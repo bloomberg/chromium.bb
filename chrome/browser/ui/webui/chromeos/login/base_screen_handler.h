@@ -29,6 +29,14 @@ class LocalizedValuesBuilder {
  public:
   explicit LocalizedValuesBuilder(base::DictionaryValue* dict);
   // Method to declare localized value. |key| is the i18n key used in html.
+  // |message| is text of the message.
+  void Add(const std::string& key, const std::string& message);
+
+  // Method to declare localized value. |key| is the i18n key used in html.
+  // |message| is text of the message.
+  void Add(const std::string& key, const string16& message);
+
+  // Method to declare localized value. |key| is the i18n key used in html.
   // |message_id| is a resource id of message.
   void Add(const std::string& key, int message_id);
 

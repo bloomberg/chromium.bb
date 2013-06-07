@@ -76,6 +76,9 @@ class LoginDisplay : public RemoveUserDelegate {
     // Called when the user requests device reset.
     virtual void OnStartDeviceReset() = 0;
 
+    // Called when the owner permission for kiosk app auto launch is requested.
+    virtual void OnStartKioskAutolaunchScreen() = 0;
+
     // Shows wrong HWID screen.
     virtual void ShowWrongHWIDScreen() = 0;
 

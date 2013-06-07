@@ -15,6 +15,16 @@ LocalizedValuesBuilder::LocalizedValuesBuilder(base::DictionaryValue* dict)
     : dict_(dict) {
 }
 
+void LocalizedValuesBuilder::Add(const std::string& key,
+                                 const std::string& message) {
+  dict_->SetString(key, message);
+}
+
+void LocalizedValuesBuilder::Add(const std::string& key,
+                                 const string16& message) {
+  dict_->SetString(key, message);
+}
+
 void LocalizedValuesBuilder::Add(const std::string& key, int message_id) {
   dict_->SetString(key,
                    l10n_util::GetStringUTF16(message_id));

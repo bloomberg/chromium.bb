@@ -86,6 +86,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   virtual void OnUserSelected(const std::string& username) OVERRIDE;
   virtual void OnStartEnterpriseEnrollment() OVERRIDE;
   virtual void OnStartDeviceReset() OVERRIDE;
+  virtual void OnStartKioskAutolaunchScreen() OVERRIDE;
   virtual void ResetPublicSessionAutoLoginTimer() OVERRIDE;
   virtual void ResyncUserData() OVERRIDE;
   virtual void SetDisplayEmail(const std::string& email) OVERRIDE;
@@ -176,6 +177,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Shows "reset device" screen.
   void ShowResetScreen();
+
+  // Shows "kiosk auto-launch permission" screen.
+  void ShowKioskAutolaunchScreen();
 
   // Shows "critical TPM error" screen.
   void ShowTPMError();

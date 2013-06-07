@@ -46,7 +46,9 @@ void PopulateAppDict(const KioskAppManager::App& app_data,
   app_dict->SetString("iconURL", icon_url);
   app_dict->SetBoolean(
       "autoLaunch",
-      KioskAppManager::Get()->GetAutoLaunchApp() == app_data.app_id);
+      KioskAppManager::Get()->GetAutoLaunchApp() == app_data.app_id &&
+      (KioskAppManager::Get()->IsAutoLaunchEnabled() ||
+          KioskAppManager::Get()->IsAutoLaunchRequested()));
   app_dict->SetBoolean("isLoading", app_data.is_loading);
 }
 

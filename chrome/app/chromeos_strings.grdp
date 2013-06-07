@@ -245,6 +245,15 @@ Press any key to continue exploring.
   <message name="IDS_EULA_SCREEN_TITLE" desc="Title of the OOBE EULA screen">
     The small print
   </message>
+  <message name="IDS_AUTOSTART_WARNING_TITLE" desc="Title of the kiosk autostart screen">
+    Auto-start permission requested
+  </message>
+  <message name="IDS_KIOSK_AUTOSTART_SCREEN_WARNING_MSG" desc="Warning text shown on kiosk autolaunch screen above the exclamation icon.">
+    Do you want to automatically start this app when the machine turns on?
+  </message>
+  <message name="IDS_KIOSK_AUTOSTART_CONFIRM" desc="Confirm button text">
+    Confirm
+  </message>
   <message name="IDS_RESET_SCREEN_TITLE" desc="Title of the reset screen">
     Factory reset
   </message>

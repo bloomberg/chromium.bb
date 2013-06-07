@@ -159,10 +159,16 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, Basic) {
   // Clear the auto launch app.
   manager()->SetAutoLaunchApp("");
   EXPECT_EQ("", manager()->GetAutoLaunchApp());
+  EXPECT_FALSE(manager()->IsAutoLaunchEnabled());
 
   // Set another auto launch app.
   manager()->SetAutoLaunchApp("app_2");
   EXPECT_EQ("app_2", manager()->GetAutoLaunchApp());
+
+  // Check auto launch permissions.
+  EXPECT_FALSE(manager()->IsAutoLaunchEnabled());
+  manager()->SetEnableAutoLaunch(true);
+  EXPECT_TRUE(manager()->IsAutoLaunchEnabled());
 
   // Remove the auto launch app.
   manager()->RemoveApp("app_2");
@@ -173,6 +179,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, Basic) {
   TestKioskAppManagerObserver observer(manager());
   manager()->SetAutoLaunchApp("none_exist_app");
   EXPECT_EQ("", manager()->GetAutoLaunchApp());
+  EXPECT_FALSE(manager()->IsAutoLaunchEnabled());
 
   // Add an exist app again.
   observer.Reset();

@@ -30,6 +30,7 @@ class EnrollmentScreen;
 class ErrorScreen;
 class EulaScreen;
 class FocusRingController;
+class KioskAutolaunchScreen;
 class LoginDisplayHost;
 class NetworkScreen;
 class OobeDisplay;
@@ -116,6 +117,7 @@ class WizardController : public ScreenObserver {
   EulaScreen* GetEulaScreen();
   EnrollmentScreen* GetEnrollmentScreen();
   ResetScreen* GetResetScreen();
+  KioskAutolaunchScreen* GetKioskAutolaunchScreen();
   TermsOfServiceScreen* GetTermsOfServiceScreen();
   WrongHWIDScreen* GetWrongHWIDScreen();
   LocallyManagedUserCreationScreen* GetLocallyManagedUserCreationScreen();
@@ -136,6 +138,7 @@ class WizardController : public ScreenObserver {
   static const char kEulaScreenName[];
   static const char kEnrollmentScreenName[];
   static const char kResetScreenName[];
+  static const char kKioskAutolaunchScreenName[];
   static const char kErrorScreenName[];
   static const char kTermsOfServiceScreenName[];
   static const char kWrongHWIDScreenName[];
@@ -149,6 +152,7 @@ class WizardController : public ScreenObserver {
   void ShowEulaScreen();
   void ShowEnrollmentScreen();
   void ShowResetScreen();
+  void ShowKioskAutolaunchScreen();
   void ShowTermsOfServiceScreen();
   void ShowWrongHWIDScreen();
   void ShowLocallyManagedUserCreationScreen();
@@ -172,6 +176,8 @@ class WizardController : public ScreenObserver {
   void OnEnrollmentDone();
   void OnAutoEnrollmentDone();
   void OnResetCanceled();
+  void OnKioskAutolaunchCanceled();
+  void OnKioskAutolaunchConfirmed();
   void OnWrongHWIDWarningSkipped();
   void OnOOBECompleted();
   void OnTermsOfServiceDeclined();
@@ -217,6 +223,9 @@ class WizardController : public ScreenObserver {
   // Logs in the specified user via default login screen.
   void Login(const std::string& username, const std::string& password);
 
+  // Launched kiosk app configured for auto-launch.
+  void AutoLaunchKioskApp();
+
   // Whether to skip any screens that may normally be shown after login
   // (registration, Terms of Service, user image selection).
   static bool skip_post_login_screens_;
@@ -229,6 +238,7 @@ class WizardController : public ScreenObserver {
   scoped_ptr<UserImageScreen> user_image_screen_;
   scoped_ptr<EulaScreen> eula_screen_;
   scoped_ptr<ResetScreen> reset_screen_;
+  scoped_ptr<KioskAutolaunchScreen> autolaunch_screen_;
   scoped_ptr<EnrollmentScreen> enrollment_screen_;
   scoped_ptr<ErrorScreen> error_screen_;
   scoped_ptr<TermsOfServiceScreen> terms_of_service_screen_;

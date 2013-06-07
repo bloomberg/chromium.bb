@@ -14,6 +14,7 @@
 <include src="header_bar.js"></include>
 <include src="network_dropdown.js"></include>
 <include src="oobe_screen_reset.js"></include>
+<include src="oobe_screen_autolaunch.js"></include>
 <include src="oobe_screen_terms_of_service.js"></include>
 <include src="oobe_screen_user_image.js"></include>
 <include src="screen_account_picker.js"></include>

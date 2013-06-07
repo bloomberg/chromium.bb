@@ -243,6 +243,10 @@ void WebUIScreenLocker::OnStartDeviceReset() {
   NOTREACHED();
 }
 
+void WebUIScreenLocker::OnStartKioskAutolaunchScreen() {
+  NOTREACHED();
+}
+
 void WebUIScreenLocker::ShowWrongHWIDScreen() {
   NOTREACHED();
 }

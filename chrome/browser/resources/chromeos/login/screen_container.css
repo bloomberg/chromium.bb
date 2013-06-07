@@ -26,6 +26,7 @@
 }
 
 /* Screens that have a border and background. */
+#oobe.autolaunch #inner-container,
 #oobe.connect #inner-container,
 #oobe.enrollment #inner-container,
 #oobe.eula #inner-container,
@@ -94,6 +95,7 @@
 }
 
 #account-picker-dot,
+#autolaunch-dot,
 #enrollment-dot,
 #oauth-enrollment-dot,
 #reset-dot,

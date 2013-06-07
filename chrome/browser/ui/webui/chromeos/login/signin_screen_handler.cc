@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
@@ -1205,6 +1206,13 @@ void SigninScreenHandler::HandleToggleResetScreen() {
   }
 }
 
+void SigninScreenHandler::HandleToggleKioskAutolaunchScreen() {
+  if (delegate_ &&
+      !g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
+    delegate_->ShowKioskAutolaunchScreen();
+  }
+}
+
 void SigninScreenHandler::HandleLaunchHelpApp(double help_topic_id) {
   if (!delegate_)
     return;
@@ -1450,6 +1458,13 @@ void SigninScreenHandler::HandleLoginUIStateChanged(const std::string& source,
                                                     bool new_value) {
   LOG(INFO) << "Login WebUI >> active: " << new_value << ", "
             << "source: " << source;
+
+  if (!KioskAppManager::Get()->GetAutoLaunchApp().empty() &&
+      KioskAppManager::Get()->IsAutoLaunchRequested()) {
+    LOG(INFO) << "Showing auto-launch warning";
+    HandleToggleKioskAutolaunchScreen();
+    return;
+  }
 
   if (source == kSourceGaiaSignin) {
     ui_state_ = UI_STATE_GAIA_SIGNIN;

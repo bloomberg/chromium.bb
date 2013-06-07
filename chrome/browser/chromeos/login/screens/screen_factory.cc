@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
+#include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
@@ -22,6 +23,7 @@ namespace chromeos {
 const char ScreenFactory::kEnrollmentScreenId[] = "enroll";
 const char ScreenFactory::kErrorScreenId[] = "error-message";
 const char ScreenFactory::kEulaScreenId[] = "eula";
+const char ScreenFactory::kKioskAutolaunchScreenId[] = "autolaunch";
 const char ScreenFactory::kLocallyManagedUserCreationScreenId[] =
   "locally-managed-user-creation-flow";
 const char ScreenFactory::kNetworkScreenId[] = "network";
@@ -63,6 +65,9 @@ BaseScreen* ScreenFactory::CreateScreenImpl(const std::string& id) {
                                 oobe_display_->GetEnrollmentScreenActor());
   } else if (id == kResetScreenId) {
     return new ResetScreen(observer_, oobe_display_->GetResetScreenActor());
+  } else if (id == kKioskAutolaunchScreenId) {
+    return new KioskAutolaunchScreen(
+        observer_, oobe_display_->GetKioskAutolaunchScreenActor());
   } else if (id == kTermsOfServiceScreenId) {
     return new TermsOfServiceScreen(observer_,
         oobe_display_->GetTermsOfServiceScreenActor());

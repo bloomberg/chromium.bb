@@ -304,6 +304,11 @@ void WebUILoginDisplay::ShowResetScreen() {
     delegate_->OnStartDeviceReset();
 }
 
+void WebUILoginDisplay::ShowKioskAutolaunchScreen() {
+  if (delegate_)
+    delegate_->OnStartKioskAutolaunchScreen();
+}
+
 void WebUILoginDisplay::ShowWrongHWIDScreen() {
   if (delegate_)
     delegate_->ShowWrongHWIDScreen();

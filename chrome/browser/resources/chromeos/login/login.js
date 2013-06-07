@@ -21,6 +21,7 @@ cr.define('cr.ui.Oobe', function() {
       login.GaiaSigninScreen.register();
       login.UserImageScreen.register(/* lazyInit= */ true);
       login.ResetScreen.register();
+      login.AutolaunchScreen.register();
       login.ErrorMessageScreen.register();
       login.TPMErrorMessageScreen.register();
       login.PasswordChangedScreen.register();

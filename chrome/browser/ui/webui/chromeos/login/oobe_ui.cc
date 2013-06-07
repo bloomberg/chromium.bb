@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_app_menu_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/locally_managed_user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
@@ -136,6 +137,7 @@ const char OobeUI::kScreenOobeUpdate[]      = "update";
 const char OobeUI::kScreenOobeEnrollment[]  = "oauth-enrollment";
 const char OobeUI::kScreenGaiaSignin[]      = "gaia-signin";
 const char OobeUI::kScreenAccountPicker[]   = "account-picker";
+const char OobeUI::kScreenKioskAutolaunch[] = "autolaunch";
 const char OobeUI::kScreenErrorMessage[]    = "error-message";
 const char OobeUI::kScreenUserImagePicker[] = "user-image";
 const char OobeUI::kScreenTpmError[]        = "tpm-error-message";
@@ -153,6 +155,7 @@ OobeUI::OobeUI(content::WebUI* web_ui)
       network_screen_actor_(NULL),
       eula_screen_actor_(NULL),
       reset_screen_actor_(NULL),
+      autolaunch_screen_actor_(NULL),
       wrong_hwid_screen_actor_(NULL),
       locally_managed_user_creation_screen_actor_(NULL),
       error_screen_handler_(NULL),
@@ -187,6 +190,11 @@ OobeUI::OobeUI(content::WebUI* web_ui)
   ResetScreenHandler* reset_screen_handler = new ResetScreenHandler();
   reset_screen_actor_ = reset_screen_handler;
   AddScreenHandler(reset_screen_handler);
+
+  KioskAutolaunchScreenHandler* autolaunch_screen_handler =
+      new KioskAutolaunchScreenHandler();
+  autolaunch_screen_actor_ = autolaunch_screen_handler;
+  AddScreenHandler(autolaunch_screen_handler);
 
   LocallyManagedUserCreationScreenHandler*
       locally_managed_user_creation_screen_handler =
@@ -281,6 +289,10 @@ ResetScreenActor* OobeUI::GetResetScreenActor() {
   return reset_screen_actor_;
 }
 
+KioskAutolaunchScreenActor* OobeUI::GetKioskAutolaunchScreenActor() {
+  return autolaunch_screen_actor_;
+}
+
 TermsOfServiceScreenActor* OobeUI::GetTermsOfServiceScreenActor() {
   return terms_of_service_screen_actor_;
 }
@@ -345,6 +357,7 @@ void OobeUI::InitializeScreenMaps() {
   screen_names_[SCREEN_OOBE_ENROLLMENT] = kScreenOobeEnrollment;
   screen_names_[SCREEN_GAIA_SIGNIN] = kScreenGaiaSignin;
   screen_names_[SCREEN_ACCOUNT_PICKER] = kScreenAccountPicker;
+  screen_names_[SCREEN_KIOSK_AUTOLAUNCH] = kScreenKioskAutolaunch;
   screen_names_[SCREEN_ERROR_MESSAGE] = kScreenErrorMessage;
   screen_names_[SCREEN_USER_IMAGE_PICKER] = kScreenUserImagePicker;
   screen_names_[SCREEN_TPM_ERROR] = kScreenTpmError;

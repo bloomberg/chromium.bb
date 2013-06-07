@@ -21,6 +21,7 @@ class ScreenFactory {
   static const char kEnrollmentScreenId[];
   static const char kErrorScreenId[];
   static const char kEulaScreenId[];
+  static const char kKioskAutolaunchScreenId[];
   static const char kLocallyManagedUserCreationScreenId[];
   static const char kLoginScreenId[];
   static const char kNetworkScreenId[];

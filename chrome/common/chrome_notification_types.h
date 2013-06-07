@@ -988,6 +988,12 @@ enum NotificationType {
   // Sent when proxy dialog is closed.
   NOTIFICATION_LOGIN_PROXY_CHANGED,
 
+  // Send when kiosk auto-launch warning screen is visible.
+  NOTIFICATION_KIOSK_AUTOLAUNCH_WARNING_VISIBLE,
+
+  // Send when kiosk auto-launch warning screen had completed.
+  NOTIFICATION_KIOSK_AUTOLAUNCH_WARNING_COMPLETED,
+
   // Sent when kiosk app list is loaded in UI.
   NOTIFICATION_KIOSK_APPS_LOADED,
 

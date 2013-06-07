@@ -597,6 +597,10 @@ void ExistingUserController::OnStartDeviceReset() {
   ShowResetScreen();
 }
 
+void ExistingUserController::OnStartKioskAutolaunchScreen() {
+  ShowKioskAutolaunchScreen();
+}
+
 void ExistingUserController::ResyncUserData() {
   // LoginPerformer instance has state of the user so it should exist.
   if (login_performer_.get())
@@ -655,6 +659,13 @@ void ExistingUserController::ShowEnrollmentScreen(bool is_auto_enrollment,
 void ExistingUserController::ShowResetScreen() {
   scoped_ptr<DictionaryValue> params;
   host_->StartWizard(WizardController::kResetScreenName, params.Pass());
+  login_display_->OnFadeOut();
+}
+
+void ExistingUserController::ShowKioskAutolaunchScreen() {
+  scoped_ptr<DictionaryValue> params;
+  host_->StartWizard(WizardController::kKioskAutolaunchScreenName,
+                     params.Pass());
   login_display_->OnFadeOut();
 }
 

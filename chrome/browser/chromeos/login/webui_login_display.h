@@ -69,6 +69,7 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual void ResyncUserData() OVERRIDE;
   virtual void ShowEnterpriseEnrollmentScreen() OVERRIDE;
   virtual void ShowResetScreen() OVERRIDE;
+  virtual void ShowKioskAutolaunchScreen() OVERRIDE;
   virtual void ShowWrongHWIDScreen() OVERRIDE;
   virtual void SetWebUIHandler(
       LoginDisplayWebUIHandler* webui_handler) OVERRIDE;

@@ -15,6 +15,7 @@ namespace chromeos {
 class EnrollmentScreenActor;
 class ErrorScreenActor;
 class EulaScreenActor;
+class KioskAutolaunchScreenActor;
 class NetworkScreenActor;
 class ResetScreenActor;
 class TermsOfServiceScreenActor;
@@ -37,6 +38,7 @@ class OobeDisplay {
     SCREEN_OOBE_ENROLLMENT,
     SCREEN_GAIA_SIGNIN,
     SCREEN_ACCOUNT_PICKER,
+    SCREEN_KIOSK_AUTOLAUNCH,
     SCREEN_ERROR_MESSAGE,
     SCREEN_USER_IMAGE_PICKER,
     SCREEN_TPM_ERROR,
@@ -63,6 +65,7 @@ class OobeDisplay {
   virtual EulaScreenActor* GetEulaScreenActor() = 0;
   virtual EnrollmentScreenActor* GetEnrollmentScreenActor() = 0;
   virtual ResetScreenActor* GetResetScreenActor() = 0;
+  virtual KioskAutolaunchScreenActor* GetKioskAutolaunchScreenActor() = 0;
   virtual TermsOfServiceScreenActor* GetTermsOfServiceScreenActor() = 0;
   virtual UserImageScreenActor* GetUserImageScreenActor() = 0;
   virtual ErrorScreenActor* GetErrorScreenActor() = 0;

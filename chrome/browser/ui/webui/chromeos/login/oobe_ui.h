@@ -48,6 +48,7 @@ class OobeUI : public OobeDisplay,
   static const char kScreenOobeEnrollment[];
   static const char kScreenGaiaSignin[];
   static const char kScreenAccountPicker[];
+  static const char kScreenKioskAutolaunch[];
   static const char kScreenErrorMessage[];
   static const char kScreenUserImagePicker[];
   static const char kScreenTpmError[];
@@ -68,6 +69,7 @@ class OobeUI : public OobeDisplay,
   virtual EulaScreenActor* GetEulaScreenActor() OVERRIDE;
   virtual EnrollmentScreenActor* GetEnrollmentScreenActor() OVERRIDE;
   virtual ResetScreenActor* GetResetScreenActor() OVERRIDE;
+  virtual KioskAutolaunchScreenActor* GetKioskAutolaunchScreenActor() OVERRIDE;
   virtual TermsOfServiceScreenActor*
       GetTermsOfServiceScreenActor() OVERRIDE;
   virtual UserImageScreenActor* GetUserImageScreenActor() OVERRIDE;
@@ -125,6 +127,7 @@ class OobeUI : public OobeDisplay,
   EulaScreenActor* eula_screen_actor_;
   EnrollmentScreenActor* enrollment_screen_actor_;
   ResetScreenActor* reset_screen_actor_;
+  KioskAutolaunchScreenActor* autolaunch_screen_actor_;
   WrongHWIDScreenActor* wrong_hwid_screen_actor_;
   LocallyManagedUserCreationScreenHandler*
       locally_managed_user_creation_screen_actor_;

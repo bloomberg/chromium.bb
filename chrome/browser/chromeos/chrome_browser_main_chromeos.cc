@@ -209,7 +209,7 @@ bool ShouldAutoLaunchKioskApp(const CommandLine& command_line) {
   return !command_line.HasSwitch(switches::kDisableAppMode) &&
       command_line.HasSwitch(switches::kLoginManager) &&
       !command_line.HasSwitch(switches::kForceLoginManagerInTests) &&
-      !app_manager->GetAutoLaunchApp().empty() &&
+      app_manager->IsAutoLaunchEnabled() &&
       KioskAppLaunchError::Get() == KioskAppLaunchError::NONE;
 }
 

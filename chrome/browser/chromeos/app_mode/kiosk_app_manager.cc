@@ -11,12 +11,17 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/cryptohome/async_method_caller.h"
@@ -46,6 +51,7 @@ void OnRemoveAppCryptohomeComplete(const std::string& app,
 // static
 const char KioskAppManager::kKioskDictionaryName[] = "kiosk";
 const char KioskAppManager::kKeyApps[] = "apps";
+const char KioskAppManager::kKeyAutoLoginState[] = "auto_login_state";
 const char KioskAppManager::kIconCacheDir[] = "kiosk";
 
 // static
@@ -83,11 +89,47 @@ std::string KioskAppManager::GetAutoLaunchApp() const {
 }
 
 void KioskAppManager::SetAutoLaunchApp(const std::string& app_id) {
+  SetAutoLoginState(AUTOLOGIN_REQUESTED);
+  // Clean first, so the proper change notifications are triggered even
+  // if we are only changing AutoLoginState here.
+  if (!auto_launch_app_id_.empty()) {
+    CrosSettings::Get()->SetString(kAccountsPrefDeviceLocalAccountAutoLoginId,
+                                   std::string());
+  }
+
   CrosSettings::Get()->SetString(
       kAccountsPrefDeviceLocalAccountAutoLoginId,
       app_id.empty() ? std::string() : GenerateKioskAppAccountId(app_id));
   CrosSettings::Get()->SetInteger(
       kAccountsPrefDeviceLocalAccountAutoLoginDelay, 0);
+}
+
+void KioskAppManager::SetEnableAutoLaunch(bool value) {
+  SetAutoLoginState(value ? AUTOLOGIN_APPROVED : AUTOLOGIN_REJECTED);
+}
+
+bool KioskAppManager::IsAutoLaunchRequested() const {
+  if (GetAutoLaunchApp().empty())
+    return false;
+
+  // Apps that were installed by the policy don't require machine owner
+  // consent through UI.
+  if (g_browser_process->browser_policy_connector()->IsEnterpriseManaged())
+    return false;
+
+  return GetAutoLoginState() == AUTOLOGIN_REQUESTED;
+}
+
+bool KioskAppManager::IsAutoLaunchEnabled() const {
+  if (GetAutoLaunchApp().empty())
+    return false;
+
+  // Apps that were installed by the policy don't require machine owner
+  // consent through UI.
+  if (g_browser_process->browser_policy_connector()->IsEnterpriseManaged())
+    return true;
+
+  return GetAutoLoginState() == AUTOLOGIN_APPROVED;
 }
 
 void KioskAppManager::AddApp(const std::string& app_id) {
@@ -281,6 +323,25 @@ void KioskAppManager::OnKioskAppDataLoadFailure(const std::string& app_id) {
                     observers_,
                     OnKioskAppDataLoadFailure(app_id));
   RemoveApp(app_id);
+}
+
+KioskAppManager::AutoLoginState KioskAppManager::GetAutoLoginState() const {
+  PrefService* prefs = g_browser_process->local_state();
+  const base::DictionaryValue* dict =
+      prefs->GetDictionary(KioskAppManager::kKioskDictionaryName);
+  int value;
+  if (!dict->GetInteger(kKeyAutoLoginState, &value))
+    return AUTOLOGIN_NONE;
+
+  return static_cast<AutoLoginState>(value);
+}
+
+void KioskAppManager::SetAutoLoginState(AutoLoginState state) {
+  PrefService* prefs = g_browser_process->local_state();
+  DictionaryPrefUpdate dict_update(prefs,
+                                   KioskAppManager::kKioskDictionaryName);
+  dict_update->SetInteger(kKeyAutoLoginState, state);
+  prefs->CommitPendingWrite();
 }
 
 }  // namespace chromeos

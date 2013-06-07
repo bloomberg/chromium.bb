@@ -121,6 +121,9 @@ class SigninScreenHandlerDelegate {
   // Shows Reset screen.
   virtual void ShowResetScreen() = 0;
 
+  // Shows Reset screen.
+  virtual void ShowKioskAutolaunchScreen() = 0;
+
   // Show wrong hwid screen.
   virtual void ShowWrongHWIDScreen() = 0;
 
@@ -300,6 +303,7 @@ class SigninScreenHandler
   void HandleShowAddUser(const base::ListValue* args);
   void HandleToggleEnrollmentScreen();
   void HandleToggleResetScreen();
+  void HandleToggleKioskAutolaunchScreen();
   void HandleLaunchHelpApp(double help_topic_id);
   void HandleCreateAccount();
   void HandleAccountPickerReady();

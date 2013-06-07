@@ -34,6 +34,7 @@
 #include "chrome/browser/chromeos/login/oobe_display.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
+#include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
@@ -121,6 +122,7 @@ const char WizardController::kUserImageScreenName[] = "image";
 const char WizardController::kEulaScreenName[] = "eula";
 const char WizardController::kEnrollmentScreenName[] = "enroll";
 const char WizardController::kResetScreenName[] = "reset";
+const char WizardController::kKioskAutolaunchScreenName[] = "autolaunch";
 const char WizardController::kErrorScreenName[] = "error-message";
 const char WizardController::kTermsOfServiceScreenName[] = "tos";
 const char WizardController::kWrongHWIDScreenName[] = "wrong-hwid";
@@ -262,6 +264,15 @@ chromeos::ResetScreen* WizardController::GetResetScreen() {
   return reset_screen_.get();
 }
 
+chromeos::KioskAutolaunchScreen* WizardController::GetKioskAutolaunchScreen() {
+  if (!autolaunch_screen_.get()) {
+    autolaunch_screen_.reset(
+        new chromeos::KioskAutolaunchScreen(
+            this, oobe_display_->GetKioskAutolaunchScreenActor()));
+  }
+  return autolaunch_screen_.get();
+}
+
 chromeos::TermsOfServiceScreen* WizardController::GetTermsOfServiceScreen() {
   if (!terms_of_service_screen_.get()) {
     terms_of_service_screen_.reset(
@@ -382,6 +393,12 @@ void WizardController::ShowResetScreen() {
   VLOG(1) << "Showing reset screen.";
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetResetScreen());
+}
+
+void WizardController::ShowKioskAutolaunchScreen() {
+  VLOG(1) << "Showing kiosk autolaunch screen.";
+  SetStatusAreaVisible(false);
+  SetCurrentScreen(GetKioskAutolaunchScreen());
 }
 
 void WizardController::ShowTermsOfServiceScreen() {
@@ -552,13 +569,8 @@ void WizardController::OnEnrollmentDone() {
 
   // TODO(mnissler): Unify the logic for auto-login for Public Sessions and
   // Kiosk Apps and make this code cover both cases: http://crbug.com/234694.
-  const std::string auto_launch_app =
-      KioskAppManager::Get()->GetAutoLaunchApp();
-  if (!auto_launch_app.empty()) {
-    ExistingUserController::current_controller()->PrepareKioskAppLaunch();
-
-    // KioskAppLauncher deletes itself when done.
-    (new KioskAppLauncher(KioskAppManager::Get(), auto_launch_app))->Start();
+  if (KioskAppManager::Get()->IsAutoLaunchEnabled()) {
+    AutoLaunchKioskApp();
   } else if (!force_enrollment_ || can_exit_enrollment_) {
     ShowLoginScreen();
   }
@@ -569,6 +581,15 @@ void WizardController::OnResetCanceled() {
     SetCurrentScreen(previous_screen_);
   else
     ShowLoginScreen();
+}
+
+void WizardController::OnKioskAutolaunchCanceled() {
+  ShowLoginScreen();
+}
+
+void WizardController::OnKioskAutolaunchConfirmed() {
+  DCHECK(KioskAppManager::Get()->IsAutoLaunchEnabled());
+  AutoLaunchKioskApp();
 }
 
 void WizardController::OnWrongHWIDWarningSkipped() {
@@ -692,6 +713,8 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
     ShowEulaScreen();
   } else if (screen_name == kResetScreenName) {
     ShowResetScreen();
+  } else if (screen_name == kKioskAutolaunchScreenName) {
+    ShowKioskAutolaunchScreen();
   } else if (screen_name == kEnrollmentScreenName) {
     ShowEnrollmentScreen();
   } else if (screen_name == kTermsOfServiceScreenName) {
@@ -745,6 +768,12 @@ void WizardController::OnExit(ExitCodes exit_code) {
     case RESET_CANCELED:
       OnResetCanceled();
       break;
+    case KIOSK_AUTOLAUNCH_CANCELED:
+      OnKioskAutolaunchCanceled();
+      break;
+    case KIOSK_AUTOLAUNCH_CONFIRMED:
+      OnKioskAutolaunchConfirmed();
+      break;
     case ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED:
       OnAutoEnrollmentDone();
       break;
@@ -793,6 +822,15 @@ void WizardController::HideErrorScreen(WizardScreen* parent_screen) {
   DCHECK(parent_screen);
   VLOG(1) << "Hiding error screen.";
   SetCurrentScreen(parent_screen);
+}
+
+void WizardController::AutoLaunchKioskApp() {
+  KioskAppManager::App app_data;
+  std::string app_id = KioskAppManager::Get()->GetAutoLaunchApp();
+  CHECK(KioskAppManager::Get()->GetApp(app_id, &app_data));
+  ExistingUserController::current_controller()->PrepareKioskAppLaunch();
+  // KioskAppLauncher deletes itself when done.
+  (new KioskAppLauncher(KioskAppManager::Get(), app_id))->Start();
 }
 
 // static

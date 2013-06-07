@@ -45,24 +45,14 @@ class KioskAppManager : public content::NotificationObserver,
   };
   typedef std::vector<App> Apps;
 
-  // Name of a dictionary that holds kiosk app info.
+  // Name of a dictionary that holds kiosk app info in Local State.
   // Sample layout:
   //   "kiosk": {
-  //     "auto_launch": "app_id1",  // Exists if using local state pref
-  //     "apps": {
-  //       "app_id1" : {
-  //         "name": "name of app1",
-  //         "icon": "path to locally saved icon file"
-  //       },
-  //       "app_id2": {
-  //         "name": "name of app2",
-  //         "icon": "path to locally saved icon file"
-  //       },
-  //       ...
-  //     }
+  //     "auto_login_enabled": true  //
   //   }
   static const char kKioskDictionaryName[];
   static const char kKeyApps[];
+  static const char kKeyAutoLoginState[];
 
   // Sub directory under DIR_USER_DATA to store cached icon files.
   static const char kIconCacheDir[];
@@ -81,6 +71,15 @@ class KioskAppManager : public content::NotificationObserver,
 
   // Sets |app_id| as the app to auto launch at start up.
   void SetAutoLaunchApp(const std::string& app_id);
+
+  // Returns true if there is a pending auto-launch request.
+  bool IsAutoLaunchRequested() const;
+
+  // Returns true if owner/policy enabled auto launch.
+  bool IsAutoLaunchEnabled() const;
+
+  // Enable auto launch setter.
+  void SetEnableAutoLaunch(bool value);
 
   // Adds/removes a kiosk app by id. When removed, all locally cached data
   // will be removed as well.
@@ -110,6 +109,13 @@ class KioskAppManager : public content::NotificationObserver,
   friend class KioskAppManagerTest;
   friend class KioskTest;
 
+  enum AutoLoginState {
+    AUTOLOGIN_NONE      = 0,
+    AUTOLOGIN_REQUESTED = 1,
+    AUTOLOGIN_APPROVED  = 2,
+    AUTOLOGIN_REJECTED  = 3,
+  };
+
   KioskAppManager();
   virtual ~KioskAppManager();
 
@@ -131,6 +137,10 @@ class KioskAppManager : public content::NotificationObserver,
   virtual void GetKioskAppIconCacheDir(base::FilePath* cache_dir) OVERRIDE;
   virtual void OnKioskAppDataChanged(const std::string& app_id) OVERRIDE;
   virtual void OnKioskAppDataLoadFailure(const std::string& app_id) OVERRIDE;
+
+  // Reads/writes auto login state from/to local state.
+  AutoLoginState GetAutoLoginState() const;
+  void SetAutoLoginState(AutoLoginState state);
 
   ScopedVector<KioskAppData> apps_;
   std::string auto_launch_app_id_;
