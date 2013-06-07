@@ -27,7 +27,8 @@
 #define IntRect_h
 
 #include "core/platform/graphics/IntPoint.h"
-#include <wtf/Vector.h>
+#include "wtf/FastAllocBase.h"
+#include "wtf/Vector.h"
 
 #if OS(DARWIN)
 typedef struct CGRect CGRect;
@@ -58,7 +59,7 @@ public:
 
     explicit IntRect(const FloatRect&); // don't do this implicitly since it's lossy
     explicit IntRect(const LayoutRect&); // don't do this implicitly since it's lossy
-        
+
     IntPoint location() const { return m_location; }
     IntSize size() const { return m_size; }
 
@@ -71,17 +72,6 @@ public:
     int maxY() const { return y() + height(); }
     int width() const { return m_size.width(); }
     int height() const { return m_size.height(); }
-
-    // FIXME: These methods are here only to ease the transition to sub-pixel layout. They should
-    // be removed when we close http://webkit.org/b/60318
-    int pixelSnappedX() const { return m_location.x(); }
-    int pixelSnappedY() const { return m_location.y(); }
-    int pixelSnappedMaxX() const { return x() + width(); }
-    int pixelSnappedMaxY() const { return y() + height(); }
-    int pixelSnappedWidth() const { return m_size.width(); }
-    int pixelSnappedHeight() const { return m_size.height(); }
-    IntPoint pixelSnappedLocation() const { return location(); }
-    IntSize pixelSnappedSize() const { return size(); }
 
     void setX(int x) { m_location.setX(x); }
     void setY(int y) { m_location.setY(y); }
@@ -130,7 +120,7 @@ public:
     IntPoint maxXMinYCorner() const { return IntPoint(m_location.x() + m_size.width(), m_location.y()); } // typically topRight
     IntPoint minXMaxYCorner() const { return IntPoint(m_location.x(), m_location.y() + m_size.height()); } // typically bottomLeft
     IntPoint maxXMaxYCorner() const { return IntPoint(m_location.x() + m_size.width(), m_location.y() + m_size.height()); } // typically bottomRight
-    
+
     bool intersects(const IntRect&) const;
     bool contains(const IntRect&) const;
 
