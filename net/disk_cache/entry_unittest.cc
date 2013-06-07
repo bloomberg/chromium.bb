@@ -3198,4 +3198,102 @@ TEST_F(DiskCacheEntryTest, SimpleCacheMultipleReadersCheckCRC2) {
   DisableIntegrityCheck();
 }
 
+// Test if we can sequentially read each subset of the data until all the data
+// is read, then the CRC is calculated correctly and the reads are successful.
+TEST_F(DiskCacheEntryTest, SimpleCacheReadCombineCRC) {
+  // Test sequence:
+  // Create, Write, Read (first half of data), Read (second half of data),
+  // Close.
+  SetSimpleCacheMode();
+  InitCache();
+  disk_cache::Entry* null = NULL;
+  const char key[] = "the first key";
+
+  const int kHalfSize = 200;
+  const int kSize = 2 * kHalfSize;
+  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize));
+  CacheTestFillBuffer(buffer1->data(), kSize, false);
+  disk_cache::Entry* entry = NULL;
+
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+  EXPECT_NE(null, entry);
+
+  EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer1, kSize, false));
+  entry->Close();
+
+  disk_cache::Entry* entry2 = NULL;
+  ASSERT_EQ(net::OK, OpenEntry(key, &entry2));
+  EXPECT_EQ(entry, entry2);
+
+  // Read the first half of the data.
+  int offset = 0;
+  int buf_len = kHalfSize;
+  scoped_refptr<net::IOBuffer> buffer1_read1(new net::IOBuffer(buf_len));
+  EXPECT_EQ(buf_len, ReadData(entry2, 0, offset, buffer1_read1, buf_len));
+  EXPECT_EQ(0, memcmp(buffer1->data(), buffer1_read1->data(), buf_len));
+
+  // Read the second half of the data.
+  offset = buf_len;
+  buf_len = kHalfSize;
+  scoped_refptr<net::IOBuffer> buffer1_read2(new net::IOBuffer(buf_len));
+  EXPECT_EQ(buf_len, ReadData(entry2, 0, offset, buffer1_read2, buf_len));
+  char* buffer1_data = buffer1->data() + offset;
+  EXPECT_EQ(0, memcmp(buffer1_data, buffer1_read2->data(), buf_len));
+
+  // Check that we are not leaking.
+  EXPECT_NE(entry, null);
+  EXPECT_TRUE(
+      static_cast<disk_cache::SimpleEntryImpl*>(entry)->HasOneRef());
+  entry->Close();
+  entry = NULL;
+}
+
+// Test if we can write the data not in sequence and read correctly. In
+// this case the CRC will not be present.
+TEST_F(DiskCacheEntryTest, SimpleCacheNonSequentialWrite) {
+  // Test sequence:
+  // Create, Write (second half of data), Write (first half of data), Read,
+  // Close.
+  SetSimpleCacheMode();
+  InitCache();
+  disk_cache::Entry* null = NULL;
+  const char key[] = "the first key";
+
+  const int kHalfSize = 200;
+  const int kSize = 2 * kHalfSize;
+  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kSize));
+  scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kSize));
+  CacheTestFillBuffer(buffer1->data(), kSize, false);
+  char* buffer1_data = buffer1->data() + kHalfSize;
+  memcpy(buffer2->data(), buffer1_data, kHalfSize);
+  disk_cache::Entry* entry = NULL;
+
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+  EXPECT_NE(null, entry);
+
+  int offset = kHalfSize;
+  int buf_len = kHalfSize;
+
+  EXPECT_EQ(buf_len, WriteData(entry, 0, offset, buffer2, buf_len, false));
+  offset = 0;
+  buf_len = kHalfSize;
+  EXPECT_EQ(buf_len, WriteData(entry, 0, offset, buffer1, buf_len, false));
+  entry->Close();
+
+  disk_cache::Entry* entry2 = NULL;
+  ASSERT_EQ(net::OK, OpenEntry(key, &entry2));
+  EXPECT_EQ(entry, entry2);
+
+  scoped_refptr<net::IOBuffer> buffer1_read1(new net::IOBuffer(kSize));
+  EXPECT_EQ(kSize, ReadData(entry2, 0, 0, buffer1_read1, kSize));
+  EXPECT_EQ(0, memcmp(buffer1->data(), buffer1_read1->data(), kSize));
+
+  // Check that we are not leaking.
+  ASSERT_NE(entry, null);
+  EXPECT_TRUE(
+      static_cast<disk_cache::SimpleEntryImpl*>(entry)->HasOneRef());
+  entry->Close();
+  entry = NULL;
+}
+
 #endif  // defined(OS_POSIX)
