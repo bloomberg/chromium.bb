@@ -1068,7 +1068,7 @@ bool InspectorDOMAgent::handleTouchEvent(Frame* frame, const PlatformTouchEvent&
 
 void InspectorDOMAgent::inspect(Node* inspectedNode)
 {
-    if (!m_frontend)
+    if (!m_frontend || !inspectedNode)
         return;
 
     Node* node = inspectedNode;
@@ -1550,7 +1550,7 @@ Node* InspectorDOMAgent::innerParentNode(Node* node)
         Document* document = toDocument(node);
         return document->ownerElement();
     }
-    return node->parentNode();
+    return node->parentOrShadowHostNode();
 }
 
 bool InspectorDOMAgent::isWhitespace(Node* node)

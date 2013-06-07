@@ -3381,12 +3381,12 @@ void WebViewImpl::inspectElementAt(const WebPoint& point)
     if (point.x == -1 || point.y == -1)
         m_page->inspectorController()->inspect(0);
     else {
-        HitTestResult result = hitTestResultForWindowPos(point);
+        HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent | HitTestRequest::IgnorePointerEventsNone;
+        HitTestRequest request(hitType);
 
-        if (!result.innerNonSharedNode())
-            return;
-
-        m_page->inspectorController()->inspect(result.innerNonSharedNode());
+        HitTestResult result(m_page->mainFrame()->view()->windowToContents(point));
+        m_page->mainFrame()->contentRenderer()->hitTest(request, result);
+        m_page->inspectorController()->inspect(result.innerNode());
     }
 }
 
