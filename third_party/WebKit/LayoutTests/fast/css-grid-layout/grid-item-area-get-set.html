@@ -39,10 +39,10 @@ if (window.testRunner)
     function checkColumnRowValues(gridItem, gridStart, gridBefore, gridEnd, gridAfter)
     {
         this.gridItem = gridItem;
-        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-start')", gridStart);
-        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-before')", valueOrDefaultGridPosition(gridBefore));
-        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-end')", valueOrDefaultGridPosition(gridEnd));
-        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('-webkit-grid-after')", valueOrDefaultGridPosition(gridAfter));
+        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-start')", gridStart);
+        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-before')", valueOrDefaultGridPosition(gridBefore));
+        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-end')", valueOrDefaultGridPosition(gridEnd));
+        shouldBeEqualToString("getComputedStyle(gridItem, '').getPropertyValue('grid-after')", valueOrDefaultGridPosition(gridAfter));
     }
 
     function testGridAreaCSSParsing(gridItemId, gridStart, gridBefore, gridEnd, gridAfter)

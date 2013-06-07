@@ -342,8 +342,8 @@ table-caption
 -webkit-inline-box
 -webkit-flex
 -webkit-inline-flex
--webkit-grid
--webkit-inline-grid
+grid
+inline-grid
 lazy-block
 //none
 //

@@ -1,131 +1,131 @@
 .grid {
-    display: -webkit-grid;
+    display: grid;
     background-color: grey;
 }
 
 .inline-grid {
-    display: -webkit-inline-grid;
+    display: inline-grid;
     background-color: grey;
 }
 
 .firstRowFirstColumn {
     background-color: blue;
-    -webkit-grid-column: 1;
-    -webkit-grid-row: 1;
+    grid-column: 1;
+    grid-row: 1;
 }
 
 .firstRowSecondColumn {
     background-color: lime;
-    -webkit-grid-column: 2;
-    -webkit-grid-row: 1;
+    grid-column: 2;
+    grid-row: 1;
 }
 
 .secondRowFirstColumn {
     background-color: purple;
-    -webkit-grid-column: 1;
-    -webkit-grid-row: 2;
+    grid-column: 1;
+    grid-row: 2;
 }
 
 .secondRowSecondColumn {
     background-color: orange;
-    -webkit-grid-column: 2;
-    -webkit-grid-row: 2;
+    grid-column: 2;
+    grid-row: 2;
 }
 
 .firstAutoRowSecondAutoColumn {
-    -webkit-grid-row: 1 / auto;
-    -webkit-grid-column: 2 / auto;
+    grid-row: 1 / auto;
+    grid-column: 2 / auto;
 }
 
 .autoLastRowAutoLastColumn {
-    -webkit-grid-row: auto / -1;
-    -webkit-grid-column: auto / -1;
+    grid-row: auto / -1;
+    grid-column: auto / -1;
 }
 
 .autoSecondRowAutoFirstColumn {
-    -webkit-grid-row: auto / 2;
-    -webkit-grid-column: auto / 1;
+    grid-row: auto / 2;
+    grid-column: auto / 1;
 }
 
 .firstRowBothColumn {
-    -webkit-grid-row: 1;
-    -webkit-grid-column: 1 / -1;
+    grid-row: 1;
+    grid-column: 1 / -1;
 }
 
 .secondRowBothColumn {
-    -webkit-grid-row: 2;
-    -webkit-grid-column: 1 / -1;
+    grid-row: 2;
+    grid-column: 1 / -1;
 }
 
 .bothRowFirstColumn {
-    -webkit-grid-row: 1 / -1;
-    -webkit-grid-column: 1;
+    grid-row: 1 / -1;
+    grid-column: 1;
 }
 
 .bothRowSecondColumn {
-    -webkit-grid-row: 1 / -1;
-    -webkit-grid-column: 2;
+    grid-row: 1 / -1;
+    grid-column: 2;
 }
 
 .bothRowBothColumn {
-    -webkit-grid-row: 1 / -1;
-    -webkit-grid-column: 1 / -1;
+    grid-row: 1 / -1;
+    grid-column: 1 / -1;
 }
 
 /* Auto column / row. */
 .autoRowAutoColumn {
     background-color: pink;
-    -webkit-grid-column: auto;
-    -webkit-grid-row: auto;
+    grid-column: auto;
+    grid-row: auto;
 }
 
 .firstRowAutoColumn {
     background-color: blue;
-    -webkit-grid-column: auto;
-    -webkit-grid-row: 1;
+    grid-column: auto;
+    grid-row: 1;
 }
 
 .secondRowAutoColumn {
     background-color: purple;
-    -webkit-grid-column: auto;
-    -webkit-grid-row: 2;
+    grid-column: auto;
+    grid-row: 2;
 }
 
 .thirdRowAutoColumn {
     background-color: navy;
-    -webkit-grid-column: auto;
-    -webkit-grid-row: 3;
+    grid-column: auto;
+    grid-row: 3;
 }
 
 .autoRowFirstColumn {
     background-color: lime;
-    -webkit-grid-column: 1;
-    -webkit-grid-row: auto;
+    grid-column: 1;
+    grid-row: auto;
 }
 
 .autoRowSecondColumn {
     background-color: orange;
-    -webkit-grid-column: 2;
-    -webkit-grid-row: auto;
+    grid-column: 2;
+    grid-row: auto;
 }
 
 .autoRowThirdColumn {
     background-color: magenta;
-    -webkit-grid-column: 3;
-    -webkit-grid-row: auto;
+    grid-column: 3;
+    grid-row: auto;
 }
 
 /* Grid element flow. */
 .gridAutoFlowNone {
-    -webkit-grid-auto-flow: none;
+    grid-auto-flow: none;
 }
 
 .gridAutoFlowColumn {
-    -webkit-grid-auto-flow: column;
+    grid-auto-flow: column;
 }
 
 .gridAutoFlowRow {
-    -webkit-grid-auto-flow: row;
+    grid-auto-flow: row;
 }
 
 /* This rule makes sure the container is smaller than any grid items to avoid distributing any extra logical space to them. */

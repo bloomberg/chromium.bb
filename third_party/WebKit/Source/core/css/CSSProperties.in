@@ -109,7 +109,7 @@ zoom custom_all
 -webkit-flex-grow type_name=float
 -webkit-flex-shrink type_name=float
 -webkit-flex-wrap
--webkit-grid-auto-flow type_name=GridAutoFlow
+grid-auto-flow type_name=GridAutoFlow
 -webkit-hyphenate-limit-after type_name=short, name_for_methods=HyphenationLimitAfter, custom_value
 -webkit-hyphenate-limit-before type_name=short, name_for_methods=HyphenationLimitBefore, custom_value
 -webkit-hyphenate-limit-lines type_name=short, name_for_methods=HyphenationLimitLines, custom_value

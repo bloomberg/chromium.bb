@@ -365,34 +365,33 @@ const StylePropertyShorthand& webkitMarginCollapseShorthand()
     return webkitMarginCollapseLonghands;
 }
 
-const StylePropertyShorthand& webkitGridColumnShorthand()
+const StylePropertyShorthand& gridColumnShorthand()
 {
-    static const CSSPropertyID webkitGridColumnProperties[] = {
-        CSSPropertyWebkitGridStart,
-        CSSPropertyWebkitGridEnd
+    static const CSSPropertyID gridColumnProperties[] = {
+        CSSPropertyGridStart,
+        CSSPropertyGridEnd
     };
-    DEFINE_STATIC_LOCAL(StylePropertyShorthand, webkitGridColumnLonghands, (webkitGridColumnProperties, WTF_ARRAY_LENGTH(webkitGridColumnProperties)));
-    return webkitGridColumnLonghands;
-
+    DEFINE_STATIC_LOCAL(StylePropertyShorthand, gridColumnLonghands, (gridColumnProperties, WTF_ARRAY_LENGTH(gridColumnProperties)));
+    return gridColumnLonghands;
 }
 
-const StylePropertyShorthand& webkitGridRowShorthand()
+const StylePropertyShorthand& gridRowShorthand()
 {
-    static const CSSPropertyID webkitGridRowProperties[] = {
-        CSSPropertyWebkitGridBefore,
-        CSSPropertyWebkitGridAfter
+    static const CSSPropertyID gridRowProperties[] = {
+        CSSPropertyGridBefore,
+        CSSPropertyGridAfter
     };
-    DEFINE_STATIC_LOCAL(StylePropertyShorthand, webkitGridRowLonghands, (webkitGridRowProperties, WTF_ARRAY_LENGTH(webkitGridRowProperties)));
-    return webkitGridRowLonghands;
+    DEFINE_STATIC_LOCAL(StylePropertyShorthand, gridRowLonghands, (gridRowProperties, WTF_ARRAY_LENGTH(gridRowProperties)));
+    return gridRowLonghands;
 }
 
 const StylePropertyShorthand& gridAreaShorthand()
 {
     static const CSSPropertyID gridAreaProperties[] = {
-        CSSPropertyWebkitGridStart,
-        CSSPropertyWebkitGridBefore,
-        CSSPropertyWebkitGridEnd,
-        CSSPropertyWebkitGridAfter
+        CSSPropertyGridStart,
+        CSSPropertyGridBefore,
+        CSSPropertyGridEnd,
+        CSSPropertyGridAfter
     };
     DEFINE_STATIC_LOCAL(StylePropertyShorthand, gridAreaLonghands, (gridAreaProperties, WTF_ARRAY_LENGTH(gridAreaProperties)));
     return gridAreaLonghands;
@@ -547,10 +546,10 @@ const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID)
         return webkitFlexShorthand();
     case CSSPropertyWebkitFlexFlow:
         return webkitFlexFlowShorthand();
-    case CSSPropertyWebkitGridColumn:
-        return webkitGridColumnShorthand();
-    case CSSPropertyWebkitGridRow:
-        return webkitGridRowShorthand();
+    case CSSPropertyGridColumn:
+        return gridColumnShorthand();
+    case CSSPropertyGridRow:
+        return gridRowShorthand();
     case CSSPropertyGridArea:
         return gridAreaShorthand();
     case CSSPropertyWebkitMarginCollapse:

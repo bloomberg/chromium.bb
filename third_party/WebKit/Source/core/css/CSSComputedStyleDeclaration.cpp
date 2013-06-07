@@ -256,15 +256,15 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitFontKerning,
     CSSPropertyWebkitFontSmoothing,
     CSSPropertyWebkitFontVariantLigatures,
-    CSSPropertyWebkitGridAutoColumns,
-    CSSPropertyWebkitGridAutoFlow,
-    CSSPropertyWebkitGridAutoRows,
-    CSSPropertyWebkitGridColumns,
-    CSSPropertyWebkitGridRows,
-    CSSPropertyWebkitGridStart,
-    CSSPropertyWebkitGridEnd,
-    CSSPropertyWebkitGridBefore,
-    CSSPropertyWebkitGridAfter,
+    CSSPropertyGridAutoColumns,
+    CSSPropertyGridAutoFlow,
+    CSSPropertyGridAutoRows,
+    CSSPropertyGridColumns,
+    CSSPropertyGridRows,
+    CSSPropertyGridStart,
+    CSSPropertyGridEnd,
+    CSSPropertyGridBefore,
+    CSSPropertyGridAfter,
     CSSPropertyWebkitHighlight,
     CSSPropertyWebkitHyphenateCharacter,
     CSSPropertyWebkitHyphenateLimitAfter,
@@ -1916,29 +1916,29 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             }
             return list.release();
         }
-        case CSSPropertyWebkitGridAutoColumns:
+        case CSSPropertyGridAutoColumns:
             return valueForGridTrackSize(style->gridAutoColumns(), style.get(), m_node->document()->renderView());
-        case CSSPropertyWebkitGridAutoFlow:
+        case CSSPropertyGridAutoFlow:
             return cssValuePool().createValue(style->gridAutoFlow());
-        case CSSPropertyWebkitGridAutoRows:
+        case CSSPropertyGridAutoRows:
             return valueForGridTrackSize(style->gridAutoRows(), style.get(), m_node->document()->renderView());
-        case CSSPropertyWebkitGridColumns:
+        case CSSPropertyGridColumns:
             return valueForGridTrackList(style->gridColumns(), style->namedGridColumnLines(), style.get(), m_node->document()->renderView());
-        case CSSPropertyWebkitGridRows:
+        case CSSPropertyGridRows:
             return valueForGridTrackList(style->gridRows(), style->namedGridRowLines(), style.get(), m_node->document()->renderView());
 
-        case CSSPropertyWebkitGridStart:
+        case CSSPropertyGridStart:
             return valueForGridPosition(style->gridStart());
-        case CSSPropertyWebkitGridEnd:
+        case CSSPropertyGridEnd:
             return valueForGridPosition(style->gridEnd());
-        case CSSPropertyWebkitGridBefore:
+        case CSSPropertyGridBefore:
             return valueForGridPosition(style->gridBefore());
-        case CSSPropertyWebkitGridAfter:
+        case CSSPropertyGridAfter:
             return valueForGridPosition(style->gridAfter());
-        case CSSPropertyWebkitGridColumn:
-            return getCSSPropertyValuesForGridShorthand(webkitGridColumnShorthand());
-        case CSSPropertyWebkitGridRow:
-            return getCSSPropertyValuesForGridShorthand(webkitGridRowShorthand());
+        case CSSPropertyGridColumn:
+            return getCSSPropertyValuesForGridShorthand(gridColumnShorthand());
+        case CSSPropertyGridRow:
+            return getCSSPropertyValuesForGridShorthand(gridRowShorthand());
         case CSSPropertyGridArea:
             return getCSSPropertyValuesForGridShorthand(gridAreaShorthand());
 

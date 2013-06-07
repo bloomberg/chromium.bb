@@ -8,10 +8,10 @@ if (window.testRunner)
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .grid {
-    -webkit-grid-rows: 20px;
-    -webkit-grid-columns: 10px;
-    -webkit-grid-auto-rows: 30px;
-    -webkit-grid-auto-columns: 50px;
+    grid-rows: 20px;
+    grid-columns: 10px;
+    grid-auto-rows: 30px;
+    grid-auto-columns: 50px;
     font: 10px/1 Ahem;
 }
 </style>
@@ -21,8 +21,8 @@ if (window.testRunner)
 function updateAndCheck(gridElementID, defaultSizing, gridItemSize)
 {
     var gridElement = document.getElementById(gridElementID);
-    gridElement.style.webkitGridAutoRows = defaultSizing.rows;
-    gridElement.style.webkitGridAutoColumns = defaultSizing.columns;
+    gridElement.style.gridAutoRows = defaultSizing.rows;
+    gridElement.style.gridAutoColumns = defaultSizing.columns;
 
     var gridItem = gridElement.firstChild.nextSibling;
     gridItem.setAttribute("data-expected-width", gridItemSize.width);

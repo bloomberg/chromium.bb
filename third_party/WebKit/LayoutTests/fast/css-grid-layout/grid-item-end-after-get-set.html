@@ -7,40 +7,40 @@ if (window.testRunner)
 </script>
 <style>
 .gridItemWithPositiveInteger {
-    -webkit-grid-end: 10;
-    -webkit-grid-after: 15;
+    grid-end: 10;
+    grid-after: 15;
 }
 .gridItemWithNegativeInteger {
-    -webkit-grid-end: -10;
-    -webkit-grid-after: -15;
+    grid-end: -10;
+    grid-after: -15;
 }
 .gridItemWithBeforeSpan {
-    -webkit-grid-end: span 2;
-    -webkit-grid-after: span 9;
+    grid-end: span 2;
+    grid-after: span 9;
 }
 .gridItemWithAfterSpan {
-    -webkit-grid-end: 2 span;
-    -webkit-grid-after: 9 span;
+    grid-end: 2 span;
+    grid-after: 9 span;
 }
 .gridItemWithOnlySpan {
-    -webkit-grid-end: span;
-    -webkit-grid-after: span;
+    grid-end: span;
+    grid-after: span;
 }
 .gridItemWithAuto {
-    -webkit-grid-end: auto;
-    -webkit-grid-after: auto;
+    grid-end: auto;
+    grid-after: auto;
 }
 .gridItemWithString {
-    -webkit-grid-end: "first";
-    -webkit-grid-after: "last";
+    grid-end: "first";
+    grid-after: "last";
 }
 .gridItemWithSpanString {
-    -webkit-grid-end: "first" span;
-    -webkit-grid-after: span "last";
+    grid-end: "first" span;
+    grid-after: span "last";
 }
 .gridItemWithSpanNumberString {
-    -webkit-grid-end: 2 "first" span;
-    -webkit-grid-after: "last" 3 span;
+    grid-end: 2 "first" span;
+    grid-after: "last" 3 span;
 }
 </style>
 <script src="resources/grid-item-column-row-parsing-utils.js"></script>
@@ -61,7 +61,7 @@ if (window.testRunner)
 <script>
     description('Test that setting and getting grid-end and grid-after works as expected');
 
-    debug("Test getting -webkit-grid-end and -webkit-grid-after set through CSS");
+    debug("Test getting grid-end and grid-after set through CSS");
     testColumnRowCSSParsing("gridElement", "auto / auto", "auto / auto");
     testColumnRowCSSParsing("gridItemWithPositiveInteger", "auto / 10", "auto / 15");
     testColumnRowCSSParsing("gridItemWithNegativeInteger", "auto / -10", "auto / -15");
@@ -77,10 +77,10 @@ if (window.testRunner)
     debug("Test the initial value");
     var element = document.createElement("div");
     document.body.appendChild(element);
-    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-end')", "'auto'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-column')", "'auto / auto'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-after')", "'auto'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-row')", "'auto / auto'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-end')", "'auto'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-column')", "'auto / auto'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-after')", "'auto'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-row')", "'auto / auto'");
 
     debug("");
     debug("Test getting and setting grid-end and grid-after through JS");
@@ -103,18 +103,18 @@ if (window.testRunner)
 
     debug("");
     debug("Test setting grid-end and grid-after back to 'auto' through JS");
-    element.style.webkitGridEnd = "18";
-    element.style.webkitGridAfter = "66";
-    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-end')", "'18'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-column')", "'auto / 18'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-after')", "'66'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-row')", "'auto / 66'");
-    element.style.webkitGridEnd = "auto";
-    element.style.webkitGridAfter = "auto";
-    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-end')", "'auto'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-column')", "'auto / auto'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-after')", "'auto'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('-webkit-grid-row')", "'auto / auto'");
+    element.style.gridEnd = "18";
+    element.style.gridAfter = "66";
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-end')", "'18'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-column')", "'auto / 18'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-after')", "'66'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-row')", "'auto / 66'");
+    element.style.gridEnd = "auto";
+    element.style.gridAfter = "auto";
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-end')", "'auto'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-column')", "'auto / auto'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-after')", "'auto'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-row')", "'auto / auto'");
 </script>
 <script src="../js/resources/js-test-post.js"></script>
 </body>

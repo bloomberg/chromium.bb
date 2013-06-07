@@ -7,24 +7,24 @@ if (window.testRunner)
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .gridMinFlexContent {
-    -webkit-grid-columns: minmax(1fr, 50px);
-    -webkit-grid-rows: 50px;
+    grid-columns: minmax(1fr, 50px);
+    grid-rows: 50px;
 }
 .gridMaxFlexContent {
-    -webkit-grid-columns: minmax(30px, 2fr);
-    -webkit-grid-rows: 50px;
+    grid-columns: minmax(30px, 2fr);
+    grid-rows: 50px;
 }
 .gridTwoMaxFlexContent {
-    -webkit-grid-columns: minmax(10px, 1fr) minmax(10px, 2fr);
-    -webkit-grid-rows: 50px;
+    grid-columns: minmax(10px, 1fr) minmax(10px, 2fr);
+    grid-rows: 50px;
 }
 .gridTwoDoubleMaxFlexContent {
-    -webkit-grid-columns: minmax(10px, 0.5fr) minmax(10px, 2fr);
-    -webkit-grid-rows: 50px;
+    grid-columns: minmax(10px, 0.5fr) minmax(10px, 2fr);
+    grid-rows: 50px;
 }
 .gridIgnoreSecondGridItem {
-    -webkit-grid-columns: minmax(300px, 3fr) minmax(150px, 1fr);
-    -webkit-grid-rows: 50px;
+    grid-columns: minmax(300px, 3fr) minmax(150px, 1fr);
+    grid-rows: 50px;
 }
 </style>
 <script src="../../resources/check-layout.js"></script>

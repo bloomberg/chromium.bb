@@ -7,35 +7,35 @@ if (window.testRunner)
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .smallGrid {
-    -webkit-grid-columns: 50px 100px;
-    -webkit-grid-rows: 50px 100px;
+    grid-columns: 50px 100px;
+    grid-rows: 50px 100px;
 }
 
 .bigGrid {
-    -webkit-grid-columns: 50px 100px 150px 200px;
-    -webkit-grid-rows: 50px 100px 150px 200px;
+    grid-columns: 50px 100px 150px 200px;
+    grid-rows: 50px 100px 150px 200px;
 }
 
 .overflowingRowFirstColumn {
-    -webkit-grid-row: auto / 10;
-    -webkit-grid-column: 1;
+    grid-row: auto / 10;
+    grid-column: 1;
 }
 
 .secondRowOverflowingColumn {
-    -webkit-grid-row: 2;
-    -webkit-grid-column: auto / 8;
+    grid-row: 2;
+    grid-column: auto / 8;
 }
 
 /* These 2 classes forces the grid to be sized after the grid-{end|after}, thus end up in the
    first row / columns. */
 .negativeOverflowingRowFirstColumn {
-    -webkit-grid-row: auto / -10;
-    -webkit-grid-column: 1;
+    grid-row: auto / -10;
+    grid-column: 1;
 }
 
 .secondRowNegativeOverflowingColumn {
-    -webkit-grid-row: 2;
-    -webkit-grid-column: auto / -8;
+    grid-row: 2;
+    grid-column: auto / -8;
 }
 
 .unconstrainedContainer {

@@ -2686,8 +2686,8 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     case CSSPropertyWebkitColumnRule:
     case CSSPropertyWebkitFlex:
     case CSSPropertyWebkitFlexFlow:
-    case CSSPropertyWebkitGridColumn:
-    case CSSPropertyWebkitGridRow:
+    case CSSPropertyGridColumn:
+    case CSSPropertyGridRow:
     case CSSPropertyGridArea:
     case CSSPropertyWebkitMarginCollapse:
     case CSSPropertyWebkitMarquee:
@@ -2985,7 +2985,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
             state.style()->setFilter(operations);
         return;
     }
-    case CSSPropertyWebkitGridAutoColumns: {
+    case CSSPropertyGridAutoColumns: {
         HANDLE_INHERIT_AND_INITIAL(gridAutoColumns, GridAutoColumns);
         GridTrackSize trackSize;
         if (!createGridTrackSize(value, trackSize, state))
@@ -2993,7 +2993,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         state.style()->setGridAutoColumns(trackSize);
         return;
     }
-    case CSSPropertyWebkitGridAutoRows: {
+    case CSSPropertyGridAutoRows: {
         HANDLE_INHERIT_AND_INITIAL(gridAutoRows, GridAutoRows);
         GridTrackSize trackSize;
         if (!createGridTrackSize(value, trackSize, state))
@@ -3001,7 +3001,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         state.style()->setGridAutoRows(trackSize);
         return;
     }
-    case CSSPropertyWebkitGridColumns: {
+    case CSSPropertyGridColumns: {
         if (isInherit) {
             m_state.style()->setGridColumns(m_state.parentStyle()->gridColumns());
             m_state.style()->setNamedGridColumnLines(m_state.parentStyle()->namedGridColumnLines());
@@ -3021,7 +3021,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         state.style()->setNamedGridColumnLines(namedGridLines);
         return;
     }
-    case CSSPropertyWebkitGridRows: {
+    case CSSPropertyGridRows: {
         if (isInherit) {
             m_state.style()->setGridRows(m_state.parentStyle()->gridRows());
             m_state.style()->setNamedGridRowLines(m_state.parentStyle()->namedGridRowLines());
@@ -3042,7 +3042,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         return;
     }
 
-    case CSSPropertyWebkitGridStart: {
+    case CSSPropertyGridStart: {
         HANDLE_INHERIT_AND_INITIAL(gridStart, GridStart);
         GridPosition startPosition;
         if (!createGridPosition(value, startPosition))
@@ -3050,7 +3050,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         state.style()->setGridStart(startPosition);
         return;
     }
-    case CSSPropertyWebkitGridEnd: {
+    case CSSPropertyGridEnd: {
         HANDLE_INHERIT_AND_INITIAL(gridEnd, GridEnd);
         GridPosition endPosition;
         if (!createGridPosition(value, endPosition))
@@ -3059,7 +3059,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         return;
     }
 
-    case CSSPropertyWebkitGridBefore: {
+    case CSSPropertyGridBefore: {
         HANDLE_INHERIT_AND_INITIAL(gridBefore, GridBefore);
         GridPosition beforePosition;
         if (!createGridPosition(value, beforePosition))
@@ -3067,7 +3067,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         state.style()->setGridBefore(beforePosition);
         return;
     }
-    case CSSPropertyWebkitGridAfter: {
+    case CSSPropertyGridAfter: {
         HANDLE_INHERIT_AND_INITIAL(gridAfter, GridAfter);
         GridPosition afterPosition;
         if (!createGridPosition(value, afterPosition))

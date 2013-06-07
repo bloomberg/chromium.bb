@@ -7,37 +7,37 @@ if (window.testRunner)
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .gridMaxMaxContent {
-    -webkit-grid-columns: minmax(10px, -webkit-max-content) minmax(10px, 1fr);
-    -webkit-grid-rows: 50px;
+    grid-columns: minmax(10px, -webkit-max-content) minmax(10px, 1fr);
+    grid-rows: 50px;
 }
 
 .gridMinMinContent {
-    -webkit-grid-columns: minmax(10px, 1fr) minmax(-webkit-min-content, 50px);
-    -webkit-grid-rows: 50px;
+    grid-columns: minmax(10px, 1fr) minmax(-webkit-min-content, 50px);
+    grid-rows: 50px;
 }
 
 .gridWithIntrinsicSizeBiggerThanFlex {
-    -webkit-grid-columns: minmax(-webkit-min-content, 0.5fr) minmax(18px, 2fr);
-    -webkit-grid-rows: 50px;
+    grid-columns: minmax(-webkit-min-content, 0.5fr) minmax(18px, 2fr);
+    grid-rows: 50px;
 }
 
 .gridShrinkBelowItemsIntrinsicSize {
-    -webkit-grid-columns: minmax(0px, 1fr) minmax(0px, 2fr);
-    -webkit-grid-rows: 50px;
+    grid-columns: minmax(0px, 1fr) minmax(0px, 2fr);
+    grid-rows: 50px;
 }
 
 .gridWithNonFlexingItems {
-    -webkit-grid-columns: 40px minmax(-webkit-min-content, 1fr) auto minmax(20px, 2fr);
-    -webkit-grid-rows: 50px;
+    grid-columns: 40px minmax(-webkit-min-content, 1fr) auto minmax(20px, 2fr);
+    grid-rows: 50px;
 }
 
 .firstRowThirdColumn {
-    -webkit-grid-column: 3;
-    -webkit-grid-row: 1;
+    grid-column: 3;
+    grid-row: 1;
 }
 .firstRowFourthColumn {
-    -webkit-grid-column: 4;
-    -webkit-grid-row: 1;
+    grid-column: 4;
+    grid-row: 1;
 }
 </style>
 <script src="../../resources/check-layout.js"></script>

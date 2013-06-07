@@ -7,72 +7,72 @@ if (window.testRunner)
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .grid {
-    -webkit-grid-columns: 40% 60%;
-    -webkit-grid-rows: 30% 70%;
+    grid-columns: 40% 60%;
+    grid-rows: 30% 70%;
     width: 400px;
     height: 300px;
 }
 
 #bigGrid {
-    -webkit-grid-columns: 25% 25% 25% 25%;
-    -webkit-grid-rows: 25% 25% 25% 25%;
+    grid-columns: 25% 25% 25% 25%;
+    grid-rows: 25% 25% 25% 25%;
     height: 100px;
     width: 200px;
 }
 
 .negativeOverflowRowFirstColumn {
-    -webkit-grid-row: 1 / -5;
-    -webkit-grid-column: 1;
+    grid-row: 1 / -5;
+    grid-column: 1;
 }
 
 .overflowRowFirstColumn {
-    -webkit-grid-row: 1 / 5;
-    -webkit-grid-column: 1;
+    grid-row: 1 / 5;
+    grid-column: 1;
 }
 
 .firstRowNegativeOverflowColumn {
-    -webkit-grid-row: 1;
-    -webkit-grid-column: 1 / -5;
+    grid-row: 1;
+    grid-column: 1 / -5;
 }
 
 .firstRowOverflowColumn {
-    -webkit-grid-row: 1;
-    -webkit-grid-column: 1 / 5;
+    grid-row: 1;
+    grid-column: 1 / 5;
 }
 
 .secondRowSecondColumnNoSpan {
-    -webkit-grid-column: 2 / 3;
-    -webkit-grid-row: 2 / 3;
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
 }
 
 .thirdRowThirdColumnNoSpan {
-    -webkit-grid-column: 3 / 4;
-    -webkit-grid-row: 3 / 4;
+    grid-column: 3 / 4;
+    grid-row: 3 / 4;
 }
 
 .firstRowSpanning3SecondColumn {
-    -webkit-grid-column: 2;
-    -webkit-grid-row: 1 / span 3;
+    grid-column: 2;
+    grid-row: 1 / span 3;
 }
 
 .thirdRowSecondColumnSpanning2 {
-    -webkit-grid-column: 2 / span 2;
-    -webkit-grid-row: 3;
+    grid-column: 2 / span 2;
+    grid-row: 3;
 }
 
 .spanning3Row5SecondColumn {
-    -webkit-grid-column: 2;
-    -webkit-grid-row: span 3 / 5;
+    grid-column: 2;
+    grid-row: span 3 / 5;
 }
 
 .thirdRowSpanning2Column3 {
-    -webkit-grid-column: span 2 / 3;
-    -webkit-grid-row: 3;
+    grid-column: span 2 / 3;
+    grid-row: 3;
 }
 
 .underflowSpanning {
-    -webkit-grid-column: span 3 / 3;
-    -webkit-grid-row: span 8 / 4;
+    grid-column: span 3 / 3;
+    grid-row: span 8 / 4;
 }
 </style>
 <script src="../../resources/check-layout.js"></script>

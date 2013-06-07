@@ -8,65 +8,65 @@ if (window.testRunner)
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .gridWithFixed {
-    -webkit-grid-columns: 7px 11px;
-    -webkit-grid-rows: 17px 2px;
+    grid-columns: 7px 11px;
+    grid-rows: 17px 2px;
 }
 
 .gridWithPercent {
-    -webkit-grid-columns: 53% 99%;
-    -webkit-grid-rows: 27% 52%;
+    grid-columns: 53% 99%;
+    grid-rows: 27% 52%;
 }
 .gridWithAuto {
-    -webkit-grid-columns: auto auto;
-    -webkit-grid-rows: auto auto;
+    grid-columns: auto auto;
+    grid-rows: auto auto;
 }
 .gridWithEM {
-    -webkit-grid-columns: 10em 12em;
-    -webkit-grid-rows: 15em 17em;
+    grid-columns: 10em 12em;
+    grid-rows: 15em 17em;
     font: 10px Ahem;
 }
 .gridWithNoneAndAuto {
-    -webkit-grid-columns: none auto;
-    -webkit-grid-rows: none auto;
+    grid-columns: none auto;
+    grid-rows: none auto;
 }
 .gridNoneWithAndFixed {
-    -webkit-grid-columns: none 15px;
-    -webkit-grid-rows: none 22px;
+    grid-columns: none 15px;
+    grid-rows: none 22px;
 }
 .gridWithThreeItems {
-    -webkit-grid-columns: 15px auto 10em;
-    -webkit-grid-rows: 12em 18px auto;
+    grid-columns: 15px auto 10em;
+    grid-rows: 12em 18px auto;
     font: 10px Ahem;
 }
 .gridWithPercentAndViewportPercent {
-    -webkit-grid-columns: 50% 15vw;
-    -webkit-grid-rows: 35% 28vh;
+    grid-columns: 50% 15vw;
+    grid-rows: 35% 28vh;
 }
 .gridWithFitContentAndFitAvailable {
-    -webkit-grid-columns: -webkit-content-available;
-    -webkit-grid-rows: -webkit-fitcontent -webkit-fit-available;
+    grid-columns: -webkit-content-available;
+    grid-rows: -webkit-fitcontent -webkit-fit-available;
 }
 .gridWithMinMaxContent {
-    -webkit-grid-columns: -webkit-min-content -webkit-max-content;
-    -webkit-grid-rows: -webkit-max-content -webkit-min-content;
+    grid-columns: -webkit-min-content -webkit-max-content;
+    grid-rows: -webkit-max-content -webkit-min-content;
 }
 .gridWithMinMaxAndFixed {
-    -webkit-grid-columns: minmax(45px, 30%) 15px;
-    -webkit-grid-rows: 12em minmax(35%, 10px);
+    grid-columns: minmax(45px, 30%) 15px;
+    grid-rows: 12em minmax(35%, 10px);
     font: 10px Ahem;
 }
 .gridWithMinMaxAndMinMaxContent {
-    -webkit-grid-columns: minmax(-webkit-min-content, 30%) 15px;
-    -webkit-grid-rows: 12em minmax(35%, -webkit-max-content);
+    grid-columns: minmax(-webkit-min-content, 30%) 15px;
+    grid-rows: 12em minmax(35%, -webkit-max-content);
     font: 10px Ahem;
 }
 .gridWithFractionFraction {
-    -webkit-grid-columns: 1fr 2fr;
-    -webkit-grid-rows: 3fr 4fr;
+    grid-columns: 1fr 2fr;
+    grid-rows: 3fr 4fr;
 }
 .gridWithFractionMinMax {
-    -webkit-grid-columns: minmax(-webkit-min-content, 45px) 2fr;
-    -webkit-grid-rows: 3fr minmax(14px, -webkit-max-content);
+    grid-columns: minmax(-webkit-min-content, 45px) 2fr;
+    grid-rows: 3fr minmax(14px, -webkit-max-content);
 }
 </style>
 <script src="../js/resources/js-test-pre.js"></script>

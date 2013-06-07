@@ -607,7 +607,7 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         // -webkit-flex | -webkit-inline-flex | -webkit-grid | -webkit-inline-grid | lazy-block
         if ((valueID >= CSSValueInline && valueID <= CSSValueWebkitInlineFlex) || valueID == CSSValueNone)
             return true;
-        if (parserContext.isCSSGridLayoutEnabled && (valueID == CSSValueWebkitGrid || valueID == CSSValueWebkitInlineGrid))
+        if (parserContext.isCSSGridLayoutEnabled && (valueID == CSSValueGrid || valueID == CSSValueInlineGrid))
             return true;
         if (valueID == CSSValueLazyBlock)
             return RuntimeEnabledFeatures::lazyLayoutEnabled();
@@ -803,7 +803,7 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueNone || valueID == CSSValueManual || valueID == CSSValueAuto)
             return true;
         break;
-    case CSSPropertyWebkitGridAutoFlow:
+    case CSSPropertyGridAutoFlow:
         if (valueID == CSSValueNone || valueID == CSSValueRow || valueID == CSSValueColumn)
             return true;
         break;
@@ -1005,7 +1005,7 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWebkitFontKerning:
     case CSSPropertyWebkitFontSmoothing:
     case CSSPropertyWebkitHyphens:
-    case CSSPropertyWebkitGridAutoFlow:
+    case CSSPropertyGridAutoFlow:
     case CSSPropertyWebkitLineAlign:
     case CSSPropertyWebkitLineBreak:
     case CSSPropertyWebkitLineSnap:
@@ -2425,31 +2425,31 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         return false;
     }
 
-    case CSSPropertyWebkitGridAutoColumns:
-    case CSSPropertyWebkitGridAutoRows:
+    case CSSPropertyGridAutoColumns:
+    case CSSPropertyGridAutoRows:
         if (!cssGridLayoutEnabled())
             return false;
         parsedValue = parseGridTrackSize();
         break;
 
-    case CSSPropertyWebkitGridColumns:
-    case CSSPropertyWebkitGridRows:
+    case CSSPropertyGridColumns:
+    case CSSPropertyGridRows:
         if (!cssGridLayoutEnabled())
             return false;
         return parseGridTrackList(propId, important);
 
-    case CSSPropertyWebkitGridStart:
-    case CSSPropertyWebkitGridEnd:
-    case CSSPropertyWebkitGridBefore:
-    case CSSPropertyWebkitGridAfter:
+    case CSSPropertyGridStart:
+    case CSSPropertyGridEnd:
+    case CSSPropertyGridBefore:
+    case CSSPropertyGridAfter:
         if (!cssGridLayoutEnabled())
             return false;
 
         parsedValue = parseGridPosition();
         break;
 
-    case CSSPropertyWebkitGridColumn:
-    case CSSPropertyWebkitGridRow:
+    case CSSPropertyGridColumn:
+    case CSSPropertyGridRow:
     case CSSPropertyGridArea: {
         if (!cssGridLayoutEnabled())
             return false;
@@ -2804,7 +2804,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitFontKerning:
     case CSSPropertyWebkitFontSmoothing:
     case CSSPropertyWebkitHyphens:
-    case CSSPropertyWebkitGridAutoFlow:
+    case CSSPropertyGridAutoFlow:
     case CSSPropertyWebkitLineAlign:
     case CSSPropertyWebkitLineBreak:
     case CSSPropertyWebkitLineSnap:

@@ -7,23 +7,23 @@ if (window.testRunner)
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .gridAutoAutoContent {
-    -webkit-grid-columns: 50px 100px;
-    -webkit-grid-rows: auto auto;
+    grid-columns: 50px 100px;
+    grid-rows: auto auto;
 }
 
 .gridFixedAutoContent {
-    -webkit-grid-columns: 50px 100px;
-    -webkit-grid-rows: 10px auto;
+    grid-columns: 50px 100px;
+    grid-rows: 10px auto;
 }
 
 .gridMinMaxMin {
-    -webkit-grid-columns: 50px 100px;
-    -webkit-grid-rows: minmax(-webkit-min-content, 50px) minmax(-webkit-max-content, 140px);
+    grid-columns: 50px 100px;
+    grid-rows: minmax(-webkit-min-content, 50px) minmax(-webkit-max-content, 140px);
 }
 
 .gridMinMaxMax {
-    -webkit-grid-columns: 50px 100px;
-    -webkit-grid-rows: minmax(50px, -webkit-min-content) minmax(40px, -webkit-max-content);
+    grid-columns: 50px 100px;
+    grid-rows: minmax(50px, -webkit-min-content) minmax(40px, -webkit-max-content);
 }
 </style>
 <script src="../../resources/check-layout.js"></script>

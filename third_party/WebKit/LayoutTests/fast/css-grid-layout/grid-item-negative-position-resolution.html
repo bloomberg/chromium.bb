@@ -7,54 +7,54 @@ if (window.testRunner)
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .grid {
-    -webkit-grid-columns: 50px 100px;
-    -webkit-grid-rows: 50px 100px;
+    grid-columns: 50px 100px;
+    grid-rows: 50px 100px;
     /* To detect how much we extend the grid. */
-    -webkit-grid-auto-columns: 200px;
-    -webkit-grid-auto-rows: 200px;
+    grid-auto-columns: 200px;
+    grid-auto-rows: 200px;
 
     /* Make the grid shrink-to-fit. */
     position: absolute;
 }
 
 .negativeStartPositionGrowGridInColumnDirection {
-    -webkit-grid-column: -1 / auto;
-    -webkit-grid-row: 1;
+    grid-column: -1 / auto;
+    grid-row: 1;
 }
 
 .negativeStartPositionGrowGridInRowDirection {
-    -webkit-grid-column: 1;
-    -webkit-grid-row: -1 / auto;
+    grid-column: 1;
+    grid-row: -1 / auto;
 }
 
 .endSpanGrowGridInColumnDirection {
-    -webkit-grid-column: -2 / span 3;
-    -webkit-grid-row: 1;
+    grid-column: -2 / span 3;
+    grid-row: 1;
 }
 
 .endSpanGrowGridInRowDirection {
-    -webkit-grid-column: 1;
-    -webkit-grid-row: -2 / span 3;
+    grid-column: 1;
+    grid-row: -2 / span 3;
 }
 
 .negativeEndPositionStartSpanInColumnDirection {
-    -webkit-grid-column: span / -1;
-    -webkit-grid-row: 1;
+    grid-column: span / -1;
+    grid-row: 1;
 }
 
 .negativeEndPositionStartSpanInRowDirection {
-    -webkit-grid-column: 1;
-    -webkit-grid-row: span 5 / -1;
+    grid-column: 1;
+    grid-row: span 5 / -1;
 }
 
 .negativeEndPositionStartNegativeInColumnDirection {
-    -webkit-grid-column: -3 / -1;
-    -webkit-grid-row: 1;
+    grid-column: -3 / -1;
+    grid-row: 1;
 }
 
 .negativeEndPositionStartNegativeInRowDirection {
-    -webkit-grid-column: -5 / -2;
-    -webkit-grid-row: 1;
+    grid-column: -5 / -2;
+    grid-row: 1;
 }
 </style>
 <script src="../../resources/check-layout.js"></script>
