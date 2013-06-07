@@ -6,8 +6,8 @@
 #include <shlwapi.h>  // For SHDeleteKey.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
-#include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/browser_distribution.h"

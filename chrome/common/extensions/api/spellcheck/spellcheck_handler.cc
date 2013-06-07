@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/api/spellcheck/spellcheck_handler.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 
 namespace extensions {

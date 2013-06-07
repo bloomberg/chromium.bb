@@ -5,7 +5,7 @@
 #include "chrome/common/extensions/api/page_launcher/page_launcher_handler.h"
 
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/extension.h"

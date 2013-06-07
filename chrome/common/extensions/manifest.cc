@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_split.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "extensions/common/error_utils.h"

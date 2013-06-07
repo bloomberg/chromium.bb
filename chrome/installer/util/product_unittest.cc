@@ -5,8 +5,8 @@
 #include "chrome/installer/util/product_unittest.h"
 
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"

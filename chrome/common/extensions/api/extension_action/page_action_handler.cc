@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/api/extension_action/page_action_handler.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"

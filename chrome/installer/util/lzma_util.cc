@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 
 extern "C" {
 #include "third_party/lzma_sdk/7z.h"

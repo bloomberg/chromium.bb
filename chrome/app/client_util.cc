@@ -14,7 +14,7 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "chrome/app/breakpad_win.h"
@@ -25,9 +25,9 @@
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
-#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/util_constants.h"
 
 namespace {

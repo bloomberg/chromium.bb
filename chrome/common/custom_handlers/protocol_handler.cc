@@ -5,7 +5,7 @@
 #include "chrome/common/custom_handlers/protocol_handler.h"
 
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "net/base/escape.h"
 
 

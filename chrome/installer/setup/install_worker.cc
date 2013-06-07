@@ -22,7 +22,7 @@
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"

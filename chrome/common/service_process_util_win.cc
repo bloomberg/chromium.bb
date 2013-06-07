@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"

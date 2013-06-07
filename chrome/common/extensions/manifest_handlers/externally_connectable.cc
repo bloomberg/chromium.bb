@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/api/manifest_types.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "extensions/common/error_utils.h"

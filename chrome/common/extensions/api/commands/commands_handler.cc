@@ -5,7 +5,7 @@
 #include "chrome/common/extensions/api/commands/commands_handler.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "extensions/common/error_utils.h"

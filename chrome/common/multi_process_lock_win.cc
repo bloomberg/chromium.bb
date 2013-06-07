@@ -5,7 +5,7 @@
 #include "chrome/common/multi_process_lock.h"
 
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 
 class MultiProcessLockWin : public MultiProcessLock {

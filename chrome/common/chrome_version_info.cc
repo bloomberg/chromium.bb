@@ -6,8 +6,8 @@
 
 #include "base/basictypes.h"
 #include "base/file_version_info.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

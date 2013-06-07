@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/permissions/bluetooth_device_permission_data.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "device/bluetooth/bluetooth_adapter.h"
