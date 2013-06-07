@@ -347,13 +347,15 @@ void LayerTreeImpl::PushPersistedState(LayerTreeImpl* pending_tree) {
           currently_scrolling_layer_ ? currently_scrolling_layer_->id() : 0));
 }
 
-static void MarkActive(LayerImpl* layer) {
+static void DidBecomeActiveRecursive(LayerImpl* layer) {
   layer->DidBecomeActive();
+  for (size_t i = 0; i < layer->children().size(); ++i)
+    DidBecomeActiveRecursive(layer->children()[i]);
 }
 
 void LayerTreeImpl::DidBecomeActive() {
   if (root_layer())
-    LayerTreeHostCommon::CallFunctionForSubtree(MarkActive, root_layer());
+    DidBecomeActiveRecursive(root_layer());
   FindRootScrollLayer();
   UpdateMaxScrollOffset();
 }

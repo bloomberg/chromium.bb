@@ -5,6 +5,7 @@
 #include "cc/trees/layer_tree_host.h"
 
 #include <algorithm>
+#include <stack>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -437,13 +438,17 @@ void LayerTreeHost::SetDeferCommits(bool defer_commits) {
 
 void LayerTreeHost::DidDeferCommit() {}
 
-static void SetNeedsDisplay(Layer* layer) {
-  layer->SetNeedsDisplay();
-}
-
 void LayerTreeHost::SetNeedsDisplayOnAllLayers() {
-  if (root_layer())
-    LayerTreeHostCommon::CallFunctionForSubtree(SetNeedsDisplay, root_layer());
+  std::stack<Layer*> layer_stack;
+  layer_stack.push(root_layer());
+  while (!layer_stack.empty()) {
+    Layer* current_layer = layer_stack.top();
+    layer_stack.pop();
+    current_layer->SetNeedsDisplay();
+    for (unsigned int i = 0; i < current_layer->children().size(); i++) {
+      layer_stack.push(current_layer->child_at(i));
+    }
+  }
 }
 
 void LayerTreeHost::CollectRenderingStats(RenderingStats* stats) const {
@@ -667,26 +672,29 @@ static Layer* FindFirstScrollableLayer(Layer* layer) {
   return NULL;
 }
 
-static void CalculateLCDTextMetrics(Layer* layer) {
-  LayerTreeHost* layer_tree_host = layer->layer_tree_host();
-  if (!layer_tree_host)
-    return;
+class CalculateLCDTextMetricsFunctor {
+ public:
+  void operator()(Layer* layer) {
+    LayerTreeHost* layer_tree_host = layer->layer_tree_host();
+    if (!layer_tree_host)
+      return;
 
-  if (!layer->SupportsLCDText())
-    return;
+    if (!layer->SupportsLCDText())
+      return;
 
-  bool update_total_num_cc_layers_can_use_lcd_text = false;
-  bool update_total_num_cc_layers_will_use_lcd_text = false;
-  if (layer->draw_properties().can_use_lcd_text) {
-    update_total_num_cc_layers_can_use_lcd_text = true;
-    if (layer->contents_opaque())
-      update_total_num_cc_layers_will_use_lcd_text = true;
+    bool update_total_num_cc_layers_can_use_lcd_text = false;
+    bool update_total_num_cc_layers_will_use_lcd_text = false;
+    if (layer->draw_properties().can_use_lcd_text) {
+      update_total_num_cc_layers_can_use_lcd_text = true;
+      if (layer->contents_opaque())
+        update_total_num_cc_layers_will_use_lcd_text = true;
+    }
+
+    layer_tree_host->IncrementLCDTextMetrics(
+        update_total_num_cc_layers_can_use_lcd_text,
+        update_total_num_cc_layers_will_use_lcd_text);
   }
-
-  layer_tree_host->IncrementLCDTextMetrics(
-      update_total_num_cc_layers_can_use_lcd_text,
-      update_total_num_cc_layers_will_use_lcd_text);
-}
+};
 
 void LayerTreeHost::IncrementLCDTextMetrics(
     bool update_total_num_cc_layers_can_use_lcd_text,
@@ -726,8 +734,8 @@ void LayerTreeHost::UpdateLayers(Layer* root_layer,
 
     if (total_frames_used_for_lcd_text_metrics_ <=
         kTotalFramesToUseForLCDTextMetrics) {
-      LayerTreeHostCommon::CallFunctionForSubtree(CalculateLCDTextMetrics,
-                                                  root_layer);
+      LayerTreeHostCommon::CallFunctionForSubtree<
+          CalculateLCDTextMetricsFunctor, Layer>(root_layer);
       total_frames_used_for_lcd_text_metrics_++;
     }
 
@@ -770,14 +778,19 @@ void LayerTreeHost::TriggerPrepaint() {
   SetNeedsCommit();
 }
 
-static void ReduceMemoryUsageForLayer(Layer* layer) {
-  layer->ReduceMemoryUsage();
-}
+class LayerTreeHostReduceMemoryFunctor {
+ public:
+  void operator()(Layer* layer) {
+    layer->ReduceMemoryUsage();
+  }
+};
 
 void LayerTreeHost::ReduceMemoryUsage() {
-  if (root_layer())
-    LayerTreeHostCommon::CallFunctionForSubtree(ReduceMemoryUsageForLayer,
-                                                root_layer());
+  if (!root_layer())
+    return;
+
+  LayerTreeHostCommon::CallFunctionForSubtree<
+      LayerTreeHostReduceMemoryFunctor, Layer>(root_layer());
 }
 
 void LayerTreeHost::SetPrioritiesForSurfaces(size_t surface_memory_bytes) {
