@@ -119,6 +119,12 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     password_element_ = element.to<WebKit::WebInputElement>();
   }
 
+  virtual void TearDown() {
+    username_element_.reset();
+    password_element_.reset();
+    ChromeRenderViewTest::TearDown();
+  }
+
   void ClearUsernameAndPasswordFields() {
     username_element_.setValue("");
     username_element_.setAutofilled(false);

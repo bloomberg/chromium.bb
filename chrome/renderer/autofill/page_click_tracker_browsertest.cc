@@ -74,6 +74,13 @@ class PageClickTrackerTest : public content::RenderViewTest {
     ASSERT_FALSE(text_.isNull());
   }
 
+  virtual void TearDown() OVERRIDE {
+    text_.reset();
+    test_listener_.ClearResults();
+    page_click_tracker_.reset();
+    content::RenderViewTest::TearDown();
+  }
+
   // Send all the messages required for a complete key press.
   void SendKeyPress(int key_code) {
     WebKit::WebKeyboardEvent keyboard_event;
@@ -90,7 +97,7 @@ class PageClickTrackerTest : public content::RenderViewTest {
     SendWebKeyboardEvent(keyboard_event);
   }
 
-  scoped_ptr<PageClickTracker>  page_click_tracker_;
+  scoped_ptr<PageClickTracker> page_click_tracker_;
   TestPageClickListener test_listener_;
   WebKit::WebElement text_;
 };

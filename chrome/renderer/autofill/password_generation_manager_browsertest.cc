@@ -67,6 +67,12 @@ class PasswordGenerationManagerTest : public ChromeRenderViewTest {
     generation_manager_.reset(new TestPasswordGenerationManager(view_));
   }
 
+  virtual void TearDown() {
+    LoadHTML("");
+    generation_manager_.reset();
+    ChromeRenderViewTest::TearDown();
+  }
+
   void SimulateClickOnDecoration(WebKit::WebInputElement* input_element) {
     WebKit::WebElement decoration =
         input_element->decorationElementFor(generation_manager_.get());
