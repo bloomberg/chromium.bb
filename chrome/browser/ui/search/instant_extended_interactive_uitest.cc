@@ -366,15 +366,13 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_UsesOverlayIfTabNotReady) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
 
-  // Open a new tab and navigate to instant URL. Start typing before InstantTab
-  // is properly hooked up. Should use the overlay.
+  // Open a new tab and start typing before InstantTab is properly hooked up.
+  // Should use the overlay.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
-      instant_url(),
-      NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
-  EXPECT_EQ(2, browser()->tab_strip_model()->count());
-  browser()->tab_strip_model()->ActivateTabAt(1, false);
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
   ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("query"));
 
   // But Instant tab should still exist.

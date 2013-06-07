@@ -4,14 +4,10 @@
 
 #include "chrome/browser/ui/search/instant_page.h"
 
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/search/search_tab_helper.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "googleurl/src/gurl.h"
@@ -68,33 +64,20 @@ class FakePage : public InstantPage {
   }
 
   using InstantPage::SetContents;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakePage);
 };
 
 }  // namespace
 
 class InstantPageTest : public ChromeRenderViewHostTestHarness {
  public:
-  virtual void SetUp() OVERRIDE;
-
   scoped_ptr<FakePage> page;
   FakePageDelegate delegate;
 };
 
-void InstantPageTest::SetUp() {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableInstantExtendedAPI);
-  ChromeRenderViewHostTestHarness::SetUp();
-  SearchTabHelper::CreateForWebContents(web_contents());
-  page.reset(new FakePage(&delegate, ""));
-  page->SetContents(web_contents());
-}
-
 TEST_F(InstantPageTest, IsLocal) {
-  EXPECT_FALSE(page->supports_instant());
+  page.reset(new FakePage(&delegate, ""));
   EXPECT_FALSE(page->IsLocal());
+  page->SetContents(web_contents());
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   EXPECT_TRUE(page->IsLocal());
   NavigateAndCommit(GURL("http://example.com"));
@@ -104,23 +87,25 @@ TEST_F(InstantPageTest, IsLocal) {
 }
 
 TEST_F(InstantPageTest, DetermineIfPageSupportsInstant_Local) {
+  page.reset(new FakePage(&delegate, ""));
   EXPECT_FALSE(page->supports_instant());
+  page->SetContents(web_contents());
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   EXPECT_TRUE(page->IsLocal());
   EXPECT_CALL(delegate, InstantSupportDetermined(web_contents(), true))
       .Times(1);
-  SearchTabHelper::FromWebContents(web_contents())->
-      DetermineIfPageSupportsInstant();
+  page->DetermineIfPageSupportsInstant();
   EXPECT_TRUE(page->supports_instant());
 }
 
 TEST_F(InstantPageTest, DetermineIfPageSupportsInstant_NonLocal) {
+  page.reset(new FakePage(&delegate, ""));
   EXPECT_FALSE(page->supports_instant());
-  NavigateAndCommit(GURL("chrome-search://foo/bar"));
+  page->SetContents(web_contents());
+  NavigateAndCommit(GURL("http://example.com/"));
   EXPECT_FALSE(page->IsLocal());
   process()->sink().ClearMessages();
-  SearchTabHelper::FromWebContents(web_contents())->
-      DetermineIfPageSupportsInstant();
+  page->DetermineIfPageSupportsInstant();
   const IPC::Message* message = process()->sink().GetFirstMessageMatching(
       ChromeViewMsg_DetermineIfPageSupportsInstant::ID);
   ASSERT_TRUE(message != NULL);
@@ -154,50 +139,4 @@ TEST_F(InstantPageTest, DispatchRequestToUndoAllMostVisitedDeletions) {
   EXPECT_TRUE(page->OnMessageReceived(
       ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions(
           rvh()->GetRoutingID())));
-}
-
-TEST_F(InstantPageTest, PageURLDoesntBelongToInstantRenderer) {
-  EXPECT_FALSE(page->supports_instant());
-
-  // Navigate to a page URL that doesn't belong to Instant renderer.
-  // SearchTabHelper::DeterminerIfPageSupportsInstant() should return
-  // immediately without dispatching any message to the renderer.
-  NavigateAndCommit(GURL("http://www.example.com"));
-  EXPECT_FALSE(page->IsLocal());
-  process()->sink().ClearMessages();
-  EXPECT_CALL(delegate, InstantSupportDetermined(web_contents(), false))
-      .Times(1);
-
-  SearchTabHelper::FromWebContents(web_contents())->
-      DetermineIfPageSupportsInstant();
-  const IPC::Message* message = process()->sink().GetFirstMessageMatching(
-      ChromeViewMsg_DetermineIfPageSupportsInstant::ID);
-  ASSERT_TRUE(message == NULL);
-  EXPECT_FALSE(page->supports_instant());
-}
-
-// Test to verify that ChromeViewMsg_DetermineIfPageSupportsInstant message
-// reply handler updates the instant support state in InstantPage.
-TEST_F(InstantPageTest, PageSupportsInstant) {
-  EXPECT_FALSE(page->supports_instant());
-  NavigateAndCommit(GURL("chrome-search://foo/bar"));
-  process()->sink().ClearMessages();
-  SearchTabHelper::FromWebContents(web_contents())->
-      DetermineIfPageSupportsInstant();
-  const IPC::Message* message = process()->sink().GetFirstMessageMatching(
-      ChromeViewMsg_DetermineIfPageSupportsInstant::ID);
-  ASSERT_TRUE(message != NULL);
-  EXPECT_EQ(web_contents()->GetRoutingID(), message->routing_id());
-
-  EXPECT_CALL(delegate, InstantSupportDetermined(web_contents(), true))
-      .Times(1);
-
-  // Assume the page supports instant. Invoke the message reply handler to make
-  // sure the InstantPage is notified about the instant support state.
-  const content::NavigationEntry* entry =
-      web_contents()->GetController().GetActiveEntry();
-  EXPECT_TRUE(entry);
-  SearchTabHelper::FromWebContents(web_contents())->
-      OnInstantSupportDetermined(entry->GetPageID(), true);
-  EXPECT_TRUE(page->supports_instant());
 }
