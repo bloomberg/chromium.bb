@@ -127,7 +127,7 @@ StateObserver::~StateObserver() {
 }
 
 void StateObserver::OnStateChange(ReadyModeStatus status) {
-  if (ready_mode_ui_.get() == NULL)
+  if (ready_mode_ui_ == NULL)
     return;
 
   switch (status) {

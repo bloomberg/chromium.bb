@@ -238,7 +238,7 @@ OpenWithDialogController::OpenWithDialogController() {}
 OpenWithDialogController::~OpenWithDialogController() {
   // Orphan the context if this instance is being destroyed before the context
   // finishes its work.
-  if (context_.get())
+  if (context_)
     context_->Orphan();
 }
 
