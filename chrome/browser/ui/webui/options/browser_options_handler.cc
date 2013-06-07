@@ -1111,6 +1111,8 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
 
   DCHECK(profile_path_being_created_.empty());
 
+  profile_creation_start_time_ = base::TimeTicks::Now();
+
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   chrome::HostDesktopType desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
@@ -1182,6 +1184,11 @@ void BrowserOptionsHandler::ShowProfileCreationFeedback(
     UMA_HISTOGRAM_ENUMERATION("Profile.CreateResult",
                               status,
                               Profile::MAX_CREATE_STATUS);
+    UMA_HISTOGRAM_CUSTOM_TIMES("Profile.CreateTime",
+        base::TimeTicks::Now() - profile_creation_start_time_,
+        base::TimeDelta::FromMilliseconds(1),
+        base::TimeDelta::FromSeconds(30),  // From kRegistrationTimeoutMS.
+        100);
   }
 
   switch (status) {
@@ -1275,6 +1282,12 @@ void BrowserOptionsHandler::DeleteProfileAtPath(base::FilePath file_path) {
 
 void BrowserOptionsHandler::HandleCancelProfileCreation(const ListValue* args) {
   CancelProfileCreation();
+
+  UMA_HISTOGRAM_CUSTOM_TIMES("Profile.CreateTimeCanceled",
+      base::TimeTicks::Now() - profile_creation_start_time_,
+      base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromSeconds(30),  // From kRegistrationTimeoutMS.
+      100);
 }
 
 void BrowserOptionsHandler::CancelProfileCreation() {

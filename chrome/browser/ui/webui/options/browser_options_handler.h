@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
+#include "base/time.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -321,6 +322,9 @@ class BrowserOptionsHandler
   // registration) in progress. Set when profile creation is begun, and
   // cleared when all the callbacks have been run and creation is complete.
   base::FilePath profile_path_being_created_;
+
+  // Used to track how long profile creation takes.
+  base::TimeTicks profile_creation_start_time_;
 
   // Used to get WeakPtr to self for use on the UI thread.
   base::WeakPtrFactory<BrowserOptionsHandler> weak_ptr_factory_;

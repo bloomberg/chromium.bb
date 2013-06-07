@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/sync/glue/device_info.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -36,7 +38,8 @@ using syncer::SyncMergeResult;
 using sync_pb::ManagedUserSpecifics;
 using user_prefs::PrefRegistrySyncable;
 
-// How long to wait before canceling user registration.
+// How long to wait before canceling user registration. If this is changed, the
+// histogram limits in the BrowserOptionsHandler should also be updated.
 static const int kRegistrationTimeoutMS = 30 * 1000;
 
 namespace {
@@ -90,12 +93,16 @@ void ManagedUserRegistrationService::Register(
   DCHECK(!registration_timer_.IsRunning());
   callback_ = callback;
 
-  registration_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kRegistrationTimeoutMS),
-      base::Bind(&ManagedUserRegistrationService::CancelPendingRegistrationImpl,
-          weak_ptr_factory_.GetWeakPtr(),
-          GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED)));
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kNoManagedUserRegistrationTimeout)) {
+    registration_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kRegistrationTimeoutMS),
+        base::Bind(
+            &ManagedUserRegistrationService::CancelPendingRegistrationImpl,
+            weak_ptr_factory_.GetWeakPtr(),
+            GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED)));
+  }
 
   DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
   DictionaryValue* dict = update.Get();
