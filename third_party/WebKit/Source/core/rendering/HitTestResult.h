@@ -104,6 +104,7 @@ public:
     KURL absoluteLinkURL() const;
     String textContent() const;
     bool isLiveLink() const;
+    bool isMisspelled() const;
     bool isContentEditable() const;
 
     // Returns true if it is rect-based hit test and needs to continue until the rect is fully

@@ -32,6 +32,7 @@
 #include "SVGNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentEventQueue.h"
+#include "core/dom/DocumentMarkerController.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/EventPathWalker.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
@@ -420,10 +421,43 @@ void EventHandler::selectClosestWordFromHitTestResult(const HitTestResult& resul
     }
 }
 
+void EventHandler::selectClosestMisspellingFromHitTestResult(const HitTestResult& result, AppendTrailingWhitespace appendTrailingWhitespace)
+{
+    Node* innerNode = result.targetNode();
+    VisibleSelection newSelection;
+
+    if (innerNode && innerNode->renderer()) {
+        VisiblePosition pos(innerNode->renderer()->positionForPoint(result.localPoint()));
+        if (pos.isNotNull()) {
+            RefPtr<Range> range = makeRange(pos, pos);
+            Vector<DocumentMarker*> markers = innerNode->document()->markers()->markersInRange(
+                range.get(), DocumentMarker::Spelling | DocumentMarker::Grammar);
+            if (markers.size() == 1) {
+                range->setStart(innerNode, markers[0]->startOffset());
+                range->setEnd(innerNode, markers[0]->endOffset());
+                newSelection = VisibleSelection(range.get());
+            }
+        }
+
+        if (appendTrailingWhitespace == ShouldAppendTrailingWhitespace && newSelection.isRange())
+            newSelection.appendTrailingWhitespace();
+
+        updateSelectionForMouseDownDispatchingSelectStart(innerNode, expandSelectionToRespectUserSelectAll(innerNode, newSelection), WordGranularity);
+    }
+}
+
 void EventHandler::selectClosestWordFromMouseEvent(const MouseEventWithHitTestResults& result)
 {
     if (m_mouseDownMayStartSelect) {
         selectClosestWordFromHitTestResult(result.hitTestResult(),
+            (result.event().clickCount() == 2 && m_frame->editor()->isSelectTrailingWhitespaceEnabled()) ? ShouldAppendTrailingWhitespace : DontAppendTrailingWhitespace);
+    }
+}
+
+void EventHandler::selectClosestMisspellingFromMouseEvent(const MouseEventWithHitTestResults& result)
+{
+    if (m_mouseDownMayStartSelect) {
+        selectClosestMisspellingFromHitTestResult(result.hitTestResult(),
             (result.event().clickCount() == 2 && m_frame->editor()->isSelectTrailingWhitespaceEnabled()) ? ShouldAppendTrailingWhitespace : DontAppendTrailingWhitespace);
     }
 }
@@ -2664,15 +2698,18 @@ bool EventHandler::sendContextMenuEvent(const PlatformMouseEvent& event)
     HitTestRequest request(HitTestRequest::Active | HitTestRequest::DisallowShadowContent);
     MouseEventWithHitTestResults mev = doc->prepareMouseEvent(request, viewportPos, event);
 
-    if (m_frame->editor()->behavior().shouldSelectOnContextualMenuClick()
-        && !m_frame->selection()->contains(viewportPos)
+    if (!m_frame->selection()->contains(viewportPos)
         && !mev.scrollbar()
         // FIXME: In the editable case, word selection sometimes selects content that isn't underneath the mouse.
         // If the selection is non-editable, we do word selection to make it easier to use the contextual menu items
         // available for text selections.  But only if we're above text.
         && (m_frame->selection()->isContentEditable() || (mev.targetNode() && mev.targetNode()->isTextNode()))) {
         m_mouseDownMayStartSelect = true; // context menu events are always allowed to perform a selection
-        selectClosestWordOrLinkFromMouseEvent(mev);
+
+        if (mev.hitTestResult().isMisspelled())
+            selectClosestMisspellingFromMouseEvent(mev);
+        else if (m_frame->editor()->behavior().shouldSelectOnContextualMenuClick())
+            selectClosestWordOrLinkFromMouseEvent(mev);
     }
 
     swallowEvent = !dispatchMouseEvent(eventNames().contextmenuEvent, mev.targetNode(), true, 0, event, false);

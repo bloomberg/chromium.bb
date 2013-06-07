@@ -347,6 +347,17 @@ bool HitTestResult::isLiveLink() const
     return false;
 }
 
+bool HitTestResult::isMisspelled() const
+{
+    if (!targetNode())
+        return false;
+    VisiblePosition pos(targetNode()->renderer()->positionForPoint(localPoint()));
+    if (pos.isNull())
+        return false;
+    return m_innerNonSharedNode->document()->markers()->markersInRange(
+        makeRange(pos, pos).get(), DocumentMarker::Spelling | DocumentMarker::Grammar).size() > 0;
+}
+
 String HitTestResult::titleDisplayString() const
 {
     if (!m_innerURLElement)

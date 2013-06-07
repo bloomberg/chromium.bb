@@ -11,6 +11,14 @@ PASS contextMenuElements[contextMenuElements.length - 1] is "welcome"
 PASS window.getSelection().toString() is ""
 PASS window.getSelection().toString() is ""
 PASS contextMenuElements[contextMenuElements.length - 1] is "<separator>"
+PASS spellingMarkerRange.toString() is "wellcome"
+PASS window.getSelection().toString() is ""
+PASS spellingMarkerRange.toString() is "wellcome"
+PASS window.getSelection().toString() is "wellcome"
+PASS contextMenuElements[contextMenuElements.length - 1] is "welcome"
+PASS window.getSelection().toString() is ""
+PASS window.getSelection().toString() is "home"
+PASS contextMenuElements[contextMenuElements.length - 1] is "<separator>"
 PASS successfullyParsed is true
 
 TEST COMPLETE

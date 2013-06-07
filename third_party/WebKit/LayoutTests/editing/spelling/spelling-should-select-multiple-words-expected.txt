@@ -8,6 +8,11 @@ PASS window.getSelection().toString() is ""
 PASS spellingMarkerRange.toString() is "upper case"
 PASS window.getSelection().toString() is "upper case"
 PASS contextMenuElements[contextMenuElements.length - 1] is "uppercase"
+PASS spellingMarkerRange.toString() is "upper case"
+PASS window.getSelection().toString() is ""
+PASS spellingMarkerRange.toString() is "upper case"
+PASS window.getSelection().toString() is "upper case"
+PASS contextMenuElements[contextMenuElements.length - 1] is "uppercase"
 PASS successfullyParsed is true
 
 TEST COMPLETE

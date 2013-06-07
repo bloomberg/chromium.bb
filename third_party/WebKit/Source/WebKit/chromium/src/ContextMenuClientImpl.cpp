@@ -166,11 +166,6 @@ static String selectMisspellingAsync(Frame* selectedFrame, DocumentMarker& marke
     RefPtr<Range> markerRange = selectionRange->cloneRange(ASSERT_NO_EXCEPTION);
     markerRange->setStart(markerRange->startContainer(), marker.startOffset());
     markerRange->setEnd(markerRange->endContainer(), marker.endOffset());
-    if (selection.isCaret()) {
-        selection = VisibleSelection(markerRange.get());
-        selectedFrame->selection()->setSelection(selection, WordGranularity);
-        selectionRange = selection.toNormalizedRange();
-    }
 
     if (markerRange->text().stripWhiteSpace(&IsWhiteSpaceOrPunctuation) != selectionRange->text().stripWhiteSpace(&IsWhiteSpaceOrPunctuation))
         return String();
