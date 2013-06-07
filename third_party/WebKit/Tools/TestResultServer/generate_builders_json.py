@@ -88,8 +88,8 @@ def insert_builder_and_test_data(masters):
                     tests_object[step_name] = {'builders': []}
                 tests_object[step_name]['builders'].append(builder)
 
-    for step_name in tests_object:
-        tests_object[step_name]['builders'].sort()
+        for step_name in tests_object:
+            tests_object[step_name]['builders'].sort()
 
 
 def main():
