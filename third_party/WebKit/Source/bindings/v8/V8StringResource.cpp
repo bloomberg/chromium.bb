@@ -52,7 +52,6 @@ void WebCoreStringResourceBase::visitStrings(ExternalStringVisitor* visitor)
 
 template<class StringClass> struct StringTraits {
     static const StringClass& fromStringResource(WebCoreStringResourceBase*);
-    static bool is16BitAtomicString(StringClass&);
     template<bool oneByte>
     static StringClass fromV8String(v8::Handle<v8::String>, int);
 };
@@ -63,10 +62,6 @@ struct StringTraits<String> {
     {
         return resource->webcoreString();
     }
-    static bool is16BitAtomicString(String& string)
-    {
-        return false;
-    }
     template<bool oneByte>
     static String fromV8String(v8::Handle<v8::String>, int);
 };
@@ -76,10 +71,6 @@ struct StringTraits<AtomicString> {
     static const AtomicString& fromStringResource(WebCoreStringResourceBase* resource)
     {
         return resource->atomicString();
-    }
-    static bool is16BitAtomicString(AtomicString& string)
-    {
-        return !string.string().is8Bit();
     }
     template<bool oneByte>
     static AtomicString fromV8String(v8::Handle<v8::String>, int);
@@ -159,13 +150,13 @@ StringType v8StringToWebCoreString(v8::Handle<v8::String> v8String, ExternalMode
     if (UNLIKELY(!length))
         return String("");
 
-    bool oneByte = v8String->IsOneByte();
+    bool oneByte = v8String->ContainsOnlyOneByte();
     StringType result(oneByte ? StringTraits<StringType>::template fromV8String<true>(v8String, length) : StringTraits<StringType>::template fromV8String<false>(v8String, length));
 
     if (external != Externalize || !v8String->CanMakeExternal())
         return result;
 
-    if (oneByte && !StringTraits<StringType>::is16BitAtomicString(result)) {
+    if (result.is8Bit()) {
         WebCoreStringResource8* stringResource = new WebCoreStringResource8(result);
         if (UNLIKELY(!v8String->MakeExternal(stringResource)))
             delete stringResource;
@@ -176,7 +167,7 @@ StringType v8StringToWebCoreString(v8::Handle<v8::String> v8String, ExternalMode
     }
     return result;
 }
-    
+
 // Explicitly instantiate the above template with the expected parameterizations,
 // to ensure the compiler generates the code; otherwise link errors can result in GCC 4.4.
 template String v8StringToWebCoreString<String>(v8::Handle<v8::String>, ExternalMode);
