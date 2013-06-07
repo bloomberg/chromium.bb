@@ -310,6 +310,7 @@ private:
 
     virtual void willChangeForm() OVERRIDE;
     virtual void didChangeForm() OVERRIDE;
+    static void addToRadioButtonGroupCallback(Node*);
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
     virtual void didMoveToNewDocument(Document* oldDocument) OVERRIDE;

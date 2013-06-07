@@ -216,7 +216,9 @@ bool Text::textRendererIsNeeded(const NodeRenderingContext& context)
     
     if (context.style()->preserveNewline()) // pre/pre-wrap/pre-line always make renderers.
         return true;
-    
+
+    // FIXME: We should resolve this function's dependencies on next and previous renderers
+    // lazily to avoid potentially N^2 walks through the DOM.
     RenderObject* prev = context.previousRenderer();
     if (prev && prev->isBR()) // <span><br/> <br/></span>
         return false;

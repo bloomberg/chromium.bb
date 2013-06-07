@@ -410,7 +410,7 @@ public:
     virtual void detach();
     virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
     virtual bool rendererIsNeeded(const NodeRenderingContext&);
-    void recalcStyle(StyleChange = NoChange);
+    void recalcStyle(StyleChange = NoChange, int childIndex = 0);
     void didAffectSelector(AffectedSelectorMask);
 
     ElementShadow* shadow() const;
@@ -576,8 +576,8 @@ public:
 
     bool isSpellCheckingEnabled() const;
 
-    PassRefPtr<RenderStyle> styleForRenderer();
-    PassRefPtr<RenderStyle> originalStyleForRenderer();
+    PassRefPtr<RenderStyle> styleForRenderer(int childIndex = 0);
+    PassRefPtr<RenderStyle> originalStyleForRenderer(int childIndex = 0);
 
     RenderRegion* renderRegion() const;
     const AtomicString& webkitRegionOverset() const;

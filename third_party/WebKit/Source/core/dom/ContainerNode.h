@@ -80,6 +80,7 @@ private:
 
 class ContainerNode : public Node {
     friend class PostAttachCallbackDisabler;
+    friend class InsertionCallbackDeferer;
 public:
     virtual ~ContainerNode();
 
@@ -140,6 +141,8 @@ public:
 protected:
     ContainerNode(TreeScope*, ConstructionType = CreateContainer);
 
+    static void queueInsertionCallback(NodeCallback, Node*);
+    static bool insertionCallbacksAreSuspended();
     static void queuePostAttachCallback(NodeCallback, Node*);
     static bool postAttachCallbacksAreSuspended();
 
@@ -158,8 +161,14 @@ private:
     void insertBeforeCommon(Node* nextChild, Node* oldChild);
 
     static void dispatchPostAttachCallbacks();
+
     void suspendPostAttachCallbacks();
     void resumePostAttachCallbacks();
+
+    static void dispatchInsertionCallbacks();
+
+    static void suspendInsertionCallbacks();
+    static void resumeInsertionCallbacks();
 
     Node* m_firstChild;
     Node* m_lastChild;
@@ -284,7 +293,7 @@ class ChildNodesLazySnapshot {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     explicit ChildNodesLazySnapshot(Node* parentNode)
-        : m_currentNode(parentNode->firstChild())
+        : m_currentNode(parentNode->lastChild())
         , m_currentIndex(0)
     {
         m_nextSnapshot = latestSnapshot;
@@ -296,13 +305,13 @@ public:
         latestSnapshot = m_nextSnapshot;
     }
 
-    // Returns 0 if there is no next Node.
-    PassRefPtr<Node> nextNode()
+    // Returns 0 if there is no previous Node.
+    PassRefPtr<Node> previousNode()
     {
         if (LIKELY(!hasSnapshot())) {
             RefPtr<Node> node = m_currentNode;
             if (node)
-                m_currentNode = node->nextSibling();
+                m_currentNode = node->previousSibling();
             return node.release();
         }
         Vector<RefPtr<Node> >& nodeVector = *m_childNodes;
@@ -319,7 +328,7 @@ public:
         Node* node = m_currentNode.get();
         while (node) {
             m_childNodes->append(node);
-            node = node->nextSibling();
+            node = node->previousSibling();
         }
     }
 
@@ -342,6 +351,22 @@ private:
     unsigned m_currentIndex;
     OwnPtr<Vector<RefPtr<Node> > > m_childNodes; // Lazily instantiated.
     ChildNodesLazySnapshot* m_nextSnapshot;
+};
+
+// Used to ensure Radio Buttons resolve their checked state in document
+// order when a subtree of them is inserted. This is necessary because
+// we resolve style in reverse document order.
+class InsertionCallbackDeferer {
+public:
+    InsertionCallbackDeferer()
+    {
+        ContainerNode::suspendInsertionCallbacks();
+    }
+
+    ~InsertionCallbackDeferer()
+    {
+        ContainerNode::resumeInsertionCallbacks();
+    }
 };
 
 class PostAttachCallbackDisabler {

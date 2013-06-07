@@ -1475,11 +1475,18 @@ void HTMLInputElement::didChangeForm()
     addToRadioButtonGroup();
 }
 
+void HTMLInputElement::addToRadioButtonGroupCallback(Node* node)
+{
+    ASSERT(node && node->toInputElement());
+    HTMLInputElement* inputElement = node->toInputElement();
+    inputElement->addToRadioButtonGroup();
+}
+
 Node::InsertionNotificationRequest HTMLInputElement::insertedInto(ContainerNode* insertionPoint)
 {
     HTMLTextFormControlElement::insertedInto(insertionPoint);
-    if (insertionPoint->inDocument() && !form())
-        addToRadioButtonGroup();
+    if (insertionPoint->inDocument() && !form() && checkedRadioButtons())
+        queueInsertionCallback(addToRadioButtonGroupCallback, this);
     resetListAttributeTargetObserver();
     return InsertionDone;
 }

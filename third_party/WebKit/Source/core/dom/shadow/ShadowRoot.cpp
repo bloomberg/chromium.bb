@@ -148,7 +148,7 @@ void ShadowRoot::recalcStyle(StyleChange change)
     StyleResolver* styleResolver = document()->styleResolver();
     styleResolver->pushParentShadowRoot(this);
 
-    for (Node* child = firstChild(); child; child = child->nextSibling()) {
+    for (Node* child = lastChild(); child; child = child->previousSibling()) {
         if (child->isElementNode())
             toElement(child)->recalcStyle(change);
         else if (child->isTextNode())

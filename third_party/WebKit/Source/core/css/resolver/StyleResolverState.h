@@ -50,6 +50,7 @@ WTF_MAKE_NONCOPYABLE(StyleResolverState);
 public:
     StyleResolverState()
     : m_element(0)
+    , m_childIndex(0)
     , m_styledElement(0)
     , m_parentNode(0)
     , m_parentStyle(0)
@@ -67,7 +68,7 @@ public:
     , m_backgroundData(BackgroundFillLayer) { }
 
     public:
-    void initElement(Element*);
+    void initElement(Element*, int childIndex);
     void initForStyleResolve(Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
     void clear();
 
@@ -75,6 +76,7 @@ public:
 
     Document* document() const { return m_element->document(); }
     Element* element() const { return m_element; }
+    int childIndex() const { return m_childIndex; }
     StyledElement* styledElement() const { return m_styledElement; }
     void setStyle(PassRefPtr<RenderStyle> style) { m_style = style; }
     RenderStyle* style() const { return m_style.get(); }
@@ -123,6 +125,7 @@ public:
 
 private:
     Element* m_element;
+    int m_childIndex;
     RefPtr<RenderStyle> m_style;
     StyledElement* m_styledElement;
     ContainerNode* m_parentNode;

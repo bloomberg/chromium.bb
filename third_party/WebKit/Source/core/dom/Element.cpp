@@ -1362,22 +1362,22 @@ bool Element::pseudoStyleCacheIsInvalid(const RenderStyle* currentStyle, RenderS
     return false;
 }
 
-PassRefPtr<RenderStyle> Element::styleForRenderer()
+PassRefPtr<RenderStyle> Element::styleForRenderer(int childIndex)
 {
     if (hasCustomStyleCallbacks()) {
         if (RefPtr<RenderStyle> style = customStyleForRenderer())
             return style.release();
     }
 
-    return originalStyleForRenderer();
+    return originalStyleForRenderer(childIndex);
 }
 
-PassRefPtr<RenderStyle> Element::originalStyleForRenderer()
+PassRefPtr<RenderStyle> Element::originalStyleForRenderer(int childIndex)
 {
-    return document()->styleResolver()->styleForElement(this);
+    return document()->styleResolver()->styleForElement(this, childIndex);
 }
 
-void Element::recalcStyle(StyleChange change)
+void Element::recalcStyle(StyleChange change, int childIndex)
 {
     ASSERT(document()->inStyleRecalc());
 
@@ -1401,7 +1401,7 @@ void Element::recalcStyle(StyleChange change)
             // FIXME: This still recalcs style twice when changing display types, but saves
             // us from recalcing twice when going from none -> anything else which is more
             // common, especially during lazy attach.
-            newStyle = styleForRenderer();
+            newStyle = styleForRenderer(childIndex);
             localChange = Node::diff(currentStyle.get(), newStyle.get(), document());
         }
         if (localChange == Detach) {
@@ -1457,7 +1457,9 @@ void Element::recalcStyle(StyleChange change)
     // without doing way too much re-resolution.
     bool forceCheckOfNextElementSibling = false;
     bool forceCheckOfAnyElementSibling = false;
+    int indexForChild = 0;
     for (Node *n = firstChild(); n; n = n->nextSibling()) {
+        ++indexForChild;
         if (n->isTextNode()) {
             toText(n)->recalcTextStyle(change);
             continue;
@@ -1468,12 +1470,20 @@ void Element::recalcStyle(StyleChange change)
         bool childRulesChanged = element->needsStyleRecalc() && element->styleChangeType() == FullStyleChange;
         if ((forceCheckOfNextElementSibling || forceCheckOfAnyElementSibling))
             element->setNeedsStyleRecalc();
-        if (shouldRecalcStyle(change, element)) {
-            parentPusher.push();
-            element->recalcStyle(change);
-        }
         forceCheckOfNextElementSibling = childRulesChanged && hasDirectAdjacentRules;
         forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
+    }
+    // FIXME: Reversing the loop we call recalcStyle avoids an N^2 walk through the DOM to find the next renderer
+    // to insert before. The logic in NodeRenderingContext should be improved to make this unnecessary.
+    for (Node *n = lastChild(); n; n = n->previousSibling()) {
+        if (!n->isElementNode())
+            continue;
+        Element* element = toElement(n);
+        if (shouldRecalcStyle(change, element)) {
+            parentPusher.push();
+            element->recalcStyle(change, indexForChild);
+        }
+        --indexForChild;
     }
 
     if (shouldRecalcStyle(change, this))

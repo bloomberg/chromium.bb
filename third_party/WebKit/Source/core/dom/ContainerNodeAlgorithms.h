@@ -219,14 +219,15 @@ inline void ChildNodeInsertionNotifier::notify(Node* node)
 
     RefPtr<Document> protectDocument(node->document());
     RefPtr<Node> protectNode(node);
+    InsertionCallbackDeferer insertionCallbackDeferer;
 
     if (m_insertionPoint->inDocument())
         notifyNodeInsertedIntoDocument(node);
     else if (node->isContainerNode())
         notifyNodeInsertedIntoTree(toContainerNode(node));
 
-    for (size_t i = 0; i < m_postInsertionNotificationTargets.size(); ++i)
-        m_postInsertionNotificationTargets[i]->didNotifySubtreeInsertions(m_insertionPoint);
+    for (size_t i = m_postInsertionNotificationTargets.size(); i; --i)
+        m_postInsertionNotificationTargets[i - 1]->didNotifySubtreeInsertions(m_insertionPoint);
 }
 
 

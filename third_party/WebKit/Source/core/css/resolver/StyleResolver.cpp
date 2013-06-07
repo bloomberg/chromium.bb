@@ -566,10 +566,10 @@ void StyleResolver::matchAllRules(ElementRuleCollector& collector, bool matchAut
         collector.matchedResult().isCacheable = false;
 }
 
-inline void StyleResolver::initElement(Element* e)
+inline void StyleResolver::initElement(Element* e, int childIndex)
 {
     if (m_state.element() != e) {
-        m_state.initElement(e);
+        m_state.initElement(e, childIndex);
         if (e && e == e->document()->documentElement()) {
             e->document()->setDirectionSetOnDocumentElement(false);
             e->document()->setWritingModeSetOnDocumentElement(false);
@@ -606,7 +606,7 @@ Node* StyleResolver::locateCousinList(Element* parent, unsigned& visitedNodeCoun
     RenderStyle* parentStyle = p->renderStyle();
     unsigned subcount = 0;
     Node* thisCousin = p;
-    Node* currentNode = p->previousSibling();
+    Node* currentNode = p->nextSibling();
 
     // Reserve the tries for this level. This effectively makes sure that the algorithm
     // will never go deeper than cStyleSearchLevelThreshold levels into recursion.
@@ -624,7 +624,7 @@ Node* StyleResolver::locateCousinList(Element* parent, unsigned& visitedNodeCoun
             }
             if (subcount >= cStyleSearchThreshold)
                 return 0;
-            currentNode = currentNode->previousSibling();
+            currentNode = currentNode->nextSibling();
         }
         currentNode = locateCousinList(thisCousin->parentElement(), visitedNodeCount);
         thisCousin = currentNode;
@@ -820,7 +820,7 @@ bool StyleResolver::canShareStyleWithElement(StyledElement* element) const
 
 inline StyledElement* StyleResolver::findSiblingForStyleSharing(Node* node, unsigned& count) const
 {
-    for (; node; node = node->previousSibling()) {
+    for (; node; node = node->nextSibling()) {
         if (!node->isStyledElement())
             continue;
         if (canShareStyleWithElement(static_cast<StyledElement*>(node)))
@@ -865,11 +865,11 @@ RenderStyle* StyleResolver::locateSharedStyle()
     // FIXME: This shouldn't be a member variable. The style sharing code could be factored out of StyleResolver.
     state.setElementAffectedByClassRules(state.element() && state.element()->hasClass() && classNamesAffectedByRules(state.element()->classNames()));
 
-    // Check previous siblings and their cousins.
+    // Check next siblings and their cousins.
     unsigned count = 0;
     unsigned visitedNodeCount = 0;
     StyledElement* shareElement = 0;
-    Node* cousinList = state.styledElement()->previousSibling();
+    Node* cousinList = state.styledElement()->nextSibling();
     while (cousinList) {
         shareElement = findSiblingForStyleSharing(cousinList, count);
         if (shareElement)
@@ -1084,8 +1084,8 @@ static inline bool isAtShadowBoundary(const Element* element)
     return parentNode && parentNode->isShadowRoot();
 }
 
-PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderStyle* defaultParent,
-    StyleSharingBehavior sharingBehavior, RuleMatchingBehavior matchingBehavior, RenderRegion* regionForStyling)
+PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderStyle* defaultParent, StyleSharingBehavior sharingBehavior,
+    RuleMatchingBehavior matchingBehavior, RenderRegion* regionForStyling, int childIndex)
 {
     // Once an element has a renderer, we don't try to destroy it, since otherwise the renderer
     // will vanish if a style recalc happens during loading.
@@ -1100,7 +1100,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     }
 
     StyleResolverState& state = m_state;
-    initElement(element);
+    initElement(element, childIndex);
     state.initForStyleResolve(document(), element, defaultParent, regionForStyling);
     if (sharingBehavior == AllowStyleSharing && !state.distributedToInsertionPoint()) {
         RenderStyle* sharedStyle = locateSharedStyle();
