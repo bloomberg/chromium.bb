@@ -85,7 +85,7 @@ TEST(ResourceEntryConversionTest, ConvertToResourceEntry_File) {
   // Regular file specific fields.
   EXPECT_EQ(892721,  entry.file_info().size());
   EXPECT_EQ("3b4382ebefec6e743578c76bbd0575ce",
-            entry.file_specific_info().file_md5());
+            entry.file_specific_info().md5());
   EXPECT_FALSE(entry.file_info().is_directory());
 }
 

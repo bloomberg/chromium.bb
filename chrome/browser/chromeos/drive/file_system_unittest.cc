@@ -252,7 +252,7 @@ class FileSystemTest : public testing::Test {
     file1.set_title("File1");
     file1.set_resource_id("resource_id:File1");
     file1.set_parent_resource_id(root_resource_id);
-    file1.mutable_file_specific_info()->set_file_md5("md5");
+    file1.mutable_file_specific_info()->set_md5("md5");
     file1.mutable_file_info()->set_is_directory(false);
     file1.mutable_file_info()->set_size(1048576);
     resource_metadata->AddEntryOnUIThread(
@@ -280,7 +280,7 @@ class FileSystemTest : public testing::Test {
     file2.set_title("File2");
     file2.set_resource_id("resource_id:File2");
     file2.set_parent_resource_id(dir1.resource_id());
-    file2.mutable_file_specific_info()->set_file_md5("md5");
+    file2.mutable_file_specific_info()->set_md5("md5");
     file2.mutable_file_info()->set_is_directory(false);
     file2.mutable_file_info()->set_size(555);
     resource_metadata->AddEntryOnUIThread(
@@ -308,7 +308,7 @@ class FileSystemTest : public testing::Test {
     file3.set_title("File3");
     file3.set_resource_id("resource_id:File3");
     file3.set_parent_resource_id(dir2.resource_id());
-    file3.mutable_file_specific_info()->set_file_md5("md5");
+    file3.mutable_file_specific_info()->set_md5("md5");
     file3.mutable_file_info()->set_is_directory(false);
     file3.mutable_file_info()->set_size(12345);
     resource_metadata->AddEntryOnUIThread(
@@ -675,7 +675,7 @@ TEST_F(FileSystemTest, PinAndUnpin) {
   FileError error = FILE_ERROR_FAILED;
   EXPECT_CALL(*mock_cache_observer_,
               OnCachePinned(entry->resource_id(),
-                            entry->file_specific_info().file_md5())).Times(1);
+                            entry->file_specific_info().md5())).Times(1);
   file_system_->Pin(file_path,
                     google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
@@ -685,7 +685,7 @@ TEST_F(FileSystemTest, PinAndUnpin) {
   error = FILE_ERROR_FAILED;
   EXPECT_CALL(*mock_cache_observer_,
               OnCacheUnpinned(entry->resource_id(),
-                              entry->file_specific_info().file_md5())).Times(1);
+                              entry->file_specific_info().md5())).Times(1);
   file_system_->Unpin(file_path,
                       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
@@ -730,7 +730,7 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   const base::FilePath kFileInRoot(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   scoped_ptr<ResourceEntry> entry(GetResourceEntryByPathSync(kFileInRoot));
   const std::string& file_resource_id = entry->resource_id();
-  const std::string& file_md5 = entry->file_specific_info().file_md5();
+  const std::string& md5 = entry->file_specific_info().md5();
 
   // A dirty file is created on close.
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(file_resource_id))
@@ -764,14 +764,14 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   EXPECT_EQ(kExpectedContent, cache_file_data);
 
   FileCacheEntry cache_entry;
-  EXPECT_TRUE(GetCacheEntryFromOriginThread(file_resource_id, file_md5,
+  EXPECT_TRUE(GetCacheEntryFromOriginThread(file_resource_id, md5,
                                             &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
   EXPECT_TRUE(cache_entry.is_dirty());
   EXPECT_TRUE(cache_entry.is_persistent());
 
   base::FilePath cache_file_path;
-  cache_->GetFileOnUIThread(file_resource_id, file_md5,
+  cache_->GetFileOnUIThread(file_resource_id, md5,
                             google_apis::test_util::CreateCopyResultCallback(
                                 &error, &cache_file_path));
   google_apis::test_util::RunBlockingPoolTask();
@@ -788,7 +788,7 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Verify that the cache state was changed as expected.
-  EXPECT_TRUE(GetCacheEntryFromOriginThread(file_resource_id, file_md5,
+  EXPECT_TRUE(GetCacheEntryFromOriginThread(file_resource_id, md5,
                                             &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
   EXPECT_TRUE(cache_entry.is_dirty());
@@ -815,7 +815,7 @@ TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   FileError error = FILE_ERROR_FAILED;
   cache_->StoreOnUIThread(
       entry->resource_id(),
-      entry->file_specific_info().file_md5(),
+      entry->file_specific_info().md5(),
       google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
       internal::FileCache::FILE_OPERATION_COPY,
       google_apis::test_util::CreateCopyResultCallback(&error));
@@ -834,7 +834,7 @@ TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   FileCacheEntry cache_entry;
   cache_->GetCacheEntryOnUIThread(
       entry->resource_id(),
-      entry->file_specific_info().file_md5(),
+      entry->file_specific_info().md5(),
       google_apis::test_util::CreateCopyResultCallback(&success, &cache_entry));
   google_apis::test_util::RunBlockingPoolTask();
 
@@ -853,7 +853,7 @@ TEST_F(FileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
   success = false;
   cache_->GetCacheEntryOnUIThread(
       entry->resource_id(),
-      entry->file_specific_info().file_md5(),
+      entry->file_specific_info().md5(),
       google_apis::test_util::CreateCopyResultCallback(&success, &cache_entry));
   google_apis::test_util::RunBlockingPoolTask();
 

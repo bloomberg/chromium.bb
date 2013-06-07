@@ -102,7 +102,7 @@ FileError UpdateLocalStateForCreateFile(
     if (file_util::CreateTemporaryFile(&empty_file)) {
       cache_store_error =  cache->Store(
           entry.resource_id(),
-          entry.file_specific_info().file_md5(),
+          entry.file_specific_info().md5(),
           empty_file,
           internal::FileCache::FILE_OPERATION_MOVE);
     }

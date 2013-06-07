@@ -77,7 +77,7 @@ ResourceEntry ConvertToResourceEntry(
     FileSpecificInfo* file_specific_info = output.mutable_file_specific_info();
     if (input.is_file()) {
       file_info->set_size(input.file_size());
-      file_specific_info->set_file_md5(input.file_md5());
+      file_specific_info->set_md5(input.file_md5());
 
       // The resumable-edit-media link should only be present for regular
       // files as hosted documents are not uploadable.

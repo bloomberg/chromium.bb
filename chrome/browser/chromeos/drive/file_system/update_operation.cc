@@ -39,7 +39,7 @@ FileError GetFileLocalState(internal::ResourceMetadata* metadata,
     return FILE_ERROR_NOT_FOUND;
 
   return cache->GetFile(resource_id,
-                        entry->file_specific_info().file_md5(),
+                        entry->file_specific_info().md5(),
                         cache_file_path);
 }
 
@@ -63,7 +63,7 @@ FileError UpdateFileLocalState(
 
   // Clear the dirty bit if we have updated an existing file.
   return cache->ClearDirty(entry.resource_id(),
-                           entry.file_specific_info().file_md5());
+                           entry.file_specific_info().md5());
 }
 
 }  // namespace

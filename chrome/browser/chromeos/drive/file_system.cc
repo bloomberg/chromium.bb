@@ -344,7 +344,7 @@ void FileSystem::PinAfterGetResourceEntryByPath(
   DCHECK(entry);
 
   cache_->PinOnUIThread(entry->resource_id(),
-                        entry->file_specific_info().file_md5(), callback);
+                        entry->file_specific_info().md5(), callback);
 }
 
 void FileSystem::Unpin(const base::FilePath& file_path,
@@ -377,7 +377,7 @@ void FileSystem::UnpinAfterGetResourceEntryByPath(
   DCHECK(entry);
 
   cache_->UnpinOnUIThread(entry->resource_id(),
-                          entry->file_specific_info().file_md5(), callback);
+                          entry->file_specific_info().md5(), callback);
 }
 
 void FileSystem::GetFileByPath(const base::FilePath& file_path,
@@ -786,7 +786,7 @@ void FileSystem::MarkCacheFileAsMountedAfterGetResourceEntry(
 
   DCHECK(entry);
   cache_->MarkAsMountedOnUIThread(entry->resource_id(),
-                                  entry->file_specific_info().file_md5(),
+                                  entry->file_specific_info().md5(),
                                   callback);
 }
 
@@ -901,14 +901,13 @@ void FileSystem::OpenFileAfterFileDownloaded(
     return;
   }
 
-  cache_->MarkDirtyOnUIThread(
-      entry->resource_id(),
-      entry->file_specific_info().file_md5(),
-      base::Bind(&FileSystem::OpenFileAfterMarkDirty,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 entry->resource_id(),
-                 entry->file_specific_info().file_md5(),
-                 callback));
+  cache_->MarkDirtyOnUIThread(entry->resource_id(),
+                              entry->file_specific_info().md5(),
+                              base::Bind(&FileSystem::OpenFileAfterMarkDirty,
+                                         weak_ptr_factory_.GetWeakPtr(),
+                                         entry->resource_id(),
+                                         entry->file_specific_info().md5(),
+                                         callback));
 }
 
 void FileSystem::OpenFileAfterMarkDirty(
@@ -992,7 +991,7 @@ void FileSystem::CloseFileAfterGetResourceEntry(
   // intactness effectively, or provide a method for user to declare it when
   // calling CloseFile().
   cache_->CommitDirtyOnUIThread(entry->resource_id(),
-                                entry->file_specific_info().file_md5(),
+                                entry->file_specific_info().md5(),
                                 callback);
 }
 
@@ -1029,7 +1028,7 @@ void FileSystem::CheckLocalModificationAndRun(
 
   // Checks if the file is cached and modified locally.
   const std::string resource_id = entry->resource_id();
-  const std::string md5 = entry->file_specific_info().file_md5();
+  const std::string md5 = entry->file_specific_info().md5();
   cache_->GetCacheEntryOnUIThread(
       resource_id,
       md5,
@@ -1056,7 +1055,7 @@ void FileSystem::CheckLocalModificationAndRunAfterGetCacheEntry(
 
   // Gets the cache file path.
   const std::string& resource_id = entry->resource_id();
-  const std::string& md5 = entry->file_specific_info().file_md5();
+  const std::string& md5 = entry->file_specific_info().md5();
   cache_->GetFileOnUIThread(
       resource_id,
       md5,

@@ -69,7 +69,7 @@ class SyncClientTestFileSystem : public DummyFileSystem {
     // the case that there is a server-side update, this test implementation
     // returns a new md5 value different from values set in SetUpCache().
     scoped_ptr<ResourceEntry> entry(new ResourceEntry);
-    entry->mutable_file_specific_info()->set_file_md5("new_md5");
+    entry->mutable_file_specific_info()->set_md5("new_md5");
     callback.Run(FILE_ERROR_OK, entry.Pass());
   }
 

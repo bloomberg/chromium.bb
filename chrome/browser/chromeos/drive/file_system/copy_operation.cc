@@ -196,7 +196,7 @@ void CopyOperation::ScheduleTransferRegularFileAfterGetResourceEntry(
 
   cache_->StoreLocallyModifiedOnUIThread(
       entry->resource_id(),
-      entry->file_specific_info().file_md5(),
+      entry->file_specific_info().md5(),
       local_file_path,
       internal::FileCache::FILE_OPERATION_COPY,
       callback);

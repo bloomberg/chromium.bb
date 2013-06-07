@@ -70,7 +70,7 @@ FileError CheckPreConditionForEnsureFileDownloaded(
 
   // Get the cache file path if available.
   cache->GetFile(entry->resource_id(),
-                 entry->file_specific_info().file_md5(),
+                 entry->file_specific_info().md5(),
                  cache_file_path);
 
   // If the cache file is available and dirty, the modified file info needs to
@@ -81,7 +81,7 @@ FileError CheckPreConditionForEnsureFileDownloaded(
   if (!cache_file_path->empty()) {
     FileCacheEntry cache_entry;
     if (cache->GetCacheEntry(entry->resource_id(),
-                             entry->file_specific_info().file_md5(),
+                             entry->file_specific_info().md5(),
                              &cache_entry) &&
         cache_entry.is_dirty()) {
       base::PlatformFileInfo file_info;
@@ -506,7 +506,7 @@ void DownloadOperation::EnsureFileDownloadedAfterDownloadFile(
       base::Bind(&UpdateLocalStateForDownloadFile,
                  base::Unretained(cache_),
                  entry_ptr->resource_id(),
-                 entry_ptr->file_specific_info().file_md5(),
+                 entry_ptr->file_specific_info().md5(),
                  gdata_error,
                  downloaded_file_path,
                  cache_file_path),

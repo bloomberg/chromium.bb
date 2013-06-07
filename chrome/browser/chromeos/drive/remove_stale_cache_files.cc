@@ -30,7 +30,7 @@ void CollectStaleCacheFiles(
 
   // The entry is not found or the MD5 does not match.
   if (error != FILE_ERROR_OK ||
-      cache_entry.md5() != entry.file_specific_info().file_md5())
+      cache_entry.md5() != entry.file_specific_info().md5())
     out_resource_ids_to_be_removed->push_back(resource_id);
 }
 

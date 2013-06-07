@@ -62,7 +62,7 @@ ResourceEntry CreateFileEntry(const std::string& title,
   entry.set_parent_resource_id(parent_resource_id);
   entry.mutable_file_info()->set_is_directory(false);
   entry.mutable_file_info()->set_size(1024);
-  entry.mutable_file_specific_info()->set_file_md5("md5:" + title);
+  entry.mutable_file_specific_info()->set_md5("md5:" + title);
   return entry;
 }
 
@@ -898,7 +898,7 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir3/file9"), &entry));
   EXPECT_EQ("file9", entry.base_name());
   EXPECT_TRUE(!entry.file_info().is_directory());
-  EXPECT_EQ("md5:file9", entry.file_specific_info().file_md5());
+  EXPECT_EQ("md5:file9", entry.file_specific_info().md5());
 
   // Rename it.
   ResourceEntry file_entry(entry);
@@ -913,12 +913,12 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
       file_entry.resource_id(), &entry));
   EXPECT_EQ("file100", entry.base_name());
   EXPECT_TRUE(!entry.file_info().is_directory());
-  EXPECT_EQ("md5:file9", entry.file_specific_info().file_md5());
+  EXPECT_EQ("md5:file9", entry.file_specific_info().md5());
 
   // Update the file md5.
   const std::string updated_md5("md5:updated");
   file_entry = entry;
-  file_entry.mutable_file_specific_info()->set_file_md5(updated_md5);
+  file_entry.mutable_file_specific_info()->set_md5(updated_md5);
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->RefreshEntry(file_entry));
 
   EXPECT_EQ(
@@ -929,7 +929,7 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
       file_entry.resource_id(), &entry));
   EXPECT_EQ("file100", entry.base_name());
   EXPECT_TRUE(!entry.file_info().is_directory());
-  EXPECT_EQ(updated_md5, entry.file_specific_info().file_md5());
+  EXPECT_EQ(updated_md5, entry.file_specific_info().md5());
 
   // Make sure we get the same thing from GetResourceEntryByPath.
   entry.Clear();
@@ -937,7 +937,7 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
       base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir3/file100"), &entry));
   EXPECT_EQ("file100", entry.base_name());
   ASSERT_TRUE(!entry.file_info().is_directory());
-  EXPECT_EQ(updated_md5, entry.file_specific_info().file_md5());
+  EXPECT_EQ(updated_md5, entry.file_specific_info().md5());
 
   // Get dir2.
   entry.Clear();

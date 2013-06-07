@@ -2373,7 +2373,7 @@ void GetDriveEntryPropertiesFunction::OnGetFileInfo(
 
   integration_service->file_system()->GetCacheEntryByResourceId(
       entry->resource_id(),
-      file_specific_info.file_md5(),
+      file_specific_info.md5(),
       base::Bind(&GetDriveEntryPropertiesFunction::CacheStateReceived, this));
 }
 

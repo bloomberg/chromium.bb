@@ -169,7 +169,7 @@ std::string FormatEntry(const base::FilePath& path,
     StringAppendF(&out, "    content_mime_type: %s\n",
                   file_specific_info.content_mime_type().c_str());
     StringAppendF(&out, "    file_md5: %s\n",
-                  file_specific_info.file_md5().c_str());
+                  file_specific_info.md5().c_str());
     StringAppendF(&out, "    document_extension: %s\n",
                   file_specific_info.document_extension().c_str());
     StringAppendF(&out, "    is_hosted_document: %d\n",
