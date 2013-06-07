@@ -121,7 +121,7 @@ class SyncedNotification : public NotificationBitmapFetcherDelegate {
 
   FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, AddBitmapToFetchQueueTest);
   FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, OnFetchCompleteTest);
-  FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, QueueBitmapsTest);
+  FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, QueueBitmapFetchJobsTest);
 
   DISALLOW_COPY_AND_ASSIGN(SyncedNotification);
 };

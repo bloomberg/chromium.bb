@@ -44,10 +44,10 @@ COMPILE_ASSERT(static_cast<sync_pb::CoalescedSyncedNotification_ReadState>(
                local_enum_must_match_protobuf_enum);
 
 SyncedNotification::SyncedNotification(const syncer::SyncData& sync_data)
-    :   notification_manager_(NULL),
-        notifier_service_(NULL),
-        profile_(NULL),
-        active_fetcher_count_(0)  {
+    : notification_manager_(NULL),
+      notifier_service_(NULL),
+      profile_(NULL),
+      active_fetcher_count_(0) {
   Update(sync_data);
 }
 
@@ -208,14 +208,20 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
       rich_notification_data.priority = priority;
     if (!button_one_title.empty()) {
       message_center::ButtonInfo button_info(UTF8ToUTF16(button_one_title));
+      if (!button_one_bitmap_.IsEmpty())
+        button_info.icon = button_one_bitmap_;
       rich_notification_data.buttons.push_back(button_info);
-      // TODO(petewil): Add a button icon here.
     }
     if (!button_two_title.empty()) {
       message_center::ButtonInfo button_info(UTF8ToUTF16(button_two_title));
+      if (!button_two_bitmap_.IsEmpty())
+        button_info.icon = button_two_bitmap_;
       rich_notification_data.buttons.push_back(button_info);
-      // TODO(petewil): Add a button icon here.
     }
+
+    // Fill in the bitmap images.
+    if (!image_bitmap_.IsEmpty())
+      rich_notification_data.image = image_bitmap_;
 
     // Fill the individual notification fields for a multiple notification.
     if (notification_count > 1) {
@@ -227,14 +233,11 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
       }
     }
 
-    // TODO(petewil): Add code here that sets the various notification images
-    // that have been decoded.  Also, don't use the notification tray icon once
-    // this is enabled, that could cause user confusion.
     Notification ui_notification(notification_type,
                                  GetOriginUrl(),
                                  heading,
                                  text,
-                                 gfx::Image(),
+                                 app_icon_bitmap_,
                                  WebKit::WebTextDirectionDefault,
                                  display_source,
                                  replace_key,
@@ -262,8 +265,8 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
   return;
 }
 
-// TODO(petewil): Consider the timestamp too once it gets added to the protobuf.
-// TODO: add more fields in here
+// TODO(petewil): Decide what we need for equals - is this enough, or should
+// we exhaustively compare every field in case the server refreshed the notif?
 bool SyncedNotification::EqualsIgnoringReadState(
     const SyncedNotification& other) const {
   return (GetTitle() == other.GetTitle() &&

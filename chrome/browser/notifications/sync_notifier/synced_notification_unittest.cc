@@ -150,7 +150,7 @@ class StubNotificationUIManager : public NotificationUIManager {
 class SyncedNotificationTest : public testing::Test {
  public:
   SyncedNotificationTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_)   {}
+      : ui_thread_(content::BrowserThread::UI, &message_loop_) {}
   virtual ~SyncedNotificationTest() {}
 
   // Methods from testing::Test.
@@ -635,7 +635,6 @@ TEST_F(SyncedNotificationTest, AddBitmapToFetchQueueTest) {
 }
 
 TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
-
   if (!UseRichNotifications())
     return;
 
@@ -655,8 +654,7 @@ TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
   // Put a real bitmap into "bitmap".  2x2 bitmap of green 32 bit pixels.
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
   bitmap.allocPixels();
-  SkColor c = SK_ColorGREEN;
-  bitmap.eraseColor(c);
+  bitmap.eraseColor(SK_ColorGREEN);
 
   notification1_->OnFetchComplete(GURL(kIconUrl1), &bitmap);
   EXPECT_EQ(1, notification1_->active_fetcher_count_);
@@ -679,8 +677,7 @@ TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
   //     image, notification1_->GetAppIconBitmap()));
 }
 
-TEST_F(SyncedNotificationTest, QueueBitmapsTest) {
-
+TEST_F(SyncedNotificationTest, QueueBitmapFetchJobsTest) {
   if (!UseRichNotifications())
     return;
 
