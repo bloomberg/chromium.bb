@@ -61,7 +61,6 @@
 #include "core/html/canvas/DataView.h"
 #include "core/platform/AsyncFileSystem.h"
 #include "core/platform/SharedBuffer.h"
-
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/ArrayBufferView.h"
@@ -78,6 +77,7 @@
 #include "wtf/Uint8Array.h"
 #include "wtf/Uint8ClampedArray.h"
 #include "wtf/Vector.h"
+#include "wtf/text/StringUTF8Adaptor.h"
 
 // FIXME: consider crashing in debug mode on deserialization errors
 // NOTE: be sure to change wireFormatVersion as necessary!
@@ -580,8 +580,8 @@ private:
 
     void doWriteWebCoreString(const String& string)
     {
-        RefPtr<SharedBuffer> buffer = utf8Buffer(string);
-        doWriteString(buffer->data(), buffer->size());
+        StringUTF8Adaptor stringUTF8(string);
+        doWriteString(stringUTF8.data(), stringUTF8.length());
     }
 
     int bytesNeededToWireEncode(uint32_t value)

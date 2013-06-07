@@ -116,8 +116,6 @@ private:
     mutable OwnPtr<PurgeableBuffer> m_purgeableBuffer;
 };
 
-PassRefPtr<SharedBuffer> utf8Buffer(const String&);
-
 } // namespace WebCore
 
 #endif // SharedBuffer_h
