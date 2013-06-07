@@ -74,7 +74,8 @@ class MediaPlayerManagerImpl
   virtual media::MediaPlayerAndroid* GetPlayer(int player_id) OVERRIDE;
   virtual void DestroyAllMediaPlayers() OVERRIDE;
   virtual void OnMediaSeekRequest(int player_id, base::TimeDelta time_to_seek,
-                                  bool request_surface) OVERRIDE;
+                                  unsigned seek_request_id) OVERRIDE;
+  virtual void OnMediaConfigRequest(int player_id) OVERRIDE;
   virtual void OnKeyAdded(int player_id,
                           const std::string& key_system,
                           const std::string& session_id) OVERRIDE;
@@ -121,7 +122,7 @@ class MediaPlayerManagerImpl
   virtual void OnReadFromDemuxerAck(
       int player_id,
       const media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params);
-  void OnMediaSeekRequestAck(int player_id);
+  void OnMediaSeekRequestAck(int player_id, unsigned seek_request_id);
   void OnGenerateKeyRequest(int player_id,
                             const std::string& key_system,
                             const std::string& type,

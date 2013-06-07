@@ -100,9 +100,11 @@ class MEDIA_EXPORT MediaPlayerManager {
       int player_id, media::DemuxerStream::Type type, bool seek_done) = 0;
 
   // Called when player wants the media element to initiate a seek.
-  virtual void OnMediaSeekRequest(int player_id,
-                                  base::TimeDelta time_to_seek,
-                                  bool request_surface) = 0;
+  virtual void OnMediaSeekRequest(int player_id, base::TimeDelta time_to_seek,
+                                  unsigned seek_request_id) = 0;
+
+  // Called when player wants to read the config data from the demuxer.
+  virtual void OnMediaConfigRequest(int player_id) = 0;
 
   // TODO(xhwang): The following three methods needs to be decoupled from
   // MediaPlayerManager to support the W3C Working Draft version of the EME

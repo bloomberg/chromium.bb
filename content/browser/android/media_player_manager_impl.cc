@@ -279,10 +279,11 @@ void MediaPlayerManagerImpl::OnReadFromDemuxerAck(
     player->ReadFromDemuxerAck(params);
 }
 
-void MediaPlayerManagerImpl::OnMediaSeekRequestAck(int player_id) {
+void MediaPlayerManagerImpl::OnMediaSeekRequestAck(
+    int player_id, unsigned seek_request_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
-    player->OnSeekRequestAck();
+    player->OnSeekRequestAck(seek_request_id);
 }
 
 MediaPlayerAndroid* MediaPlayerManagerImpl::GetPlayer(int player_id) {
@@ -334,15 +335,13 @@ void MediaPlayerManagerImpl::OnSeekComplete(int player_id,
 }
 
 void MediaPlayerManagerImpl::OnMediaSeekRequest(
-    int player_id, base::TimeDelta time_to_seek, bool request_surface) {
-  bool request_texture_peer = request_surface;
-  if (request_surface && player_id == fullscreen_player_id_ &&
-      video_view_.get()) {
-    video_view_->OpenVideo();
-    request_texture_peer = false;
-  }
+    int player_id, base::TimeDelta time_to_seek, unsigned seek_request_id) {
   Send(new MediaPlayerMsg_MediaSeekRequest(
-      routing_id(), player_id, time_to_seek, request_texture_peer));
+      routing_id(), player_id, time_to_seek, seek_request_id));
+}
+
+void MediaPlayerManagerImpl::OnMediaConfigRequest(int player_id) {
+  Send(new MediaPlayerMsg_MediaConfigRequest(routing_id(), player_id));
 }
 
 void MediaPlayerManagerImpl::OnError(int player_id, int error) {

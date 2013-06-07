@@ -95,7 +95,12 @@ class MediaCodecBridge {
 
     @CalledByNative
     private int dequeueInputBuffer(long timeoutUs) {
-        return mMediaCodec.dequeueInputBuffer(timeoutUs);
+        try {
+            return mMediaCodec.dequeueInputBuffer(timeoutUs);
+        } catch(Exception e) {
+            Log.e(TAG, "Cannot dequeue Input buffer " + e.toString());
+        }
+        return MEDIA_CODEC_ERROR;
     }
 
     @CalledByNative

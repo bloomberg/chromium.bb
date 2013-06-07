@@ -95,7 +95,8 @@ class WebMediaPlayerProxyImplAndroid
   void OnReadFromDemuxer(
       int player_id, media::DemuxerStream::Type type, bool seek_done);
   void OnMediaSeekRequest(int player_id, base::TimeDelta time_to_seek,
-                          bool request_texture_peer);
+                          unsigned seek_request_id);
+  void OnMediaConfigRequest(int player_id);
   void OnKeyAdded(int player_id,
                   const std::string& key_system,
                   const std::string& session_id);

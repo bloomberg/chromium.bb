@@ -554,8 +554,7 @@ void WebMediaPlayerAndroid::OnMediaPlayerPause() {
   client_->playbackStateChanged();
 }
 
-void WebMediaPlayerAndroid::OnMediaSeekRequest(base::TimeDelta time_to_seek,
-                                               bool request_texture_peer) {
+void WebMediaPlayerAndroid::OnMediaSeekRequest(base::TimeDelta time_to_seek) {
   if (!media_source_delegate_)
     return;
 
@@ -563,8 +562,13 @@ void WebMediaPlayerAndroid::OnMediaSeekRequest(base::TimeDelta time_to_seek,
     media_source_delegate_->CancelPendingSeek();
   media_source_delegate_->Seek(time_to_seek);
   OnTimeUpdate(time_to_seek);
-  if (request_texture_peer)
-    EstablishSurfaceTexturePeer();
+}
+
+void WebMediaPlayerAndroid::OnMediaConfigRequest() {
+  if (!media_source_delegate_)
+    return;
+
+  media_source_delegate_->OnMediaConfigRequest();
 }
 
 void WebMediaPlayerAndroid::UpdateNetworkState(

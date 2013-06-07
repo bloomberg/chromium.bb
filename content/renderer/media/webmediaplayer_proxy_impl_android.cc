@@ -46,6 +46,7 @@ bool WebMediaPlayerProxyImplAndroid::OnMessageReceived(
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPause, OnPlayerPause)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_ReadFromDemuxer, OnReadFromDemuxer)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaSeekRequest, OnMediaSeekRequest)
+    IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaConfigRequest, OnMediaConfigRequest)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_KeyAdded, OnKeyAdded)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_KeyError, OnKeyError)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_KeyMessage, OnKeyMessage)
@@ -249,12 +250,19 @@ webkit_media::WebMediaPlayerAndroid*
 }
 
 void WebMediaPlayerProxyImplAndroid::OnMediaSeekRequest(
-    int player_id, base::TimeDelta time_to_seek, bool request_texture_peer) {
+    int player_id, base::TimeDelta time_to_seek, unsigned seek_request_id) {
   webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
   if (player) {
-    Send(new MediaPlayerHostMsg_MediaSeekRequestAck(routing_id(), player_id));
-    player->OnMediaSeekRequest(time_to_seek, request_texture_peer);
+    Send(new MediaPlayerHostMsg_MediaSeekRequestAck(routing_id(), player_id,
+        seek_request_id));
+    player->OnMediaSeekRequest(time_to_seek);
   }
+}
+
+void WebMediaPlayerProxyImplAndroid::OnMediaConfigRequest(int player_id) {
+  webkit_media::WebMediaPlayerAndroid* player = GetWebMediaPlayer(player_id);
+  if (player)
+    player->OnMediaConfigRequest();
 }
 
 void WebMediaPlayerProxyImplAndroid::OnKeyAdded(int player_id,

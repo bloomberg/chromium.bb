@@ -76,6 +76,9 @@ class MediaSourceDelegate : public media::DemuxerHost {
   // If it's the first request after the seek, |seek_done| will be true.
   void OnReadFromDemuxer(media::DemuxerStream::Type type, bool seek_done);
 
+  // Called when the player needs the new config data from ChunkDemuxer.
+  void OnMediaConfigRequest();
+
   // Called by the Destroyer to destroy an instance of this object.
   void Destroy();
 

@@ -59,6 +59,9 @@ class MediaDecoderJob {
   // Causes this instance to be deleted on the thread it is bound to.
   void Release();
 
+  // Called on the UI thread to indicate that one decode cycle has completed.
+  void OnDecodeCompleted();
+
  protected:
   MediaDecoderJob(base::Thread* thread, bool is_audio);
 
@@ -96,8 +99,12 @@ class MediaDecoderJob {
   // Whether this is an audio decoder.
   bool is_audio_;
 
-  // Weak pointer passed to media decoder jobs for callbacks.
+  // Weak pointer passed to media decoder jobs for callbacks. It is bounded to
+  // the decoder thread.
   base::WeakPtrFactory<MediaDecoderJob> weak_this_;
+
+  // Whether the decoder is actively decoding data.
+  bool decoding_;
 };
 
 typedef scoped_ptr<MediaDecoderJob, MediaDecoderJob::Deleter>
@@ -131,7 +138,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   virtual bool CanSeekForward() OVERRIDE;
   virtual bool CanSeekBackward() OVERRIDE;
   virtual bool IsPlayerReady() OVERRIDE;
-  virtual void OnSeekRequestAck() OVERRIDE;
+  virtual void OnSeekRequestAck(unsigned seek_request_id) OVERRIDE;
 
   // Called when the demuxer is ready.
   virtual void DemuxerReady(
@@ -162,6 +169,10 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   // Handle pending events when all the decoder jobs finished.
   void ProcessPendingEvents();
 
+  // Helper method to create the decoder jobs.
+  void CreateVideoDecoderJob();
+  void CreateAudioDecoderJob();
+
   // Flush the decoders and clean up all the data needs to be decoded.
   void ClearDecodingData();
 
@@ -177,12 +188,16 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
     NO_EVENT_PENDING = 0,
     SEEK_EVENT_PENDING = 1 << 0,
     SURFACE_CHANGE_EVENT_PENDING = 1 << 1,
+    CONFIG_CHANGE_EVENT_PENDING = 1 << 2,
   };
   // Pending event that the player needs to do.
   unsigned pending_event_;
 
   // Number of active decoding tasks.
   int active_decoding_tasks_;
+
+  // ID to keep track of whether all the seek requests are acked.
+  unsigned seek_request_id_;
 
   // Stats about the media.
   base::TimeDelta duration_;
@@ -208,9 +223,15 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   base::Time start_wallclock_time_;
   base::TimeDelta start_presentation_timestamp_;
 
-  // Decoder jobs.
+  // The surface object currently owned by the player.
+  gfx::ScopedJavaSurface surface_;
+
+  // Decoder jobs
   ScopedMediaDecoderJob audio_decoder_job_;
   ScopedMediaDecoderJob video_decoder_job_;
+
+  bool reconfig_audio_decoder_;
+  bool reconfig_video_decoder_;
 
   // These variables keep track of the current decoding data.
   // TODO(qinmin): remove these variables when we no longer relies on IPC for
@@ -221,9 +242,6 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   bool waiting_for_video_data_;
   MediaPlayerHostMsg_ReadFromDemuxerAck_Params received_audio_;
   MediaPlayerHostMsg_ReadFromDemuxerAck_Params received_video_;
-
-  // Whether the video decoder need to use anempty surface.
-  bool use_empty_surface_;
 
   // Weak pointer passed to media decoder jobs for callbacks.
   base::WeakPtrFactory<MediaSourcePlayer> weak_this_;

@@ -94,7 +94,7 @@ class MEDIA_EXPORT MediaPlayerAndroid {
       const MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params);
 
   // Called when a seek request is acked by the render process.
-  virtual void OnSeekRequestAck();
+  virtual void OnSeekRequestAck(unsigned seek_request_id);
 
   int player_id() { return player_id_; }
 
