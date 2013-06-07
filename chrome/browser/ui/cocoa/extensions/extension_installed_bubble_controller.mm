@@ -200,11 +200,11 @@ class ExtensionLoadedNotificationObserver
    clickedOnLink:(id)link
          atIndex:(NSUInteger)charIndex {
   DCHECK_EQ(promo_.get(), aTextView);
-  std::string promo_url =
+  GURL promo_url =
       SyncPromoUI::GetSyncPromoURL(
-            GURL(), SyncPromoUI::SOURCE_EXTENSION_INSTALL_BUBBLE, false).spec();
-  chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
-      browser_, GURL(promo_url)));
+          SyncPromoUI::SOURCE_EXTENSION_INSTALL_BUBBLE, false);
+  chrome::NavigateParams params(
+      chrome::GetSingletonTabNavigateParams(browser_, promo_url));
   chrome::Navigate(&params);
   return YES;
 }

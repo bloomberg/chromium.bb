@@ -607,23 +607,6 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
           return false;
       }
     }
-
-    if (!SyncPromoUI::UseWebBasedSigninFlow()) {
-      // If we're about to show a one-click infobar but the user has started
-      // a concurrent signin flow (perhaps via the promo), we may not have yet
-      // established an authenticated username but we still shouldn't move
-      // forward with two simultaneous signin processes.  This is a bit
-      // contentious as the one-click flow is a much smoother flow from the user
-      // perspective, but it's much more difficult to hijack the other flow from
-      // here as it is to bail.
-      ProfileSyncService* service =
-          ProfileSyncServiceFactory::GetForProfile(profile);
-      if (!service)
-        return false;
-
-      if (service->FirstSetupInProgress())
-        return false;
-    }
   }
 
   VLOG(1) << "OneClickSigninHelper::CanOffer: yes we can";
@@ -648,9 +631,6 @@ OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThreadImpl(
     return IGNORE_REQUEST;
 
   if (!io_data)
-    return DONT_OFFER;
-
-  if (!SyncPromoUI::UseWebBasedSigninFlow())
     return DONT_OFFER;
 
   // Check for incognito before other parts of the io_data, since those
@@ -720,11 +700,6 @@ void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
             << " g-c-s='" << google_chrome_signin_value << "'";
   }
 
-  if (!SyncPromoUI::UseWebBasedSigninFlow() &&
-      google_accounts_signin_value.empty()) {
-    return;
-  }
-
   if (!gaia::IsGaiaSignonRealm(request->original_url().GetOrigin()))
     return;
 
@@ -748,7 +723,7 @@ void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
   // Later in the chain of this request, we'll need to check the email address
   // in the IO thread (see CanOfferOnIOThread).  So save the email address as
   // user data on the request (only for web-based flow).
-  if (SyncPromoUI::UseWebBasedSigninFlow() && !email.empty())
+  if (!email.empty())
     io_data->set_reverse_autologin_pending_email(email);
 
   if (!email.empty() || !session_index.empty()) {
@@ -761,26 +736,24 @@ void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
   AutoAccept auto_accept = AUTO_ACCEPT_NONE;
   SyncPromoUI::Source source = SyncPromoUI::SOURCE_UNKNOWN;
   GURL continue_url;
-  if (SyncPromoUI::UseWebBasedSigninFlow()) {
-    std::vector<std::string> tokens;
-    base::SplitString(google_chrome_signin_value, ',', &tokens);
-    for (size_t i = 0; i < tokens.size(); ++i) {
-      const std::string& token = tokens[i];
-      if (token == "accepted") {
-        auto_accept = AUTO_ACCEPT_ACCEPTED;
-      } else if (token == "configure") {
-        auto_accept = AUTO_ACCEPT_CONFIGURE;
-      } else if (token == "rejected-for-profile") {
-        auto_accept = AUTO_ACCEPT_REJECTED_FOR_PROFILE;
-      }
+  std::vector<std::string> tokens;
+  base::SplitString(google_chrome_signin_value, ',', &tokens);
+  for (size_t i = 0; i < tokens.size(); ++i) {
+    const std::string& token = tokens[i];
+    if (token == "accepted") {
+      auto_accept = AUTO_ACCEPT_ACCEPTED;
+    } else if (token == "configure") {
+      auto_accept = AUTO_ACCEPT_CONFIGURE;
+    } else if (token == "rejected-for-profile") {
+      auto_accept = AUTO_ACCEPT_REJECTED_FOR_PROFILE;
     }
-
-    // If this is an explicit sign in (i.e., first run, NTP, Apps page, menu,
-    // settings) then force the auto accept type to explicit.
-    source = GetSigninSource(request->url(), &continue_url);
-    if (source != SyncPromoUI::SOURCE_UNKNOWN)
-      auto_accept = AUTO_ACCEPT_EXPLICIT;
   }
+
+  // If this is an explicit sign in (i.e., first run, NTP, Apps page, menu,
+  // settings) then force the auto accept type to explicit.
+  source = GetSigninSource(request->url(), &continue_url);
+  if (source != SyncPromoUI::SOURCE_UNKNOWN)
+    auto_accept = AUTO_ACCEPT_EXPLICIT;
 
   if (auto_accept != AUTO_ACCEPT_NONE) {
     VLOG(1) << "OneClickSigninHelper::ShowInfoBarIfPossible:"
@@ -925,7 +898,7 @@ void OneClickSigninHelper::RedirectToSignin() {
       SyncPromoUI::GetSourceForSyncPromoURL(continue_url_);
   if (source == SyncPromoUI::SOURCE_UNKNOWN)
     source = SyncPromoUI::SOURCE_MENU;
-  GURL page = SyncPromoUI::GetSyncPromoURL(GURL(), source, false);
+  GURL page = SyncPromoUI::GetSyncPromoURL(source, false);
 
   content::WebContents* contents = web_contents();
   contents->GetController().LoadURL(page,
@@ -999,8 +972,7 @@ void OneClickSigninHelper::NavigateToPendingEntry(
   // process (see crbug.com/181163 for details).
   const GURL continue_url =
       SyncPromoUI::GetNextPageURLForSyncPromoURL(
-          SyncPromoUI::GetSyncPromoURL(GURL(),
-                                       SyncPromoUI::SOURCE_START_PAGE,
+          SyncPromoUI::GetSyncPromoURL(SyncPromoUI::SOURCE_START_PAGE,
                                        false));
   GURL::Replacements replacements;
   replacements.ClearQuery();
@@ -1097,46 +1069,44 @@ void OneClickSigninHelper::DidStopLoading(
   // further below for when this variable is set to true.
   bool force_same_tab_navigation = false;
 
-  if (SyncPromoUI::UseWebBasedSigninFlow()) {
-    if (!continue_url_match && IsValidGaiaSigninRedirectOrResponseURL(url))
+  if (!continue_url_match && IsValidGaiaSigninRedirectOrResponseURL(url))
+    return;
+
+  // During an explicit sign in, if the user has not yet reached the final
+  // continue URL, wait for it to arrive. Note that Gaia will add some extra
+  // query parameters to the continue URL.  Ignore them when checking to
+  // see if the user has continued.
+  //
+  // If this is not an explicit sign in, we don't need to check if we landed
+  // on the right continue URL.  This is important because the continue URL
+  // may itself lead to a redirect, which means this function will never see
+  // the continue URL go by.
+  if (auto_accept_ == AUTO_ACCEPT_EXPLICIT) {
+    DCHECK(source_ != SyncPromoUI::SOURCE_UNKNOWN);
+    if (!continue_url_match) {
+      VLOG(1) << "OneClickSigninHelper::DidStopLoading: invalid url='"
+              << url.spec()
+              << "' expected continue url=" << continue_url_;
+      CleanTransientState();
       return;
+    }
 
-    // During an explicit sign in, if the user has not yet reached the final
-    // continue URL, wait for it to arrive. Note that Gaia will add some extra
-    // query parameters to the continue URL.  Ignore them when checking to
-    // see if the user has continued.
+    // In explicit sign ins, the user may have changed the box
+    // "Let me choose what to sync".  This is reflected as a change in the
+    // source of the continue URL.  Make one last check of the current URL
+    // to see if there is a valid source.  If so, it overrides the
+    // current source.
     //
-    // If this is not an explicit sign in, we don't need to check if we landed
-    // on the right continue URL.  This is important because the continue URL
-    // may itself lead to a redirect, which means this function will never see
-    // the continue URL go by.
-    if (auto_accept_ == AUTO_ACCEPT_EXPLICIT) {
-      DCHECK(source_ != SyncPromoUI::SOURCE_UNKNOWN);
-      if (!continue_url_match) {
-        VLOG(1) << "OneClickSigninHelper::DidStopLoading: invalid url='"
-                << url.spec()
-                << "' expected continue url=" << continue_url_;
-        CleanTransientState();
-        return;
-      }
-
-      // In explicit sign ins, the user may have changed the box
-      // "Let me choose what to sync".  This is reflected as a change in the
-      // source of the continue URL.  Make one last check of the current URL
-      // to see if there is a valid source.  If so, it overrides the
-      // current source.
-      //
-      // If the source was changed to SOURCE_SETTINGS, we want
-      // OneClickSigninSyncStarter to reuse the current tab to display the
-      // advanced configuration.
-      SyncPromoUI::Source source =
-          SyncPromoUI::GetSourceForSyncPromoURL(url);
-      if (source != source_) {
-        original_source_ = source_;
-        source_ = source;
-        force_same_tab_navigation = source == SyncPromoUI::SOURCE_SETTINGS;
-        switched_to_advanced_ = source == SyncPromoUI::SOURCE_SETTINGS;
-      }
+    // If the source was changed to SOURCE_SETTINGS, we want
+    // OneClickSigninSyncStarter to reuse the current tab to display the
+    // advanced configuration.
+    SyncPromoUI::Source source =
+        SyncPromoUI::GetSourceForSyncPromoURL(url);
+    if (source != source_) {
+      original_source_ = source_;
+      source_ = source;
+      force_same_tab_navigation = source == SyncPromoUI::SOURCE_SETTINGS;
+      switched_to_advanced_ = source == SyncPromoUI::SOURCE_SETTINGS;
     }
   }
 
@@ -1148,8 +1118,8 @@ void OneClickSigninHelper::DidStopLoading(
 
   switch (auto_accept_) {
     case AUTO_ACCEPT_NONE:
-      if (SyncPromoUI::UseWebBasedSigninFlow() && showing_signin_)
-          LogOneClickHistogramValue(one_click_signin::HISTOGRAM_DISMISSED);
+      if (showing_signin_)
+        LogOneClickHistogramValue(one_click_signin::HISTOGRAM_DISMISSED);
       break;
     case AUTO_ACCEPT_ACCEPTED:
       LogOneClickHistogramValue(one_click_signin::HISTOGRAM_ACCEPTED);

@@ -585,11 +585,10 @@ void FirstRunBubbleLauncher::Observe(
 
   // Suppress the first run bubble if a Gaia sign in page or the continue
   // URL for the sign in page is showing.
-  if (SyncPromoUI::UseWebBasedSigninFlow()) {
-    if (gaia::IsGaiaSignonRealm(contents->GetURL().GetOrigin()) ||
-        SyncPromoUI::IsContinueUrlForWebBasedSigninFlow(contents->GetURL())) {
-      return;
-    }
+  if (contents &&
+      (gaia::IsGaiaSignonRealm(contents->GetURL().GetOrigin()) ||
+       SyncPromoUI::IsContinueUrlForWebBasedSigninFlow(contents->GetURL()))) {
+    return;
   }
 
   if (contents && contents->GetURL().SchemeIs(chrome::kChromeUIScheme)) {

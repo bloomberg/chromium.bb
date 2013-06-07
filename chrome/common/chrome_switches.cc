@@ -1442,9 +1442,6 @@ const char kMaxSpdyConcurrentStreams[]      = "max-spdy-concurrent-streams";
 // all of its state.
 const char kUserDataDir[]                   = "user-data-dir";
 
-// Uses the ClientLogin signin flow instead of the web-based signin flow.
-const char kUseClientLoginSigninFlow[]      = "use-client-login-signin-flow";
-
 // Examines a .crx for validity and prints the result.
 const char kValidateCrx[]                   = "validate-crx";
 

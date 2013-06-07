@@ -981,13 +981,6 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "use-client-login-signin-flow",
-    IDS_FLAGS_USE_CLIENT_LOGIN_SIGNIN_FLOW_NAME,
-    IDS_FLAGS_USE_CLIENT_LOGIN_SIGNIN_FLOW_DESCRIPTION,
-    kOsMac | kOsWin | kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kUseClientLoginSigninFlow)
-  },
-  {
     "enable-desktop-guest-mode",
     IDS_FLAGS_DESKTOP_GUEST_MODE_NAME,
     IDS_FLAGS_DESKTOP_GUEST_MODE_DESCRIPTION,

@@ -50,7 +50,6 @@ const char kSyncPromoJsFile[] = "sync_promo.js";
 
 const char kSyncPromoQueryKeyAutoClose[] = "auto_close";
 const char kSyncPromoQueryKeyContinue[] = "continue";
-const char kSyncPromoQueryKeyNextPage[] = "next_page";
 const char kSyncPromoQueryKeySource[] = "source";
 
 // Gaia cannot support about:blank as a continue URL, so using a hosted blank
@@ -209,61 +208,42 @@ std::string SyncPromoUI::GetSyncLandingURL(const char* option, int value) {
 }
 
 // static
-GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page,
-                                  Source source,
-                                  bool auto_close) {
+GURL SyncPromoUI::GetSyncPromoURL(Source source, bool auto_close) {
   DCHECK_NE(SOURCE_UNKNOWN, source);
 
   std::string url_string;
 
-  if (UseWebBasedSigninFlow()) {
-    // Build a Gaia-based URL that can be used to sign the user into chrome.
-    // There are required request parameters:
-    //
-    //  - tell Gaia which service the user is signing into.  In this case,
-    //    a chrome sign in uses the service "chromiumsync"
-    //  - provide a continue URL.  This is the URL that Gaia will redirect to
-    //    once the sign is complete.
-    //
-    // The continue URL includes a source parameter that can be extracted using
-    // the function GetSourceForSyncPromoURL() below.  This is used to know
-    // which of the chrome sign in access points was used to sign the user in.
-    // See OneClickSigninHelper for details.
-    url_string = GaiaUrls::GetInstance()->service_login_url();
-    url_string.append("?service=chromiumsync&sarp=1");
+  // Build a Gaia-based URL that can be used to sign the user into chrome.
+  // There are required request parameters:
+  //
+  //  - tell Gaia which service the user is signing into.  In this case,
+  //    a chrome sign in uses the service "chromiumsync"
+  //  - provide a continue URL.  This is the URL that Gaia will redirect to
+  //    once the sign is complete.
+  //
+  // The continue URL includes a source parameter that can be extracted using
+  // the function GetSourceForSyncPromoURL() below.  This is used to know
+  // which of the chrome sign in access points was used to sign the user in.
+  // See OneClickSigninHelper for details.
+  url_string = GaiaUrls::GetInstance()->service_login_url();
+  url_string.append("?service=chromiumsync&sarp=1");
 
-    std::string continue_url = GetSyncLandingURL(
-        kSyncPromoQueryKeySource, static_cast<int>(source));
+  std::string continue_url = GetSyncLandingURL(
+      kSyncPromoQueryKeySource, static_cast<int>(source));
 
-    base::StringAppendF(&url_string, "&%s=%s", kSyncPromoQueryKeyContinue,
-                        net::EscapeQueryParamValue(
-                            continue_url, false).c_str());
-  } else {
-    url_string = base::StringPrintf("%s?%s=%d", chrome::kChromeUISyncPromoURL,
-                                    kSyncPromoQueryKeySource,
-                                    static_cast<int>(source));
-
-    if (auto_close)
-      base::StringAppendF(&url_string, "&%s=1", kSyncPromoQueryKeyAutoClose);
-
-    if (!next_page.spec().empty()) {
-      base::StringAppendF(&url_string, "&%s=%s", kSyncPromoQueryKeyNextPage,
-                          net::EscapeQueryParamValue(next_page.spec(),
-                                                     false).c_str());
-    }
-  }
+  base::StringAppendF(&url_string, "&%s=%s", kSyncPromoQueryKeyContinue,
+                      net::EscapeQueryParamValue(
+                          continue_url, false).c_str());
 
   return GURL(url_string);
 }
 
 // static
 GURL SyncPromoUI::GetNextPageURLForSyncPromoURL(const GURL& url) {
-  const char* key_name = UseWebBasedSigninFlow() ? kSyncPromoQueryKeyContinue :
-      kSyncPromoQueryKeyNextPage;
   std::string value;
-  if (net::GetValueForKeyInQuery(url, key_name, &value)) {
+  if (net::GetValueForKeyInQuery(url, kSyncPromoQueryKeyContinue, &value))
     return GURL(value);
-  }
+
   return GURL();
 }
 
@@ -283,9 +263,7 @@ SyncPromoUI::Source SyncPromoUI::GetSourceForSyncPromoURL(const GURL& url) {
 // static
 bool SyncPromoUI::UseWebBasedSigninFlow() {
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseClientLoginSigninFlow) ||
-      g_force_web_based_signin_flow;
+  return true;
 #else
   return false;
 #endif

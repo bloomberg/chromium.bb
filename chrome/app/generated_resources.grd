@@ -15060,14 +15060,6 @@ To configure restrictions for this limited user, please sign into your account a
       Dark Theme
     </message>
 
-    <message name="IDS_FLAGS_USE_CLIENT_LOGIN_SIGNIN_FLOW_NAME" desc="Name of about:flag option to turn on ClientLogin sign in">
-      Enable ClientLogin signin
-    </message>
-    <message name="IDS_FLAGS_USE_CLIENT_LOGIN_SIGNIN_FLOW_DESCRIPTION" desc="Description of about:flag option to turn on ClientLogin sign in">
-      When enabled, will use a ClientLogin sign in flow to connect a profile to a Google account.  Otherwise use a web-based flow.
-      The web-based flow permits using verification codes instead of ASPs during authentication.
-    </message>
-
     <message name="IDS_FLAGS_DESKTOP_GUEST_MODE_NAME" desc="Name of about:flags option to turn on desktop guest mode">
       Enable desktop guest mode
     </message>

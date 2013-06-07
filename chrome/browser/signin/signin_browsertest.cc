@@ -64,14 +64,18 @@ class SigninBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(SigninBrowserTest, ProcessIsolation) {
   // If the one-click-signin feature is not enabled (e.g Chrome OS), we
   // never grant signin privileges to any renderer processes.
-  const bool kOneClickSigninEnabled = SyncPromoUI::UseWebBasedSigninFlow();
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+  const bool kOneClickSigninEnabled = true;
+#else
+  const bool kOneClickSigninEnabled = false;
+#endif
 
   SigninManager* signin = SigninManagerFactory::GetForProfile(
       browser()->profile());
   EXPECT_FALSE(signin->HasSigninProcess());
 
   ui_test_utils::NavigateToURL(browser(), SyncPromoUI::GetSyncPromoURL(
-      GURL(), SyncPromoUI::SOURCE_NTP_LINK, true));
+      SyncPromoUI::SOURCE_NTP_LINK, true));
   EXPECT_EQ(kOneClickSigninEnabled, signin->HasSigninProcess());
 
   // Navigating away should change the process.
@@ -79,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, ProcessIsolation) {
   EXPECT_FALSE(signin->HasSigninProcess());
 
   ui_test_utils::NavigateToURL(browser(), SyncPromoUI::GetSyncPromoURL(
-      GURL(), SyncPromoUI::SOURCE_NTP_LINK, true));
+      SyncPromoUI::SOURCE_NTP_LINK, true));
   EXPECT_EQ(kOneClickSigninEnabled, signin->HasSigninProcess());
 
   content::WebContents* active_tab =
@@ -94,8 +98,7 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, ProcessIsolation) {
   // shouldn't change anything.
   chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
       browser(),
-      GURL(SyncPromoUI::GetSyncPromoURL(GURL(),
-                                        SyncPromoUI::SOURCE_NTP_LINK,
+      GURL(SyncPromoUI::GetSyncPromoURL(SyncPromoUI::SOURCE_NTP_LINK,
                                         false))));
   params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser(), params);

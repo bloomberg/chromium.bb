@@ -658,8 +658,7 @@ void SyncSetupHandler::DisplayGaiaLogin(bool fatal_error) {
 
 void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
   DCHECK(!active_gaia_signin_tab_);
-  GURL url(SyncPromoUI::GetSyncPromoURL(GURL(),
-      SyncPromoUI::SOURCE_SETTINGS, false));
+  GURL url(SyncPromoUI::GetSyncPromoURL(SyncPromoUI::SOURCE_SETTINGS, false));
   Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
   if (!browser) {
@@ -1297,8 +1296,7 @@ void SyncSetupHandler::DidStopLoading(
   const GURL& url = active_gaia_signin_tab_->GetURL();
   const GURL continue_url =
       SyncPromoUI::GetNextPageURLForSyncPromoURL(
-          SyncPromoUI::GetSyncPromoURL(GURL(),
-                                       SyncPromoUI::SOURCE_SETTINGS,
+          SyncPromoUI::GetSyncPromoURL(SyncPromoUI::SOURCE_SETTINGS,
                                        false));
   GURL::Replacements replacements;
   replacements.ClearQuery();

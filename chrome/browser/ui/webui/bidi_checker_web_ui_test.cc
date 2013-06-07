@@ -20,7 +20,6 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/browser/autofill_common_test.h"
@@ -86,14 +85,6 @@ static const base::FilePath::CharType* kBidiCheckerTestsJS =
 
 void WebUIBidiCheckerBrowserTest::SetUp() {
   argv_ = CommandLine::ForCurrentProcess()->GetArgs();
-
-  // Sync only uses webui when client login is enabled.  Client login is going
-  // away, but to keep it tested for now, force client login to be used.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseClientLoginSigninFlow)) {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kUseClientLoginSigninFlow);
-  }
 }
 
 void WebUIBidiCheckerBrowserTest::TearDown() {
@@ -438,24 +429,6 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
                        TestSettingsSearchEnginesOptionsPage) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += std::string(chrome::kSearchEnginesSubPage);
-  RunBidiCheckerOnPage(url);
-}
-
-//===================================
-// chrome://settings-frame/syncSetup
-//===================================
-
-IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
-                       TestSettingsFrameSyncSetup) {
-  std::string url(chrome::kChromeUISettingsFrameURL);
-  url += std::string(chrome::kSyncSetupSubPage);
-  RunBidiCheckerOnPage(url);
-}
-
-IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       TestSettingsFrameSyncSetup) {
-  std::string url(chrome::kChromeUISettingsFrameURL);
-  url += std::string(chrome::kSyncSetupSubPage);
   RunBidiCheckerOnPage(url);
 }
 

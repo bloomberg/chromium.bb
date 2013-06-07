@@ -276,11 +276,8 @@ void AddSyncPromoTab(Profile* profile, StartupTabs* tabs) {
   SyncPromoUI::DidShowSyncPromoAtStartup(profile);
 
   StartupTab sync_promo_tab;
-  GURL continue_url;
-  if (!SyncPromoUI::UseWebBasedSigninFlow())
-    continue_url = GURL(chrome::kChromeUINewTabURL);
   sync_promo_tab.url = SyncPromoUI::GetSyncPromoURL(
-      continue_url, SyncPromoUI::SOURCE_START_PAGE, false);
+      SyncPromoUI::SOURCE_START_PAGE, false);
   sync_promo_tab.is_pinned = false;
 
   // No need to add if the sync promo is already in the startup list.

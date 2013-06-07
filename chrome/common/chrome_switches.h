@@ -383,7 +383,6 @@ extern const char kUseSpellingSuggestions[];
 extern const char kMaxSpdySessionsPerDomain[];
 extern const char kMaxSpdyConcurrentStreams[];
 extern const char kUserDataDir[];
-extern const char kUseClientLoginSigninFlow[];
 extern const char kValidateCrx[];
 extern const char kVariationsServerURL[];
 extern const char kVersion[];

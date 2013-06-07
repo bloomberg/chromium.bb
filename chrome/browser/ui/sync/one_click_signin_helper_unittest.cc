@@ -709,7 +709,7 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadBadURL) {
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadReferrer) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   std::string continue_url(SyncPromoUI::GetSyncPromoURL(
-      GURL(), SyncPromoUI::SOURCE_START_PAGE, false).spec());
+      SyncPromoUI::SOURCE_START_PAGE, false).spec());
 
   EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(

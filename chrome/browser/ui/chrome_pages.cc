@@ -233,8 +233,7 @@ void ShowBrowserSignin(Browser* browser, SyncPromoUI::Source source) {
         original_profile);
     if (use_web_flow || (show_promo && login->current_login_ui() == NULL)) {
       NavigateToSingletonTab(browser,
-                             GURL(SyncPromoUI::GetSyncPromoURL(GURL(),
-                                                               source,
+                             GURL(SyncPromoUI::GetSyncPromoURL(source,
                                                                false)));
     } else {
       if (login->current_login_ui()) {

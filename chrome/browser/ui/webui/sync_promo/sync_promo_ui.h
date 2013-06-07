@@ -60,13 +60,10 @@ class SyncPromoUI {
   static std::string GetSyncLandingURL(const char* option, int value);
 
   // Returns the sync promo URL wth the given arguments in the query.
-  // |next_page| is the URL to navigate to when the user completes or skips the
-  // promo. If an empty URL is given then the promo will navigate to the NTP.
   // |source| identifies from where the sync promo is being called, and is used
   // to record sync promo UMA stats in the context of the source.
   // |auto_close| whether to close the sync promo automatically when done.
-  static GURL GetSyncPromoURL(
-      const GURL& next_page, Source source, bool auto_close);
+  static GURL GetSyncPromoURL(Source source, bool auto_close);
 
   // Gets the next page URL from the query portion of the sync promo URL.
   static GURL GetNextPageURLForSyncPromoURL(const GURL& url);

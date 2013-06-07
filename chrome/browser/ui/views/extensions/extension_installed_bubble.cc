@@ -262,7 +262,7 @@ class InstalledBubbleContent : public views::View,
       configure_url += chrome::kExtensionConfigureCommandsSubPage;
     } else if (source == sign_in_link_) {
       configure_url = SyncPromoUI::GetSyncPromoURL(
-          GURL(), SyncPromoUI::SOURCE_EXTENSION_INSTALL_BUBBLE, false).spec();
+          SyncPromoUI::SOURCE_EXTENSION_INSTALL_BUBBLE, false).spec();
     } else {
       NOTREACHED();
       return;
