@@ -386,10 +386,14 @@ void PopupContainer::showInRect(const FloatQuad& controlPosition, const IntSize&
     // FIXME: make sure this is correct, and add an assertion.
     // ASSERT(popupWindow(popup)->listBox()->selectedIndex() == index);
 
-    // Save and convert the controlPosition to main window coords.
-    m_controlPosition = controlPosition;
-    IntPoint delta = v->contentsToWindow(IntPoint());
-    m_controlPosition.move(delta.x(), delta.y());
+    // Save and convert the controlPosition to main window coords. Each point is converted separately
+    // to window coordinates because the control could be in a transformed webview and then each point
+    // would be transformed by a different delta.
+    m_controlPosition.setP1(v->contentsToWindow(IntPoint(controlPosition.p1().x(), controlPosition.p1().y())));
+    m_controlPosition.setP2(v->contentsToWindow(IntPoint(controlPosition.p2().x(), controlPosition.p2().y())));
+    m_controlPosition.setP3(v->contentsToWindow(IntPoint(controlPosition.p3().x(), controlPosition.p3().y())));
+    m_controlPosition.setP4(v->contentsToWindow(IntPoint(controlPosition.p4().x(), controlPosition.p4().y())));
+
     m_controlSize = controlSize;
 
     // Position at (0, 0) since the frameRect().location() is relative to the
