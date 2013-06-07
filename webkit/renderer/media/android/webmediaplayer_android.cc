@@ -588,7 +588,9 @@ void WebMediaPlayerAndroid::UpdateReadyState(
 }
 
 void WebMediaPlayerAndroid::OnPlayerReleased() {
-  needs_establish_peer_ = true;
+  // |needs_external_surface_| is always false on non-TV devices.
+  if (!needs_external_surface_)
+    needs_establish_peer_ = true;
 }
 
 void WebMediaPlayerAndroid::ReleaseMediaResources() {

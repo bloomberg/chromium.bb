@@ -211,6 +211,13 @@ void MediaPlayerManagerImpl::OnReleaseResources(int player_id) {
   // OnDestroyPlayer is called.
   if (player && player_id != fullscreen_player_id_)
     player->Release();
+
+#if defined(GOOGLE_TV)
+  WebContentsViewAndroid* view =
+      static_cast<WebContentsViewAndroid*>(web_contents_->GetView());
+  if (view)
+    view->NotifyExternalSurface(player_id, false, gfx::RectF());
+#endif
 }
 
 void MediaPlayerManagerImpl::OnDestroyPlayer(int player_id) {
