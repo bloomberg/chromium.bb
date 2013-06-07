@@ -142,7 +142,7 @@ class FileManagerNotifications::NotificationMessage {
     virtual void Display() OVERRIDE {}
     virtual void Error() OVERRIDE {}
     virtual void Close(bool by_user) OVERRIDE {
-      if (host_.get())
+      if (host_)
         host_->RemoveNotificationById(id_);
     }
     virtual void Click() OVERRIDE {

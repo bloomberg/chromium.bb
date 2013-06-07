@@ -257,7 +257,7 @@ void ProxyResolutionServiceProvider::CallResolveProxyHandler(
     base::WeakPtr<ProxyResolutionServiceProvider> provider_weak_ptr,
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  if (!provider_weak_ptr.get()) {
+  if (!provider_weak_ptr) {
     LOG(WARNING) << "Called after the object is deleted";
     response_sender.Run(scoped_ptr<dbus::Response>());
     return;

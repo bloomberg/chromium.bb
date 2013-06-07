@@ -32,7 +32,7 @@ void LoginEventObserver::OnLoginSuccess(
     bool using_oauth) {
   // Profile changes after login. Ensure AutomationProvider refers to
   // the correct one.
-  if (automation_.get()) {
+  if (automation_) {
     automation_->set_profile(
         g_browser_process->profile_manager()->GetLastUsedProfile());
   }

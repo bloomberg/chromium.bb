@@ -53,7 +53,7 @@ bool NetworkManagerInitObserver::Init() {
 
 void NetworkManagerInitObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
   if (!obj->wifi_scanning()) {
-    if (automation_.get())
+    if (automation_)
       automation_->OnNetworkLibraryInit();
     delete this;
   }
@@ -79,7 +79,7 @@ void OOBEWebuiReadyObserver::Observe(
 }
 
 void OOBEWebuiReadyObserver::OOBEWebuiReady() {
-  if (automation_.get())
+  if (automation_)
     automation_->OnOOBEWebuiReady();
   delete this;
 }
@@ -110,8 +110,8 @@ void LoginObserver::OnLoginSuccess(
     bool pending_requests,
     bool using_oauth) {
   controller_->set_login_status_consumer(NULL);
-  AutomationJSONReply(automation_.get(),
-                      reply_message_.release()).SendSuccess(NULL);
+  AutomationJSONReply(automation_.get(), reply_message_.release())
+      .SendSuccess(NULL);
   delete this;
 }
 
@@ -179,7 +179,7 @@ void ScreenLockUnlockObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED);
-  if (automation_.get()) {
+  if (automation_) {
     AutomationJSONReply reply(automation_.get(), reply_message_.release());
     bool is_screen_locked = *content::Details<bool>(details).ptr();
     if (lock_screen_ == is_screen_locked)
@@ -204,7 +204,7 @@ ScreenUnlockObserver::~ScreenUnlockObserver() {
 }
 
 void ScreenUnlockObserver::OnLoginFailure(const chromeos::LoginFailure& error) {
-  if (automation_.get()) {
+  if (automation_) {
     scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
     return_value->SetString("error_string", error.GetErrorString());
     AutomationJSONReply(automation_.get(), reply_message_.release())
@@ -229,9 +229,9 @@ void NetworkScanObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
   if (obj->wifi_scanning())
     return;
 
-  if (automation_.get()) {
-    AutomationJSONReply(automation_.get(),
-                        reply_message_.release()).SendSuccess(NULL);
+  if (automation_) {
+    AutomationJSONReply(automation_.get(), reply_message_.release())
+        .SendSuccess(NULL);
   }
   delete this;
 }
@@ -254,9 +254,10 @@ void ToggleNetworkDeviceObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
   if ((device_ == "ethernet" && enable_ == obj->ethernet_enabled()) ||
       (device_ == "wifi" && enable_ == obj->wifi_enabled()) ||
       (device_ == "cellular" && enable_ == obj->cellular_enabled())) {
-    if (automation_.get())
-      AutomationJSONReply(automation_.get(),
-                          reply_message_.release()).SendSuccess(NULL);
+    if (automation_) {
+      AutomationJSONReply(automation_.get(), reply_message_.release())
+          .SendSuccess(NULL);
+    }
     delete this;
   }
 }
@@ -278,7 +279,7 @@ void NetworkStatusObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
   if (!network) {
     // The network was not found, and we assume it no longer exists.
     // This could be because the ssid is invalid, or the network went away.
-    if (automation_.get()) {
+    if (automation_) {
       scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
       return_value->SetString("error_string", "Network not found.");
       AutomationJSONReply(automation_.get(), reply_message_.release())
@@ -298,7 +299,7 @@ NetworkConnectObserver::NetworkConnectObserver(
 void NetworkConnectObserver::NetworkStatusCheck(const chromeos::Network*
                                                 network) {
   if (network->failed()) {
-    if (automation_.get()) {
+    if (automation_) {
       scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
       return_value->SetString("error_string", network->GetErrorString());
       AutomationJSONReply(automation_.get(), reply_message_.release())
@@ -306,9 +307,10 @@ void NetworkConnectObserver::NetworkStatusCheck(const chromeos::Network*
     }
     delete this;
   } else if (network->connected()) {
-    if (automation_.get())
-      AutomationJSONReply(automation_.get(),
-                          reply_message_.release()).SendSuccess(NULL);
+    if (automation_) {
+      AutomationJSONReply(automation_.get(), reply_message_.release())
+          .SendSuccess(NULL);
+    }
     delete this;
   }
 
@@ -389,7 +391,7 @@ void VirtualConnectObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
   }
 
   if (virt->failed()) {
-    if (automation_.get()) {
+    if (automation_) {
       scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
       return_value->SetString("error_string", virt->GetErrorString());
       AutomationJSONReply(automation_.get(), reply_message_.release())
@@ -397,9 +399,10 @@ void VirtualConnectObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
     }
     delete this;
   } else if (virt->connected()) {
-    if (automation_.get())
-      AutomationJSONReply(automation_.get(),
-                          reply_message_.release()).SendSuccess(NULL);
+    if (automation_) {
+      AutomationJSONReply(automation_.get(), reply_message_.release())
+          .SendSuccess(NULL);
+    }
     delete this;
   }
   // The network is in the NetworkLibrary's list, but there's no failure or
@@ -436,10 +439,10 @@ EnrollmentObserver::~EnrollmentObserver() {}
 
 void EnrollmentObserver::OnEnrollmentComplete(bool succeeded) {
   enrollment_screen_->RemoveTestingObserver(this);
-  if (automation_.get()) {
+  if (automation_) {
     if (succeeded) {
-      AutomationJSONReply(automation_.get(),
-                          reply_message_.release()).SendSuccess(NULL);
+      AutomationJSONReply(automation_.get(), reply_message_.release())
+          .SendSuccess(NULL);
     } else {
       scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
       return_value->SetString("error_string", "Enrollment failed.");

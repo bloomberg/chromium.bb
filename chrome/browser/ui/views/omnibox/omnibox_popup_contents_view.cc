@@ -153,7 +153,7 @@ void OmniboxPopupContentsView::LayoutChildren() {
 // OmniboxPopupContentsView, OmniboxPopupView overrides:
 
 bool OmniboxPopupContentsView::IsOpen() const {
-  return popup_.get() != NULL;
+  return popup_ != NULL;
 }
 
 void OmniboxPopupContentsView::InvalidateLine(size_t line) {
@@ -171,7 +171,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
       omnibox_view_->IsImeShowingPopup()) {
     // No matches or the IME is showing a popup window which may overlap
     // the omnibox popup window.  Close any existing popup.
-    if (popup_.get() != NULL) {
+    if (popup_ != NULL) {
       size_animation_.Stop();
 
       // NOTE: Do NOT use CloseNow() here, as we may be deep in a callstack
@@ -210,7 +210,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     size_animation_.Reset();
   target_bounds_ = new_target_bounds;
 
-  if (popup_.get() == NULL) {
+  if (popup_ == NULL) {
     gfx::NativeView popup_parent =
         location_bar_view_->GetWidget()->GetNativeView();
 
@@ -293,7 +293,7 @@ gfx::Image OmniboxPopupContentsView::GetIconIfExtensionMatch(
 void OmniboxPopupContentsView::AnimationProgressed(
     const ui::Animation* animation) {
   // We should only be running the animation when the popup is already visible.
-  DCHECK(popup_.get() != NULL);
+  DCHECK(popup_ != NULL);
   popup_->SetBounds(GetPopupBounds());
 }
 
