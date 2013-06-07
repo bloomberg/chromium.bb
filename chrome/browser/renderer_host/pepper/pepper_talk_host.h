@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_RENDERER_HOST_PEPPER_PEPPER_TALK_HOST_H_
 
 #include "base/memory/weak_ptr.h"
+#include "ppapi/c/private/ppb_talk_private.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/resource_message_params.h"
 
@@ -37,6 +38,14 @@ class PepperTalkHost : public ppapi::host::ResourceHost {
   void GotTalkPermission(ppapi::host::ReplyMessageContext reply);
 
  private:
+  int32_t OnRequestPermission(
+      ppapi::host::HostMessageContext* context,
+      PP_TalkPermission permission);
+  int32_t OnStartRemoting(
+      ppapi::host::HostMessageContext* context);
+  int32_t OnStopRemoting(
+      ppapi::host::HostMessageContext* context);
+
   base::WeakPtrFactory<PepperTalkHost> weak_factory_;
   content::BrowserPpapiHost* browser_ppapi_host_;
 

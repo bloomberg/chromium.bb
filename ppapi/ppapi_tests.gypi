@@ -172,6 +172,7 @@
         'proxy/printing_resource_unittest.cc',
         'proxy/raw_var_data_unittest.cc',
         'proxy/serialized_var_unittest.cc',
+        'proxy/talk_resource_unittest.cc',
         'proxy/websocket_resource_unittest.cc',
         'shared_impl/resource_tracker_unittest.cc',
         'shared_impl/thread_aware_callback_unittest.cc',

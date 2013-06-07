@@ -6,6 +6,7 @@
 #define PPAPI_THUNK_PPB_TALK_PRIVATE_API_H_
 
 #include "base/memory/ref_counted.h"
+#include "ppapi/c/private/ppb_talk_private.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
@@ -18,7 +19,15 @@ class PPAPI_THUNK_EXPORT PPB_Talk_Private_API {
  public:
   virtual ~PPB_Talk_Private_API() {}
 
-  virtual int32_t GetPermission(scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t RequestPermission(
+      PP_TalkPermission permission,
+      scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t StartRemoting(
+      PP_TalkEventCallback event_callback,
+      void* user_data,
+      scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t StopRemoting(
+      scoped_refptr<TrackedCallback> callback) = 0;
 };
 
 }  // namespace thunk

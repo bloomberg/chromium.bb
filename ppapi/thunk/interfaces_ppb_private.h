@@ -44,6 +44,8 @@ PROXIED_IFACE(NoAPIName, PPB_PDF_INTERFACE,
 
 PROXIED_IFACE(NoAPIName, PPB_TALK_PRIVATE_INTERFACE_1_0,
               PPB_Talk_Private_1_0)
+PROXIED_IFACE(NoAPIName, PPB_TALK_PRIVATE_INTERFACE_2_0,
+              PPB_Talk_Private_2_0)
 // This uses the FileIO API which is declared in the public stable file.
 PROXIED_IFACE(NoAPIName, PPB_FILEIOTRUSTED_INTERFACE_0_4, PPB_FileIOTrusted_0_4)
 

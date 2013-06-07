@@ -21,7 +21,7 @@ class TestTalkPrivate : public TestCase {
  private:
   std::string TestGetPermission();
 
-  const PPB_Talk_Private* talk_private_interface_;
+  const PPB_Talk_Private_1_0* talk_private_interface_1;
 };
 
 #endif  // PPAPI_TESTS_TEST_TALK_PRIVATE_H_

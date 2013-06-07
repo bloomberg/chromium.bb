@@ -20,7 +20,7 @@ REGISTER_TEST_CASE(TalkPrivate);
 
 TestTalkPrivate::TestTalkPrivate(TestingInstance* instance)
     : TestCase(instance),
-      talk_private_interface_(NULL) {
+      talk_private_interface_1(NULL) {
 }
 
 bool TestTalkPrivate::Init() {
@@ -29,14 +29,14 @@ bool TestTalkPrivate::Init() {
     return false;
   }
 
-  talk_private_interface_ = static_cast<const PPB_Talk_Private*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_TALK_PRIVATE_INTERFACE));
+  talk_private_interface_1 = static_cast<const PPB_Talk_Private_1_0*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_TALK_PRIVATE_INTERFACE_1_0));
 
 #if defined(__native_client__)
-  if (talk_private_interface_)
+  if (talk_private_interface_1)
     instance_->AppendError("TalkPrivate interface is supported by NaCl");
 #else
-  if (!talk_private_interface_)
+  if (!talk_private_interface_1)
     instance_->AppendError("TalkPrivate interface not available");
 #endif
   return true;
@@ -47,7 +47,7 @@ void TestTalkPrivate::RunTests(const std::string& filter) {
 }
 
 std::string TestTalkPrivate::TestGetPermission() {
-  if (!talk_private_interface_) {
+  if (!talk_private_interface_1) {
     PASS();
   }
 
@@ -62,11 +62,11 @@ std::string TestTalkPrivate::TestGetPermission() {
   PASS();
 #endif
 
-  PP_Resource talk_resource = talk_private_interface_->Create(
+  PP_Resource talk_resource = talk_private_interface_1->Create(
       instance_->pp_instance());
 
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-  callback.WaitForResult(talk_private_interface_->GetPermission(talk_resource,
+  callback.WaitForResult(talk_private_interface_1->GetPermission(talk_resource,
       callback.GetCallback().pp_completion_callback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
 

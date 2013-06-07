@@ -26,18 +26,61 @@ int32_t GetPermission(PP_Resource resource,
   EnterResource<PPB_Talk_Private_API> enter(resource, callback, true);
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;
-  return enter.SetResult(enter.object()->GetPermission(enter.callback()));
+  return enter.SetResult(enter.object()->RequestPermission(
+      PP_TALKPERMISSION_SCREENCAST, enter.callback()));
 }
 
-const PPB_Talk_Private_1_0 g_ppb_talk_private_thunk = {
+int32_t RequestPermission(PP_Resource resource,
+                          PP_TalkPermission permission,
+                          PP_CompletionCallback callback) {
+  EnterResource<PPB_Talk_Private_API> enter(resource, callback, true);
+  if (enter.failed())
+    return PP_ERROR_BADRESOURCE;
+  return enter.SetResult(
+      enter.object()->RequestPermission(permission, enter.callback()));
+}
+
+int32_t StartRemoting(PP_Resource resource,
+                      PP_TalkEventCallback event_callback,
+                      void* user_data,
+                      PP_CompletionCallback callback) {
+  EnterResource<PPB_Talk_Private_API> enter(resource, callback, true);
+  if (enter.failed())
+    return PP_ERROR_BADRESOURCE;
+  return enter.SetResult(
+      enter.object()->StartRemoting(event_callback, user_data,
+                                    enter.callback()));
+}
+
+int32_t StopRemoting(PP_Resource resource,
+                  PP_CompletionCallback callback) {
+  EnterResource<PPB_Talk_Private_API> enter(resource, callback, true);
+  if (enter.failed())
+    return PP_ERROR_BADRESOURCE;
+  return enter.SetResult(
+      enter.object()->StopRemoting(enter.callback()));
+}
+
+const PPB_Talk_Private_1_0 g_ppb_talk_private_thunk_1_0 = {
   &Create,
   &GetPermission
+};
+
+const PPB_Talk_Private_2_0 g_ppb_talk_private_thunk_2_0 = {
+  &Create,
+  &RequestPermission,
+  &StartRemoting,
+  &StopRemoting
 };
 
 }  // namespace
 
 const PPB_Talk_Private_1_0* GetPPB_Talk_Private_1_0_Thunk() {
-  return &g_ppb_talk_private_thunk;
+  return &g_ppb_talk_private_thunk_1_0;
+}
+
+const PPB_Talk_Private_2_0* GetPPB_Talk_Private_2_0_Thunk() {
+  return &g_ppb_talk_private_thunk_2_0;
 }
 
 }  // namespace thunk

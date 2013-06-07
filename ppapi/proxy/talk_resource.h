@@ -23,14 +23,33 @@ class PPAPI_PROXY_EXPORT TalkResource
   // Resource overrides.
   thunk::PPB_Talk_Private_API* AsPPB_Talk_Private_API();
 
+ private:
   // PPB_Talk_API implementation.
-  virtual int32_t GetPermission(
+  virtual int32_t RequestPermission(
+      PP_TalkPermission permission,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t StartRemoting(
+      PP_TalkEventCallback event_callback,
+      void* user_data,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual int32_t StopRemoting(
       scoped_refptr<TrackedCallback> callback) OVERRIDE;
 
- private:
-  void GetPermissionReply(const ResourceMessageReplyParams& params);
+  // PluginResource override.
+  virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
+                               const IPC::Message& msg) OVERRIDE;
 
-  scoped_refptr<TrackedCallback> callback_;
+  void OnNotifyEvent(const ResourceMessageReplyParams& params,
+                     PP_TalkEvent event);
+  void OnRequestPermissionReply(const ResourceMessageReplyParams& params);
+  void OnStartRemotingReply(const ResourceMessageReplyParams& params);
+  void OnStopRemotingReply(const ResourceMessageReplyParams& params);
+
+  scoped_refptr<TrackedCallback> permission_callback_;
+  scoped_refptr<TrackedCallback> start_callback_;
+  scoped_refptr<TrackedCallback> stop_callback_;
+  PP_TalkEventCallback event_callback_;
+  void* event_callback_user_data_;
 
   DISALLOW_COPY_AND_ASSIGN(TalkResource);
 };

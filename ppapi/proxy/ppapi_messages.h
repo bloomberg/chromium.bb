@@ -46,6 +46,7 @@
 #include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/c/private/ppp_flash_browser_operations.h"
 #include "ppapi/c/private/ppb_flash_drm.h"
+#include "ppapi/c/private/ppb_talk_private.h"
 #include "ppapi/proxy/host_resolver_private_resource.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
@@ -92,6 +93,9 @@ IPC_ENUM_TRAITS(PP_PrintScalingOption_Dev)
 IPC_ENUM_TRAITS(PP_PrivateFontCharset)
 IPC_ENUM_TRAITS(PP_ResourceImage)
 IPC_ENUM_TRAITS(PP_ResourceString)
+IPC_ENUM_TRAITS_MAX_VALUE(PP_TalkEvent, PP_TALKEVENT_NUM_EVENTS - 1)
+IPC_ENUM_TRAITS_MAX_VALUE(PP_TalkPermission,
+                          PP_TALKPERMISSION_NUM_PERMISSIONS - 1)
 IPC_ENUM_TRAITS(PP_TextInput_Type)
 IPC_ENUM_TRAITS(PP_TrueTypeFontFamily_Dev)
 IPC_ENUM_TRAITS(PP_TrueTypeFontStyle_Dev)
@@ -1853,18 +1857,6 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_VideoCapture_Open,
                      uint32_t /* buffer_count */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_VideoCapture_OpenReply)
 
-// Talk ------------------------------------------------------------------------
-
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_Talk_Create)
-
-// Requests talk permissions. The host will respond with GetPermissionReply.
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_Talk_GetPermission)
-
-// Response to GetPermission.
-//
-// The result of this message is the general Pepper "result" in the ReplyParams.
-IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Talk_GetPermissionReply)
-
 // VideoCapture_Dev, host -> plugin
 IPC_MESSAGE_CONTROL3(PpapiPluginMsg_VideoCapture_OnDeviceInfo,
                      PP_VideoCaptureDeviceInfo_Dev /* info */,
@@ -1876,6 +1868,18 @@ IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoCapture_OnError,
                      uint32_t /* error */)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoCapture_OnBufferReady,
                      uint32_t /* buffer */)
+
+// Talk ------------------------------------------------------------------------
+
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Talk_Create)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_Talk_RequestPermission,
+                     PP_TalkPermission /* permission */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Talk_RequestPermissionReply)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Talk_StartRemoting)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Talk_StartRemotingReply)
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_Talk_StopRemoting)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Talk_StopRemotingReply)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Talk_NotifyEvent, PP_TalkEvent /* event */)
 
 // MediaStream -----------------------------------------------------------------
 

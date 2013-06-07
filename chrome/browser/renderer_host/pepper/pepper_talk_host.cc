@@ -10,6 +10,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "grit/generated_resources.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -75,9 +76,23 @@ PepperTalkHost::~PepperTalkHost() {
 int32_t PepperTalkHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  // We only have one message with no parameters.
-  if (msg.type() != PpapiHostMsg_Talk_GetPermission::ID)
-    return 0;
+  IPC_BEGIN_MESSAGE_MAP(PepperTalkHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Talk_RequestPermission,
+                                      OnRequestPermission)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Talk_StartRemoting,
+                                        OnStartRemoting)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Talk_StopRemoting,
+                                        OnStopRemoting)
+  IPC_END_MESSAGE_MAP()
+  return PP_ERROR_FAILED;
+}
+
+int32_t PepperTalkHost::OnRequestPermission(
+    ppapi::host::HostMessageContext* context,
+    PP_TalkPermission permission) {
+  // TODO(dcaiafa): Implement support for other permission types.
+  if (permission != PP_TALKPERMISSION_SCREENCAST)
+    return PP_ERROR_BADARGUMENT;
 
   int render_process_id = 0;
   int render_view_id = 0;
@@ -96,7 +111,21 @@ int32_t PepperTalkHost::OnResourceMessageReceived(
 void PepperTalkHost::GotTalkPermission(
     ppapi::host::ReplyMessageContext reply) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  host()->SendReply(reply, PpapiPluginMsg_Talk_GetPermissionReply());
+  host()->SendReply(reply, PpapiPluginMsg_Talk_RequestPermissionReply());
+}
+
+int32_t PepperTalkHost::OnStartRemoting(
+    ppapi::host::HostMessageContext* context) {
+  // TODO(dcaiafa): Request IPC audit when this is implemented
+  NOTIMPLEMENTED();
+  return PP_ERROR_FAILED;
+}
+
+int32_t PepperTalkHost::OnStopRemoting(
+    ppapi::host::HostMessageContext* context) {
+  // TODO(dcaiafa): Request IPC audit when this is implemented
+  NOTIMPLEMENTED();
+  return PP_ERROR_FAILED;
 }
 
 }  // namespace chrome
