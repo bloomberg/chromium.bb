@@ -17,13 +17,9 @@ class Random {
   virtual ~Random() {}
 
   // Returns a pseudorandom value between(inclusive) and(exclusive).
-  virtual double RandDouble() {
-    return base::RandDouble();
-  }
+  virtual double RandDouble();
 
-  virtual uint64 RandUint64() {
-    return base::RandUint64();
-  }
+  virtual uint64 RandUint64();
 };
 
 }  // namespace invalidation

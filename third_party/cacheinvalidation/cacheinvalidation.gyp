@@ -51,6 +51,7 @@
         'overrides/google/cacheinvalidation/deps/logging.h',
         'overrides/google/cacheinvalidation/deps/mutex.h',
         'overrides/google/cacheinvalidation/deps/random.h',
+        'overrides/google/cacheinvalidation/deps/random.cc',
         'overrides/google/cacheinvalidation/deps/sha1-digest-function.h',
         'overrides/google/cacheinvalidation/deps/scoped_ptr.h',
         'overrides/google/cacheinvalidation/deps/stl-namespace.h',
