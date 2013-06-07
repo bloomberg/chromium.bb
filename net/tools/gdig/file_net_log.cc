@@ -12,20 +12,24 @@
 
 namespace net {
 
-FileNetLogObserver::FileNetLogObserver(FILE* destination)
-    : destination_(destination) {
+FileNetLog::FileNetLog(FILE* destination, LogLevel level)
+    : log_level_(level),
+      destination_(destination) {
   DCHECK(destination != NULL);
+  // Without calling GetNext() once here, the first GetNext will return 0
+  // that is not a valid id.
+  sequence_number_.GetNext();
 }
 
-FileNetLogObserver::~FileNetLogObserver() {
+FileNetLog::~FileNetLog() {
 }
 
-void FileNetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
+void FileNetLog::OnAddEntry(const net::NetLog::Entry& entry) {
   // Only BoundNetLogs without a NetLog should have an invalid source.
   DCHECK(entry.source().IsValid());
 
-  const char* source = NetLog::SourceTypeToString(entry.source().type);
-  const char* type = NetLog::EventTypeToString(entry.type());
+  const char* source = SourceTypeToString(entry.source().type);
+  const char* type = EventTypeToString(entry.type());
 
   scoped_ptr<Value> param_value(entry.ParametersToValue());
   std::string params;
@@ -43,6 +47,30 @@ void FileNetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
   fprintf(destination_ , "%u\t%u\t%s\t%s\t%s\n",
           static_cast<unsigned>(elapsed_time.InMilliseconds()),
           entry.source().id, source, type, params.c_str());
+}
+
+uint32 FileNetLog::NextID() {
+  return sequence_number_.GetNext();
+}
+
+NetLog::LogLevel FileNetLog::GetLogLevel() const {
+  return log_level_;
+}
+
+void FileNetLog::AddThreadSafeObserver(
+    NetLog::ThreadSafeObserver* observer,
+    NetLog::LogLevel log_level) {
+  NOTIMPLEMENTED() << "Not currently used by gdig.";
+}
+
+void FileNetLog::SetObserverLogLevel(ThreadSafeObserver* observer,
+                                          LogLevel log_level) {
+  NOTIMPLEMENTED() << "Not currently used by gdig.";
+}
+
+void FileNetLog::RemoveThreadSafeObserver(
+    NetLog::ThreadSafeObserver* observer) {
+  NOTIMPLEMENTED() << "Not currently used by gdig.";
 }
 
 }  // namespace net

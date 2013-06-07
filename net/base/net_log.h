@@ -7,13 +7,10 @@
 
 #include <string>
 
-#include "base/atomicops.h"
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/observer_list.h"
 #include "base/string16.h"
-#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "net/base/net_export.h"
 
@@ -201,8 +198,8 @@ class NET_EXPORT NetLog {
     DISALLOW_COPY_AND_ASSIGN(ThreadSafeObserver);
   };
 
-  NetLog();
-  virtual ~NetLog();
+  NetLog() {}
+  virtual ~NetLog() {}
 
   // Emits a global event to the log stream, with its own unique source ID.
   void AddGlobalEntry(EventType type);
@@ -211,11 +208,11 @@ class NET_EXPORT NetLog {
 
   // Returns a unique ID which can be used as a source ID.  All returned IDs
   // will be unique and greater than 0.
-  uint32 NextID();
+  virtual uint32 NextID() = 0;
 
   // Returns the logging level for this NetLog. This is used to avoid computing
   // and saving expensive log entries.
-  LogLevel GetLogLevel() const;
+  virtual LogLevel GetLogLevel() const = 0;
 
   // Adds an observer and sets its log level.  The observer must not be
   // watching any NetLog, including this one, when this is called.
@@ -227,19 +224,21 @@ class NET_EXPORT NetLog {
   //
   // NetLog implementations must call NetLog::OnAddObserver to update the
   // observer's internal state.
-  void AddThreadSafeObserver(ThreadSafeObserver* observer, LogLevel log_level);
+  virtual void AddThreadSafeObserver(ThreadSafeObserver* observer,
+                                     LogLevel log_level) = 0;
 
   // Sets the log level of |observer| to |log_level|.  |observer| must be
   // watching |this|.  NetLog implementations must call
   // NetLog::OnSetObserverLogLevel to update the observer's internal state.
-  void SetObserverLogLevel(ThreadSafeObserver* observer, LogLevel log_level);
+  virtual void SetObserverLogLevel(ThreadSafeObserver* observer,
+                                   LogLevel log_level) = 0;
 
   // Removes an observer.  NetLog implementations must call
   // NetLog::OnAddObserver to update the observer's internal state.
   //
   // For thread safety reasons, it is recommended that this not be called in
   // an object's destructor.
-  void RemoveThreadSafeObserver(ThreadSafeObserver* observer);
+  virtual void RemoveThreadSafeObserver(ThreadSafeObserver* observer) = 0;
 
   // Converts a time to the string format that the NetLog uses to represent
   // times.  Strings are used since integers may overflow.
@@ -294,8 +293,16 @@ class NET_EXPORT NetLog {
                                            const base::string16* value);
 
  protected:
-  // Set the lowest allowed log level, regardless of any Observers.
-  void SetBaseLogLevel(LogLevel log_level);
+  // Child classes should respond to the new entry here.  This includes
+  // creating the Entry object and alerting their observers.
+  virtual void OnAddEntry(const Entry& entry) = 0;
+
+  // Subclasses must call these in the corresponding functions to set an
+  // observer's |net_log_| and |log_level_| values.
+  void OnAddObserver(ThreadSafeObserver* observer, LogLevel log_level);
+  void OnSetObserverLogLevel(ThreadSafeObserver* observer,
+                             LogLevel log_level);
+  void OnRemoveObserver(ThreadSafeObserver* observer);
 
  private:
   friend class BoundNetLog;
@@ -304,26 +311,6 @@ class NET_EXPORT NetLog {
                 const Source& source,
                 EventPhase phase,
                 const NetLog::ParametersCallback* parameters_callback);
-
-  // Called whenever an observer is added or removed, or has its log level
-  // changed.  Must have acquired |lock_| prior to calling.
-  void UpdateLogLevel();
-
-  // |lock_| protects access to |observers_|.
-  base::Lock lock_;
-
-  // Last assigned source ID.  Incremented to get the next one.
-  base::subtle::Atomic32 last_id_;
-
-  // The lowest allowed log level, regardless of any Observers.
-  // Normally defaults to LOG_NONE, but can be changed with SetBaseLogLevel
-  LogLevel base_log_level_;
-
-  // The current log level.
-  base::subtle::Atomic32 effective_log_level_;
-
-  // |lock_| must be acquired whenever reading or writing to this.
-  ObserverList<ThreadSafeObserver, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(NetLog);
 };

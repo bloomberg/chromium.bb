@@ -103,18 +103,14 @@ class QuitDelegate : public net::URLFetcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(QuitDelegate);
 };
 
-// NetLog::ThreadSafeObserver implementation that simply prints events
-// to the logs.
-class PrintingLogObserver : public net::NetLog::ThreadSafeObserver {
+// NetLog implementation that simply prints events to the logs.
+class PrintingLog : public net::NetLog {
  public:
-  PrintingLogObserver() {}
+  PrintingLog() : next_id_(1) {}
 
-  virtual ~PrintingLogObserver() {
-    // This is guaranteed to be safe as this program is single threaded.
-    net_log()->RemoveThreadSafeObserver(this);
-  }
+  virtual ~PrintingLog() {}
 
-  // NetLog::ThreadSafeObserver implementation:
+  // NetLog implementation:
   virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE {
     // The log level of the entry is unknown, so just assume it maps
     // to VLOG(1).
@@ -138,13 +134,43 @@ class PrintingLogObserver : public net::NetLog::ThreadSafeObserver {
             << event_type << ": " << event_phase << params_str;
   }
 
+  virtual uint32 NextID() OVERRIDE {
+    return next_id_++;
+  }
+
+  virtual LogLevel GetLogLevel() const OVERRIDE {
+    const int vlog_level = logging::GetVlogLevel(__FILE__);
+    if (vlog_level <= 0) {
+      return LOG_BASIC;
+    }
+    if (vlog_level == 1) {
+      return LOG_ALL_BUT_BYTES;
+    }
+    return LOG_ALL;
+  }
+
+  virtual void AddThreadSafeObserver(ThreadSafeObserver* observer,
+                                     LogLevel log_level) OVERRIDE {
+    NOTIMPLEMENTED();
+  }
+
+  virtual void SetObserverLogLevel(ThreadSafeObserver* observer,
+                                   LogLevel log_level) OVERRIDE {
+    NOTIMPLEMENTED();
+  }
+
+  virtual void RemoveThreadSafeObserver(ThreadSafeObserver* observer) OVERRIDE {
+    NOTIMPLEMENTED();
+  }
+
  private:
-  DISALLOW_COPY_AND_ASSIGN(PrintingLogObserver);
+  uint32 next_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrintingLog);
 };
 
 // Builds a URLRequestContext assuming there's only a single loop.
-scoped_ptr<net::URLRequestContext>
-BuildURLRequestContext(net::NetLog* net_log) {
+scoped_ptr<net::URLRequestContext> BuildURLRequestContext() {
   net::URLRequestContextBuilder builder;
 #if defined(OS_LINUX)
   // On Linux, use a fixed ProxyConfigService, since the default one
@@ -155,7 +181,7 @@ BuildURLRequestContext(net::NetLog* net_log) {
       new net::ProxyConfigServiceFixed(net::ProxyConfig()));
 #endif
   scoped_ptr<net::URLRequestContext> context(builder.Build());
-  context->set_net_log(net_log);
+  context->set_net_log(new PrintingLog());
   return context.Pass();
 }
 
@@ -163,10 +189,9 @@ class SingleThreadRequestContextGetter : public net::URLRequestContextGetter {
  public:
   // Since there's only a single thread, there's no need to worry
   // about when |context_| gets created.
-  SingleThreadRequestContextGetter(
-      net::NetLog* net_log,
+  explicit SingleThreadRequestContextGetter(
       const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner)
-      : context_(BuildURLRequestContext(net_log)),
+      : context_(BuildURLRequestContext()),
         main_task_runner_(main_task_runner) {}
 
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
@@ -256,16 +281,8 @@ int main(int argc, char* argv[]) {
   // which causes the DNS resolution to abort.  It's simpler to just
   // not instantiate one, since only a single request is sent anyway.
 
-  // The declaration order for net_log and printing_log_observer is
-  // important. The destructor of PrintingLogObserver removes itself
-  // from net_log, so net_log must be available for entire lifetime of
-  // printing_log_observer.
-  net::NetLog net_log;
-  PrintingLogObserver printing_log_observer;
-  net_log.AddThreadSafeObserver(&printing_log_observer, net::NetLog::LOG_ALL);
   scoped_refptr<SingleThreadRequestContextGetter> context_getter(
-      new SingleThreadRequestContextGetter(&net_log,
-                                           main_loop.message_loop_proxy()));
+      new SingleThreadRequestContextGetter(main_loop.message_loop_proxy()));
 
   QuitDelegate delegate;
   scoped_ptr<net::URLFetcher> fetcher(

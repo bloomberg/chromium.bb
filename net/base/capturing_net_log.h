@@ -23,10 +23,9 @@ class DictionaryValue;
 
 namespace net {
 
-// CapturingNetLog is a NetLog which instantiates Observer that saves messages
-// to a bounded buffer.  It is intended for testing only, and is part of the
-// net_test_support project. This is provided for convinience and compatilbility
-// with the old unittests.
+// CapturingNetLog is an implementation of NetLog that saves messages to a
+// bounded buffer.  It is intended for testing only, and is part of the
+// net_test_support project.
 class CapturingNetLog : public NetLog {
  public:
   struct CapturedEntry {
@@ -72,48 +71,40 @@ class CapturingNetLog : public NetLog {
   CapturingNetLog();
   virtual ~CapturingNetLog();
 
-  void SetLogLevel(LogLevel log_level);
-
-  // Below methods are forwarded to capturing_net_log_observer_.
+  // Returns the list of all entries in the log.
   void GetEntries(CapturedEntryList* entry_list) const;
-  void GetEntriesForSource(Source source, CapturedEntryList* entry_list) const;
+
+  // Fills |entry_list| with all entries in the log from the specified Source.
+  void GetEntriesForSource(NetLog::Source source,
+                           CapturedEntryList* entry_list) const;
+
+  // Returns number of entries in the log.
   size_t GetSize() const;
+
   void Clear();
 
+  void SetLogLevel(NetLog::LogLevel log_level);
+
+  // NetLog implementation:
+  virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE;
+  virtual uint32 NextID() OVERRIDE;
+  virtual LogLevel GetLogLevel() const OVERRIDE;
+  virtual void AddThreadSafeObserver(ThreadSafeObserver* observer,
+                                     LogLevel log_level) OVERRIDE;
+  virtual void SetObserverLogLevel(ThreadSafeObserver* observer,
+                                   LogLevel log_level) OVERRIDE;
+  virtual void RemoveThreadSafeObserver(ThreadSafeObserver* observer) OVERRIDE;
+
  private:
-  // Observer is an implementation of NetLog::ThreadSafeObserver
-  // that saves messages to a bounded buffer. It is intended for testing only,
-  // and is part of the net_test_support project.
-  class Observer : public NetLog::ThreadSafeObserver {
-   public:
-    Observer();
-    virtual ~Observer();
+  // Needs to be "mutable" so can use it in GetEntries().
+  mutable base::Lock lock_;
 
-    // Returns the list of all entries in the log.
-    void GetEntries(CapturedEntryList* entry_list) const;
+  // Last assigned source ID.  Incremented to get the next one.
+  base::subtle::Atomic32 last_id_;
 
-    // Fills |entry_list| with all entries in the log from the specified Source.
-    void GetEntriesForSource(Source source,
-                             CapturedEntryList* entry_list) const;
+  CapturedEntryList captured_entries_;
 
-    // Returns number of entries in the log.
-    size_t GetSize() const;
-
-    void Clear();
-
-   private:
-    // ThreadSafeObserver implementation:
-    virtual void OnAddEntry(const Entry& entry) OVERRIDE;
-
-    // Needs to be "mutable" so can use it in GetEntries().
-    mutable base::Lock lock_;
-
-    CapturedEntryList captured_entries_;
-
-    DISALLOW_COPY_AND_ASSIGN(Observer);
-  };
-
-  Observer capturing_net_log_observer_;
+  NetLog::LogLevel log_level_;
 
   DISALLOW_COPY_AND_ASSIGN(CapturingNetLog);
 };

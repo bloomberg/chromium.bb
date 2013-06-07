@@ -6,7 +6,6 @@
 #define REMOTING_HOST_VLOG_NET_LOG_H_
 
 #include "base/memory/scoped_handle.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/net_log.h"
 
 namespace remoting {
@@ -20,9 +19,18 @@ class VlogNetLog : public net::NetLog {
   VlogNetLog();
   virtual ~VlogNetLog();
 
+  // NetLog overrides:
+  virtual void OnAddEntry(const NetLog::Entry& entry) OVERRIDE;
+  virtual uint32 NextID() OVERRIDE;
+  virtual LogLevel GetLogLevel() const OVERRIDE;
+  virtual void AddThreadSafeObserver(ThreadSafeObserver* observer,
+                                     LogLevel log_level) OVERRIDE;
+  virtual void SetObserverLogLevel(ThreadSafeObserver* observer,
+                                   LogLevel log_level) OVERRIDE;
+  virtual void RemoveThreadSafeObserver(ThreadSafeObserver* observer) OVERRIDE;
+
  private:
-  class Observer;
-  scoped_ptr<Observer> observer_;
+  uint32 id_;
 
   DISALLOW_COPY_AND_ASSIGN(VlogNetLog);
 };
