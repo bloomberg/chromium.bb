@@ -6673,9 +6673,16 @@ void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
 }
 
 void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
-  SetDeviceScaleFactor(factor);
-  if (!auto_resize_mode_)
-    AutoResizeCompositor();
+  ViewMsg_Resize_Params params;
+  params.screen_info = screen_info_;
+  params.screen_info.deviceScaleFactor = factor;
+  params.new_size = size();
+  params.physical_backing_size =
+      gfx::ToCeiledSize(gfx::ScaleSize(size(), factor));
+  params.overdraw_bottom_height = 0.f;
+  params.resizer_rect = WebRect();
+  params.is_fullscreen = is_fullscreen();
+  OnResize(params);
 }
 
 void RenderViewImpl::EnableAutoResizeForTesting(const gfx::Size& min_size,
