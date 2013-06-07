@@ -515,7 +515,7 @@ def drover(options, args):
     f.close()
     if FILE_PATTERN:
       file_pattern_ = FILE_PATTERN
-    NO_ALT_URLS = TRUE
+    NO_ALT_URLS = True
 
   if options.revert and options.branch:
     print 'Note: --branch is usually not needed for reverts.'
