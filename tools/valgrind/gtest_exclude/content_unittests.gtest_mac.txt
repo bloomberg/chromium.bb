@@ -40,4 +40,5 @@ SmoothScrollGestureControllerTest.Tick
 VideoCaptureManagerTest.CloseWithoutStop
 VideoCaptureManagerTest.CreateAndClose
 VideoCaptureManagerTest.StartUsingId
+WebRTCAudioDeviceTest.WebRtcPlayoutSetupTime
 WebRTCAudioDeviceTest.WebRtcRecordingSetupTime

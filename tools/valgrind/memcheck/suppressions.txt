@@ -3746,18 +3746,6 @@
    fun:_ZN2v88internalL19HandleApiCallHelperILb1EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
 {
-   bug_100981
-   Memcheck:Uninitialized
-   fun:_ZN7WebCore*
-   fun:_ZN7WebCore27BorderImageQuadParseContext21commitBorderImageQuadEv
-   fun:_ZN7WebCore9CSSParser20parseBorderImageQuadENS0_5UnitsERN3WTF6RefPtrINS_17CSSPrimitiveValueEEE
-   fun:_ZN7WebCore9CSSParser21parseBorderImageWidthERN3WTF6RefPtrINS_17CSSPrimitiveValueEEE
-   fun:_ZN7WebCore9CSSParser16parseBorderImageEiRN3WTF6RefPtrINS_8CSSValueEEE
-   fun:_ZN7WebCore9CSSParser12parseReflectEib
-   fun:_ZN7WebCore9CSSParser10parseValueEib
-   fun:_Z10cssyyparsePv
-}
-{
    bug_100982
    Memcheck:Leak
    fun:_Znw*
@@ -4309,14 +4297,6 @@
    ...
    fun:_ZN7WebCore24XMLHttpRequestV8Internal*
    fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-}
-{
-   bug_109470
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN7WebCore16CSSStyleSelector24applyMatchedDeclarationsERKNS0_11MatchResultE
-   fun:_ZN7WebCore16CSSStyleSelector15styleForElementEPNS_7ElementEPNS_11RenderStyleEbb
-   fun:_ZN7WebCore7Element16styleForRendererEv
 }
 {
    bug_109495e
@@ -7414,7 +7394,6 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN7content25RenderViewHostTestHarness21CreateTestWebContentsEv
    fun:_ZN7content25RenderViewHostTestHarness5SetUpEv
    fun:_ZN31ChromeRenderViewHostTestHarness5SetUpEv
-   fun:_ZN8autofill23AutocheckoutManagerTest5SetUpEv
 }
 {
    bug_247525b
@@ -7439,5 +7418,4 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN7content25RenderViewHostTestHarness21CreateTestWebContentsEv
    fun:_ZN7content25RenderViewHostTestHarness5SetUpEv
    fun:_ZN31ChromeRenderViewHostTestHarness5SetUpEv
-   fun:_ZN8autofill23AutocheckoutManagerTest5SetUpEv
 }
