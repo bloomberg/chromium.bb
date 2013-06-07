@@ -22,7 +22,6 @@ HEADER_TEMPLATE = """
 namespace WebCore {
 
 enum CSSValueID {
-    CSSValueInvalid = 0,
 %(value_keyword_enums)s
 };
 
@@ -134,11 +133,12 @@ class CSSValueKeywordsWriter(in_generator.Writer):
         return "case %(enum_name)s:" % property
 
     def generate_header(self):
+        enum_enties = map(self._enum_declaration, [{'enum_name': 'CSSValueInvalid', 'enum_value': 0}] + self._value_keywords)
         return HEADER_TEMPLATE % {
             'license': license.license_for_generated_cpp(),
             'class_name': self.class_name,
-            'value_keyword_enums': "\n".join(map(self._enum_declaration, self._value_keywords)),
-            'value_keywords_count': len(self._value_keywords),
+            'value_keyword_enums': "\n".join(enum_enties),
+            'value_keywords_count': len(enum_enties),
             'max_value_keyword_length': reduce(max, map(len, map(lambda property: property['name'], self._value_keywords))),
         }
 
