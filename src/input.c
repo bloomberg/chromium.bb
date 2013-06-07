@@ -178,7 +178,7 @@ default_grab_touch_down(struct weston_touch_grab *grab, uint32_t time,
 		display = wl_client_get_display(touch->focus_resource->client);
 		serial = wl_display_next_serial(display);
 		wl_touch_send_down(touch->focus_resource, serial, time,
-				   &touch->focus->resource,
+				   touch->focus->resource,
 				   touch_id, sx, sy);
 	}
 }
@@ -242,7 +242,7 @@ find_resource_for_surface(struct wl_list *list, struct weston_surface *surface)
 		return NULL;
 
 	wl_list_for_each(r, list, link) {
-		if (r->client == surface->resource.client)
+		if (r->client == wl_resource_get_client(surface->resource))
 			return r;
 	}
 
@@ -437,7 +437,7 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 		display = wl_client_get_display(resource->client);
 		serial = wl_display_next_serial(display);
 		wl_pointer_send_leave(resource, serial,
-				      &pointer->focus->resource);
+				      pointer->focus->resource);
 		wl_list_remove(&pointer->focus_listener.link);
 	}
 
@@ -460,7 +460,7 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 							   kbd->modifiers.group);
 			}
 		}
-		wl_pointer_send_enter(resource, serial, &surface->resource,
+		wl_pointer_send_enter(resource, serial, surface->resource,
 				      sx, sy);
 		wl_signal_add(&resource->destroy_signal,
 			      &pointer->focus_listener);
@@ -485,7 +485,7 @@ weston_keyboard_set_focus(struct weston_keyboard *keyboard,
 		display = wl_client_get_display(resource->client);
 		serial = wl_display_next_serial(display);
 		wl_keyboard_send_leave(resource, serial,
-				       &keyboard->focus->resource);
+				       keyboard->focus->resource);
 		wl_list_remove(&keyboard->focus_listener.link);
 	}
 
@@ -501,7 +501,7 @@ weston_keyboard_set_focus(struct weston_keyboard *keyboard,
 					   keyboard->modifiers.mods_latched,
 					   keyboard->modifiers.mods_locked,
 					   keyboard->modifiers.group);
-		wl_keyboard_send_enter(resource, serial, &surface->resource,
+		wl_keyboard_send_enter(resource, serial, surface->resource,
 				       &keyboard->keys);
 		wl_signal_add(&resource->destroy_signal,
 			      &keyboard->focus_listener);
@@ -963,7 +963,7 @@ notify_keyboard_focus_out(struct weston_seat *seat)
 		seat->saved_kbd_focus = keyboard->focus;
 		seat->saved_kbd_focus_listener.notify =
 			destroy_device_saved_kbd_focus;
-		wl_signal_add(&keyboard->focus->resource.destroy_signal,
+		wl_signal_add(&keyboard->focus->destroy_signal,
 			      &seat->saved_kbd_focus_listener);
 	}
 
@@ -1112,14 +1112,14 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 
 	if (pointer->focus == NULL)
 		return;
-	if (pointer->focus->resource.client != client)
+	if (wl_resource_get_client(pointer->focus->resource) != client)
 		return;
 	if (pointer->focus_serial - serial > UINT32_MAX / 2)
 		return;
 
 	if (surface && surface != pointer->sprite) {
 		if (surface->configure) {
-			wl_resource_post_error(&surface->resource,
+			wl_resource_post_error(surface->resource,
 					       WL_DISPLAY_ERROR_INVALID_OBJECT,
 					       "surface->configure already "
 					       "set");
@@ -1133,7 +1133,7 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 	if (!surface)
 		return;
 
-	wl_signal_add(&surface->resource.destroy_signal,
+	wl_signal_add(&surface->destroy_signal,
 		      &pointer->sprite_destroy_listener);
 
 	surface->configure = pointer_cursor_surface_configure;
@@ -1167,7 +1167,7 @@ seat_get_pointer(struct wl_client *client, struct wl_resource *resource,
 	cr->destroy = unbind_resource;
 
 	if (seat->pointer->focus &&
-	    seat->pointer->focus->resource.client == client) {
+	    wl_resource_get_client(seat->pointer->focus->resource) == client) {
 		struct weston_surface *surface;
 		wl_fixed_t sx, sy;
 
@@ -1204,7 +1204,7 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 				seat->xkb_info.keymap_size);
 
 	if (seat->keyboard->focus &&
-	    seat->keyboard->focus->resource.client == client) {
+	    wl_resource_get_client(seat->keyboard->focus->resource) == client) {
 		weston_keyboard_set_focus(seat->keyboard,
 					  seat->keyboard->focus);
 		wl_data_device_set_keyboard_focus(seat);

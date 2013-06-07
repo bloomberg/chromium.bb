@@ -230,11 +230,12 @@ weston_drag_set_focus(struct weston_drag *drag, struct weston_surface *surface,
 	if (!surface)
 		return;
 
-	if (!drag->data_source && surface->resource.client != drag->client)
+	if (!drag->data_source &&
+	    wl_resource_get_client(surface->resource) != drag->client)
 		return;
 
 	resource = find_resource(&pointer->seat->drag_resource_list,
-				 surface->resource.client);
+				 wl_resource_get_client(surface->resource));
 	if (!resource)
 		return;
 
@@ -244,7 +245,7 @@ weston_drag_set_focus(struct weston_drag *drag, struct weston_surface *surface,
 	if (drag->data_source)
 		offer = wl_data_source_send_offer(drag->data_source, resource);
 
-	wl_data_device_send_enter(resource, serial, &surface->resource,
+	wl_data_device_send_enter(resource, serial, surface->resource,
 				  sx, sy, offer);
 
 	drag->focus = surface;
@@ -405,7 +406,7 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 	if (icon) {
 		drag->icon = icon;
 		drag->icon_destroy_listener.notify = handle_drag_icon_destroy;
-		wl_signal_add(&icon->resource.destroy_signal,
+		wl_signal_add(&icon->destroy_signal,
 			      &drag->icon_destroy_listener);
 
 		icon->configure = drag_surface_configure;

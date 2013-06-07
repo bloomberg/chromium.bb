@@ -197,7 +197,7 @@ text_input_activate(struct wl_client *client,
 		wl_signal_emit(&ec->update_input_panel_signal, &text_input->cursor_rectangle);
 	}
 
-	wl_text_input_send_enter(&text_input->resource, &text_input->surface->resource);
+	wl_text_input_send_enter(&text_input->resource, text_input->surface->resource);
 }
 
 static void

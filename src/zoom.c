@@ -40,7 +40,10 @@ text_cursor_position_notify(struct wl_client *client,
 			    struct wl_resource *surface_resource,
 			    wl_fixed_t x, wl_fixed_t y)
 {
-	weston_text_cursor_position_notify((struct weston_surface *) surface_resource, x, y);
+	struct weston_surface *surface =
+		wl_resource_get_user_data(surface_resource);
+
+	weston_text_cursor_position_notify(surface, x, y);
 }
 
 struct text_cursor_position_interface text_cursor_position_implementation = {

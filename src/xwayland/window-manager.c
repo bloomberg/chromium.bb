@@ -1621,7 +1621,7 @@ weston_wm_create(struct weston_xserver *wxs)
 	}
 
 	xserver_send_client(wxs->resource, sv[1]);
-	wl_client_flush(wxs->resource->client);
+	wl_client_flush(wl_resource_get_client(wxs->resource));
 	close(sv[1]);
 	
 	/* xcb_connect_to_fd takes ownership of the fd. */
@@ -1715,10 +1715,9 @@ surface_destroy(struct wl_listener *listener, void *data)
 static struct weston_wm_window *
 get_wm_window(struct weston_surface *surface)
 {
-	struct wl_resource *resource = &surface->resource;
 	struct wl_listener *listener;
 
-	listener = wl_signal_get(&resource->destroy_signal, surface_destroy);
+	listener = wl_signal_get(&surface->destroy_signal, surface_destroy);
 	if (listener)
 		return container_of(listener, struct weston_wm_window,
 				    surface_destroy_listener);
@@ -1850,9 +1849,10 @@ static void
 xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 		      struct wl_resource *surface_resource, uint32_t id)
 {
-	struct weston_xserver *wxs = resource->data;
+	struct weston_xserver *wxs = wl_resource_get_user_data(resource);
 	struct weston_wm *wm = wxs->wm;
-	struct weston_surface *surface = surface_resource->data;
+	struct weston_surface *surface =
+		wl_resource_get_user_data(surface_resource);
 	struct weston_wm_window *window;
 
 	if (client != wxs->client)
@@ -1870,7 +1870,7 @@ xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 
 	window->surface = (struct weston_surface *) surface;
 	window->surface_destroy_listener.notify = surface_destroy;
-	wl_signal_add(&surface->resource.destroy_signal,
+	wl_signal_add(&surface->destroy_signal,
 		      &window->surface_destroy_listener);
 
 	weston_wm_window_schedule_repaint(window);

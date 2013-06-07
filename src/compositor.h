@@ -651,7 +651,8 @@ struct weston_subsurface {
  */
 
 struct weston_surface {
-	struct wl_resource resource;
+	struct wl_resource *resource;
+	struct wl_signal destroy_signal;
 	struct weston_compositor *compositor;
 	pixman_region32_t clip;
 	pixman_region32_t damage;

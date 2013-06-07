@@ -2001,7 +2001,7 @@ popup_grab_focus(struct weston_pointer_grab *grab)
 						 pointer->x, pointer->y,
 						 &sx, &sy);
 
-	if (surface && surface->resource.client == client) {
+	if (surface && wl_resource_get_client(surface->resource) == client) {
 		weston_pointer_set_focus(pointer, surface, sx, sy);
 	} else {
 		weston_pointer_set_focus(pointer, NULL,
@@ -2263,7 +2263,7 @@ create_shell_surface(void *shell, struct weston_surface *surface,
 
 	wl_signal_init(&shsurf->resource.destroy_signal);
 	shsurf->surface_destroy_listener.notify = shell_handle_surface_destroy;
-	wl_signal_add(&surface->resource.destroy_signal,
+	wl_signal_add(&surface->destroy_signal,
 		      &shsurf->surface_destroy_listener);
 
 	/* init link so its safe to always remove it in destroy_shell_surface */
@@ -2937,8 +2937,7 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 
 	state->keyboard_focus = es;
 	wl_list_remove(&state->surface_destroy_listener.link);
-	wl_signal_add(&es->resource.destroy_signal,
-		      &state->surface_destroy_listener);
+	wl_signal_add(&es->destroy_signal, &state->surface_destroy_listener);
 
 	switch (get_shell_surface_type(main_surface)) {
 	case SHELL_SURFACE_FULLSCREEN:
@@ -3789,7 +3788,7 @@ create_input_panel_surface(struct desktop_shell *shell,
 
 	wl_signal_init(&input_panel_surface->resource.destroy_signal);
 	input_panel_surface->surface_destroy_listener.notify = input_panel_handle_surface_destroy;
-	wl_signal_add(&surface->resource.destroy_signal,
+	wl_signal_add(&surface->destroy_signal,
 		      &input_panel_surface->surface_destroy_listener);
 
 	wl_list_init(&input_panel_surface->link);
@@ -3956,7 +3955,7 @@ switcher_next(struct switcher *switcher)
 		return;
 
 	wl_list_remove(&switcher->listener.link);
-	wl_signal_add(&next->resource.destroy_signal, &switcher->listener);
+	wl_signal_add(&next->destroy_signal, &switcher->listener);
 
 	switcher->current = next;
 	next->alpha = 1.0;
@@ -4213,7 +4212,7 @@ force_kill_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 
 	wl_signal_emit(&compositor->kill_signal, focus_surface);
 
-	client = focus_surface->resource.client;
+	client = wl_resource_get_client(focus_surface->resource);
 	wl_client_get_credentials(client, &pid, NULL, NULL);
 
 	/* Skip clients that we launched ourselves (the credentials of

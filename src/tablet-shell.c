@@ -152,7 +152,7 @@ tablet_shell_surface_configure(struct weston_surface *surface,
 		}
 	} else if (shell->current_client &&
 		   shell->current_client->surface != surface &&
-		   shell->current_client->client == surface->resource.client) {
+		   shell->current_client->client == wl_resource_get_client(surface->resource)) {
 		tablet_shell_set_state(shell, STATE_TASK);
 		shell->current_client->surface = surface;
 		weston_zoom_run(surface, 0.3, 1.0, NULL, NULL);
@@ -186,8 +186,7 @@ tablet_shell_set_lockscreen(struct wl_client *client,
 	shell->lockscreen_surface = es;
 	shell->lockscreen_surface->configure = tablet_shell_surface_configure;
 	shell->lockscreen_listener.notify = handle_lockscreen_surface_destroy;
-	wl_signal_add(&es->resource.destroy_signal,
-		      &shell->lockscreen_listener);
+	wl_signal_add(&es->destroy_signal, &shell->lockscreen_listener);
 }
 
 static void
@@ -218,7 +217,7 @@ tablet_shell_set_switcher(struct wl_client *client,
 	weston_surface_set_position(shell->switcher_surface, 0, 0);
 
 	shell->switcher_listener.notify = handle_switcher_surface_destroy;
-	wl_signal_add(&es->resource.destroy_signal, &shell->switcher_listener);
+	wl_signal_add(&es->destroy_signal, &shell->switcher_listener);
 }
 
 static void

@@ -276,12 +276,12 @@ weston_surface_create(struct weston_compositor *compositor)
 	if (surface == NULL)
 		return NULL;
 
-	wl_signal_init(&surface->resource.destroy_signal);
+	wl_signal_init(&surface->destroy_signal);
+
+	surface->resource = NULL;
 
 	wl_list_init(&surface->link);
 	wl_list_init(&surface->layer_link);
-
-	surface->resource.client = NULL;
 
 	surface->compositor = compositor;
 	surface->alpha = 1.0;
@@ -523,13 +523,15 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 	uint32_t left = es->output_mask & different;
 	struct weston_output *output;
 	struct wl_resource *resource = NULL;
-	struct wl_client *client = es->resource.client;
+	struct wl_client *client;
 
 	es->output_mask = mask;
-	if (es->resource.client == NULL)
+	if (es->resource == NULL)
 		return;
 	if (different == 0)
 		return;
+
+	client = wl_resource_get_client(es->resource);
 
 	wl_list_for_each(output, &es->compositor->output_list, link) {
 		if (1 << output->id & different)
@@ -539,9 +541,9 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 		if (resource == NULL)
 			continue;
 		if (1 << output->id & entered)
-			wl_surface_send_enter(&es->resource, resource);
+			wl_surface_send_enter(es->resource, resource);
 		if (1 << output->id & left)
-			wl_surface_send_leave(&es->resource, resource);
+			wl_surface_send_leave(es->resource, resource);
 	}
 }
 
@@ -882,7 +884,7 @@ weston_surface_set_transform_parent(struct weston_surface *surface,
 	surface->geometry.parent_destroy_listener.notify =
 		transform_parent_handle_parent_destroy;
 	if (parent) {
-		wl_signal_add(&parent->resource.destroy_signal,
+		wl_signal_add(&parent->destroy_signal,
 			      &surface->geometry.parent_destroy_listener);
 		wl_list_insert(&parent->geometry.child_list,
 			       &surface->geometry.parent_link);
@@ -1004,11 +1006,15 @@ struct weston_frame_callback {
 	struct wl_list link;
 };
 
-static void
-destroy_surface(struct wl_resource *resource)
+
+WL_EXPORT void
+weston_surface_destroy(struct weston_surface *surface)
 {
-	struct weston_surface *surface =
-		container_of(resource, struct weston_surface, resource);
+	/* Not a valid way to destroy a client surface */
+	assert(surface->resource == NULL);
+
+	wl_signal_emit(&surface->destroy_signal, &surface->resource);
+
 	struct weston_compositor *compositor = surface->compositor;
 	struct weston_frame_callback *cb, *next;
 
@@ -1048,14 +1054,13 @@ destroy_surface(struct wl_resource *resource)
 	free(surface);
 }
 
-WL_EXPORT void
-weston_surface_destroy(struct weston_surface *surface)
+static void
+destroy_surface(struct wl_resource *resource)
 {
-	/* Not a valid way to destroy a client surface */
-	assert(surface->resource.client == NULL);
+	struct weston_surface *surface = wl_resource_get_user_data(resource);
 
-	wl_signal_emit(&surface->resource.destroy_signal, &surface->resource);
-	destroy_surface(&surface->resource);
+	surface->resource = NULL;
+	weston_surface_destroy(surface);
 }
 
 static void
@@ -1660,15 +1665,10 @@ compositor_create_surface(struct wl_client *client,
 		return;
 	}
 
-	surface->resource.destroy = destroy_surface;
-
-	surface->resource.object.id = id;
-	surface->resource.object.interface = &wl_surface_interface;
-	surface->resource.object.implementation =
-		(void (**)(void)) &surface_interface;
-	surface->resource.data = surface;
-
-	wl_client_add_resource(client, &surface->resource);
+	surface->resource = wl_client_add_object(client, &wl_surface_interface,
+						 &surface_interface,
+						 id, surface);
+	wl_resource_set_destructor(surface->resource, destroy_surface);
 }
 
 static void
@@ -2035,7 +2035,7 @@ subsurface_sibling_check(struct weston_subsurface *sub,
 		wl_resource_post_error(sub->resource,
 			WL_SUBSURFACE_ERROR_BAD_SURFACE,
 			"%s: wl_surface@%d is not a parent or sibling",
-			request, surface->resource.object.id);
+			request, wl_resource_get_id(surface->resource));
 		return NULL;
 	}
 
@@ -2043,7 +2043,7 @@ subsurface_sibling_check(struct weston_subsurface *sub,
 		wl_resource_post_error(sub->resource,
 			WL_SUBSURFACE_ERROR_BAD_SURFACE,
 			"%s: wl_surface@%d has a different parent",
-			request, surface->resource.object.id);
+			request, wl_resource_get_id(surface->resource));
 		return NULL;
 	}
 
@@ -2204,7 +2204,7 @@ weston_subsurface_link_parent(struct weston_subsurface *sub,
 {
 	sub->parent = parent;
 	sub->parent_destroy_listener.notify = subsurface_handle_parent_destroy;
-	wl_signal_add(&parent->resource.destroy_signal,
+	wl_signal_add(&parent->destroy_signal,
 		      &sub->parent_destroy_listener);
 
 	wl_list_insert(&parent->subsurface_list, &sub->parent_link);
@@ -2219,7 +2219,7 @@ weston_subsurface_link_surface(struct weston_subsurface *sub,
 	sub->surface = surface;
 	sub->surface_destroy_listener.notify =
 		subsurface_handle_surface_destroy;
-	wl_signal_add(&surface->resource.destroy_signal,
+	wl_signal_add(&surface->destroy_signal,
 		      &sub->surface_destroy_listener);
 }
 
@@ -2266,12 +2266,13 @@ weston_subsurface_create(uint32_t id, struct weston_surface *surface,
 			 struct weston_surface *parent)
 {
 	struct weston_subsurface *sub;
+	struct wl_client *client = wl_resource_get_client(surface->resource);
 
 	sub = calloc(1, sizeof *sub);
 	if (!sub)
 		return NULL;
 
-	sub->resource = wl_client_add_object(surface->resource.client,
+	sub->resource = wl_client_add_object(client,
 					     &wl_subsurface_interface,
 					     &subsurface_implementation,
 					     id, sub);
