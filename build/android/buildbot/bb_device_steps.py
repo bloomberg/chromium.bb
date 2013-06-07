@@ -5,14 +5,12 @@
 
 import collections
 import glob
-import json
 import multiprocessing
-import optparse
 import os
-import pipes
 import shutil
-import subprocess
 import sys
+
+import bb_utils
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from pylib import android_commands
@@ -24,8 +22,6 @@ sys.path.append(os.path.join(
     constants.DIR_SOURCE_ROOT, 'third_party', 'android_testrunner'))
 import errors
 
-
-TESTING = 'BUILDBOT_TESTING' in os.environ
 
 CHROME_SRC = constants.DIR_SOURCE_ROOT
 
@@ -61,34 +57,7 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
 
 VALID_TESTS = set(['chromedriver', 'ui', 'unit', 'webkit', 'webkit_layout'])
 
-
-def SpawnCmd(command):
-  """Spawn a process without waiting for termination."""
-  print '>', ' '.join(map(pipes.quote, command))
-  sys.stdout.flush()
-  if TESTING:
-    class MockPopen(object):
-      @staticmethod
-      def wait():
-        return 0
-    return MockPopen()
-
-  return subprocess.Popen(command, cwd=CHROME_SRC)
-
-def RunCmd(command, flunk_on_failure=True, halt_on_failure=False):
-  """Run a command relative to the chrome source root."""
-  code = SpawnCmd(command).wait()
-  print '<', ' '.join(map(pipes.quote, command))
-  if code != 0:
-    print 'ERROR: process exited with code %d' % code
-    if flunk_on_failure:
-      buildbot_report.PrintError()
-    else:
-      buildbot_report.PrintWarning()
-    # Allow steps to have both halting (i.e. 1) and non-halting exit codes.
-    if code != 0 and code != 88 and halt_on_failure:
-      raise OSError()
-  return code
+RunCmd = bb_utils.RunCmd
 
 
 # multiprocessing map_async requires a top-level function for pickle library.
@@ -105,7 +74,7 @@ def RebootDevices():
   buildbot_report.PrintNamedStep('Reboot devices')
   # Early return here to avoid presubmit dependence on adb,
   # which might not exist in this checkout.
-  if TESTING:
+  if bb_utils.TESTING:
     return
   devices = android_commands.GetAttachedDevices()
   print 'Rebooting: %s' % devices
@@ -260,7 +229,7 @@ def MainTestWrapper(options):
   # Spawn logcat monitor
   logcat_dir = os.path.join(CHROME_SRC, 'out/logcat')
   shutil.rmtree(logcat_dir, ignore_errors=True)
-  SpawnCmd(['build/android/adb_logcat_monitor.py', logcat_dir])
+  bb_utils.SpawnCmd(['build/android/adb_logcat_monitor.py', logcat_dir])
 
   # Wait for logcat_monitor to pull existing logcat
   RunCmd(['sleep', '5'])
@@ -312,20 +281,7 @@ def MainTestWrapper(options):
 
 
 def main(argv):
-  parser = optparse.OptionParser()
-
-  def convert_json(option, _, value, parser):
-    setattr(parser.values, option.dest, json.loads(value))
-
-  parser.add_option('--build-properties', action='callback',
-                    callback=convert_json, type='string', default={},
-                    help='build properties in JSON format')
-  parser.add_option('--factory-properties', action='callback',
-                    callback=convert_json, type='string', default={},
-                    help='factory properties in JSON format')
-  parser.add_option('--slave-properties', action='callback',
-                    callback=convert_json, type='string', default={},
-                    help='Properties set by slave script in JSON format')
+  parser = bb_utils.GetParser()
   parser.add_option('--experimental', action='store_true',
                     help='Run experiemental tests')
   parser.add_option('-f', '--test-filter', metavar='<filter>', default=[],
@@ -344,18 +300,12 @@ def main(argv):
       help='Push script to device which restarts adbd on disconnections.')
   options, args = parser.parse_args(argv[1:])
 
-  def ParserError(msg):
-    """We avoid parser.error because it calls sys.exit."""
-    parser.print_help()
-    print >> sys.stderr, '\nERROR:', msg
-    return 1
-
   if args:
-    return ParserError('Unused args %s' % args)
+    return sys.exit('Unused args %s' % args)
 
   unknown_tests = set(options.test_filter) - VALID_TESTS
   if unknown_tests:
-    return ParserError('Unknown tests %s' % list(unknown_tests))
+    return sys.exit('Unknown tests %s' % list(unknown_tests))
 
   setattr(options, 'target', options.factory_properties.get('target', 'Debug'))
 

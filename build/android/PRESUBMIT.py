@@ -40,7 +40,8 @@ def CommonChecks(input_api, output_api):
       output_api,
       white_list=[r'PRESUBMIT\.py$', r'buildbot/.*\.py$'],
       extra_paths_list=[
-          J(), J('..', '..', 'third_party', 'android_testrunner')]))
+          J(), J('..', '..', 'third_party', 'android_testrunner'),
+          J('buildbot')]))
 
   output.extend(input_api.canned_checks.RunUnitTestsInDirectory(
       input_api, output_api, J('buildbot', 'tests')))

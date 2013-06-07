@@ -13,6 +13,8 @@ import pipes
 import subprocess
 import sys
 
+import bb_utils
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from pylib import buildbot_report
 
@@ -22,10 +24,12 @@ CHROME_SRC = os.path.abspath(
 GLOBAL_SLAVE_PROPS = {}
 
 BotConfig = collections.namedtuple(
-    'BotConfig', ['bot_id', 'bash_funs', 'test_obj', 'slave_props'])
+    'BotConfig', ['bot_id', 'host_opts', 'test_obj', 'slave_props'])
 TestConfig = collections.namedtuple('Tests', ['tests', 'extra_args'])
 Command = collections.namedtuple(
     'Command', ['step_name', 'command', 'testing_cmd'])
+
+CommandToString = bb_utils.CommandToString
 
 
 def GetCommands(options, bot_config):
@@ -41,26 +45,28 @@ def GetCommands(options, bot_config):
   if bot_config.slave_props:
     slave_props.update(bot_config.slave_props)
 
+  slave_properties = json.dumps(slave_props)
   property_args = [
       '--factory-properties=%s' % json.dumps(options.factory_properties),
       '--build-properties=%s' % json.dumps(options.build_properties),
-      '--slave-properties=%s' % json.dumps(slave_props)]
+      '--slave-properties=%s' % slave_properties]
 
   commands = []
   def WrapWithBash(command):
     """Wrap a bash command string with envsetup scripts."""
     return ['bash', '-exc', '; '.join([
         '. build/android/buildbot/buildbot_functions.sh',
-        'bb_baseline_setup %s %s' % (
-             CHROME_SRC,
-             ' '.join(map(pipes.quote, property_args))),
+        'bb_baseline_setup %s --slave-properties=%s' % (
+            CHROME_SRC, pipes.quote(slave_properties)),
         command])
     ]
 
-  if bot_config.bash_funs:
-    # bash_funs command does not have a testing mode.
-    commands.append(
-        Command(None, WrapWithBash('; '.join(bot_config.bash_funs)), None))
+  if bot_config.host_opts:
+    host_cmd = (['build/android/buildbot/bb_host_steps.py'] +
+                bot_config.host_opts + property_args)
+    commands.append(Command(
+        'Host steps',
+        WrapWithBash(' '.join(map(pipes.quote, host_cmd))), host_cmd))
 
   test_obj = bot_config.test_obj
   if test_obj:
@@ -78,9 +84,10 @@ def GetCommands(options, bot_config):
 
 
 def GetBotStepMap():
-  compile_step = ['bb_compile']
-  std_build_steps = ['bb_compile', 'bb_zip_build']
-  std_test_steps = ['bb_extract_build']
+  compile_opt = ['--compile']
+  std_host_tests = ['--host-tests=check_webview_licenses,findbugs']
+  std_build_opts = ['--compile', '--zip-build']
+  std_test_opts = ['--extract-build']
   std_tests = ['ui', 'unit']
   flakiness_server = '--upload-to-flakiness-server'
   extra_gyp = 'extra_gyp_defines'
@@ -93,39 +100,35 @@ def GetBotStepMap():
 
   bot_configs = [
       # Main builders
-      B('main-builder-dbg',
-        ['bb_check_webview_licenses', 'bb_compile', 'bb_run_findbugs',
-         'bb_zip_build']),
-      B('main-builder-rel', ['bb_compile', 'bb_zip_build']),
-      B('main-clang-builder', compile_step, slave_props={extra_gyp: 'clang=1'}),
-      B('main-clobber', compile_step),
-      B('main-tests', std_test_steps, T(std_tests, [flakiness_server])),
+      B('main-builder-dbg', std_build_opts + std_host_tests),
+      B('main-builder-rel', std_build_opts),
+      B('main-clang-builder', compile_opt, slave_props={extra_gyp: 'clang=1'}),
+      B('main-clobber', compile_opt),
+      B('main-tests', std_test_opts, T(std_tests, [flakiness_server])),
 
       # Other waterfalls
-      B('asan-builder-tests', compile_step + ['bb_asan_tests_setup'],
+      B('asan-builder-tests', compile_opt + ['--update-clang'],
         T(std_tests, ['--asan']), {extra_gyp: 'asan=1'}),
-      B('chromedriver-fyi-tests-dbg', std_test_steps,
+      B('chromedriver-fyi-tests-dbg', std_test_opts,
         T(['chromedriver'], ['--install=ChromiumTestShell'])),
       B('fyi-builder-dbg',
-        ['bb_check_webview_licenses', 'bb_compile', 'bb_compile_experimental',
-         'bb_run_findbugs', 'bb_zip_build']),
-      B('fyi-builder-rel',
-        ['bb_compile', 'bb_compile_experimental', 'bb_zip_build']),
-      B('fyi-tests-dbg-ics-gn', ['bb_compile', 'bb_compile_experimental'],
+        std_build_opts + std_host_tests + ['--experimental']),
+      B('fyi-builder-rel', std_build_opts + ['--experimental']),
+      B('fyi-tests-dbg-ics-gn', compile_opt + [ '--experimental'],
         T(std_tests, ['--experimental', flakiness_server])),
-      B('fyi-tests', std_test_steps,
+      B('fyi-tests', std_test_opts,
         T(std_tests, ['--experimental', flakiness_server])),
-      B('fyi-component-builder-tests-dbg', compile_step,
+      B('fyi-component-builder-tests-dbg', compile_opt,
         T(std_tests, ['--experimental', flakiness_server]),
         {extra_gyp: 'component=shared_library'}),
-      B('perf-tests-rel', std_test_steps, T([], ['--install=ContentShell'])),
-      B('webkit-latest-webkit-tests', std_test_steps,
+      B('perf-tests-rel', std_test_opts, T([], ['--install=ContentShell'])),
+      B('webkit-latest-webkit-tests', std_test_opts,
         T(['webkit_layout', 'webkit'])),
-      B('webkit-latest-contentshell', compile_step, T(['webkit_layout'])),
-      B('builder-unit-tests', compile_step, T(['unit'])),
+      B('webkit-latest-contentshell', compile_opt, T(['webkit_layout'])),
+      B('builder-unit-tests', compile_opt, T(['unit'])),
 
       # Generic builder config (for substring match).
-      B('builder', std_build_steps),
+      B('builder', std_build_opts),
   ]
 
   bot_map = dict((config.bot_id, config) for config in bot_configs)
@@ -196,10 +199,6 @@ def main(argv):
     return 1
 
   print 'Using config:', bot_config
-
-  def CommandToString(command):
-    """Returns quoted command that can be run in bash shell."""
-    return ' '.join(map(pipes.quote, command))
 
   command_objs = GetCommands(options, bot_config)
   for command_obj in command_objs:
