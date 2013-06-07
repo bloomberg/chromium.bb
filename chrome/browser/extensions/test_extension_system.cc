@@ -148,10 +148,6 @@ EventRouter* TestExtensionSystem::event_router() {
   return NULL;
 }
 
-RulesRegistryService* TestExtensionSystem::rules_registry_service() {
-  return NULL;
-}
-
 ApiResourceManager<SerialConnection>*
 TestExtensionSystem::serial_connection_manager() {
   return NULL;

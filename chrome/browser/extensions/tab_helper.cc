@@ -86,10 +86,6 @@ TabHelper::TabHelper(content::WebContents* web_contents)
       pending_web_app_action_(NONE),
       script_executor_(new ScriptExecutor(web_contents,
                                           &script_execution_observers_)),
-      rules_registry_service_(
-          ExtensionSystem::Get(
-              Profile::FromBrowserContext(web_contents->GetBrowserContext()))->
-          rules_registry_service()),
       image_loader_ptr_factory_(this) {
   // The ActiveTabPermissionManager requires a session ID; ensure this
   // WebContents has one.
@@ -195,9 +191,10 @@ void TabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
 #if defined(ENABLE_EXTENSIONS)
-  if (rules_registry_service_) {
-    rules_registry_service_->content_rules_registry()->DidNavigateMainFrame(
-        web_contents(), details, params);
+  if (ExtensionSystem::Get(profile_)->extension_service() &&
+      RulesRegistryService::Get(profile_)) {
+    RulesRegistryService::Get(profile_)->content_rules_registry()->
+        DidNavigateMainFrame(web_contents(), details, params);
   }
 #endif  // defined(ENABLE_EXTENSIONS)
 
@@ -346,8 +343,9 @@ void TabHelper::OnContentScriptsExecuting(
 void TabHelper::OnWatchedPageChange(
     const std::vector<std::string>& css_selectors) {
 #if defined(ENABLE_EXTENSIONS)
-  if (rules_registry_service_) {
-    rules_registry_service_->content_rules_registry()->Apply(
+  if (ExtensionSystem::Get(profile_)->extension_service() &&
+      RulesRegistryService::Get(profile_)) {
+    RulesRegistryService::Get(profile_)->content_rules_registry()->Apply(
         web_contents(), css_selectors);
   }
 #endif  // defined(ENABLE_EXTENSIONS)
