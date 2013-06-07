@@ -1,8 +1,6 @@
 {
   'variables': {
     'modules_idl_files': [
-      'battery/BatteryManager.idl',
-      'battery/NavigatorBattery.idl',
       'device_orientation/DeviceAcceleration.idl',
       'device_orientation/DeviceMotionEvent.idl',
       'device_orientation/DeviceRotationRate.idl',
@@ -171,15 +169,6 @@
       'websockets/WorkerContextWebSocket.idl',
     ],
     'modules_files': [
-      'battery/BatteryClient.h',
-      'battery/BatteryController.cpp',
-      'battery/BatteryController.h',
-      'battery/BatteryManager.cpp',
-      'battery/BatteryManager.h',
-      'battery/BatteryStatus.cpp',
-      'battery/BatteryStatus.h',
-      'battery/NavigatorBattery.cpp',
-      'battery/NavigatorBattery.h',
       'device_orientation/DeviceAcceleration.cpp',
       'device_orientation/DeviceAcceleration.h',
       'device_orientation/DeviceMotionClient.h',

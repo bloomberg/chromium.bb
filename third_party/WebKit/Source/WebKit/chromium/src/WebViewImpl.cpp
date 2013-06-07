@@ -48,7 +48,6 @@
 #include <wtf/TemporaryChange.h>
 #include <wtf/Uint8ClampedArray.h>
 #include "AutofillPopupMenuClient.h"
-#include "BatteryClientImpl.h"
 #include "CSSValueKeywords.h"
 #include "CompositionUnderlineVectorBuilder.h"
 #include "ContextFeaturesClientImpl.h"
@@ -152,7 +151,6 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"
-#include "modules/battery/BatteryController.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "weborigin/SchemeRegistry.h"
 #include "weborigin/SecurityOrigin.h"
@@ -420,9 +418,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_speechRecognitionClient(SpeechRecognitionClientProxy::create(client ? client->speechRecognizer() : 0))
     , m_deviceOrientationClientProxy(adoptPtr(new DeviceOrientationClientProxy(client ? client->deviceOrientationClient() : 0)))
     , m_geolocationClientProxy(adoptPtr(new GeolocationClientProxy(client ? client->geolocationClient() : 0)))
-#if ENABLE(BATTERY_STATUS)
-    , m_batteryClient(adoptPtr(new BatteryClientImpl(client ? client->batteryStatusClient() : 0)))
-#endif
     , m_emulatedTextZoomFactor(1)
     , m_userMediaClientImpl(this)
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
@@ -460,11 +455,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     provideDeviceOrientationTo(m_page.get(), m_deviceOrientationClientProxy.get());
     provideGeolocationTo(m_page.get(), m_geolocationClientProxy.get());
     m_geolocationClientProxy->setController(GeolocationController::from(m_page.get()));
-
-#if ENABLE(BATTERY_STATUS)
-    provideBatteryTo(m_page.get(), m_batteryClient.get());
-    m_batteryClient->setController(BatteryController::from(m_page.get()));
-#endif
 
     m_page->setGroupType(Page::SharedPageGroup);
 
@@ -1715,13 +1705,6 @@ void WebViewImpl::didExitFullScreen()
 
     m_fullScreenFrame.clear();
 }
-
-#if ENABLE(BATTERY_STATUS)
-void WebViewImpl::updateBatteryStatus(const WebBatteryStatus& status)
-{
-    m_batteryClient->updateBatteryStatus(status);
-}
-#endif
 
 void WebViewImpl::animate(double monotonicFrameBeginTime)
 {

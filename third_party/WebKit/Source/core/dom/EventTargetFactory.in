@@ -19,7 +19,6 @@ core/workers/SharedWorkerContext
 core/workers/Worker
 core/xml/XMLHttpRequest
 core/xml/XMLHttpRequestUpload
-modules/battery/BatteryManager conditional=BATTERY_STATUS
 modules/encryptedmedia/MediaKeySession conditional=ENCRYPTED_MEDIA_V2
 modules/filesystem/FileWriter
 modules/indexeddb/IDBDatabase

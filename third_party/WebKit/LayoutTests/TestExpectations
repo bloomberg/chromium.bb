@@ -121,9 +121,6 @@ webkit.org/b/67434 [ Debug ] fast/overflow/overflow-height-float-not-removed-cra
 webkit.org/b/67434 [ Debug ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Skip ]
 webkit.org/b/67434 [ Debug ] fast/block/float/overhanging-tall-block.html [ Skip ]
 
-# Battery Status API is not supported yet in the chromium port.
-crbug.com/122593 batterystatus [ Skip ]
-
 # Requires generation of progress events during loading
 webkit.org/b/100985 media/progress-events-generated-correctly.html [ Failure Pass Slow ]
 

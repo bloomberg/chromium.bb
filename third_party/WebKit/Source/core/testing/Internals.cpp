@@ -103,10 +103,6 @@
 #include "wtf/dtoa.h"
 #include "wtf/text/StringBuffer.h"
 
-#if ENABLE(BATTERY_STATUS)
-#include "modules/battery/BatteryController.h"
-#endif
-
 #include "core/page/PagePopupController.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/filters/FilterOperation.h"
@@ -1315,24 +1311,6 @@ void Internals::emitInspectorDidCancelFrame()
 {
     InspectorController* inspectorController = contextDocument()->frame()->page()->inspectorController();
     inspectorController->didCancelFrame();
-}
-
-void Internals::setBatteryStatus(Document* document, const String& eventType, bool charging, double chargingTime, double dischargingTime, double level, ExceptionCode& ec)
-{
-    if (!document || !document->page()) {
-        ec = INVALID_ACCESS_ERR;
-        return;
-    }
-
-#if ENABLE(BATTERY_STATUS)
-    BatteryController::from(document->page())->didChangeBatteryStatus(eventType, BatteryStatus::create(charging, chargingTime, dischargingTime, level));
-#else
-    UNUSED_PARAM(eventType);
-    UNUSED_PARAM(charging);
-    UNUSED_PARAM(chargingTime);
-    UNUSED_PARAM(dischargingTime);
-    UNUSED_PARAM(level);
-#endif
 }
 
 bool Internals::hasSpellingMarker(Document* document, int from, int length, ExceptionCode&)
