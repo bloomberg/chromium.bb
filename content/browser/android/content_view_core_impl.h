@@ -33,7 +33,6 @@ class WindowAndroid;
 
 namespace content {
 class RenderWidgetHostViewAndroid;
-class SyncInputEventFilter;
 
 // TODO(jrg): this is a shell.  Upstream the rest.
 class ContentViewCoreImpl : public ContentViewCore,
@@ -296,8 +295,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   gfx::Size GetViewportSizeOffsetDip() const;
   float GetOverdrawBottomHeightDip() const;
 
-  InputEventAckState FilterInputEvent(const WebKit::WebInputEvent& input_event);
-
   void AttachLayer(scoped_refptr<cc::Layer> layer);
   void RemoveLayer(scoped_refptr<cc::Layer> layer);
   void SetVSyncNotificationEnabled(bool enabled);
@@ -360,9 +357,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   ui::WindowAndroid* window_android_;
 
   std::vector<UpdateFrameInfoCallback> update_frame_info_callbacks_;
-
-  // Optional browser-side input event filtering.
-  scoped_ptr<SyncInputEventFilter> input_event_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentViewCoreImpl);
 };

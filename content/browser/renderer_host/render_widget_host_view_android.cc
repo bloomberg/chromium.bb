@@ -19,6 +19,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "content/browser/android/content_view_core_impl.h"
+#include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/browser/android/overscroll_glow.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
@@ -829,10 +830,14 @@ void RenderWidgetHostViewAndroid::UnhandledWheelEvent(
 
 InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
     const WebKit::WebInputEvent& input_event) {
-  if (!content_view_core_)
-    return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-
-  return content_view_core_->FilterInputEvent(input_event);
+  if (host_) {
+    SynchronousCompositorImpl* compositor =
+        SynchronousCompositorImpl::FromID(host_->GetProcess()->GetID(),
+                                          host_->GetRoutingID());
+    if (compositor)
+      return compositor->HandleInputEvent(input_event);
+  }
+  return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
 void RenderWidgetHostViewAndroid::OnAccessibilityNotifications(

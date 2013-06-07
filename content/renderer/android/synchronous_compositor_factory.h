@@ -18,6 +18,8 @@ class OutputSurface;
 
 namespace content {
 
+class InputHandlerManagerClient;
+
 // Decouples creation from usage of the parts needed for the synchonous
 // compositor rendering path. In practice this is only used in single
 // process mode (namely, for Android WebView) hence the implementation of
@@ -33,6 +35,9 @@ class SynchronousCompositorFactory {
       GetCompositorMessageLoop() = 0;
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       int routing_id) = 0;
+
+  // The factory maintains ownership of the returned interface.
+  virtual InputHandlerManagerClient* GetInputHandlerManagerClient() = 0;
 
  protected:
   SynchronousCompositorFactory() {}

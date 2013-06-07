@@ -12,6 +12,7 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/port/common/input_event_ack_state.h"
+#include "content/renderer/gpu/input_handler_manager_client.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
@@ -26,11 +27,11 @@
 namespace content {
 
 class CONTENT_EXPORT InputEventFilter
-    : public IPC::ChannelProxy::MessageFilter {
+    : public InputHandlerManagerClient,
+      public IPC::ChannelProxy::MessageFilter {
  public:
-  typedef base::Callback<InputEventAckState(
-      int /*routing_id*/,
-      const WebKit::WebInputEvent*)> Handler;
+  InputEventFilter(IPC::Listener* main_listener,
+                   const scoped_refptr<base::MessageLoopProxy>& target_loop);
 
   // The |handler| is invoked on the thread associated with |target_loop| to
   // handle input events matching the filtered routes.
@@ -42,13 +43,9 @@ class CONTENT_EXPORT InputEventFilter
   // is left to the eventual handler to deliver the corresponding
   // InputHostMsg_HandleInputEvent_ACK.
   //
-  InputEventFilter(IPC::Listener* main_listener,
-                   const scoped_refptr<base::MessageLoopProxy>& target_loop,
-                   const Handler& handler);
-
-  // Define the message routes to be filtered.
-  void AddRoute(int routing_id);
-  void RemoveRoute(int routing_id);
+  virtual void SetBoundHandler(const Handler& handler) OVERRIDE;
+  virtual void DidAddInputHandler(int routing_id) OVERRIDE;
+  virtual void DidRemoveInputHandler(int routing_id) OVERRIDE;
 
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;

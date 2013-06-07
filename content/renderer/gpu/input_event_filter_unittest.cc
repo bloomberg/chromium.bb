@@ -135,9 +135,11 @@ class InputEventFilterTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     filter_ = new InputEventFilter(
         &message_recorder_,
-        message_loop_.message_loop_proxy(),
+        message_loop_.message_loop_proxy());
+    filter_->SetBoundHandler(
         base::Bind(&InputEventRecorder::HandleInputEvent,
             base::Unretained(&event_recorder_)));
+
     event_recorder_.set_filter(filter_.get());
 
     filter_->OnFilterAdded(&ipc_sink_);
@@ -170,7 +172,7 @@ TEST_F(InputEventFilterTest, Basic) {
   EXPECT_EQ(0U, event_recorder_.record_count());
   EXPECT_EQ(0U, message_recorder_.message_count());
 
-  filter_->AddRoute(kTestRoutingID);
+  filter_->DidAddInputHandler(kTestRoutingID);
 
   AddEventsToFilter(filter_.get(), kEvents, arraysize(kEvents));
   ASSERT_EQ(arraysize(kEvents), ipc_sink_.message_count());
@@ -245,7 +247,7 @@ TEST_F(InputEventFilterTest, Basic) {
 }
 
 TEST_F(InputEventFilterTest, PreserveRelativeOrder) {
-  filter_->AddRoute(kTestRoutingID);
+  filter_->DidAddInputHandler(kTestRoutingID);
   event_recorder_.set_send_to_widget(true);
 
 

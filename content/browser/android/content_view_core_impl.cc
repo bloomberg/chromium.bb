@@ -17,7 +17,6 @@
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/android/media_player_manager_impl.h"
-#include "content/browser/android/sync_input_event_filter.h"
 #include "content/browser/android/touch_point.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/java/java_bound_object.h"
@@ -686,14 +685,6 @@ float ContentViewCoreImpl::GetOverdrawBottomHeightDip() const {
     return 0.f;
   return Java_ContentViewCore_getOverdrawBottomHeightPix(env, j_obj.obj())
       / GetDpiScale();
-}
-
-InputEventAckState ContentViewCoreImpl::FilterInputEvent(
-    const WebKit::WebInputEvent& input_event) {
-  if (!input_event_filter_)
-    return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-
-  return input_event_filter_->HandleInputEvent(input_event);
 }
 
 void ContentViewCoreImpl::AttachLayer(scoped_refptr<cc::Layer> layer) {

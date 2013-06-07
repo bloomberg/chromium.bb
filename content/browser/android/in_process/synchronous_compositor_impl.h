@@ -9,8 +9,13 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
+#include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/web_contents_user_data.h"
+
+namespace WebKit {
+class WebInputEvent;
+}
 
 namespace content {
 
@@ -24,7 +29,13 @@ class SynchronousCompositorImpl
       public SynchronousCompositorOutputSurfaceDelegate,
       public WebContentsUserData<SynchronousCompositorImpl> {
  public:
+  // When used from browser code, use both |process_id| and |routing_id|.
+  static SynchronousCompositorImpl* FromID(int process_id, int routing_id);
+  // When handling upcalls from renderer code, use this version; the process id
+  // is implicitly that of the in-process renderer.
   static SynchronousCompositorImpl* FromRoutingID(int routing_id);
+
+  InputEventAckState HandleInputEvent(const WebKit::WebInputEvent& input_event);
 
   // SynchronousCompositor
   virtual bool IsHwReady() OVERRIDE;

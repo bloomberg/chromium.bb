@@ -57,6 +57,7 @@
 #include "content/renderer/gpu/compositor_output_surface.h"
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
 #include "content/renderer/gpu/input_handler_manager.h"
+#include "content/renderer/gpu/input_event_filter.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
@@ -456,9 +457,10 @@ void RenderThreadImpl::Shutdown() {
   }
 
   compositor_thread_.reset();
-  if (input_handler_manager_) {
-    RemoveFilter(input_handler_manager_->GetMessageFilter());
-    input_handler_manager_.reset();
+  input_handler_manager_.reset();
+  if (input_event_filter_) {
+    RemoveFilter(input_event_filter_.get());
+    input_event_filter_ = NULL;
   }
 
   if (webkit_platform_support_)
@@ -775,9 +777,22 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
                      false));
     }
 
+    InputHandlerManagerClient* input_handler_manager_client = NULL;
+#if defined(OS_ANDROID)
+    if (SynchronousCompositorFactory* factory =
+        SynchronousCompositorFactory::GetInstance()) {
+      input_handler_manager_client = factory->GetInputHandlerManagerClient();
+    }
+#endif
+    if (!input_handler_manager_client) {
+      input_event_filter_ =
+          new InputEventFilter(this, compositor_message_loop_proxy_);
+      AddFilter(input_event_filter_.get());
+      input_handler_manager_client = input_event_filter_.get();
+    }
     input_handler_manager_.reset(
-        new InputHandlerManager(this, compositor_message_loop_proxy_));
-    AddFilter(input_handler_manager_->GetMessageFilter());
+        new InputHandlerManager(compositor_message_loop_proxy_,
+                                input_handler_manager_client));
   }
 
   scoped_refptr<base::MessageLoopProxy> output_surface_loop;

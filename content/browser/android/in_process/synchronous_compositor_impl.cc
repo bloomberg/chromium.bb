@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
+#include "content/browser/android/in_process/synchronous_input_event_filter.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -49,6 +50,17 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
         new SynchronousCompositorOutputSurface(routing_id));
     return output_surface.PassAs<cc::OutputSurface>();
   }
+
+  virtual InputHandlerManagerClient* GetInputHandlerManagerClient() OVERRIDE {
+    return synchronous_input_event_filter();
+  }
+
+  SynchronousInputEventFilter* synchronous_input_event_filter() {
+    return &synchronous_input_event_filter_;
+  }
+
+ private:
+  SynchronousInputEventFilter synchronous_input_event_filter_;
 };
 
 base::LazyInstance<SynchronousCompositorFactoryImpl>::Leaky g_factory =
@@ -59,16 +71,22 @@ base::LazyInstance<SynchronousCompositorFactoryImpl>::Leaky g_factory =
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SynchronousCompositorImpl);
 
 // static
-SynchronousCompositorImpl* SynchronousCompositorImpl::FromRoutingID(
-    int routing_id) {
-  RenderViewHost* rvh = RenderViewHost::FromID(GetInProcessRendererId(),
-                                               routing_id);
+SynchronousCompositorImpl* SynchronousCompositorImpl::FromID(int process_id,
+                                                             int routing_id) {
+  if (g_factory == NULL)
+    return NULL;
+  RenderViewHost* rvh = RenderViewHost::FromID(process_id, routing_id);
   if (!rvh)
     return NULL;
   WebContents* contents = WebContents::FromRenderViewHost(rvh);
   if (!contents)
     return NULL;
   return FromWebContents(contents);
+}
+
+SynchronousCompositorImpl* SynchronousCompositorImpl::FromRoutingID(
+    int routing_id) {
+  return FromID(GetInProcessRendererId(), routing_id);
 }
 
 SynchronousCompositorImpl::SynchronousCompositorImpl(WebContents* contents)
@@ -137,6 +155,13 @@ void SynchronousCompositorImpl::SetContinuousInvalidate(bool enable) {
   DCHECK(CalledOnValidThread());
   if (compositor_client_)
     compositor_client_->SetContinuousInvalidate(enable);
+}
+
+InputEventAckState SynchronousCompositorImpl::HandleInputEvent(
+    const WebKit::WebInputEvent& input_event) {
+  DCHECK(CalledOnValidThread());
+  return g_factory.Get().synchronous_input_event_filter()->HandleInputEvent(
+      routing_id_, input_event);
 }
 
 // Not using base::NonThreadSafe as we want to enforce a more exacting threading

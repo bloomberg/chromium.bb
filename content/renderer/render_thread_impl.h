@@ -77,6 +77,7 @@ class DevToolsAgentFilter;
 class DomStorageDispatcher;
 class GpuChannelHost;
 class IndexedDBDispatcher;
+class InputEventFilter;
 class InputHandlerManager;
 class MediaStreamCenter;
 class MediaStreamDependencyFactory;
@@ -437,6 +438,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // regardless of whether |compositor_thread_| is overriden.
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy_;
 
+  // May be null if unused by the |input_handler_manager_|.
+  scoped_refptr<InputEventFilter> input_event_filter_;
   scoped_ptr<InputHandlerManager> input_handler_manager_;
   scoped_refptr<IPC::ForwardingMessageFilter> compositor_output_surface_filter_;
 

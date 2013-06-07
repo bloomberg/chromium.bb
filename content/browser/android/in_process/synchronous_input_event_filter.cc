@@ -1,0 +1,44 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/browser/android/in_process/synchronous_input_event_filter.h"
+
+#include "content/public/browser/browser_thread.h"
+
+using WebKit::WebInputEvent;
+
+namespace content {
+
+SynchronousInputEventFilter::SynchronousInputEventFilter() {
+}
+
+SynchronousInputEventFilter::~SynchronousInputEventFilter() {
+}
+
+InputEventAckState SynchronousInputEventFilter::HandleInputEvent(
+    int routing_id,
+    const WebKit::WebInputEvent& input_event) {
+  // The handler will be empty both before renderer initialization and after
+  // renderer destruction. It's possible that this will be reached in such a
+  // state. While not good, it should also not be fatal.
+  if (handler_.is_null())
+    return INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+
+  return handler_.Run(routing_id, &input_event);
+}
+
+void SynchronousInputEventFilter::SetBoundHandler(const Handler& handler) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&SynchronousInputEventFilter::SetBoundHandlerOnUIThread,
+                 base::Unretained(this), handler));
+}
+
+void SynchronousInputEventFilter::SetBoundHandlerOnUIThread(
+    const Handler& handler) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  handler_ = handler;
+}
+
+}  // namespace content

@@ -111,6 +111,7 @@
     'renderer/gpu/input_handler_proxy.h',
     'renderer/gpu/input_handler_manager.cc',
     'renderer/gpu/input_handler_manager.h',
+    'renderer/gpu/input_handler_manager_client.h',
     'renderer/gpu/input_handler_wrapper.cc',
     'renderer/gpu/input_handler_wrapper.h',
     'renderer/gpu/gpu_benchmarking_extension.cc',

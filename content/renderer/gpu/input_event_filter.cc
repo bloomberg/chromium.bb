@@ -15,23 +15,25 @@ namespace content {
 
 InputEventFilter::InputEventFilter(
     IPC::Listener* main_listener,
-    const scoped_refptr<base::MessageLoopProxy>& target_loop,
-    const Handler& handler)
+    const scoped_refptr<base::MessageLoopProxy>& target_loop)
     : main_loop_(base::MessageLoopProxy::current()),
       main_listener_(main_listener),
       sender_(NULL),
-      target_loop_(target_loop),
-      handler_(handler) {
-  DCHECK(target_loop_.get());
-  DCHECK(!handler_.is_null());
+      target_loop_(target_loop) {
+  DCHECK(target_loop_);
 }
 
-void InputEventFilter::AddRoute(int routing_id) {
+void InputEventFilter::SetBoundHandler(const Handler& handler) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+  handler_ = handler;
+}
+
+void InputEventFilter::DidAddInputHandler(int routing_id) {
   base::AutoLock locked(routes_lock_);
   routes_.insert(routing_id);
 }
 
-void InputEventFilter::RemoveRoute(int routing_id) {
+void InputEventFilter::DidRemoveInputHandler(int routing_id) {
   base::AutoLock locked(routes_lock_);
   routes_.erase(routing_id);
 }
@@ -93,6 +95,7 @@ void InputEventFilter::ForwardToMainListener(const IPC::Message& message) {
 }
 
 void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
+  DCHECK(!handler_.is_null());
   DCHECK(target_loop_->BelongsToCurrentThread());
 
   if (message.type() != InputMsg_HandleInputEvent::ID) {

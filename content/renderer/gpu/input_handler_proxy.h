@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/input/input_handler.h"
 #include "content/common/content_export.h"
-#include "content/port/common/input_event_ack_state.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
 #include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebActiveWheelFlingParameters.h"
