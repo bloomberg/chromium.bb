@@ -9,7 +9,6 @@
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_data_reader.h"
 #include "net/quic/quic_data_writer.h"
-#include "net/quic/quic_utils.h"
 
 using base::StringPiece;
 using std::make_pair;

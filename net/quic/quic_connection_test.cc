@@ -13,13 +13,13 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_random.h"
+#include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_packet_creator_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
-#include "net/quic/quic_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -261,16 +261,16 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
     return last_packet_size_;
   }
 
-  virtual void SetRetransmissionAlarm(QuicTime::Delta delay) OVERRIDE {
-    retransmission_alarm_ = clock_->ApproximateNow().Add(delay);
-  }
-
   virtual bool IsWriteBlockedDataBuffered() OVERRIDE {
     return false;
   }
 
   virtual bool IsWriteBlocked(int error) OVERRIDE {
     return error == ERR_IO_PENDING;
+  }
+
+  virtual void SetRetransmissionAlarm(QuicTime::Delta delay) OVERRIDE {
+    retransmission_alarm_ = clock_->ApproximateNow().Add(delay);
   }
 
   virtual void SetSendAlarm(QuicTime alarm_time) OVERRIDE {
