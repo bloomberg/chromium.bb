@@ -1,1 +1,1 @@
-#include "../../../../public/webview/WebContentDetectionResult.h"
+#include "../../../../public/webpage/WebContentDetectionResult.h"
