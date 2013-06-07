@@ -27,21 +27,38 @@ function FileTasks(fileManager, opt_params) {
 }
 
 /**
-* Location of the Chrome Web Store.
-*
-* @const
-* @type {string}
-*/
-FileTasks.CHROME_WEB_STORE_URL = 'https://chrome.google.com/webstore';
-
-/**
-* Location of the FAQ about the file actions.
-*
-* @const
-* @type {string}
-*/
+ * Location of the FAQ about the file actions.
+ *
+ * @const
+ * @type {string}
+ */
 FileTasks.NO_ACTION_FOR_FILE_URL = 'http://support.google.com/chromeos/bin/' +
     'answer.py?answer=1700055&topic=29026&ctx=topic';
+
+/**
+ * Base URL of apps list in the Chrome Web Store. This constant is used in
+ * FileTasks.createWebStoreLink().
+ * @const
+ * @type {string}
+ */
+FileTasks.WEB_STORE_HANDLER_BASE_URL =
+    'https://chrome.google.com/webstore/category/collection/file_handlers';
+
+/**
+ * Returns URL of the Chrome Web Store which show apps supporting the given
+ * file-extension and mime-type.
+ *
+ * @param {string} extension Extension of the file.
+ * @param {string} mimeType Mime type of the file.
+ * @return {string} URL
+ */
+FileTasks.createWebStoreLink = function(extension, mimeType) {
+  var url = FileTasks.WEB_STORE_HANDLER_BASE_URL;
+  url += '?_fe=' + extension.toLowerCase().replace(/[^\w]/g, '');
+  if (mimeType)
+    url += '&_fmt=' + mimeType.replace(/[^-\w\/]/g, '');
+  return url;
+};
 
 /**
  * Complete the initialization.
@@ -249,11 +266,20 @@ FileTasks.prototype.executeDefaultInternal_ = function(urls) {
         var filename = decodeURIComponent(urls[0]);
         if (filename.indexOf('/') != -1)
           filename = filename.substr(filename.lastIndexOf('/') + 1);
+        var extension = filename.lastIndexOf('.') != -1 ?
+            filename.substr(filename.lastIndexOf('.') + 1) : '';
 
-        var text = loadTimeData.getStringF('NO_ACTION_FOR_FILE',
-                                           FileTasks.CHROME_WEB_STORE_URL,
-                                           FileTasks.NO_ACTION_FOR_FILE_URL);
-        this.fileManager_.alert.showHtml(filename, text, function() {});
+        this.fileManager_.metadataCache_.get(urls, 'drive', function(props) {
+          var mimeType;
+          if (props && props[0] && props[0].contentMimeType)
+            mimeType = props[0].contentMimeType;
+
+          var webStoreUrl = FileTasks.createWebStoreLink(extension, mimeType);
+          var text = loadTimeData.getStringF('NO_ACTION_FOR_FILE',
+                                             webStoreUrl,
+                                             FileTasks.NO_ACTION_FOR_FILE_URL);
+          this.fileManager_.alert.showHtml(filename, text, function() {});
+        }.bind(this));
       }
     }.bind(this);
 
