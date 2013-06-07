@@ -21,6 +21,7 @@ Please refer to http://crbug.com/235118 for the details.
 
 import optparse
 import os
+import re
 import shutil
 import sys
 import xml.dom.minidom as minidom
@@ -241,6 +242,14 @@ def main(argv):
     resource_type = dir_pieces[0]
     qualifiers = dir_pieces[1:]
 
+    api_level_qualifier_index = -1
+    api_level_qualifier = ''
+    for index, qualifier in enumerate(qualifiers):
+      if re.match('v[0-9]+$', qualifier):
+        api_level_qualifier_index = index
+        api_level_qualifier = qualifier
+        break
+
     # Android pre-v17 API doesn't support RTL. Skip.
     if 'ldrtl' in qualifiers:
       continue
@@ -254,19 +263,19 @@ def main(argv):
 
     # We only convert layout resources under layout*/, xml*/,
     # and style resources under values*/.
-    # TODO(kkimlabs): don't process xml directly once all layouts have
-    # been moved out of XML directory. see http://crbug.com/238458
     if resource_type in ('layout', 'xml'):
-      GenerateV14LayoutResourcesInDir(input_dir, output_v14_dir, output_v17_dir)
+      if not api_level_qualifier:
+        GenerateV14LayoutResourcesInDir(input_dir, output_v14_dir,
+                                        output_v17_dir)
     elif resource_type == 'values':
-      if 'v17' in qualifiers:
+      if api_level_qualifier == 'v17':
         output_qualifiers = qualifiers[:]
-        del output_qualifiers[qualifiers.index('v17')]
+        del output_qualifiers[api_level_qualifier_index]
         output_v14_dir = os.path.join(options.res_v14_compatibility_dir,
                                       '-'.join([resource_type] +
                                                output_qualifiers))
         GenerateV14StyleResourcesInDir(input_dir, output_v14_dir)
-      else:
+      elif not api_level_qualifier:
         ErrorIfStyleResourceExistsInDir(input_dir)
 
   if options.stamp:
