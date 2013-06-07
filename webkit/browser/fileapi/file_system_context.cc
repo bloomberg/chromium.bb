@@ -92,11 +92,13 @@ FileSystemContext::FileSystemContext(
 #if defined(OS_CHROMEOS)
   // TODO(kinuko): Move this out of webkit/fileapi layer.
   DCHECK(external_mount_points);
-  external_provider_.reset(
+  chromeos::CrosMountPointProvider* cros_mount_provider =
       new chromeos::CrosMountPointProvider(
           special_storage_policy,
           external_mount_points,
-          ExternalMountPoints::GetSystemInstance()));
+          ExternalMountPoints::GetSystemInstance());
+  cros_mount_provider->AddSystemMountPoints();
+  external_provider_.reset(cros_mount_provider);
   RegisterMountPointProvider(external_provider_.get());
 #endif
 

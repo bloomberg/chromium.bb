@@ -5,7 +5,6 @@
 #include "content/public/browser/browser_context.h"
 
 #if !defined(OS_IOS)
-#include "base/path_service.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/download/download_manager_impl.h"
@@ -148,15 +147,6 @@ fileapi::ExternalMountPoints* BrowserContext::GetMountPoints(
         kMountPointsKey,
         new UserDataAdapter<fileapi::ExternalMountPoints>(
             mount_points));
-
-    // Add Downloads mount point.
-    base::FilePath home_path;
-    if (PathService::Get(base::DIR_HOME, &home_path)) {
-      mount_points->RegisterFileSystem(
-          "Downloads",
-          fileapi::kFileSystemTypeNativeLocal,
-          home_path.AppendASCII("Downloads"));
-    }
   }
 
   return UserDataAdapter<fileapi::ExternalMountPoints>::Get(

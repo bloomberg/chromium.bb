@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,11 +42,16 @@ TEST(CrosMountPointProviderTest, DefaultMountPoints) {
       storage_policy,
       mount_points.get(),
       fileapi::ExternalMountPoints::GetSystemInstance());
+  provider.AddSystemMountPoints();
   std::vector<base::FilePath> root_dirs = provider.GetRootDirectories();
   std::set<base::FilePath> root_dirs_set(root_dirs.begin(), root_dirs.end());
 
-  // By default there should be 3 mount points (in system mount points):
-  EXPECT_EQ(3u, root_dirs.size());
+  // By default there should be 4 mount points (in system mount points):
+  EXPECT_EQ(4u, root_dirs.size());
+  base::FilePath home_path;
+  ASSERT_TRUE(PathService::Get(base::DIR_HOME, &home_path));
+
+  EXPECT_TRUE(root_dirs_set.count(home_path.AppendASCII("Downloads")));
   EXPECT_TRUE(root_dirs_set.count(
       chromeos::CrosDisksClient::GetRemovableDiskMountPoint()));
   EXPECT_TRUE(root_dirs_set.count(

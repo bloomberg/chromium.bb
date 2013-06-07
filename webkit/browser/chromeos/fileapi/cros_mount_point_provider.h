@@ -35,7 +35,7 @@ class FileAccessPermissions;
 // ExternalFileSystemMountPointProvider. This class is responsible for a
 // number of things, including:
 //
-// - Add default mount points
+// - Add system mount points
 // - Grant/revoke/check file access permissions
 // - Create FileSystemOperation per file system type
 // - Create FileStreamReader/Writer per file system type
@@ -77,6 +77,10 @@ class WEBKIT_STORAGE_EXPORT CrosMountPointProvider
       scoped_refptr<fileapi::ExternalMountPoints> mount_points,
       fileapi::ExternalMountPoints* system_mount_points);
   virtual ~CrosMountPointProvider();
+
+  // Adds system mount points, such as "archive", and "removable". This
+  // function is no-op if these mount points are already present.
+  void AddSystemMountPoints();
 
   // Returns true if CrosMountpointProvider can handle |url|, i.e. its
   // file system type matches with what this provider supports.
@@ -144,9 +148,8 @@ class WEBKIT_STORAGE_EXPORT CrosMountPointProvider
   scoped_ptr<FileAccessPermissions> file_access_permissions_;
   scoped_ptr<fileapi::AsyncFileUtilAdapter> local_file_util_;
 
-  // Mount points specific to the owning context.
-  //
-  // Add/Remove MountPoints will affect only these mount points.
+  // Mount points specific to the owning context (i.e. per-profile mount
+  // points).
   //
   // It is legal to have mount points with the same name as in
   // system_mount_points_. Also, mount point paths may overlap with mount point
