@@ -123,20 +123,29 @@ void NineBox::RenderToWidget(GtkWidget* dst) const {
 void NineBox::RenderToWidgetWithOpacity(GtkWidget* dst, double opacity) const {
   GtkAllocation allocation;
   gtk_widget_get_allocation(dst, &allocation);
-  int dst_width = allocation.width;
-  int dst_height = allocation.height;
+  int w = allocation.width;
+  int h = allocation.height;
 
-  // The upper-left and lower-right corners of the center square in the
-  // rendering of the ninebox.
-  int x1 = gdk_pixbuf_get_width(images_[0]->ToGdkPixbuf());
-  int y1 = gdk_pixbuf_get_height(images_[0]->ToGdkPixbuf());
-  int x2 = images_[2] ? dst_width - gdk_pixbuf_get_width(
-      images_[2]->ToGdkPixbuf()) : x1;
-  int y2 = images_[6] ? dst_height - gdk_pixbuf_get_height(
-      images_[6]->ToGdkPixbuf()) : y1;
-  // Paint nothing if there's not enough room.
-  if (x2 < x1 || y2 < y1)
-    return;
+  // In case the corners and edges don't all have the same width/height, we draw
+  // the center first, and extend it out in all directions to the edges of the
+  // images with the smallest widths/heights.  This way there will be no
+  // unpainted areas, though some corners or edges might overlap the center.
+  int i0w = images_[0] ? images_[0]->Width() : 0;
+  int i2w = images_[2] ? images_[2]->Width() : 0;
+  int i3w = images_[3] ? images_[3]->Width() : 0;
+  int i5w = images_[5] ? images_[5]->Width() : 0;
+  int i6w = images_[6] ? images_[6]->Width() : 0;
+  int i8w = images_[8] ? images_[8]->Width() : 0;
+  int i4x = std::min(std::min(i0w, i3w), i6w);
+  int i4w = w - i4x - std::min(std::min(i2w, i5w), i8w);
+  int i0h = images_[0] ? images_[0]->Height() : 0;
+  int i1h = images_[1] ? images_[1]->Height() : 0;
+  int i2h = images_[2] ? images_[2]->Height() : 0;
+  int i6h = images_[6] ? images_[6]->Height() : 0;
+  int i7h = images_[7] ? images_[7]->Height() : 0;
+  int i8h = images_[8] ? images_[8]->Height() : 0;
+  int i4y = std::min(std::min(i0h, i1h), i2h);
+  int i4h = h - i4y - std::min(std::min(i6h, i7h), i8h);
 
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(gtk_widget_get_window(dst)));
   // For widgets that have their own window, the allocation (x,y) coordinates
@@ -148,24 +157,24 @@ void NineBox::RenderToWidgetWithOpacity(GtkWidget* dst, double opacity) const {
   }
 
   if (base::i18n::IsRTL()) {
-    cairo_translate(cr, dst_width, 0.0f);
+    cairo_translate(cr, w, 0.0f);
     cairo_scale(cr, -1.0f, 1.0f);
   }
 
   // Top row, center image is horizontally tiled.
   DrawImage(cr, dst, images_[0], 0, 0, opacity);
-  TileImage(cr, dst, images_[1], x1, 0, x2 - x1, y1, opacity);
-  DrawImage(cr, dst, images_[2], x2, 0, opacity);
+  TileImage(cr, dst, images_[1], i0w, 0, w - i0w - i2w, i1h, opacity);
+  DrawImage(cr, dst, images_[2], w - i2w, 0, opacity);
 
   // Center row, all images are vertically tiled, center is horizontally tiled.
-  TileImage(cr, dst, images_[3], 0, y1, x1, y2 - y1, opacity);
-  TileImage(cr, dst, images_[4], x1, y1, x2 - x1, y2 - y1, opacity);
-  TileImage(cr, dst, images_[5], x2, y1, dst_width - x2, y2 - y1, opacity);
+  TileImage(cr, dst, images_[3], 0, i0h, i3w, h - i0h - i6h, opacity);
+  TileImage(cr, dst, images_[4], i4x, i4y, i4w, i4h, opacity);
+  TileImage(cr, dst, images_[5],  w - i5w, i2h, i5w, h - i2h - i8h, opacity);
 
   // Bottom row, center image is horizontally tiled.
-  DrawImage(cr, dst, images_[6], 0, y2, opacity);
-  TileImage(cr, dst, images_[7], x1, y2, x2 - x1, dst_height - y2, opacity);
-  DrawImage(cr, dst, images_[8], x2, y2, opacity);
+  DrawImage(cr, dst, images_[6], 0, h - i6h, opacity);
+  TileImage(cr, dst, images_[7], i6w, h - i7h, w - i6w - i8w, i7h, opacity);
+  DrawImage(cr, dst, images_[8], w - i8w, h - i8h, opacity);
 
   cairo_destroy(cr);
 }
