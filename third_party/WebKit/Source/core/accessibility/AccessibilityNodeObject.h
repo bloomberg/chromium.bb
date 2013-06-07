@@ -179,6 +179,8 @@ protected:
 
     // Low-level accessibility tree exploration.
     virtual AccessibilityObject* firstChild() const;
+    virtual AccessibilityObject* lastChild() const;
+    virtual AccessibilityObject* previousSibling() const;
     virtual AccessibilityObject* nextSibling() const;
     virtual void addChildren();
     virtual void addChild(AccessibilityObject*);

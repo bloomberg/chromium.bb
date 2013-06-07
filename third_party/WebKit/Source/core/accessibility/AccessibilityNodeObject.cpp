@@ -1338,6 +1338,30 @@ AccessibilityObject* AccessibilityNodeObject::firstChild() const
     return axObjectCache()->getOrCreate(firstChild);
 }
 
+AccessibilityObject* AccessibilityNodeObject::lastChild() const
+{
+    if (!node())
+        return 0;
+
+    Node* lastChild = node()->lastChild();
+    if (!lastChild)
+        return 0;
+
+    return axObjectCache()->getOrCreate(lastChild);
+}
+
+AccessibilityObject* AccessibilityNodeObject::previousSibling() const
+{
+    if (!node())
+        return 0;
+
+    Node* previousSibling = node()->previousSibling();
+    if (!previousSibling)
+        return 0;
+
+    return axObjectCache()->getOrCreate(previousSibling);
+}
+
 AccessibilityObject* AccessibilityNodeObject::nextSibling() const
 {
     if (!node())
