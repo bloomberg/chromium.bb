@@ -1711,6 +1711,14 @@
     ]
   },
 
+  "UserActivityScreenDimDelayScale": {
+    "os": ["chromeos"],
+    "test_policy": { "UserActivityScreenDimDelayScale": 200 },
+    "pref_mappings": [
+      { "pref": "power.user_activity_screen_dim_delay_factor" }
+    ]
+  },
+
   "TermsOfServiceURL": {
     "os": ["chromeos"],
     "test_policy": { "TermsOfServiceURL": "http://www.example.com/terms_of_service.txt" },

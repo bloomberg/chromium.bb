@@ -520,6 +520,11 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
           key::kPresentationIdleDelayScale,
           prefs::kPowerPresentationIdleDelayFactor,
           100, INT_MAX, true));
+  handlers_.push_back(
+      new IntPercentageToDoublePolicyHandler(
+          key::kUserActivityScreenDimDelayScale,
+          prefs::kPowerUserActivityScreenDimDelayFactor,
+          100, INT_MAX, true));
   handlers_.push_back(new IntRangePolicyHandler(key::kUptimeLimit,
                                                 prefs::kUptimeLimit,
                                                 3600, INT_MAX, true));
