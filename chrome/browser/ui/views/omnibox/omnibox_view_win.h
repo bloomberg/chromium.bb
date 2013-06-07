@@ -63,7 +63,6 @@ class OmniboxViewWin
                  LocationBarView* parent_view,
                  CommandUpdater* command_updater,
                  bool popup_window_mode,
-                 views::View* location_bar,
                  const gfx::Font& font,
                  int font_y_offset);
   ~OmniboxViewWin();
@@ -405,7 +404,7 @@ class OmniboxViewWin
 
   // The parent view for the edit, used to align the popup and for
   // accessibility.
-  LocationBarView* parent_view_;
+  LocationBarView* location_bar_;
 
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (font size / color). This is used for popups.

@@ -16,14 +16,11 @@
 #include "ui/views/view.h"
 
 struct AutocompleteMatch;
+class LocationBarView;
 class OmniboxEditModel;
 class OmniboxResultView;
 class OmniboxView;
 class Profile;
-
-namespace views {
-class BubbleBorder;
-}
 
 // A view representing the contents of the autocomplete popup.
 class OmniboxPopupContentsView : public views::View,
@@ -35,7 +32,7 @@ class OmniboxPopupContentsView : public views::View,
   static OmniboxPopupView* Create(const gfx::Font& font,
                                   OmniboxView* omnibox_view,
                                   OmniboxEditModel* edit_model,
-                                  views::View* location_bar);
+                                  LocationBarView* location_bar_view);
 
   // Returns the bounds the popup should be shown at. This is the display bounds
   // and includes offsets for the dropshadow which this view's border renders.
@@ -80,10 +77,10 @@ class OmniboxPopupContentsView : public views::View,
   OmniboxPopupContentsView(const gfx::Font& font,
                            OmniboxView* omnibox_view,
                            OmniboxEditModel* edit_model,
-                           views::View* location_bar);
+                           LocationBarView* location_bar_view);
   virtual ~OmniboxPopupContentsView();
 
-  views::View* location_bar() { return location_bar_; }
+  LocationBarView* location_bar_view() { return location_bar_view_; }
 
   virtual void PaintResultViews(gfx::Canvas* canvas);
 
@@ -119,16 +116,6 @@ class OmniboxPopupContentsView : public views::View,
   // bounds the path.
   void MakeContentsPath(gfx::Path* path, const gfx::Rect& bounding_rect);
 
-  // Updates the window's blur region for the current size.
-  void UpdateBlurRegion();
-
-  // Makes the contents of the canvas slightly transparent.
-  void MakeCanvasTransparent(gfx::Canvas* canvas);
-
-  // Called when the line at the specified index should be opened with the
-  // provided disposition.
-  void OpenIndex(size_t index, WindowOpenDisposition disposition);
-
   // Find the index of the match under the given |point|, specified in window
   // coordinates. Returns OmniboxPopupModel::kNoMatch if there isn't a match at
   // the specified point.
@@ -144,9 +131,6 @@ class OmniboxPopupContentsView : public views::View,
   void OpenSelectedLine(const ui::LocatedEvent& event,
                         WindowOpenDisposition disposition);
 
-  // Returns the target bounds given the specified content height.
-  gfx::Rect CalculateTargetBounds(int h);
-
   OmniboxResultView* result_view_at(size_t i);
 
   // The popup that contains this view.  We create this, but it deletes itself
@@ -158,11 +142,7 @@ class OmniboxPopupContentsView : public views::View,
   // The edit view that invokes us.
   OmniboxView* omnibox_view_;
 
-  // An object that the popup positions itself against.
-  views::View* location_bar_;
-
-  // Our border, which can compute our desired bounds.
-  const views::BubbleBorder* bubble_border_;
+  LocationBarView* location_bar_view_;
 
   // The font used for result rows, based on the omnibox font.
   gfx::Font font_;
@@ -180,6 +160,14 @@ class OmniboxPopupContentsView : public views::View,
   ui::SlideAnimation size_animation_;
   gfx::Rect start_bounds_;
   gfx::Rect target_bounds_;
+
+  int left_margin_;
+  int right_margin_;
+
+  const gfx::ImageSkia* bottom_shadow_;  // Ptr owned by resource bundle.
+
+  // Amount of extra padding to add to the popup on the top and bottom.
+  int outside_vertical_padding_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupContentsView);
 };

@@ -106,14 +106,14 @@ class OmniboxResultView::MirroringContext {
 OmniboxResultView::OmniboxResultView(
     OmniboxResultViewModel* model,
     int model_index,
-    views::View* location_bar,
+    LocationBarView* location_bar_view,
     const gfx::Font& font)
     : edge_item_padding_(LocationBarView::GetItemPadding()),
       item_padding_(LocationBarView::GetItemPadding()),
       minimum_text_vertical_padding_(kMinimumTextVerticalPadding),
       model_(model),
       model_index_(model_index),
-      location_bar_(location_bar),
+      location_bar_view_(location_bar_view),
       font_(font),
       font_height_(std::max(font.GetHeight(),
                             font.DeriveFont(0, gfx::BOLD).GetHeight())),
@@ -124,7 +124,7 @@ OmniboxResultView::OmniboxResultView(
   CHECK_GE(model_index, 0);
   if (default_icon_size_ == 0) {
     default_icon_size_ =
-        location_bar_->GetThemeProvider()->GetImageSkiaNamed(
+        location_bar_view_->GetThemeProvider()->GetImageSkiaNamed(
             AutocompleteMatch::TypeToIcon(
                 AutocompleteMatchType::URL_WHAT_YOU_TYPED))->width();
   }
@@ -221,6 +221,10 @@ OmniboxResultView::ResultViewState OmniboxResultView::GetState() const {
   return model_->IsHoveredIndex(model_index_) ? HOVERED : NORMAL;
 }
 
+int OmniboxResultView::GetTextHeight() const {
+  return font_height_;
+}
+
 void OmniboxResultView::PaintMatch(gfx::Canvas* canvas,
                                    const AutocompleteMatch& match,
                                    int x) {
@@ -245,10 +249,6 @@ void OmniboxResultView::PaintMatch(gfx::Canvas* canvas,
     DrawString(canvas, match.description, match.description_class, true, x,
                text_bounds_.y());
   }
-}
-
-int OmniboxResultView::GetTextHeight() const {
-  return font_height_;
 }
 
 // static
@@ -325,13 +325,13 @@ gfx::ImageSkia OmniboxResultView::GetIcon() const {
         break;
     }
   }
-  return *(location_bar_->GetThemeProvider()->GetImageSkiaNamed(icon));
+  return *(location_bar_view_->GetThemeProvider()->GetImageSkiaNamed(icon));
 }
 
 const gfx::ImageSkia* OmniboxResultView::GetKeywordIcon() const {
   // NOTE: If we ever begin returning icons of varying size, then callers need
   // to ensure that |keyword_icon_| is resized each time its image is reset.
-  return location_bar_->GetThemeProvider()->GetImageSkiaNamed(
+  return location_bar_view_->GetThemeProvider()->GetImageSkiaNamed(
       (GetState() == SELECTED) ? IDR_OMNIBOX_TTS_SELECTED : IDR_OMNIBOX_TTS);
 }
 

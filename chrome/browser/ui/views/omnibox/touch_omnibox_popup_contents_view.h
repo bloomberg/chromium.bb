@@ -24,7 +24,7 @@ class TouchOmniboxResultView : public OmniboxResultView {
  public:
   TouchOmniboxResultView(OmniboxResultViewModel* model,
                          int model_index,
-                         views::View* location_bar,
+                         LocationBarView* location_bar_view,
                          const gfx::Font& font);
 
  private:
@@ -45,7 +45,7 @@ class TouchOmniboxPopupContentsView
   TouchOmniboxPopupContentsView(const gfx::Font& font,
                                 OmniboxView* omnibox_view,
                                 OmniboxEditModel* edit_model,
-                                views::View* location_bar);
+                                LocationBarView* location_bar_view);
   virtual ~TouchOmniboxPopupContentsView();
 
   // OmniboxPopupContentsView:

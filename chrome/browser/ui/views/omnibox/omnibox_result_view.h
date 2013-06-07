@@ -16,6 +16,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/view.h"
 
+class LocationBarView;
 class OmniboxResultViewModel;
 
 namespace gfx {
@@ -46,7 +47,7 @@ class OmniboxResultView : public views::View,
 
   OmniboxResultView(OmniboxResultViewModel* model,
                     int model_index,
-                    views::View* location_bar,
+                    LocationBarView* location_bar_view,
                     const gfx::Font& font);
   virtual ~OmniboxResultView();
 
@@ -66,14 +67,14 @@ class OmniboxResultView : public views::View,
 
   ResultViewState GetState() const;
 
+  // Returns the height of the text portion of the result view. In the base
+  // class, this is the height of one line of text.
+  virtual int GetTextHeight() const;
+
  protected:
   virtual void PaintMatch(gfx::Canvas* canvas,
                           const AutocompleteMatch& match,
                           int x);
-
-  // Returns the height of the text portion of the result view. In the base
-  // class, this is the height of one line of text.
-  virtual int GetTextHeight() const;
 
   // Draws the specified |text| into the canvas, using highlighting provided by
   // |classifications|. If |force_dim| is true, ACMatchClassification::DIM is
@@ -145,7 +146,7 @@ class OmniboxResultView : public views::View,
   OmniboxResultViewModel* model_;
   size_t model_index_;
 
-  views::View* location_bar_;
+  LocationBarView* location_bar_view_;
 
   const gfx::Font font_;
   int font_height_;

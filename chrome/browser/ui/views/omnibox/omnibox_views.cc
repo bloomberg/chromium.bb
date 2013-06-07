@@ -39,7 +39,7 @@ OmniboxView* CreateOmniboxView(OmniboxEditController* controller,
   if (!views::Textfield::IsViewsTextfieldEnabled()) {
     return new OmniboxViewWin(
         controller, toolbar_model, location_bar, command_updater,
-        popup_window_mode, location_bar, font, font_y_offset);
+        popup_window_mode, font, font_y_offset);
   }
 #endif
   OmniboxViewViews* omnibox = new OmniboxViewViews(

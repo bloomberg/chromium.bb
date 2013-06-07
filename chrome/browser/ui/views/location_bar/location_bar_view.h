@@ -320,6 +320,15 @@ class LocationBarView : public LocationBar,
   // otherwise it will be the current height.
   int GetInternalHeight(bool use_preferred_size);
 
+  // Returns the position and width that the popup should be, and also the left
+  // edge that the results should align themselves to (which will leave some
+  // border on the left of the popup).
+  void GetOmniboxPopupPositioningInfo(
+      gfx::Point* top_left_screen_coord,
+      int* popup_width,
+      int* left_margin,
+      int* right_margin);
+
   // Space between items in the location bar, as well as between items and the
   // edges.
   static int GetItemPadding();

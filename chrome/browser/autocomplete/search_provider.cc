@@ -166,15 +166,15 @@ AutocompleteMatch SearchProvider::CreateSearchSuggestion(
       // looks odd if both the first and last s are highlighted.
       if (input_position != 0) {
         match.contents_class.push_back(
-            ACMatchClassification(0, ACMatchClassification::NONE));
+            ACMatchClassification(0, ACMatchClassification::MATCH));
       }
       match.contents_class.push_back(
-          ACMatchClassification(input_position, ACMatchClassification::DIM));
+          ACMatchClassification(input_position, ACMatchClassification::NONE));
       size_t next_fragment_position = input_position + input_text.length();
       if (next_fragment_position < query_string.length()) {
         match.contents_class.push_back(
             ACMatchClassification(next_fragment_position,
-                                  ACMatchClassification::NONE));
+                                  ACMatchClassification::MATCH));
       }
     }
   } else {
