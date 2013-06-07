@@ -128,28 +128,6 @@ base::FilePath CreateFilePath(const std::string& file_path) {
 #endif
 }
 
-std::string FilePathToString(const base::FilePath& file_path) {
-#if defined(OS_WIN)
-  return UTF16ToUTF8(file_path.value());
-#else
-  return file_path.value();
-#endif
-}
-
-bool sync_parent(const std::string& fname) {
-#if !defined(OS_WIN)
-  TRACE_EVENT0("leveldb", "sync_parent");
-  base::FilePath parent_dir = CreateFilePath(fname).DirName();
-  int parent_fd =
-      HANDLE_EINTR(open(FilePathToString(parent_dir).c_str(), O_RDONLY));
-  if (parent_fd < 0)
-    return false;
-  HANDLE_EINTR(fsync(parent_fd));
-  HANDLE_EINTR(close(parent_fd));
-#endif
-  return true;
-}
-
 const char* MethodIDToString(MethodID method) {
   switch (method) {
     case kSequentialFileRead:
@@ -190,6 +168,8 @@ const char* MethodIDToString(MethodID method) {
       return "GetTestDirectory";
     case kNewLogger:
       return "NewLogger";
+    case kSyncParent:
+      return "SyncParent";
     case kNumEntries:
       NOTREACHED();
       return "kNumEntries";
@@ -427,10 +407,27 @@ bool ParseMethodAndError(const char* string, int* method, int* error) {
   return false;
 }
 
+std::string FilePathToString(const base::FilePath& file_path) {
+#if defined(OS_WIN)
+  return UTF16ToUTF8(file_path.value());
+#else
+  return file_path.value();
+#endif
+}
+
 ChromiumWritableFile::ChromiumWritableFile(const std::string& fname,
                                            FILE* f,
-                                           const UMALogger* uma_logger)
-    : filename_(fname), file_(f), uma_logger_(uma_logger) {}
+                                           const UMALogger* uma_logger,
+                                           WriteTracker* tracker)
+    : filename_(fname), file_(f), uma_logger_(uma_logger), tracker_(tracker) {
+  base::FilePath path = base::FilePath::FromUTF8Unsafe(fname);
+  is_manifest_ =
+      FilePathToString(path.BaseName()).find("MANIFEST") !=
+      std::string::npos;
+  if (!is_manifest_)
+    tracker_->DidCreateNewFile(filename_);
+  parent_dir_ = FilePathToString(CreateFilePath(fname).DirName());
+}
 
 ChromiumWritableFile::~ChromiumWritableFile() {
   if (file_ != NULL) {
@@ -439,15 +436,37 @@ ChromiumWritableFile::~ChromiumWritableFile() {
   }
 }
 
+Status ChromiumWritableFile::SyncParent() {
+  Status s;
+#if !defined(OS_WIN)
+  TRACE_EVENT0("leveldb", "SyncParent");
+
+  int parent_fd =
+      HANDLE_EINTR(open(parent_dir_.c_str(), O_RDONLY));
+  if (parent_fd < 0)
+    return MakeIOError(parent_dir_, strerror(errno), kSyncParent);
+  if (HANDLE_EINTR(fsync(parent_fd)) != 0) {
+    s = MakeIOError(parent_dir_, strerror(errno), kSyncParent);
+  };
+  HANDLE_EINTR(close(parent_fd));
+#endif
+  return s;
+}
+
 Status ChromiumWritableFile::Append(const Slice& data) {
+  if (is_manifest_ && tracker_->DoesDirNeedSync(filename_)) {
+    Status s = SyncParent();
+    if (!s.ok())
+      return s;
+    tracker_->DidSyncDir(filename_);
+  }
+
   size_t r = fwrite_wrapper(data.data(), 1, data.size(), file_);
-  Status result;
   if (r != data.size()) {
     uma_logger_->RecordOSError(kWritableFileAppend, errno);
-    result =
-        MakeIOError(filename_, strerror(errno), kWritableFileAppend, errno);
+    return MakeIOError(filename_, strerror(errno), kWritableFileAppend, errno);
   }
-  return result;
+  return Status::OK();
 }
 
 Status ChromiumWritableFile::Close() {
@@ -497,7 +516,11 @@ ChromiumEnv::ChromiumEnv()
       kMaxRetryTimeMillis(1000) {
 }
 
-ChromiumEnv::~ChromiumEnv() { NOTREACHED(); }
+ChromiumEnv::~ChromiumEnv() {
+  // In chromium, ChromiumEnv is leaked. It'd be nice to add NOTREACHED here to
+  // ensure that behavior isn't accidentally changed, but there's an instance in
+  // a unit test that is deleted.
+}
 
 Status ChromiumEnv::NewSequentialFile(const std::string& fname,
                                       SequentialFile** result) {
@@ -555,12 +578,7 @@ Status ChromiumEnv::NewWritableFile(const std::string& fname,
     RecordErrorAt(kNewWritableFile);
     return MakeIOError(fname, strerror(errno), kNewWritableFile, errno);
   } else {
-    if (!sync_parent(fname)) {
-      fclose(f);
-      RecordErrorAt(kNewWritableFile);
-      return MakeIOError(fname, strerror(errno), kNewWritableFile, errno);
-    }
-    *result = new ChromiumWritableFile(fname, f, this);
+    *result = new ChromiumWritableFile(fname, f, this, this);
     return Status::OK();
   }
 }
@@ -639,12 +657,6 @@ Status ChromiumEnv::RenameFile(const std::string& src, const std::string& dst) {
   do {
     if (::file_util::ReplaceFileAndGetError(
             src_file_path, destination, &error)) {
-      sync_parent(dst);
-      if (src_file_path.DirName() != destination.DirName()) {
-        // As leveldb is implemented now this branch will never be taken, but
-        // this is future-proof.
-        sync_parent(src);
-      }
       return result;
     }
   } while (retrier.ShouldKeepTrying(error));
@@ -738,10 +750,6 @@ Status ChromiumEnv::NewLogger(const std::string& fname, Logger** result) {
     RecordOSError(kNewLogger, saved_errno);
     return MakeIOError(fname, strerror(saved_errno), kNewLogger, saved_errno);
   } else {
-    if (!sync_parent(fname)) {
-      fclose(f);
-      return MakeIOError(fname, strerror(errno), kNewLogger, errno);
-    }
     *result = new ChromiumLogger(f);
     return Status::OK();
   }
@@ -905,6 +913,26 @@ void ChromiumEnv::BGThread() {
 
 void ChromiumEnv::StartThread(void (*function)(void* arg), void* arg) {
   new Thread(function, arg); // Will self-delete.
+}
+
+static std::string GetDirName(const std::string& filename) {
+  base::FilePath file = base::FilePath::FromUTF8Unsafe(filename);
+  return FilePathToString(file.DirName());
+}
+
+void ChromiumEnv::DidCreateNewFile(const std::string& filename) {
+  base::AutoLock auto_lock(map_lock_);
+  needs_sync_map_[GetDirName(filename)] = true;
+}
+
+bool ChromiumEnv::DoesDirNeedSync(const std::string& filename) {
+  base::AutoLock auto_lock(map_lock_);
+  return needs_sync_map_.find(GetDirName(filename)) != needs_sync_map_.end();
+}
+
+void ChromiumEnv::DidSyncDir(const std::string& filename) {
+  base::AutoLock auto_lock(map_lock_);
+  needs_sync_map_.erase(GetDirName(filename));
 }
 
 }  // namespace leveldb_env

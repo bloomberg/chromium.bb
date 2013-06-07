@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_LEVELDATABASE_ENV_CHROMIUM_H_
 #define THIRD_PARTY_LEVELDATABASE_ENV_CHROMIUM_H_
 
+#include <map>
+
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/synchronization/condition_variable.h"
@@ -34,6 +36,7 @@ enum MethodID {
   kUnlockFile,
   kGetTestDirectory,
   kNewLogger,
+  kSyncParent,
   kNumEntries
 };
 
@@ -50,6 +53,7 @@ leveldb::Status MakeIOError(leveldb::Slice filename,
                             MethodID method);
 
 bool ParseMethodAndError(const char* string, int* method, int* error);
+std::string FilePathToString(const base::FilePath& file_path);
 
 class UMALogger {
  public:
@@ -67,11 +71,19 @@ class RetrierProvider {
       MethodID method) const = 0;
 };
 
+class WriteTracker {
+ public:
+  virtual void DidCreateNewFile(const std::string& fname) = 0;
+  virtual bool DoesDirNeedSync(const std::string& fname) = 0;
+  virtual void DidSyncDir(const std::string& fname) = 0;
+};
+
 class ChromiumWritableFile : public leveldb::WritableFile {
  public:
   ChromiumWritableFile(const std::string& fname,
                        FILE* f,
-                       const UMALogger* uma_logger);
+                       const UMALogger* uma_logger,
+                       WriteTracker* tracker);
   virtual ~ChromiumWritableFile();
   virtual leveldb::Status Append(const leveldb::Slice& data);
   virtual leveldb::Status Close();
@@ -79,14 +91,20 @@ class ChromiumWritableFile : public leveldb::WritableFile {
   virtual leveldb::Status Sync();
 
  private:
+  leveldb::Status SyncParent();
+
   std::string filename_;
   FILE* file_;
   const UMALogger* uma_logger_;
+  WriteTracker* tracker_;
+  bool is_manifest_;
+  std::string parent_dir_;
 };
 
 class ChromiumEnv : public leveldb::Env,
                     public UMALogger,
-                    public RetrierProvider {
+                    public RetrierProvider,
+                    public WriteTracker {
  public:
   ChromiumEnv();
   virtual ~ChromiumEnv();
@@ -119,9 +137,16 @@ class ChromiumEnv : public leveldb::Env,
   virtual void SleepForMicroseconds(int micros);
 
  protected:
+  virtual void DidCreateNewFile(const std::string& fname);
+  virtual bool DoesDirNeedSync(const std::string& fname);
+  virtual void DidSyncDir(const std::string& fname);
+
   std::string name_;
 
  private:
+  std::map<std::string, bool> needs_sync_map_;
+  base::Lock map_lock_;
+
   const int kMaxRetryTimeMillis;
   // BGThread() is the body of the background thread
   void BGThread();

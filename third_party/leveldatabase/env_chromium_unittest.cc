@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/test/test_suite.h"
 #include "env_chromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,6 +52,52 @@ TEST(ErrorEncoding, NoEncodedMessage) {
   EXPECT_FALSE(ParseMethodAndError(s.ToString().c_str(), &method, &error));
   EXPECT_EQ(3, method);
   EXPECT_EQ(4, error);
+}
+
+class MyEnv : public ChromiumEnv {
+ public:
+  MyEnv() : directory_syncs_(0) {}
+  int directory_syncs() { return directory_syncs_; }
+
+ protected:
+  virtual void DidSyncDir(const std::string& fname) {
+    ++directory_syncs_;
+    ChromiumEnv::DidSyncDir(fname);
+  }
+
+ private:
+  int directory_syncs_;
+};
+
+TEST(ChromiumEnv, DirectorySyncing) {
+  MyEnv env;
+  base::ScopedTempDir dir;
+  dir.CreateUniqueTempDir();
+  base::FilePath dir_path = dir.path();
+  std::string some_data = "some data";
+  Slice data = some_data;
+
+  std::string manifest_file_name =
+      FilePathToString(dir_path.Append("MANIFEST-001"));
+  WritableFile* manifest_file;
+  Status s = env.NewWritableFile(manifest_file_name, &manifest_file);
+  EXPECT_TRUE(s.ok());
+  manifest_file->Append(data);
+  EXPECT_EQ(0, env.directory_syncs());
+  manifest_file->Append(data);
+  EXPECT_EQ(0, env.directory_syncs());
+
+  std::string sst_file_name = FilePathToString(dir_path.Append("000003.sst"));
+  WritableFile* sst_file;
+  s = env.NewWritableFile(sst_file_name, &sst_file);
+  EXPECT_TRUE(s.ok());
+  sst_file->Append(data);
+  EXPECT_EQ(0, env.directory_syncs());
+
+  manifest_file->Append(data);
+  EXPECT_EQ(1, env.directory_syncs());
+  manifest_file->Append(data);
+  EXPECT_EQ(1, env.directory_syncs());
 }
 
 int main(int argc, char** argv) { return base::TestSuite(argc, argv).Run(); }
