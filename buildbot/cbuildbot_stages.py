@@ -2489,6 +2489,18 @@ class ArchiveStage(ArchivingStage):
       cros_build_lib.CreateTarball(env_tar, tempdir)
       self._upload_queue.put([os.path.basename(env_tar)])
 
+  def BuildAndArchiveDeltaSysroot(self):
+    """Generate and upload delta sysroot for initial build_packages."""
+    extra_env = {}
+    if self._build_config['useflags']:
+      extra_env['USE'] = ' '.join(self._build_config['useflags'])
+    in_chroot_path = git.ReinterpretPathForChroot(self.archive_path)
+    cmd = ['generate_delta_sysroot', '--out-dir', in_chroot_path,
+           '--board', self._current_board]
+    cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True,
+                              extra_env=extra_env)
+    self._upload_queue.put([constants.DELTA_SYSROOT_TAR])
+
   def PerformStage(self):
     buildroot = self._build_root
     config = self._build_config
@@ -2702,6 +2714,8 @@ class ArchiveStage(ArchivingStage):
         steps.extend(
             [self.ArchiveStrippedChrome, self.BuildAndArchiveChromeSysroot,
              self.ArchiveChromeEbuildEnv, ArchiveImageScripts])
+      if config['create_delta_sysroot']:
+        steps.append(self.BuildAndArchiveDeltaSysroot)
 
       with parallel.BackgroundTaskRunner(
           UploadSymbols, queue=self._upload_symbols_queue, processes=1):

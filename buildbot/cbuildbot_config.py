@@ -435,6 +435,10 @@ _settings = dict(
 #                   default.
   postsync_reexec=True,
 
+# create_delta_sysroot -- Create delta sysroot during ArchiveStage. Disabled by
+#                          default.
+  create_delta_sysroot=False,
+
 # TODO(sosa): Collapse to one option.
 # ====================== Dev installer prebuilts options =======================
 
@@ -688,6 +692,7 @@ paladin = _config(
   trybot_list=True,
   description='Commit Queue',
   upload_standalone_images=False,
+  create_delta_sysroot=True,
 )
 
 # Used for paladin builders that build from source.
