@@ -1779,7 +1779,11 @@ void RenderBox::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformState
 
 LayoutSize RenderBox::offsetFromContainer(RenderObject* o, const LayoutPoint& point, bool* offsetDependsOnPoint) const
 {
-    ASSERT(o == container());
+    // A region "has" boxes inside it without being their container.
+    // FIXME: change container() / containingBlock() to count for boxes being positioned relative to the region, not the
+    // FlowThread. This requires a separate patch as a simple test with such a change in container() causes 129 out of
+    // 337 regions tests to fail.
+    ASSERT(o == container() || o->isRenderRegion());
 
     LayoutSize offset;    
     if (hasPaintOffset())
