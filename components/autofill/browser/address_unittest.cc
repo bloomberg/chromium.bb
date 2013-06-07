@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/browser/address.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "content/public/test/test_browser_thread.h"

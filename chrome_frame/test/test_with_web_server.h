@@ -11,7 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "chrome_frame/chrome_tab.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"

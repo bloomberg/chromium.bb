@@ -13,7 +13,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/browser/android/auxiliary_profile_loader_android.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/phone_number.h"

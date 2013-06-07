@@ -6,8 +6,8 @@
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/browser/autofill_download.h"

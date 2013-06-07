@@ -15,7 +15,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "net/base/net_util.h"
 
 #include "chrome/browser/automation/url_request_automation_job.h"

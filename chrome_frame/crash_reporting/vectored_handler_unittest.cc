@@ -6,7 +6,7 @@
 
 #include "base/environment.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome_frame/crash_reporting/crash_dll.h"
 #include "chrome_frame/crash_reporting/nt_loader.h"
 #include "chrome_frame/crash_reporting/vectored_handler-impl.h"

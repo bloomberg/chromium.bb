@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/data_driven_test.h"

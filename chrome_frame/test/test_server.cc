@@ -14,7 +14,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_piece.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "net/base/winsock_init.h"
 #include "net/http/http_util.h"

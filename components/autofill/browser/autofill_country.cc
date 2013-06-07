@@ -14,7 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "grit/component_resources.h"
 #include "third_party/icu/public/common/unicode/locid.h"
 #include "third_party/icu/public/common/unicode/uloc.h"

@@ -15,7 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/i18n.h"
 #include "base/win/windows_version.h"
 #include "chrome_frame/policy_settings.h"

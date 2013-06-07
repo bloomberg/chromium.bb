@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "device/bluetooth/bluetooth_utils.h"
 #include "grit/device_bluetooth_strings.h"
 #include "ui/base/l10n/l10n_util.h"

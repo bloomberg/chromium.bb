@@ -5,7 +5,7 @@
 #include "components/sessions/serialized_navigation_entry.h"
 
 #include "base/pickle.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"

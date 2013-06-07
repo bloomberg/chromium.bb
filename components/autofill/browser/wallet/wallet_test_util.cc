@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/browser/wallet/full_wallet.h"
 #include "components/autofill/browser/wallet/instrument.h"

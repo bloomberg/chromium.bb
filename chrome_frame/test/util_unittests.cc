@@ -6,7 +6,7 @@
 #include "base/file_version_info_win.h"
 #include "base/files/file_path.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome_frame/navigation_constraints.h"
 #include "chrome_frame/registry_list_preferences_holder.h"

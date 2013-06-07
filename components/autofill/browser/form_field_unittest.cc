@@ -4,7 +4,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_field.h"
 #include "components/autofill/browser/form_field.h"
 #include "testing/gtest/include/gtest/gtest.h"

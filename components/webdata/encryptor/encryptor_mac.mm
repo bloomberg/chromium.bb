@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/webdata/encryptor/encryptor_password_mac.h"
 #include "crypto/apple_keychain.h"
 #include "crypto/encryptor.h"

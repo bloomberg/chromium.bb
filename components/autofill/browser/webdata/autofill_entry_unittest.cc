@@ -4,8 +4,8 @@
 
 #include <algorithm>
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
 #include "components/autofill/browser/webdata/autofill_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

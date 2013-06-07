@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/field_types.h"
 #include "components/autofill/browser/phone_number.h"

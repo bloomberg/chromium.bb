@@ -9,7 +9,7 @@
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/common/form_field_data.h"

@@ -4,7 +4,7 @@
 
 #include "components/autofill/browser/email_field.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_regex_constants.h"
 #include "components/autofill/browser/autofill_scanner.h"
 #include "ui/base/l10n/l10n_util.h"

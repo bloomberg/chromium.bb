@@ -6,7 +6,7 @@
 
 #include <sstream>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_variant.h"
 #include "chrome_frame/test/mock_ie_event_sink_actions.h"
 

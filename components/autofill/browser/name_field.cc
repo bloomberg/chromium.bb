@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_regex_constants.h"
 #include "components/autofill/browser/autofill_scanner.h"
 #include "components/autofill/browser/autofill_type.h"

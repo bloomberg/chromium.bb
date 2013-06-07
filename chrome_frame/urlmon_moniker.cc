@@ -9,7 +9,7 @@
 
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome_frame/bho.h"
 #include "chrome_frame/bind_context_info.h"
 #include "chrome_frame/chrome_active_document.h"

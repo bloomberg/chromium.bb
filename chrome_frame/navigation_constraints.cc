@@ -5,7 +5,7 @@
 #include "chrome_frame/navigation_constraints.h"
 
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
 #include "chrome_frame/utils.h"
 #include "extensions/common/constants.h"

@@ -6,8 +6,8 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
-#include "base/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"

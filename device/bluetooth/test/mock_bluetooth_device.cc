@@ -4,7 +4,7 @@
 
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 
 namespace device {

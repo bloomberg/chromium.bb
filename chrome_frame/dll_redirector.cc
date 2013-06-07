@@ -15,7 +15,7 @@
 #include "base/path_service.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/windows_version.h"
 #include "chrome_frame/utils.h"

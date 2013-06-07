@@ -7,16 +7,16 @@
 
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
-#include "chrome_frame/http_negotiate.h"
 #include "chrome_frame/html_utils.h"
+#include "chrome_frame/http_negotiate.h"
 #include "chrome_frame/registry_list_preferences_holder.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/utils.h"
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 class HttpNegotiateTest : public testing::Test {
  protected:
