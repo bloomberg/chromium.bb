@@ -46,7 +46,7 @@
         '../net/net.gyp:net',
         '../net/net.gyp:net_resources',
         '../skia/skia.gyp:skia',
-        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit_test_support',
         '../third_party/WebKit/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:TestRunner',
         '../ui/gl/gl.gyp:gl',

@@ -11,7 +11,7 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/net/net.gyp:net',
-        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
         '<(DEPTH)/url/url.gyp:url_lib',
       ],
       'defines': ['WEBKIT_BASE_IMPLEMENTATION'],

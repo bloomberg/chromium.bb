@@ -370,7 +370,7 @@
         '../gpu/gpu.gyp:gpu_ipc',
         '../ipc/ipc.gyp:ipc',
         '../media/media.gyp:shared_memory_support',
-        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/WebKit/public/blink.gyp:blink',
         '../ui/gl/gl.gyp:gl',
         '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:webkit_base',

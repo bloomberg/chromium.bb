@@ -2267,7 +2267,7 @@
         'test_support_ui_runner',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
-        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/WebKit/public/blink.gyp:blink',
       ],
       'include_dirs': [
         '..',
@@ -2434,7 +2434,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/npapi/npapi.gyp:npapi',
-        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/WebKit/public/blink.gyp:blink',
       ],
       'include_dirs': [
         '..',

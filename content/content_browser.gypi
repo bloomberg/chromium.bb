@@ -1151,7 +1151,7 @@
         '../cc/cc.gyp:cc',
         '../net/net.gyp:http_server',
         '../printing/printing.gyp:printing',
-        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../ui/surface/surface.gyp:surface',
         '../webkit/support/webkit_support.gyp:webkit_common',

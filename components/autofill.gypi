@@ -55,7 +55,7 @@
             '../base/base.gyp:base',
             '../content/content.gyp:content_common',
             '../ipc/ipc.gyp:ipc',
-            '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+            '../third_party/WebKit/public/blink.gyp:blink',
             '../ui/ui.gyp:ui',
             '../url/url.gyp:url_lib',
           ],

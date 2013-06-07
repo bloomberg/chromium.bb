@@ -86,7 +86,7 @@
       ],
     }, {  # OS!="ios"
       'dependencies': [
-        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/npapi/npapi.gyp:npapi',
         '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:webkit_base',

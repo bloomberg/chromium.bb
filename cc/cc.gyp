@@ -365,7 +365,7 @@
         '<(DEPTH)/ui/gl/gl.gyp:gl',
         '<(DEPTH)/ui/surface/surface.gyp:surface',
         '<(DEPTH)/ui/ui.gyp:ui',
-        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
       ],
       'defines': [
         'CC_IMPLEMENTATION=1',

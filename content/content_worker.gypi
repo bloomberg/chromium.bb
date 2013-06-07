@@ -6,7 +6,7 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../skia/skia.gyp:skia',
-    '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+    '../third_party/WebKit/public/blink.gyp:blink',
   ],
   'sources': [
     'worker/shared_worker_devtools_agent.cc',

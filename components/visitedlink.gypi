@@ -53,7 +53,7 @@
             '../base/base.gyp:base',
             '../content/content.gyp:content_common',
             '../content/content.gyp:content_renderer',
-            '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+            '../third_party/WebKit/public/blink.gyp:blink',
           ],
           'sources': [
             'visitedlink/renderer/visitedlink_slave.cc',

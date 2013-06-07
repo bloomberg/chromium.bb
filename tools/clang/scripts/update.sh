@@ -148,15 +148,7 @@ if [[ "${OS}" = "Darwin" ]]; then
   fi
 fi
 
-if [ -f "${THIS_DIR}/../../../WebKit.gyp" ]; then
-  # We're inside a WebKit checkout.
-  # TODO(thakis): try to unify the directory layout of the xcode- and
-  # make-based builds. http://crbug.com/110455
-  MAKE_DIR="${THIS_DIR}/../../../../../../out"
-else
-  # We're inside a Chromium checkout.
-  MAKE_DIR="${THIS_DIR}/../../../out"
-fi
+MAKE_DIR="${THIS_DIR}/../../../out"
 
 for CONFIG in Debug Release; do
   if [[ -d "${MAKE_DIR}/${CONFIG}/obj.target" ||

@@ -7,7 +7,7 @@
     '../jingle/jingle.gyp:jingle_glue',
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',
-    '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+    '../third_party/WebKit/public/blink.gyp:blink',
     '../third_party/hyphen/hyphen.gyp:hyphen',
     '../third_party/icu/icu.gyp:icui18n',
     '../third_party/icu/icu.gyp:icuuc',
