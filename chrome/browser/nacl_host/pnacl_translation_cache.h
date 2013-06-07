@@ -22,7 +22,7 @@ class Backend;
 
 namespace pnacl_cache {
 typedef base::Callback<void(int)> CompletionCallback;
-class PNaClTranslationCacheWriteEntry;
+class PNaClTranslationCacheEntry;
 extern const int kMaxMemCacheSize;
 
 class PNaClTranslationCache
@@ -48,19 +48,20 @@ class PNaClTranslationCache
                  const std::string& nexe,
                  const CompletionCallback& callback);
 
-  // Retrieve the nexe from the translation cache. (Not implemented yet.)
-  int GetNexe(const std::string& key,
-              std::string* nexe,
-              const CompletionCallback& callback);
+  // Retrieve the nexe from the translation cache. Write the data into |nexe|
+  // and call |callback| with the result (0 on success and <0 otherwise)
+  void GetNexe(const std::string& key,
+               std::string* nexe,
+               const CompletionCallback& callback);
 
   // Return the number of entries in the cache backend.
   int Size();
 
  private:
-  friend class PNaClTranslationCacheWriteEntry;
-  // PNaClTranslationCacheWriteEntry should only use the
-  // WriteComplete and backend methods on PNaClTranslationCache.
-  void WriteComplete(PNaClTranslationCacheWriteEntry* entry);
+  friend class PNaClTranslationCacheEntry;
+  // PNaClTranslationCacheEntry should only use the
+  // OpComplete and backend methods on PNaClTranslationCache.
+  void OpComplete(PNaClTranslationCacheEntry* entry);
   disk_cache::Backend* backend() { return disk_cache_; }
 
   int InitWithDiskBackend(const base::FilePath& disk_cache_dir,
@@ -79,8 +80,7 @@ class PNaClTranslationCache
   disk_cache::Backend* disk_cache_;
   CompletionCallback init_callback_;
   bool in_memory_;
-  std::map<void*, scoped_refptr<PNaClTranslationCacheWriteEntry> >
-      write_entries_;
+  std::map<void*, scoped_refptr<PNaClTranslationCacheEntry> > open_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(PNaClTranslationCache);
 };
