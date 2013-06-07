@@ -7,6 +7,7 @@
 
 #import <AppKit/AppKit.h>
 
+#import "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 
 @class AvatarMenuBubbleController;
@@ -14,6 +15,10 @@ class Browser;
 
 namespace AvatarButtonControllerInternal {
 class Observer;
+}
+
+namespace ui {
+class ThemeProvider;
 }
 
 // This view controller manages the button/image that sits in the top of the
@@ -29,10 +34,19 @@ class Observer;
 
   // The menu controller, if the menu is open.
   __weak AvatarMenuBubbleController* menuController_;
+
+  // The avatar button.
+  scoped_nsobject<NSButton> button_;
+
+  // The managed user avatar label. Only used for managed user profiles.
+  scoped_nsobject<NSTextField> label_;
 }
 
-// The view cast to a button.
-@property (readonly, nonatomic) NSButton* buttonView;
+// The avatar button view.
+@property(readonly, nonatomic) NSButton* buttonView;
+
+// The managed user avatar label view.
+@property(readonly, nonatomic) NSTextField* labelView;
 
 // Designated initializer.
 - (id)initWithBrowser:(Browser*)browser;
@@ -40,6 +54,10 @@ class Observer;
 // Sets the image to be used as the avatar. This will have a drop shadow applied
 // and will be resized to the frame of the button.
 - (void)setImage:(NSImage*)image;
+
+// Updates the text color and the background color of the avatar label
+// according to the chosen theme.
+- (void)updateColors:(ui::ThemeProvider*)themeProvider;
 
 // Shows the avatar bubble.
 - (void)showAvatarBubble;

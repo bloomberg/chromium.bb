@@ -342,7 +342,7 @@ willPositionSheet:(NSWindow*)sheet
     NSView* avatarButton = [avatarButtonController_ view];
     CGFloat buttonHeight = std::min(
         static_cast<CGFloat>(profiles::kAvatarIconHeight), tabStripHeight);
-    [avatarButton setFrameSize:NSMakeSize(profiles::kAvatarIconWidth,
+    [avatarButton setFrameSize:NSMakeSize(NSWidth([avatarButton frame]),
                                           buttonHeight)];
 
     // Actually place the badge *above* |maxY|, by +2 to miss the divider.
@@ -367,6 +367,10 @@ willPositionSheet:(NSWindow*)sheet
     rightIndent += -[window fullScreenButtonOriginAdjustment].x;
   } else if ([self shouldShowAvatar]) {
     rightIndent += kAvatarTabStripShrink;
+    if ([avatarButtonController_ labelView]) {
+      rightIndent += NSWidth([[avatarButtonController_ labelView] frame]) +
+                     kAvatarRightOffset;
+    }
   }
   [tabStripController_ setRightIndentForControls:rightIndent];
 

@@ -26,7 +26,17 @@
 
 @interface AvatarMenuBubbleController (Private)
 - (AvatarMenuModel*)model;
-- (NSButton*)configureNewUserButton:(CGFloat)yOffset;
+- (NSTextView*)configureManagedUserInformation:(CGFloat)yOffset;
+- (NSButton*)configureNewUserButton:(CGFloat)yOffset
+                  updateWidthAdjust:(CGFloat*)widthAdjust;
+- (NSButton*)configureSwitchUserButton:(CGFloat)yOffset
+                     updateWidthAdjust:(CGFloat*)widthAdjust;
+- (AvatarMenuItemController*)initAvatarItem:(int)itemIndex
+                          updateWidthAdjust:(CGFloat*)widthAdjust
+                                 setYOffset:(CGFloat)yOffset;
+- (void)setWindowFrame:(CGFloat)yOffset widthAdjust:(CGFloat)width;
+- (void)initMenuContents;
+- (void)initManagedUserContents;
 - (void)keyDown:(NSEvent*)theEvent;
 - (void)moveDown:(id)sender;
 - (void)moveUp:(id)sender;
@@ -84,6 +94,11 @@ const CGFloat kLabelInset = 49.0;
   model_->EditProfile([sender modelIndex]);
 }
 
+- (IBAction)switchProfile:(id)sender {
+  expanded_ = YES;
+  [self performLayout];
+}
+
 // Private /////////////////////////////////////////////////////////////////////
 
 - (id)initWithModel:(AvatarMenuModel*)model
@@ -115,22 +130,77 @@ const CGFloat kLabelInset = 49.0;
   return self;
 }
 
-- (void)performLayout {
+- (AvatarMenuItemController*)initAvatarItem:(int)itemIndex
+                          updateWidthAdjust:(CGFloat*)widthAdjust
+                                 setYOffset:(CGFloat)yOffset {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSView* contentView = [[self window] contentView];
+  const AvatarMenuModel::Item& item = model_->GetItemAt(itemIndex);
+  // Create the item view controller. Autorelease it because it will be owned
+  // by the |items_| array.
+  AvatarMenuItemController* itemView =
+      [[[AvatarMenuItemController alloc] initWithModelIndex:item.model_index
+                                             menuController:self] autorelease];
+  itemView.iconView.image = item.icon.ToNSImage();
 
-  // Reset the array of controllers and remove all the views.
-  items_.reset([[NSMutableArray alloc] init]);
-  [contentView setSubviews:[NSArray array]];
+  // Adjust the name field to fit the string. If it overflows, record by how
+  // much the window needs to grow to accomodate the new size of the field.
+  NSTextField* nameField = itemView.nameField;
+  nameField.stringValue = base::SysUTF16ToNSString(item.name);
+  NSSize delta = [GTMUILocalizerAndLayoutTweaker sizeToFitView:nameField];
+  if (delta.width > 0)
+    *widthAdjust = std::max(*widthAdjust, delta.width);
+
+  // Repeat for the sync state/email.
+  NSTextField* emailField = itemView.emailField;
+  emailField.stringValue = base::SysUTF16ToNSString(item.sync_state);
+  delta = [GTMUILocalizerAndLayoutTweaker sizeToFitView:emailField];
+  if (delta.width > 0)
+    *widthAdjust = std::max(*widthAdjust, delta.width);
+
+  if (!item.active) {
+    // In the inactive case, hide additional UI.
+    [itemView.activeView setHidden:YES];
+    [itemView.editButton setHidden:YES];
+  } else {
+    // Otherwise, set up the edit button and its three interaction states.
+    itemView.activeView.image =
+        rb.GetImageNamed(IDR_PROFILE_SELECTED).ToNSImage();
+  }
+
+  // Add the item to the content view.
+  [[itemView view] setFrameOrigin:NSMakePoint(0, yOffset)];
+
+  // Keep track of the view controller.
+  [items_ addObject:itemView];
+  return itemView;
+}
+
+- (void)setWindowFrame:(CGFloat)yOffset widthAdjust:(CGFloat)width {
+  // Set the window frame, clamping the width at a sensible max.
+  NSRect frame = [[self window] frame];
+  // Adjust the origin after we have switched from the managed user menu to the
+  // regular menu.
+  if (expanded_)
+    frame.origin.y += frame.size.height - yOffset;
+  frame.size.height = yOffset;
+  frame.size.width = kBubbleMinWidth + width;
+  frame.size.width = std::min(NSWidth(frame), kBubbleMaxWidth);
+  [[self window] setFrame:frame display:YES];
+}
+
+- (void)initMenuContents {
+  NSView* contentView = [[self window] contentView];
 
   // |yOffset| is the next position at which to draw in contentView coordinates.
   // Use a little more vertical spacing because the items have padding built-
   // into the xib, and this gives a little more space to visually match.
   CGFloat yOffset = kLinkSpacing;
+  CGFloat widthAdjust = 0;
 
   if (model_->ShouldShowAddNewProfileLink()) {
     // Since drawing happens bottom-up, start with the "New User" link.
-    NSButton* newButton = [self configureNewUserButton:yOffset];
+    NSButton* newButton =
+        [self configureNewUserButton:yOffset updateWidthAdjust:&widthAdjust];
     [contentView addSubview:newButton];
     yOffset += NSHeight([newButton frame]) + kVerticalSpacing;
 
@@ -145,65 +215,111 @@ const CGFloat kLabelInset = 49.0;
   }
 
   // Loop over the profiles in reverse, constructing the menu items.
-  CGFloat widthAdjust = 0;
   for (int i = model_->GetNumberOfItems() - 1; i >= 0; --i) {
-    const AvatarMenuModel::Item& item = model_->GetItemAt(i);
-
-    // Create the item view controller. Autorelease it because it will be owned
-    // by the |items_| array.
-    AvatarMenuItemController* itemView =
-        [[[AvatarMenuItemController alloc] initWithModelIndex:item.model_index
-                                              menuController:self] autorelease];
-    itemView.iconView.image = item.icon.ToNSImage();
-
-    // Adjust the name field to fit the string. If it overflows, record by how
-    // much the window needs to grow to accomodate the new size of the field.
-    NSTextField* nameField = itemView.nameField;
-    nameField.stringValue = base::SysUTF16ToNSString(item.name);
-    NSSize delta = [GTMUILocalizerAndLayoutTweaker sizeToFitView:nameField];
-    if (delta.width > 0)
-      widthAdjust = std::max(widthAdjust, delta.width);
-
-    // Repeat for the sync state/email.
-    NSTextField* emailField = itemView.emailField;
-    emailField.stringValue = base::SysUTF16ToNSString(item.sync_state);
-    delta = [GTMUILocalizerAndLayoutTweaker sizeToFitView:emailField];
-    if (delta.width > 0)
-      widthAdjust = std::max(widthAdjust, delta.width);
-
-    if (!item.active) {
-      // In the inactive case, hide additional UI.
-      [itemView.activeView setHidden:YES];
-      [itemView.editButton setHidden:YES];
-    } else {
-      // Otherwise, set up the edit button and its three interaction states.
-      itemView.activeView.image =
-          rb.GetImageNamed(IDR_PROFILE_SELECTED).ToNSImage();
-    }
-
-    // Add the item to the content view.
-    [[itemView view] setFrameOrigin:NSMakePoint(0, yOffset)];
+    AvatarMenuItemController* itemView = [self initAvatarItem:i
+                                            updateWidthAdjust:&widthAdjust
+                                                   setYOffset:yOffset];
     [contentView addSubview:[itemView view]];
     yOffset += NSHeight([[itemView view] frame]);
-
-    // Keep track of the view controller.
-    [items_ addObject:itemView];
   }
 
   yOffset += kVerticalSpacing * 1.5;
-
-  // Set the window frame, clamping the width at a sensible max.
-  NSRect frame = [[self window] frame];
-  frame.size.height = yOffset;
-  frame.size.width = kBubbleMinWidth + widthAdjust;
-  frame.size.width = std::min(NSWidth(frame), kBubbleMaxWidth);
-  [[self window] setFrame:frame display:YES];
+  [self setWindowFrame:yOffset widthAdjust:widthAdjust];
 }
 
-- (NSButton*)configureNewUserButton:(CGFloat)yOffset {
+- (void)initManagedUserContents {
+  NSView* contentView = [[self window] contentView];
+
+  // |yOffset| is the next position at which to draw in contentView coordinates.
+  // Use a little more vertical spacing because the items have padding built-
+  // into the xib, and this gives a little more space to visually match.
+  CGFloat yOffset = kLinkSpacing;
+  CGFloat widthAdjust = 0;
+
+  // Since drawing happens bottom-up, start with the "Switch User" link.
+  NSButton* newButton =
+      [self configureSwitchUserButton:yOffset updateWidthAdjust:&widthAdjust];
+  [contentView addSubview:newButton];
+  yOffset += NSHeight([newButton frame]) + kVerticalSpacing;
+
+  NSBox* separator = [self separatorWithFrame:
+      NSMakeRect(10, yOffset, NSWidth([contentView frame]) - 20, 0)];
+  [separator setAutoresizingMask:NSViewWidthSizable];
+  [contentView addSubview:separator];
+
+  yOffset += NSHeight([separator frame]) + kVerticalSpacing;
+
+  // First init the active profile in order to determine the required width. We
+  // will have to adjust its frame later after adding general information about
+  // managed users.
+  AvatarMenuItemController* itemView =
+      [self initAvatarItem:model_->GetActiveProfileIndex()
+          updateWidthAdjust:&widthAdjust
+                 setYOffset:yOffset];
+
+  // Don't increase the width too much (the total size should be at most
+  // |kBubbleMaxWidth|).
+  widthAdjust = std::min(widthAdjust, kBubbleMaxWidth - kBubbleMinWidth);
+  CGFloat newWidth = kBubbleMinWidth + widthAdjust;
+
+  // Add general information about managed users.
+  NSTextView* info = [self configureManagedUserInformation:yOffset
+                                                  setWidth:newWidth];
+  [contentView addSubview:info];
+  yOffset += NSHeight([info frame]) + kVerticalSpacing;
+
+  separator = [self separatorWithFrame:
+      NSMakeRect(10, yOffset, NSWidth([contentView frame]) - 20, 0)];
+  [separator setAutoresizingMask:NSViewWidthSizable];
+  [contentView addSubview:separator];
+
+  yOffset += NSHeight([separator frame]);
+
+  // Now update the frame of the active profile and add it.
+  NSRect frame = [[itemView view] frame];
+  frame.origin.y = yOffset;
+  [[itemView view] setFrame:frame];
+  [contentView addSubview:[itemView view]];
+
+  yOffset += NSHeight(frame) + kVerticalSpacing * 1.5;
+  [self setWindowFrame:yOffset widthAdjust:widthAdjust];
+}
+
+- (void)performLayout {
+  NSView* contentView = [[self window] contentView];
+
+  // Reset the array of controllers and remove all the views.
+  items_.reset([[NSMutableArray alloc] init]);
+  [contentView setSubviews:[NSArray array]];
+
+  if (model_->GetManagedUserInformation().empty() || expanded_)
+    [self initMenuContents];
+  else
+    [self initManagedUserContents];
+}
+
+- (NSTextView*)configureManagedUserInformation:(CGFloat)yOffset
+                                      setWidth:(CGFloat)width {
+  NSString* info =
+      base::SysUTF16ToNSString(model_->GetManagedUserInformation());
+  scoped_nsobject<NSAttributedString> attrString(
+      [[NSAttributedString alloc] initWithString:info attributes:nil]);
+  NSTextView* label =
+      [[[NSTextView alloc] initWithFrame:
+          NSMakeRect(5, yOffset, width - 10, 0)] autorelease];
+  [label setFont:[NSFont labelFontOfSize:12.0]];
+  [[label textStorage] setAttributedString:attrString];
+  [label setHorizontallyResizable:NO];
+  [label setEditable:NO];
+  [label sizeToFit];
+  return label;
+}
+
+- (NSButton*)configureNewUserButton:(CGFloat)yOffset
+                  updateWidthAdjust:(CGFloat*)widthAdjust {
   scoped_nsobject<NSButton> newButton(
-      [[NSButton alloc] initWithFrame:NSMakeRect(kLabelInset, yOffset,
-                                                 90, 16)]);
+      [[NSButton alloc] initWithFrame:NSMakeRect(
+          kLabelInset, yOffset, kBubbleMinWidth - kLabelInset, 16)]);
   scoped_nsobject<HyperlinkButtonCell> buttonCell(
       [[HyperlinkButtonCell alloc] initTextCell:
           l10n_util::GetNSString(IDS_PROFILES_CREATE_NEW_PROFILE_LINK)]);
@@ -212,8 +328,29 @@ const CGFloat kLabelInset = 49.0;
   [newButton setBezelStyle:NSRegularSquareBezelStyle];
   [newButton setTarget:self];
   [newButton setAction:@selector(newProfile:)];
-  [GTMUILocalizerAndLayoutTweaker sizeToFitView:newButton];
-  return [newButton.release() autorelease];
+  NSSize delta = [GTMUILocalizerAndLayoutTweaker sizeToFitView:newButton];
+  if (delta.width > 0)
+    *widthAdjust = std::max(*widthAdjust, delta.width);
+  return newButton.autorelease();
+}
+
+- (NSButton*)configureSwitchUserButton:(CGFloat)yOffset
+                     updateWidthAdjust:(CGFloat*)widthAdjust {
+  scoped_nsobject<NSButton> newButton(
+      [[NSButton alloc] initWithFrame:NSMakeRect(
+          kLabelInset, yOffset, kBubbleMinWidth - kLabelInset, 16)]);
+  scoped_nsobject<HyperlinkButtonCell> buttonCell(
+      [[HyperlinkButtonCell alloc] initTextCell:
+          l10n_util::GetNSString(IDS_PROFILES_SWITCH_PROFILE_LINK)]);
+  [newButton setCell:buttonCell.get()];
+  [newButton setFont:[NSFont labelFontOfSize:12.0]];
+  [newButton setBezelStyle:NSRegularSquareBezelStyle];
+  [newButton setTarget:self];
+  [newButton setAction:@selector(switchProfile:)];
+  NSSize delta = [GTMUILocalizerAndLayoutTweaker sizeToFitView:newButton];
+  if (delta.width > 0)
+    *widthAdjust = std::max(*widthAdjust, delta.width);
+  return newButton.autorelease();
 }
 
 - (NSMutableArray*)items {

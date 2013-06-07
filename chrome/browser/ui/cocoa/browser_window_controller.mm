@@ -1626,6 +1626,8 @@ enum {
   // TODO(dmaclach): Instead of redrawing the whole window, views that care
   // about the active window state should be registering for notifications.
   [[self window] setViewsNeedDisplay:YES];
+  if (avatarButtonController_.get())
+    [avatarButtonController_ updateColors:[self themeProvider]];
 }
 
 - (ui::ThemeProvider*)themeProvider {
@@ -1727,6 +1729,9 @@ enum {
   // image to display based on the browser.
   avatarButtonController_.reset(
       [[AvatarButtonController alloc] initWithBrowser:browser_.get()]);
+  if ([avatarButtonController_ labelView])
+    [avatarButtonController_ updateColors:[self themeProvider]];
+
   NSView* view = [avatarButtonController_ view];
   [view setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
   [view setHidden:![self shouldShowAvatar]];

@@ -24,6 +24,9 @@ class Browser;
 
   // Array of the below view controllers.
   scoped_nsobject<NSMutableArray> items_;
+
+  // Is set to true if the managed user has clicked on Switch Users.
+  BOOL expanded_;
 }
 
 // Designated initializer. The browser is passed to the model for profile
@@ -31,7 +34,7 @@ class Browser;
 - (id)initWithBrowser:(Browser*)parentBrowser
            anchoredAt:(NSPoint)point;
 
-// Creats a new profile.
+// Creates a new profile.
 - (IBAction)newProfile:(id)sender;
 
 // Switches to a given profile. |sender| is an AvatarMenuItemController.
@@ -39,6 +42,10 @@ class Browser;
 
 // Edits a given profile. |sender| is an AvatarMenuItemController.
 - (IBAction)editProfile:(id)sender;
+
+// Switches from the managed user avatar menu to the normal avatar menu which
+// allows to switch profiles.
+- (IBAction)switchProfile:(id)sender;
 
 @end
 
