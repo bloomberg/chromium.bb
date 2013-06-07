@@ -87,7 +87,7 @@ static inline bool isCSSTokenAString(int yytype)
 
 %}
 
-%expect 2
+%expect 1
 
 %nonassoc LOWEST_PREC
 
@@ -212,7 +212,6 @@ static inline bool isCSSTokenAString(int yytype)
 %type <relation> combinator
 
 %type <rule> charset
-%type <rule> ignored_charset
 %type <rule> ruleset
 %type <rule> media
 %type <rule> import
@@ -223,7 +222,6 @@ static inline bool isCSSTokenAString(int yytype)
 %type <rule> host
 %type <rule> keyframes
 %type <rule> invalid_rule
-%type <rule> invalid_at
 %type <rule> rule
 %type <rule> valid_rule
 %type <ruleList> block_rule_body
@@ -423,16 +421,6 @@ charset:
   }
 ;
 
-ignored_charset:
-    CHARSET_SYM rule_error_recovery ';' {
-        // Ignore any @charset rule not at the beginning of the style sheet.
-        $$ = 0;
-    }
-    | CHARSET_SYM rule_error_recovery invalid_block {
-        $$ = 0;
-    }
-;
-
 rule_list:
    /* empty */
  | rule_list rule maybe_sgml {
@@ -462,9 +450,7 @@ rule:
     valid_rule {
         parser->m_hadSyntacticallyValidCSSRule = true;
     }
-  | ignored_charset
   | invalid_rule
-  | invalid_at
   ;
 
 block_rule_body:
@@ -514,9 +500,7 @@ block_valid_rule:
 
 block_rule:
     block_valid_rule
-  | ignored_charset
   | invalid_rule
-  | invalid_at
   | namespace
   | import
   | region
@@ -1941,12 +1925,9 @@ min_or_max_function:
     ;
 
 invalid_at:
-    ATKEYWORD at_rule_recovery {
-        $$ = 0;
-    }
-  | margin_sym at_rule_recovery {
-        $$ = 0;
-    }
+    ATKEYWORD at_rule_recovery
+  | margin_sym at_rule_recovery
+  | error CHARSET_SYM at_rule_recovery
     ;
 
 at_rule_recovery:
@@ -1959,6 +1940,9 @@ at_rule_end:
 
 invalid_rule:
     error rule_error_recovery at_invalid_rule_header_end invalid_block {
+        $$ = 0;
+    }
+  | invalid_at {
         $$ = 0;
     }
     ;
