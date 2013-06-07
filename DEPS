@@ -317,6 +317,9 @@ deps = {
 
   "src/webkit/renderer/media/crypto/ppapi/cdm":
     "/trunk/deps/cdm@181763",
+
+  "src/third_party/mesa/src":
+    "/trunk/deps/third_party/mesa@204346",
 }
 
 
