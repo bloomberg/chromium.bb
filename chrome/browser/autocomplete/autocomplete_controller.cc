@@ -631,8 +631,11 @@ void AutocompleteController::StartStopTimer() {
   // dropdown.  Furthermore, both Instant and InstantExtended expect
   // all results they inject (regardless of how long they took) to make
   // it to the edit model / dropdown display code.
+#if defined(HTML_INSTANT_EXTENDED_POPUP)
   if (!chrome::IsInstantExtendedAPIEnabled() &&
-      !chrome::IsInstantEnabled(profile_)) {
+      !chrome::IsInstantEnabled(profile_))
+#endif
+  {
     stop_timer_.Start(FROM_HERE,
                       base::TimeDelta::FromMilliseconds(kStopTimeMS),
                       base::Bind(&AutocompleteController::Stop,

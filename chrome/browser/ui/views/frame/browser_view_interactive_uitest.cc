@@ -72,6 +72,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, MAYBE_FullscreenClearsFocus) {
 
 //////////////////////////////////////////////////////////////////////////////
 
+#if defined(HTML_INSTANT_EXTENDED_POPUP)
 class BrowserViewInstantExtendedTest : public InProcessBrowserTest,
                                        public InstantTestBase {
  public:
@@ -296,3 +297,4 @@ IN_PROC_BROWSER_TEST_F(BrowserViewImmersiveInstantExtendedTest,
 }
 
 #endif  // defined(OS_CHROMEOS)
+#endif  // defined(HTML_INSTANT_EXTENDED_POPUP)

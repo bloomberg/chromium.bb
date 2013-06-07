@@ -78,6 +78,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(HTML_INSTANT_EXTENDED_POPUP)
+
 namespace {
 
 // Creates a bitmap of the specified color. Caller takes ownership.
@@ -2715,3 +2717,5 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_KeyboardTogglesVoiceSearch) {
   EXPECT_TRUE(UpdateSearchState(instant()->instant_tab()->contents()));
   EXPECT_EQ(1, on_toggle_voice_search_calls_);
 }
+
+#endif  // HTML_INSTANT_EXTENDED_POPUP

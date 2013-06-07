@@ -48,6 +48,7 @@ void OmniboxController::StartAutocomplete(
   ClearPopupKeywordMode();
   popup_->SetHoveredLine(OmniboxPopupModel::kNoMatch);
 
+#if defined(HTML_INSTANT_EXTENDED_POPUP)
   InstantController* instant_controller = GetInstantController();
   if (instant_controller) {
     instant_controller->OnAutocompleteStart();
@@ -60,6 +61,7 @@ void OmniboxController::StartAutocomplete(
     if (instant_controller->WillFetchCompletions())
       autocomplete_controller_->search_provider()->SuppressSearchSuggestions();
   }
+#endif
 
   // We don't explicitly clear OmniboxPopupModel::manually_selected_match, as
   // Start ends up invoking OmniboxPopupModel::OnResultChanged which clears it.
@@ -110,12 +112,14 @@ void OmniboxController::OnResultChanged(bool default_match_changed) {
     // The popup size may have changed, let instant know.
     OnPopupBoundsChanged(popup_->view()->GetTargetBounds());
 
+#if defined(HTML_INSTANT_EXTENDED_POPUP)
     InstantController* instant_controller = GetInstantController();
     if (instant_controller && !omnibox_edit_model_->in_revert()) {
       instant_controller->HandleAutocompleteResults(
           *autocomplete_controller_->providers(),
           autocomplete_controller_->result());
     }
+#endif
   } else if (was_open) {
     // Accept the temporary text as the user text, because it makes little sense
     // to have temporary text when the popup is closed.
@@ -134,6 +138,7 @@ bool OmniboxController::DoInstant(const AutocompleteMatch& match,
                                   bool in_escape_handler,
                                   bool just_deleted_text,
                                   bool keyword_is_selected) {
+#if defined(HTML_INSTANT_EXTENDED_POPUP)
   InstantController* instant_controller = GetInstantController();
   if (!instant_controller)
     return false;
@@ -147,6 +152,9 @@ bool OmniboxController::DoInstant(const AutocompleteMatch& match,
       match, user_text, full_text, selection_start, selection_end,
       UseVerbatimInstant(just_deleted_text), user_input_in_progress,
       popup_->IsOpen(), in_escape_handler, keyword_is_selected);
+#else
+  return false;
+#endif
 }
 
 void OmniboxController::ClearPopupKeywordMode() const {
