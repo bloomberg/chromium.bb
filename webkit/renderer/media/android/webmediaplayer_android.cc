@@ -80,7 +80,9 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       current_time_(0),
       media_log_(media_log),
       media_stream_client_(NULL) {
+  DCHECK(proxy_);
   main_loop_->AddDestructionObserver(this);
+
   if (manager_)
     player_id_ = manager_->RegisterMediaPlayer(this);
 
@@ -195,11 +197,9 @@ void WebMediaPlayerAndroid::InitializeMediaPlayer(
     MediaPlayerAndroid::SourceType source_type) {
   url_ = url;
   GURL first_party_url = frame_->document().firstPartyForCookies();
-  if (proxy_) {
-    proxy_->Initialize(player_id_, url, source_type, first_party_url);
-    if (manager_->IsInFullscreen(frame_))
-      proxy_->EnterFullscreen(player_id_);
-  }
+  proxy_->Initialize(player_id_, url, source_type, first_party_url);
+  if (manager_->IsInFullscreen(frame_))
+    proxy_->EnterFullscreen(player_id_);
 
   UpdateNetworkState(WebMediaPlayer::NetworkStateLoading);
   UpdateReadyState(WebMediaPlayer::ReadyStateHaveNothing);
@@ -209,8 +209,7 @@ void WebMediaPlayerAndroid::play() {
 #if defined(GOOGLE_TV)
   if (hasVideo() && needs_external_surface_) {
     DCHECK(!needs_establish_peer_);
-    if (proxy_)
-      proxy_->RequestExternalSurface(player_id_, last_computed_rect_);
+    proxy_->RequestExternalSurface(player_id_, last_computed_rect_);
   }
   if (audio_renderer_ && paused())
     audio_renderer_->Play();
@@ -218,7 +217,7 @@ void WebMediaPlayerAndroid::play() {
   if (hasVideo() && needs_establish_peer_)
     EstablishSurfaceTexturePeer();
 
-  if (paused() && proxy_)
+  if (paused())
     proxy_->Start(player_id_);
   is_playing_ = true;
 }
@@ -228,8 +227,7 @@ void WebMediaPlayerAndroid::pause() {
   if (audio_renderer_ && !paused())
     audio_renderer_->Pause();
 #endif
-  if (proxy_)
-    proxy_->Pause(player_id_);
+  proxy_->Pause(player_id_);
   is_playing_ = false;
 }
 
@@ -246,8 +244,7 @@ void WebMediaPlayerAndroid::seek(double seconds) {
   if (media_source_delegate_)
     media_source_delegate_->Seek(seek_time);
 #endif
-  if (proxy_)
-    proxy_->Seek(player_id_, seek_time);
+  proxy_->Seek(player_id_, seek_time);
 }
 
 bool WebMediaPlayerAndroid::supportsFullscreen() const {
@@ -509,7 +506,7 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
       media_source_delegate_) {
     needs_external_surface_ = true;
     SetNeedsEstablishPeer(false);
-    if (!paused() && proxy_)
+    if (!paused())
       proxy_->RequestExternalSurface(player_id_, last_computed_rect_);
   }
 #endif
@@ -616,8 +613,7 @@ void WebMediaPlayerAndroid::ReleaseMediaResources() {
     case WebMediaPlayer::NetworkStateDecodeError:
       break;
   }
-  if (proxy_)
-    proxy_->ReleaseResources(player_id_);
+  proxy_->ReleaseResources(player_id_);
   OnPlayerReleased();
 }
 
@@ -836,9 +832,6 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
   }
 #else
-  if (!proxy_)
-    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
-
   proxy_->GenerateKeyRequest(
       player_id_,
       key_system.utf8(),
@@ -889,9 +882,6 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::AddKeyInternal(
   decryptor_->AddKey(key_system.utf8(), key, key_length,
                      init_data, init_data_length, session_id.utf8());
 #else
-  if (!proxy_)
-    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
-
   proxy_->AddKey(player_id_,
                  key_system.utf8(),
                  std::vector<uint8>(key, key + key_length),
@@ -924,9 +914,6 @@ WebMediaPlayerAndroid::CancelKeyRequestInternal(
 #if defined(GOOGLE_TV)
   decryptor_->CancelKeyRequest(key_system.utf8(), session_id.utf8());
 #else
-  if (!proxy_)
-    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
-
   proxy_->CancelKeyRequest(player_id_, key_system.utf8(), session_id.utf8());
 #endif  // #if defined(GOOGLE_TV)
 
@@ -1030,15 +1017,14 @@ void WebMediaPlayerAndroid::OnReadFromDemuxer(
 }
 
 void WebMediaPlayerAndroid::enterFullscreen() {
-  if (proxy_ && manager_->CanEnterFullscreen(frame_)) {
+  if (manager_->CanEnterFullscreen(frame_)) {
     proxy_->EnterFullscreen(player_id_);
     SetNeedsEstablishPeer(false);
   }
 }
 
 void WebMediaPlayerAndroid::exitFullscreen() {
-  if (proxy_)
-    proxy_->ExitFullscreen(player_id_);
+  proxy_->ExitFullscreen(player_id_);
 }
 
 bool WebMediaPlayerAndroid::canEnterFullscreen() const {
