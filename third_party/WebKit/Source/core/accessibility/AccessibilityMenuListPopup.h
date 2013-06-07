@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef AccessibilityMenuListPopup_h
@@ -39,8 +39,8 @@ class AccessibilityMenuListPopup : public AccessibilityMockObject {
 public:
     static PassRefPtr<AccessibilityMenuListPopup> create() { return adoptRef(new AccessibilityMenuListPopup); }
 
-    virtual bool isEnabled() const;
-    virtual bool isOffScreen() const;
+    virtual bool isEnabled() const OVERRIDE;
+    virtual bool isOffScreen() const OVERRIDE;
 
     void didUpdateActiveOption(int optionIndex);
 
@@ -48,16 +48,16 @@ public:
 private:
     AccessibilityMenuListPopup();
 
-    virtual bool isMenuListPopup() const { return true; }
+    virtual bool isMenuListPopup() const OVERRIDE { return true; }
 
-    virtual LayoutRect elementRect() const { return LayoutRect(); }
-    virtual AccessibilityRole roleValue() const { return MenuListPopupRole; }
+    virtual LayoutRect elementRect() const OVERRIDE { return LayoutRect(); }
+    virtual AccessibilityRole roleValue() const OVERRIDE { return MenuListPopupRole; }
 
-    virtual bool isVisible() const;
-    virtual bool press() const;
-    virtual void addChildren();
-    virtual void childrenChanged();
-    virtual bool computeAccessibilityIsIgnored() const;
+    virtual bool isVisible() const OVERRIDE;
+    virtual bool press() const OVERRIDE;
+    virtual void addChildren() OVERRIDE;
+    virtual void childrenChanged() OVERRIDE;
+    virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
 
     AccessibilityMenuListOption* menuListOptionAccessibilityObject(HTMLElement*) const;
 };

@@ -39,7 +39,7 @@ class AccessibilityListBox;
 class Element;
 class HTMLElement;
 class HTMLSelectElement;
-    
+
 class AccessibilityListBoxOption : public AccessibilityObject {
 
 private:
@@ -47,32 +47,33 @@ private:
 public:
     static PassRefPtr<AccessibilityListBoxOption> create();
     virtual ~AccessibilityListBoxOption();
-    
-    void setHTMLElement(HTMLElement* element) { m_optionElement = element; }
-    
-    virtual AccessibilityRole roleValue() const { return ListBoxOptionRole; }
-    virtual bool isSelected() const;
-    virtual bool isEnabled() const;
-    virtual bool isSelectedOptionActive() const;
-    virtual String stringValue() const;
-    virtual Element* actionElement() const;
-    virtual Node* node() const { return m_optionElement; }
-    virtual void setSelected(bool);
-    virtual bool canSetSelectedAttribute() const;
 
-    virtual LayoutRect elementRect() const;
-    virtual AccessibilityObject* parentObject() const;
-    
+    void setHTMLElement(HTMLElement* element) { m_optionElement = element; }
+
+    virtual AccessibilityRole roleValue() const OVERRIDE { return ListBoxOptionRole; }
+    virtual bool isSelected() const OVERRIDE;
+    virtual bool isEnabled() const OVERRIDE;
+    virtual bool isSelectedOptionActive() const OVERRIDE;
+    virtual String stringValue() const OVERRIDE;
+    virtual Element* actionElement() const OVERRIDE;
+    virtual Node* node() const OVERRIDE { return m_optionElement; }
+    virtual void setSelected(bool) OVERRIDE;
+    virtual bool canSetSelectedAttribute() const OVERRIDE;
+
+    virtual LayoutRect elementRect() const OVERRIDE;
+    virtual AccessibilityObject* parentObject() const OVERRIDE;
+
 private:
     HTMLElement* m_optionElement;
-    
-    virtual bool canHaveChildren() const { return false; }
+
+    virtual bool canHaveChildren() const OVERRIDE { return false; }
+    virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
+
     HTMLSelectElement* listBoxOptionParentNode() const;
     int listBoxOptionIndex() const;
     AccessibilityObject* listBoxOptionAccessibilityObject(HTMLElement*) const;
-    virtual bool computeAccessibilityIsIgnored() const;
 };
-    
-} // namespace WebCore 
+
+} // namespace WebCore
 
 #endif // AccessibilityListBoxOption_h

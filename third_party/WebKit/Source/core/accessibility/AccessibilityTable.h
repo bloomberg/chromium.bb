@@ -36,7 +36,7 @@ namespace WebCore {
 
 class AccessibilityTableCell;
 class RenderTableSection;
-    
+
 class AccessibilityTable : public AccessibilityRenderObject {
 
 protected:
@@ -45,31 +45,33 @@ public:
     static PassRefPtr<AccessibilityTable> create(RenderObject*);
     virtual ~AccessibilityTable();
 
-    virtual void init();
+    virtual void init() OVERRIDE;
 
-    virtual bool isAccessibilityTable() const;
-    virtual bool isDataTable() const;
+    virtual bool isAccessibilityTable() const OVERRIDE;
+    virtual bool isDataTable() const OVERRIDE;
 
-    virtual AccessibilityRole roleValue() const;
+    virtual AccessibilityRole roleValue() const OVERRIDE;
+
+    virtual void addChildren() OVERRIDE;
+    virtual void clearChildren() OVERRIDE;
+
+    // To be overridden by AccessibilityARIAGrid.
     virtual bool isAriaTable() const { return false; }
-    
-    virtual void addChildren();
-    virtual void clearChildren();
-    
+    virtual bool supportsSelectedRows() { return false; }
+
     AccessibilityChildrenVector& columns();
     AccessibilityChildrenVector& rows();
-    
-    virtual bool supportsSelectedRows() { return false; }
+
     unsigned columnCount();
     unsigned rowCount();
-    virtual int tableLevel() const;
-    
-    virtual String title() const;
-    
+    virtual int tableLevel() const OVERRIDE;
+
+    virtual String title() const OVERRIDE;
+
     // all the cells in the table
     void cells(AccessibilityChildrenVector&);
     AccessibilityTableCell* cellForColumnAndRow(unsigned column, unsigned row);
-    
+
     void columnHeaders(AccessibilityChildrenVector&);
 
     // an object that contains, as children, all the objects that act as headers
@@ -84,15 +86,15 @@ protected:
 
     bool hasARIARole() const;
     virtual bool isTableExposableThroughAccessibility() const;
-    virtual bool computeAccessibilityIsIgnored() const;
+    virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
 };
-    
+
 inline AccessibilityTable* toAccessibilityTable(AccessibilityObject* object)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isAccessibilityTable());
     return static_cast<AccessibilityTable*>(object);
 }
-    
-} // namespace WebCore 
+
+} // namespace WebCore
 
 #endif // AccessibilityTable_h

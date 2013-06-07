@@ -25,7 +25,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- 
+
 #ifndef AccessibilityScrollbar_h
 #define AccessibilityScrollbar_h
 
@@ -40,23 +40,24 @@ public:
     static PassRefPtr<AccessibilityScrollbar> create(Scrollbar*);
 
     Scrollbar* scrollbar() const { return m_scrollbar.get(); }
-    
+
 private:
     explicit AccessibilityScrollbar(Scrollbar*);
 
-    virtual bool canSetValueAttribute() const { return true; }
+    virtual bool canSetValueAttribute() const OVERRIDE { return true; }
 
-    virtual bool isAccessibilityScrollbar() const { return true; }
-    virtual LayoutRect elementRect() const;
-    
-    virtual AccessibilityRole roleValue() const { return ScrollBarRole; }
-    virtual AccessibilityOrientation orientation() const;
-    virtual Document* document() const;
-    virtual bool isEnabled() const;
-    
+    virtual bool isAccessibilityScrollbar() const OVERRIDE { return true; }
+    virtual LayoutRect elementRect() const OVERRIDE;
+
+    virtual AccessibilityRole roleValue() const OVERRIDE { return ScrollBarRole; }
+    virtual AccessibilityOrientation orientation() const OVERRIDE;
+    virtual Document* document() const OVERRIDE;
+
+    virtual bool isEnabled() const OVERRIDE;
+
     // Assumes float [0..1]
-    virtual void setValue(float);
-    virtual float valueForRange() const;
+    virtual void setValue(float) OVERRIDE;
+    virtual float valueForRange() const OVERRIDE;
 
     RefPtr<Scrollbar> m_scrollbar;
 };

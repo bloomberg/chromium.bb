@@ -71,7 +71,7 @@ protected:
     bool m_initialized;
 #endif
 
-    virtual bool computeAccessibilityIsIgnored() const;
+    virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
     virtual AccessibilityRole determineAccessibilityRole();
 
     String accessibilityDescriptionForElements(Vector<Element*> &elements) const;
@@ -91,108 +91,108 @@ protected:
     Element* menuItemElementForMenu() const;
     Element* mouseButtonListener() const;
     AccessibilityRole remapAriaRoleDueToParent(AccessibilityRole) const;
+    bool isNativeCheckboxOrRadio() const;
+    void setNode(Node*);
 
     //
     // Overridden from AccessibilityObject.
     //
 
-    virtual void init();
-    virtual void detach();
-    virtual bool isDetached() const { return !m_node; }
-    virtual bool isAccessibilityNodeObject() const { return true; }
+    virtual void init() OVERRIDE;
+    virtual void detach() OVERRIDE;
+    virtual bool isDetached() const OVERRIDE { return !m_node; }
+    virtual bool isAccessibilityNodeObject() const OVERRIDE { return true; }
 
     // Check object role or purpose.
-    virtual bool isAnchor() const;
-    virtual bool isControl() const;
-    virtual bool isFieldset() const;
-    virtual bool isHeading() const;
-    virtual bool isHovered() const;
-    virtual bool isImage() const;
-    virtual bool isImageButton() const;
-    virtual bool isInputImage() const;
+    virtual bool isAnchor() const OVERRIDE;
+    virtual bool isControl() const OVERRIDE;
+    virtual bool isFieldset() const OVERRIDE;
+    virtual bool isHeading() const OVERRIDE;
+    virtual bool isHovered() const OVERRIDE;
+    virtual bool isImage() const OVERRIDE;
+    virtual bool isImageButton() const OVERRIDE;
+    virtual bool isInputImage() const OVERRIDE;
     virtual bool isLink() const;
-    virtual bool isMenu() const;
-    virtual bool isMenuButton() const;
-    virtual bool isMenuRelated() const;
-    virtual bool isMultiSelectable() const;
-    virtual bool isNativeCheckboxOrRadio() const;
-    virtual bool isNativeImage() const;
-    virtual bool isNativeTextControl() const;
-    virtual bool isPasswordField() const;
-    virtual bool isProgressIndicator() const;
-    virtual bool isSearchField() const;
-    virtual bool isSlider() const;
+    virtual bool isMenu() const OVERRIDE;
+    virtual bool isMenuButton() const OVERRIDE;
+    virtual bool isMenuRelated() const OVERRIDE;
+    virtual bool isMultiSelectable() const OVERRIDE;
+    virtual bool isNativeImage() const OVERRIDE;
+    virtual bool isNativeTextControl() const OVERRIDE;
+    virtual bool isPasswordField() const OVERRIDE;
+    virtual bool isProgressIndicator() const OVERRIDE;
+    virtual bool isSearchField() const OVERRIDE;
+    virtual bool isSlider() const OVERRIDE;
 
     // Check object state.
-    virtual bool isChecked() const;
-    virtual bool isEnabled() const;
-    virtual bool isIndeterminate() const;
-    virtual bool isPressed() const;
-    virtual bool isReadOnly() const;
-    virtual bool isRequired() const;
+    virtual bool isChecked() const OVERRIDE;
+    virtual bool isEnabled() const OVERRIDE;
+    virtual bool isIndeterminate() const OVERRIDE;
+    virtual bool isPressed() const OVERRIDE;
+    virtual bool isReadOnly() const OVERRIDE;
+    virtual bool isRequired() const OVERRIDE;
 
     // Check whether certain properties can be modified.
-    virtual bool canSetFocusAttribute() const;
+    virtual bool canSetFocusAttribute() const OVERRIDE;
 
     // Properties of static elements.
-    virtual bool canvasHasFallbackContent() const;
-    virtual int headingLevel() const;
-    virtual unsigned hierarchicalLevel() const;
-    virtual String text() const;
+    virtual bool canvasHasFallbackContent() const OVERRIDE;
+    virtual int headingLevel() const OVERRIDE;
+    virtual unsigned hierarchicalLevel() const OVERRIDE;
+    virtual String text() const OVERRIDE;
 
     // Properties of interactive elements.
-    virtual AccessibilityButtonState checkboxOrRadioValue() const;
-    virtual void colorValue(int& r, int& g, int& b) const;
-    virtual String valueDescription() const;
-    virtual float valueForRange() const;
-    virtual float maxValueForRange() const;
-    virtual float minValueForRange() const;
-    virtual float stepValueForRange() const;
-    virtual String stringValue() const;
+    virtual AccessibilityButtonState checkboxOrRadioValue() const OVERRIDE;
+    virtual void colorValue(int& r, int& g, int& b) const OVERRIDE;
+    virtual String valueDescription() const OVERRIDE;
+    virtual float valueForRange() const OVERRIDE;
+    virtual float maxValueForRange() const OVERRIDE;
+    virtual float minValueForRange() const OVERRIDE;
+    virtual float stepValueForRange() const OVERRIDE;
+    virtual String stringValue() const OVERRIDE;
 
     // ARIA attributes.
-    String ariaDescribedByAttribute() const;
-    virtual String ariaLabeledByAttribute() const;
-    AccessibilityRole ariaRoleAttribute() const;
+    virtual String ariaDescribedByAttribute() const;
+    virtual String ariaLabeledByAttribute() const OVERRIDE;
+    virtual AccessibilityRole ariaRoleAttribute() const OVERRIDE;
 
     // Accessibility Text.
-    virtual void accessibilityText(Vector<AccessibilityText>&);
-    virtual String textUnderElement() const;
+    virtual void accessibilityText(Vector<AccessibilityText>&) OVERRIDE;
+    virtual String textUnderElement() const OVERRIDE;
 
     // Accessibility Text - (To be deprecated).
-    virtual String accessibilityDescription() const;
-    virtual String title() const;
-    virtual String helpText() const;
+    virtual String accessibilityDescription() const OVERRIDE;
+    virtual String title() const OVERRIDE;
+    virtual String helpText() const OVERRIDE;
 
     // Location and click point in frame-relative coordinates.
-    virtual LayoutRect elementRect() const;
+    virtual LayoutRect elementRect() const OVERRIDE;
 
     // High-level accessibility tree access.
-    virtual AccessibilityObject* parentObject() const;
-    virtual AccessibilityObject* parentObjectIfExists() const;
+    virtual AccessibilityObject* parentObject() const OVERRIDE;
+    virtual AccessibilityObject* parentObjectIfExists() const OVERRIDE;
 
     // Low-level accessibility tree exploration.
-    virtual AccessibilityObject* firstChild() const;
-    virtual AccessibilityObject* nextSibling() const;
-    virtual void addChildren();
-    virtual void addChild(AccessibilityObject*);
-    virtual void insertChild(AccessibilityObject*, unsigned index);
-    virtual bool canHaveChildren() const;
+    virtual AccessibilityObject* firstChild() const OVERRIDE;
+    virtual AccessibilityObject* nextSibling() const OVERRIDE;
+    virtual void addChildren() OVERRIDE;
+    virtual void addChild(AccessibilityObject*) OVERRIDE;
+    virtual void insertChild(AccessibilityObject*, unsigned index) OVERRIDE;
+    virtual bool canHaveChildren() const OVERRIDE;
 
     // DOM and Render tree access.
-    virtual Element* actionElement() const;
-    virtual Element* anchorElement() const;
-    virtual Document* document() const;
-    virtual Node* node() const { return m_node; }
-    void setNode(Node*);
+    virtual Element* actionElement() const OVERRIDE;
+    virtual Element* anchorElement() const OVERRIDE;
+    virtual Document* document() const OVERRIDE;
+    virtual Node* node() const OVERRIDE { return m_node; }
 
     // Modify or take an action on an object.
-    virtual void increment();
-    virtual void decrement();
+    virtual void increment() OVERRIDE;
+    virtual void decrement() OVERRIDE;
 
     // Notifications that this object may have changed.
-    virtual void childrenChanged();
-    virtual void updateAccessibilityRole();
+    virtual void childrenChanged() OVERRIDE;
+    virtual void updateAccessibilityRole() OVERRIDE;
 
 private:
     Node* m_node;

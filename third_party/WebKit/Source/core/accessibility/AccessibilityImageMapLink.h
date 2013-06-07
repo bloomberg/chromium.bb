@@ -34,45 +34,45 @@
 #include "core/html/HTMLMapElement.h"
 
 namespace WebCore {
-    
+
 class AccessibilityImageMapLink : public AccessibilityMockObject {
-        
+
 private:
     AccessibilityImageMapLink();
 public:
     static PassRefPtr<AccessibilityImageMapLink> create();
     virtual ~AccessibilityImageMapLink();
-    
+
     void setHTMLAreaElement(HTMLAreaElement* element) { m_areaElement = element; }
     HTMLAreaElement* areaElement() const { return m_areaElement.get(); }
-    
-    void setHTMLMapElement(HTMLMapElement* element) { m_mapElement = element; }    
-    HTMLMapElement* mapElement() const { return m_mapElement.get(); }
-    
-    virtual Node* node() const { return m_areaElement.get(); }
-        
-    virtual AccessibilityRole roleValue() const;
-    virtual bool isEnabled() const { return true; }
-    
-    virtual Element* anchorElement() const;
-    virtual Element* actionElement() const;
-    virtual KURL url() const;
-    virtual bool isLink() const { return true; } 
-    virtual bool isLinked() const { return true; }
-    virtual String title() const;
-    virtual String accessibilityDescription() const;
-    virtual AccessibilityObject* parentObject() const;
-    
-    virtual LayoutRect elementRect() const;
 
-private:    
+    void setHTMLMapElement(HTMLMapElement* element) { m_mapElement = element; }
+    HTMLMapElement* mapElement() const { return m_mapElement.get(); }
+
+    virtual Node* node() const OVERRIDE { return m_areaElement.get(); }
+
+    virtual AccessibilityRole roleValue() const OVERRIDE;
+    virtual bool isEnabled() const OVERRIDE { return true; }
+
+    virtual Element* anchorElement() const OVERRIDE;
+    virtual Element* actionElement() const OVERRIDE;
+    virtual KURL url() const OVERRIDE;
+    virtual bool isLink() const { return true; }
+    virtual bool isLinked() const OVERRIDE { return true; }
+    virtual String title() const OVERRIDE;
+    virtual String accessibilityDescription() const OVERRIDE;
+    virtual AccessibilityObject* parentObject() const OVERRIDE;
+
+    virtual LayoutRect elementRect() const OVERRIDE;
+
+private:
     RefPtr<HTMLAreaElement> m_areaElement;
     RefPtr<HTMLMapElement> m_mapElement;
-    
-    virtual void accessibilityText(Vector<AccessibilityText>&);
-    virtual bool isImageMapLink() const { return true; }
+
+    virtual void accessibilityText(Vector<AccessibilityText>&) OVERRIDE;
+    virtual bool isImageMapLink() const OVERRIDE { return true; }
 };
-    
+
 } // namespace WebCore
 
 #endif // AccessibilityImageMapLink_h

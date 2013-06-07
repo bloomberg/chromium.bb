@@ -37,7 +37,7 @@ namespace WebCore {
 class HTMLInputElement;
 
 class AccessibilitySlider : public AccessibilityRenderObject {
-    
+
 public:
     static PassRefPtr<AccessibilitySlider> create(RenderObject*);
     virtual ~AccessibilitySlider() { }
@@ -47,38 +47,38 @@ protected:
 
 private:
     HTMLInputElement* element() const;
-    virtual AccessibilityObject* elementAccessibilityHitTest(const IntPoint&) const;
+    virtual AccessibilityObject* elementAccessibilityHitTest(const IntPoint&) const OVERRIDE;
 
-    virtual AccessibilityRole roleValue() const { return SliderRole; }    
-    virtual bool isSlider() const { return true; }
-    virtual bool isControl() const { return true; }
-    
-    virtual void addChildren();
-    
-    virtual bool canSetValueAttribute() const { return true; }
+    virtual AccessibilityRole roleValue() const OVERRIDE { return SliderRole; }
+    virtual bool isSlider() const OVERRIDE { return true; }
+    virtual bool isControl() const OVERRIDE { return true; }
+
+    virtual void addChildren() OVERRIDE;
+
+    virtual bool canSetValueAttribute() const OVERRIDE { return true; }
     const AtomicString& getAttribute(const QualifiedName& attribute) const;
-    
-    virtual void setValue(const String&);
-    virtual float valueForRange() const;
-    virtual float maxValueForRange() const;
-    virtual float minValueForRange() const;
-    virtual AccessibilityOrientation orientation() const;    
+
+    virtual void setValue(const String&) OVERRIDE;
+    virtual float valueForRange() const OVERRIDE;
+    virtual float maxValueForRange() const OVERRIDE;
+    virtual float minValueForRange() const OVERRIDE;
+    virtual AccessibilityOrientation orientation() const OVERRIDE;
 };
 
 class AccessibilitySliderThumb : public AccessibilityMockObject {
-    
+
 public:
     static PassRefPtr<AccessibilitySliderThumb> create();
     virtual ~AccessibilitySliderThumb() { }
 
-    virtual AccessibilityRole roleValue() const { return SliderThumbRole; }
+    virtual AccessibilityRole roleValue() const OVERRIDE { return SliderThumbRole; }
 
-    virtual LayoutRect elementRect() const;
+    virtual LayoutRect elementRect() const OVERRIDE;
 
 private:
     AccessibilitySliderThumb();
 
-    virtual bool computeAccessibilityIsIgnored() const;
+    virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
 };
 
 

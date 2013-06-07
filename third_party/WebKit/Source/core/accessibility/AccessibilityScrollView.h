@@ -29,52 +29,52 @@
 #include "core/accessibility/AccessibilityObject.h"
 
 namespace WebCore {
-    
+
 class AccessibilityScrollbar;
 class Scrollbar;
 class ScrollView;
-    
+
 class AccessibilityScrollView : public AccessibilityObject {
 public:
-    static PassRefPtr<AccessibilityScrollView> create(ScrollView*);    
+    static PassRefPtr<AccessibilityScrollView> create(ScrollView*);
     virtual AccessibilityRole roleValue() const { return ScrollAreaRole; }
     ScrollView* scrollView() const { return m_scrollView; }
 
     virtual ~AccessibilityScrollView();
-    virtual void detach();
+    virtual void detach() OVERRIDE;
 
 protected:
-    virtual ScrollableArea* getScrollableAreaIfScrollable() const;
-    virtual void scrollTo(const IntPoint&) const;
-    
+    virtual ScrollableArea* getScrollableAreaIfScrollable() const OVERRIDE;
+    virtual void scrollTo(const IntPoint&) const OVERRIDE;
+
 private:
     explicit AccessibilityScrollView(ScrollView*);
-    
-    virtual bool computeAccessibilityIsIgnored() const;
-    virtual bool isAccessibilityScrollView() const { return true; }
-    virtual bool isEnabled() const { return true; }
-    
-    virtual bool isAttachment() const;
-    virtual Widget* widgetForAttachmentView() const;
-    
-    virtual AccessibilityObject* scrollBar(AccessibilityOrientation);
-    virtual void addChildren();
-    virtual void clearChildren();
-    virtual AccessibilityObject* accessibilityHitTest(const IntPoint&) const;
-    virtual void updateChildrenIfNecessary();
-    virtual void setNeedsToUpdateChildren() { m_childrenDirty = true; }
+
+    virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
+    virtual bool isAccessibilityScrollView() const OVERRIDE { return true; }
+    virtual bool isEnabled() const OVERRIDE { return true; }
+
+    virtual bool isAttachment() const OVERRIDE;
+    virtual Widget* widgetForAttachmentView() const OVERRIDE;
+
+    virtual AccessibilityObject* scrollBar(AccessibilityOrientation) OVERRIDE;
+    virtual void addChildren() OVERRIDE;
+    virtual void clearChildren() OVERRIDE;
+    virtual AccessibilityObject* accessibilityHitTest(const IntPoint&) const OVERRIDE;
+    virtual void updateChildrenIfNecessary() OVERRIDE;
+    virtual void setNeedsToUpdateChildren() OVERRIDE { m_childrenDirty = true; }
     void updateScrollbars();
-    
-    virtual FrameView* documentFrameView() const;
-    virtual LayoutRect elementRect() const;
-    virtual AccessibilityObject* parentObject() const;
-    virtual AccessibilityObject* parentObjectIfExists() const;
-    
+
+    virtual FrameView* documentFrameView() const OVERRIDE;
+    virtual LayoutRect elementRect() const OVERRIDE;
+    virtual AccessibilityObject* parentObject() const OVERRIDE;
+    virtual AccessibilityObject* parentObjectIfExists() const OVERRIDE;
+
     AccessibilityObject* webAreaObject() const;
-    virtual AccessibilityObject* firstChild() const { return webAreaObject(); }
+    virtual AccessibilityObject* firstChild() const OVERRIDE { return webAreaObject(); }
     AccessibilityScrollbar* addChildScrollbar(Scrollbar*);
     void removeChildScrollbar(AccessibilityObject*);
-    
+
     ScrollView* m_scrollView;
     RefPtr<AccessibilityObject> m_horizontalScrollbar;
     RefPtr<AccessibilityObject> m_verticalScrollbar;
@@ -86,10 +86,10 @@ inline AccessibilityScrollView* toAccessibilityScrollView(AccessibilityObject* o
     ASSERT(!object || object->isAccessibilityScrollView());
     if (!object->isAccessibilityScrollView())
         return 0;
-    
+
     return static_cast<AccessibilityScrollView*>(object);
 }
-    
+
 } // namespace WebCore
 
 #endif // AccessibilityScrollView_h

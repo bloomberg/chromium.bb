@@ -33,31 +33,31 @@
 #include <wtf/Forward.h>
 
 namespace WebCore {
-    
+
 class AccessibilityTableCell;
 class AccessibilityTableHeaderContainer;
 
 class AccessibilityARIAGrid : public AccessibilityTable {
-    
+
 private:
     explicit AccessibilityARIAGrid(RenderObject*);
 public:
     static PassRefPtr<AccessibilityARIAGrid> create(RenderObject*);
     virtual ~AccessibilityARIAGrid();
 
-    virtual bool isAriaTable() const { return true; }    
-    
-    virtual void addChildren();
-    
+    virtual bool isAriaTable() const OVERRIDE { return true; }
+
+    virtual void addChildren() OVERRIDE;
+
 private:
     // ARIA treegrids and grids support selected rows.
-    virtual bool supportsSelectedRows() { return true; }    
-    virtual bool isMultiSelectable() const { return true; }
-    virtual bool isTableExposableThroughAccessibility() const { return true; }
-    
+    virtual bool supportsSelectedRows() OVERRIDE { return true; }
+    virtual bool isMultiSelectable() const OVERRIDE { return true; }
+    virtual bool isTableExposableThroughAccessibility() const OVERRIDE { return true; }
+
     bool addTableCellChild(AccessibilityObject*, HashSet<AccessibilityObject*>& appendedRows, unsigned& columnCount);
 };
 
-} // namespace WebCore 
+} // namespace WebCore
 
 #endif // AccessibilityARIAGrid_h

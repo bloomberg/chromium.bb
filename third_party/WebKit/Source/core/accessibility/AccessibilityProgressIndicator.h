@@ -35,16 +35,16 @@ public:
 private:
     virtual AccessibilityRole roleValue() const { return ProgressIndicatorRole; }
 
-    virtual bool isProgressIndicator() const { return true; }
+    virtual bool isProgressIndicator() const OVERRIDE { return true; }
 
-    virtual float valueForRange() const;
-    virtual float maxValueForRange() const;
-    virtual float minValueForRange() const;
+    virtual float valueForRange() const OVERRIDE;
+    virtual float maxValueForRange() const OVERRIDE;
+    virtual float minValueForRange() const OVERRIDE;
 
     explicit AccessibilityProgressIndicator(RenderProgress*);
 
     HTMLProgressElement* element() const;
-    virtual bool computeAccessibilityIsIgnored() const;
+    virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
 };
 
 

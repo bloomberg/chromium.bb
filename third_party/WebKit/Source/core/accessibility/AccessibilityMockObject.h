@@ -29,35 +29,37 @@
 #include "core/accessibility/AccessibilityObject.h"
 
 namespace WebCore {
-    
+
 class AccessibilityMockObject : public AccessibilityObject {
-    
+
 protected:
     AccessibilityMockObject();
 public:
     virtual ~AccessibilityMockObject();
-    
-    virtual AccessibilityObject* parentObject() const { return m_parent; }
+
     virtual void setParent(AccessibilityObject* parent) { m_parent = parent; };
-    virtual bool isEnabled() const { return true; }
-    
+
+    // AccessibilityObject overrides.
+    virtual AccessibilityObject* parentObject() const OVERRIDE { return m_parent; }
+    virtual bool isEnabled() const OVERRIDE { return true; }
+
 protected:
     AccessibilityObject* m_parent;
 
 private:
-    virtual bool isMockObject() const { return true; }
+    virtual bool isMockObject() const OVERRIDE { return true; }
 
-    virtual bool computeAccessibilityIsIgnored() const;
+    virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
     // Must be called when the parent object clears its children.
-    virtual void detachFromParent() { m_parent = 0; }
-}; 
-    
+    virtual void detachFromParent() OVERRIDE { m_parent = 0; }
+};
+
 inline AccessibilityMockObject* toAccessibilityMockObject(AccessibilityObject* object)
 {
     ASSERT(!object || object->isMockObject());
     return static_cast<AccessibilityMockObject*>(object);
 }
-    
-} // namespace WebCore 
+
+} // namespace WebCore
 
 #endif // AccessibilityMockObject_h

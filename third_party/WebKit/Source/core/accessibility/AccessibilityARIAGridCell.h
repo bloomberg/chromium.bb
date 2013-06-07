@@ -32,24 +32,24 @@
 #include "core/accessibility/AccessibilityTableCell.h"
 
 namespace WebCore {
-    
+
 class AccessibilityARIAGridCell : public AccessibilityTableCell {
-    
+
 private:
     explicit AccessibilityARIAGridCell(RenderObject*);
 public:
     static PassRefPtr<AccessibilityARIAGridCell> create(RenderObject*);
     virtual ~AccessibilityARIAGridCell();
-    
+
     // fills in the start location and row span of cell
-    virtual void rowIndexRange(pair<unsigned, unsigned>& rowRange);
+    virtual void rowIndexRange(pair<unsigned, unsigned>& rowRange) OVERRIDE;
     // fills in the start location and column span of cell
-    virtual void columnIndexRange(pair<unsigned, unsigned>& columnRange);
-    
+    virtual void columnIndexRange(pair<unsigned, unsigned>& columnRange) OVERRIDE;
+
 protected:
     virtual AccessibilityObject* parentTable() const;
-}; 
-    
-} // namespace WebCore 
+};
+
+} // namespace WebCore
 
 #endif // AccessibilityARIAGridCell_h

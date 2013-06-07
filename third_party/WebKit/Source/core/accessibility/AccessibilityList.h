@@ -32,15 +32,15 @@
 #include "core/accessibility/AccessibilityRenderObject.h"
 
 namespace WebCore {
-    
+
 class AccessibilityList : public AccessibilityRenderObject {
-    
+
 private:
     explicit AccessibilityList(RenderObject*);
 public:
     static PassRefPtr<AccessibilityList> create(RenderObject*);
     virtual ~AccessibilityList();
-    
+
     virtual bool isList() const { return true; }
     bool isUnorderedList() const;
     bool isOrderedList() const;
@@ -50,7 +50,7 @@ public:
 private:
     virtual bool computeAccessibilityIsIgnored() const;
 };
-    
+
 } // namespace WebCore
 
 #endif // AccessibilityList_h
