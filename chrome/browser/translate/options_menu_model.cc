@@ -31,25 +31,33 @@ OptionsMenuModel::OptionsMenuModel(
   string16 target_language = translate_delegate->language_name_at(
       translate_delegate->target_language_index());
 
+  bool autodetermined_source_language =
+      translate_delegate->original_language_index() ==
+      TranslateInfoBarDelegate::kNoIndex;
+
   // Populate the menu.
   // Incognito mode does not get any preferences related items.
   if (!translate_delegate->web_contents()->GetBrowserContext()->
       IsOffTheRecord()) {
-    AddCheckItem(IDC_TRANSLATE_OPTIONS_ALWAYS,
-        l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS_ALWAYS,
-            original_language, target_language));
-    AddCheckItem(IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_LANG,
-        l10n_util::GetStringFUTF16(
-            IDS_TRANSLATE_INFOBAR_OPTIONS_NEVER_TRANSLATE_LANG,
-            original_language));
+    if (!autodetermined_source_language) {
+      AddCheckItem(IDC_TRANSLATE_OPTIONS_ALWAYS,
+          l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS_ALWAYS,
+                                     original_language, target_language));
+      AddCheckItem(IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_LANG,
+          l10n_util::GetStringFUTF16(
+              IDS_TRANSLATE_INFOBAR_OPTIONS_NEVER_TRANSLATE_LANG,
+              original_language));
+    }
     AddCheckItem(IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_SITE,
         l10n_util::GetStringUTF16(
             IDS_TRANSLATE_INFOBAR_OPTIONS_NEVER_TRANSLATE_SITE));
     AddSeparator(ui::NORMAL_SEPARATOR);
   }
-  AddItem(IDC_TRANSLATE_REPORT_BAD_LANGUAGE_DETECTION,
-          l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS_REPORT_ERROR,
-                                     original_language));
+  if (!autodetermined_source_language) {
+    AddItem(IDC_TRANSLATE_REPORT_BAD_LANGUAGE_DETECTION,
+        l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS_REPORT_ERROR,
+                                   original_language));
+  }
   AddItemWithStringId(IDC_TRANSLATE_OPTIONS_ABOUT,
       IDS_TRANSLATE_INFOBAR_OPTIONS_ABOUT);
 }
