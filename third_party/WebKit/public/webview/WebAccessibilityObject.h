@@ -92,12 +92,7 @@ public:
     WEBKIT_EXPORT unsigned childCount() const;
 
     WEBKIT_EXPORT WebAccessibilityObject childAt(unsigned) const;
-    WEBKIT_EXPORT WebAccessibilityObject firstChild() const;
-    WEBKIT_EXPORT WebAccessibilityObject focusedChild() const;
-    WEBKIT_EXPORT WebAccessibilityObject lastChild() const;
-    WEBKIT_EXPORT WebAccessibilityObject nextSibling() const;
     WEBKIT_EXPORT WebAccessibilityObject parentObject() const;
-    WEBKIT_EXPORT WebAccessibilityObject previousSibling() const;
 
     WEBKIT_EXPORT bool isAnchor() const;
     WEBKIT_EXPORT bool isAriaReadOnly() const;

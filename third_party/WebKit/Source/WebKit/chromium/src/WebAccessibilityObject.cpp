@@ -192,58 +192,12 @@ WebAccessibilityObject WebAccessibilityObject::childAt(unsigned index) const
     return WebAccessibilityObject(m_private->children()[index]);
 }
 
-WebAccessibilityObject WebAccessibilityObject::firstChild() const
-{
-    if (isDetached())
-        return WebAccessibilityObject();
-
-    return WebAccessibilityObject(m_private->firstChild());
-}
-
-WebAccessibilityObject WebAccessibilityObject::focusedChild() const
-{
-    if (isDetached())
-        return WebAccessibilityObject();
-
-    RefPtr<AccessibilityObject> focused = m_private->focusedUIElement();
-    if (m_private.get() == focused.get() || m_private.get() == focused->parentObject())
-        return WebAccessibilityObject(focused);
-
-    return WebAccessibilityObject();
-}
-
-WebAccessibilityObject WebAccessibilityObject::lastChild() const
-{
-    if (isDetached())
-        return WebAccessibilityObject();
-
-    return WebAccessibilityObject(m_private->lastChild());
-}
-
-
-WebAccessibilityObject WebAccessibilityObject::nextSibling() const
-{
-    if (isDetached())
-        return WebAccessibilityObject();
-
-    return WebAccessibilityObject(m_private->nextSibling());
-}
-
 WebAccessibilityObject WebAccessibilityObject::parentObject() const
 {
     if (isDetached())
         return WebAccessibilityObject();
 
     return WebAccessibilityObject(m_private->parentObject());
-}
-
-
-WebAccessibilityObject WebAccessibilityObject::previousSibling() const
-{
-    if (isDetached())
-        return WebAccessibilityObject();
-
-    return WebAccessibilityObject(m_private->previousSibling());
 }
 
 bool WebAccessibilityObject::canSetSelectedAttribute() const
