@@ -73,12 +73,14 @@ class AccessibilityDetailedView : public TrayDetailsView,
   views::View* spoken_feedback_view_;
   views::View* high_contrast_view_;
   views::View* screen_magnifier_view_;;
+  views::View* large_cursor_view_;;
   views::View* help_view_;
   views::View* settings_view_;
 
   bool spoken_feedback_enabled_;
   bool high_contrast_enabled_;
   bool screen_magnifier_enabled_;
+  bool large_cursor_enabled_;
   user::LoginStatus login_;
 
   friend class chromeos::TrayAccessibilityTest;

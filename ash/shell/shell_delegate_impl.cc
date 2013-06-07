@@ -59,7 +59,8 @@ ShellDelegateImpl::ShellDelegateImpl()
       spoken_feedback_enabled_(false),
       high_contrast_enabled_(false),
       screen_magnifier_enabled_(false),
-      screen_magnifier_type_(kDefaultMagnifierType) {
+      screen_magnifier_type_(kDefaultMagnifierType),
+      large_cursor_enabled_(false) {
 }
 
 ShellDelegateImpl::~ShellDelegateImpl() {
@@ -168,6 +169,14 @@ bool ShellDelegateImpl::IsMagnifierEnabled() const {
 
 MagnifierType ShellDelegateImpl::GetMagnifierType() const {
   return screen_magnifier_type_;
+}
+
+void ShellDelegateImpl::SetLargeCursorEnabled(bool enabled) {
+  large_cursor_enabled_ = enabled;
+}
+
+bool ShellDelegateImpl::IsLargeCursorEnabled() const {
+  return large_cursor_enabled_;
 }
 
 bool ShellDelegateImpl::ShouldAlwaysShowAccessibilityMenu() const {

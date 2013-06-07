@@ -26,6 +26,7 @@ TestShellDelegate::TestShellDelegate()
       high_contrast_enabled_(false),
       screen_magnifier_enabled_(false),
       screen_magnifier_type_(kDefaultMagnifierType),
+      large_cursor_enabled_(false),
       num_exit_requests_(0),
       multi_profiles_enabled_(false),
       test_session_state_delegate_(NULL) {
@@ -127,6 +128,14 @@ bool TestShellDelegate::IsMagnifierEnabled() const {
 
 MagnifierType TestShellDelegate::GetMagnifierType() const {
   return screen_magnifier_type_;
+}
+
+void TestShellDelegate::SetLargeCursorEnabled(bool enabled) {
+  large_cursor_enabled_ = enabled;
+}
+
+bool TestShellDelegate::IsLargeCursorEnabled() const {
+  return large_cursor_enabled_;
 }
 
 bool TestShellDelegate::ShouldAlwaysShowAccessibilityMenu() const {

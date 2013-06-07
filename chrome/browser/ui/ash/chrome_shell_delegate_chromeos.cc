@@ -181,6 +181,16 @@ double ChromeShellDelegate::GetSavedScreenMagnifierScale() {
   return std::numeric_limits<double>::min();
 }
 
+void ChromeShellDelegate::SetLargeCursorEnabled(bool enabled) {
+  DCHECK(chromeos::AccessibilityManager::Get());
+  return chromeos::AccessibilityManager::Get()->EnableLargeCursor(enabled);
+}
+
+bool ChromeShellDelegate::IsLargeCursorEnabled() const {
+  DCHECK(chromeos::AccessibilityManager::Get());
+  return chromeos::AccessibilityManager::Get()->IsLargeCursorEnabled();
+}
+
 ash::CapsLockDelegate* ChromeShellDelegate::CreateCapsLockDelegate() {
   chromeos::input_method::XKeyboard* xkeyboard =
       chromeos::input_method::InputMethodManager::Get()->GetXKeyboard();

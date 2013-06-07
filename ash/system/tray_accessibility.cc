@@ -36,6 +36,7 @@ enum AccessibilityState {
   A11Y_SPOKEN_FEEDBACK  = 1 << 0,
   A11Y_HIGH_CONTRAST    = 1 << 1,
   A11Y_SCREEN_MAGNIFIER = 1 << 2,
+  A11Y_LARGE_CURSOR     = 1 << 3,
 };
 
 uint32 GetAccessibilityState() {
@@ -47,6 +48,8 @@ uint32 GetAccessibilityState() {
     state |= A11Y_HIGH_CONTRAST;
   if (shell_delegate->IsMagnifierEnabled())
     state |= A11Y_SCREEN_MAGNIFIER;
+  if (shell_delegate->IsLargeCursorEnabled())
+    state |= A11Y_LARGE_CURSOR;
   return state;
 }
 
@@ -107,11 +110,13 @@ AccessibilityDetailedView::AccessibilityDetailedView(
         spoken_feedback_view_(NULL),
         high_contrast_view_(NULL),
         screen_magnifier_view_(NULL),
+        large_cursor_view_(NULL),
         help_view_(NULL),
         settings_view_(NULL),
         spoken_feedback_enabled_(false),
         high_contrast_enabled_(false),
         screen_magnifier_enabled_(false),
+        large_cursor_enabled_(false),
         login_(login) {
 
   Reset();
@@ -134,6 +139,17 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SPOKEN_FEEDBACK),
       spoken_feedback_enabled_ ? gfx::Font::BOLD : gfx::Font::NORMAL,
       spoken_feedback_enabled_);
+
+  // Large Cursor item is shown only in Login screen.
+  if (login_ == user::LOGGED_IN_NONE) {
+    large_cursor_enabled_ = shell_delegate->IsLargeCursorEnabled();
+    large_cursor_view_ = AddScrollListItem(
+        bundle.GetLocalizedString(
+            IDS_ASH_STATUS_TRAY_ACCESSIBILITY_LARGE_CURSOR),
+        large_cursor_enabled_ ? gfx::Font::BOLD : gfx::Font::NORMAL,
+        large_cursor_enabled_);
+  }
+
   high_contrast_enabled_ = shell_delegate->IsHighContrastEnabled();
   high_contrast_view_ = AddScrollListItem(
       bundle.GetLocalizedString(
@@ -203,6 +219,9 @@ void AccessibilityDetailedView::OnViewClicked(views::View* sender) {
     shell_delegate->ToggleHighContrast();
   } else if (sender == screen_magnifier_view_) {
     shell_delegate->SetMagnifierEnabled(!shell_delegate->IsMagnifierEnabled());
+  } else if (large_cursor_view_ && sender == large_cursor_view_) {
+    shell_delegate->
+        SetLargeCursorEnabled(!shell_delegate->IsLargeCursorEnabled());
   }
 }
 
@@ -260,8 +279,6 @@ bool TrayAccessibility::GetInitialVisibility() {
 views::View* TrayAccessibility::CreateDefaultView(user::LoginStatus status) {
   CHECK(default_ == NULL);
 
-  login_ = status;
-
   // Shows accessibility menu if:
   // - on login screen (not logged in);
   // - "Enable accessibility menu" on chrome://settings is checked;
@@ -284,8 +301,6 @@ views::View* TrayAccessibility::CreateDefaultView(user::LoginStatus status) {
 views::View* TrayAccessibility::CreateDetailedView(user::LoginStatus status) {
   CHECK(detailed_popup_ == NULL);
   CHECK(detailed_menu_ == NULL);
-
-  login_ = status;
 
   if (request_popup_view_) {
     detailed_popup_ = new tray::AccessibilityPopupView(this);

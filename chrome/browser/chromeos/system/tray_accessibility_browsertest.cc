@@ -29,6 +29,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/login/login_state.h"
 #include "content/public/test/test_utils.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -163,6 +164,26 @@ class TrayAccessibilityTest
 
   bool IsScreenMagnifierEnabledOnDetailMenu() {
     return tray()->detailed_menu_->screen_magnifier_enabled_;
+  }
+
+  bool IsLargeCursorEnabledOnDetailMenu() {
+    return tray()->detailed_menu_->large_cursor_enabled_;
+  }
+
+  bool IsSpokenFeedbackMenuShownOnDetailMenu() {
+    return tray()->detailed_menu_->spoken_feedback_view_;
+  }
+
+  bool IsHighContrastMenuShownOnDetailMenu() {
+    return tray()->detailed_menu_->high_contrast_view_;
+  }
+
+  bool IsScreenMagnifierMenuShownOnDetailMenu() {
+    return tray()->detailed_menu_->screen_magnifier_view_;
+  }
+
+  bool IsLargeCursorMenuShownOnDetailMenu() {
+    return tray()->detailed_menu_->large_cursor_view_;
   }
 
   policy::MockConfigurationPolicyProvider provider_;
@@ -449,11 +470,14 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, MAYBE_ClickDetailMenu) {
 }
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
+  SetLoginStatus(ash::user::LOGGED_IN_NONE);
+
   // At first, all of the check is unchecked.
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
   EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
   EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Enabling spoken feedback.
@@ -463,6 +487,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_TRUE(IsSpokenFeedbackEnabledOnDetailMenu());
   EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
   EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling spoken feedback.
@@ -472,6 +497,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
   EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
   EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Enabling high contrast.
@@ -480,6 +506,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
   EXPECT_TRUE(IsHighContrastEnabledOnDetailMenu());
   EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling high contrast.
@@ -488,6 +515,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
   EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
   EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Enabling full screen magnifier.
@@ -496,6 +524,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
   EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
   EXPECT_TRUE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling screen magnifier.
@@ -504,6 +533,25 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
   EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
   EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
+  CloseDetailMenu();
+
+  // Enabling large cursor.
+  AccessibilityManager::Get()->EnableLargeCursor(true);
+  EXPECT_TRUE(CreateDetailedMenu());
+  EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
+  EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_TRUE(IsLargeCursorEnabledOnDetailMenu());
+  CloseDetailMenu();
+
+  // Disabling large cursor.
+  AccessibilityManager::Get()->EnableLargeCursor(false);
+  EXPECT_TRUE(CreateDetailedMenu());
+  EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
+  EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Enabling all of the a11y features.
@@ -511,10 +559,12 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
       true, NULL, ash::A11Y_NOTIFICATION_NONE);
   AccessibilityManager::Get()->EnableHighContrast(true);
   SetMagnifierEnabled(true);
+  AccessibilityManager::Get()->EnableLargeCursor(true);
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_TRUE(IsSpokenFeedbackEnabledOnDetailMenu());
   EXPECT_TRUE(IsHighContrastEnabledOnDetailMenu());
   EXPECT_TRUE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_TRUE(IsLargeCursorEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling all of the a11y features.
@@ -522,10 +572,38 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
       false, NULL, ash::A11Y_NOTIFICATION_NONE);
   AccessibilityManager::Get()->EnableHighContrast(false);
   SetMagnifierEnabled(false);
+  AccessibilityManager::Get()->EnableLargeCursor(false);
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
   EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
   EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
+  CloseDetailMenu();
+}
+
+IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
+  SetLoginStatus(ash::user::LOGGED_IN_NONE);
+  EXPECT_TRUE(CreateDetailedMenu());
+  EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsScreenMagnifierMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsLargeCursorMenuShownOnDetailMenu());
+  CloseDetailMenu();
+
+  SetLoginStatus(ash::user::LOGGED_IN_USER);
+  EXPECT_TRUE(CreateDetailedMenu());
+  EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsScreenMagnifierMenuShownOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorMenuShownOnDetailMenu());
+  CloseDetailMenu();
+
+  SetLoginStatus(ash::user::LOGGED_IN_LOCKED);
+  EXPECT_TRUE(CreateDetailedMenu());
+  EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsScreenMagnifierMenuShownOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorMenuShownOnDetailMenu());
   CloseDetailMenu();
 }
 

@@ -930,6 +930,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         base::Bind(&SystemTrayDelegate::UpdateShowLogoutButtonInTray,
                    base::Unretained(this)));
     user_pref_registrar_->Add(
+        prefs::kLargeCursorEnabled,
+        base::Bind(&SystemTrayDelegate::OnAccessibilityModeChanged,
+                   base::Unretained(this),
+                   ash::A11Y_NOTIFICATION_NONE));
+    user_pref_registrar_->Add(
         prefs::kShouldAlwaysShowAccessibilityMenu,
         base::Bind(&SystemTrayDelegate::OnAccessibilityModeChanged,
                    base::Unretained(this),

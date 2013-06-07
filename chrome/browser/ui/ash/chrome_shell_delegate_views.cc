@@ -55,6 +55,13 @@ void ChromeShellDelegate::ToggleSpokenFeedback(
     ash::AccessibilityNotificationVisibility notify) {
 }
 
+void ChromeShellDelegate::SetLargeCursorEnabled(bool enalbed) {
+}
+
+bool ChromeShellDelegate::IsLargeCursorEnabled() const {
+  return false;
+}
+
 bool ChromeShellDelegate::IsHighContrastEnabled() const {
   return false;
 }
