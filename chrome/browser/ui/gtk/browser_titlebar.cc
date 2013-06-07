@@ -19,6 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -55,11 +56,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/x/active_window_watcher_x.h"
 #include "ui/gfx/image/image.h"
-
-#if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_service.h"
-#include "chrome/browser/managed_mode/managed_user_service_factory.h"
-#endif
 
 using content::WebContents;
 
@@ -820,10 +816,8 @@ void BrowserTitlebar::UpdateAvatar() {
 
   gtk_widget_show_all(avatar_);
 
-#if defined(ENABLE_MANAGED_USERS)
-  ManagedUserService* service = ManagedUserServiceFactory::GetForProfile(
-      browser_window_->browser()->profile());
-  if (service->ProfileIsManaged()) {
+  Profile* profile = browser_window_->browser()->profile();
+  if (ManagedUserService::ProfileIsManaged(profile)) {
     avatar_label_ = gtk_label_new(NULL);
     avatar_label_bg_ = gtk_event_box_new();
     gtk_container_add(GTK_CONTAINER(avatar_label_bg_), avatar_label_);
@@ -842,7 +836,6 @@ void BrowserTitlebar::UpdateAvatar() {
       gtk_widget_hide(titlebar_left_label_frame_);
     }
   }
-#endif
 
   if (display_avatar_on_left_) {
     gtk_container_add(GTK_CONTAINER(titlebar_left_avatar_frame_), avatar_);
@@ -861,7 +854,6 @@ void BrowserTitlebar::UpdateAvatar() {
   gfx::Image avatar;
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
-  Profile* profile = browser_window_->browser()->profile();
   size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
   if (index == std::string::npos)
     return;

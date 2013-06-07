@@ -95,6 +95,10 @@ class AvatarMenuModel : public content::NotificationObserver {
   // string will be returned.
   base::string16 GetManagedUserInformation() const;
 
+  // Returns the icon for the managed user which will be displayed in the
+  // avatar menu.
+  const gfx::Image& GetManagedUserIcon() const;
+
   // This model is also used for the always-present Mac system menubar. As the
   // last active browser changes, the model needs to update accordingly.
   void set_browser(Browser* browser) { browser_ = browser; }

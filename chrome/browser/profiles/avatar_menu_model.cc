@@ -29,7 +29,9 @@
 #include "content/public/browser/site_instance.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/managed_user_service.h"
@@ -239,6 +241,11 @@ base::string16 AvatarMenuModel::GetManagedUserInformation() const {
   }
 #endif
   return base::string16();
+}
+
+const gfx::Image& AvatarMenuModel::GetManagedUserIcon() const {
+  return ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_MANAGED_USER_ICON);
 }
 
 void AvatarMenuModel::Observe(int type,

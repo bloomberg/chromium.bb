@@ -8292,7 +8292,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
 
       <!-- Managed User Avatar Menu -->
       <message name="IDS_MANAGED_USER_INFO" desc="A text which explains that the user is managed by a custodian.">
-        This user is managed by <ph name="CUSTODIAN_NAME">$1<ex>custodian@gmail.com</ex></ph>. Usage and history from this user may be tracked.
+        This user is managed by <ph name="CUSTODIAN_NAME">$1<ex>custodian@gmail.com</ex></ph>. Usage and history from this user may be viewed by the manager.
       </message>
       <message name="IDS_MANAGED_USER_AVATAR_LABEL" desc="A label for the managed user which is used in the avatar menu and as a label in the titlebar.">
         Limited user
