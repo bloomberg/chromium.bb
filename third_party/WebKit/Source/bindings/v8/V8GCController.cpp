@@ -110,16 +110,7 @@ public:
         UNUSED_PARAM(m_isolate);
     }
 
-#ifdef V8_USE_OLD_STYLE_PERSISTENT_HANDLE_VISITORS
-    virtual void VisitPersistentHandle(v8::Persistent<v8::Value> value, uint16_t classId) OVERRIDE
-    {
-        VisitPersistentHandle(&value, classId);
-    }
-
-    virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId)
-#else
     virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId) OVERRIDE
-#endif
     {
         // A minor DOM GC can collect only Nodes.
         if (classId != v8DOMNodeClassId)
@@ -248,16 +239,7 @@ public:
     {
     }
 
-#ifdef V8_USE_OLD_STYLE_PERSISTENT_HANDLE_VISITORS
-    virtual void VisitPersistentHandle(v8::Persistent<v8::Value> value, uint16_t classId) OVERRIDE
-    {
-        VisitPersistentHandle(&value, classId);
-    }
-
-    virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId)
-#else
     virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId) OVERRIDE
-#endif
     {
         // Casting to a Handle is safe here, since the Persistent cannot get GCd
         // during the GC prologue.

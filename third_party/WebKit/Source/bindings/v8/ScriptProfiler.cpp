@@ -279,16 +279,7 @@ void ScriptProfiler::visitNodeWrappers(WrappedNodeVisitor* visitor)
         {
         }
 
-#ifdef V8_USE_OLD_STYLE_PERSISTENT_HANDLE_VISITORS
-        virtual void VisitPersistentHandle(v8::Persistent<v8::Value> value, uint16_t classId) OVERRIDE
-        {
-            VisitPersistentHandle(&value, classId);
-        }
-
-        virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId)
-#else
         virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId) OVERRIDE
-#endif
         {
             if (classId != v8DOMNodeClassId)
                 return;
@@ -322,16 +313,7 @@ void ScriptProfiler::visitExternalArrays(ExternalArrayVisitor* visitor)
         {
         }
 
-#ifdef V8_USE_OLD_STYLE_PERSISTENT_HANDLE_VISITORS
-        virtual void VisitPersistentHandle(v8::Persistent<v8::Value> value, uint16_t classId) OVERRIDE
-        {
-            VisitPersistentHandle(&value, classId);
-        }
-
-        virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId)
-#else
         virtual void VisitPersistentHandle(v8::Persistent<v8::Value>* value, uint16_t classId) OVERRIDE
-#endif
         {
             if (classId != v8DOMObjectClassId)
                 return;
