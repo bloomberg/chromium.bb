@@ -1,0 +1,23 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+console.log("http://www.chromium.org/");
+console.log("follow http://www.chromium.org/");
+console.log("string", "http://www.chromium.org/");
+console.log(123, "http://www.chromium.org/");
+
+function test()
+{
+    InspectorTest.dumpConsoleMessages(false, true);
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Test that console.log() would linkify the links. <a href="http://crbug.com/231074">Bug 231074.</a>
+</p>
+</body>
+</html>
