@@ -1516,6 +1516,14 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableWebGLDraftExtensions)
   },
+  {
+    "high-dpi-support",
+    IDS_FLAGS_HIDPI_NAME,
+    IDS_FLAGS_HIDPI_DESCRIPTION,
+    kOsWin,
+    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(switches::kHighDPISupport,"1",
+        switches::kHighDPISupport,"0")
+  },
 };
 
 const Experiment* experiments = kExperiments;

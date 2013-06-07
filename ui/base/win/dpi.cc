@@ -5,10 +5,11 @@
 #include "ui/base/win/dpi.h"
 
 #include <windows.h>
-
+#include "base/command_line.h"
 #include "base/win/scoped_hdc.h"
 #include "ui/base/layout.h"
 #include "base/win/registry.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
@@ -19,16 +20,26 @@ namespace {
 int kDefaultDPIX = 96;
 int kDefaultDPIY = 96;
 
+bool IsHighDPIEnabled() {
+  // Default is disabled.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kHighDPISupport)) {
+    return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kHighDPISupport).compare("1") == 0;
+  }
+  return false;
+}
+
 float GetDeviceScaleFactorImpl() {
 #if defined(ENABLE_HIDPI)
-  float scale = gfx::Display::HasForceDeviceScaleFactor() ?
-      gfx::Display::GetForcedDeviceScaleFactor() : ui::GetDPIScale();
-  // Quantize to nearest supported scale factor.
-  scale = ui::GetScaleFactorScale(ui::GetScaleFactorFromScale(scale));
-  return scale;
-#else
-  return 1.0f;
+  if (IsHighDPIEnabled()) {
+    float scale = gfx::Display::HasForceDeviceScaleFactor() ?
+        gfx::Display::GetForcedDeviceScaleFactor() : ui::GetDPIScale();
+    // Quantize to nearest supported scale factor.
+    scale = ui::GetScaleFactorScale(ui::GetScaleFactorFromScale(scale));
+    return scale;
+  }
 #endif
+  return 1.0f;
 }
 
 BOOL IsProcessDPIAwareWrapper() {
