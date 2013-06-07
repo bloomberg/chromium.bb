@@ -11,7 +11,8 @@
 namespace cc {
 
 ManagedTileState::ManagedTileState()
-    : picture_pile_analyzed(false),
+    : raster_mode(LOW_QUALITY_RASTER_MODE),
+      picture_pile_analyzed(false),
       gpu_memmgr_stats_bin(NEVER_BIN),
       resolution(NON_IDEAL_RESOLUTION),
       required_for_activation(false),
@@ -58,7 +59,8 @@ ManagedTileState::~ManagedTileState() {
 
 scoped_ptr<base::Value> ManagedTileState::AsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-  state->SetBoolean("has_resource", tile_version.resource_.get() != 0);
+  state->SetBoolean("has_resource",
+                    tile_versions[raster_mode].resource_.get() != 0);
   state->Set("bin.0", TileManagerBinAsValue(bin[ACTIVE_TREE]).release());
   state->Set("bin.1", TileManagerBinAsValue(bin[PENDING_TREE]).release());
   state->Set("gpu_memmgr_stats_bin",

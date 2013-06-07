@@ -74,8 +74,7 @@ class CC_EXPORT Picture
   void Raster(SkCanvas* canvas,
               SkDrawPictureCallback* callback,
               gfx::Rect content_rect,
-              float contents_scale,
-              bool enable_lcd_text);
+              float contents_scale);
 
   scoped_ptr<base::Value> AsValue() const;
 

@@ -111,6 +111,10 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
 
   void DidBeginTracing();
 
+  bool can_use_lcd_text() const {
+    return enable_lcd_text_;
+  }
+
  protected:
   friend class PicturePile;
   friend class PixelRefIterator;

@@ -10,6 +10,7 @@
 #include "base/memory/scoped_vector.h"
 #include "cc/resources/managed_tile_state.h"
 #include "cc/resources/picture_pile_impl.h"
+#include "cc/resources/tile_manager.h"
 #include "cc/resources/tile_priority.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "ui/gfx/rect.h"
@@ -18,7 +19,6 @@
 namespace cc {
 
 class Tile;
-class TileManager;
 
 class CC_EXPORT Tile : public base::RefCounted<Tile> {
  public:
@@ -32,6 +32,10 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
        int source_frame_number);
 
   PicturePileImpl* picture_pile() {
+    return picture_pile_.get();
+  }
+
+  const PicturePileImpl* picture_pile() const {
     return picture_pile_.get();
   }
 
@@ -58,11 +62,23 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
 
   scoped_ptr<base::Value> AsValue() const;
 
-  const ManagedTileState::TileVersion& tile_version() const {
-    return managed_state_.tile_version;
+  bool IsReadyToDraw(TileRasterMode* ready_mode) const {
+    for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
+      if (managed_state_.tile_versions[mode].IsReadyToDraw()) {
+        if (ready_mode)
+          *ready_mode = static_cast<TileRasterMode>(mode);
+        return true;
+      }
+    }
+    return false;
   }
-  ManagedTileState::TileVersion& tile_version() {
-    return managed_state_.tile_version;
+
+  const ManagedTileState::TileVersion& tile_version(TileRasterMode mode) const {
+    return managed_state_.tile_versions[mode];
+  }
+
+  ManagedTileState::TileVersion& tile_version(TileRasterMode mode) {
+    return managed_state_.tile_versions[mode];
   }
 
   gfx::Rect opaque_rect() const { return opaque_rect_; }
@@ -84,10 +100,15 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
 
   // For test only methods.
   bool HasRasterTaskForTesting() const {
-    return !managed_state().raster_task.is_null();
+    for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
+      if (!managed_state().tile_versions[mode].raster_task_.is_null())
+        return true;
+    }
+    return false;
   }
   void ResetRasterTaskForTesting() {
-    managed_state().raster_task.Reset();
+    for (int mode = 0; mode < NUM_RASTER_MODES; ++mode)
+      managed_state().tile_versions[mode].raster_task_.Reset();
   }
 
  private:

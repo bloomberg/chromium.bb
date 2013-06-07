@@ -208,8 +208,7 @@ void PicturePileImpl::RasterCommon(
         if (raster_stats)
           start_time = base::TimeTicks::HighResNow();
 
-        (*i)->Raster(
-            canvas, callback, content_clip, contents_scale, enable_lcd_text_);
+        (*i)->Raster(canvas, callback, content_clip, contents_scale);
 
         if (raster_stats) {
           base::TimeDelta duration = base::TimeTicks::HighResNow() - start_time;

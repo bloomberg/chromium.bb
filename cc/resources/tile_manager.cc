@@ -16,12 +16,25 @@
 #include "cc/resources/image_raster_worker_pool.h"
 #include "cc/resources/pixel_buffer_raster_worker_pool.h"
 #include "cc/resources/tile.h"
+#include "skia/ext/paint_simplifier.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/rect_conversions.h"
 
 namespace cc {
 
 namespace {
+
+class DisableLCDTextFilter : public SkDrawFilter {
+ public:
+  // SkDrawFilter interface.
+  virtual bool filter(SkPaint* paint, SkDrawFilter::Type type) OVERRIDE {
+    if (type != SkDrawFilter::kText_Type)
+      return true;
+
+    paint->setLCDRenderText(false);
+    return true;
+  }
+};
 
 // Determine bin based on three categories of tiles: things we need now,
 // things we need soon, and eventually.
@@ -306,15 +319,23 @@ void TileManager::CheckForCompletedTileUploads() {
        it != tiles_that_need_to_be_initialized_for_activation_.end();
        ++it) {
     Tile* tile = *it;
-    if (!tile->managed_state().raster_task.is_null() &&
-        !tile->tile_version().forced_upload_) {
-      if (!raster_worker_pool_->ForceUploadToComplete(
-              tile->managed_state().raster_task))
-        continue;
+    ManagedTileState& mts = tile->managed_state();
 
-      // Setting |forced_upload_| to true makes this tile ready to draw.
-      tile->tile_version().forced_upload_ = true;
-      initialized_tiles.insert(tile);
+    for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
+      ManagedTileState::TileVersion& pending_version =
+          mts.tile_versions[mode];
+      if (!pending_version.raster_task_.is_null() &&
+          !pending_version.forced_upload_) {
+        if (!raster_worker_pool_->ForceUploadToComplete(
+                pending_version.raster_task_)) {
+          continue;
+        }
+        // Setting |forced_upload_| to true makes this tile version
+        // ready to draw.
+        pending_version.forced_upload_ = true;
+        initialized_tiles.insert(tile);
+        break;
+      }
     }
   }
 
@@ -323,7 +344,7 @@ void TileManager::CheckForCompletedTileUploads() {
        ++it) {
     Tile* tile = *it;
     DidFinishTileInitialization(tile);
-    DCHECK(tile->tile_version().IsReadyToDraw());
+    DCHECK(tile->IsReadyToDraw(NULL));
   }
 }
 
@@ -338,10 +359,13 @@ void TileManager::GetMemoryStats(
        it != tiles_.end();
        ++it) {
     const Tile* tile = *it;
-    if (!tile->tile_version().requires_resource())
+    const ManagedTileState& mts = tile->managed_state();
+
+    TileRasterMode mode;
+    if (tile->IsReadyToDraw(&mode) &&
+        !mts.tile_versions[mode].requires_resource())
       continue;
 
-    const ManagedTileState& mts = tile->managed_state();
     size_t tile_bytes = tile->bytes_consumed_if_allocated();
     if (mts.gpu_memmgr_stats_bin == NOW_BIN)
       *memory_required_bytes += tile_bytes;
@@ -393,6 +417,22 @@ void TileManager::AddRequiredTileForActivation(Tile* tile) {
   tiles_that_need_to_be_initialized_for_activation_.insert(tile);
 }
 
+TileRasterMode TileManager::DetermineRasterMode(const Tile* tile) const {
+  DCHECK(tile);
+  DCHECK(tile->picture_pile());
+
+  TileRasterMode raster_mode;
+
+  if (tile->managed_state().resolution == LOW_RESOLUTION)
+    raster_mode = LOW_QUALITY_RASTER_MODE;
+  else if (!tile->picture_pile()->can_use_lcd_text())
+    raster_mode = HIGH_QUALITY_NO_LCD_RASTER_MODE;
+  else
+    raster_mode = HIGH_QUALITY_RASTER_MODE;
+
+  return raster_mode;
+}
+
 void TileManager::AssignGpuMemoryToTiles() {
   TRACE_EVENT0("cc", "TileManager::AssignGpuMemoryToTiles");
 
@@ -406,8 +446,11 @@ void TileManager::AssignGpuMemoryToTiles() {
        it != tiles_.end();
        ++it) {
     const Tile* tile = *it;
-    if (tile->tile_version().resource_)
-      bytes_releasable += tile->bytes_consumed_if_allocated();
+    const ManagedTileState& mts = tile->managed_state();
+    for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
+      if (mts.tile_versions[mode].resource_)
+        bytes_releasable += tile->bytes_consumed_if_allocated();
+    }
   }
 
   // Cast to prevent overflow.
@@ -429,7 +472,13 @@ void TileManager::AssignGpuMemoryToTiles() {
        ++it) {
     Tile* tile = *it;
     ManagedTileState& mts = tile->managed_state();
-    ManagedTileState::TileVersion& tile_version = tile->tile_version();
+
+    // Pick the better version out of the one we already set,
+    // and the one that is required.
+    mts.raster_mode = std::min(mts.raster_mode, DetermineRasterMode(tile));
+
+    ManagedTileState::TileVersion& tile_version =
+        mts.tile_versions[mts.raster_mode];
 
     // If this tile doesn't need a resource, then nothing to do.
     if (!tile_version.requires_resource())
@@ -444,18 +493,19 @@ void TileManager::AssignGpuMemoryToTiles() {
     size_t tile_bytes = 0;
 
     // It costs to maintain a resource.
-    if (tile_version.resource_)
-      tile_bytes += tile->bytes_consumed_if_allocated();
+    for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
+      if (mts.tile_versions[mode].resource_)
+        tile_bytes += tile->bytes_consumed_if_allocated();
+    }
 
-    // It will cost to allocate a resource.
-    // Note that this is separate from the above condition,
-    // so that it's clear why we're adding memory.
-    if (!tile_version.resource_ && mts.raster_task.is_null())
+    // If we don't have the required version, and it's not in flight
+    // then we'll have to pay to create a new task.
+    if (!tile_version.resource_ && tile_version.raster_task_.is_null())
       tile_bytes += tile->bytes_consumed_if_allocated();
 
     // Tile is OOM.
     if (tile_bytes > bytes_left) {
-      tile->tile_version().set_rasterize_on_demand();
+      mts.tile_versions[mts.raster_mode].set_rasterize_on_demand();
       if (mts.tree_bin[PENDING_TREE] == NOW_BIN) {
         tiles_requiring_memory_but_oomed.push_back(tile);
         bytes_oom_in_now_bin_on_pending_tree += tile_bytes;
@@ -480,8 +530,10 @@ void TileManager::AssignGpuMemoryToTiles() {
     if (!tile_version.resource_)
       tiles_that_need_to_be_rasterized_.push_back(tile);
 
-    if (!tile_version.resource_ && tile->required_for_activation())
+    if (!tile->IsReadyToDraw(NULL) &&
+        tile->required_for_activation()) {
       AddRequiredTileForActivation(tile);
+    }
   }
 
   // In OOM situation, we iterate tiles_, remove the memory for active tree
@@ -491,33 +543,44 @@ void TileManager::AssignGpuMemoryToTiles() {
     for (TileVector::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
       Tile* tile = *it;
       ManagedTileState& mts = tile->managed_state();
-      ManagedTileState::TileVersion& tile_version = tile->tile_version();
-      if (tile_version.resource_ &&
-          mts.tree_bin[PENDING_TREE] == NEVER_BIN &&
+      if (mts.tree_bin[PENDING_TREE] == NEVER_BIN &&
           mts.tree_bin[ACTIVE_TREE] != NOW_BIN) {
-        DCHECK(!tile->required_for_activation());
-        FreeResourcesForTile(tile);
-        tile_version.set_rasterize_on_demand();
-        bytes_freed += tile->bytes_consumed_if_allocated();
-        TileVector::iterator it = std::find(
-                tiles_that_need_to_be_rasterized_.begin(),
-                tiles_that_need_to_be_rasterized_.end(),
-                tile);
-        if (it != tiles_that_need_to_be_rasterized_.end())
-            tiles_that_need_to_be_rasterized_.erase(it);
-        if (bytes_oom_in_now_bin_on_pending_tree <= bytes_freed)
-          break;
+        size_t bytes_that_can_be_freed = 0;
+        for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
+          ManagedTileState::TileVersion& tile_version =
+              mts.tile_versions[mode];
+          if (tile_version.resource_) {
+            DCHECK(!tile->required_for_activation());
+            bytes_that_can_be_freed += tile->bytes_consumed_if_allocated();
+          }
+        }
+
+        if (bytes_that_can_be_freed > 0) {
+          FreeResourcesForTile(tile);
+          bytes_freed += bytes_that_can_be_freed;
+          mts.tile_versions[mts.raster_mode].set_rasterize_on_demand();
+          TileVector::iterator it = std::find(
+                  tiles_that_need_to_be_rasterized_.begin(),
+                  tiles_that_need_to_be_rasterized_.end(),
+                  tile);
+          if (it != tiles_that_need_to_be_rasterized_.end())
+              tiles_that_need_to_be_rasterized_.erase(it);
+        }
       }
+
+      if (bytes_oom_in_now_bin_on_pending_tree <= bytes_freed)
+        break;
     }
 
     for (TileVector::iterator it = tiles_requiring_memory_but_oomed.begin();
          it != tiles_requiring_memory_but_oomed.end() && bytes_freed > 0;
          ++it) {
       Tile* tile = *it;
+      ManagedTileState& mts = tile->managed_state();
       size_t bytes_needed = tile->bytes_consumed_if_allocated();
       if (bytes_needed > bytes_freed)
         continue;
-      tile->tile_version().set_use_resource();
+      mts.tile_versions[mts.raster_mode].set_use_resource();
       bytes_freed -= bytes_needed;
       tiles_that_need_to_be_rasterized_.push_back(tile);
       if (tile->required_for_activation())
@@ -542,12 +605,28 @@ void TileManager::AssignGpuMemoryToTiles() {
       bytes_that_exceeded_memory_budget_in_now_bin;
 }
 
-void TileManager::FreeResourcesForTile(Tile* tile) {
-  tile->tile_version().resource_id_ = 0;
-  tile->tile_version().forced_upload_ = false;
-  if (tile->tile_version().resource_) {
+void TileManager::FreeResourceForTile(Tile* tile, TileRasterMode mode) {
+  ManagedTileState& mts = tile->managed_state();
+  if (mts.tile_versions[mode].resource_) {
     resource_pool_->ReleaseResource(
-        tile->tile_version().resource_.Pass());
+        mts.tile_versions[mode].resource_.Pass());
+  }
+  mts.tile_versions[mode].resource_id_ = 0;
+  mts.tile_versions[mode].forced_upload_ = false;
+}
+
+void TileManager::FreeResourcesForTile(Tile* tile) {
+  for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
+    FreeResourceForTile(tile, static_cast<TileRasterMode>(mode));
+  }
+}
+
+void TileManager::FreeUnusedResourcesForTile(Tile* tile) {
+  TileRasterMode used_mode;
+  bool version_is_used = tile->IsReadyToDraw(&used_mode);
+  for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
+    if (!version_is_used || mode != used_mode)
+      FreeResourceForTile(tile, static_cast<TileRasterMode>(mode));
   }
 }
 
@@ -563,16 +642,16 @@ void TileManager::ScheduleTasks() {
        ++it) {
     Tile* tile = *it;
     ManagedTileState& mts = tile->managed_state();
+    ManagedTileState::TileVersion& tile_version =
+        mts.tile_versions[mts.raster_mode];
 
-    DCHECK(tile->tile_version().requires_resource());
-    DCHECK(!tile->tile_version().resource_);
+    DCHECK(tile_version.requires_resource());
+    DCHECK(!tile_version.resource_);
 
-    // Create raster task for this tile if necessary.
-    if (mts.raster_task.is_null())
-      mts.raster_task = CreateRasterTask(tile, &decoded_images);
+    if (tile_version.raster_task_.is_null())
+      tile_version.raster_task_ = CreateRasterTask(tile, &decoded_images);
 
-    // Finally append raster task.
-    tasks.Append(mts.raster_task);
+    tasks.Append(tile_version.raster_task_);
   }
 
   // Schedule running of |tasks|. This replaces any previously
@@ -614,6 +693,7 @@ TileManager::RasterTaskMetadata TileManager::GetRasterTaskMetadata(
   metadata.layer_id = tile.layer_id();
   metadata.tile_id = &tile;
   metadata.source_frame_number = tile.source_frame_number();
+  metadata.raster_mode = mts.raster_mode;
   return metadata;
 }
 
@@ -622,15 +702,17 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(
     PixelRefSet* decoded_images) {
   TRACE_EVENT0("cc", "TileManager::CreateRasterTask");
 
+  ManagedTileState& mts = tile->managed_state();
+
   scoped_ptr<ResourcePool::Resource> resource =
       resource_pool_->AcquireResource(
           tile->tile_size_.size(),
-          tile->tile_version().resource_format_);
+          mts.tile_versions[mts.raster_mode].resource_format_);
   const Resource* const_resource = resource.get();
 
-  DCHECK(!tile->tile_version().resource_id_);
-  DCHECK(!tile->tile_version().forced_upload_);
-  tile->tile_version().resource_id_ = resource->id();
+  DCHECK(!mts.tile_versions[mts.raster_mode].resource_id_);
+  DCHECK(!mts.tile_versions[mts.raster_mode].forced_upload_);
+  mts.tile_versions[mts.raster_mode].resource_id_ = resource->id();
 
   PicturePileImpl::Analysis* analysis = new PicturePileImpl::Analysis;
 
@@ -667,6 +749,7 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(
     pending_decode_tasks_[id] = decode_task;
   }
 
+  RasterTaskMetadata metadata = GetRasterTaskMetadata(*tile);
   return RasterWorkerPool::RasterTask(
       tile->picture_pile(),
       const_resource,
@@ -676,19 +759,20 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(
                             tile->content_rect(),
                             tile->contents_scale(),
                             use_color_estimator_,
-                            GetRasterTaskMetadata(*tile),
+                            metadata,
                             rendering_stats_instrumentation_),
                  base::Bind(&TileManager::RunRasterTask,
                             analysis,
                             tile->content_rect(),
                             tile->contents_scale(),
-                            GetRasterTaskMetadata(*tile),
+                            metadata,
                             rendering_stats_instrumentation_)),
       base::Bind(&TileManager::OnRasterTaskCompleted,
                  base::Unretained(this),
                  make_scoped_refptr(tile),
                  base::Passed(&resource),
-                 base::Owned(analysis)),
+                 base::Owned(analysis),
+                 metadata.raster_mode),
       &decode_tasks);
 }
 
@@ -696,13 +780,16 @@ void TileManager::OnRasterTaskCompleted(
     scoped_refptr<Tile> tile,
     scoped_ptr<ResourcePool::Resource> resource,
     PicturePileImpl::Analysis* analysis,
+    TileRasterMode raster_mode,
     bool was_canceled) {
   TRACE_EVENT1("cc", "TileManager::OnRasterTaskCompleted",
                "was_canceled", was_canceled);
 
   ManagedTileState& mts = tile->managed_state();
-  DCHECK(!mts.raster_task.is_null());
-  mts.raster_task.Reset();
+  ManagedTileState::TileVersion& tile_version =
+      mts.tile_versions[raster_mode];
+  DCHECK(!tile_version.raster_task_.is_null());
+  tile_version.raster_task_.Reset();
 
   if (was_canceled) {
     resource_pool_->ReleaseResource(resource.Pass());
@@ -713,12 +800,14 @@ void TileManager::OnRasterTaskCompleted(
   mts.picture_pile_analyzed = true;
 
   if (analysis->is_solid_color) {
-    tile->tile_version().set_solid_color(analysis->solid_color);
+    tile_version.set_solid_color(analysis->solid_color);
     resource_pool_->ReleaseResource(resource.Pass());
   } else {
-    tile->tile_version().resource_ = resource.Pass();
-    tile->tile_version().forced_upload_ = false;
+    tile_version.resource_ = resource.Pass();
+    tile_version.forced_upload_ = false;
   }
+
+  FreeUnusedResourcesForTile(tile.get());
 
   DidFinishTileInitialization(tile.get());
 }
@@ -803,6 +892,7 @@ scoped_ptr<base::Value> TileManager::RasterTaskMetadata::AsValue() const {
                   is_tile_in_pending_tree_now_bin);
   res->Set("resolution", TileResolutionAsValue(tile_resolution).release());
   res->SetInteger("source_frame_number", source_frame_number);
+  res->SetInteger("raster_mode", raster_mode);
   return res.PassAs<base::Value>();
 }
 
@@ -829,6 +919,23 @@ bool TileManager::RunRasterTask(
     return false;
 
   SkCanvas canvas(device);
+
+  skia::RefPtr<SkDrawFilter> draw_filter;
+  switch (metadata.raster_mode) {
+    case LOW_QUALITY_RASTER_MODE:
+      draw_filter = skia::AdoptRef(new skia::PaintSimplifier);
+      break;
+    case HIGH_QUALITY_NO_LCD_RASTER_MODE:
+      draw_filter = skia::AdoptRef(new DisableLCDTextFilter);
+      break;
+    case HIGH_QUALITY_RASTER_MODE:
+      break;
+    case NUM_RASTER_MODES:
+    default:
+      NOTREACHED();
+  }
+
+  canvas.setDrawFilter(draw_filter.get());
 
   if (stats_instrumentation->record_rendering_stats()) {
     PicturePileImpl::RasterStats raster_stats;

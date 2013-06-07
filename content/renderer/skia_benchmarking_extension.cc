@@ -116,7 +116,7 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     SkCanvas canvas(bitmap);
     canvas.translate(SkFloatToScalar(-clip.x()),
                      SkFloatToScalar(-clip.y()));
-    picture->Raster(&canvas, NULL, snapped_clip, scale, true);
+    picture->Raster(&canvas, NULL, snapped_clip, scale);
 
     WebKit::WebArrayBuffer buffer =
         WebKit::WebArrayBuffer::create(bitmap.getSize(), 1);

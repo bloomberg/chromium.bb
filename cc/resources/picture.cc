@@ -80,18 +80,6 @@ bool DecodeBitmap(const void* buffer, size_t size, SkBitmap* bm) {
   return false;
 }
 
-class DisableLCDTextFilter : public SkDrawFilter {
- public:
-  // SkDrawFilter interface.
-  virtual bool filter(SkPaint* paint, SkDrawFilter::Type type) OVERRIDE {
-    if (type != SkDrawFilter::kText_Type)
-      return true;
-
-    paint->setLCDRenderText(false);
-    return true;
-  }
-};
-
 }  // namespace
 
 scoped_refptr<Picture> Picture::Create(gfx::Rect layer_rect) {
@@ -312,24 +300,16 @@ void Picture::Raster(
     SkCanvas* canvas,
     SkDrawPictureCallback* callback,
     gfx::Rect content_rect,
-    float contents_scale,
-    bool enable_lcd_text) {
+    float contents_scale) {
   TRACE_EVENT_BEGIN1("cc", "Picture::Raster",
     "data", AsTraceableRasterData(content_rect, contents_scale));
 
   DCHECK(picture_);
 
-  skia::RefPtr<DisableLCDTextFilter> disable_lcd_text_filter;
-
   canvas->save();
   canvas->clipRect(gfx::RectToSkRect(content_rect));
   canvas->scale(contents_scale, contents_scale);
   canvas->translate(layer_rect_.x(), layer_rect_.y());
-  // Pictures by default have LCD text enabled.
-  if (!enable_lcd_text) {
-    disable_lcd_text_filter = skia::AdoptRef(new DisableLCDTextFilter);
-    canvas->setDrawFilter(disable_lcd_text_filter.get());
-  }
   picture_->draw(canvas, callback);
   SkIRect bounds;
   canvas->getClipDeviceBounds(&bounds);

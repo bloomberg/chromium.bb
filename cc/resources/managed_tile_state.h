@@ -105,6 +105,7 @@ class CC_EXPORT ManagedTileState {
       scoped_ptr<ResourcePool::Resource> resource_;
       GLenum resource_format_;
       bool forced_upload_;
+      RasterWorkerPool::RasterTask raster_task_;
   };
 
 
@@ -114,10 +115,11 @@ class CC_EXPORT ManagedTileState {
   scoped_ptr<base::Value> AsValue() const;
 
   // Persisted state: valid all the time.
-  TileVersion tile_version;
+  TileVersion tile_versions[NUM_RASTER_MODES];
+  TileRasterMode raster_mode;
+
   bool picture_pile_analyzed;
   PicturePileImpl::Analysis picture_pile_analysis;
-  RasterWorkerPool::RasterTask raster_task;
 
   // Ephemeral state, valid only during TileManager::ManageTiles.
   bool is_in_never_bin_on_both_trees() const {

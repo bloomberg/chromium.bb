@@ -69,14 +69,15 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
     PictureLayerTilingSet set(&client, layer_bounds);
 
     float scale = min_scale;
+    TileRasterMode mode = HIGH_QUALITY_RASTER_MODE;
     for (int i = 0; i < num_tilings; ++i, scale += scale_increment) {
       PictureLayerTiling* tiling = set.AddTiling(scale);
       tiling->CreateAllTilesForTesting();
       std::vector<Tile*> tiles = tiling->AllTilesForTesting();
       for (size_t i = 0; i < tiles.size(); ++i) {
-        EXPECT_FALSE(tiles[i]->tile_version().GetResourceForTesting());
+        EXPECT_FALSE(tiles[i]->tile_version(mode).GetResourceForTesting());
 
-        tiles[i]->tile_version().SetResourceForTesting(
+        tiles[i]->tile_version(mode).SetResourceForTesting(
             make_scoped_ptr(new ResourcePool::Resource(
                 resource_provider.get(),
                 gfx::Size(1, 1),
