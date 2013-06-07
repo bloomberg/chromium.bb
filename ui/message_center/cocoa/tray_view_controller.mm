@@ -204,6 +204,12 @@ const CGFloat kTrayBottomMargin = 75;
   (void)delegate;
 }
 
+- (void)scrollToTop {
+  NSPoint topPoint =
+      NSMakePoint(0.0, [[scrollView_ documentView] bounds].size.height);
+  [[scrollView_ documentView] scrollPoint:topPoint];
+}
+
 // Testing API /////////////////////////////////////////////////////////////////
 
 - (NSScrollView*)scrollView {

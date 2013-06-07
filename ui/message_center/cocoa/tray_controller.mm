@@ -57,6 +57,7 @@
   frame.origin.x = point.x;
   frame.origin.y = point.y - NSHeight(frame);
   [[self window] setFrame:frame display:YES];
+  [viewController_ scrollToTop];
   [self showWindow:nil];
 }
 

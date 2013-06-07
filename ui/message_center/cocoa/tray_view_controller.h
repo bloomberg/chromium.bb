@@ -69,6 +69,9 @@ MESSAGE_CENTER_EXPORT
 // Action for the settings button.
 - (void)showSettings:(id)sender;
 
+// Scroll to the topmost notification in the tray.
+- (void)scrollToTop;
+
 @end
 
 // Testing API /////////////////////////////////////////////////////////////////
