@@ -1796,6 +1796,7 @@
         # TODO(joi): Move the google_apis tests to a separate
         # google_apis_unittests executable.
         '../google_apis/google_api_keys_unittest.cc',
+        '../google_apis/cup/client_update_protocol_unittest.cc',
         '../google_apis/gaia/mock_url_fetcher_factory.h',
         '../google_apis/gaia/gaia_auth_fetcher_unittest.cc',
         '../google_apis/gaia/gaia_auth_util_unittest.cc',

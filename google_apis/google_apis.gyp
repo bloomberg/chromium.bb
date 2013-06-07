@@ -48,8 +48,29 @@
             'GOOGLE_CLIENT_SECRET_REMOTING="<(google_default_client_secret)"',
           ]
         }],
+        [ 'OS == "android"', {
+            'dependencies': [
+              '../third_party/openssl/openssl.gyp:openssl',
+            ],
+            'sources/': [
+              ['exclude', 'cup/client_update_protocol_nss\.cc$'],
+            ],
+        }],
+        [ 'use_openssl==1', {
+            'sources!': [
+              'cup/client_update_protocol_nss.cc',
+            ],
+          }, {
+            'sources!': [
+              'cup/client_update_protocol_openssl.cc',
+            ],
+        },],
       ],
       'sources': [
+        'cup/client_update_protocol.cc',
+        'cup/client_update_protocol.h',
+        'cup/client_update_protocol_nss.cc',
+        'cup/client_update_protocol_openssl.cc',
         'gaia/gaia_auth_consumer.cc',
         'gaia/gaia_auth_consumer.h',
         'gaia/gaia_auth_fetcher.cc',
