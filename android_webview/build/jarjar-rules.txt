@@ -1,4 +1,4 @@
-rule org.chromium.** com.android.internal.webviewchromium.@1
-rule com.google.common.** com.android.internal.webviewchromium.guava.@1
-rule com.googlecode.eyesfree.** com.android.internal.webviewchromium.eyesfree.@1
-rule javax.annotation.** com.android.internal.webviewchromium.jsr305.@1
+rule org.chromium.** com.android.@0
+rule com.google.** com.android.org.chromium.@0
+rule com.googlecode.** com.android.org.chromium.@0
+rule javax.annotation.** com.android.org.chromium.@0
