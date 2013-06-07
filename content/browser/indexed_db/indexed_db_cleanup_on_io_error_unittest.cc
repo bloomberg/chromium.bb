@@ -42,7 +42,8 @@ class MockLevelDBFactory : public LevelDBFactory {
   MockLevelDBFactory() : destroy_called_(false) {}
   virtual scoped_ptr<LevelDBDatabase> OpenLevelDB(
       const base::FilePath& file_name,
-      const LevelDBComparator* comparator) OVERRIDE {
+      const LevelDBComparator* comparator,
+      bool* is_disk_full = 0) OVERRIDE {
     return BustedLevelDBDatabase::Open(file_name, comparator);
   }
   virtual bool DestroyLevelDB(const base::FilePath& file_name) OVERRIDE {

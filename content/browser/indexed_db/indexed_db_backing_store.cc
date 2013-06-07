@@ -365,8 +365,8 @@ class DefaultLevelDBFactory : public LevelDBFactory {
  public:
   virtual scoped_ptr<LevelDBDatabase> OpenLevelDB(
       const base::FilePath& file_name,
-      const LevelDBComparator* comparator) OVERRIDE {
-    return LevelDBDatabase::Open(file_name, comparator);
+      const LevelDBComparator* comparator, bool* is_disk_full) OVERRIDE {
+    return LevelDBDatabase::Open(file_name, comparator, is_disk_full);
   }
   virtual bool DestroyLevelDB(const base::FilePath& file_name) OVERRIDE {
     return LevelDBDatabase::Destroy(file_name);
@@ -499,7 +499,8 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
 
   base::FilePath file_path = path_base.Append(identifier_path);
 
-  db = leveldb_factory->OpenLevelDB(file_path, comparator.get());
+  bool is_disk_full = false;
+  db = leveldb_factory->OpenLevelDB(file_path, comparator.get(), &is_disk_full);
 
   if (db) {
     bool known = false;
@@ -536,6 +537,16 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
                                 INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
                                 base::HistogramBase::kUmaTargetedHistogramFlag)
         ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_SUCCESS);
+  } else if (is_disk_full) {
+    LOG(ERROR) << "Unable to open backing store - disk is full.";
+    base::Histogram::FactoryGet(
+        "WebCore.IndexedDB.BackingStore.OpenStatus",
+        1,
+        INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
+        INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
+        base::HistogramBase::kUmaTargetedHistogramFlag)
+        ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_DISK_FULL);
+    return scoped_refptr<IndexedDBBackingStore>();
   } else {
     LOG(ERROR) << "IndexedDB backing store open failed, attempting cleanup";
     bool success = leveldb_factory->DestroyLevelDB(file_path);

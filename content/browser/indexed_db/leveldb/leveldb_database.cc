@@ -109,8 +109,8 @@ bool LevelDBDatabase::Destroy(const base::FilePath& file_name) {
   return s.ok();
 }
 
-static void HistogramFreeSpace(const char* type,
-                               const base::FilePath& file_name) {
+static int CheckFreeSpace(const char* type, const base::FilePath& file_name) {
+  // TODO(dgrogan): Change string16 -> std::string.
   string16 name = ASCIIToUTF16("WebCore.IndexedDB.LevelDB.Open") +
                   ASCIIToUTF16(type) + ASCIIToUTF16("FreeDiskSpace");
   int64 free_disk_space_in_k_bytes =
@@ -122,7 +122,7 @@ static void HistogramFreeSpace(const char* type,
         2 /*boundary*/,
         2 /*boundary*/ + 1,
         base::HistogramBase::kUmaTargetedHistogramFlag)->Add(1 /*sample*/);
-    return;
+    return -1;
   }
   int clamped_disk_space_k_bytes =
       free_disk_space_in_k_bytes > INT_MAX ? INT_MAX
@@ -135,6 +135,7 @@ static void HistogramFreeSpace(const char* type,
                               11 /*buckets*/,
                               base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(clamped_disk_space_k_bytes);
+  return clamped_disk_space_k_bytes;
 }
 
 static void HistogramLevelDBError(const char* histogram_name,
@@ -164,7 +165,8 @@ static void HistogramLevelDBError(const char* histogram_name,
 
 scoped_ptr<LevelDBDatabase> LevelDBDatabase::Open(
     const base::FilePath& file_name,
-    const LevelDBComparator* comparator) {
+    const LevelDBComparator* comparator,
+    bool* is_disk_full) {
   scoped_ptr<ComparatorAdapter> comparator_adapter(
       new ComparatorAdapter(comparator));
 
@@ -174,14 +176,18 @@ scoped_ptr<LevelDBDatabase> LevelDBDatabase::Open(
 
   if (!s.ok()) {
     HistogramLevelDBError("WebCore.IndexedDB.LevelDBOpenErrors", s);
-    HistogramFreeSpace("Failure", file_name);
+    int free_space_k_bytes = CheckFreeSpace("Failure", file_name);
+    // Disks with <100k of free space almost never succeed in opening a
+    // leveldb database.
+    if (is_disk_full)
+      *is_disk_full = free_space_k_bytes >= 0 && free_space_k_bytes < 100;
 
     LOG(ERROR) << "Failed to open LevelDB database from "
                << file_name.AsUTF8Unsafe() << "," << s.ToString();
     return scoped_ptr<LevelDBDatabase>();
   }
 
-  HistogramFreeSpace("Success", file_name);
+  CheckFreeSpace("Success", file_name);
 
   scoped_ptr<LevelDBDatabase> result(new LevelDBDatabase);
   result->db_ = make_scoped_ptr(db);

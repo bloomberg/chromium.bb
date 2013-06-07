@@ -43,7 +43,8 @@ class LevelDBSnapshot {
 class CONTENT_EXPORT LevelDBDatabase {
  public:
   static scoped_ptr<LevelDBDatabase> Open(const base::FilePath& file_name,
-                                          const LevelDBComparator* comparator);
+                                          const LevelDBComparator* comparator,
+                                          bool* is_disk_full = 0);
   static scoped_ptr<LevelDBDatabase> OpenInMemory(
       const LevelDBComparator* comparator);
   static bool Destroy(const base::FilePath& file_name);
