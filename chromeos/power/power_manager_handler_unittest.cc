@@ -88,7 +88,7 @@ TEST_F(PowerManagerHandlerTest, PowerManagerInitializeAndUpdate) {
   // requests, pretends there is a battery present, and generate some
   // valid power supply status data.
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(test_observer_->power_changed_count(), 0);
+  const int initial_changed_count = test_observer_->power_changed_count();
   PowerSupplyStatus init_status = power_handler_->GetPowerSupplyStatus();
   ValidatePowerSupplyStatus(init_status);
 
@@ -96,7 +96,7 @@ TEST_F(PowerManagerHandlerTest, PowerManagerInitializeAndUpdate) {
   // status change.
   power_handler_->RequestStatusUpdate();
   message_loop_.RunUntilIdle();
-  EXPECT_GE(test_observer_->power_changed_count(), 1);
+  EXPECT_GT(test_observer_->power_changed_count(), initial_changed_count);
 }
 
 }  // namespace chromeos

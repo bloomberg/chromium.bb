@@ -56,8 +56,9 @@ class CHROMEOS_EXPORT PowerManagerClient {
                                                  const std::string& name,
                                                  int level) {}
 
-    // Called when power supply polling takes place.  |status| is a data
-    // structure that contains the current state of the power supply.
+    // Called when updated information about the power supply is available.
+    // The status is automatically updated periodically, but
+    // RequestStatusUpdate() can be used to trigger an immediate update.
     virtual void PowerChanged(const PowerSupplyStatus& status) {}
 
     // Called when we go idle for threshold time.
@@ -91,12 +92,6 @@ class CHROMEOS_EXPORT PowerManagerClient {
     virtual void IdleActionDeferred() {}
   };
 
-  enum UpdateRequestType {
-    UPDATE_INITIAL,  // Initial update request.
-    UPDATE_USER,     // User initialted update request.
-    UPDATE_POLL      // Update requested by poll signal.
-  };
-
   // Adds and removes the observer.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
@@ -124,8 +119,9 @@ class CHROMEOS_EXPORT PowerManagerClient {
   // Increases the keyboard brightness.
   virtual void IncreaseKeyboardBrightness() = 0;
 
-  // Request for power supply status update.
-  virtual void RequestStatusUpdate(UpdateRequestType update_type) = 0;
+  // Requests an updated copy of the power status. Observer::PowerChanged()
+  // will be called asynchronously.
+  virtual void RequestStatusUpdate() = 0;
 
   // Requests restart of the system.
   virtual void RequestRestart() = 0;

@@ -70,8 +70,7 @@ PowerManagerHandler::PowerManagerHandler() {
       !DBusThreadManager::Get()->GetPowerManagerClient())
     return;
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-  DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
-      PowerManagerClient::UPDATE_INITIAL);
+  DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate();
 }
 
 PowerManagerHandler::~PowerManagerHandler() {
@@ -83,8 +82,7 @@ PowerManagerHandler::~PowerManagerHandler() {
 }
 
 void PowerManagerHandler::RequestStatusUpdate() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
-      PowerManagerClient::UPDATE_USER);
+  DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate();
 }
 
 PowerSupplyStatus PowerManagerHandler::GetPowerSupplyStatus() const {
