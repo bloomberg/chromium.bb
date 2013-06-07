@@ -256,6 +256,8 @@ wl_client_get_display(struct wl_client *client);
 
 void
 wl_resource_destroy(struct wl_resource *resource);
+uint32_t
+wl_resource_get_id(struct wl_resource *resource);
 struct wl_list *
 wl_resource_get_link(struct wl_resource *resource);
 struct wl_client *

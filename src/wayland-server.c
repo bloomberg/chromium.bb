@@ -440,6 +440,12 @@ wl_resource_destroy(struct wl_resource *resource)
 	}
 }
 
+WL_EXPORT uint32_t
+wl_resource_get_id(struct wl_resource *resource)
+{
+	return resource->object.id;
+}
+
 WL_EXPORT struct wl_list *
 wl_resource_get_link(struct wl_resource *resource)
 {
