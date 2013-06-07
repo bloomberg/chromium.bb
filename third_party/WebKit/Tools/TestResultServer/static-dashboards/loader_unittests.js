@@ -70,7 +70,7 @@ test('results files loading', 11, function() {
         successCallback({responseText: '{"version":4,"' + builderName + '":{"failure_map":{"A":"AUDIO","C":"CRASH","F":"TEXT"},"secondsSinceEpoch":[' + Date.now() + '],"tests":{}}}'});
     }
 
-    builders.loadBuildersList('@ToT - chromium.org', 'layout-tests');
+    builders.loadBuildersList('@ToT Blink', 'layout-tests');
 
     try {
         resourceLoader._loadResultsFiles();
@@ -81,7 +81,7 @@ test('results files loading', 11, function() {
 
 test('results file failing to load', 2, function() {
     resetGlobals();
-    builders.loadBuildersList('@ToT - chromium.org', 'layout-tests');
+    builders.loadBuildersList('@ToT Blink', 'layout-tests');
 
     var resourceLoader = new loader.Loader();
     var resourceLoadCount = 0;
@@ -104,7 +104,7 @@ test('results file failing to load', 2, function() {
 
 test('Default builder gets set.', 3, function() {
     resetGlobals();
-    builders.loadBuildersList('@ToT - chromium.org', 'layout-tests');
+    builders.loadBuildersList('@ToT Blink', 'layout-tests');
 
     var defaultBuilder = currentBuilderGroup().defaultBuilder();
     ok(defaultBuilder, "Default builder should exist.");

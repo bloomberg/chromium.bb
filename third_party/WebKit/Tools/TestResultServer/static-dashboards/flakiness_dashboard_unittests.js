@@ -47,12 +47,12 @@ function resetGlobals()
             name: 'ChromiumWebkit',
             url: 'dummyurl',
             tests: {'layout-tests': {'builders': ['WebKit Linux', 'WebKit Linux (dbg)', 'WebKit Linux (deps)', 'WebKit Mac10.7', 'WebKit Win', 'WebKit Win (dbg)']}},
-            groups: ['@ToT - chromium.org', '@DEPS - chromium.org'],
+            groups: ['@ToT Blink', '@ToT Chromium'],
         },{
             name :'ChromiumWin',
             url: 'dummyurl2',
             tests: {'interactive_ui_tests': {'builders': ['XP Tests (1)', 'Win7 Tests (1)']}},
-            groups: ['@DEPS - chromium.org'],
+            groups: ['@ToT Chromium'],
         }],
     });
 
@@ -108,13 +108,13 @@ test('htmlForTestTypeSwitcherGroup', 6, function() {
 
 test('htmlForIndividualTestOnAllBuilders', 1, function() {
     resetGlobals();
-    builders.loadBuildersList('@ToT - chromium.org', 'layout-tests');
+    builders.loadBuildersList('@ToT Blink', 'layout-tests');
     equal(htmlForIndividualTestOnAllBuilders('foo/nonexistant.html'), '<div class="not-found">Test not found. Either it does not exist, is skipped or passes on all recorded runs.</div>');
 });
 
 test('htmlForIndividualTestOnAllBuildersWithResultsLinksNonexistant', 1, function() {
     resetGlobals();
-    builders.loadBuildersList('@ToT - chromium.org', 'layout-tests');
+    builders.loadBuildersList('@ToT Blink', 'layout-tests');
     equal(htmlForIndividualTestOnAllBuildersWithResultsLinks('foo/nonexistant.html'),
         '<div class="not-found">Test not found. Either it does not exist, is skipped or passes on all recorded runs.</div>' +
         '<div class=expectations test=foo/nonexistant.html>' +
@@ -128,7 +128,7 @@ test('htmlForIndividualTestOnAllBuildersWithResultsLinksNonexistant', 1, functio
 
 test('htmlForIndividualTestOnAllBuildersWithResultsLinks', 1, function() {
     resetGlobals();
-    builders.loadBuildersList('@ToT - chromium.org', 'layout-tests');
+    builders.loadBuildersList('@ToT Blink', 'layout-tests');
 
     var builderName = 'WebKit Linux';
     g_resultsByBuilder[builderName] = {buildNumbers: [2, 1], blinkRevision: [1234, 1233], failure_map: FAILURE_MAP};
@@ -170,7 +170,7 @@ test('htmlForIndividualTestOnAllBuildersWithResultsLinks', 1, function() {
 
 test('htmlForIndividualTests', 4, function() {
     var historyInstance = resetGlobals();
-    builders.loadBuildersList('@ToT - chromium.org', 'layout-tests');
+    builders.loadBuildersList('@ToT Blink', 'layout-tests');
     var test1 = 'foo/nonexistant.html';
     var test2 = 'bar/nonexistant.html';
 
@@ -260,7 +260,7 @@ test('isChromiumWebkitTipOfTreeTestRunner', 1, function() {
         "WebKit Mac10.6 (deps)", "WebKit Mac10.7", "WebKit Win", "WebKit Win (dbg)(1)", "WebKit Win (dbg)(2)", "WebKit Win (deps)",
         "WebKit Win7", "Linux (Content Shell)"];
     var expectedBuilders = ["WebKit Linux", "WebKit Linux (dbg)", "WebKit Linux 32", "WebKit Mac10.6",
-        "WebKit Mac10.6 (dbg)", "WebKit Mac10.7", "WebKit Win", "WebKit Win (dbg)(1)", "WebKit Win (dbg)(2)", "WebKit Win7"];
+        "WebKit Mac10.6 (dbg)", "WebKit Mac10.7", "WebKit Win", "WebKit Win (dbg)(1)", "WebKit Win (dbg)(2)", "WebKit Win7", "Linux (Content Shell)"];
     deepEqual(builderList.filter(isChromiumWebkitTipOfTreeTestRunner), expectedBuilders);
 });
 
@@ -275,9 +275,9 @@ test('isChromiumWebkitDepsTestRunner', 1, function() {
 
 test('builderGroupIsToTWebKitAttribute', 2, function() {
     resetGlobals();
-    builders.loadBuildersList('@ToT - chromium.org', 'layout-tests');
+    builders.loadBuildersList('@ToT Blink', 'layout-tests');
     equal(builders.getBuilderGroup().isToTBlink, true);
-    builders.loadBuildersList('@DEPS - chromium.org', 'layout-tests');
+    builders.loadBuildersList('@ToT Chromium', 'layout-tests');
     equal(builders.getBuilderGroup().isToTBlink, false);
 });
 
@@ -385,7 +385,7 @@ test('TestTrie', 3, function() {
 
 test('changeTestTypeInvalidatesGroup', 1, function() {
     var historyInstance = resetGlobals();
-    var originalGroup = '@ToT - chromium.org';
+    var originalGroup = '@ToT Blink';
     var originalTestType = 'layout-tests';
     builders.loadBuildersList(originalGroup, originalTestType);
     historyInstance.crossDashboardState.group = originalGroup;
@@ -437,43 +437,39 @@ test('shouldShowTest', 9, function() {
 test('testLoadBuildersList', 4, function() {
     resetGlobals();
 
-    builders.loadBuildersList('@ToT - chromium.org', 'layout-tests');
+    builders.loadBuildersList('@ToT Blink', 'layout-tests');
     var expectedBuilder = 'WebKit Win';
     equal(expectedBuilder in builders.getBuilderGroup().builders, true, expectedBuilder + ' should be among current builders');
 
-    builders.loadBuildersList('@DEPS - chromium.org', 'layout-tests');
+    builders.loadBuildersList('@ToT Chromium', 'layout-tests');
     expectedBuilder = 'WebKit Linux (deps)'
     equal(expectedBuilder in builders.getBuilderGroup().builders, true, expectedBuilder + ' should be among current builders');
     expectedBuilder = 'XP Tests (1)'
     equal(expectedBuilder in builders.getBuilderGroup().builders, false, expectedBuilder + ' should not be among current builders');
 
-    builders.loadBuildersList('@DEPS - chromium.org', 'interactive_ui_tests');
+    builders.loadBuildersList('@ToT Chromium', 'interactive_ui_tests');
     equal(expectedBuilder in builders.getBuilderGroup().builders, true, expectedBuilder + ' should be among current builders');
 });
 
-test('testSelectBuilderFilter', 7, function() {
-    var filter = selectBuilderFilter('@ToT - chromium.org', 'layout-tests');
-    equal(filter('WebKit (Content Shell) Linux'), false, 'don\'t show content shell builders');
+test('builders._builderFilter', 5, function() {
+    var filter = builders._builderFilter('@ToT Blink', 'layout-tests');
+    equal(filter('WebKit (Content Shell) Linux'), true, 'show content shell builder');
     equal(filter('WebKit Linux'), true, 'show generic webkit builder');
     equal(filter('Android Tests (dbg) '), false, 'don\'t show android tests');
 
-    var filter = selectBuilderFilter('Content Shell @ToT - chromium.org', 'layout-tests');
-    equal(filter('WebKit (Content Shell) Linux'), true, 'show content shell builder');
-    equal(filter('WebKit Linux'), false, 'don\'t show non-content shell builder');
-
-    var filter = selectBuilderFilter('@DEPS - chromium.org', 'webkit_unit_tests');
+    var filter = builders._builderFilter('@ToT Chromium', 'webkit_unit_tests');
     equal(filter('WebKit Win7 (deps)'), true, 'show DEPS builder');
     equal(filter('WebKit Win7'), false, 'don\'t show non-deps builder');
 });
 
 test('testGroupNamesForTestType', 4, function() {
     var names = groupNamesForTestType('layout-tests');
-    equal(names.indexOf('@ToT - chromium.org') != -1, true, 'include layout-tests in ToT');
-    equal(names.indexOf('@DEPS - chromium.org') != -1, true, 'include layout-tests in DEPS');
+    equal(names.indexOf('@ToT Blink') != -1, true, 'include layout-tests in ToT');
+    equal(names.indexOf('@ToT Chromium') != -1, true, 'include layout-tests in DEPS');
 
     names = groupNamesForTestType('interactive_ui_tests');
-    equal(names.indexOf('@ToT - chromium.org') != -1, false, 'don\'t include interactive_ui_tests in ToT');
-    equal(names.indexOf('@DEPS - chromium.org') != -1, true, 'include interactive_ui_tests in DEPS');
+    equal(names.indexOf('@ToT Blink') != -1, false, 'don\'t include interactive_ui_tests in ToT');
+    equal(names.indexOf('@ToT Chromium') != -1, true, 'include interactive_ui_tests in DEPS');
 });
 
 test('determineFlakiness', 10, function() {

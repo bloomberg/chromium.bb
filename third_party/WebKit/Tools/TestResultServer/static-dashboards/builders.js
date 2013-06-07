@@ -64,6 +64,7 @@ builders.testTypeUploadsToFlakinessDashboardServer = function(testType)
 }
 
 builders._currentBuilderGroup = {};
+builders._testTypesThatRunToTBlinkBots = ['layout-tests', 'test_shell_tests', 'webkit_unit_tests'];
 
 builders.getBuilderGroup = function(groupName, testType)
 {
@@ -73,13 +74,27 @@ builders.getBuilderGroup = function(groupName, testType)
     return builders._currentBuilderGroup;
 }
 
+builders._builderFilter = function(groupName, testType)
+{
+    if (builders._testTypesThatRunToTBlinkBots.indexOf(testType) == -1)
+        return null;
+
+    if (groupName == '@ToT Blink')
+        return isChromiumWebkitTipOfTreeTestRunner;
+
+    if (groupName == '@ToT Chromium')
+        return isChromiumWebkitDepsTestRunner;
+
+    return null;
+}
+
 builders.loadBuildersList = function(groupName, testType)
 {
     if (!groupName || !testType) {
         console.warn("Group name and/or test type were empty.");
         return new BuilderGroup(false);
     }
-    var builderGroup = new BuilderGroup(isToTBlink(groupName));
+    var builderGroup = new BuilderGroup(groupName == '@ToT Blink');
 
     for (masterName in builders.masters) {
         if (!builders.masters[masterName])
@@ -91,7 +106,7 @@ builders.loadBuildersList = function(groupName, testType)
 
         if (hasTest && isInGroup) {
             var builderList = master.tests[testType].builders;
-            var builderFilter = selectBuilderFilter(groupName, testType);
+            var builderFilter = builders._builderFilter(groupName, testType);
             if (builderFilter)
                 builderList = builderList.filter(builderFilter);
             builderGroup.append(builderList);
@@ -167,58 +182,17 @@ function builderMaster(builderName)
     return BUILDER_TO_MASTER[builderName];
 }
 
-function isChromiumContentShellTestRunner(builder)
-{
-    return builder.indexOf('(Content Shell)') != -1;
-}
-
 function isChromiumWebkitTipOfTreeTestRunner(builder)
 {
     // FIXME: Remove the Android check once the android tests bot is actually uploading results.
     return builder.indexOf('ASAN') == -1 &&
         builder.indexOf('Android') == -1 &&
-        !isChromiumContentShellTestRunner(builder) &&
         !isChromiumWebkitDepsTestRunner(builder);
 }
 
 function isChromiumWebkitDepsTestRunner(builder)
 {
     return builder.indexOf('(deps)') != -1;
-}
-
-// FIXME: replace this by looking up which bots run which test suites.
-function selectBuilderFilter(groupName, testType)
-{
-    var builderFilter = null;
-    switch (testType) {
-    case 'layout-tests':
-        switch (groupName) {
-        case '@ToT - chromium.org':
-            builderFilter = isChromiumWebkitTipOfTreeTestRunner;
-            break;
-        case 'Content Shell @ToT - chromium.org':
-            builderFilter = isChromiumContentShellTestRunner;
-            break;
-        case '@DEPS - chromium.org':
-            builderFilter = isChromiumWebkitDepsTestRunner;
-            break;
-        }
-        break;
-
-    case 'test_shell_tests':
-    case 'webkit_unit_tests':
-        switch (groupName) {
-        case '@ToT - chromium.org':
-            builderFilter = isChromiumWebkitTipOfTreeTestRunner;
-            break;
-        case '@DEPS - chromium.org':
-            builderFilter = isChromiumWebkitDepsTestRunner;
-            break;
-        }
-        break;
-    }
-
-    return builderFilter;
 }
 
 function populateBuilderToMaster()
@@ -235,12 +209,6 @@ function populateBuilderToMaster()
             });
         });
     });
-}
-
-// FIXME: should this be metadata?
-function isToTBlink(groupName)
-{
-    return groupName.indexOf('@ToT') >= 0;
 }
 
 function groupNamesForTestType(testType)

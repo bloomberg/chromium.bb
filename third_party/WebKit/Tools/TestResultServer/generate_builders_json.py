@@ -75,15 +75,14 @@ def insert_builder_and_test_data(masters):
 
             for step in fetch_json(cached_build_json_url(master_url, builder, latest_cached_build))['steps']:
                 step_name = step['name']
-
-                # The chromium bots call this step webkit-tests, the webkit.org bots call it layout-test. :(
-                # The files stored at test-results.appspot.com use layout-tests as the test suite name, so normalize to that.
-                if step_name in ['layout-test', 'webkit_tests']:
-                    step_name = 'layout-tests'
-
-                is_test = step_name == 'layout-tests' if master['name'] == 'webkit.org' else 'test' in step_name and 'archive' not in step_name
-                if not is_test:
+                is_test_step = 'test' in step_name and 'archive' not in step_name
+                if not is_test_step:
                     continue
+
+                # The chromium bots call this step webkit-tests, but the files stored at
+                # test-results.appspot.com use layout-tests as the test suite name, so normalize to that.
+                if step_name == 'webkit_tests':
+                    step_name = 'layout-tests'
 
                 if step_name not in tests_object:
                     tests_object[step_name] = {'builders': []}
@@ -101,16 +100,15 @@ def main():
     logging.getLogger().setLevel(logging.DEBUG if options.verbose else logging.INFO)
 
     masters = [
-        {'name': 'ChromiumWin', 'url': 'http://build.chromium.org/p/chromium.win', 'groups': ['@DEPS - chromium.org']},
-        {'name': 'ChromiumMac', 'url': 'http://build.chromium.org/p/chromium.mac', 'groups': ['@DEPS - chromium.org']},
-        {'name': 'ChromiumLinux', 'url': 'http://build.chromium.org/p/chromium.linux', 'groups': ['@DEPS - chromium.org']},
-        {'name': 'ChromiumChromiumOS', 'url': 'http://build.chromium.org/p/chromium.chromiumos', 'groups': ['@DEPS CrOS - chromium.org']},
-        {'name': 'ChromiumGPU', 'url': 'http://build.chromium.org/p/chromium.gpu', 'groups': ['@DEPS - chromium.org']},
-        {'name': 'ChromiumGPUFYI', 'url': 'http://build.chromium.org/p/chromium.gpu.fyi', 'groups': ['@DEPS FYI - chromium.org']},
-        {'name': 'ChromiumPerfAv', 'url': 'http://build.chromium.org/p/chromium.perf_av', 'groups': ['@DEPS - chromium.org']},
-        {'name': 'ChromiumWebkit', 'url': 'http://build.chromium.org/p/chromium.webkit', 'groups': ['@DEPS - chromium.org', '@ToT - chromium.org', 'Content Shell @ToT - chromium.org']},
-        {'name': 'ChromiumFYI', 'url': 'http://build.chromium.org/p/chromium.fyi', 'groups': ['@DEPS FYI - chromium.org']},
-        {'name': 'webkit.org', 'url': 'http://build.webkit.org', 'groups': []},
+        {'name': 'ChromiumWin', 'url': 'http://build.chromium.org/p/chromium.win', 'groups': ['@ToT Chromium']},
+        {'name': 'ChromiumMac', 'url': 'http://build.chromium.org/p/chromium.mac', 'groups': ['@ToT Chromium']},
+        {'name': 'ChromiumLinux', 'url': 'http://build.chromium.org/p/chromium.linux', 'groups': ['@ToT Chromium']},
+        {'name': 'ChromiumChromiumOS', 'url': 'http://build.chromium.org/p/chromium.chromiumos', 'groups': ['@ToT ChromeOS']},
+        {'name': 'ChromiumGPU', 'url': 'http://build.chromium.org/p/chromium.gpu', 'groups': ['@ToT Chromium']},
+        {'name': 'ChromiumGPUFYI', 'url': 'http://build.chromium.org/p/chromium.gpu.fyi', 'groups': ['@ToT Chromium FYI']},
+        {'name': 'ChromiumPerfAv', 'url': 'http://build.chromium.org/p/chromium.perf_av', 'groups': ['@ToT Chromium']},
+        {'name': 'ChromiumWebkit', 'url': 'http://build.chromium.org/p/chromium.webkit', 'groups': ['@ToT Chromium', '@ToT Blink']},
+        {'name': 'ChromiumFYI', 'url': 'http://build.chromium.org/p/chromium.fyi', 'groups': ['@ToT Chromium FYI']},
     ]
 
     insert_builder_and_test_data(masters)

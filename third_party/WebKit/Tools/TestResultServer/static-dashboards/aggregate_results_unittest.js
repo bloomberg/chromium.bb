@@ -40,7 +40,7 @@ function setupAggregateResultsData(includeRevisonNumbers)
     LOAD_BUILDBOT_DATA({
         "masters": [
             {
-                "groups": [ "@ToT - chromium.org" ],
+                "groups": [ "@ToT Blink" ],
                 "name": "ChromiumWebkit",
                 "tests": {
                     "layout-tests": {
@@ -51,7 +51,7 @@ function setupAggregateResultsData(includeRevisonNumbers)
             }
         ]
     });
-    builders.loadBuildersList('@ToT - chromium.org', 'layout-tests');
+    builders.loadBuildersList('@ToT Blink', 'layout-tests');
 
     g_resultsByBuilder[builderName] = {
         "num_failures_by_type": {
