@@ -97,6 +97,7 @@ import shutil
 import sys
 
 from webkitpy.common.host import Host
+from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.w3c.test_parser import TestParser
 from webkitpy.w3c.test_converter import W3CTestConverter
@@ -172,19 +173,17 @@ class TestImporter(object):
 
         self.filesystem = self.host.filesystem
 
-        self._webkit_root = __file__.split(self.filesystem.sep + 'Tools')[0]
+        webkit_finder = WebKitFinder(self.filesystem)
+        self._webkit_root = webkit_finder.webkit_base()
         self.repo_dir = repo_dir
         subdirs = os.path.dirname(os.path.relpath(source_directory, repo_dir))
 
-        self.destination_directory = os.path.join(self.path_from_webkit_root("LayoutTests"), 'w3c', subdirs)
+        self.destination_directory = webkit_finder.path_from_webkit_base("LayoutTests", 'w3c', *subdirs)
 
         self.changeset = CHANGESET_NOT_AVAILABLE
         self.test_status = TEST_STATUS_UNKNOWN
 
         self.import_list = []
-
-    def path_from_webkit_root(self, *comps):
-        return self.filesystem.abspath(self.filesystem.join(self._webkit_root, *comps))
 
     def do_import(self):
         self.find_importable_tests(self.source_directory)
