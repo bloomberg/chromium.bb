@@ -30,6 +30,7 @@
 #include "core/inspector/InspectorOverlay.h"
 
 #include "InspectorOverlayPage.h"
+#include "V8InspectorOverlayHost.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "core/dom/Element.h"
@@ -37,13 +38,18 @@
 #include "core/dom/StyledElement.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/inspector/InspectorClient.h"
+#include "core/inspector/InspectorOverlayHost.h"
 #include "core/inspector/InspectorValues.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/EmptyClients.h"
+#include "core/page/Chrome.h"
+#include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
+#include "core/platform/PlatformMouseEvent.h"
+#include "core/platform/PlatformTouchEvent.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderInline.h"
@@ -53,6 +59,42 @@
 namespace WebCore {
 
 namespace {
+
+class InspectorOverlayChromeClient: public EmptyChromeClient {
+public:
+    InspectorOverlayChromeClient(ChromeClient* client, InspectorOverlay* overlay)
+        : m_client(client)
+        , m_overlay(overlay)
+    { }
+
+    virtual void setCursor(const Cursor& cursor)
+    {
+        m_client->setCursor(cursor);
+    }
+
+    virtual void setToolTip(const String& tooltip, TextDirection direction)
+    {
+        m_client->setToolTip(tooltip, direction);
+    }
+
+    virtual void invalidateRootView(const IntRect& rect)
+    {
+        m_overlay->invalidate();
+    }
+
+    virtual void invalidateContentsAndRootView(const IntRect& rect)
+    {
+        m_overlay->invalidate();
+    }
+
+    virtual void invalidateContentsForSlowScroll(const IntRect& rect)
+    {
+        m_overlay->invalidate();
+    }
+private:
+    ChromeClient* m_client;
+    InspectorOverlay* m_overlay;
+};
 
 Path quadToPath(const FloatQuad& quad)
 {
@@ -190,6 +232,7 @@ InspectorOverlay::InspectorOverlay(Page* page, InspectorClient* client)
     , m_drawViewSize(false)
     , m_drawViewSizeWithGrid(false)
     , m_timer(this, &InspectorOverlay::onTimer)
+    , m_overlayHost(InspectorOverlayHost::create())
 {
 }
 
@@ -199,12 +242,39 @@ InspectorOverlay::~InspectorOverlay()
 
 void InspectorOverlay::paint(GraphicsContext& context)
 {
-    if (m_pausedInDebuggerMessage.isNull() && !m_highlightNode && !m_highlightQuad && m_size.isEmpty() && !m_drawViewSize)
+    if (isEmpty())
         return;
     GraphicsContextStateSaver stateSaver(context);
     FrameView* view = overlayPage()->mainFrame()->view();
     ASSERT(!view->needsLayout());
     view->paint(&context, IntRect(0, 0, view->width(), view->height()));
+}
+
+void InspectorOverlay::invalidate()
+{
+    m_client->highlight();
+}
+
+bool InspectorOverlay::handleMouseEvent(const PlatformMouseEvent& event)
+{
+    if (isEmpty())
+        return false;
+
+    EventHandler* eventHandler = overlayPage()->mainFrame()->eventHandler();
+    switch (event.type()) {
+    case PlatformEvent::MouseMoved: return eventHandler->mouseMoved(event);
+    case PlatformEvent::MousePressed: return eventHandler->handleMousePressEvent(event);
+    case PlatformEvent::MouseReleased: return eventHandler->handleMouseReleaseEvent(event);
+    default: return false;
+    }
+}
+
+bool InspectorOverlay::handleTouchEvent(const PlatformTouchEvent& event)
+{
+    if (isEmpty())
+        return false;
+
+    return overlayPage()->mainFrame()->eventHandler()->handleTouchEvent(event);
 }
 
 void InspectorOverlay::drawOutline(GraphicsContext* context, const LayoutRect& rect, const Color& color)
@@ -273,9 +343,14 @@ Node* InspectorOverlay::highlightedNode() const
     return m_highlightNode.get();
 }
 
+bool InspectorOverlay::isEmpty()
+{
+    return !m_highlightNode && !m_eventTargetNode && !m_highlightQuad && m_pausedInDebuggerMessage.isNull() && m_size.isEmpty() && !m_drawViewSize;
+}
+
 void InspectorOverlay::update()
 {
-    if (!m_highlightNode && !m_eventTargetNode && !m_highlightQuad && m_pausedInDebuggerMessage.isNull() && m_size.isEmpty() && !m_drawViewSize) {
+    if (isEmpty()) {
         m_client->hideHighlight();
         return;
     }
@@ -449,6 +524,9 @@ Page* InspectorOverlay::overlayPage()
     static FrameLoaderClient* dummyFrameLoaderClient =  new EmptyFrameLoaderClient;
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
+    ASSERT(!m_overlayChromeClient);
+    m_overlayChromeClient = adoptPtr(new InspectorOverlayChromeClient(m_page->chrome().client(), this));
+    pageClients.chromeClient = m_overlayChromeClient.get();
     m_overlayPage = adoptPtr(new Page(pageClients));
     m_overlayPage->setGroupType(Page::InspectorPageGroup);
 
@@ -466,6 +544,7 @@ Page* InspectorOverlay::overlayPage()
     overlaySettings->setMediaEnabled(false);
     overlaySettings->setScriptEnabled(true);
     overlaySettings->setPluginsEnabled(false);
+    overlaySettings->setLoadsImagesAutomatically(true);
 
     RefPtr<Frame> frame = Frame::create(m_overlayPage.get(), 0, dummyFrameLoaderClient);
     frame->setView(FrameView::create(frame.get()));
@@ -478,6 +557,13 @@ Page* InspectorOverlay::overlayPage()
     loader->activeDocumentLoader()->writer()->begin();
     loader->activeDocumentLoader()->writer()->addData(reinterpret_cast<const char*>(InspectorOverlayPage_html), sizeof(InspectorOverlayPage_html));
     loader->activeDocumentLoader()->writer()->end();
+
+    v8::HandleScope handleScope;
+    v8::Handle<v8::Context> frameContext = frame->script()->currentWorldContext();
+    v8::Context::Scope contextScope(frameContext);
+    v8::Handle<v8::Value> overlayHostObj = toV8(m_overlayHost.get(), v8::Handle<v8::Object>(), frameContext->GetIsolate());
+    v8::Handle<v8::Object> global = frameContext->Global();
+    global->Set(v8::String::New("InspectorOverlayHost"), overlayHostObj);
 
 #if OS(WINDOWS)
     evaluateInOverlay("setPlatform", "windows");
@@ -542,6 +628,7 @@ void InspectorOverlay::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) con
 void InspectorOverlay::freePage()
 {
     m_overlayPage.clear();
+    m_overlayChromeClient.clear();
     m_timer.stop();
 }
 
