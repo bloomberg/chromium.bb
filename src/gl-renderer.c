@@ -66,6 +66,7 @@ struct gl_surface_state {
 
 	GLuint textures[3];
 	int num_textures;
+	int needs_full_upload;
 	pixman_region32_t texture_damage;
 
 	EGLImageKHR images[3];
@@ -1147,6 +1148,16 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	/* Mesa does not define GL_EXT_unpack_subimage */
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, gs->pitch);
 	data = wl_shm_buffer_get_data(buffer->shm_buffer);
+
+	if (gs->needs_full_upload) {
+		glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+		glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+		glTexSubImage2D(GL_TEXTURE_2D, 0,
+				0, 0, gs->pitch, buffer->height,
+				GL_BGRA_EXT, GL_UNSIGNED_BYTE, data);
+		goto done;
+	}
+
 	rectangles = pixman_region32_rectangles(&gs->texture_damage, &n);
 	for (i = 0; i < n; i++) {
 		pixman_box32_t r;
@@ -1164,6 +1175,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 done:
 	pixman_region32_fini(&gs->texture_damage);
 	pixman_region32_init(&gs->texture_damage);
+	gs->needs_full_upload = 0;
 
 	weston_buffer_reference(&gs->buffer_ref, NULL);
 }
@@ -1228,17 +1240,13 @@ gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 			gs->height = buffer->height;
 			gs->target = GL_TEXTURE_2D;
 			gs->buffer_type = BUFFER_TYPE_SHM;
+			gs->needs_full_upload = 1;
 
 			ensure_textures(gs, 1);
 			glBindTexture(GL_TEXTURE_2D, gs->textures[0]);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
 				     gs->pitch, buffer->height, 0,
 				     GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);
-			pixman_region32_union_rect(&gs->texture_damage,
-						   &gs->texture_damage,
-						   0, 0,
-						   gs->pitch / es->buffer_scale,
-						   gs->height / es->buffer_scale);
 		}
 
 		if (wl_shm_buffer_get_format(shm_buffer) == WL_SHM_FORMAT_XRGB8888)
