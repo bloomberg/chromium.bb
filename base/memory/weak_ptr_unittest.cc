@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/debug/leak_annotations.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -435,9 +436,12 @@ TEST(WeakPtrTest, NonOwnerThreadCanCopyAndAssignWeakPtr) {
   // Main thread creates a Target object.
   Target target;
   // Main thread creates an arrow referencing the Target.
-  Arrow* arrow = new Arrow();
-  arrow->target = target.AsWeakPtr();
-
+  Arrow *arrow;
+  {
+    ANNOTATE_SCOPED_MEMORY_LEAK;
+    arrow = new Arrow();
+    arrow->target = target.AsWeakPtr();
+  }
   // Background can copy and assign arrow (as well as the WeakPtr inside).
   BackgroundThread background;
   background.Start();
@@ -448,9 +452,12 @@ TEST(WeakPtrTest, NonOwnerThreadCanCopyAndAssignWeakPtrBase) {
   // Main thread creates a Target object.
   Target target;
   // Main thread creates an arrow referencing the Target.
-  Arrow* arrow = new Arrow();
-  arrow->target = target.AsWeakPtr();
-
+  Arrow *arrow;
+  {
+    ANNOTATE_SCOPED_MEMORY_LEAK;
+    arrow = new Arrow();
+    arrow->target = target.AsWeakPtr();
+  }
   // Background can copy and assign arrow's WeakPtr to a base class WeakPtr.
   BackgroundThread background;
   background.Start();
