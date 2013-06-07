@@ -99,7 +99,7 @@ class ScreenNotificationView : public TrayNotificationView {
 // The base tray item for screen capture and screen sharing. The
 // Start method brings up a notification and a tray item, and the user
 // can stop the screen capture/sharing by pressing the stop button.
-class ScreenTrayItem : public SystemTrayItem {
+class ASH_EXPORT ScreenTrayItem : public SystemTrayItem {
  public:
   explicit ScreenTrayItem(SystemTray* system_tray);
   virtual ~ScreenTrayItem();
