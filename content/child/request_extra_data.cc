@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/request_extra_data.h"
+#include "content/child/request_extra_data.h"
 
 using WebKit::WebReferrerPolicy;
 using WebKit::WebString;
