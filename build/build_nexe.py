@@ -11,9 +11,12 @@ additional arguments, and use them to build.
 
 from optparse import OptionParser
 import os
+import Queue
 import subprocess
 import sys
 import tempfile
+import threading
+import urllib2
 
 class Error(Exception):
   pass
@@ -92,6 +95,33 @@ def IsStale(out_ts, src_ts, rebuilt=False):
     return out_ts < src_ts
   # If about to build, be conservative and rebuilt just in case.
   return out_ts <= src_ts
+
+
+def GetGomaPath(osname, arch, toolname):
+  """Returns full-path of gomacc if goma is available or None."""
+  # Start goma support from os/arch/toolname that have been tested.
+  # Set NO_NACL_GOMA=true to force to avoid using goma.
+  if (osname != 'linux' or arch not in ['x86-32', 'x86-64']
+      or toolname not in ['newlib', 'glibc']
+      or os.environ.get('NO_NACL_GOMA', None)):
+    return None
+
+  try:
+    gomacc_base = 'gomacc.exe' if os.name == 'nt' else 'gomacc'
+    for directory in os.environ.get('PATH', '').split(os.path.pathsep):
+      gomacc = os.path.join(directory, gomacc_base)
+      if os.path.isfile(gomacc):
+        port = subprocess.Popen(
+            [gomacc, 'port'], stdout=subprocess.PIPE).communicate()[0].strip()
+        if port:
+          status = urllib2.urlopen(
+              'http://127.0.0.1:%s/healthz' % port).read().strip()
+          if status == 'ok':
+            return gomacc
+  except Exception:
+    # Anyway, fallbacks to non-goma mode.
+    pass
+  return None
 
 
 class Builder(object):
@@ -190,6 +220,7 @@ class Builder(object):
     self.strip_all = options.strip_all
     self.strip_debug = options.strip_debug
     self.finalize_pexe = options.finalize_pexe
+    self.gomacc = GetGomaPath(self.osname, arch, toolname)
 
     self.Log('Compile options: %s' % self.compile_options)
     self.Log('Linker options: %s' % self.link_options)
@@ -469,6 +500,8 @@ class Builder(object):
     self.CleanOutput(outd)
     cmd_line = [bin_name, '-c', src, '-o', out,
                 '-MD', '-MF', outd] + extra + self.compile_options
+    if self.gomacc:
+      cmd_line.insert(0, self.gomacc)
     err = self.RunWithRetry(cmd_line, out)
     if err:
       self.CleanOutput(outd)
@@ -683,10 +716,27 @@ def Main(argv):
       build.Translate(files[0])
       return 0
 
-    for filename in files:
-      out = build.Compile(filename)
-      if out:
-        objs.append(out)
+    if build.gomacc:  # use goma build.
+      returns = Queue.Queue()
+      def CompileThread(filename, queue):
+        queue.put(build.Compile(filename))
+      build_threads = []
+      # Start parallel build.
+      for filename in files:
+        thr = threading.Thread(target=CompileThread, args=(filename, returns))
+        thr.start()
+        build_threads.append(thr)
+      for thr in build_threads:
+        thr.join()
+        out = returns.get()
+        if out:
+          objs.append(out)
+    else:  # slow path.
+      for filename in files:
+        out = build.Compile(filename)
+        if out:
+          objs.append(out)
+
     # Do not link if building an object
     if not options.compile_only:
       build.Generate(objs)
