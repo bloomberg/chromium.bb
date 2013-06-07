@@ -6497,6 +6497,49 @@ int sqlite3PagerMovepage(Pager *pPager, DbPage *pPg, Pgno pgno, int isCommit){
 #endif
 
 /* Begin preload-cache.patch for Chromium */
+#if 1
+/* NOTE(shess): Testing to see if simply reading the data into the
+ * filesystem buffers will have the positive speed impact without the
+ * negative memory impact.
+ */
+int sqlite3PagerLoadall(Pager* pPager)
+{
+  int i, pageSize, loadPages, rc;
+  unsigned char *fileData;
+
+  /* TODO(shess): This test may not be relevant for this
+   * implementation, but keep the invariant consistent.
+   */
+  pageSize = pPager->pageSize;
+  if (pPager->dbSize < 0 || pageSize < 0) {
+    /* pager not initialized, this means a statement is not open */
+    return SQLITE_MISUSE;
+  }
+
+  /* Allocate a buffer to read pages into. */
+  /* TODO(shess): No need to read by page, this could be a fixed-size
+   * buffer on stack.
+   */
+  fileData = sqlite3Malloc(pageSize);
+  if (!fileData)
+    return SQLITE_NOMEM;
+
+  /* Load the smaller of the entire cache or the entire database. */
+  loadPages = sqlite3PcacheGetCachesize(pPager->pPCache);
+  if (loadPages > pPager->dbSize)
+    loadPages = pPager->dbSize;
+
+  /* Read database page by page. */
+  rc = SQLITE_OK;
+  for(i=0; i < loadPages; i++) {
+    rc = sqlite3OsRead(pPager->fd, fileData, pageSize, i*pageSize);
+    if (rc != SQLITE_OK)
+      break;
+  }
+  sqlite3_free(fileData);
+  return rc;
+}
+#else
 /**
 ** When making large allocations, there is no need to stress the heap and
 ** potentially hold its lock while we allocate a bunch of memory.  If we know
@@ -6579,6 +6622,7 @@ int sqlite3PagerLoadall(Pager* pPager)
   freeLarge(fileData);
   return SQLITE_OK;
 }
+#endif
 /* End preload-cache.patch for Chromium */
 
 /*
