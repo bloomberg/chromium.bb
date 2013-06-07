@@ -28,6 +28,8 @@
 #include "grit/webkit_chromium_resources.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
+#include "net/base/data_url.h"
+#include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebCookie.h"
 #include "third_party/WebKit/public/platform/WebData.h"
@@ -401,6 +403,20 @@ WebSocketStreamHandle* WebKitPlatformSupportImpl::createSocketStreamHandle() {
 
 WebString WebKitPlatformSupportImpl::userAgent(const WebURL& url) {
   return WebString::fromUTF8(webkit_glue::GetUserAgent(url));
+}
+
+WebData WebKitPlatformSupportImpl::parseDataURL(
+    const WebURL& url,
+    WebString& mimetype_out,
+    WebString& charset_out) {
+  std::string mime_type, char_set, data;
+  if (net::DataURL::Parse(url, &mime_type, &char_set, &data)
+      && net::IsSupportedMimeType(mime_type)) {
+    mimetype_out = WebString::fromUTF8(mime_type);
+    charset_out = WebString::fromUTF8(char_set);
+    return data;
+  }
+  return WebData();
 }
 
 WebURLError WebKitPlatformSupportImpl::cancelledError(
