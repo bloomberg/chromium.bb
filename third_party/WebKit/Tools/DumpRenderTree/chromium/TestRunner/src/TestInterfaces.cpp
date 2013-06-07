@@ -40,6 +40,8 @@
 #include "WebCache.h"
 #include "WebKit.h"
 #include "WebRuntimeFeatures.h"
+#include "WebTestProxy.h"
+#include "WebView.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 
@@ -54,7 +56,6 @@ TestInterfaces::TestInterfaces()
     , m_gamepadController(new GamepadController())
     , m_textInputController(new TextInputController())
     , m_testRunner(new TestRunner(this))
-    , m_webView(0)
     , m_delegate(0)
 {
     WebKit::setLayoutTestMode(true);
@@ -83,7 +84,6 @@ TestInterfaces::~TestInterfaces()
 
 void TestInterfaces::setWebView(WebView* webView, WebTestProxyBase* proxy)
 {
-    m_webView = webView;
     m_proxy = proxy;
     m_accessibilityController->setWebView(webView);
     m_eventSender->setWebView(webView);
@@ -169,11 +169,6 @@ EventSender* TestInterfaces::eventSender()
 TestRunner* TestInterfaces::testRunner()
 {
     return m_testRunner.get();
-}
-
-WebView* TestInterfaces::webView()
-{
-    return m_webView;
 }
 
 WebTestDelegate* TestInterfaces::delegate()

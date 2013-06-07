@@ -75,7 +75,6 @@ public:
     AccessibilityController* accessibilityController();
     EventSender* eventSender();
     TestRunner* testRunner();
-    WebKit::WebView* webView();
     WebTestDelegate* delegate();
     WebTestProxyBase* proxy();
     const std::vector<WebTestProxyBase*>& windowList();
@@ -87,7 +86,6 @@ private:
     std::auto_ptr<GamepadController> m_gamepadController;
     std::auto_ptr<TextInputController> m_textInputController;
     std::auto_ptr<TestRunner> m_testRunner;
-    WebKit::WebView* m_webView;
     WebTestDelegate* m_delegate;
     WebTestProxyBase* m_proxy;
 

@@ -1805,6 +1805,8 @@ crbug.com/246549 http/tests/security/svg-image-leak.html [ Failure Pass ]
 
 crbug.com/247553 http/tests/inspector/compiler-source-mapping-debug.html [ Crash Timeout Pass ]
 
+crbug.com/247614 [ Debug ] printing/print-close-crash.html [ Crash ]
+
 # Needs new pixel baselines on other platforms
 Bug(jamesr) compositing/video/video-controls-layer-creation.html [ ImageOnlyFailure Pass ]
 Bug(jamesr) virtual/softwarecompositing/video/video-controls-layer-creation.html [ ImageOnlyFailure Pass ]

@@ -219,6 +219,9 @@ private:
     SkCanvas* canvas();
     void displayRepaintMask();
 
+    WebKit::WebWidget* webWidget();
+    WebKit::WebView* webView();
+
     TestInterfaces* m_testInterfaces;
     WebTestDelegate* m_delegate;
     WebKit::WebWidget* m_webWidget;

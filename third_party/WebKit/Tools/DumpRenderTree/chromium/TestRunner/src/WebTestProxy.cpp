@@ -474,6 +474,18 @@ void WebTestProxyBase::setWidget(WebWidget* widget)
     m_webWidget = widget;
 }
 
+WebWidget* WebTestProxyBase::webWidget()
+{
+    return m_webWidget;
+}
+
+WebView* WebTestProxyBase::webView()
+{
+    WEBKIT_ASSERT(m_webWidget);
+    // TestRunner does not support popup widgets. So m_webWidget is always a WebView.
+    return static_cast<WebView*>(m_webWidget);
+}
+
 void WebTestProxyBase::reset()
 {
     m_paintRect = WebRect();
@@ -506,7 +518,7 @@ string WebTestProxyBase::captureTree(bool debugRenderTree)
 
     bool shouldDumpAsText = m_testInterfaces->testRunner()->shouldDumpAsText();
     bool shouldDumpAsPrinted = m_testInterfaces->testRunner()->isPrinting();
-    WebFrame* frame = m_testInterfaces->webView()->mainFrame();
+    WebFrame* frame = webView()->mainFrame();
     string dataUtf8;
     if (shouldDumpAsText) {
         bool recursive = m_testInterfaces->testRunner()->shouldDumpChildFramesAsText();
@@ -530,9 +542,9 @@ string WebTestProxyBase::captureTree(bool debugRenderTree)
 
 SkCanvas* WebTestProxyBase::capturePixels()
 {
-    m_testInterfaces->webView()->layout();
+    webWidget()->layout();
     if (m_testInterfaces->testRunner()->testRepaint()) {
-        WebSize viewSize = m_testInterfaces->webView()->size();
+        WebSize viewSize = webWidget()->size();
         int width = viewSize.width;
         int height = viewSize.height;
         if (m_testInterfaces->testRunner()->sweepHorizontally()) {
@@ -552,7 +564,7 @@ SkCanvas* WebTestProxyBase::capturePixels()
     // The rect should be drawn after everything is laid out and painted.
     if (m_testInterfaces->testRunner()->shouldDumpSelectionRect()) {
         // If there is a selection rect - draw a red 1px border enclosing rect
-        WebRect wr = m_testInterfaces->webView()->mainFrame()->selectionBoundsRect();
+        WebRect wr = webView()->mainFrame()->selectionBoundsRect();
         if (!wr.isEmpty()) {
             // Render a red rectangle bounding selection rect
             SkPaint paint;
@@ -579,21 +591,21 @@ void WebTestProxyBase::paintRect(const WebRect& rect)
     WEBKIT_ASSERT(!m_isPainting);
     WEBKIT_ASSERT(canvas());
     m_isPainting = true;
-    float deviceScaleFactor = m_testInterfaces->webView()->deviceScaleFactor();
+    float deviceScaleFactor = webView()->deviceScaleFactor();
     int scaledX = static_cast<int>(static_cast<float>(rect.x) * deviceScaleFactor);
     int scaledY = static_cast<int>(static_cast<float>(rect.y) * deviceScaleFactor);
     int scaledWidth = static_cast<int>(ceil(static_cast<float>(rect.width) * deviceScaleFactor));
     int scaledHeight = static_cast<int>(ceil(static_cast<float>(rect.height) * deviceScaleFactor));
     WebRect deviceRect(scaledX, scaledY, scaledWidth, scaledHeight);
-    m_testInterfaces->webView()->paint(canvas(), deviceRect);
+    webWidget()->paint(canvas(), deviceRect);
     m_isPainting = false;
 }
 
 void WebTestProxyBase::paintInvalidatedRegion()
 {
-    m_testInterfaces->webView()->animate(0.0);
-    m_testInterfaces->webView()->layout();
-    WebSize widgetSize = m_testInterfaces->webView()->size();
+    webWidget()->animate(0.0);
+    webWidget()->layout();
+    WebSize widgetSize = webWidget()->size();
     WebRect clientRect(0, 0, widgetSize.width, widgetSize.height);
 
     // Paint the canvas if necessary. Allow painting to generate extra rects
@@ -626,8 +638,8 @@ void WebTestProxyBase::paintPagesWithBoundaries()
     WEBKIT_ASSERT(canvas());
     m_isPainting = true;
 
-    WebSize pageSizeInPixels = m_testInterfaces->webView()->size();
-    WebFrame* webFrame = m_testInterfaces->webView()->mainFrame();
+    WebSize pageSizeInPixels = webWidget()->size();
+    WebFrame* webFrame = webView()->mainFrame();
 
     int pageCount = webFrame->printBegin(pageSizeInPixels);
     int totalHeight = pageCount * (pageSizeInPixels.height + 1) - 1;
@@ -651,8 +663,8 @@ SkCanvas* WebTestProxyBase::canvas()
 {
     if (m_canvas.get())
         return m_canvas.get();
-    WebSize widgetSize = m_testInterfaces->webView()->size();
-    float deviceScaleFactor = m_testInterfaces->webView()->deviceScaleFactor();
+    WebSize widgetSize = webWidget()->size();
+    float deviceScaleFactor = webView()->deviceScaleFactor();
     int scaledWidth = static_cast<int>(ceil(static_cast<float>(widgetSize.width) * deviceScaleFactor));
     int scaledHeight = static_cast<int>(ceil(static_cast<float>(widgetSize.height) * deviceScaleFactor));
     m_canvas.reset(skia::CreateBitmapCanvas(scaledWidth, scaledHeight, true));
@@ -668,7 +680,7 @@ void WebTestProxyBase::displayRepaintMask()
 
 void WebTestProxyBase::display()
 {
-    const WebKit::WebSize& size = m_testInterfaces->webView()->size();
+    const WebKit::WebSize& size = webWidget()->size();
     WebRect rect(0, 0, size.width, size.height);
     m_paintRect = rect;
     paintInvalidatedRegion();
@@ -1013,7 +1025,7 @@ WebMediaPlayer* WebTestProxyBase::createMediaPlayer(WebFrame* frame, const WebUR
 // Simulate a print by going into print mode and then exit straight away.
 void WebTestProxyBase::printPage(WebFrame* frame)
 {
-    WebSize pageSizeInPixels = m_testInterfaces->webView()->size();
+    WebSize pageSizeInPixels = webWidget()->size();
     WebPrintParams printParams(pageSizeInPixels);
     frame->printBegin(printParams);
     frame->printEnd();
