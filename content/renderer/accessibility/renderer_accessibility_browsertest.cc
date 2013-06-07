@@ -301,7 +301,7 @@ TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
   document = view()->GetWebView()->mainFrame()->document();
   root_obj = document.accessibilityObject();
   sink_->ClearMessages();
-  const WebAccessibilityObject& first_child = root_obj.firstChild();
+  const WebAccessibilityObject& first_child = root_obj.childAt(0);
   accessibility->HandleWebAccessibilityNotification(
       first_child,
       WebKit::WebAccessibilityNotificationLiveRegionChanged);
