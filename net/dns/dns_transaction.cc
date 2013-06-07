@@ -73,7 +73,8 @@ Value* NetLogStartCallback(const std::string* hostname,
 // matches. Logging is done in the socket and in the outer DnsTransaction.
 class DnsAttempt {
  public:
-  DnsAttempt() : result_(ERR_FAILED) {}
+  explicit DnsAttempt(unsigned server_index)
+      : result_(ERR_FAILED), server_index_(server_index) {}
 
   virtual ~DnsAttempt() {}
   // Starts the attempt. Returns ERR_IO_PENDING if cannot complete synchronously
@@ -91,7 +92,7 @@ class DnsAttempt {
   virtual const BoundNetLog& GetSocketNetLog() const = 0;
 
   // Returns the index of the destination server within DnsConfig::nameservers.
-  virtual unsigned GetServerIndex() const = 0;
+  unsigned server_index() const { return server_index_; }
 
   // Returns a Value representing the received response, along with a reference
   // to the NetLog source source of the UDP socket used.  The request must have
@@ -124,17 +125,20 @@ class DnsAttempt {
  private:
   // Result of last operation.
   int result_;
+
+  const unsigned server_index_;
 };
 
 class DnsUDPAttempt : public DnsAttempt {
  public:
-  DnsUDPAttempt(scoped_ptr<DnsSession::SocketLease> socket_lease,
+  DnsUDPAttempt(unsigned server_index,
+                scoped_ptr<DnsSession::SocketLease> socket_lease,
                 scoped_ptr<DnsQuery> query)
-      : next_state_(STATE_NONE),
+      : DnsAttempt(server_index),
+        next_state_(STATE_NONE),
         received_malformed_response_(false),
         socket_lease_(socket_lease.Pass()),
-        query_(query.Pass()) {
-  }
+        query_(query.Pass()) {}
 
   // DnsAttempt:
   virtual int Start(const CompletionCallback& callback) OVERRIDE {
@@ -156,10 +160,6 @@ class DnsUDPAttempt : public DnsAttempt {
 
   virtual const BoundNetLog& GetSocketNetLog() const OVERRIDE {
     return socket_lease_->socket()->NetLog();
-  }
-
-  virtual unsigned GetServerIndex() const OVERRIDE {
-    return socket_lease_->server_index();
   }
 
  private:
@@ -298,13 +298,12 @@ class DnsTCPAttempt : public DnsAttempt {
   DnsTCPAttempt(unsigned server_index,
                 scoped_ptr<StreamSocket> socket,
                 scoped_ptr<DnsQuery> query)
-      : next_state_(STATE_NONE),
-        server_index_(server_index),
+      : DnsAttempt(server_index),
+        next_state_(STATE_NONE),
         socket_(socket.Pass()),
         query_(query.Pass()),
         length_buffer_(new IOBufferWithSize(sizeof(uint16))),
-        response_length_(0) {
-  }
+        response_length_(0) {}
 
   // DnsAttempt:
   virtual int Start(const CompletionCallback& callback) OVERRIDE {
@@ -332,10 +331,6 @@ class DnsTCPAttempt : public DnsAttempt {
 
   virtual const BoundNetLog& GetSocketNetLog() const OVERRIDE {
     return socket_->NetLog();
-  }
-
-  virtual unsigned GetServerIndex() const OVERRIDE {
-    return server_index_;
   }
 
  private:
@@ -497,7 +492,6 @@ class DnsTCPAttempt : public DnsAttempt {
   State next_state_;
   base::TimeTicks start_time_;
 
-  unsigned server_index_;
   scoped_ptr<StreamSocket> socket_;
   scoped_ptr<DnsQuery> query_;
   scoped_refptr<IOBufferWithSize> length_buffer_;
@@ -685,13 +679,16 @@ class DnsTransactionImpl : public DnsTransaction,
 
     unsigned server_index =
         (first_server_index_ + attempt_number) % config.nameservers.size();
+    // Skip over known failed servers.
+    server_index = session_->NextGoodServerIndex(server_index);
 
     scoped_ptr<DnsSession::SocketLease> lease =
         session_->AllocateSocket(server_index, net_log_.source());
 
     bool got_socket = !!lease.get();
 
-    DnsUDPAttempt* attempt = new DnsUDPAttempt(lease.Pass(), query.Pass());
+    DnsUDPAttempt* attempt =
+        new DnsUDPAttempt(server_index, lease.Pass(), query.Pass());
 
     attempts_.push_back(attempt);
 
@@ -718,7 +715,7 @@ class DnsTransactionImpl : public DnsTransaction,
     DCHECK(previous_attempt);
     DCHECK(!had_tcp_attempt_);
 
-    unsigned server_index = previous_attempt->GetServerIndex();
+    unsigned server_index = previous_attempt->server_index();
 
     scoped_ptr<StreamSocket> socket(
         session_->CreateTCPSocket(server_index, net_log_.source()));
@@ -774,7 +771,7 @@ class DnsTransactionImpl : public DnsTransaction,
     DCHECK_LT(attempt_number, attempts_.size());
     const DnsAttempt* attempt = attempts_[attempt_number];
     if (attempt->GetResponse()) {
-      session_->RecordRTT(attempt->GetServerIndex(),
+      session_->RecordRTT(attempt->server_index(),
                           base::TimeTicks::Now() - start);
     }
     OnAttemptComplete(attempt_number, rv);
@@ -805,15 +802,14 @@ class DnsTransactionImpl : public DnsTransaction,
       return;
 
     size_t num_servers = session_->config().nameservers.size();
+    std::vector<int> server_attempts(num_servers);
     for (size_t i = 0; i < first_completed; ++i) {
+      unsigned server_index = attempts_[i]->server_index();
+      int server_attempt = server_attempts[server_index]++;
       // Don't record lost packet unless attempt is in pending state.
       if (!attempts_[i]->is_pending())
         continue;
-      unsigned server_index = attempts_[i]->GetServerIndex();
-      // Servers are rotated in round robin, so server round can be calculated
-      // from attempt index.
-      size_t server_round = i / num_servers;
-      session_->RecordLostPacket(server_index, static_cast<int>(server_round));
+      session_->RecordLostPacket(server_index, server_attempt);
     }
   }
 
@@ -841,14 +837,16 @@ class DnsTransactionImpl : public DnsTransaction,
 
       switch (result.rv) {
         case OK:
-          net_log_.EndEventWithNetErrorCode(
-              NetLog::TYPE_DNS_TRANSACTION_QUERY, result.rv);
+          session_->RecordServerSuccess(result.attempt->server_index());
+          net_log_.EndEventWithNetErrorCode(NetLog::TYPE_DNS_TRANSACTION_QUERY,
+                                            result.rv);
           DCHECK(result.attempt);
           DCHECK(result.attempt->GetResponse());
           return result;
         case ERR_NAME_NOT_RESOLVED:
-          net_log_.EndEventWithNetErrorCode(
-              NetLog::TYPE_DNS_TRANSACTION_QUERY, result.rv);
+          session_->RecordServerSuccess(result.attempt->server_index());
+          net_log_.EndEventWithNetErrorCode(NetLog::TYPE_DNS_TRANSACTION_QUERY,
+                                            result.rv);
           // Try next suffix.
           qnames_.pop_front();
           if (qnames_.empty()) {
@@ -859,6 +857,8 @@ class DnsTransactionImpl : public DnsTransaction,
           break;
         case ERR_CONNECTION_REFUSED:
         case ERR_DNS_TIMED_OUT:
+          if (result.attempt)
+            session_->RecordServerFailure(result.attempt->server_index());
           if (MoreAttemptsAllowed()) {
             result = MakeAttempt();
           } else {
@@ -873,6 +873,7 @@ class DnsTransactionImpl : public DnsTransaction,
           DCHECK(result.attempt);
           if (result.attempt != attempts_.back()) {
             // This attempt already timed out. Ignore it.
+            session_->RecordServerFailure(result.attempt->server_index());
             return AttemptResult(ERR_IO_PENDING, NULL);
           }
           if (MoreAttemptsAllowed()) {

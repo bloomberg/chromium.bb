@@ -7,9 +7,11 @@
 
 #include <vector>
 
+#include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/metrics/bucket_ranges.h"
 #include "base/time.h"
 #include "net/base/net_export.h"
 #include "net/base/rand_callback.h"
@@ -67,13 +69,28 @@ class NET_EXPORT_PRIVATE DnsSession
   int NextQueryId() const;
 
   // Return the index of the first configured server to use on first attempt.
-  int NextFirstServerIndex();
+  unsigned NextFirstServerIndex();
+
+  // Start with |server_index| and find the index of the next known good server
+  // to use on this attempt. Returns |server_index| if this server has no
+  // recorded failures, or if there are no other servers that have not failed
+  // or have failed longer time ago.
+  unsigned NextGoodServerIndex(unsigned server_index);
+
+  // Record that server failed to respond (due to SRV_FAIL or timeout).
+  void RecordServerFailure(unsigned server_index);
+
+  // Record that server responded successfully.
+  void RecordServerSuccess(unsigned server_index);
 
   // Record how long it took to receive a response from the server.
   void RecordRTT(unsigned server_index, base::TimeDelta rtt);
 
   // Record suspected loss of a packet for a specific server.
   void RecordLostPacket(unsigned server_index, int attempt);
+
+  // Record server stats before it is destroyed.
+  void RecordServerStats();
 
   // Return the timeout for the next query. |attempt| counts from 0 and is used
   // for exponential backoff.
@@ -111,15 +128,16 @@ class NET_EXPORT_PRIVATE DnsSession
   // Current index into |config_.nameservers| to begin resolution with.
   int server_index_;
 
-  // Estimated RTT for each name server using moving average.
-  std::vector<base::TimeDelta> rtt_estimates_;
-  // Estimated error in the above for each name server.
-  std::vector<base::TimeDelta> rtt_deviations_;
+  struct ServerStats;
 
-  // Buckets shared for all |rtt_histograms_|.
-  scoped_ptr<base::BucketRanges> rtt_buckets_;
-  // A histogram of observed RTT for each name server.
-  ScopedVector<base::SampleVector> rtt_histograms_;
+  // Track runtime statistics of each DNS server.
+  ScopedVector<ServerStats> server_stats_;
+
+  // Buckets shared for all |ServerStats::rtt_histogram|.
+  struct RttBuckets : public base::BucketRanges {
+    RttBuckets();
+  };
+  static base::LazyInstance<RttBuckets>::Leaky rtt_buckets_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsSession);
 };

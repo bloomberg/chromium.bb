@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sample_vector.h"
 #include "base/rand_util.h"
@@ -32,6 +33,40 @@ const size_t kRTTBucketCount = 100;
 const unsigned kRTOPercentile = 99;
 }  // namespace
 
+// Runtime statistics of DNS server.
+struct DnsSession::ServerStats {
+  ServerStats(base::TimeDelta rtt_estimate_param, RttBuckets* buckets)
+    : last_failure_count(0), rtt_estimate(rtt_estimate_param) {
+    rtt_histogram.reset(new base::SampleVector(buckets));
+  }
+
+  // Count of consecutive failures after last success.
+  int last_failure_count;
+
+  // Last time when server returned failure or timeout.
+  base::Time last_failure;
+  // Last time when server returned success.
+  base::Time last_success;
+
+  // Estimated RTT using moving average.
+  base::TimeDelta rtt_estimate;
+  // Estimated error in the above.
+  base::TimeDelta rtt_deviation;
+
+  // A histogram of observed RTT .
+  scoped_ptr<base::SampleVector> rtt_histogram;
+
+  DISALLOW_COPY_AND_ASSIGN(ServerStats);
+};
+
+// static
+base::LazyInstance<DnsSession::RttBuckets>::Leaky DnsSession::rtt_buckets_ =
+    LAZY_INSTANCE_INITIALIZER;
+
+DnsSession::RttBuckets::RttBuckets() : base::BucketRanges(kRTTBucketCount + 1) {
+  base::Histogram::InitializeBucketRanges(1, 5000, kRTTBucketCount, this);
+}
+
 DnsSession::SocketLease::SocketLease(scoped_refptr<DnsSession> session,
                                      unsigned server_index,
                                      scoped_ptr<DatagramClientSocket> socket)
@@ -49,33 +84,79 @@ DnsSession::DnsSession(const DnsConfig& config,
       socket_pool_(socket_pool.Pass()),
       rand_callback_(base::Bind(rand_int_callback, 0, kuint16max)),
       net_log_(net_log),
-      server_index_(0),
-      rtt_estimates_(config_.nameservers.size(), config_.timeout),
-      rtt_deviations_(config_.nameservers.size()),
-      rtt_buckets_(new base::BucketRanges(kRTTBucketCount + 1)) {
+      server_index_(0) {
   socket_pool_->Initialize(&config_.nameservers, net_log);
-
-  // TODO(mef): This could be done once per process lifetime.
-  base::Histogram::InitializeBucketRanges(1, 5000, kRTTBucketCount,
-                                          rtt_buckets_.get());
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "AsyncDNS.ServerCount", config_.nameservers.size(), 0, 10, 10);
   for (size_t i = 0; i < config_.nameservers.size(); ++i) {
-    rtt_histograms_.push_back(new base::SampleVector(rtt_buckets_.get()));
+    server_stats_.push_back(new ServerStats(config_.timeout,
+                                            rtt_buckets_.Pointer()));
   }
 }
 
-DnsSession::~DnsSession() {}
+DnsSession::~DnsSession() {
+  RecordServerStats();
+}
 
 int DnsSession::NextQueryId() const { return rand_callback_.Run(); }
 
-int DnsSession::NextFirstServerIndex() {
-  int index = server_index_;
+unsigned DnsSession::NextFirstServerIndex() {
+  unsigned index = NextGoodServerIndex(server_index_);
   if (config_.rotate)
     server_index_ = (server_index_ + 1) % config_.nameservers.size();
   return index;
 }
 
+unsigned DnsSession::NextGoodServerIndex(unsigned server_index) {
+  unsigned index = server_index;
+  base::Time oldest_server_failure(base::Time::Now());
+  unsigned oldest_server_failure_index = 0;
+
+  UMA_HISTOGRAM_BOOLEAN("AsyncDNS.ServerIsGood",
+                        server_stats_[server_index]->last_failure.is_null());
+
+  do {
+    base::Time cur_server_failure = server_stats_[index]->last_failure;
+    // If number of failures on this server doesn't exceed number of allowed
+    // attempts, return its index.
+    if (server_stats_[server_index]->last_failure_count < config_.attempts) {
+      return index;
+    }
+    // Track oldest failed server.
+    if (cur_server_failure < oldest_server_failure) {
+      oldest_server_failure = cur_server_failure;
+      oldest_server_failure_index = index;
+    }
+    index = (index + 1) % config_.nameservers.size();
+  } while (index != server_index);
+
+  // If we are here it means that there are no successful servers, so we have
+  // to use one that has failed oldest.
+  return oldest_server_failure_index;
+}
+
+void DnsSession::RecordServerFailure(unsigned server_index) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "AsyncDNS.ServerFailureIndex", server_index, 0, 10, 10);
+  ++(server_stats_[server_index]->last_failure_count);
+  server_stats_[server_index]->last_failure = base::Time::Now();
+}
+
+void DnsSession::RecordServerSuccess(unsigned server_index) {
+  if (server_stats_[server_index]->last_success.is_null()) {
+    UMA_HISTOGRAM_COUNTS_100("AsyncDNS.ServerFailuresAfterNetworkChange",
+                           server_stats_[server_index]->last_failure_count);
+  } else {
+    UMA_HISTOGRAM_COUNTS_100("AsyncDNS.ServerFailuresBeforeSuccess",
+                           server_stats_[server_index]->last_failure_count);
+  }
+  server_stats_[server_index]->last_failure_count = 0;
+  server_stats_[server_index]->last_failure = base::Time();
+  server_stats_[server_index]->last_success = base::Time::Now();
+}
+
 void DnsSession::RecordRTT(unsigned server_index, base::TimeDelta rtt) {
-  DCHECK_LT(server_index, rtt_histograms_.size());
+  DCHECK_LT(server_index, server_stats_.size());
 
   // For measurement, assume it is the first attempt (no backoff).
   base::TimeDelta timeout_jacobson = NextTimeoutFromJacobson(server_index, 0);
@@ -90,8 +171,8 @@ void DnsSession::RecordRTT(unsigned server_index, base::TimeDelta rtt) {
 
   // Jacobson/Karels algorithm for TCP.
   // Using parameters: alpha = 1/8, delta = 1/4, beta = 4
-  base::TimeDelta& estimate = rtt_estimates_[server_index];
-  base::TimeDelta& deviation = rtt_deviations_[server_index];
+  base::TimeDelta& estimate = server_stats_[server_index]->rtt_estimate;
+  base::TimeDelta& deviation = server_stats_[server_index]->rtt_deviation;
   base::TimeDelta current_error = rtt - estimate;
   estimate += current_error / 8;  // * alpha
   base::TimeDelta abs_error = base::TimeDelta::FromInternalValue(
@@ -99,7 +180,8 @@ void DnsSession::RecordRTT(unsigned server_index, base::TimeDelta rtt) {
   deviation += (abs_error - deviation) / 4;  // * delta
 
   // Histogram-based method.
-  rtt_histograms_[server_index]->Accumulate(rtt.InMilliseconds(), 1);
+  server_stats_[server_index]->rtt_histogram
+      ->Accumulate(rtt.InMilliseconds(), 1);
 }
 
 void DnsSession::RecordLostPacket(unsigned server_index, int attempt) {
@@ -111,10 +193,28 @@ void DnsSession::RecordLostPacket(unsigned server_index, int attempt) {
   UMA_HISTOGRAM_TIMES("AsyncDNS.TimeoutSpentHistogram", timeout_histogram);
 }
 
+void DnsSession::RecordServerStats() {
+  for (size_t index = 0; index < server_stats_.size(); ++index) {
+    if (server_stats_[index]->last_failure_count) {
+      if (server_stats_[index]->last_success.is_null()) {
+        UMA_HISTOGRAM_COUNTS("AsyncDNS.ServerFailuresWithoutSuccess",
+                             server_stats_[index]->last_failure_count);
+      } else {
+        UMA_HISTOGRAM_COUNTS("AsyncDNS.ServerFailuresAfterSuccess",
+                             server_stats_[index]->last_failure_count);
+      }
+    }
+  }
+}
+
+
 base::TimeDelta DnsSession::NextTimeout(unsigned server_index, int attempt) {
-  DCHECK_LT(server_index, rtt_histograms_.size());
+  DCHECK_LT(server_index, server_stats_.size());
 
   base::TimeDelta timeout = config_.timeout;
+  // If this server has not responded successfully, then don't wait too long.
+  if (server_stats_[server_index]->last_success.is_null())
+    return timeout;
 
   // The timeout doubles every full round (each nameserver once).
   unsigned num_backoffs = attempt / config_.nameservers.size();
@@ -155,10 +255,10 @@ void DnsSession::FreeSocket(unsigned server_index,
 
 base::TimeDelta DnsSession::NextTimeoutFromJacobson(unsigned server_index,
                                                     int attempt) {
-  DCHECK_LT(server_index, rtt_estimates_.size());
+  DCHECK_LT(server_index, server_stats_.size());
 
-  base::TimeDelta timeout =
-      rtt_estimates_[server_index] + 4 * rtt_deviations_[server_index];
+  base::TimeDelta timeout = server_stats_[server_index]->rtt_estimate +
+                            4 * server_stats_[server_index]->rtt_deviation;
 
   timeout = std::max(timeout, base::TimeDelta::FromMilliseconds(kMinTimeoutMs));
 
@@ -171,23 +271,25 @@ base::TimeDelta DnsSession::NextTimeoutFromJacobson(unsigned server_index,
 
 base::TimeDelta DnsSession::NextTimeoutFromHistogram(unsigned server_index,
                                                      int attempt) {
-  DCHECK_LT(server_index, rtt_histograms_.size());
+  DCHECK_LT(server_index, server_stats_.size());
 
   COMPILE_ASSERT(std::numeric_limits<base::HistogramBase::Count>::is_signed,
                  histogram_base_count_assumed_to_be_signed);
 
   // Use fixed percentile of observed samples.
-  const base::SampleVector& samples = *rtt_histograms_[server_index];
+  const base::SampleVector& samples =
+      *server_stats_[server_index]->rtt_histogram;
+
   base::HistogramBase::Count total = samples.TotalCount();
   base::HistogramBase::Count remaining_count = kRTOPercentile * total / 100;
   size_t index = 0;
-  while (remaining_count > 0 && index < rtt_buckets_->size()) {
+  while (remaining_count > 0 && index < rtt_buckets_.Get().size()) {
     remaining_count -= samples.GetCountAtIndex(index);
     ++index;
   }
 
   base::TimeDelta timeout =
-      base::TimeDelta::FromMilliseconds(rtt_buckets_->range(index));
+      base::TimeDelta::FromMilliseconds(rtt_buckets_.Get().range(index));
 
   timeout = std::max(timeout, base::TimeDelta::FromMilliseconds(kMinTimeoutMs));
 
