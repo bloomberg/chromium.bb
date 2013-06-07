@@ -25,18 +25,6 @@ namespace {
 
 const base::Time kZeroTime;
 
-class TestErrorDelegate : public sql::ErrorDelegate {
- public:
-  virtual int OnError(int error,
-                      sql::Connection* connection,
-                      sql::Statement* stmt) OVERRIDE {
-    return error;
-  }
-
- protected:
-  virtual ~TestErrorDelegate() {}
-};
-
 }  // namespace
 
 class QuotaDatabaseTest : public testing::Test {

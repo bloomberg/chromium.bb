@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/stringprintf.h"
@@ -17,20 +18,11 @@ namespace {
 
 const base::Time kZeroTime;
 
-class TestErrorDelegate : public sql::ErrorDelegate {
- public:
-  TestErrorDelegate() {}
-  virtual ~TestErrorDelegate() {}
-
-  virtual int OnError(int error,
-                      sql::Connection* connection,
-                      sql::Statement* stmt) OVERRIDE {
-    return error;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestErrorDelegate);
-};
+// Set this error callback to "handle" errors by ignoring them.  This
+// causes the sql/ machinery to not throw fatal reports and allow
+// higher-level code to return failures.
+void IgnoreDatabaseErrors(int error, sql::Statement* stmt) {
+}
 
 }  // namespace
 
@@ -120,8 +112,7 @@ TEST(AppCacheDatabaseTest, EntryRecords) {
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
-  // Set an error delegate that will make all operations return false on error.
-  db.db_->set_error_delegate(new TestErrorDelegate());
+  db.db_->set_error_callback(base::Bind(&IgnoreDatabaseErrors));
 
   AppCacheDatabase::EntryRecord entry;
 
@@ -194,7 +185,7 @@ TEST(AppCacheDatabaseTest, CacheRecords) {
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
-  db.db_->set_error_delegate(new TestErrorDelegate());
+  db.db_->set_error_callback(base::Bind(&IgnoreDatabaseErrors));
 
   const AppCacheDatabase::CacheRecord kZeroRecord;
   AppCacheDatabase::CacheRecord record;
@@ -236,7 +227,7 @@ TEST(AppCacheDatabaseTest, GroupRecords) {
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
-  db.db_->set_error_delegate(new TestErrorDelegate());
+  db.db_->set_error_callback(base::Bind(&IgnoreDatabaseErrors));
 
   const GURL kManifestUrl("http://blah/manifest");
   const GURL kOrigin(kManifestUrl.GetOrigin());
@@ -363,7 +354,7 @@ TEST(AppCacheDatabaseTest, NamespaceRecords) {
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
-  db.db_->set_error_delegate(new TestErrorDelegate());
+  db.db_->set_error_callback(base::Bind(&IgnoreDatabaseErrors));
 
   const GURL kFooNameSpace1("http://foo/namespace1");
   const GURL kFooNameSpace2("http://foo/namespace2");
@@ -475,7 +466,7 @@ TEST(AppCacheDatabaseTest, OnlineWhiteListRecords) {
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
-  db.db_->set_error_delegate(new TestErrorDelegate());
+  db.db_->set_error_callback(base::Bind(&IgnoreDatabaseErrors));
 
   const GURL kFooNameSpace1("http://foo/namespace1");
   const GURL kFooNameSpace2("http://foo/namespace2");
@@ -524,7 +515,7 @@ TEST(AppCacheDatabaseTest, DeletableResponseIds) {
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
-  db.db_->set_error_delegate(new TestErrorDelegate());
+  db.db_->set_error_callback(base::Bind(&IgnoreDatabaseErrors));
 
   std::vector<int64> ids;
 
@@ -600,7 +591,7 @@ TEST(AppCacheDatabaseTest, OriginUsage) {
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
-  db.db_->set_error_delegate(new TestErrorDelegate());
+  db.db_->set_error_callback(base::Bind(&IgnoreDatabaseErrors));
 
   std::vector<AppCacheDatabase::CacheRecord> cache_records;
   EXPECT_EQ(0, db.GetOriginUsage(kOrigin));

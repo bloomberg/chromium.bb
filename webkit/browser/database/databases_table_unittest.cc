@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "sql/connection.h"
@@ -11,20 +12,11 @@
 
 namespace {
 
-class TestErrorDelegate : public sql::ErrorDelegate {
- public:
-  TestErrorDelegate() {}
-  virtual ~TestErrorDelegate() {}
-
-  virtual int OnError(int error,
-                      sql::Connection* connection,
-                      sql::Statement* stmt) OVERRIDE {
-    return error;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestErrorDelegate);
-};
+// Set this error callback to "handle" errors by ignoring them.  This
+// causes the sql/ machinery to not throw fatal reports and allow
+// higher-level code to return failures.
+void IgnoreDatabaseErrors(int error, sql::Statement* stmt) {
+}
 
 }  // namespace
 
@@ -48,8 +40,7 @@ TEST(DatabasesTableTest, TestIt) {
   // Initialize the 'Databases' table.
   sql::Connection db;
 
-  // Set an error delegate that will make all operations return false on error.
-  db.set_error_delegate(new TestErrorDelegate());
+  db.set_error_callback(base::Bind(&IgnoreDatabaseErrors));
 
   // Initialize the temp dir and the 'Databases' table.
   EXPECT_TRUE(db.OpenInMemory());
