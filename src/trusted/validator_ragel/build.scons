@@ -234,7 +234,7 @@ if ragel_involved:
   # Command-line decoder.
   decoder_test = env.ComponentProgram(
       'decoder_test',
-      ['unreviewed/decoder_test.c'],
+      ['unreviewed/decoder_test.cc'],
       EXTRA_LIBS=['dfa_decode_x86_32', 'dfa_decode_x86_64'])
 
   objdump, gas = env.Command(

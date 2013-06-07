@@ -59,7 +59,7 @@ void ReadImage(const char *filename, uint8_t **result, size_t *result_size) {
   /* Find the file size. */
   fseek(fp, 0, SEEK_END);
   file_size = ftell(fp);
-  data = malloc(file_size);
+  data = static_cast<uint8_t*>(malloc(file_size));
   if (data == NULL) {
     fprintf(stderr, "Unable to create memory image of input file: %s\n",
             filename);
@@ -229,7 +229,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             if ((rex_prefix & 0x01) && (rm_base <= REG_RDI)) {
               if (operands_count == 1 &&
                   instruction->operands[0].name == REG_RM)
-                rm_base |= REG_R8;
+                rm_base = static_cast<OperandName>(rm_base | REG_R8);
               else
                 spurious_rex_prefix = TRUE;
             }
@@ -237,7 +237,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
               if (operands_count == 1 &&
                   instruction->operands[0].name == REG_RM) {
                 if (rm_index <= REG_RDI)
-                  rm_index |= REG_R8;
+                  rm_index = static_cast<OperandName>(rm_index | REG_R8);
                 else if (rm_index == REG_RIZ)
                   rm_index = REG_R12;
                 else if (rm_index == NO_REG)
@@ -271,7 +271,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         ++(((struct DecodeState *)userdata)->fwait);
       }
     }
-    ((struct DecodeState *)userdata)->fwait = FALSE;
+    ((struct DecodeState *)userdata)->fwait = NULL;
   }
 
   if ((data16_prefix) && (begin[0] == 0x66) && (!(rex_prefix & 0x08)) &&
@@ -318,12 +318,12 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       --operands_count;
     }
   }
-  spurious_rex_prefix |=
-    rex_prefix &&
-    (instruction->prefix.rex_b_spurious ||
-     instruction->prefix.rex_x_spurious ||
-     instruction->prefix.rex_r_spurious ||
-     instruction->prefix.rex_w_spurious);
+  if (rex_prefix &&
+      (instruction->prefix.rex_b_spurious ||
+       instruction->prefix.rex_x_spurious ||
+       instruction->prefix.rex_r_spurious ||
+       instruction->prefix.rex_w_spurious))
+    spurious_rex_prefix = TRUE;
   if (operands_count > 0) {
     if (!((struct DecodeState *)userdata)->ia32_mode)
       for (i=0; i<operands_count; ++i)
@@ -344,7 +344,8 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
                 !instruction->prefix.rex_w_spurious)
               spurious_rex_prefix = FALSE;
           } else {
-            instruction->operands[i].name -= 8;
+            instruction->operands[i].name = static_cast<OperandName>(
+                instruction->operands[i].name - 8);
           }
         }
   }
@@ -576,8 +577,10 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       case REG_R13:
       case REG_R14:
       case REG_R15:
-        printf("%%%s", RegisterNameAsString(instruction->operands[i].name,
-                                            operand_format, rex_prefix));
+        printf("%%%s", RegisterNameAsString(
+            instruction->operands[i].name,
+            static_cast<OperandFormat>(operand_format),
+            static_cast<Bool>(rex_prefix != 0)));
         break;
       case REG_ST:
         assert(operand_format == OPERAND_FORMAT_ST);
@@ -738,7 +741,7 @@ int DecodeFile(const char *filename, int repeat_count) {
           int res;
 
           state.ia32_mode = TRUE;
-          state.fwait = FALSE;
+          state.fwait = NULL;
           state.offset = data + section->sh_offset - section->sh_addr;
           if (section->sh_size <= 0xfff) {
             state.width = 4;
@@ -782,7 +785,7 @@ int DecodeFile(const char *filename, int repeat_count) {
           int res;
 
           state.ia32_mode = FALSE;
-          state.fwait = FALSE;
+          state.fwait = NULL;
           state.offset = data + section->sh_offset - section->sh_addr;
           if (section->sh_size <= 0xfff) {
             state.width = 4;
