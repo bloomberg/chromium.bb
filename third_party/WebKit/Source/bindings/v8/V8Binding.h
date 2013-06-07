@@ -537,6 +537,13 @@ namespace WebCore {
 
     void crashIfV8IsDead();
 
+    template <class T>
+    v8::Handle<T> unsafeHandleFromRawValue(const T* value)
+    {
+        const v8::Handle<T>* handle = reinterpret_cast<const v8::Handle<T>*>(&value);
+        return *handle;
+    }
+
 } // namespace WebCore
 
 #endif // V8Binding_h

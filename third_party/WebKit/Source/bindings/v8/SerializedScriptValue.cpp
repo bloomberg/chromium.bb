@@ -139,12 +139,11 @@ private:
     struct V8HandlePtrHash {
         static unsigned hash(const G* key)
         {
-            v8::Handle<G> objHandle(const_cast<G*>(key));
-            return static_cast<unsigned>(objHandle->GetIdentityHash());
+            return static_cast<unsigned>(unsafeHandleFromRawValue(key)->GetIdentityHash());
         }
         static bool equal(const G* a, const G* b)
         {
-            return v8::Handle<G>(const_cast<G*>(a)) == v8::Handle<G>(const_cast<G*>(b));
+            return unsafeHandleFromRawValue(a) == unsafeHandleFromRawValue(b);
         }
         // For HashArg.
         static const bool safeToCompareToEmptyOrDeleted = false;
