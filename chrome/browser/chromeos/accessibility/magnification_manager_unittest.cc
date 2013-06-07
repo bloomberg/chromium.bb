@@ -7,10 +7,9 @@
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/test/ash_test_base.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -88,12 +87,15 @@ class MagnificationManagerTest : public ash::test::AshTestBase {
     ash::test::AshTestBase::SetUp();
     MagnificationManager::Initialize();
     ASSERT_TRUE(MagnificationManager::Get());
+    MagnificationManager::Get()->SetProfileForTest(&profile_);
   }
 
   virtual void TearDown() OVERRIDE {
     MagnificationManager::Shutdown();
     ash::test::AshTestBase::TearDown();
   }
+
+  TestingProfile profile_;
 };
 
 TEST_F(MagnificationManagerTest, MagnificationObserver) {
@@ -121,10 +123,12 @@ TEST_F(MagnificationManagerTest, ChangeType) {
   // Set full screen magnifier, and confirm the status is set successfully.
   EnableMagnifier();
   SetMagnifierType(ash::MAGNIFIER_FULL);
+  EXPECT_TRUE(IsMagnifierEnabled());
   EXPECT_EQ(GetMagnifierType(), ash::MAGNIFIER_FULL);
 
-  // Set partial screen magnifier, and confirm the status is set successfully.
+  // Set partial screen magnifier, and confirm the change is ignored.
   SetMagnifierType(ash::MAGNIFIER_PARTIAL);
+  EXPECT_TRUE(IsMagnifierEnabled());
   EXPECT_EQ(GetMagnifierType(), ash::MAGNIFIER_FULL);
 
   // Disables magnifier, and confirm the status is set successfully.

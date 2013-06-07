@@ -71,6 +71,13 @@ class TrayAccessibilityTest
                                     TestingProfile::kTestUserProfileDir);
   }
 
+  virtual void SetUpOnMainThread() OVERRIDE {
+    AccessibilityManager::Get()->SetProfileForTest(
+        ProfileManager::GetDefaultProfile());
+    MagnificationManager::Get()->SetProfileForTest(
+        ProfileManager::GetDefaultProfile());
+  }
+
   virtual void RunTestOnMainThreadLoop() OVERRIDE {
     // Need to mark oobe completed to show detailed views.
     StartupUtils::MarkOobeCompleted();

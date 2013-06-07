@@ -7,6 +7,8 @@
 
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 
+class Profile;
+
 namespace chromeos {
 
 // MagnificationManager controls the full screen magnifier from chrome-browser
@@ -48,6 +50,8 @@ class MagnificationManager {
 
   // Loads the magnifier scale from the pref.
   virtual double GetSavedScreenMagnifierScale() const = 0;
+
+  virtual void SetProfileForTest(Profile* profile) = 0;
 
  protected:
   virtual ~MagnificationManager() {}

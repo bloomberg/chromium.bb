@@ -102,6 +102,10 @@ class MagnificationManagerTest : public CrosInProcessBrowserTest,
         this,
         chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
         content::NotificationService::AllSources());
+
+    // Set the login-screen profile.
+    MagnificationManager::Get()->SetProfileForTest(
+        ProfileManager::GetDefaultProfile());
   }
 
   // content::NotificationObserver implementation.

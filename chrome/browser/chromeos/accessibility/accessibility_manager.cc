@@ -154,10 +154,13 @@ AccessibilityManager* AccessibilityManager::Get() {
   return g_accessibility_manager;
 }
 
-AccessibilityManager::AccessibilityManager() : profile_(NULL),
-                                               large_cursor_enabled_(false),
-                                               spoken_feedback_enabled_(false),
-                                               high_contrast_enabled_(false) {
+AccessibilityManager::AccessibilityManager()
+    : profile_(NULL),
+      large_cursor_enabled_(false),
+      spoken_feedback_enabled_(false),
+      high_contrast_enabled_(false),
+      spoken_feedback_login_web_ui_(NULL),
+      spoken_feedback_notification_(ash::A11Y_NOTIFICATION_NONE) {
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_SESSION_STARTED,
                               content::NotificationService::AllSources());
@@ -177,16 +180,25 @@ AccessibilityManager::~AccessibilityManager() {
 }
 
 void AccessibilityManager::EnableLargeCursor(bool enabled) {
+  if (!profile_)
+    return;
+
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetBoolean(prefs::kLargeCursorEnabled, enabled);
+  pref_service->CommitPendingWrite();
+}
+
+void AccessibilityManager::UpdateLargeCursorFromPref() {
+  if (!profile_)
+    return;
+
+  const bool enabled =
+      profile_->GetPrefs()->GetBoolean(prefs::kLargeCursorEnabled);
+
   if (large_cursor_enabled_ == enabled)
     return;
 
   large_cursor_enabled_ = enabled;
-
-  if (profile_) {
-    PrefService* pref_service = profile_->GetPrefs();
-    pref_service->SetBoolean(prefs::kLargeCursorEnabled, enabled);
-    pref_service->CommitPendingWrite();
-  }
 
   AccessibilityStatusEventDetails details(enabled, ash::A11Y_NOTIFICATION_NONE);
   content::NotificationService::current()->Notify(
@@ -208,26 +220,38 @@ void AccessibilityManager::EnableSpokenFeedback(
     bool enabled,
     content::WebUI* login_web_ui,
     ash::AccessibilityNotificationVisibility notify) {
-  if (spoken_feedback_enabled_ == enabled) {
-    DLOG(INFO) << "Spoken feedback is already " <<
-        (enabled ? "enabled" : "disabled") << ".  Going to do nothing.";
-    return;
-  }
-
-  spoken_feedback_enabled_ = enabled;
-
-  // Spoken feedback can't be enalbled without profile.
   if (!profile_)
     return;
+
+  spoken_feedback_login_web_ui_ = login_web_ui;
+  spoken_feedback_notification_ = notify;
 
   PrefService* pref_service = profile_->GetPrefs();
   pref_service->SetBoolean(
       prefs::kSpokenFeedbackEnabled, enabled);
   pref_service->CommitPendingWrite();
+
+  spoken_feedback_login_web_ui_ = NULL;
+  spoken_feedback_notification_ = ash::A11Y_NOTIFICATION_NONE;
+}
+
+void AccessibilityManager::UpdateSpokenFeedbackFromPref() {
+  if (!profile_)
+    return;
+
+  const bool enabled =
+      profile_->GetPrefs()->GetBoolean(prefs::kSpokenFeedbackEnabled);
+
+  if (spoken_feedback_enabled_ == enabled)
+    return;
+
+  spoken_feedback_enabled_ = enabled;
+
   ExtensionAccessibilityEventRouter::GetInstance()->
       SetAccessibilityEnabled(enabled);
 
-  AccessibilityStatusEventDetails details(enabled, notify);
+  AccessibilityStatusEventDetails details(enabled,
+                                          spoken_feedback_notification_);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
       content::NotificationService::AllSources(),
@@ -238,8 +262,8 @@ void AccessibilityManager::EnableSpokenFeedback(
       IDS_CHROMEOS_ACC_SPOKEN_FEEDBACK_DISABLED).c_str());
 
   // Load/Unload ChromeVox
-  Profile* profile = login_web_ui ?
-                         Profile::FromWebUI(login_web_ui) :
+  Profile* profile = spoken_feedback_login_web_ui_ ?
+                         Profile::FromWebUI(spoken_feedback_login_web_ui_) :
                          ProfileManager::GetDefaultProfile();
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
@@ -251,9 +275,9 @@ void AccessibilityManager::EnableSpokenFeedback(
     const extensions::Extension* extension =
         extension_service->extensions()->GetByID(extension_id);
 
-    if (login_web_ui) {
+    if (spoken_feedback_login_web_ui_) {
       RenderViewHost* render_view_host =
-          login_web_ui->GetWebContents()->GetRenderViewHost();
+          spoken_feedback_login_web_ui_->GetWebContents()->GetRenderViewHost();
       // Set a flag to tell ChromeVox that it's just been enabled,
       // so that it won't interrupt our speech feedback enabled message.
       ExtensionMsg_ExecuteCode_Params params;
@@ -300,9 +324,7 @@ bool AccessibilityManager::IsSpokenFeedbackEnabled() {
 void AccessibilityManager::ToggleSpokenFeedback(
     content::WebUI* login_web_ui,
     ash::AccessibilityNotificationVisibility notify) {
-  bool spoken_feedback_enabled = IsSpokenFeedbackEnabled();
-  spoken_feedback_enabled = !spoken_feedback_enabled;
-  EnableSpokenFeedback(spoken_feedback_enabled, login_web_ui, notify);
+  EnableSpokenFeedback(!IsSpokenFeedbackEnabled(), login_web_ui, notify);
 }
 
 void AccessibilityManager::Speak(const std::string& text) {
@@ -325,16 +347,25 @@ void AccessibilityManager::MaybeSpeak(const std::string& text) {
 }
 
 void AccessibilityManager::EnableHighContrast(bool enabled) {
+  if (!profile_)
+    return;
+
+  PrefService* pref_service = profile_->GetPrefs();
+  pref_service->SetBoolean(prefs::kHighContrastEnabled, enabled);
+  pref_service->CommitPendingWrite();
+}
+
+void AccessibilityManager::UpdateHighContrastFromPref() {
+  if (!profile_)
+    return;
+
+  const bool enabled =
+      profile_->GetPrefs()->GetBoolean(prefs::kHighContrastEnabled);
+
   if (high_contrast_enabled_ == enabled)
     return;
 
   high_contrast_enabled_ = enabled;
-
-  if (profile_) {
-    PrefService* pref_service = profile_->GetPrefs();
-    pref_service->SetBoolean(prefs::kHighContrastEnabled, enabled);
-    pref_service->CommitPendingWrite();
-  }
 
   AccessibilityStatusEventDetails detail(enabled, ash::A11Y_NOTIFICATION_NONE);
   content::NotificationService::current()->Notify(
@@ -351,37 +382,6 @@ bool AccessibilityManager::IsHighContrastEnabled() {
   return high_contrast_enabled_;
 }
 
-void AccessibilityManager::UpdateLargeCursorStatusFromPref() {
-  if (!profile_)
-    return;
-
-  PrefService* pref_service = profile_->GetPrefs();
-  bool large_cursor_enabled =
-      pref_service->GetBoolean(prefs::kLargeCursorEnabled);
-  EnableLargeCursor(large_cursor_enabled);
-}
-
-void AccessibilityManager::UpdateSpokenFeedbackStatusFromPref() {
-  if (!profile_)
-    return;
-
-  PrefService* pref_service = profile_->GetPrefs();
-  bool spoken_feedback_enabled =
-      pref_service->GetBoolean(prefs::kSpokenFeedbackEnabled);
-  EnableSpokenFeedback(
-      spoken_feedback_enabled, NULL, ash::A11Y_NOTIFICATION_NONE);
-}
-
-void AccessibilityManager::UpdateHighContrastStatusFromPref() {
-  if (!profile_)
-    return;
-
-  PrefService* pref_service = profile_->GetPrefs();
-  bool high_contrast_enabled =
-      pref_service->GetBoolean(prefs::kHighContrastEnabled);
-  EnableHighContrast(high_contrast_enabled);
-}
-
 void AccessibilityManager::SetProfile(Profile* profile) {
   pref_change_registrar_.reset();
 
@@ -390,15 +390,15 @@ void AccessibilityManager::SetProfile(Profile* profile) {
     pref_change_registrar_->Init(profile->GetPrefs());
     pref_change_registrar_->Add(
         prefs::kLargeCursorEnabled,
-        base::Bind(&AccessibilityManager::UpdateLargeCursorStatusFromPref,
+        base::Bind(&AccessibilityManager::UpdateLargeCursorFromPref,
                    base::Unretained(this)));
     pref_change_registrar_->Add(
         prefs::kSpokenFeedbackEnabled,
-        base::Bind(&AccessibilityManager::UpdateSpokenFeedbackStatusFromPref,
+        base::Bind(&AccessibilityManager::UpdateSpokenFeedbackFromPref,
                    base::Unretained(this)));
     pref_change_registrar_->Add(
         prefs::kHighContrastEnabled,
-        base::Bind(&AccessibilityManager::UpdateHighContrastStatusFromPref,
+        base::Bind(&AccessibilityManager::UpdateHighContrastFromPref,
                    base::Unretained(this)));
 
     content::BrowserAccessibilityState::GetInstance()->AddHistogramCallback(
@@ -408,9 +408,9 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   }
 
   profile_ = profile;
-  UpdateLargeCursorStatusFromPref();
-  UpdateSpokenFeedbackStatusFromPref();
-  UpdateHighContrastStatusFromPref();
+  UpdateLargeCursorFromPref();
+  UpdateSpokenFeedbackFromPref();
+  UpdateHighContrastFromPref();
 }
 
 void AccessibilityManager::SetProfileForTest(Profile* profile) {

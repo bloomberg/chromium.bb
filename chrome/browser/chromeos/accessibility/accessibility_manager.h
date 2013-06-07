@@ -87,9 +87,9 @@ class AccessibilityManager : public content::NotificationObserver {
   virtual ~AccessibilityManager();
 
  private:
-  void UpdateLargeCursorStatusFromPref();
-  void UpdateSpokenFeedbackStatusFromPref();
-  void UpdateHighContrastStatusFromPref();
+  void UpdateLargeCursorFromPref();
+  void UpdateSpokenFeedbackFromPref();
+  void UpdateHighContrastFromPref();
 
   void SetProfile(Profile* profile);
 
@@ -107,6 +107,9 @@ class AccessibilityManager : public content::NotificationObserver {
   bool large_cursor_enabled_;
   bool spoken_feedback_enabled_;
   bool high_contrast_enabled_;
+
+  content::WebUI* spoken_feedback_login_web_ui_;
+  ash::AccessibilityNotificationVisibility spoken_feedback_notification_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManager);
 };
