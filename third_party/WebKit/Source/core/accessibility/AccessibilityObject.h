@@ -465,8 +465,6 @@ public:
 
     // Low-level accessibility tree exploration, only for use within the accessibility module.
     virtual AccessibilityObject* firstChild() const { return 0; }
-    virtual AccessibilityObject* lastChild() const { return 0; }
-    virtual AccessibilityObject* previousSibling() const { return 0; }
     virtual AccessibilityObject* nextSibling() const { return 0; }
     static AccessibilityObject* firstAccessibleObjectFromNode(const Node*);
     virtual void addChildren() { }
