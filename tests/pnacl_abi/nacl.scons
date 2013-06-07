@@ -21,7 +21,11 @@ div_node = env.CommandSelLdrTestNacl('divide_by_zero.out',
 
 env.AddNodeToTestSuite(div_node,
                        ['pnacl_abi_tests', 'small_tests'],
-                       'run_divide_by_zero_test')
+                       'run_divide_by_zero_test',
+                       # The bot lucid_64-newlib-dbg-asan demonstrates a
+                       # bug wherein ASan's teardown code causes a crash of
+                       # its own when exiting after the caught crash.
+                       is_broken=env.Bit('asan'))
 
 # These tests only make sense for the PNaCl toolchain
 if not env.Bit('bitcode'):
