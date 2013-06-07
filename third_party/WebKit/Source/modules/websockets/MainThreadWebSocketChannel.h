@@ -173,6 +173,12 @@ private:
         BlobLoaderFailed
     };
 
+    enum ChannelState {
+        ChannelIdle,
+        ChannelClosing,
+        ChannelClosed
+    };
+
     Document* m_document;
     WebSocketChannelClient* m_client;
     OwnPtr<WebSocketHandshake> m_handshake;
@@ -181,11 +187,10 @@ private:
 
     Timer<MainThreadWebSocketChannel> m_resumeTimer;
     bool m_suspended;
-    bool m_closing;
     bool m_didFailOfClientAlreadyRun;
     bool m_receivedClosingHandshake;
     Timer<MainThreadWebSocketChannel> m_closingTimer;
-    bool m_closed;
+    ChannelState m_state;
     bool m_shouldDiscardReceivedData;
     unsigned long m_unhandledBufferedAmount;
 

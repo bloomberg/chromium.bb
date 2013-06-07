@@ -76,11 +76,10 @@ MainThreadWebSocketChannel::MainThreadWebSocketChannel(Document* document, WebSo
     , m_client(client)
     , m_resumeTimer(this, &MainThreadWebSocketChannel::resumeTimerFired)
     , m_suspended(false)
-    , m_closing(false)
     , m_didFailOfClientAlreadyRun(false)
     , m_receivedClosingHandshake(false)
     , m_closingTimer(this, &MainThreadWebSocketChannel::closingTimerFired)
-    , m_closed(false)
+    , m_state(ChannelIdle)
     , m_shouldDiscardReceivedData(false)
     , m_unhandledBufferedAmount(0)
     , m_identifier(0)
@@ -197,7 +196,7 @@ void MainThreadWebSocketChannel::close(int code, const String& reason)
     if (!m_handle)
         return;
     startClosingHandshake(code, reason);
-    if (m_closing && !m_closingTimer.isActive())
+    if ((m_state == ChannelClosing || m_state == ChannelClosed) && !m_closingTimer.isActive())
         m_closingTimer.startOneShot(2 * TCPMaximumSegmentLifetime);
 }
 
@@ -225,7 +224,7 @@ void MainThreadWebSocketChannel::fail(const String& reason, MessageLevel level, 
         if (m_client)
             m_client->didReceiveMessageError();
     }
-    if (m_handle && !m_closed)
+    if (m_handle && (m_state != ChannelClosed))
         m_handle->disconnect(); // Will call didCloseSocketStream().
 }
 
@@ -250,7 +249,7 @@ void MainThreadWebSocketChannel::suspend()
 void MainThreadWebSocketChannel::resume()
 {
     m_suspended = false;
-    if ((!m_buffer.isEmpty() || m_closed) && m_client && !m_resumeTimer.isActive())
+    if ((!m_buffer.isEmpty() || (m_state == ChannelClosed)) && m_client && !m_resumeTimer.isActive())
         m_resumeTimer.startOneShot(0);
 }
 
@@ -281,7 +280,7 @@ void MainThreadWebSocketChannel::didCloseSocketStream(SocketStreamHandle* handle
     if (m_identifier && m_document)
         InspectorInstrumentation::didCloseWebSocket(m_document, m_identifier);
     ASSERT_UNUSED(handle, handle == m_handle || !m_handle);
-    m_closed = true;
+    m_state = ChannelClosed;
     if (m_closingTimer.isActive())
         m_closingTimer.stop();
     if (m_outgoingFrameQueueStatus != OutgoingFrameQueueClosed)
@@ -352,11 +351,11 @@ void MainThreadWebSocketChannel::didFailSocketStream(SocketStreamHandle* handle,
         failingURL = m_handshake->url().string();
     LOG(Network, "Error Message: '%s', FailURL: '%s'", message.utf8().data(), failingURL.utf8().data());
     RefPtr<WebSocketChannel> protect(this);
-    if (m_client && !m_closing && !m_didFailOfClientAlreadyRun) {
+    if (m_client && (m_state != ChannelClosing && m_state != ChannelClosed) && !m_didFailOfClientAlreadyRun) {
         m_didFailOfClientAlreadyRun = true;
         m_client->didReceiveMessageError();
     }
-    if (m_handle && !m_closed)
+    if (m_handle && (m_state != ChannelClosed))
         m_handle->disconnect();
 }
 
@@ -471,14 +470,14 @@ void MainThreadWebSocketChannel::resumeTimerFired(Timer<MainThreadWebSocketChann
     while (!m_suspended && m_client && !m_buffer.isEmpty())
         if (!processBuffer())
             break;
-    if (!m_suspended && m_client && m_closed && m_handle)
+    if (!m_suspended && m_client && (m_state == ChannelClosed) && m_handle)
         didCloseSocketStream(m_handle.get());
 }
 
 void MainThreadWebSocketChannel::startClosingHandshake(int code, const String& reason)
 {
-    LOG(Network, "MainThreadWebSocketChannel %p startClosingHandshake() code=%d m_receivedClosingHandshake=%d", this, m_closing, m_receivedClosingHandshake);
-    if (m_closing)
+    LOG(Network, "MainThreadWebSocketChannel %p startClosingHandshake() code=%d m_receivedClosingHandshake=%d", this, (m_state == ChannelClosing), m_receivedClosingHandshake);
+    if (m_state == ChannelClosing || m_state == ChannelClosed)
         return;
     ASSERT(m_handle);
 
@@ -493,7 +492,7 @@ void MainThreadWebSocketChannel::startClosingHandshake(int code, const String& r
     enqueueRawFrame(WebSocketFrame::OpCodeClose, buf.data(), buf.size());
     processOutgoingFrameQueue();
 
-    m_closing = true;
+    m_state = ChannelClosing;
     if (m_client)
         m_client->didStartClosingHandshake();
 }
@@ -666,7 +665,7 @@ bool MainThreadWebSocketChannel::processFrame()
         skipBuffer(frameEnd - m_buffer.data());
         m_receivedClosingHandshake = true;
         startClosingHandshake(m_closeEventCode, m_closeEventReason);
-        if (m_closing) {
+        if (m_state == ChannelClosing || m_state == ChannelClosed) {
             m_outgoingFrameQueueStatus = OutgoingFrameQueueClosing;
             processOutgoingFrameQueue();
         }
