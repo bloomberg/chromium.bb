@@ -33,6 +33,31 @@ struct WhitelistedComponentExtensionIME {
     "/usr/share/chromeos-assets/input_methods/nacl_mozc",
   },
   {
+    // Google Chinese Input (zhuyin)
+    "goedamlknlnjaengojinmfgpmdjmkooo",
+    "/usr/share/chromeos-assets/input_methods/zhuyin",
+  },
+  {
+    // Google Chinese Input (pinyin)
+    "nmblnjkfdkabgdofidlkienfnnbjhnab",
+    "/usr/share/chromeos-assets/input_methods/pinyin",
+  },
+  {
+    // Google Chinese Input (cangjie)
+    "gjhclobljhjhgoebiipblnmdodbmpdgd",
+    "/usr/share/chromeos-assets/input_methods/cangjie",
+  },
+  {
+    // Google Chinese Input (wubi)
+    "jcffnbbngddhenhcnebafkbdomehdhpd",
+    "/usr/share/chromeos-assets/input_methods/wubi",
+  },
+  {
+    // Chromeos Keyboard Layouts.
+    "jhffeifommiaekmbkkjlpmilogcfdohp",
+    "/usr/share/chromeos-assets/input_methods/keyboard_layouts",
+  },
+  {
     // Google input tools.
     "gjaehgfemfahhmlgpdfknkhdnemmolop",
     "/usr/share/chromeos-assets/input_methods/input_tools",
