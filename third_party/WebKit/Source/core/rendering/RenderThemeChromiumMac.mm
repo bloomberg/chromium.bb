@@ -25,7 +25,6 @@
 #import "HTMLNames.h"
 #import "UserAgentStyleSheets.h"
 #import "core/css/CSSValueList.h"
-#import "core/css/resolver/StyleResolver.h"
 #import "core/dom/Document.h"
 #import "core/dom/Element.h"
 #import "core/fileapi/FileList.h"
@@ -718,7 +717,7 @@ void RenderThemeChromiumMac::setSizeFromFont(RenderStyle* style, const IntSize* 
         style->setHeight(Length(size.height(), Fixed));
 }
 
-void RenderThemeChromiumMac::setFontFromControlSize(StyleResolver*, RenderStyle* style, NSControlSize controlSize) const
+void RenderThemeChromiumMac::setFontFromControlSize(RenderStyle* style, NSControlSize controlSize) const
 {
     FontDescription fontDescription;
     fontDescription.setIsAbsoluteSize(true);
@@ -777,7 +776,7 @@ bool RenderThemeChromiumMac::paintTextField(RenderObject* o, const PaintInfo& pa
     return false;
 }
 
-void RenderThemeChromiumMac::adjustTextFieldStyle(StyleResolver*, RenderStyle*, Element*) const
+void RenderThemeChromiumMac::adjustTextFieldStyle(RenderStyle*, Element*) const
 {
 }
 
@@ -850,7 +849,7 @@ bool RenderThemeChromiumMac::paintTextArea(RenderObject* o, const PaintInfo& pai
     return false;
 }
 
-void RenderThemeChromiumMac::adjustTextAreaStyle(StyleResolver*, RenderStyle*, Element*) const
+void RenderThemeChromiumMac::adjustTextAreaStyle(RenderStyle*, Element*) const
 {
 }
 
@@ -1055,7 +1054,7 @@ double RenderThemeChromiumMac::animationDurationForProgressBar(RenderProgress*) 
     return progressAnimationNumFrames * progressAnimationFrameRate;
 }
 
-void RenderThemeChromiumMac::adjustProgressBarStyle(StyleResolver*, RenderStyle*, Element*) const
+void RenderThemeChromiumMac::adjustProgressBarStyle(RenderStyle*, Element*) const
 {
 }
 
@@ -1298,7 +1297,7 @@ static const IntSize* menuListButtonSizes()
     return sizes;
 }
 
-void RenderThemeChromiumMac::adjustMenuListStyle(StyleResolver* styleResolver, RenderStyle* style, Element* e) const
+void RenderThemeChromiumMac::adjustMenuListStyle(RenderStyle* style, Element* e) const
 {
     NSControlSize controlSize = controlSizeForFont(style);
 
@@ -1321,7 +1320,7 @@ void RenderThemeChromiumMac::adjustMenuListStyle(StyleResolver* styleResolver, R
     // Our font is locked to the appropriate system font size for the control.  To clarify, we first use the CSS-specified font to figure out
     // a reasonable control size, but once that control size is determined, we throw that font away and use the appropriate
     // system font for the control size instead.
-    setFontFromControlSize(styleResolver, style, controlSize);
+    setFontFromControlSize(style, controlSize);
 }
 
 const int autofillPopupHorizontalPadding = 4;
@@ -1375,7 +1374,7 @@ int RenderThemeChromiumMac::popupInternalPaddingBottom(RenderStyle* style) const
     return 0;
 }
 
-void RenderThemeChromiumMac::adjustMenuListButtonStyle(StyleResolver*, RenderStyle* style, Element*) const
+void RenderThemeChromiumMac::adjustMenuListButtonStyle(RenderStyle* style, Element*) const
 {
     float fontScale = style->fontSize() / baseFontSize;
 
@@ -1580,7 +1579,7 @@ void RenderThemeChromiumMac::setSearchFieldSize(RenderStyle* style) const
     setSizeFromFont(style, searchFieldSizes());
 }
 
-void RenderThemeChromiumMac::adjustSearchFieldStyle(StyleResolver* styleResolver, RenderStyle* style, Element*) const
+void RenderThemeChromiumMac::adjustSearchFieldStyle(RenderStyle* style, Element*) const
 {
     // Override border.
     style->resetBorder();
@@ -1606,7 +1605,7 @@ void RenderThemeChromiumMac::adjustSearchFieldStyle(StyleResolver* styleResolver
     style->setPaddingBottom(Length(padding, Fixed));
 
     NSControlSize controlSize = controlSizeForFont(style);
-    setFontFromControlSize(styleResolver, style, controlSize);
+    setFontFromControlSize(style, controlSize);
 
     style->setBoxShadow(nullptr);
 }
@@ -1656,7 +1655,7 @@ const IntSize* RenderThemeChromiumMac::cancelButtonSizes() const
     return sizes;
 }
 
-void RenderThemeChromiumMac::adjustSearchFieldCancelButtonStyle(StyleResolver*, RenderStyle* style, Element*) const
+void RenderThemeChromiumMac::adjustSearchFieldCancelButtonStyle(RenderStyle* style, Element*) const
 {
     IntSize size = sizeForSystemFont(style, cancelButtonSizes());
     style->setWidth(Length(size.width(), Fixed));
@@ -1671,7 +1670,7 @@ const IntSize* RenderThemeChromiumMac::resultsButtonSizes() const
 }
 
 const int emptyResultsOffset = 9;
-void RenderThemeChromiumMac::adjustSearchFieldDecorationStyle(StyleResolver*, RenderStyle* style, Element*) const
+void RenderThemeChromiumMac::adjustSearchFieldDecorationStyle(RenderStyle* style, Element*) const
 {
     IntSize size = sizeForSystemFont(style, resultsButtonSizes());
     style->setWidth(Length(size.width() - emptyResultsOffset, Fixed));
@@ -1684,7 +1683,7 @@ bool RenderThemeChromiumMac::paintSearchFieldDecoration(RenderObject*, const Pai
     return false;
 }
 
-void RenderThemeChromiumMac::adjustSearchFieldResultsDecorationStyle(StyleResolver*, RenderStyle* style, Element*) const
+void RenderThemeChromiumMac::adjustSearchFieldResultsDecorationStyle(RenderStyle* style, Element*) const
 {
     IntSize size = sizeForSystemFont(style, resultsButtonSizes());
     style->setWidth(Length(size.width(), Fixed));

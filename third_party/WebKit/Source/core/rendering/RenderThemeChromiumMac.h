@@ -95,18 +95,18 @@ protected:
     virtual bool supportsSelectionForegroundColors() const { return false; }
 
     virtual bool paintTextField(RenderObject*, const PaintInfo&, const IntRect&);
-    virtual void adjustTextFieldStyle(StyleResolver*, RenderStyle*, Element*) const;
+    virtual void adjustTextFieldStyle(RenderStyle*, Element*) const;
 
     virtual bool paintTextArea(RenderObject*, const PaintInfo&, const IntRect&);
-    virtual void adjustTextAreaStyle(StyleResolver*, RenderStyle*, Element*) const;
+    virtual void adjustTextAreaStyle(RenderStyle*, Element*) const;
 
     virtual bool paintMenuList(RenderObject*, const PaintInfo&, const IntRect&);
-    virtual void adjustMenuListStyle(StyleResolver*, RenderStyle*, Element*) const;
+    virtual void adjustMenuListStyle(RenderStyle*, Element*) const;
 
     virtual bool paintMenuListButton(RenderObject*, const PaintInfo&, const IntRect&);
-    virtual void adjustMenuListButtonStyle(StyleResolver*, RenderStyle*, Element*) const;
+    virtual void adjustMenuListButtonStyle(RenderStyle*, Element*) const;
 
-    virtual void adjustProgressBarStyle(StyleResolver*, RenderStyle*, Element*) const;
+    virtual void adjustProgressBarStyle(RenderStyle*, Element*) const;
     virtual bool paintProgressBar(RenderObject*, const PaintInfo&, const IntRect&);
 
     virtual bool paintSliderTrack(RenderObject*, const PaintInfo&, const IntRect&);
@@ -114,15 +114,15 @@ protected:
     virtual bool paintSliderThumb(RenderObject*, const PaintInfo&, const IntRect&);
 
     virtual bool paintSearchField(RenderObject*, const PaintInfo&, const IntRect&);
-    virtual void adjustSearchFieldStyle(StyleResolver*, RenderStyle*, Element*) const;
+    virtual void adjustSearchFieldStyle(RenderStyle*, Element*) const;
 
-    virtual void adjustSearchFieldCancelButtonStyle(StyleResolver*, RenderStyle*, Element*) const;
+    virtual void adjustSearchFieldCancelButtonStyle(RenderStyle*, Element*) const;
     virtual bool paintSearchFieldCancelButton(RenderObject*, const PaintInfo&, const IntRect&);
 
-    virtual void adjustSearchFieldDecorationStyle(StyleResolver*, RenderStyle*, Element*) const;
+    virtual void adjustSearchFieldDecorationStyle(RenderStyle*, Element*) const;
     virtual bool paintSearchFieldDecoration(RenderObject*, const PaintInfo&, const IntRect&);
 
-    virtual void adjustSearchFieldResultsDecorationStyle(StyleResolver*, RenderStyle*, Element*) const;
+    virtual void adjustSearchFieldResultsDecorationStyle(RenderStyle*, Element*) const;
     virtual bool paintSearchFieldResultsDecoration(RenderObject*, const PaintInfo&, const IntRect&);
 
     virtual bool supportsClosedCaptioning() const { return true; }
@@ -141,7 +141,7 @@ private:
     void setSizeFromFont(RenderStyle*, const IntSize* sizes) const;
     IntSize sizeForFont(RenderStyle*, const IntSize* sizes) const;
     IntSize sizeForSystemFont(RenderStyle*, const IntSize* sizes) const;
-    void setFontFromControlSize(StyleResolver*, RenderStyle*, NSControlSize) const;
+    void setFontFromControlSize(RenderStyle*, NSControlSize) const;
 
     void updateCheckedState(NSCell*, const RenderObject*);
     void updateEnabledState(NSCell*, const RenderObject*);

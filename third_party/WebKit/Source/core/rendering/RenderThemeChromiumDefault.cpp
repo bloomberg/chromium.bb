@@ -375,7 +375,7 @@ bool RenderThemeChromiumDefault::paintSliderThumb(RenderObject* o, const PaintIn
     return false;
 }
 
-void RenderThemeChromiumDefault::adjustInnerSpinButtonStyle(StyleResolver*, RenderStyle* style, Element*) const
+void RenderThemeChromiumDefault::adjustInnerSpinButtonStyle(RenderStyle* style, Element*) const
 {
     IntSize size = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartInnerSpinButton);
 

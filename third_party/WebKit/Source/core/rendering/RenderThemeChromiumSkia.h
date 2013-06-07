@@ -74,19 +74,19 @@ public:
 
     virtual void setRadioSize(RenderStyle*) const;
 
-    virtual void adjustButtonStyle(StyleResolver*, RenderStyle*, Element*) const;
+    virtual void adjustButtonStyle(RenderStyle*, Element*) const;
 
     virtual bool paintTextArea(RenderObject*, const PaintInfo&, const IntRect&);
 
-    virtual void adjustSearchFieldStyle(StyleResolver*, RenderStyle*, Element*) const;
+    virtual void adjustSearchFieldStyle(RenderStyle*, Element*) const;
     virtual bool paintSearchField(RenderObject*, const PaintInfo&, const IntRect&);
 
-    virtual void adjustSearchFieldCancelButtonStyle(StyleResolver*, RenderStyle*, Element*) const;
+    virtual void adjustSearchFieldCancelButtonStyle(RenderStyle*, Element*) const;
     virtual bool paintSearchFieldCancelButton(RenderObject*, const PaintInfo&, const IntRect&);
 
-    virtual void adjustSearchFieldDecorationStyle(StyleResolver*, RenderStyle*, Element*) const;
+    virtual void adjustSearchFieldDecorationStyle(RenderStyle*, Element*) const;
 
-    virtual void adjustSearchFieldResultsDecorationStyle(StyleResolver*, RenderStyle*, Element*) const;
+    virtual void adjustSearchFieldResultsDecorationStyle(RenderStyle*, Element*) const;
     virtual bool paintSearchFieldResultsDecoration(RenderObject*, const PaintInfo&, const IntRect&);
 
     virtual bool paintMediaSliderTrack(RenderObject*, const PaintInfo&, const IntRect&);
@@ -110,8 +110,8 @@ public:
     // In short, we either go down the MenuList code path or the MenuListButton
     // codepath. We never go down both. And in both cases, they render the
     // entire menulist.
-    virtual void adjustMenuListStyle(StyleResolver*, RenderStyle*, Element*) const;
-    virtual void adjustMenuListButtonStyle(StyleResolver*, RenderStyle*, Element*) const;
+    virtual void adjustMenuListStyle(RenderStyle*, Element*) const;
+    virtual void adjustMenuListButtonStyle(RenderStyle*, Element*) const;
     virtual bool paintMenuListButton(RenderObject*, const PaintInfo&, const IntRect&);
 
     virtual double animationRepeatIntervalForProgressBar(RenderProgress*) const;

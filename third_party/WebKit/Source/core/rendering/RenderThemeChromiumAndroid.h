@@ -37,7 +37,7 @@ public:
 
     virtual Color systemColor(CSSValueID) const OVERRIDE;
 
-    virtual void adjustInnerSpinButtonStyle(StyleResolver*, RenderStyle*, Element*) const OVERRIDE;
+    virtual void adjustInnerSpinButtonStyle(RenderStyle*, Element*) const OVERRIDE;
 
     virtual bool delegatesMenuListRendering() const OVERRIDE { return true; }
 

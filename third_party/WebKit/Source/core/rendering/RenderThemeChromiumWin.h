@@ -77,12 +77,12 @@ public:
     virtual bool paintMenuList(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
     virtual bool paintMenuListButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
 
-    virtual void adjustInnerSpinButtonStyle(StyleResolver*, RenderStyle*, Element*) const OVERRIDE;
+    virtual void adjustInnerSpinButtonStyle(RenderStyle*, Element*) const OVERRIDE;
     virtual bool paintInnerSpinButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
 
     virtual double animationRepeatIntervalForProgressBar(RenderProgress*) const OVERRIDE;
     virtual double animationDurationForProgressBar(RenderProgress*) const OVERRIDE;
-    virtual void adjustProgressBarStyle(StyleResolver*, RenderStyle*, Element*) const OVERRIDE;
+    virtual void adjustProgressBarStyle(RenderStyle*, Element*) const OVERRIDE;
     virtual bool paintProgressBar(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
 
     virtual bool shouldOpenPickerWithF4Key() const OVERRIDE;
