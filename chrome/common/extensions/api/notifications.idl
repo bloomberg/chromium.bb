@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 namespace notifications {
-  enum TemplateType {
+  [noinline_doc] enum TemplateType {
     // icon, title, message, expandedMessage, up to two buttons
     basic,
 
