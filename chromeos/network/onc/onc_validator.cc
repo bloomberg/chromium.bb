@@ -53,7 +53,8 @@ Validator::Validator(
     : error_on_unknown_field_(error_on_unknown_field),
       error_on_wrong_recommended_(error_on_wrong_recommended),
       error_on_missing_field_(error_on_missing_field),
-      managed_onc_(managed_onc) {
+      managed_onc_(managed_onc),
+      onc_source_(ONC_SOURCE_NONE) {
 }
 
 Validator::~Validator() {
