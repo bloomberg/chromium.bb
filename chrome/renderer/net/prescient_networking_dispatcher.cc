@@ -5,6 +5,7 @@
 #include "chrome/renderer/net/prescient_networking_dispatcher.h"
 
 #include "base/metrics/field_trial.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/renderer/render_thread.h"
 
@@ -43,7 +44,19 @@ bool isPreconnectEnabledForMotivation(
 
 } // namespace
 
+PrescientNetworkingDispatcher::PrescientNetworkingDispatcher() {
+}
+
 PrescientNetworkingDispatcher::~PrescientNetworkingDispatcher() {
+}
+
+void PrescientNetworkingDispatcher::prefetchDNS(
+    const WebKit::WebString& hostname) {
+  if (hostname.isEmpty())
+    return;
+
+  std::string hostname_utf8 = UTF16ToUTF8(hostname);
+  net_predictor_.Resolve(hostname_utf8.data(), hostname_utf8.length());
 }
 
 void PrescientNetworkingDispatcher::preconnect(
