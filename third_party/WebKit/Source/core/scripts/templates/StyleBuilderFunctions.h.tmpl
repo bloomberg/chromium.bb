@@ -9,7 +9,7 @@ class StyleResolver;
 class StyleBuilderFunctions {
 public:
 
-{%- for property_id, property in properties.items() %}
+{%- for property_id, property in properties.items() if not property.use_handlers_for %}
 {% call wrap_with_condition(property.condition) %}
     static void applyInitial{{property_id}}(StyleResolver* styleResolver);
     static void applyInherit{{property_id}}(StyleResolver* styleResolver);

@@ -2,15 +2,31 @@
 //   should use this for make_css_property_names.py
 // Note: Mandatory blank line to skip parameter parsing phase
 
+background-attachment custom_all
+background-blend-mode custom_all
+background-clip custom_all
+background-color custom_all
+background-image custom_all
+background-origin custom_all
+background-position-x custom_all
+background-position-y custom_all
+background-repeat-x custom_all
+background-repeat-y custom_all
+background-size custom_all
+border-bottom-color custom_all
 border-bottom-style type_name=EBorderStyle, initial=initialBorderStyle
 border-collapse
+border-left-color custom_all
 border-left-style type_name=EBorderStyle, initial=initialBorderStyle
+border-right-color custom_all
 border-right-style type_name=EBorderStyle, initial=initialBorderStyle
+border-top-color custom_all
 border-top-style type_name=EBorderStyle, initial=initialBorderStyle
 bottom apply_type=length, initial=initialOffset, use_auto
 box-sizing
 caption-side
 clear
+color custom_all
 empty-cells type_name=EEmptyCell
 float type_name=EFloat, name_for_methods=Floating
 height apply_type=length, initial=initialSize, use_auto, use_intrinsic
@@ -28,6 +44,7 @@ min-height apply_type=length, initial=initialMinSize, use_auto, use_intrinsic, u
 min-width apply_type=length, initial=initialMinSize, use_auto, use_intrinsic
 mix-blend-mode type_name=BlendMode, name_for_methods=BlendMode
 opacity type_name=float
+outline-color custom_all
 overflow-wrap
 overflow-x type_name=EOverflow
 overflow-y type_name=EOverflow
@@ -44,6 +61,7 @@ right apply_type=length, initial=initialOffset, use_auto
 speak
 table-layout
 tab-size type_name=unsigned
+text-decoration-color custom_all
 text-decoration-style type_name=TextDecorationStyle
 text-overflow type_name=TextOverflow
 text-transform
@@ -63,6 +81,10 @@ zoom custom_all
 -webkit-align-self type_name=EAlignItems
 -webkit-appearance type_name=ControlPart
 -webkit-backface-visibility
+-webkit-background-clip use_handlers_for=CSSPropertyBackgroundClip
+-webkit-background-composite custom_all
+-webkit-background-origin use_handlers_for=CSSPropertyBackgroundOrigin
+-webkit-background-size use_handlers_for=CSSPropertyBackgroundSize
 -webkit-border-fit
 -webkit-border-image initial=initialNinePieceImage, custom_value
 -webkit-box-align type_name=EBoxAlignment
@@ -79,6 +101,7 @@ zoom custom_all
 -webkit-column-break-before type_name=EPageBreak, initial=initialPageBreak
 -webkit-column-break-inside type_name=EPageBreak, initial=initialPageBreak
 -webkit-column-progression type_name=ColumnProgression
+-webkit-column-rule-color custom_all
 -webkit-column-rule-style type_name=EBorderStyle, initial=initialBorderStyle
 -webkit-column-span type_name=ColumnSpan
 -webkit-flex-basis apply_type=length, use_auto
@@ -105,6 +128,15 @@ zoom custom_all
 -webkit-marquee-repetition type_name=int, name_for_methods=MarqueeLoopCount, custom_value
 -webkit-marquee-style name_for_methods=MarqueeBehavior
 -webkit-mask-box-image initial=initialNinePieceImage, custom_value
+-webkit-mask-clip custom_all
+-webkit-mask-composite custom_all
+-webkit-mask-image custom_all
+-webkit-mask-origin custom_all
+-webkit-mask-position-x custom_all
+-webkit-mask-position-y custom_all
+-webkit-mask-repeat-x custom_all
+-webkit-mask-repeat-y custom_all
+-webkit-mask-size custom_all
 -webkit-order type_name=int
 -webkit-perspective-origin-x apply_type=length
 -webkit-perspective-origin-y apply_type=length
@@ -119,8 +151,11 @@ zoom custom_all
 -webkit-shape-padding apply_type=length
 -webkit-text-align-last type_name=TextAlignLast, condition=CSS3_TEXT
 -webkit-text-combine type_name=TextCombine
+-webkit-text-emphasis-color custom_all
 -webkit-text-emphasis-position type_name=TextEmphasisPosition
+-webkit-text-fill-color custom_all
 -webkit-text-security
+-webkit-text-stroke-color custom_all
 -webkit-transform-origin-x apply_type=length
 -webkit-transform-origin-y apply_type=length
 -webkit-transform-style name_for_methods=TransformStyle3D

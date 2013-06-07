@@ -51,6 +51,7 @@ class StyleBuilderWriter(in_generator.Writer):
         'condition': None,
         'apply_type': 'default',
         'name_for_methods': None,
+        'use_handlers_for': None,
 # These depend on property name by default
         'type_name': None,
         'getter': None,
@@ -85,6 +86,7 @@ class StyleBuilderWriter(in_generator.Writer):
             cc = self._camelcase_property_name(property["name"])
             property["property_id"] = "CSSProperty" + cc
             cc = property["name_for_methods"] or cc.replace("Webkit", "")
+            property["camel_case_name"] = cc
             set_if_none(property, "type_name", "E" + cc)
             set_if_none(property, "getter", self._lower_first(cc))
             set_if_none(property, "setter", "set" + cc)
