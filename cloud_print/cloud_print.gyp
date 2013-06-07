@@ -58,6 +58,7 @@
       'type': 'none',
       'dependencies': [
         'service/service.gyp:*',
+        'gcp20/prototype/gcp20_device.gyp:*',
       ],
       'conditions': [
         ['OS=="win"', {
