@@ -92,9 +92,6 @@ SocketStream::SocketStream(const GURL& url, Delegate* delegate)
       max_pending_send_allowed_(kMaxPendingSendAllowed),
       context_(NULL),
       next_state_(STATE_NONE),
-      host_resolver_(NULL),
-      cert_verifier_(NULL),
-      server_bound_cert_service_(NULL),
       factory_(ClientSocketFactory::GetDefaultFactory()),
       proxy_mode_(kDirectConnection),
       proxy_url_(url),
@@ -154,12 +151,6 @@ void SocketStream::set_context(const URLRequestContext* context) {
 
       net_log_.BeginEvent(NetLog::TYPE_REQUEST_ALIVE);
     }
-  }
-
-  if (context_) {
-    host_resolver_ = context_->host_resolver();
-    cert_verifier_ = context_->cert_verifier();
-    server_bound_cert_service_ = context_->server_bound_cert_service();
   }
 }
 
@@ -681,8 +672,8 @@ int SocketStream::DoResolveHost() {
 
   HostResolver::RequestInfo resolve_info(host_port_pair);
 
-  DCHECK(host_resolver_);
-  resolver_.reset(new SingleRequestHostResolver(host_resolver_));
+  DCHECK(context_->host_resolver());
+  resolver_.reset(new SingleRequestHostResolver(context_->host_resolver()));
   return resolver_->Resolve(
       resolve_info, &addresses_, base::Bind(&SocketStream::OnIOCompleted, this),
       net_log_);
@@ -968,7 +959,7 @@ int SocketStream::DoSOCKSConnect() {
   if (proxy_info_.proxy_server().scheme() == ProxyServer::SCHEME_SOCKS5)
     s = new SOCKS5ClientSocket(s, req_info);
   else
-    s = new SOCKSClientSocket(s, req_info, host_resolver_);
+    s = new SOCKSClientSocket(s, req_info, context_->host_resolver());
   socket_.reset(s);
   metrics_->OnCountConnectionType(SocketStreamMetrics::SOCKS_CONNECTION);
   return socket_->Connect(io_callback_);
@@ -991,8 +982,8 @@ int SocketStream::DoSOCKSConnectComplete(int result) {
 int SocketStream::DoSecureProxyConnect() {
   DCHECK(factory_);
   SSLClientSocketContext ssl_context;
-  ssl_context.cert_verifier = cert_verifier_;
-  ssl_context.server_bound_cert_service = server_bound_cert_service_;
+  ssl_context.cert_verifier = context_->cert_verifier();
+  ssl_context.server_bound_cert_service = context_->server_bound_cert_service();
   socket_.reset(factory_->CreateSSLClientSocket(
       socket_.release(),
       proxy_info_.proxy_server().host_port_pair(),
@@ -1044,8 +1035,8 @@ int SocketStream::DoSecureProxyHandleCertErrorComplete(int result) {
 int SocketStream::DoSSLConnect() {
   DCHECK(factory_);
   SSLClientSocketContext ssl_context;
-  ssl_context.cert_verifier = cert_verifier_;
-  ssl_context.server_bound_cert_service = server_bound_cert_service_;
+  ssl_context.cert_verifier = context_->cert_verifier();
+  ssl_context.server_bound_cert_service = context_->server_bound_cert_service();
   socket_.reset(factory_->CreateSSLClientSocket(socket_.release(),
                                                 HostPortPair::FromURL(url_),
                                                 server_ssl_config_,

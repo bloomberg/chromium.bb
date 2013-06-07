@@ -129,6 +129,8 @@ class NET_EXPORT SocketStream
   int max_pending_send_allowed() const { return max_pending_send_allowed_; }
 
   const URLRequestContext* context() const { return context_; }
+  // There're some asynchronous operations and members that are constructed from
+  // |context|. Be careful when you use this for the second time or more.
   void set_context(const URLRequestContext* context);
 
   const SSLConfig& server_ssl_config() const { return server_ssl_config_; }
@@ -346,9 +348,6 @@ class NET_EXPORT SocketStream
   UserDataMap user_data_;
 
   State next_state_;
-  HostResolver* host_resolver_;
-  CertVerifier* cert_verifier_;
-  ServerBoundCertService* server_bound_cert_service_;
   ClientSocketFactory* factory_;
 
   ProxyMode proxy_mode_;
