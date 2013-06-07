@@ -30,8 +30,20 @@ class AsyncPixelTransferManagerEGL : public AsyncPixelTransferManager {
   virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
   virtual AsyncPixelTransferDelegate* GetAsyncPixelTransferDelegate() OVERRIDE;
 
+  // State shared between Managers and Delegates.
+  struct SharedState {
+    SharedState();
+    ~SharedState();
+
+    scoped_refptr<AsyncPixelTransferUploadStats> texture_upload_stats;
+    bool is_imagination;
+    bool is_qualcomm;
+    typedef std::list<base::WeakPtr<AsyncPixelTransferState> > TransferQueue;
+    TransferQueue pending_allocations;
+  };
+
  private:
-  scoped_refptr<AsyncPixelTransferUploadStats> texture_upload_stats_;
+  SharedState shared_state_;
   scoped_ptr<AsyncPixelTransferDelegateEGL> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferManagerEGL);

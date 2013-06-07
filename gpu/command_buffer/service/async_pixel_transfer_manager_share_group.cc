@@ -327,11 +327,10 @@ class AsyncTransferStateImpl : public AsyncPixelTransferState {
 
 class AsyncPixelTransferDelegateShareGroup : public AsyncPixelTransferDelegate {
  public:
-  AsyncPixelTransferDelegateShareGroup(gfx::GLContext* context,
-                                       AsyncPixelTransferUploadStats* stats);
+  AsyncPixelTransferDelegateShareGroup(
+      gfx::GLContext* context,
+      AsyncPixelTransferManagerShareGroup::SharedState* shared_state);
   virtual ~AsyncPixelTransferDelegateShareGroup();
-
-  void BindCompletedAsyncTransfers();
 
   // Implement AsyncPixelTransferDelegate:
   virtual AsyncPixelTransferState* CreatePixelTransferState(
@@ -350,18 +349,17 @@ class AsyncPixelTransferDelegateShareGroup : public AsyncPixelTransferDelegate {
       AsyncPixelTransferState* state) OVERRIDE;
 
  private:
-  typedef std::list<base::WeakPtr<AsyncPixelTransferState> > TransferQueue;
-  TransferQueue pending_allocations_;
-
-  scoped_refptr<AsyncPixelTransferUploadStats> texture_upload_stats_;
+  // A raw pointer is safe because the SharedState is owned by the Manager,
+  // which owns this Delegate.
+  AsyncPixelTransferManagerShareGroup::SharedState* shared_state_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateShareGroup);
 };
 
 AsyncPixelTransferDelegateShareGroup::AsyncPixelTransferDelegateShareGroup(
     gfx::GLContext* context,
-    AsyncPixelTransferUploadStats* stats)
-    : texture_upload_stats_(stats) {
+    AsyncPixelTransferManagerShareGroup::SharedState* shared_state)
+    : shared_state_(shared_state) {
   g_transfer_thread.Pointer()->InitializeOnMainThread(context);
 }
 
@@ -375,32 +373,6 @@ AsyncPixelTransferState*
             const AsyncTexImage2DParams& define_params) {
   return static_cast<AsyncPixelTransferState*>(
       new AsyncTransferStateImpl(texture_id, define_params));
-}
-
-void AsyncPixelTransferDelegateShareGroup::BindCompletedAsyncTransfers() {
-  scoped_ptr<gfx::ScopedTextureBinder> texture_binder;
-
-  while (!pending_allocations_.empty()) {
-    if (!pending_allocations_.front().get()) {
-      pending_allocations_.pop_front();
-      continue;
-    }
-    scoped_refptr<TransferStateInternal> state =
-        static_cast<AsyncTransferStateImpl*>
-            (pending_allocations_.front().get())->internal();
-    // Terminate early, as all transfers finish in order, currently.
-    if (state->TransferIsInProgress())
-      break;
-
-    if (!texture_binder)
-      texture_binder.reset(new gfx::ScopedTextureBinder(GL_TEXTURE_2D, 0));
-
-    // Used to set tex info from the gles2 cmd decoder once upload has
-    // finished (it'll bind the texture and call a callback).
-    state->BindTransfer();
-
-    pending_allocations_.pop_front();
-  }
 }
 
 void AsyncPixelTransferDelegateShareGroup::WaitForTransferCompletion(
@@ -442,7 +414,7 @@ void AsyncPixelTransferDelegateShareGroup::AsyncTexImage2D(
 
   // Mark the transfer in progress and save the late bind
   // callback, so we can notify the client when it is bound.
-  pending_allocations_.push_back(transfer_state->AsWeakPtr());
+  shared_state_->pending_allocations.push_back(transfer_state->AsWeakPtr());
   state->SetBindCallback(bind_callback);
 
   // Mark the transfer in progress.
@@ -495,21 +467,46 @@ void AsyncPixelTransferDelegateShareGroup::AsyncTexSubImage2D(
           base::Owned(new ScopedSafeSharedMemory(safe_shared_memory_pool(),
                                                  mem_params.shared_memory,
                                                  mem_params.shm_size)),
-          texture_upload_stats_));
+          shared_state_->texture_upload_stats));
 }
+
+AsyncPixelTransferManagerShareGroup::SharedState::SharedState()
+    // TODO(reveman): Skip this if --enable-gpu-benchmarking is not present.
+    : texture_upload_stats(new AsyncPixelTransferUploadStats) {}
+
+AsyncPixelTransferManagerShareGroup::SharedState::~SharedState() {}
 
 AsyncPixelTransferManagerShareGroup::AsyncPixelTransferManagerShareGroup(
     gfx::GLContext* context)
-    // TODO(reveman): Skip this if --enable-gpu-benchmarking is not present.
-    : texture_upload_stats_(new AsyncPixelTransferUploadStats),
-      delegate_(
-          new AsyncPixelTransferDelegateShareGroup(context,
-                                                   texture_upload_stats_)) {}
+    : delegate_(new AsyncPixelTransferDelegateShareGroup(context,
+                                                         &shared_state_)) {}
 
 AsyncPixelTransferManagerShareGroup::~AsyncPixelTransferManagerShareGroup() {}
 
 void AsyncPixelTransferManagerShareGroup::BindCompletedAsyncTransfers() {
-  delegate_->BindCompletedAsyncTransfers();
+  scoped_ptr<gfx::ScopedTextureBinder> texture_binder;
+
+  while (!shared_state_.pending_allocations.empty()) {
+    if (!shared_state_.pending_allocations.front().get()) {
+      shared_state_.pending_allocations.pop_front();
+      continue;
+    }
+    scoped_refptr<TransferStateInternal> state =
+        static_cast<AsyncTransferStateImpl*>
+            (shared_state_.pending_allocations.front().get())->internal();
+    // Terminate early, as all transfers finish in order, currently.
+    if (state->TransferIsInProgress())
+      break;
+
+    if (!texture_binder)
+      texture_binder.reset(new gfx::ScopedTextureBinder(GL_TEXTURE_2D, 0));
+
+    // Used to set tex info from the gles2 cmd decoder once upload has
+    // finished (it'll bind the texture and call a callback).
+    state->BindTransfer();
+
+    shared_state_.pending_allocations.pop_front();
+  }
 }
 
 void AsyncPixelTransferManagerShareGroup::AsyncNotifyCompletion(
@@ -532,13 +529,13 @@ void AsyncPixelTransferManagerShareGroup::AsyncNotifyCompletion(
 }
 
 uint32 AsyncPixelTransferManagerShareGroup::GetTextureUploadCount() {
-  return texture_upload_stats_->GetStats(NULL);
+  return shared_state_.texture_upload_stats->GetStats(NULL);
 }
 
 base::TimeDelta
 AsyncPixelTransferManagerShareGroup::GetTotalTextureUploadTime() {
   base::TimeDelta total_texture_upload_time;
-  texture_upload_stats_->GetStats(&total_texture_upload_time);
+  shared_state_.texture_upload_stats->GetStats(&total_texture_upload_time);
   return total_texture_upload_time;
 }
 

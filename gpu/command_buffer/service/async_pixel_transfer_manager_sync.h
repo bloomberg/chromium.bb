@@ -26,7 +26,17 @@ class AsyncPixelTransferManagerSync : public AsyncPixelTransferManager {
   virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
   virtual AsyncPixelTransferDelegate* GetAsyncPixelTransferDelegate() OVERRIDE;
 
+  // State shared between Managers and Delegates.
+  struct SharedState {
+    SharedState();
+    ~SharedState();
+
+    int texture_upload_count;
+    base::TimeDelta total_texture_upload_time;
+  };
+
  private:
+  SharedState shared_state_;
   scoped_ptr<AsyncPixelTransferDelegateSync> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferManagerSync);

@@ -28,7 +28,8 @@ class AsyncPixelTransferStateImpl : public AsyncPixelTransferState {
 // Class which handles async pixel transfers synchronously.
 class AsyncPixelTransferDelegateSync : public AsyncPixelTransferDelegate {
  public:
-  AsyncPixelTransferDelegateSync();
+  explicit AsyncPixelTransferDelegateSync(
+      AsyncPixelTransferManagerSync::SharedState* shared_state);
   virtual ~AsyncPixelTransferDelegateSync();
 
   // Implement AsyncPixelTransferDelegate:
@@ -46,19 +47,18 @@ class AsyncPixelTransferDelegateSync : public AsyncPixelTransferDelegate {
       const AsyncMemoryParams& mem_params) OVERRIDE;
   virtual void WaitForTransferCompletion(
       AsyncPixelTransferState* state) OVERRIDE;
-  uint32 GetTextureUploadCount();
-  base::TimeDelta GetTotalTextureUploadTime();
 
  private:
-  int texture_upload_count_;
-  base::TimeDelta total_texture_upload_time_;
+  // Safe to hold a raw pointer because SharedState is owned by the Manager
+  // which owns the Delegate.
+  AsyncPixelTransferManagerSync::SharedState* shared_state_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateSync);
 };
 
-AsyncPixelTransferDelegateSync::AsyncPixelTransferDelegateSync()
-    : texture_upload_count_(0) {
-}
+AsyncPixelTransferDelegateSync::AsyncPixelTransferDelegateSync(
+    AsyncPixelTransferManagerSync::SharedState* shared_state)
+    : shared_state_(shared_state) {}
 
 AsyncPixelTransferDelegateSync::~AsyncPixelTransferDelegateSync() {}
 
@@ -108,8 +108,9 @@ void AsyncPixelTransferDelegateSync::AsyncTexSubImage2D(
       tex_params.format,
       tex_params.type,
       data);
-  texture_upload_count_++;
-  total_texture_upload_time_ += base::TimeTicks::HighResNow() - begin_time;
+  shared_state_->texture_upload_count++;
+  shared_state_->total_texture_upload_time +=
+      base::TimeTicks::HighResNow() - begin_time;
 }
 
 void AsyncPixelTransferDelegateSync::WaitForTransferCompletion(
@@ -117,16 +118,13 @@ void AsyncPixelTransferDelegateSync::WaitForTransferCompletion(
   // Already done.
 }
 
-uint32 AsyncPixelTransferDelegateSync::GetTextureUploadCount() {
-  return texture_upload_count_;
-}
+AsyncPixelTransferManagerSync::SharedState::SharedState()
+    : texture_upload_count(0) {}
 
-base::TimeDelta AsyncPixelTransferDelegateSync::GetTotalTextureUploadTime() {
-  return total_texture_upload_time_;
-}
+AsyncPixelTransferManagerSync::SharedState::~SharedState() {}
 
 AsyncPixelTransferManagerSync::AsyncPixelTransferManagerSync()
-    : delegate_(new AsyncPixelTransferDelegateSync()) {}
+    : delegate_(new AsyncPixelTransferDelegateSync(&shared_state_)) {}
 
 AsyncPixelTransferManagerSync::~AsyncPixelTransferManagerSync() {}
 
@@ -141,11 +139,11 @@ void AsyncPixelTransferManagerSync::AsyncNotifyCompletion(
 }
 
 uint32 AsyncPixelTransferManagerSync::GetTextureUploadCount() {
-  return delegate_->GetTextureUploadCount();
+  return shared_state_.texture_upload_count;
 }
 
 base::TimeDelta AsyncPixelTransferManagerSync::GetTotalTextureUploadTime() {
-  return delegate_->GetTotalTextureUploadTime();
+  return shared_state_.total_texture_upload_time;
 }
 
 void AsyncPixelTransferManagerSync::ProcessMorePendingTransfers() {

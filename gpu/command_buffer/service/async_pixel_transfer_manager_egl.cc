@@ -427,10 +427,9 @@ class AsyncPixelTransferDelegateEGL
     : public AsyncPixelTransferDelegate,
       public base::SupportsWeakPtr<AsyncPixelTransferDelegateEGL> {
  public:
-  explicit AsyncPixelTransferDelegateEGL(AsyncPixelTransferUploadStats* stats);
+  explicit AsyncPixelTransferDelegateEGL(
+      AsyncPixelTransferManagerEGL::SharedState* shared_state);
   virtual ~AsyncPixelTransferDelegateEGL();
-
-  void BindCompletedAsyncTransfers();
 
   // Implement AsyncPixelTransferDelegate:
   virtual AsyncPixelTransferState* CreatePixelTransferState(
@@ -460,23 +459,16 @@ class AsyncPixelTransferDelegateEGL
       const AsyncTexSubImage2DParams& tex_params,
       const AsyncMemoryParams& mem_params);
 
-  typedef std::list<base::WeakPtr<AsyncPixelTransferState> > TransferQueue;
-  TransferQueue pending_allocations_;
-
-  scoped_refptr<AsyncPixelTransferUploadStats> texture_upload_stats_;
-  bool is_imagination_;
-  bool is_qualcomm_;
+  // A raw pointer is safe because the SharedState is owned by the Manager,
+  // which owns this Delegate.
+  AsyncPixelTransferManagerEGL::SharedState* shared_state_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateEGL);
 };
 
 AsyncPixelTransferDelegateEGL::AsyncPixelTransferDelegateEGL(
-    AsyncPixelTransferUploadStats* stats)
-    : texture_upload_stats_(stats) {
-  std::string vendor;
-  vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
-  is_imagination_ = vendor.find("Imagination") != std::string::npos;
-  is_qualcomm_ = vendor.find("Qualcomm") != std::string::npos;
+    AsyncPixelTransferManagerEGL::SharedState* shared_state)
+    : shared_state_(shared_state) {
 }
 
 AsyncPixelTransferDelegateEGL::~AsyncPixelTransferDelegateEGL() {}
@@ -486,50 +478,26 @@ AsyncPixelTransferState* AsyncPixelTransferDelegateEGL::
                              const AsyncTexImage2DParams& define_params) {
   // We can't wait on uploads on imagination (it can take 200ms+).
   // In practice, they are complete when the CPU glTexSubImage2D completes.
-  bool wait_for_uploads = !is_imagination_;
+  bool wait_for_uploads = !shared_state_->is_imagination;
 
   // Qualcomm runs into texture corruption problems if the same texture is
   // uploaded to with both async and normal uploads. Synchronize after EGLImage
   // creation on the main thread as a work-around.
-  bool wait_for_creation = is_qualcomm_;
+  bool wait_for_creation = shared_state_->is_qualcomm;
 
   // Qualcomm has a race when using image_preserved=FALSE,
   // which can result in black textures even after the first upload.
   // Since using FALSE is mainly for performance (to avoid layout changes),
   // but Qualcomm itself doesn't seem to get any performance benefit,
   // we just using image_preservedd=TRUE on Qualcomm as a work-around.
-  bool use_image_preserved = is_qualcomm_ || is_imagination_;
+  bool use_image_preserved =
+      shared_state_->is_qualcomm || shared_state_->is_imagination;
 
   return new AsyncTransferStateImpl(texture_id,
                                     define_params,
                                     wait_for_uploads,
                                     wait_for_creation,
                                     use_image_preserved);
-}
-
-void AsyncPixelTransferDelegateEGL::BindCompletedAsyncTransfers() {
-  scoped_ptr<gfx::ScopedTextureBinder> texture_binder;
-
-  while(!pending_allocations_.empty()) {
-    if (!pending_allocations_.front().get()) {
-      pending_allocations_.pop_front();
-      continue;
-    }
-    scoped_refptr<TransferStateInternal> state =
-        static_cast<AsyncTransferStateImpl*>
-            (pending_allocations_.front().get())->internal_.get();
-    // Terminate early, as all transfers finish in order, currently.
-    if (state->TransferIsInProgress())
-      break;
-
-    if (!texture_binder)
-      texture_binder.reset(new gfx::ScopedTextureBinder(GL_TEXTURE_2D, 0));
-
-    // If the transfer is finished, bind it to the texture
-    // and remove it from pending list.
-    state->BindTransfer();
-    pending_allocations_.pop_front();
-  }
 }
 
 void AsyncPixelTransferDelegateEGL::WaitForTransferCompletion(
@@ -576,7 +544,7 @@ void AsyncPixelTransferDelegateEGL::AsyncTexImage2D(
 
   // Mark the transfer in progress and save the late bind
   // callback, so we can notify the client when it is bound.
-  pending_allocations_.push_back(transfer_state->AsWeakPtr());
+  shared_state_->pending_allocations.push_back(transfer_state->AsWeakPtr());
   state->bind_callback_ = bind_callback;
 
   // Mark the transfer in progress.
@@ -636,7 +604,7 @@ void AsyncPixelTransferDelegateEGL::AsyncTexSubImage2D(
           base::Owned(new ScopedSafeSharedMemory(safe_shared_memory_pool(),
                                                  mem_params.shared_memory,
                                                  mem_params.shm_size)),
-          texture_upload_stats_));
+          shared_state_->texture_upload_stats));
 
   DCHECK(CHECK_GL());
 }
@@ -678,7 +646,7 @@ bool AsyncPixelTransferDelegateEGL::WorkAroundAsyncTexImage2D(
     const AsyncTexImage2DParams& tex_params,
     const AsyncMemoryParams& mem_params,
     const base::Closure& bind_callback) {
-  if (!is_imagination_)
+  if (!shared_state_->is_imagination)
     return false;
   scoped_refptr<TransferStateInternal> state =
       static_cast<AsyncTransferStateImpl*>(transfer_state)->internal_.get();
@@ -704,7 +672,7 @@ bool AsyncPixelTransferDelegateEGL::WorkAroundAsyncTexImage2D(
   // texture, but this is required to prevent an imagination driver crash.
   if (DimensionsSupportImgFastPath(tex_params.width, tex_params.height)) {
     state->CreateEglImageOnMainThreadIfNeeded();
-    pending_allocations_.push_back(transfer_state->AsWeakPtr());
+    shared_state_->pending_allocations.push_back(transfer_state->AsWeakPtr());
     state->bind_callback_ = bind_callback;
   }
 
@@ -716,7 +684,7 @@ bool AsyncPixelTransferDelegateEGL::WorkAroundAsyncTexSubImage2D(
     AsyncPixelTransferState* transfer_state,
     const AsyncTexSubImage2DParams& tex_params,
     const AsyncMemoryParams& mem_params) {
-  if (!is_imagination_)
+  if (!shared_state_->is_imagination)
     return false;
 
   // If the dimensions support fast async uploads, we can use the
@@ -743,7 +711,7 @@ bool AsyncPixelTransferDelegateEGL::WorkAroundAsyncTexSubImage2D(
 
   void* data = GetAddress(mem_params);
   base::TimeTicks begin_time;
-  if (texture_upload_stats_.get())
+  if (shared_state_->texture_upload_stats.get())
     begin_time = base::TimeTicks::HighResNow();
   {
     TRACE_EVENT0("gpu", "glTexSubImage2D");
@@ -751,24 +719,54 @@ bool AsyncPixelTransferDelegateEGL::WorkAroundAsyncTexSubImage2D(
     // The DCHECKs above verify this is always the same.
     DoTexImage2D(state->define_params_, data);
   }
-  if (texture_upload_stats_.get()) {
-    texture_upload_stats_->AddUpload(base::TimeTicks::HighResNow() -
-                                     begin_time);
+  if (shared_state_->texture_upload_stats.get()) {
+    shared_state_->texture_upload_stats
+        ->AddUpload(base::TimeTicks::HighResNow() - begin_time);
   }
 
   DCHECK(CHECK_GL());
   return true;
 }
 
-AsyncPixelTransferManagerEGL::AsyncPixelTransferManagerEGL()
+AsyncPixelTransferManagerEGL::SharedState::SharedState()
     // TODO(reveman): Skip this if --enable-gpu-benchmarking is not present.
-    : texture_upload_stats_(new AsyncPixelTransferUploadStats),
-      delegate_(new AsyncPixelTransferDelegateEGL(texture_upload_stats_)) {}
+    : texture_upload_stats(new AsyncPixelTransferUploadStats) {
+  std::string vendor;
+  vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+  is_imagination = vendor.find("Imagination") != std::string::npos;
+  is_qualcomm = vendor.find("Qualcomm") != std::string::npos;
+}
+
+AsyncPixelTransferManagerEGL::SharedState::~SharedState() {}
+
+AsyncPixelTransferManagerEGL::AsyncPixelTransferManagerEGL()
+    : delegate_(new AsyncPixelTransferDelegateEGL(&shared_state_)) {}
 
 AsyncPixelTransferManagerEGL::~AsyncPixelTransferManagerEGL() {}
 
 void AsyncPixelTransferManagerEGL::BindCompletedAsyncTransfers() {
-  delegate_->BindCompletedAsyncTransfers();
+  scoped_ptr<gfx::ScopedTextureBinder> texture_binder;
+
+  while(!shared_state_.pending_allocations.empty()) {
+    if (!shared_state_.pending_allocations.front().get()) {
+      shared_state_.pending_allocations.pop_front();
+      continue;
+    }
+    scoped_refptr<TransferStateInternal> state =
+        static_cast<AsyncTransferStateImpl*>
+            (shared_state_.pending_allocations.front().get())->internal_.get();
+    // Terminate early, as all transfers finish in order, currently.
+    if (state->TransferIsInProgress())
+      break;
+
+    if (!texture_binder)
+      texture_binder.reset(new gfx::ScopedTextureBinder(GL_TEXTURE_2D, 0));
+
+    // If the transfer is finished, bind it to the texture
+    // and remove it from pending list.
+    state->BindTransfer();
+    shared_state_.pending_allocations.pop_front();
+  }
 }
 
 void AsyncPixelTransferManagerEGL::AsyncNotifyCompletion(
@@ -791,12 +789,12 @@ void AsyncPixelTransferManagerEGL::AsyncNotifyCompletion(
 }
 
 uint32 AsyncPixelTransferManagerEGL::GetTextureUploadCount() {
-  return texture_upload_stats_->GetStats(NULL);
+  return shared_state_.texture_upload_stats->GetStats(NULL);
 }
 
 base::TimeDelta AsyncPixelTransferManagerEGL::GetTotalTextureUploadTime() {
   base::TimeDelta total_texture_upload_time;
-  texture_upload_stats_->GetStats(&total_texture_upload_time);
+  shared_state_.texture_upload_stats->GetStats(&total_texture_upload_time);
   return total_texture_upload_time;
 }
 
