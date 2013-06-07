@@ -2392,21 +2392,6 @@
    fun:_ZN2v88internal11HandleScope12CreateHandleINS0*
    fun:_ZN2v88internal6Handle*
 }
-{
-   bug_247474a
-   Memcheck:Uninitialized
-   fun:_ZN7content12DecodeIDBKeyEPN4base16BasicStringPieceISsEEP10scoped_ptrINS_12IndexedDBKeyENS0_14DefaultDeleterIS5_EEE
-   ...
-   fun:_ZN7content12_GLOBAL__N_150IndexedDBLevelDBCodingTest_EncodeDecodeIDBKey_Test8TestBodyEv
-}
-{
-   bug_247474b
-   Memcheck:Uninitialized
-   fun:_ZN7content20ExtractEncodedIDBKeyEPN4base16BasicStringPieceISsEE
-   ...
-   fun:_ZN7content20ExtractEncodedIDBKeyEPN4base16BasicStringPieceISsEEPSt6vectorIcSaIcEE
-   fun:_ZN7content12_GLOBAL__N_156IndexedDBLevelDBCodingTest_ExtractAndCompareIDBKeys_Test8TestBodyEv
-}
 # Maybe related to bug_105527_a?
 {
    bug_247506a

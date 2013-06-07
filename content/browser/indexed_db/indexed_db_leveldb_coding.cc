@@ -424,10 +424,10 @@ bool DecodeStringWithLength(StringPiece* slice, string16* value) {
   if (slice->empty())
     return false;
 
-  int64 len;
-  if (!DecodeVarInt(slice, &len) || len < 0)
+  int64 length = 0;
+  if (!DecodeVarInt(slice, &length) || length < 0)
     return false;
-  size_t bytes = len * sizeof(char16);
+  size_t bytes = length * sizeof(char16);
   if (slice->size() < bytes)
     return false;
 
@@ -452,7 +452,7 @@ bool DecodeIDBKey(StringPiece* slice, scoped_ptr<IndexedDBKey>* value) {
       return true;
 
     case kIndexedDBKeyArrayTypeByte: {
-      int64 length;
+      int64 length = 0;
       if (!DecodeVarInt(slice, &length) || length < 0)
         return false;
       IndexedDBKey::KeyArray array;
@@ -572,7 +572,7 @@ bool ExtractEncodedIDBKey(StringPiece* slice) {
       return true;
     }
     case kIndexedDBKeyStringTypeByte: {
-      int64 length;
+      int64 length = 0;
       if (!DecodeVarInt(slice, &length) || length < 0)
         return false;
       if (slice->size() < static_cast<size_t>(length) * sizeof(char16))
