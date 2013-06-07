@@ -25,8 +25,8 @@ class RTCDemuxerStream : public DemuxerStream {
 
   // DemuxerStream implementation.
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
-  virtual const media::AudioDecoderConfig& audio_decoder_config() OVERRIDE;
-  virtual const media::VideoDecoderConfig& video_decoder_config() OVERRIDE;
+  virtual media::AudioDecoderConfig audio_decoder_config() OVERRIDE;
+  virtual media::VideoDecoderConfig video_decoder_config() OVERRIDE;
   virtual Type type() OVERRIDE;
   virtual void EnableBitstreamConverter() OVERRIDE;
 
@@ -78,12 +78,12 @@ RTCDemuxerStream::RTCDemuxerStream(const gfx::Size& size)
 
 RTCDemuxerStream::~RTCDemuxerStream() { DCHECK(is_destroyed_); }
 
-const media::AudioDecoderConfig& RTCDemuxerStream::audio_decoder_config() {
+media::AudioDecoderConfig RTCDemuxerStream::audio_decoder_config() {
   NOTIMPLEMENTED() << "Does not support audio.";
   return dummy_audio_decoder_config_;
 }
 
-const media::VideoDecoderConfig& RTCDemuxerStream::video_decoder_config() {
+media::VideoDecoderConfig RTCDemuxerStream::video_decoder_config() {
   base::AutoLock lock(lock_);
   return video_decoder_config_;
 }
