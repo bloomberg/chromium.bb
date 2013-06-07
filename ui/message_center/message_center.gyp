@@ -140,6 +140,7 @@
         'cocoa/notification_controller_unittest.mm',
         'cocoa/popup_collection_unittest.mm',
         'cocoa/popup_controller_unittest.mm',
+        'cocoa/settings_controller_unittest.mm',
         'cocoa/status_item_view_unittest.mm',
         'cocoa/tray_view_controller_unittest.mm',
         'message_center_tray_unittest.cc',

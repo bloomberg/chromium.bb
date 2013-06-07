@@ -72,6 +72,9 @@ MESSAGE_CENTER_EXPORT
 // Scroll to the topmost notification in the tray.
 - (void)scrollToTop;
 
+// Returns the maximum height of the notifications tray.
++ (CGFloat)maxTrayHeight;
+
 @end
 
 // Testing API /////////////////////////////////////////////////////////////////

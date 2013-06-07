@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notifier_settings.h"
@@ -44,6 +45,17 @@ MESSAGE_CENTER_EXPORT
  @private
   scoped_ptr<message_center::NotifierSettingsDelegateMac> delegate_;
   message_center::NotifierSettingsProvider* provider_;
+
+  // The "Settings" text at the top.
+  scoped_nsobject<NSTextField> settingsText_;
+
+  // The smaller text below the "Settings" text.
+  scoped_nsobject<NSTextField> detailsText_;
+
+  // Container for all the checkboxes.
+  scoped_nsobject<NSScrollView> scrollView_;
+
+  std::vector<message_center::Notifier*> notifiers_;
 }
 
 // Designated initializer.
@@ -52,6 +64,12 @@ MESSAGE_CENTER_EXPORT
 // Returns the bridge object for this controller.
 - (message_center::NotifierSettingsDelegateMac*)delegate;
 
+@end
+
+// Testing API /////////////////////////////////////////////////////////////////
+
+@interface MCSettingsController (TestingAPI)
+- (NSScrollView*)scrollView;
 @end
 
 #endif  // UI_MESSAGE_CENTER_COCOA_SETTINGS_CONTROLLER_H_

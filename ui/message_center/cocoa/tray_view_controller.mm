@@ -197,8 +197,9 @@ const CGFloat kTrayBottomMargin = 75;
 - (void)showSettings:(id)sender {
   // This ends up calling message_center::ShowSettings() and will set up the
   // NotifierSettingsProvider along the way.
-  message_center::NotifierSettingsDelegate* delegate =
-      messageCenter_->ShowNotificationSettingsDialog([self view]);
+  message_center::NotifierSettingsDelegateMac* delegate =
+      static_cast<message_center::NotifierSettingsDelegateMac*>(
+          messageCenter_->ShowNotificationSettingsDialog([self view]));
   // TODO(thakis): retain delegate->cocoa_controller(), install the controller's
   // view.
   (void)delegate;
@@ -208,6 +209,11 @@ const CGFloat kTrayBottomMargin = 75;
   NSPoint topPoint =
       NSMakePoint(0.0, [[scrollView_ documentView] bounds].size.height);
   [[scrollView_ documentView] scrollPoint:topPoint];
+}
+
++ (CGFloat)maxTrayHeight {
+  NSRect screenFrame = [[[NSScreen screens] objectAtIndex:0] visibleFrame];
+  return NSHeight(screenFrame) - kTrayBottomMargin;
 }
 
 // Testing API /////////////////////////////////////////////////////////////////
@@ -352,9 +358,8 @@ const CGFloat kTrayBottomMargin = 75;
   [[scrollView_ documentView] setFrame:documentFrame];
 
   // Resize the container view.
-  NSRect screenFrame = [[[NSScreen screens] objectAtIndex:0] visibleFrame];
   NSRect frame = [[self view] frame];
-  frame.size.height = std::min(NSHeight(screenFrame) - kTrayBottomMargin,
+  frame.size.height = std::min([MCTrayViewController maxTrayHeight],
                                scrollContentHeight + kControlAreaHeight);
   [[self view] setFrame:frame];
 
