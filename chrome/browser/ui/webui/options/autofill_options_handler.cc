@@ -401,7 +401,8 @@ void AutofillOptionsHandler::LoadAutofillData() {
     entry->Append(new StringValue(card->guid()));
     entry->Append(new StringValue(card->Label()));
     entry->Append(new StringValue(
-        webui::GetBitmapDataUrlFromResource(card->IconResourceId())));
+        webui::GetBitmapDataUrlFromResource(
+            CreditCard::IconResourceId(card->type()))));
     entry->Append(new StringValue(card->TypeForDisplay()));
     credit_cards.Append(entry);
   }

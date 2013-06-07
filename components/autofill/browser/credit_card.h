@@ -34,6 +34,9 @@ class CreditCard : public AutofillDataModel {
   // The user-visible type of the card, e.g. 'Mastercard'.
   static base::string16 TypeForDisplay(const std::string& type);
 
+  // The ResourceBundle ID for the appropriate credit card image.
+  static int IconResourceId(const std::string& type);
+
   // The internal representation of credit card type.
   static std::string GetCreditCardType(const base::string16& number);
 
@@ -70,8 +73,6 @@ class CreditCard : public AutofillDataModel {
   base::string16 TypeForDisplay() const;
   // A label for this credit card formatted as 'Cardname - 2345'.
   base::string16 TypeAndLastFourDigits() const;
-  // The ResourceBundle ID for the appropriate credit card image.
-  int IconResourceId() const;
 
   const std::string& type() const { return type_; }
 

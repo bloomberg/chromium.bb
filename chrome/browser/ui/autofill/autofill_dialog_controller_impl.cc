@@ -94,6 +94,24 @@ const char kAutofillDialogOrigin[] = "Chrome Autofill dialog";
 // HSL shift to gray out an image.
 const color_utils::HSL kGrayImageShift = {-1, 0, 0.8};
 
+// Card types that we show icons in the edit box for local Autofill.
+// Local Autofill accepts all types of cards, but we only show icons for popular
+// types in the credit card number edit box.
+const char* kAutofillCardsWithIcons[] = {
+    autofill::kVisaCard,
+    autofill::kMasterCard,
+    autofill::kAmericanExpressCard,
+    autofill::kDiscoverCard
+};
+
+// Card types that supported by Wallet. This array is used to validate user
+// input in wallet mode as well as displaying card icons in the edit box.
+const char* kWalletSupportedCards[] = {
+    autofill::kVisaCard,
+    autofill::kMasterCard,
+    autofill::kDiscoverCard
+};
+
 // Returns true if |input| should be shown when |field_type| has been requested.
 bool InputTypeMatchesFieldType(const DetailInput& input,
                                AutofillFieldType field_type) {
@@ -1151,30 +1169,29 @@ gfx::Image AutofillDialogControllerImpl::IconForField(
   // For the credit card, we show a few grayscale images, and possibly one
   // color image if |user_input| is a valid card number.
   if (type == CREDIT_CARD_NUMBER) {
-    const int card_idrs[] = {
-      IDR_AUTOFILL_CC_VISA,
-      IDR_AUTOFILL_CC_MASTERCARD,
-      IDR_AUTOFILL_CC_AMEX,
-      IDR_AUTOFILL_CC_DISCOVER
-    };
-    const int number_of_cards = arraysize(card_idrs);
+    const char** card_types = IsPayingWithWallet() ? kWalletSupportedCards :
+        kAutofillCardsWithIcons;
+    const size_t number_of_types = IsPayingWithWallet() ?
+        arraysize(kWalletSupportedCards) : arraysize(kAutofillCardsWithIcons);
     // The number of pixels between card icons.
     const int kCardPadding = 2;
 
-    gfx::ImageSkia some_card = *rb.GetImageSkiaNamed(card_idrs[0]);
+    gfx::ImageSkia some_card = *rb.GetImageSkiaNamed(
+        CreditCard::IconResourceId(card_types[0]));
     const int card_width = some_card.width();
     gfx::Canvas canvas(
-        gfx::Size((card_width + kCardPadding) * number_of_cards - kCardPadding,
+        gfx::Size((card_width + kCardPadding) * number_of_types - kCardPadding,
                   some_card.height()),
         ui::SCALE_FACTOR_100P,
         false);
-    CreditCard card;
-    card.SetRawInfo(CREDIT_CARD_NUMBER, user_input);
 
-    for (int i = 0; i < number_of_cards; ++i) {
-      int idr = card_idrs[i];
+    int input_card_idr = CreditCard::IconResourceId(
+        CreditCard::GetCreditCardType(user_input));
+
+    for (size_t i = 0; i < number_of_types; ++i) {
+      int idr = CreditCard::IconResourceId(card_types[i]);
       gfx::ImageSkia card_image = *rb.GetImageSkiaNamed(idr);
-      if (card.IconResourceId() != idr) {
+      if (input_card_idr != idr) {
         SkBitmap disabled_bitmap =
             SkBitmapOperations::CreateHSLShiftedBitmap(*card_image.bitmap(),
                                                        kGrayImageShift);
@@ -1205,11 +1222,7 @@ string16 AutofillDialogControllerImpl::InputValidityMessage(
       break;
 
     case CREDIT_CARD_NUMBER:
-      if (!value.empty() && !autofill::IsValidCreditCardNumber(value)) {
-        return l10n_util::GetStringUTF16(
-            IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_NUMBER);
-      }
-      break;
+      return CreditCardNumberValidityMessage(value);
 
     case CREDIT_CARD_NAME:
       // Wallet requires a first and last name.
@@ -1295,8 +1308,7 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
   // If there is a credit card number and a CVC, validate them together.
   if (field_values.count(CREDIT_CARD_NUMBER) &&
       field_values.count(CREDIT_CARD_VERIFICATION_CODE) &&
-      InputValidityMessage(CREDIT_CARD_NUMBER,
-                           field_values[CREDIT_CARD_NUMBER]).empty() &&
+      !invalid_messages.count(CREDIT_CARD_NUMBER) &&
       !autofill::IsValidCreditCardSecurityCode(
           field_values[CREDIT_CARD_VERIFICATION_CODE],
           field_values[CREDIT_CARD_NUMBER])) {
@@ -2123,7 +2135,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
       suggested_cc_.AddKeyedItemWithIcon(
           cards[i]->guid(),
           cards[i]->Label(),
-          rb.GetImageNamed(cards[i]->IconResourceId()));
+          rb.GetImageNamed(CreditCard::IconResourceId(cards[i]->type())));
     }
 
     const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
@@ -2435,6 +2447,31 @@ bool AutofillDialogControllerImpl::IsManuallyEditingAnySection() const {
       return true;
   }
   return false;
+}
+
+base::string16 AutofillDialogControllerImpl::CreditCardNumberValidityMessage(
+    const base::string16& number) const {
+  if (!number.empty() && !autofill::IsValidCreditCardNumber(number))
+    return l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_NUMBER);
+
+  // Wallet only accepts MasterCard, Visa and Discover. No AMEX.
+  if (IsPayingWithWallet()) {
+    const std::string type = CreditCard::GetCreditCardType(number);
+    bool card_type_found = false;
+    for (size_t i = 0; i < arraysize(kWalletSupportedCards); ++i) {
+      if (type == kWalletSupportedCards[i]) {
+        card_type_found = true;
+        break;
+      }
+    }
+    if (!card_type_found)
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_DIALOG_VALIDATION_CREDIT_CARD_NOT_SUPPORTED_BY_WALLET);
+  }
+
+  // Card number is good and supported.
+  return base::string16();
 }
 
 bool AutofillDialogControllerImpl::InputIsEditable(
