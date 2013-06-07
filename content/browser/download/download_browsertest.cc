@@ -209,7 +209,7 @@ void DownloadFileWithDelay::RenameCallbackWrapper(
     DownloadInterruptReason reason,
     const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!factory.get())
+  if (!factory)
     return;
   factory->AddRenameCallback(base::Bind(original_callback, reason, path));
 }

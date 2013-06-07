@@ -284,7 +284,7 @@ void DestroyCertificates(CERTCertificate** certs, size_t len) {
 // SSLClientSocketNSS::Core.
 void AddLogEvent(const base::WeakPtr<BoundNetLog>& net_log,
                  NetLog::EventType event_type) {
-  if (!net_log.get())
+  if (!net_log)
     return;
   net_log->AddEvent(event_type);
 }
@@ -294,7 +294,7 @@ void AddLogEvent(const base::WeakPtr<BoundNetLog>& net_log,
 void AddLogEventWithCallback(const base::WeakPtr<BoundNetLog>& net_log,
                              NetLog::EventType event_type,
                              const NetLog::ParametersCallback& callback) {
-  if (!net_log.get())
+  if (!net_log)
     return;
   net_log->AddEvent(event_type, callback);
 }
@@ -312,7 +312,7 @@ void AddLogEventWithCallback(const base::WeakPtr<BoundNetLog>& net_log,
 void LogByteTransferEvent(
     const base::WeakPtr<BoundNetLog>& net_log, NetLog::EventType event_type,
     int len, IOBuffer* buffer) {
-  if (!net_log.get())
+  if (!net_log)
     return;
   net_log->AddByteTransferEvent(event_type, len, buffer->data());
 }
