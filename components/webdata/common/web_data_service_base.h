@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/webdata/common/web_database_observer.h"
 #include "components/webdata/common/webdata_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
@@ -25,8 +24,7 @@ class Thread;
 
 // Base for WebDataService class hierarchy.
 class WEBDATA_EXPORT WebDataServiceBase
-    : public WebDatabaseObserver,
-      public base::RefCountedThreadSafe<WebDataServiceBase,
+    : public base::RefCountedThreadSafe<WebDataServiceBase,
           content::BrowserThread::DeleteOnUIThread> {
  public:
   // All requests return an opaque handle of the following type.
@@ -50,10 +48,6 @@ class WEBDATA_EXPORT WebDataServiceBase
   WebDataServiceBase(scoped_refptr<WebDatabaseService> wdbs,
                      const ProfileErrorCallback& callback);
 
-  // WebDatabaseObserver implementation.
-  virtual void WebDatabaseLoaded() OVERRIDE;
-  virtual void WebDatabaseLoadFailed(sql::InitStatus status) OVERRIDE;
-
   // Cancel any pending request. You need to call this method if your
   // WebDataServiceConsumer is about to be deleted.
   virtual void CancelRequest(Handle h);
@@ -76,8 +70,13 @@ class WEBDATA_EXPORT WebDataServiceBase
   // Unloads the database permanently and shuts down service.
   void ShutdownDatabase();
 
-  virtual void AddDBObserver(WebDatabaseObserver* observer);
-  virtual void RemoveDBObserver(WebDatabaseObserver* observer);
+  // Register a callback to be notified that the database has loaded. Multiple
+  // callbacks may be registered, and each will be called at most once
+  // (following a successful database load), then cleared.
+  // Note: if the database load is already complete, then the callback will NOT
+  // be stored or called.
+  virtual void RegisterDBLoadedCallback(
+      const base::Callback<void(void)>& callback);
 
   // Returns true if the database load has completetd successfully, and
   // ShutdownOnUIThread has not yet been called.
@@ -93,9 +92,6 @@ class WEBDATA_EXPORT WebDataServiceBase
 
   // Our database service.
   scoped_refptr<WebDatabaseService> wdbs_;
-
-  // True if we've received a notification that the WebDatabase has loaded.
-  bool db_loaded_;
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<

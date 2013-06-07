@@ -21,7 +21,6 @@
 #include "chrome/test/base/profile_mock.h"
 #include "components/autofill/browser/webdata/autofill_webdata_service.h"
 #include "components/webdata/common/web_data_service_test_util.h"
-#include "components/webdata/common/web_database_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -61,34 +60,24 @@ class FakeWebDataService : public AutofillWebDataService {
   FakeWebDataService()
       : AutofillWebDataService(),
         is_database_loaded_(false),
-        observer_(NULL) {}
+        db_loaded_callback_(base::Callback<void(void)>()){}
 
   // Mark the database as loaded and send out the appropriate notification.
   void LoadDatabase() {
     StartSyncableService();
     is_database_loaded_ = true;
-    if (observer_)
-      observer_->WebDatabaseLoaded();
+
+    if (!db_loaded_callback_.is_null())
+      db_loaded_callback_.Run();
   }
 
   virtual bool IsDatabaseLoaded() OVERRIDE {
     return is_database_loaded_;
   }
 
-  // Note: this implementation violates the contract for AddDBObserver (which
-  // should support having multiple observers at the same time), however, it
-  // is the simplest thing that works for the purpose of the unit test, which
-  // only registers one observer.
-  virtual void AddDBObserver(WebDatabaseObserver* observer) OVERRIDE {
-    DCHECK(!observer_);
-    observer_ = observer;
-  }
-
-  virtual void RemoveDBObserver(WebDatabaseObserver* observer) OVERRIDE {
-    if (!observer_)
-      return;
-    DCHECK_EQ(observer_, observer);
-    observer_ = NULL;
+  virtual void RegisterDBLoadedCallback(
+      const base::Callback<void(void)>& callback) OVERRIDE {
+    db_loaded_callback_ = callback;
   }
 
   void StartSyncableService() {
@@ -131,7 +120,7 @@ class FakeWebDataService : public AutofillWebDataService {
 
   bool is_database_loaded_;
   NoOpAutofillBackend autofill_backend_;
-  WebDatabaseObserver* observer_;
+  base::Callback<void(void)> db_loaded_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWebDataService);
 };

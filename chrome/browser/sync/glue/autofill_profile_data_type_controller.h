@@ -10,10 +10,8 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/sync/glue/non_ui_data_type_controller.h"
 #include "components/autofill/browser/personal_data_manager_observer.h"
-#include "components/webdata/common/web_database_observer.h"
 
 namespace autofill {
-class AutofillWebDataService;
 class PersonalDataManager;
 }  // namespace autofill
 
@@ -21,7 +19,6 @@ namespace browser_sync {
 
 class AutofillProfileDataTypeController
     : public NonUIDataTypeController,
-      public WebDatabaseObserver,
       public autofill::PersonalDataManagerObserver {
  public:
   AutofillProfileDataTypeController(
@@ -32,9 +29,6 @@ class AutofillProfileDataTypeController
   // NonUIDataTypeController implementation.
   virtual syncer::ModelType type() const OVERRIDE;
   virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
-
-  // WebDatabaseObserver implementation.
-  virtual void WebDatabaseLoaded() OVERRIDE;
 
   // PersonalDataManagerObserver implementation:
   virtual void OnPersonalDataChanged() OVERRIDE;
@@ -50,8 +44,11 @@ class AutofillProfileDataTypeController
   virtual void StopModels() OVERRIDE;
 
  private:
+  // Callback to notify that WebDatabase has loaded.
+  void WebDatabaseLoaded();
+
   autofill::PersonalDataManager* personal_data_;
-  scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
+  bool callback_registered_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillProfileDataTypeController);
 };

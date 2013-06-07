@@ -54,7 +54,6 @@
       'sources': [
         'webdata/common/web_database.cc',
         'webdata/common/web_database.h',
-        'webdata/common/web_database_observer.h',
         'webdata/common/web_database_service.cc',
         'webdata/common/web_database_service.h',
         'webdata/common/web_database_table.cc',

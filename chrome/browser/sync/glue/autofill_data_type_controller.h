@@ -11,7 +11,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/sync/glue/non_ui_data_type_controller.h"
-#include "components/webdata/common/web_database_observer.h"
 
 namespace autofill {
 class AutofillWebDataService;
@@ -21,8 +20,7 @@ namespace browser_sync {
 
 // A class that manages the startup and shutdown of autofill sync.
 class AutofillDataTypeController
-    : public NonUIDataTypeController,
-      public WebDatabaseObserver {
+    : public NonUIDataTypeController {
  public:
   AutofillDataTypeController(
       ProfileSyncComponentsFactory* profile_sync_factory,
@@ -36,9 +34,6 @@ class AutofillDataTypeController
   // NonFrontendDatatypeController override, needed as stop-gap until bug
   // 163431 is addressed / implemented.
   virtual void StartAssociating(const StartCallback& start_callback) OVERRIDE;
-
-  // WebDatabaseObserver implementation.
-  virtual void WebDatabaseLoaded() OVERRIDE;
 
  protected:
   virtual ~AutofillDataTypeController();
@@ -57,9 +52,11 @@ class AutofillDataTypeController
 
   // Self-invoked on the DB thread to call the AutocompleteSyncableService with
   // an updated value of autofill culling settings.
-  void UpdateAutofillCullingSettings(bool cull_expired_entries);
+  void UpdateAutofillCullingSettings(bool cull_expired_entries,
+      scoped_refptr<autofill::AutofillWebDataService> web_data_service);
 
-  scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
+  // Callback once WebDatabase has loaded.
+  void WebDatabaseLoaded();
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDataTypeController);
 };

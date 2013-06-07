@@ -40,16 +40,11 @@ void AutofillDataTypeController::WebDatabaseLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(MODEL_STARTING, state());
 
-  if (web_data_service_.get())
-    web_data_service_->RemoveDBObserver(this);
-
   OnModelLoaded();
 }
 
 AutofillDataTypeController::~AutofillDataTypeController() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (web_data_service_.get())
-    web_data_service_->RemoveDBObserver(this);
 }
 
 bool AutofillDataTypeController::PostTaskOnBackendThread(
@@ -63,13 +58,17 @@ bool AutofillDataTypeController::StartModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(MODEL_STARTING, state());
 
-  web_data_service_ =
+  autofill::AutofillWebDataService* web_data_service =
       autofill::AutofillWebDataService::FromBrowserContext(profile());
-  if (web_data_service_->IsDatabaseLoaded()) {
+
+  if (!web_data_service)
+    return false;
+
+  if (web_data_service->IsDatabaseLoaded()) {
     return true;
   } else {
-    if (web_data_service_.get())
-      web_data_service_->AddDBObserver(this);
+    web_data_service->RegisterDBLoadedCallback(base::Bind(
+        &AutofillDataTypeController::WebDatabaseLoaded, this));
     return false;
   }
 }
@@ -78,8 +77,6 @@ void AutofillDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(state() == STOPPING || state() == NOT_RUNNING || state() == DISABLED);
   DVLOG(1) << "AutofillDataTypeController::StopModels() : State = " << state();
-  if (web_data_service_.get())
-    web_data_service_->RemoveDBObserver(this);
 }
 
 void AutofillDataTypeController::StartAssociating(
@@ -89,6 +86,8 @@ void AutofillDataTypeController::StartAssociating(
   ProfileSyncService* sync = ProfileSyncServiceFactory::GetForProfile(
       profile());
   DCHECK(sync);
+  scoped_refptr<autofill::AutofillWebDataService> web_data_service =
+      autofill::AutofillWebDataService::FromBrowserContext(profile());
   bool cull_expired_entries = sync->current_experiments().autofill_culling;
   // First, post the update task to the DB thread, which guarantees us it
   // would run before anything StartAssociating does (e.g.
@@ -98,15 +97,17 @@ void AutofillDataTypeController::StartAssociating(
       base::Bind(
           &AutofillDataTypeController::UpdateAutofillCullingSettings,
           this,
-          cull_expired_entries));
+          cull_expired_entries,
+          web_data_service));
   NonUIDataTypeController::StartAssociating(start_callback);
 }
 
 void AutofillDataTypeController::UpdateAutofillCullingSettings(
-    bool cull_expired_entries) {
+    bool cull_expired_entries,
+    scoped_refptr<autofill::AutofillWebDataService> web_data_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   AutocompleteSyncableService* service =
-      AutocompleteSyncableService::FromWebDataService(web_data_service_.get());
+      AutocompleteSyncableService::FromWebDataService(web_data_service);
   if (!service) {
     DVLOG(1) << "Can't update culling, no AutocompleteSyncableService.";
     return;

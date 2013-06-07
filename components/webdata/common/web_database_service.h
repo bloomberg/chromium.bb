@@ -93,8 +93,22 @@ class WEBDATA_EXPORT WebDatabaseService
   // somewhere else.
   virtual void CancelRequest(WebDataServiceBase::Handle h);
 
-  void AddObserver(WebDatabaseObserver* observer);
-  void RemoveObserver(WebDatabaseObserver* observer);
+  // Register a callback to be notified that the database has loaded. Multiple
+  // callbacks may be registered, and each will be called at most once
+  // (following a successful database load), then cleared.
+  // Note: if the database load is already complete, then the callback will NOT
+  // be stored or called.
+  void RegisterDBLoadedCallback(const base::Callback<void(void)>& callback);
+
+  // Register a callback to be notified that the database has failed to load.
+  // Multiple callbacks may be registered, and each will be called at most once
+  // (following a database load failure), then cleared.
+  // Note: if the database load is already complete, then the callback will NOT
+  // be stored or called.
+  void RegisterDBErrorCallback(
+      const base::Callback<void(sql::InitStatus)>& callback);
+
+  bool db_loaded() { return db_loaded_; };
 
  private:
   class BackendDelegate;
@@ -116,10 +130,24 @@ class WEBDATA_EXPORT WebDatabaseService
   // PostTask on DB thread may outlive us.
   scoped_refptr<WebDataServiceBackend> wds_backend_;
 
-  ObserverList<WebDatabaseObserver> observer_list_;
-
   // All vended weak pointers are invalidated in ShutdownDatabase().
   base::WeakPtrFactory<WebDatabaseService> weak_ptr_factory_;
+
+  // Types for managing DB loading callbacks.
+  typedef base::Callback<void(void)> DBLoadedCallback;
+  typedef std::vector<DBLoadedCallback> LoadedCallbacks;
+
+  typedef base::Callback<void(sql::InitStatus)> DBLoadErrorCallback;
+  typedef std::vector<DBLoadErrorCallback> ErrorCallbacks;
+
+  // Callbacks to be called once the DB has loaded.
+  LoadedCallbacks loaded_callbacks_;
+
+  // Callbacks to be called if the DB has failed to load.
+  ErrorCallbacks error_callbacks_;
+
+  // True if the WebDatabase has loaded.
+  bool db_loaded_;
 };
 
 #endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_SERVICE_H_

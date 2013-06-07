@@ -28,7 +28,8 @@ AutofillProfileDataTypeController::AutofillProfileDataTypeController(
     : NonUIDataTypeController(profile_sync_factory,
                               profile,
                               sync_service),
-      personal_data_(NULL) {}
+      personal_data_(NULL),
+      callback_registered_(false) {}
 
 syncer::ModelType AutofillProfileDataTypeController::type() const {
   return syncer::AUTOFILL_PROFILE;
@@ -41,8 +42,6 @@ syncer::ModelSafeGroup
 
 void AutofillProfileDataTypeController::WebDatabaseLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (web_data_service_.get())
-    web_data_service_->RemoveDBObserver(this);
   OnModelLoaded();
 }
 
@@ -51,15 +50,19 @@ void AutofillProfileDataTypeController::OnPersonalDataChanged() {
   DCHECK_EQ(state(), MODEL_STARTING);
 
   personal_data_->RemoveObserver(this);
-  web_data_service_ = AutofillWebDataService::FromBrowserContext(profile());
+  autofill::AutofillWebDataService* web_data_service =
+      autofill::AutofillWebDataService::FromBrowserContext(profile());
 
-  if (!web_data_service_.get())
+  if (!web_data_service)
     return;
 
-  if (web_data_service_->IsDatabaseLoaded())
+  if (web_data_service->IsDatabaseLoaded()) {
     OnModelLoaded();
-  else
-    web_data_service_->AddDBObserver(this);
+  } else  if (!callback_registered_) {
+     web_data_service->RegisterDBLoadedCallback(base::Bind(
+        &AutofillProfileDataTypeController::WebDatabaseLoaded, this));
+     callback_registered_ = true;
+  }
 }
 
 AutofillProfileDataTypeController::~AutofillProfileDataTypeController() {}
@@ -84,24 +87,27 @@ bool AutofillProfileDataTypeController::StartModels() {
     return false;
   }
 
-  web_data_service_ = AutofillWebDataService::FromBrowserContext(profile());
+  autofill::AutofillWebDataService* web_data_service =
+      AutofillWebDataService::FromBrowserContext(profile());
 
-  if (!web_data_service_.get())
+  if (!web_data_service)
     return false;
 
-  if (web_data_service_->IsDatabaseLoaded())
+  if (web_data_service->IsDatabaseLoaded())
     return true;
 
-  web_data_service_->AddDBObserver(this);
+  if (!callback_registered_) {
+     web_data_service->RegisterDBLoadedCallback(base::Bind(
+        &AutofillProfileDataTypeController::WebDatabaseLoaded, this));
+     callback_registered_ = true;
+  }
+
   return false;
 }
 
 void AutofillProfileDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(state() == STOPPING || state() == NOT_RUNNING);
-
-  if (web_data_service_.get())
-    web_data_service_->RemoveDBObserver(this);
 
   personal_data_->RemoveObserver(this);
 }
