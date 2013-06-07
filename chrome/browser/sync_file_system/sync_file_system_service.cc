@@ -140,6 +140,12 @@ SyncServiceState SyncFileSystemService::GetSyncServiceState() {
   return RemoteStateToSyncServiceState(remote_file_service_->GetCurrentState());
 }
 
+void SyncFileSystemService::GetExtensionStatusMap(
+    std::map<GURL, std::string>* status_map) {
+  DCHECK(status_map);
+  remote_file_service_->GetOriginStatusMap(status_map);
+}
+
 void SyncFileSystemService::GetFileSyncStatus(
     const FileSystemURL& url, const SyncFileStatusCallback& callback) {
   DCHECK(local_file_service_);
