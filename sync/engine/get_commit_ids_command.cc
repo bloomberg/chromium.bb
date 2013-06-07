@@ -41,7 +41,7 @@ SyncerError GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
   // Gather the full set of unsynced items and store it in the session. They
   // are not in the correct order for commit.
   std::set<int64> ready_unsynced_set;
-  syncable::Directory::UnsyncedMetaHandles all_unsynced_handles;
+  syncable::Directory::Metahandles all_unsynced_handles;
   GetUnsyncedEntries(trans_,
                      &all_unsynced_handles);
 
@@ -165,10 +165,10 @@ void GetCommitIdsCommand::FilterUnreadyEntries(
     ModelTypeSet throttled_types,
     ModelTypeSet encrypted_types,
     bool passphrase_missing,
-    const syncable::Directory::UnsyncedMetaHandles& unsynced_handles,
+    const syncable::Directory::Metahandles& unsynced_handles,
     std::set<int64>* ready_unsynced_set) {
-  for (syncable::Directory::UnsyncedMetaHandles::const_iterator iter =
-           unsynced_handles.begin(); iter != unsynced_handles.end(); ++iter) {
+  for (syncable::Directory::Metahandles::const_iterator iter =
+       unsynced_handles.begin(); iter != unsynced_handles.end(); ++iter) {
     syncable::Entry entry(trans, syncable::GET_BY_HANDLE, *iter);
     if (IsEntryReadyForCommit(throttled_types,
                               encrypted_types,

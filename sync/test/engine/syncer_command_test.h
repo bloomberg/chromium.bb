@@ -19,7 +19,7 @@
 #include "sync/sessions/debug_info_getter.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/sessions/sync_session_context.h"
-#include "sync/syncable/syncable_mock.h"
+#include "sync/syncable/directory.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/mock_connection_manager.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
@@ -44,10 +44,6 @@ class MockDebugInfoGetter : public sessions::DebugInfoGetter {
 class SyncerCommandTestBase : public testing::Test,
                               public sessions::SyncSession::Delegate {
  public:
-  enum UseMockDirectory {
-    USE_MOCK_DIRECTORY
-  };
-
   // SyncSession::Delegate implementation.
   virtual void OnSilencedUntil(
       const base::TimeTicks& silenced_until) OVERRIDE {
@@ -225,22 +221,6 @@ class SyncerCommandTest : public SyncerCommandTestBase {
 
  private:
   TestDirectorySetterUpper dir_maker_;
-};
-
-class MockDirectorySyncerCommandTest : public SyncerCommandTestBase {
- public:
-  MockDirectorySyncerCommandTest();
-  virtual ~MockDirectorySyncerCommandTest();
-  virtual syncable::Directory* directory() OVERRIDE;
-
-  syncable::MockDirectory* mock_directory() {
-    return static_cast<syncable::MockDirectory*>(directory());
-  }
-
-  virtual void SetUp() OVERRIDE;
-
-  TestUnrecoverableErrorHandler handler_;
-  syncable::MockDirectory mock_directory_;
 };
 
 }  // namespace syncer

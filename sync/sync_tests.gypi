@@ -31,8 +31,6 @@
         'js/js_test_util.h',
         'sessions/test_util.cc',
         'sessions/test_util.h',
-        'syncable/syncable_mock.cc',
-        'syncable/syncable_mock.h',
         'test/callback_counter.h',
         'test/engine/fake_model_worker.cc',
         'test/engine/fake_model_worker.h',

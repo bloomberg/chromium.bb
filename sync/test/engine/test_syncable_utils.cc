@@ -21,14 +21,14 @@ namespace syncable {
 int CountEntriesWithName(BaseTransaction* rtrans,
                          const syncable::Id& parent_id,
                          const string& name) {
-  Directory::ChildHandles child_handles;
+  Directory::Metahandles child_handles;
   rtrans->directory()->GetChildHandlesById(rtrans, parent_id, &child_handles);
   if (child_handles.size() <= 0) {
     return 0;
   }
 
   int number_of_entries_with_name = 0;
-  for (Directory::ChildHandles::iterator i = child_handles.begin();
+  for (Directory::Metahandles::iterator i = child_handles.begin();
        i != child_handles.end(); ++i) {
     Entry e(rtrans, GET_BY_HANDLE, *i);
     CHECK(e.good());
@@ -42,10 +42,10 @@ int CountEntriesWithName(BaseTransaction* rtrans,
 Id GetFirstEntryWithName(BaseTransaction* rtrans,
                          const syncable::Id& parent_id,
                          const string& name) {
-  Directory::ChildHandles child_handles;
+  Directory::Metahandles child_handles;
   rtrans->directory()->GetChildHandlesById(rtrans, parent_id, &child_handles);
 
-  for (Directory::ChildHandles::iterator i = child_handles.begin();
+  for (Directory::Metahandles::iterator i = child_handles.begin();
        i != child_handles.end(); ++i) {
     Entry e(rtrans, GET_BY_HANDLE, *i);
     CHECK(e.good());

@@ -60,9 +60,9 @@ void ChangeEntryIDAndUpdateChildren(
   }
   if (entry->Get(IS_DIR)) {
     // Get all child entries of the old id.
-    Directory::ChildHandles children;
+    Directory::Metahandles children;
     trans->directory()->GetChildHandlesById(trans, old_id, &children);
-    Directory::ChildHandles::iterator i = children.begin();
+    Directory::Metahandles::iterator i = children.begin();
     while (i != children.end()) {
       MutableEntry child_entry(trans, GET_BY_HANDLE, *i++);
       CHECK(child_entry.good());

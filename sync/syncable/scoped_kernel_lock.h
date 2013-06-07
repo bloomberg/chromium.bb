@@ -16,7 +16,7 @@ class Directory;
 class ScopedKernelLock {
  public:
   explicit ScopedKernelLock(const Directory* dir);
-  ~ScopedKernelLock() {}
+  ~ScopedKernelLock();
 
   base::AutoLock scoped_lock_;
   Directory* const dir_;

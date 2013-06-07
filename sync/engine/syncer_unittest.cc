@@ -241,7 +241,7 @@ class SyncerTest : public testing::Test,
     syncer_ = new Syncer();
 
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    syncable::Directory::ChildHandles children;
+    syncable::Directory::Metahandles children;
     directory()->GetChildHandlesById(&trans, trans.root_id(), &children);
     ASSERT_EQ(0u, children.size());
     saw_syncer_event_ = false;
@@ -2350,7 +2350,7 @@ TEST_F(SyncerTest, DoublyChangedWithResolver) {
                                   local_cache_guid(), local_id.GetServerId());
   mock_server_->set_conflict_all_commits(true);
   SyncShareNudge();
-  syncable::Directory::ChildHandles children;
+  syncable::Directory::Metahandles children;
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     directory()->GetChildHandlesById(&trans, parent_id_, &children);
@@ -2453,7 +2453,7 @@ TEST_F(SyncerTest, ParentAndChildBothMatch) {
   SyncShareNudge();
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    Directory::ChildHandles children;
+    Directory::Metahandles children;
     directory()->GetChildHandlesById(&trans, root_id_, &children);
     EXPECT_EQ(1u, children.size());
     directory()->GetChildHandlesById(&trans, parent_id, &children);
@@ -2461,7 +2461,7 @@ TEST_F(SyncerTest, ParentAndChildBothMatch) {
     std::vector<int64> unapplied;
     directory()->GetUnappliedUpdateMetaHandles(&trans, all_types, &unapplied);
     EXPECT_EQ(0u, unapplied.size());
-    syncable::Directory::UnsyncedMetaHandles unsynced;
+    syncable::Directory::Metahandles unsynced;
     directory()->GetUnsyncedMetaHandles(&trans, &unsynced);
     EXPECT_EQ(0u, unsynced.size());
     saw_syncer_event_ = false;
@@ -3920,7 +3920,7 @@ TEST_F(SyncerTest, ClientTagUpdateClashesWithLocalEntry) {
     EXPECT_EQ("tag2", tag2.Get(UNIQUE_CLIENT_TAG));
     tag2_metahandle = tag2.Get(META_HANDLE);
 
-    syncable::Directory::ChildHandles children;
+    syncable::Directory::Metahandles children;
     directory()->GetChildHandlesById(&trans, trans.root_id(), &children);
     ASSERT_EQ(2U, children.size());
   }
@@ -3960,7 +3960,7 @@ TEST_F(SyncerTest, ClientTagUpdateClashesWithLocalEntry) {
     EXPECT_EQ("tag2", tag2.Get(UNIQUE_CLIENT_TAG));
     EXPECT_EQ(tag2_metahandle, tag2.Get(META_HANDLE));
 
-    syncable::Directory::ChildHandles children;
+    syncable::Directory::Metahandles children;
     directory()->GetChildHandlesById(&trans, trans.root_id(), &children);
     ASSERT_EQ(2U, children.size());
   }
@@ -4039,7 +4039,7 @@ TEST_F(SyncerTest, ClientTagClashWithinBatchOfUpdates) {
     EXPECT_EQ(21, tag_c.Get(BASE_VERSION));
     EXPECT_EQ("tag c", tag_c.Get(UNIQUE_CLIENT_TAG));
 
-    syncable::Directory::ChildHandles children;
+    syncable::Directory::Metahandles children;
     directory()->GetChildHandlesById(&trans, trans.root_id(), &children);
     ASSERT_EQ(3U, children.size());
   }

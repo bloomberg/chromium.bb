@@ -193,7 +193,7 @@ void ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     entry.Put(syncable::BASE_SERVER_SPECIFICS, sync_pb::EntitySpecifics());
   } else {  // SERVER_IS_DEL is true
     if (entry.Get(syncable::IS_DIR)) {
-      Directory::ChildHandles children;
+      Directory::Metahandles children;
       trans->directory()->GetChildHandlesById(trans,
                                               entry.Get(syncable::ID),
                                               &children);

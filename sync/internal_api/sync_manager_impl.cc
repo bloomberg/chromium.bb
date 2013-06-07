@@ -1223,10 +1223,10 @@ JsArgList SyncManagerImpl::GetChildNodeIds(const JsArgList& args) {
   int64 id = GetId(args.Get(), 0);
   if (id != kInvalidId) {
     ReadTransaction trans(FROM_HERE, GetUserShare());
-    syncable::Directory::ChildHandles child_handles;
+    syncable::Directory::Metahandles child_handles;
     trans.GetDirectory()->GetChildHandlesByHandle(trans.GetWrappedTrans(),
                                                   id, &child_handles);
-    for (syncable::Directory::ChildHandles::const_iterator it =
+    for (syncable::Directory::Metahandles::const_iterator it =
              child_handles.begin(); it != child_handles.end(); ++it) {
       child_ids->Append(new base::StringValue(base::Int64ToString(*it)));
     }

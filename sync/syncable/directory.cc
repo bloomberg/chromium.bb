@@ -14,6 +14,7 @@
 #include "sync/syncable/entry_kernel.h"
 #include "sync/syncable/in_memory_directory_backing_store.h"
 #include "sync/syncable/on_disk_directory_backing_store.h"
+#include "sync/syncable/scoped_kernel_lock.h"
 #include "sync/syncable/scoped_parent_child_index_updater.h"
 #include "sync/syncable/syncable-inl.h"
 #include "sync/syncable/syncable_base_transaction.h"
@@ -30,14 +31,6 @@ namespace syncable {
 // static
 const base::FilePath::CharType Directory::kSyncDatabaseFilename[] =
     FILE_PATH_LITERAL("SyncData.sqlite3");
-
-void Directory::InitKernelForTest(
-    const std::string& name,
-    DirectoryChangeDelegate* delegate,
-    const WeakHandle<TransactionObserver>& transaction_observer) {
-  DCHECK(!kernel_);
-  kernel_ = new Kernel(name, KernelLoadInfo(), delegate, transaction_observer);
-}
 
 Directory::PersistedKernelInfo::PersistedKernelInfo()
     : next_id(0) {
@@ -265,7 +258,7 @@ EntryKernel* Directory::GetEntryByHandle(int64 metahandle,
 
 bool Directory::GetChildHandlesById(
     BaseTransaction* trans, const Id& parent_id,
-    Directory::ChildHandles* result) {
+    Directory::Metahandles* result) {
   if (!SyncAssert(this == trans->directory(), FROM_HERE,
                   "Directories don't match", trans))
     return false;
@@ -278,7 +271,7 @@ bool Directory::GetChildHandlesById(
 
 bool Directory::GetChildHandlesByHandle(
     BaseTransaction* trans, int64 handle,
-    Directory::ChildHandles* result) {
+    Directory::Metahandles* result) {
   if (!SyncAssert(this == trans->directory(), FROM_HERE,
                   "Directories don't match", trans))
     return false;
@@ -893,7 +886,7 @@ void Directory::GetAllEntryKernels(BaseTransaction* trans,
 }
 
 void Directory::GetUnsyncedMetaHandles(BaseTransaction* trans,
-                                       UnsyncedMetaHandles* result) {
+                                       Metahandles* result) {
   result->clear();
   ScopedKernelLock lock(this);
   copy(kernel_->unsynced_metahandles.begin(),
@@ -1285,7 +1278,7 @@ void Directory::PutPredecessor(EntryKernel* e, EntryKernel* predecessor) {
 // TODO(rlarocque): Avoid this indirection.  Just return the set.
 void Directory::AppendChildHandles(const ScopedKernelLock& lock,
                                    const Id& parent_id,
-                                   Directory::ChildHandles* result) {
+                                   Directory::Metahandles* result) {
   const OrderedChildSet* children =
       kernel_->parent_child_index.GetChildren(parent_id);
   if (!children)
@@ -1296,10 +1289,6 @@ void Directory::AppendChildHandles(const ScopedKernelLock& lock,
     DCHECK_EQ(parent_id, (*i)->ref(PARENT_ID));
     result->push_back((*i)->ref(META_HANDLE));
   }
-}
-
-ScopedKernelLock::ScopedKernelLock(const Directory* dir)
-  :  scoped_lock_(dir->kernel_->mutex), dir_(const_cast<Directory*>(dir)) {
 }
 
 }  // namespace syncable

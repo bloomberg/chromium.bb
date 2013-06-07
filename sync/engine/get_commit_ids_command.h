@@ -66,7 +66,7 @@ class SYNC_EXPORT_PRIVATE GetCommitIdsCommand : public SyncerCommand {
       ModelTypeSet throttled_types,
       ModelTypeSet encrypted_types,
       bool passphrase_missing,
-      const syncable::Directory::UnsyncedMetaHandles& unsynced_handles,
+      const syncable::Directory::Metahandles& unsynced_handles,
       std::set<int64>* ready_unsynced_set);
 
  private:

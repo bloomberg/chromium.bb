@@ -134,7 +134,7 @@ TEST_F(SyncableGeneralTest, General) {
     Entry e(&rtrans, GET_BY_ID, id);
     ASSERT_FALSE(e.good());  // Hasn't been written yet.
 
-    Directory::ChildHandles child_handles;
+    Directory::Metahandles child_handles;
     dir.GetChildHandlesById(&rtrans, rtrans.root_id(), &child_handles);
     EXPECT_TRUE(child_handles.empty());
 
@@ -159,11 +159,11 @@ TEST_F(SyncableGeneralTest, General) {
     Entry e(&rtrans, GET_BY_ID, id);
     ASSERT_TRUE(e.good());
 
-    Directory::ChildHandles child_handles;
+    Directory::Metahandles child_handles;
     dir.GetChildHandlesById(&rtrans, rtrans.root_id(), &child_handles);
     EXPECT_EQ(1u, child_handles.size());
 
-    for (Directory::ChildHandles::iterator i = child_handles.begin();
+    for (Directory::Metahandles::iterator i = child_handles.begin();
          i != child_handles.end(); ++i) {
       EXPECT_EQ(*i, written_metahandle);
     }
@@ -171,7 +171,7 @@ TEST_F(SyncableGeneralTest, General) {
     dir.GetChildHandlesByHandle(&rtrans, root_metahandle, &child_handles);
     EXPECT_EQ(1u, child_handles.size());
 
-    for (Directory::ChildHandles::iterator i = child_handles.begin();
+    for (Directory::Metahandles::iterator i = child_handles.begin();
          i != child_handles.end(); ++i) {
       EXPECT_EQ(*i, written_metahandle);
     }
@@ -916,7 +916,7 @@ TEST_F(SyncableDirectoryTest, TestDelete) {
 }
 
 TEST_F(SyncableDirectoryTest, TestGetUnsynced) {
-  Directory::UnsyncedMetaHandles handles;
+  Directory::Metahandles handles;
   int64 handle1, handle2;
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());

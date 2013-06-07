@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
@@ -19,7 +20,6 @@
 #include "sync/syncable/entry_kernel.h"
 #include "sync/syncable/metahandle_set.h"
 #include "sync/syncable/parent_child_index.h"
-#include "sync/syncable/scoped_kernel_lock.h"
 #include "sync/syncable/syncable_delete_journal.h"
 
 namespace syncer {
@@ -62,7 +62,30 @@ class SYNC_EXPORT Directory {
                            TakeSnapshotGetsMetahandlesToPurge);
 
  public:
+  typedef std::vector<int64> Metahandles;
+
+  // Be careful when using these hash_map containers.  According to the spec,
+  // inserting into them may invalidate all iterators.
+  //
+  // It gets worse, though.  The Anroid STL library has a bug that means it may
+  // invalidate all iterators when you erase from the map, too.  That means that
+  // you can't iterate while erasing.  STLDeleteElements(), std::remove_if(),
+  // and other similar functions are off-limits too, until this bug is fixed.
+  //
+  // See http://sourceforge.net/p/stlport/bugs/239/.
+  typedef base::hash_map<int64, EntryKernel*> MetahandlesMap;
+  typedef base::hash_map<std::string, EntryKernel*> IdsMap;
+  typedef base::hash_map<std::string, EntryKernel*> TagsMap;
+
   static const base::FilePath::CharType kSyncDatabaseFilename[];
+
+  // The dirty/clean state of kernel fields backed by the share_info table.
+  // This is public so it can be used in SaveChangesSnapshot for persistence.
+  enum KernelShareInfoStatus {
+    KERNEL_SHARE_INFO_INVALID,
+    KERNEL_SHARE_INFO_VALID,
+    KERNEL_SHARE_INFO_DIRTY
+  };
 
   // Various data that the Directory::Kernel we are backing (persisting data
   // for) needs saved across runs of the application.
@@ -105,14 +128,6 @@ class SYNC_EXPORT Directory {
     }
   };
 
-  // The dirty/clean state of kernel fields backed by the share_info table.
-  // This is public so it can be used in SaveChangesSnapshot for persistence.
-  enum KernelShareInfoStatus {
-    KERNEL_SHARE_INFO_INVALID,
-    KERNEL_SHARE_INFO_VALID,
-    KERNEL_SHARE_INFO_DIRTY
-  };
-
   // When the Directory is told to SaveChanges, a SaveChangesSnapshot is
   // constructed and forms a consistent snapshot of what needs to be sent to
   // the backing store.
@@ -127,21 +142,6 @@ class SYNC_EXPORT Directory {
     EntryKernelSet delete_journals;
     MetahandleSet delete_journals_to_purge;
   };
-
-  typedef std::vector<int64> ChildHandles;
-
-  // Be careful when using these hash_map containers.  According to the spec,
-  // inserting into them may invalidate all iterators.
-  //
-  // It gets worse, though.  The Anroid STL library has a bug that means it may
-  // invalidate all iterators when you erase from the map, too.  That means that
-  // you can't iterate while erasing.  STLDeleteElements(), std::remove_if(),
-  // and other similar functions are off-limits too, until this bug is fixed.
-  //
-  // See http://sourceforge.net/p/stlport/bugs/239/.
-  typedef base::hash_map<int64, EntryKernel*> MetahandlesMap;
-  typedef base::hash_map<std::string, EntryKernel*> IdsMap;
-  typedef base::hash_map<std::string, EntryKernel*> TagsMap;
 
   // Does not take ownership of |encryptor|.
   // |report_unrecoverable_error_function| may be NULL.
@@ -241,42 +241,17 @@ class SYNC_EXPORT Directory {
 
   DeleteJournal* delete_journal();
 
- protected:  // for friends, mainly used by Entry constructors
-  virtual EntryKernel* GetEntryByHandle(int64 handle);
-  virtual EntryKernel* GetEntryByHandle(int64 metahandle,
-      ScopedKernelLock* lock);
-  virtual EntryKernel* GetEntryById(const Id& id);
-  EntryKernel* GetEntryByServerTag(const std::string& tag);
-  virtual EntryKernel* GetEntryByClientTag(const std::string& tag);
-  EntryKernel* GetRootEntry();
-  bool ReindexId(WriteTransaction* trans, EntryKernel* const entry,
-                 const Id& new_id);
-  bool ReindexParentId(WriteTransaction* trans, EntryKernel* const entry,
-                       const Id& new_parent_id);
-  void ClearDirtyMetahandles();
-
-  DirOpenResult OpenImpl(
-      const std::string& name,
-      DirectoryChangeDelegate* delegate,
-      const WeakHandle<TransactionObserver>& transaction_observer);
-
- private:
-  // These private versions expect the kernel lock to already be held
-  // before calling.
-  EntryKernel* GetEntryById(const Id& id, ScopedKernelLock* const lock);
-
- public:
   // Returns the child meta handles (even those for deleted/unlinked
   // nodes) for given parent id.  Clears |result| if there are no
   // children.
   bool GetChildHandlesById(BaseTransaction*, const Id& parent_id,
-      ChildHandles* result);
+      Metahandles* result);
 
   // Returns the child meta handles (even those for deleted/unlinked
   // nodes) for given meta handle.  Clears |result| if there are no
   // children.
   bool GetChildHandlesByHandle(BaseTransaction*, int64 handle,
-      ChildHandles* result);
+      Metahandles* result);
 
   // Counts all items under the given node, including the node itself.
   int GetTotalNodeCount(BaseTransaction*, EntryKernel* kernel_) const;
@@ -330,9 +305,8 @@ class SYNC_EXPORT Directory {
   // Get GetUnsyncedMetaHandles should only be called after SaveChanges and
   // before any new entries have been created. The intention is that the
   // syncer should call it from its PerformSyncQueries member.
-  typedef std::vector<int64> UnsyncedMetaHandles;
   void GetUnsyncedMetaHandles(BaseTransaction* trans,
-                              UnsyncedMetaHandles* result);
+                              Metahandles* result);
 
   // Returns all server types with unapplied updates.  A subset of
   // those types can then be passed into
@@ -389,53 +363,21 @@ class SYNC_EXPORT Directory {
                                       ModelTypeSet types_to_journal,
                                       ModelTypeSet types_to_unapply);
 
- private:
-  // A helper that implements the logic of checking tree invariants.
-  bool CheckTreeInvariants(syncable::BaseTransaction* trans,
-                           const MetahandleSet& handles);
+ protected:  // for friends, mainly used by Entry constructors
+  virtual EntryKernel* GetEntryByHandle(int64 handle);
+  virtual EntryKernel* GetEntryByHandle(int64 metahandle,
+      ScopedKernelLock* lock);
+  virtual EntryKernel* GetEntryById(const Id& id);
+  EntryKernel* GetEntryByServerTag(const std::string& tag);
+  virtual EntryKernel* GetEntryByClientTag(const std::string& tag);
+  EntryKernel* GetRootEntry();
+  bool ReindexId(WriteTransaction* trans, EntryKernel* const entry,
+                 const Id& new_id);
+  bool ReindexParentId(WriteTransaction* trans, EntryKernel* const entry,
+                       const Id& new_parent_id);
+  void ClearDirtyMetahandles();
 
-  // Helper to prime metahandles_map, ids_map, parent_child_index,
-  // unsynced_metahandles, unapplied_update_metahandles, server_tags_map and
-  // client_tags_map from metahandles_index.  The input |handles_map| will be
-  // cleared during the initialization process.
-  void InitializeIndices(MetahandlesMap* handles_map);
-
-  // Constructs a consistent snapshot of the current Directory state and
-  // indices (by deep copy) under a ReadTransaction for use in |snapshot|.
-  // See SaveChanges() for more information.
-  void TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot);
-
-  // Purges from memory any unused, safe to remove entries that were
-  // successfully deleted on disk as a result of the SaveChanges that processed
-  // |snapshot|.  See SaveChanges() for more information.
-  bool VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot);
-
-  // Rolls back dirty bits in the event that the SaveChanges that
-  // processed |snapshot| failed, for example, due to no disk space.
-  void HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot);
-
-  // For new entry creation only
-  bool InsertEntry(WriteTransaction* trans,
-                   EntryKernel* entry, ScopedKernelLock* lock);
-  bool InsertEntry(WriteTransaction* trans, EntryKernel* entry);
-
-  // Used by CheckTreeInvariants
-  void GetAllMetaHandles(BaseTransaction* trans, MetahandleSet* result);
-  bool SafeToPurgeFromMemory(WriteTransaction* trans,
-                             const EntryKernel* const entry) const;
-
-  // A helper used by GetTotalNodeCount.
-  void GetChildSetForKernel(
-      BaseTransaction*,
-      EntryKernel* kernel_,
-      std::deque<const OrderedChildSet*>* child_sets) const;
-
-  Directory& operator = (const Directory&);
-
- protected:
-  // Used by tests. |delegate| must not be NULL.
-  // |transaction_observer| must be initialized.
-  void InitKernelForTest(
+  DirOpenResult OpenImpl(
       const std::string& name,
       DirectoryChangeDelegate* delegate,
       const WeakHandle<TransactionObserver>& transaction_observer);
@@ -529,10 +471,54 @@ class SYNC_EXPORT Directory {
     const WeakHandle<TransactionObserver> transaction_observer;
   };
 
+  // These private versions expect the kernel lock to already be held
+  // before calling.
+  EntryKernel* GetEntryById(const Id& id, ScopedKernelLock* const lock);
+
+  // A helper that implements the logic of checking tree invariants.
+  bool CheckTreeInvariants(syncable::BaseTransaction* trans,
+                           const MetahandleSet& handles);
+
+  // Helper to prime metahandles_map, ids_map, parent_child_index,
+  // unsynced_metahandles, unapplied_update_metahandles, server_tags_map and
+  // client_tags_map from metahandles_index.  The input |handles_map| will be
+  // cleared during the initialization process.
+  void InitializeIndices(MetahandlesMap* handles_map);
+
+  // Constructs a consistent snapshot of the current Directory state and
+  // indices (by deep copy) under a ReadTransaction for use in |snapshot|.
+  // See SaveChanges() for more information.
+  void TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot);
+
+  // Purges from memory any unused, safe to remove entries that were
+  // successfully deleted on disk as a result of the SaveChanges that processed
+  // |snapshot|.  See SaveChanges() for more information.
+  bool VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot);
+
+  // Rolls back dirty bits in the event that the SaveChanges that
+  // processed |snapshot| failed, for example, due to no disk space.
+  void HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot);
+
+  // For new entry creation only
+  bool InsertEntry(WriteTransaction* trans,
+                   EntryKernel* entry, ScopedKernelLock* lock);
+  bool InsertEntry(WriteTransaction* trans, EntryKernel* entry);
+
+  // Used by CheckTreeInvariants
+  void GetAllMetaHandles(BaseTransaction* trans, MetahandleSet* result);
+  bool SafeToPurgeFromMemory(WriteTransaction* trans,
+                             const EntryKernel* const entry) const;
+
+  // A helper used by GetTotalNodeCount.
+  void GetChildSetForKernel(
+      BaseTransaction*,
+      EntryKernel* kernel_,
+      std::deque<const OrderedChildSet*>* child_sets) const;
+
   // Append the handles of the children of |parent_id| to |result|.
   void AppendChildHandles(
       const ScopedKernelLock& lock,
-      const Id& parent_id, Directory::ChildHandles* result);
+      const Id& parent_id, Directory::Metahandles* result);
 
   // Helper methods used by PurgeDisabledTypes.
   void UnapplyEntry(EntryKernel* entry);
@@ -557,6 +543,8 @@ class SYNC_EXPORT Directory {
   // Maintain deleted entries not in |kernel_| until it's verified that they
   // are deleted in native models as well.
   scoped_ptr<DeleteJournal> delete_journal_;
+
+  DISALLOW_COPY_AND_ASSIGN(Directory);
 };
 
 }  // namespace syncable

@@ -45,22 +45,4 @@ MockDebugInfoGetter::MockDebugInfoGetter() {
 MockDebugInfoGetter::~MockDebugInfoGetter() {
 }
 
-MockDirectorySyncerCommandTest::MockDirectorySyncerCommandTest()
-    :mock_directory_(&handler_) {
-}
-
-MockDirectorySyncerCommandTest::~MockDirectorySyncerCommandTest() {
-}
-
-void MockDirectorySyncerCommandTest::SetUp() {
-  // The session always expects there to be a passive worker.
-  workers()->push_back(
-      make_scoped_refptr(new FakeModelWorker(GROUP_PASSIVE)));
-  ResetContext();
-}
-
-syncable::Directory* MockDirectorySyncerCommandTest::directory() {
-  return &mock_directory_;
-}
-
 }  // namespace syncer
