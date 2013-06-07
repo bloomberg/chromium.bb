@@ -1173,7 +1173,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     setPreferredLogicalWidthsDirty(false);
 }
 
-bool RenderText::isAllCollapsibleWhitespace()
+bool RenderText::isAllCollapsibleWhitespace() const
 {
     unsigned length = textLength();
     if (is8Bit()) {
