@@ -204,7 +204,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
       base::CancelableClosure timeout(
           base::Bind(&TimeoutCallback, "Extension load timed out."));
       base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE, timeout.callback(), base::TimeDelta::FromSeconds(4));
+          FROM_HERE, timeout.callback(), TestTimeouts::action_timeout());
       extensions::UnpackedInstaller::Create(service)->Load(path);
       content::RunMessageLoop();
       timeout.Cancel();
@@ -227,7 +227,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
     base::CancelableClosure timeout(
         base::Bind(&TimeoutCallback, "Extension host load timed out."));
     base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, timeout.callback(), base::TimeDelta::FromSeconds(4));
+        FROM_HERE, timeout.callback(), TestTimeouts::action_timeout());
 
     ExtensionProcessManager* manager =
         extensions::ExtensionSystem::Get(browser()->profile())->
