@@ -400,8 +400,10 @@ String ScriptElement::scriptContent() const
             firstTextNode = t;
     }
 
-    if (firstTextNode && !foundMultipleTextNodes)
+    if (firstTextNode && !foundMultipleTextNodes) {
+        firstTextNode->atomize();
         return firstTextNode->data();
+    }
 
     return content.toString();
 }

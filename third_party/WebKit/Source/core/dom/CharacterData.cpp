@@ -41,6 +41,11 @@ using namespace std;
 
 namespace WebCore {
 
+void CharacterData::atomize()
+{
+    m_data = AtomicString(m_data);
+}
+
 void CharacterData::setData(const String& data, ExceptionCode&)
 {
     const String& nonNullData = !data.isNull() ? data : emptyString();

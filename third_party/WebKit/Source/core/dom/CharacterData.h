@@ -30,6 +30,7 @@ namespace WebCore {
 
 class CharacterData : public Node {
 public:
+    void atomize();
     String data() const { return m_data; }
     void setData(const String&, ExceptionCode&);
     unsigned length() const { return m_data.length(); }
