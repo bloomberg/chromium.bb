@@ -1692,8 +1692,7 @@ def CMDpatch(parser, args):
   parser.add_option('-f', action='store_true', dest='force',
                     help='with -b, clobber any existing branch')
   parser.add_option('--reject', action='store_true', dest='reject',
-                    help='failed patches spew .rej files rather than '
-                        'attempting a 3-way merge')
+                    help='allow failed patches and spew .rej files')
   parser.add_option('-n', '--no-commit', action='store_true', dest='nocommit',
                     help="don't commit after patch applies")
   (options, args) = parser.parse_args(args)
@@ -1751,8 +1750,6 @@ def CMDpatch(parser, args):
   cmd = ['git', '--no-pager', 'apply', '--index', '-p0']
   if options.reject:
     cmd.append('--reject')
-  else:
-    cmd.append('--3way')
   try:
     subprocess2.check_call(cmd, stdin=patch_data, stdout=subprocess2.VOID)
   except subprocess2.CalledProcessError:
