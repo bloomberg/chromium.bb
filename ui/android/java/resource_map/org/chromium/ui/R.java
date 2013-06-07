@@ -43,4 +43,7 @@ public final class R {
         public static int color_picker_dialog_content;
         public static int color_picker_advanced_component;
     }
+    public static final class drawable {
+        public static int color_picker_advanced_select_handle;
+    }
 }
