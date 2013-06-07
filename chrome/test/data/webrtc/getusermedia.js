@@ -197,7 +197,7 @@ function displayVideoSize_(videoTag) {
  */
 function getUserMediaFailedCallback_(error) {
   debug('GetUserMedia FAILED: Maybe the camera is in use by another process?');
-  gRequestWebcamAndMicrophoneResult = 'failed-with-error-' + error.code;
+  gRequestWebcamAndMicrophoneResult = 'failed-with-error-' + error.name;
   debug(gRequestWebcamAndMicrophoneResult);
 }
 

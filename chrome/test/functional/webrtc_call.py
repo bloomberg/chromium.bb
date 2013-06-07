@@ -156,9 +156,9 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     self.AddUserMediaLocalStream(tab_index=0)
     self.EstablishCall(from_tab_with_index=0, to_tab_with_index=1)
 
-    self.assertEquals('failed-with-error-1',
+    self.assertEquals('failed-with-error-PERMISSION_DENIED',
                       self.GetUserMedia(tab_index=0, action='cancel'))
-    self.assertEquals('failed-with-error-1',
+    self.assertEquals('failed-with-error-PERMISSION_DENIED',
                       self.GetUserMedia(tab_index=0, action='dismiss'))
 
   def testMediaStreamTrackEnable(self):
