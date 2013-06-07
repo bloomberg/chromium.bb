@@ -54,6 +54,12 @@ struct gl_output_state {
 	pixman_region32_t buffer_damage[BUFFER_DAMAGE_COUNT];
 };
 
+enum buffer_type {
+	BUFFER_TYPE_NULL,
+	BUFFER_TYPE_SHM,
+	BUFFER_TYPE_EGL
+};
+
 struct gl_surface_state {
 	GLfloat color[4];
 	struct gl_shader *shader;
@@ -67,6 +73,7 @@ struct gl_surface_state {
 	int num_images;
 
 	struct weston_buffer_reference buffer_ref;
+	enum buffer_type buffer_type;
 	int pitch; /* in pixels */
 	int height; /* in pixels */
 };
@@ -1201,6 +1208,7 @@ gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 		gs->num_images = 0;
 		glDeleteTextures(gs->num_textures, gs->textures);
 		gs->num_textures = 0;
+		gs->buffer_type = BUFFER_TYPE_NULL;
 		return;
 	}
 
@@ -1211,15 +1219,15 @@ gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 		buffer->height = wl_shm_buffer_get_height(shm_buffer);
 
 		/* Only allocate a texture if it doesn't match existing one.
-		 * If gs->num_images is not 0, then a switch from DRM allocated
-		 * buffer to a SHM buffer is happening, and we need to allocate
-		 * a new texture buffer. */
+		 * If a switch from DRM allocated buffer to a SHM buffer is
+		 * happening, we need to allocate a new texture buffer. */
 		if (wl_shm_buffer_get_stride(shm_buffer) / 4 != gs->pitch ||
 		    buffer->height != gs->height ||
-		    gs->num_images > 0) {
+		    gs->buffer_type != BUFFER_TYPE_SHM) {
 			gs->pitch =  wl_shm_buffer_get_stride(shm_buffer) / 4;
 			gs->height = buffer->height;
 			gs->target = GL_TEXTURE_2D;
+			gs->buffer_type = BUFFER_TYPE_SHM;
 
 			ensure_textures(gs, 1);
 			glBindTexture(GL_TEXTURE_2D, gs->textures[0]);
@@ -1300,9 +1308,11 @@ gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 
 		gs->pitch = buffer->width;
 		gs->height = buffer->height;
+		gs->buffer_type = BUFFER_TYPE_EGL;
 	} else {
 		weston_log("unhandled buffer type!\n");
 		weston_buffer_reference(&gs->buffer_ref, NULL);
+		gs->buffer_type = BUFFER_TYPE_NULL;
 	}
 }
 
