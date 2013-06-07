@@ -1705,7 +1705,7 @@ class ValidationPool(object):
     msg = ('%(queue)s has picked up your change. '
            'You can follow along at %(build_log)s .')
     self.SendNotification(change, msg)
-    if self.pre_cq and status == status.STATUS_LAUNCHING:
+    if self.pre_cq and status == self.STATUS_LAUNCHING:
       self.UpdatePreCQStatus(change, self.STATUS_INFLIGHT)
 
   def _GetPreCQStatusURL(self, change):
