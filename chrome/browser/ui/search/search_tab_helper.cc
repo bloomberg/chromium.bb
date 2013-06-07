@@ -4,12 +4,14 @@
 
 #include "chrome/browser/ui/search/search_tab_helper.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SearchTabHelper);
 
@@ -28,6 +30,14 @@ bool IsNTP(const content::WebContents* contents) {
 
 bool IsSearchResults(const content::WebContents* contents) {
   return !chrome::GetSearchTerms(contents).empty();
+}
+
+// TODO(kmadhusu): Move this helper from anonymous namespace to chrome
+// namespace and remove InstantPage::IsLocal().
+bool IsLocal(const content::WebContents* contents) {
+  return contents &&
+      (contents->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl) ||
+       contents->GetURL() == GURL(chrome::kChromeSearchLocalGoogleNtpUrl));
 }
 
 }  // namespace
@@ -75,6 +85,13 @@ void SearchTabHelper::NavigationEntryUpdated() {
   UpdateMode();
 }
 
+void SearchTabHelper::InstantSupportChanged(bool supports_instant) {
+  if (!is_search_enabled_)
+    return;
+
+  model_.SetSupportsInstant(supports_instant);
+}
+
 void SearchTabHelper::Observe(
     int type,
     const content::NotificationSource& source,
@@ -90,9 +107,20 @@ bool SearchTabHelper::OnMessageReceived(const IPC::Message& message) {
                         OnSearchBoxShowBars)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxHideBars,
                         OnSearchBoxHideBars)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_InstantSupportDetermined,
+                        OnInstantSupportDetermined)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void SearchTabHelper::DidFinishLoad(
+    int64 /* frame_id */,
+    const GURL& /* validated_url */,
+    bool is_main_frame,
+    content::RenderViewHost* /* render_view_host */) {
+  if (is_main_frame)
+    DetermineIfPageSupportsInstant();
 }
 
 void SearchTabHelper::UpdateMode() {
@@ -117,10 +145,31 @@ void SearchTabHelper::UpdateMode() {
     // OmniboxEditModel::SetInputInProgress() which is called from
     // OmniboxEditModel::Revert().
     model_.SetState(SearchModel::State(SearchMode(type, origin),
-                                       model_.state().top_bars_visible));
+                                       model_.state().top_bars_visible,
+                                       model_.instant_support()));
   } else {
     model_.SetMode(SearchMode(type, origin));
   }
+}
+
+void SearchTabHelper::DetermineIfPageSupportsInstant() {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  if (!chrome::ShouldAssignURLToInstantRenderer(web_contents_->GetURL(),
+                                                profile)) {
+    InstantSupportChanged(false);
+  } else if (IsLocal(web_contents_)) {
+    // Local pages always support Instant.
+    InstantSupportChanged(true);
+  } else {
+    Send(new ChromeViewMsg_DetermineIfPageSupportsInstant(routing_id()));
+  }
+}
+
+void SearchTabHelper::OnInstantSupportDetermined(int page_id,
+                                                 bool supports_instant) {
+  if (web_contents()->IsActiveEntry(page_id))
+    InstantSupportChanged(supports_instant);
 }
 
 void SearchTabHelper::OnSearchBoxShowBars(int page_id) {

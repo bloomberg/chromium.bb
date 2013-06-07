@@ -5,6 +5,9 @@
 #include "chrome/browser/ui/search/instant_page.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/search/search.h"
+#include "chrome/browser/ui/search/search_model.h"
+#include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
@@ -19,6 +22,8 @@ InstantPage::Delegate::~Delegate() {
 }
 
 InstantPage::~InstantPage() {
+  if (contents())
+    GetSearchModel()->RemoveObserver(this);
 }
 
 bool InstantPage::supports_instant() const {
@@ -71,16 +76,6 @@ void InstantPage::InitializeFonts() {
       routing_id(), omnibox_font_name, omnibox_font_size));
 }
 
-void InstantPage::DetermineIfPageSupportsInstant() {
-  if (IsLocal()) {
-    // Local pages always support Instant. That's why we keep them around.
-    int page_id = contents()->GetController().GetActiveEntry()->GetPageID();
-    OnInstantSupportDetermined(page_id, true);
-  } else {
-    Send(new ChromeViewMsg_DetermineIfPageSupportsInstant(routing_id()));
-  }
-}
-
 void InstantPage::SendAutocompleteResults(
     const std::vector<InstantAutocompleteResult>& results) {
   Send(new ChromeViewMsg_SearchBoxAutocompleteResults(routing_id(), results));
@@ -129,12 +124,26 @@ void InstantPage::ToggleVoiceSearch() {
 InstantPage::InstantPage(Delegate* delegate, const std::string& instant_url)
     : delegate_(delegate),
       instant_url_(instant_url),
-      supports_instant_(false),
-      instant_support_determined_(false) {
+      supports_instant_(false) {
 }
 
 void InstantPage::SetContents(content::WebContents* contents) {
+  if (web_contents())
+    GetSearchModel()->RemoveObserver(this);
+
   Observe(contents);
+
+  if (!contents) {
+    supports_instant_ = false;
+    return;
+  }
+
+  SearchModel* model = GetSearchModel();
+  model->AddObserver(this);
+
+  // Already know whether the page supports instant.
+  if (model->instant_support() != INSTANT_SUPPORT_UNKNOWN)
+    SetSupportsInstant(model->instant_support() == INSTANT_SUPPORT_YES);
 }
 
 bool InstantPage::ShouldProcessRenderViewCreated() {
@@ -170,21 +179,10 @@ void InstantPage::RenderViewCreated(content::RenderViewHost* render_view_host) {
     delegate_->InstantPageRenderViewCreated(contents());
 }
 
-void InstantPage::DidFinishLoad(
-    int64 /* frame_id */,
-    const GURL& /* validated_url */,
-    bool is_main_frame,
-    content::RenderViewHost* /* render_view_host */) {
-  if (is_main_frame && !supports_instant_)
-    DetermineIfPageSupportsInstant();
-}
-
 bool InstantPage::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(InstantPage, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SetSuggestions, OnSetSuggestions)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_InstantSupportDetermined,
-                        OnInstantSupportDetermined)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ShowInstantOverlay,
                         OnShowInstantOverlay)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FocusOmnibox, OnFocusOmnibox)
@@ -237,33 +235,41 @@ void InstantPage::DidFailProvisionalLoad(
     delegate_->InstantPageLoadFailed(contents());
 }
 
+void InstantPage::ModelChanged(const SearchModel::State& old_state,
+                               const SearchModel::State& new_state) {
+  if (old_state.instant_support != new_state.instant_support)
+    SetSupportsInstant(new_state.instant_support == INSTANT_SUPPORT_YES);
+}
+
+SearchModel* InstantPage::GetSearchModel() {
+  return contents() ?
+      SearchTabHelper::FromWebContents(contents())->model() : NULL;
+}
+
+void InstantPage::SetSupportsInstant(bool supports_instant) {
+  // Nothing to do if the page already supports Instant.
+  if (supports_instant_)
+    return;
+
+  supports_instant_ = supports_instant;
+  delegate_->InstantSupportDetermined(contents(), supports_instant);
+
+  // If the page doesn't support Instant, stop listening to it.
+  if (!supports_instant)
+    SetContents(NULL);
+}
+
 void InstantPage::OnSetSuggestions(
     int page_id,
     const std::vector<InstantSuggestion>& suggestions) {
   if (!contents()->IsActiveEntry(page_id))
     return;
 
-  OnInstantSupportDetermined(page_id, true);
+  SearchTabHelper::FromWebContents(contents())->InstantSupportChanged(true);
   if (!ShouldProcessSetSuggestions())
     return;
 
   delegate_->SetSuggestions(contents(), suggestions);
-}
-
-void InstantPage::OnInstantSupportDetermined(int page_id,
-                                             bool supports_instant) {
-  if (!contents()->IsActiveEntry(page_id) || supports_instant_) {
-    // Nothing to do if the page already supports Instant.
-    return;
-  }
-
-  instant_support_determined_ = true;
-  supports_instant_ = supports_instant;
-  delegate_->InstantSupportDetermined(contents(), supports_instant);
-
-  // If the page doesn't support Instant, stop listening to it.
-  if (!supports_instant)
-    Observe(NULL);
 }
 
 void InstantPage::OnShowInstantOverlay(int page_id,
@@ -272,7 +278,7 @@ void InstantPage::OnShowInstantOverlay(int page_id,
   if (!contents()->IsActiveEntry(page_id))
     return;
 
-  OnInstantSupportDetermined(page_id, true);
+  SearchTabHelper::FromWebContents(contents())->InstantSupportChanged(true);
   delegate_->LogDropdownShown();
   if (!ShouldProcessShowInstantOverlay())
     return;
@@ -284,7 +290,7 @@ void InstantPage::OnFocusOmnibox(int page_id, OmniboxFocusState state) {
   if (!contents()->IsActiveEntry(page_id))
     return;
 
-  OnInstantSupportDetermined(page_id, true);
+  SearchTabHelper::FromWebContents(contents())->InstantSupportChanged(true);
   if (!ShouldProcessFocusOmnibox())
     return;
 
@@ -299,7 +305,7 @@ void InstantPage::OnSearchBoxNavigate(int page_id,
   if (!contents()->IsActiveEntry(page_id))
     return;
 
-  OnInstantSupportDetermined(page_id, true);
+  SearchTabHelper::FromWebContents(contents())->InstantSupportChanged(true);
   if (!ShouldProcessNavigateToURL())
     return;
 
@@ -308,13 +314,19 @@ void InstantPage::OnSearchBoxNavigate(int page_id,
 }
 
 void InstantPage::OnDeleteMostVisitedItem(const GURL& url) {
+  // TODO(kmadhusu): Call delegate_->DeleteMostVisitedItem() only if the message
+  // is for the active entry and if the page should process the message.
   delegate_->DeleteMostVisitedItem(url);
 }
 
 void InstantPage::OnUndoMostVisitedDeletion(const GURL& url) {
+  // TODO(kmadhusu): Call delegate_->UndoMostVisitedDeletion() only if the
+  // message is for the active entry and if the page should process the message.
   delegate_->UndoMostVisitedDeletion(url);
 }
 
 void InstantPage::OnUndoAllMostVisitedDeletions() {
+  // TODO(kmadhusu): Call delegate_->UndoAllMostVisitedDeletions() only if the
+  // message is for the active entry and if the page should process the message.
   delegate_->UndoAllMostVisitedDeletions();
 }

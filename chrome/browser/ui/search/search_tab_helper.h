@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -16,6 +17,8 @@
 namespace content {
 class WebContents;
 }
+
+class InstantPageTest;
 
 // Per-tab search "helper".  Acts as the owner and controller of the tab's
 // search UI model.
@@ -42,8 +45,19 @@ class SearchTabHelper : public content::NotificationObserver,
   // the notification system and shouldn't call this method.
   void NavigationEntryUpdated();
 
+  // Invoked to update the Instant support state.
+  void InstantSupportChanged(bool supports_instant);
+
  private:
   friend class content::WebContentsUserData<SearchTabHelper>;
+  friend class InstantPageTest;
+  FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
+                           DetermineIfPageSupportsInstant_Local);
+  FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
+                           DetermineIfPageSupportsInstant_NonLocal);
+  FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
+                           PageURLDoesntBelongToInstantRenderer);
+  FRIEND_TEST_ALL_PREFIXES(InstantPageTest, PageSupportsInstant);
 
   explicit SearchTabHelper(content::WebContents* web_contents);
 
@@ -54,9 +68,22 @@ class SearchTabHelper : public content::NotificationObserver,
 
   // Overridden from contents::WebContentsObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void DidFinishLoad(
+      int64 frame_id,
+      const GURL& validated_url,
+      bool is_main_frame,
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
   // Sets the mode of the model based on the current URL of web_contents().
   void UpdateMode();
+
+  // Tells the renderer to determine if the page supports the Instant API, which
+  // results in a call to OnInstantSupportDetermined() when the reply
+  // is received.
+  void DetermineIfPageSupportsInstant();
+
+  // Handler for when Instant support has been determined.
+  void OnInstantSupportDetermined(int page_id, bool supports_instant);
 
   // Handlers for SearchBox API to show and hide top bars (bookmark and info
   // bars).
