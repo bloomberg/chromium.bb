@@ -149,22 +149,9 @@ void InputMethodIBus::ProcessKeyEventDone(uint32 id,
 
   if (it == pending_key_events_.end())
     return;  // Abandoned key event.
-
-  if (event->type == KeyPress) {
-    if (is_handled) {
-      // IME event has a priority to be handled, so that character composer
-      // should be reset.
-      character_composer_.Reset();
-    } else {
-      // If IME does not handle key event, passes keyevent to character composer
-      // to be able to compose complex characters.
-      is_handled = ExecuteCharacterComposer(ibus_keyval, ibus_keycode,
-                                            ibus_state);
-    }
-  }
-
   if (event->type == KeyPress || event->type == KeyRelease)
-    ProcessKeyEventPostIME(event, ibus_keyval, is_handled);
+    ProcessKeyEventPostIME(event, ibus_keyval, ibus_keycode, ibus_state,
+                           is_handled);
 
   // Do not use |it| for erasing, ProcessKeyEventPostIME may change the
   // |pending_key_events_|.
@@ -192,17 +179,11 @@ bool InputMethodIBus::DispatchKeyEvent(const base::NativeEvent& native_event) {
       GetTextInputType() == TEXT_INPUT_TYPE_PASSWORD ||
       !GetInputContextClient() ||
       GetInputContextClient()->IsXKBLayout()) {
-    if (native_event->type == KeyPress) {
-      if (ExecuteCharacterComposer(ibus_keyval, ibus_keycode, ibus_state)) {
-        // Treating as PostIME event if character composer handles key event and
-        // generates some IME event,
-        ProcessKeyEventPostIME(native_event, ibus_state, true);
-        return true;
-      }
-      ProcessUnfilteredKeyPressEvent(native_event, ibus_state);
-    } else {
+    if (native_event->type == KeyPress)
+      ProcessUnfilteredKeyPressEvent(native_event,
+                                     ibus_keyval, ibus_keycode, ibus_state);
+    else
       DispatchKeyEventPostIME(native_event);
-    }
     return true;
   }
 
@@ -239,7 +220,7 @@ bool InputMethodIBus::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
   // TODO(bryeung): The fabricated events should also pass through IME.
   if (event.type() == ET_KEY_PRESSED) {
     ProcessUnfilteredFabricatedKeyPressEvent(
-        ET_KEY_PRESSED, event.key_code(), event.flags());
+        ET_KEY_PRESSED, event.key_code(), event.flags(), 0, 0);
   } else {
     DispatchFabricatedKeyEventPostIME(
         ET_KEY_RELEASED,
@@ -479,6 +460,8 @@ void InputMethodIBus::UpdateContextFocusState() {
 
 void InputMethodIBus::ProcessKeyEventPostIME(
     const base::NativeEvent& native_event,
+    uint32 ibus_keyval,
+    uint32 ibus_keycode,
     uint32 ibus_state,
     bool handled) {
   TextInputClient* client = GetTextInputClient();
@@ -507,7 +490,8 @@ void InputMethodIBus::ProcessKeyEventPostIME(
     return;
 
   if (native_event->type == KeyPress && !handled)
-    ProcessUnfilteredKeyPressEvent(native_event, ibus_state);
+    ProcessUnfilteredKeyPressEvent(native_event,
+                                   ibus_keyval, ibus_keycode, ibus_state);
   else if (native_event->type == KeyRelease)
     DispatchKeyEventPostIME(native_event);
 }
@@ -544,6 +528,8 @@ void InputMethodIBus::ProcessFilteredKeyPressEvent(
 
 void InputMethodIBus::ProcessUnfilteredKeyPressEvent(
     const base::NativeEvent& native_event,
+    uint32 ibus_keyval,
+    uint32 ibus_keycode,
     uint32 ibus_state) {
   // For a fabricated event, ProcessUnfilteredFabricatedKeyPressEvent should be
   // called instead.
@@ -563,6 +549,11 @@ void InputMethodIBus::ProcessUnfilteredKeyPressEvent(
     return;
 
   const uint32 event_flags = EventFlagsFromXState(ibus_state);
+
+  // Process compose and dead keys
+  if (ProcessUnfilteredKeyPressEventWithCharacterComposer(
+          ibus_keyval, ibus_keycode, event_flags))
+    return;
 
   // If a key event was not filtered by |context_| and |character_composer_|,
   // then it means the key event didn't generate any result text. So we need
@@ -584,17 +575,57 @@ void InputMethodIBus::ProcessUnfilteredKeyPressEvent(
 void InputMethodIBus::ProcessUnfilteredFabricatedKeyPressEvent(
     EventType type,
     KeyboardCode key_code,
-    int event_flags) {
+    int event_flags,
+    uint32 ibus_keyval,
+    uint32 ibus_keycode) {
   TextInputClient* client = GetTextInputClient();
   DispatchFabricatedKeyEventPostIME(type, key_code, event_flags);
 
   if (client != GetTextInputClient())
     return;
 
+  if (ProcessUnfilteredKeyPressEventWithCharacterComposer(
+          ibus_keyval, ibus_keycode, event_flags))
+    return;
+
   client = GetTextInputClient();
   const uint16 ch = ui::GetCharacterFromKeyCode(key_code, event_flags);
   if (client && ch)
     client->InsertChar(ch, event_flags);
+}
+
+bool InputMethodIBus::ProcessUnfilteredKeyPressEventWithCharacterComposer(
+    uint32 ibus_keyval,
+    uint32 ibus_keycode,
+    int event_flags) {
+  // We don't filter key presses for inappropriate input types.
+  const TextInputType text_input_type = GetTextInputType();
+  if (text_input_type == TEXT_INPUT_TYPE_NONE ||
+      text_input_type == TEXT_INPUT_TYPE_PASSWORD)
+    return false;
+
+  // Do nothing if the key press is not filtered by our composer.
+  if (!character_composer_.FilterKeyPress(ibus_keyval, ibus_keycode,
+                                          event_flags))
+    return false;
+
+  TextInputClient* client = GetTextInputClient();
+  if (!client) // Do nothing if we cannot get the client.
+    return true;
+
+  // Insert composed character.
+  const string16 composed = character_composer_.composed_character();
+  if (!composed.empty()) {
+    if (composed.size() == 1) {
+      client->InsertChar(composed[0], event_flags);
+    } else {
+      CompositionText composition;
+      composition.text = composed;
+      client->SetCompositionText(composition);
+      client->ConfirmCompositionText();
+    }
+  }
+  return true;
 }
 
 void InputMethodIBus::ProcessInputMethodResult(
@@ -697,8 +728,8 @@ void InputMethodIBus::ForwardKeyEvent(uint32 keyval,
   // calling ProcessKeyEventPostIME(), which will clear pending input method
   // results.
   if (event_type == ET_KEY_PRESSED) {
-    ProcessUnfilteredFabricatedKeyPressEvent(event_type, ui_key_code,
-                                             event_flags);
+    ProcessUnfilteredFabricatedKeyPressEvent(
+        event_type, ui_key_code, event_flags, keyval, keycode);
   } else {
     DispatchFabricatedKeyEventPostIME(event_type, ui_key_code, event_flags);
   }
@@ -716,6 +747,9 @@ void InputMethodIBus::UpdatePreeditText(const chromeos::IBusText& text,
                                         bool visible) {
   if (suppress_next_result_ || IsTextInputTypeNone())
     return;
+
+  // Preedit update means there is a working IME, discard our composer's state.
+  character_composer_.Reset();
 
   // |visible| argument is very confusing. For example, what's the correct
   // behavior when:
@@ -836,30 +870,6 @@ bool InputMethodIBus::IsContextReady() {
   if (!GetInputContextClient())
     return false;
   return GetInputContextClient()->IsObjectProxyReady();
-}
-
-bool InputMethodIBus::ExecuteCharacterComposer(uint32 ibus_keyval,
-                                               uint32 ibus_keycode,
-                                               uint32 ibus_state) {
-  if (!character_composer_.FilterKeyPress(ibus_keyval,
-                                          ibus_keycode,
-                                          EventFlagsFromXState(ibus_state))) {
-    return false;
-  }
-  suppress_next_result_ = false;
-  chromeos::IBusText preedit;
-  preedit.set_text(
-      UTF16ToUTF8(character_composer_.preedit_string()));
-  UpdatePreeditText(preedit, preedit.text().size(),
-                    !preedit.text().empty());
-   std::string commit_text =
-      UTF16ToUTF8(character_composer_.composed_character());
-  if (!commit_text.empty()) {
-    chromeos::IBusText ibus_text;
-    ibus_text.set_text(commit_text);
-    CommitText(ibus_text);
-  }
-  return true;
 }
 
 void InputMethodIBus::OnConnected() {
