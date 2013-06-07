@@ -180,9 +180,11 @@
     "extension_types": ["extension", "platform_app"]
   },
   "enterprise.platformKeysPrivate": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["extension", "packaged_app"],
     "whitelist": [
+      "inmdanhiiibfpdlljnjjbchhjgelojnn",  // Dogfood
+      "cbpmgnfekbgbgpkmokfppmldaccjcbnb"   // Test
     ]
   },
   "experimental": {
