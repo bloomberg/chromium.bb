@@ -256,7 +256,7 @@
     "extension_types": ["extension", "packaged_app"],
     "inplies_full_url_access": true
   },
-  "inputMethodPrivate": {
+  "inputMethodPrivate": [{
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"],
     "whitelist": [
@@ -264,10 +264,13 @@
       "gnedhmakppccajfpfiihfcdlnpgomkcf",  // Citrix Receiver Beta
       "fjcibdnjlbfnbfdjneajpipnlcppleek",  // Citrix Receiver Dev
       "pnhechapfaindjhompbnflcldabbghjo",  // HTerm
-      "okddffdblfhhnmhodogpojmfkjmhinfp",  // HTerm dev
-      "fpfbhcjppmaeaijcidgiibchfbnhbelj"  // Google Japanese Input
+      "okddffdblfhhnmhodogpojmfkjmhinfp"  // HTerm dev
     ]
-  },
+  },{
+    "channel": "stable",
+    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "location": "component"
+  }],
   "location": [
     {
       "channel": "dev",
