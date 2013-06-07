@@ -7198,21 +7198,6 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN7fileapi29SandboxMountPointProviderTest11GetRootPathERK4GURLNS_14FileSystemTypeEbPN4base8FilePathE
 }
 {
-   bug_244105
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3ash8internal22MirrorWindowController12UpdateWindowERKNS0_11DisplayInfoE
-   fun:_ZN3ash8internal12_GLOBAL__N_119MirrorWindowCreatorD0Ev
-   fun:_ZNK4base14DefaultDeleterIN3ash8internal12_GLOBAL__N_119MirrorWindowUpdaterEEclEPS4_
-   fun:_ZN4base8internal15scoped_ptr_implIN3ash8internal12_GLOBAL__N_119MirrorWindowUpdaterENS_14DefaultDeleterIS5_EEED1Ev
-   fun:_ZN10scoped_ptrIN3ash8internal12_GLOBAL__N_119MirrorWindowUpdaterEN4base14DefaultDeleterIS3_EEED1Ev
-   fun:_ZN3ash8internal14DisplayManager14UpdateDisplaysERKSt6vectorINS0_11DisplayInfoESaIS3_EE
-   fun:_ZN3ash8internal14DisplayManager23OnNativeDisplaysChangedERKSt6vectorINS0_11DisplayInfoESaIS3_EE
-   fun:_ZN3ash4test21DisplayManagerTestApi13UpdateDisplayERKSs
-   fun:_ZN3ash4test11AshTestBase13UpdateDisplayERKSs
-   fun:_ZN3ash8internal44MirrorWindowControllerTest_MirrorCursor_Test8TestBodyEv
-}
-{
    bug_245714
    Memcheck:Leak
    fun:_Znw*

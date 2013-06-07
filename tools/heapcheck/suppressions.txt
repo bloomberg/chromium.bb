@@ -1756,21 +1756,6 @@
    fun:fileapi::SandboxMountPointProviderTest::GetRootPath
 }
 {
-   bug_244105
-   Heapcheck:Leak
-   fun:ash::internal::MirrorWindowController::UpdateWindow
-   fun:~MirrorWindowCreator
-   fun:~MirrorWindowCreator
-   fun:operator
-   fun:~scoped_ptr_impl
-   fun:~scoped_ptr
-   fun:ash::internal::DisplayManager::UpdateDisplays
-   fun:ash::internal::DisplayManager::OnNativeDisplaysChanged
-   fun:ash::test::DisplayManagerTestApi::UpdateDisplay
-   fun:ash::test::AshTestBase::UpdateDisplay
-   fun:ash::internal::MirrorWindowControllerTest_MirrorCursor_Test::TestBody
-}
-{
    bug_246560a
    Heapcheck:Leak
    ...
