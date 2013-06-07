@@ -363,6 +363,47 @@ void V8InjectedScriptHost::setFunctionVariableValueMethodCustom(const v8::Functi
     v8SetReturnValue(args, debugServer.setFunctionVariableValue(functionValue, scopeIndex, variableName, newValue));
 }
 
+static bool getFunctionLocation(const v8::FunctionCallbackInfo<v8::Value>& args, String* scriptId, int* lineNumber, int* columnNumber)
+{
+    if (args.Length() < 1)
+        return false;
+    v8::Handle<v8::Value> fn = args[0];
+    if (!fn->IsFunction())
+        return false;
+    v8::HandleScope handleScope;
+    v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(fn);
+    *lineNumber = function->GetScriptLineNumber();
+    *columnNumber = function->GetScriptColumnNumber();
+    if (*lineNumber == v8::Function::kLineOffsetNotFound || *columnNumber == v8::Function::kLineOffsetNotFound)
+        return false;
+    *scriptId = toWebCoreStringWithUndefinedOrNullCheck(function->GetScriptId());
+    return true;
+}
+
+void V8InjectedScriptHost::setBreakpointMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    String scriptId;
+    int lineNumber;
+    int columnNumber;
+    if (!getFunctionLocation(args, &scriptId, &lineNumber, &columnNumber))
+        return;
+
+    InjectedScriptHost* host = V8InjectedScriptHost::toNative(args.Holder());
+    host->setBreakpoint(scriptId, lineNumber, columnNumber);
+}
+
+void V8InjectedScriptHost::removeBreakpointMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    String scriptId;
+    int lineNumber;
+    int columnNumber;
+    if (!getFunctionLocation(args, &scriptId, &lineNumber, &columnNumber))
+        return;
+
+    InjectedScriptHost* host = V8InjectedScriptHost::toNative(args.Holder());
+    host->removeBreakpoint(scriptId, lineNumber, columnNumber);
+}
+
 
 } // namespace WebCore
 

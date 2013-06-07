@@ -146,6 +146,15 @@ ScriptDebugServer& InjectedScriptHost::scriptDebugServer()
     return m_debuggerAgent->scriptDebugServer();
 }
 
+void InjectedScriptHost::setBreakpoint(const String& scriptId, int lineNumber, int columnNumber)
+{
+    m_debuggerAgent->setBreakpoint(scriptId, lineNumber, columnNumber, InspectorDebuggerAgent::DebugCommandBreakpointSource);
+}
+
+void InjectedScriptHost::removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber)
+{
+    m_debuggerAgent->removeBreakpoint(scriptId, lineNumber, columnNumber, InspectorDebuggerAgent::DebugCommandBreakpointSource);
+}
 
 } // namespace WebCore
 

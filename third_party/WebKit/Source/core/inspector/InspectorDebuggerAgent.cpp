@@ -63,6 +63,12 @@ static const char pauseOnExceptionsState[] = "pauseOnExceptionsState";
 
 const char* InspectorDebuggerAgent::backtraceObjectGroup = "backtrace";
 
+static String generateBreakpointId(const String& scriptId, int lineNumber, int columnNumber, InspectorDebuggerAgent::BreakpointSource source)
+{
+    return scriptId + ':' + String::number(lineNumber) + ':' + String::number(columnNumber) +
+        (source == InspectorDebuggerAgent::UserBreakpointSource ? String() : String(":debug"));
+}
+
 InspectorDebuggerAgent::InspectorDebuggerAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* inspectorState, InjectedScriptManager* injectedScriptManager)
     : InspectorBaseAgent<InspectorDebuggerAgent>("Debugger", instrumentingAgents, inspectorState)
     , m_injectedScriptManager(injectedScriptManager)
@@ -243,7 +249,7 @@ void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString, int li
     for (ScriptsMap::iterator it = m_scripts.begin(); it != m_scripts.end(); ++it) {
         if (!matches(it->value.url, url, isRegex))
             continue;
-        RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(breakpointId, it->key, breakpoint);
+        RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(breakpointId, it->key, breakpoint, UserBreakpointSource);
         if (location)
             locations->addItem(location);
     }
@@ -273,13 +279,13 @@ void InspectorDebuggerAgent::setBreakpoint(ErrorString* errorString, const RefPt
 
     String condition = optionalCondition ? *optionalCondition : emptyString();
 
-    String breakpointId = scriptId + ':' + String::number(lineNumber) + ':' + String::number(columnNumber);
+    String breakpointId = generateBreakpointId(scriptId, lineNumber, columnNumber, UserBreakpointSource);
     if (m_breakpointIdToDebugServerBreakpointIds.find(breakpointId) != m_breakpointIdToDebugServerBreakpointIds.end()) {
         *errorString = "Breakpoint at specified location already exists.";
         return;
     }
     ScriptBreakpoint breakpoint(lineNumber, columnNumber, condition);
-    actualLocation = resolveBreakpoint(breakpointId, scriptId, breakpoint);
+    actualLocation = resolveBreakpoint(breakpointId, scriptId, breakpoint, UserBreakpointSource);
     if (actualLocation)
         *outBreakpointId = breakpointId;
     else
@@ -292,12 +298,18 @@ void InspectorDebuggerAgent::removeBreakpoint(ErrorString*, const String& breakp
     breakpointsCookie->remove(breakpointId);
     m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, breakpointsCookie);
 
+    removeBreakpoint(breakpointId);
+}
+
+void InspectorDebuggerAgent::removeBreakpoint(const String& breakpointId)
+{
     BreakpointIdToDebugServerBreakpointIdsMap::iterator debugServerBreakpointIdsIterator = m_breakpointIdToDebugServerBreakpointIds.find(breakpointId);
     if (debugServerBreakpointIdsIterator == m_breakpointIdToDebugServerBreakpointIds.end())
         return;
     for (size_t i = 0; i < debugServerBreakpointIdsIterator->value.size(); ++i) {
-        scriptDebugServer().removeBreakpoint(debugServerBreakpointIdsIterator->value[i]);
-        m_serverBreakpointIdToBreakpointId.remove(debugServerBreakpointIdsIterator->value[i]);
+        const String& debugServerBreakpointId = debugServerBreakpointIdsIterator->value[i];
+        scriptDebugServer().removeBreakpoint(debugServerBreakpointId);
+        m_serverBreakpoints.remove(debugServerBreakpointId);
     }
     m_breakpointIdToDebugServerBreakpointIds.remove(debugServerBreakpointIdsIterator);
 }
@@ -321,7 +333,7 @@ void InspectorDebuggerAgent::continueToLocation(ErrorString* errorString, const 
     resume(errorString);
 }
 
-PassRefPtr<TypeBuilder::Debugger::Location> InspectorDebuggerAgent::resolveBreakpoint(const String& breakpointId, const String& scriptId, const ScriptBreakpoint& breakpoint)
+PassRefPtr<TypeBuilder::Debugger::Location> InspectorDebuggerAgent::resolveBreakpoint(const String& breakpointId, const String& scriptId, const ScriptBreakpoint& breakpoint, BreakpointSource source)
 {
     ScriptsMap::iterator scriptIterator = m_scripts.find(scriptId);
     if (scriptIterator == m_scripts.end())
@@ -336,7 +348,7 @@ PassRefPtr<TypeBuilder::Debugger::Location> InspectorDebuggerAgent::resolveBreak
     if (debugServerBreakpointId.isEmpty())
         return 0;
 
-    m_serverBreakpointIdToBreakpointId.set(debugServerBreakpointId, breakpointId);
+    m_serverBreakpoints.set(debugServerBreakpointId, std::make_pair(breakpointId, source));
 
     BreakpointIdToDebugServerBreakpointIdsMap::iterator debugServerBreakpointIdsIterator = m_breakpointIdToDebugServerBreakpointIds.find(breakpointId);
     if (debugServerBreakpointIdsIterator == m_breakpointIdToDebugServerBreakpointIds.end())
@@ -694,7 +706,7 @@ void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script
         breakpointObject->getNumber("lineNumber", &breakpoint.lineNumber);
         breakpointObject->getNumber("columnNumber", &breakpoint.columnNumber);
         breakpointObject->getString("condition", &breakpoint.condition);
-        RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(it->key, scriptId, breakpoint);
+        RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(it->key, scriptId, breakpoint, UserBreakpointSource);
         if (location)
             m_frontend->breakpointResolved(it->key, location);
     }
@@ -723,9 +735,15 @@ void InspectorDebuggerAgent::didPause(ScriptState* scriptState, const ScriptValu
     RefPtr<Array<String> > hitBreakpointIds = Array<String>::create();
 
     for (Vector<String>::const_iterator i = hitBreakpoints.begin(); i != hitBreakpoints.end(); ++i) {
-        DebugServerBreakpointIdToBreakpointIdMap::iterator breakpointIterator = m_serverBreakpointIdToBreakpointId.find(*i);
-        if (breakpointIterator != m_serverBreakpointIdToBreakpointId.end())
-            hitBreakpointIds->addItem(breakpointIterator->value);
+        DebugServerBreakpointToBreakpointIdAndSourceMap::iterator breakpointIterator = m_serverBreakpoints.find(*i);
+        if (breakpointIterator != m_serverBreakpoints.end()) {
+            const String& localId = breakpointIterator->value.first;
+            hitBreakpointIds->addItem(localId);
+
+            BreakpointSource source = breakpointIterator->value.second;
+            if (m_breakReason == InspectorFrontend::Debugger::Reason::Other && source == DebugCommandBreakpointSource)
+                m_breakReason = InspectorFrontend::Debugger::Reason::DebugCommand;
+        }
     }
 
     m_frontend->paused(currentCallFrames(), m_breakReason, m_breakAuxData, hitBreakpointIds);
@@ -803,6 +821,18 @@ void ScriptDebugListener::Script::reportMemoryUsage(MemoryObjectInfo* memoryObje
     info.addMember(url, "url");
     info.addMember(source, "source");
     info.addMember(sourceMappingURL, "sourceMappingURL");
+}
+
+void InspectorDebuggerAgent::setBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource source)
+{
+    String breakpointId = generateBreakpointId(scriptId, lineNumber, columnNumber, source);
+    ScriptBreakpoint breakpoint(lineNumber, columnNumber, String());
+    resolveBreakpoint(breakpointId, scriptId, breakpoint, source);
+}
+
+void InspectorDebuggerAgent::removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource source)
+{
+    removeBreakpoint(generateBreakpointId(scriptId, lineNumber, columnNumber, source));
 }
 
 void InspectorDebuggerAgent::reset()

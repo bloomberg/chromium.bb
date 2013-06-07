@@ -92,6 +92,14 @@ InjectedScriptHost.prototype.getEventListeners = function(object) { }
  * @param {string} expression
  */
 InjectedScriptHost.prototype.evaluate = function(expression) { }
+/**
+ * @param {*} fn
+ */
+InjectedScriptHost.prototype.setBreakpoint = function(fn) { }
+/**
+ * @param {*} fn
+ */
+InjectedScriptHost.prototype.removeBreakpoint = function(fn) { }
 
 /**
  * @param {function(...)} fun

@@ -1153,7 +1153,8 @@ function CommandLineAPI(commandLineAPIImpl, callFrame)
  */
 CommandLineAPI.members_ = [
     "$", "$$", "$x", "dir", "dirxml", "keys", "values", "profile", "profileEnd",
-    "monitorEvents", "unmonitorEvents", "inspect", "copy", "clear", "getEventListeners", "table"
+    "monitorEvents", "unmonitorEvents", "inspect", "copy", "clear", "getEventListeners",
+    "debug", "undebug", "table"
 ];
 
 /**
@@ -1308,6 +1309,16 @@ CommandLineAPIImpl.prototype = {
     getEventListeners: function(node)
     {
         return InjectedScriptHost.getEventListeners(node);
+    },
+
+    debug: function(fn)
+    {
+        InjectedScriptHost.setBreakpoint(fn);
+    },
+
+    undebug: function(fn)
+    {
+        InjectedScriptHost.removeBreakpoint(fn);
     },
 
     table: function()

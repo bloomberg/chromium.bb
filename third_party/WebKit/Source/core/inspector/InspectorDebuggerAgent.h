@@ -64,6 +64,11 @@ typedef String ErrorString;
 class InspectorDebuggerAgent : public InspectorBaseAgent<InspectorDebuggerAgent>, public ScriptDebugListener, public InspectorBackendDispatcher::DebuggerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDebuggerAgent); WTF_MAKE_FAST_ALLOCATED;
 public:
+    enum BreakpointSource {
+        UserBreakpointSource,
+        DebugCommandBreakpointSource
+    };
+
     static const char* backtraceObjectGroup;
 
     virtual ~InspectorDebuggerAgent();
@@ -135,6 +140,9 @@ public:
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const;
 
+    void setBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource);
+    void removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource);
+
 protected:
     InspectorDebuggerAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*);
 
@@ -165,7 +173,8 @@ private:
 
     void setPauseOnExceptionsImpl(ErrorString*, int);
 
-    PassRefPtr<TypeBuilder::Debugger::Location> resolveBreakpoint(const String& breakpointId, const String& scriptId, const ScriptBreakpoint&);
+    PassRefPtr<TypeBuilder::Debugger::Location> resolveBreakpoint(const String& breakpointId, const String& scriptId, const ScriptBreakpoint&, BreakpointSource);
+    void removeBreakpoint(const String& breakpointId);
     void clear();
     bool assertPaused(ErrorString*);
     void clearBreakDetails();
@@ -174,7 +183,7 @@ private:
 
     typedef HashMap<String, Script> ScriptsMap;
     typedef HashMap<String, Vector<String> > BreakpointIdToDebugServerBreakpointIdsMap;
-    typedef HashMap<String, String> DebugServerBreakpointIdToBreakpointIdMap;
+    typedef HashMap<String, std::pair<String, BreakpointSource> > DebugServerBreakpointToBreakpointIdAndSourceMap;
 
     InjectedScriptManager* m_injectedScriptManager;
     InspectorFrontend::Debugger* m_frontend;
@@ -182,7 +191,7 @@ private:
     ScriptValue m_currentCallStack;
     ScriptsMap m_scripts;
     BreakpointIdToDebugServerBreakpointIdsMap m_breakpointIdToDebugServerBreakpointIds;
-    DebugServerBreakpointIdToBreakpointIdMap m_serverBreakpointIdToBreakpointId;
+    DebugServerBreakpointToBreakpointIdAndSourceMap m_serverBreakpoints;
     String m_continueToLocationBreakpointId;
     InspectorFrontend::Debugger::Reason::Enum m_breakReason;
     RefPtr<InspectorObject> m_breakAuxData;

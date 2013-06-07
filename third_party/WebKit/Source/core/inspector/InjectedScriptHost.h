@@ -106,6 +106,8 @@ public:
     void copyText(const String& text);
     String databaseIdImpl(Database*);
     String storageIdImpl(Storage*);
+    void setBreakpoint(const String& scriptId, int lineNumber, int columnNumber);
+    void removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber);
 
     ScriptDebugServer& scriptDebugServer();
 
