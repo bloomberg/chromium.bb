@@ -16,7 +16,7 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/shortcut.h"
 #include "chrome/browser/app_icon_win.h"
 #include "chrome/browser/browser_process.h"

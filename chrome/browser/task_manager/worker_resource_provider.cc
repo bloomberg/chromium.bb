@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/resource_provider.h"

@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/json/json_reader.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/spellchecker/spellcheck_action.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -16,7 +16,7 @@
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/session_startup_pref.h"

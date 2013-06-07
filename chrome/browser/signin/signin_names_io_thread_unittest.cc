@@ -4,7 +4,7 @@
 
 #include "base/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_names_io_thread.h"

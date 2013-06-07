@@ -6,7 +6,7 @@
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/browser/webdata/autofill_table.h"
 #include "components/autofill/browser/webdata/autofill_webdata_service.h"
 #include "components/webdata/common/web_database.h"

@@ -4,7 +4,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
 
 namespace browser_sync {

@@ -10,7 +10,7 @@
 #include "base/message_loop.h"
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sync_file_system/drive/fake_api_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/fake_remote_change_processor.h"

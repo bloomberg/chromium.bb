@@ -8,7 +8,7 @@
 
 #include "base/location.h"
 #include "base/stl_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "content/public/common/password_form.h"

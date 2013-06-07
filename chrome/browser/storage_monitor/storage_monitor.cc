@@ -5,7 +5,7 @@
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 
 #include "base/stl_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/storage_monitor/removable_storage_observer.h"
 #include "chrome/browser/storage_monitor/transient_device_ids.h"
 

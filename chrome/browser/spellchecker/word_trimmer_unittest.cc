@@ -4,7 +4,7 @@
 
 #include "chrome/browser/spellchecker/word_trimmer.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(WordTrimmerTest, TrimWordsEmptyText) {

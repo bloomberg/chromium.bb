@@ -4,7 +4,7 @@
 
 #include "chrome/browser/task_manager/task_manager.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"

@@ -17,8 +17,8 @@
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
-#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/policy/policy_load_status.h"
 

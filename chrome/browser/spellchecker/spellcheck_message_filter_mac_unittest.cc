@@ -4,7 +4,7 @@
 
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
 #include "content/public/browser/browser_thread.h"

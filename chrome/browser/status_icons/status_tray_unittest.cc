@@ -4,7 +4,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -8,7 +8,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/memory/singleton.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "jni/TtsPlatformImpl_jni.h"
 

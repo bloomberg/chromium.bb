@@ -13,7 +13,7 @@
 #include "base/file_util.h"
 #include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/pepper/device_id_fetcher.h"
