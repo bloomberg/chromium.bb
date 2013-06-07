@@ -32,9 +32,6 @@ MessageCenterTrayBridge::MessageCenterTrayBridge(
       tray_(new message_center::MessageCenterTray(this, message_center)),
       updates_pending_(false),
       weak_ptr_factory_(this) {
-  tray_controller_.reset(
-      [[MCTrayController alloc] initWithMessageCenterTray:tray_.get()]);
-
   NSStatusBar* status_bar = [NSStatusBar systemStatusBar];
   status_item_view_.reset(
       [[MCStatusItemView alloc] initWithStatusItem:
@@ -74,6 +71,11 @@ void MessageCenterTrayBridge::UpdatePopups() {
 }
 
 bool MessageCenterTrayBridge::ShowMessageCenter() {
+  if (!tray_controller_) {
+    tray_controller_.reset(
+        [[MCTrayController alloc] initWithMessageCenterTray:tray_.get()]);
+  }
+
   if (updates_pending_) {
     [tray_controller_ onMessageCenterTrayChanged];
     UpdateStatusItem();
