@@ -41,6 +41,15 @@ void MessageCenterImpl::SetMessageCenterVisible(bool visible) {
     FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
                       OnNotificationUpdated(*iter));
   }
+
+  if (!visible) {
+    FOR_EACH_OBSERVER(
+        MessageCenterObserver, observer_list_, OnNotificationCenterClosed());
+  }
+}
+
+bool MessageCenterImpl::IsMessageCenterVisible() {
+  return notification_list_->is_message_center_visible();
 }
 
 size_t MessageCenterImpl::NotificationCount() const {

@@ -124,4 +124,8 @@ void FakeMessageCenter::EnterQuietModeWithExpire(
 void FakeMessageCenter::SetMessageCenterVisible(bool visible) {
 }
 
+bool FakeMessageCenter::IsMessageCenterVisible() {
+  return false;
+}
+
 }  // namespace message_center

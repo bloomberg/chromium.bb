@@ -24,6 +24,7 @@ class MessageCenterImpl : public MessageCenter {
   virtual void AddObserver(MessageCenterObserver* observer) OVERRIDE;
   virtual void RemoveObserver(MessageCenterObserver* observer) OVERRIDE;
   virtual void SetMessageCenterVisible(bool visible) OVERRIDE;
+  virtual bool IsMessageCenterVisible() OVERRIDE;
   virtual size_t NotificationCount() const OVERRIDE;
   virtual size_t UnreadNotificationCount() const OVERRIDE;
   virtual bool HasPopupNotifications() const OVERRIDE;

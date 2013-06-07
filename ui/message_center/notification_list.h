@@ -126,6 +126,7 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   const Notifications& GetNotifications();
   size_t NotificationCount() const;
   size_t unread_count() const { return unread_count_; }
+  bool is_message_center_visible() const { return message_center_visible_; }
 
  private:
   friend class test::NotificationListTest;

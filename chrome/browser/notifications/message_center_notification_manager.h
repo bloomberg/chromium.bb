@@ -58,6 +58,7 @@ class MessageCenterNotificationManager
   // MessageCenterObserver
   virtual void OnNotificationRemoved(const std::string& notification_id,
                                      bool by_user) OVERRIDE;
+  virtual void OnNotificationCenterClosed() OVERRIDE;
 
  private:
   class ImageDownloadsObserver {

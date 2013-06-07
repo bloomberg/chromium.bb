@@ -133,7 +133,12 @@ void MessageCenterNotificationManager::CancelAll() {
 
 bool MessageCenterNotificationManager::ShowNotification(
     const Notification& notification, Profile* profile) {
-  // There is always space in MessageCenter, it never rejects Notifications.
+  if (message_center_->IsMessageCenterVisible())
+    return false;
+
+  if (UpdateNotification(notification, profile))
+    return true;
+
   AddProfileNotification(
       new ProfileNotification(profile, notification, message_center_));
   return true;
@@ -141,8 +146,13 @@ bool MessageCenterNotificationManager::ShowNotification(
 
 bool MessageCenterNotificationManager::UpdateNotification(
     const Notification& notification, Profile* profile) {
+  if (message_center_->IsMessageCenterVisible())
+    return false;
+
   const string16& replace_id = notification.replace_id();
-  DCHECK(!replace_id.empty());
+  if (replace_id.empty())
+    return false;
+
   const GURL origin_url = notification.origin_url();
   DCHECK(origin_url.is_valid());
 
@@ -264,6 +274,12 @@ void MessageCenterNotificationManager::OnNotificationRemoved(
       profile_notifications_.find(notification_id);
   if (iter != profile_notifications_.end())
     RemoveProfileNotification(iter->second, by_user);
+}
+
+void MessageCenterNotificationManager::OnNotificationCenterClosed() {
+  // When the center is open it halts all notifications, so we need to listen
+  // for events indicating it's been closed.
+  CheckAndShowNotifications();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -138,6 +138,9 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   // This affects whether or not a message has been "read".
   virtual void SetMessageCenterVisible(bool visible) = 0;
 
+  // Allows querying the visibility of the center.
+  virtual bool IsMessageCenterVisible() = 0;
+
  protected:
   MessageCenter();
   virtual ~MessageCenter();
