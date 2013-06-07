@@ -10,7 +10,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test_utils.h"
-#include "content/test/layout_browsertest.h"
 
 // TODO(wolenetz): Fix Media.YUV* tests on MSVS 2012 x64. crbug.com/180074
 #if defined(OS_WIN) && defined(ARCH_CPU_X86_64) && _MSC_VER == 1700
@@ -191,30 +190,6 @@ IN_PROC_BROWSER_TEST_F(MediaTest, Navigate) {
 
 INSTANTIATE_TEST_CASE_P(File, MediaTest, ::testing::Values(false));
 INSTANTIATE_TEST_CASE_P(Http, MediaTest, ::testing::Values(true));
-
-class MediaLayoutTest : public InProcessBrowserLayoutTest {
- protected:
-  MediaLayoutTest() : InProcessBrowserLayoutTest(
-      base::FilePath(), base::FilePath().AppendASCII("media")) {
-  }
-  virtual ~MediaLayoutTest() {}
-};
-
-// Each browser test can only correspond to a single layout test, otherwise the
-// 45 second timeout per test is not long enough for N tests on debug/asan/etc
-// builds.
-
-IN_PROC_BROWSER_TEST_F(MediaLayoutTest, VideoAutoplayTest) {
-  RunLayoutTest("video-autoplay.html");
-}
-
-IN_PROC_BROWSER_TEST_F(MediaLayoutTest, VideoLoopTest) {
-  RunLayoutTest("video-loop.html");
-}
-
-IN_PROC_BROWSER_TEST_F(MediaLayoutTest, VideoNoAutoplayTest) {
-  RunLayoutTest("video-no-autoplay.html");
-}
 
 IN_PROC_BROWSER_TEST_F(MediaTest, MAYBE(Yuv420pTheora)) {
   RunColorFormatTest("yuv420p.ogv", "ENDED");

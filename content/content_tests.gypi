@@ -778,7 +778,6 @@
             'browser/gpu/webgl_conformance_test_list_autogen.h',
             'browser/in_process_webkit/indexed_db_browsertest.cc',
             'browser/loader/resource_dispatcher_host_browsertest.cc',
-            'browser/media/audio_browsertest.cc',
             'browser/media/encrypted_media_browsertest.cc',
             'browser/media/media_browsertest.cc',
             'browser/media/media_browsertest.h',
