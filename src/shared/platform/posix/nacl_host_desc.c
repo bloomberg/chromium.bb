@@ -246,7 +246,7 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
                      int                  flags,
                      int                  mode) {
   int host_desc;
-  struct stat stbuf;
+  nacl_host_stat_t stbuf;
   int posix_flags;
 
   NaClLog(3, "NaClHostDescOpen(0x%08"NACL_PRIxPTR", %s, 0x%x, 0x%x)\n",
@@ -274,6 +274,9 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
   }
 
   posix_flags = NaClMapOpenFlags(flags);
+#if NACL_LINUX
+  posix_flags |= O_LARGEFILE;
+#endif
   mode = NaClMapOpenPerm(mode);
 
   NaClLog(3, "NaClHostDescOpen: invoking POSIX open(%s,0x%x,0%o)\n",
@@ -284,7 +287,13 @@ int NaClHostDescOpen(struct NaClHostDesc  *d,
     NaClLog(2, "NaClHostDescOpen: open returned -1, errno %d\n", errno);
     return -NaClXlateErrno(errno);
   }
-  if (-1 == fstat(host_desc, &stbuf)) {
+  if (-1 ==
+#if NACL_LINUX
+      fstat64(host_desc, &stbuf)
+#else
+      fstat(host_desc, &stbuf)
+#endif
+      ) {
     NaClLog(LOG_ERROR,
             "NaClHostDescOpen: fstat failed?!?  errno %d\n", errno);
     (void) close(host_desc);

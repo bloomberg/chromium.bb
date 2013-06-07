@@ -147,8 +147,8 @@ nacl_host_dir_test_exe = env.ComponentProgram('nacl_host_dir_test',
 # wants to create a file the name of which is the original with
 # '.svn-base' appended.
 
-def MakeTempDir():
-  temporary_dir = tempfile.mkdtemp()
+def MakeTempDir(dir=None):
+  temporary_dir = tempfile.mkdtemp(dir=dir)
   def Cleanup():
     try:
       shutil.rmtree(temporary_dir)
@@ -226,5 +226,40 @@ node = env.CommandTest('nacl_host_desc_pread_pwrite_test.out',
 
 env.AddNodeToTestSuite(node, ['small_tests'],
                        'run_nacl_host_desc_pread_pwrite_test')
+
+nacl_host_desc_big_file_nexe = env.ComponentProgram(
+  'nacl_host_desc_big_file_test',
+  ['nacl_host_desc_big_file_test.c'],
+  EXTRA_LIBS=['platform'])
+
+d = os.path.join(str(env.Dir('${TARGET_ROOT}')), 'large_temporary_files')
+try:
+  os.makedirs(d)  # if scons-out is missing, MakeTempDir would fail
+except:
+  pass  # but the directory may already exist.
+
+if env.Bit('mac') or env.Bit('windows'):
+  # OSX's HFS has no support for sparse files, so we generate a lot of
+  # disk I/O and this is expensive.  On Windows, NTFS support sparse
+  # files, but ReFs does not.  (We don't run on VFAT, so we can ignore
+  # that case.)  Whether this is an expensive test depends on the
+  # filesystem type, so we err on the side of caution.
+  test_size = 'large'
+else:
+  # On Linux, sparse file support at the filesystem level means that
+  # the test is fast -- cost is proportional to actual number of bytes
+  # written.
+  test_size = 'small'
+
+node = env.CommandTest(
+  'nacl_host_desc_big_file_test.out',
+  [nacl_host_desc_big_file_nexe, '-t', MakeTempDir(dir=d)],
+  size=test_size)
+
+env.AddNodeToTestSuite(node,
+                       [test_size + '_tests'],
+                       'run_nacl_host_desc_big_file_test',
+                       is_broken=env.UsingEmulator())
+# Qemu appears to not honor big file support and fails the lseek w/ EINVAL
 
 env.EnsureRequiredBuildWarnings()
