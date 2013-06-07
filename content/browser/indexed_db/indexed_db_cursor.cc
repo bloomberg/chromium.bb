@@ -2,54 +2,54 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/indexed_db_cursor_impl.h"
+#include "content/browser/indexed_db/indexed_db_cursor.h"
 
 #include "base/logging.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
+#include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
-#include "content/browser/indexed_db/indexed_db_database_impl.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
 
 namespace content {
 
-class IndexedDBCursorImpl::CursorIterationOperation
+class IndexedDBCursor::CursorIterationOperation
     : public IndexedDBTransaction::Operation {
  public:
-  CursorIterationOperation(scoped_refptr<IndexedDBCursorImpl> cursor,
+  CursorIterationOperation(scoped_refptr<IndexedDBCursor> cursor,
                            scoped_ptr<IndexedDBKey> key,
                            scoped_refptr<IndexedDBCallbacksWrapper> callbacks)
       : cursor_(cursor), key_(key.Pass()), callbacks_(callbacks) {}
   virtual void Perform(IndexedDBTransaction* transaction) OVERRIDE;
 
  private:
-  scoped_refptr<IndexedDBCursorImpl> cursor_;
+  scoped_refptr<IndexedDBCursor> cursor_;
   scoped_ptr<IndexedDBKey> key_;
   scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
 };
 
-class IndexedDBCursorImpl::CursorAdvanceOperation
+class IndexedDBCursor::CursorAdvanceOperation
     : public IndexedDBTransaction::Operation {
  public:
-  CursorAdvanceOperation(scoped_refptr<IndexedDBCursorImpl> cursor,
+  CursorAdvanceOperation(scoped_refptr<IndexedDBCursor> cursor,
                          uint32 count,
                          scoped_refptr<IndexedDBCallbacksWrapper> callbacks)
       : cursor_(cursor), count_(count), callbacks_(callbacks) {}
   virtual void Perform(IndexedDBTransaction* transaction) OVERRIDE;
 
  private:
-  scoped_refptr<IndexedDBCursorImpl> cursor_;
+  scoped_refptr<IndexedDBCursor> cursor_;
   uint32 count_;
   scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
 };
 
-class IndexedDBCursorImpl::CursorPrefetchIterationOperation
+class IndexedDBCursor::CursorPrefetchIterationOperation
     : public IndexedDBTransaction::Operation {
  public:
   CursorPrefetchIterationOperation(
-      scoped_refptr<IndexedDBCursorImpl> cursor,
+      scoped_refptr<IndexedDBCursor> cursor,
       int number_to_fetch,
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks)
       : cursor_(cursor),
@@ -58,12 +58,12 @@ class IndexedDBCursorImpl::CursorPrefetchIterationOperation
   virtual void Perform(IndexedDBTransaction* transaction) OVERRIDE;
 
  private:
-  scoped_refptr<IndexedDBCursorImpl> cursor_;
+  scoped_refptr<IndexedDBCursor> cursor_;
   int number_to_fetch_;
   scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
 };
 
-IndexedDBCursorImpl::IndexedDBCursorImpl(
+IndexedDBCursor::IndexedDBCursor(
     scoped_ptr<IndexedDBBackingStore::Cursor> cursor,
     indexed_db::CursorType cursor_type,
     IndexedDBDatabase::TaskType task_type,
@@ -76,29 +76,29 @@ IndexedDBCursorImpl::IndexedDBCursorImpl(
   transaction_->RegisterOpenCursor(this);
 }
 
-IndexedDBCursorImpl::~IndexedDBCursorImpl() {
+IndexedDBCursor::~IndexedDBCursor() {
   transaction_->UnregisterOpenCursor(this);
 }
 
-void IndexedDBCursorImpl::ContinueFunction(
+void IndexedDBCursor::ContinueFunction(
     scoped_ptr<IndexedDBKey> key,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
-  IDB_TRACE("IndexedDBCursorImpl::continue");
+  IDB_TRACE("IndexedDBCursor::continue");
 
   transaction_->ScheduleTask(
       task_type_, new CursorIterationOperation(this, key.Pass(), callbacks));
 }
 
-void IndexedDBCursorImpl::Advance(
+void IndexedDBCursor::Advance(
     uint32 count,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
-  IDB_TRACE("IndexedDBCursorImpl::advance");
+  IDB_TRACE("IndexedDBCursor::advance");
 
   transaction_->ScheduleTask(
       new CursorAdvanceOperation(this, count, callbacks));
 }
 
-void IndexedDBCursorImpl::CursorAdvanceOperation::Perform(
+void IndexedDBCursor::CursorAdvanceOperation::Perform(
     IndexedDBTransaction* /*transaction*/) {
   IDB_TRACE("CursorAdvanceOperation");
   if (!cursor_->cursor_ || !cursor_->cursor_->Advance(count_)) {
@@ -111,7 +111,7 @@ void IndexedDBCursorImpl::CursorAdvanceOperation::Perform(
       cursor_->key(), cursor_->primary_key(), cursor_->Value());
 }
 
-void IndexedDBCursorImpl::CursorIterationOperation::Perform(
+void IndexedDBCursor::CursorIterationOperation::Perform(
     IndexedDBTransaction* /*transaction*/) {
   IDB_TRACE("CursorIterationOperation");
   if (!cursor_->cursor_ || !cursor_->cursor_->ContinueFunction(key_.get())) {
@@ -124,17 +124,17 @@ void IndexedDBCursorImpl::CursorIterationOperation::Perform(
       cursor_->key(), cursor_->primary_key(), cursor_->Value());
 }
 
-void IndexedDBCursorImpl::PrefetchContinue(
+void IndexedDBCursor::PrefetchContinue(
     int number_to_fetch,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
-  IDB_TRACE("IndexedDBCursorImpl::prefetch_continue");
+  IDB_TRACE("IndexedDBCursor::prefetch_continue");
 
   transaction_->ScheduleTask(
       task_type_,
       new CursorPrefetchIterationOperation(this, number_to_fetch, callbacks));
 }
 
-void IndexedDBCursorImpl::CursorPrefetchIterationOperation::Perform(
+void IndexedDBCursor::CursorPrefetchIterationOperation::Perform(
     IndexedDBTransaction* /*transaction*/) {
   IDB_TRACE("CursorPrefetchIterationOperation");
 
@@ -186,8 +186,8 @@ void IndexedDBCursorImpl::CursorPrefetchIterationOperation::Perform(
       found_keys, found_primary_keys, found_values);
 }
 
-void IndexedDBCursorImpl::PrefetchReset(int used_prefetches, int) {
-  IDB_TRACE("IndexedDBCursorImpl::prefetch_reset");
+void IndexedDBCursor::PrefetchReset(int used_prefetches, int) {
+  IDB_TRACE("IndexedDBCursor::prefetch_reset");
   cursor_.swap(saved_cursor_);
   saved_cursor_.reset();
 
@@ -201,8 +201,8 @@ void IndexedDBCursorImpl::PrefetchReset(int used_prefetches, int) {
   }
 }
 
-void IndexedDBCursorImpl::Close() {
-  IDB_TRACE("IndexedDBCursorImpl::close");
+void IndexedDBCursor::Close() {
+  IDB_TRACE("IndexedDBCursor::close");
   closed_ = true;
   cursor_.reset();
   saved_cursor_.reset();

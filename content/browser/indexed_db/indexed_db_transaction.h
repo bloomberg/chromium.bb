@@ -20,8 +20,8 @@
 
 namespace content {
 
-class IndexedDBDatabaseImpl;
-class IndexedDBCursorImpl;
+class IndexedDBDatabase;
+class IndexedDBCursor;
 class IndexedDBDatabaseCallbacksWrapper;
 
 class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
@@ -31,7 +31,7 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
       scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks,
       const std::vector<int64>& scope,
       indexed_db::TransactionMode,
-      IndexedDBDatabaseImpl* db);
+      IndexedDBDatabase* db);
 
   virtual void Abort();
   void Commit();
@@ -53,8 +53,8 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
   void ScheduleTask(IndexedDBDatabase::TaskType,
                     Operation* task,
                     Operation* abort_task = NULL);
-  void RegisterOpenCursor(IndexedDBCursorImpl* cursor);
-  void UnregisterOpenCursor(IndexedDBCursorImpl* cursor);
+  void RegisterOpenCursor(IndexedDBCursor* cursor);
+  void UnregisterOpenCursor(IndexedDBCursor* cursor);
   void AddPreemptiveEvent() { pending_preemptive_events_++; }
   void DidCompletePreemptiveEvent() {
     pending_preemptive_events_--;
@@ -65,7 +65,7 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
   }
   int64 id() const { return id_; }
 
-  IndexedDBDatabaseImpl* database() const { return database_.get(); }
+  IndexedDBDatabase* database() const { return database_.get(); }
   IndexedDBDatabaseCallbacksWrapper* connection() const {
     return callbacks_.get();
   }
@@ -80,7 +80,7 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
       scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks,
       const std::set<int64>& object_store_ids,
       indexed_db::TransactionMode,
-      IndexedDBDatabaseImpl* db);
+      IndexedDBDatabase* db);
 
   enum State {
     UNUSED,         // Created, but no tasks yet.
@@ -105,7 +105,7 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
   State state_;
   bool commit_pending_;
   scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks_;
-  scoped_refptr<IndexedDBDatabaseImpl> database_;
+  scoped_refptr<IndexedDBDatabase> database_;
 
   class TaskQueue {
    public:
@@ -142,7 +142,7 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
   base::OneShotTimer<IndexedDBTransaction> task_timer_;
   int pending_preemptive_events_;
 
-  std::set<IndexedDBCursorImpl*> open_cursors_;
+  std::set<IndexedDBCursor*> open_cursors_;
 };
 
 }  // namespace content

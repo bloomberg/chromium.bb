@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
-#include "content/browser/indexed_db/indexed_db_factory_impl.h"
+#include "content/browser/indexed_db/indexed_db_factory.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseCallbacks.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
 #include "webkit/base/file_path_string_conversions.h"
@@ -20,7 +20,7 @@ using WebKit::WebString;
 namespace content {
 
 WebIDBFactoryImpl::WebIDBFactoryImpl()
-    : idb_factory_backend_(IndexedDBFactoryImpl::Create()) {}
+    : idb_factory_backend_(IndexedDBFactory::Create()) {}
 
 WebIDBFactoryImpl::~WebIDBFactoryImpl() {}
 

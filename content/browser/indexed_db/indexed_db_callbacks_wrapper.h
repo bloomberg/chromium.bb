@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
@@ -24,7 +23,10 @@ class WebIDBCallbacks;
 
 namespace content {
 class IndexedDBCursor;
+class IndexedDBDatabase;
+class IndexedDBDatabaseCallbacksWrapper;
 class WebIDBDatabaseImpl;
+struct IndexedDBDatabaseMetadata;
 
 class CONTENT_EXPORT IndexedDBCallbacksWrapper
     : public base::RefCounted<IndexedDBCallbacksWrapper> {

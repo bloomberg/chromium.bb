@@ -8,9 +8,9 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
-#include "content/browser/indexed_db/indexed_db_cursor_impl.h"
+#include "content/browser/indexed_db/indexed_db_cursor.h"
+#include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks_wrapper.h"
-#include "content/browser/indexed_db/indexed_db_database_impl.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
@@ -54,7 +54,7 @@ scoped_refptr<IndexedDBTransaction> IndexedDBTransaction::Create(
     scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks,
     const std::vector<int64>& object_store_ids,
     indexed_db::TransactionMode mode,
-    IndexedDBDatabaseImpl* database) {
+    IndexedDBDatabase* database) {
   std::set<int64> object_store_hash_set;
   for (size_t i = 0; i < object_store_ids.size(); ++i)
     object_store_hash_set.insert(object_store_ids[i]);
@@ -68,7 +68,7 @@ IndexedDBTransaction::IndexedDBTransaction(
     scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks,
     const std::set<int64>& object_store_ids,
     indexed_db::TransactionMode mode,
-    IndexedDBDatabaseImpl* database)
+    IndexedDBDatabase* database)
     : id_(id),
       object_store_ids_(object_store_ids),
       mode_(mode),
@@ -176,11 +176,11 @@ bool IndexedDBTransaction::HasPendingTasks() const {
   return pending_preemptive_events_ || !IsTaskQueueEmpty();
 }
 
-void IndexedDBTransaction::RegisterOpenCursor(IndexedDBCursorImpl* cursor) {
+void IndexedDBTransaction::RegisterOpenCursor(IndexedDBCursor* cursor) {
   open_cursors_.insert(cursor);
 }
 
-void IndexedDBTransaction::UnregisterOpenCursor(IndexedDBCursorImpl* cursor) {
+void IndexedDBTransaction::UnregisterOpenCursor(IndexedDBCursor* cursor) {
   open_cursors_.erase(cursor);
 }
 
@@ -296,7 +296,7 @@ void IndexedDBTransaction::TaskTimerFired() {
 }
 
 void IndexedDBTransaction::CloseOpenCursors() {
-  for (std::set<IndexedDBCursorImpl*>::iterator i = open_cursors_.begin();
+  for (std::set<IndexedDBCursor*>::iterator i = open_cursors_.begin();
        i != open_cursors_.end();
        ++i)
     (*i)->Close();

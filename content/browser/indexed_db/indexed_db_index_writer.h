@@ -11,13 +11,13 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
-#include "content/browser/indexed_db/indexed_db_database_impl.h"
+#include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 
 namespace content {
 
-class IndexedDBDatabaseImpl;
+class IndexedDBDatabase;
 class IndexedDBTransaction;
 struct IndexedDBObjectStoreMetadata;
 

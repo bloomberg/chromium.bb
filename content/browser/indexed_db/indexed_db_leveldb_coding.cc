@@ -1554,7 +1554,7 @@ int64 IndexFreeListKey::IndexId() const {
 }
 
 // TODO(jsbell): We never use this to look up object store ids,
-// because a mapping is kept in the IndexedDBDatabaseImpl. Can the
+// because a mapping is kept in the IndexedDBDatabase. Can the
 // mapping become unreliable?  Can we remove this?
 const char* ObjectStoreNamesKey::Decode(const char* start,
                                         const char* limit,

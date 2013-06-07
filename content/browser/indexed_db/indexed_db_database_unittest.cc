@@ -14,8 +14,8 @@
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
-#include "content/browser/indexed_db/indexed_db_database_impl.h"
-#include "content/browser/indexed_db/indexed_db_factory_impl.h"
+#include "content/browser/indexed_db/indexed_db_database.h"
+#include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/webidbdatabase_impl.h"
@@ -31,9 +31,9 @@ TEST(IndexedDBDatabaseTest, BackingStoreRetention) {
       new IndexedDBFakeBackingStore();
   EXPECT_TRUE(backing_store->HasOneRef());
 
-  IndexedDBFactoryImpl* factory = 0;
-  scoped_refptr<IndexedDBDatabaseImpl> db =
-      IndexedDBDatabaseImpl::Create(ASCIIToUTF16("db"),
+  IndexedDBFactory* factory = 0;
+  scoped_refptr<IndexedDBDatabase> db =
+      IndexedDBDatabase::Create(ASCIIToUTF16("db"),
                                     backing_store.get(),
                                     factory,
                                     ASCIIToUTF16("uniqueid"));
@@ -101,9 +101,9 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
       new IndexedDBFakeBackingStore();
   EXPECT_TRUE(backing_store->HasOneRef());  // local
 
-  IndexedDBFactoryImpl* factory = 0;
-  scoped_refptr<IndexedDBDatabaseImpl> db =
-      IndexedDBDatabaseImpl::Create(ASCIIToUTF16("db"),
+  IndexedDBFactory* factory = 0;
+  scoped_refptr<IndexedDBDatabase> db =
+      IndexedDBDatabase::Create(ASCIIToUTF16("db"),
                                     backing_store.get(),
                                     factory,
                                     ASCIIToUTF16("uniqueid"));
@@ -191,9 +191,9 @@ TEST(IndexedDBDatabaseTest, ForcedClose) {
       new IndexedDBFakeBackingStore();
   EXPECT_TRUE(backing_store->HasOneRef());
 
-  IndexedDBFactoryImpl* factory = 0;
-  scoped_refptr<IndexedDBDatabaseImpl> backend =
-      IndexedDBDatabaseImpl::Create(ASCIIToUTF16("db"),
+  IndexedDBFactory* factory = 0;
+  scoped_refptr<IndexedDBDatabase> backend =
+      IndexedDBDatabase::Create(ASCIIToUTF16("db"),
                                     backing_store.get(),
                                     factory,
                                     ASCIIToUTF16("uniqueid"));

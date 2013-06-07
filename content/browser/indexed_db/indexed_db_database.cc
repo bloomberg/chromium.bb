@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/indexed_db_database_impl.h"
+#include "content/browser/indexed_db/indexed_db_database.h"
 
 #include <math.h>
 #include <vector>
@@ -13,8 +13,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
-#include "content/browser/indexed_db/indexed_db_cursor_impl.h"
-#include "content/browser/indexed_db/indexed_db_factory_impl.h"
+#include "content/browser/indexed_db/indexed_db_cursor.h"
+#include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_index_writer.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
@@ -55,11 +55,11 @@ class DeleteObjectStoreOperation : public IndexedDBTransaction::Operation {
   const IndexedDBObjectStoreMetadata object_store_metadata_;
 };
 
-class IndexedDBDatabaseImpl::VersionChangeOperation
+class IndexedDBDatabase::VersionChangeOperation
     : public IndexedDBTransaction::Operation {
  public:
   VersionChangeOperation(
-      scoped_refptr<IndexedDBDatabaseImpl> database,
+      scoped_refptr<IndexedDBDatabase> database,
       int64 transaction_id,
       int64 version,
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
@@ -72,7 +72,7 @@ class IndexedDBDatabaseImpl::VersionChangeOperation
   virtual void Perform(IndexedDBTransaction* transaction) OVERRIDE;
 
  private:
-  scoped_refptr<IndexedDBDatabaseImpl> database_;
+  scoped_refptr<IndexedDBDatabase> database_;
   int64 transaction_id_;
   int64 version_;
   scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
@@ -81,33 +81,33 @@ class IndexedDBDatabaseImpl::VersionChangeOperation
 
 class CreateObjectStoreAbortOperation : public IndexedDBTransaction::Operation {
  public:
-  CreateObjectStoreAbortOperation(scoped_refptr<IndexedDBDatabaseImpl> database,
+  CreateObjectStoreAbortOperation(scoped_refptr<IndexedDBDatabase> database,
                                   int64 object_store_id)
       : database_(database), object_store_id_(object_store_id) {}
   virtual void Perform(IndexedDBTransaction* transaction) OVERRIDE;
 
  private:
-  const scoped_refptr<IndexedDBDatabaseImpl> database_;
+  const scoped_refptr<IndexedDBDatabase> database_;
   const int64 object_store_id_;
 };
 
 class DeleteObjectStoreAbortOperation : public IndexedDBTransaction::Operation {
  public:
   DeleteObjectStoreAbortOperation(
-      scoped_refptr<IndexedDBDatabaseImpl> database,
+      scoped_refptr<IndexedDBDatabase> database,
       const IndexedDBObjectStoreMetadata& object_store_metadata)
       : database_(database), object_store_metadata_(object_store_metadata) {}
   virtual void Perform(IndexedDBTransaction* transaction) OVERRIDE;
 
  private:
-  scoped_refptr<IndexedDBDatabaseImpl> database_;
+  scoped_refptr<IndexedDBDatabase> database_;
   IndexedDBObjectStoreMetadata object_store_metadata_;
 };
 
-class IndexedDBDatabaseImpl::VersionChangeAbortOperation
+class IndexedDBDatabase::VersionChangeAbortOperation
     : public IndexedDBTransaction::Operation {
  public:
-  VersionChangeAbortOperation(scoped_refptr<IndexedDBDatabaseImpl> database,
+  VersionChangeAbortOperation(scoped_refptr<IndexedDBDatabase> database,
                               const string16& previous_version,
                               int64 previous_int_version)
       : database_(database),
@@ -116,7 +116,7 @@ class IndexedDBDatabaseImpl::VersionChangeAbortOperation
   virtual void Perform(IndexedDBTransaction* transaction) OVERRIDE;
 
  private:
-  scoped_refptr<IndexedDBDatabaseImpl> database_;
+  scoped_refptr<IndexedDBDatabase> database_;
   string16 previous_version_;
   int64 previous_int_version_;
 };
@@ -155,7 +155,7 @@ class DeleteIndexOperation : public IndexedDBTransaction::Operation {
 
 class CreateIndexAbortOperation : public IndexedDBTransaction::Operation {
  public:
-  CreateIndexAbortOperation(scoped_refptr<IndexedDBDatabaseImpl> database,
+  CreateIndexAbortOperation(scoped_refptr<IndexedDBDatabase> database,
                             int64 object_store_id,
                             int64 index_id)
       : database_(database),
@@ -164,14 +164,14 @@ class CreateIndexAbortOperation : public IndexedDBTransaction::Operation {
   virtual void Perform(IndexedDBTransaction* transaction) OVERRIDE;
 
  private:
-  const scoped_refptr<IndexedDBDatabaseImpl> database_;
+  const scoped_refptr<IndexedDBDatabase> database_;
   const int64 object_store_id_;
   const int64 index_id_;
 };
 
 class DeleteIndexAbortOperation : public IndexedDBTransaction::Operation {
  public:
-  DeleteIndexAbortOperation(scoped_refptr<IndexedDBDatabaseImpl> database,
+  DeleteIndexAbortOperation(scoped_refptr<IndexedDBDatabase> database,
                             int64 object_store_id,
                             const IndexedDBIndexMetadata& index_metadata)
       : database_(database),
@@ -180,7 +180,7 @@ class DeleteIndexAbortOperation : public IndexedDBTransaction::Operation {
   virtual void Perform(IndexedDBTransaction* transaction) OVERRIDE;
 
  private:
-  const scoped_refptr<IndexedDBDatabaseImpl> database_;
+  const scoped_refptr<IndexedDBDatabase> database_;
   const int64 object_store_id_;
   const IndexedDBIndexMetadata index_metadata_;
 };
@@ -369,7 +369,7 @@ class ClearOperation : public IndexedDBTransaction::Operation {
   const scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
 };
 
-class IndexedDBDatabaseImpl::PendingOpenCall {
+class IndexedDBDatabase::PendingOpenCall {
  public:
   PendingOpenCall(
       scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
@@ -394,7 +394,7 @@ class IndexedDBDatabaseImpl::PendingOpenCall {
   const int64 transaction_id_;
 };
 
-class IndexedDBDatabaseImpl::PendingDeleteCall {
+class IndexedDBDatabase::PendingDeleteCall {
  public:
   explicit PendingDeleteCall(scoped_refptr<IndexedDBCallbacksWrapper> callbacks)
       : callbacks_(callbacks) {}
@@ -404,13 +404,13 @@ class IndexedDBDatabaseImpl::PendingDeleteCall {
   scoped_refptr<IndexedDBCallbacksWrapper> callbacks_;
 };
 
-scoped_refptr<IndexedDBDatabaseImpl> IndexedDBDatabaseImpl::Create(
+scoped_refptr<IndexedDBDatabase> IndexedDBDatabase::Create(
     const string16& name,
     IndexedDBBackingStore* database,
-    IndexedDBFactoryImpl* factory,
+    IndexedDBFactory* factory,
     const string16& unique_identifier) {
-  scoped_refptr<IndexedDBDatabaseImpl> backend =
-      new IndexedDBDatabaseImpl(name, database, factory, unique_identifier);
+  scoped_refptr<IndexedDBDatabase> backend =
+      new IndexedDBDatabase(name, database, factory, unique_identifier);
   if (!backend->OpenInternal())
     return 0;
   return backend;
@@ -420,11 +420,10 @@ namespace {
 const base::string16::value_type kNoStringVersion[] = {0};
 }
 
-IndexedDBDatabaseImpl::IndexedDBDatabaseImpl(
-    const string16& name,
-    IndexedDBBackingStore* backing_store,
-    IndexedDBFactoryImpl* factory,
-    const string16& unique_identifier)
+IndexedDBDatabase::IndexedDBDatabase(const string16& name,
+                                     IndexedDBBackingStore* backing_store,
+                                     IndexedDBFactory* factory,
+                                     const string16& unique_identifier)
     : backing_store_(backing_store),
       metadata_(name,
                 kInvalidId,
@@ -438,7 +437,7 @@ IndexedDBDatabaseImpl::IndexedDBDatabaseImpl(
   DCHECK(!metadata_.name.empty());
 }
 
-void IndexedDBDatabaseImpl::AddObjectStore(
+void IndexedDBDatabase::AddObjectStore(
     const IndexedDBObjectStoreMetadata& object_store,
     int64 new_max_object_store_id) {
   DCHECK(metadata_.object_stores.find(object_store.id) ==
@@ -450,15 +449,15 @@ void IndexedDBDatabaseImpl::AddObjectStore(
   metadata_.object_stores[object_store.id] = object_store;
 }
 
-void IndexedDBDatabaseImpl::RemoveObjectStore(int64 object_store_id) {
+void IndexedDBDatabase::RemoveObjectStore(int64 object_store_id) {
   DCHECK(metadata_.object_stores.find(object_store_id) !=
          metadata_.object_stores.end());
   metadata_.object_stores.erase(object_store_id);
 }
 
-void IndexedDBDatabaseImpl::AddIndex(int64 object_store_id,
-                                     const IndexedDBIndexMetadata& index,
-                                     int64 new_max_index_id) {
+void IndexedDBDatabase::AddIndex(int64 object_store_id,
+                                 const IndexedDBIndexMetadata& index,
+                                 int64 new_max_index_id) {
   DCHECK(metadata_.object_stores.find(object_store_id) !=
          metadata_.object_stores.end());
   IndexedDBObjectStoreMetadata object_store =
@@ -473,7 +472,7 @@ void IndexedDBDatabaseImpl::AddIndex(int64 object_store_id,
   metadata_.object_stores[object_store_id] = object_store;
 }
 
-void IndexedDBDatabaseImpl::RemoveIndex(int64 object_store_id, int64 index_id) {
+void IndexedDBDatabase::RemoveIndex(int64 object_store_id, int64 index_id) {
   DCHECK(metadata_.object_stores.find(object_store_id) !=
          metadata_.object_stores.end());
   IndexedDBObjectStoreMetadata object_store =
@@ -484,7 +483,7 @@ void IndexedDBDatabaseImpl::RemoveIndex(int64 object_store_id, int64 index_id) {
   metadata_.object_stores[object_store_id] = object_store;
 }
 
-bool IndexedDBDatabaseImpl::OpenInternal() {
+bool IndexedDBDatabase::OpenInternal() {
   bool success = false;
   bool ok = backing_store_->GetIDBDatabaseMetaData(
       metadata_.name, &metadata_, &success);
@@ -500,23 +499,22 @@ bool IndexedDBDatabaseImpl::OpenInternal() {
       metadata_.name, metadata_.version, metadata_.int_version, &metadata_.id);
 }
 
-IndexedDBDatabaseImpl::~IndexedDBDatabaseImpl() {
+IndexedDBDatabase::~IndexedDBDatabase() {
   DCHECK(transactions_.empty());
   DCHECK(pending_open_calls_.empty());
   DCHECK(pending_delete_calls_.empty());
 }
 
-scoped_refptr<IndexedDBBackingStore> IndexedDBDatabaseImpl::BackingStore()
-    const {
+scoped_refptr<IndexedDBBackingStore> IndexedDBDatabase::BackingStore() const {
   return backing_store_;
 }
 
-void IndexedDBDatabaseImpl::CreateObjectStore(int64 transaction_id,
-                                              int64 object_store_id,
-                                              const string16& name,
-                                              const IndexedDBKeyPath& key_path,
-                                              bool auto_increment) {
-  IDB_TRACE("IndexedDBDatabaseImpl::create_object_store");
+void IndexedDBDatabase::CreateObjectStore(int64 transaction_id,
+                                          int64 object_store_id,
+                                          const string16& name,
+                                          const IndexedDBKeyPath& key_path,
+                                          bool auto_increment) {
+  IDB_TRACE("IndexedDBDatabase::create_object_store");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -552,14 +550,14 @@ void CreateObjectStoreOperation::Perform(IndexedDBTransaction* transaction) {
     transaction->Abort(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
         ASCIIToUTF16("Internal error creating object store '") +
-        object_store_metadata_.name + ASCIIToUTF16("'.")));
+            object_store_metadata_.name + ASCIIToUTF16("'.")));
     return;
   }
 }
 
-void IndexedDBDatabaseImpl::DeleteObjectStore(int64 transaction_id,
-                                              int64 object_store_id) {
-  IDB_TRACE("IndexedDBDatabaseImpl::delete_object_store");
+void IndexedDBDatabase::DeleteObjectStore(int64 transaction_id,
+                                          int64 object_store_id) {
+  IDB_TRACE("IndexedDBDatabase::delete_object_store");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -578,14 +576,14 @@ void IndexedDBDatabaseImpl::DeleteObjectStore(int64 transaction_id,
   RemoveObjectStore(object_store_id);
 }
 
-void IndexedDBDatabaseImpl::CreateIndex(int64 transaction_id,
-                                        int64 object_store_id,
-                                        int64 index_id,
-                                        const string16& name,
-                                        const IndexedDBKeyPath& key_path,
-                                        bool unique,
-                                        bool multi_entry) {
-  IDB_TRACE("IndexedDBDatabaseImpl::create_index");
+void IndexedDBDatabase::CreateIndex(int64 transaction_id,
+                                    int64 object_store_id,
+                                    int64 index_id,
+                                    const string16& name,
+                                    const IndexedDBKeyPath& key_path,
+                                    bool unique,
+                                    bool multi_entry) {
+  IDB_TRACE("IndexedDBDatabase::create_index");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -633,10 +631,10 @@ void CreateIndexAbortOperation::Perform(IndexedDBTransaction* transaction) {
   database_->RemoveIndex(object_store_id_, index_id_);
 }
 
-void IndexedDBDatabaseImpl::DeleteIndex(int64 transaction_id,
-                                        int64 object_store_id,
-                                        int64 index_id) {
-  IDB_TRACE("IndexedDBDatabaseImpl::delete_index");
+void IndexedDBDatabase::DeleteIndex(int64 transaction_id,
+                                    int64 object_store_id,
+                                    int64 index_id) {
+  IDB_TRACE("IndexedDBDatabase::delete_index");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -680,7 +678,7 @@ void DeleteIndexAbortOperation::Perform(IndexedDBTransaction* transaction) {
       object_store_id_, index_metadata_, IndexedDBIndexMetadata::kInvalidId);
 }
 
-void IndexedDBDatabaseImpl::Commit(int64 transaction_id) {
+void IndexedDBDatabase::Commit(int64 transaction_id) {
   // The frontend suggests that we commit, but we may have previously initiated
   // an abort, and so have disposed of the transaction. on_abort has already
   // been dispatched to the frontend, so it will find out about that
@@ -689,29 +687,29 @@ void IndexedDBDatabaseImpl::Commit(int64 transaction_id) {
     transactions_[transaction_id]->Commit();
 }
 
-void IndexedDBDatabaseImpl::Abort(int64 transaction_id) {
+void IndexedDBDatabase::Abort(int64 transaction_id) {
   // If the transaction is unknown, then it has already been aborted by the
   // backend before this call so it is safe to ignore it.
   if (transactions_.find(transaction_id) != transactions_.end())
     transactions_[transaction_id]->Abort();
 }
 
-void IndexedDBDatabaseImpl::Abort(int64 transaction_id,
-                                  const IndexedDBDatabaseError& error) {
+void IndexedDBDatabase::Abort(int64 transaction_id,
+                              const IndexedDBDatabaseError& error) {
   // If the transaction is unknown, then it has already been aborted by the
   // backend before this call so it is safe to ignore it.
   if (transactions_.find(transaction_id) != transactions_.end())
     transactions_[transaction_id]->Abort(error);
 }
 
-void IndexedDBDatabaseImpl::Get(
+void IndexedDBDatabase::Get(
     int64 transaction_id,
     int64 object_store_id,
     int64 index_id,
     scoped_ptr<IndexedDBKeyRange> key_range,
     bool key_only,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
-  IDB_TRACE("IndexedDBDatabaseImpl::get");
+  IDB_TRACE("IndexedDBDatabase::get");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -785,9 +783,9 @@ void GetOperation::Perform(IndexedDBTransaction* transaction) {
                                    *key,
                                    &value);
     if (!ok) {
-      callbacks_->OnError(IndexedDBDatabaseError(
-          WebKit::WebIDBDatabaseExceptionUnknownError,
-          "Internal error in get_record."));
+      callbacks_->OnError(
+          IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
+                                 "Internal error in get_record."));
       return;
     }
 
@@ -814,9 +812,9 @@ void GetOperation::Perform(IndexedDBTransaction* transaction) {
       *key,
       &primary_key);
   if (!ok) {
-    callbacks_->OnError(IndexedDBDatabaseError(
-        WebKit::WebIDBDatabaseExceptionUnknownError,
-        "Internal error in get_primary_key_via_index."));
+    callbacks_->OnError(
+        IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
+                               "Internal error in get_primary_key_via_index."));
     return;
   }
   if (!primary_key) {
@@ -895,16 +893,15 @@ static bool UpdateKeyGenerator(
       check_current);
 }
 
-void IndexedDBDatabaseImpl::Put(
-    int64 transaction_id,
-    int64 object_store_id,
-    std::vector<char>* value,
-    scoped_ptr<IndexedDBKey> key,
-    PutMode put_mode,
-    scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
-    const std::vector<int64>& index_ids,
-    const std::vector<IndexKeys>& index_keys) {
-  IDB_TRACE("IndexedDBDatabaseImpl::put");
+void IndexedDBDatabase::Put(int64 transaction_id,
+                            int64 object_store_id,
+                            std::vector<char>* value,
+                            scoped_ptr<IndexedDBKey> key,
+                            PutMode put_mode,
+                            scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
+                            const std::vector<int64>& index_ids,
+                            const std::vector<IndexKeys>& index_keys) {
+  IDB_TRACE("IndexedDBDatabase::put");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -941,9 +938,9 @@ void PutOperation::Perform(IndexedDBTransaction* transaction) {
         backing_store_, transaction, database_id_, object_store_.id);
     key_was_generated = true;
     if (!auto_inc_key->IsValid()) {
-      callbacks_->OnError(IndexedDBDatabaseError(
-          WebKit::WebIDBDatabaseExceptionConstraintError,
-          "Maximum key generator value reached."));
+      callbacks_->OnError(
+          IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionConstraintError,
+                                 "Maximum key generator value reached."));
       return;
     }
     key = auto_inc_key.Pass();
@@ -964,15 +961,15 @@ void PutOperation::Perform(IndexedDBTransaction* transaction) {
         &record_identifier,
         &found);
     if (!ok) {
-      callbacks_->OnError(IndexedDBDatabaseError(
-          WebKit::WebIDBDatabaseExceptionUnknownError,
-          "Internal error checking key existence."));
+      callbacks_->OnError(
+          IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
+                                 "Internal error checking key existence."));
       return;
     }
     if (found) {
-      callbacks_->OnError(IndexedDBDatabaseError(
-          WebKit::WebIDBDatabaseExceptionConstraintError,
-          "Key already exists in the object store."));
+      callbacks_->OnError(
+          IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionConstraintError,
+                                 "Key already exists in the object store."));
       return;
     }
   }
@@ -1039,9 +1036,9 @@ void PutOperation::Perform(IndexedDBTransaction* transaction) {
                                  key.get(),
                                  !key_was_generated);
     if (!ok) {
-      callbacks_->OnError(IndexedDBDatabaseError(
-          WebKit::WebIDBDatabaseExceptionUnknownError,
-          "Internal error updating key generator."));
+      callbacks_->OnError(
+          IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
+                                 "Internal error updating key generator."));
       return;
     }
   }
@@ -1049,13 +1046,12 @@ void PutOperation::Perform(IndexedDBTransaction* transaction) {
   callbacks_->OnSuccess(*key);
 }
 
-void IndexedDBDatabaseImpl::SetIndexKeys(
-    int64 transaction_id,
-    int64 object_store_id,
-    scoped_ptr<IndexedDBKey> primary_key,
-    const std::vector<int64>& index_ids,
-    const std::vector<IndexKeys>& index_keys) {
-  IDB_TRACE("IndexedDBDatabaseImpl::set_index_keys");
+void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
+                                     int64 object_store_id,
+                                     scoped_ptr<IndexedDBKey> primary_key,
+                                     const std::vector<int64>& index_ids,
+                                     const std::vector<IndexKeys>& index_keys) {
+  IDB_TRACE("IndexedDBDatabase::set_index_keys");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -1076,9 +1072,9 @@ void IndexedDBDatabaseImpl::SetIndexKeys(
                                     &record_identifier,
                                     &found);
   if (!ok) {
-    transaction->Abort(IndexedDBDatabaseError(
-        WebKit::WebIDBDatabaseExceptionUnknownError,
-        "Internal error setting index keys."));
+    transaction->Abort(
+        IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
+                               "Internal error setting index keys."));
     return;
   }
   if (!found) {
@@ -1129,10 +1125,9 @@ void IndexedDBDatabaseImpl::SetIndexKeys(
   }
 }
 
-void IndexedDBDatabaseImpl::SetIndexesReady(
-    int64 transaction_id,
-    int64,
-    const std::vector<int64>& index_ids) {
+void IndexedDBDatabase::SetIndexesReady(int64 transaction_id,
+                                        int64,
+                                        const std::vector<int64>& index_ids) {
   IDB_TRACE("IndexedDBObjectStoreImpl::set_indexes_ready");
 
   TransactionMap::const_iterator trans_iterator =
@@ -1151,7 +1146,7 @@ void SetIndexesReadyOperation::Perform(IndexedDBTransaction* transaction) {
     transaction->DidCompletePreemptiveEvent();
 }
 
-void IndexedDBDatabaseImpl::OpenCursor(
+void IndexedDBDatabase::OpenCursor(
     int64 transaction_id,
     int64 object_store_id,
     int64 index_id,
@@ -1160,7 +1155,7 @@ void IndexedDBDatabaseImpl::OpenCursor(
     bool key_only,
     TaskType task_type,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
-  IDB_TRACE("IndexedDBDatabaseImpl::open_cursor");
+  IDB_TRACE("IndexedDBDatabase::open_cursor");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -1226,19 +1221,19 @@ void OpenCursorOperation::Perform(IndexedDBTransaction* transaction) {
 
   IndexedDBDatabase::TaskType task_type(
       static_cast<IndexedDBDatabase::TaskType>(task_type_));
-  scoped_refptr<IndexedDBCursorImpl> cursor = IndexedDBCursorImpl::Create(
+  scoped_refptr<IndexedDBCursor> cursor = IndexedDBCursor::Create(
       backing_store_cursor.Pass(), cursor_type_, task_type, transaction);
   callbacks_->OnSuccess(
       cursor, cursor->key(), cursor->primary_key(), cursor->Value());
 }
 
-void IndexedDBDatabaseImpl::Count(
+void IndexedDBDatabase::Count(
     int64 transaction_id,
     int64 object_store_id,
     int64 index_id,
     scoped_ptr<IndexedDBKeyRange> key_range,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
-  IDB_TRACE("IndexedDBDatabaseImpl::count");
+  IDB_TRACE("IndexedDBDatabase::count");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -1288,12 +1283,12 @@ void CountOperation::Perform(IndexedDBTransaction* transaction) {
   callbacks_->OnSuccess(count);
 }
 
-void IndexedDBDatabaseImpl::DeleteRange(
+void IndexedDBDatabase::DeleteRange(
     int64 transaction_id,
     int64 object_store_id,
     scoped_ptr<IndexedDBKeyRange> key_range,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
-  IDB_TRACE("IndexedDBDatabaseImpl::delete_range");
+  IDB_TRACE("IndexedDBDatabase::delete_range");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -1320,9 +1315,9 @@ void DeleteRangeOperation::Perform(IndexedDBTransaction* transaction) {
               database_id_,
               object_store_id_,
               backing_store_cursor->record_identifier())) {
-        callbacks_->OnError(IndexedDBDatabaseError(
-            WebKit::WebIDBDatabaseExceptionUnknownError,
-            "Internal error deleting data in range"));
+        callbacks_->OnError(
+            IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
+                                   "Internal error deleting data in range"));
         return;
       }
     } while (backing_store_cursor->ContinueFunction(0));
@@ -1331,11 +1326,11 @@ void DeleteRangeOperation::Perform(IndexedDBTransaction* transaction) {
   callbacks_->OnSuccess();
 }
 
-void IndexedDBDatabaseImpl::Clear(
+void IndexedDBDatabase::Clear(
     int64 transaction_id,
     int64 object_store_id,
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
-  IDB_TRACE("IndexedDBDatabaseImpl::clear");
+  IDB_TRACE("IndexedDBDatabase::clear");
   TransactionMap::const_iterator trans_iterator =
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
@@ -1352,9 +1347,9 @@ void ClearOperation::Perform(IndexedDBTransaction* transaction) {
   if (!backing_store_->ClearObjectStore(transaction->BackingStoreTransaction(),
                                         database_id_,
                                         object_store_id_)) {
-    callbacks_->OnError(IndexedDBDatabaseError(
-        WebKit::WebIDBDatabaseExceptionUnknownError,
-        "Internal error clearing object store"));
+    callbacks_->OnError(
+        IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
+                               "Internal error clearing object store"));
     return;
   }
   callbacks_->OnSuccess();
@@ -1375,7 +1370,7 @@ void DeleteObjectStoreOperation::Perform(IndexedDBTransaction* transaction) {
   }
 }
 
-void IndexedDBDatabaseImpl::VersionChangeOperation::Perform(
+void IndexedDBDatabase::VersionChangeOperation::Perform(
     IndexedDBTransaction* transaction) {
   IDB_TRACE("VersionChangeOperation");
   int64 database_id = database_->id();
@@ -1400,8 +1395,7 @@ void IndexedDBDatabaseImpl::VersionChangeOperation::Perform(
   callbacks_->OnUpgradeNeeded(old_version, database_, database_->metadata());
 }
 
-void IndexedDBDatabaseImpl::TransactionStarted(
-    IndexedDBTransaction* transaction) {
+void IndexedDBDatabase::TransactionStarted(IndexedDBTransaction* transaction) {
 
   if (transaction->mode() == indexed_db::TRANSACTION_VERSION_CHANGE) {
     DCHECK(!running_version_change_transaction_);
@@ -1409,8 +1403,7 @@ void IndexedDBDatabaseImpl::TransactionStarted(
   }
 }
 
-void IndexedDBDatabaseImpl::TransactionFinished(
-    IndexedDBTransaction* transaction) {
+void IndexedDBDatabase::TransactionFinished(IndexedDBTransaction* transaction) {
 
   DCHECK(transactions_.find(transaction->id()) != transactions_.end());
   DCHECK_EQ(transactions_[transaction->id()], transaction);
@@ -1421,21 +1414,21 @@ void IndexedDBDatabaseImpl::TransactionFinished(
   }
 }
 
-void IndexedDBDatabaseImpl::TransactionFinishedAndAbortFired(
+void IndexedDBDatabase::TransactionFinishedAndAbortFired(
     IndexedDBTransaction* transaction) {
   if (transaction->mode() == indexed_db::TRANSACTION_VERSION_CHANGE) {
     if (pending_second_half_open_) {
-      pending_second_half_open_->Callbacks()->OnError(IndexedDBDatabaseError(
-          WebKit::WebIDBDatabaseExceptionAbortError,
-          "Version change transaction was aborted in "
-                       "upgradeneeded event handler."));
+      pending_second_half_open_->Callbacks()->OnError(
+          IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionAbortError,
+                                 "Version change transaction was aborted in "
+                                 "upgradeneeded event handler."));
       pending_second_half_open_.reset();
     }
     ProcessPendingCalls();
   }
 }
 
-void IndexedDBDatabaseImpl::TransactionFinishedAndCompleteFired(
+void IndexedDBDatabase::TransactionFinishedAndCompleteFired(
     IndexedDBTransaction* transaction) {
   if (transaction->mode() == indexed_db::TRANSACTION_VERSION_CHANGE) {
     DCHECK(pending_second_half_open_);
@@ -1449,13 +1442,13 @@ void IndexedDBDatabaseImpl::TransactionFinishedAndCompleteFired(
   }
 }
 
-size_t IndexedDBDatabaseImpl::ConnectionCount() const {
+size_t IndexedDBDatabase::ConnectionCount() const {
   // This does not include pending open calls, as those should not block version
   // changes and deletes.
   return database_callbacks_set_.size();
 }
 
-void IndexedDBDatabaseImpl::ProcessPendingCalls() {
+void IndexedDBDatabase::ProcessPendingCalls() {
   if (pending_second_half_open_) {
     DCHECK_EQ(pending_second_half_open_->Version(), metadata_.int_version);
     DCHECK(metadata_.id != kInvalidId);
@@ -1511,7 +1504,7 @@ void IndexedDBDatabaseImpl::ProcessPendingCalls() {
   }
 }
 
-void IndexedDBDatabaseImpl::CreateTransaction(
+void IndexedDBDatabase::CreateTransaction(
     int64 transaction_id,
     scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks,
     const std::vector<int64>& object_store_ids,
@@ -1530,13 +1523,13 @@ void IndexedDBDatabaseImpl::CreateTransaction(
   transactions_[transaction_id] = transaction;
 }
 
-bool IndexedDBDatabaseImpl::IsOpenConnectionBlocked() const {
+bool IndexedDBDatabase::IsOpenConnectionBlocked() const {
   return !pending_delete_calls_.empty() ||
          running_version_change_transaction_ ||
          pending_run_version_change_transaction_call_;
 }
 
-void IndexedDBDatabaseImpl::OpenConnection(
+void IndexedDBDatabase::OpenConnection(
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
     scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
     int64 transaction_id,
@@ -1618,7 +1611,7 @@ void IndexedDBDatabaseImpl::OpenConnection(
   callbacks->OnSuccess(this, this->metadata());
 }
 
-void IndexedDBDatabaseImpl::RunVersionChangeTransaction(
+void IndexedDBDatabase::RunVersionChangeTransaction(
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
     scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
     int64 transaction_id,
@@ -1650,7 +1643,7 @@ void IndexedDBDatabaseImpl::RunVersionChangeTransaction(
       callbacks, database_callbacks, transaction_id, requested_version);
 }
 
-void IndexedDBDatabaseImpl::RunVersionChangeTransactionFinal(
+void IndexedDBDatabase::RunVersionChangeTransactionFinal(
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks,
     scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks,
     int64 transaction_id,
@@ -1676,7 +1669,7 @@ void IndexedDBDatabaseImpl::RunVersionChangeTransactionFinal(
   DCHECK(!pending_second_half_open_);
 }
 
-void IndexedDBDatabaseImpl::DeleteDatabase(
+void IndexedDBDatabase::DeleteDatabase(
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
 
   if (IsDeleteDatabaseBlocked()) {
@@ -1699,18 +1692,18 @@ void IndexedDBDatabaseImpl::DeleteDatabase(
   DeleteDatabaseFinal(callbacks);
 }
 
-bool IndexedDBDatabaseImpl::IsDeleteDatabaseBlocked() const {
+bool IndexedDBDatabase::IsDeleteDatabaseBlocked() const {
   return !!ConnectionCount();
 }
 
-void IndexedDBDatabaseImpl::DeleteDatabaseFinal(
+void IndexedDBDatabase::DeleteDatabaseFinal(
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
   DCHECK(!IsDeleteDatabaseBlocked());
   DCHECK(backing_store_);
   if (!backing_store_->DeleteDatabase(metadata_.name)) {
-    callbacks->OnError(IndexedDBDatabaseError(
-        WebKit::WebIDBDatabaseExceptionUnknownError,
-        "Internal error deleting database."));
+    callbacks->OnError(
+        IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
+                               "Internal error deleting database."));
     return;
   }
   metadata_.version = kNoStringVersion;
@@ -1720,7 +1713,7 @@ void IndexedDBDatabaseImpl::DeleteDatabaseFinal(
   callbacks->OnSuccess();
 }
 
-void IndexedDBDatabaseImpl::Close(
+void IndexedDBDatabase::Close(
     scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks) {
   DCHECK(callbacks);
   DCHECK(database_callbacks_set_.has(callbacks));
@@ -1753,7 +1746,7 @@ void IndexedDBDatabaseImpl::Close(
   }
 
   // process_pending_calls allows the inspector to process a pending open call
-  // and call close, reentering IndexedDBDatabaseImpl::close. Then the
+  // and call close, reentering IndexedDBDatabase::close. Then the
   // backend would be removed both by the inspector closing its connection, and
   // by the connection that first called close.
   // To avoid that situation, don't proceed in case of reentrancy.
@@ -1791,7 +1784,7 @@ void DeleteObjectStoreAbortOperation::Perform(
                             IndexedDBObjectStoreMetadata::kInvalidId);
 }
 
-void IndexedDBDatabaseImpl::VersionChangeAbortOperation::Perform(
+void IndexedDBDatabase::VersionChangeAbortOperation::Perform(
     IndexedDBTransaction* transaction) {
   IDB_TRACE("VersionChangeAbortOperation");
   DCHECK(!transaction);

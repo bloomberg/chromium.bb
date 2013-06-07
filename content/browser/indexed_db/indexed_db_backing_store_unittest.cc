@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/indexed_db/indexed_db_factory_impl.h"
+#include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
@@ -327,7 +327,7 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
   }
 }
 
-class MockIDBFactory : public IndexedDBFactoryImpl {
+class MockIDBFactory : public IndexedDBFactory {
  public:
   static scoped_refptr<MockIDBFactory> Create() {
     return make_scoped_refptr(new MockIDBFactory());
