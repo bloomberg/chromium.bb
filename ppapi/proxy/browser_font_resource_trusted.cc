@@ -5,7 +5,7 @@
 #include "ppapi/proxy/browser_font_resource_trusted.h"
 
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/var.h"

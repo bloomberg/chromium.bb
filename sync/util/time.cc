@@ -5,7 +5,7 @@
 #include "sync/util/time.h"
 
 #include "base/i18n/time_formatting.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 
 namespace syncer {
 

@@ -9,7 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "cc/base/thread_impl.h"
 #include "cc/output/context_provider.h"
 #include "media/base/media.h"

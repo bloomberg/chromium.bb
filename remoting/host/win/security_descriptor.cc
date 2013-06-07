@@ -7,7 +7,7 @@
 #include <sddl.h>
 
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 
 namespace remoting {
 

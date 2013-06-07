@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "remoting/host/continue_window.h"
 #include "remoting/host/win/core_resource.h"
 

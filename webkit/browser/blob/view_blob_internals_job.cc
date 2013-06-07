@@ -13,7 +13,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"

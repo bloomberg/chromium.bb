@@ -13,7 +13,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/time_conversion.h"

@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "ipc/ipc_channel.h"

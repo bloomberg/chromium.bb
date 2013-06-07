@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/wrapped_window_proc.h"
 
 const char kClassNameFormat[] = "Chromoting_MessageWindow_%p";

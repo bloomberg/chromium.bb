@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/base/origin_url_conversions.h"
 

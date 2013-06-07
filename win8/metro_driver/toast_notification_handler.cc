@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 // TODO(ananta)
 // Refactor the chrome_util and shell_util code from chrome into a common lib
 #include "win8/delegate_execute/chrome_util.h"

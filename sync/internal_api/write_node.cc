@@ -5,7 +5,7 @@
 #include "sync/internal_api/public/write_node.h"
 
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "sync/internal_api/public/base_transaction.h"
 #include "sync/internal_api/public/write_transaction.h"

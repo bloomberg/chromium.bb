@@ -15,7 +15,7 @@
 #include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 
 namespace rlz_lib {
 

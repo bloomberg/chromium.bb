@@ -13,7 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/native_library.h"
 #include "base/scoped_native_library.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "net/base/ip_endpoint.h"
 
 namespace {

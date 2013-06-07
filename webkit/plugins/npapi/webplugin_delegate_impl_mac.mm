@@ -16,7 +16,7 @@
 #include "base/metrics/stats_counters.h"
 #include "base/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"

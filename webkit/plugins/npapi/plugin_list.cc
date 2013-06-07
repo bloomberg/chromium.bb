@@ -12,7 +12,7 @@
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
 #include "webkit/plugins/npapi/plugin_utils.h"

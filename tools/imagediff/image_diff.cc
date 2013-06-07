@@ -22,7 +22,7 @@
 #include "base/process_util.h"
 #include "base/safe_numerics.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/size.h"
 

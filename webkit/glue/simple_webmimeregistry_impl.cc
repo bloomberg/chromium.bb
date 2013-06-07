@@ -6,7 +6,7 @@
 
 #include "base/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "media/filters/stream_parser_factory.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebString.h"

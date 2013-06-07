@@ -7,7 +7,7 @@
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 
 namespace {
 using gpu::demos::Window;

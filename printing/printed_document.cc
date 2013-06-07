@@ -17,7 +17,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "printing/page_number.h"
 #include "printing/printed_page.h"
 #include "printing/printed_pages_source.h"

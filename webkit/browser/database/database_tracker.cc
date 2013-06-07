@@ -13,7 +13,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"

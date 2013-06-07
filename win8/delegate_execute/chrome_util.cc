@@ -17,7 +17,7 @@
 #include "base/md5.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"

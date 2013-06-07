@@ -15,7 +15,7 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/strings/stringize_macros.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"

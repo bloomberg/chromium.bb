@@ -5,7 +5,7 @@
 #include "webkit/base/file_path_string_conversions.h"
 
 #include "base/strings/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace webkit_base {

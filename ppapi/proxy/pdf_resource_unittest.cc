@@ -4,7 +4,7 @@
 
 #include <cstring>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_image_data.h"

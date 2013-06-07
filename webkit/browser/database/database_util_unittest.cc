@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/string_piece.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/base/origin_url_conversions.h"
 #include "webkit/browser/database/database_util.h"

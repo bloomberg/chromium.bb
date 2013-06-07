@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/platform_file.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context.h"

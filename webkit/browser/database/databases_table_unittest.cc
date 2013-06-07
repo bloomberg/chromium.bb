@@ -4,7 +4,7 @@
 
 #include "base/bind.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"

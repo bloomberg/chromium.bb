@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "media/base/mock_data_source_host.h"
 #include "media/base/test_helpers.h"
 #include "media/filters/file_data_source.h"

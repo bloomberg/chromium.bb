@@ -34,7 +34,7 @@
 #include "base/command_line.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 
 namespace appcache {

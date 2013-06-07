@@ -11,7 +11,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/file_system_context.h"

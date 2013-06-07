@@ -26,7 +26,7 @@
 #include "base/stringprintf.h"
 #include "base/strings/string_split.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 
 // These headers must be included in this order to make the declaration gods

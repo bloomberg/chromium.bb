@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "cc/layers/io_surface_layer.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"

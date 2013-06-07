@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -13,10 +13,10 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
-#include "googleurl/src/gurl.h"
 
 namespace webkit {
 namespace npapi {

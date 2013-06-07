@@ -14,7 +14,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_split.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "sql/statement.h"
 #include "third_party/sqlite/sqlite3.h"
 

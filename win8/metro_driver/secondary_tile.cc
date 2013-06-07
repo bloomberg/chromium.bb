@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "win8/metro_driver/chrome_app_view.h"
 #include "win8/metro_driver/winrt_utils.h"

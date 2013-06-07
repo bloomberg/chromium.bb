@@ -9,7 +9,7 @@
 #include "media/audio/win/audio_manager_win.h"
 
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_propvariant.h"
