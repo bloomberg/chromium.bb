@@ -1974,3 +1974,11 @@
    ...
    fun:extensions::ActivityDatabase::Init
 }
+{
+   bug_247525
+   Heapcheck:Leak
+   ...
+   fun:appcache::AppCacheStorageImpl::Initialize
+   fun:appcache::AppCacheService::Initialize
+   fun:content::ChromeAppCacheService::InitializeOnIOThread
+}
