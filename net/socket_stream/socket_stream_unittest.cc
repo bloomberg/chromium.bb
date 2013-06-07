@@ -416,6 +416,41 @@ TEST_F(SocketStreamTest, CloseFlushPendingWrite) {
   EXPECT_EQ(SocketStreamEvent::EVENT_CLOSE, events[6].event_type);
 }
 
+TEST_F(SocketStreamTest, ResolveFailure) {
+  TestCompletionCallback test_callback;
+
+  scoped_ptr<SocketStreamEventRecorder> delegate(
+      new SocketStreamEventRecorder(test_callback.callback()));
+
+  scoped_refptr<SocketStream> socket_stream(
+      new SocketStream(GURL("ws://example.com/demo"), delegate.get()));
+
+  // Make resolver fail.
+  TestURLRequestContext context;
+  scoped_ptr<MockHostResolver> mock_host_resolver(
+      new MockHostResolver());
+  mock_host_resolver->rules()->AddSimulatedFailure("example.com");
+  context.set_host_resolver(mock_host_resolver.get());
+  socket_stream->set_context(&context);
+
+  // No read/write on socket is expected.
+  StaticSocketDataProvider data_provider(NULL, 0, NULL, 0);
+  MockClientSocketFactory* mock_socket_factory =
+      GetMockClientSocketFactory();
+  mock_socket_factory->AddSocketDataProvider(&data_provider);
+  socket_stream->SetClientSocketFactory(mock_socket_factory);
+
+  socket_stream->Connect();
+
+  test_callback.WaitForResult();
+
+  const std::vector<SocketStreamEvent>& events = delegate->GetSeenEvents();
+  ASSERT_EQ(2U, events.size());
+
+  EXPECT_EQ(SocketStreamEvent::EVENT_ERROR, events[0].event_type);
+  EXPECT_EQ(SocketStreamEvent::EVENT_CLOSE, events[1].event_type);
+}
+
 TEST_F(SocketStreamTest, ExceedMaxPendingSendAllowed) {
   TestCompletionCallback test_callback;
 
