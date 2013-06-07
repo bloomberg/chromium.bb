@@ -46,7 +46,8 @@ LocallyManagedUserCreationController::StatusConsumer::~StatusConsumer() {}
 LocallyManagedUserCreationController::UserCreationContext::UserCreationContext()
     : token_acquired(false),
       token_succesfully_written(false),
-      manager_profile(NULL) {}
+      manager_profile(NULL),
+      service(NULL) {}
 
 LocallyManagedUserCreationController::UserCreationContext::
     ~UserCreationContext() {}
@@ -132,11 +133,11 @@ void LocallyManagedUserCreationController::OnMountSuccess(
       this,
       &LocallyManagedUserCreationController::CreationTimedOut);
 
-  ManagedUserRegistrationService* service =
+  creation_context_->service =
       ManagedUserRegistrationServiceFactory::GetForProfile(
           creation_context_->manager_profile);
 
-  service->Register(
+  creation_context_->service->Register(
       creation_context_->display_name,
       base::Bind(&LocallyManagedUserCreationController::RegistrationCallback,
                  weak_factory_.GetWeakPtr()));
@@ -149,6 +150,9 @@ void LocallyManagedUserCreationController::RegistrationCallback(
   if (error.state() == GoogleServiceAuthError::NONE) {
     TokenFetched(token);
   } else {
+    // Do not report error if we cancelled request.
+    if (error.state() == GoogleServiceAuthError::REQUEST_CANCELED)
+      return;
     if (consumer_)
       consumer_->OnCreationError(CLOUD_SERVER_ERROR);
   }
@@ -160,6 +164,12 @@ void LocallyManagedUserCreationController::CreationTimedOut() {
 }
 
 void LocallyManagedUserCreationController::FinishCreation() {
+  chrome::AttemptUserExit();
+}
+
+void LocallyManagedUserCreationController::CancelCreation() {
+  if (creation_context_->service)
+    creation_context_->service->CancelPendingRegistration();
   chrome::AttemptUserExit();
 }
 

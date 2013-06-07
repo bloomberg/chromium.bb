@@ -67,6 +67,7 @@ class LocallyManagedUserCreationController
   void SetUpCreation(string16 display_name, std::string password);
   void SetManagerProfile(Profile* manager_profile);
   void StartCreation();
+  void CancelCreation();
   void FinishCreation();
   std::string GetManagedUserId();
 
@@ -85,6 +86,7 @@ class LocallyManagedUserCreationController
     std::string token;
     bool token_succesfully_written;
     Profile* manager_profile;
+    ManagedUserRegistrationService* service;
   };
 
   // ManagedUserAuthenticator::StatusConsumer overrides.

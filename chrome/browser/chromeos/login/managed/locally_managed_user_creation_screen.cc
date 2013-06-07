@@ -127,8 +127,7 @@ std::string LocallyManagedUserCreationScreen::GetName() const {
 }
 
 void LocallyManagedUserCreationScreen::AbortFlow() {
-  // TODO(antrim) : propagate aborting to sync service once API is available.
-  controller_->FinishCreation();
+  controller_->CancelCreation();
 }
 
 void LocallyManagedUserCreationScreen::FinishFlow() {
