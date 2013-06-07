@@ -104,6 +104,8 @@
         'base/cocoa/events_mac.mm',
         'base/cocoa/find_pasteboard.h',
         'base/cocoa/find_pasteboard.mm',
+        'base/cocoa/flipped_view.h',
+        'base/cocoa/flipped_view.mm',
         'base/cocoa/focus_tracker.h',
         'base/cocoa/focus_tracker.mm',
         'base/cocoa/focus_window_set.h',

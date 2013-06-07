@@ -5,15 +5,15 @@
 #include "chrome/browser/ui/cocoa/extensions/media_galleries_dialog_cocoa.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_control_utils.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
-#import "chrome/browser/ui/cocoa/flipped_view.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
-#include "chrome/browser/ui/chrome_style.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
+#import "ui/base/cocoa/flipped_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 

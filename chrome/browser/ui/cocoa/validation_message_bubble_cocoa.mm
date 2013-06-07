@@ -4,16 +4,16 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
+#import "chrome/browser/ui/cocoa/info_bubble_view.h"
+#import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#import "chrome/browser/ui/cocoa/validation_message_bubble_controller.h"
 #include "chrome/browser/ui/validation_message_bubble.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "grit/theme_resources.h"
-#include "ui/base/resource/resource_bundle.h"
-#import "chrome/browser/ui/cocoa/flipped_view.h"
-#import "chrome/browser/ui/cocoa/info_bubble_view.h"
-#import "chrome/browser/ui/cocoa/info_bubble_window.h"
-#import "chrome/browser/ui/cocoa/validation_message_bubble_controller.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#import "ui/base/cocoa/flipped_view.h"
+#include "ui/base/resource/resource_bundle.h"
 
 const CGFloat kWindowInitialWidth = 200;
 const CGFloat kWindowInitialHeight = 100;

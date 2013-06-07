@@ -650,8 +650,6 @@
         'browser/ui/cocoa/first_run_bubble_controller.mm',
         'browser/ui/cocoa/first_run_dialog.h',
         'browser/ui/cocoa/first_run_dialog.mm',
-        'browser/ui/cocoa/flipped_view.h',
-        'browser/ui/cocoa/flipped_view.mm',
         'browser/ui/cocoa/floating_bar_backing_view.h',
         'browser/ui/cocoa/floating_bar_backing_view.mm',
         'browser/ui/cocoa/framed_browser_window.h',
