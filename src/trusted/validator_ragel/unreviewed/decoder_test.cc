@@ -13,6 +13,7 @@
 
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/include/elf64.h"
+#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_ragel/decoder.h"
@@ -843,6 +844,43 @@ int DecodeFile(const char *filename, int repeat_count) {
     exit(1);
   }
   return 0;
+}
+
+extern "C"
+DLLEXPORT
+char *DisassembleChunk(const uint8_t *data, size_t size, int bitness) {
+  static char buf[10000];
+  struct DecodeState state;
+  int res;
+
+  std::ostringstream result_stream;
+
+  state.out_stream = &result_stream;
+  state.ia32_mode = (bitness == 32);
+  state.fwait = NULL;
+  state.offset = data;
+
+  if (bitness == 32)
+    res = DecodeChunkIA32(
+        data, size, ProcessInstruction, ProcessError, &state);
+  else if (bitness == 64)
+    res = DecodeChunkAMD64(
+        data, size, ProcessInstruction, ProcessError, &state);
+  else
+    CHECK(false);
+
+  if (res && state.fwait) {
+    while (state.fwait < data + size) {
+      stream_printf(
+          result_stream,
+          "%*lx:\t9b                   \tfwait\n",
+          state.width, (long)(state.fwait++ - state.offset));
+    }
+  }
+
+  CHECK(result_stream.str().length() < sizeof buf);
+  strcpy(buf, result_stream.str().c_str());
+  return buf;
 }
 
 int main(int argc, char **argv) {
