@@ -9,7 +9,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/cros/network_property_ui_data.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "grit/generated_resources.h"
@@ -68,18 +67,9 @@ bool ParseProxyConfig(const std::string& pref_proxy_config,
 
 // Returns true if proxy settings of |network| are editable.
 bool IsNetworkProxySettingsEditable(const Network& network) {
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
-  const base::DictionaryValue* onc =
-      network_library->FindOncForNetwork(network.unique_id());
-  if (!onc)
-    return true;
-
-  NetworkPropertyUIData proxy_settings_ui_data;
-  proxy_settings_ui_data.ParseOncProperty(
-      network.ui_data().onc_source(),
-      onc,
-      onc::network_config::kProxySettings);
-  return proxy_settings_ui_data.IsEditable();
+  onc::ONCSource source = network.ui_data().onc_source();
+  return source != onc::ONC_SOURCE_DEVICE_POLICY &&
+      source != onc::ONC_SOURCE_USER_POLICY;
 }
 
 }  // namespace
