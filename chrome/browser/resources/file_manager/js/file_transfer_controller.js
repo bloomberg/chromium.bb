@@ -46,6 +46,13 @@ function FileTransferController(doc,
    * @private
    */
   this.selectedFileObjects_ = [];
+
+  /**
+   * Drag selector.
+   * @type {DragSelector}
+   * @private
+   */
+  this.dragSelector_ = new DragSelector();
 }
 
 FileTransferController.prototype = {
@@ -296,6 +303,14 @@ FileTransferController.prototype = {
    * @param {Event} event A dragstart event of DOM.
    */
   onDragStart_: function(list, event) {
+    // Check if a drag selection should be initiated or not.
+    // TODO(hirono): Support drag selection on the grid view. crbug.com/247278
+    if (list.id == 'file-list') {
+      if (event.shiftKey) {
+        this.dragSelector_.startDragSelection(list, event);
+        return;
+      }
+    }
     // Nothing selected.
     if (!this.selectedEntries_.length) {
       event.preventDefault();
