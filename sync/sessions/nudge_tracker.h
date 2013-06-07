@@ -15,6 +15,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/model_type_invalidation_map.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/sessions/data_type_tracker.h"
 
 namespace syncer {
 namespace sessions {
@@ -86,33 +87,13 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
   void SetHintBufferSize(size_t size);
 
  private:
-  typedef std::list<std::string> PayloadList;
-  typedef std::map<ModelType, PayloadList> PayloadListMap;
-  typedef std::map<ModelType, int> NudgeMap;
+  typedef std::map<ModelType, DataTypeTracker> TypeTrackerMap;
+
+  TypeTrackerMap type_trackers_;
 
   // Merged updates source.  This should be obsolete, but the server still
   // relies on it for some heuristics.
   sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source_;
-
-  // The number of times each type has been locally nudged since the last
-  // successful sync cycle.  If a type is not in the map, the count is zero.
-  NudgeMap local_nudge_counts_;
-
-  // The number of times a refresh was requested each type, since the last
-  // successful sync cycle.  If a type is not in the map, the count is zero.
-  NudgeMap refresh_requested_counts_;
-
-  // A map of datatypes to lists of hints.  The hints are ordered from least
-  // recent to most recent.
-  PayloadListMap payload_list_map_;
-
-  // Tracks the types for which the list of pending hints has overflowed,
-  // causing us to drop the oldest hints.
-  ModelTypeSet locally_dropped_payload_types_;
-
-  // Tracks the types for which the invalidation server has notified us that it
-  // dropped some of its payloads.
-  ModelTypeSet server_dropped_payload_types_;
 
   // Tracks whether or not invalidations are currently enabled.
   bool invalidations_enabled_;

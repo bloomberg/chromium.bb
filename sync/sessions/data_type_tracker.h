@@ -1,0 +1,99 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// A class to track the per-type scheduling data.
+#ifndef SYNC_SESSIONS_DATA_TYPE_TRACKER_H_
+#define SYNC_SESSIONS_DATA_TYPE_TRACKER_H_
+
+#include <deque>
+#include <string>
+
+#include "base/basictypes.h"
+#include "sync/protocol/sync.pb.h"
+
+namespace syncer {
+namespace sessions {
+
+typedef std::deque<std::string> PayloadList;
+
+class DataTypeTracker {
+ public:
+  DataTypeTracker();
+  ~DataTypeTracker();
+
+  // For STL compatibility, we do not forbid the creation of a default copy
+  // constructor and assignment operator.
+
+  // Tracks that a local change has been made to this type.
+  void RecordLocalChange();
+
+  // Tracks that a local refresh request has been made for this type.
+  void RecordLocalRefreshRequest();
+
+  // Tracks that we received an invalidation notification for this type.
+  void RecordRemoteInvalidation(const std::string& payload);
+
+  // Records that a sync cycle has been performed successfully.
+  // Generally, this means that all local changes have been committed and all
+  // remote changes have been downloaded, so we can clear any flags related to
+  // pending work.
+  void RecordSuccessfulSyncCycle();
+
+  // Updates the size of the invalidations payload buffer.
+  void UpdatePayloadBufferSize(size_t new_size);
+
+  // Returns true if there is a good reason to perform a sync cycle.  This does
+  // not take into account whether or not now is a good time to perform a sync
+  // cycle.  That's for the scheduler to decide.
+  bool IsSyncRequired() const;
+
+  // Returns true if one of the reasons behind the need for a sync cycle is to
+  // fetch updates.  If this is true, then IsSyncRequired() will also return
+  // true.
+  bool IsGetUpdatesRequired() const;
+
+  // Returns true if there is an uncommitted local change.
+  bool HasLocalChangePending() const;
+
+  // Returns true if we've received an invalidation since we last fetched
+  // updates.
+  bool HasPendingInvalidation() const;
+
+  // Returns the most recent invalidation payload.
+  std::string GetMostRecentInvalidationPayload() const;
+
+  // Fills some type-specific contents of a GetUpdates request protobuf.  These
+  // messages provide the server with the information it needs to decide how to
+  // handle a request.
+  void FillGetUpdatesTriggersMessage(sync_pb::GetUpdateTriggers* msg) const;
+
+ private:
+  // Number of local change nudges received for this type since the last
+  // successful sync cycle.
+  int local_nudge_count_;
+
+  // Number of local refresh requests received for this type since the last
+  // successful sync cycle.
+  int local_refresh_request_count_;
+
+  // The list of invalidation payloads received since the last successful sync
+  // cycle.  This list may be incomplete.  See also: local_payload_overflow_ and
+  // server_payload_overflow_.
+  PayloadList pending_payloads_;
+
+  // This flag is set if the the local buffer space was been exhausted, causing
+  // us to prematurely discard the invalidation payloads stored locally.
+  bool local_payload_overflow_;
+
+  // This flag is set if the server buffer space was exchauseted, causing the
+  // server to prematurely discard some invalidation payloads.
+  bool server_payload_overflow_;
+
+  size_t payload_buffer_size_;
+};
+
+}  // namespace syncer
+}  // namespace sessions
+
+#endif  // SYNC_SESSIONS_DATA_TYPE_TRACKER_H_

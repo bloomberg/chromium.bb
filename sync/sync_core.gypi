@@ -101,6 +101,8 @@
     'protocol/proto_value_conversions.h',
     'protocol/sync_protocol_error.cc',
     'protocol/sync_protocol_error.h',
+    'sessions/data_type_tracker.cc',
+    'sessions/data_type_tracker.h',
     'sessions/debug_info_getter.h',
     'sessions/nudge_tracker.cc',
     'sessions/nudge_tracker.h',

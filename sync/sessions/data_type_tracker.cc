@@ -1,0 +1,91 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "sync/sessions/data_type_tracker.h"
+
+#include "sync/sessions/nudge_tracker.h"
+
+namespace syncer {
+namespace sessions {
+
+DataTypeTracker::DataTypeTracker()
+  : local_nudge_count_(0),
+    local_refresh_request_count_(0),
+    local_payload_overflow_(false),
+    server_payload_overflow_(false),
+    payload_buffer_size_(NudgeTracker::kDefaultMaxPayloadsPerType) { }
+
+DataTypeTracker::~DataTypeTracker() { }
+
+void DataTypeTracker::RecordLocalChange() {
+  local_nudge_count_++;
+}
+
+void DataTypeTracker::RecordLocalRefreshRequest() {
+  local_refresh_request_count_++;
+}
+
+void DataTypeTracker::RecordRemoteInvalidation(
+    const std::string& payload) {
+  pending_payloads_.push_back(payload);
+  if (pending_payloads_.size() > payload_buffer_size_) {
+    // Drop the oldest payload if we've overflowed.
+    pending_payloads_.pop_front();
+    local_payload_overflow_ = true;
+  }
+}
+
+void DataTypeTracker::RecordSuccessfulSyncCycle() {
+  local_nudge_count_ = 0;
+  local_refresh_request_count_ = 0;
+  pending_payloads_.clear();
+  local_payload_overflow_ = false;
+  server_payload_overflow_ = false;
+}
+
+// This limit will take effect on all future invalidations received.
+void DataTypeTracker::UpdatePayloadBufferSize(size_t new_size) {
+  payload_buffer_size_ = new_size;
+}
+
+bool DataTypeTracker::IsSyncRequired() const {
+  return local_nudge_count_ > 0 || IsGetUpdatesRequired();
+}
+
+bool DataTypeTracker::IsGetUpdatesRequired() const {
+  return local_refresh_request_count_ > 0 || !pending_payloads_.empty();
+}
+
+bool DataTypeTracker::HasLocalChangePending() const {
+  return local_nudge_count_ > 0;
+}
+
+bool DataTypeTracker::HasPendingInvalidation() const {
+  return !pending_payloads_.empty();
+}
+
+std::string DataTypeTracker::GetMostRecentInvalidationPayload() const {
+  return pending_payloads_.back();
+}
+
+void DataTypeTracker::FillGetUpdatesTriggersMessage(
+    sync_pb::GetUpdateTriggers* msg) const {
+  // Fill the list of payloads, if applicable.  The payloads must be ordered
+  // oldest to newest, so we insert them in the same order as we've been storing
+  // them internally.
+  for (PayloadList::const_iterator payload_it = pending_payloads_.begin();
+       payload_it != pending_payloads_.end(); ++payload_it) {
+    msg->add_notification_hint(*payload_it);
+  }
+
+  msg->set_client_dropped_hints(local_payload_overflow_);
+  msg->set_local_modification_nudges(local_nudge_count_);
+  msg->set_datatype_refresh_nudges(local_refresh_request_count_);
+
+  // TODO(rlarocque): Support Tango trickles.  See crbug.com/223437.
+  // msg->set_server_dropped_hints(server_payload_oveflow_);
+}
+
+}  // namespace sessions
+}  // namespace syncer

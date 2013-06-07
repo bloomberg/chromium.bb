@@ -16,41 +16,47 @@ size_t NudgeTracker::kDefaultMaxPayloadsPerType = 10;
 NudgeTracker::NudgeTracker()
     : updates_source_(sync_pb::GetUpdatesCallerInfo::UNKNOWN),
       invalidations_enabled_(false),
-      invalidations_out_of_sync_(true),
-      num_payloads_per_type_(kDefaultMaxPayloadsPerType) { }
+      invalidations_out_of_sync_(true) {
+  ModelTypeSet protocol_types = ProtocolTypes();
+  // Default initialize all the type trackers.
+  for (ModelTypeSet::Iterator it = protocol_types.First(); it.Good();
+       it.Inc()) {
+    type_trackers_[it.Get()] = DataTypeTracker();
+  }
+}
 
 NudgeTracker::~NudgeTracker() { }
 
 bool NudgeTracker::IsGetUpdatesRequired() {
-  if (!refresh_requested_counts_.empty()) {
-    return true;
-  } else if (!payload_list_map_.empty()) {
-    return true;
-  } else {
-    return false;
+  for (TypeTrackerMap::iterator it = type_trackers_.begin();
+       it != type_trackers_.end(); ++it) {
+    if (it->second.IsGetUpdatesRequired()) {
+      return true;
+    }
   }
+  return false;
 }
 
 bool NudgeTracker::IsSyncRequired() {
-  if (!local_nudge_counts_.empty()) {
-    return true;
-  } else if (IsGetUpdatesRequired()) {
-    return true;
-  } else {
-    return false;
+  for (TypeTrackerMap::iterator it = type_trackers_.begin();
+       it != type_trackers_.end(); ++it) {
+    if (it->second.IsSyncRequired()) {
+      return true;
+    }
   }
+  return false;
 }
 
 void NudgeTracker::RecordSuccessfulSyncCycle() {
   updates_source_ = sync_pb::GetUpdatesCallerInfo::UNKNOWN;
-  local_nudge_counts_.clear();
-  refresh_requested_counts_.clear();
-  payload_list_map_.clear();
-  locally_dropped_payload_types_.Clear();
-  server_dropped_payload_types_.Clear();
 
   // A successful cycle while invalidations are enabled puts us back into sync.
   invalidations_out_of_sync_ = !invalidations_enabled_;
+
+  for (TypeTrackerMap::iterator it = type_trackers_.begin();
+       it != type_trackers_.end(); ++it) {
+    it->second.RecordSuccessfulSyncCycle();
+  }
 }
 
 void NudgeTracker::RecordLocalChange(ModelTypeSet types) {
@@ -64,7 +70,8 @@ void NudgeTracker::RecordLocalChange(ModelTypeSet types) {
   }
 
   for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
-    local_nudge_counts_[it.Get()]++;
+    DCHECK(type_trackers_.find(it.Get()) != type_trackers_.end());
+    type_trackers_[it.Get()].RecordLocalChange();
   }
 }
 
@@ -78,7 +85,8 @@ void NudgeTracker::RecordLocalRefreshRequest(ModelTypeSet types) {
   }
 
   for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
-    refresh_requested_counts_[it.Get()]++;
+    DCHECK(type_trackers_.find(it.Get()) != type_trackers_.end());
+    type_trackers_[it.Get()].RecordLocalRefreshRequest();
   }
 }
 
@@ -90,14 +98,8 @@ void NudgeTracker::RecordRemoteInvalidation(
        i != invalidation_map.end(); ++i) {
     const ModelType type = i->first;
     const std::string& payload = i->second.payload;
-
-    payload_list_map_[type].push_back(payload);
-
-    // Respect the size limits on locally queued invalidation hints.
-    if (payload_list_map_[type].size() > num_payloads_per_type_) {
-      payload_list_map_[type].pop_front();
-      locally_dropped_payload_types_.Put(type);
-    }
+    DCHECK(type_trackers_.find(type) != type_trackers_.end());
+    type_trackers_[type].RecordRemoteInvalidation(payload);
   }
 }
 
@@ -110,33 +112,26 @@ void NudgeTracker::OnInvalidationsDisabled() {
   invalidations_out_of_sync_ = true;
 }
 
+// This function is intended to mimic the behavior of older clients.  Newer
+// clients and servers will not rely on SyncSourceInfo.  See FillProtoMessage
+// for the more modern equivalent.
 SyncSourceInfo NudgeTracker::GetSourceInfo() const {
-  // The old-style source added an empty hint for all locally nudge types.
-  // This will be overwritten with the proper hint for any types that were both
-  // locally nudged and invalidated.
-  ModelTypeSet nudged_types;
-  for (NudgeMap::const_iterator it = local_nudge_counts_.begin();
-       it != local_nudge_counts_.end(); ++it) {
-    nudged_types.Put(it->first);
-  }
-  ModelTypeInvalidationMap invalidation_map =
-      ModelTypeSetToInvalidationMap(nudged_types, std::string());
-
-  // The old-style source info can contain only one hint per type.  We grab the
-  // most recent, to mimic the old coalescing behaviour.
-  for (PayloadListMap::const_iterator it = payload_list_map_.begin();
-       it != payload_list_map_.end(); ++it) {
-    ModelType type = it->first;
-    const PayloadList& list = it->second;
-
-    if (!list.empty()) {
+  ModelTypeInvalidationMap invalidation_map;
+  for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
+       it != type_trackers_.end(); ++it) {
+    if (it->second.HasPendingInvalidation()) {
+      // The old-style source info can contain only one hint per type.  We grab
+      // the most recent, to mimic the old coalescing behaviour.
       Invalidation invalidation;
-      invalidation.payload = list.back();
-      if (invalidation_map.find(type) != invalidation_map.end()) {
-        invalidation_map[type] = invalidation;
-      } else {
-        invalidation_map.insert(std::make_pair(type, invalidation));
-      }
+      invalidation.payload = it->second.GetMostRecentInvalidationPayload();
+      invalidation_map.insert(std::make_pair(it->first, invalidation));
+    } else if (it->second.HasLocalChangePending()) {
+      // The old-style source info sent up an empty string (as opposed to
+      // nothing at all) when the type was locally nudged, but had not received
+      // any invalidations.
+      Invalidation invalidation;
+      invalidation.payload = "";
+      invalidation_map.insert(std::make_pair(it->first, invalidation));
     }
   }
 
@@ -145,9 +140,11 @@ SyncSourceInfo NudgeTracker::GetSourceInfo() const {
 
 ModelTypeSet NudgeTracker::GetLocallyModifiedTypes() const {
   ModelTypeSet nudged_types;
-  for (NudgeMap::const_iterator it = local_nudge_counts_.begin();
-       it != local_nudge_counts_.end(); ++it) {
-    nudged_types.Put(it->first);
+  for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
+       it != type_trackers_.end(); ++it) {
+    if (it->second.HasLocalChangePending()) {
+      nudged_types.Put(it->first);
+    }
   }
   return nudged_types;
 }
@@ -160,48 +157,20 @@ sync_pb::GetUpdatesCallerInfo::GetUpdatesSource NudgeTracker::updates_source()
 void NudgeTracker::FillProtoMessage(
     ModelType type,
     sync_pb::GetUpdateTriggers* msg) const {
-  // Fill the list of payloads, if applicable.  The payloads must be ordered
-  // oldest to newest, so we insert them in the same order as we've been storing
-  // them internally.
-  PayloadListMap::const_iterator type_it = payload_list_map_.find(type);
-  if (type_it != payload_list_map_.end()) {
-    const PayloadList& payload_list = type_it->second;
-    for (PayloadList::const_iterator payload_it = payload_list.begin();
-         payload_it != payload_list.end(); ++payload_it) {
-      msg->add_notification_hint(*payload_it);
-    }
-  }
+  DCHECK(type_trackers_.find(type) != type_trackers_.end());
 
-  // TODO(rlarocque): Support Tango trickles.  See crbug.com/223437.
-  // msg->set_server_dropped_hints(server_dropped_payload_types_.Has(type));
-
-  msg->set_client_dropped_hints(locally_dropped_payload_types_.Has(type));
+  // Fill what we can from the global data.
   msg->set_invalidations_out_of_sync(invalidations_out_of_sync_);
 
-  {
-    NudgeMap::const_iterator it = local_nudge_counts_.find(type);
-    if (it == local_nudge_counts_.end()) {
-      msg->set_local_modification_nudges(0);
-    } else {
-      msg->set_local_modification_nudges(it->second);
-    }
-  }
-
-  {
-    NudgeMap::const_iterator it = refresh_requested_counts_.find(type);
-    if (it == refresh_requested_counts_.end()) {
-      msg->set_datatype_refresh_nudges(0);
-    } else {
-      msg->set_datatype_refresh_nudges(it->second);
-    }
-  }
+  // Delegate the type-specific work to TypeSchedulingData class.
+  type_trackers_.find(type)->second.FillGetUpdatesTriggersMessage(msg);
 }
 
 void NudgeTracker::SetHintBufferSize(size_t size) {
-  // We could iterate through the list and trim it down to size here, but that
-  // seems unnecessary.  This limit will take effect on all future invalidations
-  // received.
-  num_payloads_per_type_ = size;
+  for (TypeTrackerMap::iterator it = type_trackers_.begin();
+       it != type_trackers_.end(); ++it) {
+    it->second.UpdatePayloadBufferSize(size);
+  }
 }
 
 }  // namespace sessions
