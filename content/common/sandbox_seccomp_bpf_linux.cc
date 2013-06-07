@@ -1412,9 +1412,8 @@ ErrorCode BaselinePolicy(Sandbox* sandbox, int sysno) {
     return ErrorCode(ErrorCode::ERR_ALLOWED);
 #endif
 
-  // TODO(jln): start returning EPERM for everything.
   if (IsFileSystem(sysno) || IsCurrentDirectory(sysno)) {
-    return ErrorCode(ENOENT);
+    return ErrorCode(EPERM);
   }
 
   if (IsAnySystemV(sysno)) {
@@ -1701,9 +1700,7 @@ void RunSandboxSanityChecks(const std::string& process_type) {
     // open() must be restricted.
     syscall_ret = open("/etc/passwd", O_RDONLY);
     CHECK_EQ(-1, syscall_ret);
-    // Our policies return ENOENT, but the low-level broker process
-    // uses EPERM.
-    CHECK(errno == ENOENT || errno == EPERM);
+    CHECK_EQ(EPERM, errno);
 
     // TODO(jorgelo): re-enable on arm (crbug.com/235609).
     if (!IsArchitectureArm()) {
