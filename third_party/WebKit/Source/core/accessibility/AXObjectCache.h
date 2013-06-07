@@ -249,7 +249,6 @@ inline AccessibilityObject* AXObjectCache::getOrCreate(RenderObject*) { return 0
 inline AccessibilityObject* AXObjectCache::getOrCreate(Node*) { return 0; }
 inline AccessibilityObject* AXObjectCache::getOrCreate(Widget*) { return 0; }
 inline AccessibilityObject* AXObjectCache::rootObject() { return 0; }
-inline AccessibilityObject* AXObjectCache::rootObjectForFrame(Frame*) { return 0; }
 inline Element* AXObjectCache::rootAXEditableElement(Node*) { return 0; }
 inline bool nodeHasRole(Node*, const String&) { return false; }
 inline void AXObjectCache::startCachingComputedObjectAttributesUntilTreeMutates() { }
