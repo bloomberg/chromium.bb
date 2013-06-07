@@ -194,11 +194,16 @@ class PnaclPackaging(object):
   package_base = os.path.dirname(__file__)
   # The extension system's manifest.json.
   manifest_template = J(package_base, 'pnacl_manifest_template.json')
-  # Pnacl-specific info
-  pnacl_template = J(package_base, 'pnacl_info_template.json')
+
+  # Pnacl-specific info - set from the command line.
+  pnacl_template = None
 
   # Agreed-upon name for pnacl-specific info.
   pnacl_json = 'pnacl.json'
+
+  @staticmethod
+  def SetPnaclInfoTemplatePath(path):
+    PnaclPackaging.pnacl_template = path
 
   @staticmethod
   def GenerateManifests(target_dir, version, arch, web_accessible,
@@ -582,6 +587,9 @@ def Main():
   parser.add_option('-g', '--generate_key',
                     action='store_true', dest='gen_key',
                     help='Generate a fresh private key, and exit.')
+  parser.add_option('--info_template_path',
+                    dest='info_template_path', default=None,
+                    help='Path of the info template file')
   parser.add_option('-C', '--chrome_path', dest='chrome_path',
                     help='Location of chrome.')
   parser.add_option('-v', '--verbose', dest='verbose', default=False,
@@ -606,6 +614,9 @@ def Main():
   if options.gen_key:
     GeneratePrivateKey(options)
     return 0
+
+  if options.info_template_path:
+    PnaclPackaging.SetPnaclInfoTemplatePath(options.info_template_path)
 
   lib_overrides = {}
   for o in options.lib_overrides:

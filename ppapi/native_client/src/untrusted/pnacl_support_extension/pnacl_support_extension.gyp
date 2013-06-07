@@ -19,7 +19,7 @@
           '../../../../../native_client/tools.gyp:prep_toolchain',
         ],
         'sources': [
-          'pnacl_info_template.json',
+          '../../../../../native_client/pnacl/driver/pnacl_info_template.json',
         ],
         # We could use 'copies', but we want to rename the files
         # in a white-listed way first.  Thus use a script.
@@ -142,6 +142,7 @@
               '--dest=<(PRODUCT_DIR)/pnacl',
               '<@(lib_overrides)',
               '--installer_only=<(target_arch)',
+              '--info_template_path=../../../../../native_client/pnacl/driver/pnacl_info_template.json',
               # ABI Version Number.
               '0.0.0.1',
             ],
