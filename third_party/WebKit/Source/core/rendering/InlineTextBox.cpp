@@ -393,33 +393,6 @@ bool InlineTextBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
     return false;
 }
 
-FloatSize InlineTextBox::applyShadowToGraphicsContext(GraphicsContext* context, const ShadowData* shadow, const FloatRect& textRect, bool stroked, bool opaque, bool horizontal)
-{
-    if (!shadow)
-        return FloatSize();
-
-    FloatSize extraOffset;
-    int shadowX = horizontal ? shadow->x() : shadow->y();
-    int shadowY = horizontal ? shadow->y() : -shadow->x();
-    FloatSize shadowOffset(shadowX, shadowY);
-    int shadowBlur = shadow->blur();
-    const Color& shadowColor = shadow->color();
-
-    if (shadow->next() || stroked || !opaque) {
-        FloatRect shadowRect(textRect);
-        shadowRect.inflate(shadowBlur);
-        shadowRect.move(shadowOffset);
-        context->save();
-        context->clip(shadowRect);
-
-        extraOffset = FloatSize(0, 2 * textRect.height() + max(0.0f, shadowOffset.height()) + shadowBlur);
-        shadowOffset -= extraOffset;
-    }
-
-    context->setShadow(shadowOffset, shadowBlur, shadowColor);
-    return extraOffset;
-}
-
 static void paintTextWithShadows(GraphicsContext* context, const Font& font, const TextRun& textRun,
                                  const AtomicString& emphasisMark, int emphasisMarkOffset,
                                  int startOffset, int endOffset, int truncationPoint,

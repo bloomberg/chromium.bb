@@ -25,6 +25,7 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/FloatConversion.h"
+#include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/HitTestResult.h"
@@ -598,6 +599,7 @@ void SVGInlineTextBox::paintTextWithShadows(GraphicsContext* context, RenderStyl
 
     const Font& scaledFont = textRenderer->scaledFont();
     const ShadowData* shadow = style->textShadow();
+    bool hasShadow = shadow;
 
     FloatPoint textOrigin(fragment.x, fragment.y);
     FloatSize textSize(fragment.width, fragment.height);
@@ -605,41 +607,34 @@ void SVGInlineTextBox::paintTextWithShadows(GraphicsContext* context, RenderStyl
     if (scalingFactor != 1) {
         textOrigin.scale(scalingFactor, scalingFactor);
         textSize.scale(scalingFactor);
-    }
-
-    FloatRect shadowRect(FloatPoint(textOrigin.x(), textOrigin.y() - scaledFont.fontMetrics().floatAscent()), textSize);
-    TextRunPaintInfo textRunPaintInfo(textRun);
-    textRunPaintInfo.from = startPosition;
-    textRunPaintInfo.to = endPosition;
-    textRunPaintInfo.bounds = FloatRect(textOrigin, textSize);
-
-    do {
-        if (!prepareGraphicsContextForTextPainting(context, scalingFactor, textRun, style))
-            break;
-
-        FloatSize extraOffset;
-        if (shadow)
-            extraOffset = applyShadowToGraphicsContext(context, shadow, shadowRect, false /* stroked */, true /* opaque */, true /* horizontal */);
-
         context->save();
         context->scale(FloatSize(1 / scalingFactor, 1 / scalingFactor));
+    }
 
-        scaledFont.drawText(context, textRunPaintInfo, textOrigin + extraOffset);
+    if (hasShadow) {
+        DrawLooper drawLooper;
+        do {
+            FloatSize offset(shadow->x(), shadow->y());
+            drawLooper.addShadow(offset, shadow->blur(), shadow->color(),
+                DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowRespectsAlpha);
+        } while ((shadow = shadow->next()));
+        drawLooper.addUnmodifiedContent();
+        context->setDrawLooper(drawLooper);
+    }
 
-        context->restore();
-
+    if (prepareGraphicsContextForTextPainting(context, scalingFactor, textRun, style)) {
+        TextRunPaintInfo textRunPaintInfo(textRun);
+        textRunPaintInfo.from = startPosition;
+        textRunPaintInfo.to = endPosition;
+        textRunPaintInfo.bounds = FloatRect(textOrigin, textSize);
+        scaledFont.drawText(context, textRunPaintInfo, textOrigin);
         restoreGraphicsContextAfterTextPainting(context, textRun);
+    }
 
-        if (!shadow)
-            break;
-
-        if (shadow->next())
-            context->restore();
-        else
-            context->clearShadow();
-
-        shadow = shadow->next();
-    } while (shadow);
+    if (scalingFactor != 1)
+        context->restore();
+    else if (hasShadow)
+        context->clearShadow();
 }
 
 void SVGInlineTextBox::paintText(GraphicsContext* context, RenderStyle* style, RenderStyle* selectionStyle, const SVGTextFragment& fragment, bool hasSelection, bool paintSelectedTextOnly)
