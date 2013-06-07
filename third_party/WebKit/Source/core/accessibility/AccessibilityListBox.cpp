@@ -123,20 +123,6 @@ void AccessibilityListBox::selectedChildren(AccessibilityChildrenVector& result)
     }    
 }
 
-void AccessibilityListBox::visibleChildren(AccessibilityChildrenVector& result)
-{
-    ASSERT(result.isEmpty());
-    
-    if (!hasChildren())
-        addChildren();
-    
-    unsigned length = m_children.size();
-    for (unsigned i = 0; i < length; i++) {
-        if (toRenderListBox(m_renderer)->listIndexIsVisible(i))
-            result.append(m_children[i]);
-    }
-}
-
 AccessibilityObject* AccessibilityListBox::listBoxOptionAccessibilityObject(HTMLElement* element) const
 {
     // skip hr elements

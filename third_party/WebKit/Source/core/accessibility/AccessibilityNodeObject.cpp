@@ -390,14 +390,6 @@ static Element* siblingWithAriaRole(String role, Node* node)
     return 0;
 }
 
-Element* AccessibilityNodeObject::menuElementForMenuButton() const
-{
-    if (ariaRoleAttribute() != MenuButtonRole)
-        return 0;
-
-    return siblingWithAriaRole("menu", node());
-}
-
 Element* AccessibilityNodeObject::menuItemElementForMenu() const
 {
     if (ariaRoleAttribute() != MenuRole)
@@ -496,11 +488,6 @@ bool AccessibilityNodeObject::isFieldset() const
     return node->hasTagName(fieldsetTag);
 }
 
-bool AccessibilityNodeObject::isGroup() const
-{
-    return roleValue() == GroupRole;
-}
-
 bool AccessibilityNodeObject::isHeading() const
 {
     return roleValue() == HeadingRole;
@@ -547,19 +534,9 @@ bool AccessibilityNodeObject::isMenu() const
     return roleValue() == MenuRole;
 }
 
-bool AccessibilityNodeObject::isMenuBar() const
-{
-    return roleValue() == MenuBarRole;
-}
-
 bool AccessibilityNodeObject::isMenuButton() const
 {
     return roleValue() == MenuButtonRole;
-}
-
-bool AccessibilityNodeObject::isMenuItem() const
-{
-    return roleValue() == MenuItemRole;
 }
 
 bool AccessibilityNodeObject::isMenuRelated() const
@@ -990,42 +967,6 @@ float AccessibilityNodeObject::minValueForRange() const
         return 0.0f;
 
     return getAttribute(aria_valueminAttr).toFloat();
-}
-
-AccessibilityObject* AccessibilityNodeObject::selectedRadioButton()
-{
-    if (!isRadioGroup())
-        return 0;
-
-    AccessibilityObject::AccessibilityChildrenVector children = this->children();
-
-    // Find the child radio button that is selected (ie. the intValue == 1).
-    size_t size = children.size();
-    for (size_t i = 0; i < size; ++i) {
-        AccessibilityObject* object = children[i].get();
-        if (object->roleValue() == RadioButtonRole && object->checkboxOrRadioValue() == ButtonStateOn)
-            return object;
-    }
-    return 0;
-}
-
-AccessibilityObject* AccessibilityNodeObject::selectedTabItem()
-{
-    if (!isTabList())
-        return 0;
-
-    // Find the child tab item that is selected (ie. the intValue == 1).
-    AccessibilityObject::AccessibilityChildrenVector tabs;
-    tabChildren(tabs);
-
-    AccessibilityObject::AccessibilityChildrenVector children = this->children();
-    size_t size = tabs.size();
-    for (size_t i = 0; i < size; ++i) {
-        AccessibilityObject* object = children[i].get();
-        if (object->isTabItem() && object->isChecked())
-            return object;
-    }
-    return 0;
 }
 
 float AccessibilityNodeObject::stepValueForRange() const

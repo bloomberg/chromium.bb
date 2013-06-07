@@ -100,7 +100,6 @@ protected:
     virtual bool isLoaded() const;
     virtual bool isOffScreen() const;
     virtual bool isReadOnly() const;
-    virtual bool isUnvisited() const;
     virtual bool isVisited() const;
 
     // Check object state.
@@ -108,18 +107,7 @@ protected:
     virtual bool isSelected() const;
 
     // Check whether certain properties can be modified.
-    virtual bool canSetTextRangeAttributes() const;
     virtual bool canSetValueAttribute() const;
-    virtual bool canSetExpandedAttribute() const;
-
-    // Rich text properties.
-    virtual bool hasBoldFont() const;
-    virtual bool hasItalicFont() const;
-    virtual bool hasPlainText() const;
-    virtual bool hasSameFont(RenderObject*) const;
-    virtual bool hasSameFontColor(RenderObject*) const;
-    virtual bool hasSameStyle(RenderObject*) const;
-    virtual bool hasUnderline() const;
 
     // Whether objects are ignored, i.e. not included in the tree.
     virtual AccessibilityObjectInclusion defaultObjectInclusion() const;
@@ -128,16 +116,13 @@ protected:
     // Properties of static elements.
     virtual const AtomicString& accessKey() const;
     virtual AccessibilityObject* correspondingControlForLabelElement() const;
-    virtual AccessibilityObject* correspondingLabelForControlElement() const;
     virtual bool exposesTitleUIElement() const;
     virtual void linkedUIElements(AccessibilityChildrenVector&) const;
     virtual AccessibilityOrientation orientation() const;
-    virtual void tabChildren(AccessibilityChildrenVector&);
     virtual String text() const;
     virtual int textLength() const;
     virtual AccessibilityObject* titleUIElement() const;
     virtual KURL url() const;
-    virtual void visibleChildren(AccessibilityChildrenVector&);
 
     // Properties of interactive elements.
     virtual String actionVerb() const;
@@ -148,10 +133,7 @@ protected:
     virtual AccessibilityObject* activeDescendant() const;
     virtual void ariaFlowToElements(AccessibilityChildrenVector&) const;
     virtual bool ariaHasPopup() const;
-    virtual void ariaOwnsElements(AccessibilityChildrenVector&) const;
     virtual bool ariaRoleHasPresentationalChildren() const;
-    virtual void determineARIADropEffects(Vector<String>&);
-    virtual bool isARIAGrabbed();
     virtual bool isPresentationalChildOfAriaRole() const;
     virtual bool shouldFocusActiveDescendant() const;
     virtual bool supportsARIADragging() const;
@@ -217,7 +199,6 @@ protected:
     virtual void setFocused(bool);
     virtual void setSelectedTextRange(const PlainTextRange&);
     virtual void setValue(const String&);
-    virtual void setSelectedRows(AccessibilityChildrenVector&);
     virtual void scrollTo(const IntPoint&) const;
 
     // Notifications that this object may have changed.
@@ -226,31 +207,17 @@ protected:
     virtual void textChanged();
 
     // Text metrics. Most of these should be deprecated, needs major cleanup.
-    virtual VisiblePositionRange visiblePositionRange() const;
-    virtual VisiblePositionRange visiblePositionRangeForLine(unsigned) const;
-    virtual IntRect boundsForVisiblePositionRange(const VisiblePositionRange&) const;
-    virtual void setSelectedVisiblePositionRange(const VisiblePositionRange&) const;
-    virtual VisiblePosition visiblePositionForPoint(const IntPoint&) const;
-    virtual VisiblePosition visiblePositionForIndex(unsigned indexValue, bool lastIndexOK) const;
     virtual int index(const VisiblePosition&) const;
     virtual VisiblePosition visiblePositionForIndex(int) const;
     virtual int indexForVisiblePosition(const VisiblePosition&) const;
     virtual void lineBreaks(Vector<int>&) const;
-    virtual PlainTextRange doAXRangeForLine(unsigned) const;
-    virtual PlainTextRange doAXRangeForIndex(unsigned) const;
     virtual String doAXStringForRange(const PlainTextRange&) const;
-    virtual IntRect doAXBoundsForRange(const PlainTextRange&) const;
-
-    // CSS3 Speech properties.
-    virtual ESpeak speakProperty() const;
 
 private:
     bool isAllowedChildOfTree() const;
     bool hasTextAlternative() const;
     void ariaListboxSelectedChildren(AccessibilityChildrenVector&);
-    void ariaListboxVisibleChildren(AccessibilityChildrenVector&);
     PlainTextRange ariaSelectedTextRange() const;
-    Element* rootEditableElementForPosition(const Position&) const;
     bool nodeIsTextControl(const Node*) const;
     bool isTabItemSelected() const;
     void addRadioButtonGroupMembers(AccessibilityChildrenVector& linkedUIElements) const;

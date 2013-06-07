@@ -62,7 +62,6 @@ public:
 
     virtual LayoutRect elementRect() const;
     virtual AccessibilityObject* parentObject() const;
-    bool isListBoxOption() const { return true; }
     
 private:
     HTMLElement* m_optionElement;
@@ -70,7 +69,6 @@ private:
     virtual bool canHaveChildren() const { return false; }
     HTMLSelectElement* listBoxOptionParentNode() const;
     int listBoxOptionIndex() const;
-    IntRect listBoxOptionRect() const;
     AccessibilityObject* listBoxOptionAccessibilityObject(HTMLElement*) const;
     virtual bool computeAccessibilityIsIgnored() const;
 };

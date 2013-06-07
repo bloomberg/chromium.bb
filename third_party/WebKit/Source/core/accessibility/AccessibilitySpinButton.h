@@ -39,9 +39,6 @@ public:
     
     void setSpinButtonElement(SpinButtonElement* spinButton) { m_spinButtonElement = spinButton; }
     
-    AccessibilityObject* incrementButton();
-    AccessibilityObject* decrementButton();
-
     void step(int amount);
     
 private:

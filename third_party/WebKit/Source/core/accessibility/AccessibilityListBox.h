@@ -48,7 +48,6 @@ public:
     virtual AccessibilityRole roleValue() const { return ListBoxRole; }
         
     virtual void selectedChildren(AccessibilityChildrenVector&);
-    virtual void visibleChildren(AccessibilityChildrenVector&);
     
     virtual void addChildren();
 

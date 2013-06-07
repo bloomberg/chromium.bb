@@ -83,8 +83,6 @@ public:
 
     // Returns the root object for the entire document.
     AccessibilityObject* rootObject();
-    // Returns the root object for a specific frame.
-    AccessibilityObject* rootObjectForFrame(Frame*);
     
     // For AX objects with elements that back them.
     AccessibilityObject* getOrCreate(RenderObject*);

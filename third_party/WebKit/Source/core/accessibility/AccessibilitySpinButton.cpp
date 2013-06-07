@@ -45,26 +45,6 @@ AccessibilitySpinButton::~AccessibilitySpinButton()
 {
 }
     
-AccessibilityObject* AccessibilitySpinButton::incrementButton()
-{
-    if (!m_haveChildren)
-        addChildren();
-
-    ASSERT(m_children.size() == 2);
-
-    return m_children[0].get();
-}
-   
-AccessibilityObject* AccessibilitySpinButton::decrementButton()
-{
-    if (!m_haveChildren)
-        addChildren();
-    
-    ASSERT(m_children.size() == 2);
-    
-    return m_children[1].get();    
-}
-    
 LayoutRect AccessibilitySpinButton::elementRect() const
 {
     ASSERT(m_spinButtonElement);

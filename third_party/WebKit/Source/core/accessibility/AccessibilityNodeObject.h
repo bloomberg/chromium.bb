@@ -88,7 +88,6 @@ protected:
     bool isGenericFocusableElement() const;
     HTMLLabelElement* labelForElement(Element*) const;
     AccessibilityObject* menuButtonForMenu() const;
-    Element* menuElementForMenuButton() const;
     Element* menuItemElementForMenu() const;
     Element* mouseButtonListener() const;
     AccessibilityRole remapAriaRoleDueToParent(AccessibilityRole) const;
@@ -106,7 +105,6 @@ protected:
     virtual bool isAnchor() const;
     virtual bool isControl() const;
     virtual bool isFieldset() const;
-    virtual bool isGroup() const;
     virtual bool isHeading() const;
     virtual bool isHovered() const;
     virtual bool isImage() const;
@@ -114,9 +112,7 @@ protected:
     virtual bool isInputImage() const;
     virtual bool isLink() const;
     virtual bool isMenu() const;
-    virtual bool isMenuBar() const;
     virtual bool isMenuButton() const;
-    virtual bool isMenuItem() const;
     virtual bool isMenuRelated() const;
     virtual bool isMultiSelectable() const;
     virtual bool isNativeCheckboxOrRadio() const;
@@ -151,8 +147,6 @@ protected:
     virtual float valueForRange() const;
     virtual float maxValueForRange() const;
     virtual float minValueForRange() const;
-    virtual AccessibilityObject* selectedRadioButton();
-    virtual AccessibilityObject* selectedTabItem();
     virtual float stepValueForRange() const;
     virtual String stringValue() const;
 

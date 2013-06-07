@@ -62,8 +62,6 @@ public:
     static PassRefPtr<AccessibilityObject> create(RenderObject*);
     virtual ~AccessibilityMediaTimeline() { }
 
-    virtual bool isMediaTimeline() const { return true; }
-
     virtual String helpText() const;
     virtual String valueDescription() const;
     const AtomicString& getAttribute(const QualifiedName& attribute) const;
@@ -105,7 +103,6 @@ public:
 
 private:
     explicit AccessibilityMediaTimeDisplay(RenderObject*);
-    virtual bool isMediaControlLabel() const { return true; }
     virtual bool computeAccessibilityIsIgnored() const;
 };
 

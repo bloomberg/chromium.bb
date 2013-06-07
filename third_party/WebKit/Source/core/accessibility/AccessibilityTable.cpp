@@ -412,22 +412,6 @@ AccessibilityObject::AccessibilityChildrenVector& AccessibilityTable::rows()
     return m_rows;
 }
     
-void AccessibilityTable::rowHeaders(AccessibilityChildrenVector& headers)
-{
-    if (!m_renderer)
-        return;
-    
-    updateChildrenIfNecessary();
-    
-    unsigned rowCount = m_rows.size();
-    for (unsigned k = 0; k < rowCount; ++k) {
-        AccessibilityObject* header = static_cast<AccessibilityTableRow*>(m_rows[k].get())->headerObject();
-        if (!header)
-            continue;
-        headers.append(header);
-    }
-}
-
 void AccessibilityTable::columnHeaders(AccessibilityChildrenVector& headers)
 {
     if (!m_renderer)

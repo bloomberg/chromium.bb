@@ -45,7 +45,6 @@ private:
     explicit AccessibilityScrollbar(Scrollbar*);
 
     virtual bool canSetValueAttribute() const { return true; }
-    virtual bool canSetNumericValue() const { return true; }
 
     virtual bool isAccessibilityScrollbar() const { return true; }
     virtual LayoutRect elementRect() const;

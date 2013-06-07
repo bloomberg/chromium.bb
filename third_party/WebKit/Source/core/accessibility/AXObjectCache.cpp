@@ -396,16 +396,6 @@ AccessibilityObject* AXObjectCache::rootObject()
     return getOrCreate(m_document->view());
 }
 
-AccessibilityObject* AXObjectCache::rootObjectForFrame(Frame* frame)
-{
-    if (!gAccessibilityEnabled)
-        return 0;
-
-    if (!frame)
-        return 0;
-    return getOrCreate(frame->view());
-}    
-    
 AccessibilityObject* AXObjectCache::getOrCreate(AccessibilityRole role)
 {
     RefPtr<AccessibilityObject> obj = 0;
