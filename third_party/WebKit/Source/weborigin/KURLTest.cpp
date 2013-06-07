@@ -303,7 +303,13 @@ TEST(KURLTest, Decode)
     EXPECT_EQ(invalidExpected, invalid);
 }
 
-TEST(KURLTest, Encode)
+// TODO: Re-enable this test on windows after getting it to load ICU data
+#if defined(WIN32)
+#define MAYBE_Encode DISABLED_Encode
+#else
+#define MAYBE_Encode Encode
+#endif
+TEST(KURLTest, MAYBE_Encode)
 {
     struct EncodeCase {
         const char* input;
