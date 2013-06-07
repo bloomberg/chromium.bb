@@ -5,7 +5,7 @@
 #ifndef WEBKIT_RENDERER_WEBPREFERENCES_RENDERER_H_
 #define WEBKIT_RENDERER_WEBPREFERENCES_RENDERER_H_
 
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/renderer/webkit_renderer_export.h"
 
 namespace WebKit {
 class WebView;
@@ -15,8 +15,8 @@ struct WebPreferences;
 
 namespace webkit_glue {
 
-WEBKIT_GLUE_EXPORT void ApplyWebPreferences(const WebPreferences& prefs,
-                                            WebKit::WebView* web_view);
+WEBKIT_RENDERER_EXPORT void ApplyWebPreferences(const WebPreferences& prefs,
+                                                WebKit::WebView* web_view);
 
 }  // namespace webkit_glue
 

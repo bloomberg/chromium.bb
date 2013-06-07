@@ -53,7 +53,7 @@
 
 #include "base/basictypes.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/common/webkit_common_export.h"
 
 namespace WebKit {
 class WebURLLoader;
@@ -65,7 +65,7 @@ namespace webkit_glue {
 // Used by unit tests to access private members.
 class MultipartResponseDelegateTester;
 
-class WEBKIT_GLUE_EXPORT MultipartResponseDelegate {
+class WEBKIT_COMMON_EXPORT MultipartResponseDelegate {
  public:
   MultipartResponseDelegate(WebKit::WebURLLoaderClient* client,
                             WebKit::WebURLLoader* loader,

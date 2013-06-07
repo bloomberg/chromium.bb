@@ -11,12 +11,12 @@
 #include "base/compiler_specific.h"
 #include "net/http/http_response_info.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/common/webkit_common_export.h"
 
 namespace webkit_glue {
 
 // Base class for Chrome's implementation of the "extra data".
-class WEBKIT_GLUE_EXPORT WebURLResponseExtraDataImpl :
+class WEBKIT_COMMON_EXPORT WebURLResponseExtraDataImpl :
     public NON_EXPORTED_BASE(WebKit::WebURLResponse::ExtraData) {
  public:
   explicit WebURLResponseExtraDataImpl(

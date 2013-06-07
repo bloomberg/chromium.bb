@@ -17,7 +17,7 @@
 
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/common/webkit_common_export.h"
 
 namespace WebKit {
 class WebView;
@@ -45,11 +45,11 @@ enum EditingBehavior {
 // The ISO 15924 script code for undetermined script aka Common. It's the
 // default used on WebKit's side to get/set a font setting when no script is
 // specified.
-WEBKIT_GLUE_EXPORT extern const char kCommonScript[];
+WEBKIT_COMMON_EXPORT extern const char kCommonScript[];
 
 }  // namespace webkit_glue
 
-struct WEBKIT_GLUE_EXPORT WebPreferences {
+struct WEBKIT_COMMON_EXPORT WebPreferences {
   webkit_glue::ScriptFontFamilyMap standard_font_family_map;
   webkit_glue::ScriptFontFamilyMap fixed_font_family_map;
   webkit_glue::ScriptFontFamilyMap serif_font_family_map;

@@ -17,7 +17,7 @@
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/common/webkit_common_export.h"
 
 struct IDataObject;
 
@@ -25,9 +25,9 @@ namespace WebKit {
 class WebDragData;
 }
 
-struct WEBKIT_GLUE_EXPORT WebDropData {
+struct WEBKIT_COMMON_EXPORT WebDropData {
   // The struct is used to represent a file in the drop data.
-  struct WEBKIT_GLUE_EXPORT FileInfo {
+  struct WEBKIT_COMMON_EXPORT FileInfo {
     FileInfo();
     FileInfo(const base::string16& path, const base::string16& display_name);
 

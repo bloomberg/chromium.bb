@@ -60,8 +60,7 @@
       'type': '<(component)',
       'variables': { 'enable_wexit_time_destructors': 1, },
       'defines': [
-        'WEBKIT_EXTENSIONS_IMPLEMENTATION',
-        'WEBKIT_GLUE_IMPLEMENTATION',
+        'WEBKIT_COMMON_IMPLEMENTATION',
       ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
@@ -75,23 +74,18 @@
         '<(DEPTH)/url/url.gyp:url_lib',
       ],
 
-      'include_dirs': [
-        '<(INTERMEDIATE_DIR)',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit',
-        '<(SHARED_INTERMEDIATE_DIR)/ui',
-      ],
-
       'sources': [
-        'multipart_response_delegate.cc',
-        'multipart_response_delegate.h',
         '../common/webdropdata.cc',
         '../common/webdropdata.h',
+        '../common/webkit_common_export.h',
+        '../common/webpreferences.cc',
+        '../common/webpreferences.h',
+        'multipart_response_delegate.cc',
+        'multipart_response_delegate.h',
         'weburlrequest_extradata_impl.cc',
         'weburlrequest_extradata_impl.h',
         'weburlresponse_extradata_impl.cc',
         'weburlresponse_extradata_impl.h',
-        '../common/webpreferences.cc',
-        '../common/webpreferences.h',
       ],
 
       'conditions': [
@@ -128,8 +122,7 @@
       'type': '<(component)',
       'variables': { 'enable_wexit_time_destructors': 1, },
       'defines': [
-        'WEBKIT_EXTENSIONS_IMPLEMENTATION',
-        'WEBKIT_GLUE_IMPLEMENTATION',
+        'WEBKIT_RENDERER_IMPLEMENTATION',
       ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
@@ -140,17 +133,14 @@
         'glue_common',
       ],
 
-      'include_dirs': [
-        '<(INTERMEDIATE_DIR)',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit',
-      ],
-
       'sources': [
         '../renderer/cpp_bound_class.cc',
         '../renderer/cpp_bound_class.h',
         '../renderer/cpp_variant.cc',
         '../renderer/cpp_variant.h',
+        '../renderer/webkit_renderer_export.h',
         '../renderer/webpreferences_renderer.cc',
+        '../renderer/webpreferences_renderer.h',
       ],
     },
 
