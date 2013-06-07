@@ -41,6 +41,7 @@ class SearchBoxExtension {
   static void DispatchThemeChange(WebKit::WebFrame* frame);
   static void DispatchBarsHidden(WebKit::WebFrame* frame);
   static void DispatchFocusChange(WebKit::WebFrame* frame);
+  static void DispatchToggleVoiceSearch(WebKit::WebFrame* frame);
 
   // New Tab Page API.
   static void DispatchMostVisitedChanged(WebKit::WebFrame* frame);

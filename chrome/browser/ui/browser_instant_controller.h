@@ -99,6 +99,9 @@ class BrowserInstantController : public content::NotificationObserver,
   // Sets the stored omnibox bounds.
   void SetOmniboxBounds(const gfx::Rect& bounds);
 
+  // Notifies |instant_| to toggle voice search.
+  void ToggleVoiceSearch();
+
  private:
   // Sets the value of |instant_| based on value from profile. Invoked
   // on pref change.

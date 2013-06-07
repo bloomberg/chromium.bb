@@ -242,6 +242,10 @@ void BrowserInstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
   instant_.SetOmniboxBounds(bounds);
 }
 
+void BrowserInstantController::ToggleVoiceSearch() {
+  instant_.ToggleVoiceSearch();
+}
+
 void BrowserInstantController::ResetInstant(const std::string& pref_name) {
   bool instant_checkbox_checked = chrome::IsInstantCheckboxChecked(profile());
   bool use_local_overlay_only =

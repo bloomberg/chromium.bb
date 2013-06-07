@@ -433,10 +433,12 @@ static const char kDispatchMostVisitedChangedScript[] =
 
 static const char kDispatchBarsHiddenEventScript[] =
     "if (window.chrome &&"
-    "    window.chrome.searchBox &&"
-    "    window.chrome.searchBox.onbarshidden &&"
-    "    typeof window.chrome.searchBox.onbarshidden == 'function') {"
-    "  window.chrome.searchBox.onbarshidden();"
+    "    window.chrome.embeddedSearch &&"
+    "    window.chrome.embeddedSearch.searchBox &&"
+    "    window.chrome.embeddedSearch.searchBox.onbarshidden &&"
+    "    typeof window.chrome.embeddedSearch.searchBox.onbarshidden =="
+    "         'function') {"
+    "  window.chrome.embeddedSearch.searchBox.onbarshidden();"
     "  true;"
     "}";
 
@@ -448,6 +450,17 @@ static const char kDispatchFocusChangedScript[] =
     "    typeof window.chrome.embeddedSearch.searchBox.onfocuschange =="
     "         'function') {"
     "  window.chrome.embeddedSearch.searchBox.onfocuschange();"
+    "  true;"
+    "}";
+
+static const char kDispatchToggleVoiceSearchScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.embeddedSearch &&"
+    "    window.chrome.embeddedSearch.searchBox &&"
+    "    window.chrome.embeddedSearch.searchBox.ontogglevoicesearch &&"
+    "    typeof window.chrome.embeddedSearch.searchBox.ontogglevoicesearch =="
+    "         'function') {"
+    "  window.chrome.embeddedSearch.searchBox.ontogglevoicesearch();"
     "  true;"
     "}";
 
@@ -1477,6 +1490,12 @@ void SearchBoxExtension::DispatchBarsHidden(WebKit::WebFrame* frame) {
 // static
 void SearchBoxExtension::DispatchFocusChange(WebKit::WebFrame* frame) {
   Dispatch(frame, kDispatchFocusChangedScript);
+}
+
+// static
+void SearchBoxExtension::DispatchToggleVoiceSearch(
+    WebKit::WebFrame* frame) {
+  Dispatch(frame, kDispatchToggleVoiceSearchScript);
 }
 
 }  // namespace extensions_v8

@@ -378,6 +378,8 @@ IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion,
 
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions)
 
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_SearchBoxToggleVoiceSearch)
+
 // Toggles visual muting of the render view area. This is on when a constrained
 // window is showing.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetVisuallyDeemphasized,

@@ -145,6 +145,7 @@ class SearchBox : public content::RenderViewObserver,
                                  size_t omnibox_font_size);
   void OnMostVisitedChanged(
       const std::vector<InstantMostVisitedItemIDPair>& items);
+  void OnToggleVoiceSearch();
 
   // Returns the current zoom factor of the render view or 1 on failure.
   double GetZoom() const;

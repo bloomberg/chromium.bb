@@ -146,6 +146,9 @@ class InstantController : public InstantPage::Delegate {
   // an onsubmit notification to the instant page.
   void OmniboxNavigateToURL();
 
+  // Notifies |instant_Tab_| to toggle voice search.
+  void ToggleVoiceSearch();
+
   // The overlay WebContents. May be NULL. InstantController retains ownership.
   content::WebContents* GetOverlayContents() const;
 
@@ -301,6 +304,7 @@ class InstantController : public InstantPage::Delegate {
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LogDropdownShown);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            OverlayDoesNotEchoSearchProviderNAVSUGGEST);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, KeyboardTogglesVoiceSearch);
 
   Profile* profile() const;
 

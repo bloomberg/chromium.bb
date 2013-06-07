@@ -195,6 +195,9 @@ class InstantPage : public content::WebContentsObserver {
   void SendMostVisitedItems(
       const std::vector<InstantMostVisitedItemIDPair>& items);
 
+  // Tells the page to toggle voice search.
+  void ToggleVoiceSearch();
+
  protected:
   InstantPage(Delegate* delegate, const std::string& instant_url);
 

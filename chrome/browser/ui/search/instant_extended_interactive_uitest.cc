@@ -124,7 +124,8 @@ class InstantExtendedTest : public InProcessBrowserTest,
         submit_count_(0),
         on_esc_key_press_event_calls_(0),
         on_focus_changed_calls_(0),
-        is_focused_(false) {
+        is_focused_(false),
+        on_toggle_voice_search_calls_(0) {
   }
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -192,7 +193,9 @@ class InstantExtendedTest : public InProcessBrowserTest,
            GetIntFromJS(contents, "onFocusChangedCalls",
                        &on_focus_changed_calls_) &&
            GetBoolFromJS(contents, "isFocused",
-                         &is_focused_);
+                         &is_focused_) &&
+           GetIntFromJS(contents, "onToggleVoiceSearchCalls",
+                        &on_toggle_voice_search_calls_);
   }
 
   TemplateURL* GetDefaultSearchProviderTemplateURL() {
@@ -246,6 +249,7 @@ class InstantExtendedTest : public InProcessBrowserTest,
   std::string query_value_;
   int on_focus_changed_calls_;
   bool is_focused_;
+  int on_toggle_voice_search_calls_;
 };
 
 // Test class used to verify chrome-search: scheme and access policy from the
@@ -2680,4 +2684,32 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, TaskManagerPrefix) {
       ++instant_overlays;
   }
   EXPECT_EQ(2, instant_overlays);
+}
+
+// Broken on mac: http://crbug.com/247448
+#if defined(OS_MACOSX)
+#define MAYBE_KeyboardTogglesVoiceSearch DISABLED_KeyboardTogglesVoiceSearch
+#else
+#define MAYBE_KeyboardTogglesVoiceSearch KeyboardTogglesVoiceSearch
+#endif
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_KeyboardTogglesVoiceSearch) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
+
+  // Test that toggle is not fired when no tab is open.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_OEM_PERIOD,
+                                              true, true, false, false));
+  EXPECT_TRUE(UpdateSearchState(instant()->GetOverlayContents()));
+  EXPECT_EQ(0, on_toggle_voice_search_calls_);
+
+  // Open new tab and test that toggle is fired.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_OEM_PERIOD,
+                                              true, true, false, false));
+  EXPECT_TRUE(UpdateSearchState(instant()->instant_tab()->contents()));
+  EXPECT_EQ(1, on_toggle_voice_search_calls_);
 }

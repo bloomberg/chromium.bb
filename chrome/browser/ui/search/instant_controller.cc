@@ -740,6 +740,11 @@ void InstantController::OmniboxNavigateToURL() {
     instant_tab_->Submit(string16());
 }
 
+void InstantController::ToggleVoiceSearch() {
+  if (instant_tab_)
+    instant_tab_->ToggleVoiceSearch();
+}
+
 void InstantController::InstantPageLoadFailed(content::WebContents* contents) {
   if (!chrome::ShouldPreferRemoteNTPOnStartup() || !extended_enabled()) {
     // We only need to fall back on errors if we're showing the online page

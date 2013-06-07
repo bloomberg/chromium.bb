@@ -211,7 +211,7 @@ if (!chrome.embeddedSearch) {
       };
       this.navigateContentWindow = function(destination, disposition) {
         NavigateSearchBox(destination, disposition);
-      }
+      };
       this.showBars = function() {
         ShowBars();
       };
@@ -228,6 +228,7 @@ if (!chrome.embeddedSearch) {
       this.onnativesuggestions = null;
       this.onbarshidden = null;
       this.onfocuschange = null;
+      this.ontogglevoicesearch = null;
 
       // DEPRECATED. These methods are from the legacy searchbox API.
       // TODO(jered): Delete these.

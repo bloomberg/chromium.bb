@@ -929,6 +929,8 @@ void OpenUpdateChromeDialog(Browser* browser) {
 void ToggleSpeechInput(Browser* browser) {
   browser->tab_strip_model()->GetActiveWebContents()->
       GetRenderViewHost()->ToggleSpeechInput();
+  if (browser->instant_controller())
+    browser->instant_controller()->ToggleVoiceSearch();
 }
 
 bool CanRequestTabletSite(WebContents* current_tab) {

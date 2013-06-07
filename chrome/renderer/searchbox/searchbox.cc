@@ -182,6 +182,8 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
                         OnFontInformationReceived)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
                         OnMostVisitedChanged)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxToggleVoiceSearch,
+                        OnToggleVoiceSearch)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -429,4 +431,11 @@ bool SearchBox::GetMostVisitedItemWithID(
 GURL SearchBox::GetURLForMostVisitedItem(InstantRestrictedID item_id) const {
   InstantMostVisitedItem item;
   return GetMostVisitedItemWithID(item_id, &item) ? item.url : GURL();
+}
+
+void SearchBox::OnToggleVoiceSearch() {
+  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    extensions_v8::SearchBoxExtension::DispatchToggleVoiceSearch(
+        render_view()->GetWebView()->mainFrame());
+  }
 }
