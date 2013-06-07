@@ -735,7 +735,6 @@
             '../ui/snapshot/snapshot.gyp:snapshot',
             '../ui/ui.gyp:shell_dialogs',
             '../ui/ui.gyp:ui',
-            '../webkit/support/webkit_support.gyp:clearkeycdmadapter',
             '../webkit/support/webkit_support.gyp:glue',
             '../webkit/support/webkit_support.gyp:glue_renderer',
           ],
@@ -949,6 +948,10 @@
                 'renderer/pepper/pepper_device_enumeration_host_helper_unittest.cc',
                 'renderer/pepper/pepper_file_chooser_host_unittest.cc',
                 'renderer/pepper/pepper_graphics_2d_host_unittest.cc',
+              ],
+            }, {  # enable_plugins==1
+              'dependencies': [
+                '../webkit/support/webkit_support.gyp:clearkeycdmadapter',
               ],
             }],
             ['input_speech==0', {
