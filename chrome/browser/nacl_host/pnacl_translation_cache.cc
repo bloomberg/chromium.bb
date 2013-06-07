@@ -158,7 +158,7 @@ void PNaClTranslationCacheWriteEntry::CloseEntry(int rv) {
 
 void PNaClTranslationCacheWriteEntry::DispatchNext(int rv) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!cache_.get())
+  if (!cache_)
     return;
 
   switch (step_) {
