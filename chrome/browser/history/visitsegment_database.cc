@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/common/chrome_switches.h"
 #include "sql/statement.h"

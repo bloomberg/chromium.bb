@@ -8,7 +8,7 @@
 
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/pmp_column_reader.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/pmp_constants.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/pmp_table_reader.h"

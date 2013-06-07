@@ -8,7 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/text_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

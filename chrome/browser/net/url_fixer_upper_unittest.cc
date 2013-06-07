@@ -8,11 +8,11 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/common/chrome_paths.h"
-#include "googleurl/src/url_parse.h"
 #include "googleurl/src/gurl.h"
+#include "googleurl/src/url_parse.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

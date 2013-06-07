@@ -13,7 +13,7 @@
 #include "base/bind.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/process_type.h"

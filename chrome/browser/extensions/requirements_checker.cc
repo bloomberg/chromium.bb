@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/requirements_checker.h"
 
 #include "base/bind.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/gpu/gpu_feature_checker.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension.h"

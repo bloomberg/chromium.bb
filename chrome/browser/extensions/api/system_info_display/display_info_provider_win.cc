@@ -6,7 +6,7 @@
 
 #include <windows.h>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/base/win/dpi.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/size.h"

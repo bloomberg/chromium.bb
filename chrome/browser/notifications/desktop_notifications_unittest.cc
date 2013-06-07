@@ -6,7 +6,7 @@
 
 #include "base/prefs/testing_pref_service.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 #include "chrome/browser/notifications/fake_balloon_view.h"
 #include "chrome/browser/prefs/browser_prefs.h"

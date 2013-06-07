@@ -4,7 +4,7 @@
 
 #include "chrome/browser/importer/importer_unittest_utils.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/imported_bookmark_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

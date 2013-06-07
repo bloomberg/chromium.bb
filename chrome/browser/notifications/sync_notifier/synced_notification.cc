@@ -5,8 +5,8 @@
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
 
 #include "base/basictypes.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"

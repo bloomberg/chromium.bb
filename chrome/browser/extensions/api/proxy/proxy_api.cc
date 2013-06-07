@@ -8,7 +8,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/proxy/proxy_api_constants.h"
 #include "chrome/browser/extensions/api/proxy/proxy_api_helpers.h"

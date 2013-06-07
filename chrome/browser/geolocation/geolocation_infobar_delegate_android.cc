@@ -4,7 +4,7 @@
 
 #include "chrome/browser/geolocation/geolocation_infobar_delegate_android.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/google_location_settings_helper.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

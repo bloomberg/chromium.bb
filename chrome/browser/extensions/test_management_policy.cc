@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/test_management_policy.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 
 namespace extensions {
 TestManagementPolicyProvider::TestManagementPolicyProvider()

@@ -11,7 +11,7 @@
 #include "base/environment.h"
 #include "base/guid.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 
 namespace {

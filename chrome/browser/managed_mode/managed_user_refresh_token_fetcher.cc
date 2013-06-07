@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/signin/oauth2_token_service.h"
 #include "google_apis/gaia/gaia_oauth_client.h"

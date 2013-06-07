@@ -7,7 +7,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/message_loop.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/text_database_manager.h"
 #include "chrome/browser/history/visit_database.h"
 #include "sql/connection.h"

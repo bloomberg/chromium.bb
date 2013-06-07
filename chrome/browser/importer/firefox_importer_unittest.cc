@@ -6,7 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/importer/firefox_importer_unittest_utils.h"
 #include "chrome/browser/importer/nss_decryptor.h"
 #include "chrome/common/chrome_paths.h"

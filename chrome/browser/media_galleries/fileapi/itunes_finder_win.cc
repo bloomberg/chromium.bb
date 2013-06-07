@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_xml_utils.h"
 #include "chrome/common/chrome_paths.h"
 #include "third_party/libxml/chromium/libxml_utils.h"

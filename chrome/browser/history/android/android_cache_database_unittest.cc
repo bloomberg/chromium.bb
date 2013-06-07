@@ -4,7 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/android/android_cache_database.h"
 #include "chrome/browser/history/android/android_time.h"
 #include "chrome/browser/history/history_database.h"

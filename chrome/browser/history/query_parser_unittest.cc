@@ -4,7 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/query_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

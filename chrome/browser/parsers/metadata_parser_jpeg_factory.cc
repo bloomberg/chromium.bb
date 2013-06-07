@@ -5,7 +5,7 @@
 #include "chrome/browser/parsers/metadata_parser_jpeg_factory.h"
 
 #include "base/files/file_path.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/parsers/metadata_parser_jpeg.h"
 
 MetadataParserJpegFactory::MetadataParserJpegFactory()

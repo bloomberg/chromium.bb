@@ -10,7 +10,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/imported_bookmark_entry.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/importer/importer_bridge.h"

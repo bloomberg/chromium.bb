@@ -9,8 +9,8 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/pmp_column_reader.h"
 
 namespace picasa {
