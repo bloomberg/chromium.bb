@@ -1127,7 +1127,7 @@ class Command(object):
 
   See COMMANDS in main().
   """
-  _DEVICE_LIB_BASEDIRS = ['/data/data/', '/data/app-lib/']
+  _DEVICE_LIB_BASEDIRS = ['/data/data/', '/data/app-lib/', '/data/local/tmp']
 
   def __init__(self, usage):
     self._parser = optparse.OptionParser(usage)
