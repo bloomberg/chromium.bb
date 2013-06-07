@@ -8,7 +8,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/autocomplete_match_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/instant_types.h"

@@ -12,7 +12,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/process_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "content/public/common/child_process_host.h"

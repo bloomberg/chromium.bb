@@ -8,7 +8,7 @@
 
 #include <cctype>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/automation_constants.h"
 
 namespace webdriver {

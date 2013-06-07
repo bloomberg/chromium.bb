@@ -4,7 +4,7 @@
 
 #include "chrome/renderer/pepper/pepper_pdf_host.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/printing/print_web_view_helper.h"
 #include "content/public/renderer/render_thread.h"

@@ -10,7 +10,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/automation_constants.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/x/x11_util.h"

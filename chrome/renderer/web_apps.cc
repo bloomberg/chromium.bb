@@ -11,7 +11,7 @@
 #include "base/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/json_schema/json_schema_validator.h"
 #include "chrome/common/web_application_info.h"

@@ -5,7 +5,7 @@
 #include "chrome/renderer/tts_dispatcher.h"
 
 #include "base/basictypes.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/tts_messages.h"
 #include "chrome/common/tts_utterance_request.h"
 #include "content/public/renderer/render_thread.h"

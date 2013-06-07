@@ -9,7 +9,7 @@
 #include <cctype>
 
 #include "base/mac/scoped_cftyperef.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 #include "ui/base/keycodes/keyboard_code_conversion_mac.h"
 

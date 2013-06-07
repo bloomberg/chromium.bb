@@ -5,7 +5,7 @@
 #include "chrome/test/webdriver/commands/file_upload_command.h"
 
 #include "base/file_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/test/webdriver/commands/response.h"

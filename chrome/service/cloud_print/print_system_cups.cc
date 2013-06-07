@@ -23,7 +23,7 @@
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"

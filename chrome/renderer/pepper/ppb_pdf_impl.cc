@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/safe_numerics.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"

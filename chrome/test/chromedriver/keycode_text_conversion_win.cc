@@ -8,7 +8,7 @@
 
 #include <cctype>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 
 std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers) {

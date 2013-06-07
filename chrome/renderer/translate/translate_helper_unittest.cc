@@ -4,7 +4,7 @@
 
 #include "chrome/renderer/translate/translate_helper.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

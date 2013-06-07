@@ -48,7 +48,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "crypto/scoped_nss_types.h"
 #include "grit/generated_resources.h"

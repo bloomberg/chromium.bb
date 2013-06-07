@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/webdriver/webdriver_key_converter.h"
 #include "chrome/test/webdriver/webdriver_test_util.h"

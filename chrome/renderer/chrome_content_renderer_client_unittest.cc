@@ -4,7 +4,7 @@
 
 #include "chrome/renderer/chrome_content_renderer_client.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"

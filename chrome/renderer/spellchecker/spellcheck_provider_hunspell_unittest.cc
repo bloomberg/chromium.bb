@@ -4,8 +4,8 @@
 
 #include <vector>
 
-#include "base/utf_string_conversions.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/spellcheck_marker.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider_test.h"

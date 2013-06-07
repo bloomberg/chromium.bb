@@ -9,7 +9,7 @@
 #include "base/json/string_escape.h"
 #include "base/string_util.h"
 #include "base/strings/string_piece.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"

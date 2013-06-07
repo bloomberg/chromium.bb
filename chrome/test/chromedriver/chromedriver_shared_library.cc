@@ -7,12 +7,12 @@
 
 #include "base/at_exit.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chromedriver.h"
 #include "chrome/test/chromedriver/command_executor.h"
 #include "chrome/test/chromedriver/command_executor_impl.h"
-#include "chrome/test/chromedriver/chrome/log.h"
 
 #if defined(OS_WIN)
 #include <windows.h>

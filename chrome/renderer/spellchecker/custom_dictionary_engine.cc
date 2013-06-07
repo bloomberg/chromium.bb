@@ -5,7 +5,7 @@
 #include "chrome/renderer/spellchecker/custom_dictionary_engine.h"
 
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 
 CustomDictionaryEngine::CustomDictionaryEngine() {
 }

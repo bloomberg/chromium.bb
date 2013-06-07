@@ -9,7 +9,7 @@
 #include "base/format_macros.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/tools/convert_dict/aff_reader.h"
 #include "chrome/tools/convert_dict/dic_reader.h"
 #include "testing/gtest/include/gtest/gtest.h"

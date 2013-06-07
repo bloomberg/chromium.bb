@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/translate/translate_helper_metrics.h"

@@ -7,7 +7,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/webdriver/keycode_text_conversion.h"

@@ -8,7 +8,7 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/web_element_descriptor.h"

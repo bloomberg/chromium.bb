@@ -7,7 +7,7 @@
 #include <gdk/gdk.h>
 
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/automation_constants.h"
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 

@@ -4,7 +4,7 @@
 
 #include "chrome/test/base/model_test_utils.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "googleurl/src/gurl.h"
 
