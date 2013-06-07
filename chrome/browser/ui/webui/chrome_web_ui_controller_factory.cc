@@ -218,11 +218,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<InstantUI>;
   if (url.host() == chrome::kChromeUIManagedUserPassphrasePageHost)
     return &NewWebUI<ConstrainedWebDialogUI>;
-  if (url.host() == chrome::kChromeUIMemoryInternalsHost &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableMemoryInternalsUI)) {
+  if (url.host() == chrome::kChromeUIMemoryInternalsHost)
     return &NewWebUI<MemoryInternalsUI>;
-  }
 #if !defined(DISABLE_NACL)
   if (url.host() == chrome::kChromeUINaClHost)
     return &NewWebUI<NaClUI>;
