@@ -257,6 +257,7 @@ extern const char kChildCleanExit[];
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 extern const char kDisableCarbonInterposing[];
+extern const char kUseCoreAnimation[];
 #endif
 
 #if defined(USE_AURA)

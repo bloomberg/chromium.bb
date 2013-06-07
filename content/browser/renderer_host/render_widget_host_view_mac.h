@@ -31,6 +31,7 @@ class RenderWidgetHostViewMac;
 class RenderWidgetHostViewMacEditCommandHelper;
 }
 
+@class CompositingIOSurfaceLayer;
 @class FullscreenWindowManager;
 @protocol RenderWidgetHostViewMacDelegate;
 @class ToolTip;
@@ -393,10 +394,15 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   ui::TextInputType text_input_type_;
   bool can_compose_inline_;
 
+  scoped_nsobject<CALayer> software_layer_;
+  scoped_nsobject<CompositingIOSurfaceLayer> compositing_iosurface_layer_;
   scoped_ptr<CompositingIOSurfaceMac> compositing_iosurface_;
 
   // Whether to allow overlapping views.
   bool allow_overlapping_views_;
+
+  // Whether to use the CoreAnimation path to draw content.
+  bool use_core_animation_;
 
   NSWindow* pepper_fullscreen_window() const {
     return pepper_fullscreen_window_;
@@ -414,6 +420,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   int window_number() const;
 
+  float scale_factor() const;
+
+  bool is_hidden() const { return is_hidden_; }
+
  private:
   friend class RenderWidgetHostView;
   friend class RenderWidgetHostViewMacTest;
@@ -429,6 +439,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // Shuts down the render_widget_host_.  This is a separate function so we can
   // invoke it from the message loop.
   void ShutdownHost();
+
+  // Change this view to use CoreAnimation to draw.
+  void EnableCoreAnimation();
 
   // Called when a GPU SwapBuffers is received.
   void GotAcceleratedFrame();

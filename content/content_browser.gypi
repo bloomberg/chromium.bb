@@ -722,6 +722,8 @@
     'browser/renderer_host/compositor_impl_android.h',
     'browser/renderer_host/compositing_iosurface_context_mac.mm',
     'browser/renderer_host/compositing_iosurface_context_mac.h',
+    'browser/renderer_host/compositing_iosurface_layer_mac.h',
+    'browser/renderer_host/compositing_iosurface_layer_mac.mm',
     'browser/renderer_host/compositing_iosurface_mac.h',
     'browser/renderer_host/compositing_iosurface_mac.mm',
     'browser/renderer_host/compositing_iosurface_shader_programs_mac.cc',

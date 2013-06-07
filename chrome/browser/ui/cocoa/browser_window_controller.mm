@@ -73,6 +73,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/content_switches.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -265,6 +266,10 @@ enum {
     ownsBrowser_ = ownIt;
     NSWindow* window = [self window];
     windowShim_.reset(new BrowserWindowCocoa(browser, self));
+
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kUseCoreAnimation))
+      [[[self window] contentView] setWantsLayer:YES];
 
     // Set different minimum sizes on tabbed windows vs non-tabbed, e.g. popups.
     // This has to happen before -enforceMinWindowSize: is called further down.

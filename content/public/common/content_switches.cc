@@ -797,6 +797,9 @@ const char kChildCleanExit[]                = "child-clean-exit";
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 const char kDisableCarbonInterposing[]      = "disable-carbon-interposing";
+
+// Use core animation to draw the RenderWidgetHostView on Mac.
+const char kUseCoreAnimation[]              = "use-core-animation";
 #endif
 
 // Disables the use of a 3D software rasterizer.

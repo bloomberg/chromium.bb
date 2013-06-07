@@ -8,11 +8,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/mac/sdk_forward_declarations.h"
 #import "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -25,6 +27,8 @@
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 #include "content/browser/renderer_host/backing_store_mac.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
+#include "content/browser/renderer_host/compositing_iosurface_context_mac.h"
+#include "content/browser/renderer_host/compositing_iosurface_layer_mac.h"
 #include "content/browser/renderer_host/compositing_iosurface_mac.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
@@ -38,12 +42,14 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
+#include "content/public/common/content_switches.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebInputEventFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebScreenInfoFactory.h"
 #import "third_party/mozilla/ComplexTextInputPanel.h"
+#include "ui/base/cocoa/animation_utils.h"
 #import "ui/base/cocoa/fullscreen_window_manager.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -80,15 +86,6 @@ using WebKit::WebMouseWheelEvent;
 // Declare things that are part of the 10.7 SDK.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-enum {
-  NSEventPhaseNone        = 0, // event not associated with a phase.
-  NSEventPhaseBegan       = 0x1 << 0,
-  NSEventPhaseStationary  = 0x1 << 1,
-  NSEventPhaseChanged     = 0x1 << 2,
-  NSEventPhaseEnded       = 0x1 << 3,
-  NSEventPhaseCancelled   = 0x1 << 4,
-};
-typedef NSUInteger NSEventPhase;
 
 @interface NSEvent (LionAPI)
 - (NSEventPhase)phase;
@@ -114,7 +111,6 @@ static NSString* const NSBackingPropertyOldScaleFactorKey =
 // (WebKit/mac/WebView/WebView.mm).
 
 #endif  // 10.7
-
 
 static inline int ToWebKitModifiers(NSUInteger flags) {
   int modifiers = 0;
@@ -144,6 +140,10 @@ static float ScaleFactor(NSView* view) {
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv;
 - (void)windowDidChangeBackingProperties:(NSNotification*)notification;
 - (void)windowChangedGlobalFrame:(NSNotification*)notification;
+- (void)drawBackingStore:(BackingStoreMac*)backingStore
+               dirtyRect:(CGRect)dirtyRect
+               inContext:(CGContextRef)context;
+- (void)updateSoftwareLayerScaleFactor;
 - (void)checkForPluginImeCancellation;
 - (void)updateTabBackingStoreScaleFactor;
 - (NSRect)firstViewRectForCharacterRange:(NSRange)theRange
@@ -366,6 +366,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       can_compose_inline_(true),
       allow_overlapping_views_(false),
+      use_core_animation_(false),
       is_loading_(false),
       is_hidden_(false),
       weak_factory_(this),
@@ -375,12 +376,21 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
   // |GetNativeView()| into the view hierarchy right after calling us.
   cocoa_view_ = [[[RenderWidgetHostViewCocoa alloc]
                   initWithRenderWidgetHostViewMac:this] autorelease];
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCoreAnimation))
+    EnableCoreAnimation();
   render_widget_host_->SetView(this);
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
   AckPendingSwapBuffers();
   UnlockMouse();
+
+  // Make sure that the layer doesn't reach into the now-invalid object.
+  compositing_iosurface_.reset();
+  if (compositing_iosurface_layer_)
+    [compositing_iosurface_layer_ disableCompositing];
+  compositing_iosurface_layer_.reset();
+
   // We are owned by RenderWidgetHostViewCocoa, so if we go away before the
   // RenderWidgetHost does we need to tell it not to hold a stale pointer to
   // us.
@@ -394,6 +404,8 @@ void RenderWidgetHostViewMac::SetDelegate(
 }
 
 void RenderWidgetHostViewMac::SetAllowOverlappingViews(bool overlapping) {
+  if (use_core_animation_)
+    return;
   if (allow_overlapping_views_ == overlapping)
     return;
   allow_overlapping_views_ = overlapping;
@@ -403,6 +415,21 @@ void RenderWidgetHostViewMac::SetAllowOverlappingViews(bool overlapping) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewMac, RenderWidgetHostView implementation:
+
+void RenderWidgetHostViewMac::EnableCoreAnimation() {
+  if (use_core_animation_)
+    return;
+  use_core_animation_ = true;
+
+  software_layer_.reset([[CALayer alloc] init]);
+  [software_layer_ setDelegate:cocoa_view_];
+  [software_layer_ setAutoresizingMask:kCALayerWidthSizable |
+                                       kCALayerHeightSizable];
+  [software_layer_ setContentsGravity:kCAGravityTopLeft];
+  [cocoa_view_ updateSoftwareLayerScaleFactor];
+  [cocoa_view_ setLayer:software_layer_];
+  [cocoa_view_ setWantsLayer:YES];
+}
 
 bool RenderWidgetHostViewMac::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
@@ -516,6 +543,10 @@ int RenderWidgetHostViewMac::window_number() const {
   return [window windowNumber];
 }
 
+float RenderWidgetHostViewMac::scale_factor() const {
+  return ScaleFactor(cocoa_view_);
+}
+
 RenderWidgetHost* RenderWidgetHostViewMac::GetRenderWidgetHost() const {
   return render_widget_host_;
 }
@@ -530,7 +561,11 @@ void RenderWidgetHostViewMac::WasShown() {
   render_widget_host_->WasShown();
 
   // We're messing with the window, so do this to ensure no flashes.
-  [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
+  if (!use_core_animation_)
+    [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
+
+  if (compositing_iosurface_layer_)
+    [compositing_iosurface_layer_ setNeedsDisplay];
 }
 
 void RenderWidgetHostViewMac::WasHidden() {
@@ -555,7 +590,8 @@ void RenderWidgetHostViewMac::WasHidden() {
   // the NSView and its corresponding OpenGL context.
   // disableScreenUpdatesUntilFlush prevents the transparent flash by avoiding
   // screen updates until the next tab draws.
-  [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
+  if (!use_core_animation_)
+    [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
 
   web_contents_switch_paint_time_ = base::TimeTicks();
 }
@@ -647,7 +683,7 @@ bool RenderWidgetHostViewMac::HasFocus() const {
 
 bool RenderWidgetHostViewMac::IsSurfaceAvailableForCopy() const {
   return !!render_widget_host_->GetBackingStore(false) ||
-      (compositing_iosurface_.get() && compositing_iosurface_->HasIOSurface());
+      (compositing_iosurface_ && compositing_iosurface_->HasIOSurface());
 }
 
 void RenderWidgetHostViewMac::Show() {
@@ -936,7 +972,7 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
     const base::Callback<void(bool, const SkBitmap&)>& callback) {
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, false, SkBitmap()));
-  if (!compositing_iosurface_.get() ||
+  if (!compositing_iosurface_ ||
       !compositing_iosurface_->HasIOSurface())
     return;
 
@@ -957,7 +993,7 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurfaceToVideoFrame(
       const base::Callback<void(bool)>& callback) {
   base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
   if (!render_widget_host_->is_accelerated_compositing_active() ||
-      !compositing_iosurface_.get() ||
+      !compositing_iosurface_ ||
       !compositing_iosurface_->HasIOSurface())
     return;
 
@@ -985,7 +1021,7 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurfaceToVideoFrame(
 bool RenderWidgetHostViewMac::CanCopyToVideoFrame() const {
   return (!render_widget_host_->GetBackingStore(false) &&
           render_widget_host_->is_accelerated_compositing_active() &&
-          compositing_iosurface_.get() &&
+          compositing_iosurface_ &&
           compositing_iosurface_->HasIOSurface());
 }
 
@@ -1050,7 +1086,7 @@ void RenderWidgetHostViewMac::PluginImeCompositionCompleted(
 bool RenderWidgetHostViewMac::CompositorSwapBuffers(
     uint64 surface_handle,
     const gfx::Size& size,
-    float scale_factor,
+    float surface_scale_factor,
     const ui::LatencyInfo& latency_info) {
   if (is_hidden_)
     return true;
@@ -1059,14 +1095,14 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(
   if (window_number() <= 0) {
     // There is no window to present so capturing during present won't work.
     // We check if frame subscriber wants this frame and capture manually.
-    if (compositing_iosurface_.get() && frame_subscriber_) {
+    if (compositing_iosurface_ && frame_subscriber_) {
       const base::Time present_time = base::Time::Now();
       scoped_refptr<media::VideoFrame> frame;
       RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
       if (frame_subscriber_->ShouldCaptureFrame(present_time,
                                                 &frame, &callback)) {
         compositing_iosurface_->SetIOSurface(
-            surface_handle, size, scale_factor, latency_info);
+            surface_handle, size, surface_scale_factor, latency_info);
         compositing_iosurface_->CopyToVideoFrame(
             gfx::Rect(size), frame,
             base::Bind(callback, present_time));
@@ -1097,16 +1133,40 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(
 
   bool should_post_notification = false;
   if (!compositing_iosurface_) {
-    compositing_iosurface_.reset(
-        CompositingIOSurfaceMac::Create(window_number()));
+    if (use_core_animation_) {
+      if (!compositing_iosurface_layer_) {
+        compositing_iosurface_layer_.reset([[CompositingIOSurfaceLayer alloc]
+            initWithRenderWidgetHostViewMac:this]);
+      }
+      if (!compositing_iosurface_layer_) {
+        LOG(WARNING) << "Failed to create CALayer for IOSurface";
+        return true;
+      }
+      if (![compositing_iosurface_layer_ ensureContext]) {
+        LOG(WARNING) << "Failed to create context for IOSurface";
+        return true;
+      }
+      compositing_iosurface_.reset(CompositingIOSurfaceMac::Create(
+          [compositing_iosurface_layer_ context]));
+    } else {
+      compositing_iosurface_.reset(
+          CompositingIOSurfaceMac::Create(window_number()));
+    }
     should_post_notification = true;
   }
 
-  if (!compositing_iosurface_)
+  if (!compositing_iosurface_) {
+    LOG(WARNING) << "Failed to create CompositingIOSurfaceMac";
     return true;
+  }
 
   compositing_iosurface_->SetIOSurface(
-      surface_handle, size, scale_factor, latency_info);
+      surface_handle, size, surface_scale_factor, latency_info);
+
+  // TODO(ccameron): If we've failed to allocate the GL texture for the
+  // IOSurface, or basically anything else along the way, we'll just display
+  // a white out, potentially forever. Instead, kick the renderer back to
+  // software mode (like a context lost or a GPU process death).
 
   GotAcceleratedFrame();
 
@@ -1120,20 +1180,22 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(
   // No need to draw the surface if we are inside a drawRect. It will be done
   // later.
   if (!about_to_validate_and_paint_) {
-    CompositingIOSurfaceMac::SurfaceOrder order = allow_overlapping_views_ ?
-        CompositingIOSurfaceMac::SURFACE_ORDER_BELOW_WINDOW :
-        CompositingIOSurfaceMac::SURFACE_ORDER_ABOVE_WINDOW;
-    compositing_iosurface_->DrawIOSurface(cocoa_view_,
-                                          ScaleFactor(cocoa_view_),
-                                          window_number(),
-                                          order,
-                                          frame_subscriber_.get());
+    if (use_core_animation_) {
+      DCHECK(compositing_iosurface_layer_);
+      [compositing_iosurface_layer_ setNeedsDisplay];
+    } else {
+      compositing_iosurface_->DrawIOSurface(this);
+    }
   }
 
   if (should_post_notification && [[cocoa_view_ delegate]
           respondsToSelector:@selector(compositingIOSurfaceCreated)]) {
     [[cocoa_view_ delegate] compositingIOSurfaceCreated];
   }
+
+  // Don't ack the new frame until it is drawn.
+  if (use_core_animation_)
+    return false;
 
   return true;
 }
@@ -1347,12 +1409,15 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSuspend() {
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceRelease() {
   compositing_iosurface_.reset();
+  if (compositing_iosurface_layer_)
+    [compositing_iosurface_layer_ disableCompositing];
+  compositing_iosurface_layer_.reset();
 }
 
 bool RenderWidgetHostViewMac::HasAcceleratedSurface(
       const gfx::Size& desired_size) {
   return last_frame_was_accelerated_ &&
-         compositing_iosurface_.get() &&
+         compositing_iosurface_ &&
          compositing_iosurface_->HasIOSurface() &&
          (desired_size.IsEmpty() ||
           compositing_iosurface_->dip_io_surface_size() == desired_size);
@@ -1450,12 +1515,19 @@ void RenderWidgetHostViewMac::ShutdownHost() {
 }
 
 void RenderWidgetHostViewMac::GotAcceleratedFrame() {
+  // Update the scale factor of the layer to match the scale factor of the
+  // IOSurface.
+  if (compositing_iosurface_layer_)
+    [compositing_iosurface_layer_ updateScaleFactor];
+
   if (!last_frame_was_accelerated_) {
     last_frame_was_accelerated_ = true;
 
-    // Need to wipe the software view with transparency to expose the GL
-    // underlay. Invalidate the whole window to do that.
-    [cocoa_view_ setNeedsDisplay:YES];
+    if (!use_core_animation_) {
+      // Need to wipe the software view with transparency to expose the GL
+      // underlay. Invalidate the whole window to do that.
+      [cocoa_view_ setNeedsDisplay:YES];
+    }
 
     // Delete software backingstore.
     BackingStoreManager::RemoveBackingStore(render_widget_host_);
@@ -1469,9 +1541,17 @@ void RenderWidgetHostViewMac::GotSoftwareFrame() {
     AckPendingSwapBuffers();
 
     // Forget IOSurface since we are drawing a software frame now.
-    if (compositing_iosurface_.get() &&
-        compositing_iosurface_->HasIOSurface()) {
-      compositing_iosurface_->ClearDrawable();
+    if (use_core_animation_) {
+      compositing_iosurface_.reset();
+      if (compositing_iosurface_layer_)
+        [compositing_iosurface_layer_ disableCompositing];
+      compositing_iosurface_layer_.reset();
+    }
+    else {
+      if (compositing_iosurface_ &&
+          compositing_iosurface_->HasIOSurface()) {
+        compositing_iosurface_->ClearDrawable();
+      }
     }
   }
 }
@@ -1591,7 +1671,7 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
   src_gl_subrect.set_y(GetViewBounds().height() - rect.bottom());
 
   return gfx::ToEnclosingRect(gfx::ScaleRect(src_gl_subrect,
-                                             ScaleFactor(cocoa_view_)));
+                                             scale_factor()));
 }
 
 }  // namespace content
@@ -2143,7 +2223,9 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
   // We're messing with the window, so do this to ensure no flashes. This one
   // prevents a flash when the current tab is closed.
   NSWindow* oldWindow = [self window];
-  [oldWindow disableScreenUpdatesUntilFlush];
+
+  if (!renderWidgetHostView_->use_core_animation_)
+    [oldWindow disableScreenUpdatesUntilFlush];
 
   NSNotificationCenter* notificationCenter =
       [NSNotificationCenter defaultCenter];
@@ -2194,6 +2276,7 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
   if (backingStore)  // NULL in hardware path.
     backingStore->ScaleFactorChanged(scaleFactor);
 
+  [self updateSoftwareLayerScaleFactor];
   renderWidgetHostView_->render_widget_host_->NotifyScreenInfoChanged();
 }
 
@@ -2250,12 +2333,16 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
   [self setNeedsDisplayInRect:renderWidgetHostView_->invalid_rect_];
   renderWidgetHostView_->call_set_needs_display_in_rect_pending_ = false;
   renderWidgetHostView_->invalid_rect_ = NSZeroRect;
+
+  if (renderWidgetHostView_->compositing_iosurface_layer_)
+    [renderWidgetHostView_->compositing_iosurface_layer_ setNeedsDisplay];
 }
 
 // Fills with white the parts of the area to the right and bottom for |rect|
 // that intersect |damagedRect|.
 - (void)fillBottomRightRemainderOfRect:(gfx::Rect)rect
-                             dirtyRect:(gfx::Rect)damagedRect {
+                             dirtyRect:(gfx::Rect)damagedRect
+                             inContext:(CGContextRef)context {
   if (damagedRect.right() > rect.right()) {
     int x = std::max(rect.right(), damagedRect.x());
     int y = std::min(rect.bottom(), damagedRect.bottom());
@@ -2274,8 +2361,9 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
     }
 
     NSRect r = [self flipRectToNSRect:gfx::Rect(x, y, width, height)];
-    [[NSColor whiteColor] set];
-    NSRectFill(r);
+    CGContextSetFillColorWithColor(context,
+                                   CGColorGetConstantColor(kCGColorWhite));
+    CGContextFillRect(context, NSRectToCGRect(r));
   }
   if (damagedRect.bottom() > rect.bottom()) {
     int x = damagedRect.x();
@@ -2295,13 +2383,16 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
     }
 
     NSRect r = [self flipRectToNSRect:gfx::Rect(x, y, width, height)];
-    [[NSColor whiteColor] set];
-    NSRectFill(r);
+    CGContextSetFillColorWithColor(context,
+                                   CGColorGetConstantColor(kCGColorWhite));
+    CGContextFillRect(context, NSRectToCGRect(r));
   }
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
   TRACE_EVENT0("browser", "RenderWidgetHostViewCocoa::drawRect");
+  DCHECK(!renderWidgetHostView_->use_core_animation_);
+
   if (!renderWidgetHostView_->render_widget_host_) {
     // TODO(shess): Consider using something more noticable?
     [[NSColor whiteColor] set];
@@ -2322,7 +2413,7 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
   const gfx::Rect damagedRect([self flipNSRectToRect:dirtyRect]);
 
   if (renderWidgetHostView_->last_frame_was_accelerated_ &&
-      renderWidgetHostView_->compositing_iosurface_.get()) {
+      renderWidgetHostView_->compositing_iosurface_) {
     if (renderWidgetHostView_->allow_overlapping_views_) {
       // If overlapping views need to be allowed, punch a hole in the window
       // to expose the GL underlay.
@@ -2337,19 +2428,21 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
       NSRectFill(dirtyRect);
     }
 
-    content::CompositingIOSurfaceMac::SurfaceOrder order =
-        renderWidgetHostView_->allow_overlapping_views_
-        ? content::CompositingIOSurfaceMac::SURFACE_ORDER_BELOW_WINDOW
-        : content::CompositingIOSurfaceMac::SURFACE_ORDER_ABOVE_WINDOW;
     renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(
-        self,
-        ScaleFactor(self),
-        renderWidgetHostView_->window_number(),
-        order,
-        renderWidgetHostView_->frame_subscriber());
+        renderWidgetHostView_.get());
     return;
   }
 
+  CGContextRef context = static_cast<CGContextRef>(
+      [[NSGraphicsContext currentContext] graphicsPort]);
+  [self drawBackingStore:backingStore
+               dirtyRect:NSRectToCGRect(dirtyRect)
+               inContext:context];
+}
+
+- (void)drawBackingStore:(BackingStoreMac*)backingStore
+               dirtyRect:(CGRect)dirtyRect
+               inContext:(CGContextRef)context {
   if (backingStore) {
     // Note: All coordinates are in view units, not pixels.
     gfx::Rect bitmapRect(0, 0,
@@ -2361,13 +2454,13 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
     // smaller and the renderer hasn't yet repainted.
     int yOffset = NSHeight([self bounds]) - backingStore->size().height();
 
+    NSRect nsDirtyRect = NSRectFromCGRect(dirtyRect);
+    const gfx::Rect damagedRect([self flipNSRectToRect:nsDirtyRect]);
+
     gfx::Rect paintRect = gfx::IntersectRects(bitmapRect, damagedRect);
     if (!paintRect.IsEmpty()) {
       // if we have a CGLayer, draw that into the window
       if (backingStore->cg_layer()) {
-        CGContextRef context = static_cast<CGContextRef>(
-            [[NSGraphicsContext currentContext] graphicsPort]);
-
         // TODO: add clipping to dirtyRect if it improves drawing performance.
         CGContextDrawLayerAtPoint(context, CGPointMake(0.0, yOffset),
                                   backingStore->cg_layer());
@@ -2375,8 +2468,6 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
         // if we haven't created a layer yet, draw the cached bitmap into
         // the window.  The CGLayer will be created the next time the renderer
         // paints.
-        CGContextRef context = static_cast<CGContextRef>(
-            [[NSGraphicsContext currentContext] graphicsPort]);
         base::mac::ScopedCFTypeRef<CGImageRef> image(
             CGBitmapContextCreateImage(backingStore->cg_bitmap()));
         CGRect imageRect = bitmapRect.ToCGRect();
@@ -2386,7 +2477,9 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
     }
 
     // Fill the remaining portion of the damagedRect with white
-    [self fillBottomRightRemainderOfRect:bitmapRect dirtyRect:damagedRect];
+    [self fillBottomRightRemainderOfRect:bitmapRect
+                               dirtyRect:damagedRect
+                               inContext:context];
 
     if (!renderWidgetHostView_->whiteout_start_time_.is_null()) {
       base::TimeDelta whiteout_duration = base::TimeTicks::Now() -
@@ -2409,8 +2502,9 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
           base::TimeTicks();
     }
   } else {
-    [[NSColor whiteColor] set];
-    NSRectFill(dirtyRect);
+    CGContextSetFillColorWithColor(context,
+                                   CGColorGetConstantColor(kCGColorWhite));
+    CGContextFillRect(context, dirtyRect);
     if (renderWidgetHostView_->whiteout_start_time_.is_null())
       renderWidgetHostView_->whiteout_start_time_ = base::TimeTicks::Now();
   }
@@ -3383,6 +3477,52 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   renderWidgetHostView_->KillSelf();
 }
 
+- (void)updateSoftwareLayerScaleFactor {
+  if (![renderWidgetHostView_->software_layer_
+          respondsToSelector:@selector(setContentsScale:)])
+    return;
+
+  ScopedCAActionDisabler disabler;
+  [renderWidgetHostView_->software_layer_ setContentsScale:deviceScaleFactor_];
+}
+
+// Delegate methods for the software CALayer
+- (void)drawLayer:(CALayer*)layer
+        inContext:(CGContextRef)context {
+  DCHECK(renderWidgetHostView_->use_core_animation_);
+  DCHECK([layer isEqual:renderWidgetHostView_->software_layer_]);
+
+  CGRect clipRect = CGContextGetClipBoundingBox(context);
+
+  if (!renderWidgetHostView_->render_widget_host_ ||
+      renderWidgetHostView_->is_hidden()) {
+    CGContextSetFillColorWithColor(context,
+                                   CGColorGetConstantColor(kCGColorWhite));
+    CGContextFillRect(context, clipRect);
+    return;
+  }
+
+  renderWidgetHostView_->about_to_validate_and_paint_ = true;
+  BackingStoreMac* backingStore = static_cast<BackingStoreMac*>(
+      renderWidgetHostView_->render_widget_host_->GetBackingStore(true));
+  renderWidgetHostView_->about_to_validate_and_paint_ = false;
+
+  [self drawBackingStore:backingStore
+               dirtyRect:clipRect
+               inContext:context];
+}
+
+- (void)setNeedsDisplay:(BOOL)flag {
+  [renderWidgetHostView_->software_layer_ setNeedsDisplay];
+  [super setNeedsDisplay:flag];
+}
+
+- (void)setNeedsDisplayInRect:(NSRect)rect {
+  [renderWidgetHostView_->software_layer_
+      setNeedsDisplayInRect:NSRectToCGRect(rect)];
+  [super setNeedsDisplayInRect:rect];
+}
+
 @end
 
 //
@@ -3411,6 +3551,12 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   [self confirmComposition];
   [self insertText:string];
   return YES;
+}
+
+- (BOOL)isOpaque {
+  if (renderWidgetHostView_->use_core_animation_)
+    return YES;
+  return [super isOpaque];
 }
 
 @end

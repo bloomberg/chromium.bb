@@ -43,6 +43,12 @@ typedef NSUInteger NSEventSwipeTrackingOptions;
 - (BOOL)isDirectionInvertedFromDevice;
 
 @end
+
+@interface CALayer (LionAPI)
+- (CGFloat)contentsScale;
+- (void)setContentsScale:(CGFloat)contentsScale;
+@end
+
 #endif  // MAC_OS_X_VERSION_10_7
 
 #endif  // BASE_MAC_SDK_FORWARD_DECLARATIONS_H_
