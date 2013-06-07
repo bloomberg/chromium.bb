@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -424,7 +425,8 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(ENABLE_GOOGLE_NOW)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::FieldTrialList::FindFullName("GoogleNow") == "Enable" ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGoogleNowIntegration)) {
     Add(IDR_GOOGLE_NOW_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("google_now")));
