@@ -39,6 +39,10 @@ extern const char kTaskApp[];
 
 void UpdateFileHandlerUsageStats(Profile* profile, const std::string& task_id);
 
+// Returns true if the task should be used as a fallback. Such tasks are
+// Files.app's internal handlers as well as quick office extensions.
+bool IsFallbackTask(const FileBrowserHandler* task);
+
 // Update the default file handler for the given sets of suffixes and MIME
 // types.
 void UpdateDefaultTask(Profile* profile,

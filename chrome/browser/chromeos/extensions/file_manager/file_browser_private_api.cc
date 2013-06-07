@@ -63,7 +63,6 @@
 #include "grit/app_locale_settings.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
-#include "net/base/mime_util.h"
 #include "net/base/network_change_notifier.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/shell_dialogs/selected_file_info.h"
@@ -370,23 +369,8 @@ void GetMimeTypesForFileURLs(const std::vector<base::FilePath>& file_paths,
                              PathAndMimeTypeSet* files) {
   for (std::vector<base::FilePath>::const_iterator iter = file_paths.begin();
        iter != file_paths.end(); ++iter) {
-    const base::FilePath::StringType file_extension =
-        StringToLowerASCII(iter->Extension());
-
-    // TODO(thorogood): Rearchitect this call so it can run on the File thread;
-    // GetMimeTypeFromFile requires this on Linux. Right now, we use
-    // Chrome-level knowledge only.
-    std::string mime_type;
-    if (file_extension.empty() ||
-        !net::GetWellKnownMimeTypeFromExtension(file_extension.substr(1),
-                                                &mime_type)) {
-      // If the file doesn't have an extension or its mime-type cannot be
-      // determined, then indicate that it has the empty mime-type. This will
-      // only be matched if the Web Intents accepts "*" or "*/*".
-      files->insert(std::make_pair(*iter, ""));
-    } else {
-      files->insert(std::make_pair(*iter, mime_type));
-    }
+    files->insert(
+        std::make_pair(*iter, file_manager_util::GetMimeTypeForPath(*iter)));
   }
 }
 

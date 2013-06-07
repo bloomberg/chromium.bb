@@ -97,6 +97,9 @@ bool ExecuteBuiltinHandler(
 // Checks whether a pepper plugin for |file_extension| is enabled.
 bool ShouldBeOpenedWithPlugin(Profile* profile, const char* file_extension);
 
+// Returns the MIME type of |file_path|.
+std::string GetMimeTypeForPath(const base::FilePath& file_path);
+
 }  // namespace file_manager_util
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_UTIL_H_

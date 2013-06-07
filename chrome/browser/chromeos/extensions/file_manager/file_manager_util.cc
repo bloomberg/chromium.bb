@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_handler.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_handler_util.h"
 #include "chrome/browser/chromeos/media/media_player.h"
+#include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -50,6 +51,7 @@
 #include "content/public/common/pepper_plugin_info.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
+#include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"
@@ -66,6 +68,8 @@ using content::BrowserContext;
 using content::BrowserThread;
 using content::PluginService;
 using content::UserMetricsAction;
+using extensions::app_file_handler_util::FindFileHandlersForFiles;
+using extensions::app_file_handler_util::PathAndMimeTypeSet;
 using extensions::Extension;
 using file_handler_util::FileTaskExecutor;
 using fileapi::FileSystemURL;
@@ -315,7 +319,8 @@ bool GrantFileSystemAccessToFileBrowser(Profile* profile) {
 void ExecuteHandler(Profile* profile,
                     std::string extension_id,
                     std::string action_id,
-                    const GURL& url) {
+                    const GURL& url,
+                    const std::string& task_type) {
   // If File Browser has not been open yet then it did not request access
   // to the file system. Do it now.
   if (!GrantFileSystemAccessToFileBrowser(profile))
@@ -333,7 +338,7 @@ void ExecuteHandler(Profile* profile,
   urls.push_back(file_system_context->CrackURL(url));
   scoped_refptr<FileTaskExecutor> executor = FileTaskExecutor::Create(profile,
       source_url, kFileBrowserDomain, 0 /* no tab id */, extension_id,
-      file_handler_util::kTaskFile, action_id);
+      task_type, action_id);
   executor->Execute(urls);
 }
 
@@ -352,7 +357,8 @@ void OpenFileBrowserImpl(const base::FilePath& path,
 
     // Some values of |action_id| are not listed in the manifest and are used
     // to parametrize the behavior when opening the Files app window.
-    ExecuteHandler(profile, kFileBrowserDomain, action_id, url);
+    ExecuteHandler(profile, kFileBrowserDomain, action_id, url,
+                   file_handler_util::kTaskFile);
     return;
   }
 
@@ -410,17 +416,70 @@ Browser* GetBrowserForUrl(GURL target_url) {
   return NULL;
 }
 
-bool ExecuteDefaultHandler(Profile* profile, const base::FilePath& path) {
-  GURL url;
-  if (!ConvertFileToFileSystemUrl(profile, path, kFileBrowserDomain, &url))
+bool ExecuteDefaultAppHandler(Profile* profile,
+                              const base::FilePath& path,
+                              const GURL& url,
+                              const std::string& mime_type,
+                              const std::string& default_task_id) {
+  ExtensionService* service = profile->GetExtensionService();
+  if (!service)
     return false;
 
-  const FileBrowserHandler* handler;
-  if (!file_handler_util::GetTaskForURLAndPath(profile, url, path, &handler))
-    return false;
+  PathAndMimeTypeSet files;
+  files.insert(std::make_pair(path, mime_type));
+  const extensions::FileHandlerInfo* first_handler = NULL;
+  const extensions::Extension* extension_for_first_handler = NULL;
 
-  std::string extension_id = handler->extension_id();
-  std::string action_id = handler->id();
+  // If we find the default handler, we execute it immediately, but otherwise,
+  // we remember the first handler, and if there was no default handler, simply
+  // execute the first one.
+  for (ExtensionSet::const_iterator iter = service->extensions()->begin();
+       iter != service->extensions()->end();
+       ++iter) {
+    const Extension* extension = *iter;
+
+    // We don't support using hosted apps to open files.
+    if (!extension->is_platform_app())
+      continue;
+
+    // We only support apps that specify "incognito: split" if in incognito
+    // mode.
+    if (profile->IsOffTheRecord() &&
+        !service->IsIncognitoEnabled(extension->id()))
+      continue;
+
+    typedef std::vector<const extensions::FileHandlerInfo*> FileHandlerList;
+    FileHandlerList file_handlers = FindFileHandlersForFiles(*extension, files);
+    for (FileHandlerList::iterator i = file_handlers.begin();
+         i != file_handlers.end(); ++i) {
+      const extensions::FileHandlerInfo* handler = *i;
+      std::string task_id = file_handler_util::MakeTaskID(extension->id(),
+          file_handler_util::kTaskApp, handler->id);
+      if (task_id == default_task_id) {
+        ExecuteHandler(profile, extension->id(), handler->id, url,
+                       file_handler_util::kTaskApp);
+        return true;
+
+      } else if (!first_handler) {
+        first_handler = handler;
+        extension_for_first_handler = extension;
+      }
+    }
+  }
+  if (first_handler) {
+    ExecuteHandler(profile, extension_for_first_handler->id(),
+                   first_handler->id, url, file_handler_util::kTaskApp);
+    return true;
+  }
+  return false;
+}
+
+bool ExecuteExtensionHandler(Profile* profile,
+                             const base::FilePath& path,
+                             const FileBrowserHandler& handler,
+                             const GURL& url) {
+  std::string extension_id = handler.extension_id();
+  std::string action_id = handler.id();
   Browser* browser = chrome::FindLastActiveWithProfile(profile,
       chrome::HOST_DESKTOP_TYPE_ASH);
 
@@ -435,7 +494,8 @@ bool ExecuteDefaultHandler(Profile* profile, const base::FilePath& path) {
           action_id == kFileBrowserMountArchiveTaskId ||
           action_id == kFileBrowserPlayTaskId ||
           action_id == kFileBrowserWatchTaskId) {
-        ExecuteHandler(profile, extension_id, action_id, url);
+        ExecuteHandler(profile, extension_id, action_id, url,
+                       file_handler_util::kTaskFile);
         return true;
       }
       return ExecuteBuiltinHandler(browser, path, action_id);
@@ -455,8 +515,43 @@ bool ExecuteDefaultHandler(Profile* profile, const base::FilePath& path) {
     return ExecuteBuiltinHandler(browser, path, action_id);
   }
 
-  ExecuteHandler(profile, extension_id, action_id, url);
+  ExecuteHandler(profile, extension_id, action_id, url,
+                 file_handler_util::kTaskFile);
   return true;
+}
+
+bool ExecuteDefaultHandler(Profile* profile, const base::FilePath& path) {
+  GURL url;
+  if (!ConvertFileToFileSystemUrl(profile, path, kFileBrowserDomain, &url))
+    return false;
+
+  std::string mime_type = GetMimeTypeForPath(path);
+  std::string default_task_id = file_handler_util::GetDefaultTaskIdFromPrefs(
+      profile, mime_type, path.Extension());
+  const FileBrowserHandler* handler;
+
+  // We choose the file handler from the following in decreasing priority or
+  // fail if none support the file type:
+  // 1. default extension
+  // 2. default app
+  // 3. a fallback handler (e.g. opening in the browser)
+  // 4. non-default app
+  // 5. non-default extension
+  // Note that there can be at most one of default extension and default app.
+  if (!file_handler_util::GetTaskForURLAndPath(profile, url, path, &handler)) {
+    return ExecuteDefaultAppHandler(
+        profile, path, url, mime_type, default_task_id);
+  }
+
+  std::string handler_task_id = file_handler_util::MakeTaskID(
+        handler->extension_id(), file_handler_util::kTaskFile, handler->id());
+  if (handler_task_id != default_task_id &&
+      !file_handler_util::IsFallbackTask(handler) &&
+      ExecuteDefaultAppHandler(
+          profile, path, url, mime_type, default_task_id)) {
+    return true;
+  }
+  return ExecuteExtensionHandler(profile, path, *handler, url);
 }
 
 // Reads the alternate URL from a GDoc file. When it fails, returns a file URL
@@ -888,6 +983,26 @@ bool ShouldBeOpenedWithPlugin(Profile* profile, const char* file_extension) {
   if (LowerCaseEqualsASCII(file_extension, kSwfExtension))
     return IsFlashPluginEnabled(profile);
   return false;
+}
+
+std::string GetMimeTypeForPath(const base::FilePath& file_path) {
+  const base::FilePath::StringType file_extension =
+      StringToLowerASCII(file_path.Extension());
+
+  // TODO(thorogood): Rearchitect this call so it can run on the File thread;
+  // GetMimeTypeFromFile requires this on Linux. Right now, we use
+  // Chrome-level knowledge only.
+  std::string mime_type;
+  if (file_extension.empty() ||
+      !net::GetWellKnownMimeTypeFromExtension(file_extension.substr(1),
+                                              &mime_type)) {
+    // If the file doesn't have an extension or its mime-type cannot be
+    // determined, then indicate that it has the empty mime-type. This will
+    // only be matched if the Web Intents accepts "*" or "*/*".
+    return "";
+  } else {
+    return mime_type;
+  }
 }
 
 }  // namespace file_manager_util

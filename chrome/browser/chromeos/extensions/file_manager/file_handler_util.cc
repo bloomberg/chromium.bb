@@ -98,16 +98,6 @@ int ExtractProcessFromExtensionId(Profile* profile,
   return process->GetID();
 }
 
-// Returns true if the task should be used as a fallback. Such tasks are
-// Files.app's internal handlers as well as quick office extensions.
-bool IsFallbackTask(const FileBrowserHandler* task) {
-  return (task->extension_id() == kFileBrowserDomain ||
-          task->extension_id() ==
-              extension_misc::kQuickOfficeComponentExtensionId ||
-          task->extension_id() == extension_misc::kQuickOfficeDevExtensionId ||
-          task->extension_id() == extension_misc::kQuickOfficeExtensionId);
-}
-
 const FileBrowserHandler* FindFileBrowserHandler(const Extension* extension,
                                                  const std::string& action_id) {
   FileBrowserHandler::List* handler_list =
@@ -185,6 +175,14 @@ bool GetFileBrowserHandlers(Profile* profile,
 }
 
 }  // namespace
+
+bool IsFallbackTask(const FileBrowserHandler* task) {
+  return (task->extension_id() == kFileBrowserDomain ||
+          task->extension_id() ==
+              extension_misc::kQuickOfficeComponentExtensionId ||
+          task->extension_id() == extension_misc::kQuickOfficeDevExtensionId ||
+          task->extension_id() == extension_misc::kQuickOfficeExtensionId);
+}
 
 void UpdateDefaultTask(Profile* profile,
                        const std::string& task_id,
