@@ -134,8 +134,23 @@ int main(int argc, char* argv[]) {
 #if (defined(OS_LINUX) || defined(OS_OPENBSD)) && !defined(OS_CHROMEOS)
   // Needed so ProxyConfigServiceLinux can use gconf.
   // Normally handled by BrowserMainLoop::InitializeToolkit().
-  g_type_init();
+  // From glib version 2.36 onwards, g_type_init is implicitly called and it is
+  // deprecated.
+  // TODO(yael) Simplify this once Ubuntu 10.04 is no longer supported.
+#if defined(G_GNUC_BEGIN_IGNORE_DEPRECATIONS) && \
+    defined(G_GNUC_END_IGNORE_DEPRECATIONS)
+#define USE_GLIB_DEPRECATIONS_MACROS
 #endif
+
+#if defined(USE_GLIB_DEPRECATIONS_MACROS)
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+#endif
+  g_type_init();
+#if defined(USE_GLIB_DEPRECATIONS_MACROS)
+G_GNUC_END_IGNORE_DEPRECATIONS
+#endif
+#undef USE_GLIB_DEPRECATIONS_MACROS
+#endif  // (defined(OS_LINUX) || defined(OS_OPENBSD)) && !defined(OS_CHROMEOS)
   base::AtExitManager exit_manager;
   CommandLine::Init(argc, argv);
   logging::InitLogging(
