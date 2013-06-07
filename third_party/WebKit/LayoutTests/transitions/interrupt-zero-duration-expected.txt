@@ -1,3 +1,3 @@
-This tests changing a transitioning property while running and resetting its duration to 0. The box should start moving left and after 500ms snap back to 0
+PASS - "left" property for "box" element at 0.5s saw something close to: 100
+PASS - "left" property for "box" element at 0.7s saw something close to: 0
 
-PASS

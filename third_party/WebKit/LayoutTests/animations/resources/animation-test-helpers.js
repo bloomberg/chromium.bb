@@ -9,7 +9,7 @@ Function parameters:
     callbacks [optional]: a function to be executed immediately after animation starts;
                           or, an object in the form {time: function} containing functions to be
                           called at the specified times (in seconds) during animation.
-    event [optional]: which DOM event to wait for before starting the test ("webkitAnimationStart" by default)
+    trigger [optional]: a function to trigger transitions at the start of the test
 
     Each sub-array must contain these items in this order:
     FIXME: Remove the name element as it is no longer required.
@@ -583,8 +583,6 @@ var hasPauseAnimationAPI;
 var animStartTime;
 var isTransitionsTest = false;
 
-var usePauseAPI = true;
-var dontUsePauseAPI = false;
 var shouldBeTransitioning = 'should-be-transitioning';
 var shouldNotBeTransitioning = 'should-not-be-transitioning';
 
@@ -602,12 +600,10 @@ function waitForAnimationsToStart(callback)
     }
 }
 
-// FIXME: remove deprecatedEvent, disablePauseAnimationAPI and doPixelTest
-function runAnimationTest(expected, callbacks, deprecatedEvent, disablePauseAnimationAPI, doPixelTest)
+// FIXME: disablePauseAnimationAPI and doPixelTest
+function runAnimationTest(expected, callbacks, trigger, disablePauseAnimationAPI, doPixelTest)
 {
     log('runAnimationTest');
-    if (deprecatedEvent)
-        throw 'Event argument is deprecated!';
     if (!expected)
         throw "Expected results are missing!";
 
@@ -616,18 +612,6 @@ function runAnimationTest(expected, callbacks, deprecatedEvent, disablePauseAnim
         hasPauseAnimationAPI = false;
 
     var checks = {};
-    var trigger = function() {};
-
-    if (isTransitionsTest) {
-        var transitionTrigger = callbacks;
-        callbacks = null;
-        trigger = function() {
-            transitionTrigger();
-            document.body.offsetTop
-            if (window.testRunner)
-                testRunner.display();
-        };
-    }
 
     if (typeof callbacks == 'function') {
         checks[0] = [callbacks];
@@ -662,7 +646,10 @@ function runAnimationTest(expected, callbacks, deprecatedEvent, disablePauseAnim
         if (!started) {
             log('First ' + event + ' event fired');
             started = true;
-            trigger();
+            if (trigger) {
+                trigger();
+                document.documentElement.offsetTop
+            }
             waitForAnimationsToStart(function() {
                 log('Finished waiting for animations to start');
                 animStartTime = performance.now();
@@ -681,7 +668,7 @@ Test page requirements:
 Function parameters:
     expected [required]: an array of arrays defining a set of CSS properties that must have given values at specific times (see below)
     trigger [optional]: a function to be executed just before the test starts (none by default)
-    callbacks [optional]: [not yet implemented] an object in the form {timeS: function} specifing callbacks to be made during the test
+    callbacks [optional]: an object in the form {timeS: function} specifing callbacks to be made during the test
     doPixelTest [optional]: whether to dump pixels during the test (false by default)
 
     Each sub-array must contain these items in this order:
@@ -699,5 +686,5 @@ Function parameters:
 function runTransitionTest(expected, trigger, callbacks, doPixelTest) {
     expected = expected.map(function(expectation) { expectation.unshift(null); return expectation; });
     isTransitionsTest = true;
-    runAnimationTest(expected, trigger, undefined, !usePauseAPI, doPixelTest);
+    runAnimationTest(expected, callbacks, trigger, false, doPixelTest);
 }
