@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -9,8 +9,8 @@
 // generated with explicit user consent, including consent to gather geolocation
 // data.
 
-#ifndef COMPONENTS_AUTOFILL_BROWSER_RISK_FINGERPRINT_H_
-#define COMPONENTS_AUTOFILL_BROWSER_RISK_FINGERPRINT_H_
+#ifndef COMPONENTS_AUTOFILL_CONTENT_BROWSER_RISK_FINGERPRINT_H_
+#define COMPONENTS_AUTOFILL_CONTENT_BROWSER_RISK_FINGERPRINT_H_
 
 #include <string>
 
@@ -65,4 +65,4 @@ void GetFingerprint(
 }  // namespace risk
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_BROWSER_RISK_FINGERPRINT_H_
+#endif  // COMPONENTS_AUTOFILL_CONTENT_BROWSER_RISK_FINGERPRINT_H_

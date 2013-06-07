@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -10,7 +10,7 @@
 // data.  Step (1) requires waiting on several asynchronous callbacks, which are
 // managed by the FingerprintDataLoader class.
 
-#include "components/autofill/browser/risk/fingerprint.h"
+#include "components/autofill/content/browser/risk/fingerprint.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -21,7 +21,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/autofill/browser/risk/proto/fingerprint.pb.h"
+#include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/font_list_async.h"
 #include "content/public/browser/geolocation_provider.h"

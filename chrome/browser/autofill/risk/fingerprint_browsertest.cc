@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/browser/risk/fingerprint.h"
+#include "components/autofill/content/browser/risk/fingerprint.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/port.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/autofill/browser/risk/proto/fingerprint.pb.h"
+#include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "content/public/browser/geolocation_provider.h"
 #include "content/public/common/geoposition.h"
 #include "content/public/test/test_utils.h"

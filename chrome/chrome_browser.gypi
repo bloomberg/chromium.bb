@@ -2366,6 +2366,7 @@
             'sync_file_system_proto',
             '../cc/cc.gyp:cc',
             '../components/components.gyp:autofill_browser',
+            '../components/components.gyp:autofill_content_browser',
             '../components/components.gyp:navigation_interception',
             '../net/net.gyp:net_with_v8',
             '../printing/printing.gyp:printing',

@@ -7,6 +7,7 @@ include_rules = [
   "+chromeos",
   "+components/autofill/browser",
   "+components/autofill/common",
+  "+components/autofill/content/browser",
   "+components/auto_login_parser",
   "+components/autofill/common",
   "+components/browser_context_keyed_service",
