@@ -89,6 +89,8 @@ cr.define('cr.ui.Oobe', function() {
 
       $('high-contrast').addEventListener('click',
                                           Oobe.handleHighContrastClick);
+      $('large-cursor').addEventListener('click',
+                                         Oobe.handleLargeCursorClick);
       $('spoken-feedback').addEventListener('click',
                                             Oobe.handleSpokenFeedbackClick);
       $('screen-magnifier').addEventListener('click',
@@ -128,6 +130,14 @@ cr.define('cr.ui.Oobe', function() {
      */
     handleSpokenFeedbackClick: function(e) {
       chrome.send('enableSpokenFeedback', [$('spoken-feedback').checked]);
+      e.stopPropagation();
+    },
+
+    /**
+     * Large cursor checkbox handler.
+     */
+    handleLargeCursorClick: function(e) {
+      chrome.send('enableLargeCursor', [$('large-cursor').checked]);
       e.stopPropagation();
     },
 
@@ -275,6 +285,7 @@ cr.define('cr.ui.Oobe', function() {
       $('high-contrast').checked = data.highContrastEnabled;
       $('spoken-feedback').checked = data.spokenFeedbackEnabled;
       $('screen-magnifier').checked = data.screenMagnifierEnabled;
+      $('large-cursor').checked = data.largeCursorEnabled;
     },
 
     /**

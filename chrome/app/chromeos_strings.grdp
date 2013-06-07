@@ -308,6 +308,9 @@ Press any key to continue exploring.
   <message name="IDS_OOBE_SPOKEN_FEEDBACK_OPTION" desc="Spoken feedback option shown on OOBE screens accessibility menu.">
     Spoken feedback
   </message>
+  <message name="IDS_OOBE_LARGE_CURSOR_OPTION" desc="Large cursor option shown on OOBE screens accessibility menu.">
+    Large Cursor
+  </message>
   <message name="IDS_OOBE_HIGH_CONTRAST_MODE_OPTION" desc="High contrast mode option shown on OOBE screens accessibility menu.">
     High contrast
   </message>

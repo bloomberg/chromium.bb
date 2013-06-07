@@ -56,6 +56,7 @@ class CoreOobeHandler : public BaseScreenHandler,
 
  private:
   // Handlers for JS WebUI messages.
+  void HandleEnableLargeCursor(bool enabled);
   void HandleEnableHighContrast(bool enabled);
   void HandleEnableScreenMagnifier(bool enabled);
   void HandleEnableSpokenFeedback();

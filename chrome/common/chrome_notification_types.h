@@ -1033,6 +1033,9 @@ enum NotificationType {
   // PIN or PUK.
   NOTIFICATION_ENTER_PIN_ENDED,
 
+  // Sent when large cursor is toggled.
+  NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_LARGE_CURSOR,
+
   // Sent when high contrast mode is toggled.
   NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
 

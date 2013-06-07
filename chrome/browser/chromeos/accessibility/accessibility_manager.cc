@@ -188,6 +188,12 @@ void AccessibilityManager::EnableLargeCursor(bool enabled) {
     pref_service->CommitPendingWrite();
   }
 
+  AccessibilityStatusEventDetails details(enabled, ash::A11Y_NOTIFICATION_NONE);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_LARGE_CURSOR,
+      content::NotificationService::AllSources(),
+      content::Details<AccessibilityStatusEventDetails>(&details));
+
 #if defined(USE_ASH)
   // Large cursor is implemented only in ash.
   ash::Shell::GetInstance()->cursor_manager()->SetScale(enabled ? 2.0 : 1.0);

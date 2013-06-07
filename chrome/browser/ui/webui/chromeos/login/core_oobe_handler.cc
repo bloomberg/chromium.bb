@@ -24,6 +24,7 @@ namespace {
 // JS API callbacks names.
 const char kJsApiEnableHighContrast[] = "enableHighContrast";
 const char kJsApiEnableScreenMagnifier[] = "enableScreenMagnifier";
+const char kJsApiEnableLargeCursor[] = "enableLargeCursor";
 const char kJsApiEnableSpokenFeedback[] = "enableSpokenFeedback";
 const char kJsApiScreenStateInitialize[] = "screenStateInitialize";
 const char kJsApiSkipUpdateEnrollAfterEula[] = "skipUpdateEnrollAfterEula";
@@ -51,6 +52,10 @@ CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui)
       this,
       chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
       content::NotificationService::AllSources());
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_LARGE_CURSOR,
+      content::NotificationService::AllSources());
 }
 
 CoreOobeHandler::~CoreOobeHandler() {
@@ -68,6 +73,7 @@ void CoreOobeHandler::DeclareLocalizedValues(LocalizedValuesBuilder* builder) {
   // OOBE accessibility options menu strings shown on each screen.
   builder->Add("accessibilityLink", IDS_OOBE_ACCESSIBILITY_LINK);
   builder->Add("spokenFeedbackOption", IDS_OOBE_SPOKEN_FEEDBACK_OPTION);
+  builder->Add("largeCursorOption", IDS_OOBE_LARGE_CURSOR_OPTION);
   builder->Add("highContrastOption", IDS_OOBE_HIGH_CONTRAST_MODE_OPTION);
   builder->Add("screenMagnifierOption", IDS_OOBE_SCREEN_MAGNIFIER_OPTION);
 }
@@ -91,6 +97,8 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleUpdateCurrentScreen);
   AddCallback(kJsApiEnableHighContrast,
               &CoreOobeHandler::HandleEnableHighContrast);
+  AddCallback(kJsApiEnableLargeCursor,
+              &CoreOobeHandler::HandleEnableLargeCursor);
   AddCallback(kJsApiEnableScreenMagnifier,
               &CoreOobeHandler::HandleEnableScreenMagnifier);
   AddCallback(kJsApiEnableSpokenFeedback,
@@ -115,6 +123,10 @@ void CoreOobeHandler::HandleUpdateCurrentScreen(const std::string& screen) {
 
 void CoreOobeHandler::HandleEnableHighContrast(bool enabled) {
   AccessibilityManager::Get()->EnableHighContrast(enabled);
+}
+
+void CoreOobeHandler::HandleEnableLargeCursor(bool enabled) {
+  AccessibilityManager::Get()->EnableLargeCursor(enabled);
 }
 
 void CoreOobeHandler::HandleEnableScreenMagnifier(bool enabled) {
@@ -145,6 +157,8 @@ void CoreOobeHandler::UpdateA11yState() {
   base::DictionaryValue a11y_info;
   a11y_info.SetBoolean("highContrastEnabled",
                        AccessibilityManager::Get()->IsHighContrastEnabled());
+  a11y_info.SetBoolean("largeCursorEnabled",
+                       AccessibilityManager::Get()->IsLargeCursorEnabled());
   a11y_info.SetBoolean("spokenFeedbackEnabled",
                        AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   a11y_info.SetBoolean("screenMagnifierEnabled",
@@ -197,6 +211,7 @@ void CoreOobeHandler::Observe(int type,
                               const content::NotificationDetails& details) {
   if (type ==
           chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE ||
+      type == chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_LARGE_CURSOR ||
       type == chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER ||
       type == chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK) {
     UpdateA11yState();
