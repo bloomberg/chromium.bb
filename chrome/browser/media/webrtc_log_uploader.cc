@@ -129,8 +129,8 @@ void WebRtcLogUploader::AddLogData(std::string* post_data,
   post_data->append("--");
   post_data->append(kMultipartBoundary);
   post_data->append("\r\n");
-  post_data->append("Content-Disposition: form-data; name=\"log\"");
-  post_data->append("; filename=\"log.gz\"\r\n");
+  post_data->append("Content-Disposition: form-data; name=\"webrtc_log\"");
+  post_data->append("; filename=\"webrtc_log.gz\"\r\n");
   post_data->append("Content-Type: application/gzip\r\n\r\n");
 
   CompressLog(post_data, log_buffer, log_buffer_length);
