@@ -60,7 +60,7 @@ bool InitializeWebRtcModule() {
   std::string error;
   static base::NativeLibrary lib =
       base::LoadNativeLibrary(path, &error);
-  CHECK(lib);
+  CHECK(lib) << error;
 
   InitializeModuleFunction initialize_module =
       reinterpret_cast<InitializeModuleFunction>(
