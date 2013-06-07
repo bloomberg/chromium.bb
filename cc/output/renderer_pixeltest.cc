@@ -419,7 +419,7 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
       FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
 }
 
-TYPED_TEST(RendererPixelTest, RenderPassChangesSize) {
+TYPED_TEST(RendererPixelTest, DISABLED_RenderPassChangesSize) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   RenderPass::Id root_pass_id(1, 1);

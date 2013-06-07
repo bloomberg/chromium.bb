@@ -87,7 +87,7 @@ class BlueYellowLayerClient : public ContentLayerClient {
   gfx::Rect layer_rect_;
 };
 
-TEST_F(LayerTreeHostOnDemandRasterPixelTest, RasterPictureLayer) {
+TEST_F(LayerTreeHostOnDemandRasterPixelTest, DISABLED_RasterPictureLayer) {
   // Use multiple colors in a single layer to prevent bypassing on-demand
   // rasterization if a single solid color is detected in picture analysis.
   gfx::Rect layer_rect(200, 200);
