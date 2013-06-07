@@ -55,7 +55,7 @@
       'filepath': 'OWNERS',
     },
     'public_api': {
-      'filepath': 'Source/Platform/chromium/public' \
+      'filepath': 'public' \
                   '|Source/WebKit/chromium/public' \
                   '|Tools/DumpRenderTree/chromium/TestRunner/public/',
     },
