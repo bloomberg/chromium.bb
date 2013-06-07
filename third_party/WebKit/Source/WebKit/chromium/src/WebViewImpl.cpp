@@ -2399,6 +2399,8 @@ bool WebViewImpl::isSelectionEditable() const
 
 WebColor WebViewImpl::backgroundColor() const
 {
+    if (isTransparent())
+        return Color::transparent;
     if (!m_page)
         return Color::white;
     FrameView* view = m_page->mainFrame()->view();
