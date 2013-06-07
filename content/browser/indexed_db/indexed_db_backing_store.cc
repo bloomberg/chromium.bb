@@ -413,6 +413,8 @@ enum IndexedDBLevelDBBackingStoreOpenResult {
   INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_ERR,
   INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MEMORY_FAILED,
   INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_ATTEMPT_NON_ASCII,
+  INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_DISK_FULL,
+  INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_ORIGIN_TOO_LONG,
   INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
 };
 
@@ -459,6 +461,42 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
   // TODO(jsbell): Rework to use FilePath throughout.
   base::FilePath identifier_path = base::FilePath::FromUTF8Unsafe(
       UTF16ToUTF8(database_identifier) + ".indexeddb.leveldb");
+  int limit = file_util::GetMaximumPathComponentLength(path_base);
+  if (limit == -1) {
+    DLOG(WARNING) << "GetMaximumPathComponentLength returned -1";
+    // In limited testing, ChromeOS returns 143, other OSes 255.
+#if defined(OS_CHROMEOS)
+    limit = 143;
+#else
+    limit = 255;
+#endif
+  }
+  if (identifier_path.value().length() > static_cast<uint32_t>(limit)) {
+    DLOG(WARNING) << "Path component length ("
+                  << identifier_path.value().length() << ") exceeds maximum ("
+                  << limit << ") allowed by this filesystem.";
+    const int min = 140;
+    const int max = 300;
+    const int num_buckets = 12;
+    // TODO(dgrogan): Remove WebCore from these histogram names.
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "WebCore.IndexedDB.BackingStore.OverlyLargeOriginLength",
+        identifier_path.value().length(),
+        min,
+        max,
+        num_buckets);
+    // TODO(dgrogan): Translate the FactoryGet calls to
+    // UMA_HISTOGRAM_ENUMERATION. FactoryGet was the most direct translation
+    // from the WebCore code.
+    base::Histogram::FactoryGet("WebCore.IndexedDB.BackingStore.OpenStatus",
+                                1,
+                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
+                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
+                                base::HistogramBase::kUmaTargetedHistogramFlag)
+        ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_ORIGIN_TOO_LONG);
+    return scoped_refptr<IndexedDBBackingStore>();
+  }
+
   base::FilePath file_path = path_base.Append(identifier_path);
 
   db = leveldb_factory->OpenLevelDB(file_path, comparator.get());

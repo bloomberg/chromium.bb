@@ -4,6 +4,7 @@
 
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 
+#include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/string16.h"
@@ -399,6 +400,31 @@ TEST(IndexedDBFactoryTest, MemoryBackingStoreLifetime) {
 
   mem_store2 = NULL;
   EXPECT_TRUE(mem_store1->HasOneRef());
+}
+
+TEST(IndexedDBFactoryTest, RejectLongOrigins)
+{
+  base::ScopedTempDir temp_directory;
+  ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
+  const base::FilePath base_path = temp_directory.path();
+  scoped_refptr<MockIDBFactory> factory = MockIDBFactory::Create();
+
+  int limit = file_util::GetMaximumPathComponentLength(base_path);
+  EXPECT_GT(limit, 0);
+
+  std::string origin(limit + 1, 'x');
+  WebSecurityOrigin too_long_origin =
+      WebSecurityOrigin::createFromString(WebKit::WebString::fromUTF8(
+          std::string("http://" + origin + ":81/").c_str()));
+  scoped_refptr<IndexedDBBackingStore> diskStore1 =
+      factory->TestOpenBackingStore(too_long_origin, base_path);
+  EXPECT_FALSE(diskStore1);
+
+  WebSecurityOrigin ok_origin =
+      WebSecurityOrigin::createFromString("http://someorigin.com:82/");
+  scoped_refptr<IndexedDBBackingStore> diskStore2 =
+      factory->TestOpenBackingStore(ok_origin, base_path);
+  EXPECT_TRUE(diskStore2);
 }
 
 }  // namespace
