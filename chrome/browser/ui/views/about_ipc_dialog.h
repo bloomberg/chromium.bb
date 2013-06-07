@@ -54,6 +54,7 @@ class AboutIPCDialog : public views::DialogDelegateView,
 
   // views::WidgetDelegate (via views::DialogDelegateView).
   virtual bool CanResize() const OVERRIDE;
+  virtual bool UseNewStyleForThisDialog() const OVERRIDE;
 
   // views::ButtonListener.
   virtual void ButtonPressed(views::Button* button,
