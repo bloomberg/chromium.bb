@@ -74,8 +74,11 @@ class CC_EXPORT DrawQuad {
   bool IsDebugQuad() const { return material == DEBUG_BORDER; }
 
   bool ShouldDrawWithBlending() const {
-    return needs_blending || shared_quad_state->opacity < 1.0f ||
-        !opaque_rect.Contains(visible_rect);
+    if (needs_blending || shared_quad_state->opacity < 1.0f)
+      return true;
+    if (visible_rect.IsEmpty())
+      return false;
+    return !opaque_rect.Contains(visible_rect);
   }
 
   typedef ResourceProvider::ResourceId ResourceId;

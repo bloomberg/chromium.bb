@@ -45,6 +45,9 @@ inline gfx::Rect CalculateVisibleRectWithCachedLayerRect(
     gfx::Rect layer_bound_rect,
     gfx::Rect layer_rect_in_target_space,
     const gfx::Transform& transform) {
+  if (layer_rect_in_target_space.IsEmpty())
+    return gfx::Rect();
+
   // Is this layer fully contained within the target surface?
   if (target_surface_rect.Contains(layer_rect_in_target_space))
     return layer_bound_rect;

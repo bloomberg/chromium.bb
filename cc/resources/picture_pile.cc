@@ -121,7 +121,8 @@ class FullyContainedPredicate {
  public:
   explicit FullyContainedPredicate(gfx::Rect rect) : layer_rect_(rect) {}
   bool operator()(const scoped_refptr<Picture>& picture) {
-    return layer_rect_.Contains(picture->LayerRect());
+    return picture->LayerRect().IsEmpty() ||
+        layer_rect_.Contains(picture->LayerRect());
   }
   gfx::Rect layer_rect_;
 };
@@ -130,6 +131,7 @@ void PicturePile::InvalidateRect(
     PictureList& picture_list,
     gfx::Rect invalidation) {
   DCHECK(!picture_list.empty());
+  DCHECK(!invalidation.IsEmpty());
 
   std::vector<PictureList::iterator> overlaps;
   for (PictureList::iterator i = picture_list.begin();
