@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/atomic_sequence_num.h"
 #include "base/basictypes.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
@@ -15,27 +14,18 @@
 
 namespace net {
 
-// FileNetLog is a simple implementation of NetLog that prints out all
-// the events received into the stream passed to the constructor.
-class FileNetLog : public NetLog {
+// FileNetLogObserver is a simple implementation of NetLog::ThreadSafeObserver
+// that prints out all the events received into the stream passed
+// to the constructor.
+class FileNetLogObserver : public NetLog::ThreadSafeObserver {
  public:
-  explicit FileNetLog(FILE* destination, LogLevel level);
-  virtual ~FileNetLog();
+  explicit FileNetLogObserver(FILE* destination);
+  virtual ~FileNetLogObserver();
+
+  // NetLog::ThreadSafeObserver implementation:
+  virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE;
 
  private:
-  // NetLog implementation:
-  virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE;
-  virtual uint32 NextID() OVERRIDE;
-  virtual LogLevel GetLogLevel() const OVERRIDE;
-  virtual void AddThreadSafeObserver(ThreadSafeObserver* observer,
-                                     LogLevel log_level) OVERRIDE;
-  virtual void SetObserverLogLevel(ThreadSafeObserver* observer,
-                                   LogLevel log_level) OVERRIDE;
-  virtual void RemoveThreadSafeObserver(ThreadSafeObserver* observer) OVERRIDE;
-
-  base::AtomicSequenceNumber sequence_number_;
-  const NetLog::LogLevel log_level_;
-
   FILE* const destination_;
   base::Lock lock_;
 

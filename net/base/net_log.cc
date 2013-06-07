@@ -187,6 +187,15 @@ NetLog* NetLog::ThreadSafeObserver::net_log() const {
   return net_log_;
 }
 
+NetLog::NetLog()
+    : last_id_(0),
+      base_log_level_(LOG_NONE),
+      effective_log_level_(LOG_NONE) {
+}
+
+NetLog::~NetLog() {
+}
+
 void NetLog::AddGlobalEntry(EventType type) {
   AddEntry(type,
            Source(net::NetLog::SOURCE_NONE, NextID()),
@@ -201,6 +210,73 @@ void NetLog::AddGlobalEntry(
            Source(net::NetLog::SOURCE_NONE, NextID()),
            net::NetLog::PHASE_NONE,
            &parameters_callback);
+}
+
+uint32 NetLog::NextID() {
+  return base::subtle::NoBarrier_AtomicIncrement(&last_id_, 1);
+}
+
+void NetLog::SetBaseLogLevel(LogLevel log_level) {
+  base::AutoLock lock(lock_);
+  base_log_level_ = log_level;
+
+  UpdateLogLevel();
+}
+
+NetLog::LogLevel NetLog::GetLogLevel() const {
+  base::subtle::Atomic32 log_level =
+      base::subtle::NoBarrier_Load(&effective_log_level_);
+  return static_cast<net::NetLog::LogLevel>(log_level);
+}
+
+void NetLog::AddThreadSafeObserver(
+    net::NetLog::ThreadSafeObserver* observer,
+    LogLevel log_level) {
+  base::AutoLock lock(lock_);
+
+  DCHECK(!observer->net_log_);
+  observers_.AddObserver(observer);
+  observer->net_log_ = this;
+  observer->log_level_ = log_level;
+  UpdateLogLevel();
+}
+
+void NetLog::SetObserverLogLevel(
+    net::NetLog::ThreadSafeObserver* observer,
+    LogLevel log_level) {
+  base::AutoLock lock(lock_);
+
+  DCHECK(observers_.HasObserver(observer));
+  DCHECK_EQ(this, observer->net_log_);
+  observer->log_level_ = log_level;
+  UpdateLogLevel();
+}
+
+void NetLog::RemoveThreadSafeObserver(
+    net::NetLog::ThreadSafeObserver* observer) {
+  base::AutoLock lock(lock_);
+
+  DCHECK(observers_.HasObserver(observer));
+  DCHECK_EQ(this, observer->net_log_);
+  observers_.RemoveObserver(observer);
+  observer->net_log_ = NULL;
+  UpdateLogLevel();
+}
+
+void NetLog::UpdateLogLevel() {
+  lock_.AssertAcquired();
+
+  // Look through all the observers and find the finest granularity
+  // log level (higher values of the enum imply *lower* log levels).
+  LogLevel new_effective_log_level = base_log_level_;
+  ObserverListBase<ThreadSafeObserver>::Iterator it(observers_);
+  ThreadSafeObserver* observer;
+  while ((observer = it.GetNext()) != NULL) {
+    new_effective_log_level =
+        std::min(new_effective_log_level, observer->log_level());
+  }
+  base::subtle::NoBarrier_Store(&effective_log_level_,
+                                new_effective_log_level);
 }
 
 // static
@@ -301,23 +377,6 @@ NetLog::ParametersCallback NetLog::StringCallback(const char* name,
   return base::Bind(&NetLogString16Callback, name, value);
 }
 
-void NetLog::OnAddObserver(ThreadSafeObserver* observer, LogLevel log_level) {
-  DCHECK(!observer->net_log_);
-  observer->net_log_ = this;
-  observer->log_level_ = log_level;
-}
-
-void NetLog::OnSetObserverLogLevel(ThreadSafeObserver* observer,
-                                   LogLevel log_level) {
-  DCHECK_EQ(this, observer->net_log_);
-  observer->log_level_ = log_level;
-}
-
-void NetLog::OnRemoveObserver(ThreadSafeObserver* observer) {
-  DCHECK_EQ(this, observer->net_log_);
-  observer->net_log_ = NULL;
-}
-
 void NetLog::AddEntry(EventType type,
                       const Source& source,
                       EventPhase phase,
@@ -327,7 +386,10 @@ void NetLog::AddEntry(EventType type,
     return;
   Entry entry(type, source, phase, base::TimeTicks::Now(),
               parameters_callback, log_level);
-  OnAddEntry(entry);
+
+  // Notify all of the log observers.
+  base::AutoLock lock(lock_);
+  FOR_EACH_OBSERVER(ThreadSafeObserver, observers_, OnAddEntry(entry));
 }
 
 void BoundNetLog::AddEntry(NetLog::EventType type,

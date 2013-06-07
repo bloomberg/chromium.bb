@@ -182,6 +182,7 @@ bool LoadReplayLog(const base::FilePath& file_path, ReplayLog* replay_log) {
 class GDig {
  public:
   GDig();
+  ~GDig();
 
   enum Result {
     RESULT_NO_RESOLVE = -3,
@@ -219,7 +220,8 @@ class GDig {
 
   base::CancelableClosure timeout_closure_;
   scoped_ptr<DnsConfigService> dns_config_service_;
-  scoped_ptr<FileNetLog> log_;
+  scoped_ptr<FileNetLogObserver> log_observer_;
+  scoped_ptr<NetLog> log_;
   scoped_ptr<HostResolver> resolver_;
 };
 
@@ -230,6 +232,11 @@ GDig::GDig()
       parallellism_(6),
       replay_log_index_(0u),
       active_resolves_(0) {
+}
+
+GDig::~GDig() {
+  if (log_)
+    log_->RemoveThreadSafeObserver(log_observer_.get());
 }
 
 GDig::Result GDig::Main(int argc, const char* argv[]) {
@@ -299,7 +306,9 @@ bool GDig::ParseCommandLine(int argc, const char* argv[]) {
         return false;
       }
     }
-    log_.reset(new FileNetLog(stderr, level));
+    log_.reset(new NetLog);
+    log_observer_.reset(new FileNetLogObserver(stderr));
+    log_->AddThreadSafeObserver(log_observer_.get(), level);
   }
 
   print_config_ = parsed_command_line.HasSwitch("print_config");
