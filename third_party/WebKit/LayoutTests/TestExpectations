@@ -1811,6 +1811,8 @@ crbug.com/24182 inspector/timeline/timeline-decode-resize.html [ Pass Failure Ti
 
 crbug.com/246549 http/tests/security/svg-image-leak.html [ Failure Pass ]
 
+crbug.com/247553 http/tests/inspector/compiler-source-mapping-debug.html [ Crash Timeout Pass ]
+
 # Needs new pixel baselines on other platforms
 Bug(jamesr) compositing/video/video-controls-layer-creation.html [ ImageOnlyFailure Pass ]
 Bug(jamesr) virtual/softwarecompositing/video/video-controls-layer-creation.html [ ImageOnlyFailure Pass ]
