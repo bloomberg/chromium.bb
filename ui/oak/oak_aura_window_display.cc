@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/oak/oak_pretty_print.h"

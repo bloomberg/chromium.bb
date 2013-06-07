@@ -4,7 +4,7 @@
 
 #include "ui/app_list/views/cached_label.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 

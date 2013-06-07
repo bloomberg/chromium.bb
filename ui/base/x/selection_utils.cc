@@ -8,7 +8,7 @@
 
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/x/x11_atom_cache.h"
 

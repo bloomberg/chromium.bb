@@ -5,7 +5,7 @@
 #include "ui/message_center/message_center_tray.h"
 
 #include "base/observer_list.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"

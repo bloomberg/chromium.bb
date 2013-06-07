@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/i18n/time_formatting.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/message_center_style.h"

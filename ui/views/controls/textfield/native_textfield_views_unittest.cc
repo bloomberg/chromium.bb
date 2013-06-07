@@ -14,7 +14,7 @@
 #include "base/message_loop.h"
 #include "base/pickle.h"
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "grit/ui_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"

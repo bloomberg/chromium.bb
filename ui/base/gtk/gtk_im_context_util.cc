@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/i18n/char_iterator.h"
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/composition_text.h"
 
 namespace ui {

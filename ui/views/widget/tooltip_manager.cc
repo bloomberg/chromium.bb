@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/strings/string_split.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/base/text/text_elider.h"
 
 namespace {

@@ -4,7 +4,7 @@
 
 #include "ui/views/controls/progress_bar.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 

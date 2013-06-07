@@ -4,7 +4,7 @@
 
 #include "ui/views/widget/widget_delegate.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/view.h"

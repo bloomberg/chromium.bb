@@ -20,7 +20,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/strings/utf_offset_string_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/wrapped_window_proc.h"

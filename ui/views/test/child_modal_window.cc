@@ -4,7 +4,7 @@
 
 #include "ui/views/test/child_modal_window.h"
 
-#include "base/utf_string_conversions.h"  // ASCIIToUTF16
+#include "base/strings/utf_string_conversions.h"  // ASCIIToUTF16
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"

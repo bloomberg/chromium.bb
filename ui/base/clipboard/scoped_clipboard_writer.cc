@@ -9,7 +9,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 #include "base/pickle.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/size.h"
 
 namespace ui {

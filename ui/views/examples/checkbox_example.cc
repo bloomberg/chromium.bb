@@ -5,7 +5,7 @@
 #include "ui/views/examples/checkbox_example.h"
 
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/layout/fill_layout.h"

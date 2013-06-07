@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/base/events/event.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/focus/accelerator_handler.h"

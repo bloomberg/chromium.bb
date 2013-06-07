@@ -4,7 +4,7 @@
 
 #include "ui/gfx/font.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/platform_font.h"
 
 namespace gfx {

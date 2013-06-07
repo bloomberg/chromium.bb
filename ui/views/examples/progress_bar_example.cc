@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/grid_layout.h"

@@ -17,7 +17,7 @@
 #include "base/message_pump_aurax11.h"
 #include "base/message_pump_observer.h"
 #include "base/stl_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/x/selection_owner.h"

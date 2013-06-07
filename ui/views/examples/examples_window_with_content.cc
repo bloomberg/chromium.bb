@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/memory/scoped_vector.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/ui_base_paths.h"
