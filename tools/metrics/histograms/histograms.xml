@@ -10589,9 +10589,19 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Variations.DisabledNoEntropyProvider" enum="BooleanHit">
+  <obsolete>
+    Deprecated 1/2013. No longer tracked.
+  </obsolete>
   <summary>
     A count of the number of times we hit the code where a field trial is
     disabled because no entropy provider was provided.
+  </summary>
+</histogram>
+
+<histogram name="Variations.FailedRequestErrorCode" enum="NetErrorCodes">
+  <summary>
+    The counts of network error codes encountered by VariationsService when an
+    attempt to fetch a variations seed from the server fails.
   </summary>
 </histogram>
 
@@ -10630,13 +10640,25 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Variations.SeedEmpty" enum="BooleanHit">
-  <summary>Hit if no variations seed exists in local state on startup.</summary>
+<histogram name="Variations.ResourceRequestsAllowed"
+    enum="VariationsResourceRequestsAllowedState">
+  <summary>
+    Counts the number of times the VariationsService is allowed or not allowed
+    to make a request due to the ResourceRequestAllowedNotifier.
+  </summary>
+</histogram>
+
+<histogram name="Variations.SeedEmpty" enum="BooleanEmpty">
+  <summary>
+    Records whether the variations seed in local state is empty (does not exist)
+    on startup.
+  </summary>
 </histogram>
 
 <histogram name="Variations.SeedFetchResponseCode">
   <summary>
-    The count of HTTP Response codes encountered by the VariationsService.
+    The counts of HTTP response codes encountered by VariationsService when
+    attempting to fetch a variations seed from the server.
   </summary>
 </histogram>
 
@@ -10649,13 +10671,27 @@ other types of suffix sets.
 
 <histogram name="Variations.ServerStudyExpiredUniformity1Percent"
     enum="BooleanExpired">
+  <obsolete>
+    Deprecated 11/2012. No longer tracked.
+  </obsolete>
   <summary>
     Whether or not the 1-Percent uniformity trial from the Variations server was
     expired when loaded.
   </summary>
 </histogram>
 
+<histogram name="Variations.TimeSinceLastFetchAttempt" units="minutes">
+  <summary>
+    The time since the previous attempt to fetch the variations seed within the
+    same session, with 0 indicating that this is the first attempt. Recorded
+    when a variations seed fetch is attempted by the VariationsService.
+  </summary>
+</histogram>
+
 <histogram name="Variations.UniformityTrialExpired" enum="BooleanHit">
+  <obsolete>
+    Deprecated 1/2013. No longer tracked.
+  </obsolete>
   <summary>
     A count of the number of times we hit the code where the
     UMA-Uniformity-Trial-1-Percent field trial is disabled as a result of the
@@ -10665,6 +10701,9 @@ other types of suffix sets.
 
 <histogram name="Variations.UniformityTrialGroupNotActive"
     enum="UniformityTrialGroupNotActive">
+  <obsolete>
+    Deprecated 1/2013. No longer tracked.
+  </obsolete>
   <summary>
     Tracks whether the UMA-Uniformity-Trial-1-Percent field trial was not active
     and which factors contributed to it.
@@ -11535,6 +11574,11 @@ other types of suffix sets.
 <enum name="BooleanDuplicate" type="int">
   <int value="0" label="Not Duplicate"/>
   <int value="1" label="Duplicate"/>
+</enum>
+
+<enum name="BooleanEmpty" type="int">
+  <int value="0" label="Not Empty"/>
+  <int value="1" label="Empty"/>
 </enum>
 
 <enum name="BooleanEnabled" type="int">
@@ -16364,6 +16408,12 @@ other types of suffix sets.
   <int value="7" label="kFileURLScheme"/>
   <int value="8" label="kBlobURLScheme"/>
   <int value="9" label="kDataURLScheme"/>
+</enum>
+
+<enum name="VariationsResourceRequestsAllowedState" type="int">
+  <int value="0" label="Resource requests allowed"/>
+  <int value="1" label="Resource requests not allowed"/>
+  <int value="2" label="Notified that requests became allowed"/>
 </enum>
 
 <enum name="VAVDAH264DecoderFailure" type="int">

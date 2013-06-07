@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/version.h"
@@ -25,6 +26,7 @@
 #include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
@@ -153,6 +155,19 @@ std::string GetRestrictParameterPref(PrefService* local_state) {
     parameter = local_state->GetString(prefs::kVariationsRestrictParameter);
 #endif
   return parameter;
+}
+
+enum ResourceRequestsAllowedState {
+  RESOURCE_REQUESTS_ALLOWED,
+  RESOURCE_REQUESTS_NOT_ALLOWED,
+  RESOURCE_REQUESTS_ALLOWED_NOTIFIED,
+  RESOURCE_REQUESTS_ALLOWED_ENUM_SIZE,
+};
+
+// Records UMA histogram with the current resource requests allowed state.
+void RecordRequestsAllowedHistogram(ResourceRequestsAllowedState state) {
+  UMA_HISTOGRAM_ENUMERATION("Variations.ResourceRequestsAllowed", state,
+                            RESOURCE_REQUESTS_ALLOWED_ENUM_SIZE);
 }
 
 }  // namespace
@@ -316,17 +331,27 @@ void VariationsService::DoActualFetch() {
   }
   pending_seed_request_->Start();
 
-  last_request_started_time_ = base::TimeTicks::Now();
+  const base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeDelta time_since_last_fetch;
+  // Record a time delta of 0 (default value) if there was no previous fetch.
+  if (!last_request_started_time_.is_null())
+    time_since_last_fetch = now - last_request_started_time_;
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Variations.TimeSinceLastFetchAttempt",
+                              time_since_last_fetch.InMinutes(), 0,
+                              base::TimeDelta::FromDays(7).InMinutes(), 50);
+  last_request_started_time_ = now;
 }
 
 void VariationsService::FetchVariationsSeed() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   if (!resource_request_allowed_notifier_->ResourceRequestsAllowed()) {
+    RecordRequestsAllowedHistogram(RESOURCE_REQUESTS_NOT_ALLOWED);
     DVLOG(1) << "Resource requests were not allowed. Waiting for notification.";
     return;
   }
 
+  RecordRequestsAllowedHistogram(RESOURCE_REQUESTS_ALLOWED);
   DoActualFetch();
 }
 
@@ -334,16 +359,20 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(pending_seed_request_.get(), source);
   // The fetcher will be deleted when the request is handled.
   scoped_ptr<const net::URLFetcher> request(pending_seed_request_.release());
-  if (request->GetStatus().status() != net::URLRequestStatus::SUCCESS) {
-    DVLOG(1) << "Variations server request failed.";
+  const net::URLRequestStatus& request_status = request->GetStatus();
+  if (request_status.status() != net::URLRequestStatus::SUCCESS) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Variations.FailedRequestErrorCode",
+                                -request_status.error());
+    DVLOG(1) << "Variations server request failed with error: "
+             << request_status.error() << ": "
+             << net::ErrorToString(request_status.error());
     return;
   }
 
   // Log the response code.
   const int response_code = request->GetResponseCode();
-  UMA_HISTOGRAM_CUSTOM_ENUMERATION("Variations.SeedFetchResponseCode",
-      net::HttpUtil::MapStatusCodeForHistogram(response_code),
-      net::HttpUtil::GetStatusCodesForHistogram());
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Variations.SeedFetchResponseCode",
+                              response_code);
 
   const base::TimeDelta latency =
       base::TimeTicks::Now() - last_request_started_time_;
@@ -389,6 +418,7 @@ void VariationsService::OnResourceRequestsAllowed() {
   // attempt was made earlier that fails (which implies that the period had
   // elapsed). After a successful attempt is made, the notifier will know not
   // to call this method again until another failed attempt occurs.
+  RecordRequestsAllowedHistogram(RESOURCE_REQUESTS_ALLOWED_NOTIFIED);
   DVLOG(1) << "Retrying fetch.";
   DoActualFetch();
 
@@ -620,10 +650,9 @@ bool VariationsService::ValidateStudyAndComputeTotalProbability(
 bool VariationsService::LoadTrialsSeedFromPref(PrefService* local_prefs,
                                                TrialsSeed* seed) {
   std::string base64_seed_data = local_prefs->GetString(prefs::kVariationsSeed);
-  if (base64_seed_data.empty()) {
-    UMA_HISTOGRAM_BOOLEAN("Variations.SeedEmpty", true);
+  UMA_HISTOGRAM_BOOLEAN("Variations.SeedEmpty", base64_seed_data.empty());
+  if (base64_seed_data.empty())
     return false;
-  }
 
   // If the decode process fails, assume the pref value is corrupt and clear it.
   std::string seed_data;
