@@ -377,7 +377,6 @@ int NoNotificationMessageView::GetHeightForWidth(int width) {
 }
 
 void NoNotificationMessageView::Layout() {
-  DCHECK_EQ(100, height());
   int text_height = label_->GetHeightForWidth(width());
   int margin = (height() - text_height) / 2;
   label_->SetBounds(0, margin, width(), text_height);
