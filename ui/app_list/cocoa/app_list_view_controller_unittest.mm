@@ -19,10 +19,7 @@ class AppListViewControllerTest : public AppsGridControllerTestHelper {
 
   virtual void SetUp() OVERRIDE {
     app_list_view_controller_.reset([[AppListViewController alloc] init]);
-    [app_list_view_controller_ setDelegate:
-        delegate_.PassAs<AppListViewDelegate>()];
     SetUpWithGridController([app_list_view_controller_ appsGridController]);
-
     [[test_window() contentView] addSubview:[app_list_view_controller_ view]];
   }
 
@@ -31,6 +28,12 @@ class AppListViewControllerTest : public AppsGridControllerTestHelper {
         setDelegate:scoped_ptr<app_list::AppListViewDelegate>(NULL)];
     app_list_view_controller_.reset();
     AppsGridControllerTestHelper::TearDown();
+  }
+
+  virtual void ResetModel(scoped_ptr<AppListModel> new_model) OVERRIDE {
+    scoped_ptr<AppListViewDelegate> delegate_(new AppListTestViewDelegate);
+    [app_list_view_controller_ setDelegate:delegate_.Pass()
+                             withTestModel:new_model.Pass()];
   }
 
  protected:

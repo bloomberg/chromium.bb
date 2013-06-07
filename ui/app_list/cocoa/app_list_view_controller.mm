@@ -7,9 +7,12 @@
 #include "base/mac/foundation_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #import "ui/app_list/cocoa/app_list_pager_view.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
+#import "ui/base/cocoa/flipped_view.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
 
@@ -19,13 +22,11 @@ const CGFloat kBubbleCornerRadius = 3;
 // Height of the pager.
 const CGFloat kPagerPreferredHeight = 57;
 
-// Padding between the top of the grid and the top of the view.
-// TODO(tapted): Update padding when the search entry control is added.
-const CGFloat kTopPadding = 16;
+// Height of separator line drawn between the searchbox and grid view.
+const CGFloat kTopSeparatorSize = 1;
 
-// Height of the search input. TODO(tapted): Make this visible when the search
-// input UI is written.
-const CGFloat kSearchInputHeight = 0;
+// Height of the search input.
+const CGFloat kSearchInputHeight = 48;
 
 // Minimum margin on either side of the pager. If the pager grows beyond this,
 // the segment size is reduced.
@@ -35,23 +36,29 @@ const CGFloat kMaxSegmentWidth = 80;
 
 }  // namespace
 
-@interface BackgroundView : NSView;
+@interface BackgroundView : FlippedView;
 @end
 
 @implementation BackgroundView
 
 - (void)drawRect:(NSRect)dirtyRect {
-  [NSGraphicsContext saveGraphicsState];
-  [gfx::SkColorToCalibratedNSColor(app_list::kContentsBackgroundColor) set];
-  [[NSBezierPath bezierPathWithRoundedRect:[self bounds]
+  gfx::ScopedNSGraphicsContextSaveGState context;
+  NSRect boundsRect = [self bounds];
+  NSRect searchAreaRect = NSMakeRect(0, 0,
+                                     NSWidth(boundsRect), kSearchInputHeight);
+  NSRect separatorRect = NSMakeRect(0, NSMaxY(searchAreaRect),
+                                    NSWidth(boundsRect), kTopSeparatorSize);
+
+  [[NSBezierPath bezierPathWithRoundedRect:boundsRect
                                    xRadius:kBubbleCornerRadius
                                    yRadius:kBubbleCornerRadius] addClip];
-  NSRectFill([self bounds]);
-  [NSGraphicsContext restoreGraphicsState];
-}
 
-- (BOOL)isFlipped {
-  return YES;
+  [gfx::SkColorToCalibratedNSColor(app_list::kContentsBackgroundColor) set];
+  NSRectFill(boundsRect);
+  [gfx::SkColorToCalibratedNSColor(app_list::kSearchBoxBackground) set];
+  NSRectFill(searchAreaRect);
+  [gfx::SkColorToCalibratedNSColor(app_list::kTopSeparatorColor) set];
+  NSRectFill(separatorRect);
 }
 
 @end
@@ -97,9 +104,22 @@ const CGFloat kMaxSegmentWidth = 80;
   return delegate_.get();
 }
 
-- (void)setDelegate:(scoped_ptr<app_list::AppListViewDelegate>)newDelegate {
+- (void)setDelegate:(scoped_ptr<app_list::AppListViewDelegate>)newDelegate
+      withTestModel:(scoped_ptr<app_list::AppListModel>)newModel {
+  if (delegate_) {
+    // First clean up, in reverse order.
+    [appsSearchBoxController_ setDelegate:nil];
+  }
   delegate_.reset(newDelegate.release());
   [appsGridController_ setDelegate:delegate_.get()];
+  if (newModel.get())
+    [appsGridController_ setModel:newModel.Pass()];
+  [appsSearchBoxController_ setDelegate:self];
+}
+
+- (void)setDelegate:(scoped_ptr<app_list::AppListViewDelegate>)newDelegate {
+  [self setDelegate:newDelegate.Pass()
+      withTestModel:scoped_ptr<app_list::AppListModel>()];
 }
 
 -(void)loadAndSetView {
@@ -107,22 +127,23 @@ const CGFloat kMaxSegmentWidth = 80;
   [pagerControl_ setTarget:appsGridController_];
   [pagerControl_ setAction:@selector(onPagerClicked:)];
 
-  [[appsGridController_ view] setFrameOrigin:NSMakePoint(0, kTopPadding)];
+  NSRect gridFrame = [[appsGridController_ view] frame];
+  NSRect contentsRect = NSMakeRect(0, kSearchInputHeight + kTopSeparatorSize,
+      NSWidth(gridFrame), NSHeight(gridFrame) + kPagerPreferredHeight -
+          [AppsGridController scrollerPadding]);
 
-  NSRect backgroundRect = [[appsGridController_ view] bounds];
-  backgroundRect.size.height += kPagerPreferredHeight;
+  contentsView_.reset([[FlippedView alloc] initWithFrame:contentsRect]);
   scoped_nsobject<BackgroundView> backgroundView(
-      [[BackgroundView alloc] initWithFrame:backgroundRect]);
+      [[BackgroundView alloc] initWithFrame:
+          NSMakeRect(0, 0, NSMaxX(contentsRect), NSMaxY(contentsRect))]);
+  appsSearchBoxController_.reset(
+      [[AppsSearchBoxController alloc] initWithFrame:
+          NSMakeRect(0, 0, NSWidth(contentsRect), kSearchInputHeight)]);
 
-  NSRect searchInputRect =
-      NSMakeRect(0, 0, backgroundRect.size.width, kSearchInputHeight);
-  scoped_nsobject<NSTextField> searchInput(
-      [[NSTextField alloc] initWithFrame:searchInputRect]);
-  [searchInput setDelegate:self];
-
-  [backgroundView addSubview:[appsGridController_ view]];
-  [backgroundView addSubview:pagerControl_];
-  [backgroundView addSubview:searchInput];
+  [contentsView_ addSubview:[appsGridController_ view]];
+  [contentsView_ addSubview:pagerControl_];
+  [backgroundView addSubview:contentsView_];
+  [backgroundView addSubview:[appsSearchBoxController_ view]];
   [self setView:backgroundView];
 }
 
@@ -130,7 +151,7 @@ const CGFloat kMaxSegmentWidth = 80;
   size_t pageCount = [appsGridController_ pageCount];
   [pagerControl_ setSegmentCount:pageCount];
 
-  NSRect viewFrame = [[self view] bounds];
+  NSRect viewFrame = [[pagerControl_ superview] bounds];
   CGFloat segmentWidth = std::min(
       kMaxSegmentWidth,
       (viewFrame.size.width - 2 * kMinPagerMargin) / pageCount);
@@ -163,9 +184,17 @@ const CGFloat kMaxSegmentWidth = 80;
   return [pagerControl_ findAndHighlightSegmentAtLocation:locationInWindow];
 }
 
+- (app_list::SearchBoxModel*)searchBoxModel {
+  app_list::AppListModel* appListModel = [appsGridController_ model];
+  return appListModel ? appListModel->search_box() : NULL;
+}
+
 - (BOOL)control:(NSControl*)control
                textView:(NSTextView*)textView
     doCommandBySelector:(SEL)command {
+  // TODO(tapted): If showing search results, first pass up/down navigation to
+  // the search results controller.
+
   // If anything has been written, let the search view handle it.
   if ([[control stringValue] length] > 0)
     return NO;
@@ -181,6 +210,16 @@ const CGFloat kMaxSegmentWidth = 80;
 
   // Possibly handle grid navigation.
   return [appsGridController_ handleCommandBySelector:command];
+}
+
+- (void)modelTextDidChange {
+  app_list::SearchBoxModel* searchBoxModel = [self searchBoxModel];
+  if (!searchBoxModel || !delegate_)
+    return;
+
+  // TODO(tapted): If there is a non-empty query in |searchBoxModel| reveal the
+  // search results, and run delegate_->StartSearch(). Or, if the query is now
+  // empty, hide results and run delegate_->StopSearch().
 }
 
 @end

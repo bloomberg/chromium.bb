@@ -11,23 +11,27 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
 #import "ui/app_list/cocoa/apps_pagination_model_observer.h"
+#import "ui/app_list/cocoa/apps_search_box_controller.h"
 
 namespace app_list {
 class AppListViewDelegate;
+class AppListModel;
 }
 
-@class AppsGridController;
 @class AppListPagerView;
+@class AppsGridController;
 
 // Controller for the top-level view of the app list UI. It creates and hosts an
-// AppsGridController (displaying an AppListModel), and pager control for
-// navigating between pages in the grid.
+// AppsGridController (displaying an AppListModel), pager control to navigate
+// between pages in the grid, and search entry box.
 APP_LIST_EXPORT
-@interface AppListViewController :
-    NSViewController<AppsPaginationModelObserver, NSTextFieldDelegate> {
+@interface AppListViewController : NSViewController<AppsPaginationModelObserver,
+                                                    AppsSearchBoxDelegate> {
  @private
   scoped_nsobject<AppsGridController> appsGridController_;
   scoped_nsobject<AppListPagerView> pagerControl_;
+  scoped_nsobject<AppsSearchBoxController> appsSearchBoxController_;
+  scoped_nsobject<NSView> contentsView_;
   scoped_ptr<app_list::AppListViewDelegate> delegate_;
 }
 
@@ -38,6 +42,13 @@ APP_LIST_EXPORT
 - (app_list::AppListViewDelegate*)delegate;
 
 - (void)setDelegate:(scoped_ptr<app_list::AppListViewDelegate>)newDelegate;
+
+@end
+
+@interface AppListViewController (TestingAPI)
+
+- (void)setDelegate:(scoped_ptr<app_list::AppListViewDelegate>)newDelegate
+      withTestModel:(scoped_ptr<app_list::AppListModel>)newModel;
 
 @end
 

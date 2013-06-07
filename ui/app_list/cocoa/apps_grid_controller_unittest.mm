@@ -80,9 +80,14 @@ class AppsGridControllerTest : public AppsGridControllerTestHelper {
  public:
   AppsGridControllerTest() {}
 
+  AppListTestViewDelegate* delegate() {
+    return owned_delegate_.get();
+  }
+
   virtual void SetUp() OVERRIDE {
     owned_apps_grid_controller_.reset([[AppsGridController alloc] init]);
-    [owned_apps_grid_controller_ setDelegate:delegate_.get()];
+    owned_delegate_.reset(new AppListTestViewDelegate);
+    [owned_apps_grid_controller_ setDelegate:owned_delegate_.get()];
     AppsGridControllerTestHelper::SetUpWithGridController(
         owned_apps_grid_controller_.get());
 
@@ -98,6 +103,7 @@ class AppsGridControllerTest : public AppsGridControllerTestHelper {
 
  private:
   scoped_nsobject<AppsGridController> owned_apps_grid_controller_;
+  scoped_ptr<AppListTestViewDelegate> owned_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridControllerTest);
 };

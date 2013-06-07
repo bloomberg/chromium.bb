@@ -20,7 +20,6 @@ const size_t AppsGridControllerTestHelper::kItemsPerPage = 16;
 
 AppsGridControllerTestHelper::AppsGridControllerTestHelper() {
   Init();
-  delegate_.reset(new AppListTestViewDelegate);
   [AppsGridController setScrollAnimationDuration:0.0];
 }
 
@@ -30,8 +29,7 @@ void AppsGridControllerTestHelper::SetUpWithGridController(
     AppsGridController* grid_controller) {
   ui::CocoaTest::SetUp();
   apps_grid_controller_ = grid_controller;
-  scoped_ptr<AppListModel> model(new AppListTestModel);
-  [apps_grid_controller_ setModel:model.Pass()];
+  ReplaceTestModel(0);
 }
 
 void AppsGridControllerTestHelper::SimulateClick(NSView* view) {
@@ -58,7 +56,12 @@ void AppsGridControllerTestHelper::SimulateMouseExitItemAt(size_t index) {
 void AppsGridControllerTestHelper::ReplaceTestModel(int item_count) {
   scoped_ptr<AppListTestModel> new_model(new AppListTestModel);
   new_model->PopulateApps(item_count);
-  [apps_grid_controller_ setModel:new_model.PassAs<AppListModel>()];
+  ResetModel(new_model.PassAs<AppListModel>());
+}
+
+void AppsGridControllerTestHelper::ResetModel(
+    scoped_ptr<AppListModel> new_model) {
+  [apps_grid_controller_ setModel:new_model.Pass()];
 }
 
 std::string AppsGridControllerTestHelper::GetViewContent() const {
@@ -124,10 +127,6 @@ NSCollectionView* AppsGridControllerTestHelper::GetPageAt(size_t index) {
 
 NSView* AppsGridControllerTestHelper::GetSelectedView() {
   return GetItemViewAt([apps_grid_controller_ selectedItemIndex]);
-}
-
-AppListTestViewDelegate* AppsGridControllerTestHelper::delegate() {
-  return static_cast<AppListTestViewDelegate*>(delegate_.get());
 }
 
 AppListTestModel* AppsGridControllerTestHelper::model() {

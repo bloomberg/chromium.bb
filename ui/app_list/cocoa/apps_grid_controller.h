@@ -54,6 +54,10 @@ APP_LIST_EXPORT
 
 + (void)setScrollAnimationDuration:(NSTimeInterval)duration;
 
+// The amount the grid view has been extended to hold the sometimes present
+// invisible scroller that allows for gesture scrolling.
++ (CGFloat)scrollerPadding;
+
 - (NSCollectionView*)collectionViewAtPageIndex:(size_t)pageIndex;
 - (size_t)pageIndexForCollectionView:(NSCollectionView*)page;
 

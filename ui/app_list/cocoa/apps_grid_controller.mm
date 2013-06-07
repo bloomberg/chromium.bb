@@ -21,6 +21,7 @@ const int kFixedColumns = 4;
 const int kItemsPerPage = kFixedRows * kFixedColumns;
 
 // Padding space in pixels for fixed layout.
+const CGFloat kGridTopPadding = 1;
 const CGFloat kLeftRightPadding = 16;
 const CGFloat kScrollerPadding = 16;
 
@@ -140,6 +141,10 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 
 + (void)setScrollAnimationDuration:(NSTimeInterval)duration {
   g_scroll_duration = duration;
+}
+
++ (CGFloat)scrollerPadding {
+  return kScrollerPadding;
 }
 
 @synthesize paginationObserver = paginationObserver_;
@@ -338,7 +343,7 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   scoped_nsobject<PageContainerView> pagesContainer(
       [[PageContainerView alloc] initWithFrame:NSZeroRect]);
 
-  NSRect scrollFrame = NSMakeRect(0, 0, kViewWidth,
+  NSRect scrollFrame = NSMakeRect(0, kGridTopPadding, kViewWidth,
                                   kViewHeight + kScrollerPadding);
   scoped_nsobject<ScrollViewWithNoScrollbars> scrollView(
       [[ScrollViewWithNoScrollbars alloc] initWithFrame:scrollFrame]);

@@ -12,6 +12,9 @@
 @class AppsGridController;
 
 namespace app_list {
+
+class AppListModel;
+
 namespace test {
 
 class AppListTestViewDelegate;
@@ -55,10 +58,10 @@ class AppsGridControllerTestHelper : public ui::CocoaTest {
   NSCollectionView* GetPageAt(size_t index);
   NSView* GetSelectedView();
 
-  AppListTestViewDelegate* delegate();
   AppListTestModel* model();
 
-  scoped_ptr<AppListTestViewDelegate> delegate_;
+  virtual void ResetModel(scoped_ptr<AppListModel> model);
+
   AppsGridController* apps_grid_controller_;
 
  private:
