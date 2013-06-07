@@ -63,6 +63,15 @@ void AccessibilityEventRouterViews::HandleAccessibilityEvent(
       break;
     case ui::AccessibilityTypes::EVENT_TEXT_CHANGED:
     case ui::AccessibilityTypes::EVENT_SELECTION_CHANGED:
+      // These two events should only be sent for views that have focus. This
+      // enforces the invariant that we fire events triggered by user action and
+      // not by programmatic logic. For example, the location bar can be updated
+      // by javascript while the user focus is within some other part of the
+      // user interface. In contrast, the other supported events here do not
+      // depend on focus. For example, a menu within a menubar can open or close
+      // while focus is within the location bar or anywhere else as a result of
+      // user action. Note that the below logic can at some point be removed if
+      // we pass more information along to the listener such as focused state.
       if (!view->GetFocusManager() ||
           view->GetFocusManager()->GetFocusedView() != view)
         return;
