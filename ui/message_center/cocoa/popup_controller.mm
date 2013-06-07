@@ -183,13 +183,24 @@ enum {
 }
 
 - (void)showWithAnimation:(NSRect)newBounds {
+  bounds_ = newBounds;
   NSRect startBounds = newBounds;
   startBounds.origin.x += startBounds.size.width;
   startBounds.size.width = 0;
-  bounds_ = startBounds;
   [[self window] setFrame:startBounds display:NO];
   [self showWindow:nil];
-  [self setBounds:newBounds];
+
+  // Slide-in and fade-in simulatenously.
+  NSDictionary* animationDict = @{
+    NSViewAnimationTargetKey :   [self window],
+    NSViewAnimationEndFrameKey : [NSValue valueWithRect:newBounds],
+    NSViewAnimationEffectKey :   NSViewAnimationFadeInEffect
+  };
+  boundsAnimation_.reset([[NSViewAnimation alloc]
+      initWithViewAnimations:[NSArray arrayWithObject:animationDict]]);
+  [boundsAnimation_ setDuration:[popupCollection_ popupAnimationDuration]];
+  [boundsAnimation_ setDelegate:self];
+  [boundsAnimation_ startAnimation];
 }
 
 - (void)closeWithAnimation {
@@ -230,7 +241,7 @@ enum {
   bounds_ = newBounds;
 
   NSDictionary* animationDict = @{
-      NSViewAnimationTargetKey : [self window],
+    NSViewAnimationTargetKey :   [self window],
     NSViewAnimationEndFrameKey : [NSValue valueWithRect:newBounds]
   };
   boundsAnimation_.reset([[NSViewAnimation alloc]
