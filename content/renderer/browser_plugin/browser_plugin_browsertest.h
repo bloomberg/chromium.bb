@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/browser_plugin/mock_browser_plugin_manager.h"
@@ -20,6 +21,7 @@ class RenderThreadImpl;
 
 namespace content {
 
+class MockBrowserPlugin;
 class TestContentRendererClient;
 
 class BrowserPluginTest : public RenderViewTest {
@@ -36,6 +38,11 @@ class BrowserPluginTest : public RenderViewTest {
   std::string ExecuteScriptAndReturnString(const std::string& script);
   int ExecuteScriptAndReturnInt(const std::string& script);
   bool ExecuteScriptAndReturnBool(const std::string& script, bool* result);
+  // Returns NULL if there is no plugin.
+  MockBrowserPlugin* GetCurrentPlugin();
+  // Returns NULL if there is no plugin.
+  MockBrowserPlugin* GetCurrentPluginWithAttachParams(
+      BrowserPluginHostMsg_Attach_Params* params);
  private:
   scoped_ptr<TestContentRendererClient> test_content_renderer_client_;
 };

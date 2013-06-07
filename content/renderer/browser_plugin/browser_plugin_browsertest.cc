@@ -7,7 +7,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
-#include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/public/common/content_constants.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager_factory.h"
@@ -150,6 +149,25 @@ bool BrowserPluginTest::ExecuteScriptAndReturnBool(
   return true;
 }
 
+MockBrowserPlugin* BrowserPluginTest::GetCurrentPlugin() {
+  BrowserPluginHostMsg_Attach_Params params;
+  return GetCurrentPluginWithAttachParams(&params);
+}
+
+MockBrowserPlugin* BrowserPluginTest::GetCurrentPluginWithAttachParams(
+    BrowserPluginHostMsg_Attach_Params* params) {
+  int instance_id = 0;
+  const IPC::Message* msg =
+      browser_plugin_manager()->sink().GetUniqueMessageMatching(
+          BrowserPluginHostMsg_Attach::ID);
+  if (!msg)
+    return NULL;
+
+  BrowserPluginHostMsg_Attach::Read(msg, &instance_id, params);
+  return static_cast<MockBrowserPlugin*>(
+      browser_plugin_manager()->GetBrowserPlugin(instance_id));
+}
+
 // This test verifies that an initial resize occurs when we instantiate the
 // browser plugin. This test also verifies that the browser plugin is waiting
 // for a BrowserPluginMsg_UpdateRect in response. We issue an UpdateRect, and
@@ -159,23 +177,14 @@ bool BrowserPluginTest::ExecuteScriptAndReturnBool(
 TEST_F(BrowserPluginTest, InitialResize) {
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
   // Verify that the information in Attach is correct.
-  int instance_id = 0;
-  {
-    const IPC::Message* msg =
-        browser_plugin_manager()->sink().GetUniqueMessageMatching(
-            BrowserPluginHostMsg_Attach::ID);
-    ASSERT_TRUE(msg);
-    BrowserPluginHostMsg_Attach_Params params;
-    BrowserPluginHostMsg_Attach::Read(msg, &instance_id, &params);
-    EXPECT_EQ(640, params.resize_guest_params.view_rect.width());
-    EXPECT_EQ(480, params.resize_guest_params.view_rect.height());
-  }
+  BrowserPluginHostMsg_Attach_Params params;
+  MockBrowserPlugin* browser_plugin = GetCurrentPluginWithAttachParams(&params);
 
-  MockBrowserPlugin* browser_plugin =
-      static_cast<MockBrowserPlugin*>(
-          browser_plugin_manager()->GetBrowserPlugin(instance_id));
+  EXPECT_EQ(640, params.resize_guest_params.view_rect.width());
+  EXPECT_EQ(480, params.resize_guest_params.view_rect.height());
   ASSERT_TRUE(browser_plugin);
   // Now the browser plugin is expecting a UpdateRect resize.
+  int instance_id = browser_plugin->instance_id();
   EXPECT_TRUE(browser_plugin->pending_damage_buffer_.get());
 
   // Send the BrowserPlugin an UpdateRect equal to its container size with
@@ -233,15 +242,10 @@ TEST_F(BrowserPluginTest, SrcAttribute) {
   // Verify that we're reporting the correct URL to navigate to based on the
   // src attribute.
   {
-    // Ensure we get a Attach on the initial navigation.
-    const IPC::Message* msg =
-        browser_plugin_manager()->sink().GetUniqueMessageMatching(
-            BrowserPluginHostMsg_Attach::ID);
-    ASSERT_TRUE(msg);
-
-    int instance_id = 0;
     BrowserPluginHostMsg_Attach_Params params;
-    BrowserPluginHostMsg_Attach::Read(msg, &instance_id, &params);
+    MockBrowserPlugin* browser_plugin =
+        GetCurrentPluginWithAttachParams(&params);
+    ASSERT_TRUE(browser_plugin);
     EXPECT_EQ("foo", params.src);
   }
 
@@ -275,21 +279,9 @@ TEST_F(BrowserPluginTest, SrcAttribute) {
 
 TEST_F(BrowserPluginTest, ResizeFlowControl) {
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
-  int instance_id = 0;
-  {
-    // Ensure we get a Attach on the initial navigation and grab the
-    // BrowserPlugin's instance_id from there.
-    const IPC::Message* msg =
-        browser_plugin_manager()->sink().GetUniqueMessageMatching(
-            BrowserPluginHostMsg_Attach::ID);
-    ASSERT_TRUE(msg);
-    BrowserPluginHostMsg_Attach_Params params;
-    BrowserPluginHostMsg_Attach::Read(msg, &instance_id, &params);
-  }
-  MockBrowserPlugin* browser_plugin =
-      static_cast<MockBrowserPlugin*>(
-          browser_plugin_manager()->GetBrowserPlugin(instance_id));
+  MockBrowserPlugin* browser_plugin = GetCurrentPlugin();
   ASSERT_TRUE(browser_plugin);
+  int instance_id = browser_plugin->instance_id();
   EXPECT_TRUE(browser_plugin->pending_damage_buffer_.get());
   // Send an UpdateRect to the BrowserPlugin to make it use the pending damage
   // buffer.
@@ -379,19 +371,7 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
 TEST_F(BrowserPluginTest, GuestCrash) {
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
 
-  // Grab the BrowserPlugin's instance ID from its Attach message.
-  int instance_id = 0;
-  {
-    const IPC::Message* msg =
-        browser_plugin_manager()->sink().GetFirstMessageMatching(
-            BrowserPluginHostMsg_Attach::ID);
-    ASSERT_TRUE(msg);
-    BrowserPluginHostMsg_Attach_Params params;
-    BrowserPluginHostMsg_Attach::Read(msg, &instance_id, &params);
-  }
-  MockBrowserPlugin* browser_plugin =
-      static_cast<MockBrowserPlugin*>(
-          browser_plugin_manager()->GetBrowserPlugin(instance_id));
+  MockBrowserPlugin* browser_plugin = GetCurrentPlugin();
   ASSERT_TRUE(browser_plugin);
 
   WebKit::WebCursorInfo cursor_info;
@@ -483,19 +463,10 @@ TEST_F(BrowserPluginTest, CustomEvents) {
 
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
   ExecuteJavaScript(kAddEventListener);
-  // Grab the BrowserPlugin's instance ID from its resize message.
-  const IPC::Message* msg =
-      browser_plugin_manager()->sink().GetFirstMessageMatching(
-          BrowserPluginHostMsg_Attach::ID);
-  ASSERT_TRUE(msg);
-  int instance_id = 0;
-  BrowserPluginHostMsg_Attach_Params params;
-  BrowserPluginHostMsg_Attach::Read(msg, &instance_id, &params);
 
-  MockBrowserPlugin* browser_plugin =
-      static_cast<MockBrowserPlugin*>(
-          browser_plugin_manager()->GetBrowserPlugin(instance_id));
+  MockBrowserPlugin* browser_plugin = GetCurrentPlugin();
   ASSERT_TRUE(browser_plugin);
+  int instance_id = browser_plugin->instance_id();
 
   {
     BrowserPluginMsg_LoadCommit_Params navigate_params;
@@ -650,17 +621,11 @@ TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
   ExecuteJavaScript("document.getElementById('browserplugin').src = 'bar'");
   ProcessPendingMessages();
   {
-    const IPC::Message* create_msg =
-    browser_plugin_manager()->sink().GetUniqueMessageMatching(
-        BrowserPluginHostMsg_Attach::ID);
-    ASSERT_TRUE(create_msg);
-
-    int create_instance_id = 0;
     BrowserPluginHostMsg_Attach_Params params;
-    BrowserPluginHostMsg_Attach::Read(
-        create_msg,
-        &create_instance_id,
-        &params);
+    MockBrowserPlugin* browser_plugin =
+        GetCurrentPluginWithAttachParams(&params);
+    ASSERT_TRUE(browser_plugin);
+
     EXPECT_STREQ("storage", params.storage_partition_id.c_str());
     EXPECT_FALSE(params.persist_storage);
     EXPECT_STREQ("bar", params.src.c_str());
@@ -701,19 +666,10 @@ TEST_F(BrowserPluginTest, RemoveEventListenerInEventListener) {
 
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
   ExecuteJavaScript(kAddEventListener);
-  // Grab the BrowserPlugin's instance ID from its Attach message.
-  const IPC::Message* msg =
-      browser_plugin_manager()->sink().GetFirstMessageMatching(
-          BrowserPluginHostMsg_Attach::ID);
-  ASSERT_TRUE(msg);
-  int instance_id = 0;
-  BrowserPluginHostMsg_Attach_Params params;
-  BrowserPluginHostMsg_Attach::Read(msg, &instance_id, &params);
 
-  MockBrowserPlugin* browser_plugin =
-      static_cast<MockBrowserPlugin*>(
-          browser_plugin_manager()->GetBrowserPlugin(instance_id));
+  MockBrowserPlugin* browser_plugin = GetCurrentPlugin();
   ASSERT_TRUE(browser_plugin);
+  int instance_id = browser_plugin->instance_id();
 
   {
     BrowserPluginMsg_LoadCommit_Params navigate_params;
@@ -752,19 +708,10 @@ TEST_F(BrowserPluginTest, MultipleEventListeners) {
 
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
   ExecuteJavaScript(kAddEventListener);
-  // Grab the BrowserPlugin's instance ID from its Attach message.
-  const IPC::Message* msg =
-      browser_plugin_manager()->sink().GetFirstMessageMatching(
-          BrowserPluginHostMsg_Attach::ID);
-  ASSERT_TRUE(msg);
-  int instance_id = 0;
-  BrowserPluginHostMsg_Attach_Params params;
-  BrowserPluginHostMsg_Attach::Read(msg, &instance_id, &params);
 
-  MockBrowserPlugin* browser_plugin =
-      static_cast<MockBrowserPlugin*>(
-          browser_plugin_manager()->GetBrowserPlugin(instance_id));
+  MockBrowserPlugin* browser_plugin = GetCurrentPlugin();
   ASSERT_TRUE(browser_plugin);
+  int instance_id = browser_plugin->instance_id();
 
   {
     BrowserPluginMsg_LoadCommit_Params navigate_params;
@@ -778,21 +725,9 @@ TEST_F(BrowserPluginTest, MultipleEventListeners) {
 TEST_F(BrowserPluginTest, RemoveBrowserPluginOnExit) {
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
 
-  // Grab the BrowserPlugin's instance ID from its Attach message.
-  int instance_id = 0;
-  {
-    const IPC::Message* msg =
-        browser_plugin_manager()->sink().GetFirstMessageMatching(
-            BrowserPluginHostMsg_Attach::ID);
-    ASSERT_TRUE(msg);
-    BrowserPluginHostMsg_Attach_Params params;
-    BrowserPluginHostMsg_Attach::Read(msg, &instance_id, &params);
-  }
-
-  MockBrowserPlugin* browser_plugin =
-      static_cast<MockBrowserPlugin*>(
-          browser_plugin_manager()->GetBrowserPlugin(instance_id));
+  MockBrowserPlugin* browser_plugin = GetCurrentPlugin();
   ASSERT_TRUE(browser_plugin);
+  int instance_id = browser_plugin->instance_id();
 
   const char* kAddEventListener =
     "function exitListener(e) {"
@@ -837,28 +772,20 @@ TEST_F(BrowserPluginTest, AutoSizeAttributes) {
   // the correct autosize parameters.
   ExecuteJavaScript(kSetAutoSizeParametersAndNavigate);
   ProcessPendingMessages();
-  {
-    const IPC::Message* create_msg =
-    browser_plugin_manager()->sink().GetUniqueMessageMatching(
-        BrowserPluginHostMsg_Attach::ID);
-    ASSERT_TRUE(create_msg);
 
-    BrowserPluginHostMsg_Attach_Params params;
-    BrowserPluginHostMsg_Attach::Read(
-        create_msg,
-        &instance_id,
-        &params);
-     EXPECT_TRUE(params.auto_size_params.enable);
-     EXPECT_EQ(42, params.auto_size_params.min_size.width());
-     EXPECT_EQ(43, params.auto_size_params.min_size.height());
-     EXPECT_EQ(1337, params.auto_size_params.max_size.width());
-     EXPECT_EQ(1338, params.auto_size_params.max_size.height());
-  }
+  BrowserPluginHostMsg_Attach_Params params;
+  MockBrowserPlugin* browser_plugin =
+      GetCurrentPluginWithAttachParams(&params);
+  ASSERT_TRUE(browser_plugin);
+
+  EXPECT_TRUE(params.auto_size_params.enable);
+  EXPECT_EQ(42, params.auto_size_params.min_size.width());
+  EXPECT_EQ(43, params.auto_size_params.min_size.height());
+  EXPECT_EQ(1337, params.auto_size_params.max_size.width());
+  EXPECT_EQ(1338, params.auto_size_params.max_size.height());
+
   // Verify that we are waiting for the browser process to grab the new
   // damage buffer.
-  MockBrowserPlugin* browser_plugin =
-      static_cast<MockBrowserPlugin*>(
-          browser_plugin_manager()->GetBrowserPlugin(instance_id));
   EXPECT_TRUE(browser_plugin->pending_damage_buffer_.get());
   // Disable autosize. AutoSize state will not be sent to the guest until
   // the guest has responded to the last resize request.
