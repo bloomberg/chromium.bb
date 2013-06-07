@@ -4,11 +4,15 @@
 
 package org.chromium.ui;
 
+import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.GradientDrawable.Orientation;
+import android.os.Build;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import org.chromium.base.ApiCompatibilityUtils;
 
 /**
  * Encapsulates a single gradient view of the HSV color display, including its label, gradient
@@ -24,7 +28,7 @@ public class ColorPickerAdvancedComponent {
     // The set of colors to interpolate the gradient through.
     private int[] mGradientColors;
     // The Drawable that represents the gradient.
-    private final GradientDrawable mGradientDrawable;
+    private GradientDrawable mGradientDrawable;
     // The text label for the component.
     private final TextView mText;
 
@@ -49,7 +53,11 @@ public class ColorPickerAdvancedComponent {
         mSeekBar.setMax(seekBarMax);
         // Setting the thumb offset means the seek bar thumb can move all the way to each end
         // of the gradient view.
-        mSeekBar.setThumbOffset(mSeekBar.getThumb().getIntrinsicWidth() / 2);
+        Context context = rootView.getContext();
+        int offset = context.getResources()
+                            .getDrawable(R.drawable.color_picker_advanced_select_handle)
+                            .getIntrinsicWidth();
+        mSeekBar.setThumbOffset(offset / 2);
     }
 
     /**
@@ -75,7 +83,12 @@ public class ColorPickerAdvancedComponent {
      */
     public void setGradientColors(int[] newColors) {
         mGradientColors = newColors.clone();
-        mGradientDrawable.setColors(mGradientColors);
-        mGradientView.setBackground(mGradientDrawable);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+            Orientation currentOrientation = Orientation.LEFT_RIGHT;
+            mGradientDrawable = new GradientDrawable(currentOrientation, mGradientColors);
+        } else {
+            mGradientDrawable.setColors(mGradientColors);
+        }
+        ApiCompatibilityUtils.setBackgroundForView(mGradientView, mGradientDrawable);
     }
 }
