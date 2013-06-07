@@ -2369,6 +2369,14 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
         aura::client::GetCursorClient(window_->GetRootWindow());
     DCHECK(!cursor_client || !cursor_client->IsCursorVisible());
 
+    if (event->type() == ui::ET_MOUSEWHEEL) {
+      WebKit::WebMouseWheelEvent mouse_wheel_event =
+          MakeWebMouseWheelEvent(static_cast<ui::MouseWheelEvent*>(event));
+      if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0)
+        host_->ForwardWheelEvent(mouse_wheel_event);
+      return;
+    }
+
     WebKit::WebMouseEvent mouse_event = MakeWebMouseEvent(event);
     gfx::Point center(gfx::Rect(window_->bounds().size()).CenterPoint());
 
