@@ -5,8 +5,10 @@
 #ifndef CC_OUTPUT_OUTPUT_SURFACE_CLIENT_H_
 #define CC_OUTPUT_OUTPUT_SURFACE_CLIENT_H_
 
+#include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/context_provider.h"
 #include "ui/gfx/rect.h"
 
 namespace gfx {
@@ -19,6 +21,11 @@ class CompositorFrameAck;
 
 class CC_EXPORT OutputSurfaceClient {
  public:
+  // Called to synchronously re-initialize using the Context3D. Upon returning
+  // the compositor should be able to draw using GL what was previously
+  // committed.
+  virtual bool DeferredInitialize(
+      scoped_refptr<ContextProvider> offscreen_context_provider) = 0;
   virtual void SetNeedsRedrawRect(gfx::Rect damage_rect) = 0;
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
                                         base::TimeDelta interval) = 0;

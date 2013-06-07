@@ -327,6 +327,13 @@ void SingleThreadProxy::SendManagedMemoryStats() {
 
 bool SingleThreadProxy::IsInsideDraw() { return inside_draw_; }
 
+void SingleThreadProxy::DidTryInitializeRendererOnImplThread(
+    bool success,
+    scoped_refptr<ContextProvider> offscreen_context_provider) {
+  NOTREACHED()
+      << "This is only used on threaded compositing with impl-side painting";
+}
+
 void SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() {
   // Cause a commit so we can notice the lost context.
   SetNeedsCommitOnImplThread();

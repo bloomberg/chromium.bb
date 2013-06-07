@@ -1164,9 +1164,6 @@ void ThreadProxy::InitializeOutputSurfaceOnImplThread(
 
   *success = layer_tree_host_impl_->InitializeRenderer(output_surface.Pass());
 
-  if (offscreen_context_provider.get())
-    offscreen_context_provider->BindToCurrentThread();
-
   if (*success) {
     *capabilities = layer_tree_host_impl_->GetRendererCapabilities();
     scheduler_on_impl_thread_->SetSwapBuffersCompleteSupported(
@@ -1183,16 +1180,34 @@ void ThreadProxy::InitializeOutputSurfaceOnImplThread(
 
     scheduler_on_impl_thread_->SetMaxFramesPending(max_frames_pending);
 
-    if (layer_tree_host_impl_->resource_provider())
+    scheduler_on_impl_thread_->DidCreateAndInitializeOutputSurface();
+  }
+
+  DidTryInitializeRendererOnImplThread(*success, offscreen_context_provider);
+
+  completion->Signal();
+}
+
+void ThreadProxy::DidTryInitializeRendererOnImplThread(
+    bool success,
+    scoped_refptr<ContextProvider> offscreen_context_provider) {
+  DCHECK(IsImplThread());
+  DCHECK(!inside_draw_);
+
+  if (offscreen_context_provider.get())
+    offscreen_context_provider->BindToCurrentThread();
+
+  if (success) {
+    DCHECK_EQ(layer_tree_host_impl_->GetRendererCapabilities()
+                  .using_swap_complete_callback,
+              scheduler_on_impl_thread_->swap_buffers_complete_supported());
+    if (layer_tree_host_impl_->resource_provider()) {
       layer_tree_host_impl_->resource_provider()->
           set_offscreen_context_provider(offscreen_context_provider);
-
-    scheduler_on_impl_thread_->DidCreateAndInitializeOutputSurface();
+    }
   } else if (offscreen_context_provider.get()) {
     offscreen_context_provider->VerifyContexts();
   }
-
-  completion->Signal();
 }
 
 void ThreadProxy::FinishGLOnImplThread(CompletionEvent* completion) {

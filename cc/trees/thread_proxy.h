@@ -61,6 +61,9 @@ class ThreadProxy : public Proxy,
   virtual bool CommitPendingForTesting() OVERRIDE;
 
   // LayerTreeHostImplClient implementation
+  virtual void DidTryInitializeRendererOnImplThread(
+      bool success,
+      scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE;
   virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE;
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE;
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,

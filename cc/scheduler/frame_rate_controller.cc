@@ -88,6 +88,10 @@ void FrameRateController::SetTimebaseAndInterval(base::TimeTicks timebase,
     time_source_->SetTimebaseAndInterval(timebase, interval);
 }
 
+bool FrameRateController::swap_buffers_complete_supported() const {
+  return swap_buffers_complete_supported_;
+}
+
 void FrameRateController::SetSwapBuffersCompleteSupported(bool supported) {
   swap_buffers_complete_supported_ = supported;
 }

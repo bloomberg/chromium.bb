@@ -1454,7 +1454,15 @@ bool LayerTreeHostImpl::InitializeRenderer(
   if (!output_surface->BindToClient(this))
     return false;
 
-  if (output_surface->capabilities().deferred_gl_initialization) {
+  return DoInitializeRenderer(output_surface.Pass(),
+                              false /* is_deferred_init */);
+}
+
+bool LayerTreeHostImpl::DoInitializeRenderer(
+    scoped_ptr<OutputSurface> output_surface,
+    bool is_deferred_init) {
+  if (output_surface->capabilities().deferred_gl_initialization &&
+      !is_deferred_init) {
     // TODO(joth): Defer creating the Renderer too, until GL is initialized.
     // See http://crbug.com/230197
     renderer_ = SoftwareRenderer::Create(this, output_surface.get(), NULL);
@@ -1509,6 +1517,22 @@ bool LayerTreeHostImpl::InitializeRenderer(
     pending_tree_->set_needs_update_draw_properties();
 
   return true;
+}
+
+bool LayerTreeHostImpl::DeferredInitialize(
+    scoped_refptr<ContextProvider> offscreen_context_provider) {
+  DCHECK(output_surface_->capabilities().deferred_gl_initialization);
+  DCHECK(output_surface_->context3d());
+
+  // TODO(boliu): This is temporary until proper resource clean up is possible
+  // without resetting |tile_manager_| or |resource_provider_|.
+  DCHECK(!resource_provider_);
+
+  bool success =
+      DoInitializeRenderer(output_surface_.Pass(), true /* is_deferred_init */);
+  client_->DidTryInitializeRendererOnImplThread(success,
+                                                offscreen_context_provider);
+  return success;
 }
 
 void LayerTreeHostImpl::SetViewportSize(gfx::Size device_viewport_size) {

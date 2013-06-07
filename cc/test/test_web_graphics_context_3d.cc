@@ -41,6 +41,7 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       next_buffer_id_(1),
       next_image_id_(1),
       next_texture_id_(1),
+      support_swapbuffers_complete_callback_(true),
       have_extension_io_surface_(false),
       have_extension_egl_image_(false),
       times_make_current_succeeds_(-1),
@@ -64,6 +65,7 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D(
       next_image_id_(1),
       next_texture_id_(1),
       attributes_(attributes),
+      support_swapbuffers_complete_callback_(true),
       have_extension_io_surface_(false),
       have_extension_egl_image_(false),
       times_make_current_succeeds_(-1),
@@ -132,7 +134,10 @@ WebGraphicsContext3D::Attributes
 }
 
 WebKit::WebString TestWebGraphicsContext3D::getString(WGC3Denum name) {
-  std::string string("GL_CHROMIUM_swapbuffers_complete_callback");
+  std::string string;
+
+  if (support_swapbuffers_complete_callback_)
+    string += "GL_CHROMIUM_swapbuffers_complete_callback";
 
   if (name == GL_EXTENSIONS) {
     if (have_extension_io_surface_)
@@ -355,7 +360,8 @@ void TestWebGraphicsContext3D::signalSyncPoint(
 
 void TestWebGraphicsContext3D::setSwapBuffersCompleteCallbackCHROMIUM(
     WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback) {
-  swap_buffers_callback_ = callback;
+  if (support_swapbuffers_complete_callback_)
+    swap_buffers_callback_ = callback;
 }
 
 void TestWebGraphicsContext3D::prepareTexture() {

@@ -28,6 +28,10 @@ class TestOutputSurface : public OutputSurface {
 
 class FakeOutputSurfaceClient : public OutputSurfaceClient {
  public:
+  virtual bool DeferredInitialize(
+      scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE {
+    return true;
+  }
   virtual void SetNeedsRedrawRect(gfx::Rect damage_rect) OVERRIDE {}
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
                                         base::TimeDelta interval) OVERRIDE {}

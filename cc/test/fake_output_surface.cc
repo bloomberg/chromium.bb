@@ -30,6 +30,17 @@ FakeOutputSurface::FakeOutputSurface(
   capabilities_.has_parent_compositor = has_parent;
 }
 
+FakeOutputSurface::FakeOutputSurface(
+    scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
+    scoped_ptr<SoftwareOutputDevice> software_device,
+    bool has_parent)
+    : OutputSurface(context3d.Pass(), software_device.Pass()),
+      num_sent_frames_(0),
+      forced_draw_to_software_device_(false),
+      weak_ptr_factory_(this) {
+  capabilities_.has_parent_compositor = has_parent;
+}
+
 FakeOutputSurface::~FakeOutputSurface() {}
 
 void FakeOutputSurface::SendFrameToParentCompositor(

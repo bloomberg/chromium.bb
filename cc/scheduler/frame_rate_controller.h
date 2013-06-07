@@ -63,6 +63,7 @@ class CC_EXPORT FrameRateController {
 
   void SetTimebaseAndInterval(base::TimeTicks timebase,
                               base::TimeDelta interval);
+  bool swap_buffers_complete_supported() const;
   void SetSwapBuffersCompleteSupported(bool supported);
 
  protected:

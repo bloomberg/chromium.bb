@@ -64,6 +64,7 @@ class LayerTreeHostImplTest : public testing::Test,
       : proxy_(scoped_ptr<Thread>(NULL)),
         always_impl_thread_(&proxy_),
         always_main_thread_blocked_(&proxy_),
+        did_try_initialize_renderer_(false),
         on_can_draw_state_changed_called_(false),
         has_pending_tree_(false),
         did_request_commit_(false),
@@ -90,6 +91,11 @@ class LayerTreeHostImplTest : public testing::Test,
 
   virtual void TearDown() OVERRIDE {}
 
+  virtual void DidTryInitializeRendererOnImplThread(
+      bool success,
+      scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE {
+    did_try_initialize_renderer_ = true;
+  }
   virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE {}
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE {}
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
@@ -275,6 +281,7 @@ class LayerTreeHostImplTest : public testing::Test,
 
   scoped_ptr<LayerTreeHostImpl> host_impl_;
   FakeRenderingStatsInstrumentation stats_instrumentation_;
+  bool did_try_initialize_renderer_;
   bool on_can_draw_state_changed_called_;
   bool has_pending_tree_;
   bool did_request_commit_;
@@ -5786,6 +5793,7 @@ TEST_F(LayerTreeHostImplTest, ForcedDrawToSoftwareDeviceBasicRender) {
   host_impl_->SetViewportSize(gfx::Size(50, 50));
   CountingSoftwareDevice* software_device = new CountingSoftwareDevice();
   FakeOutputSurface* output_surface = FakeOutputSurface::CreateDeferredGL(
+      scoped_ptr<WebKit::WebGraphicsContext3D>(),
       scoped_ptr<SoftwareOutputDevice>(software_device)).release();
   host_impl_->InitializeRenderer(scoped_ptr<OutputSurface>(output_surface));
 
@@ -5808,6 +5816,7 @@ TEST_F(LayerTreeHostImplTest, ForcedDrawToSoftwareDeviceBasicRender) {
 TEST_F(LayerTreeHostImplTest,
        ForcedDrawToSoftwareDeviceSkipsUnsupportedLayers) {
   FakeOutputSurface* output_surface = FakeOutputSurface::CreateDeferredGL(
+      scoped_ptr<WebKit::WebGraphicsContext3D>(),
       scoped_ptr<SoftwareOutputDevice>(new CountingSoftwareDevice())).release();
   host_impl_->InitializeRenderer(
       scoped_ptr<OutputSurface>(output_surface));
@@ -5836,6 +5845,38 @@ TEST_F(LayerTreeHostImplTest,
 
   EXPECT_EQ(1u, frame.will_draw_layers.size());
   EXPECT_EQ(host_impl_->active_tree()->root_layer(), frame.will_draw_layers[0]);
+}
+
+TEST_F(LayerTreeHostImplTest, DeferredInitializeSmoke) {
+  host_impl_->InitializeRenderer(
+      scoped_ptr<OutputSurface>(FakeOutputSurface::CreateDeferredGL(
+          scoped_ptr<WebKit::WebGraphicsContext3D>(
+              TestWebGraphicsContext3D::Create(
+                  WebKit::WebGraphicsContext3D::Attributes())),
+          scoped_ptr<SoftwareOutputDevice>(new CountingSoftwareDevice()))));
+
+  // Add two layers.
+  scoped_ptr<SolidColorLayerImpl> root_layer =
+      SolidColorLayerImpl::Create(host_impl_->active_tree(), 1);
+  FakeVideoFrameProvider provider;
+  scoped_ptr<VideoLayerImpl> video_layer =
+      VideoLayerImpl::Create(host_impl_->active_tree(), 2, &provider);
+  video_layer->SetBounds(gfx::Size(10, 10));
+  video_layer->SetContentBounds(gfx::Size(10, 10));
+  video_layer->SetDrawsContent(true);
+  root_layer->AddChild(video_layer.PassAs<LayerImpl>());
+  SetupRootLayerImpl(root_layer.PassAs<LayerImpl>());
+
+  // Software draw.
+  DrawFrame();
+
+  // DeferredInitialize and hardware draw.
+  EXPECT_FALSE(did_try_initialize_renderer_);
+  host_impl_->DeferredInitialize(scoped_refptr<ContextProvider>());
+  EXPECT_TRUE(did_try_initialize_renderer_);
+
+  // Defer intialized GL draw.
+  DrawFrame();
 }
 
 }  // namespace

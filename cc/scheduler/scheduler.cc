@@ -100,6 +100,10 @@ int Scheduler::NumFramesPendingForTesting() const {
   return frame_rate_controller_->NumFramesPendingForTesting();
 }
 
+bool Scheduler::swap_buffers_complete_supported() const {
+  return frame_rate_controller_->swap_buffers_complete_supported();
+}
+
 void Scheduler::SetSwapBuffersCompleteSupported(bool supported) {
   frame_rate_controller_->SetSwapBuffersCompleteSupported(supported);
 }

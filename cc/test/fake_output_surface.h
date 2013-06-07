@@ -58,9 +58,10 @@ class FakeOutputSurface : public OutputSurface {
   }
 
   static scoped_ptr<FakeOutputSurface> CreateDeferredGL(
+      scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
       scoped_ptr<SoftwareOutputDevice> software_device) {
     scoped_ptr<FakeOutputSurface> result(
-        new FakeOutputSurface(software_device.Pass(), false));
+        new FakeOutputSurface(context3d.Pass(), software_device.Pass(), false));
     result->capabilities_.deferred_gl_initialization = true;
     return result.Pass();
   }
@@ -87,6 +88,11 @@ class FakeOutputSurface : public OutputSurface {
       bool has_parent);
 
   FakeOutputSurface(
+      scoped_ptr<SoftwareOutputDevice> software_device,
+      bool has_parent);
+
+  FakeOutputSurface(
+      scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
       scoped_ptr<SoftwareOutputDevice> software_device,
       bool has_parent);
 

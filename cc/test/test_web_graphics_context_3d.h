@@ -163,6 +163,9 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   }
   void ResetUsedTextures() { used_textures_.clear(); }
 
+  void set_support_swapbuffers_complete_callback(bool support) {
+    support_swapbuffers_complete_callback_ = support;
+  }
   void set_have_extension_io_surface(bool have) {
     have_extension_io_surface_ = have;
   }
@@ -197,6 +200,7 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   unsigned next_image_id_;
   unsigned next_texture_id_;
   Attributes attributes_;
+  bool support_swapbuffers_complete_callback_;
   bool have_extension_io_surface_;
   bool have_extension_egl_image_;
   int times_make_current_succeeds_;

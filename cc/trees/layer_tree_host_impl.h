@@ -50,6 +50,9 @@ struct RendererCapabilities;
 // LayerTreeHost->Proxy callback interface.
 class LayerTreeHostImplClient {
  public:
+  virtual void DidTryInitializeRendererOnImplThread(
+      bool success,
+      scoped_refptr<ContextProvider> offscreen_context_provider) = 0;
   virtual void DidLoseOutputSurfaceOnImplThread() = 0;
   virtual void OnSwapBuffersCompleteOnImplThread() = 0;
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
@@ -200,6 +203,8 @@ class CC_EXPORT LayerTreeHostImpl
       OVERRIDE;
 
   // OutputSurfaceClient implementation.
+  virtual bool DeferredInitialize(
+      scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE;
   virtual void SetNeedsRedrawRect(gfx::Rect rect) OVERRIDE;
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
                                         base::TimeDelta interval) OVERRIDE;
@@ -397,6 +402,9 @@ class CC_EXPORT LayerTreeHostImpl
   Proxy* proxy_;
 
  private:
+  bool DoInitializeRenderer(scoped_ptr<OutputSurface> output_surface,
+                            bool is_deffered_init);
+
   void AnimatePageScale(base::TimeTicks monotonic_time);
   void AnimateScrollbars(base::TimeTicks monotonic_time);
   void AnimateTopControls(base::TimeTicks monotonic_time);
