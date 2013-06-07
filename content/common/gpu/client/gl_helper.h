@@ -296,14 +296,17 @@ class CONTENT_EXPORT GLHelper {
   // This reduces the amount of memory read from GPU to CPU memory by a factor
   // 2.6, which can be quite handy since readbacks have very limited speed
   // on some platforms. All values in |dst_size| and |dst_subrect| must be
-  // a multiple of two.
+  // a multiple of two. If |use_mrt| is true, the pipeline will try to optimize
+  // the YUV conversion using the multi-render-target extension. |use_mrt|
+  // should only be set to false for testing.
   ReadbackYUVInterface* CreateReadbackPipelineYUV(
       ScalerQuality quality,
       const gfx::Size& src_size,
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
       const gfx::Rect& dst_subrect,
-      bool flip_vertically);
+      bool flip_vertically,
+      bool use_mrt);
 
  protected:
   class CopyTextureToImpl;
