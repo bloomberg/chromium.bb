@@ -45,11 +45,6 @@ class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {
     test_user_manager_.reset(new chromeos::ScopedTestUserManager());
 #endif
     CommandLine command_line(CommandLine::NO_PROGRAM);
-    profile_ =
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-    extension_service_ = static_cast<TestExtensionSystem*>(
-        ExtensionSystem::Get(profile_))->CreateExtensionService(
-            &command_line, base::FilePath(), false);
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityLogTesting);
   }
@@ -60,10 +55,6 @@ class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {
 #endif
     ChromeRenderViewHostTestHarness::TearDown();
   }
-
- protected:
-  ExtensionService* extension_service_;
-  Profile* profile_;
 
  private:
 #if defined OS_CHROMEOS
@@ -217,9 +208,9 @@ TEST_F(ActivityDatabaseTest, GetTodaysActions) {
   activity_db->RecordAction(extra_dom_action);
 
   // Read them back
-  std::string api_print = "ID: punky, CATEGORY: CALL, "
+  std::string api_print = "ID: punky, CATEGORY: call, "
       "API: brewster, ARGS: woof";
-  std::string dom_print = "DOM API CALL: lets, ARGS: vamoose, VERB: MODIFIED";
+  std::string dom_print = "DOM API CALL: lets, ARGS: vamoose, VERB: modified";
   scoped_ptr<std::vector<scoped_refptr<Action> > > actions =
       activity_db->GetActions("punky", 0);
   ASSERT_EQ(2, static_cast<int>(actions->size()));
@@ -288,9 +279,9 @@ TEST_F(ActivityDatabaseTest, GetOlderActions) {
   activity_db->RecordAction(tooold_dom_action);
 
   // Read them back
-  std::string api_print = "ID: punky, CATEGORY: CALL, "
+  std::string api_print = "ID: punky, CATEGORY: call, "
       "API: brewster, ARGS: woof";
-  std::string dom_print = "DOM API CALL: lets, ARGS: vamoose, VERB: MODIFIED";
+  std::string dom_print = "DOM API CALL: lets, ARGS: vamoose, VERB: modified";
   scoped_ptr<std::vector<scoped_refptr<Action> > > actions =
       activity_db->GetActions("punky", 3);
   ASSERT_EQ(2, static_cast<int>(actions->size()));

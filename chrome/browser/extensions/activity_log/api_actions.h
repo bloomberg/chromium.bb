@@ -47,6 +47,9 @@ class APIAction : public Action {
   // Record the action in the database.
   virtual void Record(sql::Connection* db) OVERRIDE;
 
+  virtual scoped_ptr<api::activity_log_private::ExtensionActivity>
+      ConvertToExtensionActivity() OVERRIDE;
+
   // Used to associate tab IDs with URLs. It will swap out the int in args with
   // a URL as a string. If the tab is in incognito mode, we leave it alone as
   // the original int. There is a small chance that the URL translation could

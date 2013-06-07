@@ -77,6 +77,8 @@
         'browser/extensions/activity_log/web_request_constants.h',
         'browser/extensions/admin_policy.cc',
         'browser/extensions/admin_policy.h',
+        'browser/extensions/api/activity_log_private/activity_log_private_api.cc',
+        'browser/extensions/api/activity_log_private/activity_log_private_api.h',
         'browser/extensions/api/api_function.cc',
         'browser/extensions/api/api_function.h',
         'browser/extensions/api/api_resource.cc',
@@ -806,6 +808,8 @@
             # less intertwined in the main codebase.
             ['exclude', '^browser/extensions/api/'],
             ['exclude', '^browser/extensions/.*_api\.cc$'],
+            ['include', '^browser/extensions/api/activity_log_private/activity_log_private_api.cc'],
+            ['include', '^browser/extensions/api/activity_log_private/activity_log_private_api.h'],
             ['include', '^browser/extensions/api/alarms/alarm_manager.cc'],
             ['include', '^browser/extensions/api/content_settings/content_settings_api_constants.cc'],
             ['include', '^browser/extensions/api/content_settings/content_settings_helpers.cc'],

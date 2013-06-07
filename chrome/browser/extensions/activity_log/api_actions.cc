@@ -96,6 +96,11 @@ class APINameMap {
 
 namespace extensions {
 
+using api::activity_log_private::ExtensionActivity;
+using api::activity_log_private::DomActivityDetail;
+using api::activity_log_private::ChromeActivityDetail;
+using api::activity_log_private::BlockedChromeActivityDetail;
+
 const char* APIAction::kTableName = "activitylog_apis";
 const char* APIAction::kTableContentFields[] =
     {"api_type", "api_call", "args", "extra"};
@@ -115,7 +120,7 @@ APIAction::APIAction(const std::string& extension_id,
                      const std::string& api_call,
                      const std::string& args,
                      const std::string& extra)
-    : Action(extension_id, time),
+    : Action(extension_id, time, ExtensionActivity::ACTIVITY_TYPE_CHROME),
       type_(type),
       api_call_(api_call),
       args_(args),
@@ -123,13 +128,31 @@ APIAction::APIAction(const std::string& extension_id,
 
 APIAction::APIAction(const sql::Statement& s)
     : Action(s.ColumnString(0),
-          base::Time::FromInternalValue(s.ColumnInt64(1))),
+             base::Time::FromInternalValue(s.ColumnInt64(1)),
+             ExtensionActivity::ACTIVITY_TYPE_CHROME),
       type_(static_cast<Type>(s.ColumnInt(2))),
       api_call_(APINameMap::GetInstance()->ShortnameToApi(s.ColumnString(3))),
       args_(s.ColumnString(4)),
       extra_(s.ColumnString(5)) { }
 
 APIAction::~APIAction() {
+}
+
+scoped_ptr<ExtensionActivity> APIAction::ConvertToExtensionActivity() {
+  scoped_ptr<ExtensionActivity> formatted_activity;
+  formatted_activity.reset(new ExtensionActivity);
+  formatted_activity->extension_id.reset(
+      new std::string(extension_id()));
+  formatted_activity->activity_type = activity_type();
+  formatted_activity->time.reset(new double(time().ToJsTime()));
+  ChromeActivityDetail* details = new ChromeActivityDetail;
+  details->api_activity_type = ChromeActivityDetail::ParseApiActivityType(
+      TypeAsString());
+  details->api_call.reset(new std::string(api_call_));
+  details->args.reset(new std::string(args_));
+  details->extra.reset(new std::string(extra_));
+  formatted_activity->chrome_activity_detail.reset(details);
+  return formatted_activity.Pass();
 }
 
 // static
@@ -229,11 +252,11 @@ std::string APIAction::PrintForDebug() {
 std::string APIAction::TypeAsString() const {
   switch (type_) {
     case CALL:
-      return "CALL";
+      return "call";
     case EVENT_CALLBACK:
-      return "EVENT_CALLBACK";
+      return "event_callback";
     default:
-      return "UNKNOWN_TYPE";
+      return "unknown_type";
   }
 }
 

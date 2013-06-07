@@ -11,6 +11,11 @@ using content::BrowserThread;
 
 namespace extensions {
 
+using api::activity_log_private::ExtensionActivity;
+using api::activity_log_private::DomActivityDetail;
+using api::activity_log_private::ChromeActivityDetail;
+using api::activity_log_private::BlockedChromeActivityDetail;
+
 const char* BlockedAction::kTableName = "activitylog_blocked";
 const char* BlockedAction::kTableContentFields[] =
     {"api_call", "args", "reason", "extra"};
@@ -23,7 +28,9 @@ BlockedAction::BlockedAction(const std::string& extension_id,
                              const std::string& args,
                              const BlockedAction::Reason reason,
                              const std::string& extra)
-    : Action(extension_id, time),
+    : Action(extension_id,
+             time,
+             ExtensionActivity::ACTIVITY_TYPE_BLOCKED_CHROME),
       api_call_(api_call),
       args_(args),
       reason_(reason),
@@ -31,13 +38,31 @@ BlockedAction::BlockedAction(const std::string& extension_id,
 
 BlockedAction::BlockedAction(const sql::Statement& s)
     : Action(s.ColumnString(0),
-          base::Time::FromInternalValue(s.ColumnInt64(1))),
+             base::Time::FromInternalValue(s.ColumnInt64(1)),
+             ExtensionActivity::ACTIVITY_TYPE_BLOCKED_CHROME),
       api_call_(s.ColumnString(2)),
       args_(s.ColumnString(3)),
       reason_(static_cast<Reason>(s.ColumnInt(4))),
       extra_(s.ColumnString(5)) { }
 
 BlockedAction::~BlockedAction() {
+}
+
+scoped_ptr<ExtensionActivity> BlockedAction::ConvertToExtensionActivity() {
+  scoped_ptr<ExtensionActivity> formatted_activity;
+  formatted_activity.reset(new ExtensionActivity);
+  formatted_activity->extension_id.reset(
+      new std::string(extension_id()));
+  formatted_activity->activity_type = activity_type();
+  formatted_activity->time.reset(new double(time().ToJsTime()));
+  BlockedChromeActivityDetail* details = new BlockedChromeActivityDetail;
+  details->api_call.reset(new std::string(api_call_));
+  details->args.reset(new std::string(args_));
+  details->reason = BlockedChromeActivityDetail::ParseReason(
+      ReasonAsString());
+  details->extra.reset(new std::string(extra_));
+  formatted_activity->blocked_chrome_activity_detail.reset(details);
+  return formatted_activity.Pass();
 }
 
 // static
@@ -93,11 +118,11 @@ std::string BlockedAction::PrintForDebug() {
 
 std::string BlockedAction::ReasonAsString() const {
   if (reason_ == ACCESS_DENIED)
-    return std::string("access denied");
+    return std::string("access_denied");
   else if (reason_ == QUOTA_EXCEEDED)
-    return std::string("quota exceeded");
+    return std::string("quota_exceeded");
   else
-    return std::string("unknown");
+    return std::string("unknown_reason_type");  // To avoid Win header name.
 }
 
 }  // namespace extensions

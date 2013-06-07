@@ -13,6 +13,11 @@ using content::BrowserThread;
 
 namespace extensions {
 
+using api::activity_log_private::ExtensionActivity;
+using api::activity_log_private::DomActivityDetail;
+using api::activity_log_private::ChromeActivityDetail;
+using api::activity_log_private::BlockedChromeActivityDetail;
+
 const char* DOMAction::kTableName = "activitylog_urls";
 const char* DOMAction::kTableContentFields[] =
     {"url_action_type", "url", "url_title", "api_call", "args", "extra"};
@@ -28,7 +33,7 @@ DOMAction::DOMAction(const std::string& extension_id,
                      const std::string& api_call,
                      const std::string& args,
                      const std::string& extra)
-    : Action(extension_id, time),
+    : Action(extension_id, time, ExtensionActivity::ACTIVITY_TYPE_DOM),
       verb_(verb),
       url_(url),
       url_title_(url_title),
@@ -38,7 +43,8 @@ DOMAction::DOMAction(const std::string& extension_id,
 
 DOMAction::DOMAction(const sql::Statement& s)
     : Action(s.ColumnString(0),
-          base::Time::FromInternalValue(s.ColumnInt64(1))),
+             base::Time::FromInternalValue(s.ColumnInt64(1)),
+             ExtensionActivity::ACTIVITY_TYPE_DOM),
       verb_(static_cast<DomActionType::Type>(s.ColumnInt(2))),
       url_(GURL(s.ColumnString(3))),
       url_title_(s.ColumnString16(4)),
@@ -47,6 +53,25 @@ DOMAction::DOMAction(const sql::Statement& s)
       extra_(s.ColumnString(7)) { }
 
 DOMAction::~DOMAction() {
+}
+
+scoped_ptr<ExtensionActivity> DOMAction::ConvertToExtensionActivity() {
+  scoped_ptr<ExtensionActivity> formatted_activity;
+  formatted_activity.reset(new ExtensionActivity);
+  formatted_activity->extension_id.reset(
+      new std::string(extension_id()));
+  formatted_activity->activity_type = activity_type();
+  formatted_activity->time.reset(new double(time().ToJsTime()));
+  DomActivityDetail* details = new DomActivityDetail;
+  details->dom_activity_type = DomActivityDetail::ParseDomActivityType(
+      VerbAsString());
+  details->url.reset(new std::string(url_.spec()));
+  details->url_title.reset(new std::string(base::UTF16ToUTF8(url_title_)));
+  details->api_call.reset(new std::string(api_call_));
+  details->args.reset(new std::string(args_));
+  details->extra.reset(new std::string(extra_));
+  formatted_activity->dom_activity_detail.reset(details);
+  return formatted_activity.Pass();
 }
 
 // static
@@ -111,19 +136,19 @@ std::string DOMAction::PrintForDebug() {
 std::string DOMAction::VerbAsString() const {
   switch (verb_) {
     case DomActionType::GETTER:
-      return "GETTER";
+      return "getter";
     case DomActionType::SETTER:
-      return "SETTER";
+      return "setter";
     case DomActionType::METHOD:
-      return "METHOD";
+      return "method";
     case DomActionType::INSERTED:
-      return "INSERTED";
+      return "inserted";
     case DomActionType::XHR:
-      return "XHR";
+      return "xhr";
     case DomActionType::WEBREQUEST:
-      return "WEBREQUEST";
+      return "webrequest";
     case DomActionType::MODIFIED:    // legacy
-      return "MODIFIED";
+      return "modified";
     default:
       NOTREACHED();
       return NULL;

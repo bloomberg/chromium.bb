@@ -711,6 +711,7 @@
         'browser/extensions/activity_log/activity_database_unittest.cc',
         'browser/extensions/activity_log/activity_log_unittest.cc',
         'browser/extensions/admin_policy_unittest.cc',
+        'browser/extensions/api/activity_log_private/activity_log_private_api_unittest.cc',
         'browser/extensions/api/alarms/alarms_api_unittest.cc',
         'browser/extensions/api/api_resource_manager_unittest.cc',
         'browser/extensions/api/bluetooth/bluetooth_event_router_unittest.cc',
@@ -1924,8 +1925,7 @@
         ['enable_extensions==0', {
           'sources/': [
             ['exclude', '^../extensions/'],
-            ['exclude', '^browser/extensions/activity_database_unittest.cc'],
-            ['exclude', '^browser/extensions/activity_log_unittest.cc'],
+            ['exclude', '^browser/extensions/activity_log/'],
             ['exclude', '^browser/extensions/api/'],
             ['exclude', '^browser/sync/glue/chrome_extensions_activity_monitor_unittest.cc'],
             ['exclude', '^common/extensions/api/'],

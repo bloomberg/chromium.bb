@@ -26,6 +26,7 @@ class ActivityLogExtensionTest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExtensionActivityLogging);
+    command_line->AppendSwitch(switches::kEnableExtensionActivityLogTesting);
   }
 };
 

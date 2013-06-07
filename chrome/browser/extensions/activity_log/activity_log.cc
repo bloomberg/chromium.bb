@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/activity_log/api_actions.h"
 #include "chrome/browser/extensions/activity_log/blocked_actions.h"
+#include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -38,14 +39,6 @@ std::string MakeArgList(const ListValue* args) {
       call_signature += arg;
     }
   }
-  return call_signature;
-}
-
-// Concatenate an API call with its arguments.
-std::string MakeCallSignature(const std::string& name, const ListValue* args) {
-  std::string call_signature = name + "(";
-  call_signature += MakeArgList(args);
-  call_signature += ")";
   return call_signature;
 }
 
@@ -106,12 +99,9 @@ content::BrowserContext* ActivityLogFactory::GetBrowserContextToUse(
 
 // Use GetInstance instead of directly creating an ActivityLog.
 ActivityLog::ActivityLog(Profile* profile) : profile_(profile) {
-  // enable-extension-activity-logging and enable-extension-activity-ui
-  log_activity_to_stdout_ = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableExtensionActivityLogging);
-
   // enable-extension-activity-log-testing
   // This controls whether arguments are collected.
+  // It also controls whether logging statements are printed.
   testing_mode_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableExtensionActivityLogTesting);
   if (!testing_mode_) {
@@ -129,6 +119,8 @@ ActivityLog::ActivityLog(Profile* profile) : profile_(profile) {
     LOG(ERROR) << "BrowserThread::DB does not exist, running on UI thread!";
     dispatch_thread_ = BrowserThread::UI;
   }
+
+  observers_ = new ObserverListThreadSafe<Observer>;
 
   // If the database cannot be initialized for some reason, we keep
   // chugging along but nothing will get recorded. If the UI is
@@ -158,12 +150,11 @@ ActivityLog* ActivityLog::GetInstance(Profile* profile) {
 }
 
 void ActivityLog::AddObserver(ActivityLog::Observer* observer) {
-  if (!IsLogEnabled()) return;
-  // TODO(felt) Re-implement Observer notification HERE for the API.
+  observers_->AddObserver(observer);
 }
 
 void ActivityLog::RemoveObserver(ActivityLog::Observer* observer) {
-  // TODO(felt) Re-implement Observer notification HERE for the API.
+  observers_->RemoveObserver(observer);
 }
 
 void ActivityLog::LogAPIActionInternal(const std::string& extension_id,
@@ -185,9 +176,8 @@ void ActivityLog::LogAPIActionInternal(const std::string& extension_id,
         MakeArgList(args),
         extra);
     ScheduleAndForget(&ActivityDatabase::RecordAction, action);
-    // TODO(felt) Re-implement Observer notification HERE for the API.
-    if (log_activity_to_stdout_)
-      LOG(INFO) << action->PrintForDebug();
+    observers_->Notify(&Observer::OnExtensionActivity, action);
+    if (testing_mode_) LOG(INFO) << action->PrintForDebug();
   } else {
     LOG(ERROR) << "Unknown API call! " << api_call;
   }
@@ -198,7 +188,8 @@ void ActivityLog::LogAPIAction(const std::string& extension_id,
                                const std::string& api_call,
                                ListValue* args,
                                const std::string& extra) {
-  if (!IsLogEnabled()) return;
+  if (!IsLogEnabled() ||
+      ActivityLogAPI::IsExtensionWhitelisted(extension_id)) return;
   if (!testing_mode_ &&
       arg_whitelist_api_.find(api_call) == arg_whitelist_api_.end())
     args->Clear();
@@ -217,7 +208,8 @@ void ActivityLog::LogEventAction(const std::string& extension_id,
                                  const std::string& api_call,
                                  ListValue* args,
                                  const std::string& extra) {
-  if (!IsLogEnabled()) return;
+  if (!IsLogEnabled() ||
+      ActivityLogAPI::IsExtensionWhitelisted(extension_id)) return;
   if (!testing_mode_ &&
       arg_whitelist_api_.find(api_call) == arg_whitelist_api_.end())
     args->Clear();
@@ -233,7 +225,8 @@ void ActivityLog::LogBlockedAction(const std::string& extension_id,
                                    ListValue* args,
                                    BlockedAction::Reason reason,
                                    const std::string& extra) {
-  if (!IsLogEnabled()) return;
+  if (!IsLogEnabled() ||
+      ActivityLogAPI::IsExtensionWhitelisted(extension_id)) return;
   if (!testing_mode_ &&
       arg_whitelist_api_.find(blocked_call) == arg_whitelist_api_.end())
     args->Clear();
@@ -244,9 +237,8 @@ void ActivityLog::LogBlockedAction(const std::string& extension_id,
                                                           reason,
                                                           extra);
   ScheduleAndForget(&ActivityDatabase::RecordAction, action);
-  // TODO(felt) Re-implement Observer notification HERE for the API.
-  if (log_activity_to_stdout_)
-    LOG(INFO) << action->PrintForDebug();
+  observers_->Notify(&Observer::OnExtensionActivity, action);
+  if (testing_mode_) LOG(INFO) << action->PrintForDebug();
 }
 
 void ActivityLog::LogDOMAction(const std::string& extension_id,
@@ -256,7 +248,8 @@ void ActivityLog::LogDOMAction(const std::string& extension_id,
                                const ListValue* args,
                                DomActionType::Type call_type,
                                const std::string& extra) {
-  if (!IsLogEnabled()) return;
+  if (!IsLogEnabled() ||
+      ActivityLogAPI::IsExtensionWhitelisted(extension_id)) return;
   if (call_type == DomActionType::METHOD && api_call == "XMLHttpRequest.open")
     call_type = DomActionType::XHR;
   scoped_refptr<DOMAction> action = new DOMAction(
@@ -269,9 +262,8 @@ void ActivityLog::LogDOMAction(const std::string& extension_id,
       MakeArgList(args),
       extra);
   ScheduleAndForget(&ActivityDatabase::RecordAction, action);
-  // TODO(felt) Re-implement Observer notification HERE for the API.
-  if (log_activity_to_stdout_)
-    LOG(INFO) << action->PrintForDebug();
+  observers_->Notify(&Observer::OnExtensionActivity, action);
+  if (testing_mode_) LOG(INFO) << action->PrintForDebug();
 }
 
 void ActivityLog::LogWebRequestAction(const std::string& extension_id,
@@ -280,7 +272,8 @@ void ActivityLog::LogWebRequestAction(const std::string& extension_id,
                                       scoped_ptr<DictionaryValue> details,
                                       const std::string& extra) {
   string16 null_title;
-  if (!IsLogEnabled()) return;
+  if (!IsLogEnabled() ||
+      ActivityLogAPI::IsExtensionWhitelisted(extension_id)) return;
 
   // Strip details of the web request modifications (for privacy reasons),
   // unless testing is enabled.
@@ -305,9 +298,8 @@ void ActivityLog::LogWebRequestAction(const std::string& extension_id,
       details_string,
       extra);
   ScheduleAndForget(&ActivityDatabase::RecordAction, action);
-  // TODO(felt) Re-implement Observer notification HERE for the API.
-  if (log_activity_to_stdout_)
-    LOG(INFO) << action->PrintForDebug();
+  observers_->Notify(&Observer::OnExtensionActivity, action);
+  if (testing_mode_) LOG(INFO) << action->PrintForDebug();
 }
 
 void ActivityLog::GetActions(
@@ -340,7 +332,7 @@ void ActivityLog::OnScriptsExecuted(
   for (ExecutingScriptsMap::const_iterator it = extension_ids.begin();
        it != extension_ids.end(); ++it) {
     const Extension* extension = extensions->GetByID(it->first);
-    if (!extension)
+    if (!extension || ActivityLogAPI::IsExtensionWhitelisted(extension->id()))
       continue;
 
     // If OnScriptsExecuted is fired because of tabs.executeScript, the list

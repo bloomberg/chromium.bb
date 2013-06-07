@@ -76,7 +76,7 @@ class ActivityLogTest : public testing::Test {
     scoped_refptr<Action> last = i->front();
     std::string id(kExtensionId);
     std::string noargs = "ID: " + id + ", CATEGORY: "
-      "CALL, API: tabs.testMethod, ARGS: ";
+      "call, API: tabs.testMethod, ARGS: ";
     ASSERT_EQ(noargs, last->PrintForDebug());
   }
 
@@ -85,7 +85,7 @@ class ActivityLogTest : public testing::Test {
     scoped_refptr<Action> last = i->front();
     std::string id(kExtensionId);
     std::string args = "ID: " + id + ", CATEGORY: "
-      "CALL, API: extension.connect, ARGS: \"hello\", \"world\"";
+      "call, API: extension.connect, ARGS: \"hello\", \"world\"";
     ASSERT_EQ(args, last->PrintForDebug());
   }
 

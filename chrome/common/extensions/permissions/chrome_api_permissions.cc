@@ -128,6 +128,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       APIPermissionInfo::kFlagCannotBeOptional },
 
     // Register private permissions.
+    { APIPermission::kActivityLogPrivate, "activityLogPrivate",
+      APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kAutoTestPrivate, "autotestPrivate",
       APIPermissionInfo::kFlagCannotBeOptional },
     { APIPermission::kBookmarkManagerPrivate, "bookmarkManagerPrivate",

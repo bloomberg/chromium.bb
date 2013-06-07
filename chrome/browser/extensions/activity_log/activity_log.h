@@ -38,7 +38,8 @@ class Extension;
 class ActivityLog : public BrowserContextKeyedService,
                     public TabHelper::ScriptExecutionObserver {
  public:
-  // Observers can listen for activity events.
+  // Observers can listen for activity events. There is probably only one
+  // observer: the activityLogPrivate API.
   class Observer {
    public:
     virtual void OnExtensionActivity(scoped_refptr<Action> activity) = 0;
@@ -57,7 +58,8 @@ class ActivityLog : public BrowserContextKeyedService,
   // really intended for use by unit tests.
   static void RecomputeLoggingIsEnabled();
 
-  // Add/remove observer.
+  // Add/remove observer: the activityLogPrivate API only listens when the
+  // ActivityLog extension is registered for an event.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -170,6 +172,7 @@ class ActivityLog : public BrowserContextKeyedService,
   }
 
   typedef ObserverListThreadSafe<Observer> ObserverList;
+  scoped_refptr<ObserverList> observers_;
 
   // The database wrapper that does the actual database I/O.
   // We initialize this on the same thread as the ActivityLog, but then
@@ -182,14 +185,11 @@ class ActivityLog : public BrowserContextKeyedService,
   // we dispatch to the UI thread.
   BrowserThread::ID dispatch_thread_;
 
-  // Whether to log activity to stdout or the UI. These are set by switches.
-  bool log_activity_to_stdout_;
-  bool log_activity_to_ui_;
-
   // testing_mode_ controls whether to log API call arguments. By default, we
   // don't log most arguments to avoid saving too much data. In testing mode,
   // argument collection is enabled. We also whitelist some arguments for
   // collection regardless of whether this bool is true.
+  // When testing_mode_ is enabled, we also print to the console.
   bool testing_mode_;
   base::hash_set<std::string> arg_whitelist_api_;
 

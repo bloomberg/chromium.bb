@@ -41,6 +41,9 @@ class DOMAction : public Action {
   // Create a new DOMAction from a database row.
   explicit DOMAction(const sql::Statement& s);
 
+  virtual scoped_ptr<api::activity_log_private::ExtensionActivity>
+      ConvertToExtensionActivity() OVERRIDE;
+
   // Record the action in the database.
   virtual void Record(sql::Connection* db) OVERRIDE;
 

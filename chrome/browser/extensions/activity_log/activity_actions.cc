@@ -5,18 +5,22 @@
 #include <string>
 #include "base/logging.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/extensions/activity_log/api_actions.h"
+#include "chrome/browser/extensions/activity_log/activity_actions.h"
 
 namespace extensions {
+
+using api::activity_log_private::ExtensionActivity;
 
 const char* Action::kTableBasicFields =
     "extension_id LONGVARCHAR NOT NULL, "
     "time INTEGER NOT NULL";
 
 Action::Action(const std::string& extension_id,
-               const base::Time& time)
+               const base::Time& time,
+               ExtensionActivity::ActivityType activity_type)
     : extension_id_(extension_id),
-      time_(time) {}
+      time_(time),
+      activity_type_(activity_type) {}
 
 // static
 bool Action::InitializeTableInternal(sql::Connection* db,

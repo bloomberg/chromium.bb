@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "chrome/common/extensions/api/activity_log_private.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -27,14 +28,22 @@ class Action : public base::RefCountedThreadSafe<Action> {
   // Record the action in the database.
   virtual void Record(sql::Connection* db) = 0;
 
+  // Flatten the activity's type-specific fields into an ExtensionActivity.
+  virtual scoped_ptr<api::activity_log_private::ExtensionActivity>
+      ConvertToExtensionActivity() = 0;
+
   // Print an action as a regular string for debugging purposes.
   virtual std::string PrintForDebug() = 0;
 
   const std::string& extension_id() const { return extension_id_; }
   const base::Time& time() const { return time_; }
+  api::activity_log_private::ExtensionActivity::ActivityType activity_type()
+      const { return activity_type_; }
 
  protected:
-  Action(const std::string& extension_id, const base::Time& time);
+  Action(const std::string& extension_id,
+         const base::Time& time,
+         api::activity_log_private::ExtensionActivity::ActivityType type);
   virtual ~Action() {}
 
   // Initialize the table for a given action type.
@@ -53,6 +62,7 @@ class Action : public base::RefCountedThreadSafe<Action> {
 
   std::string extension_id_;
   base::Time time_;
+  api::activity_log_private::ExtensionActivity::ActivityType activity_type_;
 
   DISALLOW_COPY_AND_ASSIGN(Action);
 };

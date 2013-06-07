@@ -8,6 +8,14 @@
     "extension_types": ["extension", "packaged_app"],
     "min_manifest_version": 2
   },
+  "activityLogPrivate": {
+    "channel": "dev",
+    "extension_types": ["extension"],
+    "whitelist": [
+      "acldcpdepobcjbdanifkmfndkjoilgba",  // Activity Log
+      "ajabfgledjhbabeoojlabelaifmakodf"   // For testing
+    ]
+  },
   "adview": {
     "channel": "dev",
     "extension_types": ["platform_app"]
