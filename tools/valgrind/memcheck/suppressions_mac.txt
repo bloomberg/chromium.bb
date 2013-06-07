@@ -2547,3 +2547,29 @@
    fun:MyDeactivateTSMDocument
    fun:_ReactivateTSMDocumentAfterMenuTracking
 }
+{
+   bug_247506j
+   Memcheck:Leak
+   fun:malloc_zone_calloc
+   fun:ripr_Rectangles
+   fun:ripc_DrawRects
+   fun:CGContextFillRects
+   fun:NSRectFillListWithColorsUsingOperation
+   fun:NSDrawColorTiledRects
+}
+{
+   bug_247506k
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN11TMemoryHeap6MallocEm
+   fun:_Z24Type1InterpretCharStringP11_t_FontInstP10_t_BCProcsP17_t_T1CharDataDescP9_t_CharIOP9_t_RunRecP12_t_PathProcsP6T1Args
+   fun:_ZL14ATMCharOutlineP11_t_FontInstP10_t_BCProcsPvP9_t_CharIOP12_t_PathProcsmS3_
+   fun:_ZN21MPathRenderingContext13RenderOutlineERK11_t_FontInstb
+   fun:_ZN28TPathMetricsRenderingContext11MakeOutlineERK11_t_FontInstbR10FixedPointS4_S4_
+   fun:_ZNK10TType1Font20RenderOutlineMetricsERK15TType1TransformtPKhtR21GlyphRenderingMetrics
+   fun:_ZNK13TType1CIDFont17GetOutlineMetricsERK15TType1TransformtP21GlyphRenderingMetrics
+   fun:_ZNK12TType1Strike10GetMetricsERK21TRenderingDescriptionmPKtRK19TDestinationMapping
+   fun:_Z20Type1GetGlyphMetricsmPK18TStrikeDescriptionPK21TRenderingDescriptionmPKtPvm
+   fun:_ZNK19TConcreteFontScaler19GetGlyphIdealBoundsEt
+   fun:FPFontGetGlyphIdealBounds
+}
