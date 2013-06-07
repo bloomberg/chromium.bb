@@ -112,15 +112,15 @@ void MediaPlayerManagerImpl::FullscreenPlayerSeek(int msec) {
 void MediaPlayerManagerImpl::ExitFullscreen(bool release_media_player) {
   Send(new MediaPlayerMsg_DidExitFullscreen(
       routing_id(), fullscreen_player_id_));
-  MediaPlayerAndroid* player = GetFullscreenPlayer();
   fullscreen_player_id_ = -1;
+  video_view_.reset();
+  MediaPlayerAndroid* player = GetFullscreenPlayer();
   if (!player)
     return;
   if (release_media_player)
     player->Release();
   else
     player->SetVideoSurface(gfx::ScopedJavaSurface());
-  video_view_.reset();
 }
 
 void MediaPlayerManagerImpl::SetVideoSurface(gfx::ScopedJavaSurface surface) {
@@ -200,9 +200,7 @@ void MediaPlayerManagerImpl::OnExitFullscreen(int player_id) {
     MediaPlayerAndroid* player = GetPlayer(player_id);
     if (player)
       player->SetVideoSurface(gfx::ScopedJavaSurface());
-    fullscreen_player_id_ = -1;
     video_view_->OnExitFullscreen();
-    video_view_.reset();
   }
 }
 

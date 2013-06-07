@@ -587,10 +587,12 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
      */
     @CalledByNative
     private void destroyContentVideoView() {
-        mClient.onDestroyContentVideoView();
-        removeMediaController();
-        removeSurfaceView();
-        setVisibility(View.GONE);
+        if (mVideoSurfaceView != null) {
+            mClient.onDestroyContentVideoView();
+            removeMediaController();
+            removeSurfaceView();
+            setVisibility(View.GONE);
+        }
     }
 
     public static ContentVideoView getContentVideoView() {
