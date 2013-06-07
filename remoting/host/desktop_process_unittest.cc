@@ -15,17 +15,17 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
-#include "media/video/capture/screen/screen_capturer_fake.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_process.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_mock_objects.h"
+#include "remoting/host/screen_capturer_fake.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/protocol/protocol_mock_objects.h"
-#include "testing/gmock_mutant.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -105,7 +105,7 @@ class DesktopProcessTest : public testing::Test {
   void ConnectNetworkChannel(IPC::PlatformFileForTransit desktop_process);
   void OnDesktopAttached(IPC::PlatformFileForTransit desktop_process);
 
-  // Creates a DesktopEnvironment with a fake media::ScreenCapturer, to mock
+  // Creates a DesktopEnvironment with a fake webrtc::ScreenCapturer, to mock
   // DesktopEnvironmentFactory::Create().
   DesktopEnvironment* CreateDesktopEnvironment();
 
@@ -113,9 +113,9 @@ class DesktopProcessTest : public testing::Test {
   // DesktopEnvironment::CreateInputInjector().
   InputInjector* CreateInputInjector();
 
-  // Creates a fake media::ScreenCapturer, to mock
+  // Creates a fake webrtc::ScreenCapturer, to mock
   // DesktopEnvironment::CreateVideoCapturer().
-  media::ScreenCapturer* CreateVideoCapturer();
+  webrtc::ScreenCapturer* CreateVideoCapturer();
 
   // Disconnects the daemon-to-desktop channel causing the desktop process to
   // exit.
@@ -219,8 +219,8 @@ InputInjector* DesktopProcessTest::CreateInputInjector() {
   return input_injector;
 }
 
-media::ScreenCapturer* DesktopProcessTest::CreateVideoCapturer() {
-  return new media::ScreenCapturerFake();
+webrtc::ScreenCapturer* DesktopProcessTest::CreateVideoCapturer() {
+  return new ScreenCapturerFake();
 }
 
 void DesktopProcessTest::DisconnectChannels() {

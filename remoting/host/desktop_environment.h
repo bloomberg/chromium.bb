@@ -17,9 +17,9 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
-namespace media {
+namespace webrtc {
 class ScreenCapturer;
-}  // namespace media
+}  // namespace webrtc
 
 namespace remoting {
 
@@ -39,7 +39,7 @@ class DesktopEnvironment {
   virtual scoped_ptr<AudioCapturer> CreateAudioCapturer() = 0;
   virtual scoped_ptr<InputInjector> CreateInputInjector() = 0;
   virtual scoped_ptr<ScreenControls> CreateScreenControls() = 0;
-  virtual scoped_ptr<media::ScreenCapturer> CreateVideoCapturer() = 0;
+  virtual scoped_ptr<webrtc::ScreenCapturer> CreateVideoCapturer() = 0;
 
   // Returns the set of all capabilities supported by |this|.
   virtual std::string GetCapabilities() const = 0;

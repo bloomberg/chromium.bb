@@ -1,5 +1,4 @@
 include_rules = [
-  "+media/video/capture/screen",
   "+net",
   "+remoting/codec",
   "+remoting/protocol",

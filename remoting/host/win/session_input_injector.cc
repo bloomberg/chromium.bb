@@ -13,10 +13,10 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/win/windows_version.h"
-#include "media/video/capture/screen/win/desktop.h"
-#include "media/video/capture/screen/win/scoped_thread_desktop.h"
 #include "remoting/host/sas_injector.h"
 #include "remoting/proto/event.pb.h"
+#include "third_party/webrtc/modules/desktop_capture/win/desktop.h"
+#include "third_party/webrtc/modules/desktop_capture/win/scoped_thread_desktop.h"
 
 namespace {
 
@@ -80,7 +80,7 @@ class SessionInputInjectorWin::Core
 
   scoped_refptr<base::SingleThreadTaskRunner> inject_sas_task_runner_;
 
-  media::ScopedThreadDesktop desktop_;
+  webrtc::ScopedThreadDesktop desktop_;
 
   // Used to inject Secure Attention Sequence on Vista+.
   base::Closure inject_sas_;
@@ -182,11 +182,12 @@ SessionInputInjectorWin::Core::~Core() {
 void SessionInputInjectorWin::Core::SwitchToInputDesktop() {
   // Switch to the desktop receiving user input if different from the current
   // one.
-  scoped_ptr<media::Desktop> input_desktop = media::Desktop::GetInputDesktop();
+  scoped_ptr<webrtc::Desktop> input_desktop(
+      webrtc::Desktop::GetInputDesktop());
   if (input_desktop.get() != NULL && !desktop_.IsSame(*input_desktop)) {
     // If SetThreadDesktop() fails, the thread is still assigned a desktop.
     // So we can continue capture screen bits, just from a diffected desktop.
-    desktop_.SetThreadDesktop(input_desktop.Pass());
+    desktop_.SetThreadDesktop(input_desktop.release());
   }
 }
 

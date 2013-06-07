@@ -6,13 +6,13 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
-#include "media/video/capture/screen/screen_capturer_fake.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_mock_objects.h"
+#include "remoting/host/screen_capturer_fake.h"
 #include "remoting/jingle_glue/mock_objects.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/errors.h"
@@ -231,7 +231,7 @@ class ChromotingHostTest : public testing::Test {
     host_->OnSessionRouteChange(get_client(0), channel_name, route);
   }
 
-  // Creates a DesktopEnvironment with a fake media::ScreenCapturer, to mock
+  // Creates a DesktopEnvironment with a fake webrtc::ScreenCapturer, to mock
   // DesktopEnvironmentFactory::Create().
   DesktopEnvironment* CreateDesktopEnvironment() {
     MockDesktopEnvironment* desktop_environment = new MockDesktopEnvironment();
@@ -261,10 +261,10 @@ class ChromotingHostTest : public testing::Test {
     return input_injector;
   }
 
-  // Creates a fake media::ScreenCapturer, to mock
+  // Creates a fake webrtc::ScreenCapturer, to mock
   // DesktopEnvironment::CreateVideoCapturer().
-  media::ScreenCapturer* CreateVideoCapturer() {
-    return new media::ScreenCapturerFake();
+  webrtc::ScreenCapturer* CreateVideoCapturer() {
+    return new ScreenCapturerFake();
   }
 
   void DisconnectAllClients() {

@@ -3,17 +3,17 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "media/video/capture/screen/screen_capturer_fake.h"
-#include "media/video/capture/screen/screen_capturer_mock_objects.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_mock_objects.h"
+#include "remoting/host/screen_capturer_fake.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capturer_mock_objects.h"
 
 namespace remoting {
 
@@ -69,7 +69,7 @@ class ClientSessionTest : public testing::Test {
   void StopClientSession();
 
  protected:
-  // Creates a DesktopEnvironment with a fake media::ScreenCapturer, to mock
+  // Creates a DesktopEnvironment with a fake webrtc::ScreenCapturer, to mock
   // DesktopEnvironmentFactory::Create().
   DesktopEnvironment* CreateDesktopEnvironment();
 
@@ -77,9 +77,9 @@ class ClientSessionTest : public testing::Test {
   // DesktopEnvironment::CreateInputInjector().
   InputInjector* CreateInputInjector();
 
-  // Creates a fake media::ScreenCapturer, to mock
+  // Creates a fake webrtc::ScreenCapturer, to mock
   // DesktopEnvironment::CreateVideoCapturer().
-  media::ScreenCapturer* CreateVideoCapturer();
+  webrtc::ScreenCapturer* CreateVideoCapturer();
 
   // Notifies the client session that the client connection has been
   // authenticated and channels have been connected. This effectively enables
@@ -209,8 +209,8 @@ InputInjector* ClientSessionTest::CreateInputInjector() {
   return input_injector_.release();
 }
 
-media::ScreenCapturer* ClientSessionTest::CreateVideoCapturer() {
-  return new media::ScreenCapturerFake();
+webrtc::ScreenCapturer* ClientSessionTest::CreateVideoCapturer() {
+  return new ScreenCapturerFake();
 }
 
 void ClientSessionTest::ConnectClientSession() {
@@ -487,9 +487,9 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
   Expectation connected = authenticated;
 
   int input_x[3] = { -999, 100, 999 };
-  int expected_x[3] = { 0, 100, media::ScreenCapturerFake::kWidth - 1 };
+  int expected_x[3] = { 0, 100, ScreenCapturerFake::kWidth - 1 };
   int input_y[3] = { -999, 50, 999 };
-  int expected_y[3] = { 0, 50, media::ScreenCapturerFake::kHeight - 1 };
+  int expected_y[3] = { 0, 50, ScreenCapturerFake::kHeight - 1 };
 
   protocol::MouseEvent expected_event;
   for (int j = 0; j < 3; j++) {

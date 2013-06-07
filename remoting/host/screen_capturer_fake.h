@@ -1,22 +1,22 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_VIDEO_CAPTURE_SCREEN_SCREEN_CAPTURER_FAKE_H_
-#define MEDIA_VIDEO_CAPTURE_SCREEN_SCREEN_CAPTURER_FAKE_H_
+#ifndef REMOTING_HOST_SCREEN_CAPTURER_FAKE_H_
+#define REMOTING_HOST_SCREEN_CAPTURER_FAKE_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
-#include "media/video/capture/screen/screen_capture_frame_queue.h"
-#include "media/video/capture/screen/screen_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capture_frame_queue.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
-namespace media {
+namespace remoting {
 
 // A ScreenCapturerFake generates artificial image for testing purpose.
 //
 // ScreenCapturerFake is double-buffered as required by ScreenCapturer.
-class MEDIA_EXPORT ScreenCapturerFake : public ScreenCapturer {
+class ScreenCapturerFake : public webrtc::ScreenCapturer {
  public:
   // ScreenCapturerFake generates a picture of size kWidth x kHeight.
   static const int kWidth = 800;
@@ -50,11 +50,11 @@ class MEDIA_EXPORT ScreenCapturerFake : public ScreenCapturer {
   int box_speed_x_;
   int box_speed_y_;
 
-  ScreenCaptureFrameQueue queue_;
+  webrtc::ScreenCaptureFrameQueue queue_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenCapturerFake);
 };
 
-}  // namespace media
+}  // namespace remoting
 
-#endif  // MEDIA_VIDEO_CAPTURE_SCREEN_SCREEN_CAPTURER_FAKE_H_
+#endif  // REMOTING_HOST_SCREEN_CAPTURER_FAKE_H_

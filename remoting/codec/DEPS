@@ -1,5 +1,4 @@
 include_rules = [
-  "+media/video/capture/screen",
   "+remoting/protocol",
 
   "+google/protobuf",

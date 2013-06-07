@@ -9,10 +9,11 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "media/video/capture/screen/mouse_cursor_shape.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+#include "third_party/webrtc/modules/desktop_capture/mouse_cursor_shape.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 namespace media {
 
@@ -27,7 +28,7 @@ class ScreenCaptureDevice::Core
   explicit Core(scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // Helper used in tests to supply a fake capturer.
-  void SetScreenCapturerForTest(scoped_ptr<ScreenCapturer> capturer) {
+  void SetScreenCapturerForTest(scoped_ptr<webrtc::ScreenCapturer> capturer) {
     screen_capturer_ = capturer.Pass();
   }
 
@@ -77,7 +78,7 @@ class ScreenCaptureDevice::Core
   int frame_rate_;
 
   // The underlying ScreenCapturer instance used to capture frames.
-  scoped_ptr<ScreenCapturer> screen_capturer_;
+  scoped_ptr<webrtc::ScreenCapturer> screen_capturer_;
 
   // After Allocate() is called we need to call OnFrameInfo() method of the
   // |event_handler_| to specify the size of the frames this capturer will
@@ -273,22 +274,23 @@ void ScreenCaptureDevice::Core::DoAllocate(int frame_rate) {
   frame_rate_ = frame_rate;
 
   // Create and start frame capturer.
+  if (!screen_capturer_) {
 #if defined(OS_CHROMEOS) && !defined(ARCH_CPU_ARMEL)
-  // ScreenCapturerX11 polls by default, due to poor driver support for DAMAGE.
-  // ChromeOS' drivers [can be patched to] support DAMAGE properly, so use it.
-  // However ARM driver seems to not support this properly, so disable it for
-  // ARM. See http://crbug.com/230105.
-  if (!screen_capturer_)
-    screen_capturer_ = ScreenCapturer::CreateWithXDamage(true);
+    // ScreenCapturerX11 polls by default, due to poor driver support for
+    // DAMAGE. ChromeOS' drivers [can be patched to] support DAMAGE properly, so
+    // use it. However ARM driver seems to not support this properly, so disable
+    // it for ARM. See http://crbug.com/230105.
+    screen_capturer_.reset(webrtc::ScreenCapturer::CreateWithXDamage(true));
 #elif defined(OS_WIN)
-  // ScreenCapturerWin disables Aero by default. We don't want it disabled for
-  // WebRTC screen capture, though.
-  if (!screen_capturer_)
-    screen_capturer_ = ScreenCapturer::CreateWithDisableAero(false);
+    // ScreenCapturerWin disables Aero by default. We don't want it disabled for
+    // WebRTC screen capture, though.
+    screen_capturer_.reset(
+        webrtc::ScreenCapturer::CreateWithDisableAero(false));
 #else
-  if (!screen_capturer_)
-    screen_capturer_ = ScreenCapturer::Create();
+    screen_capturer_.reset(webrtc::ScreenCapturer::Create());
 #endif
+  }
+
   if (screen_capturer_)
     screen_capturer_->Start(this);
 
@@ -362,7 +364,7 @@ ScreenCaptureDevice::~ScreenCaptureDevice() {
 }
 
 void ScreenCaptureDevice::SetScreenCapturerForTest(
-  scoped_ptr<ScreenCapturer> capturer) {
+  scoped_ptr<webrtc::ScreenCapturer> capturer) {
   core_->SetScreenCapturerForTest(capturer.Pass());
 }
 

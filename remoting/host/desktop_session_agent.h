@@ -15,10 +15,10 @@
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
-#include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 namespace IPC {
 class ChannelProxy;
@@ -47,7 +47,7 @@ class DesktopSessionAgent
     : public base::RefCountedThreadSafe<DesktopSessionAgent>,
       public IPC::Listener,
       public webrtc::DesktopCapturer::Callback,
-      public media::ScreenCapturer::MouseShapeObserver,
+      public webrtc::ScreenCapturer::MouseShapeObserver,
       public ClientSessionControl {
  public:
   class Delegate {
@@ -78,9 +78,9 @@ class DesktopSessionAgent
   virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
   virtual void OnCaptureCompleted(webrtc::DesktopFrame* frame) OVERRIDE;
 
-  // media::ScreenCapturer::MouseShapeObserver implementation.
+  // webrtc::ScreenCapturer::MouseShapeObserver implementation.
   virtual void OnCursorShapeChanged(
-      scoped_ptr<media::MouseCursorShape> cursor_shape) OVERRIDE;
+      webrtc::MouseCursorShape* cursor_shape) OVERRIDE;
 
   // Forwards a local clipboard event though the IPC channel to the network
   // process.
@@ -214,7 +214,7 @@ class DesktopSessionAgent
   bool started_;
 
   // Captures the screen.
-  scoped_ptr<media::ScreenCapturer> video_capturer_;
+  scoped_ptr<webrtc::ScreenCapturer> video_capturer_;
 
   // Keep reference to the last frame sent to make sure shared buffer is alive
   // before it's received.

@@ -7,11 +7,11 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/screen_controls.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 namespace remoting {
 
@@ -44,13 +44,13 @@ std::string BasicDesktopEnvironment::GetCapabilities() const {
 void BasicDesktopEnvironment::SetCapabilities(const std::string& capabilities) {
 }
 
-scoped_ptr<media::ScreenCapturer>
+scoped_ptr<webrtc::ScreenCapturer>
 BasicDesktopEnvironment::CreateVideoCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   // The basic desktop environment does not use X DAMAGE, since it is
   // broken on many systems - see http://crbug.com/73423.
-  return media::ScreenCapturer::Create();
+  return scoped_ptr<webrtc::ScreenCapturer>(webrtc::ScreenCapturer::Create());
 }
 
 BasicDesktopEnvironment::BasicDesktopEnvironment(

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
-#include "media/video/capture/screen/screen_capturer_mock_objects.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/proto/video.pb.h"
@@ -15,6 +14,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capturer_mock_objects.h"
 
 using ::remoting::protocol::MockClientStub;
 using ::remoting::protocol::MockVideoStub;
@@ -73,11 +73,11 @@ class VideoSchedulerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE;
 
-  void StartVideoScheduler(scoped_ptr<media::ScreenCapturer> capturer);
+  void StartVideoScheduler(scoped_ptr<webrtc::ScreenCapturer> capturer);
   void StopVideoScheduler();
 
-  // media::ScreenCapturer mocks.
-  void OnCapturerStart(media::ScreenCapturer::Callback* callback);
+  // webrtc::ScreenCapturer mocks.
+  void OnCapturerStart(webrtc::ScreenCapturer::Callback* callback);
   void OnCaptureFrame(const webrtc::DesktopRegion& region);
 
  protected:
@@ -94,8 +94,8 @@ class VideoSchedulerTest : public testing::Test {
 
   scoped_ptr<webrtc::DesktopFrame> frame_;
 
-  // Points to the callback passed to media::ScreenCapturer::Start().
-  media::ScreenCapturer::Callback* capturer_callback_;
+  // Points to the callback passed to webrtc::ScreenCapturer::Start().
+  webrtc::ScreenCapturer::Callback* capturer_callback_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoSchedulerTest);
@@ -114,7 +114,7 @@ void VideoSchedulerTest::SetUp() {
 }
 
 void VideoSchedulerTest::StartVideoScheduler(
-    scoped_ptr<media::ScreenCapturer> capturer) {
+    scoped_ptr<webrtc::ScreenCapturer> capturer) {
   scheduler_ = new VideoScheduler(
       task_runner_, // Capture
       task_runner_, // Encode
@@ -132,7 +132,7 @@ void VideoSchedulerTest::StopVideoScheduler() {
 }
 
 void VideoSchedulerTest::OnCapturerStart(
-    media::ScreenCapturer::Callback* callback) {
+    webrtc::ScreenCapturer::Callback* callback) {
   EXPECT_FALSE(capturer_callback_);
   EXPECT_TRUE(callback);
 
@@ -150,8 +150,8 @@ void VideoSchedulerTest::OnCaptureFrame(const webrtc::DesktopRegion& region) {
 // VideoScheduler is instructed to come to a complete stop. We expect the stop
 // sequence to be executed successfully.
 TEST_F(VideoSchedulerTest, StartAndStop) {
-  scoped_ptr<media::MockScreenCapturer> capturer(
-      new media::MockScreenCapturer());
+  scoped_ptr<webrtc::MockScreenCapturer> capturer(
+      new webrtc::MockScreenCapturer());
   Expectation capturer_start =
       EXPECT_CALL(*capturer, Start(_))
           .WillOnce(Invoke(this, &VideoSchedulerTest::OnCapturerStart));
@@ -182,7 +182,7 @@ TEST_F(VideoSchedulerTest, StartAndStop) {
       .RetiresOnSaturation();
 
   // Start video frame capture.
-  StartVideoScheduler(capturer.PassAs<media::ScreenCapturer>());
+  StartVideoScheduler(capturer.PassAs<webrtc::ScreenCapturer>());
 
   task_runner_ = NULL;
   run_loop_.Run();

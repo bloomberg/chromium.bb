@@ -49,7 +49,7 @@ class MockFrameObserver : public VideoCaptureDevice::EventHandler {
 };
 
 // TODO(sergeyu): Move this to a separate file where it can be reused.
-class FakeScreenCapturer : public ScreenCapturer {
+class FakeScreenCapturer : public webrtc::ScreenCapturer {
  public:
   FakeScreenCapturer()
       : callback_(NULL),
@@ -133,7 +133,7 @@ TEST_F(ScreenCaptureDeviceTest, ScreenResolutionChange) {
   ScreenCaptureDevice capture_device(
       worker_pool_->GetSequencedTaskRunner(worker_pool_->GetSequenceToken()));
   capture_device.SetScreenCapturerForTest(
-      scoped_ptr<ScreenCapturer>(mock_capturer));
+      scoped_ptr<webrtc::ScreenCapturer>(mock_capturer));
 
   VideoCaptureCapability caps;
   base::WaitableEvent done_event(false, false);

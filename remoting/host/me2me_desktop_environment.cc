@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/curtain_mode.h"
 #include "remoting/host/desktop_resizer.h"
@@ -16,6 +15,7 @@
 #include "remoting/host/local_input_monitor.h"
 #include "remoting/host/resizing_host_observer.h"
 #include "remoting/host/screen_controls.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 #if defined(OS_POSIX)
 #include <sys/types.h>
@@ -35,14 +35,15 @@ scoped_ptr<ScreenControls> Me2MeDesktopEnvironment::CreateScreenControls() {
       new ResizingHostObserver(DesktopResizer::Create()));
 }
 
-scoped_ptr<media::ScreenCapturer>
+scoped_ptr<webrtc::ScreenCapturer>
 Me2MeDesktopEnvironment::CreateVideoCapturer() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
 #if defined(OS_LINUX)
-  return media::ScreenCapturer::CreateWithXDamage(true);
+  return scoped_ptr<webrtc::ScreenCapturer>(
+      webrtc::ScreenCapturer::CreateWithXDamage(true));
 #else  // !defined(OS_LINUX)
-  return media::ScreenCapturer::Create();
+  return scoped_ptr<webrtc::ScreenCapturer>(webrtc::ScreenCapturer::Create());
 #endif  // !defined(OS_LINUX)
 }
 

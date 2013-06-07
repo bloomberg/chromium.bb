@@ -6,12 +6,12 @@
 #define REMOTING_HOST_CHROMOTING_MESSAGES_H_
 
 #include "ipc/ipc_platform_file.h"
-#include "media/video/capture/screen/mouse_cursor_shape.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/host/chromoting_param_traits.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/protocol/transport.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "third_party/webrtc/modules/desktop_capture/mouse_cursor_shape.h"
 
 #endif  // REMOTING_HOST_CHROMOTING_MESSAGES_H_
 
@@ -138,7 +138,7 @@ IPC_MESSAGE_CONTROL3(ChromotingDesktopNetworkMsg_CreateSharedBuffer,
 IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_ReleaseSharedBuffer,
                      int /* id */)
 
-IPC_STRUCT_TRAITS_BEGIN(media::MouseCursorShape)
+IPC_STRUCT_TRAITS_BEGIN(webrtc::MouseCursorShape)
   IPC_STRUCT_TRAITS_MEMBER(size)
   IPC_STRUCT_TRAITS_MEMBER(hotspot)
   IPC_STRUCT_TRAITS_MEMBER(data)
@@ -174,7 +174,7 @@ IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_CaptureCompleted,
 
 // Carries a cursor share update from the desktop session agent to the client.
 IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_CursorShapeChanged,
-                     media::MouseCursorShape /* cursor_shape */ )
+                     webrtc::MouseCursorShape /* cursor_shape */ )
 
 // Carries a clipboard event from the desktop session agent to the client.
 // |serialized_event| is a serialized protocol::ClipboardEvent.

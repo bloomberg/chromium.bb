@@ -1171,6 +1171,9 @@
       ],
     }],
     ['enable_webrtc==1', {
+      'dependencies': [
+        '../third_party/webrtc/modules/modules.gyp:desktop_capture',
+      ],
       'sources': [
         'browser/renderer_host/media/peer_connection_tracker_host.cc',
         'browser/renderer_host/media/peer_connection_tracker_host.h',

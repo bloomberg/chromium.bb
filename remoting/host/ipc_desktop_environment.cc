@@ -11,7 +11,6 @@
 #include "base/process_util.h"
 #include "base/single_thread_task_runner.h"
 #include "ipc/ipc_sender.h"
-#include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/client_session_control.h"
@@ -19,6 +18,7 @@
 #include "remoting/host/desktop_session_proxy.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/screen_controls.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 namespace remoting {
 
@@ -56,7 +56,8 @@ scoped_ptr<ScreenControls> IpcDesktopEnvironment::CreateScreenControls() {
   return desktop_session_proxy_->CreateScreenControls();
 }
 
-scoped_ptr<media::ScreenCapturer> IpcDesktopEnvironment::CreateVideoCapturer() {
+scoped_ptr<webrtc::ScreenCapturer>
+IpcDesktopEnvironment::CreateVideoCapturer() {
   return desktop_session_proxy_->CreateVideoCapturer();
 }
 

@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/message_loop_proxy.h"
-#include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/base/capabilities.h"
 #include "remoting/codec/audio_encoder.h"
 #include "remoting/codec/audio_encoder_opus.h"
@@ -28,6 +27,7 @@
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_thread_proxy.h"
 #include "remoting/protocol/pairing_registry.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 // Default DPI to assume for old clients that use notifyClientDimensions.
 const int kDefaultDPI = 96;

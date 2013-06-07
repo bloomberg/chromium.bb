@@ -6,7 +6,6 @@
 
 #include "base/message_loop_proxy.h"
 #include "base/single_thread_task_runner.h"
-#include "media/video/capture/screen/screen_capturer.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/codec/audio_encoder.h"
@@ -15,6 +14,7 @@
 #include "remoting/host/input_injector.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/transport.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 namespace remoting {
 
@@ -34,9 +34,9 @@ scoped_ptr<ScreenControls> MockDesktopEnvironment::CreateScreenControls() {
   return scoped_ptr<ScreenControls>(CreateScreenControlsPtr());
 }
 
-scoped_ptr<media::ScreenCapturer>
+scoped_ptr<webrtc::ScreenCapturer>
 MockDesktopEnvironment::CreateVideoCapturer() {
-  return scoped_ptr<media::ScreenCapturer>(CreateVideoCapturerPtr());
+  return scoped_ptr<webrtc::ScreenCapturer>(CreateVideoCapturerPtr());
 }
 
 MockDesktopEnvironmentFactory::MockDesktopEnvironmentFactory() {}

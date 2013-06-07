@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/video/capture/screen/screen_capturer_fake.h"
+#include "remoting/host/screen_capturer_fake.h"
 
 #include "base/logging.h"
 #include "base/time.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
-namespace media {
+namespace remoting {
 
 // ScreenCapturerFake generates a white picture of size kWidth x kHeight
 // with a rectangle of size kBoxWidth x kBoxHeight. The rectangle moves kSpeed
@@ -61,7 +61,7 @@ void ScreenCapturerFake::Capture(const webrtc::DesktopRegion& region) {
     } else {
       frame.reset(new webrtc::BasicDesktopFrame(frame_size));
     }
-    queue_.ReplaceCurrentFrame(frame.Pass());
+    queue_.ReplaceCurrentFrame(frame.release());
   }
 
   DCHECK(queue_.current_frame());
@@ -125,4 +125,4 @@ void ScreenCapturerFake::ScreenConfigurationChanged() {
   bytes_per_row_ = size_.width() * webrtc::DesktopFrame::kBytesPerPixel;
 }
 
-}  // namespace media
+}  // namespace remoting

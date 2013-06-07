@@ -4,9 +4,9 @@
 
 #include "remoting/host/ipc_video_frame_capturer.h"
 
-#include "media/video/capture/screen/mouse_cursor_shape.h"
 #include "remoting/host/desktop_session_proxy.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+#include "third_party/webrtc/modules/desktop_capture/mouse_cursor_shape.h"
 
 namespace remoting {
 
@@ -50,9 +50,9 @@ void IpcVideoFrameCapturer::OnCaptureCompleted(
 }
 
 void IpcVideoFrameCapturer::OnCursorShapeChanged(
-    scoped_ptr<media::MouseCursorShape> cursor_shape) {
+    scoped_ptr<webrtc::MouseCursorShape> cursor_shape) {
   if (mouse_shape_observer_)
-    mouse_shape_observer_->OnCursorShapeChanged(cursor_shape.Pass());
+    mouse_shape_observer_->OnCursorShapeChanged(cursor_shape.release());
 }
 
 }  // namespace remoting

@@ -6,11 +6,11 @@
 
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/host/win/session_input_injector.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 namespace remoting {
 

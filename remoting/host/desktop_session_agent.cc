@@ -320,8 +320,10 @@ void DesktopSessionAgent::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
 }
 
 void DesktopSessionAgent::OnCursorShapeChanged(
-    scoped_ptr<media::MouseCursorShape> cursor_shape) {
+    webrtc::MouseCursorShape* cursor_shape) {
   DCHECK(video_capture_task_runner_->BelongsToCurrentThread());
+
+  scoped_ptr<webrtc::MouseCursorShape> owned_cursor(cursor_shape);
 
   SendToNetwork(new ChromotingDesktopNetworkMsg_CursorShapeChanged(
       *cursor_shape));
@@ -412,11 +414,11 @@ void DesktopSessionAgent::OnCaptureFrame() {
     return;
   }
 
-  // media::ScreenCapturer supports a very few (currently 2) outstanding capture
-  // requests. The requests are serialized on |video_capture_task_runner()| task
-  // runner. If the client issues more requests, pixel data in captured frames
-  // will likely be corrupted but stability of media::ScreenCapturer will not be
-  // affected.
+  // webrtc::ScreenCapturer supports a very few (currently 2) outstanding
+  // capture requests. The requests are serialized on
+  // |video_capture_task_runner()| task runner. If the client issues more
+  // requests, pixel data in captured frames will likely be corrupted but
+  // stability of webrtc::ScreenCapturer will not be affected.
   video_capturer_->Capture(webrtc::DesktopRegion());
 }
 

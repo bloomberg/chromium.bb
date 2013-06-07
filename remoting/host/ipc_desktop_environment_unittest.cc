@@ -16,8 +16,6 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
-#include "media/video/capture/screen/screen_capturer_fake.h"
-#include "media/video/capture/screen/screen_capturer_mock_objects.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/constants.h"
@@ -28,12 +26,14 @@
 #include "remoting/host/desktop_session_proxy.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/host/ipc_desktop_environment.h"
+#include "remoting/host/screen_capturer_fake.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capturer_mock_objects.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -130,7 +130,7 @@ class IpcDesktopEnvironmentTest : public testing::Test {
                        bool virtual_terminal);
   void DisconnectTerminal(int terminal_id);
 
-  // Creates a DesktopEnvironment with a fake media::ScreenCapturer, to mock
+  // Creates a DesktopEnvironment with a fake webrtc::ScreenCapturer, to mock
   // DesktopEnvironmentFactory::Create().
   DesktopEnvironment* CreateDesktopEnvironment();
 
@@ -138,9 +138,9 @@ class IpcDesktopEnvironmentTest : public testing::Test {
   // DesktopEnvironment::CreateInputInjector().
   InputInjector* CreateInputInjector();
 
-  // Creates a fake media::ScreenCapturer, to mock
+  // Creates a fake webrtc::ScreenCapturer, to mock
   // DesktopEnvironment::CreateVideoCapturer().
-  media::ScreenCapturer* CreateVideoCapturer();
+  webrtc::ScreenCapturer* CreateVideoCapturer();
 
   void DeleteDesktopEnvironment();
 
@@ -198,7 +198,7 @@ class IpcDesktopEnvironmentTest : public testing::Test {
   scoped_ptr<ScreenControls> screen_controls_;
 
   // The IPC screen capturer.
-  scoped_ptr<media::ScreenCapturer> video_capturer_;
+  scoped_ptr<webrtc::ScreenCapturer> video_capturer_;
 
   // Represents the desktop process running in a user session.
   scoped_ptr<DesktopProcess> desktop_process_;
@@ -209,7 +209,7 @@ class IpcDesktopEnvironmentTest : public testing::Test {
   // The last |terminal_id| passed to ConnectTermina();
   int terminal_id_;
 
-  media::MockScreenCapturerCallback screen_capturer_callback_;
+  webrtc::MockScreenCapturerCallback screen_capturer_callback_;
 
   MockClientSessionControl client_session_control_;
   base::WeakPtrFactory<ClientSessionControl> client_session_control_factory_;
@@ -345,8 +345,8 @@ InputInjector* IpcDesktopEnvironmentTest::CreateInputInjector() {
   return remote_input_injector_;
 }
 
-media::ScreenCapturer* IpcDesktopEnvironmentTest::CreateVideoCapturer() {
-  return new media::ScreenCapturerFake();
+webrtc::ScreenCapturer* IpcDesktopEnvironmentTest::CreateVideoCapturer() {
+  return new ScreenCapturerFake();
 }
 
 void IpcDesktopEnvironmentTest::DeleteDesktopEnvironment() {

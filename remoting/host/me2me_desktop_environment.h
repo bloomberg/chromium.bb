@@ -21,7 +21,7 @@ class Me2MeDesktopEnvironment : public BasicDesktopEnvironment {
 
   // DesktopEnvironment interface.
   virtual scoped_ptr<ScreenControls> CreateScreenControls() OVERRIDE;
-  virtual scoped_ptr<media::ScreenCapturer> CreateVideoCapturer() OVERRIDE;
+  virtual scoped_ptr<webrtc::ScreenCapturer> CreateVideoCapturer() OVERRIDE;
 
  protected:
   friend class Me2MeDesktopEnvironmentFactory;

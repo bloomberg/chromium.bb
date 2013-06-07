@@ -8,9 +8,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
-#include "media/video/capture/screen/screen_capturer.h"
 #include "media/video/capture/video_capture_device.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -28,7 +28,7 @@ class MEDIA_EXPORT ScreenCaptureDevice : public VideoCaptureDevice {
 
   // Helper used in tests to supply a fake capturer.
   void SetScreenCapturerForTest(
-      scoped_ptr<media::ScreenCapturer> capturer);
+      scoped_ptr<webrtc::ScreenCapturer> capturer);
 
   // VideoCaptureDevice interface.
   virtual void Allocate(int width, int height,

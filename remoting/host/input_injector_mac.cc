@@ -15,13 +15,13 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "media/video/capture/screen/mac/desktop_configuration.h"
 #include "remoting/host/clipboard.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/message_decoder.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "third_party/webrtc/modules/desktop_capture/mac/desktop_configuration.h"
 
 namespace remoting {
 
@@ -191,9 +191,9 @@ void InputInjectorMac::Core::InjectMouseEvent(const MouseEvent& event) {
     // response to display-changed events. VideoFrameCapturer's VideoFrames
     // could be augmented to include native cursor coordinates for use by
     // MouseClampingFilter, removing the need for translation here.
-    media::MacDesktopConfiguration desktop_config =
-        media::MacDesktopConfiguration::GetCurrent(
-            media::MacDesktopConfiguration::TopLeftOrigin);
+    webrtc::MacDesktopConfiguration desktop_config =
+        webrtc::MacDesktopConfiguration::GetCurrent(
+            webrtc::MacDesktopConfiguration::TopLeftOrigin);
 
     // Translate the mouse position into desktop coordinates.
     mouse_pos_ += SkIPoint::Make(desktop_config.pixel_bounds.left(),

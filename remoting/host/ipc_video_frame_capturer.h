@@ -7,7 +7,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "media/video/capture/screen/screen_capturer.h"
+#include "base/memory/scoped_ptr.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 namespace IPC {
 class Message;
@@ -21,9 +22,9 @@ namespace remoting {
 
 class DesktopSessionProxy;
 
-// Routes media::ScreenCapturer calls though the IPC channel to the desktop
+// Routes webrtc::ScreenCapturer calls though the IPC channel to the desktop
 // session agent running in the desktop integration process.
-class IpcVideoFrameCapturer : public media::ScreenCapturer {
+class IpcVideoFrameCapturer : public webrtc::ScreenCapturer {
  public:
   explicit IpcVideoFrameCapturer(
       scoped_refptr<DesktopSessionProxy> desktop_session_proxy);
@@ -33,7 +34,7 @@ class IpcVideoFrameCapturer : public media::ScreenCapturer {
   virtual void Start(Callback* callback) OVERRIDE;
   virtual void Capture(const webrtc::DesktopRegion& region) OVERRIDE;
 
-  // media::ScreenCapturer interface.
+  // webrtc::ScreenCapturer interface.
   virtual void SetMouseShapeObserver(
       MouseShapeObserver* mouse_shape_observer) OVERRIDE;
 
@@ -41,11 +42,11 @@ class IpcVideoFrameCapturer : public media::ScreenCapturer {
   void OnCaptureCompleted(scoped_ptr<webrtc::DesktopFrame> frame);
 
   // Called when the cursor shape has changed.
-  void OnCursorShapeChanged(scoped_ptr<media::MouseCursorShape> cursor_shape);
+  void OnCursorShapeChanged(scoped_ptr<webrtc::MouseCursorShape> cursor_shape);
 
  private:
-  // Points to the callback passed to media::ScreenCapturer::Start().
-  media::ScreenCapturer::Callback* callback_;
+  // Points to the callback passed to webrtc::ScreenCapturer::Start().
+  webrtc::ScreenCapturer::Callback* callback_;
 
   MouseShapeObserver* mouse_shape_observer_;
 

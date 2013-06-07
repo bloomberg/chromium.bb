@@ -15,13 +15,13 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
-#include "media/video/capture/screen/screen_capturer.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -77,7 +77,7 @@ class DesktopSessionProxy
   scoped_ptr<AudioCapturer> CreateAudioCapturer();
   scoped_ptr<InputInjector> CreateInputInjector();
   scoped_ptr<ScreenControls> CreateScreenControls();
-  scoped_ptr<media::ScreenCapturer> CreateVideoCapturer();
+  scoped_ptr<webrtc::ScreenCapturer> CreateVideoCapturer();
   std::string GetCapabilities() const;
   void SetCapabilities(const std::string& capabilities);
 
@@ -101,7 +101,7 @@ class DesktopSessionProxy
   // on the |audio_capture_task_runner_| thread.
   void SetAudioCapturer(const base::WeakPtr<IpcAudioCapturer>& audio_capturer);
 
-  // APIs used to implement the media::ScreenCapturer interface. These must be
+  // APIs used to implement the webrtc::ScreenCapturer interface. These must be
   // called on the |video_capture_task_runner_| thread.
   void InvalidateRegion(const SkRegion& invalid_region);
   void CaptureFrame();
@@ -148,7 +148,7 @@ class DesktopSessionProxy
   void OnCaptureCompleted(const SerializedDesktopFrame& serialized_frame);
 
   // Handles CursorShapeChanged notification from the desktop session agent.
-  void OnCursorShapeChanged(const media::MouseCursorShape& cursor_shape);
+  void OnCursorShapeChanged(const webrtc::MouseCursorShape& cursor_shape);
 
   // Handles InjectClipboardEvent request from the desktop integration process.
   void OnInjectClipboardEvent(const std::string& serialized_event);
@@ -159,7 +159,7 @@ class DesktopSessionProxy
 
   // Posts OnCursorShapeChanged() to |video_capturer_| on the video thread,
   // passing |cursor_shape|.
-  void PostCursorShape(scoped_ptr<media::MouseCursorShape> cursor_shape);
+  void PostCursorShape(scoped_ptr<webrtc::MouseCursorShape> cursor_shape);
 
   // Sends a message to the desktop session agent. The message is silently
   // deleted if the channel is broken.

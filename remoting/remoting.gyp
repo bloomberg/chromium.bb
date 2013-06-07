@@ -297,7 +297,6 @@
             'remoting_protocol',
             '../crypto/crypto.gyp:crypto',
             '../google_apis/google_apis.gyp:google_apis',
-            '../media/media.gyp:media',
             '../ipc/ipc.gyp:ipc',
             '../third_party/webrtc/modules/modules.gyp:desktop_capture',
           ],
@@ -554,8 +553,8 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
-            '../media/media.gyp:media',
             '../net/net.gyp:net',
+            '../third_party/webrtc/modules/modules.gyp:desktop_capture',
             'remoting_base',
             'remoting_breakpad',
             'remoting_host',
@@ -840,8 +839,8 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
-            '../media/media.gyp:media',
             '../net/net.gyp:net',
+            '../third_party/webrtc/modules/modules.gyp:desktop_capture',
             'remoting_base',
             'remoting_breakpad',
             'remoting_host',
@@ -1427,8 +1426,8 @@
             '../base/base.gyp:base_static',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../ipc/ipc.gyp:ipc',
-            '../media/media.gyp:media',
             '../net/net.gyp:net',
+            '../third_party/webrtc/modules/modules.gyp:desktop_capture',
             'remoting_base',
             'remoting_breakpad',
             'remoting_host',
@@ -1942,10 +1941,10 @@
         'remoting_base',
         'remoting_client',
         'remoting_jingle_glue',
-        '../media/media.gyp:media',
         '../net/net.gyp:net',
         '../ppapi/ppapi.gyp:ppapi_cpp_objects',
         '../skia/skia.gyp:skia',
+        '../third_party/webrtc/modules/modules.gyp:desktop_capture',
       ],
       'sources': [
         'client/plugin/chromoting_instance.cc',
@@ -2115,7 +2114,7 @@
       ],
       'target_conditions': [
         # We cannot currently build the appsv2 version of WebApp on Windows as
-        # there isn't a version of the "patch" tool available on windows. We 
+        # there isn't a version of the "patch" tool available on windows. We
         # should remove this condition when we remove the reliance on the 'patch'.
 
         # We define this in a 'target_conditions' section because 'plugin_path'
@@ -2163,7 +2162,7 @@
                 '<@(remoting_webapp_locale_files)',
                 '--patches',
                 '<@(remoting_webapp_patch_files)',
-              ],    
+              ],
               'msvs_cygwin_shell': 1,
             },
           ],
@@ -2589,8 +2588,6 @@
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
         '../ipc/ipc.gyp:ipc',
-        '../media/media.gyp:media',
-        '../media/media.gyp:media_test_support',
         '../net/net.gyp:net_test_support',
         '../ppapi/ppapi.gyp:ppapi_cpp',
         '../testing/gmock.gyp:gmock',
@@ -2675,6 +2672,8 @@
         'host/register_support_host_request_unittest.cc',
         'host/remote_input_filter_unittest.cc',
         'host/resizing_host_observer_unittest.cc',
+        'host/screen_capturer_fake.cc',
+        'host/screen_capturer_fake.h',
         'host/screen_resolution_unittest.cc',
         'host/server_log_entry_unittest.cc',
         'host/setup/native_messaging_host_unittest.cc',

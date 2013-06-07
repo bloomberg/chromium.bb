@@ -137,10 +137,10 @@ scoped_ptr<ScreenControls> DesktopSessionProxy::CreateScreenControls() {
   return scoped_ptr<ScreenControls>(new IpcScreenControls(this));
 }
 
-scoped_ptr<media::ScreenCapturer> DesktopSessionProxy::CreateVideoCapturer() {
+scoped_ptr<webrtc::ScreenCapturer> DesktopSessionProxy::CreateVideoCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  return scoped_ptr<media::ScreenCapturer>(new IpcVideoFrameCapturer(this));
+  return scoped_ptr<webrtc::ScreenCapturer>(new IpcVideoFrameCapturer(this));
 }
 
 std::string DesktopSessionProxy::GetCapabilities() const {
@@ -487,10 +487,10 @@ void DesktopSessionProxy::OnCaptureCompleted(
 }
 
 void DesktopSessionProxy::OnCursorShapeChanged(
-    const media::MouseCursorShape& cursor_shape) {
+    const webrtc::MouseCursorShape& cursor_shape) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  PostCursorShape(scoped_ptr<media::MouseCursorShape>(
-      new media::MouseCursorShape(cursor_shape)));
+  PostCursorShape(scoped_ptr<webrtc::MouseCursorShape>(
+      new webrtc::MouseCursorShape(cursor_shape)));
 }
 
 void DesktopSessionProxy::OnInjectClipboardEvent(
@@ -519,7 +519,7 @@ void DesktopSessionProxy::PostCaptureCompleted(
 }
 
 void DesktopSessionProxy::PostCursorShape(
-    scoped_ptr<media::MouseCursorShape> cursor_shape) {
+    scoped_ptr<webrtc::MouseCursorShape> cursor_shape) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   video_capture_task_runner_->PostTask(
