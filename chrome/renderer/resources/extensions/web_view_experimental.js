@@ -198,7 +198,7 @@ WebView.prototype.setupNewWindowEvent_ = function() {
       console.warn('<webview>: A new window was blocked.');
     }
   });
-}
+};
 
 /**
  * @private

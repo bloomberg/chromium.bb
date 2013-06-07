@@ -84,7 +84,7 @@ WebView.prototype.createBrowserPluginNode_ = function() {
   }, this);
 
   return browserPluginNode;
-}
+};
 
 /**
  * @private
@@ -106,7 +106,7 @@ WebView.prototype.setupFocusPropagation_ = function() {
     // Blur the BrowserPlugin when the <webview> loses focus.
     self.browserPluginNode_.blur();
   });
-}
+};
 
 /**
  * @private
@@ -121,7 +121,7 @@ WebView.prototype.setupWebviewNodeMethods_ = function() {
           self.browserPluginNode_, arguments);
     };
   }, this);
-}
+};
 
 /**
  * @private
@@ -155,7 +155,7 @@ WebView.prototype.setupWebviewNodeProperties_ = function() {
     // No setter.
     enumerable: true
   });
-}
+};
 
 /**
  * @private
@@ -163,7 +163,7 @@ WebView.prototype.setupWebviewNodeProperties_ = function() {
 WebView.prototype.setupWebviewNodeAttributes_ = function() {
   this.setupWebviewNodeObservers_();
   this.setupBrowserPluginNodeObservers_();
-}
+};
 
 /**
  * @private
@@ -180,7 +180,7 @@ WebView.prototype.setupWebviewNodeObservers_ = function() {
   observer.observe(
       this.webviewNode_,
       {attributes: true, attributeFilter: WEB_VIEW_ATTRIBUTES});
-}
+};
 
 /**
  * @private
@@ -195,7 +195,7 @@ WebView.prototype.setupBrowserPluginNodeObservers_ = function() {
   objectObserver.observe(
       this.browserPluginNode_,
       {attributes: true, attributeFilter: WEB_VIEW_ATTRIBUTES});
-}
+};
 
 /**
  * @private
@@ -243,7 +243,7 @@ WebView.prototype.setupWebviewNodeEvents_ = function() {
   for (var eventName in WEB_VIEW_EVENTS) {
     this.setupEvent_(eventName, WEB_VIEW_EVENTS[eventName]);
   }
-}
+};
 
 /**
  * @private
