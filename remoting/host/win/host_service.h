@@ -11,6 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/host/win/message_window.h"
@@ -25,7 +26,7 @@ class SingleThreadTaskRunner;
 namespace remoting {
 
 class AutoThreadTaskRunner;
-class Stoppable;
+class DaemonProcess;
 class WtsTerminalObserver;
 
 class HostService : public win::MessageWindow::Delegate,
@@ -55,8 +56,6 @@ class HostService : public win::MessageWindow::Delegate,
   // Creates the process launcher.
   void CreateLauncher(scoped_refptr<AutoThreadTaskRunner> task_runner);
 
-  void OnChildStopped();
-
   // This function handshakes with the service control manager and starts
   // the service.
   int RunAsService();
@@ -69,6 +68,9 @@ class HostService : public win::MessageWindow::Delegate,
   // This function starts the service in interactive mode (i.e. as a plain
   // console application).
   int RunInConsole();
+
+  // Stops and deletes |daemon_process_|.
+  void StopDaemonProcess();
 
   // win::MessageWindow::Delegate interface.
   virtual bool HandleMessage(HWND hwnd,
@@ -105,9 +107,10 @@ class HostService : public win::MessageWindow::Delegate,
   // The list of observers receiving session notifications.
   std::list<RegisteredObserver> observers_;
 
-  scoped_ptr<Stoppable> child_;
+  scoped_ptr<DaemonProcess> daemon_process_;
 
-  // Service message loop.
+  // Service message loop. |main_task_runner_| must be valid as long as the
+  // Control+C or service notification handler is registered.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   // The action routine to be executed.
@@ -118,6 +121,10 @@ class HostService : public win::MessageWindow::Delegate,
 
   // A waitable event that is used to wait until the service is stopped.
   base::WaitableEvent stopped_event_;
+
+  // Used to post session change notifications and control events.
+  base::WeakPtrFactory<HostService> weak_factory_;
+  base::WeakPtr<HostService> weak_ptr_;
 
   // Singleton.
   friend struct DefaultSingletonTraits<HostService>;

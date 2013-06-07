@@ -25,7 +25,6 @@
 #include "base/win/windows_version.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/scoped_sc_handle_win.h"
-#include "remoting/base/stoppable.h"
 #include "remoting/host/branding.h"
 #include "remoting/host/daemon_process.h"
 #include "remoting/host/host_exit_codes.h"
@@ -203,7 +202,8 @@ void HostService::RemoveWtsTerminalObserver(WtsTerminalObserver* observer) {
 HostService::HostService() :
   run_routine_(&HostService::RunAsService),
   service_status_handle_(0),
-  stopped_event_(true, false) {
+  stopped_event_(true, false),
+  weak_factory_(this) {
 }
 
 HostService::~HostService() {
@@ -275,17 +275,10 @@ void HostService::CreateLauncher(
     return;
   }
 
-  child_ = DaemonProcess::Create(
+  daemon_process_ = DaemonProcess::Create(
       task_runner,
       io_task_runner,
-      base::Bind(&HostService::OnChildStopped,
-                 base::Unretained(this))).PassAs<Stoppable>();
-}
-
-void HostService::OnChildStopped() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  child_.reset(NULL);
+      base::Bind(&HostService::StopDaemonProcess, weak_ptr_));
 }
 
 int HostService::RunAsService() {
@@ -312,6 +305,7 @@ void HostService::RunAsServiceImpl() {
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   base::RunLoop run_loop;
   main_task_runner_ = message_loop.message_loop_proxy();
+  weak_ptr_ = weak_factory_.GetWeakPtr();
 
   // Register the service control handler.
   service_status_handle_ = RegisterServiceCtrlHandlerExW(
@@ -351,6 +345,7 @@ void HostService::RunAsServiceImpl() {
 
   // Run the service.
   run_loop.Run();
+  weak_factory_.InvalidateWeakPtrs();
 
   // Tell SCM that the service is stopped.
   service_status.dwCurrentState = SERVICE_STOPPED;
@@ -366,6 +361,7 @@ int HostService::RunInConsole() {
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   base::RunLoop run_loop;
   main_task_runner_ = message_loop.message_loop_proxy();
+  weak_ptr_ = weak_factory_.GetWeakPtr();
 
   int result = kInitializationFailed;
 
@@ -410,12 +406,20 @@ int HostService::RunInConsole() {
   }
 
 cleanup:
+  weak_factory_.InvalidateWeakPtrs();
+
   // Unsubscribe from console events. Ignore the exit code. There is nothing
   // we can do about it now and the program is about to exit anyway. Even if
   // it crashes nothing is going to be broken because of it.
   SetConsoleCtrlHandler(&HostService::ConsoleControlHandler, FALSE);
 
   return result;
+}
+
+void HostService::StopDaemonProcess() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  daemon_process_.reset();
 }
 
 bool HostService::HandleMessage(
@@ -438,9 +442,9 @@ BOOL WINAPI HostService::ConsoleControlHandler(DWORD event) {
     case CTRL_CLOSE_EVENT:
     case CTRL_LOGOFF_EVENT:
     case CTRL_SHUTDOWN_EVENT:
-      self->main_task_runner_->PostTask(FROM_HERE, base::Bind(
-          &Stoppable::Stop, base::Unretained(self->child_.get())));
-      self->stopped_event_.Wait();
+      self->main_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&HostService::StopDaemonProcess,
+                                self->weak_ptr_));
       return TRUE;
 
     default:
@@ -460,14 +464,14 @@ DWORD WINAPI HostService::ServiceControlHandler(DWORD control,
 
     case SERVICE_CONTROL_SHUTDOWN:
     case SERVICE_CONTROL_STOP:
-      self->main_task_runner_->PostTask(FROM_HERE, base::Bind(
-          &Stoppable::Stop, base::Unretained(self->child_.get())));
-      self->stopped_event_.Wait();
+      self->main_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&HostService::StopDaemonProcess,
+                                self->weak_ptr_));
       return NO_ERROR;
 
     case SERVICE_CONTROL_SESSIONCHANGE:
       self->main_task_runner_->PostTask(FROM_HERE, base::Bind(
-          &HostService::OnSessionChange, base::Unretained(self), event_type,
+          &HostService::OnSessionChange, self->weak_ptr_, event_type,
           reinterpret_cast<WTSSESSION_NOTIFICATION*>(event_data)->dwSessionId));
       return NO_ERROR;
 

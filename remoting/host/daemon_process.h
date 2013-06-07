@@ -17,7 +17,6 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
-#include "remoting/base/stoppable.h"
 #include "remoting/host/config_file_watcher.h"
 #include "remoting/host/host_status_monitor.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
@@ -40,8 +39,7 @@ class ScreenResolution;
 // process running at lower privileges and maintains the list of desktop
 // sessions.
 class DaemonProcess
-    : public Stoppable,
-      public ConfigFileWatcher::Delegate,
+    : public ConfigFileWatcher::Delegate,
       public HostStatusMonitor,
       public WorkerProcessIpcDelegate {
  public:
@@ -107,6 +105,9 @@ class DaemonProcess
   // Reads the host configuration and launches the network process.
   void Initialize();
 
+  // Invokes |stopped_callback_| to ask the owner to delete |this|.
+  void Stop();
+
   // Returns true if |terminal_id| is in the range of allocated IDs. I.e. it is
   // less or equal to the highest ID we have seen so far.
   bool WasTerminalIdAllocated(int terminal_id);
@@ -122,9 +123,6 @@ class DaemonProcess
                            const SerializedTransportRoute& route);
   void OnHostStarted(const std::string& xmpp_login);
   void OnHostShutdown();
-
-  // Stoppable implementation.
-  virtual void DoStop() OVERRIDE;
 
   // Creates a platform-specific desktop session and assigns a unique ID to it.
   // An implementation should validate |params| as they are received via IPC.
@@ -177,6 +175,9 @@ class DaemonProcess
 
   // Keeps track of observers receiving host status notifications.
   ObserverList<HostStatusObserver> status_observers_;
+
+  // Invoked to ask the owner to delete |this|.
+  base::Closure stopped_callback_;
 
   // Writes host status updates to the system event log.
   scoped_ptr<HostEventLogger> host_event_logger_;

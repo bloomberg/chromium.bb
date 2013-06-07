@@ -2343,8 +2343,6 @@
         'base/running_average.h',
         'base/socket_reader.cc',
         'base/socket_reader.h',
-        'base/stoppable.cc',
-        'base/stoppable.h',
         'base/typed_buffer.h',
         'base/util.cc',
         'base/util.h',

@@ -60,9 +60,6 @@ class DaemonProcessWin : public DaemonProcess {
       IPC::PlatformFileForTransit desktop_pipe) OVERRIDE;
 
  protected:
-  // Stoppable implementation.
-  virtual void DoStop() OVERRIDE;
-
   // DaemonProcess implementation.
   virtual scoped_ptr<DesktopSession> DoCreateDesktopSession(
       int terminal_id,
@@ -89,10 +86,6 @@ DaemonProcessWin::DaemonProcessWin(
 }
 
 DaemonProcessWin::~DaemonProcessWin() {
-  // Make sure that the object is completely stopped. The same check exists
-  // in Stoppable::~Stoppable() but this one helps us to fail early and
-  // predictably.
-  CHECK_EQ(stoppable_state(), Stoppable::kStopped);
 }
 
 void DaemonProcessWin::OnChannelConnected(int32 peer_pid) {
@@ -136,13 +129,6 @@ bool DaemonProcessWin::OnDesktopSessionAgentAttached(
   SendToNetwork(new ChromotingDaemonNetworkMsg_DesktopAttached(
       terminal_id, desktop_process_for_transit, desktop_pipe));
   return true;
-}
-
-void DaemonProcessWin::DoStop() {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
-
-  network_launcher_.reset();
-  DaemonProcess::DoStop();
 }
 
 scoped_ptr<DesktopSession> DaemonProcessWin::DoCreateDesktopSession(

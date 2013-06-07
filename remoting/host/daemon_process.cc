@@ -37,8 +37,13 @@ std::ostream& operator<<(std::ostream& os, const ScreenResolution& resolution) {
 }  // namespace
 
 DaemonProcess::~DaemonProcess() {
-  DCHECK(!config_watcher_.get());
-  DCHECK(desktop_sessions_.empty());
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  host_event_logger_.reset();
+  weak_factory_.InvalidateWeakPtrs();
+
+  config_watcher_.reset();
+  DeleteAllDesktopSessions();
 }
 
 void DaemonProcess::OnConfigUpdated(const std::string& serialized_config) {
@@ -163,10 +168,10 @@ DaemonProcess::DaemonProcess(
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
     scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     const base::Closure& stopped_callback)
-    : Stoppable(caller_task_runner, stopped_callback),
-      caller_task_runner_(caller_task_runner),
+    : caller_task_runner_(caller_task_runner),
       io_task_runner_(io_task_runner),
       next_terminal_id_(0),
+      stopped_callback_(stopped_callback),
       weak_factory_(this) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 }
@@ -270,6 +275,16 @@ void DaemonProcess::Initialize() {
   LaunchNetworkProcess();
 }
 
+void DaemonProcess::Stop() {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  if (!stopped_callback_.is_null()) {
+    base::Closure stopped_callback = stopped_callback_;
+    stopped_callback_.Reset();
+    stopped_callback.Run();
+  }
+}
+
 bool DaemonProcess::WasTerminalIdAllocated(int terminal_id) {
   return terminal_id < next_terminal_id_;
 }
@@ -350,18 +365,6 @@ void DaemonProcess::OnHostShutdown() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   FOR_EACH_OBSERVER(HostStatusObserver, status_observers_, OnShutdown());
-}
-
-void DaemonProcess::DoStop() {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
-
-  host_event_logger_.reset();
-  weak_factory_.InvalidateWeakPtrs();
-
-  config_watcher_.reset();
-  DeleteAllDesktopSessions();
-
-  CompleteStopping();
 }
 
 void DaemonProcess::DeleteAllDesktopSessions() {
