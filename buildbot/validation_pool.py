@@ -848,9 +848,11 @@ class ValidationFailedMessage(object):
       tracebacks: Exceptions received by individual builders, if any.
       internal: Whether this failure occurred on an internal builder.
     """
-    self.message = message
-    self.tracebacks = tracebacks
-    self.internal = internal
+    # Convert each of the input arguments into simple Python datastructures
+    # (i.e. not generators) that can be easily pickled.
+    self.message = str(message)
+    self.tracebacks = tuple(tracebacks)
+    self.internal = bool(internal)
 
   def __str__(self):
     return self.message
