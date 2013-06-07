@@ -29,6 +29,10 @@ import unittest
 import chrome_installer_win
 from install_test import InstallTest
 
+_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(_DIRECTORY, os.path.pardir, os.path.pardir,
+                             os.path.pardir, 'build', 'util', 'lib'))
+
 from common import unittest_util
 from common import util
 

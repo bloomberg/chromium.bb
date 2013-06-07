@@ -4,6 +4,11 @@
 
 """Update tests for themes."""
 import os
+import sys
+
+_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(_DIRECTORY, os.path.pardir, os.path.pardir,
+                             os.path.pardir, 'build', 'util', 'lib'))
 
 from common import util
 

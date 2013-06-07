@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -101,10 +101,32 @@ def FilterTestSuite(suite, gtest_filter):
 
 
 def FilterTests(all_tests, gtest_filter):
-  """Returns a filtered list of tests based on the given gtest filter.
+  """Filter a list of tests based on the given gtest filter.
+
+  Args:
+    all_tests: List of tests (unittest.TestSuite)
+    gtest_filter: Filter to apply.
+
+  Returns:
+    Filtered subset of the given list of tests.
+  """
+  test_names = [GetTestName(test) for test in all_tests]
+  filtered_names = FilterTestNames(test_names, gtest_filter)
+  return [test for test in all_tests if GetTestName(test) in filtered_names]
+
+
+def FilterTestNames(all_tests, gtest_filter):
+  """Filter a list of test names based on the given gtest filter.
 
   See http://code.google.com/p/googletest/wiki/AdvancedGuide
   for gtest_filter specification.
+
+  Args:
+    all_tests: List of test names.
+    gtest_filter: Filter to apply.
+
+  Returns:
+    Filtered subset of the given list of test names.
   """
   pattern_groups = gtest_filter.split('-')
   positive_patterns = pattern_groups[0].split(':')
@@ -114,16 +136,15 @@ def FilterTests(all_tests, gtest_filter):
 
   tests = []
   for test in all_tests:
-    test_name = GetTestName(test)
     # Test name must by matched by one positive pattern.
     for pattern in positive_patterns:
-      if fnmatch.fnmatch(test_name, pattern):
+      if fnmatch.fnmatch(test, pattern):
         break
     else:
       continue
     # Test name must not be matched by any negative patterns.
     for pattern in negative_patterns or []:
-      if fnmatch.fnmatch(test_name, pattern):
+      if fnmatch.fnmatch(test, pattern):
         break
     else:
       tests += [test]

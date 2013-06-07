@@ -4,6 +4,7 @@
 
 import logging
 import os
+import sys
 
 from pylib import android_commands
 from pylib import cmd_helper
@@ -14,7 +15,9 @@ from pylib.gtest import dispatch as gtest_dispatch
 from pylib.gtest import test_runner
 from pylib.utils import report_results
 
+sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib'))
 
+from common import unittest_util
 
 def Dispatch(options):
   attached_devices = []
@@ -53,12 +56,13 @@ def Dispatch(options):
         constants.BROWSERTEST_TEST_ACTIVITY_NAME,
         constants.BROWSERTEST_COMMAND_LINE_FILE)
 
-    # Get tests and split them up based on the number of devices.
+  # Get tests and split them up based on the number of devices.
+  all_enabled = gtest_dispatch.GetAllEnabledTests(RunnerFactory,
+                                                  attached_devices)
   if options.gtest_filter:
-    all_tests = [t for t in options.gtest_filter.split(':') if t]
+    all_tests = unittest_util.FilterTestNames(all_enabled,
+                                              options.gtest_filter)
   else:
-    all_enabled = gtest_dispatch.GetAllEnabledTests(RunnerFactory,
-                                                    attached_devices)
     all_tests = _FilterTests(all_enabled)
 
   # Run tests.

@@ -21,7 +21,8 @@ _DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(_DIRECTORY, os.path.pardir, os.path.pardir,
                              os.path.pardir, 'third_party', 'webdriver',
                              'pylib'))
-sys.path.append(os.path.join(_DIRECTORY, os.path.pardir, 'pylib'))
+sys.path.append(os.path.join(_DIRECTORY, os.path.pardir, os.path.pardir,
+                             os.path.pardir, 'build', 'util', 'lib'))
 
 # This import should go after sys.path is set appropriately.
 from chrome import Chrome
