@@ -1323,17 +1323,6 @@
    fun:_ZN3IPC12ChannelProxy7Context15OnChannelOpenedEv
 }
 {
-   # Originally filed as http://crbug.com/6547, but that was closed
-   # Found by running ui tests over and over
-   bug_18664
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN18ResourceDispatcher12CreateBridgeERKN11webkit_glue20ResourceLoaderBridge11RequestInfoEii
-   fun:_ZN11ChildThread12CreateBridgeERKN11webkit_glue20ResourceLoaderBridge11RequestInfoEii
-   ...
-   fun:_ZN7WebCore14ResourceHandle5startEPNS_5FrameE
-}
-{
    bug_19196
    Memcheck:Leak
    fun:_Znw*
