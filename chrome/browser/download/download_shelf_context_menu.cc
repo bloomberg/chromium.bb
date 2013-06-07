@@ -4,6 +4,7 @@
 
 #include "chrome/browser/download/download_shelf_context_menu.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -15,11 +16,22 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/common/content_switches.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::DownloadItem;
 using extensions::Extension;
+
+namespace {
+
+// Returns true if downloads resumption is enabled.
+bool IsDownloadResumptionEnabled() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  return command_line.HasSwitch(switches::kEnableDownloadResumption);
+}
+
+}  // namespace
 
 DownloadShelfContextMenu::~DownloadShelfContextMenu() {
   DetachFromDownloadItem();
@@ -75,7 +87,7 @@ bool DownloadShelfContextMenu::IsCommandIdEnabled(int command_id) const {
     case CANCEL:
       return !download_item_->IsDone();
     case TOGGLE_PAUSE:
-      return download_item_->GetState() == DownloadItem::IN_PROGRESS;
+      return !download_item_->IsDone();
     case DISCARD:
     case KEEP:
     case LEARN_MORE_SCANNING:
@@ -126,14 +138,11 @@ void DownloadShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
       download_item_->Cancel(true /* Cancelled by user */);
       break;
     case TOGGLE_PAUSE:
-      // It is possible for the download to complete before the user clicks the
-      // menu item, recheck if the download is in progress state before toggling
-      // pause.
-      if (download_item_->GetState() == DownloadItem::IN_PROGRESS) {
-        if (download_item_->IsPaused())
-          download_item_->Resume();
-        else
-          download_item_->Pause();
+      if (download_item_->GetState() == DownloadItem::IN_PROGRESS &&
+          !download_item_->IsPaused()) {
+        download_item_->Pause();
+      } else {
+        download_item_->Resume();
       }
       break;
     case DISCARD:
@@ -191,9 +200,11 @@ string16 DownloadShelfContextMenu::GetLabelForCommandId(int command_id) const {
     case CANCEL:
       return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_CANCEL);
     case TOGGLE_PAUSE:
-      if (download_item_ && download_item_->IsPaused())
-        return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_RESUME_ITEM);
-      return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_PAUSE_ITEM);
+      if (download_item_ &&
+          download_item_->GetState() == DownloadItem::IN_PROGRESS &&
+          !download_item_->IsPaused())
+        return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_PAUSE_ITEM);
+      return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_RESUME_ITEM);
     case DISCARD:
       return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_DISCARD);
     case KEEP:
@@ -264,22 +275,36 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetFinishedMenuModel() {
 }
 
 ui::SimpleMenuModel* DownloadShelfContextMenu::GetInterruptedMenuModel() {
-#if defined(OS_WIN)
-  // The Help Center article is currently Windows specific.
-  // TODO(asanka): Enable this for other platforms when the article is expanded
-  // for other platforms.
+#if !defined(OS_WIN)
+  // If resumption isn't enabled and we aren't on Windows, then none of the
+  // options here are applicable.
+  if (!IsDownloadResumptionEnabled())
+    return GetInProgressMenuModel();
+#endif
+
   if (interrupted_download_menu_model_)
     return interrupted_download_menu_model_.get();
 
   interrupted_download_menu_model_.reset(new ui::SimpleMenuModel(this));
 
+  if (IsDownloadResumptionEnabled()) {
+    interrupted_download_menu_model_->AddItemWithStringId(
+        TOGGLE_PAUSE, IDS_DOWNLOAD_MENU_RESUME_ITEM);
+  }
+#if defined(OS_WIN)
+  // The Help Center article is currently Windows specific.
+  // TODO(asanka): Enable this for other platforms when the article is expanded
+  // for other platforms.
   interrupted_download_menu_model_->AddItemWithStringId(
       LEARN_MORE_INTERRUPTED, IDS_DOWNLOAD_MENU_LEARN_MORE_INTERRUPTED);
+#endif
+  if (IsDownloadResumptionEnabled()) {
+    interrupted_download_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+    interrupted_download_menu_model_->AddItemWithStringId(
+        CANCEL, IDS_DOWNLOAD_MENU_CANCEL);
+  }
 
   return interrupted_download_menu_model_.get();
-#else
-  return GetInProgressMenuModel();
-#endif
 }
 
 ui::SimpleMenuModel* DownloadShelfContextMenu::GetMaliciousMenuModel() {
