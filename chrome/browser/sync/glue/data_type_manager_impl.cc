@@ -76,6 +76,9 @@ DataTypeManagerImpl::~DataTypeManagerImpl() {}
 void DataTypeManagerImpl::Configure(syncer::ModelTypeSet desired_types,
                                     syncer::ConfigureReason reason) {
   desired_types.PutAll(syncer::ControlTypes());
+  // The list of managed users created by this profile is always synced,
+  // but they are not a control type.
+  desired_types.Put(syncer::MANAGED_USERS);
   ConfigureImpl(desired_types, reason);
 }
 

@@ -340,7 +340,9 @@ TEST_F(ManagedUserRegistrationServiceTest, MergeExisting) {
 TEST_F(ManagedUserRegistrationServiceTest, Register) {
   StartInitialSync();
   service()->Register(ASCIIToUTF16("Dug"), GetRegistrationCallback());
+  EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
   Acknowledge();
+
   EXPECT_TRUE(received_callback());
   EXPECT_EQ(GoogleServiceAuthError::NONE, error().state());
   EXPECT_FALSE(token().empty());
@@ -348,8 +350,10 @@ TEST_F(ManagedUserRegistrationServiceTest, Register) {
 
 TEST_F(ManagedUserRegistrationServiceTest, RegisterBeforeInitialSync) {
   service()->Register(ASCIIToUTF16("Nemo"), GetRegistrationCallback());
+  EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
   StartInitialSync();
   Acknowledge();
+
   EXPECT_TRUE(received_callback());
   EXPECT_EQ(GoogleServiceAuthError::NONE, error().state());
   EXPECT_FALSE(token().empty());
@@ -358,7 +362,9 @@ TEST_F(ManagedUserRegistrationServiceTest, RegisterBeforeInitialSync) {
 TEST_F(ManagedUserRegistrationServiceTest, Shutdown) {
   StartInitialSync();
   service()->Register(ASCIIToUTF16("Remy"), GetRegistrationCallback());
+  EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
   ResetService();
+  EXPECT_EQ(0u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
   EXPECT_TRUE(received_callback());
   EXPECT_EQ(GoogleServiceAuthError::REQUEST_CANCELED, error().state());
   EXPECT_EQ(std::string(), token());
@@ -367,7 +373,9 @@ TEST_F(ManagedUserRegistrationServiceTest, Shutdown) {
 TEST_F(ManagedUserRegistrationServiceTest, StopSyncing) {
   StartInitialSync();
   service()->Register(ASCIIToUTF16("Mike"), GetRegistrationCallback());
+  EXPECT_EQ(1u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
   service()->StopSyncing(MANAGED_USERS);
+  EXPECT_EQ(0u, prefs()->GetDictionary(prefs::kManagedUsers)->size());
   EXPECT_TRUE(received_callback());
   EXPECT_EQ(GoogleServiceAuthError::REQUEST_CANCELED, error().state());
   EXPECT_EQ(std::string(), token());

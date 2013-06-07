@@ -344,7 +344,7 @@ ModelTypeSet UserSelectableTypes() {
   // Although the order doesn't technically matter here, it's clearer to keep
   // these in the same order as their definition in the ModelType enum.
   set.Put(BOOKMARKS);
-  set.Put(PREFERENCES);;
+  set.Put(PREFERENCES);
   set.Put(PASSWORDS);
   set.Put(AUTOFILL);
   set.Put(THEMES);

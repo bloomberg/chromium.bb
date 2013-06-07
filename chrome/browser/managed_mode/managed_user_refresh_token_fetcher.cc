@@ -38,7 +38,7 @@ static const char kChromeSyncManagedScope[] =
 
 static const char kIssueTokenBodyFormat[] =
     "client_id=%s"
-    "&scope=&%s"
+    "&scope=%s"
     "&response_type=code"
     "&profile_id=%s"
     "&profile_name=%s"

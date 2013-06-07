@@ -187,6 +187,7 @@ SyncMergeResult ManagedUserRegistrationService::MergeDataAndStartSyncing(
     dict->GetBoolean(kAcknowledged, &acknowledged);
     std::string name;
     dict->GetString(kName, &name);
+    DCHECK(!name.empty());
     change_list.push_back(
         SyncChange(FROM_HERE, SyncChange::ACTION_ADD,
                    CreateLocalSyncData(it.key(), name, acknowledged)));
@@ -202,10 +203,13 @@ SyncMergeResult ManagedUserRegistrationService::MergeDataAndStartSyncing(
 
 void ManagedUserRegistrationService::StopSyncing(ModelType type) {
   DCHECK_EQ(MANAGED_USERS, type);
+
+  // Canceling a pending registration might result in changes in the Sync data,
+  // so we do it before resetting the |sync_processor|.
+  CancelPendingRegistration();
+
   sync_processor_.reset();
   error_handler_.reset();
-
-  CancelPendingRegistration();
 }
 
 SyncDataList ManagedUserRegistrationService::GetAllSyncData(
@@ -287,6 +291,11 @@ void ManagedUserRegistrationService::OnLastSignedInUsernameChange() {
 
 void ManagedUserRegistrationService::OnManagedUserAcknowledged(
     const std::string& managed_user_id) {
+  // |pending_managed_user_id_| might be empty if we get a late acknowledgement
+  // for a previous registration that was canceled.
+  if (pending_managed_user_id_.empty())
+    return;
+
   DCHECK_EQ(pending_managed_user_id_, managed_user_id);
   DCHECK(!pending_managed_user_acknowledged_);
   pending_managed_user_acknowledged_ = true;
@@ -327,13 +336,6 @@ void ManagedUserRegistrationService::DispatchCallbackIfReady() {
 
 void ManagedUserRegistrationService::CancelPendingRegistrationImpl(
     const GoogleServiceAuthError& error) {
-  if (!pending_managed_user_id_.empty()) {
-    // Remove a pending managed user if there is one.
-    DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
-    bool success = update->RemoveWithoutPathExpansion(pending_managed_user_id_,
-                                                      NULL);
-    DCHECK(success);
-  }
   pending_managed_user_token_.clear();
   DispatchCallback(error);
 }
@@ -341,11 +343,32 @@ void ManagedUserRegistrationService::CancelPendingRegistrationImpl(
 void ManagedUserRegistrationService::DispatchCallback(
     const GoogleServiceAuthError& error) {
   registration_timer_.Stop();
-  if (callback_.is_null())
-    return;
+  if (!callback_.is_null()) {
+    callback_.Run(error, pending_managed_user_token_);
+    callback_.Reset();
 
-  callback_.Run(error, pending_managed_user_token_);
-  callback_.Reset();
+    DCHECK(!pending_managed_user_id_.empty());
+
+    if (pending_managed_user_token_.empty()) {
+      // Remove the pending managed user if we weren't successful.
+      DCHECK_NE(GoogleServiceAuthError::NONE, error.state());
+      DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
+      bool success =
+          update->RemoveWithoutPathExpansion(pending_managed_user_id_, NULL);
+      DCHECK(success);
+      if (sync_processor_) {
+        SyncChangeList change_list;
+        change_list.push_back(
+            SyncChange(FROM_HERE, SyncChange::ACTION_DELETE,
+                       SyncData::CreateLocalDelete(pending_managed_user_id_,
+                                                   MANAGED_USERS)));
+        SyncError sync_error =
+            sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
+        DCHECK(!sync_error.IsSet());
+      }
+    }
+  }
+
   pending_managed_user_token_.clear();
   pending_managed_user_id_.clear();
   pending_managed_user_acknowledged_ = false;
