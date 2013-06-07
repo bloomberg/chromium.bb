@@ -11,7 +11,6 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/gestures/border_gesture_handler.h"
 #include "ash/wm/gestures/long_press_affordance_handler.h"
 #include "ash/wm/gestures/system_pinch_handler.h"
 #include "ash/wm/gestures/two_finger_drag_handler.h"
@@ -45,7 +44,6 @@ namespace internal {
 SystemGestureEventFilter::SystemGestureEventFilter()
     : system_gestures_enabled_(CommandLine::ForCurrentProcess()->
           HasSwitch(ash::switches::kAshEnableAdvancedGestures)),
-      border_gestures_(new BorderGestureHandler),
       long_press_affordance_(new LongPressAffordanceHandler),
       two_finger_drag_(new TwoFingerDragHandler) {
 }
@@ -76,11 +74,6 @@ void SystemGestureEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   touch_uma_.RecordGestureEvent(target, *event);
   long_press_affordance_->ProcessEvent(target, event,
       event->GetLowestTouchId());
-
-  if (border_gestures_->ProcessGestureEvent(target, *event)) {
-    event->StopPropagation();
-    return;
-  }
 
   if (two_finger_drag_->ProcessGestureEvent(target, *event)) {
     event->StopPropagation();

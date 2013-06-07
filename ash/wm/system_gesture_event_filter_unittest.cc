@@ -236,41 +236,6 @@ ui::GestureEvent* CreateGesture(ui::EventType type,
       ui::GestureEventDetails(type, delta_x, delta_y), 1 << touch_id);
 }
 
-// Ensure that events targeted at the root window are consumed by the
-// system event handler.
-TEST_F(SystemGestureEventFilterTest, TapOutsideRootWindow) {
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
-
-  test::ShellTestApi shell_test(Shell::GetInstance());
-
-  const int kTouchId = 5;
-
-  // A touch outside the root window will be associated with the root window
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
-                       gfx::Point(-10, -10),
-                       kTouchId,
-                       ui::EventTimeForNow());
-  root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
-
-  scoped_ptr<ui::GestureEvent> event(CreateGesture(
-      ui::ET_GESTURE_TAP, -10, -10, 1, 0, kTouchId));
-  bool consumed = root_window->DispatchGestureEvent(event.get());
-
-  EXPECT_TRUE(consumed);
-
-  // Without the event filter, the touch shouldn't be consumed by the
-  // system event handler.
-  Shell::GetInstance()->RemovePreTargetHandler(
-      shell_test.system_gesture_event_filter());
-
-  scoped_ptr<ui::GestureEvent> event2(CreateGesture(
-      ui::ET_GESTURE_TAP, 0, 0, 1, 0, kTouchId));
-  consumed = root_window->DispatchGestureEvent(event2.get());
-
-  // The event filter doesn't exist, so the touch won't be consumed.
-  EXPECT_FALSE(consumed);
-}
-
 void MoveToDeviceControlBezelStartPosition(
     aura::RootWindow* root_window,
     DelegatePercentTracker* delegate,

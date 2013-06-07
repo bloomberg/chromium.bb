@@ -5,6 +5,8 @@
 #ifndef ASH_SHELF_SHELF_LAYOUT_MANAGER_H_
 #define ASH_SHELF_SHELF_LAYOUT_MANAGER_H_
 
+#include <vector>
+
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher.h"
 #include "ash/shelf/background_animator.h"
@@ -38,6 +40,7 @@ class ShelfWidget;
 namespace internal {
 
 class PanelLayoutManagerTest;
+class ShelfBezelEventFilter;
 class ShelfLayoutManagerTest;
 class StatusAreaWidget;
 class WorkspaceController;
@@ -312,7 +315,10 @@ class ASH_EXPORT ShelfLayoutManager :
 
   // EventFilter used to detect when user moves the mouse over the launcher to
   // trigger showing the launcher.
-  scoped_ptr<AutoHideEventFilter> event_filter_;
+  scoped_ptr<AutoHideEventFilter> auto_hide_event_filter_;
+
+  // EventFilter used to detect when user issues a gesture on a bezel sensor.
+  scoped_ptr<ShelfBezelEventFilter> bezel_event_filter_;
 
   ObserverList<ShelfLayoutManagerObserver> observers_;
 

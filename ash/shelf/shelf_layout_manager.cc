@@ -6,6 +6,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
+#include <string>
+#include <vector>
 
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
@@ -13,6 +16,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/session_state_delegate.h"
+#include "ash/shelf/shelf_bezel_event_filter.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -23,15 +27,19 @@
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace/workspace_animations.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
+#include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_handler.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
@@ -92,7 +100,6 @@ class ShelfLayoutManager::AutoHideEventFilter : public ui::EventHandler {
   ShelfLayoutManager* shelf_;
   bool in_mouse_drag_;
   ShelfGestureHandler gesture_handler_;
-
   DISALLOW_COPY_AND_ASSIGN(AutoHideEventFilter);
 };
 
@@ -172,6 +179,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf)
       shelf_(shelf),
       workspace_controller_(NULL),
       window_overlaps_shelf_(false),
+      bezel_event_filter_(new ShelfBezelEventFilter(this)),
       gesture_drag_status_(GESTURE_DRAG_NONE),
       gesture_drag_amount_(0.f),
       gesture_drag_auto_hide_state_(SHELF_AUTO_HIDE_SHOWN),
@@ -567,10 +575,10 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   if (state.visibility_state == SHELF_AUTO_HIDE) {
     // When state is SHELF_AUTO_HIDE we need to track when the mouse is over the
     // launcher to unhide the shelf. AutoHideEventFilter does that for us.
-    if (!event_filter_)
-      event_filter_.reset(new AutoHideEventFilter(this));
+    if (!auto_hide_event_filter_)
+      auto_hide_event_filter_.reset(new AutoHideEventFilter(this));
   } else {
-    event_filter_.reset(NULL);
+    auto_hide_event_filter_.reset(NULL);
   }
 
   auto_hide_timer_.Stop();
@@ -874,7 +882,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return SHELF_AUTO_HIDE_SHOWN;
 
   // Don't show if the user is dragging the mouse.
-  if (event_filter_.get() && event_filter_->in_mouse_drag())
+  if (auto_hide_event_filter_.get() && auto_hide_event_filter_->in_mouse_drag())
     return SHELF_AUTO_HIDE_HIDDEN;
 
   gfx::Rect shelf_region = shelf_->GetWindowBoundsInScreen();

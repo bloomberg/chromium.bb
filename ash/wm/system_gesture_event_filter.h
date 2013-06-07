@@ -31,7 +31,6 @@ class SystemGestureEventFilterTest;
 }
 
 namespace internal {
-class BorderGestureHandler;
 class LongPressAffordanceHandler;
 class SystemPinchHandler;
 class TouchUMA;
@@ -67,7 +66,6 @@ class SystemGestureEventFilter : public ui::EventHandler,
 
   bool system_gestures_enabled_;
 
-  scoped_ptr<BorderGestureHandler> border_gestures_;
   scoped_ptr<LongPressAffordanceHandler> long_press_affordance_;
   scoped_ptr<TwoFingerDragHandler> two_finger_drag_;
 

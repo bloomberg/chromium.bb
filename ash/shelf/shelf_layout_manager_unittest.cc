@@ -470,7 +470,7 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
       (GetShelfWidget()->GetWindowBoundsInScreen().x() +
        GetShelfWidget()->GetWindowBoundsInScreen().right())/2,
       GetShelfWidget()->GetWindowBoundsInScreen().y() - 50);
-  end.set_y(outside_start.y() - 100);
+  end = outside_start + delta;
   generator.GestureScrollSequence(outside_start,
                                   end,
                                   base::TimeDelta::FromMilliseconds(10),
@@ -481,14 +481,53 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   EXPECT_EQ(shelf_hidden.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
 
+  // Swipe up from below the shelf where a bezel would be, this should show the
+  // shelf.
+  gfx::Point below_start = start;
+  if (GetShelfLayoutManager()->IsHorizontalAlignment())
+    below_start.set_y(GetShelfWidget()->GetWindowBoundsInScreen().bottom() + 1);
+  else if (SHELF_ALIGNMENT_LEFT == GetShelfLayoutManager()->GetAlignment())
+    below_start.set_x(
+        GetShelfWidget()->GetWindowBoundsInScreen().x() - 1);
+  else if (SHELF_ALIGNMENT_RIGHT == GetShelfLayoutManager()->GetAlignment())
+    below_start.set_x(GetShelfWidget()->GetWindowBoundsInScreen().right() + 1);
+  end = below_start - delta;
+  generator.GestureScrollSequence(below_start,
+                                  end,
+                                  base::TimeDelta::FromMilliseconds(10),
+                                  kNumScrollSteps);
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+  EXPECT_EQ(bounds_shelf.ToString(), window->bounds().ToString());
+  EXPECT_EQ(GetShelfWidget()->GetDimmerBoundsForTest(),
+            GetShelfWidget()->GetWindowBoundsInScreen());
+  EXPECT_EQ(shelf_shown.ToString(),
+            GetShelfWidget()->GetWindowBoundsInScreen().ToString());
+
+  // Swipe down again to hide.
+  end = start + delta;
+  generator.GestureScrollSequenceWithCallback(start, end,
+      base::TimeDelta::FromMilliseconds(10), kNumScrollSteps,
+      base::Bind(&ShelfDragCallback::ProcessScroll,
+                 base::Unretained(&handler)));
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+  EXPECT_EQ(GetShelfWidget()->GetDimmerBoundsForTest(), gfx::Rect());
+  EXPECT_EQ(bounds_noshelf.ToString(), window->bounds().ToString());
+  EXPECT_EQ(shelf_hidden.ToString(),
+            GetShelfWidget()->GetWindowBoundsInScreen().ToString());
+
   // Make the window fullscreen.
   widget->SetFullscreen(true);
   gfx::Rect bounds_fullscreen = window->bounds();
   EXPECT_TRUE(widget->IsFullscreen());
   EXPECT_NE(bounds_noshelf.ToString(), bounds_fullscreen.ToString());
   EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
 
   // Swipe-up. This should not change anything.
+  end = start - delta;
   generator.GestureScrollSequenceWithCallback(end, start,
       base::TimeDelta::FromMilliseconds(10), kNumScrollSteps,
       base::Bind(&ShelfDragCallback::ProcessScroll,
