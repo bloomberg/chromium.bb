@@ -55,6 +55,11 @@ PassOwnPtr<WebGLDepthTexture> WebGLDepthTexture::create(WebGLRenderingContext* c
 bool WebGLDepthTexture::supported(WebGLRenderingContext* context)
 {
     Extensions3D* extensions = context->graphicsContext3D()->getExtensions();
+    // Emulating the UNSIGNED_INT_24_8_WEBGL texture internal format in terms
+    // of two separate texture objects is too difficult, so disable depth
+    // textures unless a packed depth/stencil format is available.
+    if (!extensions->supports("GL_OES_packed_depth_stencil"))
+        return false;
     return extensions->supports("GL_CHROMIUM_depth_texture")
         || extensions->supports("GL_OES_depth_texture")
         || extensions->supports("GL_ARB_depth_texture");

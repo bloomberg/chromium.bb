@@ -84,7 +84,13 @@ namespace {
 
     GC3Denum WebGLRenderbufferAttachment::getFormat() const
     {
-        return m_renderbuffer->getInternalFormat();
+        GC3Denum format = m_renderbuffer->getInternalFormat();
+        if (format == GraphicsContext3D::DEPTH_STENCIL
+            && m_renderbuffer->emulatedStencilBuffer()
+            && m_renderbuffer->emulatedStencilBuffer()->getInternalFormat() != GraphicsContext3D::STENCIL_INDEX8) {
+            return 0;
+        }
+        return format;
     }
 
     WebGLSharedObject* WebGLRenderbufferAttachment::getObject() const
@@ -121,7 +127,12 @@ namespace {
     void WebGLRenderbufferAttachment::attach(GraphicsContext3D* context, GC3Denum attachment)
     {
         Platform3DObject object = objectOrZero(m_renderbuffer.get());
-        context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, attachment, GraphicsContext3D::RENDERBUFFER, object);
+        if (attachment == GraphicsContext3D::DEPTH_STENCIL_ATTACHMENT && m_renderbuffer->emulatedStencilBuffer()) {
+            context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::DEPTH_ATTACHMENT, GraphicsContext3D::RENDERBUFFER, object);
+            context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::STENCIL_ATTACHMENT, GraphicsContext3D::RENDERBUFFER, objectOrZero(m_renderbuffer->emulatedStencilBuffer()));
+        } else {
+            context->framebufferRenderbuffer(GraphicsContext3D::FRAMEBUFFER, attachment, GraphicsContext3D::RENDERBUFFER, object);
+        }
     }
 
     void WebGLRenderbufferAttachment::unattach(GraphicsContext3D* context, GC3Denum attachment)

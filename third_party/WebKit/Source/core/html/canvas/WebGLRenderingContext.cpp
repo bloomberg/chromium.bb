@@ -1548,6 +1548,18 @@ PassRefPtr<WebGLRenderbuffer> WebGLRenderingContext::createRenderbuffer()
     return o;
 }
 
+WebGLRenderbuffer* WebGLRenderingContext::ensureEmulatedStencilBuffer(GC3Denum target, WebGLRenderbuffer* renderbuffer)
+{
+    if (isContextLost())
+        return 0;
+    if (!renderbuffer->emulatedStencilBuffer()) {
+        renderbuffer->setEmulatedStencilBuffer(createRenderbuffer());
+        m_context->bindRenderbuffer(target, objectOrZero(renderbuffer->emulatedStencilBuffer()));
+        m_context->bindRenderbuffer(target, objectOrZero(m_renderbufferBinding.get()));
+    }
+    return renderbuffer->emulatedStencilBuffer();
+}
+
 PassRefPtr<WebGLShader> WebGLRenderingContext::createShader(GC3Denum type, ExceptionCode& ec)
 {
     UNUSED_PARAM(ec);
@@ -1907,8 +1919,18 @@ void WebGLRenderingContext::framebufferRenderbuffer(GC3Denum target, GC3Denum at
     Platform3DObject bufferObject = objectOrZero(buffer);
     switch (attachment) {
     case GraphicsContext3D::DEPTH_STENCIL_ATTACHMENT:
-        m_context->framebufferRenderbuffer(target, GraphicsContext3D::DEPTH_ATTACHMENT, renderbuffertarget, bufferObject);
-        m_context->framebufferRenderbuffer(target, GraphicsContext3D::STENCIL_ATTACHMENT, renderbuffertarget, bufferObject);
+        if (isDepthStencilSupported() || !buffer) {
+            m_context->framebufferRenderbuffer(target, GraphicsContext3D::DEPTH_ATTACHMENT, renderbuffertarget, bufferObject);
+            m_context->framebufferRenderbuffer(target, GraphicsContext3D::STENCIL_ATTACHMENT, renderbuffertarget, bufferObject);
+        } else {
+            WebGLRenderbuffer* emulatedStencilBuffer = ensureEmulatedStencilBuffer(renderbuffertarget, buffer);
+            if (!emulatedStencilBuffer) {
+                synthesizeGLError(GraphicsContext3D::OUT_OF_MEMORY, "framebufferRenderbuffer", "out of memory");
+                return;
+            }
+            m_context->framebufferRenderbuffer(target, GraphicsContext3D::DEPTH_ATTACHMENT, renderbuffertarget, bufferObject);
+            m_context->framebufferRenderbuffer(target, GraphicsContext3D::STENCIL_ATTACHMENT, renderbuffertarget, objectOrZero(emulatedStencilBuffer));
+        }
         break;
     default:
         m_context->framebufferRenderbuffer(target, attachment, renderbuffertarget, bufferObject);
@@ -2482,38 +2504,6 @@ WebGLGetInfo WebGLRenderingContext::getRenderbufferParameter(GC3Denum target, GC
         return WebGLGetInfo();
     }
 
-    if (m_renderbufferBinding->getInternalFormat() == GraphicsContext3D::DEPTH_STENCIL
-        && !m_renderbufferBinding->isValid()) {
-        ASSERT(!isDepthStencilSupported());
-        int value = 0;
-        switch (pname) {
-        case GraphicsContext3D::RENDERBUFFER_WIDTH:
-            value = m_renderbufferBinding->getWidth();
-            break;
-        case GraphicsContext3D::RENDERBUFFER_HEIGHT:
-            value = m_renderbufferBinding->getHeight();
-            break;
-        case GraphicsContext3D::RENDERBUFFER_RED_SIZE:
-        case GraphicsContext3D::RENDERBUFFER_GREEN_SIZE:
-        case GraphicsContext3D::RENDERBUFFER_BLUE_SIZE:
-        case GraphicsContext3D::RENDERBUFFER_ALPHA_SIZE:
-            value = 0;
-            break;
-        case GraphicsContext3D::RENDERBUFFER_DEPTH_SIZE:
-            value = 24;
-            break;
-        case GraphicsContext3D::RENDERBUFFER_STENCIL_SIZE:
-            value = 8;
-            break;
-        case GraphicsContext3D::RENDERBUFFER_INTERNAL_FORMAT:
-            return WebGLGetInfo(m_renderbufferBinding->getInternalFormat());
-        default:
-            synthesizeGLError(GraphicsContext3D::INVALID_ENUM, "getRenderbufferParameter", "invalid parameter name");
-            return WebGLGetInfo();
-        }
-        return WebGLGetInfo(value);
-    }
-
     GC3Dint value = 0;
     switch (pname) {
     case GraphicsContext3D::RENDERBUFFER_WIDTH:
@@ -2523,8 +2513,16 @@ WebGLGetInfo WebGLRenderingContext::getRenderbufferParameter(GC3Denum target, GC
     case GraphicsContext3D::RENDERBUFFER_BLUE_SIZE:
     case GraphicsContext3D::RENDERBUFFER_ALPHA_SIZE:
     case GraphicsContext3D::RENDERBUFFER_DEPTH_SIZE:
-    case GraphicsContext3D::RENDERBUFFER_STENCIL_SIZE:
         m_context->getRenderbufferParameteriv(target, pname, &value);
+        return WebGLGetInfo(value);
+    case GraphicsContext3D::RENDERBUFFER_STENCIL_SIZE:
+        if (m_renderbufferBinding->emulatedStencilBuffer()) {
+            m_context->bindRenderbuffer(target, objectOrZero(m_renderbufferBinding->emulatedStencilBuffer()));
+            m_context->getRenderbufferParameteriv(target, pname, &value);
+            m_context->bindRenderbuffer(target, objectOrZero(m_renderbufferBinding.get()));
+        } else {
+            m_context->getRenderbufferParameteriv(target, pname, &value);
+        }
         return WebGLGetInfo(value);
     case GraphicsContext3D::RENDERBUFFER_INTERNAL_FORMAT:
         return WebGLGetInfo(m_renderbufferBinding->getInternalFormat());
@@ -3137,15 +3135,26 @@ void WebGLRenderingContext::renderbufferStorage(GC3Denum target, GC3Denum intern
     case GraphicsContext3D::STENCIL_INDEX8:
         m_context->renderbufferStorage(target, internalformat, width, height);
         m_renderbufferBinding->setInternalFormat(internalformat);
-        m_renderbufferBinding->setIsValid(true);
         m_renderbufferBinding->setSize(width, height);
+        m_renderbufferBinding->deleteEmulatedStencilBuffer(m_context.get());
         break;
     case GraphicsContext3D::DEPTH_STENCIL:
         if (isDepthStencilSupported()) {
             m_context->renderbufferStorage(target, Extensions3D::DEPTH24_STENCIL8, width, height);
+        } else {
+            WebGLRenderbuffer* emulatedStencilBuffer = ensureEmulatedStencilBuffer(target, m_renderbufferBinding.get());
+            if (!emulatedStencilBuffer) {
+                synthesizeGLError(GraphicsContext3D::OUT_OF_MEMORY, "renderbufferStorage", "out of memory");
+                return;
+            }
+            m_context->renderbufferStorage(target, GraphicsContext3D::DEPTH_COMPONENT16, width, height);
+            m_context->bindRenderbuffer(target, objectOrZero(emulatedStencilBuffer));
+            m_context->renderbufferStorage(target, GraphicsContext3D::STENCIL_INDEX8, width, height);
+            m_context->bindRenderbuffer(target, objectOrZero(m_renderbufferBinding.get()));
+            emulatedStencilBuffer->setSize(width, height);
+            emulatedStencilBuffer->setInternalFormat(GraphicsContext3D::STENCIL_INDEX8);
         }
         m_renderbufferBinding->setSize(width, height);
-        m_renderbufferBinding->setIsValid(isDepthStencilSupported());
         m_renderbufferBinding->setInternalFormat(internalformat);
         break;
     default:
