@@ -117,11 +117,20 @@
                              sourceExtensionId, targetExtensionId, sourceUrl,
                              isExternal) {
     var isSendMessage = channelName == kMessageChannel;
-    var requestEvent = (isSendMessage ?
-        (isExternal ?
-            chrome.runtime.onMessageExternal : chrome.runtime.onMessage) :
-        (isExternal ?
-            chrome.extension.onRequestExternal : chrome.extension.onRequest));
+    var requestEvent = null;
+    if (isSendMessage) {
+      if (chrome.runtime) {
+        requestEvent = isExternal ? chrome.runtime.onMessageExternal
+                                  : chrome.runtime.onMessage;
+      }
+    } else {
+      if (chrome.extension) {
+        requestEvent = isExternal ? chrome.extension.onRequestExternal
+                                  : chrome.extension.onRequest;
+      }
+    }
+    if (!requestEvent)
+      return false;
     if (!requestEvent.hasListeners())
       return false;
     var port = createPort(portId, channelName);
@@ -209,8 +218,11 @@
                                isExternal);
     }
 
-    var connectEvent = (isExternal ?
-        chrome.runtime.onConnectExternal : chrome.runtime.onConnect);
+    var connectEvent = null;
+    if (chrome.runtime) {
+      connectEvent = isExternal ? chrome.runtime.onConnectExternal
+                                : chrome.runtime.onConnect;
+    }
     if (!connectEvent)
       return false;
     if (!connectEvent.hasListeners())
@@ -275,7 +287,7 @@
     port.onDisconnect.addListener(function() {
       // For onDisconnects, we only notify the callback if there was an error.
       try {
-        if (chrome.runtime.lastError)
+        if (chrome.runtime && chrome.runtime.lastError)
           responseCallback();
       } finally {
         port = null;

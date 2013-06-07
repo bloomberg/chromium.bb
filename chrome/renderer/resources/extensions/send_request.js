@@ -6,6 +6,7 @@ var forEach = require('utils').forEach;
 var lastError = require('lastError');
 var logging = requireNative('logging');
 var natives = requireNative('sendRequest');
+var processNatives = requireNative('process');
 var validate = require('schemaUtils').validate;
 
 // All outstanding requests from sendRequest().
@@ -87,7 +88,7 @@ function getExtensionStackTrace(call_name) {
 
   // Remove stack frames before and after that weren't associated with the
   // extension.
-  var id = chrome.runtime.id;
+  var id = processNatives.GetExtensionId();
   while (stack.length > 0 && stack[0].indexOf(id) == -1)
     stack.shift();
   while (stack.length > 0 && stack[stack.length - 1].indexOf(id) == -1)
