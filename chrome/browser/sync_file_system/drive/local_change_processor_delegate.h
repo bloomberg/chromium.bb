@@ -31,7 +31,7 @@ class LocalChangeProcessorDelegate {
   typedef RemoteChangeHandler::RemoteChange RemoteChange;
 
   LocalChangeProcessorDelegate(
-      base::WeakPtr<DriveFileSyncService> sync_service,
+      DriveFileSyncService* sync_service,
       const FileChange& change,
       const base::FilePath& local_file_path,
       const SyncFileMetadata& local_file_metadata,
@@ -112,7 +112,7 @@ class LocalChangeProcessorDelegate {
   drive::APIUtilInterface* api_util();
   RemoteChangeHandler* remote_change_handler();
 
-  base::WeakPtr<DriveFileSyncService> sync_service_;
+  DriveFileSyncService* sync_service_;  // Not owned.
 
   fileapi::FileSystemURL url_;
   FileChange local_change_;

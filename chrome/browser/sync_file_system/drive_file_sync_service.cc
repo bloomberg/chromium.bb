@@ -631,8 +631,7 @@ void DriveFileSyncService::DoApplyLocalChange(
 
   DCHECK(!running_local_sync_task_);
   running_local_sync_task_.reset(new drive::LocalChangeProcessorDelegate(
-      AsWeakPtr(), local_file_change, local_file_path,
-      local_file_metadata, url));
+      this, local_file_change, local_file_path, local_file_metadata, url));
   running_local_sync_task_->Run(base::Bind(
       &DriveFileSyncService::DidApplyLocalChange, AsWeakPtr(), callback));
 }
