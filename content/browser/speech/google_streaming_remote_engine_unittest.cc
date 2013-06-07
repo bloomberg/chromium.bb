@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/speech/audio_buffer.h"
 #include "content/browser/speech/google_streaming_remote_engine.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"

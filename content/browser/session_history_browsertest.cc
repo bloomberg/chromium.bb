@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/stringprintf.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -16,8 +16,8 @@
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {

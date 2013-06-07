@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"

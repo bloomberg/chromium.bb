@@ -6,7 +6,7 @@
 
 #include "base/path_service.h"
 #include "base/platform_file.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/common/hyphenator_messages.h"
 #include "content/public/test/mock_render_thread.h"
 #include "ipc/ipc_listener.h"

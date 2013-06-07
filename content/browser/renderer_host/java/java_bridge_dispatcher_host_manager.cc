@@ -9,7 +9,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/renderer_host/java/java_bound_object.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host.h"
 #include "content/common/android/hash_set.h"

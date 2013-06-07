@@ -5,7 +5,7 @@
 #include "content/test/content_browser_test.h"
 
 #include "base/command_line.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/shell.h"

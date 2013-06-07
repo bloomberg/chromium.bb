@@ -9,8 +9,8 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
 //  These are only used for commented out tests.  If someone wants to enable
 //  them, they should be moved to chrome first.
 //  #include "chrome/browser/history/history_service.h"

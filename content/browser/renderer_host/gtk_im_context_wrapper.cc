@@ -12,7 +12,7 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "content/public/browser/native_web_keyboard_event.h"

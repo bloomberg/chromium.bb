@@ -9,8 +9,8 @@
 
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/utf_string_conversions.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/safe_util_win.h"

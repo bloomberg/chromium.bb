@@ -4,7 +4,7 @@
 
 #include "content/shell/shell_plugin_service_filter.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "webkit/plugins/webplugininfo.h"
 
 namespace content {

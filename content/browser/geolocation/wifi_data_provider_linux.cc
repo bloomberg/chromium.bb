@@ -10,7 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"

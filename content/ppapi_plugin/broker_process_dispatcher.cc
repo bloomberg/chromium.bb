@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/child/child_process.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/private/ppp_flash_browser_operations.h"

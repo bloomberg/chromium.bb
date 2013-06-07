@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_extra_data.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 

@@ -4,7 +4,7 @@
 
 #include "content/renderer/renderer_webcookiejar_impl.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/render_view_impl.h"

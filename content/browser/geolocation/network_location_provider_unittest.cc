@@ -8,7 +8,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/browser/geolocation/fake_access_token_store.h"
 #include "content/browser/geolocation/location_arbitrator_impl.h"

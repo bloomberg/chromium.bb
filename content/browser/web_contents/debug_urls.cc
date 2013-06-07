@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/public/browser/browser_thread.h"

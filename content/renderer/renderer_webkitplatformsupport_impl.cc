@@ -11,7 +11,7 @@
 #include "base/platform_file.h"
 #include "base/shared_memory.h"
 #include "base/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/child/database_util.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
 #include "content/child/indexed_db/proxy_webidbfactory_impl.h"

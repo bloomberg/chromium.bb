@@ -5,7 +5,7 @@
 #include "content/shell/shell.h"
 
 #include "base/command_line.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/aura/env.h"
@@ -22,8 +22,8 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/view.h"
 #include "ui/views/test/desktop_test_views_delegate.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"

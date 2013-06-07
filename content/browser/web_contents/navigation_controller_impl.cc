@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"  // Temporary
 #include "base/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"

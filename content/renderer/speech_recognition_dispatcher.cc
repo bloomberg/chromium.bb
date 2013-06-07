@@ -5,7 +5,7 @@
 #include "content/renderer/speech_recognition_dispatcher.h"
 
 #include "base/basictypes.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/common/speech_recognition_messages.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"

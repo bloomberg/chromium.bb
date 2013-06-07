@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/speech/audio_buffer.h"
 #include "content/browser/speech/google_one_shot_remote_engine.h"
 #include "content/public/common/speech_recognition_error.h"

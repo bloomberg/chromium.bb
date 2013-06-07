@@ -13,9 +13,9 @@
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
 #include "cc/base/switches.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
@@ -87,8 +87,8 @@
 #include "webkit/common/webpreferences.h"
 
 #if defined(OS_ANDROID)
-#include "content/public/browser/android/content_view_core.h"
 #include "content/browser/android/date_time_chooser_android.h"
+#include "content/public/browser/android/content_view_core.h"
 #endif
 
 #if defined(OS_MACOSX)

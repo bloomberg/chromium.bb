@@ -6,7 +6,7 @@
 
 #include <assert.h>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/geolocation/device_data_provider.h"
 #include "content/browser/geolocation/wifi_data_provider_common.h"
 

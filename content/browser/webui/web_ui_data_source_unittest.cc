@@ -4,7 +4,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/webui/web_ui_data_source_impl.h"
 #include "content/test/test_content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"

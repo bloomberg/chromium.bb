@@ -13,7 +13,7 @@
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"

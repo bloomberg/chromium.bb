@@ -15,7 +15,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/browser_child_process_host_impl.h"

@@ -4,7 +4,7 @@
 #include "content/renderer/media/mock_web_rtc_peer_connection_handler_client.h"
 
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 

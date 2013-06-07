@@ -5,7 +5,7 @@
 #include "content/renderer/pepper/pepper_file_chooser_host.h"
 
 #include "base/files/file_path.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/render_view_impl.h"
 #include "ppapi/c/pp_errors.h"

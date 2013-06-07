@@ -5,7 +5,7 @@
 #include "content/browser/media/media_browsertest.h"
 
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/shell.h"

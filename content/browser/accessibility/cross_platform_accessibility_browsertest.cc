@@ -5,16 +5,16 @@
 #include <string>
 #include <vector>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
+#include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
-#include "content/shell/shell.h"
 
 #if defined(OS_WIN)
 #include <atlbase.h>

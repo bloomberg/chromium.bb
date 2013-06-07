@@ -4,7 +4,7 @@
 
 #include "content/renderer/android/email_detector.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {

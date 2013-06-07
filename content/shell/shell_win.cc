@@ -9,7 +9,7 @@
 #include <io.h>
 #include <windows.h>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/wrapped_window_proc.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"

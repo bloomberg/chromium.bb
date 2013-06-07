@@ -21,9 +21,9 @@
 #include "base/shared_memory.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"  // Temporary
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/child/child_histogram_message_filter.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"

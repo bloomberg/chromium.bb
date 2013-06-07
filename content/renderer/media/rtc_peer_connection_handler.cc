@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/peer_connection_tracker.h"

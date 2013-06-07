@@ -6,7 +6,7 @@
 // a CppBindingExample class into JavaScript in a custom test shell and tests
 // the binding from the outside by loading JS into the shell.
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/test/render_view_test.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"

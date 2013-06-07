@@ -22,7 +22,7 @@
 #include "base/process.h"
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "content/child/child_process.h"
 #include "content/child/npobject_proxy.h"

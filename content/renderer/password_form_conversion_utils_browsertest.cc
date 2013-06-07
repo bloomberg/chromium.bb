@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/common/password_form.h"
 #include "content/public/renderer/password_form_conversion_utils.h"
 #include "content/public/test/render_view_test.h"

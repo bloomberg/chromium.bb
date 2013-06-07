@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"

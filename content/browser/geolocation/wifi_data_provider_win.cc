@@ -28,7 +28,7 @@
 #include <wlanapi.h>
 
 #include "base/metrics/histogram.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "content/browser/geolocation/wifi_data_provider_common.h"
 #include "content/browser/geolocation/wifi_data_provider_common_win.h"

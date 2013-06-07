@@ -12,7 +12,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "cc/base/thread.h"

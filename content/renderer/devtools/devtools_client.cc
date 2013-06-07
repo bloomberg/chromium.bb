@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"

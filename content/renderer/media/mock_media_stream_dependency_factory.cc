@@ -5,7 +5,7 @@
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
 
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/mock_peer_connection_impl.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/libjingle/source/talk/base/scoped_ref_ptr.h"

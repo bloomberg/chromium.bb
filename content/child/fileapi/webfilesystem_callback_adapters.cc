@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"

@@ -4,7 +4,7 @@
 
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/network/geolocation_handler.h"

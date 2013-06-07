@@ -8,7 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"

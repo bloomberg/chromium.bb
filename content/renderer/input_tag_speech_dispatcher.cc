@@ -4,7 +4,7 @@
 
 #include "content/renderer/input_tag_speech_dispatcher.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/common/speech_recognition_messages.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebSize.h"

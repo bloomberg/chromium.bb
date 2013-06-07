@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/process.h"
 #include "base/process_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/in_process_webkit/indexed_db_callbacks.h"
 #include "content/browser/in_process_webkit/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"

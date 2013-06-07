@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/child/child_thread.h"
 #include "content/common/socket_stream.h"
 #include "content/common/socket_stream_handle_data.h"

@@ -7,7 +7,7 @@
 #include <bitset>
 
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/common/android/address_parser.h"
 #include "content/public/renderer/android_content_detection_prefixes.h"
 #include "net/base/escape.h"

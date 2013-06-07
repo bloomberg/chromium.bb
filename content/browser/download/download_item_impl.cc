@@ -34,7 +34,7 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"

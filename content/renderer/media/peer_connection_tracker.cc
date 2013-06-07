@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 #include "content/renderer/media/peer_connection_tracker.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"

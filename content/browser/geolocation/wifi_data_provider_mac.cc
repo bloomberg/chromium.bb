@@ -12,7 +12,7 @@
 #include <dlfcn.h>
 #include <stdio.h>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/geolocation/osx_wifi.h"
 #include "content/browser/geolocation/wifi_data_provider_common.h"
 

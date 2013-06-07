@@ -5,8 +5,8 @@
 #include "content/browser/geolocation/network_location_provider.h"
 
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
 #include "content/public/browser/access_token_store.h"
 
 namespace content {

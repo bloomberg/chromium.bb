@@ -6,7 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
