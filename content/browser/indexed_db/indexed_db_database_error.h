@@ -18,7 +18,7 @@ class IndexedDBDatabaseError {
       : code_(code), message_(ASCIIToUTF16(message)) {}
   IndexedDBDatabaseError(uint16 code, const string16& message)
       : code_(code), message_(message) {}
-  IndexedDBDatabaseError(const WebKit::WebIDBDatabaseError& other)
+  explicit IndexedDBDatabaseError(const WebKit::WebIDBDatabaseError& other)
       : code_(other.code()), message_(other.message()) {}
   ~IndexedDBDatabaseError() {}
 

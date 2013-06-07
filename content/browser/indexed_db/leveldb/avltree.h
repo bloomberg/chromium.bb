@@ -343,7 +343,7 @@ class AVLTree {
     unsigned depth_;
 
     // Handles of nodes in path from root to current node (returned by *).
-    const static size_t kPathSize = maxDepth - 1;
+    static const size_t kPathSize = maxDepth - 1;
     handle path_h_[kPathSize];
 
     int CmpKN(key k, handle h) { return tree_->abs_.CompareKeyNode(k, h); }

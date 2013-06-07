@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_TRANSACTION_H_
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/memory/ref_counted.h"

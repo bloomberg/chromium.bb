@@ -554,7 +554,6 @@ bool DecodeIDBKeyPath(StringPiece* slice, IndexedDBKeyPath* value) {
 }
 
 bool ExtractEncodedIDBKey(StringPiece* slice) {
-
   unsigned char type = (*slice)[0];
   slice->remove_prefix(1);
 

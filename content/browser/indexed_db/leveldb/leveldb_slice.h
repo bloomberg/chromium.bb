@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_SLICE_H_
 #define CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_SLICE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/logging.h"

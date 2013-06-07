@@ -597,7 +597,6 @@ TEST(IndexedDBLevelDBCodingTest, EncodeDecodeIDBKeyPath) {
 
   ASSERT_EQ(key_paths.size(), encoded_paths.size());
   for (size_t i = 0; i < key_paths.size(); ++i) {
-
     IndexedDBKeyPath key_path = key_paths[i];
     std::vector<char> encoded = encoded_paths[i];
 
@@ -636,7 +635,6 @@ TEST(IndexedDBLevelDBCodingTest, DecodeLegacyIDBKeyPath) {
 
   ASSERT_EQ(key_paths.size(), encoded_paths.size());
   for (size_t i = 0; i < key_paths.size(); ++i) {
-
     IndexedDBKeyPath key_path = key_paths[i];
     std::string encoded = encoded_paths[i];
 

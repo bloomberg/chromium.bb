@@ -4,6 +4,8 @@
 
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/leveldb_slice.h"

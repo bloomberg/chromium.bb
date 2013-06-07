@@ -95,8 +95,8 @@ TEST(ListSetTest, ListSetPrimitive) {
 template <typename T>
 class Wrapped {
  public:
-  Wrapped(const T& value) : value_(value) {}
-  Wrapped(const Wrapped<T>& other) : value_(other.value_) {}
+  explicit Wrapped(const T& value) : value_(value) {}
+  explicit Wrapped(const Wrapped<T>& other) : value_(other.value_) {}
   Wrapped& operator=(const Wrapped<T>& rhs) {
     value_ = rhs.value_;
     return *this;
@@ -188,7 +188,7 @@ TEST(ListSetTest, ListSetPointer) {
 template <typename T>
 class RefCounted : public base::RefCounted<RefCounted<T> > {
  public:
-  RefCounted(const T& value) : value_(value) {}
+  explicit RefCounted(const T& value) : value_(value) {}
   T value() { return value_; }
 
  private:

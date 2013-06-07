@@ -4,6 +4,8 @@
 
 #include "content/browser/indexed_db/indexed_db_database.h"
 
+#include <gtest/gtest.h>
+
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/string16.h"
@@ -17,8 +19,6 @@
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/webidbdatabase_impl.h"
-
-#include <gtest/gtest.h>
 
 using WebKit::WebIDBDatabase;
 using WebKit::WebIDBDatabaseError;
@@ -48,25 +48,25 @@ class MockIDBCallbacks : public IndexedDBCallbacksWrapper {
     return make_scoped_refptr(new MockIDBCallbacks());
   }
   virtual void OnError(const IndexedDBDatabaseError& error) OVERRIDE {}
-  virtual void OnSuccess(const std::vector<string16>&) OVERRIDE {}
+  virtual void OnSuccess(const std::vector<string16>& value) OVERRIDE {}
   virtual void OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
-                         const IndexedDBKey&,
-                         const IndexedDBKey&,
-                         std::vector<char>*) OVERRIDE {}
-  virtual void OnSuccess(scoped_refptr<IndexedDBDatabase>,
-                         const IndexedDBDatabaseMetadata&) OVERRIDE {
+                         const IndexedDBKey& key,
+                         const IndexedDBKey& primary_key,
+                         std::vector<char>* value) OVERRIDE {}
+  virtual void OnSuccess(scoped_refptr<IndexedDBDatabase> db,
+                         const IndexedDBDatabaseMetadata& metadata) OVERRIDE {
     was_success_db_called_ = true;
   }
-  virtual void OnSuccess(const IndexedDBKey&) OVERRIDE {}
-  virtual void OnSuccess(std::vector<char>*) OVERRIDE {}
-  virtual void OnSuccess(std::vector<char>*,
-                         const IndexedDBKey&,
-                         const IndexedDBKeyPath&) OVERRIDE {}
-  virtual void OnSuccess(int64) OVERRIDE {}
+  virtual void OnSuccess(const IndexedDBKey& key) OVERRIDE {}
+  virtual void OnSuccess(std::vector<char>* value) OVERRIDE {}
+  virtual void OnSuccess(std::vector<char>* value,
+                         const IndexedDBKey& key,
+                         const IndexedDBKeyPath& key_path) OVERRIDE {}
+  virtual void OnSuccess(int64 value) OVERRIDE {}
   virtual void OnSuccess() OVERRIDE {}
-  virtual void OnSuccess(const IndexedDBKey&,
-                         const IndexedDBKey&,
-                         std::vector<char>*) OVERRIDE {}
+  virtual void OnSuccess(const IndexedDBKey& key,
+                         const IndexedDBKey& primary_key,
+                         std::vector<char>* value) OVERRIDE {}
   virtual void OnSuccessWithPrefetch(
       const std::vector<IndexedDBKey>& keys,
       const std::vector<IndexedDBKey>& primary_keys,

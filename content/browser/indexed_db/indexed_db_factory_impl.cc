@@ -61,7 +61,7 @@ void IndexedDBFactoryImpl::GetDatabaseNames(
     callbacks->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
         "Internal error opening backing store for "
-        "indexed_db.webkit_get_database_names."));
+        "indexedDB.webkitGetDatabaseNames."));
     return;
   }
 
