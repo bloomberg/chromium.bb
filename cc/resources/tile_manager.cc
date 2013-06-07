@@ -361,7 +361,7 @@ void TileManager::GetMemoryStats(
     const Tile* tile = *it;
     const ManagedTileState& mts = tile->managed_state();
 
-    TileRasterMode mode;
+    TileRasterMode mode = HIGH_QUALITY_RASTER_MODE;
     if (tile->IsReadyToDraw(&mode) &&
         !mts.tile_versions[mode].requires_resource())
       continue;
@@ -622,7 +622,7 @@ void TileManager::FreeResourcesForTile(Tile* tile) {
 }
 
 void TileManager::FreeUnusedResourcesForTile(Tile* tile) {
-  TileRasterMode used_mode;
+  TileRasterMode used_mode = HIGH_QUALITY_RASTER_MODE;
   bool version_is_used = tile->IsReadyToDraw(&used_mode);
   for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
     if (!version_is_used || mode != used_mode)
