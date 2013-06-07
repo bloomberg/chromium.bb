@@ -184,7 +184,7 @@ void InitDiagnosticLoggingDelegateFunction(
 
 #define LOG_V(sev) VLOG(sev)
 #undef LOG
-#define LOG(sev) LOG_V(talk_base::sev)
+#define LOG(sev) DIAGNOSTIC_LOG(talk_base::sev)
 
 // The _F version prefixes the message with the current function name.
 #if defined(__GNUC__) && defined(_DEBUG)
