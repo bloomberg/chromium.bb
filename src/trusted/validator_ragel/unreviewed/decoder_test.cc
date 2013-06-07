@@ -9,6 +9,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sstream>
 
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/include/elf64.h"
@@ -79,6 +80,7 @@ void ReadImage(const char *filename, uint8_t **result, size_t *result_size) {
 }
 
 struct DecodeState {
+  std::ostream *out_stream;
   uint8_t width;
   const uint8_t *fwait; /* Set to true if fwait is detetected. */
   const uint8_t *offset;
@@ -159,6 +161,19 @@ Bool IsNameInList(const char *name, ...) {
     }
   }
 }
+
+int stream_printf(std::ostream& out_stream, const char *format, ...) {
+  va_list ap;
+  va_start(ap, format);
+
+  char buf[1024];
+  int result = vsprintf(buf, format, ap);
+  out_stream << buf;
+  return result;
+}
+
+#define printf(...) \
+      stream_printf(*((struct DecodeState *)userdata)->out_stream, __VA_ARGS__)
 
 void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
                         struct Instruction *instruction, void *userdata) {
@@ -716,6 +731,8 @@ void ProcessError (const uint8_t *ptr, void *userdata) {
          *ptr);
 }
 
+#undef printf
+
 int DecodeFile(const char *filename, int repeat_count) {
   size_t data_size;
   uint8_t *data;
@@ -740,6 +757,9 @@ int DecodeFile(const char *filename, int repeat_count) {
           struct DecodeState state;
           int res;
 
+          std::ostringstream result_stream;
+
+          state.out_stream = &result_stream;
           state.ia32_mode = TRUE;
           state.fwait = NULL;
           state.offset = data + section->sh_offset - section->sh_addr;
@@ -754,6 +774,7 @@ int DecodeFile(const char *filename, int repeat_count) {
                       data + section->sh_offset, section->sh_size);
           res = DecodeChunkIA32(data + section->sh_offset, section->sh_size,
                                       ProcessInstruction, ProcessError, &state);
+          printf("%s", result_stream.str().c_str());
           if (!res) {
             return FALSE;
           } else if (state.fwait) {
@@ -784,6 +805,9 @@ int DecodeFile(const char *filename, int repeat_count) {
           struct DecodeState state;
           int res;
 
+          std::ostringstream result_stream;
+
+          state.out_stream = &result_stream;
           state.ia32_mode = FALSE;
           state.fwait = NULL;
           state.offset = data + section->sh_offset - section->sh_addr;
@@ -801,6 +825,7 @@ int DecodeFile(const char *filename, int repeat_count) {
           res = DecodeChunkAMD64(data + section->sh_offset,
                                  (size_t)section->sh_size,
                                  ProcessInstruction, ProcessError, &state);
+          printf("%s", result_stream.str().c_str());
           if (!res) {
             return FALSE;
           } else if (state.fwait) {
