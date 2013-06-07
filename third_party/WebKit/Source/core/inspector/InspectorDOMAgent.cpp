@@ -155,7 +155,6 @@ static Node* hoveredNodeForPoint(Frame* frame, const IntPoint& point, bool ignor
     HitTestRequest request(hitType);
     HitTestResult result(frame->view()->windowToContents(point));
     frame->contentRenderer()->hitTest(request, result);
-    result.setToShadowHostIfInUserAgentShadowRoot();
     Node* node = result.innerNode();
     while (node && node->nodeType() == Node::TEXT_NODE)
         node = node->parentNode();
@@ -1374,14 +1373,7 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
         .setLocalName(localName)
         .setNodeValue(nodeValue);
 
-    if (node->isContainerNode()) {
-        int nodeCount = innerChildNodeCount(node);
-        value->setChildNodeCount(nodeCount);
-        RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > children = buildArrayForContainerChildren(node, depth, nodesMap);
-        if (children->length() > 0)
-            value->setChildren(children.release());
-    }
-
+    bool forcePushChildren = false;
     if (node->isElementNode()) {
         Element* element = toElement(node);
         value->setAttributes(buildArrayForElementAttributes(element));
@@ -1401,10 +1393,13 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
             for (ShadowRoot* root = shadow->youngestShadowRoot(); root; root = root->olderShadowRoot())
                 shadowRoots->addItem(buildObjectForNode(root, 0, nodesMap));
             value->setShadowRoots(shadowRoots);
+            forcePushChildren = true;
         }
 
-        if (element->hasTagName(templateTag))
+        if (element->hasTagName(templateTag)) {
             value->setTemplateContent(buildObjectForNode(static_cast<HTMLTemplateElement*>(element)->content(), 0, nodesMap));
+            forcePushChildren = true;
+        }
     } else if (node->isDocumentNode()) {
         Document* document = toDocument(node);
         value->setDocumentURL(documentURLString(document));
@@ -1420,6 +1415,17 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
         value->setName(attribute->name());
         value->setValue(attribute->value());
     }
+
+    if (node->isContainerNode()) {
+        int nodeCount = innerChildNodeCount(node);
+        value->setChildNodeCount(nodeCount);
+        if (forcePushChildren && !depth)
+            depth = 1;
+        RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > children = buildArrayForContainerChildren(node, depth, nodesMap);
+        if (children->length() > 0 || depth) // Push children along with shadow in any case.
+            value->setChildren(children.release());
+    }
+
     return value.release();
 }
 

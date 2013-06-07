@@ -34,18 +34,14 @@ function test()
 
         function testAppend(next)
         {
+            InspectorTest.evaluateInPage("typeText()", callback);
+
             function callback()
-            {
-                InspectorTest.evaluateInPage("typeText()", callback2);
-                
-            }
-            function callback2()
             {
                 InspectorTest.addResult("======== Type text =========");
                 InspectorTest.dumpElementsTree(containerNode);
                 next();
             }
-            InspectorTest.expandElementsTree(callback);
         }
     ]);
 }

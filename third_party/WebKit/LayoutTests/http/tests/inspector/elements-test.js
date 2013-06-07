@@ -4,36 +4,40 @@ InspectorTest.findNode = function(matchFunction, callback)
 {
     callback = InspectorTest.safeWrap(callback);
     var result = null;
-    var topLevelChildrenRequested = false;
     var pendingRequests = 0;
-    function processChildren(topLevel, children)
+    function processChildren(node)
     {
-        pendingRequests--;
-        if (result)
-            return;
-
-        for (var i = 0; children && i < children.length; ++i) {
-            var childNode = children[i];
-            if (matchFunction(childNode)) {
-                result = childNode;
-                callback(result);
+        try {
+            if (result)
                 return;
+
+            var children = (node.children() || []).concat(node.shadowRoots());
+            if (node.templateContent())
+                children.push(node.templateContent());
+
+            for (var i = 0; i < children.length; ++i) {
+                var childNode = children[i];
+                if (matchFunction(childNode)) {
+                    result = childNode;
+                    callback(result);
+                    return;
+                }
+                pendingRequests++;
+                childNode.getChildNodes(processChildren.bind(null, childNode));
             }
-            pendingRequests++;
-            childNode.getChildNodes(processChildren.bind(null, false));
+        } finally {
+            pendingRequests--;
         }
 
-        if (topLevel)
-            topLevelChildrenRequested = true;
-        if (topLevelChildrenRequested && !result && !pendingRequests)
+        if (!result && !pendingRequests)
             callback(null);
     }
-    pendingRequests++;
 
     WebInspector.domAgent.requestDocument(documentRequested.bind(this));
     function documentRequested(doc)
     {
-        doc.getChildNodes(processChildren.bind(this, true));
+        pendingRequests++;
+        doc.getChildNodes(processChildren.bind(null, doc));
     }
 };
 
