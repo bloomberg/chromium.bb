@@ -103,6 +103,7 @@ class ShellIntegration {
     base::FilePath extension_path;
     gfx::ImageFamily favicon;
     base::FilePath profile_path;
+    std::string profile_name;
   };
 
   // Info about which locations to create app shortcuts in.

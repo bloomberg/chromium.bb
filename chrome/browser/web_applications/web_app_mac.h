@@ -65,6 +65,10 @@ class WebAppShortcutCreator {
  private:
   FRIEND_TEST_ALL_PREFIXES(WebAppShortcutCreatorTest, UpdateIcon);
 
+  // Updates the InfoPlist.string inside |app_path| with the display name for
+  // the app.
+  bool UpdateDisplayName(const base::FilePath& app_path) const;
+
   // Path to the app's user data directory. For example:
   // ~/Library/Application Support/Chromium/Default/Web Applications/_crx_abc/
   // Note, the user data directory is the parent of the profile directory.

@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/prefs/pref_service.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/image_loader.h"
@@ -20,6 +21,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
@@ -423,6 +425,8 @@ void UpdateShortcutInfoForApp(const extensions::Extension& app,
   shortcut_info->description = UTF8ToUTF16(app.description());
   shortcut_info->extension_path = app.path();
   shortcut_info->profile_path = profile->GetPath();
+  shortcut_info->profile_name =
+      profile->GetPrefs()->GetString(prefs::kProfileName);
 }
 
 void UpdateShortcutInfoAndIconForApp(

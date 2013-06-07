@@ -18,6 +18,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -132,6 +133,31 @@ base::FilePath GetWritableApplicationsDirectory() {
   return base::FilePath();
 }
 
+// Given the path to an app bundle, return the resources directory.
+base::FilePath GetResourcesPath(const base::FilePath& app_path) {
+  return app_path.Append("Contents").Append("Resources");
+}
+
+bool HasExistingExtensionShim(const base::FilePath& destination_directory,
+                              const std::string& extension_id,
+                              const base::FilePath& own_basename) {
+  // Check if there any any other shims for the same extension.
+  file_util::FileEnumerator enumerator(destination_directory,
+                                       false /* recursive */,
+                                       file_util::FileEnumerator::DIRECTORIES);
+  for (base::FilePath shim_path = enumerator.Next();
+       !shim_path.empty(); shim_path = enumerator.Next()) {
+    if (shim_path.BaseName() != own_basename &&
+        EndsWith(shim_path.RemoveExtension().value(),
+                 extension_id,
+                 true /* case_sensitive */)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 }  // namespace
 
 namespace web_app {
@@ -155,15 +181,16 @@ base::FilePath WebAppShortcutCreator::GetShortcutPath() const {
   if (dst_path.empty())
     return dst_path;
 
-  base::FilePath app_name = internals::GetSanitizedFileName(info_.title);
+  base::FilePath app_name = internals::GetSanitizedFileName(UTF8ToUTF16(
+      info_.profile_path.BaseName().value() + " " + info_.extension_id));
   return dst_path.Append(app_name.ReplaceExtension("app"));
 }
 
 bool WebAppShortcutCreator::CreateShortcut() {
-  base::FilePath app_name = internals::GetSanitizedFileName(info_.title);
-  base::FilePath app_file_name = app_name.ReplaceExtension("app");
-  base::FilePath dst_path = GetDestinationPath();
-  if (dst_path.empty() || !file_util::DirectoryExists(dst_path.DirName())) {
+  base::FilePath app_path = GetShortcutPath();
+  base::FilePath app_name = app_path.BaseName();
+  base::FilePath dst_path = app_path.DirName();
+  if (app_path.empty() || !file_util::DirectoryExists(dst_path.DirName())) {
     LOG(ERROR) << "Couldn't find an Applications directory to copy app to.";
     return false;
   }
@@ -172,19 +199,10 @@ bool WebAppShortcutCreator::CreateShortcut() {
     return false;
   }
 
-  base::FilePath app_path = dst_path.Append(app_file_name);
-  app_path = file_util::MakeUniqueDirectory(app_path);
-  if (app_path.empty()) {
-    LOG(ERROR) << "Couldn't create a unique directory for app path: "
-               << app_path.value();
-    return false;
-  }
-  app_file_name = app_path.BaseName();
-
   base::ScopedTempDir scoped_temp_dir;
   if (!scoped_temp_dir.CreateUniqueTempDir())
     return false;
-  base::FilePath staging_path = scoped_temp_dir.path().Append(app_file_name);
+  base::FilePath staging_path = scoped_temp_dir.path().Append(app_name);
 
   // Update the app's plist and icon in a temp directory. This works around
   // a Finder bug where the app's icon doesn't properly update.
@@ -195,6 +213,9 @@ bool WebAppShortcutCreator::CreateShortcut() {
   }
 
   if (!UpdatePlist(staging_path))
+    return false;
+
+  if (!UpdateDisplayName(staging_path))
     return false;
 
   if (!UpdateIcon(staging_path))
@@ -224,9 +245,6 @@ base::FilePath WebAppShortcutCreator::GetDestinationPath() const {
 }
 
 bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
-  NSString* plist_path = base::mac::FilePathToNSString(
-      app_path.Append("Contents").Append("Info.plist"));
-
   NSString* extension_id = base::SysUTF8ToNSString(info_.extension_id);
   NSString* extension_title = base::SysUTF16ToNSString(info_.title);
   NSString* extension_url = base::SysUTF8ToNSString(info_.url.spec());
@@ -239,6 +257,8 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
           chrome_bundle_id, app_mode::kShortcutBrowserBundleIDPlaceholder,
           nil];
 
+  NSString* plist_path = base::mac::FilePathToNSString(
+      app_path.Append("Contents").Append("Info.plist"));
   NSMutableDictionary* plist =
       [NSMutableDictionary dictionaryWithContentsOfFile:plist_path];
   NSArray* keys = [plist allKeys];
@@ -265,7 +285,45 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
             forKey:app_mode::kCrAppModeUserDataDirKey];
   [plist setObject:base::mac::FilePathToNSString(info_.profile_path.BaseName())
             forKey:app_mode::kCrAppModeProfileDirKey];
+  [plist setObject:base::SysUTF8ToNSString(info_.profile_name)
+            forKey:app_mode::kCrAppModeProfileNameKey];
+  [plist setObject:[NSNumber numberWithBool:YES]
+            forKey:app_mode::kLSHasLocalizedDisplayNameKey];
+
+  base::FilePath app_name = app_path.BaseName().RemoveExtension();
+  [plist setObject:base::mac::FilePathToNSString(app_name)
+            forKey:base::mac::CFToNSCast(kCFBundleNameKey)];
+
   return [plist writeToFile:plist_path atomically:YES];
+}
+
+bool WebAppShortcutCreator::UpdateDisplayName(
+    const base::FilePath& app_path) const {
+  // OSX searches for the best language in the order of preferred languages.
+  // Since we only have one localization directory, it will choose this one.
+  base::FilePath localized_dir = GetResourcesPath(app_path).Append("en.lproj");
+  if (!file_util::CreateDirectory(localized_dir))
+    return false;
+
+  NSString* bundle_name = base::SysUTF16ToNSString(info_.title);
+  NSString* display_name = base::SysUTF16ToNSString(info_.title);
+  if (HasExistingExtensionShim(GetDestinationPath(),
+                               info_.extension_id,
+                               app_path.BaseName())) {
+    display_name = [bundle_name
+        stringByAppendingString:base::SysUTF8ToNSString(
+            " (" + info_.profile_name + ")")];
+  }
+
+  NSDictionary* strings_plist = @{
+    base::mac::CFToNSCast(kCFBundleNameKey) : bundle_name,
+    app_mode::kCFBundleDisplayNameKey : display_name
+  };
+
+  NSString* localized_path = base::mac::FilePathToNSString(
+      localized_dir.Append("InfoPlist.strings"));
+  return [strings_plist writeToFile:localized_path
+                         atomically:YES];
 }
 
 bool WebAppShortcutCreator::UpdateIcon(const base::FilePath& app_path) const {
@@ -290,8 +348,7 @@ bool WebAppShortcutCreator::UpdateIcon(const base::FilePath& app_path) const {
   if (!image_added)
     return false;
 
-  base::FilePath resources_path =
-      app_path.Append("Contents").Append("Resources");
+  base::FilePath resources_path = GetResourcesPath(app_path);
   if (!file_util::CreateDirectory(resources_path))
     return false;
 

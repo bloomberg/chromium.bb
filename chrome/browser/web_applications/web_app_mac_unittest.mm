@@ -50,6 +50,7 @@ ShellIntegration::ShortcutInfo GetShortcutInfo() {
   info.title = ASCIIToUTF16("Shortcut Title");
   info.url = GURL("http://example.com/");
   info.profile_path = base::FilePath("Default");
+  info.profile_name = "profile name";
   return info;
 }
 
@@ -64,7 +65,8 @@ TEST(WebAppShortcutCreatorTest, CreateShortcut) {
   ShellIntegration::ShortcutInfo info = GetShortcutInfo();
 
   base::FilePath dst_folder = scoped_temp_dir.path();
-  base::FilePath dst_path = dst_folder.Append(UTF16ToUTF8(info.title) + ".app");
+  base::FilePath dst_path = dst_folder.Append(
+      info.profile_path.value() + " " + info.extension_id + ".app");
 
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(info);
   EXPECT_CALL(shortcut_creator, GetDestinationPath())
@@ -103,7 +105,8 @@ TEST(WebAppShortcutCreatorTest, RunShortcut) {
   ShellIntegration::ShortcutInfo info = GetShortcutInfo();
 
   base::FilePath dst_folder = scoped_temp_dir.path();
-  base::FilePath dst_path = dst_folder.Append(UTF16ToUTF8(info.title) + ".app");
+  base::FilePath dst_path = dst_folder.Append(
+      info.profile_path.value() + " " + info.extension_id + ".app");
 
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(info);
   EXPECT_CALL(shortcut_creator, GetDestinationPath())
@@ -130,29 +133,6 @@ TEST(WebAppShortcutCreatorTest, CreateFailure) {
   EXPECT_CALL(shortcut_creator, GetDestinationPath())
       .WillRepeatedly(Return(non_existent_path));
   EXPECT_FALSE(shortcut_creator.CreateShortcut());
-}
-
-TEST(WebAppShortcutCreatorTest, CreateUnique) {
-  base::ScopedTempDir scoped_temp_dir;
-  EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
-
-  ShellIntegration::ShortcutInfo info = GetShortcutInfo();
-
-  base::FilePath dst_folder = scoped_temp_dir.path();
-  base::FilePath dst_path = dst_folder.Append(UTF16ToUTF8(info.title) + ".app");
-
-  file_util::CreateDirectory(dst_path);
-  base::FilePath expected_app_path =
-      dst_path.InsertBeforeExtensionASCII(" (1)");
-
-  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(info);
-  EXPECT_CALL(shortcut_creator, GetDestinationPath())
-      .WillRepeatedly(Return(dst_folder));
-  EXPECT_CALL(shortcut_creator,
-      RevealGeneratedBundleInFinder(expected_app_path));
-
-  EXPECT_TRUE(shortcut_creator.CreateShortcut());
-  EXPECT_TRUE(file_util::PathExists(expected_app_path));
 }
 
 TEST(WebAppShortcutCreatorTest, UpdateIcon) {
