@@ -42,8 +42,6 @@ const char* AutocompleteProvider::TypeToString(Type type) {
       return "Contact";
     case TYPE_EXTENSION_APP:
       return "ExtensionApp";
-    case TYPE_HISTORY_CONTENTS:
-      return "HistoryContents";
     case TYPE_HISTORY_QUICK:
       return "HistoryQuick";
     case TYPE_HISTORY_URL:
@@ -81,8 +79,6 @@ metrics::OmniboxEventProto_ProviderType AutocompleteProvider::
       return metrics::OmniboxEventProto::CONTACT;
     case TYPE_EXTENSION_APP:
       return metrics::OmniboxEventProto::EXTENSION_APPS;
-    case TYPE_HISTORY_CONTENTS:
-      return metrics::OmniboxEventProto::HISTORY_CONTENTS;
     case TYPE_HISTORY_QUICK:
       return metrics::OmniboxEventProto::HISTORY_QUICK;
     case TYPE_HISTORY_URL:

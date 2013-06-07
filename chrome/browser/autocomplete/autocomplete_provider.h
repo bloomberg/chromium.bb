@@ -48,15 +48,11 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Extension App (inexact match)                                       | 1175*~
 // Keyword (substituting, exact match)                                 | 1100
 // Search Primary Provider (past query in history older than 2 days)   | 1050--
-// HistoryContents (any match in title of starred page)                | 1000++
 // HistoryURL (some inexact matches)                                   |  900++
 // BookmarkProvider (prefix match in bookmark title)                   |  900+-
 // Search Primary Provider (navigational suggestion)                   |  800++
-// HistoryContents (any match in title of nonstarred page)             |  700++
 // Search Primary Provider (suggestion)                                |  600++
 // Built-in                                                            |  575++
-// HistoryContents (any match in body of starred page)                 |  550++
-// HistoryContents (any match in body of nonstarred page)              |  500++
 // Keyword (inexact match)                                             |  450
 // Search Secondary Provider (what you typed)                          |  250
 // Search Secondary Provider (past query in history)                   |  200--
@@ -94,14 +90,10 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Search Primary Provider (what you typed)                            | 1300
 // Extension App (inexact match)                                       | 1175*~
 // Search Primary Provider (past query in history older than 2 days)   | 1050--
-// HistoryContents (any match in title of starred page)                | 1000++
 // HistoryURL (inexact match)                                          |  900++
 // BookmarkProvider (prefix match in bookmark title)                   |  900+-
 // Search Primary Provider (navigational suggestion)                   |  800++
-// HistoryContents (any match in title of nonstarred page)             |  700++
 // Search Primary Provider (suggestion)                                |  600++
-// HistoryContents (any match in body of starred page)                 |  550++
-// HistoryContents (any match in body of nonstarred page)              |  500++
 // Keyword (inexact match)                                             |  450
 // Search Secondary Provider (what you typed)                          |  250
 // Search Secondary Provider (past query in history)                   |  200--
@@ -115,12 +107,8 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Search Primary Provider (what you typed)                            | 1300
 // Extension App (inexact match on title only, not url)                | 1175*~
 // Search Primary Provider (past query in history older than 2 days)   | 1050--
-// HistoryContents (any match in title of starred page)                | 1000++
 // Search Primary Provider (navigational suggestion)                   |  800++
-// HistoryContents (any match in title of nonstarred page)             |  700++
 // Search Primary Provider (suggestion)                                |  600++
-// HistoryContents (any match in body of starred page)                 |  550++
-// HistoryContents (any match in body of nonstarred page)              |  500++
 //
 // (A search keyword is a keyword with a replacement string; a bookmark keyword
 // is a keyword with no replacement string, that is, a shortcut for a URL.)
@@ -157,13 +145,12 @@ class AutocompleteProvider
     TYPE_BUILTIN          = 1 << 1,
     TYPE_CONTACT          = 1 << 2,
     TYPE_EXTENSION_APP    = 1 << 3,
-    TYPE_HISTORY_CONTENTS = 1 << 4,
-    TYPE_HISTORY_QUICK    = 1 << 5,
-    TYPE_HISTORY_URL      = 1 << 6,
-    TYPE_KEYWORD          = 1 << 7,
-    TYPE_SEARCH           = 1 << 8,
-    TYPE_SHORTCUTS        = 1 << 9,
-    TYPE_ZERO_SUGGEST     = 1 << 10,
+    TYPE_HISTORY_QUICK    = 1 << 4,
+    TYPE_HISTORY_URL      = 1 << 5,
+    TYPE_KEYWORD          = 1 << 6,
+    TYPE_SEARCH           = 1 << 7,
+    TYPE_SHORTCUTS        = 1 << 8,
+    TYPE_ZERO_SUGGEST     = 1 << 9,
   };
 
   AutocompleteProvider(AutocompleteProviderListener* listener,

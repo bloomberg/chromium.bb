@@ -73,7 +73,6 @@ TEST_F(OmniboxControllerTest, CheckDefaultAutocompleteProviders) {
   // not expected to run in instant extended.
   int providers_with_instant_extended =
       observed_providers &
-      ~AutocompleteProvider::TYPE_HISTORY_CONTENTS &
       ~AutocompleteProvider::TYPE_SHORTCUTS;
   // TODO(beaudoin): remove TYPE_SEARCH once it's no longer needed to pass
   // the Instant suggestion through via FinalizeInstantQuery.

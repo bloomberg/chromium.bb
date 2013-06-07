@@ -18,7 +18,6 @@
 #include "chrome/browser/autocomplete/bookmark_provider.h"
 #include "chrome/browser/autocomplete/builtin_provider.h"
 #include "chrome/browser/autocomplete/extension_app_provider.h"
-#include "chrome/browser/autocomplete/history_contents_provider.h"
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
@@ -159,8 +158,6 @@ AutocompleteController::AutocompleteController(
 #endif
   if (provider_types & AutocompleteProvider::TYPE_EXTENSION_APP)
     providers_.push_back(new ExtensionAppProvider(this, profile));
-  if (provider_types & AutocompleteProvider::TYPE_HISTORY_CONTENTS)
-    providers_.push_back(new HistoryContentsProvider(this, profile, use_hqp));
   if (use_hqp)
     providers_.push_back(new HistoryQuickProvider(this, profile));
   if (provider_types & AutocompleteProvider::TYPE_HISTORY_URL) {

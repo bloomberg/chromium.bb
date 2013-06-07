@@ -492,7 +492,6 @@
         'browser/autocomplete/builtin_provider_unittest.cc',
         'browser/autocomplete/contact_provider_chromeos_unittest.cc',
         'browser/autocomplete/extension_app_provider_unittest.cc',
-        'browser/autocomplete/history_contents_provider_unittest.cc',
         'browser/autocomplete/history_quick_provider_unittest.cc',
         'browser/autocomplete/history_url_provider_unittest.cc',
         'browser/autocomplete/keyword_provider_unittest.cc',

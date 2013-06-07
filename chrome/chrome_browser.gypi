@@ -144,8 +144,6 @@
         'browser/autocomplete/contact_provider_chromeos.h',
         'browser/autocomplete/extension_app_provider.cc',
         'browser/autocomplete/extension_app_provider.h',
-        'browser/autocomplete/history_contents_provider.cc',
-        'browser/autocomplete/history_contents_provider.h',
         'browser/autocomplete/history_provider.cc',
         'browser/autocomplete/history_provider.h',
         'browser/autocomplete/history_provider_util.cc',
