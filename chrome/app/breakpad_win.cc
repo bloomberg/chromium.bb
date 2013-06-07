@@ -883,10 +883,17 @@ extern "C" int __declspec(dllexport) CrashForException(
     EXCEPTION_POINTERS* info) {
   if (g_breakpad) {
     g_breakpad->WriteMinidumpForException(info);
-    NtTerminateProcessPtr real_terminate_proc =
-        reinterpret_cast<NtTerminateProcessPtr>(
-            static_cast<char*>(g_real_terminate_process_stub));
-    real_terminate_proc(::GetCurrentProcess(), content::RESULT_CODE_KILLED);
+    // Patched stub exists based on conditions (See InitCrashReporter).
+    // As a side note this function also gets called from
+    // WindowProcExceptionFilter.
+    if (g_real_terminate_process_stub == NULL) {
+      ::TerminateProcess(::GetCurrentProcess(), content::RESULT_CODE_KILLED);
+    } else {
+      NtTerminateProcessPtr real_terminate_proc =
+          reinterpret_cast<NtTerminateProcessPtr>(
+              static_cast<char*>(g_real_terminate_process_stub));
+      real_terminate_proc(::GetCurrentProcess(), content::RESULT_CODE_KILLED);
+    }
   }
   return EXCEPTION_CONTINUE_SEARCH;
 }
