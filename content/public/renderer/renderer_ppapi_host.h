@@ -23,6 +23,7 @@ class Point;
 
 namespace IPC {
 struct ChannelHandle;
+class Message;
 }
 
 namespace ppapi {
@@ -130,6 +131,18 @@ class RendererPpapiHost {
 
   // Returns true if the plugin is running in process.
   virtual bool IsRunningInProcess() const = 0;
+
+  // There are times when the renderer needs to create a ResourceHost in the
+  // browser. This function does so asynchronously. |nested_msg| is the
+  // resource host creation message and |instance| is the PP_Instance which
+  // the resource will belong to. |callback| will be called with the pending
+  // host ID when the ResourceHost has been created. This can be passed back
+  // to the plugin to attach to the ResourceHost. A pending ID of 0 will be
+  // passed to the callback upon error.
+  virtual void CreateBrowserResourceHost(
+      PP_Instance instance,
+      const IPC::Message& nested_msg,
+      const base::Callback<void(int)>& callback) const = 0;
 
  protected:
   virtual ~RendererPpapiHost() {}

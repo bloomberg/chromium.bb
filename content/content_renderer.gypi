@@ -188,6 +188,8 @@
     'renderer/pepper/pepper_audio_input_host.h',
     'renderer/pepper/pepper_broker_impl.cc',
     'renderer/pepper/pepper_broker_impl.h',
+    'renderer/pepper/pepper_browser_connection.cc',
+    'renderer/pepper/pepper_browser_connection.h',
     'renderer/pepper/pepper_device_enumeration_event_handler.cc',
     'renderer/pepper/pepper_device_enumeration_event_handler.h',
     'renderer/pepper/pepper_device_enumeration_host_helper.cc',

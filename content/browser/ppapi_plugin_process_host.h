@@ -107,6 +107,8 @@ class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
   // channel is ready or if there's an error.
   void OpenChannelToPlugin(Client* client);
 
+  BrowserPpapiHostImpl* host_impl() { return host_impl_.get(); }
+  const BrowserChildProcessHostImpl* process() { return process_.get(); }
   const base::FilePath& plugin_path() const { return plugin_path_; }
   const base::FilePath& profile_data_directory() const {
     return profile_data_directory_;

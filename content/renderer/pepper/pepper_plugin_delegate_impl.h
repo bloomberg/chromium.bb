@@ -18,6 +18,7 @@
 #include "base/observer_list.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
+#include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/render_view_pepper_helper.h"
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/shared_impl/private/ppb_tcp_server_socket_shared.h"
@@ -69,6 +70,10 @@ class PepperPluginDelegateImpl
   virtual ~PepperPluginDelegateImpl();
 
   RenderViewImpl* render_view() { return render_view_; }
+
+  PepperBrowserConnection* pepper_browser_connection() {
+    return &pepper_browser_connection_;
+  }
 
   // Sets up the renderer host and out-of-process proxy for an external plugin
   // module. Returns the renderer host, or NULL if it couldn't be created.
@@ -409,6 +414,10 @@ class PepperPluginDelegateImpl
 
   // Pointer to the RenderView that owns us.
   RenderViewImpl* render_view_;
+
+  // Connection for sending and receiving pepper host-related messages to/from
+  // the browser.
+  PepperBrowserConnection pepper_browser_connection_;
 
   std::set<webkit::ppapi::PluginInstance*> active_instances_;
   typedef std::map<webkit::ppapi::PluginInstance*,

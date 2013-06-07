@@ -509,6 +509,12 @@ base::ProcessId PluginModule::GetPeerProcessId() {
   return base::kNullProcessId;
 }
 
+int PluginModule::GetPluginChildId() {
+  if (out_of_process_proxy_)
+    return out_of_process_proxy_->GetPluginChildId();
+  return 0;
+}
+
 // static
 const PPB_Core* PluginModule::GetCore() {
   return &core_interface;

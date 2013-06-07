@@ -42,6 +42,7 @@
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/pepper/content_renderer_pepper_host_factory.h"
 #include "content/renderer/pepper/pepper_broker_impl.h"
+#include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/pepper_device_enumeration_event_handler.h"
 #include "content/renderer/pepper/pepper_file_system_host.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
@@ -204,6 +205,10 @@ class HostDispatcherWrapper
     return peer_pid_;
   }
 
+  virtual int GetPluginChildId() OVERRIDE {
+    return plugin_child_id_;
+  }
+
   ppapi::proxy::HostDispatcher* dispatcher() { return dispatcher_.get(); }
 
  private:
@@ -328,6 +333,7 @@ ppapi::host::ResourceHost* GetRendererResourceHost(
 PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderViewImpl* render_view)
     : RenderViewObserver(render_view),
       render_view_(render_view),
+      pepper_browser_connection_(this),
       focused_plugin_(NULL),
       last_mouse_event_target_(NULL),
       device_enumeration_event_handler_(
@@ -1469,6 +1475,9 @@ void PepperPluginDelegateImpl::StopEnumerateDevices(int request_id) {
 }
 
 bool PepperPluginDelegateImpl::OnMessageReceived(const IPC::Message& message) {
+  if (pepper_browser_connection_.OnMessageReceived(message))
+    return true;
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PepperPluginDelegateImpl, message)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBTCPSocket_ConnectACK,

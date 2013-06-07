@@ -163,6 +163,7 @@ class PluginDelegate {
     virtual void RemoveInstance(PP_Instance instance) = 0;
 
     virtual base::ProcessId GetPeerProcessId() = 0;
+    virtual int GetPluginChildId() = 0;
   };
 
   // Represents an image. This is to allow the browser layer to supply a correct

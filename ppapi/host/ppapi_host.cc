@@ -99,9 +99,32 @@ void PpapiHost::SendUnsolicitedReply(PP_Resource resource,
   Send(new PpapiPluginMsg_ResourceReply(params, msg));
 }
 
+scoped_ptr<ResourceHost> PpapiHost::CreateResourceHost(
+    const proxy::ResourceMessageCallParams& params,
+    PP_Instance instance,
+    const IPC::Message& nested_msg) {
+  scoped_ptr<ResourceHost> resource_host;
+  DCHECK(!host_factory_filters_.empty());  // Caller forgot to add a factory.
+  for (size_t i = 0; i < host_factory_filters_.size(); i++) {
+    resource_host = host_factory_filters_[i]->CreateResourceHost(
+        this, params, instance, nested_msg).Pass();
+    if (resource_host.get())
+      break;
+  }
+  return resource_host.Pass();
+}
+
 int PpapiHost::AddPendingResourceHost(scoped_ptr<ResourceHost> resource_host) {
   // The resource ID should not be assigned.
-  DCHECK(resource_host->pp_resource() == 0);
+  if (!resource_host.get() || resource_host->pp_resource() != 0) {
+    NOTREACHED();
+    return 0;
+  }
+
+  if (pending_resource_hosts_.size() + resources_.size()
+      >= kMaxResourcesPerPlugin) {
+    return 0;
+  }
 
   int pending_id = next_pending_resource_host_id_++;
   pending_resource_hosts_[pending_id] =
@@ -168,18 +191,16 @@ void PpapiHost::OnHostMsgResourceCreated(
   TRACE_EVENT2("ppapi proxy", "PpapiHost::OnHostMsgResourceCreated",
                "Class", IPC_MESSAGE_ID_CLASS(nested_msg.type()),
                "Line", IPC_MESSAGE_ID_LINE(nested_msg.type()));
-  if (resources_.size() >= kMaxResourcesPerPlugin)
+
+  if (pending_resource_hosts_.size() + resources_.size()
+      >= kMaxResourcesPerPlugin) {
     return;
+  }
 
   // Run through all filters until one grabs this message.
-  scoped_ptr<ResourceHost> resource_host;
-  DCHECK(!host_factory_filters_.empty());  // Caller forgot to add a factory.
-  for (size_t i = 0; i < host_factory_filters_.size(); i++) {
-    resource_host = host_factory_filters_[i]->CreateResourceHost(
-        this, params, instance, nested_msg).Pass();
-    if (resource_host.get())
-      break;
-  }
+  scoped_ptr<ResourceHost> resource_host = CreateResourceHost(params, instance,
+                                                              nested_msg);
+
   if (!resource_host.get()) {
     NOTREACHED();
     return;

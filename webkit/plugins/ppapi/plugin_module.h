@@ -129,6 +129,13 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   // returns |base::kNullProcessId| otherwise.
   base::ProcessId GetPeerProcessId();
 
+  // Returns the plugin child process ID if the plugin is running out of
+  // process. Returns 0 otherwise. This is the ID that the browser process uses
+  // to idetify the child process for the plugin. This isn't directly useful
+  // from our process (the renderer) except in messages to the browser to
+  // disambiguate plugins.
+  int GetPluginChildId();
+
   static const PPB_Core* GetCore();
 
   // Returns a pointer to the local GetInterface function for retrieving

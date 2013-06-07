@@ -8,12 +8,14 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "content/common/sandbox_util.h"
+#include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/pepper_graphics_2d_host.h"
 #include "content/renderer/pepper/pepper_in_process_resource_creation.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
+#include "ipc/ipc_message.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -257,6 +259,29 @@ IPC::PlatformFileForTransit RendererPpapiHostImpl::ShareHandleWithRemote(
 
 bool RendererPpapiHostImpl::IsRunningInProcess() const {
   return is_running_in_process_;
+}
+
+void RendererPpapiHostImpl::CreateBrowserResourceHost(
+    PP_Instance instance,
+    const IPC::Message& nested_msg,
+    const base::Callback<void(int)>& callback) const {
+  PluginInstance* instance_object = GetAndValidateInstance(instance);
+  if (!instance_object)
+    callback.Run(0);
+
+  // Since we're the embedder, we can make assumptions about the delegate on
+  // the instance.
+  PepperPluginDelegateImpl* delegate =
+      static_cast<PepperPluginDelegateImpl*>(instance_object->delegate());
+  if (!delegate)
+    callback.Run(0);
+
+  PepperBrowserConnection* browser_connection =
+      delegate->pepper_browser_connection();
+  browser_connection->SendBrowserCreate(module_->GetPluginChildId(),
+                                        instance,
+                                        nested_msg,
+                                        callback);
 }
 
 PluginInstance* RendererPpapiHostImpl::GetAndValidateInstance(

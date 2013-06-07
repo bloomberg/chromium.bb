@@ -101,6 +101,10 @@ class RendererPpapiHostImpl
       base::PlatformFile handle,
       bool should_close_source) OVERRIDE;
   virtual bool IsRunningInProcess() const OVERRIDE;
+  virtual void CreateBrowserResourceHost(
+      PP_Instance instance,
+      const IPC::Message& nested_msg,
+      const base::Callback<void(int)>& callback) const OVERRIDE;
 
  private:
   RendererPpapiHostImpl(webkit::ppapi::PluginModule* module,
