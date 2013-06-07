@@ -41,6 +41,7 @@ TEST(PicturePileTest, SmallInvalidateInflated) {
   // Update the whole layer.
   pile->Update(&client,
                background_color,
+               false,
                gfx::Rect(layer_size),
                gfx::Rect(layer_size),
                NULL);
@@ -49,6 +50,7 @@ TEST(PicturePileTest, SmallInvalidateInflated) {
   gfx::Rect invalidate_rect(50, 50, 1, 1);
   pile->Update(&client,
                background_color,
+               false,
                invalidate_rect,
                gfx::Rect(layer_size),
                NULL);
@@ -90,6 +92,7 @@ TEST(PicturePileTest, LargeInvalidateInflated) {
   // Update the whole layer.
   pile->Update(&client,
                background_color,
+               false,
                gfx::Rect(layer_size),
                gfx::Rect(layer_size),
                NULL);
@@ -98,6 +101,7 @@ TEST(PicturePileTest, LargeInvalidateInflated) {
   gfx::Rect invalidate_rect(50, 50, 100, 100);
   pile->Update(&client,
                background_color,
+               false,
                invalidate_rect,
                gfx::Rect(layer_size),
                NULL);
@@ -150,6 +154,7 @@ TEST(PicturePileTest, InvalidateOnTileBoundaryInflated) {
   // Update the whole layer.
   pile->Update(&client,
                background_color,
+               false,
                gfx::Rect(layer_size),
                gfx::Rect(layer_size),
                NULL);
@@ -163,6 +168,7 @@ TEST(PicturePileTest, InvalidateOnTileBoundaryInflated) {
       50);
   pile->Update(&client,
                background_color,
+               false,
                invalidate_rect,
                gfx::Rect(layer_size),
                NULL);

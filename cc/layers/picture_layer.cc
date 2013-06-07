@@ -93,6 +93,7 @@ void PictureLayer::Update(ResourceUpdateQueue*,
       devtools_instrumentation::kPaintLayer, id());
   pile_->Update(client_,
                 SafeOpaqueBackgroundColor(),
+                contents_opaque(),
                 pile_invalidation_,
                 visible_layer_rect,
                 stats);

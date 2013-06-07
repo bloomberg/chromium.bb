@@ -94,48 +94,48 @@ void PicturePileImpl::RasterToBitmap(
     gfx::Rect canvas_rect,
     float contents_scale,
     RasterStats* raster_stats) {
-
-  canvas->save();
-  canvas->translate(-canvas_rect.x(), -canvas_rect.y());
-
-  gfx::SizeF total_content_size = gfx::ScaleSize(tiling_.total_size(),
-                                                 contents_scale);
-  gfx::Rect total_content_rect(gfx::ToCeiledSize(total_content_size));
-  gfx::Rect content_rect = total_content_rect;
-  content_rect.Intersect(canvas_rect);
-
 #ifndef NDEBUG
   // Any non-painted areas will be left in this color.
   canvas->clear(DebugColors::NonPaintedFillColor());
 #endif  // NDEBUG
 
-  // TODO(enne): this needs to be rolled together with the border clear
-  SkPaint paint;
-  paint.setAntiAlias(false);
-  paint.setXfermodeMode(SkXfermode::kClear_Mode);
-  canvas->drawRect(gfx::RectToSkRect(content_rect), paint);
+  // If this picture has opaque contents, it is guaranteeing that it will
+  // draw an opaque rect the size of the layer.  If it is not, then we must
+  // clear this canvas ourselves.
+  if (!contents_opaque_) {
+    // Clearing is about ~4x faster than drawing a rect even if the content
+    // isn't covering a majority of the canvas.
+    canvas->clear(SK_ColorTRANSPARENT);
+  } else {
+    // Even if it is opaque, on any rasterizations that touch the edge of the
+    // layer, we also need to raster the background color underneath the last
+    // texel (since the recording won't cover it) and outside the last texel
+    // (due to linear filtering when using this texture).
+    gfx::SizeF total_content_size = gfx::ScaleSize(tiling_.total_size(),
+                                                   contents_scale);
+    gfx::Rect content_rect(gfx::ToCeiledSize(total_content_size));
+    gfx::Rect deflated_content_rect = content_rect;
+    content_rect.Intersect(canvas_rect);
 
-  // Clear one texel inside the right/bottom edge of the content rect,
-  // as it may only be partially covered by the picture playback.
-  // Also clear one texel outside the right/bottom edge of the content rect,
-  // as it may get blended in by linear filtering when zoomed in.
-  gfx::Rect deflated_content_rect = total_content_rect;
-  deflated_content_rect.Inset(0, 0, 1, 1);
-
-  gfx::Rect canvas_outside_content_rect = canvas_rect;
-  canvas_outside_content_rect.Subtract(deflated_content_rect);
-
-  if (!canvas_outside_content_rect.IsEmpty()) {
-    gfx::Rect inflated_content_rect = total_content_rect;
-    inflated_content_rect.Inset(0, 0, -1, -1);
-    canvas->clipRect(gfx::RectToSkRect(inflated_content_rect),
-                     SkRegion::kReplace_Op);
-    canvas->clipRect(gfx::RectToSkRect(deflated_content_rect),
-                     SkRegion::kDifference_Op);
-    canvas->drawColor(background_color_, SkXfermode::kSrc_Mode);
+    // The final texel of content may only be partially covered by a
+    // rasterization; this rect represents the content rect that is fully
+    // covered by content.
+    deflated_content_rect.Inset(0, 0, 1, 1);
+    deflated_content_rect.Intersect(canvas_rect);
+    if (!deflated_content_rect.Contains(canvas_rect)) {
+      // Drawing at most 2 x 2 x (canvas width + canvas height) texels is 2-3X
+      // faster than clearing, so special case this.
+      canvas->save();
+      gfx::Rect inflated_content_rect = content_rect;
+      inflated_content_rect.Inset(0, 0, -1, -1);
+      canvas->clipRect(gfx::RectToSkRect(inflated_content_rect),
+                       SkRegion::kReplace_Op);
+      canvas->clipRect(gfx::RectToSkRect(deflated_content_rect),
+                       SkRegion::kDifference_Op);
+      canvas->drawColor(background_color_, SkXfermode::kSrc_Mode);
+      canvas->restore();
+    }
   }
-
-  canvas->restore();
 
   RasterCommon(canvas, NULL, canvas_rect, contents_scale, raster_stats);
 }

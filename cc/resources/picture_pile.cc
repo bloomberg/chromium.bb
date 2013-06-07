@@ -34,10 +34,12 @@ PicturePile::~PicturePile() {
 void PicturePile::Update(
     ContentLayerClient* painter,
     SkColor background_color,
+    bool contents_opaque,
     const Region& invalidation,
     gfx::Rect visible_layer_rect,
     RenderingStats* stats) {
   background_color_ = background_color;
+  contents_opaque_ = contents_opaque;
 
   gfx::Rect interest_rect = visible_layer_rect;
   interest_rect.Inset(

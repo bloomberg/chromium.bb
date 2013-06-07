@@ -26,6 +26,7 @@ namespace cc {
 PicturePileBase::PicturePileBase()
     : min_contents_scale_(0),
       background_color_(SkColorSetARGBInline(0, 0, 0, 0)),
+      contents_opaque_(false),
       slow_down_raster_scale_factor_for_debug_(0),
       show_debug_picture_borders_(false),
       num_raster_threads_(0) {
@@ -42,6 +43,7 @@ PicturePileBase::PicturePileBase(const PicturePileBase* other)
       min_contents_scale_(other->min_contents_scale_),
       tile_grid_info_(other->tile_grid_info_),
       background_color_(other->background_color_),
+      contents_opaque_(other->contents_opaque_),
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
       show_debug_picture_borders_(other->show_debug_picture_borders_),
@@ -55,6 +57,7 @@ PicturePileBase::PicturePileBase(
       min_contents_scale_(other->min_contents_scale_),
       tile_grid_info_(other->tile_grid_info_),
       background_color_(other->background_color_),
+      contents_opaque_(other->contents_opaque_),
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
       show_debug_picture_borders_(other->show_debug_picture_borders_),

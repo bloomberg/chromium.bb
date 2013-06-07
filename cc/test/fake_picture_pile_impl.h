@@ -48,6 +48,14 @@ class FakePicturePileImpl : public PicturePileImpl {
     default_paint_ = paint;
   }
 
+  void set_background_color(SkColor color) {
+    background_color_ = color;
+  }
+
+  void set_contents_opaque(bool contents_opaque) {
+    contents_opaque_ = contents_opaque;
+  }
+
  protected:
   FakePicturePileImpl();
   virtual ~FakePicturePileImpl();

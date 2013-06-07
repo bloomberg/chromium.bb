@@ -51,6 +51,8 @@ void FakePicturePileImpl::AddRecordingAt(int x, int y) {
   if (HasRecordingAt(x, y))
     return;
   gfx::Rect bounds(tiling().TileBounds(x, y));
+  bounds.Inset(-buffer_pixels(), -buffer_pixels());
+
   scoped_refptr<Picture> picture(Picture::Create(bounds));
   picture->Record(&client_, tile_grid_info_, NULL);
   picture->GatherPixelRefs(tile_grid_info_, NULL);

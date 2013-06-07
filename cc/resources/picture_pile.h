@@ -22,6 +22,7 @@ class CC_EXPORT PicturePile : public PicturePileBase {
   void Update(
       ContentLayerClient* painter,
       SkColor background_color,
+      bool contents_opaque,
       const Region& invalidation,
       gfx::Rect visible_layer_rect,
       RenderingStats* stats);

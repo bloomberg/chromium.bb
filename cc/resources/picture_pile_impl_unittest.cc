@@ -11,6 +11,7 @@
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/size_conversions.h"
 
 namespace cc {
 namespace {
@@ -709,6 +710,87 @@ TEST(PicturePileImplTest, PixelRefIteratorMultiplePictures) {
     PicturePileImpl::PixelRefIterator iterator(
         gfx::Rect(0, 128, 128, 128), 1.0, pile.get());
     EXPECT_FALSE(iterator);
+  }
+}
+
+TEST(PicturePileImpl, RasterContentsOpaque) {
+  gfx::Size tile_size(1000, 1000);
+  gfx::Size layer_bounds(3, 5);
+  float contents_scale = 1.5f;
+
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  // Because the caller sets content opaque, it also promises that it
+  // has at least filled in layer_bounds opaquely.
+  SkPaint red_paint;
+  red_paint.setColor(SK_ColorRED);
+  pile->add_draw_rect_with_paint(gfx::Rect(layer_bounds), red_paint);
+
+  pile->SetMinContentsScale(contents_scale);
+  pile->set_background_color(SK_ColorRED);
+  pile->set_contents_opaque(true);
+  pile->RerecordPile();
+
+  gfx::Size content_bounds(
+      gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale)));
+
+  // Simulate a canvas rect larger than the content bounds.  Every pixel
+  // up to one pixel outside the content bounds is guaranteed to be opaque.
+  // Outside of that is undefined.
+  gfx::Rect canvas_rect(content_bounds);
+  canvas_rect.Inset(0, 0, -1, -1);
+
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                   canvas_rect.width(),
+                   canvas_rect.height());
+  bitmap.allocPixels();
+  SkCanvas canvas(bitmap);
+
+  PicturePileImpl::RasterStats raster_stats;
+  pile->RasterToBitmap(
+      &canvas, canvas_rect, contents_scale, &raster_stats);
+
+  SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
+  int num_pixels = bitmap.width() * bitmap.height();
+  for (int i = 0; i < num_pixels; ++i) {
+    EXPECT_EQ(SkColorGetA(pixels[i]), 255u);
+  }
+}
+
+TEST(PicturePileImpl, RasterContentsTransparent) {
+  gfx::Size tile_size(1000, 1000);
+  gfx::Size layer_bounds(5, 3);
+  float contents_scale = 0.5f;
+
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  pile->set_background_color(SK_ColorTRANSPARENT);
+  pile->set_contents_opaque(false);
+  pile->SetMinContentsScale(contents_scale);
+  pile->RerecordPile();
+
+  gfx::Size content_bounds(
+      gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale)));
+
+  gfx::Rect canvas_rect(content_bounds);
+  canvas_rect.Inset(0, 0, -1, -1);
+
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                   canvas_rect.width(),
+                   canvas_rect.height());
+  bitmap.allocPixels();
+  SkCanvas canvas(bitmap);
+
+  PicturePileImpl::RasterStats raster_stats;
+  pile->RasterToBitmap(
+      &canvas, canvas_rect, contents_scale, &raster_stats);
+
+  SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
+  int num_pixels = bitmap.width() * bitmap.height();
+  for (int i = 0; i < num_pixels; ++i) {
+    EXPECT_EQ(SkColorGetA(pixels[i]), 0u);
   }
 }
 
