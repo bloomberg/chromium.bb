@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_BASE_UI_CONTROLS_H_
-#define CHROME_TEST_BASE_UI_CONTROLS_H_
+#ifndef UI_BASE_TEST_UI_CONTROLS_H_
+#define UI_BASE_TEST_UI_CONTROLS_H_
 
 #include "base/callback_forward.h"
 #include "build/build_config.h"
@@ -12,6 +12,12 @@
 
 namespace ui_controls {
 
+// A set of utility functions to generate native events in platform
+// independent way.  For aura tests, please look into
+// |aura::test:EventGenerator| first. This class provides a way to
+// emulate events in synchronous way and it is often easier to write
+// tests with this class than using |ui_controls|.
+//
 // Many of the functions in this class include a variant that takes a Closure.
 // The version that takes a Closure waits until the generated event is
 // processed. Once the generated event is processed the Closure is Run (and
@@ -82,11 +88,8 @@ void RunClosureAfterAllPendingUIEvents(const base::Closure& closure);
 #if defined(USE_AURA)
 class UIControlsAura;
 void InstallUIControlsAura(UIControlsAura* instance);
-#if defined(USE_ASH)
-UIControlsAura* CreateAshUIControls();
-#endif
 #endif
 
 }  // namespace ui_controls
 
-#endif  // CHROME_TEST_BASE_UI_CONTROLS_H_
+#endif  // UI_BASE_TEST_UI_CONTROLS_H_

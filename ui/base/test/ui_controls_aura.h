@@ -1,18 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_BASE_UI_CONTROLS_AURA_H_
-#define CHROME_TEST_BASE_UI_CONTROLS_AURA_H_
+#ifndef UI_TEST_BASE_UI_CONTROLS_AURA_H_
+#define UI_TEST_BASE_UI_CONTROLS_AURA_H_
 
 #include "base/callback_forward.h"
-#include "chrome/test/base/ui_controls.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/test/ui_controls.h"
 #include "ui/gfx/native_widget_types.h"
-
-namespace aura {
-class RootWindow;
-}
 
 namespace ui_controls {
 
@@ -56,8 +52,6 @@ class UIControlsAura {
       const base::Closure& closure) = 0;
 };
 
-UIControlsAura* CreateUIControlsAura(aura::RootWindow* root_window);
-
 }  // namespace ui_controls
 
-#endif  // CHROME_TEST_BASE_UI_CONTROLS_AURA_H_
+#endif  // UI_TEST_BASE_UI_CONTROLS_AURA_H_

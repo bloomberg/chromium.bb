@@ -8,7 +8,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/test/base/ui_controls.h"
+#include "ui/base/test/ui_controls.h"
 #include "ui/views/focus/focus_manager.h"
 
 namespace ui_test_utils {

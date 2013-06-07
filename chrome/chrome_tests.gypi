@@ -287,17 +287,6 @@
         'test/base/interactive_test_utils_win.cc',
         'test/base/view_event_test_base.cc',
         'test/base/view_event_test_base.h',
-        'test/base/ui_controls.h',
-        'test/base/ui_controls_ash.cc',
-        'test/base/ui_controls_aura.h',
-        'test/base/ui_controls_aura.cc',
-        'test/base/ui_controls_aurawin.cc',
-        'test/base/ui_controls_aurax11.cc',
-        'test/base/ui_controls_gtk.cc',
-        'test/base/ui_controls_internal_win.cc',
-        'test/base/ui_controls_internal_win.h',
-        'test/base/ui_controls_mac.mm',
-        'test/base/ui_controls_win.cc',
         'test/ppapi/ppapi_interactive_browsertest.cc',
       ],
       'conditions': [
@@ -384,7 +373,6 @@
         ['use_aura==1', {
           'sources!': [
             'browser/ui/views/tabs/tab_drag_controller_interactive_uitest_win.cc',
-            'test/base/ui_controls_win.cc',
           ],
         }],
         ['chromeos==1', {

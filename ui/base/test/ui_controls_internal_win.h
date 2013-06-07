@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_BASE_UI_CONTROLS_INTERNAL_WIN_H_
-#define CHROME_TEST_BASE_UI_CONTROLS_INTERNAL_WIN_H_
+#ifndef UI_BASE_TEST_UI_CONTROLS_INTERNAL_WIN_H_
+#define UI_BASE_TEST_UI_CONTROLS_INTERNAL_WIN_H_
 
 #include "base/callback_forward.h"
-#include "chrome/test/base/ui_controls.h"
+#include "ui/base/test/ui_controls.h"
 
 namespace ui_controls {
 namespace internal {
@@ -29,4 +29,4 @@ void RunClosureAfterAllPendingUITasksImpl(const base::Closure& task);
 }  // namespace internal
 }  // namespace ui_controls
 
-#endif  // CHROME_TEST_BASE_UI_CONTROLS_INTERNAL_WIN_H_
+#endif  // UI_BASE_TEST_UI_CONTROLS_INTERNAL_WIN_H_

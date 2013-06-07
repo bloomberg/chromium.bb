@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,16 +12,25 @@
 
 #include "base/logging.h"
 #include "base/message_pump_aurax11.h"
-#include "chrome/test/base/ui_controls.h"
-#include "chrome/test/base/ui_controls_aura.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
+#include "ui/base/test/ui_controls_aura.h"
 #include "ui/compositor/dip_util.h"
 
-namespace ui_controls {
+namespace aura {
+namespace test {
 namespace {
+
+using ui_controls::DOWN;
+using ui_controls::LEFT;
+using ui_controls::MIDDLE;
+using ui_controls::MouseButton;
+using ui_controls::RIGHT;
+using ui_controls::UIControlsAura;
+using ui_controls::UP;
 
 // Mask of the buttons currently down.
 unsigned button_down_mask = 0;
@@ -245,4 +254,5 @@ UIControlsAura* CreateUIControlsAura(aura::RootWindow* root_window) {
   return new UIControlsX11(root_window);
 }
 
-}  // namespace ui_controls
+}  // namespace test
+}  // namespace aura

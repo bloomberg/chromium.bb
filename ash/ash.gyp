@@ -579,6 +579,8 @@
         'test/test_suite.h',
         'test/test_suite_init.h',
         'test/test_suite_init.mm',
+        'test/ui_controls_factory_ash.cc',
+        'test/ui_controls_factory_ash.h',
       ],
       'conditions': [
         ['OS=="win"', {

@@ -56,8 +56,32 @@ class EventGeneratorDelegate {
       const aura::Window* window) const = 0;
 };
 
-// EventGenerator is a tool that generates and dispatch events. The
-// coordinates of the points in API is determined by the
+// EventGenerator is a tool that generates and dispatch events.
+// Unlike |ui_controls| package in ui/base/test, this does not
+// generate platform native events. Insetad, it directly posts event
+// to |aura::RootWindow| synchronously.
+
+// Advantage of using this class, compared to |ui_controls| is that
+// you can write the tests that involves events in synchronus
+// way. There is no need to wait for native
+//
+// On the other hand, this class is not suited for the following
+// cases:
+//
+// 1) If your test depends on native events (ui::Event::native_event()).
+//   This return is empty/NULL event with EventGenerator.
+// 2) If your test involves nested message loop, such as
+//    menu or drag & drop. Because this class directly
+//    post an event to RootWindow, this event will not be
+//    handled in the nested message loop.
+// 3) Similarly, |base::MessagePumpObserver| will not be invoked.
+// 4) Any other code that requires native events, such as
+//    tests for RootWindowHostWin/RootWindowHostX11.
+//
+// If one of these applies to your test, please use |ui_controls|
+// package instead.
+//
+// Note: The coordinates of the points in API is determined by the
 // EventGeneratorDelegate.
 class EventGenerator {
  public:

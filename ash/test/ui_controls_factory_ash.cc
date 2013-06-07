@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,19 +6,24 @@
 #include "ash/shell_factory.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_properties.h"
-#include "chrome/test/base/ui_controls.h"
-#include "chrome/test/base/ui_controls_aura.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/aura/window_property.h"
+#include "ui/base/test/ui_controls.h"
+#include "ui/base/test/ui_controls_aura.h"
 #include "ui/gfx/screen.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(ui_controls::UIControlsAura*)
 
-namespace ui_controls {
+namespace ash {
+namespace test {
 namespace {
+
+using ui_controls::UIControlsAura;
+using ui_controls::MouseButton;
 
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(UIControlsAura, kUIControlsKey, NULL);
 
@@ -29,7 +34,7 @@ UIControlsAura* GetUIControlsForRootWindow(aura::RootWindow* root_window) {
   UIControlsAura* native_ui_control =
       root_window->GetProperty(kUIControlsKey);
   if (!native_ui_control) {
-    native_ui_control = CreateUIControlsAura(root_window);
+    native_ui_control = aura::test::CreateUIControlsAura(root_window);
     // Pass the ownership to the |root_window|.
     root_window->SetProperty(kUIControlsKey, native_ui_control);
   }
@@ -135,8 +140,9 @@ class UIControlsAsh : public UIControlsAura {
   DISALLOW_COPY_AND_ASSIGN(UIControlsAsh);
 };
 
-UIControlsAura* CreateAshUIControls() {
-  return new UIControlsAsh();
+ui_controls::UIControlsAura* CreateAshUIControls() {
+  return new ash::test::UIControlsAsh();
 }
 
-}  // namespace ui_controls
+}  // namespace test
+}  // namespace ash

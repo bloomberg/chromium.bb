@@ -19,6 +19,13 @@
         'base/test/ui_cocoa_test_helper.mm',
         'base/test/dummy_input_method.cc',
         'base/test/dummy_input_method.h',
+        'base/test/ui_controls.h',
+        'base/test/ui_controls_aura.cc',
+        'base/test/ui_controls_gtk.cc',
+        'base/test/ui_controls_internal_win.cc',
+        'base/test/ui_controls_internal_win.h',
+        'base/test/ui_controls_mac.mm',
+        'base/test/ui_controls_win.cc',
       ],
       'include_dirs': [
         '../',
@@ -34,6 +41,11 @@
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos_test_support_without_gmock',
             '../skia/skia.gyp:skia',
+          ],
+        }],
+        ['use_aura==1', {
+          'sources!': [
+            'base/test/ui_controls_win.cc',
           ],
         }],
       ],
