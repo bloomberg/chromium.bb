@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/sha1.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "crypto/capi_util.h"
 #include "crypto/scoped_capi_types.h"
 #include "crypto/sha2.h"

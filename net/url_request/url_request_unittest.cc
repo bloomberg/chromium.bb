@@ -26,7 +26,7 @@
 #include "base/stringprintf.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"

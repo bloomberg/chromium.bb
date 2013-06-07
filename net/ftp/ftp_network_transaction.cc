@@ -11,7 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/strings/string_split.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "net/base/address_list.h"
 #include "net/base/connection_type_histograms.h"

@@ -8,7 +8,7 @@
 #pragma comment(lib, "urlmon.lib")
 
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_auth_filter.h"

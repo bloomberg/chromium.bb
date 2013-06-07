@@ -7,7 +7,7 @@
 #include "base/format_macros.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "net/ftp/ftp_directory_listing_parser_netware.h"
 
 namespace net {

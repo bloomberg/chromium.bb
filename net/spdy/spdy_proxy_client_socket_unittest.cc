@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "net/base/address_list.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/net_log.h"

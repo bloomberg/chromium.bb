@@ -7,7 +7,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_network_session.h"
