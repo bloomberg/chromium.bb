@@ -238,6 +238,7 @@
       <structure type="chrome_scaled_image" name="IDR_CHECKBOX_FOCUSED_PRESSED" file="common/checkbox_focused_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_CHECKBOX_HOVER" file="common/checkbox_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_CHECKBOX_PRESSED" file="common/checkbox_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_CHECKMARK" file="common/checkmark.png" />
       <structure type="chrome_scaled_image" name="IDR_RADIO" file="common/radio.png" />
       <structure type="chrome_scaled_image" name="IDR_RADIO_CHECKED" file="common/radio_checked.png" />
       <structure type="chrome_scaled_image" name="IDR_RADIO_CHECKED_DISABLED" file="common/radio_checked_inactive.png" />
@@ -252,7 +253,7 @@
       <structure type="chrome_scaled_image" name="IDR_RADIO_FOCUSED_PRESSED" file="common/radio_focused_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_RADIO_HOVER" file="common/radio_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_RADIO_PRESSED" file="common/radio_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_CHECKMARK" file="common/checkmark.png" />
+      <structure type="chrome_scaled_image" name="IDR_TEXT_SELECTION_HANDLE" file="common/text_selection_handle.png" />
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_CLOSE" file="linux/linux_close.png" />
       </if>
