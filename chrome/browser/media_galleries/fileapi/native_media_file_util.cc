@@ -98,6 +98,40 @@ NativeMediaFileUtil::NativeMediaFileUtil() : weak_factory_(this) {
 NativeMediaFileUtil::~NativeMediaFileUtil() {
 }
 
+// static
+base::PlatformFileError NativeMediaFileUtil::IsMediaFile(
+    const base::FilePath& path) {
+  base::PlatformFile file_handle;
+  const int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
+  base::PlatformFileError error =
+      fileapi::NativeFileUtil::CreateOrOpen(path, flags, &file_handle, NULL);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+
+  ScopedPlatformFile scoped_platform_file(&file_handle);
+  char buffer[net::kMaxBytesToSniff];
+
+  // Read as much as net::SniffMimeTypeFromLocalData() will bother looking at.
+  int64 len =
+      base::ReadPlatformFile(file_handle, 0, buffer, net::kMaxBytesToSniff);
+  if (len < 0)
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  if (len == 0)
+    return base::PLATFORM_FILE_ERROR_SECURITY;
+
+  std::string mime_type;
+  if (!net::SniffMimeTypeFromLocalData(buffer, len, &mime_type))
+    return base::PLATFORM_FILE_ERROR_SECURITY;
+
+  if (StartsWithASCII(mime_type, "image/", true) ||
+      StartsWithASCII(mime_type, "audio/", true) ||
+      StartsWithASCII(mime_type, "video/", true) ||
+      mime_type == "application/x-shockwave-flash") {
+    return base::PLATFORM_FILE_OK;
+  }
+  return base::PLATFORM_FILE_ERROR_SECURITY;
+}
+
 bool NativeMediaFileUtil::CreateOrOpen(
     fileapi::FileSystemOperationContext* context,
     const fileapi::FileSystemURL& url,
@@ -134,8 +168,8 @@ bool NativeMediaFileUtil::CreateDirectory(
   return context->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&NativeMediaFileUtil::CreateDirectoryOnTaskRunnerThread,
-                 weak_factory_.GetWeakPtr(), context, url, exclusive,
-                 recursive, callback));
+                 weak_factory_.GetWeakPtr(), context, url, exclusive, recursive,
+                 callback));
 }
 
 bool NativeMediaFileUtil::GetFileInfo(
@@ -255,281 +289,6 @@ bool NativeMediaFileUtil::CreateSnapshotFile(
                  weak_factory_.GetWeakPtr(), context, url, callback));
 }
 
-base::PlatformFileError NativeMediaFileUtil::CreateDirectorySync(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url,
-    bool exclusive,
-    bool recursive) {
-  base::FilePath file_path;
-  base::PlatformFileError error = GetLocalFilePath(context, url, &file_path);
-  if (error != base::PLATFORM_FILE_OK)
-    return error;
-  return fileapi::NativeFileUtil::CreateDirectory(file_path, exclusive,
-                                                  recursive);
-}
-
-base::PlatformFileError NativeMediaFileUtil::GetLocalFilePath(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url,
-    base::FilePath* local_file_path) {
-  DCHECK(local_file_path);
-  DCHECK(url.is_valid());
-  if (url.path().empty()) {
-    // Root direcory case, which should not be accessed.
-    return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
-  }
-  *local_file_path = url.path();
-  return base::PLATFORM_FILE_OK;
-}
-
-base::PlatformFileError NativeMediaFileUtil::ReadDirectorySync(
-      fileapi::FileSystemOperationContext* context,
-      const fileapi::FileSystemURL& url,
-      EntryList* file_list) {
-  DCHECK(IsOnTaskRunnerThread(context));
-  DCHECK(file_list);
-  DCHECK(file_list->empty());
-  base::PlatformFileInfo file_info;
-  base::FilePath platform_path;
-  base::PlatformFileError error = GetFileInfoSync(context, url, &file_info,
-                                                  &platform_path);
-
-  if (error != base::PLATFORM_FILE_OK)
-    return error;
-
-  if (!file_info.is_directory)
-    return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
-
-  file_util::FileEnumerator file_enum(
-      platform_path,
-      false /* recursive */,
-      file_util::FileEnumerator::FILES |
-          file_util::FileEnumerator::DIRECTORIES);
-  file_util::FileEnumerator::FindInfo file_util_info;
-#if defined(OS_WIN)
-  memset(&file_util_info, 0, sizeof(file_util_info));
-#endif  // defined(OS_WIN)
-
-  for (base::FilePath platform_path = file_enum.Next();
-       !platform_path.empty();
-       platform_path = file_enum.Next()) {
-    // Skip symlinks.
-    if (file_util::IsLink(platform_path))
-      continue;
-
-    file_enum.GetFindInfo(&file_util_info);
-
-    // NativeMediaFileUtil skip criteria.
-    if (ShouldSkip(platform_path))
-      continue;
-    if (!file_util::FileEnumerator::IsDirectory(file_util_info) &&
-        !GetMediaPathFilter(context)->Match(platform_path))
-      continue;
-
-    fileapi::DirectoryEntry entry;
-    entry.is_directory = file_util::FileEnumerator::IsDirectory(file_util_info);
-    entry.name = platform_path.BaseName().value();
-    entry.size = file_util::FileEnumerator::GetFilesize(file_util_info);
-    entry.last_modified_time =
-        file_util::FileEnumerator::GetLastModifiedTime(file_util_info);
-
-    file_list->push_back(entry);
-  }
-
-  return base::PLATFORM_FILE_OK;
-}
-
-base::PlatformFileError NativeMediaFileUtil::CopyOrMoveFileSync(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& src_url,
-    const fileapi::FileSystemURL& dest_url,
-    bool copy) {
-  DCHECK(IsOnTaskRunnerThread(context));
-  base::FilePath src_file_path;
-  base::PlatformFileError error =
-      GetFilteredLocalFilePathForExistingFileOrDirectory(
-          context, src_url,
-          base::PLATFORM_FILE_ERROR_NOT_FOUND,
-          &src_file_path);
-  if (error != base::PLATFORM_FILE_OK)
-    return error;
-  if (fileapi::NativeFileUtil::DirectoryExists(src_file_path))
-    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
-
-  base::FilePath dest_file_path;
-  error = GetLocalFilePath(context, dest_url, &dest_file_path);
-  if (error != base::PLATFORM_FILE_OK)
-    return error;
-  base::PlatformFileInfo file_info;
-  error = fileapi::NativeFileUtil::GetFileInfo(dest_file_path, &file_info);
-  if (error != base::PLATFORM_FILE_OK &&
-      error != base::PLATFORM_FILE_ERROR_NOT_FOUND)
-    return error;
-  if (error == base::PLATFORM_FILE_OK && file_info.is_directory)
-    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-  if (!GetMediaPathFilter(context)->Match(dest_file_path))
-    return base::PLATFORM_FILE_ERROR_SECURITY;
-
-  return fileapi::NativeFileUtil::CopyOrMoveFile(src_file_path, dest_file_path,
-                                                 copy);
-}
-
-base::PlatformFileError NativeMediaFileUtil::CopyInForeignFileSync(
-    fileapi::FileSystemOperationContext* context,
-    const base::FilePath& src_file_path,
-    const fileapi::FileSystemURL& dest_url) {
-  DCHECK(IsOnTaskRunnerThread(context));
-  if (src_file_path.empty())
-    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-
-  base::FilePath dest_file_path;
-  base::PlatformFileError error =
-      GetFilteredLocalFilePath(context, dest_url, &dest_file_path);
-  if (error != base::PLATFORM_FILE_OK)
-    return error;
-  return fileapi::NativeFileUtil::CopyOrMoveFile(src_file_path, dest_file_path,
-                                                 true);
-}
-
-base::PlatformFileError NativeMediaFileUtil::GetFilteredLocalFilePath(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& file_system_url,
-    base::FilePath* local_file_path) {
-  DCHECK(IsOnTaskRunnerThread(context));
-  base::FilePath file_path;
-  base::PlatformFileError error =
-      GetLocalFilePath(context, file_system_url, &file_path);
-  if (error != base::PLATFORM_FILE_OK)
-    return error;
-  if (!GetMediaPathFilter(context)->Match(file_path))
-    return base::PLATFORM_FILE_ERROR_SECURITY;
-
-  *local_file_path = file_path;
-  return base::PLATFORM_FILE_OK;
-}
-
-base::PlatformFileError NativeMediaFileUtil::GetFileInfoSync(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url,
-    base::PlatformFileInfo* file_info,
-    base::FilePath* platform_path) {
-  DCHECK(IsOnTaskRunnerThread(context));
-  DCHECK(context);
-  DCHECK(file_info);
-  DCHECK(GetMediaPathFilter(context));
-
-  base::FilePath file_path;
-  base::PlatformFileError error = GetLocalFilePath(context, url, &file_path);
-  if (error != base::PLATFORM_FILE_OK)
-    return error;
-  if (file_util::IsLink(file_path))
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-  error = fileapi::NativeFileUtil::GetFileInfo(file_path, file_info);
-  if (error != base::PLATFORM_FILE_OK)
-    return error;
-
-  if (platform_path)
-    *platform_path = file_path;
-  if (file_info->is_directory ||
-      GetMediaPathFilter(context)->Match(file_path)) {
-    return base::PLATFORM_FILE_OK;
-  }
-  return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-}
-
-base::PlatformFileError
-NativeMediaFileUtil::GetFilteredLocalFilePathForExistingFileOrDirectory(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& file_system_url,
-    base::PlatformFileError failure_error,
-    base::FilePath* local_file_path) {
-  DCHECK(IsOnTaskRunnerThread(context));
-  base::FilePath file_path;
-  base::PlatformFileError error =
-      GetLocalFilePath(context, file_system_url, &file_path);
-  if (error != base::PLATFORM_FILE_OK)
-    return error;
-
-  if (!file_util::PathExists(file_path))
-    return failure_error;
-  base::PlatformFileInfo file_info;
-  if (!file_util::GetFileInfo(file_path, &file_info))
-    return base::PLATFORM_FILE_ERROR_FAILED;
-
-  if (!file_info.is_directory &&
-      !GetMediaPathFilter(context)->Match(file_path)) {
-    return failure_error;
-  }
-
-  *local_file_path = file_path;
-  return base::PLATFORM_FILE_OK;
-}
-
-base::PlatformFileError NativeMediaFileUtil::DeleteDirectorySync(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url) {
-  DCHECK(IsOnTaskRunnerThread(context));
-  base::FilePath file_path;
-  base::PlatformFileError error = GetLocalFilePath(context, url, &file_path);
-  if (error != base::PLATFORM_FILE_OK)
-    return error;
-  return fileapi::NativeFileUtil::DeleteDirectory(file_path);
-}
-
-base::PlatformFileError NativeMediaFileUtil::CreateSnapshotFileSync(
-    fileapi::FileSystemOperationContext* context,
-    const fileapi::FileSystemURL& url,
-    base::PlatformFileInfo* file_info,
-    base::FilePath* platform_path,
-    scoped_refptr<webkit_blob::ShareableFileReference>* file_ref) {
-  DCHECK(IsOnTaskRunnerThread(context));
-  base::PlatformFileError error =
-      GetFileInfoSync(context, url, file_info, platform_path);
-  if (error == base::PLATFORM_FILE_OK && file_info->is_directory)
-    error = base::PLATFORM_FILE_ERROR_NOT_A_FILE;
-  if (error == base::PLATFORM_FILE_OK)
-    error = NativeMediaFileUtil::IsMediaFile(*platform_path);
-
-  // We're just returning the local file information.
-  *file_ref = scoped_refptr<webkit_blob::ShareableFileReference>();
-
-  return error;
-}
-
-// static
-base::PlatformFileError NativeMediaFileUtil::IsMediaFile(
-    const base::FilePath& path) {
-  base::PlatformFile file_handle;
-  const int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
-  base::PlatformFileError error =
-      fileapi::NativeFileUtil::CreateOrOpen(path, flags, &file_handle, NULL);
-  if (error != base::PLATFORM_FILE_OK)
-    return error;
-
-  ScopedPlatformFile scoped_platform_file(&file_handle);
-  char buffer[net::kMaxBytesToSniff];
-
-  // Read as much as net::SniffMimeTypeFromLocalData() will bother looking at.
-  int64 len =
-      base::ReadPlatformFile(file_handle, 0, buffer, net::kMaxBytesToSniff);
-  if (len < 0)
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  if (len == 0)
-    return base::PLATFORM_FILE_ERROR_SECURITY;
-
-  std::string mime_type;
-  if (!net::SniffMimeTypeFromLocalData(buffer, len, &mime_type))
-    return base::PLATFORM_FILE_ERROR_SECURITY;
-
-  if (StartsWithASCII(mime_type, "image/", true) ||
-      StartsWithASCII(mime_type, "audio/", true) ||
-      StartsWithASCII(mime_type, "video/", true) ||
-      mime_type == "application/x-shockwave-flash") {
-    return base::PLATFORM_FILE_OK;
-  }
-  return base::PLATFORM_FILE_ERROR_SECURITY;
-}
-
 void NativeMediaFileUtil::CreateDirectoryOnTaskRunnerThread(
     fileapi::FileSystemOperationContext* context,
     const fileapi::FileSystemURL& url,
@@ -644,6 +403,247 @@ void NativeMediaFileUtil::CreateSnapshotFileOnTaskRunnerThread(
       content::BrowserThread::IO,
       FROM_HERE,
       base::Bind(callback, error, file_info, platform_path, file_ref));
+}
+
+base::PlatformFileError NativeMediaFileUtil::CreateDirectorySync(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url,
+    bool exclusive,
+    bool recursive) {
+  base::FilePath file_path;
+  base::PlatformFileError error = GetLocalFilePath(context, url, &file_path);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+  return fileapi::NativeFileUtil::CreateDirectory(file_path, exclusive,
+                                                  recursive);
+}
+
+base::PlatformFileError NativeMediaFileUtil::CopyOrMoveFileSync(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& src_url,
+    const fileapi::FileSystemURL& dest_url,
+    bool copy) {
+  DCHECK(IsOnTaskRunnerThread(context));
+  base::FilePath src_file_path;
+  base::PlatformFileError error =
+      GetFilteredLocalFilePathForExistingFileOrDirectory(
+          context, src_url,
+          base::PLATFORM_FILE_ERROR_NOT_FOUND,
+          &src_file_path);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+  if (fileapi::NativeFileUtil::DirectoryExists(src_file_path))
+    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+
+  base::FilePath dest_file_path;
+  error = GetLocalFilePath(context, dest_url, &dest_file_path);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+  base::PlatformFileInfo file_info;
+  error = fileapi::NativeFileUtil::GetFileInfo(dest_file_path, &file_info);
+  if (error != base::PLATFORM_FILE_OK &&
+      error != base::PLATFORM_FILE_ERROR_NOT_FOUND)
+    return error;
+  if (error == base::PLATFORM_FILE_OK && file_info.is_directory)
+    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+  if (!GetMediaPathFilter(context)->Match(dest_file_path))
+    return base::PLATFORM_FILE_ERROR_SECURITY;
+
+  return fileapi::NativeFileUtil::CopyOrMoveFile(src_file_path, dest_file_path,
+                                                 copy);
+}
+
+base::PlatformFileError NativeMediaFileUtil::CopyInForeignFileSync(
+    fileapi::FileSystemOperationContext* context,
+    const base::FilePath& src_file_path,
+    const fileapi::FileSystemURL& dest_url) {
+  DCHECK(IsOnTaskRunnerThread(context));
+  if (src_file_path.empty())
+    return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+
+  base::FilePath dest_file_path;
+  base::PlatformFileError error =
+      GetFilteredLocalFilePath(context, dest_url, &dest_file_path);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+  return fileapi::NativeFileUtil::CopyOrMoveFile(src_file_path, dest_file_path,
+                                                 true);
+}
+
+base::PlatformFileError NativeMediaFileUtil::GetFileInfoSync(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url,
+    base::PlatformFileInfo* file_info,
+    base::FilePath* platform_path) {
+  DCHECK(IsOnTaskRunnerThread(context));
+  DCHECK(context);
+  DCHECK(file_info);
+  DCHECK(GetMediaPathFilter(context));
+
+  base::FilePath file_path;
+  base::PlatformFileError error = GetLocalFilePath(context, url, &file_path);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+  if (file_util::IsLink(file_path))
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  error = fileapi::NativeFileUtil::GetFileInfo(file_path, file_info);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+
+  if (platform_path)
+    *platform_path = file_path;
+  if (file_info->is_directory ||
+      GetMediaPathFilter(context)->Match(file_path)) {
+    return base::PLATFORM_FILE_OK;
+  }
+  return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+}
+
+base::PlatformFileError NativeMediaFileUtil::GetLocalFilePath(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url,
+    base::FilePath* local_file_path) {
+  DCHECK(local_file_path);
+  DCHECK(url.is_valid());
+  if (url.path().empty()) {
+    // Root direcory case, which should not be accessed.
+    return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+  }
+  *local_file_path = url.path();
+  return base::PLATFORM_FILE_OK;
+}
+
+base::PlatformFileError NativeMediaFileUtil::ReadDirectorySync(
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
+      EntryList* file_list) {
+  DCHECK(IsOnTaskRunnerThread(context));
+  DCHECK(file_list);
+  DCHECK(file_list->empty());
+  base::PlatformFileInfo file_info;
+  base::FilePath platform_path;
+  base::PlatformFileError error = GetFileInfoSync(context, url, &file_info,
+                                                  &platform_path);
+
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+
+  if (!file_info.is_directory)
+    return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+
+  file_util::FileEnumerator file_enum(
+      platform_path,
+      false /* recursive */,
+      file_util::FileEnumerator::FILES |
+          file_util::FileEnumerator::DIRECTORIES);
+  file_util::FileEnumerator::FindInfo file_util_info;
+#if defined(OS_WIN)
+  memset(&file_util_info, 0, sizeof(file_util_info));
+#endif  // defined(OS_WIN)
+
+  for (base::FilePath platform_path = file_enum.Next();
+       !platform_path.empty();
+       platform_path = file_enum.Next()) {
+    // Skip symlinks.
+    if (file_util::IsLink(platform_path))
+      continue;
+
+    file_enum.GetFindInfo(&file_util_info);
+
+    // NativeMediaFileUtil skip criteria.
+    if (ShouldSkip(platform_path))
+      continue;
+    if (!file_util::FileEnumerator::IsDirectory(file_util_info) &&
+        !GetMediaPathFilter(context)->Match(platform_path))
+      continue;
+
+    fileapi::DirectoryEntry entry;
+    entry.is_directory = file_util::FileEnumerator::IsDirectory(file_util_info);
+    entry.name = platform_path.BaseName().value();
+    entry.size = file_util::FileEnumerator::GetFilesize(file_util_info);
+    entry.last_modified_time =
+        file_util::FileEnumerator::GetLastModifiedTime(file_util_info);
+
+    file_list->push_back(entry);
+  }
+
+  return base::PLATFORM_FILE_OK;
+}
+
+base::PlatformFileError NativeMediaFileUtil::DeleteDirectorySync(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url) {
+  DCHECK(IsOnTaskRunnerThread(context));
+  base::FilePath file_path;
+  base::PlatformFileError error = GetLocalFilePath(context, url, &file_path);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+  return fileapi::NativeFileUtil::DeleteDirectory(file_path);
+}
+
+base::PlatformFileError NativeMediaFileUtil::CreateSnapshotFileSync(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url,
+    base::PlatformFileInfo* file_info,
+    base::FilePath* platform_path,
+    scoped_refptr<webkit_blob::ShareableFileReference>* file_ref) {
+  DCHECK(IsOnTaskRunnerThread(context));
+  base::PlatformFileError error =
+      GetFileInfoSync(context, url, file_info, platform_path);
+  if (error == base::PLATFORM_FILE_OK && file_info->is_directory)
+    error = base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+  if (error == base::PLATFORM_FILE_OK)
+    error = NativeMediaFileUtil::IsMediaFile(*platform_path);
+
+  // We're just returning the local file information.
+  *file_ref = scoped_refptr<webkit_blob::ShareableFileReference>();
+
+  return error;
+}
+
+base::PlatformFileError NativeMediaFileUtil::GetFilteredLocalFilePath(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& file_system_url,
+    base::FilePath* local_file_path) {
+  DCHECK(IsOnTaskRunnerThread(context));
+  base::FilePath file_path;
+  base::PlatformFileError error =
+      GetLocalFilePath(context, file_system_url, &file_path);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+  if (!GetMediaPathFilter(context)->Match(file_path))
+    return base::PLATFORM_FILE_ERROR_SECURITY;
+
+  *local_file_path = file_path;
+  return base::PLATFORM_FILE_OK;
+}
+
+base::PlatformFileError
+NativeMediaFileUtil::GetFilteredLocalFilePathForExistingFileOrDirectory(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& file_system_url,
+    base::PlatformFileError failure_error,
+    base::FilePath* local_file_path) {
+  DCHECK(IsOnTaskRunnerThread(context));
+  base::FilePath file_path;
+  base::PlatformFileError error =
+      GetLocalFilePath(context, file_system_url, &file_path);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+
+  if (!file_util::PathExists(file_path))
+    return failure_error;
+  base::PlatformFileInfo file_info;
+  if (!file_util::GetFileInfo(file_path, &file_info))
+    return base::PLATFORM_FILE_ERROR_FAILED;
+
+  if (!file_info.is_directory &&
+      !GetMediaPathFilter(context)->Match(file_path)) {
+    return failure_error;
+  }
+
+  *local_file_path = file_path;
+  return base::PLATFORM_FILE_OK;
 }
 
 }  // namespace chrome

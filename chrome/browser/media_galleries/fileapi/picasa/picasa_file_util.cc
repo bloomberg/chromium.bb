@@ -295,7 +295,7 @@ base::PlatformFileError PicasaFileUtil::GetLocalFilePath(
 }
 
 PicasaDataProvider* PicasaFileUtil::DataProvider() {
-  return chrome::ImportedMediaGalleryRegistry::picasa_data_provider();
+  return chrome::ImportedMediaGalleryRegistry::PicasaDataProvider();
 }
 
 }  // namespace picasa

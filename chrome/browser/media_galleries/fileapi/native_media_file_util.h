@@ -19,6 +19,11 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
   NativeMediaFileUtil();
   virtual ~NativeMediaFileUtil();
 
+  // Uses the MIME sniffer code, which actually looks into the file,
+  // to determine if it is really a media file (to avoid exposing
+  // non-media files with a media file extension.)
+  static base::PlatformFileError IsMediaFile(const base::FilePath& path);
+
   // AsyncFileUtil overrides.
   virtual bool CreateOrOpen(
       fileapi::FileSystemOperationContext* context,
@@ -82,12 +87,41 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
       const fileapi::FileSystemURL& url,
       const CreateSnapshotFileCallback& callback) OVERRIDE;
 
-  // Uses the MIME sniffer code, which actually looks into the file,
-  // to determine if it is really a media file (to avoid exposing
-  // non-media files with a media file extension.)
-  static base::PlatformFileError IsMediaFile(const base::FilePath& path);
-
  protected:
+  virtual void CreateDirectoryOnTaskRunnerThread(
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
+      bool exclusive,
+      bool recursive,
+      const StatusCallback& callback);
+  virtual void GetFileInfoOnTaskRunnerThread(
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
+      const GetFileInfoCallback& callback);
+  virtual void ReadDirectoryOnTaskRunnerThread(
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
+      const ReadDirectoryCallback& callback);
+  virtual void CopyOrMoveFileLocalOnTaskRunnerThread(
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& src_url,
+      const fileapi::FileSystemURL& dest_url,
+      bool copy,
+      const StatusCallback& callback);
+  virtual void CopyInForeignFileOnTaskRunnerThread(
+      fileapi::FileSystemOperationContext* context,
+      const base::FilePath& src_file_path,
+      const fileapi::FileSystemURL& dest_url,
+      const StatusCallback& callback);
+  virtual void DeleteDirectoryOnTaskRunnerThread(
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
+      const StatusCallback& callback);
+  virtual void CreateSnapshotFileOnTaskRunnerThread(
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
+      const CreateSnapshotFileCallback& callback);
+
   // The following methods should only be called on the task runner thread.
 
   // Necessary for copy/move to succeed.
@@ -152,39 +186,6 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
       base::PlatformFileError failure_error,
       base::FilePath* local_file_path);
 
-  virtual void CreateDirectoryOnTaskRunnerThread(
-      fileapi::FileSystemOperationContext* context,
-      const fileapi::FileSystemURL& url,
-      bool exclusive,
-      bool recursive,
-      const StatusCallback& callback);
-  virtual void GetFileInfoOnTaskRunnerThread(
-      fileapi::FileSystemOperationContext* context,
-      const fileapi::FileSystemURL& url,
-      const GetFileInfoCallback& callback);
-  virtual void ReadDirectoryOnTaskRunnerThread(
-      fileapi::FileSystemOperationContext* context,
-      const fileapi::FileSystemURL& url,
-      const ReadDirectoryCallback& callback);
-  virtual void CopyOrMoveFileLocalOnTaskRunnerThread(
-      fileapi::FileSystemOperationContext* context,
-      const fileapi::FileSystemURL& src_url,
-      const fileapi::FileSystemURL& dest_url,
-      bool copy,
-      const StatusCallback& callback);
-  virtual void CopyInForeignFileOnTaskRunnerThread(
-      fileapi::FileSystemOperationContext* context,
-      const base::FilePath& src_file_path,
-      const fileapi::FileSystemURL& dest_url,
-      const StatusCallback& callback);
-  virtual void DeleteDirectoryOnTaskRunnerThread(
-      fileapi::FileSystemOperationContext* context,
-      const fileapi::FileSystemURL& url,
-      const StatusCallback& callback);
-  virtual void CreateSnapshotFileOnTaskRunnerThread(
-      fileapi::FileSystemOperationContext* context,
-      const fileapi::FileSystemURL& url,
-      const CreateSnapshotFileCallback& callback);
 
   base::WeakPtrFactory<NativeMediaFileUtil> weak_factory_;
 

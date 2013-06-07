@@ -337,7 +337,8 @@ class ExtensionGalleriesHost
         DCHECK(mtp_device_host.get());
         media_device_map_references_[pref_id] = mtp_device_host;
       }
-      DCHECK(!fsid.empty());
+      if (fsid.empty())
+        continue;
 
       MediaFileSystemInfo new_entry(
           MediaGalleriesDialogController::GetGalleryDisplayNameNoAttachment(
@@ -558,20 +559,22 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     // Sanity checks for |path|.
     CHECK(path.IsAbsolute());
     CHECK(!path.ReferencesParent());
-    std::string fs_name(extension_misc::kMediaFileSystemPathPart);
 
     std::string fsid;
     if (StorageInfo::IsITunesDevice(device_id)) {
-      NOTIMPLEMENTED();
+      ImportedMediaGalleryRegistry* imported_registry =
+          ImportedMediaGalleryRegistry::GetInstance();
+      fsid = imported_registry->RegisterITunesFilesystemOnUIThread(path);
     } else if (StorageInfo::IsPicasaDevice(device_id)) {
-      fsid = ImportedMediaGalleryRegistry::RegisterPicasaFilesystemOnUIThread(
+      ImportedMediaGalleryRegistry* imported_registry =
+          ImportedMediaGalleryRegistry::GetInstance();
+      fsid = imported_registry->RegisterPicasaFilesystemOnUIThread(
           path);
     } else {
+      std::string fs_name(extension_misc::kMediaFileSystemPathPart);
       fsid = IsolatedContext::GetInstance()->RegisterFileSystemForPath(
           fileapi::kFileSystemTypeNativeMedia, path, &fs_name);
     }
-
-    CHECK(!fsid.empty());
     return fsid;
   }
 
@@ -594,6 +597,11 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   }
 
   virtual void RevokeFileSystem(const std::string& fsid) OVERRIDE {
+    ImportedMediaGalleryRegistry* imported_registry =
+        ImportedMediaGalleryRegistry::GetInstance();
+    if (imported_registry->RevokeImportedFilesystemOnUIThread(fsid))
+      return;
+
     IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
   }
 

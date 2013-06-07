@@ -244,15 +244,10 @@ MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
       extension_prefs_for_testing_(NULL) {
   AddDefaultGalleriesIfFreshProfile();
 
-  // TODO(vandebo) Turn this back on when the iTunes code is ready.
-  // Temporarily turned off because it adds an extra user-visible entry to the
-  // preferences that does not quite work.
-#if 0
   // Look for optional default galleries every time.
   itunes::ITunesFinder::FindITunesLibrary(
       base::Bind(&MediaGalleriesPreferences::OnITunesDeviceID,
                  weak_factory_.GetWeakPtr()));
-#endif
 
   // TODO(tommycli): Turn on when Picasa code is ready.
 #if 0
@@ -299,6 +294,10 @@ void MediaGalleriesPreferences::AddDefaultGalleriesIfFreshProfile() {
 
 void MediaGalleriesPreferences::OnITunesDeviceID(const std::string& device_id) {
   DCHECK(!device_id.empty());
+  // TODO(vandebo): Since we only want to support one iTunes location (and
+  // it is possible for it to move), but we want to preserve the user's
+  // permissions for "the" iTunes gallery, we need to Amend any existing
+  // iTunes galleries instead of adding a new one.
   AddGalleryWithName(device_id, ASCIIToUTF16(kITunesGalleryName),
                      base::FilePath(), false /*not user added*/);
 }

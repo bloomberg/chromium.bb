@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/media_galleries/fileapi/itunes_data_provider.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/picasa_data_provider.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -46,10 +47,10 @@ ImportedMediaGalleryRegistry* ImportedMediaGalleryRegistry::GetInstance() {
   return g_imported_media_gallery_registry.Pointer();
 }
 
-// static
 std::string ImportedMediaGalleryRegistry::RegisterPicasaFilesystemOnUIThread(
     const base::FilePath& database_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!database_path.empty());
 
   std::string fsid =
       fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
@@ -60,63 +61,128 @@ std::string ImportedMediaGalleryRegistry::RegisterPicasaFilesystemOnUIThread(
   if (fsid.empty())
     return "";
 
-  MediaTaskRunner()->PostTask(
-      FROM_HERE,
-      Bind(&ImportedMediaGalleryRegistry::RegisterPicasaFileSystem,
-           base::Unretained(GetInstance()), database_path));
+  picasa_fsids_.insert(fsid);
+
+  if (picasa_fsids_.size() == 1) {
+    MediaTaskRunner()->PostTask(
+        FROM_HERE,
+        Bind(&ImportedMediaGalleryRegistry::RegisterPicasaFileSystem,
+             base::Unretained(this), database_path));
+#ifndef NDEBUG
+    picasa_database_path_ = database_path;
+  } else {
+    DCHECK_EQ(picasa_database_path_.value(), database_path.value());
+#endif
+  }
 
   return fsid;
 }
 
-// static
-bool ImportedMediaGalleryRegistry::RevokePicasaFilesystemOnUIThread(
+std::string ImportedMediaGalleryRegistry::RegisterITunesFilesystemOnUIThread(
+    const base::FilePath& library_xml_path) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!library_xml_path.empty());
+
+  std::string fsid =
+      fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
+           fileapi::kFileSystemTypeItunes,
+           extension_misc::kMediaFileSystemPathPart,
+           base::FilePath());
+
+  if (fsid.empty())
+    return std::string();
+
+  itunes_fsids_.insert(fsid);
+
+  if (itunes_fsids_.size() == 1) {
+    MediaTaskRunner()->PostTask(
+        FROM_HERE,
+        Bind(&ImportedMediaGalleryRegistry::RegisterITunesFileSystem,
+             base::Unretained(this), library_xml_path));
+#ifndef NDEBUG
+    itunes_xml_library_path_ = library_xml_path;
+  } else {
+    DCHECK_EQ(itunes_xml_library_path_.value(), library_xml_path.value());
+#endif
+  }
+
+  return fsid;
+}
+
+bool ImportedMediaGalleryRegistry::RevokeImportedFilesystemOnUIThread(
     const std::string& fsid) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  if (!fileapi::IsolatedContext::GetInstance()->RevokeFileSystem(fsid))
-    return false;
+  if (picasa_fsids_.erase(fsid)) {
+    if (picasa_fsids_.empty()) {
+      MediaTaskRunner()->PostTask(
+          FROM_HERE,
+          Bind(&ImportedMediaGalleryRegistry::RevokePicasaFileSystem,
+               base::Unretained(this)));
+    }
+    return fileapi::IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
+  }
 
-  MediaTaskRunner()->PostTask(
-      FROM_HERE,
-      Bind(&ImportedMediaGalleryRegistry::RevokePicasaFileSystem,
-           base::Unretained(GetInstance())));
+  if (itunes_fsids_.erase(fsid)) {
+    if (itunes_fsids_.empty()) {
+      MediaTaskRunner()->PostTask(
+          FROM_HERE,
+          Bind(&ImportedMediaGalleryRegistry::RevokeITunesFileSystem,
+               base::Unretained(this)));
+    }
+    return fileapi::IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
+  }
 
-  return true;
+  return false;
 }
 
 // static
 picasa::PicasaDataProvider*
-ImportedMediaGalleryRegistry::picasa_data_provider() {
+ImportedMediaGalleryRegistry::PicasaDataProvider() {
   DCHECK(CurrentlyOnMediaTaskRunnerThread());
   DCHECK(GetInstance()->picasa_data_provider_);
   return GetInstance()->picasa_data_provider_.get();
 }
 
-ImportedMediaGalleryRegistry::ImportedMediaGalleryRegistry()
-    : picasa_filesystems_count_(0) {
+// static
+itunes::ITunesDataProvider*
+ImportedMediaGalleryRegistry::ITunesDataProvider() {
+  DCHECK(CurrentlyOnMediaTaskRunnerThread());
+  DCHECK(GetInstance()->itunes_data_provider_);
+  return GetInstance()->itunes_data_provider_.get();
 }
 
+ImportedMediaGalleryRegistry::ImportedMediaGalleryRegistry() {}
+
 ImportedMediaGalleryRegistry::~ImportedMediaGalleryRegistry() {
-  DCHECK_EQ(0, picasa_filesystems_count_);
+  DCHECK_EQ(0U, picasa_fsids_.size());
+  DCHECK_EQ(0U, itunes_fsids_.size());
 }
 
 void ImportedMediaGalleryRegistry::RegisterPicasaFileSystem(
     const base::FilePath& database_path) {
   DCHECK(CurrentlyOnMediaTaskRunnerThread());
-
-  if (++picasa_filesystems_count_ == 1) {
-    DCHECK(!picasa_data_provider_);
-    picasa_data_provider_.reset(new picasa::PicasaDataProvider(database_path));
-  }
+  DCHECK(!picasa_data_provider_);
+  picasa_data_provider_.reset(new picasa::PicasaDataProvider(database_path));
 }
 
 void ImportedMediaGalleryRegistry::RevokePicasaFileSystem() {
   DCHECK(CurrentlyOnMediaTaskRunnerThread());
+  DCHECK(picasa_data_provider_);
+  picasa_data_provider_.reset();
+}
 
-  if (--picasa_filesystems_count_ == 0) {
-    DCHECK(picasa_data_provider_);
-    picasa_data_provider_.reset(NULL);
-  }
+void ImportedMediaGalleryRegistry::RegisterITunesFileSystem(
+    const base::FilePath& xml_library_path) {
+  DCHECK(CurrentlyOnMediaTaskRunnerThread());
+  DCHECK(!itunes_data_provider_);
+  itunes_data_provider_.reset(new itunes::ITunesDataProvider(xml_library_path));
+}
+
+void ImportedMediaGalleryRegistry::RevokeITunesFileSystem() {
+  DCHECK(CurrentlyOnMediaTaskRunnerThread());
+  DCHECK(itunes_data_provider_);
+  itunes_data_provider_.reset();
 }
 
 }  // namespace chrome

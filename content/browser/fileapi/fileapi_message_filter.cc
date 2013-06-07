@@ -708,10 +708,12 @@ void FileAPIMessageFilter::DidCreateSnapshot(
     //   when the filesystem has been granted permissions. This happens with:
     //   - Drive filesystems
     //   - Picasa filesystems
+    //   - iTunes filesystems
     DCHECK(snapshot_file.get() ||
            fileapi::SandboxMountPointProvider::IsSandboxType(url.type()) ||
            url.type() == fileapi::kFileSystemTypeDrive ||
-           url.type() == fileapi::kFileSystemTypePicasa);
+           url.type() == fileapi::kFileSystemTypePicasa ||
+           url.type() == fileapi::kFileSystemTypeItunes);
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
         process_id_, platform_path);
     if (snapshot_file.get()) {
