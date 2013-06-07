@@ -60,7 +60,7 @@ void UserAgentState::Set(const std::string& user_agent, bool overriding) {
 }
 
 bool IsMicrosoftSiteThatNeedsSpoofingForSilverlight(const GURL& url) {
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   // The landing page for updating Silverlight gives a confusing experience
   // in browsers that Silverlight doesn't officially support; spoof as
   // Safari to reduce the chance that users won't complete updates.
@@ -74,7 +74,7 @@ bool IsMicrosoftSiteThatNeedsSpoofingForSilverlight(const GURL& url) {
 }
 
 bool IsYahooSiteThatNeedsSpoofingForSilverlight(const GURL& url) {
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   if ((url.host() == "downloads.yahoo.co.jp" &&
       StartsWithASCII(url.path(), "/docs/silverlight/", true)) ||
       url.host() == "gyao.yahoo.co.jp") {
@@ -99,7 +99,7 @@ const std::string& UserAgentState::Get(const GURL& url) const {
     if (IsMicrosoftSiteThatNeedsSpoofingForSilverlight(url) ||
         IsYahooSiteThatNeedsSpoofingForSilverlight(url)) {
       if (user_agent_for_spoofing_hack_.empty()) {
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
         user_agent_for_spoofing_hack_ =
             BuildUserAgentFromProduct("Version/5.1.1 Safari/534.51.22");
 #elif defined(OS_WIN)
