@@ -255,7 +255,7 @@
     CGFloat y = 0;
 
     NSFont* font = [NSFont systemFontOfSize:message_center::kMessageFontSize];
-    CGFloat lineHeight = NSHeight([font boundingRectForFont]);
+    CGFloat lineHeight = roundf(NSHeight([font boundingRectForFont]));
 
     const int kNumNotifications =
         std::min(items.size(), message_center::kNotificationMaximumItems);
