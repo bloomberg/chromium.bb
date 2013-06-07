@@ -8565,6 +8565,22 @@ other types of suffix sets.
   <summary>The number of installed apps when a profile is opened.</summary>
 </histogram>
 
+<histogram name="Profile.CreateResult" enum="ProfileCreateResult">
+  <summary>Result (final status) when creating a new profile.</summary>
+</histogram>
+
+<histogram name="Profile.CreateTime" units="milliseconds">
+  <summary>Back-end time elapsed while creating a new profile.</summary>
+</histogram>
+
+<histogram name="Profile.CreateTimeCanceled" units="milliseconds">
+  <summary>
+    Time elapsed before the user decided to cancel creation of a new profile.
+    Since only managed-user profile creation can be canceled, this time comes
+    from managed-user registration.
+  </summary>
+</histogram>
+
 <histogram name="Renderer.PixelIncreaseFromTransitions">
   <summary>
     A lower-bound on the percentage increase in memory that would result from
@@ -15549,6 +15565,14 @@ other types of suffix sets.
   <int value="1" label="tapdown"/>
   <int value="2" label="tapunconfirmed"/>
   <int value="3" label="tapdown + tapunconfirmed"/>
+</enum>
+
+<enum name="ProfileCreateResult" type="int">
+  <int value="0" label="Failed locally"/>
+  <int value="1" label="Failed remotely"/>
+  <int value="2" label="Created but not initialized (should never happen)"/>
+  <int value="3" label="Succeeded"/>
+  <int value="4" label="Canceled"/>
 </enum>
 
 <enum name="ProtocolVersion" type="int">
