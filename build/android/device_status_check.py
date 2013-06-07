@@ -41,8 +41,8 @@ def DeviceInfo(serial):
       'getprop ro.setupwizard.mode') == 'DISABLED'
   battery = AdbShellCmd('dumpsys battery')
   install_output = GetCmdOutput(
-    ['%s/build/android/adb_install_apk.py' % constants.CHROME_DIR, '--apk',
-     '%s/build/android/CheckInstallApk-debug.apk' % constants.CHROME_DIR])
+    ['%s/build/android/adb_install_apk.py' % constants.DIR_SOURCE_ROOT, '--apk',
+     '%s/build/android/CheckInstallApk-debug.apk' % constants.DIR_SOURCE_ROOT])
   install_speed_found = re.findall('(\d+) KB/s', install_output)
   if install_speed_found:
     install_speed = int(install_speed_found[0])

@@ -11,8 +11,6 @@ import sys
 
 DIR_SOURCE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                os.pardir, os.pardir, os.pardir))
-# TODO(bulach): remove this.
-CHROME_DIR = DIR_SOURCE_ROOT
 EMULATOR_SDK_ROOT = os.path.abspath(os.path.join(DIR_SOURCE_ROOT, os.pardir,
                                                  os.pardir))
 

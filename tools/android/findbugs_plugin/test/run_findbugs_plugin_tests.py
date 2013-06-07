@@ -32,8 +32,8 @@ def main(argv):
   options, _ = parser.parse_args()
 
   if not options.known_bugs:
-    options.known_bugs = os.path.join(constants.CHROME_DIR, 'tools', 'android',
-                                      'findbugs_plugin', 'test',
+    options.known_bugs = os.path.join(constants.DIR_SOURCE_ROOT, 'tools',
+                                      'android', 'findbugs_plugin', 'test',
                                       'expected_result.txt')
   if not options.only_analyze:
     options.only_analyze = 'org.chromium.tools.findbugs.plugin.*'
