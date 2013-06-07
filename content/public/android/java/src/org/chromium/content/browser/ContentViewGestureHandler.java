@@ -645,12 +645,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
         mIgnoreSingleTap = value;
     }
 
-    private float calculateDragAngle(float dx, float dy) {
-        dx = Math.abs(dx);
-        dy = Math.abs(dy);
-        return (float) Math.atan2(dy, dx);
-    }
-
     private void setClickXAndY(int x, int y) {
         mSingleTapX = x;
         mSingleTapY = y;
@@ -768,21 +762,23 @@ class ContentViewGestureHandler implements LongPressDelegate {
                 return true;
             }
         }
-        int forward = EVENT_NOT_FORWARDED;
         if (mPendingMotionEvents.isEmpty()) {
-            forward = sendTouchEventToNative(event);
-        }
-        if (!mPendingMotionEvents.isEmpty() || forward != EVENT_NOT_FORWARDED) {
+            // Add the event to the pending queue prior to calling sendTouchEventToNative.
+            // When sending an event to native, the callback to confirmTouchEvent can be
+            // synchronous or asynchronous and confirmTouchEvent expects the event to be
+            // in the queue when it is called.
+            MotionEvent clone = MotionEvent.obtain(event);
+            mPendingMotionEvents.add(clone);
+
+            int forward = sendTouchEventToNative(clone);
+            if (forward == EVENT_NOT_FORWARDED) mPendingMotionEvents.remove(clone);
+            return forward != EVENT_NOT_FORWARDED;
+        } else {
             // Copy the event, as the original may get mutated after this method returns.
             MotionEvent clone = MotionEvent.obtain(event);
             mPendingMotionEvents.add(clone);
-            // If touch cancel was sent, remember the event.
-            if (forward == EVENT_CONVERTED_TO_CANCEL) {
-                mLastCancelledEvent = clone;
-            }
             return true;
         }
-        return false;
     }
 
     private int sendTouchEventToNative(MotionEvent event) {
@@ -791,19 +787,26 @@ class ContentViewGestureHandler implements LongPressDelegate {
         TouchPoint[] pts = new TouchPoint[event.getPointerCount()];
         int type = TouchPoint.createTouchPoints(event, pts);
 
-        if (type != TouchPoint.CONVERSION_ERROR) {
-            if (!mNativeScrolling && !mPinchInProgress) {
-                mTouchCancelEventSent = false;
-                if (mMotionEventDelegate.sendTouchEvent(event.getEventTime(), type, pts)) {
-                    mTouchEventTimeoutHandler.start(event.getEventTime(), pts);
-                    return EVENT_FORWARDED_TO_NATIVE;
-                }
-            } else if (!mTouchCancelEventSent) {
-                mTouchCancelEventSent = true;
-                if (mMotionEventDelegate.sendTouchEvent(event.getEventTime(),
-                        TouchPoint.TOUCH_EVENT_TYPE_CANCEL, pts)) {
-                    return EVENT_CONVERTED_TO_CANCEL;
-                }
+        if (type == TouchPoint.CONVERSION_ERROR) return EVENT_NOT_FORWARDED;
+
+        if (!mNativeScrolling && !mPinchInProgress) {
+            mTouchCancelEventSent = false;
+
+            if (mMotionEventDelegate.sendTouchEvent(event.getEventTime(), type, pts)) {
+                mTouchEventTimeoutHandler.start(event.getEventTime(), pts);
+                return EVENT_FORWARDED_TO_NATIVE;
+            }
+        } else if (!mTouchCancelEventSent) {
+            mTouchCancelEventSent = true;
+
+            MotionEvent previousCancelEvent = mLastCancelledEvent;
+            mLastCancelledEvent = event;
+
+            if (mMotionEventDelegate.sendTouchEvent(event.getEventTime(),
+                    TouchPoint.TOUCH_EVENT_TYPE_CANCEL, pts)) {
+                return EVENT_CONVERTED_TO_CANCEL;
+            } else {
+                mLastCancelledEvent = previousCancelEvent;
             }
         }
         return EVENT_NOT_FORWARDED;
@@ -855,7 +858,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
     /**
      * Respond to a MotionEvent being returned from the native side.
-     * @param ackResult Whether the MotionEvent was consumed on the native side.
+     * @param ackResult The status acknowledgment code.
      */
     void confirmTouchEvent(int ackResult) {
         if (mTouchEventTimeoutHandler.confirmTouchEvent()) return;
@@ -916,8 +919,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
             if (!mPendingMotionEvents.isEmpty()) {
                 trySendNextEventToNative(mPendingMotionEvents.peekFirst());
             }
-        } else if (forward == EVENT_CONVERTED_TO_CANCEL) {
-            mLastCancelledEvent = mPendingMotionEvents.peekFirst();
         }
     }
 
