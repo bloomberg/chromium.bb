@@ -39,7 +39,7 @@
 namespace WebCore {
 
 class KURL;
-class WebKitMediaSource;
+class MediaSourceBase;
 
 class MediaSourceRegistry : public URLRegistry {
 public:
@@ -50,10 +50,10 @@ public:
     virtual void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*) OVERRIDE;
     virtual void unregisterURL(const KURL&) OVERRIDE;
 
-    WebKitMediaSource* lookupMediaSource(const String& url);
+    MediaSourceBase* lookupMediaSource(const String& url);
 
 private:
-    HashMap<String, RefPtr<WebKitMediaSource> > m_mediaSources;
+    HashMap<String, RefPtr<MediaSourceBase> > m_mediaSources;
 };
 
 } // namespace WebCore

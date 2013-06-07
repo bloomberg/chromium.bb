@@ -78,8 +78,8 @@
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
+#include "modules/mediasource/MediaSourceBase.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
-#include "modules/mediasource/WebKitMediaSource.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityPolicy.h"
@@ -1886,7 +1886,7 @@ void HTMLMediaElement::seek(double time, ExceptionCode& ec)
 
     // Always notify the media engine of a seek if the source is not closed. This ensures that the source is
     // always in a flushed state when the 'seeking' event fires.
-    if (m_mediaSource && m_mediaSource->readyState() != WebKitMediaSource::closedKeyword())
+    if (m_mediaSource && m_mediaSource->isClosed())
         noSeekRequired = false;
 
     if (noSeekRequired) {
@@ -2212,7 +2212,7 @@ void HTMLMediaElement::closeMediaSource()
     if (!m_mediaSource)
         return;
 
-    m_mediaSource->setReadyState(WebKitMediaSource::closedKeyword());
+    m_mediaSource->close();
     m_mediaSource = 0;
 }
 
@@ -3959,7 +3959,7 @@ void HTMLMediaElement::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) con
     info.addMember(m_currentSourceNode, "currentSourceNode");
     info.addMember(m_nextChildNodeToConsider, "nextChildNodeToConsider");
     info.addMember(m_player, "player");
-    info.addMember(static_cast<ActiveDOMObject*>(m_mediaSource.get()), "mediaSource");
+    info.addMember(m_mediaSource, "mediaSource");
     info.addMember(m_textTracks, "textTracks");
     info.addMember(m_textTracksWhenResourceSelectionBegan, "textTracksWhenResourceSelectionBegan");
     info.addMember(m_cueTree, "cueTree");

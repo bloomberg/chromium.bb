@@ -32,74 +32,41 @@
 #define WebKitMediaSource_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/ActiveDOMObject.h"
-#include "core/dom/GenericEventQueue.h"
-#include "core/html/URLRegistry.h"
-#include "core/platform/graphics/MediaSourcePrivate.h"
+#include "modules/mediasource/MediaSourceBase.h"
 #include "modules/mediasource/WebKitSourceBuffer.h"
 #include "modules/mediasource/WebKitSourceBufferList.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class WebKitMediaSource : public RefCounted<WebKitMediaSource>, public ScriptWrappable, public URLRegistrable, public EventTarget, public ActiveDOMObject {
+class WebKitMediaSource : public MediaSourceBase, public ScriptWrappable {
 public:
-    static const String& openKeyword();
-    static const String& closedKeyword();
-    static const String& endedKeyword();
-
     static PassRefPtr<WebKitMediaSource> create(ScriptExecutionContext*);
     virtual ~WebKitMediaSource() { }
 
     // WebKitMediaSource.idl methods
     WebKitSourceBufferList* sourceBuffers();
     WebKitSourceBufferList* activeSourceBuffers();
-    double duration() const;
-    void setDuration(double, ExceptionCode&);
     WebKitSourceBuffer* addSourceBuffer(const String& type, ExceptionCode&);
     void removeSourceBuffer(WebKitSourceBuffer*, ExceptionCode&);
-    const String& readyState() const;
-    void setReadyState(const String&);
-    void endOfStream(const String& error, ExceptionCode&);
     static bool isTypeSupported(const String& type);
-
-    void setPrivateAndOpen(PassOwnPtr<MediaSourcePrivate>);
 
     // EventTarget interface
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
-    // ActiveDOMObject interface
-    virtual bool hasPendingActivity() const OVERRIDE;
-    virtual void stop() OVERRIDE;
-
-    // URLRegistrable
-    virtual URLRegistry& registry() const OVERRIDE;
-
-    using RefCounted<WebKitMediaSource>::ref;
-    using RefCounted<WebKitMediaSource>::deref;
+    using RefCounted<MediaSourceBase>::ref;
+    using RefCounted<MediaSourceBase>::deref;
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
 private:
     explicit WebKitMediaSource(ScriptExecutionContext*);
 
-    virtual EventTargetData* eventTargetData() OVERRIDE;
-    virtual EventTargetData* ensureEventTargetData() OVERRIDE;
-
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
-
-    void scheduleEvent(const AtomicString& eventName);
-
-    EventTargetData m_eventTargetData;
-
-    String m_readyState;
-    OwnPtr<MediaSourcePrivate> m_private;
+    // MediaSourceBase interface
+    virtual void setReadyState(const AtomicString&) OVERRIDE;
 
     RefPtr<WebKitSourceBufferList> m_sourceBuffers;
     RefPtr<WebKitSourceBufferList> m_activeSourceBuffers;
-    OwnPtr<GenericEventQueue> m_asyncEventQueue;
 };
 
 } // namespace WebCore

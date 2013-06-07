@@ -333,6 +333,8 @@
       'indexeddb/WorkerContextIndexedDatabase.h',
       'indexeddb/chromium/IDBFactoryBackendInterfaceChromium.cpp',
       'indexeddb/chromium/IDBFactoryBackendInterfaceChromium.h',
+      'mediasource/MediaSourceBase.cpp',
+      'mediasource/MediaSourceBase.h',
       'mediasource/MediaSourceRegistry.cpp',
       'mediasource/MediaSourceRegistry.h',
       'mediasource/WebKitMediaSource.cpp',

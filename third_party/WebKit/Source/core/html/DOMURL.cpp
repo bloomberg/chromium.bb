@@ -36,12 +36,12 @@
 #include "core/html/PublicURLManager.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/platform/KURL.h"
-#include "modules/mediasource/WebKitMediaSource.h"
+#include "modules/mediasource/MediaSourceBase.h"
 #include "modules/mediastream/MediaStream.h"
 
 namespace WebCore {
 
-String DOMURL::createObjectURL(ScriptExecutionContext* scriptExecutionContext, WebKitMediaSource* source)
+String DOMURL::createObjectURL(ScriptExecutionContext* scriptExecutionContext, MediaSourceBase* source)
 {
     // Since WebWorkers cannot obtain MediaSource objects, we should be on the main thread.
     ASSERT(isMainThread());

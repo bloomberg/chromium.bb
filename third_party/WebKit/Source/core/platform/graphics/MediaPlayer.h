@@ -41,8 +41,8 @@ class IntRect;
 class IntSize;
 class KURL;
 class MediaPlayer;
+class MediaSourceBase;
 class TimeRanges;
-class WebKitMediaSource;
 
 class MediaPlayerClient {
 public:
@@ -106,7 +106,7 @@ public:
     virtual ~MediaPlayer() { }
 
     virtual void load(const String& url) = 0;
-    virtual void load(const String& url, PassRefPtr<WebKitMediaSource>) = 0;
+    virtual void load(const String& url, PassRefPtr<MediaSourceBase>) = 0;
 
     virtual void prepareToPlay() = 0;
     virtual PlatformLayer* platformLayer() const = 0;

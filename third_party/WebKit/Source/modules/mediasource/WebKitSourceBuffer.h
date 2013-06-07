@@ -61,8 +61,6 @@ private:
     WebKitSourceBuffer(PassOwnPtr<SourceBufferPrivate>, PassRefPtr<WebKitMediaSource>);
 
     bool isRemoved() const;
-    bool isOpen() const;
-    void openIfInEndedState();
 
     OwnPtr<SourceBufferPrivate> m_private;
     RefPtr<WebKitMediaSource> m_source;

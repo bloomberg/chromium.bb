@@ -37,7 +37,7 @@
 namespace WebKit {
 
 
-WebMediaSourceImpl::WebMediaSourceImpl(PassRefPtr<WebCore::WebKitMediaSource> mediaSource)
+WebMediaSourceImpl::WebMediaSourceImpl(PassRefPtr<WebCore::MediaSourceBase> mediaSource)
 {
     m_mediaSource = mediaSource;
 }

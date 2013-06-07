@@ -31,7 +31,6 @@
 #include "config.h"
 #include "modules/mediasource/WebKitMediaSource.h"
 
-#include "core/dom/Event.h"
 #include "core/html/TimeRanges.h"
 #include "core/platform/ContentType.h"
 #include "core/platform/MIMETypeRegistry.h"
@@ -49,31 +48,11 @@ PassRefPtr<WebKitMediaSource> WebKitMediaSource::create(ScriptExecutionContext* 
 }
 
 WebKitMediaSource::WebKitMediaSource(ScriptExecutionContext* context)
-    : ActiveDOMObject(context)
-    , m_readyState(closedKeyword())
-    , m_asyncEventQueue(GenericEventQueue::create(this))
+    : MediaSourceBase(context)
 {
     ScriptWrappable::init(this);
-    m_sourceBuffers = WebKitSourceBufferList::create(scriptExecutionContext(), m_asyncEventQueue.get());
-    m_activeSourceBuffers = WebKitSourceBufferList::create(scriptExecutionContext(), m_asyncEventQueue.get());
-}
-
-const String& WebKitMediaSource::openKeyword()
-{
-    DEFINE_STATIC_LOCAL(const String, open, (ASCIILiteral("open")));
-    return open;
-}
-
-const String& WebKitMediaSource::closedKeyword()
-{
-    DEFINE_STATIC_LOCAL(const String, closed, (ASCIILiteral("closed")));
-    return closed;
-}
-
-const String& WebKitMediaSource::endedKeyword()
-{
-    DEFINE_STATIC_LOCAL(const String, ended, (ASCIILiteral("ended")));
-    return ended;
+    m_sourceBuffers = WebKitSourceBufferList::create(scriptExecutionContext(), asyncEventQueue());
+    m_activeSourceBuffers = WebKitSourceBufferList::create(scriptExecutionContext(), asyncEventQueue());
 }
 
 WebKitSourceBufferList* WebKitMediaSource::sourceBuffers()
@@ -85,24 +64,6 @@ WebKitSourceBufferList* WebKitMediaSource::activeSourceBuffers()
 {
     // FIXME(91649): support track selection
     return m_activeSourceBuffers.get();
-}
-
-double WebKitMediaSource::duration() const
-{
-    return m_readyState == closedKeyword() ? std::numeric_limits<float>::quiet_NaN() : m_private->duration();
-}
-
-void WebKitMediaSource::setDuration(double duration, ExceptionCode& ec)
-{
-    if (duration < 0.0 || std::isnan(duration)) {
-        ec = INVALID_ACCESS_ERR;
-        return;
-    }
-    if (m_readyState != openKeyword()) {
-        ec = INVALID_STATE_ERR;
-        return;
-    }
-    m_private->setDuration(duration);
 }
 
 WebKitSourceBuffer* WebKitMediaSource::addSourceBuffer(const String& type, ExceptionCode& ec)
@@ -124,7 +85,7 @@ WebKitSourceBuffer* WebKitMediaSource::addSourceBuffer(const String& type, Excep
 
     // 4. If the readyState attribute is not in the "open" state then throw an
     // INVALID_STATE_ERR exception and abort these steps.
-    if (!m_private || m_readyState != openKeyword()) {
+    if (!isOpen()) {
         ec = INVALID_STATE_ERR;
         return 0;
     }
@@ -132,33 +93,16 @@ WebKitSourceBuffer* WebKitMediaSource::addSourceBuffer(const String& type, Excep
     // 5. Create a new SourceBuffer object and associated resources.
     ContentType contentType(type);
     Vector<String> codecs = contentType.codecs();
-    OwnPtr<SourceBufferPrivate> sourceBufferPrivate;
-    switch (m_private->addSourceBuffer(contentType.type(), codecs, &sourceBufferPrivate)) {
-    case MediaSourcePrivate::Ok: {
-        ASSERT(sourceBufferPrivate);
-        RefPtr<WebKitSourceBuffer> buffer = WebKitSourceBuffer::create(sourceBufferPrivate.release(), this);
-
-        // 6. Add the new object to sourceBuffers and fire a addsourcebuffer on that object.
-        m_sourceBuffers->add(buffer);
-        m_activeSourceBuffers->add(buffer);
-        // 7. Return the new object to the caller.
-        return buffer.get();
-    }
-    case MediaSourcePrivate::NotSupported:
-        // 2 (cont). If type contains a MIME type ... that is not supported with the types
-        // specified for the other SourceBuffer objects in sourceBuffers, then throw
-        // a NOT_SUPPORTED_ERR exception and abort these steps.
-        ec = NOT_SUPPORTED_ERR;
+    OwnPtr<SourceBufferPrivate> sourceBufferPrivate = createSourceBufferPrivate(contentType.type(), codecs, ec);
+    if (!sourceBufferPrivate)
         return 0;
-    case MediaSourcePrivate::ReachedIdLimit:
-        // 3 (cont). If the user agent can't handle any more SourceBuffer objects then throw
-        // a QUOTA_EXCEEDED_ERR exception and abort these steps.
-        ec = QUOTA_EXCEEDED_ERR;
-        return 0;
-    }
 
-    ASSERT_NOT_REACHED();
-    return 0;
+    RefPtr<WebKitSourceBuffer> buffer = WebKitSourceBuffer::create(sourceBufferPrivate.release(), this);
+    // 6. Add the new object to sourceBuffers and fire a addsourcebuffer on that object.
+    m_sourceBuffers->add(buffer);
+    m_activeSourceBuffers->add(buffer);
+    // 7. Return the new object to the caller.
+    return buffer.get();
 }
 
 void WebKitMediaSource::removeSourceBuffer(WebKitSourceBuffer* buffer, ExceptionCode& ec)
@@ -173,7 +117,7 @@ void WebKitMediaSource::removeSourceBuffer(WebKitSourceBuffer* buffer, Exception
 
     // 2. If sourceBuffers is empty then throw an INVALID_STATE_ERR exception and
     // abort these steps.
-    if (!m_private || !m_sourceBuffers->length()) {
+    if (isClosed() || !m_sourceBuffers->length()) {
         ec = INVALID_STATE_ERR;
         return;
     }
@@ -199,65 +143,31 @@ void WebKitMediaSource::removeSourceBuffer(WebKitSourceBuffer* buffer, Exception
     // FIXME(91649): support track selection
 }
 
-const String& WebKitMediaSource::readyState() const
-{
-    return m_readyState;
-}
-
-void WebKitMediaSource::setReadyState(const String& state)
+void WebKitMediaSource::setReadyState(const AtomicString& state)
 {
     ASSERT(state == openKeyword() || state == closedKeyword() || state == endedKeyword());
-    if (m_readyState == state)
+    String oldState = readyState();
+    if (oldState == state)
         return;
 
-    String oldState = m_readyState;
-    m_readyState = state;
+    MediaSourceBase::setReadyState(state);
 
-    if (m_readyState == closedKeyword()) {
+    if (isClosed()) {
         m_sourceBuffers->clear();
         m_activeSourceBuffers->clear();
-        m_private.clear();
         scheduleEvent(eventNames().webkitsourcecloseEvent);
         return;
     }
 
-    if (oldState == openKeyword() && m_readyState == endedKeyword()) {
+    if (oldState == openKeyword() && state == endedKeyword()) {
         scheduleEvent(eventNames().webkitsourceendedEvent);
         return;
     }
 
-    if (m_readyState == openKeyword()) {
+    if (isOpen()) {
         scheduleEvent(eventNames().webkitsourceopenEvent);
         return;
     }
-}
-
-void WebKitMediaSource::endOfStream(const String& error, ExceptionCode& ec)
-{
-    // 3.1 http://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#dom-endofstream
-    // 1. If the readyState attribute is not in the "open" state then throw an
-    // INVALID_STATE_ERR exception and abort these steps.
-    if (!m_private || m_readyState != openKeyword()) {
-        ec = INVALID_STATE_ERR;
-        return;
-    }
-
-    MediaSourcePrivate::EndOfStreamStatus eosStatus = MediaSourcePrivate::EosNoError;
-
-    if (error.isNull() || error.isEmpty())
-        eosStatus = MediaSourcePrivate::EosNoError;
-    else if (error == "network")
-        eosStatus = MediaSourcePrivate::EosNetworkError;
-    else if (error == "decode")
-        eosStatus = MediaSourcePrivate::EosDecodeError;
-    else {
-        ec = INVALID_ACCESS_ERR;
-        return;
-    }
-
-    // 2. Change the readyState attribute value to "ended".
-    setReadyState(endedKeyword());
-    m_private->endOfStream(eosStatus);
 }
 
 bool WebKitMediaSource::isTypeSupported(const String& type)
@@ -282,73 +192,18 @@ bool WebKitMediaSource::isTypeSupported(const String& type)
     return MIMETypeRegistry::isSupportedMediaSourceMIMEType(contentType.type(), codecs);
 }
 
-void WebKitMediaSource::setPrivateAndOpen(PassOwnPtr<MediaSourcePrivate> mediaSourcePrivate)
-{
-    ASSERT(mediaSourcePrivate);
-    ASSERT(!m_private);
-    m_private = mediaSourcePrivate;
-    setReadyState(openKeyword());
-}
-
 const AtomicString& WebKitMediaSource::interfaceName() const
 {
     return eventNames().interfaceForWebKitMediaSource;
-}
-
-ScriptExecutionContext* WebKitMediaSource::scriptExecutionContext() const
-{
-    return ActiveDOMObject::scriptExecutionContext();
-}
-
-bool WebKitMediaSource::hasPendingActivity() const
-{
-    return m_private || m_asyncEventQueue->hasPendingEvents()
-        || ActiveDOMObject::hasPendingActivity();
-}
-
-void WebKitMediaSource::stop()
-{
-    m_private.clear();
-    m_asyncEventQueue->cancelAllEvents();
-}
-
-EventTargetData* WebKitMediaSource::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* WebKitMediaSource::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-void WebKitMediaSource::scheduleEvent(const AtomicString& eventName)
-{
-    ASSERT(m_asyncEventQueue);
-
-    RefPtr<Event> event = Event::create(eventName, false, false);
-    event->setTarget(this);
-
-    m_asyncEventQueue->enqueueEvent(event.release());
 }
 
 void WebKitMediaSource::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
     ScriptWrappable::reportMemoryUsage(memoryObjectInfo);
-    ActiveDOMObject::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_eventTargetData, "eventTargetData");
-    info.addMember(m_readyState, "readyState");
-    info.addMember(m_private, "private");
+    MediaSourceBase::reportMemoryUsage(memoryObjectInfo);
     info.addMember(m_sourceBuffers, "sourceBuffers");
     info.addMember(m_activeSourceBuffers, "activeSourceBuffers");
-    info.addMember(m_asyncEventQueue, "asyncEventQueue");
 }
-
-URLRegistry& WebKitMediaSource::registry() const
-{
-    return MediaSourceRegistry::registry();
-}
-
 
 } // namespace WebCore

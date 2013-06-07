@@ -89,7 +89,7 @@ void WebKitSourceBuffer::setTimestampOffset(double offset, ExceptionCode& ec)
     // 4. If the readyState attribute of the parent media source is in the "ended" state then run the following steps:
     // 4.1 Set the readyState attribute of the parent media source to "open"
     // 4.2 Queue a task to fire a simple event named sourceopen at the parent media source.
-    openIfInEndedState();
+    m_source->openIfInEndedState();
 
     // 5. If this object is waiting for the end of a media segment to be appended, then throw an INVALID_STATE_ERR
     // and abort these steps.
@@ -123,7 +123,7 @@ void WebKitSourceBuffer::append(PassRefPtr<Uint8Array> data, ExceptionCode& ec)
     // 5. If the readyState attribute of media source is in the "ended" state then run the following steps:
     // 5.1. Set the readyState attribute of media source to "open"
     // 5.2. Queue a task to fire a simple event named sourceopen at media source.
-    openIfInEndedState();
+    m_source->openIfInEndedState();
 
     // Steps 6 & beyond are handled by the private implementation.
     m_private->append(data->data(), data->length());
@@ -136,7 +136,7 @@ void WebKitSourceBuffer::abort(ExceptionCode& ec)
     //    then throw an INVALID_STATE_ERR exception and abort these steps.
     // 2. If the readyState attribute of the parent media source is not in the "open" state
     //    then throw an INVALID_STATE_ERR exception and abort these steps.
-    if (isRemoved() || !isOpen()) {
+    if (isRemoved() || !m_source->isOpen()) {
         ec = INVALID_STATE_ERR;
         return;
     }
@@ -157,21 +157,6 @@ void WebKitSourceBuffer::removedFromMediaSource()
 bool WebKitSourceBuffer::isRemoved() const
 {
     return !m_source;
-}
-
-bool WebKitSourceBuffer::isOpen() const
-{
-    ASSERT(m_source);
-    return m_source->readyState() == WebKitMediaSource::openKeyword();
-}
-
-void WebKitSourceBuffer::openIfInEndedState()
-{
-    ASSERT(m_source);
-    if (m_source->readyState() != WebKitMediaSource::endedKeyword())
-        return;
-
-    m_source->setReadyState(WebKitMediaSource::openKeyword());
 }
 
 } // namespace WebCore

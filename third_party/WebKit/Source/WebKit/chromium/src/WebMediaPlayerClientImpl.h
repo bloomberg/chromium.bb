@@ -46,7 +46,10 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Threading.h"
 
-namespace WebCore { class AudioSourceProviderClient; }
+namespace WebCore {
+class AudioSourceProviderClient;
+class MediaSourceBase;
+}
 
 namespace WebKit {
 
@@ -89,7 +92,7 @@ public:
 
     // MediaPlayer methods:
     virtual void load(const WTF::String& url) OVERRIDE;
-    virtual void load(const WTF::String& url, PassRefPtr<WebCore::WebKitMediaSource>) OVERRIDE;
+    virtual void load(const WTF::String& url, PassRefPtr<WebCore::MediaSourceBase>) OVERRIDE;
 
     virtual WebKit::WebLayer* platformLayer() const OVERRIDE;
     virtual void play() OVERRIDE;
@@ -221,7 +224,7 @@ private:
     AudioSourceProviderImpl m_audioSourceProvider;
 #endif
 
-    RefPtr<WebCore::WebKitMediaSource> m_mediaSource;
+    RefPtr<WebCore::MediaSourceBase> m_mediaSource;
 };
 
 } // namespace WebKit

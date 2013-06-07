@@ -46,10 +46,11 @@ class ContentType;
 class Event;
 class HTMLSourceElement;
 class HTMLTrackElement;
+class KURL;
 class MediaController;
 class MediaControls;
 class MediaError;
-class KURL;
+class MediaSourceBase;
 class TextTrackList;
 class TimeRanges;
 #if ENABLE(ENCRYPTED_MEDIA_V2)
@@ -502,7 +503,7 @@ private:
 
     DisplayMode m_displayMode;
 
-    RefPtr<WebKitMediaSource> m_mediaSource;
+    RefPtr<MediaSourceBase> m_mediaSource;
 
     mutable double m_cachedTime;
     mutable double m_cachedTimeWallClockUpdateTime;

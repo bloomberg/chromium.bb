@@ -223,7 +223,7 @@ void WebMediaPlayerClientImpl::load(const String& url)
     loadRequested();
 }
 
-void WebMediaPlayerClientImpl::load(const String& url, PassRefPtr<WebCore::WebKitMediaSource> mediaSource)
+void WebMediaPlayerClientImpl::load(const String& url, PassRefPtr<WebCore::MediaSourceBase> mediaSource)
 {
     m_url = KURL(ParsedURLString, url);
     m_mediaSource = mediaSource;
