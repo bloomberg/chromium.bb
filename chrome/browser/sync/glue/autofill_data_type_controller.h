@@ -52,9 +52,8 @@ class AutofillDataTypeController
 
   // Self-invoked on the DB thread to call the AutocompleteSyncableService with
   // an updated value of autofill culling settings.
-  void UpdateAutofillCullingSettings(
-      bool cull_expired_entries,
-      autofill::AutofillWebDataService* web_data_service);
+  void UpdateAutofillCullingSettings(bool cull_expired_entries,
+      scoped_refptr<autofill::AutofillWebDataService> web_data_service);
 
   // Callback once WebDatabase has loaded.
   void WebDatabaseLoaded();

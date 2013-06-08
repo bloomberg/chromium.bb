@@ -48,8 +48,6 @@ class AutofillProfileDataTypeController
   void WebDatabaseLoaded();
 
   autofill::PersonalDataManager* personal_data_;
-
-  // Flag to ensure we don't register the WebDB callback multiple times.
   bool callback_registered_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillProfileDataTypeController);

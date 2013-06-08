@@ -226,8 +226,6 @@ class WebDataServiceFake : public AutofillWebDataService {
         syncable_service_created_or_destroyed_(false, false) {
   }
 
-  virtual ~WebDataServiceFake() {}
-
   void SetDatabase(WebDatabase* web_database) {
     web_database_ = web_database;
   }
@@ -292,6 +290,8 @@ class WebDataServiceFake : public AutofillWebDataService {
   }
 
  private:
+  virtual ~WebDataServiceFake() {}
+
   void CreateSyncableService(const base::Closure& on_changed_callback) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     // These services are deleted in DestroySyncableService().
@@ -511,7 +511,7 @@ class ProfileSyncServiceAutofillTest
             WebDataServiceFactory::GetInstance()->SetTestingFactoryAndUse(
                 profile_.get(), BuildMockWebDataServiceWrapper));
     web_data_service_ =
-        static_cast<WebDataServiceFake*>(wrapper->GetAutofillWebData());
+        static_cast<WebDataServiceFake*>(wrapper->GetAutofillWebData().get());
     web_data_service_->SetDatabase(web_database_.get());
 
     MockPersonalDataManagerService* personal_data_manager_service =
@@ -577,7 +577,7 @@ class ProfileSyncServiceAutofillTest
                                           sync_service_);
     factory->SetExpectation(components,
                             sync_service_,
-                            web_data_service_,
+                            web_data_service_.get(),
                             data_type_controller);
 
     EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _, _, _)).
@@ -757,7 +757,7 @@ class ProfileSyncServiceAutofillTest
   scoped_ptr<ProfileMock> profile_;
   AutofillTableMock autofill_table_;
   scoped_ptr<WebDatabaseFake> web_database_;
-  WebDataServiceFake* web_data_service_;
+  scoped_refptr<WebDataServiceFake> web_data_service_;
   MockPersonalDataManager* personal_data_manager_;
   syncer::DataTypeAssociationStats association_stats_;
   base::WeakPtrFactory<DataTypeDebugInfoListener> debug_ptr_factory_;
@@ -935,7 +935,7 @@ bool IncludesField(const AutofillProfile& profile1,
   return true;
 }
 
-};  // namespace
+};
 
 // TODO(skrul): Test abort startup.
 // TODO(skrul): Test processing of cloud changes.

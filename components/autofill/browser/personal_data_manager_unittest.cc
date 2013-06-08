@@ -539,9 +539,9 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   profile_pointers.push_back(&profile2);
   AutofillProfile::AdjustInferredLabels(&profile_pointers);
 
-  AutofillWebDataService* wds =
+  scoped_refptr<AutofillWebDataService> wds =
       AutofillWebDataService::FromBrowserContext(profile_.get());
-  ASSERT_TRUE(wds);
+  ASSERT_TRUE(wds.get());
   wds->AddAutofillProfile(profile2);
 
   personal_data_->Refresh();

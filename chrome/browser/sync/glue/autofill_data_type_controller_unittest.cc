@@ -106,10 +106,10 @@ class FakeWebDataService : public AutofillWebDataService {
     return result;
   }
 
+ private:
   virtual ~FakeWebDataService() {
   }
 
- private:
   void CreateSyncableService() {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     // These services are deleted in DestroySyncableService().
@@ -226,7 +226,7 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
 TEST_F(SyncAutofillDataTypeControllerTest, StartWDSReady) {
   FakeWebDataService* web_db =
       static_cast<FakeWebDataService*>(
-          AutofillWebDataService::FromBrowserContext(&profile_));
+          AutofillWebDataService::FromBrowserContext(&profile_).get());
   web_db->LoadDatabase();
   autofill_dtc_->LoadModels(
     base::Bind(&SyncAutofillDataTypeControllerTest::OnLoadFinished,
@@ -259,7 +259,7 @@ TEST_F(SyncAutofillDataTypeControllerTest, StartWDSNotReady) {
 
   FakeWebDataService* web_db =
       static_cast<FakeWebDataService*>(
-        AutofillWebDataService::FromBrowserContext(&profile_));
+        AutofillWebDataService::FromBrowserContext(&profile_).get());
   web_db->LoadDatabase();
 
   EXPECT_CALL(*change_processor_.get(), Connect(_, _, _, _, _))
@@ -278,13 +278,13 @@ TEST_F(SyncAutofillDataTypeControllerTest, StartWDSNotReady) {
 TEST_F(SyncAutofillDataTypeControllerTest, UpdateAutofillCullingSettings) {
   FakeWebDataService* web_db =
       static_cast<FakeWebDataService*>(
-          AutofillWebDataService::FromBrowserContext(&profile_));
+          AutofillWebDataService::FromBrowserContext(&profile_).get());
 
   // Set up the experiments state.
-  syncer::Experiments experiments;
-  experiments.autofill_culling = true;
   ProfileSyncService* sync = ProfileSyncServiceFactory::GetForProfile(
       &profile_);
+  syncer::Experiments experiments;
+  experiments.autofill_culling = true;
   sync->OnExperimentsChanged(experiments);
 
   web_db->LoadDatabase();

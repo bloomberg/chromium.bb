@@ -76,15 +76,15 @@ class WebDataServiceTest : public testing::Test {
     wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new AutofillTable("en-US")));
     wdbs_->LoadDatabase();
 
-    wds_.reset(new AutofillWebDataService(
-        wdbs_, WebDataServiceBase::ProfileErrorCallback()));
+    wds_ = new AutofillWebDataService(
+        wdbs_, WebDataServiceBase::ProfileErrorCallback());
     wds_->Init();
   }
 
   virtual void TearDown() {
     wds_->ShutdownOnUIThread();
     wdbs_->ShutdownDatabase();
-    wds_.reset();
+    wds_ = NULL;
     wdbs_ = NULL;
     WaitForDatabaseThread();
 
@@ -107,7 +107,7 @@ class WebDataServiceTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   base::FilePath profile_dir_;
-  scoped_ptr<AutofillWebDataService> wds_;
+  scoped_refptr<AutofillWebDataService> wds_;
   scoped_refptr<WebDatabaseService> wdbs_;
   base::ScopedTempDir temp_dir_;
 };
@@ -135,8 +135,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
     BrowserThread::PostTask(
         BrowserThread::DB,
         FROM_HERE,
-        base::Bind(add_observer_func,
-                   base::Unretained(wds_.get()), &observer_));
+        base::Bind(add_observer_func, wds_, &observer_));
     WaitForDatabaseThread();
   }
 
@@ -147,8 +146,7 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
     BrowserThread::PostTask(
         BrowserThread::DB,
         FROM_HERE,
-        base::Bind(remove_observer_func,
-                   base::Unretained(wds_.get()), &observer_));
+        base::Bind(remove_observer_func, wds_, &observer_));
     WaitForDatabaseThread();
 
     WebDataServiceTest::TearDown();

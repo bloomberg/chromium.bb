@@ -58,20 +58,21 @@ class MockWebDataServiceWrapper : public MockWebDataServiceWrapperBase {
  public:
   MockWebDataServiceWrapper(
       scoped_refptr<WebDataService> fake_service,
-      autofill::AutofillWebDataService* fake_autofill,
-      TokenWebData* fake_token);
+      scoped_refptr<autofill::AutofillWebDataService> fake_autofill,
+      scoped_refptr<TokenWebData> fake_token);
 
   virtual ~MockWebDataServiceWrapper();
 
-  virtual autofill::AutofillWebDataService* GetAutofillWebData() OVERRIDE;
+  virtual scoped_refptr<autofill::AutofillWebDataService>
+      GetAutofillWebData() OVERRIDE;
 
-  virtual TokenWebData* GetTokenWebData() OVERRIDE;
+  virtual scoped_refptr<TokenWebData> GetTokenWebData() OVERRIDE;
 
   virtual scoped_refptr<WebDataService> GetWebData() OVERRIDE;
 
  protected:
-  scoped_ptr<autofill::AutofillWebDataService> fake_autofill_web_data_;
-  scoped_ptr<TokenWebData> fake_token_web_data_;
+  scoped_refptr<autofill::AutofillWebDataService> fake_autofill_web_data_;
+  scoped_refptr<TokenWebData> fake_token_web_data_;
   scoped_refptr<WebDataService> fake_web_data_;
 
  private:
