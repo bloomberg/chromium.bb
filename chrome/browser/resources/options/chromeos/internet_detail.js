@@ -759,6 +759,9 @@ cr.define('options.internet', function() {
     if (!data)
       return;
 
+    if (update.servicePath != data.servicePath)
+      return;
+
     // Update our cached data object.
     updateDataObject(data, update);
 

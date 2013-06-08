@@ -1362,7 +1362,9 @@ void InternetOptionsHandler::PopulateIPConfigsCallback(
 }
 
 void InternetOptionsHandler::PopulateConnectionDetails(
-    const chromeos::Network* network, DictionaryValue* dictionary) {
+    const chromeos::Network* network,
+    DictionaryValue* dictionary) {
+  dictionary->SetString(kNetworkInfoKeyServicePath, network->service_path());
   chromeos::ConnectionType type = network->type();
   dictionary->SetBoolean(kTagConnecting, network->connecting());
   dictionary->SetBoolean(kTagConnected, network->connected());
