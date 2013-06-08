@@ -5,6 +5,7 @@
 #include "ui/snapshot/snapshot.h"
 
 #include "base/logging.h"
+#include "base/safe_numerics.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "ui/aura/root_window.h"
@@ -80,8 +81,8 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
       bitmap.pixelRef()->pixels());
   gfx::PNGCodec::Encode(pixels, gfx::PNGCodec::FORMAT_BGRA,
                         gfx::Size(bitmap.width(), bitmap.height()),
-                        bitmap.rowBytes(), true,
-                        std::vector<gfx::PNGCodec::Comment>(),
+                        base::checked_numeric_cast<int>(bitmap.rowBytes()),
+                        true, std::vector<gfx::PNGCodec::Comment>(),
                         png_representation);
   return true;
 }
