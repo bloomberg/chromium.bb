@@ -21,7 +21,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
-#include "sql/error_delegate_util.h"
 #include "third_party/re2/re2/re2.h"
 
 namespace {
@@ -131,13 +130,14 @@ ActivityLog::ActivityLog(Profile* profile) : profile_(profile) {
   base::FilePath base_dir = profile->GetPath();
   base::FilePath database_name = base_dir.Append(
       chrome::kExtensionActivityLogFilename);
-  db_->SetErrorCallback(base::Bind(&ActivityLog::DatabaseErrorCallback,
-                                   base::Unretained(this)));
   ScheduleAndForget(&ActivityDatabase::Init, database_name);
 }
 
 ActivityLog::~ActivityLog() {
-  ScheduleAndForget(&ActivityDatabase::Close);
+  if (dispatch_thread_ == BrowserThread::UI)  // Cleanup fast in a unittest.
+    db_->Close();
+  else
+    ScheduleAndForget(&ActivityDatabase::Close);
 }
 
 void ActivityLog::SetArgumentLoggingForTesting(bool log_arguments) {
@@ -357,11 +357,6 @@ void ActivityLog::OnScriptsExecuted(
                    std::string());  // no extras either
     }
   }
-}
-
-void ActivityLog::DatabaseErrorCallback(int error, sql::Statement* stmt) {
-  if (sql::IsErrorCatastrophic(error))
-    ScheduleAndForget(&ActivityDatabase::KillDatabase);
 }
 
 }  // namespace extensions

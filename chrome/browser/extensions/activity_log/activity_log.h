@@ -124,9 +124,6 @@ class ActivityLog : public BrowserContextKeyedService,
   explicit ActivityLog(Profile* profile);
   virtual ~ActivityLog();
 
-  // Reset the database in case of persistent catastrophic errors.
-  void DatabaseErrorCallback(int error, sql::Statement* stmt);
-
   // We log callbacks and API calls very similarly, so we handle them the same
   // way internally.
   void LogAPIActionInternal(
@@ -143,9 +140,6 @@ class ActivityLog : public BrowserContextKeyedService,
       const ExecutingScriptsMap& extension_ids,
       int32 page_id,
       const GURL& on_url) OVERRIDE;
-
-  // The callback when initializing the database.
-  void OnDBInitComplete();
 
   // The Schedule methods dispatch the calls to the database on a
   // separate thread. We dispatch to the UI thread if the DB thread doesn't

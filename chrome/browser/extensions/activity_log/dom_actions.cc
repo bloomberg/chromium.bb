@@ -106,7 +106,7 @@ bool DOMAction::InitializeTable(sql::Connection* db) {
   return initialized;
 }
 
-void DOMAction::Record(sql::Connection* db) {
+bool DOMAction::Record(sql::Connection* db) {
   std::string sql_str = "INSERT INTO " + std::string(kTableName) +
       " (extension_id, time, url_action_type, url, url_title, api_call, args,"
       "  extra) VALUES (?,?,?,?,?,?,?,?)";
@@ -120,8 +120,12 @@ void DOMAction::Record(sql::Connection* db) {
   statement.BindString(5, api_call_);
   statement.BindString(6, args_);
   statement.BindString(7, extra_);
-  if (!statement.Run())
+  if (!statement.Run()) {
     LOG(ERROR) << "Activity log database I/O failed: " << sql_str;
+    statement.Clear();
+    return false;
+  }
+  return true;
 }
 
 std::string DOMAction::PrintForDebug() {

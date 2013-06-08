@@ -13,7 +13,9 @@
 #include "base/time/clock.h"
 #include "chrome/browser/extensions/activity_log/activity_database.h"
 #include "chrome/common/chrome_switches.h"
+#include "sql/error_delegate_util.h"
 #include "sql/transaction.h"
+#include "third_party/sqlite/sqlite3.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -34,7 +36,9 @@ namespace extensions {
 
 ActivityDatabase::ActivityDatabase()
     : testing_clock_(NULL),
-      initialized_(false) {
+      valid_db_(false),
+      already_closed_(false),
+      did_init_(false) {
   // We don't batch commits when in testing mode.
   batch_mode_ = !(CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kEnableExtensionActivityLogTesting));
@@ -42,14 +46,14 @@ ActivityDatabase::ActivityDatabase()
 
 ActivityDatabase::~ActivityDatabase() {}
 
-void ActivityDatabase::SetErrorCallback(
-    const sql::Connection::ErrorCallback& error_callback) {
-  db_.set_error_callback(error_callback);
-}
-
 void ActivityDatabase::Init(const base::FilePath& db_name) {
+  if (did_init_) return;
+  did_init_ = true;
   if (BrowserThread::IsMessageLoopValid(BrowserThread::DB))
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  db_.set_error_callback(
+      base::Bind(&ActivityDatabase::DatabaseErrorCallback,
+                 base::Unretained(this)));
   db_.set_page_size(4096);
   db_.set_cache_size(32);
 
@@ -87,7 +91,7 @@ void ActivityDatabase::Init(const base::FilePath& db_name) {
   if (stat != sql::INIT_OK)
     return LogInitFailure();
 
-  initialized_ = true;
+  valid_db_ = true;
   timer_.Start(FROM_HERE,
                base::TimeDelta::FromMinutes(2),
                this,
@@ -96,23 +100,30 @@ void ActivityDatabase::Init(const base::FilePath& db_name) {
 
 void ActivityDatabase::LogInitFailure() {
   LOG(ERROR) << "Couldn't initialize the activity log database.";
+  SoftFailureClose();
 }
 
 void ActivityDatabase::RecordAction(scoped_refptr<Action> action) {
-  if (initialized_) {
-    if (batch_mode_)
-      batched_actions_.push_back(action);
-    else
-      action->Record(&db_);
+  if (!valid_db_) return;
+  if (batch_mode_) {
+    batched_actions_.push_back(action);
+  } else {
+    if (!action->Record(&db_)) SoftFailureClose();
   }
 }
 
 void ActivityDatabase::RecordBatchedActions() {
+  if (!valid_db_) return;
+  bool failure = false;
   std::vector<scoped_refptr<Action> >::size_type i;
   for (i = 0; i != batched_actions_.size(); ++i) {
-    batched_actions_.at(i)->Record(&db_);
+    if (!batched_actions_.at(i)->Record(&db_)) {
+      failure = true;
+      break;
+    }
   }
   batched_actions_.clear();
+  if (failure) SoftFailureClose();
 }
 
 void ActivityDatabase::SetBatchModeForTesting(bool batch_mode) {
@@ -135,7 +146,7 @@ scoped_ptr<std::vector<scoped_refptr<Action> > > ActivityDatabase::GetActions(
   DCHECK_GE(days_ago, 0);
   scoped_ptr<std::vector<scoped_refptr<Action> > >
       actions(new std::vector<scoped_refptr<Action> >());
-  if (!initialized_)
+  if (!valid_db_)
     return actions.Pass();
   // Compute the time bounds for that day.
   base::Time morning_midnight = testing_clock_ ?
@@ -164,7 +175,7 @@ scoped_ptr<std::vector<scoped_refptr<Action> > > ActivityDatabase::GetActions(
   dom_statement.BindString(0, extension_id);
   dom_statement.BindInt64(1, early_bound);
   dom_statement.BindInt64(2, late_bound);
-  while (dom_statement.Step()) {
+  while (dom_statement.is_valid() && dom_statement.Step()) {
     scoped_refptr<DOMAction> action = new DOMAction(dom_statement);
     actions->push_back(action);
   }
@@ -178,7 +189,7 @@ scoped_ptr<std::vector<scoped_refptr<Action> > > ActivityDatabase::GetActions(
   api_statement.BindString(0, extension_id);
   api_statement.BindInt64(1, early_bound);
   api_statement.BindInt64(2, late_bound);
-  while (api_statement.Step()) {
+  while (api_statement.is_valid() && api_statement.Step()) {
     scoped_refptr<APIAction> action = new APIAction(api_statement);
     actions->push_back(action);
   }
@@ -192,7 +203,7 @@ scoped_ptr<std::vector<scoped_refptr<Action> > > ActivityDatabase::GetActions(
   blocked_statement.BindString(0, extension_id);
   blocked_statement.BindInt64(1, early_bound);
   blocked_statement.BindInt64(2, late_bound);
-  while (blocked_statement.Step()) {
+  while (blocked_statement.is_valid() && blocked_statement.Step()) {
     scoped_refptr<BlockedAction> action = new BlockedAction(blocked_statement);
     actions->push_back(action);
   }
@@ -201,32 +212,40 @@ scoped_ptr<std::vector<scoped_refptr<Action> > > ActivityDatabase::GetActions(
   return actions.Pass();
 }
 
-void ActivityDatabase::BeginTransaction() {
-  db_.BeginTransaction();
-}
-
-void ActivityDatabase::CommitTransaction() {
-  db_.CommitTransaction();
-}
-
-void ActivityDatabase::RollbackTransaction() {
-  db_.RollbackTransaction();
-}
-
-bool ActivityDatabase::Raze() {
-  return db_.Raze();
-}
-
 void ActivityDatabase::Close() {
   timer_.Stop();
-  RecordBatchedActions();
-  db_.Close();
+  if (!already_closed_) {
+    RecordBatchedActions();
+    db_.reset_error_callback();
+  }
+  valid_db_ = false;
+  already_closed_ = true;
   delete this;
 }
 
-void ActivityDatabase::KillDatabase() {
+void ActivityDatabase::HardFailureClose() {
+  if (already_closed_) return;
+  valid_db_ = false;
   timer_.Stop();
+  db_.reset_error_callback();
   db_.RazeAndClose();
+  already_closed_ = true;
+}
+
+void ActivityDatabase::SoftFailureClose() {
+  valid_db_ = false;
+  timer_.Stop();
+}
+
+void ActivityDatabase::DatabaseErrorCallback(int error, sql::Statement* stmt) {
+  if (sql::IsErrorCatastrophic(error)) {
+    LOG(ERROR) << "Killing the ActivityDatabase due to catastrophic error.";
+    HardFailureClose();
+  } else if (error != SQLITE_BUSY) {
+    // We ignore SQLITE_BUSY errors because they are presumably transient.
+    LOG(ERROR) << "Closing the ActivityDatabase due to error.";
+    SoftFailureClose();
+  }
 }
 
 void ActivityDatabase::SetClockForTesting(base::Clock* clock) {

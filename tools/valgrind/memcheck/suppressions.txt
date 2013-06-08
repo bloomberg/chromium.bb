@@ -7210,56 +7210,6 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN7content16RenderThreadImpl15OnCreateNewViewERK18ViewMsg_New_Params
 }
 {
-   bug_246825a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeIPN3sql10Connection12StatementRefEEE8allocateEmPKv
-   fun:_ZNSt8_Rb_treeIPN3sql10Connection12StatementRefES3_St9_IdentityIS3_ESt4lessIS3_ESaIS3_EE11_M_get_nodeEv
-   fun:_ZNSt8_Rb_treeIPN3sql10Connection12StatementRefES3_St9_IdentityIS3_ESt4lessIS3_ESaIS3_EE14_M_create_nodeERKS3_
-   fun:_ZNSt8_Rb_treeIPN3sql10Connection12StatementRefES3_St9_IdentityIS3_ESt4lessIS3_ESaIS3_EE10_M_insert_EPKSt18_Rb_tree_node_baseSC_RKS3_
-   fun:_ZNSt8_Rb_treeIPN3sql10Connection12StatementRefES3_St9_IdentityIS3_ESt4lessIS3_ESaIS3_EE16_M_insert_uniqueERKS3_
-   fun:_ZNSt3setIPN3sql10Connection12StatementRefESt4lessIS3_ESaIS3_EE6insertERKS3_
-   fun:_ZN3sql10Connection19StatementRefCreatedEPNS0_12StatementRefE
-   fun:_ZN3sql10Connection12StatementRefC1EPS0_P12sqlite3_stmtb
-   fun:_ZN3sql10Connection18GetUniqueStatementEPKc
-   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
-   ...
-   fun:_ZN10extensions16ActivityDatabase4InitERKN4base8FilePathE
-}
-{
-   bug_246825b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKN3sql11StatementIDE13scoped_refptrINS3_10Connection12StatementRefEEEEE8allocateEmPKv
-   fun:_ZNSt8_Rb_treeIN3sql11StatementIDESt4pairIKS1_13scoped_refptrINS0_10Connection12StatementRefEEESt10_Select1stIS8_ESt4lessIS1_ESaIS8_EE11_M_get_nodeEv
-   fun:_ZNSt8_Rb_treeIN3sql11StatementIDESt4pairIKS1_13scoped_refptrINS0_10Connection12StatementRefEEESt10_Select1stIS8_ESt4lessIS1_ESaIS8_EE14_M_create_nodeERKS8_
-   fun:_ZNSt8_Rb_treeIN3sql11StatementIDESt4pairIKS1_13scoped_refptrINS0_10Connection12StatementRefEEESt10_Select1stIS8_ESt4lessIS1_ESaIS8_EE10_M_insert_EPKSt18_Rb_tree_node_baseSH_RKS8_
-   ...
-   fun:_ZNSt8_Rb_treeIN3sql11StatementIDESt4pairIKS1_13scoped_refptrINS0_10Connection12StatementRefEEESt10_Select1stIS8_ESt4lessIS1_ESaIS8_EE17_M_insert_unique_ESt23_Rb_tree_const_iteratorIS8_ERKS8_
-   fun:_ZNSt3mapIN3sql11StatementIDE13scoped_refptrINS0_10Connection12StatementRefEESt4lessIS1_ESaISt4pairIKS1_S5_EEE6insertESt17_Rb_tree_iteratorISA_ERKSA_
-   fun:_ZNSt3mapIN3sql11StatementIDE13scoped_refptrINS0_10Connection12StatementRefEESt4lessIS1_ESaISt4pairIKS1_S5_EEEixERS9_
-   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
-   ...
-   fun:_ZN10extensions16ActivityDatabase4InitERKN4base8FilePathE
-}
-{
-   bug_246825c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3sql10Connection18GetUniqueStatementEPKc
-   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
-   ...
-   fun:_ZN10extensions16ActivityDatabase4InitERKN4base8FilePathE
-}
-{
-   bug_246825d
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base4BindIMN10extensions16ActivityDatabaseEFvvENS_8internal17UnretainedWrapper*
-   fun:_ZN4base22BaseTimerMethodPointerIN10extensions16ActivityDatabaseELb1EE5StartERKN15tracked_objects8LocationENS_9TimeDelta*
-   fun:_ZN10extensions16ActivityDatabase4InitERKN4base8FilePathE
-}
-{
    bug_247525a
    Memcheck:Leak
    fun:_Znw*

@@ -26,7 +26,7 @@ class Action : public base::RefCountedThreadSafe<Action> {
   static bool InitializeTableInternal(sql::Connection* db);
 
   // Record the action in the database.
-  virtual void Record(sql::Connection* db) = 0;
+  virtual bool Record(sql::Connection* db) = 0;
 
   // Flatten the activity's type-specific fields into an ExtensionActivity.
   virtual scoped_ptr<api::activity_log_private::ExtensionActivity>

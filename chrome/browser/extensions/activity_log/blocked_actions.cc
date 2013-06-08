@@ -95,7 +95,7 @@ bool BlockedAction::InitializeTable(sql::Connection* db) {
                                  arraysize(kTableContentFields));
 }
 
-void BlockedAction::Record(sql::Connection* db) {
+bool BlockedAction::Record(sql::Connection* db) {
   std::string sql_str = "INSERT INTO " + std::string(kTableName)
     + " (extension_id, time, api_call, args, reason, extra)"
     "  VALUES (?,?,?,?,?,?)";
@@ -107,8 +107,13 @@ void BlockedAction::Record(sql::Connection* db) {
   statement.BindString(3, args_);
   statement.BindInt(4, static_cast<int>(reason_));
   statement.BindString(5, extra_);
-  if (!statement.Run())
+  if (!statement.Run()) {
     LOG(ERROR) << "Activity log database I/O failed: " << sql_str;
+    statement.Clear();
+    return false;
+  } else {
+    return true;
+  }
 }
 
 std::string BlockedAction::PrintForDebug() {

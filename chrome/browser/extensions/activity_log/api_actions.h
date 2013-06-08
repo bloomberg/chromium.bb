@@ -45,7 +45,7 @@ class APIAction : public Action {
   explicit APIAction(const sql::Statement& s);
 
   // Record the action in the database.
-  virtual void Record(sql::Connection* db) OVERRIDE;
+  virtual bool Record(sql::Connection* db) OVERRIDE;
 
   virtual scoped_ptr<api::activity_log_private::ExtensionActivity>
       ConvertToExtensionActivity() OVERRIDE;
@@ -79,6 +79,6 @@ class APIAction : public Action {
   DISALLOW_COPY_AND_ASSIGN(APIAction);
 };
 
-}  // namespace
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_API_ACTIONS_H_

@@ -41,7 +41,7 @@ class BlockedAction : public Action {
   explicit BlockedAction(const sql::Statement& s);
 
   // Record the action in the database.
-  virtual void Record(sql::Connection* db) OVERRIDE;
+  virtual bool Record(sql::Connection* db) OVERRIDE;
 
   virtual scoped_ptr<api::activity_log_private::ExtensionActivity>
       ConvertToExtensionActivity() OVERRIDE;

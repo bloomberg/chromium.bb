@@ -186,7 +186,7 @@ bool APIAction::InitializeTable(sql::Connection* db) {
                                  arraysize(kTableContentFields));
 }
 
-void APIAction::Record(sql::Connection* db) {
+bool APIAction::Record(sql::Connection* db) {
   std::string sql_str = "INSERT INTO " + std::string(kTableName)
       + " (extension_id, time, api_type, api_call, args, extra) VALUES"
       " (?,?,?,?,?,?)";
@@ -198,8 +198,12 @@ void APIAction::Record(sql::Connection* db) {
   statement.BindString(3, APINameMap::GetInstance()->ApiToShortname(api_call_));
   statement.BindString(4, args_);
   statement.BindString(5, extra_);
-  if (!statement.Run())
+  if (!statement.Run()) {
     LOG(ERROR) << "Activity log database I/O failed: " << sql_str;
+    statement.Clear();
+    return false;
+  }
+  return true;
 }
 
 // static

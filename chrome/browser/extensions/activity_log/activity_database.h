@@ -29,17 +29,13 @@ namespace extensions {
 
 // Encapsulates the SQL connection for the activity log database.
 // This class holds the database connection and has methods for writing.
-// All of the methods except constructor and SetErrorCallback need to be
+// All of the methods except constructor need to be
 // called on the DB thread. For this reason, the ActivityLog calls Close from
 // its destructor instead of destructing its ActivityDatabase object.
 class ActivityDatabase {
  public:
   // Need to call Init to actually use the ActivityDatabase.
   ActivityDatabase();
-
-  // Sets up an optional error callback.
-  // Should be the only thing done before Init.
-  void SetErrorCallback(const sql::Connection::ErrorCallback& error_callback);
 
   // Opens the DB and creates tables as necessary.
   void Init(const base::FilePath& db_name);
@@ -67,18 +63,10 @@ class ActivityDatabase {
   scoped_ptr<std::vector<scoped_refptr<Action> > > GetActions(
       const std::string& extension_id, const int days_ago);
 
-  // Break any outstanding transactions, raze the database, and close
-  // it.  Future calls on the current database handle will fail, when
-  // next opened the database will be empty. This is the ugly version of Close.
-  void KillDatabase();
+  // Handle errors in database writes.
+  void DatabaseErrorCallback(int error, sql::Statement* stmt);
 
-  bool initialized() const { return initialized_; }
-
-  // Standard db operation wrappers.
-  void BeginTransaction();
-  void CommitTransaction();
-  void RollbackTransaction();
-  bool Raze();
+  bool is_db_valid() const { return valid_db_; }
 
   // For unit testing only.
   void SetBatchModeForTesting(bool batch_mode);
@@ -99,15 +87,27 @@ class ActivityDatabase {
   void StartTimer();
   void RecordBatchedActions();
 
+  // If an error is unrecoverable or occurred while we were trying to close
+  // the database properly, we take "emergency" actions: break any outstanding
+  // transactions, raze the database, and close. When next opened, the
+  // database will be empty.
+  void HardFailureClose();
+
+  // Doesn't actually close the DB, but changes bools to prevent further writes
+  // or changes to it.
+  void SoftFailureClose();
+
   // For unit testing only.
   void RecordBatchedActionsWhileTesting();
 
   base::Clock* testing_clock_;
   sql::Connection db_;
-  bool initialized_;
+  bool valid_db_;
   bool batch_mode_;
   std::vector<scoped_refptr<Action> > batched_actions_;
   base::RepeatingTimer<ActivityDatabase> timer_;
+  bool already_closed_;
+  bool did_init_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivityDatabase);
 };

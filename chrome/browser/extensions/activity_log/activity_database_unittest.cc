@@ -77,7 +77,7 @@ TEST_F(ActivityDatabaseTest, Init) {
 
   ActivityDatabase* activity_db = new ActivityDatabase();
   activity_db->Init(db_file);
-  ASSERT_TRUE(activity_db->initialized());
+  ASSERT_TRUE(activity_db->is_db_valid());
   activity_db->Close();
 
   sql::Connection db;
@@ -99,7 +99,7 @@ TEST_F(ActivityDatabaseTest, RecordAPIAction) {
   ActivityDatabase* activity_db = new ActivityDatabase();
   activity_db->Init(db_file);
   activity_db->SetBatchModeForTesting(false);
-  ASSERT_TRUE(activity_db->initialized());
+  ASSERT_TRUE(activity_db->is_db_valid());
   scoped_refptr<APIAction> action = new APIAction(
       "punky",
       base::Time::Now(),
@@ -134,7 +134,7 @@ TEST_F(ActivityDatabaseTest, RecordBlockedAction) {
 
   ActivityDatabase* activity_db = new ActivityDatabase();
   activity_db->Init(db_file);
-  ASSERT_TRUE(activity_db->initialized());
+  ASSERT_TRUE(activity_db->is_db_valid());
   scoped_refptr<BlockedAction> action = new BlockedAction(
       "punky",
       base::Time::Now(),
@@ -177,7 +177,7 @@ TEST_F(ActivityDatabaseTest, GetTodaysActions) {
   // Record some actions
   ActivityDatabase* activity_db = new ActivityDatabase();
   activity_db->Init(db_file);
-  ASSERT_TRUE(activity_db->initialized());
+  ASSERT_TRUE(activity_db->is_db_valid());
   scoped_refptr<APIAction> api_action = new APIAction(
       "punky",
       mock_clock.Now() - base::TimeDelta::FromMinutes(40),
@@ -237,7 +237,7 @@ TEST_F(ActivityDatabaseTest, GetOlderActions) {
   // Record some actions
   ActivityDatabase* activity_db = new ActivityDatabase();
   activity_db->Init(db_file);
-  ASSERT_TRUE(activity_db->initialized());
+  ASSERT_TRUE(activity_db->is_db_valid());
   scoped_refptr<APIAction> api_action = new APIAction(
       "punky",
       mock_clock.Now() - base::TimeDelta::FromDays(3)
@@ -309,7 +309,7 @@ TEST_F(ActivityDatabaseTest, BatchModeOff) {
   activity_db->Init(db_file);
   activity_db->SetBatchModeForTesting(false);
   activity_db->SetClockForTesting(&mock_clock);
-  ASSERT_TRUE(activity_db->initialized());
+  ASSERT_TRUE(activity_db->is_db_valid());
   scoped_refptr<APIAction> api_action = new APIAction(
       "punky",
       mock_clock.Now() - base::TimeDelta::FromMinutes(40),
@@ -343,7 +343,7 @@ TEST_F(ActivityDatabaseTest, BatchModeOn) {
   activity_db->Init(db_file);
   activity_db->SetBatchModeForTesting(true);
   activity_db->SetClockForTesting(&mock_clock);
-  ASSERT_TRUE(activity_db->initialized());
+  ASSERT_TRUE(activity_db->is_db_valid());
   scoped_refptr<APIAction> api_action = new APIAction(
       "punky",
       mock_clock.Now() - base::TimeDelta::FromMinutes(40),
@@ -388,5 +388,5 @@ TEST_F(ActivityDatabaseTest, InitFailure) {
   activity_db->Close();
 }
 
-}  // namespace
+}  // namespace extensions
 

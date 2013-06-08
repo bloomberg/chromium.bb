@@ -45,7 +45,7 @@ class DOMAction : public Action {
       ConvertToExtensionActivity() OVERRIDE;
 
   // Record the action in the database.
-  virtual void Record(sql::Connection* db) OVERRIDE;
+  virtual bool Record(sql::Connection* db) OVERRIDE;
 
   // Print a DOMAction as a regular string for debugging purposes.
   virtual std::string PrintForDebug() OVERRIDE;

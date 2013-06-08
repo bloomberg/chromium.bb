@@ -50,9 +50,6 @@ class ActivityLogTest : public testing::Test {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityLogTesting);
     ActivityLog::RecomputeLoggingIsEnabled();
-    extension_service_ = static_cast<TestExtensionSystem*>(
-            ExtensionSystem::Get(profile_.get()))->CreateExtensionService(
-                &command_line, base::FilePath(), false);
   }
 
   virtual ~ActivityLogTest() {
@@ -113,14 +110,6 @@ TEST_F(ActivityLogTest, Enabled) {
 }
 
 TEST_F(ActivityLogTest, Construct) {
-  scoped_refptr<const Extension> extension =
-      ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                       .Set("name", "Test extension")
-                       .Set("version", "1.0.0")
-                       .Set("manifest_version", 2))
-          .Build();
-  extension_service_->AddExtension(extension);
   ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
   scoped_ptr<ListValue> args(new ListValue());
   ASSERT_TRUE(ActivityLog::IsLogEnabled());
@@ -164,14 +153,6 @@ TEST_F(ActivityLogTest, LogWithoutArguments) {
 }
 
 TEST_F(ActivityLogTest, LogWithArguments) {
-  scoped_refptr<const Extension> extension =
-      ExtensionBuilder()
-          .SetManifest(DictionaryBuilder()
-                       .Set("name", "Test extension")
-                       .Set("version", "1.0.0")
-                       .Set("manifest_version", 2))
-          .Build();
-  extension_service_->AddExtension(extension);
   ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
   ASSERT_TRUE(ActivityLog::IsLogEnabled());
 
