@@ -762,7 +762,8 @@ static void PreCalculateMetaInformation(LayerType* layer) {
       !layer->sublayer_transform().IsPositiveScaleOrTranslation();
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
-    LayerType* child_layer = layer->children()[i];
+    LayerType* child_layer =
+        LayerTreeHostCommon::get_child_as_raw_ptr(layer->children(), i);
     PreCalculateMetaInformation<LayerType>(child_layer);
 
     num_descendants_that_draw_content += child_layer->DrawsContent() ? 1 : 0;
