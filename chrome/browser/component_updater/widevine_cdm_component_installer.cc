@@ -273,15 +273,15 @@ void StartWidevineCdmUpdateRegistration(ComponentUpdateService* cus) {
   std::vector<base::FilePath> older_dirs;
 
   if (GetWidevineCdmDirectory(&latest_dir, &version, &older_dirs)) {
-    base::FilePath adpater_path =
+    base::FilePath adapter_path =
         latest_dir.AppendASCII(kWidevineCdmAdapterFileName);
     base::FilePath cdm_path = latest_dir.AppendASCII(kWidevineCdmFileName);
 
     if (file_util::PathExists(adapter_path) &&
-        file_util::PathExists(cdm_path))) {
+        file_util::PathExists(cdm_path)) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&RegisterWidevineCdmWithChrome, adpater_path, version));
+          base::Bind(&RegisterWidevineCdmWithChrome, adapter_path, version));
     } else {
       file_util::Delete(latest_dir, true);
       version = base::Version(kNullVersion);
