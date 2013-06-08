@@ -86,12 +86,19 @@ ResourceProvider::Resource::Resource()
       format(0),
       filter(0),
       image_id(0),
+      texture_pool(0),
+      hint(TextureUsageAny),
       type(static_cast<ResourceType>(0)) {}
 
 ResourceProvider::Resource::~Resource() {}
 
 ResourceProvider::Resource::Resource(
-    unsigned texture_id, gfx::Size size, GLenum format, GLenum filter)
+    unsigned texture_id,
+    gfx::Size size,
+    GLenum format,
+    GLenum filter,
+    GLenum texture_pool,
+    TextureUsageHint hint)
     : gl_id(texture_id),
       gl_pixel_buffer_id(0),
       gl_upload_query_id(0),
@@ -111,6 +118,8 @@ ResourceProvider::Resource::Resource(
       format(format),
       filter(filter),
       image_id(0),
+      texture_pool(texture_pool),
+      hint(hint),
       type(GLTexture) {}
 
 ResourceProvider::Resource::Resource(
@@ -134,6 +143,8 @@ ResourceProvider::Resource::Resource(
       format(format),
       filter(filter),
       image_id(0),
+      texture_pool(0),
+      hint(TextureUsageAny),
       type(Bitmap) {}
 
 ResourceProvider::Child::Child() {}
@@ -210,24 +221,10 @@ ResourceProvider::ResourceId ResourceProvider::CreateGLTexture(
     gfx::Size size, GLenum format, GLenum texture_pool, TextureUsageHint hint) {
   DCHECK_LE(size.width(), max_texture_size_);
   DCHECK_LE(size.height(), max_texture_size_);
-
   DCHECK(thread_checker_.CalledOnValidThread());
-  WebGraphicsContext3D* context3d = output_surface_->context3d();
-  DCHECK(context3d);
-
-  // Create and set texture properties. Allocation is delayed until needed.
-  unsigned texture_id = CreateTextureId(context3d);
-  GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D,
-                                          GL_TEXTURE_POOL_CHROMIUM,
-                                          texture_pool));
-  if (use_texture_usage_hint_ && hint == TextureUsageFramebuffer) {
-    GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D,
-                                            GL_TEXTURE_USAGE_ANGLE,
-                                            GL_FRAMEBUFFER_ATTACHMENT_ANGLE));
-  }
 
   ResourceId id = next_id_++;
-  Resource resource(texture_id, size, format, GL_LINEAR);
+  Resource resource(0, size, format, GL_LINEAR, texture_pool, hint);
   resource.allocated = false;
   resources_[id] = resource;
   return id;
@@ -264,7 +261,7 @@ ResourceProvider::CreateResourceFromExternalTexture(
       texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
   ResourceId id = next_id_++;
-  Resource resource(texture_id, gfx::Size(), 0, GL_LINEAR);
+  Resource resource(texture_id, gfx::Size(), 0, GL_LINEAR, 0, TextureUsageAny);
   resource.external = true;
   resource.allocated = true;
   resources_[id] = resource;
@@ -279,8 +276,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
   DCHECK(mailbox.IsValid());
   Resource& resource = resources_[id];
   if (mailbox.IsTexture()) {
-    unsigned texture_id = 0;
-    resource = Resource(texture_id, gfx::Size(), 0, GL_LINEAR);
+    resource = Resource(0, gfx::Size(), 0, GL_LINEAR, 0, TextureUsageAny);
   } else {
     DCHECK(mailbox.IsSharedMemory());
     base::SharedMemory* shared_memory = mailbox.shared_memory();
@@ -835,7 +831,8 @@ void ResourceProvider::ReceiveFromChild(
     GLC(context3d, context3d->consumeTextureCHROMIUM(GL_TEXTURE_2D,
                                                      it->mailbox.name));
     ResourceId id = next_id_++;
-    Resource resource(texture_id, it->size, it->format, it->filter);
+    Resource resource(
+        texture_id, it->size, it->format, it->filter, 0, TextureUsageAny);
     resource.mailbox.SetName(it->mailbox);
     // Don't allocate a texture for a child.
     resource.allocated = true;
@@ -928,7 +925,7 @@ void ResourceProvider::AcquirePixelBuffer(ResourceId id) {
   DCHECK(!resource->exported);
   DCHECK(!resource->image_id);
 
-  if (resource->gl_id) {
+  if (resource->type == GLTexture) {
     WebGraphicsContext3D* context3d = output_surface_->context3d();
     DCHECK(context3d);
     if (!resource->gl_pixel_buffer_id)
@@ -961,7 +958,7 @@ void ResourceProvider::ReleasePixelBuffer(ResourceId id) {
   DCHECK(!resource->exported);
   DCHECK(!resource->image_id);
 
-  if (resource->gl_id) {
+  if (resource->type == GLTexture) {
     if (!resource->gl_pixel_buffer_id)
       return;
     WebGraphicsContext3D* context3d = output_surface_->context3d();
@@ -994,7 +991,7 @@ uint8_t* ResourceProvider::MapPixelBuffer(ResourceId id) {
   DCHECK(!resource->exported);
   DCHECK(!resource->image_id);
 
-  if (resource->gl_id) {
+  if (resource->type == GLTexture) {
     WebGraphicsContext3D* context3d = output_surface_->context3d();
     DCHECK(context3d);
     DCHECK(resource->gl_pixel_buffer_id);
@@ -1025,7 +1022,7 @@ void ResourceProvider::UnmapPixelBuffer(ResourceId id) {
   DCHECK(!resource->exported);
   DCHECK(!resource->image_id);
 
-  if (resource->gl_id) {
+  if (resource->type == GLTexture) {
     WebGraphicsContext3D* context3d = output_surface_->context3d();
     DCHECK(context3d);
     DCHECK(resource->gl_pixel_buffer_id);
@@ -1112,6 +1109,8 @@ void ResourceProvider::BeginSetPixels(ResourceId id) {
   CHECK(it != resources_.end());
   Resource* resource = &it->second;
   DCHECK(!resource->pending_set_pixels);
+
+  LazyCreate(resource);
   DCHECK(resource->gl_id || resource->allocated);
   DCHECK(ReadLockFenceHasPassed(resource));
   DCHECK(!resource->image_id);
@@ -1237,6 +1236,35 @@ void ResourceProvider::AbortSetPixels(ResourceId id) {
   UnlockForWrite(id);
 }
 
+void ResourceProvider::CreateForTesting(ResourceId id) {
+  ResourceMap::iterator it = resources_.find(id);
+  CHECK(it != resources_.end());
+  Resource* resource = &it->second;
+  LazyCreate(resource);
+}
+
+void ResourceProvider::LazyCreate(Resource* resource) {
+  if (resource->type != GLTexture || resource->gl_id != 0)
+    return;
+
+  // Early out for resources that don't require texture creation.
+  if (resource->texture_pool == 0)
+    return;
+
+  WebGraphicsContext3D* context3d = output_surface_->context3d();
+  DCHECK(context3d);
+  // Create and set texture properties. Allocation is delayed until needed.
+  resource->gl_id = CreateTextureId(context3d);
+  GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D,
+                                          GL_TEXTURE_POOL_CHROMIUM,
+                                          resource->texture_pool));
+  if (use_texture_usage_hint_ && resource->hint == TextureUsageFramebuffer) {
+    GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D,
+                                            GL_TEXTURE_USAGE_ANGLE,
+                                            GL_FRAMEBUFFER_ATTACHMENT_ANGLE));
+  }
+}
+
 void ResourceProvider::AllocateForTesting(ResourceId id) {
   ResourceMap::iterator it = resources_.find(id);
   CHECK(it != resources_.end());
@@ -1246,8 +1274,9 @@ void ResourceProvider::AllocateForTesting(ResourceId id) {
 
 void ResourceProvider::LazyAllocate(Resource* resource) {
   DCHECK(resource);
-  DCHECK(resource->gl_id || resource->allocated);
+  LazyCreate(resource);
 
+  DCHECK(resource->gl_id || resource->allocated);
   if (resource->allocated || !resource->gl_id)
     return;
   resource->allocated = true;
@@ -1290,7 +1319,6 @@ void ResourceProvider::AcquireImage(ResourceId id) {
   CHECK(it != resources_.end());
   Resource* resource = &it->second;
 
-  DCHECK(resource->gl_id);
   DCHECK(!resource->pixels);
   DCHECK(!resource->external);
   DCHECK(!resource->exported);
@@ -1370,8 +1398,8 @@ void ResourceProvider::BindImage(ResourceId id) {
   DCHECK(!resource->exported);
   DCHECK(!resource->pixels);
   DCHECK(resource->image_id);
-  DCHECK(resource->gl_id);
 
+  LazyCreate(resource);
   resource->allocated = true;
 
   WebGraphicsContext3D* context3d = output_surface_->context3d();
@@ -1398,6 +1426,5 @@ int ResourceProvider::GetImageStride(ResourceId id) {
       resource->image_id, GL_IMAGE_ROWBYTES_CHROMIUM, &stride);
   return stride;
 }
-
 
 }  // namespace cc

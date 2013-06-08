@@ -382,12 +382,6 @@ class ResourceProviderTest
     return context->GetTextureFilter();
   }
 
-  void ExpectNumResources(int count) {
-    EXPECT_EQ(count, static_cast<int>(resource_provider_->num_resources()));
-    if (GetParam() == ResourceProvider::GLTexture)
-      EXPECT_EQ(count, context()->texture_count());
-  }
-
  protected:
   scoped_ptr<ContextSharedData> shared_data_;
   scoped_ptr<OutputSurface> output_surface_;
@@ -402,18 +396,24 @@ TEST_P(ResourceProviderTest, Basic) {
 
   ResourceProvider::ResourceId id = resource_provider_->CreateResource(
       size, format, ResourceProvider::TextureUsageAny);
-  ExpectNumResources(1);
+  EXPECT_EQ(1, static_cast<int>(resource_provider_->num_resources()));
+  if (GetParam() == ResourceProvider::GLTexture)
+    EXPECT_EQ(0, context()->texture_count());
 
   uint8_t data[4] = { 1, 2, 3, 4 };
   gfx::Rect rect(size);
   resource_provider_->SetPixels(id, data, rect, rect, gfx::Vector2d());
+  if (GetParam() == ResourceProvider::GLTexture)
+    EXPECT_EQ(1, context()->texture_count());
 
   uint8_t result[4] = { 0 };
   GetResourcePixels(id, size, format, result);
   EXPECT_EQ(0, memcmp(data, result, pixel_size));
 
   resource_provider_->DeleteResource(id);
-  ExpectNumResources(0);
+  EXPECT_EQ(0, static_cast<int>(resource_provider_->num_resources()));
+  if (GetParam() == ResourceProvider::GLTexture)
+    EXPECT_EQ(0, context()->texture_count());
 }
 
 TEST_P(ResourceProviderTest, Upload) {
@@ -1083,6 +1083,8 @@ TEST_P(ResourceProviderTest, ManagedResource) {
   int texture_id = 1;
 
   // Check that the texture gets created with the right sampler settings.
+  ResourceProvider::ResourceId id = resource_provider->CreateManagedResource(
+      size, format, ResourceProvider::TextureUsageAny);
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id));
   EXPECT_CALL(*context,
               texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
@@ -1098,8 +1100,7 @@ TEST_P(ResourceProviderTest, ManagedResource) {
               texParameteri(GL_TEXTURE_2D,
                             GL_TEXTURE_POOL_CHROMIUM,
                             GL_TEXTURE_POOL_MANAGED_CHROMIUM));
-  ResourceProvider::ResourceId id = resource_provider->CreateManagedResource(
-      size, format, ResourceProvider::TextureUsageAny);
+  resource_provider->CreateForTesting(id);
   EXPECT_NE(0u, id);
 
   Mock::VerifyAndClearExpectations(context);
@@ -1319,7 +1320,7 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
     return;
   scoped_ptr<WebKit::WebGraphicsContext3D> mock_context(
       static_cast<WebKit::WebGraphicsContext3D*>(
-          new NiceMock<AllocationTrackingContext3D>));
+          new StrictMock<AllocationTrackingContext3D>));
   scoped_ptr<OutputSurface> output_surface(
       FakeOutputSurface::Create3d(mock_context.Pass()));
 
@@ -1337,55 +1338,67 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
       ResourceProvider::Create(output_surface.get(), 0));
 
   // Lazy allocation. Don't allocate when creating the resource.
-  EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
-  EXPECT_CALL(*context, deleteTexture(texture_id)).Times(1);
-  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(1);
-  EXPECT_CALL(*context, texImage2D(_, _, _, _, _, _, _, _, _)).Times(0);
-  EXPECT_CALL(*context, asyncTexImage2DCHROMIUM(_, _, _, _, _, _, _, _, _))
-      .Times(0);
   id = resource_provider->CreateResource(
       size, format, ResourceProvider::TextureUsageAny);
+
+  EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(1);
+  resource_provider->CreateForTesting(id);
+
+  EXPECT_CALL(*context, deleteTexture(texture_id)).Times(1);
   resource_provider->DeleteResource(id);
+
   Mock::VerifyAndClearExpectations(context);
 
   // Do allocate when we set the pixels.
+  id = resource_provider->CreateResource(
+      size, format, ResourceProvider::TextureUsageAny);
+
   EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
-  EXPECT_CALL(*context, deleteTexture(texture_id)).Times(1);
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(3);
   EXPECT_CALL(*context, texImage2D(_, _, _, 2, 2, _, _, _, _)).Times(1);
   EXPECT_CALL(*context, texSubImage2D(_, _, _, _, 2, 2, _, _, _)).Times(1);
-  id = resource_provider->CreateResource(
-      size, format, ResourceProvider::TextureUsageAny);
   resource_provider->SetPixels(id, pixels, rect, rect, offset);
+
+  EXPECT_CALL(*context, deleteTexture(texture_id)).Times(1);
   resource_provider->DeleteResource(id);
+
   Mock::VerifyAndClearExpectations(context);
 
   // Same for SetPixelsFromBuffer
+  id = resource_provider->CreateResource(
+      size, format, ResourceProvider::TextureUsageAny);
+  resource_provider->AcquirePixelBuffer(id);
+
   EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
-  EXPECT_CALL(*context, deleteTexture(texture_id)).Times(1);
   EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(3);
   EXPECT_CALL(*context, texImage2D(_, _, _, 2, 2, _, _, _, _)).Times(1);
   EXPECT_CALL(*context, texSubImage2D(_, _, _, _, 2, 2, _, _, _)).Times(1);
-  id = resource_provider->CreateResource(
-      size, format, ResourceProvider::TextureUsageAny);
-  resource_provider->AcquirePixelBuffer(id);
   resource_provider->SetPixelsFromBuffer(id);
+
   resource_provider->ReleasePixelBuffer(id);
+
+  EXPECT_CALL(*context, deleteTexture(texture_id)).Times(1);
   resource_provider->DeleteResource(id);
+
   Mock::VerifyAndClearExpectations(context);
 
   // Same for async version.
-  EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
-  EXPECT_CALL(*context, deleteTexture(texture_id)).Times(1);
-  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
-  EXPECT_CALL(*context, asyncTexImage2DCHROMIUM(_, _, _, 2, 2, _, _, _, _))
-      .Times(1);
   id = resource_provider->CreateResource(
       size, format, ResourceProvider::TextureUsageAny);
   resource_provider->AcquirePixelBuffer(id);
+
+  EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
+  EXPECT_CALL(*context, asyncTexImage2DCHROMIUM(_, _, _, 2, 2, _, _, _, _))
+      .Times(1);
   resource_provider->BeginSetPixels(id);
+
   resource_provider->ReleasePixelBuffer(id);
+
+  EXPECT_CALL(*context, deleteTexture(texture_id)).Times(1);
   resource_provider->DeleteResource(id);
+
   Mock::VerifyAndClearExpectations(context);
 }
 
@@ -1395,7 +1408,7 @@ TEST_P(ResourceProviderTest, ForcingAsyncUploadToComplete) {
     return;
   scoped_ptr<WebKit::WebGraphicsContext3D> mock_context(
       static_cast<WebKit::WebGraphicsContext3D*>(
-          new NiceMock<AllocationTrackingContext3D>));
+          new StrictMock<AllocationTrackingContext3D>));
   scoped_ptr<OutputSurface> output_surface(
       FakeOutputSurface::Create3d(mock_context.Pass()));
 
@@ -1409,18 +1422,26 @@ TEST_P(ResourceProviderTest, ForcingAsyncUploadToComplete) {
   scoped_ptr<ResourceProvider> resource_provider(
       ResourceProvider::Create(output_surface.get(), 0));
 
-  EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
-  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(3);
-  EXPECT_CALL(*context, asyncTexImage2DCHROMIUM(_, _, _, 2, 2, _, _, _, _))
-      .Times(1);
-  EXPECT_CALL(*context, waitAsyncTexImage2DCHROMIUM(GL_TEXTURE_2D)).Times(1);
-  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, 0)).Times(1);
   id = resource_provider->CreateResource(
       size, format, ResourceProvider::TextureUsageAny);
   resource_provider->AcquirePixelBuffer(id);
+
+  EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
+  EXPECT_CALL(*context, asyncTexImage2DCHROMIUM(_, _, _, 2, 2, _, _, _, _))
+      .Times(1);
   resource_provider->BeginSetPixels(id);
+
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(1);
+  EXPECT_CALL(*context, waitAsyncTexImage2DCHROMIUM(GL_TEXTURE_2D)).Times(1);
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, 0)).Times(1);
   resource_provider->ForceSetPixelsToComplete(id);
+
   resource_provider->ReleasePixelBuffer(id);
+
+  EXPECT_CALL(*context, deleteTexture(texture_id)).Times(1);
+  resource_provider->DeleteResource(id);
+
   Mock::VerifyAndClearExpectations(context);
 }
 
@@ -1430,7 +1451,7 @@ TEST_P(ResourceProviderTest, AbortForcedAsyncUpload) {
     return;
   scoped_ptr<WebKit::WebGraphicsContext3D> mock_context(
       static_cast<WebKit::WebGraphicsContext3D*>(
-          new NiceMock<AllocationTrackingContext3D>));
+          new StrictMock<AllocationTrackingContext3D>));
   scoped_ptr<OutputSurface> output_surface(
       FakeOutputSurface::Create3d(mock_context.Pass()));
 
@@ -1444,20 +1465,31 @@ TEST_P(ResourceProviderTest, AbortForcedAsyncUpload) {
   scoped_ptr<ResourceProvider> resource_provider(
       ResourceProvider::Create(output_surface.get(), 0));
 
-  EXPECT_CALL(*context, createTexture()).WillRepeatedly(Return(texture_id));
-  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(4);
-  EXPECT_CALL(*context, asyncTexImage2DCHROMIUM(_, _, _, 2, 2, _, _, _, _))
-      .Times(1);
-  EXPECT_CALL(*context, waitAsyncTexImage2DCHROMIUM(GL_TEXTURE_2D)).Times(1);
-  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, 0)).Times(1);
-  EXPECT_CALL(*context, deleteTexture(_)).Times(1);
   id = resource_provider->CreateResource(
       size, format, ResourceProvider::TextureUsageAny);
   resource_provider->AcquirePixelBuffer(id);
+
+  EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(2);
+  EXPECT_CALL(*context, asyncTexImage2DCHROMIUM(_, _, _, 2, 2, _, _, _, _))
+      .Times(1);
   resource_provider->BeginSetPixels(id);
+
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(1);
+  EXPECT_CALL(*context, waitAsyncTexImage2DCHROMIUM(GL_TEXTURE_2D)).Times(1);
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, 0)).Times(1);
   resource_provider->ForceSetPixelsToComplete(id);
+
+  EXPECT_CALL(*context, deleteTexture(texture_id)).Times(1);
+  EXPECT_CALL(*context, createTexture()).WillOnce(Return(texture_id));
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, texture_id)).Times(1);
   resource_provider->AbortSetPixels(id);
+
   resource_provider->ReleasePixelBuffer(id);
+
+  EXPECT_CALL(*context, deleteTexture(texture_id)).Times(1);
+  resource_provider->DeleteResource(id);
+
   Mock::VerifyAndClearExpectations(context);
 }
 
@@ -1515,13 +1547,6 @@ TEST_P(ResourceProviderTest, GpuMemoryBuffers) {
   scoped_ptr<ResourceProvider> resource_provider(
       ResourceProvider::Create(output_surface.get(), 0));
 
-  EXPECT_CALL(*context, createTexture())
-      .WillOnce(Return(kTextureId))
-      .RetiresOnSaturation();
-
-  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId))
-      .Times(1)
-      .RetiresOnSaturation();
   id = resource_provider->CreateResource(
       size, format, ResourceProvider::TextureUsageAny);
   EXPECT_CALL(*context, createImageCHROMIUM(kWidth, kHeight, GL_RGBA8_OES))
@@ -1529,7 +1554,10 @@ TEST_P(ResourceProviderTest, GpuMemoryBuffers) {
       .RetiresOnSaturation();
   resource_provider->AcquireImage(id);
 
-  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId)).Times(1)
+  EXPECT_CALL(*context, createTexture())
+      .WillOnce(Return(kTextureId))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*context, bindTexture(GL_TEXTURE_2D, kTextureId)).Times(2)
       .RetiresOnSaturation();
   EXPECT_CALL(*context, bindTexImage2DCHROMIUM(GL_TEXTURE_2D, kImageId))
       .Times(1)

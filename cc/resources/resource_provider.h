@@ -312,6 +312,9 @@ class CC_EXPORT ResourceProvider {
   // Use SetPixels or LockForWrite to allocate implicitly.
   void AllocateForTesting(ResourceId id);
 
+  // For tests only!
+  void CreateForTesting(ResourceId id);
+
   // Sets the current read fence. If a resource is locked for read
   // and has read fences enabled, the resource will not allow writes
   // until this fence has passed.
@@ -338,7 +341,12 @@ class CC_EXPORT ResourceProvider {
   struct Resource {
     Resource();
     ~Resource();
-    Resource(unsigned texture_id, gfx::Size size, GLenum format, GLenum filter);
+    Resource(unsigned texture_id,
+             gfx::Size size,
+             GLenum format,
+             GLenum filter,
+             GLenum texture_pool,
+             TextureUsageHint hint);
     Resource(uint8_t* pixels, gfx::Size size, GLenum format, GLenum filter);
 
     unsigned gl_id;
@@ -364,6 +372,8 @@ class CC_EXPORT ResourceProvider {
     // TODO(skyostil): Use a separate sampler object for filter state.
     GLenum filter;
     unsigned image_id;
+    GLenum texture_pool;
+    TextureUsageHint hint;
     ResourceType type;
   };
   typedef base::hash_map<ResourceId, Resource> ResourceMap;
@@ -399,6 +409,7 @@ class CC_EXPORT ResourceProvider {
     ForShutdown,
   };
   void DeleteResourceInternal(ResourceMap::iterator it, DeleteStyle style);
+  void LazyCreate(Resource* resource);
   void LazyAllocate(Resource* resource);
 
   OutputSurface* output_surface_;
