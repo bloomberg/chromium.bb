@@ -787,6 +787,7 @@ void TileManager::OnRasterTaskCompleted(
 
   if (was_canceled) {
     resource_pool_->ReleaseResource(resource.Pass());
+    tile_version.resource_id_ = 0;
     return;
   }
 
