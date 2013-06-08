@@ -38,13 +38,6 @@ namespace {
 // a background install.
 const int kInitialDelaySeconds = 10;
 
-// One of the Pnacl component files, for checking that expected files exist.
-// TODO(jvoung): perhaps replace this with a list of the expected files in the
-// manifest.json. Use that to check that everything is unpacked.
-// However, that would make startup detection even slower (need to check for
-// more than one file!).
-const char kPnaclCompilerFileName[] = "llc_nexe";
-
 // Name of the Pnacl component specified in the manifest.
 const char kPnaclManifestNamePrefix[] = "PNaCl";
 
@@ -151,12 +144,9 @@ bool GetLatestPnaclDirectory(PnaclComponentInstaller* pci,
   return found;
 }
 
-// Read the PNaCl specific manifest.
-base::DictionaryValue* ReadPnaclManifest(const base::FilePath& unpack_path) {
-  base::FilePath manifest_path = unpack_path.Append(
-      FILE_PATH_LITERAL("pnacl_public_pnacl_json"));
-  if (!file_util::PathExists(manifest_path))
-    return NULL;
+// Read a manifest file in.
+base::DictionaryValue* ReadJSONManifest(
+    const base::FilePath& manifest_path) {
   JSONFileValueSerializer serializer(manifest_path);
   std::string error;
   scoped_ptr<base::Value> root(serializer.Deserialize(NULL, &error));
@@ -167,12 +157,33 @@ base::DictionaryValue* ReadPnaclManifest(const base::FilePath& unpack_path) {
   return static_cast<base::DictionaryValue*>(root.release());
 }
 
+// Read the PNaCl specific manifest.
+base::DictionaryValue* ReadPnaclManifest(const base::FilePath& unpack_path) {
+  base::FilePath manifest_path = unpack_path.Append(
+      FILE_PATH_LITERAL("pnacl_public_pnacl_json"));
+  if (!file_util::PathExists(manifest_path))
+    return NULL;
+  return ReadJSONManifest(manifest_path);
+}
+
+// Read the component's manifest.json.
+base::DictionaryValue* ReadComponentManifest(
+    const base::FilePath& unpack_path) {
+  base::FilePath manifest_path = unpack_path.Append(
+      FILE_PATH_LITERAL("manifest.json"));
+  if (!file_util::PathExists(manifest_path))
+    return NULL;
+  return ReadJSONManifest(manifest_path);
+}
+
 }  // namespace
 
+// Check that the component's manifest is for PNaCl, and check the
+// PNaCl manifest indicates this is the correct arch-specific package.
 bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
                                  const base::DictionaryValue& pnacl_manifest,
                                  Version* version_out) {
-  // Make sure we have the right manifest file.
+  // Make sure we have the right |manifest| file.
   std::string name;
   manifest.GetStringASCII("name", &name);
   // For the webstore, we've given different names to each of the
@@ -193,6 +204,7 @@ bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
     return false;
   }
 
+  // Now check the |pnacl_manifest|.
   std::string arch;
   pnacl_manifest.GetStringASCII("pnacl-arch", &arch);
   if (arch.compare(OmahaQueryParams::getNaclArch()) != 0) {
@@ -252,19 +264,6 @@ void PnaclComponentInstaller::OnProfileChange() {
       pm->GetInitialProfileDir());
 }
 
-namespace {
-
-bool PathContainsPnacl(const base::FilePath& base_path) {
-  // Check that at least one of the compiler files exists, for the current ISA.
-  std::string expected_filename("pnacl_public_");
-  std::string arch = OmahaQueryParams::getNaclArch();
-  expected_filename = expected_filename + SanitizeForPath(arch) +
-      "_" + kPnaclCompilerFileName;
-  return file_util::PathExists(base_path.AppendASCII(expected_filename));
-}
-
-}  // namespace
-
 bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
                                       const base::FilePath& unpack_path) {
   scoped_ptr<base::DictionaryValue> pnacl_manifest(
@@ -283,11 +282,6 @@ bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
   // Don't install if the current version is actually newer.
   if (current_version().CompareTo(version) > 0)
     return false;
-
-  if (!PathContainsPnacl(unpack_path)) {
-    LOG(WARNING) << "PathContainsPnacl check failed, not installing.";
-    return false;
-  }
 
   // Passed the basic tests. Time to install it.
   base::FilePath path = GetPnaclBaseDirectory().AppendASCII(
@@ -366,7 +360,17 @@ void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
   Version version(kNullVersion);
   std::vector<base::FilePath> older_dirs;
   if (GetLatestPnaclDirectory(pci, &path, &version, &older_dirs)) {
-    if (!PathContainsPnacl(path)) {
+    scoped_ptr<base::DictionaryValue> manifest(
+        ReadComponentManifest(path));
+    scoped_ptr<base::DictionaryValue> pnacl_manifest(
+        ReadPnaclManifest(path));
+    Version manifest_version;
+    // Check that the component manifest and PNaCl manifest files
+    // are legit, and that the indicated version matches the one
+    // encoded within the path name.
+    if (!CheckPnaclComponentManifest(*manifest, *pnacl_manifest,
+                                     &manifest_version)
+        || !version.Equals(manifest_version)) {
       version = Version(kNullVersion);
     } else {
       PathService::Override(chrome::DIR_PNACL_COMPONENT, path);
