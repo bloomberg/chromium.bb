@@ -28,6 +28,10 @@ class URLRequestContextGetter;
 
 namespace spellcheck {
 
+// Constants for the feedback field trial.
+static const char kFeedbackFieldTrialName[] = "SpellingServiceFeedback";
+static const char kFeedbackFieldTrialEnabledGroupName[] = "Enabled";
+
 // Manages sending feedback to the spelling service.
 class FeedbackSender : public base::SupportsWeakPtr<FeedbackSender>,
                        public net::URLFetcherDelegate {

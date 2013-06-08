@@ -664,6 +664,10 @@ const char kEnableSpdyCredentialFrames[]    = "enable-spdy-credential-frames";
 // Enables auto correction for misspelled words.
 const char kEnableSpellingAutoCorrect[]     = "enable-spelling-auto-correct";
 
+// Enables sending user feedback to spelling service.
+const char kEnableSpellingServiceFeedback[] =
+    "enable-spelling-service-feedback";
+
 // Enables the stacked tabstrip.
 const char kEnableStackedTabStrip[]         = "enable-stacked-tab-strip";
 

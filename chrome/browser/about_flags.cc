@@ -1510,6 +1510,13 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
+    "enable-spelling-service-feedback",
+    IDS_FLAGS_ENABLE_SPELLING_SERVICE_FEEDBACK_NAME,
+    IDS_FLAGS_ENABLE_SPELLING_SERVICE_FEEDBACK_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableSpellingServiceFeedback)
+  },
+  {
     "enable-webgl-draft-extensions",
     IDS_FLAGS_ENABLE_WEBGL_DRAFT_EXTENSIONS_NAME,
     IDS_FLAGS_ENABLE_WEBGL_DRAFT_EXTENSIONS_DESCRIPTION,

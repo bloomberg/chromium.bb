@@ -187,6 +187,7 @@ extern const char kEnableSdch[];
 extern const char kDisableSpdy31[];
 extern const char kEnableSpdyCredentialFrames[];
 extern const char kEnableSpellingAutoCorrect[];
+extern const char kEnableSpellingServiceFeedback[];
 extern const char kEnableStackedTabStrip[];
 extern const char kEnableSuggestionsTabPage[];
 extern const char kEnableSyncFavicons[];
