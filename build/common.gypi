@@ -65,12 +65,12 @@
           'branding%': 'Chromium',
 
           'conditions': [
-            # ChromeOS implies ash and for a limited time Windows. Call now!.
-            ['chromeos==1 or OS=="win"', {
+            # ChromeOS implies ash.
+            ['chromeos==1', {
               'use_ash%': 1,
               'use_aura%': 1,
             }],
-            
+
             # For now, Windows builds that |use_aura| should also imply using
             # ash. This rule should be removed for the future when Windows is
             # using the aura windows without the ash interface.
