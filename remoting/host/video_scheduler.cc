@@ -280,14 +280,14 @@ void VideoScheduler::SendCursorShape(
 
 void VideoScheduler::EncodeFrame(
     scoped_ptr<webrtc::DesktopFrame> frame,
-    int sequence_number) {
+    int64 sequence_number) {
   DCHECK(encode_task_runner_->BelongsToCurrentThread());
 
   // If there is nothing to encode then send an empty keep-alive packet.
   if (!frame || frame->updated_region().is_empty()) {
     scoped_ptr<VideoPacket> packet(new VideoPacket());
     packet->set_flags(VideoPacket::LAST_PARTITION);
-    packet->set_sequence_number(sequence_number);
+    packet->set_client_sequence_number(sequence_number);
     network_task_runner_->PostTask(
         FROM_HERE, base::Bind(&VideoScheduler::SendVideoPacket, this,
                               base::Passed(&packet)));
@@ -302,11 +302,11 @@ void VideoScheduler::EncodeFrame(
 }
 
 void VideoScheduler::EncodedDataAvailableCallback(
-    int sequence_number,
+    int64 sequence_number,
     scoped_ptr<VideoPacket> packet) {
   DCHECK(encode_task_runner_->BelongsToCurrentThread());
 
-  packet->set_sequence_number(sequence_number);
+  packet->set_client_sequence_number(sequence_number);
 
   bool last = (packet->flags() & VideoPacket::LAST_PACKET) != 0;
   if (last) {

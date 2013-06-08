@@ -150,9 +150,9 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
 
   // Encode a frame, passing generated VideoPackets to SendVideoPacket().
   void EncodeFrame(scoped_ptr<webrtc::DesktopFrame> frame,
-                   int sequence_number);
+                   int64 sequence_number);
 
-  void EncodedDataAvailableCallback(int sequence_number,
+  void EncodedDataAvailableCallback(int64 sequence_number,
                                     scoped_ptr<VideoPacket> packet);
 
   // Task runners used by this class.
