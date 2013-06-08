@@ -511,7 +511,7 @@ Download.prototype.update = function(download) {
     showInline(this.controlRetry_, download.retry);
     this.controlRetry_.href = this.url_;
     showInline(this.controlPause_, this.state_ == Download.States.IN_PROGRESS);
-    showInline(this.controlResume_, this.state_ == Download.States.PAUSED);
+    showInline(this.controlResume_, download.resume);
     var showCancel = this.state_ == Download.States.IN_PROGRESS ||
                      this.state_ == Download.States.PAUSED;
     showInline(this.controlCancel_, showCancel);
