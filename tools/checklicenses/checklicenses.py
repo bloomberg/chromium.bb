@@ -238,11 +238,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/jemalloc': [  # http://crbug.com/98302
         'UNKNOWN',
     ],
-    'third_party/JSON': [
-        'Perl',  # Build-only.
-        # License missing upstream on 3 minor files.
-        'UNKNOWN',  # https://rt.cpan.org/Public/Bug/Display.html?id=85915
-    ],
     'third_party/lcov': [  # http://crbug.com/98304
         'UNKNOWN',
     ],
