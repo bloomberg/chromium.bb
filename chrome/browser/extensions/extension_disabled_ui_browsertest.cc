@@ -4,6 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/test/test_utils.h"
 #include "content/test/net/url_request_prepackaged_interceptor.h"
 #include "net/url_request/url_fetcher.h"
 
@@ -80,6 +82,7 @@ class ExtensionDisabledGlobalErrorTest : public ExtensionBrowserTest {
     if (UpdateExtension(extension->id(), crx_path, expected_change))
       return NULL;
     BrowserThread::GetBlockingPool()->FlushForTesting();
+    base::RunLoop().RunUntilIdle();
     EXPECT_EQ(size_before + expected_change, service_->extensions()->size());
     if (service_->disabled_extensions()->size() != 1u)
       return NULL;
@@ -154,9 +157,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
 
 // Test that an error appears if the disable reason is unknown
 // (but probably was for increased permissions).
-// Disabled due to http://crbug.com/246431
 IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
-                       DISABLED_UnknownReasonHigherPermissions) {
+                       UnknownReasonHigherPermissions) {
   const Extension* extension = InstallAndUpdateIncreasingPermissionsExtension();
   // Clear disable reason to simulate legacy disables.
   service_->extension_prefs()->ClearDisableReasons(extension->id());
@@ -182,7 +184,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
   // Get data for extension v2 (disabled) into sync.
   const Extension* extension = InstallAndUpdateIncreasingPermissionsExtension();
   std::string extension_id = extension->id();
-  // service_->GrantPermissionsAndEnableExtension(extension, false);
   extensions::ExtensionSyncData sync_data =
       service_->GetExtensionSyncData(*extension);
   UninstallExtension(extension_id);
@@ -211,6 +212,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
 
   WaitForExtensionInstall();
   BrowserThread::GetBlockingPool()->FlushForTesting();
+  base::RunLoop().RunUntilIdle();
 
   extension = service_->GetExtensionById(extension_id, true);
   ASSERT_TRUE(extension);
