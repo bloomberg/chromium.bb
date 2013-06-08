@@ -1673,7 +1673,7 @@ DialogType AutofillDialogControllerImpl::GetDialogType() const {
 }
 
 std::string AutofillDialogControllerImpl::GetRiskData() const {
-  return risk_data_;
+  return risk_data_.empty() ? "no pagers" : risk_data_;
 }
 
 void AutofillDialogControllerImpl::OnDidAcceptLegalDocuments() {

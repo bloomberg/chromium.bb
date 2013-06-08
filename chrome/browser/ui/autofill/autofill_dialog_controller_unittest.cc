@@ -1816,7 +1816,7 @@ TEST_F(AutofillDialogControllerTest, RiskNeverLoadsWithPendingLegalDocuments) {
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
 
-  EXPECT_TRUE(controller()->GetRiskData().empty());
+  EXPECT_EQ("no pagers", controller()->GetRiskData());
 }
 
 TEST_F(AutofillDialogControllerTest, RiskLoadsWithoutPendingLegalDocuments) {
@@ -1828,7 +1828,7 @@ TEST_F(AutofillDialogControllerTest, RiskLoadsWithoutPendingLegalDocuments) {
   controller()->OnDidGetWalletItems(wallet_items.Pass());
   controller()->OnAccept();
 
-  EXPECT_TRUE(controller()->GetRiskData().empty());
+  EXPECT_EQ("no pagers", controller()->GetRiskData());
 
   controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
   EXPECT_EQ(kFakeFingerprintEncoded, controller()->GetRiskData());
@@ -1845,7 +1845,7 @@ TEST_F(AutofillDialogControllerTest, RiskLoadsAfterAcceptingLegalDocuments) {
   EXPECT_CALL(*controller(), LoadRiskFingerprintData()).Times(1);
 
   controller()->OnAccept();
-  EXPECT_TRUE(controller()->GetRiskData().empty());
+  EXPECT_EQ("no pagers", controller()->GetRiskData());
 
   // Simulate a risk load and verify |GetRiskData()| matches the encoded value.
   controller()->OnDidAcceptLegalDocuments();
