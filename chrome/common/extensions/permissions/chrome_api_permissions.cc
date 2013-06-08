@@ -53,6 +53,13 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
     { APIPermission::kIdentity, "identity" },
     { APIPermission::kExperimental, "experimental",
       APIPermissionInfo::kFlagCannotBeOptional },
+      // NOTE(kalman): this is provided by a manifest property but needs to
+      // appear in the install permission dialogue, so we need a fake
+      // permission for it. See http://crbug.com/247857.
+    { APIPermission::kWebConnectable, "webConnectable",
+      APIPermissionInfo::kFlagCannotBeOptional,
+      IDS_EXTENSION_PROMPT_WARNING_WEB_CONNECTABLE,
+      PermissionMessage::kWebConnectable},
     { APIPermission::kGeolocation, "geolocation",
       APIPermissionInfo::kFlagCannotBeOptional,
       IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION,

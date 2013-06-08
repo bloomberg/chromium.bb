@@ -7,6 +7,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/api/manifest_types.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/permissions/api_permission_set.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/url_pattern.h"
 #include "googleurl/src/gurl.h"
@@ -48,6 +50,10 @@ bool ExternallyConnectableHandler::Parse(Extension* extension,
       ExternallyConnectableInfo::FromValue(*externally_connectable, error);
   if (!info)
     return false;
+  if (!info->matches.is_empty()) {
+    PermissionsData::GetInitialAPIPermissions(extension)->insert(
+        APIPermission::kWebConnectable);
+  }
   extension->SetManifestData(keys::kExternallyConnectable, info.release());
   return true;
 }
