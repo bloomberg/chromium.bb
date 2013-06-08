@@ -42,6 +42,7 @@ void InitPasswordFormFillData(
   FormFieldData password_field;
   password_field.name = form_on_page.password_element;
   password_field.value = preferred_match->password_value;
+  password_field.form_control_type = "password";
 
   // Fill basic form data.
   result->basic_data.origin = form_on_page.origin;

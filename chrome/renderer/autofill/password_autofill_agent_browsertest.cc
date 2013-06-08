@@ -89,6 +89,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     FormFieldData password_field;
     password_field.name = ASCIIToUTF16(kPasswordName);
     password_field.value = password1_;
+    password_field.form_control_type = "password";
     fill_data_.basic_data.fields.push_back(password_field);
 
     fill_data_.additional_logins[username2_] = password2_;
@@ -278,6 +279,66 @@ TEST_F(PasswordAutofillAgentTest, NoInitialAutocompleteForFilledField) {
 
   // Neither field should be autocompleted.
   CheckTextFieldsState("bogus", false, std::string(), false);
+}
+
+TEST_F(PasswordAutofillAgentTest, NoAutocompleteForTextFieldPasswords) {
+  const char kTextFieldPasswordFormHTML[] =
+      "<FORM name='LoginTestForm' action='http://www.bidule.com'>"
+      "  <INPUT type='text' id='username'/>"
+      "  <INPUT type='text' id='password'/>"
+      "  <INPUT type='submit' value='Login'/>"
+      "</FORM>";
+  LoadHTML(kTextFieldPasswordFormHTML);
+
+  // Retrieve the input elements so the test can access them.
+  WebDocument document = GetMainFrame()->document();
+  WebElement element =
+      document.getElementById(WebString::fromUTF8(kUsernameName));
+  ASSERT_FALSE(element.isNull());
+  username_element_ = element.to<WebKit::WebInputElement>();
+  element = document.getElementById(WebString::fromUTF8(kPasswordName));
+  ASSERT_FALSE(element.isNull());
+  password_element_ = element.to<WebKit::WebInputElement>();
+
+  // Set the expected form origin URL.
+  std::string origin("data:text/html;charset=utf-8,");
+  origin += kTextFieldPasswordFormHTML;
+  fill_data_.basic_data.origin = GURL(origin);
+
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Fields should still be empty.
+  CheckTextFieldsState(std::string(), false, std::string(), false);
+}
+
+TEST_F(PasswordAutofillAgentTest, NoAutocompleteForPasswordFieldUsernames) {
+  const char kPasswordFieldUsernameFormHTML[] =
+      "<FORM name='LoginTestForm' action='http://www.bidule.com'>"
+      "  <INPUT type='password' id='username'/>"
+      "  <INPUT type='password' id='password'/>"
+      "  <INPUT type='submit' value='Login'/>"
+      "</FORM>";
+  LoadHTML(kPasswordFieldUsernameFormHTML);
+
+  // Retrieve the input elements so the test can access them.
+  WebDocument document = GetMainFrame()->document();
+  WebElement element =
+      document.getElementById(WebString::fromUTF8(kUsernameName));
+  ASSERT_FALSE(element.isNull());
+  username_element_ = element.to<WebKit::WebInputElement>();
+  element = document.getElementById(WebString::fromUTF8(kPasswordName));
+  ASSERT_FALSE(element.isNull());
+  password_element_ = element.to<WebKit::WebInputElement>();
+
+  // Set the expected form origin URL.
+  std::string origin("data:text/html;charset=utf-8,");
+  origin += kPasswordFieldUsernameFormHTML;
+  fill_data_.basic_data.origin = GURL(origin);
+
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Fields should still be empty.
+  CheckTextFieldsState(std::string(), false, std::string(), false);
 }
 
 // Tests that having a matching username does not preclude the autocomplete.

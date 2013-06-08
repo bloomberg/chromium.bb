@@ -74,13 +74,20 @@ static bool FindFormInputElements(WebKit::WebFormElement* fe,
           break;
         }
 
+        // Only fill saved passwords into password fields and usernames into
+        // text fields.
+        WebKit::WebInputElement input_element =
+            temp_elements[i].to<WebKit::WebInputElement>();
+        if (input_element.isPasswordField() !=
+            (data.fields[j].form_control_type == "password"))
+          continue;
+
         // This element matched, add it to our temporary result. It's possible
         // there are multiple matches, but for purposes of identifying the form
         // one suffices and if some function needs to deal with multiple
         // matching elements it can get at them through the FormElement*.
         // Note: This assignment adds a reference to the InputElement.
-        result->input_elements[data.fields[j].name] =
-            temp_elements[i].to<WebKit::WebInputElement>();
+        result->input_elements[data.fields[j].name] = input_element;
         found_input = true;
       }
     }
