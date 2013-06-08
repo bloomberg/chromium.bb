@@ -97,7 +97,7 @@ CmdBufferImageTransportFactory::CmdBufferImageTransportFactory() {
                                                            url,
                                                            factory,
                                                            swap_client));
-  context_->Initialize(
+  context_->InitializeWithDefaultBufferSizes(
       attrs,
       false,
       CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE);

@@ -80,7 +80,15 @@ class WebGraphicsContext3DCommandBufferImpl
 
   bool Initialize(const Attributes& attributes,
                   bool bind_generates_resources,
-                  CauseForGpuLaunch cause);
+                  CauseForGpuLaunch cause,
+                  size_t command_buffer_size,
+                  size_t start_transfer_buffer_size,
+                  size_t min_transfer_buffer_size,
+                  size_t max_transfer_buffer_size);
+
+  bool InitializeWithDefaultBufferSizes(const Attributes& attributes,
+                                        bool bind_generates_resources,
+                                        CauseForGpuLaunch cause);
 
   // The following 3 IDs let one uniquely identify this context.
   // Gets the GPU process ID for this context.
@@ -734,6 +742,10 @@ class WebGraphicsContext3DCommandBufferImpl
   int frame_number_;
   bool bind_generates_resources_;
   bool use_echo_for_swap_ack_;
+  size_t command_buffer_size_;
+  size_t start_transfer_buffer_size_;
+  size_t min_transfer_buffer_size_;
+  size_t max_transfer_buffer_size_;
 };
 
 }  // namespace content

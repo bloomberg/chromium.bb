@@ -2398,7 +2398,7 @@ WebGraphicsContext3DCommandBufferImpl* RenderWidget::CreateGraphicsContext3D(
           RenderThreadImpl::current(),
           weak_ptr_factory_.GetWeakPtr()));
 
-  if (!context->Initialize(
+  if (!context->InitializeWithDefaultBufferSizes(
           attributes,
           false /* bind generates resources */,
           CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE))

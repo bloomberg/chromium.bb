@@ -47,6 +47,11 @@ static base::LazyInstance<std::set<WebGraphicsContext3DCommandBufferImpl*> >
 
 namespace {
 
+const size_t kDefaultCommandBufferSize = 1024 * 1024;
+const size_t kDefaultStartTransferBufferSize = 1 * 1024 * 1024;
+const size_t kDefaultMinTransferBufferSize = 1 * 256 * 1024;
+const size_t kDefaultMaxTransferBufferSize = 16 * 1024 * 1024;
+
 void ClearSharedContextsIfInShareSet(
     WebGraphicsContext3DCommandBufferImpl* context) {
   // If the given context isn't in the share set, that means that it
@@ -72,13 +77,6 @@ size_t ClampUint64ToSizeT(uint64 value) {
                    static_cast<uint64>(std::numeric_limits<size_t>::max()));
   return static_cast<size_t>(value);
 }
-
-const int32 kCommandBufferSize = 1024 * 1024;
-// TODO(kbr): make the transfer buffer size configurable via context
-// creation attributes.
-const size_t kStartTransferBufferSize = 1 * 1024 * 1024;
-const size_t kMinTransferBufferSize = 1 * 256 * 1024;
-const size_t kMaxTransferBufferSize = 16 * 1024 * 1024;
 
 // Singleton used to initialize and terminate the gles2 library.
 class GLES2Initializer {
@@ -243,7 +241,11 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       trace_gl_(NULL),
       frame_number_(0),
       bind_generates_resources_(false),
-      use_echo_for_swap_ack_(true) {
+      use_echo_for_swap_ack_(true),
+      command_buffer_size_(0),
+      start_transfer_buffer_size_(0),
+      min_transfer_buffer_size_(0),
+      max_transfer_buffer_size_(0) {
 #if (defined(OS_MACOSX) || defined(OS_WIN)) && !defined(USE_AURA)
   // Get ViewMsg_SwapBuffers_ACK from browser for single-threaded path.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -265,10 +267,27 @@ WebGraphicsContext3DCommandBufferImpl::
   Destroy();
 }
 
-bool WebGraphicsContext3DCommandBufferImpl::Initialize(
+bool WebGraphicsContext3DCommandBufferImpl::InitializeWithDefaultBufferSizes(
     const WebGraphicsContext3D::Attributes& attributes,
     bool bind_generates_resources,
     CauseForGpuLaunch cause) {
+  return Initialize(attributes,
+                    bind_generates_resources,
+                    cause,
+                    kDefaultCommandBufferSize,
+                    kDefaultStartTransferBufferSize,
+                    kDefaultMinTransferBufferSize,
+                    kDefaultMaxTransferBufferSize);
+}
+
+bool WebGraphicsContext3DCommandBufferImpl::Initialize(
+    const WebGraphicsContext3D::Attributes& attributes,
+    bool bind_generates_resources,
+    CauseForGpuLaunch cause,
+    size_t command_buffer_size,
+    size_t start_transfer_buffer_size,
+    size_t min_transfer_buffer_size,
+    size_t max_transfer_buffer_size) {
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::initialize");
 
   attributes_ = attributes;
@@ -285,6 +304,11 @@ bool WebGraphicsContext3DCommandBufferImpl::Initialize(
   if (!host_.get())
     return false;
   DCHECK(host_->state() == GpuChannelHost::kConnected);
+
+  command_buffer_size_ = command_buffer_size;
+  start_transfer_buffer_size_ = start_transfer_buffer_size;
+  min_transfer_buffer_size_ = min_transfer_buffer_size;
+  max_transfer_buffer_size_ = max_transfer_buffer_size;
 
   return true;
 }
@@ -432,7 +456,7 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_ = new gpu::gles2::GLES2CmdHelper(command_buffer_);
-  if (!gles2_helper_->Initialize(kCommandBufferSize))
+  if (!gles2_helper_->Initialize(command_buffer_size_))
     return false;
 
   if (attributes_.noAutomaticFlushes)
@@ -458,9 +482,9 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
   gl_ = real_gl_;
 
   if (!real_gl_->Initialize(
-      kStartTransferBufferSize,
-      kMinTransferBufferSize,
-      kMaxTransferBufferSize)) {
+      start_transfer_buffer_size_,
+      min_transfer_buffer_size_,
+      max_transfer_buffer_size_)) {
     return false;
   }
 
@@ -1461,7 +1485,7 @@ WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
           0, active_url, factory, null_client));
   CauseForGpuLaunch cause =
       CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
-  if (context->Initialize(attributes, false, cause))
+  if (context->InitializeWithDefaultBufferSizes(attributes, false, cause))
     return context.release();
   return NULL;
 }
