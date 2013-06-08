@@ -1150,7 +1150,7 @@ internal_paladin.add_config('link-paladin',
 internal_paladin.add_config('lumpy-paladin',
   boards=['lumpy'],
   paladin_builder_name='lumpy paladin',
-  hw_tests=HWTestConfig.DefaultListCQ(num=4),
+  hw_tests=HWTestConfig.DefaultListCQ(),
   upload_hw_test_artifacts=True,
 )
 
