@@ -644,19 +644,21 @@ TEST_F(SyncerTest, GetCommitIdsCommandTruncates) {
   }
 
   // The arrangement is now: x (b (d) c (e)) w j
-  // Entry "w" is in conflict, making its sucessors unready to commit.
+  // Entry "w" is in conflict, so it is not eligible for commit.
   vector<int64> unsynced_handle_view;
   vector<syncable::Id> expected_order;
   {
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
     GetUnsyncedEntries(&rtrans, &unsynced_handle_view);
   }
-  // The expected order is "x", "b", "c", "d", "e", truncated appropriately.
+  // The expected order is "x", "b", "c", "d", "e", "j", truncated
+  // appropriately.
   expected_order.push_back(ids_.MakeServer("x"));
   expected_order.push_back(ids_.MakeLocal("b"));
   expected_order.push_back(ids_.MakeLocal("c"));
   expected_order.push_back(ids_.MakeLocal("d"));
   expected_order.push_back(ids_.MakeLocal("e"));
+  expected_order.push_back(ids_.MakeLocal("j"));
   DoTruncationTest(unsynced_handle_view, expected_order);
 }
 

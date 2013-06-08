@@ -198,14 +198,16 @@ bool GetCommitIdsCommand::AddUncommittedParentsAndTheirPredecessors(
       // We can return early.
       break;
     }
-    if (!AddItemThenPredecessors(trans, ready_unsynced_set, parent,
-                                 &item_dependencies)) {
-      // There was a parent/predecessor in conflict. We return without adding
-      // anything to |commit_set|.
-      DVLOG(1) << "Parent or parent's predecessor was in conflict, omitting "
-               << item;
+    if (IsEntryInConflict(parent)) {
+      // We ignore all entries that are children of a conflicing item.  Return
+      // false immediately to forget the traversal we've built up so far.
+      DVLOG(1) << "Parent was in conflict, omitting " << item;
       return false;
     }
+    AddItemThenPredecessors(trans,
+                            ready_unsynced_set,
+                            parent,
+                            &item_dependencies);
     parent_id = parent.Get(syncable::PARENT_ID);
   }
 
@@ -214,26 +216,24 @@ bool GetCommitIdsCommand::AddUncommittedParentsAndTheirPredecessors(
   return true;
 }
 
-bool GetCommitIdsCommand::AddItem(const std::set<int64>& ready_unsynced_set,
-                                  const syncable::Entry& item,
-                                  OrderedCommitSet* result) const {
+// Adds the given item to the list if it is unsynced and ready for commit.
+void GetCommitIdsCommand::TryAddItem(const std::set<int64>& ready_unsynced_set,
+                                     const syncable::Entry& item,
+                                     OrderedCommitSet* result) const {
   DCHECK(item.Get(syncable::IS_UNSYNCED));
-  // An item in conflict means that dependent items (successors and children)
-  // cannot be added either.
-  if (IsEntryInConflict(item))
-    return false;
   int64 item_handle = item.Get(syncable::META_HANDLE);
-  if (ready_unsynced_set.count(item_handle) == 0) {
-    // It's not in conflict, but not ready for commit. Just return true without
-    // adding it to the commit set.
-    return true;
+  if (ready_unsynced_set.count(item_handle) != 0) {
+    result->AddCommitItem(item_handle, item.Get(syncable::ID),
+                          item.GetModelType());
   }
-  result->AddCommitItem(item_handle, item.Get(syncable::ID),
-                        item.GetModelType());
-  return true;
 }
 
-bool GetCommitIdsCommand::AddItemThenPredecessors(
+// Adds the given item, and all its unsynced predecessors.  The traversal will
+// be cut short if any item along the traversal is not IS_UNSYNCED, or if we
+// detect that this area of the tree has already been traversed.  Items that are
+// not 'ready' for commit (see IsEntryReadyForCommit()) will not be added to the
+// list, though they will not stop the traversal.
+void GetCommitIdsCommand::AddItemThenPredecessors(
     syncable::BaseTransaction* trans,
     const std::set<int64>& ready_unsynced_set,
     const syncable::Entry& item,
@@ -242,50 +242,44 @@ bool GetCommitIdsCommand::AddItemThenPredecessors(
   if (commit_set_->HaveCommitItem(item_handle)) {
     // We've already added this item to the commit set, and so must have
     // already added the predecessors as well.
-    return true;
+    return;
   }
-  if (!AddItem(ready_unsynced_set, item, result))
-    return false;  // Item is in conflict.
+  TryAddItem(ready_unsynced_set, item, result);
   if (item.Get(syncable::IS_DEL))
-    return true;  // Deleted items have no predecessors.
+    return;  // Deleted items have no predecessors.
 
   syncable::Id prev_id = item.GetPredecessorId();
   while (!prev_id.IsRoot()) {
     syncable::Entry prev(trans, syncable::GET_BY_ID, prev_id);
     CHECK(prev.good()) << "Bad id when walking predecessors.";
-    if (!prev.Get(syncable::IS_UNSYNCED))
-      break;
+    if (!prev.Get(syncable::IS_UNSYNCED)) {
+      // We're interested in "runs" of unsynced items.  This item breaks
+      // the streak, so we stop traversing.
+      return;
+    }
     int64 handle = prev.Get(syncable::META_HANDLE);
     if (commit_set_->HaveCommitItem(handle)) {
       // We've already added this item to the commit set, and so must have
       // already added the predecessors as well.
-      return true;
+      return;
     }
-    if (!AddItem(ready_unsynced_set, prev, result))
-      return false;  // Item is in conflict.
+    TryAddItem(ready_unsynced_set, prev, result);
     prev_id = prev.GetPredecessorId();
   }
-  return true;
 }
 
-bool GetCommitIdsCommand::AddPredecessorsThenItem(
+// Same as AddItemThenPredecessor, but the traversal order will be reversed.
+void GetCommitIdsCommand::AddPredecessorsThenItem(
     syncable::BaseTransaction* trans,
     const ModelSafeRoutingInfo& routes,
     const std::set<int64>& ready_unsynced_set,
     const syncable::Entry& item,
     OrderedCommitSet* result) const {
   OrderedCommitSet item_dependencies(routes);
-  if (!AddItemThenPredecessors(trans, ready_unsynced_set, item,
-                               &item_dependencies)) {
-    // Either the item or its predecessors are in conflict, so don't add any
-    // items to the commit set.
-    DVLOG(1) << "Predecessor was in conflict, omitting " << item;
-    return false;
-  }
+  AddItemThenPredecessors(trans, ready_unsynced_set, item, &item_dependencies);
 
   // Reverse what we added to get the correct order.
   result->AppendReverse(item_dependencies);
-  return true;
 }
 
 bool GetCommitIdsCommand::IsCommitBatchFull() const {
@@ -315,12 +309,12 @@ void GetCommitIdsCommand::AddCreatesAndMoves(
               routes,
               ready_unsynced_set,
               entry,
-              &item_dependencies) &&
-          AddPredecessorsThenItem(trans,
-                                  routes,
-                                  ready_unsynced_set,
-                                  entry,
-                                  &item_dependencies)) {
+              &item_dependencies)) {
+        AddPredecessorsThenItem(trans,
+                                routes,
+                                ready_unsynced_set,
+                                entry,
+                                &item_dependencies);
         commit_set_->Append(item_dependencies);
       }
     }

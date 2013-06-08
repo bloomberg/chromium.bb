@@ -70,14 +70,14 @@ class SYNC_EXPORT_PRIVATE GetCommitIdsCommand : public SyncerCommand {
       std::set<int64>* ready_unsynced_set);
 
  private:
-  // Add all the uncommitted parents (and their predecessors) of |item| to
-  // |result| if they are ready to commit. Entries are added in root->child
-  // order and predecessor->successor order.
+  // Add all the uncommitted parents of |item| to |result| if they are ready to
+  // commit. Entries are added in root->child order and predecessor->successor
+  // order.
   // Returns values:
-  //    False: if a dependent item was in conflict, and hence no child cannot be
+  //    False: if a parent item was in conflict, and hence no child cannot be
   //           committed.
-  //    True: if all parents and their predecessors were checked for commit
-  //          readiness and were added to |result| as necessary.
+  //    True: if all parents were checked for commit readiness and were added to
+  //          |result| as necessary.
   bool AddUncommittedParentsAndTheirPredecessors(
       syncable::BaseTransaction* trans,
       const ModelSafeRoutingInfo& routes,
@@ -90,32 +90,21 @@ class SYNC_EXPORT_PRIVATE GetCommitIdsCommand : public SyncerCommand {
   // Adds |item| to |result| if it's ready for committing and was not already
   // present.
   // Prereq: |item| is unsynced.
-  // Returns values:
-  //    False: if |item| was in conflict.
-  //    True: if |item| was checked for commit readiness and added to |result|
-  //          as necessary.
-  bool AddItem(const std::set<int64>& ready_unsynced_set,
-               const syncable::Entry& item,
-               sessions::OrderedCommitSet* result) const;
+  void TryAddItem(const std::set<int64>& ready_unsynced_set,
+                  const syncable::Entry& item,
+                  sessions::OrderedCommitSet* result) const;
 
-  // Adds item and all its unsynced predecessors to |result| as necessary, as
-  // long as no item was in conflict.
-  // Return values:
-  //   False: if there was an entry in conflict.
-  //   True: if all entries were checked for commit readiness and added to
-  //         |result| as necessary.
-  bool AddItemThenPredecessors(syncable::BaseTransaction* trans,
+  // Adds |item| and all its unsynced predecessors to |result| as necessary.
+  // Entries that are unsynced but not ready to commit are not added to the
+  // list, though they do not stop the traversal.
+  void AddItemThenPredecessors(syncable::BaseTransaction* trans,
                                const std::set<int64>& ready_unsynced_set,
                                const syncable::Entry& item,
                                sessions::OrderedCommitSet* result) const;
 
   // Appends all commit ready predecessors of |item|, followed by |item| itself,
-  // to |commit_set|, iff item and all its predecessors not in conflict.
-  // Return values:
-  //   False: if there was an entry in conflict.
-  //   True: if all entries were checked for commit readiness and added to
-  //         |result| as necessary.
-  bool AddPredecessorsThenItem(syncable::BaseTransaction* trans,
+  // to |commit_set|.
+  void AddPredecessorsThenItem(syncable::BaseTransaction* trans,
                                const ModelSafeRoutingInfo& routes,
                                const std::set<int64>& ready_unsynced_set,
                                const syncable::Entry& item,
