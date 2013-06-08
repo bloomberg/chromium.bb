@@ -44,7 +44,7 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/policy/policy_loader_mac.h"
 #include "chrome/browser/policy/preferences_mac.h"
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
 #include "chrome/browser/policy/config_dir_policy_loader.h"
 #endif
 
@@ -480,7 +480,7 @@ ConfigurationPolicyProvider* BrowserPolicyConnector::CreatePlatformProvider() {
   scoped_ptr<AsyncPolicyLoader> loader(
       new PolicyLoaderMac(policy_list, new MacPreferences()));
   return new AsyncPolicyProvider(loader.Pass());
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
   base::FilePath config_dir_path;
   if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
     scoped_ptr<AsyncPolicyLoader> loader(

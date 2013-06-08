@@ -77,7 +77,6 @@
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/performance_monitor/startup_timer.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
-#include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -185,10 +184,6 @@
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/mac/keystone_glue.h"
-#endif
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
-#include "policy/policy_constants.h"
 #endif
 
 #if defined(ENABLE_LANGUAGE_DETECTION)

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 
+#include <ctype.h>
+
 #include <algorithm>
 #include <vector>
 
@@ -247,4 +249,4 @@ std::string LocalPolicyTestServer::GetSelector(const std::string& type,
   return selector;
 }
 
-}  // namespace policy;
+}  // namespace policy

@@ -2360,7 +2360,6 @@
             'common/extensions/api/api.gyp:api',
             'debugger',
             'installer_util',
-            'policy_path_parser',
             'sync_file_system_proto',
             '../cc/cc.gyp:cc',
             '../components/components.gyp:autofill_browser',
@@ -2497,6 +2496,13 @@
           'dependencies': [
             'app/policy/cloud_policy_codegen.gyp:policy',
             'cloud_policy_proto',
+          ],
+          'conditions': [
+            ['OS!="android"', {
+              'dependencies': [
+                'policy_path_parser',
+              ],
+            }],
           ],
         }, {  # configuration_policy==0
           'sources/': [
@@ -2874,6 +2880,24 @@
             'browser/net/gaia/gaia_oauth_fetcher.cc',
             'browser/page_cycler/page_cycler.cc',
             'browser/page_cycler/page_cycler.h',
+            'browser/policy/async_policy_loader.cc',
+            'browser/policy/async_policy_loader.h',
+            'browser/policy/async_policy_provider.cc',
+            'browser/policy/async_policy_provider.h',
+            'browser/policy/cloud/component_cloud_policy_service.cc',
+            'browser/policy/cloud/component_cloud_policy_service.h',
+            'browser/policy/cloud/component_cloud_policy_store.cc',
+            'browser/policy/cloud/component_cloud_policy_store.h',
+            'browser/policy/cloud/component_cloud_policy_updater.cc',
+            'browser/policy/cloud/component_cloud_policy_updater.h',
+            'browser/policy/cloud/external_policy_data_updater.cc',
+            'browser/policy/cloud/external_policy_data_updater.h',
+            'browser/policy/cloud/resource_cache.cc',
+            'browser/policy/cloud/resource_cache.h',
+            'browser/policy/config_dir_policy_loader.cc',
+            'browser/policy/config_dir_policy_loader.h',
+            'browser/policy/managed_mode_policy_provider.cc',
+            'browser/policy/managed_mode_policy_provider.h',
             'browser/sessions/persistent_tab_restore_service.cc',
             'browser/sessions/persistent_tab_restore_service.h',
             'browser/sessions/session_backend.cc',

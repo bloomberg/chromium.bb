@@ -169,7 +169,6 @@
         'chrome_renderer.gypi',
         'chrome_tests.gypi',
         'nacl.gypi',
-        'policy.gypi',
         '../apps/apps.gypi',
       ],
       'targets': [
@@ -1158,5 +1157,8 @@
         'chrome_android.gypi',
       ]}, # 'includes'
     ],  # OS=="android"
+    ['configuration_policy==1 and OS!="android"', {
+      'includes': [ 'policy.gypi', ],
+    }],
   ],  # 'conditions'
 }

@@ -47,8 +47,7 @@ TEST(PolicyDomainDescriptor, FilterBundle) {
   descriptor->RegisterComponent("abc", schema.Pass());
 
   EXPECT_EQ(1u, descriptor->components().size());
-  EXPECT_NE(descriptor->components().end(),
-            descriptor->components().find("abc"));
+  EXPECT_EQ(1u, descriptor->components().count("abc"));
 
   PolicyBundle bundle;
   descriptor->FilterBundle(&bundle);

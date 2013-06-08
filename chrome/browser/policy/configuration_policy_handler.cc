@@ -20,7 +20,6 @@
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -33,6 +32,10 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/policy/policy_path_parser.h"
+#endif
 
 namespace policy {
 
@@ -678,6 +681,9 @@ void AutofillPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   }
 }
 
+// Android doesn't support these policies, and doesn't have a policy_path_parser
+// implementation.
+#if !defined(OS_ANDROID)
 
 // DownloadDirPolicyHandler implementation -------------------------------------
 
@@ -733,6 +739,7 @@ void DiskCacheDirPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   }
 }
 
+#endif  // !defined(OS_ANDROID)
 
 // FileSelectionDialogsHandler implementation ----------------------------------
 

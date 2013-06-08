@@ -153,18 +153,19 @@ INSTANTIATE_TEST_CASE_P(
                       prefs::kAuthNegotiateDelegateWhitelist),
         PolicyAndPref(key::kGSSAPILibraryName,
                       prefs::kGSSAPILibraryName),
-        PolicyAndPref(key::kDiskCacheDir,
-                      prefs::kDiskCacheDir),
         PolicyAndPref(key::kVariationsRestrictParameter,
                       prefs::kVariationsRestrictParameter)));
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 INSTANTIATE_TEST_CASE_P(
     ConfigurationPolicyPrefStoreDownloadDirectoryInstance,
     ConfigurationPolicyPrefStoreStringTest,
-    testing::Values(PolicyAndPref(key::kDownloadDirectory,
-                                  prefs::kDownloadDefaultDirectory)));
-#endif  // !defined(OS_CHROMEOS)
+    testing::Values(
+        PolicyAndPref(key::kDiskCacheDir,
+                      prefs::kDiskCacheDir),
+        PolicyAndPref(key::kDownloadDirectory,
+                      prefs::kDownloadDefaultDirectory)));
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 // Test cases for boolean-valued policy settings.
 class ConfigurationPolicyPrefStoreBooleanTest
@@ -925,7 +926,7 @@ TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest, Default) {
   EXPECT_FALSE(store_->GetValue(prefs::kPromptForDownload, NULL));
 }
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest, SetDownloadDirectory) {
   PolicyMap policy;
   EXPECT_FALSE(store_->GetValue(prefs::kPromptForDownload, NULL));
@@ -945,7 +946,7 @@ TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest, SetDownloadDirectory) {
   ASSERT_TRUE(result);
   EXPECT_FALSE(prompt_for_download);
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest,
        EnableFileSelectionDialogs) {

@@ -411,7 +411,6 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
 
   handlers_.push_back(new AutofillPolicyHandler());
   handlers_.push_back(new DefaultSearchPolicyHandler());
-  handlers_.push_back(new DiskCacheDirPolicyHandler());
   handlers_.push_back(new FileSelectionDialogsHandler());
   handlers_.push_back(new IncognitoModePolicyHandler());
   handlers_.push_back(new JavascriptPolicyHandler());
@@ -445,9 +444,10 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
                                      false));
 #endif  // defined(OS_CHROMEOS)
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+  handlers_.push_back(new DiskCacheDirPolicyHandler());
   handlers_.push_back(new DownloadDirPolicyHandler());
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
   handlers_.push_back(
