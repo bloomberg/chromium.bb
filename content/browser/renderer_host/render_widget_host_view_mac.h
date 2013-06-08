@@ -253,7 +253,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect,
       const gfx::Vector2d& scroll_delta,
-      const std::vector<gfx::Rect>& copy_rects) OVERRIDE;
+      const std::vector<gfx::Rect>& copy_rects,
+      const ui::LatencyInfo& latency_info) OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status,
                               int error_code) OVERRIDE;
   virtual void Destroy() OVERRIDE;
@@ -404,6 +405,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // Whether to use the CoreAnimation path to draw content.
   bool use_core_animation_;
 
+  ui::LatencyInfo software_latency_info_;
+
   NSWindow* pepper_fullscreen_window() const {
     return pepper_fullscreen_window_;
   }
@@ -423,6 +426,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   float scale_factor() const;
 
   bool is_hidden() const { return is_hidden_; }
+
+  void FrameSwapped();
 
  private:
   friend class RenderWidgetHostView;

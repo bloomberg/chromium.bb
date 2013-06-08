@@ -181,7 +181,8 @@ class RenderWidgetHostViewAura
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect,
       const gfx::Vector2d& scroll_delta,
-      const std::vector<gfx::Rect>& copy_rects) OVERRIDE;
+      const std::vector<gfx::Rect>& copy_rects,
+      const ui::LatencyInfo& latency_info) OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status,
                               int error_code) OVERRIDE;
   virtual void Destroy() OVERRIDE;
@@ -677,6 +678,8 @@ class RenderWidgetHostViewAura
       yuv_readback_pipeline_;
 
   TouchEditingClient* touch_editing_client_;
+
+  ui::LatencyInfo software_latency_info_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };

@@ -710,6 +710,10 @@ class CONTENT_EXPORT RenderWidget
   // received when using the --enable-gpu-benchmarking flag.
   BrowserRenderingStats browser_rendering_stats_;
 
+  // The latency information for any current non-accelerated-compositing
+  // frame.
+  ui::LatencyInfo latency_info_;
+
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);

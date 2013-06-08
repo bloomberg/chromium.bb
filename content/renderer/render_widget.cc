@@ -731,6 +731,8 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
 
   if (compositor_)
     compositor_->SetLatencyInfo(latency_info);
+  else
+    latency_info_.MergeWith(latency_info);
 
   base::TimeDelta now = base::TimeDelta::FromInternalValue(
       base::TimeTicks::Now().ToInternalValue());
@@ -1214,6 +1216,11 @@ void RenderWidget::DoDeferredUpdate() {
   pending_update_params_->scale_factor = device_scale_factor_;
   next_paint_flags_ = 0;
   need_update_rect_for_auto_resize_ = false;
+
+  if (!is_accelerated_compositing_active_)
+    pending_update_params_->latency_info = latency_info_;
+
+  latency_info_.Clear();
 
   if (update.scroll_rect.IsEmpty() &&
       !is_accelerated_compositing_active_ &&

@@ -853,8 +853,10 @@ void RenderWidgetHostViewGtk::ImeCompositionRangeChanged(
 void RenderWidgetHostViewGtk::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect,
     const gfx::Vector2d& scroll_delta,
-    const std::vector<gfx::Rect>& copy_rects) {
+    const std::vector<gfx::Rect>& copy_rects,
+    const ui::LatencyInfo& latency_info) {
   TRACE_EVENT0("ui::gtk", "RenderWidgetHostViewGtk::DidUpdateBackingStore");
+  software_latency_info_.MergeWith(latency_info);
 
   if (is_hidden_)
     return;
@@ -1211,6 +1213,9 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
       // recorded.
       web_contents_switch_paint_time_ = base::TimeTicks();
     }
+    software_latency_info_.swap_timestamp = base::TimeTicks::HighResNow();
+    render_widget_host->FrameSwapped(software_latency_info_);
+    software_latency_info_.Clear();
   } else {
     if (window)
       gdk_window_clear(window);

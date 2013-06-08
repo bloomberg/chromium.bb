@@ -568,6 +568,10 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   // All the above coordinates are in DIP. This is the scale factor needed
   // to convert them to pixels.
   IPC_STRUCT_MEMBER(float, scale_factor)
+
+  // The latency information for the frame. Only valid when accelerated
+  // compositing is disabled.
+  IPC_STRUCT_MEMBER(ui::LatencyInfo, latency_info)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)

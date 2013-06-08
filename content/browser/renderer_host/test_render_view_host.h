@@ -104,7 +104,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect,
       const gfx::Vector2d& scroll_delta,
-      const std::vector<gfx::Rect>& rects) OVERRIDE {}
+      const std::vector<gfx::Rect>& rects,
+      const ui::LatencyInfo& latency_info) OVERRIDE {}
   virtual void RenderViewGone(base::TerminationStatus status,
                               int error_code) OVERRIDE;
   virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) { }

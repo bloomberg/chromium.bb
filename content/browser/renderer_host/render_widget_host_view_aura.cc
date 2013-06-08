@@ -1037,9 +1037,12 @@ void RenderWidgetHostViewAura::ImeCompositionRangeChanged(
 void RenderWidgetHostViewAura::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect,
     const gfx::Vector2d& scroll_delta,
-    const std::vector<gfx::Rect>& copy_rects) {
+    const std::vector<gfx::Rect>& copy_rects,
+    const ui::LatencyInfo& latency_info) {
   if (accelerated_compositing_state_changed_)
     UpdateExternalTexture();
+
+  software_latency_info_.MergeWith(latency_info);
 
   // Use the state of the RenderWidgetHost and not the window as the two may
   // differ. In particular if the window is hidden but the renderer isn't and we
@@ -2222,6 +2225,11 @@ void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
 
     if (paint_observer_)
       paint_observer_->OnPaintComplete();
+    ui::Compositor* compositor = GetCompositor();
+    if (compositor) {
+      compositor->SetLatencyInfo(software_latency_info_);
+      software_latency_info_.Clear();
+    }
   } else if (aura::Env::GetInstance()->render_white_bg()) {
     canvas->DrawColor(SK_ColorWHITE);
   }

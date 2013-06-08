@@ -267,7 +267,8 @@ void RenderWidgetHostViewGuest::ImeCompositionRangeChanged(
 void RenderWidgetHostViewGuest::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect,
     const gfx::Vector2d& scroll_delta,
-    const std::vector<gfx::Rect>& copy_rects) {
+    const std::vector<gfx::Rect>& copy_rects,
+    const ui::LatencyInfo& latency_info) {
   NOTREACHED();
 }
 

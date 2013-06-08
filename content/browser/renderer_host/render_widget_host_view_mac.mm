@@ -764,8 +764,11 @@ void RenderWidgetHostViewMac::ImeCompositionRangeChanged(
 void RenderWidgetHostViewMac::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect,
     const gfx::Vector2d& scroll_delta,
-    const std::vector<gfx::Rect>& copy_rects) {
+    const std::vector<gfx::Rect>& copy_rects,
+    const ui::LatencyInfo& latency_info) {
   GotSoftwareFrame();
+
+  software_latency_info_.MergeWith(latency_info);
 
   if (!is_hidden_) {
     std::vector<gfx::Rect> rects(copy_rects);
@@ -1674,6 +1677,12 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
                                              scale_factor()));
 }
 
+void RenderWidgetHostViewMac::FrameSwapped() {
+  software_latency_info_.swap_timestamp = base::TimeTicks::HighResNow();
+  render_widget_host_->FrameSwapped(software_latency_info_);
+  software_latency_info_.Clear();
+}
+
 }  // namespace content
 
 // RenderWidgetHostViewCocoa ---------------------------------------------------
@@ -2475,6 +2484,8 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
         CGContextDrawImage(context, imageRect, image);
       }
     }
+
+    renderWidgetHostView_->FrameSwapped();
 
     // Fill the remaining portion of the damagedRect with white
     [self fillBottomRightRemainderOfRect:bitmapRect

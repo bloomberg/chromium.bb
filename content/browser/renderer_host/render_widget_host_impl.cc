@@ -1873,7 +1873,7 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
   if (view_ && !is_accelerated_compositing_active_) {
     view_being_painted_ = true;
     view_->DidUpdateBackingStore(params.scroll_rect, params.scroll_delta,
-                                 params.copy_rects);
+                                 params.copy_rects, params.latency_info);
     view_being_painted_ = false;
   }
 
