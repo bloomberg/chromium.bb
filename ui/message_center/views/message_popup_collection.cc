@@ -203,32 +203,24 @@ void MessagePopupCollection::RepositionWidgetsWithTarget() {
   if (toasts_.empty())
     return;
 
-  if (toasts_.back()->origin().y() > target_top_edge_) {
-    // No widgets are above, thus slides up the widgets.
-    int slide_length =
-        toasts_.back()->origin().y() - target_top_edge_;
-    for (Toasts::iterator iter = toasts_.begin();
-         iter != toasts_.end(); ++iter) {
-      gfx::Rect bounds((*iter)->bounds());
-      bounds.set_y(bounds.y() - slide_length);
-      (*iter)->SetBoundsWithAnimation(bounds);
-    }
-  } else {
-    Toasts::reverse_iterator iter = toasts_.rbegin();
-    for (; iter != toasts_.rend(); ++iter) {
-      if ((*iter)->origin().y() > target_top_edge_)
-        break;
-    }
-    --iter;
-    int slide_length = target_top_edge_ - (*iter)->origin().y();
-    for (; ; --iter) {
-      gfx::Rect bounds((*iter)->bounds());
-      bounds.set_y(bounds.y() + slide_length);
-      (*iter)->SetBoundsWithAnimation(bounds);
+  // No widgets above.
+  if (toasts_.back()->origin().y() > target_top_edge_)
+    return;
 
-      if (iter == toasts_.rbegin())
-        break;
-    }
+  Toasts::reverse_iterator iter = toasts_.rbegin();
+  for (; iter != toasts_.rend(); ++iter) {
+    if ((*iter)->origin().y() > target_top_edge_)
+      break;
+  }
+  --iter;
+  int slide_length = target_top_edge_ - (*iter)->origin().y();
+  for (; ; --iter) {
+    gfx::Rect bounds((*iter)->bounds());
+    bounds.set_y(bounds.y() + slide_length);
+    (*iter)->SetBoundsWithAnimation(bounds);
+
+    if (iter == toasts_.rbegin())
+      break;
   }
 }
 
