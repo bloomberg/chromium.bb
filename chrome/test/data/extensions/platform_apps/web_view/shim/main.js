@@ -212,6 +212,22 @@ chrome.test.getConfig(function(config) {
       }, 0);
     },
 
+    function webViewExecuteScriptFail() {
+      var webview = document.createElement('webview');
+      document.body.appendChild(webview);
+      setTimeout(function() {
+        try {
+        webview.executeScript(
+          {code:'document.body.style.backgroundColor = "red";'},
+          function(results) {
+            chrome.test.fail();
+          });
+        } catch (e) {
+          chrome.test.succeed();
+        }
+      }, 0);
+    },
+
     function webViewExecuteScript() {
       var webview = document.createElement('webview');
       webview.setAttribute('partition', arguments.callee.name);

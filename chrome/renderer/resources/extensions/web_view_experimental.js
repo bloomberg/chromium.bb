@@ -42,6 +42,10 @@ var ERROR_MSG_NEWWINDOW_ACTION_ALREADY_TAKEN = '<webview>: ' +
 /** @type {string} */
 var ERROR_MSG_WEBVIEW_EXPECTED = '<webview> element expected.';
 
+/** @type {string} */
+var ERROR_MSG_CANNOT_INJECT_SCRIPT = '<webview>: ' +
+    'Script cannot be injected into content until the page has loaded.';
+
 /**
  * @private
  */
@@ -113,14 +117,22 @@ WebView.prototype.setupPermissionEvent_ = function() {
  */
 WebView.prototype.setupExecuteCodeAPI_ = function() {
   var self = this;
+  var validateCall = function() {
+    if (!self.browserPluginNode_.getGuestInstanceId()) {
+      throw new Error(ERROR_MSG_CANNOT_INJECT_SCRIPT);
+    }
+  };
+
   this.webviewNode_['executeScript'] = function(var_args) {
+    validateCall();
     var args = [self.browserPluginNode_.getGuestInstanceId()].concat(
-                    Array.prototype.slice.call(arguments));
+        Array.prototype.slice.call(arguments));
     chrome.webview.executeScript.apply(null, args);
   }
   this.webviewNode_['insertCSS'] = function(var_args) {
+    validateCall();
     var args = [self.browserPluginNode_.getGuestInstanceId()].concat(
-                    Array.prototype.slice.call(arguments));
+        Array.prototype.slice.call(arguments));
     chrome.webview.insertCSS.apply(null, args);
   }
 };
