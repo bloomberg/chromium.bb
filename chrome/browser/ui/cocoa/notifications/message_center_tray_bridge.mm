@@ -84,7 +84,10 @@ bool MessageCenterTrayBridge::ShowMessageCenter() {
 
   [status_item_view_ setHighlight:YES];
   NSRect frame = [[status_item_view_ window] frame];
-  [tray_controller_ showTrayAt:NSMakePoint(NSMinX(frame), NSMinY(frame))];
+  [tray_controller_ showTrayAtRightOf:NSMakePoint(NSMinX(frame),
+                                                  NSMinY(frame))
+                             atLeftOf:NSMakePoint(NSMaxX(frame),
+                                                  NSMinY(frame))];
   return true;
 }
 

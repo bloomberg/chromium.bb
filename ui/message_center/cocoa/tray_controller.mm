@@ -48,14 +48,20 @@
   return self;
 }
 
-- (void)dealloc {
-  [super dealloc];
-}
+- (void)showTrayAtRightOf:(NSPoint)rightPoint atLeftOf:(NSPoint)leftPoint {
+  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+  NSRect screenFrame = [screen visibleFrame];
 
-- (void)showTrayAt:(NSPoint)point {
   NSRect frame = [[viewController_ view] frame];
-  frame.origin.x = point.x;
-  frame.origin.y = point.y - NSHeight(frame);
+
+  if (rightPoint.x + NSWidth(frame) < NSWidth(screenFrame)) {
+    frame.origin.x = rightPoint.x;
+    frame.origin.y = rightPoint.y - NSHeight(frame);
+  } else {
+    frame.origin.x = leftPoint.x - NSWidth(frame);
+    frame.origin.y = leftPoint.y - NSHeight(frame);
+  }
+
   [[self window] setFrame:frame display:YES];
   [viewController_ scrollToTop];
   [self showWindow:nil];

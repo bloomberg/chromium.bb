@@ -31,8 +31,11 @@ MESSAGE_CENTER_EXPORT
 // Designated initializer.
 - (id)initWithMessageCenterTray:(message_center::MessageCenterTray*)tray;
 
-// Opens the message center tray with the window's upper-left corner at |point|.
-- (void)showTrayAt:(NSPoint)point;
+// Opens the message center tray to either the right or left of the given
+// points, depending on if it will fit on screen. It will try opening to the
+// right first, but if the window does not fit on screen, it will open to the
+// left.
+- (void)showTrayAtRightOf:(NSPoint)rightPoint atLeftOf:(NSPoint)leftPoint;
 
 // Callback from MessageCenterTrayDelegate, used to update the tray content.
 - (void)onMessageCenterTrayChanged;
