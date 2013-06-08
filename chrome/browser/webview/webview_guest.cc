@@ -19,9 +19,8 @@ namespace chrome {
 
 namespace {
 
-typedef std::map<int, WebViewGuest*> WebViewGuestMap;
-typedef std::map<void*, WebViewGuestMap> WebViewProfileMap;
-static base::LazyInstance<WebViewProfileMap> webview_profile_map =
+typedef std::map<std::pair<int, int>, WebViewGuest*> WebViewGuestMap;
+static base::LazyInstance<WebViewGuestMap> webview_guest_map =
     LAZY_INSTANCE_INITIALIZER;
 
 void RemoveWebViewEventListenersOnIOThread(
@@ -50,27 +49,24 @@ WebViewGuest::WebViewGuest(WebContents* guest_web_contents,
       webview_instance_id_(webview_instance_id),
       script_executor_(new extensions::ScriptExecutor(guest_web_contents,
                                                       &script_observers_)) {
-  webview_profile_map.Get()[profile_].insert(
-      std::make_pair(guest_instance_id_, this));
+  std::pair<int, int> key(embedder_render_process_id_, guest_instance_id_);
+  webview_guest_map.Get().insert(std::make_pair(key, this));
 
   AddWebViewToExtensionRendererState();
 }
 
 // static
-WebViewGuest* WebViewGuest::From(void* profile, int guest_instance_id) {
-  WebViewProfileMap* profile_map = webview_profile_map.Pointer();
-  WebViewProfileMap::iterator it = profile_map->find(profile);
-  if (it == profile_map->end())
-    return NULL;
-  const WebViewGuestMap& guest_map = it->second;
-  WebViewGuestMap::const_iterator guest_it = guest_map.find(guest_instance_id);
-  return guest_it == guest_map.end() ? NULL : guest_it->second;
+WebViewGuest* WebViewGuest::From(int embedder_process_id,
+                                 int guest_instance_id) {
+  WebViewGuestMap* guest_map = webview_guest_map.Pointer();
+  WebViewGuestMap::iterator it = guest_map->find(
+      std::make_pair(embedder_process_id, guest_instance_id));
+  return it == guest_map->end() ? NULL : it->second;
 }
 
 WebViewGuest::~WebViewGuest() {
-  webview_profile_map.Get()[profile_].erase(guest_instance_id_);
-  if (webview_profile_map.Get()[profile_].empty())
-    webview_profile_map.Get().erase(profile_);
+  std::pair<int, int> key(embedder_render_process_id_, guest_instance_id_);
+  webview_guest_map.Get().erase(key);
 }
 
 void WebViewGuest::WebContentsDestroyed(WebContents* web_contents) {

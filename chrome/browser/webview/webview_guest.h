@@ -29,7 +29,7 @@ class WebViewGuest : public content::WebContentsObserver {
                const std::string& extension_id,
                int webview_instance_id);
 
-  static WebViewGuest* From(void* profile, int instance_id);
+  static WebViewGuest* From(int embedder_process_id, int instance_id);
 
   content::WebContents* embedder_web_contents() const {
     return embedder_web_contents_;

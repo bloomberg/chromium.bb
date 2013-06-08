@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/webview/webview_guest.h"
 #include "chrome/common/extensions/api/webview.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -51,8 +52,8 @@ bool WebviewExecuteCodeFunction::CanExecuteScriptOnPage() {
 }
 
 extensions::ScriptExecutor* WebviewExecuteCodeFunction::GetScriptExecutor() {
-  chrome::WebViewGuest* guest = chrome::WebViewGuest::From(profile_id(),
-                                                           guest_instance_id_);
+  chrome::WebViewGuest* guest = chrome::WebViewGuest::From(
+      render_view_host()->GetProcess()->GetID(), guest_instance_id_);
   if (!guest)
     return NULL;
 
