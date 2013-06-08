@@ -222,29 +222,6 @@ void OverlayContainer::SetOverlay(views::WebView* overlay,
   browser_view_->OnOverlayStateChanged(repaint_infobars);
 }
 
-void OverlayContainer::MaybeStackAtTop(bool immersive_is_revealed) {
-#if defined(USE_AURA)
-  bool paint_to_layer = immersive_is_revealed && overlay_;
-  SetPaintToLayer(paint_to_layer);
-
-  if (paint_to_layer) {
-    SetFillsBoundsOpaquely(false);
-    layer()->parent()->StackAtTop(layer());
-
-    if (overlay_->web_contents() == overlay_web_contents_) {
-      // The web contents layer should be above OverlayContainer's layer.
-      // TODO(pkotwicz): Reorder the layer for the NativeView attached to a
-      // NativeViewHost according to the position of the NativeViewHost in the
-      // view tree.
-      ui::Layer* overlay_layer =
-          overlay_web_contents_->GetView()->GetNativeView()->layer();
-      DCHECK_EQ(overlay_layer->parent(), layer()->parent());
-      overlay_layer->parent()->StackAtTop(overlay_layer);
-    }
-  }
-#endif  // defined(USE_AURA)
-}
-
 gfx::Rect OverlayContainer::GetOverlayBounds() const {
   gfx::Point screen_loc;
   ConvertPointToScreen(this, &screen_loc);

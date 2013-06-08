@@ -52,7 +52,8 @@ DropdownBarHost::DropdownBarHost(BrowserView* browser_view)
       is_visible_(false) {
 }
 
-void DropdownBarHost::Init(views::View* view,
+void DropdownBarHost::Init(views::View* host_view,
+                           views::View* view,
                            DropdownBarHostDelegate* delegate) {
   DCHECK(view);
   DCHECK(delegate);
@@ -70,6 +71,8 @@ void DropdownBarHost::Init(views::View* view,
 #endif
   host_->Init(params);
   host_->SetContentsView(view_);
+
+  SetHostViewNative(host_view);
 
   // Start listening to focus changes, so we can register and unregister our
   // own handler for Escape.

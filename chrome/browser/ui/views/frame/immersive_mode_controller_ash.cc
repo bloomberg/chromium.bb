@@ -415,14 +415,6 @@ int ImmersiveModeControllerAsh::GetTopContainerVerticalOffset(
       -top_container_size.height() + kAnimationOffsetY, 0);
 }
 
-void ImmersiveModeControllerAsh::MaybeStackViewAtTop() {
-  if (enabled_ && reveal_state_ != CLOSED) {
-    ui::Layer* reveal_layer = top_container_->layer();
-    if (reveal_layer)
-      reveal_layer->parent()->StackAtTop(reveal_layer);
-  }
-}
-
 ImmersiveRevealedLock* ImmersiveModeControllerAsh::GetRevealedLock(
     AnimateReveal animate_reveal) {
   return new RevealedLockAsh(weak_ptr_factory_.GetWeakPtr(), animate_reveal);

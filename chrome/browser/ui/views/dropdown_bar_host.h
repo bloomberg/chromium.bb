@@ -49,7 +49,14 @@ class DropdownBarHost : public ui::AcceleratorTarget,
   explicit DropdownBarHost(BrowserView* browser_view);
   virtual ~DropdownBarHost();
 
-  void Init(views::View* view, DropdownBarHostDelegate* delegate);
+  // Initializes the DropdownBarHost. This creates the widget that |view| paints
+  // into.
+  // |host_view| is the view whose position in the |browser_view_| view
+  // hierarchy determines the z-order of the widget relative to views with
+  // layers and views with associated NativeViews.
+  void Init(views::View* host_view,
+            views::View* view,
+            DropdownBarHostDelegate* delegate);
 
   // Whether we are animating the position of the dropdown widget.
   bool IsAnimating() const;
@@ -156,6 +163,11 @@ class DropdownBarHost : public ui::AcceleratorTarget,
   }
 
  private:
+  // Set the view whose position in the |browser_view_| view hierarchy
+  // determines the z-order of |host_| relative to views with layers and
+  // views with associated NativeViews.
+  void SetHostViewNative(views::View* host_view);
+
   // The BrowserView that created us.
   BrowserView* browser_view_;
 

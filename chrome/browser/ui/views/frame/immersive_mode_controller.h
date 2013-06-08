@@ -87,10 +87,6 @@ class ImmersiveModeController {
   virtual int GetTopContainerVerticalOffset(
       const gfx::Size& top_container_size) const = 0;
 
-  // If the controller is temporarily revealing the top views ensures that
-  // the reveal view's layer is on top and hence visible over web contents.
-  virtual void MaybeStackViewAtTop() = 0;
-
   // Returns a lock which will keep the top-of-window views revealed for its
   // lifetime. Several locks can be obtained. When all of the locks are
   // destroyed, if immersive mode is enabled and there is nothing else keeping

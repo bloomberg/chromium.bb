@@ -37,3 +37,8 @@ void DropdownBarHost::SetWidgetPositionNative(const gfx::Rect& new_pos,
   ::SetWindowPos(host_->GetNativeView(), HWND_TOP, new_pos.x(), new_pos.y(),
                  new_pos.width(), new_pos.height(), swp_flags);
 }
+
+void DropdownBarHost::SetHostViewNative(views::View* host_view) {
+  // TODO(pkotwicz): Implement controlling the z-order of hwnds associated to a
+  // host view via the z-order of the host views in |browser_view_|'s view tree.
+}

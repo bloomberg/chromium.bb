@@ -28,7 +28,6 @@ class ImmersiveModeControllerStub : public ImmersiveModeController {
   virtual bool IsRevealed() const OVERRIDE;
   virtual int GetTopContainerVerticalOffset(
       const gfx::Size& top_container_size) const OVERRIDE;
-  virtual void MaybeStackViewAtTop() OVERRIDE;
   virtual ImmersiveRevealedLock* GetRevealedLock(
       AnimateReveal animate_reveal) OVERRIDE WARN_UNUSED_RESULT;
   virtual void AnchorWidgetToTopContainer(views::Widget* widget,

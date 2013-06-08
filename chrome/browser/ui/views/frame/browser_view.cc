@@ -446,6 +446,7 @@ BrowserView::BrowserView()
       tabstrip_(NULL),
       toolbar_(NULL),
       window_switcher_button_(NULL),
+      find_bar_host_view_(NULL),
       infobar_container_(NULL),
       contents_web_view_(NULL),
       devtools_container_(NULL),
@@ -978,14 +979,17 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   }
 }
 
-void BrowserView::MaybeStackImmersiveRevealAtTop() {
-  immersive_mode_controller_->MaybeStackViewAtTop();
-}
-
 void BrowserView::OnOverlayStateChanged(bool repaint_infobars) {
   Layout();
 
-  overlay_container_->MaybeStackAtTop(immersive_mode_controller_->IsRevealed());
+  // |top_container_| paints to a layer when in immersive fullscreen. Paint
+  // |overlay_container_| to a layer in this case so that the overlay stays
+  // stacked on top of |top_container_| in z-order.
+  if (overlay_container_->visible() &&
+      immersive_mode_controller_->IsRevealed()) {
+    overlay_container_->SetPaintToLayer(true);
+    overlay_container_->SetFillsBoundsOpaquely(false);
+  }
 
   // When immersive mode is not reveal and infobar container is visible, set top
   // infobar arrow as per overlay state.  Layout() needs to happen before
@@ -1515,10 +1519,6 @@ void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
 
   // Update all the UI bits.
   UpdateTitleBar();
-
-  // Like the overlay layer and the bookmark bar layer, the immersive mode
-  // reveal view's layer may need to live above the web contents.
-  MaybeStackImmersiveRevealAtTop();
 
   // No need to update Toolbar because it's already updated in
   // browser.cc.
@@ -2060,6 +2060,11 @@ void BrowserView::InitViews() {
   toolbar_ = new ToolbarView(browser_.get());
   top_container_->AddChildView(toolbar_);
   toolbar_->Init();
+
+  // Create do-nothing view for the sake of controlling the z-order of the find
+  // bar widget.
+  find_bar_host_view_ = new View();
+  AddChildView(find_bar_host_view_);
 
   overlay_container_ =
       new OverlayContainer(this, immersive_mode_controller_.get());

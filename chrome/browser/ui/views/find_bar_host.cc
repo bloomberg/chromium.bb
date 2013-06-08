@@ -39,7 +39,7 @@ FindBarHost::FindBarHost(BrowserView* browser_view)
     : DropdownBarHost(browser_view),
       find_bar_controller_(NULL) {
   FindBarView* find_bar_view = new FindBarView(this);
-  Init(find_bar_view, find_bar_view);
+  Init(browser_view->find_bar_host_view(), find_bar_view, find_bar_view);
 }
 
 FindBarHost::~FindBarHost() {

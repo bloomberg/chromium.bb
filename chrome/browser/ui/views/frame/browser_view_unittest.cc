@@ -176,11 +176,13 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   EXPECT_EQ(browser_view(), browser_view()->infobar_container()->parent());
   EXPECT_EQ(browser_view(), overlay_container->parent());
 
-  // Overlay container is at the front of the view hierarchy, followed by top
-  // container.
+  // Overlay container is at the front of the view hierarchy, followed by the
+  // find bar host and the top container.
   EXPECT_EQ(browser_view()->child_count() - 1,
             browser_view()->GetIndexOf(overlay_container));
   EXPECT_EQ(browser_view()->child_count() - 2,
+            browser_view()->GetIndexOf(browser_view()->find_bar_host_view()));
+  EXPECT_EQ(browser_view()->child_count() - 3,
             browser_view()->GetIndexOf(top_container));
 
   // Verify basic layout.
@@ -219,10 +221,13 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   EXPECT_TRUE(bookmark_bar->visible());
   EXPECT_TRUE(bookmark_bar->IsDetached());
   EXPECT_EQ(browser_view(), bookmark_bar->parent());
-  // Overlay container is still at front, followed by top container.
+  // Overlay container is still at the front of the view hierarchy, followed by
+  // the find bar host and the top container.
   EXPECT_EQ(browser_view()->child_count() - 1,
             browser_view()->GetIndexOf(overlay_container));
   EXPECT_EQ(browser_view()->child_count() - 2,
+            browser_view()->GetIndexOf(browser_view()->find_bar_host_view()));
+  EXPECT_EQ(browser_view()->child_count() - 3,
             browser_view()->GetIndexOf(top_container));
 
   // Bookmark bar layout on NTP.
@@ -246,8 +251,8 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   EXPECT_FALSE(bookmark_bar->visible());
   EXPECT_FALSE(bookmark_bar->IsDetached());
   EXPECT_EQ(top_container, bookmark_bar->parent());
-  // Top container is still second from front.
-  EXPECT_EQ(browser_view()->child_count() - 2,
+  // Top container is still third from front.
+  EXPECT_EQ(browser_view()->child_count() - 3,
             browser_view()->GetIndexOf(top_container));
 
   BookmarkBarView::DisableAnimationsForTesting(false);

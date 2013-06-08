@@ -53,10 +53,6 @@ class OverlayContainer : public views::View,
   // has been made the active view.
   void ResetOverlayAndContents();
 
-  // If immersive mode is reveal and there's overlay, stack overlay container at
-  // top so that it paints over the bookmark bar.
-  void MaybeStackAtTop(bool immersive_is_revealed);
-
   // Returns the bounds the overlay would be shown at.
   gfx::Rect GetOverlayBounds() const;
 

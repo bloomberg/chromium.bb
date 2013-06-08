@@ -43,9 +43,6 @@ int ImmersiveModeControllerStub::GetTopContainerVerticalOffset(
   return 0;
 }
 
-void ImmersiveModeControllerStub::MaybeStackViewAtTop() {
-}
-
 ImmersiveRevealedLock* ImmersiveModeControllerStub::GetRevealedLock(
     AnimateReveal animate_reveal) {
   return NULL;

@@ -107,7 +107,6 @@ class MockImmersiveModeController : public ImmersiveModeController {
   virtual bool ShouldHideTabIndicators() const OVERRIDE { return false; }
   virtual bool ShouldHideTopViews() const OVERRIDE { return false; }
   virtual bool IsRevealed() const OVERRIDE { return false; }
-  virtual void MaybeStackViewAtTop() OVERRIDE {}
   virtual int GetTopContainerVerticalOffset(
       const gfx::Size& top_container_size) const OVERRIDE { return 0; }
   virtual ImmersiveRevealedLock* GetRevealedLock(

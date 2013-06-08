@@ -167,6 +167,13 @@ class BrowserView : public BrowserWindow,
   // Bookmark bar may be NULL, for example for pop-ups.
   BookmarkBarView* bookmark_bar() { return bookmark_bar_view_.get(); }
 
+  // Returns the do-nothing view which controls the z-order of the find bar
+  // widget relative to views which paint into layers and views which have an
+  // associated NativeView. The presence / visibility of this view is not
+  // indicative of the visibility of the find bar widget or even whether
+  // FindBarController is initialized.
+  View* find_bar_host_view() { return find_bar_host_view_; }
+
   // Accessor for the InfobarContainer.
   InfoBarContainerView* infobar_container() { return infobar_container_; }
 
@@ -236,10 +243,6 @@ class BrowserView : public BrowserWindow,
   // Called from BookmarkBarView/DownloadShelfView during their show/hide
   // animations.
   void ToolbarSizeChanged(bool is_animating);
-
-  // If immersive mode is enabled and we're revealing the tab strip and toolbar
-  // then stack it at the top.
-  void MaybeStackImmersiveRevealAtTop();
 
   // Called from OverlayContainer::SetOverlay() when overlay is to be shown,
   // expanded or hidden.  Set |repaint_infobars| to true to repaint infobars.
@@ -669,6 +672,11 @@ class BrowserView : public BrowserWindow,
   // The Bookmark Bar View for this window. Lazily created. May be NULL for
   // non-tabbed browsers like popups. May not be visible.
   scoped_ptr<BookmarkBarView> bookmark_bar_view_;
+
+  // The do-nothing view which controls the z-order of the find bar widget
+  // relative to views which paint into layers and views with an associated
+  // NativeView.
+  View* find_bar_host_view_;
 
   // The download shelf view (view at the bottom of the page).
   scoped_ptr<DownloadShelfView> download_shelf_;
