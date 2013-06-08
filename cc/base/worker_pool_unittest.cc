@@ -46,7 +46,7 @@ class FakeTaskImpl : public internal::WorkerPoolTask {
 
 class FakeWorkerPool : public WorkerPool {
  public:
-  FakeWorkerPool() : WorkerPool(1, base::TimeDelta::FromDays(1024), "test") {}
+  FakeWorkerPool() : WorkerPool(1, "test") {}
   virtual ~FakeWorkerPool() {}
 
   static scoped_ptr<FakeWorkerPool> Create() {
@@ -89,10 +89,9 @@ class FakeWorkerPool : public WorkerPool {
   scoped_ptr<CompletionEvent> scheduled_tasks_completion_;
 };
 
-class WorkerPoolTest : public testing::Test,
-                       public WorkerPoolClient {
+class WorkerPoolTest : public testing::Test {
  public:
-  WorkerPoolTest() : finish_dispatching_completion_callbacks_count_(0) {}
+  WorkerPoolTest() {}
   virtual ~WorkerPoolTest() {}
 
   // Overridden from testing::Test:
@@ -103,19 +102,14 @@ class WorkerPoolTest : public testing::Test,
     worker_pool_->Shutdown();
   }
 
-  // Overridden from WorkerPoolClient:
-  virtual void DidFinishDispatchingWorkerPoolCompletionCallbacks() OVERRIDE {
-    ++finish_dispatching_completion_callbacks_count_;
-  }
-
   void Reset() {
     worker_pool_ = FakeWorkerPool::Create();
-    worker_pool_->SetClient(this);
   }
 
   void RunAllTasksAndReset() {
     worker_pool_->WaitForTasksToComplete();
     worker_pool_->Shutdown();
+    worker_pool_->CheckForCompletedTasks();
     Reset();
   }
 
@@ -139,21 +133,15 @@ class WorkerPoolTest : public testing::Test,
     return on_task_completed_ids_;
   }
 
-  unsigned finish_dispatching_completion_callbacks_count() {
-    return finish_dispatching_completion_callbacks_count_;
-  }
-
  private:
   scoped_ptr<FakeWorkerPool> worker_pool_;
   std::vector<unsigned> run_task_ids_;
   std::vector<unsigned> on_task_completed_ids_;
-  unsigned finish_dispatching_completion_callbacks_count_;
 };
 
 TEST_F(WorkerPoolTest, Basic) {
   EXPECT_EQ(0u, run_task_ids().size());
   EXPECT_EQ(0u, on_task_completed_ids().size());
-  EXPECT_EQ(0u, finish_dispatching_completion_callbacks_count());
 
   worker_pool()->ScheduleTasks(
       base::Bind(&WorkerPoolTest::RunTask, base::Unretained(this), 0u),
@@ -164,7 +152,6 @@ TEST_F(WorkerPoolTest, Basic) {
 
   EXPECT_EQ(1u, run_task_ids().size());
   EXPECT_EQ(1u, on_task_completed_ids().size());
-  EXPECT_EQ(1u, finish_dispatching_completion_callbacks_count());
 
   worker_pool()->ScheduleTasks(
       base::Bind(&WorkerPoolTest::RunTask, base::Unretained(this), 0u),
@@ -175,7 +162,6 @@ TEST_F(WorkerPoolTest, Basic) {
 
   EXPECT_EQ(3u, run_task_ids().size());
   EXPECT_EQ(3u, on_task_completed_ids().size());
-  EXPECT_EQ(2u, finish_dispatching_completion_callbacks_count());
 }
 
 TEST_F(WorkerPoolTest, Dependencies) {

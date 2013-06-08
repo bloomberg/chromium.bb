@@ -6,13 +6,13 @@
 #define CC_RESOURCES_PIXEL_BUFFER_RASTER_WORKER_POOL_H_
 
 #include <deque>
+#include <set>
 
 #include "cc/resources/raster_worker_pool.h"
 
 namespace cc {
 
-class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool,
-                                              public WorkerPoolClient {
+class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
  public:
   virtual ~PixelBufferRasterWorkerPool();
 
@@ -34,9 +34,8 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool,
   PixelBufferRasterWorkerPool(ResourceProvider* resource_provider,
                               size_t num_threads);
 
-  // Overridden from WorkerPoolClient:
-  virtual void DidFinishDispatchingWorkerPoolCompletionCallbacks() OVERRIDE;
-
+  void CheckForCompletedRasterTasks();
+  void ScheduleCheckForCompletedRasterTasks();
   bool CanScheduleRasterTask(internal::RasterWorkerPoolTask* task);
   void ScheduleMoreTasks();
   void OnRasterTaskCompleted(
@@ -55,10 +54,12 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool,
 
   typedef std::deque<scoped_refptr<internal::RasterWorkerPoolTask> > TaskDeque;
   TaskDeque tasks_with_pending_upload_;
+  TaskDeque completed_tasks_;
 
   size_t bytes_pending_upload_;
   bool has_performed_uploads_since_last_flush_;
-  bool did_dispatch_completion_callback_;
+  base::CancelableClosure check_for_completed_raster_tasks_callback_;
+  bool check_for_completed_raster_tasks_pending_;
 
   base::WeakPtrFactory<PixelBufferRasterWorkerPool> weak_ptr_factory_;
   int64 schedule_more_tasks_count_;

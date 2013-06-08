@@ -55,14 +55,6 @@ class CC_EXPORT WorkerPoolTask
 
 }  // namespace internal
 
-class CC_EXPORT WorkerPoolClient {
- public:
-  virtual void DidFinishDispatchingWorkerPoolCompletionCallbacks() = 0;
-
- protected:
-  virtual ~WorkerPoolClient() {}
-};
-
 // A worker thread pool that runs tasks provided by task graph and
 // guarantees completion of all pending tasks at shutdown.
 class CC_EXPORT WorkerPool {
@@ -73,18 +65,11 @@ class CC_EXPORT WorkerPool {
   // completed.
   virtual void Shutdown();
 
-  // Set a new client.
-  void SetClient(WorkerPoolClient* client) {
-    client_ = client;
-  }
-
   // Force a check for completed tasks.
   virtual void CheckForCompletedTasks();
 
  protected:
-  WorkerPool(size_t num_threads,
-             base::TimeDelta check_for_completed_tasks_delay,
-             const std::string& thread_name_prefix);
+  WorkerPool(size_t num_threads, const std::string& thread_name_prefix);
 
   void ScheduleTasks(internal::WorkerPoolTask* root);
 
@@ -94,14 +79,8 @@ class CC_EXPORT WorkerPool {
 
   typedef std::deque<scoped_refptr<internal::WorkerPoolTask> > TaskDeque;
 
-  void ScheduleCheckForCompletedTasks();
   void DispatchCompletionCallbacks(TaskDeque* completed_tasks);
 
-  WorkerPoolClient* client_;
-  scoped_refptr<base::MessageLoopProxy> origin_loop_;
-  base::CancelableClosure check_for_completed_tasks_callback_;
-  base::TimeDelta check_for_completed_tasks_delay_;
-  bool check_for_completed_tasks_pending_;
   bool in_dispatch_completion_callbacks_;
 
   // Hide the gory details of the worker pool in |inner_|.

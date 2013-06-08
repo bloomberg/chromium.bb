@@ -9,8 +9,7 @@
 
 namespace cc {
 
-class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool,
-                                        public WorkerPoolClient {
+class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
  public:
   virtual ~ImageRasterWorkerPool();
 
@@ -27,12 +26,8 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool,
   ImageRasterWorkerPool(ResourceProvider* resource_provider,
                         size_t num_threads);
 
-  // Overridden from WorkerPoolClient:
-  virtual void DidFinishDispatchingWorkerPoolCompletionCallbacks() OVERRIDE {}
-
   void OnRasterTaskCompleted(
       scoped_refptr<internal::RasterWorkerPoolTask> task, bool was_canceled);
-  void DidCompleteRasterTask(internal::RasterWorkerPoolTask* task);
 
   TaskMap image_tasks_;
 

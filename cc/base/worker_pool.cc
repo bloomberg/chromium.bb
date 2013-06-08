@@ -100,9 +100,7 @@ bool WorkerPoolTask::HasCompleted() const {
 // by |lock_|.
 class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
  public:
-  Inner(WorkerPool* worker_pool,
-        size_t num_threads,
-        const std::string& thread_name_prefix);
+  Inner(size_t num_threads, const std::string& thread_name_prefix);
   virtual ~Inner();
 
   void Shutdown();
@@ -116,8 +114,8 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
   // ScheduleTasks().
   void ScheduleTasks(internal::WorkerPoolTask* root);
 
-  // Collect all completed tasks in |completed_tasks|. Returns true if idle.
-  bool CollectCompletedTasks(TaskDeque* completed_tasks);
+  // Collect all completed tasks in |completed_tasks|.
+  void CollectCompletedTasks(TaskDeque* completed_tasks);
 
  private:
   class ScheduledTask {
@@ -147,11 +145,6 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
       ScheduledTaskMap* scheduled_tasks);
   static void BuildScheduledTaskMap(
       internal::WorkerPoolTask* root, ScheduledTaskMap* scheduled_tasks);
-
-  // Collect all completed tasks by swapping the contents of
-  // |completed_tasks| and |completed_tasks_|. Lock must be acquired
-  // before calling this function. Returns true if idle.
-  bool CollectCompletedTasksWithLockAcquired(TaskDeque* completed_tasks);
 
   // Overridden from base::DelegateSimpleThread:
   virtual void Run() OVERRIDE;
@@ -195,9 +188,8 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
   DISALLOW_COPY_AND_ASSIGN(Inner);
 };
 
-WorkerPool::Inner::Inner(WorkerPool* worker_pool,
-                         size_t num_threads,
-                         const std::string& thread_name_prefix)
+WorkerPool::Inner::Inner(
+    size_t num_threads, const std::string& thread_name_prefix)
     : lock_(),
       has_ready_to_run_tasks_cv_(&lock_),
       next_thread_index_(0),
@@ -324,20 +316,11 @@ void WorkerPool::Inner::ScheduleTasks(internal::WorkerPoolTask* root) {
   }
 }
 
-bool WorkerPool::Inner::CollectCompletedTasks(TaskDeque* completed_tasks) {
+void WorkerPool::Inner::CollectCompletedTasks(TaskDeque* completed_tasks) {
   base::AutoLock lock(lock_);
-
-  return CollectCompletedTasksWithLockAcquired(completed_tasks);
-}
-
-bool WorkerPool::Inner::CollectCompletedTasksWithLockAcquired(
-    TaskDeque* completed_tasks) {
-  lock_.AssertAcquired();
 
   DCHECK_EQ(0u, completed_tasks->size());
   completed_tasks->swap(completed_tasks_);
-
-  return running_tasks_.empty() && pending_tasks_.empty();
 }
 
 void WorkerPool::Inner::Run() {
@@ -477,16 +460,9 @@ void WorkerPool::Inner::BuildScheduledTaskMap(
 }
 
 WorkerPool::WorkerPool(size_t num_threads,
-                       base::TimeDelta check_for_completed_tasks_delay,
                        const std::string& thread_name_prefix)
-    : client_(NULL),
-      origin_loop_(base::MessageLoopProxy::current()),
-      check_for_completed_tasks_delay_(check_for_completed_tasks_delay),
-      check_for_completed_tasks_pending_(false),
-      in_dispatch_completion_callbacks_(false),
-      inner_(make_scoped_ptr(new Inner(this,
-                                       num_threads,
-                                       thread_name_prefix))) {
+    : in_dispatch_completion_callbacks_(false),
+      inner_(make_scoped_ptr(new Inner(num_threads, thread_name_prefix))) {
 }
 
 WorkerPool::~WorkerPool() {
@@ -498,23 +474,6 @@ void WorkerPool::Shutdown() {
   DCHECK(!in_dispatch_completion_callbacks_);
 
   inner_->Shutdown();
-
-  TaskDeque completed_tasks;
-  inner_->CollectCompletedTasks(&completed_tasks);
-  DispatchCompletionCallbacks(&completed_tasks);
-}
-
-void WorkerPool::ScheduleCheckForCompletedTasks() {
-  if (check_for_completed_tasks_pending_)
-    return;
-  check_for_completed_tasks_callback_.Reset(
-      base::Bind(&WorkerPool::CheckForCompletedTasks,
-                 base::Unretained(this)));
-  origin_loop_->PostDelayedTask(
-      FROM_HERE,
-      check_for_completed_tasks_callback_.callback(),
-      check_for_completed_tasks_delay_);
-  check_for_completed_tasks_pending_ = true;
 }
 
 void WorkerPool::CheckForCompletedTasks() {
@@ -522,50 +481,33 @@ void WorkerPool::CheckForCompletedTasks() {
 
   DCHECK(!in_dispatch_completion_callbacks_);
 
-  check_for_completed_tasks_callback_.Cancel();
-  check_for_completed_tasks_pending_ = false;
-
   TaskDeque completed_tasks;
-
-  // Schedule another check for completed tasks if not idle.
-  if (!inner_->CollectCompletedTasks(&completed_tasks))
-    ScheduleCheckForCompletedTasks();
-
+  inner_->CollectCompletedTasks(&completed_tasks);
   DispatchCompletionCallbacks(&completed_tasks);
 }
 
 void WorkerPool::DispatchCompletionCallbacks(TaskDeque* completed_tasks) {
   TRACE_EVENT0("cc", "WorkerPool::DispatchCompletionCallbacks");
 
-  // Early out when |completed_tasks| is empty to prevent unnecessary
-  // call to DidFinishDispatchingWorkerPoolCompletionCallbacks().
-  if (completed_tasks->empty())
-    return;
-
   // Worker pool instance is not reentrant while processing completed tasks.
   in_dispatch_completion_callbacks_ = true;
 
   while (!completed_tasks->empty()) {
-    scoped_refptr<internal::WorkerPoolTask> task = completed_tasks->front();
-    completed_tasks->pop_front();
+    internal::WorkerPoolTask* task = completed_tasks->front();
+
     task->DidComplete();
     task->DispatchCompletionCallback();
+
+    completed_tasks->pop_front();
   }
 
   in_dispatch_completion_callbacks_ = false;
-
-  DCHECK(client_);
-  client_->DidFinishDispatchingWorkerPoolCompletionCallbacks();
 }
 
 void WorkerPool::ScheduleTasks(internal::WorkerPoolTask* root) {
   TRACE_EVENT0("cc", "WorkerPool::ScheduleTasks");
 
   DCHECK(!in_dispatch_completion_callbacks_);
-
-  // Schedule check for completed tasks.
-  if (root)
-    ScheduleCheckForCompletedTasks();
 
   inner_->ScheduleTasks(root);
 }

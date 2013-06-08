@@ -61,7 +61,7 @@ class PerfControlTaskImpl : public internal::WorkerPoolTask {
 
 class PerfWorkerPool : public WorkerPool {
  public:
-  PerfWorkerPool() : WorkerPool(1, base::TimeDelta::FromDays(1024), "test") {}
+  PerfWorkerPool() : WorkerPool(1, "test") {}
   virtual ~PerfWorkerPool() {}
 
   static scoped_ptr<PerfWorkerPool> Create() {
@@ -73,22 +73,18 @@ class PerfWorkerPool : public WorkerPool {
   }
 };
 
-class WorkerPoolPerfTest : public testing::Test,
-                           public WorkerPoolClient {
+class WorkerPoolPerfTest : public testing::Test {
  public:
   WorkerPoolPerfTest() : num_runs_(0) {}
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
     worker_pool_ = PerfWorkerPool::Create();
-    worker_pool_->SetClient(this);
   }
   virtual void TearDown() OVERRIDE {
     worker_pool_->Shutdown();
+    worker_pool_->CheckForCompletedTasks();
   }
-
-  // Overridden from WorkerPoolClient:
-  virtual void DidFinishDispatchingWorkerPoolCompletionCallbacks() OVERRIDE {}
 
   void EndTest() {
     elapsed_ = base::TimeTicks::HighResNow() - start_time_;

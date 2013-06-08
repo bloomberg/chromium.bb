@@ -60,8 +60,6 @@ class ImageWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 ImageRasterWorkerPool::ImageRasterWorkerPool(
     ResourceProvider* resource_provider, size_t num_threads)
     : RasterWorkerPool(resource_provider, num_threads) {
-  // TODO(reveman): Remove WorkerPool client interface.
-  WorkerPool::SetClient(this);
 }
 
 ImageRasterWorkerPool::~ImageRasterWorkerPool() {
@@ -136,14 +134,10 @@ void ImageRasterWorkerPool::OnRasterTaskCompleted(
   if (!was_canceled)
     task->DidRun();
 
-  DidCompleteRasterTask(task);
-  image_tasks_.erase(task);
-}
-
-void ImageRasterWorkerPool::DidCompleteRasterTask(
-    internal::RasterWorkerPoolTask* task) {
   task->DidComplete();
   task->DispatchCompletionCallback();
+
+  image_tasks_.erase(task);
 }
 
 }  // namespace cc

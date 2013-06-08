@@ -84,8 +84,6 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
 
 const char* kWorkerThreadNamePrefix = "CompositorRaster";
 
-const int kCheckForCompletedTasksDelayMs = 6;
-
 }  // namespace
 
 namespace internal {
@@ -200,10 +198,7 @@ RasterWorkerPool::RootTask::~RootTask() {
 
 RasterWorkerPool::RasterWorkerPool(ResourceProvider* resource_provider,
                                    size_t num_threads)
-    : WorkerPool(
-        num_threads,
-        base::TimeDelta::FromMilliseconds(kCheckForCompletedTasksDelayMs),
-        kWorkerThreadNamePrefix),
+    : WorkerPool(num_threads, kWorkerThreadNamePrefix),
       resource_provider_(resource_provider) {
 }
 
