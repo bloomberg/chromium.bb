@@ -123,6 +123,13 @@ RealOutputConfiguratorDelegate::GetOutputs() {
       to_populate.output = this_id;
       to_populate.has_display_id =
           GetDisplayId(this_id, i, &to_populate.display_id);
+      to_populate.is_internal = IsInternalOutput(output_info);
+      // Use the index as a valid display id even if the internal
+      // display doesn't have valid EDID because the index
+      // will never change.
+      if (!to_populate.has_display_id && to_populate.is_internal)
+        to_populate.has_display_id = true;
+
       (outputs.empty() ? one_info : two_info) = output_info;
 
       // Now, look up the current CRTC and any related info.
@@ -145,7 +152,6 @@ RealOutputConfiguratorDelegate::GetOutputs() {
       }
 
       to_populate.native_mode = GetOutputNativeMode(output_info);
-      to_populate.is_internal = IsInternalOutput(output_info);
       to_populate.is_aspect_preserving_scaling =
           IsOutputAspectPreservingScaling(this_id);
       to_populate.touch_device_id = None;

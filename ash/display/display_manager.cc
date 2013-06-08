@@ -441,7 +441,7 @@ void DisplayManager::UpdateDisplays(
   // the root window so that it matches the external display's
   // resolution. This is necessary in order for scaling to work while
   // mirrored.
-  int mirrored_display_id = gfx::Display::kInvalidDisplayID;
+  int64 mirrored_display_id = gfx::Display::kInvalidDisplayID;
   if (software_mirroring_enabled_ && new_display_info_list.size() == 2)
     mirrored_display_id = new_display_info_list[1].id();
 
@@ -560,6 +560,9 @@ void DisplayManager::UpdateDisplays(
     Shell::GetInstance()->screen()->NotifyDisplayRemoved(displays_.back());
     displays_.pop_back();
   }
+  // Create or delete the mirror window here to avoid creating two
+  // compositor on one display.
+  mirror_window_updater.reset();
   for (std::vector<size_t>::iterator iter = added_display_indices.begin();
        iter != added_display_indices.end(); ++iter) {
     Shell::GetInstance()->screen()->NotifyDisplayAdded(displays_[*iter]);
@@ -568,7 +571,6 @@ void DisplayManager::UpdateDisplays(
        iter != changed_display_indices.end(); ++iter) {
     Shell::GetInstance()->screen()->NotifyBoundsChanged(displays_[*iter]);
   }
-  mirror_window_updater.reset();
   display_controller->NotifyDisplayConfigurationChanged();
   if (update_mouse_location)
     display_controller->EnsurePointerInDisplays();

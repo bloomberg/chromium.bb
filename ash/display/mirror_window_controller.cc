@@ -168,6 +168,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
     // No need to remove RootWindowObserver because
     // the DisplayManager object outlives RootWindow objects.
     root_window_->AddRootWindowObserver(display_manager);
+    root_window_->AddRootWindowObserver(this);
     // TODO(oshima): TouchHUD is using idkey.
     root_window_->SetProperty(internal::kDisplayIdKey, display_info.id());
     root_window_->Init();
@@ -179,6 +180,14 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
     root_window_->ShowRootWindow();
 
     // TODO(oshima): Start mirroring.
+    aura::Window* mirror_window = new aura::Window(NULL);
+    mirror_window->Init(ui::LAYER_TEXTURED);
+    root_window_->AddChild(mirror_window);
+    mirror_window->SetBounds(root_window_->bounds());
+    mirror_window->Show();
+    reflector_ = ui::ContextFactory::GetInstance()->
+        CreateReflector(Shell::GetPrimaryRootWindow()->compositor(),
+                        mirror_window->layer());
 
     cursor_window_ = new aura::Window(cursor_window_delegate_.get());
     cursor_window_->SetTransparent(true);
@@ -213,11 +222,17 @@ void MirrorWindowController::UpdateWindow() {
 
 void MirrorWindowController::Close() {
   if (root_window_.get()) {
+    ui::ContextFactory::GetInstance()->RemoveReflector(reflector_);
+    reflector_ = NULL;
     root_window_->RemoveRootWindowObserver(
         Shell::GetInstance()->display_manager());
     NoneCaptureClient* capture_client = static_cast<NoneCaptureClient*>(
         aura::client::GetCaptureClient(root_window_.get()));
     delete capture_client;
+
+    root_window_->RemoveRootWindowObserver(
+        Shell::GetInstance()->display_manager());
+    root_window_->RemoveRootWindowObserver(this);
     root_window_.reset();
     cursor_window_ = NULL;
   }
@@ -262,6 +277,31 @@ void MirrorWindowController::SetMirroredCursor(gfx::NativeCursor cursor) {
 void MirrorWindowController::SetMirroredCursorVisibility(bool visible) {
   if (cursor_window_)
     visible ? cursor_window_->Show() : cursor_window_->Hide();
+}
+
+void MirrorWindowController::OnRootWindowResized(
+    const aura::RootWindow* root,
+    const gfx::Size& old_size) {
+  // Do not use |old_size| as it contains RootWindow's (but not host's) size,
+  // and this parameter wil be removed soon.
+  if (mirror_window_host_size_ == root->GetHostSize())
+    return;
+  mirror_window_host_size_ = root->GetHostSize();
+  reflector_->OnMirroringCompositorResized();
+
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  const DisplayInfo& mirror_display_info = display_manager->GetDisplayInfo(
+      display_manager->mirrored_display().id());
+  const DisplayInfo& source_display_info = display_manager->GetDisplayInfo(
+      Shell::GetScreen()->GetPrimaryDisplay().id());
+  DCHECK(display_manager->mirrored_display().is_valid());
+  scoped_ptr<aura::RootWindowTransformer> transformer(
+      internal::CreateRootWindowTransformerForMirroredDisplay(
+          source_display_info,
+          mirror_display_info));
+  root_window_->SetRootWindowTransformer(transformer.Pass());
+
+  UpdateCursorLocation();
 }
 
 }  // namespace internal

@@ -34,6 +34,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_setup.h"
 #include "ui/compositor/compositor_switches.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/test_web_graphics_context_3d.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
@@ -267,6 +268,10 @@ class BrowserCompositorOutputSurfaceProxy
     surface_map_.AddWithID(surface, surface_id);
   }
 
+  BrowserCompositorOutputSurface* GetOutputSurface(int surface_id) {
+    return surface_map_.Lookup(surface_id);
+  }
+
   void RemoveSurface(int surface_id) {
     surface_map_.Remove(surface_id);
   }
@@ -292,6 +297,182 @@ class BrowserCompositorOutputSurfaceProxy
   DISALLOW_COPY_AND_ASSIGN(BrowserCompositorOutputSurfaceProxy);
 };
 
+// A reflector implementation that copies the framebuffer content
+// to the texture, then draw it onto the mirroring compositor.
+class ReflectorImpl : public ImageTransportFactoryObserver,
+                      public base::SupportsWeakPtr<ReflectorImpl>,
+                      public ui::Reflector {
+ public:
+  ReflectorImpl(ui::Compositor* mirrored_compositor,
+                ui::Layer* mirroring_layer,
+                BrowserCompositorOutputSurfaceProxy* output_surface_proxy,
+                int surface_id)
+      : texture_id_(0),
+        texture_size_(mirrored_compositor->size()),
+        output_surface_proxy_(output_surface_proxy),
+        mirrored_compositor_(mirrored_compositor),
+        mirroring_compositor_(mirroring_layer->GetCompositor()),
+        mirroring_layer_(mirroring_layer),
+        impl_message_loop_(ui::Compositor::GetCompositorMessageLoop()),
+        main_message_loop_(base::MessageLoopProxy::current()),
+        surface_id_(surface_id) {
+    CreateSharedTexture();
+    impl_message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&ReflectorImpl::InitOnImplThread,
+                   this));
+  }
+
+  ui::Compositor* mirrored_compositor() {
+    return mirrored_compositor_;
+  }
+
+  void InitOnImplThread();
+
+  void Shutdown() {
+    mirroring_compositor_ = NULL;
+    mirroring_layer_ = NULL;
+    shared_texture_ = NULL;
+    impl_message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&ReflectorImpl::ShutdownOnImplThread,
+                   this));
+  }
+
+  void ShutdownOnImplThread();
+
+  // This must be called on ImplThread, or before the surface is passed to
+  // ImplThread.
+  void AttachToOutputSurface(BrowserCompositorOutputSurface* surface);
+
+  // ui::Reflector overrides:
+  virtual void OnMirroringCompositorResized() OVERRIDE {
+    mirroring_compositor_->ScheduleFullRedraw();
+  }
+
+  // ImageTransportFactoryObsever overrides:
+  virtual void OnLostResources() OVERRIDE {
+    shared_texture_ = NULL;
+    mirroring_layer_->SetExternalTexture(NULL);
+  }
+
+  // Called when the output surface's size has changed.
+  // This must be called on ImplThread.
+  void OnReshape(gfx::Size size) {
+    texture_size_ = size;
+    DCHECK(texture_id_);
+    gl_helper_->ResizeTexture(texture_id_, size);
+    main_message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&ReflectorImpl::UpdateTextureSizeOnMainThread,
+                   this->AsWeakPtr(),
+                   texture_size_));
+  }
+
+  // Called in |BrowserCompositorOutputSurface::SwapBuffers| to copy
+  // the full screen image to the |texture_id_|. This must be called
+  // on ImplThread.
+  void OnSwapBuffers() {
+    DCHECK(texture_id_);
+    gl_helper_->CopyTextureFullImage(texture_id_, texture_size_);
+    main_message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&ReflectorImpl::FullRedrawOnMainThread,
+                   this->AsWeakPtr(),
+                   texture_size_));
+  }
+
+  // Called in |BrowserCompositorOutputSurface::PostSubBuffer| copy
+  // the sub image given by |rect| to the texture.This must be called
+  // on ImplThread.
+  void OnPostSubBuffer(gfx::Rect rect) {
+    DCHECK(texture_id_);
+    gl_helper_->CopyTextureSubImage(texture_id_, rect);
+    main_message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&ReflectorImpl::UpdateSubBufferOnMainThread,
+                   this->AsWeakPtr(),
+                   texture_size_,
+                   rect));
+  }
+
+  // Create a shared texture that will be used to copy the content of
+  // mirrored compositor to the mirroring compositor.  This must be
+  // called before the reflector is attached to OutputSurface to avoid
+  // race with ImplThread accessing |texture_id_|.
+  void CreateSharedTexture() {
+    texture_id_ = ImageTransportFactory::GetInstance()->GetGLHelper()->
+        CreateTexture();
+    shared_texture_ = ImageTransportFactory::GetInstance()->
+        CreateOwnedTexture(texture_size_, 1.0f, texture_id_);
+    mirroring_layer_->SetExternalTexture(shared_texture_.get());
+  }
+
+ private:
+  virtual ~ReflectorImpl() {
+    // Make sure the reflector is deleted on main thread.
+    DCHECK_EQ(main_message_loop_.get(),
+              base::MessageLoopProxy::current().get());
+  }
+
+  void UpdateTextureSizeOnMainThread(gfx::Size size) {
+    if (!mirroring_layer_)
+      return;
+    mirroring_layer_->SetBounds(gfx::Rect(size));
+  }
+
+  // Request full redraw on mirroring compositor.
+  void FullRedrawOnMainThread(gfx::Size size) {
+    if (!mirroring_compositor_)
+      return;
+    UpdateTextureSizeOnMainThread(size);
+    mirroring_compositor_->ScheduleFullRedraw();
+  }
+
+  void UpdateSubBufferOnMainThread(gfx::Size size,
+                                   gfx::Rect rect) {
+    if (!mirroring_compositor_)
+      return;
+    UpdateTextureSizeOnMainThread(size);
+    // Flip the coordinates to compositor's one.
+    int y = size.height() - rect.y() - rect.height();
+    gfx::Rect new_rect(rect.x(), y, rect.width(), rect.height());
+    mirroring_layer_->SchedulePaint(new_rect);
+  }
+
+  // Request full redraw on mirrored compositor so that
+  // the full content will be copied to mirroring compositor.
+  void FullRedrawContentOnMainThread() {
+    mirrored_compositor_->ScheduleFullRedraw();
+  }
+
+  static void DeleteOnMainThread(ReflectorImpl* reflector) {
+    // reflector gets deleted when the function returns.
+  }
+
+  // These variables are initialized on MainThread before
+  // the reflector is attached to the output surface. Once
+  // attached, they must be accessed only on ImplThraed unless
+  // the context is lost. When the context is lost, these
+  // will be re-ininitiailzed when the new output-surface
+  // is created on MainThread.
+  int texture_id_;
+  gfx::Size texture_size_;
+
+  // Must be accessed only on ImplThread.
+  scoped_refptr<BrowserCompositorOutputSurfaceProxy> output_surface_proxy_;
+  scoped_ptr<GLHelper> gl_helper_;
+
+  // Must be accessed only on MainThread.
+  ui::Compositor* mirrored_compositor_;
+  ui::Compositor* mirroring_compositor_;
+  ui::Layer* mirroring_layer_;
+  scoped_refptr<ui::Texture> shared_texture_;
+  scoped_refptr<base::MessageLoopProxy> impl_message_loop_;
+  scoped_refptr<base::MessageLoopProxy> main_message_loop_;
+  int surface_id_;
+};
+
 // Adapts a WebGraphicsContext3DCommandBufferImpl into a
 // cc::OutputSurface that also handles vsync parameter updates
 // arriving from the GPU process.
@@ -313,7 +494,7 @@ class BrowserCompositorOutputSurface
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(switches::kUIMaxFramesPending)) {
       std::string string_value = command_line->GetSwitchValueASCII(
-        switches::kUIMaxFramesPending);
+          switches::kUIMaxFramesPending);
       int int_value;
       if (base::StringToInt(string_value, &int_value))
         capabilities_.max_frames_pending = int_value;
@@ -352,6 +533,12 @@ class BrowserCompositorOutputSurface
                    compositor_, timebase, interval));
   }
 
+  virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE {
+    OutputSurface::Reshape(size, scale_factor);
+    if (reflector_.get())
+      reflector_->OnReshape(size);
+  }
+
   virtual void SwapBuffers(const ui::LatencyInfo& latency_info) OVERRIDE {
     WebGraphicsContext3DCommandBufferImpl* command_buffer =
         static_cast<WebGraphicsContext3DCommandBufferImpl*>(context3d());
@@ -360,6 +547,10 @@ class BrowserCompositorOutputSurface
     DCHECK(command_buffer_proxy);
     context3d()->shallowFlushCHROMIUM();
     command_buffer_proxy->SetLatencyInfo(latency_info);
+
+    if (reflector_.get())
+      reflector_->OnSwapBuffers();
+
     OutputSurface::SwapBuffers(latency_info);
   }
 
@@ -372,7 +563,15 @@ class BrowserCompositorOutputSurface
     DCHECK(command_buffer_proxy);
     context3d()->shallowFlushCHROMIUM();
     command_buffer_proxy->SetLatencyInfo(latency_info);
+
+    if (reflector_.get())
+      reflector_->OnPostSubBuffer(rect);
+
     OutputSurface::PostSubBuffer(rect, latency_info);
+  }
+
+  void SetReflector(ReflectorImpl* reflector) {
+    reflector_ = reflector;
   }
 
  private:
@@ -381,6 +580,7 @@ class BrowserCompositorOutputSurface
 
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_;
   base::WeakPtr<ui::Compositor> compositor_;
+  scoped_refptr<ReflectorImpl> reflector_;
 };
 
 void BrowserCompositorOutputSurfaceProxy::OnUpdateVSyncParameters(
@@ -388,6 +588,35 @@ void BrowserCompositorOutputSurfaceProxy::OnUpdateVSyncParameters(
   BrowserCompositorOutputSurface* surface = surface_map_.Lookup(surface_id);
   if (surface)
     surface->OnUpdateVSyncParameters(timebase, interval);
+}
+
+void ReflectorImpl::AttachToOutputSurface(
+    BrowserCompositorOutputSurface* output_surface) {
+  gl_helper_.reset(new GLHelper(output_surface->context3d()));
+  output_surface->SetReflector(this);
+}
+
+void ReflectorImpl::InitOnImplThread() {
+  AttachToOutputSurface(output_surface_proxy_->GetOutputSurface(surface_id_));
+  gl_helper_->CopyTextureFullImage(texture_id_, texture_size_);
+  // The shared texture doesn't have the data, so invokes full redraw
+  // now.
+  main_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&ReflectorImpl::FullRedrawContentOnMainThread,
+                 scoped_refptr<ReflectorImpl>(this)));
+}
+
+void ReflectorImpl::ShutdownOnImplThread() {
+  BrowserCompositorOutputSurface* output_surface =
+      output_surface_proxy_->GetOutputSurface(surface_id_);
+  output_surface->SetReflector(NULL);
+  gl_helper_.reset();
+  // The instance must be deleted on main thread.
+  main_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&ReflectorImpl::DeleteOnMainThread,
+                 scoped_refptr<ReflectorImpl>(this)));
 }
 
 class GpuProcessTransportFactory
@@ -417,12 +646,46 @@ class GpuProcessTransportFactory
     WebGraphicsContext3DCommandBufferImpl* context =
         CreateContextCommon(data->swap_client->AsWeakPtr(),
                             data->surface_id);
-    return new BrowserCompositorOutputSurface(
-        context,
-        per_compositor_data_[compositor]->surface_id,
-        output_surface_proxy_,
-        base::MessageLoopProxy::current(),
-        compositor->AsWeakPtr());
+    BrowserCompositorOutputSurface* surface =
+        new BrowserCompositorOutputSurface(
+            context,
+            per_compositor_data_[compositor]->surface_id,
+            output_surface_proxy_,
+            base::MessageLoopProxy::current(),
+            compositor->AsWeakPtr());
+    if (data->reflector.get()) {
+      data->reflector->CreateSharedTexture();
+      data->reflector->AttachToOutputSurface(surface);
+    }
+    return surface;
+  }
+
+  virtual scoped_refptr<ui::Reflector> CreateReflector(
+      ui::Compositor* source,
+      ui::Layer* target) OVERRIDE {
+    PerCompositorData* data = per_compositor_data_[source];
+    DCHECK(data);
+
+    if (data->reflector.get())
+      RemoveObserver(data->reflector.get());
+
+    data->reflector = new ReflectorImpl(
+        source, target, output_surface_proxy_,
+        data->surface_id);
+    AddObserver(data->reflector.get());
+    return data->reflector;
+  }
+
+  virtual void RemoveReflector(
+      scoped_refptr<ui::Reflector> reflector) OVERRIDE {
+    ReflectorImpl* reflector_impl =
+        static_cast<ReflectorImpl*>(reflector.get());
+    PerCompositorData* data =
+        per_compositor_data_[reflector_impl->mirrored_compositor()];
+    DCHECK(data);
+    RemoveObserver(reflector_impl);
+    data->reflector->Shutdown();
+    data->reflector = NULL;
   }
 
   virtual void RemoveCompositor(ui::Compositor* compositor) OVERRIDE {
@@ -533,6 +796,7 @@ class GpuProcessTransportFactory
 #if defined(OS_WIN)
     scoped_ptr<AcceleratedSurface> accelerated_surface;
 #endif
+    scoped_refptr<ReflectorImpl> reflector;
   };
 
   PerCompositorData* CreatePerCompositorData(ui::Compositor* compositor) {
@@ -743,6 +1007,15 @@ class SoftwareContextFactory : public ui::ContextFactory {
     return NULL;
 #endif
   }
+
+  virtual scoped_refptr<ui::Reflector> CreateReflector(
+      ui::Compositor* source,
+      ui::Layer* target) OVERRIDE {
+    return NULL;
+  }
+  virtual void RemoveReflector(
+      scoped_refptr<ui::Reflector> reflector) OVERRIDE {}
+
   virtual void RemoveCompositor(ui::Compositor* compositor) OVERRIDE {}
 
   virtual scoped_refptr<cc::ContextProvider>

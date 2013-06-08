@@ -262,6 +262,19 @@ class CONTENT_EXPORT GLHelper {
                            const SkRegion& new_damage,
                            const SkRegion& old_damage);
 
+  // Simply creates a texture.
+  WebKit::WebGLId CreateTexture();
+
+  // Resizes the texture's size to |size|.
+  void ResizeTexture(WebKit::WebGLId texture, const gfx::Size& size);
+
+  // Copies the framebuffer data given in |rect| to |texture|.
+  void CopyTextureSubImage(WebKit::WebGLId texture, const gfx::Rect& rect);
+
+  // Copies the all framebuffer data to |texture|. |size| specifies the
+  // size of the framebuffer.
+  void CopyTextureFullImage(WebKit::WebGLId texture, const gfx::Size& size);
+
   // A scaler will cache all intermediate textures and programs
   // needed to scale from a specified size to a destination size.
   // If the source or destination sizes changes, you must create

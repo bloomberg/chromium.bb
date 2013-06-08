@@ -36,7 +36,8 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
   const int kDefaultHostWindowWidth = 1366;
   const int kDefaultHostWindowHeight = 768;
 
-  static int64 synthesized_display_id = 1000;
+  // Use larger than max int to catch overflow early.
+  static int64 synthesized_display_id = 2200000000LL;
 
 #if defined(OS_WIN)
   gfx::Rect bounds(aura::RootWindowHost::GetNativeScreenSize());

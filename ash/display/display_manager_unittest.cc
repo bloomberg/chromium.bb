@@ -876,15 +876,53 @@ TEST_F(DisplayManagerTest, MAYBE_UpdateMouseCursorAfterRotateZoom) {
 #define MAYBE_SoftwareMirroring SoftwareMirroring
 #endif
 
+class TestDisplayObserver : public gfx::DisplayObserver {
+ public:
+  TestDisplayObserver() : changed_(false) {}
+  virtual ~TestDisplayObserver() {}
+
+  // gfx::DisplayObserver overrides:
+  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE {
+  }
+  virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE {
+    // Mirror window should already be delete before restoring
+    // the external dispay.
+    EXPECT_FALSE(test_api.GetRootWindow());
+    changed_ = true;
+  }
+  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE {
+    // Mirror window should not be created until the external display
+    // is removed.
+    EXPECT_FALSE(test_api.GetRootWindow());
+    changed_ = true;
+  }
+
+  bool changed_and_reset() {
+    bool changed = changed_;
+    changed_ = false;
+    return changed;
+  }
+
+ private:
+  test::MirrorWindowTestApi test_api;
+  bool changed_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDisplayObserver);
+};
+
 TEST_F(DisplayManagerTest, MAYBE_SoftwareMirroring) {
   UpdateDisplay("300x400,400x500");
 
   test::MirrorWindowTestApi test_api;
   EXPECT_EQ(NULL, test_api.GetRootWindow());
 
+  TestDisplayObserver display_observer;
+  Shell::GetScreen()->AddObserver(&display_observer);
+
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display_manager->SetSoftwareMirroring(true);
   display_manager->UpdateDisplays();
+  EXPECT_TRUE(display_observer.changed_and_reset());
   EXPECT_EQ(1U, display_manager->GetNumDisplays());
   EXPECT_EQ("0,0 300x400",
             Shell::GetScreen()->GetPrimaryDisplay().bounds().ToString());
@@ -893,6 +931,7 @@ TEST_F(DisplayManagerTest, MAYBE_SoftwareMirroring) {
   EXPECT_TRUE(display_manager->IsMirrored());
 
   display_manager->SetMirrorMode(false);
+  EXPECT_TRUE(display_observer.changed_and_reset());
   EXPECT_EQ(NULL, test_api.GetRootWindow());
   EXPECT_EQ(2U, display_manager->GetNumDisplays());
   EXPECT_FALSE(display_manager->IsMirrored());
@@ -900,27 +939,35 @@ TEST_F(DisplayManagerTest, MAYBE_SoftwareMirroring) {
   // Make sure the mirror window has the pixel size of the
   // source display.
   display_manager->SetMirrorMode(true);
+  EXPECT_TRUE(display_observer.changed_and_reset());
 
   UpdateDisplay("300x400@0.5,400x500");
+  EXPECT_FALSE(display_observer.changed_and_reset());
   EXPECT_EQ("300x400", test_api.GetRootWindow()->bounds().size().ToString());
   EXPECT_EQ("400x500", GetMirroredDisplay().size().ToString());
 
   UpdateDisplay("310x410*2,400x500");
+  EXPECT_FALSE(display_observer.changed_and_reset());
   EXPECT_EQ("310x410", test_api.GetRootWindow()->bounds().size().ToString());
   EXPECT_EQ("400x500", GetMirroredDisplay().size().ToString());
 
   UpdateDisplay("320x420/r,400x500");
+  EXPECT_FALSE(display_observer.changed_and_reset());
   EXPECT_EQ("320x420", test_api.GetRootWindow()->bounds().size().ToString());
   EXPECT_EQ("400x500", GetMirroredDisplay().size().ToString());
 
   UpdateDisplay("330x440/r,400x500");
+  EXPECT_FALSE(display_observer.changed_and_reset());
   EXPECT_EQ("330x440", test_api.GetRootWindow()->bounds().size().ToString());
   EXPECT_EQ("400x500", GetMirroredDisplay().size().ToString());
 
   // Overscan insets are ignored.
   UpdateDisplay("400x600/o,600x800/o");
+  EXPECT_FALSE(display_observer.changed_and_reset());
   EXPECT_EQ("400x600", test_api.GetRootWindow()->bounds().size().ToString());
   EXPECT_EQ("600x800", GetMirroredDisplay().size().ToString());
+
+  Shell::GetScreen()->RemoveObserver(&display_observer);
 }
 
 }  // namespace internal

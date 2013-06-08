@@ -634,6 +634,41 @@ void GLHelper::CopySubBufferDamage(WebKit::WebGLId texture,
   }
 }
 
+WebKit::WebGLId GLHelper::CreateTexture() {
+  WebKit::WebGLId texture = context_->createTexture();
+  content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_,
+                                                             texture);
+  context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  return texture;
+}
+
+void GLHelper::ResizeTexture(WebKit::WebGLId texture, const gfx::Size& size) {
+  content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_, texture);
+  context_->texImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+                       size.width(), size.height(), 0,
+                       GL_RGB, GL_UNSIGNED_BYTE, NULL);
+}
+
+void GLHelper::CopyTextureSubImage(WebKit::WebGLId texture,
+                                   const gfx::Rect& rect) {
+  content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_, texture);
+  context_->copyTexSubImage2D(GL_TEXTURE_2D, 0,
+                              rect.x(), rect.y(),
+                              rect.x(), rect.y(), rect.width(), rect.height());
+}
+
+void GLHelper::CopyTextureFullImage(WebKit::WebGLId texture,
+                                    const gfx::Size& size) {
+  content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_, texture);
+  context_->copyTexImage2D(GL_TEXTURE_2D, 0,
+                           GL_RGB,
+                           0, 0,
+                           size.width(), size.height(), 0);
+}
+
 void GLHelper::CopyTextureToImpl::ReadbackPlane(
     TextureFrameBufferPair* source,
     media::VideoFrame* target,

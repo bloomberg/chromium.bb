@@ -7,13 +7,20 @@
 
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/root_window_observer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/size.h"
 
 namespace aura {
 class RootWindow;
 class Window;
+}
+
+namespace ui {
+class Reflector;
 }
 
 namespace ash {
@@ -28,10 +35,10 @@ class CursorWindowDelegate;
 // An object that copies the content of the primary root window to a
 // mirror window. This also draws a mouse cursor as the mouse cursor
 // is typically drawn by the window system.
-class MirrorWindowController {
+class MirrorWindowController : public aura::RootWindowObserver {
  public:
   MirrorWindowController();
-  ~MirrorWindowController();
+  virtual ~MirrorWindowController();
 
   // Updates the root window's bounds using |display_info|.
   // Creates the new root window if one doesn't exist.
@@ -50,6 +57,10 @@ class MirrorWindowController {
   void SetMirroredCursor(gfx::NativeCursor cursor);
   void SetMirroredCursorVisibility(bool visible);
 
+  // aura::RootWindowObserver overrides:
+  virtual void OnRootWindowResized(const aura::RootWindow* root,
+                                   const gfx::Size& old_size) OVERRIDE;
+
  private:
   friend class test::MirrorWindowTestApi;
 
@@ -58,6 +69,8 @@ class MirrorWindowController {
   scoped_ptr<aura::RootWindow> root_window_;
   scoped_ptr<CursorWindowDelegate> cursor_window_delegate_;
   gfx::Point hot_point_;
+  gfx::Size mirror_window_host_size_;
+  scoped_refptr<ui::Reflector> reflector_;
 
   DISALLOW_COPY_AND_ASSIGN(MirrorWindowController);
 };
