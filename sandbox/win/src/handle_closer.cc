@@ -180,11 +180,12 @@ bool GetHandleName(HANDLE handle, string16* handle_name) {
     ResolveNTFunctionPtr("NtQueryObject", &QueryObject);
 
   ULONG size = MAX_PATH;
-  scoped_ptr<UNICODE_STRING> name;
+  scoped_ptr<UNICODE_STRING, base::FreeDeleter> name;
   NTSTATUS result;
 
   do {
-    name.reset(reinterpret_cast<UNICODE_STRING*>(new BYTE[size]));
+    name.reset(static_cast<UNICODE_STRING*>(malloc(size)));
+    DCHECK(name.get());
     result = QueryObject(handle, ObjectNameInformation, name.get(),
                          size, &size);
   } while (result == STATUS_INFO_LENGTH_MISMATCH ||

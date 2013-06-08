@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstdlib>
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/win/src/win_utils.h"
 
@@ -120,9 +121,10 @@ void HandleTable::HandleEntry::UpdateInfo(UpdateType flag) {
     case UPDATE_INFO_AND_NAME:
       if (type_info_buffer_.size() && handle_name_.empty()) {
         ULONG size = MAX_PATH;
-        scoped_ptr<UNICODE_STRING> name;
+        scoped_ptr<UNICODE_STRING, base::FreeDeleter> name;
         do {
-          name.reset(reinterpret_cast<UNICODE_STRING*>(new BYTE[size]));
+          name.reset(static_cast<UNICODE_STRING*>(malloc(size)));
+          DCHECK(name.get());
           result = QueryObject(reinterpret_cast<HANDLE>(
               handle_entry_->Handle), ObjectNameInformation, name.get(),
               size, &size);
