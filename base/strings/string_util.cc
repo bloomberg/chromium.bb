@@ -1,10 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/string_util.h"
-
-#include "build/build_config.h"
+#include "base/strings/string_util.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -26,6 +24,7 @@
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/third_party/icu/icu_utf.h"
+#include "build/build_config.h"
 
 namespace {
 

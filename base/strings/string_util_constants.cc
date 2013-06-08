@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 #define WHITESPACE_UNICODE \
   0x0009, /* <control-0009> to <control-000D> */ \

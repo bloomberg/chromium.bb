@@ -25,7 +25,7 @@
             'sources': [
               'base_switches.cc',
               'base_switches.h',
-              'string16.cc',
+              'strings/string16.cc',
               'sync_socket_nacl.cc',
               'time_posix.cc',
             ],
