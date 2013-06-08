@@ -35,6 +35,7 @@ def DeviceInfo(serial):
 
   device_type = AdbShellCmd('getprop ro.build.product')
   device_build = AdbShellCmd('getprop ro.build.id')
+  device_build_type = AdbShellCmd('getprop ro.build.type')
   device_product_name = AdbShellCmd('getprop ro.product.name')
 
   setup_wizard_disabled = AdbShellCmd(
@@ -71,7 +72,7 @@ def DeviceInfo(serial):
   errors = []
   if battery_level < 5:
     errors += ['Device critically low in battery. Do not use for testing.']
-  if not setup_wizard_disabled:
+  if not setup_wizard_disabled and device_build_type != 'user':
     errors += ['Setup wizard not disabled. Was it provisioned correctly?']
   if device_product_name == 'mantaray' and ac_power != 'true':
     errors += ['Mantaray device not connected to AC power.']
