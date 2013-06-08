@@ -266,6 +266,7 @@ body.fakebox-focused #cursor {
 
 .mv-mask {
   opacity: 0.35;
+  pointer-events: none;
 }
 
 .mv-page:focus .mv-mask {
