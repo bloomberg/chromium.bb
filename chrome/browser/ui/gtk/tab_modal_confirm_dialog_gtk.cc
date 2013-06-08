@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/gtk/tab_modal_confirm_dialog_gtk.h"
 
 #include "base/message_loop.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"

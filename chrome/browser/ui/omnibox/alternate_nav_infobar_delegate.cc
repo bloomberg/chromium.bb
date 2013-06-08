@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"

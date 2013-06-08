@@ -6,7 +6,7 @@
 
 #include <gtk/gtk.h>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "testing/platform_test.h"
 #include "ui/base/gtk/gtk_hig_constants.h"

@@ -6,7 +6,7 @@
 
 #include <gtk/gtk.h>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"

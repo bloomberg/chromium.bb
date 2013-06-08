@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/gtk/extensions/media_galleries_dialog_gtk.h"
 
 #include "base/auto_reset.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"

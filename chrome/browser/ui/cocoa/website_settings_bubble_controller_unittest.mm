@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/website_settings_bubble_controller.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest_mac.h"
 

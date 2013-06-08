@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace {

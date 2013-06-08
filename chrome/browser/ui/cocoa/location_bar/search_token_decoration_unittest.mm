@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/search_token_decoration.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

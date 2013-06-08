@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "crypto/crypto_module_blocking_password_delegate.h"
 #include "googleurl/src/gurl.h"

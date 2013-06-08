@@ -6,7 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/memory/scoped_nsobject.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/mock_autofill_dialog_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/layout_view.h"

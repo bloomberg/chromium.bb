@@ -7,9 +7,9 @@
 
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 
-#include "base/string_util.h"
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
+#include "base/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "ui/base/clipboard/clipboard.h"
 

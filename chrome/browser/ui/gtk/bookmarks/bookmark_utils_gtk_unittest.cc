@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "googleurl/src/gurl.h"

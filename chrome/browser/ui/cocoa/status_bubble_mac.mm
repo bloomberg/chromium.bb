@@ -12,7 +12,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/bubble_view.h"
 #include "net/base/net_util.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"

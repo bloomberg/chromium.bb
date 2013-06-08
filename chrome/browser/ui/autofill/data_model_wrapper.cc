@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
 
 #include "base/callback.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "components/autofill/browser/autofill_data_model.h"

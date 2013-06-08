@@ -7,7 +7,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/history_types.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"

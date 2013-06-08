@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/gtk/gtk_chrome_cookie_view.h"
 
 #include "base/i18n/time_formatting.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "grit/generated_resources.h"
 #include "net/cookies/canonical_cookie.h"

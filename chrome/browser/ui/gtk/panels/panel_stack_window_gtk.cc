@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/gtk/panels/panel_stack_window_gtk.h"
 
 #include <gdk/gdkkeysyms.h>
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/stacked_panel_collection.h"
 #include "ui/base/x/active_window_watcher_x.h"

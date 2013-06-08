@@ -9,7 +9,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/process_singleton.h"

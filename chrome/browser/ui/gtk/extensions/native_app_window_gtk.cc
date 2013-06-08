@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/gtk/extensions/native_app_window_gtk.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/gtk/extensions/extension_keybinding_registry_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"

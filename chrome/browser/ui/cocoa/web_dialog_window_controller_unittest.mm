@@ -11,7 +11,7 @@
 
 #import "base/mac/scoped_nsautorelease_pool.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/test/base/browser_with_test_window_test.h"

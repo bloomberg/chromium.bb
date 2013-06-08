@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/gtk/status_icons/status_icon_gtk.h"
 
 #include "base/string16.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/gtk_util.h"

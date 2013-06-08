@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/gtk/status_icons/status_tray_gtk.h"
 
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/status_icons/status_icon_observer.h"
 #include "chrome/browser/ui/gtk/status_icons/status_icon_gtk.h"
 #include "grit/chrome_unscaled_resources.h"

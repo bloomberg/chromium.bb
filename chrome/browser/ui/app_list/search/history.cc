@@ -6,7 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/search/history_data.h"
 #include "chrome/browser/ui/app_list/search/history_data_store.h"
 #include "chrome/browser/ui/app_list/search/tokenized_string.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/gtk/panels/panel_titlebar_gtk.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"

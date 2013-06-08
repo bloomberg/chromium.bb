@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/infobars/mock_confirm_infobar_delegate.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 
 const char MockConfirmInfoBarDelegate::kMessage[] = "MockConfirmInfoBarMessage";
 

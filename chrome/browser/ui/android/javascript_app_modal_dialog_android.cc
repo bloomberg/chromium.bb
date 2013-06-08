@@ -6,7 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"

@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "content/public/browser/render_widget_host_view.h"

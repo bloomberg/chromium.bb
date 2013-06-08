@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/action_box_menu_bubble_controller.h"
 
 #include "base/command_line.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"

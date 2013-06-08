@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/extensions/shell_window.h"
 
 #include "apps/shell_window_geometry_cache.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/app_window_contents.h"
 #include "chrome/browser/extensions/extension_process_manager.h"

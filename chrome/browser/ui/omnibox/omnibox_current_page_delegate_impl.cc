@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/omnibox/omnibox_current_page_delegate_impl.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"

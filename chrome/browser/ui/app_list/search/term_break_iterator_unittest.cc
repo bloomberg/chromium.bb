@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/app_list/search/term_break_iterator.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace app_list {

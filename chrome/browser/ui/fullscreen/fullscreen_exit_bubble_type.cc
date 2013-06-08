@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
