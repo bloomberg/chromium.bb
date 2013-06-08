@@ -234,23 +234,28 @@ html[dir='rtl'] .site-domain {
 
 .entry .time {
   color: rgb(151, 156, 160);
-  min-width: 90px;
+  min-width: 55px;
   overflow: hidden;
+  text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
-  width: 90px;
+}
+
+html[dir='rtl'] .entry .time {
+  text-align: left;
 }
 
 .search-results .time,
 .month-results .time {
-  min-width: 110px;
-  width: 110px;
+  min-width: 85px;
 }
 
 .entry input[type='checkbox'] {
   -webkit-margin-end: 6px;
   -webkit-margin-start: 4px;
   line-height: 1em;
+  margin-top: 2px;
+  min-width: 13px;
 }
 
 <if expr="not is_android">
@@ -413,13 +418,17 @@ html[dir='rtl'] .site-domain-arrow.expand {
   -webkit-transform: rotate(180deg);
 }
 
-.entry .starred {
-  -webkit-margin-start: 4px;
-  background:
-      url(../../../../ui/webui/resources/images/star_small.png) no-repeat;
+.entry .bookmark-section {
+  -webkit-margin-end: 3px;
+  -webkit-margin-start: 8px;
   display: inline-block;
   height: 11px;
-  width: 11px;
+  min-width: 15px;
+}
+
+.entry .starred {
+  background:
+      url(../../../../ui/webui/resources/images/star_small.png) no-repeat;
 }
 
 .entry .title > a {

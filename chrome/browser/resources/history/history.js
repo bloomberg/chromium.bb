@@ -135,7 +135,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     checkbox.id = 'checkbox-' + this.id_;
     checkbox.time = this.date.getTime();
     checkbox.addEventListener('click', checkboxClicked);
-    time.appendChild(checkbox);
+    entryBox.appendChild(checkbox);
 
     // Clicking anywhere in the entryBox will check/uncheck the checkbox.
     entryBox.setAttribute('for', checkbox.id);
@@ -155,6 +155,19 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   domain.textContent = this.getDomainFromURL_(this.url_);
 
   entryBox.appendChild(time);
+
+  var bookmarkSection = createElementWithClassName('div', 'bookmark-section');
+  if (this.starred_) {
+    bookmarkSection.classList.add('starred');
+    bookmarkSection.addEventListener('click', function f(e) {
+      bookmarkSection.classList.remove('starred');
+      chrome.send('removeBookmark', [self.url_]);
+      bookmarkSection.removeEventListener('click', f);
+      e.preventDefault();
+    });
+  }
+  entryBox.appendChild(bookmarkSection);
+
   var titleAndDomainWrapper = entryBox.appendChild(
       createElementWithClassName('div', 'title-and-domain'));
   if (this.blockedVisit) {
@@ -310,12 +323,6 @@ Visit.prototype.getTitleDOM_ = function() {
   this.addHighlightedText_(link, this.title_, this.model_.getSearchText());
   node.appendChild(link);
 
-  if (this.starred_) {
-    var star = createElementWithClassName('div', 'starred');
-    node.appendChild(star);
-    star.addEventListener('click', this.starClicked_.bind(this));
-  }
-
   return node;
 };
 
@@ -349,18 +356,6 @@ Visit.prototype.addFaviconToElement_ = function(el) {
  */
 Visit.prototype.showMoreFromSite_ = function() {
   historyView.setSearch(this.getDomainFromURL_(this.url_));
-};
-
-/**
- * Click event handler for the star icon that appears beside bookmarked URLs.
- * When clicked, the bookmark is removed for that URL.
- * @param {Event} event The click event.
- * @private
- */
-Visit.prototype.starClicked_ = function(event) {
-  chrome.send('removeBookmark', [this.url_]);
-  event.currentTarget.hidden = true;
-  event.preventDefault();
 };
 
 // Visit, private, static: ----------------------------------------------------
