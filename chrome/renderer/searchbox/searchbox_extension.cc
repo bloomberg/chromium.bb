@@ -85,16 +85,20 @@ void Dispatch(WebKit::WebFrame* frame, const WebKit::WebString& script) {
   frame->executeScript(WebKit::WebScriptSource(script));
 }
 
-v8::Handle<v8::String> GenerateThumbnailURL(uint64 most_visited_item_id) {
-  return UTF8ToV8String(
-      base::StringPrintf("chrome-search://thumb/%s",
-                         base::Uint64ToString(most_visited_item_id).c_str()));
+v8::Handle<v8::String> GenerateThumbnailURL(
+    int render_view_id,
+    InstantRestrictedID most_visited_item_id) {
+  return UTF8ToV8String(base::StringPrintf("chrome-search://thumb/%d/%d",
+                                           render_view_id,
+                                           most_visited_item_id));
 }
 
-v8::Handle<v8::String> GenerateFaviconURL(uint64 most_visited_item_id) {
-  return UTF8ToV8String(
-      base::StringPrintf("chrome-search://favicon/%s",
-                         base::Uint64ToString(most_visited_item_id).c_str()));
+v8::Handle<v8::String> GenerateFaviconURL(
+    int render_view_id,
+    InstantRestrictedID most_visited_item_id) {
+  return UTF8ToV8String(base::StringPrintf("chrome-search://favicon/%d/%d",
+                                           render_view_id,
+                                           most_visited_item_id));
 }
 
 // If |url| starts with |prefix|, removes |prefix|.
@@ -171,6 +175,7 @@ v8::Handle<v8::Object> GenerateNativeSuggestion(
 // not be returned to the Instant page. These should be erased before returning
 // the object. See GetMostVisitedItemsWrapper() in searchbox_api.js.
 v8::Handle<v8::Object> GenerateMostVisitedItem(
+    int render_view_id,
     InstantRestrictedID restricted_id,
     const InstantMostVisitedItem &mv_item) {
   // We set the "dir" attribute of the title, so that in RTL locales, a LTR
@@ -197,9 +202,9 @@ v8::Handle<v8::Object> GenerateMostVisitedItem(
   v8::Handle<v8::Object> obj = v8::Object::New();
   obj->Set(v8::String::New("rid"), v8::Int32::New(restricted_id));
   obj->Set(v8::String::New("thumbnailUrl"),
-           GenerateThumbnailURL(restricted_id));
+           GenerateThumbnailURL(render_view_id, restricted_id));
   obj->Set(v8::String::New("faviconUrl"),
-           GenerateFaviconURL(restricted_id));
+           GenerateFaviconURL(render_view_id, restricted_id));
   obj->Set(v8::String::New("title"), UTF16ToV8String(title));
   obj->Set(v8::String::New("domain"), UTF8ToV8String(mv_item.url.host()));
   obj->Set(v8::String::New("direction"), UTF8ToV8String(direction));
@@ -1259,7 +1264,8 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetMostVisitedItems(
   search_box->GetMostVisitedItems(&instant_mv_items);
   v8::Handle<v8::Array> v8_mv_items = v8::Array::New(instant_mv_items.size());
   for (size_t i = 0; i < instant_mv_items.size(); ++i) {
-    v8_mv_items->Set(i, GenerateMostVisitedItem(instant_mv_items[i].first,
+    v8_mv_items->Set(i, GenerateMostVisitedItem(render_view->GetRoutingID(),
+                                                instant_mv_items[i].first,
                                                 instant_mv_items[i].second));
   }
   return v8_mv_items;
@@ -1408,7 +1414,8 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetMostVisitedItemData(
           restricted_id, &mv_item)) {
     return v8::Undefined();
   }
-  return GenerateMostVisitedItem(restricted_id, mv_item);
+  return GenerateMostVisitedItem(render_view->GetRoutingID(), restricted_id,
+                                 mv_item);
 }
 
 // static

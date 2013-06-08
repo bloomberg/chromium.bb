@@ -35,8 +35,7 @@ InstantIOContext* GetDataForRequest(const net::URLRequest* request) {
 
 const char InstantIOContext::kInstantIOContextKeyName[] = "instant_io_context";
 
-InstantIOContext::InstantIOContext()
-    : most_visited_item_cache_(kMaxInstantMostVisitedItemCacheSize) {
+InstantIOContext::InstantIOContext() {
   // The InstantIOContext is created on the UI thread but is accessed
   // on the IO thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -77,15 +76,6 @@ void InstantIOContext::ClearInstantProcessesOnIO(
 }
 
 // static
-void InstantIOContext::AddMostVisitedItemsOnIO(
-    scoped_refptr<InstantIOContext> instant_io_context,
-    std::vector<InstantMostVisitedItemIDPair> items) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  instant_io_context->most_visited_item_cache_.AddItemsWithRestrictedID(items);
-}
-
-
-// static
 bool InstantIOContext::ShouldServiceRequest(const net::URLRequest* request) {
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
@@ -104,36 +94,7 @@ bool InstantIOContext::ShouldServiceRequest(const net::URLRequest* request) {
   return false;
 }
 
-// static
-bool InstantIOContext::GetURLForMostVisitedItemID(
-    const net::URLRequest* request,
-    InstantRestrictedID most_visited_item_id,
-    GURL* url) {
-  InstantIOContext* instant_io_context = GetDataForRequest(request);
-  if (!instant_io_context) {
-    *url = GURL();
-    return false;
-  }
-
-  return instant_io_context->GetURLForMostVisitedItemID(most_visited_item_id,
-                                                        url);
-}
-
 bool InstantIOContext::IsInstantProcess(int process_id) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return process_ids_.find(process_id) != process_ids_.end();
-}
-
-bool InstantIOContext::GetURLForMostVisitedItemID(
-    InstantRestrictedID most_visited_item_id,
-    GURL* url) const {
-  InstantMostVisitedItem item;
-  if (most_visited_item_cache_.GetItemWithRestrictedID(most_visited_item_id,
-                                                       &item)) {
-    *url = item.url;
-    return true;
-  }
-
-  *url = GURL();
-  return false;
 }

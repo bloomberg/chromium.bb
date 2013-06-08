@@ -117,9 +117,9 @@ class FaviconSource : public content::URLDataSource {
     NUM_SIZES
   };
 
-  // Parses |raw_path|, which should be in the format described at the top of
-  // the file. Returns true if |raw_path| could be parsed.
-  bool ParsePath(const std::string& raw_path,
+  // Parses |path|, which should be in the format described at the top of the
+  // file. Returns true if |path| could be parsed.
+  bool ParsePath(const std::string& path,
                  bool* is_icon_url,
                  GURL* url,
                  int* size_in_dip,

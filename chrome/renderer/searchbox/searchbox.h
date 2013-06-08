@@ -114,6 +114,26 @@ class SearchBox : public content::RenderViewObserver,
   // browser.
   void UndoAllMostVisitedDeletions();
 
+  // Generates the thumbnail URL of the most visited item specified by the
+  // |transient_url|. If the |transient_url| is valid, returns true and fills in
+  // |url|. If the |transient_url| is invalid, returns false  and |url| is not
+  // set.
+  //
+  // Valid form of |transient_url|:
+  //    chrome-search://thumb/<render_view_id>/<most_visited_item_id>
+  bool GenerateThumbnailURLFromTransientURL(const GURL& transient_url,
+                                            GURL* url) const;
+
+  // Generates the favicon URL of the most visited item specified by the
+  // |transient_url|. If the |transient_url| is valid, returns true and fills in
+  // |url|. If the |transient_url| is invalid, returns false  and |url| is not
+  // set.
+  //
+  // Valid form of |transient_url|:
+  //    chrome-search://favicon/<render_view_id>/<most_visited_item_id>
+  bool GenerateFaviconURLFromTransientURL(const GURL& transient_url,
+                                          GURL* url) const;
+
  private:
   // Overridden from content::RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -144,7 +164,7 @@ class SearchBox : public content::RenderViewObserver,
   void OnFontInformationReceived(const string16& omnibox_font,
                                  size_t omnibox_font_size);
   void OnMostVisitedChanged(
-      const std::vector<InstantMostVisitedItemIDPair>& items);
+      const std::vector<InstantMostVisitedItem>& items);
   void OnToggleVoiceSearch();
 
   // Returns the current zoom factor of the render view or 1 on failure.

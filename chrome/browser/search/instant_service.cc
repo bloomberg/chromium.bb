@@ -16,6 +16,7 @@
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/local_ntp_source.h"
 #include "chrome/browser/search/most_visited_iframe_source.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/search/suggestion_iframe_source.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
@@ -38,7 +39,6 @@ using content::BrowserThread;
 
 InstantService::InstantService(Profile* profile)
     : profile_(profile),
-      most_visited_item_cache_(kMaxInstantMostVisitedItemCacheSize),
       weak_ptr_factory_(this) {
   // Stub for unit tests.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
@@ -78,52 +78,6 @@ InstantService::InstantService(Profile* profile)
 InstantService::~InstantService() {
 }
 
-// static
-const std::string InstantService::MaybeTranslateInstantPathOnUI(
-    Profile* profile, const std::string& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile);
-  if (!instant_service)
-    return path;
-
-  InstantRestrictedID restricted_id = 0;
-  DCHECK_EQ(sizeof(InstantRestrictedID), sizeof(int));
-  if (base::StringToInt(path, &restricted_id)) {
-    InstantMostVisitedItem item;
-    if (instant_service->GetMostVisitedItemForID(restricted_id, &item))
-      return item.url.spec();
-  }
-  return path;
-}
-
-const std::string InstantService::MaybeTranslateInstantPathOnIO(
-    const net::URLRequest* request, const std::string& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  InstantRestrictedID restricted_id = 0;
-  DCHECK_EQ(sizeof(InstantRestrictedID), sizeof(int));
-  if (base::StringToInt(path, &restricted_id)) {
-    GURL url;
-    if (InstantIOContext::GetURLForMostVisitedItemID(request,
-                                                     restricted_id,
-                                                     &url)) {
-      return url.spec();
-    }
-  }
-  return path;
-}
-
-// static
-bool InstantService::IsInstantPath(const GURL& url) {
-  // Strip leading slash.
-  std::string path = url.path().substr(1);
-
-  // Check that path is of Most Visited item ID form.
-  InstantRestrictedID dummy = 0;
-  return base::StringToInt(path, &dummy);
-}
-
 void InstantService::AddInstantProcess(int process_id) {
   process_ids_.insert(process_id);
 
@@ -138,22 +92,6 @@ void InstantService::AddInstantProcess(int process_id) {
 
 bool InstantService::IsInstantProcess(int process_id) const {
   return process_ids_.find(process_id) != process_ids_.end();
-}
-
-void InstantService::AddMostVisitedItems(
-    const std::vector<InstantMostVisitedItem>& items) {
-  most_visited_item_cache_.AddItems(items);
-
-  // Post task to the IO thread to copy the data.
-  if (instant_io_context_.get()) {
-    std::vector<InstantMostVisitedItemIDPair> items;
-    most_visited_item_cache_.GetCurrentItems(&items);
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&InstantIOContext::AddMostVisitedItemsOnIO,
-                   instant_io_context_,
-                   items));
-  }
 }
 
 void InstantService::DeleteMostVisitedItem(const GURL& url) {
@@ -181,8 +119,8 @@ void InstantService::UndoAllMostVisitedDeletions() {
 }
 
 void InstantService::GetCurrentMostVisitedItems(
-    std::vector<InstantMostVisitedItemIDPair>* items) const {
-  most_visited_item_cache_.GetCurrentItems(items);
+    std::vector<InstantMostVisitedItem>* items) const {
+  *items = most_visited_items_;
 }
 
 void InstantService::Shutdown() {
@@ -231,13 +169,6 @@ void InstantService::Observe(int type,
   }
 }
 
-bool InstantService::GetMostVisitedItemForID(
-    InstantRestrictedID most_visited_item_id,
-    InstantMostVisitedItem* item) const {
-  return most_visited_item_cache_.GetItemWithRestrictedID(
-      most_visited_item_id, item);
-}
-
 void InstantService::OnMostVisitedItemsReceived(
     const history::MostVisitedURLList& data) {
   // Android doesn't use Browser/BrowserList. Do nothing for Android platform.
@@ -245,15 +176,20 @@ void InstantService::OnMostVisitedItemsReceived(
   history::MostVisitedURLList reordered_data(data);
   history::TopSites::MaybeShuffle(&reordered_data);
 
-  std::vector<InstantMostVisitedItem> most_visited_items;
+  std::vector<InstantMostVisitedItem> new_most_visited_items;
   for (size_t i = 0; i < reordered_data.size(); i++) {
     const history::MostVisitedURL& url = reordered_data[i];
     InstantMostVisitedItem item;
     item.url = url.url;
     item.title = url.title;
-    most_visited_items.push_back(item);
+    new_most_visited_items.push_back(item);
   }
-  AddMostVisitedItems(most_visited_items);
+  if (chrome::AreMostVisitedItemsEqual(new_most_visited_items,
+                                       most_visited_items_)) {
+    return;
+  }
+
+  most_visited_items_ = new_most_visited_items;
 
   const BrowserList* browser_list =
       BrowserList::GetInstance(chrome::GetActiveDesktop());

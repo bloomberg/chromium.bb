@@ -118,7 +118,7 @@ void InstantPage::FocusChanged(OmniboxFocusState state,
 }
 
 void InstantPage::SendMostVisitedItems(
-    const std::vector<InstantMostVisitedItemIDPair>& items) {
+    const std::vector<InstantMostVisitedItem>& items) {
   Send(new ChromeViewMsg_SearchBoxMostVisitedItemsChanged(routing_id(), items));
 }
 

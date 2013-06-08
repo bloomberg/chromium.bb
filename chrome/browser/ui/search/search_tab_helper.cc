@@ -75,6 +75,15 @@ void SearchTabHelper::NavigationEntryUpdated() {
   UpdateMode();
 }
 
+bool SearchTabHelper::UpdateLastKnownMostVisitedItems(
+    const std::vector<InstantMostVisitedItem>& items) {
+  if (chrome::AreMostVisitedItemsEqual(items, last_known_most_visited_items_))
+    return false;
+
+  last_known_most_visited_items_ = items;
+  return true;
+}
+
 void SearchTabHelper::Observe(
     int type,
     const content::NotificationSource& source,

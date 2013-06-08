@@ -193,7 +193,7 @@ class InstantPage : public content::WebContentsObserver {
 
   // Tells the page about new Most Visited data.
   void SendMostVisitedItems(
-      const std::vector<InstantMostVisitedItemIDPair>& items);
+      const std::vector<InstantMostVisitedItem>& items);
 
   // Tells the page to toggle voice search.
   void ToggleVoiceSearch();

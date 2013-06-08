@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_SEARCH_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_TAB_HELPER_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/search/search_model.h"
+#include "chrome/common/instant_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -41,6 +44,11 @@ class SearchTabHelper : public content::NotificationObserver,
   // virtual URL of the active entry. Regular navigations are captured through
   // the notification system and shouldn't call this method.
   void NavigationEntryUpdated();
+
+  // Updates |last_known_most_visited_items_| with |items|.
+  // Returns false if |items| matches the |last_known_most_visited_items_|.
+  bool UpdateLastKnownMostVisitedItems(
+      const std::vector<InstantMostVisitedItem>& items);
 
  private:
   friend class content::WebContentsUserData<SearchTabHelper>;
@@ -76,6 +84,10 @@ class SearchTabHelper : public content::NotificationObserver,
   content::NotificationRegistrar registrar_;
 
   content::WebContents* web_contents_;
+
+  // Tracks the last set of most visited items sent to the InstantPage renderer.
+  // Used to prevent sending duplicate IPC messages to the renderer.
+  std::vector<InstantMostVisitedItem> last_known_most_visited_items_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchTabHelper);
 };

@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/child_process_logging.h"
@@ -990,6 +991,16 @@ bool ChromeContentRendererClient::WillSendRequest(
           frame)) {
     *new_url = GURL(chrome::kExtensionResourceInvalidRequestURL);
     return true;
+  }
+
+  const content::RenderView* render_view =
+      content::RenderView::FromWebView(frame->view());
+  SearchBox* search_box = SearchBox::Get(render_view);
+  if (search_box && url.SchemeIs(chrome::kChromeSearchScheme)) {
+    if (url.host() == chrome::kChromeUIThumbnailHost)
+      return search_box->GenerateThumbnailURLFromTransientURL(url, new_url);
+    else if (url.host() == chrome::kChromeUIFaviconHost)
+      return search_box->GenerateFaviconURLFromTransientURL(url, new_url);
   }
 
   return false;

@@ -1276,8 +1276,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   omnibox()->RevertAll();
 }
 
-// TODO(dhollowa): Fix flakes.  http://crbug.com/179930.
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_MostVisited) {
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MostVisited) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_INSTANT_SENT_MOST_VISITED_ITEMS,
       content::NotificationService::AllSources());

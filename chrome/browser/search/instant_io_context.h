@@ -5,13 +5,10 @@
 #ifndef CHROME_BROWSER_SEARCH_INSTANT_IO_CONTEXT_H_
 #define CHROME_BROWSER_SEARCH_INSTANT_IO_CONTEXT_H_
 
-#include <map>
 #include <set>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/common/instant_restricted_id_cache.h"
 
 class GURL;
 
@@ -51,21 +48,9 @@ class InstantIOContext : public base::RefCountedThreadSafe<InstantIOContext> {
   static void ClearInstantProcessesOnIO(
       scoped_refptr<InstantIOContext> instant_io_context);
 
-  // Associates the |most_visited_item_id| with the |url|.
-  static void AddMostVisitedItemsOnIO(
-      scoped_refptr<InstantIOContext> instant_io_context,
-      std::vector<InstantMostVisitedItemIDPair> items);
-
   // Determine if this chrome-search: request is coming from an Instant render
   // process.
   static bool ShouldServiceRequest(const net::URLRequest* request);
-
-  // If there is a mapping for the |most_visited_item_id|, sets |url| and
-  // returns true.
-  static bool GetURLForMostVisitedItemID(
-      const net::URLRequest* request,
-      InstantRestrictedID most_visited_item_id,
-      GURL* url);
 
  protected:
    virtual ~InstantIOContext();
@@ -77,17 +62,10 @@ class InstantIOContext : public base::RefCountedThreadSafe<InstantIOContext> {
   // |process_ids_|.
   bool IsInstantProcess(int process_id) const;
 
-  bool GetURLForMostVisitedItemID(InstantRestrictedID most_visited_item_id,
-                                  GURL* url) const;
-
   // The process IDs associated with Instant processes.  Mirror of the process
   // IDs in InstantService.  Duplicated here for synchronous access on the IO
   // thread.
   std::set<int> process_ids_;
-
-  // The Most Visited item cache. Mirror of the Most Visited item cache in
-  // InstantService. Duplicated here for synchronous access on the IO thread.
-  InstantRestrictedIDCache<InstantMostVisitedItem> most_visited_item_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantIOContext);
 };

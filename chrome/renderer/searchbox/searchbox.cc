@@ -4,7 +4,10 @@
 
 #include "chrome/renderer/searchbox/searchbox.h"
 
+#include <string>
+
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/omnibox_focus_state.h"
@@ -12,6 +15,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "content/public/renderer/render_view.h"
+#include "googleurl/src/gurl.h"
 #include "grit/renderer_resources.h"
 #include "net/base/escape.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -25,6 +29,36 @@ namespace {
 const size_t kMaxInstantAutocompleteResultItemCacheSize = 100;
 
 }  // namespace
+
+namespace internal {  // for testing
+
+// Parses |url| and fills in |id| with the InstantRestrictedID obtained from the
+// |url|. |render_view_id| is the ID of the associated RenderView.
+//
+// Valid |url| forms:
+// chrome-search://favicon/<view_id>/<restricted_id>
+// chrome-search://thumb/<view_id>/<restricted_id>
+//
+// If the |url| is valid, returns true and fills in |id| with restricted_id
+// value. If the |url| is invalid, returns false and |id| is not set.
+bool GetInstantRestrictedIDFromURL(int render_view_id,
+                                   const GURL& url,
+                                   InstantRestrictedID* id) {
+  // Strip leading path.
+  std::string path = url.path().substr(1);
+
+  // Check that the path is of Most visited item ID form.
+  std::vector<std::string> tokens;
+  if (Tokenize(path, "/", &tokens) != 2)
+    return false;
+
+  int view_id = 0;
+  if (!base::StringToInt(tokens[0], &view_id) || view_id != render_view_id)
+    return false;
+  return base::StringToInt(tokens[1], id);
+}
+
+}  // namespace internal
 
 SearchBox::SearchBox(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
@@ -153,6 +187,38 @@ bool SearchBox::GetAutocompleteResultWithID(
 
 const ThemeBackgroundInfo& SearchBox::GetThemeBackgroundInfo() {
   return theme_info_;
+}
+
+bool SearchBox::GenerateThumbnailURLFromTransientURL(const GURL& transient_url,
+                                                     GURL* url) const {
+  InstantRestrictedID rid = 0;
+  if (!internal::GetInstantRestrictedIDFromURL(render_view()->GetRoutingID(),
+                                               transient_url, &rid)) {
+    return false;
+  }
+
+  GURL most_visited_item_url(GetURLForMostVisitedItem(rid));
+  if (most_visited_item_url.is_empty())
+    return false;
+  *url = GURL(base::StringPrintf("chrome-search://thumb/%s",
+                                 most_visited_item_url.spec().c_str()));
+  return true;
+}
+
+bool SearchBox::GenerateFaviconURLFromTransientURL(const GURL& transient_url,
+                                                   GURL* url) const {
+  InstantRestrictedID rid = 0;
+  if (!internal::GetInstantRestrictedIDFromURL(render_view()->GetRoutingID(),
+                                               transient_url, &rid)) {
+    return false;
+  }
+
+  GURL most_visited_item_url(GetURLForMostVisitedItem(rid));
+  if (most_visited_item_url.is_empty())
+    return false;
+  *url = GURL(base::StringPrintf("chrome-search://favicon/%s",
+                                 most_visited_item_url.spec().c_str()));
+  return true;
 }
 
 bool SearchBox::OnMessageReceived(const IPC::Message& message) {
@@ -407,9 +473,8 @@ void SearchBox::SetQuery(const string16& query, bool verbatim) {
 }
 
 void SearchBox::OnMostVisitedChanged(
-    const std::vector<InstantMostVisitedItemIDPair>& items) {
-  most_visited_items_cache_.AddItemsWithRestrictedID(items);
-
+    const std::vector<InstantMostVisitedItem>& items) {
+  most_visited_items_cache_.AddItems(items);
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     extensions_v8::SearchBoxExtension::DispatchMostVisitedChanged(
         render_view()->GetWebView()->mainFrame());

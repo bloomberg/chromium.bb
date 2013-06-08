@@ -35,23 +35,6 @@ class FaviconSourceTest : public testing::Test {
   virtual ~FaviconSourceTest() {
   }
 
-  // Adds a most visited item with |url| and an arbitrary title to the instant
-  // service and returns the assigned id.
-  int AddInstantMostVisitedUrlAndGetId(GURL url) {
-    InstantMostVisitedItem item;
-    item.url = GURL(url);
-    std::vector<InstantMostVisitedItem> items(1, item);
-
-    InstantService* instant_service =
-        InstantServiceFactory::GetForProfile(profile_.get());
-    instant_service->AddMostVisitedItems(items);
-
-    std::vector<InstantMostVisitedItemIDPair> items_with_ids;
-    instant_service->GetCurrentMostVisitedItems(&items_with_ids);
-    CHECK_EQ(1u, items_with_ids.size());
-    return items_with_ids[0].first;
-  }
-
   FaviconSource* favicon_source() const { return favicon_source_.get(); }
 
  private:
@@ -71,29 +54,16 @@ class FaviconSourceTest : public testing::Test {
 
 // Test parsing the chrome-search://favicon/ URLs
 TEST_F(FaviconSourceTest, InstantParsing) {
-  GURL kUrl1("http://www.google.com/");
-  GURL kUrl2("http://maps.google.com/");
-  int instant_id1 = AddInstantMostVisitedUrlAndGetId(kUrl1);
-  int instant_id2 = AddInstantMostVisitedUrlAndGetId(kUrl2);
-
+  const std::string path("chrome-search://favicon/http://www.google.com");
   bool is_icon_url;
   GURL url;
   int size_in_dip;
   ui::ScaleFactor scale_factor;
 
-  const std::string path1 = base::IntToString(instant_id1);
-  EXPECT_TRUE(favicon_source()->ParsePath(path1, &is_icon_url, &url,
+  EXPECT_TRUE(favicon_source()->ParsePath(path, &is_icon_url, &url,
       &size_in_dip, &scale_factor));
   EXPECT_FALSE(is_icon_url);
-  EXPECT_EQ(kUrl1, url);
-  EXPECT_EQ(16, size_in_dip);
-  EXPECT_EQ(ui::SCALE_FACTOR_100P, scale_factor);
-
-  const std::string path2 = base::IntToString(instant_id2);
-  EXPECT_TRUE(favicon_source()->ParsePath(path2, &is_icon_url, &url,
-      &size_in_dip, &scale_factor));
-  EXPECT_FALSE(is_icon_url);
-  EXPECT_EQ(kUrl2, url);
+  EXPECT_EQ(GURL(path), url);
   EXPECT_EQ(16, size_in_dip);
   EXPECT_EQ(ui::SCALE_FACTOR_100P, scale_factor);
 }

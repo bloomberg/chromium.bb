@@ -368,7 +368,7 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxFocusChanged,
                     OmniboxFocusChangeReason /* reason */)
 
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
-                    std::vector<InstantMostVisitedItemIDPair> /* items */)
+                    std::vector<InstantMostVisitedItem> /* items */)
 
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
                     GURL /* url */)
