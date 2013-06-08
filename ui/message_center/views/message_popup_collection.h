@@ -109,7 +109,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   virtual void OnNotificationUpdated(
       const std::string& notification_id) OVERRIDE;
 
-  bool HasToast(const std::string& notification_id);
+  ToastContentsView* FindToast(const std::string& notification_id);
 
   // While the toasts are animated, avoid updating the collection, to reduce
   // user confusion. Instead, update the collection when all animations are

@@ -216,6 +216,17 @@ NotificationList::PopupNotifications NotificationList::GetPopupNotifications() {
   return result;
 }
 
+Notification* NotificationList::GetPopup(const std::string& id) {
+  PopupNotifications popups = GetPopupNotifications();
+  for (PopupNotifications::iterator iter = popups.begin(); iter != popups.end();
+       ++iter) {
+    if ((*iter)->id() == id)
+      return *iter;
+  }
+
+  return NULL;
+}
+
 void NotificationList::MarkPopupsAsShown(int priority) {
   PopupNotifications popups = GetPopupNotifications();
   for (PopupNotifications::iterator iter = popups.begin();

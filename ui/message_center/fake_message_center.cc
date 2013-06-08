@@ -128,4 +128,10 @@ bool FakeMessageCenter::IsMessageCenterVisible() {
   return false;
 }
 
+void FakeMessageCenter::RestartPopupTimers() {}
+
+void FakeMessageCenter::PausePopupTimers() {}
+
+void FakeMessageCenter::DisableTimersForTest() {}
+
 }  // namespace message_center

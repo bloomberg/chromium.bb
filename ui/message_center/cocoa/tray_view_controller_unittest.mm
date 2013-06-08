@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_impl.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
 
@@ -17,6 +18,7 @@ class TrayViewControllerTest : public ui::CocoaTest {
     ui::CocoaTest::SetUp();
     message_center::MessageCenter::Initialize();
     center_ = message_center::MessageCenter::Get();
+    center_->DisableTimersForTest();
     tray_.reset([[MCTrayViewController alloc] initWithMessageCenter:center_]);
     [tray_ view];  // Create the view.
   }

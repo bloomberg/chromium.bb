@@ -94,6 +94,7 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // used to limit the number of notifications for the DEFAULT priority.
   // The returned list is sorted by timestamp, newer first.
   PopupNotifications GetPopupNotifications();
+  Notification* GetPopup(const std::string& id);
 
   // Marks the popups for the |priority| as shown.
   void MarkPopupsAsShown(int priority);

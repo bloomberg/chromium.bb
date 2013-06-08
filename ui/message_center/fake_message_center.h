@@ -62,6 +62,11 @@ class FakeMessageCenter : public MessageCenter {
       const base::TimeDelta& expires_in) OVERRIDE;
   virtual void SetMessageCenterVisible(bool visible) OVERRIDE;
   virtual bool IsMessageCenterVisible() OVERRIDE;
+  virtual void RestartPopupTimers() OVERRIDE;
+  virtual void PausePopupTimers() OVERRIDE;
+
+ protected:
+  virtual void DisableTimersForTest() OVERRIDE;
 
  private:
   const NotificationList::Notifications empty_notifications_;

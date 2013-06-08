@@ -145,6 +145,7 @@
         'cocoa/tray_controller_unittest.mm',
         'cocoa/tray_view_controller_unittest.mm',
         'message_center_tray_unittest.cc',
+        'message_center_impl_unittest.cc',
         'fake_message_center.h',
         'fake_message_center.cc',
         'notification_list_unittest.cc',

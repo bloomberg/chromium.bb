@@ -92,7 +92,7 @@ void MessagePopupCollection::UpdateWidgets() {
   // items may be ignored if there are no room to place them.
   for (NotificationList::PopupNotifications::const_reverse_iterator iter =
            popups.rbegin(); iter != popups.rend(); ++iter) {
-    if (HasToast((*iter)->id()))
+    if (FindToast((*iter)->id()))
       continue;
 
     MessageView* view =
@@ -130,9 +130,7 @@ void MessagePopupCollection::OnMouseEntered(ToastContentsView* toast_entered) {
   // toasts.  So we need to keep track of which one is the currently active one.
   latest_toast_entered_ = toast_entered;
 
-  for (Toasts::iterator iter = toasts_.begin(); iter != toasts_.end(); ++iter) {
-    (*iter)->SuspendTimer();
-  }
+  message_center_->PausePopupTimers();
 
   if (user_is_closing_toasts_by_clicking_)
     defer_timer_->Stop();
@@ -152,11 +150,7 @@ void MessagePopupCollection::OnMouseExited(ToastContentsView* toast_exited) {
         this,
         &MessagePopupCollection::OnDeferTimerExpired);
   } else {
-    for (Toasts::iterator iter = toasts_.begin();
-         iter != toasts_.end();
-         ++iter) {
-      (*iter)->StartTimer();
-    }
+    message_center_->RestartPopupTimers();
   }
 }
 
@@ -277,9 +271,7 @@ void MessagePopupCollection::OnDeferTimerExpired() {
   user_is_closing_toasts_by_clicking_ = false;
   DecrementDeferCounter();
 
-  for (Toasts::iterator iter = toasts_.begin(); iter != toasts_.end(); ++iter) {
-    (*iter)->StartTimer();
-  }
+  message_center_->RestartPopupTimers();
 }
 
 void MessagePopupCollection::OnNotificationUpdated(
@@ -305,7 +297,6 @@ void MessagePopupCollection::OnNotificationUpdated(
     MessageView* view = NotificationView::Create(
         *(*iter), message_center_, true);
     (*toast_iter)->SetContents(view);
-    (*toast_iter)->ResetTimeout((*iter)->priority());
     updated = true;
   }
 
@@ -325,12 +316,13 @@ void MessagePopupCollection::SetWorkAreaForTest(const gfx::Rect& work_area) {
   work_area_ = work_area;
 }
 
-bool MessagePopupCollection::HasToast(const std::string& notification_id) {
+ToastContentsView* MessagePopupCollection::FindToast(
+    const std::string& notification_id) {
   for (Toasts::iterator iter = toasts_.begin(); iter != toasts_.end(); ++iter) {
     if ((*iter)->id() == notification_id)
-      return true;
+      return *iter;
   }
-  return false;
+  return NULL;
 }
 
 void MessagePopupCollection::IncrementDeferCounter() {
