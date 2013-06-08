@@ -34,7 +34,7 @@ class InMemoryURLIndex;
 class RefCountedBool;
 
 // Current version of the cache file.
-static const int kCurrentCacheFileVersion = 2;
+static const int kCurrentCacheFileVersion = 3;
 
 // A structure private to InMemoryURLIndex describing its internal data and
 // providing for restoring, rebuilding and updating that internal data. As
@@ -153,6 +153,7 @@ class URLIndexPrivateData
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CacheSaveRestore);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, HugeResultSet);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, ReadVisitsFromHistory);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, RebuildFromHistoryIfCacheOld);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, Scoring);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TitleSearch);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, TypedCharacterCaching);
@@ -334,6 +335,9 @@ class URLIndexPrivateData
   // of the private data. If the private data was rebuilt from the history
   // database this will be 0.
   int restored_cache_version_;
+
+  // The last time the data was rebuilt from the history database.
+  base::Time last_time_rebuilt_from_history_;
 
   // A list of all of indexed words. The index of a word in this list is the
   // ID of the word in the word_map_. It reduces the memory overhead by

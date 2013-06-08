@@ -444,6 +444,7 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RebuildFromHistory(
   URLDatabase::URLEnumerator history_enum;
   if (!history_db->InitURLEnumeratorForSignificant(&history_enum))
     return NULL;
+  rebuilt_data->last_time_rebuilt_from_history_ = base::Time::Now();
   for (URLRow row; history_enum.GetNextURL(&row); ) {
     rebuilt_data->IndexRow(history_db, NULL, row, languages,
                            scheme_whitelist);
@@ -475,6 +476,7 @@ void URLIndexPrivateData::CancelPendingUpdates() {
 
 scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::Duplicate() const {
   scoped_refptr<URLIndexPrivateData> data_copy = new URLIndexPrivateData;
+  data_copy->last_time_rebuilt_from_history_ = last_time_rebuilt_from_history_;
   data_copy->word_list_ = word_list_;
   data_copy->available_words_ = available_words_;
   data_copy->word_map_ = word_map_;
@@ -496,6 +498,7 @@ bool URLIndexPrivateData::Empty() const {
 }
 
 void URLIndexPrivateData::Clear() {
+  last_time_rebuilt_from_history_ = base::Time();
   word_list_.clear();
   available_words_.clear();
   word_map_.clear();
@@ -908,7 +911,8 @@ bool URLIndexPrivateData::SaveToFile(const base::FilePath& file_path) {
 void URLIndexPrivateData::SavePrivateData(
     InMemoryURLIndexCacheItem* cache) const {
   DCHECK(cache);
-  cache->set_timestamp(base::Time::Now().ToInternalValue());
+  cache->set_last_rebuild_timestamp(
+      last_time_rebuilt_from_history_.ToInternalValue());
   cache->set_version(saved_cache_version_);
   // history_item_count_ is no longer used but rather than change the protobuf
   // definition use a placeholder. This will go away with the switch to SQLite.
@@ -1040,6 +1044,19 @@ void URLIndexPrivateData::SaveWordStartsMap(
 bool URLIndexPrivateData::RestorePrivateData(
     const InMemoryURLIndexCacheItem& cache,
     const std::string& languages) {
+  last_time_rebuilt_from_history_ =
+      base::Time::FromInternalValue(cache.last_rebuild_timestamp());
+  const base::TimeDelta rebuilt_ago =
+      base::Time::Now() - last_time_rebuilt_from_history_;
+  if ((rebuilt_ago > base::TimeDelta::FromDays(7)) ||
+      (rebuilt_ago < base::TimeDelta::FromDays(-1))) {
+    // Cache is more than a week old or, somehow, from some time in the future.
+    // It's probably a good time to rebuild the index from history to
+    // allow synced entries to now appear, expired entries to disappear, etc.
+    // Allow one day in the future to make the cache not rebuild on simple
+    // system clock changes such as time zone changes.
+    return false;
+  }
   if (cache.has_version()) {
     if (cache.version() < kCurrentCacheFileVersion) {
       // Don't try to restore an old format cache file.  (This will cause

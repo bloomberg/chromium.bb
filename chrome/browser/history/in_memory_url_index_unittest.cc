@@ -1018,6 +1018,7 @@ TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
 
   // Capture the current private data for later comparison to restored data.
   scoped_refptr<URLIndexPrivateData> old_data(private_data.Duplicate());
+  const base::Time rebuild_time = private_data.last_time_rebuilt_from_history_;
 
   // Save then restore our private data.
   CacheFileSaverObserver save_observer(&message_loop_);
@@ -1048,8 +1049,78 @@ TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
 
   // Make sure the data we have was reloaded from cache.  (Version 0
   // means rebuilt from history; anything else means restored from
-  // a cache version.)
+  // a cache version.)  Also, the rebuild time should not have changed.
   EXPECT_GT(new_data.restored_cache_version_, 0);
+  EXPECT_EQ(rebuild_time, new_data.last_time_rebuilt_from_history_);
+
+  // Compare the captured and restored for equality.
+  ExpectPrivateDataEqual(*old_data.get(), new_data);
+}
+
+TEST_F(InMemoryURLIndexTest, RebuildFromHistoryIfCacheOld) {
+  base::ScopedTempDir temp_directory;
+  ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
+  set_history_dir(temp_directory.path());
+
+  URLIndexPrivateData& private_data(*GetPrivateData());
+
+  // Ensure that there is really something there to be saved.
+  EXPECT_FALSE(private_data.word_list_.empty());
+  // available_words_ will already be empty since we have freshly built the
+  // data set for this test.
+  EXPECT_TRUE(private_data.available_words_.empty());
+  EXPECT_FALSE(private_data.word_map_.empty());
+  EXPECT_FALSE(private_data.char_word_map_.empty());
+  EXPECT_FALSE(private_data.word_id_history_map_.empty());
+  EXPECT_FALSE(private_data.history_id_word_map_.empty());
+  EXPECT_FALSE(private_data.history_info_map_.empty());
+  EXPECT_FALSE(private_data.word_starts_map_.empty());
+
+  // Make sure the data we have was built from history.  (Version 0
+  // means rebuilt from history.)
+  EXPECT_EQ(0, private_data.restored_cache_version_);
+
+  // Overwrite the build time so that we'll think the data is too old
+  // and rebuild the cache from history.
+  const base::Time fake_rebuild_time =
+      base::Time::Now() - base::TimeDelta::FromDays(30);
+  private_data.last_time_rebuilt_from_history_ = fake_rebuild_time;
+
+  // Capture the current private data for later comparison to restored data.
+  scoped_refptr<URLIndexPrivateData> old_data(private_data.Duplicate());
+
+  // Save then restore our private data.
+  CacheFileSaverObserver save_observer(&message_loop_);
+  url_index_->set_save_cache_observer(&save_observer);
+  PostSaveToCacheFileTask();
+  message_loop_.Run();
+  EXPECT_TRUE(save_observer.succeeded_);
+
+  // Clear and then prove it's clear before restoring.
+  ClearPrivateData();
+  EXPECT_TRUE(private_data.word_list_.empty());
+  EXPECT_TRUE(private_data.available_words_.empty());
+  EXPECT_TRUE(private_data.word_map_.empty());
+  EXPECT_TRUE(private_data.char_word_map_.empty());
+  EXPECT_TRUE(private_data.word_id_history_map_.empty());
+  EXPECT_TRUE(private_data.history_id_word_map_.empty());
+  EXPECT_TRUE(private_data.history_info_map_.empty());
+  EXPECT_TRUE(private_data.word_starts_map_.empty());
+
+  HistoryIndexRestoreObserver restore_observer(
+      base::Bind(&base::MessageLoop::Quit, base::Unretained(&message_loop_)));
+  url_index_->set_restore_cache_observer(&restore_observer);
+  PostRestoreFromCacheFileTask();
+  message_loop_.Run();
+  EXPECT_TRUE(restore_observer.succeeded());
+
+  URLIndexPrivateData& new_data(*GetPrivateData());
+
+  // Make sure the data we have was rebuilt from history.  (Version 0
+  // means rebuilt from history; anything else means restored from
+  // a cache version.)
+  EXPECT_EQ(0, new_data.restored_cache_version_);
+  EXPECT_NE(fake_rebuild_time, new_data.last_time_rebuilt_from_history_);
 
   // Compare the captured and restored for equality.
   ExpectPrivateDataEqual(*old_data.get(), new_data);
