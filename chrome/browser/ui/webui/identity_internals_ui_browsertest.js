@@ -66,6 +66,15 @@ BaseIdentityInternalsWebUITest.prototype = {
   },
 
   /**
+   * Gets the revoke button of the token entry.
+   * @param {Element} tokenEntry Diplsy element holding token information.
+   * @return {HTMLButtonElement} Revoke button belonging related to the token.
+   */
+  getRevokeButton: function(tokenEntry) {
+    return tokenEntry.querySelector('.revoke-button');
+  },
+
+  /**
    * Gets the token ID displayed on the page for a given entry.
    * @param {Element} tokenEntry Display element holding token information.
    * @return {string} Token ID of the token.
@@ -212,5 +221,36 @@ TEST_F('IdentityInternalsMultipleTokensWebUITest', 'getAllTokens', function() {
   expectEquals('scope_1_1', scopes[0]);
   expectEquals('scope_2_1', scopes[1]);
   expectEquals('', scopes[2]);
+});
+
+/**
+ * Fixture for asynchronous testing of Identity Internals Web UI with multiple
+ * tokens in Identity API token cache.
+ * @extends {IdentityInternalsMultipleTokensWebUITest}
+ * @constructor
+ */
+function IdentityInternalsWebUITestAsync() {}
+
+IdentityInternalsWebUITestAsync.prototype = {
+  __proto__: IdentityInternalsMultipleTokensWebUITest.prototype,
+
+  /** @inhritDoc */
+  isAsync: true,
+};
+
+TEST_F('IdentityInternalsWebUITestAsync', 'revokeToken', function() {
+  var tokenListBefore = this.getTokens();
+  expectEquals(2, tokenListBefore.length);
+  var tokenRevokeDone = identity_internals.tokenRevokeDone;
+  identity_internals.tokenRevokeDone = this.continueTest(
+      WhenTestDone.ALWAYS, function (tokenIds) {
+        tokenRevokeDone.call(identity_internals, tokenIds);
+        identity_internals.tokenRevokeDone = tokenRevokeDone;
+        var tokenListAfter = this.getTokens();
+        expectEquals(1, tokenListAfter.length);
+        expectEquals(this.getTokenId(tokenListBefore[0]),
+                     this.getTokenId(tokenListAfter[0]));
+      }.bind(this));
+  this.getRevokeButton(tokenListBefore[1]).click();
 });
 
