@@ -32,7 +32,7 @@ class CachedRawResourceClient;
 
 class CachedRawResource : public CachedResource {
 public:
-    CachedRawResource(const ResourceRequest&, Type);
+    CachedRawResource(ResourceRequest&, Type);
 
     // FIXME: AssociatedURLLoader shouldn't be a DocumentThreadableLoader and therefore shouldn't
     // use CachedRawResource. However, it is, and it needs to be able to defer loading.
