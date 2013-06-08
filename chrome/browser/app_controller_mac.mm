@@ -967,7 +967,7 @@ void RecordLastRunAppBundlePath() {
 // dock icon and there are no open windows.  To match standard mac
 // behavior, we should open a new window.
 - (BOOL)applicationShouldHandleReopen:(NSApplication*)theApplication
-                    hasVisibleWindows:(BOOL)flag {
+                    hasVisibleWindows:(BOOL)hasVisibleWindows {
   // If the browser is currently trying to quit, don't do anything and return NO
   // to prevent AppKit from doing anything.
   // TODO(rohitrao): Remove this code when http://crbug.com/40861 is resolved.
@@ -978,7 +978,7 @@ void RecordLastRunAppBundlePath() {
   // cause AppKit to unminimize the most recently minimized window. If the
   // visible windows are panels or notifications, we still need to open a new
   // window.
-  if (flag) {
+  if (hasVisibleWindows) {
     for (chrome::BrowserIterator iter; !iter.done(); iter.Next()) {
       Browser* browser = *iter;
       if (browser->is_type_tabbed() || browser->is_type_popup())
@@ -1005,21 +1005,27 @@ void RecordLastRunAppBundlePath() {
   }
 
   // Platform apps don't use browser windows so don't do anything if there are
-  // visible windows.
+  // visible windows, otherwise, launch the browser with the same command line
+  // which should launch the app again.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (flag && command_line.HasSwitch(switches::kAppId))
-    return YES;
+  if (command_line.HasSwitch(switches::kAppId)) {
+    if (hasVisibleWindows)
+      return YES;
+
+    {
+      base::AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
+      int return_code;
+      StartupBrowserCreator browser_creator;
+      browser_creator.LaunchBrowser(
+          command_line, [self lastProfile], base::FilePath(),
+          chrome::startup::IS_NOT_PROCESS_STARTUP,
+          chrome::startup::IS_NOT_FIRST_RUN, &return_code);
+    }
+    return NO;
+  }
 
   // Otherwise open a new window.
-  {
-    base::AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
-    int return_code;
-    StartupBrowserCreator browser_creator;
-    browser_creator.LaunchBrowser(
-        command_line, [self lastProfile], base::FilePath(),
-        chrome::startup::IS_NOT_PROCESS_STARTUP,
-        chrome::startup::IS_NOT_FIRST_RUN, &return_code);
-  }
+  CreateBrowser([self lastProfile]);
 
   // We've handled the reopen event, so return NO to tell AppKit not
   // to do anything.

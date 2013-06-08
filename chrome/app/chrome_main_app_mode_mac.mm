@@ -344,18 +344,31 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
   io_thread->StartWithOptions(io_thread_options);
   g_io_thread = io_thread;
 
+  // Find already running instances of Chrome.
+  NSString* chrome_bundle_path =
+      base::SysUTF8ToNSString(g_info->chrome_outer_bundle_path.value());
+  NSBundle* chrome_bundle = [NSBundle bundleWithPath:chrome_bundle_path];
+  NSArray* existing_chrome = [NSRunningApplication
+      runningApplicationsWithBundleIdentifier:[chrome_bundle bundleIdentifier]];
+
   // Launch Chrome if it isn't already running.
-  // TODO(jeremya): this opens a new browser window if Chrome is already
-  // running without any windows open.
-  CommandLine command_line(CommandLine::NO_PROGRAM);
-  command_line.AppendSwitch(switches::kSilentLaunch);
   ProcessSerialNumber psn;
-  bool success =
-      base::mac::OpenApplicationWithPath(info->chrome_outer_bundle_path,
-                                         command_line,
-                                         &psn);
-  if (!success)
-    return 1;
+  if ([existing_chrome count] > 0) {
+    OSStatus status = GetProcessForPID(
+        [[existing_chrome objectAtIndex:0] processIdentifier], &psn);
+    if (status)
+      return 1;
+
+  } else {
+    CommandLine command_line(CommandLine::NO_PROGRAM);
+    command_line.AppendSwitch(switches::kSilentLaunch);
+    bool success =
+        base::mac::OpenApplicationWithPath(info->chrome_outer_bundle_path,
+                                           command_line,
+                                           &psn);
+    if (!success)
+      return 1;
+  }
 
   // This code abuses the fact that Apple Events sent before the process is
   // fully initialized don't receive a reply until its run loop starts. Once
