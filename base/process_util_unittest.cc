@@ -466,6 +466,15 @@ TEST_F(ProcessUtilTest, CalcFreeMemory) {
       base::ProcessMetrics::CreateProcessMetrics(::GetCurrentProcess()));
   ASSERT_TRUE(NULL != metrics.get());
 
+  bool using_tcmalloc = false;
+
+  // Detect if we are using tcmalloc
+#if !defined(NO_TCMALLOC)
+  const char* chrome_allocator = getenv("CHROME_ALLOCATOR");
+  if (!chrome_allocator || _stricmp(chrome_allocator, "tcmalloc") == 0)
+    using_tcmalloc = true;
+#endif
+
   // Typical values here is ~1900 for total and ~1000 for largest. Obviously
   // it depends in what other tests have done to this process.
   base::FreeMBytes free_mem1 = {0};
@@ -486,7 +495,11 @@ TEST_F(ProcessUtilTest, CalcFreeMemory) {
   base::FreeMBytes free_mem2 = {0};
   EXPECT_TRUE(metrics->CalculateFreeMemory(&free_mem2));
   EXPECT_GE(free_mem2.total, free_mem2.largest);
-  EXPECT_GE(expected_total, free_mem2.total);
+  // This test is flaky when using tcmalloc, because tcmalloc
+  // allocation strategy sometimes results in less than the
+  // full drop of 20Mb of free memory.
+  if (!using_tcmalloc)
+    EXPECT_GE(expected_total, free_mem2.total);
   EXPECT_GE(expected_largest, free_mem2.largest);
   EXPECT_TRUE(NULL != free_mem2.largest_ptr);
 }
