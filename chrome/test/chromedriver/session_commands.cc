@@ -97,18 +97,6 @@ Status ExecuteGetSessionCapabilities(
   return Status(kOk);
 }
 
-Status ExecuteQuit(
-    bool allow_detach,
-    SessionMap* session_map,
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value) {
-  CHECK(session_map->Remove(session->id));
-  if (allow_detach && session->detach)
-    return Status(kOk);
-  return session->chrome->Quit();
-}
-
 Status ExecuteGetCurrentWindowHandle(
     Session* session,
     const base::DictionaryValue& params,
@@ -146,9 +134,11 @@ Status ExecuteClose(
   status = session->chrome->GetWebViewIds(&web_view_ids);
   if ((status.code() == kChromeNotReachable && is_last_web_view) ||
       (status.IsOk() && web_view_ids.empty())) {
+    // If no window is open, close is the equivalent of calling "quit".
     CHECK(session_map->Remove(session->id));
-    return Status(kOk);
+    return session->chrome->Quit();
   }
+
   return status;
 }
 

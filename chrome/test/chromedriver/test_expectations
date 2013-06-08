@@ -63,7 +63,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'ProxySettingTest.canConfigureProxyWithRequiredCapability',
     'ProxySettingTest.requiredProxyCapabilityShouldHavePriority',
     'RenderedWebElementTest.testShouldHandleNonIntegerPositionAndSize',
-    'SessionHandlingTest.callingQuitAfterClosingTheLastWindowIsANoOp',
     # Broken because AddWebStorage.java is broken.
     'SessionStorageTest.*',
     'SqlDatabaseTest.*',
@@ -183,6 +182,7 @@ _OS_NEGATIVE_FILTER['android'] = [
     'SelectElementTest.shouldAllowUserToDeselectAllWhenSelectSupportsMultipleSelections',
     'SelectElementTest.shouldAllowUserToDeselectOptionsByVisibleText',
     'SessionHandlingTest.callingAnyOperationAfterClosingTheLastWindowShouldThrowAnException',
+    'SessionHandlingTest.callingQuitAfterClosingTheLastWindowIsANoOp',
     'TakesScreenshotTest.testCaptureToBase64',
     'TakesScreenshotTest.testSaveScreenshotAsFile',
     'TextHandlingTest.testShouldBeAbleToEnterDatesAfterFillingInOtherValuesFirst',

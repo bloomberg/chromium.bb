@@ -41,14 +41,6 @@ Status ExecuteGetSessionCapabilities(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
-// Quits a particular session.
-Status ExecuteQuit(
-    bool allow_detach,
-    SessionMap* session_map,
-    Session* session,
-    const base::DictionaryValue& params,
-    scoped_ptr<base::Value>* value);
-
 // Retrieve the handle of the target window.
 Status ExecuteGetCurrentWindowHandle(
     Session* session,

@@ -54,6 +54,15 @@ Status ExecuteNewSession(
     scoped_ptr<base::Value>* out_value,
     std::string* out_session_id);
 
+// Quits a particular session.
+Status ExecuteQuit(
+    bool allow_detach,
+    SessionMap* session_map,
+    const base::DictionaryValue& params,
+    const std::string& session_id,
+    scoped_ptr<base::Value>* out_value,
+    std::string* out_session_id);
+
 // Quits all sessions.
 Status ExecuteQuitAll(
     Command quit_command,

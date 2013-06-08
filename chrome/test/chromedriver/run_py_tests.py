@@ -614,6 +614,14 @@ class ChromeLogPathCapabilityTest(ChromeDriverBaseTest):
     self.assertTrue(self.LOG_MESSAGE in open(tmp_log_path.name).read())
 
 
+class SessionHandlingTest(ChromeDriverBaseTest):
+  """Tests for session operations."""
+  def testQuitASessionMoreThanOnce(self):
+    driver = self.CreateDriver()
+    driver.Quit()
+    driver.Quit()
+
+
 class PerfTest(ChromeDriverBaseTest):
   """Tests for ChromeDriver perf."""
   def setUp(self):

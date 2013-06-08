@@ -6,6 +6,7 @@
 
 #include <list>
 
+#include "base/logging.h"  // For CHECK macros.
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
@@ -127,6 +128,32 @@ Status ExecuteNewSession(
   bound_params.session_map->Set(new_id, accessor);
 
   return Status(kOk);
+}
+
+Status ExecuteQuit(
+    bool allow_detach,
+    SessionMap* session_map,
+    const base::DictionaryValue& params,
+    const std::string& session_id,
+    scoped_ptr<base::Value>* out_value,
+    std::string* out_session_id) {
+  *out_session_id = session_id;
+  scoped_refptr<SessionAccessor> session_accessor;
+  if (!session_map->Get(session_id, &session_accessor))
+    return Status(kOk);
+  scoped_ptr<base::AutoLock> session_lock;
+  Session* session = session_accessor->Access(&session_lock);
+  if (!session)
+    return Status(kOk);
+  CHECK(session_map->Remove(session->id));
+  if (allow_detach && session->detach) {
+    session_accessor->DeleteSession();
+    return Status(kOk);
+  } else {
+    Status status = session->chrome->Quit();
+    session_accessor->DeleteSession();
+    return status;
+  }
 }
 
 Status ExecuteQuitAll(
