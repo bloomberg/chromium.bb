@@ -309,6 +309,9 @@ bool GLSurfaceGLX::InitializeOneOff() {
   if (initialized)
     return true;
 
+  // http://crbug.com/245466
+  setenv("force_s3tc_enable", "true", 1);
+
   // SGIVideoSyncProviderShim (if instantiated) will issue X commands on
   // it's own thread.
   XInitThreads();
