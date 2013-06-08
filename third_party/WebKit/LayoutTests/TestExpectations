@@ -1755,6 +1755,8 @@ crbug.com/247887 [ Mac Debug ] fast/text/custom-font-data-crash.html [ Crash ]
 crbug.com/247887 [ Mac Debug ] svg/css/font-face-variant-crash.html [ Crash ]
 crbug.com/247888 fast/workers/worker-cloneport.html [ Failure Pass Timeout ]
 
+crbug.com/247889 [ Win ] http/tests/navigation/back-send-referrer.html [ Pass Timeout ]
+
 # Needs new pixel baselines on other platforms
 Bug(jamesr) compositing/video/video-controls-layer-creation.html [ ImageOnlyFailure Pass ]
 Bug(jamesr) virtual/softwarecompositing/video/video-controls-layer-creation.html [ ImageOnlyFailure Pass ]
