@@ -181,7 +181,7 @@ public class AutofillDialogUtils {
                         return R.id.billing_zip_code;
                     case AutofillDialogConstants.ADDRESS_BILLING_COUNTRY :
                         return R.id.billing_country_spinner;
-                    case AutofillDialogConstants.PHONE_HOME_WHOLE_NUMBER :
+                    case AutofillDialogConstants.PHONE_BILLING_WHOLE_NUMBER:
                         return R.id.billing_phone_number;
                     default:
                         assert(false);
@@ -211,7 +211,7 @@ public class AutofillDialogUtils {
                         return R.id.billing_zip_code;
                     case AutofillDialogConstants.ADDRESS_BILLING_COUNTRY :
                         return R.id.billing_country_spinner;
-                    case AutofillDialogConstants.PHONE_HOME_WHOLE_NUMBER :
+                    case AutofillDialogConstants.PHONE_BILLING_WHOLE_NUMBER :
                         return R.id.billing_phone_number;
                     default:
                         assert(false);

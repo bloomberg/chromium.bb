@@ -103,6 +103,13 @@ public class AutofillDialogConstants {
     // Generic type whose default value is known.
     public static final int FIELD_WITH_DEFAULT_VALUE = 61;
 
+    public static final int PHONE_BILLING_NUMBER = 62;
+    public static final int PHONE_BILLING_CITY_CODE = 63;
+    public static final int PHONE_BILLING_COUNTRY_CODE = 64;
+    public static final int PHONE_BILLING_CITY_AND_NUMBER = 65;
+    public static final int PHONE_BILLING_WHOLE_NUMBER = 66;
+
     // No new types can be added.
-    public static final int MAX_VALID_FIELD_TYPE = 62;
+
+    public static final int MAX_VALID_FIELD_TYPE = 67;
 }
