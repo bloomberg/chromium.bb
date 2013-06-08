@@ -9,6 +9,7 @@
 #include "android_webview/public/browser/draw_gl.h"
 #include "android_webview/public/browser/draw_sw.h"
 #include "base/android/jni_android.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "content/public/browser/android/content_view_core.h"
@@ -316,8 +317,8 @@ void InProcessViewRenderer::WebContentsGone() {
 bool InProcessViewRenderer::PrepareDrawGL(int x, int y) {
   // No harm in updating |hw_rendering_scroll_| even if we return false.
   hw_rendering_scroll_ = gfx::Point(x, y);
-  return attached_to_window_ && compositor_ && compositor_->IsHwReady() &&
-      !hardware_failed_;
+  return attached_to_window_ && compositor_ && !hardware_failed_ &&
+         CommandLine::ForCurrentProcess()->HasSwitch("testing-webview-gl-mode");
 }
 
 void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
@@ -334,9 +335,12 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   GLStateRestore state_restore;
 
   if (attached_to_window_ && compositor_ && !hardware_initialized_) {
-    // TODO(boliu): Actually initialize the compositor GL path.
+    hardware_failed_ = !compositor_->InitializeHwDraw();
     hardware_initialized_ = true;
     egl_context_at_init_ = current_context;
+
+    if (hardware_failed_)
+      return;
   }
 
   if (draw_info->mode == AwDrawGLInfo::kModeProcess)

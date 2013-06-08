@@ -53,11 +53,11 @@ class SynchronousCompositorOutputSurface
   virtual void SwapBuffers(const ui::LatencyInfo& info) OVERRIDE;
 
   // Partial SynchronousCompositor API implementation.
-  bool IsHwReady();
-  bool DemandDrawSw(SkCanvas* canvas);
+  bool InitializeHwDraw();
   bool DemandDrawHw(gfx::Size surface_size,
                     const gfx::Transform& transform,
                     gfx::Rect clip);
+  bool DemandDrawSw(SkCanvas* canvas);
 
  private:
   class SoftwareDevice;

@@ -38,14 +38,14 @@ class SynchronousCompositorImpl
   InputEventAckState HandleInputEvent(const WebKit::WebInputEvent& input_event);
 
   // SynchronousCompositor
-  virtual bool IsHwReady() OVERRIDE;
   virtual void SetClient(SynchronousCompositorClient* compositor_client)
       OVERRIDE;
-  virtual bool DemandDrawSw(SkCanvas* canvas) OVERRIDE;
+  virtual bool InitializeHwDraw() OVERRIDE;
   virtual bool DemandDrawHw(
       gfx::Size view_size,
       const gfx::Transform& transform,
       gfx::Rect clip) OVERRIDE;
+  virtual bool DemandDrawSw(SkCanvas* canvas) OVERRIDE;
 
   // SynchronousCompositorOutputSurfaceDelegate
   virtual void DidBindOutputSurface(

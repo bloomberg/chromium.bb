@@ -120,24 +120,16 @@ SynchronousCompositorImpl::~SynchronousCompositorImpl() {
     compositor_client_->DidDestroyCompositor(this);
 }
 
-bool SynchronousCompositorImpl::IsHwReady() {
-  DCHECK(CalledOnValidThread());
-  DCHECK(output_surface_);
-
-  return output_surface_->IsHwReady();
-}
-
 void SynchronousCompositorImpl::SetClient(
     SynchronousCompositorClient* compositor_client) {
   DCHECK(CalledOnValidThread());
   compositor_client_ = compositor_client;
 }
 
-bool SynchronousCompositorImpl::DemandDrawSw(SkCanvas* canvas) {
+bool SynchronousCompositorImpl::InitializeHwDraw() {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
-
-  return output_surface_->DemandDrawSw(canvas);
+  return output_surface_->InitializeHwDraw();
 }
 
 bool SynchronousCompositorImpl::DemandDrawHw(
@@ -148,6 +140,13 @@ bool SynchronousCompositorImpl::DemandDrawHw(
   DCHECK(output_surface_);
 
   return output_surface_->DemandDrawHw(view_size, transform, damage_area);
+}
+
+bool SynchronousCompositorImpl::DemandDrawSw(SkCanvas* canvas) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(output_surface_);
+
+  return output_surface_->DemandDrawSw(canvas);
 }
 
 void SynchronousCompositorImpl::DidBindOutputSurface(

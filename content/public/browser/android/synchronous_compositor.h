@@ -36,13 +36,9 @@ class SynchronousCompositor {
   // the caller.
   virtual void SetClient(SynchronousCompositorClient* client) = 0;
 
-  // Returns true if the compositor is fully initialized and ready to receive
-  // calls to DemandDrawHw().
-  virtual bool IsHwReady() = 0;
-
-  // "On demand" SW draw, into the supplied canvas (observing the transform
-  // and clip set there-in).
-  virtual bool DemandDrawSw(SkCanvas* canvas) = 0;
+  // One-time synchronously initialize compositor for hardware draw.
+  // It is invalid to DemandDrawHw before this returns true.
+  virtual bool InitializeHwDraw() = 0;
 
   // "On demand" hardware draw. The content is first clipped to |damage_area|,
   // then transformed through |transform|, and finally clipped to |view_size|.
@@ -50,6 +46,10 @@ class SynchronousCompositor {
       gfx::Size view_size,
       const gfx::Transform& transform,
       gfx::Rect damage_area) = 0;
+
+  // "On demand" SW draw, into the supplied canvas (observing the transform
+  // and clip set there-in).
+  virtual bool DemandDrawSw(SkCanvas* canvas) = 0;
 
  protected:
   virtual ~SynchronousCompositor() {}

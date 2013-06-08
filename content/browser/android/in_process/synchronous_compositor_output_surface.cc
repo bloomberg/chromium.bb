@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
+#include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
@@ -34,9 +35,6 @@ namespace {
 
 // TODO(boliu): RenderThreadImpl should create in process contexts as well.
 scoped_ptr<WebKit::WebGraphicsContext3D> CreateWebGraphicsContext3D() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch("testing-webview-gl-mode"))
-    return scoped_ptr<WebKit::WebGraphicsContext3D>();
-
   WebKit::WebGraphicsContext3D::Attributes attributes;
   attributes.antialias = false;
   attributes.shareResources = true;
@@ -84,7 +82,6 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
 SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
     int routing_id)
     : cc::OutputSurface(
-          CreateWebGraphicsContext3D(),
           scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareDevice(this))),
       routing_id_(routing_id),
       needs_begin_frame_(false),
@@ -143,10 +140,6 @@ void SynchronousCompositorOutputSurface::SwapBuffers(
   did_swap_buffer_ = true;
 }
 
-bool SynchronousCompositorOutputSurface::IsHwReady() {
-  return context3d() != NULL;
-}
-
 namespace {
 void AdjustTransformForClip(gfx::Transform* transform, gfx::Rect clip) {
   // The system-provided transform translates us from the screen origin to the
@@ -154,6 +147,45 @@ void AdjustTransformForClip(gfx::Transform* transform, gfx::Rect clip) {
   transform->matrix().postTranslate(-clip.x(), -clip.y(), 0);
 }
 } // namespace
+
+bool SynchronousCompositorOutputSurface::InitializeHwDraw() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(client_);
+  DCHECK(!context3d_);
+
+  // TODO(boliu): Get a context provider in constructor and pass here.
+  return InitializeAndSetContext3D(CreateWebGraphicsContext3D().Pass(),
+                                   scoped_refptr<cc::ContextProvider>());
+}
+
+bool SynchronousCompositorOutputSurface::DemandDrawHw(
+    gfx::Size surface_size,
+    const gfx::Transform& transform,
+    gfx::Rect clip) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(client_);
+  DCHECK(context3d());
+
+  // Force a GL state restore next time a GLContextVirtual is made current.
+  // TODO(boliu): Move this to the end of this function after we have fixed
+  // all cases of MakeCurrent calls outside of draws. Tracked in
+  // crbug.com/239856.
+  gfx::GLContext* current_context = gfx::GLContext::GetCurrent();
+  if (current_context)
+    current_context->ReleaseCurrent(NULL);
+
+  did_swap_buffer_ = false;
+
+  gfx::Transform adjusted_transform = transform;
+  AdjustTransformForClip(&adjusted_transform, clip);
+  surface_size_ = surface_size;
+  client_->SetExternalDrawConstraints(adjusted_transform, clip);
+  InvokeComposite(clip.size());
+
+  // TODO(boliu): Check if context is lost here.
+
+  return did_swap_buffer_;
+}
 
 bool SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
   DCHECK(CalledOnValidThread());
@@ -178,33 +210,6 @@ bool SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
   bool finished_draw = current_sw_canvas_ == NULL;
   current_sw_canvas_ = NULL;
   return finished_draw;
-}
-
-bool SynchronousCompositorOutputSurface::DemandDrawHw(
-      gfx::Size surface_size,
-      const gfx::Transform& transform,
-      gfx::Rect clip) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(client_);
-  DCHECK(context3d());
-
-  // Force a GL state restore next time a GLContextVirtual is made current.
-  // TODO(boliu): Move this to the end of this function after we have fixed
-  // all cases of MakeCurrent calls outside of draws. Tracked in
-  // crbug.com/239856.
-  gfx::GLContext* current_context = gfx::GLContext::GetCurrent();
-  if (current_context)
-    current_context->ReleaseCurrent(NULL);
-
-  did_swap_buffer_ = false;
-
-  gfx::Transform adjusted_transform = transform;
-  AdjustTransformForClip(&adjusted_transform, clip);
-  surface_size_ = surface_size;
-  client_->SetExternalDrawConstraints(adjusted_transform, clip);
-  InvokeComposite(clip.size());
-
-  return did_swap_buffer_;
 }
 
 void SynchronousCompositorOutputSurface::InvokeComposite(
