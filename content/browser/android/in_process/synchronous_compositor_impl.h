@@ -63,7 +63,6 @@ class SynchronousCompositorImpl
       SynchronousCompositorOutputSurface* output_surface);
   bool CalledOnValidThread() const;
 
-  int routing_id_;
   SynchronousCompositorClient* compositor_client_;
   SynchronousCompositorOutputSurface* output_surface_;
   WebContents* contents_;

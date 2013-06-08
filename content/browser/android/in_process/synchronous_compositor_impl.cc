@@ -112,6 +112,7 @@ SynchronousCompositorImpl::SynchronousCompositorImpl(WebContents* contents)
     : compositor_client_(NULL),
       output_surface_(NULL),
       contents_(contents) {
+  DCHECK(contents);
 }
 
 SynchronousCompositorImpl::~SynchronousCompositorImpl() {
@@ -180,7 +181,7 @@ InputEventAckState SynchronousCompositorImpl::HandleInputEvent(
     const WebKit::WebInputEvent& input_event) {
   DCHECK(CalledOnValidThread());
   return g_factory.Get().synchronous_input_event_filter()->HandleInputEvent(
-      routing_id_, input_event);
+      contents_->GetRoutingID(), input_event);
 }
 
 // Not using base::NonThreadSafe as we want to enforce a more exacting threading
