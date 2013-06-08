@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
@@ -1055,4 +1056,26 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadPermission) {
   EXPECT_TRUE(content::ExecuteScript(guest_web_contents,
                                      "startDownload('download-link-3')"));
   mock_delegate->WaitForCanDownload(false); // Expect to not allow.
+}
+
+// This test makes sure loading <webview> does not crash when there is an
+// extension which has content script whitelisted/forced.
+IN_PROC_BROWSER_TEST_F(WebViewTest, WhitelistedContentScript) {
+  // Whitelist the extension for running content script we are going to load.
+  extensions::Extension::ScriptingWhitelist whitelist;
+  const std::string extension_id = "imeongpbjoodlnmlakaldhlcmijmhpbb";
+  whitelist.push_back(extension_id);
+  extensions::Extension::SetScriptingWhitelist(whitelist);
+
+  // Load the extension.
+  const extensions::Extension* content_script_whitelisted_extension =
+      LoadExtension(test_data_dir_.AppendASCII(
+                        "platform_apps/web_view/legacy/content_script"));
+  ASSERT_TRUE(content_script_whitelisted_extension);
+  ASSERT_EQ(extension_id, content_script_whitelisted_extension->id());
+
+  // Now load an app with <webview>.
+  ExtensionTestMessageListener done_listener("DoneTest", false);
+  LoadAndLaunchPlatformApp("web_view/content_script_whitelisted");
+  ASSERT_TRUE(done_listener.WaitUntilSatisfied());
 }

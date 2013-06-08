@@ -1,0 +1,12 @@
+{
+  "name": "<webview> with forced embedder content script.",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

@@ -956,9 +956,17 @@ void BrowserPlugin::UpdateDeviceScaleFactor(float device_scale_factor) {
 
 void BrowserPlugin::TriggerEvent(const std::string& event_name,
                                  std::map<std::string, base::Value*>* props) {
-  if (!container() || !container()->element().document().frame())
+  if (!container())
     return;
+
+  WebKit::WebFrame* frame = container()->element().document().frame();
+  if (!frame)
+    return;
+
   v8::HandleScope handle_scope;
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  v8::Context::Scope context_scope(context);
+
   std::string json_string;
   if (props) {
     base::DictionaryValue dict;
@@ -972,7 +980,6 @@ void BrowserPlugin::TriggerEvent(const std::string& event_name,
       return;
   }
 
-  WebKit::WebFrame* frame = container()->element().document().frame();
   WebKit::WebDOMEvent dom_event = frame->document().createEvent("CustomEvent");
   WebKit::WebDOMCustomEvent event = dom_event.to<WebKit::WebDOMCustomEvent>();
 
