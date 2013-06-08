@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
+#include "chrome/common/extensions/user_script.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"

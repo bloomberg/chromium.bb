@@ -334,9 +334,6 @@ const char kInvalidImportVersion[] =
     "Invalid value for 'import[*].minimum_version'.";
 const char kInvalidIncognitoBehavior[] =
     "Invalid value for 'incognito'.";
-const char kInvalidIncognitoModeForPlatformApp[] =
-    "Invalid value for 'incognito'. Packaged apps must use split incognito "
-    "mode.";
 const char kInvalidInputComponents[] =
     "Invalid value for 'input_components'";
 const char kInvalidInputComponentDescription[] =

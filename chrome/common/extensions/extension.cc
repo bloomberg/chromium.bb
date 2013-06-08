@@ -23,19 +23,13 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-// TODO(rdevlin.cronin): Remove these once all references have been removed as
-// part of crbug.com/159265.
-#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
-#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
-#include "chrome/common/extensions/user_script.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
@@ -170,12 +164,6 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
   extension->install_warnings_.swap(install_warnings);
 
   if (!extension->InitFromValue(flags, &error)) {
-    *utf8_error = UTF16ToUTF8(error);
-    return NULL;
-  }
-
-  if (!extension->CheckPlatformAppFeatures(&error) ||
-      !extension->CheckConflictingFeatures(&error)) {
     *utf8_error = UTF16ToUTF8(error);
     return NULL;
   }
@@ -821,33 +809,6 @@ bool Extension::CheckMinimumChromeVersion(string16* error) const {
         minimum_version_string);
     return false;
   }
-  return true;
-}
-
-bool Extension::CheckPlatformAppFeatures(string16* error) const {
-  if (!is_platform_app())
-    return true;
-
-  if (!BackgroundInfo::HasBackgroundPage(this)) {
-    *error = ASCIIToUTF16(errors::kBackgroundRequiredForPlatformApps);
-    return false;
-  }
-
-  if (!IncognitoInfo::IsSplitMode(this)) {
-    *error = ASCIIToUTF16(errors::kInvalidIncognitoModeForPlatformApp);
-    return false;
-  }
-
-  return true;
-}
-
-bool Extension::CheckConflictingFeatures(string16* error) const {
-  if (BackgroundInfo::HasLazyBackgroundPage(this) &&
-      HasAPIPermission(APIPermission::kWebRequest)) {
-    *error = ASCIIToUTF16(errors::kWebRequestConflictsWithLazyBackground);
-    return false;
-  }
-
   return true;
 }
 

@@ -275,7 +275,6 @@ namespace extension_manifest_errors {
   extern const char kInvalidImportId[];
   extern const char kInvalidImportVersion[];
   extern const char kInvalidIncognitoBehavior[];
-  extern const char kInvalidIncognitoModeForPlatformApp[];
   extern const char kInvalidInputComponents[];
   extern const char kInvalidInputComponentDescription[];
   extern const char kInvalidInputComponentLayoutName[];

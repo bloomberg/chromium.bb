@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/user_script.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_service.h"
 

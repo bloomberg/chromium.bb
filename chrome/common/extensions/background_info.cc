@@ -79,14 +79,12 @@ bool BackgroundInfo::AllowJSAccess(const Extension* extension) {
 
 // static
 bool BackgroundInfo::HasPersistentBackgroundPage(const Extension* extension)  {
-  const BackgroundInfo& info = GetBackgroundInfo(extension);
-  return info.has_background_page() && info.is_persistent_;
+  return GetBackgroundInfo(extension).has_persistent_background_page();
 }
 
 // static
 bool BackgroundInfo::HasLazyBackgroundPage(const Extension* extension) {
-  const BackgroundInfo& info = GetBackgroundInfo(extension);
-  return info.has_background_page() && !info.is_persistent_;
+  return GetBackgroundInfo(extension).has_lazy_background_page();
 }
 
 bool BackgroundInfo::Parse(const Extension* extension, string16* error) {
@@ -240,6 +238,20 @@ bool BackgroundManifestHandler::Parse(Extension* extension, string16* error) {
   scoped_ptr<BackgroundInfo> info(new BackgroundInfo);
   if (!info->Parse(extension, error))
     return false;
+
+  // Platform apps must have background pages.
+  if (extension->is_platform_app() && !info->has_background_page()) {
+    *error = ASCIIToUTF16(errors::kBackgroundRequiredForPlatformApps);
+    return false;
+  }
+  // Lazy background pages are incompatible with the webRequest API.
+  if (info->has_lazy_background_page() &&
+      PermissionsData::GetInitialAPIPermissions(extension)->count(
+          APIPermission::kWebRequest)) {
+    *error = ASCIIToUTF16(errors::kWebRequestConflictsWithLazyBackground);
+    return false;
+  }
+
   extension->SetManifestData(kBackground, info.release());
   return true;
 }
@@ -281,6 +293,10 @@ bool BackgroundManifestHandler::Validate(
   return true;
 }
 
+bool BackgroundManifestHandler::AlwaysParseForType(Manifest::Type type) const {
+  return type == Manifest::TYPE_PLATFORM_APP;
+}
+
 const std::vector<std::string> BackgroundManifestHandler::Keys() const {
   static const char* keys[] = {
     keys::kBackgroundAllowJsAccess,
@@ -294,4 +310,4 @@ const std::vector<std::string> BackgroundManifestHandler::Keys() const {
   return std::vector<std::string>(keys, keys + arraysize(keys));
 }
 
-}  // extensions
+}  // namespace extensions
