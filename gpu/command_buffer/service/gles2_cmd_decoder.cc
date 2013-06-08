@@ -3234,7 +3234,8 @@ bool GLES2DecoderImpl::ProduceFrontBuffer(const Mailbox& mailbox) {
     return false;
   if (!offscreen_saved_color_texture_info_.get()) {
     GLuint service_id = offscreen_saved_color_texture_->id();
-    offscreen_saved_color_texture_info_ = CreateTexture(0, service_id);
+    offscreen_saved_color_texture_info_ = TextureRef::Create(
+        texture_manager(), 0, service_id);
     texture_manager()->SetTarget(offscreen_saved_color_texture_info_.get(),
                                  GL_TEXTURE_2D);
     UpdateParentTextureInfo();

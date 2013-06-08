@@ -318,5 +318,54 @@ TEST_F(GLTextureMailboxTest, ProduceFrontBuffer) {
   glDeleteTextures(1, &tex1);
 }
 
+TEST_F(GLTextureMailboxTest, ProduceFrontBufferMultipleContexts) {
+  gl1_.MakeCurrent();
+  Mailbox mailbox[2];
+  glGenMailboxCHROMIUM(mailbox[0].name);
+  glGenMailboxCHROMIUM(mailbox[1].name);
+  GLuint tex[2];
+  glGenTextures(2, tex);
+
+  GLManager::Options options;
+  options.share_mailbox_manager = &gl1_;
+  GLManager other_gl[2];
+  for (size_t i = 0; i < 2; ++i) {
+    other_gl[i].Initialize(options);
+    other_gl[i].MakeCurrent();
+    other_gl[i].decoder()->ProduceFrontBuffer(mailbox[i]);
+    // Make sure both "other gl" are in the same share group.
+    if (!options.share_group_manager)
+      options.share_group_manager = other_gl+i;
+  }
+
+
+  gl1_.MakeCurrent();
+  for (size_t i = 0; i < 2; ++i) {
+    glBindTexture(GL_TEXTURE_2D, tex[i]);
+    glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox[i].name);
+    EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+  }
+
+  for (size_t i = 0; i < 2; ++i) {
+    other_gl[i].MakeCurrent();
+    glResizeCHROMIUM(10, 10, 1);
+    glClearColor(1-i%2, i%2, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ::gles2::GetGLContext()->SwapBuffers();
+  }
+
+  gl1_.MakeCurrent();
+  EXPECT_EQ(0xFF0000FFu, ReadTexel(tex[0], 0, 0));
+  EXPECT_EQ(0xFF00FF00u, ReadTexel(tex[1], 9, 9));
+
+  for (size_t i = 0; i < 2; ++i) {
+    other_gl[i].MakeCurrent();
+    other_gl[i].Destroy();
+  }
+
+  gl1_.MakeCurrent();
+  glDeleteTextures(2, tex);
+}
+
 }  // namespace gpu
 
