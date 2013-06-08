@@ -36,12 +36,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/developer_private.h"
 #include "chrome/common/extensions/background_info.h"
-#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -72,19 +72,6 @@ const base::FilePath::CharType kUnpackedAppsFolder[]
 
 ExtensionUpdater* GetExtensionUpdater(Profile* profile) {
     return profile->GetExtensionService()->updater();
-}
-
-GURL ToDataURL(const base::FilePath& path) {
-  std::string contents;
-  if (!file_util::ReadFileToString(path, &contents))
-    return GURL();
-
-  std::string contents_base64;
-  if (!base::Base64Encode(contents, &contents_base64))
-    return GURL();
-
-  const char kDataURLPrefix[] = "data:image;base64,";
-  return GURL(kDataURLPrefix + contents_base64);
 }
 
 std::vector<base::FilePath> ListFolder(const base::FilePath path) {
@@ -193,6 +180,14 @@ scoped_ptr<developer::ItemInfo>
   info->version = item.VersionString();
   info->description = item.description();
 
+  GURL url =
+      ExtensionIconSource::GetIconURL(&item,
+                                      extension_misc::EXTENSION_ICON_MEDIUM,
+                                      ExtensionIconSet::MATCH_BIGGER,
+                                      false,
+                                      NULL);
+  info->icon_url = url.spec();
+
   if (item.is_app()) {
     if (item.is_legacy_packaged_app())
       info->type = developer::ITEM_TYPE_LEGACY_PACKAGED_APP;
@@ -246,26 +241,6 @@ scoped_ptr<developer::ItemInfo>
   info->views = GetInspectablePagesForExtension(&item, item_is_enabled);
 
   return info.Pass();
-}
-
-void DeveloperPrivateGetItemsInfoFunction::GetIconsOnFileThread(
-    ItemInfoList item_list,
-    const std::map<std::string, ExtensionResource> idToIcon) {
-  for (ItemInfoList::iterator iter = item_list.begin();
-       iter != item_list.end(); ++iter) {
-    developer_private::ItemInfo* info = iter->get();
-    std::map<std::string, ExtensionResource>::const_iterator resource_ptr
-        = idToIcon.find(info->id);
-    if (resource_ptr != idToIcon.end()) {
-      info->icon = ToDataURL(resource_ptr->second.GetFilePath()).spec();
-    }
-  }
-
-  results_ = developer::GetItemsInfo::Results::Create(item_list);
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&DeveloperPrivateGetItemsInfoFunction::SendResponse,
-                 this,
-                 true));
 }
 
 void DeveloperPrivateGetItemsInfoFunction::
@@ -404,18 +379,11 @@ bool DeveloperPrivateGetItemsInfoFunction::RunImpl() {
     items.InsertAll(*service->terminated_extensions());
   }
 
-  std::map<std::string, ExtensionResource> id_to_icon;
   ItemInfoList item_list;
 
   for (ExtensionSet::const_iterator iter = items.begin();
        iter != items.end(); ++iter) {
     const Extension& item = **iter;
-
-    ExtensionResource item_resource =
-        IconsInfo::GetIconResource(&item,
-                                   48,
-                                   ExtensionIconSet::MATCH_BIGGER);
-    id_to_icon[item.id()] = item_resource;
 
     // Don't show component extensions because they are only extensions as an
     // implementation detail of Chrome.
@@ -437,11 +405,9 @@ bool DeveloperPrivateGetItemsInfoFunction::RunImpl() {
             item, service->IsExtensionEnabled(item.id())).release()));
   }
 
-  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DeveloperPrivateGetItemsInfoFunction::GetIconsOnFileThread,
-                 this,
-                 item_list,
-                 id_to_icon));
+  results_ = developer::GetItemsInfo::Results::Create(item_list);
+  SendResponse(true);
+
   return true;
 }
 

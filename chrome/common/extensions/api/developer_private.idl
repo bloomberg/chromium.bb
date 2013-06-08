@@ -45,7 +45,7 @@ namespace developerPrivate {
     boolean allow_reload;
     boolean terminated;
     boolean allow_incognito;
-    DOMString icon;
+    DOMString icon_url;
 
     // Path of an unpacked extension.
     DOMString? path;

@@ -155,10 +155,9 @@ html[dir='rtl'] #search {
 
 .extension-list-item {
   /* Set in ItemsList.createNode_(). */
-  -webkit-background-size: 3em 3em;
   background-repeat: no-repeat;
   display: -webkit-box;
-  min-height: 4em;
+  min-height: 48px;
 }
 
 html[dir='rtl'] .extension-list-item {

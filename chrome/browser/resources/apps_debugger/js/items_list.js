@@ -144,7 +144,7 @@ cr.define('apps_dev_tool', function() {
         node.classList.add('may-not-disable');
 
       var itemNode = node.querySelector('.extension-list-item');
-      itemNode.style.backgroundImage = 'url(' + item.icon + ')';
+      itemNode.style.backgroundImage = 'url(' + item.icon_url + ')';
 
       var title = node.querySelector('.extension-title');
       title.textContent = item.name;
