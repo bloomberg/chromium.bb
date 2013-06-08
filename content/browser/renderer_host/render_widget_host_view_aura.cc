@@ -1286,6 +1286,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
                                              src_subrect_in_pixel,
                                              target->coded_size(),
                                              region_in_frame,
+                                             true,
                                              true));
   }
 

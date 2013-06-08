@@ -100,7 +100,9 @@ class ShaderProgram : public base::RefCounted<ShaderProgram> {
 // multiple stages, it calls Scale() on the subscaler, then further scales the
 // output. Caches textures and framebuffers to avoid allocating/deleting
 // them once per frame, which can be expensive on some drivers.
-class ScalerImpl : public GLHelper::ScalerInterface {
+class ScalerImpl :
+      public GLHelper::ScalerInterface,
+      public GLHelperScaling::ShaderInterface {
  public:
   // |context| and |copy_impl| are expected to live longer than this object.
   // |src_size| is the size of the input texture in pixels.
@@ -160,9 +162,10 @@ class ScalerImpl : public GLHelper::ScalerInterface {
     }
   }
 
-  // GLHelper::ScalerInterface implementation.
-  virtual void Scale(WebKit::WebGLId source_texture,
-                     WebKit::WebGLId dest_texture) OVERRIDE {
+  // GLHelperShader::ShaderInterface implementation.
+  virtual void Execute(
+      WebKit::WebGLId source_texture,
+      const std::vector<WebKit::WebGLId>& dest_textures) OVERRIDE {
     if (subscaler_) {
       subscaler_->Scale(source_texture, intermediate_texture_);
       source_texture = intermediate_texture_;
@@ -171,14 +174,18 @@ class ScalerImpl : public GLHelper::ScalerInterface {
     ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(
         context_,
         dst_framebuffer_);
-    {
+    DCHECK_GT(dest_textures.size(), 0U);
+    scoped_ptr<WebKit::WGC3Denum[]> buffers(
+        new WebKit::WGC3Denum[dest_textures.size()]);
+    for (size_t t = 0; t < dest_textures.size(); t++) {
       ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_,
-                                                        dest_texture);
+                                                        dest_textures[t]);
       context_->framebufferTexture2D(GL_FRAMEBUFFER,
-                                     GL_COLOR_ATTACHMENT0,
+                                     GL_COLOR_ATTACHMENT0 + t,
                                      GL_TEXTURE_2D,
-                                     dest_texture,
+                                     dest_textures[t],
                                      0);
+      buffers[t] = GL_COLOR_ATTACHMENT0 + t;
     }
     ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_,
                                                       source_texture);
@@ -203,8 +210,25 @@ class ScalerImpl : public GLHelper::ScalerInterface {
                                 color_weights_);
     context_->viewport(0, 0, spec_.dst_size.width(), spec_.dst_size.height());
 
+    if (dest_textures.size() > 1) {
+      DCHECK_LE(static_cast<int>(dest_textures.size()),
+                scaler_helper_->helper_->MaxDrawBuffers());
+      context_->drawBuffersEXT(dest_textures.size(), buffers.get());
+    }
     // Conduct texture mapping by drawing a quad composed of two triangles.
     context_->drawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    if (dest_textures.size() > 1) {
+      // Set the draw buffers back to not confuse others.
+      context_->drawBuffersEXT(1, &buffers[0]);
+    }
+  }
+
+  // GLHelper::ScalerInterface implementation.
+  virtual void Scale(WebKit::WebGLId source_texture,
+                     WebKit::WebGLId dest_texture) OVERRIDE {
+    std::vector<WebKit::WebGLId> tmp(1);
+    tmp[0] = dest_texture;
+    Execute(source_texture, tmp);
   }
 
   virtual const gfx::Size& SrcSize() OVERRIDE {
@@ -468,6 +492,24 @@ GLHelperScaling::CreatePlanarScaler(
   return new ScalerImpl(context_, this, stage, NULL, color_weights);
 }
 
+GLHelperScaling::ShaderInterface*
+GLHelperScaling::CreateYuvMrtShader(
+    const gfx::Size& src_size,
+    const gfx::Rect& src_subrect,
+    const gfx::Size& dst_size,
+    bool vertically_flip_texture,
+    ShaderType shader) {
+  DCHECK(shader == SHADER_YUV_MRT_PASS1 || shader == SHADER_YUV_MRT_PASS2);
+  ScalerStage stage(shader,
+                    src_size,
+                    src_subrect,
+                    dst_size,
+                    true,
+                    vertically_flip_texture,
+                    false);
+  return new ScalerImpl(context_, this, stage, NULL, NULL);
+}
+
 const WebKit::WGC3Dfloat GLHelperScaling::kVertexAttributes[] = {
   -1.0f, -1.0f, 0.0f, 0.0f,
   1.0f, -1.0f, 1.0f, 0.0f,
@@ -687,6 +729,85 @@ GLHelperScaling::GetShaderProgram(ShaderType type,
             "    vec4(texture2D(s_texture, v_texcoords[0].zw).rgb, 1.0),\n"
             "    vec4(texture2D(s_texture, v_texcoords[1].xy).rgb, 1.0),\n"
             "    vec4(texture2D(s_texture, v_texcoords[1].zw).rgb, 1.0));\n");
+        // Swizzle makes no sense for this shader.
+        DCHECK(!swizzle);
+        break;
+
+      case SHADER_YUV_MRT_PASS1:
+        // RGB24 to YV12 in two passes; writing two 8888 targets each pass.
+        //
+        // YV12 is full-resolution luma and half-resolution blue/red chroma.
+        //
+        //                  (original)
+        //    RGBX RGBX RGBX RGBX RGBX RGBX RGBX RGBX
+        //    RGBX RGBX RGBX RGBX RGBX RGBX RGBX RGBX
+        //    RGBX RGBX RGBX RGBX RGBX RGBX RGBX RGBX
+        //    RGBX RGBX RGBX RGBX RGBX RGBX RGBX RGBX
+        //    RGBX RGBX RGBX RGBX RGBX RGBX RGBX RGBX
+        //    RGBX RGBX RGBX RGBX RGBX RGBX RGBX RGBX
+        //      |
+        //      |      (y plane)    (temporary)
+        //      |      YYYY YYYY     UUVV UUVV
+        //      +--> { YYYY YYYY  +  UUVV UUVV }
+        //             YYYY YYYY     UUVV UUVV
+        //   First     YYYY YYYY     UUVV UUVV
+        //    pass     YYYY YYYY     UUVV UUVV
+        //             YYYY YYYY     UUVV UUVV
+        //                              |
+        //                              |  (u plane) (v plane)
+        //   Second                     |      UUUU   VVVV
+        //     pass                     +--> { UUUU + VVVV }
+        //                                     UUUU   VVVV
+        //
+        shared_variables.append(
+            "varying vec4 v_texcoords[2];\n");
+        vertex_program.append(
+            "  step /= 4.0;\n"
+            "  v_texcoords[0].xy = texcoord - step * 1.5;\n"
+            "  v_texcoords[0].zw = texcoord - step * 0.5;\n"
+            "  v_texcoords[1].xy = texcoord + step * 0.5;\n"
+            "  v_texcoords[1].zw = texcoord + step * 1.5;\n");
+        fragment_header.append(
+            "const vec3 kRGBtoY = vec3(0.257, 0.504, 0.098);\n"
+            "const float kYBias = 0.0625;\n"
+            // Divide U and V by two to compensate for averaging below.
+            "const vec3 kRGBtoU = vec3(-0.148, -0.291, 0.439) / 2.0;\n"
+            "const vec3 kRGBtoV = vec3(0.439, -0.368, -0.071) / 2.0;\n"
+            "const float kUVBias = 0.5;\n");
+        fragment_program.append(
+            "  vec3 pixel1 = texture2D(s_texture, v_texcoords[0].xy).rgb;\n"
+            "  vec3 pixel2 = texture2D(s_texture, v_texcoords[0].zw).rgb;\n"
+            "  vec3 pixel3 = texture2D(s_texture, v_texcoords[1].xy).rgb;\n"
+            "  vec3 pixel4 = texture2D(s_texture, v_texcoords[1].zw).rgb;\n"
+            "  vec3 pixel12 = pixel1 + pixel2;\n"
+            "  vec3 pixel34 = pixel3 + pixel4;\n"
+            "  gl_FragData[0] = vec4(dot(pixel1, kRGBtoY),\n"
+            "                        dot(pixel2, kRGBtoY),\n"
+            "                        dot(pixel3, kRGBtoY),\n"
+            "                        dot(pixel4, kRGBtoY)) + kYBias;\n"
+            "  gl_FragData[1] = vec4(dot(pixel12, kRGBtoU),\n"
+            "                        dot(pixel34, kRGBtoU),\n"
+            "                        dot(pixel12, kRGBtoV),\n"
+            "                        dot(pixel34, kRGBtoV)) + kUVBias;\n");
+        // Swizzle makes no sense for this shader.
+        DCHECK(!swizzle);
+        break;
+
+      case SHADER_YUV_MRT_PASS2:
+        // We're just sampling two pixels and unswizzling them.  There's
+        // no need to do vertical scaling with math, since bilinear
+        // interpolation in the sampler takes care of that.
+        shared_variables.append(
+            "varying vec4 v_texcoords;\n");
+        vertex_program.append(
+            "  step /= 2.0;\n"
+            "  v_texcoords.xy = texcoord - step * 0.5;\n"
+            "  v_texcoords.zw = texcoord + step * 0.5;\n");
+        fragment_program.append(
+            "  vec4 lo_uuvv = texture2D(s_texture, v_texcoords.xy);\n"
+            "  vec4 hi_uuvv = texture2D(s_texture, v_texcoords.zw);\n"
+            "  gl_FragData[0] = vec4(lo_uuvv.rg, hi_uuvv.rg);\n"
+            "  gl_FragData[1] = vec4(lo_uuvv.ba, hi_uuvv.ba);\n");
         // Swizzle makes no sense for this shader.
         DCHECK(!swizzle);
         break;
