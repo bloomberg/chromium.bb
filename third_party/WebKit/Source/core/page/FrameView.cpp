@@ -2147,26 +2147,26 @@ void FrameView::scrollToAnchor()
     m_maintainScrollPositionAnchor = anchorNode;
 }
 
-bool FrameView::updateWidget(RenderObject* object)
+void FrameView::updateWidget(RenderObject* object)
 {
     ASSERT(!object->node() || object->node()->isElementNode());
-    RefPtr<Element> ownerElement = toElement(object->node());
+    Element* ownerElement = toElement(object->node());
     // The object may have already been destroyed (thus node cleared),
     // but FrameView holds a manual ref, so it won't have been deleted.
     ASSERT(m_widgetUpdateSet->contains(object));
     if (!ownerElement)
-        return true;
+        return;
 
     if (object->isEmbeddedObject()) {
         RenderEmbeddedObject* embeddedObject = static_cast<RenderEmbeddedObject*>(object);
         // No need to update if it's already crashed or known to be missing.
         if (embeddedObject->showsUnavailablePluginIndicator())
-            return true;
+            return;
 
         // FIXME: This could turn into a real virtual dispatch if we defined
         // updateWidget(PluginCreationOption) on HTMLElement.
         if (ownerElement->hasTagName(objectTag) || ownerElement->hasTagName(embedTag) || ownerElement->hasTagName(appletTag)) {
-            HTMLPlugInImageElement* pluginElement = toHTMLPlugInImageElement(ownerElement.get());
+            HTMLPlugInImageElement* pluginElement = toHTMLPlugInImageElement(ownerElement);
             if (pluginElement->needsWidgetUpdate())
                 pluginElement->updateWidget(CreateAnyWidgetType);
         } else
@@ -2174,14 +2174,8 @@ bool FrameView::updateWidget(RenderObject* object)
 
         // Caution: it's possible the object was destroyed again, since loading a
         // plugin may run any arbitrary JavaScript.
-        if (ownerElement->renderer() != embeddedObject) {
-            m_widgetUpdateSet->clear();
-            return false;
-        }
         embeddedObject->updateWidgetPosition();
     }
-
-    return true;
 }
 
 bool FrameView::updateWidgets()
@@ -2206,8 +2200,7 @@ bool FrameView::updateWidgets()
 
     for (size_t i = 0; i < size; ++i) {
         RenderObject* object = objects[i];
-        if (!updateWidget(object))
-            return false;
+        updateWidget(object);
         m_widgetUpdateSet->remove(object);
     }
 
@@ -2299,8 +2292,6 @@ void FrameView::performPostLayoutTasks()
         InspectorInstrumentation::mediaQueryResultChanged(m_frame->document());
     }
 
-    // Refetch render view since it can be destroyed by updateWidget() call above.
-    renderView = this->renderView();
     if (renderView && !renderView->printing()) {
         IntSize currentSize;
         currentSize = visibleContentRect(IncludeScrollbars).size();
