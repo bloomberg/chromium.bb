@@ -672,6 +672,7 @@ void TemplateURLService::ResetNonExtensionURLs() {
   DCHECK(loaded());
   ClearDefaultProviderFromPrefs();
 
+  // Preserve all extension URLs, as they should not be reset.
   TemplateURLVector entries_to_process;
   for (TemplateURLVector::const_iterator i = template_urls_.begin();
        i != template_urls_.end(); ++i) {
@@ -680,13 +681,14 @@ void TemplateURLService::ResetNonExtensionURLs() {
   }
   // Clear default provider to be able to delete it.
   default_search_provider_ = NULL;
-  // Remove non-extension keywords.
   for (TemplateURLVector::const_iterator i = entries_to_process.begin();
        i != entries_to_process.end(); ++i)
     RemoveNoNotify(*i);
 
   // Store the remaining engines in entries_to_process and merge them with
-  // prepopulated ones.
+  // prepopulated ones. NOTE: Because this class owns the pointers stored in
+  // |template_urls_|, the swap() call below means this function is taking
+  // ownership of all these pointers; see comments below.
   entries_to_process.clear();
   entries_to_process.swap(template_urls_);
   provider_map_.reset(new SearchHostToURLsMap);
@@ -703,13 +705,18 @@ void TemplateURLService::ResetNonExtensionURLs() {
                                        &default_search_provider,
                                        &new_resource_keyword_version,
                                        &pre_sync_deletes_);
-  for (TemplateURLVector::iterator i = entries_to_process.begin();
-       i != entries_to_process.end();) {
-    if ((*i)->IsExtensionKeyword())
-      i = entries_to_process.erase(i);
-    else
-      ++i;
-  }
+  // We don't want to pass any extension URLs to
+  // AddTemplateURLsAndSetupDefaultEngine(), since they were never removed
+  // from the model to begin with.
+  TemplateURLVector::iterator extensions(std::partition(
+      entries_to_process.begin(), entries_to_process.end(),
+      std::not1(std::mem_fun(&TemplateURL::IsExtensionKeyword))));
+  // Right now we own all pointers in |entries_to_process| (see above).
+  // AddTemplateURLsAndSetupDefaultEngine() will take ownership of all
+  // passed-in TemplateURLs (generally by passing them to AddNoNotify()). Any
+  // URLs we aren't going to pass to it have to be freed here.
+  STLDeleteContainerPointers(extensions, entries_to_process.end());
+  entries_to_process.erase(extensions, entries_to_process.end());
   // Setup search engines and a default one.
   AddTemplateURLsAndSetupDefaultEngine(&entries_to_process,
                                        default_search_provider);

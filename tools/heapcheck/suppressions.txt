@@ -1740,20 +1740,6 @@
    fun:fileapi::SandboxMountPointProviderTest::GetRootPath
 }
 {
-   bug_246560a
-   Heapcheck:Leak
-   ...
-   fun:TemplateURLServiceTest::AddKeywordWithDate
-   fun:TemplateURLServiceTest_ResetNonExtensionURLs_Test::TestBody
-}
-{
-   bug_246560b
-   Heapcheck:Leak
-   fun:std::basic_string::_Rep::_S_create
-   fun:std::operator+
-   fun:TemplateURLServiceTest_ResetNonExtensionURLs_Test::TestBody
-}
-{
    bug_246567a
    Heapcheck:Leak
    fun:v8::internal::PerThreadAssertScopeBase::AssertData

@@ -7210,13 +7210,6 @@ fun:_ZN7content21RenderViewHostManager8NavigateERKNS_19NavigationEntryImplE
    fun:_ZN7content16RenderThreadImpl15OnCreateNewViewERK18ViewMsg_New_Params
 }
 {
-   bug_246560
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN22TemplateURLServiceTest18AddKeywordWithDateERKSsS1_S1_S1_S1_S1_bS1_N4base4TimeES3_
-   fun:_ZN49TemplateURLServiceTest_ResetNonExtensionURLs_Test8TestBodyEv
-}
-{
    bug_246825a
    Memcheck:Leak
    fun:_Znw*
