@@ -210,6 +210,16 @@ WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateOffscreenContext() {
   return CreateContextCommon(NULL, true);
 }
 
+scoped_refptr<Reflector> DefaultContextFactory::CreateReflector(
+    Compositor* mirroed_compositor,
+    Layer* mirroring_layer) {
+  return NULL;
+}
+
+void DefaultContextFactory::RemoveReflector(
+    scoped_refptr<Reflector> reflector) {
+}
+
 scoped_refptr<cc::ContextProvider>
 DefaultContextFactory::OffscreenContextProviderForMainThread() {
   if (!offscreen_contexts_main_thread_.get() ||
@@ -279,6 +289,15 @@ WebKit::WebGraphicsContext3D* TestContextFactory::CreateOffscreenContext() {
   ui::TestWebGraphicsContext3D* context = new ui::TestWebGraphicsContext3D;
   context->Initialize();
   return context;
+}
+
+scoped_refptr<Reflector> TestContextFactory::CreateReflector(
+    Compositor* mirrored_compositor,
+    Layer* mirroring_layer) {
+  return new Reflector();
+}
+
+void TestContextFactory::RemoveReflector(scoped_refptr<Reflector> reflector) {
 }
 
 scoped_refptr<cc::ContextProvider>
