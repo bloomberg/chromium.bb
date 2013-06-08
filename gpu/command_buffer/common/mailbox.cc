@@ -22,6 +22,10 @@ bool Mailbox::IsZero() const {
   return true;
 }
 
+void Mailbox::SetZero() {
+  memset(name, 0, sizeof(name));
+}
+
 void Mailbox::SetName(const int8* n) {
   GPU_DCHECK(IsZero() || !memcmp(name, n, sizeof(name)));
   memcpy(name, n, sizeof(name));

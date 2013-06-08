@@ -72,13 +72,6 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
   virtual void CopyToBitmap(gfx::Rect rect, SkBitmap* output) OVERRIDE {
     NOTIMPLEMENTED();
   }
-  virtual void Scroll(gfx::Vector2d delta,
-                      gfx::Rect clip_rect) OVERRIDE {
-    NOTIMPLEMENTED();
-  }
-  virtual void ReclaimDIB(const TransportDIB::Id& id) OVERRIDE {
-    NOTIMPLEMENTED();
-  }
 
  private:
   SynchronousCompositorOutputSurface* surface_;

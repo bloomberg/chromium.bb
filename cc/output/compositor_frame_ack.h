@@ -9,7 +9,6 @@
 #include "cc/base/cc_export.h"
 #include "cc/output/gl_frame_data.h"
 #include "cc/resources/transferable_resource.h"
-#include "ui/surface/transport_dib.h"
 
 namespace cc {
 
@@ -20,7 +19,7 @@ class CC_EXPORT CompositorFrameAck {
 
   TransferableResourceArray resources;
   scoped_ptr<GLFrameData> gl_frame_data;
-  TransportDIB::Id last_dib_id;
+  unsigned last_software_frame_id;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameAck);

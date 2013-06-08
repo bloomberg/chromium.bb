@@ -34,7 +34,8 @@ TextureLayerImpl::~TextureLayerImpl() { FreeTextureMailbox(); }
 
 void TextureLayerImpl::SetTextureMailbox(const TextureMailbox& mailbox) {
   DCHECK(uses_mailbox_);
-  DCHECK(mailbox.IsEmpty() || !mailbox.Equals(texture_mailbox_));
+  if (own_mailbox_)
+    DCHECK(!mailbox.IsValid() || !mailbox.Equals(texture_mailbox_));
   FreeTextureMailbox();
   texture_mailbox_ = mailbox;
   own_mailbox_ = true;
@@ -146,7 +147,7 @@ void TextureLayerImpl::DidBecomeActive() {
     return;
   DCHECK(!external_texture_resource_);
   ResourceProvider* resource_provider = layer_tree_impl()->resource_provider();
-  if (!texture_mailbox_.IsEmpty()) {
+  if (texture_mailbox_.IsValid()) {
     external_texture_resource_ =
         resource_provider->CreateResourceFromTextureMailbox(texture_mailbox_);
   }

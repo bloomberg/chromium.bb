@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/resources/texture_mailbox.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/image_transport_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -484,7 +485,7 @@ class RenderWidgetHostViewAura
       scoped_ptr<cc::SoftwareFrameData> frame_data,
       float frame_device_scale_factor,
       const ui::LatencyInfo& latency_info);
-  void SendSoftwareFrameAck(const TransportDIB::Id& id);
+  void SendSoftwareFrameAck(unsigned software_frame_id);
 
   BrowserAccessibilityManager* GetOrCreateBrowserAccessibilityManager();
 
@@ -562,12 +563,8 @@ class RenderWidgetHostViewAura
   // The current frontbuffer texture.
   scoped_refptr<ui::Texture> current_surface_;
 
-  // The current frontbuffer DIB.
-  scoped_ptr<TransportDIB> current_dib_;
-
-  // The current DIB id as it was received from the renderer. Note that on
-  // some platforms (e.g. Windows) this is different from current_dib_->id().
-  TransportDIB::Id current_dib_id_;
+  // The current software frontbuffer.
+  cc::TextureMailbox current_software_frame_;
 
   // The damage in the previously presented buffer.
   SkRegion previous_damage_;

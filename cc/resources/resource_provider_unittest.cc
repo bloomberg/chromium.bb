@@ -874,6 +874,41 @@ TEST_P(ResourceProviderTest, Shutdown) {
   EXPECT_FALSE(lost_resource);
 }
 
+static scoped_ptr<base::SharedMemory> CreateAndFillSharedMemory(
+    gfx::Size size, uint32_t value) {
+  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
+  CHECK(shared_memory->CreateAndMapAnonymous(4 * size.GetArea()));
+  uint32_t* pixels = reinterpret_cast<uint32_t*>(shared_memory->memory());
+  CHECK(pixels);
+  std::fill_n(pixels, size.GetArea(), value);
+  return shared_memory.Pass();
+}
+
+static void ReleaseSharedMemoryCallback(
+    bool* release_called,
+    unsigned sync_point, bool lost_resource) {
+  *release_called = true;
+}
+
+TEST_P(ResourceProviderTest, ShutdownSharedMemory) {
+  if (GetParam() != ResourceProvider::Bitmap)
+    return;
+
+  gfx::Size size(64, 64);
+  scoped_ptr<base::SharedMemory> shared_memory(
+      CreateAndFillSharedMemory(size, 0));
+
+  bool release_called = false;
+  TextureMailbox::ReleaseCallback callback =
+      base::Bind(ReleaseSharedMemoryCallback, &release_called);
+  resource_provider_->CreateResourceFromTextureMailbox(
+      TextureMailbox(shared_memory.get(), size, callback));
+
+  resource_provider_.reset();
+
+  EXPECT_TRUE(release_called);
+}
+
 TEST_P(ResourceProviderTest, ShutdownWithExportedResource) {
   // TextureMailbox callbacks only exist for GL textures for now.
   if (GetParam() != ResourceProvider::GLTexture)
@@ -1071,6 +1106,37 @@ TEST_P(ResourceProviderTest, ManagedResource) {
 }
 
 static void EmptyReleaseCallback(unsigned sync_point, bool lost_resource) {}
+
+TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
+  if (GetParam() != ResourceProvider::Bitmap)
+    return;
+
+  gfx::Size size(64, 64);
+  const uint32_t kBadBeef = 0xbadbeef;
+  scoped_ptr<base::SharedMemory> shared_memory(
+      CreateAndFillSharedMemory(size, kBadBeef));
+
+  scoped_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::CreateSoftware(make_scoped_ptr(
+          new SoftwareOutputDevice)));
+  scoped_ptr<ResourceProvider> resource_provider(
+      ResourceProvider::Create(output_surface.get(), 0));
+
+  TextureMailbox::ReleaseCallback callback = base::Bind(&EmptyReleaseCallback);
+  TextureMailbox mailbox(shared_memory.get(), size, callback);
+
+  ResourceProvider::ResourceId id =
+      resource_provider->CreateResourceFromTextureMailbox(mailbox);
+  EXPECT_NE(0u, id);
+
+  {
+    ResourceProvider::ScopedReadLockSoftware lock(resource_provider.get(), id);
+    const SkBitmap* sk_bitmap = lock.sk_bitmap();
+    EXPECT_EQ(sk_bitmap->width(), size.width());
+    EXPECT_EQ(sk_bitmap->height(), size.height());
+    EXPECT_EQ(*sk_bitmap->getAddr32(16, 16), kBadBeef);
+  }
+}
 
 TEST_P(ResourceProviderTest, TextureMailbox_GLTexture2D) {
   // Mailboxing is only supported for GL textures.

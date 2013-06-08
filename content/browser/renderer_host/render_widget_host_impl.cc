@@ -1715,7 +1715,7 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
     } else if (frame->delegated_frame_data) {
       ack.resources.swap(frame->delegated_frame_data->resource_list);
     } else if (frame->software_frame_data) {
-      ack.last_dib_id = frame->software_frame_data->dib_id;
+      ack.last_software_frame_id = frame->software_frame_data->id;
     }
     SendSwapCompositorFrameAck(routing_id_, process_->GetID(), ack);
   }

@@ -62,6 +62,7 @@ class CC_EXPORT TextureLayer : public Layer {
   void SetTextureId(unsigned texture_id);
 
   // Code path for plugins which supply their own mailbox.
+  bool uses_mailbox() const { return uses_mailbox_; }
   void SetTextureMailbox(const TextureMailbox& mailbox);
 
   void WillModifyTexture();

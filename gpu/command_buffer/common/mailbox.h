@@ -13,6 +13,7 @@ namespace gpu {
 struct GPU_EXPORT Mailbox {
   Mailbox();
   bool IsZero() const;
+  void SetZero();
   void SetName(const int8* name);
   int8 name[64];
 };

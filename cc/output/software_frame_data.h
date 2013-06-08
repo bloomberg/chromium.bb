@@ -5,10 +5,9 @@
 #ifndef CC_OUTPUT_SOFTWARE_FRAME_DATA_H_
 #define CC_OUTPUT_SOFTWARE_FRAME_DATA_H_
 
-#include "base/basictypes.h"
+#include "base/memory/shared_memory.h"
 #include "cc/base/cc_export.h"
 #include "ui/gfx/rect.h"
-#include "ui/surface/transport_dib.h"
 
 namespace cc {
 
@@ -17,9 +16,10 @@ class CC_EXPORT SoftwareFrameData {
   SoftwareFrameData();
   ~SoftwareFrameData();
 
+  unsigned id;
   gfx::Size size;
   gfx::Rect damage_rect;
-  TransportDIB::Id dib_id;
+  base::SharedMemoryHandle handle;
 };
 
 }  // namespace cc

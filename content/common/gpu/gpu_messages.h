@@ -28,7 +28,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gpu_preference.h"
-#include "ui/surface/transport_dib.h"
 
 #if defined(OS_ANDROID)
 #include "content/common/android/surface_texture_peer.h"

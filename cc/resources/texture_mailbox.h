@@ -7,13 +7,16 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/shared_memory.h"
 #include "cc/base/cc_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "ui/gfx/size.h"
 
 namespace cc {
 
+// TODO(skaslev, danakj) Rename this class more apropriately since now it
+// can hold a shared memory resource as well as a texture mailbox.
 class CC_EXPORT TextureMailbox {
  public:
   typedef base::Callback<void(unsigned sync_point,
@@ -30,14 +33,22 @@ class CC_EXPORT TextureMailbox {
                  const ReleaseCallback& callback,
                  unsigned texture_target,
                  unsigned sync_point);
+  TextureMailbox(base::SharedMemory* shared_memory,
+                 gfx::Size size,
+                 const ReleaseCallback& callback);
 
   ~TextureMailbox();
 
+  bool IsValid() const { return IsTexture() || IsSharedMemory(); }
+  bool IsTexture() const { return !name_.IsZero(); }
+  bool IsSharedMemory() const { return shared_memory_ != NULL; }
+
+  bool Equals(const TextureMailbox&) const;
+  bool ContainsMailbox(const gpu::Mailbox&) const;
+  bool ContainsHandle(base::SharedMemoryHandle handle) const;
+
   const ReleaseCallback& callback() const { return callback_; }
   const int8* data() const { return name_.name; }
-  bool Equals(const gpu::Mailbox&) const;
-  bool Equals(const TextureMailbox&) const;
-  bool IsEmpty() const;
   const gpu::Mailbox& name() const { return name_; }
   void ResetSyncPoint() { sync_point_ = 0; }
   void RunReleaseCallback(unsigned sync_point, bool lost_resource) const;
@@ -45,11 +56,19 @@ class CC_EXPORT TextureMailbox {
   unsigned target() const { return target_; }
   unsigned sync_point() const { return sync_point_; }
 
+  base::SharedMemory* shared_memory() const { return shared_memory_; }
+  gfx::Size shared_memory_size() const { return shared_memory_size_; }
+  size_t shared_memory_size_in_bytes() const;
+
+  TextureMailbox CopyWithNewCallback(const ReleaseCallback& callback) const;
+
  private:
   gpu::Mailbox name_;
   ReleaseCallback callback_;
   unsigned target_;
   unsigned sync_point_;
+  base::SharedMemory* shared_memory_;
+  gfx::Size shared_memory_size_;
 };
 
 }  // namespace cc

@@ -29,7 +29,6 @@
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_preference.h"
-#include "ui/surface/transport_dib.h"
 
 namespace gpu {
 struct Mailbox;

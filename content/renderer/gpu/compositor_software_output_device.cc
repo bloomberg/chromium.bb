@@ -10,27 +10,56 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/surface/transport_dib.h"
 
 namespace content {
 
-CompositorSoftwareOutputDevice::DIB::DIB(size_t size) {
-  RenderProcess* render_process = RenderProcess::current();
-  dib_ = render_process->CreateTransportDIB(size);
-  CHECK(dib_);
-  bool success = dib_->Map();
-  CHECK(success);
+CompositorSoftwareOutputDevice::Buffer::Buffer(
+    unsigned id, scoped_ptr<base::SharedMemory> mem)
+    : id_(id),
+      mem_(mem.Pass()),
+      free_(true),
+      parent_(NULL) {
 }
 
-CompositorSoftwareOutputDevice::DIB::~DIB() {
-  RenderProcess* render_process = RenderProcess::current();
-  render_process->FreeTransportDIB(dib_);
+CompositorSoftwareOutputDevice::Buffer::~Buffer() {
+}
+
+void CompositorSoftwareOutputDevice::Buffer::SetParent(
+    Buffer* parent, const gfx::Rect& damage) {
+  parent_ = parent;
+  damage_ = damage;
+}
+
+bool CompositorSoftwareOutputDevice::Buffer::FindDamageDifferenceFrom(
+    Buffer* buffer, SkRegion* result) const {
+  if (!buffer)
+    return false;
+
+  if (buffer == this) {
+    *result = SkRegion();
+    return true;
+  }
+
+  SkRegion damage;
+  const Buffer* current = this;
+  while (current->parent_) {
+    damage.op(RectToSkIRect(current->damage_), SkRegion::kUnion_Op);
+    if (current->parent_ == buffer) {
+      *result = damage;
+      return true;
+    }
+    current = current->parent_;
+  }
+
+  return false;
 }
 
 CompositorSoftwareOutputDevice::CompositorSoftwareOutputDevice()
-    : front_buffer_(-1),
-      num_free_buffers_(0) {
+    : current_index_(-1),
+      next_buffer_id_(1),
+      render_thread_(RenderThread::Get()) {
   DetachFromThread();
 }
 
@@ -38,10 +67,34 @@ CompositorSoftwareOutputDevice::~CompositorSoftwareOutputDevice() {
   DCHECK(CalledOnValidThread());
 }
 
-CompositorSoftwareOutputDevice::DIB*
-CompositorSoftwareOutputDevice::CreateDIB() {
-  const size_t size =  4 * viewport_size_.GetArea();
-  return new DIB(size);
+unsigned CompositorSoftwareOutputDevice::GetNextId() {
+  unsigned id = next_buffer_id_++;
+  // Zero is reserved to label invalid frame id.
+  if (id == 0)
+    id = next_buffer_id_++;
+  return id;
+}
+
+CompositorSoftwareOutputDevice::Buffer*
+CompositorSoftwareOutputDevice::CreateBuffer() {
+  const size_t size = 4 * viewport_size_.GetArea();
+  scoped_ptr<base::SharedMemory> mem =
+      render_thread_->HostAllocateSharedMemoryBuffer(size).Pass();
+  CHECK(mem);
+  bool success = mem->Map(size);
+  CHECK(success);
+  return new Buffer(GetNextId(), mem.Pass());
+}
+
+size_t CompositorSoftwareOutputDevice::FindFreeBuffer(size_t hint) {
+  for (size_t i = 0; i < buffers_.size(); ++i) {
+    size_t index = (hint + i) % buffers_.size();
+    if (buffers_[index]->free())
+      return index;
+  }
+
+  buffers_.push_back(CreateBuffer());
+  return buffers_.size() - 1;
 }
 
 void CompositorSoftwareOutputDevice::Resize(gfx::Size viewport_size) {
@@ -50,65 +103,75 @@ void CompositorSoftwareOutputDevice::Resize(gfx::Size viewport_size) {
   if (viewport_size_ == viewport_size)
     return;
 
-  // Keep non-ACKed dibs open.
-  int first_non_free = front_buffer_ + num_free_buffers_ + 1;
-  int num_non_free = dibs_.size() - num_free_buffers_;
-  for (int i = 0; i < num_non_free; ++i) {
-    int index = (first_non_free + i) % dibs_.size();
-    awaiting_ack_.push_back(dibs_[index]);
-    dibs_[index] = NULL;
+  // Keep non-ACKed buffers in awaiting_ack_ until they get acknowledged.
+  for (size_t i = 0; i < buffers_.size(); ++i) {
+    if (!buffers_[i]->free()) {
+      awaiting_ack_.push_back(buffers_[i]);
+      buffers_[i] = NULL;
+    }
   }
 
-  dibs_.clear();
-  front_buffer_ = -1;
-  num_free_buffers_ = 0;
+  buffers_.clear();
+  current_index_ = -1;
   viewport_size_ = viewport_size;
 }
 
 SkCanvas* CompositorSoftwareOutputDevice::BeginPaint(gfx::Rect damage_rect) {
   DCHECK(CalledOnValidThread());
 
-  gfx::Rect last_damage_rect = damage_rect_;
-  damage_rect_ = damage_rect;
-
-  int last_buffer = front_buffer_;
-  if (num_free_buffers_ == 0) {
-    dibs_.insert(dibs_.begin() + (front_buffer_ + 1), CreateDIB());
-    last_damage_rect = gfx::Rect(viewport_size_);
-  } else {
-    --num_free_buffers_;
-  }
-  front_buffer_ = (front_buffer_ + 1) % dibs_.size();
-
-  TransportDIB* front_dib = dibs_[front_buffer_]->dib();
-  DCHECK(front_dib);
-  DCHECK(front_dib->memory());
+  Buffer* previous = NULL;
+  if (current_index_ != size_t(-1))
+    previous = buffers_[current_index_];
+  current_index_ = FindFreeBuffer(current_index_ + 1);
+  Buffer* current = buffers_[current_index_];
+  DCHECK(current->free());
+  current->SetFree(false);
 
   // Set up a canvas for the current front buffer.
   bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
                     viewport_size_.width(),
                     viewport_size_.height());
-  bitmap_.setPixels(front_dib->memory());
+  bitmap_.setPixels(current->memory());
   device_ = skia::AdoptRef(new SkDevice(bitmap_));
   canvas_ = skia::AdoptRef(new SkCanvas(device_.get()));
 
-  // Copy over previous damage.
-  if (last_buffer != -1) {
-    TransportDIB* last_dib = dibs_[last_buffer]->dib();
-    SkBitmap back_bitmap;
-    back_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                          viewport_size_.width(),
-                          viewport_size_.height());
-    back_bitmap.setPixels(last_dib->memory());
-
-    SkRegion region(RectToSkIRect(last_damage_rect));
+  if (!previous) {
+    DCHECK(damage_rect == gfx::Rect(viewport_size_));
+  } else {
+    // Find the smallest damage region that needs
+    // to be copied from the |previous| buffer.
+    SkRegion region;
+    bool found =
+        current->FindDamageDifferenceFrom(previous, &region) ||
+        previous->FindDamageDifferenceFrom(current, &region);
+    if (!found)
+      region = SkRegion(RectToSkIRect(gfx::Rect(viewport_size_)));
     region.op(RectToSkIRect(damage_rect), SkRegion::kDifference_Op);
-    for (SkRegion::Iterator it(region); !it.done(); it.next()) {
-      const SkIRect& src_rect = it.rect();
-      SkRect dst_rect = SkRect::Make(src_rect);
-      canvas_->drawBitmapRect(back_bitmap, &src_rect, dst_rect, NULL);
+
+    // Copy over the damage region.
+    if (!region.isEmpty()) {
+      SkBitmap back_bitmap;
+      back_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                            viewport_size_.width(),
+                            viewport_size_.height());
+      back_bitmap.setPixels(previous->memory());
+
+      for (SkRegion::Iterator it(region); !it.done(); it.next()) {
+        const SkIRect& src_rect = it.rect();
+        SkRect dst_rect = SkRect::Make(src_rect);
+        canvas_->drawBitmapRect(back_bitmap, &src_rect, dst_rect, NULL);
+      }
     }
   }
+
+  // Make |current| child of |previous| and orphan all of |current|'s children.
+  current->SetParent(previous, damage_rect);
+  for (size_t i = 0; i < buffers_.size(); ++i) {
+    Buffer* buffer = buffers_[i];
+    if (buffer->parent() == current)
+      buffer->SetParent(NULL, gfx::Rect(viewport_size_));
+  }
+  damage_rect_ = damage_rect;
 
   return canvas_.get();
 }
@@ -118,25 +181,27 @@ void CompositorSoftwareOutputDevice::EndPaint(
   DCHECK(CalledOnValidThread());
 
   if (frame_data) {
+    Buffer* buffer = buffers_[current_index_];
+    frame_data->id = buffer->id();
     frame_data->size = viewport_size_;
     frame_data->damage_rect = damage_rect_;
-    frame_data->dib_id = dibs_[front_buffer_]->dib()->id();
+    frame_data->handle = buffer->handle();
   }
 }
 
-void CompositorSoftwareOutputDevice::ReclaimDIB(const TransportDIB::Id& id) {
+void CompositorSoftwareOutputDevice::ReclaimSoftwareFrame(unsigned id) {
   DCHECK(CalledOnValidThread());
 
-  if (!TransportDIB::is_valid_id(id))
+  if (!id)
     return;
 
-  // The reclaimed dib id might not be among the currently
-  // active dibs if we got a resize event in the mean time.
-  ScopedVector<DIB>::iterator it =
-      std::find_if(dibs_.begin(), dibs_.end(), CompareById(id));
-  if (it != dibs_.end()) {
-    ++num_free_buffers_;
-    DCHECK_LE(static_cast<size_t>(num_free_buffers_), dibs_.size());
+  // The reclaimed buffer id might not be among the currently
+  // active buffers if we got a resize event in the mean time.
+  ScopedVector<Buffer>::iterator it =
+      std::find_if(buffers_.begin(), buffers_.end(), CompareById(id));
+  if (it != buffers_.end()) {
+    DCHECK(!(*it)->free());
+    (*it)->SetFree(true);
     return;
   } else {
     it = std::find_if(awaiting_ack_.begin(), awaiting_ack_.end(),

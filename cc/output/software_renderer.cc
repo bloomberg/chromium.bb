@@ -113,7 +113,7 @@ void SoftwareRenderer::SwapBuffers(const ui::LatencyInfo& latency_info) {
 
 void SoftwareRenderer::ReceiveCompositorFrameAck(
     const CompositorFrameAck& ack) {
-  output_device_->ReclaimDIB(ack.last_dib_id);
+  output_device_->ReclaimSoftwareFrame(ack.last_software_frame_id);
 }
 
 bool SoftwareRenderer::FlippedFramebuffer() const {

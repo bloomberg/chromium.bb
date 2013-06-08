@@ -363,7 +363,6 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/media/media.gyp:media',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
-        '<(DEPTH)/ui/surface/surface.gyp:surface',
         '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
       ],

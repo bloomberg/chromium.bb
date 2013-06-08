@@ -205,6 +205,9 @@ class MockMailboxCallback {
   MOCK_METHOD3(Release, void(const std::string& mailbox,
                              unsigned sync_point,
                              bool lost_resource));
+  MOCK_METHOD3(Release2, void(base::SharedMemory* shared_memory,
+                              unsigned sync_point,
+                              bool lost_resource));
 };
 
 struct CommonMailboxObjects {
@@ -212,7 +215,8 @@ struct CommonMailboxObjects {
       : mailbox_name1_(64, '1'),
         mailbox_name2_(64, '2'),
         sync_point1_(1),
-        sync_point2_(2) {
+        sync_point2_(2),
+        shared_memory_(new base::SharedMemory) {
     release_mailbox1_ = base::Bind(&MockMailboxCallback::Release,
                                    base::Unretained(&mock_callback_),
                                    mailbox_name1_);
@@ -225,6 +229,13 @@ struct CommonMailboxObjects {
     gpu::Mailbox m2;
     m2.SetName(reinterpret_cast<const int8*>(mailbox_name2_.data()));
     mailbox2_ = TextureMailbox(m2, release_mailbox2_, sync_point2_);
+
+    gfx::Size size(128, 128);
+    EXPECT_TRUE(shared_memory_->CreateAndMapAnonymous(4 * size.GetArea()));
+    release_mailbox3_ = base::Bind(&MockMailboxCallback::Release2,
+                                   base::Unretained(&mock_callback_),
+                                   shared_memory_.get());
+    mailbox3_ = TextureMailbox(shared_memory_.get(), size, release_mailbox3_);
   }
 
   std::string mailbox_name1_;
@@ -232,10 +243,13 @@ struct CommonMailboxObjects {
   MockMailboxCallback mock_callback_;
   TextureMailbox::ReleaseCallback release_mailbox1_;
   TextureMailbox::ReleaseCallback release_mailbox2_;
+  TextureMailbox::ReleaseCallback release_mailbox3_;
   TextureMailbox mailbox1_;
   TextureMailbox mailbox2_;
+  TextureMailbox mailbox3_;
   unsigned sync_point1_;
   unsigned sync_point2_;
+  scoped_ptr<base::SharedMemory> shared_memory_;
 };
 
 class TextureLayerWithMailboxTest : public TextureLayerTest {
@@ -283,6 +297,20 @@ TEST_F(TextureLayerWithMailboxTest, ReplaceMailboxOnMainThreadBeforeCommit) {
               Release(test_data_.mailbox_name2_,
                       test_data_.sync_point2_,
                       false))
+      .Times(1);
+  test_layer->SetTextureMailbox(TextureMailbox());
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+  Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
+
+  test_layer->SetTextureMailbox(test_data_.mailbox3_);
+  Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+  Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
+
+  EXPECT_CALL(*layer_tree_host_, AcquireLayerTextures()).Times(0);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
+  EXPECT_CALL(test_data_.mock_callback_,
+              Release2(test_data_.shared_memory_.get(),
+                       0, false))
       .Times(1);
   test_layer->SetTextureMailbox(TextureMailbox());
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());

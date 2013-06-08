@@ -236,7 +236,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateGLTexture(
 ResourceProvider::ResourceId ResourceProvider::CreateBitmap(gfx::Size size) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  uint8_t* pixels = new uint8_t[size.width() * size.height() * 4];
+  uint8_t* pixels = new uint8_t[4 * size.GetArea()];
 
   ResourceId id = next_id_++;
   Resource resource(pixels, size, GL_RGBA, GL_LINEAR);
@@ -276,12 +276,22 @@ ResourceProvider::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
   DCHECK(thread_checker_.CalledOnValidThread());
   // Just store the information. Mailbox will be consumed in LockForRead().
   ResourceId id = next_id_++;
-  unsigned texture_id = 0;
-  Resource resource(texture_id, gfx::Size(), 0, GL_LINEAR);
+  DCHECK(mailbox.IsValid());
+  Resource& resource = resources_[id];
+  if (mailbox.IsTexture()) {
+    unsigned texture_id = 0;
+    resource = Resource(texture_id, gfx::Size(), 0, GL_LINEAR);
+  } else {
+    DCHECK(mailbox.IsSharedMemory());
+    base::SharedMemory* shared_memory = mailbox.shared_memory();
+    DCHECK(shared_memory->memory());
+    uint8_t* pixels = reinterpret_cast<uint8_t*>(shared_memory->memory());
+    resource = Resource(pixels, mailbox.shared_memory_size(),
+                        GL_RGBA, GL_LINEAR);
+  }
   resource.external = true;
   resource.allocated = true;
   resource.mailbox = mailbox;
-  resources_[id] = resource;
   return id;
 }
 
@@ -332,20 +342,29 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
     DCHECK(context3d);
     GLC(context3d, context3d->deleteBuffer(resource->gl_pixel_buffer_id));
   }
-  if (!resource->mailbox.IsEmpty() && resource->external) {
-    WebGraphicsContext3D* context3d = output_surface_->context3d();
-    DCHECK(context3d);
+  if (resource->mailbox.IsValid() && resource->external) {
     unsigned sync_point = resource->mailbox.sync_point();
-    if (!lost_resource && resource->gl_id) {
-      GLC(context3d, context3d->bindTexture(
-          resource->mailbox.target(), resource->gl_id));
-      GLC(context3d, context3d->produceTextureCHROMIUM(
-          resource->mailbox.target(), resource->mailbox.data()));
+    if (resource->mailbox.IsTexture()) {
+      WebGraphicsContext3D* context3d = output_surface_->context3d();
+      DCHECK(context3d);
+      if (!lost_resource && resource->gl_id) {
+        GLC(context3d, context3d->bindTexture(
+            resource->mailbox.target(), resource->gl_id));
+        GLC(context3d, context3d->produceTextureCHROMIUM(
+            resource->mailbox.target(), resource->mailbox.data()));
+      }
+      if (resource->gl_id)
+        GLC(context3d, context3d->deleteTexture(resource->gl_id));
+      if (!lost_resource && resource->gl_id)
+        sync_point = context3d->insertSyncPoint();
+    } else {
+      DCHECK(resource->mailbox.IsSharedMemory());
+      base::SharedMemory* shared_memory = resource->mailbox.shared_memory();
+      if (resource->pixels && shared_memory) {
+        DCHECK(shared_memory->memory() == resource->pixels);
+        resource->pixels = NULL;
+      }
     }
-    if (resource->gl_id)
-      GLC(context3d, context3d->deleteTexture(resource->gl_id));
-    if (!lost_resource && resource->gl_id)
-      sync_point = context3d->insertSyncPoint();
     resource->mailbox.RunReleaseCallback(sync_point, lost_resource);
   }
   if (resource->pixels)
@@ -487,18 +506,21 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
   // Uninitialized! Call SetPixels or LockForWrite first.
   DCHECK(resource->allocated);
 
-  if (!resource->gl_id && resource->external && !resource->mailbox.IsEmpty()) {
-    WebGraphicsContext3D* context3d = output_surface_->context3d();
-    DCHECK(context3d);
-    if (resource->mailbox.sync_point()) {
-      GLC(context3d, context3d->waitSyncPoint(resource->mailbox.sync_point()));
-      resource->mailbox.ResetSyncPoint();
+  if (resource->external) {
+    if (!resource->gl_id && resource->mailbox.IsTexture()) {
+      WebGraphicsContext3D* context3d = output_surface_->context3d();
+      DCHECK(context3d);
+      if (resource->mailbox.sync_point()) {
+        GLC(context3d,
+            context3d->waitSyncPoint(resource->mailbox.sync_point()));
+        resource->mailbox.ResetSyncPoint();
+      }
+      resource->gl_id = context3d->createTexture();
+      GLC(context3d, context3d->bindTexture(
+          resource->mailbox.target(), resource->gl_id));
+      GLC(context3d, context3d->consumeTextureCHROMIUM(
+          resource->mailbox.target(), resource->mailbox.data()));
     }
-    resource->gl_id = context3d->createTexture();
-    GLC(context3d, context3d->bindTexture(
-        resource->mailbox.target(), resource->gl_id));
-    GLC(context3d, context3d->consumeTextureCHROMIUM(
-        resource->mailbox.target(), resource->mailbox.data()));
   }
 
   resource->lock_for_read_count++;
@@ -840,7 +862,7 @@ void ResourceProvider::ReceiveFromParent(
     DCHECK(resource->exported);
     resource->exported = false;
     resource->filter = it->filter;
-    DCHECK(resource->mailbox.Equals(it->mailbox));
+    DCHECK(resource->mailbox.ContainsMailbox(it->mailbox));
     if (resource->gl_id) {
       if (it->sync_point)
         GLC(context3d, context3d->waitSyncPoint(it->sync_point));
@@ -867,7 +889,7 @@ bool ResourceProvider::TransferResource(WebGraphicsContext3D* context,
   Resource* source = &it->second;
   DCHECK(!source->locked_for_write);
   DCHECK(!source->lock_for_read_count);
-  DCHECK(!source->external || (source->external && !source->mailbox.IsEmpty()));
+  DCHECK(!source->external || (source->external && source->mailbox.IsValid()));
   DCHECK(source->allocated);
   if (source->exported)
     return false;
@@ -876,7 +898,10 @@ bool ResourceProvider::TransferResource(WebGraphicsContext3D* context,
   resource->filter = source->filter;
   resource->size = source->size;
 
-  if (source->mailbox.IsEmpty()) {
+  // TODO(skaslev) Implement this path for shared memory resources.
+  DCHECK(!source->mailbox.IsSharedMemory());
+
+  if (!source->mailbox.IsTexture()) {
     GLC(context3d, context3d->genMailboxCHROMIUM(resource->mailbox.name));
     source->mailbox.SetName(resource->mailbox);
   } else {
@@ -913,7 +938,7 @@ void ResourceProvider::AcquirePixelBuffer(ResourceId id) {
         resource->gl_pixel_buffer_id);
     context3d->bufferData(
         GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM,
-        resource->size.width() * resource->size.height() * 4,
+        4 * resource->size.GetArea(),
         NULL,
         GL_DYNAMIC_DRAW);
     context3d->bindBuffer(GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM, 0);
@@ -923,8 +948,7 @@ void ResourceProvider::AcquirePixelBuffer(ResourceId id) {
     if (resource->pixel_buffer)
       return;
 
-    resource->pixel_buffer = new uint8_t[
-        resource->size.width() * resource->size.height() * 4];
+    resource->pixel_buffer = new uint8_t[4 * resource->size.GetArea()];
   }
 }
 
@@ -1049,6 +1073,7 @@ void ResourceProvider::SetPixelsFromBuffer(ResourceId id) {
   }
 
   if (resource->pixels) {
+    DCHECK(!resource->mailbox.IsValid());
     DCHECK(resource->pixel_buffer);
     DCHECK(resource->format == GL_RGBA);
 

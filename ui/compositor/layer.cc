@@ -86,6 +86,7 @@ Layer::Layer(LayerType type)
       zoom_(1),
       zoom_inset_(0),
       delegate_(NULL),
+      cc_layer_(NULL),
       scale_content_(true),
       device_scale_factor_(1.0f) {
   CreateWebLayer();
@@ -514,6 +515,32 @@ void Layer::SetExternalTexture(Texture* texture) {
   RecomputeDrawsContentAndUVRect();
 }
 
+void Layer::SetTextureMailbox(const cc::TextureMailbox& mailbox,
+                              float scale_factor) {
+  DCHECK_EQ(type_, LAYER_TEXTURED);
+  DCHECK(!solid_color_layer_);
+  layer_updated_externally_ = true;
+  texture_ = NULL;
+  if (!texture_layer_ || !texture_layer_->uses_mailbox()) {
+    scoped_refptr<cc::TextureLayer> new_layer =
+        cc::TextureLayer::CreateForMailbox(this);
+    new_layer->SetFlipped(false);
+    SwitchToLayer(new_layer);
+    texture_layer_ = new_layer;
+  }
+  texture_layer_->SetTextureMailbox(mailbox);
+  mailbox_ = mailbox;
+  mailbox_scale_factor_ = scale_factor;
+  RecomputeDrawsContentAndUVRect();
+}
+
+cc::TextureMailbox Layer::GetTextureMailbox(float* scale_factor) {
+  if (scale_factor)
+    *scale_factor = mailbox_scale_factor_;
+  cc::TextureMailbox::ReleaseCallback callback;
+  return mailbox_.CopyWithNewCallback(callback);
+}
+
 void Layer::SetDelegatedFrame(scoped_ptr<cc::DelegatedFrameData> frame,
                               gfx::Size frame_size_in_dip) {
   DCHECK_EQ(type_, LAYER_TEXTURED);
@@ -640,7 +667,9 @@ unsigned Layer::PrepareTexture(cc::ResourceUpdateQueue* queue) {
 
 WebKit::WebGraphicsContext3D* Layer::Context3d() {
   DCHECK(texture_layer_.get());
-  return texture_->HostContext3D();
+  if (texture_)
+    return texture_->HostContext3D();
+  return NULL;
 }
 
 bool Layer::PrepareTextureMailbox(cc::TextureMailbox* mailbox) {
@@ -918,11 +947,18 @@ void Layer::RecomputeDrawsContentAndUVRect() {
   DCHECK(cc_layer_);
   gfx::Size size(bounds_.size());
   if (texture_layer_.get()) {
-    DCHECK(texture_.get());
-
-    float texture_scale_factor = 1.0f / texture_->device_scale_factor();
-    gfx::Size texture_size = gfx::ToFlooredSize(
-        gfx::ScaleSize(texture_->size(), texture_scale_factor));
+    gfx::Size texture_size;
+    if (!texture_layer_->uses_mailbox()) {
+      DCHECK(texture_);
+      float texture_scale_factor = 1.0f / texture_->device_scale_factor();
+      texture_size = gfx::ToFlooredSize(
+          gfx::ScaleSize(texture_->size(), texture_scale_factor));
+    } else {
+      DCHECK(mailbox_.IsSharedMemory());
+      float texture_scale_factor = 1.0f / mailbox_scale_factor_;
+      texture_size = gfx::ToFlooredSize(
+          gfx::ScaleSize(mailbox_.shared_memory_size(), texture_scale_factor));
+    }
     size.SetToMin(texture_size);
 
     gfx::PointF uv_top_left(0.f, 0.f);
