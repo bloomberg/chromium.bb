@@ -273,15 +273,16 @@ PermissionMessages PermissionSet::GetPermissionMessages(
     } else {
       for (URLPatternSet::const_iterator i = effective_hosts_.begin();
            i != effective_hosts_.end(); ++i) {
-        if (i->scheme() == chrome::kChromeUIScheme) {
-          // chrome://favicon is the only URL for chrome:// scheme that we
-          // want to support. We want to deprecate the "chrome" scheme.
-          // We should not add any additional "host" here.
-          CHECK(GURL(chrome::kChromeUIFaviconURL).host() == i->host());
-          messages.push_back(PermissionMessage(
-              PermissionMessage::kFavicon,
-              l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FAVICON)));
-        }
+        if (i->scheme() != chrome::kChromeUIScheme)
+          continue;
+        // chrome://favicon is the only URL for chrome:// scheme that we
+        // want to support. We want to deprecate the "chrome" scheme.
+        // We should not add any additional "host" here.
+        if (GURL(chrome::kChromeUIFaviconURL).host() != i->host())
+          continue;
+        messages.push_back(PermissionMessage(
+            PermissionMessage::kFavicon,
+            l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FAVICON)));
       }
       std::set<std::string> hosts = GetDistinctHostsForDisplay();
       if (!hosts.empty())

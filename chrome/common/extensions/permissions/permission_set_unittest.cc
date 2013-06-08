@@ -1359,4 +1359,21 @@ TEST(PermissionsTest, SyncFileSystemPermission) {
   ASSERT_EQ(1u, warnings.size());
 }
 
+// Make sure that we don't crash when we're trying to show the permissions
+// even though chrome://thumb (and everything that's not chrome://favicon with
+// a chrome:// scheme) is not a valid permission.
+// More details here: crbug/246314.
+TEST(PermissionsTest, ChromeURLs) {
+  URLPatternSet allowed_hosts;
+  allowed_hosts.AddPattern(
+      URLPattern(URLPattern::SCHEME_ALL, "http://www.google.com/"));
+  allowed_hosts.AddPattern(
+      URLPattern(URLPattern::SCHEME_ALL, "chrome://favicon/"));
+  allowed_hosts.AddPattern(
+      URLPattern(URLPattern::SCHEME_ALL, "chrome://thumb/"));
+  scoped_refptr<PermissionSet> permissions(
+      new PermissionSet(APIPermissionSet(), allowed_hosts, URLPatternSet()));
+  permissions->GetPermissionMessages(Manifest::TYPE_EXTENSION);
+}
+
 }  // namespace extensions
