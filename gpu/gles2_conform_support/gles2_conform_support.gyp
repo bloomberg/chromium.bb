@@ -4,26 +4,30 @@
 
 {
   'variables': {
+    'chromium_code': 1,
     # These are defined here because we want to be able to compile them on
     # the buildbots without needed the OpenGL ES 2.0 conformance tests
     # which are not open source.
     'bootstrap_sources_native': [
       'native/main.cc',
     ],
-    'conditions': [
-      ['OS=="linux"', {
-        'bootstrap_sources_native': [
-          'native/egl_native.cc',
-          'native/egl_native_x11.cc',
-        ],
-      }],
-      ['OS=="win"', {
-        'bootstrap_sources_native': [
-          'native/egl_native.cc',
-          'native/egl_native_win.cc',
-        ],
-      }],
-    ],
+   'conditions': [
+     ['OS=="linux"', {
+       'bootstrap_sources_native': [
+         'native/egl_native_aura.cc',
+         'native/egl_native.cc',
+         'native/egl_native_gtk.cc',
+         'native/egl_native_x11.cc',
+       ],
+     }],
+     ['OS=="win"', {
+       'bootstrap_sources_native': [
+         'native/egl_native.cc',
+         'native/egl_native_win.cc',
+       ],
+     }],
+   ],
+
   },
   'targets': [
     {
