@@ -380,6 +380,7 @@ enum {
     // ToolbarController.
     infoBarContainerController_.reset(
         [[InfoBarContainerController alloc] initWithResizeDelegate:self]);
+    [self updateInfoBarTipVisibility];
 
     // We don't want to try and show the bar before it gets placed in its parent
     // view, so this step shoudn't be inside the bookmark bar controller's
@@ -1977,11 +1978,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
   [toolbarController_ setDividerOpacity:[self toolbarDividerOpacity]];
   [self updateContentOffsets];
   [self updateSubviewZOrder:[self inPresentationMode]];
-
-  // If the overlay is open then hide the infobar tip.
-  [infoBarContainerController_
-      setShouldSuppressTopInfoBarTip:[self currentInstantUIState] !=
-      browser_window_controller::kInstantUINone];
+  [self updateInfoBarTipVisibility];
 }
 
 - (void)onFindBarVisibilityChanged {

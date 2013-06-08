@@ -1041,4 +1041,13 @@ willPositionSheet:(NSWindow*)sheet
       [self shouldAllowOverlappingViews:inPresentationMode]);
 }
 
+- (void)updateInfoBarTipVisibility {
+  // If the overlay is open or if there's no toolbar then hide the infobar tip.
+  BOOL suppressInfoBarTip =
+      [self currentInstantUIState] !=
+      browser_window_controller::kInstantUINone || ![self hasToolbar];
+  [infoBarContainerController_
+      setShouldSuppressTopInfoBarTip:suppressInfoBarTip];
+}
+
 @end  // @implementation BrowserWindowController(Private)

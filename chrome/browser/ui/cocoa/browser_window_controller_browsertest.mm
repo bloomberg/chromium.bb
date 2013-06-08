@@ -540,31 +540,28 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, InstantSearchResultsMode) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, SheetPosition) {
-  NSWindow* window = browser()->window()->GetNativeWindow();
-  BrowserWindowController* mainController =
-      static_cast<BrowserWindowController*>([window windowController]);
-  ASSERT_TRUE([mainController isKindOfClass:[BrowserWindowController class]]);
-  EXPECT_TRUE([mainController isTabbedWindow]);
-  EXPECT_TRUE([mainController hasTabStrip]);
-  EXPECT_FALSE([mainController hasTitleBar]);
-  EXPECT_TRUE([mainController hasToolbar]);
-  EXPECT_FALSE([mainController isBookmarkBarVisible]);
+  ASSERT_TRUE([controller() isKindOfClass:[BrowserWindowController class]]);
+  EXPECT_TRUE([controller() isTabbedWindow]);
+  EXPECT_TRUE([controller() hasTabStrip]);
+  EXPECT_FALSE([controller() hasTitleBar]);
+  EXPECT_TRUE([controller() hasToolbar]);
+  EXPECT_FALSE([controller() isBookmarkBarVisible]);
 
   NSRect defaultAlertFrame = NSMakeRect(0, 0, 300, 200);
-  NSRect alertFrame = [mainController window:window
-                           willPositionSheet:nil
-                                   usingRect:defaultAlertFrame];
-  NSRect toolbarFrame = [[[mainController toolbarController] view] frame];
+  NSWindow* window = browser()->window()->GetNativeWindow();
+  NSRect alertFrame = [controller() window:window
+                         willPositionSheet:nil
+                                 usingRect:defaultAlertFrame];
+  NSRect toolbarFrame = [[[controller() toolbarController] view] frame];
   EXPECT_EQ(NSMinY(alertFrame), NSMinY(toolbarFrame));
 
   // Open sheet with normal browser window, persistent bookmark bar.
   browser()->window()->ToggleBookmarkBar();
-  EXPECT_TRUE([mainController isBookmarkBarVisible]);
-  alertFrame = [mainController window:window
-                    willPositionSheet:nil
-                            usingRect:defaultAlertFrame];
-  NSRect bookmarkBarFrame =
-      [[[mainController bookmarkBarController] view] frame];
+  EXPECT_TRUE([controller() isBookmarkBarVisible]);
+  alertFrame = [controller() window:window
+                  willPositionSheet:nil
+                          usingRect:defaultAlertFrame];
+  NSRect bookmarkBarFrame = [[[controller() bookmarkBarController] view] frame];
   EXPECT_EQ(NSMinY(alertFrame), NSMinY(bookmarkBarFrame));
 
   // Make sure the profile does not have the bookmark visible so that
@@ -577,27 +574,27 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, SheetPosition) {
   Browser* popup_browser = BrowserList::GetInstance(
       chrome::HOST_DESKTOP_TYPE_NATIVE)->GetLastActive();
   NSWindow* popupWindow = popup_browser->window()->GetNativeWindow();
-  BrowserWindowController* controller =
-      static_cast<BrowserWindowController*>([popupWindow windowController]);
-  ASSERT_TRUE([controller isKindOfClass:[BrowserWindowController class]]);
-  EXPECT_FALSE([controller isTabbedWindow]);
-  EXPECT_FALSE([controller hasTabStrip]);
-  EXPECT_TRUE([controller hasTitleBar]);
-  EXPECT_FALSE([controller isBookmarkBarVisible]);
-  EXPECT_FALSE([controller hasToolbar]);
+  BrowserWindowController* popupController =
+      [BrowserWindowController browserWindowControllerForWindow:popupWindow];
+  ASSERT_TRUE([popupController isKindOfClass:[BrowserWindowController class]]);
+  EXPECT_FALSE([popupController isTabbedWindow]);
+  EXPECT_FALSE([popupController hasTabStrip]);
+  EXPECT_TRUE([popupController hasTitleBar]);
+  EXPECT_FALSE([popupController isBookmarkBarVisible]);
+  EXPECT_FALSE([popupController hasToolbar]);
 
   // Open sheet in an application window.
-  [controller showWindow:nil];
-  alertFrame = [controller window:popupWindow
-                willPositionSheet:nil
-                        usingRect:defaultAlertFrame];
+  [popupController showWindow:nil];
+  alertFrame = [popupController window:popupWindow
+                     willPositionSheet:nil
+                             usingRect:defaultAlertFrame];
   EXPECT_EQ(NSMinY(alertFrame),
             NSHeight([[popupWindow contentView] frame]) -
             defaultAlertFrame.size.height);
 
   // Close the application window.
   popup_browser->tab_strip_model()->CloseSelectedTabs();
-  [controller close];
+  [popupController close];
 }
 
 // Verify that the info bar tip is hidden when the instant overlay is visible.
@@ -614,4 +611,35 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   HideInstant();
   EXPECT_FALSE(
       [[controller() infoBarContainerController] shouldSuppressTopInfoBarTip]);
+}
+
+// Verify that the info bar tip is hidden when the toolbar is not visible.
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
+                       InfoBarTipHiddenForWindowWithoutToolbar) {
+  ShowInfoBar();
+  EXPECT_FALSE(
+      [[controller() infoBarContainerController] shouldSuppressTopInfoBarTip]);
+
+  gfx::Rect initial_bounds(0, 0, 400, 400);
+  chrome::OpenAppShortcutWindow(
+      browser()->profile(), GURL("about:blank"), initial_bounds);
+  Browser* popup_browser = BrowserList::GetInstance(
+      chrome::HOST_DESKTOP_TYPE_NATIVE)->GetLastActive();
+  NSWindow* popupWindow = popup_browser->window()->GetNativeWindow();
+  BrowserWindowController* popupController =
+      [BrowserWindowController browserWindowControllerForWindow:popupWindow];
+  EXPECT_FALSE([popupController hasToolbar]);
+
+  // Show infobar for controller.
+  content::WebContents* web_contents =
+      popup_browser->tab_strip_model()->GetActiveWebContents();
+  InfoBarService* service = InfoBarService::FromWebContents(web_contents);
+  scoped_ptr<InfoBarDelegate> info_bar_delegate(new DummyInfoBar(service));
+  [[popupController infoBarContainerController]
+      addInfoBar:info_bar_delegate->CreateInfoBar(service)
+         animate:NO];
+
+  EXPECT_TRUE(
+      [[popupController infoBarContainerController]
+          shouldSuppressTopInfoBarTip]);
 }

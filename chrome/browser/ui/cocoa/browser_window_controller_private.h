@@ -170,6 +170,9 @@ enum InstantUIState {
 
 - (void)updateAllowOverlappingViews:(BOOL)inPresentationMode;
 
+// Update visibility of the infobar tip, depending on the state of the window.
+- (void)updateInfoBarTipVisibility;
+
 @end  // @interface BrowserWindowController(Private)
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_CONTROLLER_PRIVATE_H_
