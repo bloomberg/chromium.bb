@@ -11,10 +11,10 @@
 // permission API would only be available for channels CHANNEL_DEV and
 // CHANNEL_CANARY.
 
+var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
+var webRequestSchema =
+    requireNative('schema_registry').GetSchema('webRequest');
 var WebView = require('webView').WebView;
-var GetExtensionAPIDefinitions =
-      requireNative('apiDefinitions').GetExtensionAPIDefinitions;
-var WebRequestEvent = require('webRequest').WebRequestEvent;
 var forEach = require('utils').forEach;
 
 /** @type {Array.<string>} */
@@ -206,12 +206,9 @@ WebView.prototype.setupNewWindowEvent_ = function() {
 WebView.prototype.setupWebRequestEvents_ = function() {
   var self = this;
   // Populate the WebRequest events from the API definition.
-  var webRequestDefinition = GetExtensionAPIDefinitions().filter(function(api) {
-    return api.namespace == 'webRequest';
-  })[0];
-  for (var i = 0; i < webRequestDefinition.events.length; ++i) {
+  for (var i = 0; i < webRequestSchema.events.length; ++i) {
     Object.defineProperty(self.webviewNode_,
-                          webRequestDefinition.events[i].name, {
+                          webRequestSchema.events[i].name, {
       get: function(webRequestEvent) {
         return function() {
           if (!self[webRequestEvent.name + '_']) {
@@ -224,7 +221,7 @@ WebView.prototype.setupWebRequestEvents_ = function() {
           }
           return self[webRequestEvent.name + '_'];
         }
-      }(webRequestDefinition.events[i]),
+      }(webRequestSchema.events[i]),
       // No setter.
       enumerable: true
     });
