@@ -242,20 +242,8 @@ void CloseProcessHandle(ProcessHandle process) {
 }
 
 ProcessId GetProcId(ProcessHandle process) {
-  // Get a handle to |process| that has PROCESS_QUERY_INFORMATION rights.
-  HANDLE current_process = GetCurrentProcess();
-  HANDLE process_with_query_rights;
-  if (DuplicateHandle(current_process, process, current_process,
-                      &process_with_query_rights, PROCESS_QUERY_INFORMATION,
-                      false, 0)) {
-    DWORD id = GetProcessId(process_with_query_rights);
-    CloseHandle(process_with_query_rights);
-    return id;
-  }
-
-  // We're screwed.
-  NOTREACHED();
-  return 0;
+  // This returns 0 if we have insufficient rights to query the process handle.
+  return GetProcessId(process);
 }
 
 bool GetProcessIntegrityLevel(ProcessHandle process, IntegrityLevel *level) {
