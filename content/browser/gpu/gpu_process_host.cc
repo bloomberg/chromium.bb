@@ -131,6 +131,7 @@ void AcceleratedSurfaceBuffersSwappedCompletedForRenderer(
   int render_widget_id = 0;
   if (!GpuSurfaceTracker::Get()->GetRenderWidgetIDForSurface(
       surface_id, &render_process_id, &render_widget_id)) {
+    RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
     return;
   }
   RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);

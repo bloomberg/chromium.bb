@@ -121,6 +121,8 @@ bool GpuSurfaceTracker::GetRenderWidgetIDForSurface(int surface_id,
   if (it == surface_map_.end())
     return false;
   const SurfaceInfo& info = it->second;
+  if (!info.handle.is_transport())
+    return false;
   *renderer_id = info.renderer_id;
   *render_widget_id = info.render_widget_id;
   return true;
