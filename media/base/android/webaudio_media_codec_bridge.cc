@@ -5,6 +5,9 @@
 #include "media/base/android/webaudio_media_codec_bridge.h"
 
 #include <errno.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <vector>
 
@@ -35,11 +38,10 @@ WebAudioMediaCodecBridge::WebAudioMediaCodecBridge(
     base::SharedMemoryHandle encoded_audio_handle,
     base::FileDescriptor pcm_output,
     uint32_t data_size)
-    : encoded_audio_handle_(encoded_audio_handle.fd),
+    : encoded_audio_handle_(encoded_audio_handle),
       pcm_output_(pcm_output.fd),
       data_size_(data_size) {
   DVLOG(1) << "WebAudioMediaCodecBridge start **********************"
-           << "input fd = " << encoded_audio_handle_
            << " output fd = " << pcm_output.fd;
 }
 
@@ -48,26 +50,71 @@ WebAudioMediaCodecBridge::~WebAudioMediaCodecBridge() {
     DVLOG(1) << "Couldn't close output fd " << pcm_output_
              << ": " << strerror(errno);
   }
+}
 
-  if (close(encoded_audio_handle_)) {
-    DVLOG(1) << "Couldn't close shared mem fd " << encoded_audio_handle_
-             << ": " << strerror(errno);
+int WebAudioMediaCodecBridge::SaveEncodedAudioToFile(
+    JNIEnv* env,
+    jobject context) {
+  // Create a temporary file where we can save the encoded audio data.
+  std::string temporaryFile =
+      base::android::ConvertJavaStringToUTF8(
+          env,
+          Java_WebAudioMediaCodecBridge_CreateTempFile(env, context).obj());
+
+  // Open the file and unlink it, so that it will be actually removed
+  // when we close the file.
+  int fd = open(temporaryFile.c_str(), O_RDWR);
+  if (unlink(temporaryFile.c_str())) {
+    VLOG(0) << "Couldn't unlink temp file " << temporaryFile
+            << ": " << strerror(errno);
   }
+
+  if (fd < 0) {
+    return -1;
+  }
+
+  // Create a local mapping of the shared memory containing the
+  // encoded audio data, and save the contents to the temporary file.
+  base::SharedMemory encoded_data(encoded_audio_handle_, true);
+
+  if (!encoded_data.Map(data_size_)) {
+    VLOG(0) << "Unable to map shared memory!";
+    return -1;
+  }
+
+  if (static_cast<uint32_t>(write(fd, encoded_data.memory(), data_size_))
+      != data_size_) {
+    VLOG(0) << "Failed to write all audio data to temp file!";
+    return -1;
+  }
+
+  lseek(fd, 0, SEEK_SET);
+
+  return fd;
 }
 
 bool WebAudioMediaCodecBridge::DecodeInMemoryAudioFile() {
-  // Process the encoded data from |encoded_data_handle_|.
-
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
+
+  jobject context = base::android::GetApplicationContext();
+
+  int sourceFd = SaveEncodedAudioToFile(env, context);
+
+  if (sourceFd < 0)
+    return false;
+
   jboolean decoded = Java_WebAudioMediaCodecBridge_decodeAudioFile(
       env,
-      base::android::GetApplicationContext(),
+      context,
       reinterpret_cast<intptr_t>(this),
-      encoded_audio_handle_,
+      sourceFd,
       data_size_);
 
-  DVLOG(1) << "decoded = " << decoded;
+  close(sourceFd);
+
+  DVLOG(1) << "decoded = " << (decoded ? "true" : "false");
+
   return decoded;
 }
 

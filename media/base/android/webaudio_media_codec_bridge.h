@@ -8,7 +8,7 @@
 #include <jni.h>
 
 #include "base/file_descriptor_posix.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -55,9 +55,14 @@ class MEDIA_EXPORT WebAudioMediaCodecBridge {
   // Returns true if decoding was successful.
   bool DecodeInMemoryAudioFile();
 
+  // Save encoded audio data to a temporary file and return the file
+  // descriptor to that file.  -1 is returned if the audio data could
+  // not be saved for any reason.
+  int SaveEncodedAudioToFile(JNIEnv*, jobject);
+
   // The encoded audio data is read from this file descriptor for the
   // shared memory that holds the encoded data.
-  int encoded_audio_handle_;
+  base::SharedMemoryHandle encoded_audio_handle_;
 
   // The audio file information and decoded pcm data are written to
   // this file descriptor. We take ownership of this descriptor.
