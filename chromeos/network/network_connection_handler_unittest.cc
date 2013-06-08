@@ -38,12 +38,15 @@ class NetworkConnectionHandlerTest : public testing::Test {
     DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface()
         ->ClearServices();
     message_loop_.RunUntilIdle();
+    LoginState::Initialize();
     network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
     network_configuration_handler_.reset(
         NetworkConfigurationHandler::InitializeForTest(
             network_state_handler_.get()));
     network_connection_handler_.reset(new NetworkConnectionHandler);
-    network_connection_handler_->Init(network_state_handler_.get(),
+    // TODO(stevenjb): Test integration with CertLoader using a stub or mock.
+    network_connection_handler_->Init(NULL /* cert_loader */,
+                                      network_state_handler_.get(),
                                       network_configuration_handler_.get());
   }
 
@@ -51,6 +54,7 @@ class NetworkConnectionHandlerTest : public testing::Test {
     network_connection_handler_.reset();
     network_configuration_handler_.reset();
     network_state_handler_.reset();
+    LoginState::Shutdown();
     DBusThreadManager::Shutdown();
   }
 

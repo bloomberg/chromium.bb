@@ -46,7 +46,8 @@ void NetworkHandler::Init() {
       network_state_handler_.get(),
       network_profile_handler_.get(),
       network_configuration_handler_.get());
-  network_connection_handler_->Init(network_state_handler_.get(),
+  network_connection_handler_->Init(cert_loader_.get(),
+                                    network_state_handler_.get(),
                                     network_configuration_handler_.get());
   geolocation_handler_->Init();
 }
@@ -54,6 +55,15 @@ void NetworkHandler::Init() {
 // static
 void NetworkHandler::Initialize() {
   CHECK(!g_network_handler);
+  g_network_handler = new NetworkHandler();
+  g_network_handler->Init();
+}
+
+// static
+void NetworkHandler::InitializeForTest() {
+  CHECK(!g_network_handler);
+  if (!LoginState::IsInitialized())
+    LoginState::Initialize();  // OK not to shutdown LoginState for tests.
   g_network_handler = new NetworkHandler();
   g_network_handler->Init();
 }

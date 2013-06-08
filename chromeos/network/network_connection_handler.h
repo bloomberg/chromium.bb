@@ -14,6 +14,8 @@
 #include "base/values.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/login/login_state.h"
+#include "chromeos/network/cert_loader.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -21,6 +23,7 @@
 namespace chromeos {
 
 class NetworkState;
+class NetworkUIData;
 
 // The NetworkConnectionHandler class is used to manage network connection
 // requests. This is the only class that should make Shill Connect calls.
@@ -29,16 +32,19 @@ class NetworkState;
 //    known to be available to connect to the network.
 // 2. Request additional information (e.g. user data which contains certificate
 //    information) and determine whether sufficient information is available.
-// 3. Send the connect request.
-// 4. Wait for the network state to change to a non connecting state.
-// 5. Invoke the appropriate callback (always) on success or failure.
+// 3. Possibly configure the network certificate info (tpm slot and pkcs11 id).
+// 4. Send the connect request.
+// 5. Wait for the network state to change to a non connecting state.
+// 6. Invoke the appropriate callback (always) on success or failure.
 //
 // NetworkConnectionHandler depends on NetworkStateHandler for immediately
 // available State information, and NetworkConfigurationHandler for any
 // configuration calls.
 
 class CHROMEOS_EXPORT NetworkConnectionHandler
-    : public NetworkStateHandlerObserver,
+    : public LoginState::Observer,
+      public CertLoader::Observer,
+      public NetworkStateHandlerObserver,
       public base::SupportsWeakPtr<NetworkConnectionHandler> {
  public:
   // Constants for |error_name| from |error_callback| for Connect.
@@ -96,6 +102,13 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   virtual void NetworkListChanged() OVERRIDE;
   virtual void NetworkPropertiesUpdated(const NetworkState* network) OVERRIDE;
 
+  // LoginState::Observer
+  virtual void LoggedInStateChanged(LoginState::LoggedInState state) OVERRIDE;
+
+  // CertLoader::Observer
+  virtual void OnCertificatesLoaded(const net::CertificateList& cert_list,
+                                    bool initial_load) OVERRIDE;
+
  private:
   friend class NetworkHandler;
   friend class NetworkConnectionHandlerTest;
@@ -104,7 +117,8 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
 
   NetworkConnectionHandler();
 
-  void Init(NetworkStateHandler* network_state_handler,
+  void Init(CertLoader* cert_loader,
+            NetworkStateHandler* network_state_handler,
             NetworkConfigurationHandler* network_configuration_handler);
 
   ConnectRequest* pending_request(const std::string& service_path);
@@ -133,6 +147,9 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
 
   void CheckPendingRequest(const std::string service_path);
   void CheckAllPendingRequests();
+  bool CertificateIsConfigured(NetworkUIData* ui_data, std::string* pkcs11_id);
+  void ErrorCallbackForPendingRequest(const std::string& service_path,
+                                      const std::string& error_name);
 
   // Calls Shill.Manager.Disconnect asynchronously.
   void CallShillDisconnect(
@@ -150,13 +167,19 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
       const std::string& error_message);
 
   // Local references to the associated handler instances.
+  CertLoader* cert_loader_;
   NetworkStateHandler* network_state_handler_;
   NetworkProfileHandler* network_profile_handler_;
   NetworkConfigurationHandler* network_configuration_handler_;
 
-  // Map of pending connect requests, used to prevent repeat attempts while
+  // Map of pending connect requests, used to prevent repeated attempts while
   // waiting for Shill and to trigger callbacks on eventual success or failure.
   std::map<std::string, ConnectRequest> pending_requests_;
+  scoped_ptr<ConnectRequest> queued_connect_;
+
+  // Track certificate loading state.
+  bool logged_in_;
+  bool certificates_loaded_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectionHandler);
 };

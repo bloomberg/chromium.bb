@@ -216,7 +216,7 @@ class ProxyConfigServiceImplTest : public testing::Test {
 
   virtual void SetUp() {
     DBusThreadManager::InitializeWithStub();
-    NetworkHandler::Initialize();
+    NetworkHandler::InitializeForTest();
 
     SetUpNetwork();
 

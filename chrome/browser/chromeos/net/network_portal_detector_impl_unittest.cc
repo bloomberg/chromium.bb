@@ -211,7 +211,7 @@ class NetworkPortalDetectorImplTest
 
   void SetupNetworkHandler() {
     SetupDefaultShillState();
-    NetworkHandler::Initialize();
+    NetworkHandler::InitializeForTest();
   }
 
   base::MessageLoop message_loop_;

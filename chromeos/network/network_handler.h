@@ -27,6 +27,9 @@ class CHROMEOS_EXPORT NetworkHandler {
   // Sets the global instance. Must be called before any calls to Get().
   static void Initialize();
 
+  // Sets the global instance for testing.
+  static void InitializeForTest();
+
   // Destroys the global instance.
   static void Shutdown();
 

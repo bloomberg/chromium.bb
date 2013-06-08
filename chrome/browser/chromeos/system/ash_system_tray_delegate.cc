@@ -742,31 +742,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ConfigureNetwork(const std::string& network_id) OVERRIDE {
-    const chromeos::NetworkState* network = network_id.empty() ? NULL :
-        NetworkHandler::Get()->network_state_handler()->GetNetworkState(
-            network_id);
-    if (!network) {
-      LOG(ERROR) << "ConfigureNetwork: Network not found: " << network_id;
-      return;
-    }
-    if (network->type() == flimflam::kTypeWifi ||
-        network->type() == flimflam::kTypeWimax ||
-        network->type() == flimflam::kTypeVPN) {
-      // TODO(stevenjb): Replace with non-NetworkLibrary UI.
-      Network* cros_network = CrosLibrary::Get()->GetNetworkLibrary()->
-          FindNetworkByPath(network_id);
-      NetworkConfigView::Show(cros_network, GetNativeWindow());
-      return;
-    }
-    if (network->type() == flimflam::kTypeCellular) {
-      if (network->activation_state() != flimflam::kActivationStateActivated)
-        network_connect::ActivateCellular(network_id);
-      else if (network->cellular_out_of_credits())
-        network_connect::ShowMobileSetup(network_id);
-      return;
-    }
-    // No special configure or setup for |network_id|, show the settings UI.
-    ShowNetworkSettings(network_id);
+    network_connect::HandleUnconfiguredNetwork(network_id, GetNativeWindow());
   }
 
   virtual void ConnectToNetwork(const std::string& network_id) OVERRIDE {

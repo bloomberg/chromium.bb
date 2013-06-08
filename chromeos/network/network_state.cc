@@ -232,6 +232,15 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
                                              cellular_out_of_credits_);
 }
 
+void NetworkState::GetConfigProperties(
+    base::DictionaryValue* dictionary) const {
+  dictionary->SetStringWithoutPathExpansion(flimflam::kNameProperty, name());
+  dictionary->SetStringWithoutPathExpansion(flimflam::kTypeProperty, type());
+  dictionary->SetStringWithoutPathExpansion(flimflam::kSecurityProperty,
+                                            security());
+  dictionary->SetStringWithoutPathExpansion(flimflam::kGuidProperty, guid());
+}
+
 bool NetworkState::IsConnectedState() const {
   return StateIsConnected(connection_state_);
 }

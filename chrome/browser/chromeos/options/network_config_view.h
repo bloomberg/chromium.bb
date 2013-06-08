@@ -45,9 +45,8 @@ class NetworkConfigView : public views::DialogDelegateView,
   };
 
   // Shows a network connection dialog if none is currently visible.
-  // Returns false if a dialog is already visible.
-  static bool Show(Network* network, gfx::NativeWindow parent);
-  static bool ShowForType(ConnectionType type, gfx::NativeWindow parent);
+  static void Show(Network* network, gfx::NativeWindow parent);
+  static void ShowForType(ConnectionType type, gfx::NativeWindow parent);
 
   // Returns corresponding native window.
   gfx::NativeWindow GetNativeWindow() const;

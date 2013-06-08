@@ -35,6 +35,10 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // stored.
   void GetProperties(base::DictionaryValue* dictionary) const;
 
+  // Fills |dictionary| with the state properties required to configure a
+  // network.
+  void GetConfigProperties(base::DictionaryValue* dictionary) const;
+
   // Accessors
   const std::string& security() const { return security_; }
   const std::string& ip_address() const { return ip_address_; }
