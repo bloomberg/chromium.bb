@@ -406,18 +406,6 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
   EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
   EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
 
-  // Setting STATE_DUAL_MIRROR should try to reconfigure
-  EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_EXTENDED));
-  EXPECT_EQ(JoinActions(NULL), delegate_->GetActionsAndClear());
-  EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
-
-  // Set back to software mirror mode.
-  EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_MIRROR));
-  EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL),
-            delegate_->GetActionsAndClear());
-  EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
-  EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
-
   // Disconnect the second output.
   UpdateOutputs(1);
   EXPECT_TRUE(test_api_.SendOutputChangeEvents(false));

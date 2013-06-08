@@ -42,7 +42,6 @@ class GLSurface;
 class GLShareGroup;
 class Point;
 class Rect;
-class Size;
 }
 
 namespace WebKit {
@@ -56,8 +55,6 @@ class CompositorObserver;
 class ContextProviderFromContextFactory;
 class Layer;
 class PostedSwapQueue;
-class Reflector;
-class Texture;
 struct LatencyInfo;
 
 // This class abstracts the creation of the 3D context for the compositor. It is
@@ -84,14 +81,6 @@ class COMPOSITOR_EXPORT ContextFactory {
   // with all compositors.
   virtual WebKit::WebGraphicsContext3D* CreateOffscreenContext() = 0;
 
-  // Creates a reflector that copies the content of the |mirrored_compositor|
-  // onto |mirroing_layer|.
-  virtual scoped_refptr<Reflector> CreateReflector(
-      Compositor* mirrored_compositor,
-      Layer* mirroring_layer) = 0;
-  // Removes the reflector, which stops the mirroring.
-  virtual void RemoveReflector(scoped_refptr<Reflector> reflector) = 0;
-
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForMainThread() = 0;
   virtual scoped_refptr<cc::ContextProvider>
@@ -111,12 +100,6 @@ class COMPOSITOR_EXPORT DefaultContextFactory : public ContextFactory {
   virtual cc::OutputSurface* CreateOutputSurface(
       Compositor* compositor) OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* CreateOffscreenContext() OVERRIDE;
-
-  virtual scoped_refptr<Reflector> CreateReflector(
-      Compositor* compositor,
-      Layer* layer) OVERRIDE;
-  virtual void RemoveReflector(scoped_refptr<Reflector> reflector) OVERRIDE;
-
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForMainThread() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
@@ -148,12 +131,6 @@ class COMPOSITOR_EXPORT TestContextFactory : public ContextFactory {
   virtual cc::OutputSurface* CreateOutputSurface(
       Compositor* compositor) OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* CreateOffscreenContext() OVERRIDE;
-
-  virtual scoped_refptr<Reflector> CreateReflector(
-      Compositor* mirrored_compositor,
-      Layer* mirroring_layer) OVERRIDE;
-  virtual void RemoveReflector(scoped_refptr<Reflector> reflector) OVERRIDE;
-
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForMainThread() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
@@ -211,20 +188,6 @@ class COMPOSITOR_EXPORT CompositorDelegate {
 
  protected:
   virtual ~CompositorDelegate() {}
-};
-
-class COMPOSITOR_EXPORT Reflector
-    : public base::RefCountedThreadSafe<Reflector> {
- public:
-  Reflector() {}
-
-  virtual void OnMirroringCompositorResized() {}
-
- protected:
-  friend class base::RefCountedThreadSafe<Reflector>;
-  virtual ~Reflector() {}
-
-  DISALLOW_COPY_AND_ASSIGN(Reflector);
 };
 
 // This class represents a lock on the compositor, that can be used to prevent

@@ -254,14 +254,8 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
     return false;
 
   VLOG(1) << "SetDisplayMode: state=" << OutputStateToString(new_state);
-  if (output_state_ == new_state) {
-    // Cancel software mirroring if the state is moving from
-    // STATE_DUAL_EXTENDED to STATE_DUAL_EXTENDED.
-    if (mirroring_controller_ && new_state == STATE_DUAL_EXTENDED)
-      mirroring_controller_->SetSoftwareMirroring(false);
-    NotifyOnDisplayChanged();
+  if (output_state_ == new_state)
     return true;
-  }
 
   delegate_->GrabServer();
   std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
