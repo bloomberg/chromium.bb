@@ -7,6 +7,9 @@
 namespace autofill {
 namespace switches {
 
+// Flag used to tell Chrome the Autochecout whitelist url.
+const char kAutocheckoutWhitelistUrl[]      = "autocheckout-whitelist-url";
+
 // Flag used to tell Chrome the base url of the Autofill service.
 const char kAutofillServiceUrl[]            = "autofill-service-url";
 
