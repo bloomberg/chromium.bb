@@ -75,6 +75,7 @@ const char kNaClModules[] = "nacl_modules";
 const char kNaClModulesMIMEType[] = "mime_type";
 const char kNaClModulesPath[] = "path";
 const char kOAuth2[] = "oauth2";
+const char kOAuth2AutoApprove[] = "oauth2.auto_approve";
 const char kOAuth2ClientId[] = "oauth2.client_id";
 const char kOAuth2Scopes[] = "oauth2.scopes";
 const char kOfflineEnabled[] = "offline_enabled";

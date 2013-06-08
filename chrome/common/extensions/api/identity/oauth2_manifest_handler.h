@@ -22,6 +22,9 @@ struct OAuth2Info : public Extension::ManifestData {
   std::string client_id;
   std::vector<std::string> scopes;
 
+  // Indicates that approval UI can be skipped for a set of whitelisted apps.
+  bool auto_approve;
+
   static const OAuth2Info& GetOAuth2Info(const Extension* extension);
 };
 

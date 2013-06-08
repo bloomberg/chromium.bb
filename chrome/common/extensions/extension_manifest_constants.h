@@ -87,6 +87,7 @@ namespace extension_manifest_keys {
   extern const char kNaClModulesPath[];
   extern const char kName[];
   extern const char kOAuth2[];
+  extern const char kOAuth2AutoApprove[];
   extern const char kOAuth2ClientId[];
   extern const char kOAuth2Scopes[];
   extern const char kOfflineEnabled[];

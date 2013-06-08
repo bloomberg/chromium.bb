@@ -19,12 +19,13 @@ namespace {
 // Manifest keys.
 const char kClientId[] = "client_id";
 const char kScopes[] = "scopes";
+const char kAutoApprove[] = "auto_approve";
 
 }  // namespace
 
 namespace extensions {
 
-OAuth2Info::OAuth2Info() {}
+OAuth2Info::OAuth2Info() : auto_approve(false) {}
 OAuth2Info::~OAuth2Info() {}
 
 static base::LazyInstance<OAuth2Info> g_empty_oauth2_info =
@@ -68,6 +69,8 @@ bool OAuth2ManifestHandler::Parse(Extension* extension,
     }
     info->scopes.push_back(scope);
   }
+
+  dict->GetBoolean(kAutoApprove, &info->auto_approve);
 
   extension->SetManifestData(keys::kOAuth2, info.release());
   return true;
