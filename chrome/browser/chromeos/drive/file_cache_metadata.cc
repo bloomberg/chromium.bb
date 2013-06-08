@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
@@ -43,10 +44,10 @@ void ScanCacheDirectory(const std::vector<base::FilePath>& cache_paths,
   DCHECK(cache_map);
   DCHECK(processed_file_map);
 
-  file_util::FileEnumerator enumerator(cache_paths[sub_dir_type],
-                                       false,  // not recursive
-                                       file_util::FileEnumerator::FILES,
-                                       util::kWildCard);
+  base::FileEnumerator enumerator(cache_paths[sub_dir_type],
+                                  false,  // not recursive
+                                  base::FileEnumerator::FILES,
+                                  util::kWildCard);
   for (base::FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {
     // Extract resource_id and md5 from filename.

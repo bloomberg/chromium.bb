@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
@@ -132,10 +133,10 @@ class SandboxedUnpackerTest : public testing::Test {
 
   bool TempFilesRemoved() {
     // Check that temporary files were cleaned up.
-    int files_and_dirs = file_util::FileEnumerator::DIRECTORIES |
-        file_util::FileEnumerator::FILES;
+    int files_and_dirs = base::FileEnumerator::DIRECTORIES |
+        base::FileEnumerator::FILES;
 
-    file_util::FileEnumerator temp_iterator(
+    base::FileEnumerator temp_iterator(
       temp_path_,
       true,  // recursive
       files_and_dirs

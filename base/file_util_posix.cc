@@ -7,7 +7,6 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <fnmatch.h>
 #include <libgen.h>
 #include <limits.h>
 #include <stdio.h>
@@ -32,6 +31,7 @@
 #include <fstream>
 
 #include "base/basictypes.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -58,6 +58,7 @@
 #include "base/chromeos/chromeos_version.h"
 #endif
 
+using base::FileEnumerator;
 using base::FilePath;
 using base::MakeAbsoluteFilePath;
 
@@ -190,10 +191,7 @@ bool Delete(const FilePath& path, bool recursive) {
       FileEnumerator::SHOW_SYM_LINKS);
   for (FilePath current = traversal.Next(); success && !current.empty();
        current = traversal.Next()) {
-    FileEnumerator::FindInfo info;
-    traversal.GetFindInfo(&info);
-
-    if (S_ISDIR(info.stat.st_mode))
+    if (traversal.GetInfo().IsDirectory())
       directories.push(current.value());
     else
       success = (unlink(current.value().c_str()) == 0);
@@ -287,9 +285,9 @@ bool CopyDirectory(const FilePath& from_path,
 
   // We have to mimic windows behavior here. |to_path| may not exist yet,
   // start the loop with |to_path|.
-  FileEnumerator::FindInfo info;
+  struct stat from_stat;
   FilePath current = from_path;
-  if (stat(from_path.value().c_str(), &info.stat) < 0) {
+  if (stat(from_path.value().c_str(), &from_stat) < 0) {
     DLOG(ERROR) << "CopyDirectory() couldn't stat source directory: "
                 << from_path.value() << " errno = " << errno;
     success = false;
@@ -305,7 +303,7 @@ bool CopyDirectory(const FilePath& from_path,
 
   // The Windows version of this function assumes that non-recursive calls
   // will always have a directory for from_path.
-  DCHECK(recursive || S_ISDIR(info.stat.st_mode));
+  DCHECK(recursive || S_ISDIR(from_stat.st_mode));
 
   while (success && !current.empty()) {
     // current is the source path, including from_path, so append
@@ -318,14 +316,14 @@ bool CopyDirectory(const FilePath& from_path,
       }
     }
 
-    if (S_ISDIR(info.stat.st_mode)) {
-      if (mkdir(target_path.value().c_str(), info.stat.st_mode & 01777) != 0 &&
+    if (S_ISDIR(from_stat.st_mode)) {
+      if (mkdir(target_path.value().c_str(), from_stat.st_mode & 01777) != 0 &&
           errno != EEXIST) {
         DLOG(ERROR) << "CopyDirectory() couldn't create directory: "
                     << target_path.value() << " errno = " << errno;
         success = false;
       }
-    } else if (S_ISREG(info.stat.st_mode)) {
+    } else if (S_ISREG(from_stat.st_mode)) {
       if (!CopyFile(current, target_path)) {
         DLOG(ERROR) << "CopyDirectory() couldn't create file: "
                     << target_path.value();
@@ -337,7 +335,8 @@ bool CopyDirectory(const FilePath& from_path,
     }
 
     current = traversal.Next();
-    traversal.GetFindInfo(&info);
+    if (!current.empty())
+      from_stat = traversal.GetInfo().stat();
   }
 
   return success;
@@ -688,156 +687,6 @@ bool SetCurrentDirectory(const FilePath& path) {
   base::ThreadRestrictions::AssertIOAllowed();
   int ret = chdir(path.value().c_str());
   return !ret;
-}
-
-///////////////////////////////////////////////
-// FileEnumerator
-
-FileEnumerator::FileEnumerator(const FilePath& root_path,
-                               bool recursive,
-                               int file_type)
-    : current_directory_entry_(0),
-      root_path_(root_path),
-      recursive_(recursive),
-      file_type_(file_type) {
-  // INCLUDE_DOT_DOT must not be specified if recursive.
-  DCHECK(!(recursive && (INCLUDE_DOT_DOT & file_type_)));
-  pending_paths_.push(root_path);
-}
-
-FileEnumerator::FileEnumerator(const FilePath& root_path,
-                               bool recursive,
-                               int file_type,
-                               const FilePath::StringType& pattern)
-    : current_directory_entry_(0),
-      root_path_(root_path),
-      recursive_(recursive),
-      file_type_(file_type),
-      pattern_(root_path.Append(pattern).value()) {
-  // INCLUDE_DOT_DOT must not be specified if recursive.
-  DCHECK(!(recursive && (INCLUDE_DOT_DOT & file_type_)));
-  // The Windows version of this code appends the pattern to the root_path,
-  // potentially only matching against items in the top-most directory.
-  // Do the same here.
-  if (pattern.empty())
-    pattern_ = FilePath::StringType();
-  pending_paths_.push(root_path);
-}
-
-FileEnumerator::~FileEnumerator() {
-}
-
-FilePath FileEnumerator::Next() {
-  ++current_directory_entry_;
-
-  // While we've exhausted the entries in the current directory, do the next
-  while (current_directory_entry_ >= directory_entries_.size()) {
-    if (pending_paths_.empty())
-      return FilePath();
-
-    root_path_ = pending_paths_.top();
-    root_path_ = root_path_.StripTrailingSeparators();
-    pending_paths_.pop();
-
-    std::vector<DirectoryEntryInfo> entries;
-    if (!ReadDirectory(&entries, root_path_, file_type_ & SHOW_SYM_LINKS))
-      continue;
-
-    directory_entries_.clear();
-    current_directory_entry_ = 0;
-    for (std::vector<DirectoryEntryInfo>::const_iterator
-        i = entries.begin(); i != entries.end(); ++i) {
-      FilePath full_path = root_path_.Append(i->filename);
-      if (ShouldSkip(full_path))
-        continue;
-
-      if (pattern_.size() &&
-          fnmatch(pattern_.c_str(), full_path.value().c_str(), FNM_NOESCAPE))
-        continue;
-
-      if (recursive_ && S_ISDIR(i->stat.st_mode))
-        pending_paths_.push(full_path);
-
-      if ((S_ISDIR(i->stat.st_mode) && (file_type_ & DIRECTORIES)) ||
-          (!S_ISDIR(i->stat.st_mode) && (file_type_ & FILES)))
-        directory_entries_.push_back(*i);
-    }
-  }
-
-  return root_path_.Append(directory_entries_[current_directory_entry_
-      ].filename);
-}
-
-void FileEnumerator::GetFindInfo(FindInfo* info) {
-  DCHECK(info);
-
-  if (current_directory_entry_ >= directory_entries_.size())
-    return;
-
-  DirectoryEntryInfo* cur_entry = &directory_entries_[current_directory_entry_];
-  memcpy(&(info->stat), &(cur_entry->stat), sizeof(info->stat));
-  info->filename.assign(cur_entry->filename.value());
-}
-
-// static
-bool FileEnumerator::IsDirectory(const FindInfo& info) {
-  return S_ISDIR(info.stat.st_mode);
-}
-
-// static
-FilePath FileEnumerator::GetFilename(const FindInfo& find_info) {
-  return FilePath(find_info.filename);
-}
-
-// static
-int64 FileEnumerator::GetFilesize(const FindInfo& find_info) {
-  return find_info.stat.st_size;
-}
-
-// static
-base::Time FileEnumerator::GetLastModifiedTime(const FindInfo& find_info) {
-  return base::Time::FromTimeT(find_info.stat.st_mtime);
-}
-
-bool FileEnumerator::ReadDirectory(std::vector<DirectoryEntryInfo>* entries,
-                                   const FilePath& source, bool show_links) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  DIR* dir = opendir(source.value().c_str());
-  if (!dir)
-    return false;
-
-#if !defined(OS_LINUX) && !defined(OS_MACOSX) && !defined(OS_BSD) && \
-    !defined(OS_SOLARIS) && !defined(OS_ANDROID)
-  #error Port warning: depending on the definition of struct dirent, \
-         additional space for pathname may be needed
-#endif
-
-  struct dirent dent_buf;
-  struct dirent* dent;
-  while (readdir_r(dir, &dent_buf, &dent) == 0 && dent) {
-    DirectoryEntryInfo info;
-    info.filename = FilePath(dent->d_name);
-
-    FilePath full_name = source.Append(dent->d_name);
-    int ret;
-    if (show_links)
-      ret = lstat(full_name.value().c_str(), &info.stat);
-    else
-      ret = stat(full_name.value().c_str(), &info.stat);
-    if (ret < 0) {
-      // Print the stat() error message unless it was ENOENT and we're
-      // following symlinks.
-      if (!(errno == ENOENT && !show_links)) {
-        DPLOG(ERROR) << "Couldn't stat "
-                     << source.Append(dent->d_name).value();
-      }
-      memset(&info.stat, 0, sizeof(info.stat));
-    }
-    entries->push_back(info);
-  }
-
-  closedir(dir);
-  return true;
 }
 
 bool NormalizeFilePath(const FilePath& path, FilePath* normalized_path) {

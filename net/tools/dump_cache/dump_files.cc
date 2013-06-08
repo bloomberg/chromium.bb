@@ -14,6 +14,7 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/format_macros.h"
 #include "base/message_loop.h"
 #include "net/base/file_stream.h"
@@ -339,9 +340,9 @@ int DumpHeaders(const base::FilePath& input_path) {
   disk_cache::CacheAddr stats_addr = 0;
   DumpIndexHeader(index_name, &stats_addr);
 
-  file_util::FileEnumerator iter(input_path, false,
-                                 file_util::FileEnumerator::FILES,
-                                 FILE_PATH_LITERAL("data_*"));
+  base::FileEnumerator iter(input_path, false,
+                            base::FileEnumerator::FILES,
+                            FILE_PATH_LITERAL("data_*"));
   for (base::FilePath file = iter.Next(); !file.empty(); file = iter.Next())
     DumpBlockHeader(file);
 

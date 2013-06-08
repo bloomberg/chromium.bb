@@ -5,6 +5,7 @@
 #include "webkit/browser/fileapi/local_file_util.h"
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -26,9 +27,6 @@ class LocalFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
       : file_enum_(platform_root_path, false /* recursive */, file_type),
         platform_root_path_(platform_root_path),
         virtual_root_path_(virtual_root_path) {
-#if defined(OS_WIN)
-    memset(&file_util_info_, 0, sizeof(file_util_info_));
-#endif  // defined(OS_WIN)
   }
 
   virtual ~LocalFileEnumerator() {}
@@ -39,8 +37,8 @@ class LocalFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
   virtual bool IsDirectory() OVERRIDE;
 
  private:
-  file_util::FileEnumerator file_enum_;
-  file_util::FileEnumerator::FindInfo file_util_info_;
+  base::FileEnumerator file_enum_;
+  base::FileEnumerator::FileInfo file_util_info_;
   base::FilePath platform_root_path_;
   base::FilePath virtual_root_path_;
 };
@@ -52,7 +50,7 @@ base::FilePath LocalFileEnumerator::Next() {
     next = file_enum_.Next();
   if (next.empty())
     return next;
-  file_enum_.GetFindInfo(&file_util_info_);
+  file_util_info_ = file_enum_.GetInfo();
 
   base::FilePath path;
   platform_root_path_.AppendRelativePath(next, &path);
@@ -60,15 +58,15 @@ base::FilePath LocalFileEnumerator::Next() {
 }
 
 int64 LocalFileEnumerator::Size() {
-  return file_util::FileEnumerator::GetFilesize(file_util_info_);
+  return file_util_info_.GetSize();
 }
 
 base::Time LocalFileEnumerator::LastModifiedTime() {
-  return file_util::FileEnumerator::GetLastModifiedTime(file_util_info_);
+  return file_util_info_.GetLastModifiedTime();
 }
 
 bool LocalFileEnumerator::IsDirectory() {
-  return file_util::FileEnumerator::IsDirectory(file_util_info_);
+  return file_util_info_.IsDirectory();
 }
 
 LocalFileUtil::LocalFileUtil() {
@@ -151,8 +149,7 @@ scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> LocalFileUtil::
   }
   return make_scoped_ptr(new LocalFileEnumerator(
       file_path, root_url.path(),
-      file_util::FileEnumerator::FILES |
-          file_util::FileEnumerator::DIRECTORIES))
+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES))
       .PassAs<FileSystemFileUtil::AbstractFileEnumerator>();
 }
 

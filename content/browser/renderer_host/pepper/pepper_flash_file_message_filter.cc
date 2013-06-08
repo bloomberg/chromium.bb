@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_ppapi_host.h"
@@ -219,17 +220,16 @@ int32_t PepperFlashFileMessageFilter::OnGetDirContents(
   }
 
   ppapi::DirContents contents;
-  file_util::FileEnumerator enumerator(full_path, false,
-      file_util::FileEnumerator::FILES |
-      file_util::FileEnumerator::DIRECTORIES |
-      file_util::FileEnumerator::INCLUDE_DOT_DOT);
+  base::FileEnumerator enumerator(full_path, false,
+      base::FileEnumerator::FILES |
+      base::FileEnumerator::DIRECTORIES |
+      base::FileEnumerator::INCLUDE_DOT_DOT);
 
   while (!enumerator.Next().empty()) {
-    file_util::FileEnumerator::FindInfo info;
-    enumerator.GetFindInfo(&info);
+    base::FileEnumerator::FileInfo info = enumerator.GetInfo();
     ppapi::DirEntry entry = {
-      file_util::FileEnumerator::GetFilename(info),
-      file_util::FileEnumerator::IsDirectory(info)
+      info.GetName(),
+      info.IsDirectory()
     };
     contents.push_back(entry);
   }

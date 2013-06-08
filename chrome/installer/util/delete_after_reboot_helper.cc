@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/win/registry.h"
 #include "base/string_util.h"
 
@@ -116,8 +117,8 @@ bool ScheduleDirectoryForDeletion(const wchar_t* dir_name) {
   // First schedule all the normal files for deletion.
   {
     bool success = true;
-    file_util::FileEnumerator file_enum(base::FilePath(dir_name), false,
-                                        file_util::FileEnumerator::FILES);
+    base::FileEnumerator file_enum(base::FilePath(dir_name), false,
+                                   base::FileEnumerator::FILES);
     for (base::FilePath file = file_enum.Next(); !file.empty();
          file = file_enum.Next()) {
       success = ScheduleFileSystemEntityForDeletion(file.value().c_str());
@@ -131,8 +132,8 @@ bool ScheduleDirectoryForDeletion(const wchar_t* dir_name) {
   // Then recurse to all the subdirectories.
   {
     bool success = true;
-    file_util::FileEnumerator dir_enum(base::FilePath(dir_name), false,
-                                       file_util::FileEnumerator::DIRECTORIES);
+    base::FileEnumerator dir_enum(base::FilePath(dir_name), false,
+                                  base::FileEnumerator::DIRECTORIES);
     for (base::FilePath sub_dir = dir_enum.Next(); !sub_dir.empty();
          sub_dir = dir_enum.Next()) {
       success = ScheduleDirectoryForDeletion(sub_dir.value().c_str());

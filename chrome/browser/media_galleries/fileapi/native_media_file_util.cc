@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/string_util.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
@@ -531,16 +532,10 @@ base::PlatformFileError NativeMediaFileUtil::ReadDirectorySync(
   if (!file_info.is_directory)
     return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
 
-  file_util::FileEnumerator file_enum(
+  base::FileEnumerator file_enum(
       platform_path,
       false /* recursive */,
-      file_util::FileEnumerator::FILES |
-          file_util::FileEnumerator::DIRECTORIES);
-  file_util::FileEnumerator::FindInfo file_util_info;
-#if defined(OS_WIN)
-  memset(&file_util_info, 0, sizeof(file_util_info));
-#endif  // defined(OS_WIN)
-
+      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
   for (base::FilePath platform_path = file_enum.Next();
        !platform_path.empty();
        platform_path = file_enum.Next()) {
@@ -548,21 +543,20 @@ base::PlatformFileError NativeMediaFileUtil::ReadDirectorySync(
     if (file_util::IsLink(platform_path))
       continue;
 
-    file_enum.GetFindInfo(&file_util_info);
+    base::FileEnumerator::FileInfo info = file_enum.GetInfo();
 
     // NativeMediaFileUtil skip criteria.
     if (ShouldSkip(platform_path))
       continue;
-    if (!file_util::FileEnumerator::IsDirectory(file_util_info) &&
+    if (!info.IsDirectory() &&
         !GetMediaPathFilter(context)->Match(platform_path))
       continue;
 
     fileapi::DirectoryEntry entry;
-    entry.is_directory = file_util::FileEnumerator::IsDirectory(file_util_info);
+    entry.is_directory = info.IsDirectory();
     entry.name = platform_path.BaseName().value();
-    entry.size = file_util::FileEnumerator::GetFilesize(file_util_info);
-    entry.last_modified_time =
-        file_util::FileEnumerator::GetLastModifiedTime(file_util_info);
+    entry.size = info.GetSize();
+    entry.last_modified_time = info.GetLastModifiedTime();
 
     file_list->push_back(entry);
   }

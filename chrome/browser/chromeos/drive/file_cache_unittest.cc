@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -162,9 +163,9 @@ class FileCacheTestOnUIThread : public testing::Test {
   // Returns number of files matching to |path_pattern|.
   int CountFilesWithPathPattern(const base::FilePath& path_pattern) {
     int result = 0;
-    file_util::FileEnumerator enumerator(
+    base::FileEnumerator enumerator(
         path_pattern.DirName(), false /* not recursive*/,
-        file_util::FileEnumerator::FILES,
+        base::FileEnumerator::FILES,
         path_pattern.BaseName().value());
     for (base::FilePath current = enumerator.Next(); !current.empty();
          current = enumerator.Next())
@@ -481,9 +482,9 @@ class FileCacheTestOnUIThread : public testing::Test {
          FileCache::CACHE_TYPE_PERSISTENT :
          FileCache::CACHE_TYPE_TMP),
         FileCache::CACHED_FILE_FROM_SERVER);
-    file_util::FileEnumerator enumerator(path.DirName(), false,
-                                         file_util::FileEnumerator::FILES,
-                                         path.BaseName().value());
+    base::FileEnumerator enumerator(path.DirName(), false,
+                                    base::FileEnumerator::FILES,
+                                    path.BaseName().value());
     size_t num_files_found = 0;
     for (base::FilePath current = enumerator.Next(); !current.empty();
          current = enumerator.Next()) {

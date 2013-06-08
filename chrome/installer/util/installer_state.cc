@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
+#include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
@@ -649,8 +650,8 @@ void InstallerState::RemoveOldVersionDirectories(
   GetExistingExeVersions(&existing_version_strings);
 
   // Try to delete all directories that are not in the set we care to keep.
-  file_util::FileEnumerator version_enum(target_path(), false,
-      file_util::FileEnumerator::DIRECTORIES);
+  base::FileEnumerator version_enum(target_path(), false,
+                                    base::FileEnumerator::DIRECTORIES);
   for (base::FilePath next_version = version_enum.Next(); !next_version.empty();
        next_version = version_enum.Next()) {
     base::FilePath dir_name(next_version.BaseName());

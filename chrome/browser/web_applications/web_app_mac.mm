@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
@@ -142,9 +143,9 @@ bool HasExistingExtensionShim(const base::FilePath& destination_directory,
                               const std::string& extension_id,
                               const base::FilePath& own_basename) {
   // Check if there any any other shims for the same extension.
-  file_util::FileEnumerator enumerator(destination_directory,
-                                       false /* recursive */,
-                                       file_util::FileEnumerator::DIRECTORIES);
+  base::FileEnumerator enumerator(destination_directory,
+                                  false /* recursive */,
+                                  base::FileEnumerator::DIRECTORIES);
   for (base::FilePath shim_path = enumerator.Next();
        !shim_path.empty(); shim_path = enumerator.Next()) {
     if (shim_path.BaseName() != own_basename &&

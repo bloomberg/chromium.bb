@@ -5,6 +5,7 @@
 #ifndef SYNC_SYNCABLE_DIRECTORY_H_
 #define SYNC_SYNCABLE_DIRECTORY_H_
 
+#include <deque>
 #include <set>
 #include <string>
 #include <vector>
