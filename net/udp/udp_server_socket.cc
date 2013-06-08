@@ -69,4 +69,20 @@ void UDPServerSocket::AllowBroadcast() {
   socket_.AllowBroadcast();
 }
 
+int UDPServerSocket::JoinGroup(const IPAddressNumber& group_address) const {
+  return socket_.JoinGroup(group_address);
+}
+
+int UDPServerSocket::LeaveGroup(const IPAddressNumber& group_address) const {
+  return socket_.LeaveGroup(group_address);
+}
+
+int UDPServerSocket::SetMulticastTimeToLive(int time_to_live) {
+  return socket_.SetMulticastTimeToLive(time_to_live);
+}
+
+int UDPServerSocket::SetMulticastLoopbackMode(bool loopback) {
+  return socket_.SetMulticastLoopbackMode(loopback);
+}
+
 }  // namespace net

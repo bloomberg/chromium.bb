@@ -116,6 +116,28 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
     NOTIMPLEMENTED();
   }
 
+  virtual int JoinGroup(
+      const net::IPAddressNumber& group_address) const OVERRIDE {
+    NOTIMPLEMENTED();
+    return net::ERR_NOT_IMPLEMENTED;
+  }
+
+  virtual int LeaveGroup(
+      const net::IPAddressNumber& group_address) const OVERRIDE {
+    NOTIMPLEMENTED();
+    return net::ERR_NOT_IMPLEMENTED;
+  }
+
+  virtual int SetMulticastTimeToLive(int time_to_live) OVERRIDE {
+    NOTIMPLEMENTED();
+    return net::ERR_NOT_IMPLEMENTED;
+  }
+
+  virtual int SetMulticastLoopbackMode(bool loopback) OVERRIDE {
+    NOTIMPLEMENTED();
+    return net::ERR_NOT_IMPLEMENTED;
+  }
+
  private:
   net::IPEndPoint address_;
   std::deque<UDPPacket>* sent_packets_;

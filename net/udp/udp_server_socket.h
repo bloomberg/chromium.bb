@@ -6,6 +6,7 @@
 #define NET_SOCKET_UDP_SERVER_SOCKET_H_
 
 #include "net/base/completion_callback.h"
+#include "net/base/net_util.h"
 #include "net/udp/datagram_server_socket.h"
 #include "net/udp/udp_socket.h"
 
@@ -39,6 +40,10 @@ class NET_EXPORT UDPServerSocket : public DatagramServerSocket {
   virtual const BoundNetLog& NetLog() const OVERRIDE;
   virtual void AllowAddressReuse() OVERRIDE;
   virtual void AllowBroadcast() OVERRIDE;
+  virtual int JoinGroup(const IPAddressNumber& group_address) const OVERRIDE;
+  virtual int LeaveGroup(const IPAddressNumber& group_address) const OVERRIDE;
+  virtual int SetMulticastTimeToLive(int time_to_live) OVERRIDE;
+  virtual int SetMulticastLoopbackMode(bool loopback) OVERRIDE;
 
  private:
   UDPSocket socket_;
