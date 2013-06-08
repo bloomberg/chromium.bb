@@ -43,7 +43,7 @@
 namespace WebCore {
 
 class DrawingBuffer;
-class EXTDrawBuffers;
+class WebGLDrawBuffers;
 class EXTFragDepth;
 class EXTTextureFilterAnisotropic;
 class HTMLImageElement;
@@ -327,7 +327,7 @@ public:
     virtual void stop();
 
   private:
-    friend class EXTDrawBuffers;
+    friend class WebGLDrawBuffers;
     friend class WebGLFramebuffer;
     friend class WebGLObject;
     friend class OESVertexArrayObject;
@@ -501,7 +501,6 @@ public:
     int m_numGLErrorsToConsoleAllowed;
 
     // Enabled extension objects.
-    OwnPtr<EXTDrawBuffers> m_extDrawBuffers;
     OwnPtr<EXTFragDepth> m_extFragDepth;
     OwnPtr<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
     OwnPtr<OESTextureFloat> m_oesTextureFloat;
@@ -514,6 +513,7 @@ public:
     OwnPtr<WebGLLoseContext> m_webglLoseContext;
     OwnPtr<WebGLDebugRendererInfo> m_webglDebugRendererInfo;
     OwnPtr<WebGLDebugShaders> m_webglDebugShaders;
+    OwnPtr<WebGLDrawBuffers> m_webglDrawBuffers;
     OwnPtr<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
     OwnPtr<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
     OwnPtr<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;

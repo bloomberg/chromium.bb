@@ -33,7 +33,6 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
-#include "core/html/canvas/EXTDrawBuffers.h"
 #include "core/html/canvas/EXTFragDepth.h"
 #include "core/html/canvas/EXTTextureFilterAnisotropic.h"
 #include "core/html/canvas/OESElementIndexUint.h"
@@ -54,6 +53,7 @@
 #include "core/html/canvas/WebGLDebugRendererInfo.h"
 #include "core/html/canvas/WebGLDebugShaders.h"
 #include "core/html/canvas/WebGLDepthTexture.h"
+#include "core/html/canvas/WebGLDrawBuffers.h"
 #include "core/html/canvas/WebGLFramebuffer.h"
 #include "core/html/canvas/WebGLLoseContext.h"
 #include "core/html/canvas/WebGLProgram.h"
@@ -577,7 +577,6 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
     static const char* webkitPrefix[] = { "WEBKIT_", 0, };
     static const char* bothPrefixes[] = { "", "WEBKIT_", 0, };
 
-    registerExtension<EXTDrawBuffers>(m_extDrawBuffers, false, false, false, unprefixed);
     registerExtension<EXTTextureFilterAnisotropic>(m_extTextureFilterAnisotropic, false, false, true, webkitPrefix);
     registerExtension<OESElementIndexUint>(m_oesElementIndexUint, false, false, false, unprefixed);
     registerExtension<OESStandardDerivatives>(m_oesStandardDerivatives, false, false, false, unprefixed);
@@ -594,6 +593,7 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
 
     // Register draft extensions.
     registerExtension<EXTFragDepth>(m_extFragDepth, false, true, false, unprefixed);
+    registerExtension<WebGLDrawBuffers>(m_webglDrawBuffers, false, true, false, unprefixed);
 
     // Register privileged extensions.
     registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo, true, false, false, unprefixed);
@@ -2429,17 +2429,17 @@ WebGLGetInfo WebGLRenderingContext::getParameter(GC3Denum pname, ExceptionCode& 
         synthesizeGLError(GraphicsContext3D::INVALID_ENUM, "getParameter", "invalid parameter name, EXT_texture_filter_anisotropic not enabled");
         return WebGLGetInfo();
     case Extensions3D::MAX_COLOR_ATTACHMENTS_EXT: // EXT_draw_buffers BEGIN
-        if (m_extDrawBuffers)
+        if (m_webglDrawBuffers)
             return WebGLGetInfo(getMaxColorAttachments());
-        synthesizeGLError(GraphicsContext3D::INVALID_ENUM, "getParameter", "invalid parameter name, EXT_draw_buffers not enabled");
+        synthesizeGLError(GraphicsContext3D::INVALID_ENUM, "getParameter", "invalid parameter name, WEBGL_draw_buffers not enabled");
         return WebGLGetInfo();
     case Extensions3D::MAX_DRAW_BUFFERS_EXT:
-        if (m_extDrawBuffers)
+        if (m_webglDrawBuffers)
             return WebGLGetInfo(getMaxDrawBuffers());
-        synthesizeGLError(GraphicsContext3D::INVALID_ENUM, "getParameter", "invalid parameter name, EXT_draw_buffers not enabled");
+        synthesizeGLError(GraphicsContext3D::INVALID_ENUM, "getParameter", "invalid parameter name, WEBGL_draw_buffers not enabled");
         return WebGLGetInfo();
     default:
-        if (m_extDrawBuffers
+        if (m_webglDrawBuffers
             && pname >= Extensions3D::DRAW_BUFFER0_EXT
             && pname < static_cast<GC3Denum>(Extensions3D::DRAW_BUFFER0_EXT + getMaxDrawBuffers())) {
             GC3Dint value = GraphicsContext3D::NONE;
@@ -4992,7 +4992,7 @@ bool WebGLRenderingContext::validateFramebufferFuncParameters(const char* functi
     case GraphicsContext3D::DEPTH_STENCIL_ATTACHMENT:
         break;
     default:
-        if (m_extDrawBuffers
+        if (m_webglDrawBuffers
             && attachment > GraphicsContext3D::COLOR_ATTACHMENT0
             && attachment < static_cast<GC3Denum>(GraphicsContext3D::COLOR_ATTACHMENT0 + getMaxColorAttachments()))
             break;
@@ -5444,7 +5444,7 @@ IntSize WebGLRenderingContext::clampedCanvasSize()
 
 GC3Dint WebGLRenderingContext::getMaxDrawBuffers()
 {
-    if (isContextLost() || !m_extDrawBuffers)
+    if (isContextLost() || !m_webglDrawBuffers)
         return 0;
     if (!m_maxDrawBuffers)
         m_context->getIntegerv(Extensions3D::MAX_DRAW_BUFFERS_EXT, &m_maxDrawBuffers);
@@ -5456,7 +5456,7 @@ GC3Dint WebGLRenderingContext::getMaxDrawBuffers()
 
 GC3Dint WebGLRenderingContext::getMaxColorAttachments()
 {
-    if (isContextLost() || !m_extDrawBuffers)
+    if (isContextLost() || !m_webglDrawBuffers)
         return 0;
     if (!m_maxColorAttachments)
         m_context->getIntegerv(Extensions3D::MAX_COLOR_ATTACHMENTS_EXT, &m_maxColorAttachments);

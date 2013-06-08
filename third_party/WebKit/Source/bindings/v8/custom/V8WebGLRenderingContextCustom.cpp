@@ -33,7 +33,6 @@
 #include "V8WebGLRenderingContext.h"
 
 #include "V8ArrayBufferView.h"
-#include "V8EXTDrawBuffers.h"
 #include "V8EXTFragDepth.h"
 #include "V8EXTTextureFilterAnisotropic.h"
 #include "V8Float32Array.h"
@@ -61,6 +60,7 @@
 #include "V8WebGLDebugRendererInfo.h"
 #include "V8WebGLDebugShaders.h"
 #include "V8WebGLDepthTexture.h"
+#include "V8WebGLDrawBuffers.h"
 #include "V8WebGLFramebuffer.h"
 #include "V8WebGLLoseContext.h"
 #include "V8WebGLProgram.h"
@@ -178,10 +178,6 @@ static v8::Handle<v8::Value> toV8Object(WebGLExtension* extension, v8::Handle<v8
     v8::Handle<v8::Value> extensionObject;
     const char* referenceName = 0;
     switch (extension->getName()) {
-    case WebGLExtension::EXTDrawBuffersName:
-        extensionObject = toV8(static_cast<EXTDrawBuffers*>(extension), contextObject, isolate);
-        referenceName = "extDrawBuffersName";
-        break;
     case WebGLExtension::EXTFragDepthName:
         extensionObject = toV8(static_cast<EXTFragDepth*>(extension), contextObject, isolate);
         referenceName = "extFragDepthName";
@@ -240,6 +236,10 @@ static v8::Handle<v8::Value> toV8Object(WebGLExtension* extension, v8::Handle<v8
     case WebGLExtension::WebGLDepthTextureName:
         extensionObject = toV8(static_cast<WebGLDepthTexture*>(extension), contextObject, isolate);
         referenceName = "webGLDepthTextureName";
+        break;
+    case WebGLExtension::WebGLDrawBuffersName:
+        extensionObject = toV8(static_cast<WebGLDrawBuffers*>(extension), contextObject, isolate);
+        referenceName = "webGLDrawBuffersName";
         break;
     case WebGLExtension::WebGLLoseContextName:
         extensionObject = toV8(static_cast<WebGLLoseContext*>(extension), contextObject, isolate);

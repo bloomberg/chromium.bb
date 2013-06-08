@@ -23,8 +23,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EXTDrawBuffers_h
-#define EXTDrawBuffers_h
+#ifndef WebGLDrawBuffers_h
+#define WebGLDrawBuffers_h
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
@@ -32,23 +32,23 @@
 
 namespace WebCore {
 
-class EXTDrawBuffers : public WebGLExtension, public ScriptWrappable {
+class WebGLDrawBuffers : public WebGLExtension, public ScriptWrappable {
 public:
-    static PassOwnPtr<EXTDrawBuffers> create(WebGLRenderingContext*);
+    static PassOwnPtr<WebGLDrawBuffers> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
     static const char* getExtensionName();
 
-    virtual ~EXTDrawBuffers();
+    virtual ~WebGLDrawBuffers();
     virtual ExtensionName getName() const;
 
-    void drawBuffersEXT(const Vector<GC3Denum>& buffers);
+    void drawBuffersWEBGL(const Vector<GC3Denum>& buffers);
 
 private:
-    EXTDrawBuffers(WebGLRenderingContext*);
+    WebGLDrawBuffers(WebGLRenderingContext*);
 
     static bool satisfiesWebGLRequirements(WebGLRenderingContext*);
 };
 
 } // namespace WebCore
 
-#endif // EXTDrawBuffers_h
+#endif // WebGLDrawBuffers_h
