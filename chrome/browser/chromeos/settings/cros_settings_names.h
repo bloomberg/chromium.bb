@@ -25,6 +25,9 @@ extern const char kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled[];
 
 extern const char kSignedDataRoamingEnabled[];
 
+extern const char kUpdateDisabled[];
+extern const char kAllowedConnectionTypesForUpdate[];
+
 extern const char kSystemTimezonePolicy[];
 extern const char kSystemTimezone[];
 

@@ -56,7 +56,7 @@ body {
   display: inline-block;
   height: 17px;
   margin-right: 4px;
-  vertical-align: middle;
+  vertical-align: top;
   width: 17px;
 }
 
@@ -70,8 +70,13 @@ body {
 }
 
 #update-status-icon.failed {
-  background-image: url('chrome://theme/IDR_UPDATE_FAIL');
+  background-image: url('chrome://theme/IDR_UPDATE_FAILED');
   background-size: 17px;
+}
+
+#update-status-message-container {
+  display: inline-block;
+  vertical-align: top;
 }
 
 #more-info-expander {

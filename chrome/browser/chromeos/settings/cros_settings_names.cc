@@ -36,6 +36,14 @@ const char kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled[] =
 // All cros.signed.* settings are stored in SignedSettings.
 const char kSignedDataRoamingEnabled[] = "cros.signed.data_roaming_enabled";
 
+// True if auto-update was disabled by the system administrator.
+const char kUpdateDisabled[] = "cros.system.updateDisabled";
+
+// A list of strings which specifies allowed connection types for
+// update.
+const char kAllowedConnectionTypesForUpdate[] =
+    "cros.system.allowedConnectionTypesForUpdate";
+
 // The first constant refers to the user setting editable in the UI. The second
 // refers to the timezone policy. This seperation is necessary to allow the user
 // to temporarily change the timezone for the current session and reset it to

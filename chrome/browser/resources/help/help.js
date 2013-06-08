@@ -107,21 +107,23 @@ cr.define('help', function() {
     setUpdateStatus_: function(status, message) {
       if (status == 'checking') {
         this.setUpdateImage_('working');
-        $('update-status').innerHTML =
+        $('update-status-message').innerHTML =
             loadTimeData.getString('updateCheckStarted');
       } else if (status == 'updating') {
         this.setUpdateImage_('working');
-        $('update-status').innerHTML = loadTimeData.getString('updating');
+        $('update-status-message').innerHTML =
+            loadTimeData.getString('updating');
       } else if (status == 'nearly_updated') {
         this.setUpdateImage_('up-to-date');
-        $('update-status').innerHTML =
+        $('update-status-message').innerHTML =
             loadTimeData.getString('updateAlmostDone');
       } else if (status == 'updated') {
         this.setUpdateImage_('up-to-date');
-        $('update-status').innerHTML = loadTimeData.getString('upToDate');
+        $('update-status-message').innerHTML =
+            loadTimeData.getString('upToDate');
       } else if (status == 'failed') {
         this.setUpdateImage_('failed');
-        $('update-status').innerHTML = message;
+        $('update-status-message').innerHTML = message;
       }
 
       var container = $('update-status-container');
@@ -139,6 +141,20 @@ cr.define('help', function() {
      */
     setProgress_: function(progress) {
       $('update-percentage').innerHTML = progress + '%';
+    },
+
+    /**
+     * @private
+     */
+    setAllowedConnectionTypesMsg_: function(message) {
+      $('allowed-connection-types-message').innerText = message;
+    },
+
+    /**
+     * @private
+     */
+    showAllowedConnectionTypesMsg_: function(visible) {
+      $('allowed-connection-types-message').hidden = !visible;
     },
 
     /**
@@ -242,6 +258,15 @@ cr.define('help', function() {
 
   HelpPage.setProgress = function(progress) {
     HelpPage.getInstance().setProgress_(progress);
+  };
+
+  HelpPage.setAndShowAllowedConnectionTypesMsg = function(message) {
+    HelpPage.getInstance().setAllowedConnectionTypesMsg_(message);
+    HelpPage.getInstance().showAllowedConnectionTypesMsg_(true);
+  };
+
+  HelpPage.showAllowedConnectionTypesMsg = function(visible) {
+    HelpPage.getInstance().showAllowedConnectionTypesMsg_(visible);
   };
 
   HelpPage.setPromotionState = function(state) {

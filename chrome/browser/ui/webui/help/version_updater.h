@@ -20,6 +20,8 @@ class VersionUpdater {
     NEARLY_UPDATED,
     UPDATED,
     FAILED,
+    FAILED_OFFLINE,
+    FAILED_CONNECTION_TYPE_DISALLOWED,
     DISABLED,
   };
 

@@ -46,6 +46,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "content/public/browser/browser_thread.h"
 #endif
 
@@ -77,6 +78,17 @@ string16 BuildBrowserVersionString() {
 }
 
 #if defined(OS_CHROMEOS)
+
+// Returns message that informs user that for update it's better to
+// connect to a network of one of the allowed types.
+string16 GetAllowedConnectionTypesMessage() {
+  if (help_utils_chromeos::IsUpdateOverCellularAllowed()) {
+    return l10n_util::GetStringUTF16(IDS_UPGRADE_NETWORK_LIST_CELLULAR_ALLOWED);
+  } else {
+    return l10n_util::GetStringUTF16(
+        IDS_UPGRADE_NETWORK_LIST_CELLULAR_DISALLOWED);
+  }
+}
 
 bool CanChangeReleaseChannel() {
   // On non managed machines we have local owner who is the only one to change
@@ -265,10 +277,9 @@ void HelpHandler::OnPageLoaded(const ListValue* args) {
       base::Bind(&HelpHandler::OnOSFirmware, base::Unretained(this)),
       &tracker_);
 
-  scoped_ptr<base::Value> can_change_channel_value(
-      base::Value::CreateBooleanValue(CanChangeReleaseChannel()));
   web_ui()->CallJavascriptFunction(
-      "help.HelpPage.updateEnableReleaseChannel", *can_change_channel_value);
+      "help.HelpPage.updateEnableReleaseChannel",
+      base::FundamentalValue(CanChangeReleaseChannel()));
 
   if (g_build_date_string == NULL) {
     // If |g_build_date_string| is |NULL|, the date has not yet been assigned.
@@ -367,6 +378,8 @@ void HelpHandler::SetUpdateStatus(VersionUpdater::Status status,
     status_str = "updated";
     break;
   case VersionUpdater::FAILED:
+  case VersionUpdater::FAILED_OFFLINE:
+  case VersionUpdater::FAILED_CONNECTION_TYPE_DISALLOWED:
     status_str = "failed";
     break;
   case VersionUpdater::DISABLED:
@@ -374,16 +387,34 @@ void HelpHandler::SetUpdateStatus(VersionUpdater::Status status,
     break;
   }
 
-  scoped_ptr<Value> status_value(Value::CreateStringValue(status_str));
-  scoped_ptr<Value> message_value(Value::CreateStringValue(message));
   web_ui()->CallJavascriptFunction("help.HelpPage.setUpdateStatus",
-                                   *status_value, *message_value);
+                                   base::StringValue(status_str),
+                                   base::StringValue(message));
 
   if (status == VersionUpdater::UPDATING) {
-    scoped_ptr<Value> progress_value(Value::CreateIntegerValue(progress));
     web_ui()->CallJavascriptFunction("help.HelpPage.setProgress",
-                                     *progress_value);
+                                     base::FundamentalValue(progress));
   }
+
+#if defined(OS_CHROMEOS)
+  if (status == VersionUpdater::FAILED_OFFLINE ||
+      status == VersionUpdater::FAILED_CONNECTION_TYPE_DISALLOWED) {
+    string16 types_msg = GetAllowedConnectionTypesMessage();
+    if (!types_msg.empty()) {
+      web_ui()->CallJavascriptFunction(
+          "help.HelpPage.setAndShowAllowedConnectionTypesMsg",
+          base::StringValue(types_msg));
+    } else {
+      web_ui()->CallJavascriptFunction(
+          "help.HelpPage.showAllowedConnectionTypesMsg",
+          base::FundamentalValue(false));
+    }
+  } else {
+    web_ui()->CallJavascriptFunction(
+        "help.HelpPage.showAllowedConnectionTypesMsg",
+        base::FundamentalValue(false));
+  }
+#endif  // defined(OS_CHROMEOS)
 }
 
 #if defined(OS_MACOSX)
@@ -401,29 +432,25 @@ void HelpHandler::SetPromotionState(VersionUpdater::PromotionState state) {
     break;
   }
 
-  scoped_ptr<Value> state_value(Value::CreateStringValue(state_str));
   web_ui()->CallJavascriptFunction("help.HelpPage.setPromotionState",
-                                   *state_value);
+                                   base::StringValue(state_str));
 }
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_CHROMEOS)
 void HelpHandler::OnOSVersion(const std::string& version) {
-  scoped_ptr<Value> version_string(Value::CreateStringValue(version));
   web_ui()->CallJavascriptFunction("help.HelpPage.setOSVersion",
-                                   *version_string);
+                                   base::StringValue(version));
 }
 
 void HelpHandler::OnOSFirmware(const std::string& firmware) {
-  scoped_ptr<Value> firmware_string(Value::CreateStringValue(firmware));
   web_ui()->CallJavascriptFunction("help.HelpPage.setOSFirmware",
-                                   *firmware_string);
+                                   base::StringValue(firmware));
 }
 
 void HelpHandler::OnReleaseChannel(const std::string& channel) {
-  scoped_ptr<Value> channel_string(Value::CreateStringValue(channel));
   web_ui()->CallJavascriptFunction(
-      "help.HelpPage.updateSelectedChannel", *channel_string);
+      "help.HelpPage.updateSelectedChannel", base::StringValue(channel));
 }
 
 void HelpHandler::ProcessLsbFileInfo(

@@ -28,6 +28,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chromeos/chromeos_switches.h"
 
+using google::protobuf::RepeatedField;
 using google::protobuf::RepeatedPtrField;
 
 namespace em = enterprise_management;
@@ -48,6 +49,7 @@ const char* kKnownSettings[] = {
   kAccountsPrefShowUserNamesOnSignIn,
   kAccountsPrefUsers,
   kAllowRedeemChromeOsRegistrationOffers,
+  kAllowedConnectionTypesForUpdate,
   kAppPack,
   kDeviceAttestationEnabled,
   kDeviceOwner,
@@ -67,6 +69,7 @@ const char* kKnownSettings[] = {
   kStartUpUrls,
   kStatsReportingPref,
   kSystemTimezonePolicy,
+  kUpdateDisabled,
   kVariationsRestrictParameter,
 };
 
@@ -599,6 +602,27 @@ void DeviceSettingsProvider::DecodeNetworkPolicies(
       policy.data_roaming_enabled().data_roaming_enabled());
 }
 
+void DeviceSettingsProvider::DecodeAutoUpdatePolicies(
+    const em::ChromeDeviceSettingsProto& policy,
+    PrefValueMap* new_values_cache) const {
+  if (!policy.has_auto_update_settings())
+    return;
+  const em::AutoUpdateSettingsProto& au_settings_proto =
+      policy.auto_update_settings();
+  if (au_settings_proto.has_update_disabled()) {
+    new_values_cache->SetBoolean(kUpdateDisabled,
+                                 au_settings_proto.update_disabled());
+  }
+  const RepeatedField<int>& allowed_connection_types =
+      au_settings_proto.allowed_connection_types();
+  base::ListValue* list = new base::ListValue();
+  for (RepeatedField<int>::const_iterator i = allowed_connection_types.begin(),
+           e = allowed_connection_types.end(); i != e; ++i) {
+    list->Append(new base::FundamentalValue(*i));
+  }
+  new_values_cache->SetValue(kAllowedConnectionTypesForUpdate, list);
+}
+
 void DeviceSettingsProvider::DecodeReportingPolicies(
     const em::ChromeDeviceSettingsProto& policy,
     PrefValueMap* new_values_cache) const {
@@ -694,6 +718,7 @@ void DeviceSettingsProvider::UpdateValuesCache(
   DecodeLoginPolicies(settings, &new_values_cache);
   DecodeKioskPolicies(settings, &new_values_cache);
   DecodeNetworkPolicies(settings, &new_values_cache);
+  DecodeAutoUpdatePolicies(settings, &new_values_cache);
   DecodeReportingPolicies(settings, &new_values_cache);
   DecodeGenericPolicies(settings, &new_values_cache);
 

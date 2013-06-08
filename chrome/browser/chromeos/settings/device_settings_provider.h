@@ -75,6 +75,9 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   void DecodeNetworkPolicies(
       const enterprise_management::ChromeDeviceSettingsProto& policy,
       PrefValueMap* new_values_cache) const;
+  void DecodeAutoUpdatePolicies(
+      const enterprise_management::ChromeDeviceSettingsProto& policy,
+      PrefValueMap* new_values_cache) const;
   void DecodeReportingPolicies(
       const enterprise_management::ChromeDeviceSettingsProto& policy,
       PrefValueMap* new_values_cache) const;

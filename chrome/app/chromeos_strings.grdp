@@ -2278,6 +2278,24 @@ Press any key to continue exploring.
   <message name="IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR" desc="The cellular network device.">
     Mobile Data
   </message>
+  <message name="IDS_NETWORK_TYPE_ETHERNET" desc="The ethernet network type.">
+    Ethernet
+  </message>
+  <message name="IDS_NETWORK_TYPE_WIFI" desc="The wifi network type.">
+    Wi-Fi
+  </message>
+  <message name="IDS_NETWORK_TYPE_WIMAX" desc="The wimax network type.">
+    WiMAX
+  </message>
+  <message name="IDS_NETWORK_TYPE_BLUETOOTH" desc="The bluetooth network type.">
+    Bluetooth
+  </message>
+  <message name="IDS_NETWORK_TYPE_CELLULAR" desc="The cellular network type.">
+    cellular
+  </message>
+  <message name="IDS_NETWORK_TYPE_VPN" desc="The vpn network type.">
+    VPN
+  </message>
   <message name="IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING" desc="The network device status connecting.">
     Connecting...
   </message>
@@ -3663,4 +3681,19 @@ Battery full
   <message name="IDS_KIOSK_APP_ERROR_USER_CANCEL" desc="Error message used when a kiosk app launch is canceled by user.">
     Kiosk application launch canceled.
   </message>
+
+  <!-- About Chrome page -->
+  <message name="IDS_UPGRADE_OFFLINE" desc="Status label: Currently offline">
+    You are currently offline.
+  </message>
+  <message name="IDS_UPGRADE_DISALLOWED" desc="Status label: Upgrade disallowed for the current network">
+    You are currently connected to the <ph name="NETWORK_TYPE">$1<ex>cellular</ex></ph> network.
+  </message>
+  <message name="IDS_UPGRADE_NETWORK_LIST_CELLULAR_ALLOWED" desc="Status label: for updates you need to connect to an Ethernet or Wi-Fi">
+    To check for updates, please use Ethernet or Wi-Fi.
+  </message>
+  <message name="IDS_UPGRADE_NETWORK_LIST_CELLULAR_DISALLOWED" desc="Status label: for updates you need to connect to an Ethernet, mobile data or Wi-Fi">
+    To check for updates, please use Ethernet, Wi-Fi or mobile data.
+  </message>
+
 </grit-part>
