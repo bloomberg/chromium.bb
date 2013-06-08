@@ -10,7 +10,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 
-#include "utils/macros.h"
+#include "sdk_util/macros.h"
 
 EXTERN_C_BEGIN
 

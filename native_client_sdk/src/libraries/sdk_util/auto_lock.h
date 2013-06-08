@@ -3,8 +3,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef LIBRARIES_UTILS_AUTO_LOCK_H_
-#define LIBRARIES_UTILS_AUTO_LOCK_H_
+#ifndef LIBRARIES_SDK_UTIL_AUTO_LOCK_H_
+#define LIBRARIES_SDK_UTIL_AUTO_LOCK_H_
 
 #include <pthread.h>
 
@@ -27,4 +27,5 @@ class AutoLock {
   pthread_mutex_t* lock_;
 };
 
-#endif  // LIBRARIES_UTILS_AUTO_LOCK_H_
+#endif  // LIBRARIES_SDK_UTIL_AUTO_LOCK_H_
+

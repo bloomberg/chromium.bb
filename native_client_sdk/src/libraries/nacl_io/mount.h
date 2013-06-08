@@ -11,8 +11,8 @@
 #include "nacl_io/inode_pool.h"
 #include "nacl_io/mount_node.h"
 #include "nacl_io/path.h"
-#include "utils/macros.h"
-#include "utils/ref_object.h"
+#include "sdk_util/macros.h"
+#include "sdk_util/ref_object.h"
 
 class MountNode;
 class PepperInterface;

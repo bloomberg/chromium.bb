@@ -13,8 +13,8 @@
 #include "nacl_io/mount_node_mem.h"
 #include "nacl_io/osstat.h"
 #include "nacl_io/path.h"
-#include "utils/auto_lock.h"
-#include "utils/ref_object.h"
+#include "sdk_util/auto_lock.h"
+#include "sdk_util/ref_object.h"
 
 #if defined(WIN32)
 #include <windows.h>
@@ -63,3 +63,4 @@ void Mount::OnNodeCreated(MountNode* node) {
 void Mount::OnNodeDestroyed(MountNode* node) {
   if (node->stat_.st_ino) inode_pool_.Release(node->stat_.st_ino);
 }
+

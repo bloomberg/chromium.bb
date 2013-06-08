@@ -8,7 +8,7 @@
 #define ERROR_HANDLING_ERROR_HANDLING_H_
 
 #include "error_handling/string_stream.h"
-#include "utils/macros.h"
+#include "sdk_util/macros.h"
 
 EXTERN_C_BEGIN
 
@@ -83,3 +83,4 @@ int EHUnwindFrame(EHFrame* frame);
 EXTERN_C_END
 
 #endif  // ERROR_HANDLING_ERROR_HANDLING_H_
+

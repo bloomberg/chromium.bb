@@ -25,8 +25,8 @@
 #include "nacl_io/osstat.h"
 #include "nacl_io/path.h"
 #include "nacl_io/pepper_interface.h"
-#include "utils/auto_lock.h"
-#include "utils/ref_object.h"
+#include "sdk_util/auto_lock.h"
+#include "sdk_util/ref_object.h"
 
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 256

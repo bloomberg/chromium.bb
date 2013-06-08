@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LIBRARIES_UTILS_THREAD_SAFE_QUEUE_H_
-#define LIBRARIES_UTILS_THREAD_SAFE_QUEUE_H_
+#ifndef LIBRARIES_SDK_UTIL_THREAD_SAFE_QUEUE_H_
+#define LIBRARIES_SDK_UTIL_THREAD_SAFE_QUEUE_H_
 
 #include <pthread.h>
 
 #include <list>
 
-#include "utils/auto_lock.h"
-#include "utils/macros.h"
+#include "sdk_util/auto_lock.h"
+#include "sdk_util/macros.h"
 
 
 // ThreadSafeQueue
@@ -59,4 +59,5 @@ template<class T> class ThreadSafeQueue {
   DISALLOW_COPY_AND_ASSIGN(ThreadSafeQueue);
 };
 
-#endif  // LIBRARIES_UTILS_THREAD_SAFE_QUEUE_H_
+#endif  // LIBRARIES_SDK_UTIL_THREAD_SAFE_QUEUE_H_
+

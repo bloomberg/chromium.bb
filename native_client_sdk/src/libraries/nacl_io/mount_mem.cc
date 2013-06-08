@@ -14,8 +14,8 @@
 #include "nacl_io/mount_node_mem.h"
 #include "nacl_io/osstat.h"
 #include "nacl_io/path.h"
-#include "utils/auto_lock.h"
-#include "utils/ref_object.h"
+#include "sdk_util/auto_lock.h"
+#include "sdk_util/ref_object.h"
 
 // TODO(noelallen) : Grab/Redefine these in the kernel object once available.
 #define USR_ID 1002

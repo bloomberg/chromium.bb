@@ -6,7 +6,7 @@
 #define PPAPI_SIMPLE_PS_H_
 
 #include "ppapi/c/pp_instance.h"
-#include "utils/macros.h"
+#include "sdk_util/macros.h"
 
 EXTERN_C_BEGIN
 

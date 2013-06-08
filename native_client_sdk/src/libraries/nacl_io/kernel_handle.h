@@ -8,8 +8,8 @@
 #include <pthread.h>
 
 #include "nacl_io/ostypes.h"
-#include "utils/macros.h"
-#include "utils/ref_object.h"
+#include "sdk_util/macros.h"
+#include "sdk_util/ref_object.h"
 
 class Mount;
 class MountNode;

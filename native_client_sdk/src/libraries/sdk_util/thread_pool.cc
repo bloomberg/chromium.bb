@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "threadpool.h"
+#include "sdk_util/thread_pool.h"
 
 #include <pthread.h>
 #include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "utils/auto_lock.h"
+#include "sdk_util/auto_lock.h"
 
 // Initializes mutex, semaphores and a pool of threads.  If 0 is passed for
 // num_threads, all work will be performed on the dispatch thread.

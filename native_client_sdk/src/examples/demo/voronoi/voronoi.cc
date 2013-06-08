@@ -23,7 +23,7 @@
 #include <algorithm>
 #include <string>
 
-#include "threadpool.h"
+#include "sdk_util/thread_pool.h"
 
 // Global properties used to setup Voronoi demo.
 namespace {

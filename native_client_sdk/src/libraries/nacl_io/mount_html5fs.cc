@@ -12,7 +12,7 @@
 #include <string.h>
 #include <algorithm>
 #include "nacl_io/mount_node_html5fs.h"
-#include "utils/auto_lock.h"
+#include "sdk_util/auto_lock.h"
 
 namespace {
 

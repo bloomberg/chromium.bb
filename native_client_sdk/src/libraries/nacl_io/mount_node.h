@@ -8,7 +8,7 @@
 #include <string>
 
 #include "nacl_io/osstat.h"
-#include "utils/ref_object.h"
+#include "sdk_util/ref_object.h"
 
 struct dirent;
 struct stat;

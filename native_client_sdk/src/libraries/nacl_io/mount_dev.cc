@@ -14,7 +14,7 @@
 #include "nacl_io/mount_node.h"
 #include "nacl_io/mount_node_dir.h"
 #include "nacl_io/pepper_interface.h"
-#include "utils/auto_lock.h"
+#include "sdk_util/auto_lock.h"
 
 #if defined(__native_client__)
 #  include <irt.h>

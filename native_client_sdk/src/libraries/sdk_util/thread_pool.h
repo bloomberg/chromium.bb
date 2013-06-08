@@ -4,8 +4,8 @@
 
 // Simple thread pool class
 
-#ifndef EXAMPLES_DEMO_VORONOI_THREADPOOL_H_
-#define EXAMPLES_DEMO_VORONOI_THREADPOOL_H_
+#ifndef LIBRARIES_SDK_UTIL_THREAD_POOL_H_
+#define LIBRARIES_SDK_UTIL_THREAD_POOL_H_
 
 #include <pthread.h>
 #include <semaphore.h>
@@ -41,5 +41,5 @@ class ThreadPool {
   sem_t work_sem_;
   sem_t done_sem_;
 };
-#endif  // EXAMPLES_DEMO_VORONOI_THREADPOOL_H_
+#endif  // LIBRARIES_SDK_UTIL_THREAD_POOL_H_
 

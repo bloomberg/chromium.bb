@@ -9,7 +9,7 @@
 #include <ppapi/c/ppb.h>
 
 #include "nacl_io/kernel_wrap.h"
-#include "utils/macros.h"
+#include "sdk_util/macros.h"
 
 EXTERN_C_BEGIN
 

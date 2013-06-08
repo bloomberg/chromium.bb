@@ -17,7 +17,7 @@
 #include "nacl_io/mount.h"
 #include "nacl_io/osdirent.h"
 #include "nacl_io/pepper_interface.h"
-#include "utils/auto_lock.h"
+#include "sdk_util/auto_lock.h"
 
 namespace {
 

@@ -8,7 +8,7 @@
 #if defined(WIN32)
 
 #include <sys/types.h>
-#include "utils/macros.h"
+#include "sdk_util/macros.h"
 
 struct dirent {
   _ino_t d_ino;

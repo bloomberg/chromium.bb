@@ -8,7 +8,7 @@
 #include <string.h>
 
 #include "nacl_io/osstat.h"
-#include "utils/auto_lock.h"
+#include "sdk_util/auto_lock.h"
 
 #define BLOCK_SIZE (1 << 16)
 #define BLOCK_MASK (BLOCK_SIZE - 1)

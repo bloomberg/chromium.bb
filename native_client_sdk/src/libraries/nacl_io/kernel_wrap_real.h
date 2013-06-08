@@ -6,7 +6,7 @@
 #define LIBRARIES_NACL_IO_KERNEL_WRAP_REAL_H_
 
 #include "nacl_io/ostypes.h"
-#include "utils/macros.h"
+#include "sdk_util/macros.h"
 
 EXTERN_C_BEGIN
 

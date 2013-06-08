@@ -9,8 +9,8 @@
 
 #include "nacl_io/osdirent.h"
 #include "nacl_io/osstat.h"
-#include "utils/macros.h"
-#include "utils/auto_lock.h"
+#include "sdk_util/auto_lock.h"
+#include "sdk_util/macros.h"
 
 MountNodeDir::MountNodeDir(Mount* mount)
     : MountNode(mount),

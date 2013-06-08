@@ -16,7 +16,7 @@
 #include <vector>
 #include "nacl_io/mount_node_dir.h"
 #include "nacl_io/osinttypes.h"
-#include "utils/auto_lock.h"
+#include "sdk_util/auto_lock.h"
 
 #if defined(WIN32)
 #define snprintf _snprintf

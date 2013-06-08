@@ -2,8 +2,7 @@
   'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
   'SEARCH': [
     '.',
-    'pepper',
-    '../utils'
+    'pepper'
   ],
   'TARGETS': [
     {
@@ -73,15 +72,6 @@
         "undef_macros.h",
       ],
       'DEST': 'include/nacl_io/pepper',
-    },
-    {
-      'FILES': [
-        "auto_lock.h",
-        "macros.h",
-        "ref_object.h",
-        "thread_safe_queue.h"
-      ],
-      'DEST': 'include/utils',
     }
   ],
   'DEST': 'src',

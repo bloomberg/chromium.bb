@@ -5,12 +5,10 @@
       'NAME' : 'voronoi',
       'TYPE' : 'main',
       'SOURCES' : [
-        'voronoi.cc',
-        'threadpool.cc',
-        'threadpool.h'
+        'voronoi.cc'
       ],
 
-      'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
+      'LIBS': ['sdk_util', 'ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
   'DATA': [

@@ -11,7 +11,7 @@
 
 #include "nacl_io/osstat.h"
 #include "pthread.h"
-#include "utils/auto_lock.h"
+#include "sdk_util/auto_lock.h"
 
 
 class INodePool {

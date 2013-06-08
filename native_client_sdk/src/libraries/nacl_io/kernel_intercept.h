@@ -8,7 +8,7 @@
 #include <ppapi/c/ppb.h>
 #include <ppapi/c/pp_instance.h>
 #include "nacl_io/ostypes.h"
-#include "utils/macros.h"
+#include "sdk_util/macros.h"
 
 EXTERN_C_BEGIN
 

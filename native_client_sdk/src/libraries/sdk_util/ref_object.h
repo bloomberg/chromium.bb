@@ -3,8 +3,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef LIBRARIES_UTILS_REF_OBJECT
-#define LIBRARIES_UTILS_REF_OBJECT
+#ifndef LIBRARIES_SDK_UTIL_REF_OBJECT
+#define LIBRARIES_SDK_UTIL_REF_OBJECT
 
 #include <stdlib.h>
 #include "pthread.h"
@@ -45,4 +45,5 @@ class RefObject {
   int ref_count_;
 };
 
-#endif  // LIBRARIES_UTILS_REF_OBJECT
+#endif  // LIBRARIES_SDK_UTIL_REF_OBJECT
+

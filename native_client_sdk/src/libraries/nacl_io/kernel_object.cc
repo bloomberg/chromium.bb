@@ -17,7 +17,7 @@
 #include "nacl_io/kernel_handle.h"
 #include "nacl_io/mount.h"
 #include "nacl_io/mount_node.h"
-#include "utils/auto_lock.h"
+#include "sdk_util/auto_lock.h"
 
 KernelObject::KernelObject() {
   pthread_mutex_init(&kernel_lock_, NULL);

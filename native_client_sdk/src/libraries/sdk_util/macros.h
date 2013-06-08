@@ -2,8 +2,8 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#ifndef LIBRARIES_UTILS_MACROS_H_
-#define LIBRARIES_UTILS_MACROS_H_
+#ifndef LIBRARIES_SDK_UTIL_MACROS_H_
+#define LIBRARIES_SDK_UTIL_MACROS_H_
 
 /**
  * A macro to disallow the evil copy constructor and operator= functions
@@ -46,4 +46,5 @@
     force_link_##x = 1; \
   }
 
-#endif  /* LIBRARIES_UTILS_MACROS_H_ */
+#endif  /* LIBRARIES_SDK_UTIL_MACROS_H_ */
+

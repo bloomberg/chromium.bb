@@ -13,7 +13,7 @@
 #include "nacl_io/kernel_wrap_real.h"
 #include "nacl_io/mount.h"
 #include "nacl_io/osmman.h"
-#include "utils/auto_lock.h"
+#include "sdk_util/auto_lock.h"
 
 static const int USR_ID = 1001;
 static const int GRP_ID = 1002;

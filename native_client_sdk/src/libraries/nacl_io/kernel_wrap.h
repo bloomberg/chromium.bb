@@ -7,7 +7,7 @@
 
 #include <sys/types.h>
 #include <stdlib.h>
-#include "utils/macros.h"
+#include "sdk_util/macros.h"
 
 #if defined(__GLIBC__)
 #include <sys/cdefs.h>

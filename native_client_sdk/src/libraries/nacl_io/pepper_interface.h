@@ -21,7 +21,7 @@
 #include <ppapi/c/ppb_url_response_info.h>
 #include <ppapi/c/ppb_var.h>
 
-#include <utils/macros.h>
+#include <sdk_util/macros.h>
 
 // Note: To add a new interface:
 //

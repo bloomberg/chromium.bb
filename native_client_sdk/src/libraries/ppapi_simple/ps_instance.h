@@ -23,7 +23,7 @@
 #include "ppapi_simple/ps_event.h"
 #include "ppapi_simple/ps_main.h"
 
-#include "utils/thread_safe_queue.h"
+#include "sdk_util/thread_safe_queue.h"
 
 
 typedef std::map<std::string, std::string> PropertyMap_t;
