@@ -413,9 +413,12 @@ void RenderWidget::Resize(const gfx::Size& new_size,
     // send an ACK if we are resized to a non-empty rect.
     webwidget_->resize(new_size);
 
-    // Resize should have caused an invalidation of the entire view.
-    DCHECK(new_size.IsEmpty() || is_accelerated_compositing_active_ ||
-           paint_aggregator_.HasPendingUpdate());
+    if (!RenderThreadImpl::current() ||  // Will be NULL during unit tests.
+        !RenderThreadImpl::current()->layout_test_mode()) {
+      // Resize should have caused an invalidation of the entire view.
+      DCHECK(new_size.IsEmpty() || is_accelerated_compositing_active_ ||
+             paint_aggregator_.HasPendingUpdate());
+    }
   } else if (!RenderThreadImpl::current() ||  // Will be NULL during unit tests.
              !RenderThreadImpl::current()->layout_test_mode()) {
     resize_ack = NO_RESIZE_ACK;
