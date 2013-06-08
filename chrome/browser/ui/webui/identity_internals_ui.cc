@@ -19,24 +19,36 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
+// Properties of the Javascript object representing a token.
 const char kExtensionId[] = "extensionId";
 const char kExtensionName[] = "extensionName";
 const char kScopes[] = "scopes";
 const char kStatus[] = "status";
 const char kTokenExpirationTime[] = "expirationTime";
 const char kTokenId[] = "tokenId";
-const char kGetTokensCallback[] = "identity_internals.returnTokens";
+
+// RevokeToken message parameter offsets.
+const int kRevokeTokenExtensionOffset = 0;
+const int kRevokeTokenTokenOffset = 1;
+
+class IdentityInternalsTokenRevoker;
 
 class IdentityInternalsUIMessageHandler : public content::WebUIMessageHandler {
  public:
   IdentityInternalsUIMessageHandler();
   virtual ~IdentityInternalsUIMessageHandler();
+
+  // Ensures that a proper clean up happens after a token is revoked. That
+  // includes deleting the |token_revoker|, removing the token from Identity API
+  // cache and updating the UI that the token is gone.
+  void OnTokenRevokerDone(IdentityInternalsTokenRevoker* token_revoker);
 
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
@@ -59,11 +71,74 @@ class IdentityInternalsUIMessageHandler : public content::WebUIMessageHandler {
       const extensions::IdentityTokenCacheValue& token_cache_value);
 
   void GetInfoForAllTokens(const ListValue* args);
+
+  // Initiates revoking of the token, based on the extension ID and token
+  // passed as entries in the args list.
+  void RevokeToken(const ListValue* args);
+
+  // A vector of token revokers that are currently revoking tokens.
+  ScopedVector<IdentityInternalsTokenRevoker> token_revokers_;
+};
+
+// Handles the revoking of an access token and helps performing the clean up
+// after it is revoked by holding information about the access token and related
+// extension ID.
+class IdentityInternalsTokenRevoker : public GaiaAuthConsumer {
+ public:
+  // Revokes |access_token| from extension with |extension_id|.
+  // |profile| is required for its request context. |consumer| will be
+  // notified when revocation succeeds via |OnTokenRevokerDone()|.
+  IdentityInternalsTokenRevoker(const std::string& extension_id,
+                                const std::string& access_token,
+                                Profile* profile,
+                                IdentityInternalsUIMessageHandler* consumer);
+  virtual ~IdentityInternalsTokenRevoker();
+
+  // Returns the access token being revoked.
+  const std::string& access_token() const { return access_token_; }
+
+  // Returns the ID of the extension the access token is related to.
+  const std::string& extension_id() const { return extension_id_; }
+
+  // GaiaAuthConsumer implementation.
+  virtual void OnOAuth2RevokeTokenCompleted() OVERRIDE;
+
+ private:
+  // An object used to start a token revoke request.
+  GaiaAuthFetcher fetcher_;
+  // An ID of an extension the access token is related to.
+  const std::string extension_id_;
+  // The access token to revoke.
+  const std::string access_token_;
+  // An object that needs to be notified once the access token is revoked.
+  IdentityInternalsUIMessageHandler* consumer_;  // weak.
+
+  DISALLOW_COPY_AND_ASSIGN(IdentityInternalsTokenRevoker);
 };
 
 IdentityInternalsUIMessageHandler::IdentityInternalsUIMessageHandler() {}
 
 IdentityInternalsUIMessageHandler::~IdentityInternalsUIMessageHandler() {}
+
+void IdentityInternalsUIMessageHandler::OnTokenRevokerDone(
+    IdentityInternalsTokenRevoker* token_revoker) {
+  // Remove token from the cache.
+  extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(
+      Profile::FromWebUI(web_ui()))->EraseCachedToken(
+          token_revoker->extension_id(), token_revoker->access_token());
+
+  // Update view about the token being removed.
+  ListValue result;
+  result.AppendString(token_revoker->access_token());
+  web_ui()->CallJavascriptFunction("identity_internals.tokenRevokeDone",
+                                   result);
+
+  // Erase the revoker.
+  ScopedVector<IdentityInternalsTokenRevoker>::iterator iter =
+      std::find(token_revokers_.begin(), token_revokers_.end(), token_revoker);
+  DCHECK(iter != token_revokers_.end());
+  token_revokers_.erase(iter);
+}
 
 const std::string IdentityInternalsUIMessageHandler::GetExtensionName(
     const extensions::IdentityAPI::TokenCacheKey& token_cache_key) {
@@ -134,13 +209,45 @@ void IdentityInternalsUIMessageHandler::GetInfoForAllTokens(
     results.Append(GetInfoForToken(iter->first, iter->second));
   }
 
-  web_ui()->CallJavascriptFunction(kGetTokensCallback, results);
+  web_ui()->CallJavascriptFunction("identity_internals.returnTokens", results);
 }
 
 void IdentityInternalsUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("identityInternalsGetTokens",
       base::Bind(&IdentityInternalsUIMessageHandler::GetInfoForAllTokens,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("identityInternalsRevokeToken",
+      base::Bind(&IdentityInternalsUIMessageHandler::RevokeToken,
+                 base::Unretained(this)));
+}
+
+void IdentityInternalsUIMessageHandler::RevokeToken(const ListValue* args) {
+  std::string extension_id;
+  std::string access_token;
+  args->GetString(kRevokeTokenExtensionOffset, &extension_id);
+  args->GetString(kRevokeTokenTokenOffset, &access_token);
+  token_revokers_.push_back(new IdentityInternalsTokenRevoker(
+      extension_id, access_token, Profile::FromWebUI(web_ui()), this));
+}
+
+IdentityInternalsTokenRevoker::IdentityInternalsTokenRevoker(
+    const std::string& extension_id,
+    const std::string& access_token,
+    Profile* profile,
+    IdentityInternalsUIMessageHandler* consumer)
+    : fetcher_(this, GaiaConstants::kChromeSource,
+               profile->GetRequestContext()),
+      extension_id_(extension_id),
+      access_token_(access_token),
+      consumer_(consumer) {
+  DCHECK(consumer_);
+  fetcher_.StartRevokeOAuth2Token(access_token);
+}
+
+IdentityInternalsTokenRevoker::~IdentityInternalsTokenRevoker() {}
+
+void IdentityInternalsTokenRevoker::OnOAuth2RevokeTokenCompleted() {
+  consumer_->OnTokenRevokerDone(this);
 }
 
 }  // namespace
