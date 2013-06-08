@@ -5,6 +5,8 @@
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 
 #include "apps/app_load_service.h"
+#include "apps/app_restore_service.h"
+#include "apps/saved_files_service.h"
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -508,31 +510,44 @@ bool DeveloperPrivateReloadFunction::RunImpl() {
 }
 
 bool DeveloperPrivateShowPermissionsDialogFunction::RunImpl() {
-  std::string extension_id;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id_));
   ExtensionService* service = profile()->GetExtensionService();
-  CHECK(!extension_id.empty());
+  CHECK(!extension_id_.empty());
   ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile());
   DCHECK(registry);
   ShellWindow* shell_window = registry->GetShellWindowForRenderViewHost(
       render_view_host());
   prompt_.reset(new ExtensionInstallPrompt(shell_window->web_contents()));
-  const Extension* extension = service->GetInstalledExtension(extension_id);
+  const Extension* extension = service->GetInstalledExtension(extension_id_);
 
   if (!extension)
     return false;
 
-  // Released by InstallUIAbort.
+  // Released by InstallUIAbort or InstallUIProceed.
   AddRef();
-  prompt_->ReviewPermissions(this, extension);
+  std::vector<base::FilePath> retained_file_paths;
+  if (extension->HasAPIPermission(extensions::APIPermission::kFileSystem)) {
+    std::vector<apps::SavedFileEntry> retained_file_entries =
+        apps::SavedFilesService::Get(profile())->GetAllFileEntries(
+            extension_id_);
+    for (size_t i = 0; i < retained_file_entries.size(); i++) {
+      retained_file_paths.push_back(retained_file_entries[i].path);
+    }
+  }
+  prompt_->ReviewPermissions(this, extension, retained_file_paths);
   return true;
 }
 
 DeveloperPrivateReloadFunction::~DeveloperPrivateReloadFunction() {}
 
+// This is called when the user clicks "Revoke File Access."
 void DeveloperPrivateShowPermissionsDialogFunction::InstallUIProceed() {
-  // The permissions dialog only contains a close button.
-  NOTREACHED();
+  apps::SavedFilesService::Get(profile())->ClearQueue(
+      profile()->GetExtensionService()->GetExtensionById(extension_id_, true));
+  if (apps::AppRestoreService::Get(profile())->IsAppRestorable(extension_id_))
+    apps::AppLoadService::Get(profile())->RestartApplication(extension_id_);
+  SendResponse(true);
+  Release();
 }
 
 void DeveloperPrivateShowPermissionsDialogFunction::InstallUIAbort(

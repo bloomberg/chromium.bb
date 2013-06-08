@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
 
 #include "apps/app_load_service.h"
+#include "apps/app_restore_service.h"
+#include "apps/saved_files_service.h"
 #include "base/auto_reset.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -516,12 +518,21 @@ void ExtensionSettingsHandler::ExtensionWarningsChanged() {
   MaybeUpdateAfterNotification();
 }
 
+// This is called when the user clicks "Revoke File Access."
 void ExtensionSettingsHandler::InstallUIProceed() {
-  // This should never happen. The dialog only has a cancel button.
-  NOTREACHED();
+  Profile* profile = Profile::FromWebUI(web_ui());
+  apps::SavedFilesService::Get(profile)->ClearQueue(
+      extension_service_->GetExtensionById(extension_id_prompting_, true));
+  if (apps::AppRestoreService::Get(profile)->
+          IsAppRestorable(extension_id_prompting_)) {
+    apps::AppLoadService::Get(profile)->RestartApplication(
+        extension_id_prompting_);
+  }
+  extension_id_prompting_.clear();
 }
 
 void ExtensionSettingsHandler::InstallUIAbort(bool user_initiated) {
+  extension_id_prompting_.clear();
 }
 
 void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
@@ -816,8 +827,21 @@ void ExtensionSettingsHandler::HandlePermissionsMessage(const ListValue* args) {
   if (!extension)
     return;
 
+  if (!extension_id_prompting_.empty())
+    return;  // Only one prompt at a time.
+
+  extension_id_prompting_ = extension->id();
   prompt_.reset(new ExtensionInstallPrompt(web_contents()));
-  prompt_->ReviewPermissions(this, extension);
+  std::vector<base::FilePath> retained_file_paths;
+  if (extension->HasAPIPermission(extensions::APIPermission::kFileSystem)) {
+    std::vector<apps::SavedFileEntry> retained_file_entries =
+        apps::SavedFilesService::Get(Profile::FromWebUI(
+            web_ui()))->GetAllFileEntries(extension_id_prompting_);
+    for (size_t i = 0; i < retained_file_entries.size(); ++i) {
+      retained_file_paths.push_back(retained_file_entries[i].path);
+    }
+  }
+  prompt_->ReviewPermissions(this, extension, retained_file_paths);
 }
 
 void ExtensionSettingsHandler::HandleShowButtonMessage(const ListValue* args) {

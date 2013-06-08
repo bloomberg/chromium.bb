@@ -34,6 +34,7 @@ const int kLeftColumnMinWidth = 250;
 const int kExternalInstallLeftColumnWidth = 350;
 const int kImageSize = 69;
 const int kDetailIndent = 20;
+const int kMaxRetainedFilesHeight = 100;
 
 // Additional padding (beyond on ui::kControlSpacing) all sides of each
 // permission in the permissions list.
@@ -113,6 +114,7 @@ ExtensionInstallDialog::ExtensionInstallDialog(
       dialog_(NULL) {
   bool show_permissions = prompt.GetPermissionCount() > 0;
   bool show_oauth_issues = prompt.GetOAuthIssueCount() > 0;
+  bool show_retained_files = prompt.GetRetainedFileCount() > 0;
   bool is_inline_install =
       prompt.type() == ExtensionInstallPrompt::INLINE_INSTALL_PROMPT;
   bool is_bundle_install =
@@ -174,8 +176,8 @@ ExtensionInstallDialog::ExtensionInstallDialog(
 
   GtkWidget* heading_vbox = gtk_vbox_new(FALSE, 0);
   // If we are not going to show anything else, vertically center the title.
-  bool center_heading =
-      !show_permissions && !show_oauth_issues && !is_inline_install;
+  bool center_heading = !show_permissions && !show_oauth_issues &&
+                        !is_inline_install && !show_retained_files;
   gtk_box_pack_start(GTK_BOX(left_column_area), heading_vbox, center_heading,
                      center_heading, 0);
 
@@ -301,6 +303,36 @@ ExtensionInstallDialog::ExtensionInstallDialog(
       gtk_box_pack_start(GTK_BOX(oauth_issues_container), issue_advice_widget,
                          FALSE, FALSE, kPermissionsPadding);
     }
+  }
+
+  if (show_retained_files) {
+    GtkWidget* retained_files_container =
+        (show_permissions || show_oauth_issues) ? content_vbox
+                                                : left_column_area;
+    int pixel_width =
+        left_column_min_width +
+        ((show_permissions || show_oauth_issues) ? kImageSize : 0);
+
+    GtkWidget* retained_files_header = gtk_util::CreateBoldLabel(
+        UTF16ToUTF8(prompt.GetRetainedFilesHeading()).c_str());
+    gtk_util::SetLabelWidth(retained_files_header, pixel_width);
+    gtk_box_pack_start(GTK_BOX(retained_files_container), retained_files_header,
+                       FALSE, FALSE, 0);
+
+    GtkWidget* paths_vbox = gtk_vbox_new(FALSE, kPermissionsPadding);
+    for (size_t i = 0; i < prompt.GetRetainedFileCount(); ++i) {
+      std::string path = base::UTF16ToUTF8(prompt.GetRetainedFile(i));
+      GtkWidget* path_label = gtk_label_new(path.c_str());
+      gtk_util::LeftAlignMisc(path_label);
+      gtk_box_pack_start(GTK_BOX(paths_vbox), path_label, FALSE, FALSE, 0);
+    }
+    GtkWidget* paths_scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+    gtk_widget_set_size_request(
+        paths_scrolled_window, pixel_width, kMaxRetainedFilesHeight);
+    gtk_scrolled_window_add_with_viewport(
+        GTK_SCROLLED_WINDOW(paths_scrolled_window), paths_vbox);
+    gtk_box_pack_start(GTK_BOX(retained_files_container), paths_scrolled_window,
+                       FALSE, FALSE, kPermissionsPadding);
   }
 
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);

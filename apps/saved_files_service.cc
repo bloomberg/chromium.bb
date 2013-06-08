@@ -240,7 +240,10 @@ void SavedFilesService::EnqueueFileEntry(const std::string& extension_id,
 
 std::vector<SavedFileEntry> SavedFilesService::GetAllFileEntries(
     const std::string& extension_id) {
-  return GetOrInsert(extension_id)->GetAllFileEntries();
+  SavedFiles* saved_files = Get(extension_id);
+  if (saved_files)
+    return saved_files->GetAllFileEntries();
+  return GetSavedFileEntries(ExtensionPrefs::Get(profile_), extension_id);
 }
 
 bool SavedFilesService::IsRegistered(const std::string& extension_id,
@@ -258,19 +261,32 @@ void SavedFilesService::ClearQueueIfNoRetainPermission(
     const Extension* extension) {
   if (!extension->GetActivePermissions()->HasAPIPermission(
           APIPermission::kFileSystemRetainFiles)) {
-    ClearSavedFileEntries(ExtensionPrefs::Get(profile_), extension->id());
-    Clear(extension->id());
+    ClearQueue(extension);
   }
 }
 
-SavedFilesService::SavedFiles* SavedFilesService::GetOrInsert(
-    const std::string& extension_id) {
-  std::map<std::string, SavedFiles*>::iterator it =
+void SavedFilesService::ClearQueue(const extensions::Extension* extension) {
+  ClearSavedFileEntries(ExtensionPrefs::Get(profile_), extension->id());
+  Clear(extension->id());
+}
+
+SavedFilesService::SavedFiles* SavedFilesService::Get(
+    const std::string& extension_id) const {
+  std::map<std::string, SavedFiles*>::const_iterator it =
       extension_id_to_saved_files_.find(extension_id);
   if (it != extension_id_to_saved_files_.end())
     return it->second;
 
-  SavedFiles* saved_files = new SavedFiles(profile_, extension_id);
+  return NULL;
+}
+
+SavedFilesService::SavedFiles* SavedFilesService::GetOrInsert(
+    const std::string& extension_id) {
+  SavedFiles* saved_files = Get(extension_id);
+  if (saved_files)
+    return saved_files;
+
+  saved_files = new SavedFiles(profile_, extension_id);
   extension_id_to_saved_files_.insert(
       std::make_pair(extension_id, saved_files));
   return saved_files;

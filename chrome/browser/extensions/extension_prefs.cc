@@ -50,7 +50,10 @@ namespace {
 
 // Additional preferences keys
 
-// Whether this extension was running when chrome last shutdown.
+// True if this extension is running. Note this preference stops getting updated
+// during Chrome shutdown (and won't be updated on a browser crash) and so can
+// be used at startup to determine whether the extension was running when Chrome
+// was last terminated.
 const char kPrefRunning[] = "running";
 
 // Whether this extension had windows when it was last running.

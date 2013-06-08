@@ -211,6 +211,7 @@ class DeveloperPrivateShowPermissionsDialogFunction
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
   scoped_ptr<ExtensionInstallPrompt> prompt_;
+  std::string extension_id_;
 
 };
 

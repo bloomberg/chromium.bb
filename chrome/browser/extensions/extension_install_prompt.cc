@@ -85,7 +85,7 @@ static const int kAcceptButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON,
   IDS_EXTENSION_PROMPT_PERMISSIONS_BUTTON,
   0,  // External installs use different strings for extensions/apps.
-  0,
+  IDS_EXTENSION_PROMPT_PERMISSIONS_CLEAR_RETAINED_FILES_BUTTON,
 };
 static const int kAbortButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   0,  // These all use the platform's default cancel label.
@@ -266,11 +266,22 @@ string16 ExtensionInstallPrompt::Prompt::GetHeading() const {
 }
 
 int ExtensionInstallPrompt::Prompt::GetDialogButtons() const {
+  if (type_ == POST_INSTALL_PERMISSIONS_PROMPT &&
+      ShouldDisplayRevokeFilesButton()) {
+    return kButtons[type_] | ui::DIALOG_BUTTON_OK;
+  }
+
   return kButtons[type_];
 }
 
 bool ExtensionInstallPrompt::Prompt::HasAcceptButtonLabel() const {
-  return kAcceptButtonIds[type_] > 0;
+  if (kAcceptButtonIds[type_] == 0)
+    return false;
+
+  if (type_ == POST_INSTALL_PERMISSIONS_PROMPT)
+    return ShouldDisplayRevokeFilesButton();
+
+  return true;
 }
 
 string16 ExtensionInstallPrompt::Prompt::GetAcceptButtonLabel() const {
@@ -302,6 +313,10 @@ string16 ExtensionInstallPrompt::Prompt::GetPermissionsHeading() const {
 
 string16 ExtensionInstallPrompt::Prompt::GetOAuthHeading() const {
   return l10n_util::GetStringFUTF16(kOAuthHeaderIds[type_], oauth_user_name_);
+}
+
+string16 ExtensionInstallPrompt::Prompt::GetRetainedFilesHeading() const {
+  return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_RETAINED_FILES);
 }
 
 void ExtensionInstallPrompt::Prompt::AppendRatingStars(
@@ -364,6 +379,19 @@ const IssueAdviceInfoEntry& ExtensionInstallPrompt::Prompt::GetOAuthIssue(
     size_t index) const {
   CHECK_LT(index, oauth_issue_advice_.size());
   return oauth_issue_advice_[index];
+}
+
+size_t ExtensionInstallPrompt::Prompt::GetRetainedFileCount() const {
+  return retained_files_.size();
+}
+
+string16 ExtensionInstallPrompt::Prompt::GetRetainedFile(size_t index) const {
+  CHECK_LT(index, retained_files_.size());
+  return base::UTF8ToUTF16(retained_files_[index].AsUTF8Unsafe());
+}
+
+bool ExtensionInstallPrompt::Prompt::ShouldDisplayRevokeFilesButton() const {
+  return !retained_files_.empty();
 }
 
 ExtensionInstallPrompt::ShowParams::ShowParams(content::WebContents* contents)
@@ -561,11 +589,14 @@ void ExtensionInstallPrompt::ConfirmIssueAdvice(
   LoadImageIfNeeded();
 }
 
-void ExtensionInstallPrompt::ReviewPermissions(Delegate* delegate,
-                                               const Extension* extension) {
+void ExtensionInstallPrompt::ReviewPermissions(
+    Delegate* delegate,
+    const Extension* extension,
+    const std::vector<base::FilePath>& retained_file_paths) {
   DCHECK(ui_loop_ == base::MessageLoop::current());
   extension_ = extension;
   permissions_ = extension->GetActivePermissions();
+  prompt_.set_retained_files(retained_file_paths);
   delegate_ = delegate;
   prompt_.set_type(POST_INSTALL_PERMISSIONS_PROMPT);
 

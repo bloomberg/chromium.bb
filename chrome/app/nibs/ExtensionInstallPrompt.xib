@@ -199,7 +199,7 @@
 						<reference key="NSSuperview" ref="359431345"/>
 						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="544761792"/>
-						<int key="NSsFlags">133760</int>
+						<int key="NSsFlags">133776</int>
 						<reference key="NSVScroller" ref="636351768"/>
 						<reference key="NSHScroller" ref="858919758"/>
 						<reference key="NSContentView" ref="544761792"/>

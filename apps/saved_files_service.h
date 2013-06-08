@@ -95,6 +95,9 @@ class SavedFilesService : public BrowserContextKeyedService,
   // fileSystem.retainFiles permission.
   void ClearQueueIfNoRetainPermission(const extensions::Extension* extension);
 
+  // Clears all retained files.
+  void ClearQueue(const extensions::Extension* extension);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(::SavedFilesServiceUnitTest, RetainTwoFilesTest);
   FRIEND_TEST_ALL_PREFIXES(::SavedFilesServiceUnitTest, EvictionTest);
@@ -109,6 +112,9 @@ class SavedFilesService : public BrowserContextKeyedService,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Returns the SavedFiles for |extension_id| or NULL if one does not exist.
+  SavedFiles* Get(const std::string& extension_id) const;
 
   // Returns the SavedFiles for |extension_id|, creating it if necessary.
   SavedFiles* GetOrInsert(const std::string& extension_id);

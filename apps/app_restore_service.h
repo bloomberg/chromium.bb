@@ -36,6 +36,12 @@ class AppRestoreService : public BrowserContextKeyedService,
   // from apps to prevent them being restarted in subsequent restarts.
   void HandleStartup(bool should_restore_apps);
 
+  // Returns whether this extension is running or, at startup, whether it was
+  // running when Chrome was last terminated.
+  bool IsAppRestorable(const std::string& extension_id);
+
+  static AppRestoreService* Get(Profile* profile);
+
  private:
   // content::NotificationObserver.
   virtual void Observe(int type,

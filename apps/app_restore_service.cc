@@ -4,6 +4,7 @@
 
 #include "apps/app_restore_service.h"
 
+#include "apps/app_restore_service_factory.h"
 #include "apps/saved_files_service.h"
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -82,6 +83,16 @@ void AppRestoreService::HandleStartup(bool should_restore_apps) {
       }
     }
   }
+}
+
+bool AppRestoreService::IsAppRestorable(const std::string& extension_id) {
+  return extensions::ExtensionPrefs::Get(profile_) ->IsExtensionRunning(
+      extension_id);
+}
+
+// static
+AppRestoreService* AppRestoreService::Get(Profile* profile) {
+  return apps::AppRestoreServiceFactory::GetForProfile(profile);
 }
 
 void AppRestoreService::Observe(int type,

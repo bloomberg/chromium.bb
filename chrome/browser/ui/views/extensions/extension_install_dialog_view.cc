@@ -32,6 +32,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -64,6 +65,9 @@ const int kBundleLeftColumnWidth = 300;
 // Width of the left column for external install prompts. The text is long in
 // this case, so make it wider than normal.
 const int kExternalInstallLeftColumnWidth = 350;
+
+// Maximum height of the retained files view.
+const int kMaxRetainedFilesHeight = 100;
 
 void AddResourceIcon(const gfx::ImageSkia* skia_image, void* data) {
   views::View* parent = static_cast<views::View*>(data);
@@ -190,6 +194,40 @@ void ShowExtensionInstallDialogImpl(
       NULL, show_params.parent_window)->Show();
 }
 
+// A ScrollView that imposes a maximum size on its viewport but sizes its
+// contents to its preferred size.
+class MaxSizeScrollView : public views::ScrollView {
+ public:
+  MaxSizeScrollView(int max_height, int max_width);
+  // Overridden from views::View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+
+ private:
+  const int max_height_;
+  const int max_width_;
+
+  DISALLOW_COPY_AND_ASSIGN(MaxSizeScrollView);
+};
+
+MaxSizeScrollView::MaxSizeScrollView(int max_height, int max_width)
+    : max_height_(max_height),
+      max_width_(max_width) {}
+
+gfx::Size MaxSizeScrollView::GetPreferredSize() {
+  gfx::Size size = contents()->GetPreferredSize();
+  size.SetToMin(gfx::Size(max_width_, max_height_));
+  gfx::Insets insets = GetInsets();
+  size.Enlarge(insets.width(), insets.height());
+  size.Enlarge(GetScrollBarWidth(), GetScrollBarHeight());
+  return size;
+}
+
+void MaxSizeScrollView::Layout() {
+  contents()->SizeToPreferredSize();
+  views::ScrollView::Layout();
+}
+
 }  // namespace
 
 ExtensionInstallDialogView::ExtensionInstallDialogView(
@@ -255,7 +293,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   int column_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
   int left_column_width =
-      prompt.GetPermissionCount() + prompt.GetOAuthIssueCount() > 0 ?
+      (prompt.GetPermissionCount() + prompt.GetOAuthIssueCount() +
+       prompt.GetRetainedFileCount()) > 0 ?
           kPermissionsLeftColumnWidth : kNoPermissionsLeftColumnWidth;
   if (is_bundle_install())
     left_column_width = kBundleLeftColumnWidth;
@@ -312,6 +351,10 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       // Also span the permission header and each of the permission rows (all
       // have a padding row above it).
       icon_row_span = 3 + prompt.GetOAuthIssueCount() * 2;
+    } else if (prompt.GetRetainedFileCount()) {
+      // Also span the permission header and each of the permission rows (all
+      // have a padding row above it).
+      icon_row_span = 3 + prompt.GetRetainedFileCount() * 2;
     }
     layout->AddView(icon, 1, icon_row_span);
   }
@@ -435,6 +478,52 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
           new IssueAdviceView(this, prompt.GetOAuthIssue(i), space_for_oauth);
       layout->AddView(issue_advice_view);
     }
+  }
+  if (prompt.GetRetainedFileCount()) {
+    // Slide in under the permissions or OAuth, if there are any. If there are
+    // either, the retained files prompt stretches all the way to the right of
+    // the dialog. If there are no permissions or OAuth, the retained files
+    // prompt just takes up the left column.
+    int space_for_files = left_column_width;
+    if (prompt.GetPermissionCount() || prompt.GetOAuthIssueCount()) {
+      space_for_files += kIconSize;
+      column_set = layout->AddColumnSet(++column_set_id);
+      column_set->AddColumn(views::GridLayout::FILL,
+                            views::GridLayout::FILL,
+                            1,
+                            views::GridLayout::USE_PREF,
+                            0,  // no fixed width
+                            space_for_files);
+    }
+
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+    layout->StartRow(0, column_set_id);
+    views::Label* retained_files_header = NULL;
+    retained_files_header = new views::Label(prompt.GetRetainedFilesHeading());
+    retained_files_header->SetMultiLine(true);
+    retained_files_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    retained_files_header->SizeToFit(space_for_files);
+    layout->AddView(retained_files_header);
+
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->StartRow(0, column_set_id);
+    views::View* files_view = new views::View();
+    files_view->SetLayoutManager(new views::BoxLayout(
+        views::BoxLayout::kVertical,
+        views::kRelatedControlHorizontalSpacing,
+        0,
+        0));
+    for (size_t i = 0; i < prompt.GetRetainedFileCount(); ++i) {
+      views::Label* retained_file_label = new views::Label(PrepareForDisplay(
+          prompt.GetRetainedFile(i), true));
+      retained_file_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+      files_view->AddChildView(retained_file_label);
+    }
+    views::ScrollView* scroll_view =
+        new MaxSizeScrollView(kMaxRetainedFilesHeight, space_for_files);
+    scroll_view->SetContents(files_view);
+    layout->AddView(scroll_view);
   }
 }
 

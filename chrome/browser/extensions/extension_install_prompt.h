@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/extensions/crx_installer_error.h"
@@ -89,6 +90,7 @@ class ExtensionInstallPrompt
     string16 GetAbortButtonLabel() const;
     string16 GetPermissionsHeading() const;
     string16 GetOAuthHeading() const;
+    string16 GetRetainedFilesHeading() const;
 
     // Getters for webstore metadata. Only populated when the type is
     // INLINE_INSTALL_PROMPT.
@@ -105,6 +107,8 @@ class ExtensionInstallPrompt
     string16 GetPermission(size_t index) const;
     size_t GetOAuthIssueCount() const;
     const IssueAdviceInfoEntry& GetOAuthIssue(size_t index) const;
+    size_t GetRetainedFileCount() const;
+    string16 GetRetainedFile(size_t index) const;
 
     // Populated for BUNDLE_INSTALL_PROMPT.
     const extensions::BundleInstaller* bundle() const { return bundle_; }
@@ -118,10 +122,17 @@ class ExtensionInstallPrompt
       extension_ = extension;
     }
 
+    // May be populated for POST_INSTALL_PERMISSIONS_PROMPT.
+    void set_retained_files(const std::vector<base::FilePath>& retained_files) {
+      retained_files_ = retained_files;
+    }
+
     const gfx::Image& icon() const { return icon_; }
     void set_icon(const gfx::Image& icon) { icon_ = icon; }
 
    private:
+    bool ShouldDisplayRevokeFilesButton() const;
+
     PromptType type_;
 
     // Permissions that are being requested (may not be all of an extension's
@@ -149,6 +160,8 @@ class ExtensionInstallPrompt
     // Range is kMinExtensionRating to kMaxExtensionRating
     double average_rating_;
     int rating_count_;
+
+    std::vector<base::FilePath> retained_files_;
   };
 
   static const int kMinExtensionRating = 0;
@@ -292,9 +305,11 @@ class ExtensionInstallPrompt
   // This is called by the app handler launcher to review what permissions the
   // extension or app currently has.
   //
-  // This *WILL* call Abort() on |delegate|.
-  virtual void ReviewPermissions(Delegate* delegate,
-                                 const extensions::Extension* extension);
+  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
+  virtual void ReviewPermissions(
+      Delegate* delegate,
+      const extensions::Extension* extension,
+      const std::vector<base::FilePath>& retained_file_paths);
 
   // Installation was successful. This is declared virtual for testing.
   virtual void OnInstallSuccess(const extensions::Extension* extension,

@@ -92,6 +92,8 @@ void OffsetOutlineViewVerticallyToFitContent(NSOutlineView* outlineView,
   NSScrollView* scrollView = [outlineView enclosingScrollView];
   NSRect frame = [scrollView frame];
   CGFloat desiredHeight = GetDesiredOutlineViewHeight(outlineView);
+  if (desiredHeight > kMaxControlHeight)
+    desiredHeight = kMaxControlHeight;
   CGFloat offset = desiredHeight - NSHeight(frame);
   frame.size.height += offset;
 
@@ -148,7 +150,8 @@ void DrawBulletInFrame(NSRect frame) {
   } else if (prompt.type() == ExtensionInstallPrompt::INLINE_INSTALL_PROMPT) {
     nibName = @"ExtensionInstallPromptInline";
   } else if (prompt.GetPermissionCount() == 0 &&
-             prompt.GetOAuthIssueCount() == 0) {
+             prompt.GetOAuthIssueCount() == 0 &&
+             prompt.GetRetainedFileCount() == 0) {
     nibName = @"ExtensionInstallPromptNoWarnings";
   } else {
     nibName = @"ExtensionInstallPrompt";
@@ -267,7 +270,8 @@ void DrawBulletInFrame(NSRect frame) {
 
   // If there are any warnings or OAuth issues, then we have to do some special
   // layout.
-  if (prompt_->GetPermissionCount() > 0 || prompt_->GetOAuthIssueCount() > 0) {
+  if (prompt_->GetPermissionCount() > 0 || prompt_->GetOAuthIssueCount() > 0 ||
+      prompt_->GetRetainedFileCount() > 0) {
     NSSize spacing = [outlineView_ intercellSpacing];
     spacing.width += 2;
     spacing.height += 2;
@@ -506,6 +510,21 @@ void DrawBulletInFrame(NSRect frame) {
       [children addObject:[self buildIssue:prompt.GetOAuthIssue(i)]];
     [warnings addObject:
         [self buildItemWithTitle:SysUTF16ToNSString(prompt.GetOAuthHeading())
+                     isGroupItem:YES
+                        children:children]];
+  }
+
+  if (prompt.GetRetainedFileCount() > 0) {
+    NSMutableArray* children = [NSMutableArray array];
+    for (size_t i = 0; i < prompt.GetRetainedFileCount(); ++i) {
+      [children addObject:
+          [self buildItemWithTitle:SysUTF16ToNSString(prompt.GetRetainedFile(i))
+                       isGroupItem:NO
+                          children:nil]];
+    }
+    [warnings addObject:
+        [self buildItemWithTitle:SysUTF16ToNSString(
+            prompt.GetRetainedFilesHeading())
                      isGroupItem:YES
                         children:children]];
   }

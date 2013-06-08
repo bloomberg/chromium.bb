@@ -101,7 +101,7 @@ ShellWindowRegistry::ShellWindowList ShellWindowRegistry::GetShellWindowsForApp(
   ShellWindowList app_windows;
   for (ShellWindowList::const_iterator i = shell_windows_.begin();
        i != shell_windows_.end(); ++i) {
-    if ((*i)->extension()->id() == app_id)
+    if ((*i)->extension_id() == app_id)
       app_windows.push_back(*i);
   }
   return app_windows;
