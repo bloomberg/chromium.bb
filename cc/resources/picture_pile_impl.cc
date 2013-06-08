@@ -303,8 +303,8 @@ void PicturePileImpl::AnalyzeInRect(gfx::Rect content_rect,
 
   RasterForAnalysis(&canvas, layer_rect, 1.0f);
 
-  analysis->is_solid_color = canvas.getColorIfSolid(&analysis->solid_color);
-  analysis->has_text = canvas.hasText();
+  analysis->is_solid_color = canvas.GetColorIfSolid(&analysis->solid_color);
+  analysis->has_text = canvas.HasText();
 }
 
 PicturePileImpl::Analysis::Analysis()
