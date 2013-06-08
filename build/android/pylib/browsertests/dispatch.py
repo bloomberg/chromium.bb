@@ -15,7 +15,8 @@ from pylib.gtest import dispatch as gtest_dispatch
 from pylib.gtest import test_runner
 from pylib.utils import report_results
 
-sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib'))
+sys.path.insert(0,
+                os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib'))
 
 from common import unittest_util
 
