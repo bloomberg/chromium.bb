@@ -51,7 +51,7 @@ def main():
 
     tester.skip(('webkitpy.common.checkout.scm.scm_unittest',), 'are really, really, slow', 31818)
     if sys.platform == 'win32':
-        tester.skip(('webkitpy.common.checkout', 'webkitpy.common.config', 'webkitpy.tool'), 'fail horribly on win32', 54526)
+        tester.skip(('webkitpy.common.checkout', 'webkitpy.common.config', 'webkitpy.tool', 'webkitpy.w3c', 'webkitpy.layout_tests.layout_package.bot_test_expectations'), 'fail horribly on win32', 54526)
 
     # This only needs to run on Unix, so don't worry about win32 for now.
     appengine_sdk_path = '/usr/local/google_appengine'

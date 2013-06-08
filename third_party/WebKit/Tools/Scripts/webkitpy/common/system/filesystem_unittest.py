@@ -37,11 +37,12 @@ import sys
 import tempfile
 import unittest2 as unittest
 
-from filesystem import FileSystem
+from webkitpy.common.system.filesystem import FileSystem
 
 
 class GenericFileSystemTests(object):
     """Tests that should pass on either a real or mock filesystem."""
+    # pylint gets confused about this being a mixin: pylint: disable=E1101
     def setup_generic_test_dir(self):
         fs = self.fs
         self.generic_test_dir = str(self.fs.mkdtemp())
@@ -74,7 +75,9 @@ class GenericFileSystemTests(object):
         self.fs.chdir(self.generic_test_dir)
         self.assertEqual(set(self.fs.glob('foo.*')), set(['foo.txt']))
 
-    def test_relpath(self):
+    def test_relpath_unix(self):
+        if sys.platform == 'win32':
+            return
         self.assertEqual(self.fs.relpath('aaa/bbb'), 'aaa/bbb')
         self.assertEqual(self.fs.relpath('aaa/bbb/'), 'aaa/bbb')
         self.assertEqual(self.fs.relpath('aaa/bbb/.'), 'aaa/bbb')
@@ -88,6 +91,23 @@ class GenericFileSystemTests(object):
         self.assertEqual(self.fs.relpath('aaa/bbb', 'ccc/ddd'), '../../aaa/bbb')
         self.assertEqual(self.fs.relpath('aaa/bbb', 'aaa/b'), '../bbb')
         self.assertEqual(self.fs.relpath('aaa/bbb', 'a/bbb'), '../../aaa/bbb')
+
+    def test_relpath_win32(self):
+        if sys.platform != 'win32':
+            return
+        self.assertEqual(self.fs.relpath('aaa\\bbb'), 'aaa\\bbb')
+        self.assertEqual(self.fs.relpath('aaa\\bbb\\'), 'aaa\\bbb')
+        self.assertEqual(self.fs.relpath('aaa\\bbb\\.'), 'aaa\\bbb')
+        self.assertEqual(self.fs.relpath('aaa\\.\\bbb'), 'aaa\\bbb')
+        self.assertEqual(self.fs.relpath('aaa\\..\\bbb\\'), 'bbb')
+        self.assertEqual(self.fs.relpath('aaa\\bbb', 'aaa\\bbb'), '.')
+        self.assertEqual(self.fs.relpath('aaa\\bbb\\ccc', 'aaa\\bbb'), 'ccc')
+        self.assertEqual(self.fs.relpath('aaa\\.\\ccc', 'aaa\\bbb'), '..\\ccc')
+        self.assertEqual(self.fs.relpath('aaa\\..\\ccc', 'aaa\\bbb'), '..\\..\\ccc')
+        self.assertEqual(self.fs.relpath('aaa\\bbb', 'aaa\\ccc'), '..\\bbb')
+        self.assertEqual(self.fs.relpath('aaa\\bbb', 'ccc\\ddd'), '..\\..\\aaa\\bbb')
+        self.assertEqual(self.fs.relpath('aaa\\bbb', 'aaa\\b'), '..\\bbb')
+        self.assertEqual(self.fs.relpath('aaa\\bbb', 'a\\bbb'), '..\\..\\aaa\\bbb')
 
     def test_rmtree(self):
         self.fs.chdir(self.generic_test_dir)

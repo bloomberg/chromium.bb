@@ -82,3 +82,6 @@ class MockFileSystemTest(unittest.TestCase, filesystem_unittest.GenericFileSyste
                          'foo/../bar',
                          'foo/../bar/baz',
                          '../foo')
+
+    def test_relpath_win32(self):
+        pass

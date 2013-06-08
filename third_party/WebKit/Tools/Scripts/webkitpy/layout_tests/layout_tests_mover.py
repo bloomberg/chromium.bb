@@ -42,9 +42,9 @@ Note that when new entries are added to the test expectations, no attempt is mad
 them with existing entries. This should be be done manually and with lint-test-expectations.
 """
 
-import argparse
 import copy
 import logging
+import optparse
 import os
 import re
 import urlparse
@@ -314,10 +314,10 @@ class LayoutTestsMover(object):
         self._commit_changes()
 
 def main(argv):
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('origin',
-                        help=('The directory of tests to move, as a relative path from the LayoutTests directory.'))
-    parser.add_argument('destination',
-                        help=('The new path for the directory of tests, as a relative path from the LayoutTests directory.'))
-    args = parser.parse_args()
-    LayoutTestsMover().move(args.origin, args.destination)
+    parser = optparse.OptionParser(description=__doc__)
+    parser.add_option('--origin',
+                      help=('The directory of tests to move, as a relative path from the LayoutTests directory.'))
+    parser.add_option('--destination',
+                      help=('The new path for the directory of tests, as a relative path from the LayoutTests directory.'))
+    options, _ = parser.parse_args()
+    LayoutTestsMover().move(options.origin, options.destination)
