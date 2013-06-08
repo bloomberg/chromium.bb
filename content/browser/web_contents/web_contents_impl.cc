@@ -614,6 +614,7 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
 
   prefs.is_online = !net::NetworkChangeNotifier::IsOffline();
 
+#if !defined(USE_AURA)
   // Force accelerated compositing and 2d canvas off for chrome: and about:
   // pages (unless it's specifically allowed).
   if ((url.SchemeIs(chrome::kChromeUIScheme) ||
@@ -623,6 +624,7 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
     prefs.accelerated_compositing_enabled = false;
     prefs.accelerated_2d_canvas_enabled = false;
   }
+#endif
 
   prefs.fixed_position_creates_stacking_context = !command_line.HasSwitch(
       switches::kDisableFixedPositionCreatesStackingContext);
