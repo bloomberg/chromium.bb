@@ -1,0 +1,14 @@
+/w/chr/src/third_party/JSON/out/lib/perl5/JSON.pm
+/w/chr/src/third_party/JSON/out/lib/perl5/JSON/backportPP.pm
+/w/chr/src/third_party/JSON/out/lib/perl5/JSON/backportPP/Boolean.pm
+/w/chr/src/third_party/JSON/out/lib/perl5/JSON/backportPP/Compat5005.pm
+/w/chr/src/third_party/JSON/out/lib/perl5/JSON/backportPP/Compat5006.pm
+/w/chr/src/third_party/JSON/out/man/man3/JSON.3pm
+/w/chr/src/third_party/JSON/out/man/man3/JSON::backportPP.3pm
+/w/chr/src/third_party/JSON/out/man/man3/JSON::backportPP::Boolean.3pm
+/w/chr/src/third_party/JSON/out/man/man3/JSON::backportPP::Compat5005.3pm
+/w/chr/src/third_party/JSON/out/man/man3/JSON::backportPP::Compat5006.3pm
+/w/chr/src/third_party/JSON/out/man/man3/JSON__backportPP.3pm
+/w/chr/src/third_party/JSON/out/man/man3/JSON__backportPP__Boolean.3pm
+/w/chr/src/third_party/JSON/out/man/man3/JSON__backportPP__Compat5005.3pm
+/w/chr/src/third_party/JSON/out/man/man3/JSON__backportPP__Compat5006.3pm
