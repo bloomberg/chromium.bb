@@ -384,7 +384,11 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #if defined(GOOGLE_CHROME_BUILD)
     if (!command_line->HasSwitch(
             chromeos::switches::kDisableQuickofficeComponentApp)) {
-      std::string id = Add(IDR_QUICK_OFFICE_MANIFEST, base::FilePath(
+      int manifest_id = IDR_QUICK_OFFICE_MANIFEST;
+      if (command_line->HasSwitch(switches::kEnableQuickofficeEdit)) {
+        manifest_id = IDR_QUICKOFFICE_EDITOR_MANIFEST;
+      }
+      std::string id = Add(manifest_id, base::FilePath(
           FILE_PATH_LITERAL("/usr/share/chromeos-assets/quick_office")));
       if (command_line->HasSwitch(chromeos::switches::kGuestSession)) {
         // TODO(dpolukhin): Hack to enable HTML5 temporary file system for

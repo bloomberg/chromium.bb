@@ -640,6 +640,9 @@ const char kEnableProfiling[]               = "enable-profiling";
 // Enables support for the QUIC protocol.  This is a temporary testing flag.
 const char kEnableQuic[]                    = "enable-quic";
 
+// Enables the Quickoffoce/Chrome document editor rather than the viewer.
+const char kEnableQuickofficeEdit[]         = "enable-quickoffice-editing";
+
 // Enables support in chrome://settings to reset settings in your profile
 // that are often touched by malware.
 const char kEnableResetProfileSettings[]    = "enable-reset-profile-settings";

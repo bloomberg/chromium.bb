@@ -1531,6 +1531,15 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(switches::kHighDPISupport,"1",
         switches::kHighDPISupport,"0")
   },
+#if defined(OS_CHROMEOS)
+  {
+    "enable-quickoffice-editing",
+    IDS_FLAGS_ENABLE_QUICKOFFICE_DESKTOP_EDIT_NAME,
+    IDS_FLAGS_ENABLE_QUICKOFFICE_DESKTOP_EDIT_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableQuickofficeEdit),
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;
