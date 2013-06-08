@@ -28,7 +28,7 @@
       ],
       'include_dirs': [
         '<(DEPTH)/third_party/swiftshader/include',
-        '<(DEPTH)/third_party/mesa/MesaLib/include',
+        '<(DEPTH)/third_party/mesa/src/include',
         '<(gl_binding_output_dir)',
       ],
       'direct_dependent_settings': {
@@ -129,7 +129,7 @@
             'generator_path': 'generate_bindings.py',
             'conditions': [
               ['use_system_mesa==0', {
-                'header_paths': '../../third_party/mesa/MesaLib/include:../../third_party/khronos',
+                'header_paths': '../../third_party/mesa/src/include:../../third_party/khronos',
               }, { # use_system_mesa==1
                 'header_paths': '/usr/include',
               }],

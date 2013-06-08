@@ -4,13 +4,13 @@
 
 #include <stddef.h>
 
-#include "third_party/mesa/MesaLib/src/egl/main/egldriver.h"
+#include "third_party/mesa/src/src/egl/main/egldriver.h"
 
-#include "third_party/mesa/MesaLib/src/egl/main/eglconfig.h"
-#include "third_party/mesa/MesaLib/src/egl/main/eglcontext.h"
-#include "third_party/mesa/MesaLib/src/egl/main/egldisplay.h"
-#include "third_party/mesa/MesaLib/src/egl/main/eglmisc.h"
-#include "third_party/mesa/MesaLib/src/egl/main/eglsurface.h"
+#include "third_party/mesa/src/src/egl/main/eglconfig.h"
+#include "third_party/mesa/src/src/egl/main/eglcontext.h"
+#include "third_party/mesa/src/src/egl/main/egldisplay.h"
+#include "third_party/mesa/src/src/egl/main/eglmisc.h"
+#include "third_party/mesa/src/src/egl/main/eglsurface.h"
 
 /**
  * Functions for choosing and opening/loading device drivers.

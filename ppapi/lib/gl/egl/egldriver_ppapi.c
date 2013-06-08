@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdlib.h>
-#include "third_party/mesa/MesaLib/src/egl/main/egldriver.h"
+#include "third_party/mesa/src/src/egl/main/egldriver.h"
 
 /**
  * This is an EGL driver that wraps PPAPI.
