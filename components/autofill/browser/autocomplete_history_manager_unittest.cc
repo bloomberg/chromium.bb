@@ -38,43 +38,11 @@ class MockWebDataService : public AutofillWebDataService {
  public:
   MockWebDataService()
       : AutofillWebDataService() {
-    current_mock_web_data_service_ = this;
   }
 
   MOCK_METHOD1(AddFormFields, void(const std::vector<FormFieldData>&));
 
-  static scoped_refptr<MockWebDataService> GetCurrent() {
-    if (!current_mock_web_data_service_) {
-      return new MockWebDataService();
-    }
-    return current_mock_web_data_service_;
-  }
-
- protected:
   virtual ~MockWebDataService() {}
-
- private:
-  // Keep track of the most recently created instance, so that it can be
-  // associated with the current profile when Build() is called.
-  static MockWebDataService* current_mock_web_data_service_;
-};
-
-MockWebDataService* MockWebDataService::current_mock_web_data_service_ = NULL;
-
-class MockWebDataServiceWrapperCurrent : public MockWebDataServiceWrapperBase {
- public:
-  static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
-    return new MockWebDataServiceWrapperCurrent();
-  }
-
-  MockWebDataServiceWrapperCurrent() {}
-
-  virtual scoped_refptr<AutofillWebDataService> GetAutofillWebData() OVERRIDE {
-    return MockWebDataService::GetCurrent();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockWebDataServiceWrapperCurrent);
 };
 
 class MockAutofillManagerDelegate
@@ -90,25 +58,37 @@ class MockAutofillManagerDelegate
   DISALLOW_COPY_AND_ASSIGN(MockAutofillManagerDelegate);
 };
 
+BrowserContextKeyedService* BuildMockWebDataServiceWrapper(
+    content::BrowserContext* profile) {
+  return new MockWebDataServiceWrapper(
+      NULL,
+      new MockWebDataService(),
+      NULL);
+}
+
 }  // namespace
 
 class AutocompleteHistoryManagerTest : public ChromeRenderViewHostTestHarness {
  protected:
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
-    web_data_service_ = new MockWebDataService();
-    WebDataServiceFactory::GetInstance()->SetTestingFactory(
-        profile(), MockWebDataServiceWrapperCurrent::Build);
+    MockWebDataServiceWrapper* wrapper =
+        static_cast<MockWebDataServiceWrapper*>(
+            WebDataServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+                profile(), BuildMockWebDataServiceWrapper));
+    web_data_service_ =
+        static_cast<MockWebDataService*>(wrapper->GetAutofillWebData());
     autocomplete_manager_.reset(new AutocompleteHistoryManager(web_contents()));
   }
 
   virtual void TearDown() OVERRIDE {
     autocomplete_manager_.reset();
+    web_data_service_->ShutdownOnUIThread();
     web_data_service_ = NULL;
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  scoped_refptr<MockWebDataService> web_data_service_;
+  MockWebDataService* web_data_service_;
   scoped_ptr<AutocompleteHistoryManager> autocomplete_manager_;
   MockAutofillManagerDelegate manager_delegate;
 };
@@ -130,7 +110,7 @@ TEST_F(AutocompleteHistoryManagerTest, CreditCardNumberValue) {
   valid_cc.form_control_type = "text";
   form.fields.push_back(valid_cc);
 
-  EXPECT_CALL(*web_data_service_.get(), AddFormFields(_)).Times(0);
+  EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);
   autocomplete_manager_->OnFormSubmitted(form);
 }
 
@@ -153,7 +133,7 @@ TEST_F(AutocompleteHistoryManagerTest, NonCreditCardNumberValue) {
   invalid_cc.form_control_type = "text";
   form.fields.push_back(invalid_cc);
 
-  EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_)).Times(1);
+  EXPECT_CALL(*(web_data_service_), AddFormFields(_)).Times(1);
   autocomplete_manager_->OnFormSubmitted(form);
 }
 
@@ -173,7 +153,7 @@ TEST_F(AutocompleteHistoryManagerTest, SSNValue) {
   ssn.form_control_type = "text";
   form.fields.push_back(ssn);
 
-  EXPECT_CALL(*web_data_service_.get(), AddFormFields(_)).Times(0);
+  EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);
   autocomplete_manager_->OnFormSubmitted(form);
 }
 
@@ -194,7 +174,7 @@ TEST_F(AutocompleteHistoryManagerTest, SearchField) {
   search_field.form_control_type = "search";
   form.fields.push_back(search_field);
 
-  EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_)).Times(1);
+  EXPECT_CALL(*(web_data_service_), AddFormFields(_)).Times(1);
   autocomplete_manager_->OnFormSubmitted(form);
 }
 

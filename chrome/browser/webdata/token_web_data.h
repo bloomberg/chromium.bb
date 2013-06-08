@@ -35,11 +35,12 @@ class BrowserContext;
 class TokenWebData : public WebDataServiceBase {
  public:
   // Retrieve a WebDataService for the given context.
-  static scoped_refptr<TokenWebData> FromBrowserContext(
-      content::BrowserContext* context);
+  static TokenWebData* FromBrowserContext(content::BrowserContext* context);
 
   TokenWebData(scoped_refptr<WebDatabaseService> wdbs,
                const ProfileErrorCallback& callback);
+
+  virtual ~TokenWebData();
 
   // Set a token to use for a specified service.
   void SetTokenForService(const std::string& service,
@@ -54,8 +55,6 @@ class TokenWebData : public WebDataServiceBase {
  protected:
   // For unit tests, passes a null callback.
   TokenWebData();
-
-  virtual ~TokenWebData();
 
  private:
   scoped_refptr<TokenWebDataBackend> token_backend_;

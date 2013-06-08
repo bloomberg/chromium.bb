@@ -117,7 +117,7 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
     return;
   }
 
-  if (autofill_data_.get()) {
+  if (autofill_data_) {
     pending_query_handle_ = autofill_data_->GetFormValuesForElementName(
         name, prefix, kMaxAutocompleteMenuItems, this);
   }
@@ -153,13 +153,13 @@ void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
     }
   }
 
-  if (!values.empty() && autofill_data_.get())
+  if (!values.empty() && autofill_data_)
     autofill_data_->AddFormFields(values);
 }
 
 void AutocompleteHistoryManager::OnRemoveAutocompleteEntry(
     const base::string16& name, const base::string16& value) {
-  if (autofill_data_.get())
+  if (autofill_data_)
     autofill_data_->RemoveFormValueForElementName(name, value);
 }
 
@@ -170,7 +170,7 @@ void AutocompleteHistoryManager::SetExternalDelegate(
 
 void AutocompleteHistoryManager::CancelPendingQuery() {
   if (pending_query_handle_) {
-    if (autofill_data_.get())
+    if (autofill_data_)
       autofill_data_->CancelRequest(pending_query_handle_);
     pending_query_handle_ = 0;
   }

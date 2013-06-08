@@ -314,9 +314,9 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     // The saved Autofill profiles and credit cards can include the origin from
     // which these profiles and credit cards were learned.  These are a form of
     // history, so clear them as well.
-    scoped_refptr<autofill::AutofillWebDataService> web_data_service =
+    autofill::AutofillWebDataService* web_data_service =
         autofill::AutofillWebDataService::FromBrowserContext(profile_);
-    if (web_data_service.get()) {
+    if (web_data_service) {
       waiting_for_clear_autofill_origin_urls_ = true;
       web_data_service->RemoveOriginURLsModifiedBetween(
           delete_begin_, delete_end_);
@@ -462,10 +462,10 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
   if (remove_mask & REMOVE_FORM_DATA) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Autofill"));
-    scoped_refptr<autofill::AutofillWebDataService> web_data_service =
+    autofill::AutofillWebDataService* web_data_service =
         autofill::AutofillWebDataService::FromBrowserContext(profile_);
 
-    if (web_data_service.get()) {
+    if (web_data_service) {
       waiting_for_clear_form_ = true;
       web_data_service->RemoveFormElementsAddedBetween(delete_begin_,
           delete_end_);

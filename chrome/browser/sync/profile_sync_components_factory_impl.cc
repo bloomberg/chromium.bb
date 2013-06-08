@@ -347,14 +347,14 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
           syncer::PRIORITY_PREFERENCES)->AsWeakPtr();
     case syncer::AUTOFILL:
     case syncer::AUTOFILL_PROFILE: {
-      if (!web_data_service_.get())
+      if (!web_data_service_)
         return base::WeakPtr<syncer::SyncableService>();
       if (type == syncer::AUTOFILL) {
         return AutocompleteSyncableService::FromWebDataService(
-            web_data_service_.get())->AsWeakPtr();
+            web_data_service_)->AsWeakPtr();
       } else {
         return AutofillProfileSyncableService::FromWebDataService(
-            web_data_service_.get())->AsWeakPtr();
+            web_data_service_)->AsWeakPtr();
       }
     }
     case syncer::APPS:

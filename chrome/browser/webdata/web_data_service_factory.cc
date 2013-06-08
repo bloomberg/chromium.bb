@@ -41,7 +41,7 @@ void ProfileErrorCallback(sql::InitStatus status) {
 }
 
 void InitSyncableServicesOnDBThread(
-    scoped_refptr<AutofillWebDataService> autofill_web_data,
+    AutofillWebDataService* autofill_web_data,
     const base::FilePath& profile_path,
     const std::string& app_locale,
     autofill::AutofillWebDataBackend* autofill_backend) {
@@ -50,13 +50,13 @@ void InitSyncableServicesOnDBThread(
   // Currently only Autocomplete and Autofill profiles use the new Sync API, but
   // all the database data should migrate to this API over time.
   AutocompleteSyncableService::CreateForWebDataServiceAndBackend(
-      autofill_web_data.get(), autofill_backend);
-  AutocompleteSyncableService::FromWebDataService(autofill_web_data.get())
+      autofill_web_data, autofill_backend);
+  AutocompleteSyncableService::FromWebDataService(autofill_web_data)
       ->InjectStartSyncFlare(
             sync_start_util::GetFlareForSyncableService(profile_path));
   AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(
-      autofill_web_data.get(), autofill_backend, app_locale);
-  AutofillProfileSyncableService::FromWebDataService(autofill_web_data.get())
+      autofill_web_data, autofill_backend, app_locale);
+  AutofillProfileSyncableService::FromWebDataService(autofill_web_data)
       ->InjectStartSyncFlare(
             sync_start_util::GetFlareForSyncableService(profile_path));
 }
@@ -94,12 +94,12 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
 
   web_database_->LoadDatabase();
 
-  autofill_web_data_ = new AutofillWebDataService(
-      web_database_, base::Bind(&ProfileErrorCallback));
+  autofill_web_data_.reset(new AutofillWebDataService(
+      web_database_, base::Bind(&ProfileErrorCallback)));
   autofill_web_data_->Init();
 
-  token_web_data_ = new TokenWebData(
-      web_database_, base::Bind(&ProfileErrorCallback));
+  token_web_data_.reset(new TokenWebData(
+      web_database_, base::Bind(&ProfileErrorCallback)));
   token_web_data_->Init();
 
   web_data_ = new WebDataService(
@@ -108,7 +108,7 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
 
   autofill_web_data_->GetAutofillBackend(
          base::Bind(&InitSyncableServicesOnDBThread,
-                    autofill_web_data_,
+                    autofill_web_data_.get(),
                     profile_path,
                     g_browser_process->GetApplicationLocale()));
 }
@@ -123,8 +123,7 @@ void WebDataServiceWrapper::Shutdown() {
   web_database_->ShutdownDatabase();
 }
 
-scoped_refptr<AutofillWebDataService>
-WebDataServiceWrapper::GetAutofillWebData() {
+AutofillWebDataService* WebDataServiceWrapper::GetAutofillWebData() {
   return autofill_web_data_.get();
 }
 
@@ -132,12 +131,12 @@ scoped_refptr<WebDataService> WebDataServiceWrapper::GetWebData() {
   return web_data_.get();
 }
 
-scoped_refptr<TokenWebData> WebDataServiceWrapper::GetTokenWebData() {
+TokenWebData* WebDataServiceWrapper::GetTokenWebData() {
   return token_web_data_.get();
 }
 
 // static
-scoped_refptr<AutofillWebDataService>
+AutofillWebDataService*
 AutofillWebDataService::FromBrowserContext(content::BrowserContext* context) {
   // For this service, the implicit/explicit distinction doesn't
   // really matter; it's just used for a DCHECK.  So we currently
@@ -148,11 +147,11 @@ AutofillWebDataService::FromBrowserContext(content::BrowserContext* context) {
   if (wrapper)
     return wrapper->GetAutofillWebData();
   // |wrapper| can be NULL in Incognito mode.
-  return scoped_refptr<AutofillWebDataService>(NULL);
+  return NULL;
 }
 
 // static
-scoped_refptr<TokenWebData> TokenWebData::FromBrowserContext(
+TokenWebData* TokenWebData::FromBrowserContext(
     content::BrowserContext* context) {
   // For this service, the implicit/explicit distinction doesn't
   // really matter; it's just used for a DCHECK.  So we currently
@@ -163,7 +162,7 @@ scoped_refptr<TokenWebData> TokenWebData::FromBrowserContext(
   if (wrapper)
     return wrapper->GetTokenWebData();
   // |wrapper| can be NULL in Incognito mode.
-  return scoped_refptr<TokenWebData>(NULL);
+  return NULL;
 }
 
 // static
