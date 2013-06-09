@@ -1477,9 +1477,7 @@ void HTMLInputElement::didChangeForm()
 
 void HTMLInputElement::addToRadioButtonGroupCallback(Node* node)
 {
-    ASSERT(node && node->toInputElement());
-    HTMLInputElement* inputElement = node->toInputElement();
-    inputElement->addToRadioButtonGroup();
+    toHTMLInputElement(node)->addToRadioButtonGroup();
 }
 
 Node::InsertionNotificationRequest HTMLInputElement::insertedInto(ContainerNode* insertionPoint)

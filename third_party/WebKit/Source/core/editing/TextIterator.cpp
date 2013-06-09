@@ -737,7 +737,7 @@ static bool shouldEmitNewlineForNode(Node* node, bool emitsOriginalText)
 
     if (renderer ? !renderer->isBR() : !node->hasTagName(brTag))
         return false;
-    return emitsOriginalText || !(node->isInShadowTree() && node->shadowHost()->toInputElement());
+    return emitsOriginalText || !(node->isInShadowTree() && node->shadowHost()->hasTagName(inputTag));
 }
 
 static bool shouldEmitNewlinesBeforeAndAfterNode(Node* node)

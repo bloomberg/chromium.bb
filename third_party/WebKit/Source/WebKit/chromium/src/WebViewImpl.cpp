@@ -987,7 +987,7 @@ bool WebViewImpl::autocompleteHandleKeyEvent(const WebKeyboardEvent& event)
         if (!m_autofillPopupClient->canRemoveSuggestionAtIndex(selectedIndex))
             return false;
 
-        WebString name = WebInputElement(element->toInputElement()).nameForAutofill();
+        WebString name = WebInputElement(toHTMLInputElement(element)).nameForAutofill();
         WebString value = m_autofillPopupClient->itemText(selectedIndex);
         m_autofillClient->removeAutocompleteSuggestion(name, value);
         // Update the entries in the currently showing popup to reflect the
@@ -3440,8 +3440,8 @@ void WebViewImpl::applyAutofillSuggestions(
         return;
     }
 
-    HTMLInputElement* inputElem = focusedNode->toInputElement();
-    ASSERT(inputElem);
+    ASSERT(focusedNode->hasTagName(HTMLNames::inputTag));
+    HTMLInputElement* inputElem = toHTMLInputElement(focusedNode.get());
 
     // The first time the Autofill popup is shown we'll create the client and
     // the popup.

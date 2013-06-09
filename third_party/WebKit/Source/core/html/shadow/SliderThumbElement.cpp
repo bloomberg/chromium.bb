@@ -72,8 +72,8 @@ inline static bool hasVerticalAppearance(HTMLInputElement* input)
 
 SliderThumbElement* sliderThumbElementOf(Node* node)
 {
-    ASSERT(node);
-    ShadowRoot* shadow = node->toInputElement()->userAgentShadowRoot();
+    RELEASE_ASSERT(node->hasTagName(inputTag));
+    ShadowRoot* shadow = toHTMLInputElement(node)->userAgentShadowRoot();
     ASSERT(shadow);
     Node* thumb = shadow->firstChild()->firstChild()->firstChild();
     ASSERT(thumb);
@@ -82,8 +82,8 @@ SliderThumbElement* sliderThumbElementOf(Node* node)
 
 HTMLElement* sliderTrackElementOf(Node* node)
 {
-    ASSERT(node);
-    ShadowRoot* shadow = node->toInputElement()->userAgentShadowRoot();
+    RELEASE_ASSERT(node->hasTagName(inputTag));
+    ShadowRoot* shadow = toHTMLInputElement(node)->userAgentShadowRoot();
     ASSERT(shadow);
     Node* track = shadow->firstChild()->firstChild();
     ASSERT(track);
@@ -135,7 +135,7 @@ private:
 
 void RenderSliderContainer::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const
 {
-    HTMLInputElement* input = node()->shadowHost()->toInputElement();
+    HTMLInputElement* input = toHTMLInputElement(node()->shadowHost());
     bool isVertical = hasVerticalAppearance(input);
 
     if (input->renderer()->isSlider() && !isVertical && input->list()) {
@@ -161,7 +161,7 @@ void RenderSliderContainer::computeLogicalHeight(LayoutUnit logicalHeight, Layou
 
 void RenderSliderContainer::layout()
 {
-    HTMLInputElement* input = node()->shadowHost()->toInputElement();
+    HTMLInputElement* input = toHTMLInputElement(node()->shadowHost());
     bool isVertical = hasVerticalAppearance(input);
     style()->setFlexDirection(isVertical ? FlowColumn : FlowRow);
     TextDirection oldTextDirection = style()->direction();
@@ -401,7 +401,7 @@ HTMLInputElement* SliderThumbElement::hostInput() const
 {
     // Only HTMLInputElement creates SliderThumbElement instances as its shadow nodes.
     // So, shadowHost() must be an HTMLInputElement.
-    return shadowHost()->toInputElement();
+    return toHTMLInputElement(shadowHost());
 }
 
 static const AtomicString& sliderThumbShadowPseudoId()
@@ -458,11 +458,10 @@ const AtomicString& SliderContainerElement::shadowPseudoId() const
     DEFINE_STATIC_LOCAL(const AtomicString, mediaSliderContainer, ("-webkit-media-slider-container", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, sliderContainer, ("-webkit-slider-container", AtomicString::ConstructFromLiteral));
 
-    HTMLInputElement* input = shadowHost()->toInputElement();
-    if (!input)
+    if (!shadowHost()->hasTagName(inputTag))
         return sliderContainer;
 
-    RenderStyle* sliderStyle = input->renderer()->style();
+    RenderStyle* sliderStyle = toHTMLInputElement(shadowHost())->renderer()->style();
     switch (sliderStyle->appearance()) {
     case MediaSliderPart:
     case MediaSliderThumbPart:

@@ -767,26 +767,16 @@ bool RenderTheme::isActive(const RenderObject* o) const
 
 bool RenderTheme::isChecked(const RenderObject* o) const
 {
-    if (!o->node())
+    if (!o->node() || !o->node()->hasTagName(inputTag))
         return false;
-
-    HTMLInputElement* inputElement = o->node()->toInputElement();
-    if (!inputElement)
-        return false;
-
-    return inputElement->shouldAppearChecked();
+    return toHTMLInputElement(o->node())->shouldAppearChecked();
 }
 
 bool RenderTheme::isIndeterminate(const RenderObject* o) const
 {
-    if (!o->node())
+    if (!o->node() || !o->node()->hasTagName(inputTag))
         return false;
-
-    HTMLInputElement* inputElement = o->node()->toInputElement();
-    if (!inputElement)
-        return false;
-
-    return inputElement->shouldAppearIndeterminate();
+    return toHTMLInputElement(o->node())->shouldAppearIndeterminate();
 }
 
 bool RenderTheme::isEnabled(const RenderObject* o) const
@@ -950,14 +940,11 @@ LayoutUnit RenderTheme::sliderTickSnappingThreshold() const
 void RenderTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, const IntRect& rect)
 {
     Node* node = o->node();
-    if (!node)
+    if (!node || !node->hasTagName(inputTag))
         return;
 
-    HTMLInputElement* input = node->toInputElement();
-    if (!input)
-        return;
-
-    HTMLDataListElement* dataList = static_cast<HTMLDataListElement*>(input->list());
+    HTMLInputElement* input = toHTMLInputElement(node);
+    HTMLDataListElement* dataList = input->dataList();
     if (!dataList)
         return;
 

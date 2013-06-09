@@ -607,9 +607,8 @@ void EditorClientImpl::handleKeyboardEvent(KeyboardEvent* evt)
 
 void EditorClientImpl::textFieldDidEndEditing(Element* element)
 {
-    HTMLInputElement* inputElement = element->toInputElement();
-    if (m_webView->autofillClient() && inputElement)
-        m_webView->autofillClient()->textFieldDidEndEditing(WebInputElement(inputElement));
+    if (m_webView->autofillClient() && element->hasTagName(HTMLNames::inputTag))
+        m_webView->autofillClient()->textFieldDidEndEditing(WebInputElement(toHTMLInputElement(element)));
 
     // Notification that focus was lost.  Be careful with this, it's also sent
     // when the page is being closed.
@@ -628,9 +627,8 @@ void EditorClientImpl::textDidChangeInTextField(Element* element)
 bool EditorClientImpl::doTextFieldCommandFromEvent(Element* element,
                                                    KeyboardEvent* event)
 {
-    HTMLInputElement* inputElement = element->toInputElement();
-    if (m_webView->autofillClient() && inputElement) {
-        m_webView->autofillClient()->textFieldDidReceiveKeyDown(WebInputElement(inputElement),
+    if (m_webView->autofillClient() && element->hasTagName(HTMLNames::inputTag)) {
+        m_webView->autofillClient()->textFieldDidReceiveKeyDown(WebInputElement(toHTMLInputElement(element)),
                                                                 WebKeyboardEventBuilder(*event));
     }
 

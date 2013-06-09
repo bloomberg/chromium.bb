@@ -50,8 +50,6 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitspeechchange);
 
-    virtual HTMLInputElement* toInputElement() { return this; }
-
     virtual bool shouldAutocomplete() const;
 
     // For ValidityState
