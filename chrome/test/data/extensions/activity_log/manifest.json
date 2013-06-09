@@ -6,12 +6,5 @@
                    "http://*/*", "https://*/*", "storage" ],
   "options_page": "options.html",
   "manifest_version": 2,
-  "omnibox": { "keyword" : "hello" },
-  "content_scripts": [
-    {
-      "matches": ["http://www.google.com.bo/*"],
-      "js": ["google_cs.js"],
-      "run_at": "document_start"
-    }
-  ]
+  "omnibox": { "keyword" : "hello" }
 }

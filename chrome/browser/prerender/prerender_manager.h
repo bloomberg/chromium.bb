@@ -205,13 +205,13 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // is prerendering a page. The optional parameter |origin| is an output
   // parameter which, if a prerender is found, is set to the Origin of the
   // prerender |web_contents|.
-  bool IsWebContentsPrerendering(const content::WebContents* web_contents,
+  bool IsWebContentsPrerendering(content::WebContents* web_contents,
                                  Origin* origin) const;
 
   // Returns the PrerenderContents object for the given web_contents if it's
   // used for an active prerender page, otherwise returns NULL.
   PrerenderContents* GetPrerenderContents(
-      const content::WebContents* web_contents) const;
+      content::WebContents* web_contents) const;
 
   // Returns a list of all WebContents being prerendered.
   const std::vector<content::WebContents*> GetAllPrerenderingContents() const;

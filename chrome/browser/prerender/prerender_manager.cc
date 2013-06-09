@@ -730,7 +730,7 @@ bool PrerenderManager::IsNoUseGroup() {
 }
 
 bool PrerenderManager::IsWebContentsPrerendering(
-    const WebContents* web_contents,
+    WebContents* web_contents,
     Origin* origin) const {
   DCHECK(CalledOnValidThread());
   if (PrerenderContents* prerender_contents =
@@ -760,7 +760,7 @@ bool PrerenderManager::IsWebContentsPrerendering(
 }
 
 PrerenderContents* PrerenderManager::GetPrerenderContents(
-    const content::WebContents* web_contents) const {
+    content::WebContents* web_contents) const {
   DCHECK(CalledOnValidThread());
   for (ScopedVector<PrerenderData>::const_iterator it =
            active_prerenders_.begin();
