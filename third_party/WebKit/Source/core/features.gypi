@@ -132,11 +132,6 @@
           'ENABLE_DEFAULT_RENDER_THEME=1',
         ],
       }],
-      ['OS=="linux" and target_arch=="x64"', {
-        'feature_defines': [
-          'ENABLE_PARTITION_ALLOC=0',
-        ],
-      }],
     ],
   },
 }
