@@ -1317,6 +1317,7 @@ crbug.com/227397 svg/W3C-SVG-1.1/types-basicDOM-01-b.svg [ Failure Pass ]
 # These tests need a rebasline after crbug.com/224317
 # Note, after the rebaseline need to uncomment another more-specific instance of each of these.
 crbug.com/224317 virtual/softwarecompositing/tiling/huge-layer-img.html [ Slow Failure Pass ]
+crbug.com/224317 virtual/gpu/fast/canvas/canvas-createPattern-fillRect-shadow.html [ Failure Pass ]
 crbug.com/224317 fast/forms/basic-buttons.html [ Crash Failure Pass ]
 
 crbug.com/234758 [ Win Debug ] tables/mozilla/other/test3.html [ Crash Pass ]
