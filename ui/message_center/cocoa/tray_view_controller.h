@@ -15,6 +15,7 @@
 
 @class HoverImageButton;
 @class MCNotificationController;
+@class MCSettingsController;
 
 namespace message_center {
 class MessageCenter;
@@ -52,6 +53,9 @@ MESSAGE_CENTER_EXPORT
   // Used to animate multiple notifications simultaneously when they're being
   // removed or repositioned.
   scoped_nsobject<NSViewAnimation> animation_;
+
+  // The controller of the settings view. Only set while the view is open.
+  scoped_nsobject<MCSettingsController> settingsController_;
 }
 
 // Designated initializer.
@@ -69,11 +73,17 @@ MESSAGE_CENTER_EXPORT
 // Action for the settings button.
 - (void)showSettings:(id)sender;
 
+// Hides the settings dialog if it's open.
+- (void)hideSettings:(id)sender;
+
 // Scroll to the topmost notification in the tray.
 - (void)scrollToTop;
 
 // Returns the maximum height of the notifications tray.
 + (CGFloat)maxTrayHeight;
+
+// Returns the width of the notifications tray.
++ (CGFloat)trayWidth;
 
 @end
 

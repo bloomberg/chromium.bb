@@ -7,10 +7,12 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
+#include "ui/message_center/fake_notifier_settings_provider.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_impl.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
+#include "ui/message_center/notifier_settings.h"
 
 class TrayViewControllerTest : public ui::CocoaTest {
  public:
@@ -171,3 +173,63 @@ TEST_F(TrayViewControllerTest, NoClearAllWhenNoNotifications) {
   EXPECT_LT(NSMinX([[tray_ clearAllButton] frame]),
             NSMinX([[tray_ pauseButton] frame]));
 }
+
+namespace message_center {
+
+namespace {
+
+class FakeDelegate : public MessageCenter::Delegate {
+ public:
+  FakeDelegate(NotifierSettingsProvider* provider) : provider_(provider) {}
+
+  virtual NotifierSettingsDelegate* ShowSettingsDialog(
+        gfx::NativeView context) OVERRIDE {
+    return message_center::ShowSettings(provider_, context);
+  }
+
+  virtual void DisableExtension(const std::string& notification_id) OVERRIDE {}
+  virtual void DisableNotificationsFromSource(
+      const std::string& notification_id) OVERRIDE {}
+  virtual void ShowSettings(const std::string& notification_id) OVERRIDE {}
+
+
+
+  NotifierSettingsProvider* provider_;
+};
+
+Notifier* NewNotifier(const std::string& id,
+                      const std::string& title,
+                      bool enabled) {
+  return new Notifier(id, base::UTF8ToUTF16(title), enabled);
+}
+
+}  // namespace
+
+
+TEST_F(TrayViewControllerTest, Settings) {
+  std::vector<Notifier*> notifiers;
+  notifiers.push_back(NewNotifier("id", "title", /*enabled=*/true));
+  notifiers.push_back(NewNotifier("id2", "other title", /*enabled=*/false));
+
+  FakeNotifierSettingsProvider provider(notifiers);
+  FakeDelegate delegate(&provider);
+
+  center_->SetDelegate(&delegate);
+
+  CGFloat trayHeight = NSHeight([[tray_ view] frame]);
+  EXPECT_EQ(0, provider.closed_called_count());
+
+  [tray_ showSettings:nil];
+
+  // There are 0 notifications, but 2 notifiers. The settings pane should be
+  // higher than the empty tray bubble.
+  EXPECT_LT(trayHeight, NSHeight([[tray_ view] frame]));
+
+  [tray_ hideSettings:nil];
+  EXPECT_EQ(1, provider.closed_called_count());
+
+  // The tray should be back at its previous height now.
+  EXPECT_EQ(trayHeight, NSHeight([[tray_ view] frame]));
+}
+
+}  // namespace message_center

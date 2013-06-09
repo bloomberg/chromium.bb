@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
+#include "ui/message_center/fake_notifier_settings_provider.h"
 
 @implementation MCSettingsController (TestingInterface)
 - (NSUInteger)scrollViewItemCount {
@@ -25,34 +26,6 @@ namespace message_center {
 using ui::CocoaTest;
 
 namespace {
-
-class FakeNotifierSettingsProvider : public NotifierSettingsProvider {
- public:
-  FakeNotifierSettingsProvider(
-      const std::vector<Notifier*>& notifiers)
-      : notifiers_(notifiers) {}
-
-  virtual void GetNotifierList(
-      std::vector<Notifier*>* notifiers) OVERRIDE {
-    notifiers->clear();
-    for (Notifier* notifier : notifiers_)
-      notifiers->push_back(notifier);
-  }
-
-  virtual void SetNotifierEnabled(const Notifier& notifier,
-                                  bool enabled) OVERRIDE {
-    enabled_[&notifier] = enabled;
-  }
-  virtual void OnNotifierSettingsClosing() OVERRIDE {}
-
-  bool WasEnabled(const Notifier& notifier) {
-    return enabled_[&notifier];
-  }
-
- private:
-  std::vector<Notifier*> notifiers_;
-  std::map<const Notifier*, bool> enabled_;
-};
 
 Notifier* NewNotifier(const std::string& id,
                       const std::string& title,
@@ -96,6 +69,10 @@ TEST_F(CocoaTest, Toggle) {
 
   [toggleSecond performClick:nil];
   EXPECT_FALSE(provider.WasEnabled(*notifiers.back()));
+
+  EXPECT_EQ(0, provider.closed_called_count());
+  controller.reset();
+  EXPECT_EQ(1, provider.closed_called_count());
 
   STLDeleteElements(&notifiers);
 }

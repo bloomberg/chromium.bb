@@ -68,18 +68,15 @@
 }
 
 - (void)onMessageCenterTrayChanged {
-  CGFloat oldHeight = NSHeight([[viewController_ view] frame]);
   [viewController_ onMessageCenterTrayChanged];
-  CGFloat newHeight = NSHeight([[viewController_ view] frame]);
-
-  NSRect windowFrame = [[self window] frame];
-  CGFloat delta = newHeight - oldHeight;
-  windowFrame.origin.y -= delta;
-  windowFrame.size.height += delta;
-  [[self window] setFrame:windowFrame display:YES];
 }
 
 - (void)windowDidResignKey:(NSNotification*)notification {
+  // The settings bubble data structures assume that the settings dialog is
+  // visible only for short periods of time: There's a fixed list of permissions
+  // for example.
+  [viewController_ hideSettings:self];
+
   tray_->HideMessageCenterBubble();
 }
 

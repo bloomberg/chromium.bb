@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/time.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
@@ -22,8 +23,8 @@
 // Creates all the views for the control area of the tray.
 - (void)layoutControlArea;
 
-// Update the tray view by resizing it to fit its content.
-- (void)updateTrayView;
+// Update both tray view and window by resizing it to fit its content.
+- (void)updateTrayViewAndWindow;
 
 // Remove notifications dismissed by the user. It is done in the following
 // 3 steps.
@@ -39,6 +40,9 @@
 // Step 3: finalize the tray view and window to get rid of the empty space.
 - (void)finalizeTrayViewAndWindow;
 
+// Informs the window controller that it should update the window's size based
+// on the size of the tray view.
+- (void)forceWindowSizeUpdate;
 @end
 
 namespace {
@@ -72,11 +76,8 @@ const CGFloat kTrayBottomMargin = 75;
 
 - (void)loadView {
   // Configure the root view as a background-colored box.
-  scoped_nsobject<NSBox> view([[NSBox alloc] initWithFrame:
-      NSMakeRect(0, 0,
-                 message_center::kNotificationWidth +
-                     2 * message_center::kMarginBetweenItems,
-                 kControlAreaHeight)]);
+  scoped_nsobject<NSBox> view([[NSBox alloc] initWithFrame:NSMakeRect(
+      0, 0, [MCTrayViewController trayWidth], kControlAreaHeight)]);
   [view setBorderType:NSNoBorder];
   [view setBoxType:NSBoxCustom];
   [view setContentViewMargins:NSZeroSize];
@@ -105,6 +106,9 @@ const CGFloat kTrayBottomMargin = 75;
 }
 
 - (void)onMessageCenterTrayChanged {
+  if (settingsController_)
+    return [self updateTrayViewAndWindow];
+
   // When the window is visible, the only update is to remove notifications
   // dismissed by the user.
   if ([[[self view] window] isVisible]) {
@@ -172,7 +176,7 @@ const CGFloat kTrayBottomMargin = 75;
   // Copy the new map of notifications to replace the old.
   notificationsMap_ = newMap;
 
-  [self updateTrayView];
+  [self updateTrayViewAndWindow];
 }
 
 - (void)toggleQuietMode:(id)sender {
@@ -195,14 +199,42 @@ const CGFloat kTrayBottomMargin = 75;
 }
 
 - (void)showSettings:(id)sender {
-  // This ends up calling message_center::ShowSettings() and will set up the
-  // NotifierSettingsProvider along the way.
-  message_center::NotifierSettingsDelegateMac* delegate =
-      static_cast<message_center::NotifierSettingsDelegateMac*>(
-          messageCenter_->ShowNotificationSettingsDialog([self view]));
-  // TODO(thakis): retain delegate->cocoa_controller(), install the controller's
-  // view.
-  (void)delegate;
+  if (settingsController_) {
+    NOTREACHED();
+    return [self hideSettings:sender];
+  }
+
+  {
+    // ShowNotificationSettingsDialog() returns an object owned by an
+    // autoreleased controller. Use a local autorelease pool to make sure this
+    // controller doesn't outlive self if self destroyed before the runloop
+    // flushes autoreleased objects (for example, in tests).
+    base::mac::ScopedNSAutoreleasePool pool;
+    // This ends up calling message_center::ShowSettings() and will set up the
+    // NotifierSettingsProvider along the way.
+    message_center::NotifierSettingsDelegateMac* delegate =
+        static_cast<message_center::NotifierSettingsDelegateMac*>(
+            messageCenter_->ShowNotificationSettingsDialog([self view]));
+    settingsController_.reset([delegate->cocoa_controller() retain]);
+  }
+
+  [[self view] addSubview:[settingsController_ view]];
+
+  [settingsController_ setCloseTarget:self];
+  [settingsController_ setCloseAction:@selector(hideSettings:)];
+
+  [[[self view] window] recalculateKeyViewLoop];
+  [[[self view] window] makeFirstResponder:[settingsController_ responderView]];
+
+  [self forceWindowSizeUpdate];
+}
+
+- (void)hideSettings:(id)sender {
+  [[settingsController_ view] removeFromSuperview];
+  settingsController_.reset();
+  [[[self view] window] recalculateKeyViewLoop];
+  [[[self view] window] makeFirstResponder:pauseButton_];
+  [self forceWindowSizeUpdate];
 }
 
 - (void)scrollToTop {
@@ -214,6 +246,11 @@ const CGFloat kTrayBottomMargin = 75;
 + (CGFloat)maxTrayHeight {
   NSRect screenFrame = [[[NSScreen screens] objectAtIndex:0] visibleFrame];
   return NSHeight(screenFrame) - kTrayBottomMargin;
+}
+
++ (CGFloat)trayWidth {
+  return message_center::kNotificationWidth +
+         2 * message_center::kMarginBetweenItems;
 }
 
 // Testing API /////////////////////////////////////////////////////////////////
@@ -343,7 +380,7 @@ const CGFloat kTrayBottomMargin = 75;
   [view addSubview:pauseButton_];
 }
 
-- (void)updateTrayView {
+- (void)updateTrayViewAndWindow {
   CGFloat scrollContentHeight = 0;
   if ([notifications_ count]) {
     scrollContentHeight = NSMaxY([[[notifications_ lastObject] view] frame]) +
@@ -359,14 +396,27 @@ const CGFloat kTrayBottomMargin = 75;
 
   // Resize the container view.
   NSRect frame = [[self view] frame];
-  frame.size.height = std::min([MCTrayViewController maxTrayHeight],
-                               scrollContentHeight + kControlAreaHeight);
+  CGFloat oldHeight = NSHeight(frame);
+  if (settingsController_) {
+    frame.size.height = NSHeight([[settingsController_ view] frame]);
+  } else {
+    frame.size.height = std::min([MCTrayViewController maxTrayHeight],
+                                 scrollContentHeight + kControlAreaHeight);
+  }
+  CGFloat newHeight = NSHeight(frame);
   [[self view] setFrame:frame];
 
   // Resize the scroll view.
   scrollViewFrame.size.height = NSHeight(frame) - kControlAreaHeight;
   [scrollView_ setFrame:scrollViewFrame];
 
+  // Resize the window.
+  NSRect windowFrame = [[[self view] window] frame];
+  CGFloat delta = newHeight - oldHeight;
+  windowFrame.origin.y -= delta;
+  windowFrame.size.height += delta;
+
+  [[[self view] window] setFrame:windowFrame display:YES];
   // Hide the clear-all button if there are no notifications. Simply swap the
   // X position of it and the pause button in that case.
   BOOL hidden = ![notifications_ count];
@@ -481,19 +531,14 @@ const CGFloat kTrayBottomMargin = 75;
     minY = NSMaxY(frame) + message_center::kMarginBetweenItems;
   }
 
-  CGFloat oldHeight = NSHeight([[self view] frame]);
-  [self updateTrayView];
-  CGFloat newHeight = NSHeight([[self view] frame]);
-
-  // Resize the window.
-  NSRect windowFrame = [[[self view] window] frame];
-  CGFloat delta = newHeight - oldHeight;
-  windowFrame.origin.y -= delta;
-  windowFrame.size.height += delta;
-  [[[self view] window] setFrame:windowFrame display:YES];
+  [self updateTrayViewAndWindow];
 
   // Check if there're more notifications pending removal.
   [self closeNotificationsByUser];
+}
+
+- (void)forceWindowSizeUpdate {
+  [self updateTrayViewAndWindow];
 }
 
 @end

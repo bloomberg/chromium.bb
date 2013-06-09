@@ -148,6 +148,8 @@
         'message_center_impl_unittest.cc',
         'fake_message_center.h',
         'fake_message_center.cc',
+        'fake_notifier_settings_provider.h',
+        'fake_notifier_settings_provider.cc',
         'notification_list_unittest.cc',
         'test/run_all_unittests.cc',
       ],
