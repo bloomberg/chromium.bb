@@ -193,13 +193,6 @@ inline bool operator!=(const IntRect& a, const IntRect& b)
     return a.location() != b.location() || a.size() != b.size();
 }
 
-// FIXME: This method is here only to ease the transition to sub-pixel layout. It should
-// be removed when we close http://webkit.org/b/60318
-inline IntRect enclosingIntRect(const IntRect& rect)
-{
-    return rect;
-}
-
 #if OS(DARWIN)
 IntRect enclosingIntRect(const CGRect&);
 #if !defined(NSGEOMETRY_TYPES_SAME_AS_CGGEOMETRY_TYPES)
