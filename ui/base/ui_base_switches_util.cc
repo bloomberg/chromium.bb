@@ -10,13 +10,23 @@
 namespace switches {
 
 bool IsTouchDragDropEnabled() {
+#if defined(OS_CHROMEOS)
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableTouchDragDrop);
+#else
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTouchDragDrop);
+#endif
 }
 
 bool IsTouchEditingEnabled() {
+#if defined(OS_CHROMEOS)
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableTouchEditing);
+#else
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTouchEditing);
+#endif
 }
 
 bool IsNewDialogStyleEnabled() {
