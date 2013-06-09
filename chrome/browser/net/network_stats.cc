@@ -807,6 +807,9 @@ void NetworkStats::RecordRTTHistograms(const ProtocolValue& protocol,
   DCHECK_GE(index, 0u);
   DCHECK_LT(index, packet_status_.size());
 
+  if (packet_status_[index].end_time_ ==  base::TimeTicks())
+    return;  // Echo response packet never arrived.
+
   const char* test_name = TestName();
   std::string rtt_histogram_name = base::StringPrintf(
       "NetConnectivity3.%s.Sent%02d.Success.RTT.Packet%02d.%d.%s",
