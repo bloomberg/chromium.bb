@@ -1873,7 +1873,7 @@ void Document::attach()
     ASSERT(!m_axObjectCache || this != topDocument());
 
     if (!m_renderArena)
-        m_renderArena = adoptPtr(new RenderArena);
+        m_renderArena = RenderArena::create();
 
     // Create the rendering tree
     setRenderer(new (m_renderArena.get()) RenderView(this));
@@ -2302,13 +2302,15 @@ void Document::implicitClose()
         // AX object to send the notification to. getOrCreate will make sure that an valid AX object
         // exists in the cache (we ignore the return value because we don't need it here). This is
         // only safe to call when a layout is not in progress, so it can not be used in postNotification.    
-        axObjectCache()->getOrCreate(renderObject);
-        if (this == topDocument())
-            axObjectCache()->postNotification(renderObject, AXObjectCache::AXLoadComplete, true);
-        else {
-            // AXLoadComplete can only be posted on the top document, so if it's a document
-            // in an iframe that just finished loading, post AXLayoutComplete instead.
-            axObjectCache()->postNotification(renderObject, AXObjectCache::AXLayoutComplete, true);
+        if (AXObjectCache* cache = axObjectCache()) {
+            cache->getOrCreate(renderObject);
+            if (this == topDocument()) {
+                cache->postNotification(renderObject, AXObjectCache::AXLoadComplete, true);
+            } else {
+                // AXLoadComplete can only be posted on the top document, so if it's a document
+                // in an iframe that just finished loading, post AXLayoutComplete instead.
+                cache->postNotification(renderObject, AXObjectCache::AXLayoutComplete, true);
+            }
         }
     }
 

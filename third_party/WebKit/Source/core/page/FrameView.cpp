@@ -2187,6 +2187,8 @@ bool FrameView::updateWidgets()
 
     Vector<RenderObject*> objects;
     objects.reserveInitialCapacity(size);
+    // Protect RendereArena from getting wiped out, when Document is detached during updateWidget().
+    RefPtr<RenderArena> protectedArena = m_frame->document()->renderArena();
 
     RenderObjectSet::const_iterator end = m_widgetUpdateSet->end();
     for (RenderObjectSet::const_iterator it = m_widgetUpdateSet->begin(); it != end; ++it) {
@@ -2204,12 +2206,11 @@ bool FrameView::updateWidgets()
         m_widgetUpdateSet->remove(object);
     }
 
-    RenderArena* arena = m_frame->document()->renderArena();
     for (size_t i = 0; i < size; ++i) {
         RenderObject* object = objects[i];
         if (object->isEmbeddedObject()) {
             RenderEmbeddedObject* embeddedObject = static_cast<RenderEmbeddedObject*>(object);
-            embeddedObject->deref(arena);
+            embeddedObject->deref(protectedArena.get());
         }
     }
     
@@ -2292,6 +2293,8 @@ void FrameView::performPostLayoutTasks()
         InspectorInstrumentation::mediaQueryResultChanged(m_frame->document());
     }
 
+    // Refetch render view since it can be destroyed by updateWidget() call above.
+    renderView = this->renderView();
     if (renderView && !renderView->printing()) {
         IntSize currentSize;
         currentSize = visibleContentRect(IncludeScrollbars).size();
