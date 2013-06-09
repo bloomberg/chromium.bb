@@ -1063,7 +1063,7 @@ void replaceChildrenWithFragment(ContainerNode* container, PassRefPtr<DocumentFr
     }
 
     if (hasOneTextChild(containerNode.get()) && hasOneTextChild(fragment.get())) {
-        toText(containerNode->firstChild())->setData(toText(fragment->firstChild())->data(), ec);
+        toText(containerNode->firstChild())->setData(toText(fragment->firstChild())->data());
         return;
     }
 
@@ -1083,7 +1083,7 @@ void replaceChildrenWithText(ContainerNode* container, const String& text, Excep
     ChildListMutationScope mutation(containerNode.get());
 
     if (hasOneTextChild(containerNode.get())) {
-        toText(containerNode->firstChild())->setData(text, ec);
+        toText(containerNode->firstChild())->setData(text);
         return;
     }
 

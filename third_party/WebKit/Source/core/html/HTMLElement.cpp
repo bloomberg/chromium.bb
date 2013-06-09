@@ -325,9 +325,7 @@ static void mergeWithNextTextNode(PassRefPtr<Node> node, ExceptionCode& ec)
     
     RefPtr<Text> textNode = toText(node.get());
     RefPtr<Text> textNext = toText(next);
-    textNode->appendData(textNext->data(), ec);
-    if (ec)
-        return;
+    textNode->appendData(textNext->data());
     if (textNext->parentNode()) // Might have been removed by mutation event.
         textNext->remove(ec);
 }

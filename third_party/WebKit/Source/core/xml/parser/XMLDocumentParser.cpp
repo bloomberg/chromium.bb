@@ -362,7 +362,7 @@ void XMLDocumentParser::exitText()
     if (!m_leafTextNode)
         return;
 
-    m_leafTextNode->appendData(toString(m_bufferedText.data(), m_bufferedText.size()), IGNORE_EXCEPTION);
+    m_leafTextNode->appendData(toString(m_bufferedText.data(), m_bufferedText.size()));
     Vector<xmlChar> empty;
     m_bufferedText.swap(empty);
 

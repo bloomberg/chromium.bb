@@ -85,7 +85,7 @@ void HTMLScriptElement::setText(const String &value)
     int numChildren = childNodeCount();
 
     if (numChildren == 1 && firstChild()->isTextNode()) {
-        toText(firstChild())->setData(value, IGNORE_EXCEPTION);
+        toText(firstChild())->setData(value);
         return;
     }
 

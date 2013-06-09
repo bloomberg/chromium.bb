@@ -176,7 +176,7 @@ PassRefPtr<Text> Text::replaceWholeText(const String& newText)
         return 0;
     }
 
-    setData(newText, IGNORE_EXCEPTION);
+    setData(newText);
     return protectedThis.release();
 }
 

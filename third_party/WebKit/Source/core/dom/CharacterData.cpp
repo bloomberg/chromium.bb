@@ -46,7 +46,7 @@ void CharacterData::atomize()
     m_data = AtomicString(m_data);
 }
 
-void CharacterData::setData(const String& data, ExceptionCode&)
+void CharacterData::setData(const String& data)
 {
     const String& nonNullData = !data.isNull() ? data : emptyString();
     if (m_data == nonNullData)
@@ -117,7 +117,7 @@ void CharacterData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_data, "data");
 }
 
-void CharacterData::appendData(const String& data, ExceptionCode&)
+void CharacterData::appendData(const String& data)
 {
     String newStr = m_data;
     newStr.append(data);
@@ -194,9 +194,9 @@ bool CharacterData::containsOnlyWhitespace() const
     return m_data.containsOnlyWhitespace();
 }
 
-void CharacterData::setNodeValue(const String& nodeValue, ExceptionCode& ec)
+void CharacterData::setNodeValue(const String& nodeValue, ExceptionCode&)
 {
-    setData(nodeValue, ec);
+    setData(nodeValue);
 }
 
 void CharacterData::setDataAndUpdate(const String& newData, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength)
