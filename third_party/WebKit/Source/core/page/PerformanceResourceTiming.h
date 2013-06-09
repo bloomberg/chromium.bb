@@ -44,18 +44,12 @@ class KURL;
 class ResourceLoadTiming;
 class ResourceRequest;
 class ResourceResponse;
-class ResourceTimingInfo;
 
 class PerformanceResourceTiming : public PerformanceEntry {
 public:
-    static PassRefPtr<PerformanceResourceTiming> create(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails)
+    static PassRefPtr<PerformanceResourceTiming> create(const AtomicString& initiatorType, const ResourceRequest& request, const ResourceResponse& response, double initiationTime, double finishTime, Document* requestingDocument)
     {
-        return adoptRef(new PerformanceResourceTiming(info, requestingDocument, startTime, lastRedirectEndTime, m_allowTimingDetails, m_allowRedirectDetails));
-    }
-
-    static PassRefPtr<PerformanceResourceTiming> create(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, bool m_allowTimingDetails)
-    {
-        return adoptRef(new PerformanceResourceTiming(info, requestingDocument, startTime, 0.0, m_allowTimingDetails, false));
+        return adoptRef(new PerformanceResourceTiming(initiatorType, request, response, initiationTime, finishTime, requestingDocument));
     }
 
     AtomicString initiatorType() const;
@@ -75,16 +69,14 @@ public:
     virtual bool isResource() { return true; }
 
 private:
-    PerformanceResourceTiming(const ResourceTimingInfo&, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails);
+    PerformanceResourceTiming(const AtomicString& initatorType, const ResourceRequest&, const ResourceResponse&, double initiationTime, double finishTime, Document*);
     ~PerformanceResourceTiming();
 
     AtomicString m_initiatorType;
     RefPtr<ResourceLoadTiming> m_timing;
-    double m_lastRedirectEndTime;
     double m_finishTime;
     bool m_didReuseConnection;
-    bool m_allowTimingDetails;
-    bool m_allowRedirectDetails;
+    bool m_shouldReportDetails;
     RefPtr<Document> m_requestingDocument;
 };
 

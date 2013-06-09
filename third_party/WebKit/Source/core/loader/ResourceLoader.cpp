@@ -277,7 +277,6 @@ void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, 
             cancel();
             return;
         }
-        m_documentLoader->cachedResourceLoader()->redirectReceived(m_resource, redirectResponse);
         m_resource->willSendRequest(request, redirectResponse);
     }
 
