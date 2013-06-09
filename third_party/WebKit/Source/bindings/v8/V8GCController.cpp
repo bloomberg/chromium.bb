@@ -84,7 +84,7 @@ Node* V8GCController::opaqueRootForGC(Node* node, v8::Isolate*)
     // The same special handling is in V8GCController::gcTree().
     // Maybe should image elements be active DOM nodes?
     // See https://code.google.com/p/chromium/issues/detail?id=164882
-    if (node->inDocument() || (node->hasTagName(HTMLNames::imgTag) && static_cast<HTMLImageElement*>(node)->hasPendingActivity()))
+    if (node->inDocument() || (node->hasTagName(HTMLNames::imgTag) && toHTMLImageElement(node)->hasPendingActivity()))
         return node->document();
 
     if (node->isAttributeNode()) {
@@ -171,7 +171,7 @@ private:
                 // The same special handling is in V8GCController::opaqueRootForGC().
                 // Maybe should image elements be active DOM nodes?
                 // See https://code.google.com/p/chromium/issues/detail?id=164882
-                if (!node->isV8CollectableDuringMinorGC() || (node->hasTagName(HTMLNames::imgTag) && static_cast<HTMLImageElement*>(node)->hasPendingActivity())) {
+                if (!node->isV8CollectableDuringMinorGC() || (node->hasTagName(HTMLNames::imgTag) && toHTMLImageElement(node)->hasPendingActivity())) {
                     // This node is not in the new space of V8. This indicates that
                     // the minor GC cannot anyway judge reachability of this DOM tree.
                     // Thus we give up traversing the DOM tree.

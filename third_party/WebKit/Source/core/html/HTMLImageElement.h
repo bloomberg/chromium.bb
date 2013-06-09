@@ -111,6 +111,18 @@ private:
     CompositeOperator m_compositeOperator;
 };
 
+inline HTMLImageElement* toHTMLImageElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::imgTag));
+    return static_cast<HTMLImageElement*>(node);
+}
+
+inline const HTMLImageElement* toHTMLImageElement(const Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::imgTag));
+    return static_cast<const HTMLImageElement*>(node);
+}
+
 } //namespace
 
 #endif

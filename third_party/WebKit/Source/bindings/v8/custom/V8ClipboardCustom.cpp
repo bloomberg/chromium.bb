@@ -105,7 +105,7 @@ void V8Clipboard::setDragImageMethodCustom(const v8::FunctionCallbackInfo<v8::Va
     }
 
     if (toElement(node)->hasTagName(HTMLNames::imgTag) && !node->inDocument())
-        clipboard->setDragImage(static_cast<HTMLImageElement*>(node)->cachedImage(), IntPoint(x, y));
+        clipboard->setDragImage(toHTMLImageElement(node)->cachedImage(), IntPoint(x, y));
     else
         clipboard->setDragImageElement(node, IntPoint(x, y));
 }

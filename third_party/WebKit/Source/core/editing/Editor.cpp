@@ -223,7 +223,7 @@ static HTMLImageElement* imageElementFromImageDocument(Document* document)
         return 0;    
     if (!node->hasTagName(imgTag))
         return 0;
-    return static_cast<HTMLImageElement*>(node);
+    return toHTMLImageElement(node);
 }
 
 bool Editor::canCopy() const
