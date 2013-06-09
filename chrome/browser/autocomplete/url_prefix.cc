@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 
 URLPrefix::URLPrefix(const string16& prefix, size_t num_components)
     : prefix(prefix),

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_utils.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/bluetooth.h"
 #include "device/bluetooth/bluetooth_adapter.h"

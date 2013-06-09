@@ -13,7 +13,7 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"  // g_browser_process
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/x509_certificate_model.h"

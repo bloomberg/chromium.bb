@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "ui/base/gtk/gtk_screen_util.h"

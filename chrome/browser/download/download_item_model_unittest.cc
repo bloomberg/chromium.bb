@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/test/mock_download_item.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"

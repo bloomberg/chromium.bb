@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/options/passphrase_textfield.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 
 namespace chromeos {
 

@@ -12,11 +12,11 @@
 #include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
-#include "crypto/random.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
+#include "crypto/random.h"
 
 namespace extensions {
 

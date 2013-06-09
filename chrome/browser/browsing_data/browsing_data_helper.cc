@@ -5,7 +5,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 
 #include "base/command_line.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"

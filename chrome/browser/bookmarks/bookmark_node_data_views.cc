@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/pickle.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/common/url_constants.h"
 #include "ui/base/clipboard/clipboard.h"
 

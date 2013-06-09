@@ -4,7 +4,7 @@
 
 #include "base/logging.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/activity_log/dom_actions.h"
 #include "chrome/browser/history/url_database.h"
 #include "content/public/browser/browser_thread.h"

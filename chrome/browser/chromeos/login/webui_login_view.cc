@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"

@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "ash/system/chromeos/network/network_icon_animation.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "grit/ash_resources.h"

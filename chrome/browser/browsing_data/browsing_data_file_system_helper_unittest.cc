@@ -9,7 +9,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/storage_partition.h"

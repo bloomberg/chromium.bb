@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_helpers.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_constants.h"

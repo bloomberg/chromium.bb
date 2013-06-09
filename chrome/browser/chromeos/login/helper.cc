@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 
 #include "ash/shell.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

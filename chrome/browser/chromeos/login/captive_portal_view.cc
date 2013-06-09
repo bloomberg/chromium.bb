@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/login/captive_portal_view.h"
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/captive_portal/captive_portal_detector.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"

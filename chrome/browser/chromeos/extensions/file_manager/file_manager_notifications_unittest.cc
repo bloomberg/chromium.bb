@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_notifications.h"
 #include "chrome/browser/ui/browser.h"
 #include "grit/generated_resources.h"

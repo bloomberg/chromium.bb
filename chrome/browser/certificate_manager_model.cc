@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "net/base/crypto_module.h"
