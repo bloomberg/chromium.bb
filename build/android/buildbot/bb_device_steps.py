@@ -71,7 +71,6 @@ def RebootDeviceSafe(device):
 
 def RebootDevices():
   """Reboot all attached and online devices."""
-  buildbot_report.PrintNamedStep('Reboot devices')
   # Early return here to avoid presubmit dependence on adb,
   # which might not exist in this checkout.
   if bb_utils.TESTING:
@@ -234,17 +233,15 @@ def MainTestWrapper(options):
   # Wait for logcat_monitor to pull existing logcat
   RunCmd(['sleep', '5'])
 
+  # Provision devices
+  buildbot_report.PrintNamedStep('provision_devices')
   if options.reboot:
     RebootDevices()
+  RunCmd(['build/android/provision_devices.py', '-t', options.target])
 
   # Device check and alert emails
   buildbot_report.PrintNamedStep('device_status_check')
   RunCmd(['build/android/device_status_check.py'], halt_on_failure=True)
-
-  # Provision devices
-  buildbot_report.PrintNamedStep('provision_devices')
-  target = options.factory_properties.get('target', 'Debug')
-  RunCmd(['build/android/provision_devices.py', '-t', target])
 
   if options.install:
     test_obj = INSTRUMENTATION_TESTS[options.install]
