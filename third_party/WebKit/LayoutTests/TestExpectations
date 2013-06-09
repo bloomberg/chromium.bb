@@ -210,8 +210,6 @@ crbug.com/233124 http/tests/inspector/network/network-size-sync.html [ Skip ]
 # PageAgent can not getCookies from DumpRenderTree.
 webkit.org/b/65770 http/tests/inspector/resource-main-cookies.php [ Skip ]
 
-webkit.org/b/60109 [ Release ] inspector/elements/edit-dom-actions.html [ Slow ]
-
 webkit.org/b/74654 http/tests/inspector/network/network-worker.html [ Skip ]
 
 webkit.org/b/75186 [ Linux ] http/tests/inspector-enabled/dedicated-workers-list.html [ Skip ]
@@ -1785,3 +1783,14 @@ crbug.com/232188 editing/selection/editable-links.html [ ImageOnlyFailure ]
 crbug.com/232188 editing/selection/end-of-document.html [ ImageOnlyFailure ]
 crbug.com/232188 editing/style/5065910.html [ ImageOnlyFailure ]
 crbug.com/232188 editing/style/5084241.html [ ImageOnlyFailure ]
+
+crbug.com/247979 [ Mac Release ] inspector/elements/edit-dom-actions.html [ Slow Failure ]
+crbug.com/247979 [ XP Release ] inspector/elements/edit-dom-actions.html [ Slow Pass Failure ]
+crbug.com/247979 [ Win7 Debug ] inspector/elements/edit-dom-actions.html [ Timeout ]
+crbug.com/247981 [ Win7 Debug ] inspector/profiler/heap-snapshot-get-profile-crash.html [ Pass Crash ]
+crbug.com/247982 [ Win7 Debug ] virtual/deferred/fast/images/gif-large-checkerboard.html [ ImageOnlyFailure ]
+crbug.com/247982 [ Win7 Debug ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
+crbug.com/247984 [ Win7 Debug ] virtual/gpu/compositedscrolling/overflow/build-paint-order-lists.html [ Timeout Pass ]
+crbug.com/247984 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-composite-image.html [ Timeout Pass ]
+crbug.com/247984 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ Timeout ImageOnlyFailure ]
+webkit.org/b/60109 [ Release ] inspector/elements/edit-dom-actions.html [ Slow ]
