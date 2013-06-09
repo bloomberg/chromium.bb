@@ -54,7 +54,7 @@
 
   NSRect frame = [[viewController_ view] frame];
 
-  if (rightPoint.x + NSWidth(frame) < NSWidth(screenFrame)) {
+  if (rightPoint.x + NSWidth(frame) < NSMaxX(screenFrame)) {
     frame.origin.x = rightPoint.x;
     frame.origin.y = rightPoint.y - NSHeight(frame);
   } else {
