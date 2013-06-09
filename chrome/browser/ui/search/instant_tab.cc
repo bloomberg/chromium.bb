@@ -33,3 +33,15 @@ bool InstantTab::ShouldProcessFocusOmnibox() {
 bool InstantTab::ShouldProcessNavigateToURL() {
   return true;
 }
+
+bool InstantTab::ShouldProcessDeleteMostVisitedItem() {
+  return true;
+}
+
+bool InstantTab::ShouldProcessUndoMostVisitedDeletion() {
+  return true;
+}
+
+bool InstantTab::ShouldProcessUndoAllMostVisitedDeletions() {
+  return true;
+}

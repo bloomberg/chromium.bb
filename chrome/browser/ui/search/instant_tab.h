@@ -26,6 +26,9 @@ class InstantTab : public InstantPage {
   virtual bool ShouldProcessSetSuggestions() OVERRIDE;
   virtual bool ShouldProcessFocusOmnibox() OVERRIDE;
   virtual bool ShouldProcessNavigateToURL() OVERRIDE;
+  virtual bool ShouldProcessDeleteMostVisitedItem() OVERRIDE;
+  virtual bool ShouldProcessUndoMostVisitedDeletion() OVERRIDE;
+  virtual bool ShouldProcessUndoAllMostVisitedDeletions() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(InstantTab);
 };

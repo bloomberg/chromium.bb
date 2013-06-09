@@ -165,6 +165,18 @@ bool InstantPage::ShouldProcessNavigateToURL() {
   return false;
 }
 
+bool InstantPage::ShouldProcessDeleteMostVisitedItem() {
+  return false;
+}
+
+bool InstantPage::ShouldProcessUndoMostVisitedDeletion() {
+  return false;
+}
+
+bool InstantPage::ShouldProcessUndoAllMostVisitedDeletions() {
+  return false;
+}
+
 void InstantPage::RenderViewCreated(content::RenderViewHost* render_view_host) {
   if (ShouldProcessRenderViewCreated())
     delegate_->InstantPageRenderViewCreated(contents());
@@ -307,14 +319,35 @@ void InstantPage::OnSearchBoxNavigate(int page_id,
       contents(), url, transition, disposition, is_search_type);
 }
 
-void InstantPage::OnDeleteMostVisitedItem(const GURL& url) {
+void InstantPage::OnDeleteMostVisitedItem(int page_id, const GURL& url) {
+  if (!contents()->IsActiveEntry(page_id))
+    return;
+
+  OnInstantSupportDetermined(page_id, true);
+  if (!ShouldProcessDeleteMostVisitedItem())
+    return;
+
   delegate_->DeleteMostVisitedItem(url);
 }
 
-void InstantPage::OnUndoMostVisitedDeletion(const GURL& url) {
+void InstantPage::OnUndoMostVisitedDeletion(int page_id, const GURL& url) {
+  if (!contents()->IsActiveEntry(page_id))
+    return;
+
+  OnInstantSupportDetermined(page_id, true);
+  if (!ShouldProcessUndoMostVisitedDeletion())
+    return;
+
   delegate_->UndoMostVisitedDeletion(url);
 }
 
-void InstantPage::OnUndoAllMostVisitedDeletions() {
+void InstantPage::OnUndoAllMostVisitedDeletions(int page_id) {
+  if (!contents()->IsActiveEntry(page_id))
+    return;
+
+  OnInstantSupportDetermined(page_id, true);
+  if (!ShouldProcessUndoAllMostVisitedDeletions())
+    return;
+
   delegate_->UndoAllMostVisitedDeletions();
 }

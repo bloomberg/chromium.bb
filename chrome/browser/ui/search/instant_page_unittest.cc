@@ -8,6 +8,8 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "googleurl/src/gurl.h"
@@ -57,14 +59,48 @@ class FakePageDelegate : public InstantPage::Delegate {
 
 class FakePage : public InstantPage {
  public:
-  FakePage(Delegate* delegate, const std::string& instant_url)
-    : InstantPage(delegate, instant_url) {
-  }
-  virtual ~FakePage() {
-  }
+  FakePage(Delegate* delegate, const std::string& instant_url);
+  virtual ~FakePage();
+
+  // InstantPage overrride.
+  virtual bool ShouldProcessDeleteMostVisitedItem() OVERRIDE;
+  virtual bool ShouldProcessUndoMostVisitedDeletion() OVERRIDE;
+  virtual bool ShouldProcessUndoAllMostVisitedDeletions() OVERRIDE;
+
+  void set_should_handle_messages(bool should_handle_messages);
 
   using InstantPage::SetContents;
+
+ private:
+  // Initialized to true to handle the messages sent by the renderer.
+  bool should_handle_messages_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakePage);
 };
+
+FakePage::FakePage(Delegate* delegate, const std::string& instant_url)
+    : InstantPage(delegate, instant_url),
+      should_handle_messages_(true) {
+}
+
+FakePage::~FakePage() {
+}
+
+void FakePage::set_should_handle_messages(bool should_handle_messages) {
+  should_handle_messages_ = should_handle_messages;
+}
+
+bool FakePage::ShouldProcessDeleteMostVisitedItem() {
+  return should_handle_messages_;
+}
+
+bool FakePage::ShouldProcessUndoMostVisitedDeletion() {
+  return should_handle_messages_;
+}
+
+bool FakePage::ShouldProcessUndoAllMostVisitedDeletions() {
+  return should_handle_messages_;
+}
 
 }  // namespace
 
@@ -115,28 +151,85 @@ TEST_F(InstantPageTest, DetermineIfPageSupportsInstant_NonLocal) {
 TEST_F(InstantPageTest, DispatchRequestToDeleteMostVisitedItem) {
   page.reset(new FakePage(&delegate, ""));
   page->SetContents(web_contents());
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   GURL item_url("www.foo.com");
+  int page_id = web_contents()->GetController().GetActiveEntry()->GetPageID();
   EXPECT_CALL(delegate, DeleteMostVisitedItem(item_url)).Times(1);
   EXPECT_TRUE(page->OnMessageReceived(
       ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem(rvh()->GetRoutingID(),
-                                                       item_url)));
+                                                       page_id, item_url)));
 }
 
 TEST_F(InstantPageTest, DispatchRequestToUndoMostVisitedDeletion) {
   page.reset(new FakePage(&delegate, ""));
   page->SetContents(web_contents());
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   GURL item_url("www.foo.com");
+  int page_id = web_contents()->GetController().GetActiveEntry()->GetPageID();
   EXPECT_CALL(delegate, UndoMostVisitedDeletion(item_url)).Times(1);
   EXPECT_TRUE(page->OnMessageReceived(
       ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion(rvh()->GetRoutingID(),
-                                                         item_url)));
+                                                         page_id, item_url)));
 }
 
 TEST_F(InstantPageTest, DispatchRequestToUndoAllMostVisitedDeletions) {
   page.reset(new FakePage(&delegate, ""));
   page->SetContents(web_contents());
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  int page_id = web_contents()->GetController().GetActiveEntry()->GetPageID();
   EXPECT_CALL(delegate, UndoAllMostVisitedDeletions()).Times(1);
   EXPECT_TRUE(page->OnMessageReceived(
       ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions(
-          rvh()->GetRoutingID())));
+          rvh()->GetRoutingID(), page_id)));
+}
+
+TEST_F(InstantPageTest, IgnoreMessageIfThePageIsNotActive) {
+  page.reset(new FakePage(&delegate, ""));
+  page->SetContents(web_contents());
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  GURL item_url("www.foo.com");
+  int inactive_page_id = 1999;
+
+  EXPECT_CALL(delegate, DeleteMostVisitedItem(item_url)).Times(0);
+  EXPECT_TRUE(page->OnMessageReceived(
+      ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem(rvh()->GetRoutingID(),
+                                                       inactive_page_id,
+                                                       item_url)));
+
+  EXPECT_CALL(delegate, UndoMostVisitedDeletion(item_url)).Times(0);
+  EXPECT_TRUE(page->OnMessageReceived(
+      ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion(rvh()->GetRoutingID(),
+                                                         inactive_page_id,
+                                                         item_url)));
+
+  EXPECT_CALL(delegate, UndoAllMostVisitedDeletions()).Times(0);
+  EXPECT_TRUE(page->OnMessageReceived(
+      ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions(
+          rvh()->GetRoutingID(), inactive_page_id)));
+}
+
+TEST_F(InstantPageTest, IgnoreMessageReceivedFromThePage) {
+  page.reset(new FakePage(&delegate, ""));
+  page->SetContents(web_contents());
+
+  // Ignore the messages received from the page.
+  page->set_should_handle_messages(false);
+  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
+  GURL item_url("www.foo.com");
+  int page_id = web_contents()->GetController().GetActiveEntry()->GetPageID();
+
+  EXPECT_CALL(delegate, DeleteMostVisitedItem(item_url)).Times(0);
+  EXPECT_TRUE(page->OnMessageReceived(
+      ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem(rvh()->GetRoutingID(),
+                                                       page_id, item_url)));
+
+  EXPECT_CALL(delegate, UndoMostVisitedDeletion(item_url)).Times(0);
+  EXPECT_TRUE(page->OnMessageReceived(
+      ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion(rvh()->GetRoutingID(),
+                                                         page_id, item_url)));
+
+  EXPECT_CALL(delegate, UndoAllMostVisitedDeletions()).Times(0);
+  EXPECT_TRUE(page->OnMessageReceived(
+      ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions(
+          rvh()->GetRoutingID(), page_id)));
 }

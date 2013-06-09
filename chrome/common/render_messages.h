@@ -370,13 +370,16 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxFocusChanged,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxMostVisitedItemsChanged,
                     std::vector<InstantMostVisitedItem> /* items */)
 
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
+                    int /* page_id */,
                     GURL /* url */)
 
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion,
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion,
+                    int /* page_id */,
                     GURL /* url */)
 
-IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions)
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions,
+                    int /* page_id */)
 
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_SearchBoxToggleVoiceSearch)
 

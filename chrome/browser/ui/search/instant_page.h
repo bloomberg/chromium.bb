@@ -209,7 +209,7 @@ class InstantPage : public content::WebContentsObserver {
 
   // These functions are called before processing messages received from the
   // page. By default, all messages are handled, but any derived classes may
-  // choose to ingore some or all of the received messages by overriding these
+  // choose to ignore some or all of the received messages by overriding these
   // methods.
   virtual bool ShouldProcessRenderViewCreated();
   virtual bool ShouldProcessRenderViewGone();
@@ -218,6 +218,9 @@ class InstantPage : public content::WebContentsObserver {
   virtual bool ShouldProcessShowInstantOverlay();
   virtual bool ShouldProcessFocusOmnibox();
   virtual bool ShouldProcessNavigateToURL();
+  virtual bool ShouldProcessDeleteMostVisitedItem();
+  virtual bool ShouldProcessUndoMostVisitedDeletion();
+  virtual bool ShouldProcessUndoAllMostVisitedDeletions();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
@@ -226,6 +229,10 @@ class InstantPage : public content::WebContentsObserver {
                            DispatchRequestToUndoMostVisitedDeletion);
   FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
                            DispatchRequestToUndoAllMostVisitedDeletions);
+  FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
+                           IgnoreMessageIfThePageIsNotActive);
+  FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
+                           IgnoreMessageReceivedFromThePage);
 
   // Overridden from content::WebContentsObserver:
   virtual void RenderViewCreated(
@@ -266,9 +273,9 @@ class InstantPage : public content::WebContentsObserver {
                            content::PageTransition transition,
                            WindowOpenDisposition disposition,
                            bool is_search_type);
-  void OnDeleteMostVisitedItem(const GURL& url);
-  void OnUndoMostVisitedDeletion(const GURL& url);
-  void OnUndoAllMostVisitedDeletions();
+  void OnDeleteMostVisitedItem(int page_id, const GURL& url);
+  void OnUndoMostVisitedDeletion(int page_id, const GURL& url);
+  void OnUndoAllMostVisitedDeletions(int page_id);
 
   Delegate* const delegate_;
   const std::string instant_url_;
