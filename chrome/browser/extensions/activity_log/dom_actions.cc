@@ -131,7 +131,7 @@ bool DOMAction::Record(sql::Connection* db) {
 std::string DOMAction::PrintForDebug() {
   if (verb_ == DomActionType::INSERTED)
     return "Injected scripts (" + args_ + ") onto "
-        + std::string(url_.spec());
+        + std::string(url_.spec()) + (extra_.empty() ? extra_ : " " + extra_);
   else
     return "DOM API CALL: " + api_call_ + ", ARGS: " + args_ + ", VERB: "
         + VerbAsString();
