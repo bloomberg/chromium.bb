@@ -1812,6 +1812,9 @@
       ],
     },
     'conditions': [
+      ['OS=="linux"', {
+        'defines': ['ENABLE_PARTITION_ALLOC=1'],
+      }],
       ['(OS=="mac" or OS=="ios") and asan==1', {
         'dependencies': [
           '<(DEPTH)/build/mac/asan.gyp:asan_dynamic_runtime',
