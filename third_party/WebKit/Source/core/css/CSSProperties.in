@@ -29,6 +29,7 @@ clear
 color custom_all
 empty-cells type_name=EEmptyCell
 float type_name=EFloat, name_for_methods=Floating
+grid-auto-flow type_name=GridAutoFlow
 height apply_type=length, initial=initialSize, use_auto, use_intrinsic
 image-rendering
 left apply_type=length, initial=initialOffset, use_auto
@@ -44,6 +45,7 @@ min-height apply_type=length, initial=initialMinSize, use_auto, use_intrinsic, u
 min-width apply_type=length, initial=initialMinSize, use_auto, use_intrinsic
 mix-blend-mode type_name=BlendMode, name_for_methods=BlendMode
 opacity type_name=float
+orphans type_name=short, custom_all
 outline-color custom_all
 overflow-wrap
 overflow-x type_name=EOverflow
@@ -70,11 +72,13 @@ touch-action type_name=TouchAction, initial=initialTouchAction
 unicode-bidi
 visibility
 white-space
+widows type_name=short, custom_all
 width apply_type=length, initial=initialSize, use_auto, use_intrinsic
 word-break
 // UAs must treat 'word-wrap' as an alternate name for the 'overflow-wrap' property. So using the same handlers.
 word-wrap name_for_methods=OverflowWrap
 zoom custom_all
+z-index type_name=int, custom_all
 
 -webkit-align-content
 -webkit-align-items
@@ -100,16 +104,22 @@ zoom custom_all
 -webkit-column-break-after type_name=EPageBreak, initial=initialPageBreak
 -webkit-column-break-before type_name=EPageBreak, initial=initialPageBreak
 -webkit-column-break-inside type_name=EPageBreak, initial=initialPageBreak
+-webkit-column-count type_name=unsigned short, custom_all
+-webkit-column-gap type_name=float, custom_all
 -webkit-column-progression type_name=ColumnProgression
 -webkit-column-rule-color custom_all
 -webkit-column-rule-style type_name=EBorderStyle, initial=initialBorderStyle
 -webkit-column-span type_name=ColumnSpan
+-webkit-column-width type_name=float, custom_all
 -webkit-flex-basis apply_type=length, use_auto
 -webkit-flex-direction
 -webkit-flex-grow type_name=float
 -webkit-flex-shrink type_name=float
 -webkit-flex-wrap
-grid-auto-flow type_name=GridAutoFlow
+-webkit-flow-from type_name=const AtomicString&, name_for_methods=RegionThread, custom_value
+-webkit-flow-into type_name=const AtomicString&, name_for_methods=FlowThread, custom_value
+-webkit-highlight type_name=const AtomicString&, custom_value
+-webkit-hyphenate-character type_name=const AtomicString&, name_for_methods=HyphenationString, custom_value
 -webkit-hyphenate-limit-after type_name=short, name_for_methods=HyphenationLimitAfter, custom_value
 -webkit-hyphenate-limit-before type_name=short, name_for_methods=HyphenationLimitBefore, custom_value
 -webkit-hyphenate-limit-lines type_name=short, name_for_methods=HyphenationLimitLines, custom_value
@@ -118,6 +128,7 @@ grid-auto-flow type_name=GridAutoFlow
 -webkit-line-align type_name=LineAlign
 -webkit-line-break type_name=LineBreak
 -webkit-line-clamp type_name=LineClampValue
+-webkit-line-grid type_name=const AtomicString&, custom_value
 -webkit-line-snap type_name=LineSnap
 -webkit-margin-after-collapse type_name=EMarginCollapse
 -webkit-margin-before-collapse type_name=EMarginCollapse

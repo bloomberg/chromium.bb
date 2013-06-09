@@ -12,6 +12,7 @@
 #include "StyleBuilderFunctions.h"
 
 #include "CSSValueKeywords.h"
+#include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/resolver/StyleResolver.h"
 
 {%- macro apply_initial(property_id) -%}
@@ -31,6 +32,47 @@ void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolver* styleResolv
 {%- endmacro %}
 
 namespace WebCore {
+
+{%- macro apply_auto(property_id, auto_getter=none, auto_setter=none, auto_identity="CSSValueAuto", compute_length=false) %}
+{%- set property = properties[property_id] %}
+{%- set auto_getter = auto_getter or "hasAuto" + property.camel_case_name %}
+{%- set auto_setter = auto_setter or "setHasAuto" + property.camel_case_name %}
+{{ apply_initial(property_id) }}
+{
+    styleResolver->style()->{{auto_setter}}();
+}
+
+{{ apply_inherit(property_id) }}
+{
+    if (styleResolver->parentStyle()->{{auto_getter}}())
+        styleResolver->style()->{{auto_setter}}();
+    else
+        {{ set_value(property) }}(styleResolver->parentStyle()->{{property.getter}}());
+}
+
+{{ apply_value(property_id) }}
+{
+    if (!value->isPrimitiveValue())
+        return;
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue->getValueID() == {{auto_identity}})
+        styleResolver->style()->{{auto_setter}}();
+    else
+    {%- if compute_length %}
+        {{ set_value(property) }}(primitiveValue->computeLength<{{property.type_name}}>(styleResolver->style(), styleResolver->rootElementStyle(), styleResolver->style()->effectiveZoom()));
+    {%- else %}
+        {{ set_value(property) }}(*primitiveValue);
+    {%- endif %}
+}
+{%- endmacro %}
+
+{{ apply_auto("CSSPropertyOrphans") }}
+{{ apply_auto("CSSPropertyWebkitColumnCount") }}
+{{ apply_auto("CSSPropertyWebkitColumnGap", auto_getter="hasNormalColumnGap", auto_setter="setHasNormalColumnGap", auto_identity="CSSValueNormal", compute_length=true) }}
+{{ apply_auto("CSSPropertyWebkitColumnWidth", compute_length=true) }}
+{{ apply_auto("CSSPropertyWidows") }}
+{{ apply_auto("CSSPropertyZIndex") }}
 
 {%- macro apply_value_border_image(property_id) %}
 {{ apply_value(property_id) }}
@@ -214,6 +256,26 @@ namespace WebCore {
 {{ apply_value_number("CSSPropertyWebkitHyphenateLimitBefore", "CSSValueAuto") }}
 {{ apply_value_number("CSSPropertyWebkitHyphenateLimitLines", "CSSValueNoLimit") }}
 {{ apply_value_number("CSSPropertyWebkitMarqueeRepetition", "CSSValueInfinite") }}
+
+{%- macro apply_value_string(property_id, id_for_none) %}
+{{ apply_value(property_id) }}
+{
+    {%- set property = properties[property_id] %}
+    if (!value->isPrimitiveValue())
+        return;
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue->getValueID() == {{id_for_none}})
+        {{ set_value(property) }}(nullAtom);
+    else
+        {{ set_value(property) }}(primitiveValue->getStringValue());
+}
+{%- endmacro %}
+
+{{ apply_value_string("CSSPropertyWebkitHighlight", "CSSValueNone") }}
+{{ apply_value_string("CSSPropertyWebkitHyphenateCharacter", "CSSValueAuto") }}
+{{ apply_value_string("CSSPropertyWebkitLineGrid", "CSSValueNone") }}
+{{ apply_value_string("CSSPropertyWebkitFlowFrom", "CSSValueNone") }}
+{{ apply_value_string("CSSPropertyWebkitFlowInto", "CSSValueNone") }}
 
 {{ apply_value("CSSPropertyWebkitMarqueeIncrement") }}
 {
