@@ -55,6 +55,9 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   void LockRevealedState(AnimateReveal animate_reveal);
   void UnlockRevealedState();
 
+  // Exits immersive fullscreen based on |native_window_|'s show state.
+  void MaybeExitImmersiveFullscreen();
+
   // ImmersiveModeController overrides:
   virtual void Init(Delegate* delegate,
                     views::Widget* widget,
@@ -196,6 +199,13 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // Called when the animation to slide out the top-of-window views has
   // completed.
   void OnSlideClosedAnimationCompleted();
+
+  // Returns whether immersive fullscreen should be exited based on
+  // |native_window_|'s show state. This handles cases where the user has
+  // exited immersive fullscreen without going through
+  // FullscreenController::ToggleFullscreenMode(). This is the case if the
+  // user exits fullscreen via the restore button.
+  bool ShouldExitImmersiveFullscreen() const;
 
   // Returns the type of swipe given |event|.
   SwipeType GetSwipeType(ui::GestureEvent* event) const;

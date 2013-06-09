@@ -714,6 +714,7 @@
         'corewm/tooltip_controller_unittest.cc',
         'corewm/visibility_controller_unittest.cc',
         'corewm/window_animations_unittest.cc',
+        'corewm/window_util_unittest.cc',
         'focus/focus_manager_test.h',
         'focus/focus_manager_test.cc',
         'focus/focus_manager_unittest.cc',

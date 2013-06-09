@@ -30,6 +30,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/javascript_dialog_manager.h"
+#include "content/public/test/test_utils.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -236,11 +237,11 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, ImmersiveMode) {
   controller()->SetMouseHoveredForTest(false);
   EXPECT_FALSE(controller()->IsRevealed());
 
-  // Window restore tracking is only implemented in the Aura port.
-  // Also, Windows Aura does not trigger maximize/restore notifications.
-#if !defined(OS_WIN)
   // Restoring the window exits immersive mode.
   browser_view()->GetWidget()->Restore();
+  // Exiting immersive fullscreen occurs as a result of a task posted to the
+  // message loop.
+  content::RunAllPendingInMessageLoop();
   ASSERT_FALSE(browser_view()->IsFullscreen());
   EXPECT_FALSE(controller()->IsEnabled());
   EXPECT_FALSE(controller()->ShouldHideTopViews());
@@ -248,7 +249,6 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, ImmersiveMode) {
   EXPECT_FALSE(browser_view()->tabstrip()->IsImmersiveStyle());
   EXPECT_TRUE(browser_view()->IsTabStripVisible());
   EXPECT_TRUE(browser_view()->IsToolbarVisible());
-#endif  // !defined(OS_WIN)
 
   // Don't crash if we exit the test during a reveal.
   if (!browser_view()->IsFullscreen())

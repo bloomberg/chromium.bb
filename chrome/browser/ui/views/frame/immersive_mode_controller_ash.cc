@@ -319,6 +319,11 @@ void ImmersiveModeControllerAsh::UnlockRevealedState() {
   }
 }
 
+void ImmersiveModeControllerAsh::MaybeExitImmersiveFullscreen() {
+  if (ShouldExitImmersiveFullscreen())
+    delegate_->FullscreenStateChanged();
+}
+
 void ImmersiveModeControllerAsh::Init(
     Delegate* delegate,
     views::Widget* widget,
@@ -573,15 +578,18 @@ void ImmersiveModeControllerAsh::AnimationProgressed(
 void ImmersiveModeControllerAsh::OnWindowPropertyChanged(aura::Window* window,
                                                          const void* key,
                                                          intptr_t old) {
-  using aura::client::kShowStateKey;
-  if (key == kShowStateKey) {
-    // Disable immersive mode when leaving the fullscreen state.
-    ui::WindowShowState show_state = static_cast<ui::WindowShowState>(
-        window->GetProperty(kShowStateKey));
-    if (IsEnabled() &&
-        show_state != ui::SHOW_STATE_FULLSCREEN &&
-        show_state != ui::SHOW_STATE_MINIMIZED) {
-      delegate_->FullscreenStateChanged();
+  if (key == aura::client::kShowStateKey) {
+    // Disable immersive mode when the user exits fullscreen without going
+    // through FullscreenController::ToggleFullscreenMode(). This is the case
+    // if the user exits fullscreen via the restore button.
+    if (ShouldExitImmersiveFullscreen()) {
+      // Other "property change" observers may want to animate between the
+      // current visuals and the new window state. Do not alter the current
+      // visuals yet and post a task to exit immersive fullscreen instead.
+      base::MessageLoopForUI::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&ImmersiveModeControllerAsh::MaybeExitImmersiveFullscreen,
+                     weak_ptr_factory_.GetWeakPtr()));
     }
   }
 }
@@ -1002,6 +1010,17 @@ void ImmersiveModeControllerAsh::OnSlideClosedAnimationCompleted() {
   // Update tabstrip for closed state.
   delegate_->SetImmersiveStyle(true);
   LayoutBrowserRootView();
+}
+
+bool ImmersiveModeControllerAsh::ShouldExitImmersiveFullscreen() const {
+  if (!native_window_)
+    return false;
+
+  ui::WindowShowState show_state = static_cast<ui::WindowShowState>(
+      native_window_->GetProperty(aura::client::kShowStateKey));
+  return IsEnabled() &&
+      show_state != ui::SHOW_STATE_FULLSCREEN &&
+      show_state != ui::SHOW_STATE_MINIMIZED;
 }
 
 ImmersiveModeControllerAsh::SwipeType ImmersiveModeControllerAsh::GetSwipeType(
