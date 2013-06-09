@@ -2188,7 +2188,12 @@ AccessibilityObject* AccessibilityRenderObject::accessibilityImageMapHitTest(HTM
     if (!area)
         return 0;
 
-    HTMLMapElement* map = static_cast<HTMLMapElement*>(area->parentNode());
+    Element* mapParent = area->parentElement();
+    while (mapParent && !mapParent->hasTagName(mapTag))
+        mapParent = mapParent->parentElement();
+    if (!mapParent)
+        return 0;
+    HTMLMapElement* map = static_cast<HTMLMapElement*>(mapParent);
     AccessibilityObject* parent = accessibilityParentForImageMap(map);
     if (!parent)
         return 0;
