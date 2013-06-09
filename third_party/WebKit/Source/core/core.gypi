@@ -1200,6 +1200,7 @@
             'page/PointerLockController.h',
             'page/PopupOpeningObserver.h',
             'page/PrintContext.cpp',
+            'page/ResourceTimingInfo.h',
             'page/RuntimeCSSEnabled.cpp',
             'page/RuntimeCSSEnabled.h',
             'page/RuntimeEnabledFeaturesCustom.cpp',
