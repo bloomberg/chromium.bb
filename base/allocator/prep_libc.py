@@ -56,7 +56,7 @@ def main():
   objfiles = ['malloc', 'free', 'realloc', 'new', 'delete', 'new2', 'delete2',
               'align', 'msize', 'heapinit', 'expand', 'heapchk', 'heapwalk',
               'heapmin', 'sbheap', 'calloc', 'recalloc', 'calloc_impl',
-              'new_mode', 'newopnt']
+              'new_mode', 'newopnt', 'newaopnt']
   for obj in objfiles:
     for vspath in vspaths:
       cmd = ('lib /nologo /ignore:4006,4014,4221 /remove:%s%s.obj %s' %
