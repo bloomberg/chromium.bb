@@ -152,8 +152,8 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     // Lets move the handles a bit to modify the selection
     touch_editable->Reset();
     generator.GestureScrollSequence(
-        gfx::Point(10, 37),
-        gfx::Point(30, 37),
+        gfx::Point(10, 47),
+        gfx::Point(30, 47),
         base::TimeDelta::FromMilliseconds(20),
         1);
     EXPECT_TRUE(touch_editable->touch_selection_controller_.get());

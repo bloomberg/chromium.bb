@@ -5,9 +5,12 @@
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 
 #include "base/time.h"
+#include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
@@ -18,22 +21,18 @@
 namespace {
 
 // Constants defining the visual attributes of selection handles
-const int kSelectionHandleRadius = 10;
-const int kSelectionHandleAlpha = 0x7F;
-const SkColor kSelectionHandleColor =
-    SkColorSetA(SK_ColorBLACK, kSelectionHandleAlpha);
+const int kSelectionHandleLineWidth = 1;
+const SkColor kSelectionHandleLineColor =
+    SkColorSetRGB(0x42, 0x81, 0xf4);
+
+// Padding around the selection handle defining the area that will be included
+// in the touch target to make dragging the handle easier.
+const int kSelectionHandlePadding = 10;
 
 // The minimum selection size to trigger selection controller.
 const int kMinSelectionSize = 4;
 
 const int kContextMenuTimoutMs = 200;
-
-// Convenience struct to represent a circle shape.
-struct Circle {
-  int radius;
-  gfx::Point center;
-  SkColor color;
-};
 
 // Creates a widget to host SelectionHandleView.
 views::Widget* CreateTouchSelectionPopupWidget(
@@ -53,12 +52,17 @@ views::Widget* CreateTouchSelectionPopupWidget(
   return widget;
 }
 
-void PaintCircle(const Circle& circle, gfx::Canvas* canvas) {
-  SkPaint paint;
-  paint.setAntiAlias(true);
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(circle.color);
-  canvas->DrawCircle(circle.center, circle.radius, paint);
+gfx::Image* GetHandleImage() {
+  static gfx::Image* handle_image = NULL;
+  if (!handle_image) {
+    handle_image = &ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        IDR_TEXT_SELECTION_HANDLE);
+  }
+  return handle_image;
+}
+
+gfx::Size GetHandleImageSize() {
+  return GetHandleImage()->Size();
 }
 
 // The points may not match exactly, since the selection range computation may
@@ -68,12 +72,6 @@ bool IsEmptySelection(const gfx::Point& p1, const gfx::Point& p2) {
   int delta_x = p2.x() - p1.x();
   int delta_y = p2.y() - p1.y();
   return (abs(delta_x) < kMinSelectionSize && abs(delta_y) < kMinSelectionSize);
-}
-
-gfx::Rect GetHandleBoundsFromCursor(const gfx::Rect& cursor) {
-  return gfx::Rect(cursor.x() - kSelectionHandleRadius, cursor.y(),
-          2 * kSelectionHandleRadius,
-          2 * kSelectionHandleRadius + cursor.height());
 }
 
 }  // namespace
@@ -107,9 +105,11 @@ class TouchSelectionControllerImpl::EditingHandleView
   }
 
   virtual void GetWidgetHitTestMask(gfx::Path* mask) const OVERRIDE {
-    mask->addCircle(SkIntToScalar(kSelectionHandleRadius),
-                    SkIntToScalar(kSelectionHandleRadius + cursor_height_),
-                    SkIntToScalar(kSelectionHandleRadius));
+    gfx::Size image_size = GetHandleImageSize();
+    mask->addRect(SkIntToScalar(0), SkIntToScalar(cursor_height_),
+        SkIntToScalar(image_size.width()) + 2 * kSelectionHandlePadding,
+        SkIntToScalar(cursor_height_ + image_size.height() +
+            kSelectionHandlePadding));
   }
 
   virtual void DeleteDelegate() OVERRIDE {
@@ -118,13 +118,19 @@ class TouchSelectionControllerImpl::EditingHandleView
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    Circle circle = {kSelectionHandleRadius, gfx::Point(kSelectionHandleRadius,
-                     kSelectionHandleRadius + cursor_height_),
-                     kSelectionHandleColor};
-    PaintCircle(circle, canvas);
-    canvas->DrawLine(gfx::Point(kSelectionHandleRadius, 0),
-        gfx::Point(kSelectionHandleRadius, cursor_height_),
-        kSelectionHandleColor);
+    gfx::Size image_size = GetHandleImageSize();
+    int cursor_pos_x = image_size.width() / 2 - kSelectionHandleLineWidth +
+        kSelectionHandlePadding;
+
+    // Draw the cursor line.
+    canvas->FillRect(
+        gfx::Rect(cursor_pos_x, 0,
+                  2 * kSelectionHandleLineWidth + 1, cursor_height_),
+        kSelectionHandleLineColor);
+
+    // Draw the handle image.
+    canvas->DrawImageInt(*GetHandleImage()->ToImageSkia(),
+        kSelectionHandlePadding, cursor_height_);
   }
 
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
@@ -156,8 +162,9 @@ class TouchSelectionControllerImpl::EditingHandleView
   }
 
   virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return gfx::Size(2 * kSelectionHandleRadius,
-                     2 * kSelectionHandleRadius + cursor_height_);
+    gfx::Size image_size = GetHandleImageSize();
+    return gfx::Size(image_size.width() + 2 * kSelectionHandlePadding,
+        image_size.height() + cursor_height_ + kSelectionHandlePadding);
   }
 
   bool IsWidgetVisible() const {
@@ -165,8 +172,13 @@ class TouchSelectionControllerImpl::EditingHandleView
   }
 
   void SetSelectionRectInScreen(const gfx::Rect& rect) {
+    gfx::Size image_size = GetHandleImageSize();
     cursor_height_ = rect.height();
-    gfx::Rect widget_bounds = GetHandleBoundsFromCursor(rect);
+    gfx::Rect widget_bounds(
+        rect.x() - image_size.width() / 2 - kSelectionHandlePadding,
+        rect.y(),
+        image_size.width() + 2 * kSelectionHandlePadding,
+        rect.height() + image_size.height() + kSelectionHandlePadding);
     widget_->SetBounds(widget_bounds);
   }
 
@@ -288,9 +300,10 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(
 
   DCHECK(dragging_handle_);
 
+  gfx::Size image_size = GetHandleImageSize();
   gfx::Point offset_drag_pos(drag_pos.x(),
       drag_pos.y() - dragging_handle_->cursor_height() / 2 -
-      2 * kSelectionHandleRadius);
+      image_size.height() / 2);
   ConvertPointToClientView(dragging_handle_, &offset_drag_pos);
   if (dragging_handle_ == cursor_handle_.get()) {
     client_view_->MoveCaretTo(offset_drag_pos);
@@ -303,7 +316,8 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(
     fixed_handle = selection_handle_2_.get();
 
   // Find selection end points in client_view's coordinate system.
-  gfx::Point p2(kSelectionHandleRadius, fixed_handle->cursor_height() / 2);
+  gfx::Point p2(image_size.width() / 2 + kSelectionHandlePadding,
+                fixed_handle->cursor_height() / 2);
   ConvertPointToClientView(fixed_handle, &p2);
 
   // Instruct client_view to select the region between p1 and p2. The position
@@ -329,8 +343,9 @@ void TouchSelectionControllerImpl::ExecuteCommand(int command_id,
 }
 
 void TouchSelectionControllerImpl::OpenContextMenu() {
-  gfx::Point anchor = context_menu_->anchor_rect().origin();
-  anchor.Offset(0, -kSelectionHandleRadius);
+  gfx::Size image_size = GetHandleImageSize();
+  gfx::Point anchor = context_menu_->anchor_rect().CenterPoint();
+  anchor.Offset(0, -image_size.height() / 2);
   HideContextMenu();
   client_view_->OpenContextMenu(anchor);
 }
@@ -358,8 +373,15 @@ void TouchSelectionControllerImpl::ContextMenuTimerFired() {
   gfx::Rect r1, r2;
   client_view_->GetSelectionEndPoints(&r1, &r2);
 
-  gfx::Rect handle_1_bounds = GetHandleBoundsFromCursor(r1);
-  gfx::Rect handle_2_bounds = GetHandleBoundsFromCursor(r2);
+  gfx::Rect handle_1_bounds;
+  gfx::Rect handle_2_bounds;
+  if (cursor_handle_->IsWidgetVisible()) {
+    handle_1_bounds = cursor_handle_->GetBoundsInScreen();
+    handle_2_bounds = handle_1_bounds;
+  } else {
+    handle_1_bounds = selection_handle_1_->GetBoundsInScreen();
+    handle_2_bounds = selection_handle_2_->GetBoundsInScreen();
+  }
 
   // if selection is completely inside the view, we display the context menu
   // in the middle of the end points on the top. Else, we show it above the
@@ -376,10 +398,6 @@ void TouchSelectionControllerImpl::ContextMenuTimerFired() {
   } else {
     return;
   }
-
-  gfx::Point menu_origin = menu_anchor.origin();
-  client_view_->ConvertPointToScreen(&menu_origin);
-  menu_anchor.set_origin(menu_origin);
 
   DCHECK(!context_menu_);
   context_menu_ = new TouchEditingMenuView(this, menu_anchor,

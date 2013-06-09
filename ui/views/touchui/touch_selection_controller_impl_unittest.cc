@@ -4,6 +4,8 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "grit/ui_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/touch/touch_editing_controller.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/point.h"
@@ -19,6 +21,24 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #endif
+
+namespace {
+// Should match kSelectionHandlePadding in touch_selection_controller.
+const int kPadding = 10;
+
+gfx::Image* GetHandleImage() {
+  static gfx::Image* handle_image = NULL;
+  if (!handle_image) {
+    handle_image = &ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        IDR_TEXT_SELECTION_HANDLE);
+  }
+  return handle_image;
+}
+
+gfx::Size GetHandleImageSize() {
+  return GetHandleImage()->Size();
+}
+}  // namespace
 
 namespace views {
 
@@ -87,7 +107,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
 
     // Offset the drag position by the selection handle radius since it is
     // supposed to be in the coordinate system of the handle.
-    p.Offset(10, 0);
+    p.Offset(GetHandleImageSize().width() / 2 + kPadding, 0);
     controller->SelectionHandleDragged(p);
 
     // Do the work of OnMouseReleased().
@@ -149,8 +169,8 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
       gfx::Point selection_end = GetCursorPosition(sel);                       \
       gfx::Point sh1 = GetSelectionHandle1Position();                          \
       gfx::Point sh2 = GetSelectionHandle2Position();                          \
-      sh1.Offset(10, 0);                                                       \
-      sh2.Offset(10, 0);                                                       \
+      sh1.Offset(GetHandleImageSize().width() / 2 + kPadding, 0);              \
+      sh2.Offset(GetHandleImageSize().width() / 2 + kPadding, 0);              \
       if (cursor_at_selection_handle_1) {                                      \
         EXPECT_EQ(sh1, selection_end);                                         \
         EXPECT_EQ(sh2, selection_start);                                       \
@@ -164,7 +184,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
       EXPECT_TRUE(IsCursorHandleVisible());                                    \
       gfx::Point cursor_pos = GetCursorPosition(sel);                          \
       gfx::Point ch_pos = GetCursorHandlePosition();                           \
-      ch_pos.Offset(10, 0);                                                    \
+      ch_pos.Offset(GetHandleImageSize().width() / 2 + kPadding, 0);           \
       EXPECT_EQ(ch_pos, cursor_pos);                                           \
     }                                                                          \
 }
@@ -429,6 +449,7 @@ TEST_F(TouchSelectionControllerImplTest,
   // handle is not eating the event and that the event is falling through to the
   // textfield.
   gfx::Point cursor_pos = GetCursorHandlePosition();
+  cursor_pos.Offset(GetHandleImageSize().width() / 2 + kPadding, 0);
   generator.GestureTapAt(cursor_pos);
   generator.GestureTapAt(cursor_pos);
   EXPECT_TRUE(textfield_->HasSelection());
