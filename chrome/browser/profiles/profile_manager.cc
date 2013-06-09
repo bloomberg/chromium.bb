@@ -430,7 +430,7 @@ Profile* ProfileManager::GetDefaultProfile(
     // many of the browser and ui tests fail. We do return the OTR profile
     // if the login-profile switch is passed so that we can test this.
     // TODO(davemoore) Fix the tests so they allow OTR profiles.
-    if (ShouldGoOffTheRecord())
+    if (ShouldGoOffTheRecord(profile))
       return profile->GetOffTheRecordProfile();
     return profile;
   }
@@ -572,7 +572,7 @@ bool ProfileManager::AddProfile(Profile* profile) {
   }
 
   RegisterProfile(profile, true);
-  DoFinalInit(profile, ShouldGoOffTheRecord());
+  DoFinalInit(profile, ShouldGoOffTheRecord(profile));
   return true;
 }
 
@@ -860,7 +860,7 @@ void ProfileManager::OnProfileCreated(Profile* profile,
   info->callbacks.swap(callbacks);
 
   // Invoke CREATED callback for normal profiles.
-  bool go_off_the_record = ShouldGoOffTheRecord();
+  bool go_off_the_record = ShouldGoOffTheRecord(profile);
   if (success && !go_off_the_record)
     RunCallbacks(callbacks, profile, Profile::CREATE_STATUS_CREATED);
 
@@ -1026,11 +1026,11 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
     profile->GetPrefs()->SetBoolean(prefs::kProfileIsManaged, is_managed);
 }
 
-bool ProfileManager::ShouldGoOffTheRecord() {
+bool ProfileManager::ShouldGoOffTheRecord(Profile* profile) {
   bool go_off_the_record = false;
 #if defined(OS_CHROMEOS)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (!logged_in_ &&
+  if (profile->GetPath().BaseName().value() == chrome::kInitialProfile &&
       (!command_line.HasSwitch(switches::kTestType) ||
        command_line.HasSwitch(chromeos::switches::kLoginProfile))) {
     go_off_the_record = true;
