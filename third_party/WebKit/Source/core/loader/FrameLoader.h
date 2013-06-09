@@ -37,7 +37,6 @@
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/HistoryController.h"
-#include "core/loader/IconController.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/ResourceLoadNotifier.h"
 #include "core/loader/SubframeLoader.h"
@@ -45,8 +44,9 @@
 #include "core/page/LayoutMilestones.h"
 #include "core/platform/Timer.h"
 #include "core/platform/network/ResourceHandle.h"
-#include <wtf/Forward.h>
-#include <wtf/HashSet.h>
+#include "wtf/Forward.h"
+#include "wtf/HashSet.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 
@@ -58,6 +58,7 @@ class Event;
 class FormState;
 class FormSubmission;
 class FrameLoaderClient;
+class IconController;
 class NavigationAction;
 class Page;
 class ResourceError;
@@ -86,7 +87,7 @@ public:
     HistoryController* history() const { return &m_history; }
     ResourceLoadNotifier* notifier() const { return &m_notifer; }
     SubframeLoader* subframeLoader() const { return &m_subframeLoader; }
-    IconController* icon() const { return &m_icon; }
+    IconController* icon() const { return m_icon.get(); }
     MixedContentChecker* mixedContentChecker() const { return &m_mixedContentChecker; }
 
     void prepareForHistoryNavigation();
@@ -333,7 +334,7 @@ private:
     mutable ResourceLoadNotifier m_notifer;
     mutable SubframeLoader m_subframeLoader;
     mutable FrameLoaderStateMachine m_stateMachine;
-    mutable IconController m_icon;
+    OwnPtr<IconController> m_icon;
     mutable MixedContentChecker m_mixedContentChecker;
 
     class FrameProgressTracker;
