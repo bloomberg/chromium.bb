@@ -10,7 +10,7 @@
 #include "base/message_loop_proxy.h"
 #include "net/url_request/url_request_context.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/glue/webkit_glue.h"
@@ -18,7 +18,7 @@
 
 using fileapi::FileSystemURL;
 using fileapi::FileSystemContext;
-using fileapi::FileSystemOperation;
+using fileapi::FileSystemOperationRunner;
 using fileapi::WebFileWriterBase;
 using WebKit::WebFileWriterClient;
 using WebKit::WebString;
@@ -35,7 +35,7 @@ class SimpleFileWriter::IOThreadProxy
   IOThreadProxy(const base::WeakPtr<SimpleFileWriter>& simple_writer,
                 FileSystemContext* file_system_context)
       : simple_writer_(simple_writer),
-        operation_(NULL),
+        operation_id_(FileSystemOperationRunner::kErrorOperationID),
         file_system_context_(file_system_context) {
     // The IO thread needs to be running for this class to work.
     SimpleResourceLoaderBridge::EnsureIOThread();
@@ -52,10 +52,9 @@ class SimpleFileWriter::IOThreadProxy
     }
     if (FailIfNotWritable(url))
       return;
-    DCHECK(!operation_);
-    operation_ = GetNewOperation(url);
-    operation_->Truncate(url, offset,
-                         base::Bind(&IOThreadProxy::DidFinish, this));
+    DCHECK_EQ(FileSystemOperationRunner::kErrorOperationID, operation_id_);
+    operation_id_ = file_system_context_->operation_runner()->Truncate(
+        url, offset, base::Bind(&IOThreadProxy::DidFinish, this));
   }
 
   void Write(const FileSystemURL& url, const GURL& blob_url, int64 offset) {
@@ -68,10 +67,10 @@ class SimpleFileWriter::IOThreadProxy
     if (FailIfNotWritable(url))
       return;
     DCHECK(request_context_);
-    DCHECK(!operation_);
-    operation_ = GetNewOperation(url);
-    operation_->Write(request_context_, url, blob_url, offset,
-                      base::Bind(&IOThreadProxy::DidWrite, this));
+    DCHECK_EQ(FileSystemOperationRunner::kErrorOperationID, operation_id_);
+    operation_id_ = file_system_context_->operation_runner()->Write(
+        request_context_, url, blob_url, offset,
+        base::Bind(&IOThreadProxy::DidWrite, this));
   }
 
   void Cancel() {
@@ -81,20 +80,17 @@ class SimpleFileWriter::IOThreadProxy
           base::Bind(&IOThreadProxy::Cancel, this));
       return;
     }
-    if (!operation_) {
+    if (operation_id_ == FileSystemOperationRunner::kErrorOperationID) {
       DidFailOnMainThread(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
       return;
     }
-    operation_->Cancel(base::Bind(&IOThreadProxy::DidFinish, this));
+    file_system_context_->operation_runner()->Cancel(
+        operation_id_, base::Bind(&IOThreadProxy::DidFinish, this));
   }
 
  private:
   friend class base::RefCountedThreadSafe<IOThreadProxy>;
   virtual ~IOThreadProxy() {}
-
-  FileSystemOperation* GetNewOperation( const FileSystemURL& url) {
-    return file_system_context_->CreateFileSystemOperation(url, NULL);
-  }
 
   // Returns true if it is not writable.
   bool FailIfNotWritable(const FileSystemURL& url) {
@@ -142,7 +138,7 @@ class SimpleFileWriter::IOThreadProxy
 
   void ClearOperation() {
     DCHECK(io_thread_->BelongsToCurrentThread());
-    operation_ = NULL;
+    operation_id_ = FileSystemOperationRunner::kErrorOperationID;
   }
 
   void DidFinish(base::PlatformFileError result) {
@@ -171,7 +167,7 @@ class SimpleFileWriter::IOThreadProxy
   base::WeakPtr<SimpleFileWriter> simple_writer_;
 
   // Only used on the io thread.
-  FileSystemOperation* operation_;
+  FileSystemOperationRunner::OperationID operation_id_;
 
   scoped_refptr<FileSystemContext> file_system_context_;
 };

@@ -50,7 +50,7 @@
 #include "webkit/browser/blob/blob_storage_controller.h"
 #include "webkit/browser/blob/blob_url_request_job.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/blob/blob_data.h"
 
@@ -793,13 +793,13 @@ class HTML5FileWriter {
         &HTML5FileWriter::CreateFile, base::Unretained(this))));
   }
 
-  fileapi::FileSystemOperation* operation() {
-    return fs_->CreateFileSystemOperation(fs_->CrackURL(GURL(root_)), NULL);
+  fileapi::FileSystemOperationRunner* operation_runner() {
+    return fs_->operation_runner();
   }
 
   void CreateFile() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    operation()->CreateFile(fs_->CrackURL(GURL(root_ + filename_)),
+    operation_runner()->CreateFile(fs_->CrackURL(GURL(root_ + filename_)),
         kExclusive, base::Bind(
             &HTML5FileWriter::CreateFileCallback, base::Unretained(this)));
   }
@@ -811,7 +811,7 @@ class HTML5FileWriter {
     url_request_context_.reset(new TestURLRequestContext(fs_));
     url_request_context_->blob_storage_controller()
         ->AddFinishedBlob(blob_url(), blob_data_.get());
-    operation()->Write(
+    operation_runner()->Write(
         url_request_context_.get(),
         fs_->CrackURL(GURL(root_ + filename_)),
         blob_url(),

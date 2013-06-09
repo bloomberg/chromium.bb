@@ -12,7 +12,7 @@
 #include "webkit/browser/blob/local_file_stream_reader.h"
 #include "webkit/browser/fileapi/file_observers.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/local_file_stream_writer.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -66,18 +66,11 @@ int SandboxFileStreamWriter::Write(
   if (local_file_writer_)
     return WriteInternal(buf, buf_len, callback);
 
-  base::PlatformFileError error_code;
-  FileSystemOperation* operation =
-      file_system_context_->CreateFileSystemOperation(url_, &error_code);
-  if (error_code != base::PLATFORM_FILE_OK)
-    return net::PlatformFileErrorToNetError(error_code);
-
-  DCHECK(operation);
   net::CompletionCallback write_task =
       base::Bind(&SandboxFileStreamWriter::DidInitializeForWrite,
                  weak_factory_.GetWeakPtr(),
                  make_scoped_refptr(buf), buf_len, callback);
-  operation->GetMetadata(
+  file_system_context_->operation_runner()->GetMetadata(
       url_, base::Bind(&SandboxFileStreamWriter::DidGetFileInfo,
                        weak_factory_.GetWeakPtr(), write_task));
   return net::ERR_IO_PENDING;

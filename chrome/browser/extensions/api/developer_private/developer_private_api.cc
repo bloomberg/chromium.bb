@@ -56,7 +56,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/webui/web_ui_util.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/common/blob/shareable_file_reference.h"
@@ -848,15 +848,9 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
       GURL(origin_url),
       project_path.BaseName()));
 
-  base::PlatformFileError error_code;
-  fileapi::FileSystemOperation* op =
-      context_->CreateFileSystemOperation(url, &error_code);
-
-  DCHECK(op);
-
-  op->ReadDirectory(url, base::Bind(
-      &DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
-          ReadSyncFileSystemDirectoryCb, this, project_path));
+  context_->operation_runner()->ReadDirectory(
+      url, base::Bind(&DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
+                      ReadSyncFileSystemDirectoryCb, this, project_path));
 }
 
 void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
@@ -892,17 +886,7 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::
     base::FilePath target_path = project_path;
     target_path = target_path.Append(file_list[i].name);
 
-    base::PlatformFileError error_code;
-    fileapi::FileSystemOperation* op =
-        context_->CreateFileSystemOperation(url, &error_code);
-    DCHECK(op);
-
-    if (error_code != base::PLATFORM_FILE_OK) {
-      DLOG(ERROR) << "Error in copying files from sync filesystem.";
-      return;
-    }
-
-    op->CreateSnapshotFile(
+    context_->operation_runner()->CreateSnapshotFile(
         url,
         base::Bind(
             &DeveloperPrivateExportSyncfsFolderToLocalfsFunction::

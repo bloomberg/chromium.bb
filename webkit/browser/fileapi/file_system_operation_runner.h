@@ -25,11 +25,11 @@ class FileSystemContext;
 // code (therefore in most cases the caller does not need to check the
 // returned operation ID).
 //
-// Some operations (CopyInForeignFile, RemoveFile, RemoveDirectory,
-// CopyFileLocal and MoveFileLocal) are only supported by filesystems
-// which implement LocalFileSystemOperation.  If they are called on
-// other filesystems base::PLATFORM_FILE_ERROR_INVALID_OPERATION is
-// returned via callback.
+// Some operations (e.g. CopyInForeignFile, RemoveFile, RemoveDirectory,
+// CopyFileLocal, MoveFileLocal and SyncGetPlatformPath) are only supported
+// by filesystems which implement LocalFileSystemOperation.
+// If they are called on other filesystems
+// base::PLATFORM_FILE_ERROR_INVALID_OPERATION is returned via callback.
 class WEBKIT_STORAGE_EXPORT FileSystemOperationRunner
     : public base::SupportsWeakPtr<FileSystemOperationRunner> {
  public:
@@ -210,6 +210,12 @@ class WEBKIT_STORAGE_EXPORT FileSystemOperationRunner
   OperationID MoveFileLocal(const FileSystemURL& src_url,
                             const FileSystemURL& dest_url,
                             const StatusCallback& callback);
+
+  // This is called only by pepper plugin as of writing to synchronously get
+  // the underlying platform path to upload a file in the sandboxed filesystem
+  // (e.g. TEMPORARY or PERSISTENT).
+  base::PlatformFileError SyncGetPlatformPath(const FileSystemURL& url,
+                                              base::FilePath* platform_path);
 
  private:
   friend class FileSystemContext;

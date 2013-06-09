@@ -28,7 +28,7 @@
 #include "net/url_request/url_request.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/local_file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 using net::NetworkDelegate;
@@ -157,15 +157,7 @@ void FileSystemURLRequestJob::StartAsync() {
     return;
   DCHECK(!reader_.get());
   url_ = file_system_context_->CrackURL(request_->url());
-  base::PlatformFileError error_code;
-  FileSystemOperation* operation =
-      file_system_context_->CreateFileSystemOperation(url_, &error_code);
-  if (error_code != base::PLATFORM_FILE_OK) {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
-                                net::PlatformFileErrorToNetError(error_code)));
-    return;
-  }
-  operation->GetMetadata(
+  file_system_context_->operation_runner()->GetMetadata(
       url_,
       base::Bind(&FileSystemURLRequestJob::DidGetMetadata,
                  weak_factory_.GetWeakPtr()));

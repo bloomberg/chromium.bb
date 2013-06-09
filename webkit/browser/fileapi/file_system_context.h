@@ -181,16 +181,6 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
       FileSystemType type,
       const DeleteFileSystemCallback& callback);
 
-  // TODO(kinuko): Make this private to FileSystemOperationRunner.
-  // Creates a new FileSystemOperation instance by getting an appropriate
-  // MountPointProvider for |url| and calling the provider's corresponding
-  // CreateFileSystemOperation method.
-  // The resolved MountPointProvider could perform further specialization
-  // depending on the filesystem type pointed by the |url|.
-  FileSystemOperation* CreateFileSystemOperation(
-      const FileSystemURL& url,
-      base::PlatformFileError* error_code);
-
   // Creates new FileStreamReader instance to read a file pointed by the given
   // filesystem URL |url| starting from |offset|. |expected_modification_time|
   // specifies the expected last modification if the value is non-null, the
@@ -243,11 +233,8 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   typedef std::map<FileSystemType, FileSystemMountPointProvider*>
       MountPointProviderMap;
 
-  // These classes know the target filesystem (i.e. sandbox filesystem)
-  // supports synchronous FileUtil.
-  friend class LocalFileSystemOperation;
-  friend class sync_file_system::LocalFileChangeTracker;
-  friend class sync_file_system::LocalFileSyncContext;
+  // For CreateFileSystemOperation.
+  friend class FileSystemOperationRunner;
 
   // Deleters.
   friend struct DefaultContextDeleter;
@@ -257,6 +244,17 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   ~FileSystemContext();
 
   void DeleteOnCorrectThread() const;
+
+  // Creates a new FileSystemOperation instance by getting an appropriate
+  // MountPointProvider for |url| and calling the provider's corresponding
+  // CreateFileSystemOperation method.
+  // The resolved MountPointProvider could perform further specialization
+  // depending on the filesystem type pointed by the |url|.
+  //
+  // Called by FileSystemOperationRunner.
+  FileSystemOperation* CreateFileSystemOperation(
+      const FileSystemURL& url,
+      base::PlatformFileError* error_code);
 
   // For non-cracked isolated and external mount points, returns a FileSystemURL
   // created by cracking |url|. The url is cracked using MountPoints registered

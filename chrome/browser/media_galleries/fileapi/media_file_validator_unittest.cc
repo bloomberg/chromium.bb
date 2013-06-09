@@ -16,7 +16,7 @@
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_mount_point_provider.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
@@ -145,9 +145,9 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
   void CheckFile(fileapi::FileSystemURL url,
                  int64 expected_size,
                  const base::Callback<void(bool success)>& callback) {
-    CreateFSOp(url)->GetMetadata(url,
-                                 base::Bind(&HandleCheckFileResult,
-                                            expected_size, callback));
+    operation_runner()->GetMetadata(url,
+                                    base::Bind(&HandleCheckFileResult,
+                                               expected_size, callback));
   }
 
   // Helper that checks the result of |move_src_| lookup and then checks
@@ -168,7 +168,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
   // |move_src_| to |move_dest_|.
   void OnTestFilesReady(bool expected_result, bool test_files_ready) {
     ASSERT_TRUE(test_files_ready);
-    CreateFSOp(move_dest_)->Move(
+    operation_runner()->Move(
         move_src_, move_dest_,
         base::Bind(&MediaFileValidatorTest::OnMoveResult,
                    base::Unretained(this), expected_result));
@@ -194,8 +194,8 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
                                      loop_runner_->QuitClosure());
   }
 
-  fileapi::FileSystemOperation* CreateFSOp(const fileapi::FileSystemURL& url) {
-    return file_system_context_->CreateFileSystemOperation(url, NULL);
+  fileapi::FileSystemOperationRunner* operation_runner() {
+    return file_system_context_->operation_runner();
   }
 
   base::ScopedTempDir base_dir_;

@@ -12,7 +12,7 @@
 #include "net/base/net_errors.h"
 #include "webkit/browser/blob/local_file_stream_reader.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 
 using webkit_blob::LocalFileStreamReader;
@@ -87,13 +87,8 @@ int FileSystemFileStreamReader::CreateSnapshot(
     const base::Closure& callback,
     const net::CompletionCallback& error_callback) {
   DCHECK(!has_pending_create_snapshot_);
-  base::PlatformFileError error_code;
-  FileSystemOperation* operation =
-      file_system_context_->CreateFileSystemOperation(url_, &error_code);
-  if (error_code != base::PLATFORM_FILE_OK)
-    return net::PlatformFileErrorToNetError(error_code);
   has_pending_create_snapshot_ = true;
-  operation->CreateSnapshotFile(
+  file_system_context_->operation_runner()->CreateSnapshotFile(
       url_,
       base::Bind(&FileSystemFileStreamReader::DidCreateSnapshot,
                  weak_factory_.GetWeakPtr(),

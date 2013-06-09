@@ -29,7 +29,7 @@ class Thread;
 
 namespace fileapi {
 class FileSystemContext;
-class FileSystemOperation;
+class FileSystemOperationRunner;
 class FileSystemURL;
 }
 
@@ -133,8 +133,7 @@ class CannedSyncableFileSystem
   void GetChangedURLsInTracker(fileapi::FileSystemURLSet* urls);
   void ClearChangeForURLInTracker(const fileapi::FileSystemURL& url);
 
-  // Returns new FileSystemOperation.
-  fileapi::FileSystemOperation* NewOperation();
+  fileapi::FileSystemOperationRunner* operation_runner();
 
   // LocalFileSyncStatus::Observer overrides.
   virtual void OnSyncEnabled(const fileapi::FileSystemURL& url) OVERRIDE;

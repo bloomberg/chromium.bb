@@ -8,6 +8,7 @@
 #include "webkit/browser/fileapi/async_file_test_helper.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_mount_point_provider.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -80,13 +81,10 @@ base::PlatformFileError AsyncFileTestHelper::Copy(
     FileSystemContext* context,
     const FileSystemURL& src,
     const FileSystemURL& dest) {
-  DCHECK(context);
-  FileSystemOperation* operation =
-      context->CreateFileSystemOperation(dest, NULL);
-  EXPECT_TRUE(operation != NULL);
   base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
   base::RunLoop run_loop;
-  operation->Copy(src, dest, AssignAndQuitCallback(&run_loop, &result));
+  context->operation_runner()->Copy(
+      src, dest, AssignAndQuitCallback(&run_loop, &result));
   run_loop.Run();
   return result;
 }
@@ -95,12 +93,10 @@ base::PlatformFileError AsyncFileTestHelper::Move(
     FileSystemContext* context,
     const FileSystemURL& src,
     const FileSystemURL& dest) {
-  FileSystemOperation* operation =
-      context->CreateFileSystemOperation(dest, NULL);
-  EXPECT_TRUE(operation != NULL);
   base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
   base::RunLoop run_loop;
-  operation->Move(src, dest, AssignAndQuitCallback(&run_loop, &result));
+  context->operation_runner()->Move(
+      src, dest, AssignAndQuitCallback(&run_loop, &result));
   run_loop.Run();
   return result;
 }
@@ -109,12 +105,10 @@ base::PlatformFileError AsyncFileTestHelper::Remove(
     FileSystemContext* context,
     const FileSystemURL& url,
     bool recursive) {
-  FileSystemOperation* operation =
-      context->CreateFileSystemOperation(url, NULL);
-  EXPECT_TRUE(operation != NULL);
   base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
   base::RunLoop run_loop;
-  operation->Remove(url, recursive, AssignAndQuitCallback(&run_loop, &result));
+  context->operation_runner()->Remove(
+      url, recursive, AssignAndQuitCallback(&run_loop, &result));
   run_loop.Run();
   return result;
 }
@@ -123,14 +117,11 @@ base::PlatformFileError AsyncFileTestHelper::ReadDirectory(
     FileSystemContext* context,
     const FileSystemURL& url,
     FileEntryList* entries) {
+  base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
   DCHECK(entries);
   entries->clear();
-  base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
-  FileSystemOperation* operation =
-      context->CreateFileSystemOperation(url, NULL);
-  EXPECT_TRUE(operation != NULL);
   base::RunLoop run_loop;
-  operation->ReadDirectory(
+  context->operation_runner()->ReadDirectory(
       url, base::Bind(&ReadDirectoryCallback, &run_loop, &result, entries));
   run_loop.Run();
   return result;
@@ -139,15 +130,13 @@ base::PlatformFileError AsyncFileTestHelper::ReadDirectory(
 base::PlatformFileError AsyncFileTestHelper::CreateDirectory(
     FileSystemContext* context,
     const FileSystemURL& url) {
-  FileSystemOperation* operation =
-      context->CreateFileSystemOperation(url, NULL);
-  EXPECT_TRUE(operation != NULL);
   base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
   base::RunLoop run_loop;
-  operation->CreateDirectory(url,
-                             false /* exclusive */,
-                             false /* recursive */,
-                             AssignAndQuitCallback(&run_loop, &result));
+  context->operation_runner()->CreateDirectory(
+      url,
+      false /* exclusive */,
+      false /* recursive */,
+      AssignAndQuitCallback(&run_loop, &result));
   run_loop.Run();
   return result;
 }
@@ -155,13 +144,11 @@ base::PlatformFileError AsyncFileTestHelper::CreateDirectory(
 base::PlatformFileError AsyncFileTestHelper::CreateFile(
     FileSystemContext* context,
     const FileSystemURL& url) {
-  FileSystemOperation* operation =
-      context->CreateFileSystemOperation(url, NULL);
-  EXPECT_TRUE(operation != NULL);
-  base::RunLoop run_loop;
   base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
-  operation->CreateFile(url, false /* exclusive */,
-                        AssignAndQuitCallback(&run_loop, &result));
+  base::RunLoop run_loop;
+  context->operation_runner()->CreateFile(
+      url, false /* exclusive */,
+      AssignAndQuitCallback(&run_loop, &result));
   run_loop.Run();
   return result;
 }
@@ -170,13 +157,10 @@ base::PlatformFileError AsyncFileTestHelper::TruncateFile(
     FileSystemContext* context,
     const FileSystemURL& url,
     size_t size) {
-  FileSystemOperation* operation =
-      context->CreateFileSystemOperation(url, NULL);
-  EXPECT_TRUE(operation != NULL);
   base::RunLoop run_loop;
   base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
-  operation->Truncate(url, size,
-                      AssignAndQuitCallback(&run_loop, &result));
+  context->operation_runner()->Truncate(
+      url, size, AssignAndQuitCallback(&run_loop, &result));
   run_loop.Run();
   return result;
 }
@@ -188,12 +172,9 @@ base::PlatformFileError AsyncFileTestHelper::GetMetadata(
     base::FilePath* platform_path) {
   base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
   base::RunLoop run_loop;
-  FileSystemOperation* operation =
-      context->CreateFileSystemOperation(url, NULL);
-  EXPECT_TRUE(operation != NULL);
-  operation->GetMetadata(url, base::Bind(&GetMetadataCallback,
-                                         &run_loop, &result,
-                                         file_info, platform_path));
+  context->operation_runner()->GetMetadata(
+      url, base::Bind(&GetMetadataCallback, &run_loop, &result,
+                      file_info, platform_path));
   run_loop.Run();
   return result;
 }

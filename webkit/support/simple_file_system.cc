@@ -23,6 +23,7 @@
 #include "webkit/browser/blob/blob_storage_controller.h"
 #include "webkit/browser/fileapi/file_permission_policy.h"
 #include "webkit/browser/fileapi/file_system_mount_point_provider.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
 #include "webkit/common/fileapi/directory_entry.h"
@@ -133,8 +134,8 @@ void SimpleFileSystem::move(
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
-  GetNewOperation(src_url)->Move(src_url, dest_url,
-                                 FinishHandler(callbacks));
+  file_system_context_->operation_runner()->Move(
+      src_url, dest_url, FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::copy(
@@ -147,8 +148,8 @@ void SimpleFileSystem::copy(
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
-  GetNewOperation(src_url)->Copy(src_url, dest_url,
-                                 FinishHandler(callbacks));
+  file_system_context_->operation_runner()->Copy(
+      src_url, dest_url, FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::remove(
@@ -158,8 +159,8 @@ void SimpleFileSystem::remove(
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
-  GetNewOperation(url)->Remove(url, false /* recursive */,
-                               FinishHandler(callbacks));
+  file_system_context_->operation_runner()->Remove(
+      url, false /* recursive */, FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::removeRecursively(
@@ -169,8 +170,8 @@ void SimpleFileSystem::removeRecursively(
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
-  GetNewOperation(url)->Remove(url, true /* recursive */,
-                               FinishHandler(callbacks));
+  file_system_context_->operation_runner()->Remove(
+      url, true /* recursive */, FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::readMetadata(
@@ -180,7 +181,8 @@ void SimpleFileSystem::readMetadata(
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
-  GetNewOperation(url)->GetMetadata(url, GetMetadataHandler(callbacks));
+  file_system_context_->operation_runner()->GetMetadata(
+      url, GetMetadataHandler(callbacks));
 }
 
 void SimpleFileSystem::createFile(
@@ -190,7 +192,8 @@ void SimpleFileSystem::createFile(
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
-  GetNewOperation(url)->CreateFile(url, exclusive, FinishHandler(callbacks));
+  file_system_context_->operation_runner()->CreateFile(
+      url, exclusive, FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::createDirectory(
@@ -200,8 +203,8 @@ void SimpleFileSystem::createDirectory(
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
-  GetNewOperation(url)->CreateDirectory(url, exclusive, false,
-                                        FinishHandler(callbacks));
+  file_system_context_->operation_runner()->CreateDirectory(
+      url, exclusive, false, FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::fileExists(
@@ -211,7 +214,8 @@ void SimpleFileSystem::fileExists(
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
-  GetNewOperation(url)->FileExists(url, FinishHandler(callbacks));
+  file_system_context_->operation_runner()->FileExists(
+      url, FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::directoryExists(
@@ -221,7 +225,8 @@ void SimpleFileSystem::directoryExists(
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
-  GetNewOperation(url)->DirectoryExists(url, FinishHandler(callbacks));
+  file_system_context_->operation_runner()->DirectoryExists(
+      url, FinishHandler(callbacks));
 }
 
 void SimpleFileSystem::readDirectory(
@@ -231,7 +236,8 @@ void SimpleFileSystem::readDirectory(
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
-  GetNewOperation(url)->ReadDirectory(url, ReadDirectoryHandler(callbacks));
+  file_system_context_->operation_runner()->ReadDirectory(
+      url, ReadDirectoryHandler(callbacks));
 }
 
 WebFileWriter* SimpleFileSystem::createFileWriter(
@@ -247,7 +253,7 @@ void SimpleFileSystem::createSnapshotFileAndReadMetadata(
     callbacks->didFail(WebKit::WebFileErrorSecurity);
     return;
   }
-  GetNewOperation(url)->CreateSnapshotFile(
+  file_system_context_->operation_runner()->CreateSnapshotFile(
       url, SnapshotFileHandler(callbacks));
 }
 
@@ -275,11 +281,6 @@ bool SimpleFileSystem::HasFilePermission(
   // not specifically forbidden by ALWAYS_DENY.
   return (mount_point_provider->GetPermissionPolicy(url, permissions)
       != fileapi::FILE_PERMISSION_ALWAYS_DENY);
-}
-
-FileSystemOperation* SimpleFileSystem::GetNewOperation(
-    const fileapi::FileSystemURL& url) {
-  return file_system_context_->CreateFileSystemOperation(url, NULL);
 }
 
 FileSystemOperation::StatusCallback

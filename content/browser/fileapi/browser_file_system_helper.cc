@@ -18,9 +18,9 @@
 #include "content/public/common/url_constants.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_permission_policy.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_options.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
-#include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/browser/quota/quota_manager.h"
 
@@ -146,19 +146,7 @@ void SyncGetPlatformPath(fileapi::FileSystemContext* context,
       context, process_id, url, fileapi::kReadFilePermissions, &error))
     return;
 
-  // This is called only by pepper plugin as of writing to get the
-  // underlying platform path to upload a file in the sandboxed filesystem
-  // (e.g. TEMPORARY or PERSISTENT).
-  // TODO(kinuko): this hack should go away once appropriate upload-stream
-  // handling based on element types is supported.
-  fileapi::LocalFileSystemOperation* operation =
-      context->CreateFileSystemOperation(
-          url, NULL)->AsLocalFileSystemOperation();
-  DCHECK(operation);
-  if (!operation)
-    return;
-
-  operation->SyncGetPlatformPath(url, platform_path);
+  context->operation_runner()->SyncGetPlatformPath(url, platform_path);
 
   // The path is to be attached to URLLoader so we grant read permission
   // for the file. (We first need to check if it can already be read not to

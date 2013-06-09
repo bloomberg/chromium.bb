@@ -17,8 +17,8 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
-#include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/browser/fileapi/mock_file_system_options.h"
 #include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/browser/fileapi/syncable/local_file_change_tracker.h"
@@ -29,7 +29,7 @@
 
 using base::PlatformFileError;
 using fileapi::FileSystemContext;
-using fileapi::FileSystemOperation;
+using fileapi::FileSystemOperationRunner;
 using fileapi::FileSystemURL;
 using fileapi::FileSystemURLSet;
 using quota::QuotaManager;
@@ -476,9 +476,8 @@ void CannedSyncableFileSystem::ClearChangeForURLInTracker(
                  url));
 }
 
-FileSystemOperation* CannedSyncableFileSystem::NewOperation() {
-  return file_system_context_->CreateFileSystemOperation(URL(std::string()),
-                                                         NULL);
+FileSystemOperationRunner* CannedSyncableFileSystem::operation_runner() {
+  return file_system_context_->operation_runner();
 }
 
 void CannedSyncableFileSystem::OnSyncEnabled(const FileSystemURL& url) {
@@ -495,7 +494,7 @@ void CannedSyncableFileSystem::DoCreateDirectory(
     const FileSystemURL& url,
     const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
-  NewOperation()->CreateDirectory(
+  operation_runner()->CreateDirectory(
       url, false /* exclusive */, false /* recursive */, callback);
 }
 
@@ -503,7 +502,7 @@ void CannedSyncableFileSystem::DoCreateFile(
     const FileSystemURL& url,
     const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
-  NewOperation()->CreateFile(url, false /* exclusive */, callback);
+  operation_runner()->CreateFile(url, false /* exclusive */, callback);
 }
 
 void CannedSyncableFileSystem::DoCopy(
@@ -511,7 +510,7 @@ void CannedSyncableFileSystem::DoCopy(
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
-  NewOperation()->Copy(src_url, dest_url, callback);
+  operation_runner()->Copy(src_url, dest_url, callback);
 }
 
 void CannedSyncableFileSystem::DoMove(
@@ -519,14 +518,14 @@ void CannedSyncableFileSystem::DoMove(
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
-  NewOperation()->Move(src_url, dest_url, callback);
+  operation_runner()->Move(src_url, dest_url, callback);
 }
 
 void CannedSyncableFileSystem::DoTruncateFile(
     const FileSystemURL& url, int64 size,
     const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
-  NewOperation()->Truncate(url, size, callback);
+  operation_runner()->Truncate(url, size, callback);
 }
 
 void CannedSyncableFileSystem::DoTouchFile(
@@ -535,27 +534,27 @@ void CannedSyncableFileSystem::DoTouchFile(
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
-  NewOperation()->TouchFile(url, last_access_time,
-                            last_modified_time, callback);
+  operation_runner()->TouchFile(url, last_access_time,
+                                last_modified_time, callback);
 }
 
 void CannedSyncableFileSystem::DoRemove(
     const FileSystemURL& url, bool recursive,
     const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
-  NewOperation()->Remove(url, recursive, callback);
+  operation_runner()->Remove(url, recursive, callback);
 }
 
 void CannedSyncableFileSystem::DoFileExists(
     const FileSystemURL& url, const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
-  NewOperation()->FileExists(url, callback);
+  operation_runner()->FileExists(url, callback);
 }
 
 void CannedSyncableFileSystem::DoDirectoryExists(
     const FileSystemURL& url, const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
-  NewOperation()->DirectoryExists(url, callback);
+  operation_runner()->DirectoryExists(url, callback);
 }
 
 void CannedSyncableFileSystem::DoVerifyFile(
@@ -563,9 +562,8 @@ void CannedSyncableFileSystem::DoVerifyFile(
     const std::string& expected_data,
     const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
-  NewOperation()->GetMetadata(
-      url, base::Bind(&OnGetMetadataAndVerifyData,
-                      expected_data, callback));
+  operation_runner()->GetMetadata(
+      url, base::Bind(&OnGetMetadataAndVerifyData, expected_data, callback));
 }
 
 void CannedSyncableFileSystem::DoGetMetadata(
@@ -574,7 +572,7 @@ void CannedSyncableFileSystem::DoGetMetadata(
     base::FilePath* platform_path,
     const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
-  NewOperation()->GetMetadata(
+  operation_runner()->GetMetadata(
       url, base::Bind(&OnGetMetadata, info, platform_path, callback));
 }
 
@@ -584,9 +582,9 @@ void CannedSyncableFileSystem::DoWrite(
     const WriteCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
   WriteHelper* helper = new WriteHelper;
-  NewOperation()->Write(url_request_context, url, blob_url, 0,
-                        base::Bind(&WriteHelper::DidWrite,
-                                   base::Owned(helper), callback));
+  operation_runner()->Write(url_request_context, url, blob_url, 0,
+                            base::Bind(&WriteHelper::DidWrite,
+                                       base::Owned(helper), callback));
 }
 
 void CannedSyncableFileSystem::DoWriteString(
@@ -597,9 +595,9 @@ void CannedSyncableFileSystem::DoWriteString(
       new MockBlobURLRequestContext(file_system_context_.get()));
   const GURL blob_url(std::string("blob:") + data);
   WriteHelper* helper = new WriteHelper(url_request_context, blob_url, data);
-  NewOperation()->Write(url_request_context, url, blob_url, 0,
-                        base::Bind(&WriteHelper::DidWrite,
-                                   base::Owned(helper), callback));
+  operation_runner()->Write(url_request_context, url, blob_url, 0,
+                            base::Bind(&WriteHelper::DidWrite,
+                                       base::Owned(helper), callback));
 }
 
 void CannedSyncableFileSystem::DoGetUsageAndQuota(

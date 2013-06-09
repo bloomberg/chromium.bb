@@ -81,7 +81,7 @@ TestMountPointProvider::TestMountPointProvider(
       require_copy_or_move_validator_(false) {
   UpdateObserverList::Source source;
   source.AddObserver(quota_util_.get(), task_runner_.get());
-  observers_ = UpdateObserverList(source);
+  update_observers_ = UpdateObserverList(source);
 }
 
 TestMountPointProvider::~TestMountPointProvider() {
@@ -142,7 +142,8 @@ FileSystemOperation* TestMountPointProvider::CreateFileSystemOperation(
     base::PlatformFileError* error_code) const {
   scoped_ptr<FileSystemOperationContext> operation_context(
       new FileSystemOperationContext(context));
-  operation_context->set_update_observers(observers_);
+  operation_context->set_update_observers(update_observers_);
+  operation_context->set_change_observers(change_observers_);
   operation_context->set_root_path(base_path_);
   return new LocalFileSystemOperation(context, operation_context.Pass());
 }
@@ -164,7 +165,7 @@ TestMountPointProvider::CreateFileStreamWriter(
     int64 offset,
     FileSystemContext* context) const {
   return scoped_ptr<fileapi::FileStreamWriter>(
-      new SandboxFileStreamWriter(context, url, offset, observers_));
+      new SandboxFileStreamWriter(context, url, offset, update_observers_));
 }
 
 FileSystemQuotaUtil* TestMountPointProvider::GetQuotaUtil() {
@@ -184,7 +185,14 @@ void TestMountPointProvider::DeleteFileSystem(
 
 const UpdateObserverList* TestMountPointProvider::GetUpdateObservers(
     FileSystemType type) const {
-  return &observers_;
+  return &update_observers_;
+}
+
+void TestMountPointProvider::AddFileChangeObserver(
+    FileChangeObserver* observer) {
+  ChangeObserverList::Source source = change_observers_.source();
+  source.AddObserver(observer, task_runner_.get());
+  change_observers_ = ChangeObserverList(source);
 }
 
 }  // namespace fileapi

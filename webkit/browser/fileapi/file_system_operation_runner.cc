@@ -386,6 +386,19 @@ OperationID FileSystemOperationRunner::MoveFileLocal(
   return id;
 }
 
+base::PlatformFileError FileSystemOperationRunner::SyncGetPlatformPath(
+    const FileSystemURL& url,
+    base::FilePath* platform_path) {
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  FileSystemOperation* operation = CreateLocalFileSystemOperation(url, &error);
+  if (!operation)
+    return error;
+
+  operation->AsLocalFileSystemOperation()->SyncGetPlatformPath(
+      url, platform_path);
+  return base::PLATFORM_FILE_OK;
+}
+
 FileSystemOperationRunner::FileSystemOperationRunner(
     FileSystemContext* file_system_context)
     : file_system_context_(file_system_context) {}

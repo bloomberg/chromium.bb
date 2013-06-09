@@ -17,7 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/blob/mock_blob_url_request_context.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/syncable/canned_syncable_file_system.h"
 #include "webkit/browser/fileapi/syncable/file_change.h"
@@ -163,7 +163,7 @@ class LocalFileSyncContextTest : public testing::Test {
     }
     ASSERT_TRUE(io_task_runner_->RunsTasksOnCurrentThread());
     file_error_ = base::PLATFORM_FILE_ERROR_FAILED;
-    file_system->NewOperation()->Truncate(
+    file_system->operation_runner()->Truncate(
         url, 1, base::Bind(&LocalFileSyncContextTest::DidModifyFile,
                            base::Unretained(this)));
   }

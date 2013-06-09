@@ -99,8 +99,6 @@ class SimpleFileSystem
  private:
   // Helpers.
   bool HasFilePermission(const fileapi::FileSystemURL& url, int permissions);
-  fileapi::FileSystemOperation* GetNewOperation(
-      const fileapi::FileSystemURL& url);
 
   // Callback Handlers
   fileapi::FileSystemOperation::StatusCallback FinishHandler(

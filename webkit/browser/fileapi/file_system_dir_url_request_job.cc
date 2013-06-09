@@ -20,7 +20,7 @@
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 #include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/fileapi/directory_entry.h"
 
@@ -80,14 +80,7 @@ void FileSystemDirURLRequestJob::StartAsync() {
   if (!request_)
     return;
   url_ = file_system_context_->CrackURL(request_->url());
-  base::PlatformFileError error_code;
-  FileSystemOperation* operation = GetNewOperation(&error_code);
-  if (error_code != base::PLATFORM_FILE_OK) {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
-                                net::PlatformFileErrorToNetError(error_code)));
-    return;
-  }
-  operation->ReadDirectory(
+  file_system_context_->operation_runner()->ReadDirectory(
       url_,
       base::Bind(&FileSystemDirURLRequestJob::DidReadDirectory, this));
 }
@@ -125,27 +118,13 @@ void FileSystemDirURLRequestJob::DidReadDirectory(
   }
 
   if (has_more) {
-    base::PlatformFileError error_code;
-    FileSystemOperation* operation = GetNewOperation(&error_code);
-    if (error_code != base::PLATFORM_FILE_OK) {
-      NotifyDone(URLRequestStatus(
-          URLRequestStatus::FAILED,
-          net::PlatformFileErrorToNetError(error_code)));
-      return;
-    }
-
-    operation->ReadDirectory(
+    file_system_context_->operation_runner()->ReadDirectory(
         url_,
         base::Bind(&FileSystemDirURLRequestJob::DidReadDirectory, this));
   } else {
     set_expected_content_size(data_.size());
     NotifyHeadersComplete();
   }
-}
-
-FileSystemOperation* FileSystemDirURLRequestJob::GetNewOperation(
-    base::PlatformFileError* error_code) {
-  return file_system_context_->CreateFileSystemOperation(url_, error_code);
 }
 
 }  // namespace fileapi

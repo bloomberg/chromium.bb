@@ -279,31 +279,6 @@ void FileSystemContext::DeleteFileSystem(
   mount_point_provider->DeleteFileSystem(origin_url, type, this, callback);
 }
 
-FileSystemOperation* FileSystemContext::CreateFileSystemOperation(
-    const FileSystemURL& url, base::PlatformFileError* error_code) {
-  if (!url.is_valid()) {
-    if (error_code)
-      *error_code = base::PLATFORM_FILE_ERROR_INVALID_URL;
-    return NULL;
-  }
-
-  FileSystemMountPointProvider* mount_point_provider =
-      GetMountPointProvider(url.type());
-  if (!mount_point_provider) {
-    if (error_code)
-      *error_code = base::PLATFORM_FILE_ERROR_FAILED;
-    return NULL;
-  }
-
-  base::PlatformFileError fs_error = base::PLATFORM_FILE_OK;
-  FileSystemOperation* operation =
-      mount_point_provider->CreateFileSystemOperation(url, this, &fs_error);
-
-  if (error_code)
-    *error_code = fs_error;
-  return operation;
-}
-
 scoped_ptr<webkit_blob::FileStreamReader>
 FileSystemContext::CreateFileStreamReader(
     const FileSystemURL& url,
@@ -374,6 +349,32 @@ void FileSystemContext::DeleteOnCorrectThread() const {
   }
   delete this;
 }
+
+FileSystemOperation* FileSystemContext::CreateFileSystemOperation(
+    const FileSystemURL& url, base::PlatformFileError* error_code) {
+  if (!url.is_valid()) {
+    if (error_code)
+      *error_code = base::PLATFORM_FILE_ERROR_INVALID_URL;
+    return NULL;
+  }
+
+  FileSystemMountPointProvider* mount_point_provider =
+      GetMountPointProvider(url.type());
+  if (!mount_point_provider) {
+    if (error_code)
+      *error_code = base::PLATFORM_FILE_ERROR_FAILED;
+    return NULL;
+  }
+
+  base::PlatformFileError fs_error = base::PLATFORM_FILE_OK;
+  FileSystemOperation* operation =
+      mount_point_provider->CreateFileSystemOperation(url, this, &fs_error);
+
+  if (error_code)
+    *error_code = fs_error;
+  return operation;
+}
+
 
 FileSystemURL FileSystemContext::CrackFileSystemURL(
     const FileSystemURL& url) const {

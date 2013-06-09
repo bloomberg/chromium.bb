@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/blob/mock_blob_url_request_context.h"
 #include "webkit/browser/fileapi/file_system_context.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/syncable/canned_syncable_file_system.h"
 #include "webkit/browser/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/browser/fileapi/syncable/local_file_sync_context.h"
@@ -149,17 +150,17 @@ TEST_F(SyncableFileOperationRunnerTest, SimpleQueue) {
 
   // The URL is in syncing so the write operations won't run.
   ResetCallbackStatus();
-  file_system_.NewOperation()->CreateFile(
+  file_system_.operation_runner()->CreateFile(
       URL(kFile), false /* exclusive */,
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
-  file_system_.NewOperation()->Truncate(
+  file_system_.operation_runner()->Truncate(
       URL(kFile), 1,
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
   // Read operations are not blocked (and are executed before queued ones).
-  file_system_.NewOperation()->FileExists(
+  file_system_.operation_runner()->FileExists(
       URL(kFile), ExpectStatus(FROM_HERE, base::PLATFORM_FILE_ERROR_NOT_FOUND));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
@@ -174,7 +175,7 @@ TEST_F(SyncableFileOperationRunnerTest, SimpleQueue) {
 
   // Now the file must have been created and updated.
   ResetCallbackStatus();
-  file_system_.NewOperation()->FileExists(
+  file_system_.operation_runner()->FileExists(
       URL(kFile), ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
@@ -191,23 +192,23 @@ TEST_F(SyncableFileOperationRunnerTest, WriteToParentAndChild) {
 
   // Writes to kParent and kChild should be all queued up.
   ResetCallbackStatus();
-  file_system_.NewOperation()->Truncate(
+  file_system_.operation_runner()->Truncate(
       URL(kChild), 1, ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
-  file_system_.NewOperation()->Remove(
+  file_system_.operation_runner()->Remove(
       URL(kParent), true /* recursive */,
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(0, callback_count_);
 
   // Read operations are not blocked (and are executed before queued ones).
-  file_system_.NewOperation()->DirectoryExists(
+  file_system_.operation_runner()->DirectoryExists(
       URL(kDir), ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, callback_count_);
 
   // Writes to unrelated files must succeed as well.
   ResetCallbackStatus();
-  file_system_.NewOperation()->CreateDirectory(
+  file_system_.operation_runner()->CreateDirectory(
       URL(kOther), false /* exclusive */, false /* recursive */,
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
@@ -233,10 +234,10 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
   // Copying kDir to other directory should succeed, while moving would fail
   // (since the source directory is in syncing).
   ResetCallbackStatus();
-  file_system_.NewOperation()->Copy(
+  file_system_.operation_runner()->Copy(
       URL(kDir), URL("dest-copy"),
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
-  file_system_.NewOperation()->Move(
+  file_system_.operation_runner()->Move(
       URL(kDir), URL("dest-move"),
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
@@ -253,7 +254,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyAndMove) {
 
   // Now the destination is also locked copying kDir should be queued.
   ResetCallbackStatus();
-  file_system_.NewOperation()->Copy(
+  file_system_.operation_runner()->Copy(
       URL(kDir), URL("dest-copy2"),
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
@@ -289,7 +290,7 @@ TEST_F(SyncableFileOperationRunnerTest, Write) {
   sync_status()->StartSyncing(URL(kFile));
 
   ResetCallbackStatus();
-  file_system_.NewOperation()->Write(
+  file_system_.operation_runner()->Write(
       &url_request_context_,
       URL(kFile), kBlobURL, 0, GetWriteCallback(FROM_HERE));
   base::MessageLoop::current()->RunUntilIdle();
@@ -311,10 +312,10 @@ TEST_F(SyncableFileOperationRunnerTest, QueueAndCancel) {
   ASSERT_FALSE(sync_status()->IsWritable(URL(kFile)));
 
   ResetCallbackStatus();
-  file_system_.NewOperation()->CreateFile(
+  file_system_.operation_runner()->CreateFile(
       URL(kFile), false /* exclusive */,
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_ERROR_ABORT));
-  file_system_.NewOperation()->Truncate(
+  file_system_.operation_runner()->Truncate(
       URL(kFile), 1,
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_ERROR_ABORT));
   base::MessageLoop::current()->RunUntilIdle();
@@ -345,7 +346,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyInForeignFile) {
 
   // The URL is in syncing so CopyIn (which is a write operation) won't run.
   ResetCallbackStatus();
-  file_system_.NewOperation()->AsLocalFileSystemOperation()->CopyInForeignFile(
+  file_system_.operation_runner()->CopyInForeignFile(
       temp_path, URL(kFile),
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
@@ -370,7 +371,7 @@ TEST_F(SyncableFileOperationRunnerTest, CopyInForeignFile) {
 
 TEST_F(SyncableFileOperationRunnerTest, Cancel) {
   // Prepare a file.
-  file_system_.NewOperation()->CreateFile(
+  file_system_.operation_runner()->CreateFile(
       URL(kFile), false /* exclusive */,
       ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
@@ -378,11 +379,12 @@ TEST_F(SyncableFileOperationRunnerTest, Cancel) {
 
   // Run Truncate and immediately cancel. This shouldn't crash.
   ResetCallbackStatus();
-  FileSystemOperation* operation = file_system_.NewOperation();
-  operation->Truncate(
-      URL(kFile), 10,
-      ExpectStatus(FROM_HERE, base::PLATFORM_FILE_ERROR_ABORT));
-  operation->Cancel(ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
+  fileapi::FileSystemOperationRunner::OperationID id =
+      file_system_.operation_runner()->Truncate(
+          URL(kFile), 10,
+          ExpectStatus(FROM_HERE, base::PLATFORM_FILE_ERROR_ABORT));
+  file_system_.operation_runner()->Cancel(
+      id, ExpectStatus(FROM_HERE, base::PLATFORM_FILE_OK));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, callback_count_);
 }

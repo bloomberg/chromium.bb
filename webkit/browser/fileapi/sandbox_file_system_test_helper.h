@@ -29,6 +29,7 @@ namespace fileapi {
 class FileSystemContext;
 class FileSystemFileUtil;
 class FileSystemOperationContext;
+class FileSystemOperationRunner;
 class LocalFileSystemOperation;
 
 // Filesystem test helper class that encapsulates test environment for
@@ -70,7 +71,7 @@ class SandboxFileSystemTestHelper {
 
   int64 ComputeCurrentDirectoryDatabaseUsage();
 
-  LocalFileSystemOperation* NewOperation();
+  FileSystemOperationRunner* operation_runner();
   FileSystemOperationContext* NewOperationContext();
 
   FileSystemContext* file_system_context() const {

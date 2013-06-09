@@ -20,12 +20,12 @@
 #include "webkit/browser/blob/mock_blob_url_request_context.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
-#include "webkit/browser/fileapi/local_file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/local_file_util.h"
 #include "webkit/browser/fileapi/mock_file_change_observer.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
+#include "webkit/browser/fileapi/test_mount_point_provider.h"
 #include "webkit/browser/quota/mock_quota_manager.h"
 #include "webkit/common/blob/blob_data.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -75,23 +75,19 @@ class LocalFileSystemOperationWriteTest
     url_request_context_.reset(
         new MockBlobURLRequestContext(file_system_context_.get()));
 
-    NewOperation()->CreateFile(
+    file_system_context_->operation_runner()->CreateFile(
         URLForPath(virtual_path_), true /* exclusive */,
         base::Bind(&AssertStatusEq, base::PLATFORM_FILE_OK));
+
+    static_cast<TestMountPointProvider*>(
+        file_system_context_->GetMountPointProvider(kFileSystemType))
+        ->AddFileChangeObserver(change_observer());
   }
 
   virtual void TearDown() {
     quota_manager_ = NULL;
     file_system_context_ = NULL;
     base::MessageLoop::current()->RunUntilIdle();
-  }
-
-  LocalFileSystemOperation* NewOperation() {
-    LocalFileSystemOperation* operation =
-        file_system_context_->CreateFileSystemOperation(
-            URLForPath(base::FilePath()), NULL)->AsLocalFileSystemOperation();
-    operation->operation_context()->set_change_observers(change_observers());
-    return operation;
   }
 
   base::PlatformFileError status() const { return status_; }
@@ -178,7 +174,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteSuccess) {
   const GURL blob_url("blob:success");
   ScopedTextBlob blob(url_request_context(), blob_url, "Hello, world!\n");
 
-  NewOperation()->Write(
+  file_system_context_->operation_runner()->Write(
       &url_request_context(), URLForPath(virtual_path_), blob_url,
       0, RecordWriteCallback());
   base::MessageLoop::current()->Run();
@@ -197,7 +193,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteZero) {
   url_request_context().blob_storage_controller()
       ->AddFinishedBlob(blob_url, blob_data.get());
 
-  NewOperation()->Write(
+  file_system_context_->operation_runner()->Write(
       &url_request_context(), URLForPath(virtual_path_),
       blob_url, 0, RecordWriteCallback());
   base::MessageLoop::current()->Run();
@@ -212,7 +208,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteZero) {
 }
 
 TEST_F(LocalFileSystemOperationWriteTest, TestWriteInvalidBlobUrl) {
-  NewOperation()->Write(
+  file_system_context_->operation_runner()->Write(
       &url_request_context(), URLForPath(virtual_path_),
       GURL("blob:invalid"), 0, RecordWriteCallback());
   base::MessageLoop::current()->Run();
@@ -229,7 +225,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteInvalidFile) {
   ScopedTextBlob blob(url_request_context(), blob_url,
                       "It\'ll not be written.");
 
-  NewOperation()->Write(
+  file_system_context_->operation_runner()->Write(
       &url_request_context(),
       URLForPath(base::FilePath(FILE_PATH_LITERAL("nonexist"))),
       blob_url, 0, RecordWriteCallback());
@@ -244,7 +240,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteInvalidFile) {
 
 TEST_F(LocalFileSystemOperationWriteTest, TestWriteDir) {
   base::FilePath virtual_dir_path(FILE_PATH_LITERAL("d"));
-  NewOperation()->CreateDirectory(
+  file_system_context_->operation_runner()->CreateDirectory(
       URLForPath(virtual_dir_path),
       true /* exclusive */, false /* recursive */,
       base::Bind(&AssertStatusEq, base::PLATFORM_FILE_OK));
@@ -253,7 +249,8 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteDir) {
   ScopedTextBlob blob(url_request_context(), blob_url,
                       "It\'ll not be written, too.");
 
-  NewOperation()->Write(&url_request_context(), URLForPath(virtual_dir_path),
+  file_system_context_->operation_runner()->Write(
+      &url_request_context(), URLForPath(virtual_dir_path),
                         blob_url, 0, RecordWriteCallback());
   base::MessageLoop::current()->Run();
 
@@ -274,7 +271,7 @@ TEST_F(LocalFileSystemOperationWriteTest, TestWriteFailureByQuota) {
 
   quota_manager_->SetQuota(
       kOrigin, FileSystemTypeToQuotaStorageType(kFileSystemType), 10);
-  NewOperation()->Write(
+  file_system_context_->operation_runner()->Write(
       &url_request_context(), URLForPath(virtual_path_), blob_url,
       0, RecordWriteCallback());
   base::MessageLoop::current()->Run();
@@ -290,10 +287,11 @@ TEST_F(LocalFileSystemOperationWriteTest, TestImmediateCancelSuccessfulWrite) {
   GURL blob_url("blob:success");
   ScopedTextBlob blob(url_request_context(), blob_url, "Hello, world!\n");
 
-  FileSystemOperation* write_operation = NewOperation();
-  write_operation->Write(&url_request_context(), URLForPath(virtual_path_),
-                         blob_url, 0, RecordWriteCallback());
-  write_operation->Cancel(RecordCancelCallback());
+  FileSystemOperationRunner::OperationID id =
+      file_system_context_->operation_runner()->Write(
+          &url_request_context(), URLForPath(virtual_path_),
+          blob_url, 0, RecordWriteCallback());
+  file_system_context_->operation_runner()->Cancel(id, RecordCancelCallback());
   // We use RunAllPendings() instead of Run() here, because we won't dispatch
   // callbacks after Cancel() is issued (so no chance to Quit) nor do we need
   // to run another write cycle.
@@ -314,12 +312,12 @@ TEST_F(LocalFileSystemOperationWriteTest, TestImmediateCancelFailingWrite) {
   ScopedTextBlob blob(url_request_context(), blob_url,
                       "It\'ll not be written.");
 
-  FileSystemOperation* write_operation = NewOperation();
-  write_operation->Write(
-      &url_request_context(),
-      URLForPath(base::FilePath(FILE_PATH_LITERAL("nonexist"))),
-      blob_url, 0, RecordWriteCallback());
-  write_operation->Cancel(RecordCancelCallback());
+  FileSystemOperationRunner::OperationID id =
+      file_system_context_->operation_runner()->Write(
+          &url_request_context(),
+          URLForPath(base::FilePath(FILE_PATH_LITERAL("nonexist"))),
+          blob_url, 0, RecordWriteCallback());
+  file_system_context_->operation_runner()->Cancel(id, RecordCancelCallback());
   // We use RunAllPendings() instead of Run() here, because we won't dispatch
   // callbacks after Cancel() is issued (so no chance to Quit) nor do we need
   // to run another write cycle.

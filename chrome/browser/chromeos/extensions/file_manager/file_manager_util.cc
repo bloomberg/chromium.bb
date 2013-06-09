@@ -57,7 +57,7 @@
 #include "ui/gfx/screen.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_mount_point_provider.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/fileapi/file_system_util.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -587,14 +587,8 @@ void CheckIfDirectoryExistsOnIOThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   fileapi::FileSystemURL file_system_url = file_system_context->CrackURL(url);
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  fileapi::FileSystemOperation* operation =
-      file_system_context->CreateFileSystemOperation(file_system_url, &error);
-  if (error != base::PLATFORM_FILE_OK) {
-    callback.Run(error);
-    return;
-  }
-  operation->DirectoryExists(file_system_url, callback);
+  file_system_context->operation_runner()->DirectoryExists(
+      file_system_url, callback);
 }
 
 // Checks if a directory exists at |url|.

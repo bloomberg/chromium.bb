@@ -13,8 +13,8 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
-#include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/browser/fileapi/syncable/file_change.h"
 #include "webkit/browser/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/browser/fileapi/syncable/local_origin_change_observer.h"
@@ -202,12 +202,6 @@ void LocalFileSyncContext::ApplyRemoteChange(
   DCHECK(!sync_status()->IsWritable(url));
   DCHECK(!sync_status()->IsWriting(url));
 
-  FileSystemURL url_for_sync = CreateSyncableFileSystemURLForSync(
-      file_system_context, url);
-  FileSystemOperation* operation =
-      file_system_context->CreateFileSystemOperation(url_for_sync, NULL);
-  DCHECK(operation);
-
   FileSystemOperation::StatusCallback operation_callback;
   if (change.change() == FileChange::FILE_CHANGE_ADD_OR_UPDATE) {
     operation_callback = base::Bind(
@@ -223,7 +217,10 @@ void LocalFileSyncContext::ApplyRemoteChange(
     operation_callback = base::Bind(
         &LocalFileSyncContext::DidApplyRemoteChange, this, url, callback);
   }
-  operation->Remove(url_for_sync, true /* recursive */, operation_callback);
+  FileSystemURL url_for_sync = CreateSyncableFileSystemURLForSync(
+      file_system_context, url);
+  file_system_context->operation_runner()->Remove(
+      url_for_sync, true /* recursive */, operation_callback);
 }
 
 void LocalFileSyncContext::DidRemoveExistingEntryForApplyRemoteChange(
@@ -247,10 +244,6 @@ void LocalFileSyncContext::DidRemoveExistingEntryForApplyRemoteChange(
 
   FileSystemURL url_for_sync = CreateSyncableFileSystemURLForSync(
       file_system_context, url);
-  FileSystemOperation* operation =
-      file_system_context->CreateFileSystemOperation(url_for_sync, NULL);
-  DCHECK(operation);
-
   FileSystemOperation::StatusCallback operation_callback = base::Bind(
       &LocalFileSyncContext::DidApplyRemoteChange, this, url, callback);
 
@@ -262,14 +255,14 @@ void LocalFileSyncContext::DidRemoveExistingEntryForApplyRemoteChange(
       if (dir_path.empty() ||
           fileapi::VirtualPath::DirName(dir_path) == dir_path) {
         // Copying into the root directory.
-        operation->AsLocalFileSystemOperation()->CopyInForeignFile(
+        file_system_context->operation_runner()->CopyInForeignFile(
             local_path, url_for_sync, operation_callback);
       } else {
         FileSystemURL dir_url = file_system_context->CreateCrackedFileSystemURL(
             url_for_sync.origin(),
             url_for_sync.mount_type(),
             fileapi::VirtualPath::DirName(url_for_sync.virtual_path()));
-        operation->CreateDirectory(
+        file_system_context->operation_runner()->CreateDirectory(
             dir_url,
             false /* exclusive */,
             true /* recursive */,
@@ -283,7 +276,7 @@ void LocalFileSyncContext::DidRemoveExistingEntryForApplyRemoteChange(
       break;
     }
     case SYNC_FILE_TYPE_DIRECTORY:
-      operation->CreateDirectory(
+      file_system_context->operation_runner()->CreateDirectory(
           url_for_sync, false /* exclusive */, true /* recursive */,
           operation_callback);
       break;
@@ -337,10 +330,7 @@ void LocalFileSyncContext::GetFileMetadata(
 
   FileSystemURL url_for_sync = CreateSyncableFileSystemURLForSync(
       file_system_context, url);
-  FileSystemOperation* operation =
-      file_system_context->CreateFileSystemOperation(url_for_sync, NULL);
-  DCHECK(operation);
-  operation->GetMetadata(
+  file_system_context->operation_runner()->GetMetadata(
       url_for_sync, base::Bind(&LocalFileSyncContext::DidGetFileMetadata,
                       this, callback));
 }
@@ -748,10 +738,7 @@ void LocalFileSyncContext::DidCreateDirectoryForCopyIn(
 
   FileSystemURL url_for_sync = CreateSyncableFileSystemURLForSync(
       file_system_context, dest_url);
-  FileSystemOperation* operation =
-      file_system_context->CreateFileSystemOperation(url_for_sync, NULL);
-  DCHECK(operation);
-  operation->AsLocalFileSystemOperation()->CopyInForeignFile(
+  file_system_context->operation_runner()->CopyInForeignFile(
       local_path, url_for_sync, callback);
 }
 

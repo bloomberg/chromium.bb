@@ -74,6 +74,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE TestMountPointProvider
       scoped_ptr<CopyOrMoveFileValidatorFactory> factory);
 
   const UpdateObserverList* GetUpdateObservers(FileSystemType type) const;
+  void AddFileChangeObserver(FileChangeObserver* observer);
 
   // For CopyOrMoveFileValidatorFactory testing. Once it's set to true
   // GetCopyOrMoveFileValidatorFactory will start returning security
@@ -89,7 +90,8 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE TestMountPointProvider
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_ptr<AsyncFileUtilAdapter> local_file_util_;
   scoped_ptr<QuotaUtil> quota_util_;
-  UpdateObserverList observers_;
+  UpdateObserverList update_observers_;
+  ChangeObserverList change_observers_;
 
   bool require_copy_or_move_validator_;
   scoped_ptr<CopyOrMoveFileValidatorFactory>

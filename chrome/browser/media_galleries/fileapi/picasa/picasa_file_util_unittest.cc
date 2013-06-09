@@ -25,17 +25,16 @@
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/isolated_context.h"
-#include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/browser/fileapi/mock_file_system_options.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 
 using fileapi::FileSystemFileUtil;
-using fileapi::FileSystemOperation;
 using fileapi::FileSystemOperationContext;
+using fileapi::FileSystemOperation;
 using fileapi::FileSystemURL;
 
 namespace picasa {
@@ -280,7 +279,7 @@ class PicasaFileUtilTest : public testing::Test {
     FileSystemOperation::FileEntryList contents;
     FileSystemURL url = CreateURL(kPicasaDirFolders);
     bool completed = false;
-    NewOperation(url)->ReadDirectory(
+    operation_runner()->ReadDirectory(
         url, base::Bind(&DidReadDirectory, &contents, &completed));
     base::MessageLoop::current()->RunUntilIdle();
 
@@ -301,7 +300,7 @@ class PicasaFileUtilTest : public testing::Test {
           std::string(kPicasaDirFolders) + "/" +
           base::FilePath(contents[i].name).AsUTF8Unsafe());
       bool folder_read_completed = false;
-      NewOperation(folder_url)->ReadDirectory(
+      operation_runner()->ReadDirectory(
           folder_url,
           base::Bind(&DidReadDirectory, &folder_contents,
                      &folder_read_completed));
@@ -332,7 +331,7 @@ class PicasaFileUtilTest : public testing::Test {
     FileSystemURL url = CreateURL(
         std::string(kPicasaDirFolders) + path_append);
     bool completed = false;
-    NewOperation(url)->ReadDirectory(
+    operation_runner()->ReadDirectory(
         url, base::Bind(&DidReadDirectory, &contents, &completed));
     base::MessageLoop::current()->RunUntilIdle();
 
@@ -345,8 +344,8 @@ class PicasaFileUtilTest : public testing::Test {
         base::FilePath::FromUTF8Unsafe(virtual_path));
   }
 
-  FileSystemOperation* NewOperation(const FileSystemURL& url) {
-    return file_system_context_->CreateFileSystemOperation(url, NULL);
+  fileapi::FileSystemOperationRunner* operation_runner() {
+    return file_system_context_->operation_runner();
   }
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context() {
@@ -438,7 +437,7 @@ TEST_F(PicasaFileUtilTest, RootFolders) {
   FileSystemOperation::FileEntryList contents;
   FileSystemURL url = CreateURL("");
   bool completed = false;
-  NewOperation(url)->ReadDirectory(
+  operation_runner()->ReadDirectory(
       url, base::Bind(&DidReadDirectory, &contents, &completed));
   base::MessageLoop::current()->RunUntilIdle();
 
@@ -511,4 +510,4 @@ TEST_F(PicasaFileUtilTest, ManyFolders) {
   VerifyFolderDirectoryList(test_folders);
 }
 
-}  // namespace chrome
+}  // namespace picasa
