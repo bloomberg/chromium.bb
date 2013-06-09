@@ -62,18 +62,25 @@ struct ExternallyConnectableInfo : public Extension::ManifestData {
   // The URL patterns that are allowed to connect/sendMessage.
   const URLPatternSet matches;
 
-  // The extension IDs that are allowed to connect/sendMessage.
+  // The extension IDs that are allowed to connect/sendMessage. Sorted.
   const std::vector<std::string> ids;
 
   // True if any extension is allowed to connect. This would have corresponded
   // to an ID of "*" in |ids|.
-  const bool matches_all_ids;
+  const bool all_ids;
 
- private:
+  // Returns true if |ids| contains |id| or if |all_ids| is true.
+  //
+  // More convenient for callers than checking each individually, and it makes
+  // use of the sortedness of |ids|.
+  bool IdCanConnect(const std::string& id);
+
+  // Public only for testing. Use FromValue in production.
   ExternallyConnectableInfo(const URLPatternSet& matches,
                             const std::vector<std::string>& ids,
-                            bool matches_all_ids);
+                            bool all_ids);
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ExternallyConnectableInfo);
 };
 

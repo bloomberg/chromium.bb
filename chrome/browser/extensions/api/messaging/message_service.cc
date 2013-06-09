@@ -26,8 +26,10 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/incognito_handler.h"
+#include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -187,11 +189,46 @@ void MessageService::OpenChannelToExtension(
   const Extension* target_extension = ExtensionSystem::Get(profile)->
       extension_service()->extensions()->GetByID(target_extension_id);
   if (!target_extension) {
-    // Treat it as a disconnect.
-    ExtensionMessagePort port(source, MSG_ROUTING_CONTROL, std::string());
-    port.DispatchOnDisconnect(GET_OPPOSITE_PORT_ID(receiver_port_id),
-                              kReceivingEndDoesntExistError);
+    DispatchOnDisconnect(
+        source, receiver_port_id, kReceivingEndDoesntExistError);
     return;
+  }
+
+  if (source_extension_id != target_extension_id) {
+    // It's an external connection. Check the externally_connectable manifest
+    // key if it's present. If it's not, we allow connection from any extension
+    // but not webpages.
+    ExternallyConnectableInfo* externally_connectable =
+        static_cast<ExternallyConnectableInfo*>(
+            target_extension->GetManifestData(
+                extension_manifest_keys::kExternallyConnectable));
+    bool is_externally_connectable = false;
+
+    if (externally_connectable) {
+      if (source_extension_id.empty()) {
+        // No source extension ID so the source was a web page. Check that the
+        // URL matches.
+        is_externally_connectable =
+            externally_connectable->matches.MatchesURL(source_url);
+      } else {
+        // Source extension ID so the source was an extension. Check that the
+        // extension matches.
+        is_externally_connectable =
+            externally_connectable->IdCanConnect(source_extension_id);
+      }
+    } else {
+      // Default behaviour. Any extension, no webpages.
+      is_externally_connectable = !source_extension_id.empty();
+    }
+
+    if (!is_externally_connectable) {
+      // Important: use kReceivingEndDoesntExistError here so that we don't
+      // leak information about this extension to callers. This way it's
+      // indistinguishable from the extension just not existing.
+      DispatchOnDisconnect(
+          source, receiver_port_id, kReceivingEndDoesntExistError);
+      return;
+    }
   }
 
   // Note: we use the source's profile here. If the source is an incognito
@@ -257,9 +294,7 @@ void MessageService::OpenChannelToNativeApp(
   }
 
   if (!has_permission) {
-    ExtensionMessagePort port(source, MSG_ROUTING_CONTROL, std::string());
-    port.DispatchOnDisconnect(GET_OPPOSITE_PORT_ID(receiver_port_id),
-                              kMissingPermissionError);
+    DispatchOnDisconnect(source, receiver_port_id, kMissingPermissionError);
     return;
   }
 
@@ -276,10 +311,8 @@ void MessageService::OpenChannelToNativeApp(
   // Abandon the channel.
   if (!native_process.get()) {
     LOG(ERROR) << "Failed to create native process.";
-    // Treat it as a disconnect.
-    ExtensionMessagePort port(source, MSG_ROUTING_CONTROL, std::string());
-    port.DispatchOnDisconnect(GET_OPPOSITE_PORT_ID(receiver_port_id),
-                              kReceivingEndDoesntExistError);
+    DispatchOnDisconnect(
+        source, receiver_port_id, kReceivingEndDoesntExistError);
     return;
   }
   channel->receiver.reset(new NativeMessagePort(native_process.release()));
@@ -289,9 +322,8 @@ void MessageService::OpenChannelToNativeApp(
 
   AddChannel(channel.release(), receiver_port_id);
 #else  // !(defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX))
-  ExtensionMessagePort port(source, MSG_ROUTING_CONTROL, "");
-  port.DispatchOnDisconnect(GET_OPPOSITE_PORT_ID(receiver_port_id),
-                            kNativeMessagingNotSupportedError);
+  DispatchOnDisconnect(
+      source, receiver_port_id, kNativeMessagingNotSupportedError);
 #endif  // !(defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX))
 }
 
@@ -316,11 +348,9 @@ void MessageService::OpenChannelToTab(
   }
 
   if (contents && contents->GetController().NeedsReload()) {
-    // The tab isn't loaded yet. Don't attempt to connect. Treat this as a
-    // disconnect.
-    ExtensionMessagePort port(source, MSG_ROUTING_CONTROL, extension_id);
-    port.DispatchOnDisconnect(GET_OPPOSITE_PORT_ID(receiver_port_id),
-                              kReceivingEndDoesntExistError);
+    // The tab isn't loaded yet. Don't attempt to connect.
+    DispatchOnDisconnect(
+        source, receiver_port_id, kReceivingEndDoesntExistError);
     return;
   }
 
@@ -342,11 +372,9 @@ bool MessageService::OpenChannelImpl(scoped_ptr<OpenChannelParams> params) {
     return false;  // Closed while in flight.
 
   if (!params->receiver || !params->receiver->GetRenderProcessHost()) {
-    // Treat it as a disconnect.
-    ExtensionMessagePort port(
-        params->source, MSG_ROUTING_CONTROL, std::string());
-    port.DispatchOnDisconnect(GET_OPPOSITE_PORT_ID(params->receiver_port_id),
-                              kReceivingEndDoesntExistError);
+    DispatchOnDisconnect(params->source,
+                         params->receiver_port_id,
+                         kReceivingEndDoesntExistError);
     return false;
   }
 
@@ -548,6 +576,13 @@ void MessageService::PendingOpenChannel(scoped_ptr<OpenChannelParams> params,
                                                   MSG_ROUTING_CONTROL,
                                                   params->target_extension_id));
   OpenChannelImpl(params.Pass());
+}
+
+void MessageService::DispatchOnDisconnect(content::RenderProcessHost* source,
+                                          int port_id,
+                                          const std::string& error_message) {
+  ExtensionMessagePort port(source, MSG_ROUTING_CONTROL, "");
+  port.DispatchOnDisconnect(GET_OPPOSITE_PORT_ID(port_id), error_message);
 }
 
 }  // namespace extensions

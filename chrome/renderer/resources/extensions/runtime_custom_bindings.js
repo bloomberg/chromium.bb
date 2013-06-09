@@ -82,22 +82,21 @@ binding.registerCustomHook(function(binding, id, contextType) {
   });
 
   apiFunctions.setHandleRequest('connect', function(targetId, connectInfo) {
+    // Don't let orphaned content scripts communicate with their extension.
+    // http://crbug.com/168263
+    if (unloadEvent.wasDispatched)
+      throw new Error('Error connecting to extension ' + targetId);
+
     if (!targetId)
       targetId = runtime.id;
+
     var name = '';
     if (connectInfo && connectInfo.name)
       name = connectInfo.name;
 
-    // Don't let orphaned content scripts communicate with their extension.
-    // http://crbug.com/168263
-    if (!unloadEvent.wasDispatched) {
-      var portId = runtimeNatives.OpenChannelToExtension(runtime.id,
-                                                         targetId,
-                                                         name);
-      if (portId >= 0)
-        return miscBindings.createPort(portId, name);
-    }
-    throw new Error('Error connecting to extension ' + targetId);
+    var portId = runtimeNatives.OpenChannelToExtension(targetId, name);
+    if (portId >= 0)
+      return miscBindings.createPort(portId, name);
   });
 
   //

@@ -40,7 +40,7 @@ TEST_F(ExternallyConnectableTest, IDsAndMatches) {
   EXPECT_THAT(info->ids, ElementsAre("abcdefghijklmnopabcdefghijklmnop",
                                      "ponmlkjihgfedcbaponmlkjihgfedcba"));
 
-  EXPECT_FALSE(info->matches_all_ids);
+  EXPECT_FALSE(info->all_ids);
 
   EXPECT_TRUE(info->matches.MatchesURL(GURL("http://example.com")));
   EXPECT_TRUE(info->matches.MatchesURL(GURL("http://example.com/")));
@@ -100,7 +100,7 @@ TEST_F(ExternallyConnectableTest, IDs) {
   EXPECT_THAT(info->ids, ElementsAre("abcdefghijklmnopabcdefghijklmnop",
                                      "ponmlkjihgfedcbaponmlkjihgfedcba"));
 
-  EXPECT_FALSE(info->matches_all_ids);
+  EXPECT_FALSE(info->all_ids);
 
   EXPECT_FALSE(info->matches.MatchesURL(GURL("http://google.com/index.html")));
 }
@@ -118,7 +118,7 @@ TEST_F(ExternallyConnectableTest, Matches) {
 
   EXPECT_THAT(info->ids, ElementsAre());
 
-  EXPECT_FALSE(info->matches_all_ids);
+  EXPECT_FALSE(info->all_ids);
 
   EXPECT_TRUE(info->matches.MatchesURL(GURL("http://example.com")));
   EXPECT_TRUE(info->matches.MatchesURL(GURL("http://example.com/")));
@@ -159,9 +159,36 @@ TEST_F(ExternallyConnectableTest, AllIDs) {
   EXPECT_THAT(info->ids, ElementsAre("abcdefghijklmnopabcdefghijklmnop",
                                      "ponmlkjihgfedcbaponmlkjihgfedcba"));
 
-  EXPECT_TRUE(info->matches_all_ids);
+  EXPECT_TRUE(info->all_ids);
 
   EXPECT_FALSE(info->matches.MatchesURL(GURL("http://google.com/index.html")));
+}
+
+TEST_F(ExternallyConnectableTest, IdCanConnect) {
+  // Not in order to test that ExternallyConnectableInfo sorts it.
+  std::string matches_ids_array[] = { "g", "h", "c", "i", "a", "z", "b" };
+  std::vector<std::string> matches_ids(
+      matches_ids_array, matches_ids_array + arraysize(matches_ids_array));
+
+  std::string nomatches_ids_array[] = { "2", "3", "1" };
+
+  // all_ids = false.
+  {
+    ExternallyConnectableInfo info(URLPatternSet(), matches_ids, false);
+    for (size_t i = 0; i < matches_ids.size(); ++i)
+      EXPECT_TRUE(info.IdCanConnect(matches_ids[i]));
+    for (size_t i = 0; i < arraysize(nomatches_ids_array); ++i)
+      EXPECT_FALSE(info.IdCanConnect(nomatches_ids_array[i]));
+  }
+
+  // all_ids = true.
+  {
+    ExternallyConnectableInfo info(URLPatternSet(), matches_ids, true);
+    for (size_t i = 0; i < matches_ids.size(); ++i)
+      EXPECT_TRUE(info.IdCanConnect(matches_ids[i]));
+    for (size_t i = 0; i < arraysize(nomatches_ids_array); ++i)
+      EXPECT_TRUE(info.IdCanConnect(nomatches_ids_array[i]));
+  }
 }
 
 TEST_F(ExternallyConnectableTest, ErrorWrongFormat) {

@@ -212,6 +212,12 @@ class MessageService : public ProfileKeyedAPI,
       PostMessage(port_id, message.Pass());
   }
 
+  // Immediate dispatches a disconnect to |source| for |port_id|. Sets source's
+  // runtime.lastMessage to |error_message|, if any.
+  void DispatchOnDisconnect(content::RenderProcessHost* source,
+                            int port_id,
+                            const std::string& error_message);
+
   // ProfileKeyedAPI implementation.
   static const char* service_name() {
     return "MessageService";

@@ -995,9 +995,9 @@ void Dispatcher::DidCreateScriptContext(
   switch (context_type) {
     case Feature::UNSPECIFIED_CONTEXT:
     case Feature::WEB_PAGE_CONTEXT:
-      // TODO(kalman): see comment below about ExtensionAPI.
-      InstallBindings(module_system, v8_context, "app");
-      InstallBindings(module_system, v8_context, "webstore");
+      RegisterBinding("app", context);
+      RegisterBinding("runtime", context);  // for connect() and sendMessage()
+      RegisterBinding("webstore", context);
       break;
     case Feature::BLESSED_EXTENSION_CONTEXT:
     case Feature::UNBLESSED_EXTENSION_CONTEXT:

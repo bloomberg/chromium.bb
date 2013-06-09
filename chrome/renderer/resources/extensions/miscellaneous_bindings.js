@@ -205,7 +205,9 @@
     // the right event.
     var isExternal = sourceExtensionId != extensionId;
 
-    var sender = {id: sourceExtensionId};
+    var sender = {};
+    if (sourceExtensionId != '')
+      sender.id = sourceExtensionId;
     if (sourceUrl)
       sender.url = sourceUrl;
     if (sourceTab)

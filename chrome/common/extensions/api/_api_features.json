@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// See c/c/e/features/* to understand this file, in particular feature.h,
+// simple_feature.h, and base_feature_provider.h.
+
 {
   "app": {
     "channel": "stable",
@@ -71,7 +74,8 @@
   "runtime.connect": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"],
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+    "contexts": "all",
+    "matches": ["<all_urls>"]
   },
   "runtime.getManifest": {
     "channel": "stable",
@@ -116,7 +120,8 @@
   "runtime.sendMessage": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"],
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+    "contexts": "all",
+    "matches": ["<all_urls>"]
   },
   "runtime.setUninstallUrl": {
     "channel": "dev",

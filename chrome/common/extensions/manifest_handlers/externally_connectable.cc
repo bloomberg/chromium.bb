@@ -4,6 +4,9 @@
 
 #include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
 
+#include <algorithm>
+
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/api/manifest_types.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -34,8 +37,17 @@ namespace errors = externally_connectable_errors;
 using api::manifest_types::ExternallyConnectable;
 
 namespace {
+
 const char kAllIds[] = "*";
+
+template <typename T>
+std::vector<T> Sorted(const std::vector<T>& in) {
+  std::vector<T> out = in;
+  std::sort(out.begin(), out.end());
+  return out;
 }
+
+} // namespace
 
 ExternallyConnectableHandler::ExternallyConnectableHandler() {}
 
@@ -135,14 +147,14 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
   }
 
   std::vector<std::string> ids;
-  bool matches_all_ids = false;
+  bool all_ids = false;
 
   if (externally_connectable->ids) {
     for (std::vector<std::string>::iterator it =
              externally_connectable->ids->begin();
          it != externally_connectable->ids->end(); ++it) {
       if (*it == kAllIds) {
-        matches_all_ids = true;
+        all_ids = true;
       } else if (Extension::IdIsValid(*it)) {
         ids.push_back(*it);
       } else {
@@ -154,7 +166,7 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
   }
 
   return make_scoped_ptr(
-      new ExternallyConnectableInfo(matches, ids, matches_all_ids));
+      new ExternallyConnectableInfo(matches, ids, all_ids));
 }
 
 ExternallyConnectableInfo::~ExternallyConnectableInfo() {}
@@ -162,7 +174,14 @@ ExternallyConnectableInfo::~ExternallyConnectableInfo() {}
 ExternallyConnectableInfo::ExternallyConnectableInfo(
     const URLPatternSet& matches,
     const std::vector<std::string>& ids,
-    bool matches_all_ids)
-    : matches(matches), ids(ids), matches_all_ids(matches_all_ids) {}
+    bool all_ids)
+    : matches(matches), ids(Sorted(ids)), all_ids(all_ids) {}
+
+bool ExternallyConnectableInfo::IdCanConnect(const std::string& id) {
+  if (all_ids)
+    return true;
+  DCHECK(base::STLIsSorted(ids));
+  return std::binary_search(ids.begin(), ids.end(), id);
+}
 
 }   // namespace extensions
