@@ -51,7 +51,7 @@ webkit.org/b/82954 svg/hixie/perf/007.xml [ Slow ]
 crbug.com/239465 [ Mac ] fast/canvas/webgl/premultiplyalpha-test.html [ Failure Pass ]
 crbug.com/239465 [ Win ] fast/canvas/webgl/premultiplyalpha-test.html [ Crash Pass Timeout ]
 crbug.com/245596 [ Win7 ] fast/forms/access-key.html [ Crash Pass ]
-crbug.com/245600 [ Mac ] fast/forms/basic-buttons.html [ Crash Pass ]
+# crbug.com/245600 [ Mac ] fast/forms/basic-buttons.html [ Crash Pass ]
 
 # Sometimes the output includes an empty line, sometimes it doesn't. Flake.
 crbug.com/239874 http/tests/xmlhttprequest/send-data-view.html [ Failure Pass ]
@@ -848,7 +848,7 @@ crbug.com/240353 compositing/tiled-layers-hidpi.html [ Failure ]
 crbug.com/240353 virtual/softwarecompositing/tiled-layers-hidpi.html [ Failure ]
 
 webkit.org/b/48454 compositing/tiling/huge-layer-img.html [ Failure Pass ]
-webkit.org/b/48454 [ Win Debug ] virtual/softwarecompositing/tiling/huge-layer-img.html [ Slow ]
+# webkit.org/b/48454 [ Win Debug ] virtual/softwarecompositing/tiling/huge-layer-img.html [ Slow ]
 
 # New reftest failing on Win7.
 webkit.org/b/76050 [ Win7 ] fast/text/font-kerning.html [ ImageOnlyFailure ]
@@ -1313,6 +1313,11 @@ crbug.com/227397 svg/text/text-path-01-b.svg [ Failure Pass ]
 crbug.com/227397 svg/text/text-path-middle-align.svg [ Failure Pass ]
 crbug.com/227397 svg/text/textPathBoundsBug.svg [ ImageOnlyFailure Pass ]
 crbug.com/227397 svg/W3C-SVG-1.1/types-basicDOM-01-b.svg [ Failure Pass ]
+
+# These tests need a rebasline after crbug.com/224317
+# Note, after the rebaseline need to uncomment another more-specific instance of each of these.
+crbug.com/224317 virtual/softwarecompositing/tiling/huge-layer-img.html [ Slow Failure Pass ]
+crbug.com/224317 fast/forms/basic-buttons.html [ Crash Failure Pass ]
 
 crbug.com/234758 [ Win Debug ] tables/mozilla/other/test3.html [ Crash Pass ]
 crbug.com/234758 [ Debug ] jquery/traversing.html [ Crash Timeout ]

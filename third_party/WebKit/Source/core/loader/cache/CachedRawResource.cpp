@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-CachedRawResource::CachedRawResource(ResourceRequest& resourceRequest, Type type)
+CachedRawResource::CachedRawResource(const ResourceRequest& resourceRequest, Type type)
     : CachedResource(resourceRequest, type)
 {
 }

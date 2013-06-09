@@ -1,0 +1,2 @@
+Test for crbug.com/224317: data:uri images should reload synchronously.
+PASS
