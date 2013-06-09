@@ -304,7 +304,7 @@ void StyleIterator::UpdatePosition(size_t position) {
 RenderText::~RenderText() {
 }
 
-void RenderText::SetText(const string16& text) {
+void RenderText::SetText(const base::string16& text) {
   DCHECK(!composition_range_.IsValid());
   text_ = text;
 
@@ -797,7 +797,7 @@ void RenderText::SetSelectionModel(const SelectionModel& model) {
   cached_bounds_and_offset_valid_ = false;
 }
 
-const string16& RenderText::GetLayoutText() const {
+const base::string16& RenderText::GetLayoutText() const {
   return obscured() ? obscured_text_ : text();
 }
 

@@ -145,7 +145,7 @@ int PlatformFontWin::GetAverageCharacterWidth() const {
   return font_ref_->ave_char_width();
 }
 
-int PlatformFontWin::GetStringWidth(const string16& text) const {
+int PlatformFontWin::GetStringWidth(const base::string16& text) const {
   return Canvas::GetStringWidth(text,
                                 Font(const_cast<PlatformFontWin*>(this)));
 }
@@ -273,7 +273,7 @@ PlatformFontWin::HFontRef::HFontRef(HFONT hfont,
 
   LOGFONT font_info;
   GetObject(hfont_, sizeof(LOGFONT), &font_info);
-  font_name_ = UTF16ToUTF8(string16(font_info.lfFaceName));
+  font_name_ = UTF16ToUTF8(base::string16(font_info.lfFaceName));
   if (font_info.lfHeight < 0)
     requested_font_size_ = -font_info.lfHeight;
 }

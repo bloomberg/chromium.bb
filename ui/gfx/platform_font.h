@@ -47,7 +47,7 @@ class UI_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
 
   // Returns the number of horizontal pixels needed to display the specified
   // string.
-  virtual int GetStringWidth(const string16& text) const = 0;
+  virtual int GetStringWidth(const base::string16& text) const = 0;
 
   // Returns the expected number of horizontal pixels needed to display the
   // specified length of characters. Call GetStringWidth() to retrieve the

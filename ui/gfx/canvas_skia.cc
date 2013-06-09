@@ -25,7 +25,7 @@ namespace {
 // |flags| and |text| content.
 // Returns true if the text will be rendered right-to-left.
 // TODO(msw): Nix this, now that RenderTextWin supports directionality directly.
-bool AdjustStringDirection(int flags, string16* text) {
+bool AdjustStringDirection(int flags, base::string16* text) {
   // TODO(msw): FORCE_LTR_DIRECTIONALITY does not work for RTL text now.
 
   // If the string is empty or LTR was forced, simply return false since the
@@ -85,7 +85,7 @@ bool PixelShouldGetHalo(const SkBitmap& bitmap,
 // Strips accelerator character prefixes in |text| if needed, based on |flags|.
 // Returns a range in |text| to underline or ui::Range::InvalidRange() if
 // underlining is not needed.
-ui::Range StripAcceleratorChars(int flags, string16* text) {
+ui::Range StripAcceleratorChars(int flags, base::string16* text) {
   if (flags & (Canvas::SHOW_PREFIX | Canvas::HIDE_PREFIX)) {
     int char_pos = -1;
     int char_span = 0;
@@ -100,9 +100,10 @@ ui::Range StripAcceleratorChars(int flags, string16* text) {
 // to no longer point to the same character in |text|, |range| is made invalid.
 void ElideTextAndAdjustRange(const Font& font,
                              int width,
-                             string16* text,
+                             base::string16* text,
                              ui::Range* range) {
-  const char16 start_char = (range->IsValid() ? text->at(range->start()) : 0);
+  const base::char16 start_char =
+      (range->IsValid() ? text->at(range->start()) : 0);
   *text = ui::ElideText(*text, font, width, ui::ELIDE_AT_END);
   if (!range->IsValid())
     return;
@@ -114,7 +115,7 @@ void ElideTextAndAdjustRange(const Font& font,
 
 // Updates |render_text| from the specified parameters.
 void UpdateRenderText(const Rect& rect,
-                      const string16& text,
+                      const base::string16& text,
                       const Font& font,
                       int flags,
                       SkColor color,
@@ -152,11 +153,11 @@ void UpdateRenderText(const Rect& rect,
 }
 
 // Returns updated |flags| to match platform-specific expected behavior.
-int AdjustPlatformSpecificFlags(const string16& text, int flags) {
+int AdjustPlatformSpecificFlags(const base::string16& text, int flags) {
 #if defined(OS_LINUX)
   // TODO(asvitkine): ash/tooltips/tooltip_controller.cc adds \n's to the string
   //                  without passing MULTI_LINE.
-  if (text.find('\n') != string16::npos)
+  if (text.find('\n') != base::string16::npos)
     flags |= Canvas::MULTI_LINE;
 #endif
 
@@ -166,7 +167,7 @@ int AdjustPlatformSpecificFlags(const string16& text, int flags) {
 }  // namespace
 
 // static
-void Canvas::SizeStringInt(const string16& text,
+void Canvas::SizeStringInt(const base::string16& text,
                            const Font& font,
                            int* width, int* height,
                            int line_height,
@@ -176,7 +177,7 @@ void Canvas::SizeStringInt(const string16& text,
 
   flags = AdjustPlatformSpecificFlags(text, flags);
 
-  string16 adjusted_text = text;
+  base::string16 adjusted_text = text;
 #if defined(OS_WIN)
   AdjustStringDirection(flags, &adjusted_text);
 #endif
@@ -189,11 +190,11 @@ void Canvas::SizeStringInt(const string16& text,
       wrap_behavior = ui::ELIDE_LONG_WORDS;
 
     Rect rect(*width, INT_MAX);
-    std::vector<string16> strings;
+    std::vector<base::string16> strings;
     ui::ElideRectangleText(adjusted_text, font, rect.width(), rect.height(),
                            wrap_behavior, &strings);
     scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-    UpdateRenderText(rect, string16(), font, flags, 0, render_text.get());
+    UpdateRenderText(rect, base::string16(), font, flags, 0, render_text.get());
 
     int h = 0;
     int w = 0;
@@ -225,7 +226,7 @@ void Canvas::SizeStringInt(const string16& text,
   }
 }
 
-void Canvas::DrawStringWithShadows(const string16& text,
+void Canvas::DrawStringWithShadows(const base::string16& text,
                                    const Font& font,
                                    SkColor color,
                                    const Rect& text_bounds,
@@ -244,7 +245,7 @@ void Canvas::DrawStringWithShadows(const string16& text,
   ClipRect(clip_rect);
 
   Rect rect(text_bounds);
-  string16 adjusted_text = text;
+  base::string16 adjusted_text = text;
 
 #if defined(OS_WIN)
   AdjustStringDirection(flags, &adjusted_text);
@@ -260,7 +261,7 @@ void Canvas::DrawStringWithShadows(const string16& text,
     else if (!(flags & NO_ELLIPSIS))
       wrap_behavior = ui::ELIDE_LONG_WORDS;
 
-    std::vector<string16> strings;
+    std::vector<base::string16> strings;
     ui::ElideRectangleText(adjusted_text,
                            font,
                            text_bounds.width(), text_bounds.height(),
@@ -332,7 +333,7 @@ void Canvas::DrawStringWithShadows(const string16& text,
   canvas_->restore();
 }
 
-void Canvas::DrawStringWithHalo(const string16& text,
+void Canvas::DrawStringWithHalo(const base::string16& text,
                                 const Font& font,
                                 SkColor text_color,
                                 SkColor halo_color_in,
@@ -379,7 +380,7 @@ void Canvas::DrawStringWithHalo(const string16& text,
 }
 
 void Canvas::DrawFadeTruncatingString(
-      const string16& text,
+      const base::string16& text,
       TruncateFadeMode truncate_mode,
       size_t desired_characters_to_truncate_from_head,
       const Font& font,
@@ -395,7 +396,7 @@ void Canvas::DrawFadeTruncatingString(
   }
 
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-  string16 clipped_text = text;
+  base::string16 clipped_text = text;
   const bool is_rtl = AdjustStringDirection(flags, &clipped_text);
 
   switch (truncate_mode) {

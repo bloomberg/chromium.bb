@@ -144,7 +144,7 @@ double GetPangoResolution() {
 }
 
 void DrawTextOntoCairoSurface(cairo_t* cr,
-                              const string16& text,
+                              const base::string16& text,
                               const gfx::Font& font,
                               const gfx::Rect& bounds,
                               const gfx::Rect& clip,
@@ -180,7 +180,7 @@ void DrawTextOntoCairoSurface(cairo_t* cr,
 // Pass a width greater than 0 to force wrapping and eliding.
 static void SetupPangoLayoutWithoutFont(
     PangoLayout* layout,
-    const string16& text,
+    const base::string16& text,
     int width,
     base::i18n::TextDirection text_direction,
     int flags) {
@@ -266,7 +266,7 @@ static void SetupPangoLayoutWithoutFont(
     // a single ampersand.
     if (flags & Canvas::HIDE_PREFIX) {
       DCHECK_EQ(1, g_unichar_to_utf8(kAcceleratorChar, NULL));
-      string16 accelerator_removed =
+      base::string16 accelerator_removed =
           RemoveAcceleratorChar(text, static_cast<char16>(kAcceleratorChar),
                                 NULL, NULL);
       utf8 = UTF16ToUTF8(accelerator_removed);
@@ -279,7 +279,7 @@ static void SetupPangoLayoutWithoutFont(
 }
 
 void SetupPangoLayout(PangoLayout* layout,
-                      const string16& text,
+                      const base::string16& text,
                       const Font& font,
                       int width,
                       base::i18n::TextDirection text_direction,
@@ -292,7 +292,7 @@ void SetupPangoLayout(PangoLayout* layout,
 
 void SetupPangoLayoutWithFontDescription(
     PangoLayout* layout,
-    const string16& text,
+    const base::string16& text,
     const std::string& font_description,
     int width,
     base::i18n::TextDirection text_direction,

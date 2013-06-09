@@ -15,10 +15,10 @@ namespace gfx {
 // |accelerated_char_pos| and |accelerated_char_span| will be set to the index
 // and span of the last accelerated character, respectively, or -1 and 0 if
 // there was none.
-UI_EXPORT string16 RemoveAcceleratorChar(const string16& s,
-                                         char16 accelerator_char,
-                                         int* accelerated_char_pos,
-                                         int* accelerated_char_span);
+UI_EXPORT base::string16 RemoveAcceleratorChar(const base::string16& s,
+                                               base::char16 accelerator_char,
+                                               int* accelerated_char_pos,
+                                               int* accelerated_char_span);
 
 }  // namespace gfx
 

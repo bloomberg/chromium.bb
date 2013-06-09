@@ -126,7 +126,7 @@ class UI_EXPORT Canvas {
   // height and then width as needed to make the text fit. This method
   // supports multiple lines. On Skia only a line_height can be specified and
   // specifying a 0 value for it will cause the default height to be used.
-  static void SizeStringInt(const string16& text,
+  static void SizeStringInt(const base::string16& text,
                             const gfx::Font& font,
                             int* width, int* height,
                             int line_height,
@@ -134,7 +134,7 @@ class UI_EXPORT Canvas {
 
   // Returns the number of horizontal pixels needed to display the specified
   // |text| with |font|.
-  static int GetStringWidth(const string16& text, const gfx::Font& font);
+  static int GetStringWidth(const base::string16& text, const gfx::Font& font);
 
   // Returns the default text alignment to be used when drawing text on a
   // gfx::Canvas based on the directionality of the system locale language.
@@ -154,7 +154,7 @@ class UI_EXPORT Canvas {
   // On Mac, NOTIMPLEMENTED.
   //   TODO(dhollowa): Skia-native implementation is underway.  Cut over to
   //   that when ready.  http::/crbug.com/109946
-  void DrawStringWithHalo(const string16& text,
+  void DrawStringWithHalo(const base::string16& text,
                           const gfx::Font& font,
                           SkColor text_color,
                           SkColor halo_color,
@@ -305,11 +305,11 @@ class UI_EXPORT Canvas {
   // Draws text with the specified color, font and location. The text is
   // aligned to the left, vertically centered, clipped to the region. If the
   // text is too big, it is truncated and '...' is added to the end.
-  void DrawStringInt(const string16& text,
+  void DrawStringInt(const base::string16& text,
                      const gfx::Font& font,
                      SkColor color,
                      int x, int y, int w, int h);
-  void DrawStringInt(const string16& text,
+  void DrawStringInt(const base::string16& text,
                      const gfx::Font& font,
                      SkColor color,
                      const gfx::Rect& display_rect);
@@ -317,7 +317,7 @@ class UI_EXPORT Canvas {
   // Draws text with the specified color, font and location. The last argument
   // specifies flags for how the text should be rendered. It can be one of
   // TEXT_ALIGN_CENTER, TEXT_ALIGN_RIGHT or TEXT_ALIGN_LEFT.
-  void DrawStringInt(const string16& text,
+  void DrawStringInt(const base::string16& text,
                      const gfx::Font& font,
                      SkColor color,
                      int x, int y, int w, int h,
@@ -326,7 +326,7 @@ class UI_EXPORT Canvas {
   // Similar to above DrawStringInt method but with text shadows support.
   // Currently it's only implemented for canvas skia. Specifying a 0 line_height
   // will cause the default height to be used.
-  void DrawStringWithShadows(const string16& text,
+  void DrawStringWithShadows(const base::string16& text,
                              const gfx::Font& font,
                              SkColor color,
                              const gfx::Rect& text_bounds,
@@ -366,7 +366,7 @@ class UI_EXPORT Canvas {
   // |desired_characters_to_truncate_from_head| specifies the maximum number of
   // characters that can be truncated.
   void DrawFadeTruncatingString(
-      const string16& text,
+      const base::string16& text,
       TruncateFadeMode truncate_mode,
       size_t desired_characters_to_truncate_from_head,
       const gfx::Font& font,

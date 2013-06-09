@@ -58,7 +58,7 @@ int Font::GetAverageCharacterWidth() const {
   return platform_font_->GetAverageCharacterWidth();
 }
 
-int Font::GetStringWidth(const string16& text) const {
+int Font::GetStringWidth(const base::string16& text) const {
   return platform_font_->GetStringWidth(text);
 }
 

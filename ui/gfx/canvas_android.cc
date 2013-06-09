@@ -10,7 +10,7 @@
 namespace gfx {
 
 // static
-void Canvas::SizeStringInt(const string16& text,
+void Canvas::SizeStringInt(const base::string16& text,
                            const gfx::Font& font,
                            int* width,
                            int* height,
@@ -19,7 +19,7 @@ void Canvas::SizeStringInt(const string16& text,
   NOTIMPLEMENTED();
 }
 
-void Canvas::DrawStringWithShadows(const string16& text,
+void Canvas::DrawStringWithShadows(const base::string16& text,
                                    const gfx::Font& font,
                                    SkColor color,
                                    const gfx::Rect& text_bounds,

@@ -8,15 +8,15 @@
 
 namespace gfx {
 
-string16 RemoveAcceleratorChar(const string16& s,
-                               char16 accelerator_char,
-                               int* accelerated_char_pos,
-                               int* accelerated_char_span) {
+base::string16 RemoveAcceleratorChar(const base::string16& s,
+                                     base::char16 accelerator_char,
+                                     int* accelerated_char_pos,
+                                     int* accelerated_char_span) {
   bool escaped = false;
   ptrdiff_t last_char_pos = -1;
   int last_char_span = 0;
   base::i18n::UTF16CharIterator chars(&s);
-  string16 accelerator_removed;
+  base::string16 accelerator_removed;
 
   accelerator_removed.reserve(s.size());
   while (!chars.end()) {

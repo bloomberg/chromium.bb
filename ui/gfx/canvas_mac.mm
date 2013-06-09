@@ -35,7 +35,7 @@ SkTypeface::Style FontTypefaceStyle(const gfx::Font& font) {
 namespace gfx {
 
 // static
-void Canvas::SizeStringInt(const string16& text,
+void Canvas::SizeStringInt(const base::string16& text,
                            const gfx::Font& font,
                            int* width,
                            int* height,
@@ -54,7 +54,7 @@ void Canvas::SizeStringInt(const string16& text,
   *height = font.GetHeight();
 }
 
-void Canvas::DrawStringWithShadows(const string16& text,
+void Canvas::DrawStringWithShadows(const base::string16& text,
                                    const gfx::Font& font,
                                    SkColor color,
                                    const gfx::Rect& text_bounds,
@@ -72,13 +72,13 @@ void Canvas::DrawStringWithShadows(const string16& text,
   paint.setTypeface(typeface.get());
   paint.setColor(color);
   canvas_->drawText(text.c_str(),
-                    text.size() * sizeof(string16::value_type),
+                    text.size() * sizeof(base::string16::value_type),
                     text_bounds.x(),
                     text_bounds.bottom(),
                     paint);
 }
 
-void Canvas::DrawStringWithHalo(const string16& text,
+void Canvas::DrawStringWithHalo(const base::string16& text,
                                 const gfx::Font& font,
                                 SkColor text_color,
                                 SkColor halo_color,

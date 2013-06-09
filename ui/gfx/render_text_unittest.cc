@@ -193,7 +193,7 @@ TEST_F(RenderTextTest, PangoAttributes) {
     PangoFontDescription* font = pango_font_description_new();
     pango_attr_iterator_get_font(iter, font, NULL, NULL);
     char* description_string = pango_font_description_to_string(font);
-    const string16 desc = ASCIIToUTF16(description_string);
+    const base::string16 desc = ASCIIToUTF16(description_string);
     const bool bold = desc.find(ASCIIToUTF16("Bold")) != std::string::npos;
     EXPECT_EQ(cases[i].bold, bold);
     const bool italic = desc.find(ASCIIToUTF16("Italic")) != std::string::npos;
@@ -211,7 +211,7 @@ TEST_F(RenderTextTest, PangoAttributes) {
 //                  does not implement this yet. http://crbug.com/131618
 #if !defined(OS_MACOSX)
 void TestVisualCursorMotionInObscuredField(RenderText* render_text,
-                                           const string16& text,
+                                           const base::string16& text,
                                            bool select) {
   ASSERT_TRUE(render_text->obscured());
   render_text->SetText(text);
@@ -239,8 +239,8 @@ void TestVisualCursorMotionInObscuredField(RenderText* render_text,
 }
 
 TEST_F(RenderTextTest, ObscuredText) {
-  const string16 seuss = ASCIIToUTF16("hop on pop");
-  const string16 no_seuss = ASCIIToUTF16("**********");
+  const base::string16 seuss = ASCIIToUTF16("hop on pop");
+  const base::string16 no_seuss = ASCIIToUTF16("**********");
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
 
   // GetLayoutText() returns asterisks when the obscured bit is set.
@@ -295,15 +295,15 @@ TEST_F(RenderTextTest, ObscuredText) {
     L"\x05d0\x05d1 \x05d0\x05d2 \x05d1\x05d2",  // Check RTL word boundaries.
   };
   for (size_t i = 0; i < arraysize(texts); ++i) {
-    string16 text = WideToUTF16(texts[i]);
+    base::string16 text = WideToUTF16(texts[i]);
     TestVisualCursorMotionInObscuredField(render_text.get(), text, false);
     TestVisualCursorMotionInObscuredField(render_text.get(), text, true);
   }
 }
 
 TEST_F(RenderTextTest, RevealObscuredText) {
-  const string16 seuss = ASCIIToUTF16("hop on pop");
-  const string16 no_seuss = ASCIIToUTF16("**********");
+  const base::string16 seuss = ASCIIToUTF16("hop on pop");
+  const base::string16 no_seuss = ASCIIToUTF16("**********");
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
 
   render_text->SetText(seuss);
@@ -616,27 +616,28 @@ TEST_F(RenderTextTest, MoveCursorLeftRight_ComplexScript) {
 
 TEST_F(RenderTextTest, GraphemePositions) {
   // LTR 2-character grapheme, LTR abc, LTR 2-character grapheme.
-  const string16 kText1 = WideToUTF16(L"\x0915\x093f"L"abc"L"\x0915\x093f");
+  const base::string16 kText1 =
+      WideToUTF16(L"\x0915\x093f"L"abc"L"\x0915\x093f");
 
   // LTR ab, LTR 2-character grapheme, LTR cd.
-  const string16 kText2 = WideToUTF16(L"ab"L"\x0915\x093f"L"cd");
+  const base::string16 kText2 = WideToUTF16(L"ab"L"\x0915\x093f"L"cd");
 
   // The below is 'MUSICAL SYMBOL G CLEF', which is represented in UTF-16 as
   // two characters forming the surrogate pair 0x0001D11E.
   const std::string kSurrogate = "\xF0\x9D\x84\x9E";
 
   // LTR ab, UTF16 surrogate pair, LTR cd.
-  const string16 kText3 = UTF8ToUTF16("ab" + kSurrogate + "cd");
+  const base::string16 kText3 = UTF8ToUTF16("ab" + kSurrogate + "cd");
 
   struct {
-    string16 text;
+    base::string16 text;
     size_t index;
     size_t expected_previous;
     size_t expected_next;
   } cases[] = {
-    { string16(), 0, 0, 0 },
-    { string16(), 1, 0, 0 },
-    { string16(), 50, 0, 0 },
+    { base::string16(), 0, 0, 0 },
+    { base::string16(), 1, 0, 0 },
+    { base::string16(), 50, 0, 0 },
     { kText1, 0, 0, 2 },
     { kText1, 1, 0, 2 },
     { kText1, 2, 0, 3 },
@@ -692,21 +693,23 @@ TEST_F(RenderTextTest, GraphemePositions) {
 
 TEST_F(RenderTextTest, EdgeSelectionModels) {
   // Simple Latin text.
-  const string16 kLatin = WideToUTF16(L"abc");
+  const base::string16 kLatin = WideToUTF16(L"abc");
   // LTR 2-character grapheme.
-  const string16 kLTRGrapheme = WideToUTF16(L"\x0915\x093f");
+  const base::string16 kLTRGrapheme = WideToUTF16(L"\x0915\x093f");
   // LTR 2-character grapheme, LTR a, LTR 2-character grapheme.
-  const string16 kHindiLatin = WideToUTF16(L"\x0915\x093f"L"a"L"\x0915\x093f");
+  const base::string16 kHindiLatin =
+      WideToUTF16(L"\x0915\x093f"L"a"L"\x0915\x093f");
   // RTL 2-character grapheme.
-  const string16 kRTLGrapheme = WideToUTF16(L"\x05e0\x05b8");
+  const base::string16 kRTLGrapheme = WideToUTF16(L"\x05e0\x05b8");
   // RTL 2-character grapheme, LTR a, RTL 2-character grapheme.
-  const string16 kHebrewLatin = WideToUTF16(L"\x05e0\x05b8"L"a"L"\x05e0\x05b8");
+  const base::string16 kHebrewLatin =
+      WideToUTF16(L"\x05e0\x05b8"L"a"L"\x05e0\x05b8");
 
   struct {
-    string16 text;
+    base::string16 text;
     base::i18n::TextDirection expected_text_direction;
   } cases[] = {
-    { string16(),   base::i18n::LEFT_TO_RIGHT },
+    { base::string16(), base::i18n::LEFT_TO_RIGHT },
     { kLatin,       base::i18n::LEFT_TO_RIGHT },
     { kLTRGrapheme, base::i18n::LEFT_TO_RIGHT },
     { kHindiLatin,  base::i18n::LEFT_TO_RIGHT },
@@ -750,7 +753,7 @@ TEST_F(RenderTextTest, SelectAll) {
   for (size_t i = 0; i < 2; ++i) {
     SetRTL(!base::i18n::IsRTL());
     // Test that an empty string produces an empty selection model.
-    render_text->SetText(string16());
+    render_text->SetText(base::string16());
     EXPECT_EQ(render_text->selection_model(), SelectionModel());
 
     // Test the weak, LTR, RTL, and Bidi string cases.
@@ -985,7 +988,7 @@ TEST_F(RenderTextTest, StringSizeEmptyString) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetFont(font);
 
-  render_text->SetText(string16());
+  render_text->SetText(base::string16());
   EXPECT_EQ(font.GetHeight(), render_text->GetStringSize().height());
   EXPECT_EQ(0, render_text->GetStringSize().width());
 
@@ -1021,7 +1024,7 @@ TEST_F(RenderTextTest, StringSizeBoldWidth) {
 }
 
 TEST_F(RenderTextTest, StringSizeHeight) {
-  string16 cases[] = {
+  base::string16 cases[] = {
     WideToUTF16(L"Hello World!"),  // English
     WideToUTF16(L"\x6328\x62f6"),  // Japanese
     WideToUTF16(L"\x0915\x093f"),  // Hindi
@@ -1149,7 +1152,7 @@ TEST_F(RenderTextTest, SameFontForParentheses) {
     { '<', '>' },
   };
   struct {
-    string16 text;
+    base::string16 text;
   } cases[] = {
     // English(English)
     { WideToUTF16(L"Hello World(a)") },
@@ -1180,11 +1183,11 @@ TEST_F(RenderTextTest, SameFontForParentheses) {
 
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
-    string16 text = cases[i].text;
+    base::string16 text = cases[i].text;
     const size_t start_paren_char_index = text.find('(');
-    ASSERT_NE(string16::npos, start_paren_char_index);
+    ASSERT_NE(base::string16::npos, start_paren_char_index);
     const size_t end_paren_char_index = text.find(')');
-    ASSERT_NE(string16::npos, end_paren_char_index);
+    ASSERT_NE(base::string16::npos, end_paren_char_index);
 
     for (size_t j = 0; j < ARRAYSIZE_UNSAFE(punctuation_pairs); ++j) {
       text[start_paren_char_index] = punctuation_pairs[j].left_char;

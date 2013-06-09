@@ -124,8 +124,8 @@ class UI_EXPORT RenderText {
   // Creates a platform-specific RenderText instance.
   static RenderText* CreateInstance();
 
-  const string16& text() const { return text_; }
-  void SetText(const string16& text);
+  const base::string16& text() const { return text_; }
+  void SetText(const base::string16& text);
 
   HorizontalAlignment horizontal_alignment() const {
     return horizontal_alignment_;
@@ -409,7 +409,7 @@ class UI_EXPORT RenderText {
   virtual void DrawVisualText(Canvas* canvas) = 0;
 
   // Returns the text used for layout, which may be |obscured_text_|.
-  const string16& GetLayoutText() const;
+  const base::string16& GetLayoutText() const;
 
   // Apply (and undo) temporary composition underlines and selection colors.
   void ApplyCompositionAndSelectionStyles();
@@ -470,7 +470,7 @@ class UI_EXPORT RenderText {
   void DrawSelection(Canvas* canvas);
 
   // Logical UTF-16 string data to be drawn.
-  string16 text_;
+  base::string16 text_;
 
   // Horizontal alignment of the text with respect to |display_rect_|.  The
   // default is to align left if the application UI is LTR and right if RTL.
@@ -536,7 +536,7 @@ class UI_EXPORT RenderText {
   // A flag and the text to display for obscured (password) fields.
   // Asterisks are used instead of the actual text glyphs when true.
   bool obscured_;
-  string16 obscured_text_;
+  base::string16 obscured_text_;
 
   // The index at which the char should be revealed in the obscured text.
   int obscured_reveal_index_;

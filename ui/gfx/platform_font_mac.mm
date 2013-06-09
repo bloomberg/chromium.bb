@@ -63,7 +63,7 @@ int PlatformFontMac::GetAverageCharacterWidth() const {
   return average_width_;
 }
 
-int PlatformFontMac::GetStringWidth(const string16& text) const {
+int PlatformFontMac::GetStringWidth(const base::string16& text) const {
   return Canvas::GetStringWidth(text,
                                 Font(const_cast<PlatformFontMac*>(this)));
 }
