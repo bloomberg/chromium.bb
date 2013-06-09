@@ -159,7 +159,6 @@ public:
 #endif
 #endif
 
-    IntRect(const SkIRect&);
     operator SkRect() const;
     operator SkIRect() const;
 

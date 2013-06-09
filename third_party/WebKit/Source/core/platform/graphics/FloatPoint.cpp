@@ -33,8 +33,10 @@
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/LayoutPoint.h"
 #include "core/platform/graphics/LayoutSize.h"
+#include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/platform/graphics/transforms/TransformationMatrix.h"
+#include "third_party/skia/include/core/SkPoint.h"
 
 namespace WebCore {
 
@@ -76,6 +78,12 @@ void FloatPoint::moveBy(const LayoutPoint& point)
 {
     m_x += point.x();
     m_y += point.y();
+}
+
+FloatPoint::operator SkPoint() const
+{
+    SkPoint p = { WebCoreFloatToSkScalar(m_x), WebCoreFloatToSkScalar(m_y) };
+    return p;
 }
 
 FloatPoint FloatPoint::matrixTransform(const AffineTransform& transform) const

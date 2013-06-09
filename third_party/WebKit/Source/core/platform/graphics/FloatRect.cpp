@@ -27,12 +27,14 @@
 #include "config.h"
 #include "core/platform/graphics/FloatRect.h"
 
-#include <math.h>
-#include <algorithm>
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/LayoutRect.h"
-#include <wtf/MathExtras.h>
+#include "third_party/skia/include/core/SkRect.h"
+#include "wtf/MathExtras.h"
+
+#include <algorithm>
+#include <math.h>
 
 using std::max;
 using std::min;
@@ -44,6 +46,10 @@ FloatRect::FloatRect(const IntRect& r) : m_location(r.location()), m_size(r.size
 }
 
 FloatRect::FloatRect(const LayoutRect& r) : m_location(r.location()), m_size(r.size())
+{
+}
+
+FloatRect::FloatRect(const SkRect& r) : m_location(r.fLeft, r.fTop), m_size(r.width(), r.height())
 {
 }
 
@@ -220,6 +226,12 @@ void FloatRect::fitToPoints(const FloatPoint& p0, const FloatPoint& p1, const Fl
     float bottom = max4(p0.y(), p1.y(), p2.y(), p3.y());
 
     setLocationAndSizeFromEdges(left, top, right, bottom);
+}
+
+FloatRect::operator SkRect() const
+{
+    SkRect rect = { x(), y(), maxX(), maxY() };
+    return rect;
 }
 
 IntRect enclosingIntRect(const FloatRect& rect)

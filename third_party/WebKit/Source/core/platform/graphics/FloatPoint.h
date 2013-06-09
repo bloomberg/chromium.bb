@@ -29,7 +29,7 @@
 
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/IntPoint.h"
-#include <wtf/MathExtras.h>
+#include "wtf/MathExtras.h"
 
 #if OS(DARWIN)
 typedef struct CGPoint CGPoint;
@@ -141,7 +141,6 @@ public:
 #endif
 
     operator SkPoint() const;
-    FloatPoint(const SkPoint&);
 
     FloatPoint matrixTransform(const TransformationMatrix&) const;
     FloatPoint matrixTransform(const AffineTransform&) const;

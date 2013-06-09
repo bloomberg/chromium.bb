@@ -26,9 +26,11 @@
 #include "config.h"
 #include "core/platform/graphics/IntRect.h"
 
-#include <algorithm>
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/LayoutRect.h"
+#include "third_party/skia/include/core/SkRect.h"
+
+#include <algorithm>
 
 using std::max;
 using std::min;
@@ -146,6 +148,19 @@ IntSize IntRect::differenceToPoint(const IntPoint& point) const
     int xdistance = distanceToInterval(point.x(), x(), maxX());
     int ydistance = distanceToInterval(point.y(), y(), maxY());
     return IntSize(xdistance, ydistance);
+}
+
+IntRect::operator SkIRect() const
+{
+    SkIRect rect = { x(), y(), maxX(), maxY() };
+    return rect;
+}
+
+IntRect::operator SkRect() const
+{
+    SkRect rect;
+    rect.set(SkIntToScalar(x()), SkIntToScalar(y()), SkIntToScalar(maxX()), SkIntToScalar(maxY()));
+    return rect;
 }
 
 IntRect unionRect(const Vector<IntRect>& rects)

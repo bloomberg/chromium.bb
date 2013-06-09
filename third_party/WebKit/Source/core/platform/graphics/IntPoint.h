@@ -28,8 +28,8 @@
 #define IntPoint_h
 
 #include "core/platform/graphics/IntSize.h"
-#include <wtf/MathExtras.h>
-#include <wtf/Platform.h>
+#include "wtf/MathExtras.h"
+#include "wtf/Platform.h"
 
 #if OS(DARWIN)
 typedef struct CGPoint CGPoint;
@@ -39,9 +39,6 @@ typedef struct CGPoint NSPoint;
 typedef struct _NSPoint NSPoint;
 #endif
 #endif
-
-struct SkPoint;
-struct SkIPoint;
 
 namespace WebCore {
 
@@ -101,10 +98,6 @@ public:
     operator NSPoint() const;
 #endif
 #endif
-
-    IntPoint(const SkIPoint&);
-    operator SkIPoint() const;
-    operator SkPoint() const;
 
 private:
     int m_x, m_y;

@@ -61,6 +61,7 @@ public:
         : m_location(FloatPoint(x, y)), m_size(FloatSize(width, height)) { }
     FloatRect(const IntRect&);
     FloatRect(const LayoutRect&);
+    FloatRect(const SkRect&);
 
     static FloatRect narrowPrecision(double x, double y, double width, double height);
 
@@ -168,7 +169,6 @@ public:
 #endif
 #endif
 
-    FloatRect(const SkRect&);
     operator SkRect() const;
 
 private:
