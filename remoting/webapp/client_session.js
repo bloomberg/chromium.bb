@@ -254,7 +254,8 @@ remoting.ClientSession.Capability = {
   // When enabled this capability causes the client to send its screen
   // resolution to the host once connection has been established. See
   // this.plugin.notifyClientResolution().
-  SEND_INITIAL_RESOLUTION: 'sendInitialResolution'
+  SEND_INITIAL_RESOLUTION: 'sendInitialResolution',
+  RATE_LIMIT_RESIZE_REQUESTS: 'rateLimitResizeRequests'
 };
 
 /**
@@ -890,12 +891,17 @@ remoting.ClientSession.prototype.onResize = function() {
   // Defer notifying the host of the change until the window stops resizing, to
   // avoid overloading the control channel with notifications.
   if (this.resizeToClient_) {
+    var kResizeRateLimitMs = 1000;
+    if (this.hasCapability_(
+        remoting.ClientSession.Capability.RATE_LIMIT_RESIZE_REQUESTS)) {
+      kResizeRateLimitMs = 250;
+    }
     this.notifyClientResolutionTimer_ = window.setTimeout(
         this.plugin.notifyClientResolution.bind(this.plugin,
                                                 window.innerWidth,
                                                 window.innerHeight,
                                                 window.devicePixelRatio),
-        1000);
+        kResizeRateLimitMs);
   }
 
   // If bump-scrolling is enabled, adjust the plugin margins to fully utilize

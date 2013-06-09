@@ -6,6 +6,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
+#include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "remoting/host/desktop_resizer.h"
 #include "remoting/host/resizing_host_observer.h"
 #include "remoting/host/screen_resolution.h"
@@ -71,15 +74,27 @@ class FakeDesktopResizer : public DesktopResizer {
 
 class ResizingHostObserverTest : public testing::Test {
  public:
-  ResizingHostObserverTest() : desktop_resizer_(NULL) {
+  ResizingHostObserverTest()
+      : desktop_resizer_(NULL),
+        now_(base::Time::Now()) {
   }
 
+  // This needs to be public because the derived test-case class needs to
+  // pass it to Bind, which fails if it's protected.
+  base::Time GetTime() {
+    return now_;
+  }
+
+ protected:
   void SetDesktopResizer(scoped_ptr<FakeDesktopResizer> desktop_resizer) {
     CHECK(!desktop_resizer_) << "Call SetDeskopResizer once per test";
     desktop_resizer_ = desktop_resizer.get();
 
     resizing_host_observer_.reset(
         new ResizingHostObserver(desktop_resizer.PassAs<DesktopResizer>()));
+    resizing_host_observer_->SetNowFunctionForTesting(
+        base::Bind(&ResizingHostObserverTest::GetTimeAndIncrement,
+                   base::Unretained(this)));
   }
 
   SkISize GetBestSize(const SkISize& client_size) {
@@ -98,9 +113,15 @@ class ResizingHostObserverTest : public testing::Test {
     }
   }
 
- private:
+  base::Time GetTimeAndIncrement() {
+    base::Time result = now_;
+    now_ += base::TimeDelta::FromSeconds(1);
+    return result;
+  }
+
   scoped_ptr<ResizingHostObserver> resizing_host_observer_;
   FakeDesktopResizer* desktop_resizer_;
+  base::Time now_;
 };
 
 // Check that the host is not resized if GetSupportedSizes returns an empty
@@ -189,6 +210,40 @@ TEST_F(ResizingHostObserverTest, NoSetSizeForSameSize) {
   SkISize expected_sizes[] = { { 640, 480 }, { 640, 480 }, { 640, 480 } };
   VerifySizes(client_sizes, expected_sizes, arraysize(client_sizes));
   EXPECT_EQ(desktop_resizer->set_size_call_count(), 0);
+}
+
+// Check that desktop resizes are rate-limited, and that if multiple resize
+// requests are received in the time-out period, the most recent is respected.
+TEST_F(ResizingHostObserverTest, RateLimited) {
+  FakeDesktopResizer* desktop_resizer =
+      new FakeDesktopResizer(SkISize::Make(640, 480), true, NULL, 0);
+  SetDesktopResizer(scoped_ptr<FakeDesktopResizer>(desktop_resizer));
+  resizing_host_observer_->SetNowFunctionForTesting(
+      base::Bind(&ResizingHostObserverTest::GetTime, base::Unretained(this)));
+
+  base::MessageLoop message_loop;
+  base::RunLoop run_loop;
+
+  EXPECT_EQ(GetBestSize(SkISize::Make(100, 100)), SkISize::Make(100, 100));
+  now_ += base::TimeDelta::FromMilliseconds(900);
+  EXPECT_EQ(GetBestSize(SkISize::Make(200, 200)), SkISize::Make(100, 100));
+  now_ += base::TimeDelta::FromMilliseconds(99);
+  EXPECT_EQ(GetBestSize(SkISize::Make(300, 300)), SkISize::Make(100, 100));
+  now_ += base::TimeDelta::FromMilliseconds(1);
+
+  // Due to the kMinimumResizeIntervalMs constant in resizing_host_observer.cc,
+  // We need to wait a total of 1000ms for the final resize to be processed.
+  // Since it was queued 900 + 99 ms after the first, we need to wait an
+  // additional 1ms. However, since RunLoop is not guaranteed to process tasks
+  // with the same due time in FIFO order, wait an additional 1ms for safety.
+  message_loop.PostDelayedTask(
+      FROM_HERE,
+      run_loop.QuitClosure(),
+      base::TimeDelta::FromMilliseconds(2));
+  run_loop.Run();
+
+  // If the QuitClosure fired before the final resize, it's a test failure.
+  EXPECT_EQ(desktop_resizer_->GetCurrentSize(), SkISize::Make(300, 300));
 }
 
 }  // namespace remoting

@@ -6,15 +6,19 @@
 #define REMOTING_HOST_RESIZING_HOST_OBSERVER_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/time.h"
+#include "base/timer.h"
 #include "remoting/host/screen_controls.h"
+#include "remoting/host/screen_resolution.h"
 #include "third_party/skia/include/core/SkSize.h"
 
 namespace remoting {
 
 class DesktopResizer;
-class ScreenResolution;
 
 // TODO(alexeypa): Rename this class to reflect that it is not
 // HostStatusObserver any more.
@@ -30,9 +34,22 @@ class ResizingHostObserver : public ScreenControls {
   // ScreenControls interface.
   virtual void SetScreenResolution(const ScreenResolution& resolution) OVERRIDE;
 
+  // Provide a replacement for base::Time::Now so that this class can be
+  // unit-tested in a timely manner. This function will be called exactly
+  // once for each call to SetScreenResolution.
+  void SetNowFunctionForTesting(
+      const base::Callback<base::Time(void)>& now_function);
+
  private:
   scoped_ptr<DesktopResizer> desktop_resizer_;
   SkISize original_size_;
+
+  // State to manage rate-limiting of desktop resizes.
+  base::OneShotTimer<ResizingHostObserver> deferred_resize_timer_;
+  base::Time previous_resize_time_;
+  base::Callback<base::Time(void)> now_function_;
+
+  base::WeakPtrFactory<ResizingHostObserver> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResizingHostObserver);
 };

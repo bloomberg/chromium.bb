@@ -34,6 +34,7 @@
 
 const bool kReadOnly = true;
 const char kSendInitialResolution[] = "sendInitialResolution";
+const char kRateLimitResizeRequests[] = "rateLimitResizeRequests";
 
 namespace remoting {
 
@@ -144,8 +145,11 @@ scoped_ptr<webrtc::ScreenCapturer> DesktopSessionProxy::CreateVideoCapturer() {
 }
 
 std::string DesktopSessionProxy::GetCapabilities() const {
-  // Ask the client to send it's resolution unconditionally.
-  return virtual_terminal_ ? kSendInitialResolution : std::string();
+  std::string result = kRateLimitResizeRequests;
+  // Ask the client to send its resolution unconditionally.
+  if (virtual_terminal_)
+    result = result + " " + kSendInitialResolution;
+  return result;
 }
 
 void DesktopSessionProxy::SetCapabilities(const std::string& capabilities) {

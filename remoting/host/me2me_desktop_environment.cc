@@ -22,6 +22,8 @@
 #include <unistd.h>
 #endif  // defined(OS_POSIX)
 
+const char kRateLimitResizeRequests[] = "rateLimitResizeRequests";
+
 namespace remoting {
 
 Me2MeDesktopEnvironment::~Me2MeDesktopEnvironment() {
@@ -45,6 +47,10 @@ Me2MeDesktopEnvironment::CreateVideoCapturer() {
 #else  // !defined(OS_LINUX)
   return scoped_ptr<webrtc::ScreenCapturer>(webrtc::ScreenCapturer::Create());
 #endif  // !defined(OS_LINUX)
+}
+
+std::string Me2MeDesktopEnvironment::GetCapabilities() const {
+  return kRateLimitResizeRequests;
 }
 
 Me2MeDesktopEnvironment::Me2MeDesktopEnvironment(

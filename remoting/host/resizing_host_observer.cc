@@ -6,11 +6,18 @@
 
 #include <list>
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "remoting/host/desktop_resizer.h"
 #include "remoting/host/screen_resolution.h"
 
 namespace {
+
+// Minimum amount of time to wait between desktop resizes. Note that this
+// constant is duplicated by the ResizingHostObserverTest.RateLimited
+// unit-test and must be kept in sync.
+const int kMinimumResizeIntervalMs = 1000;
 
 class CandidateSize {
  public:
@@ -101,7 +108,9 @@ namespace remoting {
 ResizingHostObserver::ResizingHostObserver(
     scoped_ptr<DesktopResizer> desktop_resizer)
     : desktop_resizer_(desktop_resizer.Pass()),
-      original_size_(desktop_resizer_->GetCurrentSize()) {
+      original_size_(desktop_resizer_->GetCurrentSize()),
+      now_function_(base::Bind(base::Time::Now)),
+      weak_factory_(this) {
 }
 
 ResizingHostObserver::~ResizingHostObserver() {
@@ -111,20 +120,40 @@ ResizingHostObserver::~ResizingHostObserver() {
 
 void ResizingHostObserver::SetScreenResolution(
     const ScreenResolution& resolution) {
+  // Get the current time. This function is called exactly once for each call
+  // to SetScreenResolution to simplify the implementation of unit-tests.
+  base::Time now = now_function_.Run();
+
   if (resolution.IsEmpty())
     return;
 
+  // Resizing the desktop too often is probably not a good idea, so apply a
+  // simple rate-limiting scheme.
+  base::TimeDelta minimum_resize_interval =
+      base::TimeDelta::FromMilliseconds(kMinimumResizeIntervalMs);
+  base::Time next_allowed_resize =
+      previous_resize_time_ + minimum_resize_interval;
+
+  if (now < next_allowed_resize) {
+    deferred_resize_timer_.Start(
+        FROM_HERE,
+        next_allowed_resize - now,
+        base::Bind(&ResizingHostObserver::SetScreenResolution,
+                   weak_factory_.GetWeakPtr(), resolution));
+    return;
+  }
+
   // If the implementation returns any sizes, pick the best one according to
   // the algorithm described in CandidateSize::IsBetterThen.
-  SkISize dimentions = SkISize::Make(
+  SkISize dimensions = SkISize::Make(
       resolution.dimensions().width(), resolution.dimensions().height());
-  std::list<SkISize> sizes = desktop_resizer_->GetSupportedSizes(dimentions);
+  std::list<SkISize> sizes = desktop_resizer_->GetSupportedSizes(dimensions);
   if (sizes.empty())
     return;
-  CandidateSize best_size(sizes.front(), dimentions);
+  CandidateSize best_size(sizes.front(), dimensions);
   for (std::list<SkISize>::const_iterator i = ++sizes.begin();
        i != sizes.end(); ++i) {
-    CandidateSize candidate_size(*i, dimentions);
+    CandidateSize candidate_size(*i, dimensions);
     if (candidate_size.IsBetterThan(best_size)) {
       best_size = candidate_size;
     }
@@ -132,6 +161,14 @@ void ResizingHostObserver::SetScreenResolution(
   SkISize current_size = desktop_resizer_->GetCurrentSize();
   if (best_size.size() != current_size)
     desktop_resizer_->SetSize(best_size.size());
+
+  // Update the time of last resize to allow it to be rate-limited.
+  previous_resize_time_ = now;
+}
+
+void ResizingHostObserver::SetNowFunctionForTesting(
+    const base::Callback<base::Time(void)>& now_function) {
+  now_function_ = now_function;
 }
 
 }  // namespace remoting

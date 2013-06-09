@@ -172,6 +172,11 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
       // the client's dimensions.
       this.capabilities_.push(
           remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION);
+
+      // Let the host know that we're interested in knowing whether or not
+      // it rate-limits desktop-resize requests.
+      this.capabilities_.push(
+          remoting.ClientSession.Capability.RATE_LIMIT_RESIZE_REQUESTS);
     } else if (this.pluginApiVersion_ >= 6) {
       this.pluginApiFeatures_ = ['highQualityScaling', 'injectKeyEvent'];
     } else {
