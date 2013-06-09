@@ -136,10 +136,13 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config gnu_getopt);
 use File::Basename;
+use Tie::File;
+use Fcntl 'O_RDONLY';
 
 sub fatal($);
 sub parse_copyright($);
 sub parselicense($);
+sub remove_comments($);
 
 my $progname = basename($0);
 
@@ -284,7 +287,7 @@ while (@ARGV) {
 
 while (@files) {
     my $file = shift @files;
-    my $content = '';
+    my $header = '';
     my $copyright_match;
     my $copyright = '';
     my $license = '';
@@ -293,24 +296,35 @@ while (@files) {
     open (F, "<$file") or die "Unable to access $file\n";
     while (<F>) {
         last if ($. > $opt_lines);
-        $content .= $_;
+        $header .= $_;
     }
     close(F);
 
     $copyright = join(" / ", values %copyrights);
 
-    print qq(----- $file header -----\n$content----- end header -----\n\n)
+    print qq(----- $file header -----\n$header----- end header -----\n\n)
 	if $opt_verbose;
 
-    # Remove Fortran comments
-    $content =~ s/^[cC] //gm;
-    $content =~ tr/\t\r\n/ /;
-    # Remove C / C++ comments
-    $content =~ s#(\*/|/[/*])##g;
-    $content =~ tr% A-Za-z.,@;0-9\(\)/-%%cd;
-    $content =~ tr/ //s;
+    remove_comments($header);
+    $license = parselicense($header);
 
-    $license = parselicense($content);
+    # If no license in header, check footer (slow, because read file backwards)
+    # Need for instance for Perl files, which often use the footer
+    if ($license eq "UNKNOWN") {
+        my $footer = '';
+        tie(my @file_lines, "Tie::File", $file, autochomp => 0, mode => O_RDONLY) or die("Unable to access $file\n");
+        # Avoid indexing error if header is entire file
+        if ($#file_lines >= $opt_lines) {
+            foreach (@file_lines[-$opt_lines .. -1]) {
+                $footer .= $_;
+            }
+        }
+        print qq(----- $file footer -----\n$header----- end footer -----\n\n)
+            if $opt_verbose;
+        remove_comments($footer);
+        $license = parselicense($footer);
+    }
+
     if ($opt_machine) {
 	print "$file\t$license";
 	print "\t" . ($copyright or "*No copyright*") if $opt_copyright;
@@ -323,6 +337,18 @@ while (@files) {
 	  if $copyright and $opt_copyright;
 	print "\n" if $opt_copyright;
     }
+}
+
+sub remove_comments($) {
+    $_ = $_[0];
+    # Remove Fortran comments
+    s/^[cC] //gm;
+    tr/\t\r\n/ /;
+    # Remove C / C++ comments
+    s#(\*/|/[/*])##g;
+    tr% A-Za-z.,@;0-9\(\)/-%%cd;
+    tr/ //s;
+    $_[0] = $_;
 }
 
 sub parse_copyright($) {
@@ -498,7 +524,7 @@ sub parselicense($) {
 	$license = "Artistic $license";
     }
 
-    if ($licensetext =~ /This program is free software; you can redistribute it and\/or modify it under the same terms as Perl itself/) {
+    if ($licensetext =~ /This (program|library) is free software; you can redistribute it and\/or modify it under the same terms as Perl itself/) {
 	$license = "Perl $license";
     }
 
