@@ -343,10 +343,11 @@ MenuRunner::RunResult MenuRunner::RunMenuAt(Widget* parent,
   }
   if ((types & MenuRunner::CONTEXT_MENU) &&
       parent &&
-      parent->GetCurrentEvent() &&
-      !MenuItemView::IsBubble(anchor))
-    anchor = parent->GetCurrentEvent()->IsGestureEvent() ?
-        MenuItemView::BOTTOMCENTER : MenuItemView::TOPLEFT;
+      !MenuItemView::IsBubble(anchor)) {
+    const ui::Event* current_event = parent->GetCurrentEvent();
+    anchor = current_event && current_event->IsMouseEvent() ?
+        MenuItemView::TOPLEFT : MenuItemView::BOTTOMCENTER;
+  }
 
   return holder_->RunMenuAt(parent, button, bounds, anchor, types);
 }
