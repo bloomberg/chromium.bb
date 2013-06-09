@@ -46,14 +46,15 @@ public:
 private:
     virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
     virtual bool rendererIsNeeded(const NodeRenderingContext&);
-    virtual const AtomicString& shadowPseudoId() const;
 
     HTMLSummaryElement* summaryElement();
 };
 
 inline PassRefPtr<DetailsMarkerControl> DetailsMarkerControl::create(Document* document)
 {
-    return adoptRef(new DetailsMarkerControl(document));
+    RefPtr<DetailsMarkerControl> element = adoptRef(new DetailsMarkerControl(document));
+    element->setPseudo(AtomicString("-webkit-details-marker", AtomicString::ConstructFromLiteral));
+    return element.release();
 }
 
 }

@@ -54,12 +54,6 @@ bool DetailsMarkerControl::rendererIsNeeded(const NodeRenderingContext& context)
     return summaryElement()->isMainSummary() && HTMLDivElement::rendererIsNeeded(context);
 }
 
-const AtomicString& DetailsMarkerControl::shadowPseudoId() const
-{
-    DEFINE_STATIC_LOCAL(AtomicString, pseudId, ("-webkit-details-marker", AtomicString::ConstructFromLiteral));
-    return pseudId;
-}
-
 HTMLSummaryElement* DetailsMarkerControl::summaryElement()
 {
     Element* element = shadowHost();

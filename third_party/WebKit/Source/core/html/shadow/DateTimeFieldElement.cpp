@@ -46,9 +46,6 @@ DateTimeFieldElement::DateTimeFieldElement(Document* document, FieldOwner& field
     : HTMLSpanElement(spanTag, document)
     , m_fieldOwner(&fieldOwner)
 {
-    // On accessibility, DateTimeFieldElement acts like spin button.
-    setAttribute(roleAttr, "spinbutton");
-    setAttribute(aria_valuetextAttr, AXDateTimeFieldEmptyValueText());
 }
 
 void DateTimeFieldElement::defaultEventHandler(Event* event)
@@ -149,9 +146,13 @@ void DateTimeFieldElement::focusOnNextField()
 
 void DateTimeFieldElement::initialize(const AtomicString& pseudo, const String& axHelpText, int axMinimum, int axMaximum)
 {
-    setAttribute(aria_helpAttr, axHelpText);
+    // On accessibility, DateTimeFieldElement acts like spin button.
+    setAttribute(roleAttr, AtomicString("spinbutton", AtomicString::ConstructFromLiteral));
+    setAttribute(aria_valuetextAttr, AXDateTimeFieldEmptyValueText());
     setAttribute(aria_valueminAttr, String::number(axMinimum));
     setAttribute(aria_valuemaxAttr, String::number(axMaximum));
+
+    setAttribute(aria_helpAttr, axHelpText);
     setPseudo(pseudo);
     appendChild(Text::create(document(), visibleValue()));
 }

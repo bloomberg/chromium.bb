@@ -183,13 +183,9 @@ inline SearchFieldCancelButtonElement::SearchFieldCancelButtonElement(Document* 
 
 PassRefPtr<SearchFieldCancelButtonElement> SearchFieldCancelButtonElement::create(Document* document)
 {
-    return adoptRef(new SearchFieldCancelButtonElement(document));
-}
-
-const AtomicString& SearchFieldCancelButtonElement::shadowPseudoId() const
-{
-    DEFINE_STATIC_LOCAL(AtomicString, pseudoId, ("-webkit-search-cancel-button", AtomicString::ConstructFromLiteral));
-    return pseudoId;
+    RefPtr<SearchFieldCancelButtonElement> element = adoptRef(new SearchFieldCancelButtonElement(document));
+    element->setPseudo(AtomicString("-webkit-search-cancel-button", AtomicString::ConstructFromLiteral));
+    return element.release();
 }
 
 void SearchFieldCancelButtonElement::detach()
@@ -275,7 +271,9 @@ InputFieldSpeechButtonElement::~InputFieldSpeechButtonElement()
 
 PassRefPtr<InputFieldSpeechButtonElement> InputFieldSpeechButtonElement::create(Document* document)
 {
-    return adoptRef(new InputFieldSpeechButtonElement(document));
+    RefPtr<InputFieldSpeechButtonElement> element = adoptRef(new InputFieldSpeechButtonElement(document));
+    element->setPseudo(AtomicString("-webkit-input-speech-button", AtomicString::ConstructFromLiteral));
+    return element.release();
 }
 
 void InputFieldSpeechButtonElement::defaultEventHandler(Event* event)
@@ -444,13 +442,6 @@ void InputFieldSpeechButtonElement::stopSpeechInput()
     if (m_state == Recording)
         speechInput()->stopRecording(m_listenerId);
 }
-
-const AtomicString& InputFieldSpeechButtonElement::shadowPseudoId() const
-{
-    DEFINE_STATIC_LOCAL(AtomicString, pseudoId, ("-webkit-input-speech-button", AtomicString::ConstructFromLiteral));
-    return pseudoId;
-}
-
 #endif // ENABLE(INPUT_SPEECH)
 
 }

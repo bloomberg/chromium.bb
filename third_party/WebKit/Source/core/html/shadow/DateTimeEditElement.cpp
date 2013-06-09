@@ -447,9 +447,6 @@ DateTimeEditElement::DateTimeEditElement(Document* document, EditControlOwner& e
     : HTMLDivElement(divTag, document)
     , m_editControlOwner(&editControlOwner)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, dateTimeEditPseudoId, ("-webkit-datetime-edit", AtomicString::ConstructFromLiteral));
-    setPseudo(dateTimeEditPseudoId);
-    setAttribute(idAttr, ShadowElementNames::dateTimeEdit());
     setHasCustomStyleCallbacks();
 }
 
@@ -491,6 +488,8 @@ void DateTimeEditElement::blurByOwner()
 PassRefPtr<DateTimeEditElement> DateTimeEditElement::create(Document* document, EditControlOwner& editControlOwner)
 {
     RefPtr<DateTimeEditElement> container = adoptRef(new DateTimeEditElement(document, editControlOwner));
+    container->setPseudo(AtomicString("-webkit-datetime-edit", AtomicString::ConstructFromLiteral));
+    container->setAttribute(idAttr, ShadowElementNames::dateTimeEdit());
     return container.release();
 }
 

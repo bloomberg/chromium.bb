@@ -51,18 +51,14 @@ inline SpinButtonElement::SpinButtonElement(Document* document, SpinButtonOwner&
     , m_pressStartingState(Indeterminate)
     , m_repeatingTimer(this, &SpinButtonElement::repeatingTimerFired)
 {
-    setAttribute(idAttr, ShadowElementNames::spinButton());
 }
 
 PassRefPtr<SpinButtonElement> SpinButtonElement::create(Document* document, SpinButtonOwner& spinButtonOwner)
 {
-    return adoptRef(new SpinButtonElement(document, spinButtonOwner));
-}
-
-const AtomicString& SpinButtonElement::shadowPseudoId() const
-{
-    DEFINE_STATIC_LOCAL(AtomicString, innerPseudoId, ("-webkit-inner-spin-button", AtomicString::ConstructFromLiteral));
-    return innerPseudoId;
+    RefPtr<SpinButtonElement> element = adoptRef(new SpinButtonElement(document, spinButtonOwner));
+    element->setPseudo(AtomicString("-webkit-inner-spin-button", AtomicString::ConstructFromLiteral));
+    element->setAttribute(idAttr, ShadowElementNames::spinButton());
+    return element.release();
 }
 
 void SpinButtonElement::detach()

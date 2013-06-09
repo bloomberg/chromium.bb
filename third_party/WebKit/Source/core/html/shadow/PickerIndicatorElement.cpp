@@ -48,13 +48,14 @@ inline PickerIndicatorElement::PickerIndicatorElement(Document* document, Picker
     : HTMLDivElement(divTag, document)
     , m_pickerIndicatorOwner(&pickerIndicatorOwner)
 {
-    setPseudo(AtomicString("-webkit-calendar-picker-indicator", AtomicString::ConstructFromLiteral));
-    setAttribute(idAttr, ShadowElementNames::pickerIndicator());
 }
 
 PassRefPtr<PickerIndicatorElement> PickerIndicatorElement::create(Document* document, PickerIndicatorOwner& pickerIndicatorOwner)
 {
-    return adoptRef(new PickerIndicatorElement(document, pickerIndicatorOwner));
+    RefPtr<PickerIndicatorElement> element = adoptRef(new PickerIndicatorElement(document, pickerIndicatorOwner));
+    element->setPseudo(AtomicString("-webkit-calendar-picker-indicator", AtomicString::ConstructFromLiteral));
+    element->setAttribute(idAttr, ShadowElementNames::pickerIndicator());
+    return element.release();
 }
 
 PickerIndicatorElement::~PickerIndicatorElement()

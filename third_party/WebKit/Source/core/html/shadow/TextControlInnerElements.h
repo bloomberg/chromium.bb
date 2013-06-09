@@ -90,7 +90,6 @@ public:
 
 private:
     SearchFieldCancelButtonElement(Document*);
-    virtual const AtomicString& shadowPseudoId() const;
     virtual void detach();
     virtual bool isMouseFocusable() const { return false; }
 
@@ -129,7 +128,6 @@ private:
     InputFieldSpeechButtonElement(Document*);
     SpeechInput* speechInput();
     void setState(SpeechInputState state);
-    virtual const AtomicString& shadowPseudoId() const;
     virtual bool isMouseFocusable() const { return false; }
     virtual void attach();
 

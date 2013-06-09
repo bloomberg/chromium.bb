@@ -41,13 +41,14 @@ inline ClearButtonElement::ClearButtonElement(Document* document, ClearButtonOwn
     , m_clearButtonOwner(&clearButtonOwner)
     , m_capturing(false)
 {
-    setPseudo(AtomicString("-webkit-clear-button", AtomicString::ConstructFromLiteral));
-    setAttribute(idAttr, ShadowElementNames::clearButton());
 }
 
 PassRefPtr<ClearButtonElement> ClearButtonElement::create(Document* document, ClearButtonOwner& clearButtonOwner)
 {
-    return adoptRef(new ClearButtonElement(document, clearButtonOwner));
+    RefPtr<ClearButtonElement> element = adoptRef(new ClearButtonElement(document, clearButtonOwner));
+    element->setPseudo(AtomicString("-webkit-clear-button", AtomicString::ConstructFromLiteral));
+    element->setAttribute(idAttr, ShadowElementNames::clearButton());
+    return element.release();
 }
 
 void ClearButtonElement::detach()
