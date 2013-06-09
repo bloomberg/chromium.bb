@@ -32,7 +32,6 @@
 #include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/IntRect.h"
-#include "core/platform/graphics/PlatformLayer.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/ListHashSet.h"

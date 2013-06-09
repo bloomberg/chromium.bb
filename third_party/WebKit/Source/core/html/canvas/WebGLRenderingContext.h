@@ -40,6 +40,8 @@
 #include <wtf/text/WTFString.h>
 #include <wtf/Uint8Array.h>
 
+namespace WebKit { class WebLayer; }
+
 namespace WebCore {
 
 class DrawingBuffer;
@@ -309,7 +311,7 @@ public:
 
     GraphicsContext3D* graphicsContext3D() const { return m_context.get(); }
     WebGLContextGroup* contextGroup() const { return m_contextGroup.get(); }
-    virtual PlatformLayer* platformLayer() const;
+    virtual WebKit::WebLayer* platformLayer() const;
 
     void reshape(int width, int height);
 

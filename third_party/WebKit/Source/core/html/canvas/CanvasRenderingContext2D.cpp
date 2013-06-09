@@ -2227,7 +2227,7 @@ const Font& CanvasRenderingContext2D::accessFont()
     return state().m_font;
 }
 
-PlatformLayer* CanvasRenderingContext2D::platformLayer() const
+WebKit::WebLayer* CanvasRenderingContext2D::platformLayer() const
 {
     return canvas()->buffer() ? canvas()->buffer()->platformLayer() : 0;
 }

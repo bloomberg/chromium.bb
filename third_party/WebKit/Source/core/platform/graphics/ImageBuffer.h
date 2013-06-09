@@ -34,7 +34,6 @@
 #include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/IntSize.h"
-#include "core/platform/graphics/PlatformLayer.h"
 #include "core/platform/graphics/chromium/ImageBufferDataSkia.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/Forward.h>
@@ -43,6 +42,8 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/Uint8ClampedArray.h>
 #include <wtf/Vector.h>
+
+namespace WebKit { class WebLayer; }
 
 namespace WebCore {
 
@@ -121,7 +122,7 @@ namespace WebCore {
         void platformTransformColorSpace(const Vector<uint8_t>&);
         static const Vector<uint8_t>& getLinearRgbLUT();
         static const Vector<uint8_t>& getDeviceRgbLUT();
-        PlatformLayer* platformLayer() const;
+        WebKit::WebLayer* platformLayer() const;
 
         // FIXME: current implementations of this method have the restriction that they only work
         // with textures that are RGB or RGBA format, UNSIGNED_BYTE type and level 0, as specified in

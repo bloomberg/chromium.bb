@@ -33,7 +33,6 @@
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/GraphicsLayerClient.h"
 #include "core/platform/graphics/IntRect.h"
-#include "core/platform/graphics/PlatformLayer.h"
 #include "core/platform/graphics/chromium/OpaqueRectTrackingContentLayerDelegate.h"
 #include "core/platform/graphics/filters/FilterOperations.h"
 #include "core/platform/graphics/transforms/TransformOperations.h"
@@ -47,7 +46,6 @@
 #include "public/platform/WebCompositingReasons.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebImageLayer.h"
-#include "public/platform/WebLayer.h"
 #include "public/platform/WebLayerScrollClient.h"
 #include "public/platform/WebSolidColorLayer.h"
 
@@ -67,6 +65,7 @@ enum DebugIDSpecialValues {
 
 namespace WebKit {
 class GraphicsLayerFactoryChromium;
+class WebLayer;
 }
 
 namespace WebCore {
@@ -367,22 +366,22 @@ public:
     // Layer contents
     void setContentsToImage(Image*);
     bool shouldDirectlyCompositeImage(Image*) const { return true; }
-    void setContentsToMedia(PlatformLayer*); // video or plug-in
+    void setContentsToMedia(WebKit::WebLayer*); // video or plug-in
     // Pass an invalid color to remove the contents layer.
     void setContentsToSolidColor(const Color&) { }
-    void setContentsToCanvas(PlatformLayer*);
+    void setContentsToCanvas(WebKit::WebLayer*);
     // FIXME: webkit.org/b/109658
     // Should unify setContentsToMedia and setContentsToCanvas
-    void setContentsToPlatformLayer(PlatformLayer* layer) { setContentsToMedia(layer); }
+    void setContentsToPlatformLayer(WebKit::WebLayer* layer) { setContentsToMedia(layer); }
     bool hasContentsLayer() const { return m_contentsLayer; }
 
     // Callback from the underlying graphics system to draw layer contents.
     void paintGraphicsLayerContents(GraphicsContext&, const IntRect& clip);
     // Callback from the underlying graphics system when the layer has been displayed
-    void layerDidDisplay(PlatformLayer*) { }
+    void layerDidDisplay(WebKit::WebLayer*) { }
     
     // For hosting this GraphicsLayer in a native layer hierarchy.
-    PlatformLayer* platformLayer() const;
+    WebKit::WebLayer* platformLayer() const;
 
     enum CompositingCoordinatesOrientation { CompositingCoordinatesTopDown, CompositingCoordinatesBottomUp };
 

@@ -28,10 +28,11 @@
 
 #include "core/platform/ScrollTypes.h"
 #include "core/platform/Widget.h"
-#include "core/platform/graphics/PlatformLayer.h"
 #include <wtf/text/WTFString.h>
 
 struct NPObject;
+
+namespace WebKit { class WebLayer; }
 
 namespace WebCore {
 
@@ -41,7 +42,7 @@ class PluginView : public Widget {
 public:
     virtual bool isPluginView() const { return true; }
 
-    virtual PlatformLayer* platformLayer() const { return 0; }
+    virtual WebKit::WebLayer* platformLayer() const { return 0; }
     virtual NPObject* scriptableObject() { return 0; }
     virtual bool getFormValue(String&) { return false; }
     virtual bool wantsWheelEvents() { return false; }

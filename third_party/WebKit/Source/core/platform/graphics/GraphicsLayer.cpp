@@ -60,6 +60,7 @@
 #include "public/platform/WebFilterOperations.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
+#include "public/platform/WebLayer.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebSize.h"
 
@@ -1152,12 +1153,12 @@ void GraphicsLayer::setContentsToImage(Image* image)
         updateChildList();
 }
 
-void GraphicsLayer::setContentsToCanvas(PlatformLayer* layer)
+void GraphicsLayer::setContentsToCanvas(WebLayer* layer)
 {
     setContentsTo(ContentsLayerForCanvas, layer);
 }
 
-void GraphicsLayer::setContentsToMedia(PlatformLayer* layer)
+void GraphicsLayer::setContentsToMedia(WebLayer* layer)
 {
     setContentsTo(ContentsLayerForVideo, layer);
 }
@@ -1210,7 +1211,7 @@ void GraphicsLayer::resumeAnimations()
     platformLayer()->resumeAnimations(monotonicallyIncreasingTime());
 }
 
-PlatformLayer* GraphicsLayer::platformLayer() const
+WebLayer* GraphicsLayer::platformLayer() const
 {
     return m_layer->layer();
 }

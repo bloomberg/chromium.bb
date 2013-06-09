@@ -358,7 +358,7 @@ Platform3DObject DrawingBuffer::framebuffer() const
     return m_fbo;
 }
 
-PlatformLayer* DrawingBuffer::platformLayer()
+WebKit::WebLayer* DrawingBuffer::platformLayer()
 {
     if (!m_context)
         return 0;

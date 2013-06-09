@@ -214,7 +214,7 @@ BackingStoreCopy ImageBuffer::fastCopyImageMode()
     return DontCopyBackingStore;
 }
 
-PlatformLayer* ImageBuffer::platformLayer() const
+WebKit::WebLayer* ImageBuffer::platformLayer() const
 {
     return m_data.m_layerBridge ? m_data.m_layerBridge->layer() : 0;
 }

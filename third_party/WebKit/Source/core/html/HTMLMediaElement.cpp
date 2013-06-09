@@ -3523,7 +3523,7 @@ void HTMLMediaElement::willStopBeingFullscreenElement()
         mediaControls()->exitedFullscreen();
 }
 
-PlatformLayer* HTMLMediaElement::platformLayer() const
+WebKit::WebLayer* HTMLMediaElement::platformLayer() const
 {
     return m_player ? m_player->platformLayer() : 0;
 }

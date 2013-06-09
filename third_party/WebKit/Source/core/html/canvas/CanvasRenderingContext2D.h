@@ -36,11 +36,11 @@
 #include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/Path.h"
-#include "core/platform/graphics/PlatformLayer.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/text/WTFString.h>
 #include <wtf/Vector.h>
 
+namespace WebKit { class WebLayer; }
 
 namespace WebCore {
 
@@ -321,7 +321,7 @@ private:
 
     virtual bool isTransformInvertible() const { return state().m_invertibleCTM; }
 
-    virtual PlatformLayer* platformLayer() const OVERRIDE;
+    virtual WebKit::WebLayer* platformLayer() const OVERRIDE;
 
     Vector<State, 1> m_stateStack;
     unsigned m_unrealizedSaveCount;

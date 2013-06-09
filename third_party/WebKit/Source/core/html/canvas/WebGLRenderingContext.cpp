@@ -4205,7 +4205,7 @@ void WebGLRenderingContext::forceRestoreContext()
         m_restoreTimer.startOneShot(0);
 }
 
-PlatformLayer* WebGLRenderingContext::platformLayer() const
+WebKit::WebLayer* WebGLRenderingContext::platformLayer() const
 {
     return m_drawingBuffer->platformLayer();
 }

@@ -112,7 +112,7 @@ public:
         ASSERT(compositor);
         ASSERT(compositor->scrollLayer());
 
-        WebLayer* webScrollLayer = static_cast<WebLayer*>(compositor->scrollLayer()->platformLayer());
+        WebLayer* webScrollLayer = compositor->scrollLayer()->platformLayer();
         return webScrollLayer;
     }
 
@@ -298,7 +298,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, overflowScrolling)
     GraphicsLayer* graphicsLayer = layerBacking->scrollingContentsLayer();
     ASSERT_EQ(layer, graphicsLayer->scrollableArea());
 
-    WebLayer* webScrollLayer = static_cast<WebLayer*>(layerBacking->scrollingContentsLayer()->platformLayer());
+    WebLayer* webScrollLayer = layerBacking->scrollingContentsLayer()->platformLayer();
     ASSERT_TRUE(webScrollLayer->scrollable());
 
 #if OS(ANDROID)
@@ -341,7 +341,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, iframeScrolling)
     GraphicsLayer* scrollLayer = innerCompositor->scrollLayer();
     ASSERT_EQ(innerFrameView, scrollLayer->scrollableArea());
 
-    WebLayer* webScrollLayer = static_cast<WebLayer*>(scrollLayer->platformLayer());
+    WebLayer* webScrollLayer = scrollLayer->platformLayer();
     ASSERT_TRUE(webScrollLayer->scrollable());
 
 #if OS(ANDROID)
@@ -384,7 +384,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, rtlIframe)
     GraphicsLayer* scrollLayer = innerCompositor->scrollLayer();
     ASSERT_EQ(innerFrameView, scrollLayer->scrollableArea());
 
-    WebLayer* webScrollLayer = static_cast<WebLayer*>(scrollLayer->platformLayer());
+    WebLayer* webScrollLayer = scrollLayer->platformLayer();
     ASSERT_TRUE(webScrollLayer->scrollable());
 
     int expectedScrollPosition = 958 + (innerFrameView->verticalScrollbar()->isOverlayScrollbar() ? 0 : 15);

@@ -34,7 +34,6 @@
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/IntSize.h"
-#include "core/platform/graphics/PlatformLayer.h"
 
 #include "public/platform/WebExternalTextureLayerClient.h"
 #include "public/platform/WebExternalTextureMailbox.h"
@@ -45,6 +44,7 @@
 namespace WebKit {
 class WebExternalTextureLayer;
 class WebGraphicsContext3D;
+class WebLayer;
 }
 
 namespace WebCore {
@@ -61,7 +61,7 @@ public:
 };
 
 // Manages a rendering target (framebuffer + attachment) for a canvas.  Can publish its rendering
-// results to a PlatformLayer for compositing.
+// results to a WebKit::WebLayer for compositing.
 class DrawingBuffer : public RefCounted<DrawingBuffer>, public WebKit::WebExternalTextureLayerClient  {
     struct MailboxInfo : public RefCounted<MailboxInfo> {
         WebKit::WebExternalTextureMailbox mailbox;
@@ -119,7 +119,7 @@ public:
 
     void markContentsChanged() { m_contentsChanged = true; }
 
-    PlatformLayer* platformLayer();
+    WebKit::WebLayer* platformLayer();
     void paintCompositedResultsToCanvas(ImageBuffer*);
 
     // WebExternalTextureLayerClient implementation.

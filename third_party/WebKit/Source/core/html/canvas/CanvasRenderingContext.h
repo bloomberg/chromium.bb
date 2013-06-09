@@ -33,6 +33,8 @@
 #include <wtf/Noncopyable.h>
 #include <wtf/text/StringHash.h>
 
+namespace WebKit { class WebLayer; }
+
 namespace WebCore {
 
 class CanvasPattern;
@@ -58,7 +60,7 @@ public:
 
     virtual void paintRenderingResultsToCanvas() {}
 
-    virtual PlatformLayer* platformLayer() const { return 0; }
+    virtual WebKit::WebLayer* platformLayer() const { return 0; }
 
 protected:
     CanvasRenderingContext(HTMLCanvasElement*);
