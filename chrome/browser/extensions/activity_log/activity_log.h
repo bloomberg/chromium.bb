@@ -19,6 +19,8 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_database.h"
+#include "chrome/browser/extensions/install_observer.h"
+#include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/dom_action_types.h"
@@ -36,7 +38,8 @@ class Extension;
 // A utility for tracing interesting activity for each extension.
 // It writes to an ActivityDatabase on a separate thread to record the activity.
 class ActivityLog : public BrowserContextKeyedService,
-                    public TabHelper::ScriptExecutionObserver {
+                    public TabHelper::ScriptExecutionObserver,
+                    public InstallObserver {
  public:
   // Observers can listen for activity events. There is probably only one
   // observer: the activityLogPrivate API.
@@ -49,14 +52,15 @@ class ActivityLog : public BrowserContextKeyedService,
   // use GetInstance instead.
   static ActivityLog* GetInstance(Profile* profile);
 
-  // Currently, we only want to record actions if the user has opted in to the
-  // ActivityLog feature.
-  static bool IsLogEnabled();
+  // Provides up-to-date information about whether the AL is enabled for a
+  // profile. The AL is enabled if the user has installed the whitelisted
+  // AL extension *or* set the --enable-extension-activity-logging flag.
+  bool IsLogEnabled();
 
-  // Recompute whether logging should be enabled (the value of IsLogEnabled is
-  // normally cached).  WARNING: This may not be thread-safe, and is only
-  // really intended for use by unit tests.
-  static void RecomputeLoggingIsEnabled();
+  // If you want to know whether the log is enabled but DON'T have a profile
+  // object yet, use this method. However, it's preferable for the caller to
+  // use IsLogEnabled when possible.
+  static bool IsLogEnabledOnAnyProfile();
 
   // Add/remove observer: the activityLogPrivate API only listens when the
   // ActivityLog extension is registered for an event.
@@ -115,8 +119,35 @@ class ActivityLog : public BrowserContextKeyedService,
                       <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>&
                       callback);
 
+  // Extension::InstallObserver
+  // We keep track of whether the whitelisted extension is installed; if it is,
+  // we want to recompute whether to have logging enabled.
+  virtual void OnExtensionInstalled(
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionDisabled(
+      const extensions::Extension* extension) OVERRIDE;
+  // We also have to list the following from InstallObserver.
+  virtual void OnBeginExtensionInstall(const std::string& extension_id,
+                                       const std::string& extension_name,
+                                       const gfx::ImageSkia& installing_icon,
+                                       bool is_app,
+                                       bool is_platform_app) OVERRIDE {}
+  virtual void OnDownloadProgress(const std::string& extension_id,
+                                  int percent_downloaded) OVERRIDE {}
+  virtual void OnInstallFailure(const std::string& extension_id) OVERRIDE {}
+  virtual void OnAppsReordered() OVERRIDE {}
+  virtual void OnAppInstalledToAppList(
+      const std::string& extension_id) OVERRIDE {}
+  virtual void OnShutdown() OVERRIDE {}
+
   // For unit tests only.
   void SetArgumentLoggingForTesting(bool log_arguments);
+  static void RecomputeLoggingIsEnabled(bool profile_enabled);
+
+  // BrowserContextKeyedService
+  virtual void Shutdown() OVERRIDE;
 
  private:
   friend class ActivityLogFactory;
@@ -146,21 +177,24 @@ class ActivityLog : public BrowserContextKeyedService,
   // exist, which should only happen in tests where there is no DB thread.
   template<typename DatabaseFunc>
   void ScheduleAndForget(DatabaseFunc func) {
-    BrowserThread::PostTask(dispatch_thread_,
+    if (!has_threads_) return;
+    BrowserThread::PostTask(BrowserThread::DB,
                             FROM_HERE,
                             base::Bind(func, base::Unretained(db_)));
   }
 
   template<typename DatabaseFunc, typename ArgA>
   void ScheduleAndForget(DatabaseFunc func, ArgA a) {
-    BrowserThread::PostTask(dispatch_thread_,
+    if (!has_threads_) return;
+    BrowserThread::PostTask(BrowserThread::DB,
                             FROM_HERE,
                             base::Bind(func, base::Unretained(db_), a));
   }
 
   template<typename DatabaseFunc, typename ArgA, typename ArgB>
   void ScheduleAndForget(DatabaseFunc func, ArgA a, ArgB b) {
-    BrowserThread::PostTask(dispatch_thread_,
+    if (!has_threads_) return;
+    BrowserThread::PostTask(BrowserThread::DB,
                             FROM_HERE,
                             base::Bind(func, base::Unretained(db_), a, b));
   }
@@ -175,10 +209,6 @@ class ActivityLog : public BrowserContextKeyedService,
   // commits suicide.
   extensions::ActivityDatabase* db_;
 
-  // Normally the DB thread. In some cases (tests), it might not exist
-  // we dispatch to the UI thread.
-  BrowserThread::ID dispatch_thread_;
-
   // testing_mode_ controls whether to log API call arguments. By default, we
   // don't log most arguments to avoid saving too much data. In testing mode,
   // argument collection is enabled. We also whitelist some arguments for
@@ -188,6 +218,14 @@ class ActivityLog : public BrowserContextKeyedService,
   base::hash_set<std::string> arg_whitelist_api_;
 
   Profile* profile_;
+  bool enabled_;
+  bool first_time_checking_;
+  InstallTracker* tracker_;
+
+  // We need the DB, FILE, and IO threads to operate. In some cases (tests),
+  // these threads might not exist, so we avoid dispatching anything to the
+  // ActivityDatabase to prevent things from exploding.
+  bool has_threads_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivityLog);
 };
@@ -205,11 +243,8 @@ class ActivityLogFactory : public BrowserContextKeyedServiceFactory {
 
  private:
   friend struct DefaultSingletonTraits<ActivityLogFactory>;
-  ActivityLogFactory()
-      : BrowserContextKeyedServiceFactory(
-          "ActivityLog",
-          BrowserContextDependencyManager::GetInstance()) {}
-  virtual ~ActivityLogFactory() {}
+  ActivityLogFactory();
+  virtual ~ActivityLogFactory();
 
   virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;

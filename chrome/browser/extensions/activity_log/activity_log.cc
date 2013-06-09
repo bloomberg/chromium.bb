@@ -15,10 +15,13 @@
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/re2/re2/re2.h"
@@ -41,16 +44,21 @@ std::string MakeArgList(const ListValue* args) {
   return call_signature;
 }
 
-// Computes whether the activity log is enabled in this browser (controlled by
-// command-line flags) and caches the value (which is assumed never to change).
+// This is a hack for AL callers who don't have access to a profile object
+// when deciding whether or not to do the work required for logging. The state
+// is accessed through the static ActivityLog::IsLogEnabledOnAnyProfile()
+// method. It returns true if --enable-extension-activity-logging is set on the
+// command line OR *ANY* profile has the activity log whitelisted extension
+// installed.
 class LogIsEnabled {
  public:
-  LogIsEnabled() {
-    ComputeIsEnabled();
+  LogIsEnabled() : any_profile_enabled_(false) {
+    ComputeIsFlagEnabled();
   }
 
-  void ComputeIsEnabled() {
-    enabled_ = CommandLine::ForCurrentProcess()->
+  void ComputeIsFlagEnabled() {
+    base::AutoLock auto_lock(lock_);
+    cmd_line_enabled_ = CommandLine::ForCurrentProcess()->
         HasSwitch(switches::kEnableExtensionActivityLogging);
   }
 
@@ -58,10 +66,20 @@ class LogIsEnabled {
     return Singleton<LogIsEnabled>::get();
   }
 
-  bool enabled() { return enabled_; }
+  bool IsEnabled() {
+    base::AutoLock auto_lock(lock_);
+    return cmd_line_enabled_ || any_profile_enabled_;
+  }
+
+  void SetProfileEnabled(bool any_profile_enabled) {
+    base::AutoLock auto_lock(lock_);
+    any_profile_enabled_ = any_profile_enabled;
+  }
 
  private:
-  bool enabled_;
+  base::Lock lock_;
+  bool any_profile_enabled_;
+  bool cmd_line_enabled_;
 };
 
 }  // namespace
@@ -69,13 +87,14 @@ class LogIsEnabled {
 namespace extensions {
 
 // static
-bool ActivityLog::IsLogEnabled() {
-  return LogIsEnabled::GetInstance()->enabled();
+bool ActivityLog::IsLogEnabledOnAnyProfile() {
+  return LogIsEnabled::GetInstance()->IsEnabled();
 }
 
 // static
-void ActivityLog::RecomputeLoggingIsEnabled() {
-  return LogIsEnabled::GetInstance()->ComputeIsEnabled();
+void ActivityLog::RecomputeLoggingIsEnabled(bool profile_enabled) {
+  LogIsEnabled::GetInstance()->ComputeIsFlagEnabled();
+  LogIsEnabled::GetInstance()->SetProfileEnabled(profile_enabled);
 }
 
 // ActivityLogFactory
@@ -94,10 +113,26 @@ content::BrowserContext* ActivityLogFactory::GetBrowserContextToUse(
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
+ActivityLogFactory::ActivityLogFactory()
+    : BrowserContextKeyedServiceFactory(
+        "ActivityLog",
+        BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(ExtensionSystemFactory::GetInstance());
+  DependsOn(InstallTrackerFactory::GetInstance());
+}
+
+ActivityLogFactory::~ActivityLogFactory() {
+}
+
 // ActivityLog
 
 // Use GetInstance instead of directly creating an ActivityLog.
-ActivityLog::ActivityLog(Profile* profile) : profile_(profile) {
+ActivityLog::ActivityLog(Profile* profile)
+    : profile_(profile),
+      first_time_checking_(true),
+      has_threads_(true) {
+  enabled_ = IsLogEnabledOnAnyProfile();
+
   // enable-extension-activity-log-testing
   // This controls whether arguments are collected.
   // It also controls whether logging statements are printed.
@@ -109,35 +144,80 @@ ActivityLog::ActivityLog(Profile* profile) : profile_(profile) {
     }
   }
 
-  // We normally dispatch DB requests to the DB thread, but the thread might
-  // not exist if we are under test conditions. Substitute the UI thread for
-  // this case.
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::DB)) {
-    dispatch_thread_ = BrowserThread::DB;
-  } else {
-    LOG(ERROR) << "BrowserThread::DB does not exist, running on UI thread!";
-    dispatch_thread_ = BrowserThread::UI;
+  // Check that the right threads exist. If not, we shouldn't try to do things
+  // that require them.
+  if (!BrowserThread::IsMessageLoopValid(BrowserThread::DB) ||
+      !BrowserThread::IsMessageLoopValid(BrowserThread::FILE) ||
+      !BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
+    LOG(ERROR) << "Missing threads, disabling Activity Logging!";
+    has_threads_ = false;
   }
 
   observers_ = new ObserverListThreadSafe<Observer>;
 
-  // If the database cannot be initialized for some reason, we keep
-  // chugging along but nothing will get recorded. If the UI is
+  // We initialize the database whether or not the AL is enabled, since we might
+  // be enabled later on. If the database cannot be initialized for some
+  // reason, we keep chugging along but nothing will get recorded. If the UI is
   // available, things will still get sent to the UI even if nothing
   // is being written to the database.
   db_ = new ActivityDatabase();
-  if (!IsLogEnabled()) return;
+  if (!has_threads_) return;
   base::FilePath base_dir = profile->GetPath();
   base::FilePath database_name = base_dir.Append(
       chrome::kExtensionActivityLogFilename);
   ScheduleAndForget(&ActivityDatabase::Init, database_name);
 }
 
+void ActivityLog::Shutdown() {
+  if (tracker_ && !first_time_checking_) tracker_->RemoveObserver(this);
+}
+
 ActivityLog::~ActivityLog() {
-  if (dispatch_thread_ == BrowserThread::UI)  // Cleanup fast in a unittest.
-    db_->Close();
-  else
+  if (has_threads_)
     ScheduleAndForget(&ActivityDatabase::Close);
+  else
+    db_->Close();
+}
+
+// We can't register for the InstallTrackerFactory events or talk to the
+// extension service in the constructor, so we do that here the first time
+// this is called (as identified by first_time_checking_).
+bool ActivityLog::IsLogEnabled() {
+  if (!first_time_checking_) return enabled_;
+  if (!has_threads_) return false;
+  tracker_ = InstallTrackerFactory::GetForProfile(profile_);
+  tracker_->AddObserver(this);
+  const ExtensionService* extension_service =
+      ExtensionSystem::Get(profile_)->extension_service();
+  if (extension_service->IsExtensionEnabled(
+      kActivityLogExtensionId)) {
+    enabled_ = true;
+    LogIsEnabled::GetInstance()->SetProfileEnabled(true);
+  }
+  first_time_checking_ = false;
+  return enabled_;
+}
+
+void ActivityLog::OnExtensionInstalled(const Extension* extension) {
+  if (extension->id() != kActivityLogExtensionId) return;
+  enabled_ = true;
+  LogIsEnabled::GetInstance()->SetProfileEnabled(true);
+}
+
+void ActivityLog::OnExtensionUninstalled(const Extension* extension) {
+  if (extension->id() != kActivityLogExtensionId) return;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableExtensionActivityLogging))
+    enabled_ = false;
+}
+
+// Counter-intuitively, OnExtensionInstalled is also called when an extension
+// is reenabled.
+void ActivityLog::OnExtensionDisabled(const Extension* extension) {
+  if (extension->id() != kActivityLogExtensionId) return;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableExtensionActivityLogging))
+    enabled_ = false;
 }
 
 void ActivityLog::SetArgumentLoggingForTesting(bool log_arguments) {
@@ -307,8 +387,9 @@ void ActivityLog::GetActions(
     const int day,
     const base::Callback
         <void(scoped_ptr<std::vector<scoped_refptr<Action> > >)>& callback) {
+  if (!has_threads_) return;
   BrowserThread::PostTaskAndReplyWithResult(
-      dispatch_thread_,
+      BrowserThread::DB,
       FROM_HERE,
       base::Bind(&ActivityDatabase::GetActions,
                  base::Unretained(db_),

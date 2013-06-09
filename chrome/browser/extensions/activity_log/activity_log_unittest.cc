@@ -49,7 +49,10 @@ class ActivityLogTest : public testing::Test {
         switches::kEnableExtensionActivityLogging);
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityLogTesting);
-    ActivityLog::RecomputeLoggingIsEnabled();
+    extension_service_ = static_cast<TestExtensionSystem*>(
+        ExtensionSystem::Get(profile_.get()))->CreateExtensionService
+            (&command_line, base::FilePath(), false);
+    ActivityLog::RecomputeLoggingIsEnabled(false);
   }
 
   virtual ~ActivityLogTest() {
@@ -58,9 +61,10 @@ class ActivityLogTest : public testing::Test {
 #endif
     base::RunLoop().RunUntilIdle();
     profile_.reset(NULL);
+    base::RunLoop().RunUntilIdle();
     // Restore the original command line and undo the affects of SetUp().
     *CommandLine::ForCurrentProcess() = saved_cmdline_;
-    ActivityLog::RecomputeLoggingIsEnabled();
+    ActivityLog::RecomputeLoggingIsEnabled(false);
   }
 
   static void RetrieveActions_LogAndFetchActions(
@@ -106,13 +110,13 @@ class ActivityLogTest : public testing::Test {
 };
 
 TEST_F(ActivityLogTest, Enabled) {
-  ASSERT_TRUE(ActivityLog::IsLogEnabled());
+  ASSERT_TRUE(ActivityLog::IsLogEnabledOnAnyProfile());
 }
 
 TEST_F(ActivityLogTest, Construct) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
   scoped_ptr<ListValue> args(new ListValue());
-  ASSERT_TRUE(ActivityLog::IsLogEnabled());
+  ASSERT_TRUE(activity_log->IsLogEnabled());
   activity_log->LogAPIAction(
       kExtensionId, std::string("tabs.testMethod"), args.get(), std::string());
 }
@@ -120,7 +124,7 @@ TEST_F(ActivityLogTest, Construct) {
 TEST_F(ActivityLogTest, LogAndFetchActions) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
   scoped_ptr<ListValue> args(new ListValue());
-  ASSERT_TRUE(ActivityLog::IsLogEnabled());
+  ASSERT_TRUE(activity_log->IsLogEnabled());
 
   // Write some API calls
   activity_log->LogAPIAction(
@@ -141,7 +145,7 @@ TEST_F(ActivityLogTest, LogAndFetchActions) {
 TEST_F(ActivityLogTest, LogWithoutArguments) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
   activity_log->SetArgumentLoggingForTesting(false);
-  ASSERT_TRUE(ActivityLog::IsLogEnabled());
+  ASSERT_TRUE(activity_log->IsLogEnabled());
 
   scoped_ptr<ListValue> args(new ListValue());
   args->Set(0, new base::StringValue("hello"));
@@ -154,7 +158,7 @@ TEST_F(ActivityLogTest, LogWithoutArguments) {
 
 TEST_F(ActivityLogTest, LogWithArguments) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
-  ASSERT_TRUE(ActivityLog::IsLogEnabled());
+  ASSERT_TRUE(activity_log->IsLogEnabled());
 
   scoped_ptr<ListValue> args(new ListValue());
   args->Set(0, new base::StringValue("hello"));

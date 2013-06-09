@@ -1638,7 +1638,7 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
     helpers::EventResponseDelta* delta =
         CalculateDelta(&blocked_request, response);
 
-    if (extensions::ActivityLog::IsLogEnabled()) {
+    if (extensions::ActivityLog::IsLogEnabledOnAnyProfile()) {
       LogExtensionActivity(static_cast<Profile*>(profile),
                            extension_id,
                            blocked_request.request->url(),
