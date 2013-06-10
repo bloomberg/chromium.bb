@@ -12,7 +12,6 @@
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notifier_settings.h"
 
-@class HoverImageButton;
 @class MCSettingsController;
 
 namespace message_center {
@@ -47,9 +46,6 @@ MESSAGE_CENTER_EXPORT
   scoped_ptr<message_center::NotifierSettingsDelegateMac> delegate_;
   message_center::NotifierSettingsProvider* provider_;
 
-  // The back button at the top.
-  scoped_nsobject<HoverImageButton> backButton_;
-
   // The "Settings" text at the top.
   scoped_nsobject<NSTextField> settingsText_;
 
@@ -67,13 +63,6 @@ MESSAGE_CENTER_EXPORT
 
 // Returns the bridge object for this controller.
 - (message_center::NotifierSettingsDelegateMac*)delegate;
-
-// Returns a view that should be initial first responder.
-- (NSView*)responderView;
-
-// Set up the close target and action.
-- (void)setCloseTarget:(id)target;
-- (void)setCloseAction:(SEL)action;
 
 @end
 

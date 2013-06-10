@@ -6,9 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
-#import "ui/base/cocoa/hover_image_button.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #import "base/memory/scoped_nsobject.h"
@@ -16,7 +14,6 @@
 #include "ui/message_center/message_center_style.h"
 #include "skia/ext/skia_utils_mac.h"
 
-const int kBackButtonSize = 32;
 const int kMarginWidth = 16;
 const int kEntryHeight = 32;
 const int kIconSize = 16;
@@ -143,7 +140,7 @@ NotifierSettingsDelegate* ShowSettings(NotifierSettingsProvider* provider,
 
 - (void)loadView {
   provider_->GetNotifierList(&notifiers_);
-  CGFloat maxHeight = [MCTrayViewController maxTrayHeight];
+  CGFloat maxHeight = [MCTrayViewController maxTrayClientHeight];
 
   // Container view.
   NSRect fullFrame =
@@ -157,27 +154,9 @@ NotifierSettingsDelegate* ShowSettings(NotifierSettingsProvider* provider,
   [view setTitlePosition:NSNoTitle];
   [self setView:view];
 
-  // Back button.
-  NSRect backButtonFrame = NSMakeRect(
-      kMarginWidth, kMarginWidth, kBackButtonSize, kBackButtonSize);
-  backButton_.reset([[HoverImageButton alloc] initWithFrame:backButtonFrame]);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  [backButton_ setDefaultImage:
-      rb.GetNativeImageNamed(IDR_NOTIFICATION_ARROW).ToNSImage()];
-  [backButton_ setHoverImage:
-      rb.GetNativeImageNamed(IDR_NOTIFICATION_ARROW_HOVER).ToNSImage()];
-  [backButton_ setPressedImage:
-      rb.GetNativeImageNamed(IDR_NOTIFICATION_ARROW_PRESSED).ToNSImage()];
-  [[backButton_ cell] setHighlightsBy:NSOnState];
-  [backButton_ setBordered:NO];
-  [backButton_ setAutoresizingMask:NSViewMinYMargin];
-  [[self view] addSubview:backButton_];
-
   // "Settings" text.
-  NSRect headerFrame = NSMakeRect(NSMaxX(backButtonFrame),
-                                  kMarginWidth,
-                                  NSWidth(fullFrame) - NSMaxX(backButtonFrame),
-                                  NSHeight(fullFrame));
+  NSRect headerFrame = NSMakeRect(
+      kMarginWidth, kMarginWidth, NSWidth(fullFrame), NSHeight(fullFrame));
   settingsText_.reset([self newLabelWithFrame:headerFrame]);
   [settingsText_ setAutoresizingMask:NSViewMinYMargin];
   [settingsText_ setTextColor:gfx::SkColorToCalibratedNSColor(
@@ -192,10 +171,6 @@ NotifierSettingsDelegate* ShowSettings(NotifierSettingsProvider* provider,
   headerFrame.origin.y =
       NSMaxY(fullFrame) - kMarginWidth - NSHeight(headerFrame);
   [[self view] addSubview:settingsText_];
-
-  // Vertically center back button with "Settings" text.
-  backButtonFrame.origin.y =
-      NSMidY(headerFrame) - NSHeight(backButtonFrame) / 2;
 
   // Subheader.
   NSRect subheaderFrame = NSMakeRect(
@@ -257,7 +232,6 @@ NotifierSettingsDelegate* ShowSettings(NotifierSettingsProvider* provider,
     // Everything fits without scrolling.
     CGFloat delta = remainingHeight - NSHeight(documentFrame);
     headerFrame.origin.y -= delta;
-    backButtonFrame.origin.y -= delta;
     subheaderFrame.origin.y -= delta;
     fullFrame.size.height -= delta;
   } else {
@@ -275,7 +249,6 @@ NotifierSettingsDelegate* ShowSettings(NotifierSettingsProvider* provider,
   // Set final sizes.
   [[self view] setFrame:fullFrame];
   [[self view] addSubview:scrollView_];
-  [backButton_ setFrame:backButtonFrame];
   [settingsText_ setFrame:headerFrame];
   [detailsText_ setFrame:subheaderFrame];
 }
@@ -287,18 +260,6 @@ NotifierSettingsDelegate* ShowSettings(NotifierSettingsProvider* provider,
 
 - (message_center::NotifierSettingsDelegateMac*)delegate {
   return delegate_.get();
-}
-
-- (NSView*)responderView {
-  return backButton_;
-}
-
-- (void)setCloseTarget:(id)target {
-  [backButton_ setTarget:target];
-}
-
-- (void)setCloseAction:(SEL)action {
-  [backButton_ setAction:action];
 }
 
 // Testing API /////////////////////////////////////////////////////////////////

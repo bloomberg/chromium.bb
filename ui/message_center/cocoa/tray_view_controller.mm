@@ -19,6 +19,8 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 
+const int kBackButtonSize = 16;
+
 @interface MCTrayViewController (Private)
 // Creates all the views for the control area of the tray.
 - (void)layoutControlArea;
@@ -199,10 +201,8 @@ const CGFloat kTrayBottomMargin = 75;
 }
 
 - (void)showSettings:(id)sender {
-  if (settingsController_) {
-    NOTREACHED();
+  if (settingsController_)
     return [self hideSettings:sender];
-  }
 
   {
     // ShowNotificationSettingsDialog() returns an object owned by an
@@ -220,11 +220,14 @@ const CGFloat kTrayBottomMargin = 75;
 
   [[self view] addSubview:[settingsController_ view]];
 
-  [settingsController_ setCloseTarget:self];
-  [settingsController_ setCloseAction:@selector(hideSettings:)];
+  NSRect titleFrame = [title_ frame];
+  titleFrame.origin.x =
+      NSMaxX([backButton_ frame]) + message_center::kMarginBetweenItems / 2;
+  [title_ setFrame:titleFrame];
+  [backButton_ setHidden:NO];
+  [clearAllButton_ setEnabled:NO];
 
   [[[self view] window] recalculateKeyViewLoop];
-  [[[self view] window] makeFirstResponder:[settingsController_ responderView]];
 
   [self forceWindowSizeUpdate];
 }
@@ -232,8 +235,14 @@ const CGFloat kTrayBottomMargin = 75;
 - (void)hideSettings:(id)sender {
   [[settingsController_ view] removeFromSuperview];
   settingsController_.reset();
+
+  NSRect titleFrame = [title_ frame];
+  titleFrame.origin.x = NSMinX([backButton_ frame]);
+  [title_ setFrame:titleFrame];
+  [backButton_ setHidden:YES];
+  [clearAllButton_ setEnabled:YES];
+
   [[[self view] window] recalculateKeyViewLoop];
-  [[[self view] window] makeFirstResponder:pauseButton_];
   [self forceWindowSizeUpdate];
 }
 
@@ -243,9 +252,9 @@ const CGFloat kTrayBottomMargin = 75;
   [[scrollView_ documentView] scrollPoint:topPoint];
 }
 
-+ (CGFloat)maxTrayHeight {
++ (CGFloat)maxTrayClientHeight {
   NSRect screenFrame = [[[NSScreen screens] objectAtIndex:0] visibleFrame];
-  return NSHeight(screenFrame) - kTrayBottomMargin;
+  return NSHeight(screenFrame) - kTrayBottomMargin - kControlAreaHeight;
 }
 
 + (CGFloat)trayWidth {
@@ -270,30 +279,56 @@ const CGFloat kTrayBottomMargin = 75;
 // Private /////////////////////////////////////////////////////////////////////
 
 - (void)layoutControlArea {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   NSView* view = [self view];
 
   // Create the "Notifications" label at the top of the tray.
   NSFont* font = [NSFont labelFontOfSize:message_center::kTitleFontSize];
-  scoped_nsobject<NSTextField> title(
-      [[NSTextField alloc] initWithFrame:NSZeroRect]);
-  [title setAutoresizingMask:NSViewMinYMargin];
-  [title setBezeled:NO];
-  [title setBordered:NO];
-  [title setDrawsBackground:NO];
-  [title setEditable:NO];
-  [title setFont:font];
-  [title setSelectable:NO];
-  [title setStringValue:
+  title_.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
+  [title_ setAutoresizingMask:NSViewMinYMargin];
+  [title_ setBezeled:NO];
+  [title_ setBordered:NO];
+  [title_ setDrawsBackground:NO];
+  [title_ setEditable:NO];
+  [title_ setFont:font];
+  [title_ setSelectable:NO];
+  [title_ setStringValue:
       l10n_util::GetNSString(IDS_MESSAGE_CENTER_FOOTER_TITLE)];
-  [title setTextColor:gfx::SkColorToCalibratedNSColor(
+  [title_ setTextColor:gfx::SkColorToCalibratedNSColor(
       message_center::kFooterTextColor)];
-  [title sizeToFit];
+  [title_ sizeToFit];
 
-  NSRect titleFrame = [title frame];
+  NSRect titleFrame = [title_ frame];
   titleFrame.origin.x = message_center::kMarginBetweenItems;
   titleFrame.origin.y = kControlAreaHeight/2 - NSMidY(titleFrame);
-  [title setFrame:titleFrame];
-  [view addSubview:title];
+  [title_ setFrame:titleFrame];
+  [view addSubview:title_];
+
+  auto configureButton = ^(HoverImageButton* button) {
+      [[button cell] setHighlightsBy:NSOnState];
+      [button setTrackingEnabled:YES];
+      [button setBordered:NO];
+      [button setAutoresizingMask:NSViewMinYMargin];
+      [button setTarget:self];
+  };
+
+  // Back button. On top of the "Notifications" label, hidden by default.
+  NSRect backButtonFrame =
+      NSMakeRect(NSMinX(titleFrame),
+                 (kControlAreaHeight - kBackButtonSize) / 2,
+                 kBackButtonSize,
+                 kBackButtonSize);
+  backButton_.reset([[HoverImageButton alloc] initWithFrame:backButtonFrame]);
+  [backButton_ setDefaultImage:
+      rb.GetNativeImageNamed(IDR_NOTIFICATION_ARROW).ToNSImage()];
+  [backButton_ setHoverImage:
+      rb.GetNativeImageNamed(IDR_NOTIFICATION_ARROW_HOVER).ToNSImage()];
+  [backButton_ setPressedImage:
+      rb.GetNativeImageNamed(IDR_NOTIFICATION_ARROW_PRESSED).ToNSImage()];
+  [backButton_ setAction:@selector(hideSettings:)];
+  configureButton(backButton_);
+  [backButton_ setHidden:YES];
+  [[self view] addSubview:backButton_];
 
   // Create the divider line between the control area and the notifications.
   scoped_nsobject<NSBox> divider(
@@ -316,16 +351,7 @@ const CGFloat kTrayBottomMargin = 75;
           size.height);
   };
 
-  auto configureButton = ^(HoverImageButton* button) {
-      [[button cell] setHighlightsBy:NSOnState];
-      [button setTrackingEnabled:YES];
-      [button setBordered:NO];
-      [button setAutoresizingMask:NSViewMinYMargin];
-      [button setTarget:self];
-  };
-
   // Create the settings button at the far-right.
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   NSImage* defaultImage =
       rb.GetNativeImageNamed(IDR_NOTIFICATION_SETTINGS).ToNSImage();
   NSRect settingsButtonFrame = getButtonFrame(
@@ -400,9 +426,10 @@ const CGFloat kTrayBottomMargin = 75;
   if (settingsController_) {
     frame.size.height = NSHeight([[settingsController_ view] frame]);
   } else {
-    frame.size.height = std::min([MCTrayViewController maxTrayHeight],
-                                 scrollContentHeight + kControlAreaHeight);
+    frame.size.height = std::min([MCTrayViewController maxTrayClientHeight],
+                                 scrollContentHeight);
   }
+  frame.size.height += kControlAreaHeight;
   CGFloat newHeight = NSHeight(frame);
   [[self view] setFrame:frame];
 

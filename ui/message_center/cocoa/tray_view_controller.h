@@ -21,6 +21,8 @@ namespace message_center {
 class MessageCenter;
 }
 
+@class HoverImageButton;
+
 // The view controller responsible for the content of the message center tray
 // UI. This hosts a scroll view of all the notifications, as well as buttons
 // to enter quiet mode and the settings panel.
@@ -29,6 +31,12 @@ MESSAGE_CENTER_EXPORT
  @private
   // Controller of the notifications, where action messages are forwarded. Weak.
   message_center::MessageCenter* messageCenter_;
+
+  // The back button shown while the settings are open.
+  scoped_nsobject<HoverImageButton> backButton_;
+
+  // The "Notifications" label at the top.
+  scoped_nsobject<NSTextField> title_;
 
   // The scroll view that contains all the notifications in its documentView.
   scoped_nsobject<NSScrollView> scrollView_;
@@ -79,8 +87,8 @@ MESSAGE_CENTER_EXPORT
 // Scroll to the topmost notification in the tray.
 - (void)scrollToTop;
 
-// Returns the maximum height of the notifications tray.
-+ (CGFloat)maxTrayHeight;
+// Returns the maximum height of the client area of the notifications tray.
++ (CGFloat)maxTrayClientHeight;
 
 // Returns the width of the notifications tray.
 + (CGFloat)trayWidth;
