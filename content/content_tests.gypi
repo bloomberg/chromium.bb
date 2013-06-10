@@ -768,7 +768,6 @@
             'browser/download/drag_download_file_browsertest.cc',
             'browser/download/mhtml_generation_browsertest.cc',
             'browser/download/save_package_browsertest.cc',
-            'browser/fileapi/blob_layout_browsertest.cc',
             'browser/fileapi/file_system_browsertest.cc',
             'browser/gpu/gpu_crash_browsertest.cc',
             'browser/gpu/gpu_functional_browsertest.cc',
