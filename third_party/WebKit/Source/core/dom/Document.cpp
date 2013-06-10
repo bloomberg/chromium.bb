@@ -388,6 +388,8 @@ private:
         document->didRunCheckFocusedNodeTask();
         if (!document->focusedNode())
             return;
+        if (document->childNeedsStyleRecalc())
+            return;
         if (document->focusedNode()->renderer() && document->focusedNode()->renderer()->needsLayout())
             return;
         if (!document->focusedNode()->isFocusable())
