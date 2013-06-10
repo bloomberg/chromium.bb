@@ -159,6 +159,23 @@
       ]
     },
     {
+      'target_name': 'pnacl_mime_type_test',
+      'type': 'none',
+      'variables': {
+        'build_newlib': 1,
+        'build_glibc': 1,
+        'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
+        # No need to translate AOT.
+        'enable_x86_32': 0,
+        'enable_x86_64': 0,
+        'enable_arm': 0,
+        'test_files': [
+          'pnacl_mime_type/pnacl_mime_type.html',
+        ],
+      },
+    },
+    {
       'target_name': 'pnacl_options_test',
       'type': 'none',
       'variables': {

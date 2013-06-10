@@ -9,7 +9,7 @@ found in the LICENSE file.
 <script type="text/javascript" src="nacltest.js"></script> 
 </head>
 <body>
-<h2>NaCl Load Test</h2>
+<h2>PNaCl Load Options Test</h2>
 </body>
 <script>
 
@@ -25,7 +25,7 @@ function create(manifest_prefix, manifest_opt) {
   var nmf_url = manifest_prefix + manifest_opt + ".nmf";
 
   embed.src = nmf_url;
-  embed.type = "application/x-nacl";
+  embed.type = "application/x-pnacl";
 
   embed.addEventListener("load", function(evt) {
     report({type: "Shutdown", message: "1 test passed.", passed: true});

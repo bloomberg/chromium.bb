@@ -31,12 +31,10 @@ class JsonManifest : public Manifest {
  public:
   JsonManifest(const pp::URLUtil_Dev* url_util,
            const nacl::string& manifest_base_url,
-           const nacl::string& sandbox_isa,
-           bool prefer_portable)
+           const nacl::string& sandbox_isa)
       : url_util_(url_util),
         manifest_base_url_(manifest_base_url),
         sandbox_isa_(sandbox_isa),
-        prefer_portable_(prefer_portable),
         dictionary_(Json::nullValue) { }
   virtual ~JsonManifest() { }
 
@@ -81,9 +79,6 @@ class JsonManifest : public Manifest {
   const pp::URLUtil_Dev* url_util_;
   nacl::string manifest_base_url_;
   nacl::string sandbox_isa_;
-  // Determines whether portable programs are chosen in manifest files over
-  // native programs.
-  bool prefer_portable_;
 
   Json::Value dictionary_;
 };

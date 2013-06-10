@@ -14,6 +14,7 @@ namespace {
 #define MAYBE_ExitStatusNeg2 DISABLED_ExitStatusNeg2
 #define MAYBE_PPAPICore DISABLED_PPAPICore
 #define MAYBE_ProgressEvents DISABLED_ProgressEvents
+#define MAYBE_PnaclMimeType DISABLED_PnaclMimeType
 #define MAYBE_CrossOriginCORS DISABLED_CrossOriginCORS
 #define MAYBE_CrossOriginFail DISABLED_CrossOriginFail
 #define MAYBE_SameOriginCookie DISABLED_SameOriginCookie
@@ -25,6 +26,7 @@ namespace {
 #define MAYBE_ExitStatusNeg2 ExitStatusNeg2
 #define MAYBE_PPAPICore PPAPICore
 #define MAYBE_ProgressEvents ProgressEvents
+#define MAYBE_PnaclMimeType PnaclMimeType
 #define MAYBE_CrossOriginCORS CrossOriginCORS
 #define MAYBE_CrossOriginFail CrossOriginFail
 #define MAYBE_SameOriginCookie SameOriginCookie
@@ -56,6 +58,10 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_PPAPICore, {
 
 NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_ProgressEvents, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_progress_events.html"));
+})
+
+NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_PnaclMimeType, {
+  RunLoadTest(FILE_PATH_LITERAL("pnacl_mime_type.html"));
 })
 
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, MAYBE_CrossOriginCORS) {

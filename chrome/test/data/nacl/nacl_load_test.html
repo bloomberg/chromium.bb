@@ -10,6 +10,7 @@ found in the LICENSE file.
 <body>
 <h2>NaCl Load Test</h2>
 </body>
+<script type="text/javascript" src="nacltest.js"> </script>
 <script>
 
 function report(msg) {
@@ -23,6 +24,9 @@ function create(manifest_url) {
   var embed = document.createElement("embed");
   embed.src = manifest_url;
   embed.type = "application/x-nacl";
+  if (getTestArguments()["pnacl"] !== undefined) {
+    embed.type = "application/x-pnacl";
+  }
 
   embed.addEventListener("load", function(evt) {
     report({type: "Shutdown", message: "1 test passed.", passed: true});
