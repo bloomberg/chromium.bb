@@ -40,28 +40,28 @@ class MediaStreamInfobarTest(webrtc_test_base.WebrtcTestBase):
     able to deny the javascript to access the webcam.
     """
     # Error 1 = Permission denied
-    self.assertEquals('failed-with-error-1',
+    self.assertEquals('failed-with-error-PERMISSION_DENIED',
                       self._TestGetUserMedia(with_action='cancel'))
 
   def testDismissingUserMedia(self):
     """Dismiss should be treated just like deny, which is described above."""
     # Error 1 = Permission denied
-    self.assertEquals('failed-with-error-1',
+    self.assertEquals('failed-with-error-PERMISSION_DENIED',
                       self._TestGetUserMedia(with_action='dismiss'))
 
   def testConsecutiveGetUserMediaCalls(self):
     """Ensures we deal appropriately with several consecutive requests."""
-    self.assertEquals('failed-with-error-1',
+    self.assertEquals('failed-with-error-PERMISSION_DENIED',
                       self._TestGetUserMedia(with_action='dismiss'))
-    self.assertEquals('failed-with-error-1',
+    self.assertEquals('failed-with-error-PERMISSION_DENIED',
                       self._TestGetUserMedia(with_action='cancel'))
     self.assertEquals('ok-got-stream',
                       self._TestGetUserMedia(with_action='accept'))
-    self.assertEquals('failed-with-error-1',
+    self.assertEquals('failed-with-error-PERMISSION_DENIED',
                       self._TestGetUserMedia(with_action='cancel'))
     self.assertEquals('ok-got-stream',
                       self._TestGetUserMedia(with_action='accept'))
-    self.assertEquals('failed-with-error-1',
+    self.assertEquals('failed-with-error-PERMISSION_DENIED',
                       self._TestGetUserMedia(with_action='dismiss'))
 
   def _TestGetUserMedia(self, with_action):
