@@ -81,6 +81,10 @@ void SetScreenManagnifierTypeToPref(ash::MagnifierType type) {
   prefs()->SetInteger(prefs::kScreenMagnifierType, type);
 }
 
+void SetFullScreenMagnifierScaleToPref(double scale) {
+  prefs()->SetDouble(prefs::kScreenMagnifierScale, scale);
+}
+
 }  // anonymouse namespace
 
 class MagnificationManagerTest : public CrosInProcessBrowserTest,
@@ -189,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginOffToFull) {
   // Enable magnifier on the pref.
   EnableScreenManagnifierToPref(true);
   SetScreenManagnifierTypeToPref(ash::MAGNIFIER_FULL);
-  SetSavedFullScreenMagnifierScale(2.5);
+  SetFullScreenMagnifierScaleToPref(2.5);
 
   UserManager::Get()->SessionStarted();
 
@@ -216,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, LoginFullToFull) {
   // Enable magnifier on the pref.
   EnableScreenManagnifierToPref(true);
   SetScreenManagnifierTypeToPref(ash::MAGNIFIER_FULL);
-  SetSavedFullScreenMagnifierScale(2.5);
+  SetFullScreenMagnifierScaleToPref(2.5);
 
   UserManager::Get()->SessionStarted();
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 
+#include <limits>
+
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/shell.h"
@@ -83,13 +85,17 @@ class MagnificationManagerImpl : public MagnificationManager,
   }
 
   virtual void SaveScreenMagnifierScale(double scale) OVERRIDE {
-    ProfileManager::GetDefaultProfileOrOffTheRecord()->GetPrefs()->
-        SetDouble(prefs::kScreenMagnifierScale, scale);
+    if (!profile_)
+      return;
+
+    profile_->GetPrefs()->SetDouble(prefs::kScreenMagnifierScale, scale);
   }
 
   virtual double GetSavedScreenMagnifierScale() const OVERRIDE {
-    return ProfileManager::GetDefaultProfileOrOffTheRecord()->GetPrefs()->
-        GetDouble(prefs::kScreenMagnifierScale);
+    if (!profile_)
+      return std::numeric_limits<double>::min();
+
+    return profile_->GetPrefs()->GetDouble(prefs::kScreenMagnifierScale);
   }
 
   virtual void SetProfileForTest(Profile* profile) OVERRIDE {
