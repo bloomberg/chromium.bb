@@ -2714,7 +2714,15 @@ than via the compiler driver."""
   if env.IsNewLinker():
     args = ['-Trodata-segment=' + value]
   else:
-    args = ['--section-start', '.rodata=' + value]
+    # With the --build-id option (which the compiler will pass, but pass it
+    # here to be doubly sure), the rodata segment starts with the
+    # .note.gnu.build-id section; without --build-id it starts with .rodata.
+    if via_compiler:
+      args = ['--build-id', '--section-start', '.note.gnu.build-id=' + value]
+    else:
+      # If file is linked directly then it's probably some kind of low-level
+      # test so don't use build id and move .rodata to the desired position.
+      args = ['--section-start', '.rodata=' + value]
   if via_compiler:
     args = ','.join(['-Wl'] + args)
   else:
