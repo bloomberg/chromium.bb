@@ -431,7 +431,7 @@ bool DownloadDatabase::UpdateDownload(const DownloadRow& data) {
   statement.BindInt(column++, danger_type);
   statement.BindInt(column++, static_cast<int>(data.interrupt_reason));
   statement.BindInt64(column++, data.end_time.ToInternalValue());
-  statement.BindInt(column++, data.total_bytes);
+  statement.BindInt64(column++, data.total_bytes);
   statement.BindInt(column++, (data.opened ? 1 : 0));
   statement.BindInt64(column++, data.db_handle);
 
