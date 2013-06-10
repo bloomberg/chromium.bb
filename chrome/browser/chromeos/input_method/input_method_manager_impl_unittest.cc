@@ -23,7 +23,6 @@
 #include "chromeos/ime/mock_xkeyboard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/ime/text_input_test_support.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 namespace chromeos {

@@ -8,7 +8,6 @@
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ime/text_input_test_support.h"
 
 namespace chromeos {
 namespace input_method {
