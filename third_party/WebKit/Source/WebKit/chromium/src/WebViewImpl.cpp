@@ -849,7 +849,7 @@ WebViewBenchmarkSupport* WebViewImpl::benchmarkSupport()
 
 void WebViewImpl::setShowFPSCounter(bool show)
 {
-    if (isAcceleratedCompositingActive()) {
+    if (m_layerTreeView) {
         TRACE_EVENT0("webkit", "WebViewImpl::setShowFPSCounter");
         m_layerTreeView->setShowFPSCounter(show);
     }
@@ -858,7 +858,7 @@ void WebViewImpl::setShowFPSCounter(bool show)
 
 void WebViewImpl::setShowPaintRects(bool show)
 {
-    if (isAcceleratedCompositingActive()) {
+    if (m_layerTreeView) {
         TRACE_EVENT0("webkit", "WebViewImpl::setShowPaintRects");
         m_layerTreeView->setShowPaintRects(show);
     }
@@ -867,14 +867,14 @@ void WebViewImpl::setShowPaintRects(bool show)
 
 void WebViewImpl::setShowDebugBorders(bool show)
 {
-    if (isAcceleratedCompositingActive())
+    if (m_layerTreeView)
         m_layerTreeView->setShowDebugBorders(show);
     m_showDebugBorders = show;
 }
 
 void WebViewImpl::setContinuousPaintingEnabled(bool enabled)
 {
-    if (isAcceleratedCompositingActive()) {
+    if (m_layerTreeView) {
         TRACE_EVENT0("webkit", "WebViewImpl::setContinuousPaintingEnabled");
         m_layerTreeView->setContinuousPaintingEnabled(enabled);
     }
