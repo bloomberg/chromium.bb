@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_CRX_INSTALLER_ERROR_H_
 #define CHROME_BROWSER_EXTENSIONS_CRX_INSTALLER_ERROR_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace extensions {
 

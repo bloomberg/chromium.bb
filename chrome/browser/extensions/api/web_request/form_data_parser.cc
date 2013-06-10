@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
