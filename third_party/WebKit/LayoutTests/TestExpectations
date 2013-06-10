@@ -1776,8 +1776,7 @@ Bug(jamesr) virtual/softwarecompositing/video/video-controls-layer-creation.html
 crbug.com/245520 [ Mac ] compositing/repaint/transform-style-change.html [ ImageOnlyFailure ]
 
 # Temporary expectations until I've fixed fast/hidpi
-Bug(jochen) fast/hidpi [ ImageOnlyFailure Timeout Crash Pass ]
-Bug(jochen) virtual/gpu/fast/hidpi [ ImageOnlyFailure Timeout Crash Pass ]
+Bug(jochen) virtual/gpu/fast/hidpi [ Slow ]
 
 # Temporary expectations for changing caret color
 crbug.com/232188 editing/caret/caret-color.html [ Missing ]
