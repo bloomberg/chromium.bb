@@ -2343,7 +2343,7 @@
    fun:fnmatch1
    fun:fnmatch1
    fun:fnmatch$UNIX2003
-   fun:_ZN9file_util14FileEnumerator4NextEv
+   fun:_ZN4base14FileEnumerator4NextEv
    fun:_ZN10disk_cache15SimpleIndexFile15RestoreFromDiskERKN4base8FilePathE
 }
 {
