@@ -22,15 +22,6 @@
                    'autofill/browser/autofill_regex_constants.cc.utf8'],
       }],
     },
-    {
-      'target_name': 'autofill_test_util',
-      'type': 'static_library',
-      'sources': [
-        'autofill/browser/wallet/wallet_test_util.cc',
-        'autofill/browser/wallet/wallet_test_util.h',
-      ],
-      'include_dirs': [ '..' ],
-    },
   ],
   'conditions': [
     ['OS != "ios"', {
@@ -211,26 +202,6 @@
             'autofill/browser/state_names.h',
             'autofill/browser/validation.cc',
             'autofill/browser/validation.h',
-            'autofill/browser/wallet/encryption_escrow_client.cc',
-            'autofill/browser/wallet/encryption_escrow_client.h',
-            'autofill/browser/wallet/encryption_escrow_client_observer.h',
-            'autofill/browser/wallet/full_wallet.cc',
-            'autofill/browser/wallet/full_wallet.h',
-            'autofill/browser/wallet/instrument.cc',
-            'autofill/browser/wallet/instrument.h',
-            'autofill/browser/wallet/required_action.cc',
-            'autofill/browser/wallet/required_action.h',
-            'autofill/browser/wallet/wallet_address.cc',
-            'autofill/browser/wallet/wallet_address.h',
-            'autofill/browser/wallet/wallet_client.cc',
-            'autofill/browser/wallet/wallet_client.h',
-            'autofill/browser/wallet/wallet_client_delegate.h',
-            'autofill/browser/wallet/wallet_items.cc',
-            'autofill/browser/wallet/wallet_items.h',
-            'autofill/browser/wallet/wallet_service_url.cc',
-            'autofill/browser/wallet/wallet_service_url.h',
-            'autofill/browser/wallet/wallet_signin_helper.cc',
-            'autofill/browser/wallet/wallet_signin_helper.h',
             'autofill/browser/webdata/autofill_change.cc',
             'autofill/browser/webdata/autofill_change.h',
             'autofill/browser/webdata/autofill_entry.cc',
@@ -266,7 +237,16 @@
           },
           'includes': [ '../build/protoc.gypi' ]
         },
-        {
+       {
+         'target_name': 'autofill_content_test_util',
+         'type': 'static_library',
+         'sources': [
+           'autofill/content/browser/wallet/wallet_test_util.cc',
+           'autofill/content/browser/wallet/wallet_test_util.h',
+         ],
+         'include_dirs': [ '..' ],
+       },
+       {
           'target_name': 'autofill_content_browser',
           'type': 'static_library',
           'include_dirs': [
@@ -302,6 +282,26 @@
           'sources': [
             'autofill/content/browser/risk/fingerprint.cc',
             'autofill/content/browser/risk/fingerprint.h',
+            'autofill/content/browser/wallet/encryption_escrow_client.cc',
+            'autofill/content/browser/wallet/encryption_escrow_client.h',
+            'autofill/content/browser/wallet/encryption_escrow_client_observer.h',
+            'autofill/content/browser/wallet/full_wallet.cc',
+            'autofill/content/browser/wallet/full_wallet.h',
+            'autofill/content/browser/wallet/instrument.cc',
+            'autofill/content/browser/wallet/instrument.h',
+            'autofill/content/browser/wallet/required_action.cc',
+            'autofill/content/browser/wallet/required_action.h',
+            'autofill/content/browser/wallet/wallet_address.cc',
+            'autofill/content/browser/wallet/wallet_address.h',
+            'autofill/content/browser/wallet/wallet_client.cc',
+            'autofill/content/browser/wallet/wallet_client.h',
+            'autofill/content/browser/wallet/wallet_client_delegate.h',
+            'autofill/content/browser/wallet/wallet_items.cc',
+            'autofill/content/browser/wallet/wallet_items.h',
+            'autofill/content/browser/wallet/wallet_service_url.cc',
+            'autofill/content/browser/wallet/wallet_service_url.h',
+            'autofill/content/browser/wallet/wallet_signin_helper.cc',
+            'autofill/content/browser/wallet/wallet_signin_helper.h',
           ],
 
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

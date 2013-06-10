@@ -10,7 +10,7 @@
 #include "base/string16.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "components/autofill/browser/field_types.h"
-#include "components/autofill/browser/wallet/required_action.h"
+#include "components/autofill/content/browser/wallet/required_action.h"
 #include "ui/base/range/range.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/image/image.h"

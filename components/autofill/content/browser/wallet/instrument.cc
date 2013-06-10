@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/browser/wallet/instrument.h"
+#include "components/autofill/content/browser/wallet/instrument.h"
 
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -13,7 +13,7 @@
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/browser/validation.h"
-#include "components/autofill/browser/wallet/wallet_address.h"
+#include "components/autofill/content/browser/wallet/wallet_address.h"
 
 namespace autofill {
 namespace wallet {

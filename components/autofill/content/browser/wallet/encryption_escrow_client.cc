@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/browser/wallet/encryption_escrow_client.h"
+#include "components/autofill/content/browser/wallet/encryption_escrow_client.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -10,9 +10,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/browser/wallet/encryption_escrow_client_observer.h"
-#include "components/autofill/browser/wallet/instrument.h"
-#include "components/autofill/browser/wallet/wallet_service_url.h"
+#include "components/autofill/content/browser/wallet/encryption_escrow_client_observer.h"
+#include "components/autofill/content/browser/wallet/instrument.h"
+#include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/http/http_status_code.h"

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/browser/wallet/wallet_client.h"
+#include "components/autofill/content/browser/wallet/wallet_client.h"
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
@@ -11,11 +11,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "components/autofill/browser/autofill_metrics.h"
-#include "components/autofill/browser/wallet/instrument.h"
-#include "components/autofill/browser/wallet/wallet_address.h"
-#include "components/autofill/browser/wallet/wallet_client_delegate.h"
-#include "components/autofill/browser/wallet/wallet_items.h"
-#include "components/autofill/browser/wallet/wallet_service_url.h"
+#include "components/autofill/content/browser/wallet/instrument.h"
+#include "components/autofill/content/browser/wallet/wallet_address.h"
+#include "components/autofill/content/browser/wallet/wallet_client_delegate.h"
+#include "components/autofill/content/browser/wallet/wallet_items.h"
+#include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "crypto/random.h"
 #include "google_apis/google_api_keys.h"
 #include "net/http/http_status_code.h"

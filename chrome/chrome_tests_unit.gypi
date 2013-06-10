@@ -412,7 +412,6 @@
         '<@(chromium_child_dependencies)',
         # 2) test-specific support libraries:
         '../base/base.gyp:test_support_base',
-        '../components/components.gyp:autofill_test_util',
         '../media/media.gyp:media_test_support',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
@@ -1775,14 +1774,14 @@
         '../components/autofill/browser/phone_number_unittest.cc',
         '../components/autofill/browser/phone_number_i18n_unittest.cc',
         '../components/autofill/browser/validation_unittest.cc',
-        '../components/autofill/browser/wallet/encryption_escrow_client_unittest.cc',
-        '../components/autofill/browser/wallet/full_wallet_unittest.cc',
-        '../components/autofill/browser/wallet/instrument_unittest.cc',
-        '../components/autofill/browser/wallet/wallet_address_unittest.cc',
-        '../components/autofill/browser/wallet/wallet_client_unittest.cc',
-        '../components/autofill/browser/wallet/wallet_items_unittest.cc',
-        '../components/autofill/browser/wallet/wallet_service_url_unittest.cc',
-        '../components/autofill/browser/wallet/wallet_signin_helper_unittest.cc',
+        '../components/autofill/content/browser/wallet/encryption_escrow_client_unittest.cc',
+        '../components/autofill/content/browser/wallet/full_wallet_unittest.cc',
+        '../components/autofill/content/browser/wallet/instrument_unittest.cc',
+        '../components/autofill/content/browser/wallet/wallet_address_unittest.cc',
+        '../components/autofill/content/browser/wallet/wallet_client_unittest.cc',
+        '../components/autofill/content/browser/wallet/wallet_items_unittest.cc',
+        '../components/autofill/content/browser/wallet/wallet_service_url_unittest.cc',
+        '../components/autofill/content/browser/wallet/wallet_signin_helper_unittest.cc',
 
         # TODO(caitkp): Move to //components/components.gypi once
         # remaining dependencies back to //chrome are eliminated.
@@ -1854,6 +1853,7 @@
         ['OS!="ios"', {
           'dependencies': [
             'common/extensions/api/api.gyp:api',
+            '../components/components.gyp:autofill_content_test_util',
             '../components/component_resources.gyp:component_resources',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
             '../gpu/gpu.gyp:gpu_unittest_utils',

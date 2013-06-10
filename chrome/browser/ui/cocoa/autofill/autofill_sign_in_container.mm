@@ -9,7 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
-#include "components/autofill/browser/wallet/wallet_service_url.h"
+#include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 

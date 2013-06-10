@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,13 +11,13 @@
 #include "base/values.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/browser/autofill_metrics.h"
-#include "components/autofill/browser/wallet/full_wallet.h"
-#include "components/autofill/browser/wallet/instrument.h"
-#include "components/autofill/browser/wallet/wallet_client.h"
-#include "components/autofill/browser/wallet/wallet_client_delegate.h"
-#include "components/autofill/browser/wallet/wallet_items.h"
-#include "components/autofill/browser/wallet/wallet_test_util.h"
 #include "components/autofill/common/autocheckout_status.h"
+#include "components/autofill/content/browser/wallet/full_wallet.h"
+#include "components/autofill/content/browser/wallet/instrument.h"
+#include "components/autofill/content/browser/wallet/wallet_client.h"
+#include "components/autofill/content/browser/wallet/wallet_client_delegate.h"
+#include "components/autofill/content/browser/wallet/wallet_items.h"
+#include "components/autofill/content/browser/wallet/wallet_test_util.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"

@@ -14,9 +14,9 @@
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/browser/form_structure.h"
 #include "components/autofill/browser/validation.h"
-#include "components/autofill/browser/wallet/full_wallet.h"
-#include "components/autofill/browser/wallet/wallet_address.h"
-#include "components/autofill/browser/wallet/wallet_items.h"
+#include "components/autofill/content/browser/wallet/full_wallet.h"
+#include "components/autofill/content/browser/wallet/wallet_address.h"
+#include "components/autofill/content/browser/wallet/wallet_items.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 

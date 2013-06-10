@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_sign_in_delegate.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "components/autofill/browser/autofill_type.h"
-#include "components/autofill/browser/wallet/wallet_service_url.h"
+#include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/native_web_keyboard_event.h"

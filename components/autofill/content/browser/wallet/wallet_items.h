@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_BROWSER_WALLET_WALLET_ITEMS_H_
-#define COMPONENTS_AUTOFILL_BROWSER_WALLET_WALLET_ITEMS_H_
+#ifndef COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_WALLET_ITEMS_H_
+#define COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_WALLET_ITEMS_H_
 
 #include <string>
 #include <vector>
@@ -14,8 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
-#include "components/autofill/browser/wallet/required_action.h"
-#include "components/autofill/browser/wallet/wallet_address.h"
+#include "components/autofill/content/browser/wallet/required_action.h"
+#include "components/autofill/content/browser/wallet/wallet_address.h"
 #include "googleurl/src/gurl.h"
 
 namespace base {
@@ -295,4 +295,4 @@ class WalletItems {
 }  // namespace wallet
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_BROWSER_WALLET_WALLET_ITEMS_H_
+#endif  // COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_WALLET_ITEMS_H_

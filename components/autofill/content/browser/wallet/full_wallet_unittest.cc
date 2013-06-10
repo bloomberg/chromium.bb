@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/autofill/browser/wallet/full_wallet.h"
-#include "components/autofill/browser/wallet/required_action.h"
-#include "components/autofill/browser/wallet/wallet_test_util.h"
+#include "components/autofill/content/browser/wallet/full_wallet.h"
+#include "components/autofill/content/browser/wallet/required_action.h"
+#include "components/autofill/content/browser/wallet/wallet_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

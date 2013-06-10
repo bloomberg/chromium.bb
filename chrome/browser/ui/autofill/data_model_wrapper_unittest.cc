@@ -10,8 +10,8 @@
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/browser/field_types.h"
-#include "components/autofill/browser/wallet/wallet_items.h"
-#include "components/autofill/browser/wallet/wallet_test_util.h"
+#include "components/autofill/content/browser/wallet/wallet_items.h"
+#include "components/autofill/content/browser/wallet/wallet_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {

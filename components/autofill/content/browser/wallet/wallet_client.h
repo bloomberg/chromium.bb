@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_BROWSER_WALLET_WALLET_CLIENT_H_
-#define COMPONENTS_AUTOFILL_BROWSER_WALLET_WALLET_CLIENT_H_
+#ifndef COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_WALLET_CLIENT_H_
+#define COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_WALLET_CLIENT_H_
 
 #include <queue>
 #include <string>
@@ -15,11 +15,11 @@
 #include "base/values.h"
 #include "components/autofill/browser/autofill_manager_delegate.h"
 #include "components/autofill/browser/autofill_metrics.h"
-#include "components/autofill/browser/wallet/encryption_escrow_client.h"
-#include "components/autofill/browser/wallet/encryption_escrow_client_observer.h"
-#include "components/autofill/browser/wallet/full_wallet.h"
-#include "components/autofill/browser/wallet/wallet_items.h"
 #include "components/autofill/common/autocheckout_status.h"
+#include "components/autofill/content/browser/wallet/encryption_escrow_client.h"
+#include "components/autofill/content/browser/wallet/encryption_escrow_client_observer.h"
+#include "components/autofill/content/browser/wallet/full_wallet.h"
+#include "components/autofill/content/browser/wallet/wallet_items.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -320,4 +320,4 @@ class WalletClient
 }  // namespace wallet
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_BROWSER_WALLET_WALLET_CLIENT_H_
+#endif  // COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_WALLET_CLIENT_H_

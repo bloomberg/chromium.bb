@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_BROWSER_WALLET_FULL_WALLET_H_
-#define COMPONENTS_AUTOFILL_BROWSER_WALLET_FULL_WALLET_H_
+#ifndef COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_FULL_WALLET_H_
+#define COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_FULL_WALLET_H_
 
 #include <string>
 #include <vector>
@@ -11,8 +11,8 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/autofill/browser/wallet/required_action.h"
-#include "components/autofill/browser/wallet/wallet_address.h"
+#include "components/autofill/content/browser/wallet/required_action.h"
+#include "components/autofill/content/browser/wallet/wallet_address.h"
 
 namespace base {
 class DictionaryValue;
@@ -127,4 +127,4 @@ class FullWallet {
 }  // namespace wallet
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_BROWSER_WALLET_FULL_WALLET_H_
+#endif  // COMPONENTS_AUTOFILL_CONTENT_BROWSER_WALLET_FULL_WALLET_H_

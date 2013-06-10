@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/browser/wallet/wallet_signin_helper.h"
+#include "components/autofill/content/browser/wallet/wallet_signin_helper.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/stringprintf.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/autofill/browser/wallet/wallet_service_url.h"
-#include "components/autofill/browser/wallet/wallet_signin_helper_delegate.h"
+#include "components/autofill/content/browser/wallet/wallet_service_url.h"
+#include "components/autofill/content/browser/wallet/wallet_signin_helper_delegate.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
