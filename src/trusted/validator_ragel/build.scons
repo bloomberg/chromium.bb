@@ -31,7 +31,8 @@ INSTRUCTION_DEFINITIONS = map(env.File, [
     'instruction_definitions/x87_instructions.def',
     'instruction_definitions/mmx_instructions.def',
     'instruction_definitions/xmm_instructions.def',
-    'instruction_definitions/nops.def'
+    'instruction_definitions/nops.def',
+    'instruction_definitions/tls.def',
 ])
 
 # These objects are included in both dfa_validate_x86_xx and rdfa_validator
