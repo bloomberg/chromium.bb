@@ -374,6 +374,15 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kShowAccessibilityOptionsInSystemTrayMenu,
     prefs::kShouldAlwaysShowAccessibilityMenu,
     Value::TYPE_BOOLEAN },
+  { key::kLargeCursorEnabled,
+    prefs::kLargeCursorEnabled,
+    Value::TYPE_BOOLEAN },
+  { key::kSpokenFeedbackEnabled,
+    prefs::kSpokenFeedbackEnabled,
+    Value::TYPE_BOOLEAN },
+  { key::kHighContrastEnabled,
+    prefs::kHighContrastEnabled,
+    Value::TYPE_BOOLEAN },
   { key::kRebootAfterUpdate,
     prefs::kRebootAfterUpdate,
     Value::TYPE_BOOLEAN },
@@ -454,6 +463,7 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
       NetworkConfigurationPolicyHandler::CreateForDevicePolicy());
   handlers_.push_back(NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   handlers_.push_back(new PinnedLauncherAppsPolicyHandler());
+  handlers_.push_back(new ScreenMagnifierPolicyHandler());
 
   handlers_.push_back(
       new IntRangePolicyHandler(

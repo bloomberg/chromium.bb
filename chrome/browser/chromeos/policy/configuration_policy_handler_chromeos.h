@@ -65,6 +65,19 @@ class PinnedLauncherAppsPolicyHandler : public ExtensionListPolicyHandler {
   DISALLOW_COPY_AND_ASSIGN(PinnedLauncherAppsPolicyHandler);
 };
 
+class ScreenMagnifierPolicyHandler : public IntRangePolicyHandlerBase {
+ public:
+  ScreenMagnifierPolicyHandler();
+  virtual ~ScreenMagnifierPolicyHandler();
+
+  // IntRangePolicyHandlerBase:
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
+                                   PrefValueMap* prefs) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScreenMagnifierPolicyHandler);
+};
+
 }  // namespace policy
 
 #endif  // CHROME_BROWSER_CHROMEOS_POLICY_CONFIGURATION_POLICY_HANDLER_CHROMEOS_H_

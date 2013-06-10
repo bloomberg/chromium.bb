@@ -1739,6 +1739,55 @@
     ]
   },
 
+  "LargeCursorEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "LargeCursorEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.large_cursor_enabled",
+        "indicator_tests": [
+          { "policy": { "LargeCursorEnabled": true } }
+        ]
+      }
+    ]
+  },
+
+  "SpokenFeedbackEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "SpokenFeedbackEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.accessibility",
+        "indicator_tests": [
+          { "policy": { "SpokenFeedbackEnabled": true } }
+        ]
+      }
+    ]
+  },
+
+  "HighContrastEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "HighContrastEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.high_contrast_enabled",
+        "indicator_tests": [
+          { "policy": { "HighContrastEnabled": true } }
+        ]
+      }
+    ]
+  },
+
+  "ScreenMagnifierType": {
+    "os": ["chromeos"],
+    "test_policy": { "ScreenMagnifierType": 1 },
+    "pref_mappings": [
+      { "pref": "settings.a11y.screen_magnifier",
+        "indicator_tests": [
+          { "policy": { "ScreenMagnifierType": 1 } }
+        ]
+      },
+      { "pref": "settings.a11y.screen_magnifier_type2" }
+    ]
+  },
+
   "AttestationEnabledForUser": {
     "os": ["chromeos"],
     "test_policy": { "AttestationEnabledForUser": true },

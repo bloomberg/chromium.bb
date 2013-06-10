@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 210
+#   For your editing convenience: highest ID currently used: 214
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4498,6 +4498,111 @@
           If you set this policy, users cannot change or override it.
 
           If this policy is left unset, Accessibility options will not appear in the system tray menu, but the user can cause the Accessibility options to appear via the Settings page.'''
+        },
+        {
+          'name': 'LargeCursorEnabled',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome_os:29-'],
+          'features': {
+            'can_be_recommended': True,
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': True,
+          'id': 211,
+          'caption': '''Enable large cursor''',
+          'desc': '''Enable the large cursor accessibility feature.
+
+          If this policy is set to true, the large cursor will always be enabled.
+
+          If this policy is set to false, the large cursor will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the large cursor is disabled initially but can be enabled by the user anytime.'''
+        },
+        {
+          'name': 'SpokenFeedbackEnabled',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome_os:29-'],
+          'features': {
+            'can_be_recommended': True,
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': True,
+          'id': 212,
+          'caption': '''Enable spoken feedback''',
+          'desc': '''Enable the spoken feedback accessibility feature.
+
+          If this policy is set to true, spoken feedback will always be enabled.
+
+          If this policy is set to false, spoken feedback will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, spoken feedback is disabled initially but can be enabled by the user anytime.'''
+        },
+        {
+          'name': 'HighContrastEnabled',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome_os:29-'],
+          'features': {
+            'can_be_recommended': True,
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': True,
+          'id': 213,
+          'caption': '''Enable high contrast mode''',
+          'desc': '''Enable the high contrast mode accessibility feature.
+
+          If this policy is set to true, high contrast mode will always be enabled.
+
+          If this policy is set to false, high contrast mode will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, high contrast mode is disabled initially but can be enabled by the user anytime.'''
+        },
+        {
+          'name': 'ScreenMagnifierType',
+          'type': 'int-enum',
+          'schema': {
+            'type': 'integer',
+            'enum': [ 0, 1 ],
+          },
+          'items': [
+            {
+              'name': 'None',
+              'value': 0,
+              'caption': '''Screen magnifier disabled''',
+            },
+            {
+              'name': 'Full-screen',
+              'value': 1,
+              'caption': '''Full-screen magnifier enabled''',
+            },
+          ],
+          'supported_on': ['chrome_os:29-'],
+          'features': {
+            'can_be_recommended': True,
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': 1,
+          'id': 214,
+          'caption': '''Set screen magnifier type''',
+          'desc': '''Set the type of screen magnifier that is enabled.
+
+          If this policy is set, it controls the type of screen magnifier that is enabled. Setting the policy to "None" disables the screen magnifier.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the screen magnifier is disabled initially but can be enabled by the user anytime.''',
         },
       ],
     },

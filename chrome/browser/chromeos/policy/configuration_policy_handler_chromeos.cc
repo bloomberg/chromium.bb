@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/magnifier/magnifier_constants.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
@@ -164,6 +165,27 @@ void PinnedLauncherAppsPolicyHandler::ApplyPolicySettings(
       }
     }
     prefs->SetValue(pref_path(), pinned_apps_list);
+  }
+}
+
+ScreenMagnifierPolicyHandler::ScreenMagnifierPolicyHandler()
+    : IntRangePolicyHandlerBase(key::kScreenMagnifierType,
+                                0, ash::MAGNIFIER_FULL, false) {
+}
+
+ScreenMagnifierPolicyHandler::~ScreenMagnifierPolicyHandler() {
+}
+
+void ScreenMagnifierPolicyHandler::ApplyPolicySettings(
+    const PolicyMap& policies,
+    PrefValueMap* prefs) {
+  const base::Value* value = policies.GetValue(policy_name());
+  int value_in_range;
+  if (value && EnsureInRange(value, &value_in_range, NULL)) {
+    prefs->SetValue(prefs::kScreenMagnifierEnabled,
+                    base::Value::CreateBooleanValue(value_in_range != 0));
+    prefs->SetValue(prefs::kScreenMagnifierType,
+                    base::Value::CreateIntegerValue(value_in_range));
   }
 }
 

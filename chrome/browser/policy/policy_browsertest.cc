@@ -122,8 +122,11 @@
 #if defined(OS_CHROMEOS)
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
+#include "ash/magnifier/magnifier_constants.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chromeos/audio/audio_pref_handler.h"
 #endif
@@ -1866,6 +1869,124 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SessionLengthLimit) {
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
 }
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, LargeCursorEnabled) {
+  // Verifies that the large cursor accessibility feature can be controlled
+  // through policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+
+  // Manually enable the large cursor.
+  accessibility_manager->EnableLargeCursor(true);
+  EXPECT_TRUE(accessibility_manager->IsLargeCursorEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kLargeCursorEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateBooleanValue(false));
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(accessibility_manager->IsLargeCursorEnabled());
+
+  // Verify that the large cursor cannot be enabled manually anymore.
+  accessibility_manager->EnableLargeCursor(true);
+  EXPECT_FALSE(accessibility_manager->IsLargeCursorEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, SpokenFeedbackEnabled) {
+  // Verifies that the spoken feedback accessibility feature can be controlled
+  // through policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+
+  // Manually enable spoken feedback.
+  accessibility_manager->EnableSpokenFeedback(
+      true, NULL, ash::A11Y_NOTIFICATION_NONE);
+  EXPECT_TRUE(accessibility_manager->IsSpokenFeedbackEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kSpokenFeedbackEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateBooleanValue(false));
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(accessibility_manager->IsSpokenFeedbackEnabled());
+
+  // Verify that spoken feedback cannot be enabled manually anymore.
+  accessibility_manager->EnableSpokenFeedback(
+      true, NULL, ash::A11Y_NOTIFICATION_NONE);
+  EXPECT_FALSE(accessibility_manager->IsSpokenFeedbackEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, HighContrastEnabled) {
+  // Verifies that the high contrast mode accessibility feature can be
+  // controlled through policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+
+  // Manually enable high contrast mode.
+  accessibility_manager->EnableHighContrast(true);
+  EXPECT_TRUE(accessibility_manager->IsHighContrastEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kHighContrastEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateBooleanValue(false));
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(accessibility_manager->IsHighContrastEnabled());
+
+  // Verify that high contrast mode cannot be enabled manually anymore.
+  accessibility_manager->EnableHighContrast(true);
+  EXPECT_FALSE(accessibility_manager->IsHighContrastEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, ScreenMagnifierTypeNone) {
+  // Verifies that the screen magnifier can be disabled through policy.
+  chromeos::MagnificationManager* magnification_manager =
+      chromeos::MagnificationManager::Get();
+
+  // Manually enable the full-screen magnifier.
+  magnification_manager->SetMagnifierType(ash::MAGNIFIER_FULL);
+  magnification_manager->SetMagnifierEnabled(true);
+  EXPECT_EQ(ash::MAGNIFIER_FULL, magnification_manager->GetMagnifierType());
+  EXPECT_TRUE(magnification_manager->IsMagnifierEnabled());
+
+  // Verify that policy overrides the manual setting.
+  PolicyMap policies;
+  policies.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateIntegerValue(0));
+  UpdateProviderPolicy(policies);
+  EXPECT_FALSE(magnification_manager->IsMagnifierEnabled());
+
+  // Verify that the screen magnifier cannot be enabled manually anymore.
+  magnification_manager->SetMagnifierEnabled(true);
+  EXPECT_FALSE(magnification_manager->IsMagnifierEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, ScreenMagnifierTypeFull) {
+  // Verifies that the full-screen magnifier can be enabled through policy.
+  chromeos::MagnificationManager* magnification_manager =
+      chromeos::MagnificationManager::Get();
+
+  // Verify that the screen magnifier is initially disabled.
+  EXPECT_FALSE(magnification_manager->IsMagnifierEnabled());
+
+  // Verify that policy can enable the full-screen magnifier.
+  PolicyMap policies;
+  policies.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER,
+               base::Value::CreateIntegerValue(ash::MAGNIFIER_FULL));
+  UpdateProviderPolicy(policies);
+  EXPECT_EQ(ash::MAGNIFIER_FULL, magnification_manager->GetMagnifierType());
+  EXPECT_TRUE(magnification_manager->IsMagnifierEnabled());
+
+  // Verify that the screen magnifier cannot be disabled manually anymore.
+  magnification_manager->SetMagnifierEnabled(false);
+  EXPECT_TRUE(magnification_manager->IsMagnifierEnabled());
+}
+
 #endif
 
 namespace {

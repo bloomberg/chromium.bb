@@ -161,10 +161,13 @@ class MagnificationManagerImpl : public MagnificationManager,
     const int type_integer =
         profile_->GetPrefs()->GetInteger(prefs::kScreenMagnifierType);
 
-    ash::MagnifierType type = ash::MAGNIFIER_FULL;
-    if (type_integer == ash::MAGNIFIER_FULL ||
-        type_integer == ash::MAGNIFIER_PARTIAL) {
+    ash::MagnifierType type = ash::kDefaultMagnifierType;
+    if (type_integer > 0 && type_integer <= ash::kMaxMagnifierType) {
       type = static_cast<ash::MagnifierType>(type_integer);
+    } else if (type_integer == 0) {
+      // Type 0 is used to disable the screen magnifier through policy. As the
+      // magnifier type is irrelevant in this case, it is OK to just fall back
+      // to the default.
     } else {
       NOTREACHED();
     }
