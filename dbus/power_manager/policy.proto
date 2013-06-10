@@ -103,11 +103,13 @@ message PowerManagementPolicy {
   // be reset once the video has stopped.
   optional bool use_video_activity = 6;
 
-  // Factor by which |idle_ms| will be scaled while the device is in
-  // presentation mode.  Other delays' distances from |idle_ms| are
+  // Factor by which |screen_dim_ms| will be scaled while the device is in
+  // presentation mode.  Other delays' distances from |screen_dim_ms| are
   // preserved after scaling.  A value of 1.0 (or less) leaves delays
-  // unchanged.
-  optional double presentation_idle_delay_factor = 7;
+  // unchanged. If the conditions used for both this field and
+  // |user_activity_screen_dim_delay_factor| are true, this field takes
+  // precedence.
+  optional double presentation_screen_dim_delay_factor = 10;
 
   // Factor by which |screen_dim_ms| will be scaled if user activity is
   // observed while the screen is dimmed or soon after it is turned off.
@@ -121,5 +123,8 @@ message PowerManagementPolicy {
   // Logged by the power manager to aid in debugging.
   optional string reason = 8;
 
-  // Next ID to use: 10
+  // DEPRECATED: Use |presentation_screen_dim_delay_factor| instead.
+  optional double presentation_idle_delay_factor = 7;
+
+  // Next ID to use: 11
 }
