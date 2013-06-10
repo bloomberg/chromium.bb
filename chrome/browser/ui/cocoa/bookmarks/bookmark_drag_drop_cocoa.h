@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_DRAG_DROP_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_DRAG_DROP_COCOA_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 #if defined(__OBJC__)
 @class NSImage;

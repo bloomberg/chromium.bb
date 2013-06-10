@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_VALIDATION_MESSAGE_BUBBLE_CONTROLLER_H_
 #define CHROME_BROWSER_UI_COCOA_VALIDATION_MESSAGE_BUBBLE_CONTROLLER_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 
 // A bubble controller implementation for ValidationMessageBubbleCocoa class.

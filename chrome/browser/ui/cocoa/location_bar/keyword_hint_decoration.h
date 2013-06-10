@@ -10,7 +10,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 
 #import "base/memory/scoped_nsobject.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 // Draws the keyword hint, "Press [tab] to search <site>".
 

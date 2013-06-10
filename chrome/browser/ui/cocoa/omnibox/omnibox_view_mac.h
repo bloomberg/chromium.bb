@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 

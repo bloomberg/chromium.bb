@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 

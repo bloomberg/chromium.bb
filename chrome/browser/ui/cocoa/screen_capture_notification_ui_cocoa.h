@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/screen_capture_notification_ui.h"
 
 // Controller for the screen capture notification window which allows the user

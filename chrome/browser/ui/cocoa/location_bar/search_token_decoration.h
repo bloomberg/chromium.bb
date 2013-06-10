@@ -8,7 +8,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 
 #import "base/memory/scoped_nsobject.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 // This class is used to draw a label on the right side of the omnibox when
 // the user does a search. For example, if the default search provider is

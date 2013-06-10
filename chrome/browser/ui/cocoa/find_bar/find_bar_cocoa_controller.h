@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/gfx/point.h"
 
 class Browser;

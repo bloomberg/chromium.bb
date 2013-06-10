@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #import "base/mac/mac_util.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "grit/generated_resources.h"

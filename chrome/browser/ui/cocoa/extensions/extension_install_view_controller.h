@@ -11,7 +11,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "ui/gfx/image/image_skia.h"
 

@@ -9,7 +9,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/cocoa/location_bar/bubble_decoration.h"
 
 class SelectedKeywordDecoration : public BubbleDecoration {

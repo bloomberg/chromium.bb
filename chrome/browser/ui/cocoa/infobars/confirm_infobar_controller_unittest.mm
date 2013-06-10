@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/infobars/confirm_infobar_controller.h"
 
 #include "base/memory/scoped_nsobject.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"

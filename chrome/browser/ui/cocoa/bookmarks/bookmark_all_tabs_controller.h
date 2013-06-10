@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_base_controller.h"
 
 // A list of pairs containing the name and URL associated with each

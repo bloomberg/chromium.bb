@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace cocoa_l10n_util {
 
