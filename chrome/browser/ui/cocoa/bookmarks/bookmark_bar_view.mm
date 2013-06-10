@@ -69,6 +69,7 @@ using content::UserMetricsAction;
   ui::ThemeProvider* themeProvider = [window themeProvider];
   [self updateTheme:themeProvider];
   [controller_ updateTheme:themeProvider];
+  [super viewWillMoveToWindow:window];
 }
 
 - (void)viewDidMoveToWindow {
