@@ -10,7 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/animation/timing_function.h"
 #include "cc/base/math_util.h"

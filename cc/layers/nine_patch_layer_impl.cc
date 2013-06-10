@@ -4,7 +4,7 @@
 
 #include "cc/layers/nine_patch_layer_impl.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "cc/layers/quad_sink.h"
 #include "cc/quads/texture_draw_quad.h"

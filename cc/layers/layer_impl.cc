@@ -5,7 +5,7 @@
 #include "cc/layers/layer_impl.h"
 
 #include "base/debug/trace_event.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/animation/scrollbar_animation_controller_linear_fade.h"

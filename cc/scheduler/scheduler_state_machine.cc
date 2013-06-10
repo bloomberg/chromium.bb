@@ -5,7 +5,7 @@
 #include "cc/scheduler/scheduler_state_machine.h"
 
 #include "base/logging.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 
 namespace cc {
 

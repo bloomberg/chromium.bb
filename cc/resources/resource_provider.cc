@@ -10,8 +10,8 @@
 #include "base/debug/alias.h"
 #include "base/hash_tables.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "cc/output/gl_renderer.h"  // For the GLC() macro.
 #include "cc/resources/platform_color.h"
 #include "cc/resources/transferable_resource.h"

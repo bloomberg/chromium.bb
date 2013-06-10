@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/stringprintf.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/debug/debug_rect_history.h"
 #include "cc/debug/frame_rate_counter.h"

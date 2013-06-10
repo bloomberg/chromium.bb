@@ -12,8 +12,8 @@
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/string_util.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/video_layer_impl.h"

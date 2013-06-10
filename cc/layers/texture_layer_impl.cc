@@ -4,7 +4,7 @@
 
 #include "cc/layers/texture_layer_impl.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "cc/layers/quad_sink.h"
 #include "cc/output/renderer.h"
 #include "cc/quads/texture_draw_quad.h"

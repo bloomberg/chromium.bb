@@ -5,7 +5,7 @@
 #include "cc/layers/tiled_layer_impl.h"
 
 #include "base/basictypes.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/layers/append_quads_data.h"

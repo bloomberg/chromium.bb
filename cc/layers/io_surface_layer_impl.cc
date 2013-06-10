@@ -4,7 +4,7 @@
 
 #include "cc/layers/io_surface_layer_impl.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "cc/layers/quad_sink.h"
 #include "cc/output/gl_renderer.h"  // For the GLC() macro.
 #include "cc/output/output_surface.h"

@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/debug/trace_event.h"
-#include "base/string_util.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
