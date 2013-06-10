@@ -26,9 +26,12 @@ class CONTENT_EXPORT SpeechRecognizer
   virtual bool IsCapturingAudio() const = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<SpeechRecognizer>;
-
   virtual ~SpeechRecognizer() {}
+  SpeechRecognitionEventListener* listener() const { return listener_; }
+  int session_id() const { return session_id_; }
+
+ private:
+  friend class base::RefCountedThreadSafe<SpeechRecognizer>;
 
   SpeechRecognitionEventListener* listener_;
   int session_id_;
