@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_TEST_H_
 
 #include "base/compiler_specific.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/diagnostics/diagnostics_model.h"
 
 namespace base {

@@ -7,7 +7,7 @@
 
 #include "chrome/browser/download/download_extensions.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 

@@ -5,7 +5,7 @@
 #include "chrome/browser/devtools/browser_list_tabcontents_provider.h"
 
 #include "base/path_service.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
