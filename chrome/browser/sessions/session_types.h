@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/time.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "components/sessions/serialized_navigation_entry.h"

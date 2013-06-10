@@ -4,7 +4,7 @@
 //
 // Program to test the SafeBrowsing protocol parsing v2.1.
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

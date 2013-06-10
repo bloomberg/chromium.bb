@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 
 class Profile;

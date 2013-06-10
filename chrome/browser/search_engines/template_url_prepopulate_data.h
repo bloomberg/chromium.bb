@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 
 class GURL;

@@ -18,7 +18,7 @@
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/performance_monitor/startup_timer.h"

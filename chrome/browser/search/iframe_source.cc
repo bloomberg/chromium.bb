@@ -6,8 +6,8 @@
 
 #include "base/json/string_escape.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/string_util.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/render_view_host.h"

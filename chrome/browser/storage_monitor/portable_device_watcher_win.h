@@ -13,7 +13,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 
 namespace base {

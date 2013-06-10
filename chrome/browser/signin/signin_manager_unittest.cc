@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/signin/chrome_signin_manager_delegate.h"

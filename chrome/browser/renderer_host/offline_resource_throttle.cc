@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/url_constants.h"

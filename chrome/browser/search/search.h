@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/common/instant_types.h"
 
 class GURL;

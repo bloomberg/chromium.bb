@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/time.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "googleurl/src/gurl.h"

@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_instance.h"

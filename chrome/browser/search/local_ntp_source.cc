@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"

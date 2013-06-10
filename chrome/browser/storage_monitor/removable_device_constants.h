@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_STORAGE_MONITOR_REMOVABLE_DEVICE_CONSTANTS_H_
 
 #include "base/files/file_path.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 
 namespace chrome {

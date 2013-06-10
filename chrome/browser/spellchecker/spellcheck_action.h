@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_ACTION_H_
 #define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_ACTION_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace base {
 class DictionaryValue;

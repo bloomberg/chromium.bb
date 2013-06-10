@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SPELLCHECKER_WORD_TRIMMER_H_
 #define CHROME_BROWSER_SPELLCHECKER_WORD_TRIMMER_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 // Trims |text| to contain only the range from |start| to |end| and |keep| words
 // on either side of the range. The |start| and |end| parameters are character

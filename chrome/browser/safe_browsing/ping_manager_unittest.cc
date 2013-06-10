@@ -4,12 +4,12 @@
 //
 
 #include "base/logging.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/time.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
 using base::TimeDelta;

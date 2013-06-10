@@ -9,7 +9,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/policy/policy_path_parser.h"

@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/observer_list_threadsafe.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 

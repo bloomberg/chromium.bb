@@ -5,7 +5,7 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

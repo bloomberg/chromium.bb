@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/common/env_vars.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/google_api_keys.h"

@@ -14,7 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/win/scoped_co_mem.h"

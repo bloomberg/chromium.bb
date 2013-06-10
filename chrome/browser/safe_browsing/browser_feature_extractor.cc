@@ -11,7 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/format_macros.h"
 #include "base/stl_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/time.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_service.h"

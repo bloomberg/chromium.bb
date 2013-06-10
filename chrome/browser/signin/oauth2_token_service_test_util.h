@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 extern const char kValidTokenResponse[];

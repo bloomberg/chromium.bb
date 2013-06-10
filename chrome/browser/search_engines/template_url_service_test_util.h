@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread.h"

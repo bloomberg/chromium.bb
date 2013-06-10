@@ -15,7 +15,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"
 

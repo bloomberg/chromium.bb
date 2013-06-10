@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/storage_monitor/volume_mount_watcher_win.h"
 

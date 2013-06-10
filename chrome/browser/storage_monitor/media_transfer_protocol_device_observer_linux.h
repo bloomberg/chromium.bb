@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_vector.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"

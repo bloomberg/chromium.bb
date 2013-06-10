@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/signin/oauth2_token_service.h"
 #include "chrome/browser/signin/oauth2_token_service_test_util.h"
 #include "chrome/browser/signin/token_service_factory.h"

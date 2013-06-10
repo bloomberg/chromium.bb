@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 //
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time.h"

@@ -4,7 +4,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/search_engines/search_terms_data.h"

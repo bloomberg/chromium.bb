@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/compiler_specific.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"

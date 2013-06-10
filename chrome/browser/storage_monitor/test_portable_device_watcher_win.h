@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/storage_monitor/portable_device_watcher_win.h"
 
 namespace chrome {

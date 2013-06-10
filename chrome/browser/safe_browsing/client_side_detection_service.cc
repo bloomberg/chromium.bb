@@ -12,7 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"

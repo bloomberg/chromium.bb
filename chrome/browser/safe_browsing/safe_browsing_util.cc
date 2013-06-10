@@ -5,8 +5,8 @@
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
 #include "base/logging.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/google/google_util.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
