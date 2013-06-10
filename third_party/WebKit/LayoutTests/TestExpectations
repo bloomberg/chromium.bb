@@ -83,9 +83,6 @@ webkit.org/b/66989 transforms/3d/point-mapping/3d-point-mapping-deep.html [ Slow
 # The test has been timing out since landed in r130587.
 webkit.org/b/98659 [ Debug ] fast/dom/gc-dom-tree-lifetime.html [ Pass Timeout ]
 
-# Has been timing out intermittently for a long time.
-webkit.org/b/101236 [ Debug ] css3/filters/custom/custom-filter-animation.html [ Pass Timeout ]
-
 webkit.org/b/101362 [ Debug ] fast/dom/Window/customized-property-survives-gc.html [ Slow ]
 
 # This test os slow since r144263
@@ -1043,15 +1040,6 @@ crbug.com/240374 virtual/softwarecompositing/overlap-blending/reflection-opacity
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
 crbug.com/240374 virtual/softwarecompositing/overlap-blending/preserves3d-opacity.html [ ImageOnlyFailure ]
-
-# The following tests will need rebaselining.
-crbug.com/237518 css3/filters/effect-reference.html [ ImageOnlyFailure Failure ]
-crbug.com/229689 css3/filters/effect-reference-colorspace.html [ ImageOnlyFailure Missing ]
-crbug.com/229689 css3/filters/effect-reference-colorspace-hw.html [ ImageOnlyFailure Missing ]
-crbug.com/237518 css3/filters/effect-reference-composite.html [ ImageOnlyFailure Failure ]
-
-# The following tests will fail until hueRotate.svg is modified
-crbug.com/229689 css3/filters/effect-reference-external.html [ ImageOnlyFailure ]
 
 webkit.org/b/95588 [ Mac ] fast/dom/shadow/shadowdom-for-textarea-complex-shadow.html [ ImageOnlyFailure ]
 
