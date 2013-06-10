@@ -547,8 +547,8 @@
         ]
       },
       {
-        "name": "requestLocalFileSystem",
-        "description": "Requests access to local file system",
+        "name": "requestFileSystem",
+        "description": "Requests access to the file system specially set up for Files.app. The filesystem has multiple mount points which provide access to the user's Downloadsfolder, removal media like SD cards, and Drive. See comments at CrosDiskMountPorivder for details.",
         "parameters": [
           {
             "name": "callback",

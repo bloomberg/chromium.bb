@@ -12685,7 +12685,7 @@ other types of suffix sets.
   <int value="105" label="TERMINALPRIVATE_OPENTERMINALPROCESS"/>
   <int value="106" label="SERIAL_CLOSE"/>
   <int value="107" label="CONTEXTMENUS_REMOVE"/>
-  <int value="108" label="FILEBROWSERPRIVATE_REQUESTLOCALFILESYSTEM"/>
+  <int value="108" label="FILEBROWSERPRIVATE_REQUESTFILESYSTEM"/>
   <int value="109" label="ECHOPRIVATE_GETREGISTRATIONCODE"/>
   <int value="110" label="TABS_GETCURRENT"/>
   <int value="111" label="FONTSETTINGS_CLEARDEFAULTFIXEDFONTSIZE"/>

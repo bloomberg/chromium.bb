@@ -310,7 +310,7 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
  * @private
  */
 VolumeManager.prototype.waitDriveLoaded_ = function(mountPath, callback) {
-  chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
+  chrome.fileBrowserPrivate.requestFileSystem(function(filesystem) {
     filesystem.root.getDirectory(mountPath, {},
         function(entry) {
           // After file system is mounted, we need to "read" drive grand root

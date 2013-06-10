@@ -7,7 +7,7 @@
 var binding = require('binding').Binding.create('fileBrowserPrivate');
 
 var fileBrowserPrivateNatives = requireNative('file_browser_private');
-var GetLocalFileSystem = fileBrowserPrivateNatives.GetLocalFileSystem;
+var GetFileSystem = fileBrowserPrivateNatives.GetFileSystem;
 
 var fileBrowserNatives = requireNative('file_browser_handler');
 var GetExternalFileEntry = fileBrowserNatives.GetExternalFileEntry;
@@ -15,11 +15,11 @@ var GetExternalFileEntry = fileBrowserNatives.GetExternalFileEntry;
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
-  apiFunctions.setCustomCallback('requestLocalFileSystem',
+  apiFunctions.setCustomCallback('requestFileSystem',
                                  function(name, request, response) {
     var fs = null;
     if (response && !response.error)
-      fs = GetLocalFileSystem(response.name, response.path);
+      fs = GetFileSystem(response.name, response.path);
     if (request.callback)
       request.callback(fs);
     request.callback = null;

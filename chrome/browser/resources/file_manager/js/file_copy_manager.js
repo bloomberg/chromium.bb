@@ -224,7 +224,7 @@ FileCopyManager.prototype.initialize = function(callback) {
     callback();
     return;
   }
-  chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
+  chrome.fileBrowserPrivate.requestFileSystem(function(filesystem) {
     this.root_ = filesystem.root;
     callback();
   }.bind(this));

@@ -145,7 +145,7 @@ function loadVideoPlayer() {
 
     // If the video player is starting before the first instance of the File
     // Manager then it does not have access to filesystem URLs. Request it now.
-    chrome.fileBrowserPrivate.requestLocalFileSystem(reload);
+    chrome.fileBrowserPrivate.requestFileSystem(reload);
 
     volumeManager.addEventListener('externally-unmounted',
                                    onExternallyUnmounted);

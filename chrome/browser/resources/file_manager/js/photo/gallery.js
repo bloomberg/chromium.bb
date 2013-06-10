@@ -101,7 +101,7 @@ Gallery.openStandalone = function(path, pageState, opt_callback) {
   var selectedUrls = [];
   var appWindow = util.platform.v2() ? chrome.app.window.current() : null;
 
-  Gallery.getFileBrowserPrivate().requestLocalFileSystem(function(filesystem) {
+  Gallery.getFileBrowserPrivate().requestFileSystem(function(filesystem) {
     // If the path points to the directory scan it.
     filesystem.root.getDirectory(path, {create: false}, scanDirectory,
         function() {

@@ -111,7 +111,7 @@ ActionChoice.load = function(opt_filesystem, opt_params) {
     if (opt_filesystem) {
       onFilesystem(opt_filesystem);
     } else {
-      chrome.fileBrowserPrivate.requestLocalFileSystem(onFilesystem);
+      chrome.fileBrowserPrivate.requestFileSystem(onFilesystem);
     }
   });
 };

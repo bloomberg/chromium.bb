@@ -131,14 +131,14 @@ class LogoutUserFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-// Implements the chrome.fileBrowserPrivate.requestLocalFileSystem method.
-class RequestLocalFileSystemFunction : public FileBrowserFunction {
+// Implements the chrome.fileBrowserPrivate.requestFileSystem method.
+class RequestFileSystemFunction : public FileBrowserFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.requestLocalFileSystem",
-                             FILEBROWSERPRIVATE_REQUESTLOCALFILESYSTEM)
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.requestFileSystem",
+                             FILEBROWSERPRIVATE_REQUESTFILESYSTEM)
 
  protected:
-  virtual ~RequestLocalFileSystemFunction() {}
+  virtual ~RequestFileSystemFunction() {}
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;

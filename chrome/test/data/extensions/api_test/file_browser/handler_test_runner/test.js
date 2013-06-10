@@ -193,7 +193,7 @@ function run() {
   }
 
   /**
-   * Callback for chrome.fileBrowserPrivate.requestLocalFileSystem.
+   * Callback for chrome.fileBrowserPrivate.requestFileSystem.
    * When the local fileSystem is found, tries to get the test mount point root
    * dir by probing for existence of possible mount point root dirs.
    * The Chrome should have enabled either 'local/' or 'drive/' mount point.
@@ -224,7 +224,7 @@ function run() {
     tryNextMountPoint();
   }
 
-  chrome.fileBrowserPrivate.requestLocalFileSystem(onGotFileSystem);
+  chrome.fileBrowserPrivate.requestFileSystem(onGotFileSystem);
 }
 
 // Start the testing.

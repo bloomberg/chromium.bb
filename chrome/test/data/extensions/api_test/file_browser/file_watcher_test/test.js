@@ -271,7 +271,7 @@ function initTests(callback) {
   };
 
   // Get the file system.
-  chrome.fileBrowserPrivate.requestLocalFileSystem(function(fileSystem) {
+  chrome.fileBrowserPrivate.requestFileSystem(function(fileSystem) {
     if(!fileSystem) {
       callback(testParams, 'Failed to get file system,');
       return;

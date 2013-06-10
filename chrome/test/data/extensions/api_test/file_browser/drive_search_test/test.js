@@ -70,7 +70,7 @@ function getEntryVerifier(type) {
 chrome.test.runTests([
   // Loads filesystem that contains drive mount point.
   function loadFileSystem() {
-    chrome.fileBrowserPrivate.requestLocalFileSystem(
+    chrome.fileBrowserPrivate.requestFileSystem(
       function (fileSystem) {
         chrome.test.assertFalse(!fileSystem, 'Failed to get file system.');
         fileSystem.root.getDirectory('drive/root/test_dir', {create: false},

@@ -72,7 +72,7 @@ AudioPlayer.load = function() {
 
   // If the audio player is starting before the first instance of the File
   // Manager then it does not have access to filesystem URLs. Request it now.
-  chrome.fileBrowserPrivate.requestLocalFileSystem(function() {
+  chrome.fileBrowserPrivate.requestFileSystem(function() {
     AudioPlayer.instance =
         new AudioPlayer(document.querySelector('.audio-player'));
     chrome.mediaPlayerPrivate.onPlaylistChanged.addListener(getPlaylist);

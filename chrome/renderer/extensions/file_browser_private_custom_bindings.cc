@@ -21,12 +21,12 @@ FileBrowserPrivateCustomBindings::FileBrowserPrivateCustomBindings(
     Dispatcher* dispatcher, ChromeV8Context* context)
     : ChromeV8Extension(dispatcher, context) {
   RouteFunction(
-      "GetLocalFileSystem",
-       base::Bind(&FileBrowserPrivateCustomBindings::GetLocalFileSystem,
+      "GetFileSystem",
+       base::Bind(&FileBrowserPrivateCustomBindings::GetFileSystem,
                   base::Unretained(this)));
 }
 
-v8::Handle<v8::Value> FileBrowserPrivateCustomBindings::GetLocalFileSystem(
+v8::Handle<v8::Value> FileBrowserPrivateCustomBindings::GetFileSystem(
     const v8::Arguments& args) {
   DCHECK(args.Length() == 2);
   DCHECK(args[0]->IsString());

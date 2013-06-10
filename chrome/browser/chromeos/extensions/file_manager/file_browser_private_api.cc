@@ -426,7 +426,7 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<FileDialogStringsFunction>();
   registry->RegisterFunction<GetFileTasksFileBrowserFunction>();
   registry->RegisterFunction<GetVolumeMetadataFunction>();
-  registry->RegisterFunction<RequestLocalFileSystemFunction>();
+  registry->RegisterFunction<RequestFileSystemFunction>();
   registry->RegisterFunction<AddFileWatchBrowserFunction>();
   registry->RegisterFunction<RemoveFileWatchBrowserFunction>();
   registry->RegisterFunction<SelectFileFunction>();
@@ -475,7 +475,7 @@ bool LogoutUserFunction::RunImpl() {
   return true;
 }
 
-void RequestLocalFileSystemFunction::DidOpenFileSystem(
+void RequestFileSystemFunction::DidOpenFileSystem(
     scoped_refptr<fileapi::FileSystemContext> file_system_context,
     base::PlatformFileError result,
     const std::string& name,
@@ -517,7 +517,7 @@ void RequestLocalFileSystemFunction::DidOpenFileSystem(
   SendResponse(true);
 }
 
-void RequestLocalFileSystemFunction::DidFail(
+void RequestFileSystemFunction::DidFail(
     base::PlatformFileError error_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -525,7 +525,7 @@ void RequestLocalFileSystemFunction::DidFail(
   SendResponse(false);
 }
 
-bool RequestLocalFileSystemFunction::SetupFileSystemAccessPermissions(
+bool RequestFileSystemFunction::SetupFileSystemAccessPermissions(
     scoped_refptr<fileapi::FileSystemContext> file_system_context,
     int child_id,
     scoped_refptr<const extensions::Extension> extension) {
@@ -561,7 +561,7 @@ bool RequestLocalFileSystemFunction::SetupFileSystemAccessPermissions(
   return true;
 }
 
-bool RequestLocalFileSystemFunction::RunImpl() {
+bool RequestFileSystemFunction::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!dispatcher() || !render_view_host() || !render_view_host()->GetProcess())
@@ -579,7 +579,7 @@ bool RequestLocalFileSystemFunction::RunImpl() {
       origin_url,
       fileapi::kFileSystemTypeExternal,
       fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
-      base::Bind(&RequestLocalFileSystemFunction::DidOpenFileSystem,
+      base::Bind(&RequestFileSystemFunction::DidOpenFileSystem,
                  this,
                  file_system_context));
   return true;

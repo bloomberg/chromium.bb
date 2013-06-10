@@ -29,7 +29,7 @@ var ImageLoader = function() {
   this.worker_ = new ImageLoader.Worker();
 
   // Grant permissions to the local file system.
-  chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
+  chrome.fileBrowserPrivate.requestFileSystem(function(filesystem) {
     // TODO(mtomasz): Handle.
   });
 
