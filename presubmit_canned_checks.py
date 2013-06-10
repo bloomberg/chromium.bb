@@ -328,7 +328,7 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
   SPECIAL_JAVA_STARTS = ('package ', 'import ')
 
   def no_long_lines(file_extension, line):
-    # Allow special java statements to be as long as neccessary.
+    # Allow special java statements to be as long as necessary.
     if file_extension == 'java' and line.startswith(SPECIAL_JAVA_STARTS):
       return True
 
@@ -487,7 +487,7 @@ def GetUnitTestsInDirectory(
     input_api, output_api, directory, whitelist=None, blacklist=None):
   """Lists all files in a directory and runs them. Doesn't recurse.
 
-  It's mainly a wrapper for RunUnitTests. USe whitelist and blacklist to filter
+  It's mainly a wrapper for RunUnitTests. Use whitelist and blacklist to filter
   tests accordingly.
   """
   unit_tests = []
@@ -546,6 +546,7 @@ def GetUnitTests(input_api, output_api, unit_tests):
         kwargs={'cwd': input_api.PresubmitLocalPath()},
         message=message_type))
   return results
+
 
 def GetPythonUnitTests(input_api, output_api, unit_tests):
   """Run the unit tests out of process, capture the output and use the result

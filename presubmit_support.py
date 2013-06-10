@@ -489,11 +489,76 @@ class InputApi(object):
     return [m for m in msgs if m]
 
 
+class _DiffCache(object):
+  """Caches diffs retrieved from a particular SCM."""
+
+  def GetDiff(self, path, local_root):
+    """Get the diff for a particular path."""
+    raise NotImplementedError()
+
+
+class _SvnDiffCache(_DiffCache):
+  """DiffCache implementation for subversion."""
+  def __init__(self):
+    super(_SvnDiffCache, self).__init__()
+    self._diffs_by_file = {}
+
+  def GetDiff(self, path, local_root):
+    if path not in self._diffs_by_file:
+      self._diffs_by_file[path] = scm.SVN.GenerateDiff([path], local_root,
+                                                       False, None)
+    return self._diffs_by_file[path]
+
+
+class _GitDiffCache(_DiffCache):
+  """DiffCache implementation for git; gets all file diffs at once."""
+  def __init__(self):
+    super(_GitDiffCache, self).__init__()
+    self._diffs_by_file = None
+
+  def GetDiff(self, path, local_root):
+    if not self._diffs_by_file:
+      # Compute a single diff for all files and parse the output; should
+      # with git this is much faster than computing one diff for each file.
+      diffs = {}
+
+      # Don't specify any filenames below, because there are command line length
+      # limits on some platforms and GenerateDiff would fail.
+      unified_diff = scm.GIT.GenerateDiff(local_root, files=[], full_move=True)
+
+      # This regex matches the path twice, separated by a space. Note that
+      # filename itself may contain spaces.
+      file_marker = re.compile('^diff --git (?P<filename>.*) (?P=filename)$')
+      current_diff = []
+      keep_line_endings = True
+      for x in unified_diff.splitlines(keep_line_endings):
+        match = file_marker.match(x)
+        if match:
+          # Marks the start of a new per-file section.
+          diffs[match.group('filename')] = current_diff = [x]
+        elif x.startswith('diff --git'):
+          raise PresubmitFailure('Unexpected diff line: %s' % x)
+        else:
+          current_diff.append(x)
+
+      self._diffs_by_file = dict(
+        (normpath(path), ''.join(diff)) for path, diff in diffs.items())
+
+    if path not in self._diffs_by_file:
+      raise PresubmitFailure(
+          'Unified diff did not contain entry for file %s' % path)
+
+    return self._diffs_by_file[path]
+
+
 class AffectedFile(object):
   """Representation of a file in a change."""
+
+  DIFF_CACHE = _DiffCache
+
   # Method could be a function
   # pylint: disable=R0201
-  def __init__(self, path, action, repository_root):
+  def __init__(self, path, action, repository_root, diff_cache=None):
     self._path = path
     self._action = action
     self._local_root = repository_root
@@ -501,6 +566,10 @@ class AffectedFile(object):
     self._properties = {}
     self._cached_changed_contents = None
     self._cached_new_contents = None
+    if diff_cache:
+      self._diff_cache = diff_cache
+    else:
+      self._diff_cache = self.DIFF_CACHE()
     logging.debug('%s(%s)' % (self.__class__.__name__, self._path))
 
   def ServerPath(self):
@@ -508,7 +577,7 @@ class AffectedFile(object):
 
     Returns the empty string if the file does not exist in SCM.
     """
-    return ""
+    return ''
 
   def LocalPath(self):
     """Returns the path of this file on the local disk relative to client root.
@@ -565,22 +634,6 @@ class AffectedFile(object):
           pass  # File not found?  That's fine; maybe it was deleted.
     return self._cached_new_contents[:]
 
-  def OldContents(self):
-    """Returns an iterator over the lines in the old version of file.
-
-    The old version is the file in depot, i.e. the "left hand side".
-    """
-    raise NotImplementedError()  # Implement when needed
-
-  def OldFileTempPath(self):
-    """Returns the path on local disk where the old contents resides.
-
-    The old version is the file in depot, i.e. the "left hand side".
-    This is a read-only cached copy of the old contents. *DO NOT* try to
-    modify this file.
-    """
-    raise NotImplementedError()  # Implement if/when needed.
-
   def ChangedContents(self):
     """Returns a list of tuples (line number, line text) of all new lines.
 
@@ -612,7 +665,7 @@ class AffectedFile(object):
     return self.LocalPath()
 
   def GenerateScmDiff(self):
-    raise NotImplementedError()  # Implemented in derived classes.
+    return self._diff_cache.GetDiff(self.LocalPath(), self._local_root)
 
 
 class SvnAffectedFile(AffectedFile):
@@ -620,11 +673,12 @@ class SvnAffectedFile(AffectedFile):
   # Method 'NNN' is abstract in class 'NNN' but is not overridden
   # pylint: disable=W0223
 
+  DIFF_CACHE = _SvnDiffCache
+
   def __init__(self, *args, **kwargs):
     AffectedFile.__init__(self, *args, **kwargs)
     self._server_path = None
     self._is_text_file = None
-    self._diff = None
 
   def ServerPath(self):
     if self._server_path is None:
@@ -664,23 +718,18 @@ class SvnAffectedFile(AffectedFile):
         self._is_text_file = (not mime_type or mime_type.startswith('text/'))
     return self._is_text_file
 
-  def GenerateScmDiff(self):
-    if self._diff is None:
-      self._diff = scm.SVN.GenerateDiff(
-          [self.LocalPath()], self._local_root, False, None)
-    return self._diff
-
 
 class GitAffectedFile(AffectedFile):
   """Representation of a file in a change out of a git checkout."""
   # Method 'NNN' is abstract in class 'NNN' but is not overridden
   # pylint: disable=W0223
 
+  DIFF_CACHE = _GitDiffCache
+
   def __init__(self, *args, **kwargs):
     AffectedFile.__init__(self, *args, **kwargs)
     self._server_path = None
     self._is_text_file = None
-    self._diff = None
 
   def ServerPath(self):
     if self._server_path is None:
@@ -714,12 +763,6 @@ class GitAffectedFile(AffectedFile):
         self._is_text_file = os.path.isfile(self.AbsoluteLocalPath())
     return self._is_text_file
 
-  def GenerateScmDiff(self):
-    if self._diff is None:
-      self._diff = scm.GIT.GenerateDiff(
-          self._local_root, files=[self.LocalPath(),])
-    return self._diff
-
 
 class Change(object):
   """Describe a change.
@@ -728,7 +771,7 @@ class Change(object):
   tested.
 
   Instance members:
-    tags: Dictionnary of KEY=VALUE pairs found in the change description.
+    tags: Dictionary of KEY=VALUE pairs found in the change description.
     self.KEY: equivalent to tags['KEY']
   """
 
@@ -769,9 +812,10 @@ class Change(object):
     assert all(
         (isinstance(f, (list, tuple)) and len(f) == 2) for f in files), files
 
+    diff_cache = self._AFFECTED_FILES.DIFF_CACHE()
     self._affected_files = [
-        self._AFFECTED_FILES(info[1], info[0].strip(), self._local_root)
-        for info in files
+        self._AFFECTED_FILES(path, action.strip(), self._local_root, diff_cache)
+        for action, path in files
     ]
 
   def Name(self):

@@ -318,7 +318,7 @@ class FilePatchDiff(FilePatchBase):
 
     Expects the following format:
 
-    <garbagge>
+    <garbage>
     diff --git (|a/)<filename> (|b/)<filename>
     <similarity>
     <filemode changes>
