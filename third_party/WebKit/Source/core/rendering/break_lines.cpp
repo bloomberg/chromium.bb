@@ -182,4 +182,12 @@ int nextBreakablePositionIgnoringNBSP(LazyLineBreakIterator& lazyBreakIterator, 
     return nextBreakablePosition<UChar, false>(lazyBreakIterator, string.characters16(), string.length(), pos);
 }
 
+int nextBreakablePosition(LazyLineBreakIterator& lazyBreakIterator, int pos)
+{
+    String string = lazyBreakIterator.string();
+    if (string.is8Bit())
+        return nextBreakablePosition<LChar, true>(lazyBreakIterator, string.characters8(), string.length(), pos);
+    return nextBreakablePosition<UChar, true>(lazyBreakIterator, string.characters16(), string.length(), pos);
+}
+
 } // namespace WebCore

@@ -297,6 +297,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitMaskPosition,
     CSSPropertyWebkitMaskRepeat,
     CSSPropertyWebkitMaskSize,
+    CSSPropertyWebkitNbspMode,
     CSSPropertyWebkitOrder,
 #if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
     CSSPropertyWebkitOverflowScrolling,
@@ -2255,6 +2256,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return cssValuePool().createValue(style->overflowWrap());
         case CSSPropertyWebkitLineBreak:
             return cssValuePool().createValue(style->lineBreak());
+        case CSSPropertyWebkitNbspMode:
+            return cssValuePool().createValue(style->nbspMode());
         case CSSPropertyResize:
             return cssValuePool().createValue(style->resize());
         case CSSPropertyWebkitFontKerning:
