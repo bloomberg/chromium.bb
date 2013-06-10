@@ -6,7 +6,7 @@
 
 #include "ash/system/tray/tray_item_view.h"
 #include "base/process_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "ui/base/text/bytes_formatting.h"

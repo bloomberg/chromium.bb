@@ -12,7 +12,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/user/login_status.h"
 #include "base/logging.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/border.h"

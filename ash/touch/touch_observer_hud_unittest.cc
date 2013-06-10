@@ -12,7 +12,7 @@
 #include "ash/wm/property_util.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 
 namespace ash {
 namespace internal {

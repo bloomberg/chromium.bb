@@ -15,7 +15,7 @@
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_popup_header_button.h"
 #include "base/i18n/time_formatting.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
 #include "base/timer.h"

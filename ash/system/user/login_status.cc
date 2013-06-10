@@ -6,7 +6,7 @@
 
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
