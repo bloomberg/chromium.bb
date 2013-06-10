@@ -4,61 +4,52 @@
 
 #include <string>
 
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/remove_stale_cache_files.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
 namespace internal {
-namespace {
-
-const int64 kLotsOfSpace = kMinFreeSpace * 10;
-
-}  // namespace
 
 class RemoveStaleCacheFilesTest : public testing::Test {
  protected:
-  RemoveStaleCacheFilesTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
-  }
-
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
     cache_.reset(new FileCache(temp_dir_.path(),
-                               message_loop_.message_loop_proxy(),
+                               base::MessageLoopProxy::current(),
                                fake_free_disk_space_getter_.get()));
 
     resource_metadata_.reset(new ResourceMetadata(
         cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_META),
-        message_loop_.message_loop_proxy()));
+        base::MessageLoopProxy::current()));
 
     bool success = false;
     cache_->RequestInitialize(
         google_apis::test_util::CreateCopyResultCallback(&success));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(success);
 
     FileError error = FILE_ERROR_FAILED;
     resource_metadata_->Initialize(
         google_apis::test_util::CreateCopyResultCallback(&error));
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     ASSERT_EQ(FILE_ERROR_OK, error);
   }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir temp_dir_;
 
   scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
@@ -68,8 +59,9 @@ class RemoveStaleCacheFilesTest : public testing::Test {
 };
 
 TEST_F(RemoveStaleCacheFilesTest, RemoveStaleCacheFiles) {
-  base::FilePath dummy_file =
-      google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json");
+  base::FilePath dummy_file;
+  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
+                                                  &dummy_file));
   std::string resource_id("pdf:1a2b3c");
   std::string md5("abcdef0123456789");
 
