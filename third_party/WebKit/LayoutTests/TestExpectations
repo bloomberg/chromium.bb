@@ -1821,3 +1821,7 @@ crbug.com/248128 inspector/console/console-url-and-line.html [ Pass Failure ]
 # Rebaselines needed
 crbug.com/247782 virtual/softwarecompositing/color-matching/image-color-matching.html [ ImageOnlyFailure Pass ]
 crbug.com/247782 virtual/softwarecompositing/culling/tile-occlusion-boundaries.html [ ImageOnlyFailure Pass ]
+
+crbug.com/248146 [ Linux ] editing/selection/after-line-wrap.html [ ImageOnlyFailure Pass ]
+crbug.com/248146 [ Linux ] editing/style/create-block-for-style-012.html [ ImageOnlyFailure Pass ]
+crbug.com/248146 [ Linux ] fast/text/whitespace/nbsp-mode-and-linewraps.html [ ImageOnlyFailure Pass ]
