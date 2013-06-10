@@ -335,7 +335,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVARect) {
       ExactPixelComparator(true)));
 }
 
-TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
+TYPED_TEST(RendererPixelTest, DISABLED_FastPassColorFilterAlpha) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   RenderPass::Id root_pass_id(1, 1);
@@ -434,7 +434,7 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
       FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
 }
 
-TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
+TYPED_TEST(RendererPixelTest, DISABLED_FastPassColorFilterAlphaTranslation) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   RenderPass::Id root_pass_id(1, 1);
