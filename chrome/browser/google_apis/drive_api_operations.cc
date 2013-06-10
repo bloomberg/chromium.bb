@@ -9,7 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
-#include "chrome/browser/google_apis/operation_util.h"
+#include "chrome/browser/google_apis/request_util.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "content/public/browser/browser_thread.h"
 
