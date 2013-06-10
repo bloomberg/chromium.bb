@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/gtk/event_utils.h"
 
 #include "base/basictypes.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/events/event_constants.h"
 

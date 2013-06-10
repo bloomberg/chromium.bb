@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/point.h"

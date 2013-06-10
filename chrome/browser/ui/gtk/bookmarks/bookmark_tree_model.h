@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_GTK_BOOKMARKS_BOOKMARK_TREE_MODEL_H_
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 class BookmarkModel;
 class BookmarkNode;

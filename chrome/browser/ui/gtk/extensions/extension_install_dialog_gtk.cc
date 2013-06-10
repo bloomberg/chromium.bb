@@ -5,7 +5,7 @@
 #include <gtk/gtk.h>
 
 #include "base/i18n/rtl.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
