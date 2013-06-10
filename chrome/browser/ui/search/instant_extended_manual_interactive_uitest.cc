@@ -10,11 +10,13 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/search/instant_ntp.h"
 #include "chrome/browser/ui/search/instant_overlay.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/search_types.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -25,6 +27,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/network_change_notifier.h"
 #include "net/dns/mock_host_resolver.h"
 
 // !!! IMPORTANT !!!
@@ -56,6 +59,23 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
         testing::UnitTest::GetInstance()->current_test_info();
     ASSERT_TRUE(StartsWithASCII(test_info->name(), "MANUAL_", true) ||
                 StartsWithASCII(test_info->name(), "DISABLED_", true));
+    // Make IsOffline() return false so we don't try to use the local overlay.
+    disable_network_change_notifier_.reset(
+        new net::NetworkChangeNotifier::DisableForTest());
+  }
+
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    disable_network_change_notifier_.reset();
+  }
+
+  void ResetInstant() {
+    set_browser(browser());
+    instant()->SetInstantEnabled(false, true);
+    instant()->SetInstantEnabled(true, false);
+
+    FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
+    ASSERT_TRUE(IsGoogleOverlay());
+    ASSERT_TRUE(IsGoogleNTP());
   }
 
  protected:
@@ -116,15 +136,26 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
                          "google.ac.gs().api.i()", selected);
   }
 
-  bool OverlayIsGoogle() {
-    content::WebContents* overlay_contents = instant()->GetOverlayContents();
-    return overlay_contents &&
-        overlay_contents->GetTitle() == ASCIIToUTF16("Google");
+  bool IsGooglePage(content::WebContents* contents) {
+    bool is_google = false;
+    if (!GetBoolFromJS(contents, "!!window.google", &is_google))
+      return false;
+    return is_google;
+  }
+
+  bool IsGoogleOverlay() {
+    return IsGooglePage(instant()->overlay()->contents());
+  }
+
+  bool IsGoogleNTP() {
+    return IsGooglePage(instant()->ntp()->contents());
   }
 
  private:
   scoped_refptr<net::RuleBasedHostResolverProc> host_resolver_proc_;
   scoped_ptr<net::ScopedDefaultHostResolverProc> scoped_host_resolver_proc_;
+  scoped_ptr<net::NetworkChangeNotifier::DisableForTest>
+      disable_network_change_notifier_;
 };
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
@@ -144,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
 
   // Refocus the omnibox. The InstantController should've preloaded Instant.
   FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
-  EXPECT_TRUE(OverlayIsGoogle());
+  ASSERT_TRUE(IsGoogleOverlay());
 
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
   EXPECT_TRUE(omnibox()->model()->has_focus());
@@ -154,274 +185,4 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   EXPECT_TRUE(instant()->overlay()->supports_instant());
   EXPECT_FALSE(instant()->IsOverlayingSearchResults());
   EXPECT_TRUE(instant()->model()->mode().is_default());
-}
-
-// TODO: http://crbug.com/230940
-IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       DISABLED_BackspaceFromQueryToSameQueryAndSearch) {
-  set_browser(browser());
-  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
-  EXPECT_TRUE(OverlayIsGoogle());
-
-  // Type "face" and expect Google to set gray text for "book" to suggest
-  // [facebook], the query.
-  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("face"));
-  EXPECT_EQ(ASCIIToUTF16("face"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16("book"), GetGrayText());
-
-  // Backspace to the text "fac".
-  EXPECT_TRUE(PressBackspaceAndWaitForSuggestions());
-  EXPECT_EQ(ASCIIToUTF16("fac"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16("ebook"), GetGrayText());
-
-  // Press Enter. The page should show search results for [fac].
-  EXPECT_TRUE(PressEnterAndWaitForNavigationWithTitle(
-      instant()->GetOverlayContents(),
-      ASCIIToUTF16("fac - Google Search")));
-}
-
-// TODO: http://crbug.com/230940
-IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       DISABLED_BackspaceFromQueryToOtherQueryAndSearch) {
-  set_browser(browser());
-  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
-  EXPECT_TRUE(OverlayIsGoogle());
-
-  // Type "fan" and expect Google to set gray text to "dango" to suggest
-  // [fandango], the query.
-  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("fan"));
-  EXPECT_EQ(ASCIIToUTF16("fan"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16("dango"), GetGrayText());
-
-  // Backspace to the text "fa". Expect Google to set gray text for "cebook" to
-  // suggest [facebook], the query.
-  EXPECT_TRUE(PressBackspaceAndWaitForSuggestions());
-  EXPECT_EQ(ASCIIToUTF16("fa"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16("cebook"), GetGrayText());
-
-  // Press Enter. Instant should clear gray text and submit the query [fa].
-  EXPECT_TRUE(PressEnterAndWaitForNavigationWithTitle(
-      instant()->GetOverlayContents(),
-      ASCIIToUTF16("fa - Google Search")));
-}
-
-IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_BackspaceFromUrlToNonSelectedUrlAndSearch) {
-  set_browser(browser());
-  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
-  EXPECT_TRUE(OverlayIsGoogle());
-
-  // Type "facebook.c" and expect Google to set blue text to "om" to suggest
-  // http://www.facebook.com/, the URL.
-  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("facebook.c"));
-  EXPECT_EQ(ASCIIToUTF16("facebook.com"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16("om"), GetBlueText());
-  bool selected = false;
-  EXPECT_TRUE(GetSelectionState(&selected));
-  EXPECT_TRUE(selected);
-
-  // Backspace to the text "facebook.c". Expect no suggestion text and no
-  // selected suggestion.
-  // Page won't actually show because it's showing "press enter to search".
-  EXPECT_TRUE(PressBackspaceAndWaitForSuggestions());
-  EXPECT_EQ(ASCIIToUTF16("facebook.c"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
-  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
-  EXPECT_TRUE(GetSelectionState(&selected));
-  EXPECT_FALSE(selected);
-
-  // Press Enter. Instant should submit the query "facebook.c".
-  EXPECT_TRUE(PressEnterAndWaitForNavigationWithTitle(
-      active_tab(), ASCIIToUTF16("facebook.c - Google Search")));
-}
-
-IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_BackspaceFromUrlToUrlAndNavigate) {
-  set_browser(browser());
-  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
-  EXPECT_TRUE(OverlayIsGoogle());
-
-  // Type "facebook.com/" and expect Google to set blue text to "login.php" to
-  // suggest http://www.facebook.com/login.php, the URL.
-  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("facebook.com/"));
-  EXPECT_EQ(ASCIIToUTF16("facebook.com/login.php"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16("login.php"), GetBlueText());
-  bool selected = false;
-  EXPECT_TRUE(GetSelectionState(&selected));
-  EXPECT_TRUE(selected);
-
-  // Backspace to the text "facebook.com/". There should be no suggestion text,
-  // but the first suggestion should be selected.
-  EXPECT_TRUE(PressBackspaceAndWaitForSuggestions());
-  EXPECT_EQ(ASCIIToUTF16("facebook.com/"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
-  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
-  selected = false;
-  EXPECT_TRUE(GetSelectionState(&selected));
-  EXPECT_TRUE(selected);
-
-  // Press Enter. Instant should navigate to facebook.com.
-  PressEnterAndWaitForNavigation();
-  EXPECT_TRUE(GetActiveTabURL().DomainIs("facebook.com"));
-}
-
-IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_BackspaceFromQueryToSelectedUrlAndNavigate) {
-  set_browser(browser());
-  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
-  EXPECT_TRUE(OverlayIsGoogle());
-
-  // Type "a.cop" and expect top match to be a search, not a url.
-  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("a.cop"));
-  EXPECT_EQ(ASCIIToUTF16("a.cop"), omnibox()->GetText());
-  EXPECT_TRUE(instant()->last_match_was_search_);
-
-  // Backspace to the text "a.co". Expect no suggestion text, but the
-  // first suggestion should be selected URL "a.co".
-  EXPECT_TRUE(PressBackspaceAndWaitForSuggestions());
-  EXPECT_EQ(ASCIIToUTF16("a.co"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
-  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
-  bool selected = false;
-  EXPECT_TRUE(GetSelectionState(&selected));
-  EXPECT_TRUE(selected);
-
-  // Press Enter. Instant should navigate to a.co/.
-  PressEnterAndWaitForNavigation();
-  EXPECT_TRUE(GetActiveTabURL().DomainIs("amazon.com"));
-}
-
-// TODO: http://crbug.com/230491
-IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       DISABLED_BackspaceFromSelectedUrlToQueryAndSearch) {
-  set_browser(browser());
-  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
-  EXPECT_TRUE(OverlayIsGoogle());
-
-  // Type "e.co/" and expect the top suggestion to be the URL "e.co/".
-  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("e.co/"));
-  EXPECT_EQ(ASCIIToUTF16("e.co/"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
-  EXPECT_EQ(ASCIIToUTF16(""), GetGrayText());
-  bool selected = false;
-  EXPECT_TRUE(GetSelectionState(&selected));
-  EXPECT_TRUE(selected);
-
-  // Backspace to the text "e.co". Expect Google to suggest the query [e.coli].
-  EXPECT_TRUE(PressBackspaceAndWaitForOverlayToShow());
-  EXPECT_EQ(ASCIIToUTF16("e.co"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
-  EXPECT_EQ(ASCIIToUTF16("li"), GetGrayText());
-  selected = true;
-  EXPECT_TRUE(GetSelectionState(&selected));
-  EXPECT_FALSE(selected);
-
-  // Press Enter. Instant should search for "e.co".
-  EXPECT_TRUE(PressEnterAndWaitForNavigationWithTitle(
-      instant()->GetOverlayContents(),
-      ASCIIToUTF16("e.co - Google Search")));
-}
-
-IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_TypeURLAndPressEnter) {
-  set_browser(browser());
-  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
-  EXPECT_TRUE(OverlayIsGoogle());
-
-  // Type "www.facebook.com" and expect the top suggestion to be the URL
-  // facebook.com.
-  ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("www.facebook.com"));
-  EXPECT_EQ(ASCIIToUTF16("www.facebook.com"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16(""), GetBlueText());
-  bool selected = false;
-  EXPECT_TRUE(GetSelectionState(&selected));
-  EXPECT_TRUE(selected);
-
-  // Press Enter. Should navigate to facebook.com.
-  PressEnterAndWaitForNavigation();
-  EXPECT_TRUE(GetActiveTabURL().DomainIs("facebook.com"));
-}
-
-// TODO: http://crbug.com/232088
-IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       DISABLED_TypeAutocompletedURLAndPressEnter) {
-  set_browser(browser());
-  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
-  EXPECT_TRUE(OverlayIsGoogle());
-
-  // Type "www.facebook." and expect the top suggestion to be the URL
-  // www.facebook.com.
-  SetOmniboxTextAndWaitForSuggestion("www.facebook.");
-  EXPECT_EQ(ASCIIToUTF16("www.facebook.com"), omnibox()->GetText());
-  EXPECT_EQ(ASCIIToUTF16("com"), GetBlueText());
-  bool selected = false;
-  EXPECT_TRUE(GetSelectionState(&selected));
-  EXPECT_TRUE(selected);
-
-  // Press Enter. Should navigate to facebook.com.
-  PressEnterAndWaitForNavigation();
-  EXPECT_TRUE(GetActiveTabURL().DomainIs("facebook.com"));
-}
-
-IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_PasteURLAndPressEnter) {
-  set_browser(browser());
-  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
-  EXPECT_TRUE(OverlayIsGoogle());
-
-  // Paste "www.facebook.com" and expect the top suggestion to be the URL
-  // facebook.com.
-  InstantTestModelObserver observer(
-      instant()->model(), SearchMode::MODE_SEARCH_SUGGESTIONS);
-  omnibox()->OnBeforePossibleChange();
-  omnibox()->model()->on_paste();
-  SetOmniboxText("www.facebook.com");
-  omnibox()->OnAfterPossibleChange();
-  ASSERT_EQ(SearchMode::MODE_SEARCH_SUGGESTIONS,
-            observer.WaitForExpectedOverlayState());
-  EXPECT_EQ(ASCIIToUTF16("www.facebook.com"), omnibox()->GetText());
-  EXPECT_EQ(string16(), GetBlueText());
-  bool selected = false;
-  EXPECT_TRUE(GetSelectionState(&selected));
-  EXPECT_TRUE(selected);
-
-  // Press Enter. Should navigate to facebook.com.
-  PressEnterAndWaitForNavigation();
-  EXPECT_TRUE(GetActiveTabURL().DomainIs("facebook.com"));
-}
-
-IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_PasteAndGo) {
-  set_browser(browser());
-  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
-  EXPECT_TRUE(OverlayIsGoogle());
-
-  // "Paste and Go" with the text www.facebook.com.
-  content::WindowedNotificationObserver nav_observer(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::NotificationService::AllSources());
-  omnibox()->model()->PasteAndGo(ASCIIToUTF16("www.facebook.com"));
-  nav_observer.Wait();
-  EXPECT_TRUE(GetActiveTabURL().DomainIs("facebook.com"));
-}
-
-IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_TypeSearchAndPressControlEnter) {
-  set_browser(browser());
-  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
-  EXPECT_TRUE(OverlayIsGoogle());
-
-  // Type "example" and expect Google to suggest a query, i.e., no blue text.
-  SetOmniboxTextAndWaitForSuggestion("example");
-  EXPECT_EQ(ASCIIToUTF16("example"), omnibox()->GetText());
-  EXPECT_EQ(string16(), GetBlueText());
-
-  // Press ctrl+enter and expect to navigate to example.com.
-  content::WindowedNotificationObserver nav_observer(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::NotificationService::AllSources());
-  omnibox()->model()->OnControlKeyChanged(true);
-  browser()->window()->GetLocationBar()->AcceptInput();
-  nav_observer.Wait();
-  // example.com redirects to iana.
-  EXPECT_TRUE(GetActiveTabURL().DomainIs("example.com") ||
-              GetActiveTabURL().DomainIs("iana.org"));
 }

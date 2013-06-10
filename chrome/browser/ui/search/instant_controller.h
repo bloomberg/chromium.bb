@@ -252,6 +252,7 @@ class InstantController : public InstantPage::Delegate {
   virtual InstantNTP* ntp() const;
 
  private:
+  friend class InstantExtendedManualTest;
   friend class InstantTestBase;
   FRIEND_TEST_ALL_PREFIXES(InstantControllerTest,
                            ShouldSwitchToLocalOverlayReturn);
