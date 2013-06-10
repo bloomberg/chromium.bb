@@ -1078,9 +1078,6 @@ void InspectorDOMAgent::inspect(Node* inspectedNode)
     int nodeId = pushNodePathToFrontend(node);
     if (nodeId)
         m_frontend->inspectNodeRequested(nodeId);
-
-    ErrorString error;
-    setSearchingForNode(&error, false, 0);
 }
 
 void InspectorDOMAgent::handleMouseMove(Frame* frame, const PlatformMouseEvent& event)
