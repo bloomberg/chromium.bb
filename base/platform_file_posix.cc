@@ -81,12 +81,18 @@ PlatformFile CreatePlatformFileUnsafe(const FilePath& name,
     open_flags |= O_WRONLY;
   } else if (!(flags & PLATFORM_FILE_READ) &&
              !(flags & PLATFORM_FILE_WRITE_ATTRIBUTES) &&
+             !(flags & PLATFORM_FILE_APPEND) &&
              !(flags & PLATFORM_FILE_OPEN_ALWAYS)) {
     NOTREACHED();
   }
 
   if (flags & PLATFORM_FILE_TERMINAL_DEVICE)
     open_flags |= O_NOCTTY | O_NDELAY;
+
+  if (flags & PLATFORM_FILE_APPEND && flags & PLATFORM_FILE_READ)
+    open_flags |= O_APPEND | O_RDWR;
+  else if (flags & PLATFORM_FILE_APPEND)
+    open_flags |= O_APPEND | O_WRONLY;
 
   COMPILE_ASSERT(O_RDONLY == 0, O_RDONLY_must_equal_zero);
 
@@ -207,6 +213,10 @@ int ReadPlatformFileCurPosNoBestEffort(PlatformFile file,
 int WritePlatformFile(PlatformFile file, int64 offset,
                       const char* data, int size) {
   base::ThreadRestrictions::AssertIOAllowed();
+
+  if (fcntl(file, F_GETFL) & O_APPEND)
+    return WritePlatformFileAtCurrentPos(file, data, size);
+
   if (file < 0 || size < 0)
     return -1;
 

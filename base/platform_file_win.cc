@@ -51,9 +51,15 @@ PlatformFile CreatePlatformFileUnsafe(const FilePath& name,
     return NULL;
   }
 
-  DWORD access = (flags & PLATFORM_FILE_READ) ? GENERIC_READ : 0;
+  DWORD access = 0;
   if (flags & PLATFORM_FILE_WRITE)
-    access |= GENERIC_WRITE;
+    access = GENERIC_WRITE;
+  if (flags & PLATFORM_FILE_APPEND) {
+    DCHECK(!access);
+    access = FILE_APPEND_DATA;
+  }
+  if (flags & PLATFORM_FILE_READ)
+    access |= GENERIC_READ;
   if (flags & PLATFORM_FILE_WRITE_ATTRIBUTES)
     access |= FILE_WRITE_ATTRIBUTES;
   if (flags & PLATFORM_FILE_EXECUTE)
