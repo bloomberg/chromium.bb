@@ -258,7 +258,13 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
 
 // Test that hosted apps without the background permission use a process per app
 // instance model, such that separate instances are in separate processes.
-IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessInstances) {
+// Flaky on Windows. http://crbug.com/248047
+#if defined(OS_WIN)
+#define MAYBE_AppProcessInstances DISABLED_AppProcessInstances
+#else
+#define MAYBE_AppProcessInstances AppProcessInstances
+#endif
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessInstances) {
   TestAppInstancesHelper("app_process_instances");
 }
 
