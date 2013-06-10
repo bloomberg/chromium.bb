@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "base/compiler_specific.h"
+#include "base/debug/leak_annotations.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
@@ -808,8 +809,14 @@ void ThreadData::ShutdownSingleThreadedCleanup(bool leak) {
   // To avoid any chance of racing in unit tests, which is the only place we
   // call this function, we may sometimes leak all the data structures we
   // recovered, as they may still be in use on threads from prior tests!
-  if (leak)
+  if (leak) {
+    ThreadData* thread_data = thread_data_list;
+    while (thread_data) {
+      ANNOTATE_LEAKING_OBJECT_PTR(thread_data);
+      thread_data = thread_data->next();
+    }
     return;
+  }
 
   // When we want to cleanup (on a single thread), here is what we do.
 

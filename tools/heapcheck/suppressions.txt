@@ -290,23 +290,6 @@
    fun:base::ToolsSanityTest_MemoryLeak_Test::TestBody
 }
 {
-   Intentional leak in object tracking statics to avoid shutdown race
-   Heapcheck:Leak
-   ...
-   fun:tracked_objects::ThreadData::Initialize*
-}
-{
-   Intentional leak in object tracking of thread context to avoid shutdown race
-   Heapcheck:Leak
-   fun:tracked_objects::ThreadData::Get
-}
-{
-   Intentional leak of task birth and death data to avoid shutdown race
-   Heapcheck:Leak
-   ...
-   fun:tracked_objects::ThreadData::TallyA*
-}
-{
    FileStream::Context can leak through WorkerPool by design (Linux)
    Heapcheck:Leak
    fun:net::FileStream::FileStream
@@ -907,22 +890,6 @@
    Heapcheck:Leak
    fun:ui::InputMethodIBus::CreateContext
    fun:ui::InputMethodIBus::Init
-}
-{
-   bug_136936_a
-   Heapcheck:Leak
-   ...
-   fun:std::basic_string::_Rep::_S_create
-   ...
-   fun:base::PlatformThread::SetName
-}
-{
-   bug_136936_b
-   Heapcheck:Leak
-   ...
-   fun:std::basic_string::_Rep::_S_create
-   ...
-   fun:base::PlatformThread::CurrentId
 }
 {
    bug_143565
