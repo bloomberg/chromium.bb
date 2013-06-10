@@ -18,20 +18,6 @@ OffTheRecordClipboardTest.ClearContentData
 GpuPixelBrowserTest.*
 FileSystemBrowserTestWithLowQuota.QuotaTest
 ChildProcessSecurityPolicyInProcessBrowserTest.NoLeak
-WorkerLayoutTest.SharedWorkerFastConstructor
-WorkerLayoutTest.SharedWorkerFastContextGC
-WorkerLayoutTest.SharedWorkerFastException
-WorkerLayoutTest.SharedWorkerFastGC
-WorkerLayoutTest.SharedWorkerFastInIframe
-WorkerLayoutTest.SharedWorkerFastLocation
-WorkerLayoutTest.SharedWorkerFastName
-WorkerLayoutTest.SharedWorkerFastNavigator
-WorkerLayoutTest.SharedWorkerFastReplaceGlobalConstructor
-WorkerLayoutTest.SharedWorkerFastReplaceSelf
-WorkerLayoutTest.SharedWorkerFastScriptError
-WorkerLayoutTest.SharedWorkerFastShared
-WorkerLayoutTest.SharedWorkerFastSimple
-WorkerXHRHttpLayoutTest.Tests
 
 # Needs to start the test server before
 # BrowserTestBase::SetUpCommandLine is called, but on Android
