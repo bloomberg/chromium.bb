@@ -1486,6 +1486,16 @@ void RenderBlock::computeExclusionShapeSize()
     }
 }
 
+void RenderBlock::updateRegionsAndExclusionsAfterChildLayout(RenderFlowThread* flowThread, bool heightChanged)
+{
+    // A previous sibling has changed dimension, so we need to relayout the shape with the content
+    ExclusionShapeInsideInfo* shapeInsideInfo = layoutExclusionShapeInsideInfo();
+    if (heightChanged && shapeInsideInfo)
+        shapeInsideInfo->dirtyShapeSize();
+
+    computeRegionRangeForBlock(flowThread);
+}
+
 void RenderBlock::computeRegionRangeForBlock(RenderFlowThread* flowThread)
 {
     if (flowThread)
@@ -1634,12 +1644,13 @@ void RenderBlock::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeigh
         }
     }
 
-    if (previousHeight != newHeight)
+    bool heightChanged = (previousHeight != newHeight);
+    if (heightChanged)
         relayoutChildren = true;
 
     layoutPositionedObjects(relayoutChildren || isRoot());
 
-    computeRegionRangeForBlock(flowThread);
+    updateRegionsAndExclusionsAfterChildLayout(flowThread, heightChanged);
 
     // Add overflow from children (unless we're multi-column, since in that case all our child overflow is clipped anyway).
     computeOverflow(oldClientAfterEdge);

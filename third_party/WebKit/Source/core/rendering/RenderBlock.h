@@ -573,6 +573,7 @@ protected:
 
 private:
     void computeExclusionShapeSize();
+    void updateRegionsAndExclusionsAfterChildLayout(RenderFlowThread*, bool);
     void updateExclusionShapeInsideInfoAfterStyleChange(const ExclusionShapeValue*, const ExclusionShapeValue* oldExclusionShape);
 
     virtual RenderObjectChildList* virtualChildren() OVERRIDE FINAL { return children(); }
