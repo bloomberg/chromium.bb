@@ -11,6 +11,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -22,7 +23,6 @@
 namespace base {
 class SequencedTaskRunner;
 class SingleThreadTaskRunner;
-class Thread;
 }
 
 namespace tracked_objects {
@@ -563,6 +563,28 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   virtual void GetServiceOwner(const std::string& service_name,
                                const GetServiceOwnerCallback& callback);
 
+  // Whenever the owner for |service_name| changes, run |callback| with the
+  // name of the new owner. If the owner goes away, then |callback| receives
+  // an empty string.
+  //
+  // Any unique (service_name, callback) can be used. Duplicate are ignored.
+  // |service_name| must not be empty and |callback| must not be null.
+  //
+  // Must be called in the origin thread.
+  virtual void ListenForServiceOwnerChange(
+      const std::string& service_name,
+      const GetServiceOwnerCallback& callback);
+
+  // Stop listening for |service_name| owner changes for |callback|.
+  // Any unique (service_name, callback) can be used. Non-registered callbacks
+  // for a given service name are ignored.
+  // |service_name| must not be empty and |callback| must not be null.
+  //
+  // Must be called in the origin thread.
+  virtual void UnlistenForServiceOwnerChange(
+      const std::string& service_name,
+      const GetServiceOwnerCallback& callback);
+
   // Returns true if the bus is connected to D-Bus.
   bool is_connected() { return connection_ != NULL; }
 
@@ -591,6 +613,16 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // Helper function used for GetServiceOwner().
   void GetServiceOwnerInternal(const std::string& service_name,
                                const GetServiceOwnerCallback& callback);
+
+  // Helper function used for ListenForServiceOwnerChange().
+  void ListenForServiceOwnerChangeInternal(
+      const std::string& service_name,
+      const GetServiceOwnerCallback& callback);
+
+  // Helper function used for UnListenForServiceOwnerChange().
+  void UnlistenForServiceOwnerChangeInternal(
+      const std::string& service_name,
+      const GetServiceOwnerCallback& callback);
 
   // Processes the all incoming data to the connection, if any.
   //
@@ -625,6 +657,9 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // Called when the connection is diconnected.
   void OnConnectionDisconnected(DBusConnection* connection);
 
+  // Called when a service owner change occurs.
+  void OnServiceOwnerChanged(DBusMessage* message);
+
   // Callback helper functions. Redirects to the corresponding member function.
   static dbus_bool_t OnAddWatchThunk(DBusWatch* raw_watch, void* data);
   static void OnRemoveWatchThunk(DBusWatch* raw_watch, void* data);
@@ -636,8 +671,14 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
                                            DBusDispatchStatus status,
                                            void* data);
 
-  // Calls OnConnectionDisconnected if the Diconnected signal is received.
+  // Calls OnConnectionDisconnected if the Disconnected signal is received.
   static DBusHandlerResult OnConnectionDisconnectedFilter(
+      DBusConnection* connection,
+      DBusMessage* message,
+      void* user_data);
+
+  // Calls OnServiceOwnerChanged for a NameOwnerChanged signal.
+  static DBusHandlerResult OnServiceOwnerChangedFilter(
       DBusConnection* connection,
       DBusMessage* message,
       void* user_data);
@@ -683,6 +724,16 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   typedef std::map<std::string,
                    scoped_refptr<dbus::ObjectManager> > ObjectManagerTable;
   ObjectManagerTable object_manager_table_;
+
+  // A map of NameOwnerChanged signals to listen for and the callbacks to run
+  // on the origin thread when the owner changes.
+  // Only accessed on the DBus thread.
+  // Key: Service name
+  // Value: Vector of callbacks. Unique and expected to be small. Not using
+  //        std::set here because base::Callbacks don't have a '<' operator.
+  typedef std::map<std::string, std::vector<GetServiceOwnerCallback> >
+      ServiceOwnerChangedListenerMap;
+  ServiceOwnerChangedListenerMap service_owner_changed_listener_map_;
 
   bool async_operations_set_up_;
   bool shutdown_completed_;

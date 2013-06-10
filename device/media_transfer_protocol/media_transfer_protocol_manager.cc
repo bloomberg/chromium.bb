@@ -50,15 +50,29 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     session_bus_ = new dbus::Bus(options);
 #endif
 
-    dbus::Bus::GetServiceOwnerCallback reply_task =
+    // Listen for future mtpd service owner changes, in case it is not
+    // available right now. There is no guarantee on Linux or ChromeOS that
+    // mtpd is running already.
+    mtpd_owner_changed_callback_ =
         base::Bind(&MediaTransferProtocolManagerImpl::FinishSetupOnOriginThread,
                    weak_ptr_factory_.GetWeakPtr());
-    GetBus()->GetServiceOwner(mtpd::kMtpdServiceName, reply_task);
+    GetBus()->ListenForServiceOwnerChange(mtpd::kMtpdServiceName,
+                                          mtpd_owner_changed_callback_);
+    GetBus()->GetServiceOwner(mtpd::kMtpdServiceName,
+                              mtpd_owner_changed_callback_);
   }
 
   virtual ~MediaTransferProtocolManagerImpl() {
     DCHECK(g_media_transfer_protocol_manager);
     g_media_transfer_protocol_manager = NULL;
+    GetBus()->UnlistenForServiceOwnerChange(mtpd::kMtpdServiceName,
+                                            mtpd_owner_changed_callback_);
+
+#if !defined(OS_CHROMEOS)
+      session_bus_->PostTaskToDBusThread(
+          FROM_HERE, base::Bind(&dbus::Bus::ShutdownAndBlock, session_bus_));
+#endif
+
     VLOG(1) << "MediaTransferProtocolManager Shutdown completed";
   }
 
@@ -97,7 +111,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                            const std::string& mode,
                            const OpenStorageCallback& callback) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(storage_info_map_, storage_name)) {
+    if (!ContainsKey(storage_info_map_, storage_name) || !mtp_client_) {
       callback.Run(std::string(), true);
       return;
     }
@@ -115,7 +129,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   virtual void CloseStorage(const std::string& storage_handle,
                             const CloseStorageCallback& callback) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, storage_handle)) {
+    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(true);
       return;
     }
@@ -134,7 +148,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
       const std::string& path,
       const ReadDirectoryCallback& callback) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, storage_handle)) {
+    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(std::vector<MtpFileEntry>(), true);
       return;
     }
@@ -154,7 +168,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
       uint32 file_id,
       const ReadDirectoryCallback& callback) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, storage_handle)) {
+    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(std::vector<MtpFileEntry>(), true);
       return;
     }
@@ -175,7 +189,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                                    uint32 count,
                                    const ReadFileCallback& callback) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, storage_handle)) {
+    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(std::string(), true);
       return;
     }
@@ -195,7 +209,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                                  uint32 count,
                                  const ReadFileCallback& callback) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, storage_handle)) {
+    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(std::string(), true);
       return;
     }
@@ -212,7 +226,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                                  const std::string& path,
                                  const GetFileInfoCallback& callback) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, storage_handle)) {
+    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(MtpFileEntry(), true);
       return;
     }
@@ -230,7 +244,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                                uint32 file_id,
                                const GetFileInfoCallback& callback) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());
-    if (!ContainsKey(handles_, storage_handle)) {
+    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
       callback.Run(MtpFileEntry(), true);
       return;
     }
@@ -259,6 +273,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
   void OnStorageChanged(bool is_attach, const std::string& storage_name) {
     DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(mtp_client_);
     if (is_attach) {
       mtp_client_->GetStorageInfo(
           storage_name,
@@ -283,6 +298,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
   void OnEnumerateStorages(const std::vector<std::string>& storage_names) {
     DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(mtp_client_);
     for (size_t i = 0; i < storage_names.size(); ++i) {
       mtp_client_->GetStorageInfo(
           storage_names[i],
@@ -396,19 +412,21 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   // Callback to finish initialization after figuring out if the mtp service
-  // has an owner.
-  // |service_owner| contains the name of the current owner, if any.
-  void FinishSetupOnOriginThread(const std::string& service_owner) {
+  // has an owner, or if the service owner has changed.
+  // |mtpd_service_owner| contains the name of the current owner, if any.
+  void FinishSetupOnOriginThread(const std::string& mtpd_service_owner) {
     DCHECK(thread_checker_.CalledOnValidThread());
 
-    if (service_owner.empty()) {
-#if !defined(OS_CHROMEOS)
-      // |session_bus_| will not get used. Manually shut it down.
-      session_bus_->PostTaskToDBusThread(
-          FROM_HERE, base::Bind(&dbus::Bus::ShutdownAndBlock, session_bus_));
-#endif
+    if (mtpd_service_owner == current_mtpd_owner_)
+      return;
+
+    if (mtpd_service_owner.empty()) {
+      current_mtpd_owner_.clear();
+      mtp_client_.reset();
       return;
     }
+
+    current_mtpd_owner_ = mtpd_service_owner;
 
     mtp_client_.reset(
         MediaTransferProtocolDaemonClient::Create(GetBus(),
@@ -444,6 +462,10 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
   // Set of open storage handles.
   std::set<std::string> handles_;
+
+  dbus::Bus::GetServiceOwnerCallback mtpd_owner_changed_callback_;
+
+  std::string current_mtpd_owner_;
 
   // Queued callbacks.
   OpenStorageCallbackQueue open_storage_callbacks_;

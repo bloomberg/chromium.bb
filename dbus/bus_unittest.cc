@@ -7,11 +7,13 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "dbus/exported_object.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "dbus/scoped_dbus_error.h"
+#include "dbus/test_service.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,6 +24,49 @@ DBusHandlerResult DummyHandler(DBusConnection* connection,
                                DBusMessage* raw_message,
                                void* user_data) {
   return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+// Test helper for BusTest.ListenForServiceOwnerChange that wraps a
+// base::RunLoop. At Run() time, the caller pass in the expected number of
+// quit calls, and at QuitIfConditionIsSatisified() time, only quit the RunLoop
+// if the expected number of quit calls have been reached.
+class RunLoopWithExpectedCount {
+ public:
+  RunLoopWithExpectedCount() : expected_quit_calls_(0), actual_quit_calls_(0) {}
+  ~RunLoopWithExpectedCount() {}
+
+  void Run(int expected_quit_calls) {
+    DCHECK_EQ(0, expected_quit_calls_);
+    DCHECK_EQ(0, actual_quit_calls_);
+    expected_quit_calls_ = expected_quit_calls;
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
+  }
+
+  void QuitIfConditionIsSatisified() {
+    if (++actual_quit_calls_ != expected_quit_calls_)
+      return;
+    run_loop_->Quit();
+    expected_quit_calls_ = 0;
+    actual_quit_calls_ = 0;
+  }
+
+ private:
+  scoped_ptr<base::RunLoop> run_loop_;
+  int expected_quit_calls_;
+  int actual_quit_calls_;
+
+  DISALLOW_COPY_AND_ASSIGN(RunLoopWithExpectedCount);
+};
+
+// Test helper for BusTest.ListenForServiceOwnerChange.
+void OnServiceOwnerChanged(RunLoopWithExpectedCount* run_loop_state,
+                           std::string* service_owner,
+                           int* num_of_owner_changes,
+                           const std::string& new_service_owner) {
+  *service_owner = new_service_owner;
+  ++(*num_of_owner_changes);
+  run_loop_state->QuitIfConditionIsSatisified();
 }
 
 }  // namespace
@@ -295,4 +340,81 @@ TEST(BusTest, DoubleAddAndRemoveMatch) {
       error.get()));
 
   bus->ShutdownAndBlock();
+}
+
+TEST(BusTest, ListenForServiceOwnerChange) {
+  // Setup the current thread's MessageLoop. Must be of TYPE_IO for the
+  // listeners to work.
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  RunLoopWithExpectedCount run_loop_state;
+
+  // Create the bus.
+  dbus::Bus::Options bus_options;
+  scoped_refptr<dbus::Bus> bus = new dbus::Bus(bus_options);
+
+  // Add a listener.
+  std::string service_owner1;
+  int num_of_owner_changes1 = 0;
+  dbus::Bus::GetServiceOwnerCallback callback1 =
+      base::Bind(&OnServiceOwnerChanged,
+                 &run_loop_state,
+                 &service_owner1,
+                 &num_of_owner_changes1);
+  bus->ListenForServiceOwnerChange("org.chromium.TestService", callback1);
+  // This should be a no-op.
+  bus->ListenForServiceOwnerChange("org.chromium.TestService", callback1);
+  base::RunLoop().RunUntilIdle();
+
+  // Nothing has happened yet. Check initial state.
+  EXPECT_TRUE(service_owner1.empty());
+  EXPECT_EQ(0, num_of_owner_changes1);
+
+  // Make an ownership change.
+  ASSERT_TRUE(bus->RequestOwnershipAndBlock("org.chromium.TestService"));
+  run_loop_state.Run(1);
+
+  {
+    // Get the current service owner and check to make sure the listener got
+    // the right value.
+    std::string current_service_owner =
+        bus->GetServiceOwnerAndBlock("org.chromium.TestService",
+                                     dbus::Bus::REPORT_ERRORS);
+    ASSERT_FALSE(current_service_owner.empty());
+
+    // Make sure the listener heard about the new owner.
+    EXPECT_EQ(current_service_owner, service_owner1);
+
+    // Test the second ListenForServiceOwnerChange() above is indeed a no-op.
+    EXPECT_EQ(1, num_of_owner_changes1);
+  }
+
+  // Add a second listener.
+  std::string service_owner2;
+  int num_of_owner_changes2 = 0;
+  dbus::Bus::GetServiceOwnerCallback callback2 =
+      base::Bind(&OnServiceOwnerChanged,
+                 &run_loop_state,
+                 &service_owner2,
+                 &num_of_owner_changes2);
+  bus->ListenForServiceOwnerChange("org.chromium.TestService", callback2);
+  base::RunLoop().RunUntilIdle();
+
+  // Release the ownership and make sure the service owner listeners fire with
+  // the right values and the right number of times.
+  ASSERT_TRUE(bus->ReleaseOwnership("org.chromium.TestService"));
+  run_loop_state.Run(2);
+
+  EXPECT_TRUE(service_owner1.empty());
+  EXPECT_TRUE(service_owner2.empty());
+  EXPECT_EQ(2, num_of_owner_changes1);
+  EXPECT_EQ(1, num_of_owner_changes2);
+
+  // Unlisten so shutdown can proceed correctly.
+  bus->UnlistenForServiceOwnerChange("org.chromium.TestService", callback1);
+  bus->UnlistenForServiceOwnerChange("org.chromium.TestService", callback2);
+  base::RunLoop().RunUntilIdle();
+
+  // Shut down synchronously.
+  bus->ShutdownAndBlock();
+  EXPECT_TRUE(bus->shutdown_completed());
 }
