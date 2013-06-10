@@ -100,7 +100,8 @@ IndexedDBKey::IndexedDBKey(const WebIDBKey& key)
       size_estimate_(kOverheadSize + CalculateKeySize(key)) {}
 
 IndexedDBKey::IndexedDBKey(const string16& key)
-    : type_(WebIDBKey::StringType), string_(key) {}
+    : type_(WebIDBKey::StringType), string_(key),
+      size_estimate_(key.length() * sizeof(string16::value_type)) {}
 
 IndexedDBKey::~IndexedDBKey() {}
 
