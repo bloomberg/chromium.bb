@@ -15,9 +15,14 @@
 #include "skia/ext/skia_utils_mac.h"
 
 const int kMarginWidth = 16;
-const int kEntryHeight = 32;
+const int kEntryHeight = 38;
 const int kIconSize = 16;
-const int kIconTextPadding = 2;
+const int kIconTextPadding = 10;
+const int kCheckmarkIconPadding = 20;
+
+const int kIntrinsicCheckmarkPadding = 4;  // Padding already provided by Cocoa.
+const int kCorrectedCheckmarkPadding =
+    kCheckmarkIconPadding - kIntrinsicCheckmarkPadding;
 
 @interface MCSettingsButtonCell : NSButtonCell {
   // A checkbox's regular image is the checkmark image. This additional image
@@ -35,10 +40,12 @@ const int kIconTextPadding = 2;
 - (NSRect)drawTitle:(NSAttributedString*)title
           withFrame:(NSRect)frame
              inView:(NSView*)controlView {
+  CGFloat inset = kCorrectedCheckmarkPadding;
   // drawTitle:withFrame:inView: draws the checkmark image. Draw the extra
   // image as part of the checkbox's text.
   if (extraImage_) {
     NSRect imageRect = frame;
+    imageRect.origin.x += inset;
     imageRect.size = NSMakeSize(kIconSize, kIconSize);
     [extraImage_ drawInRect:imageRect
                    fromRect:NSZeroRect
@@ -47,10 +54,10 @@ const int kIconTextPadding = 2;
              respectFlipped:YES
                       hints:nil];
 
-    CGFloat inset = kIconSize + kIconTextPadding;
-    frame.origin.x += inset;
-    frame.size.width -= inset;
+    inset += kIconSize + kIconTextPadding;
   }
+  frame.origin.x += inset;
+  frame.size.width -= inset;
   return [super drawTitle:title withFrame:frame inView:controlView];
 }
 
@@ -59,16 +66,21 @@ const int kIconTextPadding = 2;
                        ofView:(NSView*)controlView {
   NSUInteger result =
       [super hitTestForEvent:event inRect:cellFrame ofView:controlView];
-  if (result == NSCellHitNone && extraImage_) {
+  if (result == NSCellHitNone) {
     // The default button cell does hit testing on the attributed string. Since
-    // this cell draws an icon in front of the string, tweak the hit testing
-    // result.
+    // this cell draws additional spacing and an icon in front of the string,
+    // tweak the hit testing result.
     NSPoint point =
         [controlView convertPoint:[event locationInWindow] fromView:nil];
 
     NSRect rect = [self titleRectForBounds:[controlView bounds]];
     rect.size = [[self attributedTitle] size];
-    rect.size.width += kIconSize + kIconTextPadding;
+    rect.size.width += kCorrectedCheckmarkPadding;
+
+    if (extraImage_) {
+      rect.size.width +=
+          kIconSize + kIconTextPadding + kCorrectedCheckmarkPadding;
+    }
 
     if (NSPointInRect(point, rect))
       result = NSCellHitContentArea | NSCellHitTrackableArea;
