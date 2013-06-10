@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "ui/gfx/native_widget_types.h"
 

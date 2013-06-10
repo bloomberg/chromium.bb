@@ -9,7 +9,7 @@
 #include <list>
 
 #include "base/i18n/case_conversion.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_title_match.h"
 #include "chrome/browser/history/history_service.h"

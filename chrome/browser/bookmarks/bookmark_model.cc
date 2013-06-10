@@ -12,7 +12,7 @@
 #include "base/i18n/string_compare.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/sequenced_task_runner.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"

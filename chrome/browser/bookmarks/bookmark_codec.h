@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/md5.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 class BookmarkModel;
 class BookmarkNode;
