@@ -50,7 +50,7 @@ class BrowserInstantController : public content::NotificationObserver,
 
   // Commits the current Instant, returning true on success. This is intended
   // for use from OpenCurrentURL.
-  bool OpenInstant(WindowOpenDisposition disposition);
+  bool OpenInstant(WindowOpenDisposition disposition, const GURL& url);
 
   // Returns the Profile associated with the Browser that owns this object.
   Profile* profile() const;

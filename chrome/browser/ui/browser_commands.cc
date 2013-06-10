@@ -399,6 +399,8 @@ void OpenCurrentURL(Browser* browser) {
   if (!location_bar)
     return;
 
+  GURL url(location_bar->GetInputString());
+
   content::PageTransition page_transition = location_bar->GetPageTransition();
   content::PageTransition page_transition_without_qualifier(
       PageTransitionStripQualifier(page_transition));
@@ -414,10 +416,8 @@ void OpenCurrentURL(Browser* browser) {
   if (page_transition_without_qualifier != content::PAGE_TRANSITION_TYPED &&
       page_transition_without_qualifier != content::PAGE_TRANSITION_RELOAD &&
       browser->instant_controller() &&
-      browser->instant_controller()->OpenInstant(open_disposition))
+      browser->instant_controller()->OpenInstant(open_disposition, url))
     return;
-
-  GURL url(location_bar->GetInputString());
 
   NavigateParams params(browser, url, page_transition);
   params.disposition = open_disposition;

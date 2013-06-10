@@ -159,6 +159,11 @@ class InstantController : public InstantPage::Delegate {
   // if the overlay is not showing, or if it's showing only suggestions.
   bool IsOverlayingSearchResults() const;
 
+  // Called if the browser is navigating to a search URL for |search_terms| with
+  // search-term-replacement enabled. If |instant_tab_| can be used to process
+  // the search, this does so and returns true. Else, returns false.
+  bool SubmitQuery(const string16& search_terms);
+
   // If the overlay is showing search results, commits the overlay, calling
   // CommitInstant() on the browser, and returns true. Else, returns false.
   bool CommitIfPossible(InstantCommitType type);
@@ -303,8 +308,15 @@ class InstantController : public InstantPage::Delegate {
       InstantExtendedFirstTabTest, RedirectToLocalOnLoadFailure);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LogDropdownShown);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
-                           OverlayDoesNotEchoSearchProviderNAVSUGGEST);
+                           OverlayDoesNotEchoSearchProviderNavsuggest);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, KeyboardTogglesVoiceSearch);
+#if !defined(HTML_INSTANT_EXTENDED_POPUP)
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, SearchReusesInstantTab);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
+                           SearchDoesntReuseInstantTabWithoutSupport);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
+                           TypedSearchURLDoesntReuseInstantTab);
+#endif
 
   Profile* profile() const;
 

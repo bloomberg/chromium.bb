@@ -66,6 +66,12 @@ bool IsQueryExtractionEnabled(Profile* profile);
 // Returns whether the local-only version of Instant Extended API is enabled.
 bool IsLocalOnlyInstantExtendedAPIEnabled();
 
+// Extracts and returns search terms from |url|. Returns empty string if the URL
+// is not secure or doesn't have a search term replacement key.  Does not
+// consider IsQueryExtractionEnabled() and does not check for a privileged
+// process, so most callers should use GetSearchTerms() below instead.
+string16 GetSearchTermsFromURL(Profile* profile, const GURL& url);
+
 // Returns the search terms attached to a specific NavigationEntry, or empty
 // string otherwise. Does not consider IsQueryExtractionEnabled(), so most
 // callers should use GetSearchTerms() below instead.

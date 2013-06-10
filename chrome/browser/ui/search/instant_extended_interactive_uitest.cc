@@ -75,10 +75,11 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "grit/generated_resources.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(HTML_INSTANT_EXTENDED_POPUP)
+using testing::HasSubstr;
 
 namespace {
 
@@ -290,6 +291,8 @@ class InstantPolicyTest : public ExtensionBrowserTest, public InstantTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(InstantPolicyTest);
 };
+
+#if defined(HTML_INSTANT_EXTENDED_POPUP)
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, ExtendedModeIsOn) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
@@ -2410,7 +2413,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OverlaySendsSearchWhatYouTyped) {
 }
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
-                       OverlayDoesNotEchoSearchProviderNAVSUGGEST) {
+                       OverlayDoesNotEchoSearchProviderNavsuggest) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
 
@@ -2716,3 +2719,85 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, MAYBE_KeyboardTogglesVoiceSearch) {
 }
 
 #endif  // HTML_INSTANT_EXTENDED_POPUP
+
+#if !defined(HTML_INSTANT_EXTENDED_POPUP)
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, SearchReusesInstantTab) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
+
+  // Create an observer to wait for the instant tab to support Instant.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
+      content::NotificationService::AllSources());
+
+  SetOmniboxText("flowers");
+  browser()->window()->GetLocationBar()->AcceptInput();
+  observer.Wait();
+
+  // Just did a regular search.
+  ASSERT_THAT(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec(),
+      HasSubstr("q=flowers"));
+  ASSERT_TRUE(UpdateSearchState(instant()->instant_tab()->contents()));
+  ASSERT_EQ(0, submit_count_);
+
+  SetOmniboxText("puppies");
+  browser()->window()->GetLocationBar()->AcceptInput();
+
+  // Should have reused the tab and sent an onsubmit message.
+  ASSERT_THAT(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec(),
+      HasSubstr("q=flowers"));
+  ASSERT_TRUE(UpdateSearchState(instant()->instant_tab()->contents()));
+  EXPECT_EQ(1, submit_count_);
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       SearchDoesntReuseInstantTabWithoutSupport) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
+
+  // Don't wait for the navigation to complete.
+  SetOmniboxText("flowers");
+  browser()->window()->GetLocationBar()->AcceptInput();
+
+  SetOmniboxText("puppies");
+  browser()->window()->GetLocationBar()->AcceptInput();
+
+  // Should not have reused the tab.
+  ASSERT_THAT(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec(),
+      HasSubstr("q=puppies"));
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       TypedSearchURLDoesntReuseInstantTab) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
+
+  // Create an observer to wait for the instant tab to support Instant.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
+      content::NotificationService::AllSources());
+
+  SetOmniboxText("flowers");
+  browser()->window()->GetLocationBar()->AcceptInput();
+  observer.Wait();
+
+  // Just did a regular search.
+  ASSERT_THAT(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec(),
+      HasSubstr("q=flowers"));
+  ASSERT_TRUE(UpdateSearchState(instant()->instant_tab()->contents()));
+  ASSERT_EQ(0, submit_count_);
+
+  // Typed in a search URL "by hand".
+  SetOmniboxText(instant_url().spec() + "#q=puppies");
+  browser()->window()->GetLocationBar()->AcceptInput();
+
+  // Should not have reused the tab.
+  ASSERT_THAT(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec(),
+      HasSubstr("q=puppies"));
+}
+#endif  // if !defined(HTML_INSTANT_EXTENDED_POPUP)

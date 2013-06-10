@@ -259,20 +259,7 @@ string16 GetSearchTermsImpl(const content::WebContents* contents,
     return search_terms;
 
   // Otherwise, extract from the URL.
-  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
-  if (!template_url)
-    return string16();
-
-  GURL url = entry->GetVirtualURL();
-
-  if (IsCommandLineInstantURL(url))
-    url = CoerceCommandLineURLToTemplateURL(url, template_url->url_ref(),
-                                            kDisableStartMargin);
-
-  if (url.SchemeIsSecure() && template_url->HasSearchTermsReplacementKey(url))
-    template_url->ExtractSearchTermsFromURL(url, &search_terms);
-
-  return search_terms;
+  return GetSearchTermsFromURL(profile, entry->GetVirtualURL());
 }
 
 }  // namespace
@@ -323,6 +310,24 @@ bool IsLocalOnlyInstantExtendedAPIEnabled() {
     return GetBoolValueForFlagWithDefault(kLocalOnlyFlagName, false, flags);
   }
   return false;
+}
+
+string16 GetSearchTermsFromURL(Profile* profile, const GURL& in_url) {
+  GURL url(in_url);
+  string16 search_terms;
+
+  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
+  if (!template_url)
+    return string16();
+
+  if (IsCommandLineInstantURL(url))
+    url = CoerceCommandLineURLToTemplateURL(url, template_url->url_ref(),
+                                            kDisableStartMargin);
+
+  if (url.SchemeIsSecure() && template_url->HasSearchTermsReplacementKey(url))
+    template_url->ExtractSearchTermsFromURL(url, &search_terms);
+
+  return search_terms;
 }
 
 string16 GetSearchTermsFromNavigationEntry(

@@ -133,19 +133,26 @@ bool BrowserInstantController::MaybeSwapInInstantNTPContents(
   return true;
 }
 
-bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition) {
+bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition,
+                                           const GURL& url) {
   // Unsupported dispositions.
-  if (disposition == NEW_BACKGROUND_TAB || disposition == NEW_WINDOW)
+  if (disposition == NEW_BACKGROUND_TAB || disposition == NEW_WINDOW ||
+      disposition == NEW_FOREGROUND_TAB)
     return false;
 
   // The omnibox currently doesn't use other dispositions, so we don't attempt
   // to handle them. If you hit this DCHECK file a bug and I'll (sky) add
   // support for the new disposition.
-  DCHECK(disposition == CURRENT_TAB ||
-         disposition == NEW_FOREGROUND_TAB) << disposition;
+  DCHECK(disposition == CURRENT_TAB) << disposition;
 
-  return instant_.CommitIfPossible(disposition == CURRENT_TAB ?
-      INSTANT_COMMIT_PRESSED_ENTER : INSTANT_COMMIT_PRESSED_ALT_ENTER);
+  // If we will not be replacing search terms from this URL, don't send to
+  // InstantController.
+  const string16& search_terms =
+      chrome::GetSearchTermsFromURL(browser_->profile(), url);
+  if (search_terms.empty())
+    return false;
+
+  return instant_.SubmitQuery(search_terms);
 }
 
 Profile* BrowserInstantController::profile() const {
