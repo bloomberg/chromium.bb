@@ -87,7 +87,7 @@ static inline bool isCSSTokenAString(int yytype)
 
 %}
 
-%expect 1
+%expect 0
 
 %nonassoc LOWEST_PREC
 
@@ -1539,12 +1539,6 @@ declaration_list:
     | decl_list {
         $$ = $1;
     }
-    | decl_list_recovery {
-        $$ = false;
-    }
-    | decl_list decl_list_recovery {
-        $$ = $1;
-    }
     ;
 
 decl_list:
@@ -1552,25 +1546,11 @@ decl_list:
         parser->startProperty();
         $$ = $1;
     }
-    | decl_list_recovery ';' maybe_space {
-        parser->startProperty();
-        $$ = false;
-    }
     | decl_list declaration ';' maybe_space {
         parser->startProperty();
         $$ = $1;
         if ($2)
             $$ = $2;
-    }
-    | decl_list decl_list_recovery ';' maybe_space {
-        parser->startProperty();
-        $$ = $1;
-    }
-    ;
-
-decl_list_recovery:
-    error error_location error_recovery {
-        parser->reportError($2, CSSParser::PropertyDeclarationError);
     }
     ;
 
@@ -1581,7 +1561,7 @@ declaration:
         parser->endProperty($6, true);
     }
     |
-    property ':' maybe_space error_location expr prio {
+    property ':' maybe_space error_location valid_expr prio {
         $$ = false;
         bool isPropertyParsed = false;
         if ($1 && $5) {
@@ -1598,33 +1578,28 @@ declaration:
         parser->endProperty($6, isPropertyParsed);
     }
     |
-    property declaration_recovery {
-        parser->endProperty(false, false, CSSParser::GeneralError);
-        $$ = false;
-    }
-    |
-    property ':' maybe_space error_location expr prio declaration_recovery {
+    property ':' maybe_space error_location valid_expr prio error error_recovery {
         /* When we encounter something like p {color: red !important fail;} we should drop the declaration */
+        parser->reportError($4, CSSParser::InvalidPropertyValueError);
         parser->endProperty(false, false);
         $$ = false;
     }
     |
-    IMPORTANT_SYM maybe_space declaration_recovery {
-        /* Handle this case: div { text-align: center; !important } Just reduce away the stray !important. */
+    property ':' maybe_space error_location error error_recovery {
+        parser->reportError($4, CSSParser::InvalidPropertyValueError);
+        parser->endProperty(false, false);
+        $$ = false;
+    }
+    |
+    property error error_location error_recovery {
+        parser->reportError($3, CSSParser::PropertyDeclarationError);
         parser->endProperty(false, false, CSSParser::GeneralError);
         $$ = false;
     }
     |
-    property ':' maybe_space declaration_recovery {
-        /* if we come across rules with invalid values like this case: p { weight: *; }, just discard the rule */
-        parser->endProperty(false, false);
-        $$ = false;
-    }
-  ;
-
-declaration_recovery:
     error error_location error_recovery {
-        parser->reportError($2);
+        parser->reportError($2, CSSParser::PropertyDeclarationError);
+        $$ = false;
     }
   ;
 
