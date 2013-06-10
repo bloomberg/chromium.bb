@@ -37,9 +37,9 @@
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #if defined(OS_ANDROID)
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/gpu/GrTexture.h"
+#include "GrTexture.h"
+#include "SkBitmap.h"
+#include "SkRefCnt.h"
 #endif
 #include "weborigin/KURL.h"
 #include "wtf/OwnPtr.h"
