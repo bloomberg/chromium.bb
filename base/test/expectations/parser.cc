@@ -4,7 +4,7 @@
 
 #include "base/test/expectations/parser.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 namespace test_expectations {
 

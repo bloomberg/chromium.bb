@@ -10,7 +10,7 @@
 #include "base/path_service.h"
 #include "base/perftimer.h"
 #include "base/process_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

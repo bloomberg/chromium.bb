@@ -8,7 +8,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 
 #pragma comment(lib, "shlwapi.lib")  // for SHDeleteKey

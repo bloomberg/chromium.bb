@@ -14,7 +14,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 
 using base::MakeAbsoluteFilePath;

@@ -20,7 +20,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"

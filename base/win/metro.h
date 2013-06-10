@@ -11,7 +11,7 @@
 #include "base/base_export.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace base {
 namespace win {

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 
 namespace base {

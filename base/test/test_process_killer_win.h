@@ -5,7 +5,7 @@
 #ifndef BASE_TEST_TEST_PROCESS_KILLER_WIN_H_
 #define BASE_TEST_TEST_PROCESS_KILLER_WIN_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace base {
 

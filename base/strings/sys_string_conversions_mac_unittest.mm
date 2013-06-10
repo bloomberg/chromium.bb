@@ -4,7 +4,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

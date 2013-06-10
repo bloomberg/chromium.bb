@@ -11,7 +11,7 @@
 
 #include "base/logging.h"
 #include "base/process_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/win/scoped_handle.h"
 
 namespace {

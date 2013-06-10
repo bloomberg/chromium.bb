@@ -5,7 +5,7 @@
 #include <windows.h>
 
 #include "base/basictypes.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"

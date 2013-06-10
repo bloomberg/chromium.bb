@@ -27,7 +27,7 @@
 #include <string>
 
 #include "base/base_export.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 struct IPropertyStore;
 struct _tagpropertykey;

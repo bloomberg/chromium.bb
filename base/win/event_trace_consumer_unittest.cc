@@ -15,7 +15,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/process.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/win/event_trace_controller.h"
 #include "base/win/event_trace_provider.h"
 #include "base/win/scoped_handle.h"

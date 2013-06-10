@@ -30,7 +30,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 // This file declares "using base::Value", etc. at the bottom, so that
 // current code can use these classes without the base namespace. In

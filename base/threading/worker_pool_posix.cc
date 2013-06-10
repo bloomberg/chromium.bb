@@ -10,7 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/worker_pool.h"

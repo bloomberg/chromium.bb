@@ -16,7 +16,7 @@
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"  // For implicit conversions.
 
 // Safe standard library wrappers for all platforms.
@@ -146,9 +146,9 @@ template<typename Char> struct CaseInsensitiveCompareASCII {
 }  // namespace base
 
 #if defined(OS_WIN)
-#include "base/string_util_win.h"
+#include "base/strings/string_util_win.h"
 #elif defined(OS_POSIX)
-#include "base/string_util_posix.h"
+#include "base/strings/string_util_posix.h"
 #else
 #error Define string operations appropriately for your platform
 #endif
