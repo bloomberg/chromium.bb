@@ -8,8 +8,8 @@
 
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
-#include "base/string16.h"
-#include "base/string_util.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "grit/generated_resources.h"

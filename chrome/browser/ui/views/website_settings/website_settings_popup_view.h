@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "ui/views/bubble/bubble_delegate.h"

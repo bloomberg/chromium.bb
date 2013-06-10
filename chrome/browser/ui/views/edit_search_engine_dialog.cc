@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/edit_search_engine_dialog.h"
 
 #include "base/i18n/rtl.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"

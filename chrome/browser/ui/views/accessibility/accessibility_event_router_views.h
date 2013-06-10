@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/accessibility/accessibility_events.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"

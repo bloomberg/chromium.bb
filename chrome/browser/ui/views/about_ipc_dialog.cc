@@ -23,7 +23,7 @@
 #include <set>
 
 #include "base/memory/singleton.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/time.h"

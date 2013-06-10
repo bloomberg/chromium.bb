@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_RENDERER_DATA_H_
 
 #include "base/process_util.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/views/chrome_views_export.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/image/image_skia.h"

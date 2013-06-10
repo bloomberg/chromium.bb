@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "content/public/common/context_menu_source_type.h"
 

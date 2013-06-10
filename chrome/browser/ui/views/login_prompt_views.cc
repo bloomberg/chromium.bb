@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/login/login_prompt.h"
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"

@@ -9,7 +9,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "ui/views/bubble/bubble_delegate.h"
