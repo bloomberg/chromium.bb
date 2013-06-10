@@ -30,27 +30,6 @@ TEST_F(TranslateHelperTest, LanguageCodeTypoCorrection) {
   EXPECT_EQ("ja-JP", language);
 }
 
-// Tests that synonym language code is converted to one used in supporting list.
-TEST_F(TranslateHelperTest, LanguageCodeSynonyms) {
-  std::string language;
-
-  language = std::string("nb");
-  TranslateHelper::ConvertLanguageCodeSynonym(&language);
-  EXPECT_EQ("no", language);
-
-  language = std::string("he");
-  TranslateHelper::ConvertLanguageCodeSynonym(&language);
-  EXPECT_EQ("iw", language);
-
-  language = std::string("jv");
-  TranslateHelper::ConvertLanguageCodeSynonym(&language);
-  EXPECT_EQ("jw", language);
-
-  language = std::string("fil");
-  TranslateHelper::ConvertLanguageCodeSynonym(&language);
-  EXPECT_EQ("tl", language);
-}
-
 // Tests that invalid language code is reset to empty string.
 TEST_F(TranslateHelperTest, ResetInvalidLanguageCode) {
   std::string language;

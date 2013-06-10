@@ -1681,6 +1681,7 @@
         'common/switch_utils_unittest.cc',
         'common/thumbnail_score_unittest.cc',
         'common/time_format_unittest.cc',
+        'common/translate/translate_util_unittest.cc',
         'common/worker_thread_ticker_unittest.cc',
         'nacl/nacl_ipc_adapter_unittest.cc',
         'nacl/nacl_validation_query_unittest.cc',

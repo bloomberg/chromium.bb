@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/translate/translate_util.h"
 #include "chrome/renderer/translate/translate_helper_metrics.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -52,20 +53,6 @@ const int kTranslateStatusCheckDelayMs = 400;
 
 // Language name passed to the Translate element for it to detect the language.
 const char kAutoDetectionLanguage[] = "auto";
-
-// Language code synonyms. Some languages have changed codes over the years
-// and sometimes the older codes are used, so we must see them as synonyms.
-struct LanguageCodeSynonym {
-  const char* const to;  // code used in supporting list
-  const char* const from;  // synonym code
-};
-
-const LanguageCodeSynonym kLanguageCodeSynonyms[] = {
-  {"no", "nb"},
-  {"iw", "he"},
-  {"jw", "jv"},
-  {"tl", "fil"},
-};
 
 // Similar language code list. Some languages are very similar and difficult
 // for CLD to distinguish.
@@ -331,19 +318,6 @@ void TranslateHelper::CorrectLanguageCodeTypo(std::string* code) {
 }
 
 // static
-void TranslateHelper::ConvertLanguageCodeSynonym(std::string* code) {
-  DCHECK(code);
-
-  // Apply liner search here because number of items in the list is just four.
-  for (size_t i = 0; i < arraysize(kLanguageCodeSynonyms); ++i) {
-    if (code->compare(kLanguageCodeSynonyms[i].from) == 0) {
-      *code = std::string(kLanguageCodeSynonyms[i].to);
-      break;
-    }
-  }
-}
-
-// static
 void TranslateHelper::ResetInvalidLanguageCode(std::string* code) {
   // Roughly check if the language code follows [a-z][a-z](-[A-Z][A-Z]).
   size_t dash_index = code->find('-');
@@ -362,7 +336,7 @@ void TranslateHelper::ApplyLanguageCodeCorrection(std::string* code) {
   // Convert language code synonym firstly because sometime synonym code is in
   // invalid format, e.g. 'fil'. After validation, such a 3 characters language
   // gets converted to an empty string.
-  ConvertLanguageCodeSynonym(code);
+  TranslateUtil::ConvertLanguageCodeSynonym(code);
   ResetInvalidLanguageCode(code);
 }
 
@@ -406,7 +380,7 @@ std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
     *cld_language_p = cld_language;
   if (is_cld_reliable_p != NULL)
     *is_cld_reliable_p = is_cld_reliable;
-  ConvertLanguageCodeSynonym(&cld_language);
+  TranslateUtil::ConvertLanguageCodeSynonym(&cld_language);
 #endif  // defined(ENABLE_LANGUAGE_DETECTION)
 
   // Check if html lang attribute is valid.
