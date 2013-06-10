@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/omaha_query_params/omaha_query_params.h"
 #include "extensions/common/id_util.h"

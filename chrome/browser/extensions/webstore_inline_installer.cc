@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
 

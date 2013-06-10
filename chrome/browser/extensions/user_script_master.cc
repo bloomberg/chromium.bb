@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_service.h"

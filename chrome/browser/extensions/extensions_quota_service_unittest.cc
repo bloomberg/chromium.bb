@@ -5,7 +5,7 @@
 #include "base/message_loop.h"
 #include "base/process.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "content/public/test/test_browser_thread.h"

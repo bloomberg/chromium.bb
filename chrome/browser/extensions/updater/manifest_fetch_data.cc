@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/omaha_query_params/omaha_query_params.h"

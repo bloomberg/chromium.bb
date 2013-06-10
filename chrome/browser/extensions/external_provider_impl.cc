@@ -13,7 +13,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"

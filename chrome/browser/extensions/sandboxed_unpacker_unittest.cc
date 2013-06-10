@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/sandboxed_unpacker.h"
 #include "chrome/common/chrome_paths.h"

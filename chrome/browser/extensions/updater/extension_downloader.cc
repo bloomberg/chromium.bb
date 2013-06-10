@@ -16,7 +16,7 @@
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/time.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/updater/request_queue_impl.h"
