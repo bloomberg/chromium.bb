@@ -123,6 +123,7 @@ public:
     bool handleTouchEvent(const PlatformTouchEvent&);
 
     void setPausedInDebuggerMessage(const String*);
+    void setInspectModeEnabled(bool);
 
     void hideHighlight();
     void highlightNode(Node*, Node* eventTarget, const HighlightConfig&);
@@ -159,6 +160,7 @@ private:
     Page* m_page;
     InspectorClient* m_client;
     String m_pausedInDebuggerMessage;
+    bool m_inspectModeEnabled;
     RefPtr<Node> m_highlightNode;
     RefPtr<Node> m_eventTargetNode;
     HighlightConfig m_nodeHighlightConfig;

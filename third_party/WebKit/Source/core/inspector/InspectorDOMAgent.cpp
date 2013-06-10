@@ -1104,6 +1104,7 @@ void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, bool enabl
     if (m_searchingForNode == enabled)
         return;
     m_searchingForNode = enabled;
+    m_overlay->setInspectModeEnabled(enabled);
     if (enabled) {
         m_inspectModeHighlightConfig = highlightConfigFromInspectorObject(errorString, highlightInspectorObject);
         if (!m_inspectModeHighlightConfig)

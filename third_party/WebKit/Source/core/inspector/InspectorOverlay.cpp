@@ -229,6 +229,7 @@ static void buildQuadHighlight(Page* page, const FloatQuad& quad, const Highligh
 InspectorOverlay::InspectorOverlay(Page* page, InspectorClient* client)
     : m_page(page)
     , m_client(client)
+    , m_inspectModeEnabled(false)
     , m_drawViewSize(false)
     , m_drawViewSizeWithGrid(false)
     , m_timer(this, &InspectorOverlay::onTimer)
@@ -307,6 +308,12 @@ void InspectorOverlay::setPausedInDebuggerMessage(const String* message)
     update();
 }
 
+void InspectorOverlay::setInspectModeEnabled(bool enabled)
+{
+    m_inspectModeEnabled = enabled;
+    update();
+}
+
 void InspectorOverlay::hideHighlight()
 {
     m_highlightNode.clear();
@@ -345,7 +352,9 @@ Node* InspectorOverlay::highlightedNode() const
 
 bool InspectorOverlay::isEmpty()
 {
-    return !m_highlightNode && !m_eventTargetNode && !m_highlightQuad && m_pausedInDebuggerMessage.isNull() && m_size.isEmpty() && !m_drawViewSize;
+    bool hasAlwaysVisibleElements = m_highlightNode || m_eventTargetNode || m_highlightQuad || !m_size.isEmpty() || m_drawViewSize;
+    bool hasInvisibleInInspectModeElements = !m_pausedInDebuggerMessage.isNull();
+    return !(hasAlwaysVisibleElements || (hasInvisibleInInspectModeElements && !m_inspectModeEnabled));
 }
 
 void InspectorOverlay::update()
@@ -372,7 +381,8 @@ void InspectorOverlay::update()
     drawGutter();
     drawNodeHighlight();
     drawQuadHighlight();
-    drawPausedInDebuggerMessage();
+    if (!m_inspectModeEnabled)
+        drawPausedInDebuggerMessage();
     drawViewSize();
 
     // Position DOM elements.
