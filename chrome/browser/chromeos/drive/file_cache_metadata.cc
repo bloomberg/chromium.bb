@@ -11,6 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
@@ -19,6 +20,8 @@ namespace internal {
 
 namespace {
 
+typedef std::map<std::string, FileCacheEntry> CacheMap;
+
 enum DBOpenStatus {
   DB_OPEN_SUCCESS,
   DB_OPEN_FAILURE_CORRUPTION,
@@ -26,6 +29,112 @@ enum DBOpenStatus {
   DB_OPEN_FAILURE_UNRECOVERABLE,
   DB_OPEN_MAX_VALUE,
 };
+
+// A map table of resource ID to file path.
+typedef std::map<std::string, base::FilePath> ResourceIdToFilePathMap;
+
+// Scans cache subdirectory and build or update |cache_map| with found files.
+//
+// The resource IDs and file paths of discovered files are collected as a
+// ResourceIdToFilePathMap, if these are processed properly.
+void ScanCacheDirectory(const std::vector<base::FilePath>& cache_paths,
+                        FileCache::CacheSubDirectoryType sub_dir_type,
+                        CacheMap* cache_map,
+                        ResourceIdToFilePathMap* processed_file_map) {
+  DCHECK(cache_map);
+  DCHECK(processed_file_map);
+
+  base::FileEnumerator enumerator(cache_paths[sub_dir_type],
+                                  false,  // not recursive
+                                  base::FileEnumerator::FILES,
+                                  util::kWildCard);
+  for (base::FilePath current = enumerator.Next(); !current.empty();
+       current = enumerator.Next()) {
+    // Extract resource_id and md5 from filename.
+    std::string resource_id;
+    std::string md5;
+    std::string extra_extension;
+    util::ParseCacheFilePath(current, &resource_id, &md5, &extra_extension);
+
+    // Determine cache state.
+    FileCacheEntry cache_entry;
+    cache_entry.set_md5(md5);
+    if (sub_dir_type == FileCache::CACHE_TYPE_PERSISTENT)
+      cache_entry.set_is_persistent(true);
+
+    if (extra_extension == util::kMountedArchiveFileExtension) {
+      // Mounted archives in cache should be unmounted upon logout/shutdown.
+      // But if we encounter a mounted file at start, delete it and create an
+      // entry with not PRESENT state.
+      DCHECK(sub_dir_type == FileCache::CACHE_TYPE_PERSISTENT);
+      file_util::Delete(current, false);
+    } else {
+      // The cache file is present.
+      cache_entry.set_is_present(true);
+
+      // Adds the dirty bit if |md5| indicates that the file is dirty, and
+      // the file is in the persistent directory.
+      if (md5 == util::kLocallyModifiedFileExtension) {
+        if (sub_dir_type == FileCache::CACHE_TYPE_PERSISTENT) {
+          cache_entry.set_is_dirty(true);
+        } else {
+          LOG(WARNING) << "Removing a dirty file in tmp directory: "
+                       << current.value();
+          file_util::Delete(current, false);
+          continue;
+        }
+      }
+    }
+
+    // Create and insert new entry into cache map.
+    cache_map->insert(std::make_pair(resource_id, cache_entry));
+    processed_file_map->insert(std::make_pair(resource_id, current));
+  }
+}
+
+void ScanCachePaths(const std::vector<base::FilePath>& cache_paths,
+                    CacheMap* cache_map) {
+  DVLOG(1) << "Scanning directories";
+
+  // Scan cache persistent and tmp directories to enumerate all files and create
+  // corresponding entries for cache map.
+  ResourceIdToFilePathMap persistent_file_map;
+  ScanCacheDirectory(cache_paths,
+                     FileCache::CACHE_TYPE_PERSISTENT,
+                     cache_map,
+                     &persistent_file_map);
+  ResourceIdToFilePathMap tmp_file_map;
+  ScanCacheDirectory(cache_paths,
+                     FileCache::CACHE_TYPE_TMP,
+                     cache_map,
+                     &tmp_file_map);
+
+  // On DB corruption, keep only dirty-and-committed files in persistent
+  // directory. Other files are deleted or moved to temporary directory.
+  for (ResourceIdToFilePathMap::const_iterator iter =
+           persistent_file_map.begin();
+       iter != persistent_file_map.end(); ++iter) {
+    const std::string& resource_id = iter->first;
+    const base::FilePath& file_path = iter->second;
+
+    CacheMap::iterator cache_map_iter = cache_map->find(resource_id);
+    if (cache_map_iter != cache_map->end()) {
+      FileCacheEntry* cache_entry = &cache_map_iter->second;
+      const bool is_dirty = cache_entry->is_dirty();
+      if (!is_dirty) {
+        // If the file is not dirty, move to temporary directory.
+        base::FilePath new_file_path =
+            cache_paths[FileCache::CACHE_TYPE_TMP].Append(
+                file_path.BaseName());
+        DLOG(WARNING) << "Moving: " << file_path.value()
+                      << " to: " << new_file_path.value();
+        file_util::Move(file_path, new_file_path);
+        cache_entry->set_is_persistent(false);
+      }
+    }
+  }
+  DVLOG(1) << "Directory scan finished";
+}
 
 // Returns true if |md5| matches the one in |cache_entry| with some
 // exceptions. See the function definition for details.
@@ -119,14 +228,15 @@ FileCacheMetadata::~FileCacheMetadata() {
   AssertOnSequencedWorkerPool();
 }
 
-FileCacheMetadata::InitializeResult FileCacheMetadata::Initialize(
-    const base::FilePath& db_directory_path) {
+bool FileCacheMetadata::Initialize(
+    const std::vector<base::FilePath>& cache_paths) {
   AssertOnSequencedWorkerPool();
 
-  const base::FilePath db_path = db_directory_path.Append(kCacheMetadataDBPath);
+  const base::FilePath db_path =
+      cache_paths[FileCache::CACHE_TYPE_META].Append(kCacheMetadataDBPath);
   DVLOG(1) << "db path=" << db_path.value();
 
-  bool created = !file_util::PathExists(db_path);
+  bool scan_cache = !file_util::PathExists(db_path);
 
   leveldb::DB* level_db = NULL;
   leveldb::Options options;
@@ -149,17 +259,29 @@ FileCacheMetadata::InitializeResult FileCacheMetadata::Initialize(
       UMA_HISTOGRAM_ENUMERATION("Drive.CacheDBOpenStatus",
                                 DB_OPEN_FAILURE_UNRECOVERABLE,
                                 DB_OPEN_MAX_VALUE);
-      return INITIALIZE_FAILED;
+      // Failed to open the cache metadata DB. Drive will be disabled.
+      return false;
     }
 
-    created = true;
+    scan_cache = true;
   }
   UMA_HISTOGRAM_ENUMERATION("Drive.CacheDBOpenStatus", uma_status,
                             DB_OPEN_MAX_VALUE);
   DCHECK(level_db);
   level_db_.reset(level_db);
 
-  return created ? INITIALIZE_CREATED : INITIALIZE_OPENED;
+  // We scan the cache directories to initialize the cache database if we
+  // were previously using the cache map.
+  if (scan_cache) {
+    CacheMap cache_map;
+    ScanCachePaths(cache_paths, &cache_map);
+    for (CacheMap::const_iterator it = cache_map.begin();
+         it != cache_map.end(); ++it) {
+      AddOrUpdateCacheEntry(it->first, it->second);
+    }
+  }
+
+  return true;
 }
 
 void FileCacheMetadata::AddOrUpdateCacheEntry(
