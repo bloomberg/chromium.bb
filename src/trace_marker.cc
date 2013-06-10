@@ -59,7 +59,7 @@ void TraceMarker::TraceWrite(const char* str) {
 
 TraceMarker::TraceMarker() : fd_(-1) {
   if (!OpenTraceMarker())
-    Err("Cannot open trace_marker");
+    Log("Cannot open trace_marker");
 }
 
 TraceMarker::~TraceMarker() {
