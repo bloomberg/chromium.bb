@@ -282,6 +282,10 @@ def ShardAndRunTests(runner_factory, devices, tests, build_type='Debug',
   Returns:
     A base_test_result.TestRunResults object.
   """
+  if not tests:
+    logging.warning('No tests to run.')
+    return base_test_result.TestRunResults()
+
   logging.info('Will run %d tests: %s', len(tests), str(tests))
   forwarder.Forwarder.KillHost(build_type)
   runners = _CreateRunners(runner_factory, devices, setup_timeout)

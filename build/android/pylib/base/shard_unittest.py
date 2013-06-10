@@ -83,7 +83,7 @@ class TestFunctions(unittest.TestCase):
     results = []
     tests = shard._TestCollection([shard._Test(t) for t in tests])
     shard._RunTestsFromQueue(mock_runner, tests, results,
-                             watchdog_timer.WatchdogTimer(None))
+                             watchdog_timer.WatchdogTimer(None), 2)
     run_results = base_test_result.TestRunResults()
     for r in results:
       run_results.AddTestRunResults(r)
@@ -133,7 +133,7 @@ class TestThreadGroupFunctions(unittest.TestCase):
 
   def testRun(self):
     runners = [MockRunner('0'), MockRunner('1')]
-    results = shard._RunAllTests(runners, self.tests)
+    results = shard._RunAllTests(runners, self.tests, 0)
     self.assertEqual(len(results.GetPass()), len(self.tests))
 
   def testTearDown(self):
@@ -144,13 +144,13 @@ class TestThreadGroupFunctions(unittest.TestCase):
 
   def testRetry(self):
     runners = shard._CreateRunners(MockRunnerFail, ['0', '1'])
-    results = shard._RunAllTests(runners, self.tests)
+    results = shard._RunAllTests(runners, self.tests, 0)
     self.assertEqual(len(results.GetFail()), len(self.tests))
 
   def testReraise(self):
     runners = shard._CreateRunners(MockRunnerException, ['0', '1'])
     with self.assertRaises(TestException):
-      shard._RunAllTests(runners, self.tests)
+      shard._RunAllTests(runners, self.tests, 0)
 
 
 class TestShard(unittest.TestCase):
@@ -167,6 +167,10 @@ class TestShard(unittest.TestCase):
     results = TestShard._RunShard(MockRunnerFail)
     self.assertEqual(len(results.GetPass()), 0)
     self.assertEqual(len(results.GetFail()), 3)
+
+  def testNoTests(self):
+    results = shard.ShardAndRunTests(MockRunner, ['0', '1'], [])
+    self.assertEqual(len(results.GetAll()), 0)
 
 
 if __name__ == '__main__':
