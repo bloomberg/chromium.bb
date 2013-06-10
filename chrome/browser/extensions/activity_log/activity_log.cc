@@ -130,6 +130,7 @@ ActivityLogFactory::~ActivityLogFactory() {
 ActivityLog::ActivityLog(Profile* profile)
     : profile_(profile),
       first_time_checking_(true),
+      tracker_(NULL),
       has_threads_(true) {
   enabled_ = IsLogEnabledOnAnyProfile();
 
@@ -169,7 +170,7 @@ ActivityLog::ActivityLog(Profile* profile)
 }
 
 void ActivityLog::Shutdown() {
-  if (tracker_ && !first_time_checking_) tracker_->RemoveObserver(this);
+  if (!first_time_checking_ && tracker_) tracker_->RemoveObserver(this);
 }
 
 ActivityLog::~ActivityLog() {
