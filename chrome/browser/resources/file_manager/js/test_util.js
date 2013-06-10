@@ -152,7 +152,6 @@ test.util.getFileList = function(contentWindow) {
       row.querySelector('.date').textContent
     ]);
   }
-  fileList.sort();
   return fileList;
 };
 
@@ -220,6 +219,7 @@ test.util.waitForFileListChange = function(
     contentWindow, lengthBefore, callback) {
   function helper() {
     var files = test.util.getFileList(contentWindow);
+    files.sort();
     var notReadyRows = files.filter(function(row) {
       return row.filter(function(cell) { return cell == '...'; }).length;
     });
@@ -378,16 +378,21 @@ test.util.selectVolume = function(contentWindow, iconName, callback) {
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {Array.<Array.<string>>} expected Expected contents of file list.
- * @param {function(boolean)} callback Callback function to notify the caller
- *     whether expected files turned up or not.
+ * @param {boolean=} opt_orderCheck If it is true, this function also compares
+ *     the order of files.
+ * @param {function()} callback Callback function to notify the caller that
+ *     expected files turned up.
  */
 test.util.waitForFiles = function(contentWindow,
                                   expected,
+                                  opt_orderCheck,
                                   callback) {
   var step = function() {
-    if (chrome.test.checkDeepEq(expected,
-                                test.util.getFileList(contentWindow))) {
-      callback(true);
+    var fileList = test.util.getFileList(contentWindow);
+    if (!opt_orderCheck)
+      fileList.sort();
+    if (chrome.test.checkDeepEq(expected, fileList)) {
+      callback();
       return;
     }
     setTimeout(step, 50);
@@ -416,6 +421,19 @@ test.util.sendEvent = function(
   }
   console.error('Target element for ' + targetQuery + ' not found.');
   return false;
+};
+
+/**
+ * Sends an fake event having the specified type to the target query.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} targetQuery Query to specify the element.
+ * @param {string} event Type of event.
+ * @return {boolean} True if the event is sent to the target, false otherwise.
+ */
+test.util.fakeEvent = function(contentWindow, targetQuery, event) {
+  return test.util.sendEvent(
+      contentWindow, targetQuery, new Event(event));
 };
 
 /**
@@ -498,6 +516,21 @@ test.util.fakeMouseDoubleClick = function(
 test.util.fakeMouseDown = function(
     contentWindow, targetQuery, opt_iframeQuery) {
   var event = new MouseEvent('mousedown', { bubbles: true });
+  return test.util.sendEvent(
+      contentWindow, targetQuery, event, opt_iframeQuery);
+};
+
+/**
+ * Sends a fake mouse up event to the element specified by |targetQuery|.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} targetQuery Query to specify the element.
+ * @param {string=} opt_iframeQuery Optional iframe selector.
+ * @return {boolean} True if the event is sent to the target, false otherwise.
+ */
+test.util.fakeMouseUp = function(
+    contentWindow, targetQuery, opt_iframeQuery) {
+  var event = new MouseEvent('mouseup', { bubbles: true });
   return test.util.sendEvent(
       contentWindow, targetQuery, event, opt_iframeQuery);
 };
@@ -640,6 +673,14 @@ test.util.registerRemoteTestUtils = function() {
           sendResponse(test.util.fakeMouseDown(
               contentWindow, request.args[0], request.args[1]));
           return false;
+        case 'fakeMouseUp':
+          sendResponse(test.util.fakeMouseUp(
+              contentWindow, request.args[0], request.args[1]));
+          return false;
+        case 'fakeEvent':
+          sendResponse(test.util.fakeEvent(
+              contentWindow, request.args[0], request.args[1]));
+          return false;
         case 'copyFile':
           sendResponse(test.util.copyFile(contentWindow, request.args[0]));
           return false;
@@ -647,7 +688,10 @@ test.util.registerRemoteTestUtils = function() {
           sendResponse(test.util.deleteFile(contentWindow, request.args[0]));
           return false;
         case 'waitForFiles':
-          test.util.waitForFiles(contentWindow, request.args[0], sendResponse);
+          test.util.waitForFiles(contentWindow,
+                                 request.args[0],
+                                 request.args[1],
+                                 sendResponse);
           return true;
         case 'execCommand':
           sendResponse(contentWindow.document.execCommand(request.args[0]));

@@ -745,8 +745,7 @@ testcase.intermediate.copyBetweenVolumes = function(targetFile,
           'waitForFiles', appId, [srcContents], this.next);
     },
     // Select the source file.
-    function(result) {
-      chrome.test.assertTrue(result);
+    function() {
       callRemoteTestUtil(
           'selectFile', appId, [targetFile], this.next);
     },
@@ -768,8 +767,7 @@ testcase.intermediate.copyBetweenVolumes = function(targetFile,
           'waitForFiles', appId, [dstContents], this.next);
     },
     // Paste the file.
-    function(result) {
-      chrome.test.assertTrue(result);
+    function() {
       callRemoteTestUtil(
           'execCommand', appId, ['paste'], this.next);
     },
@@ -935,6 +933,138 @@ testcase.hideSearchBox = function() {
     function(styles) {
       chrome.test.assertTrue(styles[0].visibility == 'hidden');
       chrome.test.assertTrue(styles[1].display == 'none');
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};
+
+/**
+ * Tests restoring the sorting order.
+ */
+testcase.restoreSortColumn = function() {
+  var appId;
+  var EXPECTED_FILES = [
+    ['world.ogv', '59 KB', 'OGG video', 'Jul 4, 2012 10:35 AM'],
+    ['photos', '--', 'Folder', 'Jan 1, 1980 11:59 PM'],
+    ['My Desktop Background.png', '272 bytes', 'PNG image',
+     'Jan 18, 2038 1:02 AM'],
+    ['hello.txt', '51 bytes', 'Plain text', 'Sep 4, 1998 12:34 PM'],
+    ['Beautiful Song.ogg', '14 KB', 'OGG audio', 'Nov 12, 2086 12:00 PM']
+  ];
+  StepsRunner.run([
+    // Set up File Manager.
+    function() {
+      setupAndWaitUntilReady('/Downloads', this.next);
+    },
+    // Sort by name.
+    function(inAppId) {
+      appId = inAppId;
+      callRemoteTestUtil('fakeMouseClick',
+                         appId,
+                         ['.table-header-cell:nth-of-type(1)'],
+                         this.next);
+    },
+    // Check the sorted style of the header.
+    function() {
+      callRemoteTestUtil('waitForElement',
+                         appId,
+                         ['.table-header-sort-image-asc'],
+                         this.next);
+    },
+    // Sort by name.
+    function() {
+      callRemoteTestUtil('fakeMouseClick',
+                         appId,
+                         ['.table-header-cell:nth-of-type(1)'],
+                         this.next);
+    },
+    // Check the sorted style of the header.
+    function() {
+      callRemoteTestUtil('waitForElement',
+                         appId,
+                         ['.table-header-sort-image-desc'],
+                         this.next);
+    },
+    // Check the sorted files.
+    function() {
+      callRemoteTestUtil('waitForFiles',
+                         appId,
+                         [EXPECTED_FILES, true /* Check the order */],
+                         this.next);
+    },
+    // Open another window, where the sorted column should be restored.
+    function() {
+      setupAndWaitUntilReady('/Downloads', this.next);
+    },
+    // Check the sorted style of the header.
+    function(inAppId) {
+      appId = inAppId;
+      callRemoteTestUtil('waitForElement',
+                         appId,
+                         ['.table-header-sort-image-desc'],
+                         this.next);
+    },
+    // Check the sorted files.
+    function() {
+      callRemoteTestUtil('waitForFiles',
+                         appId,
+                         [EXPECTED_FILES, true /* Check the order */],
+                         this.next);
+    },
+    // Check the error.
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};
+
+/**
+ * Tests restoring the current view (the file list or the thumbnail grid).
+ */
+testcase.restoreCurrentView = function() {
+  var appId;
+  StepsRunner.run([
+    // Set up File Manager.
+    function() {
+      setupAndWaitUntilReady('/Downloads', this.next);
+    },
+    // Check the initial view.
+    function(inAppId) {
+      appId = inAppId;
+      callRemoteTestUtil('waitForElement',
+                         appId,
+                         ['.thumbnail-grid[style*="display: none;"]'],
+                         this.next);
+    },
+    // Change the current view.
+    function() {
+      callRemoteTestUtil('fakeEvent',
+                         appId,
+                         ['#thumbnail-view', 'activate'],
+                         this.next);
+    },
+    // Check the new current view.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('waitForElement',
+                         appId,
+                         ['.detail-table[style*="display: none;"]'],
+                         this.next);
+    },
+    // Open another window, where the current view is restored.
+    function() {
+      callRemoteTestUtil('openMainWindow', null, ['/Downloads'], this.next);
+    },
+    // Check the current view.
+    function(inAppId) {
+      appId = inAppId;
+      callRemoteTestUtil('waitForElement',
+                         appId,
+                         ['.detail-table[style*="display: none;"]'],
+                         this.next);
+    },
+    // Check the error.
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);

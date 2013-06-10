@@ -13,7 +13,7 @@ window.JSErrorCount = 0;
 /**
  * Count uncaught exceptions.
  */
-window.onerror = function() { window.JSErrorCount++ };
+window.onerror = function() { window.JSErrorCount++; };
 
 /**
  * FileManager constructor.
@@ -341,6 +341,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Get startup preferences.
     this.viewOptions_ = {};
     group.add(function(done) {
+      this.dialogType = this.params_.type || DialogType.FULL_PAGE;
+      this.startupPrefName_ = 'file-manager-' + this.dialogType;
       util.platform.getPreference(this.startupPrefName_, function(value) {
         // Load the global default options.
         try {
@@ -441,10 +443,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     dm.addEventListener('scan-updated', this.onScanUpdated_.bind(this));
     dm.addEventListener('rescan-completed',
                         this.refreshCurrentDirectoryMetadata_.bind(this));
-
-    this.directoryModel_.sortFileList(
-        this.viewOptions_.sortField || 'modificationTime',
-        this.viewOptions_.sortDirection || 'desc');
 
     if (util.platform.newUI()) {
       /**
@@ -830,7 +828,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (window.appState) {
       this.params_ = window.appState.params || {};
       this.defaultPath = window.appState.defaultPath;
-      util.saveAppState();
     } else {
       this.params_ = location.search ?
                      JSON.parse(decodeURIComponent(location.search.substr(1))) :
@@ -1256,8 +1253,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.table_.addEventListener('column-resize-end',
                                  this.updateStartupPrefs_.bind(this));
 
-    this.setListType(this.viewOptions_.listType || FileManager.ListType.DETAIL);
-
+    // Restore preferences.
+    this.directoryModel_.sortFileList(
+        this.viewOptions_.sortField || 'modificationTime',
+        this.viewOptions_.sortDirection || 'desc');
     if (!util.platform.newUI() && this.viewOptions_.columns) {
       var cm = this.table_.columnModel;
       for (var i = 0; i < cm.totalSize; i++) {
@@ -1265,6 +1264,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           cm.setWidth(i, this.viewOptions_.columns[i]);
       }
     }
+    this.setListType(this.viewOptions_.listType || FileManager.ListType.DETAIL);
 
     this.textSearchState_ = {text: '', date: new Date()};
 
@@ -1333,7 +1333,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var prefs = {
       sortField: sortStatus.field,
       sortDirection: sortStatus.direction,
-      columns: []
+      columns: [],
+      listType: this.listType_
     };
     if (!util.platform.newUI()) {
       var cm = this.table_.columnModel;

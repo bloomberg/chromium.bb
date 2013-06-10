@@ -455,4 +455,12 @@ INSTANTIATE_TEST_CASE_P(
      FileManagerBrowserSimpleTest,
      ::testing::Values(TestParameter(IN_GUEST_MODE, "hideSearchBox"),
                        TestParameter(NOT_IN_GUEST_MODE, "hideSearchBox")));
+
+INSTANTIATE_TEST_CASE_P(
+    RestorePrefs,
+    FileManagerBrowserSimpleTest,
+    ::testing::Values(TestParameter(IN_GUEST_MODE, "restoreSortColumn"),
+                      TestParameter(NOT_IN_GUEST_MODE, "restoreSortColumn"),
+                      TestParameter(IN_GUEST_MODE, "restoreCurrentView"),
+                      TestParameter(NOT_IN_GUEST_MODE, "restoreCurrentView")));
 }  // namespace
