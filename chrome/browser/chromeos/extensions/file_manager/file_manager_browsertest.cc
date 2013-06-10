@@ -394,7 +394,7 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserSimpleTest, Test) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-    OpenSpecialTypes,
+    DISABLED_OpenSpecialTypes,
     FileManagerBrowserSimpleTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "videoOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDownloads"),
