@@ -92,7 +92,7 @@ static void PutBool(LevelDBTransaction* transaction,
                     bool value) {
   std::vector<char> buffer;
   EncodeBool(value, &buffer);
-  transaction->Put(key, buffer);
+  transaction->Put(key, &buffer);
 }
 
 template <typename DBOrTransaction>
@@ -116,7 +116,7 @@ static void PutInt(LevelDBTransaction* transaction,
   DCHECK_GE(value, 0);
   std::vector<char> buffer;
   EncodeInt(value, &buffer);
-  transaction->Put(key, buffer);
+  transaction->Put(key, &buffer);
 }
 
 template <typename DBOrTransaction>
@@ -139,7 +139,7 @@ static void PutVarInt(LevelDBTransaction* transaction,
                       int64 value) {
   std::vector<char> buffer;
   EncodeVarInt(value, &buffer);
-  transaction->Put(key, buffer);
+  transaction->Put(key, &buffer);
 }
 
 template <typename DBOrTransaction>
@@ -163,7 +163,7 @@ static void PutString(LevelDBTransaction* transaction,
                       const string16& value) {
   std::vector<char> buffer;
   EncodeString(value, &buffer);
-  transaction->Put(key, buffer);
+  transaction->Put(key, &buffer);
 }
 
 static void PutIDBKeyPath(LevelDBTransaction* transaction,
@@ -171,7 +171,7 @@ static void PutIDBKeyPath(LevelDBTransaction* transaction,
                           const IndexedDBKeyPath& value) {
   std::vector<char> buffer;
   EncodeIDBKeyPath(value, &buffer);
-  transaction->Put(key, buffer);
+  transaction->Put(key, &buffer);
 }
 
 static int CompareKeys(const LevelDBSlice& a, const LevelDBSlice& b) {
@@ -1260,13 +1260,13 @@ bool IndexedDBBackingStore::PutRecord(
   EncodeVarInt(version, &v);
   v.insert(v.end(), value.begin(), value.end());
 
-  leveldb_transaction->Put(LevelDBSlice(object_storedata_key), v);
+  leveldb_transaction->Put(LevelDBSlice(object_storedata_key), &v);
 
   const std::vector<char> exists_entry_key =
       ExistsEntryKey::Encode(database_id, object_store_id, key);
   std::vector<char> version_encoded;
   EncodeInt(version, &version_encoded);
-  leveldb_transaction->Put(LevelDBSlice(exists_entry_key), version_encoded);
+  leveldb_transaction->Put(LevelDBSlice(exists_entry_key), &version_encoded);
 
   std::vector<char> key_encoded;
   EncodeIDBKey(key, &key_encoded);
@@ -1675,7 +1675,7 @@ bool IndexedDBBackingStore::PutIndexDataForRecord(
   const std::vector<char>& primary_key = record_identifier.primary_key();
   data.insert(data.end(), primary_key.begin(), primary_key.end());
 
-  leveldb_transaction->Put(LevelDBSlice(index_data_key), data);
+  leveldb_transaction->Put(LevelDBSlice(index_data_key), &data);
   return true;
 }
 

@@ -222,12 +222,12 @@ scoped_ptr<LevelDBDatabase> LevelDBDatabase::OpenInMemory(
 }
 
 bool LevelDBDatabase::Put(const LevelDBSlice& key,
-                          const std::vector<char>& value) {
+                          std::vector<char>* value) {
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 
   const leveldb::Status s =
-      db_->Put(write_options, MakeSlice(key), MakeSlice(value));
+      db_->Put(write_options, MakeSlice(key), MakeSlice(*value));
   if (s.ok())
     return true;
   LOG(ERROR) << "LevelDB put failed: " << s.ToString();

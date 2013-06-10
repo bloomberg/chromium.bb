@@ -50,7 +50,7 @@ class CONTENT_EXPORT LevelDBDatabase {
   static bool Destroy(const base::FilePath& file_name);
   virtual ~LevelDBDatabase();
 
-  bool Put(const LevelDBSlice& key, const std::vector<char>& value);
+  bool Put(const LevelDBSlice& key, std::vector<char>* value);
   bool Remove(const LevelDBSlice& key);
   virtual bool Get(const LevelDBSlice& key,
                    std::string* value,

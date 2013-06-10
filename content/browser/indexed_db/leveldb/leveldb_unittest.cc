@@ -43,14 +43,16 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
 
   const std::vector<char> key = EncodeString("key");
-  const std::vector<char> put_value = EncodeString("value");
+  const std::vector<char> value = EncodeString("value");
+  std::vector<char> put_value;
   std::string got_value;
   SimpleComparator comparator;
 
   scoped_ptr<LevelDBDatabase> leveldb =
       LevelDBDatabase::Open(temp_directory.path(), &comparator);
   EXPECT_TRUE(leveldb);
-  bool success = leveldb->Put(LevelDBSlice(key), put_value);
+  put_value = value;
+  bool success = leveldb->Put(LevelDBSlice(key), &put_value);
   EXPECT_TRUE(success);
   leveldb.Pass();
   EXPECT_FALSE(leveldb);
@@ -61,7 +63,7 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   success = leveldb->Get(LevelDBSlice(key), &got_value, &found);
   EXPECT_TRUE(success);
   EXPECT_TRUE(found);
-  EXPECT_EQ(put_value, std::vector<char>(got_value.begin(), got_value.end()));
+  EXPECT_EQ(value, std::vector<char>(got_value.begin(), got_value.end()));
   leveldb.Pass();
   EXPECT_FALSE(leveldb);
 
@@ -93,6 +95,7 @@ TEST(LevelDBDatabaseTest, Transaction) {
 
   const std::vector<char> key = EncodeString("key");
   std::string got_value;
+  std::vector<char> put_value;
   SimpleComparator comparator;
 
   scoped_ptr<LevelDBDatabase> leveldb =
@@ -100,14 +103,16 @@ TEST(LevelDBDatabaseTest, Transaction) {
   EXPECT_TRUE(leveldb);
 
   const std::vector<char> old_value = EncodeString("value");
-  bool success = leveldb->Put(LevelDBSlice(key), old_value);
+  put_value = old_value;
+  bool success = leveldb->Put(LevelDBSlice(key), &put_value);
   EXPECT_TRUE(success);
 
   scoped_refptr<LevelDBTransaction> transaction =
       LevelDBTransaction::Create(leveldb.get());
 
   const std::vector<char> new_value = EncodeString("new value");
-  success = leveldb->Put(LevelDBSlice(key), new_value);
+  put_value = new_value;
+  success = leveldb->Put(LevelDBSlice(key), &put_value);
   EXPECT_TRUE(success);
 
   bool found = false;
@@ -126,7 +131,8 @@ TEST(LevelDBDatabaseTest, Transaction) {
 
   const std::vector<char> added_key = EncodeString("added key");
   const std::vector<char> added_value = EncodeString("added value");
-  success = leveldb->Put(LevelDBSlice(added_key), added_value);
+  put_value = added_value;
+  success = leveldb->Put(LevelDBSlice(added_key), &put_value);
   EXPECT_TRUE(success);
 
   success = leveldb->Get(LevelDBSlice(added_key), &got_value, &found);
@@ -142,7 +148,8 @@ TEST(LevelDBDatabaseTest, Transaction) {
 
   const std::vector<char> another_key = EncodeString("another key");
   const std::vector<char> another_value = EncodeString("another value");
-  transaction->Put(LevelDBSlice(another_key), another_value);
+  put_value = another_value;
+  transaction->Put(LevelDBSlice(another_key), &put_value);
 
   success = transaction->Get(LevelDBSlice(another_key), &got_value, &found);
   EXPECT_TRUE(success);
@@ -160,7 +167,7 @@ TEST(LevelDBDatabaseTest, TransactionIterator) {
   const std::vector<char> value1 = EncodeString("value1");
   const std::vector<char> key2 = EncodeString("key2");
   const std::vector<char> value2 = EncodeString("value2");
-
+  std::vector<char> put_value;
   SimpleComparator comparator;
   bool success;
 
@@ -168,9 +175,11 @@ TEST(LevelDBDatabaseTest, TransactionIterator) {
       LevelDBDatabase::Open(temp_directory.path(), &comparator);
   EXPECT_TRUE(leveldb);
 
-  success = leveldb->Put(LevelDBSlice(key1), value1);
+  put_value = value1;
+  success = leveldb->Put(LevelDBSlice(key1), &put_value);
   EXPECT_TRUE(success);
-  success = leveldb->Put(LevelDBSlice(key2), value2);
+  put_value = value2;
+  success = leveldb->Put(LevelDBSlice(key2), &put_value);
   EXPECT_TRUE(success);
 
   scoped_refptr<LevelDBTransaction> transaction =

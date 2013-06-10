@@ -51,7 +51,7 @@ static void InitVector(const LevelDBSlice& slice, std::vector<char>* vector) {
 }
 
 void LevelDBTransaction::Set(const LevelDBSlice& key,
-                             const std::vector<char>& value,
+                             std::vector<char>* value,
                              bool deleted) {
   DCHECK(!finished_);
   bool new_node = false;
@@ -63,7 +63,7 @@ void LevelDBTransaction::Set(const LevelDBSlice& key,
     tree_.Insert(node);
     new_node = true;
   }
-  node->value = value;
+  node->value.swap(*value);
   node->deleted = deleted;
 
   if (new_node)
@@ -71,12 +71,13 @@ void LevelDBTransaction::Set(const LevelDBSlice& key,
 }
 
 void LevelDBTransaction::Put(const LevelDBSlice& key,
-                             const std::vector<char>& value) {
+                             std::vector<char>* value) {
   Set(key, value, false);
 }
 
 void LevelDBTransaction::Remove(const LevelDBSlice& key) {
-  Set(key, std::vector<char>(), true);
+  std::vector<char> empty;
+  Set(key, &empty, true);
 }
 
 bool LevelDBTransaction::Get(const LevelDBSlice& key,

@@ -26,7 +26,7 @@ class CONTENT_EXPORT LevelDBTransaction
  public:
   static scoped_refptr<LevelDBTransaction> Create(LevelDBDatabase* db);
 
-  void Put(const LevelDBSlice& key, const std::vector<char>& value);
+  void Put(const LevelDBSlice& key, std::vector<char>* value);
   void Remove(const LevelDBSlice& key);
   bool Get(const LevelDBSlice& key, std::string* value, bool* found);
   bool Commit();
@@ -144,7 +144,7 @@ class CONTENT_EXPORT LevelDBTransaction
   };
 
   void Set(const LevelDBSlice& key,
-           const std::vector<char>& value,
+           std::vector<char>* value,
            bool deleted);
   void ClearTree();
   void RegisterIterator(TransactionIterator* iterator);
