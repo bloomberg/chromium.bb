@@ -490,7 +490,7 @@ void DriveAPIService::AddNewDirectory(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new drive::CreateDirectoryOperation(
+      new drive::CreateDirectoryRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -544,7 +544,7 @@ void DriveAPIService::RenameResource(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new drive::RenameResourceOperation(
+      new drive::RenameResourceRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -599,7 +599,7 @@ void DriveAPIService::RemoveResourceFromDirectory(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new drive::DeleteResourceOperation(
+      new drive::DeleteResourceRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -619,7 +619,7 @@ void DriveAPIService::InitiateUploadNewFile(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new drive::InitiateUploadNewFileOperation(
+      new drive::InitiateUploadNewFileRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -642,7 +642,7 @@ void DriveAPIService::InitiateUploadExistingFile(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new drive::InitiateUploadExistingFileOperation(
+      new drive::InitiateUploadExistingFileRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -668,7 +668,7 @@ void DriveAPIService::ResumeUpload(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new drive::ResumeUploadOperation(
+      new drive::ResumeUploadRequest(
           sender_.get(),
           url_request_context_getter_,
           drive_file_path,
@@ -690,7 +690,7 @@ void DriveAPIService::GetUploadStatus(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  sender_->StartRequestWithRetry(new drive::GetUploadStatusOperation(
+  sender_->StartRequestWithRetry(new drive::GetUploadStatusRequest(
       sender_.get(),
       url_request_context_getter_,
       drive_file_path,

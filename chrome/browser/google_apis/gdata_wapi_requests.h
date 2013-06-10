@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_OPERATIONS_H_
-#define CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_OPERATIONS_H_
+#ifndef CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_REQUESTS_H_
+#define CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_REQUESTS_H_
 
 #include <string>
 #include <vector>
@@ -22,10 +22,10 @@ class AccountMetadata;
 class GDataWapiUrlGenerator;
 class ResourceEntry;
 
-//============================ GetResourceListOperation ========================
+//============================ GetResourceListRequest ========================
 
-// This class performs the operation for fetching a resource list.
-class GetResourceListOperation : public GetDataRequest {
+// This class performs the request for fetching a resource list.
+class GetResourceListRequest : public GetDataRequest {
  public:
   // override_url:
   //   If empty, a hard-coded base URL of the WAPI server is used to fetch
@@ -45,7 +45,7 @@ class GetResourceListOperation : public GetDataRequest {
   //
   // callback:
   //   Called once the feed is fetched. Must not be null.
-  GetResourceListOperation(
+  GetResourceListRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
@@ -54,7 +54,7 @@ class GetResourceListOperation : public GetDataRequest {
       const std::string& search_string,
       const std::string& directory_resource_id,
       const GetResourceListCallback& callback);
-  virtual ~GetResourceListOperation();
+  virtual ~GetResourceListRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -67,13 +67,13 @@ class GetResourceListOperation : public GetDataRequest {
   const std::string search_string_;
   const std::string directory_resource_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetResourceListOperation);
+  DISALLOW_COPY_AND_ASSIGN(GetResourceListRequest);
 };
 
-//============================ SearchByTitleOperation ==========================
+//============================ SearchByTitleRequest ==========================
 
-// This class performs the operation for searching resources by title.
-class SearchByTitleOperation : public GetDataRequest {
+// This class performs the request for searching resources by title.
+class SearchByTitleRequest : public GetDataRequest {
  public:
   // title: the search query.
   //
@@ -83,14 +83,14 @@ class SearchByTitleOperation : public GetDataRequest {
   //
   // callback:
   //   Called once the feed is fetched. Must not be null.
-  SearchByTitleOperation(
+  SearchByTitleRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const std::string& title,
       const std::string& directory_resource_id,
       const GetResourceListCallback& callback);
-  virtual ~SearchByTitleOperation();
+  virtual ~SearchByTitleRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -101,22 +101,22 @@ class SearchByTitleOperation : public GetDataRequest {
   const std::string title_;
   const std::string directory_resource_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(SearchByTitleOperation);
+  DISALLOW_COPY_AND_ASSIGN(SearchByTitleRequest);
 };
 
-//========================= GetResourceEntryOperation ==========================
+//========================= GetResourceEntryRequest ==========================
 
-// This class performs the operation for fetching a single resource entry.
-class GetResourceEntryOperation : public GetDataRequest {
+// This class performs the request for fetching a single resource entry.
+class GetResourceEntryRequest : public GetDataRequest {
  public:
   // |callback| must not be null.
-  GetResourceEntryOperation(
+  GetResourceEntryRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const std::string& resource_id,
       const GetDataCallback& callback);
-  virtual ~GetResourceEntryOperation();
+  virtual ~GetResourceEntryRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -127,29 +127,29 @@ class GetResourceEntryOperation : public GetDataRequest {
   // Resource id of the requested entry.
   const std::string resource_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetResourceEntryOperation);
+  DISALLOW_COPY_AND_ASSIGN(GetResourceEntryRequest);
 };
 
-//========================= GetAccountMetadataOperation ========================
+//========================= GetAccountMetadataRequest ========================
 
 // Callback used for GetAccountMetadata().
 typedef base::Callback<void(GDataErrorCode error,
                             scoped_ptr<AccountMetadata> account_metadata)>
     GetAccountMetadataCallback;
 
-// This class performs the operation for fetching account metadata.
-class GetAccountMetadataOperation : public GetDataRequest {
+// This class performs the request for fetching account metadata.
+class GetAccountMetadataRequest : public GetDataRequest {
  public:
   // If |include_installed_apps| is set to true, the result should include
   // the list of installed third party applications.
   // |callback| must not be null.
-  GetAccountMetadataOperation(
+  GetAccountMetadataRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const GetAccountMetadataCallback& callback,
       bool include_installed_apps);
-  virtual ~GetAccountMetadataOperation();
+  virtual ~GetAccountMetadataRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -159,28 +159,28 @@ class GetAccountMetadataOperation : public GetDataRequest {
   const GDataWapiUrlGenerator url_generator_;
   const bool include_installed_apps_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetAccountMetadataOperation);
+  DISALLOW_COPY_AND_ASSIGN(GetAccountMetadataRequest);
 };
 
-//=========================== DeleteResourceOperation ==========================
+//=========================== DeleteResourceRequest ==========================
 
-// This class performs the operation for deleting a resource.
+// This class performs the request for deleting a resource.
 //
 // In WAPI, "gd:deleted" means that the resource was put in the trash, and
 // "docs:removed" means its permanently gone. Since what the class does is to
 // put the resource into trash, we have chosen "Delete" in the name, even though
 // we are preferring the term "Remove" in drive/google_api code.
-class DeleteResourceOperation : public EntryActionRequest {
+class DeleteResourceRequest : public EntryActionRequest {
  public:
   // |callback| must not be null.
-  DeleteResourceOperation(
+  DeleteResourceRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const EntryActionCallback& callback,
       const std::string& resource_id,
       const std::string& etag);
-  virtual ~DeleteResourceOperation();
+  virtual ~DeleteResourceRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -193,26 +193,26 @@ class DeleteResourceOperation : public EntryActionRequest {
   const std::string resource_id_;
   const std::string etag_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeleteResourceOperation);
+  DISALLOW_COPY_AND_ASSIGN(DeleteResourceRequest);
 };
 
-//========================== CreateDirectoryOperation ==========================
+//========================== CreateDirectoryRequest ==========================
 
-// This class performs the operation for creating a directory.
-class CreateDirectoryOperation : public GetDataRequest {
+// This class performs the request for creating a directory.
+class CreateDirectoryRequest : public GetDataRequest {
  public:
   // A new directory will be created under a directory specified by
   // |parent_resource_id|. If this parameter is empty, a new directory will
   // be created in the root directory.
   // |callback| must not be null.
-  CreateDirectoryOperation(
+  CreateDirectoryRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const GetDataCallback& callback,
       const std::string& parent_resource_id,
       const std::string& directory_name);
-  virtual ~CreateDirectoryOperation();
+  virtual ~CreateDirectoryRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -226,25 +226,25 @@ class CreateDirectoryOperation : public GetDataRequest {
   const std::string parent_resource_id_;
   const std::string directory_name_;
 
-  DISALLOW_COPY_AND_ASSIGN(CreateDirectoryOperation);
+  DISALLOW_COPY_AND_ASSIGN(CreateDirectoryRequest);
 };
 
-//============================ CopyHostedDocumentOperation =====================
+//============================ CopyHostedDocumentRequest =====================
 
-// This class performs the operation for making a copy of a hosted document.
+// This class performs the request for making a copy of a hosted document.
 // Note that this function cannot be used to copy regular files, as it's not
 // supported by WAPI.
-class CopyHostedDocumentOperation : public GetDataRequest {
+class CopyHostedDocumentRequest : public GetDataRequest {
  public:
   // |callback| must not be null.
-  CopyHostedDocumentOperation(
+  CopyHostedDocumentRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const GetDataCallback& callback,
       const std::string& resource_id,
       const std::string& new_name);
-  virtual ~CopyHostedDocumentOperation();
+  virtual ~CopyHostedDocumentRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -258,23 +258,23 @@ class CopyHostedDocumentOperation : public GetDataRequest {
   const std::string resource_id_;
   const std::string new_name_;
 
-  DISALLOW_COPY_AND_ASSIGN(CopyHostedDocumentOperation);
+  DISALLOW_COPY_AND_ASSIGN(CopyHostedDocumentRequest);
 };
 
-//=========================== RenameResourceOperation ==========================
+//=========================== RenameResourceRequest ==========================
 
-// This class performs the operation for renaming a document/file/directory.
-class RenameResourceOperation : public EntryActionRequest {
+// This class performs the request for renaming a document/file/directory.
+class RenameResourceRequest : public EntryActionRequest {
  public:
   // |callback| must not be null.
-  RenameResourceOperation(
+  RenameResourceRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const EntryActionCallback& callback,
       const std::string& resource_id,
       const std::string& new_name);
-  virtual ~RenameResourceOperation();
+  virtual ~RenameResourceRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -289,24 +289,24 @@ class RenameResourceOperation : public EntryActionRequest {
   const std::string resource_id_;
   const std::string new_name_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenameResourceOperation);
+  DISALLOW_COPY_AND_ASSIGN(RenameResourceRequest);
 };
 
-//=========================== AuthorizeAppOperation ==========================
+//=========================== AuthorizeAppRequest ==========================
 
-// This class performs the operation for authorizing an application specified
+// This class performs the request for authorizing an application specified
 // by |app_id| to access a document specified by |resource_id|.
-class AuthorizeAppOperation : public GetDataRequest {
+class AuthorizeAppRequest : public GetDataRequest {
  public:
   // |callback| must not be null.
-  AuthorizeAppOperation(
+  AuthorizeAppRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const AuthorizeAppCallback& callback,
       const std::string& resource_id,
       const std::string& app_id);
-  virtual ~AuthorizeAppOperation();
+  virtual ~AuthorizeAppRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -321,24 +321,24 @@ class AuthorizeAppOperation : public GetDataRequest {
   const std::string resource_id_;
   const std::string app_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(AuthorizeAppOperation);
+  DISALLOW_COPY_AND_ASSIGN(AuthorizeAppRequest);
 };
 
-//======================= AddResourceToDirectoryOperation ======================
+//======================= AddResourceToDirectoryRequest ======================
 
-// This class performs the operation for adding a document/file/directory
+// This class performs the request for adding a document/file/directory
 // to a directory.
-class AddResourceToDirectoryOperation : public EntryActionRequest {
+class AddResourceToDirectoryRequest : public EntryActionRequest {
  public:
   // |callback| must not be null.
-  AddResourceToDirectoryOperation(
+  AddResourceToDirectoryRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const EntryActionCallback& callback,
       const std::string& parent_resource_id,
       const std::string& resource_id);
-  virtual ~AddResourceToDirectoryOperation();
+  virtual ~AddResourceToDirectoryRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -352,24 +352,24 @@ class AddResourceToDirectoryOperation : public EntryActionRequest {
   const std::string parent_resource_id_;
   const std::string resource_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(AddResourceToDirectoryOperation);
+  DISALLOW_COPY_AND_ASSIGN(AddResourceToDirectoryRequest);
 };
 
-//==================== RemoveResourceFromDirectoryOperation ====================
+//==================== RemoveResourceFromDirectoryRequest ====================
 
-// This class performs the operation for removing a document/file/directory
+// This class performs the request for removing a document/file/directory
 // from a directory.
-class RemoveResourceFromDirectoryOperation : public EntryActionRequest {
+class RemoveResourceFromDirectoryRequest : public EntryActionRequest {
  public:
   // |callback| must not be null.
-  RemoveResourceFromDirectoryOperation(
+  RemoveResourceFromDirectoryRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
       const EntryActionCallback& callback,
       const std::string& parent_resource_id,
       const std::string& resource_id);
-  virtual ~RemoveResourceFromDirectoryOperation();
+  virtual ~RemoveResourceFromDirectoryRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -382,20 +382,20 @@ class RemoveResourceFromDirectoryOperation : public EntryActionRequest {
   const std::string resource_id_;
   const std::string parent_resource_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(RemoveResourceFromDirectoryOperation);
+  DISALLOW_COPY_AND_ASSIGN(RemoveResourceFromDirectoryRequest);
 };
 
-//======================= InitiateUploadNewFileOperation =======================
+//======================= InitiateUploadNewFileRequest =======================
 
-// This class performs the operation for initiating the upload of a new file.
-class InitiateUploadNewFileOperation : public InitiateUploadRequestBase {
+// This class performs the request for initiating the upload of a new file.
+class InitiateUploadNewFileRequest : public InitiateUploadRequestBase {
  public:
   // |title| should be set.
   // |parent_upload_url| should be the upload_url() of the parent directory.
   //   (resumable-create-media URL)
   // See also the comments of InitiateUploadRequestBase for more details
   // about the other parameters.
-  InitiateUploadNewFileOperation(
+  InitiateUploadNewFileRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
@@ -405,7 +405,7 @@ class InitiateUploadNewFileOperation : public InitiateUploadRequestBase {
       int64 content_length,
       const std::string& parent_resource_id,
       const std::string& title);
-  virtual ~InitiateUploadNewFileOperation();
+  virtual ~InitiateUploadNewFileRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -419,14 +419,14 @@ class InitiateUploadNewFileOperation : public InitiateUploadRequestBase {
   const std::string parent_resource_id_;
   const std::string title_;
 
-  DISALLOW_COPY_AND_ASSIGN(InitiateUploadNewFileOperation);
+  DISALLOW_COPY_AND_ASSIGN(InitiateUploadNewFileRequest);
 };
 
-//==================== InitiateUploadExistingFileOperation =====================
+//==================== InitiateUploadExistingFileRequest =====================
 
-// This class performs the operation for initiating the upload of an existing
+// This class performs the request for initiating the upload of an existing
 // file.
-class InitiateUploadExistingFileOperation
+class InitiateUploadExistingFileRequest
     : public InitiateUploadRequestBase {
  public:
   // |upload_url| should be the upload_url() of the file
@@ -434,7 +434,7 @@ class InitiateUploadExistingFileOperation
   // |etag| should be set if it is available to detect the upload confliction.
   // See also the comments of InitiateUploadRequestBase for more details
   // about the other parameters.
-  InitiateUploadExistingFileOperation(
+  InitiateUploadExistingFileRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GDataWapiUrlGenerator& url_generator,
@@ -444,7 +444,7 @@ class InitiateUploadExistingFileOperation
       int64 content_length,
       const std::string& resource_id,
       const std::string& etag);
-  virtual ~InitiateUploadExistingFileOperation();
+  virtual ~InitiateUploadExistingFileRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -459,17 +459,17 @@ class InitiateUploadExistingFileOperation
   const std::string resource_id_;
   const std::string etag_;
 
-  DISALLOW_COPY_AND_ASSIGN(InitiateUploadExistingFileOperation);
+  DISALLOW_COPY_AND_ASSIGN(InitiateUploadExistingFileRequest);
 };
 
-//============================ ResumeUploadOperation ===========================
+//============================ ResumeUploadRequest ===========================
 
-// Performs the operation for resuming the upload of a file.
-class ResumeUploadOperation : public ResumeUploadRequestBase {
+// Performs the request for resuming the upload of a file.
+class ResumeUploadRequest : public ResumeUploadRequestBase {
  public:
   // See also ResumeUploadRequestBase's comment for parameters meaining.
   // |callback| must not be null.
-  ResumeUploadOperation(
+  ResumeUploadRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const UploadRangeCallback& callback,
@@ -481,7 +481,7 @@ class ResumeUploadOperation : public ResumeUploadRequestBase {
       int64 content_length,
       const std::string& content_type,
       const base::FilePath& local_file_path);
-  virtual ~ResumeUploadOperation();
+  virtual ~ResumeUploadRequest();
 
  protected:
   // UploadRangeRequestBase overrides.
@@ -496,24 +496,24 @@ class ResumeUploadOperation : public ResumeUploadRequestBase {
   const UploadRangeCallback callback_;
   const ProgressCallback progress_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(ResumeUploadOperation);
+  DISALLOW_COPY_AND_ASSIGN(ResumeUploadRequest);
 };
 
-//========================== GetUploadStatusOperation ==========================
+//========================== GetUploadStatusRequest ==========================
 
-// Performs the operation to request the current upload status of a file.
-class GetUploadStatusOperation : public GetUploadStatusRequestBase {
+// Performs the request to request the current upload status of a file.
+class GetUploadStatusRequest : public GetUploadStatusRequestBase {
  public:
   // See also GetUploadStatusRequestBase's comment for parameters meaning.
   // |callback| must not be null.
-  GetUploadStatusOperation(
+  GetUploadStatusRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const UploadRangeCallback& callback,
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 content_length);
-  virtual ~GetUploadStatusOperation();
+  virtual ~GetUploadStatusRequest();
 
  protected:
   // UploadRangeRequestBase overrides.
@@ -524,9 +524,9 @@ class GetUploadStatusOperation : public GetUploadStatusRequestBase {
  private:
   const UploadRangeCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetUploadStatusOperation);
+  DISALLOW_COPY_AND_ASSIGN(GetUploadStatusRequest);
 };
 
 }  // namespace google_apis
 
-#endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_OPERATIONS_H_
+#endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_REQUESTS_H_

@@ -845,7 +845,7 @@
         'browser/google_apis/drive_uploader_unittest.cc',
         'browser/google_apis/event_logger_unittest.cc',
         'browser/google_apis/gdata_wapi_parser_unittest.cc',
-        'browser/google_apis/gdata_wapi_operations_unittest.cc',
+        'browser/google_apis/gdata_wapi_requests_unittest.cc',
         'browser/google_apis/gdata_wapi_url_generator_unittest.cc',
         'browser/google_apis/fake_drive_service.cc',
         'browser/google_apis/fake_drive_service.h',
@@ -2348,7 +2348,7 @@
             'browser/google_apis/base_requests_server_unittest.cc',
             'browser/google_apis/drive_api_operations_unittest.cc',
             'browser/google_apis/fake_drive_service_unittest.cc',
-            'browser/google_apis/gdata_wapi_operations_unittest.cc',
+            'browser/google_apis/gdata_wapi_requests_unittest.cc',
             'browser/google_apis/gdata_wapi_parser_unittest.cc',
 
             'browser/user_style_sheet_watcher_unittest.cc',

@@ -14,8 +14,8 @@
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
-#include "chrome/browser/google_apis/gdata_wapi_operations.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/gdata_wapi_requests.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/google_apis/request_sender.h"
 #include "chrome/browser/google_apis/time_util.h"
@@ -166,7 +166,7 @@ std::string GDataWapiService::GetRootResourceId() const {
 }
 
 // Because GData WAPI support is expected to be gone somehow soon by migration
-// to the Drive API v2, so we'll reuse GetResourceListOperation to implement
+// to the Drive API v2, so we'll reuse GetResourceListRequest to implement
 // following methods, instead of cleaning the operation class.
 
 void GDataWapiService::GetAllResourceList(
@@ -175,7 +175,7 @@ void GDataWapiService::GetAllResourceList(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new GetResourceListOperation(sender_.get(),
+      new GetResourceListRequest(sender_.get(),
                                    url_request_context_getter_,
                                    url_generator_,
                                    GURL(),         // No override url
@@ -193,7 +193,7 @@ void GDataWapiService::GetResourceListInDirectory(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new GetResourceListOperation(sender_.get(),
+      new GetResourceListRequest(sender_.get(),
                                    url_request_context_getter_,
                                    url_generator_,
                                    GURL(),         // No override url
@@ -210,7 +210,7 @@ void GDataWapiService::Search(const std::string& search_query,
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new GetResourceListOperation(sender_.get(),
+      new GetResourceListRequest(sender_.get(),
                                    url_request_context_getter_,
                                    url_generator_,
                                    GURL(),         // No override url
@@ -229,7 +229,7 @@ void GDataWapiService::SearchByTitle(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new SearchByTitleOperation(
+      new SearchByTitleRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -244,7 +244,7 @@ void GDataWapiService::GetChangeList(int64 start_changestamp,
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new GetResourceListOperation(sender_.get(),
+      new GetResourceListRequest(sender_.get(),
                                    url_request_context_getter_,
                                    url_generator_,
                                    GURL(),         // No override url
@@ -262,7 +262,7 @@ void GDataWapiService::ContinueGetResourceList(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new GetResourceListOperation(sender_.get(),
+      new GetResourceListRequest(sender_.get(),
                                    url_request_context_getter_,
                                    url_generator_,
                                    override_url,
@@ -279,7 +279,7 @@ void GDataWapiService::GetResourceEntry(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new GetResourceEntryOperation(
+      new GetResourceEntryRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -293,7 +293,7 @@ void GDataWapiService::GetAboutResource(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new GetAccountMetadataOperation(
+      new GetAccountMetadataRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -306,7 +306,7 @@ void GDataWapiService::GetAppList(const GetAppListCallback& callback) {
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new GetAccountMetadataOperation(
+      new GetAccountMetadataRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -344,7 +344,7 @@ void GDataWapiService::DeleteResource(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new DeleteResourceOperation(sender_.get(),
+      new DeleteResourceRequest(sender_.get(),
                                   url_request_context_getter_,
                                   url_generator_,
                                   callback,
@@ -360,7 +360,7 @@ void GDataWapiService::AddNewDirectory(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new CreateDirectoryOperation(sender_.get(),
+      new CreateDirectoryRequest(sender_.get(),
                                    url_request_context_getter_,
                                    url_generator_,
                                    base::Bind(&ParseResourceEntryAndRun,
@@ -391,7 +391,7 @@ void GDataWapiService::CopyHostedDocument(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new CopyHostedDocumentOperation(
+      new CopyHostedDocumentRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,
@@ -408,7 +408,7 @@ void GDataWapiService::RenameResource(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new RenameResourceOperation(sender_.get(),
+      new RenameResourceRequest(sender_.get(),
                                   url_request_context_getter_,
                                   url_generator_,
                                   callback,
@@ -442,7 +442,7 @@ void GDataWapiService::AddResourceToDirectory(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new AddResourceToDirectoryOperation(sender_.get(),
+      new AddResourceToDirectoryRequest(sender_.get(),
                                           url_request_context_getter_,
                                           url_generator_,
                                           callback,
@@ -458,7 +458,7 @@ void GDataWapiService::RemoveResourceFromDirectory(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new RemoveResourceFromDirectoryOperation(sender_.get(),
+      new RemoveResourceFromDirectoryRequest(sender_.get(),
                                                url_request_context_getter_,
                                                url_generator_,
                                                callback,
@@ -478,7 +478,7 @@ void GDataWapiService::InitiateUploadNewFile(
   DCHECK(!parent_resource_id.empty());
 
   sender_->StartRequestWithRetry(
-      new InitiateUploadNewFileOperation(sender_.get(),
+      new InitiateUploadNewFileRequest(sender_.get(),
                                          url_request_context_getter_,
                                          url_generator_,
                                          callback,
@@ -501,7 +501,7 @@ void GDataWapiService::InitiateUploadExistingFile(
   DCHECK(!resource_id.empty());
 
   sender_->StartRequestWithRetry(
-      new InitiateUploadExistingFileOperation(sender_.get(),
+      new InitiateUploadExistingFileRequest(sender_.get(),
                                               url_request_context_getter_,
                                               url_generator_,
                                               callback,
@@ -526,7 +526,7 @@ void GDataWapiService::ResumeUpload(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new ResumeUploadOperation(sender_.get(),
+      new ResumeUploadRequest(sender_.get(),
                                 url_request_context_getter_,
                                 callback,
                                 progress_callback,
@@ -548,7 +548,7 @@ void GDataWapiService::GetUploadStatus(
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new GetUploadStatusOperation(sender_.get(),
+      new GetUploadStatusRequest(sender_.get(),
                                    url_request_context_getter_,
                                    callback,
                                    drive_file_path,
@@ -563,7 +563,7 @@ void GDataWapiService::AuthorizeApp(const std::string& resource_id,
   DCHECK(!callback.is_null());
 
   sender_->StartRequestWithRetry(
-      new AuthorizeAppOperation(
+      new AuthorizeAppRequest(
           sender_.get(),
           url_request_context_getter_,
           url_generator_,

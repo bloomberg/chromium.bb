@@ -15,8 +15,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/auth_service.h"
-#include "chrome/browser/google_apis/gdata_wapi_operations.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/gdata_wapi_requests.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/google_apis/request_sender.h"
 #include "chrome/browser/google_apis/task_util.h"
@@ -38,9 +38,9 @@ const char kTestGDataAuthToken[] = "testtoken";
 const char kTestUserAgent[] = "test-user-agent";
 const char kTestETag[] = "test_etag";
 
-class GDataWapiOperationsTest : public testing::Test {
+class GDataWapiRequestsTest : public testing::Test {
  public:
-  GDataWapiOperationsTest()
+  GDataWapiRequestsTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE),
         io_thread_(content::BrowserThread::IO),
@@ -57,11 +57,11 @@ class GDataWapiOperationsTest : public testing::Test {
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::IO));
 
-    operation_runner_.reset(new RequestSender(profile_.get(),
-                                              request_context_getter_.get(),
-                                              std::vector<std::string>(),
-                                              kTestUserAgent));
-    operation_runner_->auth_service()->set_access_token_for_testing(
+    request_sender_.reset(new RequestSender(profile_.get(),
+                                            request_context_getter_.get(),
+                                            std::vector<std::string>(),
+                                            kTestUserAgent));
+    request_sender_->auth_service()->set_access_token_for_testing(
         kTestGDataAuthToken);
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -72,16 +72,16 @@ class GDataWapiOperationsTest : public testing::Test {
                    test_server_.base_url(),
                    base::Unretained(&http_request_)));
     test_server_.RegisterRequestHandler(
-        base::Bind(&GDataWapiOperationsTest::HandleResourceFeedRequest,
+        base::Bind(&GDataWapiRequestsTest::HandleResourceFeedRequest,
                    base::Unretained(this)));
     test_server_.RegisterRequestHandler(
-        base::Bind(&GDataWapiOperationsTest::HandleMetadataRequest,
+        base::Bind(&GDataWapiRequestsTest::HandleMetadataRequest,
                    base::Unretained(this)));
     test_server_.RegisterRequestHandler(
-        base::Bind(&GDataWapiOperationsTest::HandleCreateSessionRequest,
+        base::Bind(&GDataWapiRequestsTest::HandleCreateSessionRequest,
                    base::Unretained(this)));
     test_server_.RegisterRequestHandler(
-        base::Bind(&GDataWapiOperationsTest::HandleUploadRequest,
+        base::Bind(&GDataWapiRequestsTest::HandleUploadRequest,
                    base::Unretained(this)));
 
     url_generator_.reset(new GDataWapiUrlGenerator(
@@ -321,15 +321,15 @@ class GDataWapiOperationsTest : public testing::Test {
   content::TestBrowserThread io_thread_;
   net::test_server::EmbeddedTestServer test_server_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<RequestSender> operation_runner_;
+  scoped_ptr<RequestSender> request_sender_;
   scoped_ptr<GDataWapiUrlGenerator> url_generator_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   base::ScopedTempDir temp_dir_;
 
   // These fields are used to keep the current upload state during a
   // test case. These values are updated by the request from
-  // ResumeUploadOperation, and used to construct the response for
-  // both ResumeUploadOperation and GetUploadStatusOperation, to emulate
+  // ResumeUploadRequest, and used to construct the response for
+  // both ResumeUploadRequest and GetUploadStatusRequest, to emulate
   // the WAPI server.
   int64 received_bytes_;
   int64 content_length_;
@@ -342,12 +342,12 @@ class GDataWapiOperationsTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(GDataWapiOperationsTest, GetResourceListOperation_DefaultFeed) {
+TEST_F(GDataWapiRequestsTest, GetResourceListRequest_DefaultFeed) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> result_data;
 
-  GetResourceListOperation* operation = new GetResourceListOperation(
-      operation_runner_.get(),
+  GetResourceListRequest* operation = new GetResourceListRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       *url_generator_,
       GURL(),         // Pass an empty URL to use the default feed
@@ -357,7 +357,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_DefaultFeed) {
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)));
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -374,12 +374,12 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_DefaultFeed) {
   EXPECT_EQ(expected->title(), result_data->title());
 }
 
-TEST_F(GDataWapiOperationsTest, GetResourceListOperation_ValidFeed) {
+TEST_F(GDataWapiRequestsTest, GetResourceListRequest_ValidFeed) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> result_data;
 
-  GetResourceListOperation* operation = new GetResourceListOperation(
-      operation_runner_.get(),
+  GetResourceListRequest* operation = new GetResourceListRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       *url_generator_,
       test_server_.GetURL("/files/chromeos/gdata/root_feed.json"),
@@ -389,7 +389,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_ValidFeed) {
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)));
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -405,14 +405,14 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_ValidFeed) {
   EXPECT_EQ(expected->title(), result_data->title());
 }
 
-TEST_F(GDataWapiOperationsTest, GetResourceListOperation_InvalidFeed) {
+TEST_F(GDataWapiRequestsTest, GetResourceListRequest_InvalidFeed) {
   // testfile.txt exists but the response is not JSON, so it should
   // emit a parse error instead.
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> result_data;
 
-  GetResourceListOperation* operation = new GetResourceListOperation(
-      operation_runner_.get(),
+  GetResourceListRequest* operation = new GetResourceListRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       *url_generator_,
       test_server_.GetURL("/files/chromeos/gdata/testfile.txt"),
@@ -422,7 +422,7 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_InvalidFeed) {
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)));
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
@@ -433,12 +433,12 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_InvalidFeed) {
   EXPECT_FALSE(result_data);
 }
 
-TEST_F(GDataWapiOperationsTest, SearchByTitleOperation) {
+TEST_F(GDataWapiRequestsTest, SearchByTitleRequest) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> result_data;
 
-  SearchByTitleOperation* operation = new SearchByTitleOperation(
-      operation_runner_.get(),
+  SearchByTitleRequest* operation = new SearchByTitleRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       *url_generator_,
       "search-title",
@@ -446,7 +446,7 @@ TEST_F(GDataWapiOperationsTest, SearchByTitleOperation) {
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)));
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -458,19 +458,19 @@ TEST_F(GDataWapiOperationsTest, SearchByTitleOperation) {
   EXPECT_TRUE(result_data);
 }
 
-TEST_F(GDataWapiOperationsTest, GetResourceEntryOperation_ValidResourceId) {
+TEST_F(GDataWapiRequestsTest, GetResourceEntryRequest_ValidResourceId) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result_data;
 
-  GetResourceEntryOperation* operation = new GetResourceEntryOperation(
-      operation_runner_.get(),
+  GetResourceEntryRequest* operation = new GetResourceEntryRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       *url_generator_,
       "file:2_file_resource_id",  // resource ID
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)));
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -483,19 +483,19 @@ TEST_F(GDataWapiOperationsTest, GetResourceEntryOperation_ValidResourceId) {
       result_data.get()));
 }
 
-TEST_F(GDataWapiOperationsTest, GetResourceEntryOperation_InvalidResourceId) {
+TEST_F(GDataWapiRequestsTest, GetResourceEntryRequest_InvalidResourceId) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result_data;
 
-  GetResourceEntryOperation* operation = new GetResourceEntryOperation(
-      operation_runner_.get(),
+  GetResourceEntryRequest* operation = new GetResourceEntryRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       *url_generator_,
       "<invalid>",  // resource ID
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)));
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_NOT_FOUND, result_code);
@@ -506,19 +506,19 @@ TEST_F(GDataWapiOperationsTest, GetResourceEntryOperation_InvalidResourceId) {
   ASSERT_FALSE(result_data);
 }
 
-TEST_F(GDataWapiOperationsTest, GetAccountMetadataOperation) {
+TEST_F(GDataWapiRequestsTest, GetAccountMetadataRequest) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<AccountMetadata> result_data;
 
-  GetAccountMetadataOperation* operation = new GetAccountMetadataOperation(
-      operation_runner_.get(),
+  GetAccountMetadataRequest* operation = new GetAccountMetadataRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       *url_generator_,
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)),
       true);  // Include installed apps.
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -544,20 +544,20 @@ TEST_F(GDataWapiOperationsTest, GetAccountMetadataOperation) {
             result_data->installed_apps().size());
 }
 
-TEST_F(GDataWapiOperationsTest,
-       GetAccountMetadataOperationWithoutInstalledApps) {
+TEST_F(GDataWapiRequestsTest,
+       GetAccountMetadataRequestWithoutInstalledApps) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<AccountMetadata> result_data;
 
-  GetAccountMetadataOperation* operation = new GetAccountMetadataOperation(
-      operation_runner_.get(),
+  GetAccountMetadataRequest* operation = new GetAccountMetadataRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       *url_generator_,
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&result_code, &result_data)),
       false);  // Exclude installed apps.
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -581,11 +581,11 @@ TEST_F(GDataWapiOperationsTest,
   EXPECT_EQ(0U, result_data->installed_apps().size());
 }
 
-TEST_F(GDataWapiOperationsTest, DeleteResourceOperation) {
+TEST_F(GDataWapiRequestsTest, DeleteResourceRequest) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
 
-  DeleteResourceOperation* operation = new DeleteResourceOperation(
-      operation_runner_.get(),
+  DeleteResourceRequest* operation = new DeleteResourceRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       *url_generator_,
       CreateComposedCallback(base::Bind(&test_util::RunAndQuit),
@@ -593,7 +593,7 @@ TEST_F(GDataWapiOperationsTest, DeleteResourceOperation) {
       "file:2_file_resource_id",
       std::string());
 
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -605,11 +605,11 @@ TEST_F(GDataWapiOperationsTest, DeleteResourceOperation) {
   EXPECT_EQ("*", http_request_.headers["If-Match"]);
 }
 
-TEST_F(GDataWapiOperationsTest, DeleteResourceOperationWithETag) {
+TEST_F(GDataWapiRequestsTest, DeleteResourceRequestWithETag) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
 
-  DeleteResourceOperation* operation = new DeleteResourceOperation(
-      operation_runner_.get(),
+  DeleteResourceRequest* operation = new DeleteResourceRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       *url_generator_,
       CreateComposedCallback(
@@ -618,7 +618,7 @@ TEST_F(GDataWapiOperationsTest, DeleteResourceOperationWithETag) {
       "file:2_file_resource_id",
       "etag");
 
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -630,13 +630,13 @@ TEST_F(GDataWapiOperationsTest, DeleteResourceOperationWithETag) {
   EXPECT_EQ("etag", http_request_.headers["If-Match"]);
 }
 
-TEST_F(GDataWapiOperationsTest, CreateDirectoryOperation) {
+TEST_F(GDataWapiRequestsTest, CreateDirectoryRequest) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result_data;
 
   // Create "new directory" in the root directory.
-  CreateDirectoryOperation* operation = new CreateDirectoryOperation(
-      operation_runner_.get(),
+  CreateDirectoryRequest* operation = new CreateDirectoryRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       *url_generator_,
       CreateComposedCallback(
@@ -645,7 +645,7 @@ TEST_F(GDataWapiOperationsTest, CreateDirectoryOperation) {
       "folder:root",
       "new directory");
 
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -665,13 +665,13 @@ TEST_F(GDataWapiOperationsTest, CreateDirectoryOperation) {
             http_request_.content);
 }
 
-TEST_F(GDataWapiOperationsTest, CopyHostedDocumentOperation) {
+TEST_F(GDataWapiRequestsTest, CopyHostedDocumentRequest) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result_data;
 
   // Copy a document with a new name "New Document".
-  CopyHostedDocumentOperation* operation = new CopyHostedDocumentOperation(
-      operation_runner_.get(),
+  CopyHostedDocumentRequest* operation = new CopyHostedDocumentRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       *url_generator_,
       CreateComposedCallback(
@@ -680,7 +680,7 @@ TEST_F(GDataWapiOperationsTest, CopyHostedDocumentOperation) {
       "document:5_document_resource_id",  // source resource ID
       "New Document");
 
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -698,12 +698,12 @@ TEST_F(GDataWapiOperationsTest, CopyHostedDocumentOperation) {
             http_request_.content);
 }
 
-TEST_F(GDataWapiOperationsTest, RenameResourceOperation) {
+TEST_F(GDataWapiRequestsTest, RenameResourceRequest) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
 
   // Rename a file with a new name "New File".
-  RenameResourceOperation* operation = new RenameResourceOperation(
-      operation_runner_.get(),
+  RenameResourceRequest* operation = new RenameResourceRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       *url_generator_,
       CreateComposedCallback(
@@ -712,7 +712,7 @@ TEST_F(GDataWapiOperationsTest, RenameResourceOperation) {
       "file:2_file_resource_id",
       "New File");
 
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -732,13 +732,13 @@ TEST_F(GDataWapiOperationsTest, RenameResourceOperation) {
             http_request_.content);
 }
 
-TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_ValidFeed) {
+TEST_F(GDataWapiRequestsTest, AuthorizeAppRequest_ValidFeed) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   GURL result_data;
 
   // Authorize an app with APP_ID to access to a document.
-  AuthorizeAppOperation* operation = new AuthorizeAppOperation(
-      operation_runner_.get(),
+  AuthorizeAppRequest* operation = new AuthorizeAppRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       *url_generator_,
       CreateComposedCallback(
@@ -747,7 +747,7 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_ValidFeed) {
       "file:2_file_resource_id",
       "the_app_id");
 
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -769,13 +769,13 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_ValidFeed) {
             http_request_.content);
 }
 
-TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_NotFound) {
+TEST_F(GDataWapiRequestsTest, AuthorizeAppRequest_NotFound) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   GURL result_data;
 
   // Authorize an app with APP_ID to access to a document.
-  AuthorizeAppOperation* operation = new AuthorizeAppOperation(
-      operation_runner_.get(),
+  AuthorizeAppRequest* operation = new AuthorizeAppRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       *url_generator_,
       CreateComposedCallback(
@@ -784,7 +784,7 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_NotFound) {
       "file:2_file_resource_id",
       "unauthorized_app_id");
 
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(GDATA_OTHER_ERROR, result_code);
@@ -804,13 +804,13 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_NotFound) {
             http_request_.content);
 }
 
-TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_InvalidFeed) {
+TEST_F(GDataWapiRequestsTest, AuthorizeAppRequest_InvalidFeed) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   GURL result_data;
 
   // Authorize an app with APP_ID to access to a document but an invalid feed.
-  AuthorizeAppOperation* operation = new AuthorizeAppOperation(
-      operation_runner_.get(),
+  AuthorizeAppRequest* operation = new AuthorizeAppRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       *url_generator_,
       CreateComposedCallback(
@@ -819,7 +819,7 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_InvalidFeed) {
       "invalid_resource_id",
       "APP_ID");
 
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(GDATA_PARSE_ERROR, result_code);
@@ -839,13 +839,13 @@ TEST_F(GDataWapiOperationsTest, AuthorizeAppOperation_InvalidFeed) {
             http_request_.content);
 }
 
-TEST_F(GDataWapiOperationsTest, AddResourceToDirectoryOperation) {
+TEST_F(GDataWapiRequestsTest, AddResourceToDirectoryRequest) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
 
   // Add a file to the root directory.
-  AddResourceToDirectoryOperation* operation =
-      new AddResourceToDirectoryOperation(
-          operation_runner_.get(),
+  AddResourceToDirectoryRequest* operation =
+      new AddResourceToDirectoryRequest(
+          request_sender_.get(),
           request_context_getter_.get(),
           *url_generator_,
           CreateComposedCallback(
@@ -854,7 +854,7 @@ TEST_F(GDataWapiOperationsTest, AddResourceToDirectoryOperation) {
           "folder:root",
           "file:2_file_resource_id");
 
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -874,13 +874,13 @@ TEST_F(GDataWapiOperationsTest, AddResourceToDirectoryOperation) {
             http_request_.content);
 }
 
-TEST_F(GDataWapiOperationsTest, RemoveResourceFromDirectoryOperation) {
+TEST_F(GDataWapiRequestsTest, RemoveResourceFromDirectoryRequest) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
 
   // Remove a file from the root directory.
-  RemoveResourceFromDirectoryOperation* operation =
-      new RemoveResourceFromDirectoryOperation(
-          operation_runner_.get(),
+  RemoveResourceFromDirectoryRequest* operation =
+      new RemoveResourceFromDirectoryRequest(
+          request_sender_.get(),
           request_context_getter_.get(),
           *url_generator_,
           CreateComposedCallback(
@@ -889,7 +889,7 @@ TEST_F(GDataWapiOperationsTest, RemoveResourceFromDirectoryOperation) {
           "folder:root",
           "file:2_file_resource_id");
 
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -902,9 +902,9 @@ TEST_F(GDataWapiOperationsTest, RemoveResourceFromDirectoryOperation) {
   EXPECT_FALSE(http_request_.has_content);
 }
 
-// This test exercises InitiateUploadNewFileOperation and
-// ResumeUploadOperation for a scenario of uploading a new file.
-TEST_F(GDataWapiOperationsTest, UploadNewFile) {
+// This test exercises InitiateUploadNewFileRequest and
+// ResumeUploadRequest for a scenario of uploading a new file.
+TEST_F(GDataWapiRequestsTest, UploadNewFile) {
   const std::string kUploadContent = "hello";
   const base::FilePath kTestFilePath =
       temp_dir_.path().AppendASCII("upload_file.txt");
@@ -914,9 +914,9 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
   GURL upload_url;
 
   // 1) Get the upload URL for uploading a new file.
-  InitiateUploadNewFileOperation* initiate_operation =
-      new InitiateUploadNewFileOperation(
-          operation_runner_.get(),
+  InitiateUploadNewFileRequest* initiate_operation =
+      new InitiateUploadNewFileRequest(
+          request_sender_.get(),
           request_context_getter_.get(),
           *url_generator_,
           CreateComposedCallback(
@@ -928,7 +928,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
           "folder:id",
           "New file");
 
-  operation_runner_->StartRequestWithRetry(initiate_operation);
+  request_sender_->StartRequestWithRetry(initiate_operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -956,8 +956,8 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> new_entry;
 
-  ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
-      operation_runner_.get(),
+  ResumeUploadRequest* resume_operation = new ResumeUploadRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
@@ -971,7 +971,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
       "text/plain",  // content_type
       kTestFilePath);
 
-  operation_runner_->StartRequestWithRetry(resume_operation);
+  request_sender_->StartRequestWithRetry(resume_operation);
   base::MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
@@ -997,16 +997,16 @@ TEST_F(GDataWapiOperationsTest, UploadNewFile) {
 // TODO(kinaba): crbug.com/{241241,164098} Re-enable the test.
 #define NO_GET_UPLOAD_STATUS_TEST
 
-// This test exercises InitiateUploadNewFileOperation and ResumeUploadOperation
+// This test exercises InitiateUploadNewFileRequest and ResumeUploadRequest
 // for a scenario of uploading a new *large* file, which requires multiple
-// requests of ResumeUploadOperation. GetUploadOperation is also tested in this
+// requests of ResumeUploadRequest. GetUploadOperation is also tested in this
 // test case.
-TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
+TEST_F(GDataWapiRequestsTest, UploadNewLargeFile) {
   const size_t kMaxNumBytes = 10;
-  // This is big enough to cause multiple requests of ResumeUploadOperation
+  // This is big enough to cause multiple requests of ResumeUploadRequest
   // as we are going to send at most kMaxNumBytes at a time.
   // So, sending "kMaxNumBytes * 2 + 1" bytes ensures three
-  // ResumeUploadOperations, which are start, middle and last operations.
+  // ResumeUploadRequests, which are start, middle and last operations.
   const std::string kUploadContent(kMaxNumBytes * 2 + 1, 'a');
   const base::FilePath kTestFilePath =
       temp_dir_.path().AppendASCII("upload_file.txt");
@@ -1016,9 +1016,9 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
   GURL upload_url;
 
   // 1) Get the upload URL for uploading a new file.
-  InitiateUploadNewFileOperation* initiate_operation =
-      new InitiateUploadNewFileOperation(
-          operation_runner_.get(),
+  InitiateUploadNewFileRequest* initiate_operation =
+      new InitiateUploadNewFileRequest(
+          request_sender_.get(),
           request_context_getter_.get(),
           *url_generator_,
           CreateComposedCallback(
@@ -1030,7 +1030,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
           "folder:id",
           "New file");
 
-  operation_runner_->StartRequestWithRetry(initiate_operation);
+  request_sender_->StartRequestWithRetry(initiate_operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -1056,16 +1056,16 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
 
 #if !defined(NO_GET_UPLOAD_STATUS_TEST)
   // 2) Before sending any data, check the current status.
-  // This is an edge case test for GetUploadStatusOperation
+  // This is an edge case test for GetUploadStatusRequest
   // (UploadRangeRequestBase).
   {
     UploadRangeResponse response;
     scoped_ptr<ResourceEntry> new_entry;
 
-    // Check the response by GetUploadStatusOperation.
-    GetUploadStatusOperation* get_upload_status_operation =
-        new GetUploadStatusOperation(
-            operation_runner_.get(),
+    // Check the response by GetUploadStatusRequest.
+    GetUploadStatusRequest* get_upload_status_operation =
+        new GetUploadStatusRequest(
+            request_sender_.get(),
             request_context_getter_.get(),
             CreateComposedCallback(
                 base::Bind(&test_util::RunAndQuit),
@@ -1073,7 +1073,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
             base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
             upload_url,
             kUploadContent.size());
-    operation_runner_->StartRequestWithRetry(get_upload_status_operation);
+    request_sender_->StartRequestWithRetry(get_upload_status_operation);
     base::MessageLoop::current()->Run();
 
     // METHOD_PUT should be used to upload data.
@@ -1110,8 +1110,8 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
     UploadRangeResponse response;
     scoped_ptr<ResourceEntry> new_entry;
 
-    ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
-        operation_runner_.get(),
+    ResumeUploadRequest* resume_operation = new ResumeUploadRequest(
+        request_sender_.get(),
         request_context_getter_.get(),
         CreateComposedCallback(
             base::Bind(&test_util::RunAndQuit),
@@ -1125,7 +1125,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
         "text/plain",  // content_type
         kTestFilePath);
 
-    operation_runner_->StartRequestWithRetry(resume_operation);
+    request_sender_->StartRequestWithRetry(resume_operation);
     base::MessageLoop::current()->Run();
 
     // METHOD_PUT should be used to upload data.
@@ -1159,10 +1159,10 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
               response.end_position_received);
 
 #if !defined(NO_GET_UPLOAD_STATUS_TEST)
-    // Check the response by GetUploadStatusOperation.
-    GetUploadStatusOperation* get_upload_status_operation =
-        new GetUploadStatusOperation(
-            operation_runner_.get(),
+    // Check the response by GetUploadStatusRequest.
+    GetUploadStatusRequest* get_upload_status_operation =
+        new GetUploadStatusRequest(
+            request_sender_.get(),
             request_context_getter_.get(),
             CreateComposedCallback(
                 base::Bind(&test_util::RunAndQuit),
@@ -1170,7 +1170,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
             base::FilePath::FromUTF8Unsafe("drive/newfile.txt"),
             upload_url,
             kUploadContent.size());
-    operation_runner_->StartRequestWithRetry(get_upload_operation);
+    request_sender_->StartRequestWithRetry(get_upload_operation);
     base::MessageLoop::current()->Run();
 
     // METHOD_PUT should be used to upload data.
@@ -1194,12 +1194,12 @@ TEST_F(GDataWapiOperationsTest, UploadNewLargeFile) {
   EXPECT_EQ(kUploadContent.size(), num_bytes_consumed);
 }
 
-// This test exercises InitiateUploadNewFileOperation and ResumeUploadOperation
+// This test exercises InitiateUploadNewFileRequest and ResumeUploadRequest
 // for a scenario of uploading a new *empty* file.
 //
 // The test is almost identical to UploadNewFile. The only difference is the
 // expectation for the Content-Range header.
-TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
+TEST_F(GDataWapiRequestsTest, UploadNewEmptyFile) {
   const std::string kUploadContent;
   const base::FilePath kTestFilePath =
       temp_dir_.path().AppendASCII("empty_file.txt");
@@ -1209,9 +1209,9 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
   GURL upload_url;
 
   // 1) Get the upload URL for uploading a new file.
-  InitiateUploadNewFileOperation* initiate_operation =
-      new InitiateUploadNewFileOperation(
-          operation_runner_.get(),
+  InitiateUploadNewFileRequest* initiate_operation =
+      new InitiateUploadNewFileRequest(
+          request_sender_.get(),
           request_context_getter_.get(),
           *url_generator_,
           CreateComposedCallback(
@@ -1223,7 +1223,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
           "folder:id",
           "New file");
 
-  operation_runner_->StartRequestWithRetry(initiate_operation);
+  request_sender_->StartRequestWithRetry(initiate_operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -1251,8 +1251,8 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> new_entry;
 
-  ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
-      operation_runner_.get(),
+  ResumeUploadRequest* resume_operation = new ResumeUploadRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
@@ -1266,7 +1266,7 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
       "text/plain",  // content_type
       kTestFilePath);
 
-  operation_runner_->StartRequestWithRetry(resume_operation);
+  request_sender_->StartRequestWithRetry(resume_operation);
   base::MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
@@ -1287,9 +1287,9 @@ TEST_F(GDataWapiOperationsTest, UploadNewEmptyFile) {
   EXPECT_EQ(-1, response.end_position_received);
 }
 
-// This test exercises InitiateUploadExistingFileOperation and
-// ResumeUploadOperation for a scenario of updating an existing file.
-TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
+// This test exercises InitiateUploadExistingFileRequest and
+// ResumeUploadRequest for a scenario of updating an existing file.
+TEST_F(GDataWapiRequestsTest, UploadExistingFile) {
   const std::string kUploadContent = "hello";
   const base::FilePath kTestFilePath =
       temp_dir_.path().AppendASCII("upload_file.txt");
@@ -1299,9 +1299,9 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
   GURL upload_url;
 
   // 1) Get the upload URL for uploading an existing file.
-  InitiateUploadExistingFileOperation* initiate_operation =
-      new InitiateUploadExistingFileOperation(
-          operation_runner_.get(),
+  InitiateUploadExistingFileRequest* initiate_operation =
+      new InitiateUploadExistingFileRequest(
+          request_sender_.get(),
           request_context_getter_.get(),
           *url_generator_,
           CreateComposedCallback(
@@ -1313,7 +1313,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
           "file:foo",
           std::string() /* etag */);
 
-  operation_runner_->StartRequestWithRetry(initiate_operation);
+  request_sender_->StartRequestWithRetry(initiate_operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -1340,8 +1340,8 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> new_entry;
 
-  ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
-      operation_runner_.get(),
+  ResumeUploadRequest* resume_operation = new ResumeUploadRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
@@ -1355,7 +1355,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
       "text/plain",  // content_type
       kTestFilePath);
 
-  operation_runner_->StartRequestWithRetry(resume_operation);
+  request_sender_->StartRequestWithRetry(resume_operation);
   base::MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
@@ -1378,9 +1378,9 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFile) {
   EXPECT_EQ(-1, response.end_position_received);
 }
 
-// This test exercises InitiateUploadExistingFileOperation and
-// ResumeUploadOperation for a scenario of updating an existing file.
-TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
+// This test exercises InitiateUploadExistingFileRequest and
+// ResumeUploadRequest for a scenario of updating an existing file.
+TEST_F(GDataWapiRequestsTest, UploadExistingFileWithETag) {
   const std::string kUploadContent = "hello";
   const base::FilePath kTestFilePath =
       temp_dir_.path().AppendASCII("upload_file.txt");
@@ -1390,9 +1390,9 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
   GURL upload_url;
 
   // 1) Get the upload URL for uploading an existing file.
-  InitiateUploadExistingFileOperation* initiate_operation =
-      new InitiateUploadExistingFileOperation(
-          operation_runner_.get(),
+  InitiateUploadExistingFileRequest* initiate_operation =
+      new InitiateUploadExistingFileRequest(
+          request_sender_.get(),
           request_context_getter_.get(),
           *url_generator_,
           CreateComposedCallback(
@@ -1404,7 +1404,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
           "file:foo",
           kTestETag);
 
-  operation_runner_->StartRequestWithRetry(initiate_operation);
+  request_sender_->StartRequestWithRetry(initiate_operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
@@ -1431,8 +1431,8 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
   UploadRangeResponse response;
   scoped_ptr<ResourceEntry> new_entry;
 
-  ResumeUploadOperation* resume_operation = new ResumeUploadOperation(
-      operation_runner_.get(),
+  ResumeUploadRequest* resume_operation = new ResumeUploadRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
@@ -1446,7 +1446,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
       "text/plain",  // content_type
       kTestFilePath);
 
-  operation_runner_->StartRequestWithRetry(resume_operation);
+  request_sender_->StartRequestWithRetry(resume_operation);
   base::MessageLoop::current()->Run();
 
   // METHOD_PUT should be used to upload data.
@@ -1469,17 +1469,17 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETag) {
   EXPECT_EQ(-1, response.end_position_received);
 }
 
-// This test exercises InitiateUploadExistingFileOperation for a scenario of
+// This test exercises InitiateUploadExistingFileRequest for a scenario of
 // confliction on updating an existing file.
-TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETagConflict) {
+TEST_F(GDataWapiRequestsTest, UploadExistingFileWithETagConflict) {
   const std::string kUploadContent = "hello";
   const std::string kWrongETag = "wrong_etag";
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   GURL upload_url;
 
-  InitiateUploadExistingFileOperation* initiate_operation =
-      new InitiateUploadExistingFileOperation(
-          operation_runner_.get(),
+  InitiateUploadExistingFileRequest* initiate_operation =
+      new InitiateUploadExistingFileRequest(
+          request_sender_.get(),
           request_context_getter_.get(),
           *url_generator_,
           CreateComposedCallback(
@@ -1491,7 +1491,7 @@ TEST_F(GDataWapiOperationsTest, UploadExistingFileWithETagConflict) {
           "file:foo",
           kWrongETag);
 
-  operation_runner_->StartRequestWithRetry(initiate_operation);
+  request_sender_->StartRequestWithRetry(initiate_operation);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_PRECONDITION, result_code);

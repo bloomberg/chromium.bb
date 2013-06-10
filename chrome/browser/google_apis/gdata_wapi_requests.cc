@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google_apis/gdata_wapi_operations.h"
+#include "chrome/browser/google_apis/gdata_wapi_requests.h"
 
 #include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
@@ -103,8 +103,8 @@ void ParseAccounetMetadataAndRun(const GetAccountMetadataCallback& callback,
 }
 
 // Parses the |value| to ResourceEntry with error handling.
-// This is designed to be used for ResumeUploadOperation and
-// GetUploadStatusOperation.
+// This is designed to be used for ResumeUploadRequest and
+// GetUploadStatusRequest.
 scoped_ptr<ResourceEntry> ParseResourceEntry(scoped_ptr<base::Value> value) {
   scoped_ptr<ResourceEntry> entry;
   if (value.get()) {
@@ -158,9 +158,9 @@ void ParseOpenLinkAndRun(const std::string& app_id,
 
 }  // namespace
 
-//============================ GetResourceListOperation ========================
+//============================ GetResourceListRequest ========================
 
-GetResourceListOperation::GetResourceListOperation(
+GetResourceListRequest::GetResourceListRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
@@ -179,18 +179,18 @@ GetResourceListOperation::GetResourceListOperation(
   DCHECK(!callback.is_null());
 }
 
-GetResourceListOperation::~GetResourceListOperation() {}
+GetResourceListRequest::~GetResourceListRequest() {}
 
-GURL GetResourceListOperation::GetURL() const {
+GURL GetResourceListRequest::GetURL() const {
   return url_generator_.GenerateResourceListUrl(override_url_,
                                                 start_changestamp_,
                                                 search_string_,
                                                 directory_resource_id_);
 }
 
-//============================ SearchByTitleOperation ==========================
+//============================ SearchByTitleRequest ==========================
 
-SearchByTitleOperation::SearchByTitleOperation(
+SearchByTitleRequest::SearchByTitleRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
@@ -205,16 +205,16 @@ SearchByTitleOperation::SearchByTitleOperation(
   DCHECK(!callback.is_null());
 }
 
-SearchByTitleOperation::~SearchByTitleOperation() {}
+SearchByTitleRequest::~SearchByTitleRequest() {}
 
-GURL SearchByTitleOperation::GetURL() const {
+GURL SearchByTitleRequest::GetURL() const {
   return url_generator_.GenerateSearchByTitleUrl(
       title_, directory_resource_id_);
 }
 
-//============================ GetResourceEntryOperation =======================
+//============================ GetResourceEntryRequest =======================
 
-GetResourceEntryOperation::GetResourceEntryOperation(
+GetResourceEntryRequest::GetResourceEntryRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
@@ -226,15 +226,15 @@ GetResourceEntryOperation::GetResourceEntryOperation(
   DCHECK(!callback.is_null());
 }
 
-GetResourceEntryOperation::~GetResourceEntryOperation() {}
+GetResourceEntryRequest::~GetResourceEntryRequest() {}
 
-GURL GetResourceEntryOperation::GetURL() const {
+GURL GetResourceEntryRequest::GetURL() const {
   return url_generator_.GenerateEditUrl(resource_id_);
 }
 
-//========================= GetAccountMetadataOperation ========================
+//========================= GetAccountMetadataRequest ========================
 
-GetAccountMetadataOperation::GetAccountMetadataOperation(
+GetAccountMetadataRequest::GetAccountMetadataRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
@@ -247,15 +247,15 @@ GetAccountMetadataOperation::GetAccountMetadataOperation(
   DCHECK(!callback.is_null());
 }
 
-GetAccountMetadataOperation::~GetAccountMetadataOperation() {}
+GetAccountMetadataRequest::~GetAccountMetadataRequest() {}
 
-GURL GetAccountMetadataOperation::GetURL() const {
+GURL GetAccountMetadataRequest::GetURL() const {
   return url_generator_.GenerateAccountMetadataUrl(include_installed_apps_);
 }
 
-//=========================== DeleteResourceOperation ==========================
+//=========================== DeleteResourceRequest ==========================
 
-DeleteResourceOperation::DeleteResourceOperation(
+DeleteResourceRequest::DeleteResourceRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
@@ -269,26 +269,26 @@ DeleteResourceOperation::DeleteResourceOperation(
   DCHECK(!callback.is_null());
 }
 
-DeleteResourceOperation::~DeleteResourceOperation() {}
+DeleteResourceRequest::~DeleteResourceRequest() {}
 
-GURL DeleteResourceOperation::GetURL() const {
+GURL DeleteResourceRequest::GetURL() const {
   return url_generator_.GenerateEditUrl(resource_id_);
 }
 
-URLFetcher::RequestType DeleteResourceOperation::GetRequestType() const {
+URLFetcher::RequestType DeleteResourceRequest::GetRequestType() const {
   return URLFetcher::DELETE_REQUEST;
 }
 
 std::vector<std::string>
-DeleteResourceOperation::GetExtraRequestHeaders() const {
+DeleteResourceRequest::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
   headers.push_back(util::GenerateIfMatchHeader(etag_));
   return headers;
 }
 
-//========================== CreateDirectoryOperation ==========================
+//========================== CreateDirectoryRequest ==========================
 
-CreateDirectoryOperation::CreateDirectoryOperation(
+CreateDirectoryRequest::CreateDirectoryRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
@@ -302,19 +302,19 @@ CreateDirectoryOperation::CreateDirectoryOperation(
   DCHECK(!callback.is_null());
 }
 
-CreateDirectoryOperation::~CreateDirectoryOperation() {}
+CreateDirectoryRequest::~CreateDirectoryRequest() {}
 
-GURL CreateDirectoryOperation::GetURL() const {
+GURL CreateDirectoryRequest::GetURL() const {
   return url_generator_.GenerateContentUrl(parent_resource_id_);
 }
 
 URLFetcher::RequestType
-CreateDirectoryOperation::GetRequestType() const {
+CreateDirectoryRequest::GetRequestType() const {
   return URLFetcher::POST;
 }
 
-bool CreateDirectoryOperation::GetContentData(std::string* upload_content_type,
-                                              std::string* upload_content) {
+bool CreateDirectoryRequest::GetContentData(std::string* upload_content_type,
+                                            std::string* upload_content) {
   upload_content_type->assign("application/atom+xml");
   XmlWriter xml_writer;
   xml_writer.StartWriting();
@@ -338,9 +338,9 @@ bool CreateDirectoryOperation::GetContentData(std::string* upload_content_type,
   return true;
 }
 
-//============================ CopyHostedDocumentOperation =====================
+//============================ CopyHostedDocumentRequest =====================
 
-CopyHostedDocumentOperation::CopyHostedDocumentOperation(
+CopyHostedDocumentRequest::CopyHostedDocumentRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
@@ -354,17 +354,17 @@ CopyHostedDocumentOperation::CopyHostedDocumentOperation(
   DCHECK(!callback.is_null());
 }
 
-CopyHostedDocumentOperation::~CopyHostedDocumentOperation() {}
+CopyHostedDocumentRequest::~CopyHostedDocumentRequest() {}
 
-URLFetcher::RequestType CopyHostedDocumentOperation::GetRequestType() const {
+URLFetcher::RequestType CopyHostedDocumentRequest::GetRequestType() const {
   return URLFetcher::POST;
 }
 
-GURL CopyHostedDocumentOperation::GetURL() const {
+GURL CopyHostedDocumentRequest::GetURL() const {
   return url_generator_.GenerateResourceListRootUrl();
 }
 
-bool CopyHostedDocumentOperation::GetContentData(
+bool CopyHostedDocumentRequest::GetContentData(
     std::string* upload_content_type,
     std::string* upload_content) {
   upload_content_type->assign("application/atom+xml");
@@ -379,14 +379,14 @@ bool CopyHostedDocumentOperation::GetContentData(
   xml_writer.EndElement();  // Ends "entry" element.
   xml_writer.StopWriting();
   upload_content->assign(xml_writer.GetWrittenString());
-  DVLOG(1) << "CopyHostedDocumentOperation data: " << *upload_content_type
+  DVLOG(1) << "CopyHostedDocumentRequest data: " << *upload_content_type
            << ", [" << *upload_content << "]";
   return true;
 }
 
-//=========================== RenameResourceOperation ==========================
+//=========================== RenameResourceRequest ==========================
 
-RenameResourceOperation::RenameResourceOperation(
+RenameResourceRequest::RenameResourceRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
@@ -400,25 +400,25 @@ RenameResourceOperation::RenameResourceOperation(
   DCHECK(!callback.is_null());
 }
 
-RenameResourceOperation::~RenameResourceOperation() {}
+RenameResourceRequest::~RenameResourceRequest() {}
 
-URLFetcher::RequestType RenameResourceOperation::GetRequestType() const {
+URLFetcher::RequestType RenameResourceRequest::GetRequestType() const {
   return URLFetcher::PUT;
 }
 
 std::vector<std::string>
-RenameResourceOperation::GetExtraRequestHeaders() const {
+RenameResourceRequest::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
   headers.push_back(util::kIfMatchAllHeader);
   return headers;
 }
 
-GURL RenameResourceOperation::GetURL() const {
+GURL RenameResourceRequest::GetURL() const {
   return url_generator_.GenerateEditUrl(resource_id_);
 }
 
-bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
-                                             std::string* upload_content) {
+bool RenameResourceRequest::GetContentData(std::string* upload_content_type,
+                                           std::string* upload_content) {
   upload_content_type->assign("application/atom+xml");
   XmlWriter xml_writer;
   xml_writer.StartWriting();
@@ -430,14 +430,14 @@ bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
   xml_writer.EndElement();  // Ends "entry" element.
   xml_writer.StopWriting();
   upload_content->assign(xml_writer.GetWrittenString());
-  DVLOG(1) << "RenameResourceOperation data: " << *upload_content_type << ", ["
+  DVLOG(1) << "RenameResourceRequest data: " << *upload_content_type << ", ["
            << *upload_content << "]";
   return true;
 }
 
-//=========================== AuthorizeAppOperation ==========================
+//=========================== AuthorizeAppRequest ==========================
 
-AuthorizeAppOperation::AuthorizeAppOperation(
+AuthorizeAppRequest::AuthorizeAppRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
@@ -452,21 +452,21 @@ AuthorizeAppOperation::AuthorizeAppOperation(
   DCHECK(!callback.is_null());
 }
 
-AuthorizeAppOperation::~AuthorizeAppOperation() {}
+AuthorizeAppRequest::~AuthorizeAppRequest() {}
 
-URLFetcher::RequestType AuthorizeAppOperation::GetRequestType() const {
+URLFetcher::RequestType AuthorizeAppRequest::GetRequestType() const {
   return URLFetcher::PUT;
 }
 
 std::vector<std::string>
-AuthorizeAppOperation::GetExtraRequestHeaders() const {
+AuthorizeAppRequest::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
   headers.push_back(util::kIfMatchAllHeader);
   return headers;
 }
 
-bool AuthorizeAppOperation::GetContentData(std::string* upload_content_type,
-                                           std::string* upload_content) {
+bool AuthorizeAppRequest::GetContentData(std::string* upload_content_type,
+                                         std::string* upload_content) {
   upload_content_type->assign("application/atom+xml");
   XmlWriter xml_writer;
   xml_writer.StartWriting();
@@ -478,18 +478,18 @@ bool AuthorizeAppOperation::GetContentData(std::string* upload_content_type,
   xml_writer.EndElement();  // Ends "entry" element.
   xml_writer.StopWriting();
   upload_content->assign(xml_writer.GetWrittenString());
-  DVLOG(1) << "AuthorizeAppOperation data: " << *upload_content_type << ", ["
+  DVLOG(1) << "AuthorizeAppRequest data: " << *upload_content_type << ", ["
            << *upload_content << "]";
   return true;
 }
 
-GURL AuthorizeAppOperation::GetURL() const {
+GURL AuthorizeAppRequest::GetURL() const {
   return url_generator_.GenerateEditUrl(resource_id_);
 }
 
-//======================= AddResourceToDirectoryOperation ======================
+//======================= AddResourceToDirectoryRequest ======================
 
-AddResourceToDirectoryOperation::AddResourceToDirectoryOperation(
+AddResourceToDirectoryRequest::AddResourceToDirectoryRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
@@ -503,18 +503,18 @@ AddResourceToDirectoryOperation::AddResourceToDirectoryOperation(
   DCHECK(!callback.is_null());
 }
 
-AddResourceToDirectoryOperation::~AddResourceToDirectoryOperation() {}
+AddResourceToDirectoryRequest::~AddResourceToDirectoryRequest() {}
 
-GURL AddResourceToDirectoryOperation::GetURL() const {
+GURL AddResourceToDirectoryRequest::GetURL() const {
   return url_generator_.GenerateContentUrl(parent_resource_id_);
 }
 
 URLFetcher::RequestType
-AddResourceToDirectoryOperation::GetRequestType() const {
+AddResourceToDirectoryRequest::GetRequestType() const {
   return URLFetcher::POST;
 }
 
-bool AddResourceToDirectoryOperation::GetContentData(
+bool AddResourceToDirectoryRequest::GetContentData(
     std::string* upload_content_type, std::string* upload_content) {
   upload_content_type->assign("application/atom+xml");
   XmlWriter xml_writer;
@@ -528,14 +528,14 @@ bool AddResourceToDirectoryOperation::GetContentData(
   xml_writer.EndElement();  // Ends "entry" element.
   xml_writer.StopWriting();
   upload_content->assign(xml_writer.GetWrittenString());
-  DVLOG(1) << "AddResourceToDirectoryOperation data: " << *upload_content_type
+  DVLOG(1) << "AddResourceToDirectoryRequest data: " << *upload_content_type
            << ", [" << *upload_content << "]";
   return true;
 }
 
-//==================== RemoveResourceFromDirectoryOperation ====================
+//==================== RemoveResourceFromDirectoryRequest ====================
 
-RemoveResourceFromDirectoryOperation::RemoveResourceFromDirectoryOperation(
+RemoveResourceFromDirectoryRequest::RemoveResourceFromDirectoryRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
@@ -549,29 +549,29 @@ RemoveResourceFromDirectoryOperation::RemoveResourceFromDirectoryOperation(
   DCHECK(!callback.is_null());
 }
 
-RemoveResourceFromDirectoryOperation::~RemoveResourceFromDirectoryOperation() {
+RemoveResourceFromDirectoryRequest::~RemoveResourceFromDirectoryRequest() {
 }
 
-GURL RemoveResourceFromDirectoryOperation::GetURL() const {
+GURL RemoveResourceFromDirectoryRequest::GetURL() const {
   return url_generator_.GenerateResourceUrlForRemoval(
       parent_resource_id_, resource_id_);
 }
 
 URLFetcher::RequestType
-RemoveResourceFromDirectoryOperation::GetRequestType() const {
+RemoveResourceFromDirectoryRequest::GetRequestType() const {
   return URLFetcher::DELETE_REQUEST;
 }
 
 std::vector<std::string>
-RemoveResourceFromDirectoryOperation::GetExtraRequestHeaders() const {
+RemoveResourceFromDirectoryRequest::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
   headers.push_back(util::kIfMatchAllHeader);
   return headers;
 }
 
-//======================= InitiateUploadNewFileOperation =======================
+//======================= InitiateUploadNewFileRequest =======================
 
-InitiateUploadNewFileOperation::InitiateUploadNewFileOperation(
+InitiateUploadNewFileRequest::InitiateUploadNewFileRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
@@ -592,18 +592,18 @@ InitiateUploadNewFileOperation::InitiateUploadNewFileOperation(
       title_(title) {
 }
 
-InitiateUploadNewFileOperation::~InitiateUploadNewFileOperation() {}
+InitiateUploadNewFileRequest::~InitiateUploadNewFileRequest() {}
 
-GURL InitiateUploadNewFileOperation::GetURL() const {
+GURL InitiateUploadNewFileRequest::GetURL() const {
   return url_generator_.GenerateInitiateUploadNewFileUrl(parent_resource_id_);
 }
 
 net::URLFetcher::RequestType
-InitiateUploadNewFileOperation::GetRequestType() const {
+InitiateUploadNewFileRequest::GetRequestType() const {
   return net::URLFetcher::POST;
 }
 
-bool InitiateUploadNewFileOperation::GetContentData(
+bool InitiateUploadNewFileRequest::GetContentData(
     std::string* upload_content_type,
     std::string* upload_content) {
   upload_content_type->assign("application/atom+xml");
@@ -622,9 +622,9 @@ bool InitiateUploadNewFileOperation::GetContentData(
   return true;
 }
 
-//===================== InitiateUploadExistingFileOperation ====================
+//===================== InitiateUploadExistingFileRequest ====================
 
-InitiateUploadExistingFileOperation::InitiateUploadExistingFileOperation(
+InitiateUploadExistingFileRequest::InitiateUploadExistingFileRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GDataWapiUrlGenerator& url_generator,
@@ -645,18 +645,18 @@ InitiateUploadExistingFileOperation::InitiateUploadExistingFileOperation(
       etag_(etag) {
 }
 
-InitiateUploadExistingFileOperation::~InitiateUploadExistingFileOperation() {}
+InitiateUploadExistingFileRequest::~InitiateUploadExistingFileRequest() {}
 
-GURL InitiateUploadExistingFileOperation::GetURL() const {
+GURL InitiateUploadExistingFileRequest::GetURL() const {
   return url_generator_.GenerateInitiateUploadExistingFileUrl(resource_id_);
 }
 
 net::URLFetcher::RequestType
-InitiateUploadExistingFileOperation::GetRequestType() const {
+InitiateUploadExistingFileRequest::GetRequestType() const {
   return net::URLFetcher::PUT;
 }
 
-bool InitiateUploadExistingFileOperation::GetContentData(
+bool InitiateUploadExistingFileRequest::GetContentData(
     std::string* upload_content_type,
     std::string* upload_content) {
   // According to the document there is no need to send the content-type.
@@ -669,16 +669,16 @@ bool InitiateUploadExistingFileOperation::GetContentData(
 }
 
 std::vector<std::string>
-InitiateUploadExistingFileOperation::GetExtraRequestHeaders() const {
+InitiateUploadExistingFileRequest::GetExtraRequestHeaders() const {
   std::vector<std::string> headers(
       InitiateUploadRequestBase::GetExtraRequestHeaders());
   headers.push_back(util::GenerateIfMatchHeader(etag_));
   return headers;
 }
 
-//============================ ResumeUploadOperation ===========================
+//============================ ResumeUploadRequest ===========================
 
-ResumeUploadOperation::ResumeUploadOperation(
+ResumeUploadRequest::ResumeUploadRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const UploadRangeCallback& callback,
@@ -704,22 +704,22 @@ ResumeUploadOperation::ResumeUploadOperation(
   DCHECK(!callback_.is_null());
 }
 
-ResumeUploadOperation::~ResumeUploadOperation() {}
+ResumeUploadRequest::~ResumeUploadRequest() {}
 
-void ResumeUploadOperation::OnRangeRequestComplete(
+void ResumeUploadRequest::OnRangeRequestComplete(
     const UploadRangeResponse& response, scoped_ptr<base::Value> value) {
   callback_.Run(response, ParseResourceEntry(value.Pass()));
 }
 
-void ResumeUploadOperation::OnURLFetchUploadProgress(
+void ResumeUploadRequest::OnURLFetchUploadProgress(
     const URLFetcher* source, int64 current, int64 total) {
   if (!progress_callback_.is_null())
     progress_callback_.Run(current, total);
 }
 
-//========================== GetUploadStatusOperation ==========================
+//========================== GetUploadStatusRequest ==========================
 
-GetUploadStatusOperation::GetUploadStatusOperation(
+GetUploadStatusRequest::GetUploadStatusRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const UploadRangeCallback& callback,
@@ -735,9 +735,9 @@ GetUploadStatusOperation::GetUploadStatusOperation(
   DCHECK(!callback.is_null());
 }
 
-GetUploadStatusOperation::~GetUploadStatusOperation() {}
+GetUploadStatusRequest::~GetUploadStatusRequest() {}
 
-void GetUploadStatusOperation::OnRangeRequestComplete(
+void GetUploadStatusRequest::OnRangeRequestComplete(
     const UploadRangeResponse& response, scoped_ptr<base::Value> value) {
   callback_.Run(response, ParseResourceEntry(value.Pass()));
 }

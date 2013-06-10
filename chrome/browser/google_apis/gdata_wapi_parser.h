@@ -558,7 +558,7 @@ class ResourceEntry : public CommonMetadata {
  private:
   friend class base::internal::RepeatedMessageConverter<ResourceEntry>;
   friend class ResourceList;
-  friend class ResumeUploadOperation;
+  friend class ResumeUploadRequest;
 
   // Fills the remaining fields where JSONValueConverter cannot catch.
   void FillRemainingFields();

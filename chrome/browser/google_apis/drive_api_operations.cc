@@ -199,9 +199,9 @@ GURL ContinueGetFileListOperation::GetURL() const {
   return url_;
 }
 
-//========================== CreateDirectoryOperation ==========================
+//========================== CreateDirectoryRequest ==========================
 
-CreateDirectoryOperation::CreateDirectoryOperation(
+CreateDirectoryRequest::CreateDirectoryRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
@@ -218,17 +218,17 @@ CreateDirectoryOperation::CreateDirectoryOperation(
   DCHECK(!directory_name_.empty());
 }
 
-CreateDirectoryOperation::~CreateDirectoryOperation() {}
+CreateDirectoryRequest::~CreateDirectoryRequest() {}
 
-GURL CreateDirectoryOperation::GetURL() const {
+GURL CreateDirectoryRequest::GetURL() const {
   return url_generator_.GetFilesUrl();
 }
 
-net::URLFetcher::RequestType CreateDirectoryOperation::GetRequestType() const {
+net::URLFetcher::RequestType CreateDirectoryRequest::GetRequestType() const {
   return net::URLFetcher::POST;
 }
 
-bool CreateDirectoryOperation::GetContentData(std::string* upload_content_type,
+bool CreateDirectoryRequest::GetContentData(std::string* upload_content_type,
                                               std::string* upload_content) {
   *upload_content_type = kContentTypeApplicationJson;
 
@@ -250,9 +250,9 @@ bool CreateDirectoryOperation::GetContentData(std::string* upload_content_type,
   return true;
 }
 
-//=========================== RenameResourceOperation ==========================
+//=========================== RenameResourceRequest ==========================
 
-RenameResourceOperation::RenameResourceOperation(
+RenameResourceRequest::RenameResourceRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
@@ -266,24 +266,24 @@ RenameResourceOperation::RenameResourceOperation(
   DCHECK(!callback.is_null());
 }
 
-RenameResourceOperation::~RenameResourceOperation() {}
+RenameResourceRequest::~RenameResourceRequest() {}
 
-net::URLFetcher::RequestType RenameResourceOperation::GetRequestType() const {
+net::URLFetcher::RequestType RenameResourceRequest::GetRequestType() const {
   return net::URLFetcher::PATCH;
 }
 
 std::vector<std::string>
-RenameResourceOperation::GetExtraRequestHeaders() const {
+RenameResourceRequest::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
   headers.push_back(util::kIfMatchAllHeader);
   return headers;
 }
 
-GURL RenameResourceOperation::GetURL() const {
+GURL RenameResourceRequest::GetURL() const {
   return url_generator_.GetFileUrl(resource_id_);
 }
 
-bool RenameResourceOperation::GetContentData(std::string* upload_content_type,
+bool RenameResourceRequest::GetContentData(std::string* upload_content_type,
                                              std::string* upload_content) {
   *upload_content_type = kContentTypeApplicationJson;
 
@@ -465,9 +465,9 @@ bool InsertResourceOperation::GetContentData(std::string* upload_content_type,
   return true;
 }
 
-//========================== DeleteResourceOperation ===========================
+//========================== DeleteResourceRequest ===========================
 
-DeleteResourceOperation::DeleteResourceOperation(
+DeleteResourceRequest::DeleteResourceRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
@@ -481,20 +481,20 @@ DeleteResourceOperation::DeleteResourceOperation(
   DCHECK(!callback.is_null());
 }
 
-DeleteResourceOperation::~DeleteResourceOperation() {}
+DeleteResourceRequest::~DeleteResourceRequest() {}
 
-GURL DeleteResourceOperation::GetURL() const {
+GURL DeleteResourceRequest::GetURL() const {
   return url_generator_.GetChildrenUrlForRemoval(
       parent_resource_id_, resource_id_);
 }
 
-net::URLFetcher::RequestType DeleteResourceOperation::GetRequestType() const {
+net::URLFetcher::RequestType DeleteResourceRequest::GetRequestType() const {
   return net::URLFetcher::DELETE_REQUEST;
 }
 
-//======================= InitiateUploadNewFileOperation =======================
+//======================= InitiateUploadNewFileRequest =======================
 
-InitiateUploadNewFileOperation::InitiateUploadNewFileOperation(
+InitiateUploadNewFileRequest::InitiateUploadNewFileRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
@@ -515,18 +515,18 @@ InitiateUploadNewFileOperation::InitiateUploadNewFileOperation(
       title_(title) {
 }
 
-InitiateUploadNewFileOperation::~InitiateUploadNewFileOperation() {}
+InitiateUploadNewFileRequest::~InitiateUploadNewFileRequest() {}
 
-GURL InitiateUploadNewFileOperation::GetURL() const {
+GURL InitiateUploadNewFileRequest::GetURL() const {
   return url_generator_.GetInitiateUploadNewFileUrl();
 }
 
 net::URLFetcher::RequestType
-InitiateUploadNewFileOperation::GetRequestType() const {
+InitiateUploadNewFileRequest::GetRequestType() const {
   return net::URLFetcher::POST;
 }
 
-bool InitiateUploadNewFileOperation::GetContentData(
+bool InitiateUploadNewFileRequest::GetContentData(
     std::string* upload_content_type,
     std::string* upload_content) {
   *upload_content_type = kContentTypeApplicationJson;
@@ -553,9 +553,9 @@ bool InitiateUploadNewFileOperation::GetContentData(
   return true;
 }
 
-//===================== InitiateUploadExistingFileOperation ====================
+//===================== InitiateUploadExistingFileRequest ====================
 
-InitiateUploadExistingFileOperation::InitiateUploadExistingFileOperation(
+InitiateUploadExistingFileRequest::InitiateUploadExistingFileRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
@@ -576,28 +576,28 @@ InitiateUploadExistingFileOperation::InitiateUploadExistingFileOperation(
       etag_(etag) {
 }
 
-InitiateUploadExistingFileOperation::~InitiateUploadExistingFileOperation() {}
+InitiateUploadExistingFileRequest::~InitiateUploadExistingFileRequest() {}
 
-GURL InitiateUploadExistingFileOperation::GetURL() const {
+GURL InitiateUploadExistingFileRequest::GetURL() const {
   return url_generator_.GetInitiateUploadExistingFileUrl(resource_id_);
 }
 
 net::URLFetcher::RequestType
-InitiateUploadExistingFileOperation::GetRequestType() const {
+InitiateUploadExistingFileRequest::GetRequestType() const {
   return net::URLFetcher::PUT;
 }
 
 std::vector<std::string>
-InitiateUploadExistingFileOperation::GetExtraRequestHeaders() const {
+InitiateUploadExistingFileRequest::GetExtraRequestHeaders() const {
   std::vector<std::string> headers(
       InitiateUploadRequestBase::GetExtraRequestHeaders());
   headers.push_back(util::GenerateIfMatchHeader(etag_));
   return headers;
 }
 
-//============================ ResumeUploadOperation ===========================
+//============================ ResumeUploadRequest ===========================
 
-ResumeUploadOperation::ResumeUploadOperation(
+ResumeUploadRequest::ResumeUploadRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const base::FilePath& drive_file_path,
@@ -623,22 +623,22 @@ ResumeUploadOperation::ResumeUploadOperation(
   DCHECK(!callback_.is_null());
 }
 
-ResumeUploadOperation::~ResumeUploadOperation() {}
+ResumeUploadRequest::~ResumeUploadRequest() {}
 
-void ResumeUploadOperation::OnRangeRequestComplete(
+void ResumeUploadRequest::OnRangeRequestComplete(
     const UploadRangeResponse& response, scoped_ptr<base::Value> value) {
   ParseFileResourceWithUploadRangeAndRun(callback_, response, value.Pass());
 }
 
-void ResumeUploadOperation::OnURLFetchUploadProgress(
+void ResumeUploadRequest::OnURLFetchUploadProgress(
     const net::URLFetcher* source, int64 current, int64 total) {
   if (!progress_callback_.is_null())
     progress_callback_.Run(current, total);
 }
 
-//========================== GetUploadStatusOperation ==========================
+//========================== GetUploadStatusRequest ==========================
 
-GetUploadStatusOperation::GetUploadStatusOperation(
+GetUploadStatusRequest::GetUploadStatusRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const base::FilePath& drive_file_path,
@@ -654,9 +654,9 @@ GetUploadStatusOperation::GetUploadStatusOperation(
   DCHECK(!callback.is_null());
 }
 
-GetUploadStatusOperation::~GetUploadStatusOperation() {}
+GetUploadStatusRequest::~GetUploadStatusRequest() {}
 
-void GetUploadStatusOperation::OnRangeRequestComplete(
+void GetUploadStatusRequest::OnRangeRequestComplete(
     const UploadRangeResponse& response, scoped_ptr<base::Value> value) {
   ParseFileResourceWithUploadRangeAndRun(callback_, response, value.Pass());
 }

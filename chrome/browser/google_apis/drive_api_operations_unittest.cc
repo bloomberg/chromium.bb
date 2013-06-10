@@ -477,7 +477,7 @@ TEST_F(DriveApiOperationsTest, ContinueGetFileListOperation) {
   EXPECT_TRUE(result);
 }
 
-TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
+TEST_F(DriveApiOperationsTest, CreateDirectoryRequest) {
   // Set an expected data file containing the directory's entry data.
   expected_data_file_path_ =
       test_util::GetTestFilePath("chromeos/drive/directory_entry.json");
@@ -486,8 +486,8 @@ TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
   scoped_ptr<FileResource> file_resource;
 
   // Create "new directory" in the root directory.
-  drive::CreateDirectoryOperation* operation =
-      new drive::CreateDirectoryOperation(
+  drive::CreateDirectoryRequest* operation =
+      new drive::CreateDirectoryRequest(
           operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
@@ -519,7 +519,7 @@ TEST_F(DriveApiOperationsTest, CreateDirectoryOperation) {
   EXPECT_EQ(expected->parents().size(), file_resource->parents().size());
 }
 
-TEST_F(DriveApiOperationsTest, RenameResourceOperation) {
+TEST_F(DriveApiOperationsTest, RenameResourceRequest) {
   // Set an expected data file containing the directory's entry data.
   // It'd be returned if we rename a directory.
   expected_data_file_path_ =
@@ -528,8 +528,8 @@ TEST_F(DriveApiOperationsTest, RenameResourceOperation) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
 
   // Create "new directory" in the root directory.
-  drive::RenameResourceOperation* operation =
-      new drive::RenameResourceOperation(
+  drive::RenameResourceRequest* operation =
+      new drive::RenameResourceRequest(
           operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
@@ -719,13 +719,13 @@ TEST_F(DriveApiOperationsTest, InsertResourceOperation) {
   EXPECT_EQ("{\"id\":\"resource_id\"}", http_request_.content);
 }
 
-TEST_F(DriveApiOperationsTest, DeleteResourceOperation) {
+TEST_F(DriveApiOperationsTest, DeleteResourceRequest) {
   GDataErrorCode error = GDATA_OTHER_ERROR;
 
   // Remove a resource with "resource_id" from a directory with
   // "parent_resource_id".
-  drive::DeleteResourceOperation* operation =
-      new drive::DeleteResourceOperation(
+  drive::DeleteResourceRequest* operation =
+      new drive::DeleteResourceRequest(
           operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
@@ -759,8 +759,8 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
 
   // Initiate uploading a new file to the directory with
   // "parent_resource_id".
-  drive::InitiateUploadNewFileOperation* operation =
-      new drive::InitiateUploadNewFileOperation(
+  drive::InitiateUploadNewFileRequest* operation =
+      new drive::InitiateUploadNewFileRequest(
           operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
@@ -797,8 +797,8 @@ TEST_F(DriveApiOperationsTest, UploadNewFileOperation) {
   UploadRangeResponse response;
   scoped_ptr<FileResource> new_entry;
 
-  drive::ResumeUploadOperation* resume_operation =
-      new drive::ResumeUploadOperation(
+  drive::ResumeUploadRequest* resume_operation =
+      new drive::ResumeUploadRequest(
           operation_runner_.get(),
           request_context_getter_.get(),
           base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
@@ -849,8 +849,8 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
   GURL upload_url;
 
   // Initiate uploading a new file to the directory with "parent_resource_id".
-  drive::InitiateUploadNewFileOperation* operation =
-      new drive::InitiateUploadNewFileOperation(
+  drive::InitiateUploadNewFileRequest* operation =
+      new drive::InitiateUploadNewFileRequest(
           operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
@@ -886,8 +886,8 @@ TEST_F(DriveApiOperationsTest, UploadNewEmptyFileOperation) {
   UploadRangeResponse response;
   scoped_ptr<FileResource> new_entry;
 
-  drive::ResumeUploadOperation* resume_operation =
-      new drive::ResumeUploadOperation(
+  drive::ResumeUploadRequest* resume_operation =
+      new drive::ResumeUploadRequest(
           operation_runner_.get(),
           request_context_getter_.get(),
           base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
@@ -939,8 +939,8 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
   GURL upload_url;
 
   // Initiate uploading a new file to the directory with "parent_resource_id".
-  drive::InitiateUploadNewFileOperation* operation =
-      new drive::InitiateUploadNewFileOperation(
+  drive::InitiateUploadNewFileRequest* operation =
+      new drive::InitiateUploadNewFileRequest(
           operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
@@ -975,14 +975,14 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
 
 #if !defined(NO_GET_UPLOAD_STATUS_TEST)
   // Before sending any data, check the current status.
-  // This is an edge case test for GetUploadStatusOperation.
+  // This is an edge case test for GetUploadStatusRequest.
   {
     UploadRangeResponse response;
     scoped_ptr<FileResource> new_entry;
 
-    // Check the response by GetUploadStatusOperation.
-    drive::GetUploadStatusOperation* get_upload_status_operation =
-        new drive::GetUploadStatusOperation(
+    // Check the response by GetUploadStatusRequest.
+    drive::GetUploadStatusRequest* get_upload_status_operation =
+        new drive::GetUploadStatusRequest(
             operation_runner_.get(),
             request_context_getter_.get(),
             base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
@@ -1022,8 +1022,8 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
     UploadRangeResponse response;
     scoped_ptr<FileResource> new_entry;
 
-    drive::ResumeUploadOperation* resume_operation =
-        new drive::ResumeUploadOperation(
+    drive::ResumeUploadRequest* resume_operation =
+        new drive::ResumeUploadRequest(
             operation_runner_.get(),
             request_context_getter_.get(),
             base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
@@ -1070,9 +1070,9 @@ TEST_F(DriveApiOperationsTest, UploadNewLargeFileOperation) {
     EXPECT_EQ(static_cast<int64>(end_position), response.end_position_received);
 
 #if !defined(NO_GET_UPLOAD_STATUS_TEST)
-    // Check the response by GetUploadStatusOperation.
-    drive::GetUploadStatusOperation* get_upload_status_operation =
-        new drive::GetUploadStatusOperation(
+    // Check the response by GetUploadStatusRequest.
+    drive::GetUploadStatusRequest* get_upload_status_operation =
+        new drive::GetUploadStatusRequest(
             operation_runner_.get(),
             request_context_getter_.get(),
             base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
@@ -1117,8 +1117,8 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
   GURL upload_url;
 
   // Initiate uploading a new file to the directory with "parent_resource_id".
-  drive::InitiateUploadExistingFileOperation* operation =
-      new drive::InitiateUploadExistingFileOperation(
+  drive::InitiateUploadExistingFileRequest* operation =
+      new drive::InitiateUploadExistingFileRequest(
           operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
@@ -1150,8 +1150,8 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperation) {
   UploadRangeResponse response;
   scoped_ptr<FileResource> new_entry;
 
-  drive::ResumeUploadOperation* resume_operation =
-      new drive::ResumeUploadOperation(
+  drive::ResumeUploadRequest* resume_operation =
+      new drive::ResumeUploadRequest(
           operation_runner_.get(),
           request_context_getter_.get(),
           base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
@@ -1202,8 +1202,8 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETag) {
   GURL upload_url;
 
   // Initiate uploading a new file to the directory with "parent_resource_id".
-  drive::InitiateUploadExistingFileOperation* operation =
-      new drive::InitiateUploadExistingFileOperation(
+  drive::InitiateUploadExistingFileRequest* operation =
+      new drive::InitiateUploadExistingFileRequest(
           operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,
@@ -1235,8 +1235,8 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETag) {
   UploadRangeResponse response;
   scoped_ptr<FileResource> new_entry;
 
-  drive::ResumeUploadOperation* resume_operation =
-      new drive::ResumeUploadOperation(
+  drive::ResumeUploadRequest* resume_operation =
+      new drive::ResumeUploadRequest(
           operation_runner_.get(),
           request_context_getter_.get(),
           base::FilePath(FILE_PATH_LITERAL("drive/file/path")),
@@ -1284,8 +1284,8 @@ TEST_F(DriveApiOperationsTest, UploadExistingFileOperationWithETagConflicting) {
   GURL upload_url;
 
   // Initiate uploading a new file to the directory with "parent_resource_id".
-  drive::InitiateUploadExistingFileOperation* operation =
-      new drive::InitiateUploadExistingFileOperation(
+  drive::InitiateUploadExistingFileRequest* operation =
+      new drive::InitiateUploadExistingFileRequest(
           operation_runner_.get(),
           request_context_getter_.get(),
           *url_generator_,

@@ -185,19 +185,19 @@ class ContinueGetFileListOperation : public GetDataRequest {
   DISALLOW_COPY_AND_ASSIGN(ContinueGetFileListOperation);
 };
 
-//========================== CreateDirectoryOperation ==========================
+//========================== CreateDirectoryRequest ==========================
 
 // This class performs the operation for creating a directory.
-class CreateDirectoryOperation : public GetDataRequest {
+class CreateDirectoryRequest : public GetDataRequest {
  public:
-  CreateDirectoryOperation(
+  CreateDirectoryRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       const std::string& parent_resource_id,
       const std::string& directory_name,
       const FileResourceCallback& callback);
-  virtual ~CreateDirectoryOperation();
+  virtual ~CreateDirectoryRequest();
 
  protected:
   // Overridden from GetDataRequest.
@@ -211,23 +211,23 @@ class CreateDirectoryOperation : public GetDataRequest {
   const std::string parent_resource_id_;
   const std::string directory_name_;
 
-  DISALLOW_COPY_AND_ASSIGN(CreateDirectoryOperation);
+  DISALLOW_COPY_AND_ASSIGN(CreateDirectoryRequest);
 };
 
-//=========================== RenameResourceOperation ==========================
+//=========================== RenameResourceRequest ==========================
 
 // This class performs the operation for renaming a document/file/directory.
-class RenameResourceOperation : public EntryActionRequest {
+class RenameResourceRequest : public EntryActionRequest {
  public:
   // |callback| must not be null.
-  RenameResourceOperation(
+  RenameResourceRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       const std::string& resource_id,
       const std::string& new_name,
       const EntryActionCallback& callback);
-  virtual ~RenameResourceOperation();
+  virtual ~RenameResourceRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -243,7 +243,7 @@ class RenameResourceOperation : public EntryActionRequest {
   const std::string resource_id_;
   const std::string new_name_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenameResourceOperation);
+  DISALLOW_COPY_AND_ASSIGN(RenameResourceRequest);
 };
 
 //=========================== TouchResourceOperation ===========================
@@ -390,7 +390,7 @@ class InsertResourceOperation : public EntryActionRequest {
   DISALLOW_COPY_AND_ASSIGN(InsertResourceOperation);
 };
 
-//========================== DeleteResourceOperation ===========================
+//========================== DeleteResourceRequest ===========================
 
 // This class performs the operation for removing a resource from a directory.
 // Note that we use "delete" for the name of this class, which comes from the
@@ -398,17 +398,17 @@ class InsertResourceOperation : public EntryActionRequest {
 // sense in "drive/google_api"
 // Also note that this is the operation of "Children: delete" of the Drive API
 // v2. https://developers.google.com/drive/v2/reference/children/delete
-class DeleteResourceOperation : public EntryActionRequest {
+class DeleteResourceRequest : public EntryActionRequest {
  public:
   // |callback| must not be null.
-  DeleteResourceOperation(
+  DeleteResourceRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       const std::string& parent_resource_id,
       const std::string& resource_id,
       const EntryActionCallback& callback);
-  virtual ~DeleteResourceOperation();
+  virtual ~DeleteResourceRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -420,19 +420,19 @@ class DeleteResourceOperation : public EntryActionRequest {
   const std::string parent_resource_id_;
   const std::string resource_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeleteResourceOperation);
+  DISALLOW_COPY_AND_ASSIGN(DeleteResourceRequest);
 };
 
-//======================= InitiateUploadNewFileOperation =======================
+//======================= InitiateUploadNewFileRequest =======================
 
 // This class performs the operation for initiating the upload of a new file.
-class InitiateUploadNewFileOperation : public InitiateUploadRequestBase {
+class InitiateUploadNewFileRequest : public InitiateUploadRequestBase {
  public:
   // |parent_resource_id| should be the resource id of the parent directory.
   // |title| should be set.
   // See also the comments of InitiateUploadRequestBase for more details
   // about the other parameters.
-  InitiateUploadNewFileOperation(
+  InitiateUploadNewFileRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
@@ -442,7 +442,7 @@ class InitiateUploadNewFileOperation : public InitiateUploadRequestBase {
       const std::string& parent_resource_id,
       const std::string& title,
       const InitiateUploadCallback& callback);
-  virtual ~InitiateUploadNewFileOperation();
+  virtual ~InitiateUploadNewFileRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -456,14 +456,14 @@ class InitiateUploadNewFileOperation : public InitiateUploadRequestBase {
   const std::string parent_resource_id_;
   const std::string title_;
 
-  DISALLOW_COPY_AND_ASSIGN(InitiateUploadNewFileOperation);
+  DISALLOW_COPY_AND_ASSIGN(InitiateUploadNewFileRequest);
 };
 
-//==================== InitiateUploadExistingFileOperation =====================
+//==================== InitiateUploadExistingFileRequest =====================
 
 // This class performs the operation for initiating the upload of an existing
 // file.
-class InitiateUploadExistingFileOperation
+class InitiateUploadExistingFileRequest
     : public InitiateUploadRequestBase {
  public:
   // |upload_url| should be the upload_url() of the file
@@ -471,7 +471,7 @@ class InitiateUploadExistingFileOperation
   // |etag| should be set if it is available to detect the upload confliction.
   // See also the comments of InitiateUploadRequestBase for more details
   // about the other parameters.
-  InitiateUploadExistingFileOperation(
+  InitiateUploadExistingFileRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
@@ -481,7 +481,7 @@ class InitiateUploadExistingFileOperation
       const std::string& resource_id,
       const std::string& etag,
       const InitiateUploadCallback& callback);
-  virtual ~InitiateUploadExistingFileOperation();
+  virtual ~InitiateUploadExistingFileRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -494,7 +494,7 @@ class InitiateUploadExistingFileOperation
   const std::string resource_id_;
   const std::string etag_;
 
-  DISALLOW_COPY_AND_ASSIGN(InitiateUploadExistingFileOperation);
+  DISALLOW_COPY_AND_ASSIGN(InitiateUploadExistingFileRequest);
 };
 
 // Callback used for ResumeUpload() and GetUploadStatus().
@@ -502,14 +502,14 @@ typedef base::Callback<void(
     const UploadRangeResponse& response,
     scoped_ptr<FileResource> new_resource)> UploadRangeCallback;
 
-//============================ ResumeUploadOperation ===========================
+//============================ ResumeUploadRequest ===========================
 
 // Performs the operation for resuming the upload of a file.
-class ResumeUploadOperation : public ResumeUploadRequestBase {
+class ResumeUploadRequest : public ResumeUploadRequestBase {
  public:
   // See also ResumeUploadRequestBase's comment for parameters meaning.
   // |callback| must not be null. |progress_callback| may be null.
-  ResumeUploadOperation(
+  ResumeUploadRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const base::FilePath& drive_file_path,
@@ -521,7 +521,7 @@ class ResumeUploadOperation : public ResumeUploadRequestBase {
       const base::FilePath& local_file_path,
       const UploadRangeCallback& callback,
       const ProgressCallback& progress_callback);
-  virtual ~ResumeUploadOperation();
+  virtual ~ResumeUploadRequest();
 
  protected:
   // UploadRangeRequestBase overrides.
@@ -536,24 +536,24 @@ class ResumeUploadOperation : public ResumeUploadRequestBase {
   const UploadRangeCallback callback_;
   const ProgressCallback progress_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(ResumeUploadOperation);
+  DISALLOW_COPY_AND_ASSIGN(ResumeUploadRequest);
 };
 
-//========================== GetUploadStatusOperation ==========================
+//========================== GetUploadStatusRequest ==========================
 
 // Performs the operation to request the current upload status of a file.
-class GetUploadStatusOperation : public GetUploadStatusRequestBase {
+class GetUploadStatusRequest : public GetUploadStatusRequestBase {
  public:
   // See also GetUploadStatusRequestBase's comment for parameters meaning.
   // |callback| must not be null.
-  GetUploadStatusOperation(
+  GetUploadStatusRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 content_length,
       const UploadRangeCallback& callback);
-  virtual ~GetUploadStatusOperation();
+  virtual ~GetUploadStatusRequest();
 
  protected:
   // UploadRangeRequestBase overrides.
@@ -564,7 +564,7 @@ class GetUploadStatusOperation : public GetUploadStatusRequestBase {
  private:
   const UploadRangeCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetUploadStatusOperation);
+  DISALLOW_COPY_AND_ASSIGN(GetUploadStatusRequest);
 };
 
 
