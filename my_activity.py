@@ -573,7 +573,9 @@ class MyActivity(object):
       output = self.git_cmd(repo, 'log', commit + "^!", "--format=%cn%n%cd%n%B")
       author = output[0]
       date = datetime.strptime(output[1], "%a %b %d %H:%M:%S %Y +0000")
-      ret.append(self.process_git_commit(instance, author, date, output[2:]))
+      processed = self.process_git_commit(instance, author, date, output[2:])
+      if processed:
+        ret.append(processed)
 
     ret = sorted(ret, key=lambda i: i['modified'], reverse=True)
     return ret
@@ -614,8 +616,11 @@ class MyActivity(object):
       url = 'http://%s/%d' % (instance['review_url'], reviews[0])
       if instance['review_prop']:
         ret[instance['review_prop']] = reviews[0]
-    else:
+    elif len(changes) == 1:
       url = 'http://%s/%d' % (instance['change_url'], changes[0])
+    else:
+      # Couldn't find anything.
+      return None
     ret['review_url'] = url
 
     return ret
