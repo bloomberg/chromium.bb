@@ -23,7 +23,7 @@
 #
 #  Maintained by John J. Boyer john.boyer@jjb-software.com
 
-include chardefs-ueb.cti All character definition opcodes
+include en-ueb-chardefs.uti UEB specific char defs.
 
 # Braille indicators
 numsign 3456  number sign, just a dots operand
@@ -134,13 +134,16 @@ nofor begnum $ 256-3456
 always $ 4-234
 # Note for self, John, Mesar or Ken: Investigate dollar sign usage based on context.
 
+#UEB and Unicode:
 # Symbols (Rulebook Appendix B):
 # Grouped them according to types of symbols.
 #Unicode series 1: Greek and Latin alphabets.
-#Unicode series 2: symbols used in geometry, set theory and calculus.
-#Unicode series 3: superscripts and subscripts, electron shells and bonding and other chemistry symbols, engineering and advanced mathematical operators
-#Unicode series 4: Symbols used by transcribers.
-#Unicode series 5: Misc items, such as shapes, typeforms and fractional parts.
+#Unicode series 2: General punctuation for documents and formatting.
+#Unicode series 3: world currencies.
+#Unicode series 4: symbols used in geometry, set theory and calculus.
+#Unicode series 5: superscripts and subscripts, electron shells and bonding and other chemistry symbols, engineering and advanced mathematical operators
+#Unicode series 6: Symbols used by transcribers.
+#Unicode series 7: Misc items, such as shapes, typeforms and fractional parts.
 
 #Unicode series 1: Greek and Latin scripts
 # Organized according to increasing hex values. Uplow opcode was used since these have uppercase and lowercase forms.
@@ -177,7 +180,26 @@ uplow Ωω 46-2456 Omega
 #Ŋ
 
 
-# Unicode series 2: mathematical operators (Rule 11)
+#Unicode series 2: General punctuation used in literary, documentation and formatting (3.8).
+#These mostly concerns documents, such as daggers, bullets and so forth.
+#Most were declared in en-ueb-chardefs.uti. G1 declares some specialist symbols.
+sign † 4-6-1456 Dagger
+sign ‡ 4-6-12456 Double dagger
+sign • 456-256 Bullet
+
+
+#Unicode series 3: World currencies (3)
+#Currency signs except dollar, which has been declared above (in increasing Unicode value).
+#Use sign opcode for now.
+sign ¢ 4-13 Cents
+sign € 4-15 Euro
+sign ₣ 4-124 Franc
+always £ 4-123 Pound (use always, as pound has been declared somewhere)
+sign ₦ 4-1345 Naira
+sign ¥ 4-13456 Yen
+
+
+# Unicode series 4: mathematical operators (Rule 11)
 # Organized by subject area with increasing Unicode value.
 # Algebras, geometry and other elemental symbols:
 # Superscripts and subscripts (11.4):
@@ -199,6 +221,8 @@ sign ≑ 46-5-2356 Geometrically equal
 sign ⊥ 3456-36 Perpendicular
 sign ⊾ 3456-456-246 Right arcc angle
 # Calculus, vectors, matrices and other symbols (11):
+sign ′ 2356 Prime (derivative)
+sign ″ 2356-2356 Double prime (second derivative)
 sign ∂ 4-145 Partial derivative (curly D)
 sign ∇ 45-145 Nabla
 sign ∞ 3456-123456 Infinity
@@ -242,17 +266,17 @@ sign ⊴ 456-456-126 Is normal subgroup or equal
 sign ⊵ 456-456-345 Is not normal subgroup or equal
 
 
-# Unicode series 3: chemistry, engineering and advanced mathematics
+# Unicode series 5: chemistry, engineering and advanced mathematics
 # Organized by fields with increasing Unicode value.
 # Chemistry:
 # Engineering:
 # Programming and other symbols:
 
 
-# Unicode series 4: Transcriber's notes and symbols
+# Unicode series 6: Transcriber's notes and symbols
 
 
-# Unicode series 5: miscellaneous symbols
+# Unicode series 7: miscellaneous symbols
 # Symbols which doesn't fit any categories above, including arrows, shapes and others.
 # Organized by Unicode values.
 

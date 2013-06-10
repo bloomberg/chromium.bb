@@ -15,7 +15,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
     - Updated hyphenation tables for the Norwegian language (nynorsk
       and bokmål) thanks to Lars Bjørndal.
     - New hyphenation dictionary for Esperanto thanks to Aaron Cannon.
-    - New Esperanto grade 1 table, using the x system for accented letters, thanks to Aaron Cannon.
+    - New Esperanto grade 1 table, using the x system for accented
+      letters, thanks to Aaron Cannon.
 
 *** runHarness.py: 
     Accept filename globs on the commandline to run specific harness files.
@@ -24,11 +25,13 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
     of our tables, rather than validity of the code.
 
 ** Braille Table Improvements
-   - da-dk-g2.ctb, mostly rewritten to use nocross and hyphenation table.
-   - Most tables: removed the default collapse whitespace statements, if you need to compress 
-     whitespace, consider adding compress.ctb to the list of tables when processing.
-   - Corrections to Unified English Braille Code (Grade 2), thanks to
-     Joseph Lee
+   - da-dk-g2.ctb, mostly rewritten to use nocross and hyphenation
+     table.
+   - Most tables: removed the default collapse whitespace statements,
+     if you need to compress whitespace, consider adding compress.ctb
+     to the list of tables when processing.
+   - Corrections to Unified English Braille Code (Grade 1 and 2),
+     thanks to Joseph Lee
    - Corrections to apostrophes in the Computer Spanish 8 dots Braille
      table (Es-Es-G0.utb). Thanks to Juan C. Buno.
    - Corrections for double angle quotation marks and emphasis marks
@@ -41,11 +44,13 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
      Attila
    - Corrections to English, U.S. Grade 2 (ABAE) table. Thanks to Ken
      Perry for reporting the bug and John J. Boyer for fixing it.
-   - Further reorganization of the tables to remove
-     duplication. Move litdigit opcode common parts and include where needed.
-   - Removed obsolete en-us-g1.utb, which has been replaced by en-us-g1.ctb.
+   - Further reorganization of the tables to remove duplication. Move
+     litdigit opcode common parts and include where needed.
+   - Removed obsolete en-us-g1.utb, which has been replaced by
+     en-us-g1.ctb.
    - Added dictionary harness tests for: en-ueb-g2.ctb, en-us-g2.ctb.
-   - Corrections to Nemeth character definitions thanks to Neil Soiffer.
+   - Corrections to Nemeth character definitions thanks to Neil
+     Soiffer.
    - Corrections to the Esperanto table thanks to Aaron Cannon.
 
 ** Bug Fixes
@@ -53,10 +58,11 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
      calculates inpos and outpos. This probably solves a number of
      bugs.
    - Fix nocross opcode processing.
-   - Fix several buffer over/under runs in lou_translateString.c:hyphenate.
+   - Fix several buffer over/under runs in
+     lou_translateString.c:hyphenate.
    - Fix the '=' problem, i.e. fix inputPositions calculation for the
-     case where the equals sign is used as the dots operand. Thanks
-     to Bert Frees
+     case where the equals sign is used as the dots operand. Thanks to
+     Bert Frees
    - Fix a bug when resizing a table. Previously not all references to
      this table were updated.
 

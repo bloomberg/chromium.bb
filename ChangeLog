@@ -1,3 +1,9 @@
+2013-06-10  Joseph Lee <joseph.lee22590@gmail.com>
+
+	* tables/en-ueb-g1.ctb:
+	* tables/en-ueb-chardefs.uti: latest additions to Unified English
+	Braille.
+
 2013-06-06  Christian Egli  <christian.egli@sbs.ch>
 
 	* tables/Makefile.am (table_files):
@@ -5,7 +11,7 @@
 	(compileTranslationTable): Remove the lang2table feature. It was
 	never used, undocumented and contains an out-of-bounds access bug.
 	See also
-	http://www.freelists.org/post/liblouis-liblouisxml/PATCH-FW-Outofbounds-access-in-doLang2Table 
+	http://www.freelists.org/post/liblouis-liblouisxml/PATCH-FW-Outofbounds-access-in-doLang2Table
 
 2013-06-03  Christian Egli  <christian.egli@sbs.ch>
 
