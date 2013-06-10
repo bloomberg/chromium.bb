@@ -101,6 +101,16 @@ public:
 private:
     static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Object>* wrapper, DOMWrapperMap<KeyType>*);
 
+    // FIXME: This is only exposed so it can be called by weak callbacks that
+    // take care of disposing the wrapper on their own. Once the map never has
+    // dupicate set() calls, this can be removed.
+    void remove(KeyType* key)
+    {
+        typename MapType::iterator it = m_map.find(key);
+        ASSERT(it != m_map.end());
+        m_map.remove(it);
+    }
+
     v8::Isolate* m_isolate;
     MapType m_map;
 };
@@ -112,7 +122,8 @@ inline void DOMWrapperMap<void>::makeWeakCallback(v8::Isolate* isolate, v8::Pers
     ASSERT(type->derefObjectFunction);
     void* key = static_cast<void*>(toNative(*wrapper));
     ASSERT(map->get(key) == *wrapper);
-    map->removeAndDispose(key);
+    map->remove(key);
+    wrapper->Dispose(isolate);
     type->derefObject(key);
 }
 
