@@ -4458,6 +4458,24 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.IPv6ConnectDuration" units="milliseconds">
+  <summary>Duration of time spent during the UDP-connect IPv6 probe.</summary>
+</histogram>
+
+<histogram name="Net.IPv6ConnectFailureMatch" enum="BooleanSuccess">
+  <summary>
+    Whether the the interface-enumeration IPv6 probe method failed given that
+    the UDP-connect IPV6 probe failed.
+  </summary>
+</histogram>
+
+<histogram name="Net.IPv6ConnectSuccessMatch" enum="BooleanSuccess">
+  <summary>
+    Whether the the interface-enumeration IPv6 probe method was successful given
+    that the UDP-connect IPV6 probe was successful.
+  </summary>
+</histogram>
+
 <histogram name="Net.IPv6Status" enum="IPV6ProbeResult">
   <summary>The probe results when a test for IPv6 support is done.</summary>
 </histogram>
