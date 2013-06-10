@@ -223,7 +223,14 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) {
 
   current_paint_.reset();
   if (!IsScaleAndTranslate(sk_device_matrix)) {
-    current_paint_.setAntiAlias(true);
+    // TODO(danakj): Until we can enable AA only on exterior edges of the
+    // layer, disable AA if any interior edges are present. crbug.com/248175
+    bool all_four_edges_are_exterior = quad->IsTopEdge() &&
+                                       quad->IsLeftEdge() &&
+                                       quad->IsBottomEdge() &&
+                                       quad->IsRightEdge();
+    if (all_four_edges_are_exterior)
+      current_paint_.setAntiAlias(true);
     current_paint_.setFilterBitmap(true);
   }
 
