@@ -701,8 +701,8 @@ webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html [ Failure Ti
 # Software compositor can't do anti-aliasing at this time when layers are tiled.
 crbug.com/248222 virtual/softwarecompositing/geometry/vertical-scroll-composited.html [ ImageOnlyFailure ]
 crbug.com/248222 virtual/softwarecompositing/huge-layer-rotated.html [ ImageOnlyFailure ]
-crbug.com/248222 virtual/softwarecompositing/lots-of-img-layers-with-opacity.html [ ImageOnlyFailure ]
-crbug.com/248222 virtual/softwarecompositing/lots-of-img-layers.html [ Slow ImageOnlyFailure ]
+crbug.com/248222 virtual/softwarecompositing/lots-of-img-layers-with-opacity.html [ ImageOnlyFailure Missing ]
+crbug.com/248222 virtual/softwarecompositing/lots-of-img-layers.html [ Slow ImageOnlyFailure Missing ]
 crbug.com/248222 virtual/softwarecompositing/tiling/rotated-tiled-clamped.html [ ImageOnlyFailure ]
 crbug.com/248222 virtual/softwarecompositing/tiling/rotated-tiled-preserve3d-clamped.html [ ImageOnlyFailure ]
 crbug.com/248222 virtual/softwarecompositing/tiny-layer-rotated.html [ ImageOnlyFailure ]
