@@ -11,7 +11,6 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from pylib import buildbot_report
-from pylib import constants
 
 
 TESTING = 'BUILDBOT_TESTING' in os.environ
@@ -20,6 +19,10 @@ BB_BUILD_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
     os.pardir, os.pardir, os.pardir, os.pardir))
 
+CHROME_SRC = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+
+GOMA_DIR = os.environ.get('GOMA_DIR', os.path.join(BB_BUILD_DIR, 'goma'))
 
 def CommandToString(command):
   """Returns quoted command that can be run in bash shell."""
@@ -36,8 +39,7 @@ def SpawnCmd(command):
       def wait():
         return 0
     return MockPopen()
-
-  return subprocess.Popen(command, cwd=constants.DIR_SOURCE_ROOT)
+  return subprocess.Popen(command, cwd=CHROME_SRC)
 
 
 def RunCmd(command, flunk_on_failure=True, halt_on_failure=False,
@@ -53,7 +55,8 @@ def RunCmd(command, flunk_on_failure=True, halt_on_failure=False,
       buildbot_report.PrintWarning()
     # Allow steps to have both halting (i.e. 1) and non-halting exit codes.
     if code != warning_code and halt_on_failure:
-      raise OSError()
+      print 'FATAL %d != %d' % (code, warning_code)
+      sys.exit(1)
   return code
 
 
@@ -67,9 +70,9 @@ def GetParser():
   parser.add_option('--factory-properties', action='callback',
                     callback=ConvertJson, type='string', default={},
                     help='factory properties in JSON format')
-  parser.add_option('--slave-properties', action='callback',
-                    callback=ConvertJson, type='string', default={},
-                    help='Properties set by slave script in JSON format')
-
   return parser
 
+
+def EncodeProperties(options):
+  return ['--factory-properties=%s' % json.dumps(options.factory_properties),
+          '--build-properties=%s' % json.dumps(options.build_properties)]

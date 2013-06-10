@@ -306,17 +306,6 @@ def main(argv):
 
   setattr(options, 'target', options.factory_properties.get('target', 'Debug'))
 
-  # Add adb binary and chromium-source platform-tools to tip of PATH variable.
-  android_paths = [os.path.join(constants.ANDROID_SDK_ROOT, 'platform-tools')]
-
-  # Bots checkout chrome in /b/build/slave/<name>/build/src
-  build_internal_android = os.path.abspath(os.path.join(
-      CHROME_SRC, '..', '..', '..', '..', '..', 'build_internal', 'scripts',
-      'slave', 'android'))
-  if os.path.exists(build_internal_android):
-    android_paths.insert(0, build_internal_android)
-  os.environ['PATH'] = os.pathsep.join(android_paths + [os.environ['PATH']])
-
   MainTestWrapper(options)
 
 

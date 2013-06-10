@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
 import os
 import sys
 
@@ -27,12 +26,24 @@ def SrcPath(*path):
 
 
 def CheckWebViewLicenses():
-  buildbot_report.PrintNamedStep('Check licenses for WebView')
+  buildbot_report.PrintNamedStep('check_licenses')
   RunCmd([SrcPath('android_webview', 'tools', 'webview_licenses.py'), 'scan'],
          warning_code=1)
 
 
-def RunHooks():
+def RunHooks(build_type):
+  RunCmd([SrcPath('build', 'landmines.py')])
+  build_path = SrcPath('out', build_type)
+  landmine_path = os.path.join(build_path, '.landmines_triggered')
+  clobber_env = os.environ.get('BUILDBOT_CLOBBER')
+  if clobber_env or os.path.isfile(landmine_path):
+    buildbot_report.PrintNamedStep('Clobber')
+    if not clobber_env:
+      print 'Clobbering due to triggered landmines:'
+      with open(landmine_path) as f:
+        print f.read()
+    RunCmd(['rm', '-rf', build_path])
+
   buildbot_report.PrintNamedStep('runhooks')
   RunCmd(['gclient', 'runhooks'], halt_on_failure=True)
 
@@ -42,7 +53,7 @@ def Compile(build_type, args, experimental=False):
          '--build-tool=ninja',
          '--compiler=goma',
          '--target=%s' % build_type,
-         '--goma-dir=%s' % os.path.join(bb_utils.BB_BUILD_DIR, 'goma')]
+         '--goma-dir=%s' % bb_utils.GOMA_DIR]
   if experimental:
     for compile_target in args:
       buildbot_report.PrintNamedStep('Experimental Compile %s' % compile_target)
@@ -52,23 +63,21 @@ def Compile(build_type, args, experimental=False):
     RunCmd(cmd + ['--build-args=%s' % ' '.join(args)], halt_on_failure=True)
 
 
-def ZipBuild(factory_properties, build_properties):
-  buildbot_report.PrintNamedStep('Zip build')
-  RunCmd([os.path.join(SLAVE_SCRIPTS_DIR, 'zip_build.py'),
-          '--src-dir', constants.DIR_SOURCE_ROOT,
-          '--build-dir', SrcPath('out'),
-          '--exclude-files', 'lib.target,gen,android_webview,jingle_unittests',
-          '--factory-properties', json.dumps(factory_properties),
-          '--build-properties', json.dumps(build_properties)])
+def ZipBuild(properties):
+  buildbot_report.PrintNamedStep('zip_build')
+  RunCmd([
+      os.path.join(SLAVE_SCRIPTS_DIR, 'zip_build.py'),
+      '--src-dir', constants.DIR_SOURCE_ROOT,
+      '--build-dir', SrcPath('out'),
+      '--exclude-files', 'lib.target,gen,android_webview,jingle_unittests']
+      + properties)
 
 
-def ExtractBuild(factory_properties, build_properties):
-  buildbot_report.PrintNamedStep('Download and extract build')
+def ExtractBuild(properties):
+  buildbot_report.PrintNamedStep('extract_build')
   RunCmd([os.path.join(SLAVE_SCRIPTS_DIR, 'extract_build.py'),
           '--build-dir', SrcPath('build'),
-          '--build-output-dir', SrcPath('out'),
-          '--factory-properties', json.dumps(factory_properties),
-          '--build-properties', json.dumps(build_properties)],
+          '--build-output-dir', SrcPath('out')] + properties,
          warning_code=1)
 
 
@@ -81,10 +90,6 @@ def FindBugs(is_release):
   RunCmd([SrcPath(
       'tools', 'android', 'findbugs_plugin', 'test',
       'run_findbugs_plugin_tests.py')] + build_type)
-
-
-def UpdateClang():
-  RunCmd([SrcPath('tools', 'clang', 'scripts', 'update.sh')])
 
 
 def main(argv):
@@ -100,8 +105,6 @@ def main(argv):
                     help='Indicate whether the build should be zipped.')
   parser.add_option('--extract-build', action='store_true',
                     help='Indicate whether a build should be downloaded.')
-  parser.add_option('--update-clang', action='store_true',
-                    help='Download or build the ASan runtime library.')
 
   options, args = parser.parse_args(argv[1:])
   if args:
@@ -119,18 +122,16 @@ def main(argv):
   if options.compile:
     if 'check_webview_licenses' in host_tests:
       CheckWebViewLicenses()
-    RunHooks()
+    RunHooks(build_type)
     Compile(build_type, options.build_args.split(','))
     if options.experimental:
       Compile(build_type, EXPERIMENTAL_TARGETS, True)
     if 'findbugs' in host_tests:
       FindBugs(build_type == 'Release')
     if options.zip_build:
-      ZipBuild(options.factory_properties, options.build_properties)
-  if options.update_clang:
-    UpdateClang()
+      ZipBuild(bb_utils.EncodeProperties(options))
   if options.extract_build:
-    ExtractBuild(options.factory_properties, options.build_properties)
+    ExtractBuild(bb_utils.EncodeProperties(options))
 
 
 if __name__ == '__main__':

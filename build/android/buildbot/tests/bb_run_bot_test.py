@@ -14,14 +14,16 @@ import bb_run_bot
 
 def main():
   code = 0
-  for bot_id in bb_run_bot.GetBotStepMap():
-    proc = subprocess.Popen(
-        [os.path.join(BUILDBOT_DIR, 'bb_run_bot.py'), '--bot-id', bot_id,
-         '--TESTING'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  procs = [
+      (bot, subprocess.Popen(
+          [os.path.join(BUILDBOT_DIR, 'bb_run_bot.py'), '--bot-id', bot,
+          '--testing'], stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+      for bot in bb_run_bot.GetBotStepMap()]
+  for bot, proc in procs:
     _, err = proc.communicate()
     code |= proc.returncode
     if proc.returncode != 0:
-      print 'Error running bb_run_bot with id="%s"' % bot_id, err
+      print 'Error running bb_run_bot with id="%s"' % bot, err
 
   return code
 
