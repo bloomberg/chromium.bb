@@ -15,15 +15,17 @@ class MountNodeDir;
 class MountNodeHttp;
 class MountHttpMock;
 
+std::string NormalizeHeaderKey(const std::string& s);
+
 class MountHttp : public Mount {
  public:
   typedef std::map<std::string, MountNode*> NodeMap_t;
 
-  virtual MountNode *Open(const Path& path, int mode);
-  virtual int Unlink(const Path& path);
-  virtual int Mkdir(const Path& path, int permissions);
-  virtual int Rmdir(const Path& path);
-  virtual int Remove(const Path& path);
+  virtual Error Open(const Path& path, int mode, MountNode** out_node);
+  virtual Error Unlink(const Path& path);
+  virtual Error Mkdir(const Path& path, int permissions);
+  virtual Error Rmdir(const Path& path);
+  virtual Error Remove(const Path& path);
 
   PP_Resource MakeUrlRequestInfo(const std::string& url,
                                  const char* method,
@@ -32,11 +34,11 @@ class MountHttp : public Mount {
  protected:
   MountHttp();
 
-  virtual bool Init(int dev, StringMap_t& args, PepperInterface* ppapi);
+  virtual Error Init(int dev, StringMap_t& args, PepperInterface* ppapi);
   virtual void Destroy();
-  MountNodeDir* FindOrCreateDir(const Path& path);
-  char *LoadManifest(const std::string& path);
-  bool ParseManifest(char *text);
+  Error FindOrCreateDir(const Path& path, MountNodeDir** out_node);
+  Error LoadManifest(const std::string& path, char** out_manifest);
+  Error ParseManifest(char *text);
 
  private:
   std::string url_root_;

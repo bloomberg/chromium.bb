@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "nacl_io/error.h"
 #include "nacl_io/inode_pool.h"
 #include "nacl_io/mount_node.h"
 #include "nacl_io/path.h"
@@ -19,7 +20,8 @@ class PepperInterface;
 
 typedef std::map<std::string, std::string> StringMap_t;
 
-
+// NOTE: The KernelProxy is the only class that should be setting errno. All
+// other classes should return Error (as defined by nacl_io/error.h).
 class Mount : public RefObject {
  protected:
   // The protected functions are only used internally and will not
@@ -30,38 +32,49 @@ class Mount : public RefObject {
   // Init must be called by the factory before the mount is used.
   // This function must assign a root node, or replace FindNode.
   // |ppapi| can be NULL. If so, this mount cannot make any pepper calls.
-  virtual bool Init(int dev, StringMap_t& args, PepperInterface* ppapi);
+  virtual Error Init(int dev, StringMap_t& args, PepperInterface* ppapi);
   virtual void Destroy();
 
  public:
   template <class M>
-  static Mount* Create(int dev, StringMap_t& args, PepperInterface* ppapi);
+  // Assumes that |out_mount| is non-NULL.
+  static Error Create(int dev,
+                      StringMap_t& args,
+                      PepperInterface* ppapi,
+                      Mount** out_mount);
 
   PepperInterface* ppapi() { return ppapi_; }
 
-  // All paths are expected to containing a leading "/"
+  // Assumes that |node| is non-NULL.
   void AcquireNode(MountNode* node);
+  // Assumes that |node| is non-NULL.
   void ReleaseNode(MountNode* node);
+
+  // All paths in functions below are expected to containing a leading "/".
 
   // Open a node at |path| with the specified open flags. The resulting
   // MountNode is created with a ref count of 1.
-  virtual MountNode *Open(const Path& path, int o_flags) = 0;
+  // Assumes that |out_node| is non-NULL.
+  virtual Error Open(const Path& path, int o_flags, MountNode** out_node) = 0;
 
   // OpenResource is only used to read files from the NaCl NMF file. No mount
   // except MountPassthrough should implement it.
-  virtual MountNode *OpenResource(const Path& path) { return NULL; }
+  // Assumes that |out_node| is non-NULL.
+  virtual Error OpenResource(const Path& path, MountNode** out_node);
 
   // Unlink, Mkdir, Rmdir will affect the both the RefCount
   // and the nlink number in the stat object.
-  virtual int Unlink(const Path& path) = 0;
-  virtual int Mkdir(const Path& path, int permissions) = 0;
-  virtual int Rmdir(const Path& path) = 0;
-  virtual int Remove(const Path& path) = 0;
+  virtual Error Unlink(const Path& path) = 0;
+  virtual Error Mkdir(const Path& path, int permissions) = 0;
+  virtual Error Rmdir(const Path& path) = 0;
+  virtual Error Remove(const Path& path) = 0;
 
   // Convert from R,W,R/W open flags to STAT permission flags
   static int OpenModeToPermission(int mode);
 
-  void OnNodeCreated(MountNode* node) ;
+  // Assumes that |node| is non-NULL.
+  void OnNodeCreated(MountNode* node);
+  // Assumes that |node| is non-NULL.
   void OnNodeDestroyed(MountNode* node);
 
  protected:
@@ -81,16 +94,22 @@ class Mount : public RefObject {
   DISALLOW_COPY_AND_ASSIGN(Mount);
 };
 
-
-template <class M>
 /*static*/
-Mount* Mount::Create(int dev, StringMap_t& args, PepperInterface* ppapi) {
+template <class M>
+Error Mount::Create(int dev,
+                    StringMap_t& args,
+                    PepperInterface* ppapi,
+                    Mount** out_mount) {
   Mount* mnt = new M();
-  if (mnt->Init(dev, args, ppapi) == false) {
+  Error error = mnt->Init(dev, args, ppapi);
+  if (error) {
     delete mnt;
-    return NULL;
+    *out_mount = NULL;
+    return error;
   }
-  return mnt;
+
+  *out_mount = mnt;
+  return 0;
 }
 
 #endif  // LIBRARIES_NACL_IO_MOUNT_H_

@@ -13,69 +13,83 @@
 #define BLOCK_SIZE (1 << 16)
 #define BLOCK_MASK (BLOCK_SIZE - 1)
 
-MountNodeMem::MountNodeMem(Mount *mount)
-    : MountNode(mount),
-      data_(NULL),
-      capacity_(0) {
+MountNodeMem::MountNodeMem(Mount* mount)
+    : MountNode(mount), data_(NULL), capacity_(0) {
   stat_.st_mode |= S_IFREG;
 }
 
-MountNodeMem::~MountNodeMem() {
-  free(data_);
-}
+MountNodeMem::~MountNodeMem() { free(data_); }
 
-int MountNodeMem::Read(size_t offs, void *buf, size_t count) {
+Error MountNodeMem::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
+  *out_bytes = 0;
+
   AutoLock lock(&lock_);
-  if (count == 0) return 0;
-  if (offs + count > GetSize()) {
-    count = GetSize() - offs;
+  if (count == 0)
+    return 0;
+
+  size_t size = stat_.st_size;
+
+  if (offs + count > size) {
+    count = size - offs;
   }
 
   memcpy(buf, &data_[offs], count);
-  return static_cast<int>(count);
+  *out_bytes = static_cast<int>(count);
+  return 0;
 }
 
-int MountNodeMem::Write(size_t offs, const void *buf, size_t count) {
+Error MountNodeMem::Write(size_t offs,
+                          const void* buf,
+                          size_t count,
+                          int* out_bytes) {
+  *out_bytes = 0;
+
   AutoLock lock(&lock_);
 
-  if (count == 0) return 0;
+  if (count == 0)
+    return 0;
 
-  if (count + offs > GetSize()) {
-    FTruncate(count + offs);
-    count = GetSize() - offs;
+  if (count + offs > stat_.st_size) {
+    Error error = FTruncate(count + offs);
+    if (error)
+      return error;
+
+    count = stat_.st_size - offs;
   }
 
   memcpy(&data_[offs], buf, count);
-  return static_cast<int>(count);
+  *out_bytes = static_cast<int>(count);
+  return 0;
 }
 
-int MountNodeMem::FTruncate(off_t size) {
-  size_t need = (size + BLOCK_MASK) & ~BLOCK_MASK;
+Error MountNodeMem::FTruncate(off_t new_size) {
+  size_t need = (new_size + BLOCK_MASK) & ~BLOCK_MASK;
+  size_t old_size = stat_.st_size;
 
   // If the current capacity is correct, just adjust and return
   if (need == capacity_) {
-    stat_.st_size = static_cast<off_t>(size);
+    stat_.st_size = static_cast<off_t>(new_size);
     return 0;
   }
 
   // Attempt to realloc the block
-  char *newdata = static_cast<char *>(realloc(data_, need));
+  char* newdata = static_cast<char*>(realloc(data_, need));
   if (newdata != NULL) {
     // Zero out new space.
-    if (size > GetSize())
-      memset(newdata + GetSize(), 0, size - GetSize());
+    if (new_size > old_size)
+      memset(newdata + old_size, 0, new_size - old_size);
 
     data_ = newdata;
     capacity_ = need;
-    stat_.st_size = static_cast<off_t>(size);
+    stat_.st_size = static_cast<off_t>(new_size);
     return 0;
   }
 
   // If we failed, then adjust size according to what we keep
-  if (size > capacity_) size = capacity_;
+  if (new_size > capacity_)
+    new_size = capacity_;
 
   // Update the size and return the new size
-  stat_.st_size = static_cast<off_t>(size);
-  errno = EIO;
-  return -1;
+  stat_.st_size = static_cast<off_t>(new_size);
+  return EIO;
 }

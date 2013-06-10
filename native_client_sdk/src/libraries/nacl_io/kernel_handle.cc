@@ -17,40 +17,57 @@
 #include "nacl_io/mount_node.h"
 
 // It is only legal to construct a handle while the kernel lock is held.
-KernelHandle::KernelHandle(Mount* mnt, MountNode* node, int mode)
-    : mount_(mnt),
-      node_(node),
-      mode_(mode),
-      offs_(0) {
-  if (mode & O_APPEND) offs_ = node->GetSize();
+KernelHandle::KernelHandle(Mount* mnt, MountNode* node)
+    : mount_(mnt), node_(node), offs_(0) {}
+
+Error KernelHandle::Init(int open_mode) {
+  if (open_mode & O_APPEND) {
+    size_t node_size;
+    Error error = node_->GetSize(&offs_);
+    if (error)
+      return error;
+  }
+
+  return 0;
 }
 
-off_t KernelHandle::Seek(off_t offset, int whence) {
+Error KernelHandle::Seek(off_t offset, int whence, off_t* out_offset) {
+  // By default, don't move the offset.
+  *out_offset = offset;
+
   size_t base;
-  size_t node_size = node_->GetSize();
+  size_t node_size;
+  Error error = node_->GetSize(&node_size);
+  if (error)
+    return error;
 
   switch (whence) {
-    default: return -1;
-    case SEEK_SET: base = 0; break;
-    case SEEK_CUR: base = offs_; break;
-    case SEEK_END: base = node_size; break;
+    default:
+      return -1;
+    case SEEK_SET:
+      base = 0;
+      break;
+    case SEEK_CUR:
+      base = offs_;
+      break;
+    case SEEK_END:
+      base = node_size;
+      break;
   }
 
-  if (base + offset < 0) {
-    errno = EINVAL;
-    return -1;
-  }
+  if (base + offset < 0)
+    return EINVAL;
 
-  offs_ = base + offset;
+  off_t new_offset = base + offset;
 
   // Seeking past the end of the file will zero out the space between the old
   // end and the new end.
-  if (offs_ > node_size) {
-    if (node_->FTruncate(offs_) < 0) {
-      errno = EINVAL;
-      return -1;
-    }
+  if (new_offset > node_size) {
+    error = node_->FTruncate(new_offset);
+    if (error)
+      return EINVAL;
   }
 
-  return offs_;
+  *out_offset = offs_ = new_offset;
+  return 0;
 }

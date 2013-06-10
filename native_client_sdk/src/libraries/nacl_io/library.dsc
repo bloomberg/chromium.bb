@@ -24,6 +24,7 @@
         "mount_node.cc",
         "mount_node_dir.cc",
         "mount_node_html5fs.cc",
+        "mount_node_http.cc",
         "mount_node_mem.cc",
         "mount_passthrough.cc",
         "nacl_io.cc",
@@ -36,6 +37,7 @@
   'HEADERS': [
     {
       'FILES': [
+        "error.h",
         "inode_pool.h",
         "kernel_handle.h",
         "kernel_intercept.h",
@@ -51,6 +53,7 @@
         "mount_node_dir.h",
         "mount_node.h",
         "mount_node_html5fs.h",
+        "mount_node_http.h",
         "mount_node_mem.h",
         "mount_passthrough.h",
         "nacl_io.h",

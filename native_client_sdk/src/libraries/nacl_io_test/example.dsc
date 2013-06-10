@@ -1,5 +1,4 @@
 {
-  # TODO(binji): pnacl doesn't build right now because gtest doesn't build yet.
   'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
 
   # Need to add ../../examples for common.js

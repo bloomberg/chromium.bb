@@ -232,6 +232,7 @@ include/json/reader.h
 include/json/value.h
 include/json/writer.h
 include/KHR/khrplatform.h
+include/nacl_io/error.h
 include/nacl_io/inode_pool.h
 include/nacl_io/kernel_handle.h
 include/nacl_io/kernel_intercept.h
@@ -247,6 +248,7 @@ include/nacl_io/mount_mem.h
 include/nacl_io/mount_node_dir.h
 include/nacl_io/mount_node.h
 include/nacl_io/mount_node_html5fs.h
+include/nacl_io/mount_node_http.h
 include/nacl_io/mount_node_mem.h
 include/nacl_io/mount_passthrough.h
 include/nacl_io/nacl_io.h
@@ -667,6 +669,7 @@ src/nacl_io/mount_mem.cc
 src/nacl_io/mount_node.cc
 src/nacl_io/mount_node_dir.cc
 src/nacl_io/mount_node_html5fs.cc
+src/nacl_io/mount_node_http.cc
 src/nacl_io/mount_node_mem.cc
 src/nacl_io/mount_passthrough.cc
 src/nacl_io/nacl_io.cc

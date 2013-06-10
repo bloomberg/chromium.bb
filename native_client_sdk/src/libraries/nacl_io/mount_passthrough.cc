@@ -9,14 +9,10 @@
 class MountNodePassthrough : public MountNode {
  public:
   explicit MountNodePassthrough(Mount* mount, int real_fd)
-    : MountNode(mount),
-      real_fd_(real_fd) {
-  }
+      : MountNode(mount), real_fd_(real_fd) {}
 
  protected:
-  virtual bool Init(int flags) {
-    return true;
-  }
+  virtual Error Init(int flags) { return 0; }
 
   virtual void Destroy() {
     if (real_fd_)
@@ -26,77 +22,74 @@ class MountNodePassthrough : public MountNode {
 
  public:
   // Normal read/write operations on a file
-  virtual int Read(size_t offs, void* buf, size_t count) {
+  virtual Error Read(size_t offs, void* buf, size_t count, int* out_bytes) {
+    *out_bytes = 0;
+
     off_t new_offset;
     int err = _real_lseek(real_fd_, offs, 0, &new_offset);
-    if (err) {
-      errno = err;
-      return -1;
-    }
+    if (err)
+      return err;
 
     size_t nread;
     err = _real_read(real_fd_, buf, count, &nread);
-    if (err) {
-      errno = err;
-      return -1;
-    }
+    if (err)
+      return err;
 
-    return static_cast<int>(nread);
-  }
-
-  virtual int Write(size_t offs, const void* buf, size_t count) {
-    off_t new_offset;
-    int err = _real_lseek(real_fd_, offs, 0, &new_offset);
-    if (err) {
-      errno = err;
-      return -1;
-    }
-
-    size_t nwrote;
-    err = _real_write(real_fd_, buf, count, &nwrote);
-    if (err) {
-      errno = err;
-      return -1;
-    }
-
-    return static_cast<int>(nwrote);
-  }
-
-  virtual int FTruncate(off_t size) {
-    // TODO(binji): what to do here?
-    return -1;
-  }
-
-  virtual int GetDents(size_t offs, struct dirent* pdir, size_t count) {
-    size_t nread;
-    int err = _real_getdents(real_fd_, pdir, count, &nread);
-    if (err) {
-      errno = err;
-      return -1;
-    }
-
-    return nread;
-  }
-
-  virtual int GetStat(struct stat* stat) {
-    int err = _real_fstat(real_fd_, stat);
-    if (err) {
-      errno = err;
-      return -1;
-    }
-
+    *out_bytes = static_cast<int>(nread);
     return 0;
   }
 
-  void* MMap(void* addr, size_t length, int prot, int flags, size_t offset) {
-    void* new_addr = addr;
-    int err = _real_mmap(&new_addr, length, prot, flags, real_fd_, offset);
-    if (err) {
-      errno = err;
-      return (void*)-1;
-    }
+  virtual Error Write(size_t offs,
+                      const void* buf,
+                      size_t count,
+                      int* out_bytes) {
+    *out_bytes = 0;
 
-    return new_addr;
+    off_t new_offset;
+    int err = _real_lseek(real_fd_, offs, 0, &new_offset);
+    if (err)
+      return err;
+
+    size_t nwrote;
+    err = _real_write(real_fd_, buf, count, &nwrote);
+    if (err)
+      return err;
+
+    *out_bytes = static_cast<int>(nwrote);
+    return 0;
+  }
+
+  virtual Error FTruncate(off_t size) {
+    // TODO(binji): what to do here?
+    return ENOSYS;
+  }
+
+  virtual Error GetDents(size_t offs, struct dirent* pdir, size_t count) {
+    size_t nread;
+    int err = _real_getdents(real_fd_, pdir, count, &nread);
+    if (err)
+      return err;
+    return nread;
+  }
+
+  virtual Error GetStat(struct stat* stat) {
+    int err = _real_fstat(real_fd_, stat);
+    if (err)
+      return err;
+    return 0;
+  }
+
+  Error MMap(void* addr,
+             size_t length,
+             int prot,
+             int flags,
+             size_t offset,
+             void** out_addr) {
+    *out_addr = addr;
+    int err = _real_mmap(out_addr, length, prot, flags, real_fd_, offset);
+    if (err)
+      return err;
+    return 0;
   }
 
  private:
@@ -105,70 +98,56 @@ class MountNodePassthrough : public MountNode {
   int real_fd_;
 };
 
-MountPassthrough::MountPassthrough() {
+MountPassthrough::MountPassthrough() {}
+
+Error MountPassthrough::Init(int dev,
+                             StringMap_t& args,
+                             PepperInterface* ppapi) {
+  return Mount::Init(dev, args, ppapi);
 }
 
-bool MountPassthrough::Init(int dev, StringMap_t& args,
-                            PepperInterface* ppapi) {
-  Mount::Init(dev, args, ppapi);
-  return true;
-}
+void MountPassthrough::Destroy() {}
 
-void MountPassthrough::Destroy() {
-}
+Error MountPassthrough::Open(const Path& path, int mode, MountNode** out_node) {
+  *out_node = NULL;
 
-MountNode *MountPassthrough::Open(const Path& path, int mode) {
   int real_fd;
-  int err = _real_open(path.Join().c_str(), mode, 0666, &real_fd);
-  if (err) {
-    errno = err;
-    return NULL;
-  }
+  int error = _real_open(path.Join().c_str(), mode, 0666, &real_fd);
+  if (error)
+    return error;
 
   MountNodePassthrough* node = new MountNodePassthrough(this, real_fd);
-  return node;
-}
-
-MountNode *MountPassthrough::OpenResource(const Path& path) {
-  int real_fd;
-  int err = _real_open_resource(path.Join().c_str(), &real_fd);
-  if (err) {
-    errno = err;
-    return NULL;
-  }
-
-  MountNodePassthrough* node = new MountNodePassthrough(this, real_fd);
-  return node;
-}
-
-int MountPassthrough::Unlink(const Path& path) {
-  // Not implemented by NaCl.
-  errno = ENOSYS;
-  return -1;
-}
-
-int MountPassthrough::Mkdir(const Path& path, int perm) {
-  int err = _real_mkdir(path.Join().c_str(), perm);
-  if (err) {
-    errno = err;
-    return -1;
-  }
-
+  *out_node = node;
   return 0;
 }
 
-int MountPassthrough::Rmdir(const Path& path) {
-  int err = _real_rmdir(path.Join().c_str());
-  if (err) {
-    errno = err;
-    return -1;
-  }
+Error MountPassthrough::OpenResource(const Path& path, MountNode** out_node) {
+  *out_node = NULL;
 
+  int real_fd;
+  int error = _real_open_resource(path.Join().c_str(), &real_fd);
+  if (error)
+    return error;
+
+  MountNodePassthrough* node = new MountNodePassthrough(this, real_fd);
+  *out_node = node;
   return 0;
 }
 
-int MountPassthrough::Remove(const Path& path) {
+Error MountPassthrough::Unlink(const Path& path) {
   // Not implemented by NaCl.
-  errno = ENOSYS;
-  return -1;
+  return ENOSYS;
+}
+
+Error MountPassthrough::Mkdir(const Path& path, int perm) {
+  return _real_mkdir(path.Join().c_str(), perm);
+}
+
+Error MountPassthrough::Rmdir(const Path& path) {
+  return _real_rmdir(path.Join().c_str());
+}
+
+Error MountPassthrough::Remove(const Path& path) {
+  // Not implemented by NaCl.
+  return ENOSYS;
 }

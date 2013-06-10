@@ -20,16 +20,14 @@
 #include <windows.h>
 #endif
 
-Mount::Mount()
-  : dev_(0) {
-}
+Mount::Mount() : dev_(0) {}
 
 Mount::~Mount() {}
 
-bool Mount::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
+Error Mount::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
   dev_ = dev;
   ppapi_ = ppapi;
-  return true;
+  return 0;
 }
 
 void Mount::Destroy() {}
@@ -44,16 +42,23 @@ void Mount::ReleaseNode(MountNode* node) {
   node->Release();
 }
 
+Error Mount::OpenResource(const Path& path, MountNode** out_node) {
+  *out_node = NULL;
+  return EINVAL;
+}
+
 int Mount::OpenModeToPermission(int mode) {
   int out;
   switch (mode & 3) {
-    case O_RDONLY: out = S_IREAD;
-    case O_WRONLY: out = S_IWRITE;
-    case O_RDWR: out = S_IREAD | S_IWRITE;
+    case O_RDONLY:
+      out = S_IREAD;
+    case O_WRONLY:
+      out = S_IWRITE;
+    case O_RDWR:
+      out = S_IREAD | S_IWRITE;
   }
   return out;
 }
-
 
 void Mount::OnNodeCreated(MountNode* node) {
   node->stat_.st_ino = inode_pool_.Acquire();
@@ -61,6 +66,6 @@ void Mount::OnNodeCreated(MountNode* node) {
 }
 
 void Mount::OnNodeDestroyed(MountNode* node) {
-  if (node->stat_.st_ino) inode_pool_.Release(node->stat_.st_ino);
+  if (node->stat_.st_ino)
+    inode_pool_.Release(node->stat_.st_ino);
 }
-

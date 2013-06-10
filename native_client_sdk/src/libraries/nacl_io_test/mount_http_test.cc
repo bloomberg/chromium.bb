@@ -29,7 +29,7 @@ using ::testing::StrEq;
 class MountHttpMock : public MountHttp {
  public:
   MountHttpMock(StringMap_t map, PepperInterfaceMock* ppapi) {
-    EXPECT_TRUE(Init(1, map, ppapi));
+    EXPECT_EQ(0, Init(1, map, ppapi));
   }
 
   ~MountHttpMock() {
@@ -71,25 +71,34 @@ TEST_F(MountHttpTest, MountEmpty) {
 
 TEST_F(MountHttpTest, ParseManifest) {
   StringMap_t args;
+  size_t result_size = 0;
+
   mnt_ = new MountHttpMock(args, &ppapi_);
 
   char manifest[] = "-r-- 123 /mydir/foo\n-rw- 234 /thatdir/bar\n";
-  EXPECT_TRUE(mnt_->ParseManifest(manifest));
+  EXPECT_EQ(0, mnt_->ParseManifest(manifest));
 
-  MountNodeDir* root = mnt_->FindOrCreateDir(Path("/"));
+  MountNodeDir* root = NULL;
+  EXPECT_EQ(0, mnt_->FindOrCreateDir(Path("/"), &root));
+  ASSERT_NE((MountNode*)NULL, root);
   EXPECT_EQ(2, root->ChildCount());
 
-  MountNodeDir* dir = mnt_->FindOrCreateDir(Path("/mydir"));
+  MountNodeDir* dir = NULL;
+  EXPECT_EQ(0, mnt_->FindOrCreateDir(Path("/mydir"), &dir));
+  ASSERT_NE((MountNode*)NULL, dir);
   EXPECT_EQ(1, dir->ChildCount());
 
   MountNode* node = mnt_->GetMap()["/mydir/foo"];
-  EXPECT_TRUE(node);
-  EXPECT_EQ(123, node->GetSize());
+  EXPECT_NE((MountNode*)NULL, node);
+  EXPECT_EQ(0, node->GetSize(&result_size));
+  EXPECT_EQ(123, result_size);
 
   // Since these files are cached thanks to the manifest, we can open them
   // without accessing the PPAPI URL API.
-  MountNode* foo = mnt_->Open(Path("/mydir/foo"), O_RDONLY);
-  MountNode* bar = mnt_->Open(Path("/thatdir/bar"), O_RDWR);
+  MountNode* foo = NULL;
+  EXPECT_EQ(0, mnt_->Open(Path("/mydir/foo"), O_RDONLY, &foo));
+  MountNode* bar = NULL;
+  EXPECT_EQ(0, mnt_->Open(Path("/thatdir/bar"), O_RDWR, &bar));
 
   struct stat sfoo;
   struct stat sbar;
@@ -248,7 +257,7 @@ void MountHttpNodeTest::SetResponseBody(const char* body) {
 }
 
 void MountHttpNodeTest::OpenNode() {
-  node_ = mnt_->Open(Path(path_), O_RDONLY);
+  ASSERT_EQ(0, mnt_->Open(Path(path_), O_RDONLY, &node_));
   ASSERT_NE((MountNode*)NULL, node_);
 }
 
@@ -266,7 +275,9 @@ void MountHttpNodeTest::TearDown() {
   delete mnt_;
 }
 
-TEST_F(MountHttpNodeTest, OpenAndClose) {
+TEST_F(MountHttpNodeTest, OpenAndCloseNoCache) {
+  StringMap_t smap;
+  smap["cache_content"] = "false";
   SetMountArgs(StringMap_t());
   ExpectOpen("HEAD");
   ExpectHeaders("");
@@ -275,6 +286,9 @@ TEST_F(MountHttpNodeTest, OpenAndClose) {
 }
 
 TEST_F(MountHttpNodeTest, ReadCached) {
+  size_t result_size = 0;
+  int result_bytes = 0;
+
   SetMountArgs(StringMap_t());
   ExpectOpen("HEAD");
   ExpectHeaders("");
@@ -282,7 +296,8 @@ TEST_F(MountHttpNodeTest, ReadCached) {
   OpenNode();
   ResetMocks();
 
-  EXPECT_EQ(42, node_->GetSize());
+  EXPECT_EQ(0, node_->GetSize(&result_size));
+  EXPECT_EQ(42, result_size);
 
   char buf[10];
   memset(&buf[0], 0, sizeof(buf));
@@ -291,20 +306,24 @@ TEST_F(MountHttpNodeTest, ReadCached) {
   ExpectHeaders("");
   SetResponse(200, "Content-Length: 42\n");
   SetResponseBody("Here is some response text. And some more.");
-  node_->Read(0, buf, sizeof(buf) - 1);
+  EXPECT_EQ(0, node_->Read(0, buf, sizeof(buf) - 1, &result_bytes));
   EXPECT_STREQ("Here is s", &buf[0]);
   ResetMocks();
 
   // Further reads should be cached.
-  node_->Read(0, buf, sizeof(buf) - 1);
+  EXPECT_EQ(0, node_->Read(0, buf, sizeof(buf) - 1, &result_bytes));
   EXPECT_STREQ("Here is s", &buf[0]);
-  node_->Read(10, buf, sizeof(buf) - 1);
+  EXPECT_EQ(0, node_->Read(10, buf, sizeof(buf) - 1, &result_bytes));
   EXPECT_STREQ("me respon", &buf[0]);
 
-  EXPECT_EQ(42, node_->GetSize());
+  EXPECT_EQ(0, node_->GetSize(&result_size));
+  EXPECT_EQ(42, result_size);
 }
 
 TEST_F(MountHttpNodeTest, ReadCachedNoContentLength) {
+  size_t result_size = 0;
+  int result_bytes = 0;
+
   SetMountArgs(StringMap_t());
   ExpectOpen("HEAD");
   ExpectHeaders("");
@@ -319,25 +338,30 @@ TEST_F(MountHttpNodeTest, ReadCachedNoContentLength) {
 
   // GetSize will Read() because it didn't get the content length from the HEAD
   // request.
-  EXPECT_EQ(42, node_->GetSize());
+  EXPECT_EQ(0, node_->GetSize(&result_size));
+  EXPECT_EQ(42, result_size);
 
   char buf[10];
   memset(&buf[0], 0, sizeof(buf));
 
-  node_->Read(0, buf, sizeof(buf) - 1);
+  EXPECT_EQ(0, node_->Read(0, buf, sizeof(buf) - 1, &result_bytes));
   EXPECT_STREQ("Here is s", &buf[0]);
   ResetMocks();
 
   // Further reads should be cached.
-  node_->Read(0, buf, sizeof(buf) - 1);
+  EXPECT_EQ(0, node_->Read(0, buf, sizeof(buf) - 1, &result_bytes));
   EXPECT_STREQ("Here is s", &buf[0]);
-  node_->Read(10, buf, sizeof(buf) - 1);
+  EXPECT_EQ(0, node_->Read(10, buf, sizeof(buf) - 1, &result_bytes));
   EXPECT_STREQ("me respon", &buf[0]);
 
-  EXPECT_EQ(42, node_->GetSize());
+  EXPECT_EQ(0, node_->GetSize(&result_size));
+  EXPECT_EQ(42, result_size);
 }
 
 TEST_F(MountHttpNodeTest, ReadCachedUnderrun) {
+  size_t result_size = 0;
+  int result_bytes = 0;
+
   SetMountArgs(StringMap_t());
   ExpectOpen("HEAD");
   ExpectHeaders("");
@@ -345,7 +369,8 @@ TEST_F(MountHttpNodeTest, ReadCachedUnderrun) {
   OpenNode();
   ResetMocks();
 
-  EXPECT_EQ(100, node_->GetSize());
+  EXPECT_EQ(0, node_->GetSize(&result_size));
+  EXPECT_EQ(100, result_size);
 
   char buf[10];
   memset(&buf[0], 0, sizeof(buf));
@@ -354,14 +379,19 @@ TEST_F(MountHttpNodeTest, ReadCachedUnderrun) {
   ExpectHeaders("");
   SetResponse(200, "Content-Length: 100\n");
   SetResponseBody("abcdefghijklmnopqrstuvwxyz");
-  node_->Read(0, buf, sizeof(buf) - 1);
+  EXPECT_EQ(0, node_->Read(0, buf, sizeof(buf) - 1, &result_bytes));
+  EXPECT_EQ(sizeof(buf) - 1, result_bytes);
   EXPECT_STREQ("abcdefghi", &buf[0]);
   ResetMocks();
 
-  EXPECT_EQ(26, node_->GetSize());
+  EXPECT_EQ(0, node_->GetSize(&result_size));
+  EXPECT_EQ(26, result_size);
 }
 
 TEST_F(MountHttpNodeTest, ReadCachedOverrun) {
+  size_t result_size = 0;
+  int result_bytes = 0;
+
   SetMountArgs(StringMap_t());
   ExpectOpen("HEAD");
   ExpectHeaders("");
@@ -369,7 +399,8 @@ TEST_F(MountHttpNodeTest, ReadCachedOverrun) {
   OpenNode();
   ResetMocks();
 
-  EXPECT_EQ(15, node_->GetSize());
+  EXPECT_EQ(0, node_->GetSize(&result_size));
+  EXPECT_EQ(15, result_size);
 
   char buf[10];
   memset(&buf[0], 0, sizeof(buf));
@@ -378,14 +409,18 @@ TEST_F(MountHttpNodeTest, ReadCachedOverrun) {
   ExpectHeaders("");
   SetResponse(200, "Content-Length: 15\n");
   SetResponseBody("01234567890123456789");
-  node_->Read(10, buf, sizeof(buf) - 1);
+  EXPECT_EQ(0, node_->Read(10, buf, sizeof(buf) - 1, &result_bytes));
+  EXPECT_EQ(5, result_bytes);
   EXPECT_STREQ("01234", &buf[0]);
   ResetMocks();
 
-  EXPECT_EQ(15, node_->GetSize());
+  EXPECT_EQ(0, node_->GetSize(&result_size));
+  EXPECT_EQ(15, result_size);
 }
 
 TEST_F(MountHttpNodeTest, ReadPartial) {
+  int result_bytes = 0;
+
   StringMap_t args;
   args["cache_content"] = "false";
   SetMountArgs(args);
@@ -402,7 +437,8 @@ TEST_F(MountHttpNodeTest, ReadPartial) {
   ExpectHeaders("Range: bytes=0-8\n");
   SetResponse(206, "Content-Length: 9\nContent-Range: bytes=0-8\n");
   SetResponseBody("012345678");
-  node_->Read(0, buf, sizeof(buf) - 1);
+  EXPECT_EQ(0, node_->Read(0, buf, sizeof(buf) - 1, &result_bytes));
+  EXPECT_EQ(sizeof(buf) - 1, result_bytes);
   EXPECT_STREQ("012345678", &buf[0]);
   ResetMocks();
 
@@ -411,11 +447,14 @@ TEST_F(MountHttpNodeTest, ReadPartial) {
   ExpectHeaders("Range: bytes=10-18\n");
   SetResponse(206, "Content-Length: 9\nContent-Range: bytes=10-18\n");
   SetResponseBody("abcdefghi");
-  node_->Read(10, buf, sizeof(buf) - 1);
+  EXPECT_EQ(0, node_->Read(10, buf, sizeof(buf) - 1, &result_bytes));
+  EXPECT_EQ(sizeof(buf) - 1, result_bytes);
   EXPECT_STREQ("abcdefghi", &buf[0]);
 }
 
 TEST_F(MountHttpNodeTest, ReadPartialNoServerSupport) {
+  int result_bytes = 0;
+
   StringMap_t args;
   args["cache_content"] = "false";
   SetMountArgs(args);
@@ -432,6 +471,7 @@ TEST_F(MountHttpNodeTest, ReadPartialNoServerSupport) {
   ExpectHeaders("Range: bytes=10-18\n");
   SetResponse(200, "Content-Length: 20\n");
   SetResponseBody("0123456789abcdefghij");
-  node_->Read(10, buf, sizeof(buf) - 1);
+  EXPECT_EQ(0, node_->Read(10, buf, sizeof(buf) - 1, &result_bytes));
+  EXPECT_EQ(sizeof(buf) - 1, result_bytes);
   EXPECT_STREQ("abcdefghi", &buf[0]);
 }

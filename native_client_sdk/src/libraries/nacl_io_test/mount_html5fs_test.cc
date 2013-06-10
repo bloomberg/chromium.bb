@@ -166,7 +166,7 @@ void MountHtml5FsNodeTest::InitFilesystem() {
 }
 
 void MountHtml5FsNodeTest::InitNode() {
-  node_ = mnt_->Open(Path(path_), O_CREAT | O_RDWR);
+  ASSERT_EQ(0, mnt_->Open(Path(path_), O_CREAT | O_RDWR, &node_));
   ASSERT_NE((MountNode*)NULL, node_);
 }
 
@@ -378,7 +378,8 @@ TEST_F(MountHtml5FsNodeSyncTest, Write) {
   EXPECT_CALL(*fileio_, Write(fileio_resource_, offset, &buffer[0], count, _))
       .WillOnce(Return(count));
 
-  int result = node_->Write(offset, &buffer, count);
+  int result = 0;
+  EXPECT_EQ(0, node_->Write(offset, &buffer, count, &result));
   EXPECT_EQ(count, result);
 }
 
@@ -390,7 +391,8 @@ TEST_F(MountHtml5FsNodeSyncTest, Read) {
   EXPECT_CALL(*fileio_, Read(fileio_resource_, offset, &buffer[0], count, _))
       .WillOnce(Return(count));
 
-  int result = node_->Read(offset, &buffer, count);
+  int result = 0;
+  EXPECT_EQ(0, node_->Read(offset, &buffer, count, &result));
   EXPECT_EQ(count, result);
 }
 
@@ -437,9 +439,10 @@ TEST_F(MountHtml5FsNodeSyncTest, GetDents) {
   memset(&dirents[0], 0, sizeof(dirents));
 
   // Should fail for regular files.
-  int result = node_->GetDents(0, &dirents[0], sizeof(dirent) * 2);
-  ASSERT_EQ(-1, result);
-  ASSERT_EQ(ENOTDIR, errno);
+  int result_bytes = 0;
+  EXPECT_EQ(ENOTDIR, node_->GetDents(0, &dirents[0], sizeof(dirent) * 2,
+        &result_bytes));
+  ASSERT_EQ(0, result_bytes);
 }
 
 TEST_F(MountHtml5FsNodeSyncDirTest, OpenAndClose) {
@@ -451,9 +454,9 @@ TEST_F(MountHtml5FsNodeSyncDirTest, Write) {
   const char buffer[30] = {0};
 
   // Should fail for directories.
-  int result = node_->Write(offset, &buffer, count);
-  ASSERT_EQ(-1, result);
-  EXPECT_EQ(EISDIR, errno);
+  int result_bytes = 0;
+  EXPECT_EQ(EISDIR, node_->Write(offset, &buffer, count, &result_bytes));
+  ASSERT_EQ(0, result_bytes);
 }
 
 TEST_F(MountHtml5FsNodeSyncDirTest, Read) {
@@ -462,9 +465,9 @@ TEST_F(MountHtml5FsNodeSyncDirTest, Read) {
   char buffer[30] = {0};
 
   // Should fail for directories.
-  int result = node_->Read(offset, &buffer, count);
-  ASSERT_EQ(-1, result);
-  EXPECT_EQ(EISDIR, errno);
+  int result_bytes = 0;
+  EXPECT_EQ(EISDIR, node_->Read(offset, &buffer, count, &result_bytes));
+  ASSERT_EQ(0, result_bytes);
 }
 
 TEST_F(MountHtml5FsNodeSyncDirTest, GetStat) {
@@ -498,9 +501,7 @@ TEST_F(MountHtml5FsNodeSyncDirTest, GetStat) {
 TEST_F(MountHtml5FsNodeSyncDirTest, FTruncate) {
   const int size = 123;
   // Should fail for directories.
-  int result = node_->FTruncate(size);
-  ASSERT_EQ(-1, result);
-  EXPECT_EQ(EISDIR, errno);
+  EXPECT_EQ(EISDIR, node_->FTruncate(size));
 }
 
 TEST_F(MountHtml5FsNodeSyncDirTest, GetDents) {
@@ -542,9 +543,12 @@ TEST_F(MountHtml5FsNodeSyncDirTest, GetDents) {
   memset(&dirents[0], 0, sizeof(dirents));
   // +2 to test a size that is not a multiple of sizeof(dirent).
   // Expect it to round down.
-  int result = node_->GetDents(0, &dirents[0], sizeof(dirent) * 2 + 2);
+  int result_bytes = 0;
+  EXPECT_EQ(
+      0,
+      node_->GetDents(0, &dirents[0], sizeof(dirent) * 2 + 2, &result_bytes));
 
-  ASSERT_EQ(sizeof(dirent) * 2, result);
+  ASSERT_EQ(sizeof(dirent) * 2, result_bytes);
   EXPECT_LT(0, dirents[0].d_ino);  // 0 is an invalid inode number.
   EXPECT_EQ(sizeof(dirent), dirents[0].d_off);
   EXPECT_EQ(sizeof(dirent), dirents[0].d_reclen);

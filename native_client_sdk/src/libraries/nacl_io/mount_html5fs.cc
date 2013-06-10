@@ -24,96 +24,85 @@ int64_t strtoull(const char* nptr, char** endptr, int base) {
 
 }  // namespace
 
-MountNode *MountHtml5Fs::Open(const Path& path, int mode) {
-  if (BlockUntilFilesystemOpen() != PP_OK) {
-    errno = ENODEV;
-    return NULL;
-  }
+Error MountHtml5Fs::Open(const Path& path, int mode, MountNode** out_node) {
+  *out_node = NULL;
 
-  PP_Resource fileref = ppapi()->GetFileRefInterface()->Create(
-      filesystem_resource_, path.Join().c_str());
+  Error error = BlockUntilFilesystemOpen();
+  if (error)
+    return error;
+
+  PP_Resource fileref = ppapi()->GetFileRefInterface()
+      ->Create(filesystem_resource_, path.Join().c_str());
   if (!fileref)
-    return NULL;
+    return ENOSYS;
 
   MountNodeHtml5Fs* node = new MountNodeHtml5Fs(this, fileref);
-  if (!node->Init(mode)) {
+  error = node->Init(mode);
+  if (error) {
     node->Release();
-    return NULL;
+    return error;
   }
 
-  return node;
+  *out_node = node;
+  return 0;
 }
 
-int MountHtml5Fs::Unlink(const Path& path) {
-  return Remove(path);
-}
+Error MountHtml5Fs::Unlink(const Path& path) { return Remove(path); }
 
-int MountHtml5Fs::Mkdir(const Path& path, int permissions) {
-  if (BlockUntilFilesystemOpen() != PP_OK) {
-    errno = ENODEV;
-    return -1;
-  }
+Error MountHtml5Fs::Mkdir(const Path& path, int permissions) {
+  Error error = BlockUntilFilesystemOpen();
+  if (error)
+    return error;
 
   ScopedResource fileref_resource(
-      ppapi(), ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
-                                                      path.Join().c_str()));
-  if (!fileref_resource.pp_resource()) {
-    errno = EINVAL;
-    return -1;
-  }
+      ppapi(),
+      ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
+                                             path.Join().c_str()));
+  if (!fileref_resource.pp_resource())
+    return EIO;
 
   int32_t result = ppapi()->GetFileRefInterface()->MakeDirectory(
       fileref_resource.pp_resource(), PP_FALSE, PP_BlockUntilComplete());
-  if (result != PP_OK) {
-    errno = PPErrorToErrno(result);
-    return -1;
-  }
+  if (result != PP_OK)
+    return PPErrorToErrno(result);
 
   return 0;
 }
 
-int MountHtml5Fs::Rmdir(const Path& path) {
-  return Remove(path);
-}
+Error MountHtml5Fs::Rmdir(const Path& path) { return Remove(path); }
 
-int MountHtml5Fs::Remove(const Path& path) {
-  if (BlockUntilFilesystemOpen() != PP_OK) {
-    errno = ENODEV;
-    return -1;
-  }
+Error MountHtml5Fs::Remove(const Path& path) {
+  Error error = BlockUntilFilesystemOpen();
+  if (error)
+    return error;
 
   ScopedResource fileref_resource(
-      ppapi(), ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
-                                                      path.Join().c_str()));
-  if (!fileref_resource.pp_resource()) {
-    errno = EINVAL;
-    return -1;
-  }
+      ppapi(),
+      ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
+                                             path.Join().c_str()));
+  if (!fileref_resource.pp_resource())
+    return ENOSYS;
 
-  int32_t result = ppapi()->GetFileRefInterface()->Delete(
-      fileref_resource.pp_resource(),
-      PP_BlockUntilComplete());
-  if (result != PP_OK) {
-    errno = PPErrorToErrno(result);
-    return -1;
-  }
+  int32_t result = ppapi()->GetFileRefInterface()
+      ->Delete(fileref_resource.pp_resource(), PP_BlockUntilComplete());
+  if (result != PP_OK)
+    return PPErrorToErrno(result);
 
   return 0;
 }
-
 
 MountHtml5Fs::MountHtml5Fs()
     : filesystem_resource_(0),
       filesystem_open_has_result_(false),
-      filesystem_open_result_(PP_OK) {
-}
+      filesystem_open_error_(0) {}
 
-bool MountHtml5Fs::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
-  if (!Mount::Init(dev, args, ppapi))
-    return false;
+Error MountHtml5Fs::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
+  Error error = Mount::Init(dev, args, ppapi);
+  if (error)
+    return error;
 
   if (!ppapi)
-    return false;
+    return ENOSYS;
 
   pthread_cond_init(&filesystem_open_cond_, NULL);
 
@@ -121,7 +110,7 @@ bool MountHtml5Fs::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
   PP_FileSystemType filesystem_type = PP_FILESYSTEMTYPE_LOCALPERSISTENT;
   int64_t expected_size = 0;
   for (StringMap_t::iterator iter = args.begin(), end = args.end(); iter != end;
-      ++iter) {
+       ++iter) {
     if (iter->first == "type") {
       if (iter->second == "PERSISTENT") {
         filesystem_type = PP_FILESYSTEMTYPE_LOCALPERSISTENT;
@@ -134,33 +123,32 @@ bool MountHtml5Fs::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
   }
 
   // Initialize filesystem.
-  filesystem_resource_ = ppapi->GetFileSystemInterface()->Create(
-      ppapi_->GetInstance(), filesystem_type);
-
+  filesystem_resource_ = ppapi->GetFileSystemInterface()
+      ->Create(ppapi_->GetInstance(), filesystem_type);
   if (filesystem_resource_ == 0)
-    return false;
+    return ENOSYS;
 
   // We can't block the main thread, so make an asynchronous call if on main
   // thread. If we are off-main-thread, then don't make an asynchronous call;
   // otherwise we require a message loop.
   bool main_thread = ppapi->IsMainThread();
-  PP_CompletionCallback cc = main_thread ?
-      PP_MakeCompletionCallback(&MountHtml5Fs::FilesystemOpenCallbackThunk,
-                                this) :
-      PP_BlockUntilComplete();
+  PP_CompletionCallback cc =
+      main_thread ? PP_MakeCompletionCallback(
+                        &MountHtml5Fs::FilesystemOpenCallbackThunk, this)
+                  : PP_BlockUntilComplete();
 
-  int32_t result = ppapi->GetFileSystemInterface()->Open(
-      filesystem_resource_, expected_size, cc);
+  int32_t result = ppapi->GetFileSystemInterface()
+      ->Open(filesystem_resource_, expected_size, cc);
 
   if (!main_thread) {
     filesystem_open_has_result_ = true;
-    filesystem_open_result_ = result;
+    filesystem_open_error_ = PPErrorToErrno(result);
 
-    return filesystem_open_result_ == PP_OK;
+    return filesystem_open_error_;
   } else {
     // We have to assume the call to Open will succeed; there is no better
     // result to return here.
-    return true;
+    return 0;
   }
 }
 
@@ -169,12 +157,12 @@ void MountHtml5Fs::Destroy() {
   pthread_cond_destroy(&filesystem_open_cond_);
 }
 
-int32_t MountHtml5Fs::BlockUntilFilesystemOpen() {
+Error MountHtml5Fs::BlockUntilFilesystemOpen() {
   AutoLock lock(&lock_);
   while (!filesystem_open_has_result_) {
     pthread_cond_wait(&filesystem_open_cond_, &lock_);
   }
-  return filesystem_open_result_;
+  return filesystem_open_error_;
 }
 
 // static
@@ -187,6 +175,6 @@ void MountHtml5Fs::FilesystemOpenCallbackThunk(void* user_data,
 void MountHtml5Fs::FilesystemOpenCallback(int32_t result) {
   AutoLock lock(&lock_);
   filesystem_open_has_result_ = true;
-  filesystem_open_result_ = result;
+  filesystem_open_error_ = PPErrorToErrno(result);
   pthread_cond_signal(&filesystem_open_cond_);
 }

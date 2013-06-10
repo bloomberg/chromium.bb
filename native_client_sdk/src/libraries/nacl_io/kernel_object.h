@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "nacl_io/error.h"
 #include "nacl_io/path.h"
 
 class KernelHandle;
@@ -28,17 +29,25 @@ class KernelObject {
   KernelObject();
   virtual ~KernelObject();
 
-  // Find the mount for the given path, and acquires it
-  Mount* AcquireMountAndPath(const std::string& relpath, Path *pobj);
+  // Find the mount for the given path, and acquires it.
+  // Assumes |out_mount| and |out_path| are non-NULL.
+  Error AcquireMountAndPath(const std::string& relpath,
+                            Mount** out_mount,
+                            Path* out_path);
+  // Assumes |mnt| is non-NULL.
   void ReleaseMount(Mount* mnt);
 
   // Convert from FD to KernelHandle, and acquire the handle.
-  KernelHandle* AcquireHandle(int fd);
+  // Assumes |out_handle| is non-NULL.
+  Error AcquireHandle(int fd, KernelHandle** out_handle);
+  // Assumes |handle| is non-NULL.
   void ReleaseHandle(KernelHandle* handle);
 
   // Allocate a new fd and assign the handle to it, while
   // ref counting the handle and associated mount.
+  // Assumes |handle| is non-NULL;
   int AllocateFD(KernelHandle* handle);
+  // Assumes |handle| is non-NULL;
   void FreeAndReassignFD(int fd, KernelHandle* handle);
   void FreeFD(int fd);
 

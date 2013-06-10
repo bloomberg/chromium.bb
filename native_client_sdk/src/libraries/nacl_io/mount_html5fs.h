@@ -11,23 +11,23 @@
 
 class MountNode;
 
-class MountHtml5Fs: public Mount {
+class MountHtml5Fs : public Mount {
  public:
-  virtual MountNode *Open(const Path& path, int mode);
-  virtual int Unlink(const Path& path);
-  virtual int Mkdir(const Path& path, int permissions);
-  virtual int Rmdir(const Path& path);
-  virtual int Remove(const Path& path);
+  virtual Error Open(const Path& path, int mode, MountNode** out_node);
+  virtual Error Unlink(const Path& path);
+  virtual Error Mkdir(const Path& path, int permissions);
+  virtual Error Rmdir(const Path& path);
+  virtual Error Remove(const Path& path);
 
   PP_Resource filesystem_resource() { return filesystem_resource_; }
 
  protected:
   MountHtml5Fs();
 
-  virtual bool Init(int dev, StringMap_t& args, PepperInterface* ppapi);
+  virtual Error Init(int dev, StringMap_t& args, PepperInterface* ppapi);
   virtual void Destroy();
 
-  int32_t BlockUntilFilesystemOpen();
+  Error BlockUntilFilesystemOpen();
 
  private:
   static void FilesystemOpenCallbackThunk(void* user_data, int32_t result);
@@ -35,7 +35,7 @@ class MountHtml5Fs: public Mount {
 
   PP_Resource filesystem_resource_;
   bool filesystem_open_has_result_;  // protected by lock_.
-  int32_t filesystem_open_result_;  // protected by lock_.
+  Error filesystem_open_error_;      // protected by lock_.
   pthread_cond_t filesystem_open_cond_;
 
   friend class Mount;

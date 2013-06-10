@@ -18,8 +18,7 @@
 static const int USR_ID = 1001;
 static const int GRP_ID = 1002;
 
-MountNode::MountNode(Mount* mount)
-    : mount_(mount) {
+MountNode::MountNode(Mount* mount) : mount_(mount) {
   memset(&stat_, 0, sizeof(stat_));
   stat_.st_gid = GRP_ID;
   stat_.st_uid = USR_ID;
@@ -32,12 +31,11 @@ MountNode::MountNode(Mount* mount)
     stat_.st_ino = 1;
 }
 
-MountNode::~MountNode() {
-}
+MountNode::~MountNode() {}
 
-bool MountNode::Init(int perm) {
+Error MountNode::Init(int perm) {
   stat_.st_mode |= perm;
-  return true;
+  return 0;
 }
 
 void MountNode::Destroy() {
@@ -46,119 +44,110 @@ void MountNode::Destroy() {
   }
 }
 
-int MountNode::FSync() {
-  return 0;
+Error MountNode::FSync() { return 0; }
+
+Error MountNode::FTruncate(off_t length) {
+  return EINVAL;
 }
 
-int MountNode::FTruncate(off_t length) {
-  errno = EINVAL;
-  return -1;
+Error MountNode::GetDents(size_t offs,
+                          struct dirent* pdir,
+                          size_t count,
+                          int* out_bytes) {
+  *out_bytes = 0;
+  return ENOTDIR;
 }
 
-int MountNode::GetDents(size_t offs, struct dirent* pdir, size_t count) {
-  errno = ENOTDIR;
-  return -1;
-}
-
-int MountNode::GetStat(struct stat* pstat) {
+Error MountNode::GetStat(struct stat* pstat) {
   AutoLock lock(&lock_);
   memcpy(pstat, &stat_, sizeof(stat_));
   return 0;
 }
 
-int MountNode::Ioctl(int request, char* arg) {
-  errno = EINVAL;
-  return -1;
+Error MountNode::Ioctl(int request, char* arg) {
+  return EINVAL;
 }
 
-int MountNode::Read(size_t offs, void* buf, size_t count) {
-  errno = EINVAL;
-  return -1;
+Error MountNode::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
+  *out_bytes = 0;
+  return EINVAL;
 }
 
-int MountNode::Write(size_t offs, const void* buf, size_t count) {
-  errno = EINVAL;
-  return -1;
+Error MountNode::Write(size_t offs,
+                       const void* buf,
+                       size_t count,
+                       int* out_bytes) {
+  *out_bytes = 0;
+  return EINVAL;
 }
 
-void* MountNode::MMap(void* addr, size_t length, int prot, int flags,
-                      size_t offset) {
+Error MountNode::MMap(void* addr,
+                      size_t length,
+                      int prot,
+                      int flags,
+                      size_t offset,
+                      void** out_addr) {
+  *out_addr = NULL;
+
   // Never allow mmap'ing PROT_EXEC. The passthrough node supports this, but we
   // don't. Fortunately, glibc will fallback if this fails, so dlopen will
   // continue to work.
-  if (prot & PROT_EXEC) {
-    errno = EPERM;
-    return MAP_FAILED;
-  }
+  if (prot & PROT_EXEC)
+    return EPERM;
 
   // This default mmap support is just enough to make dlopen work.
   // This implementation just reads from the mount into the mmap'd memory area.
   void* new_addr = addr;
-  int err = _real_mmap(&new_addr, length, prot | PROT_WRITE, flags |
-                       MAP_ANONYMOUS, -1, 0);
+  int mmap_error = _real_mmap(
+      &new_addr, length, prot | PROT_WRITE, flags | MAP_ANONYMOUS, -1, 0);
   if (new_addr == MAP_FAILED) {
     _real_munmap(new_addr, length);
-    errno = err;
-    return MAP_FAILED;
+    return mmap_error;
   }
 
-  ssize_t cnt = Read(offset, new_addr, length);
-  if (cnt == -1) {
+  int bytes_read;
+  Error read_error = Read(offset, new_addr, length, &bytes_read);
+  if (read_error) {
     _real_munmap(new_addr, length);
-    errno = ENOSYS;
-    return MAP_FAILED;
+    return read_error;
   }
 
-  return new_addr;
+  *out_addr = new_addr;
+  return 0;
 }
 
-int MountNode::GetLinks() {
-  return stat_.st_nlink;
+int MountNode::GetLinks() { return stat_.st_nlink; }
+
+int MountNode::GetMode() { return stat_.st_mode & ~S_IFMT; }
+
+Error MountNode::GetSize(size_t* out_size) {
+  *out_size = stat_.st_size;
+  return 0;
 }
 
-int MountNode::GetMode() {
-  return stat_.st_mode & ~S_IFMT;
+int MountNode::GetType() { return stat_.st_mode & S_IFMT; }
+
+bool MountNode::IsaDir() { return (stat_.st_mode & S_IFDIR) != 0; }
+
+bool MountNode::IsaFile() { return (stat_.st_mode & S_IFREG) != 0; }
+
+bool MountNode::IsaTTY() { return (stat_.st_mode & S_IFCHR) != 0; }
+
+Error MountNode::AddChild(const std::string& name, MountNode* node) {
+  return ENOTDIR;
 }
 
-size_t MountNode::GetSize() {
-  return stat_.st_size;
+Error MountNode::RemoveChild(const std::string& name) {
+  return ENOTDIR;
 }
 
-int MountNode::GetType() {
-  return stat_.st_mode & S_IFMT;
-}
-
-bool MountNode::IsaDir() {
-  return (stat_.st_mode & S_IFDIR) != 0;
-}
-
-bool MountNode::IsaFile() {
-  return (stat_.st_mode & S_IFREG) != 0;
-}
-
-bool MountNode::IsaTTY() {
-  return (stat_.st_mode & S_IFCHR) != 0;
-}
-
-
-int MountNode:: AddChild(const std::string& name, MountNode* node) {
-  errno = ENOTDIR;
-  return -1;
-}
-
-int MountNode::RemoveChild(const std::string& name) {
-  errno = ENOTDIR;
-  return -1;
-}
-
-MountNode* MountNode::FindChild(const std::string& name) {
-  errno = ENOTDIR;
-  return NULL;
+Error MountNode::FindChild(const std::string& name, MountNode** out_node) {
+  *out_node = NULL;
+  return ENOTDIR;
 }
 
 int MountNode::ChildCount() {
-  errno = ENOTDIR;
-  return -1;
+  return 0;
 }
 
 void MountNode::Link() {

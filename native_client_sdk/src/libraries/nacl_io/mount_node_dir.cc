@@ -12,75 +12,79 @@
 #include "sdk_util/auto_lock.h"
 #include "sdk_util/macros.h"
 
-MountNodeDir::MountNodeDir(Mount* mount)
-    : MountNode(mount),
-      cache_(NULL) {
+MountNodeDir::MountNodeDir(Mount* mount) : MountNode(mount), cache_(NULL) {
   stat_.st_mode |= S_IFDIR;
 }
 
 MountNodeDir::~MountNodeDir() {
+  for (MountNodeMap_t::iterator it = map_.begin(); it != map_.end(); ++it) {
+    it->second->Unlink();
+  }
   free(cache_);
 }
 
-int MountNodeDir::Read(size_t offs, void *buf, size_t count) {
-  errno = EISDIR;
-  return -1;
+Error MountNodeDir::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
+  *out_bytes = 0;
+  return EISDIR;
 }
 
-int MountNodeDir::FTruncate(off_t size) {
-  errno = EISDIR;
-  return -1;
+Error MountNodeDir::FTruncate(off_t size) { return EISDIR; }
+
+Error MountNodeDir::Write(size_t offs,
+                          void* buf,
+                          size_t count,
+                          int* out_bytes) {
+  *out_bytes = 0;
+  return EISDIR;
 }
 
-int MountNodeDir::Write(size_t offs, void *buf, size_t count) {
-  errno = EISDIR;
-  return -1;
-}
+Error MountNodeDir::GetDents(size_t offs,
+                             struct dirent* pdir,
+                             size_t size,
+                             int* out_bytes) {
+  *out_bytes = 0;
 
-int MountNodeDir::GetDents(size_t offs, struct dirent* pdir, size_t size) {
   AutoLock lock(&lock_);
 
   // If the buffer pointer is invalid, fail
-  if (NULL == pdir) {
-    errno = EINVAL;
-    return -1;
-  }
+  if (NULL == pdir)
+    return EINVAL;
 
   // If the buffer is too small, fail
-  if (size < sizeof(struct dirent)) {
-    errno = EINVAL;
-    return -1;
-  }
+  if (size < sizeof(struct dirent))
+    return EINVAL;
 
   // Force size to a multiple of dirent
   size -= size % sizeof(struct dirent);
   size_t max = map_.size() * sizeof(struct dirent);
-  if (cache_ == NULL) BuildCache();
+  if (cache_ == NULL)
+    BuildCache();
 
-  if (offs >= max) return 0;
-  if (offs + size >= max) size = max - offs;
+  if (offs >= max) {
+    // OK, trying to read past the end.
+    return 0;
+  }
 
-  memcpy(pdir, ((char *) cache_) + offs, size);
-  return size;
+  if (offs + size >= max)
+    size = max - offs;
+
+  memcpy(pdir, ((char*)cache_) + offs, size);
+  *out_bytes = size;
+  return 0;
 }
 
-int MountNodeDir::AddChild(const std::string& name, MountNode* node) {
+Error MountNodeDir::AddChild(const std::string& name, MountNode* node) {
   AutoLock lock(&lock_);
 
-  if (name.empty()) {
-    errno = ENOENT;
-    return -1;
-  }
-  if (name.length() >= MEMBER_SIZE(struct dirent, d_name)) {
-    errno = ENAMETOOLONG;
-    return -1;
-  }
+  if (name.empty())
+    return ENOENT;
+
+  if (name.length() >= MEMBER_SIZE(struct dirent, d_name))
+    return ENAMETOOLONG;
 
   MountNodeMap_t::iterator it = map_.find(name);
-  if (it != map_.end()) {
-    errno = EEXIST;
-    return -1;
-  }
+  if (it != map_.end())
+    return EEXIST;
 
   node->Link();
   map_[name] = node;
@@ -88,7 +92,7 @@ int MountNodeDir::AddChild(const std::string& name, MountNode* node) {
   return 0;
 }
 
-int MountNodeDir::RemoveChild(const std::string& name) {
+Error MountNodeDir::RemoveChild(const std::string& name) {
   AutoLock lock(&lock_);
   MountNodeMap_t::iterator it = map_.find(name);
   if (it != map_.end()) {
@@ -97,18 +101,19 @@ int MountNodeDir::RemoveChild(const std::string& name) {
     ClearCache();
     return 0;
   }
-  errno = ENOENT;
-  return -1;
+  return ENOENT;
 }
 
-MountNode* MountNodeDir::FindChild(const std::string& name) {
+Error MountNodeDir::FindChild(const std::string& name, MountNode** out_node) {
+  *out_node = NULL;
+
   AutoLock lock(&lock_);
   MountNodeMap_t::iterator it = map_.find(name);
-  if (it != map_.end()) {
-    return it->second;
-  }
-  errno = ENOENT;
-  return NULL;
+  if (it == map_.end())
+    return ENOENT;
+
+  *out_node = it->second;
+  return 0;
 }
 
 int MountNodeDir::ChildCount() {
@@ -123,7 +128,7 @@ void MountNodeDir::ClearCache() {
 
 void MountNodeDir::BuildCache() {
   if (map_.size()) {
-    cache_ = (struct dirent *) malloc(sizeof(struct dirent) * map_.size());
+    cache_ = (struct dirent*)malloc(sizeof(struct dirent) * map_.size());
     MountNodeMap_t::iterator it = map_.begin();
     for (size_t index = 0; it != map_.end(); it++, index++) {
       MountNode* node = it->second;

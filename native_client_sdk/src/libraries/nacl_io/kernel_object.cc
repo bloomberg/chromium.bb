@@ -31,8 +31,12 @@ KernelObject::~KernelObject() {
 
 // Uses longest prefix to find the mount for the give path, then
 // acquires the mount and returns it with a relative path.
-Mount* KernelObject::AcquireMountAndPath(const std::string& relpath,
-                                         Path* out_path) {
+Error KernelObject::AcquireMountAndPath(const std::string& relpath,
+                                        Mount** out_mount,
+                                        Path* out_path) {
+  *out_mount = NULL;
+  *out_path = Path();
+
   Path abs_path;
   {
     AutoLock lock(&process_lock_);
@@ -41,7 +45,6 @@ Mount* KernelObject::AcquireMountAndPath(const std::string& relpath,
 
   AutoLock lock(&kernel_lock_);
   Mount* mount = NULL;
-
 
   // Find longest prefix
   size_t max = abs_path.Size();
@@ -55,14 +58,13 @@ Mount* KernelObject::AcquireMountAndPath(const std::string& relpath,
     }
   }
 
-  if (NULL == mount) {
-    errno = ENOTDIR;
-    return NULL;
-  }
+  if (NULL == mount)
+    return ENOTDIR;
 
   // Acquire the mount while we hold the proxy lock
   mount->Acquire();
-  return mount;
+  *out_mount = mount;
+  return 0;
 }
 
 void KernelObject::ReleaseMount(Mount* mnt) {
@@ -70,41 +72,36 @@ void KernelObject::ReleaseMount(Mount* mnt) {
   mnt->Release();
 }
 
-KernelHandle* KernelObject::AcquireHandle(int fd) {
+Error KernelObject::AcquireHandle(int fd, KernelHandle** out_handle) {
+  *out_handle = NULL;
+
   AutoLock lock(&process_lock_);
-  if (fd < 0 || fd >= static_cast<int>(handle_map_.size())) {
-    errno = EBADF;
-    return NULL;
-  }
+  if (fd < 0 || fd >= static_cast<int>(handle_map_.size()))
+    return EBADF;
 
   KernelHandle* handle = handle_map_[fd];
-  if (NULL == handle) {
-    errno = EBADF;
-    return NULL;
-  }
+  if (NULL == handle)
+    return EBADF;
 
   // Ref count while holding parent mutex
   handle->Acquire();
 
   lock.Unlock();
-  if (handle->node_) handle->mount_->AcquireNode(handle->node_);
+  if (handle->node_)
+    handle->mount_->AcquireNode(handle->node_);
 
-  return handle;
+  *out_handle = handle;
+  return 0;
 }
 
 void KernelObject::ReleaseHandle(KernelHandle* handle) {
   // The handle must already be held before taking the
   // kernel lock.
-  if (handle->node_) handle->mount_->ReleaseNode(handle->node_);
+  if (handle->node_)
+    handle->mount_->ReleaseNode(handle->node_);
 
   AutoLock lock(&process_lock_);
   handle->Release();
-}
-
-// Helper function to properly sort FD order in the heap, forcing
-// lower numbered FD to be available first.
-static bool FdOrder(int i, int j) {
-  return i > j;
 }
 
 int KernelObject::AllocateFD(KernelHandle* handle) {
@@ -119,7 +116,8 @@ int KernelObject::AllocateFD(KernelHandle* handle) {
   // If we can recycle and FD, use that first
   if (free_fds_.size()) {
     id = free_fds_.front();
-    std::pop_heap(free_fds_.begin(), free_fds_.end(), FdOrder);
+    // Force lower numbered FD to be available first.
+    std::pop_heap(free_fds_.begin(), free_fds_.end(), std::greater<int>());
     free_fds_.pop_back();
     handle_map_[id] = handle;
   } else {
@@ -166,7 +164,8 @@ void KernelObject::FreeFD(int fd) {
 
   handle_map_[fd] = NULL;
   free_fds_.push_back(fd);
-  std::push_heap(free_fds_.begin(), free_fds_.end(), FdOrder);
+  // Force lower numbered FD to be available first.
+  std::push_heap(free_fds_.begin(), free_fds_.end(), std::greater<int>());
 }
 
 Path KernelObject::GetAbsPathLocked(const std::string& path) {

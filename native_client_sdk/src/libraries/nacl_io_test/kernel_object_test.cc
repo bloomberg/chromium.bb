@@ -23,22 +23,21 @@ namespace {
 class MountRefMock : public Mount {
  public:
   MountRefMock(int* mount_count, int* handle_count)
-      : mount_count(mount_count),
-        handle_count(handle_count) {
+      : mount_count(mount_count), handle_count(handle_count) {
     (*mount_count)++;
   }
 
-  ~MountRefMock() {
-    (*mount_count)--;
-  }
+  ~MountRefMock() { (*mount_count)--; }
 
  public:
-  MountNode* Open(const Path& path, int mode) { return NULL; }
-  int Close(MountNode* node) { return 0; }
-  int Unlink(const Path& path) { return 0; }
-  int Mkdir(const Path& path, int permissions) { return 0; }
-  int Rmdir(const Path& path) { return 0; }
-  int Remove(const Path& path) { return 0; }
+  Error Open(const Path& path, int mode, MountNode** out_node) {
+    *out_node = NULL;
+    return ENOSYS;
+  }
+  Error Unlink(const Path& path) { return 0; }
+  Error Mkdir(const Path& path, int permissions) { return 0; }
+  Error Rmdir(const Path& path) { return 0; }
+  Error Remove(const Path& path) { return 0; }
 
  public:
   int* mount_count;
@@ -47,8 +46,8 @@ class MountRefMock : public Mount {
 
 class KernelHandleRefMock : public KernelHandle {
  public:
-  KernelHandleRefMock(Mount* mnt, MountNode* node, int flags)
-      : KernelHandle(mnt, node, flags) {
+  KernelHandleRefMock(Mount* mnt, MountNode* node)
+      : KernelHandle(mnt, node) {
     MountRefMock* mock_mount = static_cast<MountRefMock*>(mnt);
     (*mock_mount->handle_count)++;
   }
@@ -61,9 +60,7 @@ class KernelHandleRefMock : public KernelHandle {
 
 class KernelObjectTest : public ::testing::Test {
  public:
-  KernelObjectTest()
-      : mount_count(0),
-        handle_count(0) {
+  KernelObjectTest() : mount_count(0), handle_count(0) {
     proxy = new KernelObject;
     mnt = new MountRefMock(&mount_count, &handle_count);
   }
@@ -81,10 +78,10 @@ class KernelObjectTest : public ::testing::Test {
 
 }  // namespace
 
-
 TEST_F(KernelObjectTest, Referencing) {
-  KernelHandle* handle = new KernelHandleRefMock(mnt, NULL, 0);
-  KernelHandle* handle2 = new KernelHandleRefMock(mnt, NULL, 0);
+  KernelHandle* handle = new KernelHandleRefMock(mnt, NULL);
+  KernelHandle* handle2 = new KernelHandleRefMock(mnt, NULL);
+  KernelHandle* result_handle = NULL;
 
   // Objects should have one ref when we start
   EXPECT_EQ(1, mnt->RefCount());
@@ -111,14 +108,16 @@ TEST_F(KernelObjectTest, Referencing) {
   EXPECT_EQ(2, fd3);
 
   // We should find the handle by either fd
-  EXPECT_EQ(handle, proxy->AcquireHandle(fd1));
-  EXPECT_EQ(handle, proxy->AcquireHandle(fd2));
+  EXPECT_EQ(0, proxy->AcquireHandle(fd1, &result_handle));
+  EXPECT_EQ(handle, result_handle);
+  EXPECT_EQ(0, proxy->AcquireHandle(fd2, &result_handle));
+  EXPECT_EQ(handle, result_handle);
 
   // A non existent fd should fail
-  EXPECT_EQ(NULL, proxy->AcquireHandle(-1));
-  EXPECT_EQ(EBADF, errno);
-  EXPECT_EQ(NULL, proxy->AcquireHandle(100));
-  EXPECT_EQ(EBADF, errno);
+  EXPECT_EQ(EBADF, proxy->AcquireHandle(-1, &result_handle));
+  EXPECT_EQ(NULL, result_handle);
+  EXPECT_EQ(EBADF, proxy->AcquireHandle(100, &result_handle));
+  EXPECT_EQ(NULL, result_handle);
 
   // Acquiring the handle, should have ref'd it
   EXPECT_EQ(4, mnt->RefCount());
@@ -155,27 +154,35 @@ TEST_F(KernelObjectTest, Referencing) {
 }
 
 TEST_F(KernelObjectTest, FreeAndReassignFD) {
+  KernelHandle* result_handle = NULL;
+
   EXPECT_EQ(0, handle_count);
 
-  KernelHandle* handle = new KernelHandleRefMock(mnt, NULL, 0);
+  KernelHandle* handle = new KernelHandleRefMock(mnt, NULL);
 
   EXPECT_EQ(1, handle_count);
   EXPECT_EQ(1, handle->RefCount());
 
   // Assign to a non-existent FD
   proxy->FreeAndReassignFD(2, handle);
-  EXPECT_EQ((KernelHandle*)NULL, proxy->AcquireHandle(0));
-  EXPECT_EQ((KernelHandle*)NULL, proxy->AcquireHandle(1));
-  EXPECT_EQ(handle, proxy->AcquireHandle(2));
+  EXPECT_EQ(EBADF, proxy->AcquireHandle(0, &result_handle));
+  EXPECT_EQ(NULL, result_handle);
+  EXPECT_EQ(EBADF, proxy->AcquireHandle(1, &result_handle));
+  EXPECT_EQ(NULL, result_handle);
+  EXPECT_EQ(0, proxy->AcquireHandle(2, &result_handle));
+  EXPECT_EQ(handle, result_handle);
   proxy->ReleaseHandle(handle);
 
   EXPECT_EQ(1, handle_count);
   EXPECT_EQ(2, handle->RefCount());
 
   proxy->FreeAndReassignFD(0, handle);
-  EXPECT_EQ(handle, proxy->AcquireHandle(0));
-  EXPECT_EQ((KernelHandle*)NULL, proxy->AcquireHandle(1));
-  EXPECT_EQ(handle, proxy->AcquireHandle(2));
+  EXPECT_EQ(0, proxy->AcquireHandle(0, &result_handle));
+  EXPECT_EQ(handle, result_handle);
+  EXPECT_EQ(EBADF, proxy->AcquireHandle(1, &result_handle));
+  EXPECT_EQ(NULL, result_handle);
+  EXPECT_EQ(0, proxy->AcquireHandle(2, &result_handle));
+  EXPECT_EQ(handle, result_handle);
   proxy->ReleaseHandle(handle);
   proxy->ReleaseHandle(handle);
 

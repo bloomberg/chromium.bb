@@ -14,35 +14,33 @@ class MountMem : public Mount {
  protected:
   MountMem();
 
-  virtual bool Init(int dev, StringMap_t& args, PepperInterface* ppapi);
+  virtual Error Init(int dev, StringMap_t& args, PepperInterface* ppapi);
   virtual void Destroy();
 
   // The protected functions are only used internally and will not
   // acquire or release the mount's lock themselves.  The caller is
   // required to use correct locking as needed.
-  MountNode *AllocateData(int mode);
-  MountNode *AllocatePath(int mode);
 
   // Allocate or free an INODE number.
   int AllocateINO();
   void FreeINO(int ino);
 
   // Find a Node specified node optionally failing if type does not match.
-  virtual MountNode* FindNode(const Path& path, int type = 0);
+  virtual Error FindNode(const Path& path, int type, MountNode** out_node);
 
  public:
-  virtual MountNode *Open(const Path& path, int mode);
-  virtual int Unlink(const Path& path);
-  virtual int Mkdir(const Path& path, int perm);
-  virtual int Rmdir(const Path& path);
-  virtual int Remove(const Path& path);
+  virtual Error Open(const Path& path, int mode, MountNode** out_node);
+  virtual Error Unlink(const Path& path);
+  virtual Error Mkdir(const Path& path, int perm);
+  virtual Error Rmdir(const Path& path);
+  virtual Error Remove(const Path& path);
 
 private:
   static const int REMOVE_DIR = 1;
   static const int REMOVE_FILE = 2;
   static const int REMOVE_ALL = REMOVE_DIR | REMOVE_FILE;
 
-  int RemoveInternal(const Path& path, int remove_type);
+  Error RemoveInternal(const Path& path, int remove_type);
 
   MountNode* root_;
   size_t max_ino_;

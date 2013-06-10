@@ -25,15 +25,18 @@ class MountNodeDir : public MountNode {
  public:
   typedef std::map<std::string, MountNode*> MountNodeMap_t;
 
-  virtual int FTruncate(off_t size);
-  virtual int GetDents(size_t offs, struct dirent* pdir, size_t count);
-  virtual int Read(size_t offs, void *buf, size_t count);
-  virtual int Write(size_t offs, void *buf, size_t count);
+  virtual Error FTruncate(off_t size);
+  virtual Error GetDents(size_t offs,
+                         struct dirent* pdir,
+                         size_t count,
+                         int* out_bytes);
+  virtual Error Read(size_t offs, void *buf, size_t count, int* out_bytes);
+  virtual Error Write(size_t offs, void *buf, size_t count, int* out_bytes);
 
   // Adds a finds or adds a directory entry as an INO, updating the refcount
-  virtual int AddChild(const std::string& name, MountNode *node);
-  virtual int RemoveChild(const std::string& name);
-  virtual MountNode* FindChild(const std::string& name);
+  virtual Error AddChild(const std::string& name, MountNode *node);
+  virtual Error RemoveChild(const std::string& name);
+  virtual Error FindChild(const std::string& name, MountNode** out_node);
   virtual int ChildCount();
 
 

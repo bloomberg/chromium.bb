@@ -11,16 +11,16 @@ class MountPassthrough : public Mount {
  protected:
   MountPassthrough();
 
-  virtual bool Init(int dev, StringMap_t& args, PepperInterface* ppapi);
+  virtual Error Init(int dev, StringMap_t& args, PepperInterface* ppapi);
   virtual void Destroy();
 
  public:
-  virtual MountNode *Open(const Path& path, int mode);
-  virtual MountNode *OpenResource(const Path& path);
-  virtual int Unlink(const Path& path);
-  virtual int Mkdir(const Path& path, int perm);
-  virtual int Rmdir(const Path& path);
-  virtual int Remove(const Path& path);
+  virtual Error Open(const Path& path, int mode, MountNode** out_node);
+  virtual Error OpenResource(const Path& path, MountNode** out_node);
+  virtual Error Unlink(const Path& path);
+  virtual Error Mkdir(const Path& path, int perm);
+  virtual Error Rmdir(const Path& path);
+  virtual Error Remove(const Path& path);
 
 private:
   friend class Mount;

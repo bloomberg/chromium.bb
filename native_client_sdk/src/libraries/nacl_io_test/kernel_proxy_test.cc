@@ -21,11 +21,9 @@
 
 #include "gtest/gtest.h"
 
-
 class KernelProxyTest : public ::testing::Test {
  public:
-  KernelProxyTest()
-      : kp_(new KernelProxy) {
+  KernelProxyTest() : kp_(new KernelProxy) {
     ki_init(kp_);
     // Unmount the passthrough FS and mount a memfs.
     EXPECT_EQ(0, kp_->umount("/"));
@@ -41,7 +39,6 @@ class KernelProxyTest : public ::testing::Test {
   KernelProxy* kp_;
 };
 
-
 TEST_F(KernelProxyTest, WorkingDirectory) {
   char text[1024];
 
@@ -50,7 +47,7 @@ TEST_F(KernelProxyTest, WorkingDirectory) {
   EXPECT_STREQ("/", text);
 
   char* alloc = ki_getwd(NULL);
-  EXPECT_EQ((char *) NULL, alloc);
+  EXPECT_EQ((char*)NULL, alloc);
   EXPECT_EQ(EFAULT, errno);
 
   text[0] = 0;
@@ -113,7 +110,8 @@ TEST_F(KernelProxyTest, MemMountIO) {
   EXPECT_NE(-1, fd3);
 
   len = ki_read(fd3, text, sizeof(text));
-  if (len > -0) text[len] = 0;
+  if (len > 0)
+    text[len] = 0;
   EXPECT_EQ(5, len);
   EXPECT_STREQ("HELLO", text);
   EXPECT_EQ(0, ki_close(fd1));
@@ -124,7 +122,8 @@ TEST_F(KernelProxyTest, MemMountIO) {
   EXPECT_EQ(5, ki_write(fd1, "WORLD", 5));
 
   len = ki_read(fd3, text, sizeof(text));
-  if (len >= 0) text[len] = 0;
+  if (len >= 0)
+    text[len] = 0;
 
   EXPECT_EQ(5, len);
   EXPECT_STREQ("WORLD", text);
@@ -132,7 +131,8 @@ TEST_F(KernelProxyTest, MemMountIO) {
   fd2 = ki_open("/foo/bar", O_RDONLY);
   EXPECT_NE(-1, fd2);
   len = ki_read(fd2, text, sizeof(text));
-  if (len > 0) text[len] = 0;
+  if (len > 0)
+    text[len] = 0;
   EXPECT_EQ(10, len);
   EXPECT_STREQ("HELLOWORLD", text);
 }
@@ -197,17 +197,17 @@ TEST_F(KernelProxyTest, MemMountDup) {
   // fd, new_fd, dup_fd -> "/bar"
 }
 
-
 StringMap_t g_StringMap;
 
 class MountMockInit : public MountMem {
  public:
-  virtual bool Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
+  virtual Error Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
     g_StringMap = args;
     if (args.find("false") != args.end())
-      return false;
-    return true;
-  };
+      return EINVAL;
+    return 0;
+  }
+  ;
 };
 
 class KernelProxyMountMock : public KernelProxy {
@@ -219,10 +219,7 @@ class KernelProxyMountMock : public KernelProxy {
 
 class KernelProxyMountTest : public ::testing::Test {
  public:
-  KernelProxyMountTest()
-      : kp_(new KernelProxyMountMock) {
-    ki_init(kp_);
-  }
+  KernelProxyMountTest() : kp_(new KernelProxyMountMock) { ki_init(kp_); }
 
   ~KernelProxyMountTest() {
     ki_uninit();
@@ -245,28 +242,38 @@ TEST_F(KernelProxyMountTest, MountInit) {
   EXPECT_EQ("y", g_StringMap["x"]);
 }
 
-
 namespace {
 
 int g_MMapCount = 0;
 
 class MountNodeMockMMap : public MountNode {
  public:
-  MountNodeMockMMap(Mount* mount)
-      : MountNode(mount),
-        node_mmap_count_(0) {
-    Init(0);
+  MountNodeMockMMap(Mount* mount) : MountNode(mount), node_mmap_count_(0) {
+    EXPECT_EQ(0, Init(0));
   }
 
-  virtual void* MMap(void* addr, size_t length, int prot, int flags,
-                     size_t offset) {
+  virtual Error MMap(void* addr,
+                     size_t length,
+                     int prot,
+                     int flags,
+                     size_t offset,
+                     void** out_addr) {
     node_mmap_count_++;
     switch (g_MMapCount++) {
-      case 0: return reinterpret_cast<void*>(0x1000);
-      case 1: return reinterpret_cast<void*>(0x2000);
-      case 2: return reinterpret_cast<void*>(0x3000);
-      default: return MAP_FAILED;
+      case 0:
+        *out_addr = reinterpret_cast<void*>(0x1000);
+        break;
+      case 1:
+        *out_addr = reinterpret_cast<void*>(0x2000);
+        break;
+      case 2:
+        *out_addr = reinterpret_cast<void*>(0x3000);
+        break;
+      default:
+        return EPERM;
     }
+
+    return 0;
   }
 
  private:
@@ -275,16 +282,20 @@ class MountNodeMockMMap : public MountNode {
 
 class MountMockMMap : public Mount {
  public:
-  virtual MountNode* Open(const Path& path, int mode) {
+  virtual Error Open(const Path& path, int mode, MountNode** out_node) {
     MountNodeMockMMap* node = new MountNodeMockMMap(this);
-    return node;
+    *out_node = node;
+    return 0;
   }
 
-  virtual MountNode* OpenResource(const Path& path) { return NULL; }
-  virtual int Unlink(const Path& path) { return -1; }
-  virtual int Mkdir(const Path& path, int permissions) { return -1; }
-  virtual int Rmdir(const Path& path) { return -1; }
-  virtual int Remove(const Path& path) { return -1; }
+  virtual Error OpenResource(const Path& path, MountNode** out_node) {
+    *out_node = NULL;
+    return ENOSYS;
+  }
+  virtual Error Unlink(const Path& path) { return ENOSYS; }
+  virtual Error Mkdir(const Path& path, int permissions) { return ENOSYS; }
+  virtual Error Rmdir(const Path& path) { return ENOSYS; }
+  virtual Error Remove(const Path& path) { return ENOSYS; }
 };
 
 class KernelProxyMockMMap : public KernelProxy {
@@ -296,10 +307,7 @@ class KernelProxyMockMMap : public KernelProxy {
 
 class KernelProxyMMapTest : public ::testing::Test {
  public:
-  KernelProxyMMapTest()
-      : kp_(new KernelProxyMockMMap) {
-    ki_init(kp_);
-  }
+  KernelProxyMMapTest() : kp_(new KernelProxyMockMMap) { ki_init(kp_); }
 
   ~KernelProxyMMapTest() {
     ki_uninit();

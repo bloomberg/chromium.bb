@@ -7,6 +7,7 @@
 
 #include <pthread.h>
 
+#include "nacl_io/error.h"
 #include "nacl_io/ostypes.h"
 #include "sdk_util/macros.h"
 #include "sdk_util/ref_object.h"
@@ -19,13 +20,15 @@ class MountNode;
 // KernelHandle can only be referenced when the KernelProxy lock is held.
 class KernelHandle : public RefObject {
  public:
-  KernelHandle(Mount* mnt, MountNode* node, int oflags);
+  // Assumes |mnt| and |node| are non-NULL.
+  KernelHandle(Mount* mnt, MountNode* node);
 
-  off_t Seek(off_t offset, int whence);
+  Error Init(int open_flags);
+  // Assumes |out_offset| is non-NULL.
+  Error Seek(off_t offset, int whence, off_t* out_offset);
 
   Mount* mount_;
   MountNode* node_;
-  int mode_;
   size_t offs_;
 
  private:

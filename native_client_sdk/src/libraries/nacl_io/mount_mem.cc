@@ -17,19 +17,21 @@
 #include "sdk_util/auto_lock.h"
 #include "sdk_util/ref_object.h"
 
-// TODO(noelallen) : Grab/Redefine these in the kernel object once available.
-#define USR_ID 1002
-#define GRP_ID 1003
+MountMem::MountMem() : root_(NULL), max_ino_(0) {}
 
-MountMem::MountMem()
-    : root_(NULL),
-      max_ino_(0) {
-}
+Error MountMem::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
+  Error error = Mount::Init(dev, args, ppapi);
+  if (error)
+    return error;
 
-bool MountMem::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
-  Mount::Init(dev, args, ppapi);
-  root_ = AllocatePath(S_IREAD | S_IWRITE);
-  return (bool) (root_ != NULL);
+  root_ = new MountNodeDir(this);
+  error = root_->Init(S_IREAD | S_IWRITE);
+  if (error) {
+    root_->Release();
+    return error;
+  }
+
+  return 0;
 }
 
 void MountMem::Destroy() {
@@ -38,173 +40,156 @@ void MountMem::Destroy() {
   root_ = NULL;
 }
 
-MountNode* MountMem::AllocatePath(int mode) {
-  MountNode *ptr = new MountNodeDir(this);
-  if (!ptr->Init(mode)) {
-    ptr->Release();
-    return NULL;
-  }
-  return ptr;
-}
-
-MountNode* MountMem::AllocateData(int mode) {
-  MountNode* ptr = new MountNodeMem(this);
-  if (!ptr->Init(mode)) {
-    ptr->Release();
-    return NULL;
-  }
-  return ptr;
-}
-
-MountNode* MountMem::FindNode(const Path& path, int type) {
+Error MountMem::FindNode(const Path& path, int type, MountNode** out_node) {
   MountNode* node = root_;
 
   // If there is no root there, we have an error.
-  if (node == NULL) {
-    errno = ENOTDIR;
-    return NULL;
-  }
+  if (node == NULL)
+    return ENOTDIR;
 
   // We are expecting an "absolute" path from this mount point.
-  if (!path.IsAbsolute()) {
-    errno = EINVAL;
-    return NULL;
-  }
+  if (!path.IsAbsolute())
+    return EINVAL;
 
   // Starting at the root, traverse the path parts.
   for (size_t index = 1; node && index < path.Size(); index++) {
     // If not a directory, then we have an error so return.
-    if (!node->IsaDir()) {
-      errno = ENOTDIR;
-      return NULL;
-    }
+    if (!node->IsaDir())
+      return ENOTDIR;
 
     // Find the child node
-    node = node->FindChild(path.Part(index));
+    Error error = node->FindChild(path.Part(index), &node);
+    if (error)
+      return error;
   }
-
-  // node should be root, a found child, or a failed 'FindChild'
-  // which already has the correct errno set.
-  if (NULL == node) return NULL;
 
   // If a directory is expected, but it's not a directory, then fail.
-  if ((type & S_IFDIR) && !node->IsaDir()) {
-    errno = ENOTDIR;
-    return NULL;
-  }
+  if ((type & S_IFDIR) && !node->IsaDir())
+    return ENOTDIR;
 
   // If a file is expected, but it's not a file, then fail.
-  if ((type & S_IFREG) && node->IsaDir()) {
-    errno = EISDIR;
-    return NULL;
-  }
+  if ((type & S_IFREG) && node->IsaDir())
+    return EISDIR;
 
   // We now have a valid object of the expected type, so return it.
-  return node;
+  *out_node = node;
+  return 0;
 }
 
-MountNode* MountMem::Open(const Path& path, int mode) {
+Error MountMem::Open(const Path& path, int mode, MountNode** out_node) {
   AutoLock lock(&lock_);
-  MountNode* node = FindNode(path);
+  MountNode* node = NULL;
+  *out_node = NULL;
 
-  if (NULL == node) {
-    // Now first find the parent directory to see if we can add it
-    MountNode* parent = FindNode(path.Parent(), S_IFDIR);
-    if (NULL == parent) return NULL;
+  Error error = FindNode(path, 0, &node);
 
+  if (error) {
     // If the node does not exist and we can't create it, fail
-    if ((mode & O_CREAT) == 0) return NULL;
+    if ((mode & O_CREAT) == 0)
+      return ENOENT;
 
-    // Otherwise, create it with a single reference
-    mode = OpenModeToPermission(mode);
-    node = AllocateData(mode);
-    if (NULL == node) return NULL;
+    // Now first find the parent directory to see if we can add it
+    MountNode* parent = NULL;
+    error = FindNode(path.Parent(), S_IFDIR, &parent);
+    if (error)
+      return error;
 
-    if (parent->AddChild(path.Basename(), node) == -1) {
+    // Create it with a single reference
+    node = new MountNodeMem(this);
+    error = node->Init(OpenModeToPermission(mode));
+    if (error) {
+      node->Release();
+      return error;
+    }
+
+    error = parent->AddChild(path.Basename(), node);
+    if (error) {
       // Or if it fails, release it
       node->Release();
-      return NULL;
+      return error;
     }
-    return node;
+
+    *out_node = node;
+    return 0;
   }
 
+  // Directories can only be opened read-only.
+  if (node->IsaDir() && (mode & 3) != O_RDONLY)
+    return EISDIR;
+
   // If we were expected to create it exclusively, fail
-  if (mode & O_EXCL) {
-    errno = EEXIST;
-    return NULL;
-  }
+  if (mode & O_EXCL)
+    return EEXIST;
 
   // Verify we got the requested permissions.
   int req_mode = OpenModeToPermission(mode);
   int obj_mode = node->GetMode() & OpenModeToPermission(O_RDWR);
-  if ((obj_mode & req_mode) != req_mode) {
-    errno = EACCES;
-    return NULL;
-  }
+  if ((obj_mode & req_mode) != req_mode)
+    return EACCES;
 
   // We opened it, so ref count it before passing it back.
   node->Acquire();
-  return node;
+  *out_node = node;
+  return 0;
 }
 
-int MountMem::Mkdir(const Path& path, int mode) {
+Error MountMem::Mkdir(const Path& path, int mode) {
   AutoLock lock(&lock_);
 
   // We expect a Mount "absolute" path
-  if (!path.IsAbsolute()) {
-    errno = ENOENT;
-    return -1;
-  }
+  if (!path.IsAbsolute())
+    return ENOENT;
 
   // The root of the mount is already created by the mount
-  if (path.Size() == 1) {
-    errno = EEXIST;
-    return -1;
-  }
+  if (path.Size() == 1)
+    return EEXIST;
 
-  MountNode* parent = FindNode(path.Parent(), S_IFDIR);
-  MountNode* node;
+  MountNode* parent = NULL;
+  int error = FindNode(path.Parent(), S_IFDIR, &parent);
+  if (error)
+    return error;
 
-  // If we failed to find the parent, the error code is already set.
-  if (NULL == parent) return -1;
+  MountNode* node = NULL;
+  error = parent->FindChild(path.Basename(), &node);
+  if (!error)
+    return EEXIST;
 
-  node = parent->FindChild(path.Basename());
-  if (NULL != node) {
-    errno = EEXIST;
-    return -1;
-  }
-
-  // Otherwise, create a new node and attempt to add it
-  mode = OpenModeToPermission(mode);
+  if (error != ENOENT)
+    return error;
 
   // Allocate a node, with a RefCount of 1.  If added to the parent
   // it will get ref counted again.  In either case, release the
   // recount we have on exit.
-  node = AllocatePath(S_IREAD | S_IWRITE);
-  if (NULL == node) return -1;
-
-  if (parent->AddChild(path.Basename(), node) == -1) {
+  node = new MountNodeDir(this);
+  error = node->Init(S_IREAD | S_IWRITE);
+  if (error) {
     node->Release();
-    return -1;
+    return error;
+  }
+
+  error = parent->AddChild(path.Basename(), node);
+  if (error) {
+    node->Release();
+    return error;
   }
 
   node->Release();
   return 0;
 }
 
-int MountMem::Unlink(const Path& path) {
+Error MountMem::Unlink(const Path& path) {
   return RemoveInternal(path, REMOVE_FILE);
 }
 
-int MountMem::Rmdir(const Path& path) {
+Error MountMem::Rmdir(const Path& path) {
   return RemoveInternal(path, REMOVE_DIR);
 }
 
-int MountMem::Remove(const Path& path) {
+Error MountMem::Remove(const Path& path) {
   return RemoveInternal(path, REMOVE_ALL);
 }
 
-int MountMem::RemoveInternal(const Path& path, int remove_type) {
+Error MountMem::RemoveInternal(const Path& path, int remove_type) {
   AutoLock lock(&lock_);
   bool dir_only = remove_type == REMOVE_DIR;
   bool file_only = remove_type == REMOVE_FILE;
@@ -212,40 +197,33 @@ int MountMem::RemoveInternal(const Path& path, int remove_type) {
 
   if (dir_only) {
     // We expect a Mount "absolute" path
-    if (!path.IsAbsolute()) {
-      errno = ENOENT;
-      return -1;
-    }
+    if (!path.IsAbsolute())
+      return ENOENT;
 
     // The root of the mount is already created by the mount
-    if (path.Size() == 1) {
-      errno = EEXIST;
-      return -1;
-    }
+    if (path.Size() == 1)
+      return EEXIST;
   }
 
-  MountNode* parent = FindNode(path.Parent(), S_IFDIR);
-
-  // If we failed to find the parent, the error code is already set.
-  if (NULL == parent) return -1;
+  MountNode* parent = NULL;
+  int error = FindNode(path.Parent(), S_IFDIR, &parent);
+  if (error)
+    return error;
 
   // Verify we find a child which is a directory.
-  MountNode* child = parent->FindChild(path.Basename());
-  if (NULL == child) {
-    errno = ENOENT;
-    return -1;
-  }
-  if (dir_only && !child->IsaDir()) {
-    errno = ENOTDIR;
-    return -1;
-  }
-  if (file_only && child->IsaDir()) {
-    errno = EISDIR;
-    return -1;
-  }
-  if (remove_dir && child->ChildCount() > 0) {
-    errno = ENOTEMPTY;
-    return -1;
-  }
+  MountNode* child = NULL;
+  error = parent->FindChild(path.Basename(), &child);
+  if (error)
+    return error;
+
+  if (dir_only && !child->IsaDir())
+    return ENOTDIR;
+
+  if (file_only && child->IsaDir())
+    return EISDIR;
+
+  if (remove_dir && child->ChildCount() > 0)
+    return ENOTEMPTY;
+
   return parent->RemoveChild(path.Basename());
 }
