@@ -1223,6 +1223,54 @@ class FileCacheTest : public testing::Test {
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
 };
 
+TEST_F(FileCacheTest, ScanCacheFile) {
+  // Set up files in cache directories.
+  const base::FilePath persistent_directory =
+      cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_PERSISTENT);
+  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
+      persistent_directory.AppendASCII("id_foo.md5foo"), "foo"));
+  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
+      persistent_directory.AppendASCII("id_bar.local"), "bar"));
+
+  const base::FilePath tmp_directory =
+      cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_TMP);
+  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
+      tmp_directory.AppendASCII("id_qux.md5qux"), "qux"));
+  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
+      tmp_directory.AppendASCII("id_quux.local"), "quux"));
+
+  // Remove the existing DB.
+  ASSERT_TRUE(file_util::Delete(
+      cache_->GetCacheDirectoryPath(FileCache::CACHE_TYPE_META),
+      true /* recursive */));
+
+  // Create a new cache and initialize it.
+  cache_.reset(new FileCache(temp_dir_.path(),
+                             base::MessageLoopProxy::current(),
+                             fake_free_disk_space_getter_.get()));
+  bool success = false;
+  cache_->RequestInitialize(
+      google_apis::test_util::CreateCopyResultCallback(&success));
+  message_loop_.RunUntilIdle();
+  ASSERT_TRUE(success);
+
+  // Check contents of the cache.
+  FileCacheEntry cache_entry;
+  EXPECT_TRUE(cache_->GetCacheEntry("id_foo", std::string(), &cache_entry));
+  EXPECT_TRUE(cache_entry.is_present());
+  EXPECT_EQ("md5foo", cache_entry.md5());
+
+  EXPECT_TRUE(cache_->GetCacheEntry("id_bar", std::string(), &cache_entry));
+  EXPECT_TRUE(cache_entry.is_present());
+  EXPECT_TRUE(cache_entry.is_dirty());
+
+  EXPECT_TRUE(cache_->GetCacheEntry("id_qux", std::string(), &cache_entry));
+  EXPECT_EQ("md5qux", cache_entry.md5());
+
+  EXPECT_FALSE(cache_->GetCacheEntry("id_quux", std::string(), &cache_entry));
+
+}
+
 TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
   base::FilePath src_file;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));

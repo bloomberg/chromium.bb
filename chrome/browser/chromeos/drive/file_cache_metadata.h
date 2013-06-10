@@ -33,6 +33,13 @@ class FileCacheMetadata {
   // Database path.
   static const base::FilePath::CharType* kCacheMetadataDBPath;
 
+  // Result of Initialize().
+  enum InitializeResult {
+    INITIALIZE_FAILED,  // Could not open nor create DB.
+    INITIALIZE_OPENED,  // Opened an existing DB.
+    INITIALIZE_CREATED,  // Created a new DB.
+  };
+
   // Object to iterate over entries stored in the cache metadata.
   class Iterator {
    public:
@@ -72,7 +79,7 @@ class FileCacheMetadata {
   ~FileCacheMetadata();
 
   // Initialize the cache metadata store. Returns true on success.
-  bool Initialize(const std::vector<base::FilePath>& cache_paths);
+  InitializeResult Initialize(const base::FilePath& db_directory_path);
   // Adds a new cache entry corresponding to |resource_id| if it doesn't
   // exist, otherwise update the existing entry.
   void AddOrUpdateCacheEntry(const std::string& resource_id,
