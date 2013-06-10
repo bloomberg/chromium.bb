@@ -85,9 +85,6 @@ namespace {
 const int kLeftEdgeSpacing = 3;
 const int kRightEdgeSpacing = 2;
 
-// The buttons to the left of the omnibox are close together.
-const int kButtonSpacing = 0;
-
 // Ash doesn't use a rounded content area and its top edge has an extra shadow.
 const int kContentShadowHeightAsh = 2;
 
@@ -98,39 +95,9 @@ const int kContentShadowHeight = 0;
 // corner of the wrench menu).
 const int kBadgeTopMargin = 2;
 
-// The omnibox border has some additional shadow, so we use less vertical
-// spacing than ToolbarView::kVertSpacing.
-int location_bar_vert_spacing() {
-  static int value = -1;
-  if (value == -1) {
-    switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_DESKTOP:
-        value = ToolbarView::kVertSpacing;
-        break;
-      case ui::LAYOUT_TOUCH:
-        value = 10;
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-  return value;
-}
-
-// The buttons to the left of the omnibox are close together.
-int button_spacing() {
-  static int value = -1;
-  if (value == -1) {
-    switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_DESKTOP:
-        value = kButtonSpacing;
-        break;
-      case ui::LAYOUT_TOUCH:
-        value = kButtonSpacing + 3;
-        break;
-    }
-  }
-  return value;
+int GetButtonSpacing() {
+  return (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) ?
+      ToolbarView::kStandardSpacing : 0;
 }
 
 }  // namespace
@@ -496,12 +463,13 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
 
 gfx::Size ToolbarView::GetPreferredSize() {
   if (is_display_mode_normal()) {
+    int button_spacing = GetButtonSpacing();
     int min_width = kLeftEdgeSpacing +
-        back_->GetPreferredSize().width() + button_spacing() +
-        forward_->GetPreferredSize().width() + button_spacing() +
+        back_->GetPreferredSize().width() + button_spacing +
+        forward_->GetPreferredSize().width() + button_spacing +
         reload_->GetPreferredSize().width() + kStandardSpacing +
         (show_home_button_.GetValue() ?
-            (home_->GetPreferredSize().width() + button_spacing()) : 0) +
+            (home_->GetPreferredSize().width() + button_spacing) : 0) +
         location_bar_->GetPreferredSize().width() +
         browser_actions_->GetPreferredSize().width() +
         app_menu_->GetPreferredSize().width() + kRightEdgeSpacing;
@@ -531,15 +499,12 @@ void ToolbarView::Layout() {
     return;
   }
 
-  // We assume all child elements are the same height.
+  // We assume all child elements except the location bar are the same height.
+  // Set child_y such that buttons appear vertically centered. We put any excess
+  // padding above the buttons.
   int child_height =
       std::min(back_->GetPreferredSize().height(), height());
-
-  // Set child_y such that buttons appear vertically centered. To preseve
-  // the behaviour on non-touch UIs, round-up by taking
-  // ceil((height() - child_height) / 2) + delta
-  // which is equivalent to the below.
-  int child_y = (1 + ((height() - child_height - 1) / 2));
+  int child_y = (height() - child_height + 1) / 2;
 
   // If the window is maximized, we extend the back button to the left so that
   // clicking on the left-most pixel will activate the back button.
@@ -555,15 +520,16 @@ void ToolbarView::Layout() {
   else
     back_->SetBounds(kLeftEdgeSpacing, child_y, back_width, child_height);
 
-  forward_->SetBounds(back_->x() + back_->width() + button_spacing(),
+  int button_spacing = GetButtonSpacing();
+  forward_->SetBounds(back_->x() + back_->width() + button_spacing,
       child_y, forward_->GetPreferredSize().width(), child_height);
 
-  reload_->SetBounds(forward_->x() + forward_->width() + button_spacing(),
+  reload_->SetBounds(forward_->x() + forward_->width() + button_spacing,
       child_y, reload_->GetPreferredSize().width(), child_height);
 
   if (show_home_button_.GetValue()) {
     home_->SetVisible(true);
-    home_->SetBounds(reload_->x() + reload_->width() + button_spacing(),
+    home_->SetBounds(reload_->x() + reload_->width() + button_spacing,
                      child_y, home_->GetPreferredSize().width(), child_height);
   } else {
     home_->SetVisible(false);
@@ -576,10 +542,10 @@ void ToolbarView::Layout() {
   int available_width = std::max(0, width() - kRightEdgeSpacing -
       app_menu_width - browser_actions_width - location_x);
 
-  int location_y = std::min(location_bar_vert_spacing(), height());
-  int location_bar_height = location_bar_->GetPreferredSize().height();
+  int location_height = location_bar_->GetPreferredSize().height();
+  int location_y = (height() - location_height + 1) / 2;
   location_bar_->SetBounds(location_x, location_y, std::max(available_width, 0),
-                           location_bar_height);
+                           location_height);
 
   browser_actions_->SetBounds(location_bar_->x() + location_bar_->width(), 0,
                               browser_actions_width, height());
