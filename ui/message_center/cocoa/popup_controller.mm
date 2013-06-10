@@ -189,15 +189,15 @@ enum {
   bounds_ = newBounds;
   NSRect startBounds = newBounds;
   startBounds.origin.x += startBounds.size.width;
-  startBounds.size.width = 0;
   [[self window] setFrame:startBounds display:NO];
+  [[self window] setAlphaValue:0];
   [self showWindow:nil];
 
-  // Slide-in and fade-in simulatenously.
+  // Slide-in and fade-in simultaneously.
   NSDictionary* animationDict = @{
-    NSViewAnimationTargetKey :   [self window],
+    NSViewAnimationTargetKey : [self window],
     NSViewAnimationEndFrameKey : [NSValue valueWithRect:newBounds],
-    NSViewAnimationEffectKey :   NSViewAnimationFadeInEffect
+    NSViewAnimationEffectKey : NSViewAnimationFadeInEffect
   };
   boundsAnimation_.reset([[NSViewAnimation alloc]
       initWithViewAnimations:[NSArray arrayWithObject:animationDict]]);

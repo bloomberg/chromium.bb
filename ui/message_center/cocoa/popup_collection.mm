@@ -10,9 +10,7 @@
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_style.h"
 
-namespace {
 const float kAnimationDuration = 0.2;
-}  // namespace
 
 @interface MCPopupCollection (Private)
 // Returns the primary screen's visible frame rectangle.
