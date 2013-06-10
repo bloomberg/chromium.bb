@@ -5,7 +5,8 @@
 #ifndef UI_BASE_OZONE_SURFACE_LNUX_FACTORY_OZONE_H_
 #define UI_BASE_OZONE_SURFACE_LNUX_FACTORY_OZONE_H_
 
-#include  "ui/gfx/native_widget_types.h"
+#include "ui/base/ui_export.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 class VSyncProvider;
@@ -19,14 +20,14 @@ class SurfaceFactoryOzone {
   virtual ~SurfaceFactoryOzone();
 
   // Returns the instance
-  static SurfaceFactoryOzone* GetInstance();
+  UI_EXPORT static SurfaceFactoryOzone* GetInstance();
 
   // Returns a display spec as in |CreateDisplayFromSpec| for the default
   // native surface.
   virtual const char* DefaultDisplaySpec();
 
   // Sets the implementation delegate.
-  static void SetInstance(SurfaceFactoryOzone* impl);
+  UI_EXPORT static void SetInstance(SurfaceFactoryOzone* impl);
 
   // TODO(rjkroege): Add a status code if necessary.
   // Configures the display hardware. Must be called from within the GPU

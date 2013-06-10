@@ -105,13 +105,6 @@ bool RootWindowHostOzone::CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
   return false;
 }
 
-bool RootWindowHostOzone::GrabSnapshot(
-    const gfx::Rect& snapshot_bounds,
-    std::vector<unsigned char>* png_representation) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void RootWindowHostOzone::PostNativeEvent(
     const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();

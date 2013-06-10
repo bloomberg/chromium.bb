@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,73 +8,93 @@
 
 namespace ui {
 
+void UpdateDeviceList() { NOTIMPLEMENTED(); }
+
 base::TimeDelta EventTimeFromNative(const base::NativeEvent& native_event) {
-  ui::Event* event = static_cast<ui::Event*>(native_event);
+  const ui::Event* event = static_cast<const ui::Event*>(native_event);
   return event->time_stamp();
 }
 
 int EventFlagsFromNative(const base::NativeEvent& native_event) {
-  ui::Event* event = static_cast<ui::Event*>(native_event);
+  const ui::Event* event = static_cast<const ui::Event*>(native_event);
   return event->flags();
 }
 
 EventType EventTypeFromNative(const base::NativeEvent& native_event) {
-  ui::Event* event = static_cast<ui::Event*>(native_event);
+  const ui::Event* event = static_cast<const ui::Event*>(native_event);
   return event->type();
 }
 
+gfx::Point EventSystemLocationFromNative(
+    const base::NativeEvent& native_event) {
+  const ui::LocatedEvent* e =
+      static_cast<const ui::LocatedEvent*>(native_event);
+  DCHECK(e->IsMouseEvent() || e->IsTouchEvent() || e->IsGestureEvent() ||
+         e->IsScrollEvent());
+  return e->location();
+}
+
 gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
-  ui::LocatedEvent* event = static_cast<ui::LocatedEvent*>(native_event);
-  DCHECK(event->IsMouseEvent() || event->IsTouchEvent() ||
-         event->IsGestureEvent() || event->IsScrollEvent());
-  return event->location();
+  return EventSystemLocationFromNative(native_event);
 }
 
 int GetChangedMouseButtonFlagsFromNative(
     const base::NativeEvent& native_event) {
-  ui::MouseEvent* event = static_cast<ui::MouseEvent*>(native_event);
+  const ui::MouseEvent* event =
+      static_cast<const ui::MouseEvent*>(native_event);
   DCHECK(event->IsMouseEvent());
   return event->changed_button_flags();
 }
 
 KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
-  ui::KeyEvent* event = static_cast<ui::KeyEvent*>(native_event);
+  const ui::KeyEvent* event = static_cast<const ui::KeyEvent*>(native_event);
   DCHECK(event->IsKeyEvent());
   return event->key_code();
 }
 
+bool IsMouseEvent(const base::NativeEvent& native_event) {
+  const ui::Event* e = static_cast<const ui::Event*>(native_event);
+  return e->IsMouseEvent();
+}
+
 gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
-  ui::MouseWheelEvent* event = static_cast<ui::MouseWheelEvent*>(native_event);
+  const ui::MouseWheelEvent* event =
+      static_cast<const ui::MouseWheelEvent*>(native_event);
   DCHECK(event->type() == ET_MOUSEWHEEL);
   return event->offset();
 }
 
 int GetTouchId(const base::NativeEvent& native_event) {
-  ui::TouchEvent* event = static_cast<ui::TouchEvent*>(native_event);
+  const ui::TouchEvent* event =
+      static_cast<const ui::TouchEvent*>(native_event);
   DCHECK(event->IsTouchEvent());
   return event->touch_id();
 }
 
 float GetTouchRadiusX(const base::NativeEvent& native_event) {
-  ui::TouchEvent* event = static_cast<ui::TouchEvent*>(native_event);
+  const ui::TouchEvent* event =
+      static_cast<const ui::TouchEvent*>(native_event);
   DCHECK(event->IsTouchEvent());
   return event->radius_x();
 }
 
 float GetTouchRadiusY(const base::NativeEvent& native_event) {
-  ui::TouchEvent* event = static_cast<ui::TouchEvent*>(native_event);
+  const ui::TouchEvent* event =
+      static_cast<const ui::TouchEvent*>(native_event);
   DCHECK(event->IsTouchEvent());
   return event->radius_y();
 }
 
 float GetTouchAngle(const base::NativeEvent& native_event) {
-  ui::TouchEvent* event = static_cast<ui::TouchEvent*>(native_event);
+  const ui::TouchEvent* event =
+      static_cast<const ui::TouchEvent*>(native_event);
   DCHECK(event->IsTouchEvent());
   return event->rotation_angle();
 }
 
 float GetTouchForce(const base::NativeEvent& native_event) {
-  ui::TouchEvent* event = static_cast<ui::TouchEvent*>(native_event);
+  const ui::TouchEvent* event =
+      static_cast<const ui::TouchEvent*>(native_event);
   DCHECK(event->IsTouchEvent());
   return event->force();
 }
@@ -97,6 +117,38 @@ bool GetFlingData(const base::NativeEvent& native_event,
                   bool* is_cancel) {
   NOTIMPLEMENTED();
   return false;
+}
+
+bool GetGestureTimes(const base::NativeEvent& native_event,
+                     double* start_time,
+                     double* end_time) {
+  *start_time = 0;
+  *end_time = 0;
+  return false;
+}
+
+void SetNaturalScroll(bool /* enabled */) { NOTIMPLEMENTED(); }
+
+bool IsNaturalScrollEnabled() { return false; }
+
+bool IsTouchpadEvent(const base::NativeEvent& event) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool IsNoopEvent(const base::NativeEvent& event) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+base::NativeEvent CreateNoopEvent() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+int GetModifiersFromKeyState() {
+  NOTIMPLEMENTED();
+  return 0;
 }
 
 }  // namespace ui
