@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/safe_numerics.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "base/win/scoped_co_mem.h"

@@ -16,7 +16,7 @@
 #include <string>
 
 #include "base/platform_file.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/media_galleries/win/mtp_device_object_entry.h"
 

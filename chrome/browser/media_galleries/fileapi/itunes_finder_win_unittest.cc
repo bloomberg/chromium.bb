@@ -12,7 +12,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_finder.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_finder_win.h"

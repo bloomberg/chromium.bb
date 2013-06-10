@@ -9,7 +9,7 @@
 #include <map>
 
 #include "base/lazy_instance.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/win/scoped_comptr.h"
 

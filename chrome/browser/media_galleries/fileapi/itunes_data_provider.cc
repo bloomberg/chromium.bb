@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_library_parser.h"
 
