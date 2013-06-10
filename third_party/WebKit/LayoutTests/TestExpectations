@@ -1807,3 +1807,5 @@ crbug.com/247984 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-composite-image.h
 crbug.com/247984 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ Timeout ImageOnlyFailure ]
 webkit.org/b/60109 [ Release ] inspector/elements/edit-dom-actions.html [ Slow ]
 crbug.com/248062 css3/compositing/effect-background-blend-mode-stacking.html [ ImageOnlyFailure Pass ]
+crbug.com/248063 [ Debug ] plugins/plugin-clip-subframe.html [ Pass Failure ]
+crbug.com/248065 [ Linux ] svg/text/foreignObject-text-clipping-bug.xml [ Pass ImageOnlyFailure ]
