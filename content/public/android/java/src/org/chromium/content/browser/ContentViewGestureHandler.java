@@ -208,15 +208,15 @@ class ContentViewGestureHandler implements LongPressDelegate {
                 case PENDING_ACK_ORIGINAL_EVENT:
                     // The ACK to the original event is received after timeout.
                     // Inject a touchcancel event.
+                    mPendingAckState = PENDING_ACK_CANCEL_EVENT;
                     mMotionEventDelegate.sendTouchEvent(mEventTime + TOUCH_EVENT_TIMEOUT,
                             TouchPoint.TOUCH_EVENT_TYPE_CANCEL, mTouchPoints);
                     mTouchPoints = null;
-                    mPendingAckState = PENDING_ACK_CANCEL_EVENT;
                     return true;
                 case PENDING_ACK_CANCEL_EVENT:
                     // The ACK to the injected touchcancel event is received.
-                    drainAllPendingEventsUntilNextDown();
                     mPendingAckState = PENDING_ACK_NONE;
+                    drainAllPendingEventsUntilNextDown();
                     return true;
                 default:
                     assert false : "Never reached";
