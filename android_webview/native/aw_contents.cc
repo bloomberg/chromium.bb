@@ -26,7 +26,7 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/pickle.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "components/autofill/browser/autofill_external_delegate.h"
 #include "components/autofill/browser/autofill_manager.h"

@@ -8,7 +8,7 @@
 #include "android_webview/browser/aw_http_auth_handler_base.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 
 namespace net {

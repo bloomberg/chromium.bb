@@ -5,7 +5,7 @@
 #ifndef ANDROID_WEBVIEW_COMMON_AW_HIT_TEST_DATA_H_
 #define ANDROID_WEBVIEW_COMMON_AW_HIT_TEST_DATA_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "googleurl/src/gurl.h"
 
 namespace android_webview {
