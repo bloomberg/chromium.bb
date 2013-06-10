@@ -38,15 +38,6 @@ void PrerenderWebMediaPlayer::load(const WebKit::WebURL& url,
   WebMediaPlayerImpl::load(url, cors_mode);
 }
 
-void PrerenderWebMediaPlayer::cancelLoad() {
-  if (is_prerendering_) {
-    url_to_load_.reset(NULL);
-    cors_mode_ = CORSModeUnspecified;
-    return;
-  }
-  WebMediaPlayerImpl::cancelLoad();
-}
-
 bool PrerenderWebMediaPlayer::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(PrerenderWebMediaPlayer, message)
     IPC_MESSAGE_HANDLER(PrerenderMsg_SetIsPrerendering, OnSetIsPrerendering)

@@ -28,7 +28,6 @@ class PrerenderWebMediaPlayer
 
   // WebMediaPlayerImpl methods:
   virtual void load(const WebKit::WebURL& url, CORSMode cors_mode) OVERRIDE;
-  virtual void cancelLoad() OVERRIDE;
 
  private:
   // RenderViewObserver method:
