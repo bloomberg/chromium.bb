@@ -170,11 +170,11 @@ TEST_F(LocalSyncOperationResolverTest, ResolveForAddDirectoryInConflict) {
             Resolver::ResolveForAddDirectoryInConflict());
 }
 
-TEST_F(LocalSyncOperationResolverTest, ResolveForDeleteFile) {
+TEST_F(LocalSyncOperationResolverTest, ResolveForDelete) {
   const LocalSyncOperationType kExpectedTypes[] = {
-    LOCAL_SYNC_OPERATION_NONE,
-    LOCAL_SYNC_OPERATION_DELETE_FILE,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
+    LOCAL_SYNC_OPERATION_DELETE,
+    LOCAL_SYNC_OPERATION_DELETE,
+    LOCAL_SYNC_OPERATION_DELETE,
 
     LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
     LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
@@ -188,14 +188,14 @@ TEST_F(LocalSyncOperationResolverTest, ResolveForDeleteFile) {
   ASSERT_EQ(expected_types.size(), inputs.size());
   for (ExpectedTypes::size_type i = 0; i < expected_types.size(); ++i) {
     EXPECT_EQ(expected_types[i],
-              Resolver::ResolveForDeleteFile(
+              Resolver::ResolveForDelete(
                   inputs[i]->remote_file_change.get(),
                   inputs[i]->remote_file_type_in_metadata))
         << DebugString(inputs, i);
   }
 }
 
-TEST_F(LocalSyncOperationResolverTest, ResolveForDeleteFileInConflict) {
+TEST_F(LocalSyncOperationResolverTest, ResolveForDeleteInConflict) {
   const LocalSyncOperationType kExpectedTypes[] = {
     LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
     LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
@@ -213,56 +213,7 @@ TEST_F(LocalSyncOperationResolverTest, ResolveForDeleteFileInConflict) {
   ASSERT_EQ(expected_types.size(), inputs.size());
   for (ExpectedTypes::size_type i = 0; i < expected_types.size(); ++i) {
     EXPECT_EQ(expected_types[i],
-              Resolver::ResolveForDeleteFileInConflict(
-                  inputs[i]->remote_file_change.get()))
-        << DebugString(inputs, i);
-  }
-}
-
-TEST_F(LocalSyncOperationResolverTest, ResolveForDeleteDirectory) {
-  const LocalSyncOperationType kExpectedTypes[] = {
-    LOCAL_SYNC_OPERATION_NONE,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
-    LOCAL_SYNC_OPERATION_DELETE_DIRECTORY,
-
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
-    LOCAL_SYNC_OPERATION_DELETE_METADATA,
-    LOCAL_SYNC_OPERATION_DELETE_METADATA,
-  };
-
-  ExpectedTypes expected_types = CreateList(kExpectedTypes);
-  ScopedVector<Input> inputs = CreateInput();
-
-  ASSERT_EQ(expected_types.size(), inputs.size());
-  for (ExpectedTypes::size_type i = 0; i < expected_types.size(); ++i) {
-    EXPECT_EQ(expected_types[i],
-              Resolver::ResolveForDeleteDirectory(
-                  inputs[i]->remote_file_change.get(),
-                  inputs[i]->remote_file_type_in_metadata))
-        << DebugString(inputs, i);
-  }
-}
-
-TEST_F(LocalSyncOperationResolverTest, ResolveForDeleteDirectoryInConflict) {
-  const LocalSyncOperationType kExpectedTypes[] = {
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
-
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
-    LOCAL_SYNC_OPERATION_DELETE_METADATA,
-    LOCAL_SYNC_OPERATION_DELETE_METADATA,
-  };
-
-  ExpectedTypes expected_types = CreateList(kExpectedTypes);
-  ScopedVector<Input> inputs = CreateInput();
-
-  ASSERT_EQ(expected_types.size(), inputs.size());
-  for (ExpectedTypes::size_type i = 0; i < expected_types.size(); ++i) {
-    EXPECT_EQ(expected_types[i],
-              Resolver::ResolveForDeleteDirectoryInConflict(
+              Resolver::ResolveForDeleteInConflict(
                   inputs[i]->remote_file_change.get()))
         << DebugString(inputs, i);
   }

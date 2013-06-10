@@ -90,11 +90,8 @@ void LocalChangeProcessorDelegate::DidGetOriginRoot(
     case LOCAL_SYNC_OPERATION_UPDATE_FILE:
       UploadExistingFile(callback);
       return;
-    case LOCAL_SYNC_OPERATION_DELETE_FILE:
-      DeleteFile(callback);
-      return;
-    case LOCAL_SYNC_OPERATION_DELETE_DIRECTORY:
-      DeleteDirectory(callback);
+    case LOCAL_SYNC_OPERATION_DELETE:
+      Delete(callback);
       return;
     case LOCAL_SYNC_OPERATION_NONE:
       callback.Run(SYNC_STATUS_OK);
@@ -249,30 +246,17 @@ void LocalChangeProcessorDelegate::DidUploadExistingFile(
   }
 }
 
-void LocalChangeProcessorDelegate::DeleteFile(
+void LocalChangeProcessorDelegate::Delete(
     const SyncStatusCallback& callback) {
   DCHECK(has_drive_metadata_);
   api_util()->DeleteFile(
       drive_metadata_.resource_id(),
       drive_metadata_.md5_checksum(),
-      base::Bind(&LocalChangeProcessorDelegate::DidDeleteFile,
+      base::Bind(&LocalChangeProcessorDelegate::DidDelete,
                  weak_factory_.GetWeakPtr(), callback));
 }
 
-void LocalChangeProcessorDelegate::DeleteDirectory(
-    const SyncStatusCallback& callback) {
-  DCHECK(IsSyncFSDirectoryOperationEnabled());
-  DCHECK(has_drive_metadata_);
-  // This does not handle recursive directory deletion
-  // (which should not happen other than after a restart).
-  api_util()->DeleteFile(
-      drive_metadata_.resource_id(),
-      std::string(),  // empty md5
-      base::Bind(&LocalChangeProcessorDelegate::DidDeleteFile,
-                 weak_factory_.GetWeakPtr(), callback));
-}
-
-void LocalChangeProcessorDelegate::DidDeleteFile(
+void LocalChangeProcessorDelegate::DidDelete(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error) {
   DCHECK(has_drive_metadata_);

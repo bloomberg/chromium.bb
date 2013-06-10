@@ -18,8 +18,7 @@ enum LocalSyncOperationType {
   LOCAL_SYNC_OPERATION_ADD_FILE,
   LOCAL_SYNC_OPERATION_ADD_DIRECTORY,
   LOCAL_SYNC_OPERATION_UPDATE_FILE,
-  LOCAL_SYNC_OPERATION_DELETE_FILE,
-  LOCAL_SYNC_OPERATION_DELETE_DIRECTORY,
+  LOCAL_SYNC_OPERATION_DELETE,
   LOCAL_SYNC_OPERATION_NONE,
   LOCAL_SYNC_OPERATION_CONFLICT,
   LOCAL_SYNC_OPERATION_RESOLVE_TO_LOCAL,
@@ -47,15 +46,10 @@ class LocalSyncOperationResolver {
       const FileChange* remote_file_change,
       SyncFileType remote_file_type_in_metadata);
   static LocalSyncOperationType ResolveForAddDirectoryInConflict();
-  static LocalSyncOperationType ResolveForDeleteFile(
+  static LocalSyncOperationType ResolveForDelete(
       const FileChange* remote_file_change,
       SyncFileType remote_file_type_in_metadata);
-  static LocalSyncOperationType ResolveForDeleteFileInConflict(
-      const FileChange* remote_file_change);
-  static LocalSyncOperationType ResolveForDeleteDirectory(
-      const FileChange* remote_file_change,
-      SyncFileType remote_file_type_in_metadata);
-  static LocalSyncOperationType ResolveForDeleteDirectoryInConflict(
+  static LocalSyncOperationType ResolveForDeleteInConflict(
       const FileChange* remote_file_change);
 
   FRIEND_TEST_ALL_PREFIXES(LocalSyncOperationResolverTest,
@@ -67,13 +61,9 @@ class LocalSyncOperationResolver {
   FRIEND_TEST_ALL_PREFIXES(LocalSyncOperationResolverTest,
                            ResolveForAddDirectoryInConflict);
   FRIEND_TEST_ALL_PREFIXES(LocalSyncOperationResolverTest,
-                           ResolveForDeleteFile);
+                           ResolveForDelete);
   FRIEND_TEST_ALL_PREFIXES(LocalSyncOperationResolverTest,
-                           ResolveForDeleteFileInConflict);
-  FRIEND_TEST_ALL_PREFIXES(LocalSyncOperationResolverTest,
-                           ResolveForDeleteDirectory);
-  FRIEND_TEST_ALL_PREFIXES(LocalSyncOperationResolverTest,
-                           ResolveForDeleteDirectoryInConflict);
+                           ResolveForDeleteInConflict);
 };
 
 }  // namespace sync_file_system

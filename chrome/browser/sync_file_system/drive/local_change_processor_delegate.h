@@ -60,10 +60,9 @@ class LocalChangeProcessorDelegate {
       google_apis::GDataErrorCode error,
       const std::string& resource_id,
       const std::string& md5);
-  void DeleteFile(const SyncStatusCallback& callback);
-  void DeleteDirectory(const SyncStatusCallback& callback);
-  void DidDeleteFile(const SyncStatusCallback& callback,
-                     google_apis::GDataErrorCode error);
+  void Delete(const SyncStatusCallback& callback);
+  void DidDelete(const SyncStatusCallback& callback,
+                 google_apis::GDataErrorCode error);
   void ResolveToLocal(const SyncStatusCallback& callback);
   void DidDeleteFileToResolveToLocal(
       const SyncStatusCallback& callback,

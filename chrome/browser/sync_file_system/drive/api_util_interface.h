@@ -167,6 +167,7 @@ class APIUtilInterface {
   // Deletes the file identified by |resource_id|.
   // A directory is considered a file and will cause a recursive delete if
   // given as the |resource_id|.
+  // TODO(tzik): Rename this function to DeleteResource.
   //
   // |remote_file_md5| represents the expected hash value of the file to be
   // deleted from Drive. If |remote_file_md5| is empty, then it's implied that
