@@ -4,6 +4,7 @@
 
 #import "ui/message_center/cocoa/settings_controller.h"
 
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
@@ -18,6 +19,77 @@
 const int kBackButtonSize = 32;
 const int kMarginWidth = 16;
 const int kEntryHeight = 32;
+const int kIconSize = 16;
+const int kIconTextPadding = 2;
+
+@interface MCSettingsButtonCell : NSButtonCell {
+  // A checkbox's regular image is the checkmark image. This additional image
+  // is used for the favicon or app icon shown next to the checkmark.
+  scoped_nsobject<NSImage> extraImage_;
+}
+- (void)setExtraImage:(NSImage*)extraImage;
+@end
+
+@implementation MCSettingsButtonCell
+- (void)setExtraImage:(NSImage*)extraImage {
+  extraImage_.reset([extraImage retain]);
+}
+
+- (NSRect)drawTitle:(NSAttributedString*)title
+          withFrame:(NSRect)frame
+             inView:(NSView*)controlView {
+  // drawTitle:withFrame:inView: draws the checkmark image. Draw the extra
+  // image as part of the checkbox's text.
+  if (extraImage_) {
+    NSRect imageRect = frame;
+    imageRect.size = NSMakeSize(kIconSize, kIconSize);
+    [extraImage_ drawInRect:imageRect
+                   fromRect:NSZeroRect
+                  operation:NSCompositeSourceOver
+                   fraction:1.0
+             respectFlipped:YES
+                      hints:nil];
+
+    CGFloat inset = kIconSize + kIconTextPadding;
+    frame.origin.x += inset;
+    frame.size.width -= inset;
+  }
+  return [super drawTitle:title withFrame:frame inView:controlView];
+}
+
+- (NSUInteger)hitTestForEvent:(NSEvent*)event
+                       inRect:(NSRect)cellFrame
+                       ofView:(NSView*)controlView {
+  NSUInteger result =
+      [super hitTestForEvent:event inRect:cellFrame ofView:controlView];
+  if (result == NSCellHitNone && extraImage_) {
+    // The default button cell does hit testing on the attributed string. Since
+    // this cell draws an icon in front of the string, tweak the hit testing
+    // result.
+    NSPoint point =
+        [controlView convertPoint:[event locationInWindow] fromView:nil];
+
+    NSRect rect = [self titleRectForBounds:[controlView bounds]];
+    rect.size = [[self attributedTitle] size];
+    rect.size.width += kIconSize + kIconTextPadding;
+
+    if (NSPointInRect(point, rect))
+      result = NSCellHitContentArea | NSCellHitTrackableArea;
+  }
+  return result;
+}
+@end
+
+@interface MCSettingsController (Private)
+// Sets the icon on the checkbox corresponding to |notifiers_[index]|.
+- (void)setIcon:(NSImage*)icon forNotifierIndex:(size_t)index;
+
+- (void)setIcon:(NSImage*)icon forAppId:(const std::string&)id;
+- (void)setIcon:(NSImage*)icon forURL:(const GURL&)url;
+
+// Returns the NSButton corresponding to the checkbox for |notifiers_[index]|.
+- (NSButton*)buttonForNotifierAtIndex:(size_t)index;
+@end
 
 namespace message_center {
 
@@ -25,12 +97,12 @@ NotifierSettingsDelegateMac::~NotifierSettingsDelegateMac() {}
 
 void NotifierSettingsDelegateMac::UpdateIconImage(const std::string& id,
                                                   const gfx::Image& icon) {
-  // TODO(thakis): Implement.
+  [cocoa_controller() setIcon:icon.AsNSImage() forAppId:id];
 }
 
 void NotifierSettingsDelegateMac::UpdateFavicon(const GURL& url,
                                                 const gfx::Image& icon) {
-  // TODO(thakis): Implement.
+  [cocoa_controller() setIcon:icon.AsNSImage() forURL:url];
 }
 
 NotifierSettingsDelegate* ShowSettings(NotifierSettingsProvider* provider,
@@ -156,8 +228,11 @@ NotifierSettingsDelegate* ShowSettings(NotifierSettingsProvider* provider,
     NSRect frame = NSMakeRect(
         kMarginWidth, y, NSWidth(documentFrame) - kMarginWidth, kEntryHeight);
     scoped_nsobject<NSButton> button([[NSButton alloc] initWithFrame:frame]);
+    scoped_nsobject<MCSettingsButtonCell> cell(
+        [[MCSettingsButtonCell alloc]
+            initTextCell:base::SysUTF16ToNSString(notifier->name)]);
+    [button setCell:cell];
     [button setButtonType:NSSwitchButton];
-    [button setTitle:base::SysUTF16ToNSString(notifier->name)];
 
     [button setState:notifier->enabled ? NSOnState : NSOffState];
     [button setTag:i];
@@ -230,6 +305,40 @@ NotifierSettingsDelegate* ShowSettings(NotifierSettingsProvider* provider,
 
 - (NSScrollView*)scrollView {
   return scrollView_;
+}
+
+// Private API /////////////////////////////////////////////////////////////////
+
+- (void)setIcon:(NSImage*)icon forNotifierIndex:(size_t)index {
+  NSButton* button = [self buttonForNotifierAtIndex:index];
+  [[button cell] setExtraImage:icon];
+  [button setNeedsDisplay:YES];
+}
+
+- (void)setIcon:(NSImage*)icon forAppId:(const std::string&)id {
+  for (size_t i = 0; i < notifiers_.size(); ++i) {
+    if (notifiers_[i]->id == id) {
+      [self setIcon:icon forNotifierIndex:i];
+      return;
+    }
+  }
+}
+
+- (void)setIcon:(NSImage*)icon forURL:(const GURL&)url {
+  for (size_t i = 0; i < notifiers_.size(); ++i) {
+    if (notifiers_[i]->url == url) {
+      [self setIcon:icon forNotifierIndex:i];
+      return;
+    }
+  }
+}
+
+- (NSButton*)buttonForNotifierAtIndex:(size_t)index {
+  NSArray* subviews = [[scrollView_ documentView] subviews];
+  // The checkboxes are in bottom-top order, the checkbox for notifiers_[0] is
+  // last.
+  NSView* view = [subviews objectAtIndex:notifiers_.size() - 1 - index];
+  return base::mac::ObjCCastStrict<NSButton>(view);
 }
 
 @end
