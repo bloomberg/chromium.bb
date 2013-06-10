@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_constants.h"

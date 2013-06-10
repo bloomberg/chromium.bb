@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/process_util.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class PrefRegistrySimple;

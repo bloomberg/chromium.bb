@@ -4,7 +4,7 @@
 
 #include "chrome/browser/task_manager/guest_resource_provider.h"
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/renderer_resource.h"

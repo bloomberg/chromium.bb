@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"

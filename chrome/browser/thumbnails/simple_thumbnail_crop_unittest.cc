@@ -5,7 +5,7 @@
 #include "chrome/browser/thumbnails/simple_thumbnail_crop.h"
 
 #include "base/basictypes.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/thumbnails/thumbnailing_context.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/notification_service.h"

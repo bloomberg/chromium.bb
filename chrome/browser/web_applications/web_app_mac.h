@@ -7,7 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/shell_integration.h"
 
 #ifdef __OBJC__

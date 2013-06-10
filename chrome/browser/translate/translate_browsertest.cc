@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_TRANSLATE_TRANSLATE_BROWSERTEST_H_
 
 #include "base/files/file_path.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"

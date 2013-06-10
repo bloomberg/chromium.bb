@@ -14,7 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/process_util.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/timer.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/task_manager/resource_provider.h"

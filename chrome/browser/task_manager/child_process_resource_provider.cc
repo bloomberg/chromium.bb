@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/i18n/rtl.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/chrome_notification_types.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/task_manager/task_manager.h"
 
 #include "base/files/file_path.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"

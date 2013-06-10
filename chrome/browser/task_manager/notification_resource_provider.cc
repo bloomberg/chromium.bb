@@ -4,7 +4,7 @@
 
 #include "chrome/browser/task_manager/notification_resource_provider.h"
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/notifications/balloon_host.h"
