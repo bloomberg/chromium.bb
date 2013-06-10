@@ -1344,6 +1344,9 @@ def CMDupload(parser, args):
   """upload the current changelist to codereview"""
   parser.add_option('--bypass-hooks', action='store_true', dest='bypass_hooks',
                     help='bypass upload presubmit hook')
+  parser.add_option('--bypass-watchlists', action='store_true',
+                    dest='bypass_watchlists',
+                    help='bypass watchlists auto CC-ing reviewers')
   parser.add_option('-f', action='store_true', dest='force',
                     help="force yes to questions (don't prompt)")
   parser.add_option('-m', dest='message', help='message for patchset')
@@ -1391,7 +1394,8 @@ def CMDupload(parser, args):
   change = cl.GetChange(base_branch, None)
   watchlist = watchlists.Watchlists(change.RepositoryRoot())
   files = [f.LocalPath() for f in change.AffectedFiles()]
-  cl.SetWatchers(watchlist.GetWatchersForPaths(files))
+  if not options.bypass_watchlists:
+    cl.SetWatchers(watchlist.GetWatchersForPaths(files))
 
   if not options.bypass_hooks:
     hook_results = cl.RunHook(committing=False,
