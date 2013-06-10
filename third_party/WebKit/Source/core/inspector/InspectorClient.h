@@ -58,13 +58,8 @@ public:
 
     virtual bool overridesShowPaintRects() { return false; }
     virtual void setShowPaintRects(bool) { }
-
     virtual void setShowDebugBorders(bool) { }
-
-    virtual bool canShowFPSCounter() { return false; }
     virtual void setShowFPSCounter(bool) { }
-
-    virtual bool canContinuouslyPaint() { return false; }
     virtual void setContinuousPaintingEnabled(bool) { }
 
     virtual void getAllocatedObjects(HashSet<const void*>&) { }

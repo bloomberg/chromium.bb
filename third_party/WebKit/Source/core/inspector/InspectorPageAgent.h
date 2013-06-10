@@ -105,9 +105,7 @@ public:
     virtual void setDeviceMetricsOverride(ErrorString*, int width, int height, double fontScaleFactor, bool fitWindow);
     virtual void setShowPaintRects(ErrorString*, bool show);
     virtual void setShowDebugBorders(ErrorString*, bool show);
-    virtual void canShowFPSCounter(ErrorString*, bool*);
     virtual void setShowFPSCounter(ErrorString*, bool show);
-    virtual void canContinuouslyPaint(ErrorString*, bool*);
     virtual void setContinuousPaintingEnabled(ErrorString*, bool enabled);
     virtual void getScriptExecutionStatus(ErrorString*, PageCommandHandler::Result::Enum*);
     virtual void setScriptExecutionDisabled(ErrorString*, bool);
@@ -117,6 +115,7 @@ public:
     virtual void clearDeviceOrientationOverride(ErrorString*);
     virtual void setTouchEmulationEnabled(ErrorString*, bool);
     virtual void setEmulatedMedia(ErrorString*, const String&);
+    virtual void setForceCompositingMode(ErrorString*, bool force);
     virtual void getCompositingBordersVisible(ErrorString*, bool* out_param);
     virtual void setCompositingBordersVisible(ErrorString*, bool);
     virtual void captureScreenshot(ErrorString*, String* data);
@@ -202,6 +201,7 @@ private:
     bool m_isFirstLayoutAfterOnLoad;
     bool m_geolocationOverridden;
     bool m_ignoreScriptsEnabledNotification;
+    bool m_didForceCompositingMode;
     RefPtr<GeolocationPosition> m_geolocationPosition;
     RefPtr<GeolocationPosition> m_platformGeolocationPosition;
     RefPtr<DeviceOrientationData> m_deviceOrientation;

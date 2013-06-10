@@ -123,23 +123,9 @@ void InspectorClientImpl::setShowDebugBorders(bool show)
     m_inspectedWebView->setShowDebugBorders(show);
 }
 
-bool InspectorClientImpl::canShowFPSCounter()
-{
-    if (m_inspectedWebView->page())
-        return m_inspectedWebView->page()->settings()->forceCompositingMode();
-    return false;
-}
-
 void InspectorClientImpl::setShowFPSCounter(bool show)
 {
     m_inspectedWebView->setShowFPSCounter(show);
-}
-
-bool InspectorClientImpl::canContinuouslyPaint()
-{
-    if (m_inspectedWebView->page())
-        return m_inspectedWebView->page()->settings()->forceCompositingMode();
-    return false;
 }
 
 void InspectorClientImpl::setContinuousPaintingEnabled(bool enabled)

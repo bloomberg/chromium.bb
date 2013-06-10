@@ -100,6 +100,7 @@ static const char touchEventEmulationEnabled[] = "touchEventEmulationEnabled";
 static const char pageAgentEmulatedMedia[] = "pageAgentEmulatedMedia";
 static const char showSizeOnResize[] = "showSizeOnResize";
 static const char showGridOnResize[] = "showGridOnResize";
+static const char forceCompositingMode[] = "forceCompositingMode";
 }
 
 static bool decodeBuffer(const char* buffer, unsigned size, const String& textEncodingName, String* result)
@@ -336,6 +337,7 @@ InspectorPageAgent::InspectorPageAgent(InstrumentingAgents* instrumentingAgents,
     , m_isFirstLayoutAfterOnLoad(false)
     , m_geolocationOverridden(false)
     , m_ignoreScriptsEnabledNotification(false)
+    , m_didForceCompositingMode(false)
 {
 }
 
@@ -359,6 +361,8 @@ void InspectorPageAgent::restore()
         enable(&error);
         bool scriptExecutionDisabled = m_state->getBoolean(PageAgentState::pageAgentScriptExecutionDisabled);
         setScriptExecutionDisabled(0, scriptExecutionDisabled);
+        if (m_state->getBoolean(PageAgentState::forceCompositingMode))
+            setForceCompositingMode(0, true);
         bool showPaintRects = m_state->getBoolean(PageAgentState::pageAgentShowPaintRects);
         setShowPaintRects(0, showPaintRects);
         bool showDebugBorders = m_state->getBoolean(PageAgentState::pageAgentShowDebugBorders);
@@ -406,6 +410,8 @@ void InspectorPageAgent::disable(ErrorString*)
     setEmulatedMedia(0, "");
     setContinuousPaintingEnabled(0, false);
     setShowViewportSizeOnResize(0, false, 0);
+    if (m_didForceCompositingMode)
+        setForceCompositingMode(0, false);
 
     if (!deviceMetricsChanged(0, 0, 1, false))
         return;
@@ -730,11 +736,6 @@ void InspectorPageAgent::setShowDebugBorders(ErrorString*, bool show)
         mainFrame()->view()->invalidate();
 }
 
-void InspectorPageAgent::canShowFPSCounter(ErrorString*, bool* outParam)
-{
-    *outParam = m_client->canShowFPSCounter();
-}
-
 void InspectorPageAgent::setShowFPSCounter(ErrorString*, bool show)
 {
     m_state->setBoolean(PageAgentState::pageAgentShowFPSCounter, show);
@@ -742,11 +743,6 @@ void InspectorPageAgent::setShowFPSCounter(ErrorString*, bool show)
 
     if (mainFrame() && mainFrame()->view())
         mainFrame()->view()->invalidate();
-}
-
-void InspectorPageAgent::canContinuouslyPaint(ErrorString*, bool* outParam)
-{
-    *outParam = m_client->canContinuouslyPaint();
 }
 
 void InspectorPageAgent::setContinuousPaintingEnabled(ErrorString*, bool enabled)
@@ -825,6 +821,8 @@ void InspectorPageAgent::domContentLoadedEventFired(Frame* frame)
 
     m_isFirstLayoutAfterOnLoad = true;
     m_frontend->domContentEventFired(currentTime());
+    if (m_state->getBoolean(PageAgentState::forceCompositingMode))
+        setForceCompositingMode(0, true);
 }
 
 void InspectorPageAgent::loadEventFired(Frame*)
@@ -1195,11 +1193,10 @@ DeviceOrientationData* InspectorPageAgent::overrideDeviceOrientation(DeviceOrien
     return deviceOrientation;
 }
 
-void InspectorPageAgent::setTouchEmulationEnabled(ErrorString* error, bool enabled)
+void InspectorPageAgent::setTouchEmulationEnabled(ErrorString*, bool enabled)
 {
     if (m_state->getBoolean(PageAgentState::touchEventEmulationEnabled) == enabled)
         return;
-    UNUSED_PARAM(error);
     updateTouchEventEmulationInPage(enabled);
 }
 
@@ -1226,22 +1223,34 @@ void InspectorPageAgent::applyEmulatedMedia(String* media)
         *media = emulatedMedia;
 }
 
+void InspectorPageAgent::setForceCompositingMode(ErrorString* errorString, bool force)
+{
+    Settings* settings = m_page->settings();
+    if (force && !settings->acceleratedCompositingEnabled()) {
+        if (errorString)
+            *errorString = "Compositing mode is not supported";
+        return;
+    }
+    m_state->setBoolean(PageAgentState::forceCompositingMode, force);
+    if (settings->forceCompositingMode() == force)
+        return;
+    m_didForceCompositingMode = force;
+    settings->setForceCompositingMode(force);
+    Frame* mainFrame = m_page->mainFrame();
+    if (!mainFrame)
+        return;
+    mainFrame->view()->updateCompositingLayersAfterStyleChange();
+}
+
 void InspectorPageAgent::getCompositingBordersVisible(ErrorString* error, bool* outParam)
 {
     Settings* settings = m_page->settings();
-    if (!settings) {
-        *error = "Internal error: unable to read settings";
-        return;
-    }
-
     *outParam = settings->showDebugBorders() || settings->showRepaintCounter();
 }
 
 void InspectorPageAgent::setCompositingBordersVisible(ErrorString*, bool visible)
 {
     Settings* settings = m_page->settings();
-    if (!settings)
-        return;
 
     settings->setShowDebugBorders(visible);
     settings->setShowRepaintCounter(visible);
