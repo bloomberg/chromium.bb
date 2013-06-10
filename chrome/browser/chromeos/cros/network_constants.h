@@ -91,31 +91,6 @@ enum PropertyIndex {
   PROPERTY_INDEX_OFFLINE_MODE,
   PROPERTY_INDEX_OLP,
   PROPERTY_INDEX_OLP_URL,
-  PROPERTY_INDEX_ONC_CERTIFICATE_PATTERN_ENROLLMENT_URI,  // For parsing ONC
-  PROPERTY_INDEX_ONC_CERTIFICATE_PATTERN_ISSUER,  // For parsing ONC
-  PROPERTY_INDEX_ONC_CERTIFICATE_PATTERN_ISSUER_CA_REF,  // For parsing ONC
-  PROPERTY_INDEX_ONC_CERTIFICATE_PATTERN_SUBJECT,  // For parsing ONC
-  PROPERTY_INDEX_ONC_CLIENT_CERT_PATTERN,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_CLIENT_CERT_REF,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_CLIENT_CERT_TYPE,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_ETHERNET,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_IPSEC,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_L2TP,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_OPENVPN,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_PROXY_EXCLUDE_DOMAINS,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_PROXY_FTP,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_PROXY_HOST,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_PROXY_HTTP,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_PROXY_HTTPS,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_PROXY_MANUAL,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_PROXY_PAC,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_PROXY_PORT,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_PROXY_SETTINGS,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_PROXY_SOCKS,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_PROXY_TYPE,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_REMOVE,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_VPN,  // Used internally for ONC parsing
-  PROPERTY_INDEX_ONC_WIFI,  // Used internally for ONC parsing
   PROPERTY_INDEX_OPEN_VPN_AUTH,
   PROPERTY_INDEX_OPEN_VPN_AUTHNOCACHE,
   PROPERTY_INDEX_OPEN_VPN_AUTHRETRY,
@@ -162,7 +137,6 @@ enum PropertyIndex {
   PROPERTY_INDEX_PROVIDER_HOST,
   PROPERTY_INDEX_PROVIDER_REQUIRES_ROAMING,
   PROPERTY_INDEX_PROVIDER_TYPE,
-  PROPERTY_INDEX_PROXY_CONFIG,
   PROPERTY_INDEX_ROAMING_STATE,
   PROPERTY_INDEX_SAVE_CREDENTIALS,
   PROPERTY_INDEX_SCANNING,
@@ -376,15 +350,6 @@ enum ProviderType {
   PROVIDER_TYPE_OPEN_VPN,
   // Add new provider types before PROVIDER_TYPE_MAX.
   PROVIDER_TYPE_MAX,
-};
-
-// Proxy type specified in ONC.
-enum ProxyOncType {
-  PROXY_ONC_DIRECT,
-  PROXY_ONC_WPAD,
-  PROXY_ONC_PAC,
-  PROXY_ONC_MANUAL,
-  PROXY_ONC_MAX,
 };
 
 }  // namespace chromeos

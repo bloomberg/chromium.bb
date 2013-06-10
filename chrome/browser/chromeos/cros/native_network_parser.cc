@@ -123,7 +123,6 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { shill::kProviderRequiresRoamingProperty,
     PROPERTY_INDEX_PROVIDER_REQUIRES_ROAMING },
   { flimflam::kProviderTypeProperty, PROPERTY_INDEX_PROVIDER_TYPE },
-  { flimflam::kProxyConfigProperty, PROPERTY_INDEX_PROXY_CONFIG },
   { flimflam::kRoamingStateProperty, PROPERTY_INDEX_ROAMING_STATE },
   { flimflam::kSIMLockStatusProperty, PROPERTY_INDEX_SIM_LOCK },
   { shill::kSIMPresentProperty, PROPERTY_INDEX_SIM_PRESENT },

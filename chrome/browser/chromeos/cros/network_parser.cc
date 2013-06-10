@@ -196,13 +196,6 @@ bool NetworkParser::ParseValue(PropertyIndex index,
       network->set_auto_connect(auto_connect);
       return true;
     }
-    case PROPERTY_INDEX_PROXY_CONFIG: {
-      std::string proxy_config;
-      if (!value.GetAsString(&proxy_config))
-        return false;
-      network->set_proxy_config(proxy_config);
-      return true;
-    }
     case PROPERTY_INDEX_UI_DATA: {
       network->set_ui_data(NetworkUIData());
       std::string ui_data_json;

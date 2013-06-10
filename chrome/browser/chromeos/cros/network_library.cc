@@ -236,8 +236,6 @@ Network::~Network() {
   }
 }
 
-Network::ProxyOncConfig::ProxyOncConfig() : type(PROXY_ONC_DIRECT) {}
-
 void Network::SetNetworkParser(NetworkParser* parser) {
   network_parser_.reset(parser);
 }
@@ -531,11 +529,6 @@ std::string Network::GetErrorString() const {
       return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
   }
   return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED);
-}
-
-void Network::SetProxyConfig(const std::string& proxy_config) {
-  SetOrClearStringProperty(
-      flimflam::kProxyConfigProperty, proxy_config, &proxy_config_);
 }
 
 void Network::InitIPAddress() {

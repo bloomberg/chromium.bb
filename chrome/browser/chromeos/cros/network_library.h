@@ -345,19 +345,6 @@ class Network {
   };
   friend class TestApi;
 
-  // Structure used only for parsing ONC's ProxySettings value.
-  struct ProxyOncConfig {
-    ProxyOncConfig();
-
-    ProxyOncType type;
-    std::string pac_url;  // Only for PROXY_TYPE_PAC.
-    // Concatenated string of manual proxies only for PROXY_TYPE_MANUAL,
-    // formatted using chromeos::ProxyConfigServiceImpl::ProxyConfig::
-    // EncodeAndAppendProxyServer.
-    std::string manual_spec;
-    std::string bypass_rules;  // Only for PROXY_TYPE_MANUAL.
-  };
-
   const std::string& service_path() const { return service_path_; }
   const std::string& name() const { return name_; }
   const std::string& device_path() const { return device_path_; }
@@ -400,11 +387,7 @@ class Network {
   const std::string& unique_id() const { return unique_id_; }
   int priority_order() const { return priority_order_; }
 
-  const std::string& proxy_config() const { return proxy_config_; }
-
   const NetworkUIData& ui_data() const { return ui_data_; }
-
-  ProxyOncConfig& proxy_onc_config() { return proxy_onc_config_; }
 
   void set_notify_failure(bool state) { notify_failure_ = state; }
 
@@ -429,8 +412,6 @@ class Network {
 
   // Return a string representation of the error code.
   std::string GetErrorString() const;
-
-  void SetProxyConfig(const std::string& proxy_config);
 
   // Return true if the network must be in the user profile (e.g. has certs).
   virtual bool RequiresUserProfile() const;
@@ -538,16 +519,10 @@ class Network {
   friend class NetworkParser;
   friend class NativeNetworkParser;
   friend class NativeVirtualNetworkParser;
-  friend class OncWifiNetworkParser;
-  friend class OncVirtualNetworkParser;
   // We reach directly into the network for testing purposes.
   friend class MobileActivatorTest;
   // This allows the implementation classes access to privates.
   NETWORK_LIBRARY_IMPL_FRIENDS;
-
-  FRIEND_TEST_ALL_PREFIXES(NetworkLibraryTest, GetUserExpandedValue);
-  FRIEND_TEST_ALL_PREFIXES(NetworkLibraryStubTest, NetworkConnectOncWifi);
-  FRIEND_TEST_ALL_PREFIXES(NetworkLibraryStubTest, NetworkConnectOncVPN);
 
   // Use these functions at your peril.  They are used by the various
   // parsers to set state, and really shouldn't be used by anything else
@@ -586,7 +561,6 @@ class Network {
   }
   void set_profile_path(const std::string& path) { profile_path_ = path; }
   void set_profile_type(NetworkProfileType type) { profile_type_ = type; }
-  void set_proxy_config(const std::string& proxy) { proxy_config_ = proxy; }
   void set_ui_data(const NetworkUIData& ui_data) {
     ui_data_ = ui_data;
   }
@@ -621,8 +595,6 @@ class Network {
   int priority_;  // determines order in network list.
   bool auto_connect_;
   bool save_credentials_;  // save passphrase and EAP credentials to disk.
-  std::string proxy_config_;  // ProxyConfig property in shill.
-  ProxyOncConfig proxy_onc_config_;  // Only used for parsing ONC proxy value.
   scoped_ptr<EnrollmentDelegate> enrollment_delegate_;
 
   // Unique identifier, set the first time the network is parsed.
@@ -734,7 +706,6 @@ class VirtualNetwork : public Network {
   // parsers.
   friend class NativeNetworkParser;
   friend class NativeVirtualNetworkParser;
-  friend class OncVirtualNetworkParser;
 
   // This allows the implementation classes access to privates.
   NETWORK_LIBRARY_IMPL_FRIENDS;
@@ -834,7 +805,6 @@ class WirelessNetwork : public Network {
   // only access things through the private set_ functions so that
   // this class can evolve without having to change all the parsers.
   friend class NativeWirelessNetworkParser;
-  friend class OncWirelessNetworkParser;
 
   // This allows the implementation classes access to privates.
   NETWORK_LIBRARY_IMPL_FRIENDS;
@@ -920,7 +890,6 @@ class CellularNetwork : public WirelessNetwork {
   // only access things through the private set_ functions so that
   // this class can evolve without having to change all the parsers.
   friend class NativeCellularNetworkParser;
-  friend class OncCellularNetworkParser;
   // We reach directly into the network for testing purposes.
   friend class MobileActivatorTest;
 
@@ -1076,7 +1045,6 @@ class WifiNetwork : public WirelessNetwork {
   // access things through the private set_ functions so that this
   // class can evolve without having to change all the parsers.
   friend class NativeWifiNetworkParser;
-  friend class OncWifiNetworkParser;
 
   // This allows the implementation classes access to privates.
   NETWORK_LIBRARY_IMPL_FRIENDS;

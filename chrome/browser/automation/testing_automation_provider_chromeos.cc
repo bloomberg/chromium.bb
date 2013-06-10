@@ -35,8 +35,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/proxy_config_service_impl.h"
-#include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
+#include "chrome/browser/chromeos/net/proxy_config_handler.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
@@ -48,6 +47,8 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/network_change_notifier.h"
 #include "policy/policy_constants.h"
@@ -690,22 +691,24 @@ void TestingAutomationProvider::SetSharedProxies(
 void TestingAutomationProvider::SetProxySettings(DictionaryValue* args,
                                                  IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
-  std::string proxy_config;
-  if (!args->GetString("proxy_config", &proxy_config)) {
+  std::string proxy_config_str;
+  if (!args->GetString("proxy_config", &proxy_config_str)) {
     reply.SendError("Invalid or missing args.");
     return;
   }
 
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
-  chromeos::Network* network =
-      const_cast<chromeos::Network*>(network_library->active_network());
-
+  const chromeos::NetworkState* network = chromeos::NetworkHandler::Get()->
+      network_state_handler()->DefaultNetwork();
   if (!network) {
     reply.SendError("No network connected.");
     return;
   }
 
-  network->SetProxyConfig(proxy_config);
+  scoped_ptr<base::DictionaryValue> proxy_config_dict(
+      chromeos::onc::ReadDictionaryFromJson(proxy_config_str));
+  ProxyConfigDictionary proxy_config(proxy_config_dict.get());
+  chromeos::proxy_config::SetProxyConfigForNetwork(proxy_config, *network);
+
   reply.SendSuccess(NULL);
 }
 
