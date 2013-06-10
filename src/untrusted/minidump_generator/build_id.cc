@@ -21,8 +21,39 @@
 // headers are not visible in the address space.
 extern const char __ehdr_start __attribute__((weak));
 
+// The newest versions of the "old" nacl-binutils linker define these
+// symbols to give the bounds of the section that contains the build ID note.
+extern const Elf32_Nhdr __note_gnu_build_id_start[] __attribute__((weak));
+extern const Elf32_Nhdr __note_gnu_build_id_end[] __attribute__((weak));
+
 static uintptr_t note_align(uintptr_t value) {
   return (value + 3) & ~3;
+}
+
+static int GetBuildIdFromNotes(const Elf32_Nhdr *start,
+                               const Elf32_Nhdr *end,
+                               const char **data, size_t *size) {
+  const Elf32_Nhdr *note = start;
+
+  while (note < end) {
+    uintptr_t name_ptr = (uintptr_t) &note[1];
+    assert(name_ptr <= (uintptr_t) end);
+    uintptr_t desc_ptr = note_align(name_ptr + note->n_namesz);
+    const Elf32_Nhdr *next_ptr = ((const Elf32_Nhdr *)
+                                  note_align(desc_ptr + note->n_descsz));
+    assert(next_ptr <= end);
+    if (note->n_type == NT_GNU_BUILD_ID &&
+        note->n_namesz == sizeof(ELF_NOTE_GNU) &&
+        memcmp((const char *) name_ptr, ELF_NOTE_GNU,
+               sizeof(ELF_NOTE_GNU)) == 0) {
+      *data = (const char *) desc_ptr;
+      *size = note->n_descsz;
+      return 1;
+    }
+    note = next_ptr;
+  }
+
+  return 0;
 }
 
 // The PNaCl toolchain currently generates ELFCLASS64 executables for
@@ -43,24 +74,12 @@ static int GetBuildId(const char **data, size_t *size) {
     if (phdr->p_type == PT_NOTE) {
       found_pt_note = true;
       // Elf64_Nhdr is the same as Elf32_Nhdr so we can use either here.
-      Elf32_Nhdr *note = (Elf32_Nhdr *) ((uintptr_t) ehdr + phdr->p_offset);
-      uintptr_t note_end = (uintptr_t) note + phdr->p_memsz;
-      while ((uintptr_t) note < note_end) {
-        uintptr_t name_ptr = (uintptr_t) &note[1];
-        assert(name_ptr <= note_end);
-        uintptr_t desc_ptr = note_align(name_ptr + note->n_namesz);
-        uintptr_t next_ptr = note_align(desc_ptr + note->n_descsz);
-        assert(next_ptr <= note_end);
-        if (note->n_type == NT_GNU_BUILD_ID &&
-            note->n_namesz == sizeof(ELF_NOTE_GNU) &&
-            memcmp((const char *) name_ptr, ELF_NOTE_GNU,
-                   sizeof(ELF_NOTE_GNU)) == 0) {
-          *data = (const char *) desc_ptr;
-          *size = note->n_descsz;
-          return 1;
-        }
-        note = (Elf32_Nhdr *) next_ptr;
-      }
+      const Elf32_Nhdr *note = (const Elf32_Nhdr *) ((uintptr_t) ehdr +
+                                                     phdr->p_offset);
+      const Elf32_Nhdr *note_end = ((const Elf32_Nhdr *)
+                                    (uintptr_t) note + phdr->p_memsz);
+      if (GetBuildIdFromNotes(note, note_end, data, size))
+        return 1;
     }
   }
   if (found_pt_note) {
@@ -72,6 +91,12 @@ static int GetBuildId(const char **data, size_t *size) {
 }
 
 int nacl_get_build_id(const char **data, size_t *size) {
+  if (__note_gnu_build_id_start != NULL) {
+    assert(__note_gnu_build_id_end >= __note_gnu_build_id_start);
+    return GetBuildIdFromNotes(__note_gnu_build_id_start,
+                               __note_gnu_build_id_end,
+                               data, size);
+  }
   if (&__ehdr_start == NULL) {
     fprintf(stderr, "Build ID not found: __ehdr_start not defined\n");
     return 0;
