@@ -21,8 +21,17 @@ import sys
 
 class DepsWhitelist(object):
   def __init__(self):
-    # Dependencies required to build android_webview.
-    self._compile_dependencies = [
+    # If a new DEPS entry is needed for the AOSP bot to compile please add it
+    # here first.
+    # This is a staging area for deps that are accepted by the android_webview
+    # team and are in the process of having the required branches being created
+    # in the Android tree.
+    self._compile_but_not_snapshot_dependencies = [
+      'third_party/mesa/src',
+    ]
+
+    # Dependencies that need to be merged into the Android tree.
+    self._snapshot_into_android_dependencies = [
       'googleurl',
       'sdch/open-vcdiff',
       'testing/gtest',
@@ -50,8 +59,9 @@ class DepsWhitelist(object):
       'v8',
     ]
 
-    # Dependencies that need to be merged into the Android tree.
-    self._snapshot_into_android_dependencies = self._compile_dependencies
+    # Dependencies required to build android_webview.
+    self._compile_dependencies = (self._snapshot_into_android_dependencies +
+                                  self._compile_but_not_snapshot_dependencies)
 
     # Dependencies required to run android_webview tests but not required to
     # compile.
@@ -147,7 +157,7 @@ class DepsWhitelist(object):
   def get_deps_for_license_check(self, _):
     """Calculates the list of deps that need to be checked for Android license
     compatibility"""
-    return self._snapshot_into_android_dependencies
+    return self._compile_dependencies
 
   def execute_method(self, method_name, deps_file_path):
     methods = {
