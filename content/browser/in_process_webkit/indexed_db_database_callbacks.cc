@@ -7,6 +7,7 @@
 #include "base/memory/scoped_vector.h"
 #include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
+#include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
 
 namespace content {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/in_process_webkit/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
-
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/webidbcursor_impl.h"
@@ -24,7 +24,7 @@ using WebKit::WebString;
 using WebKit::WebVector;
 
 IndexedDBCallbacksWrapper::IndexedDBCallbacksWrapper(
-    WebKit::WebIDBCallbacks* callbacks)
+    IndexedDBCallbacksBase* callbacks)
     : callbacks_(callbacks), did_complete_(false), did_create_proxy_(false) {}
 
 IndexedDBCallbacksWrapper::~IndexedDBCallbacksWrapper() {}

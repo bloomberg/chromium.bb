@@ -11,15 +11,15 @@
 #include "base/string16.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabaseCallbacks.h"
 
 namespace content {
+class IndexedDBDatabaseCallbacks;
 
 class CONTENT_EXPORT IndexedDBDatabaseCallbacksWrapper
     : public base::RefCounted<IndexedDBDatabaseCallbacksWrapper> {
  public:
   static scoped_refptr<IndexedDBDatabaseCallbacksWrapper> Create(
-      WebKit::WebIDBDatabaseCallbacks* callbacks) {
+      IndexedDBDatabaseCallbacks* callbacks) {
     return make_scoped_refptr(new IndexedDBDatabaseCallbacksWrapper(callbacks));
   }
 
@@ -32,13 +32,13 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacksWrapper
 
  protected:
   explicit IndexedDBDatabaseCallbacksWrapper(
-      WebKit::WebIDBDatabaseCallbacks* callbacks);
+      IndexedDBDatabaseCallbacks* callbacks);
   virtual ~IndexedDBDatabaseCallbacksWrapper();
 
  private:
   friend class base::RefCounted<IndexedDBDatabaseCallbacksWrapper>;
 
-  scoped_ptr<WebKit::WebIDBDatabaseCallbacks> callbacks_;
+  scoped_ptr<IndexedDBDatabaseCallbacks> callbacks_;
 };
 
 }  // namespace content

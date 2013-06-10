@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/in_process_webkit/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
@@ -20,9 +21,7 @@
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/webidbdatabase_impl.h"
 
-using WebKit::WebIDBDatabase;
 using WebKit::WebIDBDatabaseError;
-using WebKit::WebIDBDatabaseCallbacks;
 
 namespace content {
 
@@ -163,29 +162,6 @@ class MockIDBDatabaseCallbacks : public IndexedDBDatabaseCallbacksWrapper {
   bool was_abort_called_;
 };
 
-class WebIDBDatabaseCallbacksImpl : public WebIDBDatabaseCallbacks {
- public:
-  explicit WebIDBDatabaseCallbacksImpl(
-      scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks)
-      : callbacks_(callbacks) {}
-  virtual ~WebIDBDatabaseCallbacksImpl() {}
-
-  virtual void onForcedClose() { callbacks_->OnForcedClose(); }
-  virtual void onVersionChange(long long old_version, long long new_version) {
-    callbacks_->OnVersionChange(old_version, new_version);
-  }
-  virtual void onAbort(long long transaction_id,
-                       const WebIDBDatabaseError& error) {
-    callbacks_->OnAbort(transaction_id, IndexedDBDatabaseError(error));
-  }
-  virtual void onComplete(long long transaction_id) {
-    callbacks_->OnComplete(transaction_id);
-  }
-
- private:
-  scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks_;
-};
-
 TEST(IndexedDBDatabaseTest, ForcedClose) {
   scoped_refptr<IndexedDBFakeBackingStore> backing_store =
       new IndexedDBFakeBackingStore();
@@ -202,15 +178,12 @@ TEST(IndexedDBDatabaseTest, ForcedClose) {
 
   scoped_refptr<MockIDBDatabaseCallbacks> connection =
       MockIDBDatabaseCallbacks::Create();
-  scoped_refptr<IndexedDBDatabaseCallbacksWrapper> connection_proxy =
-      IndexedDBDatabaseCallbacksWrapper::Create(
-          new WebIDBDatabaseCallbacksImpl(connection));
-  WebIDBDatabaseImpl web_database(backend, connection_proxy);
+  WebIDBDatabaseImpl web_database(backend, connection);
 
   scoped_refptr<MockIDBCallbacks> request = MockIDBCallbacks::Create();
   const int64 upgrade_transaction_id = 3;
   backend->OpenConnection(request,
-                          connection_proxy,
+                          connection,
                           upgrade_transaction_id,
                           IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
 

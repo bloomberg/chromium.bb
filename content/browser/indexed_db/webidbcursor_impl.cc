@@ -9,8 +9,6 @@
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "third_party/WebKit/public/platform/WebIDBKey.h"
 
-using WebKit::WebIDBCallbacks;
-
 namespace content {
 
 WebIDBCursorImpl::WebIDBCursorImpl(
@@ -20,20 +18,20 @@ WebIDBCursorImpl::WebIDBCursorImpl(
 WebIDBCursorImpl::~WebIDBCursorImpl() {}
 
 void WebIDBCursorImpl::advance(unsigned long count,
-                               WebIDBCallbacks* callbacks) {
+                               IndexedDBCallbacksBase* callbacks) {
   idb_cursor_backend_->Advance(count,
                                IndexedDBCallbacksWrapper::Create(callbacks));
 }
 
 void WebIDBCursorImpl::continueFunction(const WebKit::WebIDBKey& key,
-                                        WebIDBCallbacks* callbacks) {
+                                        IndexedDBCallbacksBase* callbacks) {
   idb_cursor_backend_->ContinueFunction(
       make_scoped_ptr(new IndexedDBKey(key)),
       IndexedDBCallbacksWrapper::Create(callbacks));
 }
 
 void WebIDBCursorImpl::prefetchContinue(int number_to_fetch,
-                                        WebKit::WebIDBCallbacks* callbacks) {
+                                        IndexedDBCallbacksBase* callbacks) {
   idb_cursor_backend_->PrefetchContinue(
       number_to_fetch, IndexedDBCallbacksWrapper::Create(callbacks));
 }

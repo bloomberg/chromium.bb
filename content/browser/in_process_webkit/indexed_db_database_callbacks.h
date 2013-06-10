@@ -6,12 +6,15 @@
 #define CONTENT_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_DATABASE_CALLBACKS_H_
 
 #include "base/memory/ref_counted.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabaseCallbacks.h"
+
+namespace WebKit {
+class WebIDBDatabaseError;
+}
 
 namespace content {
 class IndexedDBDispatcherHost;
 
-class IndexedDBDatabaseCallbacks : public WebKit::WebIDBDatabaseCallbacks {
+class IndexedDBDatabaseCallbacks {
  public:
   IndexedDBDatabaseCallbacks(IndexedDBDispatcherHost* dispatcher_host,
                              int ipc_thread_id,
@@ -20,8 +23,7 @@ class IndexedDBDatabaseCallbacks : public WebKit::WebIDBDatabaseCallbacks {
   virtual ~IndexedDBDatabaseCallbacks();
 
   virtual void onForcedClose();
-  virtual void onVersionChange(long long old_version,
-                               long long new_version);
+  virtual void onVersionChange(long long old_version, long long new_version);
   virtual void onAbort(long long host_transaction_id,
                        const WebKit::WebIDBDatabaseError&);
   virtual void onComplete(long long host_transaction_id);

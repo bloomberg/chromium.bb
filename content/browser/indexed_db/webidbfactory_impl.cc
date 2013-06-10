@@ -8,13 +8,9 @@
 #include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabaseCallbacks.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
 #include "webkit/base/file_path_string_conversions.h"
 
-using WebKit::WebIDBCallbacks;
-using WebKit::WebIDBDatabaseCallbacks;
-using WebKit::WebIDBFactory;
 using WebKit::WebString;
 
 namespace content {
@@ -24,7 +20,7 @@ WebIDBFactoryImpl::WebIDBFactoryImpl()
 
 WebIDBFactoryImpl::~WebIDBFactoryImpl() {}
 
-void WebIDBFactoryImpl::getDatabaseNames(WebIDBCallbacks* callbacks,
+void WebIDBFactoryImpl::getDatabaseNames(IndexedDBCallbacksBase* callbacks,
                                          const WebString& database_identifier,
                                          const WebString& data_dir) {
   idb_factory_backend_->GetDatabaseNames(
@@ -36,8 +32,8 @@ void WebIDBFactoryImpl::getDatabaseNames(WebIDBCallbacks* callbacks,
 void WebIDBFactoryImpl::open(const WebString& name,
                              long long version,
                              long long transaction_id,
-                             WebIDBCallbacks* callbacks,
-                             WebIDBDatabaseCallbacks* database_callbacks,
+                             IndexedDBCallbacksBase* callbacks,
+                             IndexedDBDatabaseCallbacks* database_callbacks,
                              const WebString& database_identifier,
                              const WebString& data_dir) {
   scoped_refptr<IndexedDBCallbacksWrapper> callbacks_proxy =
@@ -56,7 +52,7 @@ void WebIDBFactoryImpl::open(const WebString& name,
 }
 
 void WebIDBFactoryImpl::deleteDatabase(const WebString& name,
-                                       WebIDBCallbacks* callbacks,
+                                       IndexedDBCallbacksBase* callbacks,
                                        const WebString& database_identifier,
                                        const WebString& data_dir) {
   idb_factory_backend_->DeleteDatabase(

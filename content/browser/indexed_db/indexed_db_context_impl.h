@@ -13,16 +13,12 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/browser/indexed_db/webidbfactory_impl.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/common/quota/quota_types.h"
 
 class GURL;
-
-namespace WebKit {
-class WebIDBDatabase;
-class WebIDBFactory;
-}
 
 namespace base {
 class FilePath;
@@ -36,6 +32,8 @@ class SpecialStoragePolicy;
 
 namespace content {
 
+class WebIDBDatabaseImpl;
+
 class CONTENT_EXPORT IndexedDBContextImpl
     : NON_EXPORTED_BASE(public IndexedDBContext) {
  public:
@@ -45,7 +43,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
                        quota::QuotaManagerProxy* quota_manager_proxy,
                        base::MessageLoopProxy* webkit_thread_loop);
 
-  WebKit::WebIDBFactory* GetIDBFactory();
+  WebIDBFactoryImpl* GetIDBFactory();
 
   // The indexed db directory.
   static const base::FilePath::CharType kIndexedDBDirectory[];
@@ -66,8 +64,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
       OVERRIDE;
 
   // Methods called by IndexedDBDispatcherHost for quota support.
-  void ConnectionOpened(const GURL& origin_url, WebKit::WebIDBDatabase* db);
-  void ConnectionClosed(const GURL& origin_url, WebKit::WebIDBDatabase* db);
+  void ConnectionOpened(const GURL& origin_url, WebIDBDatabaseImpl* db);
+  void ConnectionClosed(const GURL& origin_url, WebIDBDatabaseImpl* db);
   void TransactionComplete(const GURL& origin_url);
   bool WouldBeOverQuota(const GURL& origin_url, int64 additional_bytes);
   bool IsOverQuota(const GURL& origin_url);
@@ -121,7 +119,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // Only for testing.
   void ResetCaches();
 
-  scoped_ptr<WebKit::WebIDBFactory> idb_factory_;
+  scoped_ptr<WebIDBFactoryImpl> idb_factory_;
   base::FilePath data_path_;
   // If true, nothing (not even session-only data) should be deleted on exit.
   bool force_keep_session_state_;
@@ -130,7 +128,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   scoped_ptr<std::set<GURL> > origin_set_;
   OriginToSizeMap origin_size_map_;
   OriginToSizeMap space_available_map_;
-  typedef std::set<WebKit::WebIDBDatabase*> ConnectionSet;
+  typedef std::set<WebIDBDatabaseImpl*> ConnectionSet;
   std::map<GURL, ConnectionSet> connections_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContextImpl);

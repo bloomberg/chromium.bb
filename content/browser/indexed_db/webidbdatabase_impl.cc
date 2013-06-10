@@ -14,8 +14,6 @@
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "third_party/WebKit/public/platform/WebData.h"
-#include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabaseCallbacks.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
 #include "third_party/WebKit/public/platform/WebIDBKey.h"
 #include "third_party/WebKit/public/platform/WebIDBKeyRange.h"
@@ -26,8 +24,6 @@ using WebKit::WebIDBKey;
 using WebKit::WebData;
 using WebKit::WebIDBKeyPath;
 using WebKit::WebIDBKeyRange;
-using WebKit::WebIDBDatabaseCallbacks;
-using WebKit::WebIDBCallbacks;
 using WebKit::WebVector;
 using WebKit::WebIDBDatabaseError;
 
@@ -60,7 +56,7 @@ void WebIDBDatabaseImpl::deleteObjectStore(long long transaction_id,
 
 void WebIDBDatabaseImpl::createTransaction(
     long long id,
-    WebIDBDatabaseCallbacks* /*callbacks*/,
+    IndexedDBDatabaseCallbacks* /*callbacks*/,
     const WebVector<long long>& object_store_ids,
     unsigned short mode) {
   if (!database_callbacks_)
@@ -111,8 +107,8 @@ void WebIDBDatabaseImpl::openCursor(long long transaction_id,
                                     const WebIDBKeyRange& key_range,
                                     unsigned short direction,
                                     bool key_only,
-                                    TaskType task_type,
-                                    WebIDBCallbacks* callbacks) {
+                                    WebKit::WebIDBDatabase::TaskType task_type,
+                                    IndexedDBCallbacksBase* callbacks) {
   if (database_backend_)
     database_backend_->OpenCursor(
         transaction_id,
@@ -129,7 +125,7 @@ void WebIDBDatabaseImpl::count(long long transaction_id,
                                long long object_store_id,
                                long long index_id,
                                const WebIDBKeyRange& key_range,
-                               WebIDBCallbacks* callbacks) {
+                               IndexedDBCallbacksBase* callbacks) {
   if (database_backend_)
     database_backend_->Count(transaction_id,
                              object_store_id,
@@ -143,7 +139,7 @@ void WebIDBDatabaseImpl::get(long long transaction_id,
                              long long index_id,
                              const WebIDBKeyRange& key_range,
                              bool key_only,
-                             WebIDBCallbacks* callbacks) {
+                             IndexedDBCallbacksBase* callbacks) {
   if (database_backend_)
     database_backend_->Get(transaction_id,
                            object_store_id,
@@ -153,14 +149,15 @@ void WebIDBDatabaseImpl::get(long long transaction_id,
                            IndexedDBCallbacksWrapper::Create(callbacks));
 }
 
-void WebIDBDatabaseImpl::put(long long transaction_id,
-                             long long object_store_id,
-                             const WebData& value,
-                             const WebIDBKey& key,
-                             PutMode put_mode,
-                             WebIDBCallbacks* callbacks,
-                             const WebVector<long long>& web_index_ids,
-                             const WebVector<WebIndexKeys>& web_index_keys) {
+void WebIDBDatabaseImpl::put(
+    long long transaction_id,
+    long long object_store_id,
+    const WebData& value,
+    const WebIDBKey& key,
+    WebKit::WebIDBDatabase::PutMode put_mode,
+    IndexedDBCallbacksBase* callbacks,
+    const WebVector<long long>& web_index_ids,
+    const WebVector<WebKit::WebIDBDatabase::WebIndexKeys>& web_index_keys) {
   if (!database_backend_)
     return;
 
@@ -192,7 +189,7 @@ void WebIDBDatabaseImpl::setIndexKeys(
     long long object_store_id,
     const WebIDBKey& primary_key,
     const WebVector<long long>& web_index_ids,
-    const WebVector<WebIndexKeys>& web_index_keys) {
+    const WebVector<WebKit::WebIDBDatabase::WebIndexKeys>& web_index_keys) {
   if (!database_backend_)
     return;
 
@@ -232,7 +229,7 @@ void WebIDBDatabaseImpl::setIndexesReady(
 void WebIDBDatabaseImpl::deleteRange(long long transaction_id,
                                      long long object_store_id,
                                      const WebIDBKeyRange& key_range,
-                                     WebIDBCallbacks* callbacks) {
+                                     IndexedDBCallbacksBase* callbacks) {
   if (database_backend_)
     database_backend_->DeleteRange(
         transaction_id,
@@ -243,7 +240,7 @@ void WebIDBDatabaseImpl::deleteRange(long long transaction_id,
 
 void WebIDBDatabaseImpl::clear(long long transaction_id,
                                long long object_store_id,
-                               WebIDBCallbacks* callbacks) {
+                               IndexedDBCallbacksBase* callbacks) {
   if (database_backend_)
     database_backend_->Clear(transaction_id,
                              object_store_id,

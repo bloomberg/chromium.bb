@@ -6,6 +6,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
+#include "content/browser/indexed_db/webidbdatabase_impl.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_browser_context.h"
@@ -126,16 +127,18 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
   EXPECT_TRUE(file_util::DirectoryExists(session_only_path));
 }
 
-class MockWebIDBDatabase : public WebKit::WebIDBDatabase {
+class MockWebIDBDatabase : public WebIDBDatabaseImpl {
  public:
   explicit MockWebIDBDatabase(bool expect_force_close)
-      : expect_force_close_(expect_force_close), force_close_called_(false) {}
+      : WebIDBDatabaseImpl(NULL, NULL),
+        expect_force_close_(expect_force_close),
+        force_close_called_(false) {}
 
   virtual ~MockWebIDBDatabase() {
     EXPECT_TRUE(force_close_called_ == expect_force_close_);
   }
 
-  virtual void forceClose() {
+  virtual void forceClose() OVERRIDE {
     ASSERT_TRUE(expect_force_close_);
     force_close_called_ = true;
   }

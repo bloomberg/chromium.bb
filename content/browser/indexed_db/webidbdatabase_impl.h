@@ -11,18 +11,17 @@
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
 
 namespace WebKit {
-class WebIDBDatabaseCallbacks;
 class WebIDBDatabaseError;
 class WebIDBDatabaseMetadata;
 }
 
 namespace content {
+class IndexedDBCallbacksBase;
 class IndexedDBDatabase;
+class IndexedDBDatabaseCallbacks;
 class IndexedDBDatabaseCallbacksWrapper;
 
-// See comment in WebIDBFactory for a high level overview these classes.
-class CONTENT_EXPORT WebIDBDatabaseImpl
-    : NON_EXPORTED_BASE(public WebKit::WebIDBDatabase) {
+class CONTENT_EXPORT WebIDBDatabaseImpl {
  public:
   WebIDBDatabaseImpl(
       scoped_refptr<IndexedDBDatabase> db,
@@ -37,7 +36,7 @@ class CONTENT_EXPORT WebIDBDatabaseImpl
   virtual void deleteObjectStore(long long object_store_id,
                                  long long transaction_id);
   virtual void createTransaction(long long id,
-                                 WebKit::WebIDBDatabaseCallbacks* callbacks,
+                                 IndexedDBDatabaseCallbacks* callbacks,
                                  const WebKit::WebVector<long long>& scope,
                                  unsigned short mode);
   virtual void forceClose();
@@ -52,20 +51,23 @@ class CONTENT_EXPORT WebIDBDatabaseImpl
                    long long index_id,
                    const WebKit::WebIDBKeyRange& range,
                    bool key_only,
-                   WebKit::WebIDBCallbacks* callbacks);
+                   IndexedDBCallbacksBase* callbacks);
   virtual void put(long long transaction_id,
                    long long object_store_id,
                    const WebKit::WebData& value,
                    const WebKit::WebIDBKey& key,
-                   PutMode mode,
-                   WebKit::WebIDBCallbacks* callbacks,
+                   WebKit::WebIDBDatabase::PutMode mode,
+                   IndexedDBCallbacksBase* callbacks,
                    const WebKit::WebVector<long long>& index_ids,
-                   const WebKit::WebVector<WebIndexKeys>& index_keys);
-  virtual void setIndexKeys(long long transaction_id,
-                            long long object_store_id,
-                            const WebKit::WebIDBKey& key,
-                            const WebKit::WebVector<long long>& index_ids,
-                            const WebKit::WebVector<WebIndexKeys>& index_keys);
+                   const WebKit::WebVector<
+                       WebKit::WebIDBDatabase::WebIndexKeys>& index_keys);
+  virtual void setIndexKeys(
+      long long transaction_id,
+      long long object_store_id,
+      const WebKit::WebIDBKey& key,
+      const WebKit::WebVector<long long>& index_ids,
+      const WebKit::WebVector<WebKit::WebIDBDatabase::WebIndexKeys>&
+          index_keys);
   virtual void setIndexesReady(long long transaction_id,
                                long long object_store_id,
                                const WebKit::WebVector<long long>& index_ids);
@@ -75,20 +77,20 @@ class CONTENT_EXPORT WebIDBDatabaseImpl
                           const WebKit::WebIDBKeyRange& range,
                           unsigned short direction,
                           bool key_only,
-                          TaskType task_type,
-                          WebKit::WebIDBCallbacks* callbacks);
+                          WebKit::WebIDBDatabase::TaskType task_type,
+                          IndexedDBCallbacksBase* callbacks);
   virtual void count(long long transaction_id,
                      long long object_store_id,
                      long long index_id,
                      const WebKit::WebIDBKeyRange& range,
-                     WebKit::WebIDBCallbacks* callbacks);
+                     IndexedDBCallbacksBase* callbacks);
   virtual void deleteRange(long long transaction_id,
                            long long object_store_id,
                            const WebKit::WebIDBKeyRange& range,
-                           WebKit::WebIDBCallbacks* callbacks);
+                           IndexedDBCallbacksBase* callbacks);
   virtual void clear(long long transaction_id,
                      long long object_store_id,
-                     WebKit::WebIDBCallbacks* callbacks);
+                     IndexedDBCallbacksBase* callbacks);
 
   virtual void createIndex(long long transaction_id,
                            long long object_store_id,

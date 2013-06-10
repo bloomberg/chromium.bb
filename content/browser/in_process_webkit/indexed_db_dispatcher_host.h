@@ -28,8 +28,6 @@ struct IndexedDBHostMsg_FactoryGetDatabaseNames_Params;
 struct IndexedDBHostMsg_FactoryOpen_Params;
 
 namespace WebKit {
-class WebIDBCursor;
-class WebIDBDatabase;
 struct WebIDBMetadata;
 }
 
@@ -38,6 +36,8 @@ class IndexedDBContextImpl;
 class IndexedDBKey;
 class IndexedDBKeyPath;
 class IndexedDBKeyRange;
+class WebIDBCursorImpl;
+class WebIDBDatabaseImpl;
 
 // Handles all IndexedDB related messages from a particular renderer process.
 class IndexedDBDispatcherHost : public BrowserMessageFilter {
@@ -63,14 +63,14 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   // The various IndexedDBCallbacks children call these methods to add the
   // results into the applicable map.  See below for more details.
-  int32 Add(WebKit::WebIDBCursor* idb_cursor);
-  int32 Add(WebKit::WebIDBDatabase* idb_database,
+  int32 Add(WebIDBCursorImpl* idb_cursor);
+  int32 Add(WebIDBDatabaseImpl* idb_database,
             int32 ipc_thread_id,
             const GURL& origin_url);
 
   void RegisterTransactionId(int64 host_transaction_id, const GURL& origin_url);
 
-  WebKit::WebIDBCursor* GetCursorFromId(int32 ipc_cursor_id);
+  WebIDBCursorImpl* GetCursorFromId(int32 ipc_cursor_id);
 
   int64 HostTransactionId(int64 transaction_id);
   int64 RendererTransactionId(int64 host_transaction_id);
@@ -154,7 +154,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnAbort(int32 ipc_database_id, int64 transaction_id);
     void OnCommit(int32 ipc_database_id, int64 transaction_id);
     IndexedDBDispatcherHost* parent_;
-    IDMap<WebKit::WebIDBDatabase, IDMapOwnPointer> map_;
+    IDMap<WebIDBDatabaseImpl, IDMapOwnPointer> map_;
     WebIDBObjectIDToURLMap database_url_map_;
     TransactionIDToSizeMap transaction_size_map_;
     TransactionIDToURLMap transaction_url_map_;
@@ -187,7 +187,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnDestroyed(int32 ipc_cursor_id);
 
     IndexedDBDispatcherHost* parent_;
-    IDMap<WebKit::WebIDBCursor, IDMapOwnPointer> map_;
+    IDMap<WebIDBCursorImpl, IDMapOwnPointer> map_;
   };
 
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;

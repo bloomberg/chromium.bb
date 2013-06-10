@@ -15,16 +15,13 @@
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
-#include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
-
-namespace WebKit {
-class WebIDBCallbacks;
-}
 
 namespace content {
+class IndexedDBCallbacksBase;
+class IndexedDBDatabaseCallbacksWrapper;
 class IndexedDBCursor;
 class IndexedDBDatabase;
-class IndexedDBDatabaseCallbacksWrapper;
+class WebIDBCursorImpl;
 class WebIDBDatabaseImpl;
 struct IndexedDBDatabaseMetadata;
 
@@ -32,7 +29,7 @@ class CONTENT_EXPORT IndexedDBCallbacksWrapper
     : public base::RefCounted<IndexedDBCallbacksWrapper> {
  public:
   static scoped_refptr<IndexedDBCallbacksWrapper> Create(
-      WebKit::WebIDBCallbacks* callbacks) {
+      IndexedDBCallbacksBase* callbacks) {
     return make_scoped_refptr(new IndexedDBCallbacksWrapper(callbacks));
   }
 
@@ -74,22 +71,23 @@ class CONTENT_EXPORT IndexedDBCallbacksWrapper
   // From IDBFactory.open()/deleteDatabase()
   virtual void OnBlocked(int64 existing_version);
   // From IDBFactory.open()
-  virtual void OnUpgradeNeeded(int64 old_version,
-                               scoped_refptr<IndexedDBDatabase> db,
-                               const IndexedDBDatabaseMetadata& metadata);
+  virtual void OnUpgradeNeeded(
+      int64 old_version,
+      scoped_refptr<IndexedDBDatabase> db,
+      const content::IndexedDBDatabaseMetadata& metadata);
   virtual void OnSuccess(scoped_refptr<IndexedDBDatabase> db,
-                         const IndexedDBDatabaseMetadata& metadata);
+                         const content::IndexedDBDatabaseMetadata& metadata);
   virtual void SetDatabaseCallbacks(
       scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks);
 
  protected:
   virtual ~IndexedDBCallbacksWrapper();
-  explicit IndexedDBCallbacksWrapper(WebKit::WebIDBCallbacks* callbacks);
+  explicit IndexedDBCallbacksWrapper(IndexedDBCallbacksBase* callbacks);
 
  private:
   friend class base::RefCounted<IndexedDBCallbacksWrapper>;
   scoped_ptr<WebIDBDatabaseImpl> web_database_impl_;
-  scoped_ptr<WebKit::WebIDBCallbacks> callbacks_;
+  scoped_ptr<IndexedDBCallbacksBase> callbacks_;
   scoped_refptr<IndexedDBDatabaseCallbacksWrapper> database_callbacks_;
   bool did_complete_;
   bool did_create_proxy_;

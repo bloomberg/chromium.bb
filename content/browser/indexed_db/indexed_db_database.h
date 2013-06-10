@@ -19,6 +19,8 @@
 
 namespace content {
 
+class IndexedDBCallbacksWrapper;
+class IndexedDBDatabaseCallbacksWrapper;
 class IndexedDBBackingStore;
 class IndexedDBFactory;
 class IndexedDBKey;

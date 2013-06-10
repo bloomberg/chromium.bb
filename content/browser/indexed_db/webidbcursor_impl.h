@@ -6,21 +6,25 @@
 #define CONTENT_BROWSER_INDEXED_DB_WEBIDBCURSOR_IMPL_H_
 
 #include "base/memory/ref_counted.h"
-#include "third_party/WebKit/public/platform/WebIDBCursor.h"
+
+namespace WebKit {
+class WebIDBKey;
+}
 
 namespace content {
 class IndexedDBCursor;
+class IndexedDBCallbacksBase;
 
-class WebIDBCursorImpl : public WebKit::WebIDBCursor {
+class WebIDBCursorImpl {
  public:
   explicit WebIDBCursorImpl(scoped_refptr<IndexedDBCursor> cursor);
   virtual ~WebIDBCursorImpl();
 
-  virtual void advance(unsigned long, WebKit::WebIDBCallbacks* callbacks);
+  virtual void advance(unsigned long, IndexedDBCallbacksBase* callbacks);
   virtual void continueFunction(const WebKit::WebIDBKey& key,
-                                WebKit::WebIDBCallbacks* callbacks);
+                                IndexedDBCallbacksBase* callbacks);
   virtual void prefetchContinue(int number_to_fetch,
-                                WebKit::WebIDBCallbacks* callbacks);
+                                IndexedDBCallbacksBase* callbacks);
   virtual void prefetchReset(int used_prefetches, int unused_prefetches);
 
  private:

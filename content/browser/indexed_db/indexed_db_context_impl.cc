@@ -15,13 +15,13 @@
 #include "base/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_quota_client.h"
+#include "content/browser/indexed_db/webidbdatabase_impl.h"
 #include "content/browser/indexed_db/webidbfactory_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/indexed_db_info.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
-#include "third_party/WebKit/public/platform/WebIDBFactory.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/base/origin_url_conversions.h"
@@ -30,8 +30,6 @@
 #include "webkit/browser/quota/special_storage_policy.h"
 
 using webkit_database::DatabaseUtil;
-using WebKit::WebIDBDatabase;
-using WebKit::WebIDBFactory;
 
 namespace content {
 const base::FilePath::CharType IndexedDBContextImpl::kIndexedDBDirectory[] =
@@ -104,7 +102,7 @@ IndexedDBContextImpl::IndexedDBContextImpl(
   }
 }
 
-WebIDBFactory* IndexedDBContextImpl::GetIDBFactory() {
+WebIDBFactoryImpl* IndexedDBContextImpl::GetIDBFactory() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   if (!idb_factory_) {
     // Prime our cache of origins with existing databases so we can
@@ -190,7 +188,7 @@ void IndexedDBContextImpl::ForceClose(const GURL& origin_url) {
     ConnectionSet::iterator it = connections.begin();
     while (it != connections.end()) {
       // Remove before closing so callbacks don't double-erase
-      WebKit::WebIDBDatabase* db = *it;
+      WebIDBDatabaseImpl* db = *it;
       connections.erase(it++);
       db->forceClose();
     }
@@ -211,7 +209,7 @@ base::FilePath IndexedDBContextImpl::GetFilePathForTesting(
 }
 
 void IndexedDBContextImpl::ConnectionOpened(const GURL& origin_url,
-                                            WebIDBDatabase* connection) {
+                                            WebIDBDatabaseImpl* connection) {
   DCHECK_EQ(connections_[origin_url].count(connection), 0UL);
   if (quota_manager_proxy()) {
     quota_manager_proxy()->NotifyStorageAccessed(
@@ -230,7 +228,7 @@ void IndexedDBContextImpl::ConnectionOpened(const GURL& origin_url,
 }
 
 void IndexedDBContextImpl::ConnectionClosed(const GURL& origin_url,
-                                            WebIDBDatabase* connection) {
+                                            WebIDBDatabaseImpl* connection) {
   // May not be in the map if connection was forced to close
   if (connections_.find(origin_url) == connections_.end() ||
       connections_[origin_url].count(connection) != 1)
@@ -275,7 +273,7 @@ quota::QuotaManagerProxy* IndexedDBContextImpl::quota_manager_proxy() {
 }
 
 IndexedDBContextImpl::~IndexedDBContextImpl() {
-  WebKit::WebIDBFactory* factory = idb_factory_.release();
+  WebIDBFactoryImpl* factory = idb_factory_.release();
   if (factory) {
     if (!BrowserThread::DeleteSoon(
             BrowserThread::WEBKIT_DEPRECATED, FROM_HERE, factory))

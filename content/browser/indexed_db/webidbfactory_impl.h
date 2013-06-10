@@ -6,29 +6,34 @@
 #define CONTENT_BROWSER_INDEXED_DB_WEBIDBFACTORY_IMPL_H_
 
 #include "base/memory/ref_counted.h"
-#include "third_party/WebKit/public/platform/WebIDBFactory.h"
+
+namespace WebKit {
+class WebString;
+}
 
 namespace content {
 
 class IndexedDBFactory;
+class IndexedDBCallbacksBase;
+class IndexedDBDatabaseCallbacks;
 
-class WebIDBFactoryImpl : public WebKit::WebIDBFactory {
+class WebIDBFactoryImpl {
  public:
   WebIDBFactoryImpl();
   virtual ~WebIDBFactoryImpl();
 
-  virtual void getDatabaseNames(WebKit::WebIDBCallbacks* callbacks,
+  virtual void getDatabaseNames(IndexedDBCallbacksBase* callbacks,
                                 const WebKit::WebString& database_identifier,
                                 const WebKit::WebString& data_dir);
   virtual void open(const WebKit::WebString& name,
                     long long version,
                     long long transaction_id,
-                    WebKit::WebIDBCallbacks* callbacks,
-                    WebKit::WebIDBDatabaseCallbacks* database_callbacks,
+                    IndexedDBCallbacksBase* callbacks,
+                    IndexedDBDatabaseCallbacks* database_callbacks,
                     const WebKit::WebString& database_identifier,
                     const WebKit::WebString& data_dir);
   virtual void deleteDatabase(const WebKit::WebString& name,
-                              WebKit::WebIDBCallbacks* callbacks,
+                              IndexedDBCallbacksBase* callbacks,
                               const WebKit::WebString& database_identifier,
                               const WebKit::WebString& data_dir);
 
