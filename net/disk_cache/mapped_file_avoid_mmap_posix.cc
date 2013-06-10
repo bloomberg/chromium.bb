@@ -47,30 +47,16 @@ bool MappedFile::Store(const FileBlock* block) {
 void MappedFile::Flush() {
   DCHECK(buffer_);
   DCHECK(snapshot_);
-  if (0 == memcmp(buffer_, snapshot_, view_size_)) {
-    // Nothing changed, no need to flush.
-    return;
-  }
-
   const char* buffer_ptr = static_cast<const char*>(buffer_);
   char* snapshot_ptr = static_cast<char*>(snapshot_);
-  size_t i = 0;
-  while (i < view_size_) {
-    size_t run_start = i;
-    // Look for a run of changed bytes (possibly zero-sized). Write them out.
-    while(i < view_size_ && snapshot_ptr[i] != buffer_ptr[i]) {
-      snapshot_ptr[i] = buffer_ptr[i];
-      i++;
-    }
-    if (i > run_start) {
-      Write(snapshot_ptr + run_start, i - run_start, run_start);
-    }
-    // Look for a run of unchanged bytes (possibly zero-sized). Skip them.
-    while (i < view_size_ && snapshot_ptr[i] == buffer_ptr[i]) {
-      i++;
+  const size_t block_size = 4096;
+  for (size_t offset = 0; offset < view_size_; offset += block_size) {
+    size_t size = std::min(view_size_ - offset, block_size);
+    if (memcmp(snapshot_ptr + offset, buffer_ptr + offset, size)) {
+      memcpy(snapshot_ptr + offset, buffer_ptr + offset, size);
+      Write(snapshot_ptr + offset, size, offset);
     }
   }
-  DCHECK(0 == memcmp(buffer_, snapshot_, view_size_));
 }
 
 MappedFile::~MappedFile() {
