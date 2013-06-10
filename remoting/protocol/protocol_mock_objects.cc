@@ -4,7 +4,7 @@
 
 #include "remoting/protocol/protocol_mock_objects.h"
 
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/protocol/transport.h"
 

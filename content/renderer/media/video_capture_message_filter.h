@@ -12,7 +12,7 @@
 
 #include <map>
 
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/shared_memory.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"

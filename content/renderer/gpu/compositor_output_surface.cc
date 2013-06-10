@@ -5,7 +5,7 @@
 #include "content/renderer/gpu/compositor_output_surface.h"
 
 #include "base/command_line.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/output_surface_client.h"

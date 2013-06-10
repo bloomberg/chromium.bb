@@ -5,7 +5,7 @@
 #include "media/audio/mock_audio_manager.h"
 
 #include "base/logging.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "media/audio/audio_parameters.h"
 
 namespace media {

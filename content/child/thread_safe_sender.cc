@@ -4,7 +4,7 @@
 
 #include "content/child/thread_safe_sender.h"
 
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "content/child/child_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
 

@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_MEDIA_RTC_VIDEO_CAPTURE_DELEGATE_H_
 
 #include "base/callback.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "content/common/media/video_capture.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "media/video/capture/video_capture.h"

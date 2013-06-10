@@ -7,7 +7,7 @@
 
 #include "base/base_export.h"
 #include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
 
 namespace base {

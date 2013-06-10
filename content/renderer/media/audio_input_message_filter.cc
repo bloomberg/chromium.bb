@@ -5,7 +5,7 @@
 #include "content/renderer/media/audio_input_message_filter.h"
 
 #include "base/bind.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "content/common/media/audio_messages.h"
 #include "ipc/ipc_logging.h"
 

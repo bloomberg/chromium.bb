@@ -6,7 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/backend_impl.h"

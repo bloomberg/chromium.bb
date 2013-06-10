@@ -8,7 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"

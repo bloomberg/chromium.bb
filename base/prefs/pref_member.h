@@ -33,7 +33,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/base_prefs_export.h"
 #include "base/prefs/pref_observer.h"
 #include "base/values.h"

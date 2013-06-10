@@ -11,7 +11,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/task_runner_util.h"

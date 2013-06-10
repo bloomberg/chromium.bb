@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"

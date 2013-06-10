@@ -5,7 +5,7 @@
 #include "content/renderer/p2p/host_address_request.h"
 
 #include "base/bind.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "content/common/p2p_messages.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 

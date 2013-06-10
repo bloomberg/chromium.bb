@@ -14,7 +14,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "webkit/browser/appcache/appcache_database.h"
 #include "webkit/browser/appcache/appcache_disk_cache.h"
 #include "webkit/browser/appcache/appcache_storage.h"

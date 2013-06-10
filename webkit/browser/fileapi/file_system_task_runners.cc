@@ -4,7 +4,7 @@
 
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/single_thread_task_runner.h"
 
 namespace fileapi {

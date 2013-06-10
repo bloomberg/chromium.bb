@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/dom_storage/dom_storage_area.h"

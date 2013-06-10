@@ -13,7 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/message_pump.h"
 #include "base/observer_list.h"
 #include "base/pending_task.h"

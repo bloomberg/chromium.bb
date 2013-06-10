@@ -5,7 +5,7 @@
 #include "chrome/renderer/media/webrtc_logging_message_filter.h"
 
 #include "base/logging.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "chrome/common/media/webrtc_logging_messages.h"
 #include "chrome/renderer/media/webrtc_logging_handler_impl.h"
 #include "ipc/ipc_logging.h"

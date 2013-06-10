@@ -4,7 +4,7 @@
 
 #include "webkit/renderer/media/android/media_source_delegate.h"
 
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/bind_to_loop.h"

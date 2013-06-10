@@ -4,7 +4,7 @@
 
 #include "remoting/host/url_request_context.h"
 
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"

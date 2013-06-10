@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread_delegate.h"

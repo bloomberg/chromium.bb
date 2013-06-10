@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/message_loop_proxy.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/audio_capturer.h"

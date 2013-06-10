@@ -7,7 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sync_message_filter.h"

@@ -8,7 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "jni/MediaPlayerBridge_jni.h"
 #include "jni/MediaPlayer_jni.h"
 #include "media/base/android/media_player_manager.h"

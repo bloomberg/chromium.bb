@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/location.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/sys_info.h"
 #include "base/threading/worker_pool.h"

@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/location.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "content/common/input_messages.h"
 #include "content/renderer/gpu/input_event_filter.h"
 

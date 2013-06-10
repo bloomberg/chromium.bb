@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/pickle.h"
 #include "content/child/child_thread.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"

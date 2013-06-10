@@ -5,7 +5,7 @@
 #include "net/url_request/url_fetcher_impl.h"
 
 #include "base/bind.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "net/url_request/url_fetcher_core.h"
 #include "net/url_request/url_fetcher_factory.h"
 

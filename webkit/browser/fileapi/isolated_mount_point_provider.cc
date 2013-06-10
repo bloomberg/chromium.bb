@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
 #include "base/logging.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/sequenced_task_runner.h"
 #include "webkit/browser/blob/local_file_stream_reader.h"

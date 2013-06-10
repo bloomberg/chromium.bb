@@ -4,7 +4,7 @@
 
 #include "webkit/renderer/media/webmediaplayer_params.h"
 
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/media_log.h"
 

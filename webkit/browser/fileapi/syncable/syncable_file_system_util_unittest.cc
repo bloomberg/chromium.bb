@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/syncable/canned_syncable_file_system.h"

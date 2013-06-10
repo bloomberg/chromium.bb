@@ -13,7 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"

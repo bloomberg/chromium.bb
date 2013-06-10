@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "google/cacheinvalidation/include/invalidation-client-factory.h"
 #include "jingle/notifier/listener/push_client.h"

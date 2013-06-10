@@ -8,7 +8,7 @@
 
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 
 namespace syncer {
 

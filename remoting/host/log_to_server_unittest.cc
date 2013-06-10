@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "remoting/host/host_status_monitor_fake.h"
 #include "remoting/host/log_to_server.h"
 #include "remoting/jingle_glue/mock_objects.h"

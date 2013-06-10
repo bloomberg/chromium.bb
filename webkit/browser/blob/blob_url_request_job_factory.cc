@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "webkit/browser/blob/blob_storage_controller.h"

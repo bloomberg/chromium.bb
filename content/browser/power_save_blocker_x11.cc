@@ -21,7 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #if defined(TOOLKIT_GTK)
 #include "base/message_pump_gtk.h"
 #else

@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/mac/aggregate_device_manager.h"
 #include "media/audio/mac/audio_device_listener_mac.h"

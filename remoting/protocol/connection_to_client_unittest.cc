@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/fake_session.h"
 #include "remoting/protocol/protocol_mock_objects.h"

@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_message_loop.h"
 #include "ppapi/proxy/plugin_dispatcher.h"

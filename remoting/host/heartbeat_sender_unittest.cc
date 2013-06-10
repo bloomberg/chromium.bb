@@ -8,7 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/rsa_key_pair.h"

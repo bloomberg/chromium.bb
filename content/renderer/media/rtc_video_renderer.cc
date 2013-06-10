@@ -8,7 +8,7 @@
 #include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "third_party/libjingle/source/talk/media/base/videoframe.h"

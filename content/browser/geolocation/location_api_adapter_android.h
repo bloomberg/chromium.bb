@@ -9,7 +9,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
 
 namespace content {

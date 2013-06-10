@@ -5,7 +5,7 @@
 #include "net/proxy/proxy_resolver_v8_tracing.h"
 
 #include "base/bind.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/cancellation_flag.h"

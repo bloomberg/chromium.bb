@@ -6,7 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/debug/trace_event.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/channel_layout.h"

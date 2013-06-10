@@ -6,7 +6,7 @@
 #define WEBKIT_SUPPORT_SIMPLE_RESOURCE_LOADER_BRIDGE_H__
 
 #include <string>
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "net/http/http_cache.h"
 #include "webkit/glue/resource_loader_bridge.h"
 

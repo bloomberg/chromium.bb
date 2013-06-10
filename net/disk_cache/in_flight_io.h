@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 

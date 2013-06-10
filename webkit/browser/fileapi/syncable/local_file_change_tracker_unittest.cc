@@ -11,7 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/blob/mock_blob_url_request_context.h"

@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/common/media/audio_messages.h"

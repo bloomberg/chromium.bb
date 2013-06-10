@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/task_runner_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"

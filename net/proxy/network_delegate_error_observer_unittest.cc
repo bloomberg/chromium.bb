@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/thread.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"

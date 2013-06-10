@@ -13,8 +13,8 @@
 #include <list>
 #include <map>
 
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/thread.h"
-#include "base/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "media/video/capture/video_capture.h"

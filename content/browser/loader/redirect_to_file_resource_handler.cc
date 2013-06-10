@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/files/file_util_proxy.h"
 #include "base/logging.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"

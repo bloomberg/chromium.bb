@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"

@@ -17,7 +17,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"

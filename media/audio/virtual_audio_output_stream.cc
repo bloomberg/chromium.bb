@@ -4,7 +4,7 @@
 
 #include "media/audio/virtual_audio_output_stream.h"
 
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "media/audio/virtual_audio_input_stream.h"
 
 namespace media {

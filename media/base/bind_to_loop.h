@@ -12,7 +12,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 
 // This is a helper utility for base::Bind()ing callbacks on to particular
 // MessageLoops.  A typical use is when |a| (of class |A|) wants to hand a

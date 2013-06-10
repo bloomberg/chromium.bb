@@ -6,7 +6,7 @@
 
 #include "base/lazy_instance.h"  // For testing purposes only.
 #include "base/logging.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/thread_local.h"  // For testing purposes only.
 
 namespace ppapi {

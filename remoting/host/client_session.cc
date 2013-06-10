@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/message_loop_proxy.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "remoting/base/capabilities.h"
 #include "remoting/codec/audio_encoder.h"
 #include "remoting/codec/audio_encoder_opus.h"
