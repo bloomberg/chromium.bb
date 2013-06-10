@@ -107,7 +107,8 @@ SuggestionState MockAutofillDialogController::SuggestionStateForSection(
                          gfx::Font::NORMAL,
                          gfx::Image(),
                          string16(),
-                         gfx::Image());
+                         gfx::Image(),
+                         false);
 }
 
 void MockAutofillDialogController::EditClickedForSection(
