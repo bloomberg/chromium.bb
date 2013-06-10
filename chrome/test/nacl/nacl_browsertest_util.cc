@@ -177,15 +177,6 @@ static bool GetNaClVariantRoot(const base::FilePath::StringType& variant,
   return true;
 }
 
-static void AddPnaclParm(const base::FilePath::StringType& url,
-                         base::FilePath::StringType* url_with_parm) {
-  if (url.find(FILE_PATH_LITERAL("?")) == base::FilePath::StringType::npos) {
-    *url_with_parm = url + FILE_PATH_LITERAL("?pnacl=1");
-  } else {
-    *url_with_parm = url + FILE_PATH_LITERAL("&pnacl=1");
-  }
-}
-
 NaClBrowserTestBase::NaClBrowserTestBase() {
 }
 
@@ -233,11 +224,7 @@ bool NaClBrowserTestBase::RunJavascriptTest(const GURL& url,
 void NaClBrowserTestBase::RunLoadTest(
     const base::FilePath::StringType& test_file) {
   LoadTestMessageHandler handler;
-  base::FilePath::StringType test_file_with_parm = test_file;
-  if (IsPnacl()) {
-    AddPnaclParm(test_file, &test_file_with_parm);
-  }
-  bool ok = RunJavascriptTest(TestURL(test_file_with_parm), &handler);
+  bool ok = RunJavascriptTest(TestURL(test_file), &handler);
   ASSERT_TRUE(ok) << handler.error_message();
   ASSERT_TRUE(handler.test_passed()) << "Test failed.";
 }
@@ -245,11 +232,7 @@ void NaClBrowserTestBase::RunLoadTest(
 void NaClBrowserTestBase::RunNaClIntegrationTest(
     const base::FilePath::StringType& url_fragment) {
   NaClIntegrationMessageHandler handler;
-  base::FilePath::StringType url_fragment_with_parm = url_fragment;
-  if (IsPnacl()) {
-    AddPnaclParm(url_fragment, &url_fragment_with_parm);
-  }
-  bool ok = RunJavascriptTest(TestURL(url_fragment_with_parm), &handler);
+  bool ok = RunJavascriptTest(TestURL(url_fragment), &handler);
   ASSERT_TRUE(ok) << handler.error_message();
   ASSERT_TRUE(handler.test_passed()) << "Test failed.";
 }

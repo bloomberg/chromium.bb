@@ -76,8 +76,6 @@ const char* const kSrcManifestAttribute = "src";
 // MIME type because the "src" attribute is used to supply us with the resource
 // of that MIME type that we're supposed to display.
 const char* const kNaClManifestAttribute = "nacl";
-// The pseudo-ISA used to indicate portable native client.
-const char* const kPortableISA = "portable";
 // This is a pretty arbitrary limit on the byte size of the NaCl manfest file.
 // Note that the resulting string object has to have at least one byte extra
 // for the null termination character.
@@ -577,7 +575,6 @@ class ProgressEvent {
 };
 
 const char* const Plugin::kNaClMIMEType = "application/x-nacl";
-const char* const Plugin::kPnaclMIMEType = "application/x-pnacl";
 
 bool Plugin::NexeIsContentHandler() const {
   // Tests if the MIME type is not a NaCl MIME type.
@@ -585,8 +582,7 @@ bool Plugin::NexeIsContentHandler() const {
   // type handler rather than directly by an HTML document.
   return
       !mime_type().empty() &&
-      mime_type() != kNaClMIMEType &&
-      mime_type() != kPnaclMIMEType;
+      mime_type() != kNaClMIMEType;
 }
 
 
@@ -1256,11 +1252,13 @@ bool Plugin::SetManifestObject(const nacl::string& manifest_json,
     return false;
   // Determine whether lookups should use portable (i.e., pnacl versions)
   // rather than platform-specific files.
-  bool is_pnacl = (mime_type() == kPnaclMIMEType);
+  bool should_prefer_portable =
+      (getenv("NACL_PREFER_PORTABLE_IN_MANIFEST") != NULL);
   nacl::scoped_ptr<JsonManifest> json_manifest(
       new JsonManifest(url_util_,
                        manifest_base_url(),
-                       (is_pnacl ? kPortableISA : GetSandboxISA())));
+                       GetSandboxISA(),
+                       should_prefer_portable));
   if (!json_manifest->Init(manifest_json, error_info)) {
     return false;
   }
