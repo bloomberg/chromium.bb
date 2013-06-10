@@ -89,6 +89,11 @@ def AddTestRunnerOptions(option_parser, default_timeout=60):
                            dest='flakiness_dashboard_server',
                            help=('Address of the server that is hosting the '
                                  'Chrome for Android flakiness dashboard.'))
+  option_parser.add_option('--skip-deps-push', dest='push_deps',
+                           action='store_false', default=True,
+                           help='Do not push dependencies to the device. '
+                                'Use this at own risk for speeding up test '
+                                'execution on local machine.')
   AddBuildTypeOption(option_parser)
 
 

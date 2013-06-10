@@ -149,6 +149,7 @@ def _RunATestSuite(options, suite_name):
         options.tool,
         options.build_type,
         options.webkit,
+        options.push_deps,
         constants.GTEST_TEST_PACKAGE_NAME,
         constants.GTEST_TEST_ACTIVITY_NAME,
         constants.GTEST_COMMAND_LINE_FILE)

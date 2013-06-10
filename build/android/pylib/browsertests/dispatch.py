@@ -53,6 +53,7 @@ def Dispatch(options):
         options.tool,
         options.build_type,
         options.webkit,
+        options.push_deps,
         constants.BROWSERTEST_TEST_PACKAGE_NAME,
         constants.BROWSERTEST_TEST_ACTIVITY_NAME,
         constants.BROWSERTEST_COMMAND_LINE_FILE)

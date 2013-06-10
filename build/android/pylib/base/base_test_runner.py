@@ -34,12 +34,13 @@ class BaseTestRunner(object):
   the Run() method will set up tests, run them and tear them down.
   """
 
-  def __init__(self, device, tool, build_type):
+  def __init__(self, device, tool, build_type, push_deps):
     """
       Args:
         device: Tests will run on the device of this ID.
         shard_index: Index number of the shard on which the test suite will run.
         build_type: 'Release' or 'Debug'.
+        push_deps: If True, push all dependencies to the device.
     """
     self.device = device
     self.adb = android_commands.AndroidCommands(device=device)
@@ -59,6 +60,7 @@ class BaseTestRunner(object):
     self.test_server_spawner_port = 0
     self.test_server_port = 0
     self.build_type = build_type
+    self._push_deps = push_deps
 
   def _PushTestServerPortInfoToDevice(self):
     """Pushes the latest port information to device."""
@@ -86,7 +88,11 @@ class BaseTestRunner(object):
   def SetUp(self):
     """Run once before all tests are run."""
     Forwarder.KillDevice(self.adb, self.tool)
-    self.PushDependencies()
+    if self._push_deps:
+      logging.info('Pushing deps to device.')
+      self.PushDependencies()
+    else:
+      logging.warning('Skipping pushing deps to device.')
 
   def TearDown(self):
     """Run once after all tests are run."""
