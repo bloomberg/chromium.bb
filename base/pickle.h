@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 class Pickle;
 

@@ -5,7 +5,7 @@
 #ifndef BASE_NULLABLE_STRING16_H_
 #define BASE_NULLABLE_STRING16_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 // This class is a simple wrapper for string16 which also contains a null
 // state.  This should be used only where the difference between null and

@@ -16,8 +16,8 @@
 #include "base/prefs/pref_registry.h"
 #include "base/prefs/pref_value_store.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/value_conversions.h"
 #include "build/build_config.h"
 

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/message_loop.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class LibDispatchTaskRunnerTest : public testing::Test {
