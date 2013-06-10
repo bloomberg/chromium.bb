@@ -1,0 +1,42 @@
+<h1>Manifest Version</h1>
+
+<style type="text/css">
+#schedule h3 {
+  margin-bottom:0;
+}
+
+#schedule p {
+  margin-top:0;
+  margin-bottom:1em;
+}
+</style>
+
+<p>
+  Applications are simply bundles of resources, wrapped
+  up with a <a href="manifest.html"><code>manifest.json</code></a> file that
+  describes the package's contents. The format of this file is generally stable,
+  but occasionally breaking changes must be made to address important issues.
+  Developers should specify which version of the manifest specification their
+  package targets by setting a <code>manifest_version</code> key in their
+  manifests.
+</p>
+
+<h2 id="current-version">Current Version</h2>
+
+<p>
+  Packaged app developers must currently specify
+  <strong><code>'manifest_version': 2</code></strong>:
+</p>
+
+<pre>{
+  ...,
+  "manifest_version": 2,
+  ...
+}</pre>
+
+<p>
+  Manifest version 1 only applied to extensions and hosted apps, not
+  packaged apps.  It
+  was <a href="../extensions/manifestVersion.html">deprecated</a> in
+  Chrome 18.
+</p>
