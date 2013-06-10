@@ -21,7 +21,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "net/url_request/url_fetcher_delegate.h"

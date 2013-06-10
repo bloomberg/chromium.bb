@@ -7,7 +7,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
 #include "build/build_config.h"

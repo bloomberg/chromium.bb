@@ -22,7 +22,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/content_settings.h"

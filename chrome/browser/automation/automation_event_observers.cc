@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/automation/automation_event_observers.h"
 #include "chrome/browser/automation/automation_event_queue.h"
 #include "chrome/browser/automation/automation_provider.h"

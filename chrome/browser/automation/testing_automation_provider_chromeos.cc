@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/prefs/pref_service.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/automation/automation_provider_json.h"

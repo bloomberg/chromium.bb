@@ -4,7 +4,7 @@
 
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/net/url_fixer_upper.h"

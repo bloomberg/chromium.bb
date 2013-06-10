@@ -4,7 +4,7 @@
 
 #include "chrome/browser/autocomplete/builtin_provider.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/browser_about_handler.h"

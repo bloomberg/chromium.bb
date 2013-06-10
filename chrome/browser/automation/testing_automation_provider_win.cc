@@ -6,7 +6,7 @@
 
 #include <windows.h>
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_window_tracker.h"

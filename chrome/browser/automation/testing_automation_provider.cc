@@ -21,7 +21,7 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
