@@ -112,12 +112,6 @@ _OS_NEGATIVE_FILTER['mac'] = [
 ]
 _OS_NEGATIVE_FILTER['android'] = [
     'AlertsTest.*',
-    'BasicKeyboardInterfaceTest.testBasicKeyboardInput',
-    'BasicKeyboardInterfaceTest.testBasicKeyboardInputOnActiveElement',
-    'BasicKeyboardInterfaceTest.testSendingKeyDownOnly',
-    'BasicKeyboardInterfaceTest.testSendingKeysToActiveElement',
-    'BasicKeyboardInterfaceTest.testSendingKeysWithShiftPressed',
-    'BasicKeyboardInterfaceTest.testSendingKeyUp',
     'BasicMouseInterfaceTest.testCannotMoveToANullLocator',
     'BasicMouseInterfaceTest.testDoubleClick',
     'BasicMouseInterfaceTest.testDoubleClickThenGet',
@@ -191,8 +185,6 @@ _OS_NEGATIVE_FILTER['android'] = [
     'TouchFlickTest.*',
     'TouchScrollTest.*',
     'TouchSingleTapTest.*',
-    # Passes locally but not on bots??
-    'TypingTest.*',
 
     # These tests start multiple sessions, which is not supported on a single
     # Android device.

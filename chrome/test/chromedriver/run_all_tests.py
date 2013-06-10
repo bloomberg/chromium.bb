@@ -54,6 +54,7 @@ def _GenerateTestCommand(script,
     cmd.append('--chrome-version=' + chrome_version)
 
   if android_package:
+    cmd.insert(0, 'xvfb-run')
     cmd.append('--android-package=' + android_package)
   return cmd
 
