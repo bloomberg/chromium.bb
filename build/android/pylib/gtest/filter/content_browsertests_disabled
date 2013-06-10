@@ -75,11 +75,3 @@ WebrtcBrowserTest.CallWithDataAndLaterAddMedia
 
 # http://crbug.com/224134
 RenderWidgetHostBrowserTest.GetSnapshotFromRendererTest
-
-# http://crbug.com/233118
-IndexedDBBrowserTest.*
-IndexedDBBrowserTestWithMissingSSTFile.DestroyTest
-IndexedDBBrowserTestWithVersion0Schema.MigrationTest
-IndexedDBBrowserTestWithVersion123456Schema.DestroyTest
-IndexedDBBrowserTestWithVersion987654SSVData.DestroyTest
-IndexedDBLayoutTest.*
