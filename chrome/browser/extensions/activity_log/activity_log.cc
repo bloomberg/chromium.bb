@@ -190,14 +190,13 @@ bool ActivityLog::IsLogEnabled() {
   if (!has_threads_) return false;
   tracker_ = InstallTrackerFactory::GetForProfile(profile_);
   tracker_->AddObserver(this);
-  // TODO(felt): Fix this.
-  /*const ExtensionService* extension_service =
+  const ExtensionService* extension_service =
       ExtensionSystem::Get(profile_)->extension_service();
   if (extension_service->IsExtensionEnabled(
       kActivityLogExtensionId)) {
     enabled_ = true;
     LogIsEnabled::GetInstance()->SetProfileEnabled(true);
-  }*/
+  }
   first_time_checking_ = false;
   return enabled_;
 }

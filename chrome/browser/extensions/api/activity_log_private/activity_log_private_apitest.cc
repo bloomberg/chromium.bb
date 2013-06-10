@@ -13,22 +13,13 @@ namespace extensions {
 
 class ActivityLogApiTest : public ExtensionApiTest {
  public:
-  ActivityLogApiTest() : saved_cmdline_(CommandLine::NO_PROGRAM) {}
-
-  ~ActivityLogApiTest() {
-    ExtensionApiTest::SetUpCommandLine(&saved_cmdline_);
-    *CommandLine::ForCurrentProcess() = saved_cmdline_;
-  }
+  ActivityLogApiTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    saved_cmdline_ = *CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(switches::kEnableExtensionActivityLogging);
     command_line->AppendSwitch(switches::kEnableExtensionActivityLogTesting);
   }
-
- private:
-  CommandLine saved_cmdline_;
 };
 
 // The test extension sends a message to its 'friend'. The test completes
