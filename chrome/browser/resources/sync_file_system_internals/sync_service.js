@@ -8,8 +8,7 @@
 var syncService = (function() {
 'use strict';
 
-function SyncService() {
-}
+var SyncService = {};
 
 /**
  * Request Sync Service Status.
@@ -22,7 +21,7 @@ function getServiceStatus() {
  * Handles callback from getServiceStatus.
  * @param {string} Service status enum as a string.
  */
-SyncService.prototype.onGetServiceStatus = function(statusString) {
+SyncService.onGetServiceStatus = function(statusString) {
   $('service-status').textContent = statusString;
 }
 
@@ -37,7 +36,7 @@ function getNotificationSource() {
  * Handles callback from getNotificationSource.
  * @param {string} Notification source as a string.
  */
-SyncService.prototype.onGetNotificationSource = function(sourceString) {
+SyncService.onGetNotificationSource = function(sourceString) {
   $('notification-source').textContent = sourceString;
 }
 
@@ -64,7 +63,7 @@ function getLog() {
  * Handles callback from getUpdateLog.
  * @param {Array} list List of dictionaries containing 'time' and 'logEvent'.
  */
-SyncService.prototype.onGetLog = function(logEntries) {
+SyncService.onGetLog = function(logEntries) {
   var itemContainer = $('log-entries');
   for (var i = 0; i < logEntries.length; i++) {
     var logEntry = logEntries[i];
@@ -82,9 +81,11 @@ function main() {
   cr.ui.decorate('tabbox', cr.ui.TabBox);
   getServiceStatus();
   getNotificationSource();
+
+  // TODO: Look for a way to push entries to the page when necessary.
   window.setInterval(getLog, 1000);
 }
 
 document.addEventListener('DOMContentLoaded', main);
-return new SyncService;
+return SyncService;
 })();
