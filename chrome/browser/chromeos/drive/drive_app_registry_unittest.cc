@@ -5,34 +5,18 @@
 #include "chrome/browser/chromeos/drive/drive_app_registry.h"
 
 #include "base/files/file_path.h"
-#include "base/json/json_file_value_serializer.h"
-#include "base/message_loop.h"
-#include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
-#include "chrome/browser/chromeos/drive/test_util.h"
-#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
-#include "chrome/browser/google_apis/gdata_wapi_parser.h"
-#include "chrome/browser/google_apis/test_util.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using base::Value;
-using base::DictionaryValue;
-using base::ListValue;
 
 namespace drive {
 
 class DriveAppRegistryTest : public testing::Test {
  protected:
-  DriveAppRegistryTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
-  }
-
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
 
@@ -45,7 +29,7 @@ class DriveAppRegistryTest : public testing::Test {
 
     web_apps_registry_.reset(new DriveAppRegistry(scheduler_.get()));
     web_apps_registry_->Update();
-    google_apis::test_util::RunBlockingPoolTask();
+    base::RunLoop().RunUntilIdle();
   }
 
   bool VerifyApp(const ScopedVector<DriveAppInfo>& list,
@@ -72,23 +56,7 @@ class DriveAppRegistryTest : public testing::Test {
     return found;
   }
 
-  bool VerifyApp1(const ScopedVector<DriveAppInfo>& list,
-                  bool is_primary) {
-    return VerifyApp(list, "abcdefabcdef", "11111111",
-              "Drive App 1", "Drive App Object 1",
-              is_primary);
-  }
-
-  bool VerifyApp2(const ScopedVector<DriveAppInfo>& list,
-                  bool is_primary) {
-    return VerifyApp(list, "deadbeefdeadbeef", "22222222",
-              "Drive App 2", "Drive App Object 2",
-              is_primary);
-  }
-
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;

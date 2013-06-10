@@ -6,11 +6,9 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/json/json_file_value_serializer.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/path_service.h"
-#include "base/platform_file.h"
+#include "base/values.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"

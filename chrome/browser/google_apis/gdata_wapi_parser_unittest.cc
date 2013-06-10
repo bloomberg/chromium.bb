@@ -9,17 +9,11 @@
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
-#include "base/path_service.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using base::Value;
-using base::DictionaryValue;
-using base::ListValue;
 
 namespace google_apis {
 
@@ -28,10 +22,10 @@ namespace google_apis {
 // Test document feed parsing.
 TEST(GDataWAPIParserTest, ResourceListJsonParser) {
   std::string error;
-  scoped_ptr<Value> document =
+  scoped_ptr<base::Value> document =
       test_util::LoadJSONFile("chromeos/gdata/basic_feed.json");
   ASSERT_TRUE(document.get());
-  ASSERT_EQ(Value::TYPE_DICTIONARY, document->GetType());
+  ASSERT_EQ(base::Value::TYPE_DICTIONARY, document->GetType());
   scoped_ptr<ResourceList> feed(ResourceList::ExtractAndParse(*document));
   ASSERT_TRUE(feed.get());
 
@@ -157,10 +151,10 @@ TEST(GDataWAPIParserTest, ResourceListJsonParser) {
 // Test document feed parsing.
 TEST(GDataWAPIParserTest, ResourceEntryJsonParser) {
   std::string error;
-  scoped_ptr<Value> document =
+  scoped_ptr<base::Value> document =
       test_util::LoadJSONFile("chromeos/gdata/file_entry.json");
   ASSERT_TRUE(document.get());
-  ASSERT_EQ(Value::TYPE_DICTIONARY, document->GetType());
+  ASSERT_EQ(base::Value::TYPE_DICTIONARY, document->GetType());
   scoped_ptr<ResourceEntry> entry(ResourceEntry::ExtractAndParse(*document));
   ASSERT_TRUE(entry.get());
 
@@ -238,13 +232,13 @@ TEST(GDataWAPIParserTest, ResourceEntryJsonParser) {
 }
 
 TEST(GDataWAPIParserTest, AccountMetadataParser) {
-  scoped_ptr<Value> document =
+  scoped_ptr<base::Value> document =
       test_util::LoadJSONFile("chromeos/gdata/account_metadata.json");
   ASSERT_TRUE(document.get());
-  ASSERT_EQ(Value::TYPE_DICTIONARY, document->GetType());
-  DictionaryValue* entry_value = NULL;
-  ASSERT_TRUE(reinterpret_cast<DictionaryValue*>(document.get())->GetDictionary(
-      std::string("entry"), &entry_value));
+  base::DictionaryValue* document_dict = NULL;
+  base::DictionaryValue* entry_value = NULL;
+  ASSERT_TRUE(document->GetAsDictionary(&document_dict));
+  ASSERT_TRUE(document_dict->GetDictionary(std::string("entry"), &entry_value));
   ASSERT_TRUE(entry_value);
 
   scoped_ptr<AccountMetadata> metadata(

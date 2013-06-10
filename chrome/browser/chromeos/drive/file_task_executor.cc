@@ -7,24 +7,15 @@
 #include <string>
 #include <vector>
 
-#include "base/json/json_writer.h"
-#include "base/string_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
-#include "chrome/browser/google_apis/gdata_wapi_parser.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/common/fileapi/file_system_util.h"
 
 using file_handler_util::FileTaskExecutor;
 using fileapi::FileSystemURL;
