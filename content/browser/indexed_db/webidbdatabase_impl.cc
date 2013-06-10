@@ -15,15 +15,10 @@
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
-#include "third_party/WebKit/public/platform/WebIDBKey.h"
-#include "third_party/WebKit/public/platform/WebIDBKeyRange.h"
 #include "third_party/WebKit/public/platform/WebIDBMetadata.h"
 
 using WebKit::WebString;
-using WebKit::WebIDBKey;
 using WebKit::WebData;
-using WebKit::WebIDBKeyPath;
-using WebKit::WebIDBKeyRange;
 using WebKit::WebVector;
 using WebKit::WebIDBDatabaseError;
 
@@ -40,7 +35,7 @@ WebIDBDatabaseImpl::~WebIDBDatabaseImpl() {}
 void WebIDBDatabaseImpl::createObjectStore(long long transaction_id,
                                            long long object_store_id,
                                            const WebString& name,
-                                           const WebIDBKeyPath& key_path,
+                                           const IndexedDBKeyPath& key_path,
                                            bool auto_increment) {
   database_backend_->CreateObjectStore(transaction_id,
                                        object_store_id,
@@ -104,7 +99,7 @@ void WebIDBDatabaseImpl::commit(long long transaction_id) {
 void WebIDBDatabaseImpl::openCursor(long long transaction_id,
                                     long long object_store_id,
                                     long long index_id,
-                                    const WebIDBKeyRange& key_range,
+                                    const IndexedDBKeyRange& key_range,
                                     unsigned short direction,
                                     bool key_only,
                                     WebKit::WebIDBDatabase::TaskType task_type,
@@ -124,7 +119,7 @@ void WebIDBDatabaseImpl::openCursor(long long transaction_id,
 void WebIDBDatabaseImpl::count(long long transaction_id,
                                long long object_store_id,
                                long long index_id,
-                               const WebIDBKeyRange& key_range,
+                               const IndexedDBKeyRange& key_range,
                                IndexedDBCallbacksBase* callbacks) {
   if (database_backend_)
     database_backend_->Count(transaction_id,
@@ -137,7 +132,7 @@ void WebIDBDatabaseImpl::count(long long transaction_id,
 void WebIDBDatabaseImpl::get(long long transaction_id,
                              long long object_store_id,
                              long long index_id,
-                             const WebIDBKeyRange& key_range,
+                             const IndexedDBKeyRange& key_range,
                              bool key_only,
                              IndexedDBCallbacksBase* callbacks) {
   if (database_backend_)
@@ -149,28 +144,22 @@ void WebIDBDatabaseImpl::get(long long transaction_id,
                            IndexedDBCallbacksWrapper::Create(callbacks));
 }
 
-void WebIDBDatabaseImpl::put(
-    long long transaction_id,
-    long long object_store_id,
-    const WebData& value,
-    const WebIDBKey& key,
-    WebKit::WebIDBDatabase::PutMode put_mode,
-    IndexedDBCallbacksBase* callbacks,
-    const WebVector<long long>& web_index_ids,
-    const WebVector<WebKit::WebIDBDatabase::WebIndexKeys>& web_index_keys) {
+void WebIDBDatabaseImpl::put(long long transaction_id,
+                             long long object_store_id,
+                             const WebData& value,
+                             const IndexedDBKey& key,
+                             WebKit::WebIDBDatabase::PutMode put_mode,
+                             IndexedDBCallbacksBase* callbacks,
+                             const WebVector<long long>& web_index_ids,
+                             const std::vector<IndexKeys>& index_keys) {
   if (!database_backend_)
     return;
 
-  DCHECK_EQ(web_index_ids.size(), web_index_keys.size());
+  DCHECK_EQ(web_index_ids.size(), index_keys.size());
   std::vector<int64> index_ids(web_index_ids.size());
-  std::vector<IndexedDBDatabase::IndexKeys> index_keys(web_index_keys.size());
 
   for (size_t i = 0; i < web_index_ids.size(); ++i) {
     index_ids[i] = web_index_ids[i];
-    IndexedDBKey::KeyArray index_key_list;
-    for (size_t j = 0; j < web_index_keys[i].size(); ++j)
-      index_key_list.push_back(IndexedDBKey(web_index_keys[i][j]));
-    index_keys[i] = index_key_list;
   }
 
   std::vector<char> value_buffer(value.data(), value.data() + value.size());
@@ -187,9 +176,9 @@ void WebIDBDatabaseImpl::put(
 void WebIDBDatabaseImpl::setIndexKeys(
     long long transaction_id,
     long long object_store_id,
-    const WebIDBKey& primary_key,
+    const IndexedDBKey& primary_key,
     const WebVector<long long>& web_index_ids,
-    const WebVector<WebKit::WebIDBDatabase::WebIndexKeys>& web_index_keys) {
+    const std::vector<IndexKeys>& web_index_keys) {
   if (!database_backend_)
     return;
 
@@ -201,7 +190,7 @@ void WebIDBDatabaseImpl::setIndexKeys(
     index_ids[i] = web_index_ids[i];
     IndexedDBKey::KeyArray index_key_list;
     for (size_t j = 0; j < web_index_keys[i].size(); ++j)
-      index_key_list.push_back(IndexedDBKey(web_index_keys[i][j]));
+      index_key_list.push_back(web_index_keys[i][j]);
     index_keys[i] = index_key_list;
   }
   database_backend_->SetIndexKeys(
@@ -228,7 +217,7 @@ void WebIDBDatabaseImpl::setIndexesReady(
 
 void WebIDBDatabaseImpl::deleteRange(long long transaction_id,
                                      long long object_store_id,
-                                     const WebIDBKeyRange& key_range,
+                                     const IndexedDBKeyRange& key_range,
                                      IndexedDBCallbacksBase* callbacks) {
   if (database_backend_)
     database_backend_->DeleteRange(
@@ -251,7 +240,7 @@ void WebIDBDatabaseImpl::createIndex(long long transaction_id,
                                      long long object_store_id,
                                      long long index_id,
                                      const WebString& name,
-                                     const WebIDBKeyPath& key_path,
+                                     const IndexedDBKeyPath& key_path,
                                      bool unique,
                                      bool multi_entry) {
   if (database_backend_)

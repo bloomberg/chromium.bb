@@ -509,7 +509,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
   if (!database)
     return;
   scoped_ptr<IndexedDBCallbacksBase> callbacks(
-      new IndexedDBCallbacks<WebIDBKey>(
+      new IndexedDBCallbacks<IndexedDBKey>(
           parent_, params.ipc_thread_id, params.ipc_callbacks_id));
   // Be careful with empty vectors.
   WebData value;

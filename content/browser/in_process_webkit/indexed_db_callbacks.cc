@@ -40,8 +40,7 @@ void IndexedDBCallbacksBase::onBlocked(long long old_version) {
       ipc_thread_id_, ipc_callbacks_id_, old_version));
 }
 
-void IndexedDBCallbacksBase::onSuccess(
-    const WebVector<WebString>& value) {
+void IndexedDBCallbacksBase::onSuccess(const WebVector<WebString>& value) {
   NOTREACHED();
 }
 
@@ -57,36 +56,34 @@ void IndexedDBCallbacksBase::onUpgradeNeeded(long long old_version,
 }
 
 void IndexedDBCallbacksBase::onSuccess(WebIDBCursorImpl* idb_object,
-                                       const WebKit::WebIDBKey& key,
-                                       const WebKit::WebIDBKey& primaryKey,
+                                       const IndexedDBKey& key,
+                                       const IndexedDBKey& primaryKey,
                                        const WebData& value) {
   NOTREACHED();
 }
 
-void IndexedDBCallbacksBase::onSuccess(const WebKit::WebIDBKey& key,
-                                       const WebKit::WebIDBKey& primaryKey,
+void IndexedDBCallbacksBase::onSuccess(const IndexedDBKey& key,
+                                       const IndexedDBKey& primaryKey,
                                        const WebData& value) {
   NOTREACHED();
 }
 
-void IndexedDBCallbacksBase::onSuccess(const WebData& value) {
-  NOTREACHED();
-}
+void IndexedDBCallbacksBase::onSuccess(const WebData& value) { NOTREACHED(); }
 
 void IndexedDBCallbacksBase::onSuccessWithPrefetch(
-    const WebVector<WebKit::WebIDBKey>& keys,
-    const WebVector<WebKit::WebIDBKey>& primaryKeys,
-    const WebVector<WebData>& values) {
+    const std::vector<IndexedDBKey>& keys,
+    const std::vector<IndexedDBKey>& primaryKeys,
+    const std::vector<std::vector<char> >& values) {
   NOTREACHED();
 }
 
-void IndexedDBCallbacksBase::onSuccess(const WebKit::WebIDBKey& value) {
+void IndexedDBCallbacksBase::onSuccess(const IndexedDBKey& value) {
   NOTREACHED();
 }
 
 void IndexedDBCallbacksBase::onSuccess(const WebData& value,
-                                       const WebKit::WebIDBKey& key,
-                                       const WebKit::WebIDBKeyPath& keyPath) {
+                                       const IndexedDBKey& key,
+                                       const IndexedDBKeyPath& keyPath) {
   NOTREACHED();
 }
 
@@ -149,8 +146,8 @@ void IndexedDBCallbacksDatabase::onUpgradeNeeded(
 
 void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccess(
     WebIDBCursorImpl* idb_cursor,
-    const WebKit::WebIDBKey& key,
-    const WebKit::WebIDBKey& primaryKey,
+    const IndexedDBKey& key,
+    const IndexedDBKey& primaryKey,
     const WebData& value) {
   int32 ipc_object_id = dispatcher_host()->Add(idb_cursor);
   IndexedDBMsg_CallbacksSuccessIDBCursor_Params params;
@@ -163,16 +160,15 @@ void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccess(
   dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessIDBCursor(params));
 }
 
-void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccess(
-    const WebData& webValue) {
+void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccess(const WebData& webValue) {
   std::vector<char> value(webValue.data(), webValue.data() + webValue.size());
   dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessValue(
       ipc_thread_id(), ipc_callbacks_id(), value));
 }
 
 void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccess(
-    const WebKit::WebIDBKey& key,
-    const WebKit::WebIDBKey& primaryKey,
+    const IndexedDBKey& key,
+    const IndexedDBKey& primaryKey,
     const WebData& value) {
   DCHECK_NE(ipc_cursor_id_, -1);
   WebIDBCursorImpl* idb_cursor =
@@ -193,20 +189,17 @@ void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccess(
 }
 
 void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccessWithPrefetch(
-    const WebVector<WebKit::WebIDBKey>& keys,
-    const WebVector<WebKit::WebIDBKey>& primaryKeys,
-    const WebVector<WebData>& values) {
+    const std::vector<IndexedDBKey>& keys,
+    const std::vector<IndexedDBKey>& primaryKeys,
+    const std::vector<std::vector<char> >& values) {
   DCHECK_NE(ipc_cursor_id_, -1);
 
   std::vector<IndexedDBKey> msgKeys;
   std::vector<IndexedDBKey> msgPrimaryKeys;
-  std::vector<std::vector<char> > msgValues;
 
   for (size_t i = 0; i < keys.size(); ++i) {
-    msgKeys.push_back(IndexedDBKey(keys[i]));
-    msgPrimaryKeys.push_back(IndexedDBKey(primaryKeys[i]));
-    msgValues.push_back(std::vector<char>(values[i].data(),
-                                          values[i].data() + values[i].size()));
+    msgKeys.push_back(keys[i]);
+    msgPrimaryKeys.push_back(primaryKeys[i]);
   }
 
   IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params params;
@@ -215,13 +208,12 @@ void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccessWithPrefetch(
   params.ipc_cursor_id = ipc_cursor_id_;
   params.keys = msgKeys;
   params.primary_keys = msgPrimaryKeys;
-  params.values = msgValues;
+  params.values = values;
   dispatcher_host()->Send(
       new IndexedDBMsg_CallbacksSuccessCursorPrefetch(params));
 }
 
-void IndexedDBCallbacks<WebKit::WebIDBKey>::onSuccess(
-    const WebKit::WebIDBKey& value) {
+void IndexedDBCallbacks<IndexedDBKey>::onSuccess(const IndexedDBKey& value) {
   dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessIndexedDBKey(
       ipc_thread_id(), ipc_callbacks_id(), IndexedDBKey(value)));
 }
@@ -237,18 +229,16 @@ void IndexedDBCallbacks<WebVector<WebString> >::onSuccess(
       ipc_thread_id(), ipc_callbacks_id(), list));
 }
 
-void IndexedDBCallbacks<WebData>::onSuccess(
-    const WebData& value) {
+void IndexedDBCallbacks<WebData>::onSuccess(const WebData& value) {
   dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessValue(
       ipc_thread_id(),
       ipc_callbacks_id(),
       std::vector<char>(value.data(), value.data() + value.size())));
 }
 
-void IndexedDBCallbacks<WebData>::onSuccess(
-    const WebData& value,
-    const WebKit::WebIDBKey& primaryKey,
-    const WebKit::WebIDBKeyPath& keyPath) {
+void IndexedDBCallbacks<WebData>::onSuccess(const WebData& value,
+                                            const IndexedDBKey& primaryKey,
+                                            const IndexedDBKeyPath& keyPath) {
   dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessValueWithKey(
       ipc_thread_id(),
       ipc_callbacks_id(),
@@ -267,8 +257,7 @@ void IndexedDBCallbacks<WebData>::onSuccess() {
       ipc_thread_id(), ipc_callbacks_id()));
 }
 
-void IndexedDBCallbacks<WebData>::onSuccess(
-    const WebKit::WebIDBKey& value) {
+void IndexedDBCallbacks<WebData>::onSuccess(const IndexedDBKey& value) {
   dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessIndexedDBKey(
       ipc_thread_id(), ipc_callbacks_id(), IndexedDBKey(value)));
 }

@@ -51,13 +51,13 @@ void IndexedDBCallbacksWrapper::OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
   if (value && value->size())
     web_value.assign(&value->front(), value->size());
   callbacks_->onSuccess(
-      new WebIDBCursorImpl(cursor), WebIDBKey(key), primary_key, web_value);
+      new WebIDBCursorImpl(cursor), key, primary_key, web_value);
   callbacks_.reset();
 }
 
 void IndexedDBCallbacksWrapper::OnSuccess(const IndexedDBKey& key) {
   DCHECK(callbacks_);
-  callbacks_->onSuccess(WebIDBKey(key));
+  callbacks_->onSuccess(key);
   callbacks_.reset();
 }
 
@@ -78,7 +78,7 @@ void IndexedDBCallbacksWrapper::OnSuccess(std::vector<char>* value,
   if (value && value->size())
     web_value.assign(&value->front(), value->size());
   DCHECK(callbacks_);
-  callbacks_->onSuccess(web_value, WebIDBKey(key), key_path);
+  callbacks_->onSuccess(web_value, key, key_path);
   callbacks_.reset();
 }
 
@@ -112,18 +112,8 @@ void IndexedDBCallbacksWrapper::OnSuccessWithPrefetch(
   DCHECK_EQ(keys.size(), primary_keys.size());
   DCHECK_EQ(keys.size(), values.size());
 
-  std::vector<WebIDBKey> web_keys(keys.size());
-  std::vector<WebIDBKey> web_primary_keys(primary_keys.size());
-  std::vector<WebData> web_values(values.size());
-  for (size_t i = 0; i < keys.size(); ++i) {
-    web_keys[i] = keys[i];
-    web_primary_keys[i] = primary_keys[i];
-    if (values[i].size())
-      web_values[i].assign(&values[i].front(), values[i].size());
-  }
-
   DCHECK(callbacks_);
-  callbacks_->onSuccessWithPrefetch(web_keys, web_primary_keys, web_values);
+  callbacks_->onSuccessWithPrefetch(keys, primary_keys, values);
   callbacks_.reset();
 }
 

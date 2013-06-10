@@ -28,10 +28,12 @@ class CONTENT_EXPORT WebIDBDatabaseImpl {
       scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks);
   virtual ~WebIDBDatabaseImpl();
 
+  typedef std::vector<IndexedDBKey> IndexKeys;
+
   virtual void createObjectStore(long long transaction_id,
                                  long long object_store_id,
                                  const WebKit::WebString& name,
-                                 const WebKit::WebIDBKeyPath& key_path,
+                                 const IndexedDBKeyPath& key_path,
                                  bool auto_increment);
   virtual void deleteObjectStore(long long object_store_id,
                                  long long transaction_id);
@@ -49,32 +51,29 @@ class CONTENT_EXPORT WebIDBDatabaseImpl {
   virtual void get(long long transaction_id,
                    long long object_store_id,
                    long long index_id,
-                   const WebKit::WebIDBKeyRange& range,
+                   const IndexedDBKeyRange& range,
                    bool key_only,
                    IndexedDBCallbacksBase* callbacks);
   virtual void put(long long transaction_id,
                    long long object_store_id,
                    const WebKit::WebData& value,
-                   const WebKit::WebIDBKey& key,
+                   const IndexedDBKey& key,
                    WebKit::WebIDBDatabase::PutMode mode,
                    IndexedDBCallbacksBase* callbacks,
                    const WebKit::WebVector<long long>& index_ids,
-                   const WebKit::WebVector<
-                       WebKit::WebIDBDatabase::WebIndexKeys>& index_keys);
-  virtual void setIndexKeys(
-      long long transaction_id,
-      long long object_store_id,
-      const WebKit::WebIDBKey& key,
-      const WebKit::WebVector<long long>& index_ids,
-      const WebKit::WebVector<WebKit::WebIDBDatabase::WebIndexKeys>&
-          index_keys);
+                   const std::vector<IndexKeys>& index_keys);
+  virtual void setIndexKeys(long long transaction_id,
+                            long long object_store_id,
+                            const IndexedDBKey& key,
+                            const WebKit::WebVector<long long>& index_ids,
+                            const std::vector<IndexKeys>& index_keys);
   virtual void setIndexesReady(long long transaction_id,
                                long long object_store_id,
                                const WebKit::WebVector<long long>& index_ids);
   virtual void openCursor(long long transaction_id,
                           long long object_store_id,
                           long long index_id,
-                          const WebKit::WebIDBKeyRange& range,
+                          const IndexedDBKeyRange& range,
                           unsigned short direction,
                           bool key_only,
                           WebKit::WebIDBDatabase::TaskType task_type,
@@ -82,11 +81,11 @@ class CONTENT_EXPORT WebIDBDatabaseImpl {
   virtual void count(long long transaction_id,
                      long long object_store_id,
                      long long index_id,
-                     const WebKit::WebIDBKeyRange& range,
+                     const IndexedDBKeyRange& range,
                      IndexedDBCallbacksBase* callbacks);
   virtual void deleteRange(long long transaction_id,
                            long long object_store_id,
-                           const WebKit::WebIDBKeyRange& range,
+                           const IndexedDBKeyRange& range,
                            IndexedDBCallbacksBase* callbacks);
   virtual void clear(long long transaction_id,
                      long long object_store_id,
@@ -96,7 +95,7 @@ class CONTENT_EXPORT WebIDBDatabaseImpl {
                            long long object_store_id,
                            long long index_id,
                            const WebKit::WebString& name,
-                           const WebKit::WebIDBKeyPath& key_path,
+                           const IndexedDBKeyPath& key_path,
                            bool unique,
                            bool multi_entry);
   virtual void deleteIndex(long long transaction_id,

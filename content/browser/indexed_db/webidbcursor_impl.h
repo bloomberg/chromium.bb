@@ -7,13 +7,10 @@
 
 #include "base/memory/ref_counted.h"
 
-namespace WebKit {
-class WebIDBKey;
-}
-
 namespace content {
 class IndexedDBCursor;
 class IndexedDBCallbacksBase;
+class IndexedDBKey;
 
 class WebIDBCursorImpl {
  public:
@@ -21,7 +18,7 @@ class WebIDBCursorImpl {
   virtual ~WebIDBCursorImpl();
 
   virtual void advance(unsigned long, IndexedDBCallbacksBase* callbacks);
-  virtual void continueFunction(const WebKit::WebIDBKey& key,
+  virtual void continueFunction(const IndexedDBKey& key,
                                 IndexedDBCallbacksBase* callbacks);
   virtual void prefetchContinue(int number_to_fetch,
                                 IndexedDBCallbacksBase* callbacks);

@@ -7,7 +7,6 @@
 #include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/common/indexed_db/indexed_db_key.h"
-#include "third_party/WebKit/public/platform/WebIDBKey.h"
 
 namespace content {
 
@@ -23,7 +22,7 @@ void WebIDBCursorImpl::advance(unsigned long count,
                                IndexedDBCallbacksWrapper::Create(callbacks));
 }
 
-void WebIDBCursorImpl::continueFunction(const WebKit::WebIDBKey& key,
+void WebIDBCursorImpl::continueFunction(const IndexedDBKey& key,
                                         IndexedDBCallbacksBase* callbacks) {
   idb_cursor_backend_->ContinueFunction(
       make_scoped_ptr(new IndexedDBKey(key)),
