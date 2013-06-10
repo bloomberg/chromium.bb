@@ -542,10 +542,7 @@ void ManagedUserService::OnManagedUserRegistered(
     Profile* custodian_profile,
     const GoogleServiceAuthError& auth_error,
     const std::string& token) {
-  if (auth_error.state() == GoogleServiceAuthError::REQUEST_CANCELED) {
-    callback.Run(profile_, Profile::CREATE_STATUS_CANCELED);
-    return;
-  } else if (auth_error.state() != GoogleServiceAuthError::NONE) {
+  if (auth_error.state() != GoogleServiceAuthError::NONE) {
     LOG(ERROR) << "Managed user OAuth error: " << auth_error.ToString();
     DCHECK_EQ(std::string(), token);
     callback.Run(profile_, Profile::CREATE_STATUS_REMOTE_FAIL);

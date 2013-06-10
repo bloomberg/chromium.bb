@@ -120,7 +120,10 @@ class ManagedUserService : public BrowserContextKeyedService,
   // Convenience method that registers this managed user with
   // |registration_service| and initializes sync with the returned token.
   // Note that |registration_service| should belong to the custodian's profile,
-  // not this one.
+  // not this one. The |callback| will be called when registration is complete,
+  // whether it suceeded or not -- unless registration was cancelled in the
+  // ManagedUserRegistrationService manually, in which case the callback will
+  // be ignored.
   void RegisterAndInitSync(Profile* custodian_profile,
                            const ProfileManager::CreateCallback& callback);
 

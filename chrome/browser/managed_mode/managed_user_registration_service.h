@@ -56,8 +56,9 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
   // managed user does not yet exist.
   void Register(const string16& name, const RegistrationCallback& callback);
 
-  // Cancels any registration currently in progress and calls the callback with
-  // an appropriate error.
+  // Cancels any registration currently in progress, without calling the
+  // callback or reporting an error. This should be called when the user
+  // actively cancels the registration by canceling profile creation.
   void CancelPendingRegistration();
 
   // ProfileKeyedService implementation:
@@ -90,16 +91,19 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
   void OnReceivedToken(const GoogleServiceAuthError& error,
                        const std::string& token);
 
-  // Dispatches the callback if all the conditions have been met.
-  void DispatchCallbackIfReady();
+  // Dispatches the callback and cleans up if all the conditions have been met.
+  void CompleteRegistrationIfReady();
 
-  // Cancels any registration currently in progress and calls the callback
-  // specified when Register was called with the given error.
-  void CancelPendingRegistrationImpl(const GoogleServiceAuthError& error);
+  // Aborts any registration currently in progress. If |run_callback| is true,
+  // calls the callback specified in Register() with the given |error|.
+  void AbortPendingRegistration(bool run_callback,
+                                const GoogleServiceAuthError& error);
 
-  // Dispatches the callback with the saved token (which may be empty) and the
-  // given |error|.
-  void DispatchCallback(const GoogleServiceAuthError& error);
+  // If |run_callback| is true, dispatches the callback with the saved token
+  // (which may be empty) and the given |error|. In any case, resets internal
+  // variables to be ready for the next registration.
+  void CompleteRegistration(bool run_callback,
+                            const GoogleServiceAuthError& error);
 
   base::WeakPtrFactory<ManagedUserRegistrationService> weak_ptr_factory_;
   PrefService* prefs_;

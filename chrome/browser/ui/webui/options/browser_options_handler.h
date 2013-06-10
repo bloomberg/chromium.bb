@@ -145,6 +145,9 @@ class BrowserOptionsHandler
   // Sends an array of Profile objects to javascript.
   void SendProfilesInfo();
 
+  // Returns the current desktop type.
+  chrome::HostDesktopType GetDesktopType();
+
   // Asynchronously creates and initializes a new profile.
   // The arguments are as follows:
   //   0: name (string)
@@ -163,6 +166,9 @@ class BrowserOptionsHandler
                               Profile* new_profile,
                               Profile::CreateStatus status);
 
+  // Records UMA histograms relevant to profile creation.
+  void RecordProfileCreationMetrics(Profile::CreateStatus status);
+
   // Updates the UI as the final task after a new profile has been created.
   void ShowProfileCreationFeedback(
       chrome::HostDesktopType desktop_type,
@@ -179,15 +185,17 @@ class BrowserOptionsHandler
 
   // Cancels creation of a managed-user profile currently in progress, as
   // indicated by profile_path_being_created_, removing the object and files
-  // and canceling managed-user registration. This should be called from JS, to
-  // ensure that the profile-creation dialog is properly updated. |args| is not
-  // used.
+  // and canceling managed-user registration. This is the handler for the
+  // "cancelCreateProfile" message. |args| is not used.
   // TODO(pamg): Move all the profile-handling methods into a more appropriate
   // class.
   void HandleCancelProfileCreation(const base::ListValue* args);
 
-  // Internal implementation.
-  void CancelProfileCreation();
+  // Internal implementation. This may safely be called whether profile creation
+  // or registration is in progress or not. |user_initiated| should be true if
+  // the cancellation was deliberately requested by the user, and false if it
+  // was caused implicitly, e.g. by shutting down the browser.
+  void CancelProfileRegistration(bool user_initiated);
 
   void ObserveThemeChanged();
   void ThemesReset(const base::ListValue* args);

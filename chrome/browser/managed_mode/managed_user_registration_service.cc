@@ -38,7 +38,7 @@ using syncer::SyncMergeResult;
 using sync_pb::ManagedUserSpecifics;
 using user_prefs::PrefRegistrySyncable;
 
-// How long to wait before canceling user registration. If this is changed, the
+// How long to wait before aborting user registration. If this is changed, the
 // histogram limits in the BrowserOptionsHandler should also be updated.
 static const int kRegistrationTimeoutMS = 30 * 1000;
 
@@ -99,8 +99,9 @@ void ManagedUserRegistrationService::Register(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kRegistrationTimeoutMS),
         base::Bind(
-            &ManagedUserRegistrationService::CancelPendingRegistrationImpl,
+            &ManagedUserRegistrationService::AbortPendingRegistration,
             weak_ptr_factory_.GetWeakPtr(),
+            true,  // Run the callback.
             GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED)));
   }
 
@@ -133,12 +134,15 @@ void ManagedUserRegistrationService::Register(
 }
 
 void ManagedUserRegistrationService::CancelPendingRegistration() {
-  CancelPendingRegistrationImpl(
-      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
+  AbortPendingRegistration(
+      false,  // Don't run the callback. The error will be ignored.
+      GoogleServiceAuthError(GoogleServiceAuthError::NONE));
 }
 
 void ManagedUserRegistrationService::Shutdown() {
-  CancelPendingRegistration();
+  AbortPendingRegistration(
+      true,  // Run the callback.
+      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 }
 
 SyncMergeResult ManagedUserRegistrationService::MergeDataAndStartSyncing(
@@ -206,7 +210,9 @@ void ManagedUserRegistrationService::StopSyncing(ModelType type) {
 
   // Canceling a pending registration might result in changes in the Sync data,
   // so we do it before resetting the |sync_processor|.
-  CancelPendingRegistration();
+  AbortPendingRegistration(
+      true,  // Run the callback.
+      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 
   sync_processor_.reset();
   error_handler_.reset();
@@ -299,7 +305,7 @@ void ManagedUserRegistrationService::OnManagedUserAcknowledged(
   DCHECK_EQ(pending_managed_user_id_, managed_user_id);
   DCHECK(!pending_managed_user_acknowledged_);
   pending_managed_user_acknowledged_ = true;
-  DispatchCallbackIfReady();
+  CompleteRegistrationIfReady();
 }
 
 void ManagedUserRegistrationService::FetchToken(
@@ -315,36 +321,39 @@ void ManagedUserRegistrationService::OnReceivedToken(
     const GoogleServiceAuthError& error,
     const std::string& token) {
   if (error.state() != GoogleServiceAuthError::NONE) {
-    DispatchCallback(error);
+    CompleteRegistration(true, error);
     return;
   }
 
   DCHECK(!token.empty());
   pending_managed_user_token_ = token;
-  DispatchCallbackIfReady();
+  CompleteRegistrationIfReady();
 }
 
-void ManagedUserRegistrationService::DispatchCallbackIfReady() {
+void ManagedUserRegistrationService::CompleteRegistrationIfReady() {
   if (!pending_managed_user_acknowledged_ ||
       pending_managed_user_token_.empty()) {
     return;
   }
 
   GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
-  DispatchCallback(error);
+  CompleteRegistration(true, error);
 }
 
-void ManagedUserRegistrationService::CancelPendingRegistrationImpl(
+void ManagedUserRegistrationService::AbortPendingRegistration(
+    bool run_callback,
     const GoogleServiceAuthError& error) {
   pending_managed_user_token_.clear();
-  DispatchCallback(error);
+  CompleteRegistration(run_callback, error);
 }
 
-void ManagedUserRegistrationService::DispatchCallback(
+void ManagedUserRegistrationService::CompleteRegistration(
+    bool run_callback,
     const GoogleServiceAuthError& error) {
   registration_timer_.Stop();
   if (!callback_.is_null()) {
-    callback_.Run(error, pending_managed_user_token_);
+    if (run_callback)
+      callback_.Run(error, pending_managed_user_token_);
     callback_.Reset();
 
     DCHECK(!pending_managed_user_id_.empty());
