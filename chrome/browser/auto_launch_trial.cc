@@ -6,7 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/metrics/field_trial.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"

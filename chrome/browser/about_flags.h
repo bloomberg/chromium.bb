@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 class PrefService;
 

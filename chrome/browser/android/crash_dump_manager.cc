@@ -13,7 +13,7 @@
 #include "base/process.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/descriptors_android.h"
 #include "content/public/browser/browser_thread.h"

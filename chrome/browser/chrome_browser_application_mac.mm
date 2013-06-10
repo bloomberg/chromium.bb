@@ -11,7 +11,7 @@
 #import "base/mac/scoped_nsexception_enabler.h"
 #import "base/memory/scoped_nsobject.h"
 #import "base/metrics/histogram.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"

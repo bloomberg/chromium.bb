@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"

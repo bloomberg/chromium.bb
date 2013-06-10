@@ -6,7 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/metrics/histogram.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"

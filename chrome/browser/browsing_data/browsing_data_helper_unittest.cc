@@ -4,7 +4,7 @@
 
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/url_constants.h"

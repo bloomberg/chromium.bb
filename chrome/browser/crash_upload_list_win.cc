@@ -4,8 +4,8 @@
 
 #include "chrome/browser/crash_upload_list_win.h"
 
-#include "base/stringprintf.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 
 CrashUploadListWin::CrashUploadListWin(Delegate* delegate)

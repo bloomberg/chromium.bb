@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/background/background_contents_service_factory.h"

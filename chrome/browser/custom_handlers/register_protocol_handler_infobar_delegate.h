@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CUSTOM_HANDLERS_REGISTER_PROTOCOL_HANDLER_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_CUSTOM_HANDLERS_REGISTER_PROTOCOL_HANDLER_INFOBAR_DELEGATE_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 

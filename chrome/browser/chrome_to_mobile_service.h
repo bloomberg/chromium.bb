@@ -15,7 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/timer.h"
 #include "base/values.h"
 #include "chrome/browser/sessions/session_id.h"
