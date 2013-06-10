@@ -101,6 +101,14 @@ class TreeNode : public TreeModelNode {
     children_.weak_clear();
   }
 
+  // Removes all existing children without deleting the nodes and adds all nodes
+  // contained in |children| into this node as children.
+  void SetChildren(const std::vector<NodeType*>& children) {
+    RemoveAll();
+    for (size_t i = 0; i < children.size(); ++i)
+      Add(children[i], i);
+  }
+
   // Returns the parent node, or NULL if this is the root node.
   const NodeType* parent() const { return parent_; }
   NodeType* parent() { return parent_; }

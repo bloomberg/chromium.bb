@@ -30,6 +30,15 @@ class BookmarkModelObserver {
                                  const BookmarkNode* parent,
                                  int index) = 0;
 
+  // Invoked before a node is removed.
+  // |parent| the parent of the node that will be removed.
+  // |old_index| the index of the node about to be removed in |parent|.
+  // |node| is the node to be removed.
+  virtual void OnWillRemoveBookmarks(BookmarkModel* model,
+                                     const BookmarkNode* parent,
+                                     int old_index,
+                                     const BookmarkNode* node) {}
+
   // Invoked when a node has been removed, the item may still be starred though.
   // |parent| the parent of the node that was removed.
   // |old_index| the index of the removed node in |parent| before it was
@@ -40,6 +49,10 @@ class BookmarkModelObserver {
                                    int old_index,
                                    const BookmarkNode* node) = 0;
 
+  // Invoked before the title or url of a node is changed.
+  virtual void OnWillChangeBookmarkNode(BookmarkModel* model,
+                                        const BookmarkNode* node) {}
+
   // Invoked when the title or url of a node changes.
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) = 0;
@@ -47,6 +60,11 @@ class BookmarkModelObserver {
   // Invoked when a favicon has been loaded or changed.
   virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
                                           const BookmarkNode* node) = 0;
+
+  // Invoked before the direct children of |node| have been reordered in some
+  // way, such as sorted.
+  virtual void OnWillReorderBookmarkNode(BookmarkModel* model,
+                                         const BookmarkNode* node) {}
 
   // Invoked when the children (just direct children, not descendants) of
   // |node| have been reordered in some way, such as sorted.
@@ -65,6 +83,9 @@ class BookmarkModelObserver {
   // This tells observers to update themselves if they were waiting for the
   // update to finish.
   virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) {}
+
+  // Invoked before all non-permanent bookmark nodes are removed.
+  virtual void OnWillRemoveAllBookmarks(BookmarkModel* model) {}
 
   // Invoked when all non-permanent bookmark nodes have been removed.
   virtual void BookmarkAllNodesRemoved(BookmarkModel* model) = 0;

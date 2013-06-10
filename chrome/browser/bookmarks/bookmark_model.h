@@ -369,6 +369,13 @@ class BookmarkModel : public content::NotificationObserver,
   // BookmarkNodeChildrenReordered method.
   void SortChildren(const BookmarkNode* parent);
 
+  // Order the children of |parent| as specified in |ordered_nodes|.  This
+  // function should only be used to reorder the child nodes of |parent| and
+  // is not meant to move nodes between different parent. Notifies observers
+  // using the BookmarkNodeChildrenReordered method.
+  void ReorderChildren(const BookmarkNode* parent,
+                       const std::vector<BookmarkNode*>& ordered_nodes);
+
   // Sets the date when the folder was modified.
   void SetDateFolderModified(const BookmarkNode* node, const base::Time time);
 

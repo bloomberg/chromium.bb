@@ -299,6 +299,10 @@ void BookmarkModel::Remove(const BookmarkNode* parent, int index) {
 void BookmarkModel::RemoveAll() {
   std::set<GURL> changed_urls;
   ScopedVector<BookmarkNode> removed_nodes;
+
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    OnWillRemoveAllBookmarks(this));
+
   BeginExtensiveChanges();
   // Skip deleting permanent nodes. Permanent bookmark nodes are the root and
   // its immediate children. For removing all non permanent nodes just remove
@@ -412,6 +416,9 @@ void BookmarkModel::SetTitle(const BookmarkNode* node, const string16& title) {
     return;
   }
 
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    OnWillChangeBookmarkNode(this, node));
+
   // The title index doesn't support changing the title, instead we remove then
   // add it back.
   index_->Remove(node);
@@ -443,6 +450,9 @@ void BookmarkModel::SetURL(const BookmarkNode* node, const GURL& url) {
   BookmarkNode* mutable_node = AsMutable(node);
   mutable_node->InvalidateFavicon();
   CancelPendingFaviconLoadRequests(mutable_node);
+
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    OnWillChangeBookmarkNode(this, node));
 
   {
     base::AutoLock url_lock(url_lock_);
@@ -627,6 +637,9 @@ void BookmarkModel::SortChildren(const BookmarkNode* parent) {
     return;
   }
 
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    OnWillReorderBookmarkNode(this, parent));
+
   UErrorCode error = U_ZERO_ERROR;
   scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(error));
   if (U_FAILURE(error))
@@ -635,6 +648,26 @@ void BookmarkModel::SortChildren(const BookmarkNode* parent) {
   std::sort(mutable_parent->children().begin(),
             mutable_parent->children().end(),
             SortComparator(collator.get()));
+
+  if (store_.get())
+    store_->ScheduleSave();
+
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    BookmarkNodeChildrenReordered(this, parent));
+}
+
+void BookmarkModel::ReorderChildren(
+    const BookmarkNode* parent,
+    const std::vector<BookmarkNode*>& ordered_nodes) {
+  // Ensure that all children in |parent| are in |ordered_nodes|.
+  DCHECK_EQ(static_cast<size_t>(parent->child_count()), ordered_nodes.size());
+  for (size_t i = 0; i < ordered_nodes.size(); ++i)
+    DCHECK_EQ(parent, ordered_nodes[i]->parent());
+
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    OnWillReorderBookmarkNode(this, parent));
+
+  AsMutable(parent)->SetChildren(ordered_nodes);
 
   if (store_.get())
     store_->ScheduleSave();
@@ -778,6 +811,9 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
   const BookmarkNode* parent = node->parent();
   DCHECK(parent);
   int index = parent->GetIndexOf(node.get());
+
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    OnWillRemoveBookmarks(this, parent, index, node.get()));
 
   std::set<GURL> changed_urls;
   {

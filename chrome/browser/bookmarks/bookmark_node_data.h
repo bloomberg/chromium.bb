@@ -57,7 +57,7 @@ struct BookmarkNodeData {
     // Children, only used for non-URL nodes.
     std::vector<Element> children;
 
-    int64 id() { return id_; }
+    int64 id() const { return id_; }
 
    private:
     friend struct BookmarkNodeData;
