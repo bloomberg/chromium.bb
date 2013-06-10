@@ -20,7 +20,6 @@ class MockTSFBridge : public TSFBridge {
   virtual ~MockTSFBridge();
 
   // TSFBridge:
-  virtual void Shutdown() OVERRIDE;
   virtual bool CancelComposition() OVERRIDE;
   virtual void OnTextInputTypeChanged(TextInputClient* client) OVERRIDE;
   virtual void OnTextLayoutChanged() OVERRIDE;
@@ -32,9 +31,6 @@ class MockTSFBridge : public TSFBridge {
 
   // Resets MockTSFBridge state including function call counter.
   void Reset();
-
-  // Call count of Shutdown().
-  int shutdown_call_count() const { return shutdown_call_count_; }
 
   // Call count of EnableIME().
   int enable_ime_call_count() const { return enable_ime_call_count_; }
@@ -77,7 +73,6 @@ class MockTSFBridge : public TSFBridge {
   }
 
  private:
-  int shutdown_call_count_;
   int enable_ime_call_count_;
   int disalbe_ime_call_count_;
   int cancel_composition_call_count_;

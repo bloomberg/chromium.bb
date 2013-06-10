@@ -10,8 +10,7 @@
 namespace ui {
 
 MockTSFBridge::MockTSFBridge()
-  : shutdown_call_count_(0),
-    enable_ime_call_count_(0),
+  : enable_ime_call_count_(0),
     disalbe_ime_call_count_(0),
     cancel_composition_call_count_(0),
     on_text_layout_changed_(0),
@@ -24,10 +23,6 @@ MockTSFBridge::MockTSFBridge()
 }
 
 MockTSFBridge::~MockTSFBridge() {
-}
-
-void MockTSFBridge::Shutdown() {
-  shutdown_call_count_++;
 }
 
 bool MockTSFBridge::CancelComposition() {
@@ -66,7 +61,6 @@ TextInputClient* MockTSFBridge::GetFocusedTextInputClient() const {
 }
 
 void MockTSFBridge::Reset() {
-  shutdown_call_count_ = 0;
   enable_ime_call_count_ = 0;
   disalbe_ime_call_count_ = 0;
   cancel_composition_call_count_ = 0;

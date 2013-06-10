@@ -44,7 +44,7 @@ class UI_EXPORT TSFBridge {
   static TSFBridge* ReplaceForTesting(TSFBridge* bridge);
 
   // Destroys the thread local instance.
-  virtual void Shutdown() = 0;
+  static void Shutdown();
 
   // Handles TextInputTypeChanged event. RWHVW is responsible for calling this
   // handler whenever renderer's input text type is changed. Does nothing

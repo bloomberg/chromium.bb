@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/win/scoped_comptr.h"
@@ -37,7 +36,6 @@ class TSFBridgeDelegate : public TSFBridge {
   bool Initialize();
 
   // TsfBridge:
-  virtual void Shutdown() OVERRIDE;
   virtual void OnTextInputTypeChanged(TextInputClient* client) OVERRIDE;
   virtual void OnTextLayoutChanged() OVERRIDE;
   virtual bool CancelComposition() OVERRIDE;
@@ -48,8 +46,6 @@ class TSFBridgeDelegate : public TSFBridge {
   virtual TextInputClient* GetFocusedTextInputClient() const OVERRIDE;
 
  private:
-  friend struct DefaultSingletonTraits<TSFBridgeDelegate>;
-
   // Returns true if |tsf_document_map_| is successfully initialized. This
   // method should be called from and only from Initialize().
   bool InitializeDocumentMapInternal();
@@ -122,6 +118,22 @@ TSFBridgeDelegate::TSFBridgeDelegate()
 }
 
 TSFBridgeDelegate::~TSFBridgeDelegate() {
+  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
+  if (!IsInitialized())
+    return;
+  for (TSFDocumentMap::iterator it = tsf_document_map_.begin();
+       it != tsf_document_map_.end(); ++it) {
+    base::win::ScopedComPtr<ITfContext> context;
+    base::win::ScopedComPtr<ITfSource> source;
+    if (it->second.cookie != TF_INVALID_COOKIE &&
+        SUCCEEDED(it->second.document_manager->GetBase(context.Receive())) &&
+        SUCCEEDED(source.QueryFrom(context))) {
+      source->UnadviseSink(it->second.cookie);
+    }
+  }
+  tsf_document_map_.clear();
+
+  client_id_ = TF_CLIENTID_NULL;
 }
 
 bool TSFBridgeDelegate::Initialize() {
@@ -170,25 +182,6 @@ bool TSFBridgeDelegate::Initialize() {
   }
 
   return true;
-}
-
-void TSFBridgeDelegate::Shutdown() {
-  DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
-  if (!IsInitialized())
-    return;
-  for (TSFDocumentMap::iterator it = tsf_document_map_.begin();
-       it != tsf_document_map_.end(); ++it) {
-    base::win::ScopedComPtr<ITfContext> context;
-    base::win::ScopedComPtr<ITfSource> source;
-    if (it->second.cookie != TF_INVALID_COOKIE &&
-        SUCCEEDED(it->second.document_manager->GetBase(context.Receive())) &&
-        SUCCEEDED(source.QueryFrom(context))) {
-      source->UnadviseSink(it->second.cookie);
-    }
-  }
-  tsf_document_map_.clear();
-
-  client_id_ = TF_CLIENTID_NULL;
 }
 
 void TSFBridgeDelegate::OnTextInputTypeChanged(TextInputClient* client) {
@@ -460,11 +453,14 @@ bool TSFBridge::Initialize() {
   }
   if (!tls_tsf_bridge.initialized()) {
     tls_tsf_bridge.Initialize(TSFBridge::Finalize);
-    TSFBridgeDelegate* delegate = new TSFBridgeDelegate();
-    tls_tsf_bridge.Set(delegate);
-    return delegate->Initialize();
   }
-  return true;
+  TSFBridgeDelegate* delegate =
+      static_cast<TSFBridgeDelegate*>(tls_tsf_bridge.Get());
+  if (delegate)
+    return true;
+  delegate = new TSFBridgeDelegate();
+  tls_tsf_bridge.Set(delegate);
+  return delegate->Initialize();
 }
 
 // static
@@ -476,6 +472,19 @@ TSFBridge* TSFBridge::ReplaceForTesting(TSFBridge* bridge) {
   TSFBridge* old_bridge = TSFBridge::GetInstance();
   tls_tsf_bridge.Set(bridge);
   return old_bridge;
+}
+
+// static
+void TSFBridge::Shutdown() {
+  if (base::MessageLoop::current()->type() != base::MessageLoop::TYPE_UI) {
+    DVLOG(1) << "Do not use TSFBridge without UI thread.";
+  }
+  if (tls_tsf_bridge.initialized()) {
+    TSFBridgeDelegate* delegate =
+        static_cast<TSFBridgeDelegate*>(tls_tsf_bridge.Get());
+    tls_tsf_bridge.Set(NULL);
+    delete delegate;
+  }
 }
 
 // static

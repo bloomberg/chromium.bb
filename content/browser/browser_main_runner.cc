@@ -127,7 +127,7 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
 
 #if defined(OS_WIN)
     if (base::win::IsTSFAwareRequired())
-      ui::TSFBridge::GetInstance()->Shutdown();
+      ui::TSFBridge::Shutdown();
     ole_initializer_.reset(NULL);
 #endif
 
