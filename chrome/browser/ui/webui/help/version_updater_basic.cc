@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/help/version_updater_basic.h"
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/upgrade_detector.h"
 

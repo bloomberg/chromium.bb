@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/memory_internals/memory_internals_proxy.h"
 #include "content/public/browser/browser_thread.h"

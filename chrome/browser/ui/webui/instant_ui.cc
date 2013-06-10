@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

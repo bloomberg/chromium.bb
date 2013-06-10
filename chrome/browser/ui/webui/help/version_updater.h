@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 // Interface implemented to expose per-platform updating functionality.
 class VersionUpdater {

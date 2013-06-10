@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_HISTORY_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_HISTORY_UI_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/timer.h"
 #include "base/values.h"
 #include "chrome/browser/common/cancelable_request.h"

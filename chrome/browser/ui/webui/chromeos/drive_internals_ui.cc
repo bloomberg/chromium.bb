@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/drive/debug_info_collector.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"

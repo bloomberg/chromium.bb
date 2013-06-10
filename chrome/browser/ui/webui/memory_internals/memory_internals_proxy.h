@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/memory_details.h"
 #include "content/public/browser/browser_thread.h"
 

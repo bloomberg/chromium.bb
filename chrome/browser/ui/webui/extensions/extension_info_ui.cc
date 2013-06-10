@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
 
 #include "base/i18n/time_formatting.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/extensions/extension_prefs.h"

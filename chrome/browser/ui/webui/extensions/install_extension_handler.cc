@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/extensions/install_extension_handler.h"
 
 #include "base/bind.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
