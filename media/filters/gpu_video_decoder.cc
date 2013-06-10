@@ -612,6 +612,10 @@ void GpuVideoDecoder::EnqueueFrameAndTriggerFrameDelivery(
 
 void GpuVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id) {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
+
+  if (!vda_)
+    return;
+
   CHECK(!picture_buffers_at_display_.empty());
 
   size_t num_erased = picture_buffers_at_display_.erase(picture_buffer_id);
@@ -630,9 +634,6 @@ void GpuVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id) {
   }
 
   ++available_pictures_;
-
-  if (!vda_)
-    return;
 
   vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &VideoDecodeAccelerator::ReusePictureBuffer, weak_vda_,
