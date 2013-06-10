@@ -281,8 +281,13 @@
       'type': 'none',
       'dependencies': [
         'browser/devtools/devtools_resources.gyp:devtools_resources',
+        'content_resources.gyp:content_resources',
         'content_shell_resources',
+        '<(DEPTH)/net/net.gyp:net_resources',
+        '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
       ],
       'variables': {
         'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
