@@ -4,9 +4,14 @@
 
 // This file contains forward declarations for items in later SDKs than the
 // default one with which Chromium is built (currently 10.6).
+// If you call any function from this header, be sure to check at runtime for
+// respondsToSelector: before calling these functions (else your code will crash
+// on older OS X versions that chrome still supports).
 
 #ifndef BASE_MAC_SDK_FORWARD_DECLARATIONS_H_
 #define BASE_MAC_SDK_FORWARD_DECLARATIONS_H_
+
+#import <AppKit/AppKit.h>
 
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
@@ -49,6 +54,14 @@ typedef NSUInteger NSEventSwipeTrackingOptions;
 - (void)setContentsScale:(CGFloat)contentsScale;
 @end
 
+@interface NSScreen (LionSDK)
+- (CGFloat)backingScaleFactor;
+- (NSRect)convertRectToBacking:(NSRect)aRect;
+@end
+
+@interface NSWindow (LionSDK)
+- (CGFloat)backingScaleFactor;
+@end
 #endif  // MAC_OS_X_VERSION_10_7
 
 #endif  // BASE_MAC_SDK_FORWARD_DECLARATIONS_H_

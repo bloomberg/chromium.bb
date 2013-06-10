@@ -8,16 +8,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "ui/gfx/display.h"
-
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-@interface NSScreen (LionAPI)
-- (CGFloat)backingScaleFactor;
-@end
-
-#endif  // 10.7
 
 namespace {
 

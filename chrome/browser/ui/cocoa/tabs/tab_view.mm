@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 
 #include "base/logging.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
@@ -17,16 +18,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-@interface NSWindow (LionAPI)
-- (CGFloat)backingScaleFactor;
-@end
-#endif
 
 const int kMaskHeight = 29;  // Height of the mask bitmap.
 const int kFillHeight = 25;  // Height of the "mask on" part of the mask bitmap.
-
 
 // Constants for inset and control points for tab shape.
 const CGFloat kInsetMultiplier = 2.0/3.0;

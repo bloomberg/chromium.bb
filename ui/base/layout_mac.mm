@@ -6,18 +6,7 @@
 
 #include <Cocoa/Cocoa.h>
 
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-@interface NSScreen (LionAPI)
-- (CGFloat)backingScaleFactor;
-@end
-
-@interface NSWindow (LionAPI)
-- (CGFloat)backingScaleFactor;
-@end
-
-#endif  // 10.7
+#include "base/mac/sdk_forward_declarations.h"
 
 namespace {
 

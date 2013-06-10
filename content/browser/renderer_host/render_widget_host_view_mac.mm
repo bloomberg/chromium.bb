@@ -86,15 +86,6 @@ using WebKit::WebMouseWheelEvent;
 // Declare things that are part of the 10.7 SDK.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-@interface NSEvent (LionAPI)
-- (NSEventPhase)phase;
-@end
-
-@interface NSWindow (LionAPI)
-- (CGFloat)backingScaleFactor;
-@end
-
 @interface NSView (NSOpenGLSurfaceResolutionLionAPI)
 - (void)setWantsBestResolutionOpenGLSurface:(BOOL)flag;
 @end

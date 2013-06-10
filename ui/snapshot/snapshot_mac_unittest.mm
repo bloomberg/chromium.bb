@@ -6,19 +6,11 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/platform_test.h"
 #include "ui/gfx/rect.h"
-
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-@interface NSWindow (LionAPI)
-- (CGFloat)backingScaleFactor;
-@end
-
-#endif  // 10.7
 
 namespace ui {
 namespace {
