@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_HISTORY_PAGE_USAGE_DATA_H__
 #define CHROME_BROWSER_HISTORY_PAGE_USAGE_DATA_H__
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/time.h"
 #include "chrome/browser/history/history_types.h"
 #include "googleurl/src/gurl.h"

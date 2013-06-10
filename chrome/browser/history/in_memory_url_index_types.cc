@@ -12,7 +12,7 @@
 
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 

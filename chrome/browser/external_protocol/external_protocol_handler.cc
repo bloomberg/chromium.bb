@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"

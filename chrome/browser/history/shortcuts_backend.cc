@@ -12,7 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/history/history_notifications.h"

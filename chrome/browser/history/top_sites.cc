@@ -5,7 +5,7 @@
 #include "chrome/browser/history/top_sites.h"
 
 #include "base/metrics/field_trial.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/history/top_sites_impl.h"
 #include "chrome/browser/history/top_sites_likely_impl.h"
 #include "grit/chromium_strings.h"

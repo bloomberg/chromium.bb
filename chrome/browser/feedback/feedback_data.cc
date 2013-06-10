@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"

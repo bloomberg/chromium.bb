@@ -15,7 +15,7 @@
 #include "base/containers/stack_container.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_vector.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/time.h"
 #include "chrome/browser/favicon/favicon_types.h"
 #include "chrome/browser/history/snippet.h"

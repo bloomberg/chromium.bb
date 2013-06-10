@@ -4,7 +4,7 @@
 
 #include "chrome/browser/geolocation/geolocation_permission_request_id.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 
 
 GeolocationPermissionRequestID::GeolocationPermissionRequestID(

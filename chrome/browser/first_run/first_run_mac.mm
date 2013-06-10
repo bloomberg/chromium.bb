@@ -5,7 +5,7 @@
 #include "chrome/browser/first_run/first_run.h"
 
 #include "base/files/file_path.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/first_run/first_run_internal.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/importer_host.h"

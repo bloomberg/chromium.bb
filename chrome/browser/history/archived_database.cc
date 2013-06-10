@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <string>
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/history/archived_database.h"
 #include "sql/transaction.h"
 

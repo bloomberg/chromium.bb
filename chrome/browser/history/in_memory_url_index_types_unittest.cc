@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
