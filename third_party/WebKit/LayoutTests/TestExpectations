@@ -1812,6 +1812,11 @@ crbug.com/248081 [ Win7 Debug ] fast/forms/suggestion-picker/date-suggestion-pic
 crbug.com/248081 [ Win ] virtual/gpu/fast/hidpi/image-set-background-dynamic.html [ Slow ]
 crbug.com/248081 [ Win ] virtual/gpu/fast/hidpi/image-set-border-image-dynamic.html [ Slow ]
 crbug.com/248081 [ Win7 Debug ] compositing/reflections/animation-inside-reflection.html [ Slow ]
+crbug.com/248067 storage/storageinfo-query-usage.html [ Pass Failure ]
+crbug.com/248067 storage/storagequota-query-usage.html [ Pass Failure ]
+crbug.com/248121 fast/events/frame-scroll-fake-mouse-move.html [ Pass Failure ]
+crbug.com/248121 fast/events/overflow-scroll-fake-mouse-move.html [ Pass Failure ]
+crbug.com/248128 inspector/console/console-url-and-line.html [ Pass Failure ]
 
 # Rebaselines needed
 crbug.com/247782 virtual/softwarecompositing/color-matching/image-color-matching.html [ ImageOnlyFailure Pass ]
