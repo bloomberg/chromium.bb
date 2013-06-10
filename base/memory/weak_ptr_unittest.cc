@@ -436,32 +436,28 @@ TEST(WeakPtrTest, NonOwnerThreadCanCopyAndAssignWeakPtr) {
   // Main thread creates a Target object.
   Target target;
   // Main thread creates an arrow referencing the Target.
-  Arrow *arrow;
-  {
-    ANNOTATE_SCOPED_MEMORY_LEAK;
-    arrow = new Arrow();
-    arrow->target = target.AsWeakPtr();
-  }
+  Arrow *arrow = new Arrow();
+  arrow->target = target.AsWeakPtr();
+
   // Background can copy and assign arrow (as well as the WeakPtr inside).
   BackgroundThread background;
   background.Start();
   background.CopyAndAssignArrow(arrow);
+  background.DeleteArrow(arrow);
 }
 
 TEST(WeakPtrTest, NonOwnerThreadCanCopyAndAssignWeakPtrBase) {
   // Main thread creates a Target object.
   Target target;
   // Main thread creates an arrow referencing the Target.
-  Arrow *arrow;
-  {
-    ANNOTATE_SCOPED_MEMORY_LEAK;
-    arrow = new Arrow();
-    arrow->target = target.AsWeakPtr();
-  }
+  Arrow *arrow = new Arrow();
+  arrow->target = target.AsWeakPtr();
+
   // Background can copy and assign arrow's WeakPtr to a base class WeakPtr.
   BackgroundThread background;
   background.Start();
   background.CopyAndAssignArrowBase(arrow);
+  background.DeleteArrow(arrow);
 }
 
 TEST(WeakPtrTest, NonOwnerThreadCanDeleteWeakPtr) {
