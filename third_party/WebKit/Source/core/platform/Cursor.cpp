@@ -26,9 +26,6 @@
 #include "config.h"
 #include "core/platform/Cursor.h"
 
-#include "core/platform/graphics/Image.h"
-#include <wtf/Assertions.h>
-
 namespace WebCore {
 
 IntPoint determineHotSpot(Image* image, const IntPoint& specifiedHotSpot)
@@ -164,6 +161,27 @@ Cursor::Cursor(Image* image, const IntPoint& hotSpot, float scale)
 Cursor::Cursor(Type type)
     : m_type(type)
     , m_imageScaleFactor(1)
+{
+}
+
+Cursor::Cursor(const Cursor& other)
+    : m_type(other.m_type)
+    , m_image(other.m_image)
+    , m_hotSpot(other.m_hotSpot)
+    , m_imageScaleFactor(other.m_imageScaleFactor)
+{
+}
+
+Cursor& Cursor::operator=(const Cursor& other)
+{
+    m_type = other.m_type;
+    m_image = other.m_image;
+    m_hotSpot = other.m_hotSpot;
+    m_imageScaleFactor = other.m_imageScaleFactor;
+    return *this;
+}
+
+Cursor::~Cursor()
 {
 }
 
