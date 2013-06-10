@@ -45,7 +45,8 @@ class URLRequestThrottlerManager;
 // these member variables, since they may be shared. For the ones that aren't
 // shared, URLRequestContextStorage can be helpful in defining their storage.
 class NET_EXPORT URLRequestContext
-    : NON_EXPORTED_BASE(public base::NonThreadSafe) {
+    : NON_EXPORTED_BASE(public base::NonThreadSafe),
+      public base::SupportsWeakPtr<URLRequestContext> {
  public:
   URLRequestContext();
   virtual ~URLRequestContext();
