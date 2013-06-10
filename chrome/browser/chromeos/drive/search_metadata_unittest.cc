@@ -508,15 +508,17 @@ TEST_F(SearchMetadataTest, SearchMetadata_Offline) {
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_EQ(6U, result->size());
 
-  EXPECT_EQ("drive/root/gdata/basic_feed.json",
+  // Newer entries are listed earlier. So, the results come in the reverse
+  // order of addition written in test_util::GetDefaultTestCacheResources.
+  EXPECT_EQ("drive/root/pinned/dirty/cache.pdf",
             result->at(0).path.AsUTF8Unsafe());
-  EXPECT_EQ("drive/root/gdata/account_metadata.json",
+  EXPECT_EQ("drive/root/dirty/cache.avi",
             result->at(1).path.AsUTF8Unsafe());
-  EXPECT_EQ("drive/root/gdata/directory_entry.json",
+  EXPECT_EQ("drive/root/pinned/cache.mp3",
             result->at(2).path.AsUTF8Unsafe());
-  EXPECT_EQ("drive/root/gdata/empty_feed.json",
+  EXPECT_EQ("drive/root/cache2.png",
             result->at(3).path.AsUTF8Unsafe());
-  EXPECT_EQ("drive/root/gdata/root_feed.json",
+  EXPECT_EQ("drive/root/cache.txt",
             result->at(4).path.AsUTF8Unsafe());
   // This is not included in the cache but is a hosted document.
   EXPECT_EQ("drive/root/Document 1 excludeDir-test.gdoc",

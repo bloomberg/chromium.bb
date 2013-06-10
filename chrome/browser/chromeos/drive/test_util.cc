@@ -6,13 +6,10 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
-#include "base/threading/worker_pool.h"
-#include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/google_apis/drive_api_parser.h"
 
 namespace drive {
 
@@ -33,20 +30,20 @@ TestCacheResource::TestCacheResource(const std::string& source_file,
 std::vector<TestCacheResource> GetDefaultTestCacheResources() {
   const TestCacheResource resources[] = {
     // Cache resource in tmp dir, i.e. not pinned or dirty.
-    TestCacheResource("gdata/root_feed.json",
+    TestCacheResource("cache.txt",
                       "tmp:resource_id",
                       "md5_tmp_alphanumeric",
                       false,
                       false),
     // Cache resource in tmp dir, i.e. not pinned or dirty, with resource_id
     // containing non-alphanumeric characters.
-    TestCacheResource("gdata/empty_feed.json",
+    TestCacheResource("cache2.png",
                       "tmp:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?",
                       "md5_tmp_non_alphanumeric",
                       false,
                       false),
     // Cache resource that is pinned and persistent.
-    TestCacheResource("gdata/directory_entry.json",
+    TestCacheResource("pinned/cache.mp3",
                       "pinned:existing",
                       "md5_pinned_existing",
                       true,
@@ -58,13 +55,13 @@ std::vector<TestCacheResource> GetDefaultTestCacheResources() {
                       true,
                       false),
     // Cache resource that is dirty.
-    TestCacheResource("gdata/account_metadata.json",
+    TestCacheResource("dirty/cache.avi",
                       "dirty:existing",
                       "md5_dirty_existing",
                       false,
                       true),
     // Cache resource that is pinned and dirty.
-    TestCacheResource("gdata/basic_feed.json",
+    TestCacheResource("pinned/dirty/cache.pdf",
                       "dirty_and_pinned:existing",
                       "md5_dirty_and_pinned_existing",
                       true,
@@ -96,13 +93,18 @@ bool CacheStatesEqual(const FileCacheEntry& a, const FileCacheEntry& b) {
 bool PrepareTestCacheResources(
     internal::FileCache* cache,
     const std::vector<TestCacheResource>& resources) {
+  // cache->StoreOnUIThread requires real file to be stored. As a dummy data for
+  // testing, an empty temporary file is created.
+  base::ScopedTempDir temp_dir;
+  if (!temp_dir.CreateUniqueTempDir())
+    return false;
+  base::FilePath source_path;
+  if (!file_util::CreateTemporaryFileInDir(temp_dir.path(), &source_path))
+    return false;
+
   for (size_t i = 0; i < resources.size(); ++i) {
     // Copy file from data dir to cache.
     if (!resources[i].source_file.empty()) {
-      base::FilePath source_path =
-          google_apis::test_util::GetTestFilePath(
-              std::string("chromeos/") + resources[i].source_file);
-
       FileError error = FILE_ERROR_OK;
       cache->StoreOnUIThread(
           resources[i].resource_id,
