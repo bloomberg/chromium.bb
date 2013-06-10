@@ -41,10 +41,6 @@ const int kBackButtonSize = 16;
 
 // Step 3: finalize the tray view and window to get rid of the empty space.
 - (void)finalizeTrayViewAndWindow;
-
-// Informs the window controller that it should update the window's size based
-// on the size of the tray view.
-- (void)forceWindowSizeUpdate;
 @end
 
 namespace {
@@ -229,7 +225,7 @@ const CGFloat kTrayBottomMargin = 75;
 
   [[[self view] window] recalculateKeyViewLoop];
 
-  [self forceWindowSizeUpdate];
+  [self updateTrayViewAndWindow];
 }
 
 - (void)hideSettings:(id)sender {
@@ -243,7 +239,7 @@ const CGFloat kTrayBottomMargin = 75;
   [clearAllButton_ setEnabled:YES];
 
   [[[self view] window] recalculateKeyViewLoop];
-  [self forceWindowSizeUpdate];
+  [self updateTrayViewAndWindow];
 }
 
 - (void)scrollToTop {
@@ -328,6 +324,7 @@ const CGFloat kTrayBottomMargin = 75;
   [backButton_ setAction:@selector(hideSettings:)];
   configureButton(backButton_);
   [backButton_ setHidden:YES];
+  [backButton_ setKeyEquivalent:@"\e"];
   [[self view] addSubview:backButton_];
 
   // Create the divider line between the control area and the notifications.
@@ -562,10 +559,6 @@ const CGFloat kTrayBottomMargin = 75;
 
   // Check if there're more notifications pending removal.
   [self closeNotificationsByUser];
-}
-
-- (void)forceWindowSizeUpdate {
-  [self updateTrayViewAndWindow];
 }
 
 @end

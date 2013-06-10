@@ -20,6 +20,10 @@
   return YES;
 }
 
+- (void)cancelOperation:(id)sender {
+  [self orderOut:self];
+}
+
 @end
 
 @implementation MCTrayController
