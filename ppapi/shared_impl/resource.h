@@ -52,6 +52,7 @@
   F(PPB_InputEvent_API) \
   F(PPB_LayerCompositor_API) \
   F(PPB_MessageLoop_API) \
+  F(PPB_NetAddress_API) \
   F(PPB_NetworkList_API) \
   F(PPB_NetworkMonitor_Private_API) \
   F(PPB_PDF_API) \

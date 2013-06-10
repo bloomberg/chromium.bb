@@ -125,6 +125,12 @@ class ResourceCreationProxy : public InterfaceProxy,
                                           PP_ImageDataFormat format,
                                           const PP_Size* size,
                                           PP_Bool init_to_zero) OVERRIDE;
+  virtual PP_Resource CreateNetAddressFromIPv4Address(
+      PP_Instance instance,
+      const PP_NetAddress_IPv4_Dev* ipv4_addr) OVERRIDE;
+  virtual PP_Resource CreateNetAddressFromIPv6Address(
+      PP_Instance instance,
+      const PP_NetAddress_IPv6_Dev* ipv6_addr) OVERRIDE;
   virtual PP_Resource CreateNetworkMonitor(
       PP_Instance instance,
       PPB_NetworkMonitor_Callback callback,

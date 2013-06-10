@@ -1,0 +1,126 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/**
+ * This file defines the <code>PPB_NetAddress_Dev</code> interface.
+ */
+
+label Chrome {
+  M29 = 0.1
+};
+
+[assert_size(4)]
+enum PP_NetAddress_Family_Dev {
+  /**
+   * The address family is unspecified.
+   */
+  PP_NETADDRESS_FAMILY_UNSPECIFIED = 0,
+  /**
+   * The Internet Protocol version 4 (IPv4) address family.
+   */
+  PP_NETADDRESS_FAMILY_IPV4 = 1,
+  /**
+   * The Internet Protocol version 6 (IPv6) address family.
+   */
+  PP_NETADDRESS_FAMILY_IPV6 = 2
+};
+
+/**
+ * All members are expressed in network byte order.
+ */
+[assert_size(8)]
+struct PP_NetAddress_IPv4_Dev {
+  /**
+   * Port number.
+   */
+  uint16_t port;
+  /**
+   * Padding that makes the structure size consistent across compilers.
+   */
+  uint16_t unused_padding;
+  /**
+   * IPv4 address.
+   */
+  uint8_t[4] addr;
+};
+
+/**
+ * All members are expressed in network byte order.
+ */
+[assert_size(20)]
+struct PP_NetAddress_IPv6_Dev {
+  /**
+   * Port number.
+   */
+  uint16_t port;
+  /**
+   * Padding that makes the structure size consistent across compilers.
+   */
+  uint16_t unused_padding;
+  /**
+   * IPv6 address.
+   */
+  uint8_t[16] addr;
+};
+
+/**
+ * The <code>PPB_NetAddress_Dev</code> interface provides operations on
+ * network addresses.
+ */
+interface PPB_NetAddress_Dev {
+  /**
+   * Creates a <code>PPB_NetAddress_Dev</code> resource with the specified IPv4
+   * address.
+   */
+  PP_Resource CreateFromIPv4Address([in] PP_Instance instance,
+                                    [in] PP_NetAddress_IPv4_Dev ipv4_addr);
+
+  /**
+   * Creates a <code>PPB_NetAddress_Dev</code> resource with the specified IPv6
+   * address.
+   */
+  PP_Resource CreateFromIPv6Address([in] PP_Instance instance,
+                                    [in] PP_NetAddress_IPv6_Dev ipv6_addr);
+
+  /**
+   * Determines if a given resource is a network address.
+   */
+  PP_Bool IsNetAddress([in] PP_Resource addr);
+
+  /**
+   * Gets the address family.
+   */
+  PP_NetAddress_Family_Dev GetFamily([in] PP_Resource addr);
+
+  /**
+   * Returns a human-readable description of the network address. The
+   * description is in the form of host [ ":" port ] and conforms to
+   * http://tools.ietf.org/html/rfc3986#section-3.2 for IPv4 and IPv6 addresses
+   * (e.g., "192.168.0.1", "192.168.0.1:99", or "[::1]:80").
+   * Returns an undefined var on failure.
+   */
+  PP_Var DescribeAsString([in] PP_Resource addr,
+                          [in] PP_Bool include_port);
+
+  /**
+   * Fills a <code>PP_NetAddress_IPv4_Dev</code> structure if the network
+   * address is of <code>PP_NETADDRESS_FAMILY_IPV4</code> address family.
+   * Returns PP_FALSE on failure. Note that passing a network address of
+   * <code>PP_NETADDRESS_FAMILY_IPV6</code> address family will fail even if the
+   * address is an IPv4-mapped IPv6 address.
+   */
+  PP_Bool DescribeAsIPv4Address([in] PP_Resource addr,
+                                [out] PP_NetAddress_IPv4_Dev ipv4_addr);
+
+  /**
+   * Fills a <code>PP_NetAddress_IPv6_Dev</code> structure if the network
+   * address is of <code>PP_NETADDRESS_FAMILY_IPV6</code> address family.
+   * Returns PP_FALSE on failure. Note that passing a network address of
+   * <code>PP_NETADDRESS_FAMILY_IPV4</code> address family will fail - this
+   * method doesn't map it to an IPv6 address.
+   */
+  PP_Bool DescribeAsIPv6Address([in] PP_Resource addr,
+                                [out] PP_NetAddress_IPv6_Dev ipv6_addr);
+};

@@ -54,7 +54,15 @@ namespace {
 // Define our own net-host-net conversion, rather than reuse the one in
 // base/sys_byteorder.h, to simplify the NaCl port. NaCl has no byte swap
 // primitives.
-uint16 ConvertNetEndian16(uint16 x) {
+uint16 ConvertFromNetEndian16(uint16 x) {
+#if defined(ARCH_CPU_LITTLE_ENDIAN)
+  return (x << 8) | (x >> 8);
+#else
+  return x;
+#endif
+}
+
+uint16 ConvertToNetEndian16(uint16 x) {
 #if defined(ARCH_CPU_LITTLE_ENDIAN)
   return (x << 8) | (x >> 8);
 #else
@@ -261,7 +269,7 @@ std::string ConvertIPv6AddressToString(const NetAddress* net_addr,
         need_sep = false;
         i += longest_length;
       } else {
-        uint16_t v = ConvertNetEndian16(address16[i]);
+        uint16_t v = ConvertFromNetEndian16(address16[i]);
         base::StringAppendF(&description, need_sep ? ":%x" : "%x", v);
         need_sep = true;
         i++;
@@ -419,7 +427,7 @@ bool NetAddressPrivateImpl::SockaddrToNetAddress(
           reinterpret_cast<const struct sockaddr_in*>(sa);
       net_addr->is_valid = true;
       net_addr->is_ipv6 = false;
-      net_addr->port = ConvertNetEndian16(addr4->sin_port);
+      net_addr->port = ConvertFromNetEndian16(addr4->sin_port);
       memcpy(net_addr->address, &addr4->sin_addr.s_addr, kIPv4AddressSize);
       break;
     }
@@ -428,7 +436,7 @@ bool NetAddressPrivateImpl::SockaddrToNetAddress(
           reinterpret_cast<const struct sockaddr_in6*>(sa);
       net_addr->is_valid = true;
       net_addr->is_ipv6 = true;
-      net_addr->port = ConvertNetEndian16(addr6->sin6_port);
+      net_addr->port = ConvertFromNetEndian16(addr6->sin6_port);
       net_addr->flow_info = addr6->sin6_flowinfo;
       net_addr->scope_id = addr6->sin6_scope_id;
       memcpy(net_addr->address, addr6->sin6_addr.s6_addr, kIPv6AddressSize);
@@ -507,6 +515,74 @@ std::string NetAddressPrivateImpl::DescribeNetAddress(
   if (net_addr->is_ipv6)
     return ConvertIPv6AddressToString(net_addr, include_port);
   return ConvertIPv4AddressToString(net_addr, include_port);
+}
+
+// static
+void NetAddressPrivateImpl::CreateNetAddressPrivateFromIPv4Address(
+    const PP_NetAddress_IPv4_Dev& ipv4_addr,
+    PP_NetAddress_Private* addr) {
+  CreateFromIPv4Address(ipv4_addr.addr, ConvertFromNetEndian16(ipv4_addr.port),
+                        addr);
+}
+
+// static
+void NetAddressPrivateImpl::CreateNetAddressPrivateFromIPv6Address(
+    const PP_NetAddress_IPv6_Dev& ipv6_addr,
+    PP_NetAddress_Private* addr) {
+  CreateFromIPv6Address(ipv6_addr.addr, 0,
+                        ConvertFromNetEndian16(ipv6_addr.port), addr);
+}
+
+// static
+PP_NetAddress_Family_Dev NetAddressPrivateImpl::GetFamilyFromNetAddressPrivate(
+    const PP_NetAddress_Private& addr) {
+  const NetAddress* net_addr = ToNetAddress(&addr);
+  if (!IsValid(net_addr))
+    return PP_NETADDRESS_FAMILY_UNSPECIFIED;
+  return net_addr->is_ipv6 ? PP_NETADDRESS_FAMILY_IPV6 :
+                             PP_NETADDRESS_FAMILY_IPV4;
+}
+
+// static
+bool NetAddressPrivateImpl::DescribeNetAddressPrivateAsIPv4Address(
+   const PP_NetAddress_Private& addr,
+   PP_NetAddress_IPv4_Dev* ipv4_addr) {
+  if (!ipv4_addr)
+    return false;
+
+  const NetAddress* net_addr = ToNetAddress(&addr);
+  if (!IsValid(net_addr) || net_addr->is_ipv6)
+    return false;
+
+  ipv4_addr->port = ConvertToNetEndian16(net_addr->port);
+
+  COMPILE_ASSERT(sizeof(ipv4_addr->addr) == kIPv4AddressSize,
+                 mismatched_IPv4_address_size);
+  memcpy(ipv4_addr->addr, net_addr->address, kIPv4AddressSize);
+
+  ipv4_addr->unused_padding = 0;
+  return true;
+}
+
+// static
+bool NetAddressPrivateImpl::DescribeNetAddressPrivateAsIPv6Address(
+    const PP_NetAddress_Private& addr,
+    PP_NetAddress_IPv6_Dev* ipv6_addr) {
+  if (!ipv6_addr)
+    return false;
+
+  const NetAddress* net_addr = ToNetAddress(&addr);
+  if (!IsValid(net_addr) || !net_addr->is_ipv6)
+    return false;
+
+  ipv6_addr->port = ConvertToNetEndian16(net_addr->port);
+
+  COMPILE_ASSERT(sizeof(ipv6_addr->addr) == kIPv6AddressSize,
+                 mismatched_IPv6_address_size);
+  memcpy(ipv6_addr->addr, net_addr->address, kIPv6AddressSize);
+
+  ipv6_addr->unused_padding = 0;
+  return true;
 }
 
 }  // namespace ppapi

@@ -16,6 +16,19 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
 
+namespace {
+
+bool IsBigEndian() {
+  union {
+    uint32_t integer32;
+    uint8_t integer8[4];
+  } data = { 0x01020304 };
+
+  return data.integer8[0] == 1;
+}
+
+}  // namespace
+
 const int kActionTimeoutMs = 10000;
 
 const PPB_Testing_Dev* GetTestingInterface() {
@@ -69,6 +82,20 @@ bool GetLocalHostPort(PP_Instance instance, std::string* host, uint16_t* port) {
   *port = static_cast<uint16_t>(i);
 
   return true;
+}
+
+uint16_t ConvertFromNetEndian16(uint16_t x) {
+  if (IsBigEndian())
+    return x;
+  else
+    return (x << 8) | (x >> 8);
+}
+
+uint16_t ConvertToNetEndian16(uint16_t x) {
+  if (IsBigEndian())
+    return x;
+  else
+    return (x << 8) | (x >> 8);
 }
 
 void NestedEvent::Wait() {

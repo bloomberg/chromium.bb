@@ -93,6 +93,12 @@ class WEBKIT_PLUGINS_EXPORT ResourceCreationImpl
       const PP_Point* mouse_position,
       int32_t click_count,
       const PP_Point* mouse_movement) OVERRIDE;
+  virtual PP_Resource CreateNetAddressFromIPv4Address(
+      PP_Instance instance,
+      const PP_NetAddress_IPv4_Dev* ipv4_addr) OVERRIDE;
+  virtual PP_Resource CreateNetAddressFromIPv6Address(
+      PP_Instance instance,
+      const PP_NetAddress_IPv6_Dev* ipv6_addr) OVERRIDE;
   virtual PP_Resource CreateTouchInputEvent(
       PP_Instance instance,
       PP_InputEvent_Type type,

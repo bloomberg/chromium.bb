@@ -18,6 +18,7 @@
 #include "ppapi/proxy/flash_menu_resource.h"
 #include "ppapi/proxy/graphics_2d_resource.h"
 #include "ppapi/proxy/host_resolver_private_resource.h"
+#include "ppapi/proxy/net_address_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
@@ -270,6 +271,20 @@ PP_Resource ResourceCreationProxy::CreateImageDataNaCl(
   // always request a "platform" ImageData if we're trusted, or a "NaCl" one
   // if we're untrusted (see PPB_ImageData_Proxy::CreateProxyResource()).
   return CreateImageData(instance, format, size, init_to_zero);
+}
+
+PP_Resource ResourceCreationProxy::CreateNetAddressFromIPv4Address(
+    PP_Instance instance,
+    const PP_NetAddress_IPv4_Dev* ipv4_addr) {
+  return (new NetAddressResource(GetConnection(), instance,
+                                 *ipv4_addr))->GetReference();
+}
+
+PP_Resource ResourceCreationProxy::CreateNetAddressFromIPv6Address(
+    PP_Instance instance,
+    const PP_NetAddress_IPv6_Dev* ipv6_addr) {
+  return (new NetAddressResource(GetConnection(), instance,
+                                 *ipv6_addr))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateNetworkMonitor(

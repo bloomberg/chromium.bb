@@ -22,6 +22,9 @@ std::string ReportError(const char* method, int32_t error);
 void PlatformSleep(int duration_ms);
 bool GetLocalHostPort(PP_Instance instance, std::string* host, uint16_t* port);
 
+uint16_t ConvertFromNetEndian16(uint16_t x);
+uint16_t ConvertToNetEndian16(uint16_t x);
+
 // NestedEvent allows you to run a nested MessageLoop and wait for a particular
 // event to complete. For example, you can use it to wait for a callback on a
 // PPP interface, which will "Signal" the event and make the loop quit.

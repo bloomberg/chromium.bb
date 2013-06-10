@@ -804,47 +804,64 @@ TEST_PPAPI_OUT_OF_PROCESS(X509CertificatePrivate)
 TEST_PPAPI_IN_PROCESS(UMA)
 
 // NetAddress tests
-IN_PROC_BROWSER_TEST_F(PPAPITest, NetAddress) {
-  RunTestViaHTTP(
-      LIST_TEST(NetAddressPrivate_AreEqual)
-      LIST_TEST(NetAddressPrivate_AreHostsEqual)
-      LIST_TEST(NetAddressPrivate_Describe)
-      LIST_TEST(NetAddressPrivate_ReplacePort)
-      LIST_TEST(NetAddressPrivate_GetAnyAddress)
-      LIST_TEST(NetAddressPrivate_DescribeIPv6)
-      LIST_TEST(NetAddressPrivate_GetFamily)
-      LIST_TEST(NetAddressPrivate_GetPort)
-      LIST_TEST(NetAddressPrivate_GetAddress)
-      LIST_TEST(NetAddressPrivate_GetScopeID)
-  );
-}
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, NetAddress) {
   RunTestViaHTTP(
-      LIST_TEST(NetAddressPrivate_AreEqual)
-      LIST_TEST(NetAddressPrivate_AreHostsEqual)
-      LIST_TEST(NetAddressPrivate_Describe)
-      LIST_TEST(NetAddressPrivate_ReplacePort)
-      LIST_TEST(NetAddressPrivate_GetAnyAddress)
-      LIST_TEST(NetAddressPrivate_DescribeIPv6)
-      LIST_TEST(NetAddressPrivate_GetFamily)
-      LIST_TEST(NetAddressPrivate_GetPort)
-      LIST_TEST(NetAddressPrivate_GetAddress)
-      LIST_TEST(NetAddressPrivate_GetScopeID)
+      LIST_TEST(NetAddress_IPv4Address)
+      LIST_TEST(NetAddress_IPv6Address)
+      LIST_TEST(NetAddress_DescribeAsString)
   );
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, NetAddress) {
   RunTestViaHTTP(
-      LIST_TEST(NetAddressPrivateUntrusted_AreEqual)
-      LIST_TEST(NetAddressPrivateUntrusted_AreHostsEqual)
-      LIST_TEST(NetAddressPrivateUntrusted_Describe)
-      LIST_TEST(NetAddressPrivateUntrusted_ReplacePort)
-      LIST_TEST(NetAddressPrivateUntrusted_GetAnyAddress)
-      LIST_TEST(NetAddressPrivateUntrusted_GetFamily)
-      LIST_TEST(NetAddressPrivateUntrusted_GetPort)
-      LIST_TEST(NetAddressPrivateUntrusted_GetAddress)
+      LIST_TEST(NetAddress_IPv4Address)
+      LIST_TEST(NetAddress_IPv6Address)
+      LIST_TEST(NetAddress_DescribeAsString)
   );
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(NetAddress)) {
+  RunTestViaHTTP(
+      LIST_TEST(NetAddress_IPv4Address)
+      LIST_TEST(NetAddress_IPv6Address)
+      LIST_TEST(NetAddress_DescribeAsString)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, NetAddress) {
+  RunTestViaHTTP(
+      LIST_TEST(NetAddress_IPv4Address)
+      LIST_TEST(NetAddress_IPv6Address)
+      LIST_TEST(NetAddress_DescribeAsString)
+  );
+}
+
+IN_PROC_BROWSER_TEST_F(PPAPITest, NetAddressPrivate) {
+  RunTestViaHTTP(
+      LIST_TEST(NetAddressPrivate_AreEqual)
+      LIST_TEST(NetAddressPrivate_AreHostsEqual)
+      LIST_TEST(NetAddressPrivate_Describe)
+      LIST_TEST(NetAddressPrivate_ReplacePort)
+      LIST_TEST(NetAddressPrivate_GetAnyAddress)
+      LIST_TEST(NetAddressPrivate_DescribeIPv6)
+      LIST_TEST(NetAddressPrivate_GetFamily)
+      LIST_TEST(NetAddressPrivate_GetPort)
+      LIST_TEST(NetAddressPrivate_GetAddress)
+      LIST_TEST(NetAddressPrivate_GetScopeID)
+  );
+}
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, NetAddressPrivate) {
+  RunTestViaHTTP(
+      LIST_TEST(NetAddressPrivate_AreEqual)
+      LIST_TEST(NetAddressPrivate_AreHostsEqual)
+      LIST_TEST(NetAddressPrivate_Describe)
+      LIST_TEST(NetAddressPrivate_ReplacePort)
+      LIST_TEST(NetAddressPrivate_GetAnyAddress)
+      LIST_TEST(NetAddressPrivate_DescribeIPv6)
+      LIST_TEST(NetAddressPrivate_GetFamily)
+      LIST_TEST(NetAddressPrivate_GetPort)
+      LIST_TEST(NetAddressPrivate_GetAddress)
+      LIST_TEST(NetAddressPrivate_GetScopeID)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, NetAddressPrivate) {
   RunTestViaHTTP(
       LIST_TEST(NetAddressPrivateUntrusted_AreEqual)
       LIST_TEST(NetAddressPrivateUntrusted_AreHostsEqual)
@@ -856,7 +873,19 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(NetAddress)) {
       LIST_TEST(NetAddressPrivateUntrusted_GetAddress)
   );
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, NetAddress) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(NetAddressPrivate)) {
+  RunTestViaHTTP(
+      LIST_TEST(NetAddressPrivateUntrusted_AreEqual)
+      LIST_TEST(NetAddressPrivateUntrusted_AreHostsEqual)
+      LIST_TEST(NetAddressPrivateUntrusted_Describe)
+      LIST_TEST(NetAddressPrivateUntrusted_ReplacePort)
+      LIST_TEST(NetAddressPrivateUntrusted_GetAnyAddress)
+      LIST_TEST(NetAddressPrivateUntrusted_GetFamily)
+      LIST_TEST(NetAddressPrivateUntrusted_GetPort)
+      LIST_TEST(NetAddressPrivateUntrusted_GetAddress)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, NetAddressPrivate) {
   RunTestViaHTTP(
       LIST_TEST(NetAddressPrivateUntrusted_AreEqual)
       LIST_TEST(NetAddressPrivateUntrusted_AreHostsEqual)

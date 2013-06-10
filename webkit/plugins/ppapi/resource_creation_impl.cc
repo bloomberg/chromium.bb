@@ -192,6 +192,18 @@ PP_Resource ResourceCreationImpl::CreateMouseInputEvent(
       mouse_button, mouse_position, click_count, mouse_movement);
 }
 
+PP_Resource ResourceCreationImpl::CreateNetAddressFromIPv4Address(
+    PP_Instance instance,
+    const PP_NetAddress_IPv4_Dev* ipv4_addr) {
+  return 0;  // Not supported in-process.
+}
+
+PP_Resource ResourceCreationImpl::CreateNetAddressFromIPv6Address(
+    PP_Instance instance,
+    const PP_NetAddress_IPv6_Dev* ipv6_addr) {
+  return 0;  // Not supported in-process.
+}
+
 PP_Resource ResourceCreationImpl::CreateTouchInputEvent(
     PP_Instance instance,
     PP_InputEvent_Type type,
