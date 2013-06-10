@@ -99,6 +99,18 @@ class TestCommands(SdkToolsTestCase):
     self.assertTrue('pepper_24' in output)
     self.assertFalse(re.search(r'[uU]nknown', output))
 
+  def testInfoMultipleArchives(self):
+    """The info command should display multiple archives."""
+    bundle = self._AddDummyBundle(self.manifest, 'pepper_26')
+    archive2 = self._MakeDummyArchive('pepper_26', tarname='pepper_26_more',
+                                      filename='dummy2.txt')
+    archive2.host_os = 'all'
+    bundle.AddArchive(archive2)
+    self._WriteManifest()
+    output = self._Run(['info', 'pepper_26'])
+    self.assertTrue('pepper_26' in output)
+    self.assertTrue('pepper_26_more' in output)
+
   def testListBasic(self):
     """The list command should display basic information about remote
     bundles."""

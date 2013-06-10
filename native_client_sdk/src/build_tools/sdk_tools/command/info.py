@@ -23,13 +23,11 @@ def Info(manifest, bundle_names):
     for key in sorted(bundle.iterkeys()):
       value = bundle[key]
       if key == manifest_util.ARCHIVES_KEY:
-        archive = bundle.GetHostOSArchive()
-        print '  Archive:'
-        if archive:
-          for archive_key in sorted(archive.iterkeys()):
-            print '    %s: %s' % (archive_key, archive[archive_key])
-        else:
-          print '    No archives for this host.'
+        for archive in bundle.GetArchives():
+          print '  Archive:'
+          if archive:
+            for archive_key in sorted(archive.iterkeys()):
+              print '    %s: %s' % (archive_key, archive[archive_key])
       elif key not in (manifest_util.ARCHIVES_KEY, manifest_util.NAME_KEY):
         print '  %s: %s' % (key, value)
     print
