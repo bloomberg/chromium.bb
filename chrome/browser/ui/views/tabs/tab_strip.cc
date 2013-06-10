@@ -148,7 +148,7 @@ int tab_h_offset() {
         value = -26;
         break;
       case ui::LAYOUT_TOUCH:
-        value = -39;
+        value = -34;
         break;
       default:
         NOTREACHED();
