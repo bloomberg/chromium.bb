@@ -276,7 +276,7 @@ bool AuthService::CanAuthenticate(Profile* profile) {
 #if defined(OS_CHROMEOS)
   if (!chromeos::LoginState::IsInitialized())
     return false;
-  if (!chromeos::LoginState::Get()->IsUserAuthenticated())
+  if (!chromeos::LoginState::Get()->IsUserGaiaAuthenticated())
     return false;
 #endif  // OS_CHROMEOS
 

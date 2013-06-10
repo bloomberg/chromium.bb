@@ -88,6 +88,12 @@ bool LoginState::IsUserAuthenticated() const {
       type == chromeos::LoginState::LOGGED_IN_USER_LOCALLY_MANAGED;
 }
 
+bool LoginState::IsUserGaiaAuthenticated() const {
+  LoggedInUserType type = logged_in_user_type_;
+  return type == chromeos::LoginState::LOGGED_IN_USER_REGULAR ||
+      type == chromeos::LoginState::LOGGED_IN_USER_OWNER;
+}
+
 // Private methods
 
 LoginState::LoginState() : logged_in_state_(LOGGED_IN_OOBE),

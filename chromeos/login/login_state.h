@@ -63,6 +63,10 @@ class CHROMEOS_EXPORT LoginState {
   // Returns true if the user is an authenticated user (i.e. non public account)
   bool IsUserAuthenticated() const;
 
+  // Returns true if the user is authenticated by logging into Google account
+  // (i.e., non public nor locally managed account).
+  bool IsUserGaiaAuthenticated() const;
+
  private:
   LoginState();
   virtual ~LoginState();
