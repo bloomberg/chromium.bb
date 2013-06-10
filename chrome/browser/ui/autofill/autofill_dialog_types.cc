@@ -75,14 +75,12 @@ SuggestionState::SuggestionState(const string16& text,
                                  gfx::Font::FontStyle text_style,
                                  const gfx::Image& icon,
                                  const string16& extra_text,
-                                 const gfx::Image& extra_icon,
-                                 bool editable)
+                                 const gfx::Image& extra_icon)
     : text(text),
       text_style(text_style),
       icon(icon),
       extra_text(extra_text),
-      extra_icon(extra_icon),
-      editable(editable) {}
+      extra_icon(extra_icon) {}
 SuggestionState::~SuggestionState() {}
 
 AutofillMetrics::DialogUiEvent DialogSectionToUiEditEvent(

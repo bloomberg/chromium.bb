@@ -70,21 +70,19 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
 
     /**
      * @see AutofillDialog#updateSection(int, boolean, AutofillDialogField[],
-     *                                   String, Bitmap, String, Bitmap, boolean,
+     *                                   String, Bitmap, String, Bitmap,
      *                                   AutofillDialogMenuItem[], int, boolean, int)
      */
     @CalledByNative
     private void updateSection(int section, boolean visible, AutofillDialogField[] dialogInputs,
             String suggestionText, Bitmap suggestionIcon,
             String suggestionTextExtra, Bitmap suggestionIconExtra,
-            boolean suggestionSectionEditable,
             AutofillDialogMenuItem[] menuItems, int selectedMenuItem,
             boolean clobberInputs, int fieldTypeToAlwaysClobber) {
         mAutofillDialog.updateSection(
                 section, visible, dialogInputs,
                 suggestionText, suggestionIcon,
                 suggestionTextExtra, suggestionIconExtra,
-                suggestionSectionEditable,
                 menuItems, selectedMenuItem,
                 clobberInputs, fieldTypeToAlwaysClobber);
     }

@@ -583,7 +583,6 @@ void AutofillDialogViewAndroid::UpdateOrFillSectionToJava(
                                         suggestion_icon.obj(),
                                         suggestion_text_extra.obj(),
                                         suggestion_icon_extra.obj(),
-                                        suggestion_state.editable,
                                         menu_array.obj(),
                                         selected_item,
                                         clobber_inputs,

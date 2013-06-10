@@ -370,9 +370,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   string16 ExtraSuggestionTextForSection(DialogSection section) const;
   gfx::Image ExtraSuggestionIconForSection(DialogSection section) const;
 
-  // Whether |section| should be showing an "Edit" link.
-  bool EditEnabledForSection(DialogSection section) const;
-
   // Loads profiles that can suggest data for |type|. |field_contents| is the
   // part the user has already typed. |inputs| is the rest of section.
   // Identifying info is loaded into the last three outparams as well as
