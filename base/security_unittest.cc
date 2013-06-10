@@ -46,9 +46,8 @@ Type HideValueFromCompiler(volatile Type value) {
 // - ADDRESS_SANITIZER because it has its own memory allocator
 // - IOS does not use tcmalloc
 // - OS_MACOSX does not use tcmalloc
-// - OS_WIN does not use tcmalloc crbug.com/242304
 #if !defined(NO_TCMALLOC) && !defined(ADDRESS_SANITIZER) && \
-    !defined(OS_IOS) && !defined(OS_MACOSX) && !defined(OS_WIN)
+    !defined(OS_IOS) && !defined(OS_MACOSX)
   #define TCMALLOC_TEST(function) function
 #else
   #define TCMALLOC_TEST(function) DISABLED_##function
@@ -64,6 +63,12 @@ bool IsTcMallocBypassed() {
   // This should detect a TCMalloc bypass from Valgrind.
   char* g_slice = getenv("G_SLICE");
   if (g_slice && !strcmp(g_slice, "always-malloc"))
+    return true;
+#elif defined(OS_WIN)
+  // This should detect a TCMalloc bypass from setting
+  // the CHROME_ALLOCATOR environment variable.
+  char* allocator = getenv("CHROME_ALLOCATOR");
+  if (allocator && strcmp(allocator, "tcmalloc"))
     return true;
 #endif
   return false;
