@@ -251,7 +251,7 @@ class FakeDriveService : public DriveServiceInterface {
                                int* load_counter,
                                const GetResourceListCallback& callback);
 
-  scoped_ptr<base::Value> resource_list_value_;
+  scoped_ptr<base::DictionaryValue> resource_list_value_;
   scoped_ptr<base::Value> account_metadata_value_;
   scoped_ptr<base::Value> app_info_value_;
   int64 largest_changestamp_;
