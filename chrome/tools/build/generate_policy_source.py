@@ -49,6 +49,9 @@ class PolicyDetails:
     if is_chromium_os:
       expected_platform = 'chrome_os'
       wildcard_platform = None
+    elif os == 'android':
+      expected_platform = 'android'
+      wildcard_platform = None
     else:
       expected_platform = 'chrome.' + os.lower()
       wildcard_platform = 'chrome.*'
@@ -251,12 +254,16 @@ def _WritePolicyConstantSource(policies, os, f):
           '  kEntries + arraysize(kEntries),\n'
           '};\n\n')
 
-  f.write('// List of deprecated policies.\n'
-          'const char* kDeprecatedPolicyList[] = {\n')
-  for policy in policies:
-    if policy.is_supported and policy.is_deprecated:
-      f.write('  key::k%s,\n' % policy.name)
-  f.write('};\n\n')
+  has_deprecated_policies = any(
+      [p.is_supported and p.is_deprecated for p in policies])
+
+  if has_deprecated_policies:
+    f.write('// List of deprecated policies.\n'
+            'const char* kDeprecatedPolicyList[] = {\n')
+    for policy in policies:
+      if policy.is_supported and policy.is_deprecated:
+        f.write('  key::k%s,\n' % policy.name)
+    f.write('};\n\n')
 
   f.write('}  // namespace\n\n')
 
@@ -269,16 +276,18 @@ def _WritePolicyConstantSource(policies, os, f):
             'L"' + CHROMIUM_POLICY_KEY + '";\n'
             '#endif\n\n')
 
-  f.write('bool IsDeprecatedPolicy(const std::string& policy) {\n'
-          '  for (size_t i = 0; i < arraysize(kDeprecatedPolicyList);'
-            ' ++i) {\n'
-          '    if (policy == kDeprecatedPolicyList[i])\n'
-          '      return true;\n'
-          '  }\n'
-          '  return false;\n'
-          '}\n'
-          '\n'
-          'const PolicyDefinitionList* GetChromePolicyDefinitionList() {\n'
+  f.write('bool IsDeprecatedPolicy(const std::string& policy) {\n')
+  if has_deprecated_policies:
+    # arraysize() doesn't work with empty arrays.
+    f.write('  for (size_t i = 0; i < arraysize(kDeprecatedPolicyList);'
+                ' ++i) {\n'
+            '    if (policy == kDeprecatedPolicyList[i])\n'
+            '      return true;\n'
+            '  }\n')
+  f.write('  return false;\n'
+          '}\n\n')
+
+  f.write('const PolicyDefinitionList* GetChromePolicyDefinitionList() {\n'
           '  return &kChromePolicyList;\n'
           '}\n\n')
 

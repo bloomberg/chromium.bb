@@ -162,8 +162,7 @@ class CloudPolicyManagerTest : public testing::Test {
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .CopyFrom(policy_map_);
 
-    policy_.payload().mutable_homepagelocation()->set_value(
-        "http://www.example.com");
+    policy_.payload().mutable_passwordmanagerenabled()->set_value(false);
     policy_.Build();
 
     EXPECT_CALL(store_, Load());

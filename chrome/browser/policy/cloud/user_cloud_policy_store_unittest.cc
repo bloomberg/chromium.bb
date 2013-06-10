@@ -53,8 +53,10 @@ class UserCloudPolicyStoreTest : public testing::Test {
     store_.reset(new UserCloudPolicyStore(profile_.get(), policy_file()));
     store_->AddObserver(&observer_);
 
-    policy_.payload().mutable_showhomebutton()->set_value(true);
-    policy_.payload().mutable_syncdisabled()->set_value(true);
+    policy_.payload().mutable_passwordmanagerenabled()->set_value(true);
+    policy_.payload().mutable_urlblacklist()->mutable_value()->add_entries(
+        "chromium.org");
+
     policy_.Build();
   }
 
@@ -72,10 +74,10 @@ class UserCloudPolicyStoreTest : public testing::Test {
   void VerifyPolicyMap(CloudPolicyStore* store) {
     EXPECT_EQ(2U, store->policy_map().size());
     const PolicyMap::Entry* entry =
-        store->policy_map().Get(key::kShowHomeButton);
+        store->policy_map().Get(key::kPasswordManagerEnabled);
     ASSERT_TRUE(entry);
     EXPECT_TRUE(base::FundamentalValue(true).Equals(entry->value));
-    ASSERT_TRUE(store->policy_map().Get(key::kSyncDisabled));
+    ASSERT_TRUE(store->policy_map().Get(key::kURLBlacklist));
   }
 
   // Install an expectation on |observer_| for an error code.
@@ -222,7 +224,7 @@ TEST_F(UserCloudPolicyStoreTest, StoreTwoTimes) {
   EXPECT_CALL(observer_, OnStoreLoaded(store_.get())).Times(2);
 
   UserPolicyBuilder first_policy;
-  first_policy.payload().mutable_showhomebutton()->set_value(false);
+  first_policy.payload().mutable_passwordmanagerenabled()->set_value(false);
   first_policy.Build();
   store_->Store(first_policy.policy());
   RunUntilIdle();
