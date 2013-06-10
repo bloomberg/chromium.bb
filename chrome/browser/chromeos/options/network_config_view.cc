@@ -117,20 +117,22 @@ NetworkConfigView::~NetworkConfigView() {
 }
 
 // static
-void NetworkConfigView::Show(Network* network, gfx::NativeWindow parent) {
+bool NetworkConfigView::Show(Network* network, gfx::NativeWindow parent) {
   if (GetActiveDialog() != NULL)
-    return;
+    return false;
   NetworkConfigView* view = new NetworkConfigView(network);
   view->ShowDialog(parent);
+  return true;
 }
 
 // static
-void NetworkConfigView::ShowForType(ConnectionType type,
+bool NetworkConfigView::ShowForType(ConnectionType type,
                                     gfx::NativeWindow parent) {
   if (GetActiveDialog() != NULL)
-    return;
+    return false;
   NetworkConfigView* view = new NetworkConfigView(type);
   view->ShowDialog(parent);
+  return true;
 }
 
 gfx::NativeWindow NetworkConfigView::GetNativeWindow() const {

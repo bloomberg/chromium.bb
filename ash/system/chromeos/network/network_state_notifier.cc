@@ -80,24 +80,14 @@ string16 GetErrorString(const NetworkState* network_state) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_IPSEC_PSK_AUTH_FAILED);
   }
-  if (error == flimflam::kErrorIpsecCertAuthFailed ||
-      error == shill::kErrorEapAuthenticationFailed) {
+  if (error == flimflam::kErrorIpsecCertAuthFailed) {
     return l10n_util::GetStringUTF16(
-        IDS_CHROMEOS_NETWORK_ERROR_CERT_AUTH_FAILED);
-  }
-  if (error == shill::kErrorEapLocalTlsFailed) {
-    return l10n_util::GetStringUTF16(
-        IDS_CHROMEOS_NETWORK_ERROR_EAP_LOCAL_TLS_FAILED);
-  }
-  if (error == shill::kErrorEapRemoteTlsFailed) {
-    return l10n_util::GetStringUTF16(
-        IDS_CHROMEOS_NETWORK_ERROR_EAP_REMOTE_TLS_FAILED);
+        IDS_CHROMEOS_NETWORK_ERROR_IPSEC_CERT_AUTH_FAILED);
   }
   if (error == flimflam::kErrorPppAuthFailed) {
     return l10n_util::GetStringUTF16(
         IDS_CHROMEOS_NETWORK_ERROR_PPP_AUTH_FAILED);
   }
-
   if (StringToLowerASCII(error) ==
       StringToLowerASCII(std::string(flimflam::kUnknownString))) {
     return l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);

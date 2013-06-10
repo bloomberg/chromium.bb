@@ -42,7 +42,7 @@ class NetworkStateNotifierTest : public AshTestBase {
   virtual void SetUp() OVERRIDE {
     DBusThreadManager::InitializeWithStub();
     SetupDefaultShillState();
-    NetworkHandler::InitializeForTest();
+    NetworkHandler::Initialize();
     RunAllPendingInMessageLoop();
     AshTestBase::SetUp();
   }
