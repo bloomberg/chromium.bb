@@ -518,11 +518,21 @@ GpuProcessHost::~GpuProcessHost() {
     }
   }
 
-  int exit_code;
-  base::TerminationStatus status = process_->GetTerminationStatus(&exit_code);
-  UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationStatus",
-                            status,
-                            base::TERMINATION_STATUS_MAX_ENUM);
+  // In case we never started, clean up.
+  while (!queued_messages_.empty()) {
+    delete queued_messages_.front();
+    queued_messages_.pop();
+  }
+
+  // This is only called on the IO thread so no race against the constructor
+  // for another GpuProcessHost.
+  if (g_gpu_process_hosts[kind_] == this)
+    g_gpu_process_hosts[kind_] = NULL;
+
+  // If there are any remaining offscreen contexts at the point the
+  // GPU process exits, assume something went wrong, and block their
+  // URLs from accessing client 3D APIs without prompting.
+  BlockLiveOffscreenContexts();
 
   UMA_HISTOGRAM_COUNTS_100("GPU.AtExitSurfaceCount",
                            GpuSurfaceTracker::Get()->GetSurfaceCount());
@@ -545,47 +555,39 @@ GpuProcessHost::~GpuProcessHost() {
         uma_memory_stats_.bytes_limit / 1024 / 1024, 1, 2000, 50);
   }
 
-  if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION ||
-      status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
-    UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessExitCode",
-                              exit_code,
-                              RESULT_CODE_LAST_CODE);
-  }
-
-  // In case we never started, clean up.
-  while (!queued_messages_.empty()) {
-    delete queued_messages_.front();
-    queued_messages_.pop();
-  }
-
-  // This is only called on the IO thread so no race against the constructor
-  // for another GpuProcessHost.
-  if (g_gpu_process_hosts[kind_] == this)
-    g_gpu_process_hosts[kind_] = NULL;
-
-  // If there are any remaining offscreen contexts at the point the
-  // GPU process exits, assume something went wrong, and block their
-  // URLs from accessing client 3D APIs without prompting.
-  BlockLiveOffscreenContexts();
-
   std::string message;
-  switch (status) {
-    case base::TERMINATION_STATUS_NORMAL_TERMINATION:
-      message = "The GPU process exited normally. Everything is okay.";
-      break;
-    case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
-      message = base::StringPrintf(
-          "The GPU process exited with code %d.",
-          exit_code);
-      break;
-    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
-      message = "You killed the GPU process! Why?";
-      break;
-    case base::TERMINATION_STATUS_PROCESS_CRASHED:
-      message = "The GPU process crashed!";
-      break;
-    default:
-      break;
+  if (!in_process_) {
+    int exit_code;
+    base::TerminationStatus status = process_->GetTerminationStatus(&exit_code);
+    UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationStatus",
+                              status,
+                              base::TERMINATION_STATUS_MAX_ENUM);
+
+    if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION ||
+        status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
+      UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessExitCode",
+                                exit_code,
+                                RESULT_CODE_LAST_CODE);
+    }
+
+    switch (status) {
+      case base::TERMINATION_STATUS_NORMAL_TERMINATION:
+        message = "The GPU process exited normally. Everything is okay.";
+        break;
+      case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+        message = base::StringPrintf(
+            "The GPU process exited with code %d.",
+            exit_code);
+        break;
+      case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+        message = "You killed the GPU process! Why?";
+        break;
+      case base::TERMINATION_STATUS_PROCESS_CRASHED:
+        message = "The GPU process crashed!";
+        break;
+      default:
+        break;
+    }
   }
 
   BrowserThread::PostTask(BrowserThread::UI,

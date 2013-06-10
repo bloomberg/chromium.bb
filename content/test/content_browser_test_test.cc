@@ -38,10 +38,8 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTestSanityTest, Basic) {
   Test();
 }
 
-#if !(defined(OS_WIN) && defined(USE_AURA))  // TODO(jam) fix dcheck.
 IN_PROC_BROWSER_TEST_F(ContentBrowserTestSanityTest, SingleProcess) {
   Test();
 }
-#endif
 
 }  // namespace content
