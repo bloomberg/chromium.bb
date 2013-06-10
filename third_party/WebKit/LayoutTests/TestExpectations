@@ -1766,23 +1766,6 @@ crbug.com/245520 [ Mac ] compositing/repaint/transform-style-change.html [ Image
 # Temporary expectations until I've fixed fast/hidpi
 Bug(jochen) virtual/gpu/fast/hidpi [ Slow ]
 
-# Temporary expectations for changing caret color
-crbug.com/232188 editing/caret/caret-color.html [ Missing ]
-crbug.com/232188 editing/deleting/delete-4083333-fix.html [ ImageOnlyFailure ]
-crbug.com/232188 editing/deleting/type-delete-after-quote.html [ ImageOnlyFailure ]
-crbug.com/232188 editing/inserting/4840662.html [ ImageOnlyFailure ]
-crbug.com/232188 editing/inserting/4959067.html [ ImageOnlyFailure ]
-crbug.com/232188 editing/inserting/5156401-2.html [ ImageOnlyFailure ]
-crbug.com/232188 editing/inserting/insert-paragraph-05.html [ ImageOnlyFailure ]
-crbug.com/232188 editing/pasteboard/5071074-2.html [ ImageOnlyFailure ]
-crbug.com/232188 editing/pasteboard/5071074.html [ ImageOnlyFailure ]
-crbug.com/232188 editing/pasteboard/5156401-1.html [ ImageOnlyFailure ]
-crbug.com/232188 editing/pasteboard/5601583-1.html [ ImageOnlyFailure ]
-crbug.com/232188 editing/pasteboard/paste-blockquote-after-blockquote.html [ ImageOnlyFailure ]
-crbug.com/232188 editing/selection/editable-links.html [ ImageOnlyFailure ]
-crbug.com/232188 editing/selection/end-of-document.html [ ImageOnlyFailure ]
-crbug.com/232188 editing/style/5065910.html [ ImageOnlyFailure ]
-crbug.com/232188 editing/style/5084241.html [ ImageOnlyFailure ]
 
 crbug.com/247979 [ Mac Release ] inspector/elements/edit-dom-actions.html [ Slow Failure ]
 crbug.com/247979 [ XP Release ] inspector/elements/edit-dom-actions.html [ Slow Pass Failure ]
