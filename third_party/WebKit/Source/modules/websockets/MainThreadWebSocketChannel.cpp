@@ -196,7 +196,7 @@ void MainThreadWebSocketChannel::close(int code, const String& reason)
     if (!m_handle)
         return;
     startClosingHandshake(code, reason);
-    if ((m_state == ChannelClosing || m_state == ChannelClosed) && !m_closingTimer.isActive())
+    if (!m_closingTimer.isActive())
         m_closingTimer.startOneShot(2 * TCPMaximumSegmentLifetime);
 }
 
@@ -665,10 +665,8 @@ bool MainThreadWebSocketChannel::processFrame()
         skipBuffer(frameEnd - m_buffer.data());
         m_receivedClosingHandshake = true;
         startClosingHandshake(m_closeEventCode, m_closeEventReason);
-        if (m_state == ChannelClosing || m_state == ChannelClosed) {
-            m_outgoingFrameQueueStatus = OutgoingFrameQueueClosing;
-            processOutgoingFrameQueue();
-        }
+        m_outgoingFrameQueueStatus = OutgoingFrameQueueClosing;
+        processOutgoingFrameQueue();
         break;
 
     case WebSocketFrame::OpCodePing:
