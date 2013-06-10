@@ -81,10 +81,7 @@ def RunBisectionScript(config, working_directory, path_to_file, path_to_goma):
   if config['max_time_minutes']:
     cmd.extend(['--repeat_test_max_time', config['max_time_minutes']])
 
-  if os.name == 'nt':
-    cmd.extend(['--build_preference', 'ninja'])
-  else:
-    cmd.extend(['--build_preference', 'make'])
+  cmd.extend(['--build_preference', 'ninja'])
 
   if '--browser=cros' in config['command']:
     cmd.extend(['--target_platform', 'cros'])
@@ -97,6 +94,9 @@ def RunBisectionScript(config, working_directory, path_to_file, path_to_goma):
             'BISECT_CROS_BOARD undefined.'
       print
       return 1
+
+  if '--browser=android' in config['command']:
+    cmd.extend(['--target_platform', 'android'])
 
   goma_file = ''
   if path_to_goma:

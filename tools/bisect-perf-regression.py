@@ -362,6 +362,52 @@ class DesktopBuilder(Builder):
     return build_success
 
 
+class AndroidBuilder(Builder):
+  """AndroidBuilder is used to build on android."""
+  def InstallAPK(self, opts):
+    """Installs apk to device.
+
+    Args:
+        opts: The options parsed from the command line.
+
+    Returns:
+        True if successful.
+    """
+    path_to_tool = os.path.join('build', 'android', 'adb_install_apk.py')
+    cmd = [path_to_tool, '--apk', 'ContentShell.apk', '--apk_package',
+        'org.chromium.content_shell_apk', '--release']
+    (_, return_code) = RunProcess(cmd, opts.output_buildbot_annotations)
+    return not return_code
+
+  def Build(self, depot, opts):
+    """Builds the android content shell and other necessary tools using options
+    passed into the script.
+
+    Args:
+        depot: Current depot being bisected.
+        opts: The options parsed from the command line.
+
+    Returns:
+        True if build was successful.
+    """
+    targets = ['content_shell_apk', 'forwarder2', 'md5sum']
+    threads = 16
+    if opts.use_goma:
+      threads = 64
+
+    build_success = False
+    if opts.build_preference == 'ninja':
+      build_success = BuildWithNinja(threads, targets,
+          opts.output_buildbot_annotations)
+    else:
+      assert False, 'No build system defined.'
+
+    if build_success:
+      build_success = self.InstallAPK(opts)
+
+    return build_success
+
+
 class CrosBuilder(Builder):
   """CrosBuilder is used to build and image ChromeOS/Chromium when cros is the
   target platform."""
@@ -728,6 +774,8 @@ class BisectPerformanceMetrics(object):
 
     if opts.target_platform == 'cros':
       self.builder = CrosBuilder()
+    elif opts.target_platform == 'android':
+      self.builder = AndroidBuilder()
     else:
       self.builder = DesktopBuilder()
 
@@ -1297,7 +1345,7 @@ class BisectPerformanceMetrics(object):
 
     return depot_revision_list
 
-  def GatherReferenceValues(self, good_rev, bad_rev, cmd, metric):
+  def GatherReferenceValues(self, good_rev, bad_rev, cmd, metric, target_depot):
     """Gathers reference values by running the performance tests on the
     known good and bad revisions.
 
@@ -1312,7 +1360,7 @@ class BisectPerformanceMetrics(object):
       A tuple with the results of building and running each revision.
     """
     bad_run_results = self.SyncBuildAndRunRevision(bad_rev,
-                                                   self.opts.target_platform,
+                                                   target_depot,
                                                    cmd,
                                                    metric)
 
@@ -1320,7 +1368,7 @@ class BisectPerformanceMetrics(object):
 
     if not bad_run_results[1]:
       good_run_results = self.SyncBuildAndRunRevision(good_rev,
-                                                      self.opts.target_platform,
+                                                      target_depot,
                                                       cmd,
                                                       metric)
 
@@ -1536,7 +1584,8 @@ class BisectPerformanceMetrics(object):
       (bad_results, good_results) = self.GatherReferenceValues(good_revision,
                                                                bad_revision,
                                                                command_to_run,
-                                                               metric)
+                                                               metric,
+                                                               target_depot)
 
       if self.opts.output_buildbot_annotations:
         bisect_utils.OutputAnnotationStepClosed()
@@ -2076,11 +2125,12 @@ def main():
                     'are msvs/ninja.')
   parser.add_option('--target_platform',
                     type='choice',
-                    choices=['chromium', 'cros'],
+                    choices=['chromium', 'cros', 'android'],
                     default='chromium',
-                    help='The target platform. Choices are "default" (current '
-                    'platform, or "cros". If choosing "cros", you '
-                    'must be properly set up to build.')
+                    help='The target platform. Choices are "chromium" (current '
+                    'platform), "cros", or "android". If you specify something '
+                    'other than "chromium", you must be properly set up to '
+                    'build that platform.')
   parser.add_option('--cros_board',
                     type='str',
                     help='The cros board type to build.')
@@ -2167,11 +2217,10 @@ def main():
     if bisect_utils.CreateBisectDirectoryAndSetupDepot(opts):
       return 1
 
-    if opts.target_platform == 'cros':
-      if not bisect_utils.SetupCrosRepo():
-        print 'Error: Failed to grab cros source.'
-        print
-        return 1
+    if not bisect_utils.SetupPlatformBuildEnvironment(opts):
+      print 'Error: Failed to set platform environment.'
+      print
+      return 1
 
     os.chdir(os.path.join(os.getcwd(), 'src'))
 

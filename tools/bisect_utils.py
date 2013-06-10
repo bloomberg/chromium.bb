@@ -10,6 +10,7 @@ import errno
 import os
 import shutil
 import subprocess
+import sys
 
 
 GCLIENT_SPEC = """
@@ -30,6 +31,7 @@ solutions = [
 ]
 """
 GCLIENT_SPEC = ''.join([l for l in GCLIENT_SPEC.splitlines()])
+GCLIENT_SPEC_ANDROID = GCLIENT_SPEC + "\ntarget_os = ['android']"
 FILE_DEPS_GIT = '.DEPS.git'
 
 REPO_PARAMS = [
@@ -142,14 +144,21 @@ def RunRepoSyncAtTimestamp(timestamp):
   return RunRepo(cmd)
 
 
-def RunGClientAndCreateConfig():
+def RunGClientAndCreateConfig(opts):
   """Runs gclient and creates a config containing both src and src-internal.
+
+  Args:
+    opts: The options parsed from the command line through parse_args().
 
   Returns:
     The return code of the call.
   """
+  spec = GCLIENT_SPEC
+  if opts.target_platform == 'android':
+    spec = GCLIENT_SPEC_ANDROID
+
   return_code = RunGClient(
-      ['config', '--spec=%s' % GCLIENT_SPEC, '--git-deps'])
+      ['config', '--spec=%s' % spec, '--git-deps'])
   return return_code
 
 
@@ -190,17 +199,18 @@ def RunGClientAndSync(reset):
   Returns:
     The return code of the call.
   """
-  params = ['sync', '--verbose']
+  params = ['sync', '--verbose', '--nohooks']
   if reset:
     params.extend(['--reset', '--force', '--delete_unversioned_trees'])
   return RunGClient(params)
 
 
-def SetupGitDepot(output_buildbot_annotations, reset):
+def SetupGitDepot(opts, reset):
   """Sets up the depot for the bisection. The depot will be located in a
   subdirectory called 'bisect'.
 
   Args:
+    opts: The options parsed from the command line through parse_args().
     reset: Whether to reset any changes to the depot.
 
   Returns:
@@ -209,12 +219,12 @@ def SetupGitDepot(output_buildbot_annotations, reset):
   """
   name = 'Setting up Bisection Depot'
 
-  if output_buildbot_annotations:
+  if opts.output_buildbot_annotations:
     OutputAnnotationStepStart(name)
 
   passed = False
 
-  if not RunGClientAndCreateConfig():
+  if not RunGClientAndCreateConfig(opts):
     passed_deps_check = True
     if os.path.isfile(os.path.join('src', FILE_DEPS_GIT)):
       cwd = os.getcwd()
@@ -228,7 +238,7 @@ def SetupGitDepot(output_buildbot_annotations, reset):
     if passed_deps_check and not RunGClientAndSync(reset):
       passed = True
 
-  if output_buildbot_annotations:
+  if opts.output_buildbot_annotations:
     print
     OutputAnnotationStepClosed()
 
@@ -261,6 +271,47 @@ def SetupCrosRepo():
   return passed
 
 
+def SetupAndroidBuildEnvironment(opts):
+  """Sets up the android build environment.
+
+  Args:
+    opts: The options parsed from the command line through parse_args().
+    path_to_file: Path to the bisect script's directory.
+
+  Returns:
+    True if successful.
+  """
+  path_to_file = os.path.join('build', 'android', 'envsetup.sh')
+  proc = subprocess.Popen(['bash', '-c', 'source %s && env' % path_to_file],
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE,
+                           cwd='src')
+  (out, _) = proc.communicate()
+
+  for line in out.splitlines():
+    (k, _, v) = line.partition('=')
+    os.environ[k] = v
+  return not proc.returncode
+
+
+def SetupPlatformBuildEnvironment(opts):
+  """Performs any platform specific setup.
+
+  Args:
+    opts: The options parsed from the command line through parse_args().
+    path_to_file: Path to the bisect script's directory.
+
+  Returns:
+    True if successful.
+  """
+  if opts.target_platform == 'android':
+    return SetupAndroidBuildEnvironment(opts)
+  elif opts.target_platform == 'cros':
+    return SetupCrosRepo()
+
+  return False
+
+
 def CreateBisectDirectoryAndSetupDepot(opts, reset=False):
   """Sets up a subdirectory 'bisect' and then retrieves a copy of the depot
   there using gclient.
@@ -277,7 +328,7 @@ def CreateBisectDirectoryAndSetupDepot(opts, reset=False):
     print
     return 1
 
-  if not SetupGitDepot(opts.output_buildbot_annotations, reset):
+  if not SetupGitDepot(opts, reset):
     print 'Error: Failed to grab source.'
     print
     return 1
