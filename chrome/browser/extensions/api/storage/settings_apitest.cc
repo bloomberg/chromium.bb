@@ -222,7 +222,14 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
 #endif
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, SimpleTest) {
+// Flaky on Win Aura bots. http://crbug.com/248032
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_SimpleTest DISABLED_SimpleTest
+#else
+#define MAYBE_SimpleTest SimpleTest
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, MAYBE_SimpleTest) {
   ASSERT_TRUE(RunExtensionTest("settings/simple_test")) << message_;
 }
 
