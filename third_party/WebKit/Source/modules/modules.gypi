@@ -1,5 +1,13 @@
 {
   'variables': {
+    # Experimental hooks for embedder to provide extra IDL and source files.
+    #
+    # Note: this is not a supported API. If you rely on this, you will be broken
+    # from time to time as the code generator changes in backward incompatible
+    # ways.
+    'extra_blink_module_idl_files': [],
+    'extra_blink_module_files': [],
+
     'modules_idl_files': [
       'device_orientation/DeviceAcceleration.idl',
       'device_orientation/DeviceMotionEvent.idl',
@@ -169,6 +177,7 @@
       'websockets/WorkerContextWebSocket.idl',
     ],
     'modules_files': [
+      '<@(extra_blink_module_files)',
       'device_orientation/DeviceAcceleration.cpp',
       'device_orientation/DeviceAcceleration.h',
       'device_orientation/DeviceMotionClient.h',

@@ -187,6 +187,8 @@
             '--include', '../core',
             '--include', '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],
+          # Hook for embedders to specify extra directories to find IDL files.
+          'extra_blink_generator_include_dirs%': [],
         },
         'msvs_cygwin_shell': 0,
         # FIXME:  Note that we put the .cpp files in webcore/bindings
