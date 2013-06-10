@@ -10,22 +10,11 @@ namespace net {
 
 const char* GetHttpReasonPhrase(HttpStatusCode code) {
   switch (code) {
-    case HTTP_CONTINUE:
-      return "Continue";
-    case HTTP_OK:
-      return "OK";
-    case HTTP_PARTIAL_CONTENT:
-      return "Partial Content";
-    case HTTP_FORBIDDEN:
-      return "Forbidden";
-    case HTTP_NOT_FOUND:
-      return "Not Found";
-    case HTTP_METHOD_NOT_ALLOWED:
-      return "Method Not Allowed";
-    case HTTP_REQUESTED_RANGE_NOT_SATISFIABLE:
-      return "Range Not Satisfiable";
-    case HTTP_INTERNAL_SERVER_ERROR:
-      return "Internal Server Error";
+
+#define HTTP_STATUS(label, code, reason) case HTTP_ ## label: return reason;
+#include "net/http/http_status_code_list.h"
+#undef HTTP_STATUS
+
     default:
       NOTREACHED();
   }
