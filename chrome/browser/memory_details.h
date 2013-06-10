@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/process_util.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/public/common/process_type.h"
 
 // We collect data about each browser process.  A browser may

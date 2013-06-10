@@ -4,7 +4,7 @@
 
 #include "chrome/browser/notifications/notification.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "ui/message_center/message_center_util.h"
 #include "ui/webui/web_ui_util.h"

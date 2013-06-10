@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 
 @protocol CrUserNotification;

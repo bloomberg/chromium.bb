@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/mac/mac_util.h"
 #include "base/process_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/process_info_snapshot.h"

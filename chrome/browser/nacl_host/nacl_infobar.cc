@@ -5,7 +5,7 @@
 #include "chrome/browser/nacl_host/nacl_infobar.h"
 
 #include "base/bind.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "content/public/browser/browser_thread.h"

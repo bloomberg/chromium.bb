@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "base/metrics/sparse_histogram.h"
-#include "base/string_util.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 
 namespace {
 void RecordAcceptLanguage(int language_code) {

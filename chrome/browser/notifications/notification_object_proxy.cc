@@ -4,7 +4,7 @@
 
 #include "chrome/browser/notifications/notification_object_proxy.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "content/public/browser/render_view_host.h"
 
 using content::RenderViewHost;

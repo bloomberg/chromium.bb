@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/timer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"

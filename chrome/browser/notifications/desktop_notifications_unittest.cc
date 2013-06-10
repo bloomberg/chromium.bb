@@ -5,7 +5,7 @@
 #include "chrome/browser/notifications/desktop_notifications_unittest.h"
 
 #include "base/prefs/testing_pref_service.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/balloon_notification_ui_manager.h"
 #include "chrome/browser/notifications/fake_balloon_view.h"

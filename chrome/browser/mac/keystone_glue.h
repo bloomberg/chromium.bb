@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_MAC_KEYSTONE_GLUE_H_
 #define CHROME_BROWSER_MAC_KEYSTONE_GLUE_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 #if defined(__OBJC__)
 

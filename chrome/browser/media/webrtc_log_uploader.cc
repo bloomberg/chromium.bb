@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/shared_memory.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/partial_circular_buffer.h"
 #include "content/public/browser/browser_thread.h"

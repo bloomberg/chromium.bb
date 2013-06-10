@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_member.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/common/content_settings.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
