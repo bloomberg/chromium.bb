@@ -587,9 +587,19 @@ bool GetFileInfo(const FilePath& file_path, base::PlatformFileInfo* results) {
     return false;
   results->is_directory = S_ISDIR(file_info.st_mode);
   results->size = file_info.st_size;
+#if defined(OS_MACOSX)
+  results->last_modified = base::Time::FromTimeSpec(file_info.st_mtimespec);
+  results->last_accessed = base::Time::FromTimeSpec(file_info.st_atimespec);
+  results->creation_time = base::Time::FromTimeSpec(file_info.st_ctimespec);
+#elif defined(OS_ANDROID)
   results->last_modified = base::Time::FromTimeT(file_info.st_mtime);
   results->last_accessed = base::Time::FromTimeT(file_info.st_atime);
   results->creation_time = base::Time::FromTimeT(file_info.st_ctime);
+#else
+  results->last_modified = base::Time::FromTimeSpec(file_info.st_mtim);
+  results->last_accessed = base::Time::FromTimeSpec(file_info.st_atim);
+  results->creation_time = base::Time::FromTimeSpec(file_info.st_ctim);
+#endif
   return true;
 }
 

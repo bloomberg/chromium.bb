@@ -286,6 +286,14 @@ class BASE_EXPORT Time {
   static Time FromDoubleT(double dt);
   double ToDoubleT() const;
 
+#if defined(OS_POSIX)
+  // Converts the timespec structure to time. MacOS X 10.8.3 (and tentatively,
+  // earlier versions) will have the |ts|'s tv_nsec component zeroed out,
+  // having a 1 second resolution, which agrees with
+  // https://developer.apple.com/legacy/library/#technotes/tn/tn1150.html#HFSPlusDates.
+  static Time FromTimeSpec(const timespec& ts);
+#endif
+
   // Converts to/from the Javascript convention for times, a number of
   // milliseconds since the epoch:
   // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Date/getTime.

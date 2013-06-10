@@ -116,6 +116,15 @@ double Time::ToDoubleT() const {
           static_cast<double>(kMicrosecondsPerSecond));
 }
 
+#if defined(OS_POSIX)
+// static
+Time Time::FromTimeSpec(const timespec& ts) {
+  return FromDoubleT(ts.tv_sec +
+                     static_cast<double>(ts.tv_nsec) /
+                         base::Time::kNanosecondsPerSecond);
+}
+#endif
+
 // static
 Time Time::FromJsTime(double ms_since_epoch) {
   // The epoch is a valid time, so this constructor doesn't interpret
