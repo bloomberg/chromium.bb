@@ -33,13 +33,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
+#include "base/stringprintf.h"
+#include "chrome/browser/chromeos/net/proxy_config_handler.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
-#include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #endif
 
 using testing::AllOf;
@@ -715,25 +716,24 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
             "127.0.0.1:8080",
             "*.google.com, 1.2.3.4:22"));
 
-    std::string proxy_config;
-    base::JSONWriter::Write(proxy_config_dict.get(), &proxy_config);
+    ProxyConfigDictionary proxy_config(proxy_config_dict.get());
 
-    chromeos::Network* network = GetActiveNetwork();
-    network->SetProxyConfig(proxy_config);
+    const chromeos::NetworkState* network = GetDefaultNetwork();
+    chromeos::proxy_config::SetProxyConfigForNetwork(
+        proxy_config, *network);
 
-    std::string url = chrome::kChromeUIProxySettingsURL;
-    url += "?network=";
-    url += network->service_path();
+    std::string url = base::StringPrintf("%s?network=%s",
+                                         chrome::kChromeUIProxySettingsURL,
+                                         network->path().c_str());
 
     ui_test_utils::NavigateToURL(browser(), GURL(url));
     SetUpPrefs();
   }
 
  protected:
-  chromeos::Network* GetActiveNetwork() {
-    chromeos::NetworkLibrary* network_library =
-        chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-    return const_cast<chromeos::Network*>(network_library->active_network());
+  const chromeos::NetworkState* GetDefaultNetwork() {
+    return chromeos::NetworkHandler::Get()->network_state_handler()->
+        DefaultNetwork();
   }
 
   void SetProxyPref(const std::string& name, const base::Value& value) {
@@ -757,13 +757,10 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
   }
 
   void VerifyCurrentProxyServer(const std::string& expected_server) {
-    scoped_ptr<base::DictionaryValue> proxy_config =
-        chromeos::onc::ReadDictionaryFromJson(
-            GetActiveNetwork()->proxy_config());
-
-    ProxyConfigDictionary proxy_dict(proxy_config.get());
+    scoped_ptr<ProxyConfigDictionary> proxy_dict(
+        chromeos::proxy_config::GetProxyConfigForNetwork(*GetDefaultNetwork()));
     std::string actual_proxy_server;
-    EXPECT_TRUE(proxy_dict.GetProxyServer(&actual_proxy_server));
+    EXPECT_TRUE(proxy_dict->GetProxyServer(&actual_proxy_server));
     EXPECT_EQ(expected_server, actual_proxy_server);
   }
 };

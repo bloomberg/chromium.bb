@@ -73,15 +73,11 @@ struct UIProxyConfig {
 
   // Converts |this| to Dictionary of ProxyConfigDictionary format (which
   // is the same format used by prefs).
-  base::DictionaryValue* ToPrefProxyConfig();
+  base::DictionaryValue* ToPrefProxyConfig() const;
 
   // Map |scheme| (one of "http", "https", "ftp" or "socks") to the correct
   // ManualProxy.  Returns NULL if scheme is invalid.
   ManualProxy* MapSchemeToProxy(const std::string& scheme);
-
-  // Serializes config into a ProxyConfigDictionary and then std::string
-  // persisted as string property in shill for a network.
-  bool SerializeForNetwork(std::string* output);
 
   // Encodes the proxy server as "<url-scheme>=<proxy-scheme>://<proxy>"
   static void EncodeAndAppendProxyServer(const std::string& url_scheme,

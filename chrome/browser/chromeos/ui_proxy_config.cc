@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/ui_proxy_config.h"
 
-#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
@@ -101,7 +100,7 @@ bool UIProxyConfig::FromNetProxyConfig(const net::ProxyConfig& net_config) {
   return false;
 }
 
-base::DictionaryValue* UIProxyConfig::ToPrefProxyConfig() {
+base::DictionaryValue* UIProxyConfig::ToPrefProxyConfig() const {
   switch (mode) {
     case MODE_DIRECT: {
       return ProxyConfigDictionary::CreateDirect();
@@ -148,25 +147,6 @@ UIProxyConfig::ManualProxy* UIProxyConfig::MapSchemeToProxy(
     return &socks_proxy;
   NOTREACHED() << "Invalid scheme: " << scheme;
   return NULL;
-}
-
-bool UIProxyConfig::SerializeForNetwork(std::string* output) {
-  scoped_ptr<base::DictionaryValue> proxy_dict_ptr(ToPrefProxyConfig());
-  if (!proxy_dict_ptr.get())
-    return false;
-
-  // Return empty string for direct mode for portal check to work correctly.
-  base::DictionaryValue *dict = proxy_dict_ptr.get();
-  ProxyConfigDictionary proxy_dict(dict);
-  ProxyPrefs::ProxyMode mode;
-  if (proxy_dict.GetMode(&mode)) {
-    if (mode == ProxyPrefs::MODE_DIRECT) {
-      output->clear();
-      return true;
-    }
-  }
-  base::JSONWriter::Write(dict, output);
-  return true;
 }
 
 // static

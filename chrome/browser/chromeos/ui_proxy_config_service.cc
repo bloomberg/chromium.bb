@@ -7,10 +7,10 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/net/proxy_config_handler.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
-#include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "grit/generated_resources.h"
 #include "net/proxy/proxy_config.h"
 
@@ -35,27 +35,21 @@ const char* ModeToString(UIProxyConfig::Mode mode) {
   return "";
 }
 
-bool ParseProxyConfig(const std::string& pref_proxy_config,
-                      net::ProxyConfig* proxy_config) {
-  if (pref_proxy_config.empty())
+// Writes the proxy config of |network| to |proxy_config|.  Returns false if no
+// proxy was configured for this network.
+bool GetProxyConfig(const NetworkState& network,
+                    net::ProxyConfig* proxy_config) {
+  scoped_ptr<ProxyConfigDictionary> proxy_dict =
+      proxy_config::GetProxyConfigForNetwork(network);
+  if (!proxy_dict)
     return false;
-
-  scoped_ptr<base::DictionaryValue> proxy_config_dict(
-      chromeos::onc::ReadDictionaryFromJson(pref_proxy_config));
-  if (!proxy_config_dict) {
-    LOG(WARNING) << "Failed to parse proxy config.";
-    return false;
-  }
-
-  ProxyConfigDictionary proxy_config_dict_wrapper(proxy_config_dict.get());
-  return PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(
-      proxy_config_dict_wrapper,
-      proxy_config);
+  return PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(*proxy_dict,
+                                                           proxy_config);
 }
 
 // Returns true if proxy settings of |network| are editable.
-bool IsNetworkProxySettingsEditable(const Network& network) {
-  onc::ONCSource source = network.ui_data().onc_source();
+bool IsNetworkProxySettingsEditable(const NetworkState& network) {
+  onc::ONCSource source = network.onc_source();
   return source != onc::ONC_SOURCE_DEVICE_POLICY &&
       source != onc::ONC_SOURCE_USER_POLICY;
 }
@@ -74,9 +68,9 @@ void UIProxyConfigService::SetPrefs(PrefService* pref_service) {
 
 void UIProxyConfigService::SetCurrentNetwork(
     const std::string& current_network) {
-  Network* network = NULL;
+  const NetworkState* network = NULL;
   if (!current_network.empty()) {
-    network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
+    network = NetworkHandler::Get()->network_state_handler()->GetNetworkState(
         current_network);
     LOG_IF(ERROR, !network)
         << "Can't find requested network " << current_network;
@@ -105,24 +99,28 @@ void UIProxyConfigService::SetProxyConfig(const UIProxyConfig& config) {
   if (current_ui_network_.empty())
     return;
 
-  // Update config to shill.
-  std::string value;
-  if (!current_ui_config_.SerializeForNetwork(&value))
-    return;
-
-  VLOG(1) << "Set proxy for " << current_ui_network_ << " to " << value;
-  current_ui_config_.state = ProxyPrefs::CONFIG_SYSTEM;
-
-  Network* network = CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(
-      current_ui_network_);
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->
+      GetNetworkState(current_ui_network_);
   if (!network) {
     LOG(ERROR) << "Can't find requested network " << current_ui_network_;
     return;
   }
-  network->SetProxyConfig(value);
+
+  // Store config for this network.
+  scoped_ptr<base::DictionaryValue> proxy_config_value(
+      config.ToPrefProxyConfig());
+  ProxyConfigDictionary proxy_config_dict(proxy_config_value.get());
+
+  VLOG(1) << "Set proxy for " << current_ui_network_
+          << " to " << *proxy_config_value;
+
+  proxy_config::SetProxyConfigForNetwork(proxy_config_dict, *network);
+  current_ui_config_.state = ProxyPrefs::CONFIG_SYSTEM;
 }
 
-void UIProxyConfigService::DetermineEffectiveConfig(const Network& network) {
+void UIProxyConfigService::DetermineEffectiveConfig(
+    const NetworkState& network) {
   DCHECK(pref_service_);
 
   // Get prefs proxy config if available.
@@ -134,7 +132,7 @@ void UIProxyConfigService::DetermineEffectiveConfig(const Network& network) {
   net::ProxyConfig network_config;
   net::ProxyConfigService::ConfigAvailability network_availability =
       net::ProxyConfigService::CONFIG_UNSET;
-  if (ParseProxyConfig(network.proxy_config(), &network_config)) {
+  if (chromeos::GetProxyConfig(network, &network_config)) {
     // Network is private or shared with user using shared proxies.
     VLOG(1) << this << ": using network proxy: " << network.proxy_config();
     network_availability = net::ProxyConfigService::CONFIG_VALID;
@@ -162,7 +160,7 @@ void UIProxyConfigService::DetermineEffectiveConfig(const Network& network) {
     current_ui_config_.user_modifiable =
         !ProxyConfigServiceImpl::IgnoreProxy(pref_service_,
                                              network.profile_path(),
-                                             network.ui_data().onc_source());
+                                             network.onc_source());
   }
 }
 

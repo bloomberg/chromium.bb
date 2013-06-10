@@ -65,6 +65,10 @@ bool ProxyConfigDictionary::HasBypassList() const {
   return dict_->HasKey(kProxyBypassList);
 }
 
+const DictionaryValue& ProxyConfigDictionary::GetDictionary() const {
+  return *dict_;
+}
+
 // static
 DictionaryValue* ProxyConfigDictionary::CreateDirect() {
   return CreateDictionary(ProxyPrefs::MODE_DIRECT,

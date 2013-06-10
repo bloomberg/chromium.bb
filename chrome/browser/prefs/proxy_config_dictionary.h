@@ -37,6 +37,8 @@ class ProxyConfigDictionary {
   bool GetBypassList(std::string* out) const;
   bool HasBypassList() const;
 
+  const base::DictionaryValue& GetDictionary() const;
+
   static base::DictionaryValue* CreateDirect();
   static base::DictionaryValue* CreateAutoDetect();
   static base::DictionaryValue* CreatePacScript(const std::string& pac_url,

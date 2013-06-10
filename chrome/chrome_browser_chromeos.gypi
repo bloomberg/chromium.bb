@@ -572,6 +572,8 @@
         'browser/chromeos/net/network_portal_detector_stub.h',
         'browser/chromeos/net/onc_utils.cc',
         'browser/chromeos/net/onc_utils.h',
+        'browser/chromeos/net/proxy_config_handler.cc',
+        'browser/chromeos/net/proxy_config_handler.h',
         'browser/chromeos/network_login_observer.cc',
         'browser/chromeos/network_login_observer.h',
         'browser/chromeos/notifications/balloon_view_host_chromeos.cc',

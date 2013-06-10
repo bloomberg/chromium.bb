@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/net/proxy_config_handler.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
@@ -27,15 +28,15 @@ namespace chromeos {
 
 namespace {
 
-// Convert and store the proxy config of |pref_proxy_config| of
-// ProxyConfigDictionary format to |proxy_config|.  Returns true if
-// |pref_proxy_config| was not empty and if it was successfully converted.
-bool ParseProxyConfig(const base::DictionaryValue& pref_proxy_config,
-                      net::ProxyConfig* proxy_config) {
-  if (pref_proxy_config.empty())
+// Writes the proxy config of |network| to |proxy_config|.  Returns false if no
+// proxy was configured for this network.
+bool GetProxyConfig(const NetworkState& network,
+                    net::ProxyConfig* proxy_config) {
+  scoped_ptr<ProxyConfigDictionary> proxy_dict =
+      proxy_config::GetProxyConfigForNetwork(network);
+  if (!proxy_dict)
     return false;
-  ProxyConfigDictionary proxy_dict(&pref_proxy_config);
-  return PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(proxy_dict,
+  return PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(*proxy_dict,
                                                            proxy_config);
 }
 
@@ -186,7 +187,7 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
     if (ignore_proxy) {
       VLOG(1) << "Shared network && !use-shared-proxies, use direct";
       network_availability = net::ProxyConfigService::CONFIG_VALID;
-    } else if (ParseProxyConfig(network->proxy_config(), &network_config)) {
+    } else if (chromeos::GetProxyConfig(*network, &network_config)) {
       // Network is private or shared with user using shared proxies.
       VLOG(1) << this << ": using network proxy: "
               << network->proxy_config();
