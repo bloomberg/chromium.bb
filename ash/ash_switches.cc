@@ -60,6 +60,11 @@ const char kAshDisableImmersiveFullscreen[] =
 // Disables ui scaling.
 const char kAshDisableUIScaling[] = "ash-disable-ui-scaling";
 
+#if defined(OS_CHROMEOS)
+// Disable compositor based mirroring.
+const char kAshDisableSoftwareMirroring[] = "ash-disable-software-mirroring";
+#endif
+
 // Extend the status tray volume item to allow the user to choose an audio
 // input and output device.
 const char kAshEnableAudioDeviceMenu[] =
@@ -74,11 +79,6 @@ const char kAshEnableBrightnessControl[] = "ash-enable-brightness-control";
 
 // Enable immersive fullscreen mode, regardless of default setting.
 const char kAshEnableImmersiveFullscreen[] = "ash-enable-immersive-fullscreen";
-
-#if defined(OS_CHROMEOS)
-// Enable compositor based mirroring.
-const char kAshEnableSoftwareMirroring[] = "ash-enable-software-mirroring";
-#endif
 
 #if defined(OS_LINUX)
 // Enable memory monitoring.
