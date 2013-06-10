@@ -7,7 +7,7 @@
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"

@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_CHROMEOS_LABEL_TRAY_VIEW_H_
 #define ASH_SYSTEM_CHROMEOS_LABEL_TRAY_VIEW_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/views/view.h"
 
 namespace ash {

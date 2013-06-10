@@ -9,7 +9,7 @@
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_types.h"
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/base/events/event_handler.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/bubble/bubble_border.h"

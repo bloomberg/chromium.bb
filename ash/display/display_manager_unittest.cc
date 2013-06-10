@@ -11,7 +11,7 @@
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/mirror_window_test_api.h"
 #include "base/format_macros.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"

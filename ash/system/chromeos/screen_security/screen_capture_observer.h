@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_CHROMEOS_SCREEN_CAPTURE_SCREEN_CAPTURE_OBSERVER_H_
 
 #include "base/callback.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace ash {
 

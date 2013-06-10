@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace gfx {
 class ImageSkia;

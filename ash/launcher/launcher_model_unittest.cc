@@ -8,7 +8,7 @@
 #include <string>
 
 #include "ash/launcher/launcher_model_observer.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {

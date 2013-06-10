@@ -6,7 +6,7 @@
 #define ASH_LAUNCHER_LAUNCHER_BUTTON_HOST_H_
 
 #include "ash/ash_export.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace ui {
 class LocatedEvent;

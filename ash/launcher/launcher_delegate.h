@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher_types.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace aura {

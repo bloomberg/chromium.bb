@@ -11,7 +11,7 @@
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/shell.h"
 #include "base/callback.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/time.h"
 
 namespace app_list {

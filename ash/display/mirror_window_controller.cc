@@ -16,7 +16,7 @@
 #include "ash/display/root_window_transformers.h"
 #include "ash/host/root_window_host_factory.h"
 #include "ash/shell.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"

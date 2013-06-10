@@ -8,7 +8,7 @@
 #include <string>
 
 #include "ash/ash_export.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {

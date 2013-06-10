@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace ash {

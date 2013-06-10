@@ -14,7 +14,7 @@
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
