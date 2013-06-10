@@ -147,6 +147,8 @@ void LocalFileSyncService::ProcessLocalChange(
   DCHECK(!origin.is_empty());
   DCHECK(ContainsKey(origin_to_contexts_, origin));
 
+  DVLOG(1) << "Starting ProcessLocalChange";
+
   local_sync_callback_ = callback;
 
   sync_context_->GetFileForLocalSync(
@@ -189,6 +191,8 @@ void LocalFileSyncService::GetLocalFileMetadata(
 void LocalFileSyncService::PrepareForProcessRemoteChange(
     const FileSystemURL& url,
     const PrepareChangeCallback& callback) {
+  DVLOG(1) << "PrepareForProcessRemoteChange: " << url.DebugString();
+
   if (!ContainsKey(origin_to_contexts_, url.origin())) {
     // This could happen if a remote sync is triggered for the app that hasn't
     // been initialized in this service.
@@ -340,6 +344,8 @@ void LocalFileSyncService::DidInitializeForRemoteSync(
 void LocalFileSyncService::RunLocalSyncCallback(
     SyncStatusCode status,
     const FileSystemURL& url) {
+  DVLOG(1) << "Local sync is finished with: " << status
+           << " on " << url.DebugString();
   DCHECK(!local_sync_callback_.is_null());
   SyncFileCallback callback = local_sync_callback_;
   local_sync_callback_.Reset();
