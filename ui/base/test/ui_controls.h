@@ -13,10 +13,11 @@
 namespace ui_controls {
 
 // A set of utility functions to generate native events in platform
-// independent way.  For aura tests, please look into
-// |aura::test:EventGenerator| first. This class provides a way to
-// emulate events in synchronous way and it is often easier to write
-// tests with this class than using |ui_controls|.
+// independent way. Note that since the implementations depend on a window being
+// top level, these can only be called from test suites that are not sharded.
+// For aura tests, please look into |aura::test:EventGenerator| first. This
+// class provides a way to emulate events in synchronous way and it is often
+// easier to write tests with this class than using |ui_controls|.
 //
 // Many of the functions in this class include a variant that takes a Closure.
 // The version that takes a Closure waits until the generated event is
@@ -37,6 +38,12 @@ namespace ui_controls {
 //
 // If you're writing a test chances are you want the variant in ui_test_utils.
 // See it for details.
+
+// Per the above comment, these methods can only be called from non-sharded test
+// suites. This method ensures that they're not accidently called by sharded
+// tests.
+void EnableUIControls();
+
 bool SendKeyPress(gfx::NativeWindow window,
                   ui::KeyboardCode key,
                   bool control,

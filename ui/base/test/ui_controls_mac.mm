@@ -209,9 +209,15 @@ void EventQueueWatcher(const base::Closure& task) {
 // when firing keyboard and mouse click events.
 NSPoint g_mouse_location = { 0, 0 };
 
+bool g_ui_controls_enabled = false;
+
 }  // namespace
 
 namespace ui_controls {
+
+void EnableUIControls() {
+  g_ui_controls_enabled = true;
+}
 
 bool SendKeyPress(gfx::NativeWindow window,
                   ui::KeyboardCode key,
@@ -219,6 +225,7 @@ bool SendKeyPress(gfx::NativeWindow window,
                   bool shift,
                   bool alt,
                   bool command) {
+  CHECK(g_ui_controls_enabled);
   return SendKeyPressNotifyWhenDone(window, key,
                                     control, shift, alt, command,
                                     base::Closure());
@@ -233,6 +240,7 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool alt,
                                 bool command,
                                 const base::Closure& task) {
+  CHECK(g_ui_controls_enabled);
   DCHECK_EQ(base::MessageLoop::TYPE_UI, base::MessageLoop::current()->type());
 
   std::vector<NSEvent*> events;
@@ -257,6 +265,7 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
 }
 
 bool SendMouseMove(long x, long y) {
+  CHECK(g_ui_controls_enabled);
   return SendMouseMoveNotifyWhenDone(x, y, base::Closure());
 }
 
@@ -265,6 +274,7 @@ bool SendMouseMove(long x, long y) {
 // the coordinate space, so input events can be the same for all
 // platforms.  E.g. (0,0) is upper-left.
 bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task) {
+  CHECK(g_ui_controls_enabled);
   NSWindow* window = [[NSApplication sharedApplication] keyWindow];
   CGFloat screenHeight =
     [[[NSScreen screens] objectAtIndex:0] frame].size.height;
@@ -295,11 +305,13 @@ bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task) {
 }
 
 bool SendMouseEvents(MouseButton type, int state) {
+  CHECK(g_ui_controls_enabled);
   return SendMouseEventsNotifyWhenDone(type, state, base::Closure());
 }
 
 bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
                                    const base::Closure& task) {
+  CHECK(g_ui_controls_enabled);
   // On windows it appears state can be (UP|DOWN).  It is unclear if
   // that'll happen here but prepare for it just in case.
   if (state == (UP|DOWN)) {
@@ -354,7 +366,8 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
 }
 
 bool SendMouseClick(MouseButton type) {
- return SendMouseEventsNotifyWhenDone(type, UP|DOWN, base::Closure());
+  CHECK(g_ui_controls_enabled);
+  return SendMouseEventsNotifyWhenDone(type, UP|DOWN, base::Closure());
 }
 
 }  // namespace ui_controls

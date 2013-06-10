@@ -9,7 +9,12 @@
 namespace ui_controls {
 namespace {
 UIControlsAura* instance_ = NULL;
+bool g_ui_controls_enabled = false;
 }  // namespace
+
+void EnableUIControls() {
+  g_ui_controls_enabled = true;
+}
 
 // An interface to provide Aura implementation of UI control.
 bool SendKeyPress(gfx::NativeWindow window,
@@ -18,6 +23,7 @@ bool SendKeyPress(gfx::NativeWindow window,
                   bool shift,
                   bool alt,
                   bool command) {
+  CHECK(g_ui_controls_enabled);
   return instance_->SendKeyPress(
       window, key, control, shift, alt, command);
 }
@@ -30,12 +36,14 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool alt,
                                 bool command,
                                 const base::Closure& task) {
+  CHECK(g_ui_controls_enabled);
   return instance_->SendKeyPressNotifyWhenDone(
       window, key, control, shift, alt, command, task);
 }
 
 // static
 bool SendMouseMove(long x, long y) {
+  CHECK(g_ui_controls_enabled);
   return instance_->SendMouseMove(x, y);
 }
 
@@ -43,11 +51,13 @@ bool SendMouseMove(long x, long y) {
 bool SendMouseMoveNotifyWhenDone(long x,
                                  long y,
                                  const base::Closure& task) {
+  CHECK(g_ui_controls_enabled);
   return instance_->SendMouseMoveNotifyWhenDone(x, y, task);
 }
 
 // static
 bool SendMouseEvents(MouseButton type, int state) {
+  CHECK(g_ui_controls_enabled);
   return instance_->SendMouseEvents(type, state);
 }
 
@@ -55,11 +65,13 @@ bool SendMouseEvents(MouseButton type, int state) {
 bool SendMouseEventsNotifyWhenDone(MouseButton type,
                                    int state,
                                    const base::Closure& task) {
+  CHECK(g_ui_controls_enabled);
   return instance_->SendMouseEventsNotifyWhenDone(type, state, task);
 }
 
 // static
 bool SendMouseClick(MouseButton type) {
+  CHECK(g_ui_controls_enabled);
   return instance_->SendMouseClick(type);
 }
 

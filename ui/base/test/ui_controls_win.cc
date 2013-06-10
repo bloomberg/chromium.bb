@@ -11,6 +11,11 @@
 #include "ui/views/view.h"
 
 namespace ui_controls {
+bool g_ui_controls_enabled = false;
+
+void EnableUIControls() {
+  g_ui_controls_enabled = true;
+}
 
 bool SendKeyPress(gfx::NativeWindow window,
                   ui::KeyboardCode key,
@@ -18,6 +23,7 @@ bool SendKeyPress(gfx::NativeWindow window,
                   bool shift,
                   bool alt,
                   bool command) {
+  CHECK(g_ui_controls_enabled);
   DCHECK(!command);  // No command key on Windows
   return internal::SendKeyPressImpl(window, key, control, shift, alt,
                                     base::Closure());
@@ -30,28 +36,34 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool alt,
                                 bool command,
                                 const base::Closure& task) {
+  CHECK(g_ui_controls_enabled);
   DCHECK(!command);  // No command key on Windows
   return internal::SendKeyPressImpl(window, key, control, shift, alt, task);
 }
 
 bool SendMouseMove(long x, long y) {
+  CHECK(g_ui_controls_enabled);
   return internal::SendMouseMoveImpl(x, y, base::Closure());
 }
 
 bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task) {
+  CHECK(g_ui_controls_enabled);
   return internal::SendMouseMoveImpl(x, y, task);
 }
 
 bool SendMouseEvents(MouseButton type, int state) {
+  CHECK(g_ui_controls_enabled);
   return internal::SendMouseEventsImpl(type, state, base::Closure());
 }
 
 bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
                                    const base::Closure& task) {
+  CHECK(g_ui_controls_enabled);
   return internal::SendMouseEventsImpl(type, state, task);
 }
 
 bool SendMouseClick(MouseButton type) {
+  CHECK(g_ui_controls_enabled);
   return internal::SendMouseEventsImpl(type, UP | DOWN, base::Closure());
 }
 

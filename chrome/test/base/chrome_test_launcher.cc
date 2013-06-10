@@ -23,6 +23,7 @@
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "ui/base/test/ui_controls.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_application_mac.h"
@@ -39,7 +40,6 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/test/ui_controls_factory_aura.h"
-#include "ui/base/test/ui_controls.h"
 #include "ui/base/test/ui_controls_aura.h"
 #endif
 
@@ -157,6 +157,7 @@ int main(int argc, char** argv) {
 // Only allow ui_controls to be used in interactive_ui_tests, since they depend
 // on focus and can't be sharded.
 #if defined(INTERACTIVE_TESTS)
+  ui_controls::EnableUIControls();
 
 #if defined(OS_CHROMEOS)
   ui_controls::InstallUIControlsAura(ash::test::CreateAshUIControls());

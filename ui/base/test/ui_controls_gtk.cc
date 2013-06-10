@@ -15,6 +15,7 @@
 #include "ui/gfx/rect.h"
 
 namespace {
+bool g_ui_controls_enabled = false;
 
 // static
 guint32 XTimeNow() {
@@ -94,12 +95,17 @@ void FakeAMouseMotionEvent(gint x, gint y) {
 
 namespace ui_controls {
 
+void EnableUIControls() {
+  g_ui_controls_enabled = true;
+}
+
 bool SendKeyPress(gfx::NativeWindow window,
                   ui::KeyboardCode key,
                   bool control,
                   bool shift,
                   bool alt,
                   bool command) {
+  CHECK(g_ui_controls_enabled);
   DCHECK(!command);  // No command key on Linux
   GdkWindow* event_window = NULL;
   GtkWidget* grab_widget = gtk_grab_get_current();
@@ -144,6 +150,7 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool alt,
                                 bool command,
                                 const base::Closure& task) {
+  CHECK(g_ui_controls_enabled);
   DCHECK(!command);  // No command key on Linux
   int release_count = 1;
   if (control)
@@ -158,6 +165,7 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
 }
 
 bool SendMouseMove(long x, long y) {
+  CHECK(g_ui_controls_enabled);
   gdk_display_warp_pointer(gdk_display_get_default(), gdk_screen_get_default(),
                            x, y);
   // Sometimes gdk_display_warp_pointer fails to send back any indication of
@@ -168,12 +176,14 @@ bool SendMouseMove(long x, long y) {
 }
 
 bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task) {
+  CHECK(g_ui_controls_enabled);
   bool rv = SendMouseMove(x, y);
   new EventWaiter(task, GDK_MOTION_NOTIFY, 1);
   return rv;
 }
 
 bool SendMouseEvents(MouseButton type, int state) {
+  CHECK(g_ui_controls_enabled);
   GdkEvent* event = gdk_event_new(GDK_BUTTON_PRESS);
 
   event->button.send_event = false;
@@ -226,6 +236,7 @@ bool SendMouseEvents(MouseButton type, int state) {
 bool SendMouseEventsNotifyWhenDone(MouseButton type,
                                    int state,
                                    const base::Closure& task) {
+  CHECK(g_ui_controls_enabled);
   bool rv = SendMouseEvents(type, state);
   GdkEventType wait_type;
   if (state & UP) {
@@ -243,6 +254,7 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type,
 }
 
 bool SendMouseClick(MouseButton type) {
+  CHECK(g_ui_controls_enabled);
   return SendMouseEvents(type, UP | DOWN);
 }
 
