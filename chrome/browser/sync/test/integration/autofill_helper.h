@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 
 namespace autofill {

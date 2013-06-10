@@ -5,8 +5,8 @@
 #include "chrome/browser/sync_file_system/drive/metadata_db_migration_util.h"
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"

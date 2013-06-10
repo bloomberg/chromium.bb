@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/time.h"

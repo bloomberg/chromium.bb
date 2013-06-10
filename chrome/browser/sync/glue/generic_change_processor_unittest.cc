@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/sync/glue/data_type_error_handler_mock.h"
 #include "sync/api/fake_syncable_service.h"
 #include "sync/api/sync_merge_result.h"

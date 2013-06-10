@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/location.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_change.h"

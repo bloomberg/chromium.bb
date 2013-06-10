@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sync/glue/device_info.h"
 #include "sync/internal_api/public/base/model_type.h"

@@ -7,7 +7,7 @@
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/google_apis/event_logger.h"
 
 namespace sync_file_system {

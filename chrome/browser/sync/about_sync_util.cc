@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_SYNC_UI_UTIL_H_
 #define CHROME_BROWSER_SYNC_SYNC_UI_UTIL_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 class ProfileSyncService;
 class SigninManagerBase;

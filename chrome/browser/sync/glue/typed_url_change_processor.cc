@@ -6,7 +6,7 @@
 
 #include "base/location.h"
 #include "base/metrics/histogram.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_vector.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
