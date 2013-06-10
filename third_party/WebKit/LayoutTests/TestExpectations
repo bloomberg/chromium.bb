@@ -115,6 +115,10 @@ webkit.org/b/100071 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Pass Timeo
 webkit.org/b/60877 loader/navigation-while-deferring-loads.html [ Skip ]
 webkit.org/b/60877 loader/load-defer-resume-crash.html [ Skip ]
 
+# Unskip when DeviceMotion is implemented and enabled at runtime.
+crbug.com/229080 fast/dom/DeviceMotion/create-event.html [ Failure ]
+crbug.com/229080 fast/dom/DeviceMotion/optional-event-properties.html [ Failure ]
+
 # Overflowing LayoutUnits cause RenderGeometryMap assertions
 webkit.org/b/67434 [ Debug ] fast/overflow/overflow-height-float-not-removed-crash.html [ Skip ]
 webkit.org/b/67434 [ Debug ] fast/overflow/overflow-height-float-not-removed-crash2.html [ Skip ]

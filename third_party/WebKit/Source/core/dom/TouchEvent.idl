@@ -24,7 +24,7 @@
  */
 
 [
-    NoInterfaceObject
+    EnabledAtRuntime=touch
 ] interface TouchEvent : UIEvent {
     readonly attribute TouchList touches;
     readonly attribute TouchList targetTouches;

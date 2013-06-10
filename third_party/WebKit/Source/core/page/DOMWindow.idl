@@ -298,33 +298,17 @@
     attribute IDBRequestConstructor webkitIDBRequest;
     attribute IDBTransactionConstructor webkitIDBTransaction;
 
-    // Constructors enabled at runtime but whose interface does not have EnabledAtRuntime
-    // extended attribute.
-    // FIXME: Remove these.
-    [EnabledAtRuntime=media] attribute MediaErrorConstructor MediaError;
-    [EnabledAtRuntime=media] attribute TimeRangesConstructor TimeRanges;
-    [EnabledAtRuntime=media] attribute HTMLSourceElementConstructor HTMLSourceElement;
-    [EnabledAtRuntime=media] attribute MediaControllerConstructor MediaController;
-    [EnabledAtRuntime=deviceMotion] attribute DeviceMotionEventConstructor DeviceMotionEvent;
-    [EnabledAtRuntime=touch] attribute TouchConstructor Touch;
-    [EnabledAtRuntime=touch] attribute TouchEventConstructor TouchEvent;
-    [EnabledAtRuntime=touch] attribute TouchListConstructor TouchList;
-    [EnabledAtRuntime=webMIDI] attribute MIDIConnectionEventConstructor MIDIConnectionEvent;
-    [EnabledAtRuntime=webMIDI] attribute MIDIMessageEventConstructor MIDIMessageEvent;
+    // Constructors whose name does not match the interface name.
+    // FIXME: Remove these once [ImplementedAs] is used and once constructor names match interface names.
     [EnabledAtRuntime=mediaStream] attribute MediaStreamConstructor webkitMediaStream;
     [Conditional=WEB_AUDIO, EnabledAtRuntime=WebAudio] attribute AudioContextConstructor webkitAudioContext;
     [Conditional=WEB_AUDIO, EnabledAtRuntime=WebAudio] attribute OfflineAudioContextConstructor webkitOfflineAudioContext;
     [EnabledAtRuntime=peerConnection] attribute RTCPeerConnectionConstructor webkitRTCPeerConnection;
-    [EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] attribute SecurityPolicyViolationEventConstructor SecurityPolicyViolationEvent;
-    [EnabledAtRuntime] attribute SharedWorkerConstructor SharedWorker; // Usable with the new operator
     [EnabledAtRuntime=scriptedSpeech] attribute SpeechGrammarConstructor webkitSpeechGrammar;
     [EnabledAtRuntime=scriptedSpeech] attribute SpeechGrammarListConstructor webkitSpeechGrammarList;
     [EnabledAtRuntime=scriptedSpeech] attribute SpeechRecognitionConstructor webkitSpeechRecognition;
     [EnabledAtRuntime=scriptedSpeech] attribute SpeechRecognitionErrorConstructor webkitSpeechRecognitionError;
     [EnabledAtRuntime=scriptedSpeech] attribute SpeechRecognitionEventConstructor webkitSpeechRecognitionEvent;
-
-    // Constructors whose name does not match the interface name.
-    // FIXME: Remove these once [ImplementedAs] is used and once constructor names match interface names.
     attribute ShadowRootConstructor WebKitShadowRoot;
     [Conditional=WEB_AUDIO] attribute PannerNodeConstructor webkitAudioPannerNode;
 

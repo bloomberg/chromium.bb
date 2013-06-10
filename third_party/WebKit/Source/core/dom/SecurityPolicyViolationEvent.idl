@@ -23,7 +23,7 @@
  */
 
 [
-    NoInterfaceObject,
+    EnabledAtRuntime=experimentalContentSecurityPolicyFeatures,
     ConstructorTemplate=Event
 ] interface SecurityPolicyViolationEvent : Event {
     [InitializedByEventConstructor] readonly attribute DOMString documentURI;
