@@ -31,6 +31,7 @@ import logging
 import re
 
 from webkitpy.common.host import Host
+from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.thirdparty.BeautifulSoup import BeautifulSoup, Tag
 
 
@@ -42,8 +43,7 @@ class W3CTestConverter(object):
     def __init__(self):
         self._host = Host()
         self._filesystem = self._host.filesystem
-        self._host.initialize_scm()
-        self._webkit_root = self._host.scm().checkout_root
+        self._webkit_root = WebKitFinder(self._filesystem).webkit_base()
 
         # These settings might vary between WebKit and Blink
         self._css_property_file = self.path_from_webkit_root('Source', 'core', 'css', 'CSSPropertyNames.in')
