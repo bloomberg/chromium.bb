@@ -160,6 +160,7 @@ public:
                              bool handleExternally);
     virtual void popupClosed(WebCore::PopupContainer* popupContainer);
     virtual void postAccessibilityNotification(WebCore::AccessibilityObject*, WebCore::AXObjectCache::AXNotification);
+    virtual String acceptLanguages() OVERRIDE;
 
     // ChromeClientImpl:
     void setCursorForPlugin(const WebCursorInfo&);

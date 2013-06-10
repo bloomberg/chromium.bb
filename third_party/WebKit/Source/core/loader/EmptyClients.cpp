@@ -86,6 +86,11 @@ void EmptyChromeClient::runOpenPanel(Frame*, PassRefPtr<FileChooser>)
 {
 }
 
+String EmptyChromeClient::acceptLanguages()
+{
+    return String();
+}
+
 PolicyAction EmptyFrameLoaderClient::policyForNewWindowAction(const NavigationAction&, const String&)
 {
     return PolicyUse;

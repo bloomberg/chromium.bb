@@ -49,6 +49,9 @@ private:
     virtual bool isEmailField() const OVERRIDE;
     virtual bool supportsSelectionAPI() const OVERRIDE;
     virtual String sanitizeValue(const String&) const OVERRIDE;
+    virtual String convertFromVisibleValue(const String&) const OVERRIDE;
+    virtual String visibleValue() const OVERRIDE;
+    String convertEmailAddressToUnicode(const String&) const;
 };
 
 } // namespace WebCore

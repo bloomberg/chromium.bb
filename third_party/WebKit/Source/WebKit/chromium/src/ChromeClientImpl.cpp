@@ -824,6 +824,11 @@ void ChromeClientImpl::postAccessibilityNotification(AccessibilityObject* obj, A
         m_webView->client()->postAccessibilityNotification(WebAccessibilityObject(obj), toWebAccessibilityNotification(notification));
 }
 
+String ChromeClientImpl::acceptLanguages()
+{
+    return m_webView->client()->acceptLanguages();
+}
+
 bool ChromeClientImpl::paintCustomOverhangArea(GraphicsContext* context, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect)
 {
     Frame* frame = m_webView->mainFrameImpl()->frame();

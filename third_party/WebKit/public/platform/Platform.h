@@ -180,10 +180,17 @@ public:
     // Must return non-null.
     virtual WebFileSystem* fileSystem() { return 0; }
 
+
+    // IDN conversion ------------------------------------------------------
+
+    virtual WebString convertIDNToUnicode(const WebString& host, const WebString& languages) { return host; }
+
+
     // IndexedDB ----------------------------------------------------------
 
     // Must return non-null.
     virtual WebIDBFactory* idbFactory() { return 0; }
+
 
     // Gamepad -------------------------------------------------------------
 

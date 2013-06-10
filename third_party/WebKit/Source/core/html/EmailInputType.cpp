@@ -27,8 +27,12 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/InputTypeNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/RegularExpression.h"
+#include "public/platform/Platform.h"
+#include <unicode/uidna.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/StringBuilder.h>
 
@@ -38,6 +42,55 @@ static const char emailPattern[] =
     "[a-z0-9!#$%&'*+/=?^_`{|}~.-]+" // local part
     "@"
     "[a-z0-9-]+(\\.[a-z0-9-]+)*"; // domain part
+
+// RFC5321 says the maximum total length of a domain name is 255 octets.
+static const size_t maximumDomainNameLength = 255;
+static const int32_t idnaConversionOption = UIDNA_ALLOW_UNASSIGNED;
+
+static String convertEmailAddressToASCII(const String& address)
+{
+    if (address.containsOnlyASCII())
+        return address;
+
+    size_t atPosition = address.find('@');
+    if (atPosition == notFound)
+        return address;
+
+    UErrorCode error = U_ZERO_ERROR;
+    UChar domainNameBuffer[maximumDomainNameLength];
+    int32_t domainNameLength = uidna_IDNToASCII(address.characters() + atPosition + 1, address.length() - atPosition - 1, domainNameBuffer, WTF_ARRAY_LENGTH(domainNameBuffer), idnaConversionOption, 0, &error);
+    if (error != U_ZERO_ERROR || domainNameLength <= 0)
+        return address;
+
+    StringBuilder builder;
+    builder.append(address, 0, atPosition + 1);
+    builder.append(domainNameBuffer, domainNameLength);
+    return builder.toString();
+}
+
+String EmailInputType::convertEmailAddressToUnicode(const String& address) const
+{
+    if (!address.containsOnlyASCII())
+        return address;
+
+    size_t atPosition = address.find('@');
+    if (atPosition == notFound)
+        return address;
+
+    if (address.find("xn--", atPosition + 1) == notFound)
+        return address;
+
+    ChromeClient* chromeClient = chrome() ? chrome()->client() : 0;
+    if (!chromeClient)
+        return address;
+
+    String languages = chromeClient->acceptLanguages();
+    String unicodeHost = WebKit::Platform::current()->convertIDNToUnicode(address.substring(atPosition + 1), languages);
+    StringBuilder builder;
+    builder.append(address, 0, atPosition + 1);
+    builder.append(unicodeHost);
+    return builder.toString();
+}
 
 static bool isValidEmailAddress(const String& address)
 {
@@ -112,12 +165,47 @@ String EmailInputType::sanitizeValue(const String& proposedValue) const
     Vector<String> addresses;
     noLineBreakValue.split(',', true, addresses);
     StringBuilder strippedValue;
-    for (unsigned i = 0; i < addresses.size(); ++i) {
+    for (size_t i = 0; i < addresses.size(); ++i) {
         if (i > 0)
             strippedValue.append(",");
         strippedValue.append(stripLeadingAndTrailingHTMLSpaces(addresses[i]));
     }
     return strippedValue.toString();
+}
+
+String EmailInputType::convertFromVisibleValue(const String& visibleValue) const
+{
+    String sanitizedValue = sanitizeValue(visibleValue);
+    if (!element()->multiple())
+        return convertEmailAddressToASCII(sanitizedValue);
+    Vector<String> addresses;
+    sanitizedValue.split(',', true, addresses);
+    StringBuilder builder;
+    builder.reserveCapacity(sanitizedValue.length());
+    for (size_t i = 0; i < addresses.size(); ++i) {
+        if (i > 0)
+            builder.append(",");
+        builder.append(convertEmailAddressToASCII(addresses[i]));
+    }
+    return builder.toString();
+}
+
+String EmailInputType::visibleValue() const
+{
+    String value = element()->value();
+    if (!element()->multiple())
+        return convertEmailAddressToUnicode(value);
+
+    Vector<String> addresses;
+    value.split(',', true, addresses);
+    StringBuilder builder;
+    builder.reserveCapacity(value.length());
+    for (size_t i = 0; i < addresses.size(); ++i) {
+        if (i > 0)
+            builder.append(",");
+        builder.append(convertEmailAddressToUnicode(addresses[i]));
+    }
+    return builder.toString();
 }
 
 } // namespace WebCore

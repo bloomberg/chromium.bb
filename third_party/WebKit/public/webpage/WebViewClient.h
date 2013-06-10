@@ -290,6 +290,9 @@ public:
     // Return true to swallow the input event if the embedder will start a disambiguation popup
     virtual bool didTapMultipleTargets(const WebGestureEvent&, const WebVector<WebRect>& targetRects) { return false; }
 
+    // Returns comma separated list of accept languages.
+    virtual WebString acceptLanguages() { return WebString(); }
+
     // Session history -----------------------------------------------------
 
     // Tells the embedder to navigate back or forward in session history by

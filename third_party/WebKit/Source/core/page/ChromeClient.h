@@ -252,6 +252,7 @@ public:
     virtual void addTextFieldDecorationsTo(HTMLInputElement*) { }
 
     virtual void postAccessibilityNotification(AccessibilityObject*, AXObjectCache::AXNotification) { }
+    virtual String acceptLanguages() = 0;
 
     enum DialogType {
         AlertDialog = 0,
