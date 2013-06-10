@@ -37,7 +37,7 @@
 #include "public/platform/WebURL.h"
 #include "weborigin/KURL.h"
 
-#if defined(OS_ANDROID)
+#if OS(ANDROID)
 #include "GrContext.h"
 #include "GrTypes.h"
 #include "SkCanvas.h"
@@ -496,7 +496,7 @@ void WebMediaPlayerClientImpl::paintCurrentFrameInContext(GraphicsContext* conte
     if (m_webMediaPlayer && !context->paintingDisabled()) {
         // On Android, video frame is emitted as GL_TEXTURE_EXTERNAL_OES texture. We use a different path to
         // paint the video frame into the context.
-#if defined(OS_ANDROID)
+#if OS(ANDROID)
         if (!m_isMediaStream) {
             RefPtr<GraphicsContext3D> context3D = SharedGraphicsContext3D::get();
             paintOnAndroid(context, context3D.get(), rect, context->getNormalizedAlpha());
@@ -607,7 +607,7 @@ PassOwnPtr<MediaPlayer> WebMediaPlayerClientImpl::create(MediaPlayerClient* clie
     return adoptPtr(new WebMediaPlayerClientImpl(client));
 }
 
-#if defined(OS_ANDROID)
+#if OS(ANDROID)
 void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context, WebCore::GraphicsContext3D* context3D, const IntRect& rect, uint8_t alpha)
 {
     if (!context || !context3D || !m_webMediaPlayer || context->paintingDisabled())
