@@ -8,13 +8,19 @@ import sys
 import spec
 import spec_val
 import test_format
+import validator
 
 
 class SpecValTestRunner(test_format.TestRunner):
 
   SECTION_NAME = 'spec'
 
+  def CommandLineOptions(self, parser):
+    parser.add_option('--decoder_dll',
+                      help='Path to the decoder dll')
+
   def GetSectionContent(self, options, hex_content):
+      validator.Init(decoder_dll=options.decoder_dll)
       validator_cls = {32: spec_val.Validator32}[options.bits]
 
       data = ''.join(test_format.ParseHex(hex_content))

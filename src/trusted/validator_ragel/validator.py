@@ -2,8 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import cStringIO
 import ctypes
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -73,8 +75,11 @@ def ValidateChunkIA32_(*args):
 def ValidateChunkAMD64_(*args):
   raise AssertionError('using validator without calling Init first')
 
+def DisassembleChunk_(*args):
+  raise AssertionError('using validator without calling Init first')
 
-def Init(validator_dll):
+
+def Init(validator_dll=None, decoder_dll=None):
   """Initialize python interface to the validator.
 
   Should be called before any calls to ValidateChunk.
@@ -89,25 +94,37 @@ def Init(validator_dll):
   global GetFullCPUIDFeatures
   global ValidateChunkIA32_
   global ValidateChunkAMD64_
+  global DisassembleChunk_
 
-  validator_dll = ctypes.cdll.LoadLibrary(validator_dll)
+  if validator_dll is not None:
+    validator_dll = ctypes.cdll.LoadLibrary(validator_dll)
 
-  GetFullCPUIDFeatures = validator_dll.GetFullCPUIDFeatures
-  GetFullCPUIDFeatures.restype = ctypes.c_void_p
+    GetFullCPUIDFeatures = validator_dll.GetFullCPUIDFeatures
+    GetFullCPUIDFeatures.restype = ctypes.c_void_p
 
-  ValidateChunkIA32_ = validator_dll.ValidateChunkIA32
-  ValidateChunkAMD64_ = validator_dll.ValidateChunkAMD64
+    ValidateChunkIA32_ = validator_dll.ValidateChunkIA32
+    ValidateChunkAMD64_ = validator_dll.ValidateChunkAMD64
 
-  ValidateChunkIA32_.argtypes = ValidateChunkAMD64_.argtypes = [
-      ctypes.POINTER(ctypes.c_uint8),  # data
-      ctypes.c_uint32,  # size
-      ctypes.c_uint32,  # options
-      ctypes.c_void_p,  # CPU features
-      CALLBACK_TYPE,  # callback
-      ctypes.c_void_p,  # callback data
-  ]
-  ValidateChunkIA32_.restype = ctypes.c_bool  # Bool
-  ValidateChunkAMD64_.restype = ctypes.c_bool  # Bool
+    ValidateChunkIA32_.argtypes = ValidateChunkAMD64_.argtypes = [
+        ctypes.POINTER(ctypes.c_uint8),  # data
+        ctypes.c_uint32,  # size
+        ctypes.c_uint32,  # options
+        ctypes.c_void_p,  # CPU features
+        CALLBACK_TYPE,  # callback
+        ctypes.c_void_p,  # callback data
+    ]
+    ValidateChunkIA32_.restype = ctypes.c_bool  # Bool
+    ValidateChunkAMD64_.restype = ctypes.c_bool  # Bool
+
+  if decoder_dll is not None:
+    decoder_dll = ctypes.cdll.LoadLibrary(decoder_dll)
+    DisassembleChunk_ = decoder_dll.DisassembleChunk
+    DisassembleChunk_.argtypes = [
+        ctypes.POINTER(ctypes.c_uint8),  # data
+        ctypes.c_uint32,  # size
+        ctypes.c_int,  # bitness
+    ]
+    DisassembleChunk_.restype = ctypes.c_char_p
 
 
 def ValidateChunk(
@@ -172,7 +189,33 @@ def ValidateChunk(
   return bool(result)
 
 
+class DisassemblerError(Exception):
+  def __init__(self, offset=None):
+    self.offset = offset
+
+
 def DisassembleChunk(data, bitness):
+  data_ptr = ctypes.cast(data, ctypes.POINTER(ctypes.c_uint8))
+  result = DisassembleChunk_(data_ptr, len(data), bitness)
+
+  instructions = []
+  total_bytes = 0
+  for line in cStringIO.StringIO(result):
+    m = re.match(r'rejected at ([\da-f]+)', line)
+    if m is not None:
+      offset = int(m.group(1), 16)
+      raise DisassemblerError(offset)
+    insn = objdump_parser.ParseLine(line)
+    insn = objdump_parser.CanonicalizeInstruction(insn)
+    instructions.append(insn)
+    total_bytes += len(insn.bytes)
+  return instructions
+
+
+# TODO(shcherbina): Remove it.
+# Currently I'm keeping it around just in case (might be helpful for
+# troubleshooting RDFA decoder).
+def DisassembleChunkWithObjdump(data, bitness):
   """Disassemble chunk assuming it consists of valid instructions.
 
   Args:

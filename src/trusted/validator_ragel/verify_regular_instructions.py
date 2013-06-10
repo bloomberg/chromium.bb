@@ -422,6 +422,8 @@ def ParseOptions():
                     help='Path to objdump executable')
   parser.add_option('--validator_dll',
                     help='Path to librdfa_validator_dll')
+  parser.add_option('--decoder_dll',
+                    help='Path to librdfa_decoder_dll')
   parser.add_option('--ncval32',
                     help='Path to old 32-bit ncval')
   parser.add_option('--ncval64',
@@ -463,7 +465,9 @@ options, xml_file = ParseOptions()
 # multiprocess. Passing it every time is slow.
 dfa = dfa_parser.ParseXml(xml_file)
 
-validator.Init(options.validator_dll)
+validator.Init(
+    validator_dll=options.validator_dll,
+    decoder_dll=options.decoder_dll)
 
 
 def main():

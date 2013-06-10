@@ -30,7 +30,12 @@ class Validator(object):
       self.messages.append((0, 'chunk size is not multiple of bundle size'))
       return
 
-    insns = validator.DisassembleChunk(self.data, bitness=self.BITNESS)
+    try:
+      insns = validator.DisassembleChunk(self.data, bitness=self.BITNESS)
+    except validator.DisassemblerError as e:
+      self.messages.append((e.offset, 'failed to decode instruction'))
+      return
+
     i = 0
 
     while i < len(insns):

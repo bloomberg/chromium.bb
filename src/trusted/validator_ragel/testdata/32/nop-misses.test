@@ -59,7 +59,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: unrecognized instruction 'data32 data32 data32 data32 nopw %cs:0x1000000(%eax,%eax,1)'
+  d: failed to decode instruction
 ----------------------------------------------------------------------
 @hex:
   # This is an example where we have decremented the nop by 1.
@@ -72,8 +72,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: unrecognized instruction 'data32 data32 data32 data32 nopw %cs:-0x1(%ebx)'
-  d: unrecognized instruction 'call *-0x6f6f6f70(%eax)'
+  8: failed to decode instruction
 ----------------------------------------------------------------------
 @hex:
   # This is the list of all nops, just to see if they validate.

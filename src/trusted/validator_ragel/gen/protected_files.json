@@ -10,6 +10,7 @@
     "native_client/scons-out/opt-linux-x86-64/obj/src/trusted/validator_ragel/instruction_definitions/mmx_instructions.def", 
     "native_client/scons-out/opt-linux-x86-64/obj/src/trusted/validator_ragel/instruction_definitions/xmm_instructions.def", 
     "native_client/scons-out/opt-linux-x86-64/obj/src/trusted/validator_ragel/instruction_definitions/nops.def", 
+    "native_client/scons-out/opt-linux-x86-64/obj/src/trusted/validator_ragel/instruction_definitions/tls.def", 
     "native_client/validator_x86_32.rl", 
     "native_client/validator_x86_64.rl", 
     "native_client/parse_instruction.rl", 

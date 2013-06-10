@@ -174,7 +174,7 @@ def main():
   else:
     out_file = sys.stdout
 
-  validator.Init(options.validator_dll)
+  validator.Init(validator_dll=options.validator_dll)
 
   try:
     for file in args:
