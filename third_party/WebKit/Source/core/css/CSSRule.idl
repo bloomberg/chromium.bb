@@ -45,7 +45,7 @@
 
     readonly attribute unsigned short   type;
 
-             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, SetterRaisesException] attribute DOMString        cssText;
+             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString] attribute DOMString        cssText;
 
     readonly attribute CSSStyleSheet    parentStyleSheet;
     readonly attribute CSSRule          parentRule;

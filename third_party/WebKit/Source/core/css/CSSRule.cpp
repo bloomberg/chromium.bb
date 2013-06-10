@@ -43,7 +43,7 @@ COMPILE_ASSERT(StyleRuleBase::Region == static_cast<StyleRuleBase::Type>(CSSRule
 COMPILE_ASSERT(StyleRuleBase::Viewport == static_cast<StyleRuleBase::Type>(CSSRule::WEBKIT_VIEWPORT_RULE), enums_should_match);
 #endif
 
-void CSSRule::setCssText(const String& /*cssText*/, ExceptionCode& /*ec*/)
+void CSSRule::setCssText(const String&)
 {
     notImplemented();
 }
