@@ -39,6 +39,7 @@ class JobScheduler;
 namespace internal {
 class ChangeListLoader;
 class ResourceMetadata;
+class SyncClient;
 }  // namespace internal
 
 namespace file_system {
@@ -183,9 +184,6 @@ class FileSystem : public FileSystemInterface,
 
   // Sets up ChangeListLoader.
   void SetupChangeListLoader();
-
-  // Sets up file_system::XXXOperation instances.
-  void SetupOperations();
 
   // Called on preference change.
   void OnDisableDriveHostedFilesChanged();
@@ -370,6 +368,8 @@ class FileSystem : public FileSystemInterface,
   std::set<base::FilePath> open_files_;
 
   scoped_ptr<PrefChangeRegistrar> pref_registrar_;
+
+  scoped_ptr<internal::SyncClient> sync_client_;
 
   // The loader is used to load the change lists.
   scoped_ptr<internal::ChangeListLoader> change_list_loader_;

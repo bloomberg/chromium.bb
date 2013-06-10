@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/logging.h"
-#include "chrome/browser/chromeos/drive/sync_client.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
@@ -141,7 +140,6 @@ DriveIntegrationService::DriveIntegrationService(
   file_write_helper_.reset(new FileWriteHelper(file_system()));
   download_handler_.reset(new DownloadHandler(file_write_helper(),
                                               file_system()));
-  sync_client_.reset(new internal::SyncClient(file_system(), cache_.get()));
   debug_info_collector_.reset(
       new DebugInfoCollector(file_system(), cache_.get()));
 }

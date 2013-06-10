@@ -245,12 +245,17 @@ class FileCache {
   void MarkAsUnmountedOnUIThread(const base::FilePath& file_path,
                                  const FileOperationCallback& callback);
 
-  // Marks the specified entry dirty.
+  // Runs MarkDirty() on |blocking_task_runner_|, and calls |callback| with the
+  // result asynchronously.
   // |callback| must not be null.
   // Must be called on the UI thread.
   void MarkDirtyOnUIThread(const std::string& resource_id,
                            const std::string& md5,
                            const FileOperationCallback& callback);
+
+  // Marks the specified entry dirty.
+  FileError MarkDirty(const std::string& resource_id,
+                      const std::string& md5);
 
   // Commits changes for the specified dirty entry.
   // |callback| must not be null.
@@ -354,10 +359,6 @@ class FileCache {
 
   // Used to implement MarkAsUnmountedOnUIThread.
   FileError MarkAsUnmounted(const base::FilePath& file_path);
-
-  // Used to implement MarkDirtyOnUIThread.
-  FileError MarkDirty(const std::string& resource_id,
-                      const std::string& md5);
 
   // Used to implement ClearAllOnUIThread.
   bool ClearAll();

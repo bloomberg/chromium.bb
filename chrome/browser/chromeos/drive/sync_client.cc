@@ -10,7 +10,8 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
-#include "chrome/browser/chromeos/drive/file_system_interface.h"
+#include "chrome/browser/chromeos/drive/file_system/download_operation.h"
+#include "chrome/browser/chromeos/drive/file_system/update_operation.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -56,23 +57,35 @@ void CollectBacklog(std::vector<std::string>* to_fetch,
 
 }  // namespace
 
-SyncClient::SyncClient(FileSystemInterface* file_system, FileCache* cache)
-    : file_system_(file_system),
+SyncClient::SyncClient(base::SequencedTaskRunner* blocking_task_runner,
+                       file_system::OperationObserver* observer,
+                       JobScheduler* scheduler,
+                       ResourceMetadata* metadata,
+                       FileCache* cache)
+    : metadata_(metadata),
       cache_(cache),
+      download_operation_(new file_system::DownloadOperation(
+          blocking_task_runner,
+          observer,
+          scheduler,
+          metadata,
+          cache)),
+      update_operation_(new file_system::UpdateOperation(blocking_task_runner,
+                                                         observer,
+                                                         scheduler,
+                                                         metadata,
+                                                         cache)),
       delay_(base::TimeDelta::FromSeconds(kDelaySeconds)),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(file_system);
   DCHECK(cache);
 
-  file_system_->AddObserver(this);
   cache_->AddObserver(this);
 }
 
 SyncClient::~SyncClient() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  file_system_->RemoveObserver(this);
   cache_->RemoveObserver(this);
 }
 
@@ -107,18 +120,6 @@ std::vector<std::string> SyncClient::GetResourceIdsForTesting(
   }
   NOTREACHED();
   return std::vector<std::string>();
-}
-
-void SyncClient::OnInitialLoadFinished() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  StartProcessingBacklog();
-}
-
-void SyncClient::OnLoadFromServerComplete() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  StartCheckingExistingPinnedFiles();
 }
 
 void SyncClient::OnCachePinned(const std::string& resource_id,
@@ -183,13 +184,14 @@ void SyncClient::StartTask(SyncType type, const std::string& resource_id) {
         DVLOG(1) << "Fetching " << resource_id;
         pending_fetch_list_.erase(resource_id);
 
-        file_system_->GetFileByResourceId(
+        download_operation_->EnsureFileDownloadedByResourceId(
             resource_id,
             ClientContext(BACKGROUND),
+            GetFileContentInitializedCallback(),
+            google_apis::GetContentCallback(),
             base::Bind(&SyncClient::OnFetchFileComplete,
                        weak_ptr_factory_.GetWeakPtr(),
-                       resource_id),
-            google_apis::GetContentCallback());
+                       resource_id));
       } else {
         // Cancel the task.
         fetch_list_.erase(resource_id);
@@ -197,7 +199,7 @@ void SyncClient::StartTask(SyncType type, const std::string& resource_id) {
       break;
     case UPLOAD:
       DVLOG(1) << "Uploading " << resource_id;
-      file_system_->UpdateFileByResourceId(
+      update_operation_->UpdateFileByResourceId(
           resource_id,
           ClientContext(BACKGROUND),
           base::Bind(&SyncClient::OnUploadFileComplete,
@@ -233,7 +235,7 @@ void SyncClient::OnGetResourceIdOfExistingPinnedFile(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (cache_entry.is_pinned() && cache_entry.is_present()) {
-    file_system_->GetResourceEntryById(
+    metadata_->GetResourceEntryByIdOnUIThread(
         resource_id,
         base::Bind(&SyncClient::OnGetResourceEntryById,
                    weak_ptr_factory_.GetWeakPtr(),

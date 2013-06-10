@@ -350,7 +350,7 @@ FileError FileCache::GetFile(const std::string& resource_id,
   }
 
   *cache_file_path = GetCacheFilePath(resource_id,
-                                      md5,
+                                      cache_entry.md5(),
                                       GetSubDirectoryType(cache_entry),
                                       file_origin);
   return FILE_ERROR_OK;
@@ -572,6 +572,59 @@ void FileCache::MarkDirtyOnUIThread(const std::string& resource_id,
       base::Bind(&FileCache::MarkDirty,
                  base::Unretained(this), resource_id, md5),
       callback);
+}
+
+FileError FileCache::MarkDirty(const std::string& resource_id,
+                               const std::string& md5) {
+  AssertOnSequencedWorkerPool();
+
+  // If file has already been marked dirty in previous instance of chrome, we
+  // would have lost the md5 info during cache initialization, because the file
+  // would have been renamed to .local extension.
+  // So, search for entry in cache without comparing md5.
+
+  // Marking a file dirty means its entry and actual file blob must exist in
+  // cache.
+  FileCacheEntry cache_entry;
+  if (!GetCacheEntry(resource_id, std::string(), &cache_entry) ||
+      !cache_entry.is_present()) {
+    LOG(WARNING) << "Can't mark dirty a file that wasn't cached: res_id="
+                 << resource_id
+                 << ", md5=" << md5;
+    return FILE_ERROR_NOT_FOUND;
+  }
+
+  if (cache_entry.is_dirty()) {
+    // The file must be in persistent dir.
+    DCHECK(cache_entry.is_persistent());
+    return FILE_ERROR_OK;
+  }
+
+  // Move file to persistent dir with new .local extension.
+
+  // Get the current path of the file in cache.
+  base::FilePath source_path = GetCacheFilePath(
+      resource_id,
+      md5,
+      GetSubDirectoryType(cache_entry),
+      CACHED_FILE_FROM_SERVER);
+  // Determine destination path.
+  const CacheSubDirectoryType sub_dir_type = CACHE_TYPE_PERSISTENT;
+  base::FilePath cache_file_path = GetCacheFilePath(
+      resource_id,
+      md5,
+      sub_dir_type,
+      CACHED_FILE_LOCALLY_MODIFIED);
+
+  if (!MoveFile(source_path, cache_file_path))
+    return FILE_ERROR_FAILED;
+
+  // Now that file operations have completed, update metadata.
+  cache_entry.set_md5(md5);
+  cache_entry.set_is_dirty(true);
+  cache_entry.set_is_persistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
+  metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
+  return FILE_ERROR_OK;
 }
 
 void FileCache::CommitDirtyOnUIThread(const std::string& resource_id,
@@ -934,59 +987,6 @@ FileError FileCache::MarkAsUnmounted(const base::FilePath& file_path) {
   cache_entry.set_md5(md5);
   cache_entry.set_is_mounted(false);
   cache_entry.set_is_persistent(unmounted_subdir == CACHE_TYPE_PERSISTENT);
-  metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
-  return FILE_ERROR_OK;
-}
-
-FileError FileCache::MarkDirty(const std::string& resource_id,
-                               const std::string& md5) {
-  AssertOnSequencedWorkerPool();
-
-  // If file has already been marked dirty in previous instance of chrome, we
-  // would have lost the md5 info during cache initialization, because the file
-  // would have been renamed to .local extension.
-  // So, search for entry in cache without comparing md5.
-
-  // Marking a file dirty means its entry and actual file blob must exist in
-  // cache.
-  FileCacheEntry cache_entry;
-  if (!GetCacheEntry(resource_id, std::string(), &cache_entry) ||
-      !cache_entry.is_present()) {
-    LOG(WARNING) << "Can't mark dirty a file that wasn't cached: res_id="
-                 << resource_id
-                 << ", md5=" << md5;
-    return FILE_ERROR_NOT_FOUND;
-  }
-
-  if (cache_entry.is_dirty()) {
-    // The file must be in persistent dir.
-    DCHECK(cache_entry.is_persistent());
-    return FILE_ERROR_OK;
-  }
-
-  // Move file to persistent dir with new .local extension.
-
-  // Get the current path of the file in cache.
-  base::FilePath source_path = GetCacheFilePath(
-      resource_id,
-      md5,
-      GetSubDirectoryType(cache_entry),
-      CACHED_FILE_FROM_SERVER);
-  // Determine destination path.
-  const CacheSubDirectoryType sub_dir_type = CACHE_TYPE_PERSISTENT;
-  base::FilePath cache_file_path = GetCacheFilePath(
-      resource_id,
-      md5,
-      sub_dir_type,
-      CACHED_FILE_LOCALLY_MODIFIED);
-
-  if (!MoveFile(source_path, cache_file_path))
-    return FILE_ERROR_FAILED;
-
-  // Now that file operations have completed, update metadata.
-  cache_entry.set_md5(md5);
-  cache_entry.set_is_dirty(true);
-  cache_entry.set_is_persistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
   metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
   return FILE_ERROR_OK;
 }

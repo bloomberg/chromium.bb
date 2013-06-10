@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/remove_stale_cache_files.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
+#include "chrome/browser/chromeos/drive/sync_client.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
@@ -98,7 +99,29 @@ void FileSystem::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   SetupChangeListLoader();
-  SetupOperations();
+
+  file_system::OperationObserver* observer = this;
+  copy_operation_.reset(new file_system::CopyOperation(
+      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_,
+      drive_service_));
+  create_directory_operation_.reset(new file_system::CreateDirectoryOperation(
+      blocking_task_runner_, observer, scheduler_, resource_metadata_));
+  create_file_operation_.reset(new file_system::CreateFileOperation(
+      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_));
+  move_operation_.reset(new file_system::MoveOperation(
+      observer, scheduler_, resource_metadata_));
+  remove_operation_.reset(new file_system::RemoveOperation(
+      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_));
+  touch_operation_.reset(new file_system::TouchOperation(
+      blocking_task_runner_, observer, scheduler_, resource_metadata_));
+  download_operation_.reset(new file_system::DownloadOperation(
+      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_));
+  update_operation_.reset(new file_system::UpdateOperation(
+      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_));
+  search_operation_.reset(new file_system::SearchOperation(
+      blocking_task_runner_, scheduler_, resource_metadata_));
+  sync_client_.reset(new internal::SyncClient(
+      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_));
 
   PrefService* pref_service = profile_->GetPrefs();
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableDriveHostedFiles);
@@ -125,29 +148,6 @@ void FileSystem::SetupChangeListLoader() {
   change_list_loader_.reset(new internal::ChangeListLoader(
       blocking_task_runner_, resource_metadata_, scheduler_));
   change_list_loader_->AddObserver(this);
-}
-
-void FileSystem::SetupOperations() {
-  file_system::OperationObserver* observer = this;
-  copy_operation_.reset(new file_system::CopyOperation(
-      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_,
-      drive_service_));
-  create_directory_operation_.reset(new file_system::CreateDirectoryOperation(
-      blocking_task_runner_, observer, scheduler_, resource_metadata_));
-  create_file_operation_.reset(new file_system::CreateFileOperation(
-      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_));
-  move_operation_.reset(new file_system::MoveOperation(
-      observer, scheduler_, resource_metadata_));
-  remove_operation_.reset(new file_system::RemoveOperation(
-      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_));
-  touch_operation_.reset(new file_system::TouchOperation(
-      blocking_task_runner_, observer, scheduler_, resource_metadata_));
-  download_operation_.reset(new file_system::DownloadOperation(
-      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_));
-  update_operation_.reset(new file_system::UpdateOperation(
-      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_));
-  search_operation_.reset(new file_system::SearchOperation(
-      blocking_task_runner_, scheduler_, resource_metadata_));
 }
 
 void FileSystem::CheckForUpdates() {
@@ -727,8 +727,7 @@ void FileSystem::OnDirectoryChanged(const base::FilePath& directory_path) {
 void FileSystem::OnLoadFromServerComplete() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  FOR_EACH_OBSERVER(FileSystemObserver, observers_,
-                    OnLoadFromServerComplete());
+  sync_client_->StartCheckingExistingPinnedFiles();
 }
 
 void FileSystem::OnInitialLoadComplete() {
@@ -738,10 +737,7 @@ void FileSystem::OnInitialLoadComplete() {
                                   base::Bind(&internal::RemoveStaleCacheFiles,
                                              cache_,
                                              resource_metadata_));
-
-  FOR_EACH_OBSERVER(FileSystemObserver,
-                    observers_,
-                    OnInitialLoadFinished());
+  sync_client_->StartProcessingBacklog();
 }
 
 void FileSystem::GetMetadata(

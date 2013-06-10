@@ -21,16 +21,7 @@ class FileSystemObserver {
   // Triggered when a content of a directory has been changed.
   // |directory_path| is a virtual directory path (/drive/...) representing
   // changed directory.
-  virtual void OnDirectoryChanged(const base::FilePath& directory_path) {
-  }
-
-  // Triggered when the file system is initially loaded.
-  virtual void OnInitialLoadFinished() {
-  }
-
-  // Triggered when loading from the server is complete.
-  virtual void OnLoadFromServerComplete() {
-  }
+  virtual void OnDirectoryChanged(const base::FilePath& directory_path) {}
 
  protected:
   virtual ~FileSystemObserver() {}
