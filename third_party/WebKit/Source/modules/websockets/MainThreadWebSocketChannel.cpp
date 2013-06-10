@@ -476,7 +476,7 @@ void MainThreadWebSocketChannel::resumeTimerFired(Timer<MainThreadWebSocketChann
 
 void MainThreadWebSocketChannel::startClosingHandshake(int code, const String& reason)
 {
-    LOG(Network, "MainThreadWebSocketChannel %p startClosingHandshake() code=%d m_receivedClosingHandshake=%d", this, (m_state == ChannelClosing), m_receivedClosingHandshake);
+    LOG(Network, "MainThreadWebSocketChannel %p startClosingHandshake() code=%d m_state=%d m_receivedClosingHandshake=%d", this, code, m_state, m_receivedClosingHandshake);
     if (m_state == ChannelClosing || m_state == ChannelClosed)
         return;
     ASSERT(m_handle);
