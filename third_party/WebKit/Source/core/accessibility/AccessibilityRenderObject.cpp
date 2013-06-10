@@ -2188,18 +2188,11 @@ AccessibilityObject* AccessibilityRenderObject::accessibilityImageMapHitTest(HTM
     if (!area)
         return 0;
 
-    Element* mapParent = area->parentElement();
-    while (mapParent && !mapParent->hasTagName(mapTag))
-        mapParent = mapParent->parentElement();
-    if (!mapParent)
-        return 0;
-    HTMLMapElement* map = static_cast<HTMLMapElement*>(mapParent);
-    AccessibilityObject* parent = accessibilityParentForImageMap(map);
+    AccessibilityObject* parent = axObjectCache()->getOrCreate(area->imageElement());
     if (!parent)
         return 0;
 
     AccessibilityObject::AccessibilityChildrenVector children = parent->children();
-
     unsigned count = children.size();
     for (unsigned k = 0; k < count; ++k) {
         if (children[k]->elementRect().contains(point))
@@ -2207,19 +2200,6 @@ AccessibilityObject* AccessibilityRenderObject::accessibilityImageMapHitTest(HTM
     }
 
     return 0;
-}
-
-AccessibilityObject* AccessibilityRenderObject::accessibilityParentForImageMap(HTMLMapElement* map) const
-{
-    // find an image that is using this map
-    if (!map)
-        return 0;
-
-    HTMLImageElement* imageElement = map->imageElement();
-    if (!imageElement)
-        return 0;
-
-    return axObjectCache()->getOrCreate(imageElement);
 }
 
 bool AccessibilityRenderObject::renderObjectIsObservable(RenderObject* renderer) const

@@ -182,8 +182,11 @@ Path HTMLAreaElement::getRegion(const LayoutSize& size) const
 
 HTMLImageElement* HTMLAreaElement::imageElement() const
 {
-    Node* mapElement = parentNode();
-    if (!mapElement || !mapElement->hasTagName(mapTag))
+    Element* mapElement = parentElement();
+    while (mapElement && !mapElement->hasTagName(mapTag))
+        mapElement = mapElement->parentElement();
+
+    if (!mapElement)
         return 0;
     
     return static_cast<HTMLMapElement*>(mapElement)->imageElement();
