@@ -2309,7 +2309,7 @@ scoped_refptr<ui::Texture> RenderWidgetHostViewAura::CopyTexture() {
 // RenderWidgetHostViewAura, ui::EventHandler implementation:
 
 void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
-  TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnKeyEvent");
+  TRACE_EVENT0("input", "RenderWidgetHostViewAura::OnKeyEvent");
   if (touch_editing_client_ && touch_editing_client_->HandleInputEvent(event))
     return;
 
@@ -2360,7 +2360,7 @@ void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
-  TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnMouseEvent");
+  TRACE_EVENT0("input", "RenderWidgetHostViewAura::OnMouseEvent");
 
   if (touch_editing_client_ && touch_editing_client_->HandleInputEvent(event))
     return;
@@ -2473,7 +2473,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
-  TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnScrollEvent");
+  TRACE_EVENT0("input", "RenderWidgetHostViewAura::OnScrollEvent");
   if (touch_editing_client_ && touch_editing_client_->HandleInputEvent(event))
     return;
 
@@ -2500,7 +2500,7 @@ void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
 }
 
 void RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
-  TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnTouchEvent");
+  TRACE_EVENT0("input", "RenderWidgetHostViewAura::OnTouchEvent");
   if (touch_editing_client_ && touch_editing_client_->HandleInputEvent(event))
     return;
 
@@ -2525,7 +2525,7 @@ void RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
 }
 
 void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
-  TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnGestureEvent");
+  TRACE_EVENT0("input", "RenderWidgetHostViewAura::OnGestureEvent");
   // Pinch gestures are currently disabled by default. See crbug.com/128477.
   if ((event->type() == ui::ET_GESTURE_PINCH_BEGIN ||
       event->type() == ui::ET_GESTURE_PINCH_UPDATE ||

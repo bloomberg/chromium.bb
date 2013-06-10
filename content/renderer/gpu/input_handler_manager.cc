@@ -83,7 +83,9 @@ void InputHandlerManager::AddInputHandlerOnCompositorThread(
   if (input_handlers_.count(routing_id) != 0)
     return;
 
-  TRACE_EVENT0("InputHandlerManager::AddInputHandler", "AddingRoute");
+  TRACE_EVENT1("input",
+      "InputHandlerManager::AddInputHandlerOnCompositorThread",
+      "result", "AddingRoute");
   client_->DidAddInputHandler(routing_id);
   input_handlers_[routing_id] =
       make_scoped_refptr(new InputHandlerWrapper(this,
@@ -93,7 +95,7 @@ void InputHandlerManager::AddInputHandlerOnCompositorThread(
 void InputHandlerManager::RemoveInputHandler(int routing_id) {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
 
-  TRACE_EVENT0("InputHandlerManager::RemoveInputHandler", "RemovingRoute");
+  TRACE_EVENT0("input", "InputHandlerManager::RemoveInputHandler");
 
   client_->DidRemoveInputHandler(routing_id);
   input_handlers_.erase(routing_id);
@@ -106,8 +108,8 @@ InputEventAckState InputHandlerManager::HandleInputEvent(
 
   InputHandlerMap::iterator it = input_handlers_.find(routing_id);
   if (it == input_handlers_.end()) {
-    TRACE_EVENT0("InputHandlerManager::HandleInputEvent",
-                 "NoInputHandlerFound");
+    TRACE_EVENT1("input", "InputHandlerManager::HandleInputEvent",
+                  "result", "NoInputHandlerFound");
     // Oops, we no longer have an interested input handler..
     return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
   }

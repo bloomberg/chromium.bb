@@ -18,6 +18,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "base/message_pump_aurax11.h"
 #include "base/stl_util.h"
@@ -938,6 +939,11 @@ void RootWindowHostX11::DispatchXI2Event(const base::NativeEvent& event) {
   XEvent* xev = event;
   if (!factory->ShouldProcessXI2Event(xev))
     return;
+
+  TRACE_EVENT1("input", "RootWindowHostX11::DispatchXI2Event",
+               "event_latency_us",
+               (ui::EventTimeForNow() - ui::EventTimeFromNative(event)).
+                 InMicroseconds());
 
   ui::EventType type = ui::EventTypeFromNative(xev);
   XEvent last_event;

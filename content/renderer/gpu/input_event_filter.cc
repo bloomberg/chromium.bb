@@ -61,6 +61,8 @@ static bool RequiresThreadBounce(const IPC::Message& message) {
 }
 
 bool InputEventFilter::OnMessageReceived(const IPC::Message& message) {
+  TRACE_EVENT0("input", "InputEventFilter::OnMessageReceived");
+
   if (!RequiresThreadBounce(message))
     return false;
 
@@ -110,8 +112,7 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
                                         CrackMessage(message));
 
   if (ack == INPUT_EVENT_ACK_STATE_NOT_CONSUMED) {
-    TRACE_EVENT0("InputEventFilter::DidNotHandleInputEvent",
-                 "ForwardToRenderThread");
+    TRACE_EVENT0("input", "InputEventFilter::ForwardToHandler");
     main_loop_->PostTask(
         FROM_HERE,
         base::Bind(&InputEventFilter::ForwardToMainListener,

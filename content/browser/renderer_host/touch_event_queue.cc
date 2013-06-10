@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/touch_event_queue.h"
 
+#include "base/debug/trace_event.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -23,9 +24,14 @@ class CoalescedWebTouchEvent {
   explicit CoalescedWebTouchEvent(const WebKit::WebTouchEvent& event)
       : coalesced_event_(event) {
     events_.push_back(event);
+    TRACE_EVENT_ASYNC_BEGIN0(
+        "input", "TouchEventQueue::QueueEvent", this);
   }
 
-  ~CoalescedWebTouchEvent() {}
+  ~CoalescedWebTouchEvent() {
+    TRACE_EVENT_ASYNC_END0(
+        "input", "TouchEventQueue::QueueEvent", this);
+  }
 
   // Coalesces the event with the existing event if possible. Returns whether
   // the event was coalesced.

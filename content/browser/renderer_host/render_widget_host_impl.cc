@@ -965,7 +965,7 @@ void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
 
 void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
     const MouseEventWithLatencyInfo& mouse_event) {
-  TRACE_EVENT2("renderer_host",
+  TRACE_EVENT2("input",
                "RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo",
                "x", mouse_event.event.x, "y", mouse_event.event.y);
   if (ignore_input_events_ || process_->IgnoreInputEvents())
@@ -1000,7 +1000,7 @@ void RenderWidgetHostImpl::ForwardWheelEvent(
 void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
     const WebMouseWheelEvent& wheel_event,
     const ui::LatencyInfo& latency_info) {
-  TRACE_EVENT0("renderer_host",
+  TRACE_EVENT0("input",
                "RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo");
   if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
@@ -1058,7 +1058,7 @@ void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
 
 void RenderWidgetHostImpl::ForwardGestureEvent(
     const WebKit::WebGestureEvent& gesture_event) {
-  TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::ForwardGestureEvent");
+  TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardGestureEvent");
   if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
@@ -1077,7 +1077,7 @@ void RenderWidgetHostImpl::ForwardGestureEvent(
 // TouchpadTapSuppressionController.
 void RenderWidgetHostImpl::ForwardMouseEventImmediately(
     const MouseEventWithLatencyInfo& mouse_event) {
-  TRACE_EVENT2("renderer_host",
+  TRACE_EVENT2("input",
                "RenderWidgetHostImpl::ForwardMouseEventImmediately",
                "x", mouse_event.event.x, "y", mouse_event.event.y);
   if (ignore_input_events_ || process_->IgnoreInputEvents())
@@ -1119,7 +1119,7 @@ void RenderWidgetHostImpl::ForwardMouseEventImmediately(
 
 void RenderWidgetHostImpl::ForwardTouchEventImmediately(
     const WebKit::WebTouchEvent& touch_event) {
-  TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::ForwardTouchEvent");
+  TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardTouchEvent");
   if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
@@ -1137,7 +1137,7 @@ void RenderWidgetHostImpl::ForwardGestureEventImmediately(
 
 void RenderWidgetHostImpl::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& key_event) {
-  TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::ForwardKeyboardEvent");
+  TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardKeyboardEvent");
   if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
@@ -1243,7 +1243,7 @@ void RenderWidgetHostImpl::SendInputEvent(const WebInputEvent& input_event,
 void RenderWidgetHostImpl::ForwardInputEvent(
     const WebInputEvent& input_event, int event_size,
     const ui::LatencyInfo& latency_info, bool is_keyboard_shortcut) {
-  TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::ForwardInputEvent");
+  TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardInputEvent");
 
   if (!process_->HasConnection())
     return;
@@ -1904,7 +1904,7 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
 
 void RenderWidgetHostImpl::OnInputEventAck(
     WebInputEvent::Type event_type, InputEventAckState ack_result) {
-  TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::OnInputEventAck");
+  TRACE_EVENT0("input", "RenderWidgetHostImpl::OnInputEventAck");
   bool processed = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
 
   if (!in_process_event_types_.empty() &&
