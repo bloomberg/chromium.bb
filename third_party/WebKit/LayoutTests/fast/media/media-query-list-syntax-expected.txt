@@ -6,4 +6,6 @@ PASS Media query error #4
 PASS Media query error #5 
 PASS Media query error #6 
 PASS Media query error #7 
+PASS Media query error #8 
+PASS Media query error #9 
 

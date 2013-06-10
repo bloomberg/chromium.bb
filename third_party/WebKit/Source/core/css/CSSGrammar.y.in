@@ -622,6 +622,9 @@ valid_media_query:
 
 media_query:
     valid_media_query
+    | valid_media_query error rule_error_recovery {
+        $$ = parser->createFloatingNotAllQuery();
+    }
     | error rule_error_recovery {
         $$ = parser->createFloatingNotAllQuery();
     }
