@@ -186,6 +186,9 @@ TEST_F(DownloadOperationTest,
 }
 
 TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_FromCache) {
+  base::FilePath temp_file;
+  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir(), &temp_file));
+
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   ResourceEntry src_entry;
   ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &src_entry));
@@ -195,7 +198,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_FromCache) {
   cache()->StoreOnUIThread(
       src_entry.resource_id(),
       src_entry.file_specific_info().md5(),
-      google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
+      temp_file,
       internal::FileCache::FILE_OPERATION_COPY,
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
@@ -347,6 +350,9 @@ TEST_F(DownloadOperationTest,
 }
 
 TEST_F(DownloadOperationTest, EnsureFileDownloadedByResourceId_FromCache) {
+  base::FilePath temp_file;
+  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir(), &temp_file));
+
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   ResourceEntry src_entry;
   ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &src_entry));
@@ -356,7 +362,7 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByResourceId_FromCache) {
   cache()->StoreOnUIThread(
       src_entry.resource_id(),
       src_entry.file_specific_info().md5(),
-      google_apis::test_util::GetTestFilePath("chromeos/gdata/root_feed.json"),
+      temp_file,
       internal::FileCache::FILE_OPERATION_COPY,
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
