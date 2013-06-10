@@ -137,12 +137,12 @@ class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     """Test if we can generate stack traces for minidumps."""
     os.makedirs(os.path.join(self._chroot, 'tmp'))
     dump_file = os.path.join(self._chroot, 'tmp', 'test.dmp')
-    tarfile = os.path.join(self.tempdir, 'test_results.tar')
+    tarfile = os.path.join(self.tempdir, 'vm_test_results.tar')
     osutils.Touch(tarfile)
     dump_file_dir, dump_file_name = os.path.split(dump_file)
     ret = [(dump_file_dir, [''], [dump_file_name])]
     with mock.patch('os.walk', return_value=ret):
-      gzipped_test_tarball = os.path.join(self.tempdir, 'test_results.tgz')
+      gzipped_test_tarball = os.path.join(self.tempdir, 'vm_test_results.tgz')
       commands.GenerateStackTraces(self._buildroot, self._board,
                                    gzipped_test_tarball, self.tempdir, True)
       self.assertCommandContains([gzipped_test_tarball])

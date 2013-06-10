@@ -467,7 +467,7 @@ def ArchiveTestResults(buildroot, test_results_dir, prefix):
   cros_build_lib.SudoRunCommand(['chmod', '-R', 'a+rw', results_path],
                                 print_cmd=False)
 
-  test_tarball = os.path.join(buildroot, '%stest_results.tgz' % prefix)
+  test_tarball = os.path.join(buildroot, '%svm_test_results.tgz' % prefix)
   if os.path.exists(test_tarball):
     os.remove(test_tarball)
 

@@ -45,8 +45,8 @@ _PRINT_INTERVAL = 1
 _VM_TEST_ERROR_MSG = """
 !!!VMTests failed!!!
 
-Logs are uploaded in the corresponding test_results.tgz. This can be found by
-clicking on the artifacts link in the "Report" Stage. Specifically look
+Logs are uploaded in the corresponding vm_test_results.tgz. This can be found
+by clicking on the artifacts link in the "Report" Stage. Specifically look
 for the test_harness/failed for the failing tests. For more
 particulars, please refer to which test failed i.e. above see the
 individual test that failed -- or if an update failed, check the
