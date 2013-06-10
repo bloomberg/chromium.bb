@@ -230,10 +230,11 @@ v8::Local<v8::Value> ScriptController::compileAndRunScript(const ScriptSourceCod
         tryCatch.SetVerbose(true);
 
         v8::Handle<v8::String> code = v8String(source.source(), m_isolate);
+        OwnPtr<v8::ScriptData> scriptData = V8ScriptRunner::precompileScript(code, source.cachedScript());
 
         // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
         // 1, whereas v8 starts at 0.
-        v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(code, source.url(), source.startPosition(), m_isolate);
+        v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(code, source.url(), source.startPosition(), scriptData.get(), m_isolate);
 
         // Keep Frame (and therefore ScriptController) alive.
         RefPtr<Frame> protect(m_frame);
