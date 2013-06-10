@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GOOGLE_APIS_DRIVE_API_OPERATIONS_H_
-#define CHROME_BROWSER_GOOGLE_APIS_DRIVE_API_OPERATIONS_H_
+#ifndef CHROME_BROWSER_GOOGLE_APIS_DRIVE_API_REQUESTS_H_
+#define CHROME_BROWSER_GOOGLE_APIS_DRIVE_API_REQUESTS_H_
 
 #include <string>
 
@@ -20,23 +20,44 @@ namespace google_apis {
 
 class FileResource;
 
-// Callback used for operations that the server returns FileResource data
+// Callback used for requests that the server returns FileResource data
 // formatted into JSON value.
 typedef base::Callback<void(GDataErrorCode error,
                             scoped_ptr<FileResource> entry)>
     FileResourceCallback;
 
 
-//============================== GetAboutOperation =============================
+//============================== GetAboutRequest =============================
 
-// This class performs the operation for fetching About data.
-class GetAboutOperation : public GetDataRequest {
+// This class performs the request for fetching About data.
+class GetAboutRequest : public GetDataRequest {
  public:
-  GetAboutOperation(RequestSender* runner,
+  GetAboutRequest(RequestSender* runner,
+                  net::URLRequestContextGetter* url_request_context_getter,
+                  const DriveApiUrlGenerator& url_generator,
+                  const GetAboutResourceCallback& callback);
+  virtual ~GetAboutRequest();
+
+ protected:
+  // Overridden from GetDataRequest.
+  virtual GURL GetURL() const OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetAboutRequest);
+};
+
+//============================= GetApplistRequest ============================
+
+// This class performs the request for fetching Applist.
+class GetApplistRequest : public GetDataRequest {
+ public:
+  GetApplistRequest(RequestSender* runner,
                     net::URLRequestContextGetter* url_request_context_getter,
                     const DriveApiUrlGenerator& url_generator,
-                    const GetAboutResourceCallback& callback);
-  virtual ~GetAboutOperation();
+                    const GetDataCallback& callback);
+  virtual ~GetApplistRequest();
 
  protected:
   // Overridden from GetDataRequest.
@@ -45,36 +66,15 @@ class GetAboutOperation : public GetDataRequest {
  private:
   const DriveApiUrlGenerator url_generator_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetAboutOperation);
+  DISALLOW_COPY_AND_ASSIGN(GetApplistRequest);
 };
 
-//============================= GetApplistOperation ============================
+//============================ GetChangelistRequest ==========================
 
-// This class performs the operation for fetching Applist.
-class GetApplistOperation : public GetDataRequest {
- public:
-  GetApplistOperation(RequestSender* runner,
-                      net::URLRequestContextGetter* url_request_context_getter,
-                      const DriveApiUrlGenerator& url_generator,
-                      const GetDataCallback& callback);
-  virtual ~GetApplistOperation();
-
- protected:
-  // Overridden from GetDataRequest.
-  virtual GURL GetURL() const OVERRIDE;
-
- private:
-  const DriveApiUrlGenerator url_generator_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetApplistOperation);
-};
-
-//============================ GetChangelistOperation ==========================
-
-// This class performs the operation for fetching changelist.
+// This class performs the request for fetching changelist.
 // The result may contain only first part of the result. The remaining result
-// should be able to be fetched by ContinueGetFileListOperation defined below.
-class GetChangelistOperation : public GetDataRequest {
+// should be able to be fetched by ContinueGetFileListRequest defined below.
+class GetChangelistRequest : public GetDataRequest {
  public:
   // |include_deleted| specifies if the response should contain the changes
   // for deleted entries or not.
@@ -82,7 +82,7 @@ class GetChangelistOperation : public GetDataRequest {
   // all changes are necessary.
   // |max_results| specifies the max of the number of files resource in the
   // response.
-  GetChangelistOperation(
+  GetChangelistRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
@@ -90,7 +90,7 @@ class GetChangelistOperation : public GetDataRequest {
       int64 start_changestamp,
       int max_results,
       const GetDataCallback& callback);
-  virtual ~GetChangelistOperation();
+  virtual ~GetChangelistRequest();
 
  protected:
   // Overridden from GetDataRequest.
@@ -102,24 +102,24 @@ class GetChangelistOperation : public GetDataRequest {
   const int64 start_changestamp_;
   const int max_results_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetChangelistOperation);
+  DISALLOW_COPY_AND_ASSIGN(GetChangelistRequest);
 };
 
-//============================= GetFilelistOperation ===========================
+//============================= GetFilelistRequest ===========================
 
-// This class performs the operation for fetching Filelist.
+// This class performs the request for fetching Filelist.
 // The result may contain only first part of the result. The remaining result
-// should be able to be fetched by ContinueGetFileListOperation defined below.
-class GetFilelistOperation : public GetDataRequest {
+// should be able to be fetched by ContinueGetFileListRequest defined below.
+class GetFilelistRequest : public GetDataRequest {
  public:
-  GetFilelistOperation(
+  GetFilelistRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       const std::string& search_string,
       int max_results,
       const GetDataCallback& callback);
-  virtual ~GetFilelistOperation();
+  virtual ~GetFilelistRequest();
 
  protected:
   // Overridden from GetDataRequest.
@@ -130,20 +130,20 @@ class GetFilelistOperation : public GetDataRequest {
   const std::string search_string_;
   const int max_results_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetFilelistOperation);
+  DISALLOW_COPY_AND_ASSIGN(GetFilelistRequest);
 };
 
-//=============================== GetFileOperation =============================
+//=============================== GetFileRequest =============================
 
-// This class performs the operation for fetching a file.
-class GetFileOperation : public GetDataRequest {
+// This class performs the request for fetching a file.
+class GetFileRequest : public GetDataRequest {
  public:
-  GetFileOperation(RequestSender* runner,
-                   net::URLRequestContextGetter* url_request_context_getter,
-                   const DriveApiUrlGenerator& url_generator,
-                   const std::string& file_id,
-                   const FileResourceCallback& callback);
-  virtual ~GetFileOperation();
+  GetFileRequest(RequestSender* runner,
+                 net::URLRequestContextGetter* url_request_context_getter,
+                 const DriveApiUrlGenerator& url_generator,
+                 const std::string& file_id,
+                 const FileResourceCallback& callback);
+  virtual ~GetFileRequest();
 
  protected:
   // Overridden from GetDataRequest.
@@ -153,28 +153,28 @@ class GetFileOperation : public GetDataRequest {
   const DriveApiUrlGenerator url_generator_;
   std::string file_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetFileOperation);
+  DISALLOW_COPY_AND_ASSIGN(GetFileRequest);
 };
 
 // This namespace is introduced to avoid class name confliction between
-// the operations for Drive API v2 and GData WAPI for transition.
+// the requests for Drive API v2 and GData WAPI for transition.
 // And, when the migration is done and GData WAPI's code is cleaned up,
 // classes inside this namespace should be moved to the google_apis namespace.
-// TODO(hidehiko): Move all the operations defined in this file into drive
+// TODO(hidehiko): Move all the requests defined in this file into drive
 // namespace.  crbug.com/180808
 namespace drive {
 
-//======================= ContinueGetFileListOperation =========================
+//======================= ContinueGetFileListRequest =========================
 
-// This class performs the operation to fetch remaining Filelist result.
-class ContinueGetFileListOperation : public GetDataRequest {
+// This class performs the request to fetch remaining Filelist result.
+class ContinueGetFileListRequest : public GetDataRequest {
  public:
-  ContinueGetFileListOperation(
+  ContinueGetFileListRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GURL& url,
       const GetDataCallback& callback);
-  virtual ~ContinueGetFileListOperation();
+  virtual ~ContinueGetFileListRequest();
 
  protected:
   virtual GURL GetURL() const OVERRIDE;
@@ -182,12 +182,12 @@ class ContinueGetFileListOperation : public GetDataRequest {
  private:
   const GURL url_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContinueGetFileListOperation);
+  DISALLOW_COPY_AND_ASSIGN(ContinueGetFileListRequest);
 };
 
 //========================== CreateDirectoryRequest ==========================
 
-// This class performs the operation for creating a directory.
+// This class performs the request for creating a directory.
 class CreateDirectoryRequest : public GetDataRequest {
  public:
   CreateDirectoryRequest(
@@ -216,7 +216,7 @@ class CreateDirectoryRequest : public GetDataRequest {
 
 //=========================== RenameResourceRequest ==========================
 
-// This class performs the operation for renaming a document/file/directory.
+// This class performs the request for renaming a document/file/directory.
 class RenameResourceRequest : public EntryActionRequest {
  public:
   // |callback| must not be null.
@@ -246,16 +246,16 @@ class RenameResourceRequest : public EntryActionRequest {
   DISALLOW_COPY_AND_ASSIGN(RenameResourceRequest);
 };
 
-//=========================== TouchResourceOperation ===========================
+//=========================== TouchResourceRequest ===========================
 
-// This class performs the operation to touch a document/file/directory.
+// This class performs the request to touch a document/file/directory.
 // This uses "files.patch" of Drive API v2 rather than "files.touch". See also:
 // https://developers.google.com/drive/v2/reference/files/patch, and
 // https://developers.google.com/drive/v2/reference/files/touch
-class TouchResourceOperation : public GetDataRequest {
+class TouchResourceRequest : public GetDataRequest {
  public:
   // |callback| must not be null.
-  TouchResourceOperation(
+  TouchResourceRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
@@ -263,7 +263,7 @@ class TouchResourceOperation : public GetDataRequest {
       const base::Time& modified_date,
       const base::Time& last_viewed_by_me_date,
       const FileResourceCallback& callback);
-  virtual ~TouchResourceOperation();
+  virtual ~TouchResourceRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -280,25 +280,25 @@ class TouchResourceOperation : public GetDataRequest {
   const base::Time modified_date_;
   const base::Time last_viewed_by_me_date_;
 
-  DISALLOW_COPY_AND_ASSIGN(TouchResourceOperation);
+  DISALLOW_COPY_AND_ASSIGN(TouchResourceRequest);
 };
 
-//=========================== CopyResourceOperation ============================
+//=========================== CopyResourceRequest ============================
 
-// This class performs the operation for copying a resource.
+// This class performs the request for copying a resource.
 //
 // Copies the resource with |resource_id| into a directory with
 // |parent_resource_id|. The new resource will be named as |new_name|.
 // |parent_resource_id| can be empty. In the case, the copy will be created
 // directly under the default root directory (this is the default behavior
-// of Drive API v2's copy operation).
+// of Drive API v2's copy request).
 //
-// This operation corresponds to "Files: copy" operation on Drive API v2. See
+// This request corresponds to "Files: copy" request on Drive API v2. See
 // also: https://developers.google.com/drive/v2/reference/files/copy
-class CopyResourceOperation : public GetDataRequest {
+class CopyResourceRequest : public GetDataRequest {
  public:
   // Upon completion, |callback| will be called. |callback| must not be null.
-  CopyResourceOperation(
+  CopyResourceRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
@@ -306,7 +306,7 @@ class CopyResourceOperation : public GetDataRequest {
       const std::string& parent_resource_id,
       const std::string& new_name,
       const FileResourceCallback& callback);
-  virtual ~CopyResourceOperation();
+  virtual ~CopyResourceRequest();
 
  protected:
   virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
@@ -319,32 +319,32 @@ class CopyResourceOperation : public GetDataRequest {
   const std::string parent_resource_id_;
   const std::string new_name_;
 
-  DISALLOW_COPY_AND_ASSIGN(CopyResourceOperation);
+  DISALLOW_COPY_AND_ASSIGN(CopyResourceRequest);
 };
 
-//=========================== TrashResourceOperation ===========================
+//=========================== TrashResourceRequest ===========================
 
-// This class performs the operation for trashing a resource.
+// This class performs the request for trashing a resource.
 //
 // According to the document:
 // https://developers.google.com/drive/v2/reference/files/trash
 // the file resource will be returned from the server, which is not in the
 // response from WAPI server. For the transition, we simply ignore the result,
 // because now we do not handle resources in trash.
-// Note for the naming: the name "trash" comes from the server's operation
+// Note for the naming: the name "trash" comes from the server's request
 // name. In order to be consistent with the server, we chose "trash" here,
 // although we are preferring the term "remove" in drive/google_api code.
 // TODO(hidehiko): Replace the base class to GetDataRequest.
-class TrashResourceOperation : public EntryActionRequest {
+class TrashResourceRequest : public EntryActionRequest {
  public:
   // |callback| must not be null.
-  TrashResourceOperation(
+  TrashResourceRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       const std::string& resource_id,
       const EntryActionCallback& callback);
-  virtual ~TrashResourceOperation();
+  virtual ~TrashResourceRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -355,25 +355,25 @@ class TrashResourceOperation : public EntryActionRequest {
   const DriveApiUrlGenerator url_generator_;
   const std::string resource_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(TrashResourceOperation);
+  DISALLOW_COPY_AND_ASSIGN(TrashResourceRequest);
 };
 
-//========================== InsertResourceOperation ===========================
+//========================== InsertResourceRequest ===========================
 
-// This class performs the operation for inserting a resource to a directory.
-// Note that this is the operation of "Children: insert" of the Drive API v2.
+// This class performs the request for inserting a resource to a directory.
+// Note that this is the request of "Children: insert" of the Drive API v2.
 // https://developers.google.com/drive/v2/reference/children/insert.
-class InsertResourceOperation : public EntryActionRequest {
+class InsertResourceRequest : public EntryActionRequest {
  public:
   // |callback| must not be null.
-  InsertResourceOperation(
+  InsertResourceRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       const std::string& parent_resource_id,
       const std::string& resource_id,
       const EntryActionCallback& callback);
-  virtual ~InsertResourceOperation();
+  virtual ~InsertResourceRequest();
 
  protected:
   // UrlFetchRequestBase overrides.
@@ -387,16 +387,16 @@ class InsertResourceOperation : public EntryActionRequest {
   const std::string parent_resource_id_;
   const std::string resource_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(InsertResourceOperation);
+  DISALLOW_COPY_AND_ASSIGN(InsertResourceRequest);
 };
 
 //========================== DeleteResourceRequest ===========================
 
-// This class performs the operation for removing a resource from a directory.
+// This class performs the request for removing a resource from a directory.
 // Note that we use "delete" for the name of this class, which comes from the
-// operation name of the Drive API v2, although we prefer "remove" for that
+// request name of the Drive API v2, although we prefer "remove" for that
 // sense in "drive/google_api"
-// Also note that this is the operation of "Children: delete" of the Drive API
+// Also note that this is the request of "Children: delete" of the Drive API
 // v2. https://developers.google.com/drive/v2/reference/children/delete
 class DeleteResourceRequest : public EntryActionRequest {
  public:
@@ -425,7 +425,7 @@ class DeleteResourceRequest : public EntryActionRequest {
 
 //======================= InitiateUploadNewFileRequest =======================
 
-// This class performs the operation for initiating the upload of a new file.
+// This class performs the request for initiating the upload of a new file.
 class InitiateUploadNewFileRequest : public InitiateUploadRequestBase {
  public:
   // |parent_resource_id| should be the resource id of the parent directory.
@@ -461,7 +461,7 @@ class InitiateUploadNewFileRequest : public InitiateUploadRequestBase {
 
 //==================== InitiateUploadExistingFileRequest =====================
 
-// This class performs the operation for initiating the upload of an existing
+// This class performs the request for initiating the upload of an existing
 // file.
 class InitiateUploadExistingFileRequest
     : public InitiateUploadRequestBase {
@@ -504,7 +504,7 @@ typedef base::Callback<void(
 
 //============================ ResumeUploadRequest ===========================
 
-// Performs the operation for resuming the upload of a file.
+// Performs the request for resuming the upload of a file.
 class ResumeUploadRequest : public ResumeUploadRequestBase {
  public:
   // See also ResumeUploadRequestBase's comment for parameters meaning.
@@ -541,7 +541,7 @@ class ResumeUploadRequest : public ResumeUploadRequestBase {
 
 //========================== GetUploadStatusRequest ==========================
 
-// Performs the operation to request the current upload status of a file.
+// Performs the request to fetch the current upload status of a file.
 class GetUploadStatusRequest : public GetUploadStatusRequestBase {
  public:
   // See also GetUploadStatusRequestBase's comment for parameters meaning.
@@ -571,4 +571,4 @@ class GetUploadStatusRequest : public GetUploadStatusRequestBase {
 }  // namespace drive
 }  // namespace google_apis
 
-#endif  // CHROME_BROWSER_GOOGLE_APIS_DRIVE_API_OPERATIONS_H_
+#endif  // CHROME_BROWSER_GOOGLE_APIS_DRIVE_API_REQUESTS_H_

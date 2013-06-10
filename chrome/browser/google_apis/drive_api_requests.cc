@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google_apis/drive_api_operations.h"
+#include "chrome/browser/google_apis/drive_api_requests.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -74,9 +74,9 @@ void ParseFileResourceWithUploadRangeAndRun(
 
 }  // namespace
 
-//============================== GetAboutOperation =============================
+//============================== GetAboutRequest =============================
 
-GetAboutOperation::GetAboutOperation(
+GetAboutRequest::GetAboutRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
@@ -87,15 +87,15 @@ GetAboutOperation::GetAboutOperation(
   DCHECK(!callback.is_null());
 }
 
-GetAboutOperation::~GetAboutOperation() {}
+GetAboutRequest::~GetAboutRequest() {}
 
-GURL GetAboutOperation::GetURL() const {
+GURL GetAboutRequest::GetURL() const {
   return url_generator_.GetAboutUrl();
 }
 
-//============================== GetApplistOperation ===========================
+//============================== GetApplistRequest ===========================
 
-GetApplistOperation::GetApplistOperation(
+GetApplistRequest::GetApplistRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
@@ -105,15 +105,15 @@ GetApplistOperation::GetApplistOperation(
   DCHECK(!callback.is_null());
 }
 
-GetApplistOperation::~GetApplistOperation() {}
+GetApplistRequest::~GetApplistRequest() {}
 
-GURL GetApplistOperation::GetURL() const {
+GURL GetApplistRequest::GetURL() const {
   return url_generator_.GetApplistUrl();
 }
 
-//============================ GetChangelistOperation ==========================
+//============================ GetChangelistRequest ==========================
 
-GetChangelistOperation::GetChangelistOperation(
+GetChangelistRequest::GetChangelistRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
@@ -129,16 +129,16 @@ GetChangelistOperation::GetChangelistOperation(
   DCHECK(!callback.is_null());
 }
 
-GetChangelistOperation::~GetChangelistOperation() {}
+GetChangelistRequest::~GetChangelistRequest() {}
 
-GURL GetChangelistOperation::GetURL() const {
+GURL GetChangelistRequest::GetURL() const {
   return url_generator_.GetChangelistUrl(
       include_deleted_, start_changestamp_, max_results_);
 }
 
-//============================= GetFilelistOperation ===========================
+//============================= GetFilelistRequest ===========================
 
-GetFilelistOperation::GetFilelistOperation(
+GetFilelistRequest::GetFilelistRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
@@ -152,15 +152,15 @@ GetFilelistOperation::GetFilelistOperation(
   DCHECK(!callback.is_null());
 }
 
-GetFilelistOperation::~GetFilelistOperation() {}
+GetFilelistRequest::~GetFilelistRequest() {}
 
-GURL GetFilelistOperation::GetURL() const {
+GURL GetFilelistRequest::GetURL() const {
   return url_generator_.GetFilelistUrl(search_string_, max_results_);
 }
 
-//=============================== GetFileOperation =============================
+//=============================== GetFileRequest =============================
 
-GetFileOperation::GetFileOperation(
+GetFileRequest::GetFileRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
@@ -173,17 +173,17 @@ GetFileOperation::GetFileOperation(
   DCHECK(!callback.is_null());
 }
 
-GetFileOperation::~GetFileOperation() {}
+GetFileRequest::~GetFileRequest() {}
 
-GURL GetFileOperation::GetURL() const {
+GURL GetFileRequest::GetURL() const {
   return url_generator_.GetFileUrl(file_id_);
 }
 
 namespace drive {
 
-//======================= ContinueGetFileListOperation =========================
+//======================= ContinueGetFileListRequest =========================
 
-ContinueGetFileListOperation::ContinueGetFileListOperation(
+ContinueGetFileListRequest::ContinueGetFileListRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GURL& url,
@@ -193,9 +193,9 @@ ContinueGetFileListOperation::ContinueGetFileListOperation(
   DCHECK(!callback.is_null());
 }
 
-ContinueGetFileListOperation::~ContinueGetFileListOperation() {}
+ContinueGetFileListRequest::~ContinueGetFileListRequest() {}
 
-GURL ContinueGetFileListOperation::GetURL() const {
+GURL ContinueGetFileListRequest::GetURL() const {
   return url_;
 }
 
@@ -229,7 +229,7 @@ net::URLFetcher::RequestType CreateDirectoryRequest::GetRequestType() const {
 }
 
 bool CreateDirectoryRequest::GetContentData(std::string* upload_content_type,
-                                              std::string* upload_content) {
+                                            std::string* upload_content) {
   *upload_content_type = kContentTypeApplicationJson;
 
   base::DictionaryValue root;
@@ -284,7 +284,7 @@ GURL RenameResourceRequest::GetURL() const {
 }
 
 bool RenameResourceRequest::GetContentData(std::string* upload_content_type,
-                                             std::string* upload_content) {
+                                           std::string* upload_content) {
   *upload_content_type = kContentTypeApplicationJson;
 
   base::DictionaryValue root;
@@ -296,9 +296,9 @@ bool RenameResourceRequest::GetContentData(std::string* upload_content_type,
   return true;
 }
 
-//=========================== TouchResourceOperation ===========================
+//=========================== TouchResourceRequest ===========================
 
-TouchResourceOperation::TouchResourceOperation(
+TouchResourceRequest::TouchResourceRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
@@ -317,25 +317,25 @@ TouchResourceOperation::TouchResourceOperation(
   DCHECK(!callback.is_null());
 }
 
-TouchResourceOperation::~TouchResourceOperation() {}
+TouchResourceRequest::~TouchResourceRequest() {}
 
-net::URLFetcher::RequestType TouchResourceOperation::GetRequestType() const {
+net::URLFetcher::RequestType TouchResourceRequest::GetRequestType() const {
   return net::URLFetcher::PATCH;
 }
 
 std::vector<std::string>
-TouchResourceOperation::GetExtraRequestHeaders() const {
+TouchResourceRequest::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
   headers.push_back(util::kIfMatchAllHeader);
   return headers;
 }
 
-GURL TouchResourceOperation::GetURL() const {
+GURL TouchResourceRequest::GetURL() const {
   return url_generator_.GetFileTouchUrl(resource_id_);
 }
 
-bool TouchResourceOperation::GetContentData(std::string* upload_content_type,
-                                            std::string* upload_content) {
+bool TouchResourceRequest::GetContentData(std::string* upload_content_type,
+                                          std::string* upload_content) {
   *upload_content_type = kContentTypeApplicationJson;
 
   base::DictionaryValue root;
@@ -349,9 +349,9 @@ bool TouchResourceOperation::GetContentData(std::string* upload_content_type,
   return true;
 }
 
-//=========================== CopyResourceOperation ============================
+//=========================== CopyResourceRequest ============================
 
-CopyResourceOperation::CopyResourceOperation(
+CopyResourceRequest::CopyResourceRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
@@ -368,19 +368,19 @@ CopyResourceOperation::CopyResourceOperation(
   DCHECK(!callback.is_null());
 }
 
-CopyResourceOperation::~CopyResourceOperation() {
+CopyResourceRequest::~CopyResourceRequest() {
 }
 
-net::URLFetcher::RequestType CopyResourceOperation::GetRequestType() const {
+net::URLFetcher::RequestType CopyResourceRequest::GetRequestType() const {
   return net::URLFetcher::POST;
 }
 
-GURL CopyResourceOperation::GetURL() const {
+GURL CopyResourceRequest::GetURL() const {
   return url_generator_.GetFileCopyUrl(resource_id_);
 }
 
-bool CopyResourceOperation::GetContentData(std::string* upload_content_type,
-                                           std::string* upload_content) {
+bool CopyResourceRequest::GetContentData(std::string* upload_content_type,
+                                         std::string* upload_content) {
   *upload_content_type = kContentTypeApplicationJson;
 
   base::DictionaryValue root;
@@ -402,9 +402,9 @@ bool CopyResourceOperation::GetContentData(std::string* upload_content_type,
   return true;
 }
 
-//=========================== TrashResourceOperation ===========================
+//=========================== TrashResourceRequest ===========================
 
-TrashResourceOperation::TrashResourceOperation(
+TrashResourceRequest::TrashResourceRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
@@ -416,19 +416,19 @@ TrashResourceOperation::TrashResourceOperation(
   DCHECK(!callback.is_null());
 }
 
-TrashResourceOperation::~TrashResourceOperation() {}
+TrashResourceRequest::~TrashResourceRequest() {}
 
-GURL TrashResourceOperation::GetURL() const {
+GURL TrashResourceRequest::GetURL() const {
   return url_generator_.GetFileTrashUrl(resource_id_);
 }
 
-net::URLFetcher::RequestType TrashResourceOperation::GetRequestType() const {
+net::URLFetcher::RequestType TrashResourceRequest::GetRequestType() const {
   return net::URLFetcher::POST;
 }
 
-//========================== InsertResourceOperation ===========================
+//========================== InsertResourceRequest ===========================
 
-InsertResourceOperation::InsertResourceOperation(
+InsertResourceRequest::InsertResourceRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
@@ -442,18 +442,18 @@ InsertResourceOperation::InsertResourceOperation(
   DCHECK(!callback.is_null());
 }
 
-InsertResourceOperation::~InsertResourceOperation() {}
+InsertResourceRequest::~InsertResourceRequest() {}
 
-GURL InsertResourceOperation::GetURL() const {
+GURL InsertResourceRequest::GetURL() const {
   return url_generator_.GetChildrenUrl(parent_resource_id_);
 }
 
-net::URLFetcher::RequestType InsertResourceOperation::GetRequestType() const {
+net::URLFetcher::RequestType InsertResourceRequest::GetRequestType() const {
   return net::URLFetcher::POST;
 }
 
-bool InsertResourceOperation::GetContentData(std::string* upload_content_type,
-                                             std::string* upload_content) {
+bool InsertResourceRequest::GetContentData(std::string* upload_content_type,
+                                           std::string* upload_content) {
   *upload_content_type = kContentTypeApplicationJson;
 
   base::DictionaryValue root;
