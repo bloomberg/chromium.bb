@@ -17,6 +17,8 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -410,6 +412,14 @@ void ActivityLog::OnScriptsExecuted(
   const ExtensionService* extension_service =
       ExtensionSystem::Get(profile)->extension_service();
   const ExtensionSet* extensions = extension_service->extensions();
+  const prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  std::string extra;
+
+  if (prerender_manager &&
+      prerender_manager->IsWebContentsPrerendering(web_contents, NULL))
+    extra = "(prerender)";
 
   for (ExecutingScriptsMap::const_iterator it = extension_ids.begin();
        it != extension_ids.end(); ++it) {
@@ -436,7 +446,7 @@ void ActivityLog::OnScriptsExecuted(
                    std::string(),  // no api call here
                    script_names.get(),
                    DomActionType::INSERTED,
-                   std::string());  // no extras either
+                   extra);
     }
   }
 }
