@@ -1416,7 +1416,7 @@ const Experiment kExperiments[] = {
     "enable-simple-cache-backend",
     IDS_FLAGS_ENABLE_SIMPLE_CACHE_BACKEND_NAME,
     IDS_FLAGS_ENABLE_SIMPLE_CACHE_BACKEND_DESCRIPTION,
-    kOsAndroid,
+    kOsAll,
     MULTI_VALUE_TYPE(kSimpleCacheBackendChoices)
   },
   {
