@@ -365,6 +365,9 @@ void WebKitTestRunner::showDevTools() {
 
 void WebKitTestRunner::closeDevTools() {
   Send(new ShellViewHostMsg_CloseDevTools(routing_id()));
+  WebDevToolsAgent* agent = render_view()->GetWebView()->devToolsAgent();
+  if (agent)
+    agent->detach();
 }
 
 void WebKitTestRunner::evaluateInWebInspector(long call_id,
