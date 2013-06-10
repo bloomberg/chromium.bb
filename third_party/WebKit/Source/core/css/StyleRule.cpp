@@ -88,11 +88,9 @@ void StyleRuleBase::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     case HostInternal:
         static_cast<const StyleRuleHost*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
-#if ENABLE(CSS_DEVICE_ADAPTATION)
     case Viewport:
         static_cast<const StyleRuleViewport*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
-#endif
     case Filter:
         static_cast<const StyleRuleFilter*>(this)->reportDescendantMemoryUsage(memoryObjectInfo);
         return;
@@ -135,11 +133,9 @@ void StyleRuleBase::destroy()
     case HostInternal:
         delete static_cast<StyleRuleHost*>(this);
         return;
-#if ENABLE(CSS_DEVICE_ADAPTATION)
     case Viewport:
         delete static_cast<StyleRuleViewport*>(this);
         return;
-#endif
     case Filter:
         delete static_cast<StyleRuleFilter*>(this);
         return;
@@ -175,10 +171,8 @@ PassRefPtr<StyleRuleBase> StyleRuleBase::copy() const
         return static_cast<const StyleRuleKeyframes*>(this)->copy();
     case HostInternal:
         return static_cast<const StyleRuleHost*>(this)->copy();
-#if ENABLE(CSS_DEVICE_ADAPTATION)
     case Viewport:
         return static_cast<const StyleRuleViewport*>(this)->copy();
-#endif
     case Filter:
         return static_cast<const StyleRuleFilter*>(this)->copy();
     case Unknown:
@@ -220,11 +214,9 @@ PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet
     case Keyframes:
         rule = CSSKeyframesRule::create(static_cast<StyleRuleKeyframes*>(self), parentSheet);
         break;
-#if ENABLE(CSS_DEVICE_ADAPTATION)
     case Viewport:
-        rule = WebKitCSSViewportRule::create(static_cast<StyleRuleViewport*>(self), parentSheet);
+        rule = CSSViewportRule::create(static_cast<StyleRuleViewport*>(self), parentSheet);
         break;
-#endif
     case HostInternal:
         rule = CSSHostRule::create(static_cast<StyleRuleHost*>(self), parentSheet);
         break;
@@ -435,16 +427,17 @@ void StyleRuleRegion::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObject
     info.addMember(m_selectorList, "selectorList");
 }
 
-#if ENABLE(CSS_DEVICE_ADAPTATION)
 StyleRuleViewport::StyleRuleViewport()
     : StyleRuleBase(Viewport, 0)
 {
+    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled());
 }
 
 StyleRuleViewport::StyleRuleViewport(const StyleRuleViewport& o)
     : StyleRuleBase(o)
     , m_properties(o.m_properties->mutableCopy())
 {
+    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled());
 }
 
 StyleRuleViewport::~StyleRuleViewport()
@@ -468,7 +461,6 @@ void StyleRuleViewport::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObje
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
     info.addMember(m_properties, "properties");
 }
-#endif // ENABLE(CSS_DEVICE_ADAPTATION)
 
 StyleRuleFilter::StyleRuleFilter(const String& filterName)
     : StyleRuleBase(Filter, 0)

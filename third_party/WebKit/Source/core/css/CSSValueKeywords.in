@@ -782,7 +782,7 @@ reset
 // CSS_PROP_USER_ZOOM
 //
 // fixed
-zoom condition=CSS_DEVICE_ADAPTATION
+zoom
 
 //
 // CSS_PROP_MIN_WIDTH
@@ -791,8 +791,8 @@ zoom condition=CSS_DEVICE_ADAPTATION
 // CSS_PROP_MAX_HEIGHT
 //
 // auto
-device-width condition=CSS_DEVICE_ADAPTATION
-device-height condition=CSS_DEVICE_ADAPTATION
+device-width
+device-height
 
 //
 // CSS_PROP_POINTER_EVENTS

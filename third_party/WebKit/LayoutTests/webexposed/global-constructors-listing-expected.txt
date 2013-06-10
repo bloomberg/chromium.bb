@@ -38,6 +38,7 @@ CSSStyleRule
 CSSStyleSheet
 CSSValue
 CSSValueList
+CSSViewportRule
 CanvasGradient
 CanvasPattern
 CanvasRenderingContext2D

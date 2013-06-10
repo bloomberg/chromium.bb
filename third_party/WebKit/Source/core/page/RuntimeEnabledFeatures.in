@@ -37,6 +37,7 @@ ExperimentalShadowDOM status=experimental
 FileSystem status=stable
 FontLoadEvents status=experimental
 Fullscreen status=stable
+CSSViewport status=experimental
 Gamepad status=stable
 Geolocation status=stable
 HTMLImports status=test

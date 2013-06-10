@@ -1,3 +1,3 @@
 
-FAIL CSS Test: @viewport constrained - zoom less than min-zoom assert_equals: expected 2 but got 0.326531
+PASS CSS Test: @viewport constrained - zoom less than min-zoom 
 

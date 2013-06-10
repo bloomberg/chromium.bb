@@ -233,9 +233,7 @@ public:
     bool hasSelectorForAttribute(const AtomicString&) const;
 
     CSSFontSelector* fontSelector() const { return m_fontSelector.get(); }
-#if ENABLE(CSS_DEVICE_ADAPTATION)
     ViewportStyleResolver* viewportStyleResolver() { return m_viewportStyleResolver.get(); }
-#endif
 
     void addViewportDependentMediaQueryResult(const MediaQueryExp*, bool result);
     bool hasViewportDependentMediaQueries() const { return !m_viewportDependentMediaQueryResults.isEmpty(); }
@@ -427,9 +425,7 @@ private:
     RefPtr<CSSFontSelector> m_fontSelector;
     Vector<OwnPtr<MediaQueryResult> > m_viewportDependentMediaQueryResults;
 
-#if ENABLE(CSS_DEVICE_ADAPTATION)
     RefPtr<ViewportStyleResolver> m_viewportStyleResolver;
-#endif
 
     const DeprecatedStyleBuilder& m_styleBuilder;
     ScopedStyleTree m_styleTree;

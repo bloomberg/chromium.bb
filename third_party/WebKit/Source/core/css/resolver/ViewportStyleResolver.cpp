@@ -30,12 +30,11 @@
 #include "config.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 
-#if ENABLE(CSS_DEVICE_ADAPTATION)
-
 #include "CSSValueKeywords.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/dom/Document.h"
+#include "core/dom/NodeRenderStyle.h"
 #include "core/dom/ViewportArguments.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderView.h"
@@ -142,7 +141,7 @@ float ViewportStyleResolver::getViewportArgumentValue(CSSPropertyID id) const
         }
     }
 
-    switch (primitiveValue->getIdent()) {
+    switch (primitiveValue->getValueID()) {
     case CSSValueAuto:
         return defaultValue;
     case CSSValueDeviceHeight:
@@ -163,5 +162,3 @@ float ViewportStyleResolver::getViewportArgumentValue(CSSPropertyID id) const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(CSS_DEVICE_ADAPTATION)

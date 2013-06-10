@@ -1,3 +1,3 @@
 
-FAIL CSS Test: @viewport constrained - used width can be zero assert_equals: expected 0 but got 980
+FAIL CSS Test: @viewport constrained - used width can be zero assert_equals: expected 0 but got 1
 

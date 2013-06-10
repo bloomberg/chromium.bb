@@ -468,12 +468,10 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
     case CSSPropertyWebkitTextAlignLast: return 404;
     case CSSPropertyWebkitTextUnderlinePosition: return 405;
 #endif
-#if defined(ENABLE_CSS_DEVICE_ADAPTATION) && ENABLE_CSS_DEVICE_ADAPTATION
     case CSSPropertyMaxZoom: return 406;
     case CSSPropertyMinZoom: return 407;
     case CSSPropertyOrientation: return 408;
     case CSSPropertyUserZoom: return 409;
-#endif
 #if defined(ENABLE_DASHBOARD_SUPPORT) && ENABLE_DASHBOARD_SUPPORT
     case CSSPropertyWebkitDashboardRegion: return 410;
 #endif

@@ -232,9 +232,7 @@ static inline bool isCSSTokenAString(int yytype)
 %type <rule> block_valid_rule
 %type <rule> region
 %type <rule> supports
-#if ENABLE_CSS_DEVICE_ADAPTATION
 %type <rule> viewport
-#endif
 %type <rule> filter
 
 %type <string> maybe_ns_prefix
@@ -440,9 +438,7 @@ valid_rule:
   | region
   | supports
   | host
-#if ENABLE_CSS_DEVICE_ADAPTATION
   | viewport
-#endif
   | filter
   ;
 
@@ -492,9 +488,7 @@ block_valid_rule:
   | media
   | keyframes
   | supports
-#if ENABLE_CSS_DEVICE_ADAPTATION
   | viewport
-#endif
   | filter
   ;
 
@@ -1021,7 +1015,6 @@ host:
     }
     ;
 
-#if ENABLE_CSS_DEVICE_ADAPTATION
 before_viewport_rule:
     /* empty */ {
         parser->markViewportRuleBodyStart();
@@ -1041,7 +1034,6 @@ viewport:
         parser->markViewportRuleBodyEnd();
     }
 ;
-#endif
 
 region_selector:
     selector_list {

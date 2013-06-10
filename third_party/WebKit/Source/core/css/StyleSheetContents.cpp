@@ -457,9 +457,7 @@ static bool childRulesHaveFailedOrCanceledSubresources(const Vector<RefPtr<Style
         case StyleRuleBase::Charset:
         case StyleRuleBase::Keyframe:
         case StyleRuleBase::Supports:
-#if ENABLE(CSS_DEVICE_ADAPTATION)
         case StyleRuleBase::Viewport:
-#endif
         case StyleRuleBase::Filter:
             break;
         }

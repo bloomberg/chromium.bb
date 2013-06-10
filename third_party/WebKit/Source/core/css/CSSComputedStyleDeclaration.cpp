@@ -2748,13 +2748,12 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitTransformOriginZ:
             break;
 
-#if ENABLE(CSS_DEVICE_ADAPTATION)
+        /* @viewport rule properties */
         case CSSPropertyMaxZoom:
         case CSSPropertyMinZoom:
         case CSSPropertyOrientation:
         case CSSPropertyUserZoom:
             break;
-#endif
 
         case CSSPropertyBufferedRendering:
         case CSSPropertyClipPath:

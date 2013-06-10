@@ -5281,14 +5281,12 @@ IntSize Document::viewportSize() const
     return view()->visibleContentRect(ScrollableArea::IncludeScrollbars).size();
 }
 
-#if ENABLE(CSS_DEVICE_ADAPTATION)
 IntSize Document::initialViewportSize() const
 {
     if (!view())
         return IntSize();
-    return view()->initialViewportSize();
+    return view()->unscaledVisibleContentSize(ScrollableArea::IncludeScrollbars);
 }
-#endif
 
 Node* eventTargetNodeForDocument(Document* doc)
 {

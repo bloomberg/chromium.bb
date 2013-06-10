@@ -31,8 +31,6 @@
 #ifndef CSSViewportRule_h
 #define CSSViewportRule_h
 
-#if ENABLE(CSS_DEVICE_ADAPTATION)
-
 #include "core/css/CSSRule.h"
 
 namespace WebCore {
@@ -66,5 +64,3 @@ private:
 } // namespace WebCore
 
 #endif // CSSViewportRule_h
-
-#endif // ENABLE(CSS_DEVICE_ADAPTATION)

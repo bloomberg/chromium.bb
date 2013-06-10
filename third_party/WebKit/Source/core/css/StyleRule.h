@@ -48,16 +48,14 @@ public:
         Keyframes,
         Keyframe, // Not used. These are internally non-rule StyleKeyframe objects.
         Supports = 12,
-#if ENABLE(CSS_DEVICE_ADAPTATION)
         Viewport = 15,
-#endif
         Region = 16,
         Filter = 17,
         HostInternal = 18, // Spec says Host = 1001, but we can use only 5 bit for type().
     };
 
     Type type() const { return static_cast<Type>(m_type); }
-    
+
     bool isCharsetRule() const { return type() == Charset; }
     bool isFontFaceRule() const { return type() == FontFace; }
     bool isKeyframesRule() const { return type() == Keyframes; }
@@ -66,9 +64,7 @@ public:
     bool isStyleRule() const { return type() == Style; }
     bool isRegionRule() const { return type() == Region; }
     bool isSupportsRule() const { return type() == Supports; }
-#if ENABLE(CSS_DEVICE_ADAPTATION)
     bool isViewportRule() const { return type() == Viewport; }
-#endif
     bool isImportRule() const { return type() == Import; }
     bool isHostRule() const { return type() == HostInternal; }
     bool isFilterRule() const { return type() == Filter; }
@@ -276,7 +272,6 @@ private:
     StyleRuleHost(const StyleRuleHost& o) : StyleRuleGroup(o) { }
 };
 
-#if ENABLE(CSS_DEVICE_ADAPTATION)
 class StyleRuleViewport : public StyleRuleBase {
 public:
     static PassRefPtr<StyleRuleViewport> create() { return adoptRef(new StyleRuleViewport); }
@@ -298,7 +293,6 @@ private:
 
     RefPtr<StylePropertySet> m_properties;
 };
-#endif // ENABLE(CSS_DEVICE_ADAPTATION)
 
 inline const StyleRuleMedia* toStyleRuleMedia(const StyleRuleGroup* rule)
 {

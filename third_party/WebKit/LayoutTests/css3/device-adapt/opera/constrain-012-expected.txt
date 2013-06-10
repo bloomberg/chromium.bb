@@ -1,3 +1,3 @@
 
-FAIL CSS Test: @viewport constrained - min-zoom not affecting width assert_equals: expected 320 but got 980
+PASS CSS Test: @viewport constrained - min-zoom not affecting width 
 

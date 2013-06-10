@@ -268,9 +268,7 @@ CSSParser::CSSParser(const CSSParserContext& context, UseCounter* counter)
     , m_ruleHeaderType(CSSRuleSourceData::UNKNOWN_RULE)
     , m_allowImportRules(true)
     , m_allowNamespaceDeclarations(true)
-#if ENABLE(CSS_DEVICE_ADAPTATION)
     , m_inViewport(false)
-#endif
     , m_useCounter(counter)
 {
 #if YYDEBUG > 0
@@ -1705,10 +1703,12 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         return true;
     }
 
-#if ENABLE(CSS_DEVICE_ADAPTATION)
-    if (inViewport())
+    if (inViewport()) {
+        if (!RuntimeEnabledFeatures::cssViewportEnabled())
+            return false;
+
         return parseViewportProperty(propId, important);
-#endif
+    }
 
     bool validPrimitive = false;
     RefPtr<CSSValue> parsedValue;
@@ -2843,7 +2843,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         // These properties should be handled before in isValidKeywordPropertyAndValue().
         ASSERT_NOT_REACHED();
         return false;
-#if ENABLE(CSS_DEVICE_ADAPTATION)
     // Properties bellow are validated inside parseViewportProperty, because we
     // check for parser state inViewportScope. We need to invalidate if someone
     // adds them outside a @viewport rule.
@@ -2853,7 +2852,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyUserZoom:
         validPrimitive = false;
         break;
-#endif
     default:
         return parseSVGValue(propId, important);
     }
@@ -10257,10 +10255,8 @@ inline void CSSParser::detectAtToken(int length, bool hasEscape)
             if (hasEscape)
                 return;
 
-#if ENABLE(CSS_DEVICE_ADAPTATION)
             else if (isASCIIAlphaCaselessEqual(name[16], 't') && isEqualToCSSIdentifier(name + 2, "webkit-viewpor"))
                 m_token = WEBKIT_VIEWPORT_RULE_SYM;
-#endif
             return;
 
         case 18:
@@ -11460,9 +11456,11 @@ unsigned CSSParser::safeUserStringTokenOffset()
     return min(tokenStartOffset(), static_cast<unsigned>(m_length - 1 - m_parsedTextSuffixLength)) - m_parsedTextPrefixLength;
 }
 
-#if ENABLE(CSS_DEVICE_ADAPTATION)
 StyleRuleBase* CSSParser::createViewportRule()
 {
+    if (!RuntimeEnabledFeatures::cssViewportEnabled())
+        return 0;
+
     m_allowImportRules = m_allowNamespaceDeclarations = false;
 
     RefPtr<StyleRuleViewport> rule = StyleRuleViewport::create();
@@ -11479,11 +11477,13 @@ StyleRuleBase* CSSParser::createViewportRule()
 
 bool CSSParser::parseViewportProperty(CSSPropertyID propId, bool important)
 {
+    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled());
+
     CSSParserValue* value = m_valueList->current();
     if (!value)
         return false;
 
-    int id = value->id;
+    CSSValueID id = value->id;
     bool validPrimitive = false;
 
     switch (propId) {
@@ -11537,6 +11537,7 @@ bool CSSParser::parseViewportProperty(CSSPropertyID propId, bool important)
 
 bool CSSParser::parseViewportShorthand(CSSPropertyID propId, CSSPropertyID first, CSSPropertyID second, bool important)
 {
+    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled());
     unsigned numValues = m_valueList->size();
 
     if (numValues > 2)
@@ -11554,7 +11555,6 @@ bool CSSParser::parseViewportShorthand(CSSPropertyID propId, CSSPropertyID first
 
     return parseViewportProperty(second, important);
 }
-#endif
 
 template <typename CharacterType>
 static CSSPropertyID cssPropertyID(const CharacterType* propertyName, unsigned length)

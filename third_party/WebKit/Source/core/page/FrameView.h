@@ -328,16 +328,12 @@ public:
     // distinguish between the two.
     const Pagination& pagination() const;
     void setPagination(const Pagination&);
-    
+
     bool inProgrammaticScroll() const { return m_inProgrammaticScroll; }
     void setInProgrammaticScroll(bool programmaticScroll) { m_inProgrammaticScroll = programmaticScroll; }
 
     void setHasSoftwareFilters(bool hasSoftwareFilters) { m_hasSoftwareFilters = hasSoftwareFilters; }
     bool hasSoftwareFilters() const { return m_hasSoftwareFilters; }
-#if ENABLE(CSS_DEVICE_ADAPTATION)
-    IntSize initialViewportSize() const { return m_initialViewportSize; }
-    void setInitialViewportSize(const IntSize& size) { m_initialViewportSize = size; }
-#endif
 
     virtual bool isActive() const OVERRIDE;
 
@@ -537,11 +533,6 @@ private:
     static double s_deferredRepaintDelayIncrementDuringLoading;
 
     bool m_hasSoftwareFilters;
-#if ENABLE(CSS_DEVICE_ADAPTATION)
-    // Size of viewport before any UA or author styles have overridden
-    // the viewport given by the window or viewing area of the UA.
-    IntSize m_initialViewportSize;
-#endif
 
     float m_visibleContentScaleFactor;
 };

@@ -396,10 +396,10 @@ grid-area
 -webkit-shape-padding
 -webkit-wrap-flow
 -webkit-wrap-through
-max-zoom condition=CSS_DEVICE_ADAPTATION
-min-zoom condition=CSS_DEVICE_ADAPTATION
-orientation condition=CSS_DEVICE_ADAPTATION
-user-zoom condition=CSS_DEVICE_ADAPTATION
+max-zoom
+min-zoom
+orientation
+user-zoom
 -webkit-tap-highlight-color
 -webkit-app-region
 -webkit-overflow-scrolling condition=ACCELERATED_OVERFLOW_SCROLLING

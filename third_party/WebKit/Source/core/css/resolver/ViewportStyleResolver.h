@@ -30,8 +30,6 @@
 #ifndef ViewportStyleResolver_h
 #define ViewportStyleResolver_h
 
-#if ENABLE(CSS_DEVICE_ADAPTATION)
-
 #include "CSSPropertyNames.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "wtf/RefCounted.h"
@@ -68,7 +66,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(CSS_DEVICE_ADAPTATION)
 
 #endif // ViewportStyleResolver_h

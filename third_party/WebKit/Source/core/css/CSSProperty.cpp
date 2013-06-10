@@ -656,12 +656,10 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitWrapThrough:
     case CSSPropertyWebkitAppRegion:
     case CSSPropertyWidth:
-#if ENABLE(CSS_DEVICE_ADAPTATION)
     case CSSPropertyMaxZoom:
     case CSSPropertyMinZoom:
     case CSSPropertyOrientation:
     case CSSPropertyUserZoom:
-#endif
     case CSSPropertyZIndex:
     case CSSPropertyZoom:
         return false;

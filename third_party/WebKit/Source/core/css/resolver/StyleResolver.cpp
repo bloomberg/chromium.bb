@@ -219,9 +219,7 @@ StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
     , m_document(document)
     , m_matchAuthorAndUserStyles(matchAuthorAndUserStyles)
     , m_fontSelector(CSSFontSelector::create(document))
-#if ENABLE(CSS_DEVICE_ADAPTATION)
     , m_viewportStyleResolver(ViewportStyleResolver::create(document))
-#endif
     , m_styleBuilder(DeprecatedStyleBuilder::sharedStyleBuilder())
     , m_styleMap(this)
 {
@@ -294,9 +292,8 @@ void StyleResolver::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefP
     if (document()->renderer() && document()->renderer()->style())
         document()->renderer()->style()->font().update(fontSelector());
 
-#if ENABLE(CSS_DEVICE_ADAPTATION)
-    viewportStyleResolver()->resolve();
-#endif
+    if (RuntimeEnabledFeatures::cssViewportEnabled())
+        viewportStyleResolver()->resolve();
 }
 
 void StyleResolver::resetAuthorStyle()
@@ -375,10 +372,7 @@ void StyleResolver::addKeyframeStyle(PassRefPtr<StyleRuleKeyframes> rule)
 StyleResolver::~StyleResolver()
 {
     m_fontSelector->clearDocument();
-
-#if ENABLE(CSS_DEVICE_ADAPTATION)
     m_viewportStyleResolver->clearDocument();
-#endif
 }
 
 void StyleResolver::sweepMatchedPropertiesCache(Timer<StyleResolver>*)
@@ -3322,12 +3316,10 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     case CSSPropertyWordWrap:
     case CSSPropertyZIndex:
     case CSSPropertyZoom:
-#if ENABLE(CSS_DEVICE_ADAPTATION)
     case CSSPropertyMaxZoom:
     case CSSPropertyMinZoom:
     case CSSPropertyOrientation:
     case CSSPropertyUserZoom:
-#endif
         ASSERT_NOT_REACHED();
         return;
     default:

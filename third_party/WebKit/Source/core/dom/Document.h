@@ -1039,10 +1039,7 @@ public:
     void resumeScheduledTasks();
 
     IntSize viewportSize() const;
-
-#if ENABLE(CSS_DEVICE_ADAPTATION)
     IntSize initialViewportSize() const;
-#endif
 
     Prerenderer* prerenderer() { return m_prerenderer.get(); }
 

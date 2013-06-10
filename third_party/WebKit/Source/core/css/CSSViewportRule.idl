@@ -27,9 +27,6 @@
  * SUCH DAMAGE.
  */
 
-[
-    Conditional=CSS_DEVICE_ADAPTATION,
-    InterfaceName=WebKitCSSViewportRule
-] interface CSSViewportRule : CSSRule {
+interface CSSViewportRule : CSSRule {
     readonly attribute CSSStyleDeclaration style;
 };

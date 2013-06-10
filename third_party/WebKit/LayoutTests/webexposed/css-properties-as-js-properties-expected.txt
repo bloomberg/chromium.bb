@@ -126,10 +126,13 @@ mask
 maskType
 maxHeight
 maxWidth
+maxZoom
 minHeight
 minWidth
+minZoom
 mixBlendMode
 opacity
+orientation
 orphans
 outline
 outlineColor
@@ -203,6 +206,7 @@ transitionProperty
 transitionTimingFunction
 unicodeBidi
 unicodeRange
+userZoom
 vectorEffect
 verticalAlign
 visibility
