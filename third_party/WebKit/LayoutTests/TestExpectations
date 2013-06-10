@@ -1812,3 +1812,7 @@ crbug.com/248081 [ Win7 Debug ] fast/forms/suggestion-picker/date-suggestion-pic
 crbug.com/248081 [ Win ] virtual/gpu/fast/hidpi/image-set-background-dynamic.html [ Slow ]
 crbug.com/248081 [ Win ] virtual/gpu/fast/hidpi/image-set-border-image-dynamic.html [ Slow ]
 crbug.com/248081 [ Win7 Debug ] compositing/reflections/animation-inside-reflection.html [ Slow ]
+
+# Rebaselines needed
+crbug.com/247782 virtual/softwarecompositing/color-matching/image-color-matching.html [ ImageOnlyFailure Pass ]
+crbug.com/247782 virtual/softwarecompositing/culling/tile-occlusion-boundaries.html [ ImageOnlyFailure Pass ]
