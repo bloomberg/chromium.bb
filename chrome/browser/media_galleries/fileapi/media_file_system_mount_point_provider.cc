@@ -38,14 +38,18 @@ using fileapi::FileSystemURL;
 
 namespace chrome {
 
+const char MediaFileSystemMountPointProvider::kMediaTaskRunnerName[] =
+    "media-task-runner";
 const char MediaFileSystemMountPointProvider::kMediaPathFilterKey[] =
     "MediaPathFilterKey";
 const char MediaFileSystemMountPointProvider::kMTPDeviceDelegateURLKey[] =
     "MTPDeviceDelegateKey";
 
 MediaFileSystemMountPointProvider::MediaFileSystemMountPointProvider(
-    const base::FilePath& profile_path)
+    const base::FilePath& profile_path,
+    base::SequencedTaskRunner* media_task_runner)
     : profile_path_(profile_path),
+      media_task_runner_(media_task_runner),
       media_path_filter_(new MediaPathFilter),
       media_copy_or_move_file_validator_factory_(new MediaFileValidatorFactory),
       native_media_file_util_(new NativeMediaFileUtil()),
@@ -140,7 +144,7 @@ MediaFileSystemMountPointProvider::CreateFileSystemOperation(
     base::PlatformFileError* error_code) const {
   scoped_ptr<fileapi::FileSystemOperationContext> operation_context(
       new fileapi::FileSystemOperationContext(
-          context, context->task_runners()->media_task_runner()));
+          context, media_task_runner_.get()));
 
   operation_context->SetUserValue(kMediaPathFilterKey,
                                   media_path_filter_.get());

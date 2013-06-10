@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
@@ -148,7 +149,8 @@ class TestMediaFileSystemMountPointProvider
   TestMediaFileSystemMountPointProvider(
       const base::FilePath& profile_path,
       PicasaFileUtil* picasa_file_util)
-      : chrome::MediaFileSystemMountPointProvider(profile_path),
+      : chrome::MediaFileSystemMountPointProvider(
+          profile_path, base::MessageLoopProxy::current()),
         test_file_util_(picasa_file_util) {
   }
 

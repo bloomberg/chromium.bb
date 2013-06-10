@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
@@ -92,7 +93,8 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
     additional_providers.push_back(new fileapi::TestMountPointProvider(
         base::MessageLoopProxy::current(), src_path));
     additional_providers.push_back(
-        new MediaFileSystemMountPointProvider(base));
+        new MediaFileSystemMountPointProvider(
+            base, base::MessageLoopProxy::current()));
     file_system_context_ =
         fileapi::CreateFileSystemContextWithAdditionalProvidersForTesting(
             NULL, additional_providers.Pass(), base);

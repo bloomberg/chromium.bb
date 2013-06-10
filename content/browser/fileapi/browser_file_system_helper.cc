@@ -9,7 +9,6 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -52,15 +51,10 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
     fileapi::ExternalMountPoints* external_mount_points,
     quota::SpecialStoragePolicy* special_storage_policy,
     quota::QuotaManagerProxy* quota_manager_proxy) {
-  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-  base::SequencedWorkerPool::SequenceToken media_sequence_token =
-      pool->GetNamedSequenceToken(fileapi::kMediaTaskRunnerName);
-
   scoped_ptr<fileapi::FileSystemTaskRunners> task_runners(
       new fileapi::FileSystemTaskRunners(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-          pool->GetSequencedTaskRunner(media_sequence_token)));
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
 
   // Setting up additional mount point providers.
   ScopedVector<fileapi::FileSystemMountPointProvider> additional_providers;

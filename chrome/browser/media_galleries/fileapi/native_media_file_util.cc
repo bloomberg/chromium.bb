@@ -81,8 +81,7 @@ bool ShouldSkip(const base::FilePath& path) {
 
 // Returns true if the current thread is capable of doing IO.
 bool IsOnTaskRunnerThread(fileapi::FileSystemOperationContext* context) {
-  return context->file_system_context()->task_runners()->
-      media_task_runner()->RunsTasksOnCurrentThread();
+  return context->task_runner()->RunsTasksOnCurrentThread();
 }
 
 MediaPathFilter* GetMediaPathFilter(

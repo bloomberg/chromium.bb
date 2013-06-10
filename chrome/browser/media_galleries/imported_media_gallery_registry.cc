@@ -8,10 +8,10 @@
 #include "base/logging.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_data_provider.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/picasa_data_provider.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 
 using base::Bind;
@@ -23,7 +23,8 @@ namespace {
 bool CurrentlyOnMediaTaskRunnerThread() {
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   base::SequencedWorkerPool::SequenceToken media_sequence_token =
-      pool->GetNamedSequenceToken(fileapi::kMediaTaskRunnerName);
+      pool->GetNamedSequenceToken(
+          MediaFileSystemMountPointProvider::kMediaTaskRunnerName);
 
   return pool->IsRunningSequenceOnCurrentThread(media_sequence_token);
 }
@@ -32,7 +33,8 @@ scoped_refptr<base::SequencedTaskRunner> MediaTaskRunner() {
   DCHECK(!CurrentlyOnMediaTaskRunnerThread());
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   base::SequencedWorkerPool::SequenceToken media_sequence_token =
-      pool->GetNamedSequenceToken(fileapi::kMediaTaskRunnerName);
+      pool->GetNamedSequenceToken(
+          MediaFileSystemMountPointProvider::kMediaTaskRunnerName);
 
   return pool->GetSequencedTaskRunner(media_sequence_token);
 }
@@ -40,7 +42,7 @@ scoped_refptr<base::SequencedTaskRunner> MediaTaskRunner() {
 static base::LazyInstance<ImportedMediaGalleryRegistry>::Leaky
 g_imported_media_gallery_registry = LAZY_INSTANCE_INITIALIZER;
 
-}
+}  // namespace
 
 // static
 ImportedMediaGalleryRegistry* ImportedMediaGalleryRegistry::GetInstance() {

@@ -10,21 +10,17 @@
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
-class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 }  // namespace
 
 namespace fileapi {
-
-WEBKIT_STORAGE_EXPORT extern const char kMediaTaskRunnerName[];
 
 // This class holds task runners used for filesystem related stuff.
 class WEBKIT_STORAGE_EXPORT FileSystemTaskRunners {
  public:
   FileSystemTaskRunners(
       base::SingleThreadTaskRunner* io_task_runner,
-      base::SingleThreadTaskRunner* file_task_runner,
-      base::SequencedTaskRunner* media_task_runner);
+      base::SingleThreadTaskRunner* file_task_runner);
 
   ~FileSystemTaskRunners();
 
@@ -38,14 +34,9 @@ class WEBKIT_STORAGE_EXPORT FileSystemTaskRunners {
     return file_task_runner_.get();
   }
 
-  base::SequencedTaskRunner* media_task_runner() {
-    return media_task_runner_.get();
-  }
-
  private:
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemTaskRunners);
 };

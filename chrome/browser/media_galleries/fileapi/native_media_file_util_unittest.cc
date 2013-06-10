@@ -10,6 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
@@ -127,7 +128,7 @@ class NativeMediaFileUtilTest : public testing::Test {
 
     ScopedVector<fileapi::FileSystemMountPointProvider> additional_providers;
     additional_providers.push_back(new MediaFileSystemMountPointProvider(
-        data_dir_.path()));
+        data_dir_.path(), base::MessageLoopProxy::current()));
 
     file_system_context_ = new fileapi::FileSystemContext(
         fileapi::FileSystemTaskRunners::CreateMockTaskRunners(),

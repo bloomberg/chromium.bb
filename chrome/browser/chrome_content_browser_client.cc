@@ -15,6 +15,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/app/breakpad_mac.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_about_handler.h"
@@ -105,6 +106,7 @@
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_ppapi_host.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -2187,8 +2189,11 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemMountPointProviders(
     const base::FilePath& storage_partition_path,
     ScopedVector<fileapi::FileSystemMountPointProvider>* additional_providers) {
 #if !defined(OS_ANDROID)
+  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   additional_providers->push_back(new MediaFileSystemMountPointProvider(
-      storage_partition_path));
+      storage_partition_path,
+      pool->GetSequencedTaskRunner(pool->GetNamedSequenceToken(
+          MediaFileSystemMountPointProvider::kMediaTaskRunnerName))));
 #endif
 }
 

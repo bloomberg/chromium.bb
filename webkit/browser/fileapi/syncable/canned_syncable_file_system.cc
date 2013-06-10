@@ -209,7 +209,6 @@ void CannedSyncableFileSystem::SetUp() {
   file_system_context_ = new FileSystemContext(
       make_scoped_ptr(
           new fileapi::FileSystemTaskRunners(io_task_runner_.get(),
-                                             file_task_runner_.get(),
                                              file_task_runner_.get())),
       fileapi::ExternalMountPoints::CreateRefCounted().get(),
       storage_policy.get(),
