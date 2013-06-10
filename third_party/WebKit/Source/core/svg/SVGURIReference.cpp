@@ -23,7 +23,7 @@
 #include "core/svg/SVGURIReference.h"
 
 #include "core/dom/Document.h"
-#include "core/platform/KURL.h"
+#include "weborigin/KURL.h"
 
 namespace WebCore {
 

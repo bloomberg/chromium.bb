@@ -31,18 +31,17 @@
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/ScriptValue.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/platform/KURL.h"
 #include "core/platform/ThreadGlobalData.h"
 #include "core/workers/DedicatedWorkerContext.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/DatabaseTask.h"
-
-#include <utility>
-#include <wtf/Noncopyable.h>
-#include <wtf/text/WTFString.h>
-
 #include "public/platform/Platform.h"
 #include "public/platform/WebWorkerRunLoop.h"
+#include "weborigin/KURL.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/text/WTFString.h"
+
+#include <utility>
 
 namespace WebCore {
 

@@ -25,8 +25,8 @@
 #include "config.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 
-#include "core/platform/KURL.h"
 #include "modules/mediastream/MediaStream.h"
+#include "weborigin/KURL.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {

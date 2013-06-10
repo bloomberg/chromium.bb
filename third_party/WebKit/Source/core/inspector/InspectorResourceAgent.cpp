@@ -58,7 +58,6 @@
 #include "core/loader/cache/MemoryCache.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
-#include "core/platform/KURL.h"
 #include "core/platform/network/HTTPHeaderMap.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
@@ -67,12 +66,13 @@
 #include "modules/websockets/WebSocketFrame.h"
 #include "modules/websockets/WebSocketHandshakeRequest.h"
 #include "modules/websockets/WebSocketHandshakeResponse.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/HexNumber.h>
-#include <wtf/ListHashSet.h>
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/StringBuilder.h>
+#include "weborigin/KURL.h"
+#include "wtf/CurrentTime.h"
+#include "wtf/HexNumber.h"
+#include "wtf/ListHashSet.h"
+#include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/StringBuilder.h"
 
 typedef WebCore::InspectorBackendDispatcher::NetworkCommandHandler::LoadResourceForFrontendCallback LoadResourceForFrontendCallback;
 

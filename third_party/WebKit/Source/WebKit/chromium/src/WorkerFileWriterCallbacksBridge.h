@@ -32,12 +32,11 @@
 #define WorkerFileWriterCallbacksBridge_h
 
 #include "WebFileWriterClient.h"
-#include "core/platform/KURL.h"
 #include "core/workers/WorkerContext.h"
 #include "public/platform/WebFileError.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/ThreadSafeRefCounted.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/ThreadSafeRefCounted.h"
 
 namespace WebCore {
     class AsyncFileWriterClient;

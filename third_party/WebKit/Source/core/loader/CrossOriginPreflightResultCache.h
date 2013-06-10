@@ -27,12 +27,12 @@
 #ifndef CrossOriginPreflightResultCache_h
 #define CrossOriginPreflightResultCache_h
 
-#include "core/platform/KURLHash.h"
 #include "core/platform/network/ResourceHandle.h"
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/StringHash.h>
+#include "weborigin/KURLHash.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

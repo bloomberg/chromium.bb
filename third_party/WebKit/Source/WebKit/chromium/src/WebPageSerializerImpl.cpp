@@ -91,10 +91,10 @@
 #include "core/html/HTMLMetaElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
-#include "core/platform/KURL.h"
-#include "wtf/text/TextEncoding.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
+#include "weborigin/KURL.h"
+#include "wtf/text/TextEncoding.h"
 
 using namespace WebCore;
 

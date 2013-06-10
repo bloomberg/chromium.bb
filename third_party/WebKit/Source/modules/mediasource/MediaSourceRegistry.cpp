@@ -31,8 +31,8 @@
 #include "config.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
 
-#include "core/platform/KURL.h"
 #include "modules/mediasource/MediaSourceBase.h"
+#include "weborigin/KURL.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {

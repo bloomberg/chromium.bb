@@ -32,7 +32,7 @@
 #define FormSubmission_h
 
 #include "core/loader/FormState.h"
-#include "core/platform/KURL.h"
+#include "weborigin/KURL.h"
 
 namespace WTF{
 class TextEncoding;

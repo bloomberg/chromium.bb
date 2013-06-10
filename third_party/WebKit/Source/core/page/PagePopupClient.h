@@ -33,7 +33,8 @@
 
 #include "core/loader/DocumentWriter.h"
 #include "core/platform/graphics/IntRect.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/CString.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

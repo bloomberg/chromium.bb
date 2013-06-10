@@ -33,7 +33,7 @@
 
 #include "core/fileapi/FileError.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "core/platform/KURL.h"
+#include "weborigin/KURL.h"
 #include "wtf/Forward.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"

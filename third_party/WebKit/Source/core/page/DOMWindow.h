@@ -30,7 +30,6 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/EventTarget.h"
 #include "core/page/FrameDestructionObserver.h"
-#include "core/platform/KURL.h"
 #include "core/platform/Supplementable.h"
 #include "wtf/Forward.h"
 

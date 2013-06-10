@@ -32,14 +32,14 @@
 
 #include "core/platform/network/BlobRegistryProxy.h"
 
-#include "core/platform/KURL.h"
 #include "core/platform/network/BlobData.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebBlobData.h"
 #include "public/platform/WebBlobRegistry.h"
 #include "public/platform/WebURL.h"
-#include <wtf/MainThread.h>
-#include <wtf/StdLibExtras.h>
+#include "weborigin/KURL.h"
+#include "wtf/MainThread.h"
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 

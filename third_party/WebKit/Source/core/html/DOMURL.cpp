@@ -28,16 +28,16 @@
 
 #include "core/html/DOMURL.h"
 
-#include <wtf/MainThread.h>
-#include <wtf/PassOwnPtr.h>
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/BlobURL.h"
 #include "core/html/PublicURLManager.h"
 #include "core/loader/cache/MemoryCache.h"
-#include "core/platform/KURL.h"
 #include "modules/mediasource/MediaSourceBase.h"
 #include "modules/mediastream/MediaStream.h"
+#include "weborigin/KURL.h"
+#include "wtf/MainThread.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

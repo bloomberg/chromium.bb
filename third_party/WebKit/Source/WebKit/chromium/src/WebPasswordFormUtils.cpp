@@ -46,7 +46,6 @@
 #include "HTMLNames.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/platform/KURL.h"
 
 using namespace WebCore;
 

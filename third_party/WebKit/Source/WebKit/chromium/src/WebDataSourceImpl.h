@@ -34,12 +34,12 @@
 #include "WebDataSource.h"
 #include "WebPluginLoadObserver.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/platform/KURL.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
+#include "weborigin/KURL.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebKit {
 

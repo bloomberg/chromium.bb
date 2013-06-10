@@ -31,10 +31,11 @@
 #include "config.h"
 #include "core/platform/LinkHash.h"
 
-#include "core/platform/KURL.h"
-#include "wtf/text/StringUTF8Adaptor.h"
-#include <googleurl/src/url_util.h>
 #include "public/platform/Platform.h"
+#include "weborigin/KURL.h"
+#include "wtf/text/StringUTF8Adaptor.h"
+
+#include <googleurl/src/url_util.h>
 
 namespace WebCore {
 

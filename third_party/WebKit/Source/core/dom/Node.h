@@ -33,10 +33,10 @@
 #include "core/editing/EditingBoundary.h"
 #include "core/inspector/InspectorCounters.h"
 #include "core/page/FocusDirection.h"
-#include "core/platform/KURLHash.h"
 #include "core/platform/TreeShared.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/rendering/style/RenderStyleConstants.h"
+#include "weborigin/KURLHash.h"
 #include <wtf/Forward.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/text/AtomicString.h>

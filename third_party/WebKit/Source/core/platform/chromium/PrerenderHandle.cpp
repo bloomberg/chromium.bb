@@ -32,13 +32,14 @@
 #include "config.h"
 #include "core/platform/PrerenderHandle.h"
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/text/WTFString.h>
-#include "core/platform/KURL.h"
 #include "core/platform/chromium/Prerender.h"
 #include "weborigin/ReferrerPolicy.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
+
+class KURL;
 
 PassRefPtr<PrerenderHandle> PrerenderHandle::create(PrerenderClient* client, const KURL& url, const String& referrer, ReferrerPolicy policy)
 {

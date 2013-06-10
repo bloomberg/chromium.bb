@@ -33,11 +33,12 @@
 
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/loader/cache/CachedScript.h"
-#include "core/platform/KURL.h"
-#include <v8.h>
+#include "weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
+
+#include <v8.h>
 
 namespace WebCore {
 

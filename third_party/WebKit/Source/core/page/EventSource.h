@@ -36,10 +36,10 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "core/platform/KURL.h"
 #include "core/platform/Timer.h"
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "weborigin/KURL.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

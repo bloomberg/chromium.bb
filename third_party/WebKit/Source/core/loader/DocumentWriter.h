@@ -29,14 +29,14 @@
 #ifndef DocumentWriter_h
 #define DocumentWriter_h
 
-#include "core/platform/KURL.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class Document;
 class DocumentParser;
 class Frame;
+class KURL;
 class SecurityOrigin;
 class TextResourceDecoder;
 

@@ -18,7 +18,6 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/TimeRanges.h"
 #include "core/page/Frame.h"
-#include "core/platform/KURL.h"
 #include "core/platform/NotImplemented.h"
 #include "core/platform/audio/AudioBus.h"
 #include "core/platform/audio/AudioSourceProvider.h"
@@ -36,6 +35,7 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "weborigin/KURL.h"
 
 #if defined(OS_ANDROID)
 #include "GrContext.h"

@@ -26,12 +26,12 @@
 #ifndef GraphicsContext3D_h
 #define GraphicsContext3D_h
 
-#include "SkBitmap.h"
-#include "core/platform/KURL.h"
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/IntRect.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "weborigin/KURL.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/ListHashSet.h"

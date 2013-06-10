@@ -31,11 +31,11 @@
 #ifndef WebSocketHandshake_h
 #define WebSocketHandshake_h
 
-#include "core/platform/KURL.h"
 #include "modules/websockets/WebSocketExtensionDispatcher.h"
 #include "modules/websockets/WebSocketExtensionProcessor.h"
 #include "modules/websockets/WebSocketHandshakeRequest.h"
 #include "modules/websockets/WebSocketHandshakeResponse.h"
+#include "weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 

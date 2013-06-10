@@ -48,9 +48,9 @@
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/Settings.h"
-#include "core/platform/KURL.h"
 #include "core/platform/network/FormData.h"
 #include "core/platform/text/DecodeEscapeSequences.h"
+#include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
@@ -162,7 +162,7 @@ static inline String decode16BitUnicodeEscapeSequences(const String& string)
 
 static inline String decodeStandardURLEscapeSequences(const String& string, const WTF::TextEncoding& encoding)
 {
-    // We use decodeEscapeSequences() instead of decodeURLEscapeSequences() (declared in core/platform/KURL.h) to
+    // We use decodeEscapeSequences() instead of decodeURLEscapeSequences() (declared in weborigin/KURL.h) to
     // avoid platform-specific URL decoding differences (e.g. KURLGoogle).
     return decodeEscapeSequences<URLEscapeSequence>(string, encoding);
 }

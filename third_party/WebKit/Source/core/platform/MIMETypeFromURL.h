@@ -26,10 +26,11 @@
 #ifndef MIMETypeFromURL_h
 #define MIMETypeFromURL_h
 
-#include "core/platform/KURL.h"
-#include "wtf/text/WTFString.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
+
+class KURL;
 
 String mimeTypeFromDataURL(const String& url);
 String mimeTypeFromURL(const KURL&);

@@ -28,7 +28,7 @@
 #include "core/html/PublicURLManager.h"
 
 #include "core/html/URLRegistry.h"
-#include "core/platform/KURL.h"
+#include "weborigin/KURL.h"
 #include "wtf/text/StringHash.h"
 
 namespace WebCore {

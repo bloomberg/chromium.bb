@@ -48,12 +48,12 @@
 #include "core/page/DOMTimer.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/WorkerNavigator.h"
-#include "core/platform/KURL.h"
 #include "core/platform/NotImplemented.h"
 #include "core/workers/WorkerLocation.h"
 #include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerThread.h"
+#include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)

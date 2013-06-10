@@ -43,16 +43,15 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/Frame.h"
-#include "core/platform/KURL.h"
 #include "core/platform/chromium/ClipboardChromium.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "core/rendering/RenderImage.h"
-
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebDragData.h"
+#include "weborigin/KURL.h"
 
 namespace WebCore {
 

@@ -47,14 +47,14 @@
 #include "core/loader/archive/MHTMLArchive.h"
 #include "core/page/Frame.h"
 #include "core/page/PageSerializer.h"
-#include "core/platform/KURL.h"
 #include "core/platform/SerializedResource.h"
 #include "public/platform/WebCString.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
-#include <wtf/text/StringConcatenate.h>
-#include <wtf/Vector.h>
+#include "weborigin/KURL.h"
+#include "wtf/Vector.h"
+#include "wtf/text/StringConcatenate.h"
 
 using namespace WebCore;
 

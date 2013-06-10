@@ -36,10 +36,10 @@
 #include "WebFrameImpl.h"
 #include "WebView.h"
 #include "core/loader/FrameLoader.h"
-#include "core/platform/KURL.h"
+#include "weborigin/KURL.h"
+#include "wtf/text/WTFString.h"
 
 #include <gtest/gtest.h>
-#include <wtf/text/WTFString.h>
 
 using namespace WebKit;
 

@@ -31,12 +31,12 @@
 #ifndef PageSerializer_h
 #define PageSerializer_h
 
-#include "core/platform/KURL.h"
-#include "core/platform/KURLHash.h"
 #include "core/platform/SharedBuffer.h"
-#include <wtf/HashMap.h>
-#include <wtf/ListHashSet.h>
-#include <wtf/Vector.h>
+#include "weborigin/KURL.h"
+#include "weborigin/KURLHash.h"
+#include "wtf/HashMap.h"
+#include "wtf/ListHashSet.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

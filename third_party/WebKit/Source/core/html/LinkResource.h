@@ -32,7 +32,7 @@
 #define LinkResource_h
 
 #include "core/loader/cache/CachedResourceRequest.h"
-#include "core/platform/KURL.h"
+#include "weborigin/KURL.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"

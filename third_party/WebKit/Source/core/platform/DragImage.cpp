@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/platform/DragImage.h"
 
-#include "core/platform/KURL.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontDescription.h"
@@ -35,6 +34,7 @@
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/StringTruncator.h"
 #include "core/platform/graphics/TextRun.h"
+#include "weborigin/KURL.h"
 
 namespace WebCore {
     

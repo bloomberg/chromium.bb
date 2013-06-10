@@ -27,11 +27,9 @@
 #ifndef DOMURL_h
 #define DOMURL_h
 
-#include "core/platform/KURL.h"
-#include <wtf/HashSet.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

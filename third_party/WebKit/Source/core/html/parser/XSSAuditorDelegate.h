@@ -26,12 +26,12 @@
 #ifndef XSSAuditorDelegate_h
 #define XSSAuditorDelegate_h
 
-#include "core/platform/KURL.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/TextPosition.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "weborigin/KURL.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/TextPosition.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

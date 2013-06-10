@@ -31,17 +31,17 @@
 #ifndef AsyncFileSystem_h
 #define AsyncFileSystem_h
 
-#include "core/platform/KURL.h"
 #include "core/platform/Timer.h"
 #include "modules/filesystem/FileSystemType.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class AsyncFileSystem;
 class AsyncFileSystemCallbacks;
 class AsyncFileWriterClient;
+class KURL;
 
 // This class provides async interface for platform-specific file system implementation.  Note that all the methods take platform paths.
 class AsyncFileSystem {

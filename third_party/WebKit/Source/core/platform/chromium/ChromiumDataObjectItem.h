@@ -32,11 +32,11 @@
 #define ChromiumDataObjectItem_h
 
 #include "core/fileapi/File.h"
-#include "core/platform/KURL.h"
 #include "core/platform/SharedBuffer.h"
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "weborigin/KURL.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

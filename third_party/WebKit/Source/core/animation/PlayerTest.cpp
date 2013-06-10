@@ -34,7 +34,7 @@
 #include "core/animation/DocumentTimeline.h"
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
-#include "core/platform/KURL.h"
+#include "weborigin/KURL.h"
 #include <gtest/gtest.h>
 
 using namespace WebCore;

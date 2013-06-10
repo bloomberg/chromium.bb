@@ -31,7 +31,7 @@
 #ifndef CSSParserMode_h
 #define CSSParserMode_h
 
-#include "core/platform/KURL.h"
+#include "weborigin/KURL.h"
 
 namespace WebCore {
 

@@ -35,12 +35,12 @@
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/history/HistoryItem.h"
 #include "core/html/FormController.h"
-#include "core/platform/KURL.h"
 #include "core/platform/network/FormData.h"
 #include "public/platform/WebHTTPBody.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
+#include "weborigin/KURL.h"
 
 using namespace WebCore;
 

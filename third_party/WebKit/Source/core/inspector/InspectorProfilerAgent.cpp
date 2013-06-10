@@ -48,11 +48,10 @@
 #include "core/page/Console.h"
 #include "core/page/ConsoleTypes.h"
 #include "core/page/Page.h"
-#include "core/platform/KURL.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/text/StringConcatenate.h>
+#include "wtf/CurrentTime.h"
+#include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/text/StringConcatenate.h"
 
 namespace WebCore {
 

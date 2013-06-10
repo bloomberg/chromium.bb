@@ -31,12 +31,11 @@
 #include "config.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 
-#include "core/platform/KURL.h"
 #include "core/platform/Pasteboard.h"
-
 #include "public/platform/WebClipboard.h"
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/WTFString.h>
+#include "weborigin/KURL.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

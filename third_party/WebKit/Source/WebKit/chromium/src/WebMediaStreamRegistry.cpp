@@ -32,12 +32,12 @@
 
 #include "WebMediaStreamRegistry.h"
 
-#include "core/platform/KURL.h"
 #include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "weborigin/KURL.h"
 
 using namespace WebCore;
 

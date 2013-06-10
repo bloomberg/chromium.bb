@@ -31,10 +31,11 @@
 #ifndef BlobURL_h
 #define BlobURL_h
 
-#include "core/platform/KURL.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
 
+class KURL;
 class SecurityOrigin;
 
 // Blob URLs are of the form

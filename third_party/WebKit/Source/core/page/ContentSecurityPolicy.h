@@ -27,7 +27,6 @@
 #define ContentSecurityPolicy_h
 
 #include "bindings/v8/ScriptState.h"
-#include "core/platform/KURL.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/TextPosition.h>
@@ -42,6 +41,7 @@ namespace WebCore {
 
 class CSPDirectiveList;
 class DOMStringList;
+class KURL;
 class ScriptExecutionContext;
 class SecurityOrigin;
 

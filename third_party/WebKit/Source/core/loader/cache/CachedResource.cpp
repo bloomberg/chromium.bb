@@ -36,20 +36,20 @@
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/MemoryCache.h"
-#include "core/platform/KURL.h"
 #include "core/platform/Logging.h"
 #include "core/platform/PurgeableBuffer.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/ResourceHandle.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/MathExtras.h>
-#include <wtf/MemoryInstrumentationHashCountedSet.h>
-#include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/MemoryObjectInfo.h>
-#include <wtf/RefCountedLeakCounter.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/CString.h>
-#include <wtf/Vector.h>
+#include "weborigin/KURL.h"
+#include "wtf/CurrentTime.h"
+#include "wtf/MathExtras.h"
+#include "wtf/MemoryInstrumentationHashCountedSet.h"
+#include "wtf/MemoryInstrumentationHashSet.h"
+#include "wtf/MemoryObjectInfo.h"
+#include "wtf/RefCountedLeakCounter.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/Vector.h"
+#include "wtf/text/CString.h"
 
 namespace WTF {
 

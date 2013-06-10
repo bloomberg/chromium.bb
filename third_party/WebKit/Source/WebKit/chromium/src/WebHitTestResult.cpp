@@ -31,11 +31,11 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/editing/VisiblePosition.h"
-#include "core/platform/KURL.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderObject.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebURL.h"
+#include "weborigin/KURL.h"
 
 using namespace WebCore;
 

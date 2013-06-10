@@ -38,7 +38,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Frame.h"
-#include "core/platform/KURL.h"
+#include "weborigin/KURL.h"
 
 #include "DOMUtilitiesPrivate.h"
 #include "WebPasswordFormUtils.h"

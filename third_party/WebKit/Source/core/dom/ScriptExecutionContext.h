@@ -31,9 +31,9 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/SecurityContext.h"
 #include "core/page/ConsoleTypes.h"
-#include "core/platform/KURL.h"
 #include "core/platform/Supplementable.h"
-#include <wtf/HashSet.h>
+#include "weborigin/KURL.h"
+#include "wtf/HashSet.h"
 
 namespace WebCore {
 

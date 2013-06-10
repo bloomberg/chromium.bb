@@ -32,12 +32,12 @@
 
 #include "core/platform/CrossThreadCopier.h"
 
-#include "core/platform/KURL.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
-#include <wtf/Assertions.h>
-#include <wtf/text/WTFString.h>
+#include "weborigin/KURL.h"
+#include "wtf/Assertions.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

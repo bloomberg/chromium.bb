@@ -31,12 +31,12 @@
 #ifndef ApplicationCacheHost_h
 #define ApplicationCacheHost_h
 
-#include "core/platform/KURL.h"
-#include <wtf/Deque.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "weborigin/KURL.h"
+#include "wtf/Deque.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
     class DOMApplicationCache;

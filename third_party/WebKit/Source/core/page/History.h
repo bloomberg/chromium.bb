@@ -29,14 +29,14 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/page/DOMWindowProperty.h"
-#include "core/platform/KURL.h"
-#include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
 class Frame;
+class KURL;
 class ScriptExecutionContext;
 typedef int ExceptionCode;
 

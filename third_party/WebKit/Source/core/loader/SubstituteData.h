@@ -26,10 +26,10 @@
 #ifndef SubstituteData_h
 #define SubstituteData_h
 
-#include "core/platform/KURL.h"
 #include "core/platform/SharedBuffer.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "weborigin/KURL.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

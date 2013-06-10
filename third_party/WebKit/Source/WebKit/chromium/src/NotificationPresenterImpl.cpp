@@ -33,17 +33,13 @@
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 
-#include "core/dom/ScriptExecutionContext.h"
-#include "core/platform/KURL.h"
-#include "modules/notifications/Notification.h"
-#include "weborigin/SecurityOrigin.h"
-
-#include "public/platform/WebURL.h"
 #include "WebNotification.h"
 #include "WebNotificationPermissionCallback.h"
 #include "WebNotificationPresenter.h"
-
-#include <wtf/PassRefPtr.h>
+#include "core/dom/ScriptExecutionContext.h"
+#include "modules/notifications/Notification.h"
+#include "weborigin/SecurityOrigin.h"
+#include "wtf/PassRefPtr.h"
 
 using namespace WebCore;
 

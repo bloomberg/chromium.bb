@@ -32,15 +32,14 @@
 #ifndef Prerender_h
 #define Prerender_h
 
-#include "core/platform/KURL.h"
+#include "weborigin/KURL.h"
 #include "weborigin/ReferrerPolicy.h"
-#include "public/platform/WebSize.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebKit {
 class WebPrerender;

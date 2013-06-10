@@ -33,10 +33,10 @@
 #include "core/editing/markup.h"
 #include "core/page/Frame.h"
 #include "core/platform/FileSystem.h"
-#include "core/platform/KURL.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/platform/chromium/ClipboardMimeTypes.h"
 #include "modules/filesystem/DraggedIsolatedFileSystem.h"
+#include "weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 
 #include "public/platform/Platform.h"

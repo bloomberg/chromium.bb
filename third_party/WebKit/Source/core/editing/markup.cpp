@@ -60,12 +60,12 @@
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/page/Frame.h"
 #include "core/page/Settings.h"
-#include "core/platform/KURL.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderObject.h"
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/unicode/CharacterNames.h>
+#include "weborigin/KURL.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/unicode/CharacterNames.h"
 
 using namespace std;
 

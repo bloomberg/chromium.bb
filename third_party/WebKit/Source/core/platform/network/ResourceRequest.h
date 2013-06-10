@@ -28,12 +28,11 @@
 #ifndef ResourceRequest_h
 #define ResourceRequest_h
 
-#include "core/platform/KURL.h"
 #include "core/platform/network/FormData.h"
 #include "core/platform/network/HTTPHeaderMap.h"
 #include "core/platform/network/ResourceLoadPriority.h"
-
-#include <wtf/OwnPtr.h>
+#include "weborigin/KURL.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 

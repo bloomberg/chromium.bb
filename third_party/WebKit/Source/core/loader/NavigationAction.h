@@ -31,9 +31,9 @@
 
 #include "core/dom/Event.h"
 #include "core/loader/FrameLoaderTypes.h"
-#include "core/platform/KURL.h"
 #include "core/platform/network/ResourceRequest.h"
-#include <wtf/Forward.h>
+#include "weborigin/KURL.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

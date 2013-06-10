@@ -32,10 +32,10 @@
 #ifndef SocketStreamHandle_h
 #define SocketStreamHandle_h
 
-#include "core/platform/KURL.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/StreamBuffer.h>
+#include "weborigin/KURL.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/StreamBuffer.h"
 
 namespace WebCore {
 

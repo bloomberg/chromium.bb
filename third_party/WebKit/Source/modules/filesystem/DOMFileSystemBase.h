@@ -32,9 +32,9 @@
 #define DOMFileSystemBase_h
 
 #include "core/platform/AsyncFileSystem.h"
-#include "core/platform/KURL.h"
 #include "modules/filesystem/FileSystemFlags.h"
 #include "modules/filesystem/FileSystemType.h"
+#include "weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"

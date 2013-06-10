@@ -63,7 +63,6 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/ContextMenu.h"
-#include "core/platform/KURL.h"
 #include "core/platform/Widget.h"
 #include "core/platform/text/TextBreakIterator.h"
 #include "core/rendering/HitTestResult.h"
@@ -73,7 +72,8 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebVector.h"
-#include <wtf/text/WTFString.h>
+#include "weborigin/KURL.h"
+#include "wtf/text/WTFString.h"
 
 using namespace WebCore;
 

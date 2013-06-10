@@ -33,10 +33,10 @@
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/loader/cache/CachedShader.h"
-#include "core/platform/KURL.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
 #include "core/rendering/style/StyleShader.h"
-#include <wtf/FastAllocBase.h>
+#include "weborigin/KURL.h"
+#include "wtf/FastAllocBase.h"
 
 namespace WebCore {
 

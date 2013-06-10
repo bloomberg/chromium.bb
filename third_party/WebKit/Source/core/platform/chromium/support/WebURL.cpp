@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/platform/WebURL.h"
 
-#include "core/platform/KURL.h"
+#include "weborigin/KURL.h"
 
 namespace WebKit {
 

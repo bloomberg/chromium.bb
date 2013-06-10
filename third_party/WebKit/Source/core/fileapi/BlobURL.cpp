@@ -32,10 +32,10 @@
 
 #include "core/fileapi/BlobURL.h"
 
-#include <wtf/text/WTFString.h>
-#include "core/platform/KURL.h"
 #include "core/platform/UUID.h"
+#include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

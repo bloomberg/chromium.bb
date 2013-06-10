@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/platform/graphics/GraphicsContext.h"
 
-#include "core/platform/KURL.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/Gradient.h"
 #include "core/platform/graphics/ImageBuffer.h"
@@ -36,15 +35,14 @@
 #include "core/platform/graphics/TextRunIterator.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/text/BidiResolver.h"
-
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
-
-#include <wtf/Assertions.h>
-#include <wtf/MathExtras.h>
+#include "weborigin/KURL.h"
+#include "wtf/Assertions.h"
+#include "wtf/MathExtras.h"
 
 #if OS(DARWIN)
 #include <ApplicationServices/ApplicationServices.h>

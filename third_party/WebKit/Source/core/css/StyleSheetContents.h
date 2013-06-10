@@ -22,12 +22,12 @@
 #define StyleSheetContents_h
 
 #include "core/css/CSSParserMode.h"
-#include "core/platform/KURL.h"
-#include <wtf/HashMap.h>
-#include <wtf/ListHashSet.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/AtomicStringHash.h>
-#include <wtf/Vector.h>
+#include "weborigin/KURL.h"
+#include "wtf/HashMap.h"
+#include "wtf/ListHashSet.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 

@@ -36,10 +36,10 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorValues.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/platform/KURL.h"
 #include "core/workers/WorkerContextProxy.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefPtr.h>
+#include "weborigin/KURL.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

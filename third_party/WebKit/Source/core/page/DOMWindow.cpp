@@ -90,7 +90,6 @@
 #include "core/page/WindowFeatures.h"
 #include "core/page/WindowFocusAllowedIndicator.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/platform/KURL.h"
 #include "core/platform/PlatformScreen.h"
 #include "core/platform/SuddenTermination.h"
 #include "core/platform/graphics/FloatRect.h"
@@ -98,6 +97,7 @@
 #include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
 #include "modules/device_orientation/DeviceMotionController.h"
+#include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityPolicy.h"
 

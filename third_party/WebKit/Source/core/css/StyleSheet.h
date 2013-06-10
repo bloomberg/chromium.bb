@@ -22,14 +22,13 @@
 #define StyleSheet_h
 
 #include "core/css/CSSParserMode.h"
-#include "core/platform/KURLHash.h"
-#include <wtf/Forward.h>
-#include <wtf/ListHashSet.h>
-#include <wtf/RefCounted.h>
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
 class CSSImportRule;
+class KURL;
 class MediaList;
 class Node;
 class StyleSheet;

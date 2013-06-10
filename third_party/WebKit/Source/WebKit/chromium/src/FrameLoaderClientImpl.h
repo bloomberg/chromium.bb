@@ -34,9 +34,9 @@
 
 #include "WebNavigationPolicy.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/platform/KURL.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefPtr.h>
+#include "weborigin/KURL.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebKit {
 

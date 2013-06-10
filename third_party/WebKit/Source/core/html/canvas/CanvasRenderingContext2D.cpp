@@ -58,7 +58,6 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/FloatConversion.h"
-#include "core/platform/KURL.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
@@ -67,6 +66,7 @@
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/RenderHTMLCanvas.h"
 #include "core/rendering/RenderLayer.h"
+#include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
 
 #include <wtf/CheckedArithmetic.h>

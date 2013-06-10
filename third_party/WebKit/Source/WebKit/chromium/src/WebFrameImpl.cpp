@@ -167,7 +167,6 @@
 #include "core/page/PrintContext.h"
 #include "core/page/Settings.h"
 #include "core/platform/AsyncFileSystem.h"
-#include "core/platform/KURL.h"
 #include "core/platform/ScrollTypes.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
@@ -190,6 +189,7 @@
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemType.h"
+#include "weborigin/KURL.h"
 #include "weborigin/SchemeRegistry.h"
 #include "weborigin/SecurityPolicy.h"
 

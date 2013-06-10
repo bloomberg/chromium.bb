@@ -22,10 +22,10 @@
 #define CSSValue_h
 
 #include "core/dom/ExceptionCode.h"
-#include "core/platform/KURLHash.h"
-#include <wtf/ListHashSet.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "weborigin/KURL.h"
+#include "wtf/ListHashSet.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

@@ -28,14 +28,13 @@
 #define ResourceResponse_h
 
 #include "core/fileapi/File.h"
-#include "core/platform/KURL.h"
 #include "core/platform/network/HTTPHeaderMap.h"
 #include "core/platform/network/ResourceLoadInfo.h"
 #include "core/platform/network/ResourceLoadTiming.h"
-
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/CString.h>
+#include "weborigin/KURL.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/CString.h"
 
 #if OS(SOLARIS)
 #include <sys/time.h> // For time_t structure.

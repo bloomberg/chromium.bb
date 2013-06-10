@@ -31,8 +31,8 @@
 #ifndef URLTestHelpers_h
 #define URLTestHelpers_h
 
-#include "core/platform/KURL.h"
 #include "public/platform/WebString.h"
+#include "weborigin/KURL.h"
 
 namespace WebKit {
 

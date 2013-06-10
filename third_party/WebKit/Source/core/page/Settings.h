@@ -29,14 +29,14 @@
 
 #include "SettingsMacros.h"
 #include "core/editing/EditingBehaviorTypes.h"
-#include "core/platform/KURL.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/FontRenderingMode.h"
 #include "core/platform/graphics/IntSize.h"
-#include <wtf/HashMap.h>
-#include <wtf/text/AtomicString.h>
-#include <wtf/text/AtomicStringHash.h>
-#include <wtf/unicode/Unicode.h>
+#include "weborigin/KURL.h"
+#include "wtf/HashMap.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/AtomicStringHash.h"
+#include "wtf/unicode/Unicode.h"
 
 namespace WebCore {
 

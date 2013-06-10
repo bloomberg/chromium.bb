@@ -36,7 +36,6 @@
 #include "WebWorkerBase.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "core/dom/CrossThreadTask.h"
-#include "core/platform/KURL.h"
 #include "core/platform/network/BlobData.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
@@ -45,9 +44,10 @@
 #include "public/platform/WebFileSystemEntry.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
-#include <wtf/MainThread.h>
-#include <wtf/Threading.h>
-#include <wtf/UnusedParam.h>
+#include "weborigin/KURL.h"
+#include "wtf/MainThread.h"
+#include "wtf/Threading.h"
+#include "wtf/UnusedParam.h"
 
 namespace WebCore {
 

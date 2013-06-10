@@ -31,13 +31,13 @@
 
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/loader/TextResourceDecoder.h"
-#include "core/platform/KURL.h"
 #include "core/platform/network/HTTPHeaderMap.h"
-#include <wtf/Deque.h>
-#include <wtf/HashMap.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/WTFString.h>
+#include "weborigin/KURL.h"
+#include "wtf/Deque.h"
+#include "wtf/HashMap.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 
 
 namespace WebCore {

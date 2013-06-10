@@ -33,10 +33,10 @@
 
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
-#include <wtf/PassRefPtr.h>
-#include "core/platform/KURL.h"
 #include "weborigin/DatabaseIdentifier.h"
+#include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
+#include "wtf/PassRefPtr.h"
 
 using namespace WebCore;
 

@@ -29,6 +29,8 @@
 #include "config.h"
 #include "core/loader/archive/ArchiveResourceCollection.h"
 
+#include "weborigin/KURL.h"
+
 namespace WebCore {
 
 ArchiveResourceCollection::ArchiveResourceCollection()
