@@ -121,9 +121,7 @@ TEST_F(BaseOperationsServerTest, DownloadFileRequest_ValidFile) {
   EXPECT_EQ(expected_contents, contents);
 }
 
-// http://crbug.com/169588
-TEST_F(BaseOperationsServerTest,
-       DISABLED_DownloadFileRequest_NonExistentFile) {
+TEST_F(BaseOperationsServerTest, DownloadFileRequest_NonExistentFile) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   base::FilePath temp_file;
   DownloadFileRequest* operation = new DownloadFileRequest(
@@ -140,10 +138,6 @@ TEST_F(BaseOperationsServerTest,
           base::FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));
   operation_runner_->StartRequestWithRetry(operation);
   base::MessageLoop::current()->Run();
-
-  std::string contents;
-  file_util::ReadFileToString(temp_file, &contents);
-  file_util::Delete(temp_file, false);
 
   EXPECT_EQ(HTTP_NOT_FOUND, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
