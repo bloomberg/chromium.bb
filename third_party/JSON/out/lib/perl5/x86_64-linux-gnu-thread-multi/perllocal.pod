@@ -1,0 +1,66 @@
+=head2 Sat Jun  8 20:25:57 2013: C<Module> L<JSON|JSON>
+
+=over 4
+
+=item *
+
+C<installed into: /w/chr/src/third_party/JSON/out/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 2.59>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Mon Jun 10 12:38:28 2013: C<Module> L<JSON|JSON>
+
+=over 4
+
+=item *
+
+C<installed into: /w/chr/src/third_party/JSON/out/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 2.59>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Mon Jun 10 12:40:36 2013: C<Module> L<JSON|JSON>
+
+=over 4
+
+=item *
+
+C<installed into: /w/chr/src/third_party/JSON/out/lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 2.59>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
