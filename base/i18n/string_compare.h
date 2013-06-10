@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/i18n/base_i18n_export.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "third_party/icu/public/i18n/unicode/coll.h"
 
 namespace base {

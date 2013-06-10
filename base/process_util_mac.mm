@@ -33,7 +33,7 @@
 #include "base/mac/scoped_mach_port.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/scoped_clear_errno.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "third_party/apple_apsl/CFBase.h"
 #include "third_party/apple_apsl/malloc.h"

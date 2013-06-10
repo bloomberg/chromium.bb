@@ -9,7 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/i18n/base_i18n_export.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace file_util {
 

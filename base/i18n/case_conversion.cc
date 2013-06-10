@@ -4,7 +4,7 @@
 
 #include "base/i18n/case_conversion.h"
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "third_party/icu/public/common/unicode/unistr.h"
 
 namespace base {

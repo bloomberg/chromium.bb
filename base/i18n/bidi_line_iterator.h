@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/i18n/base_i18n_export.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "third_party/icu/public/common/unicode/ubidi.h"
 
 namespace base {
