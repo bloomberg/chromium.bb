@@ -1113,6 +1113,9 @@ prune-host() {
   echo "removing llvm's tblgen binaries which are not needed"
   rm -rf "${LLVM_INSTALL_DIR}"/bin/*-tblgen
 
+  echo "removing the llc binary; pnacl does not use it"
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/llc
+
   echo "removing llvm headers"
   rm -rf "${LLVM_INSTALL_DIR}"/include/llvm*
 
