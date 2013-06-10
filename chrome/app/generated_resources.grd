@@ -10491,7 +10491,10 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Change how <ph name="APP_NAME">$1<ex>Chrome</ex></ph> handles and displays languages
       </message>
       <message name="IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE" desc="The label of the check-box that enables page translate">
-        Offer to translate pages that aren't in a language I read
+        Offer to translate pages that aren't in a language I read.
+      </message>
+      <message name="IDS_OPTIONS_TRANSLATE_MANAGE_LANGUAGES" desc="The link that is clicked to manage languages for translate">
+        Manage languages
       </message>
       <message name="IDS_OPTIONS_PASSWORDS_AND_FORMS_GROUP_NAME" desc="The title of the 'Passwords and forms' group">
         Passwords and forms

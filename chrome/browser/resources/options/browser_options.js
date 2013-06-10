@@ -360,11 +360,13 @@ cr.define('options', function() {
       };
 
       // Languages section.
-      $('language-button').onclick = function(event) {
+      var showLanguageOptions = function(event) {
         OptionsPage.navigateToPage('languages');
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_LanuageAndSpellCheckSettings']);
       };
+      $('language-button').onclick = showLanguageOptions;
+      $('manage-languages').onclick = showLanguageOptions;
 
       // Downloads section.
       Preferences.getInstance().addEventListener('download.default_directory',
