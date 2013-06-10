@@ -44,7 +44,6 @@ SafeBrowsingPingManager::~SafeBrowsingPingManager() {
   // Delete in-progress safebrowsing reports (hits and details).
   STLDeleteContainerPointers(safebrowsing_reports_.begin(),
                              safebrowsing_reports_.end());
-  safebrowsing_reports_.clear();
 }
 
 // net::URLFetcherDelegate implementation ----------------------------------
@@ -52,17 +51,10 @@ SafeBrowsingPingManager::~SafeBrowsingPingManager() {
 // All SafeBrowsing request responses are handled here.
 void SafeBrowsingPingManager::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  scoped_ptr<const net::URLFetcher> fetcher;
-
-  std::set<const net::URLFetcher*>::iterator sit =
-      safebrowsing_reports_.find(source);
-  if (sit != safebrowsing_reports_.end()) {
-    const net::URLFetcher* report = *sit;
-    safebrowsing_reports_.erase(sit);
-    delete report;
-    return;
-  }
-  NOTREACHED();
+  Reports::iterator sit = safebrowsing_reports_.find(source);
+  DCHECK(sit != safebrowsing_reports_.end());
+  delete *sit;
+  safebrowsing_reports_.erase(sit);
 }
 
 // Sends a SafeBrowsing "hit" for UMA users.
