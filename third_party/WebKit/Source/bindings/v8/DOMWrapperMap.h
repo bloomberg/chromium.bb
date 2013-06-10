@@ -63,12 +63,12 @@ public:
 
     void set(KeyType* key, v8::Handle<v8::Object> wrapper, const WrapperConfiguration& configuration)
     {
+        ASSERT(!m_map.contains(key));
         ASSERT(static_cast<KeyType*>(toNative(wrapper)) == key);
         v8::Persistent<v8::Object> persistent(m_isolate, wrapper);
         configuration.configureWrapper(&persistent, m_isolate);
         persistent.MakeWeak(m_isolate, this, &makeWeakCallback);
-        typename MapType::AddResult result = m_map.set(key, UnsafePersistent<v8::Object>(persistent));
-        RELEASE_ASSERT(result.isNewEntry);
+        m_map.set(key, UnsafePersistent<v8::Object>(persistent));
     }
 
     void clear()
