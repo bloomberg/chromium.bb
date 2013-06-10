@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/common/cancelable_request.h"

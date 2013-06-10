@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"  // For DISALLOW_COPY_AND_ASSIGN
 #include "base/gtest_prod_util.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 class Profile;
 

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VALIDATION_MESSAGE_BUBBLE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace content {
 class RenderWidgetHost;

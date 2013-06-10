@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "ui/base/models/table_model.h"
 

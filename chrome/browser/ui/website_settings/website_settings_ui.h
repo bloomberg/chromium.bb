@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/website_settings/website_settings.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"

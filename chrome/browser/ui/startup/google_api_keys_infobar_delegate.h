@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_STARTUP_GOOGLE_API_KEYS_INFOBAR_DELEGATE_H_
 
 #include "base/compiler_specific.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "googleurl/src/gurl.h"
 

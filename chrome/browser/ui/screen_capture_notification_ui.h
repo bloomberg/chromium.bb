@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_SCREEN_CAPTURE_NOTIFICATION_UI_H_
 
 #include "base/callback.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 // Interface for screen capture notification UI shown when content of the screen
 // is being captured.

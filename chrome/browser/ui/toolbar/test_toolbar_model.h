@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_TOOLBAR_TEST_TOOLBAR_MODEL_H_
 
 #include "base/compiler_specific.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 
 // A ToolbarModel that is backed by instance variables, which are initialized

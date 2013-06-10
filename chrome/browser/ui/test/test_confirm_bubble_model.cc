@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/test/test_confirm_bubble_model.h"
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"

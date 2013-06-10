@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "content/public/browser/web_contents_observer.h"

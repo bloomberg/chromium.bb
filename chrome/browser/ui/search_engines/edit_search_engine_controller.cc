@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
