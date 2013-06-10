@@ -12,8 +12,8 @@
 #include <DelayIMP.h>
 
 #include "base/logging.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 
 // So long as these symbols are supplied to the final binary through an
 // object file (as opposed to indirectly through a library), these pointers

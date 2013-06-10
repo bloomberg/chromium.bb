@@ -10,7 +10,7 @@
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -38,7 +38,7 @@
 #include <algorithm>
 #include <atlbase.h>
 #include <malloc.h>
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "sandbox/win/src/sandbox.h"
 #include "tools/memory_watcher/memory_watcher.h"
 #include "ui/base/resource/resource_bundle_win.h"

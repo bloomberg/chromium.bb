@@ -5,9 +5,9 @@
 #include "chrome/app/breakpad_field_trial_win.h"
 
 #include "base/lazy_instance.h"
-#include "base/string_util.h"
-#include "base/string16.h"
-#include "base/stringprintf.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "breakpad/src/client/windows/common/ipc_protocol.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/common/child_process_logging.h"
