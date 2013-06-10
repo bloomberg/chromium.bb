@@ -60,7 +60,7 @@ class MockTSFBridge : public TSFBridge {
     return set_focused_client_call_count_;
   }
 
-  // Call count of Shutdown().
+  // Call count of RemoveFocusedClient().
   int remove_focused_client_call_count() const {
     return remove_focused_client_call_count_;
   }
