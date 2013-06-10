@@ -1095,7 +1095,7 @@ webkit.org/b/101093 [ Mac ] fast/sub-pixel/float-wrap-zoom.html [ ImageOnlyFailu
 # Flaky on win7 since at least r162410
 webkit.org/b/99886 [ Win7 Debug ] fast/dom/shadow/input-with-validation.html [ ImageOnlyFailure Pass ]
 
-webkit.org/b/79446 [ Debug ] svg/repaint/image-with-clip-path.svg [ ImageOnlyFailure Pass ]
+webkit.org/b/78830 svg/repaint/image-with-clip-path.svg [ ImageOnlyFailure Pass ]
 
 # Only ready for JSC so far, not fixed in v8 yet.
 webkit.org/b/97499 http/tests/security/script-crossorigin-onerror-information.html [ Failure ]
