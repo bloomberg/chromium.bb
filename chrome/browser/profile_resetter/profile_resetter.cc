@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_source.h"
 
 ProfileResetter::ProfileResetter(Profile* profile)
     : profile_(profile),

@@ -60,10 +60,6 @@ void WebDataServiceBase::CancelRequest(Handle h) {
   wdbs_->CancelRequest(h);
 }
 
-content::NotificationSource WebDataServiceBase::GetNotificationSource() {
-  return content::Source<WebDataServiceBase>(this);
-}
-
 bool WebDataServiceBase::IsDatabaseLoaded() {
   if (!wdbs_)
     return false;

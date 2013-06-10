@@ -1,8 +1,12 @@
 include_rules = [
   "+components/encryptor",
-  "+content/public/browser",
+  # WebData is used by iOS, which does not use content.
+  "-content",
   "+sql",
   "+ui",
+
+  # TODO(droger): Remove all dependencies on content (http://crbug.com/248049).
+  "+content/public/browser/browser_thread.h",
 ]
 
 specific_include_rules = {

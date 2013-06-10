@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/webdata/common/webdata_export.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_source.h"
 #include "sql/init_status.h"
 
 class WebDatabase;
@@ -51,10 +50,6 @@ class WEBDATA_EXPORT WebDataServiceBase
   // Cancel any pending request. You need to call this method if your
   // WebDataServiceConsumer is about to be deleted.
   virtual void CancelRequest(Handle h);
-
-  // Returns the notification source for this service. This may use a
-  // pointer other than this object's |this| pointer.
-  virtual content::NotificationSource GetNotificationSource();
 
   // Shutdown the web data service. The service can no longer be used after this
   // call.

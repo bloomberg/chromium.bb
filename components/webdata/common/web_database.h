@@ -18,10 +18,6 @@ namespace base {
 class FilePath;
 }
 
-namespace content {
-class NotificationService;
-}
-
 // This class manages a SQLite database that stores various web page meta data.
 class WEBDATA_EXPORT WebDatabase {
  public:
@@ -70,8 +66,6 @@ class WEBDATA_EXPORT WebDatabase {
   // object. Non-owning.
   typedef std::map<WebDatabaseTable::TypeKey, WebDatabaseTable*> TableMap;
   TableMap tables_;
-
-  scoped_ptr<content::NotificationService> notification_service_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDatabase);
 };

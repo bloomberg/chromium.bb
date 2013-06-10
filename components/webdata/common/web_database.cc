@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/stl_util.h"
-#include "content/public/browser/notification_service.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -70,11 +69,6 @@ sql::Connection* WebDatabase::GetSQLConnection() {
 }
 
 sql::InitStatus WebDatabase::Init(const base::FilePath& db_name) {
-  // When running in unit tests, there is already a NotificationService object.
-  // Since only one can exist at a time per thread, check first.
-  if (!content::NotificationService::current())
-    notification_service_.reset(content::NotificationService::Create());
-
   db_.set_histogram_tag("Web");
 
   // We don't store that much data in the tables so use a small page size.
