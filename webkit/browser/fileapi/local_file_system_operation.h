@@ -39,6 +39,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
   // file_system_context->CreateFileSystemOperation() to instantiate
   // an appropriate FileSystemOperation.
   LocalFileSystemOperation(
+      const FileSystemURL& url,
       FileSystemContext* file_system_context,
       scoped_ptr<FileSystemOperationContext> operation_context);
 
@@ -169,15 +170,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
   }
 
  private:
-  enum OperationMode {
-    OPERATION_MODE_READ,
-    OPERATION_MODE_WRITE,
-
-    // Indicates the operation is only for a nested operation of a
-    // larger recursive operation.
-    OPERATION_MODE_NESTED,
-  };
-
   friend class sync_file_system::SyncableFileSystemOperation;
 
   // Queries the quota and usage and then runs the given |task|.
@@ -282,11 +274,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
       const base::FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 
-  // Checks the validity of a given |url| and populates |file_util| for |mode|.
-  base::PlatformFileError SetUp(
-      const FileSystemURL& url,
-      OperationMode mode);
-
   // Used only for internal assertions.
   // Returns false if there's another inflight pending operation.
   bool SetPendingOperationType(OperationType type);
@@ -315,10 +302,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
 
   // A flag to make sure we call operation only once per instance.
   OperationType pending_operation_;
-
-  // We keep track of the file to be modified by this operation so that
-  // we can notify observers when we're done.
-  FileSystemURLSet write_target_url_;
 
   // LocalFileSystemOperation instance is usually deleted upon completion but
   // could be deleted while it has inflight callbacks when Cancel is called.

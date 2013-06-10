@@ -145,7 +145,7 @@ FileSystemOperation* TestMountPointProvider::CreateFileSystemOperation(
   operation_context->set_update_observers(update_observers_);
   operation_context->set_change_observers(change_observers_);
   operation_context->set_root_path(base_path_);
-  return new LocalFileSystemOperation(context, operation_context.Pass());
+  return new LocalFileSystemOperation(url, context, operation_context.Pass());
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>

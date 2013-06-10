@@ -153,7 +153,7 @@ MediaFileSystemMountPointProvider::CreateFileSystemOperation(
                                     url.filesystem_id());
   }
 
-  return new fileapi::LocalFileSystemOperation(context,
+  return new fileapi::LocalFileSystemOperation(url, context,
                                                operation_context.Pass());
 }
 

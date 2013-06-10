@@ -321,7 +321,7 @@ FileSystemOperation* SandboxMountPointProvider::CreateFileSystemOperation(
     operation_context->set_update_observers(syncable_update_observers_);
     operation_context->set_change_observers(syncable_change_observers_);
     return new sync_file_system::SyncableFileSystemOperation(
-        context, operation_context.Pass());
+        url, context, operation_context.Pass());
   }
 
   // For regular sandboxed types.
@@ -335,7 +335,7 @@ FileSystemOperation* SandboxMountPointProvider::CreateFileSystemOperation(
     operation_context->set_quota_limit_type(quota::kQuotaLimitTypeLimited);
   }
 
-  return new LocalFileSystemOperation(context, operation_context.Pass());
+  return new LocalFileSystemOperation(url, context, operation_context.Pass());
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>

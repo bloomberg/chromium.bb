@@ -345,10 +345,12 @@ void SyncableFileSystemOperation::CopyInForeignFile(
 }
 
 SyncableFileSystemOperation::SyncableFileSystemOperation(
+    const FileSystemURL& url,
     fileapi::FileSystemContext* file_system_context,
     scoped_ptr<FileSystemOperationContext> operation_context)
-    : LocalFileSystemOperation(file_system_context,
+    : LocalFileSystemOperation(url, file_system_context,
                                operation_context.Pass()),
+      url_(url),
       inflight_operation_(NULL) {
   DCHECK(file_system_context);
   if (!file_system_context->sync_context()) {
@@ -364,8 +366,7 @@ SyncableFileSystemOperation::SyncableFileSystemOperation(
 LocalFileSystemOperation* SyncableFileSystemOperation::NewOperation() {
   DCHECK(operation_context_);
   inflight_operation_ = new LocalFileSystemOperation(
-      file_system_context(),
-      operation_context_.Pass());
+      url_, file_system_context(), operation_context_.Pass());
   DCHECK(inflight_operation_);
   return inflight_operation_;
 }

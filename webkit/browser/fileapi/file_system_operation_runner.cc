@@ -5,6 +5,7 @@
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 
 #include "base/bind.h"
+#include "webkit/browser/fileapi/file_observers.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/common/blob/shareable_file_reference.h"
@@ -30,6 +31,7 @@ OperationID FileSystemOperationRunner::CreateFile(
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
+  PrepareForWrite(id, url);
   operation->CreateFile(
       url, exclusive,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
@@ -50,6 +52,7 @@ OperationID FileSystemOperationRunner::CreateDirectory(
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
+  PrepareForWrite(id, url);
   operation->CreateDirectory(
       url, exclusive, recursive,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
@@ -69,6 +72,8 @@ OperationID FileSystemOperationRunner::Copy(
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
+  PrepareForWrite(id, dest_url);
+  PrepareForRead(id, src_url);
   operation->Copy(
       src_url, dest_url,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
@@ -88,6 +93,8 @@ OperationID FileSystemOperationRunner::Move(
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
+  PrepareForWrite(id, dest_url);
+  PrepareForWrite(id, src_url);
   operation->Move(
       src_url, dest_url,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
@@ -106,6 +113,7 @@ OperationID FileSystemOperationRunner::DirectoryExists(
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
+  PrepareForRead(id, url);
   operation->DirectoryExists(
       url,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
@@ -124,6 +132,7 @@ OperationID FileSystemOperationRunner::FileExists(
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
+  PrepareForRead(id, url);
   operation->FileExists(
       url,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
@@ -142,6 +151,7 @@ OperationID FileSystemOperationRunner::GetMetadata(
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
+  PrepareForRead(id, url);
   operation->GetMetadata(
       url,
       base::Bind(&FileSystemOperationRunner::DidGetMetadata, AsWeakPtr(),
@@ -160,6 +170,7 @@ OperationID FileSystemOperationRunner::ReadDirectory(
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
+  PrepareForRead(id, url);
   operation->ReadDirectory(
       url,
       base::Bind(&FileSystemOperationRunner::DidReadDirectory, AsWeakPtr(),
@@ -178,6 +189,7 @@ OperationID FileSystemOperationRunner::Remove(
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
+  PrepareForWrite(id, url);
   operation->Remove(
       url, recursive,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
@@ -199,6 +211,7 @@ OperationID FileSystemOperationRunner::Write(
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
+  PrepareForWrite(id, url);
   operation->Write(
       url_request_context, url, blob_url, offset,
       base::Bind(&FileSystemOperationRunner::DidWrite, AsWeakPtr(),
@@ -217,6 +230,7 @@ OperationID FileSystemOperationRunner::Truncate(
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
+  PrepareForWrite(id, url);
   operation->Truncate(
       url, length,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
@@ -249,6 +263,7 @@ OperationID FileSystemOperationRunner::TouchFile(
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
+  PrepareForWrite(id, url);
   operation->TouchFile(
       url, last_access_time, last_modified_time,
       base::Bind(&FileSystemOperationRunner::DidFinish, AsWeakPtr(),
@@ -270,6 +285,16 @@ OperationID FileSystemOperationRunner::OpenFile(
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
+  if (file_flags &
+      (base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_OPEN_ALWAYS |
+       base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_OPEN_TRUNCATED |
+       base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_EXCLUSIVE_WRITE |
+       base::PLATFORM_FILE_DELETE_ON_CLOSE |
+       base::PLATFORM_FILE_WRITE_ATTRIBUTES)) {
+    PrepareForWrite(id, url);
+  } else {
+    PrepareForRead(id, url);
+  }
   operation->OpenFile(
       url, file_flags, peer_handle,
       base::Bind(&FileSystemOperationRunner::DidOpenFile, AsWeakPtr(),
@@ -288,6 +313,7 @@ OperationID FileSystemOperationRunner::CreateSnapshotFile(
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
+  PrepareForRead(id, url);
   operation->CreateSnapshotFile(
       url,
       base::Bind(&FileSystemOperationRunner::DidCreateSnapshot, AsWeakPtr(),
@@ -408,8 +434,7 @@ void FileSystemOperationRunner::DidFinish(
     const StatusCallback& callback,
     base::PlatformFileError rv) {
   callback.Run(rv);
-  DCHECK(operations_.Lookup(id));
-  operations_.Remove(id);
+  FinishOperation(id);
 }
 
 void FileSystemOperationRunner::DidGetMetadata(
@@ -419,8 +444,7 @@ void FileSystemOperationRunner::DidGetMetadata(
     const base::PlatformFileInfo& file_info,
     const base::FilePath& platform_path) {
   callback.Run(rv, file_info, platform_path);
-  DCHECK(operations_.Lookup(id));
-  operations_.Remove(id);
+  FinishOperation(id);
 }
 
 void FileSystemOperationRunner::DidReadDirectory(
@@ -430,10 +454,8 @@ void FileSystemOperationRunner::DidReadDirectory(
     const std::vector<DirectoryEntry>& entries,
     bool has_more) {
   callback.Run(rv, entries, has_more);
-  if (rv != base::PLATFORM_FILE_OK || !has_more) {
-    DCHECK(operations_.Lookup(id));
-    operations_.Remove(id);
-  }
+  if (rv != base::PLATFORM_FILE_OK || !has_more)
+    FinishOperation(id);
 }
 
 void FileSystemOperationRunner::DidWrite(
@@ -443,10 +465,8 @@ void FileSystemOperationRunner::DidWrite(
     int64 bytes,
     bool complete) {
   callback.Run(rv, bytes, complete);
-  if (rv != base::PLATFORM_FILE_OK || complete) {
-    DCHECK(operations_.Lookup(id));
-    operations_.Remove(id);
-  }
+  if (rv != base::PLATFORM_FILE_OK || complete)
+    FinishOperation(id);
 }
 
 void FileSystemOperationRunner::DidOpenFile(
@@ -457,8 +477,7 @@ void FileSystemOperationRunner::DidOpenFile(
     const base::Closure& on_close_callback,
     base::ProcessHandle peer_handle) {
   callback.Run(rv, file, on_close_callback, peer_handle);
-  DCHECK(operations_.Lookup(id));
-  operations_.Remove(id);
+  FinishOperation(id);
 }
 
 void FileSystemOperationRunner::DidCreateSnapshot(
@@ -469,8 +488,7 @@ void FileSystemOperationRunner::DidCreateSnapshot(
     const base::FilePath& platform_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
   callback.Run(rv, file_info, platform_path, file_ref);
-  DCHECK(operations_.Lookup(id));
-  operations_.Remove(id);
+  FinishOperation(id);
 }
 
 FileSystemOperation*
@@ -486,6 +504,40 @@ FileSystemOperationRunner::CreateLocalFileSystemOperation(
     return NULL;
   }
   return operation;
+}
+
+void FileSystemOperationRunner::PrepareForWrite(OperationID id,
+                                                const FileSystemURL& url) {
+  if (file_system_context_->GetUpdateObservers(url.type())) {
+    file_system_context_->GetUpdateObservers(url.type())->Notify(
+        &FileUpdateObserver::OnStartUpdate, MakeTuple(url));
+  }
+  write_target_urls_[id].insert(url);
+}
+
+void FileSystemOperationRunner::PrepareForRead(OperationID id,
+                                               const FileSystemURL& url) {
+  if (file_system_context_->GetAccessObservers(url.type())) {
+    file_system_context_->GetAccessObservers(url.type())->Notify(
+        &FileAccessObserver::OnAccess, MakeTuple(url));
+  }
+}
+
+void FileSystemOperationRunner::FinishOperation(OperationID id) {
+  OperationToURLSet::iterator found = write_target_urls_.find(id);
+  if (found != write_target_urls_.end()) {
+    const FileSystemURLSet& urls = found->second;
+    for (FileSystemURLSet::const_iterator iter = urls.begin();
+        iter != urls.end(); ++iter) {
+      if (file_system_context_->GetUpdateObservers(iter->type())) {
+        file_system_context_->GetUpdateObservers(iter->type())->Notify(
+            &FileUpdateObserver::OnEndUpdate, MakeTuple(*iter));
+      }
+    }
+    write_target_urls_.erase(found);
+  }
+  DCHECK(operations_.Lookup(id));
+  operations_.Remove(id);
 }
 
 }  // namespace fileapi

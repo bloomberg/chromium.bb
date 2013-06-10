@@ -122,7 +122,7 @@ FileSystemOperation* IsolatedMountPointProvider::CreateFileSystemOperation(
     FileSystemContext* context,
     base::PlatformFileError* error_code) const {
   return new LocalFileSystemOperation(
-      context, make_scoped_ptr(new FileSystemOperationContext(context)));
+      url, context, make_scoped_ptr(new FileSystemOperationContext(context)));
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>

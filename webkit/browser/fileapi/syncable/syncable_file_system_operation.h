@@ -89,6 +89,7 @@ class WEBKIT_STORAGE_EXPORT SyncableFileSystemOperation
   friend class fileapi::SandboxMountPointProvider;
   friend class SandboxMountPointProvider;
   SyncableFileSystemOperation(
+      const fileapi::FileSystemURL& url,
       fileapi::FileSystemContext* file_system_context,
       scoped_ptr<fileapi::FileSystemOperationContext> operation_context);
   fileapi::LocalFileSystemOperation* NewOperation();
@@ -102,6 +103,8 @@ class WEBKIT_STORAGE_EXPORT SyncableFileSystemOperation
   void OnCancelled();
   void AbortOperation(const StatusCallback& callback,
                       base::PlatformFileError error);
+
+  const fileapi::FileSystemURL url_;
 
   base::WeakPtr<SyncableFileOperationRunner> operation_runner_;
   fileapi::LocalFileSystemOperation* inflight_operation_;

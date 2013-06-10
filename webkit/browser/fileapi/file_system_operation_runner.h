@@ -5,11 +5,14 @@
 #ifndef WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_OPERATION_RUNNER_H_
 #define WEBKIT_BROWSER_FILEAPI_FILE_SYSTEM_OPERATION_RUNNER_H_
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
@@ -263,11 +266,22 @@ class WEBKIT_STORAGE_EXPORT FileSystemOperationRunner
       const FileSystemURL& url,
       base::PlatformFileError* error);
 
+  void PrepareForWrite(OperationID id, const FileSystemURL& url);
+  void PrepareForRead(OperationID id, const FileSystemURL& url);
+
+  // This must be called at the end of any async operations.
+  void FinishOperation(OperationID id);
+
   // Not owned; file_system_context owns this.
   FileSystemContext* file_system_context_;
 
   // IDMap<FileSystemOperation, IDMapOwnPointer> operations_;
   IDMap<FileSystemOperation> operations_;
+
+  // We keep track of the file to be modified by each operation so that
+  // we can notify observers when we're done.
+  typedef std::map<OperationID, FileSystemURLSet> OperationToURLSet;
+  OperationToURLSet write_target_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationRunner);
 };

@@ -285,7 +285,7 @@ fileapi::FileSystemOperation* CrosMountPointProvider::CreateFileSystemOperation(
   scoped_ptr<fileapi::FileSystemOperationContext> operation_context(
       new fileapi::FileSystemOperationContext(context));
   operation_context->set_root_path(GetFileSystemRootPath(url));
-  return new fileapi::LocalFileSystemOperation(context,
+  return new fileapi::LocalFileSystemOperation(url, context,
                                                operation_context.Pass());
 }
 
