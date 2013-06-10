@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_DEVICE_MEDIA_ASYNC_FILE_UTIL_H_
 
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "webkit/browser/fileapi/async_file_util.h"
@@ -34,64 +35,64 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
 
   // AsyncFileUtil overrides.
   virtual bool CreateOrOpen(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       int file_flags,
       const CreateOrOpenCallback& callback) OVERRIDE;
   virtual bool EnsureFileExists(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const EnsureFileExistsCallback& callback) OVERRIDE;
   virtual bool CreateDirectory(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       bool exclusive,
       bool recursive,
       const StatusCallback& callback) OVERRIDE;
   virtual bool GetFileInfo(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const GetFileInfoCallback& callback) OVERRIDE;
   virtual bool ReadDirectory(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const ReadDirectoryCallback& callback) OVERRIDE;
   virtual bool Touch(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const base::Time& last_access_time,
       const base::Time& last_modified_time,
       const StatusCallback& callback) OVERRIDE;
   virtual bool Truncate(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       int64 length,
       const StatusCallback& callback) OVERRIDE;
   virtual bool CopyFileLocal(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& src_url,
       const fileapi::FileSystemURL& dest_url,
       const StatusCallback& callback) OVERRIDE;
   virtual bool MoveFileLocal(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& src_url,
       const fileapi::FileSystemURL& dest_url,
       const StatusCallback& callback) OVERRIDE;
   virtual bool CopyInForeignFile(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const base::FilePath& src_file_path,
       const fileapi::FileSystemURL& dest_url,
       const StatusCallback& callback) OVERRIDE;
   virtual bool DeleteFile(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const StatusCallback& callback) OVERRIDE;
   virtual bool DeleteDirectory(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const StatusCallback& callback) OVERRIDE;
   virtual bool CreateSnapshotFile(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const CreateSnapshotFileCallback& callback) OVERRIDE;
 
@@ -168,7 +169,7 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
   // path. Forwards the CreateSnapshot request to the delegate to copy the
   // contents of |device_file_path| to |snapshot_file_path|.
   void OnSnapshotFileCreatedRunTask(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const AsyncFileUtil::CreateSnapshotFileCallback& callback,
       const base::FilePath& device_file_path,
       base::FilePath* snapshot_file_path);

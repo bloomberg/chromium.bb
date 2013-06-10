@@ -82,11 +82,11 @@ DeviceMediaAsyncFileUtil* DeviceMediaAsyncFileUtil::Create(
 }
 
 bool DeviceMediaAsyncFileUtil::CreateOrOpen(
-    FileSystemOperationContext* context,
+    scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     int file_flags,
     const CreateOrOpenCallback& callback) {
-  DCHECK(IsOnIOThread(context));
+  DCHECK(IsOnIOThread(context.get()));
   NOTIMPLEMENTED();
   if (!callback.is_null()) {
     base::PlatformFile invalid_file = base::kInvalidPlatformFileValue;
@@ -98,10 +98,10 @@ bool DeviceMediaAsyncFileUtil::CreateOrOpen(
 }
 
 bool DeviceMediaAsyncFileUtil::EnsureFileExists(
-    FileSystemOperationContext* context,
+    scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const EnsureFileExistsCallback& callback) {
-  DCHECK(IsOnIOThread(context));
+  DCHECK(IsOnIOThread(context.get()));
   NOTIMPLEMENTED();
   if (!callback.is_null())
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY, false);
@@ -109,12 +109,12 @@ bool DeviceMediaAsyncFileUtil::EnsureFileExists(
 }
 
 bool DeviceMediaAsyncFileUtil::CreateDirectory(
-    FileSystemOperationContext* context,
+    scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     bool exclusive,
     bool recursive,
     const StatusCallback& callback) {
-  DCHECK(IsOnIOThread(context));
+  DCHECK(IsOnIOThread(context.get()));
   NOTIMPLEMENTED();
   if (!callback.is_null())
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
@@ -122,11 +122,11 @@ bool DeviceMediaAsyncFileUtil::CreateDirectory(
 }
 
 bool DeviceMediaAsyncFileUtil::GetFileInfo(
-    FileSystemOperationContext* context,
+    scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const GetFileInfoCallback& callback) {
-  DCHECK(IsOnIOThread(context));
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(context);
+  DCHECK(IsOnIOThread(context.get()));
+  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(context.get());
   if (!delegate) {
     OnGetFileInfoError(callback, url.path(),
                        base::PLATFORM_FILE_ERROR_NOT_FOUND);
@@ -146,11 +146,11 @@ bool DeviceMediaAsyncFileUtil::GetFileInfo(
 }
 
 bool DeviceMediaAsyncFileUtil::ReadDirectory(
-    FileSystemOperationContext* context,
+    scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
-  DCHECK(IsOnIOThread(context));
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(context);
+  DCHECK(IsOnIOThread(context.get()));
+  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(context.get());
   if (!delegate) {
     OnReadDirectoryError(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return true;
@@ -167,12 +167,12 @@ bool DeviceMediaAsyncFileUtil::ReadDirectory(
 }
 
 bool DeviceMediaAsyncFileUtil::Touch(
-    FileSystemOperationContext* context,
+    scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
-  DCHECK(IsOnIOThread(context));
+  DCHECK(IsOnIOThread(context.get()));
   NOTIMPLEMENTED();
   if (!callback.is_null())
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
@@ -180,11 +180,11 @@ bool DeviceMediaAsyncFileUtil::Touch(
 }
 
 bool DeviceMediaAsyncFileUtil::Truncate(
-    FileSystemOperationContext* context,
+    scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     int64 length,
     const StatusCallback& callback) {
-  DCHECK(IsOnIOThread(context));
+  DCHECK(IsOnIOThread(context.get()));
   NOTIMPLEMENTED();
   if (!callback.is_null())
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
@@ -192,11 +192,11 @@ bool DeviceMediaAsyncFileUtil::Truncate(
 }
 
 bool DeviceMediaAsyncFileUtil::CopyFileLocal(
-    FileSystemOperationContext* context,
+    scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
-  DCHECK(IsOnIOThread(context));
+  DCHECK(IsOnIOThread(context.get()));
   NOTIMPLEMENTED();
   if (!callback.is_null())
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
@@ -204,11 +204,11 @@ bool DeviceMediaAsyncFileUtil::CopyFileLocal(
 }
 
 bool DeviceMediaAsyncFileUtil::MoveFileLocal(
-    FileSystemOperationContext* context,
+    scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
-  DCHECK(IsOnIOThread(context));
+  DCHECK(IsOnIOThread(context.get()));
   NOTIMPLEMENTED();
   if (!callback.is_null())
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
@@ -216,11 +216,11 @@ bool DeviceMediaAsyncFileUtil::MoveFileLocal(
 }
 
 bool DeviceMediaAsyncFileUtil::CopyInForeignFile(
-    FileSystemOperationContext* context,
+    scoped_ptr<FileSystemOperationContext> context,
     const base::FilePath& src_file_path,
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
-  DCHECK(IsOnIOThread(context));
+  DCHECK(IsOnIOThread(context.get()));
   NOTIMPLEMENTED();
   if (!callback.is_null())
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
@@ -228,10 +228,10 @@ bool DeviceMediaAsyncFileUtil::CopyInForeignFile(
 }
 
 bool DeviceMediaAsyncFileUtil::DeleteFile(
-    FileSystemOperationContext* context,
+    scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const StatusCallback& callback) {
-  DCHECK(IsOnIOThread(context));
+  DCHECK(IsOnIOThread(context.get()));
   NOTIMPLEMENTED();
   if (!callback.is_null())
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
@@ -239,10 +239,10 @@ bool DeviceMediaAsyncFileUtil::DeleteFile(
 }
 
 bool DeviceMediaAsyncFileUtil::DeleteDirectory(
-    FileSystemOperationContext* context,
+    scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const StatusCallback& callback) {
-  DCHECK(IsOnIOThread(context));
+  DCHECK(IsOnIOThread(context.get()));
   NOTIMPLEMENTED();
   if (!callback.is_null())
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
@@ -250,17 +250,18 @@ bool DeviceMediaAsyncFileUtil::DeleteDirectory(
 }
 
 bool DeviceMediaAsyncFileUtil::CreateSnapshotFile(
-    FileSystemOperationContext* context,
+    scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
-  DCHECK(IsOnIOThread(context));
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(context);
+  DCHECK(IsOnIOThread(context.get()));
+  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(context.get());
   if (!delegate) {
     OnCreateSnapshotFileError(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return true;
   }
   base::FilePath* snapshot_file_path = new base::FilePath;
-  return context->task_runner()->PostTaskAndReply(
+  base::SequencedTaskRunner* task_runner = context->task_runner();
+  return task_runner->PostTaskAndReply(
           FROM_HERE,
           base::Bind(&CreateSnapshotFileOnBlockingPool,
                      url.path(),
@@ -268,7 +269,7 @@ bool DeviceMediaAsyncFileUtil::CreateSnapshotFile(
                      base::Unretained(snapshot_file_path)),
           base::Bind(&DeviceMediaAsyncFileUtil::OnSnapshotFileCreatedRunTask,
                      weak_ptr_factory_.GetWeakPtr(),
-                     context,
+                     base::Passed(&context),
                      callback,
                      url.path(),
                      base::Owned(snapshot_file_path)));
@@ -354,16 +355,16 @@ void DeviceMediaAsyncFileUtil::OnCreateSnapshotFileError(
 }
 
 void DeviceMediaAsyncFileUtil::OnSnapshotFileCreatedRunTask(
-    FileSystemOperationContext* context,
+    scoped_ptr<FileSystemOperationContext> context,
     const AsyncFileUtil::CreateSnapshotFileCallback& callback,
     const base::FilePath& device_file_path,
     base::FilePath* snapshot_file_path) {
-  DCHECK(IsOnIOThread(context));
+  DCHECK(IsOnIOThread(context.get()));
   if (!snapshot_file_path || snapshot_file_path->empty()) {
     OnCreateSnapshotFileError(callback, base::PLATFORM_FILE_ERROR_FAILED);
     return;
   }
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(context);
+  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(context.get());
   if (!delegate) {
     OnCreateSnapshotFileError(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;

@@ -49,6 +49,9 @@ class WEBKIT_STORAGE_EXPORT FileSystemOperationRunner
 
   virtual ~FileSystemOperationRunner();
 
+  // Cancels all inflight operations.
+  void Shutdown();
+
   // Creates a file at |url|. If |exclusive| is true, an error is raised
   // in case a file is already present at the URL.
   OperationID CreateFile(const FileSystemURL& url,
@@ -276,7 +279,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemOperationRunner
   FileSystemContext* file_system_context_;
 
   // IDMap<FileSystemOperation, IDMapOwnPointer> operations_;
-  IDMap<FileSystemOperation> operations_;
+  IDMap<FileSystemOperation, IDMapOwnPointer> operations_;
 
   // We keep track of the file to be modified by each operation so that
   // we can notify observers when we're done.

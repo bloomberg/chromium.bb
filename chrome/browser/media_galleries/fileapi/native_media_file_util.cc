@@ -133,7 +133,7 @@ base::PlatformFileError NativeMediaFileUtil::IsMediaFile(
 }
 
 bool NativeMediaFileUtil::CreateOrOpen(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     int file_flags,
     const CreateOrOpenCallback& callback) {
@@ -149,7 +149,7 @@ bool NativeMediaFileUtil::CreateOrOpen(
 }
 
 bool NativeMediaFileUtil::EnsureFileExists(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const EnsureFileExistsCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
@@ -159,43 +159,48 @@ bool NativeMediaFileUtil::EnsureFileExists(
 }
 
 bool NativeMediaFileUtil::CreateDirectory(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     bool exclusive,
     bool recursive,
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  return context->task_runner()->PostTask(
+  fileapi::FileSystemOperationContext* context_ptr = context.release();
+  return context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&NativeMediaFileUtil::CreateDirectoryOnTaskRunnerThread,
-                 weak_factory_.GetWeakPtr(), context, url, exclusive, recursive,
-                 callback));
+                 weak_factory_.GetWeakPtr(), base::Owned(context_ptr),
+                 url, exclusive, recursive, callback));
 }
 
 bool NativeMediaFileUtil::GetFileInfo(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  return context->task_runner()->PostTask(
+  fileapi::FileSystemOperationContext* context_ptr = context.release();
+  return context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&NativeMediaFileUtil::GetFileInfoOnTaskRunnerThread,
-                 weak_factory_.GetWeakPtr(), context, url, callback));
+                 weak_factory_.GetWeakPtr(), base::Owned(context_ptr),
+                 url, callback));
 }
 
 bool NativeMediaFileUtil::ReadDirectory(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  return context->task_runner()->PostTask(
+  fileapi::FileSystemOperationContext* context_ptr = context.release();
+  return context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&NativeMediaFileUtil::ReadDirectoryOnTaskRunnerThread,
-                 weak_factory_.GetWeakPtr(), context, url, callback));
+                 weak_factory_.GetWeakPtr(), base::Owned(context_ptr),
+                 url, callback));
 }
 
 bool NativeMediaFileUtil::Touch(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
@@ -207,7 +212,7 @@ bool NativeMediaFileUtil::Touch(
 }
 
 bool NativeMediaFileUtil::Truncate(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     int64 length,
     const StatusCallback& callback) {
@@ -218,46 +223,49 @@ bool NativeMediaFileUtil::Truncate(
 }
 
 bool NativeMediaFileUtil::CopyFileLocal(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& src_url,
     const fileapi::FileSystemURL& dest_url,
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  return context->task_runner()->PostTask(
+  fileapi::FileSystemOperationContext* context_ptr = context.release();
+  return context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&NativeMediaFileUtil::CopyOrMoveFileLocalOnTaskRunnerThread,
-                 weak_factory_.GetWeakPtr(), context, src_url, dest_url,
-                 true /* copy */, callback));
+                 weak_factory_.GetWeakPtr(), base::Owned(context_ptr),
+                 src_url, dest_url, true /* copy */, callback));
 }
 
 bool NativeMediaFileUtil::MoveFileLocal(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& src_url,
     const fileapi::FileSystemURL& dest_url,
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  return context->task_runner()->PostTask(
+  fileapi::FileSystemOperationContext* context_ptr = context.release();
+  return context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&NativeMediaFileUtil::CopyOrMoveFileLocalOnTaskRunnerThread,
-                 weak_factory_.GetWeakPtr(), context, src_url, dest_url,
-                 false /* copy */, callback));
+                 weak_factory_.GetWeakPtr(), base::Owned(context_ptr),
+                 src_url, dest_url, false /* copy */, callback));
 }
 
 bool NativeMediaFileUtil::CopyInForeignFile(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const base::FilePath& src_file_path,
     const fileapi::FileSystemURL& dest_url,
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  return context->task_runner()->PostTask(
+  fileapi::FileSystemOperationContext* context_ptr = context.release();
+  return context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&NativeMediaFileUtil::CopyInForeignFileOnTaskRunnerThread,
-                 weak_factory_.GetWeakPtr(), context, src_file_path, dest_url,
-                 callback));
+                 weak_factory_.GetWeakPtr(), base::Owned(context_ptr),
+                 src_file_path, dest_url, callback));
 }
 
 bool NativeMediaFileUtil::DeleteFile(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
@@ -268,25 +276,29 @@ bool NativeMediaFileUtil::DeleteFile(
 
 // This is needed to support Copy and Move.
 bool NativeMediaFileUtil::DeleteDirectory(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const StatusCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  return context->task_runner()->PostTask(
+  fileapi::FileSystemOperationContext* context_ptr = context.release();
+  return context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&NativeMediaFileUtil::DeleteDirectoryOnTaskRunnerThread,
-                 weak_factory_.GetWeakPtr(), context, url, callback));
+                 weak_factory_.GetWeakPtr(), base::Owned(context_ptr),
+                 url, callback));
 }
 
 bool NativeMediaFileUtil::CreateSnapshotFile(
-    fileapi::FileSystemOperationContext* context,
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  return context->task_runner()->PostTask(
+  fileapi::FileSystemOperationContext* context_ptr = context.release();
+  return context_ptr->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&NativeMediaFileUtil::CreateSnapshotFileOnTaskRunnerThread,
-                 weak_factory_.GetWeakPtr(), context, url, callback));
+                 weak_factory_.GetWeakPtr(), base::Owned(context_ptr),
+                 url, callback));
 }
 
 void NativeMediaFileUtil::CreateDirectoryOnTaskRunnerThread(
@@ -475,8 +487,8 @@ base::PlatformFileError NativeMediaFileUtil::GetFileInfoSync(
     const fileapi::FileSystemURL& url,
     base::PlatformFileInfo* file_info,
     base::FilePath* platform_path) {
-  DCHECK(IsOnTaskRunnerThread(context));
   DCHECK(context);
+  DCHECK(IsOnTaskRunnerThread(context));
   DCHECK(file_info);
   DCHECK(GetMediaPathFilter(context));
 

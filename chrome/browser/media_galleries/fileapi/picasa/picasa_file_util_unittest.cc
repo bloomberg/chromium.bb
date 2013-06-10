@@ -191,13 +191,13 @@ void ReadDirectoryTestCallback(
 
 base::PlatformFileError ReadDirectoryTestHelper(
     fileapi::AsyncFileUtil* file_util,
-    FileSystemOperationContext* operation_context,
+    scoped_ptr<FileSystemOperationContext> operation_context,
     FileSystemURL url,
     fileapi::AsyncFileUtil::EntryList* file_list) {
   base::RunLoop run_loop;
   base::PlatformFileError result;
   file_util->ReadDirectory(
-      operation_context,
+      operation_context.Pass(),
       url,
       base::Bind(&ReadDirectoryTestCallback, &run_loop, &result, file_list));
   run_loop.Run();
@@ -407,12 +407,13 @@ TEST_F(PicasaFileUtilTest, NameDeduplication) {
       AlbumInfo("unique_name", test_date, "uuid1", base::FilePath()));
   expected_names.push_back("unique_name " + test_date_string);
 
-  FileSystemOperationContext operation_context(file_system_context().get());
+  scoped_ptr<FileSystemOperationContext> operation_context(
+      new FileSystemOperationContext(file_system_context().get()));
 
   scoped_ptr<chrome::MediaPathFilter> media_path_filter(
       new chrome::MediaPathFilter());
 
-  operation_context.SetUserValue(
+  operation_context->SetUserValue(
       chrome::MediaFileSystemMountPointProvider::kMediaPathFilterKey,
       media_path_filter.get());
 
@@ -422,7 +423,7 @@ TEST_F(PicasaFileUtilTest, NameDeduplication) {
 
   fileapi::AsyncFileUtil::EntryList file_list;
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            ReadDirectoryTestHelper(&test_file_util, &operation_context,
+            ReadDirectoryTestHelper(&test_file_util, operation_context.Pass(),
                                     CreateURL(kPicasaDirFolders),
                                     &file_list));
 

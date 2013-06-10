@@ -13,17 +13,15 @@
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
-#include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
 
 class FileStreamWriter;
-class FileSystemOperationContext;
-class FileSystemQuotaUtil;
 
 class WEBKIT_STORAGE_EXPORT_PRIVATE FileWriterDelegate
-    : public net::URLRequest::Delegate {
+    : public net::URLRequest::Delegate,
+      public base::SupportsWeakPtr<FileWriterDelegate> {
  public:
   enum WriteProgressStatus {
     SUCCESS_IO_PENDING,
@@ -44,11 +42,10 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileWriterDelegate
 
   void Start(scoped_ptr<net::URLRequest> request);
 
-  // Cancels the current write operation.  Returns true if it is ok to
-  // delete this instance immediately.  Otherwise this will call
-  // |write_operation|->DidWrite() with complete=true to let the operation
-  // perform the final cleanup.
-  bool Cancel();
+  // Cancels the current write operation.  This will synchronously or
+  // asynchronously call the given write callback (which may result in
+  // deleting this).
+  void Cancel();
 
   virtual void OnReceivedRedirect(net::URLRequest* request,
                                   const GURL& new_url,
@@ -85,7 +82,6 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileWriterDelegate
                  WriteProgressStatus progress_status,
                  int flush_error);
 
-  FileSystemQuotaUtil* quota_util() const;
   WriteProgressStatus GetCompletionStatusOnError() const;
 
   DelegateWriteCallback write_callback_;
@@ -98,7 +94,6 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileWriterDelegate
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
   scoped_refptr<net::DrainableIOBuffer> cursor_;
   scoped_ptr<net::URLRequest> request_;
-  base::WeakPtrFactory<FileWriterDelegate> weak_factory_;
 };
 
 }  // namespace fileapi

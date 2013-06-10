@@ -30,9 +30,7 @@ RemoteFileSystemOperation::~RemoteFileSystemOperation() {
 void RemoteFileSystemOperation::GetMetadata(const FileSystemURL& url,
     const GetMetadataCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationGetMetadata));
-  remote_proxy_->GetFileInfo(url,
-      base::Bind(&RemoteFileSystemOperation::DidGetMetadata,
-                 base::Owned(this), callback));
+  remote_proxy_->GetFileInfo(url, callback);
 }
 
 void RemoteFileSystemOperation::DirectoryExists(const FileSystemURL& url,
@@ -40,7 +38,7 @@ void RemoteFileSystemOperation::DirectoryExists(const FileSystemURL& url,
   DCHECK(SetPendingOperationType(kOperationDirectoryExists));
   remote_proxy_->GetFileInfo(url,
       base::Bind(&RemoteFileSystemOperation::DidDirectoryExists,
-                 base::Owned(this), callback));
+                 AsWeakPtr(), callback));
 }
 
 void RemoteFileSystemOperation::FileExists(const FileSystemURL& url,
@@ -48,15 +46,13 @@ void RemoteFileSystemOperation::FileExists(const FileSystemURL& url,
   DCHECK(SetPendingOperationType(kOperationFileExists));
   remote_proxy_->GetFileInfo(url,
       base::Bind(base::Bind(&RemoteFileSystemOperation::DidFileExists,
-                            base::Owned(this), callback)));
+                            AsWeakPtr(), callback)));
 }
 
 void RemoteFileSystemOperation::ReadDirectory(const FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationReadDirectory));
-  remote_proxy_->ReadDirectory(url,
-      base::Bind(&RemoteFileSystemOperation::DidReadDirectory,
-                 base::Owned(this), callback));
+  remote_proxy_->ReadDirectory(url, callback);
 }
 
 void RemoteFileSystemOperation::Remove(const FileSystemURL& url, bool recursive,
@@ -64,7 +60,7 @@ void RemoteFileSystemOperation::Remove(const FileSystemURL& url, bool recursive,
   DCHECK(SetPendingOperationType(kOperationRemove));
   remote_proxy_->Remove(url, recursive,
       base::Bind(&RemoteFileSystemOperation::DidFinishFileOperation,
-                 base::Owned(this), callback));
+                 AsWeakPtr(), callback));
 }
 
 
@@ -74,7 +70,7 @@ void RemoteFileSystemOperation::CreateDirectory(
   DCHECK(SetPendingOperationType(kOperationCreateDirectory));
   remote_proxy_->CreateDirectory(url, exclusive, recursive,
       base::Bind(&RemoteFileSystemOperation::DidFinishFileOperation,
-                 base::Owned(this), callback));
+                 AsWeakPtr(), callback));
 }
 
 void RemoteFileSystemOperation::CreateFile(const FileSystemURL& url,
@@ -83,7 +79,7 @@ void RemoteFileSystemOperation::CreateFile(const FileSystemURL& url,
   DCHECK(SetPendingOperationType(kOperationCreateFile));
   remote_proxy_->CreateFile(url, exclusive,
       base::Bind(&RemoteFileSystemOperation::DidFinishFileOperation,
-                 base::Owned(this), callback));
+                 AsWeakPtr(), callback));
 }
 
 void RemoteFileSystemOperation::Copy(const FileSystemURL& src_url,
@@ -93,7 +89,7 @@ void RemoteFileSystemOperation::Copy(const FileSystemURL& src_url,
 
   remote_proxy_->Copy(src_url, dest_url,
       base::Bind(&RemoteFileSystemOperation::DidFinishFileOperation,
-                 base::Owned(this), callback));
+                 AsWeakPtr(), callback));
 }
 
 void RemoteFileSystemOperation::Move(const FileSystemURL& src_url,
@@ -103,7 +99,7 @@ void RemoteFileSystemOperation::Move(const FileSystemURL& src_url,
 
   remote_proxy_->Move(src_url, dest_url,
       base::Bind(&RemoteFileSystemOperation::DidFinishFileOperation,
-                 base::Owned(this), callback));
+                 AsWeakPtr(), callback));
 }
 
 void RemoteFileSystemOperation::Write(
@@ -113,14 +109,10 @@ void RemoteFileSystemOperation::Write(
     int64 offset,
     const WriteCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationWrite));
-  DCHECK(write_callback_.is_null());
-
-  write_callback_ = callback;
   file_writer_delegate_.reset(
       new fileapi::FileWriterDelegate(
           base::Bind(&RemoteFileSystemOperation::DidWrite,
-                     // FileWriterDelegate is owned by |this|. So Unretained.
-                     base::Unretained(this)),
+                     AsWeakPtr(), callback),
           scoped_ptr<fileapi::FileStreamWriter>(
               new fileapi::RemoteFileStreamWriter(remote_proxy_,
                                                   url,
@@ -139,37 +131,21 @@ void RemoteFileSystemOperation::Truncate(const FileSystemURL& url,
 
   remote_proxy_->Truncate(url, length,
       base::Bind(&RemoteFileSystemOperation::DidFinishFileOperation,
-                 base::Owned(this), callback));
+                 AsWeakPtr(), callback));
 }
 
 void RemoteFileSystemOperation::Cancel(const StatusCallback& cancel_callback) {
+  DCHECK(cancel_callback_.is_null());
+  cancel_callback_ = cancel_callback;
+
   if (file_writer_delegate_) {
     DCHECK_EQ(kOperationWrite, pending_operation_);
-
-    // Writes are done without proxying through FileUtilProxy after the initial
-    // opening of the PlatformFile.  All state changes are done on this thread,
-    // so we're guaranteed to be able to shut down atomically.
-    const bool delete_now = file_writer_delegate_->Cancel();
-
-    if (!write_callback_.is_null()) {
-      // Notify the failure status to the ongoing operation's callback.
-      write_callback_.Run(base::PLATFORM_FILE_ERROR_ABORT, 0, false);
-    }
-    cancel_callback.Run(base::PLATFORM_FILE_OK);
-    write_callback_.Reset();
-
-    if (delete_now) {
-      delete this;
-      return;
-    }
+    // This will call DidWrite() with ABORT status code.
+    file_writer_delegate_->Cancel();
   } else {
+    // For truncate we have no way to cancel the inflight operation (for now).
+    // Let it just run and dispatch cancel callback later.
     DCHECK_EQ(kOperationTruncate, pending_operation_);
-    // We're cancelling a truncate operation, but we can't actually stop it
-    // since it's been proxied to another thread.  We need to save the
-    // cancel_callback so that when the truncate returns, it can see that it's
-    // been cancelled, report it, and report that the cancel has succeeded.
-    DCHECK(cancel_callback_.is_null());
-    cancel_callback_ = cancel_callback;
   }
 }
 
@@ -183,7 +159,7 @@ void RemoteFileSystemOperation::TouchFile(const FileSystemURL& url,
       last_access_time,
       last_modified_time,
       base::Bind(&RemoteFileSystemOperation::DidFinishFileOperation,
-                 base::Owned(this), callback));
+                 AsWeakPtr(), callback));
 }
 
 void RemoteFileSystemOperation::OpenFile(const FileSystemURL& url,
@@ -196,7 +172,7 @@ void RemoteFileSystemOperation::OpenFile(const FileSystemURL& url,
       file_flags,
       peer_handle,
       base::Bind(&RemoteFileSystemOperation::DidOpenFile,
-                 base::Owned(this), url, callback));
+                 AsWeakPtr(), url, callback));
 }
 
 fileapi::LocalFileSystemOperation*
@@ -209,10 +185,7 @@ void RemoteFileSystemOperation::CreateSnapshotFile(
     const FileSystemURL& url,
     const SnapshotFileCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationCreateSnapshotFile));
-  remote_proxy_->CreateSnapshotFile(
-      url,
-      base::Bind(&RemoteFileSystemOperation::DidCreateSnapshotFile,
-                 base::Owned(this), callback));
+  remote_proxy_->CreateSnapshotFile(url, callback);
 }
 
 bool RemoteFileSystemOperation::SetPendingOperationType(OperationType type) {
@@ -242,44 +215,16 @@ void RemoteFileSystemOperation::DidFileExists(
   callback.Run(rv);
 }
 
-void RemoteFileSystemOperation::DidGetMetadata(
-    const GetMetadataCallback& callback,
-    base::PlatformFileError rv,
-    const base::PlatformFileInfo& file_info,
-    const base::FilePath& platform_path) {
-  callback.Run(rv, file_info, platform_path);
-}
-
-void RemoteFileSystemOperation::DidReadDirectory(
-    const ReadDirectoryCallback& callback,
-    base::PlatformFileError rv,
-    const std::vector<fileapi::DirectoryEntry>& entries,
-    bool has_more) {
-  callback.Run(rv, entries, has_more /* has_more */);
-}
-
 void RemoteFileSystemOperation::DidWrite(
+    const WriteCallback& write_callback,
     base::PlatformFileError rv,
     int64 bytes,
     FileWriterDelegate::WriteProgressStatus write_status) {
-  if (write_callback_.is_null()) {
-    // If cancelled, callback is already invoked and set to null in Cancel().
-    // We must not call it twice. Just shut down this operation object.
-    delete this;
-    return;
-  }
-
   bool complete = (write_status != FileWriterDelegate::SUCCESS_IO_PENDING);
-  write_callback_.Run(rv, bytes, complete);
-  if (rv != base::PLATFORM_FILE_OK || complete) {
-    // Other Did*'s doesn't have "delete this", because it is automatic since
-    // they are base::Owned by the caller of the callback. For DidWrite, the
-    // owner is file_writer_delegate_ which itself is owned by this Operation
-    // object. Hence we need manual life time management here.
-    // TODO(kinaba): think about refactoring FileWriterDelegate to be self
-    // destructing, for avoiding the manual management.
-    delete this;
-  }
+  StatusCallback cancel_callback = cancel_callback_;
+  write_callback.Run(rv, bytes, complete);
+  if (!cancel_callback.is_null())
+    cancel_callback.Run(base::PLATFORM_FILE_OK);
 }
 
 void RemoteFileSystemOperation::DidFinishFileOperation(
@@ -288,21 +233,12 @@ void RemoteFileSystemOperation::DidFinishFileOperation(
   if (!cancel_callback_.is_null()) {
     DCHECK_EQ(kOperationTruncate, pending_operation_);
 
+    StatusCallback cancel_callback = cancel_callback_;
     callback.Run(base::PLATFORM_FILE_ERROR_ABORT);
-    cancel_callback_.Run(base::PLATFORM_FILE_OK);
-    cancel_callback_.Reset();
+    cancel_callback.Run(base::PLATFORM_FILE_OK);
   } else {
     callback.Run(rv);
   }
-}
-
-void RemoteFileSystemOperation::DidCreateSnapshotFile(
-    const SnapshotFileCallback& callback,
-    base::PlatformFileError result,
-    const base::PlatformFileInfo& file_info,
-    const base::FilePath& platform_path,
-    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
-  callback.Run(result, file_info, platform_path, file_ref);
 }
 
 void RemoteFileSystemOperation::DidOpenFile(

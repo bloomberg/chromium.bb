@@ -124,6 +124,8 @@ void FileAPIMessageFilter::OnChannelClosing() {
   }
 
   on_close_callbacks_.Clear();
+  operation_runner()->Shutdown();
+  operations_.clear();
 }
 
 void FileAPIMessageFilter::OverrideThreadForMessage(

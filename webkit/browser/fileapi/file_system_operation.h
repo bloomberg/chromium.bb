@@ -47,12 +47,12 @@ class LocalFileSystemOperation;
 // GetMetadata, ReadDirectory and Remove) may be called during the
 // lifetime of this object and it should be called no more than once.
 //
-// 2) Be self-destructed, or get deleted via base::Owned() after the
-// operation finishes and completion callback is called.
-//
-// 3) Deliver the results of operations to the client via the callback function
+// 2) Deliver the results of operations to the client via the callback function
 // passed as the last parameter of the method.
 //
+// Note that it is valid to delete an operation while it is running.
+// The callback will NOT be fired if the operation is deleted before
+// it gets called.
 class FileSystemOperation {
  public:
   virtual ~FileSystemOperation() {}

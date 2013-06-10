@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/file_util_proxy.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "webkit/common/fileapi/directory_entry.h"
 #include "webkit/storage/webkit_storage_export.h"
@@ -32,6 +33,11 @@ class FileSystemURL;
 // must implement this interface or a synchronous version of interface:
 // FileSystemFileUtil.
 //
+// As far as an instance of this class is owned by a MountPointProvider
+// (which is owned by FileSystemContext), it's guaranteed that this instance's
+// alive while FileSystemOperationContext given to each operation is kept
+// alive. (Note that this instance might be freed on different thread
+// from the thread it is created.)
 class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
  public:
   typedef base::Callback<
@@ -75,7 +81,7 @@ class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
   // This returns false if it fails to post an async task.
   //
   virtual bool CreateOrOpen(
-      FileSystemOperationContext* context,
+      scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       int file_flags,
       const CreateOrOpenCallback& callback) = 0;
@@ -95,7 +101,7 @@ class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
   //   and there was an error while creating a new file.
   //
   virtual bool EnsureFileExists(
-      FileSystemOperationContext* context,
+      scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       const EnsureFileExistsCallback& callback) = 0;
 
@@ -115,7 +121,7 @@ class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
   // - Other error code if it failed to create a directory.
   //
   virtual bool CreateDirectory(
-      FileSystemOperationContext* context,
+      scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       bool exclusive,
       bool recursive,
@@ -132,7 +138,7 @@ class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
   // - Other error code if there was an error while retrieving the file info.
   //
   virtual bool GetFileInfo(
-      FileSystemOperationContext* context,
+      scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       const GetFileInfoCallback& callback) = 0;
 
@@ -157,7 +163,7 @@ class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
   //   is a file (not a directory).
   //
   virtual bool ReadDirectory(
-      FileSystemOperationContext* context,
+      scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       const ReadDirectoryCallback& callback) = 0;
 
@@ -170,7 +176,7 @@ class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
   //
   // This returns false if it fails to post an async task.
   virtual bool Touch(
-      FileSystemOperationContext* context,
+      scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       const base::Time& last_access_time,
       const base::Time& last_modified_time,
@@ -188,7 +194,7 @@ class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
   // - PLATFORM_FILE_ERROR_NOT_FOUND if the file doesn't exist.
   //
   virtual bool Truncate(
-      FileSystemOperationContext* context,
+      scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       int64 length,
       const StatusCallback& callback) = 0;
@@ -211,7 +217,7 @@ class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
   //   its parent path is a file.
   //
   virtual bool CopyFileLocal(
-      FileSystemOperationContext* context,
+      scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
       const StatusCallback& callback) = 0;
@@ -234,7 +240,7 @@ class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
   //   its parent path is a file.
   //
   virtual bool MoveFileLocal(
-      FileSystemOperationContext* context,
+      scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
       const StatusCallback& callback) = 0;
@@ -255,7 +261,7 @@ class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
   //   its parent path is a file.
   //
   virtual bool CopyInForeignFile(
-        FileSystemOperationContext* context,
+        scoped_ptr<FileSystemOperationContext> context,
         const base::FilePath& src_file_path,
         const FileSystemURL& dest_url,
         const StatusCallback& callback) = 0;
@@ -271,7 +277,7 @@ class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
   // - PLATFORM_FILE_ERROR_NOT_A_FILE if |url| is not a file.
   //
   virtual bool DeleteFile(
-      FileSystemOperationContext* context,
+      scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       const StatusCallback& callback) = 0;
 
@@ -287,7 +293,7 @@ class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
   // - PLATFORM_FILE_ERROR_NOT_EMPTY if |url| is not empty.
   //
   virtual bool DeleteDirectory(
-      FileSystemOperationContext* context,
+      scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       const StatusCallback& callback) = 0;
 
@@ -325,7 +331,7 @@ class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
   // dependent) in error cases, and the caller should always
   // check the return code.
   virtual bool CreateSnapshotFile(
-      FileSystemOperationContext* context,
+      scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
       const CreateSnapshotFileCallback& callback) = 0;
 

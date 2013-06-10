@@ -26,64 +26,64 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
 
   // AsyncFileUtil overrides.
   virtual bool CreateOrOpen(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       int file_flags,
       const CreateOrOpenCallback& callback) OVERRIDE;
   virtual bool EnsureFileExists(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const EnsureFileExistsCallback& callback) OVERRIDE;
   virtual bool CreateDirectory(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       bool exclusive,
       bool recursive,
       const StatusCallback& callback) OVERRIDE;
   virtual bool GetFileInfo(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const GetFileInfoCallback& callback) OVERRIDE;
   virtual bool ReadDirectory(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const ReadDirectoryCallback& callback) OVERRIDE;
   virtual bool Touch(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const base::Time& last_access_time,
       const base::Time& last_modified_time,
       const StatusCallback& callback) OVERRIDE;
   virtual bool Truncate(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       int64 length,
       const StatusCallback& callback) OVERRIDE;
   virtual bool CopyFileLocal(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& src_url,
       const fileapi::FileSystemURL& dest_url,
       const StatusCallback& callback) OVERRIDE;
   virtual bool MoveFileLocal(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& src_url,
       const fileapi::FileSystemURL& dest_url,
       const StatusCallback& callback) OVERRIDE;
   virtual bool CopyInForeignFile(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const base::FilePath& src_file_path,
       const fileapi::FileSystemURL& dest_url,
       const StatusCallback& callback) OVERRIDE;
   virtual bool DeleteFile(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const StatusCallback& callback) OVERRIDE;
   virtual bool DeleteDirectory(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const StatusCallback& callback) OVERRIDE;
   virtual bool CreateSnapshotFile(
-      fileapi::FileSystemOperationContext* context,
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
       const CreateSnapshotFileCallback& callback) OVERRIDE;
 

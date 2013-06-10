@@ -5,6 +5,7 @@
 #ifndef WEBKIT_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_SYSTEM_OPERATION_H_
 #define WEBKIT_BROWSER_CHROMEOS_FILEAPI_REMOTE_FILE_SYSTEM_OPERATION_H_
 
+#include "base/memory/weak_ptr.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_writer_delegate.h"
 #include "webkit/browser/fileapi/remote_file_system_proxy.h"
@@ -21,7 +22,9 @@ class LocalFileSystemOperation;
 namespace chromeos {
 
 // FileSystemOperation implementation for local file systems.
-class RemoteFileSystemOperation : public fileapi::FileSystemOperation {
+class RemoteFileSystemOperation
+    : public fileapi::FileSystemOperation,
+      public base::SupportsWeakPtr<RemoteFileSystemOperation> {
  public:
   typedef fileapi::FileWriterDelegate FileWriterDelegate;
   virtual ~RemoteFileSystemOperation();
@@ -92,25 +95,12 @@ class RemoteFileSystemOperation : public fileapi::FileSystemOperation {
                      base::PlatformFileError rv,
                      const base::PlatformFileInfo& file_info,
                      const base::FilePath& unused);
-  void DidGetMetadata(const GetMetadataCallback& callback,
-                      base::PlatformFileError rv,
-                      const base::PlatformFileInfo& file_info,
-                      const base::FilePath& platform_path);
-  void DidReadDirectory(const ReadDirectoryCallback& callback,
-                        base::PlatformFileError rv,
-                        const std::vector<fileapi::DirectoryEntry>& entries,
-                        bool has_more);
-  void DidWrite(base::PlatformFileError result,
+  void DidWrite(const WriteCallback& write_callback,
+                base::PlatformFileError result,
                 int64 bytes,
                 FileWriterDelegate::WriteProgressStatus write_status);
   void DidFinishFileOperation(const StatusCallback& callback,
                               base::PlatformFileError rv);
-  void DidCreateSnapshotFile(
-      const SnapshotFileCallback& callback,
-      base::PlatformFileError result,
-      const base::PlatformFileInfo& file_info,
-      const base::FilePath& platform_path,
-      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
   void DidOpenFile(
       const fileapi::FileSystemURL& url,
       const OpenFileCallback& callback,
@@ -118,13 +108,11 @@ class RemoteFileSystemOperation : public fileapi::FileSystemOperation {
       base::PlatformFile file,
       base::ProcessHandle peer_handle);
 
-
   scoped_refptr<fileapi::RemoteFileSystemProxyInterface> remote_proxy_;
   // A flag to make sure we call operation only once per instance.
   OperationType pending_operation_;
   scoped_ptr<fileapi::FileWriterDelegate> file_writer_delegate_;
 
-  WriteCallback write_callback_;
   StatusCallback cancel_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteFileSystemOperation);

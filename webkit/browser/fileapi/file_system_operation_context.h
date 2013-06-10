@@ -38,7 +38,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext
   virtual ~FileSystemOperationContext();
 
   FileSystemContext* file_system_context() const {
-    return file_system_context_;
+    return file_system_context_.get();
   }
 
   // Updates the current remaining quota.
@@ -100,7 +100,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext
     DISALLOW_COPY_AND_ASSIGN(ValueAdapter);
   };
 
-  FileSystemContext* file_system_context_;
+  scoped_refptr<FileSystemContext> file_system_context_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // The current remaining quota, used by ObfuscatedFileUtil.

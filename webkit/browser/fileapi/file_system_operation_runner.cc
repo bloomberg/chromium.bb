@@ -19,6 +19,10 @@ const OperationID FileSystemOperationRunner::kErrorOperationID = -1;
 FileSystemOperationRunner::~FileSystemOperationRunner() {
 }
 
+void FileSystemOperationRunner::Shutdown() {
+  operations_.Clear();
+}
+
 OperationID FileSystemOperationRunner::CreateFile(
     const FileSystemURL& url,
     bool exclusive,
