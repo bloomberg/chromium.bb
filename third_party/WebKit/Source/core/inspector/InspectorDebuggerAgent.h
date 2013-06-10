@@ -123,6 +123,7 @@ public:
     void schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<InspectorObject> data);
     void didFireTimer();
     void didHandleEvent();
+    bool canBreakProgram();
     void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<InspectorObject> data);
     virtual void scriptExecutionBlockedByCSP(const String& directiveText);
 

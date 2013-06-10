@@ -71,6 +71,8 @@ public:
     virtual void removeInstrumentationBreakpoint(ErrorString*, const String& eventName);
     virtual void setDOMBreakpoint(ErrorString*, int nodeId, const String& type);
     virtual void removeDOMBreakpoint(ErrorString*, int nodeId, const String& type);
+    virtual void setWebGLBreakpoint(ErrorString*, const String& eventName);
+    virtual void removeWebGLBreakpoint(ErrorString*, const String& eventName);
 
     // InspectorInstrumentation API
     void willInsertDOMNode(Node* parent);
@@ -87,6 +89,7 @@ public:
     void didCancelAnimationFrame(Document*, int callbackId);
     void willFireAnimationFrame(Document*, int callbackId);
     void willHandleEvent(Event*);
+    void didFireWebGLError(Document*, const String& eventName, const String& consoleMessage);
 
     void didProcessTask();
 

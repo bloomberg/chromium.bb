@@ -226,24 +226,24 @@ void ScriptDebugServer::setPauseOnNextStatement(bool pause)
         v8::Debug::CancelDebugBreak(m_isolate);
 }
 
+bool ScriptDebugServer::canBreakProgram()
+{
+    v8::HandleScope scope(m_isolate);
+    return m_breakpointsActivated && !m_isolate->GetCurrentContext().IsEmpty();
+}
+
 void ScriptDebugServer::breakProgram()
 {
-    if (!m_breakpointsActivated)
+    if (!canBreakProgram())
         return;
 
-    if (!v8::Context::InContext())
-        return;
-
+    v8::HandleScope scope(m_isolate);
     if (m_breakProgramCallbackTemplate.get().IsEmpty()) {
         m_breakProgramCallbackTemplate.set(m_isolate, v8::FunctionTemplate::New());
         m_breakProgramCallbackTemplate.get()->SetCallHandler(&ScriptDebugServer::breakProgramCallback, v8::External::New(this));
     }
 
-    v8::Handle<v8::Context> context = v8::Context::GetCurrent();
-    if (context.IsEmpty())
-        return;
-
-    m_pausedContext = context;
+    m_pausedContext = m_isolate->GetCurrentContext();
     v8::Handle<v8::Function> breakProgramFunction = m_breakProgramCallbackTemplate.get()->GetFunction();
     v8::Debug::Call(breakProgramFunction);
     m_pausedContext.Clear();

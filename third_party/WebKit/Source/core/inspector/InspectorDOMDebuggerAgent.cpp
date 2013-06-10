@@ -70,6 +70,8 @@ namespace DOMDebuggerAgentState {
 static const char eventListenerBreakpoints[] = "eventListenerBreakpoints";
 static const char pauseOnAllXHRs[] = "pauseOnAllXHRs";
 static const char xhrBreakpoints[] = "xhrBreakpoints";
+static const char pauseOnAllWebGLErrors[] = "pauseOnAllWebGLErrors";
+static const char webGLBreakpoints[] = "webGLBreakpoints";
 }
 
 PassOwnPtr<InspectorDOMDebuggerAgent> InspectorDOMDebuggerAgent::create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* inspectorState, InspectorDOMAgent* domAgent, InspectorDebuggerAgent* debuggerAgent, InspectorAgent* inspectorAgent)
@@ -478,6 +480,47 @@ void InspectorDOMDebuggerAgent::willSendXMLHttpRequest(const String& url)
     eventData->setString("breakpointURL", breakpointURL);
     eventData->setString("url", url);
     m_debuggerAgent->breakProgram(InspectorFrontend::Debugger::Reason::XHR, eventData.release());
+}
+
+void InspectorDOMDebuggerAgent::setWebGLBreakpoint(ErrorString*, const String& eventName)
+{
+    if (eventName.isEmpty()) {
+        m_state->setBoolean(DOMDebuggerAgentState::pauseOnAllWebGLErrors, true);
+        return;
+    }
+
+    RefPtr<InspectorObject> webglBreakpoints = m_state->getObject(DOMDebuggerAgentState::webGLBreakpoints);
+    webglBreakpoints->setBoolean(eventName, true);
+    m_state->setObject(DOMDebuggerAgentState::webGLBreakpoints, webglBreakpoints);
+}
+
+void InspectorDOMDebuggerAgent::removeWebGLBreakpoint(ErrorString*, const String& eventName)
+{
+    if (eventName.isEmpty()) {
+        m_state->setBoolean(DOMDebuggerAgentState::pauseOnAllWebGLErrors, false);
+        return;
+    }
+
+    RefPtr<InspectorObject> webglBreakpoints = m_state->getObject(DOMDebuggerAgentState::webGLBreakpoints);
+    webglBreakpoints->remove(eventName);
+    m_state->setObject(DOMDebuggerAgentState::webGLBreakpoints, webglBreakpoints);
+}
+
+void InspectorDOMDebuggerAgent::didFireWebGLError(Document* document, const String& eventName, const String& consoleMessage)
+{
+    if (!m_state->getBoolean(DOMDebuggerAgentState::pauseOnAllWebGLErrors)) {
+        RefPtr<InspectorObject> webglBreakpoints = m_state->getObject(DOMDebuggerAgentState::webGLBreakpoints);
+        if (webglBreakpoints->find(eventName) == webglBreakpoints->end())
+            return;
+    }
+
+    if (!m_debuggerAgent->canBreakProgram())
+        return;
+
+    if (!consoleMessage.isEmpty())
+        document->addConsoleMessage(RenderingMessageSource, WarningMessageLevel, consoleMessage);
+
+    m_debuggerAgent->breakProgram(InspectorFrontend::Debugger::Reason::Other, 0);
 }
 
 void InspectorDOMDebuggerAgent::clear()

@@ -114,6 +114,9 @@ interface InspectorInstrumentation {
     [DOMDebugger, Inline=FastReturn]
     void willSendXMLHttpRequest(ScriptExecutionContext*, const String& url);
 
+    [DOMDebugger, Inline=FastReturn]
+    void didFireWebGLError([Keep] Document*, const String& eventName, const String& consoleMessage);
+
     [Timeline, Inline=FastReturn]
     void didScheduleResourceRequest([Keep] Document*, const String& url);
 

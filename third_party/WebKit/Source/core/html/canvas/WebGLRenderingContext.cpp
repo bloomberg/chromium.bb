@@ -62,6 +62,7 @@
 #include "core/html/canvas/WebGLShaderPrecisionFormat.h"
 #include "core/html/canvas/WebGLTexture.h"
 #include "core/html/canvas/WebGLUniformLocation.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/cache/CachedImage.h"
@@ -4957,16 +4958,18 @@ bool WebGLRenderingContext::validateStencilFunc(const char* functionName, GC3Den
     }
 }
 
-void WebGLRenderingContext::printGLErrorToConsole(const String& message)
+bool WebGLRenderingContext::printGLErrorToConsole(const String& message)
 {
     if (!m_numGLErrorsToConsoleAllowed)
-        return;
+        return false;
 
     --m_numGLErrorsToConsoleAllowed;
     printWarningToConsole(message);
 
     if (!m_numGLErrorsToConsoleAllowed)
         printWarningToConsole("WebGL: too many errors, no more errors will be reported to the console for this context.");
+
+    return true;
 }
 
 void WebGLRenderingContext::printWarningToConsole(const String& message)
@@ -5391,16 +5394,19 @@ namespace {
 
 void WebGLRenderingContext::synthesizeGLError(GC3Denum error, const char* functionName, const char* description, ConsoleDisplayPreference display)
 {
-    if (m_synthesizedErrorsToConsole && display == DisplayInConsole) {
-      String str = String("WebGL: ") + GetErrorString(error) +  ": " + String(functionName) + ": " + String(description);
-      printGLErrorToConsole(str);
-    }
+    String errorType = GetErrorString(error);
+    String message = String("WebGL: ") + errorType +  ": " + String(functionName) + ": " + String(description);
+    bool printedToConsole = false;
+    if (m_synthesizedErrorsToConsole && display == DisplayInConsole)
+        printedToConsole = printGLErrorToConsole(message);
+
     if (!isContextLost())
         m_context->synthesizeGLError(error);
     else {
         if (lost_context_errors_.find(error) == WTF::notFound)
             lost_context_errors_.append(error);
     }
+    InspectorInstrumentation::didFireWebGLError(canvas()->document(), errorType, printedToConsole ? String() : message);
 }
 
 

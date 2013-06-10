@@ -765,6 +765,11 @@ void InspectorDebuggerAgent::didContinue()
     m_frontend->resumed();
 }
 
+bool InspectorDebuggerAgent::canBreakProgram()
+{
+    return scriptDebugServer().canBreakProgram();
+}
+
 void InspectorDebuggerAgent::breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<InspectorObject> data)
 {
     m_breakReason = breakReason;
