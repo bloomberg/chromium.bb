@@ -70,16 +70,16 @@ class BlueYellowLayerClient : public ContentLayerClient {
 
     SkPaint paint;
     paint.setColor(SK_ColorBLUE);
-    canvas->drawRect(SkRect::MakeWH(layer_rect_.width() / 2,
-                                    layer_rect_.height()),
+    canvas->drawRect(SkRect::MakeWH(layer_rect_.width(),
+                                    layer_rect_.height() / 2),
                      paint);
 
     paint.setColor(SK_ColorYELLOW);
     canvas->drawRect(
-        SkRect::MakeXYWH(layer_rect_.width() / 2,
-                         0,
-                         layer_rect_.width() / 2,
-                         layer_rect_.height()),
+        SkRect::MakeXYWH(0,
+                         layer_rect_.height() / 2,
+                         layer_rect_.width(),
+                         layer_rect_.height() / 2),
         paint);
   }
 
@@ -87,7 +87,7 @@ class BlueYellowLayerClient : public ContentLayerClient {
   gfx::Rect layer_rect_;
 };
 
-TEST_F(LayerTreeHostOnDemandRasterPixelTest, DISABLED_RasterPictureLayer) {
+TEST_F(LayerTreeHostOnDemandRasterPixelTest, RasterPictureLayer) {
   // Use multiple colors in a single layer to prevent bypassing on-demand
   // rasterization if a single solid color is detected in picture analysis.
   gfx::Rect layer_rect(200, 200);

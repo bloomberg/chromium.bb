@@ -536,7 +536,7 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
       FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
 }
 
-TYPED_TEST(RendererPixelTest, DISABLED_RenderPassChangesSize) {
+TYPED_TEST(RendererPixelTest, EnlargedRenderPassTexture) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   RenderPass::Id root_pass_id(1, 1);
@@ -557,16 +557,16 @@ TYPED_TEST(RendererPixelTest, DISABLED_RenderPassChangesSize) {
   blue->SetNew(shared_state.get(),
                gfx::Rect(0,
                          0,
-                         this->device_viewport_size_.width() / 2,
-                         this->device_viewport_size_.height()),
+                         this->device_viewport_size_.width(),
+                         this->device_viewport_size_.height() / 2),
                SK_ColorBLUE,
                false);
   scoped_ptr<SolidColorDrawQuad> yellow = SolidColorDrawQuad::Create();
   yellow->SetNew(shared_state.get(),
-                 gfx::Rect(this->device_viewport_size_.width() / 2,
-                           0,
-                           this->device_viewport_size_.width() / 2,
-                           this->device_viewport_size_.height()),
+                 gfx::Rect(0,
+                           this->device_viewport_size_.height() / 2,
+                           this->device_viewport_size_.width(),
+                           this->device_viewport_size_.height() / 2),
                  SK_ColorYELLOW,
                  false);
 
@@ -590,6 +590,74 @@ TYPED_TEST(RendererPixelTest, DISABLED_RenderPassChangesSize) {
       &pass_list,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")),
       ExactPixelComparator(true)));
+}
+
+TYPED_TEST(RendererPixelTest, EnlargedRenderPassTextureWithAntiAliasing) {
+  gfx::Rect viewport_rect(this->device_viewport_size_);
+
+  RenderPass::Id root_pass_id(1, 1);
+  scoped_ptr<RenderPass> root_pass =
+      CreateTestRootRenderPass(root_pass_id, viewport_rect);
+
+  RenderPass::Id child_pass_id(2, 2);
+  gfx::Rect pass_rect(this->device_viewport_size_);
+  gfx::Transform transform_to_root;
+  scoped_ptr<RenderPass> child_pass =
+      CreateTestRenderPass(child_pass_id, pass_rect, transform_to_root);
+
+  gfx::Transform content_to_target_transform;
+  scoped_ptr<SharedQuadState> shared_state =
+      CreateTestSharedQuadState(content_to_target_transform, viewport_rect);
+
+  scoped_ptr<SolidColorDrawQuad> blue = SolidColorDrawQuad::Create();
+  blue->SetNew(shared_state.get(),
+               gfx::Rect(0,
+                         0,
+                         this->device_viewport_size_.width(),
+                         this->device_viewport_size_.height() / 2),
+               SK_ColorBLUE,
+               false);
+  scoped_ptr<SolidColorDrawQuad> yellow = SolidColorDrawQuad::Create();
+  yellow->SetNew(shared_state.get(),
+                 gfx::Rect(0,
+                           this->device_viewport_size_.height() / 2,
+                           this->device_viewport_size_.width(),
+                           this->device_viewport_size_.height() / 2),
+                 SK_ColorYELLOW,
+                 false);
+
+  child_pass->quad_list.push_back(blue.PassAs<DrawQuad>());
+  child_pass->quad_list.push_back(yellow.PassAs<DrawQuad>());
+
+  gfx::Transform aa_transform;
+  aa_transform.Translate(0.5, 0.0);
+
+  scoped_ptr<SharedQuadState> pass_shared_state =
+      CreateTestSharedQuadState(aa_transform, pass_rect);
+  root_pass->quad_list.push_back(
+      CreateTestRenderPassDrawQuad(pass_shared_state.get(),
+                                   pass_rect,
+                                   child_pass_id));
+
+  scoped_ptr<SharedQuadState> root_shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), viewport_rect);
+  scoped_ptr<SolidColorDrawQuad> background = SolidColorDrawQuad::Create();
+  background->SetNew(root_shared_state.get(),
+                     gfx::Rect(this->device_viewport_size_),
+                     SK_ColorWHITE,
+                     false);
+  root_pass->quad_list.push_back(background.PassAs<DrawQuad>());
+
+  RenderPassList pass_list;
+  pass_list.push_back(child_pass.Pass());
+  pass_list.push_back(root_pass.Pass());
+
+  this->renderer_->SetEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list,
+      base::FilePath(FILE_PATH_LITERAL("blue_yellow_anti_aliasing.png")),
+      FuzzyForSoftwareOnlyPixelComparator<TypeParam>(true)));
 }
 
 template <typename RendererType>
