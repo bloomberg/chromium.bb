@@ -26,6 +26,7 @@
 #include "SVGNames.h"
 #include "XLinkNames.h"
 #include "core/dom/DocumentMarkerController.h"
+#include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/html/HTMLAnchorElement.h"
@@ -483,10 +484,10 @@ Node* HitTestResult::targetNode() const
 
 Element* HitTestResult::innerElement() const
 {
-    for (Node* node = m_innerNode.get(); node; node = node->parentNode()) {
+    NodeRenderingTraversal::ParentDetails details;
+    for (Node* node = m_innerNode.get(); node; node = NodeRenderingTraversal::parent(node, &details))
         if (node->isElementNode())
             return toElement(node);
-    }
 
     return 0;
 }

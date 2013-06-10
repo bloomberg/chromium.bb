@@ -89,6 +89,7 @@
 #include "core/dom/NodeFilter.h"
 #include "core/dom/NodeIterator.h"
 #include "core/dom/NodeRareData.h"
+#include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/NodeWithIndex.h"
 #include "core/dom/PageTransitionEvent.h"
@@ -3109,12 +3110,14 @@ void Document::removeFocusedNodeOfSubtree(Node* node, bool amongChildrenOnly)
 
 void Document::hoveredNodeDetached(Node* node)
 {
-    if (!m_hoverNode || (node != m_hoverNode && (!m_hoverNode->isTextNode() || node != m_hoverNode->parentNode())))
+    if (!m_hoverNode)
         return;
 
-    m_hoverNode = node->parentNode();
-    while (m_hoverNode && !m_hoverNode->renderer())
-        m_hoverNode = m_hoverNode->parentNode();
+    NodeRenderingTraversal::ParentDetails details;
+    if (node != m_hoverNode && (!m_hoverNode->isTextNode() || node != NodeRenderingTraversal::parent(m_hoverNode.get(), &details)))
+        return;
+
+    for (m_hoverNode = NodeRenderingTraversal::parent(node, &details); m_hoverNode && !m_hoverNode->renderer(); m_hoverNode = NodeRenderingTraversal::parent(m_hoverNode.get(), &details)) { }
 
     // If the mouse cursor is not visible, do not clear existing
     // hover effects on the ancestors of |node| and do not invoke
@@ -3128,12 +3131,17 @@ void Document::hoveredNodeDetached(Node* node)
 
 void Document::activeChainNodeDetached(Node* node)
 {
-    if (!m_activeElement || (node != m_activeElement && (!m_activeElement->isTextNode() || node != m_activeElement->parentNode())))
+    if (!m_activeElement)
         return;
 
-    m_activeElement = node->parentElement();
-    while (m_activeElement && !m_activeElement->renderer())
-        m_activeElement = m_activeElement->parentElement();
+    NodeRenderingTraversal::ParentDetails details;
+    if (node != m_activeElement && (!m_activeElement->isTextNode() || node != NodeRenderingTraversal::parent(m_activeElement.get(), &details)))
+        return;
+
+    Node* activeNode = NodeRenderingTraversal::parent(node, &details);
+    for (; activeNode && activeNode->isElementNode() && !activeNode->renderer(); activeNode = NodeRenderingTraversal::parent(activeNode, &details)) { }
+
+    m_activeElement = activeNode && activeNode->isElementNode() ? toElement(activeNode) : 0;
 }
 
 const Vector<AnnotatedRegionValue>& Document::annotatedRegions() const
