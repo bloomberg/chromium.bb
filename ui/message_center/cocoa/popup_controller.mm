@@ -132,7 +132,10 @@ enum {
     boundsAnimation_.reset();
   }
   [super close];
-  [self release];
+  [self performSelectorOnMainThread:@selector(release)
+                         withObject:nil
+                      waitUntilDone:NO
+                              modes:@[ NSDefaultRunLoopMode ]];
 }
 
 - (MCNotificationController*)notificationController {
