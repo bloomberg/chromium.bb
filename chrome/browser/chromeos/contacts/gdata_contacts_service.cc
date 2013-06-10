@@ -20,7 +20,7 @@
 #include "base/timer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
-#include "chrome/browser/google_apis/gdata_contacts_operations.h"
+#include "chrome/browser/google_apis/gdata_contacts_requests.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/request_sender.h"
 #include "chrome/browser/google_apis/time_util.h"
@@ -420,16 +420,16 @@ struct ContactGroups {
 // This class handles a single request to download all of a user's contacts.
 //
 // First, the feed containing the user's contact groups is downloaded via
-// GetContactGroupsOperation and examined to find the ID for the "My Contacts"
+// GetContactGroupsRequest and examined to find the ID for the "My Contacts"
 // group (by default, the contacts API also returns suggested contacts).  The
 // group ID is cached in GDataContactsService so that this step can be skipped
 // by later DownloadContactRequests.
 //
-// Next, the contacts feed is downloaded via GetContactsOperation and parsed.
+// Next, the contacts feed is downloaded via GetContactsRequest and parsed.
 // Individual contacts::Contact objects are created using the data from the
 // feed.
 //
-// Finally, GetContactPhotoOperations are created and used to start downloading
+// Finally, GetContactPhotoRequests are created and used to start downloading
 // contacts' photos in parallel.  When all photos have been downloaded, the
 // contacts are passed to the passed-in callback.
 class GDataContactsService::DownloadContactsRequest {
@@ -478,8 +478,8 @@ class GDataContactsService::DownloadContactsRequest {
     if (!my_contacts_group_id_.empty()) {
       StartContactsDownload();
     } else {
-      google_apis::GetContactGroupsOperation* operation =
-          new google_apis::GetContactGroupsOperation(
+      google_apis::GetContactGroupsRequest* operation =
+          new google_apis::GetContactGroupsRequest(
               sender_,
               url_request_context_getter_,
               base::Bind(&DownloadContactsRequest::HandleGroupsFeedData,
@@ -552,7 +552,7 @@ class GDataContactsService::DownloadContactsRequest {
     }
   }
 
-  // Callback for GetContactGroupsOperation calls.  Starts downloading the
+  // Callback for GetContactGroupsRequest calls.  Starts downloading the
   // actual contacts after finding the "My Contacts" group ID.
   void HandleGroupsFeedData(google_apis::GDataErrorCode error,
                             scoped_ptr<base::Value> feed_data) {
@@ -586,8 +586,8 @@ class GDataContactsService::DownloadContactsRequest {
   // Starts a download of the contacts from the "My Contacts" group.
   void StartContactsDownload() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    google_apis::GetContactsOperation* operation =
-        new google_apis::GetContactsOperation(
+    google_apis::GetContactsRequest* operation =
+        new google_apis::GetContactsRequest(
             sender_,
             url_request_context_getter_,
             my_contacts_group_id_,
@@ -601,7 +601,7 @@ class GDataContactsService::DownloadContactsRequest {
     sender_->StartRequestWithRetry(operation);
   }
 
-  // Callback for GetContactsOperation calls.
+  // Callback for GetContactsRequest calls.
   void HandleContactsFeedData(google_apis::GDataErrorCode error,
                               scoped_ptr<base::Value> feed_data) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -744,7 +744,7 @@ class GDataContactsService::DownloadContactsRequest {
       VLOG(1) << "Starting download of photo " << url << " for "
               << contact->contact_id();
       sender_->StartRequestWithRetry(
-          new google_apis::GetContactPhotoOperation(
+          new google_apis::GetContactPhotoRequest(
               sender_,
               url_request_context_getter_,
               GURL(url),
@@ -755,7 +755,7 @@ class GDataContactsService::DownloadContactsRequest {
     }
   }
 
-  // Callback for GetContactPhotoOperation calls.  Updates the associated
+  // Callback for GetContactPhotoRequest calls.  Updates the associated
   // Contact and checks for completion.
   void HandlePhotoData(contacts::Contact* contact,
                        google_apis::GDataErrorCode error,

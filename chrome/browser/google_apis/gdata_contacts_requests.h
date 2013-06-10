@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GOOGLE_APIS_GDATA_CONTACTS_OPERATIONS_H_
-#define CHROME_BROWSER_GOOGLE_APIS_GDATA_CONTACTS_OPERATIONS_H_
+#ifndef CHROME_BROWSER_GOOGLE_APIS_GDATA_CONTACTS_REQUESTS_H_
+#define CHROME_BROWSER_GOOGLE_APIS_GDATA_CONTACTS_REQUESTS_H_
 
 #include <string>
 
@@ -15,16 +15,16 @@ class URLRequestContextGetter;
 
 namespace google_apis {
 
-//========================== GetContactGroupsOperation =========================
+//========================== GetContactGroupsRequest =========================
 
 // This class fetches a JSON feed containing a user's contact groups.
-class GetContactGroupsOperation : public GetDataRequest {
+class GetContactGroupsRequest : public GetDataRequest {
  public:
-  GetContactGroupsOperation(
+  GetContactGroupsRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GetDataCallback& callback);
-  virtual ~GetContactGroupsOperation();
+  virtual ~GetContactGroupsRequest();
 
   void set_feed_url_for_testing(const GURL& url) {
     feed_url_for_testing_ = url;
@@ -38,21 +38,21 @@ class GetContactGroupsOperation : public GetDataRequest {
   // If non-empty, URL of the feed to fetch.
   GURL feed_url_for_testing_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetContactGroupsOperation);
+  DISALLOW_COPY_AND_ASSIGN(GetContactGroupsRequest);
 };
 
-//============================ GetContactsOperation ============================
+//============================ GetContactsRequest ============================
 
 // This class fetches a JSON feed containing a user's contacts.
-class GetContactsOperation : public GetDataRequest {
+class GetContactsRequest : public GetDataRequest {
  public:
-  GetContactsOperation(
+  GetContactsRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const std::string& group_id,
       const base::Time& min_update_time,
       const GetDataCallback& callback);
-  virtual ~GetContactsOperation();
+  virtual ~GetContactsRequest();
 
   void set_feed_url_for_testing(const GURL& url) {
     feed_url_for_testing_ = url;
@@ -75,20 +75,20 @@ class GetContactsOperation : public GetDataRequest {
   // used to filter contacts.
   base::Time min_update_time_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetContactsOperation);
+  DISALLOW_COPY_AND_ASSIGN(GetContactsRequest);
 };
 
-//========================== GetContactPhotoOperation ==========================
+//========================== GetContactPhotoRequest ==========================
 
 // This class fetches a contact's photo.
-class GetContactPhotoOperation : public UrlFetchRequestBase {
+class GetContactPhotoRequest : public UrlFetchRequestBase {
  public:
-  GetContactPhotoOperation(
+  GetContactPhotoRequest(
       RequestSender* runner,
       net::URLRequestContextGetter* url_request_context_getter,
       const GURL& photo_url,
       const GetContentCallback& callback);
-  virtual ~GetContactPhotoOperation();
+  virtual ~GetContactPhotoRequest();
 
  protected:
   // Overridden from UrlFetchRequestBase.
@@ -103,9 +103,9 @@ class GetContactPhotoOperation : public UrlFetchRequestBase {
   // Callback to which the photo data is passed.
   GetContentCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(GetContactPhotoOperation);
+  DISALLOW_COPY_AND_ASSIGN(GetContactPhotoRequest);
 };
 
 }  // namespace google_apis
 
-#endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_CONTACTS_OPERATIONS_H_
+#endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_CONTACTS_REQUESTS_H_

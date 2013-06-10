@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google_apis/gdata_contacts_operations.h"
+#include "chrome/browser/google_apis/gdata_contacts_requests.h"
 
 #include "chrome/browser/google_apis/time_util.h"
 #include "googleurl/src/gurl.h"
@@ -34,26 +34,26 @@ const char kGetContactsUpdatedMinParam[] = "updated-min";
 
 }  // namespace
 
-//========================== GetContactGroupsOperation =========================
+//========================== GetContactGroupsRequest =========================
 
-GetContactGroupsOperation::GetContactGroupsOperation(
+GetContactGroupsRequest::GetContactGroupsRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GetDataCallback& callback)
     : GetDataRequest(runner, url_request_context_getter, callback) {
 }
 
-GetContactGroupsOperation::~GetContactGroupsOperation() {}
+GetContactGroupsRequest::~GetContactGroupsRequest() {}
 
-GURL GetContactGroupsOperation::GetURL() const {
+GURL GetContactGroupsRequest::GetURL() const {
   return !feed_url_for_testing_.is_empty() ?
          feed_url_for_testing_ :
          GURL(kGetContactGroupsURL);
 }
 
-//============================ GetContactsOperation ============================
+//============================ GetContactsRequest ============================
 
-GetContactsOperation::GetContactsOperation(
+GetContactsRequest::GetContactsRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const std::string& group_id,
@@ -64,9 +64,9 @@ GetContactsOperation::GetContactsOperation(
       min_update_time_(min_update_time) {
 }
 
-GetContactsOperation::~GetContactsOperation() {}
+GetContactsRequest::~GetContactsRequest() {}
 
-GURL GetContactsOperation::GetURL() const {
+GURL GetContactsRequest::GetURL() const {
   if (!feed_url_for_testing_.is_empty())
     return GURL(feed_url_for_testing_);
 
@@ -83,9 +83,9 @@ GURL GetContactsOperation::GetURL() const {
   return url;
 }
 
-//========================== GetContactPhotoOperation ==========================
+//========================== GetContactPhotoRequest ==========================
 
-GetContactPhotoOperation::GetContactPhotoOperation(
+GetContactPhotoRequest::GetContactPhotoRequest(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const GURL& photo_url,
@@ -95,13 +95,13 @@ GetContactPhotoOperation::GetContactPhotoOperation(
       callback_(callback) {
 }
 
-GetContactPhotoOperation::~GetContactPhotoOperation() {}
+GetContactPhotoRequest::~GetContactPhotoRequest() {}
 
-GURL GetContactPhotoOperation::GetURL() const {
+GURL GetContactPhotoRequest::GetURL() const {
   return photo_url_;
 }
 
-void GetContactPhotoOperation::ProcessURLFetchResults(
+void GetContactPhotoRequest::ProcessURLFetchResults(
     const net::URLFetcher* source) {
   GDataErrorCode code = GetErrorCode(source);
   scoped_ptr<std::string> data(new std::string);
@@ -110,7 +110,7 @@ void GetContactPhotoOperation::ProcessURLFetchResults(
   OnProcessURLFetchResultsComplete(code == HTTP_SUCCESS);
 }
 
-void GetContactPhotoOperation::RunCallbackOnPrematureFailure(
+void GetContactPhotoRequest::RunCallbackOnPrematureFailure(
     GDataErrorCode code) {
   scoped_ptr<std::string> data(new std::string);
   callback_.Run(code, data.Pass());
