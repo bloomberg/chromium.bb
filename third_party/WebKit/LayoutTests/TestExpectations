@@ -1755,7 +1755,6 @@ crbug.com/245520 [ Mac ] compositing/repaint/transform-style-change.html [ Image
 # Temporary expectations until I've fixed fast/hidpi
 Bug(jochen) virtual/gpu/fast/hidpi [ Slow ]
 
-
 crbug.com/247979 [ Mac Release ] inspector/elements/edit-dom-actions.html [ Slow Failure Pass ]
 crbug.com/247979 [ XP Release ] inspector/elements/edit-dom-actions.html [ Slow Pass Failure ]
 crbug.com/247979 [ Win7 Debug ] inspector/elements/edit-dom-actions.html [ Timeout ]
@@ -1784,12 +1783,13 @@ crbug.com/248081 [ Win7 Debug ] fast/forms/calendar-picker/month-picker-key-oper
 crbug.com/248081 [ Win7 Debug ] fast/forms/suggestion-picker/date-suggestion-picker-step-attribute.html [ Slow ]
 crbug.com/248081 [ Win ] virtual/gpu/fast/hidpi/image-set-background-dynamic.html [ Slow ]
 crbug.com/248081 [ Win ] virtual/gpu/fast/hidpi/image-set-border-image-dynamic.html [ Slow ]
-crbug.com/248081 [ Win7 Debug ] compositing/reflections/animation-inside-reflection.html [ Slow ]
 crbug.com/248067 storage/storageinfo-query-usage.html [ Pass Failure ]
 crbug.com/248067 storage/storagequota-query-usage.html [ Pass Failure ]
 crbug.com/248121 fast/events/frame-scroll-fake-mouse-move.html [ Pass Failure ]
 crbug.com/248121 fast/events/overflow-scroll-fake-mouse-move.html [ Pass Failure ]
 crbug.com/248128 inspector/console/console-url-and-line.html [ Pass Failure ]
+
+crbug.com/248407 [ Debug ] compositing/reflections/animation-inside-reflection.html [ Pass Timeout ]
 
 crbug.com/248146 [ Linux ] editing/selection/after-line-wrap.html [ ImageOnlyFailure Pass ]
 crbug.com/248146 [ Linux ] editing/style/create-block-for-style-012.html [ ImageOnlyFailure Pass ]
