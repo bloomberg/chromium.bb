@@ -255,11 +255,6 @@ const char kV3Dictionary[] = {
 };
 const int kV3DictionarySize = arraysize(kV3Dictionary);
 
-// Note: all protocol data structures are on-the-wire format.  That means that
-//       data is stored in network-normalized order.  Readers must use the
-//       accessors provided or call base::NetworkToHostX() functions.
-// TODO(hkhalil): remove above note.
-
 // Types of SPDY frames.
 enum SpdyFrameType {
   DATA = 0,
@@ -381,7 +376,6 @@ class SpdyFrameWithStreamIdIR : public SpdyFrameIR {
   virtual ~SpdyFrameWithStreamIdIR() {}
   SpdyStreamId stream_id() const { return stream_id_; }
   void set_stream_id(SpdyStreamId stream_id) {
-    // TODO(hkhalil): DCHECK_LT(0u, stream_id);
     DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
     stream_id_ = stream_id;
   }
