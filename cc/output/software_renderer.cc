@@ -33,8 +33,14 @@ namespace cc {
 
 namespace {
 
-bool IsScaleAndTranslate(const SkMatrix& matrix) {
-  return SkScalarNearlyZero(matrix[SkMatrix::kMSkewX]) &&
+static inline bool IsScalarNearlyInteger(SkScalar scalar) {
+  return SkScalarNearlyZero(scalar - SkScalarRound(scalar));
+}
+
+bool IsScaleAndIntegerTranslate(const SkMatrix& matrix) {
+  return IsScalarNearlyInteger(matrix[SkMatrix::kMTransX]) &&
+         IsScalarNearlyInteger(matrix[SkMatrix::kMTransY]) &&
+         SkScalarNearlyZero(matrix[SkMatrix::kMSkewX]) &&
          SkScalarNearlyZero(matrix[SkMatrix::kMSkewY]) &&
          SkScalarNearlyZero(matrix[SkMatrix::kMPersp0]) &&
          SkScalarNearlyZero(matrix[SkMatrix::kMPersp1]) &&
@@ -142,7 +148,7 @@ bool SoftwareRenderer::BindFramebufferToTexture(
                      target_rect,
                      gfx::Rect(target_rect.size()),
                      target_rect.size(),
-                     false);
+                     FlippedFramebuffer());
   return true;
 }
 
@@ -209,7 +215,7 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) {
   current_canvas_->setMatrix(sk_device_matrix);
 
   current_paint_.reset();
-  if (!IsScaleAndTranslate(sk_device_matrix)) {
+  if (!IsScaleAndIntegerTranslate(sk_device_matrix)) {
     // TODO(danakj): Until we can enable AA only on exterior edges of the
     // layer, disable AA if any interior edges are present. crbug.com/248175
     bool all_four_edges_are_exterior = quad->IsTopEdge() &&
