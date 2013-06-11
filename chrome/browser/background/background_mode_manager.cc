@@ -435,11 +435,6 @@ void BackgroundModeManager::OnProfileWillBeRemoved(
   }
 }
 
-void BackgroundModeManager::OnProfileWasRemoved(
-    const base::FilePath& profile_path,
-    const string16& profile_name) {
-}
-
 void BackgroundModeManager::OnProfileNameChanged(
     const base::FilePath& profile_path,
     const string16& old_profile_name) {
@@ -458,10 +453,6 @@ void BackgroundModeManager::OnProfileNameChanged(
   }
 }
 
-void BackgroundModeManager::OnProfileAvatarChanged(
-    const base::FilePath& profile_path) {
-
-}
 ///////////////////////////////////////////////////////////////////////////////
 //  BackgroundModeManager::BackgroundModeData, ui::SimpleMenuModel overrides
 bool BackgroundModeManager::IsCommandIdChecked(

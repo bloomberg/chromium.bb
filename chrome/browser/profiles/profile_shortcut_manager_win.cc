@@ -612,10 +612,6 @@ void ProfileShortcutManagerWin::OnProfileAdded(
   }
 }
 
-void ProfileShortcutManagerWin::OnProfileWillBeRemoved(
-    const base::FilePath& profile_path) {
-}
-
 void ProfileShortcutManagerWin::OnProfileWasRemoved(
     const base::FilePath& profile_path,
     const string16& profile_name) {

@@ -721,19 +721,6 @@ void BrowserCommandController::OnProfileWasRemoved(
   UpdateCommandsForMultipleProfiles();
 }
 
-void BrowserCommandController::OnProfileWillBeRemoved(
-    const base::FilePath& profile_path) {
-}
-
-void BrowserCommandController::OnProfileNameChanged(
-    const base::FilePath& profile_path,
-    const string16& old_profile_name) {
-}
-
-void BrowserCommandController::OnProfileAvatarChanged(
-    const base::FilePath& profile_path) {
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController, SigninPrefObserver implementation:
 

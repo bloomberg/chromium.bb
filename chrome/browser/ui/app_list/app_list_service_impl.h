@@ -78,14 +78,7 @@ class AppListServiceImpl : public AppListService,
   virtual Profile* GetCurrentAppListProfile() OVERRIDE;
 
   // ProfileInfoCacheObserver overrides:
-  virtual void OnProfileAdded(const base::FilePath& profilePath) OVERRIDE;
   virtual void OnProfileWillBeRemoved(
-      const base::FilePath& profile_path) OVERRIDE;
-  virtual void OnProfileWasRemoved(const base::FilePath& profile_path,
-                                   const string16& profile_name) OVERRIDE;
-  virtual void OnProfileNameChanged(const base::FilePath& profile_path,
-                                    const string16& profile_name) OVERRIDE;
-  virtual void OnProfileAvatarChanged(
       const base::FilePath& profile_path) OVERRIDE;
 
   // content::NotificationObserver

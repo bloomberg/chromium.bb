@@ -51,19 +51,11 @@ class ProfileRemovalObserver : public ProfileInfoCacheObserver {
   std::string last_used_profile_name() { return last_used_profile_name_; }
 
   // ProfileInfoCacheObserver overrides:
-  virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE {}
   virtual void OnProfileWillBeRemoved(
       const base::FilePath& profile_path) OVERRIDE {
     last_used_profile_name_ = g_browser_process->local_state()->GetString(
         prefs::kProfileLastUsed);
   }
-  virtual void OnProfileWasRemoved(const base::FilePath& profile_path,
-                                   const string16& profile_name) OVERRIDE {}
-  virtual void OnProfileNameChanged(const base::FilePath& profile_path,
-                                    const string16& old_profile_name)
-      OVERRIDE {}
-  virtual void OnProfileAvatarChanged(const base::FilePath& profile_path)
-      OVERRIDE {}
 
  private:
   std::string last_used_profile_name_;

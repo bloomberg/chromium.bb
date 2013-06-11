@@ -137,17 +137,6 @@ AppListControllerDelegate* AppListServiceImpl::CreateControllerDelegate() {
 
 void AppListServiceImpl::OnSigninStatusChanged() {}
 
-void AppListServiceImpl::OnProfileAdded(const base::FilePath& profilePath) {}
-
-void AppListServiceImpl::OnProfileWasRemoved(
-    const base::FilePath& profile_path, const string16& profile_name) {}
-
-void AppListServiceImpl::OnProfileNameChanged(
-    const base::FilePath& profile_path, const string16& profile_name) {}
-
-void AppListServiceImpl::OnProfileAvatarChanged(
-    const base::FilePath& profile_path) {}
-
 // We need to watch for profile removal to keep kAppListProfile updated.
 void AppListServiceImpl::OnProfileWillBeRemoved(
     const base::FilePath& profile_path) {

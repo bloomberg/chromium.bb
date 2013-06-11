@@ -56,8 +56,6 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
 
   // ProfileInfoCacheObserver implementation:
   virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE;
-  virtual void OnProfileWillBeRemoved(
-      const base::FilePath& profile_path) OVERRIDE;
   virtual void OnProfileWasRemoved(const base::FilePath& profile_path,
                                    const string16& profile_name) OVERRIDE;
   virtual void OnProfileNameChanged(const base::FilePath& profile_path,
