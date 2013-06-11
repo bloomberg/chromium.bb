@@ -35,13 +35,13 @@
         '<(DEPTH)/ui/ui.gyp:ui_resources',
         '<(DEPTH)/url/url.gyp:url_lib',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+        '<(DEPTH)/webkit/base/webkit_base.gyp:webkit_base',
         '<(DEPTH)/webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
         '<(DEPTH)/webkit/plugins/webkit_plugins.gyp:plugins_common',
         '<(DEPTH)/webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
+        '<(DEPTH)/webkit/storage_common.gyp:webkit_storage_common',
         'glue_common',
-        'webkit_base',
         'webkit_common',
-        'webkit_storage',
       ],
       'sources': [
         # This list contains all .h, .cc, and .mm files in glue except for
