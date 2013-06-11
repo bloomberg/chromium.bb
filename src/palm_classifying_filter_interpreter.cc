@@ -33,7 +33,8 @@ PalmClassifyingFilterInterpreter::PalmClassifyingFilterInterpreter(
                               8.0),
       palm_pointing_max_reverse_dist_(prop_reg,
                                       "Palm Pointing Max Reverse Move Distance",
-                                      0.3)
+                                      0.3),
+      palm_split_max_distance_(prop_reg, "Palm Split Maximum Distance", 4.0)
 {
   InitName();
   requires_metrics_ = true;
@@ -130,10 +131,12 @@ bool PalmClassifyingFilterInterpreter::FingerNearOtherFinger(
     const FingerState& other_fs = hwstate.fingers[i];
     if (other_fs.tracking_id == fs.tracking_id)
       continue;
-    bool too_close_to_other_finger =
+    bool close_enough_together =
         metrics_->CloseEnoughToGesture(Vector2(fs), Vector2(other_fs)) &&
         !SetContainsValue(palm_, other_fs.tracking_id);
-    if (too_close_to_other_finger) {
+    bool too_close_together = DistSq(fs, other_fs) <
+        palm_split_max_distance_.val_ * palm_split_max_distance_.val_;
+    if (close_enough_together && !too_close_together) {
       was_near_other_fingers_.insert(fs.tracking_id);
       return true;
     }

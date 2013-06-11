@@ -150,6 +150,10 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
   // than palm_pointing_max_reverse_dist_ in the opposite direction.
   DoubleProperty palm_pointing_min_dist_;
   DoubleProperty palm_pointing_max_reverse_dist_;
+  // If a palm splits right on the edge, sometimes the pressure readings aren't
+  // high enough to identify the palm.  If two fingers on the edge of the pad
+  // are closer together than this value, then they are likely a split palm.
+  DoubleProperty palm_split_max_distance_;
 
   DISALLOW_COPY_AND_ASSIGN(PalmClassifyingFilterInterpreter);
 };
