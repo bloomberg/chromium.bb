@@ -5,7 +5,7 @@
 #include "net/cookies/cookie_constants.h"
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 namespace net {
 

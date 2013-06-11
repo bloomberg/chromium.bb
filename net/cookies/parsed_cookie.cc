@@ -46,7 +46,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 // TODO(jww): We are collecting several UMA statistics in this file, and they
 // relate to http://crbug.com/238041. We are measuring stats related to control

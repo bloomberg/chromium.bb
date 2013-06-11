@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/sha1.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "crypto/sha2.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"

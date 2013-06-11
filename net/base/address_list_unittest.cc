@@ -4,7 +4,7 @@
 
 #include "net/base/address_list.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "net/base/net_util.h"
 #include "net/base/sys_addrinfo.h"

@@ -5,7 +5,7 @@
 #include "net/cert/mock_cert_verifier.h"
 
 #include "base/memory/ref_counted.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verify_result.h"

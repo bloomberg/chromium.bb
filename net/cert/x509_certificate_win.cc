@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/sha1.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "crypto/capi_util.h"
 #include "crypto/rsa_private_key.h"

@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "net/base/net_export.h"
 #include "net/cert/cert_type.h"
 #include "net/cert/x509_certificate.h"

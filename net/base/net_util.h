@@ -16,12 +16,12 @@
 #endif
 
 #include <list>
-#include <string>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "net/base/address_family.h"
 #include "net/base/escape.h"
 #include "net/base/net_export.h"

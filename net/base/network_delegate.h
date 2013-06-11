@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/auth.h"
 #include "net/base/completion_callback.h"

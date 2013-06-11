@@ -20,7 +20,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/pickle.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"

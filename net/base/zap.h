@@ -6,7 +6,7 @@
 #define NET_BASE_ZAP_H_
 
 #include <string>
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace net {
 

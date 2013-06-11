@@ -17,7 +17,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/time.h"
 #include "crypto/nss_util.h"
 #include "crypto/rsa_private_key.h"

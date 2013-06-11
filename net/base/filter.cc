@@ -5,7 +5,7 @@
 #include "net/base/filter.h"
 
 #include "base/files/file_path.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "net/base/gzip_filter.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_util.h"
