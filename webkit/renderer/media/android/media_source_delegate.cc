@@ -338,6 +338,8 @@ void MediaSourceDelegate::OnMediaConfigRequest() {
 }
 
 void MediaSourceDelegate::NotifyDemuxerReady(const std::string& key_system) {
+  if (!demuxer_)
+    return;
   MediaPlayerHostMsg_DemuxerReady_Params params;
   DemuxerStream* audio_stream = demuxer_->GetStream(DemuxerStream::AUDIO);
   if (audio_stream) {
