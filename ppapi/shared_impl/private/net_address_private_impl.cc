@@ -560,7 +560,6 @@ bool NetAddressPrivateImpl::DescribeNetAddressPrivateAsIPv4Address(
                  mismatched_IPv4_address_size);
   memcpy(ipv4_addr->addr, net_addr->address, kIPv4AddressSize);
 
-  ipv4_addr->unused_padding = 0;
   return true;
 }
 
@@ -581,7 +580,6 @@ bool NetAddressPrivateImpl::DescribeNetAddressPrivateAsIPv6Address(
                  mismatched_IPv6_address_size);
   memcpy(ipv6_addr->addr, net_addr->address, kIPv6AddressSize);
 
-  ipv6_addr->unused_padding = 0;
   return true;
 }
 

@@ -30,16 +30,12 @@ enum PP_NetAddress_Family_Dev {
 /**
  * All members are expressed in network byte order.
  */
-[assert_size(8)]
+[assert_size(6)]
 struct PP_NetAddress_IPv4_Dev {
   /**
    * Port number.
    */
   uint16_t port;
-  /**
-   * Padding that makes the structure size consistent across compilers.
-   */
-  uint16_t unused_padding;
   /**
    * IPv4 address.
    */
@@ -49,16 +45,12 @@ struct PP_NetAddress_IPv4_Dev {
 /**
  * All members are expressed in network byte order.
  */
-[assert_size(20)]
+[assert_size(18)]
 struct PP_NetAddress_IPv6_Dev {
   /**
    * Port number.
    */
   uint16_t port;
-  /**
-   * Padding that makes the structure size consistent across compilers.
-   */
-  uint16_t unused_padding;
   /**
    * IPv6 address.
    */

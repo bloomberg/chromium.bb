@@ -58,7 +58,7 @@ void TestNetAddress::RunTests(const std::string& filter) {
 }
 
 std::string TestNetAddress::TestIPv4Address() {
-  PP_NetAddress_IPv4_Dev ipv4_addr = { ConvertToNetEndian16(80), 0,
+  PP_NetAddress_IPv4_Dev ipv4_addr = { ConvertToNetEndian16(80),
                                        { 127, 0, 0, 1 } };
   NetAddress_Dev net_addr(instance_, ipv4_addr);
   ASSERT_NE(0, net_addr.pp_resource());
@@ -77,7 +77,7 @@ std::string TestNetAddress::TestIPv4Address() {
 
 std::string TestNetAddress::TestIPv6Address() {
   PP_NetAddress_IPv6_Dev ipv6_addr = {
-    ConvertToNetEndian16(1024), 0,
+    ConvertToNetEndian16(1024),
     { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 }
   };
 
@@ -99,13 +99,13 @@ std::string TestNetAddress::TestIPv6Address() {
 std::string TestNetAddress::TestDescribeAsString() {
   {
     // Test describing IPv4 addresses.
-    PP_NetAddress_IPv4_Dev ipv4_addr1 = { ConvertToNetEndian16(1234), 0,
+    PP_NetAddress_IPv4_Dev ipv4_addr1 = { ConvertToNetEndian16(1234),
                                           { 127, 0, 0, 1 } };
     NetAddress_Dev addr1(instance_, ipv4_addr1);
     ASSERT_EQ("127.0.0.1", addr1.DescribeAsString(PP_FALSE).AsString());
     ASSERT_EQ("127.0.0.1:1234", addr1.DescribeAsString(PP_TRUE).AsString());
 
-    PP_NetAddress_IPv4_Dev ipv4_addr2 = { ConvertToNetEndian16(80), 0,
+    PP_NetAddress_IPv4_Dev ipv4_addr2 = { ConvertToNetEndian16(80),
                                           { 192, 168, 0, 2 } };
     NetAddress_Dev addr2(instance_, ipv4_addr2);
     ASSERT_EQ("192.168.0.2", addr2.DescribeAsString(PP_FALSE).AsString());

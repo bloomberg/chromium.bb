@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_net_address_dev.idl modified Thu Jun 06 16:03:07 2013. */
+/* From dev/ppb_net_address_dev.idl modified Mon Jun 10 17:42:43 2013. */
 
 #ifndef PPAPI_C_DEV_PPB_NET_ADDRESS_DEV_H_
 #define PPAPI_C_DEV_PPB_NET_ADDRESS_DEV_H_
@@ -60,15 +60,11 @@ struct PP_NetAddress_IPv4_Dev {
    */
   uint16_t port;
   /**
-   * Padding that makes the structure size consistent across compilers.
-   */
-  uint16_t unused_padding;
-  /**
    * IPv4 address.
    */
   uint8_t addr[4];
 };
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_NetAddress_IPv4_Dev, 8);
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_NetAddress_IPv4_Dev, 6);
 
 /**
  * All members are expressed in network byte order.
@@ -79,15 +75,11 @@ struct PP_NetAddress_IPv6_Dev {
    */
   uint16_t port;
   /**
-   * Padding that makes the structure size consistent across compilers.
-   */
-  uint16_t unused_padding;
-  /**
    * IPv6 address.
    */
   uint8_t addr[16];
 };
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_NetAddress_IPv6_Dev, 20);
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_NetAddress_IPv6_Dev, 18);
 /**
  * @}
  */
