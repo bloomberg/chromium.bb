@@ -464,32 +464,21 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
  private:
   friend class base::RefCounted<SpdySession>;
   friend class SpdyStreamRequest;
-  friend class SpdySessionSpdy3Test;
+  friend class SpdySessionTest;
 
   // Allow tests to access our innards for testing purposes.
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy2Test, ClientPing);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy2Test, FailedPing);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy2Test, GetActivePushStream);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy2Test, DeleteExpiredPushStreams);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy2Test, ProtocolNegotiation);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy2Test, ClearSettings);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, ClientPing);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, FailedPing);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, GetActivePushStream);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, DeleteExpiredPushStreams);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, ClearSettings);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, ProtocolNegotiation);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, ProtocolNegotiation31);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, ProtocolNegotiation4);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, AdjustRecvWindowSize31);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, AdjustSendWindowSize31);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test,
-                           SessionFlowControlInactiveStream31);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test,
-                           SessionFlowControlNoReceiveLeaks31);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test,
-                           SessionFlowControlNoSendLeaks31);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, ClientPing);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, FailedPing);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, GetActivePushStream);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, DeleteExpiredPushStreams);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, ProtocolNegotiation);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, ClearSettings);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, AdjustRecvWindowSize);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, AdjustSendWindowSize);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlInactiveStream);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlNoReceiveLeaks);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlNoSendLeaks);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlEndToEnd);
 
   typedef std::deque<SpdyStreamRequest*> PendingStreamRequestQueue;
   typedef std::set<SpdyStreamRequest*> PendingStreamRequestCompletionSet;
