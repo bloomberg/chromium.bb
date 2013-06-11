@@ -91,6 +91,7 @@ class ExtensionInstallPrompt
     string16 GetPermissionsHeading() const;
     string16 GetOAuthHeading() const;
     string16 GetRetainedFilesHeading() const;
+    bool ShouldShowPermissions() const;
 
     // Getters for webstore metadata. Only populated when the type is
     // INLINE_INSTALL_PROMPT.

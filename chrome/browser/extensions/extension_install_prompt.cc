@@ -319,6 +319,10 @@ string16 ExtensionInstallPrompt::Prompt::GetRetainedFilesHeading() const {
   return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_RETAINED_FILES);
 }
 
+bool ExtensionInstallPrompt::Prompt::ShouldShowPermissions() const {
+  return GetPermissionCount() > 0 || type_ == POST_INSTALL_PERMISSIONS_PROMPT;
+}
+
 void ExtensionInstallPrompt::Prompt::AppendRatingStars(
     StarAppender appender, void* data) const {
   CHECK(appender);

@@ -4998,6 +4998,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_CAN_ACCESS" desc="Second line in the content area of the extension or app permissions view dialog. Note that the exact wording is important. This should mean that the extension _can now_ access the listed privileges, because it has already been installed. This message appeared because the user must approve new permissions of the extension or app.">
         It can:
       </message>
+      <message name="IDS_EXTENSION_NO_SPECIAL_PERMISSIONS" desc="Shown when the app/extension requires no special permission">
+        Has no special permissions.
+      </message>
 
       <message name="IDS_EXTENSION_PERMISSION_LINE" desc="Template for item in list of privileges that an extension or app has">
         • <ph name="PERMISSION">$1<ex>Access your data on all websites</ex></ph>

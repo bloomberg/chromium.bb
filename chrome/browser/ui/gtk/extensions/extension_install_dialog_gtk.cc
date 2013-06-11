@@ -112,7 +112,7 @@ ExtensionInstallDialog::ExtensionInstallDialog(
     : navigator_(show_params.navigator),
       delegate_(delegate),
       dialog_(NULL) {
-  bool show_permissions = prompt.GetPermissionCount() > 0;
+  bool show_permissions = prompt.ShouldShowPermissions();
   bool show_oauth_issues = prompt.GetOAuthIssueCount() > 0;
   bool show_retained_files = prompt.GetRetainedFileCount() > 0;
   bool is_inline_install =
@@ -266,16 +266,24 @@ ExtensionInstallDialog::ExtensionInstallDialog(
       permissions_container = left_column_area;
     }
 
-    GtkWidget* permissions_header = gtk_util::CreateBoldLabel(
-        UTF16ToUTF8(prompt.GetPermissionsHeading()).c_str());
-    gtk_util::SetLabelWidth(permissions_header, left_column_min_width);
-    gtk_box_pack_start(GTK_BOX(permissions_container), permissions_header,
-                       FALSE, FALSE, 0);
+    if (prompt.GetPermissionCount() > 0) {
+      GtkWidget* permissions_header = gtk_util::CreateBoldLabel(
+          UTF16ToUTF8(prompt.GetPermissionsHeading()).c_str());
+      gtk_util::SetLabelWidth(permissions_header, left_column_min_width);
+      gtk_box_pack_start(GTK_BOX(permissions_container), permissions_header,
+                         FALSE, FALSE, 0);
 
-    for (size_t i = 0; i < prompt.GetPermissionCount(); ++i) {
-      std::string permission = l10n_util::GetStringFUTF8(
-          IDS_EXTENSION_PERMISSION_LINE, prompt.GetPermission(i));
-      GtkWidget* permission_label = gtk_label_new(permission.c_str());
+      for (size_t i = 0; i < prompt.GetPermissionCount(); ++i) {
+        std::string permission = l10n_util::GetStringFUTF8(
+            IDS_EXTENSION_PERMISSION_LINE, prompt.GetPermission(i));
+        GtkWidget* permission_label = gtk_label_new(permission.c_str());
+        gtk_util::SetLabelWidth(permission_label, left_column_min_width);
+        gtk_box_pack_start(GTK_BOX(permissions_container), permission_label,
+                           FALSE, FALSE, kPermissionsPadding);
+      }
+    } else {
+      GtkWidget* permission_label = gtk_label_new(l10n_util::GetStringUTF8(
+          IDS_EXTENSION_NO_SPECIAL_PERMISSIONS).c_str());
       gtk_util::SetLabelWidth(permission_label, left_column_min_width);
       gtk_box_pack_start(GTK_BOX(permissions_container), permission_label,
                          FALSE, FALSE, kPermissionsPadding);
