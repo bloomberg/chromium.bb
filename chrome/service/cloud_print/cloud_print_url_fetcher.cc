@@ -4,7 +4,7 @@
 
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/cloud_print/cloud_print_helpers.h"

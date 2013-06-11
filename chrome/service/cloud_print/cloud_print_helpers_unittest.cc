@@ -5,7 +5,7 @@
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 
 #include "base/md5.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "chrome/common/chrome_version_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
