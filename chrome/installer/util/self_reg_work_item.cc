@@ -5,8 +5,8 @@
 #include "chrome/installer/util/self_reg_work_item.h"
 
 #include "base/logging.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/installer/util/logging_installer.h"
 
 // Default registration export names.

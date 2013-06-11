@@ -5,7 +5,7 @@
 #include "chrome/installer/util/installation_state.h"
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/google_update_constants.h"

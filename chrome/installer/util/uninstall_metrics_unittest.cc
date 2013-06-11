@@ -8,7 +8,7 @@
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace installer {

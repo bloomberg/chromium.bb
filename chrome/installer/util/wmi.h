@@ -20,9 +20,9 @@
 #ifndef CHROME_INSTALLER_UTIL_WMI_H_
 #define CHROME_INSTALLER_UTIL_WMI_H_
 
-#include "base/string16.h"
 #include <string>
 #include <wbemidl.h>
+#include "base/strings/string16.h"
 
 namespace installer {
 

@@ -11,7 +11,7 @@
 #include <functional>
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/win/i18n.h"
 #include "chrome/installer/util/google_update_settings.h"
 

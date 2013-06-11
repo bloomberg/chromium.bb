@@ -8,7 +8,7 @@
 #ifndef CHROME_INSTALLER_UTIL_USER_EXPERIMENT_H_
 #define CHROME_INSTALLER_UTIL_USER_EXPERIMENT_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/installer/util/util_constants.h"
 
 class CommandLine;

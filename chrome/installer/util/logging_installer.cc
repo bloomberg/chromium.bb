@@ -13,7 +13,7 @@
 #include "base/logging_win.h"
 #include "base/path_service.h"
 #include "base/platform_file.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/installer/util/master_preferences.h"
