@@ -2905,7 +2905,7 @@ bool GetDriveConnectionStateFunction::RunImpl() {
       drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
 
   bool ready = integration_service &&
-      integration_service->drive_service()->CanStartOperation();
+      integration_service->drive_service()->CanSendRequest();
   bool is_connection_cellular =
       net::NetworkChangeNotifier::IsConnectionCellular(
           net::NetworkChangeNotifier::GetConnectionType());

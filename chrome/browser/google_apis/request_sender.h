@@ -43,8 +43,8 @@ class RequestSender {
   virtual ~RequestSender();
 
   AuthService* auth_service() { return auth_service_.get(); }
-  RequestRegistry* operation_registry() {
-    return operation_registry_.get();
+  RequestRegistry* request_registry() {
+    return request_registry_.get();
   }
 
   // Prepares the object for use.
@@ -72,7 +72,7 @@ class RequestSender {
   Profile* profile_;  // Not owned.
 
   scoped_ptr<AuthService> auth_service_;
-  scoped_ptr<RequestRegistry> operation_registry_;
+  scoped_ptr<RequestRegistry> request_registry_;
   const std::string custom_user_agent_;
 
   // Note: This should remain the last member so it'll be destroyed and

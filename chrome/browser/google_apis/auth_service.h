@@ -67,7 +67,8 @@ class AuthService : public AuthServiceInterface,
   static bool CanAuthenticate(Profile* profile);
 
  private:
-  // Callback for AuthOperation (InternalAuthStatusCallback).
+  // Called when authentication request from StartAuthentication() is
+  // completed.
   void OnAuthCompleted(const AuthStatusCallback& callback,
                        GDataErrorCode error,
                        const std::string& access_token);

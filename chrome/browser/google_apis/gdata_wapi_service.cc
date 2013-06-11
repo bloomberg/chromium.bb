@@ -140,7 +140,7 @@ void GDataWapiService::RemoveObserver(DriveServiceObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool GDataWapiService::CanStartOperation() const {
+bool GDataWapiService::CanSendRequest() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   return HasRefreshToken();
@@ -153,7 +153,7 @@ void GDataWapiService::CancelAll() {
 
 bool GDataWapiService::CancelForFilePath(const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return sender_->operation_registry()->CancelForFilePath(file_path);
+  return sender_->request_registry()->CancelForFilePath(file_path);
 }
 
 std::string GDataWapiService::CanonicalizeResourceId(
@@ -167,7 +167,7 @@ std::string GDataWapiService::GetRootResourceId() const {
 
 // Because GData WAPI support is expected to be gone somehow soon by migration
 // to the Drive API v2, so we'll reuse GetResourceListRequest to implement
-// following methods, instead of cleaning the operation class.
+// following methods, instead of cleaning the request class.
 
 void GDataWapiService::GetAllResourceList(
     const GetResourceListCallback& callback) {
@@ -596,9 +596,9 @@ void GDataWapiService::ClearRefreshToken() {
 
 void GDataWapiService::OnOAuth2RefreshTokenChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (CanStartOperation()) {
+  if (CanSendRequest()) {
     FOR_EACH_OBSERVER(
-        DriveServiceObserver, observers_, OnReadyToPerformOperations());
+        DriveServiceObserver, observers_, OnReadyToSendRequests());
   } else if (!HasRefreshToken()) {
     FOR_EACH_OBSERVER(
         DriveServiceObserver, observers_, OnRefreshTokenInvalid());

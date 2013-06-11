@@ -44,9 +44,9 @@ class FakeGetDataRequest : public GetDataRequest {
 
 }  // namespace
 
-class BaseOperationsTest : public testing::Test {
+class BaseRequestsTest : public testing::Test {
  public:
-  BaseOperationsTest()
+  BaseRequestsTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         parse_json_callback_called_(false),
         get_data_callback_called_(false) {
@@ -87,9 +87,9 @@ class BaseOperationsTest : public testing::Test {
   bool get_data_callback_called_;
 };
 
-TEST_F(BaseOperationsTest, ParseValidJson) {
+TEST_F(BaseRequestsTest, ParseValidJson) {
   ParseJson(kValidJsonString,
-            base::Bind(&BaseOperationsTest::ParseJsonCallback,
+            base::Bind(&BaseRequestsTest::ParseJsonCallback,
                        base::Unretained(this)));
   // Should wait for a blocking pool task, as the JSON parsing is done in the
   // blocking pool.
@@ -106,9 +106,9 @@ TEST_F(BaseOperationsTest, ParseValidJson) {
   EXPECT_EQ(123, int_value);
 }
 
-TEST_F(BaseOperationsTest, ParseInvalidJson) {
+TEST_F(BaseRequestsTest, ParseInvalidJson) {
   ParseJson(kInvalidJsonString,
-            base::Bind(&BaseOperationsTest::ParseJsonCallback,
+            base::Bind(&BaseRequestsTest::ParseJsonCallback,
                        base::Unretained(this)));
   // Should wait for a blocking pool task, as the JSON parsing is done in the
   // blocking pool.
@@ -118,15 +118,15 @@ TEST_F(BaseOperationsTest, ParseInvalidJson) {
   ASSERT_FALSE(parse_json_result_.get());
 }
 
-TEST_F(BaseOperationsTest, GetDataRequestParseValidResponse) {
-  FakeGetDataRequest* get_data_operation =
+TEST_F(BaseRequestsTest, GetDataRequestParseValidResponse) {
+  FakeGetDataRequest* get_data_request =
       new FakeGetDataRequest(
           runner_.get(),
-          base::Bind(&BaseOperationsTest::GetDataCallback,
+          base::Bind(&BaseRequestsTest::GetDataCallback,
                      base::Unretained(this)));
-  get_data_operation->NotifyStart();
+  get_data_request->NotifyStart();
 
-  get_data_operation->ParseResponse(HTTP_SUCCESS, kValidJsonString);
+  get_data_request->ParseResponse(HTTP_SUCCESS, kValidJsonString);
   // Should wait for a blocking pool task, as the JSON parsing is done in the
   // blocking pool.
   test_util::RunBlockingPoolTask();
@@ -136,15 +136,15 @@ TEST_F(BaseOperationsTest, GetDataRequestParseValidResponse) {
   ASSERT_TRUE(get_data_result_value_.get());
 }
 
-TEST_F(BaseOperationsTest, GetDataRequestParseInvalidResponse) {
-  FakeGetDataRequest* get_data_operation =
+TEST_F(BaseRequestsTest, GetDataRequestParseInvalidResponse) {
+  FakeGetDataRequest* get_data_request =
       new FakeGetDataRequest(
           runner_.get(),
-          base::Bind(&BaseOperationsTest::GetDataCallback,
+          base::Bind(&BaseRequestsTest::GetDataCallback,
                      base::Unretained(this)));
-  get_data_operation->NotifyStart();
+  get_data_request->NotifyStart();
 
-  get_data_operation->ParseResponse(HTTP_SUCCESS, kInvalidJsonString);
+  get_data_request->ParseResponse(HTTP_SUCCESS, kInvalidJsonString);
   // Should wait for a blocking pool task, as the JSON parsing is done in the
   // blocking pool.
   test_util::RunBlockingPoolTask();

@@ -32,7 +32,7 @@ class RequestSender;
 
 // This class provides documents feed service calls for WAPI (codename for
 // DocumentsList API).
-// Details of API call are abstracted in each operation class and this class
+// Details of API call are abstracted in each request class and this class
 // works as a thin wrapper for the API.
 class GDataWapiService : public DriveServiceInterface,
                          public AuthServiceObserver {
@@ -52,7 +52,7 @@ class GDataWapiService : public DriveServiceInterface,
   virtual void Initialize(Profile* profile) OVERRIDE;
   virtual void AddObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DriveServiceObserver* observer) OVERRIDE;
-  virtual bool CanStartOperation() const OVERRIDE;
+  virtual bool CanSendRequest() const OVERRIDE;
   virtual void CancelAll() OVERRIDE;
   virtual bool CancelForFilePath(const base::FilePath& file_path) OVERRIDE;
   virtual std::string CanonicalizeResourceId(

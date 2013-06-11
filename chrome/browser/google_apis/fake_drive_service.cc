@@ -197,7 +197,7 @@ void FakeDriveService::RemoveObserver(DriveServiceObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-bool FakeDriveService::CanStartOperation() const {
+bool FakeDriveService::CanSendRequest() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return true;
 }
@@ -1391,7 +1391,7 @@ void FakeDriveService::GetResourceListInternal(
     entries->erase(entries->begin() + max_results, entries->end());
     // Adds the next URL.
     // Here, we embed information which is needed for continuing the
-    // GetResourceList operation in the next invocation into url query
+    // GetResourceList request in the next invocation into url query
     // parameters.
     GURL next_url(base::StringPrintf(
         "http://localhost/?start-offset=%d&max-results=%d",

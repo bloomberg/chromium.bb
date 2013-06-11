@@ -7,9 +7,6 @@
 
 #include <string>
 
-// TODO(kochi): Further split gdata_operations.h and include only necessary
-// headers. http://crbug.com/141469
-// DownloadActionCallback
 #include "chrome/browser/google_apis/base_requests.h"
 
 class Profile;
@@ -24,8 +21,8 @@ class ResourceList;
 // Observer interface for DriveServiceInterface.
 class DriveServiceObserver {
  public:
-  // Triggered when the service gets ready to perform operations.
-  virtual void OnReadyToPerformOperations() {}
+  // Triggered when the service gets ready to send requests.
+  virtual void OnReadyToSendRequests() {}
 
   // Called when the refresh token was found to be invalid.
   virtual void OnRefreshTokenInvalid() {}
@@ -85,14 +82,14 @@ class DriveServiceInterface {
   // Removes an observer.
   virtual void RemoveObserver(DriveServiceObserver* observer) = 0;
 
-  // True if ready to start operations.
-  virtual bool CanStartOperation() const = 0;
+  // True if ready to send requests.
+  virtual bool CanSendRequest() const = 0;
 
-  // Cancels all in-flight operations.
+  // Cancels all in-flight requests.
   virtual void CancelAll() = 0;
 
-  // Cancels ongoing operation for a given virtual |file_path|. Returns true if
-  // the operation was found and canceled.
+  // Cancels ongoing request for a given virtual |file_path|. Returns true if
+  // the request was found and canceled.
   virtual bool CancelForFilePath(const base::FilePath& file_path) = 0;
 
   // Converts the given resource ID into the desired format.
@@ -177,7 +174,7 @@ class DriveServiceInterface {
       int64 start_changestamp,
       const GetResourceListCallback& callback) = 0;
 
-  // Operations returning GetResourceList may be paged. In such a case,
+  // Requests returning GetResourceList may be paged. In such a case,
   // a URL to fetch remaining result is returned. The URL can be used for this
   // method. |callback| will be called upon completion.
   //
@@ -216,7 +213,7 @@ class DriveServiceInterface {
   // Makes a copy of a resource with |resource_id|.
   // The new resource will be put under a directory with |parent_resource_id|,
   // and it'll be named |new_name|.
-  // This operation is supported only on DriveAPIService, because GData WAPI
+  // This request is supported only on DriveAPIService, because GData WAPI
   // doesn't support the function unfortunately.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.

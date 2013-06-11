@@ -160,7 +160,7 @@ void ParseAppListAndRun(const google_apis::GetAppListCallback& callback,
   callback.Run(error, app_list.Pass());
 }
 
-// Parses the FileResource value to ResourceEntry for upload range operation,
+// Parses the FileResource value to ResourceEntry for upload range request,
 // and runs |callback| on the UI thread.
 void ParseResourceEntryForUploadRangeAndRun(
     const UploadRangeCallback& callback,
@@ -261,7 +261,7 @@ void DriveAPIService::RemoveObserver(DriveServiceObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool DriveAPIService::CanStartOperation() const {
+bool DriveAPIService::CanSendRequest() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   return HasRefreshToken();
@@ -274,7 +274,7 @@ void DriveAPIService::CancelAll() {
 
 bool DriveAPIService::CancelForFilePath(const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return sender_->operation_registry()->CancelForFilePath(file_path);
+  return sender_->request_registry()->CancelForFilePath(file_path);
 }
 
 std::string DriveAPIService::CanonicalizeResourceId(
@@ -738,9 +738,9 @@ void DriveAPIService::ClearRefreshToken() {
 
 void DriveAPIService::OnOAuth2RefreshTokenChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (CanStartOperation()) {
+  if (CanSendRequest()) {
     FOR_EACH_OBSERVER(
-        DriveServiceObserver, observers_, OnReadyToPerformOperations());
+        DriveServiceObserver, observers_, OnReadyToSendRequests());
   } else if (!HasRefreshToken()) {
     FOR_EACH_OBSERVER(
         DriveServiceObserver, observers_, OnRefreshTokenInvalid());

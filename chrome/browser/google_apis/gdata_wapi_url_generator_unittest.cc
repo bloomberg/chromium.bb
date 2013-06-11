@@ -43,7 +43,7 @@ TEST_F(GDataWapiUrlGeneratorTest, AddFeedUrlParams) {
 }
 
 TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
-  // This is the very basic URL for the GetResourceList operation.
+  // This is the very basic URL for the GetResourceList request.
   EXPECT_EQ("https://docs.google.com/feeds/default/private/full"
             "?v=3&alt=json&showroot=true&showfolders=true&include-shared=true"
             "&max-results=500",

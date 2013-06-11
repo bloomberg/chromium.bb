@@ -161,7 +161,7 @@ template<typename T> struct InTypeHelper<false, T> {
   typedef T InType;
 };
 
-// Simulates the std::move operation in C++11. We use pointer here for argument,
+// Simulates the std::move function in C++11. We use pointer here for argument,
 // instead of rvalue reference.
 template<bool IsMovable, typename T> struct MoveHelper {
   static const T& Move(const T* in) { return *in; }

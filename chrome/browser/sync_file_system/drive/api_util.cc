@@ -621,7 +621,7 @@ GURL APIUtil::DirectoryTitleToOrigin(const std::string& title) {
   return extensions::Extension::GetBaseURLFromExtensionId(title);
 }
 
-void APIUtil::OnReadyToPerformOperations() {
+void APIUtil::OnReadyToSendRequests() {
   DCHECK(CalledOnValidThread());
   FOR_EACH_OBSERVER(APIUtilObserver, observers_, OnAuthenticated());
 }

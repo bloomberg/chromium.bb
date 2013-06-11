@@ -95,7 +95,7 @@ void ParseJson(const std::string& json, const ParseJsonCallback& callback) {
 UrlFetchRequestBase::UrlFetchRequestBase(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter)
-    : RequestRegistry::Request(runner->operation_registry()),
+    : RequestRegistry::Request(runner->request_registry()),
       url_request_context_getter_(url_request_context_getter),
       re_authenticate_count_(0),
       started_(false),
@@ -108,7 +108,7 @@ UrlFetchRequestBase::UrlFetchRequestBase(
     RequestSender* runner,
     net::URLRequestContextGetter* url_request_context_getter,
     const base::FilePath& path)
-    : RequestRegistry::Request(runner->operation_registry(), path),
+    : RequestRegistry::Request(runner->request_registry(), path),
       url_request_context_getter_(url_request_context_getter),
       re_authenticate_count_(0),
       started_(false),
@@ -204,7 +204,7 @@ void UrlFetchRequestBase::Start(const std::string& access_token,
     }
   }
 
-  // Register to operation registry.
+  // Register to request registry.
   NotifyStartToRequestRegistry();
 
   url_fetcher_->Start();

@@ -101,7 +101,7 @@ class APIUtil : public drive::APIUtilInterface,
   static GURL DirectoryTitleToOrigin(const std::string& title);
 
   // DriveServiceObserver overrides.
-  virtual void OnReadyToPerformOperations() OVERRIDE;
+  virtual void OnReadyToSendRequests() OVERRIDE;
 
   // ConnectionTypeObserver overrides.
   virtual void OnConnectionTypeChanged(

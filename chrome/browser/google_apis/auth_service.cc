@@ -44,14 +44,14 @@ const int kSuccessRatioHistogramMaxValue = 4;  // The max value is exclusive.
 
 }  // namespace
 
-// OAuth2 authorization token retrieval operation.
-class AuthOperation : public OAuth2AccessTokenConsumer {
+// OAuth2 authorization token retrieval request.
+class AuthRequest : public OAuth2AccessTokenConsumer {
  public:
-  AuthOperation(net::URLRequestContextGetter* url_request_context_getter,
-                const AuthStatusCallback& callback,
-                const std::vector<std::string>& scopes,
-                const std::string& refresh_token);
-  virtual ~AuthOperation();
+  AuthRequest(net::URLRequestContextGetter* url_request_context_getter,
+              const AuthStatusCallback& callback,
+              const std::vector<std::string>& scopes,
+              const std::string& refresh_token);
+  virtual ~AuthRequest();
   void Start();
 
   // Overridden from OAuth2AccessTokenConsumer:
@@ -66,10 +66,10 @@ class AuthOperation : public OAuth2AccessTokenConsumer {
   std::vector<std::string> scopes_;
   scoped_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(AuthOperation);
+  DISALLOW_COPY_AND_ASSIGN(AuthRequest);
 };
 
-AuthOperation::AuthOperation(
+AuthRequest::AuthRequest(
     net::URLRequestContextGetter* url_request_context_getter,
     const AuthStatusCallback& callback,
     const std::vector<std::string>& scopes,
@@ -81,9 +81,9 @@ AuthOperation::AuthOperation(
   DCHECK(!callback_.is_null());
 }
 
-AuthOperation::~AuthOperation() {}
+AuthRequest::~AuthRequest() {}
 
-void AuthOperation::Start() {
+void AuthRequest::Start() {
   DCHECK(!refresh_token_.empty());
   oauth2_access_token_fetcher_.reset(new OAuth2AccessTokenFetcher(
       this, url_request_context_getter_));
@@ -96,8 +96,8 @@ void AuthOperation::Start() {
 
 // Callback for OAuth2AccessTokenFetcher on success. |access_token| is the token
 // used to start fetching user data.
-void AuthOperation::OnGetTokenSuccess(const std::string& access_token,
-                                      const base::Time& expiration_time) {
+void AuthRequest::OnGetTokenSuccess(const std::string& access_token,
+                                    const base::Time& expiration_time) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UMA_HISTOGRAM_ENUMERATION("GData.AuthSuccess",
@@ -109,10 +109,10 @@ void AuthOperation::OnGetTokenSuccess(const std::string& access_token,
 }
 
 // Callback for OAuth2AccessTokenFetcher on failure.
-void AuthOperation::OnGetTokenFailure(const GoogleServiceAuthError& error) {
+void AuthRequest::OnGetTokenFailure(const GoogleServiceAuthError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  LOG(WARNING) << "AuthOperation: token request using refresh token failed: "
+  LOG(WARNING) << "AuthRequest: token request using refresh token failed: "
                << error.ToString();
 
   // There are many ways to fail, but if the failure is due to connection,
@@ -178,18 +178,18 @@ void AuthService::StartAuthentication(const AuthStatusCallback& callback) {
   if (HasAccessToken()) {
     // We already have access token. Give it back to the caller asynchronously.
     relay_proxy->PostTask(FROM_HERE,
-         base::Bind(callback, HTTP_SUCCESS, access_token_));
+                          base::Bind(callback, HTTP_SUCCESS, access_token_));
   } else if (HasRefreshToken()) {
     // We have refresh token, let's get an access token.
-    (new AuthOperation(url_request_context_getter_,
-                       base::Bind(&AuthService::OnAuthCompleted,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  callback),
-                       scopes_,
-                       refresh_token_))->Start();
+    (new AuthRequest(url_request_context_getter_,
+                     base::Bind(&AuthService::OnAuthCompleted,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                callback),
+                     scopes_,
+                     refresh_token_))->Start();
   } else {
     relay_proxy->PostTask(FROM_HERE,
-        base::Bind(callback, GDATA_NOT_READY, std::string()));
+                          base::Bind(callback, GDATA_NOT_READY, std::string()));
   }
 }
 

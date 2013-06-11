@@ -16,7 +16,7 @@ void DummyDriveService::AddObserver(DriveServiceObserver* observer) {}
 
 void DummyDriveService::RemoveObserver(DriveServiceObserver* observer) {}
 
-bool DummyDriveService::CanStartOperation() const { return true; }
+bool DummyDriveService::CanSendRequest() const { return true; }
 
 void DummyDriveService::CancelAll() {}
 

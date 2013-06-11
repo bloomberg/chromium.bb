@@ -438,7 +438,7 @@ class ResourceEntry : public CommonMetadata {
   const std::vector<std::string>& labels() const { return labels_; }
 
   // The URL to download a file content.
-  // Search for 'download_url' in gdata_wapi_operations.h for details.
+  // Search for 'download_url' in gdata_wapi_requests.h for details.
   const GURL& download_url() const { return content_.url(); }
 
   const std::string& content_mime_type() const { return content_.mime_type(); }

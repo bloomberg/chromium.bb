@@ -72,7 +72,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
     EXPECT_EQ(expected_content_length_, content_length);
     EXPECT_EQ(kTestInitiateUploadParentResourceId, parent_resource_id);
 
-    // Calls back the upload URL for subsequent ResumeUpload operations.
+    // Calls back the upload URL for subsequent ResumeUpload requests.
     // InitiateUpload is an asynchronous function, so don't callback directly.
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadNewFileURL)));
@@ -95,7 +95,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
       return;
     }
 
-    // Calls back the upload URL for subsequent ResumeUpload operations.
+    // Calls back the upload URL for subsequent ResumeUpload requests.
     // InitiateUpload is an asynchronous function, so don't callback directly.
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadExistingFileURL)));

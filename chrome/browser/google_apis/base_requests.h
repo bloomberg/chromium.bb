@@ -448,7 +448,7 @@ class ResumeUploadRequestBase : public UploadRangeRequestBase {
 
 // This class performs the request for getting the current upload status
 // of a file.
-// This request calls OnRagneOperationComplete() with:
+// This request calls OnRangeRequestComplete() with:
 // - HTTP_RESUME_INCOMPLETE and the range of previously uploaded data,
 //   if a file has been partially uploaded. |value| is not used.
 // - HTTP_SUCCESS or HTTP_CREATED (up to the upload mode) and |value|

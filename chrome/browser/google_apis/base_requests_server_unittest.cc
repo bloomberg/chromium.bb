@@ -30,9 +30,9 @@ const char kTestUserAgent[] = "test-user-agent";
 
 }  // namespace
 
-class BaseOperationsServerTest : public testing::Test {
+class BaseRequestsServerTest : public testing::Test {
  protected:
-  BaseOperationsServerTest()
+  BaseRequestsServerTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE),
         io_thread_(content::BrowserThread::IO),
@@ -49,11 +49,11 @@ class BaseOperationsServerTest : public testing::Test {
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::IO));
 
-    operation_runner_.reset(new RequestSender(profile_.get(),
-                                              request_context_getter_.get(),
-                                              std::vector<std::string>(),
-                                              kTestUserAgent));
-    operation_runner_->auth_service()->set_access_token_for_testing(
+    request_sender_.reset(new RequestSender(profile_.get(),
+                                            request_context_getter_.get(),
+                                            std::vector<std::string>(),
+                                            kTestUserAgent));
+    request_sender_->auth_service()->set_access_token_for_testing(
         kTestAuthToken);
 
     ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
@@ -79,20 +79,20 @@ class BaseOperationsServerTest : public testing::Test {
   content::TestBrowserThread io_thread_;
   net::test_server::EmbeddedTestServer test_server_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<RequestSender> operation_runner_;
+  scoped_ptr<RequestSender> request_sender_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
 
   // The incoming HTTP request is saved so tests can verify the request
-  // parameters like HTTP method (ex. some operations should use DELETE
+  // parameters like HTTP method (ex. some requests should use DELETE
   // instead of GET).
   net::test_server::HttpRequest http_request_;
 };
 
-TEST_F(BaseOperationsServerTest, DownloadFileRequest_ValidFile) {
+TEST_F(BaseRequestsServerTest, DownloadFileRequest_ValidFile) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   base::FilePath temp_file;
-  DownloadFileRequest* operation = new DownloadFileRequest(
-      operation_runner_.get(),
+  DownloadFileRequest* request = new DownloadFileRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
@@ -103,7 +103,7 @@ TEST_F(BaseOperationsServerTest, DownloadFileRequest_ValidFile) {
       base::FilePath::FromUTF8Unsafe("/dummy/gdata/testfile.txt"),
       GetTestCachedFilePath(
           base::FilePath::FromUTF8Unsafe("cached_testfile.txt")));
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(request);
   base::MessageLoop::current()->Run();
 
   std::string contents;
@@ -121,11 +121,11 @@ TEST_F(BaseOperationsServerTest, DownloadFileRequest_ValidFile) {
   EXPECT_EQ(expected_contents, contents);
 }
 
-TEST_F(BaseOperationsServerTest, DownloadFileRequest_NonExistentFile) {
+TEST_F(BaseRequestsServerTest, DownloadFileRequest_NonExistentFile) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   base::FilePath temp_file;
-  DownloadFileRequest* operation = new DownloadFileRequest(
-      operation_runner_.get(),
+  DownloadFileRequest* request = new DownloadFileRequest(
+      request_sender_.get(),
       request_context_getter_.get(),
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
@@ -136,7 +136,7 @@ TEST_F(BaseOperationsServerTest, DownloadFileRequest_NonExistentFile) {
       base::FilePath::FromUTF8Unsafe("/dummy/gdata/no-such-file.txt"),
       GetTestCachedFilePath(
           base::FilePath::FromUTF8Unsafe("cache_no-such-file.txt")));
-  operation_runner_->StartRequestWithRetry(operation);
+  request_sender_->StartRequestWithRetry(request);
   base::MessageLoop::current()->Run();
 
   EXPECT_EQ(HTTP_NOT_FOUND, result_code);

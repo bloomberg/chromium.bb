@@ -16,7 +16,7 @@ namespace google_apis {
 //
 // 1) Load JSON files and construct the in-memory resource list.
 // 2) Return valid responses based on the the in-memory resource list.
-// 3) Update the in-memory resource list by operations like DeleteResource().
+// 3) Update the in-memory resource list by requests like DeleteResource().
 class FakeDriveService : public DriveServiceInterface {
  public:
   FakeDriveService();
@@ -67,7 +67,7 @@ class FakeDriveService : public DriveServiceInterface {
     return about_resource_load_count_;
   }
 
-  // Returns the file path whose operation is cancelled just before this method
+  // Returns the file path whose request is cancelled just before this method
   // invocation.
   const base::FilePath& last_cancelled_file() const {
     return last_cancelled_file_;
@@ -80,7 +80,7 @@ class FakeDriveService : public DriveServiceInterface {
   virtual void Initialize(Profile* profile) OVERRIDE;
   virtual void AddObserver(DriveServiceObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DriveServiceObserver* observer) OVERRIDE;
-  virtual bool CanStartOperation() const OVERRIDE;
+  virtual bool CanSendRequest() const OVERRIDE;
   virtual void CancelAll() OVERRIDE;
   virtual bool CancelForFilePath(const base::FilePath& file_path) OVERRIDE;
   virtual std::string CanonicalizeResourceId(
