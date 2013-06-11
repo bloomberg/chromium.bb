@@ -539,19 +539,6 @@ bool AccessibilityNodeObject::isMenuButton() const
     return roleValue() == MenuButtonRole;
 }
 
-bool AccessibilityNodeObject::isMenuRelated() const
-{
-    switch (roleValue()) {
-    case MenuRole:
-    case MenuBarRole:
-    case MenuButtonRole:
-    case MenuItemRole:
-        return true;
-    default:
-        return false;
-    }
-}
-
 bool AccessibilityNodeObject::isMultiSelectable() const
 {
     const AtomicString& ariaMultiSelectable = getAttribute(aria_multiselectableAttr);
@@ -623,33 +610,6 @@ bool AccessibilityNodeObject::isPasswordField() const
 bool AccessibilityNodeObject::isProgressIndicator() const
 {
     return roleValue() == ProgressIndicatorRole;
-}
-
-bool AccessibilityNodeObject::isSearchField() const
-{
-    Node* node = this->node();
-    if (!node || !node->hasTagName(inputTag))
-        return false;
-
-    HTMLInputElement* inputElement = toHTMLInputElement(node);
-    if (inputElement->isSearchField())
-        return true;
-
-    // Some websites don't label their search fields as such. However, they will
-    // use the word "search" in either the form or input type. This won't catch every case,
-    // but it will catch google.com for example.
-
-    // Check the node name of the input type, sometimes it's "search".
-    const AtomicString& nameAttribute = getAttribute(nameAttr);
-    if (nameAttribute.contains("search", false))
-        return true;
-
-    // Check the form action and the name, which will sometimes be "search".
-    HTMLFormElement* form = inputElement->form();
-    if (form && (form->name().contains("search", false) || form->action().contains("search", false)))
-        return true;
-
-    return false;
 }
 
 bool AccessibilityNodeObject::isSlider() const

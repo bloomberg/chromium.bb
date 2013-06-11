@@ -48,7 +48,6 @@ public:
     AccessibilityObject* headerObject();
 
     virtual AccessibilityRole roleValue() const OVERRIDE { return ColumnRole; }
-    virtual bool isTableColumn() const OVERRIDE { return true; }
 
     void setColumnIndex(int columnIndex) { m_columnIndex = columnIndex; }
     int columnIndex() const { return m_columnIndex; }

@@ -110,18 +110,16 @@ protected:
     virtual bool isHeading() const OVERRIDE;
     virtual bool isHovered() const OVERRIDE;
     virtual bool isImage() const OVERRIDE;
-    virtual bool isImageButton() const OVERRIDE;
+    bool isImageButton() const;
     virtual bool isInputImage() const OVERRIDE;
     virtual bool isLink() const;
     virtual bool isMenu() const OVERRIDE;
     virtual bool isMenuButton() const OVERRIDE;
-    virtual bool isMenuRelated() const OVERRIDE;
     virtual bool isMultiSelectable() const OVERRIDE;
-    virtual bool isNativeImage() const OVERRIDE;
+    bool isNativeImage() const;
     virtual bool isNativeTextControl() const OVERRIDE;
     virtual bool isPasswordField() const OVERRIDE;
     virtual bool isProgressIndicator() const OVERRIDE;
-    virtual bool isSearchField() const OVERRIDE;
     virtual bool isSlider() const OVERRIDE;
 
     // Check object state.
@@ -148,7 +146,6 @@ protected:
     virtual float valueForRange() const OVERRIDE;
     virtual float maxValueForRange() const OVERRIDE;
     virtual float minValueForRange() const OVERRIDE;
-    virtual float stepValueForRange() const OVERRIDE;
     virtual String stringValue() const OVERRIDE;
 
     // ARIA attributes.
@@ -176,9 +173,9 @@ protected:
     virtual AccessibilityObject* firstChild() const OVERRIDE;
     virtual AccessibilityObject* nextSibling() const OVERRIDE;
     virtual void addChildren() OVERRIDE;
-    virtual void addChild(AccessibilityObject*) OVERRIDE;
-    virtual void insertChild(AccessibilityObject*, unsigned index) OVERRIDE;
     virtual bool canHaveChildren() const OVERRIDE;
+    void addChild(AccessibilityObject*);
+    void insertChild(AccessibilityObject*, unsigned index);
 
     // DOM and Render tree access.
     virtual Element* actionElement() const OVERRIDE;
@@ -204,6 +201,7 @@ private:
     void helpText(Vector<AccessibilityText>&) const;
     void titleElementText(Vector<AccessibilityText>&);
     void visibleText(Vector<AccessibilityText>&) const;
+    float stepValueForRange() const;
 };
 
 inline AccessibilityNodeObject* toAccessibilityNodeObject(AccessibilityObject* object)

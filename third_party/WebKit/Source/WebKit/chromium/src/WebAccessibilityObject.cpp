@@ -915,7 +915,7 @@ unsigned WebAccessibilityObject::columnIndex() const
     if (isDetached())
         return 0;
 
-    if (!m_private->isTableColumn())
+    if (m_private->roleValue() != ColumnRole)
         return 0;
 
     return static_cast<WebCore::AccessibilityTableColumn*>(m_private.get())->columnIndex();
@@ -926,7 +926,7 @@ WebAccessibilityObject WebAccessibilityObject::columnHeader() const
     if (isDetached())
         return WebAccessibilityObject();
 
-    if (!m_private->isTableColumn())
+    if (m_private->roleValue() != ColumnRole)
         return WebAccessibilityObject();
 
     return WebAccessibilityObject(static_cast<WebCore::AccessibilityTableColumn*>(m_private.get())->headerObject());

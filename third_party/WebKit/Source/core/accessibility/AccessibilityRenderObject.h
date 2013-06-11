@@ -76,6 +76,8 @@ public:
     bool needsToUpdateChildren() const { return m_childrenDirty; }
     ScrollableArea* getScrollableAreaIfScrollable() const;
     virtual AccessibilityRole determineAccessibilityRole() OVERRIDE;
+    void checkCachedElementRect() const;
+    void updateCachedElementRect() const;
 
 protected:
     RenderObject* m_renderer;
@@ -115,9 +117,7 @@ protected:
 
     // Properties of static elements.
     virtual const AtomicString& accessKey() const OVERRIDE;
-    virtual AccessibilityObject* correspondingControlForLabelElement() const OVERRIDE;
     virtual bool exposesTitleUIElement() const OVERRIDE;
-    virtual void linkedUIElements(AccessibilityChildrenVector&) const OVERRIDE;
     virtual AccessibilityOrientation orientation() const OVERRIDE;
     virtual String text() const OVERRIDE;
     virtual int textLength() const OVERRIDE;
@@ -154,8 +154,6 @@ protected:
     virtual String helpText() const OVERRIDE;
 
     // Location and click point in frame-relative coordinates.
-    virtual void checkCachedElementRect() const OVERRIDE;
-    virtual void updateCachedElementRect() const OVERRIDE;
     virtual void markCachedElementRectDirty() const OVERRIDE;
     virtual IntPoint clickPoint() OVERRIDE;
 
@@ -185,12 +183,10 @@ protected:
     virtual Document* document() const OVERRIDE;
     virtual FrameView* documentFrameView() const OVERRIDE;
     virtual Element* anchorElement() const OVERRIDE;
-    virtual Widget* widget() const OVERRIDE;
     virtual Widget* widgetForAttachmentView() const OVERRIDE;
 
     // Selected text.
     virtual PlainTextRange selectedTextRange() const OVERRIDE;
-    virtual VisibleSelection selection() const OVERRIDE;
     virtual String selectedText() const OVERRIDE;
 
     // Modify or take an action on an object.
@@ -207,9 +203,7 @@ protected:
     // Text metrics. Most of these should be deprecated, needs major cleanup.
     virtual int index(const VisiblePosition&) const OVERRIDE;
     virtual VisiblePosition visiblePositionForIndex(int) const OVERRIDE;
-    virtual int indexForVisiblePosition(const VisiblePosition&) const OVERRIDE;
     virtual void lineBreaks(Vector<int>&) const OVERRIDE;
-    virtual String doAXStringForRange(const PlainTextRange&) const OVERRIDE;
 
 private:
     bool isAllowedChildOfTree() const;
@@ -218,7 +212,6 @@ private:
     PlainTextRange ariaSelectedTextRange() const;
     bool nodeIsTextControl(const Node*) const;
     bool isTabItemSelected() const;
-    void addRadioButtonGroupMembers(AccessibilityChildrenVector& linkedUIElements) const;
     AccessibilityObject* internalLinkElement() const;
     AccessibilityObject* accessibilityImageMapHitTest(HTMLAreaElement*, const IntPoint&) const;
     bool renderObjectIsObservable(RenderObject*) const;
@@ -239,6 +232,10 @@ private:
     bool elementAttributeValue(const QualifiedName&) const;
     bool inheritsPresentationalRole() const;
     LayoutRect computeElementRect() const;
+    VisibleSelection selection() const;
+    String stringForRange(const PlainTextRange&) const;
+    AccessibilityObject* correspondingControlForLabelElement() const;
+    int indexForVisiblePosition(const VisiblePosition&) const;
 };
 
 inline AccessibilityRenderObject* toAccessibilityRenderObject(AccessibilityObject* object)

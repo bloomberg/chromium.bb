@@ -306,21 +306,18 @@ public:
     virtual bool isFileUploadButton() const { return false; }
     virtual bool isHeading() const { return false; }
     virtual bool isImage() const { return false; }
-    virtual bool isImageButton() const { return false; }
     virtual bool isImageMapLink() const { return false; }
     virtual bool isInputImage() const { return false; }
     virtual bool isLink() const { return false; }
     virtual bool isList() const { return false; }
-    virtual bool isListBox() const { return roleValue() == ListBoxRole; }
     bool isListItem() const { return roleValue() == ListItemRole; }
     virtual bool isMenu() const { return false; }
     virtual bool isMenuButton() const { return false; }
     virtual bool isMenuList() const { return false; }
     virtual bool isMenuListOption() const { return false; }
     virtual bool isMenuListPopup() const { return false; }
-    virtual bool isMenuRelated() const { return false; }
+    bool isMenuRelated() const;
     virtual bool isMockObject() const { return false; }
-    virtual bool isNativeImage() const { return false; }
     virtual bool isNativeSpinButton() const { return false; }
     virtual bool isNativeTextControl() const { return false; }
     virtual bool isPasswordField() const { return false; }
@@ -328,13 +325,11 @@ public:
     bool isRadioButton() const { return roleValue() == RadioButtonRole; }
     bool isScrollbar() const { return roleValue() == ScrollBarRole; }
     bool isSeamlessWebArea() const { return roleValue() == SeamlessWebAreaRole; }
-    virtual bool isSearchField() const { return false; }
     virtual bool isSlider() const { return false; }
     virtual bool isSpinButton() const { return roleValue() == SpinButtonRole; }
     virtual bool isSpinButtonPart() const { return false; }
     bool isTabItem() const { return roleValue() == TabRole; }
     virtual bool isTableCell() const { return false; }
-    virtual bool isTableColumn() const { return false; }
     virtual bool isTableRow() const { return false; }
     bool isTextControl() const;
     bool isTree() const { return roleValue() == TreeRole; }
@@ -378,12 +373,10 @@ public:
     // Properties of static elements.
     virtual const AtomicString& accessKey() const { return nullAtom; }
     virtual bool canvasHasFallbackContent() const { return false; }
-    virtual AccessibilityObject* correspondingControlForLabelElement() const { return 0; }
     virtual bool exposesTitleUIElement() const { return true; }
     virtual int headingLevel() const { return 0; }
     // 1-based, to match the aria-level spec.
     virtual unsigned hierarchicalLevel() const { return 0; }
-    virtual void linkedUIElements(AccessibilityChildrenVector&) const { }
     virtual AccessibilityOrientation orientation() const;
     virtual int tableLevel() const { return 0; }
     virtual String text() const { return String(); }
@@ -401,7 +394,6 @@ public:
     virtual float minValueForRange() const { return 0.0f; }
     const AtomicString& placeholderValue() const;
     virtual void selectedChildren(AccessibilityChildrenVector&) { }
-    virtual float stepValueForRange() const { return 0.0f; }
     virtual String stringValue() const { return String(); }
 
     // ARIA attributes.
@@ -447,8 +439,6 @@ public:
 
     // Location and click point in frame-relative coordinates.
     virtual LayoutRect elementRect() const { return LayoutRect(); }
-    virtual void checkCachedElementRect() const { }
-    virtual void updateCachedElementRect() const { }
     virtual void markCachedElementRectDirty() const;
     virtual IntPoint clickPoint();
 
@@ -469,8 +459,6 @@ public:
     virtual AccessibilityObject* nextSibling() const { return 0; }
     static AccessibilityObject* firstAccessibleObjectFromNode(const Node*);
     virtual void addChildren() { }
-    virtual void addChild(AccessibilityObject*) { }
-    virtual void insertChild(AccessibilityObject*, unsigned) { }
     virtual bool canHaveChildren() const { return true; }
     bool hasChildren() const { return m_haveChildren; }
     virtual void updateChildrenIfNecessary();
@@ -491,7 +479,6 @@ public:
     virtual FrameView* documentFrameView() const;
     virtual Element* anchorElement() const { return 0; }
     virtual Element* actionElement() const { return 0; }
-    virtual Widget* widget() const { return 0; }
     virtual Widget* widgetForAttachmentView() const { return 0; }
     Page* page() const;
     String language() const;
@@ -503,7 +490,6 @@ public:
     virtual PlainTextRange selectedTextRange() const { return PlainTextRange(); }
     unsigned selectionStart() const { return selectedTextRange().start; }
     unsigned selectionEnd() const { return selectedTextRange().length; }
-    virtual VisibleSelection selection() const { return VisibleSelection(); }
     virtual String selectedText() const { return String(); }
 
     // Modify or take an action on an object.
@@ -536,11 +522,9 @@ public:
     virtual VisiblePositionRange visiblePositionRange() const { return VisiblePositionRange(); }
     virtual IntRect boundsForVisiblePositionRange(const VisiblePositionRange&) const { return IntRect(); }
     virtual VisiblePosition visiblePositionForIndex(int) const { return VisiblePosition(); }
-    virtual int indexForVisiblePosition(const VisiblePosition&) const { return 0; }
     int lineForPosition(const VisiblePosition&) const;
     virtual int index(const VisiblePosition&) const { return -1; }
     virtual void lineBreaks(Vector<int>&) const { }
-    virtual String doAXStringForRange(const PlainTextRange&) const { return String(); }
 
     // Static helper functions.
     static bool isARIAControl(AccessibilityRole);

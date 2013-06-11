@@ -222,10 +222,14 @@ LayoutRect AccessibilityRenderObject::elementRect() const
     if (!m_renderer->isBox())
         return computeElementRect();
 
-    for (const AccessibilityObject* obj = this; obj; obj = obj->parentObject())
-        obj->checkCachedElementRect();
-    for (const AccessibilityObject* obj = this; obj; obj = obj->parentObject())
-        obj->updateCachedElementRect();
+    for (const AccessibilityObject* obj = this; obj; obj = obj->parentObject()) {
+        if (obj->isAccessibilityRenderObject())
+            static_cast<const AccessibilityRenderObject*>(obj)->checkCachedElementRect();
+    }
+    for (const AccessibilityObject* obj = this; obj; obj = obj->parentObject()) {
+        if (obj->isAccessibilityRenderObject())
+            static_cast<const AccessibilityRenderObject*>(obj)->updateCachedElementRect();
+    }
 
     return m_cachedElementRect;
 }
@@ -847,7 +851,8 @@ AccessibilityObject* AccessibilityRenderObject::correspondingControlForLabelElem
     if (!correspondingControl)
         return 0;
 
-    // Make sure the corresponding control isn't a descendant of this label that's in the middle
+    // Make sure the corresponding control isn't a descendant of this label
+    // that's in the middle of being destroyed.
     if (correspondingControl->renderer() && !correspondingControl->renderer()->parent())
         return 0;
 
@@ -875,22 +880,6 @@ bool AccessibilityRenderObject::exposesTitleUIElement() const
         return false;
 
     return true;
-}
-
-// linked ui elements could be all the related radio buttons in a group
-// or an internal anchor connection
-void AccessibilityRenderObject::linkedUIElements(AccessibilityChildrenVector& linkedUIElements) const
-{
-    ariaFlowToElements(linkedUIElements);
-
-    if (isAnchor()) {
-        AccessibilityObject* linkedAXElement = internalLinkElement();
-        if (linkedAXElement)
-            linkedUIElements.append(linkedAXElement);
-    }
-
-    if (roleValue() == RadioButtonRole)
-        addRadioButtonGroupMembers(linkedUIElements);
 }
 
 AccessibilityOrientation AccessibilityRenderObject::orientation() const
@@ -1327,10 +1316,8 @@ void AccessibilityRenderObject::checkCachedElementRect() const
     if (!m_renderer)
         return;
 
-    if (!m_renderer->isBox()) {
-        AccessibilityNodeObject::checkCachedElementRect();
+    if (!m_renderer->isBox())
         return;
-    }
 
     bool dirty = false;
     RenderBox* box = toRenderBox(m_renderer);
@@ -1355,10 +1342,8 @@ void AccessibilityRenderObject::updateCachedElementRect() const
     if (!m_renderer)
         return;
 
-    if (!m_renderer->isBox()) {
-        AccessibilityNodeObject::updateCachedElementRect();
+    if (!m_renderer->isBox())
         return;
-    }
 
     RenderBox* box = toRenderBox(m_renderer);
     m_cachedFrameRect = box->frameRect();
@@ -1434,9 +1419,11 @@ AccessibilityObject* AccessibilityRenderObject::accessibilityHitTest(const IntPo
 
     if (result && result->accessibilityIsIgnored()) {
         // If this element is the label of a control, a hit test should return the control.
-        AccessibilityObject* controlObject = result->correspondingControlForLabelElement();
-        if (controlObject && !controlObject->exposesTitleUIElement())
-            return controlObject;
+        if (result->isAccessibilityRenderObject()) {
+            AccessibilityObject* controlObject = static_cast<AccessibilityRenderObject*>(result)->correspondingControlForLabelElement();
+            if (controlObject && !controlObject->exposesTitleUIElement())
+                return controlObject;
+        }
 
         result = result->parentObjectUnignored();
     }
@@ -1688,13 +1675,6 @@ Element* AccessibilityRenderObject::anchorElement() const
     return 0;
 }
 
-Widget* AccessibilityRenderObject::widget() const
-{
-    if (!m_renderer->isBoxModelObject() || !toRenderBoxModelObject(m_renderer)->isWidget())
-        return 0;
-    return toRenderWidget(m_renderer)->widget();
-}
-
 Widget* AccessibilityRenderObject::widgetForAttachmentView() const
 {
     if (!isAttachment())
@@ -1745,7 +1725,7 @@ String AccessibilityRenderObject::selectedText() const
     if (ariaRoleAttribute() == UnknownRole)
         return String();
 
-    return doAXStringForRange(ariaSelectedTextRange());
+    return stringForRange(ariaSelectedTextRange());
 }
 
 //
@@ -1981,7 +1961,7 @@ void AccessibilityRenderObject::lineBreaks(Vector<int>& lineBreaks) const
 
 // A substring of the text associated with this accessibility object that is
 // specified by the given character range.
-String AccessibilityRenderObject::doAXStringForRange(const PlainTextRange& range) const
+String AccessibilityRenderObject::stringForRange(const PlainTextRange& range) const
 {
     if (!range.length)
         return String();
@@ -2116,42 +2096,6 @@ bool AccessibilityRenderObject::isTabItemSelected() const
     }
 
     return false;
-}
-
-void AccessibilityRenderObject::addRadioButtonGroupMembers(AccessibilityChildrenVector& linkedUIElements) const
-{
-    if (!m_renderer || roleValue() != RadioButtonRole)
-        return;
-
-    Node* node = m_renderer->node();
-    if (!node || !node->hasTagName(inputTag))
-        return;
-
-    HTMLInputElement* input = toHTMLInputElement(node);
-    // if there's a form, then this is easy
-    if (input->form()) {
-        Vector<RefPtr<Node> > formElements;
-        input->form()->getNamedElements(input->name(), formElements);
-
-        unsigned len = formElements.size();
-        for (unsigned i = 0; i < len; ++i) {
-            Node* associateElement = formElements[i].get();
-            if (AccessibilityObject* object = axObjectCache()->getOrCreate(associateElement))
-                linkedUIElements.append(object);
-        }
-    } else {
-        RefPtr<NodeList> list = node->document()->getElementsByTagName("input");
-        unsigned len = list->length();
-        for (unsigned i = 0; i < len; ++i) {
-            if (list->item(i)->hasTagName(inputTag)) {
-                HTMLInputElement* associateElement = toHTMLInputElement(list->item(i));
-                if (associateElement->isRadioButton() && associateElement->name() == input->name()) {
-                    if (AccessibilityObject* object = axObjectCache()->getOrCreate(associateElement))
-                        linkedUIElements.append(object);
-                }
-            }
-        }
-    }
 }
 
 AccessibilityObject* AccessibilityRenderObject::internalLinkElement() const

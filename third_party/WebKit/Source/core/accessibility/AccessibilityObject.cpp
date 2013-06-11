@@ -191,6 +191,19 @@ bool AccessibilityObject::isButton() const
     return role == ButtonRole || role == PopUpButtonRole || role == ToggleButtonRole;
 }
 
+bool AccessibilityObject::isMenuRelated() const
+{
+    switch (roleValue()) {
+    case MenuRole:
+    case MenuBarRole:
+    case MenuButtonRole:
+    case MenuItemRole:
+        return true;
+    default:
+        return false;
+    }
+}
+
 bool AccessibilityObject::isTextControl() const
 {
     switch (roleValue()) {
