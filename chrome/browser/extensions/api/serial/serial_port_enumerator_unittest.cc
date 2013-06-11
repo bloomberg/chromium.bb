@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/extensions/api/serial/serial_port_enumerator.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

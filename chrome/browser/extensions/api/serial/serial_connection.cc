@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 namespace extensions {
 

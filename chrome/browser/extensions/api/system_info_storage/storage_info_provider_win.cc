@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
 
 #include <windows.h>
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace extensions {

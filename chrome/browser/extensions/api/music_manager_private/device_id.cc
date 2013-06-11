@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/api/music_manager_private/device_id.h"
 
 #include "base/bind.h"
-#include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/hmac.h"
 

@@ -7,7 +7,7 @@
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

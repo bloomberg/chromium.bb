@@ -6,7 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
 #include "base/value_conversions.h"
