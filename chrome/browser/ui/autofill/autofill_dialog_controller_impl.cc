@@ -1246,7 +1246,10 @@ string16 AutofillDialogControllerImpl::InputValidityMessage(
     case NAME_FULL:  // Used for shipping.
       break;
 
-    case PHONE_HOME_WHOLE_NUMBER:  // Used in billing section.
+    case PHONE_HOME_WHOLE_NUMBER:  // Used in shipping section.
+      break;
+
+    case PHONE_BILLING_WHOLE_NUMBER:  // Used in billing section.
       break;
 
     default:
@@ -1305,7 +1308,7 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
             IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_SECURITY_CODE);
   }
 
-  // Validate the phone number against the country code of the address.
+  // Validate the shipping phone number against the country code of the address.
   if (field_values.count(ADDRESS_HOME_COUNTRY) &&
       field_values.count(PHONE_HOME_WHOLE_NUMBER)) {
     i18n::PhoneObject phone_object(
@@ -1315,6 +1318,20 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
             g_browser_process->GetApplicationLocale()));
     if (!phone_object.IsValidNumber()) {
       invalid_messages[PHONE_HOME_WHOLE_NUMBER] = l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_PHONE_NUMBER);
+    }
+  }
+
+  // Validate the billing phone number against the country code of the address.
+  if (field_values.count(ADDRESS_BILLING_COUNTRY) &&
+      field_values.count(PHONE_BILLING_WHOLE_NUMBER)) {
+    i18n::PhoneObject phone_object(
+        field_values[PHONE_BILLING_WHOLE_NUMBER],
+        AutofillCountry::GetCountryCode(
+            field_values[ADDRESS_BILLING_COUNTRY],
+            g_browser_process->GetApplicationLocale()));
+    if (!phone_object.IsValidNumber()) {
+      invalid_messages[PHONE_BILLING_WHOLE_NUMBER] = l10n_util::GetStringUTF16(
           IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_PHONE_NUMBER);
     }
   }

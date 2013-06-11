@@ -448,61 +448,61 @@ TEST_F(AutofillDialogControllerTest, PhoneNumberValidation) {
 
   AutofillProfile full_profile(test::GetVerifiedProfile());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
-  controller()->EditClickedForSection(SECTION_SHIPPING);
 
-  DetailOutputMap outputs;
-  const DetailInputs& inputs =
-      controller()->RequestedFieldsForSection(SECTION_SHIPPING);
+  for (size_t i = 0; i < 2; ++i) {
+    AutofillFieldType phone = i == 0 ? PHONE_HOME_WHOLE_NUMBER :
+                                       PHONE_BILLING_WHOLE_NUMBER;
+    AutofillFieldType address = i == 0 ? ADDRESS_HOME_COUNTRY :
+                                         ADDRESS_BILLING_COUNTRY;
+    DialogSection section = i == 0 ? SECTION_SHIPPING : SECTION_BILLING;
 
-  // Make sure country is United States.
-  SetOutputValue(inputs, &outputs, ADDRESS_HOME_COUNTRY, "United States");
+    controller()->EditClickedForSection(section);
 
-  // Existing data should have no errors.
-  ValidityData validity_data =
-      controller()->InputsAreValid(outputs, VALIDATE_FINAL);
-  EXPECT_EQ(0U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
+    DetailOutputMap outputs;
+    const DetailInputs& inputs =
+        controller()->RequestedFieldsForSection(section);
+    // Make sure country is United States.
+    SetOutputValue(inputs, &outputs, address, "United States");
 
-  // Input an empty phone number with VALIDATE_FINAL.
-  SetOutputValue(inputs, &outputs, PHONE_HOME_WHOLE_NUMBER, "");
-  validity_data =
-      controller()->InputsAreValid(outputs, VALIDATE_FINAL);
-  EXPECT_EQ(1U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
+    // Existing data should have no errors.
+    ValidityData validity_data =
+        controller()->InputsAreValid(outputs, VALIDATE_FINAL);
+    EXPECT_EQ(0U, validity_data.count(phone));
 
-  // Input an empty phone number with VALIDATE_EDIT.
-  validity_data =
-      controller()->InputsAreValid(outputs, VALIDATE_EDIT);
-  EXPECT_EQ(0U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
+    // Input an empty phone number with VALIDATE_FINAL.
+    SetOutputValue( inputs, &outputs, phone, "");
+    validity_data = controller()->InputsAreValid(outputs, VALIDATE_FINAL);
+    EXPECT_EQ(1U, validity_data.count(phone));
 
-  // Input an invalid phone number.
-  SetOutputValue(inputs, &outputs, PHONE_HOME_WHOLE_NUMBER, "ABC");
-  validity_data =
-      controller()->InputsAreValid(outputs, VALIDATE_EDIT);
-  EXPECT_EQ(1U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
+    // Input an empty phone number with VALIDATE_EDIT.
+    validity_data = controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+    EXPECT_EQ(0U, validity_data.count(phone));
 
-  // Input a local phone number.
-  SetOutputValue(inputs, &outputs, PHONE_HOME_WHOLE_NUMBER, "2155546699");
-  validity_data =
-      controller()->InputsAreValid(outputs, VALIDATE_EDIT);
-  EXPECT_EQ(0U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
+    // Input an invalid phone number.
+    SetOutputValue(inputs, &outputs, phone, "ABC");
+    validity_data = controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+    EXPECT_EQ(1U, validity_data.count(phone));
 
-  // Input an invalid local phone number.
-  SetOutputValue(inputs, &outputs, PHONE_HOME_WHOLE_NUMBER, "215554669");
-  validity_data =
-      controller()->InputsAreValid(outputs, VALIDATE_EDIT);
-  EXPECT_EQ(1U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
+    // Input a local phone number.
+    SetOutputValue(inputs, &outputs, phone, "2155546699");
+    validity_data = controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+    EXPECT_EQ(0U, validity_data.count(phone));
 
-  // Input an international phone number.
-  SetOutputValue(inputs, &outputs, PHONE_HOME_WHOLE_NUMBER, "+33 892 70 12 39");
-  validity_data =
-      controller()->InputsAreValid(outputs, VALIDATE_EDIT);
-  EXPECT_EQ(0U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
+    // Input an invalid local phone number.
+    SetOutputValue(inputs, &outputs, phone, "215554669");
+    validity_data = controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+    EXPECT_EQ(1U, validity_data.count(phone));
 
-  // Input an invalid international phone number.
-  SetOutputValue(inputs, &outputs, PHONE_HOME_WHOLE_NUMBER,
-                 "+112333 892 70 12 39");
-  validity_data =
-      controller()->InputsAreValid(outputs, VALIDATE_EDIT);
-  EXPECT_EQ(1U, validity_data.count(PHONE_HOME_WHOLE_NUMBER));
+    // Input an international phone number.
+    SetOutputValue(inputs, &outputs, phone, "+33 892 70 12 39");
+    validity_data = controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+    EXPECT_EQ(0U, validity_data.count(phone));
+
+    // Input an invalid international phone number.
+    SetOutputValue(inputs, &outputs, phone, "+112333 892 70 12 39");
+    validity_data = controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+    EXPECT_EQ(1U, validity_data.count(phone));
+  }
 }
 
 TEST_F(AutofillDialogControllerTest, CardHolderNameValidation) {
