@@ -44,17 +44,17 @@ namespace WebCore {
 
 void V8InspectorFrontendHost::platformMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-#if defined(OS_MACOSX)
+#if OS(DARWIN)
     v8SetReturnValue(args, v8::String::NewSymbol("mac"));
-#elif defined(OS_LINUX)
+#elif OS(LINUX)
     v8SetReturnValue(args, v8::String::NewSymbol("linux"));
-#elif defined(OS_FREEBSD)
+#elif OS(FREEBSD)
     v8SetReturnValue(args, v8::String::NewSymbol("freebsd"));
-#elif defined(OS_OPENBSD)
+#elif OS(OPENBSD)
     v8SetReturnValue(args, v8::String::NewSymbol("openbsd"));
-#elif defined(OS_SOLARIS)
+#elif OS(SOLARIS)
     v8SetReturnValue(args, v8::String::NewSymbol("solaris"));
-#elif defined(OS_WIN)
+#elif OS(WINDOWS)
     v8SetReturnValue(args, v8::String::NewSymbol("windows"));
 #else
     v8SetReturnValue(args, v8::String::NewSymbol("unknown"));

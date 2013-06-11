@@ -39,7 +39,7 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 
-#if defined(OS_WIN)
+#if OS(WINDOWS)
 #include "core/rendering/RenderThemeChromiumWin.h"
 #endif
 
@@ -100,7 +100,7 @@ void WebSettingsImpl::setPictographFontFamily(const WebString& font, UScriptCode
 void WebSettingsImpl::setDefaultFontSize(int size)
 {
     m_settings->setDefaultFontSize(size);
-#if defined(OS_WIN)
+#if OS(WINDOWS)
     // RenderTheme is a singleton that needs to know the default font size to
     // draw some form controls. We let it know each time the size changes.
     WebCore::RenderThemeChromiumWin::setDefaultFontSize(size);
