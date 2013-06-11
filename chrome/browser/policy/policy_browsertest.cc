@@ -1242,7 +1242,14 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
 }
 #endif
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklist) {
+// See crbug.com/248464
+#if defined(OS_WIN)
+#define MAYBE_ExtensionInstallBlacklist DISABLED_ExtensionInstallBlacklist
+#else
+#define MAYBE_ExtensionInstallBlacklist ExtensionInstallBlacklist
+#endif
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallBlacklist) {
   // Verifies that blacklisted extensions can't be installed.
   ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
