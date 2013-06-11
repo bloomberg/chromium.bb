@@ -368,36 +368,6 @@ interface InspectorInstrumentation {
     [Timeline, Inline=FastReturn]
     void didFireAnimationFrame(const InspectorInstrumentationCookie&);
 
-    [Console, Debugger, Inline=Custom]  // FIXME: Drop this once we no longer generate stacks outside of Inspector.
-    void addMessageToConsole(Page* page, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack, unsigned long requestIdentifier = 0);
-
-    [Console, Debugger, Inline=Custom]
-    void addMessageToConsole(Page* page, MessageSource source, MessageType type, MessageLevel level, const String& message, ScriptState* state, PassRefPtr<ScriptArguments> arguments, unsigned long requestIdentifier = 0);
-
-    [Console, Inline=Custom]
-    void addMessageToConsole(Page* page, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, ScriptState* state = 0, unsigned long requestIdentifier = 0);
-
-    [Console, Inline=Custom]
-    void consoleCount(Page* page, ScriptState* state, PassRefPtr<ScriptArguments> arguments);
-
-    [Timeline, Console, Inline=Custom]
-    void startConsoleTiming([Keep] Frame* frame, const String& title);
-
-    [Console, Timeline, Inline=Custom]
-    void stopConsoleTiming([Keep] Frame* frame, const String& title, PassRefPtr<ScriptCallStack> stack);
-
-    [Timeline, Inline=Custom]
-    void consoleTimeStamp([Keep] Frame* frame, PassRefPtr<ScriptArguments> arguments);
-
-    [Profiler, Inline=Custom]
-    void addStartProfilingMessageToConsole(Page* page, const String& title, unsigned lineNumber, const String& sourceURL);
-
-    [Profiler, Inline=Custom]
-    void addProfile(Page* page, PassRefPtr<ScriptProfile> profile, PassRefPtr<ScriptCallStack> callStack);
-
-    [Database, Inline=Custom]
-    void didOpenDatabase(ScriptExecutionContext* context, PassRefPtr<Database> database, const String& domain, const String& name, const String& version);
-
     [DOMStorage, Inline=FastReturn]
     void didDispatchDOMStorageEvent(Page* page, const String& key, const String& oldValue, const String& newValue, StorageType storageType, SecurityOrigin* securityOrigin);
 
@@ -445,4 +415,53 @@ interface InspectorInstrumentation {
 
     [LayerTree]
     void pseudoElementDestroyed(Page*, PseudoElement*);
+}
+
+interface InspectorConsoleInstrumentation {
+
+#include "core/inspector/ScriptArguments.h"
+#include "core/inspector/ScriptCallStack.h"
+#include "core/inspector/ScriptProfile.h"
+
+    [Console, Debugger]  // FIXME: Drop this once we no longer generate stacks outside of Inspector.
+    void addMessageToConsole(Page* page, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack, unsigned long requestIdentifier = 0);
+
+    [Console, Debugger]
+    void addMessageToConsole(Page* page, MessageSource source, MessageType type, MessageLevel level, const String& message, ScriptState* state, PassRefPtr<ScriptArguments> arguments, unsigned long requestIdentifier = 0);
+
+    [Console]
+    void addMessageToConsole(Page* page, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, ScriptState* state = 0, unsigned long requestIdentifier = 0);
+
+    // FIXME: Convert to ScriptArguments to match non-worker context.
+    // Use the same implementation as above as a similar method dispatched on Page.
+    void addMessageToConsole(WorkerContext* workerContext, MessageSource source, MessageType type, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack, unsigned long requestIdentifier = 0);
+
+    // Use the same implementation as above as a similar method dispatched on Page.
+    void addMessageToConsole(WorkerContext* workerContext, MessageSource source, MessageType type, MessageLevel level, const String& message, const String& scriptId, unsigned lineNumber, ScriptState* state, unsigned long requestIdentifier = 0);
+
+    [Console]
+    void consoleCount(Page* page, ScriptState* state, PassRefPtr<ScriptArguments> arguments);
+
+    [Timeline, Console]
+    void startConsoleTiming([Keep] Frame* frame, const String& title);
+
+    [Console, Timeline]
+    void stopConsoleTiming([Keep] Frame* frame, const String& title, PassRefPtr<ScriptCallStack> stack);
+
+    [Timeline, Inline=FastReturn]
+    void consoleTimeStamp([Keep] Frame* frame, PassRefPtr<ScriptArguments> arguments);
+
+    [Profiler]
+    void addStartProfilingMessageToConsole(Page* page, const String& title, unsigned lineNumber, const String& sourceURL);
+
+    [Profiler]
+    void addProfile(Page* page, PassRefPtr<ScriptProfile> profile, PassRefPtr<ScriptCallStack> callStack);
+}
+
+interface InspectorDatabaseInstrumentation {
+
+#include "modules/webdatabase/Database.h"
+
+    [Database]
+    void didOpenDatabase(ScriptExecutionContext* context, PassRefPtr<Database> database, const String& domain, const String& name, const String& version);
 }

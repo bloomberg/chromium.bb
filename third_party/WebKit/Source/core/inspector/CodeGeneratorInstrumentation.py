@@ -146,7 +146,7 @@ class File:
     def __init__(self, name, source):
         self.name = name
         self.header_name = self.name + "Inl"
-        self.includes = []
+        self.includes = [include_inspector_header("InspectorInstrumentation")]
         self.declarations = []
         for line in map(str.strip, source.split("\n")):
             line = re.sub("\s{2,}", " ", line).strip()  # Collapse whitespace
@@ -342,28 +342,28 @@ def agent_class_name(agent):
     return "Inspector%sAgent" % agent
 
 
+def include_inspector_header(name):
+    return "#include \"core/inspector/%s.h\"" % name
+
+
 def generate(input_path, output_h_dir, output_cpp_dir):
     fin = open(input_path, "r")
     files = load_model_from_idl(fin.read())
     fin.close()
 
+    cpp_includes = []
     cpp_lines = []
     used_agents = set()
     for f in files:
-        fout = open(output_h_dir + "/" + f.header_name + ".h", "w")
+        file_name = f.header_name + ".h"
+        cpp_includes.append("#include \"%s\"" % file_name)
+
+        fout = open(output_h_dir + "/" + file_name, "w")
         fout.write(f.generate(cpp_lines, used_agents))
         fout.close()
 
-    def include_inspector_header(name):
-        return "#include \"core/inspector/%s.h\"" % name
-
-    cpp_includes = []
     for agent in used_agents:
         cpp_includes.append(include_inspector_header(agent_class_name(agent)))
-
-    cpp_includes.append(include_inspector_header("InspectorConsoleInstrumentation"))
-    cpp_includes.append(include_inspector_header("InspectorDatabaseInstrumentation"))
-    cpp_includes.append(include_inspector_header("InspectorInstrumentation"))
     cpp_includes.append(include_inspector_header("InstrumentingAgents"))
     cpp_includes.sort()
 
