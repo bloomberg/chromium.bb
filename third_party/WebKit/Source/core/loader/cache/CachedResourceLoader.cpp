@@ -490,8 +490,13 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::requestResource(Cache
         }
     }
 
-    // FIXME: Temporarily leave main resource caching disabled for chromium, see https://bugs.webkit.org/show_bug.cgi?id=107962
-    // Ensure main resources aren't preloaded, and other main resource loads are removed from cache to prevent reuse.
+    // FIXME: Temporarily leave main resource caching disabled for chromium,
+    // see https://bugs.webkit.org/show_bug.cgi?id=107962. Before caching main
+    // resources, we should be sure to understand the implications for memory
+    // use.
+    //
+    // Ensure main resources aren't preloaded, and other main resource loads
+    // are removed from cache to prevent reuse.
     if (type == CachedResource::MainResource) {
         ASSERT(policy != Use);
         ASSERT(policy != Revalidate);
