@@ -73,7 +73,7 @@ shouldBe('data[2]', '0');
 imageData = ctx.getImageData(380, 30, 1, 1);
 data = imageData.data;
 shouldBe('data[0]', '255');
-shouldBe('data[1]', '20');
+shouldBeCloseTo('data[1]', 20, 3);
 shouldBe('data[2]', '0');
 
 imageData = ctx.getImageData(400, 40, 1, 1);
