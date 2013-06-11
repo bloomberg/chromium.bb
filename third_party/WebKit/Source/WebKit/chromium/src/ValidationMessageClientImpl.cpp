@@ -78,24 +78,22 @@ void ValidationMessageClientImpl::showValidationMessage(const Element& anchor, c
     if (m_currentAnchor)
         hideValidationMessage(*m_currentAnchor);
     m_currentAnchor = &anchor;
-    m_lastAnchorRectInScreen = currentView()->contentsToScreen(anchor.pixelSnappedBoundingBox());
+    IntRect anchorInRootView = currentView()->contentsToRootView(anchor.pixelSnappedBoundingBox());
+    m_lastAnchorRectInScreen = currentView()->hostWindow()->rootViewToScreen(anchorInRootView);
     m_lastPageScaleFactor = m_webView.pageScaleFactor();
     m_message = message;
-    askClientToShowValidationMessage();
+
+    WebTextDirection dir = m_currentAnchor->renderer()->style()->direction() == RTL ? WebTextDirectionRightToLeft : WebTextDirectionLeftToRight;
+    AtomicString title = m_currentAnchor->fastGetAttribute(HTMLNames::titleAttr);
+    m_client.showValidationMessage(anchorInRootView, m_message, title, dir);
 
     const double minimumSecondToShowValidationMessage = 5.0;
     const double secondPerCharacter = 0.05;
     const double statusCheckInterval = 0.1;
-    m_finishTime = monotonicallyIncreasingTime() + std::max(minimumSecondToShowValidationMessage, message.length() * secondPerCharacter);
+    m_finishTime = monotonicallyIncreasingTime() + std::max(minimumSecondToShowValidationMessage, (message.length() + title.length()) * secondPerCharacter);
     // FIXME: We should invoke checkAnchorStatus actively when layout, scroll,
     // or page scale change happen.
     m_timer.startRepeating(statusCheckInterval);
-}
-
-void ValidationMessageClientImpl::askClientToShowValidationMessage()
-{
-    WebTextDirection dir = m_currentAnchor->renderer()->style()->direction() == RTL ? WebTextDirectionRightToLeft : WebTextDirectionLeftToRight;
-    m_client.showValidationMessage(m_lastAnchorRectInScreen, m_message, m_currentAnchor->fastGetAttribute(HTMLNames::titleAttr), dir);
 }
 
 void ValidationMessageClientImpl::hideValidationMessage(const Element& anchor)
@@ -136,7 +134,7 @@ void ValidationMessageClientImpl::checkAnchorStatus(Timer<ValidationMessageClien
         return;
     m_lastAnchorRectInScreen = newAnchorRectInScreen;
     m_lastPageScaleFactor = m_webView.pageScaleFactor();
-    askClientToShowValidationMessage();
+    m_client.moveValidationMessage(newAnchorRect);
 }
 
 }

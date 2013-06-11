@@ -47,7 +47,6 @@ public:
 
 private:
     ValidationMessageClientImpl(WebViewImpl&, WebValidationMessageClient&);
-    void askClientToShowValidationMessage();
     void checkAnchorStatus(WebCore::Timer<ValidationMessageClientImpl>*);
     WebCore::FrameView* currentView();
 

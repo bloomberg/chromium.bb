@@ -44,11 +44,13 @@ public:
     // Show a notification popup for the specified form vaidation messages
     // besides the anchor rectangle. An implementation of this function should
     // not hide the popup until hideValidationMessage call.
-    virtual void showValidationMessage(const WebRect& anchorInScreen, const WebString& mainText, const WebString& supplementalText, WebTextDirection hint) { }
+    virtual void showValidationMessage(const WebRect& anchorInRootView, const WebString& mainText, const WebString& supplementalText, WebTextDirection hint) { }
 
     // Hide notifation popup for form validation messages.
     virtual void hideValidationMessage() { }
 
+    // Move the existing notifation popup for the new anchor position.
+    virtual void moveValidationMessage(const WebRect& anchorInRootView) { }
 
 protected:
     virtual ~WebValidationMessageClient() { }
