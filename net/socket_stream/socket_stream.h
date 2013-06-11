@@ -329,9 +329,6 @@ class NET_EXPORT SocketStream
   int HandleCertificateError(int result);
   int AllowCertErrorForReconnection(SSLConfig* ssl_config);
 
-  SSLConfigService* ssl_config_service() const;
-  ProxyService* proxy_service() const;
-
   // Returns the sum of the size of buffers in |pending_write_bufs_|.
   size_t GetTotalSizeOfPendingWriteBufs() const;
 

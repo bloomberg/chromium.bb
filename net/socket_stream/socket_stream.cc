@@ -174,7 +174,7 @@ void SocketStream::Connect() {
   DCHECK_EQ(base::MessageLoop::TYPE_IO, base::MessageLoop::current()->type())
       << "The current base::MessageLoop must be TYPE_IO";
   if (context_.get()) {
-    ssl_config_service()->GetSSLConfig(&server_ssl_config_);
+    context_->ssl_config_service()->GetSSLConfig(&server_ssl_config_);
     proxy_ssl_config_ = server_ssl_config_;
   }
   CheckPrivacyMode();
@@ -602,6 +602,7 @@ int SocketStream::DoBeforeConnectComplete(int result) {
 }
 
 int SocketStream::DoResolveProxy() {
+  DCHECK(context_);
   DCHECK(!pac_request_);
   next_state_ = STATE_RESOLVE_PROXY_COMPLETE;
 
@@ -618,7 +619,7 @@ int SocketStream::DoResolveProxy() {
   // connection might be the first one. At that time, we should check
   // Alternate-Protocol header here for ws:// or TLS NPN extension for wss:// .
 
-  return proxy_service()->ResolveProxy(
+  return context_->proxy_service()->ResolveProxy(
       proxy_url_, &proxy_info_, io_callback_, &pac_request_, net_log_);
 }
 
@@ -1316,14 +1317,6 @@ int SocketStream::HandleCertificateError(int result) {
 
   delegate_->OnSSLCertificateError(this, ssl_info, fatal);
   return ERR_IO_PENDING;
-}
-
-SSLConfigService* SocketStream::ssl_config_service() const {
-  return context_->ssl_config_service();
-}
-
-ProxyService* SocketStream::proxy_service() const {
-  return context_->proxy_service();
 }
 
 }  // namespace net
