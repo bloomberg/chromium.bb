@@ -69,7 +69,12 @@ class SyncClient : public FileCacheObserver {
                              const std::string& md5) OVERRIDE;
   virtual void OnCacheUnpinned(const std::string& resource_id,
                                const std::string& md5) OVERRIDE;
-  virtual void OnCacheCommitted(const std::string& resource_id) OVERRIDE;
+
+  // Adds a fetch task to the queue.
+  void AddFetchTask(const std::string& resource_id);
+
+  // Adds an upload task to the queue.
+  void AddUploadTask(const std::string& resource_id);
 
   // Starts processing the backlog (i.e. pinned-but-not-filed files and
   // dirty-but-not-uploaded files). Kicks off retrieval of the resource
@@ -84,12 +89,6 @@ class SyncClient : public FileCacheObserver {
   // Returns the resource IDs in |queue_| for the given sync type. Used only
   // for testing.
   std::vector<std::string> GetResourceIdsForTesting(SyncType sync_type) const;
-
-  // Adds the resource ID to the queue. Used only for testing.
-  void AddResourceIdForTesting(SyncType sync_type,
-                               const std::string& resource_id) {
-    AddTaskToQueue(sync_type, resource_id);
-  }
 
   // Sets a delay for testing.
   void set_delay_for_testing(const base::TimeDelta& delay) {

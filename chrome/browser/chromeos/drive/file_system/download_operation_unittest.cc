@@ -403,11 +403,17 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_DirtyCache) {
 
   // Store the file as a cache, marking it to be dirty.
   FileError error = FILE_ERROR_FAILED;
-  cache()->StoreLocallyModifiedOnUIThread(
+  cache()->StoreOnUIThread(
       src_entry.resource_id(),
       src_entry.file_specific_info().md5(),
       dirty_file,
       internal::FileCache::FILE_OPERATION_COPY,
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  cache()->MarkDirtyOnUIThread(
+      src_entry.resource_id(),
+      src_entry.file_specific_info().md5(),
       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);

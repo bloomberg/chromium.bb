@@ -137,14 +137,6 @@ bool PrepareTestCacheResources(
       google_apis::test_util::RunBlockingPoolTask();
       if (error != FILE_ERROR_OK)
         return false;
-
-      cache->CommitDirtyOnUIThread(
-          resources[i].resource_id,
-          resources[i].md5,
-          google_apis::test_util::CreateCopyResultCallback(&error));
-      google_apis::test_util::RunBlockingPoolTask();
-      if (error != FILE_ERROR_OK)
-        return false;
     }
   }
   return true;

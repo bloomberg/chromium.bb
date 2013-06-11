@@ -37,6 +37,18 @@ FileError CopyLocalFileOnBlockingPool(
       FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
+// Stores a file to the cache and mark it dirty.
+FileError StoreAndMarkDirty(internal::FileCache* cache,
+                            const std::string& resource_id,
+                            const std::string& md5,
+                            const base::FilePath& local_file_path) {
+  FileError error = cache->Store(resource_id, md5, local_file_path,
+                                 internal::FileCache::FILE_OPERATION_COPY);
+  if (error != FILE_ERROR_OK)
+    return error;
+  return cache->MarkDirty(resource_id, md5);
+}
+
 }  // namespace
 
 CopyOperation::CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
@@ -194,12 +206,28 @@ void CopyOperation::ScheduleTransferRegularFileAfterGetResourceEntry(
     return;
   }
 
-  cache_->StoreLocallyModifiedOnUIThread(
-      entry->resource_id(),
-      entry->file_specific_info().md5(),
-      local_file_path,
-      internal::FileCache::FILE_OPERATION_COPY,
-      callback);
+  ResourceEntry* entry_ptr = entry.get();
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&StoreAndMarkDirty,
+                 cache_,
+                 entry_ptr->resource_id(),
+                 entry_ptr->file_specific_info().md5(),
+                 local_file_path),
+      base::Bind(&CopyOperation::ScheduleTransferRegularFileAfterStore,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&entry),
+                 callback));
+}
+
+void CopyOperation::ScheduleTransferRegularFileAfterStore(
+    scoped_ptr<ResourceEntry> entry,
+    const FileOperationCallback& callback,
+    FileError error) {
+  if (error == FILE_ERROR_OK)
+    observer_->OnCacheFileUploadNeededByOperation(entry->resource_id());
+  callback.Run(error);
 }
 
 void CopyOperation::CopyHostedDocumentToDirectory(

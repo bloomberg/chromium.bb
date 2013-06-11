@@ -22,9 +22,6 @@ class FileCacheObserver {
   virtual void OnCacheUnpinned(const std::string& resource_id,
                                const std::string& md5) {}
 
-  // Triggered when a dirty file has been committed (saved) successfully.
-  virtual void OnCacheCommitted(const std::string& resource_id) {}
-
  protected:
   virtual ~FileCacheObserver() {}
 };

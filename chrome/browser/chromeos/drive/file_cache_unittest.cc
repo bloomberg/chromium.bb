@@ -132,26 +132,6 @@ class FileCacheTestOnUIThread : public testing::Test {
     VerifyCacheFileState(error, resource_id, md5);
   }
 
-  void TestStoreLocallyModifiedToCache(
-      const std::string& resource_id,
-      const std::string& md5,
-      const base::FilePath& source_path,
-      FileError expected_error,
-      int expected_cache_state,
-      FileCache::CacheSubDirectoryType expected_sub_dir_type) {
-    expected_error_ = expected_error;
-    expected_cache_state_ = expected_cache_state;
-    expected_sub_dir_type_ = expected_sub_dir_type;
-
-    FileError error = FILE_ERROR_OK;
-    cache_->StoreLocallyModifiedOnUIThread(
-        resource_id, md5, source_path,
-        FileCache::FILE_OPERATION_COPY,
-        google_apis::test_util::CreateCopyResultCallback(&error));
-    google_apis::test_util::RunBlockingPoolTask();
-    VerifyCacheFileState(error, resource_id, md5);
-  }
-
   void TestRemoveFromCache(const std::string& resource_id,
                            FileError expected_error) {
     expected_error_ = expected_error;
@@ -284,24 +264,6 @@ class FileCacheTestOnUIThread : public testing::Test {
                 "local",
                 base_name.value());
     }
-  }
-
-  void TestCommitDirty(
-      const std::string& resource_id,
-      const std::string& md5,
-      FileError expected_error,
-      int expected_cache_state,
-      FileCache::CacheSubDirectoryType expected_sub_dir_type) {
-    expected_error_ = expected_error;
-    expected_cache_state_ = expected_cache_state;
-    expected_sub_dir_type_ = expected_sub_dir_type;
-
-    FileError error = FILE_ERROR_OK;
-    cache_->CommitDirtyOnUIThread(
-        resource_id, md5,
-        google_apis::test_util::CreateCopyResultCallback(&error));
-    google_apis::test_util::RunBlockingPoolTask();
-    VerifyCacheFileState(error, resource_id, md5);
   }
 
   void TestClearDirty(
@@ -566,21 +528,6 @@ TEST_F(FileCacheTestOnUIThread, StoreToCacheSimple) {
   EXPECT_EQ(1U, CountCacheFiles(resource_id, md5));
 }
 
-TEST_F(FileCacheTestOnUIThread, LocallyModifiedSimple) {
-  std::string resource_id("pdf:1a2b");
-  std::string md5("abcdef0123456789");
-
-  const int kDirtyCacheState =
-      test_util::TEST_CACHE_STATE_PRESENT |
-      test_util::TEST_CACHE_STATE_DIRTY |
-      test_util::TEST_CACHE_STATE_PERSISTENT;
-
-  EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(1);
-  TestStoreLocallyModifiedToCache(
-      resource_id, md5,
-      dummy_file_path_,
-      FILE_ERROR_OK, kDirtyCacheState, FileCache::CACHE_TYPE_PERSISTENT);
-}
 
 TEST_F(FileCacheTestOnUIThread, GetFromCacheSimple) {
   std::string resource_id("pdf:1a2b");
@@ -780,7 +727,6 @@ TEST_F(FileCacheTestOnUIThread, RemoveFromCachePinned) {
 TEST_F(FileCacheTestOnUIThread, DirtyCacheSimple) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(1);
 
   // First store a file to cache.
   TestStoreToCache(resource_id, md5, dummy_file_path_,
@@ -794,13 +740,6 @@ TEST_F(FileCacheTestOnUIThread, DirtyCacheSimple) {
                 test_util::TEST_CACHE_STATE_PERSISTENT,
                 FileCache::CACHE_TYPE_PERSISTENT);
 
-  // Commit the file dirty.
-  TestCommitDirty(resource_id, md5, FILE_ERROR_OK,
-                  test_util::TEST_CACHE_STATE_PRESENT |
-                  test_util::TEST_CACHE_STATE_DIRTY |
-                  test_util::TEST_CACHE_STATE_PERSISTENT,
-                  FileCache::CACHE_TYPE_PERSISTENT);
-
   // Clear dirty state of the file.
   TestClearDirty(resource_id, md5, FILE_ERROR_OK,
                  test_util::TEST_CACHE_STATE_PRESENT,
@@ -811,7 +750,6 @@ TEST_F(FileCacheTestOnUIThread, DirtyCachePinned) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
-  EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(1);
 
   // First store a file to cache and pin it.
   TestStoreToCache(resource_id, md5, dummy_file_path_,
@@ -830,14 +768,6 @@ TEST_F(FileCacheTestOnUIThread, DirtyCachePinned) {
                 test_util::TEST_CACHE_STATE_PINNED |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
                 FileCache::CACHE_TYPE_PERSISTENT);
-
-  // Commit the file dirty.
-  TestCommitDirty(resource_id, md5, FILE_ERROR_OK,
-                  test_util::TEST_CACHE_STATE_PRESENT |
-                  test_util::TEST_CACHE_STATE_DIRTY |
-                  test_util::TEST_CACHE_STATE_PINNED |
-                  test_util::TEST_CACHE_STATE_PERSISTENT,
-                  FileCache::CACHE_TYPE_PERSISTENT);
 
   // Clear dirty state of the file.
   TestClearDirty(resource_id, md5, FILE_ERROR_OK,
@@ -899,7 +829,6 @@ TEST_F(FileCacheTestOnUIThread, PinAndUnpinDirtyCache) {
 TEST_F(FileCacheTestOnUIThread, DirtyCacheRepetitive) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(3);
 
   // First store a file to cache.
   TestStoreToCache(resource_id, md5, dummy_file_path_,
@@ -919,34 +848,6 @@ TEST_F(FileCacheTestOnUIThread, DirtyCacheRepetitive) {
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
                 FileCache::CACHE_TYPE_PERSISTENT);
-
-  // Commit the file dirty.
-  TestCommitDirty(resource_id, md5, FILE_ERROR_OK,
-                  test_util::TEST_CACHE_STATE_PRESENT |
-                  test_util::TEST_CACHE_STATE_DIRTY |
-                  test_util::TEST_CACHE_STATE_PERSISTENT,
-                  FileCache::CACHE_TYPE_PERSISTENT);
-
-  // Again, commit the file dirty.  Nothing should change.
-  TestCommitDirty(resource_id, md5, FILE_ERROR_OK,
-                  test_util::TEST_CACHE_STATE_PRESENT |
-                  test_util::TEST_CACHE_STATE_DIRTY |
-                  test_util::TEST_CACHE_STATE_PERSISTENT,
-                  FileCache::CACHE_TYPE_PERSISTENT);
-
-  // Mark the file dirty again after it's being committed.
-  TestMarkDirty(resource_id, md5, FILE_ERROR_OK,
-                test_util::TEST_CACHE_STATE_PRESENT |
-                test_util::TEST_CACHE_STATE_DIRTY |
-                test_util::TEST_CACHE_STATE_PERSISTENT,
-                FileCache::CACHE_TYPE_PERSISTENT);
-
-  // Commit the file dirty.
-  TestCommitDirty(resource_id, md5, FILE_ERROR_OK,
-                  test_util::TEST_CACHE_STATE_PRESENT |
-                  test_util::TEST_CACHE_STATE_DIRTY |
-                  test_util::TEST_CACHE_STATE_PERSISTENT,
-                  FileCache::CACHE_TYPE_PERSISTENT);
 
   // Clear dirty state of the file.
   TestClearDirty(resource_id, md5, FILE_ERROR_OK,
@@ -1003,7 +904,6 @@ TEST_F(FileCacheTestOnUIThread, RemoveFromDirtyCache) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
-  EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(1);
 
   // Store a file to cache, pin it, mark it dirty and commit it.
   TestStoreToCache(resource_id, md5, dummy_file_path_,
@@ -1020,12 +920,6 @@ TEST_F(FileCacheTestOnUIThread, RemoveFromDirtyCache) {
                 test_util::TEST_CACHE_STATE_DIRTY |
                 test_util::TEST_CACHE_STATE_PERSISTENT,
                 FileCache::CACHE_TYPE_PERSISTENT);
-  TestCommitDirty(resource_id, md5, FILE_ERROR_OK,
-                  test_util::TEST_CACHE_STATE_PRESENT |
-                  test_util::TEST_CACHE_STATE_PINNED |
-                  test_util::TEST_CACHE_STATE_DIRTY |
-                  test_util::TEST_CACHE_STATE_PERSISTENT,
-                  FileCache::CACHE_TYPE_PERSISTENT);
 
   // Try to remove the file.  Since file is dirty, it should not be removed.
   TestRemoveFromCache(resource_id, FILE_ERROR_OK);
@@ -1077,10 +971,6 @@ TEST_F(FileCacheTestOnUIThread, Iterate) {
       EXPECT_CALL(*mock_cache_observer_,
                   OnCachePinned(cache_resources[i].resource_id,
                                 cache_resources[i].md5)).Times(1);
-    }
-    if (cache_resources[i].is_dirty) {
-      EXPECT_CALL(*mock_cache_observer_,
-                  OnCacheCommitted(cache_resources[i].resource_id)).Times(1);
     }
   }
   ASSERT_TRUE(test_util::PrepareTestCacheResources(

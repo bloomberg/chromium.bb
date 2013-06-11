@@ -485,28 +485,7 @@ FileError FileCache::Store(const std::string& resource_id,
                            const base::FilePath& source_path,
                            FileOperationType file_operation_type) {
   AssertOnSequencedWorkerPool();
-  return StoreInternal(resource_id, md5, source_path, file_operation_type,
-                       CACHED_FILE_FROM_SERVER);
-}
-
-void FileCache::StoreLocallyModifiedOnUIThread(
-    const std::string& resource_id,
-    const std::string& md5,
-    const base::FilePath& source_path,
-    FileOperationType file_operation_type,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&FileCache::StoreInternal,
-                 base::Unretained(this),
-                 resource_id, md5, source_path, file_operation_type,
-                 CACHED_FILE_LOCALLY_MODIFIED),
-      base::Bind(&FileCache::OnCommitDirty,
-                 weak_ptr_factory_.GetWeakPtr(), resource_id, callback));
+  return StoreInternal(resource_id, md5, source_path, file_operation_type);
 }
 
 void FileCache::PinOnUIThread(const std::string& resource_id,
@@ -733,21 +712,6 @@ FileError FileCache::MarkDirty(const std::string& resource_id,
   return FILE_ERROR_OK;
 }
 
-void FileCache::CommitDirtyOnUIThread(const std::string& resource_id,
-                                      const std::string& md5,
-                                      const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // TODO(hashimoto): Move logic around OnCommitDirty to FileSystem and remove
-  // this method.
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&FileCache::OnCommitDirty,
-                 weak_ptr_factory_.GetWeakPtr(), resource_id, callback,
-                 FILE_ERROR_OK));
-}
-
 FileError FileCache::ClearDirty(const std::string& resource_id,
                                 const std::string& md5) {
   AssertOnSequencedWorkerPool();
@@ -942,8 +906,7 @@ void FileCache::DestroyOnBlockingPool() {
 FileError FileCache::StoreInternal(const std::string& resource_id,
                                    const std::string& md5,
                                    const base::FilePath& source_path,
-                                   FileOperationType file_operation_type,
-                                   CachedFileOrigin origin) {
+                                   FileOperationType file_operation_type) {
   AssertOnSequencedWorkerPool();
 
   int64 file_size = 0;
@@ -960,25 +923,21 @@ FileError FileCache::StoreInternal(const std::string& resource_id,
   GetCacheEntry(resource_id, std::string(), &cache_entry);
 
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_TMP;
-  if (origin == CACHED_FILE_FROM_SERVER) {
-    // If file is dirty or mounted, return error.
-    if (cache_entry.is_dirty() || cache_entry.is_mounted()) {
-      LOG(WARNING) << "Can't store a file to replace a "
-                   << (cache_entry.is_dirty() ? "dirty" : "mounted")
-                   << " file: res_id=" << resource_id
-                   << ", md5=" << md5;
-      return FILE_ERROR_IN_USE;
-    }
-
-    // If file was previously pinned, store it in persistent dir.
-    if (cache_entry.is_pinned())
-      sub_dir_type = CACHE_TYPE_PERSISTENT;
-  } else {
-    sub_dir_type = CACHE_TYPE_PERSISTENT;
+  // If file is dirty or mounted, return error.
+  if (cache_entry.is_dirty() || cache_entry.is_mounted()) {
+    LOG(WARNING) << "Can't store a file to replace a "
+                 << (cache_entry.is_dirty() ? "dirty" : "mounted")
+                 << " file: res_id=" << resource_id
+                 << ", md5=" << md5;
+    return FILE_ERROR_IN_USE;
   }
 
+  // If file was previously pinned, store it in persistent dir.
+  if (cache_entry.is_pinned())
+    sub_dir_type = CACHE_TYPE_PERSISTENT;
+
   base::FilePath dest_path = GetCacheFilePath(resource_id, md5, sub_dir_type,
-                                              origin);
+                                              CACHED_FILE_FROM_SERVER);
   bool success = false;
   switch (file_operation_type) {
     case FILE_OPERATION_MOVE:
@@ -1018,7 +977,7 @@ FileError FileCache::StoreInternal(const std::string& resource_id,
     cache_entry.set_md5(md5);
     cache_entry.set_is_present(true);
     cache_entry.set_is_persistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
-    cache_entry.set_is_dirty(origin == CACHED_FILE_LOCALLY_MODIFIED);
+    cache_entry.set_is_dirty(false);
     metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
   }
 
@@ -1165,20 +1124,6 @@ void FileCache::OnUnpinned(const std::string& resource_id,
       base::Bind(
           base::IgnoreResult(&FileCache::FreeDiskSpaceIfNeededFor),
           base::Unretained(this), 0));
-}
-
-void FileCache::OnCommitDirty(const std::string& resource_id,
-                              const FileOperationCallback& callback,
-                              FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  callback.Run(error);
-
-  if (error == FILE_ERROR_OK)
-    FOR_EACH_OBSERVER(FileCacheObserver,
-                      observers_,
-                      OnCacheCommitted(resource_id));
 }
 
 bool FileCache::HasEnoughSpaceFor(int64 num_bytes,

@@ -198,16 +198,6 @@ class FileCache {
                   const base::FilePath& source_path,
                   FileOperationType file_operation_type);
 
-  // Stores |source_path| to the cache and mark it as dirty, i.e., needs to be
-  // uploaded to the remove server for syncing.
-  // |callback| must not be null.
-  // Must be called on the UI thread.
-  void StoreLocallyModifiedOnUIThread(const std::string& resource_id,
-                                      const std::string& md5,
-                                      const base::FilePath& source_path,
-                                      FileOperationType file_operation_type,
-                                      const FileOperationCallback& callback);
-
   // Runs Pin() on |blocking_task_runner_|, and calls |callback| with the result
   // asynchronously.
   // |callback| must not be null.
@@ -255,13 +245,6 @@ class FileCache {
   // Marks the specified entry dirty.
   FileError MarkDirty(const std::string& resource_id,
                       const std::string& md5);
-
-  // Commits changes for the specified dirty entry.
-  // |callback| must not be null.
-  // Must be called on the UI thread.
-  void CommitDirtyOnUIThread(const std::string& resource_id,
-                             const std::string& md5,
-                             const FileOperationCallback& callback);
 
   // Clears dirty state of the specified entry.
   FileError ClearDirty(const std::string& resource_id,
@@ -348,8 +331,7 @@ class FileCache {
   FileError StoreInternal(const std::string& resource_id,
                           const std::string& md5,
                           const base::FilePath& source_path,
-                          FileOperationType file_operation_type,
-                          CachedFileOrigin origin);
+                          FileOperationType file_operation_type);
 
   // Used to implement MarkAsMountedOnUIThread.
   FileError MarkAsMounted(const std::string& resource_id,
@@ -372,11 +354,6 @@ class FileCache {
                   const std::string& md5,
                   const FileOperationCallback& callback,
                   FileError error);
-
-  // Runs callback and notifies the observers when file is committed.
-  void OnCommitDirty(const std::string& resource_id,
-                     const FileOperationCallback& callback,
-                     FileError error);
 
   // Returns true if we have sufficient space to store the given number of
   // bytes, while keeping kMinFreeSpace bytes on the disk.

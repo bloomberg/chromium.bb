@@ -20,6 +20,10 @@ class OperationObserver {
   // changed directory.
   virtual void OnDirectoryChangedByOperation(
       const base::FilePath& directory_path) = 0;
+
+  // Sent when a cache file is modified and upload is needed.
+  virtual void OnCacheFileUploadNeededByOperation(
+      const std::string& resource_id) = 0;
 };
 
 }  // namespace file_system

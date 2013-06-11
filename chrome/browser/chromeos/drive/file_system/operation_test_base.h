@@ -23,7 +23,7 @@ class SequencedTaskRunner;
 
 namespace google_apis {
 class FakeDriveService;
-}  // namespace googl_apis
+}  // namespace google_apis
 
 namespace drive {
 
@@ -51,14 +51,22 @@ class OperationTestBase : public testing::Test {
     // OperationObserver overrides.
     virtual void OnDirectoryChangedByOperation(
         const base::FilePath& path) OVERRIDE;
+    virtual void OnCacheFileUploadNeededByOperation(
+        const std::string& resource_id) OVERRIDE;
 
     // Gets the set of changed paths.
     const std::set<base::FilePath>& get_changed_paths() {
       return changed_paths_;
     }
 
+    // Gets the set of upload needed resource IDs.
+    const std::set<std::string>& upload_needed_resource_ids() const {
+      return upload_needed_resource_ids_;
+    }
+
    private:
     std::set<base::FilePath> changed_paths_;
+    std::set<std::string> upload_needed_resource_ids_;
   };
 
   OperationTestBase();

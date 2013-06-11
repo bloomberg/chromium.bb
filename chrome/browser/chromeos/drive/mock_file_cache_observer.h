@@ -22,7 +22,6 @@ class MockCacheObserver : public internal::FileCacheObserver {
                                    const std::string& md5));
   MOCK_METHOD2(OnCacheUnpinned, void(const std::string& resource_id,
                                      const std::string& md5));
-  MOCK_METHOD1(OnCacheCommitted, void(const std::string& resource_id));
 };
 
 }  // namespace drive

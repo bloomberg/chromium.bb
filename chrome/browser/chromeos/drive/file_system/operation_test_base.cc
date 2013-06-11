@@ -30,6 +30,11 @@ void OperationTestBase::LoggingObserver::OnDirectoryChangedByOperation(
   changed_paths_.insert(path);
 }
 
+void OperationTestBase::LoggingObserver::OnCacheFileUploadNeededByOperation(
+    const std::string& resource_id) {
+  upload_needed_resource_ids_.insert(resource_id);
+}
+
 OperationTestBase::OperationTestBase()
     : ui_thread_(content::BrowserThread::UI, &message_loop_) {
 }

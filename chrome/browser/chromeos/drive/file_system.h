@@ -163,6 +163,8 @@ class FileSystem : public FileSystemInterface,
   // file_system::OperationObserver overrides.
   virtual void OnDirectoryChangedByOperation(
       const base::FilePath& directory_path) OVERRIDE;
+  virtual void OnCacheFileUploadNeededByOperation(
+      const std::string& resource_id) OVERRIDE;
 
   // ChangeListLoader::Observer overrides.
   // Used to propagate events from ChangeListLoader.
@@ -176,9 +178,10 @@ class FileSystem : public FileSystemInterface,
     return change_list_loader_.get();
   }
 
- private:
-  friend class DriveFileSystemTest;
+  // Used by tests.
+  internal::SyncClient* sync_client_for_testing() { return sync_client_.get(); }
 
+ private:
   // Used to implement Reload().
   void ReloadAfterReset(FileError error);
 
@@ -239,9 +242,6 @@ class FileSystem : public FileSystemInterface,
                                       const FileOperationCallback& callback,
                                       FileError error,
                                       scoped_ptr<ResourceEntry> entry);
-  void CloseFileFinalize(const base::FilePath& file_path,
-                         const FileOperationCallback& callback,
-                         FileError result);
 
   // Callback for handling about resource fetch.
   void OnGetAboutResource(

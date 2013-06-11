@@ -67,14 +67,6 @@ TEST_F(UpdateOperationTest, UpdateFileByResourceId_PersistentFile) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
-  // Commit the dirty bit.
-  error = FILE_ERROR_FAILED;
-  cache()->CommitDirtyOnUIThread(
-      kResourceId, kMd5,
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
   int64 original_changestamp = fake_service()->largest_changestamp();
 
   // The callback will be called upon completion of

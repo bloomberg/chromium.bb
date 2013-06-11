@@ -15,22 +15,6 @@
 namespace drive {
 namespace file_system {
 
-namespace {
-class CacheCommitObserver : public internal::FileCacheObserver {
- public:
-  virtual void OnCacheCommitted(const std::string& resource_id) OVERRIDE {
-   last_committed_resource_id_ = resource_id;
-  }
-  const std::string last_committed_resource_id() const {
-    return last_committed_resource_id_;
-  }
-
- private:
-  std::string last_committed_resource_id_;
-};
-
-}  // namespace
-
 class CopyOperationTest : public OperationTestBase {
  protected:
   virtual void SetUp() OVERRIDE {
@@ -59,9 +43,6 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_RegularFile) {
   ASSERT_EQ(FILE_ERROR_NOT_FOUND,
             GetLocalResourceEntry(remote_dest_path, &entry));
 
-  CacheCommitObserver cache_observer;
-  cache()->AddObserver(&cache_observer);
-
   // Transfer the local file to Drive.
   FileError error = FILE_ERROR_FAILED;
   operation_->TransferFileFromLocalToRemote(
@@ -71,16 +52,20 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_RegularFile) {
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
-  // What TransferFileFromLocalToRemote does is to store the local file in
-  // the Drive file cache, and mark it as dirty+committed. Here we test that
-  // the "cache committed" event is indeed fired as a result of this test case.
-  //
-  // In the production environment, SyncClient listens this event and uploads
-  // the file to the remote server in background. This part should be tested in
-  // sync_client_unittest.cc
+  // TransferFileFromLocalToRemote stores a copy of the local file in the cache,
+  // marks it dirty and requests the observer to upload the file.
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(remote_dest_path, &entry));
-  EXPECT_FALSE(cache_observer.last_committed_resource_id().empty());
-  EXPECT_EQ(entry.resource_id(), cache_observer.last_committed_resource_id());
+  EXPECT_EQ(1U, observer()->upload_needed_resource_ids().count(
+      entry.resource_id()));
+  FileCacheEntry cache_entry;
+  bool found = false;
+  cache()->GetCacheEntryOnUIThread(
+      entry.resource_id(), std::string(),
+      google_apis::test_util::CreateCopyResultCallback(&found, &cache_entry));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_TRUE(found);
+  EXPECT_TRUE(cache_entry.is_present());
+  EXPECT_TRUE(cache_entry.is_dirty());
 
   EXPECT_EQ(1U, observer()->get_changed_paths().size());
   EXPECT_TRUE(observer()->get_changed_paths().count(

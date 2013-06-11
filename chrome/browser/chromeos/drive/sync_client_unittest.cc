@@ -64,8 +64,11 @@ class SyncClientTestDriveService : public google_apis::FakeDriveService {
 };
 
 class DummyOperationObserver : public file_system::OperationObserver {
+  // OperationObserver override:
   virtual void OnDirectoryChangedByOperation(
       const base::FilePath& path) OVERRIDE {}
+  virtual void OnCacheFileUploadNeededByOperation(
+      const std::string& resource_id) OVERRIDE {}
 };
 
 }  // namespace
@@ -252,12 +255,9 @@ TEST_F(SyncClientTest, OnCachePinnedAndCancelled) {
 }
 
 TEST_F(SyncClientTest, OnCacheUnpinned) {
-  sync_client_->AddResourceIdForTesting(SyncClient::FETCH,
-                                        resource_ids_["foo"]);
-  sync_client_->AddResourceIdForTesting(SyncClient::FETCH,
-                                        resource_ids_["bar"]);
-  sync_client_->AddResourceIdForTesting(SyncClient::FETCH,
-                                        resource_ids_["baz"]);
+  sync_client_->AddFetchTask(resource_ids_["foo"]);
+  sync_client_->AddFetchTask(resource_ids_["bar"]);
+  sync_client_->AddFetchTask(resource_ids_["baz"]);
   ASSERT_EQ(3U,
             sync_client_->GetResourceIdsForTesting(SyncClient::FETCH).size());
 
@@ -282,8 +282,7 @@ TEST_F(SyncClientTest, OnCacheUnpinned) {
 }
 
 TEST_F(SyncClientTest, Deduplication) {
-  sync_client_->AddResourceIdForTesting(SyncClient::FETCH,
-                                        resource_ids_["foo"]);
+  sync_client_->AddFetchTask(resource_ids_["foo"]);
 
   // Set the delay so that DoSyncLoop() is delayed.
   sync_client_->set_delay_for_testing(TestTimeouts::action_max_timeout());

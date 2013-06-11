@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/drive/mock_file_cache_observer.h"
+#include "chrome/browser/chromeos/drive/sync_client.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
@@ -118,6 +119,10 @@ class FileSystemTest : public testing::Test {
                                       blocking_task_runner_));
     file_system_->AddObserver(mock_directory_observer_.get());
     file_system_->Initialize();
+
+    // Disable delaying so that the sync starts immediately.
+    file_system_->sync_client_for_testing()->set_delay_for_testing(
+        base::TimeDelta::FromSeconds(0));
 
     FileError error = FILE_ERROR_FAILED;
     resource_metadata_->Initialize(
@@ -663,6 +668,10 @@ TEST_F(FileSystemTest, CreateDirectoryByImplicitLoad) {
 }
 
 TEST_F(FileSystemTest, PinAndUnpin) {
+  // Pinned file gets synced and it results in entry state changes.
+  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(AtLeast(1));
+
   ASSERT_TRUE(LoadFullResourceList());
 
   base::FilePath file_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
@@ -725,16 +734,12 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   // The transfered file is cached and the change of "offline available"
   // attribute is notified.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
+      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(AtLeast(1));
 
   const base::FilePath kFileInRoot(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   scoped_ptr<ResourceEntry> entry(GetResourceEntryByPathSync(kFileInRoot));
   const std::string& file_resource_id = entry->resource_id();
   const std::string& md5 = entry->file_specific_info().md5();
-
-  // A dirty file is created on close.
-  EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(file_resource_id))
-      .Times(1);
 
   // Open kFileInRoot ("drive/root/File 1.txt").
   FileError error = FILE_ERROR_FAILED;
@@ -778,6 +783,11 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(cache_file_path, opened_file_path);
 
+  // Write a new content.
+  const std::string kNewContent = kExpectedContent + kExpectedContent;
+  EXPECT_TRUE(google_apis::test_util::WriteStringToFile(cache_file_path,
+                                                        kNewContent));
+
   // Close kFileInRoot ("drive/root/File 1.txt").
   file_system_->CloseFile(
       kFileInRoot,
@@ -787,12 +797,17 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
   // Verify that the file was properly closed.
   EXPECT_EQ(FILE_ERROR_OK, error);
 
-  // Verify that the cache state was changed as expected.
-  EXPECT_TRUE(GetCacheEntryFromOriginThread(file_resource_id, md5,
-                                            &cache_entry));
-  EXPECT_TRUE(cache_entry.is_present());
-  EXPECT_TRUE(cache_entry.is_dirty());
-  EXPECT_TRUE(cache_entry.is_persistent());
+  // Verify that the file was synced as expected.
+  google_apis::GDataErrorCode gdata_error = google_apis::GDATA_FILE_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> gdata_entry;
+  fake_drive_service_->GetResourceEntry(
+      file_resource_id,
+      google_apis::test_util::CreateCopyResultCallback(
+          &gdata_error, &gdata_entry));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(gdata_error, google_apis::HTTP_SUCCESS);
+  ASSERT_TRUE(gdata_entry);
+  EXPECT_EQ(static_cast<int>(kNewContent.size()), gdata_entry->file_size());
 
   // Try to close the same file twice.
   file_system_->CloseFile(

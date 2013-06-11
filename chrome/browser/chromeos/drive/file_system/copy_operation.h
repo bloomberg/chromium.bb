@@ -94,6 +94,10 @@ class CopyOperation {
       const FileOperationCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntry> entry);
+  void ScheduleTransferRegularFileAfterStore(
+      scoped_ptr<ResourceEntry> entry,
+      const FileOperationCallback& callback,
+      FileError error);
 
   // Invoked upon completion of GetFileByPath initiated by
   // TransferFileFromRemoteToLocal. If GetFileByPath reports no error, calls

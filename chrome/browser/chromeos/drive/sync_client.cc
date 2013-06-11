@@ -138,7 +138,13 @@ void SyncClient::OnCacheUnpinned(const std::string& resource_id,
   pending_fetch_list_.erase(resource_id);
 }
 
-void SyncClient::OnCacheCommitted(const std::string& resource_id) {
+void SyncClient::AddFetchTask(const std::string& resource_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  AddTaskToQueue(FETCH, resource_id);
+}
+
+void SyncClient::AddUploadTask(const std::string& resource_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   AddTaskToQueue(UPLOAD, resource_id);
