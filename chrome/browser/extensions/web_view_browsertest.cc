@@ -768,10 +768,17 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DOMStorageIsolation) {
   EXPECT_STREQ("badval", output.c_str());
 }
 
+// See crbug.com/248500
+#if defined(OS_WIN)
+#define MAYBE_IndexedDBIsolation DISABLED_IndexedDBIsolation
+#else
+#define MAYBE_IndexedDBIsolation IndexedDBIsolation
+#endif
+
 // This tests IndexedDB isolation for packaged apps with webview tags. It loads
 // an app with multiple webview tags and each tag creates an IndexedDB record,
 // which the test checks to ensure proper storage isolation is enforced.
-IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_IndexedDBIsolation) {
   ASSERT_TRUE(StartTestServer());
   GURL regular_url = test_server()->GetURL("files/title1.html");
 
