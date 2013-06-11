@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/time.h"
 #include "components/sessions/sessions_export.h"
 #include "content/public/common/page_state.h"

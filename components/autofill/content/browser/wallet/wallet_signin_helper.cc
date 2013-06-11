@@ -8,7 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"

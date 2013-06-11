@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/field_trial.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/common/autofill_switches.h"
 #include "components/autofill/common/form_data.h"

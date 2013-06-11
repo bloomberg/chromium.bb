@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "components/webdata/common/web_data_service_base.h"
 
 class Profile;

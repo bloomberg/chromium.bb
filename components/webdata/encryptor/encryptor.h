@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 // The Encryptor class gives access to simple encryption and decryption of
 // strings.  Note that on Mac, access to the system Keychain is required and

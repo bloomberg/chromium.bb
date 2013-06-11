@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "components/autofill/common/form_field_data.h"
 #include "content/public/common/ssl_status.h"
 #include "googleurl/src/gurl.h"

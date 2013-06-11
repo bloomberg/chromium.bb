@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/perftimer.h"
 #include "base/shared_memory.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/test_file_util.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "googleurl/src/gurl.h"

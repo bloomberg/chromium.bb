@@ -5,8 +5,8 @@
 #include "components/autofill/content/browser/wallet/instrument.h"
 
 #include "base/logging.h"
-#include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/browser/autofill_country.h"

@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_BROWSER_VALIDATION_H_
 #define COMPONENTS_AUTOFILL_BROWSER_VALIDATION_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace base {
 class Time;

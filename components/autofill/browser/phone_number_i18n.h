@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace i18n {
 namespace phonenumbers {

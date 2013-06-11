@@ -4,7 +4,7 @@
 
 #include "components/autofill/common/form_field_data.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace autofill {
