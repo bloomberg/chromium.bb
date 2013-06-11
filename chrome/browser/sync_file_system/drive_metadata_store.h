@@ -35,6 +35,7 @@ namespace sync_file_system {
 
 class DriveMetadata;
 struct DBContents;
+struct FileMetadata;
 
 // This class holds a snapshot of the server side metadata.
 class DriveMetadataStore
@@ -145,6 +146,11 @@ class DriveMetadataStore
   // root directory.
   bool GetOriginByOriginRootDirectoryId(const std::string& resource_id,
                                         GURL* origin);
+
+  // Returns all file metadata in serialized format.
+  typedef std::map<base::FilePath, FileMetadata> FileMetadataMap;
+  typedef std::map<GURL, FileMetadataMap> OriginToFileMetadataMap;
+  void GetFileMetadataMap(OriginToFileMetadataMap* output_map);
 
  private:
   friend class DriveMetadataStoreTest;

@@ -14,12 +14,15 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
+#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/sync_file_system/drive/metadata_db_migration_util.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
+#include "chrome/browser/sync_file_system/file_metadata.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "googleurl/src/gurl.h"
@@ -338,6 +341,18 @@ void AppendMetadataDeletionToBatch(const MetadataMap& metadata_map,
   for (PathToMetadata::const_iterator itr = found->second.begin();
        itr != found->second.end(); ++itr)
     batch->Delete(OriginAndPathToMetadataKey(origin, itr->first));
+}
+
+FileType DriveTypeToFileMetadataType(DriveMetadata_ResourceType drive_type) {
+  switch (drive_type) {
+    case DriveMetadata_ResourceType_RESOURCE_TYPE_FILE:
+      return TYPE_FILE;
+    case DriveMetadata_ResourceType_RESOURCE_TYPE_FOLDER:
+      return TYPE_FOLDER;
+  }
+
+  NOTREACHED();
+  return TYPE_FILE;
 }
 
 }  // namespace
@@ -747,6 +762,32 @@ bool DriveMetadataStore::GetOriginByOriginRootDirectoryId(
     return false;
   *origin = found->second;
   return true;
+}
+
+void DriveMetadataStore::GetFileMetadataMap(
+    OriginToFileMetadataMap* output_map) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(output_map);
+
+  for (MetadataMap::const_iterator origin_itr = metadata_map_.begin();
+       origin_itr != metadata_map_.end();
+       ++origin_itr) {
+    for (PathToMetadata::const_iterator itr = origin_itr->second.begin();
+         itr != origin_itr->second.end();
+         ++itr) {
+      // Convert Drive specific metadata to Common File metadata object.
+      const GURL& origin = origin_itr->first;
+      const std::string title = itr->first.BaseName().AsUTF8Unsafe();
+      const DriveMetadata& metadata = itr->second;
+      const FileType type = DriveTypeToFileMetadataType(metadata.type());
+      std::ostringstream details;
+      details << "resource_id=" << metadata.resource_id() << "\n"
+              << "md5_checksum=" << metadata.md5_checksum() << "\n"
+              << "to_be_fetched=" << metadata.to_be_fetched() << "\n";
+      FileMetadata file_metadata(title, type, details.str());
+      (*output_map)[origin][itr->first] = file_metadata;
+    }
+  }
 }
 
 }  // namespace sync_file_system

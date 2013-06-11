@@ -2136,6 +2136,7 @@
         'browser/sync_file_system/drive_file_sync_util.h',
         'browser/sync_file_system/drive_metadata_store.cc',
         'browser/sync_file_system/drive_metadata_store.h',
+        'browser/sync_file_system/file_metadata.h',
         'browser/sync_file_system/file_status_observer.h',
         'browser/sync_file_system/local_change_processor.h',
         'browser/sync_file_system/local_file_sync_service.cc',
