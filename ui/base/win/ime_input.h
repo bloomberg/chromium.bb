@@ -12,9 +12,9 @@
 
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
-#include "base/string16.h"
-#include "ui/gfx/rect.h"
+#include "base/strings/string16.h"
 #include "ui/base/ui_export.h"
+#include "ui/gfx/rect.h"
 
 namespace ui {
 

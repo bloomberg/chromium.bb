@@ -5,7 +5,7 @@
 #ifndef UI_BASE_MODELS_DIALOG_MODEL_H_
 #define UI_BASE_MODELS_DIALOG_MODEL_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/ui_export.h"
 

@@ -5,7 +5,7 @@
 #ifndef UI_BASE_TEXT_UTF16_INDEXING_H_
 #define UI_BASE_TEXT_UTF16_INDEXING_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/base/ui_export.h"
 
 namespace ui {

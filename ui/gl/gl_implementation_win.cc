@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/windows_version.h"
 #include "ui/gl/gl_bindings.h"

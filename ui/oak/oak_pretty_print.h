@@ -5,7 +5,7 @@
 #ifndef UI_OAK_OAK_PRETTY_PRINT_H_
 #define UI_OAK_OAK_PRETTY_PRINT_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace gfx {
 class Insets;

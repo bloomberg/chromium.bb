@@ -6,7 +6,7 @@
 
 #include <limits>
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"

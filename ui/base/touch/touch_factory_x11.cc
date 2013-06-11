@@ -15,7 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/x/device_list_cache_x.h"

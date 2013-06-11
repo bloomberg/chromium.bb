@@ -11,7 +11,7 @@
 
 #include "base/files/file_path.h"
 #include "base/native_library.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/win/metro.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"

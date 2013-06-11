@@ -8,7 +8,7 @@
 #include <set>
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"

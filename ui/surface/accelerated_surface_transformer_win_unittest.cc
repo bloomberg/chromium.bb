@@ -9,7 +9,7 @@
 #include "base/file_util.h"
 #include "base/hash.h"
 #include "base/scoped_native_library.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/time.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"

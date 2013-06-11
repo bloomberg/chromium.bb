@@ -8,7 +8,7 @@
 
 #include "base/debug/alias.h"
 #include "base/memory/singleton.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/win/wrapped_window_proc.h"
 #include "ui/base/win/hwnd_util.h"
 

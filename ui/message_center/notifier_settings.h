@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center_export.h"

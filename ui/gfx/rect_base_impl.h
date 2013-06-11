@@ -5,7 +5,7 @@
 #include "ui/gfx/rect_base.h"
 
 #include "base/logging.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 
 // This file provides the implementation for RectBaese template and
 // used to instantiate the base class for Rect and RectF classes.

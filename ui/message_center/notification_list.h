@@ -8,7 +8,7 @@
 #include <set>
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "ui/gfx/image/image.h"

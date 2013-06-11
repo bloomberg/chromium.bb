@@ -5,7 +5,7 @@
 #include "ui/message_center/views/notification_view.h"
 
 #include "base/command_line.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/base/layout.h"

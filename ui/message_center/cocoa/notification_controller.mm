@@ -5,9 +5,9 @@
 #import "ui/message_center/cocoa/notification_controller.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/string_util.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/hover_image_button.h"

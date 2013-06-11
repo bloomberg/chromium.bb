@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "third_party/icu/public/common/unicode/uchar.h"
 #include "third_party/icu/public/i18n/unicode/coll.h"
 #include "ui/base/ui_export.h"

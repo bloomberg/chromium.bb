@@ -9,14 +9,14 @@
 
 #include <cmath>
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/point3_f.h"
-#include "ui/gfx/vector3d_f.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/safe_integer_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform_util.h"
+#include "ui/gfx/vector3d_f.h"
 
 namespace gfx {
 

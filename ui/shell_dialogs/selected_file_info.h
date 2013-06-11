@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/shell_dialogs/shell_dialogs_export.h"
 
 namespace ui {

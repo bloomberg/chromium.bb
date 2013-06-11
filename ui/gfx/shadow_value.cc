@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/point_conversions.h"
 

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/base/models/menu_model.h"
 
 namespace gfx {

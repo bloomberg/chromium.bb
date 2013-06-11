@@ -5,7 +5,7 @@
 #ifndef UI_MESSAGE_CENTER_VIEWS_MESSAGE_VIEW_H_
 #define UI_MESSAGE_CENTER_VIEWS_MESSAGE_VIEW_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/gfx/insets.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification.h"

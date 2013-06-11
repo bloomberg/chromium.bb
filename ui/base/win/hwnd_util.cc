@@ -5,7 +5,7 @@
 #include "ui/base/win/hwnd_util.h"
 
 #include "base/i18n/rtl.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/win/metro.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
