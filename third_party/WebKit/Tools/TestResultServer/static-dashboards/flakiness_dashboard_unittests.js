@@ -166,34 +166,14 @@ test('htmlForIndividualTestOnAllBuildersWithResultsLinks', 1, function() {
         '</div>');
 });
 
-test('htmlForIndividualTests', 4, function() {
+test('htmlForIndividualTest', 2, function() {
     var historyInstance = resetGlobals();
     builders.loadBuildersList('@ToT Blink', 'layout-tests');
-    var test1 = 'foo/nonexistant.html';
-    var test2 = 'bar/nonexistant.html';
+    var test = 'foo/nonexistant.html';
 
     historyInstance.dashboardSpecificState.showChrome = false;
 
-    var tests = [test1, test2];
-    equal(htmlForIndividualTests(tests),
-        '<h2><a href="' + TEST_URL_BASE_PATH_FOR_BROWSING + 'foo/nonexistant.html" target="_blank">foo/nonexistant.html</a></h2>' +
-        htmlForIndividualTestOnAllBuilders(test1) +
-        '<div class=expectations test=foo/nonexistant.html>' +
-            '<div><span class=link onclick=\"g_history.setQueryParameter(\'showExpectations\', true)\">Show results</span> | ' +
-            '<span class=link onclick=\"g_history.setQueryParameter(\'showLargeExpectations\', true)\">Show large thumbnails</span> | ' +
-            '<b>Only shows actual results/diffs from the most recent *failure* on each bot.</b></div>' +
-        '</div>' +
-        '<hr>' +
-        '<h2><a href="' + TEST_URL_BASE_PATH_FOR_BROWSING + 'bar/nonexistant.html" target="_blank">bar/nonexistant.html</a></h2>' +
-        htmlForIndividualTestOnAllBuilders(test2) +
-        '<div class=expectations test=bar/nonexistant.html>' +
-            '<div><span class=link onclick=\"g_history.setQueryParameter(\'showExpectations\', true)\">Show results</span> | ' +
-            '<span class=link onclick=\"g_history.setQueryParameter(\'showLargeExpectations\', true)\">Show large thumbnails</span> | ' +
-            '<b>Only shows actual results/diffs from the most recent *failure* on each bot.</b></div>' +
-        '</div>');
-
-    tests = [test1];
-    equal(htmlForIndividualTests(tests), htmlForIndividualTestOnAllBuilders(test1) +
+    equal(htmlForIndividualTest(test), htmlForIndividualTestOnAllBuilders(test) +
         '<div class=expectations test=foo/nonexistant.html>' +
             '<div><span class=link onclick=\"g_history.setQueryParameter(\'showExpectations\', true)\">Show results</span> | ' +
             '<span class=link onclick=\"g_history.setQueryParameter(\'showLargeExpectations\', true)\">Show large thumbnails</span> | ' +
@@ -202,16 +182,9 @@ test('htmlForIndividualTests', 4, function() {
 
     historyInstance.dashboardSpecificState.showChrome = true;
 
-    equal(htmlForIndividualTests(tests),
+    equal(htmlForIndividualTest(test),
         '<h2><a href="' + TEST_URL_BASE_PATH_FOR_BROWSING + 'foo/nonexistant.html" target="_blank">foo/nonexistant.html</a></h2>' +
-        htmlForIndividualTestOnAllBuildersWithResultsLinks(test1));
-
-    tests = [test1, test2];
-    equal(htmlForIndividualTests(tests),
-        '<h2><a href="' + TEST_URL_BASE_PATH_FOR_BROWSING + 'foo/nonexistant.html" target="_blank">foo/nonexistant.html</a></h2>' +
-        htmlForIndividualTestOnAllBuildersWithResultsLinks(test1) + '<hr>' +
-        '<h2><a href="' + TEST_URL_BASE_PATH_FOR_BROWSING + 'bar/nonexistant.html" target="_blank">bar/nonexistant.html</a></h2>' +
-        htmlForIndividualTestOnAllBuildersWithResultsLinks(test2));
+        htmlForIndividualTestOnAllBuildersWithResultsLinks(test));
 });
 
 test('linkifyBugs', 4, function() {

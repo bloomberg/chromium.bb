@@ -40,7 +40,6 @@ var GPU_RESULTS_BASE_PATH = 'http://chromium-browser-gpu-tests.commondatastorage
 var RELEASE_TIMEOUT = 6;
 var DEBUG_TIMEOUT = 12;
 var SLOW_MULTIPLIER = 5;
-var CHUNK_SIZE = 25;
 
 // FIXME: Figure out how to make this not be hard-coded.
 // Probably just include in the results.json files and get it from there.
@@ -339,6 +338,10 @@ function substringList()
 function individualTestsForSubstringList()
 {
     var testList = substringList();
+    // If listing a lot of tests, assume you've passed in an explicit list of tests
+    // instead of patterns to match against. The matching code below is super slow.
+    if (testList.length > 10)
+        return testList;
 
     // Put the tests into an object first and then move them into an array
     // as a way of deduping.
@@ -367,6 +370,7 @@ function individualTestsForSubstringList()
     var testsArray = [];
     for (var test in testsMap)
         testsArray.push(test);
+
     return testsArray;
 }
 
@@ -1145,14 +1149,16 @@ function loadExpectationsLayoutTests(test, expectationsContainer)
 function appendExpectations()
 {
     var expectations = g_history.dashboardSpecificState.showExpectations ? document.getElementsByClassName('expectations') : [];
-    // Loading expectations is *very* slow. Use a large timeout to avoid
-    // totally hanging the renderer.
-    performChunkedAction(expectations, function(chunk) {
-        for (var i = 0, len = chunk.length; i < len; i++)
-            loadExpectations(chunk[i]);
-        postHeightChangedMessage();
-
-    }, hideLoadingUI, 10000);
+    g_chunkedActionState = {
+        items: expectations,
+        index: 0
+    }
+    performChunkedAction(function(expectation) {
+            loadExpectations(expectation);
+            postHeightChangedMessage();
+        },
+        hideLoadingUI,
+        expectations);
 }
 
 function hideLoadingUI()
@@ -1168,47 +1174,52 @@ function generatePageForIndividualTests(tests)
     console.log('Number of tests: ' + tests.length);
     if (g_history.dashboardSpecificState.showChrome)
         appendHTML(htmlForNavBar());
-    performChunkedAction(tests, function(chunk) {
-        appendHTML(htmlForIndividualTests(chunk));
-    }, appendExpectations, 500);
+    performChunkedAction(function(test) {
+            appendHTML(htmlForIndividualTest(test));
+        },
+        appendExpectations,
+        tests);
     if (g_history.dashboardSpecificState.showChrome) {
         $('tests-input').value = g_history.dashboardSpecificState.tests;
         $('result-input').value = g_history.dashboardSpecificState.result;
     }
 }
 
-function performChunkedAction(tests, handleChunk, onComplete, timeout, opt_index) {
+var g_chunkedActionRequestId;
+function performChunkedAction(action, onComplete, items, opt_index) {
+    if (g_chunkedActionRequestId)
+        cancelAnimationFrame(g_chunkedActionRequestId);
+
     var index = opt_index || 0;
-    setTimeout(function() {
-        var chunk = Array.prototype.slice.call(tests, index * CHUNK_SIZE, (index + 1) * CHUNK_SIZE);
-        if (chunk.length) {
-            handleChunk(chunk);
-            performChunkedAction(tests, handleChunk, onComplete, timeout, ++index);
-        } else
+    g_chunkedActionRequestId = requestAnimationFrame(function() {
+        if (index < items.length) {
+            action(items[index]);
+            performChunkedAction(action, onComplete, items, ++index);
+        } else {
             onComplete();
-    // No need for a timeout on the first chunked action.
-    }, index ? timeout : 0);
+        }
+    });
 }
 
-function htmlForIndividualTests(tests)
+function htmlForIndividualTest(test)
 {
-    var testsHTML = [];
-    for (var i = 0; i < tests.length; i++) {
-        var test = tests[i];
-        var testNameHtml = '';
-        if (g_history.dashboardSpecificState.showChrome || tests.length > 1) {
-            if (g_history.isLayoutTestResults()) {
-                var suite = lookupVirtualTestSuite(test);
-                var base = suite ? baseTest(test, suite) : test;
-                var versionControlUrl = TEST_URL_BASE_PATH_FOR_BROWSING + base;
-                testNameHtml += '<h2>' + linkHTMLToOpenWindow(versionControlUrl, test) + '</h2>';
-            } else
-                testNameHtml += '<h2>' + test + '</h2>';
-        }
-
-        testsHTML.push(testNameHtml + htmlForIndividualTestOnAllBuildersWithResultsLinks(test));
+    var testNameHtml = '';
+    if (g_history.dashboardSpecificState.showChrome) {
+        if (g_history.isLayoutTestResults()) {
+            var suite = lookupVirtualTestSuite(test);
+            var base = suite ? baseTest(test, suite) : test;
+            var versionControlUrl = TEST_URL_BASE_PATH_FOR_BROWSING + base;
+            testNameHtml += '<h2>' + linkHTMLToOpenWindow(versionControlUrl, test) + '</h2>';
+        } else
+            testNameHtml += '<h2>' + test + '</h2>';
     }
-    return testsHTML.join('<hr>');
+
+    return testNameHtml + htmlForIndividualTestOnAllBuildersWithResultsLinks(test);
+}
+
+function setTestsParameter(input)
+{
+    g_history.setQueryParameter('tests', input.value);
 }
 
 function htmlForNavBar()
@@ -1219,13 +1230,13 @@ function htmlForNavBar()
         'onsubmit="g_history.setQueryParameter(\'result\', result.value);' +
         'return false;">Show all tests with result: ' +
         '<input name=result placeholder="e.g. CRASH" id=result-input>' +
-        '</form><form id=tests-form ' +
-        'onsubmit="g_history.setQueryParameter(\'tests\', tests.value);' +
-        'return false;"><span>Show tests on all platforms: </span>' +
-        '<input name=tests ' +
+        '</form><span>Show tests on all platforms: </span>' +
+        // Use a textarea to avoid the 32k limit on the length of inputs.
+        '<textarea name=tests ' +
         'placeholder="Comma or space-separated list of tests or partial ' +
         'paths to show test results across all builders, e.g., ' +
-        'foo/bar.html,foo/baz,domstorage" id=tests-input></form>' +
+        'foo/bar.html,foo/baz,domstorage" id=tests-input onchange="setTestsParameter(this)" ' +
+        'onkeydown="if (event.keyCode == 13) { setTestsParameter(this); return false; }"></textarea>' +
         '<span class=link onclick="showLegend()">Show legend [type ?]</span></div>';
     return html;
 }

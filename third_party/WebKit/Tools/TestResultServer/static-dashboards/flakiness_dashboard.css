@@ -48,24 +48,17 @@ label {
     white-space: nowrap;
 }
 .forms {
-    display: -webkit-box;
-    -webkit-box-align: baseline;
-}
-.forms > * {
-    display: block;
+    display: -webkit-flex;
+    -webkit-align-items: baseline;
 }
 .forms span {
     padding: 0px 3px;
 }
-#tests-form {
-    display: -webkit-box;
-    -webkit-box-align: baseline;
-    -webkit-box-flex: 1;
-}
-#tests-form > * {
-    display: block;
-}
 #tests-input {
-    display: -webkit-box;
-    -webkit-box-flex: 1;
+    -webkit-flex: 1 auto;
+    overflow: hidden;
+    resize: none;
+    height: 1em;
+    border: 2px inset;
+    white-space: nowrap;
 }
