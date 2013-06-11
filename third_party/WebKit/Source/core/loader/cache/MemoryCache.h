@@ -104,6 +104,7 @@ public:
         TypeStatistic scripts;
         TypeStatistic xslStyleSheets;
         TypeStatistic fonts;
+        TypeStatistic other;
     };
 
     CachedResource* resourceForURL(const KURL&);

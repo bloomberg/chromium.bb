@@ -63,6 +63,7 @@ public:
         ResourceTypeStat scripts;
         ResourceTypeStat xslStyleSheets;
         ResourceTypeStat fonts;
+        ResourceTypeStat other;
     };
 
     // Sets the capacities of the resource cache, evicting objects as necessary.
