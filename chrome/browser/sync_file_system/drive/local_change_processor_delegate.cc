@@ -248,7 +248,10 @@ void LocalChangeProcessorDelegate::DidUploadExistingFile(
 
 void LocalChangeProcessorDelegate::Delete(
     const SyncStatusCallback& callback) {
-  DCHECK(has_drive_metadata_);
+  if (!has_drive_metadata_) {
+    DidDelete(callback, google_apis::HTTP_NOT_FOUND);
+    return;
+  }
   api_util()->DeleteFile(
       drive_metadata_.resource_id(),
       drive_metadata_.md5_checksum(),
