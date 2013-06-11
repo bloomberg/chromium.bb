@@ -4,7 +4,7 @@
 #include "content/renderer/media/rtc_media_constraints.h"
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/common/media/media_stream_options.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebCString.h"

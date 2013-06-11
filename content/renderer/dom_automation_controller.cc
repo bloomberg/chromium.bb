@@ -9,7 +9,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/view_messages.h"
 

@@ -7,7 +7,7 @@
 #include <list>
 #include <map>
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "content/common/dom_storage_messages.h"
 #include "content/renderer/dom_storage/webstoragearea_impl.h"

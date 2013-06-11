@@ -10,7 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/process.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/devtools/devtools_agent_filter.h"

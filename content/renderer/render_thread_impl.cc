@@ -19,8 +19,8 @@
 #include "base/metrics/stats_table.h"
 #include "base/path_service.h"
 #include "base/shared_memory.h"
-#include "base/string16.h"
-#include "base/string_number_conversions.h"  // Temporary
+#include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"  // Temporary
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
@@ -56,8 +56,8 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
-#include "content/renderer/gpu/input_handler_manager.h"
 #include "content/renderer/gpu/input_event_filter.h"
+#include "content/renderer/gpu/input_handler_manager.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"

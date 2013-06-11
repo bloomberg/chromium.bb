@@ -7,7 +7,7 @@
 #include "content/renderer/renderer_clipboard_client.h"
 
 #include "base/shared_memory.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/common/clipboard_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/render_thread_impl.h"

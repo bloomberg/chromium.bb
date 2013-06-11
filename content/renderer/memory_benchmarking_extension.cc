@@ -4,7 +4,7 @@
 
 #include "content/renderer/memory_benchmarking_extension.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/common/memory_benchmark_messages.h"
 #include "content/renderer/render_thread_impl.h"
 

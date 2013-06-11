@@ -5,9 +5,9 @@
 #include "content/renderer/p2p/port_allocator.h"
 
 #include "base/bind.h"
-#include "base/string_number_conversions.h"
-#include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "content/renderer/p2p/host_address_request.h"
 #include "jingle/glue/utils.h"
 #include "net/base/escape.h"

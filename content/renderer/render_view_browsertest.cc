@@ -5,7 +5,7 @@
 #include "base/basictypes.h"
 
 #include "base/shared_memory.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"

@@ -4,7 +4,7 @@
 
 #include "content/shell/shell_javascript_dialog.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/shell/app/resource.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_javascript_dialog_manager.h"

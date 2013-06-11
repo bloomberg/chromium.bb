@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/shell/app/resource.h"
 #include "content/shell/shell.h"

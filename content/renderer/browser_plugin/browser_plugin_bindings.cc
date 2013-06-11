@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/string16.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
