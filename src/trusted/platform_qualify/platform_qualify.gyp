@@ -65,6 +65,7 @@
               'arch/arm/nacl_dep_qualify_arch.c',
               'arch/arm/nacl_qualify_fpu.c',
               'arch/arm/nacl_qualify_sandbox_instrs.c',
+              'arch/arm/nacl_qualify_unaligned.c',
             ],
           }],
         ],

@@ -21,6 +21,11 @@ int NaClQualifyFpu(void);
  */
 int NaClQualifySandboxInstrs(void);
 
+/*
+ * Returns 1 if unaligned load/stores work properly.
+ */
+int NaClQualifyUnaligned(void);
+
 EXTERN_C_END
 
 #endif

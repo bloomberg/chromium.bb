@@ -29,7 +29,9 @@ NaClErrorCode NaClRunSelQualificationTests(void) {
 #endif
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-  if (!NaClQualifyFpu() || !NaClQualifySandboxInstrs()) {
+  if (!NaClQualifyFpu() ||
+      !NaClQualifySandboxInstrs() ||
+      !NaClQualifyUnaligned()) {
     return LOAD_UNSUPPORTED_CPU;
   }
 #endif
