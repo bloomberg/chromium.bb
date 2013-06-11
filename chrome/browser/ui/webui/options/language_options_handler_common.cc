@@ -115,7 +115,11 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
   bool enable_spelling_auto_correct =
       command_line.HasSwitch(switches::kEnableSpellingAutoCorrect);
   localized_strings->SetBoolean("enableSpellingAutoCorrect",
-      enable_spelling_auto_correct);
+                                enable_spelling_auto_correct);
+  bool enable_translate_settings =
+      command_line.HasSwitch(switches::kEnableTranslateSettings);
+  localized_strings->SetBoolean("enableTranslateSettings",
+                                enable_translate_settings);
 }
 
 void LanguageOptionsHandlerCommon::Uninitialize() {

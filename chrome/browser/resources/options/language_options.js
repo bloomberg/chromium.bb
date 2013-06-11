@@ -634,6 +634,11 @@ cr.define('options', function() {
       var dontTranslate = $('language-options-dont-translate');
       var checkbox = $('dont-translate-in-this-language');
 
+      if (!loadTimeData.getBoolean('enableTranslateSettings')) {
+        dontTranslate.hidden = true;
+        return;
+      }
+
       // TODO(hajimehoshi): Create more general function to determine this.
       if (this.isTranslatableLanguage_(languageCode)) {
         dontTranslate.hidden = false;

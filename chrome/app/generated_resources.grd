@@ -7273,6 +7273,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enables packaged app shortcuts to be added to Applications and to appear in the dock.
         </message>
       </if>
+      <message name="IDS_FLAGS_ENABLE_TRANSLATE_SETTINGS_NAME" desc="Name of the flag to enable translate setting.">
+        Enable Translate settings.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_TRANSLATE_SETTINGS_DESCRIPTION" desc="Description of the flag to translate setting.">
+        Enable Translate settings in chrome://settings/languages where the user can configure which language should be translated.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
