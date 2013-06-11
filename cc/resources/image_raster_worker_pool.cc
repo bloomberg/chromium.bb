@@ -66,6 +66,11 @@ ImageRasterWorkerPool::~ImageRasterWorkerPool() {
   DCHECK_EQ(0u, image_tasks_.size());
 }
 
+void ImageRasterWorkerPool::Shutdown() {
+  RasterWorkerPool::Shutdown();
+  ScheduleRasterTasks(RootTask());
+}
+
 void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   TRACE_EVENT0("cc", "ImageRasterWorkerPool::ScheduleTasks");
 

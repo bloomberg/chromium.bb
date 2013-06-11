@@ -20,6 +20,7 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
   }
 
   // Overridden from RasterWorkerPool:
+  virtual void Shutdown() OVERRIDE;
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE;
 
  private:
