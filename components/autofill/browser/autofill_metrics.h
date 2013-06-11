@@ -33,6 +33,10 @@ class AutofillMetrics {
     // Autocheckout failed for any number of other reasons, e.g, the proceed
     // element click failed, the page numbers were not increasing, etc.
     AUTOCHECKOUT_BUY_FLOW_CANNOT_PROCEED,
+    // Autocheckout failed due to a missing click element before form filling.
+    AUTOCHECKOUT_BUY_FLOW_MISSING_CLICK_ELEMENT_BEFORE_FORM_FILLING,
+    // Autocheckout failed due to a missing click element after form filling.
+    AUTOCHECKOUT_BUY_FLOW_MISSING_CLICK_ELEMENT_AFTER_FORM_FILLING,
     NUM_AUTOCHECKOUT_BUY_FLOW_METRICS
   };
 

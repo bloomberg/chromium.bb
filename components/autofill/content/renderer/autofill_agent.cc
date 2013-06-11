@@ -753,12 +753,34 @@ void AutofillAgent::OnRequestAutocompleteResult(
 
 void AutofillAgent::OnFillFormsAndClick(
     const std::vector<FormData>& forms,
+    const std::vector<WebElementDescriptor>& click_elements_before_form_fill,
+    const std::vector<WebElementDescriptor>& click_elements_after_form_fill,
     const WebElementDescriptor& click_element_descriptor) {
   DCHECK_EQ(forms.size(), form_elements_.size());
+
+  // Click elements in click_elements_before_form_fill.
+  for (size_t i = 0; i < click_elements_before_form_fill.size(); ++i) {
+    if (!ClickElement(topmost_frame_->document(),
+                      click_elements_before_form_fill[i])) {
+      Send(new AutofillHostMsg_ClickFailed(routing_id(),
+           MISSING_CLICK_ELEMENT_BEFORE_FORM_FILLING));
+      return;
+    }
+  }
 
   // Fill the form.
   for (size_t i = 0; i < forms.size(); ++i)
     FillFormIncludingNonFocusableElements(forms[i], form_elements_[i]);
+
+  // Click elements in click_elements_after_form_fill.
+  for (size_t i = 0; i < click_elements_after_form_fill.size(); ++i) {
+    if (!ClickElement(topmost_frame_->document(),
+                      click_elements_after_form_fill[i])) {
+      Send(new AutofillHostMsg_ClickFailed(routing_id(),
+           MISSING_CLICK_ELEMENT_AFTER_FORM_FILLING));
+      return;
+    }
+  }
 
   // Exit early if there is nothing to click.
   if (click_element_descriptor.retrieval_method == WebElementDescriptor::NONE)

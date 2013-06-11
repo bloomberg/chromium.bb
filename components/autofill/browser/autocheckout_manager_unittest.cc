@@ -28,7 +28,10 @@ namespace autofill {
 
 namespace {
 
-typedef Tuple2<std::vector<FormData>, WebElementDescriptor> AutofillParam;
+typedef Tuple4<std::vector<FormData>,
+               std::vector<WebElementDescriptor>,
+               std::vector<WebElementDescriptor>,
+               WebElementDescriptor> AutofillParam;
 
 FormFieldData BuildFieldWithValue(
     const std::string& autocomplete_attribute,
@@ -130,8 +133,9 @@ scoped_ptr<FormStructure> CreateTestFormStructureWithDefaultValues() {
   return form_structure.Pass();
 }
 
-void PopulateProceedElement(WebElementDescriptor* proceed_element) {
-  proceed_element->descriptor = "#foo";
+void PopulateClickElement(WebElementDescriptor* proceed_element,
+                          const std::string& descriptor) {
+  proceed_element->descriptor = descriptor;
   proceed_element->retrieval_method = WebElementDescriptor::ID;
 }
 
@@ -140,7 +144,7 @@ scoped_ptr<AutocheckoutPageMetaData> CreateStartOfFlowMetaData() {
       new AutocheckoutPageMetaData());
   start_of_flow->current_page_number = 0;
   start_of_flow->total_pages = 3;
-  PopulateProceedElement(&start_of_flow->proceed_element_descriptor);
+  PopulateClickElement(&start_of_flow->proceed_element_descriptor, "#foo");
   return start_of_flow.Pass();
 }
 
@@ -148,14 +152,14 @@ scoped_ptr<AutocheckoutPageMetaData> CreateInFlowMetaData() {
   scoped_ptr<AutocheckoutPageMetaData> in_flow(new AutocheckoutPageMetaData());
   in_flow->current_page_number = 1;
   in_flow->total_pages = 3;
-  PopulateProceedElement(&in_flow->proceed_element_descriptor);
+  PopulateClickElement(&in_flow->proceed_element_descriptor, "#foo");
   return in_flow.Pass();
 }
 
 scoped_ptr<AutocheckoutPageMetaData> CreateNotInFlowMetaData() {
   scoped_ptr<AutocheckoutPageMetaData> not_in_flow(
       new AutocheckoutPageMetaData());
-  PopulateProceedElement(&not_in_flow->proceed_element_descriptor );
+  PopulateClickElement(&not_in_flow->proceed_element_descriptor, "#foo");
   return not_in_flow.Pass();
 }
 
@@ -164,7 +168,7 @@ scoped_ptr<AutocheckoutPageMetaData> CreateEndOfFlowMetaData() {
       new AutocheckoutPageMetaData());
   end_of_flow->current_page_number = 2;
   end_of_flow->total_pages = 3;
-  PopulateProceedElement(&end_of_flow->proceed_element_descriptor);
+  PopulateClickElement(&end_of_flow->proceed_element_descriptor, "#foo");
   return end_of_flow.Pass();
 }
 
@@ -173,7 +177,7 @@ scoped_ptr<AutocheckoutPageMetaData> CreateOnePageFlowMetaData() {
       new AutocheckoutPageMetaData());
   one_page_flow->current_page_number = 0;
   one_page_flow->total_pages = 1;
-  PopulateProceedElement(&one_page_flow->proceed_element_descriptor);
+  PopulateClickElement(&one_page_flow->proceed_element_descriptor, "#foo");
   return one_page_flow.Pass();
 }
 
@@ -183,6 +187,21 @@ scoped_ptr<AutocheckoutPageMetaData> CreateMissingProceedMetaData() {
   missing_proceed->current_page_number = 1;
   missing_proceed->total_pages = 3;
   return missing_proceed.Pass();
+}
+
+scoped_ptr<AutocheckoutPageMetaData> CreateMultiClickMetaData() {
+  scoped_ptr<AutocheckoutPageMetaData> metadata(new AutocheckoutPageMetaData());
+  metadata->current_page_number = 1;
+  metadata->total_pages = 3;
+  PopulateClickElement(&metadata->proceed_element_descriptor, "#foo");
+  WebElementDescriptor element;
+  PopulateClickElement(&element, "#before_form_fill_1");
+  metadata->click_elements_before_form_fill.push_back(element);
+  PopulateClickElement(&element, "#before_form_fill_2");
+  metadata->click_elements_before_form_fill.push_back(element);
+  PopulateClickElement(&element, "#after_form_fill");
+  metadata->click_elements_after_form_fill.push_back(element);
+  return metadata.Pass();
 }
 
 struct TestField {
@@ -371,7 +390,8 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(message);
     AutofillParam autofill_param;
     AutofillMsg_FillFormsAndClick::Read(message, &autofill_param);
-    EXPECT_EQ(WebElementDescriptor::ID, autofill_param.b.retrieval_method);
+    EXPECT_EQ(WebElementDescriptor::ID, autofill_param.d.retrieval_method);
+    EXPECT_EQ("#foo", autofill_param.d.descriptor);
     ClearIpcSink();
   }
 
@@ -501,7 +521,7 @@ TEST_F(AutocheckoutManagerTest, OnFormsSeenTest) {
   EXPECT_FALSE(autocheckout_manager_->autocheckout_offered());
 }
 
-TEST_F(AutocheckoutManagerTest, OnClickFailedTest) {
+TEST_F(AutocheckoutManagerTest, OnClickFailedTestMissingAdvance) {
   OpenRequestAutocompleteDialog();
 
   EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutError()).Times(1);
@@ -511,6 +531,38 @@ TEST_F(AutocheckoutManagerTest, OnClickFailedTest) {
           AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_MISSING_ADVANCE_ELEMENT))
       .Times(1);
   autocheckout_manager_->OnClickFailed(MISSING_ADVANCE);
+  EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
+  EXPECT_TRUE(
+      autofill_manager_delegate_->request_autocomplete_dialog_open());
+}
+
+TEST_F(AutocheckoutManagerTest, OnClickFailedTestMissingClickBeforeFilling) {
+  OpenRequestAutocompleteDialog();
+
+  EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutError()).Times(1);
+  EXPECT_CALL(
+      autocheckout_manager_->metric_logger(),
+      LogAutocheckoutBuyFlowMetric(AutofillMetrics::
+          AUTOCHECKOUT_BUY_FLOW_MISSING_CLICK_ELEMENT_BEFORE_FORM_FILLING))
+      .Times(1);
+  autocheckout_manager_->OnClickFailed(
+      MISSING_CLICK_ELEMENT_BEFORE_FORM_FILLING);
+  EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
+  EXPECT_TRUE(
+      autofill_manager_delegate_->request_autocomplete_dialog_open());
+}
+
+TEST_F(AutocheckoutManagerTest, OnClickFailedTestMissingClickAfterFilling) {
+  OpenRequestAutocompleteDialog();
+
+  EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutError()).Times(1);
+  EXPECT_CALL(
+      autocheckout_manager_->metric_logger(),
+      LogAutocheckoutBuyFlowMetric(AutofillMetrics::
+          AUTOCHECKOUT_BUY_FLOW_MISSING_CLICK_ELEMENT_AFTER_FORM_FILLING))
+      .Times(1);
+  autocheckout_manager_->OnClickFailed(
+      MISSING_CLICK_ELEMENT_AFTER_FORM_FILLING);
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_TRUE(
       autofill_manager_delegate_->request_autocomplete_dialog_open());
@@ -545,6 +597,67 @@ TEST_F(AutocheckoutManagerTest, MaybeShowAutocheckoutBubbleTest) {
   EXPECT_TRUE(autocheckout_manager_->autocheckout_offered());
   EXPECT_FALSE(autofill_manager_delegate_->autocheckout_bubble_shown());
   EXPECT_FALSE(autofill_manager_delegate_->request_autocomplete_dialog_open());
+}
+
+// Test no proceed element is being passed to the render if a page metadata
+// with no proceed element is loaded.
+TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataMissingProceed) {
+  OpenRequestAutocompleteDialog();
+
+  // Go the second page with no proceed element.
+  EXPECT_CALL(*autofill_manager_delegate_,
+              UpdateProgressBar(testing::DoubleEq(2.0/3.0))).Times(1);
+  autocheckout_manager_->OnLoadedPageMetaData(CreateMissingProceedMetaData());
+
+  EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
+
+  EXPECT_EQ(1U, process()->sink().message_count());
+  uint32 kMsgID = AutofillMsg_FillFormsAndClick::ID;
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(kMsgID);
+  EXPECT_TRUE(message);
+  AutofillParam autofill_param;
+  AutofillMsg_FillFormsAndClick::Read(message, &autofill_param);
+  // Ensure no proceed element is being passed to the render through IPC.
+  EXPECT_EQ(WebElementDescriptor::NONE, autofill_param.d.retrieval_method);
+  EXPECT_EQ("", autofill_param.d.descriptor);
+  ClearIpcSink();
+}
+
+// Test |click_elements_before_form_fill| and |click_elements_after_form_fill|
+// are passed to the render correctly through IPC.
+TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataMultiClick) {
+  OpenRequestAutocompleteDialog();
+
+  // Go to the second page with multi-click elements.
+  EXPECT_CALL(*autofill_manager_delegate_,
+              UpdateProgressBar(testing::DoubleEq(2.0/3.0))).Times(1);
+  autocheckout_manager_->OnLoadedPageMetaData(CreateMultiClickMetaData());
+
+  EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
+
+  EXPECT_EQ(1U, process()->sink().message_count());
+  uint32 kMsgID = AutofillMsg_FillFormsAndClick::ID;
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(kMsgID);
+  EXPECT_TRUE(message);
+  AutofillParam autofill_param;
+  AutofillMsg_FillFormsAndClick::Read(message, &autofill_param);
+  EXPECT_EQ(WebElementDescriptor::ID, autofill_param.d.retrieval_method);
+  EXPECT_EQ("#foo", autofill_param.d.descriptor);
+
+  // Verify |click_elements_before_form_fill|.
+  ASSERT_EQ(2U, autofill_param.b.size());
+  EXPECT_EQ(WebElementDescriptor::ID, autofill_param.b[0].retrieval_method);
+  EXPECT_EQ("#before_form_fill_1", autofill_param.b[0].descriptor);
+  EXPECT_EQ(WebElementDescriptor::ID, autofill_param.b[1].retrieval_method);
+  EXPECT_EQ("#before_form_fill_2", autofill_param.b[1].descriptor);
+
+  // Verify |click_elements_after_form_fill|.
+  ASSERT_EQ(1U, autofill_param.c.size());
+  EXPECT_EQ(WebElementDescriptor::ID, autofill_param.c[0].retrieval_method);
+  EXPECT_EQ("#after_form_fill", autofill_param.c[0].descriptor);
+  ClearIpcSink();
 }
 
 TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataMissingMetaData) {

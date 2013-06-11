@@ -36,6 +36,10 @@ std::string AutocheckoutStatusToString(AutocheckoutStatus status) {
       return "MISSING_FIELDMAPPING";
     case MISSING_ADVANCE:
       return "MISSING_ADVANCE";
+    case MISSING_CLICK_ELEMENT_BEFORE_FORM_FILLING:
+      return "MISSING_CLICK_ELEMENT_BEFORE_FORM_FILLING";
+    case MISSING_CLICK_ELEMENT_AFTER_FORM_FILLING:
+      return "MISSING_CLICK_ELEMENT_AFTER_FORM_FILLING";
     case CANNOT_PROCEED:
       return "CANNOT_PROCEED";
     case SUCCESS:

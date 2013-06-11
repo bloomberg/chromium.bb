@@ -170,8 +170,12 @@ IPC_MESSAGE_ROUTED2(AutofillMsg_RequestAutocompleteResult,
 
 // Sent when a page should be filled using Autocheckout. This happens when the
 // Autofill server hints that a page is Autocheckout enabled.
-IPC_MESSAGE_ROUTED2(AutofillMsg_FillFormsAndClick,
+IPC_MESSAGE_ROUTED4(AutofillMsg_FillFormsAndClick,
                     std::vector<autofill::FormData> /* form_data */,
+                    std::vector<autofill::WebElementDescriptor> /*
+                        click_elements_before_form_fill */,
+                    std::vector<autofill::WebElementDescriptor> /*
+                        click_elements_after_form_fill */,
                     autofill::WebElementDescriptor /* element_descriptor */)
 
 // Sent when Autocheckout is supported for the current page. The page has to

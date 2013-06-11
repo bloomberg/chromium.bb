@@ -139,8 +139,11 @@ class AutofillAgent : public content::RenderViewObserver,
   // Autocheckout. All the relevant form fields in |form_data| will be filled
   // and then element specified by |element_descriptor| will be clicked to
   // proceed to the next step of the form.
-  void OnFillFormsAndClick(const std::vector<FormData>& form_data,
-                           const WebElementDescriptor& element_descriptor);
+  void OnFillFormsAndClick(
+      const std::vector<FormData>& form_data,
+      const std::vector<WebElementDescriptor>& click_elements_before_form_fill,
+      const std::vector<WebElementDescriptor>& click_elements_after_form_fill,
+      const WebElementDescriptor& element_descriptor);
 
   // Called when |topmost_frame_| is supported for Autocheckout.
   void OnAutocheckoutSupported();

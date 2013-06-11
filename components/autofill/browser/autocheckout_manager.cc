@@ -86,6 +86,12 @@ AutofillMetrics::AutocheckoutBuyFlowMetric AutocheckoutStatusToUmaMetric(
       return AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_SUCCESS;
     case MISSING_FIELDMAPPING:
       return AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_MISSING_FIELDMAPPING;
+    case MISSING_CLICK_ELEMENT_BEFORE_FORM_FILLING:
+      return AutofillMetrics::
+          AUTOCHECKOUT_BUY_FLOW_MISSING_CLICK_ELEMENT_BEFORE_FORM_FILLING;
+    case MISSING_CLICK_ELEMENT_AFTER_FORM_FILLING:
+      return AutofillMetrics::
+          AUTOCHECKOUT_BUY_FLOW_MISSING_CLICK_ELEMENT_AFTER_FORM_FILLING;
     case MISSING_ADVANCE:
       return AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_MISSING_ADVANCE_ELEMENT;
     case CANNOT_PROCEED:
@@ -184,6 +190,8 @@ void AutocheckoutManager::FillForms() {
   host->Send(new AutofillMsg_FillFormsAndClick(
       host->GetRoutingID(),
       filled_forms,
+      page_meta_data_->click_elements_before_form_fill,
+      page_meta_data_->click_elements_after_form_fill,
       page_meta_data_->proceed_element_descriptor));
 }
 
