@@ -414,6 +414,9 @@ bool BlockFiles::CreateBlockFile(int index, FileType file_type, bool force) {
     return false;
 
   BlockFileHeader header;
+  memset(&header, 0, sizeof(header));
+  header.magic = kBlockMagic;
+  header.version = kBlockVersion2;
   header.entry_size = Addr::BlockSizeForFileType(file_type);
   header.this_file = static_cast<int16>(index);
   DCHECK(index <= kint16max && index >= 0);
@@ -443,7 +446,7 @@ bool BlockFiles::OpenBlockFile(int index) {
   }
 
   BlockFileHeader* header = reinterpret_cast<BlockFileHeader*>(file->buffer());
-  if (kBlockMagic != header->magic || kCurrentVersion != header->version) {
+  if (kBlockMagic != header->magic || kBlockVersion2 != header->version) {
     LOG(ERROR) << "Invalid file version or magic " << name.value();
     return false;
   }

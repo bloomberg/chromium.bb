@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_log.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/disk_cache/disk_format.h"
 #include "net/disk_cache/storage_block.h"
 #include "net/disk_cache/storage_block-inl.h"
 
@@ -16,6 +17,8 @@ namespace disk_cache {
 class BackendImpl;
 class InFlightBackendIO;
 class SparseControl;
+typedef StorageBlock<EntryStore> CacheEntryBlock;
+typedef StorageBlock<RankingsNode> CacheRankingsBlock;
 
 // This class implements the Entry interface. An object of this
 // class represents a single entry on the cache.

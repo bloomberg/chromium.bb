@@ -4,8 +4,8 @@
 
 // See net/disk_cache/disk_cache.h for the public interface.
 
-#ifndef NET_DISK_CACHE_STORAGE_BLOCK_H__
-#define NET_DISK_CACHE_STORAGE_BLOCK_H__
+#ifndef NET_DISK_CACHE_STORAGE_BLOCK_H_
+#define NET_DISK_CACHE_STORAGE_BLOCK_H_
 
 #include "net/disk_cache/addr.h"
 #include "net/disk_cache/mapped_file.h"
@@ -90,9 +90,6 @@ class StorageBlock : public FileBlock {
   DISALLOW_COPY_AND_ASSIGN(StorageBlock);
 };
 
-typedef StorageBlock<EntryStore> CacheEntryBlock;
-typedef StorageBlock<RankingsNode> CacheRankingsBlock;
-
 }  // namespace disk_cache
 
-#endif  // NET_DISK_CACHE_STORAGE_BLOCK_H__
+#endif  // NET_DISK_CACHE_STORAGE_BLOCK_H_

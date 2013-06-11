@@ -17,6 +17,9 @@
 namespace disk_cache {
 
 class BackendImpl;
+struct LruData;
+struct RankingsNode;
+typedef StorageBlock<RankingsNode> CacheRankingsBlock;
 
 // Type of crashes generated for the unit tests.
 enum RankCrashes {

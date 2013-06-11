@@ -12,10 +12,4 @@ IndexHeader::IndexHeader() {
   version = kCurrentVersion;
 }
 
-BlockFileHeader::BlockFileHeader() {
-  memset(this, 0, sizeof(BlockFileHeader));
-  magic = kBlockMagic;
-  version = kCurrentVersion;
-}
-
 }  // namespace disk_cache

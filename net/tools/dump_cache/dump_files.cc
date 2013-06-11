@@ -237,7 +237,7 @@ bool CacheDumper::LoadEntry(disk_cache::CacheAddr addr,
   if (!file)
     return false;
 
-  disk_cache::CacheEntryBlock entry_block(file, address);
+  disk_cache::StorageBlock<disk_cache::EntryStore> entry_block(file, address);
   if (!entry_block.Load())
     return false;
 
@@ -262,7 +262,7 @@ bool CacheDumper::LoadRankings(disk_cache::CacheAddr addr,
   if (!file)
     return false;
 
-  disk_cache::CacheRankingsBlock rank_block(file, address);
+  disk_cache::StorageBlock<disk_cache::RankingsNode> rank_block(file, address);
   if (!rank_block.Load())
     return false;
 

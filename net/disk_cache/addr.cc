@@ -40,7 +40,7 @@ bool Addr::SanityCheck() const {
   return !(value_ & kReservedBitsMask);
 }
 
-bool Addr::SanityCheckForEntry() const {
+bool Addr::SanityCheckForEntryV2() const {
   if (!SanityCheck() || !is_initialized())
     return false;
 

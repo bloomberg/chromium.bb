@@ -13,6 +13,7 @@
 #include "net/disk_cache/backend_impl.h"
 #include "net/disk_cache/bitmap.h"
 #include "net/disk_cache/cache_util.h"
+#include "net/disk_cache/disk_format.h"
 #include "net/disk_cache/histogram_macros.h"
 #include "net/disk_cache/net_log_parameters.h"
 #include "net/disk_cache/sparse_control.h"
@@ -581,7 +582,7 @@ bool EntryImpl::SanityCheck() {
     return false;
 
   Addr next_addr(stored->next);
-  if (next_addr.is_initialized() && !next_addr.SanityCheckForEntry()) {
+  if (next_addr.is_initialized() && !next_addr.SanityCheckForEntryV2()) {
     STRESS_NOTREACHED();
     return false;
   }

@@ -22,6 +22,7 @@
 #include "base/timer.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/cache_util.h"
+#include "net/disk_cache/disk_format.h"
 #include "net/disk_cache/entry_impl.h"
 #include "net/disk_cache/errors.h"
 #include "net/disk_cache/experiments.h"
@@ -1470,7 +1471,7 @@ int BackendImpl::NewEntry(Addr address, EntryImpl** entry) {
 
   STRESS_DCHECK(block_files_.IsValid(address));
 
-  if (!address.SanityCheckForEntry()) {
+  if (!address.SanityCheckForEntryV2()) {
     LOG(WARNING) << "Wrong entry address.";
     STRESS_NOTREACHED();
     return ERR_INVALID_ADDRESS;

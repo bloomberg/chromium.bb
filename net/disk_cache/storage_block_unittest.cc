@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
+#include "net/disk_cache/disk_format.h"
 #include "net/disk_cache/storage_block.h"
 #include "net/disk_cache/storage_block-inl.h"
 #include "net/disk_cache/disk_cache_test_base.h"
 #include "net/disk_cache/disk_cache_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+typedef disk_cache::StorageBlock<disk_cache::EntryStore> CacheEntryBlock;
 
 TEST_F(DiskCacheTest, StorageBlock_LoadStore) {
   base::FilePath filename = cache_path_.AppendASCII("a_test");
@@ -15,7 +18,7 @@ TEST_F(DiskCacheTest, StorageBlock_LoadStore) {
   ASSERT_TRUE(CreateCacheTestFile(filename));
   ASSERT_TRUE(file->Init(filename, 8192));
 
-  disk_cache::CacheEntryBlock entry1(file.get(), disk_cache::Addr(0xa0010001));
+  CacheEntryBlock entry1(file.get(), disk_cache::Addr(0xa0010001));
   memset(entry1.Data(), 0, sizeof(disk_cache::EntryStore));
   entry1.Data()->hash = 0xaa5555aa;
   entry1.Data()->rankings_node = 0xa0010002;
@@ -35,10 +38,10 @@ TEST_F(DiskCacheTest, StorageBlock_SetData) {
   ASSERT_TRUE(CreateCacheTestFile(filename));
   ASSERT_TRUE(file->Init(filename, 8192));
 
-  disk_cache::CacheEntryBlock entry1(file.get(), disk_cache::Addr(0xa0010001));
+  CacheEntryBlock entry1(file.get(), disk_cache::Addr(0xa0010001));
   entry1.Data()->hash = 0xaa5555aa;
 
-  disk_cache::CacheEntryBlock entry2(file.get(), disk_cache::Addr(0xa0010002));
+  CacheEntryBlock entry2(file.get(), disk_cache::Addr(0xa0010002));
   EXPECT_TRUE(entry2.Load());
   EXPECT_TRUE(entry2.Data() != NULL);
   EXPECT_TRUE(0 == entry2.Data()->hash);
@@ -55,15 +58,15 @@ TEST_F(DiskCacheTest, StorageBlock_SetModified) {
   ASSERT_TRUE(CreateCacheTestFile(filename));
   ASSERT_TRUE(file->Init(filename, 8192));
 
-  disk_cache::CacheEntryBlock* entry1 =
-      new disk_cache::CacheEntryBlock(file.get(), disk_cache::Addr(0xa0010003));
+  CacheEntryBlock* entry1 =
+      new CacheEntryBlock(file.get(), disk_cache::Addr(0xa0010003));
   EXPECT_TRUE(entry1->Load());
   EXPECT_TRUE(0 == entry1->Data()->hash);
   entry1->Data()->hash = 0x45687912;
   entry1->set_modified();
   delete entry1;
 
-  disk_cache::CacheEntryBlock entry2(file.get(), disk_cache::Addr(0xa0010003));
+  CacheEntryBlock entry2(file.get(), disk_cache::Addr(0xa0010003));
   EXPECT_TRUE(entry2.Load());
   EXPECT_TRUE(0x45687912 == entry2.Data()->hash);
 }

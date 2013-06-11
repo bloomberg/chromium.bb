@@ -7,13 +7,13 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
-#include "net/disk_cache/disk_format.h"
 #include "net/disk_cache/rankings.h"
 
 namespace disk_cache {
 
 class BackendImpl;
 class EntryImpl;
+struct IndexHeader;
 
 // This class implements the eviction algorithm for the cache and it is tightly
 // integrated with BackendImpl.

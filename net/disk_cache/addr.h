@@ -9,7 +9,7 @@
 #define NET_DISK_CACHE_ADDR_H_
 
 #include "net/base/net_export.h"
-#include "net/disk_cache/disk_format.h"
+#include "net/disk_cache/disk_format_base.h"
 
 namespace disk_cache {
 
@@ -134,7 +134,7 @@ class NET_EXPORT_PRIVATE Addr {
 
   // Returns true if this address looks like a valid one.
   bool SanityCheck() const;
-  bool SanityCheckForEntry() const;
+  bool SanityCheckForEntryV2() const;
   bool SanityCheckForRankings() const;
 
  private:

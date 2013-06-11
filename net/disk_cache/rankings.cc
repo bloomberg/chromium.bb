@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "net/disk_cache/backend_impl.h"
+#include "net/disk_cache/disk_format.h"
 #include "net/disk_cache/entry_impl.h"
 #include "net/disk_cache/errors.h"
 #include "net/disk_cache/histogram_macros.h"

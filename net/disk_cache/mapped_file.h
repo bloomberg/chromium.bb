@@ -8,7 +8,6 @@
 #define NET_DISK_CACHE_MAPPED_FILE_H_
 
 #include "net/base/net_export.h"
-#include "net/disk_cache/disk_format.h"
 #include "net/disk_cache/file.h"
 #include "net/disk_cache/file_block.h"
 

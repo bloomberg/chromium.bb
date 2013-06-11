@@ -336,6 +336,7 @@
         'disk_cache/disk_cache.h',
         'disk_cache/disk_format.cc',
         'disk_cache/disk_format.h',
+        'disk_cache/disk_format_base.h',
         'disk_cache/entry_impl.cc',
         'disk_cache/entry_impl.h',
         'disk_cache/errors.h',

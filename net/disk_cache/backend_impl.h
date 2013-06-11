@@ -25,6 +25,8 @@ class NetLog;
 
 namespace disk_cache {
 
+struct Index;
+
 enum BackendFlags {
   kNone = 0,
   kMask = 1,                    // A mask (for the index table) was specified.
