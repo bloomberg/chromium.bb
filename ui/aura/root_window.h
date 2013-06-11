@@ -226,15 +226,15 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Toggles the host's full screen state.
   void ToggleFullScreen();
 
-  // These methods are used to defer the processing of mouse events related
-  // to resize. A client (typically a RenderWidgetHostViewAura) can call
-  // HoldMouseMoves when an resize is initiated and then ReleaseMouseMoves
+  // These methods are used to defer the processing of mouse/touch events
+  // related to resize. A client (typically a RenderWidgetHostViewAura) can call
+  // HoldPointerMoves when an resize is initiated and then ReleasePointerMoves
   // once the resize is completed.
   //
   // More than one hold can be invoked and each hold must be cancelled by a
   // release before we resume normal operation.
-  void HoldMouseMoves();
-  void ReleaseMouseMoves();
+  void HoldPointerMoves();
+  void ReleasePointerMoves();
 
   // Sets if the window should be focused when shown.
   void SetFocusWhenShown(bool focus_when_shown);
@@ -385,15 +385,17 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   virtual float GetDeviceScaleFactor() OVERRIDE;
   virtual RootWindow* AsRootWindow() OVERRIDE;
 
-  // We hold and aggregate mouse drags as a way of throttling resizes when
-  // HoldMouseMoves() is called. The following methods are used to dispatch held
-  // and newly incoming mouse events, typically when an event other than a mouse
-  // drag needs dispatching or a matching ReleaseMouseMoves() is called.
-  // NOTE: because these methods dispatch events from RootWindowHost the
-  // coordinates are in terms of the root.
+  // We hold and aggregate mouse drags and touch moves as a way of throttling
+  // resizes when HoldMouseMoves() is called. The following methods are used to
+  // dispatch held and newly incoming mouse and touch events, typically when an
+  // event other than one of these needs dispatching or a matching
+  // ReleaseMouseMoves()/ReleaseTouchMoves() is called.  NOTE: because these
+  // methods dispatch events from RootWindowHost the coordinates are in terms of
+  // the root.
   bool DispatchMouseEventImpl(ui::MouseEvent* event);
   bool DispatchMouseEventRepost(ui::MouseEvent* event);
   bool DispatchMouseEventToTarget(ui::MouseEvent* event, Window* target);
+  bool DispatchTouchEventImpl(ui::TouchEvent* event);
   void DispatchHeldEvents();
 
   // Parses the switch describing the initial size for the host window and
@@ -445,13 +447,12 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   bool defer_draw_scheduling_;
 
-  // How many holds are outstanding. We try to defer dispatching mouse moves
-  // while the count is > 0.
-  int mouse_move_hold_count_;
-  scoped_ptr<ui::MouseEvent> held_mouse_move_;
-  // Used to schedule DispatchHeldEvents() when |mouse_move_hold_count_| goes
-  // to 0.
+  // How many move holds are outstanding. We try to defer dispatching
+  // touch/mouse moves while the count is > 0.
+  int move_hold_count_;
+  // Used to schedule DispatchHeldEvents() when |move_hold_count_| goes to 0.
   base::WeakPtrFactory<RootWindow> held_event_factory_;
+  scoped_ptr<ui::LocatedEvent> held_move_event_;
 
   // Allowing for reposting of events. Used when exiting context menus.
   scoped_ptr<ui::LocatedEvent>  held_repostable_event_;

@@ -157,7 +157,7 @@ RootWindow::RootWindow(const CreateParams& params)
       waiting_on_compositing_end_(false),
       draw_on_compositing_end_(false),
       defer_draw_scheduling_(false),
-      mouse_move_hold_count_(0),
+      move_hold_count_(0),
       held_event_factory_(this),
       repostable_event_factory_(this) {
   SetName("RootWindow");
@@ -473,28 +473,27 @@ void RootWindow::ToggleFullScreen() {
   host_->ToggleFullScreen();
 }
 
-void RootWindow::HoldMouseMoves() {
-  if (!mouse_move_hold_count_)
+void RootWindow::HoldPointerMoves() {
+  if (!move_hold_count_)
     held_event_factory_.InvalidateWeakPtrs();
-  ++mouse_move_hold_count_;
-  TRACE_EVENT_ASYNC_BEGIN0("ui", "RootWindow::HoldMouseMoves", this);
+  ++move_hold_count_;
+  TRACE_EVENT_ASYNC_BEGIN0("ui", "RootWindow::HoldPointerMoves", this);
 }
 
-void RootWindow::ReleaseMouseMoves() {
-  --mouse_move_hold_count_;
-  DCHECK_GE(mouse_move_hold_count_, 0);
-  if (!mouse_move_hold_count_ && held_mouse_move_) {
-    // We don't want to call DispatchHeldEvents directly, because this might
-    // be called from a deep stack while another event, in which case
-    // dispatching another one may not be safe/expected.
-    // Instead we post a task, that we may cancel if HoldMouseMoves is called
-    // again before it executes.
+void RootWindow::ReleasePointerMoves() {
+  --move_hold_count_;
+  DCHECK_GE(move_hold_count_, 0);
+  if (!move_hold_count_ && held_move_event_) {
+    // We don't want to call DispatchHeldEvents directly, because this might be
+    // called from a deep stack while another event, in which case dispatching
+    // another one may not be safe/expected.  Instead we post a task, that we
+    // may cancel if HoldPointerMoves is called again before it executes.
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&RootWindow::DispatchHeldEvents,
                    held_event_factory_.GetWeakPtr()));
   }
-  TRACE_EVENT_ASYNC_END0("ui", "RootWindow::HoldMouseMoves", this);
+  TRACE_EVENT_ASYNC_END0("ui", "RootWindow::HoldPointerMoves", this);
 }
 
 void RootWindow::SetFocusWhenShown(bool focused) {
@@ -901,17 +900,16 @@ bool RootWindow::OnHostKeyEvent(ui::KeyEvent* event) {
 bool RootWindow::OnHostMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_DRAGGED ||
       (event->flags() & ui::EF_IS_SYNTHESIZED)) {
-    if (mouse_move_hold_count_) {
+    if (move_hold_count_) {
       Window* null_window = static_cast<Window*>(NULL);
-      held_mouse_move_.reset(
+      held_move_event_.reset(
           new ui::MouseEvent(*event, null_window, null_window));
       return true;
     } else {
-      // We may have a held event for a period between the time
-      // mouse_move_hold_count_ fell to 0 and the DispatchHeldEvents
-      // executes. Since we're going to dispatch the new event directly below,
-      // we can reset the old one.
-      held_mouse_move_.reset();
+      // We may have a held event for a period between the time move_hold_count_
+      // fell to 0 and the DispatchHeldEvents executes. Since we're going to
+      // dispatch the new event directly below, we can reset the old one.
+      held_move_event_.reset();
     }
   }
   DispatchHeldEvents();
@@ -946,70 +944,21 @@ bool RootWindow::OnHostScrollEvent(ui::ScrollEvent* event) {
 }
 
 bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
+  if ((event->type() == ui::ET_TOUCH_MOVED)) {
+    if (move_hold_count_) {
+      Window* null_window = static_cast<Window*>(NULL);
+      held_move_event_.reset(
+          new ui::TouchEvent(*event, null_window, null_window));
+      return true;
+    } else {
+      // We may have a held event for a period between the time move_hold_count_
+      // fell to 0 and the DispatchHeldEvents executes. Since we're going to
+      // dispatch the new event directly below, we can reset the old one.
+      held_move_event_.reset();
+    }
+  }
   DispatchHeldEvents();
-  switch (event->type()) {
-    case ui::ET_TOUCH_PRESSED:
-      touch_ids_down_ |= (1 << event->touch_id());
-      Env::GetInstance()->set_touch_down(touch_ids_down_ != 0);
-      break;
-
-    // Handle ET_TOUCH_CANCELLED only if it has a native event.
-    case ui::ET_TOUCH_CANCELLED:
-      if (!event->HasNativeEvent())
-        break;
-      // fallthrough
-    case ui::ET_TOUCH_RELEASED:
-      touch_ids_down_ = (touch_ids_down_ | (1 << event->touch_id())) ^
-                        (1 << event->touch_id());
-      Env::GetInstance()->set_touch_down(touch_ids_down_ != 0);
-      break;
-
-    default:
-      break;
-  }
-  TransformEventForDeviceScaleFactor(false, event);
-  bool handled = false;
-  Window* target = client::GetCaptureWindow(this);
-  if (!target) {
-    target = ConsumerToWindow(
-        gesture_recognizer_->GetTouchLockedTarget(event));
-    if (!target) {
-      target = ConsumerToWindow(
-          gesture_recognizer_->GetTargetForLocation(event->location()));
-    }
-  }
-
-  // The gesture recognizer processes touch events in the system coordinates. So
-  // keep a copy of the touch event here before possibly converting the event to
-  // a window's local coordinate system.
-  ui::TouchEvent event_for_gr(*event);
-
-  ui::EventResult result = ui::ER_UNHANDLED;
-  if (!target && !bounds().Contains(event->location())) {
-    // If the initial touch is outside the root window, target the root.
-    target = this;
-    ProcessEvent(target ? target : NULL, event);
-    result = event->result();
-  } else {
-    // We only come here when the first contact was within the root window.
-    if (!target) {
-      target = GetEventHandlerForPoint(event->location());
-      if (!target)
-        return false;
-    }
-
-    event->ConvertLocationToTarget(static_cast<Window*>(this), target);
-    ProcessEvent(target, event);
-    handled = event->handled();
-    result = event->result();
-  }
-
-  // Get the list of GestureEvents from GestureRecognizer.
-  scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
-  gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(
-      event_for_gr, result, target));
-
-  return ProcessGestures(gestures.get()) ? true : handled;
+  return DispatchTouchEventImpl(event);
 }
 
 void RootWindow::OnHostCancelMode() {
@@ -1135,6 +1084,72 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
   return false;
 }
 
+bool RootWindow::DispatchTouchEventImpl(ui::TouchEvent* event) {
+  switch (event->type()) {
+    case ui::ET_TOUCH_PRESSED:
+      touch_ids_down_ |= (1 << event->touch_id());
+      Env::GetInstance()->set_touch_down(touch_ids_down_ != 0);
+      break;
+
+      // Handle ET_TOUCH_CANCELLED only if it has a native event.
+    case ui::ET_TOUCH_CANCELLED:
+      if (!event->HasNativeEvent())
+        break;
+      // fallthrough
+    case ui::ET_TOUCH_RELEASED:
+      touch_ids_down_ = (touch_ids_down_ | (1 << event->touch_id())) ^
+            (1 << event->touch_id());
+      Env::GetInstance()->set_touch_down(touch_ids_down_ != 0);
+      break;
+
+    default:
+      break;
+  }
+  TransformEventForDeviceScaleFactor(false, event);
+  bool handled = false;
+  Window* target = client::GetCaptureWindow(this);
+  if (!target) {
+    target = ConsumerToWindow(
+        gesture_recognizer_->GetTouchLockedTarget(event));
+    if (!target) {
+      target = ConsumerToWindow(
+          gesture_recognizer_->GetTargetForLocation(event->location()));
+    }
+  }
+
+  // The gesture recognizer processes touch events in the system coordinates. So
+  // keep a copy of the touch event here before possibly converting the event to
+  // a window's local coordinate system.
+  ui::TouchEvent event_for_gr(*event);
+
+  ui::EventResult result = ui::ER_UNHANDLED;
+  if (!target && !bounds().Contains(event->location())) {
+    // If the initial touch is outside the root window, target the root.
+    target = this;
+    ProcessEvent(target ? target : NULL, event);
+    result = event->result();
+  } else {
+    // We only come here when the first contact was within the root window.
+    if (!target) {
+      target = GetEventHandlerForPoint(event->location());
+      if (!target)
+        return false;
+    }
+
+    event->ConvertLocationToTarget(static_cast<Window*>(this), target);
+    ProcessEvent(target, event);
+    handled = event->handled();
+    result = event->result();
+  }
+
+  // Get the list of GestureEvents from GestureRecognizer.
+  scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
+  gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(
+      event_for_gr, result, target));
+
+  return ProcessGestures(gestures.get()) ? true : handled;
+}
+
 void RootWindow::DispatchHeldEvents() {
   if (held_repostable_event_) {
     if (held_repostable_event_->type() == ui::ET_MOUSE_PRESSED) {
@@ -1148,12 +1163,17 @@ void RootWindow::DispatchHeldEvents() {
     }
     held_repostable_event_.reset();
   }
-  if (held_mouse_move_) {
+  if (held_move_event_ && held_move_event_->IsMouseEvent()) {
     // If a mouse move has been synthesized, the target location is suspect,
     // so drop the held event.
     if (!synthesize_mouse_move_)
-      DispatchMouseEventImpl(held_mouse_move_.get());
-    held_mouse_move_.reset();
+      DispatchMouseEventImpl(
+          static_cast<ui::MouseEvent*>(held_move_event_.get()));
+    held_move_event_.reset();
+  } else if (held_move_event_ && held_move_event_->IsTouchEvent()) {
+    DispatchTouchEventImpl(
+        static_cast<ui::TouchEvent*>(held_move_event_.get()));
+    held_move_event_.reset();
   }
 }
 

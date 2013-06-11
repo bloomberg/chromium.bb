@@ -556,7 +556,7 @@ class RenderWidgetHostViewAura::ResizeLock {
     TRACE_EVENT_ASYNC_BEGIN2("ui", "ResizeLock", this,
                              "width", new_size_.width(),
                              "height", new_size_.height());
-    root_window_->HoldMouseMoves();
+    root_window_->HoldPointerMoves();
 
     BrowserThread::PostDelayedTask(
         BrowserThread::UI, FROM_HERE,
@@ -581,7 +581,7 @@ class RenderWidgetHostViewAura::ResizeLock {
     if (!root_window_)
       return;
     UnlockCompositor();
-    root_window_->ReleaseMouseMoves();
+    root_window_->ReleasePointerMoves();
     root_window_ = NULL;
   }
 
