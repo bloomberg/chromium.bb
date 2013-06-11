@@ -13,13 +13,14 @@
 namespace cc {
 
 class OutputSurface;
+class RendererClient;
+class ResourceProvider;
 class SoftwareOutputDevice;
-class ContentDrawQuadBase;
+
+class CheckerboardDrawQuad;
 class DebugBorderDrawQuad;
 class PictureDrawQuad;
-class RendererClient;
 class RenderPassDrawQuad;
-class ResourceProvider;
 class SolidColorDrawQuad;
 class TextureDrawQuad;
 class TileDrawQuad;
@@ -73,18 +74,20 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   void SetClipRect(gfx::Rect rect);
   bool IsSoftwareResource(ResourceProvider::ResourceId resource_id) const;
 
+  void DrawCheckerboardQuad(const DrawingFrame* frame,
+                            const CheckerboardDrawQuad* quad);
   void DrawDebugBorderQuad(const DrawingFrame* frame,
                            const DebugBorderDrawQuad* quad);
   void DrawPictureQuad(const DrawingFrame* frame,
                        const PictureDrawQuad* quad);
+  void DrawRenderPassQuad(const DrawingFrame* frame,
+                          const RenderPassDrawQuad* quad);
   void DrawSolidColorQuad(const DrawingFrame* frame,
                           const SolidColorDrawQuad* quad);
   void DrawTextureQuad(const DrawingFrame* frame,
                        const TextureDrawQuad* quad);
   void DrawTileQuad(const DrawingFrame* frame,
                     const TileDrawQuad* quad);
-  void DrawRenderPassQuad(const DrawingFrame* frame,
-                          const RenderPassDrawQuad* quad);
   void DrawUnsupportedQuad(const DrawingFrame* frame,
                            const DrawQuad* quad);
 

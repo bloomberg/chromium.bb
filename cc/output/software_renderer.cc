@@ -12,6 +12,7 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/software_output_device.h"
+#include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -228,11 +229,17 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) {
   }
 
   switch (quad->material) {
+    case DrawQuad::CHECKERBOARD:
+      DrawCheckerboardQuad(frame, CheckerboardDrawQuad::MaterialCast(quad));
+      break;
     case DrawQuad::DEBUG_BORDER:
       DrawDebugBorderQuad(frame, DebugBorderDrawQuad::MaterialCast(quad));
       break;
     case DrawQuad::PICTURE_CONTENT:
       DrawPictureQuad(frame, PictureDrawQuad::MaterialCast(quad));
+      break;
+    case DrawQuad::RENDER_PASS:
+      DrawRenderPassQuad(frame, RenderPassDrawQuad::MaterialCast(quad));
       break;
     case DrawQuad::SOLID_COLOR:
       DrawSolidColorQuad(frame, SolidColorDrawQuad::MaterialCast(quad));
@@ -243,15 +250,24 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) {
     case DrawQuad::TILED_CONTENT:
       DrawTileQuad(frame, TileDrawQuad::MaterialCast(quad));
       break;
-    case DrawQuad::RENDER_PASS:
-      DrawRenderPassQuad(frame, RenderPassDrawQuad::MaterialCast(quad));
-      break;
-    default:
+    case DrawQuad::INVALID:
+    case DrawQuad::IO_SURFACE_CONTENT:
+    case DrawQuad::YUV_VIDEO_CONTENT:
+    case DrawQuad::STREAM_VIDEO_CONTENT:
       DrawUnsupportedQuad(frame, quad);
+      NOTREACHED();
       break;
   }
 
   current_canvas_->resetMatrix();
+}
+
+void SoftwareRenderer::DrawCheckerboardQuad(const DrawingFrame* frame,
+                                            const CheckerboardDrawQuad* quad) {
+  current_paint_.setColor(quad->color);
+  current_paint_.setAlpha(quad->opacity() * SkColorGetA(quad->color));
+  current_canvas_->drawRect(gfx::RectFToSkRect(QuadVertexRect()),
+                            current_paint_);
 }
 
 void SoftwareRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
