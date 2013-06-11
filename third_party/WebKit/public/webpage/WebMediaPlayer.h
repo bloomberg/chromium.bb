@@ -151,22 +151,6 @@ public:
     virtual void exitFullscreen() { }
     // Returns true if the player can enter fullscreen.
     virtual bool canEnterFullscreen() const { return false; }
-
-    // Deprecated methods to-be-deleted
-    // FIXME: Remove once Chromium no longer overrides
-    virtual void cancelLoad() { }
-    virtual int dataRate() const { return 0; }
-    virtual void setVisible(bool) { }
-    virtual void setSize(const WebSize&) { }
-    virtual unsigned long long totalBytes() const { return 0; }
-    virtual bool totalBytesKnown() { return false; }
-    enum MovieLoadType {
-        MovieLoadTypeUnknown,
-        MovieLoadTypeDownload,
-        MovieLoadTypeStoredStream,
-        MovieLoadTypeLiveStream,
-    };
-    virtual MovieLoadType movieLoadType() const { return MovieLoadTypeUnknown; }
 };
 
 } // namespace WebKit
