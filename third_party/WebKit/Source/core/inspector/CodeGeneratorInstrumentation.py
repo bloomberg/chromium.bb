@@ -66,20 +66,12 @@ inline void ${name}(${params_public})
 }
 """)
 
-template_inline_accepts_cookie = string.Template("""
-inline void ${name}(${params_public})
-{   ${fast_return}
-    if (${condition}.isValid())
-        ${name}Impl(${params_impl});
-}
-""")
-
-template_inline_returns_cookie = string.Template("""
-inline InspectorInstrumentationCookie ${name}(${params_public})
+template_inline_returns_value = string.Template("""
+inline ${return_type} ${name}(${params_public})
 {   ${fast_return}
     if (${condition})
         return ${name}Impl(${params_impl});
-    return InspectorInstrumentationCookie();
+    return ${default_return_value};
 }
 """)
 
@@ -107,7 +99,7 @@ ${return_type} ${name}Impl(${params_impl})
 
 template_agent_call = string.Template("""
     if (${agent_class}* agent = ${agent_fetch})
-        agent->${name}(${params_agent});""")
+        ${maybe_return}agent->${name}(${params_agent});""")
 
 template_agent_call_timeline_returns_cookie = string.Template("""
     int timelineAgentId = 0;
@@ -174,7 +166,7 @@ class File:
 
 class Method:
     def __init__(self, source):
-        match = re.match("(\[[\w|,|=|\s]*\])?\s?(\w*) (\w*)\((.*)\)\s?;", source)
+        match = re.match("(\[[\w|,|=|\s]*\])?\s?(\w*\*?) (\w*)\((.*)\)\s?;", source)
         if not match:
             sys.stderr.write("Cannot parse %s\n" % source)
             sys.exit(1)
@@ -195,6 +187,19 @@ class Method:
         self.accepts_cookie = len(self.params) and self.params[0].type == "const InspectorInstrumentationCookie&"
         self.returns_cookie = self.return_type == "InspectorInstrumentationCookie"
 
+        self.returns_value = self.return_type != "void"
+
+        if self.return_type == "bool":
+            self.default_return_value = "false"
+        elif self.return_type == "String":
+            self.default_return_value = "\"\""
+        else:
+            self.default_return_value = self.return_type + "()"
+
+        for param in self.params:
+            if "DefaultReturn" in param.options:
+                self.default_return_value = param.name
+
         self.params_impl = self.params
         if not self.accepts_cookie and not "Inline=Forward" in self.options:
             if not "Keep" in self.params_impl[0].options:
@@ -212,13 +217,13 @@ class Method:
             self.return_type, self.name, ", ".join(map(Parameter.to_str_class, self.params_impl))))
 
         if "Inline=FastReturn" in self.options or "Inline=Forward" in self.options:
-            fast_return = "\n    FAST_RETURN_IF_NO_FRONTENDS(%s());" % self.return_type
+            fast_return = "\n    FAST_RETURN_IF_NO_FRONTENDS(%s);" % self.default_return_value
         else:
             fast_return = ""
 
         if self.accepts_cookie:
-            condition = self.params_impl[0].name
-            template = template_inline_accepts_cookie
+            condition = "%s.isValid()" % self.params_impl[0].name
+            template = template_inline
         elif "Inline=Forward" in self.options:
             condition = ""
             template = template_inline_forward
@@ -226,18 +231,17 @@ class Method:
             condition = "InstrumentingAgents* agents = instrumentingAgentsFor%s(%s)" % (
                 self.agents_selector_class, self.params[0].name)
 
-            if self.returns_cookie:
-                template = template_inline_returns_cookie
-            elif self.return_type == "void":
-                template = template_inline
+            if self.returns_value:
+                template = template_inline_returns_value
             else:
-                sys.stderr.write("Unsupported return type %s" % self.return_type)
-                sys.exit(1)
+                template = template_inline
 
         header_lines.append(template.substitute(
             None,
             name=self.name,
             fast_return=fast_return,
+            return_type=self.return_type,
+            default_return_value=self.default_return_value,
             params_public=", ".join(map(Parameter.to_str_full, self.params)),
             params_impl=", ".join(map(Parameter.to_str_name, self.params_impl)),
             condition=condition))
@@ -254,6 +258,8 @@ class Method:
             else:
                 timeline_agent_id = "0"
             body_lines.append("\n    return InspectorInstrumentationCookie(agents, %s);" % timeline_agent_id)
+        elif self.returns_value:
+            body_lines.append("\n    return %s;" % self.default_return_value)
 
         cpp_lines.append(template_outofline.substitute(
             None,
@@ -279,11 +285,17 @@ class Method:
         else:
             template = template_agent_call
 
+        if not self.returns_value or self.returns_cookie:
+            maybe_return = ""
+        else:
+            maybe_return = "return "
+
         return template.substitute(
             None,
             name=self.name,
             agent_class=agent_class,
             agent_fetch=agent_fetch,
+            maybe_return=maybe_return,
             params_agent=", ".join(map(Parameter.to_str_name, self.params_impl)[1:]))
 
 

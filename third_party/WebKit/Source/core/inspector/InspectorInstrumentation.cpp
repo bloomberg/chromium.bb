@@ -94,33 +94,6 @@ bool isDebuggerPausedImpl(InstrumentingAgents* instrumentingAgents)
     return false;
 }
 
-bool forcePseudoStateImpl(InstrumentingAgents* instrumentingAgents, Element* element, CSSSelector::PseudoType pseudoState)
-{
-    if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
-        return cssAgent->forcePseudoState(element, pseudoState);
-    return false;
-}
-
-bool shouldApplyScreenWidthOverrideImpl(InstrumentingAgents* instrumentingAgents)
-{
-    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent()) {
-        long width = 0;
-        pageAgent->applyScreenWidthOverride(&width);
-        return !!width;
-    }
-    return false;
-}
-
-bool shouldApplyScreenHeightOverrideImpl(InstrumentingAgents* instrumentingAgents)
-{
-    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent()) {
-        long height = 0;
-        pageAgent->applyScreenHeightOverride(&height);
-        return !!height;
-    }
-    return false;
-}
-
 void continueAfterPingLoaderImpl(InstrumentingAgents* instrumentingAgents, unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& response)
 {
     willSendRequestImpl(instrumentingAgents, identifier, loader, request, response, CachedResourceInitiatorInfo());
@@ -159,27 +132,12 @@ void willDestroyCachedResourceImpl(CachedResource* cachedResource)
     }
 }
 
-String getCurrentUserInitiatedProfileNameImpl(InstrumentingAgents* instrumentingAgents, bool incrementProfileNumber)
-{
-    if (InspectorProfilerAgent* profilerAgent = instrumentingAgents->inspectorProfilerAgent())
-        return profilerAgent->getCurrentUserInitiatedProfileName(incrementProfileNumber);
-    return "";
-}
-
 bool profilerEnabledImpl(InstrumentingAgents* instrumentingAgents)
 {
     if (InspectorProfilerAgent* profilerAgent = instrumentingAgents->inspectorProfilerAgent())
         return profilerAgent->enabled();
     return false;
 }
-
-bool shouldPauseDedicatedWorkerOnStartImpl(InstrumentingAgents* instrumentingAgents)
-{
-    if (InspectorWorkerAgent* workerAgent = instrumentingAgents->inspectorWorkerAgent())
-        return workerAgent->shouldPauseDedicatedWorkerOnStart();
-    return false;
-}
-
 
 bool collectingHTMLParseErrorsImpl(InstrumentingAgents* instrumentingAgents)
 {
@@ -260,21 +218,6 @@ InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ScriptExecutionCon
         return instrumentationForWorkerContext(static_cast<WorkerContext*>(context));
     return 0;
 }
-
-GeolocationPosition* overrideGeolocationPositionImpl(InstrumentingAgents* instrumentingAgents, GeolocationPosition* position)
-{
-    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
-        position = pageAgent->overrideGeolocationPosition(position);
-    return position;
-}
-
-DeviceOrientationData* overrideDeviceOrientationImpl(InstrumentingAgents* instrumentingAgents, DeviceOrientationData* deviceOrientation)
-{
-    if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
-        deviceOrientation = pageAgent->overrideDeviceOrientation(deviceOrientation);
-    return deviceOrientation;
-}
-
 
 bool cssErrorFilter(const CSSParserString& content, int propertyId, int errorType)
 {

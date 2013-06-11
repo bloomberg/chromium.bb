@@ -966,7 +966,6 @@
             'inspector/InspectorOverlay.h',
             'inspector/InspectorOverlayHost.cpp',
             'inspector/InspectorOverlayHost.h',
-            'inspector/InspectorOverridesInl.h',
             'inspector/InspectorPageAgent.cpp',
             'inspector/InspectorPageAgent.h',
             'inspector/InspectorProfilerAgent.cpp',

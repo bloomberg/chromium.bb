@@ -465,3 +465,26 @@ interface InspectorDatabaseInstrumentation {
     [Database]
     void didOpenDatabase(ScriptExecutionContext* context, PassRefPtr<Database> database, const String& domain, const String& name, const String& version);
 }
+
+interface InspectorOverrides {
+    [CSS, Inline=FastReturn]
+    bool forcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudoState);
+
+    [Page, Inline=FastReturn]
+    bool shouldApplyScreenWidthOverride(Frame* frame);
+
+    [Page, Inline=FastReturn]
+    bool shouldApplyScreenHeightOverride(Frame* frame);
+
+    [Worker, Inline=FastReturn]
+    bool shouldPauseDedicatedWorkerOnStart(ScriptExecutionContext* context);
+
+    [Page, Inline=FastReturn]
+    GeolocationPosition* overrideGeolocationPosition(Page* page, [DefaultReturn] GeolocationPosition* position);
+
+    [Page, Inline=FastReturn]
+    DeviceOrientationData* overrideDeviceOrientation(Page* page, [DefaultReturn] DeviceOrientationData* deviceOrientation);
+
+    [Profiler]
+    String getCurrentUserInitiatedProfileName(Page* page, bool incrementProfileNumber);
+}

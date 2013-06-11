@@ -142,7 +142,9 @@ public:
     void willRunJavaScriptDialog(const String& message);
     void didRunJavaScriptDialog();
     void applyScreenWidthOverride(long*);
+    bool shouldApplyScreenWidthOverride();
     void applyScreenHeightOverride(long*);
+    bool shouldApplyScreenHeightOverride();
     void applyEmulatedMedia(String*);
     void didPaint(RenderObject*, GraphicsContext*, const LayoutRect&);
     void didLayout(RenderObject*);

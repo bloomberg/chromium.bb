@@ -951,11 +951,25 @@ void InspectorPageAgent::applyScreenWidthOverride(long* width)
         *width = widthOverride;
 }
 
+bool InspectorPageAgent::shouldApplyScreenWidthOverride()
+{
+    long width = 0;
+    applyScreenWidthOverride(&width);
+    return !!width;
+}
+
 void InspectorPageAgent::applyScreenHeightOverride(long* height)
 {
     long heightOverride = m_state->getLong(PageAgentState::pageAgentScreenHeightOverride);
     if (heightOverride)
         *height = heightOverride;
+}
+
+bool InspectorPageAgent::shouldApplyScreenHeightOverride()
+{
+    long height = 0;
+    applyScreenHeightOverride(&height);
+    return !!height;
 }
 
 void InspectorPageAgent::didPaint(RenderObject*, GraphicsContext* context, const LayoutRect& rect)
