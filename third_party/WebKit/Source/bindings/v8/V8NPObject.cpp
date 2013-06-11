@@ -183,7 +183,7 @@ public:
     {
         ASSERT(!m_map.contains(key));
         v8::Persistent<v8::FunctionTemplate> wrapper(m_isolate, handle);
-        wrapper.MakeWeak(m_isolate, key, &makeWeakCallback);
+        wrapper.MakeWeak(key, &makeWeakCallback);
         m_map.set(key, UnsafePersistent<v8::FunctionTemplate>(wrapper));
     }
 

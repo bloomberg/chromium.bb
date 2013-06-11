@@ -98,7 +98,7 @@ v8::Handle<v8::String> StringCache::v8ExternalStringSlow(StringImpl* stringImpl,
 
     stringImpl->ref();
     wrapper.MarkIndependent(isolate);
-    wrapper.MakeWeak(isolate, stringImpl, &makeWeakCallback);
+    wrapper.MakeWeak(stringImpl, &makeWeakCallback);
     m_lastV8String = UnsafePersistent<v8::String>(wrapper);
     m_stringCache.set(stringImpl, m_lastV8String);
 

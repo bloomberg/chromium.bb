@@ -62,7 +62,7 @@ static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(InjectedScriptHos
     // InspectorBackend when the wrapper is garbage collected.
     host->ref();
     v8::Persistent<v8::Object> weakHandle(isolate, instance);
-    weakHandle.MakeWeak(isolate, host, &InjectedScriptManager::makeWeakCallback);
+    weakHandle.MakeWeak(host, &InjectedScriptManager::makeWeakCallback);
     return instance;
 }
 

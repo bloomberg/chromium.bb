@@ -67,7 +67,7 @@ public:
         ASSERT(static_cast<KeyType*>(toNative(wrapper)) == key);
         v8::Persistent<v8::Object> persistent(m_isolate, wrapper);
         configuration.configureWrapper(&persistent, m_isolate);
-        persistent.MakeWeak(m_isolate, this, &makeWeakCallback);
+        persistent.MakeWeak(this, &makeWeakCallback);
         m_map.set(key, UnsafePersistent<v8::Object>(persistent));
     }
 
