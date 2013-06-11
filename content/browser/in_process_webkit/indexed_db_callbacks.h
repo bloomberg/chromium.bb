@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -17,6 +16,7 @@
 namespace content {
 class WebIDBCursorImpl;
 class WebIDBDatabaseImpl;
+struct IndexedDBDatabaseMetadata;
 
 class IndexedDBCallbacksBase {
  public:
@@ -26,26 +26,26 @@ class IndexedDBCallbacksBase {
   virtual void onBlocked(long long old_version);
 
   // implemented by subclasses, but need to be called later
-  virtual void onSuccess(const WebKit::WebVector<WebKit::WebString>& value);
+  virtual void onSuccess(const std::vector<string16>& value);
   virtual void onSuccess(WebIDBDatabaseImpl* idb_object,
-                         const WebKit::WebIDBMetadata& metadata);
+                         const IndexedDBDatabaseMetadata& metadata);
   virtual void onUpgradeNeeded(long long old_version,
                                WebIDBDatabaseImpl* database,
-                               const WebKit::WebIDBMetadata&);
+                               const IndexedDBDatabaseMetadata&);
   virtual void onSuccess(WebIDBCursorImpl* idb_object,
                          const IndexedDBKey& key,
                          const IndexedDBKey& primaryKey,
-                         const WebKit::WebData& value);
+                         std::vector<char>* value);
   virtual void onSuccess(const IndexedDBKey& key,
                          const IndexedDBKey& primaryKey,
-                         const WebKit::WebData& value);
-  virtual void onSuccess(const WebKit::WebData& value);
+                         std::vector<char>* value);
+  virtual void onSuccess(std::vector<char>* value);
   virtual void onSuccessWithPrefetch(
       const std::vector<IndexedDBKey>& keys,
       const std::vector<IndexedDBKey>& primaryKeys,
       const std::vector<std::vector<char> >& values);
   virtual void onSuccess(const IndexedDBKey& value);
-  virtual void onSuccess(const WebKit::WebData& value,
+  virtual void onSuccess(std::vector<char>* value,
                          const IndexedDBKey& key,
                          const IndexedDBKeyPath& keyPath);
   virtual void onSuccess(long long value);
@@ -86,10 +86,10 @@ class IndexedDBCallbacksDatabase : public IndexedDBCallbacksBase {
                              const GURL& origin_url);
 
   virtual void onSuccess(WebIDBDatabaseImpl* idb_object,
-                         const WebKit::WebIDBMetadata& metadata) OVERRIDE;
+                         const IndexedDBDatabaseMetadata& metadata) OVERRIDE;
   virtual void onUpgradeNeeded(long long old_version,
                                WebIDBDatabaseImpl* database,
-                               const WebKit::WebIDBMetadata&) OVERRIDE;
+                               const IndexedDBDatabaseMetadata&) OVERRIDE;
 
  private:
   int64 host_transaction_id_;
@@ -122,11 +122,11 @@ class IndexedDBCallbacks<WebIDBCursorImpl> : public IndexedDBCallbacksBase {
   virtual void onSuccess(WebIDBCursorImpl* idb_object,
                          const IndexedDBKey& key,
                          const IndexedDBKey& primaryKey,
-                         const WebKit::WebData& value);
+                         std::vector<char>* value);
   virtual void onSuccess(const IndexedDBKey& key,
                          const IndexedDBKey& primaryKey,
-                         const WebKit::WebData& value);
-  virtual void onSuccess(const WebKit::WebData& value);
+                         std::vector<char>* value);
+  virtual void onSuccess(std::vector<char>* value);
   virtual void onSuccessWithPrefetch(
       const std::vector<IndexedDBKey>& keys,
       const std::vector<IndexedDBKey>& primaryKeys,
@@ -159,12 +159,9 @@ class IndexedDBCallbacks<IndexedDBKey> : public IndexedDBCallbacksBase {
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
 };
 
-// WebVector is implemented in WebKit as opposed to being an
-// interface Chromium implements.  Thus we pass a const ___& version and thus
-// we need this specialization.
 template <>
 class IndexedDBCallbacks<
-    WebKit::WebVector<WebKit::WebString> > : public IndexedDBCallbacksBase {
+    std::vector<string16> > : public IndexedDBCallbacksBase {
  public:
   IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
                      int32 ipc_thread_id,
@@ -173,7 +170,7 @@ class IndexedDBCallbacks<
                                ipc_thread_id,
                                ipc_callbacks_id) {}
 
-  virtual void onSuccess(const WebKit::WebVector<WebKit::WebString>& value);
+  virtual void onSuccess(const std::vector<string16>& value);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
@@ -183,7 +180,7 @@ class IndexedDBCallbacks<
 // Chromium implements.  Thus we pass a const ___& version and thus we
 // need this specialization.
 template <>
-class IndexedDBCallbacks<WebKit::WebData> : public IndexedDBCallbacksBase {
+class IndexedDBCallbacks<std::vector<char> > : public IndexedDBCallbacksBase {
  public:
   IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
                      int32 ipc_thread_id,
@@ -192,8 +189,8 @@ class IndexedDBCallbacks<WebKit::WebData> : public IndexedDBCallbacksBase {
                                ipc_thread_id,
                                ipc_callbacks_id) {}
 
-  virtual void onSuccess(const WebKit::WebData& value);
-  virtual void onSuccess(const WebKit::WebData& value,
+  virtual void onSuccess(std::vector<char>* value);
+  virtual void onSuccess(std::vector<char>* value,
                          const IndexedDBKey& key,
                          const IndexedDBKeyPath& keyPath);
   virtual void onSuccess(long long value);

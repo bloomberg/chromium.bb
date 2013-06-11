@@ -27,10 +27,6 @@ struct IndexedDBHostMsg_FactoryDeleteDatabase_Params;
 struct IndexedDBHostMsg_FactoryGetDatabaseNames_Params;
 struct IndexedDBHostMsg_FactoryOpen_Params;
 
-namespace WebKit {
-struct WebIDBMetadata;
-}
-
 namespace content {
 class IndexedDBContextImpl;
 class IndexedDBKey;
@@ -38,6 +34,7 @@ class IndexedDBKeyPath;
 class IndexedDBKeyRange;
 class WebIDBCursorImpl;
 class WebIDBDatabaseImpl;
+struct IndexedDBDatabaseMetadata;
 
 // Handles all IndexedDB related messages from a particular renderer process.
 class IndexedDBDispatcherHost : public BrowserMessageFilter {
@@ -46,8 +43,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   IndexedDBDispatcherHost(int ipc_process_id,
                           IndexedDBContextImpl* indexed_db_context);
 
-  static IndexedDBDatabaseMetadata ConvertMetadata(
-      const WebKit::WebIDBMetadata& metadata);
+  static ::IndexedDBDatabaseMetadata ConvertMetadata(
+      const content::IndexedDBDatabaseMetadata& metadata);
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;

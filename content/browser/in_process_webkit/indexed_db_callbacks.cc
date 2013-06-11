@@ -4,15 +4,16 @@
 
 #include "content/browser/in_process_webkit/indexed_db_callbacks.h"
 
+#include <algorithm>
 #include <vector>
 
+#include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/webidbdatabase_impl.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "webkit/browser/quota/quota_manager.h"
 
 using WebKit::WebData;
 using WebKit::WebString;
-using WebKit::WebVector;
 
 namespace content {
 
@@ -40,35 +41,38 @@ void IndexedDBCallbacksBase::onBlocked(long long old_version) {
       ipc_thread_id_, ipc_callbacks_id_, old_version));
 }
 
-void IndexedDBCallbacksBase::onSuccess(const WebVector<WebString>& value) {
+void IndexedDBCallbacksBase::onSuccess(const std::vector<string16>& value) {
   NOTREACHED();
 }
 
-void IndexedDBCallbacksBase::onSuccess(WebIDBDatabaseImpl* idb_object,
-                                       const WebKit::WebIDBMetadata& metadata) {
+void IndexedDBCallbacksBase::onSuccess(
+    WebIDBDatabaseImpl* idb_object,
+    const IndexedDBDatabaseMetadata& metadata) {
   NOTREACHED();
 }
 
 void IndexedDBCallbacksBase::onUpgradeNeeded(long long old_version,
                                              WebIDBDatabaseImpl* database,
-                                             const WebKit::WebIDBMetadata&) {
+                                             const IndexedDBDatabaseMetadata&) {
   NOTREACHED();
 }
 
 void IndexedDBCallbacksBase::onSuccess(WebIDBCursorImpl* idb_object,
                                        const IndexedDBKey& key,
                                        const IndexedDBKey& primaryKey,
-                                       const WebData& value) {
+                                       std::vector<char>* value) {
   NOTREACHED();
 }
 
 void IndexedDBCallbacksBase::onSuccess(const IndexedDBKey& key,
                                        const IndexedDBKey& primaryKey,
-                                       const WebData& value) {
+                                       std::vector<char>* value) {
   NOTREACHED();
 }
 
-void IndexedDBCallbacksBase::onSuccess(const WebData& value) { NOTREACHED(); }
+void IndexedDBCallbacksBase::onSuccess(std::vector<char>* value) {
+  NOTREACHED();
+}
 
 void IndexedDBCallbacksBase::onSuccessWithPrefetch(
     const std::vector<IndexedDBKey>& keys,
@@ -81,7 +85,7 @@ void IndexedDBCallbacksBase::onSuccess(const IndexedDBKey& value) {
   NOTREACHED();
 }
 
-void IndexedDBCallbacksBase::onSuccess(const WebData& value,
+void IndexedDBCallbacksBase::onSuccess(std::vector<char>* value,
                                        const IndexedDBKey& key,
                                        const IndexedDBKeyPath& keyPath) {
   NOTREACHED();
@@ -106,7 +110,7 @@ IndexedDBCallbacksDatabase::IndexedDBCallbacksDatabase(
 
 void IndexedDBCallbacksDatabase::onSuccess(
     WebIDBDatabaseImpl* idb_object,
-    const WebKit::WebIDBMetadata& metadata) {
+    const IndexedDBDatabaseMetadata& metadata) {
   int32 ipc_object_id = ipc_database_id_;
   if (ipc_object_id == kDatabaseNotAdded) {
     ipc_object_id =
@@ -129,7 +133,7 @@ void IndexedDBCallbacksDatabase::onSuccess(
 void IndexedDBCallbacksDatabase::onUpgradeNeeded(
     long long old_version,
     WebIDBDatabaseImpl* database,
-    const WebKit::WebIDBMetadata& metadata) {
+    const IndexedDBDatabaseMetadata& metadata) {
   dispatcher_host()->RegisterTransactionId(host_transaction_id_, origin_url_);
   int32 ipc_database_id =
       dispatcher_host()->Add(database, ipc_thread_id(), origin_url_);
@@ -148,28 +152,36 @@ void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccess(
     WebIDBCursorImpl* idb_cursor,
     const IndexedDBKey& key,
     const IndexedDBKey& primaryKey,
-    const WebData& value) {
+    std::vector<char>* value) {
   int32 ipc_object_id = dispatcher_host()->Add(idb_cursor);
   IndexedDBMsg_CallbacksSuccessIDBCursor_Params params;
   params.ipc_thread_id = ipc_thread_id();
   params.ipc_callbacks_id = ipc_callbacks_id();
   params.ipc_cursor_id = ipc_object_id;
-  params.key = IndexedDBKey(key);
-  params.primary_key = IndexedDBKey(primaryKey);
-  params.value.assign(value.data(), value.data() + value.size());
+  params.key = key;
+  params.primary_key = primaryKey;
+  if (value && !value->empty())
+    std::swap(params.value, *value);
+  // TODO(alecflett): Avoid a copy here: the whole params object is
+  // being copied into the message.
   dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessIDBCursor(params));
 }
 
-void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccess(const WebData& webValue) {
-  std::vector<char> value(webValue.data(), webValue.data() + webValue.size());
+void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccess(std::vector<char>* value) {
+  std::vector<char> value_copy;
+  if (value && !value->empty())
+    std::swap(value_copy, *value);
   dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessValue(
-      ipc_thread_id(), ipc_callbacks_id(), value));
+      ipc_thread_id(),
+      ipc_callbacks_id(),
+      // TODO(alecflett): avoid a copy here.
+      value_copy));
 }
 
 void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccess(
     const IndexedDBKey& key,
     const IndexedDBKey& primaryKey,
-    const WebData& value) {
+    std::vector<char>* value) {
   DCHECK_NE(ipc_cursor_id_, -1);
   WebIDBCursorImpl* idb_cursor =
       dispatcher_host()->GetCursorFromId(ipc_cursor_id_);
@@ -181,9 +193,12 @@ void IndexedDBCallbacks<WebIDBCursorImpl>::onSuccess(
   params.ipc_thread_id = ipc_thread_id();
   params.ipc_callbacks_id = ipc_callbacks_id();
   params.ipc_cursor_id = ipc_cursor_id_;
-  params.key = IndexedDBKey(key);
-  params.primary_key = IndexedDBKey(primaryKey);
-  params.value.assign(value.data(), value.data() + value.size());
+  params.key = key;
+  params.primary_key = primaryKey;
+  if (value && !value->empty())
+    std::swap(params.value, *value);
+  // TODO(alecflett): Avoid a copy here: the whole params object is
+  // being copied into the message.
   dispatcher_host()->Send(
       new IndexedDBMsg_CallbacksSuccessCursorContinue(params));
 }
@@ -218,8 +233,8 @@ void IndexedDBCallbacks<IndexedDBKey>::onSuccess(const IndexedDBKey& value) {
       ipc_thread_id(), ipc_callbacks_id(), IndexedDBKey(value)));
 }
 
-void IndexedDBCallbacks<WebVector<WebString> >::onSuccess(
-    const WebVector<WebString>& value) {
+void IndexedDBCallbacks<std::vector<string16> >::onSuccess(
+    const std::vector<string16>& value) {
 
   std::vector<string16> list;
   for (unsigned i = 0; i < value.size(); ++i)
@@ -229,37 +244,48 @@ void IndexedDBCallbacks<WebVector<WebString> >::onSuccess(
       ipc_thread_id(), ipc_callbacks_id(), list));
 }
 
-void IndexedDBCallbacks<WebData>::onSuccess(const WebData& value) {
+void IndexedDBCallbacks<std::vector<char> >::onSuccess(
+    std::vector<char>* value) {
+  std::vector<char> value_copy;
+  if (value && !value->empty())
+    std::swap(value_copy, *value);
   dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessValue(
       ipc_thread_id(),
       ipc_callbacks_id(),
-      std::vector<char>(value.data(), value.data() + value.size())));
+      // TODO(alecflett): avoid a copy here
+      value_copy));
 }
 
-void IndexedDBCallbacks<WebData>::onSuccess(const WebData& value,
-                                            const IndexedDBKey& primaryKey,
-                                            const IndexedDBKeyPath& keyPath) {
+void IndexedDBCallbacks<std::vector<char> >::onSuccess(
+    std::vector<char>* value,
+    const IndexedDBKey& primaryKey,
+    const IndexedDBKeyPath& keyPath) {
+  std::vector<char> value_copy;
+  if (value && !value->empty())
+    std::swap(value_copy, *value);
   dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessValueWithKey(
       ipc_thread_id(),
       ipc_callbacks_id(),
-      std::vector<char>(value.data(), value.data() + value.size()),
+      // TODO(alecflett): Avoid a copy here.
+      value_copy,
       IndexedDBKey(primaryKey),
       IndexedDBKeyPath(keyPath)));
 }
 
-void IndexedDBCallbacks<WebData>::onSuccess(long long value) {
+void IndexedDBCallbacks<std::vector<char> >::onSuccess(long long value) {
   dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessInteger(
       ipc_thread_id(), ipc_callbacks_id(), value));
 }
 
-void IndexedDBCallbacks<WebData>::onSuccess() {
+void IndexedDBCallbacks<std::vector<char> >::onSuccess() {
   dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessUndefined(
       ipc_thread_id(), ipc_callbacks_id()));
 }
 
-void IndexedDBCallbacks<WebData>::onSuccess(const IndexedDBKey& value) {
+void IndexedDBCallbacks<std::vector<char> >::onSuccess(
+    const IndexedDBKey& value) {
   dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessIndexedDBKey(
-      ipc_thread_id(), ipc_callbacks_id(), IndexedDBKey(value)));
+      ipc_thread_id(), ipc_callbacks_id(), value));
 }
 
 }  // namespace content

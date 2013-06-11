@@ -39,7 +39,7 @@ class CONTENT_EXPORT WebIDBDatabaseImpl {
                                  long long transaction_id);
   virtual void createTransaction(long long id,
                                  IndexedDBDatabaseCallbacks* callbacks,
-                                 const WebKit::WebVector<long long>& scope,
+                                 const std::vector<int64>& scope,
                                  unsigned short mode);
   virtual void forceClose();
   virtual void close();
@@ -56,20 +56,20 @@ class CONTENT_EXPORT WebIDBDatabaseImpl {
                    IndexedDBCallbacksBase* callbacks);
   virtual void put(long long transaction_id,
                    long long object_store_id,
-                   const WebKit::WebData& value,
+                   std::vector<char>* value,
                    const IndexedDBKey& key,
                    WebKit::WebIDBDatabase::PutMode mode,
                    IndexedDBCallbacksBase* callbacks,
-                   const WebKit::WebVector<long long>& index_ids,
+                   const std::vector<int64>& index_ids,
                    const std::vector<IndexKeys>& index_keys);
   virtual void setIndexKeys(long long transaction_id,
                             long long object_store_id,
                             const IndexedDBKey& key,
-                            const WebKit::WebVector<long long>& index_ids,
+                            const std::vector<int64>& index_ids,
                             const std::vector<IndexKeys>& index_keys);
   virtual void setIndexesReady(long long transaction_id,
                                long long object_store_id,
-                               const WebKit::WebVector<long long>& index_ids);
+                               const std::vector<int64>& index_ids);
   virtual void openCursor(long long transaction_id,
                           long long object_store_id,
                           long long index_id,

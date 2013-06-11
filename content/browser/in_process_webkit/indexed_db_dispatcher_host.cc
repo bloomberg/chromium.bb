@@ -14,6 +14,7 @@
 #include "content/browser/in_process_webkit/indexed_db_callbacks.h"
 #include "content/browser/in_process_webkit/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
+#include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/webidbcursor_impl.h"
 #include "content/browser/indexed_db/webidbcursor_impl.h"
 #include "content/browser/indexed_db/webidbdatabase_impl.h"
@@ -24,24 +25,16 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
-#include "third_party/WebKit/public/platform/WebIDBMetadata.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/base/origin_url_conversions.h"
 #include "webkit/browser/database/database_util.h"
 
 using webkit_database::DatabaseUtil;
-using WebKit::WebData;
 using WebKit::WebIDBDatabaseError;
 using WebKit::WebIDBKey;
-using WebKit::WebIDBMetadata;
-using WebKit::WebString;
-using WebKit::WebVector;
 
 namespace content {
 namespace {
@@ -181,33 +174,40 @@ WebIDBCursorImpl* IndexedDBDispatcherHost::GetCursorFromId(
 }
 
 ::IndexedDBDatabaseMetadata IndexedDBDispatcherHost::ConvertMetadata(
-    const WebIDBMetadata& web_metadata) {
+    const content::IndexedDBDatabaseMetadata& web_metadata) {
   ::IndexedDBDatabaseMetadata metadata;
   metadata.id = web_metadata.id;
   metadata.name = web_metadata.name;
   metadata.version = web_metadata.version;
-  metadata.int_version = web_metadata.intVersion;
-  metadata.max_object_store_id = web_metadata.maxObjectStoreId;
+  metadata.int_version = web_metadata.int_version;
+  metadata.max_object_store_id = web_metadata.max_object_store_id;
 
-  for (size_t i = 0; i < web_metadata.objectStores.size(); ++i) {
-    const WebIDBMetadata::ObjectStore& web_store_metadata =
-        web_metadata.objectStores[i];
+  for (content::IndexedDBDatabaseMetadata::ObjectStoreMap::const_iterator iter =
+           web_metadata.object_stores.begin();
+       iter != web_metadata.object_stores.end();
+       ++iter) {
+
+    const content::IndexedDBObjectStoreMetadata& web_store_metadata =
+        iter->second;
     ::IndexedDBObjectStoreMetadata idb_store_metadata;
     idb_store_metadata.id = web_store_metadata.id;
     idb_store_metadata.name = web_store_metadata.name;
-    idb_store_metadata.keyPath = IndexedDBKeyPath(web_store_metadata.keyPath);
-    idb_store_metadata.autoIncrement = web_store_metadata.autoIncrement;
-    idb_store_metadata.max_index_id = web_store_metadata.maxIndexId;
+    idb_store_metadata.keyPath = web_store_metadata.key_path;
+    idb_store_metadata.autoIncrement = web_store_metadata.auto_increment;
+    idb_store_metadata.max_index_id = web_store_metadata.max_index_id;
 
-    for (size_t j = 0; j < web_store_metadata.indexes.size(); ++j) {
-      const WebIDBMetadata::Index& web_index_metadata =
-          web_store_metadata.indexes[j];
+    for (content::IndexedDBObjectStoreMetadata::IndexMap::const_iterator
+             index_iter = web_store_metadata.indexes.begin();
+         index_iter != web_store_metadata.indexes.end();
+         ++index_iter) {
+      const content::IndexedDBIndexMetadata& web_index_metadata =
+          index_iter->second;
       ::IndexedDBIndexMetadata idb_index_metadata;
       idb_index_metadata.id = web_index_metadata.id;
       idb_index_metadata.name = web_index_metadata.name;
-      idb_index_metadata.keyPath = IndexedDBKeyPath(web_index_metadata.keyPath);
+      idb_index_metadata.keyPath = web_index_metadata.key_path;
       idb_index_metadata.unique = web_index_metadata.unique;
-      idb_index_metadata.multiEntry = web_index_metadata.multiEntry;
+      idb_index_metadata.multiEntry = web_index_metadata.multi_entry;
       idb_store_metadata.indexes.push_back(idb_index_metadata);
     }
     metadata.object_stores.push_back(idb_store_metadata);
@@ -221,7 +221,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
   Context()->GetIDBFactory()->getDatabaseNames(
-      new IndexedDBCallbacks<WebVector<WebString> >(
+      new IndexedDBCallbacks<std::vector<string16> >(
           this, params.ipc_thread_id, params.ipc_callbacks_id),
       params.database_identifier,
       webkit_base::FilePathToWebString(indexed_db_path));
@@ -264,7 +264,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   Context()->GetIDBFactory()
       ->deleteDatabase(params.name,
-                       new IndexedDBCallbacks<WebData>(
+                       new IndexedDBCallbacks<std::vector<char> >(
                            this, params.ipc_thread_id, params.ipc_callbacks_id),
                        params.database_identifier,
                        webkit_base::FilePathToWebString(indexed_db_path));
@@ -447,17 +447,13 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(
   if (!database)
     return;
 
-  WebVector<long long> object_stores(params.object_store_ids.size());
-  for (size_t i = 0; i < params.object_store_ids.size(); ++i)
-    object_stores[i] = params.object_store_ids[i];
-
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
 
   database->createTransaction(
       host_transaction_id,
       new IndexedDBDatabaseCallbacks(
           parent_, params.ipc_thread_id, params.ipc_database_callbacks_id),
-      object_stores,
+      params.object_store_ids,
       params.mode);
   transaction_database_map_[host_transaction_id] = params.ipc_database_id;
   parent_->RegisterTransactionId(host_transaction_id,
@@ -490,8 +486,9 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGet(
   if (!database)
     return;
 
-  scoped_ptr<IndexedDBCallbacksBase> callbacks(new IndexedDBCallbacks<WebData>(
-      parent_, params.ipc_thread_id, params.ipc_callbacks_id));
+  scoped_ptr<IndexedDBCallbacksBase> callbacks(
+      new IndexedDBCallbacks<std::vector<char> >(
+          parent_, params.ipc_thread_id, params.ipc_callbacks_id));
   database->get(parent_->HostTransactionId(params.transaction_id),
                 params.object_store_id,
                 params.index_id,
@@ -511,14 +508,13 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
   scoped_ptr<IndexedDBCallbacksBase> callbacks(
       new IndexedDBCallbacks<IndexedDBKey>(
           parent_, params.ipc_thread_id, params.ipc_callbacks_id));
-  // Be careful with empty vectors.
-  WebData value;
-  if (params.value.size())
-    value.assign(&params.value.front(), params.value.size());
+
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
+  // TODO(alecflett): Avoid a copy here.
+  std::vector<char> value_copy = params.value;
   database->put(host_transaction_id,
                 params.object_store_id,
-                value,
+                &value_copy,
                 params.key,
                 params.put_mode,
                 callbacks.release(),
@@ -567,9 +563,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetIndexesReady(
   if (!database)
     return;
 
-  database->setIndexesReady(parent_->HostTransactionId(transaction_id),
-                            object_store_id,
-                            WebVector<long long>(index_ids));
+  database->setIndexesReady(
+      parent_->HostTransactionId(transaction_id), object_store_id, index_ids);
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnOpenCursor(
@@ -601,8 +596,9 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCount(
   if (!database)
     return;
 
-  scoped_ptr<IndexedDBCallbacksBase> callbacks(new IndexedDBCallbacks<WebData>(
-      parent_, params.ipc_thread_id, params.ipc_callbacks_id));
+  scoped_ptr<IndexedDBCallbacksBase> callbacks(
+      new IndexedDBCallbacks<std::vector<char> >(
+          parent_, params.ipc_thread_id, params.ipc_callbacks_id));
   database->count(parent_->HostTransactionId(params.transaction_id),
                   params.object_store_id,
                   params.index_id,
@@ -618,8 +614,9 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteRange(
   if (!database)
     return;
 
-  scoped_ptr<IndexedDBCallbacksBase> callbacks(new IndexedDBCallbacks<WebData>(
-      parent_, params.ipc_thread_id, params.ipc_callbacks_id));
+  scoped_ptr<IndexedDBCallbacksBase> callbacks(
+      new IndexedDBCallbacks<std::vector<char> >(
+          parent_, params.ipc_thread_id, params.ipc_callbacks_id));
   database->deleteRange(parent_->HostTransactionId(params.transaction_id),
                         params.object_store_id,
                         params.key_range,
@@ -638,8 +635,9 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClear(
   if (!database)
     return;
 
-  scoped_ptr<IndexedDBCallbacksBase> callbacks(new IndexedDBCallbacks<WebData>(
-      parent_, ipc_thread_id, ipc_callbacks_id));
+  scoped_ptr<IndexedDBCallbacksBase> callbacks(
+      new IndexedDBCallbacks<std::vector<char> >(
+          parent_, ipc_thread_id, ipc_callbacks_id));
 
   database->clear(parent_->HostTransactionId(transaction_id),
                   object_store_id,

@@ -19,7 +19,6 @@
 
 using WebKit::WebString;
 using WebKit::WebData;
-using WebKit::WebVector;
 using WebKit::WebIDBDatabaseError;
 
 namespace content {
@@ -52,15 +51,12 @@ void WebIDBDatabaseImpl::deleteObjectStore(long long transaction_id,
 void WebIDBDatabaseImpl::createTransaction(
     long long id,
     IndexedDBDatabaseCallbacks* /*callbacks*/,
-    const WebVector<long long>& object_store_ids,
+    const std::vector<int64>& object_store_ids,
     unsigned short mode) {
   if (!database_callbacks_)
     return;
-  std::vector<int64> object_store_id_list(object_store_ids.size());
-  for (size_t i = 0; i < object_store_ids.size(); ++i)
-    object_store_id_list[i] = object_store_ids[i];
   database_backend_->CreateTransaction(
-      id, database_callbacks_.get(), object_store_id_list, mode);
+      id, database_callbacks_.get(), object_store_ids, mode);
 }
 
 void WebIDBDatabaseImpl::close() {
@@ -146,26 +142,20 @@ void WebIDBDatabaseImpl::get(long long transaction_id,
 
 void WebIDBDatabaseImpl::put(long long transaction_id,
                              long long object_store_id,
-                             const WebData& value,
+                             std::vector<char>* value,
                              const IndexedDBKey& key,
                              WebKit::WebIDBDatabase::PutMode put_mode,
                              IndexedDBCallbacksBase* callbacks,
-                             const WebVector<long long>& web_index_ids,
+                             const std::vector<int64>& index_ids,
                              const std::vector<IndexKeys>& index_keys) {
   if (!database_backend_)
     return;
 
-  DCHECK_EQ(web_index_ids.size(), index_keys.size());
-  std::vector<int64> index_ids(web_index_ids.size());
+  DCHECK_EQ(index_ids.size(), index_keys.size());
 
-  for (size_t i = 0; i < web_index_ids.size(); ++i) {
-    index_ids[i] = web_index_ids[i];
-  }
-
-  std::vector<char> value_buffer(value.data(), value.data() + value.size());
   database_backend_->Put(transaction_id,
                          object_store_id,
-                         &value_buffer,
+                         value,
                          make_scoped_ptr(new IndexedDBKey(key)),
                          static_cast<IndexedDBDatabase::PutMode>(put_mode),
                          IndexedDBCallbacksWrapper::Create(callbacks),
@@ -177,22 +167,12 @@ void WebIDBDatabaseImpl::setIndexKeys(
     long long transaction_id,
     long long object_store_id,
     const IndexedDBKey& primary_key,
-    const WebVector<long long>& web_index_ids,
-    const std::vector<IndexKeys>& web_index_keys) {
+    const std::vector<int64>& index_ids,
+    const std::vector<IndexKeys>& index_keys) {
   if (!database_backend_)
     return;
 
-  DCHECK_EQ(web_index_ids.size(), web_index_keys.size());
-  std::vector<int64> index_ids(web_index_ids.size());
-  std::vector<IndexedDBDatabase::IndexKeys> index_keys(web_index_keys.size());
-
-  for (size_t i = 0; i < web_index_ids.size(); ++i) {
-    index_ids[i] = web_index_ids[i];
-    IndexedDBKey::KeyArray index_key_list;
-    for (size_t j = 0; j < web_index_keys[i].size(); ++j)
-      index_key_list.push_back(web_index_keys[i][j]);
-    index_keys[i] = index_key_list;
-  }
+  DCHECK_EQ(index_ids.size(), index_keys.size());
   database_backend_->SetIndexKeys(
       transaction_id,
       object_store_id,
@@ -204,7 +184,7 @@ void WebIDBDatabaseImpl::setIndexKeys(
 void WebIDBDatabaseImpl::setIndexesReady(
     long long transaction_id,
     long long object_store_id,
-    const WebVector<long long>& web_index_ids) {
+    const std::vector<int64>& web_index_ids) {
   if (!database_backend_)
     return;
 
