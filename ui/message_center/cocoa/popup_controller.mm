@@ -129,6 +129,7 @@ enum {
 - (void)close {
   if (boundsAnimation_) {
     [boundsAnimation_ stopAnimation];
+    [boundsAnimation_ setDelegate:nil];
     boundsAnimation_.reset();
   }
   [super close];
