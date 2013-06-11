@@ -97,7 +97,7 @@ const HttpResponseInfo* SpdyHttpStream::GetResponseInfo() const {
 }
 
 UploadProgress SpdyHttpStream::GetUploadProgress() const {
-  if (!HasUploadData())
+  if (!request_info_ || !HasUploadData())
     return UploadProgress();
 
   return UploadProgress(request_info_->upload_data_stream->position(),

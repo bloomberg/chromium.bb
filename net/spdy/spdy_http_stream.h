@@ -94,6 +94,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   virtual void OnClose(int status) OVERRIDE;
 
  private:
+  // Must be called only when |request_info_| is non-NULL.
   bool HasUploadData() const;
 
   void OnStreamCreated(const CompletionCallback& callback, int rv);

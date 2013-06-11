@@ -167,6 +167,15 @@ class SpdyHttpStreamSpdy3Test : public testing::Test {
   MockECSignatureCreatorFactory ec_signature_creator_factory_;
 };
 
+// SpdyHttpStream::GetUploadProgress() should still work even before the
+// stream is initialized.
+TEST_F(SpdyHttpStreamSpdy3Test, GetUploadProgressBeforeInitialization) {
+  SpdyHttpStream stream(NULL, false);
+  UploadProgress progress = stream.GetUploadProgress();
+  EXPECT_EQ(0u, progress.size());
+  EXPECT_EQ(0u, progress.position());
+}
+
 TEST_F(SpdyHttpStreamSpdy3Test, SendRequest) {
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
