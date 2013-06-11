@@ -36,7 +36,6 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
 
   void CheckForCompletedRasterTasks();
   void ScheduleCheckForCompletedRasterTasks();
-  bool CanScheduleRasterTask(internal::RasterWorkerPoolTask* task);
   void ScheduleMoreTasks();
   void OnRasterTaskCompleted(
       scoped_refptr<internal::RasterWorkerPoolTask> task,

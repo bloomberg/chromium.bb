@@ -242,17 +242,11 @@ void PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks() {
   ScheduleMoreTasks();
 }
 
-bool PixelBufferRasterWorkerPool::CanScheduleRasterTask(
-    internal::RasterWorkerPoolTask* task) {
-  if (tasks_with_pending_upload_.size() >= kMaxPendingUploads)
-    return false;
-  size_t new_bytes_pending = bytes_pending_upload_;
-  new_bytes_pending += task->resource()->bytes();
-  return new_bytes_pending <= kMaxPendingUploadBytes;
-}
-
 void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
   TRACE_EVENT0("cc", "PixelBufferRasterWorkerPool::ScheduleMoreTasks");
+
+  size_t tasks_with_pending_upload = tasks_with_pending_upload_.size();
+  size_t bytes_pending_upload = bytes_pending_upload_;
 
   internal::WorkerPoolTask::TaskVector tasks;
 
@@ -273,8 +267,22 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
       continue;
     }
 
-    if (!CanScheduleRasterTask(task))
+    // Throttle raster tasks based on number of pending uploads.
+    size_t new_tasks_with_pending_upload = tasks_with_pending_upload;
+    new_tasks_with_pending_upload += 1;
+    if (new_tasks_with_pending_upload > kMaxPendingUploads)
       break;
+
+    // Throttle raster tasks based on bytes of pending uploads.
+    size_t new_bytes_pending_upload = bytes_pending_upload;
+    new_bytes_pending_upload += task->resource()->bytes();
+    if (new_bytes_pending_upload > kMaxPendingUploadBytes)
+      break;
+
+    // Update |tasks_with_pending_upload| and |bytes_pending_upload|
+    // now that task has cleared throttling limits.
+    tasks_with_pending_upload = new_tasks_with_pending_upload;
+    bytes_pending_upload = new_bytes_pending_upload;
 
     // Request a pixel buffer. This will reserve shared memory.
     resource_provider()->AcquirePixelBuffer(task->resource()->id());
