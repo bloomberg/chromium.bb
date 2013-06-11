@@ -110,6 +110,13 @@ bool WebContentsDelegate::PreHandleKeyboardEvent(
   return false;
 }
 
+bool WebContentsDelegate::CanDragEnter(
+    WebContents* source,
+    const WebDropData& data,
+    WebKit::WebDragOperationsMask operations_allowed) {
+  return true;
+}
+
 bool WebContentsDelegate::OnGoToEntryOffset(int offset) {
   return true;
 }

@@ -101,6 +101,9 @@ class CONTENT_EXPORT WebDragDestGtk {
   // A delegate that can receive drag information about drag events.
   WebDragDestDelegate* delegate_;
 
+  // True if the drag has been canceled.
+  bool canceled_;
+
   base::WeakPtrFactory<WebDragDestGtk> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDragDestGtk);

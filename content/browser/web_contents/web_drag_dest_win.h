@@ -78,6 +78,9 @@ class CONTENT_EXPORT WebDragDest : public ui::DropTargetWin {
   // The data for the current drag, or NULL if |context_| is NULL.
   scoped_ptr<WebDropData> drop_data_;
 
+  // True if the drag has been canceled.
+  bool canceled_;
+
   DISALLOW_COPY_AND_ASSIGN(WebDragDest);
 };
 

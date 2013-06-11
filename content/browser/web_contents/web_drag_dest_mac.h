@@ -41,6 +41,9 @@ CONTENT_EXPORT
 
   // The data for the current drag, or NULL if none is in progress.
   scoped_ptr<WebDropData> dropData_;
+
+  // True if the drag has been canceled.
+  bool canceled_;
 }
 
 // |contents| is the WebContentsImpl representing this tab, used to communicate

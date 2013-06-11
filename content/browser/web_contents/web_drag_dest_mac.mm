@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -44,6 +45,7 @@ int GetModifierFlags() {
 - (id)initWithWebContentsImpl:(WebContentsImpl*)contents {
   if ((self = [super init])) {
     webContents_ = contents;
+    canceled_ = false;
   }
   return self;
 }
@@ -103,6 +105,22 @@ int GetModifierFlags() {
   // we need to send a new enter message in draggingUpdated:.
   currentRVH_ = webContents_->GetRenderViewHost();
 
+  // Fill out a WebDropData from pasteboard.
+  scoped_ptr<WebDropData> dropData;
+  dropData.reset(new WebDropData());
+  [self populateWebDropData:dropData.get()
+             fromPasteboard:[info draggingPasteboard]];
+
+  NSDragOperation mask = [info draggingSourceOperationMask];
+
+  // Give the delegate an opportunity to cancel the drag.
+  canceled_ = !webContents_->GetDelegate()->CanDragEnter(
+      webContents_,
+      *dropData,
+      static_cast<WebDragOperationsMask>(mask));
+  if (canceled_)
+    return NSDragOperationNone;
+
   if ([self onlyAllowsNavigation]) {
     if ([[info draggingPasteboard] containsURLData])
       return NSDragOperationCopy;
@@ -114,17 +132,13 @@ int GetModifierFlags() {
     delegate_->OnDragEnter();
   }
 
-  // Fill out a WebDropData from pasteboard.
-  dropData_.reset(new WebDropData());
-  [self populateWebDropData:dropData_.get()
-             fromPasteboard:[info draggingPasteboard]];
+  dropData_.swap(dropData);
 
   // Create the appropriate mouse locations for WebCore. The draggingLocation
   // is in window coordinates. Both need to be flipped.
   NSPoint windowPoint = [info draggingLocation];
   NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
-  NSDragOperation mask = [info draggingSourceOperationMask];
   webContents_->GetRenderViewHost()->DragTargetDragEnter(
       *dropData_,
       gfx::Point(viewPoint.x, viewPoint.y),
@@ -143,6 +157,9 @@ int GetModifierFlags() {
   if (currentRVH_ != webContents_->GetRenderViewHost())
     return;
 
+  if (canceled_)
+    return;
+
   if ([self onlyAllowsNavigation])
     return;
 
@@ -158,6 +175,9 @@ int GetModifierFlags() {
   DCHECK(currentRVH_);
   if (currentRVH_ != webContents_->GetRenderViewHost())
     [self draggingEntered:info view:view];
+
+  if (canceled_)
+    return NSDragOperationNone;
 
   if ([self onlyAllowsNavigation]) {
     if ([[info draggingPasteboard] containsURLData])

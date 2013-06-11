@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_drag_utils_win.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -140,7 +141,8 @@ WebDragDest::WebDragDest(HWND source_hwnd, WebContents* web_contents)
       current_rvh_(NULL),
       drag_cursor_(WebDragOperationNone),
       interstitial_drop_target_(new InterstitialDropTarget(web_contents)),
-      delegate_(NULL) {
+      delegate_(NULL),
+      canceled_(false) {
 }
 
 WebDragDest::~WebDragDest() {
@@ -152,6 +154,24 @@ DWORD WebDragDest::OnDragEnter(IDataObject* data_object,
                                DWORD effects) {
   current_rvh_ = web_contents_->GetRenderViewHost();
 
+  // TODO(tc): PopulateWebDropData can be slow depending on what is in the
+  // IDataObject.  Maybe we can do this in a background thread.
+  scoped_ptr<WebDropData> drop_data;
+  drop_data.reset(new WebDropData());
+  PopulateWebDropData(data_object, drop_data.get());
+
+  if (drop_data->url.is_empty())
+    ui::OSExchangeDataProviderWin::GetPlainTextURL(data_object,
+                                                   &drop_data->url);
+
+  // Give the delegate an opportunity to cancel the drag.
+  canceled_ = !web_contents_->GetDelegate()->CanDragEnter(
+      web_contents_,
+      *drop_data,
+      WinDragOpMaskToWebDragOpMask(effects));
+  if (canceled_)
+    return DROPEFFECT_NONE;
+
   if (delegate_)
     delegate_->DragInitialize(web_contents_);
 
@@ -161,15 +181,7 @@ DWORD WebDragDest::OnDragEnter(IDataObject* data_object,
   if (web_contents_->ShowingInterstitialPage())
     return interstitial_drop_target_->OnDragEnter(data_object, effects);
 
-  // TODO(tc): PopulateWebDropData can be slow depending on what is in the
-  // IDataObject.  Maybe we can do this in a background thread.
-  drop_data_.reset(new WebDropData());
-  PopulateWebDropData(data_object, drop_data_.get());
-
-  if (drop_data_->url.is_empty())
-    ui::OSExchangeDataProviderWin::GetPlainTextURL(data_object,
-                                                   &drop_data_->url);
-
+  drop_data_.swap(drop_data);
   drag_cursor_ = WebDragOperationNone;
 
   POINT client_pt = cursor_position;
@@ -196,6 +208,9 @@ DWORD WebDragDest::OnDragOver(IDataObject* data_object,
   if (current_rvh_ != web_contents_->GetRenderViewHost())
     OnDragEnter(data_object, key_state, cursor_position, effects);
 
+  if (canceled_)
+    return DROPEFFECT_NONE;
+
   if (web_contents_->ShowingInterstitialPage())
     return interstitial_drop_target_->OnDragOver(data_object, effects);
 
@@ -216,6 +231,9 @@ DWORD WebDragDest::OnDragOver(IDataObject* data_object,
 void WebDragDest::OnDragLeave(IDataObject* data_object) {
   DCHECK(current_rvh_);
   if (current_rvh_ != web_contents_->GetRenderViewHost())
+    return;
+
+  if (canceled_)
     return;
 
   if (web_contents_->ShowingInterstitialPage()) {

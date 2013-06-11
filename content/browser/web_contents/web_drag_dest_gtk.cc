@@ -13,6 +13,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/drag_utils_gtk.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
@@ -53,6 +54,7 @@ WebDragDestGtk::WebDragDestGtk(WebContents* web_contents, GtkWidget* widget)
       context_(NULL),
       data_requests_(0),
       delegate_(NULL),
+      canceled_(false),
       method_factory_(this) {
   gtk_drag_dest_set(widget, static_cast<GtkDestDefaults>(0),
                     NULL, 0,
@@ -143,6 +145,9 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
                         time);
     }
   } else if (data_requests_ == 0) {
+    if (canceled_)
+      return FALSE;
+
     GetRenderViewHost()->DragTargetDragOver(
         ui::ClientPoint(widget_),
         ui::ScreenPoint(widget_),
@@ -236,6 +241,20 @@ void WebDragDestGtk::OnDragDataReceived(
     }
   }
 
+  if (data_requests_ == 0) {
+    // Give the delegate an opportunity to cancel the drag.
+    canceled_ = !web_contents_->GetDelegate()->CanDragEnter(
+        web_contents_,
+        *drop_data_,
+        GdkDragActionToWebDragOp(context->actions));
+    if (canceled_) {
+      drag_over_time_ = time;
+      UpdateDragStatus(WebDragOperationNone);
+      drop_data_.reset();
+      return;
+    }
+  }
+
   // For CHROME_BOOKMARK_ITEM, we have to handle the case where the drag source
   // doesn't have any data available for us. In this case we try to synthesize a
   // URL bookmark.
@@ -273,6 +292,9 @@ void WebDragDestGtk::OnDragLeave(GtkWidget* sender, GdkDragContext* context,
   // Set |context_| to NULL to make sure we will recognize the next DragMotion
   // as an enter.
   context_ = NULL;
+
+  if (canceled_)
+    return;
 
   // Sometimes we get a drag-leave event before getting a drag-data-received
   // event. In that case, we don't want to bother the renderer with a

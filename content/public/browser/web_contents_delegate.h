@@ -16,6 +16,7 @@
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/window_container_type.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
@@ -23,6 +24,7 @@
 #include "ui/gfx/vector2d.h"
 
 class GURL;
+struct WebDropData;
 
 namespace base {
 class FilePath;
@@ -265,6 +267,13 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   virtual void HandleGestureBegin() {}
   virtual void HandleGestureEnd() {}
+
+  // Called when an external drag event enters the web contents window. Return
+  // true to allow dragging and dropping on the web contents window or false to
+  // cancel the operation. This method is used by Chromium Embedded Framework.
+  virtual bool CanDragEnter(WebContents* source,
+                            const WebDropData& data,
+                            WebKit::WebDragOperationsMask operations_allowed);
 
   // Render view drag n drop ended.
   virtual void DragEnded() {}
