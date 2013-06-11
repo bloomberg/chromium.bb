@@ -895,89 +895,99 @@ int Compare(const LevelDBSlice& a,
   if (int x = prefix_a.Compare(prefix_b))
     return x;
 
-  if (prefix_a.type() == KeyPrefix::GLOBAL_METADATA) {
-    DCHECK_NE(ptr_a, end_a);
-    DCHECK_NE(ptr_b, end_b);
+  switch (prefix_a.type()) {
+    case KeyPrefix::GLOBAL_METADATA: {
+      DCHECK_NE(ptr_a, end_a);
+      DCHECK_NE(ptr_b, end_b);
 
-    unsigned char type_byte_a = *ptr_a++;
-    unsigned char type_byte_b = *ptr_b++;
+      unsigned char type_byte_a = *ptr_a++;
+      unsigned char type_byte_b = *ptr_b++;
 
-    if (int x = type_byte_a - type_byte_b)
-      return x;
-    if (type_byte_a < kMaxSimpleGlobalMetaDataTypeByte)
-      return 0;
+      if (int x = type_byte_a - type_byte_b)
+        return x;
+      if (type_byte_a < kMaxSimpleGlobalMetaDataTypeByte)
+        return 0;
 
-    const bool ignore_duplicates = false;
-    if (type_byte_a == kDatabaseFreeListTypeByte)
-      return Compare<DatabaseFreeListKey>(a, b, ignore_duplicates, ok);
-    if (type_byte_a == kDatabaseNameTypeByte)
-      return Compare<DatabaseNameKey>(a, b, ignore_duplicates, ok);
-  }
+      const bool ignore_duplicates = false;
+      if (type_byte_a == kDatabaseFreeListTypeByte)
+        return Compare<DatabaseFreeListKey>(a, b, ignore_duplicates, ok);
+      if (type_byte_a == kDatabaseNameTypeByte)
+        return Compare<DatabaseNameKey>(a, b, ignore_duplicates, ok);
+      break;
+    }
 
-  if (prefix_a.type() == KeyPrefix::DATABASE_METADATA) {
-    DCHECK_NE(ptr_a, end_a);
-    DCHECK_NE(ptr_b, end_b);
+    case KeyPrefix::DATABASE_METADATA: {
+      DCHECK_NE(ptr_a, end_a);
+      DCHECK_NE(ptr_b, end_b);
 
-    unsigned char type_byte_a = *ptr_a++;
-    unsigned char type_byte_b = *ptr_b++;
+      unsigned char type_byte_a = *ptr_a++;
+      unsigned char type_byte_b = *ptr_b++;
 
-    if (int x = type_byte_a - type_byte_b)
-      return x;
-    if (type_byte_a < DatabaseMetaDataKey::MAX_SIMPLE_METADATA_TYPE)
-      return 0;
+      if (int x = type_byte_a - type_byte_b)
+        return x;
+      if (type_byte_a < DatabaseMetaDataKey::MAX_SIMPLE_METADATA_TYPE)
+        return 0;
 
-    const bool ignore_duplicates = false;
-    if (type_byte_a == kObjectStoreMetaDataTypeByte)
-      return Compare<ObjectStoreMetaDataKey>(a, b, ignore_duplicates, ok);
-    if (type_byte_a == kIndexMetaDataTypeByte)
-      return Compare<IndexMetaDataKey>(a, b, ignore_duplicates, ok);
-    if (type_byte_a == kObjectStoreFreeListTypeByte)
-      return Compare<ObjectStoreFreeListKey>(a, b, ignore_duplicates, ok);
-    if (type_byte_a == kIndexFreeListTypeByte)
-      return Compare<IndexFreeListKey>(a, b, ignore_duplicates, ok);
-    if (type_byte_a == kObjectStoreNamesTypeByte)
-      return Compare<ObjectStoreNamesKey>(a, b, ignore_duplicates, ok);
-    if (type_byte_a == kIndexNamesKeyTypeByte)
-      return Compare<IndexNamesKey>(a, b, ignore_duplicates, ok);
-  }
+      const bool ignore_duplicates = false;
+      if (type_byte_a == kObjectStoreMetaDataTypeByte)
+        return Compare<ObjectStoreMetaDataKey>(a, b, ignore_duplicates, ok);
+      if (type_byte_a == kIndexMetaDataTypeByte)
+        return Compare<IndexMetaDataKey>(a, b, ignore_duplicates, ok);
+      if (type_byte_a == kObjectStoreFreeListTypeByte)
+        return Compare<ObjectStoreFreeListKey>(a, b, ignore_duplicates, ok);
+      if (type_byte_a == kIndexFreeListTypeByte)
+        return Compare<IndexFreeListKey>(a, b, ignore_duplicates, ok);
+      if (type_byte_a == kObjectStoreNamesTypeByte)
+        return Compare<ObjectStoreNamesKey>(a, b, ignore_duplicates, ok);
+      if (type_byte_a == kIndexNamesKeyTypeByte)
+        return Compare<IndexNamesKey>(a, b, ignore_duplicates, ok);
+      break;
+    }
 
-  if (prefix_a.type() == KeyPrefix::OBJECT_STORE_DATA) {
-    if (ptr_a == end_a && ptr_b == end_b)
-      return 0;
-    if (ptr_a == end_a)
-      return -1;
-    if (ptr_b == end_b)
-      return 1;  // TODO(jsbell): This case of non-existing user keys should not
-                 // have to be handled this way.
+    case KeyPrefix::OBJECT_STORE_DATA: {
+      if (ptr_a == end_a && ptr_b == end_b)
+        return 0;
+      if (ptr_a == end_a)
+        return -1;
+      if (ptr_b == end_b)
+        return 1;
+      // TODO(jsbell): This case of non-existing user keys should not have to be
+      // handled this way.
 
-    const bool ignore_duplicates = false;
-    return Compare<ObjectStoreDataKey>(a, b, ignore_duplicates, ok);
-  }
+      const bool ignore_duplicates = false;
+      return Compare<ObjectStoreDataKey>(a, b, ignore_duplicates, ok);
+    }
 
-  if (prefix_a.type() == KeyPrefix::EXISTS_ENTRY) {
-    if (ptr_a == end_a && ptr_b == end_b)
-      return 0;
-    if (ptr_a == end_a)
-      return -1;
-    if (ptr_b == end_b)
-      return 1;  // TODO(jsbell): This case of non-existing user keys should not
-                 // have to be handled this way.
+    case KeyPrefix::EXISTS_ENTRY: {
+      if (ptr_a == end_a && ptr_b == end_b)
+        return 0;
+      if (ptr_a == end_a)
+        return -1;
+      if (ptr_b == end_b)
+        return 1;
+      // TODO(jsbell): This case of non-existing user keys should not have to be
+      // handled this way.
 
-    const bool ignore_duplicates = false;
-    return Compare<ExistsEntryKey>(a, b, ignore_duplicates, ok);
-  }
+      const bool ignore_duplicates = false;
+      return Compare<ExistsEntryKey>(a, b, ignore_duplicates, ok);
+    }
 
-  if (prefix_a.type() == KeyPrefix::INDEX_DATA) {
-    if (ptr_a == end_a && ptr_b == end_b)
-      return 0;
-    if (ptr_a == end_a)
-      return -1;
-    if (ptr_b == end_b)
-      return 1;  // TODO(jsbell): This case of non-existing user keys should not
-                 // have to be handled this way.
+    case KeyPrefix::INDEX_DATA: {
+      if (ptr_a == end_a && ptr_b == end_b)
+        return 0;
+      if (ptr_a == end_a)
+        return -1;
+      if (ptr_b == end_b)
+        return 1;
+      // TODO(jsbell): This case of non-existing user keys should not have to be
+      // handled this way.
 
-    bool ignore_duplicates = index_keys;
-    return Compare<IndexDataKey>(a, b, ignore_duplicates, ok);
+      bool ignore_duplicates = index_keys;
+      return Compare<IndexDataKey>(a, b, ignore_duplicates, ok);
+    }
+
+    case KeyPrefix::INVALID_TYPE:
+      break;
   }
 
   NOTREACHED();
