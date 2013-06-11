@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_test_utils.h"

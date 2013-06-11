@@ -4,7 +4,7 @@
 
 #include "chromeos/ime/extension_ime_util.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 namespace chromeos {
 namespace {

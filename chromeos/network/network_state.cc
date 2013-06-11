@@ -6,9 +6,9 @@
 
 #include "base/i18n/icu_encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_ui_data.h"

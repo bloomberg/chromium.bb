@@ -5,7 +5,7 @@
 #include "chromeos/network/network_profile.h"
 
 #include "base/logging.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 
 namespace chromeos {
 

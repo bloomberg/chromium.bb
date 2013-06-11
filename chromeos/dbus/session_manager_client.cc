@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/threading/worker_pool.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/cryptohome_client.h"

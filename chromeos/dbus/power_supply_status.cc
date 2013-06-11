@@ -5,7 +5,7 @@
 #include "chromeos/dbus/power_supply_status.h"
 
 #include "base/format_macros.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 
 namespace chromeos {
 

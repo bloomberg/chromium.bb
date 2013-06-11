@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_state.h"

@@ -8,7 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/onc/onc_mapper.h"

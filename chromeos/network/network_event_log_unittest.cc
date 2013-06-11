@@ -9,8 +9,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
-#include "base/stringprintf.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

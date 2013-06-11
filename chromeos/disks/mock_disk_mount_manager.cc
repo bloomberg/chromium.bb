@@ -8,7 +8,7 @@
 
 #include "base/message_loop.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 using testing::_;
 using testing::AnyNumber;

@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {

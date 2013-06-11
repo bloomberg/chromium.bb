@@ -10,7 +10,7 @@
 
 #include "base/hash.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 
 namespace chromeos {

@@ -4,8 +4,8 @@
 
 #include "chromeos/network/network_util.h"
 
-#include "base/stringprintf.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/stringprintf.h"
 
 namespace chromeos {
 

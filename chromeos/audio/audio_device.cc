@@ -5,8 +5,8 @@
 #include "chromeos/audio/audio_device.h"
 
 #include "base/format_macros.h"
-#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace {

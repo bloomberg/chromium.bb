@@ -5,7 +5,7 @@
 #include "chromeos/dbus/volume_state.h"
 
 #include "base/format_macros.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 
 namespace chromeos {
 

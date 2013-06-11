@@ -5,7 +5,7 @@
 #include "chromeos/network/device_state.h"
 
 #include "base/logging.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 

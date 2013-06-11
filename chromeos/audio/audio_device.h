@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/audio_node.h"
 

@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "chromeos/dbus/ibus/ibus_object.h"
 #include "dbus/message.h"
 #include "testing/gmock/include/gmock/gmock.h"

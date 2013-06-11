@@ -7,12 +7,12 @@
 #include <map>
 #include <string>
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "chromeos/dbus/ibus/ibus_constants.h"
 #include "chromeos/ime/ibus_bridge.h"
 #include "dbus/bus.h"
-#include "dbus/message.h"
 #include "dbus/exported_object.h"
+#include "dbus/message.h"
 
 namespace chromeos {
 

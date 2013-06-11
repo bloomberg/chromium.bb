@@ -15,8 +15,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_checker.h"
 
 // These includes conflict with base/tracked_objects.h so must come last.

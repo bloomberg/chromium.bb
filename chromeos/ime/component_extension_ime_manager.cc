@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 
 namespace chromeos {

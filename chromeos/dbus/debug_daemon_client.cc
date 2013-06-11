@@ -14,7 +14,7 @@
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/threading/worker_pool.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"

@@ -5,7 +5,7 @@
 #include "chromeos/app_mode/kiosk_oem_manifest_parser.h"
 
 #include "base/json/json_file_value_serializer.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 
 namespace chromeos {
