@@ -28,59 +28,57 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIAccess_h
-#define MIDIAccess_h
+#ifndef MIDIAccessPromise_h
+#define MIDIAccessPromise_h
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
-#include "core/dom/EventTarget.h"
-#include "modules/webmidi/MIDIInput.h"
-#include "modules/webmidi/MIDIOutput.h"
+#include "modules/webmidi/MIDIOptions.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
+class DOMError;
+class MIDIAccess;
+class MIDIErrorCallback;
+class MIDISuccessCallback;
 class ScriptExecutionContext;
-class MIDIAccessPromise;
 
-class MIDIAccess : public RefCounted<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTarget {
+struct MIDIOptions;
+
+class MIDIAccessPromise : public RefCounted<MIDIAccessPromise>, public ScriptWrappable, public ActiveDOMObject {
 public:
-    virtual ~MIDIAccess();
-    static PassRefPtr<MIDIAccess> create(ScriptExecutionContext*, MIDIAccessPromise*);
+    static PassRefPtr<MIDIAccessPromise> create(ScriptExecutionContext*, const Dictionary&);
+    virtual ~MIDIAccessPromise();
 
-    MIDIInputVector inputs() const { return m_inputs; }
-    MIDIOutputVector outputs() const { return m_outputs; }
-
-    using RefCounted<MIDIAccess>::ref;
-    using RefCounted<MIDIAccess>::deref;
-
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
-
-    // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE { return eventNames().interfaceForMIDIAccess; }
-    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ActiveDOMObject::scriptExecutionContext(); }
+    void then(PassRefPtr<MIDISuccessCallback>, PassRefPtr<MIDIErrorCallback>);
 
     // ActiveDOMObject
     virtual bool canSuspend() const OVERRIDE { return true; }
 
+    void fulfill();
+    void reject(DOMError*);
+
 private:
-    explicit MIDIAccess(ScriptExecutionContext*, MIDIAccessPromise*);
+    enum State {
+        Pending,
+        Accepted,
+        Rejected,
+        Invoked,
+    };
 
-    // EventTarget
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
-    virtual EventTargetData* eventTargetData() OVERRIDE { return &m_eventTargetData; }
-    virtual EventTargetData* ensureEventTargetData() OVERRIDE { return &m_eventTargetData; }
+    MIDIAccessPromise(ScriptExecutionContext*, const Dictionary&);
 
-    MIDIInputVector m_inputs;
-    MIDIOutputVector m_outputs;
-    EventTargetData m_eventTargetData;
-    MIDIAccessPromise* m_promise;
+    State m_state;
+    RefPtr<MIDISuccessCallback> m_successCallback;
+    RefPtr<MIDIErrorCallback> m_errorCallback;
+    OwnPtr<MIDIOptions> m_options;
+    RefPtr<DOMError> m_error;
+    RefPtr<MIDIAccess> m_access;
 };
 
 } // namespace WebCore
 
-#endif // MIDIAccess_h
+#endif // MIDIAccessPromise_h

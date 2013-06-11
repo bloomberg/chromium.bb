@@ -28,34 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "modules/webmidi/MIDIAccess.h"
-
-#include "core/dom/ExceptionCode.h"
-#include "modules/webmidi/MIDIConnectionEvent.h"
-#include "modules/webmidi/MIDIInput.h"
-#include "modules/webmidi/MIDIOutput.h"
-#include "modules/webmidi/MIDIPort.h"
-
-namespace WebCore {
-
-PassRefPtr<MIDIAccess> MIDIAccess::create(ScriptExecutionContext* context, MIDIAccessPromise* promise)
-{
-    RefPtr<MIDIAccess> midiAccess(adoptRef(new MIDIAccess(context, promise)));
-    midiAccess->suspendIfNeeded();
-    return midiAccess.release();
-}
-
-MIDIAccess::~MIDIAccess()
-{
-    stop();
-}
-
-MIDIAccess::MIDIAccess(ScriptExecutionContext* context, MIDIAccessPromise* promise)
-    : ActiveDOMObject(context)
-    , m_promise(promise)
-{
-    ScriptWrappable::init(this);
-}
-
-} // namespace WebCore
+// FIXME: Once Promise is implemented, remove this interface and use it.
+// See also, http://crbug.com/243345
+[
+    NoInterfaceObject,
+    ActiveDOMObject
+] interface MIDIAccessPromise {
+    // Supports only then() method tentatively. But it never returns Promise.
+    void then(MIDISuccessCallback successCallback, MIDIErrorCallback errorCallback);
+};
