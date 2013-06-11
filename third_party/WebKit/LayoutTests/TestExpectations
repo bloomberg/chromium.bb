@@ -1603,7 +1603,7 @@ crbug.com/244123 [ Win ] fast/forms/suggestion-picker/week-suggestion-picker-key
 crbug.com/244130 [ Win Debug ] fast/forms/input-search-press-escape-key.html [ Crash ]
 crbug.com/244131 [ Win Debug ] fast/forms/search-disabled-readonly.html [ Crash ]
 crbug.com/244341 [ Win ] css3/filters/composited-during-animation.html [ Failure Pass Timeout ]
-crbug.com/244739 [ Win ] compositing/video-frame-size-change.html [ Pass Timeout ]
+crbug.com/244739 [ Win ] compositing/video-frame-size-change.html [ Slow ]
 crbug.com/245160 [ Lion Debug ] webaudio/audiobuffer.html [ Crash ]
 crbug.com/245160 [ Lion Debug ] webaudio/audiobuffersource-channels.html [ Crash ]
 crbug.com/245160 [ Lion Debug ] webaudio/audionode-connect-order.html [ Crash ]
