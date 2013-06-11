@@ -583,11 +583,11 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   // Now move the ideal scale to 0.5. Our target stays 1.2.
   SetContentsScaleOnBothLayers(0.5f, device_scale, page_scale, false);
 
-  // All the tilings are between are target and the ideal, so they are not
-  // removed.
+  // The high resolution tiling is between target and ideal, so is not
+  // removed.  The low res tiling for the old ideal=1.0 scale is removed.
   used_tilings.clear();
   active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
-  ASSERT_EQ(4u, active_layer_->tilings()->num_tilings());
+  ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
 
   // Now move the ideal scale to 1.0. Our target stays 1.2.
   SetContentsScaleOnBothLayers(1.f, device_scale, page_scale, false);
@@ -596,7 +596,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   // removed.
   used_tilings.clear();
   active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
-  ASSERT_EQ(4u, active_layer_->tilings()->num_tilings());
+  ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
 
   // Now move the ideal scale to 1.1 on the active layer. Our target stays 1.2.
   active_layer_->CalculateContentsScale(1.1f,
@@ -611,7 +611,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   // in the range [1.0,1.2] and are kept.
   used_tilings.clear();
   active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
-  ASSERT_EQ(4u, active_layer_->tilings()->num_tilings());
+  ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
 
   // Move the ideal scale on the pending layer to 1.1 as well. Our target stays
   // 1.2 still.
@@ -628,16 +628,11 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   // deleted.
   used_tilings.clear();
   used_tilings.push_back(active_layer_->tilings()->tiling_at(1));
-  used_tilings.push_back(active_layer_->tilings()->tiling_at(3));
-  active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
-  ASSERT_EQ(4u, active_layer_->tilings()->num_tilings());
-
-  // If we remove it from our used tilings set, it is outside the range to keep
-  // so it is deleted. Try one tiling at a time.
-  used_tilings.clear();
-  used_tilings.push_back(active_layer_->tilings()->tiling_at(1));
   active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
   ASSERT_EQ(3u, active_layer_->tilings()->num_tilings());
+
+  // If we remove it from our used tilings set, it is outside the range to keep
+  // so it is deleted.
   used_tilings.clear();
   active_layer_->CleanUpTilingsOnActiveLayer(used_tilings);
   ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());

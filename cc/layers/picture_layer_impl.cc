@@ -906,27 +906,21 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
         std::max(twin->raster_contents_scale_, twin->ideal_contents_scale_));
   }
 
-  float low_res_factor =
-      layer_tree_impl()->settings().low_res_contents_scale_factor;
-
-  float min_acceptable_low_res_scale =
-      low_res_factor * min_acceptable_high_res_scale;
-  float max_acceptable_low_res_scale =
-      low_res_factor * max_acceptable_high_res_scale;
-
   std::vector<PictureLayerTiling*> to_remove;
   for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = tilings_->tiling_at(i);
 
+    // Keep multiple high resolution tilings even if not used to help
+    // activate earlier at non-ideal resolutions.
     if (tiling->contents_scale() >= min_acceptable_high_res_scale &&
         tiling->contents_scale() <= max_acceptable_high_res_scale)
       continue;
 
-    if (tiling->contents_scale() >= min_acceptable_low_res_scale &&
-        tiling->contents_scale() <= max_acceptable_low_res_scale)
+    // Low resolution can't activate, so only keep one around.
+    if (tiling->resolution() == LOW_RESOLUTION)
       continue;
 
-    // Don't remove tilings that are being used and expected to stay around.
+    // Don't remove tilings that are being used (and thus would cause a flash.)
     if (std::find(used_tilings.begin(), used_tilings.end(), tiling) !=
         used_tilings.end())
       continue;
