@@ -42,7 +42,6 @@ cr.define('options.network', function() {
                              'wimax',
                              'cellular',
                              'vpn',
-                             'airplaneMode',
                              'addConnection'];
 
   /**
@@ -776,14 +775,6 @@ cr.define('options.network', function() {
       // Wi-Fi control is always visible.
       this.update({key: 'wifi', networkList: []});
 
-      if (airplaneModeAvailable_()) {
-        this.update({key: 'airplaneMode',
-                     subtitle: loadTimeData.getString('airplaneModeLabel'),
-                     command: function() {
-                       chrome.send('toggleAirplaneMode');
-                     }});
-      }
-
       var entryAddWifi = {
         label: loadTimeData.getString('addConnectionWifi'),
         command: createAddConnectionCallback_(Constants.TYPE_WIFI)
@@ -956,16 +947,6 @@ cr.define('options.network', function() {
     wimaxAvailable_ = data.wimaxAvailable;
     wimaxEnabled_ = data.wimaxEnabled;
 
-    if (data.accessLocked) {
-      $('network-locked-message').hidden = false;
-      networkList.disabled = true;
-      $('use-shared-proxies').setDisabled('network-lock', true);
-    } else {
-      $('network-locked-message').hidden = true;
-      networkList.disabled = false;
-      $('use-shared-proxies').setDisabled('network-lock', false);
-    }
-
     // Only show Ethernet control if connected.
     var ethernetConnection = getConnection_(data.wiredList);
     if (ethernetConnection) {
@@ -988,8 +969,8 @@ cr.define('options.network', function() {
     else
       addEnableNetworkButton_('wifi', 'enableWifi', 'wifi');
 
-    // Only show cellular control if available and not in airplane mode.
-    if (data.cellularAvailable && !data.airplaneMode) {
+    // Only show cellular control if available.
+    if (data.cellularAvailable) {
       if (data.cellularEnabled)
         loadData_('cellular', data.wirelessList, data.rememberedList);
       else
@@ -998,8 +979,8 @@ cr.define('options.network', function() {
       networkList.deleteItem('cellular');
     }
 
-    // Only show cellular control if available and not in airplane mode.
-    if (data.wimaxAvailable && !data.airplaneMode) {
+    // Only show cellular control if available.
+    if (data.wimaxAvailable) {
       if (data.wimaxEnabled)
         loadData_('wimax', data.wirelessList, data.rememberedList);
       else
@@ -1015,7 +996,6 @@ cr.define('options.network', function() {
       loadData_('vpn', data.vpnList, data.rememberedList);
     else
       networkList.deleteItem('vpn');
-    networkList.updateToggleControl('airplaneMode', data.airplaneMode);
     networkList.endBatchUpdates();
   };
 
@@ -1160,17 +1140,6 @@ cr.define('options.network', function() {
         return entry;
     }
     return null;
-  }
-
-  /**
-   * Queries if airplane mode is available.
-   * @return {boolean} Indicates if airplane mode is available.
-   * @private
-   */
-  function airplaneModeAvailable_() {
-     // TODO(kevers): Use library callback to determine if airplane mode is
-     // available once back-end suport is in place.
-     return false;
   }
 
   /**

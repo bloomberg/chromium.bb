@@ -54,6 +54,7 @@
 #include "chromeos/network/onc/onc_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -143,12 +144,10 @@ const char kSetSimCardLockMessage[] = "setSimCardLock";
 const char kShowMorePlanInfoMessage[] = "showMorePlanInfo";
 
 // These are strings used to communicate with JavaScript.
-const char kTagAccessLocked[] = "accessLocked";
 const char kTagActivate[] = "activate";
 const char kTagActivated[] = "activated";
 const char kTagActivationState[] = "activationState";
 const char kTagAddConnection[] = "add";
-const char kTagAirplaneMode[] = "airplaneMode";
 const char kTagApn[] = "apn";
 const char kTagAutoConnect[] = "autoConnect";
 const char kTagBssid[] = "bssid";
@@ -156,7 +155,6 @@ const char kTagCarrierSelectFlag[] = "showCarrierSelect";
 const char kTagCarrierUrl[] = "carrierUrl";
 const char kTagCellular[] = "cellular";
 const char kTagCellularAvailable[] = "cellularAvailable";
-const char kTagCellularBusy[] = "cellularBusy";
 const char kTagCellularEnabled[] = "cellularEnabled";
 const char kTagCellularSupportsScan[] = "cellularSupportsScan";
 const char kTagConnect[] = "connect";
@@ -236,14 +234,11 @@ const char kTagVpnList[] = "vpnList";
 const char kTagWarning[] = "warning";
 const char kTagWifi[] = "wifi";
 const char kTagWifiAvailable[] = "wifiAvailable";
-const char kTagWifiBusy[] = "wifiBusy";
 const char kTagWifiEnabled[] = "wifiEnabled";
 const char kTagWimaxAvailable[] = "wimaxAvailable";
-const char kTagWimaxBusy[] = "wimaxBusy";
 const char kTagWimaxEnabled[] = "wimaxEnabled";
 const char kTagWiredList[] = "wiredList";
 const char kTagWirelessList[] = "wirelessList";
-const char kToggleAirplaneModeMessage[] = "toggleAirplaneMode";
 
 // A helper class for building network information dictionaries to be sent to
 // the webui code.
@@ -609,12 +604,9 @@ void InternetOptionsHandler::GetLocalizedValues(
 
     { "ethernetTitle", IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET },
     { "wifiTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIFI_NETWORK },
-    // TODO(zelidrag): Change details title to Wimax once we get strings.
-    { "wimaxTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_CELLULAR_NETWORK },
+    { "wimaxTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIMAX_NETWORK },
     { "cellularTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_CELLULAR_NETWORK },
     { "vpnTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_PRIVATE_NETWORK },
-    { "airplaneModeTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_AIRPLANE_MODE },
-    { "airplaneModeLabel", IDS_OPTIONS_SETTINGS_NETWORK_AIRPLANE_MODE_LABEL },
     { "networkNotConnected", IDS_OPTIONS_SETTINGS_NETWORK_NOT_CONNECTED },
     { "networkConnected", IDS_CHROMEOS_NETWORK_STATE_READY },
     { "joinOtherNetwork", IDS_OPTIONS_SETTINGS_NETWORK_OTHER },
@@ -675,12 +667,10 @@ void InternetOptionsHandler::GetLocalizedValues(
     { "disconnectButton", IDS_OPTIONS_SETTINGS_DISCONNECT },
     { "viewAccountButton", IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT },
 
-    // TODO(zelidrag): Change details title to Wimax once we get strings.
-    { "wimaxConnTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_CONNECTION },
+    { "wimaxConnTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIMAX },
 
     // Wifi Tab.
 
-    { "accessLockedMsg", IDS_STATUSBAR_NETWORK_LOCKED },
     { "inetSsid", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID },
     { "inetBssid", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_BSSID },
     { "inetEncryption",
@@ -835,9 +825,6 @@ void InternetOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(kChangePinMessage,
       base::Bind(&InternetOptionsHandler::ChangePinCallback,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kToggleAirplaneModeMessage,
-      base::Bind(&InternetOptionsHandler::ToggleAirplaneModeCallback,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kSetServerHostname,
       base::Bind(&InternetOptionsHandler::SetServerHostnameCallback,
                  base::Unretained(this)));
@@ -852,7 +839,6 @@ void InternetOptionsHandler::DisableWifiCallback(const ListValue* args) {
 }
 
 void InternetOptionsHandler::EnableCellularCallback(const ListValue* args) {
-  // TODO(nkostylev): Code duplication, see NetworkMenu::ToggleCellular().
   const chromeos::NetworkDevice* mobile = cros_->FindMobileDevice();
   if (!mobile) {
     LOG(ERROR) << "Didn't find mobile device, it should have been available.";
@@ -1572,11 +1558,7 @@ void InternetOptionsHandler::SetCellularButtonsVisibility(
 }
 
 gfx::NativeWindow InternetOptionsHandler::GetNativeWindow() const {
-  // TODO(beng): This is an improper direct dependency on Browser. Route this
-  // through some sort of delegate.
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
-  return browser->window()->GetNativeWindow();
+  return web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow();
 }
 
 Browser* InternetOptionsHandler::GetAppropriateBrowser() {
@@ -1647,12 +1629,6 @@ void InternetOptionsHandler::NetworkCommandCallback(const ListValue* args) {
     VLOG(1) << "Unknown command: " << command;
     NOTREACHED();
   }
-}
-
-void InternetOptionsHandler::ToggleAirplaneModeCallback(const ListValue* args) {
-  // TODO(kevers): The use of 'offline_mode' is not quite correct.  Update once
-  // we have proper back-end support.
-  cros_->EnableOfflineMode(!cros_->offline_mode());
 }
 
 void InternetOptionsHandler::AddConnection(chromeos::ConnectionType type) {
@@ -1768,16 +1744,13 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
 }
 
 void InternetOptionsHandler::FillNetworkInfo(DictionaryValue* dictionary) {
-  dictionary->SetBoolean(kTagAccessLocked, false);  // TODO(stevenj) remove.
   dictionary->Set(kTagWiredList, GetWiredList());
   dictionary->Set(kTagWirelessList, GetWirelessList());
   dictionary->Set(kTagVpnList, GetVPNList());
   dictionary->Set(kTagRememberedList, GetRememberedList());
   dictionary->SetBoolean(kTagWifiAvailable, cros_->wifi_available());
-  dictionary->SetBoolean(kTagWifiBusy, false);  // TODO(stevenj) remove.
   dictionary->SetBoolean(kTagWifiEnabled, cros_->wifi_enabled());
   dictionary->SetBoolean(kTagCellularAvailable, cros_->cellular_available());
-  dictionary->SetBoolean(kTagCellularBusy, false);  // TODO(stevenj) remove.
   dictionary->SetBoolean(kTagCellularEnabled, cros_->cellular_enabled());
 
   const chromeos::NetworkDevice* cellular_device = cros_->FindCellularDevice();
@@ -1787,10 +1760,6 @@ void InternetOptionsHandler::FillNetworkInfo(DictionaryValue* dictionary) {
 
   dictionary->SetBoolean(kTagWimaxEnabled, cros_->wimax_enabled());
   dictionary->SetBoolean(kTagWimaxAvailable, cros_->wimax_available());
-  dictionary->SetBoolean(kTagWimaxBusy, false);  // TODO(stevenj) remove.
-  // TODO(kevers): The use of 'offline_mode' is not quite correct.  Update once
-  // we have proper back-end support. TODO(stevenj) remove.
-  dictionary->SetBoolean(kTagAirplaneMode, cros_->offline_mode());
 }
 
 }  // namespace options

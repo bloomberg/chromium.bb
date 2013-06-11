@@ -101,13 +101,6 @@ class InternetOptionsHandler
   void ShowMorePlanInfoCallback(const base::ListValue* args);
   void RefreshNetworksCallback(const base::ListValue* args);
 
-  /**
-   * Toggle airplane mode.  Disables all wireless networks when activated.
-   * Celluar and Bluetooth connections remain disabled while active, but
-   * Wi-Fi can be reactivated. |args| is unused.
-   */
-  void ToggleAirplaneModeCallback(const ListValue* args);
-
   // Populates the ui with the details of the given device path. This forces
   // an overlay to be displayed in the UI. Called after the asynchronous
   // request for Shill's service properties.

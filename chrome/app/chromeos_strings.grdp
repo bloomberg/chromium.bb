@@ -582,6 +582,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIFI_NETWORK" desc="Title for the Wifi network group on the settings page.">
     Wi-Fi network
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIMAX_NETWORK" desc="Title for the Wimax network group on the settings page.">
+    Wimax network
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_CELLULAR_NETWORK" desc="Title for the cellular network group on the settings page.">
     Mobile data
   </message>
@@ -1082,6 +1085,9 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIFI" desc="In settings Internet options, the title for the wifi tab.">
     Wi-Fi
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIMAX" desc="In settings Internet options, the title for the Wimax tab.">
+    Wimax
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_VPN" desc="In settings Internet options, the title for the VPN (Virtual Private Network) tab.">
     VPN
@@ -2271,9 +2277,6 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_STATUSBAR_DISABLE_SPOKEN_FEEDBACK" desc="The menu option to disable spoken feedback accessibility feature.">
     Disable spoken feedback
-  </message>
-  <message name="IDS_STATUSBAR_NETWORK_LOCKED" desc="Message displayed while access to network devices is temporarily locked due to mobile network activation">
-    Please wait while we set up your mobile network.
   </message>
   <message name="IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET" desc="The ethernet network device.">
     Ethernet
