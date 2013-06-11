@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
+#include "base/stringprintf.h"
 #include "base/win/wrapped_window_proc.h"
 
 namespace {
@@ -25,7 +26,7 @@ enum MessageLoopProblems {
 
 namespace base {
 
-static const wchar_t kWndClass[] = L"Chrome_MessagePumpWindow";
+static const wchar_t kWndClassFormat[] = L"Chrome_MessagePumpWindow_%p";
 
 // Message sent to get an additional time slice for pumping (processing) another
 // task (a series of such messages creates a continuous task pump).
@@ -96,14 +97,15 @@ int MessagePumpWin::GetCurrentDelay() const {
 // MessagePumpForUI public:
 
 MessagePumpForUI::MessagePumpForUI()
-    : instance_(NULL),
+    : atom_(0),
       message_filter_(new MessageFilter) {
   InitMessageWnd();
 }
 
 MessagePumpForUI::~MessagePumpForUI() {
   DestroyWindow(message_hwnd_);
-  UnregisterClass(kWndClass, instance_);
+  UnregisterClass(MAKEINTATOM(atom_),
+                  base::GetModuleFromAddress(&WndProcThunk));
 }
 
 void MessagePumpForUI::ScheduleWork() {
@@ -268,16 +270,20 @@ void MessagePumpForUI::DoRunLoop() {
 }
 
 void MessagePumpForUI::InitMessageWnd() {
+  // Generate a unique window class name.
+  string16 class_name = base::StringPrintf(kWndClassFormat, this);
+
+  HINSTANCE instance = base::GetModuleFromAddress(&WndProcThunk);
   WNDCLASSEX wc = {0};
   wc.cbSize = sizeof(wc);
   wc.lpfnWndProc = base::win::WrappedWindowProc<WndProcThunk>;
-  wc.hInstance = base::GetModuleFromAddress(wc.lpfnWndProc);
-  wc.lpszClassName = kWndClass;
-  instance_ = wc.hInstance;
-  RegisterClassEx(&wc);
+  wc.hInstance = instance;
+  wc.lpszClassName = class_name.c_str();
+  atom_ = RegisterClassEx(&wc);
+  DCHECK(atom_);
 
-  message_hwnd_ =
-      CreateWindow(kWndClass, 0, 0, 0, 0, 0, 0, HWND_MESSAGE, 0, instance_, 0);
+  message_hwnd_ = CreateWindow(MAKEINTATOM(atom_), 0, 0, 0, 0, 0, 0,
+                               HWND_MESSAGE, 0, instance, 0);
   DCHECK(message_hwnd_);
 }
 
