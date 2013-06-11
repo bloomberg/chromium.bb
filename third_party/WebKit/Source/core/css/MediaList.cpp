@@ -55,21 +55,12 @@ namespace WebCore {
  */
 
 MediaQuerySet::MediaQuerySet()
-    : m_parserMode(MediaQueryNormalMode)
-    , m_lastLine(0)
+    : m_lastLine(0)
 {
-}
-
-MediaQuerySet::MediaQuerySet(const String& mediaString, MediaQueryParserMode mode)
-    : m_parserMode(mode)
-    , m_lastLine(0)
-{
-    set(mediaString);
 }
 
 MediaQuerySet::MediaQuerySet(const MediaQuerySet& o)
     : RefCounted<MediaQuerySet>()
-    , m_parserMode(o.m_parserMode)
     , m_lastLine(o.m_lastLine)
     , m_queries(o.m_queries.size())
 {
@@ -81,53 +72,19 @@ MediaQuerySet::~MediaQuerySet()
 {
 }
 
-PassOwnPtr<MediaQuery> MediaQuerySet::parseMediaQuery(const String& queryString, MediaQueryParserMode mode)
+PassRefPtr<MediaQuerySet> MediaQuerySet::create(const String& mediaString)
 {
+    if (mediaString.isEmpty())
+        return MediaQuerySet::create();
+
     CSSParser parser(CSSStrictMode);
-    OwnPtr<MediaQuery> parsedQuery = parser.parseMediaQuery(queryString);
-
-    if (parsedQuery)
-        return parsedQuery.release();
-
-    switch (mode) {
-    case MediaQueryNormalMode:
-        return adoptPtr(new MediaQuery(MediaQuery::None, "not all", nullptr));
-    case MediaQueryStrictMode:
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-        break;
-    }
-    return nullptr;
-}
-
-void MediaQuerySet::parseMediaQueryList(const String& mediaString, MediaQueryParserMode mode, Vector<OwnPtr<MediaQuery> >& result)
-{
-    if (mediaString.isEmpty()) {
-        result.clear();
-        return;
-    }
-
-    Vector<String> list;
-    // FIXME: This is too simple as it shouldn't split when the ',' is inside
-    // other allowed matching pairs such as (), [], {}, "", and ''.
-    mediaString.split(',', /* allowEmptyEntries */ true, list);
-
-    result.reserveInitialCapacity(list.size());
-
-    for (unsigned i = 0; i < list.size(); ++i) {
-        String queryString = list[i].stripWhiteSpace();
-        OwnPtr<MediaQuery> parsedQuery = parseMediaQuery(queryString, mode);
-        if (parsedQuery)
-            result.uncheckedAppend(parsedQuery.release());
-    }
+    return parser.parseMediaQueryList(mediaString);
 }
 
 bool MediaQuerySet::set(const String& mediaString)
 {
-    Vector<OwnPtr<MediaQuery> > result;
-    parseMediaQueryList(mediaString, parserMode(), result);
-    m_queries.swap(result);
+    RefPtr<MediaQuerySet> result = create(mediaString);
+    m_queries.swap(result->m_queries);
     return true;
 }
 
@@ -136,14 +93,13 @@ bool MediaQuerySet::add(const String& queryString)
     // To "parse a media query" for a given string means to follow "the parse
     // a media query list" steps and return "null" if more than one media query
     // is returned, or else the returned media query.
-    Vector<OwnPtr<MediaQuery> > queries;
-    parseMediaQueryList(queryString, MediaQueryStrictMode, queries);
+    RefPtr<MediaQuerySet> result = create(queryString);
 
     // Only continue if exactly one media query is found, as described above.
-    if (queries.size() != 1)
+    if (result->m_queries.size() != 1)
         return true;
 
-    OwnPtr<MediaQuery> newQuery = queries[0].release();
+    OwnPtr<MediaQuery> newQuery = result->m_queries[0].release();
     ASSERT(newQuery);
 
     // If comparing with any of the media queries in the collection of media
@@ -163,14 +119,13 @@ bool MediaQuerySet::remove(const String& queryStringToRemove)
     // To "parse a media query" for a given string means to follow "the parse
     // a media query list" steps and return "null" if more than one media query
     // is returned, or else the returned media query.
-    Vector<OwnPtr<MediaQuery> > queries;
-    parseMediaQueryList(queryStringToRemove, MediaQueryStrictMode, queries);
+    RefPtr<MediaQuerySet> result = create(queryStringToRemove);
 
     // Only continue if exactly one media query is found, as described above.
-    if (queries.size() != 1)
+    if (result->m_queries.size() != 1)
         return true;
 
-    OwnPtr<MediaQuery> newQuery = queries[0].release();
+    OwnPtr<MediaQuery> newQuery = result->m_queries[0].release();
     ASSERT(newQuery);
 
     // Remove any media query from the collection of media queries for which

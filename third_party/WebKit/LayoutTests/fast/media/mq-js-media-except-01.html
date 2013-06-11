@@ -12,12 +12,16 @@ p#result { color: green;}
 <script language="javascript">
 function test() {
     try {
-       document.styleSheets[0].cssRules[0].media.deleteMedium("all and (");
-        document.getElementById("result").innerHTML = "Success. This text should be green.";
+        document.styleSheets[0].cssRules[0].media.deleteMedium("all and (");
+        document.getElementById("result").innerHTML = "Failure. 'all and (' is not a valid media query and should become 'not all'. Not all is not present in the media rule, hence a DOMException.NOT_FOUND_ERR should be thrown."
     }
     catch(e) {
-        document.getElementById("result").innerHTML = "Failure. 'all and (' is not a valid medium and should be ignored."
-        document.getElementById("details").innerHTML = "Following exception was caught: " + e;
+        if (e.code == DOMException.NOT_FOUND_ERR)
+            document.getElementById("result").innerHTML = "Success. This text should be green.";
+        else {
+            document.getElementById("result").innerHTML = "Failure. Wrong exception thrown. Expected DOMException.NOT_FOUND_ERR.";
+            document.getElementById("details").innerHTML = "Following exception was caught: " + e;
+        }
     }
 }
 </script>

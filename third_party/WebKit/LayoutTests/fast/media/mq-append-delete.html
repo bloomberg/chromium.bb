@@ -67,7 +67,7 @@ test(function () {
 test(function () {
     mediaList.mediaText = "screen, tv";
     mediaList.appendMedium("&invalid");
-    assert_equals(mediaList.mediaText, "screen, tv");
+    assert_equals(mediaList.mediaText, "screen, tv, not all");
     // Ignored; terminate steps.
 }, "Add '&invalid' to 'screen, tv'");
 
@@ -80,7 +80,7 @@ test(function () {
 test(function () {
     mediaList.mediaText = "screen, tv";
     mediaList.appendMedium("#?:/");
-    assert_equals(mediaList.mediaText, "screen, tv");
+    assert_equals(mediaList.mediaText, "screen, tv, not all");
     // Ignored; terminate steps.
 }, "Add '#?:/' to 'screen, tv'");
 
@@ -90,7 +90,7 @@ test(function () {
     mediaList.mediaText = "screen, tv, not all";
     mediaList.deleteMedium("&invalid");
     // Ignored; terminate steps.
-    assert_equals(mediaList.mediaText, "screen, tv, not all");
+    assert_equals(mediaList.mediaText, "screen, tv");
 }, "Remove '&invalid' from 'screen, tv, not all'");
 
 test(function () {
@@ -153,6 +153,6 @@ test(function () {
     mediaList.mediaText = "screen, tv, not all";
     mediaList.deleteMedium("#?:/");
     // Ignored; terminate steps.
-    assert_equals(mediaList.mediaText, "screen, tv, not all");
+    assert_equals(mediaList.mediaText, "screen, tv");
 }, "Remove '#?:/' from 'screen, tv, not all'");
 </script>

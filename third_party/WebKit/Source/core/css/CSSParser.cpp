@@ -1347,19 +1347,17 @@ bool CSSParser::parseDeclaration(MutableStylePropertySet* declaration, const Str
     return ok;
 }
 
-PassOwnPtr<MediaQuery> CSSParser::parseMediaQuery(const String& string)
+PassRefPtr<MediaQuerySet> CSSParser::parseMediaQueryList(const String& string)
 {
-    if (string.isEmpty())
-        return nullptr;
-
-    ASSERT(!m_mediaQuery);
+    ASSERT(!m_mediaList);
 
     // can't use { because tokenizer state switches from mediaquery to initial state when it sees { token.
     // instead insert one " " (which is caught by maybe_space in CSSGrammar.y)
-    setupParser("@-webkit-mediaquery ", string, "} ");
+    setupParser("@-internal-medialist ", string, "");
     cssyyparse(this);
 
-    return m_mediaQuery.release();
+    ASSERT(m_mediaList.get());
+    return m_mediaList.release();
 }
 
 static inline void filterProperties(bool important, const CSSParser::ParsedPropertyVector& input, Vector<CSSProperty, 256>& output, size_t& unusedEntries, BitArray<numCSSProperties>& seenProperties, HashSet<AtomicString>& seenVariables)
@@ -10265,14 +10263,14 @@ inline void CSSParser::detectAtToken(int length, bool hasEscape)
             return;
 
         case 19:
-            if (!hasEscape && isASCIIAlphaCaselessEqual(name[18], 'r') && isEqualToCSSIdentifier(name + 2, "internal-selecto")) {
+            if (!hasEscape && isASCIIAlphaCaselessEqual(name[18], 'r') && isEqualToCSSIdentifier(name + 2, "internal-selecto"))
                 m_token = INTERNAL_SELECTOR_SYM;
-                return;
-            }
+            return;
 
-            if (isEqualToCSSIdentifier(name + 2, "webkit-mediaquery")) {
+        case 20:
+            if (isEqualToCSSIdentifier(name + 2, "internal-medialist")) {
                 m_parsingMode = MediaQueryMode;
-                m_token = WEBKIT_MEDIAQUERY_SYM;
+                m_token = INTERNAL_MEDIALIST_SYM;
             }
             return;
 

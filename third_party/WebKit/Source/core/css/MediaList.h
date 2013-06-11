@@ -36,21 +36,13 @@ class Document;
 class MediaList;
 class MediaQuery;
 
-enum MediaQueryParserMode {
-    MediaQueryNormalMode,
-    MediaQueryStrictMode,
-};
-
 class MediaQuerySet : public RefCounted<MediaQuerySet> {
 public:
     static PassRefPtr<MediaQuerySet> create()
     {
         return adoptRef(new MediaQuerySet());
     }
-    static PassRefPtr<MediaQuerySet> create(const String& mediaString)
-    {
-        return adoptRef(new MediaQuerySet(mediaString, MediaQueryNormalMode));
-    }
+    static PassRefPtr<MediaQuerySet> create(const String& mediaString);
     ~MediaQuerySet();
 
     bool set(const String&);
@@ -72,16 +64,9 @@ public:
 
 private:
     MediaQuerySet();
-    MediaQuerySet(const String& mediaQuery, MediaQueryParserMode);
     MediaQuerySet(const MediaQuerySet&);
 
-    PassOwnPtr<MediaQuery> parseMediaQuery(const String&, MediaQueryParserMode);
-    void parseMediaQueryList(const String&, MediaQueryParserMode, Vector<OwnPtr<MediaQuery> >& result);
-
-    MediaQueryParserMode parserMode() const { return static_cast<MediaQueryParserMode>(m_parserMode); }
-
-    unsigned m_parserMode : 2;
-    unsigned m_lastLine : 30;
+    unsigned m_lastLine;
     Vector<OwnPtr<MediaQuery> > m_queries;
 };
 

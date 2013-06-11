@@ -125,12 +125,12 @@ static inline bool isCSSTokenAString(int yytype)
 %token NAMESPACE_SYM
 %token VARFUNCTION
 %token INTERNAL_DECLS_SYM
+%token INTERNAL_MEDIALIST_SYM
 %token INTERNAL_RULE_SYM
 %token INTERNAL_SELECTOR_SYM
 %token INTERNAL_VALUE_SYM
 %token WEBKIT_KEYFRAME_RULE_SYM
 %token WEBKIT_KEYFRAMES_SYM
-%token WEBKIT_MEDIAQUERY_SYM
 %token WEBKIT_REGION_RULE_SYM
 %token WEBKIT_VIEWPORT_RULE_SYM
 %token WEBKIT_SUPPORTS_CONDITION_SYM
@@ -325,7 +325,7 @@ stylesheet:
   | internal_rule maybe_space
   | internal_selector maybe_space
   | internal_value maybe_space
-  | webkit_mediaquery maybe_space
+  | internal_medialist
   | webkit_keyframe_rule maybe_space
   | webkit_supports_condition maybe_space
   ;
@@ -360,10 +360,10 @@ internal_value:
     }
 ;
 
-webkit_mediaquery:
-     WEBKIT_MEDIAQUERY_SYM maybe_space valid_media_query '}' {
-         parser->m_mediaQuery = parser->sinkFloatingMediaQuery($3);
-     }
+internal_medialist:
+    INTERNAL_MEDIALIST_SYM maybe_space maybe_media_list TOKEN_EOF {
+        parser->m_mediaList = $3;
+    }
 ;
 
 internal_selector:
