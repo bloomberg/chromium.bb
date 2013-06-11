@@ -258,6 +258,13 @@ NotifierSettingsDelegate* ShowSettings(NotifierSettingsProvider* provider,
   [scrollView_ setHasHorizontalScroller:NO];
   [scrollView_ setHasVerticalScroller:YES];
 
+  // Scroll to top.
+  NSPoint newScrollOrigin =
+      NSMakePoint(0.0,
+                  NSMaxY([[scrollView_ documentView] frame]) -
+                      NSHeight([[scrollView_ contentView] bounds]));
+  [[scrollView_ documentView] scrollPoint:newScrollOrigin];
+
   // Set final sizes.
   [[self view] setFrame:fullFrame];
   [[self view] addSubview:scrollView_];
