@@ -905,7 +905,17 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_EQ(1, GetNotificationCount());
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCrashRendererNotificationRemain) {
+// See crbug.com/248470
+#if defined(OS_LINUX)
+#define MAYBE_TestCrashRendererNotificationRemain \
+    DISABLED_TestCrashRendererNotificationRemain
+#else
+#define MAYBE_TestCrashRendererNotificationRemain \
+    TestCrashRendererNotificationRemain
+#endif
+
+IN_PROC_BROWSER_TEST_F(NotificationsTest,
+                       MAYBE_TestCrashRendererNotificationRemain) {
 #if defined(OS_MACOSX)
   // TODO(kbr): re-enable: http://crbug.com/222296
   if (base::mac::IsOSMountainLionOrLater())
