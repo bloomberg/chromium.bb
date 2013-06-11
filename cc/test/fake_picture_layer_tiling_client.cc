@@ -56,7 +56,7 @@ void FakePictureLayerTilingClient::SetTileSize(gfx::Size tile_size) {
 }
 
 gfx::Size FakePictureLayerTilingClient::CalculateTileSize(
-    gfx::Size /* content_bounds */) {
+    gfx::Size /* content_bounds */) const {
   return tile_size_;
 }
 

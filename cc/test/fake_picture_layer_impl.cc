@@ -32,7 +32,8 @@ void FakePictureLayerImpl::AppendQuads(QuadSink* quad_sink,
   ++append_quads_count_;
 }
 
-gfx::Size FakePictureLayerImpl::CalculateTileSize(gfx::Size content_bounds) {
+gfx::Size FakePictureLayerImpl::CalculateTileSize(
+    gfx::Size content_bounds) const {
   if (fixed_tile_size_.IsEmpty()) {
     return PictureLayerImpl::CalculateTileSize(content_bounds);
   }

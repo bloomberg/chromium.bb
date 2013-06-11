@@ -48,9 +48,8 @@ class PictureLayerImplTest : public testing::Test {
   virtual ~PictureLayerImplTest() {
   }
 
-  void SetupDefaultTrees() {
+  void SetupDefaultTrees(gfx::Size layer_bounds) {
     gfx::Size tile_size(100, 100);
-    gfx::Size layer_bounds(100, 100);
 
     scoped_refptr<FakePicturePileImpl> pending_pile =
         FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
@@ -135,6 +134,11 @@ class PictureLayerImplTest : public testing::Test {
         &result_scale_x,
         &result_scale_y,
         &result_bounds);
+  }
+
+  void ResetTilingsAndRasterScales() {
+    pending_layer_->DidLoseOutputSurface();
+    active_layer_->DidLoseOutputSurface();
   }
 
  protected:
@@ -645,7 +649,7 @@ TEST_F(PictureLayerImplTest, CleanUpTilings) {
   } while (false)
 
 TEST_F(PictureLayerImplTest, DontAddLowResDuringAnimation) {
-  SetupDefaultTrees();
+  SetupDefaultTrees(gfx::Size(300, 100));
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
   float contents_scale = 1.f;
@@ -684,6 +688,43 @@ TEST_F(PictureLayerImplTest, DontAddLowResDuringAnimation) {
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 4.f);
   EXPECT_BOTH_EQ(LowResTiling()->contents_scale(), 4.f * low_res_factor);
   EXPECT_BOTH_EQ(num_tilings(), 4u);
+}
+
+TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
+  gfx::Size tile_size(host_impl_.settings().default_tile_size);
+  SetupDefaultTrees(tile_size);
+
+  float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
+  float contents_scale = 1.f;
+  float device_scale = 1.f;
+  float page_scale = 1.f;
+  bool animating_transform = false;
+  SetContentsScaleOnBothLayers(
+      contents_scale, device_scale, page_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), contents_scale);
+  EXPECT_BOTH_EQ(num_tilings(), 1u);
+
+  ResetTilingsAndRasterScales();
+
+  // Any content bounds that would create more than one tile will
+  // generate a low res tiling.
+  contents_scale = 1.2f;
+  SetContentsScaleOnBothLayers(
+      contents_scale, device_scale, page_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), contents_scale);
+  EXPECT_BOTH_EQ(LowResTiling()->contents_scale(),
+                 contents_scale * low_res_factor);
+  EXPECT_BOTH_EQ(num_tilings(), 2u);
+
+  ResetTilingsAndRasterScales();
+
+  // Mask layers dont create low res since they always fit on one tile.
+  pending_layer_->SetIsMask(true);
+  active_layer_->SetIsMask(true);
+  SetContentsScaleOnBothLayers(
+      contents_scale, device_scale, page_scale, animating_transform);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), contents_scale);
+  EXPECT_BOTH_EQ(num_tilings(), 1u);
 }
 
 TEST_F(PictureLayerImplTest, DidLoseOutputSurface) {

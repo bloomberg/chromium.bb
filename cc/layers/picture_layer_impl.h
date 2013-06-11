@@ -57,7 +57,7 @@ class CC_EXPORT PictureLayerImpl
                                          gfx::Rect content_rect) OVERRIDE;
   virtual void UpdatePile(Tile* tile) OVERRIDE;
   virtual gfx::Size CalculateTileSize(
-      gfx::Size content_bounds) OVERRIDE;
+      gfx::Size content_bounds) const OVERRIDE;
   virtual const Region* GetInvalidation() OVERRIDE;
   virtual const PictureLayerTiling* GetTwinTiling(
       const PictureLayerTiling* tiling) OVERRIDE;

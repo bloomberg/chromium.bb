@@ -477,7 +477,7 @@ const PictureLayerTiling* PictureLayerImpl::GetTwinTiling(
 }
 
 gfx::Size PictureLayerImpl::CalculateTileSize(
-    gfx::Size content_bounds) {
+    gfx::Size content_bounds) const {
   if (is_mask_) {
     int max_size = layer_tree_impl()->MaxTextureSize();
     return gfx::Size(
@@ -878,6 +878,16 @@ void PictureLayerImpl::CalculateRasterContentsScale(
   if (animating_transform_to_screen) {
     *raster_contents_scale = std::max(
         *raster_contents_scale, 1.f * ideal_page_scale_ * ideal_device_scale_);
+  }
+
+  // If this layer would only create one tile at this content scale,
+  // don't create a low res tiling.
+  gfx::Size content_bounds =
+      gfx::ToCeiledSize(gfx::ScaleSize(bounds(), *raster_contents_scale));
+  gfx::Size tile_size = CalculateTileSize(content_bounds);
+  if (tile_size == content_bounds) {
+    *low_res_raster_contents_scale = *raster_contents_scale;
+    return;
   }
 
   float low_res_factor =

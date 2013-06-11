@@ -26,7 +26,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
       OVERRIDE;
   virtual void AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) OVERRIDE;
-  virtual gfx::Size CalculateTileSize(gfx::Size content_bounds) OVERRIDE;
+  virtual gfx::Size CalculateTileSize(gfx::Size content_bounds) const OVERRIDE;
 
   using PictureLayerImpl::AddTiling;
   using PictureLayerImpl::CleanUpTilingsOnActiveLayer;
