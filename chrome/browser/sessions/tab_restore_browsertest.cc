@@ -409,11 +409,18 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWithExistingSiteInstance) {
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
+// See crbug.com/248574
+#if defined(OS_WIN)
+#define MAYBE_RestoreCrossSiteWithExistingSiteInstance DISABLED_RestoreCrossSiteWithExistingSiteInstance
+#else
+#define MAYBE_RestoreCrossSiteWithExistingSiteInstance RestoreCrossSiteWithExistingSiteInstance
+#endif
+
 // Tests that the SiteInstances used for entries in a restored tab's history
 // are given appropriate max page IDs, even if the renderer for the entry
 // already exists.  (Bug 1204135)
 IN_PROC_BROWSER_TEST_F(TabRestoreTest,
-                       RestoreCrossSiteWithExistingSiteInstance) {
+                       MAYBE_RestoreCrossSiteWithExistingSiteInstance) {
   ASSERT_TRUE(test_server()->Start());
 
   GURL http_url1(test_server()->GetURL("files/title1.html"));
