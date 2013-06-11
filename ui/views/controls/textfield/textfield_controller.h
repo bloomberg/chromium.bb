@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/views/views_export.h"
 

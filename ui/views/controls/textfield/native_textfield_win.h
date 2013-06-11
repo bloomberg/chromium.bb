@@ -15,12 +15,12 @@
 #include <vsstyle.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/win/scoped_comptr.h"
-#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ime/win/tsf_event_router.h"
-#include "ui/gfx/insets.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/win/extra_sdk_defines.h"
+#include "ui/gfx/insets.h"
 #include "ui/views/controls/textfield/native_textfield_wrapper.h"
 
 namespace views {

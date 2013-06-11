@@ -4,7 +4,7 @@
 
 #include "ui/views/controls/table/table_utils.h"
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/table/test_table_model.h"

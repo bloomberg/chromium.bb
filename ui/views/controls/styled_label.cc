@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"

@@ -9,7 +9,7 @@
 #include <X11/Xutil.h>
 
 #include "base/message_pump_aurax11.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/user_action_client.h"

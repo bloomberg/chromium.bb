@@ -6,7 +6,7 @@
 #define UI_VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_VIEWS_H_
 
 #include "base/memory/weak_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/timer.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/ime/text_input_client.h"

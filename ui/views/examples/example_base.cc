@@ -7,7 +7,7 @@
 #include <stdarg.h>
 
 #include "base/compiler_specific.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "ui/views/view.h"
 
 namespace views {

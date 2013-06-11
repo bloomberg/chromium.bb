@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_BUTTON_DRAG_UTILS_H_
 #define UI_VIEWS_BUTTON_DRAG_UTILS_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/views/views_export.h"
 
 class GURL;

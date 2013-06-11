@@ -9,7 +9,7 @@
 #include <queue>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/link_listener.h"

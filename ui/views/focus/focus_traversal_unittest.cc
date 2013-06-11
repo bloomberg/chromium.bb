@@ -5,7 +5,7 @@
 #include "ui/views/focus/focus_manager.h"
 
 #include "base/run_loop.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/views/controls/button/checkbox.h"

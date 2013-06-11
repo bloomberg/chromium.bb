@@ -4,7 +4,7 @@
 
 #include "ui/views/examples/combobox_example.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/layout/fill_layout.h"

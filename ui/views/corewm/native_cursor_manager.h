@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_COREWM_NATIVE_CURSOR_MANAGER_H_
 #define UI_VIEWS_COREWM_NATIVE_CURSOR_MANAGER_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/views/corewm/native_cursor_manager_delegate.h"
 #include "ui/views/views_export.h"
 

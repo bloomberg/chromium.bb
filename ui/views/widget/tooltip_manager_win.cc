@@ -12,7 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
 #include "ui/base/l10n/l10n_util_win.h"

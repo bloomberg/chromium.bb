@@ -4,7 +4,7 @@
 
 #include "ui/views/controls/table/test_table_model.h"
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/table_model_observer.h"

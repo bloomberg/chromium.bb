@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/timer.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/window_observer.h"

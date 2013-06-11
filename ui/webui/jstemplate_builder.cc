@@ -10,7 +10,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "grit/webui_resources.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"

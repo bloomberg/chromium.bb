@@ -5,7 +5,7 @@
 #include "ui/views/widget/native_widget_aura.h"
 
 #include "base/bind.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"

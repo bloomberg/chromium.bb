@@ -12,7 +12,7 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"

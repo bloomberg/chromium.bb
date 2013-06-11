@@ -13,7 +13,7 @@
 #endif
 
 #include "base/logging.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect_base_impl.h"
 

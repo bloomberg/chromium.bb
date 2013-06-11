@@ -8,7 +8,7 @@
 #include <gtk/gtk.h>
 #endif
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 
 namespace gfx {
 

@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_TREE_TREE_VIEW_SELECTOR_H_
 #define UI_VIEWS_CONTROLS_TREE_TREE_VIEW_SELECTOR_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/time.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/views/views_export.h"

@@ -6,7 +6,7 @@
 #define UI_VIEWS_WINDOW_DIALOG_DELEGATE_H_
 
 #include "base/compiler_specific.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/models/dialog_model.h"
 #include "ui/base/ui_base_types.h"
