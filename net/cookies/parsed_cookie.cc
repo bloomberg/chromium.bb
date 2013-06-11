@@ -194,26 +194,25 @@ CookiePriority ParsedCookie::Priority() const {
 }
 
 bool ParsedCookie::SetName(const std::string& name) {
-  if (!IsValidToken(name)) {
-    UMA_HISTOGRAM_BOOLEAN("Cookies.SetNameInvalidToken", true);
+  bool valid_token = IsValidToken(name);
+  UMA_HISTOGRAM_BOOLEAN("Cookie.SetNameVaildity", valid_token);
+  if (!valid_token)
     return false;
-  }
   if (pairs_.empty())
     pairs_.push_back(std::make_pair("", ""));
   pairs_[0].first = name;
-  UMA_HISTOGRAM_BOOLEAN("Cookies.SetNameInvalidToken", false);
   return true;
 }
 
 bool ParsedCookie::SetValue(const std::string& value) {
-  if (!IsValidCookieValue(value)) {
-    UMA_HISTOGRAM_BOOLEAN("Cookies.SetValueInvalidCookieValue", true);
+  bool valid_cookie_value = IsValidCookieValue(value);
+  UMA_HISTOGRAM_BOOLEAN("Cookie.SetValueCookieValueValidity",
+    valid_cookie_value);
+  if (!valid_cookie_value)
     return false;
-  }
   if (pairs_.empty())
     pairs_.push_back(std::make_pair("", ""));
   pairs_[0].second = value;
-  UMA_HISTOGRAM_BOOLEAN("Cookies.SetValueInvalidCookieValue", false);
   return true;
 }
 
@@ -355,8 +354,14 @@ std::string ParsedCookie::ParseValueString(const std::string& value) {
 
 // Parse all token/value pairs and populate pairs_.
 void ParsedCookie::ParseTokenValuePairs(const std::string& cookie_line) {
-  bool parsed_invalid_control_char = false;
-  bool parsed_invalid_token = false;
+  enum ParsedCookieStatus {
+    PARSED_COOKIE_STATUS_NOTHING = 0x0,
+    PARSED_COOKIE_STATUS_CONTROL_CHAR = 0x1,
+    PARSED_COOKIE_STATUS_INVALID = 0x2,
+    PARSED_COOKIE_STATUS_BOTH =
+      PARSED_COOKIE_STATUS_CONTROL_CHAR | PARSED_COOKIE_STATUS_INVALID
+  };
+  int parsed_cookie_status = PARSED_COOKIE_STATUS_NOTHING;
 
   pairs_.clear();
 
@@ -406,9 +411,9 @@ void ParsedCookie::ParseTokenValuePairs(const std::string& cookie_line) {
     pair.second = std::string(value_start, value_end);
 
     if (!IsValidCookieAttributeValue(pair.second))
-      parsed_invalid_control_char = true;
+      parsed_cookie_status |= PARSED_COOKIE_STATUS_CONTROL_CHAR;
     if (!IsValidToken(pair.second))
-      parsed_invalid_token = true;
+      parsed_cookie_status |= PARSED_COOKIE_STATUS_INVALID;
 
     // From RFC2109: "Attributes (names) (attr) are case-insensitive."
     if (pair_num != 0)
@@ -421,9 +426,8 @@ void ParsedCookie::ParseTokenValuePairs(const std::string& cookie_line) {
       ++it;
   }
 
-  UMA_HISTOGRAM_BOOLEAN("Cookies.ParsedInvalidControlCharacter",
-                        parsed_invalid_control_char);
-  UMA_HISTOGRAM_BOOLEAN("Cookies.ParsedInvalidToken", parsed_invalid_token);
+  UMA_HISTOGRAM_ENUMERATION("Cookie.ParsedCookieStatus", parsed_cookie_status,
+    PARSED_COOKIE_STATUS_BOTH + 1);
 }
 
 void ParsedCookie::SetupAttributes() {
@@ -474,11 +478,12 @@ bool ParsedCookie::SetBool(size_t* index,
 bool ParsedCookie::SetAttributePair(size_t* index,
                                     const std::string& key,
                                     const std::string& value) {
-  if (!IsValidToken(key) || !IsValidCookieAttributeValue(value)) {
-    UMA_HISTOGRAM_BOOLEAN("Cookies.SetAttributePairInvalidChars", true);
+  bool valid_attribute_pair = IsValidToken(key) &&
+                              IsValidCookieAttributeValue(value);
+  UMA_HISTOGRAM_BOOLEAN("Cookie.SetAttributePairCharsValidity",
+    valid_attribute_pair);
+  if (!valid_attribute_pair)
     return false;
-  }
-  UMA_HISTOGRAM_BOOLEAN("Cookies.SetAttributePairInvalidChars", false);
   if (!IsValid())
     return false;
   if (*index) {

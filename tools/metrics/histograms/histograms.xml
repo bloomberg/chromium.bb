@@ -849,10 +849,52 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Cookie.ParsedCookieStatus" enum="ParsedCookieStatus">
+  <summary>
+    When parsing a cookie, indicates if control characters were present in any
+    of the cookie values and if any of the cookie values were invalid.
+    Specifically, checks that all of the parsed values are valid according to
+    the valid token definition in Section 2.2 of RFC2616 which specifies a token
+    must have no separators (i.e. no characters from the following string,
+    ignoring the starting and ending single quote: '()&lt;&gt;@,;:\&quot;/[]?={}
+    \t') and no control characters.
+  </summary>
+</histogram>
+
 <histogram name="Cookie.ReinstatedCookies" units="seconds">
   <summary>
     The duration in seconds between a cookie getting evicted (due to the number
     of cookies exceeding a domain limit), and subsequently reinstated.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.SetAttributePairCharsValidity" enum="BooleanValid">
+  <summary>
+    Indicates whether a cookie attribute pair was set with both a valid key and
+    a valid attribute value or not. For the key, this implies that it was a
+    valid token as defined in Section 2.2 of RFC2616 which specifies a token
+    must have no separators (i.e. no characters from the following string,
+    ignoring the starting and ending single quote: '()&lt;&gt;@,;:\&quot;/[]?={}
+    \t') and no control characters. For the value, this implies that it
+    contained no control characters and no semicolon.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.SetNameValidity" enum="BooleanValid">
+  <summary>
+    Indicates whether a cookie name was set with a valid token. A valid token is
+    defined in Section 2.2 of RFC2616 which specifies a token must have no
+    separators (i.e. no characters from the following string, ignoring the
+    starting and ending single quote: '()&lt;&gt;@,;:\&quot;/[]?={} \t') and no
+    control characters.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.SetValueCookieValueValidity" enum="BooleanValid">
+  <summary>
+    Indicates whether a cookie value was valid or invalid when there was an
+    attempt to set it, where a valid value is defined in RFC 6265 as ASCII
+    characters excluding controls, whitspace, comma, semicolon, and backslash.
   </summary>
 </histogram>
 
@@ -11720,6 +11762,11 @@ other types of suffix sets.
   <int value="1" label="Used"/>
 </enum>
 
+<enum name="BooleanValid" type="int">
+  <int value="0" label="Invalid"/>
+  <int value="1" label="Valid"/>
+</enum>
+
 <enum name="BooleanWiped" type="int">
   <int value="0" label="Re-enabled"/>
   <int value="1" label="Wiped out"/>
@@ -15323,6 +15370,13 @@ other types of suffix sets.
   <int value="2" label="South">Scrolled from top towards the bottom</int>
   <int value="3" label="West">Scrolled from right towards left</int>
   <int value="4" label="East">Scrolled from left towards right</int>
+</enum>
+
+<enum name="ParsedCookieStatus" type="int">
+  <int value="0" label="All cookie values valid and without control chars"/>
+  <int value="1" label="Cookie contains control chars"/>
+  <int value="2" label="Cookie is invalid"/>
+  <int value="3" label="Cookie contains both control chars and is invalid"/>
 </enum>
 
 <enum name="PepperVideoDecodeError" type="int">
