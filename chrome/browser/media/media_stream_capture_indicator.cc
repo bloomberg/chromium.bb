@@ -13,14 +13,12 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/screen_capture_notification_ui.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -141,9 +139,7 @@ class MediaStreamCaptureIndicator::WebContentsDeviceUsage
   scoped_ptr<content::MediaStreamUI> RegisterMediaStream(
       const content::MediaStreamDevices& devices);
 
-  // Increment ref-counts up based on the type of each device provided. The
-  // return value is the message ID for the balloon body to show, or zero if the
-  // balloon should not be shown.
+  // Increment ref-counts up based on the type of each device provided.
   void AddDevices(const content::MediaStreamDevices& devices,
                   const base::Closure& close_callback);
 
@@ -217,8 +213,6 @@ MediaStreamCaptureIndicator::WebContentsDeviceUsage::RegisterMediaStream(
 void MediaStreamCaptureIndicator::WebContentsDeviceUsage::AddDevices(
     const content::MediaStreamDevices& devices,
     const base::Closure& close_callback) {
-  bool incremented_audio_count = false;
-  bool incremented_video_count = false;
   for (content::MediaStreamDevices::const_iterator it = devices.begin();
        it != devices.end(); ++it) {
     if (it->type == content::MEDIA_TAB_AUDIO_CAPTURE ||
@@ -229,32 +223,16 @@ void MediaStreamCaptureIndicator::WebContentsDeviceUsage::AddDevices(
       stop_screen_capture_callback_ = close_callback;
     } else if (content::IsAudioMediaType(it->type)) {
       ++audio_ref_count_;
-      incremented_audio_count = true;
     } else if (content::IsVideoMediaType(it->type)) {
       ++video_ref_count_;
-      incremented_video_count = true;
     } else {
       NOTIMPLEMENTED();
     }
   }
 
-  int balloon_body_message_id = 0;
-
-  if (incremented_audio_count && incremented_video_count) {
-    balloon_body_message_id =
-        IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_AUDIO_AND_VIDEO;
-  } else if (incremented_audio_count) {
-    balloon_body_message_id =
-        IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_AUDIO_ONLY;
-  } else if (incremented_video_count) {
-    balloon_body_message_id =
-        IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_VIDEO_ONLY;
-  }
-
   if (web_contents())
     web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
-  if (balloon_body_message_id && web_contents())
-    indicator_->ShowBalloon(web_contents(), balloon_body_message_id);
+
   indicator_->UpdateNotificationUserInterface();
 }
 
@@ -288,9 +266,7 @@ void MediaStreamCaptureIndicator::WebContentsDeviceUsage::RemoveDevices(
 MediaStreamCaptureIndicator::MediaStreamCaptureIndicator()
     : status_icon_(NULL),
       mic_image_(NULL),
-      camera_image_(NULL),
-      balloon_image_(NULL),
-      should_show_balloon_(false) {
+      camera_image_(NULL) {
 }
 
 MediaStreamCaptureIndicator::~MediaStreamCaptureIndicator() {
@@ -402,60 +378,12 @@ void MediaStreamCaptureIndicator::EnsureStatusTrayIconResources() {
     camera_image_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_INFOBAR_MEDIA_STREAM_CAMERA);
   }
-  if (!balloon_image_) {
-    balloon_image_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IDR_PRODUCT_LOGO_32);
-  }
   DCHECK(mic_image_);
   DCHECK(camera_image_);
-  DCHECK(balloon_image_);
-}
-
-void MediaStreamCaptureIndicator::ShowBalloon(
-    WebContents* web_contents, int balloon_body_message_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_NE(0, balloon_body_message_id);
-
-  // Only show the balloon for extensions.
-  const extensions::Extension* const extension = GetExtension(web_contents);
-  if (!extension) {
-    DVLOG(1) << "Balloon is shown only for extensions";
-    return;
-  }
-
-  string16 message =
-      l10n_util::GetStringFUTF16(balloon_body_message_id,
-                                 UTF8ToUTF16(extension->name()));
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-
-  should_show_balloon_ = true;
-  extensions::ImageLoader::Get(profile)->LoadImageAsync(
-      extension,
-      extensions::IconsInfo::GetIconResource(
-          extension, 32, ExtensionIconSet::MATCH_BIGGER),
-      gfx::Size(32, 32),
-      base::Bind(&MediaStreamCaptureIndicator::OnImageLoaded,
-                 this, message));
-}
-
-void MediaStreamCaptureIndicator::OnImageLoaded(
-    const string16& message,
-    const gfx::Image& image) {
-  if (!should_show_balloon_ || !status_icon_)
-    return;
-
-  const gfx::ImageSkia* image_skia = !image.IsEmpty() ? image.ToImageSkia() :
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_APP_DEFAULT_ICON);
-  status_icon_->DisplayBalloon(*image_skia, string16(), message);
 }
 
 void MediaStreamCaptureIndicator::MaybeDestroyStatusTrayIcon() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Make sure images that finish loading don't cause a balloon to be shown.
-  should_show_balloon_ = false;
 
   if (!status_icon_)
     return;

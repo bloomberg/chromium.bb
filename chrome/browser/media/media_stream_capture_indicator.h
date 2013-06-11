@@ -71,14 +71,6 @@ class MediaStreamCaptureIndicator
   // when WebContents is being destroyed.
   void UnregisterWebContents(content::WebContents* web_contents);
 
-  // Triggers a balloon in the corner telling capture devices are being used.
-  // Called by CaptureDevicesOpened().
-  void ShowBalloon(content::WebContents* web_contents,
-                   int balloon_body_message_id);
-
-  // ImageLoader callback.
-  void OnImageLoaded(const string16& message, const gfx::Image& image);
-
   // Updates the status tray menu and the screen capture notification. Called by
   // WebContentsDeviceUsage.
   void UpdateNotificationUserInterface();
@@ -100,7 +92,6 @@ class MediaStreamCaptureIndicator
   // These images are owned by ResourceBundle and need not be destroyed.
   gfx::ImageSkia* mic_image_;
   gfx::ImageSkia* camera_image_;
-  gfx::ImageSkia* balloon_image_;
 
   // A map that contains the usage counts of the opened capture devices for each
   // WebContents instance.
@@ -112,8 +103,6 @@ class MediaStreamCaptureIndicator
   // updated.
   typedef std::vector<content::WebContents*> CommandTargets;
   CommandTargets command_targets_;
-
-  bool should_show_balloon_;
 
   scoped_ptr<ScreenCaptureNotificationUI> screen_capture_notification_;
 };

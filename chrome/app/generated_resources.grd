@@ -14896,15 +14896,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_VIDEO_ONLY" desc="Tool tip for the capture status tray icon when camera is being used">
       <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is using your camera.
     </message>
-    <message name="IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_AUDIO_AND_VIDEO" desc="Contents of the balloon shown by the tray notification icon every time camera and microphone are used">
-      <ph name="TITLE">$1<ex>html5rocks.com</ex></ph> is using your camera and microphone.
-    </message>
-    <message name="IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_AUDIO_ONLY" desc="Contents of the balloon shown by the tray notification icon every time microphone is used">
-      <ph name="TITLE">$1<ex>html5rocks.com</ex></ph> is using your microphone.
-    </message>
-    <message name="IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_VIDEO_ONLY" desc="Contents of the balloon shown by the tray notification icon every time camera is used">
-      <ph name="TITLE">$1<ex>html5rocks.com</ex></ph> is using your camera.
-    </message>
 
     <!-- Quota messages -->
     <if expr="is_android">
