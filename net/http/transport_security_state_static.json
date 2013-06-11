@@ -607,6 +607,7 @@
     { "name": "carezone.com", "mode": "force-https" },
     { "name": "conformal.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "cyphertite.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "logotype.se", "include_subdomains": true, "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
