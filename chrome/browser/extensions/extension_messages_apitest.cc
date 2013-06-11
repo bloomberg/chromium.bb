@@ -208,8 +208,15 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
   }
 };
 
+// Flaky on Windows. http://crbug.com/248413
+#if defined(OS_WIN)
+#define MAYBE_ExternallyConnectableMessaging \
+        DISABLED_ExternallyConnectableMessaging
+#else
+#define MAYBE_ExternallyConnectableMessaging ExternallyConnectableMessaging
+#endif
 IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
-                       ExternallyConnectableMessaging) {
+                       MAYBE_ExternallyConnectableMessaging) {
   const char kExtensionDir[] = "messaging/externally_connectable";
 
   // The extension allows connections from chromium.org but not google.com.
