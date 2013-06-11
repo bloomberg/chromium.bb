@@ -119,7 +119,7 @@ class AutofillExternalDelegateUnitTest
     field.should_autocomplete = true;
     const gfx::RectF element_bounds;
 
-    external_delegate_->OnQuery(query_id, form, field, element_bounds, false);
+    external_delegate_->OnQuery(query_id, form, field, element_bounds, true);
   }
 
   MockAutofillManagerDelegate manager_delegate_;
@@ -216,6 +216,33 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateDataList) {
 
   autofill_item = std::vector<base::string16>();
   autofill_ids = std::vector<int>();
+  external_delegate_->OnSuggestionsReturned(kQueryId,
+                                            autofill_item,
+                                            autofill_item,
+                                            autofill_item,
+                                            autofill_ids);
+}
+
+// Test that the Autofill popup is able to display warnings explaining why
+// Autofill is disabled for a website.
+// Regression test for http://crbug.com/247880
+TEST_F(AutofillExternalDelegateUnitTest, AutofillWarnings) {
+  IssueOnQuery(kQueryId);
+
+  // The enums must be cast to ints to prevent compile errors on linux_rel.
+  EXPECT_CALL(manager_delegate_,
+              ShowAutofillPopup(
+                  _, _, _, _,
+                  testing::ElementsAre(
+                      static_cast<int>(
+                          WebAutofillClient::MenuItemIDWarningMessage)),
+                  _));
+
+  // This should call ShowAutofillPopup.
+  std::vector<base::string16> autofill_item;
+  autofill_item.push_back(base::string16());
+  std::vector<int> autofill_ids;
+  autofill_ids.push_back(WebAutofillClient::MenuItemIDWarningMessage);
   external_delegate_->OnSuggestionsReturned(kQueryId,
                                             autofill_item,
                                             autofill_item,

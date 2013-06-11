@@ -91,13 +91,14 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   std::vector<base::string16> icons(autofill_icons);
   std::vector<int> ids(autofill_unique_ids);
 
+  // Add or hide warnings as appropriate.
+  ApplyAutofillWarnings(&values, &labels, &icons, &ids);
+
   // Add a separator to go between the values and menu items.
   values.push_back(base::string16());
   labels.push_back(base::string16());
   icons.push_back(base::string16());
   ids.push_back(WebAutofillClient::MenuItemIDSeparator);
-
-  ApplyAutofillWarnings(&values, &labels, &icons, &ids);
 
   // Only include "Autofill Options" special menu item if we have Autofill
   // suggestions.
@@ -113,10 +114,8 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     ApplyAutofillOptions(&values, &labels, &icons, &ids);
 
   // Remove the separator if it is the last element.
-  // It is possible for ids to be empty at this point if the vectors were
-  // cleared by ApplyAutofillWarnings (which can occur if we shouldn't
-  // autocomplete or display warnings for this field).
-  if (!ids.empty() && ids.back() == WebAutofillClient::MenuItemIDSeparator) {
+  DCHECK_GT(ids.size(), 0U);
+  if (ids.back() == WebAutofillClient::MenuItemIDSeparator) {
     values.pop_back();
     labels.pop_back();
     icons.pop_back();
