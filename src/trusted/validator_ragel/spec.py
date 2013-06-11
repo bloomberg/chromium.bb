@@ -135,9 +135,16 @@ def ValidateSuperinstruction32(superinstruction):
     if len(superinstruction) != 2:
       raise DoNotMatchError(superinstruction)
 
-    register_and = (
-        and_for_call_jmp.match(superinstruction[0].disasm).group('register'))
-    register_call_jmp = call_jmp.match(dangerous_instruction).group('register')
+    m = and_for_call_jmp.match(superinstruction[0].disasm)
+    if m is None:
+      raise DoNotMatchError(superinstruction)
+    register_and = m.group('register')
+
+    m = call_jmp.match(dangerous_instruction)
+    if m is None:
+      raise DoNotMatchError(superinstruction)
+    register_call_jmp = m.group('register')
+
     if register_and == register_call_jmp:
       return
 
@@ -183,12 +190,22 @@ def ValidateSuperinstruction64(superinstruction):
 
     if len(superinstruction) != 3:
       raise DoNotMatchError(superinstruction)
-    register_and = (
-        and_for_callq_jmpq.match(superinstruction[0].disasm).group('register'))
-    register_add = (
-        add_for_callq_jmpq.match(superinstruction[1].disasm).group('register'))
-    register_callq_jmpq = (
-        callq_jmpq.match(dangerous_instruction).group('register'))
+
+    m = and_for_callq_jmpq.match(superinstruction[0].disasm)
+    if m is None:
+      raise DoNotMatchError(superinstruction)
+    register_and = m.group('register')
+
+    m = add_for_callq_jmpq.match(superinstruction[1].disasm)
+    if m is None:
+      raise DoNotMatchError(superinstruction)
+    register_add = m.group('register')
+
+    m = callq_jmpq.match(dangerous_instruction)
+    if m is None:
+      raise DoNotMatchError(superinstruction)
+    register_callq_jmpq = m.group('register')
+
     # Double-check that registers are 32-bit and convert them to 64-bit so
     # they can be compared
     if register_and[1] == 'e':
