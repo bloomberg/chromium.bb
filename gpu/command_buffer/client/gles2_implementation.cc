@@ -3724,18 +3724,16 @@ GLuint GLES2Implementation::CreateImageCHROMIUM(
 }
 
 void GLES2Implementation::DestroyImageCHROMIUMHelper(GLuint image_id) {
-  GpuMemoryBuffer* gpu_buffer =
-       gpu_memory_buffer_tracker_->GetBuffer(image_id);
-   if (!gpu_buffer) {
-     SetGLError(GL_INVALID_OPERATION, "glDestroyImageCHROMIUM",
-                "invalid image");
-     return;
-   }
+  GpuMemoryBuffer* gpu_buffer = gpu_memory_buffer_tracker_->GetBuffer(image_id);
+  if (!gpu_buffer) {
+    SetGLError(GL_INVALID_OPERATION, "glDestroyImageCHROMIUM", "invalid image");
+    return;
+  }
 
-   // Flush the command stream to make sure all pending commands
-   // that may refer to the image_id are executed on the service side.
-   helper_->CommandBufferHelper::Flush();
-   gpu_memory_buffer_tracker_->RemoveBuffer(image_id);
+  // Flush the command stream to make sure all pending commands
+  // that may refer to the image_id are executed on the service side.
+  helper_->CommandBufferHelper::Flush();
+  gpu_memory_buffer_tracker_->RemoveBuffer(image_id);
 }
 
 void GLES2Implementation::DestroyImageCHROMIUM(GLuint image_id) {
@@ -3747,18 +3745,17 @@ void GLES2Implementation::DestroyImageCHROMIUM(GLuint image_id) {
 }
 
 void GLES2Implementation::UnmapImageCHROMIUMHelper(GLuint image_id) {
-   GpuMemoryBuffer* gpu_buffer =
-       gpu_memory_buffer_tracker_->GetBuffer(image_id);
-   if (!gpu_buffer) {
-     SetGLError(GL_INVALID_OPERATION, "glUnmapImageCHROMIUM", "invalid image");
-     return;
-   }
+  GpuMemoryBuffer* gpu_buffer = gpu_memory_buffer_tracker_->GetBuffer(image_id);
+  if (!gpu_buffer) {
+    SetGLError(GL_INVALID_OPERATION, "glUnmapImageCHROMIUM", "invalid image");
+    return;
+  }
 
-   if (!gpu_buffer->IsMapped()) {
-     SetGLError(GL_INVALID_OPERATION, "glUnmapImageCHROMIUM", "not mapped");
-     return;
-   }
-   gpu_buffer->Unmap();
+  if (!gpu_buffer->IsMapped()) {
+    SetGLError(GL_INVALID_OPERATION, "glUnmapImageCHROMIUM", "not mapped");
+    return;
+  }
+  gpu_buffer->Unmap();
 }
 
 void GLES2Implementation::UnmapImageCHROMIUM(GLuint image_id) {
@@ -3772,37 +3769,36 @@ void GLES2Implementation::UnmapImageCHROMIUM(GLuint image_id) {
 
 void* GLES2Implementation::MapImageCHROMIUMHelper(GLuint image_id,
                                                   GLenum access) {
-   GpuMemoryBuffer* gpu_buffer =
-       gpu_memory_buffer_tracker_->GetBuffer(image_id);
-   if (!gpu_buffer) {
-     SetGLError(GL_INVALID_OPERATION, "glMapImageCHROMIUM", "invalid image");
-     return NULL;
-   }
-   GpuMemoryBuffer::AccessMode mode;
-   switch(access) {
-     case GL_WRITE_ONLY:
-       mode = GpuMemoryBuffer::WRITE_ONLY;
-       break;
-     case GL_READ_ONLY:
-       mode = GpuMemoryBuffer::READ_ONLY;
-       break;
-     case GL_READ_WRITE:
-       mode = GpuMemoryBuffer::READ_WRITE;
-       break;
-     default:
-       SetGLError(GL_INVALID_ENUM, "glMapImageCHROMIUM",
-                  "invalid GPU access mode");
-       return NULL;
-   }
+  GpuMemoryBuffer* gpu_buffer = gpu_memory_buffer_tracker_->GetBuffer(image_id);
+  if (!gpu_buffer) {
+    SetGLError(GL_INVALID_OPERATION, "glMapImageCHROMIUM", "invalid image");
+    return NULL;
+  }
+  GpuMemoryBuffer::AccessMode mode;
+  switch(access) {
+    case GL_WRITE_ONLY:
+      mode = GpuMemoryBuffer::WRITE_ONLY;
+      break;
+    case GL_READ_ONLY:
+      mode = GpuMemoryBuffer::READ_ONLY;
+      break;
+    case GL_READ_WRITE:
+      mode = GpuMemoryBuffer::READ_WRITE;
+      break;
+    default:
+      SetGLError(GL_INVALID_ENUM, "glMapImageCHROMIUM",
+                 "invalid GPU access mode");
+      return NULL;
+  }
 
-   if (gpu_buffer->IsMapped()) {
-     SetGLError(GL_INVALID_OPERATION, "glMapImageCHROMIUM", "already mapped");
-     return NULL;
-   }
+  if (gpu_buffer->IsMapped()) {
+    SetGLError(GL_INVALID_OPERATION, "glMapImageCHROMIUM", "already mapped");
+    return NULL;
+  }
 
-   void* mapped_buffer = NULL;
-   gpu_buffer->Map(mode, &mapped_buffer);
-   return mapped_buffer;
+  void* mapped_buffer = NULL;
+  gpu_buffer->Map(mode, &mapped_buffer);
+  return mapped_buffer;
 }
 
 void* GLES2Implementation::MapImageCHROMIUM(
