@@ -5,7 +5,7 @@
 #include "base/file_version_info.h"
 #include "base/file_version_info_win.h"
 #include "base/files/file_path.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome_frame/navigation_constraints.h"

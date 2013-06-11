@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/path_service.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/win/scoped_handle.h"
 #include "chrome_frame/test/test_server.h"
 #include "net/cookies/cookie_monster.h"

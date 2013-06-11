@@ -11,8 +11,8 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/string_util.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/test/test_process_killer_win.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"

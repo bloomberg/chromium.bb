@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "chrome_frame/chrome_tab.h"

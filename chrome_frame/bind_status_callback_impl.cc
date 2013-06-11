@@ -5,8 +5,8 @@
 #include "chrome_frame/bind_status_callback_impl.h"
 
 #include "base/logging.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 
 BSCBImpl::BSCBImpl() {

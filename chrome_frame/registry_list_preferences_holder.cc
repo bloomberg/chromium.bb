@@ -4,7 +4,7 @@
 
 #include "chrome_frame/registry_list_preferences_holder.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/win/registry.h"
 
 RegistryListPreferencesHolder::RegistryListPreferencesHolder() : valid_(false) {

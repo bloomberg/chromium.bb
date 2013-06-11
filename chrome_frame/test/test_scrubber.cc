@@ -16,7 +16,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/process_util.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_process_killer_win.h"
 #include "base/win/registry.h"

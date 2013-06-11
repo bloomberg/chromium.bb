@@ -9,7 +9,7 @@
 #include <atlwin.h>
 
 #include "base/memory/ref_counted.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "resource.h"
 #include "grit/chrome_frame_dialogs.h"
 

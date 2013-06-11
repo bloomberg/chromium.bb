@@ -13,7 +13,7 @@
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/shared_memory.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/version.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/installer/test/alternate_version_generator.h"

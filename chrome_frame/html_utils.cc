@@ -7,9 +7,9 @@
 #include <atlbase.h>
 #include <urlmon.h>
 
-#include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome_frame/utils.h"
 #include "net/base/net_util.h"

@@ -13,7 +13,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/time.h"
 #include "base/win/registry.h"
 #include "chrome_frame/chrome_tab.h"

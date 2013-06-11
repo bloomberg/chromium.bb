@@ -10,15 +10,15 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/string_number_conversions.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome_frame/infobars/infobar_content.h"
 #include "chrome_frame/infobars/internal/displaced_window_manager.h"
 #include "chrome_frame/infobars/internal/host_window_manager.h"
 #include "chrome_frame/infobars/internal/infobar_window.h"
 #include "chrome_frame/infobars/internal/subclassing_window_with_delegate.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
