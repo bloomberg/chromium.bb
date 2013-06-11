@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/process_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
