@@ -322,6 +322,55 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="AsyncDNS.ServerCount">
+  <summary>
+    Count of servers in DnsConfig. Recorded on every new DnsSession, which is
+    created on DNS change.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.ServerFailureIndex">
+  <summary>
+    Index in DnsConfig of the failing server, recorded at the time of failure.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.ServerFailuresAfterNetworkChange">
+  <summary>
+    Count of server failures after network change before first success in the
+    DnsSession. Recorded at the time of first success.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.ServerFailuresAfterSuccess">
+  <summary>
+    Count of server failures after success until the end of the session. Server
+    has reported success at some point during the session. Recorded at the end
+    of the DnsSession.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.ServerFailuresBeforeSuccess">
+  <summary>
+    Count of server failures before success. This is NOT the first success in
+    the DnsSession. Recorded at the time of success.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.ServerFailuresWithoutSuccess">
+  <summary>
+    Count of server failures without success until the end of the session.
+    Server has never reported success during the DnsSession. Recorded at the end
+    of the DnsSession.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.ServerIsGood" units="BooleanSuccess">
+  <summary>
+    The current server is &quot;good&quot; and does not have to be skipped.
+  </summary>
+</histogram>
+
 <histogram name="AsyncDNS.SortFailure" units="milliseconds">
   <summary>
     Duration of time taken in failing calls to AddressSorter in dual-stack
