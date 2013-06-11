@@ -328,7 +328,6 @@ class FileCacheTestOnUIThread : public testing::Test {
 
   void TestMarkAsMounted(
       const std::string& resource_id,
-      const std::string& md5,
       FileError expected_error,
       int expected_cache_state,
       FileCache::CacheSubDirectoryType expected_sub_dir_type) {
@@ -336,10 +335,14 @@ class FileCacheTestOnUIThread : public testing::Test {
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
 
+    FileCacheEntry entry;
+    EXPECT_TRUE(GetCacheEntryFromOriginThread(resource_id, std::string(),
+                                              &entry));
+
     FileError error = FILE_ERROR_OK;
     base::FilePath cache_file_path;
     cache_->MarkAsMountedOnUIThread(
-        resource_id, md5,
+        resource_id,
         google_apis::test_util::CreateCopyResultCallback(
             &error, &cache_file_path));
     google_apis::test_util::RunBlockingPoolTask();
@@ -347,7 +350,7 @@ class FileCacheTestOnUIThread : public testing::Test {
     EXPECT_TRUE(file_util::PathExists(cache_file_path));
     EXPECT_EQ(cache_file_path,
               cache_->GetCacheFilePath(resource_id,
-                                       md5,
+                                       entry.md5(),
                                        expected_sub_dir_type_,
                                        FileCache::CACHED_FILE_MOUNTED));
   }
@@ -1039,7 +1042,6 @@ TEST_F(FileCacheTestOnUIThread, MountUnmount) {
 
   // Mark the file mounted.
   TestMarkAsMounted(resource_id,
-                    md5,
                     FILE_ERROR_OK,
                     test_util::TEST_CACHE_STATE_PRESENT |
                     test_util::TEST_CACHE_STATE_MOUNTED |

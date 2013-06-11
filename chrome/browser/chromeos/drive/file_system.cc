@@ -781,9 +781,7 @@ void FileSystem::MarkCacheFileAsMountedAfterGetResourceEntry(
   }
 
   DCHECK(entry);
-  cache_->MarkAsMountedOnUIThread(entry->resource_id(),
-                                  entry->file_specific_info().md5(),
-                                  callback);
+  cache_->MarkAsMountedOnUIThread(entry->resource_id(), callback);
 }
 
 void FileSystem::MarkCacheFileAsUnmounted(

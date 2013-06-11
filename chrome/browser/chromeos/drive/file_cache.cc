@@ -638,7 +638,6 @@ FileError FileCache::Unpin(const std::string& resource_id,
 
 void FileCache::MarkAsMountedOnUIThread(
     const std::string& resource_id,
-    const std::string& md5,
     const GetFileFromCacheCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -648,7 +647,7 @@ void FileCache::MarkAsMountedOnUIThread(
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&FileCache::MarkAsMounted,
-                 base::Unretained(this), resource_id, md5, cache_file_path),
+                 base::Unretained(this), resource_id, cache_file_path),
       base::Bind(RunGetFileFromCacheCallback,
                  callback, base::Owned(cache_file_path)));
 }
@@ -1027,14 +1026,13 @@ FileError FileCache::StoreInternal(const std::string& resource_id,
 }
 
 FileError FileCache::MarkAsMounted(const std::string& resource_id,
-                                   const std::string& md5,
                                    base::FilePath* cache_file_path) {
   AssertOnSequencedWorkerPool();
   DCHECK(cache_file_path);
 
   // Get cache entry associated with the resource_id and md5
   FileCacheEntry cache_entry;
-  if (!GetCacheEntry(resource_id, md5, &cache_entry))
+  if (!GetCacheEntry(resource_id, std::string(), &cache_entry))
     return FILE_ERROR_NOT_FOUND;
 
   if (cache_entry.is_mounted())
@@ -1044,12 +1042,13 @@ FileError FileCache::MarkAsMounted(const std::string& resource_id,
   CacheSubDirectoryType unmounted_subdir =
       cache_entry.is_pinned() ? CACHE_TYPE_PERSISTENT : CACHE_TYPE_TMP;
   base::FilePath unmounted_path = GetCacheFilePath(
-      resource_id, md5, unmounted_subdir, CACHED_FILE_FROM_SERVER);
+      resource_id, cache_entry.md5(), unmounted_subdir,
+      CACHED_FILE_FROM_SERVER);
 
   // Get the subdir type and path for the mounted state.
   CacheSubDirectoryType mounted_subdir = CACHE_TYPE_PERSISTENT;
   base::FilePath mounted_path = GetCacheFilePath(
-      resource_id, md5, mounted_subdir, CACHED_FILE_MOUNTED);
+      resource_id, cache_entry.md5(), mounted_subdir, CACHED_FILE_MOUNTED);
 
   // Move cache file.
   if (!MoveFile(unmounted_path, mounted_path))
@@ -1064,7 +1063,6 @@ FileError FileCache::MarkAsMounted(const std::string& resource_id,
       file_util::FILE_PERMISSION_READ_BY_OTHERS);
 
   // Now that cache operation is complete, update metadata.
-  cache_entry.set_md5(md5);
   cache_entry.set_is_mounted(true);
   cache_entry.set_is_persistent(true);
   metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
