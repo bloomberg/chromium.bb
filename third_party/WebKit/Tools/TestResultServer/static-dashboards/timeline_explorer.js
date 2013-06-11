@@ -182,14 +182,14 @@ function updateTimelineForBuilder()
     inspectorNode.style.visibility = 'visible';
 
     if (g_currentBuildIndex != -1)
-        selectBuild(results, builder, g_dygraph, g_currentBuildIndex);
+        selectBuild(resultsForBuilder, builder, g_dygraph, g_currentBuildIndex);
 }
 
 function selectBuild(resultsForBuilder, builder, dygraph, index)
 {
     g_currentBuildIndex = index;
-    updateBuildIndicator(results, dygraph);
-    updateBuildInspector(results, builder, dygraph, index);
+    updateBuildIndicator(resultsForBuilder, dygraph);
+    updateBuildInspector(resultsForBuilder, builder, dygraph, index);
     g_history.setQueryParameter('buildTimestamp', resultsForBuilder[results.TIMESTAMPS][index] * 1000);
 }
 
