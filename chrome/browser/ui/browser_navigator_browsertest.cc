@@ -1196,7 +1196,14 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                 GetActiveWebContents()->GetURL()));
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, CloseSingletonTab) {
+// See crbug.com/248584.
+#if defined(OS_WIN)
+#define MAYBE_CloseSingletonTab DISABLED_CloseSingletonTab
+#else
+#define MAYBE_CloseSingletonTab CloseSingletonTab
+#endif
+
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_CloseSingletonTab) {
   for (int i = 0; i < 2; ++i) {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
