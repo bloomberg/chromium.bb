@@ -5,7 +5,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
 #include "chrome/browser/password_manager/password_form_data.h"

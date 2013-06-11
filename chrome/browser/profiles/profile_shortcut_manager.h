@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 
 class ProfileManager;

@@ -13,7 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "crypto/rsa_private_key.h"

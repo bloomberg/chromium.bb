@@ -5,7 +5,7 @@
 #include "chrome/browser/profiles/profile_info_cache_unittest.h"
 
 #include "base/prefs/testing_pref_service.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_info_cache.h"

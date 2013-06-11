@@ -12,7 +12,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"

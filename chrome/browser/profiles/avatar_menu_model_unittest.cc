@@ -5,7 +5,7 @@
 #include "chrome/browser/profiles/avatar_menu_model.h"
 
 #include "base/metrics/field_trial.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"

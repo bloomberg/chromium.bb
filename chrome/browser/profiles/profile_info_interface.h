@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_INFO_INTERFACE_H_
 
 #include "base/files/file_path.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace gfx {
 class Image;

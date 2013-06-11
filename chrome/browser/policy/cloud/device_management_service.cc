@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/basic_http_user_agent_settings.h"

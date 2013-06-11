@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/metrics/field_trial.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/common/metrics/entropy_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PLUGINS_PLUGIN_INSTALLER_H_
 
 #include "base/observer_list.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/version.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "content/public/browser/download_item.h"

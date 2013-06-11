@@ -8,7 +8,7 @@
 #include <utility>
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
 #include "sql/statement.h"
 

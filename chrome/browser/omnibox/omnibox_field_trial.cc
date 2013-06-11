@@ -7,9 +7,9 @@
 #include <string>
 
 #include "base/metrics/field_trial.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/common/metrics/metrics_util.h"
 #include "chrome/common/metrics/variations/variation_ids.h"
 #include "chrome/common/metrics/variations/variations_util.h"

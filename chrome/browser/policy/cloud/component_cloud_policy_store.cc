@@ -7,7 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/sha1.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/cloud_policy_validator.h"

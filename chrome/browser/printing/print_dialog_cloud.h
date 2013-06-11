@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/gfx/native_widget_types.h"
 
 class CommandLine;

@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_table.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"

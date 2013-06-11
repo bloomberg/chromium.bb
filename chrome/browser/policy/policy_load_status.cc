@@ -5,7 +5,7 @@
 #include "chrome/browser/policy/policy_load_status.h"
 
 #include "base/metrics/histogram.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/policy/policy_types.h"
 
 namespace policy {

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/public/browser/resource_request_info.h"
 #include "googleurl/src/url_canon.h"
 #include "googleurl/src/url_parse.h"

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_POLICY_CLOUD_MESSAGE_UTIL_H_
 #define CHROME_BROWSER_POLICY_CLOUD_MESSAGE_UTIL_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/cloud_policy_validator.h"

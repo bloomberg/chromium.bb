@@ -7,7 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"

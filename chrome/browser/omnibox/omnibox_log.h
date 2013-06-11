@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/time.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"

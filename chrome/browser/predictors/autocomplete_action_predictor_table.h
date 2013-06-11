@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/predictors/predictor_table_base.h"
 #include "googleurl/src/gurl.h"
 

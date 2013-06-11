@@ -4,7 +4,7 @@
 
 #include "chrome/browser/policy/cloud/mock_device_management_service.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "net/base/net_errors.h"
 
 using testing::Action;

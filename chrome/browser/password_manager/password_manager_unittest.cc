@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/mock_password_store.h"
 #include "chrome/browser/password_manager/password_manager.h"

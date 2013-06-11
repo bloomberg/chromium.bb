@@ -10,7 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/pickle.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/public/common/password_form.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
