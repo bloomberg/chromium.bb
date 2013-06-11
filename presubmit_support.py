@@ -317,11 +317,11 @@ class InputApi(object):
     self.Command = CommandData
 
     # Replace <hash_map> and <hash_set> as headers that need to be included
-    # with "base/hash_tables.h" instead.
+    # with "base/containers/hash_tables.h" instead.
     # Access to a protected member _XX of a client class
     # pylint: disable=W0212
     self.cpplint._re_pattern_templates = [
-      (a, b, 'base/hash_tables.h')
+      (a, b, 'base/containers/hash_tables.h')
         if header in ('<hash_map>', '<hash_set>') else (a, b, header)
       for (a, b, header) in cpplint._re_pattern_templates
     ]
