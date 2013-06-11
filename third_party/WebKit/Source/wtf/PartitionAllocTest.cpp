@@ -104,9 +104,9 @@ TEST(WTF_PartitionAlloc, Basic)
     WTF::PartitionBucket* bucket = &root.buckets[bucketIdx];
 
     EXPECT_EQ(0, bucket->freePages);
-    EXPECT_EQ(&bucket->seedPage, bucket->currPage);
-    EXPECT_EQ(&bucket->seedPage, bucket->currPage->next);
-    EXPECT_EQ(&bucket->seedPage, bucket->currPage->prev);
+    EXPECT_EQ(&bucket->root->seedPage, bucket->currPage);
+    EXPECT_EQ(&bucket->root->seedPage, bucket->currPage->next);
+    EXPECT_EQ(&bucket->root->seedPage, bucket->currPage->prev);
 
     void* ptr = partitionAlloc(&root, kTestAllocSize);
     EXPECT_TRUE(ptr);
@@ -165,6 +165,9 @@ TEST(WTF_PartitionAlloc, MultiPages)
     WTF::PartitionPageHeader* page = GetFullPage();
     FreeFullPage(page);
     EXPECT_EQ(0, bucket->freePages);
+    EXPECT_EQ(page, bucket->currPage);
+    EXPECT_EQ(page, page->next);
+    EXPECT_EQ(page, page->prev);
 
     page = GetFullPage();
     WTF::PartitionPageHeader* page2 = GetFullPage();
@@ -201,15 +204,15 @@ TEST(WTF_PartitionAlloc, PageTransitions)
     WTF::PartitionPageHeader* page1 = GetFullPage();
     WTF::PartitionPageHeader* page2 = GetFullPage();
     EXPECT_EQ(page2, bucket->currPage);
-    EXPECT_EQ(page1, bucket->seedPage.next);
+    EXPECT_EQ(page1, page2->next);
+    EXPECT_EQ(page1, page2->prev);
     // Allocating another page at this point should cause us to scan over page1
     // (which is both full and NOT our current page), and evict it from the
     // freelist. Older code had a O(n^2) condition due to failure to do this.
     WTF::PartitionPageHeader* page3 = GetFullPage();
     EXPECT_EQ(page3, bucket->currPage);
-    EXPECT_EQ(page2, bucket->seedPage.next);
-    EXPECT_EQ(page3, bucket->seedPage.next->next);
-    EXPECT_EQ(&bucket->seedPage, bucket->seedPage.next->next->next);
+    EXPECT_EQ(page2, page3->next);
+    EXPECT_EQ(page3, page2->next);
 
     // Work out a pointer into page2 and free it.
     char* ptr = reinterpret_cast<char*>(page2) + sizeof(WTF::PartitionPageHeader);

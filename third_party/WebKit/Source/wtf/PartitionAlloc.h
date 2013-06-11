@@ -122,20 +122,21 @@ struct PartitionFreepagelistEntry {
 struct PartitionBucket {
     PartitionRoot* root;
     PartitionPageHeader* currPage;
-    PartitionPageHeader seedPage;
     PartitionFreepagelistEntry* freePages;
     size_t numFullPages;
 };
 
 struct PartitionRoot {
-    char* pageBase;
+    PartitionPageHeader seedPage;
+    PartitionBucket seedBucket;
     PartitionBucket buckets[kNumBuckets];
+    char* pageBase;
 };
 
 WTF_EXPORT void partitionAllocInit(PartitionRoot*);
 WTF_EXPORT void partitionAllocShutdown(PartitionRoot*);
 
-WTF_EXPORT NEVER_INLINE void* partitionAllocSlowPath(PartitionPageHeader*);
+WTF_EXPORT NEVER_INLINE void* partitionAllocSlowPath(PartitionBucket*);
 WTF_EXPORT NEVER_INLINE void partitionFreeSlowPath(PartitionPageHeader*);
 
 ALWAYS_INLINE PartitionFreelistEntry* partitionFreelistMask(PartitionFreelistEntry* ptr)
@@ -171,7 +172,7 @@ ALWAYS_INLINE void* partitionBucketAlloc(PartitionBucket* bucket)
         page->numAllocatedSlots++;
         return ret;
     }
-    return partitionAllocSlowPath(page);
+    return partitionAllocSlowPath(bucket);
 }
 
 ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
