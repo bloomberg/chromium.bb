@@ -60,6 +60,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     cl->AppendSwitch(switches::kEnableWebViewSynchronousAPIs);
   } else {
     cl->AppendSwitch(switches::kEnableBeginFrameScheduling);
+    if (!cl->HasSwitch("disable-map-image"))
+      cl->AppendSwitch(cc::switches::kUseMapImage);
   }
 
   // WebView uses the existing Android View edge effect for overscroll glow.
