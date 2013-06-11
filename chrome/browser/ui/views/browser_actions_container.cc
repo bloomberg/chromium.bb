@@ -100,6 +100,8 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
 }
 
 BrowserActionsContainer::~BrowserActionsContainer() {
+  if (overflow_menu_)
+    overflow_menu_->set_observer(NULL);
   if (model_)
     model_->RemoveObserver(this);
   StopShowFolderDropMenuTimer();
