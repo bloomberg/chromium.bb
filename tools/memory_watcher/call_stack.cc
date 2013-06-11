@@ -7,7 +7,7 @@
 #include <shlwapi.h>
 #include <tlhelp32.h>
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "tools/memory_watcher/memory_hook.h"
 
 // Typedefs for explicit dynamic linking with functions exported from

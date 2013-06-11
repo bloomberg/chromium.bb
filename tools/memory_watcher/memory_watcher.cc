@@ -11,7 +11,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/stats_counters.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "tools/memory_watcher/call_stack.h"

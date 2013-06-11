@@ -11,8 +11,8 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/string16.h"
-#include "base/string_util.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "ui/base/win/atl_module.h"
 #include "win8/test/open_with_dialog_controller.h"
 

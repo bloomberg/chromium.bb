@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/zlib/google/zip.h"

@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <stdio.h>
 #include "base/format_macros.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/time.h"
 #include "leveldb/env.h"
 

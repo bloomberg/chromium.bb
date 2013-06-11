@@ -14,8 +14,8 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/string_util.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 
 namespace {
 

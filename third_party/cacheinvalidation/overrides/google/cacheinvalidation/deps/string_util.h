@@ -5,8 +5,8 @@
 #ifndef GOOGLE_CACHEINVALIDATION_DEPS_STRING_UTIL_H_
 #define GOOGLE_CACHEINVALIDATION_DEPS_STRING_UTIL_H_
 
-#include "base/string_number_conversions.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 
 namespace invalidation {
 

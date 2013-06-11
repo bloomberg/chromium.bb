@@ -11,7 +11,7 @@
 #include <iomanip>
 
 #include "base/atomicops.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "third_party/libjingle/source/talk/base/stream.h"
 #include "third_party/libjingle/source/talk/base/stringencode.h"

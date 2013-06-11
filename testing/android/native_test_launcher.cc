@@ -21,7 +21,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "gtest/gtest.h"
 #include "testing/android/native_test_util.h"
 #include "testing/jni/ChromeNativeTestActivity_jni.h"
