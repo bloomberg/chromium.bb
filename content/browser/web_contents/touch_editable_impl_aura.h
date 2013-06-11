@@ -87,6 +87,8 @@ class CONTENT_EXPORT TouchEditableImplAura
   // change in selection.
   bool selection_gesture_in_process_;
 
+  bool handles_hidden_due_to_scroll_;
+
   DISALLOW_COPY_AND_ASSIGN(TouchEditableImplAura);
 };
 
