@@ -54,14 +54,11 @@ void GLContextVirtual::Destroy() {
 }
 
 bool GLContextVirtual::MakeCurrent(gfx::GLSurface* surface) {
-  // TODO(epenner): We should avoid bypassing MakeVirtuallyCurrent() below
-  // (return false or DCHECK when !decoder). To do this we must reorder
-  // tear-down in GpuCommandBufferStub::Destroy().
   if (decoder_.get())
-    shared_context_->MakeVirtuallyCurrent(this, surface);
-  else if (!IsCurrent(surface))
-    shared_context_->MakeCurrent(surface);
-  return true;
+    return shared_context_->MakeVirtuallyCurrent(this, surface);
+
+  LOG(ERROR) << "Trying to make virtual context current without decoder.";
+  return false;
 }
 
 void GLContextVirtual::ReleaseCurrent(gfx::GLSurface* surface) {
