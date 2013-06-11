@@ -36,6 +36,7 @@
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/EventTarget.h"
+#include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "weborigin/KURL.h"
 #include "wtf/Forward.h"
@@ -46,7 +47,6 @@
 namespace WebCore {
 
 class Blob;
-class WebSocketChannel;
 
 class WebSocket : public RefCounted<WebSocket>, public ScriptWrappable, public EventTarget, public ActiveDOMObject, public WebSocketChannelClient {
 public:
@@ -68,10 +68,10 @@ public:
     void connect(const String& url, const String& protocol, ExceptionCode&);
     void connect(const String& url, const Vector<String>& protocols, ExceptionCode&);
 
-    bool send(const String& message, ExceptionCode&);
-    bool send(ArrayBuffer*, ExceptionCode&);
-    bool send(ArrayBufferView*, ExceptionCode&);
-    bool send(Blob*, ExceptionCode&);
+    void send(const String& message, ExceptionCode&);
+    void send(ArrayBuffer*, ExceptionCode&);
+    void send(ArrayBufferView*, ExceptionCode&);
+    void send(Blob*, ExceptionCode&);
 
     // To distinguish close method call with the code parameter from one
     // without, we have these three signatures. Use of
@@ -134,6 +134,14 @@ private:
     virtual EventTargetData* ensureEventTargetData();
 
     size_t getFramingOverhead(size_t payloadSize);
+
+    // Checks the result of WebSocketChannel::send() method, and shows console
+    // message and sets ec appropriately.
+    void handleSendResult(WebSocketChannel::SendResult, ExceptionCode&);
+
+    // Updates m_bufferedAmountAfterClose given the amount of data passed to
+    // send() method after the state changed to CLOSING or CLOSED.
+    void updateBufferedAmountAfterClose(unsigned long);
 
     enum BinaryType {
         BinaryTypeBlob,

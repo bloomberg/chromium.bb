@@ -148,12 +148,9 @@ WebSocketChannel::SendResult MainThreadWebSocketChannel::send(const String& mess
     CString utf8 = message.utf8(String::StrictConversionReplacingUnpairedSurrogatesWithFFFD);
     enqueueTextFrame(utf8);
     processOutgoingFrameQueue();
-    // According to WebSocket API specification, WebSocket.send() should return void instead
-    // of boolean. However, our implementation still returns boolean due to compatibility
-    // concern (see bug 65850).
     // m_channel->send() may happen later, thus it's not always possible to know whether
     // the message has been sent to the socket successfully. In this case, we have no choice
-    // but to return true.
+    // but to return SendSuccess.
     return WebSocketChannel::SendSuccess;
 }
 
