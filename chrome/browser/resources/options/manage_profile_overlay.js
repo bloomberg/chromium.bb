@@ -53,14 +53,6 @@ cr.define('options', function() {
       $('create-profile-ok').onclick = function(event) {
         self.submitCreateProfile_();
       };
-      $('create-profile-name').onkeydown =
-          $('create-profile-icon-grid').onkeydown = function(event) {
-        // Submit if the OK button is enabled and we hit enter.
-        if (!$('create-profile-ok').disabled &&
-            event.keyIdentifier === 'Enter') {
-          self.submitCreateProfile_();
-        }
-      };
 
       $('create-profile-cancel').onclick = function(event) {
         CreateProfileOverlay.cancelCreateProfile();
@@ -141,15 +133,6 @@ cr.define('options', function() {
       $(mode + '-profile-ok').onclick = function(event) {
         OptionsPage.closeOverlay();
         submitFunction();
-      };
-      $(mode + '-profile-name').onkeydown =
-          $(mode + '-profile-icon-grid').onkeydown = function(event) {
-        // Submit if the OK button is enabled and we hit enter.
-        if (!$(mode + '-profile-ok').disabled &&
-            event.keyIdentifier === 'Enter') {
-          OptionsPage.closeOverlay();
-          submitFunction();
-        }
       };
     },
 

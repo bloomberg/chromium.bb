@@ -44,10 +44,10 @@ cr.define('options', function() {
 
       var urlField = $('homepage-url-field');
       urlField.addEventListener('keydown', function(event) {
-        // Focus the 'OK' button when the user hits enter since people expect
-        // feedback indicating that they are done editing.
-        if (event.keyIdentifier == 'Enter' && self.autocompleteList_.hidden)
-          $('home-page-confirm').focus();
+        // Don't auto-submit when the user selects something from the
+        // auto-complete list.
+        if (event.keyIdentifier == 'Enter' && !self.autocompleteList_.hidden)
+          event.stopPropagation();
       });
       urlField.addEventListener('change', this.updateFavicon_.bind(this));
 

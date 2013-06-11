@@ -305,6 +305,7 @@ cr.define('options', function() {
         return;
 
       var endEdit = false;
+      var handledKey = true;
       switch (e.keyIdentifier) {
         case 'U+001B':  // Esc
           this.editCancelled_ = true;
@@ -314,14 +315,17 @@ cr.define('options', function() {
           if (this.currentInputIsValid)
             endEdit = true;
           break;
+        default:
+          handledKey = false;
       }
-
-      if (endEdit) {
-        // Blurring will trigger the edit to end; see InlineEditableItemList.
-        this.ownerDocument.activeElement.blur();
+      if (handledKey) {
         // Make sure that handled keys aren't passed on and double-handled.
         // (e.g., esc shouldn't both cancel an edit and close a subpage)
         e.stopPropagation();
+      }
+      if (endEdit) {
+        // Blurring will trigger the edit to end; see InlineEditableItemList.
+        this.ownerDocument.activeElement.blur();
       }
     },
 
