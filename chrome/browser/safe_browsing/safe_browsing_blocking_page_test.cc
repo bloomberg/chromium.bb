@@ -820,7 +820,14 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingReportError) {
       browser()->tab_strip_model()->GetActiveWebContents()->GetURL().path());
 }
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingLearnMore) {
+// See crbug.com/248447
+#if defined(OS_WIN)
+#define MAYBE_PhishingLearnMore DISABLED_PhishingLearnMore
+#else
+#define MAYBE_PhishingLearnMore PhishingLearnMore
+#endif
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MAYBE_PhishingLearnMore) {
   SetupWarningAndNavigate(SB_THREAT_TYPE_URL_PHISHING);
 
   EXPECT_TRUE(ClickAndWaitForDetach("learn-more-link"));
