@@ -25,6 +25,7 @@ function FileSelection(fileManager, indexes) {
   this.allDriveFilesPresent = false,
   this.iconType = null;
   this.bytesKnown = false;
+  this.mustBeHidden_ = false;
 
   // Synchronously compute what we can.
   for (var i = 0; i < this.indexes.length; i++) {
@@ -315,6 +316,15 @@ FileSelectionHandler.prototype.isFileSelectionAvailable = function() {
 };
 
 /**
+ * Sets the flag to force the preview panel hidden.
+ * @param {boolean} hidden True to force hidden.
+ */
+FileSelectionHandler.prototype.setPreviewPanelMustBeHidden = function(hidden) {
+  this.previewPanelMustBeHidden_ = hidden;
+  this.updatePreviewPanelVisibility_();
+};
+
+/**
  * Animates preview panel show/hide transitions.
  *
  * @private
@@ -355,17 +365,17 @@ FileSelectionHandler.prototype.updatePreviewPanelVisibility_ = function() {
 
   switch (state) {
     case 'visible':
-      if (!mustBeVisible)
+      if (!mustBeVisible || this.previewPanelMustBeHidden_)
         startHiding();
       break;
 
     case 'hiding':
-      if (mustBeVisible)
+      if (mustBeVisible && !this.previewPanelMustBeHidden_)
         stopHidingAndShow();
       break;
 
     case 'hidden':
-      if (mustBeVisible)
+      if (mustBeVisible && !this.previewPanelMustBeHidden_)
         show();
   }
 };

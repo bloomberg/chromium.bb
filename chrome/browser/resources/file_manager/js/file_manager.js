@@ -1246,6 +1246,14 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.table_.list.addEventListener('blur', fileListBlurBound);
     this.grid_.addEventListener('blur', fileListBlurBound);
 
+    var dragStartBound = this.onDragStart_.bind(this);
+    this.table_.list.addEventListener('dragstart', dragStartBound);
+    this.grid_.addEventListener('dragstart', dragStartBound);
+
+    var dragEndBound = this.onDragEnd_.bind(this);
+    this.table_.list.addEventListener('dragend', dragEndBound);
+    this.grid_.addEventListener('dragend', dragEndBound);
+
     // TODO(mtomasz, yoshiki): Create sidebar earlier, and here just attach
     // the directory model.
     this.initSidebar_();
@@ -1679,6 +1687,22 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     else
       this.table_.setBottomMarginForPanel(panelHeight);
     this.directoryTree_.setBottomMarginForPanel(panelHeight);
+  };
+
+  /**
+   * Invoked when the drag is started on the list or the grid.
+   * @private
+   */
+  FileManager.prototype.onDragStart_ = function() {
+    this.selectionHandler_.setPreviewPanelMustBeHidden(true);
+  };
+
+  /**
+   * Invoked when the drag is ended on the list or the grid.
+   * @private
+   */
+  FileManager.prototype.onDragEnd_ = function() {
+    this.selectionHandler_.setPreviewPanelMustBeHidden(false);
   };
 
   /**
