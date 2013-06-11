@@ -61,3 +61,6 @@ UserCloudPolicyStoreTest.StoreThenClear
 UserCloudPolicyStoreTest.StoreThenLoad
 UserCloudPolicyStoreTest.StoreTwoTimes
 UserCloudPolicyStoreTest.StoreValidationError
+
+# Tests are timing out on the bot. crbug.com/248373.
+PNaClTranslationCacheTest.*
