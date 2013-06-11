@@ -84,7 +84,8 @@ history.queryHashAsMap = function()
             errors.show();
             window.location.hash = window.location.hash.replace('master=' + paramsMap.master, '');
         } else {
-            paramsMap.group = builders.masters[paramsMap.master].groups[0];
+            var groupIndex = paramsMap.master == 'ChromiumWebkit' ? 1 : 0;
+            paramsMap.group = builders.masters[paramsMap.master].groups[groupIndex];
             window.location.hash = window.location.hash.replace('master=' + paramsMap.master, 'group=' + encodeURIComponent(paramsMap.group));
             delete paramsMap.master;
         }
