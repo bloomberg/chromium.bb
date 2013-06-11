@@ -3125,6 +3125,13 @@ other types of suffix sets.
   <summary>Video codec used in HTML5 media.</summary>
 </histogram>
 
+<histogram name="Media.DevicePermissionActions" enum="DevicePermissionActions">
+  <summary>
+    Measures the actions taken in the media infobar, which prompts the users for
+    device permission.
+  </summary>
+</histogram>
+
 <histogram name="Media.Duration" units="ms">
   <summary>Duration in milliseconds of HTML5 media (when known).</summary>
 </histogram>
@@ -11948,6 +11955,13 @@ other types of suffix sets.
   <int value="6" label="Sheets"/>
   <int value="7" label="Slides"/>
   <int value="8" label="PlayMusic"/>
+</enum>
+
+<enum name="DevicePermissionActions" type="int">
+  <int value="0" label="AllowHttps"/>
+  <int value="1" label="AllowHttp"/>
+  <int value="2" label="Deny"/>
+  <int value="3" label="Cancel"/>
 </enum>
 
 <enum name="DNSEmptyAddressListAndNoError" type="int">

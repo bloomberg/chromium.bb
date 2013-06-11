@@ -5,6 +5,7 @@
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -14,6 +15,18 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace {
+
+enum DevicePermissionActions {
+  kAllowHttps = 0,
+  kAllowHttp,
+  kDeny,
+  kCancel,
+  kPermissionActionsMax  // Must always be last!
+};
+
+}  // namespace
 
 MediaStreamInfoBarDelegate::~MediaStreamInfoBarDelegate() {}
 
@@ -58,6 +71,8 @@ MediaStreamInfoBarDelegate::MediaStreamInfoBarDelegate(
 void MediaStreamInfoBarDelegate::InfoBarDismissed() {
   // Deny the request if the infobar was closed with the 'x' button, since
   // we don't want WebRTC to be waiting for an answer that will never come.
+  UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
+                            kCancel, kPermissionActionsMax);
   controller_->Deny(false);
 }
 
@@ -92,11 +107,21 @@ string16 MediaStreamInfoBarDelegate::GetButtonLabel(
 }
 
 bool MediaStreamInfoBarDelegate::Accept() {
+  GURL origin(controller_->GetSecurityOriginSpec());
+  if (origin.SchemeIsSecure()) {
+    UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
+                              kAllowHttps, kPermissionActionsMax);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
+                              kAllowHttp, kPermissionActionsMax);
+  }
   controller_->Accept(true);
   return true;
 }
 
 bool MediaStreamInfoBarDelegate::Cancel() {
+  UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
+                            kDeny, kPermissionActionsMax);
   controller_->Deny(true);
   return true;
 }
