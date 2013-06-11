@@ -1307,10 +1307,6 @@ crbug.com/227397 svg/batik/text/textOnPathSpaces.svg [ Failure Pass ]
 crbug.com/227397 svg/batik/text/verticalText.svg [ Failure Pass ]
 # Note, after the rebaseline, need to uncomment the 2 other instances of verticalTextOnPath.svg above.
 crbug.com/227397 svg/batik/text/verticalTextOnPath.svg [ Failure Pass ]
-crbug.com/227397 svg/text/text-hkern.svg [ Failure Pass ]
-crbug.com/227397 svg/text/text-path-01-b.svg [ Failure Pass ]
-crbug.com/227397 svg/text/text-path-middle-align.svg [ Failure Pass ]
-crbug.com/227397 svg/text/textPathBoundsBug.svg [ ImageOnlyFailure Pass ]
 crbug.com/227397 svg/W3C-SVG-1.1/types-basicDOM-01-b.svg [ Failure Pass ]
 
 # These tests need a rebasline after crbug.com/224317
