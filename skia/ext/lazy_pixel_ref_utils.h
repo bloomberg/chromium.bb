@@ -28,6 +28,6 @@ class SK_API LazyPixelRefUtils {
 
 typedef std::vector<LazyPixelRefUtils::PositionLazyPixelRef> LazyPixelRefList;
 
-}
+}  // namespace skia
 
 #endif

@@ -29,7 +29,7 @@ class LazyPixelRefSet {
       std::vector<LazyPixelRefUtils::PositionLazyPixelRef>* pixel_refs)
       : pixel_refs_(pixel_refs) {}
 
-  void add(SkPixelRef* pixel_ref, const SkRect& rect) {
+  void Add(SkPixelRef* pixel_ref, const SkRect& rect) {
     // Only save lazy pixel refs.
     if (pixel_ref->getURI() &&
         !strcmp(pixel_ref->getURI(), kLabelLazyDecoded)) {
@@ -58,13 +58,13 @@ class GatherPixelRefDevice : public SkDevice {
 
   virtual void drawPaint(const SkDraw& draw, const SkPaint& paint) SK_OVERRIDE {
     SkBitmap bitmap;
-    if (getBitmapFromPaint(paint, &bitmap)) {
+    if (GetBitmapFromPaint(paint, &bitmap)) {
       SkRect clip_rect = SkRect::Make(draw.fRC->getBounds());
       SkRect canvas_rect = SkRect::MakeWH(width(), height());
       SkRect paint_rect = SkRect::MakeEmpty();
       paint_rect.intersect(canvas_rect, clip_rect);
 
-      addBitmap(bitmap, paint_rect);
+      AddBitmap(bitmap, paint_rect);
     }
   }
 
@@ -74,7 +74,7 @@ class GatherPixelRefDevice : public SkDevice {
                           const SkPoint points[],
                           const SkPaint& paint) SK_OVERRIDE {
     SkBitmap bitmap;
-    if (!getBitmapFromPaint(paint, &bitmap))
+    if (!GetBitmapFromPaint(paint, &bitmap))
       return;
 
     if (count == 0)
@@ -99,11 +99,11 @@ class GatherPixelRefDevice : public SkDevice {
                         const SkRect& rect,
                         const SkPaint& paint) SK_OVERRIDE {
     SkBitmap bitmap;
-    if (getBitmapFromPaint(paint, &bitmap)) {
+    if (GetBitmapFromPaint(paint, &bitmap)) {
       SkRect mapped_rect;
       draw.fMatrix->mapRect(&mapped_rect, rect);
       mapped_rect.intersect(SkRect::Make(draw.fRC->getBounds()));
-      addBitmap(bitmap, mapped_rect);
+      AddBitmap(bitmap, mapped_rect);
     }
   }
   virtual void drawOval(const SkDraw& draw,
@@ -119,16 +119,16 @@ class GatherPixelRefDevice : public SkDevice {
   virtual void drawPath(const SkDraw& draw,
                         const SkPath& path,
                         const SkPaint& paint,
-                        const SkMatrix* prePathMatrix,
-                        bool pathIsMutable) SK_OVERRIDE {
+                        const SkMatrix* pre_path_matrix,
+                        bool path_is_mutable) SK_OVERRIDE {
     SkBitmap bitmap;
-    if (!getBitmapFromPaint(paint, &bitmap))
+    if (!GetBitmapFromPaint(paint, &bitmap))
       return;
 
     SkRect path_bounds = path.getBounds();
     SkRect final_rect;
-    if (prePathMatrix != NULL)
-      prePathMatrix->mapRect(&final_rect, path_bounds);
+    if (pre_path_matrix != NULL)
+      pre_path_matrix->mapRect(&final_rect, path_bounds);
     else
       final_rect = path_bounds;
 
@@ -136,7 +136,7 @@ class GatherPixelRefDevice : public SkDevice {
   }
   virtual void drawBitmap(const SkDraw& draw,
                           const SkBitmap& bitmap,
-                          const SkIRect* srcRectOrNull,
+                          const SkIRect* src_rect_or_null,
                           const SkMatrix& matrix,
                           const SkPaint& paint) SK_OVERRIDE {
     SkMatrix total_matrix;
@@ -145,15 +145,15 @@ class GatherPixelRefDevice : public SkDevice {
     SkRect bitmap_rect = SkRect::MakeWH(bitmap.width(), bitmap.height());
     SkRect mapped_rect;
     total_matrix.mapRect(&mapped_rect, bitmap_rect);
-    addBitmap(bitmap, mapped_rect);
+    AddBitmap(bitmap, mapped_rect);
 
     SkBitmap paint_bitmap;
-    if (getBitmapFromPaint(paint, &paint_bitmap))
-      addBitmap(paint_bitmap, mapped_rect);
+    if (GetBitmapFromPaint(paint, &paint_bitmap))
+      AddBitmap(paint_bitmap, mapped_rect);
   }
   virtual void drawBitmapRect(const SkDraw& draw,
                               const SkBitmap& bitmap,
-                              const SkRect* srcOrNull,
+                              const SkRect* src_or_null,
                               const SkRect& dst,
                               const SkPaint& paint) SK_OVERRIDE {
     SkRect bitmap_rect = SkRect::MakeWH(bitmap.width(), bitmap.height());
@@ -174,10 +174,10 @@ class GatherPixelRefDevice : public SkDevice {
     SkRect mapped_rect;
     matrix.mapRect(&mapped_rect, bitmap_rect);
 
-    addBitmap(bitmap, mapped_rect);
+    AddBitmap(bitmap, mapped_rect);
     SkBitmap paint_bitmap;
-    if (getBitmapFromPaint(paint, &paint_bitmap))
-      addBitmap(paint_bitmap, mapped_rect);
+    if (GetBitmapFromPaint(paint, &paint_bitmap))
+      AddBitmap(paint_bitmap, mapped_rect);
   }
   virtual void drawText(const SkDraw& draw,
                         const void* text,
@@ -186,7 +186,7 @@ class GatherPixelRefDevice : public SkDevice {
                         SkScalar y,
                         const SkPaint& paint) SK_OVERRIDE {
     SkBitmap bitmap;
-    if (!getBitmapFromPaint(paint, &bitmap))
+    if (!GetBitmapFromPaint(paint, &bitmap))
       return;
 
     // Math is borrowed from SkBBoxRecord
@@ -203,8 +203,7 @@ class GatherPixelRefDevice : public SkDevice {
       }
       bounds.fBottom += metrics.fBottom;
       bounds.fTop += metrics.fTop;
-    }
-    else {
+    } else {
       SkScalar w = bounds.fRight - bounds.fLeft;
       if (paint.getTextAlign() == SkPaint::kCenter_Align) {
         bounds.fLeft -= w / 2;
@@ -231,43 +230,39 @@ class GatherPixelRefDevice : public SkDevice {
                            const void* text,
                            size_t len,
                            const SkScalar pos[],
-                           SkScalar constY,
-                           int scalarsPerPos,
+                           SkScalar const_y,
+                           int scalars_per_pos,
                            const SkPaint& paint) SK_OVERRIDE {
     SkBitmap bitmap;
-    if (!getBitmapFromPaint(paint, &bitmap))
+    if (!GetBitmapFromPaint(paint, &bitmap))
       return;
 
     if (len == 0)
       return;
 
     // Similar to SkDraw asserts.
-    SkASSERT(scalarsPerPos == 1 || scalarsPerPos == 2);
+    SkASSERT(scalars_per_pos == 1 || scalars_per_pos == 2);
 
     SkPoint min_point;
     SkPoint max_point;
-    if (scalarsPerPos == 1) {
-      min_point.set(pos[0], constY);
-      max_point.set(pos[0], constY);
-    } else if (scalarsPerPos == 2) {
-      min_point.set(pos[0], constY + pos[1]);
-      max_point.set(pos[0], constY + pos[1]);
+    if (scalars_per_pos == 1) {
+      min_point.set(pos[0], const_y);
+      max_point.set(pos[0], const_y);
+    } else if (scalars_per_pos == 2) {
+      min_point.set(pos[0], const_y + pos[1]);
+      max_point.set(pos[0], const_y + pos[1]);
     }
 
     for (size_t i = 0; i < len; ++i) {
-      SkScalar x = pos[i * scalarsPerPos];
-      SkScalar y = constY;
-      if (scalarsPerPos == 2)
-        y += pos[i * scalarsPerPos + 1];
+      SkScalar x = pos[i * scalars_per_pos];
+      SkScalar y = const_y;
+      if (scalars_per_pos == 2)
+        y += pos[i * scalars_per_pos + 1];
 
-      min_point.set(
-        std::min(x, min_point.x()),
-        std::min(y, min_point.y()));
-      max_point.set(
-        std::max(x, max_point.x()),
-        std::max(y, max_point.y()));
+      min_point.set(std::min(x, min_point.x()), std::min(y, min_point.y()));
+      max_point.set(std::max(x, max_point.x()), std::max(y, max_point.y()));
     }
-    
+
     SkRect bounds = SkRect::MakeLTRB(
         min_point.x(), min_point.y(), max_point.x(), max_point.y());
 
@@ -291,7 +286,7 @@ class GatherPixelRefDevice : public SkDevice {
                               const SkMatrix* matrix,
                               const SkPaint& paint) SK_OVERRIDE {
     SkBitmap bitmap;
-    if (!getBitmapFromPaint(paint, &bitmap))
+    if (!GetBitmapFromPaint(paint, &bitmap))
       return;
 
     // Math is borrowed from SkBBoxRecord
@@ -309,16 +304,16 @@ class GatherPixelRefDevice : public SkDevice {
   }
   virtual void drawVertices(const SkDraw& draw,
                             SkCanvas::VertexMode,
-                            int vertexCount,
+                            int vertex_count,
                             const SkPoint verts[],
                             const SkPoint texs[],
                             const SkColor colors[],
                             SkXfermode* xmode,
                             const uint16_t indices[],
-                            int indexCount,
+                            int index_count,
                             const SkPaint& paint) SK_OVERRIDE {
     GatherPixelRefDevice::drawPoints(
-        draw, SkCanvas::kPolygon_PointMode, vertexCount, verts, paint);
+        draw, SkCanvas::kPolygon_PointMode, vertex_count, verts, paint);
   }
   virtual void drawDevice(const SkDraw&,
                           SkDevice*,
@@ -337,11 +332,11 @@ class GatherPixelRefDevice : public SkDevice {
  private:
   LazyPixelRefSet* lazy_pixel_ref_set_;
 
-  void addBitmap(const SkBitmap& bm, const SkRect& rect) {
-    lazy_pixel_ref_set_->add(bm.pixelRef(), rect);
+  void AddBitmap(const SkBitmap& bm, const SkRect& rect) {
+    lazy_pixel_ref_set_->Add(bm.pixelRef(), rect);
   }
 
-  bool getBitmapFromPaint(const SkPaint& paint, SkBitmap* bm) {
+  bool GetBitmapFromPaint(const SkPaint& paint, SkBitmap* bm) {
     SkShader* shader = paint.getShader();
     if (shader) {
       // Check whether the shader is a gradient in order to prevent generation
@@ -351,7 +346,6 @@ class GatherPixelRefDevice : public SkDevice {
     }
     return false;
   }
-
 };
 
 class NoSaveLayerCanvas : public SkCanvas {
@@ -401,11 +395,11 @@ void LazyPixelRefUtils::GatherPixelRefs(
   lazy_pixel_refs->clear();
   LazyPixelRefSet pixel_ref_set(lazy_pixel_refs);
 
-  SkBitmap emptyBitmap;
-  emptyBitmap.setConfig(
+  SkBitmap empty_bitmap;
+  empty_bitmap.setConfig(
       SkBitmap::kNo_Config, picture->width(), picture->height());
 
-  GatherPixelRefDevice device(emptyBitmap, &pixel_ref_set);
+  GatherPixelRefDevice device(empty_bitmap, &pixel_ref_set);
   NoSaveLayerCanvas canvas(&device);
 
   canvas.clipRect(SkRect::MakeWH(picture->width(), picture->height()),
