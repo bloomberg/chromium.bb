@@ -24,10 +24,10 @@ class LoginModelObserver {
 
 class LoginModel {
  public:
-  // Set the observer interested in the data from the model.
-  // observer can be null, signifying there is no longer any observer
-  // interested in the data.
-  virtual void SetObserver(LoginModelObserver* observer) = 0;
+  // Add an observer interested in the data from the model.
+  virtual void AddObserver(LoginModelObserver* observer) = 0;
+  // Remove an observer from the model.
+  virtual void RemoveObserver(LoginModelObserver* observer) = 0;
 
  protected:
   virtual ~LoginModel() {}

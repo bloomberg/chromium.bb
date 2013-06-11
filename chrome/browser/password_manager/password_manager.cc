@@ -91,8 +91,7 @@ void PasswordManager::CreateForWebContentsAndDelegate(
 PasswordManager::PasswordManager(WebContents* web_contents,
                                  PasswordManagerDelegate* delegate)
     : content::WebContentsObserver(web_contents),
-      delegate_(delegate),
-      observer_(NULL) {
+      delegate_(delegate) {
   DCHECK(delegate_);
   password_manager_enabled_.Init(prefs::kPasswordManagerEnabled,
                                  delegate_->GetProfile()->GetPrefs());
@@ -101,8 +100,7 @@ PasswordManager::PasswordManager(WebContents* web_contents,
 }
 
 PasswordManager::~PasswordManager() {
-  if (observer_)
-    observer_->OnLoginModelDestroying();
+  FOR_EACH_OBSERVER(LoginModelObserver, observers_, OnLoginModelDestroying());
 }
 
 void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
@@ -210,8 +208,12 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   provisional_save_manager_.swap(manager);
 }
 
-void PasswordManager::SetObserver(LoginModelObserver* observer) {
-  observer_ = observer;
+void PasswordManager::AddObserver(LoginModelObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void PasswordManager::RemoveObserver(LoginModelObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void PasswordManager::DidNavigateAnyFrame(
@@ -373,9 +375,10 @@ void PasswordManager::Autofill(
       return;
     }
     default:
-      if (observer_) {
-        observer_->OnAutofillDataAvailable(preferred_match.username_value,
-                                           preferred_match.password_value);
-      }
+      FOR_EACH_OBSERVER(
+          LoginModelObserver,
+          observers_,
+          OnAutofillDataAvailable(preferred_match.username_value,
+                                  preferred_match.password_value));
   }
 }

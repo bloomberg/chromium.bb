@@ -80,12 +80,12 @@ LoginView::LoginView(const string16& explanation,
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   if (login_model_)
-    login_model_->SetObserver(this);
+    login_model_->AddObserver(this);
 }
 
 LoginView::~LoginView() {
   if (login_model_)
-    login_model_->SetObserver(NULL);
+    login_model_->RemoveObserver(this);
 }
 
 string16 LoginView::GetUsername() {
@@ -113,6 +113,6 @@ void LoginView::OnAutofillDataAvailable(const string16& username,
 }
 
 void LoginView::OnLoginModelDestroying() {
-  login_model_->SetObserver(NULL);
+  login_model_->RemoveObserver(this);
   login_model_ = NULL;
 }

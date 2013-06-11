@@ -234,10 +234,10 @@ LoginHandler::~LoginHandler() {
 
 void LoginHandler::SetModel(LoginModel* model) {
   if (login_model_)
-    login_model_->SetObserver(NULL);
+    login_model_->RemoveObserver(this);
   login_model_ = model;
   if (login_model_)
-    login_model_->SetObserver(this);
+    login_model_->AddObserver(this);
 }
 
 void LoginHandler::NotifyAuthNeeded() {

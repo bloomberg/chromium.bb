@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/observer_list.h"
 #include "base/prefs/pref_member.h"
 #include "base/stl_util.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
@@ -54,7 +55,8 @@ class PasswordManager : public LoginModel,
                         bool wait_for_username) const;
 
   // LoginModel implementation.
-  virtual void SetObserver(LoginModelObserver* observer) OVERRIDE;
+  virtual void AddObserver(LoginModelObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(LoginModelObserver* observer) OVERRIDE;
 
   // Mark this form as having a generated password.
   void SetFormHasGeneratedPassword(const content::PasswordForm& form);
@@ -134,6 +136,10 @@ class PasswordManager : public LoginModel,
   // Set to false to disable the password manager (will no longer ask if you
   // want to save passwords but will continue to fill passwords).
   BooleanPrefMember password_manager_enabled_;
+
+  // Observers to be notified of LoginModel events.  This is mutable to allow
+  // notification in const member functions.
+  mutable ObserverList<LoginModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };
