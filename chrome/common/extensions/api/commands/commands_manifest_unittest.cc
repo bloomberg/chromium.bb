@@ -5,7 +5,7 @@
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 
 #include "base/command_line.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"

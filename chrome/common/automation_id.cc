@@ -4,7 +4,7 @@
 
 #include "chrome/common/automation_id.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 
 using base::DictionaryValue;

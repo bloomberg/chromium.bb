@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/platform_file.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"

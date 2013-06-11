@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/debug/crash_logging.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "googleurl/src/gurl.h"
 
 class CommandLine;

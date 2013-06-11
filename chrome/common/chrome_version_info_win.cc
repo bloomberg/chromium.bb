@@ -8,7 +8,7 @@
 #include "base/debug/profiler.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 

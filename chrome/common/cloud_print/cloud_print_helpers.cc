@@ -9,7 +9,7 @@
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/common/chrome_version_info.h"

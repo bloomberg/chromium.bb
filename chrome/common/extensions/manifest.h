@@ -6,11 +6,11 @@
 #define CHROME_COMMON_EXTENSIONS_MANIFEST_H_
 
 #include <map>
-#include <string>
 #include <set>
+#include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/values.h"
 
 namespace extensions {

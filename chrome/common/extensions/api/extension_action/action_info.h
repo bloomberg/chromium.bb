@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "googleurl/src/gurl.h"

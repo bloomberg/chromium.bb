@@ -10,9 +10,9 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/sha1.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/common/chrome_switches.h"
 
 using chrome::VersionInfo;

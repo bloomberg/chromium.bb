@@ -4,7 +4,7 @@
 
 #include "chrome/common/content_settings_pattern_parser.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"

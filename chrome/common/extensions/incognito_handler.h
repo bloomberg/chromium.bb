@@ -5,7 +5,7 @@
 #ifndef CHROME_COMMON_EXTENSIONS_INCOGNITO_HANDLER_H_
 #define CHROME_COMMON_EXTENSIONS_INCOGNITO_HANDLER_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest_handler.h"
 

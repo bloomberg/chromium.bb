@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

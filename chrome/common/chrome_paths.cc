@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/version.h"
 #include "chrome/common/chrome_constants.h"

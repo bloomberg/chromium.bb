@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/permissions/media_galleries_permission_data.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/common/extensions/permissions/media_galleries_permission.h"
 

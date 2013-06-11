@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"

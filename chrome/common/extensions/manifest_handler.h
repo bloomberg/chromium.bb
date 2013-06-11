@@ -11,7 +11,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/common/extensions/manifest.h"
 
 namespace extensions {
