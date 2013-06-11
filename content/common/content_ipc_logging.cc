@@ -14,7 +14,7 @@
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 
 namespace content {

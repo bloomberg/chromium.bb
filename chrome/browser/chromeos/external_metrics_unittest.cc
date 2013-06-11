@@ -6,7 +6,7 @@
 #include <sys/file.h>
 
 #include "base/basictypes.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer_impl.h"
 #include "ui/gfx/point3_f.h"

@@ -10,7 +10,7 @@
 #ifndef NET_HTTP_MOCK_HTTP_CACHE_H_
 #define NET_HTTP_MOCK_HTTP_CACHE_H_
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_unittest.h"

@@ -6,7 +6,7 @@
 
 #include <stack>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/stl_util.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/proxy/ppapi_param_traits.h"

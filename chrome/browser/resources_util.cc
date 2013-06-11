@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "grit/theme_resources_map.h"
 #include "grit/ui_resources_map.h"

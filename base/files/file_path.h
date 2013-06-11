@@ -108,7 +108,7 @@
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"  // For implicit conversions.
 #include "build/build_config.h"

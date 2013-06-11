@@ -5,7 +5,7 @@
 #include "chromeos/cryptohome/async_method_caller.h"
 
 #include "base/bind.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "chromeos/dbus/cryptohome_client.h"

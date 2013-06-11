@@ -61,7 +61,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/download/save_types.h"
 #include "content/common/content_export.h"

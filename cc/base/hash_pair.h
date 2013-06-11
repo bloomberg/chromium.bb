@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/basictypes.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 
 #if defined(COMPILER_MSVC)
 

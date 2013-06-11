@@ -11,7 +11,7 @@
 #include "ash/event_rewriter_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 

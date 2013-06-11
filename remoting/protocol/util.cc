@@ -5,7 +5,7 @@
 #include "remoting/protocol/util.h"
 
 #include "base/basictypes.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
 #include "third_party/libjingle/source/talk/base/byteorder.h"

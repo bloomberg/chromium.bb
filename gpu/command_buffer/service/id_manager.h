@@ -6,7 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_ID_MANAGER_H_
 
 #include "base/basictypes.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/gpu_export.h"
 

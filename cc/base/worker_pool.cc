@@ -12,8 +12,8 @@
 #include <map>
 
 #include "base/bind.h"
+#include "base/containers/hash_tables.h"
 #include "base/debug/trace_event.h"
-#include "base/hash_tables.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_restrictions.h"

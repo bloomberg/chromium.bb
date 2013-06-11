@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/time.h"
 #include "base/timer.h"
 

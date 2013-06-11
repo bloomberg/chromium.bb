@@ -34,7 +34,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include <sys/epoll.h>
 

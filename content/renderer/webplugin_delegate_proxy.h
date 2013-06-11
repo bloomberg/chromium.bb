@@ -23,7 +23,7 @@
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_MACOSX)
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/memory/linked_ptr.h"
 #endif
 

@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/shared_memory.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 

@@ -8,7 +8,7 @@
 #define NET_DISK_CACHE_MEM_BACKEND_IMPL_H__
 
 #include "base/compiler_specific.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/mem_rankings.h"
 

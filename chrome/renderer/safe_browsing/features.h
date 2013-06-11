@@ -27,7 +27,7 @@
 
 #include <string>
 #include "base/basictypes.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 
 namespace safe_browsing {
 

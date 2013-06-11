@@ -10,8 +10,8 @@
 #include <sstream>
 #include <string>
 
+#include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/hash_tables.h"
 #include "sync/base/sync_export.h"
 
 class MockConnectionManager;

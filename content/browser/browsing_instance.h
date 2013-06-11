@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_BROWSING_INSTANCE_H_
 #define CONTENT_BROWSER_BROWSING_INSTANCE_H_
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"

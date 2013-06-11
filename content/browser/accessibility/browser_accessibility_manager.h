@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/common/accessibility_node_data.h"

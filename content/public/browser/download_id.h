@@ -8,7 +8,7 @@
 #include <iosfwd>
 #include <string>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/stringprintf.h"
 #include "content/common/content_export.h"
 

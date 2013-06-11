@@ -18,15 +18,15 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
-#include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/safe_browsing/chunk_range.h"
-#include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/protocol_manager_helper.h"
+#include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"

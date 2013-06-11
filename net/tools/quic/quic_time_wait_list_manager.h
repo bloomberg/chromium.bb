@@ -10,7 +10,7 @@
 
 #include <deque>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/strings/string_piece.h"
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_framer.h"

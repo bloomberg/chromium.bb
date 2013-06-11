@@ -5,7 +5,7 @@
 #ifndef CC_LAYERS_DELEGATED_RENDERER_LAYER_IMPL_H_
 #define CC_LAYERS_DELEGATED_RENDERER_LAYER_IMPL_H_
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"

@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 

@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/blocked_list.h"
 #include "net/quic/quic_connection.h"

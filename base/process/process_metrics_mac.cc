@@ -9,7 +9,7 @@
 #include <mach/shared_region.h>
 #include <sys/sysctl.h>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/mac/scoped_mach_port.h"
 #include "base/sys_info.h"

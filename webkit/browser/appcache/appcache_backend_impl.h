@@ -5,7 +5,7 @@
 #ifndef WEBKIT_BROWSER_APPCACHE_APPCACHE_BACKEND_IMPL_H_
 #define WEBKIT_BROWSER_APPCACHE_APPCACHE_BACKEND_IMPL_H_
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "webkit/browser/appcache/appcache_host.h"
 #include "webkit/storage/webkit_storage_export.h"
 

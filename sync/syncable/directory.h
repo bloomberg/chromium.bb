@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/containers/hash_tables.h"
 #include "base/file_util.h"
 #include "base/gtest_prod_util.h"
-#include "base/hash_tables.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/weak_handle.h"

@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/cancelable_callback.h"
+#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
-#include "base/hash_tables.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_allocation.h"

@@ -7,7 +7,7 @@
 
 #include <map>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/storage/webkit_storage_export.h"
 

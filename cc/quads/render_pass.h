@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/hash_pair.h"
 #include "cc/base/scoped_ptr_hash_map.h"

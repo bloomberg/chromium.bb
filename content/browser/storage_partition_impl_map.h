@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
-#include "base/hash_tables.h"
 #include "base/supports_user_data.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"

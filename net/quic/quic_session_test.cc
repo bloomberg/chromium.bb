@@ -6,7 +6,7 @@
 
 #include <set>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_protocol.h"

@@ -24,9 +24,9 @@
 #include <new>
 #include <string>
 
+#include "base/containers/hash_tables.h"
 #include "base/debug/debugger.h"
 #include "base/file_util.h"
-#include "base/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"

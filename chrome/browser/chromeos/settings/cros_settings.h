@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"

@@ -7,15 +7,14 @@
 #include <map>
 #include <string>
 
-#include "net/base/mime_util.h"
-#include "net/base/platform_mime_util.h"
-
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "net/base/mime_util.h"
+#include "net/base/platform_mime_util.h"
 
 using std::string;
 

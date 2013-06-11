@@ -4,7 +4,7 @@
 
 #include "net/quic/quic_framer.h"
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_data_reader.h"

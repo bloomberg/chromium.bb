@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/observer_list.h"
 #include "base/prefs/base_prefs_export.h"
 #include "base/prefs/pref_notifier.h"

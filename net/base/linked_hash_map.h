@@ -18,7 +18,7 @@
 #include <list>
 #include <utility>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 
 // This holds a list of pair<Key, Value> items.  This list is what gets

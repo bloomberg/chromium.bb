@@ -4,7 +4,7 @@
 
 #include "chrome/common/startup_metric_utils.h"
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"

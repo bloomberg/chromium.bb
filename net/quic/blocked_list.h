@@ -9,7 +9,7 @@
 
 #include <list>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 
 namespace net {

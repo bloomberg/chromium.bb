@@ -9,14 +9,14 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process.h"
 #include "build/build_config.h"
 #include "ipc/ipc_sync_channel.h"
-#include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_rect.h"
 #include "ppapi/c/ppb_console.h"
 #include "ppapi/proxy/dispatcher.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"

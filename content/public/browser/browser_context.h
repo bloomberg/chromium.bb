@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_BROWSER_CONTEXT_H_
 
 #include "base/callback_forward.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"

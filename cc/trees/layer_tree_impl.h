@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/values.h"
 #include "cc/layers/layer_impl.h"
 #include "ui/base/latency_info.h"

@@ -30,7 +30,7 @@
 #include "ppapi/shared_impl/ppb_audio_shared.h"
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 
 LogFunctionMap g_log_function_mapping;
 

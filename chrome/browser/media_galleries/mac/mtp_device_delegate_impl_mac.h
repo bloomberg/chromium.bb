@@ -9,8 +9,8 @@
 #include <map>
 #include <vector>
 
+#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
-#include "base/hash_tables.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"

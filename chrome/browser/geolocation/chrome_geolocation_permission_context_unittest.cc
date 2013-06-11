@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"

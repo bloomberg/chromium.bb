@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 

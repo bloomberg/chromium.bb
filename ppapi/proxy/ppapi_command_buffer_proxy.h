@@ -6,11 +6,11 @@
 #define PPAPI_PROXY_COMMAND_BUFFER_PROXY_H_
 
 #include "base/callback.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/ipc/command_buffer_proxy.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/host_resource.h"
-#include "gpu/ipc/command_buffer_proxy.h"
 
 namespace IPC {
 class Message;

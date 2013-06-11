@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "content/public/browser/browser_context.h"

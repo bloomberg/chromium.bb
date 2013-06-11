@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_GTK_ACCELERATORS_GTK_H_
 #define CHROME_BROWSER_UI_GTK_ACCELERATORS_GTK_H_
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "ui/base/accelerators/accelerator.h"
 
 template <typename T> struct DefaultSingletonTraits;

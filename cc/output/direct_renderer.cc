@@ -7,8 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/hash_tables.h"
 #include "base/debug/trace_event.h"
-#include "base/hash_tables.h"
 #include "base/metrics/histogram.h"
 #include "cc/base/math_util.h"
 #include "cc/output/copy_output_request.h"

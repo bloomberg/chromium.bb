@@ -10,8 +10,8 @@
 #include <functional>
 #include <map>
 
+#include "base/containers/hash_tables.h"
 #include "base/logging.h"
-#include "base/hash_tables.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

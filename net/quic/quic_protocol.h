@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "net/base/int128.h"

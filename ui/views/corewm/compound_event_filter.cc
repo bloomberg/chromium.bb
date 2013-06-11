@@ -4,7 +4,7 @@
 
 #include "ui/views/corewm/compound_event_filter.h"
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/drag_drop_client.h"

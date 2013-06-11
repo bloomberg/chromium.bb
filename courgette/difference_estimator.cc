@@ -8,7 +8,7 @@
 
 #include "courgette/difference_estimator.h"
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 
 namespace courgette {
 

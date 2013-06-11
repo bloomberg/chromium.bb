@@ -5,7 +5,7 @@
 #ifndef CC_ANIMATION_ANIMATION_REGISTRAR_H_
 #define CC_ANIMATION_ANIMATION_REGISTRAR_H_
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"

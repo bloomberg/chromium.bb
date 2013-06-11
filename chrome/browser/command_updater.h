@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_COMMAND_UPDATER_H_
 
 #include "base/basictypes.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "ui/base/window_open_disposition.h"
 
 class CommandObserver;

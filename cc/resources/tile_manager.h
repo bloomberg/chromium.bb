@@ -9,7 +9,7 @@
 #include <set>
 #include <vector>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "cc/debug/rendering_stats_instrumentation.h"

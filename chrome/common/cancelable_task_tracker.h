@@ -36,7 +36,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 

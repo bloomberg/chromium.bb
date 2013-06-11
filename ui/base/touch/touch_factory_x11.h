@@ -9,7 +9,7 @@
 #include <map>
 #include <vector>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/timer.h"
 #include "ui/base/ui_export.h"
 

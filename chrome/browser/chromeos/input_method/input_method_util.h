@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chromeos/ime/input_method_descriptor.h"

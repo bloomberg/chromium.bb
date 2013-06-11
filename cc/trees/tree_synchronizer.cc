@@ -4,8 +4,8 @@
 
 #include "cc/trees/tree_synchronizer.h"
 
+#include "base/containers/hash_tables.h"
 #include "base/debug/trace_event.h"
-#include "base/hash_tables.h"
 #include "base/logging.h"
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/input/scrollbar.h"

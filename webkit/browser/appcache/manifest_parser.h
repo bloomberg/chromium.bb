@@ -35,7 +35,7 @@
 #include <string>
 #include <vector>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
 #include "webkit/storage/webkit_storage_export.h"
 

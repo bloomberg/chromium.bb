@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
-#include "base/hash_tables.h"
 #include "chrome/browser/parsers/metadata_parser.h"
 
 typedef base::hash_map<std::string, std::string> PropertyMap;

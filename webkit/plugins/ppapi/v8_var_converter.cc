@@ -8,7 +8,7 @@
 #include <stack>
 #include <string>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/shared_impl/array_var.h"

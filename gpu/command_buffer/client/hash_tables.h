@@ -13,7 +13,7 @@ struct hash_map : public std::tr1::unordered_map<key, value> {
 };
 }
 #else
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 namespace gpu {
 template <typename key, typename value>
 struct hash_map : public base::hash_map<key, value> {

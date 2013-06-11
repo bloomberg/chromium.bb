@@ -14,7 +14,7 @@
 #include "net/base/net_export.h"
 
 #if !defined(NDEBUG)
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #endif
 
 namespace net {

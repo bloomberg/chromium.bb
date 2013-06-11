@@ -7,7 +7,7 @@
 #include <stack>
 
 #include "base/auto_reset.h"
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
 #include "ipc/ipc_sync_message.h"

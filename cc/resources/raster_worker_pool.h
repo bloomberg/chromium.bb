@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "cc/base/worker_pool.h"
 #include "cc/resources/resource_provider.h"
 

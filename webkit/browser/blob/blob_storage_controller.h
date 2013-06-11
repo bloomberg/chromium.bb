@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "base/hash_tables.h"
+#include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/process.h"
 #include "webkit/common/blob/blob_data.h"
