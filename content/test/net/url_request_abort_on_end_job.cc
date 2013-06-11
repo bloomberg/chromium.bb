@@ -7,7 +7,7 @@
 #include <cstring>
 
 #include "base/compiler_specific.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/test/net/url_request_abort_on_end_job.h"
 #include "net/base/io_buffer.h"
