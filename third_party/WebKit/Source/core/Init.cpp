@@ -67,8 +67,7 @@ void init()
 
 void shutdown()
 {
-    // We cannot call Node::shutdown() yet because some tests have an
-    // incorrect destruction ordering, e.g. PasswordAutofillAgentTest.*
+    Node::shutdown();
 }
 
 } // namespace WebCore
