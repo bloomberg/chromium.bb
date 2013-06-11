@@ -97,7 +97,13 @@ class BrowserWithTestWindowTest : public testing::Test {
 
   TestingProfile* profile() const { return profile_.get(); }
 
+  TestingProfile* GetProfile() { return profile_.get(); }
+
   base::MessageLoop* message_loop() { return &ui_loop_; }
+
+  BrowserWindow* release_browser_window() WARN_UNUSED_RESULT {
+    return window_.release();
+  }
 
   // Adds a tab to |browser| with the given URL and commits the load.
   // This is a convenience function. The new tab will be added at index 0.

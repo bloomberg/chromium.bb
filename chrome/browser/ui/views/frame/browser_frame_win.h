@@ -104,4 +104,8 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameWin);
 };
 
+// Helper function to create the incognito/normal browser window switcher.
+views::Button* MakeWindowSwitcherButton(views::ButtonListener* listener,
+                                        bool is_off_the_record);
+
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_FRAME_WIN_H_

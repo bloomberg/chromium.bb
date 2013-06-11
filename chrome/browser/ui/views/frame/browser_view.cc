@@ -938,7 +938,6 @@ void BrowserView::SetWindowSwitcherButton(views::Button* button) {
   if (window_switcher_button_)
     RemoveChildView(window_switcher_button_);
   window_switcher_button_ = button;
-  AddChildView(button);
 }
 
 void BrowserView::ToolbarSizeChanged(bool is_animating) {
@@ -2077,6 +2076,9 @@ void BrowserView::InitViews() {
       new OverlayContainer(this, immersive_mode_controller_.get());
   overlay_container_->SetVisible(false);
   AddChildView(overlay_container_);
+
+  if (window_switcher_button_)
+    AddChildView(window_switcher_button_);
 
   overlay_controller_.reset(
       new InstantOverlayControllerViews(browser(), overlay_container_));
