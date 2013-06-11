@@ -39,6 +39,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
   virtual void UpdateAccountChooser() OVERRIDE;
   virtual void UpdateButtonStrip() OVERRIDE;
   virtual void UpdateDetailArea() OVERRIDE;
+  virtual void UpdateForErrors() OVERRIDE;
   virtual void UpdateNotificationArea() OVERRIDE;
   virtual void UpdateSection(DialogSection section) OVERRIDE;
   virtual void FillSection(DialogSection section,

@@ -28,6 +28,7 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
   virtual void UpdateAccountChooser() OVERRIDE;
   virtual void UpdateButtonStrip() OVERRIDE;
   virtual void UpdateDetailArea() OVERRIDE;
+  virtual void UpdateForErrors() OVERRIDE;
   virtual void UpdateSection(DialogSection section) OVERRIDE;
   virtual void FillSection(DialogSection section,
                            const DetailInput& originating_input) OVERRIDE;
@@ -53,12 +54,13 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
   void EditingCancel(JNIEnv* env, jobject obj, jint section);
   void EditedOrActivatedField(JNIEnv* env,
                               jobject obj,
+                              jint section,
                               jint detail_input,
                               jint view_android,
                               jstring value,
                               jboolean was_edit);
   base::android::ScopedJavaLocalRef<jstring> ValidateField(
-      JNIEnv* env, jobject obj, jint type, jstring value);
+      JNIEnv* env, jobject obj, jint section, jint type, jstring value);
   void ValidateSection(JNIEnv* env, jobject obj, jint section);
   void DialogSubmit(JNIEnv* env, jobject obj);
   void DialogCancel(JNIEnv* env, jobject obj);

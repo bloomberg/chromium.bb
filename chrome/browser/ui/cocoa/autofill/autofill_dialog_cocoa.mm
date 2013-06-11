@@ -71,6 +71,9 @@ void AutofillDialogCocoa::UpdateButtonStrip() {
 void AutofillDialogCocoa::UpdateDetailArea() {
 }
 
+void AutofillDialogCocoa::UpdateForErrors() {
+}
+
 void AutofillDialogCocoa::UpdateNotificationArea() {
 }
 

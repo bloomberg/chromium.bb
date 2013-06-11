@@ -137,6 +137,13 @@ const char kSaveAddressValidResponse[] =
 
 const char kSaveAddressWithRequiredActionsValidResponse[] =
     "{"
+    "  \"form_field_error\":"
+    "  ["
+    "    {"
+    "      \"location\":\"SHIPPING_ADDRESS\","
+    "      \"type\":\"INVALID_POSTAL_CODE\""
+    "    }"
+    "  ],"
     "  \"required_action\":"
     "  ["
     "    \"  \\treqUIRE_PhOnE_number   \\n\\r\","
@@ -166,6 +173,13 @@ const char kSaveInstrumentValidResponse[] =
 
 const char kSaveInstrumentWithRequiredActionsValidResponse[] =
     "{"
+    "  \"form_field_error\":"
+    "  ["
+    "    {"
+    "      \"location\":\"SHIPPING_ADDRESS\","
+    "      \"type\":\"INVALID_POSTAL_CODE\""
+    "    }"
+    "  ],"
     "  \"required_action\":"
     "  ["
     "    \"  \\treqUIRE_PhOnE_number   \\n\\r\","
@@ -181,6 +195,13 @@ const char kSaveInstrumentAndAddressValidResponse[] =
 
 const char kSaveInstrumentAndAddressWithRequiredActionsValidResponse[] =
     "{"
+    "  \"form_field_error\":"
+    "  ["
+    "    {"
+    "      \"location\":\"SHIPPING_ADDRESS\","
+    "      \"type\":\"INVALID_POSTAL_CODE\""
+    "    }"
+    "  ],"
     "  \"required_action\":"
     "  ["
     "    \"  \\treqUIRE_PhOnE_number   \\n\\r\","
@@ -210,6 +231,13 @@ const char kUpdateAddressValidResponse[] =
 
 const char kUpdateWithRequiredActionsValidResponse[] =
     "{"
+    "  \"form_field_error\":"
+    "  ["
+    "    {"
+    "      \"location\":\"SHIPPING_ADDRESS\","
+    "      \"type\":\"INVALID_POSTAL_CODE\""
+    "    }"
+    "  ],"
     "  \"required_action\":"
     "  ["
     "    \"  \\treqUIRE_PhOnE_number   \\n\\r\","
@@ -655,22 +683,27 @@ class MockWalletClientDelegate : public WalletClientDelegate {
 
   MOCK_METHOD0(OnDidAcceptLegalDocuments, void());
   MOCK_METHOD1(OnDidAuthenticateInstrument, void(bool success));
-  MOCK_METHOD2(OnDidSaveAddress,
+  MOCK_METHOD3(OnDidSaveAddress,
                void(const std::string& address_id,
-                    const std::vector<RequiredAction>& required_actions));
-  MOCK_METHOD2(OnDidSaveInstrument,
+                    const std::vector<RequiredAction>& required_actions,
+                    const std::vector<FormFieldError>& form_field_errors));
+  MOCK_METHOD3(OnDidSaveInstrument,
                void(const std::string& instrument_id,
-                    const std::vector<RequiredAction>& required_actions));
-  MOCK_METHOD3(OnDidSaveInstrumentAndAddress,
+                    const std::vector<RequiredAction>& required_actions,
+                    const std::vector<FormFieldError>& form_field_errors));
+  MOCK_METHOD4(OnDidSaveInstrumentAndAddress,
                void(const std::string& instrument_id,
                     const std::string& shipping_address_id,
-                    const std::vector<RequiredAction>& required_actions));
-  MOCK_METHOD2(OnDidUpdateAddress,
+                    const std::vector<RequiredAction>& required_actions,
+                    const std::vector<FormFieldError>& form_field_errors));
+  MOCK_METHOD3(OnDidUpdateAddress,
                void(const std::string& address_id,
-                    const std::vector<RequiredAction>& required_actions));
-  MOCK_METHOD2(OnDidUpdateInstrument,
+                    const std::vector<RequiredAction>& required_actions,
+                    const std::vector<FormFieldError>& form_field_errors));
+  MOCK_METHOD3(OnDidUpdateInstrument,
                void(const std::string& instrument_id,
-                    const std::vector<RequiredAction>& required_actions));
+                    const std::vector<RequiredAction>& required_actions,
+                    const std::vector<FormFieldError>& form_field_errors));
   MOCK_METHOD1(OnWalletError, void(WalletClient::ErrorType error_type));
   MOCK_METHOD0(OnMalformedResponse, void());
   MOCK_METHOD1(OnNetworkError, void(int response_code));
@@ -1069,7 +1102,8 @@ TEST_F(WalletClientTest, GetWalletItems) {
 TEST_F(WalletClientTest, SaveAddressSucceeded) {
   EXPECT_CALL(delegate_,
               OnDidSaveAddress("saved_address_id",
-                               std::vector<RequiredAction>())).Times(1);
+                               std::vector<RequiredAction>(),
+                               std::vector<FormFieldError>())).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_ADDRESS, 1);
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
@@ -1092,9 +1126,14 @@ TEST_F(WalletClientTest, SaveAddressWithRequiredActionsSucceeded) {
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
   required_actions.push_back(INVALID_FORM_FIELD);
 
+  std::vector<FormFieldError> form_errors;
+  form_errors.push_back(FormFieldError(FormFieldError::INVALID_POSTAL_CODE,
+                                       FormFieldError::SHIPPING_ADDRESS));
+
   EXPECT_CALL(delegate_,
               OnDidSaveAddress(std::string(),
-                               required_actions)).Times(1);
+                               required_actions,
+                               form_errors)).Times(1);
 
   scoped_ptr<Address> address = GetTestSaveableAddress();
   wallet_client_->SaveAddress(*address, GURL(kMerchantUrl));
@@ -1132,7 +1171,8 @@ TEST_F(WalletClientTest, SaveAddressFailedMalformedResponse) {
 TEST_F(WalletClientTest, SaveInstrumentSucceeded) {
   EXPECT_CALL(delegate_,
               OnDidSaveInstrument("instrument_id",
-                                  std::vector<RequiredAction>())).Times(1);
+                                  std::vector<RequiredAction>(),
+                                  std::vector<FormFieldError>())).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_INSTRUMENT, 1);
   delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
@@ -1160,9 +1200,14 @@ TEST_F(WalletClientTest, SaveInstrumentWithRequiredActionsSucceeded) {
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
   required_actions.push_back(INVALID_FORM_FIELD);
 
+  std::vector<FormFieldError> form_errors;
+  form_errors.push_back(FormFieldError(FormFieldError::INVALID_POSTAL_CODE,
+                                       FormFieldError::SHIPPING_ADDRESS));
+
   EXPECT_CALL(delegate_,
               OnDidSaveInstrument(std::string(),
-                                  required_actions)).Times(1);
+                                  required_actions,
+                                  form_errors)).Times(1);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   wallet_client_->SaveInstrument(*instrument,
@@ -1247,7 +1292,8 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressSucceeded) {
               OnDidSaveInstrumentAndAddress(
                   "saved_instrument_id",
                   "saved_address_id",
-                  std::vector<RequiredAction>())).Times(1);
+                  std::vector<RequiredAction>(),
+                  std::vector<FormFieldError>())).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::SAVE_INSTRUMENT_AND_ADDRESS,
       1);
@@ -1280,11 +1326,16 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressWithRequiredActionsSucceeded) {
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
   required_actions.push_back(INVALID_FORM_FIELD);
 
+  std::vector<FormFieldError> form_errors;
+  form_errors.push_back(FormFieldError(FormFieldError::INVALID_POSTAL_CODE,
+                                       FormFieldError::SHIPPING_ADDRESS));
+
   EXPECT_CALL(delegate_,
               OnDidSaveInstrumentAndAddress(
                   std::string(),
                   std::string(),
-                  required_actions)).Times(1);
+                  required_actions,
+                  form_errors)).Times(1);
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   scoped_ptr<Address> address = GetTestSaveableAddress();
@@ -1406,7 +1457,8 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInstrumentMissing) {
 TEST_F(WalletClientTest, UpdateAddressSucceeded) {
   EXPECT_CALL(delegate_,
               OnDidUpdateAddress("shipping_address_id",
-                                 std::vector<RequiredAction>())).Times(1);
+                                 std::vector<RequiredAction>(),
+                                 std::vector<FormFieldError>())).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_ADDRESS, 1);
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
 
@@ -1431,8 +1483,13 @@ TEST_F(WalletClientTest, UpdateAddressWithRequiredActionsSucceeded) {
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
   required_actions.push_back(INVALID_FORM_FIELD);
 
-  EXPECT_CALL(delegate_,
-              OnDidUpdateAddress(std::string(), required_actions)).Times(1);
+  std::vector<FormFieldError> form_errors;
+  form_errors.push_back(FormFieldError(FormFieldError::INVALID_POSTAL_CODE,
+                                       FormFieldError::SHIPPING_ADDRESS));
+
+  EXPECT_CALL(delegate_, OnDidUpdateAddress(std::string(),
+                                            required_actions,
+                                            form_errors)).Times(1);
 
   scoped_ptr<Address> address = GetTestShippingAddress();
   address->set_object_id("shipping_address_id");
@@ -1476,7 +1533,8 @@ TEST_F(WalletClientTest, UpdateAddressMalformedResponse) {
 TEST_F(WalletClientTest, UpdateInstrumentAddressSucceeded) {
   EXPECT_CALL(delegate_,
               OnDidUpdateInstrument("instrument_id",
-                                    std::vector<RequiredAction>())).Times(1);
+                                    std::vector<RequiredAction>(),
+                                    std::vector<FormFieldError>())).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
                                            1);
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
@@ -1495,7 +1553,8 @@ TEST_F(WalletClientTest, UpdateInstrumentAddressSucceeded) {
 TEST_F(WalletClientTest, UpdateInstrumentExpirationDateSuceeded) {
   EXPECT_CALL(delegate_,
               OnDidUpdateInstrument("instrument_id",
-                                    std::vector<RequiredAction>())).Times(1);
+                                    std::vector<RequiredAction>(),
+                                    std::vector<FormFieldError>())).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
                                            1);
   delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
@@ -1521,7 +1580,8 @@ TEST_F(WalletClientTest, UpdateInstrumentExpirationDateSuceeded) {
 TEST_F(WalletClientTest, UpdateInstrumentAddressWithNameChangeSucceeded) {
   EXPECT_CALL(delegate_,
               OnDidUpdateInstrument("instrument_id",
-                                    std::vector<RequiredAction>())).Times(1);
+                                    std::vector<RequiredAction>(),
+                                    std::vector<FormFieldError>())).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
                                            1);
   delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
@@ -1545,7 +1605,8 @@ TEST_F(WalletClientTest, UpdateInstrumentAddressWithNameChangeSucceeded) {
 TEST_F(WalletClientTest, UpdateInstrumentAddressAndExpirationDateSucceeded) {
   EXPECT_CALL(delegate_,
               OnDidUpdateInstrument("instrument_id",
-                                    std::vector<RequiredAction>())).Times(1);
+                                    std::vector<RequiredAction>(),
+                                    std::vector<FormFieldError>())).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
                                            1);
   delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
@@ -1580,9 +1641,14 @@ TEST_F(WalletClientTest, UpdateInstrumentWithRequiredActionsSucceeded) {
   required_actions.push_back(REQUIRE_PHONE_NUMBER);
   required_actions.push_back(INVALID_FORM_FIELD);
 
+  std::vector<FormFieldError> form_errors;
+  form_errors.push_back(FormFieldError(FormFieldError::INVALID_POSTAL_CODE,
+                                       FormFieldError::SHIPPING_ADDRESS));
+
   EXPECT_CALL(delegate_,
               OnDidUpdateInstrument(std::string(),
-                                    required_actions)).Times(1);
+                                    required_actions,
+                                    form_errors)).Times(1);
 
   WalletClient::UpdateInstrumentRequest update_instrument_request(
       "instrument_id",

@@ -130,19 +130,23 @@ class AutofillDialogController {
   // Decides whether input of |value| is valid for a field of type |type|. If
   // valid, the returned string will be empty. Otherwise it will contain an
   // error message.
-  virtual string16 InputValidityMessage(AutofillFieldType type,
-                                        const string16& value) const = 0;
+  virtual string16 InputValidityMessage(DialogSection section,
+                                        AutofillFieldType type,
+                                        const string16& value) = 0;
 
 
   // Decides whether the combination of all |inputs| is valid, returns a
   // map of field types to error strings.
   virtual ValidityData InputsAreValid(
-      const DetailOutputMap& inputs, ValidationType validation_type) const = 0;
+      DialogSection section,
+      const DetailOutputMap& inputs,
+      ValidationType validation_type) = 0;
 
   // Called when the user changes the contents of a text field or activates it
   // (by focusing and then clicking it). |was_edit| is true when the function
   // was called in response to the user editing the text field.
-  virtual void UserEditedOrActivatedInput(const DetailInput* input,
+  virtual void UserEditedOrActivatedInput(DialogSection section,
+                                          const DetailInput* input,
                                           gfx::NativeView parent_view,
                                           const gfx::Rect& content_bounds,
                                           const string16& field_contents,

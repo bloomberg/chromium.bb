@@ -48,12 +48,15 @@ class MockAutofillDialogController : public AutofillDialogController {
   virtual gfx::Image IconForField(AutofillFieldType type,
                                   const string16& user_input) const OVERRIDE;
   virtual string16 InputValidityMessage(
+      DialogSection section,
       AutofillFieldType type,
-      const string16& value) const OVERRIDE;
+      const string16& value) OVERRIDE;
   virtual ValidityData InputsAreValid(
+      DialogSection section,
       const DetailOutputMap& inputs,
-      ValidationType validation_type) const OVERRIDE;
-  virtual void UserEditedOrActivatedInput(const DetailInput* input,
+      ValidationType validation_type) OVERRIDE;
+  virtual void UserEditedOrActivatedInput(DialogSection section,
+                                          const DetailInput* input,
                                           gfx::NativeView parent_view,
                                           const gfx::Rect& content_bounds,
                                           const string16& field_contents,

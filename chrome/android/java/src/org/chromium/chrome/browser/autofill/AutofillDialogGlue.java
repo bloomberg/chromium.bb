@@ -214,15 +214,15 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     }
 
     @Override
-    public void editedOrActivatedField(int dialogInputPointer, ViewAndroidDelegate delegate,
-            String value, boolean wasEdit) {
-        nativeEditedOrActivatedField(mNativeDialogPopup, dialogInputPointer,
+    public void editedOrActivatedField(int section, int dialogInputPointer,
+        ViewAndroidDelegate delegate, String value, boolean wasEdit) {
+        nativeEditedOrActivatedField(mNativeDialogPopup, section, dialogInputPointer,
                 mViewAndroid.getNativePointer(), value, wasEdit);
     }
 
     @Override
-    public String validateField(int fieldType, String value) {
-        return nativeValidateField(mNativeDialogPopup, fieldType, value);
+    public String validateField(int section, int fieldType, String value) {
+        return nativeValidateField(mNativeDialogPopup, section, fieldType, value);
     }
 
     @Override
@@ -421,9 +421,9 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     private native boolean nativeEditingComplete(int nativeAutofillDialogViewAndroid, int section);
     private native void nativeEditingCancel(int nativeAutofillDialogViewAndroid, int section);
     private native void nativeEditedOrActivatedField(int nativeAutofillDialogViewAndroid,
-            int dialogInputPointer, int viewAndroid, String value, boolean wasEdit);
-    private native String nativeValidateField(int nativeAutofillDialogViewAndroid, int fieldType,
-            String value);
+            int section, int dialogInputPointer, int viewAndroid, String value, boolean wasEdit);
+    private native String nativeValidateField(int nativeAutofillDialogViewAndroid, int section,
+        int fieldType, String value);
     private native void nativeValidateSection(int nativeAutofillDialogViewAndroid, int section);
     private native void nativeDialogSubmit(int nativeAutofillDialogViewAndroid);
     private native void nativeDialogCancel(int nativeAutofillDialogViewAndroid);

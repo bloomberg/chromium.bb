@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "components/autofill/browser/autofill_metrics.h"
+#include "components/autofill/content/browser/wallet/form_field_error.h"
 #include "components/autofill/content/browser/wallet/instrument.h"
 #include "components/autofill/content/browser/wallet/wallet_address.h"
 #include "components/autofill/content/browser/wallet/wallet_client_delegate.h"
@@ -115,6 +116,20 @@ void GetRequiredActionsForSaveToWallet(
       }
       required_actions->push_back(action);
     }
+  }
+}
+
+void GetFormFieldErrors(const base::DictionaryValue& dict,
+                        std::vector<FormFieldError>* form_errors) {
+  DCHECK(form_errors->empty());
+  const base::ListValue* form_errors_list;
+  if (!dict.GetList("form_field_error", &form_errors_list))
+    return;
+
+  for (size_t i = 0; i < form_errors_list->GetSize(); ++i) {
+    const base::DictionaryValue* dictionary;
+    if (form_errors_list->GetDictionary(i, &dictionary))
+      form_errors->push_back(FormFieldError::CreateFormFieldError(*dictionary));
   }
 }
 
@@ -762,11 +777,15 @@ void WalletClient::OnURLFetchComplete(
       std::string shipping_address_id;
       std::vector<RequiredAction> required_actions;
       GetRequiredActionsForSaveToWallet(*response_dict, &required_actions);
+      std::vector<FormFieldError> form_errors;
+      GetFormFieldErrors(*response_dict, &form_errors);
       if (response_dict->GetString(kShippingAddressIdKey,
                                    &shipping_address_id) ||
           !required_actions.empty()) {
         LogRequiredActions(required_actions);
-        delegate_->OnDidSaveAddress(shipping_address_id, required_actions);
+        delegate_->OnDidSaveAddress(shipping_address_id,
+                                    required_actions,
+                                    form_errors);
       } else {
         HandleMalformedResponse();
       }
@@ -777,10 +796,14 @@ void WalletClient::OnURLFetchComplete(
       std::string instrument_id;
       std::vector<RequiredAction> required_actions;
       GetRequiredActionsForSaveToWallet(*response_dict, &required_actions);
+      std::vector<FormFieldError> form_errors;
+      GetFormFieldErrors(*response_dict, &form_errors);
       if (response_dict->GetString(kInstrumentIdKey, &instrument_id) ||
           !required_actions.empty()) {
         LogRequiredActions(required_actions);
-        delegate_->OnDidSaveInstrument(instrument_id, required_actions);
+        delegate_->OnDidSaveInstrument(instrument_id,
+                                       required_actions,
+                                       form_errors);
       } else {
         HandleMalformedResponse();
       }
@@ -795,12 +818,15 @@ void WalletClient::OnURLFetchComplete(
                                &shipping_address_id);
       std::vector<RequiredAction> required_actions;
       GetRequiredActionsForSaveToWallet(*response_dict, &required_actions);
+      std::vector<FormFieldError> form_errors;
+      GetFormFieldErrors(*response_dict, &form_errors);
       if ((!instrument_id.empty() && !shipping_address_id.empty()) ||
           !required_actions.empty()) {
         LogRequiredActions(required_actions);
         delegate_->OnDidSaveInstrumentAndAddress(instrument_id,
                                                  shipping_address_id,
-                                                 required_actions);
+                                                 required_actions,
+                                                 form_errors);
       } else {
         HandleMalformedResponse();
       }
@@ -811,10 +837,14 @@ void WalletClient::OnURLFetchComplete(
       std::string address_id;
       std::vector<RequiredAction> required_actions;
       GetRequiredActionsForSaveToWallet(*response_dict, &required_actions);
+      std::vector<FormFieldError> form_errors;
+      GetFormFieldErrors(*response_dict, &form_errors);
       if (response_dict->GetString(kShippingAddressIdKey, &address_id) ||
           !required_actions.empty()) {
         LogRequiredActions(required_actions);
-        delegate_->OnDidUpdateAddress(address_id, required_actions);
+        delegate_->OnDidUpdateAddress(address_id,
+                                      required_actions,
+                                      form_errors);
       } else {
         HandleMalformedResponse();
       }
@@ -825,10 +855,14 @@ void WalletClient::OnURLFetchComplete(
       std::string instrument_id;
       std::vector<RequiredAction> required_actions;
       GetRequiredActionsForSaveToWallet(*response_dict, &required_actions);
+      std::vector<FormFieldError> form_errors;
+      GetFormFieldErrors(*response_dict, &form_errors);
       if (response_dict->GetString(kInstrumentIdKey, &instrument_id) ||
           !required_actions.empty()) {
         LogRequiredActions(required_actions);
-        delegate_->OnDidUpdateInstrument(instrument_id, required_actions);
+        delegate_->OnDidUpdateInstrument(instrument_id,
+                                         required_actions,
+                                         form_errors);
       } else {
         HandleMalformedResponse();
       }

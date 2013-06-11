@@ -43,6 +43,7 @@
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/content/browser/risk/fingerprint.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
+#include "components/autofill/content/browser/wallet/form_field_error.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 #include "components/autofill/content/browser/wallet/instrument.h"
 #include "components/autofill/content/browser/wallet/wallet_address.h"
@@ -321,6 +322,24 @@ bool IsCardHolderNameValidForWallet(const string16& name) {
   std::vector<base::string16> split_name;
   base::SplitString(whitespace_collapsed_name, ' ', &split_name);
   return split_name.size() >= 2;
+}
+
+DialogSection SectionFromLocation(wallet::FormFieldError::Location location) {
+  switch (location) {
+    case wallet::FormFieldError::PAYMENT_INSTRUMENT:
+    case wallet::FormFieldError::LEGAL_ADDRESS:
+      return SECTION_CC_BILLING;
+
+    case wallet::FormFieldError::SHIPPING_ADDRESS:
+      return SECTION_SHIPPING;
+
+    case wallet::FormFieldError::UNKNOWN_LOCATION:
+      NOTREACHED();
+      return SECTION_MAX;
+  }
+
+  NOTREACHED();
+  return SECTION_MAX;
 }
 
 }  // namespace
@@ -734,6 +753,34 @@ void AutofillDialogControllerImpl::OnWalletOrSigninUpdate() {
   // On the first successful response, compute the initial user state metric.
   if (initial_user_state_ == AutofillMetrics::DIALOG_USER_STATE_UNKNOWN)
     initial_user_state_ = GetInitialUserState();
+}
+
+void AutofillDialogControllerImpl::OnWalletFormFieldError(
+    const std::vector<wallet::FormFieldError>& form_field_errors) {
+  if (form_field_errors.empty())
+    return;
+
+  for (std::vector<wallet::FormFieldError>::const_iterator it =
+           form_field_errors.begin();
+       it != form_field_errors.end(); ++it) {
+    if (it->error_type() == wallet::FormFieldError::UNKNOWN_ERROR ||
+        it->GetAutofillType() == MAX_VALID_FIELD_TYPE ||
+        it->location() == wallet::FormFieldError::UNKNOWN_LOCATION) {
+      wallet_server_validation_recoverable_ = false;
+      break;
+    }
+    DialogSection section = SectionFromLocation(it->location());
+    wallet_errors_[section][it->GetAutofillType()] =
+        std::make_pair(it->GetErrorMessage(),
+                       GetValueFromSection(section, it->GetAutofillType()));
+  }
+
+  // Unrecoverable validation errors.
+  if (!wallet_server_validation_recoverable_)
+    DisableWallet();
+
+  if (view_)
+    view_->UpdateForErrors();
 }
 
 void AutofillDialogControllerImpl::EnsureLegalDocumentsText() {
@@ -1194,8 +1241,22 @@ gfx::Image AutofillDialogControllerImpl::IconForField(
 // TODO(estade): Replace all the error messages here with more helpful and
 // translateable ones. TODO(groby): Also add tests.
 string16 AutofillDialogControllerImpl::InputValidityMessage(
+    DialogSection section,
     AutofillFieldType type,
-    const string16& value) const {
+    const string16& value) {
+  // If the field is edited, clear any Wallet errors.
+  if (IsPayingWithWallet()) {
+    WalletValidationErrors::iterator it = wallet_errors_.find(section);
+    if (it != wallet_errors_.end()) {
+      TypeErrorInputMap::const_iterator iter = it->second.find(type);
+      if (iter != it->second.end()) {
+        if (iter->second.second == value)
+          return iter->second.first;
+        it->second.erase(type);
+      }
+    }
+  }
+
   switch (AutofillType::GetEquivalentFieldType(type)) {
     case EMAIL_ADDRESS:
       if (!value.empty() && !IsValidEmailAddress(value)) {
@@ -1269,7 +1330,9 @@ string16 AutofillDialogControllerImpl::InputValidityMessage(
 // TODO(estade): Replace all the error messages here with more helpful and
 // translateable ones. TODO(groby): Also add tests.
 ValidityData AutofillDialogControllerImpl::InputsAreValid(
-    const DetailOutputMap& inputs, ValidationType validation_type) const {
+    DialogSection section,
+    const DetailOutputMap& inputs,
+    ValidationType validation_type) {
   ValidityData invalid_messages;
   std::map<AutofillFieldType, string16> field_values;
   for (DetailOutputMap::const_iterator iter = inputs.begin();
@@ -1279,7 +1342,7 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
       continue;
 
     const AutofillFieldType type = iter->first->type;
-    string16 message = InputValidityMessage(type, iter->second);
+    string16 message = InputValidityMessage(section, type, iter->second);
     if (!message.empty())
       invalid_messages[type] = message;
     else
@@ -1302,7 +1365,7 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
   // If there is a credit card number and a CVC, validate them together.
   if (field_values.count(CREDIT_CARD_NUMBER) &&
       field_values.count(CREDIT_CARD_VERIFICATION_CODE) &&
-      InputValidityMessage(CREDIT_CARD_NUMBER,
+      InputValidityMessage(section, CREDIT_CARD_NUMBER,
                            field_values[CREDIT_CARD_NUMBER]).empty() &&
       !autofill::IsValidCreditCardSecurityCode(
           field_values[CREDIT_CARD_VERIFICATION_CODE],
@@ -1344,6 +1407,7 @@ ValidityData AutofillDialogControllerImpl::InputsAreValid(
 }
 
 void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
+    DialogSection section,
     const DetailInput* input,
     gfx::NativeView parent_view,
     const gfx::Rect& content_bounds,
@@ -1485,11 +1549,11 @@ std::vector<DialogNotification> AutofillDialogControllerImpl::
         l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_AUTOCHECKOUT_SUCCESS)));
   }
 
-  if (wallet_server_validation_error_) {
+  if (!wallet_server_validation_recoverable_) {
     // TODO(ahutter): L10n and UI.
     notifications.push_back(DialogNotification(
         DialogNotification::REQUIRED_ACTION,
-        ASCIIToUTF16("New data failed validation on server side")));
+        ASCIIToUTF16("Could not save Wallet data")));
   }
 
   if (IsPayingWithWallet() && !wallet::IsUsingProd()) {
@@ -1564,6 +1628,7 @@ void AutofillDialogControllerImpl::OnCancel() {
 
 void AutofillDialogControllerImpl::OnAccept() {
   choose_another_instrument_or_address_ = false;
+  wallet_server_validation_recoverable_ = true;
   HidePopup();
   SetIsSubmitting(true);
   if (IsSubmitPausedOn(wallet::VERIFY_CVV)) {
@@ -1800,26 +1865,30 @@ void AutofillDialogControllerImpl::OnDidGetWalletItems(
 
 void AutofillDialogControllerImpl::OnDidSaveAddress(
     const std::string& address_id,
-    const std::vector<wallet::RequiredAction>& required_actions) {
+    const std::vector<wallet::RequiredAction>& required_actions,
+    const std::vector<wallet::FormFieldError>& form_field_errors) {
   DCHECK(is_submitting_ && IsPayingWithWallet());
 
   if (required_actions.empty()) {
     active_address_id_ = address_id;
     GetFullWalletIfReady();
   } else {
+    OnWalletFormFieldError(form_field_errors);
     HandleSaveOrUpdateRequiredActions(required_actions);
   }
 }
 
 void AutofillDialogControllerImpl::OnDidSaveInstrument(
     const std::string& instrument_id,
-    const std::vector<wallet::RequiredAction>& required_actions) {
+    const std::vector<wallet::RequiredAction>& required_actions,
+    const std::vector<wallet::FormFieldError>& form_field_errors) {
   DCHECK(is_submitting_ && IsPayingWithWallet());
 
   if (required_actions.empty()) {
     active_instrument_id_ = instrument_id;
     GetFullWalletIfReady();
   } else {
+    OnWalletFormFieldError(form_field_errors);
     HandleSaveOrUpdateRequiredActions(required_actions);
   }
 }
@@ -1827,23 +1896,26 @@ void AutofillDialogControllerImpl::OnDidSaveInstrument(
 void AutofillDialogControllerImpl::OnDidSaveInstrumentAndAddress(
     const std::string& instrument_id,
     const std::string& address_id,
-    const std::vector<wallet::RequiredAction>& required_actions) {
-  OnDidSaveInstrument(instrument_id, required_actions);
+    const std::vector<wallet::RequiredAction>& required_actions,
+    const std::vector<wallet::FormFieldError>& form_field_errors) {
+  OnDidSaveInstrument(instrument_id, required_actions, form_field_errors);
   // |is_submitting_| can change while in |OnDidSaveInstrument()|.
   if (is_submitting_)
-    OnDidSaveAddress(address_id, required_actions);
+    OnDidSaveAddress(address_id, required_actions, form_field_errors);
 }
 
 void AutofillDialogControllerImpl::OnDidUpdateAddress(
     const std::string& address_id,
-    const std::vector<wallet::RequiredAction>& required_actions) {
-  OnDidSaveAddress(address_id, required_actions);
+    const std::vector<wallet::RequiredAction>& required_actions,
+    const std::vector<wallet::FormFieldError>& form_field_errors) {
+  OnDidSaveAddress(address_id, required_actions, form_field_errors);
 }
 
 void AutofillDialogControllerImpl::OnDidUpdateInstrument(
     const std::string& instrument_id,
-    const std::vector<wallet::RequiredAction>& required_actions) {
-  OnDidSaveInstrument(instrument_id, required_actions);
+    const std::vector<wallet::RequiredAction>& required_actions,
+    const std::vector<wallet::FormFieldError>& form_field_errors) {
+  OnDidSaveInstrument(instrument_id, required_actions, form_field_errors);
 }
 
 void AutofillDialogControllerImpl::OnWalletError(
@@ -1949,8 +2021,8 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       has_shown_wallet_usage_confirmation_(false),
       has_accepted_legal_documents_(false),
       is_submitting_(false),
-      wallet_server_validation_error_(false),
       choose_another_instrument_or_address_(false),
+      wallet_server_validation_recoverable_(true),
       autocheckout_state_(AUTOCHECKOUT_NOT_STARTED),
       was_ui_latency_logged_(false) {
   // TODO(estade): remove duplicates from |form_structure|?
@@ -2044,6 +2116,7 @@ void AutofillDialogControllerImpl::OnWalletSigninError() {
 void AutofillDialogControllerImpl::DisableWallet() {
   signin_helper_.reset();
   wallet_items_.reset();
+  wallet_errors_.clear();
   GetWalletClient()->CancelRequests();
   SetIsSubmitting(false);
   account_chooser_model_.SetHadWalletError();
@@ -2470,7 +2543,7 @@ bool AutofillDialogControllerImpl::InputIsEditable(
   return true;
 }
 
-bool AutofillDialogControllerImpl::AllSectionsAreValid() const {
+bool AutofillDialogControllerImpl::AllSectionsAreValid() {
   for (size_t section = SECTION_MIN; section <= SECTION_MAX; ++section) {
     if (!SectionIsValid(static_cast<DialogSection>(section)))
       return false;
@@ -2479,13 +2552,13 @@ bool AutofillDialogControllerImpl::AllSectionsAreValid() const {
 }
 
 bool AutofillDialogControllerImpl::SectionIsValid(
-    DialogSection section) const {
+    DialogSection section) {
   if (!IsManuallyEditingSection(section))
     return true;
 
   DetailOutputMap detail_outputs;
   view_->GetUserInput(section, &detail_outputs);
-  return InputsAreValid(detail_outputs, VALIDATE_EDIT).empty();
+  return InputsAreValid(section, detail_outputs, VALIDATE_EDIT).empty();
 }
 
 bool AutofillDialogControllerImpl::IsCreditCardExpirationValid(
@@ -2729,12 +2802,12 @@ void AutofillDialogControllerImpl::HandleSaveOrUpdateRequiredActions(
     const std::vector<wallet::RequiredAction>& required_actions) {
   DCHECK(!required_actions.empty());
 
+  // TODO(ahutter): Invesitigate if we need to support more generic actions on
+  // this call such as GAIA_AUTH. See crbug.com/243457.
   for (std::vector<wallet::RequiredAction>::const_iterator iter =
            required_actions.begin();
        iter != required_actions.end(); ++iter) {
-    if (*iter == wallet::INVALID_FORM_FIELD) {
-      wallet_server_validation_error_ = true;
-    } else {
+    if (*iter != wallet::INVALID_FORM_FIELD) {
       // TODO(dbeam): handle this more gracefully.
       DisableWallet();
     }

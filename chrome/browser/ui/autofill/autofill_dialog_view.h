@@ -46,6 +46,9 @@ class AutofillDialogView {
   // while Autocheckout is running.
   virtual void UpdateDetailArea() = 0;
 
+  // Updates the validity status of the detail inputs.
+  virtual void UpdateForErrors() = 0;
+
   // Called when the contents of a section have changed.
   virtual void UpdateSection(DialogSection section) = 0;
 

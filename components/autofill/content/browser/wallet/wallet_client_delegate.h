@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "components/autofill/browser/autofill_manager_delegate.h"
+#include "components/autofill/content/browser/wallet/form_field_error.h"
 #include "components/autofill/content/browser/wallet/wallet_client.h"
 
 class AutofillMetrics;
@@ -59,39 +60,51 @@ class WalletClientDelegate {
   // Called when a SaveAddress request finishes successfully. |address_id| can
   // be used in subsequent GetFullWallet calls. |required_actions| is populated
   // if there was a validation error with the data being saved.
+  // |form_field_errors| is populated with the actual form fields that are
+  // failing validation.
   virtual void OnDidSaveAddress(
       const std::string& address_id,
-      const std::vector<RequiredAction>& required_actions) = 0;
+      const std::vector<RequiredAction>& required_actions,
+      const std::vector<FormFieldError>& form_field_errors) = 0;
 
   // Called when a SaveInstrument request finishes sucessfully. |instrument_id|
   // can be used in subsequent GetFullWallet calls. |required_actions| is
   // populated if there was a validation error with the data being saved.
+  // |form_field_errors| is populated with the actual form fields that are
+  // failing validation.
   virtual void OnDidSaveInstrument(
       const std::string& instrument_id,
-      const std::vector<RequiredAction>& required_actions) = 0;
+      const std::vector<RequiredAction>& required_actions,
+      const std::vector<FormFieldError>& form_field_errors) = 0;
 
   // Called when a SaveInstrumentAndAddress request finishes succesfully.
   // |instrument_id| and |address_id| can be used in subsequent
   // GetFullWallet calls. |required_actions| is populated if there was a
-  // validation error with the data being saved.
+  // validation error with the data being saved. |form_field_errors| is
+  // populated with the actual form fields that are failing validation.
   virtual void OnDidSaveInstrumentAndAddress(
       const std::string& instrument_id,
       const std::string& address_id,
-      const std::vector<RequiredAction>& required_actions) = 0;
+      const std::vector<RequiredAction>& required_actions,
+      const std::vector<FormFieldError>& form_field_errors) = 0;
 
   // Called when an UpdateAddress request finishes successfully.
   // |required_actions| is populated if there was a validation error with the
-  // data being saved.
+  // data being saved. |form_field_errors| is populated with the actual form
+  // fields that are failing validation.
   virtual void OnDidUpdateAddress(
       const std::string& address_id,
-      const std::vector<RequiredAction>& required_actions) = 0;
+      const std::vector<RequiredAction>& required_actions,
+      const std::vector<FormFieldError>& form_field_errors) = 0;
 
   // Called when an UpdateInstrument request finishes successfully.
   // |required_actions| is populated if there was a validation error with the
-  // data being saved.
+  // data being saved. |form_field_errors| is populated with the actual form
+  // fields that are failing validation.
   virtual void OnDidUpdateInstrument(
       const std::string& instrument_id,
-      const std::vector<RequiredAction>& required_actions) = 0;
+      const std::vector<RequiredAction>& required_actions,
+      const std::vector<FormFieldError>& form_field_errors) = 0;
 
   // Called when a request fails due to an Online Wallet error.
   virtual void OnWalletError(WalletClient::ErrorType error_type) = 0;

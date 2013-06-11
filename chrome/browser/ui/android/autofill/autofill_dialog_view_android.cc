@@ -130,6 +130,10 @@ void AutofillDialogViewAndroid::UpdateDetailArea() {
   NOTIMPLEMENTED();
 }
 
+void AutofillDialogViewAndroid::UpdateForErrors() {
+  NOTIMPLEMENTED();
+}
+
 void AutofillDialogViewAndroid::UpdateSection(DialogSection section) {
   UpdateOrFillSectionToJava(section, true, UNKNOWN_TYPE);
 }
@@ -367,27 +371,32 @@ void AutofillDialogViewAndroid::EditingCancel(JNIEnv* env,
 
 void AutofillDialogViewAndroid::EditedOrActivatedField(JNIEnv* env,
                                                        jobject obj,
+                                                       jint jsection,
                                                        jint detail_input,
                                                        jint view_android,
                                                        jstring value,
                                                        jboolean was_edit) {
+  const DialogSection section = static_cast<DialogSection>(jsection);
   DetailInput* input = reinterpret_cast<DetailInput*>(detail_input);
   ui::ViewAndroid* view = reinterpret_cast<ui::ViewAndroid*>(view_android);
   gfx::Rect rect = gfx::Rect(0, 0, 0, 0);
   string16 value16 = base::android::ConvertJavaStringToUTF16(
       env, value);
-  controller_->UserEditedOrActivatedInput(input, view, rect, value16, was_edit);
+  controller_->UserEditedOrActivatedInput(
+      section, input, view, rect, value16, was_edit);
 }
 
 ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::ValidateField(
     JNIEnv* env,
     jobject obj,
+    jint jsection,
     jint type,
     jstring value) {
   string16 field_value = base::android::ConvertJavaStringToUTF16(env, value);
+  const DialogSection section = static_cast<DialogSection>(jsection);
   AutofillFieldType field_type = static_cast<AutofillFieldType>(type);
   string16 error_message =
-      controller_->InputValidityMessage(field_type, field_value);
+      controller_->InputValidityMessage(section, field_type, field_value);
   ScopedJavaLocalRef<jstring> error_text =
       base::android::ConvertUTF16ToJavaString(env, error_message);
   return error_text;
@@ -462,7 +471,7 @@ bool AutofillDialogViewAndroid::ValidateSection(DialogSection section,
   DetailOutputMap detail_outputs;
   GetUserInput(section, &detail_outputs);
   ValidityData invalid_inputs =
-      controller_->InputsAreValid(detail_outputs, type);
+      controller_->InputsAreValid(section, detail_outputs, type);
 
   const size_t item_count = invalid_inputs.size();
   if (item_count == 0) return true;

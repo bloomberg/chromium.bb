@@ -46,7 +46,7 @@ class StyledLabel;
 class Textfield;
 class WebView;
 class Widget;
-}
+}  // namespace views
 
 namespace ui {
 class ComboboxModel;
@@ -81,6 +81,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void UpdateAccountChooser() OVERRIDE;
   virtual void UpdateButtonStrip() OVERRIDE;
   virtual void UpdateDetailArea() OVERRIDE;
+  virtual void UpdateForErrors() OVERRIDE;
   virtual void UpdateNotificationArea() OVERRIDE;
   virtual void UpdateSection(DialogSection section) OVERRIDE;
   virtual void FillSection(DialogSection section,
@@ -495,6 +496,10 @@ class AutofillDialogViews : public AutofillDialogView,
   // Shows an error bubble pointing at |view| if |view| has a message in
   // |validity_map_|.
   void ShowErrorBubbleForViewIfNecessary(views::View* view);
+
+  // Updates validity of the inputs in |section| with the new validity data.
+  void MarkInputsInvalid(DialogSection section,
+                         const ValidityData& validity_data);
 
   // Checks all manual inputs in |group| for validity. Decorates the invalid
   // ones and returns true if all were valid.

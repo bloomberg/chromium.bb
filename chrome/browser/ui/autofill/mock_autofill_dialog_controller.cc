@@ -123,18 +123,21 @@ gfx::Image MockAutofillDialogController::IconForField(
 }
 
 string16 MockAutofillDialogController::InputValidityMessage(
+    DialogSection section,
     AutofillFieldType type,
-    const string16& value) const {
+    const string16& value) {
   return string16();
 }
 
 ValidityData MockAutofillDialogController::InputsAreValid(
+     DialogSection section,
      const DetailOutputMap& inputs,
-     ValidationType validation_type) const {
+     ValidationType validation_type) {
   return ValidityData();
 }
 
 void MockAutofillDialogController::UserEditedOrActivatedInput(
+    DialogSection section,
     const DetailInput* input,
     gfx::NativeView parent_view,
     const gfx::Rect& content_bounds,

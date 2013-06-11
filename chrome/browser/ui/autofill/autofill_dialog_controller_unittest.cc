@@ -126,6 +126,7 @@ class TestAutofillDialogView : public AutofillDialogView {
   virtual void UpdateProgressBar(double value) OVERRIDE {}
 
   MOCK_METHOD0(ModelChanged, void());
+  MOCK_METHOD0(UpdateForErrors, void());
 
   virtual void OnSignInResize(const gfx::Size& pref_size) OVERRIDE {}
 
@@ -436,7 +437,7 @@ TEST_F(AutofillDialogControllerTest, ValidityCheck) {
         controller()->RequestedFieldsForSection(section);
     for (DetailInputs::const_iterator iter = shipping_inputs.begin();
          iter != shipping_inputs.end(); ++iter) {
-      controller()->InputValidityMessage(iter->type, string16());
+      controller()->InputValidityMessage(section, iter->type, string16());
     }
   }
 }
@@ -466,41 +467,48 @@ TEST_F(AutofillDialogControllerTest, PhoneNumberValidation) {
 
     // Existing data should have no errors.
     ValidityData validity_data =
-        controller()->InputsAreValid(outputs, VALIDATE_FINAL);
+        controller()->InputsAreValid(section, outputs, VALIDATE_FINAL);
     EXPECT_EQ(0U, validity_data.count(phone));
 
     // Input an empty phone number with VALIDATE_FINAL.
     SetOutputValue( inputs, &outputs, phone, "");
-    validity_data = controller()->InputsAreValid(outputs, VALIDATE_FINAL);
+    validity_data =
+        controller()->InputsAreValid(section, outputs, VALIDATE_FINAL);
     EXPECT_EQ(1U, validity_data.count(phone));
 
     // Input an empty phone number with VALIDATE_EDIT.
-    validity_data = controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+    validity_data =
+        controller()->InputsAreValid(section, outputs, VALIDATE_EDIT);
     EXPECT_EQ(0U, validity_data.count(phone));
 
     // Input an invalid phone number.
     SetOutputValue(inputs, &outputs, phone, "ABC");
-    validity_data = controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+    validity_data =
+        controller()->InputsAreValid(section, outputs, VALIDATE_EDIT);
     EXPECT_EQ(1U, validity_data.count(phone));
 
     // Input a local phone number.
     SetOutputValue(inputs, &outputs, phone, "2155546699");
-    validity_data = controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+    validity_data =
+        controller()->InputsAreValid(section, outputs, VALIDATE_EDIT);
     EXPECT_EQ(0U, validity_data.count(phone));
 
     // Input an invalid local phone number.
     SetOutputValue(inputs, &outputs, phone, "215554669");
-    validity_data = controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+    validity_data =
+        controller()->InputsAreValid(section, outputs, VALIDATE_EDIT);
     EXPECT_EQ(1U, validity_data.count(phone));
 
     // Input an international phone number.
     SetOutputValue(inputs, &outputs, phone, "+33 892 70 12 39");
-    validity_data = controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+    validity_data =
+        controller()->InputsAreValid(section, outputs, VALIDATE_EDIT);
     EXPECT_EQ(0U, validity_data.count(phone));
 
     // Input an invalid international phone number.
     SetOutputValue(inputs, &outputs, phone, "+112333 892 70 12 39");
-    validity_data = controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+    validity_data =
+        controller()->InputsAreValid(section, outputs, VALIDATE_EDIT);
     EXPECT_EQ(1U, validity_data.count(phone));
   }
 }
@@ -520,18 +528,18 @@ TEST_F(AutofillDialogControllerTest, CardHolderNameValidation) {
   // Input an empty card holder name with VALIDATE_FINAL.
   SetOutputValue(inputs, &outputs, CREDIT_CARD_NAME, "");
   ValidityData validity_data =
-      controller()->InputsAreValid(outputs, VALIDATE_FINAL);
+      controller()->InputsAreValid(SECTION_CC, outputs, VALIDATE_FINAL);
   EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_NAME));
 
   // Input an empty card holder name with VALIDATE_EDIT.
   validity_data =
-      controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+      controller()->InputsAreValid(SECTION_CC, outputs, VALIDATE_EDIT);
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
 
   // Input a non-empty card holder name.
   SetOutputValue(inputs, &outputs, CREDIT_CARD_NAME, "Bob");
   validity_data =
-      controller()->InputsAreValid(outputs, VALIDATE_FINAL);
+      controller()->InputsAreValid(SECTION_CC, outputs, VALIDATE_FINAL);
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
 
   // Switch to Wallet which only considers names with with at least two names to
@@ -554,40 +562,46 @@ TEST_F(AutofillDialogControllerTest, CardHolderNameValidation) {
   // change this behavior.
   SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME, "");
   validity_data =
-      controller()->InputsAreValid(wallet_outputs, VALIDATE_FINAL);
+      controller()->InputsAreValid(
+          SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
   EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_NAME));
 
   // Input an empty card holder name with VALIDATE_EDIT. Data source should not
   // change this behavior.
   validity_data =
-      controller()->InputsAreValid(wallet_outputs, VALIDATE_EDIT);
+      controller()->InputsAreValid(
+          SECTION_CC_BILLING, wallet_outputs, VALIDATE_EDIT);
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
 
   // Input a one name card holder name. Wallet does not currently support this.
   SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME, "Bob");
   validity_data =
-      controller()->InputsAreValid(wallet_outputs, VALIDATE_FINAL);
+      controller()->InputsAreValid(
+          SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
   EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_NAME));
 
   // Input a two name card holder name.
   SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME,
                  "Bob Barker");
   validity_data =
-      controller()->InputsAreValid(wallet_outputs, VALIDATE_FINAL);
+      controller()->InputsAreValid(
+          SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
 
   // Input a more than two name card holder name.
   SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME,
                  "John Jacob Jingleheimer Schmidt");
   validity_data =
-      controller()->InputsAreValid(wallet_outputs, VALIDATE_FINAL);
+      controller()->InputsAreValid(
+          SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
 
   // Input a card holder name with lots of crazy whitespace.
   SetOutputValue(wallet_inputs, &wallet_outputs, CREDIT_CARD_NAME,
                  "     \\n\\r John \\n  Jacob Jingleheimer \\t Schmidt  ");
   validity_data =
-      controller()->InputsAreValid(wallet_outputs, VALIDATE_FINAL);
+      controller()->InputsAreValid(
+          SECTION_CC_BILLING, wallet_outputs, VALIDATE_FINAL);
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_NAME));
 }
 
@@ -1502,7 +1516,7 @@ TEST_F(AutofillDialogControllerTest, ChangeAccountDuringVerifyCvv) {
 // Simulates receiving an INVALID_FORM_FIELD required action while processing a
 // |WalletClientDelegate::OnDid{Save,Update}*()| call. This can happen if Online
 // Wallet's server validation differs from Chrome's local validation.
-TEST_F(AutofillDialogControllerTest, WalletServerSideValidationNotification) {
+TEST_F(AutofillDialogControllerTest, WalletServerSideValidation) {
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
   controller()->OnDidGetWalletItems(wallet_items.Pass());
@@ -1510,7 +1524,33 @@ TEST_F(AutofillDialogControllerTest, WalletServerSideValidationNotification) {
 
   std::vector<wallet::RequiredAction> required_actions;
   required_actions.push_back(wallet::INVALID_FORM_FIELD);
-  controller()->OnDidSaveAddress(std::string(), required_actions);
+
+  std::vector<wallet::FormFieldError> form_errors;
+  form_errors.push_back(
+      wallet::FormFieldError(wallet::FormFieldError::INVALID_POSTAL_CODE,
+                             wallet::FormFieldError::SHIPPING_ADDRESS));
+
+  EXPECT_CALL(*controller()->GetView(), UpdateForErrors()).Times(1);
+  controller()->OnDidSaveAddress(std::string(), required_actions, form_errors);
+}
+
+// Simulates receiving unrecoverable Wallet server validation errors.
+TEST_F(AutofillDialogControllerTest, WalletServerSideValidationUnrecoverable) {
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  controller()->OnAccept();
+
+  std::vector<wallet::RequiredAction> required_actions;
+  required_actions.push_back(wallet::INVALID_FORM_FIELD);
+
+  std::vector<wallet::FormFieldError> form_errors;
+  form_errors.push_back(
+      wallet::FormFieldError(wallet::FormFieldError::UNKNOWN_ERROR,
+                             wallet::FormFieldError::UNKNOWN_LOCATION));
+
+  EXPECT_CALL(*controller()->GetView(), UpdateForErrors()).Times(1);
+  controller()->OnDidSaveAddress(std::string(), required_actions, form_errors);
 
   EXPECT_EQ(1U, NotificationsOfType(
       DialogNotification::REQUIRED_ACTION).size());
@@ -1933,21 +1973,23 @@ TEST_F(AutofillDialogControllerTest, WalletExpiredCard) {
   SetOutputValue(inputs, &outputs, COMPANY_NAME, "Bluth Company");
 
   ValidityData validity_data =
-      controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+      controller()->InputsAreValid(SECTION_CC_BILLING, outputs, VALIDATE_EDIT);
   EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(1U, validity_data.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 
   // Make the local input year differ from the instrument.
   SetOutputValue(inputs, &outputs, CREDIT_CARD_EXP_4_DIGIT_YEAR, "3002");
 
-  validity_data = controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+  validity_data =
+      controller()->InputsAreValid(SECTION_CC_BILLING, outputs, VALIDATE_EDIT);
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 
   // Make the local input month differ from the instrument.
   SetOutputValue(inputs, &outputs, CREDIT_CARD_EXP_MONTH, "06");
 
-  validity_data = controller()->InputsAreValid(outputs, VALIDATE_EDIT);
+  validity_data =
+      controller()->InputsAreValid(SECTION_CC_BILLING, outputs, VALIDATE_EDIT);
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_MONTH));
   EXPECT_EQ(0U, validity_data.count(CREDIT_CARD_EXP_4_DIGIT_YEAR));
 }

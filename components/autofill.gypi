@@ -285,6 +285,8 @@
             'autofill/content/browser/wallet/encryption_escrow_client.cc',
             'autofill/content/browser/wallet/encryption_escrow_client.h',
             'autofill/content/browser/wallet/encryption_escrow_client_observer.h',
+            'autofill/content/browser/wallet/form_field_error.cc',
+            'autofill/content/browser/wallet/form_field_error.h',
             'autofill/content/browser/wallet/full_wallet.cc',
             'autofill/content/browser/wallet/full_wallet.h',
             'autofill/content/browser/wallet/instrument.cc',

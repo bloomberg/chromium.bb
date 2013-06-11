@@ -59,20 +59,25 @@ class AutocheckoutRequestManager : public base::SupportsUserData::Data,
       scoped_ptr<wallet::WalletItems> wallet_items) OVERRIDE;
   virtual void OnDidSaveAddress(
       const std::string& address_id,
-      const std::vector<wallet::RequiredAction>& required_actions) OVERRIDE;
+      const std::vector<wallet::RequiredAction>& required_actions,
+      const std::vector<wallet::FormFieldError>& form_field_errors) OVERRIDE;
   virtual void OnDidSaveInstrument(
       const std::string& instrument_id,
-      const std::vector<wallet::RequiredAction>& required_actions) OVERRIDE;
+      const std::vector<wallet::RequiredAction>& required_actions,
+      const std::vector<wallet::FormFieldError>& form_field_errors) OVERRIDE;
   virtual void OnDidSaveInstrumentAndAddress(
       const std::string& instrument_id,
       const std::string& address_id,
-      const std::vector<wallet::RequiredAction>& required_actions) OVERRIDE;
+      const std::vector<wallet::RequiredAction>& required_actions,
+      const std::vector<wallet::FormFieldError>& form_field_errors) OVERRIDE;
   virtual void OnDidUpdateAddress(
       const std::string& address_id,
-      const std::vector<wallet::RequiredAction>& required_actions) OVERRIDE;
+      const std::vector<wallet::RequiredAction>& required_actions,
+      const std::vector<wallet::FormFieldError>& form_field_errors) OVERRIDE;
   virtual void OnDidUpdateInstrument(
       const std::string& instrument_id,
-      const std::vector<wallet::RequiredAction>& required_actions) OVERRIDE;
+      const std::vector<wallet::RequiredAction>& required_actions,
+      const std::vector<wallet::FormFieldError>& form_field_errors) OVERRIDE;
   virtual void OnWalletError(
       wallet::WalletClient::ErrorType error_type) OVERRIDE;
   virtual void OnMalformedResponse() OVERRIDE;

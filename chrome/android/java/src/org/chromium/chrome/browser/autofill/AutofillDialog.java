@@ -105,25 +105,29 @@ public class AutofillDialog extends Dialog
 
         /**
          * Informs AutofillDialog controller that the user has edited or activate an EditText field.
+         * @param section Section that is being edited. Should match one of the values in
+         *                {@link AutofillDialogConstants}.
          * @param dialogInputPointer The native pointer to the field that was edited or activated.
          * @param delegate The ViewAndroidDelegate that should be used to attach the AutofillPopup
          *                 if the AutofillPopup controller has any suggestions.
          * @param value The current value the focused field.
          * @param wasEdit True if it is an edit, otherwise False.
          */
-        public void editedOrActivatedField(int dialogInputPointer, ViewAndroidDelegate delegate,
-                String  value, boolean wasEdit);
+        public void editedOrActivatedField(int section, int dialogInputPointer,
+                ViewAndroidDelegate delegate, String  value, boolean wasEdit);
 
         /**
          * Requests AutofillDialog controller to validate the specified field. If the field is
          * invalid the returned value contains the error string. If the field is valid then
          * the returned value is null.
+         * @param section Section that is being edited. Should match one of the values in
+         *                {@link AutofillDialogConstants}.
          * @param fieldType The type of the field that is being edited. Should match one of the
          *                  values in {@link AutofillDialogConstants}.
          * @param value The value of the field that is being edited.
          * @return The error if the field is not valid, otherwise return null.
          */
-        public String validateField(int fieldType, String value);
+        public String validateField(int section, int fieldType, String value);
 
         /**
          * Requests AutofillDialog controller to validate the specified section.
@@ -754,8 +758,9 @@ public class AutofillDialog extends Dialog
 
                 @Override
                 public void afterTextChanged(Editable editable) {
-                    mDelegate.editedOrActivatedField(mFocusedFieldNativePointer,
-                            AutofillDialog.this, editable.toString(), true);
+                    mDelegate.editedOrActivatedField(mView.getCurrentSection(),
+                            mFocusedFieldNativePointer, AutofillDialog.this, editable.toString(),
+                            true);
                 }
             };
         }
@@ -798,14 +803,14 @@ public class AutofillDialog extends Dialog
             // Add text watcher to the currently selected EditText and send out the first
             // editedOrActivated call because text watcher only sends it out after text changes.
             addTextWatcher(currentfield, nativePointer);
-            mDelegate.editedOrActivatedField(mFocusedFieldNativePointer, this,
-                    mFocusedField.getText().toString(), false);
+            mDelegate.editedOrActivatedField(mView.getCurrentSection(), mFocusedFieldNativePointer,
+                    this, mFocusedField.getText().toString(), false);
         } else {
             // Remove text watcher for the EditText that is being defocused, then validate that
             // field. Entire section is validated if the field is valid.
             currentfield.removeTextChangedListener(mCurrentTextWatcher);
-            String errorText =
-                    mDelegate.validateField(fieldType, currentfield.getText().toString());
+            String errorText = mDelegate.validateField(mView.getCurrentSection(), fieldType,
+                    currentfield.getText().toString());
             currentfield.setError(errorText);
             if (errorText == null) mDelegate.validateSection(section);
         }

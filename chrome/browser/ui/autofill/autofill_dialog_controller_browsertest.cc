@@ -101,14 +101,16 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   }
 
   virtual string16 InputValidityMessage(
+      DialogSection section,
       AutofillFieldType type,
-      const string16& value) const OVERRIDE {
+      const string16& value) OVERRIDE {
     return string16();
   }
 
   virtual ValidityData InputsAreValid(
+      DialogSection section,
       const DetailOutputMap& inputs,
-      ValidationType validation_type) const OVERRIDE {
+      ValidationType validation_type) OVERRIDE {
     return ValidityData();
   }
 

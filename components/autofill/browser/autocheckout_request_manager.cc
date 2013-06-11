@@ -79,32 +79,37 @@ void AutocheckoutRequestManager::OnDidGetWalletItems(
 
 void AutocheckoutRequestManager::OnDidSaveAddress(
     const std::string& address_id,
-    const std::vector<wallet::RequiredAction>& required_actions) {
+    const std::vector<wallet::RequiredAction>& required_actions,
+    const std::vector<wallet::FormFieldError>& form_field_errors) {
   NOTREACHED();
 }
 
 void AutocheckoutRequestManager::OnDidSaveInstrument(
     const std::string& instrument_id,
-    const std::vector<wallet::RequiredAction>& required_actions) {
+    const std::vector<wallet::RequiredAction>& required_actions,
+    const std::vector<wallet::FormFieldError>& form_field_errors) {
   NOTREACHED();
 }
 
 void AutocheckoutRequestManager::OnDidSaveInstrumentAndAddress(
     const std::string& instrument_id,
     const std::string& address_id,
-    const std::vector<wallet::RequiredAction>& required_actions) {
+    const std::vector<wallet::RequiredAction>& required_actions,
+    const std::vector<wallet::FormFieldError>& form_field_errors) {
   NOTREACHED();
 }
 
 void AutocheckoutRequestManager::OnDidUpdateAddress(
     const std::string& address_id,
-    const std::vector<wallet::RequiredAction>& required_actions) {
+    const std::vector<wallet::RequiredAction>& required_actions,
+    const std::vector<wallet::FormFieldError>& form_field_errors) {
   NOTREACHED();
 }
 
 void AutocheckoutRequestManager::OnDidUpdateInstrument(
     const std::string& instrument_id,
-    const std::vector<wallet::RequiredAction>& required_actions) {
+    const std::vector<wallet::RequiredAction>& required_actions,
+    const std::vector<wallet::FormFieldError>& form_field_errors) {
   NOTREACHED();
 }
 
