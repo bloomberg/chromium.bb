@@ -31,6 +31,11 @@ class Validator(object):
     destination = spec.ValidateDirectJump(instruction)
     self.jumps[instruction.address] = destination
 
+  def FitsWithinBundle(self, insns):
+    offset = insns[0].address
+    last_byte_offset = offset + sum(len(insn.bytes) for insn in insns) - 1
+    return offset // spec.BUNDLE_SIZE == last_byte_offset // spec.BUNDLE_SIZE
+
   def Validate(self):
     if len(self.data) % spec.BUNDLE_SIZE != 0:
       self.messages.append((0, 'chunk size is not multiple of bundle size'))
@@ -54,16 +59,20 @@ class Validator(object):
             continue
           try:
             self.ValidateSuperinstruction(insns[i:i+n])
-            # TODO(shcherbina): Check for bundle boundaries.
+            if not self.FitsWithinBundle(insns[i:i+n]):
+              self.messages.append(
+                  (offset, 'superinstruction crosses bundle boundary'))
             i += n
             break
           except spec.DoNotMatchError:
             continue
         else:
-          # TODO(shcherbina): Check for bundle boundaries.
           for checker in self.EnumerateInstructionCheckers():
             try:
               checker(insns[i])
+              if not self.FitsWithinBundle(insns[i:i+1]):
+                self.messages.append(
+                    (offset, 'instruction crosses bundle boundary'))
               i += 1
               break
             except spec.DoNotMatchError:

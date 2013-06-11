@@ -123,8 +123,13 @@ def ValidateSuperinstruction32(superinstruction):
       r'(call|jmp) '  # call or jmp
       r'[*](?P<register>%e[a-z]+)$')  # register name
 
+  # TODO(shcherbina): actually we only want to allow 0xffffffe0 as a mask,
+  # but it's safe anyway because what really matters is that lower 5 bits
+  # of the mask are zeroes.
+  # Disallow 0xe0 once
+  # https://code.google.com/p/nativeclient/issues/detail?id=3164 is fixed.
   and_for_call_jmp = re.compile(
-      r'and [$]0xffffffe0,(?P<register>%e[a-z]+)$')
+      r'and [$]0x(ffffff)?e0,(?P<register>%e[a-z]+)$')
 
   dangerous_instruction = superinstruction[-1].disasm
 
@@ -179,8 +184,13 @@ def ValidateSuperinstruction64(superinstruction):
       r'(callq|jmpq) ' # callq or jmpq
       r'[*](?P<register>%r[0-9a-z]+)$') # register name
   # These are sandboxing instructions for naclcall/nacljmp
+  # TODO(shcherbina): actually we only want to allow 0xffffffe0 as a mask,
+  # but it's safe anyway because what really matters is that lower 5 bits
+  # of the mask are zeroes.
+  # Disallow 0xe0 once
+  # https://code.google.com/p/nativeclient/issues/detail?id=3164 is fixed.
   and_for_callq_jmpq = re.compile(
-      r'and [$]0xffffffe0,(?P<register>%e[a-z][a-z]|%r[89]d|%r1[0-4]d)$')
+      r'and [$]0x(ffffff)?e0,(?P<register>%e[a-z][a-z]|%r[89]d|%r1[0-4]d)$')
   add_for_callq_jmpq = re.compile(
       r'add %r15,(?P<register>%r[0-9a-z]+)$')
 

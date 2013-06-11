@@ -40,6 +40,8 @@
 @rdfa_output:
   1f: [0] unrecognized instruction
   return code: 1
+@spec:
+  1f: instruction crosses bundle boundary
 ----------------------------------------------------------------------
 @hex:
   # Superinstruction crosses bundle boundary.
@@ -82,6 +84,8 @@
 @rdfa_output:
   20: [0] unrecognized instruction
   return code: 1
+@spec:
+  1d: superinstruction crosses bundle boundary
 ----------------------------------------------------------------------
 @hex:
   # Instruction crosses (16-byte) block boundary.
@@ -121,3 +125,5 @@
      f:	eb 00                	jmp    0x11
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
