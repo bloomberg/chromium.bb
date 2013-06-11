@@ -10,7 +10,6 @@
 #include "cc/quads/render_pass.h"
 #include "cc/resources/managed_memory_policy.h"
 #include "cc/trees/layer_tree_host.h"
-#include "ui/base/latency_info.h"
 
 namespace cc {
 
@@ -49,7 +48,6 @@ class CC_EXPORT Renderer {
   const LayerTreeSettings& Settings() const { return client_->Settings(); }
 
   virtual void ViewportChanged() {}
-  virtual void ReceiveCompositorFrameAck(const CompositorFrameAck& ack) {}
 
   virtual bool CanReadPixels() const = 0;
 
@@ -67,7 +65,8 @@ class CC_EXPORT Renderer {
   virtual void DoNoOp() {}
 
   // Puts backbuffer onscreen.
-  virtual void SwapBuffers(const ui::LatencyInfo& latency_info) = 0;
+  virtual void SwapBuffers() = 0;
+  virtual void ReceiveSwapBuffersAck(const CompositorFrameAck& ack) {}
 
   virtual void GetFramebufferPixels(void* pixels, gfx::Rect rect) = 0;
 

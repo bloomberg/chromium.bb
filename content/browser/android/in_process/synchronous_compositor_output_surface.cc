@@ -59,13 +59,15 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
     // Intentional no-op: canvas size is controlled by the embedder.
   }
   virtual SkCanvas* BeginPaint(gfx::Rect damage_rect) OVERRIDE {
-    DCHECK(surface_->current_sw_canvas_);
-    if (surface_->current_sw_canvas_)
-      return surface_->current_sw_canvas_;
-    return &null_canvas_;
+    if (!surface_->current_sw_canvas_) {
+      NOTREACHED() << "BeginPaint with no canvas set";
+      return &null_canvas_;
+    }
+    LOG_IF(WARNING, surface_->did_swap_buffer_)
+        << "Mutliple calls to BeginPaint per frame";
+    return surface_->current_sw_canvas_;
   }
   virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE {
-    surface_->current_sw_canvas_ = NULL;
   }
   virtual void CopyToBitmap(gfx::Rect rect, SkBitmap* output) OVERRIDE {
     NOTIMPLEMENTED();
@@ -119,12 +121,6 @@ void SynchronousCompositorOutputSurface::Reshape(
   // Intentional no-op: surface size is controlled by the embedder.
 }
 
-void SynchronousCompositorOutputSurface::SendFrameToParentCompositor(
-    cc::CompositorFrame* frame) {
-  NOTREACHED();
-  // TODO(joth): Route page scale to the client, see http://crbug.com/237006
-}
-
 void SynchronousCompositorOutputSurface::SetNeedsBeginFrame(
     bool enable) {
   DCHECK(CalledOnValidThread());
@@ -135,8 +131,12 @@ void SynchronousCompositorOutputSurface::SetNeedsBeginFrame(
 }
 
 void SynchronousCompositorOutputSurface::SwapBuffers(
-    const ui::LatencyInfo& info) {
-  context3d()->shallowFlushCHROMIUM();
+    cc::CompositorFrame* frame) {
+  if (!ForcedDrawToSoftwareDevice()) {
+    DCHECK(context3d());
+    context3d()->shallowFlushCHROMIUM();
+  }
+  // TODO(joth): Route page scale to the client, see http://crbug.com/237006
   did_swap_buffer_ = true;
 }
 
@@ -174,8 +174,6 @@ bool SynchronousCompositorOutputSurface::DemandDrawHw(
   if (current_context)
     current_context->ReleaseCurrent(NULL);
 
-  did_swap_buffer_ = false;
-
   gfx::Transform adjusted_transform = transform;
   AdjustTransformForClip(&adjusted_transform, clip);
   surface_size_ = surface_size;
@@ -207,16 +205,19 @@ bool SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
 
   InvokeComposite(clip.size());
 
-  bool finished_draw = current_sw_canvas_ == NULL;
   current_sw_canvas_ = NULL;
-  return finished_draw;
+  return did_swap_buffer_;
 }
 
 void SynchronousCompositorOutputSurface::InvokeComposite(
     gfx::Size damage_size) {
+  did_swap_buffer_ = false;
   client_->SetNeedsRedrawRect(gfx::Rect(damage_size));
   if (needs_begin_frame_)
     client_->BeginFrame(base::TimeTicks::Now());
+
+  if (did_swap_buffer_)
+    client_->OnSwapBuffersComplete(NULL);
 }
 
 // Not using base::NonThreadSafe as we want to enforce a more exacting threading

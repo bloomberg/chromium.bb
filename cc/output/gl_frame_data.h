@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
 namespace cc {
@@ -22,6 +23,8 @@ class CC_EXPORT GLFrameData {
   gpu::Mailbox mailbox;
   uint32 sync_point;
   gfx::Size size;
+  gfx::Rect sub_buffer_rect;
+  bool partial_swap_allowed;
 };
 
 }  // namespace cc

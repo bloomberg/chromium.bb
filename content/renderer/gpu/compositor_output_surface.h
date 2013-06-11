@@ -44,14 +44,13 @@ class CompositorOutputSurface
 
   CompositorOutputSurface(int32 routing_id,
                           WebGraphicsContext3DCommandBufferImpl* context3d,
-                          cc::SoftwareOutputDevice* software);
+                          cc::SoftwareOutputDevice* software,
+                          bool use_swap_compositor_frame_message);
   virtual ~CompositorOutputSurface();
 
   // cc::OutputSurface implementation.
   virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE;
-  virtual void SendFrameToParentCompositor(cc::CompositorFrame*) OVERRIDE;
-  virtual void PostSubBuffer(gfx::Rect rect, const ui::LatencyInfo&) OVERRIDE;
-  virtual void SwapBuffers(const ui::LatencyInfo&) OVERRIDE;
+  virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE;
 #if defined(OS_ANDROID)
   virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
 #endif
@@ -91,6 +90,8 @@ class CompositorOutputSurface
   void OnBeginFrame(base::TimeTicks frame_time);
 #endif
   bool Send(IPC::Message* message);
+
+  bool use_swap_compositor_frame_message_;
 
   scoped_refptr<IPC::ForwardingMessageFilter> output_surface_filter_;
   scoped_refptr<CompositorOutputSurfaceProxy> output_surface_proxy_;

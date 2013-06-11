@@ -107,6 +107,8 @@
     'renderer/gpu/compositor_output_surface.h',
     'renderer/gpu/compositor_software_output_device.cc',
     'renderer/gpu/compositor_software_output_device.h',
+    'renderer/gpu/delegated_compositor_output_surface.cc',
+    'renderer/gpu/delegated_compositor_output_surface.h',
     'renderer/gpu/input_event_filter.cc',
     'renderer/gpu/input_event_filter.h',
     'renderer/gpu/input_handler_proxy.cc',

@@ -50,18 +50,17 @@ IPC::ForwardingMessageFilter* CompositorOutputSurface::CreateFilter(
 CompositorOutputSurface::CompositorOutputSurface(
     int32 routing_id,
     WebGraphicsContext3DCommandBufferImpl* context3D,
-    cc::SoftwareOutputDevice* software_device)
+    cc::SoftwareOutputDevice* software_device,
+    bool use_swap_compositor_frame_message)
     : OutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D>(context3D),
                     make_scoped_ptr(software_device)),
+      use_swap_compositor_frame_message_(use_swap_compositor_frame_message),
       output_surface_filter_(
           RenderThreadImpl::current()->compositor_output_surface_filter()),
       routing_id_(routing_id),
       prefers_smoothness_(false),
       main_thread_handle_(base::PlatformThread::CurrentHandle()) {
   DCHECK(output_surface_filter_.get());
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  capabilities_.has_parent_compositor = command_line->HasSwitch(
-      switches::kEnableDelegatedRenderer);
   DetachFromThread();
   message_sender_ = RenderThreadImpl::current()->sync_message_filter();
   DCHECK(message_sender_.get());
@@ -93,34 +92,23 @@ bool CompositorOutputSurface::BindToClient(
   return true;
 }
 
-void CompositorOutputSurface::SendFrameToParentCompositor(
-    cc::CompositorFrame* frame) {
-  DCHECK(CalledOnValidThread());
-  Send(new ViewHostMsg_SwapCompositorFrame(routing_id_, *frame));
-}
+void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
+  if (use_swap_compositor_frame_message_) {
+    Send(new ViewHostMsg_SwapCompositorFrame(routing_id_, *frame));
+    return;
+  }
 
-void CompositorOutputSurface::SwapBuffers(
-    const ui::LatencyInfo& latency_info) {
-  WebGraphicsContext3DCommandBufferImpl* command_buffer =
-      static_cast<WebGraphicsContext3DCommandBufferImpl*>(context3d());
-  CommandBufferProxyImpl* command_buffer_proxy =
-      command_buffer->GetCommandBufferProxy();
-  DCHECK(command_buffer_proxy);
-  context3d()->shallowFlushCHROMIUM();
-  command_buffer_proxy->SetLatencyInfo(latency_info);
-  OutputSurface::SwapBuffers(latency_info);
-}
+  if (frame->gl_frame_data) {
+    WebGraphicsContext3DCommandBufferImpl* command_buffer =
+        static_cast<WebGraphicsContext3DCommandBufferImpl*>(context3d());
+    CommandBufferProxyImpl* command_buffer_proxy =
+        command_buffer->GetCommandBufferProxy();
+    DCHECK(command_buffer_proxy);
+    context3d()->shallowFlushCHROMIUM();
+    command_buffer_proxy->SetLatencyInfo(frame->metadata.latency_info);
+  }
 
-void CompositorOutputSurface::PostSubBuffer(
-    gfx::Rect rect, const ui::LatencyInfo& latency_info) {
-  WebGraphicsContext3DCommandBufferImpl* command_buffer =
-      static_cast<WebGraphicsContext3DCommandBufferImpl*>(context3d());
-  CommandBufferProxyImpl* command_buffer_proxy =
-      command_buffer->GetCommandBufferProxy();
-  DCHECK(command_buffer_proxy);
-  context3d()->shallowFlushCHROMIUM();
-  command_buffer_proxy->SetLatencyInfo(latency_info);
-  OutputSurface::PostSubBuffer(rect, latency_info);
+  OutputSurface::SwapBuffers(frame);
 }
 
 void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
@@ -155,7 +143,7 @@ void CompositorOutputSurface::OnBeginFrame(base::TimeTicks frame_time) {
 #endif  // defined(OS_ANDROID)
 
 void CompositorOutputSurface::OnSwapAck(const cc::CompositorFrameAck& ack) {
-  client_->OnSendFrameToParentCompositorAck(ack);
+  client_->OnSwapBuffersComplete(&ack);
 }
 
 bool CompositorOutputSurface::Send(IPC::Message* message) {

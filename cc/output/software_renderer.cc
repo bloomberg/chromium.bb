@@ -56,7 +56,6 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
   : DirectRenderer(client, output_surface, resource_provider),
     visible_(true),
     is_scissor_enabled_(false),
-    is_viewport_changed_(true),
     output_device_(output_surface->software_device()),
     current_canvas_(NULL) {
   if (resource_provider_) {
@@ -68,9 +67,6 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
   // The updater can access bitmaps while the SoftwareRenderer is using them.
   capabilities_.allow_partial_texture_updates = true;
   capabilities_.using_partial_swap = true;
-  if (Settings().compositor_frame_message && client_->HasImplThread())
-    capabilities_.using_swap_complete_callback = true;
-  compositor_frame_.software_frame_data.reset(new SoftwareFrameData());
 }
 
 SoftwareRenderer::~SoftwareRenderer() {}
@@ -79,16 +75,8 @@ const RendererCapabilities& SoftwareRenderer::Capabilities() const {
   return capabilities_;
 }
 
-void SoftwareRenderer::ViewportChanged() {
-  is_viewport_changed_ = true;
-}
-
 void SoftwareRenderer::BeginDrawingFrame(DrawingFrame* frame) {
   TRACE_EVENT0("cc", "SoftwareRenderer::BeginDrawingFrame");
-  if (is_viewport_changed_) {
-    is_viewport_changed_ = false;
-    output_device_->Resize(client_->DeviceViewport().size());
-  }
   root_canvas_ = output_device_->BeginPaint(
       gfx::ToEnclosingRect(frame->root_damage_rect));
 }
@@ -98,21 +86,19 @@ void SoftwareRenderer::FinishDrawingFrame(DrawingFrame* frame) {
   current_framebuffer_lock_.reset();
   current_canvas_ = NULL;
   root_canvas_ = NULL;
-  if (Settings().compositor_frame_message) {
-    compositor_frame_.metadata = client_->MakeCompositorFrameMetadata();
-    output_device_->EndPaint(compositor_frame_.software_frame_data.get());
-  } else {
-    output_device_->EndPaint(NULL);
-  }
+
+  current_frame_data_.reset(new SoftwareFrameData);
+  output_device_->EndPaint(current_frame_data_.get());
 }
 
-void SoftwareRenderer::SwapBuffers(const ui::LatencyInfo& latency_info) {
-  if (Settings().compositor_frame_message)
-    output_surface_->SendFrameToParentCompositor(&compositor_frame_);
+void SoftwareRenderer::SwapBuffers() {
+  CompositorFrame compositor_frame;
+  compositor_frame.metadata = client_->MakeCompositorFrameMetadata();
+  compositor_frame.software_frame_data = current_frame_data_.Pass();
+  output_surface_->SwapBuffers(&compositor_frame);
 }
 
-void SoftwareRenderer::ReceiveCompositorFrameAck(
-    const CompositorFrameAck& ack) {
+void SoftwareRenderer::ReceiveSwapBuffersAck(const CompositorFrameAck& ack) {
   output_device_->ReclaimSoftwareFrame(ack.last_software_frame_id);
 }
 

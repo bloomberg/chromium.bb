@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/non_thread_safe.h"
+#include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_client.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
@@ -539,35 +540,25 @@ class BrowserCompositorOutputSurface
       reflector_->OnReshape(size);
   }
 
-  virtual void SwapBuffers(const ui::LatencyInfo& latency_info) OVERRIDE {
+  virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE {
+    DCHECK(frame->gl_frame_data);
+
     WebGraphicsContext3DCommandBufferImpl* command_buffer =
         static_cast<WebGraphicsContext3DCommandBufferImpl*>(context3d());
     CommandBufferProxyImpl* command_buffer_proxy =
         command_buffer->GetCommandBufferProxy();
     DCHECK(command_buffer_proxy);
     context3d()->shallowFlushCHROMIUM();
-    command_buffer_proxy->SetLatencyInfo(latency_info);
+    command_buffer_proxy->SetLatencyInfo(frame->metadata.latency_info);
 
-    if (reflector_.get())
-      reflector_->OnSwapBuffers();
+    if (reflector_.get()) {
+      if (frame->gl_frame_data->partial_swap_allowed)
+        reflector_->OnPostSubBuffer(frame->gl_frame_data->sub_buffer_rect);
+      else
+        reflector_->OnSwapBuffers();
+    }
 
-    OutputSurface::SwapBuffers(latency_info);
-  }
-
-  virtual void PostSubBuffer(gfx::Rect rect,
-                             const ui::LatencyInfo& latency_info) OVERRIDE {
-    WebGraphicsContext3DCommandBufferImpl* command_buffer =
-        static_cast<WebGraphicsContext3DCommandBufferImpl*>(context3d());
-    CommandBufferProxyImpl* command_buffer_proxy =
-        command_buffer->GetCommandBufferProxy();
-    DCHECK(command_buffer_proxy);
-    context3d()->shallowFlushCHROMIUM();
-    command_buffer_proxy->SetLatencyInfo(latency_info);
-
-    if (reflector_.get())
-      reflector_->OnPostSubBuffer(rect);
-
-    OutputSurface::PostSubBuffer(rect, latency_info);
+    OutputSurface::SwapBuffers(frame);
   }
 
   void SetReflector(ReflectorImpl* reflector) {

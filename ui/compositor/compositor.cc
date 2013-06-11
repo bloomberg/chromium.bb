@@ -359,6 +359,14 @@ void CompositorLock::CancelLock() {
 // static
 void DrawWaiterForTest::Wait(Compositor* compositor) {
   DrawWaiterForTest waiter;
+  waiter.wait_for_commit_ = false;
+  waiter.WaitImpl(compositor);
+}
+
+// static
+void DrawWaiterForTest::WaitForCommit(Compositor* compositor) {
+  DrawWaiterForTest waiter;
+  waiter.wait_for_commit_ = true;
   waiter.WaitImpl(compositor);
 }
 
@@ -376,6 +384,8 @@ void DrawWaiterForTest::WaitImpl(Compositor* compositor) {
 }
 
 void DrawWaiterForTest::OnCompositingDidCommit(Compositor* compositor) {
+  if (wait_for_commit_)
+    wait_run_loop_->Quit();
 }
 
 void DrawWaiterForTest::OnCompositingStarted(Compositor* compositor,
@@ -383,7 +393,8 @@ void DrawWaiterForTest::OnCompositingStarted(Compositor* compositor,
 }
 
 void DrawWaiterForTest::OnCompositingEnded(Compositor* compositor) {
-  wait_run_loop_->Quit();
+  if (!wait_for_commit_)
+    wait_run_loop_->Quit();
 }
 
 void DrawWaiterForTest::OnCompositingAborted(Compositor* compositor) {
@@ -758,11 +769,6 @@ void Compositor::DidCommitAndDrawFrame() {
   FOR_EACH_OBSERVER(CompositorObserver,
                     observer_list_,
                     OnCompositingStarted(this, start_time));
-  // If we're threaded without a swap complete callback, we have to
-  // call DidCompleteSwapBuffersManually.
-  if (g_compositor_thread &&
-      !host_->GetRendererCapabilities().using_swap_complete_callback)
-    DidCompleteSwapBuffers();
 }
 
 void Compositor::DidCompleteSwapBuffers() {

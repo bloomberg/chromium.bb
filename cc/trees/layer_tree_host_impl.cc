@@ -933,8 +933,6 @@ bool LayerTreeHostImpl::PrepareToDraw(FrameData* frame,
   if (!CalculateRenderPasses(frame))
     return false;
 
-  frame->latency_info = active_tree_->GetLatencyInfo();
-
   // If we return true, then we expect DrawLayers() to be called before this
   // function is called again.
   return true;
@@ -1068,17 +1066,14 @@ void LayerTreeHostImpl::BeginFrame(base::TimeTicks frame_time) {
   client_->BeginFrameOnImplThread(frame_time);
 }
 
-void LayerTreeHostImpl::OnSendFrameToParentCompositorAck(
-    const CompositorFrameAck& ack) {
-  if (!renderer_)
-    return;
-
+void LayerTreeHostImpl::OnSwapBuffersComplete(
+    const CompositorFrameAck* ack) {
   // TODO(piman): We may need to do some validation on this ack before
   // processing it.
-  renderer_->ReceiveCompositorFrameAck(ack);
+  if (ack && renderer_)
+    renderer_->ReceiveSwapBuffersAck(*ack);
 
-  // When using compositor frame data, the ack doubles as a swap complete ack.
-  OnSwapBuffersComplete();
+  client_->OnSwapBuffersCompleteOnImplThread();
 }
 
 void LayerTreeHostImpl::OnCanDrawStateChangedForTree() {
@@ -1230,7 +1225,7 @@ const RendererCapabilities& LayerTreeHostImpl::GetRendererCapabilities() const {
 bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
   if (frame.has_no_damage)
     return false;
-  renderer_->SwapBuffers(frame.latency_info);
+  renderer_->SwapBuffers();
   active_tree_->ClearLatencyInfo();
   return true;
 }
@@ -1271,10 +1266,6 @@ void LayerTreeHostImpl::DidLoseOutputSurface() {
   // important) in production. We should adjust the test to not need this.
   if (renderer_)
     client_->DidLoseOutputSurfaceOnImplThread();
-}
-
-void LayerTreeHostImpl::OnSwapBuffersComplete() {
-  client_->OnSwapBuffersCompleteOnImplThread();
 }
 
 void LayerTreeHostImpl::Readback(void* pixels,
@@ -1483,7 +1474,7 @@ bool LayerTreeHostImpl::DoInitializeRenderer(
     if (!resource_provider)
       return false;
 
-    if (output_surface->capabilities().has_parent_compositor) {
+    if (output_surface->capabilities().delegated_rendering) {
       renderer_ = DelegatingRenderer::Create(this, output_surface.get(),
                                              resource_provider.get());
     } else if (output_surface->context3d()) {

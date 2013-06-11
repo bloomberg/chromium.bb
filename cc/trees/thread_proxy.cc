@@ -1157,8 +1157,6 @@ void ThreadProxy::InitializeOutputSurfaceOnImplThread(
 
   if (*success) {
     *capabilities = layer_tree_host_impl_->GetRendererCapabilities();
-    scheduler_on_impl_thread_->SetSwapBuffersCompleteSupported(
-        capabilities->using_swap_complete_callback);
 
     OutputSurface* output_surface_ptr = layer_tree_host_impl_->output_surface();
     DCHECK(output_surface_ptr);
@@ -1166,8 +1164,6 @@ void ThreadProxy::InitializeOutputSurfaceOnImplThread(
         output_surface_ptr->capabilities().max_frames_pending;
     if (max_frames_pending <= 0)
       max_frames_pending = FrameRateController::DEFAULT_MAX_FRAMES_PENDING;
-    if (output_surface_ptr->capabilities().has_parent_compositor)
-      max_frames_pending = 1;
 
     scheduler_on_impl_thread_->SetMaxFramesPending(max_frames_pending);
 
@@ -1189,9 +1185,6 @@ void ThreadProxy::DidTryInitializeRendererOnImplThread(
     offscreen_context_provider->BindToCurrentThread();
 
   if (success) {
-    DCHECK_EQ(layer_tree_host_impl_->GetRendererCapabilities()
-                  .using_swap_complete_callback,
-              scheduler_on_impl_thread_->swap_buffers_complete_supported());
     if (layer_tree_host_impl_->resource_provider()) {
       layer_tree_host_impl_->resource_provider()->
           set_offscreen_context_provider(offscreen_context_provider);

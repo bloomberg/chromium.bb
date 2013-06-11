@@ -50,9 +50,7 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
                                         base::TimeDelta interval) OVERRIDE {}
   virtual void BeginFrame(base::TimeTicks frame_time) OVERRIDE {}
-  virtual void OnSendFrameToParentCompositorAck(const CompositorFrameAck& ack)
-      OVERRIDE {}
-  virtual void OnSwapBuffersComplete() OVERRIDE {}
+  virtual void OnSwapBuffersComplete(const CompositorFrameAck* ack) OVERRIDE {}
   virtual void DidLoseOutputSurface() OVERRIDE {
     did_lose_output_surface_called_ = true;
   }

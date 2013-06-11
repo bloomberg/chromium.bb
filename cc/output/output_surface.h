@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/software_output_device.h"
@@ -46,11 +47,11 @@ class CC_EXPORT OutputSurface {
 
   struct Capabilities {
     Capabilities()
-        : has_parent_compositor(false),
+        : delegated_rendering(false),
           max_frames_pending(0),
           deferred_gl_initialization(false) {}
 
-    bool has_parent_compositor;
+    bool delegated_rendering;
     int max_frames_pending;
     bool deferred_gl_initialization;
   };
@@ -82,11 +83,6 @@ class CC_EXPORT OutputSurface {
   // thread.
   virtual bool BindToClient(OutputSurfaceClient* client);
 
-  // Sends frame data to the parent compositor. This should only be called when
-  // capabilities().has_parent_compositor. The implementation may destroy or
-  // steal the contents of the CompositorFrame passed in.
-  virtual void SendFrameToParentCompositor(CompositorFrame* frame);
-
   virtual void EnsureBackbuffer();
   virtual void DiscardBackbuffer();
 
@@ -95,8 +91,10 @@ class CC_EXPORT OutputSurface {
 
   virtual void BindFramebuffer();
 
-  virtual void PostSubBuffer(gfx::Rect rect, const ui::LatencyInfo&);
-  virtual void SwapBuffers(const ui::LatencyInfo&);
+  // The implementation may destroy or steal the contents of the CompositorFrame
+  // passed in (though it will not take ownership of the CompositorFrame
+  // itself).
+  virtual void SwapBuffers(CompositorFrame* frame);
 
   // Notifies frame-rate smoothness preference. If true, all non-critical
   // processing should be stopped, or lowered in priority.
@@ -116,17 +114,24 @@ class CC_EXPORT OutputSurface {
       scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
       scoped_refptr<ContextProvider> offscreen_context_provider);
 
+  void PostSwapBuffersComplete();
+
   OutputSurfaceClient* client_;
   struct cc::OutputSurface::Capabilities capabilities_;
   scoped_ptr<OutputSurfaceCallbacks> callbacks_;
   scoped_ptr<WebKit::WebGraphicsContext3D> context3d_;
   scoped_ptr<cc::SoftwareOutputDevice> software_device_;
   bool has_gl_discard_backbuffer_;
+  bool has_swap_buffers_complete_callback_;
   gfx::Size surface_size_;
   float device_scale_factor_;
 
  private:
   void SetContext3D(scoped_ptr<WebKit::WebGraphicsContext3D> context3d);
+  void SwapBuffersComplete();
+
+  base::WeakPtrFactory<OutputSurface> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);
 };
 

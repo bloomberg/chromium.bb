@@ -5,7 +5,6 @@
 #ifndef CC_TEST_FAKE_OUTPUT_SURFACE_H_
 #define CC_TEST_FAKE_OUTPUT_SURFACE_H_
 
-#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"
@@ -66,10 +65,10 @@ class FakeOutputSurface : public OutputSurface {
     return result.Pass();
   }
 
-  virtual void SendFrameToParentCompositor(CompositorFrame* frame) OVERRIDE;
-
   CompositorFrame& last_sent_frame() { return last_sent_frame_; }
   size_t num_sent_frames() { return num_sent_frames_; }
+
+  virtual void SwapBuffers(CompositorFrame* frame) OVERRIDE;
 
   virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
   bool needs_begin_frame() const {
@@ -85,24 +84,21 @@ class FakeOutputSurface : public OutputSurface {
  protected:
   FakeOutputSurface(
       scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
-      bool has_parent);
+      bool delegated_rendering);
 
   FakeOutputSurface(
       scoped_ptr<SoftwareOutputDevice> software_device,
-      bool has_parent);
+      bool delegated_rendering);
 
   FakeOutputSurface(
       scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
       scoped_ptr<SoftwareOutputDevice> software_device,
-      bool has_parent);
-
-  void SendFrameAck();
+      bool delegated_rendering);
 
   CompositorFrame last_sent_frame_;
   size_t num_sent_frames_;
   bool needs_begin_frame_;
   bool forced_draw_to_software_device_;
-  base::WeakPtrFactory<FakeOutputSurface> weak_ptr_factory_;
 };
 
 static inline scoped_ptr<cc::OutputSurface> CreateFakeOutputSurface() {

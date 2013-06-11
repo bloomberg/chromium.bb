@@ -149,16 +149,10 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       settings.top_controls_height = controls_height;
   }
 
-  settings.compositor_frame_message =
-      cmd->HasSwitch(cc::switches::kEnableCompositorFrameMessage) ||
-      cmd->HasSwitch(cc::switches::kCompositeToMailbox) ||
-      cmd->HasSwitch(switches::kEnableSoftwareCompositingGLAdapter);
-
   if (settings.calculate_top_controls_position &&
-      (settings.top_controls_height <= 0 ||
-       !settings.compositor_frame_message)) {
-    DCHECK(false) << "Top controls repositioning enabled without valid height "
-                     "or compositor_frame_message set.";
+      settings.top_controls_height <= 0) {
+    DCHECK(false)
+        << "Top controls repositioning enabled without valid height set.";
     settings.calculate_top_controls_position = false;
   }
 

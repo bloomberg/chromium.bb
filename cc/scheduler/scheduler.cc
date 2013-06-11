@@ -100,14 +100,6 @@ int Scheduler::NumFramesPendingForTesting() const {
   return frame_rate_controller_->NumFramesPendingForTesting();
 }
 
-bool Scheduler::swap_buffers_complete_supported() const {
-  return frame_rate_controller_->swap_buffers_complete_supported();
-}
-
-void Scheduler::SetSwapBuffersCompleteSupported(bool supported) {
-  frame_rate_controller_->SetSwapBuffersCompleteSupported(supported);
-}
-
 void Scheduler::DidSwapBuffersComplete() {
   TRACE_EVENT0("cc", "Scheduler::DidSwapBuffersComplete");
   frame_rate_controller_->DidSwapBuffersComplete();
@@ -178,18 +170,20 @@ void Scheduler::ProcessScheduledActions() {
         client_->ScheduledActionActivatePendingTreeIfNeeded();
         break;
       case SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE: {
+        frame_rate_controller_->DidSwapBuffers();
         ScheduledActionDrawAndSwapResult result =
             client_->ScheduledActionDrawAndSwapIfPossible();
         state_machine_.DidDrawIfPossibleCompleted(result.did_draw);
-        if (result.did_swap)
-          frame_rate_controller_->DidSwapBuffers();
+        if (!result.did_swap)
+          frame_rate_controller_->DidSwapBuffersComplete();
         break;
       }
       case SchedulerStateMachine::ACTION_DRAW_FORCED: {
+        frame_rate_controller_->DidSwapBuffers();
         ScheduledActionDrawAndSwapResult result =
             client_->ScheduledActionDrawAndSwapForced();
-        if (result.did_swap)
-          frame_rate_controller_->DidSwapBuffers();
+        if (!result.did_swap)
+          frame_rate_controller_->DidSwapBuffersComplete();
         break;
       }
       case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION:

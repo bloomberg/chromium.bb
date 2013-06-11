@@ -22,7 +22,7 @@ MailboxOutputSurface::MailboxOutputSurface(
     int32 routing_id,
     WebGraphicsContext3DCommandBufferImpl* context3D,
     cc::SoftwareOutputDevice* software_device)
-    : CompositorOutputSurface(routing_id, context3D, software_device),
+    : CompositorOutputSurface(routing_id, context3D, software_device, true),
       fbo_(0),
       is_backbuffer_discarded_(false) {
   pending_textures_.push_back(TransferableFrame());
@@ -123,24 +123,6 @@ void MailboxOutputSurface::BindFramebuffer() {
       current_backing_.texture_id, 0);
 }
 
-void MailboxOutputSurface::SendFrameToParentCompositor(
-    cc::CompositorFrame* frame) {
-  frame->gl_frame_data.reset(new GLFrameData());
-
-  DCHECK(!surface_size_.IsEmpty());
-  DCHECK(surface_size_ == current_backing_.size);
-  DCHECK(!current_backing_.mailbox.IsZero());
-
-  frame->gl_frame_data->mailbox = current_backing_.mailbox;
-  frame->gl_frame_data->size = current_backing_.size;
-  context3d_->flush();
-  frame->gl_frame_data->sync_point = context3d_->insertSyncPoint();
-  CompositorOutputSurface::SendFrameToParentCompositor(frame);
-
-  pending_textures_.push_back(current_backing_);
-  current_backing_ = TransferableFrame();
-}
-
 void MailboxOutputSurface::OnSwapAck(const cc::CompositorFrameAck& ack) {
   if (!ack.gl_frame_data->mailbox.IsZero()) {
     DCHECK(!ack.gl_frame_data->size.IsEmpty());
@@ -179,16 +161,24 @@ void MailboxOutputSurface::OnSwapAck(const cc::CompositorFrameAck& ack) {
   CompositorOutputSurface::OnSwapAck(ack);
 }
 
-void MailboxOutputSurface::SwapBuffers(const ui::LatencyInfo&) {
-}
-
-void MailboxOutputSurface::PostSubBuffer(gfx::Rect rect,
-                                         const ui::LatencyInfo&) {
-  NOTIMPLEMENTED()
+void MailboxOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
+  DCHECK(frame->gl_frame_data);
+  DCHECK(frame->gl_frame_data->sub_buffer_rect.size() ==
+         frame->gl_frame_data->size)
       << "Partial swap not supported with composite-to-mailbox yet.";
 
-  // The browser only copies damage correctly for two buffers in use.
-  DCHECK(GetNumAcksPending() < 2);
+  DCHECK(!surface_size_.IsEmpty());
+  DCHECK(surface_size_ == current_backing_.size);
+  DCHECK(frame->gl_frame_data->size == current_backing_.size);
+  DCHECK(!current_backing_.mailbox.IsZero());
+
+  frame->gl_frame_data->mailbox = current_backing_.mailbox;
+  context3d_->flush();
+  frame->gl_frame_data->sync_point = context3d_->insertSyncPoint();
+  CompositorOutputSurface::SwapBuffers(frame);
+
+  pending_textures_.push_back(current_backing_);
+  current_backing_ = TransferableFrame();
 }
 
 size_t MailboxOutputSurface::GetNumAcksPending() {

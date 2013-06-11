@@ -8,9 +8,12 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -35,7 +38,7 @@ class OutputSurfaceCallbacks
   }
 
   // WK:WGC3D::WGSwapBuffersCompleteCallbackCHROMIUM implementation.
-  virtual void onSwapBuffersComplete() { client_->OnSwapBuffersComplete(); }
+  virtual void onSwapBuffersComplete() { client_->OnSwapBuffersComplete(NULL); }
 
   // WK:WGC3D::WGContextLostCallback implementation.
   virtual void onContextLost() { client_->DidLoseOutputSurface(); }
@@ -49,7 +52,9 @@ OutputSurface::OutputSurface(
     : client_(NULL),
       context3d_(context3d.Pass()),
       has_gl_discard_backbuffer_(false),
-      device_scale_factor_(-1) {
+      has_swap_buffers_complete_callback_(false),
+      device_scale_factor_(-1),
+      weak_ptr_factory_(this) {
 }
 
 OutputSurface::OutputSurface(
@@ -57,7 +62,9 @@ OutputSurface::OutputSurface(
     : client_(NULL),
       software_device_(software_device.Pass()),
       has_gl_discard_backbuffer_(false),
-      device_scale_factor_(-1) {
+      has_swap_buffers_complete_callback_(false),
+      device_scale_factor_(-1),
+      weak_ptr_factory_(this) {
 }
 
 OutputSurface::OutputSurface(
@@ -67,7 +74,9 @@ OutputSurface::OutputSurface(
       context3d_(context3d.Pass()),
       software_device_(software_device.Pass()),
       has_gl_discard_backbuffer_(false),
-      device_scale_factor_(-1) {
+      has_swap_buffers_complete_callback_(false),
+      device_scale_factor_(-1),
+      weak_ptr_factory_(this) {
 }
 
 OutputSurface::~OutputSurface() {
@@ -129,15 +138,14 @@ void OutputSurface::SetContext3D(
   set<string> extensions(extensions_list.begin(), extensions_list.end());
   has_gl_discard_backbuffer_ =
       extensions.count("GL_CHROMIUM_discard_backbuffer") > 0;
+  has_swap_buffers_complete_callback_ =
+       extensions.count("GL_CHROMIUM_swapbuffers_complete_callback") > 0;
+
 
   context3d_ = context3d.Pass();
   callbacks_.reset(new OutputSurfaceCallbacks(client_));
   context3d_->setSwapBuffersCompleteCallbackCHROMIUM(callbacks_.get());
   context3d_->setContextLostCallback(callbacks_.get());
-}
-
-void OutputSurface::SendFrameToParentCompositor(CompositorFrame* frame) {
-  NOTIMPLEMENTED();
 }
 
 void OutputSurface::EnsureBackbuffer() {
@@ -162,6 +170,8 @@ void OutputSurface::Reshape(gfx::Size size, float scale_factor) {
     context3d_->reshapeWithScaleFactor(
         size.width(), size.height(), scale_factor);
   }
+  if (software_device_)
+    software_device_->Resize(size);
 }
 
 gfx::Size OutputSurface::SurfaceSize() const {
@@ -173,18 +183,43 @@ void OutputSurface::BindFramebuffer() {
   context3d_->bindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void OutputSurface::SwapBuffers(const ui::LatencyInfo& latency_info) {
+void OutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
+  if (frame->software_frame_data) {
+    PostSwapBuffersComplete();
+    return;
+  }
+
   DCHECK(context3d_);
-  // Note that currently this has the same effect as SwapBuffers; we should
-  // consider exposing a different entry point on WebGraphicsContext3D.
-  context3d_->prepareTexture();
+  DCHECK(frame->gl_frame_data);
+
+  if (frame->gl_frame_data->partial_swap_allowed) {
+    gfx::Rect sub_buffer_rect = frame->gl_frame_data->sub_buffer_rect;
+    context3d()->postSubBufferCHROMIUM(sub_buffer_rect.x(),
+                                       sub_buffer_rect.y(),
+                                       sub_buffer_rect.width(),
+                                       sub_buffer_rect.height());
+  } else {
+    // Note that currently this has the same effect as SwapBuffers; we should
+    // consider exposing a different entry point on WebGraphicsContext3D.
+    context3d()->prepareTexture();
+  }
+
+  if (!has_swap_buffers_complete_callback_)
+    PostSwapBuffersComplete();
 }
 
-void OutputSurface::PostSubBuffer(gfx::Rect rect,
-                                  const ui::LatencyInfo& latency_info) {
-  DCHECK(context3d_);
-  context3d_->postSubBufferCHROMIUM(
-      rect.x(), rect.y(), rect.width(), rect.height());
+void OutputSurface::PostSwapBuffersComplete() {
+  base::MessageLoop::current()->PostTask(
+       FROM_HERE,
+       base::Bind(&OutputSurface::SwapBuffersComplete,
+                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+void OutputSurface::SwapBuffersComplete() {
+  if (!client_)
+    return;
+
+  client_->OnSwapBuffersComplete(NULL);
 }
 
 }  // namespace cc

@@ -157,11 +157,6 @@ bool GLRenderer::Initialize() {
       Settings().partial_swap_enabled &&
       extensions.count("GL_CHROMIUM_post_sub_buffer");
 
-  // Use the SwapBuffers callback only with the threaded proxy.
-  if (client_->HasImplThread())
-    capabilities_.using_swap_complete_callback =
-        extensions.count("GL_CHROMIUM_swapbuffers_complete_callback") > 0;
-
   capabilities_.using_set_visibility =
       extensions.count("GL_CHROMIUM_set_visibility") > 0;
 
@@ -1859,12 +1854,6 @@ void GLRenderer::FinishDrawingFrame(DrawingFrame* frame) {
 
   GLC(context_, context_->disable(GL_BLEND));
   blend_shadow_ = false;
-
-  if (Settings().compositor_frame_message) {
-    CompositorFrame compositor_frame;
-    compositor_frame.metadata = client_->MakeCompositorFrameMetadata();
-    output_surface_->SendFrameToParentCompositor(&compositor_frame);
-  }
 }
 
 void GLRenderer::FinishDrawingQuadList() { FlushTextureQuadCache(); }
@@ -1984,13 +1973,17 @@ void GLRenderer::Finish() {
   context_->finish();
 }
 
-void GLRenderer::SwapBuffers(const ui::LatencyInfo& latency_info) {
+void GLRenderer::SwapBuffers() {
   DCHECK(visible_);
   DCHECK(!is_backbuffer_discarded_);
 
   TRACE_EVENT0("cc", "GLRenderer::SwapBuffers");
   // We're done! Time to swapbuffers!
 
+  CompositorFrame compositor_frame;
+  compositor_frame.metadata = client_->MakeCompositorFrameMetadata();
+  compositor_frame.gl_frame_data = make_scoped_ptr(new GLFrameData);
+  compositor_frame.gl_frame_data->size = output_surface_->SurfaceSize();
   if (capabilities_.using_partial_swap && client_->AllowPartialSwap()) {
     // If supported, we can save significant bandwidth by only swapping the
     // damaged/scissored region (clamped to the viewport)
@@ -1998,14 +1991,18 @@ void GLRenderer::SwapBuffers(const ui::LatencyInfo& latency_info) {
     int flipped_y_pos_of_rect_bottom =
         client_->DeviceViewport().height() - swap_buffer_rect_.y() -
         swap_buffer_rect_.height();
-    output_surface_->PostSubBuffer(gfx::Rect(swap_buffer_rect_.x(),
-                                             flipped_y_pos_of_rect_bottom,
-                                             swap_buffer_rect_.width(),
-                                             swap_buffer_rect_.height()),
-                                   latency_info);
+    compositor_frame.gl_frame_data->sub_buffer_rect =
+        gfx::Rect(swap_buffer_rect_.x(),
+                  flipped_y_pos_of_rect_bottom,
+                  swap_buffer_rect_.width(),
+                  swap_buffer_rect_.height());
+    compositor_frame.gl_frame_data->partial_swap_allowed = true;
   } else {
-    output_surface_->SwapBuffers(latency_info);
+    compositor_frame.gl_frame_data->sub_buffer_rect =
+        gfx::Rect(output_surface_->SurfaceSize());
+    compositor_frame.gl_frame_data->partial_swap_allowed = false;
   }
+  output_surface_->SwapBuffers(&compositor_frame);
 
   swap_buffer_rect_ = gfx::Rect();
 

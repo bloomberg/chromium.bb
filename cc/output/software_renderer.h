@@ -33,16 +33,15 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
 
   virtual ~SoftwareRenderer();
   virtual const RendererCapabilities& Capabilities() const OVERRIDE;
-  virtual void ViewportChanged() OVERRIDE;
   virtual void Finish() OVERRIDE;
-  virtual void SwapBuffers(const ui::LatencyInfo& latency_info) OVERRIDE;
+  virtual void SwapBuffers() OVERRIDE;
   virtual void GetFramebufferPixels(void* pixels, gfx::Rect rect) OVERRIDE;
   virtual void SetVisible(bool visible) OVERRIDE;
   virtual void SendManagedMemoryStats(
       size_t bytes_visible,
       size_t bytes_visible_and_nearby,
       size_t bytes_allocated) OVERRIDE  {}
-  virtual void ReceiveCompositorFrameAck(
+  virtual void ReceiveSwapBuffersAck(
       const CompositorFrameAck& ack) OVERRIDE;
 
  protected:
@@ -92,7 +91,6 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   RendererCapabilities capabilities_;
   bool visible_;
   bool is_scissor_enabled_;
-  bool is_viewport_changed_;
   gfx::Rect scissor_rect_;
 
   SoftwareOutputDevice* output_device_;
@@ -101,7 +99,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   SkPaint current_paint_;
   scoped_ptr<ResourceProvider::ScopedWriteLockSoftware>
       current_framebuffer_lock_;
-  CompositorFrame compositor_frame_;
+  scoped_ptr<SoftwareFrameData> current_frame_data_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareRenderer);
 };

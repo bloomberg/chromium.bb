@@ -37,7 +37,6 @@ FrameRateController::FrameRateController(scoped_refptr<TimeSource> timer)
       max_frames_pending_(0),
       time_source_(timer),
       active_(false),
-      swap_buffers_complete_supported_(true),
       is_time_source_throttling_(true),
       weak_factory_(this),
       thread_(NULL) {
@@ -51,7 +50,6 @@ FrameRateController::FrameRateController(Thread* thread)
       num_frames_pending_(0),
       max_frames_pending_(0),
       active_(false),
-      swap_buffers_complete_supported_(true),
       is_time_source_throttling_(false),
       weak_factory_(this),
       thread_(thread) {}
@@ -88,14 +86,6 @@ void FrameRateController::SetTimebaseAndInterval(base::TimeTicks timebase,
     time_source_->SetTimebaseAndInterval(timebase, interval);
 }
 
-bool FrameRateController::swap_buffers_complete_supported() const {
-  return swap_buffers_complete_supported_;
-}
-
-void FrameRateController::SetSwapBuffersCompleteSupported(bool supported) {
-  swap_buffers_complete_supported_ = supported;
-}
-
 void FrameRateController::OnTimerTick() {
   DCHECK(active_);
 
@@ -107,8 +97,7 @@ void FrameRateController::OnTimerTick() {
   if (client_)
     client_->BeginFrame(throttled);
 
-  if (swap_buffers_complete_supported_ && !is_time_source_throttling_ &&
-      !throttled)
+  if (!is_time_source_throttling_ && !throttled)
     PostManualTick();
 }
 
@@ -122,15 +111,10 @@ void FrameRateController::PostManualTick() {
 void FrameRateController::ManualTick() { OnTimerTick(); }
 
 void FrameRateController::DidSwapBuffers() {
-  if (swap_buffers_complete_supported_)
-    num_frames_pending_++;
-  else if (!is_time_source_throttling_)
-    PostManualTick();
+  num_frames_pending_++;
 }
 
 void FrameRateController::DidSwapBuffersComplete() {
-  DCHECK(swap_buffers_complete_supported_);
-
   DCHECK_GT(num_frames_pending_, 0);
   num_frames_pending_--;
   if (!is_time_source_throttling_)

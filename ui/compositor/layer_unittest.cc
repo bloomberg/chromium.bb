@@ -126,6 +126,10 @@ class LayerWithRealCompositorTest : public testing::Test {
     ui::DrawWaiterForTest::Wait(GetCompositor());
   }
 
+  void WaitForCommit() {
+    ui::DrawWaiterForTest::WaitForCommit(GetCompositor());
+  }
+
   // Invalidates the entire contents of the layer.
   void SchedulePaintForLayer(Layer* layer) {
     layer->SchedulePaint(
@@ -254,12 +258,14 @@ class NullLayerDelegate : public LayerDelegate {
 class TestCompositorObserver : public CompositorObserver {
  public:
   TestCompositorObserver()
-      : started_(false), ended_(false), aborted_(false) {}
+      : committed_(false), started_(false), ended_(false), aborted_(false) {}
 
+  bool committed() const { return committed_; }
   bool notified() const { return started_ && ended_; }
   bool aborted() const { return aborted_; }
 
   void Reset() {
+    committed_ = false;
     started_ = false;
     ended_ = false;
     aborted_ = false;
@@ -267,6 +273,7 @@ class TestCompositorObserver : public CompositorObserver {
 
  private:
   virtual void OnCompositingDidCommit(Compositor* compositor) OVERRIDE {
+    committed_ = true;
   }
 
   virtual void OnCompositingStarted(Compositor* compositor,
@@ -290,6 +297,7 @@ class TestCompositorObserver : public CompositorObserver {
                                        base::TimeDelta interval) OVERRIDE {
   }
 
+  bool committed_;
   bool started_;
   bool ended_;
   bool aborted_;
@@ -416,6 +424,10 @@ class LayerWithDelegateTest : public testing::Test, public CompositorDelegate {
 
   void WaitForDraw() {
     DrawWaiterForTest::Wait(compositor());
+  }
+
+  void WaitForCommit() {
+    DrawWaiterForTest::WaitForCommit(compositor());
   }
 
   // CompositorDelegate overrides.
@@ -819,11 +831,11 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_CompositorObservers) {
   DrawTree(l1.get());
   EXPECT_TRUE(observer.notified());
 
-  // As should scheduling a draw and waiting.
+  // ScheduleDraw without any visible change should cause a commit.
   observer.Reset();
   l1->ScheduleDraw();
-  WaitForDraw();
-  EXPECT_TRUE(observer.notified());
+  WaitForCommit();
+  EXPECT_TRUE(observer.committed());
 
   // Moving, but not resizing, a layer should alert the observers.
   observer.Reset();
@@ -917,15 +929,15 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ModifyHierarchy) {
   // WritePNGFile(bitmap, ref_img2);
   EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img2, cc::ExactPixelComparator(true)));
 
-  // l11 is already at the front, should have no effect.
-  l0->StackAtTop(l11.get());
+  // should restore to original configuration
+  l0->StackAbove(l12.get(), l11.get());
   DrawTree(l0.get());
   ASSERT_TRUE(ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
-  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img2, cc::ExactPixelComparator(true)));
+  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img1, cc::ExactPixelComparator(true)));
 
-  // l11 is already at the front, should have no effect.
-  l0->StackAbove(l11.get(), l12.get());
+  // l11 back to front
+  l0->StackAtTop(l11.get());
   DrawTree(l0.get());
   ASSERT_TRUE(ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
@@ -937,6 +949,13 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ModifyHierarchy) {
   ASSERT_TRUE(ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
   EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img1, cc::ExactPixelComparator(true)));
+
+  // l11 back to front
+  l0->StackAbove(l11.get(), l12.get());
+  DrawTree(l0.get());
+  ASSERT_TRUE(ReadPixels(&bitmap));
+  ASSERT_FALSE(bitmap.empty());
+  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img2, cc::ExactPixelComparator(true)));
 }
 
 // Opacity is rendered correctly.
@@ -1033,18 +1052,17 @@ TEST_F(LayerWithDelegateTest, SchedulePaintFromOnPaintLayer) {
   SchedulePaintForLayer(root.get());
   DrawTree(root.get());
   child->SchedulePaint(gfx::Rect(0, 0, 20, 20));
-  child_delegate.GetPaintCountAndClear();
+  EXPECT_EQ(1, child_delegate.GetPaintCountAndClear());
 
   // Set a rect so that when OnPaintLayer() is invoked SchedulePaint is invoked
   // again.
   child_delegate.SetSchedulePaintRect(gfx::Rect(10, 10, 30, 30));
-  WaitForDraw();
-  // |child| should have been painted once.
+  WaitForCommit();
   EXPECT_EQ(1, child_delegate.GetPaintCountAndClear());
 
   // Because SchedulePaint() was invoked from OnPaintLayer() |child| should
   // still need to be painted.
-  WaitForDraw();
+  WaitForCommit();
   EXPECT_EQ(1, child_delegate.GetPaintCountAndClear());
   EXPECT_TRUE(child_delegate.last_clip_rect().Contains(
                   gfx::Rect(10, 10, 30, 30)));
@@ -1227,7 +1245,6 @@ TEST_F(LayerWithDelegateTest, SetBoundsWhenInvisible) {
   // Move layer.
   child->SetBounds(gfx::Rect(200, 200, 500, 500));
   child->SetVisible(true);
-  WaitForDraw();
   DrawTree(root.get());
   EXPECT_FALSE(delegate.painted());
 
@@ -1239,7 +1256,6 @@ TEST_F(LayerWithDelegateTest, SetBoundsWhenInvisible) {
   // Resize layer.
   child->SetBounds(gfx::Rect(200, 200, 400, 400));
   child->SetVisible(true);
-  WaitForDraw();
   DrawTree(root.get());
   EXPECT_TRUE(delegate.painted());
 }

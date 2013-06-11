@@ -74,12 +74,9 @@ class LayerTreeHostImplTest : public testing::Test,
     media::InitializeMediaLibraryForTesting();
   }
 
-  virtual void OverrideSettings(LayerTreeSettings* settings) {}
-
   virtual void SetUp() OVERRIDE {
     LayerTreeSettings settings;
     settings.minimum_occlusion_tracking_size = gfx::Size();
-    OverrideSettings(&settings);
 
     host_impl_ = LayerTreeHostImpl::Create(settings,
                                            this,
@@ -5748,9 +5745,6 @@ class CompositorFrameMetadataTest : public LayerTreeHostImplTest {
   CompositorFrameMetadataTest()
       : swap_buffers_complete_(0) {}
 
-  virtual void OverrideSettings(LayerTreeSettings* settings) OVERRIDE {
-    settings->compositor_frame_message = true;
-  }
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE {
     swap_buffers_complete_++;
   }
@@ -5767,7 +5761,7 @@ TEST_F(CompositorFrameMetadataTest, CompositorFrameAckCountsAsSwapComplete) {
     host_impl_->DidDrawAllLayers(frame);
   }
   CompositorFrameAck ack;
-  host_impl_->OnSendFrameToParentCompositorAck(ack);
+  host_impl_->OnSwapBuffersComplete(&ack);
   EXPECT_EQ(swap_buffers_complete_, 1);
 }
 

@@ -26,7 +26,6 @@
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPicture.h"
-#include "ui/base/latency_info.h"
 #include "ui/gfx/rect.h"
 
 namespace cc {
@@ -146,7 +145,6 @@ class CC_EXPORT LayerTreeHostImpl
     LayerImplList will_draw_layers;
     bool contains_incomplete_tile;
     bool has_no_damage;
-    ui::LatencyInfo latency_info;
 
     // RenderPassSink implementation.
     virtual void AppendRenderPass(scoped_ptr<RenderPass> render_pass) OVERRIDE;
@@ -186,7 +184,7 @@ class CC_EXPORT LayerTreeHostImpl
   virtual const LayerTreeSettings& Settings() const OVERRIDE;
  public:
   virtual void DidLoseOutputSurface() OVERRIDE;
-  virtual void OnSwapBuffersComplete() OVERRIDE;
+  virtual void OnSwapBuffersComplete(const CompositorFrameAck* ack) OVERRIDE;
   virtual void SetFullRootLayerDamage() OVERRIDE;
   virtual void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
       OVERRIDE;
@@ -209,8 +207,6 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
                                         base::TimeDelta interval) OVERRIDE;
   virtual void BeginFrame(base::TimeTicks frame_time)
-      OVERRIDE;
-  virtual void OnSendFrameToParentCompositorAck(const CompositorFrameAck& ack)
       OVERRIDE;
   virtual void SetExternalDrawConstraints(const gfx::Transform& transform,
                                           gfx::Rect viewport) OVERRIDE;

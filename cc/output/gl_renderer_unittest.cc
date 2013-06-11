@@ -264,7 +264,7 @@ class GLRendererTest : public testing::Test {
 
   virtual void SetUp() { renderer_.Initialize(); }
 
-  void SwapBuffers() { renderer_.SwapBuffers(ui::LatencyInfo()); }
+  void SwapBuffers() { renderer_.SwapBuffers(); }
 
   FrameCountingMemoryAllocationSettingContext* Context() {
     return static_cast<FrameCountingMemoryAllocationSettingContext*>(
@@ -1552,13 +1552,11 @@ class MockOutputSurface : public OutputSurface {
   }
   virtual ~MockOutputSurface() {}
 
-  MOCK_METHOD1(SendFrameToParentCompositor, void(CompositorFrame* frame));
   MOCK_METHOD0(EnsureBackbuffer, void());
   MOCK_METHOD0(DiscardBackbuffer, void());
   MOCK_METHOD2(Reshape, void(gfx::Size size, float scale_factor));
   MOCK_METHOD0(BindFramebuffer, void());
-  MOCK_METHOD2(PostSubBuffer, void(gfx::Rect rect, const ui::LatencyInfo&));
-  MOCK_METHOD1(SwapBuffers, void(const ui::LatencyInfo&));
+  MOCK_METHOD1(SwapBuffers, void(CompositorFrame* frame));
 };
 
 class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
@@ -1569,7 +1567,7 @@ class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
 
   virtual void SetUp() { EXPECT_TRUE(renderer_.Initialize()); }
 
-  void SwapBuffers() { renderer_.SwapBuffers(ui::LatencyInfo()); }
+  void SwapBuffers() { renderer_.SwapBuffers(); }
 
   void DrawFrame() {
     gfx::Rect viewport_rect(DeviceViewport());
@@ -1608,62 +1606,31 @@ TEST_F(MockOutputSurfaceTest, DrawFrameAndSwap) {
   DrawFrame();
 
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
-  renderer_.SwapBuffers(ui::LatencyInfo());
+  renderer_.SwapBuffers();
 }
 
 TEST_F(MockOutputSurfaceTest, DrawFrameAndResizeAndSwap) {
   DrawFrame();
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
-  renderer_.SwapBuffers(ui::LatencyInfo());
+  renderer_.SwapBuffers();
 
   set_viewport_and_scale(gfx::Size(2, 2), 2.f);
   renderer_.ViewportChanged();
 
   DrawFrame();
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
-  renderer_.SwapBuffers(ui::LatencyInfo());
+  renderer_.SwapBuffers();
 
   DrawFrame();
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
-  renderer_.SwapBuffers(ui::LatencyInfo());
+  renderer_.SwapBuffers();
 
   set_viewport_and_scale(gfx::Size(1, 1), 1.f);
   renderer_.ViewportChanged();
 
   DrawFrame();
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
-  renderer_.SwapBuffers(ui::LatencyInfo());
-}
-
-class MockOutputSurfaceTestWithPartialSwap : public MockOutputSurfaceTest {
- public:
-  virtual const LayerTreeSettings& Settings() const OVERRIDE {
-    static LayerTreeSettings fake_settings;
-    fake_settings.partial_swap_enabled = true;
-    return fake_settings;
-  }
-};
-
-TEST_F(MockOutputSurfaceTestWithPartialSwap, DrawFrameAndSwap) {
-  DrawFrame();
-
-  EXPECT_CALL(output_surface_, PostSubBuffer(_, _)).Times(1);
-  renderer_.SwapBuffers(ui::LatencyInfo());
-}
-
-class MockOutputSurfaceTestWithSendCompositorFrame
-    : public MockOutputSurfaceTest {
- public:
-  virtual const LayerTreeSettings& Settings() const OVERRIDE {
-    static LayerTreeSettings fake_settings;
-    fake_settings.compositor_frame_message = true;
-    return fake_settings;
-  }
-};
-
-TEST_F(MockOutputSurfaceTestWithSendCompositorFrame, DrawFrame) {
-  EXPECT_CALL(output_surface_, SendFrameToParentCompositor(_)).Times(1);
-  DrawFrame();
+  renderer_.SwapBuffers();
 }
 
 class GLRendererTestSyncPoint : public GLRendererPixelTest {

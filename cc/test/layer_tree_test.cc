@@ -104,8 +104,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     return result;
   }
 
-  virtual void OnSwapBuffersComplete() OVERRIDE {
-    LayerTreeHostImpl::OnSwapBuffersComplete();
+  virtual void OnSwapBuffersComplete(const CompositorFrameAck* ack) OVERRIDE {
+    LayerTreeHostImpl::OnSwapBuffersComplete(ack);
     test_hooks_->SwapBuffersCompleteOnThread(this);
   }
 

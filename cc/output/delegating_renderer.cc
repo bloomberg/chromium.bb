@@ -53,8 +53,6 @@ bool DelegatingRenderer::Initialize() {
   capabilities_.using_partial_swap = false;
   // TODO(danakj): Throttling - we may want to only allow 1 outstanding frame,
   // but the parent compositor may pipeline for us.
-  // TODO(danakj): Can we use this in single-thread mode?
-  capabilities_.using_swap_complete_callback = true;
   capabilities_.max_texture_size = resource_provider_->max_texture_size();
   capabilities_.best_texture_format = resource_provider_->best_texture_format();
   capabilities_.allow_partial_texture_updates = false;
@@ -156,10 +154,10 @@ void DelegatingRenderer::DrawFrame(
   resource_provider_->PrepareSendToParent(resources, &out_data.resource_list);
 }
 
-void DelegatingRenderer::SwapBuffers(const ui::LatencyInfo& latency_info) {
+void DelegatingRenderer::SwapBuffers() {
   TRACE_EVENT0("cc", "DelegatingRenderer::SwapBuffers");
 
-  output_surface_->SendFrameToParentCompositor(&frame_for_swap_buffers_);
+  output_surface_->SwapBuffers(&frame_for_swap_buffers_);
   frame_for_swap_buffers_.delegated_frame_data.reset();
 }
 
@@ -167,7 +165,7 @@ void DelegatingRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
   NOTREACHED();
 }
 
-void DelegatingRenderer::ReceiveCompositorFrameAck(
+void DelegatingRenderer::ReceiveSwapBuffersAck(
     const CompositorFrameAck& ack) {
   resource_provider_->ReceiveFromParent(ack.resources);
 }

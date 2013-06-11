@@ -262,6 +262,9 @@ class COMPOSITOR_EXPORT DrawWaiterForTest : public ui::CompositorObserver {
   // not to draw.
   static void Wait(Compositor* compositor);
 
+  // Waits for a commit instead of a draw.
+  static void WaitForCommit(Compositor* compositor);
+
  private:
   DrawWaiterForTest();
   virtual ~DrawWaiterForTest();
@@ -280,6 +283,8 @@ class COMPOSITOR_EXPORT DrawWaiterForTest : public ui::CompositorObserver {
                                        base::TimeDelta interval) OVERRIDE;
 
   scoped_ptr<base::RunLoop> wait_run_loop_;
+
+  bool wait_for_commit_;
 
   DISALLOW_COPY_AND_ASSIGN(DrawWaiterForTest);
 };

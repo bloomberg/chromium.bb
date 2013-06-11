@@ -48,9 +48,10 @@ class DirectOutputSurface : public cc::OutputSurface {
   DirectOutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D> context3d)
       : cc::OutputSurface(context3d.Pass()) {}
 
-  virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE {}
-  virtual void PostSubBuffer(gfx::Rect rect, const ui::LatencyInfo&) OVERRIDE {}
-  virtual void SwapBuffers(const ui::LatencyInfo&) OVERRIDE {
+  virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE {
+    surface_size_ = size;
+  }
+  virtual void SwapBuffers(cc::CompositorFrame*) OVERRIDE {
     context3d()->shallowFlushCHROMIUM();
   }
 };

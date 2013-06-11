@@ -63,8 +63,6 @@ class CC_EXPORT FrameRateController {
 
   void SetTimebaseAndInterval(base::TimeTicks timebase,
                               base::TimeDelta interval);
-  bool swap_buffers_complete_supported() const;
-  void SetSwapBuffersCompleteSupported(bool supported);
 
  protected:
   friend class FrameRateControllerTimeSourceAdapter;
@@ -79,7 +77,6 @@ class CC_EXPORT FrameRateController {
   scoped_refptr<TimeSource> time_source_;
   scoped_ptr<FrameRateControllerTimeSourceAdapter> time_source_client_adapter_;
   bool active_;
-  bool swap_buffers_complete_supported_;
 
   // Members for unthrottled frame-rate.
   bool is_time_source_throttling_;
