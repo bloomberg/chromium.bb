@@ -100,6 +100,17 @@ cr.define('cr.ui.login.ResourceLoader', function() {
     Array.prototype.forEach.call(from.children, to.appendChild, to);
   }
 
+  /**
+   * Tests whether an XMLHttpRequest has successfully finished loading.
+   * @param {string} url The requested URL.
+   * @param {XMLHttpRequest} xhr The XHR object.
+   */
+  function isSuccessful(url, xhr) {
+    var fileURL = /^file:\/\//;
+    return xhr.readyState == 4 &&
+        (xhr.status == 200 || fileURL.test(url) && xhr.status == 0);
+  }
+
   /*
    * Load a chunk of HTML into the current document.
    * @param {string} id Identifier of the page's asset bundle.
@@ -112,7 +123,7 @@ cr.define('cr.ui.login.ResourceLoader', function() {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', html.url);
     xhr.onreadystatechange = function() {
-      if (this.readyState == 4 && this.status == 200) {
+      if (isSuccessful(html.url, xhr)) {
         moveNodes(this.responseXML.body, $(html.targetID));
         resourceLoaded(id);
       }

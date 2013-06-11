@@ -1236,6 +1236,7 @@
         'browser/chromeos/login/login_utils_browsertest.cc',
         'browser/chromeos/login/mock_authenticator.cc',
         'browser/chromeos/login/mock_authenticator.h',
+	'browser/chromeos/login/resource_loader_browsertest.cc',
         'browser/chromeos/login/screen_locker_tester.cc',
         'browser/chromeos/login/screen_locker_tester.h',
         'browser/chromeos/login/screens/mock_error_screen.cc',
