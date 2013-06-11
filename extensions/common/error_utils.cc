@@ -4,7 +4,7 @@
 
 #include "extensions/common/error_utils.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace extensions {

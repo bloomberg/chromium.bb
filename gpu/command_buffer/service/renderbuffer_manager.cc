@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
-#include "base/logging.h"
 #include "base/debug/trace_event.h"
-#include "base/stringprintf.h"
+#include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/memory_tracking.h"

@@ -9,7 +9,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/matcher/url_matcher_constants.h"

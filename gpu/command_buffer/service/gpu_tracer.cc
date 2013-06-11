@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/memory/weak_ptr.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "ui/gl/gl_bindings.h"

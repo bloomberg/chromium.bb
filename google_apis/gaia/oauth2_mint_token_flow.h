@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "google_apis/gaia/oauth2_api_call_flow.h"
 
 class GoogleServiceAuthError;

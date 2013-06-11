@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/json/json_reader.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_urls.h"

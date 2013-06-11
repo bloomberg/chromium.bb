@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/format_macros.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "extensions/common/matcher/url_matcher_constants.h"
 #include "googleurl/src/gurl.h"

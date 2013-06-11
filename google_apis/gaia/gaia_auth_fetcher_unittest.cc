@@ -9,7 +9,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/message_loop.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/base/testing_profile.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
