@@ -36,13 +36,13 @@ base::Closure VariationsRequestScheduler::task() const {
   return task_;
 }
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 // static
 VariationsRequestScheduler* VariationsRequestScheduler::Create(
     const base::Closure& task,
     PrefService* local_state) {
   return new VariationsRequestScheduler(task);
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 }  // namespace chrome_variations
