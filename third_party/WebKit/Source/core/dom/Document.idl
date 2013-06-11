@@ -276,7 +276,8 @@
                                                [Default=Undefined] optional float webkitForce);
     [EnabledAtRuntime=touch, Custom, RaisesException] TouchList createTouchList();
 
-    [EnabledAtRuntime=customDOMElements, ImplementedAs=registerElement, CallWith=ScriptState, DeliverCustomElementCallbacks, RaisesException] CustomElementConstructor webkitRegister(DOMString name, optional Dictionary options);
+    [DeprecateAs=PrefixedDocumentRegister, EnabledAtRuntime=customDOMElements, ImplementedAs=registerElement, CallWith=ScriptState, DeliverCustomElementCallbacks, RaisesException] CustomElementConstructor webkitRegister(DOMString name, optional Dictionary options);
+    [EnabledAtRuntime=customDOMElements, ImplementedAs=registerElement, CallWith=ScriptState, DeliverCustomElementCallbacks, RaisesException] CustomElementConstructor register(DOMString name, optional Dictionary options);
     [DeliverCustomElementCallbacks, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Element createElement(DOMString localName, [TreatNullAs=NullString] DOMString typeExtension);
     [DeliverCustomElementCallbacks, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString] DOMString namespaceURI, DOMString qualifiedName,
                             [TreatNullAs=NullString] DOMString typeExtension);

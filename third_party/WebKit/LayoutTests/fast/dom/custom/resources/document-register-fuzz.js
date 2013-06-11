@@ -3,7 +3,7 @@ function setupObjectHooks(hooks)
 {
     // Wrapper for these object should be materialized before setting hooks.
     console.log;
-    document.webkitRegister
+    document.register
     HTMLSpanElement.prototype;
 
     Object.defineProperty(Object.prototype, "prototype", {
@@ -24,7 +24,7 @@ function exerciseDocumentRegister()
     var myConstructor = null;
     var myPrototype = Object.create(HTMLElement.prototype);
     try {
-        myConstructor = document.webkitRegister("x-do-nothing", { prototype: myPrototype });
+        myConstructor = document.register("x-do-nothing", { prototype: myPrototype });
     } catch (e) { }
 
     try {

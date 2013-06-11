@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 9: Uncaught RangeError: Maximum call stack size exceeded.
+CONSOLE MESSAGE: line 8: Uncaught RangeError: Maximum call stack size exceeded.
 PASS unless crash
 PASS successfullyParsed is true
 

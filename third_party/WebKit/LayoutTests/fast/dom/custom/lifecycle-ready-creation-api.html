@@ -10,7 +10,6 @@ function markingReadyCallback() {
     this.callbacksCalled = true;
 }
 
-document.register = document.register || document.webkitRegister;
 document.register("x-foo", { prototype: Object.create(HTMLElement.prototype, { readyCallback: { value: markingReadyCallback } }) });
 document.register("x-bar", { prototype: Object.create(HTMLDivElement.prototype, { readyCallback: { value: markingReadyCallback } }) });
 </script>

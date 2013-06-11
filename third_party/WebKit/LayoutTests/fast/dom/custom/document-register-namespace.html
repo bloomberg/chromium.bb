@@ -7,8 +7,6 @@
 <script>
 description("Using document.register() for extending HTML and non-HTML elements.");
 
-document.register = document.register || document.webkitRegister;
-
 function createElementFromHTML(html)
 {
     var container = document.createElement("div");

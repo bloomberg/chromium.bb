@@ -31,7 +31,7 @@ var b = document.querySelector('#b');
 shouldBe('window.getComputedStyle(b).color', '"rgb(0, 0, 222)"');
 shouldBe('window.getComputedStyle(b).borderColor', '"rgb(0, 0, 111)"');
 
-var X = document.webkitRegister('x-x', {prototype: Object.create(HTMLElement.prototype)});
+var X = document.register('x-x', {prototype: Object.create(HTMLElement.prototype)});
 var c = new X();
 document.body.insertBefore(c, b);
 shouldBe('window.getComputedStyle(c).color', '"rgb(0, 222, 0)"');
@@ -39,7 +39,7 @@ shouldBe('window.getComputedStyle(c).color', '"rgb(0, 222, 0)"');
 // Registering x-x should have changed the styles of #a.
 shouldBe('window.getComputedStyle(a).color', '"rgb(0, 222, 0)"');
 
-var Y = document.webkitRegister('x-y', {prototype: Object.create(HTMLSpanElement.prototype)});
+var Y = document.register('x-y', {prototype: Object.create(HTMLSpanElement.prototype)});
 var d = new Y();
 document.body.insertBefore(d, b);
 shouldBe('window.getComputedStyle(d).color', '"rgb(0, 111, 0)"');
