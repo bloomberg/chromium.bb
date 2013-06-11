@@ -95,5 +95,21 @@ base::string16 GetNameForAbbreviation(const base::string16& abbreviation) {
   return base::string16();
 }
 
+void GetNameAndAbbreviation(const base::string16& value,
+                            base::string16* name,
+                            base::string16* abbreviation) {
+  base::string16 full = GetNameForAbbreviation(value);
+  base::string16 abbr = value;
+  if (full.empty()) {
+    abbr = GetAbbreviationForName(value);
+    full = value;
+  }
+
+  if (name)
+    name->swap(full);
+  if (abbreviation)
+    abbreviation->swap(abbr);
+}
+
 }  // namespace state_names
 }  // namespace autofill

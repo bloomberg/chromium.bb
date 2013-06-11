@@ -1237,8 +1237,12 @@ string16 AutofillDialogControllerImpl::InputValidityMessage(
     case ADDRESS_HOME_LINE2:
       return base::string16();  // Line 2 is optional - always valid.
 
-    case ADDRESS_HOME_CITY:
     case ADDRESS_HOME_STATE:
+      if (!value.empty() && !autofill::IsValidState(value))
+        return ASCIIToUTF16("Are you sure this is right?");
+      break;
+
+    case ADDRESS_HOME_CITY:
     case ADDRESS_HOME_ZIP:
     case ADDRESS_HOME_COUNTRY:
       break;

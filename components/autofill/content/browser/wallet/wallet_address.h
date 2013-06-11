@@ -173,6 +173,7 @@ class Address {
 
   // Top-level administrative subdivision of this country.
   // Examples: US state, IT region, UK constituent nation, JP prefecture.
+  // Note: this must be in short form, e.g. TX rather than Texas.
   base::string16 administrative_area_name_;
 
   // Despite the name, |postal_code_number_| values are frequently alphanumeric.

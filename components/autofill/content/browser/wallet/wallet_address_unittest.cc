@@ -7,6 +7,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/autofill/browser/autofill_common_test.h"
+#include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/content/browser/wallet/wallet_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -375,6 +377,36 @@ TEST_F(WalletAddressTest, ToDictionaryWithID) {
                   "id");
 
   EXPECT_TRUE(expected.Equals(address.ToDictionaryWithID().get()));
+}
+
+TEST_F(WalletAddressTest, FromAutofillProfile) {
+  {
+    AutofillProfile profile(test::GetFullProfile());
+    profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("tx"));
+    Address address(profile);
+    EXPECT_EQ(ASCIIToUTF16("TX"), address.administrative_area_name());
+  }
+
+  {
+    AutofillProfile profile(test::GetFullProfile());
+    profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("Texas"));
+    Address address(profile);
+    EXPECT_EQ(ASCIIToUTF16("TX"), address.administrative_area_name());
+  }
+
+  {
+    AutofillProfile profile(test::GetFullProfile());
+    profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("TX"));
+    Address address(profile);
+    EXPECT_EQ(ASCIIToUTF16("TX"), address.administrative_area_name());
+  }
+
+  {
+    AutofillProfile profile(test::GetFullProfile());
+    profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("txeas"));
+    Address address(profile);
+    EXPECT_TRUE(address.administrative_area_name().empty());
+  }
 }
 
 }  // namespace wallet

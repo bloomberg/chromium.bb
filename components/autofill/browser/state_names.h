@@ -18,6 +18,13 @@ base::string16 GetAbbreviationForName(const base::string16& name);
 // string if there is no such state.
 base::string16 GetNameForAbbreviation(const base::string16& abbreviation);
 
+// |value| is either a state name or abbreviation. Detects which it is, and
+// outputs both |name| and |abbreviation|. If it's neither, then |name| is
+// set to |value| and |abbreviation| will be empty.
+void GetNameAndAbbreviation(const base::string16& value,
+                            base::string16* name,
+                            base::string16* abbreviation);
+
 }  // namespace state_names
 }  // namespace autofill
 

@@ -58,12 +58,8 @@ bool SetSelectControlValue(const base::string16& value,
 
 bool FillStateSelectControl(const base::string16& value,
                             FormFieldData* field) {
-  base::string16 abbreviation = value;
-  base::string16 full = state_names::GetNameForAbbreviation(value);
-  if (full.empty()) {
-    abbreviation = state_names::GetAbbreviationForName(value);
-    full = value;
-  }
+  base::string16 full, abbreviation;
+  state_names::GetNameAndAbbreviation(value, &full, &abbreviation);
 
   // Try the abbreviation first.
   if (!abbreviation.empty() && SetSelectControlValue(abbreviation, field))

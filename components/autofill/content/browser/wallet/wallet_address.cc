@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_profile.h"
+#include "components/autofill/browser/state_names.h"
 
 namespace autofill {
 namespace wallet {
@@ -100,10 +101,14 @@ Address::Address(const AutofillProfile& profile)
       address_line_1_(profile.GetRawInfo(ADDRESS_HOME_LINE1)),
       address_line_2_(profile.GetRawInfo(ADDRESS_HOME_LINE2)),
       locality_name_(profile.GetRawInfo(ADDRESS_HOME_CITY)),
-      administrative_area_name_(profile.GetRawInfo(ADDRESS_HOME_STATE)),
       postal_code_number_(profile.GetRawInfo(ADDRESS_HOME_ZIP)),
       phone_number_(profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER)),
-      is_complete_address_(true) {}
+      is_complete_address_(true) {
+  state_names::GetNameAndAbbreviation(profile.GetRawInfo(ADDRESS_HOME_STATE),
+                                      NULL,
+                                      &administrative_area_name_);
+  StringToUpperASCII(&administrative_area_name_);
+}
 
 Address::Address(const std::string& country_name_code,
                  const string16& recipient_name,
@@ -123,7 +128,8 @@ Address::Address(const std::string& country_name_code,
       postal_code_number_(postal_code_number),
       phone_number_(phone_number),
       object_id_(object_id),
-      is_complete_address_(true) {}
+      is_complete_address_(true) {
+}
 
 Address::~Address() {}
 
