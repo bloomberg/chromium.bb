@@ -294,9 +294,6 @@
       'filepath': 'chrome/browser/.*managed_mode'\
                   '|chrome/browser/.*managed_user',
     },
-    'mac': {
-      'filepath': 'cocoa|\.mm$|(_mac|_posix)\.(cc|h)$',
-    },
     'media': {
       'filepath': 'media/|third_party/(ffmpeg|openmax)/|webmediaplayer|'\
         'audio_message_filter|video_layer|media_internals',
@@ -382,9 +379,6 @@
     'prerender': {
       'filepath': 'prerender'
     },
-    'profiles': {
-      'filepath': 'chrome/browser/profiles/'
-    },
     'pyauto': {
       'filepath': 'chrome/test/pyautolib' \
                   '|chrome/test/functional' \
@@ -425,9 +419,6 @@
     },
     'sync': {
       'filepath': 'chrome/browser/sync/|sync/',
-    },
-    'sync_promo': {
-      'filepath': 'chrome/browser/ui/webui/sync_promo/',
     },
     'tab_contents': {
       'filepath': 'chrome/browser/tab_contents/|'\
@@ -626,7 +617,6 @@
     'linux_fonts': ['derat+watch@chromium.org'],
     'linux_sandboxing': ['agl@chromium.org', 'jln+watch@chromium.org'],
     'linux_seccomp_bpf': ['jln+watch@chromium.org'],
-    'mac': ['sail+watch@chromium.org'],
     'managed_users': ['pam+watch@chromium.org'],
     'media': ['feature-media-reviews@chromium.org'],
     'message_loop': ['sadrul@chromium.org'],
@@ -656,7 +646,6 @@
     'predictors': ['dominich+watch@chromium.org', 'shishir+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org',
                   'dominich+watch@chromium.org', 'gavinp+prer@chromium.org'],
-    'profiles': ['sail+watch@chromium.org'],
     'pyauto': ['anantha@chromium.org',
                'dyu@chromium.org',
                'dennisjeffrey@chromium.org'],
@@ -682,7 +671,6 @@
              'haitaol@chromium.org',
              'rsimha@chromium.org',
              'tim@chromium.org'],
-    'sync_promo': ['sail+watch@chromium.org'],
     'tab_contents': ['avi@chromium.org',
                      'creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
     'task_manager': ['yoshiki+watch@chromium.org'],
