@@ -699,6 +699,8 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
       continue;  // Reading pagemap will fail in [vsyscall].
     }
 
+    // TODO(dmikurube): |type| will be deprecated in the dump.
+    // See http://crbug.com/245603.
     type = ABSENT;
     if (filename[0] == '/') {
       if (flags[2] == 'x')
@@ -712,10 +714,14 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
     } else {
       type = OTHER;
     }
-    all_[type].Record(
+    // TODO(dmikurube): This |all_| count should be removed in future soon.
+    // See http://crbug.com/245603.
+    uint64 vma_total = all_[type].Record(
         memory_residence_info_getter, vma_start_addr, vma_last_addr);
+    uint64 vma_subtotal = 0;
 
     // TODO(dmikurube): Stop double-counting pagemap.
+    // It will be fixed when http://crbug.com/245603 finishes.
     if (MemoryRegionMap::IsRecordingLocked()) {
       uint64 cursor = vma_start_addr;
       bool first = true;
@@ -752,6 +758,7 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
               memory_residence_info_getter,
               cursor,
               last_address_of_unhooked);
+          vma_subtotal += committed_size;
           if (mmap_dump_buffer) {
             mmap_dump_buffer->AppendString("  ", 0);
             mmap_dump_buffer->AppendPtr(cursor, 0);
@@ -783,6 +790,7 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
             partial_last_address = mmap_iter->end_addr - 1;
           uint64 committed_size = memory_residence_info_getter->CommittedSize(
               partial_first_address, partial_last_address);
+          vma_subtotal += committed_size;
           mmap_dump_buffer->AppendString(trailing ? " (" : "  ", 0);
           mmap_dump_buffer->AppendPtr(mmap_iter->start_addr, 0);
           mmap_dump_buffer->AppendString(trailing ? ")" : " ", 0);
@@ -806,6 +814,16 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
       } while (mmap_iter != MemoryRegionMap::EndRegionLocked() &&
                mmap_iter->end_addr - 1 <= vma_last_addr);
     }
+
+    if (vma_total != vma_subtotal) {
+      char buffer[1024];
+      int written = procmaps_iter.FormatLine(buffer, sizeof(buffer),
+                                             vma_start_addr, vma_last_addr,
+                                             flags, offset, inode, filename, 0);
+      RAW_LOG(0, "[%d] Mismatched total in VMA %"PRId64":%"PRId64" (%"PRId64")",
+              getpid(), vma_total, vma_subtotal, vma_total - vma_subtotal);
+      RAW_LOG(0, "[%d]   in %s", getpid(), buffer);
+    }
   }
 
   // TODO(dmikurube): Investigate and fix http://crbug.com/189114.
@@ -819,6 +837,8 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
   // during counting memory usage in the loop above.
   //
   // The difference is accounted as "ABSENT" to investigate such cases.
+  //
+  // It will be fixed when http://crbug.com/245603 finishes (no double count).
 
   RegionStats all_total;
   RegionStats unhooked_total;
