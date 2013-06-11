@@ -1048,13 +1048,18 @@ crbug.com/245611 [ Win7 Release ] virtual/gpu/fast/hidpi/image-set-border-image-
 crbug.com/245611 [ Win ] fast/hidpi/image-set-border-image-simple.html [ ImageOnlyFailure Pass ]
 crbug.com/245611 [ Win7 Release ] virtual/gpu/fast/hidpi/image-set-in-content-dynamic.html [ ImageOnlyFailure Pass Timeout ]
 crbug.com/245611 [ Win7 ] fast/hidpi/image-set-in-content-dynamic.html [ ImageOnlyFailure Pass ]
-crbug.com/245611 [ Win ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ ImageOnlyFailure Pass ]
+crbug.com/245611 [ Win Release ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ ImageOnlyFailure Pass ]
 crbug.com/245611 [ Win ] fast/hidpi/image-set-out-of-order.html [ ImageOnlyFailure Pass ]
 crbug.com/245611 [ Win ] virtual/gpu/fast/hidpi/image-set-simple.html [ ImageOnlyFailure Pass Timeout ]
 crbug.com/245611 [ Win ] fast/hidpi/image-set-simple.html [ ImageOnlyFailure Pass ]
-crbug.com/245611 [ Win ] virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ ImageOnlyFailure Pass ]
+crbug.com/245611 [ Win Release ] virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ ImageOnlyFailure Pass ]
 crbug.com/245611 [ Win ] fast/hidpi/image-set-without-specified-width.html [ ImageOnlyFailure Pass ]
 crbug.com/245611 virtual/gpu/fast/canvas/webgl/webgl-composite-modes.html [ ImageOnlyFailure Pass ]
+
+crbug.com/248415 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-strokeRect-gradient-shadow.html [ Timeout Pass ]
+crbug.com/248415 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Timeout Pass ]
+crbug.com/248415 [ Win Debug ] virtual/gpu/fast/hidpi/image-set-out-of-order.html [ ImageOnlyFailure Timeout Pass ]
+crbug.com/248415 [ Win Debug ] virtual/gpu/fast/hidpi/image-set-without-specified-width.html [ ImageOnlyFailure Timeout Pass ]
 
 webkit.org/b/98087 fast/css/lang-mapped-to-webkit-locale-dynamic.xhtml [ Failure Pass ]
 
