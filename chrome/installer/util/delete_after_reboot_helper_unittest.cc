@@ -7,7 +7,7 @@
 
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"

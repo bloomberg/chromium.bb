@@ -40,7 +40,7 @@
 #include "base/path_service.h"
 #include "base/platform_file.h"
 #include "base/process_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/version.h"
 #include "base/win/pe_image.h"
 #include "base/win/scoped_handle.h"

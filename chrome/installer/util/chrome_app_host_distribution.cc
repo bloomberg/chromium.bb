@@ -9,7 +9,7 @@
 
 #include "chrome/installer/util/chrome_app_host_distribution.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/common/net/test_server_locations.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"

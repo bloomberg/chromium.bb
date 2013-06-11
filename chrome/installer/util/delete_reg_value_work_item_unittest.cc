@@ -6,7 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/delete_reg_value_work_item.h"
 #include "chrome/installer/util/work_item.h"

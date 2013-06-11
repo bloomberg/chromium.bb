@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/version.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"

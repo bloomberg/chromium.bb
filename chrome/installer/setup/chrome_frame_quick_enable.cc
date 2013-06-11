@@ -8,7 +8,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/win/registry.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/util/google_update_constants.h"

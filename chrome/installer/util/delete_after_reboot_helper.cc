@@ -17,8 +17,8 @@
 
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/strings/string_util.h"
 #include "base/win/registry.h"
-#include "base/string_util.h"
 
 // The moves-pending-reboot is a MULTISZ registry key in the HKLM part of the
 // registry.

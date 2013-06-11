@@ -9,7 +9,7 @@
 
 #include <shlobj.h>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/installer/util/util_constants.h"
 
 class BrowserDistribution;

@@ -14,7 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/process_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/version.h"
 #include "base/win/windows_version.h"
 #include "chrome/installer/util/copy_tree_work_item.h"

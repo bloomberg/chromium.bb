@@ -8,8 +8,8 @@
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/string16.h"
-#include "base/string_util.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "chrome/installer/util/duplicate_tree_detector.h"
 #include "chrome/installer/util/installer_util_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"

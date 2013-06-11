@@ -8,8 +8,8 @@
 #ifndef CHROME_INSTALLER_UTIL_GOOGLE_CHROME_DISTRIBUTION_H_
 #define CHROME_INSTALLER_UTIL_GOOGLE_CHROME_DISTRIBUTION_H_
 
-#include "base/string16.h"
 #include "base/gtest_prod_util.h"
+#include "base/strings/string16.h"
 #include "chrome/installer/util/browser_distribution.h"
 
 namespace base {
