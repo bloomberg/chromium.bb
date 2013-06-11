@@ -93,16 +93,16 @@ WorkerInspectorController::WorkerInspectorController(WorkerContext* workerContex
     , m_state(adoptPtr(new InspectorCompositeState(m_stateClient.get())))
     , m_instrumentingAgents(InstrumentingAgents::create())
     , m_injectedScriptManager(InjectedScriptManager::createForWorker())
+    , m_debugServer(adoptPtr(new WorkerScriptDebugServer(workerContext, WorkerDebuggerAgent::debuggerTaskMode)))
     , m_runtimeAgent(0)
 {
-    OwnPtr<InspectorRuntimeAgent> runtimeAgent = WorkerRuntimeAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get(), workerContext);
+    OwnPtr<InspectorRuntimeAgent> runtimeAgent = WorkerRuntimeAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get(), m_debugServer.get(), workerContext);
     m_runtimeAgent = runtimeAgent.get();
     m_agents.append(runtimeAgent.release());
 
     OwnPtr<InspectorConsoleAgent> consoleAgent = WorkerConsoleAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get());
-    OwnPtr<InspectorDebuggerAgent> debuggerAgent = WorkerDebuggerAgent::create(m_instrumentingAgents.get(), m_state.get(), workerContext, m_injectedScriptManager.get());
+    OwnPtr<InspectorDebuggerAgent> debuggerAgent = WorkerDebuggerAgent::create(m_instrumentingAgents.get(), m_state.get(), m_debugServer.get(), workerContext, m_injectedScriptManager.get());
     InspectorDebuggerAgent* debuggerAgentPtr = debuggerAgent.get();
-    m_runtimeAgent->setScriptDebugServer(&debuggerAgent->scriptDebugServer());
     m_agents.append(debuggerAgent.release());
 
     m_agents.append(InspectorProfilerAgent::create(m_instrumentingAgents.get(), consoleAgent.get(), m_state.get(), m_injectedScriptManager.get()));
@@ -116,6 +116,7 @@ WorkerInspectorController::WorkerInspectorController(WorkerContext* workerContex
         , 0
         , 0
         , debuggerAgentPtr
+        , m_debugServer.get()
     );
 }
  

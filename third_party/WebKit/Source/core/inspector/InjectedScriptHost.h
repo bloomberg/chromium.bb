@@ -74,6 +74,7 @@ public:
             , InspectorDOMStorageAgent* domStorageAgent
             , InspectorDOMAgent* domAgent
             , InspectorDebuggerAgent* debuggerAgent
+            , ScriptDebugServer* scriptDebugServer
         )
     {
         m_inspectorAgent = inspectorAgent;
@@ -82,6 +83,7 @@ public:
         m_domStorageAgent = domStorageAgent;
         m_domAgent = domAgent;
         m_debuggerAgent = debuggerAgent;
+        m_scriptDebugServer = scriptDebugServer;
     }
 
     static Node* scriptValueAsNode(ScriptValue);
@@ -109,7 +111,7 @@ public:
     void setBreakpoint(const String& scriptId, int lineNumber, int columnNumber);
     void removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber);
 
-    ScriptDebugServer& scriptDebugServer();
+    ScriptDebugServer& scriptDebugServer() { return *m_scriptDebugServer; }
 
 private:
     InjectedScriptHost();
@@ -120,6 +122,7 @@ private:
     InspectorDOMStorageAgent* m_domStorageAgent;
     InspectorDOMAgent* m_domAgent;
     InspectorDebuggerAgent* m_debuggerAgent;
+    ScriptDebugServer* m_scriptDebugServer;
     Vector<OwnPtr<InspectableObject> > m_inspectedObjects;
     OwnPtr<InspectableObject> m_defaultInspectableObject;
 };

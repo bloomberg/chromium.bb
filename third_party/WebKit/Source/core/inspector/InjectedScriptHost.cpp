@@ -58,6 +58,7 @@ InjectedScriptHost::InjectedScriptHost()
     , m_databaseAgent(0)
     , m_domStorageAgent(0)
     , m_domAgent(0)
+    , m_scriptDebugServer(0)
 {
     ScriptWrappable::init(this);
     m_defaultInspectableObject = adoptPtr(new InspectableObject());
@@ -74,6 +75,7 @@ void InjectedScriptHost::disconnect()
     m_databaseAgent = 0;
     m_domStorageAgent = 0;
     m_domAgent = 0;
+    m_scriptDebugServer = 0;
 }
 
 void InjectedScriptHost::inspectImpl(PassRefPtr<InspectorValue> object, PassRefPtr<InspectorValue> hints)
@@ -139,11 +141,6 @@ String InjectedScriptHost::storageIdImpl(Storage* storage)
     if (m_domStorageAgent)
         return m_domStorageAgent->storageId(storage);
     return String();
-}
-
-ScriptDebugServer& InjectedScriptHost::scriptDebugServer()
-{
-    return m_debuggerAgent->scriptDebugServer();
 }
 
 void InjectedScriptHost::setBreakpoint(const String& scriptId, int lineNumber, int columnNumber)

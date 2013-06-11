@@ -48,7 +48,7 @@ class PageDebuggerAgent :
     WTF_MAKE_NONCOPYABLE(PageDebuggerAgent);
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<PageDebuggerAgent> create(InstrumentingAgents*, InspectorCompositeState*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
+    static PassOwnPtr<PageDebuggerAgent> create(InstrumentingAgents*, InspectorCompositeState*, PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
     virtual ~PageDebuggerAgent();
 
     void didClearWindowObjectInWorld(Frame*, DOMWrapperWorld*);
@@ -72,7 +72,8 @@ private:
     virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId);
     virtual void setOverlayMessage(ErrorString*, const String*);
 
-    PageDebuggerAgent(InstrumentingAgents*, InspectorCompositeState*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
+    PageDebuggerAgent(InstrumentingAgents*, InspectorCompositeState*, PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
+    PageScriptDebugServer* m_pageScriptDebugServer;
     InspectorPageAgent* m_pageAgent;
     InspectorOverlay* m_overlay;
 };

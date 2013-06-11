@@ -49,6 +49,7 @@ class InspectorState;
 class InspectorStateClient;
 class InstrumentingAgents;
 class WorkerContext;
+class WorkerScriptDebugServer;
 
 class WorkerInspectorController {
     WTF_MAKE_NONCOPYABLE(WorkerInspectorController);
@@ -72,6 +73,7 @@ private:
     OwnPtr<InspectorCompositeState> m_state;
     RefPtr<InstrumentingAgents> m_instrumentingAgents;
     OwnPtr<InjectedScriptManager> m_injectedScriptManager;
+    OwnPtr<WorkerScriptDebugServer> m_debugServer;
     InspectorRuntimeAgent* m_runtimeAgent;
     InspectorAgentRegistry m_agents;
     OwnPtr<InspectorFrontendChannel> m_frontendChannel;

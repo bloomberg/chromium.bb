@@ -123,15 +123,15 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     m_resourceAgent = resourceAgentPtr.get();
     m_agents.append(resourceAgentPtr.release());
 
-    OwnPtr<InspectorRuntimeAgent> runtimeAgentPtr(PageRuntimeAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get(), page, pageAgent));
-    InspectorRuntimeAgent* runtimeAgent = runtimeAgentPtr.get();
-    m_agents.append(runtimeAgentPtr.release());
+    PageScriptDebugServer* pageScriptDebugServer = &PageScriptDebugServer::shared();
+
+    m_agents.append(PageRuntimeAgent::create(m_instrumentingAgents.get(), m_state.get(), m_injectedScriptManager.get(), pageScriptDebugServer, page, pageAgent));
 
     OwnPtr<InspectorConsoleAgent> consoleAgentPtr(PageConsoleAgent::create(m_instrumentingAgents.get(), m_inspectorAgent, m_state.get(), m_injectedScriptManager.get(), m_domAgent));
     InspectorConsoleAgent* consoleAgent = consoleAgentPtr.get();
     m_agents.append(consoleAgentPtr.release());
 
-    OwnPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(m_instrumentingAgents.get(), m_state.get(), pageAgent, m_injectedScriptManager.get(), m_overlay.get()));
+    OwnPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(m_instrumentingAgents.get(), m_state.get(), pageScriptDebugServer, pageAgent, m_injectedScriptManager.get(), m_overlay.get()));
     m_debuggerAgent = debuggerAgentPtr.get();
     m_agents.append(debuggerAgentPtr.release());
 
@@ -161,9 +161,8 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
         , domStorageAgent
         , m_domAgent
         , m_debuggerAgent
+        , pageScriptDebugServer
     );
-
-    runtimeAgent->setScriptDebugServer(&m_debuggerAgent->scriptDebugServer());
 }
 
 InspectorController::~InspectorController()

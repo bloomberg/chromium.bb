@@ -51,8 +51,8 @@ namespace PageRuntimeAgentState {
 static const char runtimeEnabled[] = "runtimeEnabled";
 };
 
-PageRuntimeAgent::PageRuntimeAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager, Page* page, InspectorPageAgent* pageAgent)
-    : InspectorRuntimeAgent(instrumentingAgents, state, injectedScriptManager)
+PageRuntimeAgent::PageRuntimeAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, Page* page, InspectorPageAgent* pageAgent)
+    : InspectorRuntimeAgent(instrumentingAgents, state, injectedScriptManager, scriptDebugServer)
     , m_inspectedPage(page)
     , m_pageAgent(pageAgent)
     , m_frontend(0)

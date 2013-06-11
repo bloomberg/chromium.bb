@@ -79,14 +79,14 @@ private:
 
 const char* WorkerDebuggerAgent::debuggerTaskMode = "debugger";
 
-PassOwnPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* inspectorState, WorkerContext* inspectedWorkerContext, InjectedScriptManager* injectedScriptManager)
+PassOwnPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* inspectorState, WorkerScriptDebugServer* scriptDebugServer, WorkerContext* inspectedWorkerContext, InjectedScriptManager* injectedScriptManager)
 {
-    return adoptPtr(new WorkerDebuggerAgent(instrumentingAgents, inspectorState, inspectedWorkerContext, injectedScriptManager));
+    return adoptPtr(new WorkerDebuggerAgent(instrumentingAgents, inspectorState, scriptDebugServer, inspectedWorkerContext, injectedScriptManager));
 }
 
-WorkerDebuggerAgent::WorkerDebuggerAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* inspectorState, WorkerContext* inspectedWorkerContext, InjectedScriptManager* injectedScriptManager)
+WorkerDebuggerAgent::WorkerDebuggerAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* inspectorState, WorkerScriptDebugServer* scriptDebugServer, WorkerContext* inspectedWorkerContext, InjectedScriptManager* injectedScriptManager)
     : InspectorDebuggerAgent(instrumentingAgents, inspectorState, injectedScriptManager)
-    , m_scriptDebugServer(inspectedWorkerContext, WorkerDebuggerAgent::debuggerTaskMode)
+    , m_scriptDebugServer(scriptDebugServer)
     , m_inspectedWorkerContext(inspectedWorkerContext)
 {
     MutexLocker lock(workerDebuggerAgentsMutex());
@@ -105,7 +105,7 @@ void WorkerDebuggerAgent::interruptAndDispatchInspectorCommands(WorkerThread* th
     MutexLocker lock(workerDebuggerAgentsMutex());
     WorkerDebuggerAgent* agent = workerDebuggerAgents().get(thread);
     if (agent)
-        agent->m_scriptDebugServer.interruptAndRunTask(adoptPtr(new RunInspectorCommandsTask(thread, agent->m_inspectedWorkerContext)));
+        agent->m_scriptDebugServer->interruptAndRunTask(adoptPtr(new RunInspectorCommandsTask(thread, agent->m_inspectedWorkerContext)));
 }
 
 void WorkerDebuggerAgent::startListeningScriptDebugServer()
@@ -120,7 +120,7 @@ void WorkerDebuggerAgent::stopListeningScriptDebugServer()
 
 WorkerScriptDebugServer& WorkerDebuggerAgent::scriptDebugServer()
 {
-    return m_scriptDebugServer;
+    return *m_scriptDebugServer;
 }
 
 InjectedScript WorkerDebuggerAgent::injectedScriptForEval(ErrorString* error, const int* executionContextId)
