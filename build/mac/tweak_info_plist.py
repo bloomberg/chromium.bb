@@ -129,8 +129,6 @@ def _DoSCMKeys(plist, add_keys):
   elif add_keys:
     print >>sys.stderr, 'Could not determine SCM revision.  This may be OK.'
 
-  # TODO(thakis): Remove this once m25 has reached stable.
-  _RemoveKeys(plist, 'SCMPath')
   return True
 
 
