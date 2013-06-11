@@ -15,7 +15,7 @@
 #include "base/i18n/rtl.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
 #include "testing/gtest/include/gtest/gtest.h"

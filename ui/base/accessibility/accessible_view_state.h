@@ -6,7 +6,7 @@
 #define UI_BASE_ACCESSIBILITY_ACCESSIBLE_VIEW_STATE_H_
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/ui_export.h"
 

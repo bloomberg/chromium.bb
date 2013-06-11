@@ -4,7 +4,7 @@
 
 #include "ui/aura/test/test_window_delegate.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event.h"
 #include "ui/base/hit_test.h"

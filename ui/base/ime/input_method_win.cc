@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/win/metro.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"

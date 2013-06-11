@@ -6,7 +6,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/basictypes.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #endif
 
 namespace l10n_util {

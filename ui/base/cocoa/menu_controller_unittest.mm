@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"

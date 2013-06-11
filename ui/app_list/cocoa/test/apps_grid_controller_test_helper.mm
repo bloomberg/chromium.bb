@@ -5,7 +5,7 @@
 #import "ui/app_list/cocoa/test/apps_grid_controller_test_helper.h"
 
 #include "base/mac/foundation_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "ui/app_list/app_list_item_model.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 #import "ui/app_list/cocoa/apps_grid_view_item.h"

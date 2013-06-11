@@ -12,7 +12,7 @@
 #define UI_BASE_ACCELERATORS_ACCELERATOR_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/base/accelerators/platform_accelerator.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"

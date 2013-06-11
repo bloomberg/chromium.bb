@@ -4,7 +4,7 @@
 
 #include "ui/app_list/test/app_list_test_model.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "ui/app_list/app_list_item_model.h"
 
 namespace app_list {

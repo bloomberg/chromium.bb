@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/app_list_model.h"

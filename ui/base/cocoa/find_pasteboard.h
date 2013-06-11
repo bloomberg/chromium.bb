@@ -5,7 +5,7 @@
 #ifndef UI_BASE_COCOA_FIND_PASTEBOARD_H_
 #define UI_BASE_COCOA_FIND_PASTEBOARD_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 #ifdef __OBJC__
 

@@ -5,7 +5,7 @@
 #ifndef UI_BASE_IME_COMPOSITION_TEXT_H_
 #define UI_BASE_IME_COMPOSITION_TEXT_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/base/ime/composition_underline.h"
 #include "ui/base/range/range.h"
 #include "ui/base/ui_export.h"

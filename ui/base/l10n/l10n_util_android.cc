@@ -9,7 +9,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "jni/LocalizationUtils_jni.h"
 #include "third_party/icu/public/common/unicode/uloc.h"
 

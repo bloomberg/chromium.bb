@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/gfx/native_widget_types.h"

@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "ui/base/ui_export.h"
 
 namespace ui {

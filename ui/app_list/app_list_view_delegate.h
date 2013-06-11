@@ -5,7 +5,7 @@
 #ifndef UI_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 #define UI_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/app_list/app_list_export.h"
 
 namespace gfx {

@@ -6,7 +6,7 @@
 #define UI_BASE_CURSOR_CURSOR_LOADER_WIN_H_
 
 #include "base/compiler_specific.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/base/cursor/cursor_loader.h"
 
 namespace ui {

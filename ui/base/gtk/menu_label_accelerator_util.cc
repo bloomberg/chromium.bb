@@ -4,7 +4,7 @@
 
 #include "ui/base/gtk/menu_label_accelerator_util.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 namespace {
 

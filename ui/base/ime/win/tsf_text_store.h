@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/win/scoped_comptr.h"
 #include "ui/base/ime/composition_underline.h"
 #include "ui/base/range/range.h"
