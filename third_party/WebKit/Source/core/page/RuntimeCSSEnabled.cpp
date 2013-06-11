@@ -48,7 +48,7 @@ static void setPropertySwitchesFromRuntimeFeatures(BoolVector& properties)
     CSSPropertyID regionProperites[] = {
         CSSPropertyWebkitFlowInto,
         CSSPropertyWebkitFlowFrom,
-        CSSPropertyWebkitRegionOverflow,
+        CSSPropertyWebkitRegionFragment,
         CSSPropertyWebkitRegionBreakAfter,
         CSSPropertyWebkitRegionBreakBefore,
         CSSPropertyWebkitRegionBreakInside

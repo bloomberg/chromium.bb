@@ -394,7 +394,7 @@ static int mapCSSPropertyIdToCSSSampleId(int id)
     case CSSPropertyWebkitUserSelect: return 339;
     case CSSPropertyWebkitFlowInto: return 340;
     case CSSPropertyWebkitFlowFrom: return 341;
-    case CSSPropertyWebkitRegionOverflow: return 342;
+    case CSSPropertyWebkitRegionFragment: return 342;
     case CSSPropertyWebkitRegionBreakAfter: return 343;
     case CSSPropertyWebkitRegionBreakBefore: return 344;
     case CSSPropertyWebkitRegionBreakInside: return 345;

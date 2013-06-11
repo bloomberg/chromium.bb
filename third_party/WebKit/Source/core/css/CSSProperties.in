@@ -155,7 +155,7 @@ z-index type_name=int, custom_all
 -webkit-region-break-after type_name=EPageBreak, initial=initialPageBreak
 -webkit-region-break-before type_name=EPageBreak, initial=initialPageBreak
 -webkit-region-break-inside type_name=EPageBreak, initial=initialPageBreak
--webkit-region-overflow type_name=RegionOverflow
+-webkit-region-fragment type_name=RegionFragment
 -webkit-rtl-ordering type_name=Order, getter=rtlOrdering, setter=setRTLOrdering, initial=initialRTLOrdering
 -webkit-ruby-position type_name=RubyPosition
 -webkit-shape-margin apply_type=length

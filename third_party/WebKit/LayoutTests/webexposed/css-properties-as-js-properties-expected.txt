@@ -358,7 +358,7 @@ webkitPrintColorAdjust
 webkitRegionBreakAfter
 webkitRegionBreakBefore
 webkitRegionBreakInside
-webkitRegionOverflow
+webkitRegionFragment
 webkitRtlOrdering
 webkitRubyPosition
 webkitShapeInside
