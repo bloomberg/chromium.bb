@@ -127,6 +127,7 @@ private:
     Vector<Vector<LevelInfo> > m_info;
 
     bool m_isNPOT;
+    bool m_isCubeComplete;
     bool m_isComplete;
     bool m_needToUseBlackTexture;
     bool m_isFloatType;
