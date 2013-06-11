@@ -49,7 +49,8 @@ function findRollIssue(results) {
 }
 
 function isRollbotStopped(issue) {
-    return issue['messages'].some(function(message) { message['text'].match(/STOP/); })
+    // Ignore the first message as it always contains "STOP"
+    return issue.messages.slice(1).some(function(message) { return message.text.match(/STOP/); });
 }
 
 rollbot.fetchCurrentRoll = function(callback) {
@@ -71,5 +72,8 @@ rollbot.fetchCurrentRoll = function(callback) {
         });
     });
 };
+
+// Exposed for unittesting.
+rollbot._isRollbotStopped = isRollbotStopped;
 
 })();

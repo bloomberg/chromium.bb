@@ -45,7 +45,7 @@ var kSearchResults = {
             "eseidel@chromium.org",
             "chromium-reviews@chromium.org",
           ],
-          "text": "This roll was automatically created by the Blink AutoRollBot (crbug.com\/242461).\n",
+          "text": "This roll was automatically created by the Blink AutoRollBot (crbug.com\/242461).\nInclude STOP in this message, but should be ignored.",
           "disapproval": false,
           "date": "2013-06-03 18:14:34.033780",
           "approval": false
@@ -90,6 +90,70 @@ var kSearchResults = {
   ]
 };
 
+var kStoppedIssue = {
+  "description": "Blink roll 152079:152080\n\nhttp:\/\/build.chromium.org\/f\/chromium\/perf\/dashboard\/ui\/changelog_blink.html?url=\/trunk&range=152080:152080&mode=html\nTBR=\nBUG=",
+  "cc": [
+    "chromium-reviews@chromium.org",
+    "none (channel is sheriff)@chromium.org"
+  ],
+  "reviewers": [
+    "ilevy@chromium.org"
+  ],
+  "messages": [
+    {
+      "sender": "eseidel@chromium.org",
+      "recipients": [
+        "eseidel@chromium.org",
+        "chromium-reviews@chromium.org",
+      ],
+      "text": "This string has STOP in it, but should be ignored as the first message.",
+      "date": "2013-06-09 06:47:35.825820",
+    },
+    {
+      "sender": "commit-bot@chromium.org",
+      "recipients": [
+        "eseidel@chromium.org",
+        "chromium-reviews@chromium.org",
+      ],
+      "text": "CQ is trying da patch. Follow status at\nhttps:\/\/chromium-status.appspot.com\/cq\/eseidel@chromium.org\/16606004\/1",
+      "date": "2013-06-09 06:47:45.529170",
+    },
+    {
+      "sender": "ilevy@chromium.org",
+      "recipients": [
+        "eseidel@chromium.org",
+        "ilevy@chromium.org",
+        "chromium-reviews@chromium.org",
+      ],
+      "text": "STOP",
+      "date": "2013-06-09 07:59:48.280360",
+    },
+    {
+      "sender": "eseidel@chromium.org",
+      "recipients": [
+        "eseidel@chromium.org",
+        "ilevy@chromium.org",
+        "chromium-reviews@chromium.org",
+      ],
+      "text": "Rollbot was stopped by the presence of \"STOP\" in an earlier comment on this issue.\n",
+      "date": "2013-06-10 19:35:44.710470",
+    }
+  ],
+  "owner_email": "eseidel@chromium.org",
+  "private": false,
+  "base_url": "https:\/\/chromium.googlesource.com\/chromium\/src.git@master",
+  "owner": "eseidel",
+  "subject": "Blink roll 152079:152080",
+  "created": "2013-06-09 06:47:31.518010",
+  "patchsets": [
+    1
+  ],
+  "modified": "2013-06-10 19:56:59.618710",
+  "closed": true,
+  "commit": false,
+  "issue": 16606004
+};
+
 test("fetchCurrentRoll", 6, function() {
     var simulator = new NetworkSimulator();
     simulator.get = function(url, callback)
@@ -108,6 +172,10 @@ test("fetchCurrentRoll", 6, function() {
             equals(roll.toRevision, "151677");
         });
     });
+});
+
+test("_isRollbotStopped", 1, function() {
+    equals(true, rollbot._isRollbotStopped(kStoppedIssue));
 });
 
 })();
