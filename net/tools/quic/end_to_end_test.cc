@@ -417,7 +417,12 @@ TEST_F(EndToEndTest, LargePost) {
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
 }
 
-TEST_F(EndToEndTest, LargePostFEC) {
+// TODO(ianswett): Enable once b/9295090 is fixed.
+TEST_F(EndToEndTest, DISABLED_LargePostFEC) {
+  // FLAGS_fake_packet_loss_percentage = 30;
+  ASSERT_TRUE(Initialize());
+  client_->options()->max_packets_per_fec_group = 6;
+
   // TODO(rtenneti): Delete this when NSS is supported.
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";

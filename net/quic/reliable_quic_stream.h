@@ -85,7 +85,7 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   // This block of functions wraps the sequencer's functions of the same
   // name.  These methods return uncompressed data until that has
   // been fully processed.  Then they simply delegate to the sequencer.
-  virtual int Readv(const struct iovec* iov, size_t iov_len);
+  virtual size_t Readv(const struct iovec* iov, size_t iov_len);
   virtual int GetReadableRegions(iovec* iov, size_t iov_len);
   virtual bool IsHalfClosed() const;
   virtual bool IsClosed() const;

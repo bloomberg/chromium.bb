@@ -1403,7 +1403,7 @@ bool QuicFramer::AppendPacketSequenceNumber(
     QuicDataWriter* writer) {
   // Ensure the entire sequence number can be written.
   if (writer->capacity() - writer->length() <
-      static_cast<size_t>( sequence_number_length)) {
+      static_cast<size_t>(sequence_number_length)) {
     return false;
   }
   switch (sequence_number_length) {

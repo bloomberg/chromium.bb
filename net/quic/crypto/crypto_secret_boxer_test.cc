@@ -33,7 +33,7 @@ TEST(CryptoSecretBoxerTest, BoxAndUnbox) {
   EXPECT_FALSE(boxer.Unbox(string(1, 'X') + box, &storage, &result));
   EXPECT_FALSE(boxer.Unbox(box.substr(1, string::npos), &storage, &result));
   EXPECT_FALSE(boxer.Unbox(string(), &storage, &result));
-  EXPECT_FALSE(boxer.Unbox(string(1, 'X') + box.substr(1, string::npos),
+  EXPECT_FALSE(boxer.Unbox(string(1, box[0]^0x80) + box.substr(1, string::npos),
                            &storage, &result));
 }
 

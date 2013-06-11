@@ -103,7 +103,7 @@ void ReliableQuicStream::Close(QuicRstStreamErrorCode error) {
   }
 }
 
-int ReliableQuicStream::Readv(const struct iovec* iov, size_t iov_len) {
+size_t ReliableQuicStream::Readv(const struct iovec* iov, size_t iov_len) {
   if (headers_decompressed_ && decompressed_headers_.empty()) {
     return sequencer_.Readv(iov, iov_len);
   }
@@ -111,8 +111,8 @@ int ReliableQuicStream::Readv(const struct iovec* iov, size_t iov_len) {
   size_t iov_index = 0;
   while (iov_index < iov_len &&
          decompressed_headers_.length() > bytes_consumed) {
-    int bytes_to_read = min(iov[iov_index].iov_len,
-                            decompressed_headers_.length() - bytes_consumed);
+    size_t bytes_to_read = min(iov[iov_index].iov_len,
+                               decompressed_headers_.length() - bytes_consumed);
     char* iov_ptr = static_cast<char*>(iov[iov_index].iov_base);
     memcpy(iov_ptr,
            decompressed_headers_.data() + bytes_consumed, bytes_to_read);
