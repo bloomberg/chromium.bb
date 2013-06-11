@@ -1480,7 +1480,6 @@ crbug.com/231932 http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure
 crbug.com/231940 [ Linux Mac ] storage/websql/sql-error-codes.html [ Failure ]
 crbug.com/231942 svg/dom/fuzz-path-parser.html [ Failure ]
 crbug.com/231859 [ Win Linux ] virtual/softwarecompositing/plugins/invalidate_rect.html [ Failure ]
-crbug.com/231948 inspector/debugger/open-close-open.html [ Timeout Pass ]
 crbug.com/231950 editing/pasteboard/drag-and-drop-objectimage-contenteditable.html [ Timeout ]
 crbug.com/233884 animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
 crbug.com/233887 plugins/call-as-function.html [ Failure ]
