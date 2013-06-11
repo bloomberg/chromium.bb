@@ -273,9 +273,11 @@ void MemoryCache::pruneDeadResourcesToSize(unsigned targetSize)
         while (current) {
             CachedResourceHandle<CachedResource> previous = current->m_prevInAllResourcesList;
             ASSERT(!previous || previous->inCache());
-            if (!current->hasClients() && !current->isPreloaded() && !current->isCacheValidator()
-                && targetSize && m_deadSize <= targetSize)
-                return;
+            if (!current->hasClients() && !current->isPreloaded() && !current->isCacheValidator()) {
+                evict(current);
+                if (targetSize && m_deadSize <= targetSize)
+                    return;
+            }
             if (previous && !previous->inCache())
                 break;
             current = previous.get();
