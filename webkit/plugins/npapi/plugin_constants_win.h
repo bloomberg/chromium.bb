@@ -5,7 +5,7 @@
 #ifndef WEBKIT_PLUGINS_NPAPI_PLUGIN_CONSTANTS_WIN_H_
 #define WEBKIT_PLUGINS_NPAPI_PLUGIN_CONSTANTS_WIN_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 #if !defined(OS_WIN)
 #error "Windows-only header"

@@ -5,8 +5,8 @@
 #include "webkit/renderer/media/test_response_generator.h"
 
 #include "base/format_macros.h"
-#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"

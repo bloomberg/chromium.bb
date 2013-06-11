@@ -5,7 +5,7 @@
 #ifndef WEBKIT_PLUGINS_NPAPI_PLUGIN_UTILS_H_
 #define WEBKIT_PLUGINS_NPAPI_PLUGIN_UTILS_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace base {
 class Version;

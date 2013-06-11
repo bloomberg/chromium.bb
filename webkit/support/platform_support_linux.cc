@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "grit/webkit_resources.h"
 #include "ui/base/resource/resource_bundle.h"

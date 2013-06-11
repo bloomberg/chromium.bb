@@ -8,7 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/zlib/zlib.h"

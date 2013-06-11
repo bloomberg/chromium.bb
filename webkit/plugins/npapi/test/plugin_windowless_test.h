@@ -5,6 +5,7 @@
 #ifndef WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_EXECUTE_SCRIPT_DELETE_TEST_H_
 #define WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_EXECUTE_SCRIPT_DELETE_TEST_H_
 
+#include "base/compiler_specific.h"
 #include "webkit/plugins/npapi/test/plugin_test.h"
 
 namespace NPAPIClient {

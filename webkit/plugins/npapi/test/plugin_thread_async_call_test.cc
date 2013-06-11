@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "webkit/plugins/npapi/test/plugin_client.h"
 

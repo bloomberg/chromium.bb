@@ -6,7 +6,7 @@
 
 #include <vector>
 #include "base/basictypes.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/time.h"
 #include "media/base/audio_bus.h"
 #include "media/base/limits.h"

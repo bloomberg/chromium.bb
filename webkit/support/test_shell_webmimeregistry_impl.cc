@@ -5,7 +5,7 @@
 #include "webkit/support/test_shell_webmimeregistry_impl.h"
 
 #include "base/basictypes.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 

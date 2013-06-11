@@ -4,7 +4,7 @@
 
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "cc/animation/animation.h"
 #include "cc/base/region.h"
 #include "cc/layers/layer.h"

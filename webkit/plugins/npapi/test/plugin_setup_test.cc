@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 #include "webkit/plugins/npapi/test/plugin_setup_test.h"
 

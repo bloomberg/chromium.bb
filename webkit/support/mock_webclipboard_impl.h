@@ -12,7 +12,7 @@
 
 #include <map>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "third_party/WebKit/public/platform/WebClipboard.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
 #include "third_party/WebKit/public/platform/WebImage.h"

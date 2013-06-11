@@ -5,7 +5,7 @@
 #include "webkit/plugins/ppapi/url_request_info_util.h"
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"
 #include "net/http/http_util.h"

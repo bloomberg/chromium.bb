@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/npapi/bindings/npapi.h"

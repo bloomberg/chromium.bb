@@ -40,7 +40,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/time.h"

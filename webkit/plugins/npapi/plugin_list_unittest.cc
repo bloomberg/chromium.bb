@@ -4,7 +4,7 @@
 
 #include "webkit/plugins/npapi/plugin_list.h"
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/plugins/npapi/mock_plugin_list.h"

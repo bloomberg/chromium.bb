@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "webkit/plugins/ppapi/host_array_buffer_var.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/host_var_tracker.h"

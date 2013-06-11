@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "ui/gfx/rect.h"
 

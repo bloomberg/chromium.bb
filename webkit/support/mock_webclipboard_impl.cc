@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/WebKit/public/platform/WebCommon.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"

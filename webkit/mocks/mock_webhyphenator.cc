@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_handle.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "third_party/hyphen/hyphen.h"
 
 namespace webkit_glue {

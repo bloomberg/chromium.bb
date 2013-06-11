@@ -10,7 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabaseObserver.h"

@@ -4,7 +4,7 @@
 
 #include "webkit/plugins/npapi/test/plugin_client.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "webkit/plugins/npapi/test/plugin_execute_stream_javascript.h"
 #include "webkit/plugins/npapi/test/plugin_test.h"
 #include "webkit/plugins/npapi/test/plugin_test_factory.h"
