@@ -28,9 +28,19 @@ namespace syncfs_internals {
 
 SyncFileSystemInternalsHandler::SyncFileSystemInternalsHandler(Profile* profile)
     : profile_(profile),
-      last_log_id_sent_(-1) {}
+      last_log_id_sent_(-1) {
+  sync_file_system::SyncFileSystemService* sync_service =
+      SyncFileSystemServiceFactory::GetForProfile(profile);
+  DCHECK(sync_service);
+  sync_service->AddSyncEventObserver(this);
+}
 
-SyncFileSystemInternalsHandler::~SyncFileSystemInternalsHandler() {}
+SyncFileSystemInternalsHandler::~SyncFileSystemInternalsHandler() {
+  sync_file_system::SyncFileSystemService* sync_service =
+      SyncFileSystemServiceFactory::GetForProfile(profile_);
+  if (sync_service != NULL)
+    sync_service->RemoveSyncEventObserver(this);
+}
 
 void SyncFileSystemInternalsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -46,6 +56,27 @@ void SyncFileSystemInternalsHandler::RegisterMessages() {
       base::Bind(&SyncFileSystemInternalsHandler::GetNotificationSource,
                  base::Unretained(this)));
 }
+
+void SyncFileSystemInternalsHandler::OnSyncStateUpdated(
+    const GURL& app_origin,
+    sync_file_system::SyncServiceState state,
+    const std::string& description) {
+  std::string state_string = extensions::api::sync_file_system::ToString(
+        extensions::SyncServiceStateToExtensionEnum(state));
+  if (!description.empty())
+    state_string += " (" + description + ")";
+
+  // TODO(calvinlo): OnSyncStateUpdated should be updated to also provide the
+  // notification mechanism (XMPP or Polling).
+  web_ui()->CallJavascriptFunction("syncService.onGetServiceStatus",
+                                   base::StringValue(state_string));
+}
+
+void SyncFileSystemInternalsHandler::OnFileSynced(
+    const fileapi::FileSystemURL& url,
+    sync_file_system::SyncFileStatus status,
+    sync_file_system::SyncAction action,
+    sync_file_system::SyncDirection direction) {}
 
 void SyncFileSystemInternalsHandler::GetServiceStatus(
     const base::ListValue* args) {

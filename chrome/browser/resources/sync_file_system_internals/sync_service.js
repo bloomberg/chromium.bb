@@ -18,7 +18,7 @@ function getServiceStatus() {
 }
 
 /**
- * Handles callback from getServiceStatus.
+ * Called when service status is initially retrieved or updated via events.
  * @param {string} Service status enum as a string.
  */
 SyncService.onGetServiceStatus = function(statusString) {
