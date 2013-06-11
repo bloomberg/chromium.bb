@@ -1369,9 +1369,11 @@ public class AwSettingsTest extends AwTestBase {
     // setLoadsImagesAutomatically to false doesn't prevent images already
     // contained in the memory cache to be displayed.  The cache is shared among
     // all views, so the image can be put there by another view.
-    // Fixme (crbug.com/248249): Needs investigation after crbug.com/224317
-    @Feature({"AndroidWebView", "Preferences"})
-    @SmallTest
+    /*
+     * Fixme (crbug.com/248249): Needs investigation after crbug.com/224317
+     * @Feature({"AndroidWebView", "Preferences"})
+     * @SmallTest
+     */
     @DisabledTest
     public void testLoadsImagesAutomaticallyWithCachedImage() throws Throwable {
         ViewPair views = createViews();
@@ -1441,10 +1443,13 @@ public class AwSettingsTest extends AwTestBase {
     // The test verifies that after changing the LoadsImagesAutomatically
     // setting value from false to true previously skipped images are
     // automatically loaded.
-    // Fixme (crbug.com/248249): Needs investigation after crbug.com/224317
-    @SmallTest
+
+    /*
+     * Fixme (crbug.com/248249): Needs investigation after crbug.com/224317
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     */
     @DisabledTest
-    @Feature({"AndroidWebView", "Preferences"})
     public void testLoadsImagesAutomaticallyNoPageReload() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -1477,10 +1482,13 @@ public class AwSettingsTest extends AwTestBase {
         assertEquals(ImagePageGenerator.IMAGE_LOADED_STRING, getTitleOnUiThread(awContents));
     }
 
-    // Fixme (crbug.com/248249): Needs investigation after crbug.com/224317
-    @SmallTest
+
+    /*
+     * Fixme (crbug.com/248249): Needs investigation after crbug.com/224317
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     */
     @DisabledTest
-    @Feature({"AndroidWebView", "Preferences"})
     public void testLoadsImagesAutomaticallyWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
