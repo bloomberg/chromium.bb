@@ -326,6 +326,8 @@
     'common/utility_messages.h',
     'common/view_messages.h',
     'common/view_message_enums.h',
+    'common/websocket.h',
+    'common/websocket_messages.h',
     'common/worker_messages.h',
     'common/zygote_commands_linux.h',
     'port/common/input_event_ack_state.h',

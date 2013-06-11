@@ -82,6 +82,7 @@ enum IPCMessageStart {
   WebRtcLoggingMsgStart,
   TtsMsgStart,
   MemoryBenchmarkMsgStart,
+  WebSocketMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 
