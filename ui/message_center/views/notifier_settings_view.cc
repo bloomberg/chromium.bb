@@ -20,7 +20,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
-#include "ui/views/controls/scrollbar/kennedy_scroll_bar.h"
+#include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -290,7 +290,7 @@ NotifierSettingsView::NotifierSettingsView(
 
   scroller_ = new views::ScrollView();
   scroller_->set_border(new Separator());
-  scroller_->SetVerticalScrollBar(new views::KennedyScrollBar(false));
+  scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
   AddChildView(scroller_);
 
   views::View* contents_view = new views::View();

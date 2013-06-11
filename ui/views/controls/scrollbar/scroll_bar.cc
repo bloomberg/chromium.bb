@@ -31,6 +31,16 @@ int ScrollBar::GetMinPosition() const {
   return 0;
 }
 
+int ScrollBar::GetContentOverlapSize() const {
+  return 0;
+}
+
+void ScrollBar::OnMouseEnteredScrollView(const ui::MouseEvent& event) {
+}
+
+void ScrollBar::OnMouseExitedScrollView(const ui::MouseEvent& event) {
+}
+
 ScrollBar::ScrollBar(bool is_horiz)
     : is_horiz_(is_horiz),
       controller_(NULL),

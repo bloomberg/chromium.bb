@@ -31,7 +31,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
-#include "ui/views/controls/scrollbar/kennedy_scroll_bar.h"
+#include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/painter.h"
@@ -304,7 +304,7 @@ BoundedScrollView::BoundedScrollView(int min_height, int max_height)
   if (IsRichNotificationEnabled()) {
     set_background(views::Background::CreateSolidBackground(
         kMessageCenterBackgroundColor));
-    SetVerticalScrollBar(new views::KennedyScrollBar(false));
+    SetVerticalScrollBar(new views::OverlayScrollBar(false));
   }
 }
 
