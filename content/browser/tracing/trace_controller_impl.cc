@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/browser/tracing/trace_subscriber_stdio.h"
 #include "content/common/child_process_messages.h"

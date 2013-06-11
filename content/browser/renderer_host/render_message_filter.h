@@ -17,7 +17,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/shared_memory.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/pepper_renderer_instance_data.h"
 #include "content/public/browser/browser_message_filter.h"

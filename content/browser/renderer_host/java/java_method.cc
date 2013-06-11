@@ -8,7 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
-#include "base/string_util.h"  // For ReplaceSubstringsAfterOffset
+#include "base/strings/string_util.h"  // For ReplaceSubstringsAfterOffset
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;

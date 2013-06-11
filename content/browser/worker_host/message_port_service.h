@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ipc/ipc_message.h"
 
 namespace content {

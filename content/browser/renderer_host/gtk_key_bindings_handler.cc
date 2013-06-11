@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
 namespace content {

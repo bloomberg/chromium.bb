@@ -10,7 +10,7 @@
 
 #include <algorithm>
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"

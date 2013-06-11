@@ -6,7 +6,7 @@
 
 #include "base/atomicops.h"
 #include "base/lazy_instance.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/common/java_bridge_messages.h"
 

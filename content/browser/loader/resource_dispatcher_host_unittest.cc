@@ -10,7 +10,7 @@
 #include "base/message_loop.h"
 #include "base/pickle.h"
 #include "base/process_util.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"

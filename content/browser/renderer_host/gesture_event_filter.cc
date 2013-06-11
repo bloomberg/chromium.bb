@@ -5,7 +5,7 @@
 #include "content/browser/renderer_host/gesture_event_filter.h"
 
 #include "base/command_line.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/touchpad_tap_suppression_controller.h"
 #include "content/browser/renderer_host/touchscreen_tap_suppression_controller.h"

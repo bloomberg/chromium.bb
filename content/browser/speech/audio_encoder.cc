@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/browser/speech/audio_buffer.h"
 #include "third_party/flac/include/FLAC/stream_encoder.h"
 #include "third_party/speex/include/speex/speex.h"

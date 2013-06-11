@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/process_util.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/common/context_menu_source_type.h"
 #include "content/public/common/javascript_message_type.h"

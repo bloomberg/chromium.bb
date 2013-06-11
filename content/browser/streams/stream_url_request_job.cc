@@ -4,7 +4,7 @@
 
 #include "content/browser/streams/stream_url_request_job.h"
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/browser/streams/stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"

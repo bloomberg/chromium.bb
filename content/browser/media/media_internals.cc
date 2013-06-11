@@ -5,8 +5,8 @@
 #include "content/browser/media/media_internals.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
-#include "base/stringprintf.h"
+#include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "media/base/media_log.h"

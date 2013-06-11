@@ -14,7 +14,7 @@
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
 #include "base/shared_memory.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/browser/devtools/devtools_netlog_observer.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_buffer.h"

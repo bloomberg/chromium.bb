@@ -4,7 +4,7 @@
 
 #include "content/browser/loader/certificate_resource_handler.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/resource_response.h"

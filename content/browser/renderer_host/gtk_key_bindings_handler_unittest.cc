@@ -13,7 +13,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/common/edit_command.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/content_paths.h"

@@ -5,7 +5,7 @@
 #include "content/browser/net/view_blob_internals_job_factory.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/public/common/url_constants.h"
 #include "webkit/browser/blob/view_blob_internals_job.h"
 
