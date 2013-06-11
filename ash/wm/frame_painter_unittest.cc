@@ -305,17 +305,6 @@ TEST_F(FramePainterTest, UseSoloWindowHeader) {
   w2->Show();
   EXPECT_FALSE(p1.UseSoloWindowHeader());
 
-  // Maximize the window, then activate the first window. The second window
-  // is in its own workspace, so solo should be active for the first one.
-  w2->Maximize();
-  w1->Activate();
-  EXPECT_TRUE(p1.UseSoloWindowHeader());
-
-  // Switch to the second window and restore it.  Solo should be disabled.
-  w2->Activate();
-  w2->Restore();
-  EXPECT_FALSE(p2.UseSoloWindowHeader());
-
   // Minimize the second window.  Solo should be enabled.
   w2->Minimize();
   EXPECT_TRUE(p1.UseSoloWindowHeader());

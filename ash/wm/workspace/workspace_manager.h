@@ -58,14 +58,9 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
   explicit WorkspaceManager(aura::Window* viewport);
   virtual ~WorkspaceManager();
 
-  // Returns true if |window| is considered maximized and should exist in its
-  // own workspace.
-  static bool IsMaximized(aura::Window* window);
-  static bool IsMaximizedState(ui::WindowShowState state);
-
-  // Returns true if |window| is minimized and will restore to a maximized
-  // window.
-  static bool WillRestoreMaximized(aura::Window* window);
+  // Returns true if |window| is minimized and will restore to a window which
+  // exists in its own workspace.
+  static bool WillRestoreToWorkspace(aura::Window* window);
 
   // Returns the current window state.
   WorkspaceWindowState GetWindowState() const;
@@ -157,7 +152,7 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
 
   // Creates a new workspace. The Workspace is not added to anything and is
   // owned by the caller.
-  Workspace* CreateWorkspace(bool maximized);
+  Workspace* CreateWorkspace(bool fullscren);
 
   // Moves all the non-maximized child windows of |workspace| to the desktop
   // stacked beneath |stack_beneath| (if non-NULL). After moving child windows
