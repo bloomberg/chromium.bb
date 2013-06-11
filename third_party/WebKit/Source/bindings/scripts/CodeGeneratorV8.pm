@@ -1969,7 +1969,7 @@ sub GenerateParametersCheckExpression
         } elsif (IsCallbackInterface($parameter->type)) {
             # For Callbacks only checks if the value is null or object.
             push(@andExpression, "(${value}->IsNull() || ${value}->IsFunction())");
-        } elsif (GetArrayType($type) || GetSequenceType($type)) {
+        } elsif (GetArrayOrSequenceType($type)) {
             if ($parameter->isNullable) {
                 push(@andExpression, "(${value}->IsNull() || ${value}->IsArray())");
             } else {
@@ -4455,8 +4455,18 @@ END
             my @argsCheck = ();
             foreach my $param (@params) {
                 my $paramName = $param->name;
-                AddIncludesForType($param->type);
-                push(@args, GetNativeTypeForCallbacks($param->type) . " " . $paramName);
+                my $type = $param->type;
+                my $arrayOrSequenceType = GetArrayOrSequenceType($type);
+
+                if ($arrayOrSequenceType) {
+                    if (IsRefPtrType($arrayOrSequenceType)) {
+                        AddIncludesForType($arrayOrSequenceType);
+                     }
+                } else {
+                    AddIncludesForType($type);
+                }
+
+                push(@args, GetNativeTypeForCallbacks($type) . " " . $paramName);
             }
             $code .= join(", ", @args);
 
@@ -4834,9 +4844,7 @@ sub GetNativeType
     }
     return "RefPtr<${type}>" if IsRefPtrType($type) and not $isParameter;
 
-    my $arrayType = GetArrayType($type);
-    my $sequenceType = GetSequenceType($type);
-    my $arrayOrSequenceType = $arrayType || $sequenceType;
+    my $arrayOrSequenceType = GetArrayOrSequenceType($type);
 
     if ($arrayOrSequenceType) {
         my $nativeType = GetNativeType($arrayOrSequenceType);
@@ -4921,9 +4929,7 @@ sub JSValueToNative
         return "toXPathNSResolver($value, $getIsolate)";
     }
 
-    my $arrayType = GetArrayType($type);
-    my $sequenceType = GetSequenceType($type);
-    my $arrayOrSequenceType = $arrayType || $sequenceType;
+    my $arrayOrSequenceType = GetArrayOrSequenceType($type);
 
     if ($arrayOrSequenceType) {
         if (IsRefPtrType($arrayOrSequenceType)) {
@@ -4957,10 +4963,7 @@ sub CreateCustomSignature
                 $code .= "v8::Handle<v8::FunctionTemplate>()";
             } else {
                 my $type = $parameter->type;
-
-                my $arrayType = GetArrayType($type);
-                my $sequenceType = GetSequenceType($type);
-                my $arrayOrSequenceType = $arrayType || $sequenceType;
+                my $arrayOrSequenceType = GetArrayOrSequenceType($type);
 
                 if ($arrayOrSequenceType) {
                     if (IsRefPtrType($arrayOrSequenceType)) {
@@ -5210,9 +5213,7 @@ sub NativeToJSValue
         return "$indent$receiver $returnValue;";
     }
 
-    my $arrayType = GetArrayType($type);
-    my $sequenceType = GetSequenceType($type);
-    my $arrayOrSequenceType = $arrayType || $sequenceType;
+    my $arrayOrSequenceType = GetArrayOrSequenceType($type);
 
     if ($arrayOrSequenceType) {
         if (IsRefPtrType($arrayOrSequenceType)) {
@@ -5559,6 +5560,13 @@ sub GetArrayType
 
     return $1 if $type =~ /^([\w\d_\s]+)\[\]/;
     return "";
+}
+
+sub GetArrayOrSequenceType
+{
+    my $type = shift;
+
+    return GetArrayType($type) || GetSequenceType($type);
 }
 
 sub AssertNotSequenceType

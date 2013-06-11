@@ -184,5 +184,33 @@ bool V8TestCallback::callbackWithBoolean(bool boolParam)
     return !invokeCallback(m_callback.get(), 1, argv, callbackReturnValue, scriptExecutionContext());
 }
 
+bool V8TestCallback::callbackWithSequence(Vector<RefPtr<TestObj> > sequenceParam)
+{
+    if (!canInvokeCallback())
+        return true;
+
+    v8::HandleScope handleScope;
+
+    v8::Handle<v8::Context> v8Context = toV8Context(scriptExecutionContext(), m_world.get());
+    if (v8Context.IsEmpty())
+        return true;
+
+    v8::Context::Scope scope(v8Context);
+
+    v8::Handle<v8::Value> sequenceParamHandle = v8Array(sequenceParam, v8Context->GetIsolate());
+    if (sequenceParamHandle.IsEmpty()) {
+        if (!isScriptControllerTerminating())
+            CRASH();
+        return true;
+    }
+
+    v8::Handle<v8::Value> argv[] = {
+        sequenceParamHandle
+    };
+
+    bool callbackReturnValue = false;
+    return !invokeCallback(m_callback.get(), 1, argv, callbackReturnValue, scriptExecutionContext());
+}
+
 } // namespace WebCore
 

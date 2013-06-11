@@ -49,6 +49,7 @@ public:
     virtual int customCallback(TestObj* testObjParam, TestObj* testObjParam);
     virtual bool callbackWithStringList(RefPtr<DOMStringList> listParam);
     virtual bool callbackWithBoolean(bool boolParam);
+    virtual bool callbackWithSequence(Vector<RefPtr<TestObj> > sequenceParam);
 
     virtual ScriptExecutionContext* scriptExecutionContext() const { return ContextDestructionObserver::scriptExecutionContext(); }
 

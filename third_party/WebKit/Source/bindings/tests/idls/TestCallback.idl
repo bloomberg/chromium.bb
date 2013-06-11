@@ -35,4 +35,5 @@ callback interface TestCallback {
   [Custom] long customCallback(TestObject testObjParam, TestObject testObjParam);
   boolean callbackWithStringList(DOMStringList listParam);
   boolean callbackWithBoolean(boolean boolParam);
+  boolean callbackWithSequence(sequence<TestObject> sequenceParam);
 };
