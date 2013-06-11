@@ -64,8 +64,8 @@ void MediaGalleriesDialogGtk::InitWidgets() {
   checkbox_map_.clear();
   confirm_ = NULL;
 
-  GtkWidget* header =
-      gtk_util::CreateBoldLabel(UTF16ToUTF8(controller_->GetHeader()));
+  GtkWidget* header = gtk_util::LeftAlignMisc(gtk_label_new(
+      UTF16ToUTF8(controller_->GetHeader()).c_str()));
   gtk_box_pack_start(GTK_BOX(contents_.get()), header, FALSE, FALSE, 0);
 
   GtkWidget* subtext =

@@ -63,7 +63,8 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   // was added.
   bool AddOrUpdateGallery(const MediaGalleryPrefInfo& gallery,
                           bool permitted,
-                          views::View* container);
+                          views::View* container,
+                          int trailing_vertical_space);
 
   MediaGalleriesDialogController* controller_;
 

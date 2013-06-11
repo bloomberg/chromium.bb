@@ -127,9 +127,9 @@ void MediaGalleriesDialogViews::InitChildViews() {
   views::Label* subtext = new views::Label(controller_->GetSubtext());
   subtext->SetMultiLine(true);
   subtext->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->StartRowWithPadding(0, column_set_id,
-                              0, views::kRelatedControlVerticalSpacing);
+  layout->StartRow(0, column_set_id);
   layout->AddView(subtext);
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Scrollable area for checkboxes.
   ScrollableView* scroll_container = new ScrollableView();
@@ -147,14 +147,14 @@ void MediaGalleriesDialogViews::InitChildViews() {
   GalleryPermissionsVector permissions = controller_->AttachedPermissions();
   for (GalleryPermissionsVector::const_iterator iter = permissions.begin();
        iter != permissions.end(); ++iter) {
-    AddOrUpdateGallery(iter->pref_info, iter->allowed, scroll_container);
+    int spacing = 0;
+    if (iter + 1 == permissions.end())
+      spacing = views::kRelatedControlSmallVerticalSpacing;
+    AddOrUpdateGallery(iter->pref_info, iter->allowed, scroll_container,
+                       spacing);
   }
 
   // Separator line.
-  views::View* strut = new views::View;
-  strut->set_border(views::Border::CreateEmptyBorder(
-      views::kRelatedControlVerticalSpacing, 0, 0, 0));
-  scroll_container->AddChildView(strut);
   views::Separator* separator = new views::Separator(
       views::Separator::HORIZONTAL);
   scroll_container->AddChildView(separator);
@@ -177,7 +177,7 @@ void MediaGalleriesDialogViews::InitChildViews() {
   for (GalleryPermissionsVector::const_iterator iter =
            unattached_permissions.begin();
        iter != unattached_permissions.end(); ++iter) {
-    AddOrUpdateGallery(iter->pref_info, iter->allowed, scroll_container);
+    AddOrUpdateGallery(iter->pref_info, iter->allowed, scroll_container, 0);
   }
 
   confirm_available_ = controller_->HasPermittedGalleries();
@@ -202,14 +202,14 @@ void MediaGalleriesDialogViews::InitChildViews() {
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
   add_gallery_container->set_border(views::Border::CreateEmptyBorder(
       views::kRelatedControlVerticalSpacing,
-      views::kPanelHorizMargin,
+      0,
       views::kRelatedControlVerticalSpacing,
       0));
   add_gallery_container->AddChildView(add_gallery_button_);
+
   layout->StartRowWithPadding(0, column_set_id,
                               0, views::kRelatedControlVerticalSpacing);
-  layout->AddView(add_gallery_container, 1, 1,
-                  views::GridLayout::LEADING, views::GridLayout::LEADING);
+  layout->AddView(add_gallery_container);
 }
 
 void MediaGalleriesDialogViews::UpdateGallery(
@@ -227,7 +227,8 @@ void MediaGalleriesDialogViews::ForgetGallery(MediaGalleryPrefId gallery) {
 bool MediaGalleriesDialogViews::AddOrUpdateGallery(
     const MediaGalleryPrefInfo& gallery,
     bool permitted,
-    views::View* container) {
+    views::View* container,
+    int trailing_vertical_space) {
   string16 label =
       MediaGalleriesDialogController::GetGalleryDisplayNameNoAttachment(
           gallery);
@@ -270,7 +271,7 @@ bool MediaGalleriesDialogViews::AddOrUpdateGallery(
   checkbox_view->set_border(views::Border::CreateEmptyBorder(
       0,
       views::kPanelHorizMargin,
-      0,
+      trailing_vertical_space,
       0));
   checkbox_view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
