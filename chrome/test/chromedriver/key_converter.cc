@@ -187,9 +187,9 @@ KeyEvent CreateCharEvent(const std::string& unmodified_text,
 }
 
 Status ConvertKeysToKeyEvents(const string16& client_keys,
-                            bool release_modifiers,
-                            int* modifiers,
-                            std::list<KeyEvent>* client_key_events) {
+                              bool release_modifiers,
+                              int* modifiers,
+                              std::list<KeyEvent>* client_key_events) {
   std::list<KeyEvent> key_events;
 
   string16 keys = client_keys;
@@ -252,6 +252,7 @@ Status ConvertKeysToKeyEvents(const string16& client_keys,
     // Get the key code, text, and modifiers for the given key.
     bool should_skip = false;
     bool is_special_key = KeyCodeFromSpecialWebDriverKey(key, &key_code);
+    std::string error_msg;
     if (is_special_key ||
         KeyCodeFromShorthandKey(key, &key_code, &should_skip)) {
       if (should_skip)
@@ -275,18 +276,26 @@ Status ConvertKeysToKeyEvents(const string16& client_keys,
         int webdriver_modifiers = 0;
         if (key_code >= ui::VKEY_NUMPAD0 && key_code <= ui::VKEY_NUMPAD9)
           webdriver_modifiers = kNumLockKeyModifierMask;
-        unmodified_text = ConvertKeyCodeToText(key_code, webdriver_modifiers);
-        modified_text = ConvertKeyCodeToText(
-            key_code,
-            all_modifiers | webdriver_modifiers);
+        if (!ConvertKeyCodeToText(
+            key_code, webdriver_modifiers, &unmodified_text, &error_msg))
+          return Status(kUnknownError, error_msg);
+        if (!ConvertKeyCodeToText(
+            key_code, all_modifiers | webdriver_modifiers, &modified_text,
+            &error_msg))
+          return Status(kUnknownError, error_msg);
       }
     } else {
       int necessary_modifiers = 0;
-      ConvertCharToKeyCode(key, &key_code, &necessary_modifiers);
+      ConvertCharToKeyCode(key, &key_code, &necessary_modifiers, &error_msg);
+      if (!error_msg.empty())
+        return Status(kUnknownError, error_msg);
       all_modifiers |= necessary_modifiers;
       if (key_code != ui::VKEY_UNKNOWN) {
-        unmodified_text = ConvertKeyCodeToText(key_code, 0);
-        modified_text = ConvertKeyCodeToText(key_code, all_modifiers);
+        if (!ConvertKeyCodeToText(key_code, 0, &unmodified_text, &error_msg))
+          return Status(kUnknownError, error_msg);
+        if (!ConvertKeyCodeToText(
+            key_code, all_modifiers, &modified_text, &error_msg))
+          return Status(kUnknownError, error_msg);
         if (unmodified_text.empty() || modified_text.empty()) {
           // To prevent char event for special cases like CTRL + x (cut).
           unmodified_text.clear();

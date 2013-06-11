@@ -13,7 +13,9 @@
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 #include "ui/base/keycodes/keyboard_code_conversion_mac.h"
 
-std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers) {
+bool ConvertKeyCodeToText(
+    ui::KeyboardCode key_code, int modifiers, std::string* text,
+    std::string* error_msg) {
   int mac_key_code = 0;
   {
     unichar character, unmodified_character;
@@ -23,8 +25,11 @@ std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers) {
         &character,
         &unmodified_character);
   }
-  if (mac_key_code < 0)
-    return "";
+  *error_msg = std::string();
+  if (mac_key_code < 0) {
+    *text = std::string();
+    return true;
+  }
 
   int mac_modifiers = 0;
   if (modifiers & kShiftKeyModifierMask)
@@ -59,20 +64,23 @@ std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers) {
       &char_count,
       &character);
   if (status == noErr && char_count == 1 && !std::iscntrl(character)) {
-    string16 text;
-    text.push_back(character);
-    return UTF16ToUTF8(text);
-  } else {
-    return "";
+    string16 text16;
+    text16.push_back(character);
+    *text = UTF16ToUTF8(text16);
+    return true;
   }
+  *text = std::string();
+  return true;
 }
 
 bool ConvertCharToKeyCode(
-    char16 key, ui::KeyboardCode* key_code, int *necessary_modifiers) {
+    char16 key, ui::KeyboardCode* key_code, int *necessary_modifiers,
+    std::string* error_msg) {
   string16 key_string;
   key_string.push_back(key);
   std::string key_string_utf8 = UTF16ToUTF8(key_string);
   bool found_code = false;
+  *error_msg = std::string();
   // There doesn't seem to be a way to get a mac key code for a given unicode
   // character. So here we check every key code to see if it produces the
   // right character. We could cache the results and regenerate everytime the
@@ -83,9 +91,15 @@ bool ConvertCharToKeyCode(
     // Skip the numpad keys.
     if (code >= ui::VKEY_NUMPAD0 && code <= ui::VKEY_DIVIDE)
       continue;
-    found_code = key_string_utf8 == ConvertKeyCodeToText(code, 0);
-    if (!found_code && key_string_utf8 == ConvertKeyCodeToText(
-            code, kShiftKeyModifierMask)) {
+    std::string key_string;
+    if (!ConvertKeyCodeToText(code, 0, &key_string, error_msg))
+      return false;
+    found_code = key_string_utf8 == key_string;
+    std::string key_string_utf8_tmp;
+    if (!ConvertKeyCodeToText(
+        code, kShiftKeyModifierMask, &key_string_utf8_tmp, error_msg))
+      return false;
+    if (!found_code && key_string_utf8 == key_string_utf8_tmp) {
       *necessary_modifiers = kShiftKeyModifierMask;
       found_code = true;
     }

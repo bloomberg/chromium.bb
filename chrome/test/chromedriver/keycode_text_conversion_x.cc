@@ -177,15 +177,26 @@ bool GetXModifierMask(Display* display, int modifier, int* x_modifier) {
 
 }  // namespace
 
-std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers) {
+bool ConvertKeyCodeToText(
+    ui::KeyboardCode key_code, int modifiers, std::string* text,
+    std::string* error_msg) {
+  *error_msg = std::string();
   int x_key_code = KeyboardCodeToXKeyCode(key_code);
-  if (x_key_code == -1)
-    return std::string();
+  if (x_key_code == -1) {
+    *text = std::string();
+    return true;
+  }
 
   XEvent event;
   memset(&event, 0, sizeof(XEvent));
   XKeyEvent* key_event = &event.xkey;
   Display* display = ui::GetXDisplay();
+  if (!display) {
+    *error_msg =
+        "an X display is required for keycode conversions, consider using Xvfb";
+    *text = std::string();
+    return false;
+  }
   key_event->display = display;
   key_event->keycode = x_key_code;
   if (modifiers & kShiftKeyModifierMask)
@@ -211,30 +222,41 @@ std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers) {
   uint16 character = ui::GetCharacterFromXEvent(&event);
 
   if (!character)
-    return std::string();
-  return UTF16ToUTF8(string16(1, character));
+    *text = std::string();
+  else
+    *text = UTF16ToUTF8(string16(1, character));
+  return true;
 }
 
 bool ConvertCharToKeyCode(
     char16 key,
     ui::KeyboardCode* key_code,
-    int* necessary_modifiers) {
+    int* necessary_modifiers,
+    std::string* error_msg) {
   std::string key_string(UTF16ToUTF8(string16(1, key)));
   bool found = false;
   ui::KeyboardCode test_code;
   int test_modifiers;
+  *error_msg = std::string();
+  std::string conv_string;
   for (size_t i = 0; i < arraysize(kKeyCodeToXKeyCode); ++i) {
     test_code = kKeyCodeToXKeyCode[i].key_code;
     // Skip the numpad keys.
     if (test_code >= ui::VKEY_NUMPAD0 && test_code <= ui::VKEY_DIVIDE)
       continue;
     test_modifiers = 0;
-    if (ConvertKeyCodeToText(test_code, test_modifiers) == key_string) {
+    if (!ConvertKeyCodeToText(
+        test_code, test_modifiers, &conv_string, error_msg))
+      return false;
+    if (conv_string == key_string) {
       found = true;
       break;
     }
     test_modifiers = kShiftKeyModifierMask;
-    if (ConvertKeyCodeToText(test_code, test_modifiers) == key_string) {
+    if (!ConvertKeyCodeToText(
+        test_code, test_modifiers, &conv_string, error_msg))
+      return false;
+    if (conv_string == key_string) {
       found = true;
       break;
     }

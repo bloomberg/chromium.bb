@@ -13,15 +13,23 @@
 // These functions only support conversion of characters in the BMP
 // (Basic Multilingual Plane).
 
-// Returns the text in UTF8 that would be produced from the given key code and
-// modifiers with the current keyboard layout, or "" if no character would
-// be produced. This will return "" if the produced text contains characters
-// outside the BMP.
-std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers);
+// Coverts a key code and modifiers to the UTF8 text that would be produced
+// with the current keyboard layout, or "" if no character would be produced.
+// Returns "" if the produced text contains characters outside the BMP. If an
+// error occurs |error_msg| will be set to the error message and will return
+// false.
+bool ConvertKeyCodeToText(ui::KeyboardCode key_code,
+                          int modifiers,
+                          std::string* text,
+                          std::string* error_msg);
 
 // Converts a character to the key code and modifiers that would produce
 // the character using the current keyboard layout. Returns true on success.
-bool ConvertCharToKeyCode(
-    char16 key, ui::KeyboardCode* key_code, int *necessary_modifiers);
+// If an error occurs |error_msg| will be set to the error message, otherwise
+// it will be set to the empty string.
+bool ConvertCharToKeyCode(char16 key,
+                          ui::KeyboardCode* key_code,
+                          int *necessary_modifiers,
+                          std::string* error_msg);
 
 #endif  // CHROME_TEST_CHROMEDRIVER_KEYCODE_TEXT_CONVERSION_H_

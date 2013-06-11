@@ -11,10 +11,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 
-std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers) {
+bool ConvertKeyCodeToText(
+    ui::KeyboardCode key_code, int modifiers, std::string* text,
+    std::string* error_msg) {
   UINT scan_code = ::MapVirtualKeyW(key_code, MAPVK_VK_TO_VSC);
   BYTE keyboard_state[256];
   memset(keyboard_state, 0, 256);
+  *error_msg = std::string();
   if (modifiers & kShiftKeyModifierMask)
     keyboard_state[VK_SHIFT] |= 0x80;
   if (modifiers & kControlKeyModifierMask)
@@ -25,21 +28,21 @@ std::string ConvertKeyCodeToText(ui::KeyboardCode key_code, int modifiers) {
   int code = ::ToUnicode(key_code, scan_code, keyboard_state, chars, 4, 0);
   // |ToUnicode| converts some non-text key codes like F1 to various ASCII
   // control chars. Filter those out.
-  if (code <= 0 || (code == 1 && std::iscntrl(chars[0]))) {
-    return "";
-  } else {
-    std::string text;
-    WideToUTF8(chars, code, &text);
-    return text;
-  }
+  if (code <= 0 || (code == 1 && std::iscntrl(chars[0])))
+    *text = std::string();
+  else
+    WideToUTF8(chars, code, text);
+  return true;
 }
 
 bool ConvertCharToKeyCode(
-    char16 key, ui::KeyboardCode* key_code, int *necessary_modifiers) {
+    char16 key, ui::KeyboardCode* key_code, int *necessary_modifiers,
+    std::string* error_msg) {
   short vkey_and_modifiers = ::VkKeyScanW(key);
   bool translated = vkey_and_modifiers != -1 &&
                     LOBYTE(vkey_and_modifiers) != -1 &&
                     HIBYTE(vkey_and_modifiers) != -1;
+  *error_msg = std::string();
   if (translated) {
     *key_code = static_cast<ui::KeyboardCode>(LOBYTE(vkey_and_modifiers));
     int win_modifiers = HIBYTE(vkey_and_modifiers);
