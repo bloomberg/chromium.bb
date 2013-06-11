@@ -2107,6 +2107,15 @@ const char kRebootAfterUpdate[] = "automatic_reboot.reboot_after_update";
 // Public Accounts and kiosks.
 const char kDeviceRobotAnyApiRefreshToken[] =
     "device_robot_refresh_token.any-api";
+
+// Device requisition for enterprise enrollment.
+const char kDeviceEnrollmentRequisition[] = "enrollment.device_requisition";
+
+// Whether to automatically start the enterprise enrollment step during OOBE.
+const char kDeviceEnrollmentAutoStart[] = "enrollment.auto_start";
+
+// Whether the user may exit enrollment.
+const char kDeviceEnrollmentCanExit[] = "enrollment.can_exit";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.

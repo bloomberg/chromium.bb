@@ -63,6 +63,7 @@ class CoreOobeHandler : public BaseScreenHandler,
   void HandleInitialized();
   void HandleSkipUpdateEnrollAfterEula();
   void HandleUpdateCurrentScreen(const std::string& screen);
+  void HandleSetDeviceRequisition(const std::string& requisition);
 
   // Updates a11y menu state based on the current a11y features state(on/off).
   void UpdateA11yState();
@@ -72,6 +73,9 @@ class CoreOobeHandler : public BaseScreenHandler,
 
   // Updates label with specified id with specified text.
   void UpdateLabel(const std::string& id, const std::string& text);
+
+  // Updates the device requisition string on the UI side.
+  void UpdateDeviceRequisition();
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,

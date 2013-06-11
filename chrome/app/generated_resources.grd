@@ -14623,6 +14623,16 @@ Some features may be unavailable.  Please check that the profile exists and you 
 
     <!-- Strings for the new-style OAuth-based enterprise enrollment page -->
     <if expr="pp_ifdef('chromeos')">
+      <message name="IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_CANCEL" desc="Cancel button text in the device requisition poup.">
+        Cancel
+      </message>
+      <message name="IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_OK" desc="OK button text in the device requisition poup.">
+        Set Requisition
+      </message>
+      <message name="IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_TEXT" desc="Prompt shown in the device requisition prompt popup.">
+        Use this device requisition when enrolling the device for enterprise management:
+      </message>
+
       <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_FAILED" desc="Error message shown on the enrollment screen upon failed device registration.">
         Error when registering the device with the server: <ph name="CLIENT_ERROR">$1<ex>Failed to connect to the server</ex></ph>.
       </message>

@@ -44,10 +44,12 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/ui/focus_ring_controller.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/options/options_util.h"
@@ -163,18 +165,9 @@ WizardController::WizardController(chromeos::LoginDisplayHost* host,
       usage_statistics_reporting_(true),
       skip_update_enroll_after_eula_(false),
       login_screen_started_(false),
-      user_image_screen_return_to_previous_hack_(false),
-      force_enrollment_(false),
-      can_exit_enrollment_(true) {
+      user_image_screen_return_to_previous_hack_(false) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
-
-  chromeos::system::StatisticsProvider* provider =
-      chromeos::system::StatisticsProvider::GetInstance();
-  provider->GetMachineFlag(chromeos::kOemIsEnterpriseManagedKey,
-                           &force_enrollment_);
-  provider->GetMachineFlag(chromeos::kOemCanExitEnterpriseEnrollmentKey,
-                           &can_exit_enrollment_);
 }
 
 WizardController::~WizardController() {
@@ -384,7 +377,7 @@ void WizardController::ShowEnrollmentScreen() {
 
   EnrollmentScreen* screen = GetEnrollmentScreen();
   screen->SetParameters(is_auto_enrollment,
-                        !force_enrollment_ || can_exit_enrollment_,
+                        !ShouldAutoStartEnrollment() || CanExitEnrollment(),
                         user);
   SetCurrentScreen(screen);
 }
@@ -564,16 +557,15 @@ void WizardController::OnUserImageSkipped() {
 void WizardController::OnEnrollmentDone() {
   // Mark OOBE as completed only if enterprise enrollment was part of the
   // forced flow (i.e. app kiosk).
-  if (force_enrollment_)
+  if (ShouldAutoStartEnrollment())
     PerformPostUpdateActions();
 
   // TODO(mnissler): Unify the logic for auto-login for Public Sessions and
   // Kiosk Apps and make this code cover both cases: http://crbug.com/234694.
-  if (KioskAppManager::Get()->IsAutoLaunchEnabled()) {
+  if (KioskAppManager::Get()->IsAutoLaunchEnabled())
     AutoLaunchKioskApp();
-  } else if (!force_enrollment_ || can_exit_enrollment_) {
+  else
     ShowLoginScreen();
-  }
 }
 
 void WizardController::OnResetCanceled() {
@@ -605,7 +597,7 @@ void WizardController::OnAutoEnrollmentDone() {
 }
 
 void WizardController::OnOOBECompleted() {
-  if (force_enrollment_) {
+  if (ShouldAutoStartEnrollment()) {
     ShowEnrollmentScreen();
   } else {
     PerformPostUpdateActions();
@@ -842,6 +834,16 @@ bool WizardController::IsZeroDelayEnabled() {
 void WizardController::SetZeroDelays() {
   kShowDelayMs = 0;
   zero_delay_enabled_ = true;
+}
+
+bool WizardController::ShouldAutoStartEnrollment() const {
+  return g_browser_process->browser_policy_connector()->
+      GetDeviceCloudPolicyManager()->ShouldAutoStartEnrollment();
+}
+
+bool WizardController::CanExitEnrollment() const {
+  return g_browser_process->browser_policy_connector()->
+      GetDeviceCloudPolicyManager()->CanExitEnrollment();
 }
 
 }  // namespace chromeos

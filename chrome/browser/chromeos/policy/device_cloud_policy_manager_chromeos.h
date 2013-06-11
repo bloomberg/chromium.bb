@@ -23,6 +23,7 @@ class AttestationPolicyObserver;
 }
 }
 
+class PrefRegistrySimple;
 class PrefService;
 
 namespace policy {
@@ -62,11 +63,24 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // Cancels a pending enrollment operation, if any.
   void CancelEnrollment();
 
+  // Gets/Sets the device requisition.
+  std::string GetDeviceRequisition() const;
+  void SetDeviceRequisition(const std::string& requisition);
+
+  // Checks whether enterprise enrollment should be a regular step during OOBE.
+  bool ShouldAutoStartEnrollment() const;
+
+  // Checks whether the user can cancel enrollment.
+  bool CanExitEnrollment() const;
+
   // CloudPolicyManager:
   virtual void Shutdown() OVERRIDE;
 
   // CloudPolicyStore::Observer:
   virtual void OnStoreLoaded(CloudPolicyStore* store) OVERRIDE;
+
+  // Pref registration helper.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Returns the device serial number, or an empty string if not available.
   static std::string GetMachineID();
@@ -85,10 +99,6 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // Handles completion signaled by |enrollment_handler_|.
   void EnrollmentCompleted(const EnrollmentCallback& callback,
                            EnrollmentStatus status);
-
-  // Requisition parameter to send to the server that indicates the intended
-  // purpose for the device.
-  std::string requisition_;
 
   // Points to the same object as the base CloudPolicyManager::store(), but with
   // actual device policy specific type.

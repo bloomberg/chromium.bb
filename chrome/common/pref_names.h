@@ -772,6 +772,9 @@ extern const char kOwnerTapToClickEnabled[];
 extern const char kUptimeLimit[];
 extern const char kRebootAfterUpdate[];
 extern const char kDeviceRobotAnyApiRefreshToken[];
+extern const char kDeviceEnrollmentRequisition[];
+extern const char kDeviceEnrollmentAutoStart[];
+extern const char kDeviceEnrollmentCanExit[];
 #endif
 
 extern const char kClearPluginLSODataEnabled[];

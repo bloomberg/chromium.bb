@@ -31,6 +31,7 @@ class ErrorScreen;
 class EulaScreen;
 class FocusRingController;
 class KioskAutolaunchScreen;
+class LocallyManagedUserCreationScreen;
 class LoginDisplayHost;
 class NetworkScreen;
 class OobeDisplay;
@@ -40,7 +41,6 @@ class UpdateScreen;
 class UserImageScreen;
 class WizardScreen;
 class WrongHWIDScreen;
-class LocallyManagedUserCreationScreen;
 
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
@@ -226,6 +226,12 @@ class WizardController : public ScreenObserver {
   // Launched kiosk app configured for auto-launch.
   void AutoLaunchKioskApp();
 
+  // Checks whether OOBE should start enrollment automatically.
+  bool ShouldAutoStartEnrollment() const;
+
+  // Checks whether the user is allowed to exit enrollment.
+  bool CanExitEnrollment() const;
+
   // Whether to skip any screens that may normally be shown after login
   // (registration, Terms of Service, user image selection).
   static bool skip_post_login_screens_;
@@ -296,12 +302,6 @@ class WizardController : public ScreenObserver {
   // Indicates that once image selection screen finishes we should return to
   // a previous screen instead of proceeding with usual flow.
   bool user_image_screen_return_to_previous_hack_;
-
-  // True if OOBE should force enterprise enrollment flow.
-  bool force_enrollment_;
-
-  // True if OOBE should prevent exiting enterprise enrollment.
-  bool can_exit_enrollment_;
 
   // A focus ring controller to draw focus ring around view for keyboard
   // driven oobe.

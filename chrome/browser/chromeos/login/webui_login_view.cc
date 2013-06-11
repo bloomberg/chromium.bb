@@ -56,6 +56,8 @@ const char kAccelNameVersion[] = "version";
 const char kAccelNameReset[] = "reset";
 const char kAccelNameLeft[] = "left";
 const char kAccelNameRight[] = "right";
+const char kAccelNameDeviceRequisition[] = "device_requisition";
+const char kAccelNameDeviceRequisitionRemora[] = "device_requisition_remora";
 
 // Observes IPC messages from the FrameSniffer and notifies JS if error
 // appears.
@@ -170,6 +172,13 @@ WebUILoginView::WebUILoginView()
 
   accel_map_[ui::Accelerator(ui::VKEY_RIGHT, ui::EF_NONE)] =
       kAccelNameRight;
+
+  accel_map_[ui::Accelerator(
+      ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
+      kAccelNameDeviceRequisition;
+  accel_map_[
+      ui::Accelerator(ui::VKEY_H, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
+      kAccelNameDeviceRequisitionRemora;
 
   for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i)
     AddAccelerator(i->first);

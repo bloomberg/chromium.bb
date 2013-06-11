@@ -6,10 +6,13 @@
 
 #include "ash/magnifier/magnifier_constants.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -76,6 +79,14 @@ void CoreOobeHandler::DeclareLocalizedValues(LocalizedValuesBuilder* builder) {
   builder->Add("largeCursorOption", IDS_OOBE_LARGE_CURSOR_OPTION);
   builder->Add("highContrastOption", IDS_OOBE_HIGH_CONTRAST_MODE_OPTION);
   builder->Add("screenMagnifierOption", IDS_OOBE_SCREEN_MAGNIFIER_OPTION);
+
+  // Strings for the device requisition prompt.
+  builder->Add("deviceRequisitionPromptCancel",
+               IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_CANCEL);
+  builder->Add("deviceRequisitionPromptOk",
+               IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_OK);
+  builder->Add("deviceRequisitionPromptText",
+               IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_TEXT);
 }
 
 void CoreOobeHandler::Initialize() {
@@ -86,6 +97,7 @@ void CoreOobeHandler::Initialize() {
 #else
   version_info_updater_.StartUpdate(false);
 #endif
+  UpdateDeviceRequisition();
 }
 
 void CoreOobeHandler::RegisterMessages() {
@@ -103,6 +115,8 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleEnableScreenMagnifier);
   AddCallback(kJsApiEnableSpokenFeedback,
               &CoreOobeHandler::HandleEnableSpokenFeedback);
+  AddCallback("setDeviceRequisition",
+              &CoreOobeHandler::HandleSetDeviceRequisition);
 }
 
 void CoreOobeHandler::HandleInitialized() {
@@ -140,6 +154,12 @@ void CoreOobeHandler::HandleEnableSpokenFeedback() {
   // setting is changed so just toggle spoken feedback here.
   AccessibilityManager::Get()->ToggleSpokenFeedback(
       web_ui(), ash::A11Y_NOTIFICATION_NONE);
+}
+
+void CoreOobeHandler::HandleSetDeviceRequisition(
+    const std::string& requisition) {
+  g_browser_process->browser_policy_connector()->GetDeviceCloudPolicyManager()->
+      SetDeviceRequisition(requisition);
 }
 
 void CoreOobeHandler::ShowOobeUI(bool show) {
@@ -204,6 +224,12 @@ void CoreOobeHandler::OnEnterpriseInfoUpdated(
 void CoreOobeHandler::UpdateLabel(const std::string& id,
                                   const std::string& text) {
   CallJS("cr.ui.Oobe.setLabelText", id, text);
+}
+
+void CoreOobeHandler::UpdateDeviceRequisition() {
+  CallJS("cr.ui.Oobe.updateDeviceRequisition",
+         g_browser_process->browser_policy_connector()->
+             GetDeviceCloudPolicyManager()->GetDeviceRequisition());
 }
 
 void CoreOobeHandler::Observe(int type,

@@ -215,6 +215,14 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Updates the device requisition string shown in the requisition prompt.
+   * @param {string} requisition The device requisition.
+   */
+  Oobe.updateDeviceRequisition = function(requisition) {
+    Oobe.getInstance().updateDeviceRequisition(requisition);
+  };
+
+  /**
    * Enforces focus on user pod of locked user.
    */
   Oobe.forceLockedUserPodFocus = function() {
