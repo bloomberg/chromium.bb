@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "third_party/icu/public/i18n/unicode/regex.h"
 
 namespace {

@@ -4,7 +4,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/browser/address_field.h"
 #include "components/autofill/browser/autofill_field.h"

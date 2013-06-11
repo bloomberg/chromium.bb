@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/prefs/pref_service.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_external_delegate.h"
 #include "components/autofill/browser/validation.h"

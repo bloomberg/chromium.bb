@@ -12,7 +12,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "components/autofill/browser/autofill_download_url.h"
 #include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/autofill_xml_parser.h"

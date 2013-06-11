@@ -4,7 +4,7 @@
 
 #include "components/autofill/browser/autofill_regexes.h"
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_regex_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"

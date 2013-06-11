@@ -7,7 +7,7 @@
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/android/jni_android.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace autofill {
 

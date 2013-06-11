@@ -6,7 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"

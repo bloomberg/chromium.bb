@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/message_loop.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/browser/address.h"
 #include "components/autofill/browser/autofill_type.h"

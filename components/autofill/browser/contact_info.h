@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "components/autofill/browser/field_types.h"
 #include "components/autofill/browser/form_group.h"
 

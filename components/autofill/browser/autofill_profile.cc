@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/browser/address.h"
 #include "components/autofill/browser/autofill_country.h"

@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_country.h"
 #include "testing/gtest/include/gtest/gtest.h"

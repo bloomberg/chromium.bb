@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "components/autofill/browser/field_types.h"
 #include "components/autofill/common/form_field_data.h"
 

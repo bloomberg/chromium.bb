@@ -5,7 +5,7 @@
 #include "components/autofill/browser/autofill_ie_toolbar_import_win.h"
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/win/registry.h"
 #include "components/autofill/browser/autofill_profile.h"
 #include "components/autofill/browser/credit_card.h"

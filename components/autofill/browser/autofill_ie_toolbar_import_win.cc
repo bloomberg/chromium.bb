@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/win/registry.h"
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_profile.h"

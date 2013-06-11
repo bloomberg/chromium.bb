@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "components/autofill/browser/autofill_popup_delegate.h"
 #include "components/autofill/browser/password_autofill_manager.h"
 #include "components/autofill/common/form_data.h"

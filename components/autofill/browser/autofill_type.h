@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "components/autofill/browser/field_types.h"
 
 namespace autofill {

@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_REGEXES_H_
 #define COMPONENTS_AUTOFILL_BROWSER_AUTOFILL_REGEXES_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 // Parsing utilities.
 namespace autofill {

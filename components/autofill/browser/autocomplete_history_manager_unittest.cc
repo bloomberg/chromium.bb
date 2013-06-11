@@ -7,7 +7,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"

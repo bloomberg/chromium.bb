@@ -10,7 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "components/autofill/browser/autocheckout_page_meta_data.h"
 #include "components/autofill/common/autocheckout_status.h"
