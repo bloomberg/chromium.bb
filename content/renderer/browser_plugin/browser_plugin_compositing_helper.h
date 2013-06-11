@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/size.h"
 
 namespace cc {
@@ -52,13 +53,25 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
   // Friend RefCounted so that the dtor can be non-public.
   friend class base::RefCounted<BrowserPluginCompositingHelper>;
  private:
+  enum MailboxType {
+    TEXTURE_IMAGE_TRANSPORT,
+    COMPOSITOR_FRAME,
+  };
+  struct MailboxSwapInfo {
+    gpu::Mailbox name;
+    MailboxType type;
+    gfx::Size size;
+    int route_id;
+    int host_id;
+  };
   ~BrowserPluginCompositingHelper();
   void CheckSizeAndAdjustLayerBounds(const gfx::Size& new_size,
                                      float device_scale_factor,
                                      cc::Layer* layer);
-  void MailboxReleased(const std::string& mailbox_name,
-                       int gpu_route_id,
-                       int gpu_host_id,
+  void OnBuffersSwappedPrivate(const MailboxSwapInfo& mailbox,
+                               unsigned sync_point,
+                               float device_scale_factor);
+  void MailboxReleased(const MailboxSwapInfo& mailbox,
                        unsigned sync_point,
                        bool lost_resource);
   int instance_id_;
@@ -67,7 +80,6 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
   int last_host_id_;
   bool last_mailbox_valid_;
   bool ack_pending_;
-  bool ack_pending_for_crashed_guest_;
 
   gfx::Size buffer_size_;
 
