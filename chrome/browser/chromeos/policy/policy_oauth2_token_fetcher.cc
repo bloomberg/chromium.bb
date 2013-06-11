@@ -63,7 +63,6 @@ void PolicyOAuth2TokenFetcher::Start() {
 }
 
 void PolicyOAuth2TokenFetcher::StartFetchingRefreshToken() {
-  DCHECK(!refresh_token_fetcher_.get());
   refresh_token_fetcher_.reset(
       new GaiaAuthFetcher(this,
                           GaiaConstants::kChromeSource,
