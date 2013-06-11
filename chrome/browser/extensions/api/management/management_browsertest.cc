@@ -554,7 +554,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
 }
 
 // See http://crbug.com/103371 and http://crbug.com/120640.
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(OS_WIN)
 #define MAYBE_PolicyOverridesUserInstall DISABLED_PolicyOverridesUserInstall
 #else
 #define MAYBE_PolicyOverridesUserInstall PolicyOverridesUserInstall
