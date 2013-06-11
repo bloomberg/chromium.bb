@@ -37,6 +37,7 @@ namespace WebCore {
 InspectorOverlayHost::InspectorOverlayHost()
     : m_listener(0)
 {
+    ScriptWrappable::init(this);
 }
 
 InspectorOverlayHost::~InspectorOverlayHost()

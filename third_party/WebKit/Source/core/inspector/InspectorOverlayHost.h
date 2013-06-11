@@ -29,12 +29,13 @@
 #ifndef InspectorOverlayHost_h
 #define InspectorOverlayHost_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class InspectorOverlayHost : public RefCounted<InspectorOverlayHost> {
+class InspectorOverlayHost : public RefCounted<InspectorOverlayHost>, public ScriptWrappable {
 public:
     static PassRefPtr<InspectorOverlayHost> create()
     {

@@ -25,12 +25,13 @@
 #ifndef NavigatorUserMediaError_h
 #define NavigatorUserMediaError_h
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class NavigatorUserMediaError : public RefCounted<NavigatorUserMediaError> {
+class NavigatorUserMediaError : public RefCounted<NavigatorUserMediaError>, public ScriptWrappable {
 public:
     static PassRefPtr<NavigatorUserMediaError> create(const String& name, const String& message, const String& constraintName)
     {
@@ -44,7 +45,10 @@ public:
     const String& constraintName() const { return m_constraintName; }
 
 private:
-    NavigatorUserMediaError(const String& name, const String& message, const String& constraintName) : m_name(name), m_message(message), m_constraintName(constraintName) { }
+    NavigatorUserMediaError(const String& name, const String& message, const String& constraintName) : m_name(name), m_message(message), m_constraintName(constraintName)
+    {
+        ScriptWrappable::init(this);
+    }
 
     String m_name;
     String m_message;
