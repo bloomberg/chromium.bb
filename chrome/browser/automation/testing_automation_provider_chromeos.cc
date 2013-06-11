@@ -1113,26 +1113,8 @@ void TestingAutomationProvider::EnableSpokenFeedback(
     reply.SendError("Invalid or missing args.");
     return;
   }
-  const UserManager* user_manager = UserManager::Get();
-  if (!user_manager) {
-    reply.SendError("No user manager!");
-    return;
-  }
-
-  if (user_manager->IsUserLoggedIn()) {
-    chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(
-        enabled, NULL, ash::A11Y_NOTIFICATION_NONE);
-  } else {
-    ExistingUserController* controller =
-        ExistingUserController::current_controller();
-    chromeos::LoginDisplayHostImpl* webui_host =
-        static_cast<chromeos::LoginDisplayHostImpl*>(
-            controller->login_display_host());
-    chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(
-        enabled,
-        webui_host->GetOobeUI()->web_ui(),
-        ash::A11Y_NOTIFICATION_NONE);
-  }
+  chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(
+      enabled, ash::A11Y_NOTIFICATION_NONE);
 
   reply.SendSuccess(return_value.get());
 }

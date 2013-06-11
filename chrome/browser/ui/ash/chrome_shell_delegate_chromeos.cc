@@ -15,8 +15,6 @@
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
-#include "chrome/browser/chromeos/login/login_display_host_impl.h"
-#include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -33,7 +31,6 @@
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -126,21 +123,7 @@ bool ChromeShellDelegate::IsSpokenFeedbackEnabled() const {
 void ChromeShellDelegate::ToggleSpokenFeedback(
     ash::AccessibilityNotificationVisibility notify) {
   DCHECK(chromeos::AccessibilityManager::Get());
-  content::WebUI* web_ui = NULL;
-
-  chromeos::LoginDisplayHostImpl* host =
-      static_cast<chromeos::LoginDisplayHostImpl*>(
-          chromeos::LoginDisplayHostImpl::default_host());
-  if (host && host->GetOobeUI())
-    web_ui = host->GetOobeUI()->web_ui();
-
-  if (!web_ui &&
-      chromeos::ScreenLocker::default_screen_locker() &&
-      chromeos::ScreenLocker::default_screen_locker()->locked()) {
-    web_ui = chromeos::ScreenLocker::default_screen_locker()->
-        GetAssociatedWebUI();
-  }
-  chromeos::AccessibilityManager::Get()->ToggleSpokenFeedback(web_ui, notify);
+  chromeos::AccessibilityManager::Get()->ToggleSpokenFeedback(notify);
 }
 
 bool ChromeShellDelegate::IsHighContrastEnabled() const {

@@ -13,10 +13,6 @@
 
 class Profile;
 
-namespace content {
-class WebUI;
-}
-
 namespace chromeos {
 
 struct AccessibilityStatusEventDetails {
@@ -53,20 +49,15 @@ class AccessibilityManager : public content::NotificationObserver {
   bool IsLargeCursorEnabled();
 
   // Enables or disables spoken feedback. Enabling spoken feedback installs the
-  // ChromeVox component extension.  If this is being called in a login/oobe
-  // login screen, pass the WebUI object in login_web_ui so that ChromeVox
-  // can be injected directly into that screen, otherwise it should be NULL.
+  // ChromeVox component extension.
   void EnableSpokenFeedback(bool enabled,
-                            content::WebUI* login_web_ui,
                             ash::AccessibilityNotificationVisibility notify);
 
   // Returns true if spoken feedback is enabled, or false if not.
   bool IsSpokenFeedbackEnabled();
 
-  // Toggles whether Chrome OS spoken feedback is on or off. See docs for
-  // EnableSpokenFeedback, above.
-  void ToggleSpokenFeedback(content::WebUI* login_web_ui,
-                            ash::AccessibilityNotificationVisibility notify);
+  // Toggles whether Chrome OS spoken feedback is on or off.
+  void ToggleSpokenFeedback(ash::AccessibilityNotificationVisibility notify);
 
   // Speaks the specified string.
   void Speak(const std::string& text);
@@ -108,7 +99,6 @@ class AccessibilityManager : public content::NotificationObserver {
   bool spoken_feedback_enabled_;
   bool high_contrast_enabled_;
 
-  content::WebUI* spoken_feedback_login_web_ui_;
   ash::AccessibilityNotificationVisibility spoken_feedback_notification_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManager);

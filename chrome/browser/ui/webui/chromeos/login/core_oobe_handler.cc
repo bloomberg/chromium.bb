@@ -153,7 +153,7 @@ void CoreOobeHandler::HandleEnableSpokenFeedback() {
   // Checkbox is initialized on page init and updates when spoken feedback
   // setting is changed so just toggle spoken feedback here.
   AccessibilityManager::Get()->ToggleSpokenFeedback(
-      web_ui(), ash::A11Y_NOTIFICATION_NONE);
+      ash::A11Y_NOTIFICATION_NONE);
 }
 
 void CoreOobeHandler::HandleSetDeviceRequisition(

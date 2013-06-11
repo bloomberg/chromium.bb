@@ -15,7 +15,10 @@
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/login_display_host.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -159,7 +162,6 @@ AccessibilityManager::AccessibilityManager()
       large_cursor_enabled_(false),
       spoken_feedback_enabled_(false),
       high_contrast_enabled_(false),
-      spoken_feedback_login_web_ui_(NULL),
       spoken_feedback_notification_(ash::A11Y_NOTIFICATION_NONE) {
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_SESSION_STARTED,
@@ -218,12 +220,10 @@ bool AccessibilityManager::IsLargeCursorEnabled() {
 
 void AccessibilityManager::EnableSpokenFeedback(
     bool enabled,
-    content::WebUI* login_web_ui,
     ash::AccessibilityNotificationVisibility notify) {
   if (!profile_)
     return;
 
-  spoken_feedback_login_web_ui_ = login_web_ui;
   spoken_feedback_notification_ = notify;
 
   PrefService* pref_service = profile_->GetPrefs();
@@ -231,7 +231,6 @@ void AccessibilityManager::EnableSpokenFeedback(
       prefs::kSpokenFeedbackEnabled, enabled);
   pref_service->CommitPendingWrite();
 
-  spoken_feedback_login_web_ui_ = NULL;
   spoken_feedback_notification_ = ash::A11Y_NOTIFICATION_NONE;
 }
 
@@ -261,10 +260,24 @@ void AccessibilityManager::UpdateSpokenFeedbackFromPref() {
       enabled ? IDS_CHROMEOS_ACC_SPOKEN_FEEDBACK_ENABLED :
       IDS_CHROMEOS_ACC_SPOKEN_FEEDBACK_DISABLED).c_str());
 
+  // Determine whether an OOBE screen or the screen locker is currently being
+  // shown. If so, ChromeVox will be injected directly into that screen.
+  content::WebUI* login_web_ui = NULL;
+  LoginDisplayHost* login_display_host = LoginDisplayHostImpl::default_host();
+  if (login_display_host) {
+    WebUILoginView* web_ui_login_view = login_display_host->GetWebUILoginView();
+    if (web_ui_login_view)
+      login_web_ui = web_ui_login_view->GetWebUI();
+  }
+  if (!login_web_ui) {
+    ScreenLocker* screen_locker = ScreenLocker::default_screen_locker();
+    if (screen_locker && screen_locker->locked())
+      login_web_ui = screen_locker->GetAssociatedWebUI();
+  }
+
   // Load/Unload ChromeVox
-  Profile* profile = spoken_feedback_login_web_ui_ ?
-                         Profile::FromWebUI(spoken_feedback_login_web_ui_) :
-                         ProfileManager::GetDefaultProfile();
+  Profile* profile = login_web_ui ? Profile::FromWebUI(login_web_ui) :
+                                    ProfileManager::GetDefaultProfile();
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   base::FilePath path = base::FilePath(extension_misc::kChromeVoxExtensionPath);
@@ -275,9 +288,9 @@ void AccessibilityManager::UpdateSpokenFeedbackFromPref() {
     const extensions::Extension* extension =
         extension_service->extensions()->GetByID(extension_id);
 
-    if (spoken_feedback_login_web_ui_) {
+    if (login_web_ui) {
       RenderViewHost* render_view_host =
-          spoken_feedback_login_web_ui_->GetWebContents()->GetRenderViewHost();
+          login_web_ui->GetWebContents()->GetRenderViewHost();
       // Set a flag to tell ChromeVox that it's just been enabled,
       // so that it won't interrupt our speech feedback enabled message.
       ExtensionMsg_ExecuteCode_Params params;
@@ -322,9 +335,8 @@ bool AccessibilityManager::IsSpokenFeedbackEnabled() {
 }
 
 void AccessibilityManager::ToggleSpokenFeedback(
-    content::WebUI* login_web_ui,
     ash::AccessibilityNotificationVisibility notify) {
-  EnableSpokenFeedback(!IsSpokenFeedbackEnabled(), login_web_ui, notify);
+  EnableSpokenFeedback(!IsSpokenFeedbackEnabled(), notify);
 }
 
 void AccessibilityManager::Speak(const std::string& text) {
