@@ -4,7 +4,7 @@
 
 #include "dbus/string_util.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 namespace dbus {
 

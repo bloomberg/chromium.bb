@@ -8,7 +8,7 @@
 #include <openssl/evp.h>
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/symmetric_key.h"
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "device/bluetooth/bluetooth_service_record_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

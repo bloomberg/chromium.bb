@@ -14,7 +14,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 
 namespace {

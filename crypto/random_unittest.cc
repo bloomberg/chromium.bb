@@ -4,7 +4,7 @@
 
 #include "crypto/random.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Basic functionality tests. Does NOT test the security of the random data.

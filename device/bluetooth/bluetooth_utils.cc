@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 namespace {
 static const char* kCommonUuidPostfix = "-0000-1000-8000-00805f9b34fb";

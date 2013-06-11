@@ -11,7 +11,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "crypto/openssl_util.h"
 
 namespace crypto {

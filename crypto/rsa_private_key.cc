@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 // This file manually encodes and decodes RSA private keys using PrivateKeyInfo
 // from PKCS #8 and RSAPrivateKey from PKCS #1. These structures are:
