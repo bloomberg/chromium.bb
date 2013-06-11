@@ -51,11 +51,6 @@ class CONTENT_EXPORT IndexedDBKey {
   double number_;
 
   size_t size_estimate_;
-
-  // Very rough estimate of minimum key size overhead.
-  enum {
-    kOverheadSize = 16
-  };
 };
 
 }  // namespace content

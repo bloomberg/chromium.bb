@@ -15,37 +15,43 @@ using WebKit::WebIDBKey;
 using WebKit::WebVector;
 
 namespace {
-size_t CalculateKeySize(const WebIDBKey& key);
 
-template <typename T> static size_t CalculateSize(const T& keys) {
+// Very rough estimate of minimum key size overhead.
+const size_t kOverheadSize = 16;
+
+static size_t CalculateArraySize(const IndexedDBKey::KeyArray& keys) {
   size_t size(0);
-  for (size_t i = 0; i < keys.size(); ++i) {
-    size += CalculateKeySize(keys[i]);
-  }
+  for (size_t i = 0; i < keys.size(); ++i)
+    size += keys[i].size_estimate();
   return size;
 }
 
-size_t CalculateKeySize(const WebIDBKey& key) {
+static size_t CalculateKeySize(const WebIDBKey& key) {
   switch (key.type()) {
-    case WebIDBKey::ArrayType:
-      return CalculateSize(key.array());
-
+    case WebIDBKey::ArrayType: {
+      const WebVector<WebIDBKey>& array = key.array();
+      size_t total = 0;
+      for (size_t i = 0; i < array.size(); ++i)
+        total += CalculateKeySize(array[i]);
+      return kOverheadSize + total;
+    }
     case WebIDBKey::StringType:
-      return key.string().length() * sizeof(string16::value_type);
+      return kOverheadSize +
+             (key.string().length() * sizeof(string16::value_type));
 
     case WebIDBKey::DateType:
     case WebIDBKey::NumberType:
-      return sizeof(double);
+      return kOverheadSize + sizeof(double);
+
     default:
-      return 0;
+      return kOverheadSize;
   }
   NOTREACHED();
   return 0;
 }
 
 template <typename T>
-static IndexedDBKey::KeyArray
-CopyKeyArray(const T& array) {
+static IndexedDBKey::KeyArray CopyKeyArray(const T& array) {
   IndexedDBKey::KeyArray result;
   result.reserve(array.size());
   for (size_t i = 0; i < array.size(); ++i) {
@@ -78,7 +84,7 @@ IndexedDBKey::IndexedDBKey(double number, WebIDBKey::Type type)
     : type_(type),
       date_(number),
       number_(number),
-      size_estimate_(kOverheadSize + sizeof(double)) {
+      size_estimate_(kOverheadSize + sizeof(number)) {
   DCHECK(type == WebIDBKey::NumberType || type == WebIDBKey::DateType);
 }
 
@@ -87,7 +93,13 @@ IndexedDBKey::IndexedDBKey(const KeyArray& keys)
       array_(CopyKeyArray(keys)),
       date_(0),
       number_(0),
-      size_estimate_(kOverheadSize + CalculateSize(keys)) {}
+      size_estimate_(kOverheadSize + CalculateArraySize(keys)) {}
+
+IndexedDBKey::IndexedDBKey(const string16& key)
+    : type_(WebIDBKey::StringType),
+      string_(key),
+      size_estimate_(kOverheadSize +
+                     (key.length() * sizeof(string16::value_type))) {}
 
 IndexedDBKey::IndexedDBKey(const WebIDBKey& key)
     : type_(key.type()),
@@ -97,11 +109,7 @@ IndexedDBKey::IndexedDBKey(const WebIDBKey& key)
                   : string16()),
       date_(key.type() == WebIDBKey::DateType ? key.date() : 0),
       number_(key.type() == WebIDBKey::NumberType ? key.number() : 0),
-      size_estimate_(kOverheadSize + CalculateKeySize(key)) {}
-
-IndexedDBKey::IndexedDBKey(const string16& key)
-    : type_(WebIDBKey::StringType), string_(key),
-      size_estimate_(key.length() * sizeof(string16::value_type)) {}
+      size_estimate_(CalculateKeySize(key)) {}
 
 IndexedDBKey::~IndexedDBKey() {}
 
