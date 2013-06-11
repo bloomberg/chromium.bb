@@ -4,7 +4,7 @@
 
 #include "net/http/http_auth_handler.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/net_errors.h"

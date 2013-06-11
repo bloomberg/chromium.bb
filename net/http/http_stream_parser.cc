@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -16,8 +16,8 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-#include "net/socket/ssl_client_socket.h"
 #include "net/socket/client_socket_handle.h"
+#include "net/socket/ssl_client_socket.h"
 
 namespace {
 

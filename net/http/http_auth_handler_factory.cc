@@ -5,7 +5,7 @@
 #include "net/http/http_auth_handler_factory.h"
 
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_basic.h"

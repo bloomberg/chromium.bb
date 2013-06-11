@@ -5,7 +5,7 @@
 #include <algorithm>
 
 #include "base/basictypes.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "net/http/http_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

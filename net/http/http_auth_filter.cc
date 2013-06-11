@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/http/http_auth_filter.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "googleurl/src/gurl.h"
 
 namespace net {

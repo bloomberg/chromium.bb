@@ -16,7 +16,7 @@
 
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
 

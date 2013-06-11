@@ -5,7 +5,7 @@
 #include "net/http/http_server_properties.h"
 
 #include "base/logging.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 
 namespace net {
 

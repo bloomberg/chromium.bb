@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "base/basictypes.h"
-#include "base/string_util.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"

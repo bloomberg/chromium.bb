@@ -5,7 +5,7 @@
 #include "net/http/proxy_client_socket.h"
 
 #include "base/metrics/histogram.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"

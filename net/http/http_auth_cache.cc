@@ -5,7 +5,7 @@
 #include "net/http/http_auth_cache.h"
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 namespace {
 

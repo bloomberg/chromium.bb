@@ -4,8 +4,8 @@
 
 #include "net/http/http_stream_factory_impl.h"
 
-#include "base/string_number_conversions.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_log.h"
 #include "net/base/net_util.h"

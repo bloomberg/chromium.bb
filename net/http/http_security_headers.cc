@@ -4,9 +4,9 @@
 
 #include "base/base64.h"
 #include "base/basictypes.h"
-#include "base/string_number_conversions.h"
-#include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 #include "net/http/http_security_headers.h"
 #include "net/http/http_util.h"
 

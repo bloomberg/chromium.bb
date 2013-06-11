@@ -4,7 +4,7 @@
 
 #include "net/http/http_basic_stream.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
