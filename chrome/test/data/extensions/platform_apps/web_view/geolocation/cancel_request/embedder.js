@@ -34,10 +34,12 @@ embedder.setUpGuest_ = function() {
 
 /** @private */
 embedder.setUpLoadCommit_ = function(webview, testName, opt_iframeURL) {
-  var onWebViewLoadCommit = function(e) {
-    if (!e.isTopLevel) {
+  var loadstopCalled = false;
+  var onWebviewLoadStop = function(e) {
+    if (loadstopCalled) {
       return;
     }
+    loadstopCalled = true;
     // Send post message to <webview> when it's ready to receive them.
     var msgArray = [
       'test-cancel-geolocation',
@@ -46,7 +48,7 @@ embedder.setUpLoadCommit_ = function(webview, testName, opt_iframeURL) {
     ];
     webview.contentWindow.postMessage(JSON.stringify(msgArray), '*');
   };
-  webview.addEventListener('loadcommit', onWebViewLoadCommit);
+  webview.addEventListener('loadstop', onWebviewLoadStop);
 };
 
 
