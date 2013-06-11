@@ -486,6 +486,7 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
     CSSM_CSP_HANDLE cspHandle           = 0;
     const CSSM_KEY *cssmKey             = NULL;
     CSSM_ALGORITHMS sigAlg;
+    CSSM_ALGORITHMS digestAlg;
     const CSSM_ACCESS_CREDENTIALS * cssmCreds = NULL;
     CSSM_RETURN     cssmRv;
     CSSM_DATA       hashData;
@@ -521,25 +522,26 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
         goto done;    /* error code was set. */
 
     sigAlg = cssmKey->KeyHeader.AlgorithmId;
+
+    digestAlg = CSSM_ALGID_NONE;
     if (keyType == rsaKey) {
-        PORT_Assert(sigAlg == CSSM_ALGID_RSA);
         switch (hash->hashAlg) {
             case SEC_OID_UNKNOWN:
                 break;
             case SEC_OID_SHA1:
-                sigAlg = CSSM_ALGID_SHA1WithRSA;
+                digestAlg = CSSM_ALGID_SHA1;
                 break;
             case SEC_OID_SHA224:
-                sigAlg = CSSM_ALGID_SHA224WithRSA;
+                digestAlg = CSSM_ALGID_SHA224;
                 break;
             case SEC_OID_SHA256:
-                sigAlg = CSSM_ALGID_SHA256WithRSA;
+                digestAlg = CSSM_ALGID_SHA256;
                 break;
             case SEC_OID_SHA384:
-                sigAlg = CSSM_ALGID_SHA384WithRSA;
+                digestAlg = CSSM_ALGID_SHA384;
                 break;
             case SEC_OID_SHA512:
-                sigAlg = CSSM_ALGID_SHA512WithRSA;
+                digestAlg = CSSM_ALGID_SHA512;
                 break;
             default:
                 PORT_SetError(SSL_ERROR_UNSUPPORTED_HASH_ALGORITHM);
@@ -549,6 +551,7 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
 
     switch (keyType) {
         case rsaKey:
+            PORT_Assert(sigAlg == CSSM_ALGID_RSA);
             hashData.Data   = hash->u.raw;
             hashData.Length = hash->len;
             break;
@@ -610,7 +613,7 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
         }
     }
 
-    cssmRv = CSSM_SignData(cssmSignature, &hashData, 1, CSSM_ALGID_NONE,
+    cssmRv = CSSM_SignData(cssmSignature, &hashData, 1, digestAlg,
                            &signatureData);
     if (cssmRv) {
         PORT_SetError(SSL_ERROR_SIGN_HASHES_FAILURE);
