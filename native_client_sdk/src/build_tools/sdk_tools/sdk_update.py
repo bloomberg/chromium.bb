@@ -101,8 +101,19 @@ def RenameSdkToolsDirectory():
   return True
 
 
+def CheckRuntimeRequirements():
+  if sys.platform.startswith('linux'):
+    if not os.path.exists('/lib/ld-linux.so.2'):
+      sys.stderr.write("""32-bit runtime environment was not found on this
+system.  Specifically the 32-bit dynamic loader which is needed by the NaCl
+compilers was not found ('/lib/ld-linux.so.2').  On modern debian/ubuntu
+systems this is included in the 'libc6:i386' package.\n""")
+      sys.exit(1)
+
+
 def main():
   args = sys.argv[1:]
+  CheckRuntimeRequirements()
   if UpdateSDKTools(args) and RenameSdkToolsDirectory():
     # Call the shell script, just in case this script was updated in the next
     # version of sdk_tools
