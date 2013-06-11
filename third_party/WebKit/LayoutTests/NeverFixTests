@@ -86,3 +86,7 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ImageOnlyFailure ]
 
 # These tests are not intended to be run in the virtual suite.
 virtual/softwarecompositing/gestures [ WontFix ]
+
+# This test crashes occasionally on Windows and we can't seem to repro locally.
+# See comments in crbug.com/239077
+[ Win ] fast/canvas/webgl/index-validation-with-resized-buffer.html [ WontFix ]
