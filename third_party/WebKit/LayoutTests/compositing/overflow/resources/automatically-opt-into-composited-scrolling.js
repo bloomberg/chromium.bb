@@ -13,9 +13,6 @@ function write(str)
 function didOptIn(element)
 {
   // Force a synchronous style recalc and layout.
-  document.body.style.overflow = 'scroll';
-  document.body.offsetTop;
-  document.body.style.overflow = '';
   document.body.offsetTop;
 
   var nonFastScrollableRects = window.internals.nonFastScrollableRects(document);
@@ -36,9 +33,6 @@ function getStackingOrder(element)
 {
   var divElements = [];
   // Force a synchronous style recalc and layout.
-  document.body.style.overflow = 'scroll';
-  document.body.offsetTop;
-  document.body.style.overflow = '';
   document.body.offsetTop;
 
   var stackingOrder = window.internals.nodesFromRect(document, 100, 75, 200, 200, 200, 200, false, false, false);

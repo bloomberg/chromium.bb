@@ -697,6 +697,13 @@ void FrameView::updateCompositingLayersAfterStyleChange()
 
     // This call will make sure the cached hasAcceleratedCompositing is updated from the pref
     renderView->compositor()->cacheAcceleratedCompositingFlags();
+
+    // Sometimes we will change a property (for example, z-index) that will not
+    // cause a layout, but will require us to update compositing state. We only
+    // need to do this if a layout is not already scheduled.
+    if (!needsLayout())
+        renderView->compositor()->updateCompositingRequirementsState();
+
     renderView->compositor()->updateCompositingLayers(CompositingUpdateAfterStyleChange);
 }
 

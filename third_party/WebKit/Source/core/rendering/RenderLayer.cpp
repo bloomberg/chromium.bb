@@ -1689,6 +1689,11 @@ void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
         setAncestorChainHasOutOfFlowPositionedDescendant();
     }
 
+    // When we first dirty a layer, we will also dirty all the siblings in that
+    // layer's stacking context. We need to manually do it here as well, in case
+    // we're adding this layer after the stacking context has already been
+    // updated.
+    child->m_canBePromotedToStackingContainerDirty = true;
     compositor()->layerWasAdded(this, child);
 }
 
@@ -5518,6 +5523,36 @@ static inline bool compareZIndex(RenderLayer* first, RenderLayer* second)
     return first->zIndex() < second->zIndex();
 }
 
+void RenderLayer::dirtyNormalFlowListCanBePromotedToStackingContainer()
+{
+    m_canBePromotedToStackingContainerDirty = true;
+
+    if (m_normalFlowListDirty || !normalFlowList())
+        return;
+
+    for (size_t index = 0; index < normalFlowList()->size(); ++index)
+        normalFlowList()->at(index)->dirtyNormalFlowListCanBePromotedToStackingContainer();
+}
+
+void RenderLayer::dirtySiblingStackingContextCanBePromotedToStackingContainer()
+{
+    RenderLayer* ancestorStackingContext = this->ancestorStackingContext();
+    if (!ancestorStackingContext)
+        return;
+
+    if (!ancestorStackingContext->m_zOrderListsDirty && ancestorStackingContext->posZOrderList()) {
+        for (size_t index = 0; index < ancestorStackingContext->posZOrderList()->size(); ++index)
+            ancestorStackingContext->posZOrderList()->at(index)->m_canBePromotedToStackingContainerDirty = true;
+    }
+
+    ancestorStackingContext->dirtyNormalFlowListCanBePromotedToStackingContainer();
+
+    if (!ancestorStackingContext->m_zOrderListsDirty && ancestorStackingContext->negZOrderList()) {
+        for (size_t index = 0; index < ancestorStackingContext->negZOrderList()->size(); ++index)
+            ancestorStackingContext->negZOrderList()->at(index)->m_canBePromotedToStackingContainerDirty = true;
+    }
+}
+
 void RenderLayer::dirtyZOrderLists()
 {
     ASSERT(m_layerListMutationAllowed);
@@ -5541,6 +5576,12 @@ void RenderLayer::dirtyZOrderLists()
 
 void RenderLayer::dirtyStackingContainerZOrderLists()
 {
+    // Any siblings in the ancestor stacking context could also be affected.
+    // Changing z-index, for example, could cause us to stack in between a
+    // sibling's descendants, meaning that we have to recompute
+    // m_canBePromotedToStackingContainer for that sibling.
+    dirtySiblingStackingContextCanBePromotedToStackingContainer();
+
     RenderLayer* stackingContainer = this->ancestorStackingContainer();
     if (stackingContainer)
         stackingContainer->dirtyZOrderLists();
