@@ -1492,15 +1492,19 @@ ErrorCode ArmMaliGpuProcessPolicy(Sandbox* sandbox, int sysno,
 #if defined(__arm__)
     // ARM GPU sandbox is started earlier so we need to allow networking
     // in the sandbox.
-    // TODO(jorgelo): tighten this (crbug.com/235609).
     case __NR_connect:
     case __NR_getpeername:
     case __NR_getsockname:
-    case __NR_socket:
-    case __NR_socketpair:
     case __NR_sysinfo:
     case __NR_uname:
       return ErrorCode(ErrorCode::ERR_ALLOWED);
+    // Allow only AF_UNIX for |domain|.
+    case __NR_socket:
+    case __NR_socketpair:
+      return sandbox->Cond(0, ErrorCode::TP_32BIT,
+                           ErrorCode::OP_EQUAL, AF_UNIX,
+                           ErrorCode(ErrorCode::ERR_ALLOWED),
+                           ErrorCode(EPERM));
 #endif  // defined(__arm__)
     default:
       if (IsAdvancedScheduler(sysno))
@@ -1702,13 +1706,10 @@ void RunSandboxSanityChecks(const std::string& process_type) {
     CHECK_EQ(-1, syscall_ret);
     CHECK_EQ(EPERM, errno);
 
-    // TODO(jorgelo): re-enable on arm (crbug.com/235609).
-    if (!IsArchitectureArm()) {
-      // We should never allow the creation of netlink sockets.
-      syscall_ret = socket(AF_NETLINK, SOCK_DGRAM, 0);
-      CHECK_EQ(-1, syscall_ret);
-      CHECK_EQ(EPERM, errno);
-    }
+    // We should never allow the creation of netlink sockets.
+    syscall_ret = socket(AF_NETLINK, SOCK_DGRAM, 0);
+    CHECK_EQ(-1, syscall_ret);
+    CHECK_EQ(EPERM, errno);
 #endif  // !defined(NDEBUG)
   }
 }
