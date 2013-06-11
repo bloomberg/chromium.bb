@@ -1,0 +1,83 @@
+= Contributing to Wayland =
+
+== Sending patches ==
+
+Patches should be sent to wayland-devel@lists.freedesktop.org, using
+git send-email. See git's documentation for help [1].
+
+The first line of a commit message should contain a prefix indicating
+what part is affected by the patch followed by one sentence that
+describes the change. For examples:
+
+    protocol: Support scaled outputs and surfaces
+
+and
+
+    doc: generate server documentation from XML too
+
+If in doubt what prefix to use, look at other commits that change the
+same file(s) as the patch being sent.
+
+The body of the commit message should describe what the patch changes
+and why, and also note any particular side effects. This shouldn't be
+empty on most of the cases. It shouldn't take a lot of effort to write
+a commit message for an obvious change, so an empty commit message
+body is only acceptable if the questions "What?" and "Why" are already
+answered on the one-line summary.
+
+The lines of the commit message should have at most 76 characters, to
+cope with the way git log presents them.
+
+See [2] for a recommend reading on writing commit messages.
+
+== Coding style ==
+
+You should follow the style of the file you're editing. In general, we
+try to follow the rules below.
+
+- indent with tabs, and a tab is always 8 characters wide
+- opening braces are on the same line as the if statement;
+- no braces in an if-body with just one statement;
+- if one of the branches of an if-else codition has braces, than the
+  other branch should also have braces;
+- there is always an empty line between variable declarations and the
+  code;
+
+static int
+my_function(void)
+{
+	int a = 0;
+
+	if (a)
+		b();
+	else
+		c();
+
+	if (a) {
+		b();
+		c();
+	} else {
+		d();
+	}
+}
+
+- lines should be less than 80 characters wide;
+- when breaking lines with functions calls, the parameters are aligned
+  with the opening parenthesis;
+- when assigning a variable with the result of a function call, if the
+  line would be longer we break it around the equal '=' sign if it makes
+  sense;
+
+	long_variable_name =
+		function_with_a_really_long_name(parameter1, parameter2,
+						 parameter3, parameter4);
+
+	x = function_with_a_really_long_name(parameter1, parameter2,
+					     parameter3, parameter4);
+
+== References ==
+
+	[1] http://git-scm.com/documentation
+
+	[2] http://who-t.blogspot.de/2009/12/on-commit-messages.html
+
