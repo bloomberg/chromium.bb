@@ -110,6 +110,14 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
     STATE_FAILURE,
   };
 
+  // Used in histograms, please only add entries at the end.
+  enum CheckCrcResult {
+    CRC_CHECK_NEVER_READ_TO_END = 0,
+    CRC_CHECK_NOT_DONE = 1,
+    CRC_CHECK_DONE = 2,
+    CRC_CHECK_MAX = 3,
+  };
+
   virtual ~SimpleEntryImpl();
 
   // Sets entry to STATE_UNINITIALIZED.
@@ -237,6 +245,10 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
 
   // If |have_written_[index]| is true, we have written to the stream |index|.
   bool have_written_[kSimpleEntryFileCount];
+
+  // Reflects how much CRC checking has been done with the entry. This state is
+  // reported on closing each entry stream.
+  CheckCrcResult crc_check_state_[kSimpleEntryFileCount];
 
   // The |synchronous_entry_| is the worker thread object that performs IO on
   // entries. It's owned by this SimpleEntryImpl whenever |operation_running_|

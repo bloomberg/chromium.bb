@@ -10016,6 +10016,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.CheckCRCResult" enum="CheckCRCResult">
+  <summary>
+    Whether or not the CRC was checked at the moment when the last reference to
+    a read-only entry stream is closed.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.CreationToIndex" units="milliseconds">
   <summary>
     The time from the creation of the simple cache backend until the index has
@@ -11749,6 +11756,12 @@ other types of suffix sets.
   <int value="27" label="CHANNEL_LAYOUT_7_1_WIDE_BACK"/>
   <int value="28" label="CHANNEL_LAYOUT_OCTAGONAL"/>
   <int value="29" label="CHANNEL_LAYOUT_DISCRETE"/>
+</enum>
+
+<enum name="CheckCRCResult" type="int">
+  <int value="0" label="Was never read to end"/>
+  <int value="1" label="CRC check not done"/>
+  <int value="2" label="CRC check done"/>
 </enum>
 
 <enum name="ClipboardAction" type="int">

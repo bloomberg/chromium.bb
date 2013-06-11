@@ -109,9 +109,11 @@ SimpleEntryImpl::SimpleEntryImpl(SimpleBackendImpl* backend,
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_end_offset_),
                  arrays_should_be_same_size);
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_),
-                 arrays_should_be_same_size2);
+                 arrays_should_be_same_size);
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(have_written_),
-                 arrays_should_be_same_size3);
+                 arrays_should_be_same_size);
+  COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc_check_state_),
+                 arrays_should_be_same_size);
   MakeUninitialized();
 }
 
@@ -375,6 +377,7 @@ void SimpleEntryImpl::MakeUninitialized() {
   std::memset(crc32s_, 0, sizeof(crc32s_));
   std::memset(have_written_, 0, sizeof(have_written_));
   std::memset(data_size_, 0, sizeof(data_size_));
+  std::memset(crc_check_state_, 0, sizeof(crc_check_state_));
 }
 
 void SimpleEntryImpl::ReturnEntryToCaller(Entry** out_entry) {
@@ -508,6 +511,13 @@ void SimpleEntryImpl::CloseInternal() {
     Closure reply = base::Bind(&SimpleEntryImpl::CloseOperationComplete, this);
     synchronous_entry_ = NULL;
     WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
+
+    for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+      if (!have_written_[i]) {
+        UMA_HISTOGRAM_ENUMERATION("SimpleCache.CheckCRCResult",
+                                  crc_check_state_[i], CRC_CHECK_MAX);
+      }
+    }
   } else {
     synchronous_entry_ = NULL;
     CloseOperationComplete();
@@ -723,13 +733,19 @@ void SimpleEntryImpl::ReadOperationComplete(
                                  completion_callback,
                                  base::Passed(&new_result));
       WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
+      crc_check_state_[stream_index] = CRC_CHECK_DONE;
       return;
     }
   }
-  if (*result >= 0)
-    RecordReadResult(READ_RESULT_SUCCESS);
-  else
+  if (*result < 0) {
     RecordReadResult(READ_RESULT_SYNC_READ_FAILURE);
+  } else {
+    RecordReadResult(READ_RESULT_SUCCESS);
+    if (crc_check_state_[stream_index] == CRC_CHECK_NEVER_READ_TO_END &&
+        offset + *result == GetDataSize(stream_index)) {
+      crc_check_state_[stream_index] = CRC_CHECK_NOT_DONE;
+    }
+  }
   EntryOperationComplete(stream_index, completion_callback, result.Pass());
 }
 
