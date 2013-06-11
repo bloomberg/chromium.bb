@@ -75,11 +75,9 @@ public class TraceEvent {
         @Override
         public void println(final String line) {
             if (line.startsWith(">")) {
-                TraceEvent.begin(DISPATCH_EVENT_NAME, line);
                 begin(line);
             } else {
                 assert line.startsWith("<");
-                TraceEvent.end(DISPATCH_EVENT_NAME);
                 end(line);
             }
         }
@@ -104,9 +102,11 @@ public class TraceEvent {
         }
 
         private final void begin(final String line) {
+            // Close-out any prior 'idle' period before starting new task.
             if (mNumTasksSinceLastIdle == 0) {
                 TraceEvent.end(IDLE_EVENT_NAME);
             }
+            TraceEvent.begin(DISPATCH_EVENT_NAME, line);
             mLastWorkStartedAt = SystemClock.elapsedRealtime();
             syncIdleMonitoring();
         }
@@ -115,12 +115,18 @@ public class TraceEvent {
             final long elapsed = SystemClock.elapsedRealtime()
                     - mLastWorkStartedAt;
             if (elapsed > MIN_INTERESTING_DURATION_MILLIS) {
-                Log.w(TAG, "observed a task that took "
+                traceAndLog(Log.WARN, "observed a task that took "
                         + elapsed + "ms: " + line);
             }
+            TraceEvent.end(DISPATCH_EVENT_NAME);
             syncIdleMonitoring();
             mNumTasksSeen++;
             mNumTasksSinceLastIdle++;
+        }
+
+        private static void traceAndLog(int level, String message) {
+            TraceEvent.instant("TraceEvent.LooperMonitor:IdleStats", message);
+            Log.println(level, TAG, message);
         }
 
         @Override
@@ -129,17 +135,14 @@ public class TraceEvent {
             if (mLastIdleStartedAt == 0) mLastIdleStartedAt = now;
             final long elapsed = now - mLastIdleStartedAt;
             mNumIdlesSeen++;
+            TraceEvent.begin(IDLE_EVENT_NAME, mNumTasksSinceLastIdle + " tasks since last idle.");
             if (elapsed > MIN_INTERESTING_BURST_DURATION_MILLIS) {
                 // Dump stats
                 String statsString = mNumTasksSeen + " tasks and "
                         + mNumIdlesSeen + " idles processed so far, "
                         + mNumTasksSinceLastIdle + " tasks bursted and "
                         + elapsed + "ms elapsed since last idle";
-                Log.d(TAG, statsString);
-                instant("TraceEvent.LooperMonitor:IdleStats", statsString);
-                TraceEvent.begin(IDLE_EVENT_NAME, statsString);
-            } else {
-                TraceEvent.begin(IDLE_EVENT_NAME);
+                traceAndLog(Log.DEBUG, statsString);
             }
             mLastIdleStartedAt = now;
             mNumTasksSinceLastIdle = 0;
