@@ -88,7 +88,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.0",
+  "version": "6.1",
   "entries": [
     {
       "id": 1,
@@ -1105,6 +1105,21 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "device_id": ["0x0a29", "0x0861", "0x0863"],
       "features": [
         "webgl"
+      ]
+    },
+    {
+      "id": 74,
+      "description": "GPU access is blocked if users don't have proper graphics driver installed after Windows installation",
+      "cr_bugs": [248178],
+      "os": {
+        "type": "win"
+      },
+      "driver_vendor": {
+        "op": "=",
+        "value": "Microsoft"
+      },
+      "features": [
+        "all"
       ]
     }
   ]
