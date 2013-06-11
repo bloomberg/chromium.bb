@@ -1077,12 +1077,6 @@ body[new-ui] .main-panel #detail-table > list > .drag-selection-border {
   padding-left: 26px;
 }
 
-#spinner-with-text[hidden] {
-  display: block;
-  opacity: 0;
-  transition: opacity 200ms ease-in;
-}
-
 .downloads-warning {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
