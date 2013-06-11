@@ -198,7 +198,6 @@ DeepHeapProfile::DeepHeapProfile(HeapProfileTable* heap_profile,
       stats_(),
       dump_count_(0),
       filename_prefix_(NULL),
-      profiler_buffer_(NULL),
       deep_table_(kHashTableSize, heap_profile->alloc_, heap_profile->dealloc_),
       heap_profile_(heap_profile) {
   // Copy filename prefix.
@@ -207,24 +206,20 @@ DeepHeapProfile::DeepHeapProfile(HeapProfileTable* heap_profile,
       reinterpret_cast<char*>(heap_profile_->alloc_(prefix_length + 1));
   memcpy(filename_prefix_, prefix, prefix_length);
   filename_prefix_[prefix_length] = '\0';
-
-  profiler_buffer_ =
-      reinterpret_cast<char*>(heap_profile_->alloc_(kProfilerBufferSize));
 }
 
 DeepHeapProfile::~DeepHeapProfile() {
-  heap_profile_->dealloc_(profiler_buffer_);
   heap_profile_->dealloc_(filename_prefix_);
   delete memory_residence_info_getter_;
 }
 
 // Global malloc() should not be used in this function.
 // Use LowLevelAlloc if required.
-int DeepHeapProfile::FillOrderedProfile(const char* reason,
-                                        char raw_buffer[],
-                                        int buffer_size) {
-  TextBuffer buffer(raw_buffer, buffer_size);
-  TextBuffer global_buffer(profiler_buffer_, kProfilerBufferSize);
+void DeepHeapProfile::DumpOrderedProfile(const char* reason,
+                                         char raw_buffer[],
+                                         int buffer_size,
+                                         RawFD fd) {
+  TextBuffer buffer(raw_buffer, buffer_size, fd);
 
 #ifndef NDEBUG
   int64 starting_cycles = CycleClock::Now();
@@ -244,7 +239,7 @@ int DeepHeapProfile::FillOrderedProfile(const char* reason,
     deep_table_.ResetIsLogged();
 
     // Write maps into "|filename_prefix_|.<pid>.maps".
-    WriteProcMaps(filename_prefix_, kProfilerBufferSize, profiler_buffer_);
+    WriteProcMaps(filename_prefix_, raw_buffer, buffer_size);
   }
 
   // Reset committed sizes of buckets.
@@ -293,18 +288,17 @@ int DeepHeapProfile::FillOrderedProfile(const char* reason,
   // Fill buffer.
   deep_table_.UnparseForStats(&buffer);
 
-  RAW_DCHECK(buffer.FilledBytes() < buffer_size, "");
+  buffer.Flush();
 
   // Write the bucket listing into a .bucket file.
-  deep_table_.WriteForBucketFile(filename_prefix_, dump_count_, &global_buffer);
+  deep_table_.WriteForBucketFile(
+      filename_prefix_, dump_count_, raw_buffer, buffer_size);
 
 #ifndef NDEBUG
   int64 elapsed_cycles = CycleClock::Now() - starting_cycles;
   double elapsed_seconds = elapsed_cycles / CyclesPerSecond();
   RAW_LOG(0, "Time spent on DeepProfiler: %.3f sec\n", elapsed_seconds);
 #endif
-
-  return buffer.FilledBytes();
 }
 
 int DeepHeapProfile::TextBuffer::Size() {
@@ -319,8 +313,9 @@ void DeepHeapProfile::TextBuffer::Clear() {
   cursor_ = 0;
 }
 
-void DeepHeapProfile::TextBuffer::Write(RawFD fd) {
-  RawWrite(fd, buffer_, cursor_);
+void DeepHeapProfile::TextBuffer::Flush() {
+  RawWrite(fd_, buffer_, cursor_);
+  cursor_ = 0;
 }
 
 // TODO(dmikurube): These Append* functions should not use snprintf.
@@ -404,6 +399,8 @@ bool DeepHeapProfile::TextBuffer::ForwardCursor(int appended) {
   if (appended < 0 || appended >= size_ - cursor_)
     return false;
   cursor_ += appended;
+  if (cursor_ > size_ * 4 / 5)
+    Flush();
   return true;
 }
 
@@ -535,12 +532,14 @@ void DeepHeapProfile::DeepBucketTable::UnparseForStats(TextBuffer* buffer) {
 }
 
 void DeepHeapProfile::DeepBucketTable::WriteForBucketFile(
-    const char* prefix, int dump_count, TextBuffer* buffer) {
+    const char* prefix, int dump_count, char raw_buffer[], int buffer_size) {
   char filename[100];
   snprintf(filename, sizeof(filename),
            "%s.%05d.%04d.buckets", prefix, getpid(), dump_count);
   RawFD fd = RawOpenForWriting(filename);
   RAW_DCHECK(fd != kIllegalRawFD, "");
+
+  TextBuffer buffer(raw_buffer, buffer_size, fd);
 
   for (int i = 0; i < table_size_; i++) {
     for (DeepBucket* deep_bucket = table_[i];
@@ -554,18 +553,12 @@ void DeepHeapProfile::DeepBucketTable::WriteForBucketFile(
         continue;  // Skip small buckets.
       }
 
-      deep_bucket->UnparseForBucketFile(buffer);
+      deep_bucket->UnparseForBucketFile(&buffer);
       deep_bucket->is_logged = true;
-
-      // Write to file if buffer 80% full.
-      if (buffer->FilledBytes() > buffer->Size() * 0.8) {
-        buffer->Write(fd);
-        buffer->Clear();
-      }
     }
   }
 
-  buffer->Write(fd);
+  buffer.Flush();
   RawClose(fd);
 }
 
@@ -964,8 +957,8 @@ DeepHeapProfile::DeepBucket*
 
 // static
 void DeepHeapProfile::WriteProcMaps(const char* prefix,
-                                    int buffer_size,
-                                    char raw_buffer[]) {
+                                    char raw_buffer[],
+                                    int buffer_size) {
   char filename[100];
   snprintf(filename, sizeof(filename),
            "%s.%05d.maps", prefix, static_cast<int>(getpid()));
@@ -991,8 +984,10 @@ DeepHeapProfile::DeepHeapProfile(HeapProfileTable* heap_profile,
 DeepHeapProfile::~DeepHeapProfile() {
 }
 
-int DeepHeapProfile::FillOrderedProfile(char raw_buffer[], int buffer_size) {
-  return heap_profile_->FillOrderedProfile(raw_buffer, buffer_size);
+int DeepHeapProfile::DumpOrderedProfile(const char* reason,
+                                        char raw_buffer[],
+                                        int buffer_size,
+                                        RawFD fd) {
 }
 
 #endif  // USE_DEEP_HEAP_PROFILE

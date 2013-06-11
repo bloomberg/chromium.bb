@@ -7,24 +7,24 @@
 //         Dai Mikurube
 //
 // This file contains a class DeepHeapProfile and its public function
-// DeepHeapProfile::FillOrderedProfile() which works as an alternative of
-// HeapProfileTable::FillOrderedProfile().
+// DeepHeapProfile::DumpOrderedProfile().  The function works like
+// HeapProfileTable::FillOrderedProfile(), but dumps directory to files.
 //
-// DeepHeapProfile::FillOrderedProfile() dumps more detailed information about
+// DeepHeapProfile::DumpOrderedProfile() dumps more detailed information about
 // heap usage, which includes OS-level information such as memory residency and
 // type information if the type profiler is available.
 //
-// DeepHeapProfile::FillOrderedProfile() uses data stored in HeapProfileTable.
-// Any code in DeepHeapProfile runs only when FillOrderedProfile() is called.
+// DeepHeapProfile::DumpOrderedProfile() uses data stored in HeapProfileTable.
+// Any code in DeepHeapProfile runs only when DumpOrderedProfile() is called.
 // It has overhead in dumping, but no overhead in logging.
 //
-// It currently works only on Linux.  It just delegates to HeapProfileTable in
+// It currently works only on Linux including Android.  It does nothing in
 // non-Linux environments.
 
 // Note that uint64 is used to represent addresses instead of uintptr_t, and
 // int is used to represent buffer sizes instead of size_t.
 // It's for consistency with other TCMalloc functions.  ProcMapsIterator uses
-// uint64 for addresses, and HeapProfileTable::FillOrderedProfile uses int
+// uint64 for addresses, and HeapProfileTable::DumpOrderedProfile uses int
 // for buffer sizes.
 
 #ifndef BASE_DEEP_HEAP_PROFILE_H_
@@ -76,16 +76,14 @@ class DeepHeapProfile {
   DeepHeapProfile(HeapProfileTable* heap_profile, const char* prefix);
   ~DeepHeapProfile();
 
-  // Fills deep profile dump into |raw_buffer| of |buffer_size|, and return the
-  // actual size occupied by the dump in |raw_buffer|.  It works as an
-  // alternative of HeapProfileTable::FillOrderedProfile.  |raw_buffer| is not
-  // terminated by zero.
+  // Dumps a deep profile into |fd| with using |raw_buffer| of |buffer_size|.
   //
   // In addition, a list of buckets is dumped into a ".buckets" file in
   // descending order of allocated bytes.
-  int FillOrderedProfile(const char* reason,
-                         char raw_buffer[],
-                         int buffer_size);
+  void DumpOrderedProfile(const char* reason,
+                          char raw_buffer[],
+                          int buffer_size,
+                          RawFD fd);
 
  private:
 #ifdef USE_DEEP_HEAP_PROFILE
@@ -121,20 +119,20 @@ class DeepHeapProfile {
 
   static const char* kMapsRegionTypeDict[NUMBER_OF_MAPS_REGION_TYPES];
 
-  // Manages a buffer to keep a dumped text for FillOrderedProfile and other
-  // functions.
+  // Manages a buffer to keep a text to be dumped to a file.
   class TextBuffer {
    public:
-    TextBuffer(char *raw_buffer, int size)
+    TextBuffer(char *raw_buffer, int size, RawFD fd)
         : buffer_(raw_buffer),
           size_(size),
-          cursor_(0) {
+          cursor_(0),
+          fd_(fd) {
     }
 
     int Size();
     int FilledBytes();
     void Clear();
-    void Write(RawFD fd);
+    void Flush();
 
     bool AppendChar(char value);
     bool AppendString(const char* value, int width);
@@ -150,6 +148,7 @@ class DeepHeapProfile {
     char *buffer_;
     int size_;
     int cursor_;
+    RawFD fd_;
     DISALLOW_COPY_AND_ASSIGN(TextBuffer);
   };
 
@@ -188,13 +187,14 @@ class DeepHeapProfile {
 #endif
                        bool is_mmap);
 
-    // Writes stats of the hash table to |buffer| for FillOrderedProfile.
+    // Writes stats of the hash table to |buffer| for DumpOrderedProfile.
     void UnparseForStats(TextBuffer* buffer);
 
     // Writes all buckets for a bucket file with using |buffer|.
     void WriteForBucketFile(const char* prefix,
                             int dump_count,
-                            TextBuffer* buffer);
+                            char raw_buffer[],
+                            int buffer_size);
 
     // Resets 'committed_size' members in DeepBucket objects.
     void ResetCommittedSize();
@@ -296,8 +296,8 @@ class DeepHeapProfile {
   // Writes reformatted /proc/<pid>/maps into a file "|prefix|.<pid>.maps"
   // with using |raw_buffer| of |buffer_size|.
   static void WriteProcMaps(const char* prefix,
-                            int buffer_size,
-                            char raw_buffer[]);
+                            char raw_buffer[],
+                            int buffer_size);
 
   MemoryResidenceInfoGetterInterface* memory_residence_info_getter_;
 
@@ -307,7 +307,6 @@ class DeepHeapProfile {
   GlobalStats stats_;      // Stats about total memory.
   int dump_count_;         // The number of dumps.
   char* filename_prefix_;  // Output file prefix.
-  char* profiler_buffer_;  // Buffer we use many times.
 
   DeepBucketTable deep_table_;
 #endif  // USE_DEEP_HEAP_PROFILE

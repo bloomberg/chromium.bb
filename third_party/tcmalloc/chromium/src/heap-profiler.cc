@@ -178,7 +178,7 @@ static SpinLock heap_lock(SpinLock::LINKER_INITIALIZED);
 // Simple allocator for heap profiler's internal memory
 //----------------------------------------------------------------------
 
-static LowLevelAlloc::Arena* heap_profiler_memory;
+static LowLevelAlloc::Arena *heap_profiler_memory;
 
 static void* ProfilerMalloc(size_t bytes) {
   return LowLevelAlloc::AllocWithArena(bytes, heap_profiler_memory);
@@ -188,11 +188,7 @@ static void ProfilerFree(void* p) {
 }
 
 // We use buffers of this size in DoGetHeapProfile.
-// The size is 1 << 20 in the original google-perftools.  Changed it to
-// 5 << 20 since a larger buffer is requried for deeper profiling in Chromium.
-// The buffer is allocated only when the environment variable HEAPPROFILE is
-// specified to dump heap information.
-static const int kProfileBufferSize = 5 << 20;
+static const int kProfileBufferSize = 1 << 20;
 
 // This is a last-ditch buffer we use in DumpProfileLocked in case we
 // can't allocate more memory from ProfilerMalloc.  We expect this
@@ -225,7 +221,7 @@ static DeepHeapProfile* deep_profile = NULL;  // deep memory profiler
 //----------------------------------------------------------------------
 
 // Input must be a buffer of size at least 1MB.
-static char* DoGetHeapProfileLocked(const char* reason, char* buf, int buflen) {
+static char* DoGetHeapProfileLocked(char* buf, int buflen) {
   // We used to be smarter about estimating the required memory and
   // then capping it to 1MB and generating the profile into that.
   if (buf == NULL || buflen < 1)
@@ -236,11 +232,7 @@ static char* DoGetHeapProfileLocked(const char* reason, char* buf, int buflen) {
   if (is_on) {
     HeapProfileTable::Stats const stats = heap_profile->total();
     (void)stats;   // avoid an unused-variable warning in non-debug mode.
-    if (deep_profile) {
-      bytes_written = deep_profile->FillOrderedProfile(reason, buf, buflen - 1);
-    } else {
-      bytes_written = heap_profile->FillOrderedProfile(buf, buflen - 1);
-    }
+    bytes_written = heap_profile->FillOrderedProfile(buf, buflen - 1);
     // FillOrderedProfile should not reduce the set of active mmap-ed regions,
     // hence MemoryRegionMap will let us remove everything we've added above:
     RAW_DCHECK(stats.Equivalent(heap_profile->total()), "");
@@ -257,7 +249,7 @@ extern "C" char* GetHeapProfile() {
   // Use normal malloc: we return the profile to the user to free it:
   char* buffer = reinterpret_cast<char*>(malloc(kProfileBufferSize));
   SpinLockHolder l(&heap_lock);
-  return DoGetHeapProfileLocked(/* reason */ NULL, buffer, kProfileBufferSize);
+  return DoGetHeapProfileLocked(buffer, kProfileBufferSize);
 }
 
 // defined below
@@ -298,9 +290,14 @@ static void DumpProfileLocked(const char* reason) {
         reinterpret_cast<char*>(ProfilerMalloc(kProfileBufferSize));
   }
 
-  char* profile = DoGetHeapProfileLocked(reason, global_profiler_buffer,
-                                         kProfileBufferSize);
-  RawWrite(fd, profile, strlen(profile));
+  if (deep_profile) {
+    deep_profile->DumpOrderedProfile(reason, global_profiler_buffer,
+                                     kProfileBufferSize, fd);
+  } else {
+    char* profile = DoGetHeapProfileLocked(global_profiler_buffer,
+                                           kProfileBufferSize);
+    RawWrite(fd, profile, strlen(profile));
+  }
   RawClose(fd);
 
 #if defined(TYPE_PROFILING)
