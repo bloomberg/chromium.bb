@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "content/browser/android/in_process/synchronous_input_event_filter.h"
+#include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -181,6 +182,14 @@ InputEventAckState SynchronousCompositorImpl::HandleInputEvent(
   DCHECK(CalledOnValidThread());
   return g_factory.Get().synchronous_input_event_filter()->HandleInputEvent(
       contents_->GetRoutingID(), input_event);
+}
+
+void SynchronousCompositorImpl::UpdateFrameMetaData(
+    const cc::CompositorFrameMetadata& frame_metadata) {
+  RenderWidgetHostViewAndroid* rwhv = static_cast<RenderWidgetHostViewAndroid*>(
+      contents_->GetRenderWidgetHostView());
+  if (rwhv)
+    rwhv->SynchronousFrameMetadata(frame_metadata);
 }
 
 // Not using base::NonThreadSafe as we want to enforce a more exacting threading

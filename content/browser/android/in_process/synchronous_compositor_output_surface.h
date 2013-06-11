@@ -11,6 +11,10 @@
 #include "cc/output/output_surface.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 
+namespace cc {
+class CompositorFrameMetadata;
+}
+
 namespace content {
 
 class SynchronousCompositorClient;
@@ -24,6 +28,8 @@ class SynchronousCompositorOutputSurfaceDelegate {
   virtual void DidDestroySynchronousOutputSurface(
       SynchronousCompositorOutputSurface* output_surface) = 0;
   virtual void SetContinuousInvalidate(bool enable) = 0;
+  virtual void UpdateFrameMetaData(
+      const cc::CompositorFrameMetadata& frame_metadata) = 0;
 
  protected:
   SynchronousCompositorOutputSurfaceDelegate() {}

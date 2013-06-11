@@ -576,44 +576,32 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
 }
 
 void RenderWidgetHostViewAndroid::ComputeContentsSize(
-    const cc::CompositorFrame* frame) {
+    const cc::CompositorFrameMetadata& frame_metadata) {
   // Calculate the content size.  This should be 0 if the texture_size is 0.
   gfx::Vector2dF offset;
   if (texture_size_in_layer_.GetArea() > 0)
-    offset = frame->metadata.location_bar_content_translation;
-  offset.set_y(offset.y() + frame->metadata.overdraw_bottom_height);
-  offset.Scale(frame->metadata.device_scale_factor);
+    offset = frame_metadata.location_bar_content_translation;
+  offset.set_y(offset.y() + frame_metadata.overdraw_bottom_height);
+  offset.Scale(frame_metadata.device_scale_factor);
   content_size_in_layer_ =
       gfx::Size(texture_size_in_layer_.width() - offset.x(),
                 texture_size_in_layer_.height() - offset.y());
   // Content size changes should be reflected in associated animation effects.
-  UpdateAnimationSize(frame);
+  UpdateAnimationSize(frame_metadata);
 }
 
 void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
     scoped_ptr<cc::CompositorFrame> frame) {
   // Always let ContentViewCore know about the new frame first, so it can decide
   // to schedule a Draw immediately when it sees the texture layer invalidation.
-  if (content_view_core_) {
-    // All offsets and sizes are in CSS pixels.
-    content_view_core_->UpdateFrameInfo(
-        frame->metadata.root_scroll_offset,
-        frame->metadata.page_scale_factor,
-        gfx::Vector2dF(frame->metadata.min_page_scale_factor,
-                       frame->metadata.max_page_scale_factor),
-        frame->metadata.root_layer_size,
-        frame->metadata.viewport_size,
-        frame->metadata.location_bar_offset,
-        frame->metadata.location_bar_content_translation,
-        frame->metadata.overdraw_bottom_height);
-  }
+  UpdateContentViewCoreFrameMetadata(frame->metadata);
 
   if (frame->delegated_frame_data) {
     if (!frame->delegated_frame_data->render_pass_list.empty()) {
       texture_size_in_layer_ = frame->delegated_frame_data->render_pass_list
           .back()->output_rect.size();
     }
-    ComputeContentsSize(frame.get());
+    ComputeContentsSize(frame->metadata);
 
     SwapDelegatedFrame(frame->delegated_frame_data.Pass());
     return;
@@ -631,9 +619,34 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
       frame->gl_frame_data->sync_point);
 
   texture_size_in_layer_ = frame->gl_frame_data->size;
-  ComputeContentsSize(frame.get());
+  ComputeContentsSize(frame->metadata);
 
   BuffersSwapped(frame->gl_frame_data->mailbox, callback);
+}
+
+void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
+    const cc::CompositorFrameMetadata& frame_metadata) {
+  // This is a subset of OnSwapCompositorFrame() used in the synchronous
+  // compositor flow.
+  UpdateContentViewCoreFrameMetadata(frame_metadata);
+  ComputeContentsSize(frame_metadata);
+}
+
+void RenderWidgetHostViewAndroid::UpdateContentViewCoreFrameMetadata(
+    const cc::CompositorFrameMetadata& frame_metadata) {
+  if (content_view_core_) {
+    // All offsets and sizes are in CSS pixels.
+    content_view_core_->UpdateFrameInfo(
+        frame_metadata.root_scroll_offset,
+        frame_metadata.page_scale_factor,
+        gfx::Vector2dF(frame_metadata.min_page_scale_factor,
+                       frame_metadata.max_page_scale_factor),
+        frame_metadata.root_layer_size,
+        frame_metadata.viewport_size,
+        frame_metadata.location_bar_offset,
+        frame_metadata.location_bar_content_translation,
+        frame_metadata.overdraw_bottom_height);
+  }
 }
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
@@ -740,16 +753,16 @@ void RenderWidgetHostViewAndroid::CreateOverscrollEffectIfNecessary() {
 }
 
 void RenderWidgetHostViewAndroid::UpdateAnimationSize(
-    const cc::CompositorFrame* frame) {
+    const cc::CompositorFrameMetadata& frame_metadata) {
   if (!overscroll_effect_)
     return;
   // Disable edge effects for axes on which scrolling is impossible.
-  const cc::CompositorFrameMetadata& metadata = frame->metadata;
-  gfx::SizeF ceiled_viewport_size = gfx::ToCeiledSize(metadata.viewport_size);
+  gfx::SizeF ceiled_viewport_size =
+      gfx::ToCeiledSize(frame_metadata.viewport_size);
   overscroll_effect_->set_horizontal_overscroll_enabled(
-      ceiled_viewport_size.width() < metadata.root_layer_size.width());
+      ceiled_viewport_size.width() < frame_metadata.root_layer_size.width());
   overscroll_effect_->set_vertical_overscroll_enabled(
-      ceiled_viewport_size.height() < metadata.root_layer_size.height());
+      ceiled_viewport_size.height() < frame_metadata.root_layer_size.height());
   overscroll_effect_->set_size(content_size_in_layer_);
 }
 

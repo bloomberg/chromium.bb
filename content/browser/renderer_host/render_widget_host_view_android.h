@@ -206,6 +206,9 @@ class RenderWidgetHostViewAndroid
   // round-trip for requesting follow-up animation.
   bool Animate(base::TimeTicks frame_time);
 
+  void SynchronousFrameMetadata(
+      const cc::CompositorFrameMetadata& frame_metadata);
+
  private:
   void BuffersSwapped(const gpu::Mailbox& mailbox,
                       const base::Closure& ack_callback);
@@ -215,7 +218,9 @@ class RenderWidgetHostViewAndroid
   void SwapDelegatedFrame(scoped_ptr<cc::DelegatedFrameData> frame_data);
   void SendDelegatedFrameAck();
 
-  void ComputeContentsSize(const cc::CompositorFrame* frame);
+  void UpdateContentViewCoreFrameMetadata(
+      const cc::CompositorFrameMetadata& frame_metadata);
+  void ComputeContentsSize(const cc::CompositorFrameMetadata& frame_metadata);
   void ResetClipping();
   void ClipContents(const gfx::Rect& clipping, const gfx::Size& content_size);
 
@@ -223,7 +228,7 @@ class RenderWidgetHostViewAndroid
   void RemoveLayers();
 
   void CreateOverscrollEffectIfNecessary();
-  void UpdateAnimationSize(const cc::CompositorFrame* frame);
+  void UpdateAnimationSize(const cc::CompositorFrameMetadata& frame_metadata);
   void ScheduleAnimationIfNecessary();
 
   // The model object.

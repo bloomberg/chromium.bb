@@ -53,6 +53,8 @@ class SynchronousCompositorImpl
   virtual void DidDestroySynchronousOutputSurface(
       SynchronousCompositorOutputSurface* output_surface) OVERRIDE;
   virtual void SetContinuousInvalidate(bool enable) OVERRIDE;
+  virtual void UpdateFrameMetaData(
+      const cc::CompositorFrameMetadata& frame_info) OVERRIDE;
 
  private:
   explicit SynchronousCompositorImpl(WebContents* contents);
