@@ -15,6 +15,7 @@ navigator.plugins is OK
 navigator.product is OK
 navigator.productSub is OK
 navigator.registerProtocolHandler() threw err TypeError: Not enough arguments
+navigator.requestMIDIAccess() is OK
 navigator.userAgent is OK
 navigator.vendor is OK
 navigator.vendorSub is OK
@@ -36,6 +37,7 @@ navigator.plugins is OK
 navigator.product is OK
 navigator.productSub is OK
 navigator.registerProtocolHandler() threw err TypeError: Not enough arguments
+navigator.requestMIDIAccess() is OK
 navigator.userAgent is OK
 navigator.vendor is OK
 navigator.vendorSub is OK
