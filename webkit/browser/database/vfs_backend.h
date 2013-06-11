@@ -7,7 +7,7 @@
 
 #include "base/platform_file.h"
 #include "base/process.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {

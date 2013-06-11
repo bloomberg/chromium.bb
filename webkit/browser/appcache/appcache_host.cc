@@ -5,8 +5,8 @@
 #include "webkit/browser/appcache/appcache_host.h"
 
 #include "base/logging.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "net/url_request/url_request.h"
 #include "webkit/browser/appcache/appcache.h"
 #include "webkit/browser/appcache/appcache_backend_impl.h"

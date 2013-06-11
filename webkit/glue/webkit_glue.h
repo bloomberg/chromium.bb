@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "base/platform_file.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "webkit/glue/webkit_glue_export.h"

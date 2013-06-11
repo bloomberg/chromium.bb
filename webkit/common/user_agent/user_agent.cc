@@ -6,8 +6,8 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 

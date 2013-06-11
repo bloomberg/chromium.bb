@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/nullable_string16.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "sql/connection.h"
 #include "webkit/common/dom_storage/dom_storage_types.h"
 #include "webkit/storage/webkit_storage_export.h"

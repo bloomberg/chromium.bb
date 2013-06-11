@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMenuItemInfo.h"
 #include "webkit/glue/webkit_glue_export.h"
 

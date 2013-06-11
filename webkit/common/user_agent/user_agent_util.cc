@@ -9,8 +9,8 @@
 #endif
 
 #include "base/lazy_instance.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 
 #if defined(OS_WIN)

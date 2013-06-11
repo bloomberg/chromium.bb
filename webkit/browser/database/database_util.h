@@ -5,7 +5,7 @@
 #ifndef WEBKIT_BROWSER_DATABASE_DATABASE_UTIL_H_
 #define WEBKIT_BROWSER_DATABASE_DATABASE_UTIL_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/storage/webkit_storage_export.h"
 

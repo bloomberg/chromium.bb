@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/nullable_string16.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "webkit/common/dom_storage/dom_storage_types.h"
 #include "webkit/common/webkit_common_export.h"
 

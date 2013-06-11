@@ -5,7 +5,7 @@
 #ifndef WEBKIT_GLUE_WEBSOCKETSTREAMHANDLE_DELEGATE_H_
 #define WEBKIT_GLUE_WEBSOCKETSTREAMHANDLE_DELEGATE_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 class GURL;
 

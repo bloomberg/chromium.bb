@@ -37,7 +37,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
 #include "webkit/browser/fileapi/sandbox_directory_database.h"
 #include "webkit/browser/fileapi/sandbox_mount_point_provider.h"

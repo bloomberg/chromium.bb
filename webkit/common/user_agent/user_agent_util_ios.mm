@@ -10,8 +10,8 @@
 #include <string>
 
 #include "base/memory/scoped_nsobject.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/sys_info.h"
 

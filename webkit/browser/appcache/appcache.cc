@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "webkit/browser/appcache/appcache_group.h"
 #include "webkit/browser/appcache/appcache_host.h"
 #include "webkit/browser/appcache/appcache_storage.h"

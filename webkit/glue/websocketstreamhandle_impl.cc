@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebSocketStreamError.h"
 #include "third_party/WebKit/public/platform/WebSocketStreamHandleClient.h"

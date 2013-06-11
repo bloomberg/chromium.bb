@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"

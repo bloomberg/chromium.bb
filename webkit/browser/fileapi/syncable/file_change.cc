@@ -5,7 +5,7 @@
 #include <sstream>
 
 #include "base/logging.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "webkit/browser/fileapi/syncable/file_change.h"
 
 namespace sync_file_system {

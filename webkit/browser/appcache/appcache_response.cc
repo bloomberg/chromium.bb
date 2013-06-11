@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/pickle.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"

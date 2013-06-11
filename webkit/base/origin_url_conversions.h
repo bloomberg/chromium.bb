@@ -5,7 +5,7 @@
 #ifndef WEBKIT_BASE_ORIGIN_URL_CONVERSIONS_H_
 #define WEBKIT_BASE_ORIGIN_URL_CONVERSIONS_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "webkit/base/webkit_base_export.h"
 
 class GURL;

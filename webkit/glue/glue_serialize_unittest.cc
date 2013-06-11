@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/pickle.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"

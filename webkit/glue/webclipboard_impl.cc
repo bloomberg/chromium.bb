@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/pickle.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
