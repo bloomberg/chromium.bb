@@ -50,14 +50,38 @@ def ValidateNop(instruction):
   raise DoNotMatchError(instruction)
 
 
+def ValidateOperandlessInstruction(instruction, bitness):
+  assert bitness in [32, 64]
+
+  if instruction.disasm in [
+      'cpuid',
+      'hlt',
+      'lahf',
+      'sahf',
+      ]:
+    return
+
+  if bitness == 32 and instruction.disasm in [
+      'leave',
+      ]:
+    return
+
+  raise DoNotMatchError(instruction)
+
+
+def ImmediateRE(group_name='immediate'):
+  return r'(?P<%s>0x[\da-f]+)' % group_name
+
+
 def ValidateDirectJump(instruction):
   # TODO(shcherbina): return offset for potential use in text-based ncval
 
   cond_jumps_re = re.compile(
       r'(ja(e?)|jb(e?)|jg(e?)|jl(e?)|'
       r'j(n?)e|j(n?)o|j(n?)p|j(n?)s)'
-      r' (0x[\da-f]+)$')
-  if cond_jumps_re.match(instruction.disasm):
+      r' %s$' % ImmediateRE('destination'))
+  m = cond_jumps_re.match(instruction.disasm)
+  if m is not None:
     # 16-bit conditional jump has the following form:
     #   <optional branch hint (2e or 3e)>
     #   <data16 (66)>
@@ -68,14 +92,14 @@ def ValidateDirectJump(instruction):
         instruction.bytes[0] in [0x2e, 0x3e] and instruction.bytes[1] == 0x66):
       raise SandboxingError(
           '16-bit conditional jumps are disallowed', instruction)
-    return
+    return int(m.group('destination'), 16)
 
-  jumps_re = re.compile(r'(jmp|call)(|w|q) (0x[\da-f]+)$')
+  jumps_re = re.compile(r'(jmp|call)(|w|q) %s$' % ImmediateRE('destination'))
   m = jumps_re.match(instruction.disasm)
   if m is not None:
     if m.group(2) == 'w':
       raise SandboxingError('16-bit jumps are disallowed', instruction)
-    return
+    return int(m.group('destination'), 16)
 
   raise DoNotMatchError(instruction)
 

@@ -10,6 +10,8 @@ class Validator(object):
   def __init__(self, data):
     self.data = data
     self.messages = []
+    self.valid_jump_targets = set()
+    self.jumps = {}
 
   def ValidateSuperinstruction(self, superinstruction):
     raise NotImplementedError()
@@ -24,6 +26,10 @@ class Validator(object):
       respective instruction class.
     """
     raise NotImplementedError()
+
+  def ValidateDirectJump(self, instruction):
+    destination = spec.ValidateDirectJump(instruction)
+    self.jumps[instruction.address] = destination
 
   def Validate(self):
     if len(self.data) % spec.BUNDLE_SIZE != 0:
@@ -40,6 +46,7 @@ class Validator(object):
 
     while i < len(insns):
       offset = insns[i].address
+      self.valid_jump_targets.add(offset)
       try:
         # Greedy: try to match longest superinstructions first.
         for n in range(self.MAX_SUPERINSTRUCTION_LENGTH, 1, -1):
@@ -71,7 +78,11 @@ class Validator(object):
 
     assert i == len(insns)
 
-    # TODO(shcherbina): Check jump targets.
+    for source, destination in sorted(self.jumps.items()):
+      if (destination % spec.BUNDLE_SIZE != 0 and
+          destination not in self.valid_jump_targets):
+        self.messages.append(
+            (source, 'jump into a middle of instruction (0x%x)' % destination))
 
 
 class Validator32(Validator):
@@ -82,12 +93,9 @@ class Validator32(Validator):
   def ValidateSuperinstruction(self, superinstruction):
     spec.ValidateSuperinstruction32(superinstruction)
 
-  def ValidateDirectJump(self, instruction):
-    spec.ValidateDirectJump(instruction)
-    # TODO(shcherbina): Collect jump info.
-
   def EnumerateInstructionCheckers(self):
     return [
-        spec.ValidateNop,
         self.ValidateDirectJump,
+        spec.ValidateNop,
+        lambda insn: spec.ValidateOperandlessInstruction(insn, bitness=32),
     ]
