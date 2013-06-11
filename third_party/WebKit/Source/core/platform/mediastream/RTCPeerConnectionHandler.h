@@ -31,7 +31,7 @@
 #ifndef RTCPeerConnectionHandler_h
 #define RTCPeerConnectionHandler_h
 
-#include "core/platform/mediastream/MediaStreamDescriptor.h"
+#include "public/platform/WebMediaStream.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
 
@@ -68,8 +68,8 @@ public:
     virtual WebKit::WebRTCSessionDescription remoteDescription() = 0;
     virtual bool updateIce(PassRefPtr<RTCConfiguration>, PassRefPtr<MediaConstraints>) = 0;
     virtual bool addIceCandidate(WebKit::WebRTCICECandidate) = 0;
-    virtual bool addStream(PassRefPtr<MediaStreamDescriptor>, PassRefPtr<MediaConstraints>) = 0;
-    virtual void removeStream(PassRefPtr<MediaStreamDescriptor>) = 0;
+    virtual bool addStream(WebKit::WebMediaStream, PassRefPtr<MediaConstraints>) = 0;
+    virtual void removeStream(WebKit::WebMediaStream) = 0;
     virtual void getStats(PassRefPtr<RTCStatsRequest>) = 0;
     virtual PassOwnPtr<RTCDataChannelHandler> createDataChannel(const String& label, const WebKit::WebRTCDataChannelInit&) = 0;
     virtual PassOwnPtr<RTCDTMFSenderHandler> createDTMFSender(PassRefPtr<MediaStreamComponent>) = 0;

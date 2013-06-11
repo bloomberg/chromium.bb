@@ -70,7 +70,7 @@ bool WebRTCStatsRequest::hasSelector() const
 
 const WebMediaStream WebRTCStatsRequest::stream() const
 {
-    return WebMediaStream(m_private->stream());
+    return m_private->stream();
 }
 
 const WebMediaStreamTrack WebRTCStatsRequest::component() const

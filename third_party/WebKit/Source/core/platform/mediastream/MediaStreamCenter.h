@@ -39,12 +39,12 @@
 
 namespace WebKit {
 class WebSourceInfo;
+class WebMediaStream;
 }
 
 namespace WebCore {
 
 class MediaStreamComponent;
-class MediaStreamDescriptor;
 class MediaStreamSourcesQueryClient;
 
 class MediaStreamCenter {
@@ -57,16 +57,16 @@ public:
     virtual bool getSourceInfos(const String& url, WebKit::WebVector<WebKit::WebSourceInfo>&) = 0;
 
     // Calls from the DOM objects to notify the platform
-    virtual void didSetMediaStreamTrackEnabled(MediaStreamDescriptor*, MediaStreamComponent*) = 0;
-    virtual bool didAddMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*) = 0;
-    virtual bool didRemoveMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*) = 0;
-    virtual void didStopLocalMediaStream(MediaStreamDescriptor*) = 0;
-    virtual void didCreateMediaStream(MediaStreamDescriptor*) = 0;
+    virtual void didSetMediaStreamTrackEnabled(WebKit::WebMediaStream, MediaStreamComponent*) = 0;
+    virtual bool didAddMediaStreamTrack(WebKit::WebMediaStream, MediaStreamComponent*) = 0;
+    virtual bool didRemoveMediaStreamTrack(WebKit::WebMediaStream, MediaStreamComponent*) = 0;
+    virtual void didStopLocalMediaStream(WebKit::WebMediaStream) = 0;
+    virtual void didCreateMediaStream(WebKit::WebMediaStream) = 0;
 
 protected:
     MediaStreamCenter();
 
-    void endLocalMediaStream(MediaStreamDescriptor*);
+    void endLocalMediaStream(WebKit::WebMediaStream);
 };
 
 } // namespace WebCore

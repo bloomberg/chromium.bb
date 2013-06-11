@@ -30,10 +30,10 @@
  */
 
 #include "config.h"
-
 #include "core/platform/mediastream/MediaStreamCenter.h"
 
-#include "core/platform/mediastream/MediaStreamDescriptor.h"
+#include "core/platform/chromium/support/WebMediaStreamClient.h"
+#include "public/platform/WebMediaStream.h"
 
 namespace WebCore {
 
@@ -45,13 +45,13 @@ MediaStreamCenter::~MediaStreamCenter()
 {
 }
 
-void MediaStreamCenter::endLocalMediaStream(MediaStreamDescriptor* streamDescriptor)
+void MediaStreamCenter::endLocalMediaStream(WebKit::WebMediaStream webStream)
 {
-    MediaStreamDescriptorClient* client = streamDescriptor->client();
+    WebKit::WebMediaStreamClient* client = webStream.client();
     if (client)
         client->streamEnded();
     else
-        streamDescriptor->setEnded();
+        webStream.setEnded();
 }
 
 } // namespace WebCore

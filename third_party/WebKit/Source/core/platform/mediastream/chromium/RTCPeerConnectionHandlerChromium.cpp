@@ -34,6 +34,7 @@
 
 #include "core/platform/mediastream/MediaConstraints.h"
 #include "core/platform/mediastream/MediaStreamComponent.h"
+#include "core/platform/mediastream/MediaStreamSource.h"
 #include "core/platform/mediastream/RTCConfiguration.h"
 #include "core/platform/mediastream/RTCDTMFSenderHandler.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"
@@ -134,12 +135,12 @@ WebKit::WebRTCSessionDescription RTCPeerConnectionHandlerChromium::remoteDescrip
     return m_webHandler->remoteDescription();
 }
 
-bool RTCPeerConnectionHandlerChromium::addStream(PassRefPtr<MediaStreamDescriptor> mediaStream, PassRefPtr<MediaConstraints> constraints)
+bool RTCPeerConnectionHandlerChromium::addStream(WebKit::WebMediaStream mediaStream, PassRefPtr<MediaConstraints> constraints)
 {
     return m_webHandler->addStream(mediaStream, constraints);
 }
 
-void RTCPeerConnectionHandlerChromium::removeStream(PassRefPtr<MediaStreamDescriptor> mediaStream)
+void RTCPeerConnectionHandlerChromium::removeStream(WebKit::WebMediaStream mediaStream)
 {
     m_webHandler->removeStream(mediaStream);
 }
@@ -197,14 +198,14 @@ void RTCPeerConnectionHandlerChromium::didChangeICEConnectionState(WebKit::WebRT
     m_client->didChangeIceConnectionState(static_cast<RTCPeerConnectionHandlerClient::IceConnectionState>(state));
 }
 
-void RTCPeerConnectionHandlerChromium::didAddRemoteStream(const WebKit::WebMediaStream& webMediaStreamDescriptor)
+void RTCPeerConnectionHandlerChromium::didAddRemoteStream(const WebKit::WebMediaStream& webMediaStream)
 {
-    m_client->didAddRemoteStream(webMediaStreamDescriptor);
+    m_client->didAddRemoteStream(webMediaStream);
 }
 
-void RTCPeerConnectionHandlerChromium::didRemoveRemoteStream(const WebKit::WebMediaStream& webMediaStreamDescriptor)
+void RTCPeerConnectionHandlerChromium::didRemoveRemoteStream(const WebKit::WebMediaStream& webMediaStream)
 {
-    m_client->didRemoveRemoteStream(webMediaStreamDescriptor);
+    m_client->didRemoveRemoteStream(webMediaStream);
 }
 
 void RTCPeerConnectionHandlerChromium::didAddRemoteDataChannel(WebKit::WebRTCDataChannelHandler* webHandler)

@@ -32,7 +32,7 @@
 
 #include "core/platform/mediastream/chromium/MediaStreamCenterChromium.h"
 
-#include "core/platform/mediastream/MediaStreamDescriptor.h"
+#include "core/platform/mediastream/MediaStreamComponent.h"
 #include "core/platform/mediastream/MediaStreamSourcesQueryClient.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMediaStream.h"
@@ -75,7 +75,7 @@ bool MediaStreamCenterChromium::getSourceInfos(const String& url, WebKit::WebVec
     return m_private && m_private->getSourceInfos(url, sourceInfos);
 }
 
-void MediaStreamCenterChromium::didSetMediaStreamTrackEnabled(MediaStreamDescriptor* stream,  MediaStreamComponent* component)
+void MediaStreamCenterChromium::didSetMediaStreamTrackEnabled(WebKit::WebMediaStream stream,  MediaStreamComponent* component)
 {
     if (m_private) {
         if (component->enabled())
@@ -85,28 +85,28 @@ void MediaStreamCenterChromium::didSetMediaStreamTrackEnabled(MediaStreamDescrip
     }
 }
 
-bool MediaStreamCenterChromium::didAddMediaStreamTrack(MediaStreamDescriptor* stream, MediaStreamComponent* component)
+bool MediaStreamCenterChromium::didAddMediaStreamTrack(WebKit::WebMediaStream stream, MediaStreamComponent* component)
 {
     return m_private && m_private->didAddMediaStreamTrack(stream, component);
 }
 
-bool MediaStreamCenterChromium::didRemoveMediaStreamTrack(MediaStreamDescriptor* stream, MediaStreamComponent* component)
+bool MediaStreamCenterChromium::didRemoveMediaStreamTrack(WebKit::WebMediaStream stream, MediaStreamComponent* component)
 {
     return m_private && m_private->didRemoveMediaStreamTrack(stream, component);
 }
 
-void MediaStreamCenterChromium::didStopLocalMediaStream(MediaStreamDescriptor* stream)
+void MediaStreamCenterChromium::didStopLocalMediaStream(WebKit::WebMediaStream stream)
 {
     if (m_private) {
         m_private->didStopLocalMediaStream(stream);
-        for (unsigned i = 0; i < stream->numberOfAudioComponents(); i++)
-            stream->audioComponent(i)->source()->setReadyState(MediaStreamSource::ReadyStateEnded);
-        for (unsigned i = 0; i < stream->numberOfVideoComponents(); i++)
-            stream->videoComponent(i)->source()->setReadyState(MediaStreamSource::ReadyStateEnded);
+        for (unsigned i = 0; i < stream.numberOfAudioComponents(); i++)
+            stream.audioComponent(i)->source()->setReadyState(MediaStreamSource::ReadyStateEnded);
+        for (unsigned i = 0; i < stream.numberOfVideoComponents(); i++)
+            stream.videoComponent(i)->source()->setReadyState(MediaStreamSource::ReadyStateEnded);
     }
 }
 
-void MediaStreamCenterChromium::didCreateMediaStream(MediaStreamDescriptor* stream)
+void MediaStreamCenterChromium::didCreateMediaStream(WebKit::WebMediaStream stream)
 {
     if (m_private) {
         WebKit::WebMediaStream webStream(stream);
@@ -114,7 +114,7 @@ void MediaStreamCenterChromium::didCreateMediaStream(MediaStreamDescriptor* stre
     }
 }
 
-void MediaStreamCenterChromium::stopLocalMediaStream(const WebKit::WebMediaStream& stream)
+void MediaStreamCenterChromium::stopLocalMediaStream(WebKit::WebMediaStream stream)
 {
     endLocalMediaStream(stream);
 }
