@@ -372,10 +372,9 @@
         '../media/media.gyp:shared_memory_support',
         '../third_party/WebKit/public/blink.gyp:blink',
         '../ui/gl/gl.gyp:gl',
-        '../webkit/base/webkit_base.gyp:webkit_base',
-        '../webkit/storage_browser.gyp:webkit_storage_browser',
-        '../webkit/storage_common.gyp:webkit_storage_common',
         '../webkit/support/webkit_support.gyp:glue',
+        '../webkit/support/webkit_support.gyp:webkit_base',
+        '../webkit/support/webkit_support.gyp:webkit_storage',
       ],
     }],
     ['OS=="android"',{

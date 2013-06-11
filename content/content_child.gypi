@@ -88,8 +88,8 @@
       'dependencies': [
         '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/npapi/npapi.gyp:npapi',
-        '../webkit/base/webkit_base.gyp:webkit_base',
         '../webkit/support/webkit_support.gyp:glue',
+        '../webkit/support/webkit_support.gyp:webkit_base',
       ],
     }],
   ],

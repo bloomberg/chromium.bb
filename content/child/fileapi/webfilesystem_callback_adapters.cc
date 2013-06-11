@@ -12,7 +12,6 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
-#include "third_party/WebKit/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/common/fileapi/directory_entry.h"
