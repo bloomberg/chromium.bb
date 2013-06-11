@@ -11,7 +11,7 @@
 #include <windows.h>
 #endif
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/threading/thread.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
 

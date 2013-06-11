@@ -4,7 +4,7 @@
 
 #include "chrome/test/webdriver/commands/log_command.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/test/webdriver/commands/response.h"
 #include "chrome/test/webdriver/webdriver_error.h"

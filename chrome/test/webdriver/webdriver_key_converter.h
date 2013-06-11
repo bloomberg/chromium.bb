@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/test/webdriver/webdriver_automation.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 

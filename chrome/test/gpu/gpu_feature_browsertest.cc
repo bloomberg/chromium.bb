@@ -6,7 +6,7 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/version.h"
 #include "chrome/browser/ui/browser.h"
@@ -24,8 +24,8 @@
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_test_config.h"
 #include "net/base/net_util.h"
-#include "ui/gl/gl_switches.h"
 #include "ui/compositor/compositor_setup.h"
+#include "ui/gl/gl_switches.h"
 #if defined(OS_MACOSX)
 #include "ui/surface/io_surface_support_mac.h"
 #endif

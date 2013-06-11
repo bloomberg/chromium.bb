@@ -5,8 +5,8 @@
 #include "chrome/test/chromedriver/server/http_response.h"
 
 #include "base/format_macros.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 
 const int HttpResponse::kOk = 200;
 const int HttpResponse::kNoContent = 204;

@@ -7,7 +7,7 @@
 #include <list>
 
 #include "base/logging.h"  // For CHECK macros.
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/capabilities.h"

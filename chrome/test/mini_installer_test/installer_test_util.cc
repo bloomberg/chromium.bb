@@ -8,7 +8,7 @@
 #include "base/path_service.h"
 #include "base/process.h"
 #include "base/process_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/installer/util/google_update_constants.h"

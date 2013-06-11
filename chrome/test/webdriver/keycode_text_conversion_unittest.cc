@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/test/webdriver/keycode_text_conversion.h"

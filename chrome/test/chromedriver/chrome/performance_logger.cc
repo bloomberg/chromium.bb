@@ -5,7 +5,7 @@
 #include "chrome/test/chromedriver/chrome/performance_logger.h"
 
 #include "base/json/json_writer.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/log.h"

@@ -11,10 +11,10 @@
 #include "base/files/file_enumerator.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
-#include "chrome/test/mini_installer_test/mini_installer_test_constants.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/test/mini_installer_test/installer_test_util.h"
+#include "chrome/test/mini_installer_test/mini_installer_test_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

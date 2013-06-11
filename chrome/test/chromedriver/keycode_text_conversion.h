@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 // These functions only support conversion of characters in the BMP

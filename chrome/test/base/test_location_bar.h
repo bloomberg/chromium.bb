@@ -6,7 +6,7 @@
 #define CHROME_TEST_BASE_TEST_LOCATION_BAR_H_
 
 #include "base/compiler_specific.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "content/public/common/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"

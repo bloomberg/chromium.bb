@@ -4,7 +4,7 @@
 
 #include "chrome/test/chromedriver/chrome/version.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 
 namespace {
 

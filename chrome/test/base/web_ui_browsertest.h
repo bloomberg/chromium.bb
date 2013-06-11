@@ -10,7 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_vector.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/js_injection_ready_observer.h"
 

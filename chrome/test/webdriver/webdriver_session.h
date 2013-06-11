@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/threading/thread.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/test/automation/automation_json_requests.h"

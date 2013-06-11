@@ -8,7 +8,7 @@
 #include <list>
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 struct KeyEvent;

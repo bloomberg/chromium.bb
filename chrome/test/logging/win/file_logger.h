@@ -8,7 +8,7 @@
 #include <guiddef.h>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/win/event_trace_controller.h"
 
 namespace base {
