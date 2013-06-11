@@ -42,7 +42,6 @@
 #include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_separator_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/open_pdf_in_reader_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
@@ -80,7 +79,6 @@
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
@@ -180,8 +178,6 @@ LocationBarView::LocationBarView(Browser* browser,
       selected_keyword_view_(NULL),
       suggested_text_view_(NULL),
       keyword_hint_view_(NULL),
-      search_token_view_(NULL),
-      search_token_separator_view_(NULL),
       zoom_view_(NULL),
       open_pdf_in_reader_view_(NULL),
       script_bubble_icon_view_(NULL),
@@ -213,9 +209,6 @@ LocationBarView::LocationBarView(Browser* browser,
       base::Bind(&LocationBarView::Update,
                  base::Unretained(this),
                  static_cast<content::WebContents*>(NULL)));
-
-  if (browser_)
-    browser_->toolbar_model()->SetSupportsExtractionOfURLLikeSearchTerms(true);
 }
 
 LocationBarView::~LocationBarView() {
@@ -307,14 +300,6 @@ void LocationBarView::Init() {
       GetColor(ToolbarModel::NONE, LocationBarView::DEEMPHASIZED_TEXT),
       background_color);
   AddChildView(keyword_hint_view_);
-
-  search_token_view_ = new views::Label(string16(), font);
-  search_token_view_->set_border(
-      views::Border::CreateEmptyBorder(font_y_offset, 0, 0, 0));
-  search_token_view_->SetAutoColorReadabilityEnabled(false);
-  AddChildView(search_token_view_);
-  search_token_separator_view_ = new LocationBarSeparatorView();
-  AddChildView(search_token_separator_view_);
 
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     ContentSettingImageView* content_blocked_view =
@@ -486,33 +471,6 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
 
   if (action_box_button_view_)
     action_box_button_view_->SetVisible(!model_->GetInputInProgress());
-
-  string16 search_provider;
-  if (!model_->GetInputInProgress() &&
-      (model_->GetSearchTermsType() != ToolbarModel::NO_SEARCH_TERMS)) {
-    const TemplateURL* template_url =
-        TemplateURLServiceFactory::GetForProfile(profile_)->
-            GetDefaultSearchProvider();
-    if (template_url && !template_url->short_name().empty()) {
-      if (model_->GetSearchTermsType() == ToolbarModel::URL_LIKE_SEARCH_TERMS) {
-        search_provider =
-            l10n_util::GetStringFUTF16(IDS_OMNIBOX_SEARCH_TOKEN_TEXT_PROMINENT,
-                                       template_url->short_name());
-      } else {
-        search_provider = l10n_util::GetStringFUTF16(
-            IDS_OMNIBOX_SEARCH_TOKEN_TEXT, template_url->short_name());
-      }
-      search_token_view_->SetBackgroundColor(GetColor(
-          model_->GetSecurityLevel(), LocationBarView::BACKGROUND));
-      SkColor text_color = GetColor(
-          model_->GetSecurityLevel(), LocationBarView::DEEMPHASIZED_TEXT);
-      search_token_view_->SetEnabledColor(text_color);
-      search_token_separator_view_->set_separator_color(
-          SkColorSetA(text_color, 64));  // 25% alpha.
-    }
-  }
-  // If |search_provider| is empty, |search_token_view_| is hidden.
-  search_token_view_->SetText(search_provider);
 
   location_entry_->Update(tab_for_state_restoring);
 
@@ -707,8 +665,6 @@ void LocationBarView::Layout() {
   location_icon_view_->SetVisible(false);
   ev_bubble_view_->SetVisible(false);
   keyword_hint_view_->SetVisible(false);
-  search_token_view_->SetVisible(false);
-  search_token_separator_view_->SetVisible(false);
 
   const int item_padding = GetItemPadding();
   // The native edit has 1 px of whitespace inside it before the text when the
@@ -723,7 +679,6 @@ void LocationBarView::Layout() {
 
   const string16 keyword(location_entry_->model()->keyword());
   const bool is_keyword_hint(location_entry_->model()->is_keyword_hint());
-  const bool show_search_token = !search_token_view_->text().empty();
   const int bubble_location_y = vertical_edge_thickness() + kBubblePadding;
   // In some cases (e.g. fullscreen mode) we may have 0 height.  We still want
   // to position our child views in this case, because other things may be
@@ -731,7 +686,7 @@ void LocationBarView::Layout() {
   // hits ctrl-d).
   const int location_height = GetInternalHeight(false);
   const int bubble_height = std::max(location_height - (kBubblePadding * 2), 0);
-  if (!keyword.empty() && !is_keyword_hint && !show_search_token) {
+  if (!keyword.empty() && !is_keyword_hint) {
     leading_decorations.AddDecoration(bubble_location_y, bubble_height, true, 0,
                                       kBubblePadding, item_padding, 0,
                                       selected_keyword_view_);
@@ -809,31 +764,12 @@ void LocationBarView::Layout() {
           item_padding, (*i)->GetBuiltInHorizontalPadding(), (*i));
     }
   }
-  if (!keyword.empty() && is_keyword_hint && !show_search_token) {
+  if (!keyword.empty() && is_keyword_hint) {
     trailing_decorations.AddDecoration(vertical_edge_thickness(),
                                        location_height, true, 0, item_padding,
                                        item_padding, 0, keyword_hint_view_);
     if (keyword_hint_view_->keyword() != keyword)
       keyword_hint_view_->SetKeyword(keyword);
-  }
-  if (show_search_token) {
-    const int token_height = search_token_view_->GetPreferredSize().height();
-    if (model_->GetSearchTermsType() == ToolbarModel::URL_LIKE_SEARCH_TERMS) {
-      leading_decorations.AddDecoration(vertical_edge_thickness(), token_height,
-                                        true, 0, item_padding, item_padding, 0,
-                                        search_token_view_);
-    } else {
-      trailing_decorations.AddSeparator(vertical_edge_thickness(),
-                                        location_height, item_padding,
-                                        search_token_separator_view_);
-      // This must be the last item in the right decorations list, otherwise
-      // trailing_decorations.set_item_padding() makes no sense.
-      trailing_decorations.AddDecoration(vertical_edge_thickness(),
-                                         token_height, true, 0, item_padding,
-                                         item_padding, 0, search_token_view_);
-      trailing_decorations.set_item_edit_padding(
-          views::kUnrelatedControlLargeHorizontalSpacing);
-    }
   }
 
   // Perform layout.

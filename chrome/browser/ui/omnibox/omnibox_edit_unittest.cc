@@ -188,8 +188,8 @@ TEST_F(AutocompleteEditTest, AdjustTextForCopy) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input); ++i) {
     model.UpdatePermanentText(ASCIIToUTF16(input[i].perm_text));
 
-    toolbar_model()->set_search_terms_type(input[i].extracted_search_terms ?
-        ToolbarModel::NORMAL_SEARCH_TERMS : ToolbarModel::NO_SEARCH_TERMS);
+    toolbar_model()->set_replace_search_url_with_search_terms(
+        input[i].extracted_search_terms);
 
     string16 result = ASCIIToUTF16(input[i].input);
     GURL url;

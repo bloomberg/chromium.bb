@@ -858,7 +858,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   MakeRequestFail make_request_fail("search.example");
 
   chrome::EnableInstantExtendedAPIForTesting();
-  browser()->toolbar_model()->SetSupportsExtractionOfURLLikeSearchTerms(true);
 
   // Verifies that a default search is made using the provider configured via
   // policy. Also checks that default search can be completely disabled.
@@ -918,8 +917,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   LocationBar* location_bar = browser()->window()->GetLocationBar();
   ui_test_utils::SendToOmniboxAndSubmit(location_bar,
       "https://www.google.com/?espv=1#q=foobar");
-  EXPECT_NE(ToolbarModel::NO_SEARCH_TERMS,
-            browser()->toolbar_model()->GetSearchTermsType());
+  EXPECT_TRUE(
+      browser()->toolbar_model()->WouldReplaceSearchURLWithSearchTerms());
   EXPECT_EQ(ASCIIToUTF16("foobar"),
             location_bar->GetLocationEntry()->GetText());
 
@@ -928,8 +927,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   location_bar = browser()->window()->GetLocationBar();
   ui_test_utils::SendToOmniboxAndSubmit(location_bar,
       "https://www.google.com/?q=foobar");
-  EXPECT_EQ(ToolbarModel::NO_SEARCH_TERMS,
-            browser()->toolbar_model()->GetSearchTermsType());
+  EXPECT_FALSE(
+      browser()->toolbar_model()->WouldReplaceSearchURLWithSearchTerms());
   EXPECT_EQ(ASCIIToUTF16("https://www.google.com/?q=foobar"),
             location_bar->GetLocationEntry()->GetText());
 
@@ -938,8 +937,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   chrome::FocusLocationBar(browser());
   ui_test_utils::SendToOmniboxAndSubmit(location_bar,
       "https://www.google.com/search?espv=1#q=banana");
-  EXPECT_NE(ToolbarModel::NO_SEARCH_TERMS,
-            browser()->toolbar_model()->GetSearchTermsType());
+  EXPECT_TRUE(
+      browser()->toolbar_model()->WouldReplaceSearchURLWithSearchTerms());
   EXPECT_EQ(ASCIIToUTF16("banana"),
             location_bar->GetLocationEntry()->GetText());
 
@@ -948,8 +947,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   chrome::FocusLocationBar(browser());
   ui_test_utils::SendToOmniboxAndSubmit(location_bar,
       "https://www.google.com/search?q=tractor+parts&espv=1");
-  EXPECT_NE(ToolbarModel::NO_SEARCH_TERMS,
-            browser()->toolbar_model()->GetSearchTermsType());
+  EXPECT_TRUE(
+      browser()->toolbar_model()->WouldReplaceSearchURLWithSearchTerms());
   EXPECT_EQ(ASCIIToUTF16("tractor parts"),
             location_bar->GetLocationEntry()->GetText());
 
@@ -957,8 +956,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   chrome::FocusLocationBar(browser());
   ui_test_utils::SendToOmniboxAndSubmit(location_bar,
       "https://www.google.com/search?q=tractor+parts&espv=1#q=foobar");
-  EXPECT_NE(ToolbarModel::NO_SEARCH_TERMS,
-            browser()->toolbar_model()->GetSearchTermsType());
+  EXPECT_TRUE(
+      browser()->toolbar_model()->WouldReplaceSearchURLWithSearchTerms());
   EXPECT_EQ(ASCIIToUTF16("foobar"),
             location_bar->GetLocationEntry()->GetText());
 }

@@ -8,38 +8,18 @@
 #include "ui/gfx/rect.h"
 #include "ui/views/view.h"
 
-namespace {
-
-enum DecorationType {
-  // Decoration is always visible.
-  NORMAL = 0,
-  // If there is not enough available space in the location bar, the decoration
-  // will reduce its width either to its minimal width or to zero (making it
-  // invisible), whichever fits.  |LocationBarDecoration::max_fraction| must be
-  // 0.
-  AUTO_COLLAPSE,
-  // Decoration is a separator, only visible if it's not leading, or not
-  // trailing, or not next to another separator.
-  SEPARATOR,
-};
-
-}  // namespace
-
 
 // Description of a decoration to be added inside the location bar, either to
 // the left or to the right.
 struct LocationBarDecoration {
-  LocationBarDecoration(DecorationType type,
-                        int y,
+  LocationBarDecoration(int y,
                         int height,
+                        bool auto_collapse,
                         double max_fraction,
                         int edge_item_padding,
                         int item_padding,
                         int builtin_padding,
                         views::View* view);
-
-  // The type of decoration.
-  DecorationType type;
 
   // The y position of the view inside its parent.
   int y;
@@ -47,9 +27,14 @@ struct LocationBarDecoration {
   // The height of the view.
   int height;
 
+  // True means that, if there is not enough available space in the location
+  // bar, the view will reduce its width either to its minimal width or to zero
+  // (making it invisible), whichever fits. If true, |max_fraction| must be 0.
+  bool auto_collapse;
+
   // Used for resizeable decorations, indicates the maximum fraction of the
   // location bar that can be taken by this decoration, 0 for non-resizable
-  // decorations. If non-zero, |type| must not be AUTO_COLLAPSE.
+  // decorations. If non-zero, |auto_collapse| must be false.
   double max_fraction;
 
   // Padding to use if the decoration is the first element next to the edge.
@@ -68,24 +53,24 @@ struct LocationBarDecoration {
   double computed_width;
 };
 
-LocationBarDecoration::LocationBarDecoration(DecorationType type,
-                                             int y,
+LocationBarDecoration::LocationBarDecoration(int y,
                                              int height,
+                                             bool auto_collapse,
                                              double max_fraction,
                                              int edge_item_padding,
                                              int item_padding,
                                              int builtin_padding,
                                              views::View* view)
-    : type(type),
-      y(y),
+    : y(y),
       height(height),
+      auto_collapse(auto_collapse),
       max_fraction(max_fraction),
       edge_item_padding(edge_item_padding),
       item_padding(item_padding),
       builtin_padding(builtin_padding),
       view(view),
       computed_width(0) {
-  DCHECK((max_fraction == 0.0) || ((type == NORMAL) && (max_fraction > 0.0)));
+  DCHECK((max_fraction == 0.0) || (!auto_collapse && (max_fraction > 0.0)));
 }
 
 
@@ -109,8 +94,8 @@ void LocationBarLayout::AddDecoration(int y,
                                       int builtin_padding,
                                       views::View* view) {
   decorations_.push_back(new LocationBarDecoration(
-      auto_collapse ? AUTO_COLLAPSE : NORMAL, y, height, max_fraction,
-      edge_item_padding, item_padding, builtin_padding, view));
+      y, height, auto_collapse, max_fraction, edge_item_padding, item_padding,
+      builtin_padding, view));
 }
 
 void LocationBarLayout::AddDecoration(int y,
@@ -118,133 +103,79 @@ void LocationBarLayout::AddDecoration(int y,
                                       int builtin_padding,
                                       views::View* view) {
   decorations_.push_back(new LocationBarDecoration(
-      NORMAL, y, height, 0, LocationBarView::GetItemPadding(),
+      y, height, false, 0, LocationBarView::GetItemPadding(),
       LocationBarView::GetItemPadding(), builtin_padding, view));
-}
-
-void LocationBarLayout::AddSeparator(int y,
-                                     int height,
-                                     int padding_from_previous_item,
-                                     views::View* separator) {
-  // Edge item padding won't apply since a separator won't be by the edge, so
-  // use 0 for more accurate evaluation of |entry_width| in LayoutPass1().
-  decorations_.push_back(new LocationBarDecoration(
-      SEPARATOR, y, height, 0, 0, padding_from_previous_item, 0, separator));
 }
 
 void LocationBarLayout::LayoutPass1(int* entry_width) {
   bool first_item = true;
-  for (Decorations::iterator it(decorations_.begin()); it != decorations_.end();
-       ++it) {
+  for (Decorations::iterator i(decorations_.begin()); i != decorations_.end();
+       ++i) {
     // Autocollapsing decorations are ignored in this pass.
-    if ((*it)->type != AUTO_COLLAPSE) {
-      *entry_width -= -2 * (*it)->builtin_padding +
-          (first_item ? (*it)->edge_item_padding : (*it)->item_padding);
+    if (!(*i)->auto_collapse) {
+      *entry_width -= -2 * (*i)->builtin_padding +
+          (first_item ? (*i)->edge_item_padding : (*i)->item_padding);
     }
     first_item = false;
     // Resizing decorations are ignored in this pass.
-    if (((*it)->type != AUTO_COLLAPSE) && ((*it)->max_fraction == 0.0)) {
-      (*it)->computed_width = (*it)->view->GetPreferredSize().width();
-      *entry_width -= (*it)->computed_width;
+    if (!(*i)->auto_collapse && ((*i)->max_fraction == 0.0)) {
+      (*i)->computed_width = (*i)->view->GetPreferredSize().width();
+      *entry_width -= (*i)->computed_width;
     }
   }
   *entry_width -= item_edit_padding_;
 }
 
 void LocationBarLayout::LayoutPass2(int *entry_width) {
-  for (Decorations::iterator it(decorations_.begin()); it != decorations_.end();
-       ++it) {
-    if ((*it)->max_fraction > 0.0) {
-      int max_width = static_cast<int>(*entry_width * (*it)->max_fraction);
-      (*it)->computed_width = std::min((*it)->view->GetPreferredSize().width(),
-          std::max((*it)->view->GetMinimumSize().width(), max_width));
-      *entry_width -= (*it)->computed_width;
+  for (Decorations::iterator i(decorations_.begin()); i != decorations_.end();
+       ++i) {
+    if ((*i)->max_fraction > 0.0) {
+      int max_width = static_cast<int>(*entry_width * (*i)->max_fraction);
+      (*i)->computed_width =
+          std::min((*i)->view->GetPreferredSize().width(),
+                   std::max((*i)->view->GetMinimumSize().width(), max_width));
+      *entry_width -= (*i)->computed_width;
     }
   }
 }
 
 void LocationBarLayout::LayoutPass3(gfx::Rect* bounds, int* available_width) {
-  SetVisibilityForDecorations(available_width);
-  HideUnneededSeparators(available_width);
-  SetBoundsForDecorations(bounds);
-}
-
-void LocationBarLayout::SetVisibilityForDecorations(int* available_width) {
   bool first_visible = true;
-  for (Decorations::iterator it(decorations_.begin()); it != decorations_.end();
-       ++it) {
+  for (Decorations::iterator i(decorations_.begin()); i != decorations_.end();
+       ++i) {
     // Collapse decorations if needed.
-    if ((*it)->type == AUTO_COLLAPSE) {
-      int padding = -2 * (*it)->builtin_padding +
-          (first_visible ? (*it)->edge_item_padding : (*it)->item_padding);
-      // Try preferred size, if it fails try minimum size, if it fails
-      // collapse.
-      (*it)->computed_width = (*it)->view->GetPreferredSize().width();
-      if ((*it)->computed_width + padding > *available_width)
-        (*it)->computed_width = (*it)->view->GetMinimumSize().width();
-      if ((*it)->computed_width + padding > *available_width) {
-        (*it)->computed_width = 0;
-        (*it)->view->SetVisible(false);
+    if ((*i)->auto_collapse) {
+      int padding = -2 * (*i)->builtin_padding +
+          (first_visible ? (*i)->edge_item_padding : (*i)->item_padding);
+      // Try preferred size, if it fails try minimum size, if it fails collapse.
+      (*i)->computed_width = (*i)->view->GetPreferredSize().width();
+      if ((*i)->computed_width + padding > *available_width)
+        (*i)->computed_width = (*i)->view->GetMinimumSize().width();
+      if ((*i)->computed_width + padding > *available_width) {
+        (*i)->computed_width = 0;
+        (*i)->view->SetVisible(false);
       } else {
-        (*it)->view->SetVisible(true);
-        (*available_width) -= (*it)->computed_width + padding;
+        (*i)->view->SetVisible(true);
+        (*available_width) -= (*i)->computed_width + padding;
       }
     } else {
-      (*it)->view->SetVisible(true);
+      (*i)->view->SetVisible(true);
     }
 
-    if ((*it)->view->visible())
-      first_visible = false;
-  }
-}
-
-void LocationBarLayout::HideUnneededSeparators(int* available_width) {
-  // Initialize |trailing_separator| to first decoration so that any leading
-  // separator will be hidden.
-  Decorations::iterator trailing_separator = decorations_.begin();
-  for (Decorations::iterator it(decorations_.begin()); it != decorations_.end();
-       ++it) {
-    if ((*it)->type == SEPARATOR) {
-      if (trailing_separator != decorations_.end()) {
-        (*it)->view->SetVisible(false);
-        // Add back what was subtracted when setting this separator visible in
-        // LayoutPass1().
-        (*available_width) += (*it)->item_padding + (*it)->computed_width;
-      } else {
-        trailing_separator = it;
-      }
-    } else if ((*it)->view->visible()) {
-      trailing_separator = decorations_.end();
-    }
-  }
-  // If there's a trailing separator, hide it.
-  if (trailing_separator != decorations_.end()) {
-    (*trailing_separator)->view->SetVisible(false);
-    // Add back what was subtracted when setting this separator visible in
-    // LayoutPass1().
-    (*available_width) += (*trailing_separator)->item_padding +
-                          (*trailing_separator)->computed_width;
-  }
-}
-
-void LocationBarLayout::SetBoundsForDecorations(gfx::Rect* bounds) {
-  bool first_visible = true;
-  for (Decorations::iterator it(decorations_.begin()); it != decorations_.end();
-       ++it) {
-    LocationBarDecoration* curr = *it;
-    if (!curr->view->visible())
+    // Layout visible decorations.
+    if (!(*i)->view->visible())
       continue;
-    int padding = -curr->builtin_padding +
-        (first_visible ? curr->edge_item_padding : curr->item_padding);
+    int padding = -(*i)->builtin_padding +
+        (first_visible ? (*i)->edge_item_padding : (*i)->item_padding);
     first_visible = false;
     int x = (position_ == LEFT_EDGE) ? (bounds->x() + padding) :
-        (bounds->right() - padding - curr->computed_width);
-    curr->view->SetBounds(x, curr->y, curr->computed_width, curr->height);
-    bounds->set_width(bounds->width() - padding - curr->computed_width +
-                      curr->builtin_padding);
+        (bounds->right() - padding - (*i)->computed_width);
+    (*i)->view->SetBounds(x, (*i)->y, (*i)->computed_width, (*i)->height);
+    bounds->set_width(bounds->width() - padding - (*i)->computed_width +
+        (*i)->builtin_padding);
     if (position_ == LEFT_EDGE) {
       bounds->set_x(
-          bounds->x() + padding + curr->computed_width - curr->builtin_padding);
+          bounds->x() + padding + (*i)->computed_width - (*i)->builtin_padding);
     }
   }
   bounds->set_width(bounds->width() - item_edit_padding_);

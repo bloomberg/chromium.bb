@@ -300,10 +300,8 @@ void ContentSettingDecoration::SetToolTip(NSString* tooltip) {
 
 // Override to handle the case where there is text to display during the
 // animation. The width is based on the animator's progress.
-CGFloat ContentSettingDecoration::GetWidthForSpace(CGFloat width,
-                                                   CGFloat text_width) {
-  CGFloat preferred_width =
-      ImageDecoration::GetWidthForSpace(width, text_width);
+CGFloat ContentSettingDecoration::GetWidthForSpace(CGFloat width) {
+  CGFloat preferred_width = ImageDecoration::GetWidthForSpace(width);
   if (animation_.get()) {
     AnimationState state = [animation_ animationState];
     if (state != kNoAnimation) {

@@ -1576,7 +1576,6 @@
         'browser/ui/cocoa/extensions/extension_install_prompt_test_utils.mm',
         'browser/ui/cocoa/extensions/media_galleries_dialog_cocoa_browsertest.mm',
         'browser/ui/cocoa/find_bar/find_bar_browsertest.mm',
-        'browser/ui/cocoa/location_bar/location_bar_view_mac_browsertest.mm',
         'browser/ui/cocoa/location_bar/zoom_decoration_browsertest.mm',
         'browser/ui/cocoa/omnibox/omnibox_view_mac_browsertest.mm',
         'browser/ui/cocoa/one_click_signin_bubble_controller_browsertest.mm',

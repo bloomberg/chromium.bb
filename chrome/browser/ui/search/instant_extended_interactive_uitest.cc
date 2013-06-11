@@ -139,10 +139,6 @@ class InstantExtendedTest : public InProcessBrowserTest,
     InstantTestBase::Init(instant_url);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
-    browser()->toolbar_model()->SetSupportsExtractionOfURLLikeSearchTerms(true);
-  }
-
   int64 GetHistogramCount(const char* name) {
     base::HistogramBase* histogram =
         base::StatisticsRecorder::FindHistogram(name);
@@ -2488,8 +2484,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, AcceptingURLSearchDoesNotNavigate) {
 
   // Accept the omnibox input.
   EXPECT_FALSE(omnibox()->model()->user_input_in_progress());
-  EXPECT_EQ(ToolbarModel::URL_LIKE_SEARCH_TERMS,
-            browser()->toolbar_model()->GetSearchTermsType());
+  EXPECT_TRUE(
+      browser()->toolbar_model()->WouldReplaceSearchURLWithSearchTerms());
   GURL instant_tab_url = instant_tab->GetURL();
   browser()->window()->GetLocationBar()->AcceptInput();
   EXPECT_EQ(instant_tab_url, instant_tab->GetURL());
@@ -2524,8 +2520,8 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, AcceptingJSSearchDoesNotRunJS) {
 
   // Accept the omnibox input.
   EXPECT_FALSE(omnibox()->model()->user_input_in_progress());
-  EXPECT_EQ(ToolbarModel::URL_LIKE_SEARCH_TERMS,
-            browser()->toolbar_model()->GetSearchTermsType());
+  EXPECT_TRUE(
+      browser()->toolbar_model()->WouldReplaceSearchURLWithSearchTerms());
   browser()->window()->GetLocationBar()->AcceptInput();
   // Force some Javascript to run in the renderer so the inline javascript:
   // would be forced to run if it's going to.

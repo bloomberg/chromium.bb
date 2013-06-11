@@ -34,9 +34,8 @@ class LocationBarDecoration {
 
   // Decorations can change their size to fit the available space.
   // Returns the width the decoration will use in the space allotted,
-  // or |kOmittedWidth| if it should be omitted. |text_width| is the width of
-  // the omnibox text, which which can be greater than |width|.
-  virtual CGFloat GetWidthForSpace(CGFloat width, CGFloat text_width);
+  // or |kOmittedWidth| if it should be omitted.
+  virtual CGFloat GetWidthForSpace(CGFloat width);
 
   // Draw the decoration in the frame provided.  The frame will be
   // generated from an earlier call to |GetWidthForSpace()|.
@@ -97,9 +96,6 @@ class LocationBarDecoration {
   // Returns the current |LocationBarDecoration| as a |ButtonDecoration|, if it
   // inherits from that class (i.e. if it needs to act as a button).
   virtual ButtonDecoration* AsButtonDecoration();
-
-  // Returns true if this is a separator.
-  virtual bool IsSeparator() const;
 
   // Width returned by |GetWidthForSpace()| when the item should be
   // omitted for this width;

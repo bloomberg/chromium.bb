@@ -41,8 +41,7 @@ class ToolbarModelImpl : public ToolbarModel {
       bool display_search_urls_as_search_terms) const OVERRIDE;
   virtual string16 GetCorpusNameForMobile() const OVERRIDE;
   virtual GURL GetURL() const OVERRIDE;
-  virtual SearchTermsType GetSearchTermsType() const OVERRIDE;
-  virtual void SetSupportsExtractionOfURLLikeSearchTerms(bool value) OVERRIDE;
+  virtual bool WouldReplaceSearchURLWithSearchTerms() const OVERRIDE;
   virtual SecurityLevel GetSecurityLevel() const OVERRIDE;
   virtual int GetIcon() const OVERRIDE;
   virtual string16 GetEVCertName() const OVERRIDE;
@@ -62,20 +61,14 @@ class ToolbarModelImpl : public ToolbarModel {
   // Helper method to extract the profile from the navigation controller.
   Profile* GetProfile() const;
 
-  // Returns the type of the given search terms.
-  SearchTermsType GetSearchTermsTypeInternal(
-      const string16& search_terms) const;
-
-  // Checks if the search page is secure. Pages which is still loading and
-  // have an unknown security style will also be considered secure.
-  bool IsSearchPageSecure() const;
+  // Returns search terms as in chrome::GetSearchTerms() unless the page is
+  // insufficiently secure.
+  string16 GetSearchTerms() const;
 
   ToolbarModelDelegate* delegate_;
 
   // Whether the text in the location bar is currently being edited.
   bool input_in_progress_;
-
-  bool supports_extraction_of_url_like_search_terms_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ToolbarModelImpl);
 };

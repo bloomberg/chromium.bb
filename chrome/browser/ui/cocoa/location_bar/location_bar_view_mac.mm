@@ -39,9 +39,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/page_action_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/plus_decoration.h"
-#import "chrome/browser/ui/cocoa/location_bar/search_token_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
-#import "chrome/browser/ui/cocoa/location_bar/separator_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/zoom_decoration.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
@@ -64,7 +62,6 @@
 #include "net/base/net_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/cocoa_event_utils.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -94,9 +91,7 @@ LocationBarViewMac::LocationBarViewMac(
       field_(field),
       disposition_(CURRENT_TAB),
       location_icon_decoration_(new LocationIconDecoration(this)),
-      search_token_decoration_(new SearchTokenDecoration()),
       selected_keyword_decoration_(new SelectedKeywordDecoration()),
-      separator_decoration_(new SeparatorDecoration()),
       ev_bubble_decoration_(
           new EVBubbleDecoration(location_icon_decoration_.get())),
       plus_decoration_(NULL),
@@ -133,8 +128,6 @@ LocationBarViewMac::LocationBarViewMac(
       profile_->GetPrefs(),
       base::Bind(&LocationBarViewMac::OnEditBookmarksEnabledChanged,
                  base::Unretained(this)));
-
-  browser_->toolbar_model()->SetSupportsExtractionOfURLLikeSearchTerms(true);
 }
 
 LocationBarViewMac::~LocationBarViewMac() {
@@ -690,25 +683,14 @@ void LocationBarViewMac::Layout() {
 
   [cell addRightDecoration:keyword_hint_decoration_.get()];
 
-  if (toolbar_model_->GetSearchTermsType() ==
-      ToolbarModel::URL_LIKE_SEARCH_TERMS) {
-    [cell addLeftDecoration:search_token_decoration_.get()];
-  } else {
-    [cell addRightDecoration:search_token_decoration_.get()];
-    [cell addRightDecoration:separator_decoration_.get()];
-  }
-
   // By default only the location icon is visible.
   location_icon_decoration_->SetVisible(true);
   selected_keyword_decoration_->SetVisible(false);
   ev_bubble_decoration_->SetVisible(false);
   keyword_hint_decoration_->SetVisible(false);
-  separator_decoration_->SetVisible(false);
-  search_token_decoration_->SetVisible(false);
 
   // Get the keyword to use for keyword-search and hinting.
   const string16 keyword = omnibox_view_->model()->keyword();
-
   string16 short_name;
   bool is_extension_keyword = false;
   if (!keyword.empty()) {
@@ -716,16 +698,8 @@ void LocationBarViewMac::Layout() {
         GetKeywordShortName(keyword, &is_extension_keyword);
   }
 
-  const string16 search_provider_name = GetSearchProviderName();
   const bool is_keyword_hint = omnibox_view_->model()->is_keyword_hint();
-
-  const bool show_search_token = !search_provider_name.empty();
-  const bool show_selected_keyword = !keyword.empty() && !is_keyword_hint &&
-    !show_search_token;
-  const bool show_keyword_hint = !keyword.empty() && is_keyword_hint &&
-    !show_search_token;
-
-  if (show_selected_keyword) {
+  if (!keyword.empty() && !is_keyword_hint) {
     // Switch from location icon to keyword mode.
     location_icon_decoration_->SetVisible(false);
     selected_keyword_decoration_->SetVisible(true);
@@ -738,21 +712,10 @@ void LocationBarViewMac::Layout() {
 
     string16 label(toolbar_model_->GetEVCertName());
     ev_bubble_decoration_->SetFullLabel(base::SysUTF16ToNSString(label));
-  } else if (show_keyword_hint) {
+  } else if (!keyword.empty() && is_keyword_hint) {
     keyword_hint_decoration_->SetKeyword(short_name,
                                          is_extension_keyword);
     keyword_hint_decoration_->SetVisible(true);
-  } else if (show_search_token) {
-    if (toolbar_model_->GetSearchTermsType() ==
-        ToolbarModel::URL_LIKE_SEARCH_TERMS) {
-      search_token_decoration_->SetSearchTokenText(l10n_util::GetStringFUTF16(
-          IDS_OMNIBOX_SEARCH_TOKEN_TEXT_PROMINENT, search_provider_name));
-    } else {
-      search_token_decoration_->SetSearchTokenText(l10n_util::GetStringFUTF16(
-          IDS_OMNIBOX_SEARCH_TOKEN_TEXT, search_provider_name));
-      separator_decoration_->SetVisible(true);
-    }
-    search_token_decoration_->SetVisible(true);
   }
 
   // These need to change anytime the layout changes.
@@ -799,16 +762,4 @@ void LocationBarViewMac::UpdatePlusDecorationVisibility() {
     // If the action box is enabled, hide it when input is in progress.
     plus_decoration_->SetVisible(!toolbar_model_->GetInputInProgress());
   }
-}
-
-string16 LocationBarViewMac::GetSearchProviderName() const {
-  if (!toolbar_model_->GetInputInProgress() &&
-      toolbar_model_->GetSearchTermsType() != ToolbarModel::NO_SEARCH_TERMS) {
-    const TemplateURL* template_url =
-        TemplateURLServiceFactory::GetForProfile(profile_)->
-            GetDefaultSearchProvider();
-    if (template_url)
-      return template_url->short_name();
-  }
-  return string16();
 }

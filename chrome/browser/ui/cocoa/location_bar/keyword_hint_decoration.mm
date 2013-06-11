@@ -82,8 +82,7 @@ void KeywordHintDecoration::SetKeyword(const string16& short_name,
   hint_suffix_.reset([TrimAndConvert(keyword_hint.substr(split)) retain]);
 }
 
-CGFloat KeywordHintDecoration::GetWidthForSpace(CGFloat width,
-                                                CGFloat text_width) {
+CGFloat KeywordHintDecoration::GetWidthForSpace(CGFloat width) {
   NSImage* image = GetHintImage();
   const CGFloat image_width = image ? [image size].width : 0.0;
 

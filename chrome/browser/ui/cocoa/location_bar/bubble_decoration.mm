@@ -68,7 +68,7 @@ NSRect BubbleDecoration::GetImageRectInFrame(NSRect frame) {
   return imageRect;
 }
 
-CGFloat BubbleDecoration::GetWidthForSpace(CGFloat width, CGFloat text_width) {
+CGFloat BubbleDecoration::GetWidthForSpace(CGFloat width) {
   const CGFloat all_width = GetWidthForImageAndLabel(image_, label_);
   if (all_width <= width)
     return all_width;

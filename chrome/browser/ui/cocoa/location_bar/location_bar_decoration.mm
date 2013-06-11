@@ -20,8 +20,7 @@ void LocationBarDecoration::SetVisible(bool visible) {
 }
 
 
-CGFloat LocationBarDecoration::GetWidthForSpace(CGFloat width,
-                                                CGFloat text_width) {
+CGFloat LocationBarDecoration::GetWidthForSpace(CGFloat width) {
   NOTREACHED();
   return kOmittedWidth;
 }
@@ -102,8 +101,4 @@ NSSize LocationBarDecoration::GetLabelSize(NSString* label,
 
 ButtonDecoration* LocationBarDecoration::AsButtonDecoration() {
   return NULL;
-}
-
-bool LocationBarDecoration::IsSeparator() const {
-  return false;
 }

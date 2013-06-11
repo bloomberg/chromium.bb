@@ -43,8 +43,7 @@ using content::WebContents;
 
 ToolbarModelImpl::ToolbarModelImpl(ToolbarModelDelegate* delegate)
     : delegate_(delegate),
-      input_in_progress_(false),
-      supports_extraction_of_url_like_search_terms_(false) {
+      input_in_progress_(false) {
 }
 
 ToolbarModelImpl::~ToolbarModelImpl() {
@@ -94,9 +93,8 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevelForWebContents(
 string16 ToolbarModelImpl::GetText(
     bool display_search_urls_as_search_terms) const {
   if (display_search_urls_as_search_terms) {
-    string16 search_terms(
-        chrome::GetSearchTerms(delegate_->GetActiveWebContents()));
-    if (GetSearchTermsTypeInternal(search_terms) != NO_SEARCH_TERMS)
+    string16 search_terms(GetSearchTerms());
+    if (!search_terms.empty())
       return search_terms;
   }
   std::string languages;  // Empty if we don't have a |navigation_controller|.
@@ -116,7 +114,7 @@ string16 ToolbarModelImpl::GetText(
 }
 
 string16 ToolbarModelImpl::GetCorpusNameForMobile() const {
-  if (GetSearchTermsType() == NO_SEARCH_TERMS)
+  if (!WouldReplaceSearchURLWithSearchTerms())
     return string16();
   GURL url(GetURL());
   // If there is a query in the url fragment look for the corpus name there,
@@ -147,13 +145,8 @@ GURL ToolbarModelImpl::GetURL() const {
   return GURL(content::kAboutBlankURL);
 }
 
-ToolbarModel::SearchTermsType ToolbarModelImpl::GetSearchTermsType() const {
-  return GetSearchTermsTypeInternal(
-      chrome::GetSearchTerms(delegate_->GetActiveWebContents()));
-}
-
-void ToolbarModelImpl::SetSupportsExtractionOfURLLikeSearchTerms(bool value) {
-  supports_extraction_of_url_like_search_terms_ = value;
+bool ToolbarModelImpl::WouldReplaceSearchURLWithSearchTerms() const {
+  return !GetSearchTerms().empty();
 }
 
 bool ToolbarModelImpl::ShouldDisplayURL() const {
@@ -196,11 +189,8 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevel() const {
 }
 
 int ToolbarModelImpl::GetIcon() const {
-  SearchTermsType search_terms_type = GetSearchTermsType();
-  SecurityLevel security_level = GetSecurityLevel();
-  if (search_terms_type == NORMAL_SEARCH_TERMS ||
-      (search_terms_type == URL_LIKE_SEARCH_TERMS && IsSearchPageSecure()))
-    return IDR_OMNIBOX_SEARCH;
+  if (WouldReplaceSearchURLWithSearchTerms())
+    return IDR_OMNIBOX_SEARCH_SECURED;
 
   static int icon_ids[NUM_SECURITY_LEVELS] = {
     IDR_LOCATION_BAR_HTTP,
@@ -211,7 +201,7 @@ int ToolbarModelImpl::GetIcon() const {
     IDR_OMNIBOX_HTTPS_INVALID,
   };
   DCHECK(arraysize(icon_ids) == NUM_SECURITY_LEVELS);
-  return icon_ids[security_level];
+  return icon_ids[GetSecurityLevel()];
 }
 
 string16 ToolbarModelImpl::GetEVCertName() const {
@@ -262,44 +252,27 @@ Profile* ToolbarModelImpl::GetProfile() const {
       NULL;
 }
 
-ToolbarModel::SearchTermsType ToolbarModelImpl::GetSearchTermsTypeInternal(
-    const string16& search_terms) const {
+string16 ToolbarModelImpl::GetSearchTerms() const {
+  const WebContents* web_contents = delegate_->GetActiveWebContents();
+  string16 search_terms(chrome::GetSearchTerms(web_contents));
   if (search_terms.empty())
-    return NO_SEARCH_TERMS;
+    return string16();  // We mainly do this to enforce the subsequent DCHECK.
 
-  AutocompleteMatch match;
-  AutocompleteClassifierFactory::GetForProfile(Profile::FromBrowserContext(
-      delegate_->GetActiveWebContents()->GetBrowserContext()))->Classify(
-          search_terms, false, false, &match, NULL);
-  // If the current page is not being displayed securely (e.g. due to mixed
-  // content errors), force any extracted search terms to be considered as
-  // "URL-like".  This will cause callers to display a more obvious indicator
-  // that the terms are a search query.  This aims to mitigate an attack
-  // scenario where attackers inject content into a search result page to make
-  // it look like e.g. Paypal and also navigate the URL to that of a search for
-  // "Paypal" -- hopefully, showing an obvious indicator that this is a search
-  // will decrease the chances of users falling for the phishing attempt.
-  if (AutocompleteMatch::IsSearchType(match.type) && IsSearchPageSecure())
-    return NORMAL_SEARCH_TERMS;
-
-  return supports_extraction_of_url_like_search_terms_?
-      URL_LIKE_SEARCH_TERMS : NO_SEARCH_TERMS;
-}
-
-bool ToolbarModelImpl::IsSearchPageSecure() const {
-  WebContents* web_contents = delegate_->GetActiveWebContents();
-  // This method should only be called for search pages.
-  DCHECK(!chrome::GetSearchTerms(web_contents).empty());
-
+  // If the page is still loading and the security style is unknown, consider
+  // the page secure.  Without this, after the user hit enter on some search
+  // terms, the omnibox would change to displaying the loading URL before
+  // changing back to the search terms once they could be extracted, thus
+  // causing annoying flicker.
+  DCHECK(web_contents);
   const NavigationController& nav_controller = web_contents->GetController();
+  const NavigationEntry* entry = nav_controller.GetVisibleEntry();
+  if ((entry != nav_controller.GetLastCommittedEntry()) &&
+      (entry->GetSSL().security_style == content::SECURITY_STYLE_UNKNOWN))
+    return search_terms;
 
-  // If the page is still loading and the security style is unkown then consider
-  // the page secure.
-  if (nav_controller.GetVisibleEntry()->GetSSL().security_style ==
-      content::SECURITY_STYLE_UNKNOWN && nav_controller.GetVisibleEntry() !=
-                                         nav_controller.GetLastCommittedEntry())
-    return true;
-
+  // Otherwise, extract search terms for HTTPS pages that do not have a security
+  // error.
   ToolbarModel::SecurityLevel security_level = GetSecurityLevel();
-  return security_level == SECURE || security_level == EV_SECURE;
+  return ((security_level == NONE) || (security_level == SECURITY_ERROR)) ?
+      string16() : search_terms;
 }

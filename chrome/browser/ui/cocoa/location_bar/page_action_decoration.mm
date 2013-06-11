@@ -80,8 +80,7 @@ PageActionDecoration::~PageActionDecoration() {}
 
 // Always |kPageActionIconMaxSize| wide.  |ImageDecoration| draws the
 // image centered.
-CGFloat PageActionDecoration::GetWidthForSpace(CGFloat width,
-                                               CGFloat text_width) {
+CGFloat PageActionDecoration::GetWidthForSpace(CGFloat width) {
   return extensions::IconsInfo::kPageActionIconMaxSize;
 }
 

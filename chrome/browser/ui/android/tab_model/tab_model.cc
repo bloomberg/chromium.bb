@@ -39,7 +39,6 @@ TabModel::TabModel(Profile* profile)
   } else {
     is_off_the_record_ = false;
   }
-  toolbar_model_->SetSupportsExtractionOfURLLikeSearchTerms(true);
 }
 
 TabModel::TabModel()
