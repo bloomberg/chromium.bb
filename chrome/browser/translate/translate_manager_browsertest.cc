@@ -666,10 +666,6 @@ TEST_F(TranslateManagerBrowserTest, FetchLanguagesFromTranslateServer) {
                         current_supported_languages.end(),
                         server_languages[i]));
   }
-
-  // Reset to original state.
-  TranslateManager::GetInstance()->FetchLanguageListFromTranslateServer(prefs);
-  SimulateSupportedLanguagesURLFetch(true, default_supported_languages);
 }
 
 std::string GetLanguageListString(
