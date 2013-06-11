@@ -602,7 +602,10 @@ static bool ShouldUseTransitionCompositing(float device_scale_factor) {
   if (command_line.HasSwitch(switches::kEnableCompositingForTransition))
     return true;
 
-  return DeviceScaleEnsuresTextQuality(device_scale_factor);
+  // TODO(ajuma): Re-enable this by default for high-DPI once the problem
+  // of excessive layer promotion caused by overlap has been addressed.
+  // http://crbug.com/178119.
+  return false;
 }
 
 static FaviconURL::IconType ToFaviconType(WebKit::WebIconURL::Type type) {
