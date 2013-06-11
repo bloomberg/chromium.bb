@@ -17,8 +17,10 @@
 
 namespace {
 
-// Timeout value for media codec operations.
-const int kMediaCodecTimeoutInMicroseconds = 5000;
+// Timeout value for media codec operations. Because the first
+// DequeInputBuffer() can take about 150 milliseconds, use 250 milliseconds
+// here. See b/9357571.
+const int kMediaCodecTimeoutInMicroseconds = 250000;
 
 class DecoderThread : public base::Thread {
  public:
@@ -108,8 +110,8 @@ void MediaDecoderJob::DecodeInternal(
   int input_buf_index = media_codec_bridge_->DequeueInputBuffer(timeout);
   if (input_buf_index == MediaCodecBridge::INFO_MEDIA_CODEC_ERROR) {
     message_loop_->PostTask(FROM_HERE, base::Bind(
-        callback, false, start_presentation_timestamp, start_wallclock_time,
-        false));
+        callback, DECODE_FAILED, start_presentation_timestamp,
+        start_wallclock_time, false));
     return;
   }
   // TODO(qinmin): skip frames if video is falling far behind.
@@ -121,11 +123,12 @@ void MediaDecoderJob::DecodeInternal(
           input_buf_index, &unit.data[0], unit.data.size(), unit.timestamp);
     }
   }
+
   size_t offset = 0;
   size_t size = 0;
   base::TimeDelta presentation_timestamp;
   bool end_of_stream = false;
-  bool decode_succeeded = true;
+  DecodeStatus decode_status = DECODE_SUCCEEDED;
 
   int outputBufferIndex = media_codec_bridge_->DequeueOutputBuffer(
       timeout, &offset, &size, &presentation_timestamp, &end_of_stream);
@@ -137,9 +140,10 @@ void MediaDecoderJob::DecodeInternal(
       // TODO(qinmin): figure out what we should do if format changes.
       break;
     case MediaCodecBridge::INFO_TRY_AGAIN_LATER:
+      decode_status = DECODE_TRY_AGAIN_LATER;
       break;
     case MediaCodecBridge::INFO_MEDIA_CODEC_ERROR:
-      decode_succeeded = false;
+      decode_status = DECODE_FAILED;
       break;
     default:
       DCHECK_LE(0, outputBufferIndex);
@@ -168,7 +172,7 @@ void MediaDecoderJob::DecodeInternal(
       return;
   }
   message_loop_->PostTask(FROM_HERE, base::Bind(
-      callback, decode_succeeded, start_presentation_timestamp,
+      callback, decode_status, start_presentation_timestamp,
       start_wallclock_time, end_of_stream));
 }
 
@@ -184,7 +188,7 @@ void MediaDecoderJob::ReleaseOutputBuffer(
   }
   media_codec_bridge_->ReleaseOutputBuffer(outputBufferIndex, !is_audio_);
   message_loop_->PostTask(FROM_HERE, base::Bind(
-      callback, true, presentation_timestamp, base::Time::Now(),
+      callback, DECODE_SUCCEEDED, presentation_timestamp, base::Time::Now(),
       end_of_stream));
 }
 
@@ -474,7 +478,7 @@ void MediaSourcePlayer::ProcessPendingEvents() {
 }
 
 void MediaSourcePlayer::MediaDecoderCallback(
-    bool is_audio, bool decode_succeeded,
+    bool is_audio, MediaDecoderJob::DecodeStatus decode_status,
     const base::TimeDelta& presentation_timestamp,
     const base::Time& wallclock_time, bool end_of_stream) {
   if (active_decoding_tasks_ > 0)
@@ -485,10 +489,15 @@ void MediaSourcePlayer::MediaDecoderCallback(
   if (!is_audio && video_decoder_job_)
     video_decoder_job_->OnDecodeCompleted();
 
-  if (!decode_succeeded) {
+  if (decode_status == MediaDecoderJob::DECODE_FAILED) {
     Release();
     OnMediaError(MEDIA_ERROR_DECODE);
     return;
+  } else if (decode_status == MediaDecoderJob::DECODE_SUCCEEDED) {
+    if (is_audio)
+      audio_access_unit_index_++;
+    else
+      video_access_unit_index_++;
   }
 
   if (pending_event_ != NO_EVENT_PENDING) {
@@ -541,7 +550,6 @@ void MediaSourcePlayer::DecodeMoreAudio() {
       base::Bind(&MediaSourcePlayer::MediaDecoderCallback,
                  weak_this_.GetWeakPtr(), true));
   active_decoding_tasks_++;
-  audio_access_unit_index_++;
 }
 
 void MediaSourcePlayer::DecodeMoreVideo() {
@@ -572,7 +580,6 @@ void MediaSourcePlayer::DecodeMoreVideo() {
       base::Bind(&MediaSourcePlayer::MediaDecoderCallback,
                  weak_this_.GetWeakPtr(), false));
   active_decoding_tasks_++;
-  video_access_unit_index_++;
 }
 
 

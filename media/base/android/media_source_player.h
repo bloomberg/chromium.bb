@@ -34,12 +34,18 @@ class AudioDecoderJob;
 // onto the same thread. The thread will be stopped once Stop() is called.
 class MediaDecoderJob {
  public:
+  enum DecodeStatus {
+    DECODE_SUCCEEDED = 0,
+    DECODE_TRY_AGAIN_LATER = 1,
+    DECODE_FAILED = 2,
+  };
+
   virtual ~MediaDecoderJob();
 
   // Callback when a decoder job finishes its work. Args: whether decode
   // finished successfully, presentation time, timestamp when the data is
   // rendered, whether decoder is reaching EOS.
-  typedef base::Callback<void(bool, const base::TimeDelta&,
+  typedef base::Callback<void(DecodeStatus, const base::TimeDelta&,
                               const base::Time&, bool)> DecoderCallback;
 
   // Called by MediaSourcePlayer to decode some data.
@@ -162,7 +168,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
 
   // Called when the decoder finishes its task.
   void MediaDecoderCallback(
-        bool is_audio, bool decode_succeeded,
+        bool is_audio, MediaDecoderJob::DecodeStatus decode_status,
         const base::TimeDelta& presentation_timestamp,
         const base::Time& wallclock_time, bool end_of_stream);
 
