@@ -32,18 +32,18 @@
 #include "V8CSSRule.h"
 
 #include "V8CSSCharsetRule.h"
-#include "V8CSSFilterRule.h"
 #include "V8CSSFontFaceRule.h"
 #include "V8CSSHostRule.h"
 #include "V8CSSImportRule.h"
-#include "V8CSSKeyframeRule.h"
-#include "V8CSSKeyframesRule.h"
 #include "V8CSSMediaRule.h"
 #include "V8CSSPageRule.h"
-#include "V8CSSRegionRule.h"
 #include "V8CSSStyleRule.h"
 #include "V8CSSSupportsRule.h"
 #include "V8CSSViewportRule.h"
+#include "V8WebKitCSSFilterRule.h"
+#include "V8WebKitCSSKeyframeRule.h"
+#include "V8WebKitCSSKeyframesRule.h"
+#include "V8WebKitCSSRegionRule.h"
 
 namespace WebCore {
 

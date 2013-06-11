@@ -26,17 +26,36 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Introduced in DOM Level ?:
 [
-    InterfaceName=WebKitCSSKeyframesRule
-] interface CSSKeyframesRule : CSSRule {
+    DoNotCheckConstants,
+    ImplementedAs=CSSTransformValue
+] interface WebKitCSSTransformValue : CSSValueList {
 
-    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString] attribute DOMString name;
-    readonly attribute CSSRuleList cssRules;
-    
-    [ImplementedAs=item, NotEnumerable] getter CSSKeyframeRule(unsigned long index);
-    void insertRule([Default=Undefined] optional DOMString rule);
-    void deleteRule([Default=Undefined] optional DOMString key);
-    CSSKeyframeRule findRule([Default=Undefined] optional DOMString key);
+    // OperationTypes
+
+    const unsigned short CSS_TRANSLATE   = 1;
+    const unsigned short CSS_TRANSLATEX  = 2;
+    const unsigned short CSS_TRANSLATEY  = 3;
+    const unsigned short CSS_ROTATE      = 4;
+    const unsigned short CSS_SCALE       = 5;
+    const unsigned short CSS_SCALEX      = 6;
+    const unsigned short CSS_SCALEY      = 7;
+    const unsigned short CSS_SKEW        = 8;
+    const unsigned short CSS_SKEWX       = 9;
+    const unsigned short CSS_SKEWY       = 10;
+    const unsigned short CSS_MATRIX      = 11;
+    const unsigned short CSS_TRANSLATEZ  = 12;
+    const unsigned short CSS_TRANSLATE3D = 13;
+    const unsigned short CSS_ROTATEX     = 14;
+    const unsigned short CSS_ROTATEY     = 15;
+    const unsigned short CSS_ROTATEZ     = 16;
+    const unsigned short CSS_ROTATE3D    = 17;
+    const unsigned short CSS_SCALEZ      = 18;
+    const unsigned short CSS_SCALE3D     = 19;
+    const unsigned short CSS_PERSPECTIVE = 20;
+    const unsigned short CSS_MATRIX3D    = 21;
+
+    readonly attribute unsigned short operationType;
+    [ImplementedAs=item] getter CSSValue([Default=Undefined] optional unsigned long index);
 };
 

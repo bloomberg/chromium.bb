@@ -31,14 +31,13 @@
 #include "config.h"
 #include "V8CSSValue.h"
 
-
-#include "V8CSSFilterValue.h"
-#include "V8CSSMixFunctionValue.h"
 #include "V8CSSPrimitiveValue.h"
-#include "V8CSSTransformValue.h"
 #include "V8CSSValueList.h"
 #include "V8SVGColor.h"
 #include "V8SVGPaint.h"
+#include "V8WebKitCSSFilterValue.h"
+#include "V8WebKitCSSMixFunctionValue.h"
+#include "V8WebKitCSSTransformValue.h"
 #include "core/css/CSSMixFunctionValue.h"
 
 namespace WebCore {

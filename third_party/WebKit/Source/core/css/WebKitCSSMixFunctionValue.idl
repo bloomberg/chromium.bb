@@ -28,7 +28,7 @@
  */
 
 [
-    InterfaceName=WebKitCSSMixFunctionValue
-] interface CSSMixFunctionValue : CSSValueList {
+    ImplementedAs=CSSMixFunctionValue
+] interface WebKitCSSMixFunctionValue : CSSValueList {
 };
 
