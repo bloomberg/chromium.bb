@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest_handler.h"
+#include "extensions/common/install_warning.h"
 #include "extensions/common/url_pattern_set.h"
 
 class GURL;
@@ -55,6 +56,7 @@ struct ExternallyConnectableInfo : public Extension::ManifestData {
   // the manifest. Sets |error| and returns an empty scoped_ptr on failure.
   static scoped_ptr<ExternallyConnectableInfo> FromValue(
       const base::Value& value,
+      std::vector<InstallWarning>* install_warnings,
       string16* error);
 
   virtual ~ExternallyConnectableInfo();

@@ -17,6 +17,9 @@ struct InstallWarning {
     FORMAT_TEXT,
     FORMAT_HTML,
   };
+  static InstallWarning Text(const std::string& message) {
+    return InstallWarning(FORMAT_TEXT, message);
+  }
   InstallWarning(Format format, const std::string& message)
       : format(format), message(message) {
   }

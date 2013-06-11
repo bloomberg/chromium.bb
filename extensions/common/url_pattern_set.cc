@@ -139,6 +139,15 @@ bool URLPatternSet::Contains(const URLPatternSet& other) const {
   return true;
 }
 
+bool URLPatternSet::ContainsPattern(const URLPattern& pattern) const {
+  for (URLPatternSet::const_iterator it = begin();
+       it != end(); ++it) {
+    if (it->Contains(pattern))
+      return true;
+  }
+  return false;
+}
+
 bool URLPatternSet::MatchesURL(const GURL& url) const {
   for (URLPatternSet::const_iterator pattern = patterns_.begin();
        pattern != patterns_.end(); ++pattern) {
@@ -219,15 +228,6 @@ bool URLPatternSet::Populate(const base::ListValue& value,
     patterns.push_back(item);
   }
   return Populate(patterns, valid_schemes, allow_file_access, error);
-}
-
-bool URLPatternSet::ContainsPattern(const URLPattern& pattern) const {
-  for (URLPatternSet::const_iterator it = begin();
-       it != end(); ++it) {
-    if (it->Contains(pattern))
-      return true;
-  }
-  return false;
 }
 
 }  // namespace extensions

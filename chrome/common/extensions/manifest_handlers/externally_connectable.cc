@@ -58,14 +58,18 @@ bool ExternallyConnectableHandler::Parse(Extension* extension,
   const base::Value* externally_connectable = NULL;
   CHECK(extension->manifest()->Get(keys::kExternallyConnectable,
                                    &externally_connectable));
+  std::vector<InstallWarning> install_warnings;
   scoped_ptr<ExternallyConnectableInfo> info =
-      ExternallyConnectableInfo::FromValue(*externally_connectable, error);
+      ExternallyConnectableInfo::FromValue(*externally_connectable,
+                                           &install_warnings,
+                                           error);
   if (!info)
     return false;
   if (!info->matches.is_empty()) {
     PermissionsData::GetInitialAPIPermissions(extension)->insert(
         APIPermission::kWebConnectable);
   }
+  extension->AddInstallWarnings(install_warnings);
   extension->SetManifestData(keys::kExternallyConnectable, info.release());
   return true;
 }
@@ -84,6 +88,7 @@ ExternallyConnectableInfo* ExternallyConnectableInfo::Get(
 // static
 scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
     const base::Value& value,
+    std::vector<InstallWarning>* install_warnings,
     string16* error) {
   scoped_ptr<ExternallyConnectable> externally_connectable =
       ExternallyConnectable::FromValue(value);
@@ -109,9 +114,11 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
 
       // Wildcard hosts are not allowed.
       if (pattern.host().empty()) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kErrorWildcardHostsNotAllowed, *it);
-        return scoped_ptr<ExternallyConnectableInfo>();
+        // Warning not error for forwards compatibility.
+        install_warnings->push_back(
+            InstallWarning::Text(ErrorUtils::FormatErrorMessage(
+                errors::kErrorWildcardHostsNotAllowed, *it)));
+        continue;
       }
 
       // Wildcards on subdomains of a TLD are not allowed.
@@ -135,11 +142,13 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
       // Broad match patterns like "*.com", "*.co.uk", and even "*.appspot.com"
       // are not allowed. However just "appspot.com" is ok.
       if (registry_length == 0 && pattern.match_subdomains()) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kErrorTopLevelDomainsNotAllowed,
-            pattern.host().c_str(),
-            *it);
-        return scoped_ptr<ExternallyConnectableInfo>();
+        // Warning not error for forwards compatibility.
+        install_warnings->push_back(InstallWarning::Text(
+            ErrorUtils::FormatErrorMessage(
+                errors::kErrorTopLevelDomainsNotAllowed,
+                pattern.host().c_str(),
+                *it)));
+        continue;
       }
 
       matches.AddPattern(pattern);

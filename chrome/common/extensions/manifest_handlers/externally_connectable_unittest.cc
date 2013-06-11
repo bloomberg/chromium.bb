@@ -22,6 +22,13 @@ class ExternallyConnectableTest : public ExtensionManifestTest {
  public:
   ExternallyConnectableTest() : channel_(chrome::VersionInfo::CHANNEL_DEV) {}
 
+ protected:
+  ExternallyConnectableInfo* GetExternallyConnectableInfo(
+      scoped_refptr<Extension> extension) {
+    return static_cast<ExternallyConnectableInfo*>(extension->GetManifestData(
+        extension_manifest_keys::kExternallyConnectable));
+  }
+
  private:
   Feature::ScopedCurrentChannel channel_;
 };
@@ -192,75 +199,87 @@ TEST_F(ExternallyConnectableTest, IdCanConnect) {
 }
 
 TEST_F(ExternallyConnectableTest, ErrorWrongFormat) {
-  RunTestcase(Testcase("externally_connectable_error_wrong_format.json",
-                       errors::kErrorInvalid),
-              EXPECT_TYPE_ERROR);
+  LoadAndExpectError("externally_connectable_error_wrong_format.json",
+                     errors::kErrorInvalid);
 }
 
 TEST_F(ExternallyConnectableTest, ErrorBadID) {
-  RunTestcase(Testcase("externally_connectable_bad_id.json",
-                       ErrorUtils::FormatErrorMessage(errors::kErrorInvalidId,
-                                                      "badid")),
-              EXPECT_TYPE_ERROR);
+  LoadAndExpectError(
+      "externally_connectable_bad_id.json",
+      ErrorUtils::FormatErrorMessage(errors::kErrorInvalidId, "badid"));
 }
 
 TEST_F(ExternallyConnectableTest, ErrorBadMatches) {
-  RunTestcase(
-      Testcase("externally_connectable_error_bad_matches.json",
-               ErrorUtils::FormatErrorMessage(errors::kErrorInvalidMatchPattern,
-                                              "www.yahoo.com")),
-      EXPECT_TYPE_ERROR);
+  LoadAndExpectError(
+      "externally_connectable_error_bad_matches.json",
+      ErrorUtils::FormatErrorMessage(errors::kErrorInvalidMatchPattern,
+                                     "www.yahoo.com"));
 }
 
-TEST_F(ExternallyConnectableTest, ErrorNoAllURLs) {
-  RunTestcase(
-      Testcase(
-          "externally_connectable_error_all_urls.json",
-          ErrorUtils::FormatErrorMessage(errors::kErrorWildcardHostsNotAllowed,
-                                         "<all_urls>")),
-      EXPECT_TYPE_ERROR);
+TEST_F(ExternallyConnectableTest, WarningNoAllURLs) {
+  scoped_refptr<Extension> extension = LoadAndExpectWarning(
+      "externally_connectable_error_all_urls.json",
+      ErrorUtils::FormatErrorMessage(errors::kErrorWildcardHostsNotAllowed,
+                                     "<all_urls>"));
+  ExternallyConnectableInfo* info = GetExternallyConnectableInfo(extension);
+  EXPECT_FALSE(info->matches.ContainsPattern(
+      URLPattern(URLPattern::SCHEME_ALL, "<all_urls>")));
+  EXPECT_TRUE(info->matches.MatchesURL(GURL("https://example.com")));
+  EXPECT_TRUE(info->matches.MatchesURL(GURL("http://build.chromium.org")));
 }
 
-TEST_F(ExternallyConnectableTest, ErrorWildcardHost) {
-  RunTestcase(
-      Testcase(
-          "externally_connectable_error_wildcard_host.json",
-          ErrorUtils::FormatErrorMessage(errors::kErrorWildcardHostsNotAllowed,
-                                         "http://*/*")),
-      EXPECT_TYPE_ERROR);
+TEST_F(ExternallyConnectableTest, WarningWildcardHost) {
+  scoped_refptr<Extension> extension = LoadAndExpectWarning(
+      "externally_connectable_error_wildcard_host.json",
+      ErrorUtils::FormatErrorMessage(errors::kErrorWildcardHostsNotAllowed,
+                                     "http://*/*"));
+  ExternallyConnectableInfo* info = GetExternallyConnectableInfo(extension);
+  EXPECT_FALSE(info->matches.ContainsPattern(
+      URLPattern(URLPattern::SCHEME_ALL, "http://*/*")));
+  EXPECT_TRUE(info->matches.MatchesURL(GURL("https://example.com")));
+  EXPECT_TRUE(info->matches.MatchesURL(GURL("http://build.chromium.org")));
 }
 
-TEST_F(ExternallyConnectableTest, ErrorNoTLD) {
-  RunTestcase(
-      Testcase(
-          "externally_connectable_error_tld.json",
-          ErrorUtils::FormatErrorMessage(
-              errors::kErrorTopLevelDomainsNotAllowed,
-              "co.uk",
-              "http://*.co.uk/*")),
-      EXPECT_TYPE_ERROR);
+TEST_F(ExternallyConnectableTest, WarningNoTLD) {
+  scoped_refptr<Extension> extension = LoadAndExpectWarning(
+      "externally_connectable_error_tld.json",
+      ErrorUtils::FormatErrorMessage(
+          errors::kErrorTopLevelDomainsNotAllowed,
+          "co.uk",
+          "http://*.co.uk/*"));
+  ExternallyConnectableInfo* info = GetExternallyConnectableInfo(extension);
+  EXPECT_FALSE(info->matches.ContainsPattern(
+      URLPattern(URLPattern::SCHEME_ALL, "http://*.co.uk/*")));
+  EXPECT_TRUE(info->matches.MatchesURL(GURL("https://example.com")));
+  EXPECT_TRUE(info->matches.MatchesURL(GURL("http://build.chromium.org")));
 }
 
-TEST_F(ExternallyConnectableTest, ErrorNoEffectiveTLD) {
-  RunTestcase(
-      Testcase(
-          "externally_connectable_error_effective_tld.json",
-          ErrorUtils::FormatErrorMessage(
-              errors::kErrorTopLevelDomainsNotAllowed,
-              "appspot.com",
-              "http://*.appspot.com/*")),
-      EXPECT_TYPE_ERROR);
+TEST_F(ExternallyConnectableTest, WarningNoEffectiveTLD) {
+  scoped_refptr<Extension> extension = LoadAndExpectWarning(
+      "externally_connectable_error_effective_tld.json",
+      ErrorUtils::FormatErrorMessage(
+          errors::kErrorTopLevelDomainsNotAllowed,
+          "appspot.com",
+          "http://*.appspot.com/*"));
+  ExternallyConnectableInfo* info = GetExternallyConnectableInfo(extension);
+  EXPECT_FALSE(info->matches.ContainsPattern(
+      URLPattern(URLPattern::SCHEME_ALL, "http://*.appspot.com/*")));
+  EXPECT_TRUE(info->matches.MatchesURL(GURL("https://example.com")));
+  EXPECT_TRUE(info->matches.MatchesURL(GURL("http://build.chromium.org")));
 }
 
-TEST_F(ExternallyConnectableTest, ErrorUnknownTLD) {
-  RunTestcase(
-      Testcase(
-          "externally_connectable_error_unknown_tld.json",
-          ErrorUtils::FormatErrorMessage(
-              errors::kErrorTopLevelDomainsNotAllowed,
-              "notatld",
-              "http://*.notatld/*")),
-      EXPECT_TYPE_ERROR);
+TEST_F(ExternallyConnectableTest, WarningUnknownTLD) {
+  scoped_refptr<Extension> extension = LoadAndExpectWarning(
+      "externally_connectable_error_unknown_tld.json",
+      ErrorUtils::FormatErrorMessage(
+          errors::kErrorTopLevelDomainsNotAllowed,
+          "notatld",
+          "http://*.notatld/*"));
+  ExternallyConnectableInfo* info = GetExternallyConnectableInfo(extension);
+  EXPECT_FALSE(info->matches.ContainsPattern(
+      URLPattern(URLPattern::SCHEME_ALL, "http://*.notatld/*")));
+  EXPECT_TRUE(info->matches.MatchesURL(GURL("https://example.com")));
+  EXPECT_TRUE(info->matches.MatchesURL(GURL("http://build.chromium.org")));
 }
 
 }  // namespace extensions
