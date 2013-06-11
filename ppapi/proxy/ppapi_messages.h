@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/sync_socket.h"
 #include "base/values.h"
 #include "gpu/command_buffer/common/command_buffer.h"

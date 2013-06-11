@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "printing/page_range.h"
 #include "printing/page_setup.h"
 #include "printing/print_job_constants.h"

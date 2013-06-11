@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/perftimer.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
 #include "ppapi/proxy/serialized_var.h"

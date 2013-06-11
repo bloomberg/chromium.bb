@@ -5,7 +5,7 @@
 #ifndef PRINTING_PRINTED_PAGES_SOURCE_H_
 #define PRINTING_PRINTED_PAGES_SOURCE_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace printing {
 

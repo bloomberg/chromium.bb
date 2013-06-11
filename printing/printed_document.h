@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "printing/print_settings.h"
 #include "ui/gfx/native_widget_types.h"

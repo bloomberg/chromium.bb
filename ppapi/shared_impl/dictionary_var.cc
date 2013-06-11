@@ -5,7 +5,7 @@
 #include "ppapi/shared_impl/dictionary_var.h"
 
 #include "base/memory/ref_counted.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "ppapi/shared_impl/array_var.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var_tracker.h"

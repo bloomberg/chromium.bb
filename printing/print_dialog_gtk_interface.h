@@ -5,7 +5,7 @@
 #ifndef PRINTING_PRINT_DIALOG_GTK_INTERFACE_H_
 #define PRINTING_PRINT_DIALOG_GTK_INTERFACE_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "printing/printing_context_gtk.h"
 #include "ui/gfx/native_widget_types.h"
 

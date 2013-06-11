@@ -52,8 +52,8 @@ std::string StripTestCase(const std::string& full_test_name) {
 // the bool indicating whether the test should be run.
 void ParseTestFilter(const std::string& test_filter,
                      std::map<std::string, bool>* remaining_tests) {
-  // We can't use base/string_util.h::Tokenize in ppapi, so we have to do it
-  // ourselves.
+  // We can't use base/strings/string_util.h::Tokenize in ppapi, so we have to
+  // do it ourselves.
   std::istringstream filter_stream(test_filter);
   std::string current_test;
   while (std::getline(filter_stream, current_test, ',')) {

@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkunixprint.h>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "printing/print_settings.h"
 #include "printing/units.h"

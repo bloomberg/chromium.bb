@@ -45,7 +45,7 @@ std::vector<char> PnaclOptions::GetOptCommandline() {
   std::vector<nacl::string> tokens;
 
   // Split the experimental_flags_ + the -On along whitespace.
-  // Mostly a copy of "base/string_util.h", but avoid importing
+  // Mostly a copy of "base/strings/string_util.h", but avoid importing
   // base into the PPAPI plugin for now.
   nacl::string delim(" ");
   nacl::string str = experimental_flags_;

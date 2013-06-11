@@ -9,7 +9,7 @@
 #include "base/file_util.h"
 #include "base/md5.h"
 #include "base/safe_numerics.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
 #include "third_party/skia/include/core/SkColor.h"

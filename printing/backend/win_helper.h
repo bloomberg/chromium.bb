@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
 #include "printing/printing_export.h"
 

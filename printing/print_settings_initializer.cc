@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/i18n/time_formatting.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
 #include "base/values.h"
