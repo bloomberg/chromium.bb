@@ -43,9 +43,11 @@ class AutofillWebDataService : public AutofillWebData,
   AutofillWebDataService(scoped_refptr<WebDatabaseService> wdbs,
                          const ProfileErrorCallback& callback);
 
+  virtual ~AutofillWebDataService();
+
   // Retrieve an AutofillWebDataService for the given context.
   // Can return NULL in some contexts.
-  static scoped_refptr<AutofillWebDataService> FromBrowserContext(
+  static AutofillWebDataService* FromBrowserContext(
       content::BrowserContext* context);
 
   // WebDataServiceBase implementation.
@@ -101,8 +103,6 @@ class AutofillWebDataService : public AutofillWebData,
       const base::Callback<void(AutofillWebDataBackend*)>& callback);
 
  protected:
-  virtual ~AutofillWebDataService();
-
   virtual void NotifyAutofillMultipleChangedOnUIThread();
 
   base::WeakPtr<AutofillWebDataService> AsWeakPtr() {

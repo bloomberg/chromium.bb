@@ -86,7 +86,7 @@ void AutofillDataTypeController::StartAssociating(
   ProfileSyncService* sync = ProfileSyncServiceFactory::GetForProfile(
       profile());
   DCHECK(sync);
-  scoped_refptr<autofill::AutofillWebDataService> web_data_service =
+  autofill::AutofillWebDataService* web_data_service =
       autofill::AutofillWebDataService::FromBrowserContext(profile());
   bool cull_expired_entries = sync->current_experiments().autofill_culling;
   // First, post the update task to the DB thread, which guarantees us it
@@ -104,10 +104,10 @@ void AutofillDataTypeController::StartAssociating(
 
 void AutofillDataTypeController::UpdateAutofillCullingSettings(
     bool cull_expired_entries,
-    scoped_refptr<autofill::AutofillWebDataService> web_data_service) {
+    autofill::AutofillWebDataService* web_data_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   AutocompleteSyncableService* service =
-      AutocompleteSyncableService::FromWebDataService(web_data_service.get());
+      AutocompleteSyncableService::FromWebDataService(web_data_service);
   if (!service) {
     DVLOG(1) << "Can't update culling, no AutocompleteSyncableService.";
     return;

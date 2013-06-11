@@ -112,4 +112,4 @@ void AutofillProfileDataTypeController::StopModels() {
   personal_data_->RemoveObserver(this);
 }
 
-}  // namepsace browser_sync
+}  // namespace browser_sync

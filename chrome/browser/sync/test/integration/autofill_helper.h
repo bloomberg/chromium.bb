@@ -34,7 +34,7 @@ enum ProfileType {
 };
 
 // Used to access the web data service within a particular sync profile.
-scoped_refptr<autofill::AutofillWebDataService> GetWebDataService(
+autofill::AutofillWebDataService* GetWebDataService(
     int index) WARN_UNUSED_RESULT;
 
 // Used to access the personal data manager within a particular sync profile.

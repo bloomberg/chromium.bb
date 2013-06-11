@@ -33,7 +33,7 @@ class AwFormDatabaseService : public WebDataServiceConsumer {
   // Clear any saved form data. Executes asynchronously.
   void ClearFormData();
 
-  scoped_refptr<autofill::AutofillWebDataService>
+  autofill::AutofillWebDataService*
       get_autofill_webdata_service();
 
   // WebDataServiceConsumer implementation.
@@ -52,7 +52,7 @@ class AwFormDatabaseService : public WebDataServiceConsumer {
   bool has_form_data_;
   base::WaitableEvent completion_;
 
-  scoped_refptr<autofill::AutofillWebDataService> autofill_data_;
+  scoped_ptr<autofill::AutofillWebDataService> autofill_data_;
   scoped_refptr<WebDatabaseService> web_database_;
 
   DISALLOW_COPY_AND_ASSIGN(AwFormDatabaseService);

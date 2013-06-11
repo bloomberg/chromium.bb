@@ -228,8 +228,10 @@ class TokenService : public GaiaAuthConsumer,
   // The profile with which this instance was initialized, or NULL.
   Profile* profile_;
 
-  // Web data service to access tokens from.
-  scoped_refptr<TokenWebData> token_web_data_;
+  // Web data service to access tokens from. Owned by WebDataServiceWrapper,
+  // which outlives TokenService.
+  TokenWebData* token_web_data_;
+
   // Getter to use for fetchers.
   scoped_refptr<net::URLRequestContextGetter> getter_;
   // Request handle to load Gaia tokens from DB.
