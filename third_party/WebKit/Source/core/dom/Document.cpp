@@ -128,6 +128,7 @@
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLMapElement.h"
 #include "core/html/HTMLNameCollection.h"
+#include "core/html/HTMLScriptElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/HTMLTitleElement.h"
 #include "core/html/PluginDocument.h"
@@ -3930,6 +3931,18 @@ KURL Document::openSearchDescriptionURL()
     }
 
     return KURL();
+}
+
+void Document::pushCurrentScript(PassRefPtr<HTMLScriptElement> newCurrentScript)
+{
+    ASSERT(newCurrentScript);
+    m_currentScriptStack.append(newCurrentScript);
+}
+
+void Document::popCurrentScript()
+{
+    ASSERT(!m_currentScriptStack.isEmpty());
+    m_currentScriptStack.removeLast();
 }
 
 void Document::applyXSLTransform(ProcessingInstruction* pi)

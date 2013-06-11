@@ -294,5 +294,7 @@
     readonly attribute Element firstElementChild;
     readonly attribute Element lastElementChild;
     readonly attribute unsigned long childElementCount;
+
+    readonly attribute HTMLScriptElement currentScript;
 };
 

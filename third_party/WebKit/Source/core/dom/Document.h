@@ -108,6 +108,7 @@ class HTMLImportsController;
 class HTMLIFrameElement;
 class HTMLMapElement;
 class HTMLNameCollection;
+class HTMLScriptElement;
 class HitTestRequest;
 class HitTestResult;
 class IntPoint;
@@ -850,6 +851,10 @@ public:
 
     ScriptRunner* scriptRunner() { return m_scriptRunner.get(); }
 
+    HTMLScriptElement* currentScript() const { return !m_currentScriptStack.isEmpty() ? m_currentScriptStack.last().get() : 0; }
+    void pushCurrentScript(PassRefPtr<HTMLScriptElement>);
+    void popCurrentScript();
+
     void applyXSLTransform(ProcessingInstruction* pi);
     PassRefPtr<Document> transformSourceDocument() { return m_transformSourceDocument; }
     void setTransformSourceDocument(Document* doc) { m_transformSourceDocument = doc; }
@@ -1313,6 +1318,8 @@ private:
     bool m_overMinimumLayoutThreshold;
     
     OwnPtr<ScriptRunner> m_scriptRunner;
+
+    Vector<RefPtr<HTMLScriptElement> > m_currentScriptStack;
 
     OwnPtr<TransformSource> m_transformSource;
     RefPtr<Document> m_transformSourceDocument;
