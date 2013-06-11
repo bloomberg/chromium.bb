@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 
 #include "base/i18n/rtl.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"

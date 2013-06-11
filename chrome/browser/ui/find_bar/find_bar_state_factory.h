@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
 class Profile;

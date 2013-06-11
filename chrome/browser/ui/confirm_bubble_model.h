@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_CONFIRM_BUBBLE_MODEL_H_
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace gfx {
 class Image;

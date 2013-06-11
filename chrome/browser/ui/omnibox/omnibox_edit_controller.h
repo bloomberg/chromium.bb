@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_CONTROLLER_H_
 #define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_EDIT_CONTROLLER_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/public/common/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 

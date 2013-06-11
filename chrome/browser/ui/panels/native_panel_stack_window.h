@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_STACK_WINDOW_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 class Panel;
 namespace gfx {

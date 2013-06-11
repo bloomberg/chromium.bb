@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_UTIL_H_
 #define CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_UTIL_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class ExtensionAction;

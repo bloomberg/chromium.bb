@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/memory/linked_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "content/public/browser/notification_observer.h"

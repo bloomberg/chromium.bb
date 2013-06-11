@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_PDF_OPEN_PDF_IN_READER_PROMPT_DELEGATE_H_
 #define CHROME_BROWSER_UI_PDF_OPEN_PDF_IN_READER_PROMPT_DELEGATE_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace content {
 struct LoadCommittedDetails;

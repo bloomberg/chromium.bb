@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_LOGIN_LOGIN_MODEL_H_
 #define CHROME_BROWSER_UI_LOGIN_LOGIN_MODEL_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 // Simple Model & Observer interfaces for a LoginView to facilitate exchanging
 // information.

@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
