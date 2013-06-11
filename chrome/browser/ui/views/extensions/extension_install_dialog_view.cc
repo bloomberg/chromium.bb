@@ -293,7 +293,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
   int column_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
   int left_column_width =
-      (prompt.GetPermissionCount() + prompt.GetOAuthIssueCount() +
+      (prompt.ShouldShowPermissions() + prompt.GetOAuthIssueCount() +
        prompt.GetRetainedFileCount()) > 0 ?
           kPermissionsLeftColumnWidth : kNoPermissionsLeftColumnWidth;
   if (is_bundle_install())
@@ -343,10 +343,17 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     if (is_inline_install()) {
       // Also span the rating, user_count and store_link rows.
       icon_row_span = 4;
-    } else if (prompt.GetPermissionCount()) {
-      // Also span the permission header and each of the permission rows (all
-      // have a padding row above it).
-      icon_row_span = 3 + prompt.GetPermissionCount() * 2;
+    } else if (prompt.ShouldShowPermissions()) {
+      size_t permission_count = prompt.GetPermissionCount();
+      if (permission_count > 0) {
+        // Also span the permission header and each of the permission rows (all
+        // have a padding row above it).
+        icon_row_span = 3 + permission_count * 2;
+      } else {
+        // This is the 'no special permissions' case, so span the line we add
+        // (without a header) saying the extension has no special privileges.
+        icon_row_span = 4;
+      }
     } else if (prompt.GetOAuthIssueCount()) {
       // Also span the permission header and each of the permission rows (all
       // have a padding row above it).
@@ -405,38 +412,49 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     }
   }
 
-  if (prompt.GetPermissionCount()) {
+  if (prompt.ShouldShowPermissions()) {
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
-    if (is_inline_install()) {
-      layout->StartRow(0, column_set_id);
-      layout->AddView(new views::Separator(views::Separator::HORIZONTAL),
-                      3, 1, views::GridLayout::FILL, views::GridLayout::FILL);
-      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-    }
+    if (prompt.GetPermissionCount() > 0) {
+      if (is_inline_install()) {
+        layout->StartRow(0, column_set_id);
+        layout->AddView(new views::Separator(views::Separator::HORIZONTAL),
+                        3, 1, views::GridLayout::FILL, views::GridLayout::FILL);
+        layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+      }
 
-    layout->StartRow(0, column_set_id);
-    views::Label* permissions_header = NULL;
-    if (is_bundle_install()) {
-      // We need to pass the Font in the constructor, rather than calling
-      // SetFont later, because otherwise SizeToFit mis-judges the width
-      // of the line.
-      permissions_header = new views::Label(
-          prompt.GetPermissionsHeading(),
-          rb.GetFont(ui::ResourceBundle::MediumFont));
+      layout->StartRow(0, column_set_id);
+      views::Label* permissions_header = NULL;
+      if (is_bundle_install()) {
+        // We need to pass the Font in the constructor, rather than calling
+        // SetFont later, because otherwise SizeToFit mis-judges the width
+        // of the line.
+        permissions_header = new views::Label(
+            prompt.GetPermissionsHeading(),
+            rb.GetFont(ui::ResourceBundle::MediumFont));
+      } else {
+        permissions_header = new views::Label(prompt.GetPermissionsHeading());
+      }
+      permissions_header->SetMultiLine(true);
+      permissions_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+      permissions_header->SizeToFit(left_column_width);
+      layout->AddView(permissions_header);
+
+      for (size_t i = 0; i < prompt.GetPermissionCount(); ++i) {
+        layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+        layout->StartRow(0, column_set_id);
+        views::Label* permission_label = new views::Label(PrepareForDisplay(
+            prompt.GetPermission(i), true));
+        permission_label->SetMultiLine(true);
+        permission_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+        permission_label->SizeToFit(left_column_width);
+        layout->AddView(permission_label);
+      }
     } else {
-      permissions_header = new views::Label(prompt.GetPermissionsHeading());
-    }
-    permissions_header->SetMultiLine(true);
-    permissions_header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    permissions_header->SizeToFit(left_column_width);
-    layout->AddView(permissions_header);
-
-    for (size_t i = 0; i < prompt.GetPermissionCount(); ++i) {
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
       layout->StartRow(0, column_set_id);
-      views::Label* permission_label = new views::Label(PrepareForDisplay(
-          prompt.GetPermission(i), true));
+      views::Label* permission_label = new views::Label(
+          l10n_util::GetStringUTF16(IDS_EXTENSION_NO_SPECIAL_PERMISSIONS));
       permission_label->SetMultiLine(true);
       permission_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       permission_label->SizeToFit(left_column_width);
