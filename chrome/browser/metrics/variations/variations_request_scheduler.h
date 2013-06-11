@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_REQUEST_SCHEDULER_H_
 
 #include "base/bind.h"
+#include "base/time.h"
 #include "base/timer.h"
 
 class PrefService;
@@ -22,6 +23,10 @@ class VariationsRequestScheduler {
 
   // Resets the scheduler if it is currently on a timer.
   virtual void Reset();
+
+  // Schedules a fetch shortly, for example to re-try the initial request which
+  // may have failed.
+  void ScheduleFetchShortly();
 
   // Factory method for this class.
   static VariationsRequestScheduler* Create(const base::Closure& task,
@@ -42,6 +47,9 @@ class VariationsRequestScheduler {
   // member so if VariationsRequestScheduler goes out of scope, the timer is
   // automatically canceled.
   base::RepeatingTimer<VariationsRequestScheduler> timer_;
+
+  // A one-shot timer used for scheduling out-of-band fetches.
+  base::OneShotTimer<VariationsRequestScheduler> one_shot_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(VariationsRequestScheduler);
 };

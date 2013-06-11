@@ -176,6 +176,7 @@ VariationsService::VariationsService(PrefService* local_state)
     : local_state_(local_state),
       variations_server_url_(GetVariationsServerURL(local_state)),
       create_trials_from_seed_called_(false),
+      initial_request_completed_(false),
       resource_request_allowed_notifier_(
           new ResourceRequestAllowedNotifier) {
   resource_request_allowed_notifier_->Init(this);
@@ -186,6 +187,7 @@ VariationsService::VariationsService(ResourceRequestAllowedNotifier* notifier,
     : local_state_(local_state),
       variations_server_url_(GetVariationsServerURL(NULL)),
       create_trials_from_seed_called_(false),
+      initial_request_completed_(false),
       resource_request_allowed_notifier_(notifier) {
   resource_request_allowed_notifier_->Init(this);
 }
@@ -357,6 +359,10 @@ void VariationsService::FetchVariationsSeed() {
 
 void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(pending_seed_request_.get(), source);
+
+  const bool is_first_request = !initial_request_completed_;
+  initial_request_completed_ = true;
+
   // The fetcher will be deleted when the request is handled.
   scoped_ptr<const net::URLFetcher> request(pending_seed_request_.release());
   const net::URLRequestStatus& request_status = request->GetStatus();
@@ -366,6 +372,11 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
     DVLOG(1) << "Variations server request failed with error: "
              << request_status.error() << ": "
              << net::ErrorToString(request_status.error());
+    // It's common for the very first fetch attempt to fail (e.g. the network
+    // may not yet be available). In such a case, try again soon, rather than
+    // waiting the full time interval.
+    if (is_first_request)
+      request_scheduler_->ScheduleFetchShortly();
     return;
   }
 

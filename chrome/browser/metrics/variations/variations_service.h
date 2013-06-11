@@ -196,6 +196,9 @@ class VariationsService
   // it gets called prior to |StartRepeatedVariationsSeedFetch|.
   bool create_trials_from_seed_called_;
 
+  // Tracks whether the initial request to the variations server had completed.
+  bool initial_request_completed_;
+
   // Helper class used to tell this service if it's allowed to make network
   // resource requests.
   scoped_ptr<ResourceRequestAllowedNotifier> resource_request_allowed_notifier_;
