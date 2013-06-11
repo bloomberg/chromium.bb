@@ -46,25 +46,32 @@ run_with_timeout() {
   return 1
 }
 
+# Usage: run_and_ignore_error [--login] user program [args...]
+#   --login:
+#     Run program in a clean login shell. This requires backgrounding, since
+#     the user's .profile or .login script might be run, which might contain
+#     blocking commands.
 run_and_ignore_error() {
+  login_options=""
+  if [ "$1" = "--login" ]; then
+    login_options="-b -i"
+    shift
+  fi
+
   user=$1
-  shift
-  exec=$1
   shift
 
   set +e
   if [ "$(whoami)" = "$user" ]; then
-    "$exec" "$@"
+    "$@"
   else
-    shell="$(getent passwd "$user" | cut -d: -f7)"
-    USER="$user" LOGNAME="$user" SHELL="$shell" start-stop-daemon \
-      --chuid "$user" --exec "$exec" --start -- "$@"
+    sudo -u "$user" $login_options "$@"
   fi
 }
 
 do_start() {
   log_begin_msg "Starting Chrome Remote Desktop host for $1..."
-  run_and_ignore_error $1 "$HOST_PATH" --start
+  run_and_ignore_error --login $1 "$HOST_PATH" --start
   log_end_msg $?
 }
 
@@ -83,7 +90,7 @@ do_reload() {
 do_restart() {
   log_begin_msg "Restarting Chrome Remote Desktop host for $1..."
   run_and_ignore_error $1 "$HOST_PATH" --stop
-  run_and_ignore_error $1 "$HOST_PATH" --start
+  run_and_ignore_error --login $1 "$HOST_PATH" --start
   log_end_msg $?
 }
 
