@@ -4,7 +4,7 @@
 
 #include "chrome/tools/convert_dict/hunspell_reader.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 namespace convert_dict {
 

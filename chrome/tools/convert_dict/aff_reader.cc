@@ -8,8 +8,8 @@
 
 #include "base/file_util.h"
 #include "base/i18n/icu_string_conversions.h"
-#include "base/stringprintf.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/tools/convert_dict/hunspell_reader.h"
 
