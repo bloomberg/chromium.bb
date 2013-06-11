@@ -340,18 +340,6 @@ public:
     virtual bool loadAudioResource(WebAudioBus* destinationBus, const char* audioFileData, size_t dataSize, double sampleRate) { return false; }
 
 
-    // Sandbox ------------------------------------------------------------
-
-    // In some browsers, a "sandbox" restricts what operations a program
-    // is allowed to preform. Such operations are typically abstracted out
-    // via this API, but sometimes (like in HTML 5 database opening) WebKit
-    // needs to behave differently based on whether it's restricted or not.
-    // In these cases (and these cases only) you can call this function.
-    // It's OK for this value to be conservitive (i.e. true even if the
-    // sandbox isn't active).
-    virtual bool sandboxEnabled() { return false; }
-
-
     // Screen -------------------------------------------------------------
 
     // Supplies the system monitor color profile.
@@ -388,9 +376,6 @@ public:
 
     // Callable from a background WebKit thread.
     virtual void callOnMainThread(void (*func)(void*), void* context) { }
-
-    // Checks the partition/volume where fileName resides.
-    virtual long long availableDiskSpaceInBytes(const WebString& fileName) { return 0; }
 
 
     // Testing -------------------------------------------------------------
