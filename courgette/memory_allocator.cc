@@ -7,7 +7,7 @@
 #include <map>
 
 #include "base/file_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 
 #if defined(OS_WIN)
 

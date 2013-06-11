@@ -6,7 +6,7 @@
 #include <map>
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 bool inH = true;
 struct H {

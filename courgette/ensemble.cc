@@ -5,11 +5,11 @@
 #include "courgette/ensemble.h"
 
 #include "base/basictypes.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 
 #include "courgette/region.h"
-#include "courgette/streams.h"
 #include "courgette/simple_delta.h"
+#include "courgette/streams.h"
 
 namespace courgette {
 
