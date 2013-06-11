@@ -1950,4 +1950,58 @@ TEST_F(ResourceDispatcherHostTest, DelayedDataReceivedACKs) {
   }
 }
 
+// Flakyness of this test might indicate memory corruption issues with
+// for example the ResourceBuffer of AsyncResourceHandler.
+TEST_F(ResourceDispatcherHostTest, DataReceivedUnexpectedACKs) {
+  EXPECT_EQ(0, host_.pending_requests());
+
+  HandleScheme("big-job");
+  MakeTestRequest(0, 1, GURL("big-job:0123456789,1000000"));
+
+  // Sort all the messages we saw by request.
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+
+  // We expect 1x ReceivedResponse, 1x SetDataBuffer, Nx ReceivedData messages.
+  EXPECT_EQ(ResourceMsg_ReceivedResponse::ID, msgs[0][0].type());
+  EXPECT_EQ(ResourceMsg_SetDataBuffer::ID, msgs[0][1].type());
+  for (size_t i = 2; i < msgs[0].size(); ++i)
+    EXPECT_EQ(ResourceMsg_DataReceived::ID, msgs[0][i].type());
+
+  // NOTE: If we fail the above checks then it means that we probably didn't
+  // load a big enough response to trigger the delay mechanism.
+
+  // Send some unexpected ACKs.
+  for (size_t i = 0; i < 128; ++i) {
+    ResourceHostMsg_DataReceived_ACK msg(0, 1);
+    bool msg_was_ok;
+    host_.OnMessageReceived(msg, filter_.get(), &msg_was_ok);
+  }
+
+  msgs[0].erase(msgs[0].begin());
+  msgs[0].erase(msgs[0].begin());
+
+  // ACK all DataReceived messages until we find a RequestComplete message.
+  bool complete = false;
+  while (!complete) {
+    for (size_t i = 0; i < msgs[0].size(); ++i) {
+      if (msgs[0][i].type() == ResourceMsg_RequestComplete::ID) {
+        complete = true;
+        break;
+      }
+
+      EXPECT_EQ(ResourceMsg_DataReceived::ID, msgs[0][i].type());
+
+      ResourceHostMsg_DataReceived_ACK msg(0, 1);
+      bool msg_was_ok;
+      host_.OnMessageReceived(msg, filter_.get(), &msg_was_ok);
+    }
+
+    base::MessageLoop::current()->RunUntilIdle();
+
+    msgs.clear();
+    accum_.GetClassifiedMessages(&msgs);
+  }
+}
+
 }  // namespace content

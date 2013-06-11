@@ -129,11 +129,13 @@ void AsyncResourceHandler::OnFollowRedirect(
 }
 
 void AsyncResourceHandler::OnDataReceivedACK(int request_id) {
-  --pending_data_count_;
+  if (pending_data_count_) {
+    --pending_data_count_;
 
-  buffer_->RecycleLeastRecentlyAllocated();
-  if (buffer_->CanAllocate())
-    ResumeIfDeferred();
+    buffer_->RecycleLeastRecentlyAllocated();
+    if (buffer_->CanAllocate())
+      ResumeIfDeferred();
+  }
 }
 
 bool AsyncResourceHandler::OnUploadProgress(int request_id,
