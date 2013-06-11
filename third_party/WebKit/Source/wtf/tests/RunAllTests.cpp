@@ -31,8 +31,8 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/MainThread.h"
 #include "wtf/Threading.h"
+#include <base/test/test_suite.h>
 #include <gmock/gmock.h>
-#include <gtest/gtest.h>
 
 static double CurrentTime()
 {
@@ -44,5 +44,5 @@ int main(int argc, char** argv)
     ::testing::InitGoogleMock(&argc, argv);
     WTF::initialize(CurrentTime, 0);
     WTF::initializeMainThread(0);
-    return RUN_ALL_TESTS();
+    return base::TestSuite(argc, argv).Run();
 }

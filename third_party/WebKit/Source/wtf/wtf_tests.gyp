@@ -58,6 +58,10 @@
       'type': 'static_library',
       'dependencies': [
         '../config.gyp:unittest_config',
+        '<(DEPTH)/base/base.gyp:test_support_base',
+      ],
+      'export_dependent_settings': [
+        '<(DEPTH)/base/base.gyp:test_support_base',
       ],
       'sources': [
         'tests/RunAllTests.cpp',
