@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 
 // An interface derived from InfoBarDelegate implemented by objects wishing to

@@ -8,7 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/win/registry.h"
 
 // NOTE: Keep these in order since we need test all those paths according

@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "crypto/nss_util.h"
 

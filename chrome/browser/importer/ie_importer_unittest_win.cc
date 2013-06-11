@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "components/webdata/encryptor/ie7_password.h"
 
 TEST(IEImporterTest, IE7Importer) {

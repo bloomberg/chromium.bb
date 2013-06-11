@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_IMPORTER_IE_IMPORTER_UTILS_WIN_H_
 #define CHROME_BROWSER_IMPORTER_IE_IMPORTER_UTILS_WIN_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace importer {
 

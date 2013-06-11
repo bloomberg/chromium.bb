@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/native_library.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 // The following declarations of functions and types are from Firefox
 // NSS library.

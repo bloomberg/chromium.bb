@@ -4,8 +4,8 @@
 
 #include "chrome/browser/infobars/infobar_extension_api.h"
 
-#include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_host.h"

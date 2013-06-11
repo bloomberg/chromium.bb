@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_INFOBARS_INFOBAR_DELEGATE_H_
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "ui/base/window_open_disposition.h"
 
