@@ -25,7 +25,6 @@ class WindowUtilTest : public aura::test::AuraTestBase {
       aura::Window* parent,
       const gfx::Rect& bounds) const WARN_UNUSED_RESULT {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.parent = parent;
     params.bounds = bounds;
     views::Widget* widget = new views::Widget();
