@@ -7,7 +7,7 @@
 
 #include <windows.ui.notifications.h>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/win/metro.h"
 
 // Provides functionality to display a metro style toast notification.

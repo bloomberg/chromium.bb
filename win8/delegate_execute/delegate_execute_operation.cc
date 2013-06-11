@@ -5,7 +5,7 @@
 #include "win8/delegate_execute/delegate_execute_operation.h"
 
 #include "base/command_line.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "chrome/common/chrome_switches.h"
 #include "win8/delegate_execute/delegate_execute_util.h"

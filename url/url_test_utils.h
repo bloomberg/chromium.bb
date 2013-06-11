@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_canon_internal.h"
 

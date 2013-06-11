@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/process.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
 #include "base/win/scoped_comptr.h"

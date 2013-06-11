@@ -6,7 +6,7 @@
 #define WIN8_DELEGATE_EXECUTE_DELEGATE_EXECUTE_UTIL_H_
 
 #include "base/command_line.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace base {
 class FilePath;

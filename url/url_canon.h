@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "url/url_export.h"
 #include "url/url_parse.h"
 

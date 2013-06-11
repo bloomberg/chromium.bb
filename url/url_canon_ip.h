@@ -5,7 +5,7 @@
 #ifndef URL_URL_CANON_IP_H_
 #define URL_URL_CANON_IP_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "url/url_canon.h"
 #include "url/url_export.h"
 #include "url/url_parse.h"

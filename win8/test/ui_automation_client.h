@@ -14,7 +14,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 

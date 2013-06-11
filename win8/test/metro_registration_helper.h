@@ -5,7 +5,7 @@
 #ifndef WIN8_TEST_METRO_REGISTRATION_HELPER_H_
 #define WIN8_TEST_METRO_REGISTRATION_HELPER_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace win8 {
 

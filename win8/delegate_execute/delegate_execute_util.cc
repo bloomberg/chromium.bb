@@ -5,7 +5,7 @@
 #include "win8/delegate_execute/delegate_execute_util.h"
 
 #include "base/files/file_path.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 namespace delegate_execute {
 

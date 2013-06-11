@@ -10,7 +10,7 @@
 #include <roapi.h>
 #include <windows.applicationmodel.core.h>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 void CheckHR(HRESULT hr, const char* str = nullptr);
 

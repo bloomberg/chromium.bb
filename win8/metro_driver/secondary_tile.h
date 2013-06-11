@@ -5,7 +5,7 @@
 #define CHROME_BROWSER_UI_METRO_DRIVER_SECONDARY_TILE_H_
 
 #include "base/files/file_path.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/win/metro.h"
 
 extern "C" __declspec(dllexport)

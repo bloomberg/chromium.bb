@@ -5,7 +5,7 @@
 #ifndef WIN8_DELEGATE_EXECUTE_CHROME_UTIL_H_
 #define WIN8_DELEGATE_EXECUTE_CHROME_UTIL_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace base {
 class FilePath;
