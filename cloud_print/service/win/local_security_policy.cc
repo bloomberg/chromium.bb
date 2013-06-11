@@ -9,7 +9,7 @@
 #include <windows.h>
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 const wchar_t kSeServiceLogonRight[] = L"SeServiceLogonRight";
 

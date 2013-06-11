@@ -9,7 +9,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/win/windows_version.h"
 #include "cloud_print/common/win/cloud_print_utils.h"
 

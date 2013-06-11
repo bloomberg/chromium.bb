@@ -8,7 +8,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "net/base/io_buffer.h"

@@ -7,7 +7,7 @@
 
 class CommandLine;
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 string16 ReplaceLocalHostInName(const string16& user_name);
 string16 GetCurrentUserName();

@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_constants.h"
 #include "cloud_print/common/win/cloud_print_utils.h"

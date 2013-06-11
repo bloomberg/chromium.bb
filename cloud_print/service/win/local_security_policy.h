@@ -9,7 +9,7 @@
 #include <ntsecapi.h>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 extern const wchar_t kSeServiceLogonRight[];
 

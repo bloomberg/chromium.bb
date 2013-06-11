@@ -6,7 +6,7 @@
 #include <winspool.h>
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "cloud_print/virtual_driver/win/port_monitor/spooler_win.h"
