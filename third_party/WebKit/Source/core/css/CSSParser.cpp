@@ -10216,6 +10216,11 @@ inline void CSSParser::detectAtToken(int length, bool hasEscape)
         }
         return;
 
+    case 'v':
+        if (length == 9 && isEqualToCSSIdentifier(name + 2, "iewport"))
+            m_token = VIEWPORT_RULE_SYM;
+        return;
+
     case '-':
         switch (length) {
         case 15:
@@ -10247,14 +10252,6 @@ inline void CSSParser::detectAtToken(int length, bool hasEscape)
                 m_token = INTERNAL_DECLS_SYM;
             else if (isASCIIAlphaCaselessEqual(name[15], 'e') && isEqualToCSSIdentifier(name + 2, "internal-valu"))
                 m_token = INTERNAL_VALUE_SYM;
-            return;
-
-        case 17:
-            if (hasEscape)
-                return;
-
-            else if (isASCIIAlphaCaselessEqual(name[16], 't') && isEqualToCSSIdentifier(name + 2, "webkit-viewpor"))
-                m_token = WEBKIT_VIEWPORT_RULE_SYM;
             return;
 
         case 18:

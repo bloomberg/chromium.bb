@@ -14,7 +14,7 @@
    html, body, #test { width: 100%; height: 100%; }
    #log { padding: 1em; display: none; }
    /* Reset viewport values to initial values to ignore UA stylesheet. */
-   @-webkit-viewport {
+   @viewport {
     width: auto;
     height: auto;
     zoom: auto;
@@ -27,7 +27,7 @@
   </style>
   <style type="text/css">
    /* CSS for the test below. */
-   @-webkit-viewport { width: 300px !important; width: 500px }
+   @viewport { width: 300px !important; width: 500px }
    /* Set root element font-size to something different from the initial
       font-size to make sure 'rem' and 'em' for @viewport is based on the
       initial font-size, not the root element font-size. */

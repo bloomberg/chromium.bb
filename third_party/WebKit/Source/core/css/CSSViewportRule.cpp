@@ -62,7 +62,7 @@ CSSStyleDeclaration* CSSViewportRule::style() const
 String CSSViewportRule::cssText() const
 {
     StringBuilder result;
-    result.appendLiteral("@-webkit-viewport { ");
+    result.appendLiteral("@viewport { ");
 
     String decls = m_viewportRule->properties()->asText();
     result.append(decls);

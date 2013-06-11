@@ -124,6 +124,7 @@ static inline bool isCSSTokenAString(int yytype)
 %token CHARSET_SYM
 %token NAMESPACE_SYM
 %token VARFUNCTION
+%token VIEWPORT_RULE_SYM
 %token INTERNAL_DECLS_SYM
 %token INTERNAL_MEDIALIST_SYM
 %token INTERNAL_RULE_SYM
@@ -132,7 +133,6 @@ static inline bool isCSSTokenAString(int yytype)
 %token WEBKIT_KEYFRAME_RULE_SYM
 %token WEBKIT_KEYFRAMES_SYM
 %token WEBKIT_REGION_RULE_SYM
-%token WEBKIT_VIEWPORT_RULE_SYM
 %token WEBKIT_SUPPORTS_CONDITION_SYM
 %token WEBKIT_FILTER_RULE_SYM
 %token <marginBox> TOPLEFTCORNER_SYM
@@ -1023,12 +1023,12 @@ before_viewport_rule:
     ;
 
 viewport:
-    before_viewport_rule WEBKIT_VIEWPORT_RULE_SYM at_rule_header_end_maybe_space
+    before_viewport_rule VIEWPORT_RULE_SYM at_rule_header_end_maybe_space
     '{' at_rule_body_start maybe_space_before_declaration declaration_list closing_brace {
         $$ = parser->createViewportRule();
         parser->markViewportRuleBodyEnd();
     }
-    | before_viewport_rule WEBKIT_VIEWPORT_RULE_SYM at_rule_recovery {
+    | before_viewport_rule VIEWPORT_RULE_SYM at_rule_recovery {
         $$ = 0;
         parser->endRuleBody(true);
         parser->markViewportRuleBodyEnd();

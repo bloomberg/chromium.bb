@@ -74,7 +74,7 @@ v8::Handle<v8::Object> wrap(CSSRule* impl, v8::Handle<v8::Object> creationContex
         return wrap(static_cast<CSSKeyframesRule*>(impl), creationContext, isolate);
     case CSSRule::SUPPORTS_RULE:
         return wrap(static_cast<CSSSupportsRule*>(impl), creationContext, isolate);
-    case CSSRule::WEBKIT_VIEWPORT_RULE:
+    case CSSRule::VIEWPORT_RULE:
         return wrap(static_cast<CSSViewportRule*>(impl), creationContext, isolate);
     case CSSRule::WEBKIT_REGION_RULE:
         return wrap(static_cast<CSSRegionRule*>(impl), creationContext, isolate);

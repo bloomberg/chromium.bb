@@ -3,23 +3,23 @@
 <head>
     <style type="text/css">
         /* Valid viewport syntax with no properties. */
-        @-webkit-viewport {
+        @viewport {
         }
 
         /* Shorthands should be evaluated to the respective attributes. */
-        @-webkit-viewport {
+        @viewport {
             width: 400px 500px;
             height: 200px 300px;
         }
 
         /* Shorthands with single value should assume this value for min and max. */
-        @-webkit-viewport {
+        @viewport {
             width: 500px;
             height: 300px;
         }
 
         /* Shorthands should override properties if defined later. */
-        @-webkit-viewport {
+        @viewport {
             min-width: 100px;
             min-width: 100px;
             max-height: 100px;
@@ -29,7 +29,7 @@
         }
 
         /* All valid properties with valid initial values. */
-        @-webkit-viewport {
+        @viewport {
             min-width: auto;
             max-width: auto;
             min-height: auto;
@@ -42,7 +42,7 @@
         }
 
         /* All valid properties with valid values. */
-        @-webkit-viewport {
+        @viewport {
             min-width: 50%;
             max-width: 100px;
             min-height: device-width;
@@ -55,7 +55,7 @@
         }
 
         /* All valid properties with invalid initial values. Should be empty. */
-        @-webkit-viewport {
+        @viewport {
             min-width: zoom;
             max-width: fixed;
             min-height: landscape;
@@ -68,7 +68,7 @@
         }
 
         /* Negative numbers should be dropped on zoom. */
-        @-webkit-viewport {
+        @viewport {
             min-zoom: -1;
             max-zoom: -0.5;
             zoom: -0.6;
@@ -84,7 +84,7 @@
         }
 
         /* Invalid attributes among valid should be dropped. */
-        @-webkit-viewport {
+        @viewport {
             font-family: sans-serif;
             min-width: device-width;
             max-width: device-height;
@@ -109,12 +109,12 @@
         var rules = document.styleSheets[0].cssRules;
 
         test(function() {
-            assert_equals(rules.item(0).cssText, "@-webkit-viewport { }");
+            assert_equals(rules.item(0).cssText, "@viewport { }");
         }, "Rule with no attributes");
 
         test(function() {
             assert_equals(rules.item(1).cssText,
-                "@-webkit-viewport {" +
+                "@viewport {" +
                 " min-width: 400px;" +
                 " max-width: 500px;" +
                 " min-height: 200px;" +
@@ -123,7 +123,7 @@
 
         test(function() {
             assert_equals(rules.item(2).cssText,
-                "@-webkit-viewport {" +
+                "@viewport {" +
                 " min-width: 500px;" +
                 " max-width: 500px;" +
                 " min-height: 300px;" +
@@ -132,7 +132,7 @@
 
         test(function() {
             assert_equals(rules.item(3).cssText,
-                "@-webkit-viewport {" +
+                "@viewport {" +
                 " min-width: 500px;" +
                 " max-width: 500px;" +
                 " min-height: 300px;" +
@@ -141,7 +141,7 @@
 
         test(function() {
             assert_equals(rules.item(4).cssText,
-                "@-webkit-viewport {" +
+                "@viewport {" +
                 " min-width: auto;" +
                 " max-width: auto;" +
                 " min-height: auto;" +
@@ -155,7 +155,7 @@
 
         test(function() {
             assert_equals(rules.item(5).cssText,
-                "@-webkit-viewport {" +
+                "@viewport {" +
                 " min-width: 50%;" +
                 " max-width: 100px;" +
                 " min-height: device-width;" +
@@ -168,11 +168,11 @@
         }, "All valid properties with valid values");
 
         test(function() {
-            assert_equals(rules.item(6).cssText, "@-webkit-viewport { }");
+            assert_equals(rules.item(6).cssText, "@viewport { }");
         }, "All valid properties with invalid intial values");
 
         test(function() {
-            assert_equals(rules.item(7).cssText, "@-webkit-viewport { }");
+            assert_equals(rules.item(7).cssText, "@viewport { }");
         }, "Negative numbers should be dropped on zoom attribute");
 
         test(function() {
@@ -181,7 +181,7 @@
 
         test(function() {
             assert_equals(rules.item(9).cssText,
-                "@-webkit-viewport {" +
+                "@viewport {" +
                 " min-width: device-width;" +
                 " max-width: device-height;" +
                 " min-height: 500px;" +

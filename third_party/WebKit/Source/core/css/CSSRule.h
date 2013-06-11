@@ -51,7 +51,7 @@ public:
         WEBKIT_KEYFRAMES_RULE,
         WEBKIT_KEYFRAME_RULE,
         SUPPORTS_RULE = 12,
-        WEBKIT_VIEWPORT_RULE = 15,
+        VIEWPORT_RULE = 15,
         WEBKIT_REGION_RULE = 16,
         WEBKIT_FILTER_RULE = 17,
         HOST_RULE = 1001,
