@@ -398,6 +398,7 @@ Commands.openWithCommand = {
 Commands.searchCommand = {
   execute: function(event, fileManager, element) {
     element.focus();
+    element.select();
   },
   canExecute: function(event, fileManager) {
     event.canExecute = !fileManager.isRenamingInProgress();
