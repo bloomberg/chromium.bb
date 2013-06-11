@@ -681,6 +681,21 @@ void FramePainter::SchedulePaintForTitle(views::NonClientFrameView* view,
       GetTitleBounds(view, title_font));
 }
 
+void FramePainter::OnThemeChanged() {
+  // We do not cache the images for |previous_theme_frame_id_| and
+  // |previous_theme_frame_overlay_id_|. Changing the theme changes the images
+  // returned from ui::ThemeProvider for |previous_theme_frame_id_|
+  // and |previous_theme_frame_overlay_id_|. Reset the image ids to prevent
+  // starting a crossfade animation with these images.
+  previous_theme_frame_id_ = 0;
+  previous_theme_frame_overlay_id_ = 0;
+
+  if (crossfade_animation_.get() && crossfade_animation_->is_animating()) {
+    crossfade_animation_.reset();
+    frame_->non_client_view()->SchedulePaintInRect(header_frame_bounds_);
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // aura::WindowObserver overrides:
 
@@ -782,7 +797,7 @@ void FramePainter::OnWindowRemovingFromRootWindow(aura::Window* window) {
 // ui::AnimationDelegate overrides:
 
 void FramePainter::AnimationProgressed(const ui::Animation* animation) {
-  frame_->SchedulePaintInRect(gfx::Rect(header_frame_bounds_));
+  frame_->non_client_view()->SchedulePaintInRect(header_frame_bounds_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

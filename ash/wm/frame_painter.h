@@ -130,6 +130,9 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   void SchedulePaintForTitle(views::NonClientFrameView* view,
                              const gfx::Font& title_font);
 
+  // Called when the browser theme changes.
+  void OnThemeChanged();
+
   // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,

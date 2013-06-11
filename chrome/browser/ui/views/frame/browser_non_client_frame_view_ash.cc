@@ -301,6 +301,11 @@ gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() {
   return frame_painter_->GetMinimumSize(this);
 }
 
+void BrowserNonClientFrameViewAsh::OnThemeChanged() {
+  BrowserNonClientFrameView::OnThemeChanged();
+  frame_painter_->OnThemeChanged();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // views::ButtonListener overrides:
 

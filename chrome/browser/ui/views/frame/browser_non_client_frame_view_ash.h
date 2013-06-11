@@ -57,6 +57,7 @@ class BrowserNonClientFrameViewAsh
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual void OnThemeChanged() OVERRIDE;
 
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
