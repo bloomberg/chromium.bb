@@ -8,7 +8,7 @@
 
 #include "ppapi_simple/ps_main.h"
 
-int example_main(int argc, const char* argv[]) {
+int example_main(int argc, char* argv[]) {
   /* Use ppb_messaging to send "Hello World" to JavaScript. */
   printf("Hello World STDOUT.\n");
 

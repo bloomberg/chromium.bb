@@ -263,7 +263,7 @@ void Render() {
  * Starting point for the module.  We do not use main since it would
  * collide with main in libppapi_cpp.
  */
-int example_main(int argc, const char *argv[]) {
+int example_main(int argc, char *argv[]) {
   fprintf(stdout,"Started main.\n");
   g_pCore = (PPB_Core*)PSGetInterface(PPB_CORE_INTERFACE);
   g_pFullscreen = (PPB_Fullscreen*)PSGetInterface(PPB_FULLSCREEN_INTERFACE);

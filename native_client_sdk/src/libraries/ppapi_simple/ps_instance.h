@@ -52,7 +52,7 @@ class PSInstance : public pp::Instance {
   const char* GetProperty(const char* key, const char* def = NULL);
 
   // Started on Init, a thread which can be safely blocked.
-  virtual int MainThread(int argc, const char* argv[]);
+  virtual int MainThread(int argc, char* argv[]);
 
   // Logging Functions
   void SetVerbosity(Verbosity verbosity);

@@ -42,7 +42,7 @@ PSInstance* PSInstance::GetInstance() {
 struct StartInfo {
   PSInstance* inst_;
   uint32_t argc_;
-  const char** argv_;
+  char** argv_;
 };
 
 
@@ -65,7 +65,7 @@ void* PSInstance::MainThreadThunk(void *info) {
 }
 
 // The default implementation supports running a 'C' main.
-int PSInstance::MainThread(int argc, const char *argv[]) {
+int PSInstance::MainThread(int argc, char *argv[]) {
   if (main_cb_) {
     Log("Starting MAIN.\n");
     int ret = main_cb_(argc, argv);
@@ -124,7 +124,7 @@ bool PSInstance::Init(uint32_t arg,
 
   si->inst_ = this;
   si->argc_ = 1;
-  si->argv_ = new const char *[arg*2+1];
+  si->argv_ = new char *[arg*2+1];
   si->argv_[0] = NULL;
 
   // Process arguments passed into Module INIT from JavaScript

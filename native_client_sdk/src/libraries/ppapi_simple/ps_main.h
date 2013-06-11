@@ -10,7 +10,7 @@
 
 EXTERN_C_BEGIN
 
-typedef int (*PSMainFunc_t)(int argc, const char *argv[]);
+typedef int (*PSMainFunc_t)(int argc, char *argv[]);
 
 /**
  * PSMainCreate
