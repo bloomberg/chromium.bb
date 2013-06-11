@@ -28,14 +28,6 @@ using content::WebUIMessageHandler;
 using ui::WebDialogObserver;
 using web_modal::NativeWebContentsModalDialog;
 
-namespace {
-
-// Default width/height of the dialog.
-const int kDefaultWidth = 580;
-const int kDefaultHeight = 600;
-
-}  // namespace
-
 // Shows a certificate using the WebUI certificate viewer.
 void ShowCertificateViewer(WebContents* web_contents,
                            gfx::NativeWindow parent,
@@ -98,6 +90,8 @@ void CertificateViewerDialog::GetWebUIMessageHandlers(
 }
 
 void CertificateViewerDialog::GetDialogSize(gfx::Size* size) const {
+  const int kDefaultWidth = 544;
+  const int kDefaultHeight = 628;
   size->SetSize(kDefaultWidth, kDefaultHeight);
 }
 

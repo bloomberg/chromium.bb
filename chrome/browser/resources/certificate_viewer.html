@@ -20,11 +20,11 @@
   </head>
   <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
     <tabbox id="tabbox">
-      <tabs id="tabs">
+      <tabs id="tabs" class="new-style-tabs">
         <tab i18n-content="general"></tab>
         <tab i18n-content="details"></tab>
       </tabs>
-      <tabpanels id="tabpanels">
+      <tabpanels id="tabpanels" class="new-style-tabs">
         <!-- General -->
         <tabpanel id="general">
           <!-- Usages -->
@@ -113,7 +113,9 @@
           <div id="cert-field-value-section" class="vertical-box">
             <h3 i18n-content="certFieldVal"></h3>
             <div id="cert-field-value" class="section-contents"></div>
-            <button id="export" i18n-content="export"></button>
+            <div>
+              <button id="export" i18n-content="export"></button>
+            </div>
           </div>
         </tabpanel>
       </tabpanels>
