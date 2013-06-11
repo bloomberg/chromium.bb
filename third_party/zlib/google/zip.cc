@@ -52,7 +52,7 @@ bool AddFileToZip(zipFile zip_file, const base::FilePath& src_dir) {
 bool AddEntryToZip(zipFile zip_file, const base::FilePath& path,
                    const base::FilePath& root_path) {
   std::string str_path =
-      path.AsUTF8Unsafe().substr(root_path.value().length() + 1);
+      path.AsUTF8Unsafe().substr(root_path.AsUTF8Unsafe().length() + 1);
 #if defined(OS_WIN)
   ReplaceSubstringsAfterOffset(&str_path, 0u, "\\", "/");
 #endif
