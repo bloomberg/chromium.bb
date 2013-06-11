@@ -32,7 +32,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/time.h"
 #include "net/disk_cache/backend_impl.h"
 #include "net/disk_cache/disk_format.h"

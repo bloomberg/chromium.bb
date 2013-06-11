@@ -4,7 +4,7 @@
 
 #include "net/dns/dns_response.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "net/base/address_list.h"
 #include "net/base/big_endian.h"

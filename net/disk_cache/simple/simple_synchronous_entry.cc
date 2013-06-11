@@ -16,7 +16,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/sha1.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/simple/simple_util.h"

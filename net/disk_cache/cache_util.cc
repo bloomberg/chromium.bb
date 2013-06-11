@@ -6,8 +6,8 @@
 
 #include "base/file_util.h"
 #include "base/location.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
 

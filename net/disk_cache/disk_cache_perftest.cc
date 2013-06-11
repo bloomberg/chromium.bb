@@ -9,7 +9,7 @@
 #include "base/bind_helpers.h"
 #include "base/hash.h"
 #include "base/perftimer.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "base/test/test_file_util.h"
 #include "base/timer.h"

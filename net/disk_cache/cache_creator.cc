@@ -4,7 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/metrics/field_trial.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/backend_impl.h"

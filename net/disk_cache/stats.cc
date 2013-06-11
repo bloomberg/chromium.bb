@@ -7,8 +7,8 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_samples.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 
 namespace {
 
