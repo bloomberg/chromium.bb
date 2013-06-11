@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <list>
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_variant.h"
 #include "media/video/capture/win/video_capture_device_mf_win.h"

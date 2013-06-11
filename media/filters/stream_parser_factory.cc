@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
-#include "base/string_number_conversions.h"
-#include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/webm/webm_stream_parser.h"

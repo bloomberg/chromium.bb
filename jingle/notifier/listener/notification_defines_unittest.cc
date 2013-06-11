@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "jingle/notifier/listener/notification_defines.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

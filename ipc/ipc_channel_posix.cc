@@ -32,7 +32,7 @@
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "ipc/file_descriptor_set_posix.h"
 #include "ipc/ipc_descriptors.h"

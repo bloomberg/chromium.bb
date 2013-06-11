@@ -20,7 +20,7 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 
 namespace media {
 

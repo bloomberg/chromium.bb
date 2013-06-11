@@ -4,7 +4,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_pull_fifo.h"
 #include "testing/gtest/include/gtest/gtest.h"

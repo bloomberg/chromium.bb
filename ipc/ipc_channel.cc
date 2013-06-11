@@ -9,7 +9,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 
 #if !defined(OS_NACL)
 namespace {

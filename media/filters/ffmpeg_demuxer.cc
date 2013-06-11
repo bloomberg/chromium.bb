@@ -16,7 +16,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/time.h"
 #include "media/base/audio_decoder_config.h"

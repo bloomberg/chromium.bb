@@ -18,7 +18,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/perftimer.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/test/perf_test_suite.h"
 #include "media/base/media.h"
 #include "media/ffmpeg/ffmpeg_common.h"

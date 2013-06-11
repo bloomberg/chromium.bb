@@ -15,14 +15,14 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
-#include "base/string_number_conversions.h"
-#include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
-#include "ipc/ipc_switches.h"
-#include "ipc/ipc_sync_message.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sender.h"
+#include "ipc/ipc_switches.h"
+#include "ipc/ipc_sync_message.h"
 
 #if defined(OS_POSIX)
 #include <unistd.h>

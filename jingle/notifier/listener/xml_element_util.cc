@@ -7,7 +7,7 @@
 #include <sstream>
 #include <string>
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "talk/xmllite/qname.h"
 #include "talk/xmllite/xmlconstants.h"
 #include "talk/xmllite/xmlelement.h"

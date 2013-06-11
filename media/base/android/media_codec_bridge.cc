@@ -14,7 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/safe_numerics.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "jni/MediaCodecBridge_jni.h"
 #include "media/base/bit_reader.h"
 

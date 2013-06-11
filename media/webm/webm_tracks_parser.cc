@@ -5,7 +5,7 @@
 #include "media/webm/webm_tracks_parser.h"
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "media/base/buffers.h"
 #include "media/webm/webm_constants.h"
 #include "media/webm/webm_content_encodings.h"

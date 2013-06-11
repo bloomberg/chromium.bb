@@ -8,7 +8,7 @@
 
 #include "media/base/audio_hash.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "media/base/audio_bus.h"
 
 namespace media {

@@ -8,7 +8,7 @@
 
 #include "base/json/string_escape.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 
 namespace notifier {

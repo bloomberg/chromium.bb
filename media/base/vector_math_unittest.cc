@@ -10,7 +10,7 @@
 #include "base/cpu.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
 #include "base/time.h"
 #include "media/base/vector_math.h"

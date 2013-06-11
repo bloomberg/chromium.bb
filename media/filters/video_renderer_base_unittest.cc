@@ -8,7 +8,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/timer.h"
 #include "media/base/data_buffer.h"

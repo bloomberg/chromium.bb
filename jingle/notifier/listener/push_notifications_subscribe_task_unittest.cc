@@ -5,7 +5,7 @@
 #include "jingle/notifier/listener/push_notifications_subscribe_task.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "jingle/notifier/listener/xml_element_util.h"
 #include "talk/xmpp/jid.h"
 #include "testing/gtest/include/gtest/gtest.h"

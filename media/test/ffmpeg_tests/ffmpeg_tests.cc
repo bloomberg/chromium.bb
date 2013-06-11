@@ -19,7 +19,7 @@
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/path_service.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
 #include "media/base/djb2.h"

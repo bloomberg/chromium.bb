@@ -13,7 +13,7 @@
 #include "base/pickle.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
 #include "base/win/scoped_handle.h"

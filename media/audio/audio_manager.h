@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "media/audio/audio_device_name.h"
 #include "media/audio/audio_parameters.h"
 
