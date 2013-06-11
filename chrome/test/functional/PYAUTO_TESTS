@@ -493,12 +493,6 @@
       'media_stream_infobar',
       'webrtc_brutality_test',
       'webrtc_call',
-
-      # ==================================================
-      # Disabled tests that need to be investigated/fixed.
-      # ==================================================
-      # crbug.com/248079
-      '-webrtc_brutality_test.WebrtcBrutalityTest.testReloadsAfterGetUserMedia',
     ],
   },
 

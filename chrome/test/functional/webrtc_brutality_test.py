@@ -30,6 +30,7 @@ class WebrtcBrutalityTest(webrtc_test_base.WebrtcTestBase):
       else:
         self._GetUserMediaWithoutTakingAction(tab_index=0)
       self.ReloadTab(tab_index=0)
+      self.WaitForInfobarCount(0, tab_index=0)
 
   def testRepeatedGetUserMediaRequests(self):
     """Tests how we deal with lots of consecutive getUserMedia requests.
