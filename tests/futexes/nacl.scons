@@ -9,9 +9,22 @@ valgrind = env.ComponentObject(
     'valgrind_annotations.o',
     '${MAIN_DIR}/src/untrusted/valgrind/dynamic_annotations.c')
 
-nexe = env.ComponentProgram(
+test_env = env.Clone()
+test_env.Append(CPPDEFINES=[['TEST_IRT_FUTEX', '0']])
+nexe = test_env.ComponentProgram(
     'futex_test', ['futex_test.c'] + valgrind,
     EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}'])
 
 node = env.CommandSelLdrTestNacl('futex_test.out', nexe)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_futex_test')
+
+if env.Bit('tests_use_irt'):
+  test_env = env.Clone()
+  test_env.Append(CPPDEFINES=[['TEST_IRT_FUTEX', '1']])
+  nexe = test_env.ComponentProgram(
+      'irt_futex_test',
+      [test_env.ComponentObject('irt_futex_test.o', 'futex_test.c')] + valgrind,
+      EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}'])
+
+  node = env.CommandSelLdrTestNacl('irt_futex_test.out', nexe)
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_futex_test')

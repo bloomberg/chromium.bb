@@ -20,6 +20,7 @@
       'irt_memory.c',
       'irt_dyncode.c',
       'irt_thread.c',
+      'irt_futex.c',
       'irt_mutex.c',
       'irt_cond.c',
       'irt_sem.c',

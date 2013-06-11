@@ -117,6 +117,32 @@ struct nacl_irt_thread {
   int (*thread_nice)(const int nice);
 };
 
+/* The irt_futex interface is based on Linux's futex() system call. */
+#define NACL_IRT_FUTEX_v0_1        "nacl-irt-futex-0.1"
+struct nacl_irt_futex {
+  /*
+   * If |*addr| still contains |value|, futex_wait_abs() waits to be
+   * woken up by a futex_wake(addr,...) call from another thread;
+   * otherwise, it immediately returns EAGAIN (which is the same as
+   * EWOULDBLOCK).  If woken by another thread, it returns 0.  If
+   * |abstime| is non-NULL and the time specified by |*abstime|
+   * passes, this returns ETIMEDOUT.
+   *
+   * Note that this differs from Linux's FUTEX_WAIT in that it takes an
+   * absolute time value (relative to the Unix epoch) rather than a
+   * relative time duration.
+   */
+  int (*futex_wait_abs)(volatile int *addr, int value,
+                        const struct timespec *abstime);
+  /*
+   * futex_wake() wakes up threads that are waiting on |addr| using
+   * futex_wait().  |nwake| is the maximum number of threads that will
+   * be woken up.  The number of threads that were woken is returned
+   * in |*count|.
+   */
+  int (*futex_wake)(volatile int *addr, int nwake, int *count);
+};
+
 #define NACL_IRT_MUTEX_v0_1        "nacl-irt-mutex-0.1"
 struct nacl_irt_mutex {
   int (*mutex_create)(int *mutex_handle);

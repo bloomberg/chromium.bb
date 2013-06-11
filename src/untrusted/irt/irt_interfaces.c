@@ -25,6 +25,7 @@ static const struct nacl_interface_table irt_interfaces[] = {
   { NACL_IRT_MEMORY_v0_2, &nacl_irt_memory, sizeof(struct nacl_irt_memory) },
   { NACL_IRT_DYNCODE_v0_1, &nacl_irt_dyncode, sizeof(nacl_irt_dyncode) },
   { NACL_IRT_THREAD_v0_1, &nacl_irt_thread, sizeof(nacl_irt_thread) },
+  { NACL_IRT_FUTEX_v0_1, &nacl_irt_futex, sizeof(nacl_irt_futex) },
   { NACL_IRT_MUTEX_v0_1, &nacl_irt_mutex, sizeof(nacl_irt_mutex) },
   { NACL_IRT_COND_v0_1, &nacl_irt_cond, sizeof(nacl_irt_cond) },
   { NACL_IRT_SEM_v0_1, &nacl_irt_sem, sizeof(nacl_irt_sem) },

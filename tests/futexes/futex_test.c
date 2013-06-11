@@ -14,9 +14,10 @@
 
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/valgrind/dynamic_annotations.h"
 
-#if !defined(__GLIBC__)
+#if !TEST_IRT_FUTEX && !defined(__GLIBC__)
 # include "native_client/src/untrusted/pthread/futex.h"
 #endif
 
@@ -35,8 +36,23 @@
  * test to disregard them and retry.
  */
 
+#if TEST_IRT_FUTEX
+static struct nacl_irt_futex irt_futex;
+#endif
 
-#if defined(__GLIBC__)
+
+#if TEST_IRT_FUTEX
+
+static int futex_wait(volatile int *addr, int val,
+                      const struct timespec *abstime) {
+  return irt_futex.futex_wait_abs(addr, val, abstime);
+}
+
+static int futex_wake(volatile int *addr, int nwake, int *count) {
+  return irt_futex.futex_wake(addr, nwake, count);
+}
+
+#elif defined(__GLIBC__)
 
 /*
  * nacl-glibc does not provide a header file that declares these
@@ -84,7 +100,7 @@ void test_futex_wait_value_mismatch(void) {
    * This should return EWOULDBLOCK, but the implementation in
    * futex_emulation.c in nacl-glibc has a bug.
    */
-#if defined(__GLIBC__)
+#if !TEST_IRT_FUTEX && defined(__GLIBC__)
   ASSERT_EQ(rc, 0);
 #else
   ASSERT_EQ(rc, EWOULDBLOCK);
@@ -272,6 +288,12 @@ void run_test(const char *test_name, void (*test_func)(void)) {
 int main(void) {
   /* Turn off stdout buffering to aid debugging. */
   setvbuf(stdout, NULL, _IONBF, 0);
+
+#if TEST_IRT_FUTEX
+  size_t bytes = nacl_interface_query(NACL_IRT_FUTEX_v0_1, &irt_futex,
+                                      sizeof(irt_futex));
+  ASSERT_EQ(bytes, sizeof(irt_futex));
+#endif
 
   RUN_TEST(test_futex_wait_value_mismatch);
   RUN_TEST(test_futex_wait_timeout);

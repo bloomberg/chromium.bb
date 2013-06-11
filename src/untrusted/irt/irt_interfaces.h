@@ -18,6 +18,7 @@ extern const struct nacl_irt_memory_v0_1 nacl_irt_memory_v0_1;
 extern const struct nacl_irt_memory nacl_irt_memory;
 extern const struct nacl_irt_dyncode nacl_irt_dyncode;
 extern const struct nacl_irt_thread nacl_irt_thread;
+extern const struct nacl_irt_futex nacl_irt_futex;
 extern const struct nacl_irt_mutex nacl_irt_mutex;
 extern const struct nacl_irt_cond nacl_irt_cond;
 extern const struct nacl_irt_sem nacl_irt_sem;
