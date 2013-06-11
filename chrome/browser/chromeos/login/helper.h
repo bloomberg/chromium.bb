@@ -8,7 +8,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_HELPER_H_
 
 #include "base/compiler_specific.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/view.h"
 

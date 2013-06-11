@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/chrome_url_request_context.h"

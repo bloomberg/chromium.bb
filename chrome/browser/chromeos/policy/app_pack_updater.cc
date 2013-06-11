@@ -10,7 +10,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/location.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"

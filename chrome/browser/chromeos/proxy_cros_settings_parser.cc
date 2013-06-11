@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/ui_proxy_config.h"
 #include "chrome/browser/chromeos/ui_proxy_config_service.h"

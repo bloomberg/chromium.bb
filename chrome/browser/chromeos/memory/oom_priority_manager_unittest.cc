@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/common/url_constants.h"

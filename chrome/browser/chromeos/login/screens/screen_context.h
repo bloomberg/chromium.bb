@@ -12,7 +12,7 @@
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler_utils.h"

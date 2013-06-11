@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/location.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"

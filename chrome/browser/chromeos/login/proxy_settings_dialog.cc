@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/common/chrome_notification_types.h"

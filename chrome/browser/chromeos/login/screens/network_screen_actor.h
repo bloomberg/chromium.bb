@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_NETWORK_SCREEN_ACTOR_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_NETWORK_SCREEN_ACTOR_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace chromeos {
 

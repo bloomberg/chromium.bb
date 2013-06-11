@@ -8,7 +8,7 @@
 #include <cstddef>  // for size_t
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace gfx {
 class ImageSkia;

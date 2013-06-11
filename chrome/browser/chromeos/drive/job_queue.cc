@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/drive/job_queue.h"
 
 #include "base/logging.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 
 namespace drive {
 

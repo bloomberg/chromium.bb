@@ -6,7 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"  // for debug output only.
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 // Needed only for debug output (ConnectionTypeToString).
 #include "chrome/browser/chromeos/cros/native_network_constants.h"

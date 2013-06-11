@@ -15,7 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 

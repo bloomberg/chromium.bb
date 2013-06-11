@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 
 #include "base/logging.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"

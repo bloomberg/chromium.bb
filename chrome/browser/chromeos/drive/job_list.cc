@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/drive/job_list.h"
 
 #include "base/logging.h"
-#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 
 namespace drive {
 
