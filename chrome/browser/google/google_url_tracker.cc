@@ -82,10 +82,15 @@ GURL GoogleURLTracker::GoogleURL(Profile* profile) {
 }
 
 // static
-void GoogleURLTracker::RequestServerCheck(Profile* profile) {
+void GoogleURLTracker::RequestServerCheck(Profile* profile, bool force) {
   GoogleURLTracker* tracker = GoogleURLTrackerFactory::GetForProfile(profile);
-  if (tracker)
+  // If the tracker already has a fetcher, SetNeedToFetch() is unnecessary, and
+  // changing |already_fetched_| is wrong.
+  if (tracker && !tracker->fetcher_) {
+    if (force)
+      tracker->already_fetched_ = false;
     tracker->SetNeedToFetch();
+  }
 }
 
 // static

@@ -71,13 +71,15 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   static GURL GoogleURL(Profile* profile);
 
   // Requests that the tracker perform a server check to update the Google URL
-  // as necessary.  This will happen at most once per network change, not
-  // sooner than five seconds after startup (checks requested before that time
-  // will occur then; checks requested afterwards will occur immediately, if
-  // no other checks have been made during this run).
+  // as necessary.  If |force| is false, this will happen at most once per
+  // network change, not sooner than five seconds after startup (checks
+  // requested before that time will occur then; checks requested afterwards
+  // will occur immediately, if no other checks have been made during this run).
+  // If |force| is true, and the tracker has already performed any requested
+  // check, it will check again.
   //
   // When |profile| is NULL or a testing profile, this function does nothing.
-  static void RequestServerCheck(Profile* profile);
+  static void RequestServerCheck(Profile* profile, bool force);
 
   // Notifies the tracker that the user has started a Google search.
   // If prompting is necessary, we then listen for the subsequent pending

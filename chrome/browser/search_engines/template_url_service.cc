@@ -1405,7 +1405,7 @@ void TemplateURLService::Init(const Initializer* initializers,
     scoped_ptr<base::Environment> env(base::Environment::Create());
     if (!env->HasVar(env_vars::kHeadless) &&
         !CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame))
-      GoogleURLTracker::RequestServerCheck(profile_);
+      GoogleURLTracker::RequestServerCheck(profile_, false);
   }
 }
 
@@ -2025,7 +2025,7 @@ bool TemplateURLService::SetDefaultSearchProviderNoNotify(TemplateURL* url) {
       service_->UpdateKeyword(url->data());
 
     if (url->url_ref().HasGoogleBaseURLs()) {
-      GoogleURLTracker::RequestServerCheck(profile_);
+      GoogleURLTracker::RequestServerCheck(profile_, false);
 #if defined(ENABLE_RLZ)
       RLZTracker::RecordProductEvent(rlz_lib::CHROME,
                                      RLZTracker::CHROME_OMNIBOX,

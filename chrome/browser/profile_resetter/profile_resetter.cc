@@ -105,14 +105,18 @@ void ProfileResetter::ResetDefaultSearchEngine() {
   // If TemplateURLServiceFactory is ready we can clean it right now.
   // Otherwise, load it and continue from ProfileResetter::Observe.
   if (template_url_service_->loaded()) {
+    TemplateURLPrepopulateData::ClearPrepopulatedEnginesInPrefs(profile_);
+    template_url_service_->ResetNonExtensionURLs();
+
     // Reset Google search URL.
     PrefService* prefs = profile_->GetPrefs();
     DCHECK(prefs);
     prefs->ClearPref(prefs::kLastPromptedGoogleURL);
-    GoogleURLTracker::RequestServerCheck(profile_);
-
-    TemplateURLPrepopulateData::ClearPrepopulatedEnginesInPrefs(profile_);
-    template_url_service_->ResetNonExtensionURLs();
+    const TemplateURL* default_search_provider =
+        template_url_service_->GetDefaultSearchProvider();
+    if (default_search_provider &&
+        default_search_provider->url_ref().HasGoogleBaseURLs())
+      GoogleURLTracker::RequestServerCheck(profile_, true);
 
     MarkAsDone(DEFAULT_SEARCH_ENGINE);
   } else {
