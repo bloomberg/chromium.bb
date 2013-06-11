@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/process_util.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 
 #if defined(OS_WIN)
 #include "base/win/pe_image.h"

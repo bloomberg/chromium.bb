@@ -28,7 +28,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"

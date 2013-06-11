@@ -21,7 +21,7 @@
 #ifndef BASE_CONTAINERS_HASH_TABLES_H_
 #define BASE_CONTAINERS_HASH_TABLES_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 
 #if defined(COMPILER_MSVC)

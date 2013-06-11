@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "build/build_config.h"
 #include "base/memory/aligned_memory.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
+#include "build/build_config.h"
 
 namespace base {
 

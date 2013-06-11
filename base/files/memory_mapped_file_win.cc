@@ -7,7 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/threading/thread_restrictions.h"
 
 namespace base {

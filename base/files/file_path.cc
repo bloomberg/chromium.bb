@@ -13,8 +13,8 @@
 
 // These includes are just for the *Hack functions, and should be removed
 // when those functions are removed.
-#include "base/string_util.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 
