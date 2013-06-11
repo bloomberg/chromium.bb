@@ -35,7 +35,29 @@ class BaseRingBufferTest : public testing::Test {
   static const unsigned int kBaseOffset = 128;
   static const unsigned int kBufferSize = 1024;
 
+  void RunPendingSetToken() {
+    for (std::vector<const void*>::iterator it = set_token_arguments_.begin();
+         it != set_token_arguments_.end();
+         ++it) {
+      api_mock_->SetToken(cmd::kSetToken, 1, *it);
+    }
+    set_token_arguments_.clear();
+    delay_set_token_ = false;
+  }
+
+  void SetToken(unsigned int command,
+                unsigned int arg_count,
+                const void* _args) {
+    EXPECT_EQ(static_cast<unsigned int>(cmd::kSetToken), command);
+    EXPECT_EQ(1u, arg_count);
+    if (delay_set_token_)
+      set_token_arguments_.push_back(_args);
+    else
+      api_mock_->SetToken(cmd::kSetToken, 1, _args);
+  }
+
   virtual void SetUp() {
+    delay_set_token_ = false;
     api_mock_.reset(new AsyncAPIMock);
     // ignore noops in the mock - we don't want to inspect the internals of the
     // helper.
@@ -43,7 +65,7 @@ class BaseRingBufferTest : public testing::Test {
         .WillRepeatedly(Return(error::kNoError));
     // Forward the SetToken calls to the engine
     EXPECT_CALL(*api_mock_.get(), DoCommand(cmd::kSetToken, 1, _))
-        .WillRepeatedly(DoAll(Invoke(api_mock_.get(), &AsyncAPIMock::SetToken),
+        .WillRepeatedly(DoAll(Invoke(this, &BaseRingBufferTest::SetToken),
                               Return(error::kNoError)));
 
     {
@@ -81,6 +103,9 @@ class BaseRingBufferTest : public testing::Test {
   scoped_ptr<CommandBufferService> command_buffer_;
   scoped_ptr<GpuScheduler> gpu_scheduler_;
   scoped_ptr<CommandBufferHelper> helper_;
+  std::vector<const void*> set_token_arguments_;
+  bool delay_set_token_;
+
 };
 
 #ifndef _MSC_VER
@@ -128,6 +153,7 @@ TEST_F(RingBufferTest, TestFreePendingToken) {
   const unsigned int kAllocCount = kBufferSize / kSize;
   CHECK(kAllocCount * kSize == kBufferSize);
 
+  delay_set_token_ = true;
   // Allocate several buffers to fill in the memory.
   int32 tokens[kAllocCount];
   for (unsigned int ii = 0; ii < kAllocCount; ++ii) {
@@ -139,6 +165,8 @@ TEST_F(RingBufferTest, TestFreePendingToken) {
 
   EXPECT_EQ(kBufferSize - (kSize * kAllocCount),
             allocator_->GetLargestFreeSizeNoWaiting());
+
+  RunPendingSetToken();
 
   // This allocation will need to reclaim the space freed above, so that should
   // process the commands until a token is passed.
@@ -242,6 +270,7 @@ TEST_F(RingBufferWrapperTest, TestFreePendingToken) {
   const unsigned int kAllocCount = kBufferSize / kSize;
   CHECK(kAllocCount * kSize == kBufferSize);
 
+  delay_set_token_ = true;
   // Allocate several buffers to fill in the memory.
   int32 tokens[kAllocCount];
   for (unsigned int ii = 0; ii < kAllocCount; ++ii) {
@@ -253,6 +282,8 @@ TEST_F(RingBufferWrapperTest, TestFreePendingToken) {
 
   EXPECT_EQ(kBufferSize - (kSize * kAllocCount),
             allocator_->GetLargestFreeSizeNoWaiting());
+
+  RunPendingSetToken();
 
   // This allocation will need to reclaim the space freed above, so that should
   // process the commands until the token is passed.
