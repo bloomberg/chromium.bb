@@ -198,6 +198,9 @@
       'filepath': 'chrome/browser/download/|'\
                   'content/browser/download/',
     },
+    'download_database': {
+      'filepath': 'chrome/browser/history/download_database',
+    },
     'downloads_ext': {
       'filepath': 'chrome/browser/extensions/api/downloads/|'\
                   'chrome/common/extensions/api/downloads.*.idl',
@@ -593,6 +596,7 @@
                  'vsevik@chromium.org'],
     'disk_cache': ['gavinp+disk@chromium.org'],
     'dns': ['mmenke@chromium.org'],
+    'download_database': ['benjhayden+dwatch@chromium.org'],
     'download': ['benjhayden+dwatch@chromium.org', 'asanka@chromium.org'],
     'downloads_ext': ['benjhayden+dwatch@chromium.org'],
     'downloads_ui': ['asanka@chromium.org', 'benjhayden+dwatch@chromium.org'],
