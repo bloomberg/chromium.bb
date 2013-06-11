@@ -13,7 +13,7 @@
 
 #include "base/logging.h"
 #include "base/port.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/string_piece.h"
 #include "net/tools/flip_server/balsa_enums.h"
 #include "net/tools/flip_server/buffer_interface.h"

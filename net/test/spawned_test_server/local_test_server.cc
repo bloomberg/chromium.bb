@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"

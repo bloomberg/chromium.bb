@@ -4,7 +4,7 @@
 
 #include "net/websockets/websocket_net_log_params.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 
 namespace net {

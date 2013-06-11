@@ -5,8 +5,8 @@
 #include "net/tools/dump_cache/url_utilities.h"
 
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
-#include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 
 namespace net {
 

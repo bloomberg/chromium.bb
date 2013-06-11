@@ -8,7 +8,7 @@
 
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"

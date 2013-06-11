@@ -7,7 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/debug/stack_trace.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_transaction_factory.h"

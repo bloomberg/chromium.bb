@@ -11,7 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/string_split.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"

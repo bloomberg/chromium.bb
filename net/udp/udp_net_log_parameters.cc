@@ -5,7 +5,7 @@
 #include "net/udp/udp_net_log_parameters.h"
 
 #include "base/bind.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/base/ip_endpoint.h"
 

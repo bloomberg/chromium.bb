@@ -81,7 +81,7 @@
 
 #include <string>
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "net/tools/dump_cache/url_utilities.h"
 
 namespace net {

@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "net/base/net_util.h"
 #include "net/tools/dump_cache/url_to_filename_encoder.h"
 

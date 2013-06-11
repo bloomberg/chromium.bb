@@ -4,7 +4,7 @@
 
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/http_request.h"
