@@ -17,6 +17,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -40,17 +41,14 @@ class MagnificationManagerImpl : public MagnificationManager,
                                type_(ash::kDefaultMagnifierType),
                                enabled_(false) {
     registrar_.Add(this,
-                  chrome::NOTIFICATION_PROFILE_CREATED,
-                  content::NotificationService::AllSources());
+                   chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+                   content::NotificationService::AllSources());
     registrar_.Add(this,
-                  chrome::NOTIFICATION_SESSION_STARTED,
-                  content::NotificationService::AllSources());
+                   chrome::NOTIFICATION_SESSION_STARTED,
+                   content::NotificationService::AllSources());
     registrar_.Add(this,
-                  chrome::NOTIFICATION_PROFILE_DESTROYED,
-                  content::NotificationService::AllSources());
-    registrar_.Add(this,
-                  chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
-                  content::NotificationService::AllSources());
+                   chrome::NOTIFICATION_PROFILE_DESTROYED,
+                   content::NotificationService::AllSources());
   }
 
   virtual ~MagnificationManagerImpl() {
@@ -193,32 +191,19 @@ class MagnificationManagerImpl : public MagnificationManager,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
-      // When entering the login screen or non-guest desktop.
       case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE:
-      case chrome::NOTIFICATION_SESSION_STARTED: {
-        Profile* profile = ProfileManager::GetDefaultProfile();
-        if (!profile->IsGuestSession())
-          SetProfile(profile);
+        // Update |profile_| when entering the login screen.
+        SetProfile(ProfileHelper::GetSigninProfile());
         break;
-      }
-      // When entering guest desktop, no NOTIFICATION_SESSION_STARTED event is
-      // fired, so we use NOTIFICATION_PROFILE_CREATED event instead.
-      case chrome::NOTIFICATION_PROFILE_CREATED: {
-        Profile* profile = content::Source<Profile>(source).ptr();
-        if (profile->IsGuestSession() && !profile->IsOffTheRecord()) {
-          SetProfile(profile);
-
-          // In guest mode, 2 non-OTR profiles are created. We should use the
-          // first one, not second one.
-          registrar_.Remove(this,
-                            chrome::NOTIFICATION_PROFILE_CREATED,
-                            content::NotificationService::AllSources());
-        }
-
+      case chrome::NOTIFICATION_SESSION_STARTED:
+        // Update |profile_| when entering a session.
+        SetProfile(ProfileManager::GetDefaultProfile());
         break;
-      }
       case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-        SetProfile(NULL);
+        // Update |profile_| when exiting a session or shutting down.
+        Profile* profile = content::Source<Profile>(source).ptr();
+        if (profile_ == profile)
+          SetProfile(NULL);
         break;
       }
     }
