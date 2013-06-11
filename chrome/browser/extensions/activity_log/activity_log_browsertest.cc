@@ -99,8 +99,8 @@ IN_PROC_BROWSER_TEST_F(ActivityLogExtensionTest, MAYBE_ChromeEndToEnd) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-#if defined(OS_WIN)
-// TODO(ataly): test flaky on windows. See Bug: crbug.com/245594
+#if defined(OS_WIN) || defined(OS_MACOSX)
+// TODO(ataly): test flaky on windows and Mac. See Bug: crbug.com/245594
 #define MAYBE_DOMEndToEnd DISABLED_DOMEndToEnd
 #else
 #define MAYBE_DOMEndToEnd DOMEndToEnd
