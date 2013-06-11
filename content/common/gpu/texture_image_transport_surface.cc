@@ -161,7 +161,8 @@ void TextureImageTransportSurface::OnResize(gfx::Size size,
   DCHECK_GE(size.height(), 1);
   current_size_ = size;
   scale_factor_ = scale_factor;
-  CreateBackTexture();
+  if (backbuffer_suggested_allocation_)
+    CreateBackTexture();
 }
 
 void TextureImageTransportSurface::OnWillDestroyStub() {
