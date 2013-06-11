@@ -453,7 +453,13 @@ void SystemTray::UpdateNotificationBubble() {
       this, notification_items_, SystemTrayBubble::BUBBLE_TYPE_NOTIFICATION);
   views::View* anchor;
   TrayBubbleView::AnchorType anchor_type;
-  if (system_bubble_.get() && system_bubble_->bubble_view()) {
+  // Tray items might want to show notifications while we are creating and
+  // initializing the |system_bubble_| - but it might not be fully initialized
+  // when coming here - this would produce a crashed like crbug.com/247416.
+  // As such we check the existence of the widget here.
+  if (system_bubble_.get() &&
+      system_bubble_->bubble_view() &&
+      system_bubble_->bubble_view()->GetWidget()) {
     anchor = system_bubble_->bubble_view();
     anchor_type = TrayBubbleView::ANCHOR_TYPE_BUBBLE;
   } else {
