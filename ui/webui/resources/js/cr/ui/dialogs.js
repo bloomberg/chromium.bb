@@ -274,8 +274,10 @@ cr.define('cr.ui.dialogs', function() {
   };
 
   PromptDialog.prototype.onKeyDown_ = function(event) {
-    if (event.keyCode == 13)  // Enter
+    if (event.keyCode == 13) {  // Enter
       this.onOkClick_(event);
+      event.preventDefault();
+    }
   };
 
   PromptDialog.prototype.show = function(message, defaultValue, onOk, onCancel,
