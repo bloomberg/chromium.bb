@@ -226,6 +226,9 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   virtual void OnSynStreamCompressed(
       size_t uncompressed_size,
       size_t compressed_size) = 0;
+
+  // Called when a BLOCKED frame has been parsed.
+  virtual void OnBlocked(SpdyStreamId stream_id) {}
 };
 
 // Optionally, and in addition to SpdyFramerVisitorInterface, a class supporting
@@ -426,6 +429,12 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdySerializedFrame* SerializeCredential(
       const SpdyCredentialIR& credential) const;
 
+  // Serializes a BLOCKED frame. The BLOCKED frame is used to indicate to the
+  // remote endpoint that this endpoint believes itself to be flow-control
+  // blocked but otherwise ready to send data. The BLOCKED frame is purely
+  // advisory and optional.
+  SpdySerializedFrame* SerializeBlocked(const SpdyBlockedIR& blocked) const;
+
   // Given a CREDENTIAL frame's payload, extract the credential.
   // Returns true on successful parse, false otherwise.
   // TODO(hkhalil): Implement CREDENTIAL frame parsing in SpdyFramer
@@ -485,6 +494,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t GetHeadersMinimumSize() const;
   size_t GetWindowUpdateSize() const;
   size_t GetCredentialMinimumSize() const;
+  size_t GetBlockedSize() const;
 
   // Returns the minimum size a frame can be (data or control).
   size_t GetFrameMinimumSize() const;

@@ -65,6 +65,7 @@ class MockVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD2(OnSynStreamCompressed,
                void(size_t uncompressed_length,
                     size_t compressed_length));
+  MOCK_METHOD1(OnBlocked, void(SpdyStreamId stream_id));
 };
 
 class SpdyFramerTestUtil {
@@ -2888,6 +2889,24 @@ TEST_P(SpdyFramerTest, CreateWindowUpdate) {
   }
 }
 
+TEST_P(SpdyFramerTest, SerializeBlocked) {
+  if (spdy_version_ < SPDY4) {
+    return;
+  }
+
+  SpdyFramer framer(spdy_version_);
+
+  const char kDescription[] = "BLOCKED frame";
+  const unsigned char kFrameData[] = {
+    0x00, 0x08, 0x0b, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+  };
+  SpdyBlockedIR blocked_ir(0);
+  scoped_ptr<SpdySerializedFrame> frame(framer.SerializeBlocked(blocked_ir));
+  CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
+
+}
+
 TEST_P(SpdyFramerTest, ReadCompressedSynStreamHeaderBlock) {
   SpdyHeaderBlock headers;
   headers["aa"] = "vv";
@@ -3532,6 +3551,7 @@ TEST_P(SpdyFramerTest, SizesTest) {
     EXPECT_EQ(8u, framer.GetHeadersMinimumSize());
     EXPECT_EQ(12u, framer.GetWindowUpdateSize());
     EXPECT_EQ(10u, framer.GetCredentialMinimumSize());
+    EXPECT_EQ(8u, framer.GetBlockedSize());
     EXPECT_EQ(8u, framer.GetFrameMinimumSize());
     EXPECT_EQ(65535u, framer.GetFrameMaximumSize());
     EXPECT_EQ(65527u, framer.GetDataFrameMaximumPayload());
@@ -4160,6 +4180,27 @@ TEST_P(SpdyFramerTest, GoAwayStreamIdBounds) {
     framer.ProcessInput(reinterpret_cast<const char*>(kV4FrameData),
                         arraysize(kV4FrameData));
   }
+  EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+  EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code());
+}
+
+TEST_P(SpdyFramerTest, OnBlocked) {
+  if (spdy_version_ < SPDY4) {
+    return;
+  }
+
+  const SpdyStreamId kStreamId = 0;
+
+  testing::StrictMock<test::MockVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  EXPECT_CALL(visitor, OnBlocked(kStreamId));
+
+  SpdyBlockedIR blocked_ir(0);
+  scoped_ptr<SpdySerializedFrame> frame(framer.SerializeBlocked(blocked_ir));
+  framer.ProcessInput(frame->data(), framer.GetBlockedSize());
+
   EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
   EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code());
 }

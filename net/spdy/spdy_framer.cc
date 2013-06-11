@@ -279,6 +279,13 @@ size_t SpdyFramer::GetCredentialMinimumSize() const {
   return GetControlFrameHeaderSize() + 2;
 }
 
+size_t SpdyFramer::GetBlockedSize() const {
+  DCHECK_LE(4, protocol_version());
+  // Size, in bytes, of a BLOCKED frame.
+  // The BLOCKED frame has no payload beyond the control frame header.
+  return GetControlFrameHeaderSize();
+}
+
 size_t SpdyFramer::GetFrameMinimumSize() const {
   return std::min(GetDataFrameMinimumSize(), GetControlFrameHeaderSize());
 }
@@ -404,6 +411,8 @@ const char* SpdyFramer::FrameTypeToString(SpdyFrameType type) {
       return "WINDOW_UPDATE";
     case CREDENTIAL:
       return "CREDENTIAL";
+    case BLOCKED:
+      return "BLOCKED";
   }
   return "UNKNOWN_CONTROL_TYPE";
 }
@@ -735,6 +744,13 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
       }
       break;
+    case BLOCKED:
+      if (current_frame_length_ != GetBlockedSize()) {
+        set_error(SPDY_INVALID_CONTROL_FRAME);
+      } else if (current_frame_flags_ != 0) {
+        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+      }
+      break;
     default:
       LOG(WARNING) << "Valid " << display_protocol_
                    << " control frame with unhandled type: "
@@ -816,14 +832,16 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
 size_t SpdyFramer::UpdateCurrentFrameBuffer(const char** data, size_t* len,
                                             size_t max_bytes) {
   size_t bytes_to_read = std::min(*len, max_bytes);
-  DCHECK_GE(kControlFrameBufferSize,
-            current_frame_buffer_length_ + bytes_to_read);
-  memcpy(current_frame_buffer_.get() + current_frame_buffer_length_,
-         *data,
-         bytes_to_read);
-  current_frame_buffer_length_ += bytes_to_read;
-  *data += bytes_to_read;
-  *len -= bytes_to_read;
+  if (bytes_to_read > 0) {
+    DCHECK_GE(kControlFrameBufferSize,
+              current_frame_buffer_length_ + bytes_to_read);
+    memcpy(current_frame_buffer_.get() + current_frame_buffer_length_,
+           *data,
+           bytes_to_read);
+    current_frame_buffer_length_ += bytes_to_read;
+    *data += bytes_to_read;
+    *len -= bytes_to_read;
+  }
   return bytes_to_read;
 }
 
@@ -1284,89 +1302,93 @@ bool SpdyFramer::ProcessSetting(const char* data) {
 
 size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
   size_t original_len = len;
-  if (remaining_data_length_) {
-    size_t bytes_read =
-        UpdateCurrentFrameBuffer(&data, &len, remaining_data_length_);
-    remaining_data_length_ -= bytes_read;
-    if (remaining_data_length_ == 0) {
-      SpdyFrameReader reader(current_frame_buffer_.get(),
-                             current_frame_buffer_length_);
-      reader.Seek(GetControlFrameHeaderSize());  // Skip frame header.
+  size_t bytes_read =
+      UpdateCurrentFrameBuffer(&data, &len, remaining_data_length_);
+  remaining_data_length_ -= bytes_read;
+  if (remaining_data_length_ == 0) {
+    SpdyFrameReader reader(current_frame_buffer_.get(),
+                           current_frame_buffer_length_);
+    reader.Seek(GetControlFrameHeaderSize());  // Skip frame header.
 
-      // Use frame-specific handlers.
-      switch (current_frame_type_) {
-        case PING: {
-            SpdyPingId id = 0;
-            bool successful_read = reader.ReadUInt32(&id);
+    // Use frame-specific handlers.
+    switch (current_frame_type_) {
+      case PING: {
+          SpdyPingId id = 0;
+          bool successful_read = reader.ReadUInt32(&id);
+          DCHECK(successful_read);
+          DCHECK(reader.IsDoneReading());
+          visitor_->OnPing(id);
+        }
+        break;
+      case WINDOW_UPDATE: {
+          uint32 delta_window_size = 0;
+          bool successful_read = true;
+          if (spdy_version_ < 4) {
+            successful_read = reader.ReadUInt31(&current_frame_stream_id_);
             DCHECK(successful_read);
-            DCHECK(reader.IsDoneReading());
-            visitor_->OnPing(id);
           }
-          break;
-        case WINDOW_UPDATE: {
-            uint32 delta_window_size = 0;
-            bool successful_read = true;
-            if (spdy_version_ < 4) {
-              successful_read = reader.ReadUInt31(&current_frame_stream_id_);
-              DCHECK(successful_read);
-            }
-            successful_read = reader.ReadUInt32(&delta_window_size);
+          successful_read = reader.ReadUInt32(&delta_window_size);
+          DCHECK(successful_read);
+          DCHECK(reader.IsDoneReading());
+          visitor_->OnWindowUpdate(current_frame_stream_id_,
+                                   delta_window_size);
+        }
+        break;
+      case RST_STREAM: {
+          bool successful_read = true;
+          if (spdy_version_ < 4) {
+            successful_read = reader.ReadUInt31(&current_frame_stream_id_);
             DCHECK(successful_read);
-            DCHECK(reader.IsDoneReading());
-            visitor_->OnWindowUpdate(current_frame_stream_id_,
-                                     delta_window_size);
           }
-          break;
-        case RST_STREAM: {
-            bool successful_read = true;
-            if (spdy_version_ < 4) {
-              successful_read = reader.ReadUInt31(&current_frame_stream_id_);
-              DCHECK(successful_read);
-            }
-            SpdyRstStreamStatus status = RST_STREAM_INVALID;
-            uint32 status_raw = status;
+          SpdyRstStreamStatus status = RST_STREAM_INVALID;
+          uint32 status_raw = status;
+          successful_read = reader.ReadUInt32(&status_raw);
+          DCHECK(successful_read);
+          if (status_raw > RST_STREAM_INVALID &&
+              status_raw < RST_STREAM_NUM_STATUS_CODES) {
+            status = static_cast<SpdyRstStreamStatus>(status_raw);
+          } else {
+            // TODO(hkhalil): Probably best to OnError here, depending on
+            // our interpretation of the spec. Keeping with existing liberal
+            // behavior for now.
+          }
+          DCHECK(reader.IsDoneReading());
+          visitor_->OnRstStream(current_frame_stream_id_, status);
+        }
+        break;
+      case GOAWAY: {
+          bool successful_read = reader.ReadUInt31(&current_frame_stream_id_);
+          DCHECK(successful_read);
+          SpdyGoAwayStatus status = GOAWAY_OK;
+          if (spdy_version_ >= 3) {
+            uint32 status_raw = GOAWAY_OK;
             successful_read = reader.ReadUInt32(&status_raw);
             DCHECK(successful_read);
-            if (status_raw > RST_STREAM_INVALID &&
-                status_raw < RST_STREAM_NUM_STATUS_CODES) {
-              status = static_cast<SpdyRstStreamStatus>(status_raw);
+            if (status_raw >= GOAWAY_OK &&
+                status_raw < static_cast<uint32>(GOAWAY_NUM_STATUS_CODES)) {
+              status = static_cast<SpdyGoAwayStatus>(status_raw);
             } else {
               // TODO(hkhalil): Probably best to OnError here, depending on
               // our interpretation of the spec. Keeping with existing liberal
               // behavior for now.
             }
-            DCHECK(reader.IsDoneReading());
-            visitor_->OnRstStream(current_frame_stream_id_, status);
           }
-          break;
-        case GOAWAY: {
-            bool successful_read = reader.ReadUInt31(&current_frame_stream_id_);
-            DCHECK(successful_read);
-            SpdyGoAwayStatus status = GOAWAY_OK;
-            if (spdy_version_ >= 3) {
-              uint32 status_raw = GOAWAY_OK;
-              successful_read = reader.ReadUInt32(&status_raw);
-              DCHECK(successful_read);
-              if (status_raw > static_cast<uint32>(GOAWAY_INVALID) &&
-                  status_raw < static_cast<uint32>(GOAWAY_NUM_STATUS_CODES)) {
-                status = static_cast<SpdyGoAwayStatus>(status_raw);
-              } else {
-                // TODO(hkhalil): Probably best to OnError here, depending on
-                // our interpretation of the spec. Keeping with existing liberal
-                // behavior for now.
-              }
-            }
-            DCHECK(reader.IsDoneReading());
-            visitor_->OnGoAway(current_frame_stream_id_, status);
-          }
-          break;
-        default:
-          // Unreachable.
-          LOG(FATAL) << "Unhandled control frame " << current_frame_type_;
-      }
-
-      CHANGE_STATE(SPDY_IGNORE_REMAINING_PAYLOAD);
+          DCHECK(reader.IsDoneReading());
+          visitor_->OnGoAway(current_frame_stream_id_, status);
+        }
+        break;
+      case BLOCKED: {
+          DCHECK_LE(4, protocol_version());
+          DCHECK(reader.IsDoneReading());
+          visitor_->OnBlocked(current_frame_stream_id_);
+        }
+        break;
+      default:
+        // Unreachable.
+        LOG(FATAL) << "Unhandled control frame " << current_frame_type_;
     }
+
+    CHANGE_STATE(SPDY_IGNORE_REMAINING_PAYLOAD);
   }
   return original_len - len;
 }
@@ -1680,6 +1702,13 @@ SpdySerializedFrame* SpdyFramer::SerializeSettings(
     builder.WriteUInt32(it->second.value);
   }
   DCHECK_EQ(size, builder.length());
+  return builder.take();
+}
+
+SpdyFrame* SpdyFramer::SerializeBlocked(const SpdyBlockedIR& blocked) const {
+  DCHECK_LE(4, protocol_version());
+  SpdyFrameBuilder builder(GetBlockedSize());
+  builder.WriteFramePrefix(*this, BLOCKED, kNoFlags, blocked.stream_id());
   return builder.take();
 }
 

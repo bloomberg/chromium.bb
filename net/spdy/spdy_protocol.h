@@ -269,7 +269,8 @@ enum SpdyFrameType {
   HEADERS,
   WINDOW_UPDATE,
   CREDENTIAL,
-  LAST_CONTROL_TYPE = CREDENTIAL
+  BLOCKED,
+  LAST_CONTROL_TYPE = BLOCKED
 };
 
 // Flags on data packets.
@@ -661,6 +662,15 @@ class SpdyCredentialIR : public SpdyFrameIR {
   CertificateList certificates_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyCredentialIR);
+};
+
+class SpdyBlockedIR : public SpdyFrameWithStreamIdIR {
+  public:
+   explicit SpdyBlockedIR(SpdyStreamId stream_id)
+       : SpdyFrameWithStreamIdIR(stream_id) {}
+
+  private:
+   DISALLOW_COPY_AND_ASSIGN(SpdyBlockedIR);
 };
 
 // -------------------------------------------------------------------------
