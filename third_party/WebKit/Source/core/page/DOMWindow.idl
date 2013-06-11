@@ -140,10 +140,10 @@
 
     [Replaceable] readonly attribute double devicePixelRatio;
 
-    DOMPoint webkitConvertPointFromPageToNode([Default=Undefined] optional Node node,
-                                              [Default=Undefined] optional DOMPoint p);
-    DOMPoint webkitConvertPointFromNodeToPage([Default=Undefined] optional Node node,
-                                              [Default=Undefined] optional DOMPoint p);
+    WebKitPoint webkitConvertPointFromPageToNode([Default=Undefined] optional Node node,
+                                                 [Default=Undefined] optional WebKitPoint p);
+    WebKitPoint webkitConvertPointFromNodeToPage([Default=Undefined] optional Node node,
+                                                 [Default=Undefined] optional WebKitPoint p);
 
     [EnabledAtRuntime, PerWorldBindings, ActivityLog=GetterForIsolatedWorlds] readonly attribute DOMApplicationCache applicationCache;
 

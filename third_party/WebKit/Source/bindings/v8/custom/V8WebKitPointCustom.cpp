@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "V8DOMPoint.h"
+#include "V8WebKitPoint.h"
 
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-void V8DOMPoint::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
+void V8WebKitPoint::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     float x = 0;
     float y = 0;

@@ -30,8 +30,8 @@
 [
     NoInterfaceObject,
     EnabledAtRuntime=cssRegions,
-    InterfaceName=WebKitNamedFlowCollection
-] interface DOMNamedFlowCollection {
+    ImplementedAs=DOMNamedFlowCollection
+] interface WebKitNamedFlowCollection {
     readonly attribute unsigned long length;
     getter NamedFlow item(unsigned long index);
     NamedFlow namedItem(DOMString name);
