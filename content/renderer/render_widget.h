@@ -407,10 +407,6 @@ class CONTENT_EXPORT RenderWidget
   void set_next_paint_is_restore_ack();
   void set_next_paint_is_repaint_ack();
 
-  void set_throttle_input_events(bool throttle_input_events) {
-    throttle_input_events_ = throttle_input_events;
-  }
-
   // Checks if the text input state and compose inline mode have been changed.
   // If they are changed, the new value will be sent to the browser process.
   // |show_ime_if_needed| should be SHOW_IME_IF_NEEDED iff the update may cause
@@ -693,9 +689,6 @@ class CONTENT_EXPORT RenderWidget
   // The device scale factor. This value is computed from the DPI entries in
   // |screen_info_| on some platforms, and defaults to 1 on other platforms.
   float device_scale_factor_;
-
-  // Specifies whether input event throttling is enabled for this widget.
-  bool throttle_input_events_;
 
   // State associated with the BeginSmoothScroll synthetic scrolling function.
   SmoothScrollCompletionCallback pending_smooth_scroll_gesture_;

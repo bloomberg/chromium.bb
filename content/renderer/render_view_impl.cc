@@ -813,7 +813,6 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
 #else
   pepper_helper_.reset(new RenderViewPepperHelper());
 #endif
-  set_throttle_input_events(params->renderer_prefs.throttle_input_events);
   routing_id_ = params->routing_id;
   surface_id_ = params->surface_id;
   if (params->opener_id != MSG_ROUTING_NONE && params->is_renderer_created)

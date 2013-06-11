@@ -42,7 +42,6 @@ RendererPreferences::RendererPreferences()
       enable_referrers(true),
       enable_do_not_track(false),
       default_zoom_level(0),
-      throttle_input_events(true),
       report_frame_name_changes(false),
       touchpad_fling_profile(3),
       touchscreen_fling_profile(3) {

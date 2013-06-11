@@ -179,7 +179,6 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       invalidation_task_posted_(false),
       screen_info_(screen_info),
       device_scale_factor_(screen_info_.deviceScaleFactor),
-      throttle_input_events_(true),
       is_threaded_compositing_enabled_(false),
       overscroll_notifications_enabled_(false),
       weak_ptr_factory_(this) {
@@ -814,11 +813,7 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
                     compositor_->commitRequested();
   }
 
-  bool is_input_throttled =
-      throttle_input_events_ &&
-      frame_pending;
-
-  if (event_type_gets_rate_limited && is_input_throttled && !is_hidden_) {
+  if (event_type_gets_rate_limited && frame_pending && !is_hidden_) {
     // We want to rate limit the input events in this case, so we'll wait for
     // painting to finish before ACKing this message.
     if (pending_input_event_ack_) {

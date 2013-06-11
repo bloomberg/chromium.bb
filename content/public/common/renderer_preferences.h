@@ -110,9 +110,6 @@ struct CONTENT_EXPORT RendererPreferences {
   // being overridden for the current navigation.
   std::string user_agent_override;
 
-  // Specifies whether renderer input event throttle is enabled.
-  bool throttle_input_events;
-
   // Specifies whether the renderer reports frame name changes to the browser
   // process.
   // TODO(fsamuel): This is a short-term workaround to avoid regressing
