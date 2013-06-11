@@ -1121,9 +1121,6 @@ void RenderWidget::DoDeferredUpdate() {
     return;
   }
 
-  if (is_accelerated_compositing_active_)
-    using_asynchronous_swapbuffers_ = SupportsAsynchronousSwapBuffers();
-
   // Tracking of frame rate jitter
   base::TimeTicks frame_begin_ticks = base::TimeTicks::Now();
   InstrumentWillBeginFrame();
@@ -1133,6 +1130,11 @@ void RenderWidget::DoDeferredUpdate() {
   // GPU acceleration, so make sure to run layout before we send the
   // GpuRenderingActivated message.
   webwidget_->layout();
+
+  // Check for whether we need to track swap buffers. We need to do that after
+  // layout() because it may have switched us to accelerated compositing.
+  if (is_accelerated_compositing_active_)
+    using_asynchronous_swapbuffers_ = SupportsAsynchronousSwapBuffers();
 
   // The following two can result in further layout and possibly
   // enable GPU acceleration so they need to be called before any painting
