@@ -288,7 +288,7 @@ void TestingProfile::Init() {
       EnsureBrowserContextKeyedServiceFactoriesBuilt();
 
   if (prefs_.get())
-    components::UserPrefs::Set(this, prefs_.get());
+    user_prefs::UserPrefs::Set(this, prefs_.get());
   else
     CreateTestingPrefService();
 
@@ -559,7 +559,7 @@ void TestingProfile::CreateTestingPrefService() {
   DCHECK(!prefs_.get());
   testing_prefs_ = new TestingPrefServiceSyncable();
   prefs_.reset(testing_prefs_);
-  components::UserPrefs::Set(this, prefs_.get());
+  user_prefs::UserPrefs::Set(this, prefs_.get());
   chrome::RegisterUserPrefs(testing_prefs_->registry());
 }
 

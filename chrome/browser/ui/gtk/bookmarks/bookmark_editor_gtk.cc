@@ -360,9 +360,8 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
   GtkWidget* table;
   if (details_.GetNodeType() != BookmarkNode::FOLDER) {
     url_entry_ = gtk_entry_new();
-    PrefService* prefs = profile_ ?
-        components::UserPrefs::Get(profile_) :
-        NULL;
+    PrefService* prefs =
+      profile_ ? user_prefs::UserPrefs::Get(profile_) :  NULL;
     gtk_entry_set_text(
         GTK_ENTRY(url_entry_),
         UTF16ToUTF8(chrome::FormatBookmarkURLForDisplay(url, prefs)).c_str());

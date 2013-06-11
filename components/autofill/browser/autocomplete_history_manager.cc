@@ -52,7 +52,7 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
       external_delegate_(NULL) {
   autofill_enabled_.Init(
       prefs::kAutofillEnabled,
-      components::UserPrefs::Get(browser_context_));
+      user_prefs::UserPrefs::Get(browser_context_));
 }
 
 AutocompleteHistoryManager::~AutocompleteHistoryManager() {

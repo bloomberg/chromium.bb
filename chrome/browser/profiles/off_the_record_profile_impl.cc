@@ -90,7 +90,7 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
       zoom_callback_(base::Bind(&OffTheRecordProfileImpl::OnZoomLevelChanged,
                                 base::Unretained(this))) {
   // Register on BrowserContext.
-  components::UserPrefs::Set(this, prefs_);
+  user_prefs::UserPrefs::Set(this, prefs_);
 }
 
 void OffTheRecordProfileImpl::Init() {

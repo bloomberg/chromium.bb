@@ -513,7 +513,7 @@ bool BookmarkManagerPrivateGetSubtreeFunction::RunImpl() {
 }
 
 bool BookmarkManagerPrivateCanEditFunction::RunImpl() {
-  PrefService* prefs = components::UserPrefs::Get(profile_);
+  PrefService* prefs = user_prefs::UserPrefs::Get(profile_);
   SetResult(new base::FundamentalValue(
       prefs->GetBoolean(prefs::kEditBookmarksEnabled)));
   return true;

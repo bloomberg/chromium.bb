@@ -53,7 +53,7 @@ void DragBookmarks(Profile* profile,
 
 int GetBookmarkDragOperation(content::BrowserContext* browser_context,
                              const BookmarkNode* node) {
-  PrefService* prefs = components::UserPrefs::Get(browser_context);
+  PrefService* prefs = user_prefs::UserPrefs::Get(browser_context);
 
   int move = ui::DragDropTypes::DRAG_MOVE;
   if (!prefs->GetBoolean(prefs::kEditBookmarksEnabled))

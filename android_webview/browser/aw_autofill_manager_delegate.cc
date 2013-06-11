@@ -21,7 +21,7 @@ namespace {
 void HandleReadError(PersistentPrefStore::PrefReadError error) {
 }
 
-}
+}  // namespace
 
 namespace android_webview {
 
@@ -39,7 +39,7 @@ AwAutofillManagerDelegate::AwAutofillManagerDelegate(bool enabled) {
   pref_service_builder.WithReadErrorCallback(base::Bind(&HandleReadError));
 
   AwBrowserContext* context = AwContentBrowserClient::GetAwBrowserContext();
-  components::UserPrefs::Set(context,
+  user_prefs::UserPrefs::Set(context,
                              pref_service_builder.Create(pref_registry));
 }
 
@@ -58,7 +58,7 @@ bool AwAutofillManagerDelegate::GetSaveFormData() {
 }
 
 PrefService* AwAutofillManagerDelegate::GetPrefs() {
-  return components::UserPrefs::Get(
+  return user_prefs::UserPrefs::Get(
       AwContentBrowserClient::GetAwBrowserContext());
 }
 

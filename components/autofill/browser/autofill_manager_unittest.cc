@@ -1920,7 +1920,7 @@ TEST_F(AutofillManagerTest, FillAddressForm) {
 // Test that we correctly fill an address form from an auxiliary profile.
 TEST_F(AutofillManagerTest, FillAddressFormFromAuxiliaryProfile) {
   personal_data_.ClearAutofillProfiles();
-  PrefService* prefs = components::UserPrefs::Get(profile());
+  PrefService* prefs = user_prefs::UserPrefs::Get(profile());
   prefs->SetBoolean(::autofill::prefs::kAutofillAuxiliaryProfilesEnabled, true);
   personal_data_.CreateTestAuxiliaryProfiles();
 
@@ -2813,7 +2813,7 @@ TEST_F(AutofillManagerTest, FormSubmittedWithDefaultValues) {
 // Checks that resetting the auxiliary profile enabled preference does the right
 // thing on all platforms.
 TEST_F(AutofillManagerTest, AuxiliaryProfilesReset) {
-  PrefService* prefs = components::UserPrefs::Get(profile());
+  PrefService* prefs = user_prefs::UserPrefs::Get(profile());
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   // Auxiliary profiles is implemented on Mac and Android only.
   // OSX: enables Mac Address Book integration.

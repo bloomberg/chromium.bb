@@ -70,7 +70,7 @@ Profile* profile() {
 }
 
 PrefService* prefs() {
-  return components::UserPrefs::Get(profile());
+  return user_prefs::UserPrefs::Get(profile());
 }
 
 void EnableScreenManagnifierToPref(bool enabled) {

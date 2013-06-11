@@ -73,7 +73,7 @@ void BrowserContextKeyedBaseFactory::RegisterUserPrefsOnBrowserContext(
   std::set<content::BrowserContext*>::iterator it =
       registered_preferences_.find(context);
   if (it == registered_preferences_.end()) {
-    PrefService* prefs = components::UserPrefs::Get(context);
+    PrefService* prefs = user_prefs::UserPrefs::Get(context);
     user_prefs::PrefRegistrySyncable* registry =
         static_cast<user_prefs::PrefRegistrySyncable*>(
             prefs->DeprecatedGetPrefRegistry());

@@ -80,7 +80,7 @@ AutofillDownloadManager::AutofillDownloadManager(BrowserContext* context,
       negative_upload_rate_(0),
       fetcher_id_for_unittest_(0) {
   DCHECK(observer_);
-  PrefService* preferences = components::UserPrefs::Get(browser_context_);
+  PrefService* preferences = user_prefs::UserPrefs::Get(browser_context_);
   positive_upload_rate_ =
       preferences->GetDouble(prefs::kAutofillPositiveUploadRate);
   negative_upload_rate_ =
@@ -170,7 +170,7 @@ void AutofillDownloadManager::SetPositiveUploadRate(double rate) {
   positive_upload_rate_ = rate;
   DCHECK_GE(rate, 0.0);
   DCHECK_LE(rate, 1.0);
-  PrefService* preferences = components::UserPrefs::Get(browser_context_);
+  PrefService* preferences = user_prefs::UserPrefs::Get(browser_context_);
   preferences->SetDouble(prefs::kAutofillPositiveUploadRate, rate);
 }
 
@@ -180,7 +180,7 @@ void AutofillDownloadManager::SetNegativeUploadRate(double rate) {
   negative_upload_rate_ = rate;
   DCHECK_GE(rate, 0.0);
   DCHECK_LE(rate, 1.0);
-  PrefService* preferences = components::UserPrefs::Get(browser_context_);
+  PrefService* preferences = user_prefs::UserPrefs::Get(browser_context_);
   preferences->SetDouble(prefs::kAutofillNegativeUploadRate, rate);
 }
 

@@ -91,7 +91,7 @@ void PreferencesBrowserTest::SetUpPrefs() {
   ASSERT_TRUE(web_contents);
   render_view_host_ = web_contents->GetRenderViewHost();
   ASSERT_TRUE(render_view_host_);
-  pref_change_registrar_.Init(components::UserPrefs::Get(browser()->profile()));
+  pref_change_registrar_.Init(user_prefs::UserPrefs::Get(browser()->profile()));
   pref_service_ = browser()->profile()->GetPrefs();
   ASSERT_TRUE(content::ExecuteScript(render_view_host_,
       "function TestEnv() {"

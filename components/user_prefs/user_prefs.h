@@ -15,7 +15,7 @@ namespace content {
 class BrowserContext;
 }
 
-namespace components {
+namespace user_prefs {
 
 // Components may use preferences associated with a given user. These
 // hang off of content::BrowserContext and can be retrieved using
@@ -43,6 +43,6 @@ class USER_PREFS_EXPORT UserPrefs : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(UserPrefs);
 };
 
-}  // namespace components
+}  // namespace user_prefs
 
 #endif  // COMPONENTS_USER_PREFS_USER_PREFS_H_

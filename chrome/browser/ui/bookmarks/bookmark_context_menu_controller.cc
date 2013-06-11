@@ -265,7 +265,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id, int event_flags) {
 }
 
 bool BookmarkContextMenuController::IsCommandIdChecked(int command_id) const {
-  PrefService* prefs = components::UserPrefs::Get(profile_);
+  PrefService* prefs = user_prefs::UserPrefs::Get(profile_);
   if (command_id == IDC_BOOKMARK_BAR_ALWAYS_SHOW)
     return prefs->GetBoolean(prefs::kShowBookmarkBar);
 
@@ -278,7 +278,7 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
   if (IsPlatformCommandIdEnabled(command_id, &enabled))
     return enabled;
 
-  PrefService* prefs = components::UserPrefs::Get(profile_);
+  PrefService* prefs = user_prefs::UserPrefs::Get(profile_);
 
   bool is_root_node = selection_.size() == 1 &&
                       selection_[0]->parent() == model_->root_node();

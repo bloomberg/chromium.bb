@@ -9,7 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 
-namespace components {
+namespace user_prefs {
 
 namespace {
 
@@ -44,4 +44,4 @@ UserPrefs::UserPrefs(PrefService* prefs) : prefs_(prefs) {
 UserPrefs::~UserPrefs() {
 }
 
-}  // namespace components
+}  // namespace user_prefs

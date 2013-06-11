@@ -33,7 +33,7 @@ BookmarkExpandedStateTracker::GetExpandedNodes() {
   if (!bookmark_model_->loaded())
     return nodes;
 
-  PrefService* prefs = components::UserPrefs::Get(browser_context_);
+  PrefService* prefs = user_prefs::UserPrefs::Get(browser_context_);
   if (!prefs)
     return nodes;
 
@@ -95,7 +95,7 @@ void BookmarkExpandedStateTracker::BookmarkAllNodesRemoved(
 }
 
 void BookmarkExpandedStateTracker::UpdatePrefs(const Nodes& nodes) {
-  PrefService* prefs = components::UserPrefs::Get(browser_context_);
+  PrefService* prefs = user_prefs::UserPrefs::Get(browser_context_);
   if (!prefs)
     return;
 

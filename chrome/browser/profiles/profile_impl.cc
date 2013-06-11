@@ -413,7 +413,7 @@ ProfileImpl::ProfileImpl(
         pref_registry_,
         async_prefs));
     // Register on BrowserContext.
-    components::UserPrefs::Set(this, prefs_.get());
+    user_prefs::UserPrefs::Set(this, prefs_.get());
   }
 
   startup_metric_utils::ScopedSlowStartupUMA

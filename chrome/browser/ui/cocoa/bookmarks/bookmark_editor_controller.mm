@@ -71,7 +71,7 @@
   if (node_) {
     [self setInitialName:base::SysUTF16ToNSString(node_->GetTitle())];
     PrefService* prefs = [self profile] ?
-        components::UserPrefs::Get([self profile]) :
+        user_prefs::UserPrefs::Get([self profile]) :
         NULL;
     string16 urlString =
         chrome::FormatBookmarkURLForDisplay(node_->url(), prefs);

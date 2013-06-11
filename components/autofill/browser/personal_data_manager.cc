@@ -539,7 +539,7 @@ bool PersonalDataManager::IsDataLoaded() const {
 }
 
 const std::vector<AutofillProfile*>& PersonalDataManager::GetProfiles() {
-  if (!components::UserPrefs::Get(browser_context_)->GetBoolean(
+  if (!user_prefs::UserPrefs::Get(browser_context_)->GetBoolean(
           prefs::kAutofillAuxiliaryProfilesEnabled)) {
     return web_profiles();
   }
@@ -692,7 +692,7 @@ void PersonalDataManager::GetCreditCardSuggestions(
 }
 
 bool PersonalDataManager::IsAutofillEnabled() const {
-  return components::UserPrefs::Get(browser_context_)->GetBoolean(
+  return user_prefs::UserPrefs::Get(browser_context_)->GetBoolean(
       prefs::kAutofillEnabled);
 }
 

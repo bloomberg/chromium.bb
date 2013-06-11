@@ -45,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManagerEditDisabled) {
   model->AddURL(bar, 1, ASCIIToUTF16("AAA"), GURL("http://aaa.example.com"));
   model->AddURL(folder, 0, ASCIIToUTF16("BBB"), GURL("http://bbb.example.com"));
 
-  PrefService* prefs = components::UserPrefs::Get(profile);
+  PrefService* prefs = user_prefs::UserPrefs::Get(profile);
   prefs->SetBoolean(prefs::kEditBookmarksEnabled, false);
 
   ASSERT_TRUE(RunComponentExtensionTest("bookmark_manager/edit_disabled"))
