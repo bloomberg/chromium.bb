@@ -80,7 +80,7 @@ ICUCharsetConverter::ICUCharsetConverter(UConverter* converter)
 ICUCharsetConverter::~ICUCharsetConverter() {
 }
 
-void ICUCharsetConverter::ConvertFromUTF16(const char16* input,
+void ICUCharsetConverter::ConvertFromUTF16(const base::char16* input,
                                            int input_len,
                                            CanonOutput* output) {
   // Install our error handler. It will be called for character that can not
@@ -116,7 +116,7 @@ void ICUCharsetConverter::ConvertFromUTF16(const char16* input,
 // the length of the output will be set to the length of the new host name.
 //
 // On error, this will return false. The output in this case is undefined.
-bool IDNToASCII(const char16* src, int src_len, CanonOutputW* output) {
+bool IDNToASCII(const base::char16* src, int src_len, CanonOutputW* output) {
   DCHECK(output->length() == 0);  // Output buffer is assumed empty.
   while (true) {
     // Use ALLOW_UNASSIGNED to be more tolerant of hostnames that violate
@@ -155,7 +155,7 @@ bool ReadUTFChar(const char* str, int* begin, int length,
   return false;
 }
 
-bool ReadUTFChar(const char16* str, int* begin, int length,
+bool ReadUTFChar(const base::char16* str, int* begin, int length,
                  unsigned* code_point) {
   if (U16_IS_SURROGATE(str[*begin])) {
     if (!U16_IS_SURROGATE_LEAD(str[*begin]) || *begin + 1 >= length ||

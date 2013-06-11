@@ -41,7 +41,7 @@ URL_EXPORT void AppendIPv6Address(const unsigned char address[16],
 URL_EXPORT bool FindIPv4Components(const char* spec,
                                    const url_parse::Component& host,
                                    url_parse::Component components[4]);
-URL_EXPORT bool FindIPv4Components(const char16* spec,
+URL_EXPORT bool FindIPv4Components(const base::char16* spec,
                                    const url_parse::Component& host,
                                    url_parse::Component components[4]);
 
@@ -62,7 +62,7 @@ URL_EXPORT CanonHostInfo::Family IPv4AddressToNumber(
     unsigned char address[4],
     int* num_ipv4_components);
 URL_EXPORT CanonHostInfo::Family IPv4AddressToNumber(
-    const char16* spec,
+    const base::char16* spec,
     const url_parse::Component& host,
     unsigned char address[4],
     int* num_ipv4_components);
@@ -75,7 +75,7 @@ URL_EXPORT CanonHostInfo::Family IPv4AddressToNumber(
 URL_EXPORT bool IPv6AddressToNumber(const char* spec,
                                     const url_parse::Component& host,
                                     unsigned char address[16]);
-URL_EXPORT bool IPv6AddressToNumber(const char16* spec,
+URL_EXPORT bool IPv6AddressToNumber(const base::char16* spec,
                                     const url_parse::Component& host,
                                     unsigned char address[16]);
 

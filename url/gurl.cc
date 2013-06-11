@@ -102,7 +102,7 @@ GURL::GURL(const std::string& url_string) : inner_url_(NULL) {
   }
 }
 
-GURL::GURL(const string16& url_string) : inner_url_(NULL) {
+GURL::GURL(const base::string16& url_string) : inner_url_(NULL) {
   is_valid_ = InitCanonical(url_string, &spec_, &parsed_);
   if (is_valid_ && SchemeIsFileSystem()) {
     inner_url_ =
@@ -179,7 +179,7 @@ const std::string& GURL::spec() const {
 GURL GURL::Resolve(const std::string& relative) const {
   return ResolveWithCharsetConverter(relative, NULL);
 }
-GURL GURL::Resolve(const string16& relative) const {
+GURL GURL::Resolve(const base::string16& relative) const {
   return ResolveWithCharsetConverter(relative, NULL);
 }
 
@@ -217,7 +217,7 @@ GURL GURL::ResolveWithCharsetConverter(
 
 // Note: code duplicated above (it's inconvenient to use a template here).
 GURL GURL::ResolveWithCharsetConverter(
-    const string16& relative,
+    const base::string16& relative,
     url_canon::CharsetConverter* charset_converter) const {
   // Not allowed for invalid URLs.
   if (!is_valid_)
@@ -275,7 +275,7 @@ GURL GURL::ReplaceComponents(
 
 // Note: code duplicated above (it's inconvenient to use a template here).
 GURL GURL::ReplaceComponents(
-    const url_canon::Replacements<char16>& replacements) const {
+    const url_canon::Replacements<base::char16>& replacements) const {
   GURL result;
 
   // Not allowed for invalid URLs.

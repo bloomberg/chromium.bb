@@ -55,7 +55,7 @@ int HttpAuthHandlerNTLM::GenerateAuthTokenImpl(
   base::string16 domain;
   base::string16 user;
   const base::string16& username = credentials->username();
-  const char16 backslash_character = '\\';
+  const base::char16 backslash_character = '\\';
   size_t backslash_idx = username.find(backslash_character);
   if (backslash_idx == base::string16::npos) {
     user = username;

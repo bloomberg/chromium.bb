@@ -217,7 +217,7 @@ TEST(URLCanonTest, UTF) {
       out_str.clear();
       url_canon::StdStringCanonOutput output(&out_str);
 
-      string16 input_str(WStringToUTF16(utf_cases[i].input16));
+      base::string16 input_str(WStringToUTF16(utf_cases[i].input16));
       int input_len = static_cast<int>(input_str.length());
       bool success = true;
       for (int ch = 0; ch < input_len; ch++) {
@@ -235,7 +235,7 @@ TEST(URLCanonTest, UTF) {
 
       // UTF-16 -> UTF-8
       std::string input8_str(utf_cases[i].input8);
-      string16 input16_str(WStringToUTF16(utf_cases[i].input16));
+      base::string16 input16_str(WStringToUTF16(utf_cases[i].input16));
       EXPECT_EQ(input8_str, ConvertUTF16ToUTF8(input16_str));
 
       // UTF-8 -> UTF-16
@@ -269,7 +269,7 @@ TEST(URLCanonTest, ICUCharsetConverter) {
     std::string str;
     url_canon::StdStringCanonOutput output(&str);
 
-    string16 input_str(WStringToUTF16(icu_cases[i].input));
+    base::string16 input_str(WStringToUTF16(icu_cases[i].input));
     int input_len = static_cast<int>(input_str.length());
     converter.ConvertFromUTF16(input_str.c_str(), input_len, &output);
     output.Complete();
@@ -285,7 +285,7 @@ TEST(URLCanonTest, ICUCharsetConverter) {
   url_canon::ICUCharsetConverter converter(conv.converter());
   for (int i = static_size - 2; i <= static_size + 2; i++) {
     // Make a string with the appropriate length.
-    string16 input;
+    base::string16 input;
     for (int ch = 0; ch < i; ch++)
       input.push_back('a');
 
@@ -338,7 +338,7 @@ TEST(URLCanonTest, Scheme) {
     out_str.clear();
     url_canon::StdStringCanonOutput output2(&out_str);
 
-    string16 wide_input(ConvertUTF8ToUTF16(scheme_cases[i].input));
+    base::string16 wide_input(ConvertUTF8ToUTF16(scheme_cases[i].input));
     in_comp.len = static_cast<int>(wide_input.length());
     success = url_canon::CanonicalizeScheme(wide_input.c_str(), in_comp,
                                             &output2, &out_comp);
@@ -461,7 +461,7 @@ TEST(URLCanonTest, Host) {
 
     // Wide version.
     if (host_cases[i].input16) {
-      string16 input16(WStringToUTF16(host_cases[i].input16));
+      base::string16 input16(WStringToUTF16(host_cases[i].input16));
       int host_len = static_cast<int>(input16.length());
       url_parse::Component in_comp(0, host_len);
       url_parse::Component out_comp;
@@ -511,7 +511,7 @@ TEST(URLCanonTest, Host) {
 
     // Wide version.
     if (host_cases[i].input16) {
-      string16 input16(WStringToUTF16(host_cases[i].input16));
+      base::string16 input16(WStringToUTF16(host_cases[i].input16));
       int host_len = static_cast<int>(input16.length());
       url_parse::Component in_comp(0, host_len);
 
@@ -636,7 +636,7 @@ TEST(URLCanonTest, IPv4) {
     }
 
     // 16-bit version.
-    string16 input16(WStringToUTF16(cases[i].input16));
+    base::string16 input16(WStringToUTF16(cases[i].input16));
     component = url_parse::Component(0, static_cast<int>(input16.length()));
 
     std::string out_str2;
@@ -790,7 +790,7 @@ TEST(URLCanonTest, IPv6) {
     }
 
     // 16-bit version.
-    string16 input16(WStringToUTF16(cases[i].input16));
+    base::string16 input16(WStringToUTF16(cases[i].input16));
     component = url_parse::Component(0, static_cast<int>(input16.length()));
 
     std::string out_str2;
@@ -878,7 +878,7 @@ TEST(URLCanonTest, UserInfo) {
     // Now try the wide version
     out_str.clear();
     url_canon::StdStringCanonOutput output2(&out_str);
-    string16 wide_input(ConvertUTF8ToUTF16(user_info_cases[i].input));
+    base::string16 wide_input(ConvertUTF8ToUTF16(user_info_cases[i].input));
     success = url_canon::CanonicalizeUserInfo(wide_input.c_str(),
                                               parsed.username,
                                               wide_input.c_str(),
@@ -937,7 +937,7 @@ TEST(URLCanonTest, Port) {
     // Now try the wide version
     out_str.clear();
     url_canon::StdStringCanonOutput output2(&out_str);
-    string16 wide_input(ConvertUTF8ToUTF16(port_cases[i].input));
+    base::string16 wide_input(ConvertUTF8ToUTF16(port_cases[i].input));
     success = url_canon::CanonicalizePort(wide_input.c_str(), in_comp,
                                           port_cases[i].default_port,
                                           &output2, &out_comp);
@@ -1040,7 +1040,7 @@ TEST(URLCanonTest, Path) {
     }
 
     if (path_cases[i].input16) {
-      string16 input16(WStringToUTF16(path_cases[i].input16));
+      base::string16 input16(WStringToUTF16(path_cases[i].input16));
       int len = static_cast<int>(input16.length());
       url_parse::Component in_comp(0, len);
       url_parse::Component out_comp;
@@ -1135,7 +1135,7 @@ TEST(URLCanonTest, Query) {
     }
 
     if (query_cases[i].input16) {
-      string16 input16(WStringToUTF16(query_cases[i].input16));
+      base::string16 input16(WStringToUTF16(query_cases[i].input16));
       int len = static_cast<int>(input16.length());
       url_parse::Component in_comp(0, len);
       std::string out_str;
@@ -1200,7 +1200,7 @@ TEST(URLCanonTest, Ref) {
 
     // 16-bit input
     if (ref_cases[i].input16) {
-      string16 input16(WStringToUTF16(ref_cases[i].input16));
+      base::string16 input16(WStringToUTF16(ref_cases[i].input16));
       int len = static_cast<int>(input16.length());
       url_parse::Component in_comp(0, len);
       url_parse::Component out_comp;
@@ -1833,17 +1833,17 @@ TEST(URLCanonTest, _itow_s) {
   // We fill the buffer with 0xff to ensure that it's getting properly
   // null-terminated.  We also allocate one byte more than what we tell
   // _itoa_s about, and ensure that the extra byte is untouched.
-  char16 buf[6];
+  base::char16 buf[6];
   const char fill_mem = 0xff;
-  const char16 fill_char = 0xffff;
+  const base::char16 fill_char = 0xffff;
   memset(buf, fill_mem, sizeof(buf));
   EXPECT_EQ(0, url_canon::_itow_s(12, buf, sizeof(buf) / 2 - 1, 10));
-  EXPECT_EQ(WStringToUTF16(L"12"), string16(buf));
+  EXPECT_EQ(WStringToUTF16(L"12"), base::string16(buf));
   EXPECT_EQ(fill_char, buf[3]);
 
   // Test the edge cases - exactly the buffer size and one over
   EXPECT_EQ(0, url_canon::_itow_s(1234, buf, sizeof(buf) / 2 - 1, 10));
-  EXPECT_EQ(WStringToUTF16(L"1234"), string16(buf));
+  EXPECT_EQ(WStringToUTF16(L"1234"), base::string16(buf));
   EXPECT_EQ(fill_char, buf[5]);
 
   memset(buf, fill_mem, sizeof(buf));
@@ -1853,12 +1853,12 @@ TEST(URLCanonTest, _itow_s) {
   // Test the template overload (note that this will see the full buffer)
   memset(buf, fill_mem, sizeof(buf));
   EXPECT_EQ(0, url_canon::_itow_s(12, buf, 10));
-  EXPECT_EQ(WStringToUTF16(L"12"), string16(buf));
+  EXPECT_EQ(WStringToUTF16(L"12"), base::string16(buf));
   EXPECT_EQ(fill_char, buf[3]);
 
   memset(buf, fill_mem, sizeof(buf));
   EXPECT_EQ(0, url_canon::_itow_s(12345, buf, 10));
-  EXPECT_EQ(WStringToUTF16(L"12345"), string16(buf));
+  EXPECT_EQ(WStringToUTF16(L"12345"), base::string16(buf));
 
   EXPECT_EQ(EINVAL, url_canon::_itow_s(123456, buf, 10));
 }
@@ -2081,12 +2081,12 @@ TEST(URLCanonTest, ReplacementOverflow) {
 
   // Override two components, the path with something short, and the query with
   // sonething long enough to trigger the bug.
-  url_canon::Replacements<char16> repl;
-  string16 new_query;
+  url_canon::Replacements<base::char16> repl;
+  base::string16 new_query;
   for (int i = 0; i < 4800; i++)
     new_query.push_back('a');
 
-  string16 new_path(WStringToUTF16(L"/foo"));
+  base::string16 new_path(WStringToUTF16(L"/foo"));
   repl.SetPath(new_path.c_str(), url_parse::Component(0, 4));
   repl.SetQuery(new_query.c_str(),
                 url_parse::Component(0, static_cast<int>(new_query.length())));

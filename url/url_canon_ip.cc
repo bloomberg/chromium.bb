@@ -645,10 +645,11 @@ bool FindIPv4Components(const char* spec,
   return DoFindIPv4Components<char, unsigned char>(spec, host, components);
 }
 
-bool FindIPv4Components(const char16* spec,
+bool FindIPv4Components(const base::char16* spec,
                         const url_parse::Component& host,
                         url_parse::Component components[4]) {
-  return DoFindIPv4Components<char16, char16>(spec, host, components);
+  return DoFindIPv4Components<base::char16, base::char16>(
+      spec, host, components);
 }
 
 void CanonicalizeIPAddress(const char* spec,
@@ -663,14 +664,14 @@ void CanonicalizeIPAddress(const char* spec,
     return;
 }
 
-void CanonicalizeIPAddress(const char16* spec,
+void CanonicalizeIPAddress(const base::char16* spec,
                            const url_parse::Component& host,
                            CanonOutput* output,
                            CanonHostInfo* host_info) {
-  if (DoCanonicalizeIPv4Address<char16, char16>(
+  if (DoCanonicalizeIPv4Address<base::char16, base::char16>(
           spec, host, output, host_info))
     return;
-  if (DoCanonicalizeIPv6Address<char16, char16>(
+  if (DoCanonicalizeIPv6Address<base::char16, base::char16>(
           spec, host, output, host_info))
     return;
 }
@@ -682,11 +683,11 @@ CanonHostInfo::Family IPv4AddressToNumber(const char* spec,
   return DoIPv4AddressToNumber<char>(spec, host, address, num_ipv4_components);
 }
 
-CanonHostInfo::Family IPv4AddressToNumber(const char16* spec,
+CanonHostInfo::Family IPv4AddressToNumber(const base::char16* spec,
                                           const url_parse::Component& host,
                                           unsigned char address[4],
                                           int* num_ipv4_components) {
-  return DoIPv4AddressToNumber<char16>(
+  return DoIPv4AddressToNumber<base::char16>(
       spec, host, address, num_ipv4_components);
 }
 
@@ -696,10 +697,10 @@ bool IPv6AddressToNumber(const char* spec,
   return DoIPv6AddressToNumber<char, unsigned char>(spec, host, address);
 }
 
-bool IPv6AddressToNumber(const char16* spec,
+bool IPv6AddressToNumber(const base::char16* spec,
                          const url_parse::Component& host,
                          unsigned char address[16]) {
-  return DoIPv6AddressToNumber<char16, char16>(spec, host, address);
+  return DoIPv6AddressToNumber<base::char16, base::char16>(spec, host, address);
 }
 
 }  // namespace url_canon

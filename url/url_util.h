@@ -67,7 +67,7 @@ URL_EXPORT bool FindAndCompareScheme(const char* str,
                                      int str_len,
                                      const char* compare,
                                      url_parse::Component* found_scheme);
-URL_EXPORT bool FindAndCompareScheme(const char16* str,
+URL_EXPORT bool FindAndCompareScheme(const base::char16* str,
                                      int str_len,
                                      const char* compare,
                                      url_parse::Component* found_scheme);
@@ -77,7 +77,7 @@ inline bool FindAndCompareScheme(const std::string& str,
   return FindAndCompareScheme(str.data(), static_cast<int>(str.size()),
                               compare, found_scheme);
 }
-inline bool FindAndCompareScheme(const string16& str,
+inline bool FindAndCompareScheme(const base::string16& str,
                                  const char* compare,
                                  url_parse::Component* found_scheme) {
   return FindAndCompareScheme(str.data(), static_cast<int>(str.size()),
@@ -88,7 +88,7 @@ inline bool FindAndCompareScheme(const string16& str,
 // either the scheme is in the list of known standard schemes.
 URL_EXPORT bool IsStandard(const char* spec,
                            const url_parse::Component& scheme);
-URL_EXPORT bool IsStandard(const char16* spec,
+URL_EXPORT bool IsStandard(const base::char16* spec,
                            const url_parse::Component& scheme);
 
 // TODO(brettw) remove this. This is a temporary compatibility hack to avoid
@@ -115,7 +115,7 @@ URL_EXPORT bool Canonicalize(const char* spec,
                              url_canon::CharsetConverter* charset_converter,
                              url_canon::CanonOutput* output,
                              url_parse::Parsed* output_parsed);
-URL_EXPORT bool Canonicalize(const char16* spec,
+URL_EXPORT bool Canonicalize(const base::char16* spec,
                              int spec_len,
                              url_canon::CharsetConverter* charset_converter,
                              url_canon::CanonOutput* output,
@@ -142,7 +142,7 @@ URL_EXPORT bool ResolveRelative(const char* base_spec,
 URL_EXPORT bool ResolveRelative(const char* base_spec,
                                 int base_spec_len,
                                 const url_parse::Parsed& base_parsed,
-                                const char16* relative,
+                                const base::char16* relative,
                                 int relative_length,
                                 url_canon::CharsetConverter* charset_converter,
                                 url_canon::CanonOutput* output,
@@ -164,7 +164,7 @@ URL_EXPORT bool ReplaceComponents(
     const char* spec,
     int spec_len,
     const url_parse::Parsed& parsed,
-    const url_canon::Replacements<char16>& replacements,
+    const url_canon::Replacements<base::char16>& replacements,
     url_canon::CharsetConverter* charset_converter,
     url_canon::CanonOutput* output,
     url_parse::Parsed* out_parsed);
@@ -184,8 +184,8 @@ URL_EXPORT bool LowerCaseEqualsASCII(const char* a_begin,
                                      const char* a_end,
                                      const char* b_begin,
                                      const char* b_end);
-URL_EXPORT bool LowerCaseEqualsASCII(const char16* a_begin,
-                                     const char16* a_end,
+URL_EXPORT bool LowerCaseEqualsASCII(const base::char16* a_begin,
+                                     const base::char16* a_end,
                                      const char* b);
 
 // Unescapes the given string using URL escaping rules.

@@ -121,7 +121,7 @@ std::string Latin1DataToUTF8String(CSSM_DATA data) {
 
 // Converts big-endian UTF-16 to UTF-8 in a std::string.
 // Note: The byte-order flipping is done in place on the input buffer!
-bool UTF16BigEndianToUTF8(char16* chars, size_t length,
+bool UTF16BigEndianToUTF8(base::char16* chars, size_t length,
                           std::string* out_string) {
   for (size_t i = 0; i < length; i++)
     chars[i] = EndianU16_BtoN(chars[i]);
@@ -241,9 +241,10 @@ bool CertPrincipal::ParseDistinguishedName(const void* ber_name_data,
           break;
         case BER_TAG_PKIX_BMP_STRING: {        // UTF-16, big-endian
           std::string value;
-          UTF16BigEndianToUTF8(reinterpret_cast<char16*>(pair->value.Data),
-                               pair->value.Length / sizeof(char16),
-                               &value);
+          UTF16BigEndianToUTF8(
+              reinterpret_cast<base::char16*>(pair->value.Data),
+              pair->value.Length / sizeof(base::char16),
+              &value);
           AddTypeValuePair(pair->type, value, values);
           break;
         }

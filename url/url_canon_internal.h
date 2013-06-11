@@ -77,7 +77,7 @@ inline bool IsComponentChar(unsigned char c) {
 void AppendStringOfType(const char* source, int length,
                         SharedCharTypes type,
                         CanonOutput* output);
-void AppendStringOfType(const char16* source, int length,
+void AppendStringOfType(const base::char16* source, int length,
                         SharedCharTypes type,
                         CanonOutput* output);
 
@@ -121,7 +121,7 @@ inline int IsDot(const CHAR* spec, int offset, int end) {
 // required for relative URL resolving to test for scheme equality.
 //
 // Returns 0 if the input character is not a valid scheme character.
-char CanonicalSchemeChar(char16 ch);
+char CanonicalSchemeChar(base::char16 ch);
 
 // Write a single character, escaped, to the output. This always escapes: it
 // does no checking that thee character requires escaping.
@@ -136,7 +136,7 @@ inline void AppendEscapedChar(UINCHAR ch,
 }
 
 // The character we'll substitute for undecodable or invalid characters.
-extern const char16 kUnicodeReplacementCharacter;
+extern const base::char16 kUnicodeReplacementCharacter;
 
 // UTF-8 functions ------------------------------------------------------------
 
@@ -227,17 +227,17 @@ inline void AppendUTF8EscapedValue(unsigned char_value, CanonOutput* output) {
 // (for a single-16-bit-word character, it will not be changed).
 //
 // Implementation is in url_canon_icu.cc.
-URL_EXPORT bool ReadUTFChar(const char16* str, int* begin, int length,
+URL_EXPORT bool ReadUTFChar(const base::char16* str, int* begin, int length,
                             unsigned* code_point);
 
 // Equivalent to U16_APPEND_UNSAFE in ICU but uses our output method.
 inline void AppendUTF16Value(unsigned code_point,
-                             CanonOutputT<char16>* output) {
+                             CanonOutputT<base::char16>* output) {
   if (code_point > 0xffff) {
-    output->push_back(static_cast<char16>((code_point >> 10) + 0xd7c0));
-    output->push_back(static_cast<char16>((code_point & 0x3ff) | 0xdc00));
+    output->push_back(static_cast<base::char16>((code_point >> 10) + 0xd7c0));
+    output->push_back(static_cast<base::char16>((code_point & 0x3ff) | 0xdc00));
   } else {
-    output->push_back(static_cast<char16>(code_point));
+    output->push_back(static_cast<base::char16>(code_point));
   }
 }
 
@@ -262,8 +262,8 @@ inline void AppendUTF16Value(unsigned code_point,
 //
 // Assumes that ch[begin] is within range in the array, but does not assume
 // that any following characters are.
-inline bool AppendUTF8EscapedChar(const char16* str, int* begin, int length,
-                                  CanonOutput* output) {
+inline bool AppendUTF8EscapedChar(const base::char16* str, int* begin,
+                                  int length, CanonOutput* output) {
   // UTF-16 input. Readchar16 will handle invalid characters for us and give
   // us the kUnicodeReplacementCharacter, so we don't have to do special
   // checking after failure, just pass through the failure to the caller.
@@ -297,7 +297,7 @@ inline bool AppendUTF8EscapedChar(const char* str, int* begin, int length,
 inline bool Is8BitChar(char c) {
   return true;  // this case is specialized to avoid a warning
 }
-inline bool Is8BitChar(char16 c) {
+inline bool Is8BitChar(base::char16 c) {
   return c <= 255;
 }
 
@@ -333,7 +333,7 @@ inline bool DecodeEscaped(const CHAR* spec, int* begin, int end,
 // the escaping rules are not guaranteed!
 void AppendInvalidNarrowString(const char* spec, int begin, int end,
                                CanonOutput* output);
-void AppendInvalidNarrowString(const char16* spec, int begin, int end,
+void AppendInvalidNarrowString(const base::char16* spec, int begin, int end,
                                CanonOutput* output);
 
 // Misc canonicalization helpers ----------------------------------------------
@@ -346,14 +346,14 @@ void AppendInvalidNarrowString(const char16* spec, int begin, int end,
 // replacing the invalid characters with the "invalid character". It will
 // return false in the failure case, and the caller should not continue as
 // normal.
-URL_EXPORT bool ConvertUTF16ToUTF8(const char16* input, int input_len,
+URL_EXPORT bool ConvertUTF16ToUTF8(const base::char16* input, int input_len,
                                    CanonOutput* output);
 URL_EXPORT bool ConvertUTF8ToUTF16(const char* input, int input_len,
-                                   CanonOutputT<char16>* output);
+                                   CanonOutputT<base::char16>* output);
 
 // Converts from UTF-16 to 8-bit using the character set converter. If the
 // converter is NULL, this will use UTF-8.
-void ConvertUTF16ToQueryEncoding(const char16* input,
+void ConvertUTF16ToQueryEncoding(const base::char16* input,
                                  const url_parse::Component& query,
                                  CharsetConverter* converter,
                                  CanonOutput* output);
@@ -389,7 +389,7 @@ void SetupOverrideComponents(const char* base,
 // although we will have still done the override with "invalid characters" in
 // place of errors.
 bool SetupUTF16OverrideComponents(const char* base,
-                                  const Replacements<char16>& repl,
+                                  const Replacements<base::char16>& repl,
                                   CanonOutput* utf8_buffer,
                                   URLComponentSource<char>* source,
                                   url_parse::Parsed* parsed);
@@ -400,7 +400,7 @@ bool CanonicalizePartialPath(const char* spec,
                              const url_parse::Component& path,
                              int path_begin_in_output,
                              CanonOutput* output);
-bool CanonicalizePartialPath(const char16* spec,
+bool CanonicalizePartialPath(const base::char16* spec,
                              const url_parse::Component& path,
                              int path_begin_in_output,
                              CanonOutput* output);
@@ -410,7 +410,7 @@ bool CanonicalizePartialPath(const char16* spec,
 // Implementations of Windows' int-to-string conversions
 URL_EXPORT int _itoa_s(int value, char* buffer, size_t size_in_chars,
                        int radix);
-URL_EXPORT int _itow_s(int value, char16* buffer, size_t size_in_chars,
+URL_EXPORT int _itow_s(int value, base::char16* buffer, size_t size_in_chars,
                        int radix);
 
 // Secure template overloads for these functions
@@ -420,7 +420,7 @@ inline int _itoa_s(int value, char (&buffer)[N], int radix) {
 }
 
 template<size_t N>
-inline int _itow_s(int value, char16 (&buffer)[N], int radix) {
+inline int _itow_s(int value, base::char16 (&buffer)[N], int radix) {
   return _itow_s(value, buffer, N, radix);
 }
 

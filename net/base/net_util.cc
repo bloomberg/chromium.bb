@@ -180,7 +180,7 @@ UScriptCode NormalizeScript(UScriptCode code) {
   }
 }
 
-bool IsIDNComponentInSingleScript(const char16* str, int str_len) {
+bool IsIDNComponentInSingleScript(const base::char16* str, int str_len) {
   UScriptCode first_script = USCRIPT_INVALID_CODE;
   bool is_first = true;
 
@@ -301,7 +301,7 @@ bool IsComponentCoveredByLang(const icu::UnicodeSet& component_characters,
 
 // Returns true if the given Unicode host component is safe to display to the
 // user.
-bool IsIDNComponentSafe(const char16* str,
+bool IsIDNComponentSafe(const base::char16* str,
                         int str_len,
                         const std::string& languages) {
   // Most common cases (non-IDN) do not reach here so that we don't
@@ -399,7 +399,7 @@ bool IsIDNComponentSafe(const char16* str,
 // will be APPENDED to the given output string and will be the same as the input
 // if it is not IDN or the IDN is unsafe to display.  Returns whether any
 // conversion was performed.
-bool IDNToUnicodeOneComponent(const char16* comp,
+bool IDNToUnicodeOneComponent(const base::char16* comp,
                               size_t comp_len,
                               const std::string& languages,
                               base::string16* out) {
@@ -408,9 +408,9 @@ bool IDNToUnicodeOneComponent(const char16* comp,
     return false;
 
   // Only transform if the input can be an IDN component.
-  static const char16 kIdnPrefix[] = {'x', 'n', '-', '-'};
+  static const base::char16 kIdnPrefix[] = {'x', 'n', '-', '-'};
   if ((comp_len > arraysize(kIdnPrefix)) &&
-      !memcmp(comp, kIdnPrefix, arraysize(kIdnPrefix) * sizeof(char16))) {
+      !memcmp(comp, kIdnPrefix, arraysize(kIdnPrefix) * sizeof(base::char16))) {
     // Repeatedly expand the output string until it's big enough.  It looks like
     // ICU will return the required size of the buffer, but that's not
     // documented, so we'll just grow by 2x. This should be rare and is not on a

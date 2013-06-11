@@ -165,30 +165,30 @@ TEST(URLUtilTest, DecodeURLEscapeSequences) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(decode_cases); i++) {
     const char* input = decode_cases[i].input;
-    url_canon::RawCanonOutputT<char16> output;
+    url_canon::RawCanonOutputT<base::char16> output;
     url_util::DecodeURLEscapeSequences(input, strlen(input), &output);
     EXPECT_EQ(decode_cases[i].output,
               url_test_utils::ConvertUTF16ToUTF8(
-                string16(output.data(), output.length())));
+                base::string16(output.data(), output.length())));
   }
 
   // Our decode should decode %00
   const char zero_input[] = "%00";
-  url_canon::RawCanonOutputT<char16> zero_output;
+  url_canon::RawCanonOutputT<base::char16> zero_output;
   url_util::DecodeURLEscapeSequences(zero_input, strlen(zero_input),
                                      &zero_output);
   EXPECT_NE("%00",
             url_test_utils::ConvertUTF16ToUTF8(
-              string16(zero_output.data(), zero_output.length())));
+              base::string16(zero_output.data(), zero_output.length())));
 
   // Test the error behavior for invalid UTF-8.
   const char invalid_input[] = "%e4%a0%e5%a5%bd";
-  const char16 invalid_expected[4] = {0x00e4, 0x00a0, 0x597d, 0};
-  url_canon::RawCanonOutputT<char16> invalid_output;
+  const base::char16 invalid_expected[4] = {0x00e4, 0x00a0, 0x597d, 0};
+  url_canon::RawCanonOutputT<base::char16> invalid_output;
   url_util::DecodeURLEscapeSequences(invalid_input, strlen(invalid_input),
                                      &invalid_output);
-  EXPECT_EQ(string16(invalid_expected),
-            string16(invalid_output.data(), invalid_output.length()));
+  EXPECT_EQ(base::string16(invalid_expected),
+            base::string16(invalid_output.data(), invalid_output.length()));
 }
 
 TEST(URLUtilTest, TestEncodeURIComponent) {

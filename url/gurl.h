@@ -17,7 +17,7 @@
 class URL_EXPORT GURL {
  public:
   typedef url_canon::StdStringReplacements<std::string> Replacements;
-  typedef url_canon::StdStringReplacements<string16> ReplacementsW;
+  typedef url_canon::StdStringReplacements<base::string16> ReplacementsW;
 
   // Creates an empty, invalid URL.
   GURL();
@@ -34,7 +34,7 @@ class URL_EXPORT GURL {
   // version to assume the query parameter encoding should be the same as the
   // input encoding.
   explicit GURL(const std::string& url_string /*, output_param_encoding*/);
-  explicit GURL(const string16& url_string /*, output_param_encoding*/);
+  explicit GURL(const base::string16& url_string /*, output_param_encoding*/);
 
   // Constructor for URLs that have already been parsed and canonicalized. This
   // is used for conversions from KURL, for example. The caller must supply all
@@ -129,7 +129,7 @@ class URL_EXPORT GURL {
   // It is an error to resolve a URL relative to an invalid URL. The result
   // will be the empty URL.
   GURL Resolve(const std::string& relative) const;
-  GURL Resolve(const string16& relative) const;
+  GURL Resolve(const base::string16& relative) const;
 
   // Like Resolve() above but takes a character set encoder which will be used
   // for any query text specified in the input. The charset converter parameter
@@ -142,7 +142,7 @@ class URL_EXPORT GURL {
       const std::string& relative,
       url_canon::CharsetConverter* charset_converter) const;
   GURL ResolveWithCharsetConverter(
-      const string16& relative,
+      const base::string16& relative,
       url_canon::CharsetConverter* charset_converter) const;
 
   // Creates a new GURL by replacing the current URL's components with the
@@ -159,7 +159,7 @@ class URL_EXPORT GURL {
   GURL ReplaceComponents(
       const url_canon::Replacements<char>& replacements) const;
   GURL ReplaceComponents(
-      const url_canon::Replacements<char16>& replacements) const;
+      const url_canon::Replacements<base::char16>& replacements) const;
 
   // A helper function that is equivalent to replacing the path with a slash
   // and clearing out everything after that. We sometimes need to know just the

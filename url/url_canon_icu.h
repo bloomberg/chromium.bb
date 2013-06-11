@@ -25,7 +25,7 @@ class URL_EXPORT ICUCharsetConverter : public CharsetConverter {
 
   virtual ~ICUCharsetConverter();
 
-  virtual void ConvertFromUTF16(const char16* input,
+  virtual void ConvertFromUTF16(const base::char16* input,
                                 int input_len,
                                 CanonOutput* output);
 

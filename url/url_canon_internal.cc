@@ -83,7 +83,7 @@ void DoOverrideComponent(const char* override_source,
 // caller should use the beginning of the |utf8_buffer| as the string pointer
 // for all components once all overrides have been prepared.
 bool PrepareUTF16OverrideComponent(
-    const char16* override_source,
+    const base::char16* override_source,
     const url_parse::Component& override_component,
     CanonOutput* utf8_buffer,
     url_parse::Component* dest_component) {
@@ -231,7 +231,7 @@ const char kCharToHexLookup[8] = {
     0,         // 0xE0 - 0xFF
 };
 
-const char16 kUnicodeReplacementCharacter = 0xfffd;
+const base::char16 kUnicodeReplacementCharacter = 0xfffd;
 
 void AppendStringOfType(const char* source, int length,
                         SharedCharTypes type,
@@ -239,10 +239,11 @@ void AppendStringOfType(const char* source, int length,
   DoAppendStringOfType<char, unsigned char>(source, length, type, output);
 }
 
-void AppendStringOfType(const char16* source, int length,
+void AppendStringOfType(const base::char16* source, int length,
                         SharedCharTypes type,
                         CanonOutput* output) {
-  DoAppendStringOfType<char16, char16>(source, length, type, output);
+  DoAppendStringOfType<base::char16, base::char16>(
+      source, length, type, output);
 }
 
 void AppendInvalidNarrowString(const char* spec, int begin, int end,
@@ -250,12 +251,13 @@ void AppendInvalidNarrowString(const char* spec, int begin, int end,
   DoAppendInvalidNarrowString<char, unsigned char>(spec, begin, end, output);
 }
 
-void AppendInvalidNarrowString(const char16* spec, int begin, int end,
+void AppendInvalidNarrowString(const base::char16* spec, int begin, int end,
                                CanonOutput* output) {
-  DoAppendInvalidNarrowString<char16, char16>(spec, begin, end, output);
+  DoAppendInvalidNarrowString<base::char16, base::char16>(
+      spec, begin, end, output);
 }
 
-bool ConvertUTF16ToUTF8(const char16* input, int input_len,
+bool ConvertUTF16ToUTF8(const base::char16* input, int input_len,
                         CanonOutput* output) {
   bool success = true;
   for (int i = 0; i < input_len; i++) {
@@ -267,7 +269,7 @@ bool ConvertUTF16ToUTF8(const char16* input, int input_len,
 }
 
 bool ConvertUTF8ToUTF16(const char* input, int input_len,
-                        CanonOutputT<char16>* output) {
+                        CanonOutputT<base::char16>* output) {
   bool success = true;
   for (int i = 0; i < input_len; i++) {
     unsigned code_point;
@@ -309,14 +311,14 @@ void SetupOverrideComponents(const char* base,
 }
 
 bool SetupUTF16OverrideComponents(const char* base,
-                                  const Replacements<char16>& repl,
+                                  const Replacements<base::char16>& repl,
                                   CanonOutput* utf8_buffer,
                                   URLComponentSource<char>* source,
                                   url_parse::Parsed* parsed) {
   bool success = true;
 
   // Get the source and parsed structures of the things we are replacing.
-  const URLComponentSource<char16>& repl_source = repl.sources();
+  const URLComponentSource<base::char16>& repl_source = repl.sources();
   const url_parse::Parsed& repl_parsed = repl.components();
 
   success &= PrepareUTF16OverrideComponent(
@@ -378,7 +380,7 @@ int _itoa_s(int value, char* buffer, size_t size_in_chars, int radix) {
   return 0;
 }
 
-int _itow_s(int value, char16* buffer, size_t size_in_chars, int radix) {
+int _itow_s(int value, base::char16* buffer, size_t size_in_chars, int radix) {
   if (radix != 10)
     return EINVAL;
 
@@ -392,7 +394,7 @@ int _itow_s(int value, char16* buffer, size_t size_in_chars, int radix) {
   }
 
   for (int i = 0; i < written; ++i) {
-    buffer[i] = static_cast<char16>(temp[i]);
+    buffer[i] = static_cast<base::char16>(temp[i]);
   }
   buffer[written] = '\0';
   return 0;

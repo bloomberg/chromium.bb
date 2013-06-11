@@ -66,13 +66,13 @@ bool CanonicalizePathURL(const char* spec,
       URLComponentSource<char>(spec), parsed, output, new_parsed);
 }
 
-bool CanonicalizePathURL(const char16* spec,
+bool CanonicalizePathURL(const base::char16* spec,
                          int spec_len,
                          const url_parse::Parsed& parsed,
                          CanonOutput* output,
                          url_parse::Parsed* new_parsed) {
-  return DoCanonicalizePathURL<char16, char16>(
-      URLComponentSource<char16>(spec), parsed, output, new_parsed);
+  return DoCanonicalizePathURL<base::char16, base::char16>(
+      URLComponentSource<base::char16>(spec), parsed, output, new_parsed);
 }
 
 bool ReplacePathURL(const char* base,
@@ -89,7 +89,7 @@ bool ReplacePathURL(const char* base,
 
 bool ReplacePathURL(const char* base,
                     const url_parse::Parsed& base_parsed,
-                    const Replacements<char16>& replacements,
+                    const Replacements<base::char16>& replacements,
                     CanonOutput* output,
                     url_parse::Parsed* new_parsed) {
   RawCanonOutput<1024> utf8;

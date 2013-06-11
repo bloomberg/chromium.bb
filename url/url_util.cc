@@ -409,7 +409,7 @@ bool IsStandard(const char* spec, const url_parse::Component& scheme) {
   return DoIsStandard(spec, scheme);
 }
 
-bool IsStandard(const char16* spec, const url_parse::Component& scheme) {
+bool IsStandard(const base::char16* spec, const url_parse::Component& scheme) {
   return DoIsStandard(spec, scheme);
 }
 
@@ -420,7 +420,7 @@ bool FindAndCompareScheme(const char* str,
   return DoFindAndCompareScheme(str, str_len, compare, found_scheme);
 }
 
-bool FindAndCompareScheme(const char16* str,
+bool FindAndCompareScheme(const base::char16* str,
                           int str_len,
                           const char* compare,
                           url_parse::Component* found_scheme) {
@@ -436,7 +436,7 @@ bool Canonicalize(const char* spec,
                         output, output_parsed);
 }
 
-bool Canonicalize(const char16* spec,
+bool Canonicalize(const base::char16* spec,
                   int spec_len,
                   url_canon::CharsetConverter* charset_converter,
                   url_canon::CanonOutput* output,
@@ -461,7 +461,7 @@ bool ResolveRelative(const char* base_spec,
 bool ResolveRelative(const char* base_spec,
                      int base_spec_len,
                      const url_parse::Parsed& base_parsed,
-                     const char16* relative,
+                     const base::char16* relative,
                      int relative_length,
                      url_canon::CharsetConverter* charset_converter,
                      url_canon::CanonOutput* output,
@@ -482,13 +482,14 @@ bool ReplaceComponents(const char* spec,
                              charset_converter, output, out_parsed);
 }
 
-bool ReplaceComponents(const char* spec,
-                       int spec_len,
-                       const url_parse::Parsed& parsed,
-                       const url_canon::Replacements<char16>& replacements,
-                       url_canon::CharsetConverter* charset_converter,
-                       url_canon::CanonOutput* output,
-                       url_parse::Parsed* out_parsed) {
+bool ReplaceComponents(
+      const char* spec,
+      int spec_len,
+      const url_parse::Parsed& parsed,
+      const url_canon::Replacements<base::char16>& replacements,
+      url_canon::CharsetConverter* charset_converter,
+      url_canon::CanonOutput* output,
+      url_parse::Parsed* out_parsed) {
   return DoReplaceComponents(spec, spec_len, parsed, replacements,
                              charset_converter, output, out_parsed);
 }
@@ -512,8 +513,8 @@ bool LowerCaseEqualsASCII(const char* a_begin,
   return a_begin == a_end && b_begin == b_end;
 }
 
-bool LowerCaseEqualsASCII(const char16* a_begin,
-                          const char16* a_end,
+bool LowerCaseEqualsASCII(const base::char16* a_begin,
+                          const base::char16* a_end,
                           const char* b) {
   return DoLowerCaseEqualsASCII(a_begin, a_end, b);
 }
@@ -584,7 +585,7 @@ bool CompareSchemeComponent(const char* spec,
   return DoCompareSchemeComponent(spec, component, compare_to);
 }
 
-bool CompareSchemeComponent(const char16* spec,
+bool CompareSchemeComponent(const base::char16* spec,
                             const url_parse::Component& component,
                             const char* compare_to) {
   return DoCompareSchemeComponent(spec, component, compare_to);

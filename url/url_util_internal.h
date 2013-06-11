@@ -21,7 +21,7 @@ extern const char kMailtoScheme[];
 bool CompareSchemeComponent(const char* spec,
                             const url_parse::Component& component,
                             const char* compare_to);
-bool CompareSchemeComponent(const char16* spec,
+bool CompareSchemeComponent(const base::char16* spec,
                             const url_parse::Component& component,
                             const char* compare_to);
 

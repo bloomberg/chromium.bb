@@ -17,7 +17,7 @@ void ZapString(std::string* s) {
 
 void ZapString(base::string16* s) {
   if (!s->empty())
-    ZapBuf(&(*s)[0], s->length() * sizeof(char16));
+    ZapBuf(&(*s)[0], s->length() * sizeof(base::char16));
 }
 
 }  // net

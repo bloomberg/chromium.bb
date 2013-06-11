@@ -15,7 +15,7 @@ namespace url_parse {
 
 // Deprecated, but WebKit/WebCore/platform/KURLGooglePrivate.h and
 // KURLGoogle.cpp still rely on this type.
-typedef char16 UTF16Char;
+typedef base::char16 UTF16Char;
 
 // Component ------------------------------------------------------------------
 
@@ -223,7 +223,7 @@ struct URL_EXPORT Parsed {
 URL_EXPORT void ParseStandardURL(const char* url,
                                  int url_len,
                                  Parsed* parsed);
-URL_EXPORT void ParseStandardURL(const char16* url,
+URL_EXPORT void ParseStandardURL(const base::char16* url,
                                  int url_len,
                                  Parsed* parsed);
 
@@ -232,24 +232,30 @@ URL_EXPORT void ParseStandardURL(const char16* url,
 // everything after the scheme is considered as the path. This is used for
 // things like "about:" and "javascript:"
 URL_EXPORT void ParsePathURL(const char* url, int url_len, Parsed* parsed);
-URL_EXPORT void ParsePathURL(const char16* url, int url_len, Parsed* parsed);
+URL_EXPORT void ParsePathURL(const base::char16* url,
+                             int url_len,
+                             Parsed* parsed);
 
 // FileURL is for file URLs. There are some special rules for interpreting
 // these.
 URL_EXPORT void ParseFileURL(const char* url, int url_len, Parsed* parsed);
-URL_EXPORT void ParseFileURL(const char16* url, int url_len, Parsed* parsed);
+URL_EXPORT void ParseFileURL(const base::char16* url,
+                             int url_len,
+                             Parsed* parsed);
 
 // Filesystem URLs are structured differently than other URLs.
 URL_EXPORT void ParseFileSystemURL(const char* url,
                                    int url_len,
                                    Parsed* parsed);
-URL_EXPORT void ParseFileSystemURL(const char16* url,
+URL_EXPORT void ParseFileSystemURL(const base::char16* url,
                                    int url_len,
                                    Parsed* parsed);
 
 // MailtoURL is for mailto: urls. They are made up scheme,path,query
 URL_EXPORT void ParseMailtoURL(const char* url, int url_len, Parsed* parsed);
-URL_EXPORT void ParseMailtoURL(const char16* url, int url_len, Parsed* parsed);
+URL_EXPORT void ParseMailtoURL(const base::char16* url,
+                               int url_len,
+                               Parsed* parsed);
 
 // Helper functions -----------------------------------------------------------
 
@@ -276,13 +282,13 @@ URL_EXPORT void ParseMailtoURL(const char16* url, int url_len, Parsed* parsed);
 URL_EXPORT bool ExtractScheme(const char* url,
                               int url_len,
                               Component* scheme);
-URL_EXPORT bool ExtractScheme(const char16* url,
+URL_EXPORT bool ExtractScheme(const base::char16* url,
                               int url_len,
                               Component* scheme);
 
 // Returns true if ch is a character that terminates the authority segment
 // of a URL.
-URL_EXPORT bool IsAuthorityTerminator(char16 ch);
+URL_EXPORT bool IsAuthorityTerminator(base::char16 ch);
 
 // Does a best effort parse of input |spec|, in range |auth|. If a particular
 // component is not found, it will be set to invalid.
@@ -292,7 +298,7 @@ URL_EXPORT void ParseAuthority(const char* spec,
                                Component* password,
                                Component* hostname,
                                Component* port_num);
-URL_EXPORT void ParseAuthority(const char16* spec,
+URL_EXPORT void ParseAuthority(const base::char16* spec,
                                const Component& auth,
                                Component* username,
                                Component* password,
@@ -307,7 +313,7 @@ URL_EXPORT void ParseAuthority(const char16* spec,
 // the two special values below.
 enum SpecialPort { PORT_UNSPECIFIED = -1, PORT_INVALID = -2 };
 URL_EXPORT int ParsePort(const char* url, const Component& port);
-URL_EXPORT int ParsePort(const char16* url, const Component& port);
+URL_EXPORT int ParsePort(const base::char16* url, const Component& port);
 
 // Extracts the range of the file name in the given url. The path must
 // already have been computed by the parse function, and the matching URL
@@ -322,7 +328,7 @@ URL_EXPORT int ParsePort(const char16* url, const Component& port);
 URL_EXPORT void ExtractFileName(const char* url,
                                 const Component& path,
                                 Component* file_name);
-URL_EXPORT void ExtractFileName(const char16* url,
+URL_EXPORT void ExtractFileName(const base::char16* url,
                                 const Component& path,
                                 Component* file_name);
 
@@ -345,7 +351,7 @@ URL_EXPORT bool ExtractQueryKeyValue(const char* url,
                                      Component* query,
                                      Component* key,
                                      Component* value);
-URL_EXPORT bool ExtractQueryKeyValue(const char16* url,
+URL_EXPORT bool ExtractQueryKeyValue(const base::char16* url,
                                      Component* query,
                                      Component* key,
                                      Component* value);
