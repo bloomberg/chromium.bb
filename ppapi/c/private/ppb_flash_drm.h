@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash_drm.idl modified Tue May 21 09:34:07 2013. */
+/* From private/ppb_flash_drm.idl modified Sat Jun  8 16:45:26 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_DRM_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_DRM_H_
@@ -46,6 +46,20 @@ struct PPB_Flash_DRM_1_0 {
   int32_t (*GetDeviceID)(PP_Resource drm,
                          struct PP_Var* id,
                          struct PP_CompletionCallback callback);
+  /**
+   * Windows only. Synchronously outputs the HMONITOR corresponding to the
+   * monitor on which the plugin instance is displayed in |hmonitor|. PP_TRUE is
+   * returned on success.
+   */
+  PP_Bool (*GetHmonitor)(PP_Resource drm, int64_t* hmonitor);
+  /**
+   * Asynchronously returns a PPB_FileRef resource in |file_ref| which points to
+   * the Voucher file for performing DRM verification. |callback| will be called
+   * upon completion.
+   */
+  int32_t (*GetVoucherFile)(PP_Resource drm,
+                            PP_Resource* file_ref,
+                            struct PP_CompletionCallback callback);
 };
 
 typedef struct PPB_Flash_DRM_1_0 PPB_Flash_DRM;

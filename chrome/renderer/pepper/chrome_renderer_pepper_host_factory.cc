@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/renderer/pepper/pepper_extensions_common_host.h"
+#include "chrome/renderer/pepper/pepper_flash_drm_renderer_host.h"
 #include "chrome/renderer/pepper/pepper_flash_font_file_host.h"
 #include "chrome/renderer/pepper/pepper_flash_fullscreen_host.h"
 #include "chrome/renderer/pepper/pepper_flash_menu_host.h"
@@ -94,6 +95,9 @@ ChromeRendererPepperHostFactory::CreateResourceHost(
         }
         break;
       }
+      case PpapiHostMsg_FlashDRM_Create::ID:
+        return scoped_ptr<ResourceHost>(new PepperFlashDRMRendererHost(
+            host_, instance, params.pp_resource()));
     }
   }
 

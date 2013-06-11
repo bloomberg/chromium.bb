@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/memory/ref_counted.h"
-#include "ppapi/c/private/ppb_flash_drm.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
@@ -18,6 +17,9 @@ class PPAPI_THUNK_EXPORT PPB_Flash_DRM_API {
 
   virtual int32_t GetDeviceID(PP_Var* id,
                               scoped_refptr<TrackedCallback> callback) = 0;
+  virtual PP_Bool GetHmonitor(int64_t* hmonitor) = 0;
+  virtual int32_t GetVoucherFile(PP_Resource* file_ref,
+                                 scoped_refptr<TrackedCallback> callback) = 0;
 };
 
 }  // namespace thunk

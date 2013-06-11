@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,7 @@ class PepperFlashDRMHost : public ppapi::host::ResourceHost {
  private:
   // IPC message handler.
   int32_t OnHostMsgGetDeviceID(ppapi::host::HostMessageContext* context);
+  int32_t OnHostMsgGetHmonitor(ppapi::host::HostMessageContext* context);
 
   // Called by the fetcher when the device ID was retrieved, or the empty string
   // on error.

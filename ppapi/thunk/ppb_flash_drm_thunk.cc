@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_flash_drm.idl modified Mon May 20 13:45:09 2013.
+// From private/ppb_flash_drm.idl modified Sat Jun  8 16:45:26 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -37,9 +37,30 @@ int32_t GetDeviceID(PP_Resource drm,
   return enter.SetResult(enter.object()->GetDeviceID(id, enter.callback()));
 }
 
+PP_Bool GetHmonitor(PP_Resource drm, int64_t* hmonitor) {
+  VLOG(4) << "PPB_Flash_DRM::GetHmonitor()";
+  EnterResource<PPB_Flash_DRM_API> enter(drm, true);
+  if (enter.failed())
+    return PP_FALSE;
+  return enter.object()->GetHmonitor(hmonitor);
+}
+
+int32_t GetVoucherFile(PP_Resource drm,
+                       PP_Resource* file_ref,
+                       struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_Flash_DRM::GetVoucherFile()";
+  EnterResource<PPB_Flash_DRM_API> enter(drm, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->GetVoucherFile(file_ref,
+                                                        enter.callback()));
+}
+
 const PPB_Flash_DRM_1_0 g_ppb_flash_drm_thunk_1_0 = {
   &Create,
-  &GetDeviceID
+  &GetDeviceID,
+  &GetHmonitor,
+  &GetVoucherFile
 };
 
 }  // namespace

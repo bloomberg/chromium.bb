@@ -23,13 +23,10 @@ BrowserPpapiHost* BrowserPpapiHost::CreateExternalPluginProcess(
     int render_process_id,
     int render_view_id,
     const base::FilePath& profile_directory) {
-  // TODO(raymes): Figure out how to plumb plugin_name through for NaCl. It is
-  // currently only needed for PPB_Flash_File interfaces so it doesn't matter.
-  std::string plugin_name;
+  // The plugin name and path shouldn't be needed for NaCl apps.
   BrowserPpapiHostImpl* browser_ppapi_host =
-      new BrowserPpapiHostImpl(sender, permissions, plugin_name,
-                               profile_directory,
-                               true);
+      new BrowserPpapiHostImpl(sender, permissions, std::string(),
+                               base::FilePath(), profile_directory, true);
   browser_ppapi_host->set_plugin_process_handle(plugin_child_process);
 
   channel->AddFilter(
@@ -47,11 +44,13 @@ BrowserPpapiHostImpl::BrowserPpapiHostImpl(
     IPC::Sender* sender,
     const ppapi::PpapiPermissions& permissions,
     const std::string& plugin_name,
+    const base::FilePath& plugin_path,
     const base::FilePath& profile_data_directory,
     bool external_plugin)
     : ppapi_host_(new ppapi::host::PpapiHost(sender, permissions)),
       plugin_process_handle_(base::kNullProcessHandle),
       plugin_name_(plugin_name),
+      plugin_path_(plugin_path),
       profile_data_directory_(profile_data_directory),
       external_plugin_(external_plugin) {
   message_filter_ = new HostMessageFilter(ppapi_host_.get());
@@ -101,6 +100,10 @@ bool BrowserPpapiHostImpl::GetRenderViewIDsForInstance(
 
 const std::string& BrowserPpapiHostImpl::GetPluginName() {
   return plugin_name_;
+}
+
+const base::FilePath& BrowserPpapiHostImpl::GetPluginPath() {
+  return plugin_path_;
 }
 
 const base::FilePath& BrowserPpapiHostImpl::GetProfileDataDirectory() {

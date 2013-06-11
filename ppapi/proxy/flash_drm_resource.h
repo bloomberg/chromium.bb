@@ -11,6 +11,10 @@
 #include "ppapi/thunk/ppb_flash_drm_api.h"
 
 namespace ppapi {
+struct PPB_FileRef_CreateInfo;
+}
+
+namespace ppapi {
 namespace proxy {
 
 class FlashDRMResource
@@ -27,12 +31,20 @@ class FlashDRMResource
   // PPB_Flash_DRM_API implementation.
   virtual int32_t GetDeviceID(PP_Var* id,
                               scoped_refptr<TrackedCallback> callback) OVERRIDE;
+  virtual PP_Bool GetHmonitor(int64_t* hmonitor) OVERRIDE;
+  virtual int32_t GetVoucherFile(
+      PP_Resource* file_ref,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
 
  private:
   void OnPluginMsgGetDeviceIDReply(PP_Var* dest,
                                    scoped_refptr<TrackedCallback> callback,
                                    const ResourceMessageReplyParams& params,
                                    const std::string& id);
+  void OnPluginMsgGetVoucherFileReply(PP_Resource* dest,
+                                      scoped_refptr<TrackedCallback> callback,
+                                      const ResourceMessageReplyParams& params,
+                                      const PPB_FileRef_CreateInfo& file_info);
 
   DISALLOW_COPY_AND_ASSIGN(FlashDRMResource);
 };

@@ -54,5 +54,25 @@ int32_t DRM::GetDeviceID(const CompletionCallbackWithOutput<Var>& callback) {
   return callback.MayForce(PP_ERROR_NOINTERFACE);
 }
 
+bool DRM::GetHmonitor(int64_t* hmonitor) {
+  if (has_interface<PPB_Flash_DRM_1_0>()) {
+    return PP_ToBool(get_interface<PPB_Flash_DRM_1_0>()->GetHmonitor(
+        pp_resource(),
+        hmonitor));
+  }
+  return 0;
+}
+
+int32_t DRM::GetVoucherFile(
+    const CompletionCallbackWithOutput<FileRef>& callback) {
+  if (has_interface<PPB_Flash_DRM_1_0>()) {
+    return get_interface<PPB_Flash_DRM_1_0>()->GetVoucherFile(
+        pp_resource(),
+        callback.output(),
+        callback.pp_completion_callback());
+  }
+  return PP_ERROR_FAILED;
+}
+
 }  // namespace flash
 }  // namespace pp

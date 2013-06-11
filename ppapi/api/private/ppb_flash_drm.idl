@@ -31,5 +31,22 @@ interface PPB_Flash_DRM {
   int32_t GetDeviceID([in] PP_Resource drm,
                       [out] PP_Var id,
                       [in] PP_CompletionCallback callback);
+
+  /**
+   * Windows only. Synchronously outputs the HMONITOR corresponding to the
+   * monitor on which the plugin instance is displayed in |hmonitor|. PP_TRUE is
+   * returned on success.
+   */
+  PP_Bool GetHmonitor([in] PP_Resource drm,
+                      [out] int64_t hmonitor);
+
+  /**
+   * Asynchronously returns a PPB_FileRef resource in |file_ref| which points to
+   * the Voucher file for performing DRM verification. |callback| will be called
+   * upon completion.
+   */
+   int32_t GetVoucherFile([in] PP_Resource drm,
+                          [out] PP_Resource file_ref,
+                          [in] PP_CompletionCallback callback);
 };
 

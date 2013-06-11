@@ -218,7 +218,7 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
   filter_ = new PepperMessageFilter(permissions_, host_resolver);
 
   host_impl_.reset(new BrowserPpapiHostImpl(this, permissions_, info.name,
-                                            profile_data_directory,
+                                            info.path, profile_data_directory,
                                             false));
 
   process_->GetHost()->AddFilter(filter_.get());
@@ -237,12 +237,11 @@ PpapiPluginProcessHost::PpapiPluginProcessHost()
       PROCESS_TYPE_PPAPI_BROKER, this));
 
   ppapi::PpapiPermissions permissions;  // No permissions.
-  // The plugin name and profile data directory shouldn't be needed for the
-  // broker.
-  std::string plugin_name;
-  base::FilePath profile_data_directory;
-  host_impl_.reset(new BrowserPpapiHostImpl(this, permissions, plugin_name,
-                                            profile_data_directory,
+  // The plugin name, path and profile data directory shouldn't be needed for
+  // the broker.
+  host_impl_.reset(new BrowserPpapiHostImpl(this, permissions,
+                                            std::string(), base::FilePath(),
+                                            base::FilePath(),
                                             false));
 }
 

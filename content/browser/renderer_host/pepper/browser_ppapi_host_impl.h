@@ -32,6 +32,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   BrowserPpapiHostImpl(IPC::Sender* sender,
                        const ppapi::PpapiPermissions& permissions,
                        const std::string& plugin_name,
+                       const base::FilePath& plugin_path,
                        const base::FilePath& profile_data_directory,
                        bool external_plugin);
   virtual ~BrowserPpapiHostImpl();
@@ -44,6 +45,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
                                            int* render_process_id,
                                            int* render_view_id) const OVERRIDE;
   virtual const std::string& GetPluginName() OVERRIDE;
+  virtual const base::FilePath& GetPluginPath() OVERRIDE;
   virtual const base::FilePath& GetProfileDataDirectory() OVERRIDE;
   virtual GURL GetDocumentURLForInstance(PP_Instance instance) OVERRIDE;
   virtual GURL GetPluginURLForInstance(PP_Instance instance) OVERRIDE;
@@ -89,6 +91,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
   scoped_ptr<ppapi::host::PpapiHost> ppapi_host_;
   base::ProcessHandle plugin_process_handle_;
   std::string plugin_name_;
+  base::FilePath plugin_path_;
   base::FilePath profile_data_directory_;
 
   // If true, this is an external plugin, i.e. created by the embedder using

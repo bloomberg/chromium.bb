@@ -16,6 +16,7 @@ BrowserPpapiHostTest::BrowserPpapiHostTest()
                         ppapi::PpapiPermissions::AllPermissions(),
                         std::string(),
                         base::FilePath(),
+                        base::FilePath(),
                         false));
   ppapi_host_->set_plugin_process_handle(base::GetCurrentProcessHandle());
 }

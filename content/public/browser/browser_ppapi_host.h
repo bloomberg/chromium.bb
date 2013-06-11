@@ -77,6 +77,9 @@ class CONTENT_EXPORT BrowserPpapiHost {
   // Returns the name of the plugin.
   virtual const std::string& GetPluginName() = 0;
 
+  // Returns the path of the plugin.
+  virtual const base::FilePath& GetPluginPath() = 0;
+
   // Returns the user's profile data directory.
   virtual const base::FilePath& GetProfileDataDirectory() = 0;
 

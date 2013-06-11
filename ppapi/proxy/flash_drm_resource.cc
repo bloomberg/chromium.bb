@@ -8,6 +8,8 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/dispatch_reply_message.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/ppb_file_ref_proxy.h"
+#include "ppapi/shared_impl/ppb_file_ref_shared.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
@@ -17,6 +19,7 @@ FlashDRMResource::FlashDRMResource(Connection connection,
                                    PP_Instance instance)
     : PluginResource(connection, instance) {
   SendCreate(BROWSER, PpapiHostMsg_FlashDRM_Create());
+  SendCreate(RENDERER, PpapiHostMsg_FlashDRM_Create());
 }
 
 FlashDRMResource::~FlashDRMResource() {
@@ -41,6 +44,34 @@ int32_t FlashDRMResource::GetDeviceID(PP_Var* id,
   return PP_OK_COMPLETIONPENDING;
 }
 
+PP_Bool FlashDRMResource::GetHmonitor(int64_t* hmonitor) {
+  int64_t hmonitor_out;
+  int32_t result = SyncCall<PpapiPluginMsg_FlashDRM_GetHmonitorReply>(
+      BROWSER,
+      PpapiHostMsg_FlashDRM_GetHmonitor(),
+      &hmonitor_out);
+  if (result != PP_OK)
+    return PP_FALSE;
+  *hmonitor = hmonitor_out;
+  return PP_TRUE;
+}
+
+int32_t FlashDRMResource::GetVoucherFile(
+    PP_Resource* file_ref,
+    scoped_refptr<TrackedCallback> callback) {
+  if (!file_ref)
+    return PP_ERROR_BADARGUMENT;
+
+  *file_ref = 0;
+
+  Call<PpapiPluginMsg_FlashDRM_GetVoucherFileReply>(
+      RENDERER,
+      PpapiHostMsg_FlashDRM_GetVoucherFile(),
+      base::Bind(&FlashDRMResource::OnPluginMsgGetVoucherFileReply, this,
+      file_ref, callback));
+  return PP_OK_COMPLETIONPENDING;
+}
+
 void FlashDRMResource::OnPluginMsgGetDeviceIDReply(
     PP_Var* dest,
     scoped_refptr<TrackedCallback> callback,
@@ -49,6 +80,18 @@ void FlashDRMResource::OnPluginMsgGetDeviceIDReply(
   if (TrackedCallback::IsPending(callback)) {
     if (params.result() == PP_OK)
       *dest = StringVar::StringToPPVar(id);
+    callback->Run(params.result());
+  }
+}
+
+void FlashDRMResource::OnPluginMsgGetVoucherFileReply(
+    PP_Resource* dest,
+    scoped_refptr<TrackedCallback> callback,
+    const ResourceMessageReplyParams& params,
+    const PPB_FileRef_CreateInfo& file_info) {
+  if (TrackedCallback::IsPending(callback)) {
+    if (params.result() == PP_OK)
+      *dest = PPB_FileRef_Proxy::DeserializeFileRef(file_info);
     callback->Run(params.result());
   }
 }

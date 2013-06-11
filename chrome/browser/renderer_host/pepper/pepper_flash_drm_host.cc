@@ -8,6 +8,8 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "content/public/browser/browser_ppapi_host.h"
+#include "content/public/browser/child_process_security_policy.h"
+#include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/host_message_context.h"
@@ -18,13 +20,28 @@ using content::BrowserPpapiHost;
 
 namespace chrome {
 
+namespace {
+const base::FilePath::CharType kVoucherFilename[] =
+    FILE_PATH_LITERAL("plugin.vch");
+}
+
 PepperFlashDRMHost::PepperFlashDRMHost(BrowserPpapiHost* host,
                                        PP_Instance instance,
                                        PP_Resource resource)
     : ppapi::host::ResourceHost(host->GetPpapiHost(), instance, resource),
       weak_factory_(this){
+  // Grant permissions to read the flash voucher file.
   int render_process_id, unused;
-  host->GetRenderViewIDsForInstance(instance, &render_process_id, &unused);
+  bool success =
+      host->GetRenderViewIDsForInstance(instance, &render_process_id, &unused);
+  base::FilePath plugin_dir = host->GetPluginPath().DirName();
+  DCHECK(!plugin_dir.empty() && success);
+  base::FilePath voucher_file = plugin_dir.Append(
+      base::FilePath(kVoucherFilename));
+  content::ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(
+      render_process_id, voucher_file);
+
+  // Init the DeviceIDFetcher.
   fetcher_ = new DeviceIDFetcher(render_process_id);
 }
 
@@ -37,6 +54,8 @@ int32_t PepperFlashDRMHost::OnResourceMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(PepperFlashDRMHost, msg)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FlashDRM_GetDeviceID,
                                         OnHostMsgGetDeviceID)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FlashDRM_GetHmonitor,
+                                        OnHostMsgGetHmonitor)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -49,6 +68,13 @@ int32_t PepperFlashDRMHost::OnHostMsgGetDeviceID(
     return PP_ERROR_INPROGRESS;
   }
   return PP_OK_COMPLETIONPENDING;
+}
+
+int32_t PepperFlashDRMHost::OnHostMsgGetHmonitor(
+    ppapi::host::HostMessageContext* context) {
+  // TODO(cpu): Get the HMONITOR.
+  context->reply_msg = PpapiPluginMsg_FlashDRM_GetHmonitorReply(0);
+  return PP_OK;
 }
 
 void PepperFlashDRMHost::GotDeviceID(

@@ -1350,10 +1350,16 @@ TEST_PPAPI_OUT_OF_PROCESS(FlashFile)
 TEST_PPAPI_OUT_OF_PROCESS(MAYBE_FlashFullscreen)
 
 TEST_PPAPI_OUT_OF_PROCESS(PDF)
-// Only implemented on Windows and ChromeOS currently.
+
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FlashDRM) {
+  RunTest(
 #if (defined(OS_WIN) && defined(ENABLE_RLZ)) || defined(OS_CHROMEOS)
-TEST_PPAPI_OUT_OF_PROCESS(FlashDRM)
+          // Only implemented on Windows and ChromeOS currently.
+          LIST_TEST(FlashDRM_GetDeviceID)
 #endif
+          LIST_TEST(FlashDRM_GetHmonitor)
+          LIST_TEST(FlashDRM_GetVoucherFile));
+}
 
 TEST_PPAPI_IN_PROCESS(TalkPrivate)
 TEST_PPAPI_OUT_OF_PROCESS(TalkPrivate)

@@ -19,6 +19,8 @@ class TestFlashDRM : public TestCase {
 
  private:
   std::string TestGetDeviceID();
+  std::string TestGetHmonitor();
+  std::string TestGetVoucherFile();
 
   pp::CompletionCallbackFactory<TestFlashDRM> callback_factory_;
 };

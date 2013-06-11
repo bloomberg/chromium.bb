@@ -228,6 +228,8 @@
         'renderer/pepper/chrome_renderer_pepper_host_factory.h',
         'renderer/pepper/pepper_extensions_common_host.cc',
         'renderer/pepper/pepper_extensions_common_host.h',
+        'renderer/pepper/pepper_flash_drm_renderer_host.cc',
+        'renderer/pepper/pepper_flash_drm_renderer_host.h',
         'renderer/pepper/pepper_flash_font_file_host.cc',
         'renderer/pepper/pepper_flash_font_file_host.h',
         'renderer/pepper/pepper_flash_fullscreen_host.cc',

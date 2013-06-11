@@ -6,9 +6,13 @@
 #define PPAPI_CPP_PRIVATE_FLASH_DRM_H_
 
 #include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/resource.h"
 
 namespace pp {
+
+class FileRef;
+
 namespace flash {
 
 class DRM : public Resource {
@@ -18,6 +22,11 @@ class DRM : public Resource {
 
   // On success, returns a string var.
   int32_t GetDeviceID(const CompletionCallbackWithOutput<Var>& callback);
+  // Outputs the HMONITOR associated with the current plugin instance in
+  // |hmonitor|. True is returned upon success.
+  bool GetHmonitor(int64_t* hmonitor);
+  // Returns the voucher file as a FileRef or an invalid resource on failure.
+  int32_t GetVoucherFile(const CompletionCallbackWithOutput<FileRef>& callback);
 };
 
 }  // namespace flash
