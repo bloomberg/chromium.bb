@@ -9,7 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/download/all_download_item_notifier.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"

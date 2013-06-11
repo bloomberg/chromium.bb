@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/api/cloud_print_private/cloud_print_private_api.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

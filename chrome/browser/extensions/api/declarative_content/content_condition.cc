@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/api/declarative_content/content_condition.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_content/content_constants.h"
 #include "extensions/common/matcher/url_matcher_factory.h"

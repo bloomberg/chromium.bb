@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/declarative/initializing_rules_registry.h"
 
 #include "base/logging.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 
 namespace {

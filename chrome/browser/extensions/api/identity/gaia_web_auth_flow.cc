@@ -4,10 +4,10 @@
 
 #include "chrome/browser/extensions/api/identity/gaia_web_auth_flow.h"
 
-#include "base/string_util.h"
-#include "base/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
 

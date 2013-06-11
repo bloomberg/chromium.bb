@@ -4,8 +4,8 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/string_number_conversions.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/activity_log/api_actions.h"
 #include "chrome/browser/extensions/activity_log/api_name_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
