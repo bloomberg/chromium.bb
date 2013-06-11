@@ -499,14 +499,18 @@ void WebSocket::resume()
 
 void WebSocket::stop()
 {
-    bool pending = hasPendingActivity();
-    if (m_channel)
+    if (!hasPendingActivity()) {
+        ASSERT(!m_channel);
+        ASSERT(m_state == CLOSED);
+        return;
+    }
+    if (m_channel) {
         m_channel->disconnect();
-    m_channel = 0;
+        m_channel = 0;
+    }
     m_state = CLOSED;
     ActiveDOMObject::stop();
-    if (pending)
-        ActiveDOMObject::unsetPendingActivity(this);
+    ActiveDOMObject::unsetPendingActivity(this);
 }
 
 void WebSocket::didConnect()
