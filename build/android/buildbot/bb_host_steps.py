@@ -92,6 +92,15 @@ def FindBugs(is_release):
       'run_findbugs_plugin_tests.py')] + build_type)
 
 
+def BisectPerfRegression():
+  buildbot_report.PrintNamedStep('Bisect Perf Regression')
+  RunCmd([SrcPath('tools', 'prepare-bisect-perf-regression.py'),
+          '-w', os.path.join(constants.DIR_SOURCE_ROOT, os.pardir)])
+  RunCmd([SrcPath('tools', 'run-bisect-perf-regression.py'),
+          '-w', os.path.join(constants.DIR_SOURCE_ROOT, os.pardir),
+          '-p', bb_utils.GOMA_DIR])
+
+
 def main(argv):
   parser = bb_utils.GetParser()
   parser.add_option('--host-tests', help='Comma separated list of host tests.')
@@ -105,6 +114,8 @@ def main(argv):
                     help='Indicate whether the build should be zipped.')
   parser.add_option('--extract-build', action='store_true',
                     help='Indicate whether a build should be downloaded.')
+  parser.add_option('--bisect-perf-regression', action='store_true',
+                    help='Bisect a perf regression.')
 
   options, args = parser.parse_args(argv[1:])
   if args:
@@ -119,6 +130,8 @@ def main(argv):
 
   build_type = options.factory_properties.get('target', 'Debug')
 
+  if options.bisect_perf_regression:
+    BisectPerfRegression()
   if options.compile:
     if 'check_webview_licenses' in host_tests:
       CheckWebViewLicenses()

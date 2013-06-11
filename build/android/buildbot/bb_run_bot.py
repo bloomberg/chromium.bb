@@ -133,6 +133,7 @@ def GetBotStepMap():
       B('fyi-component-builder-tests-dbg',
         H(compile_opt, 'component=shared_library'),
         T(std_tests, ['--experimental', flakiness_server])),
+      B('perf-bisect-builder-tests-dbg', H(['--bisect-perf-regression'])),
       B('perf-tests-rel', H(std_test_opts), T([], ['--install=ContentShell'])),
       B('webkit-latest-webkit-tests', H(std_test_opts),
         T(['webkit_layout', 'webkit'])),
