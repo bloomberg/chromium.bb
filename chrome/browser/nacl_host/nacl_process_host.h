@@ -98,14 +98,8 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
     NaClProcessHost* host_;
   };
 
-#if defined(OS_WIN)
-  // Create command line for launching loader under nacl-gdb.
-  scoped_ptr<CommandLine> GetCommandForLaunchWithGdb(
-      const base::FilePath& nacl_gdb, CommandLine* line);
-#elif defined(OS_LINUX)
-  bool LaunchNaClGdb(base::ProcessId pid);
-  void OnNaClGdbAttached();
-#endif
+  bool LaunchNaClGdb();
+
 #if defined(OS_POSIX)
   // Create bound TCP socket in the browser process so that the NaCl GDB debug
   // stub can use it to accept incoming connections even when the Chrome sandbox
@@ -172,12 +166,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // This field becomes true when the broker successfully launched
   // the NaCl loader.
   bool process_launched_by_broker_;
-#elif defined(OS_LINUX)
-  bool wait_for_nacl_gdb_;
-  base::MessageLoopForIO::FileDescriptorWatcher nacl_gdb_watcher_;
-
-  class NaClGdbWatchDelegate;
-  scoped_ptr<NaClGdbWatchDelegate> nacl_gdb_watcher_delegate_;
 #endif
   // The ChromeRenderMessageFilter that requested this NaCl process.  We use
   // this for sending the reply once the process has started.

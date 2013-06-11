@@ -926,9 +926,7 @@ const char kNaClBrokerProcess[]             = "nacl-broker";
 // if manifest URL does not match any pattern.
 const char kNaClDebugMask[]                 = "nacl-debug-mask";
 
-// Native Client GDB debugger for loader. It needs switches calculated
-// at run time in order to work correctly. That's why NaClLoadCmdPrefix
-// flag can't be used.
+// Native Client GDB debugger that will be launched automatically when needed.
 const char kNaClGdb[]                       = "nacl-gdb";
 
 // GDB script to pass to the nacl-gdb debugger at startup.
