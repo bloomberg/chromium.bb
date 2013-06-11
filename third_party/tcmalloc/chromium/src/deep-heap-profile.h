@@ -299,6 +299,9 @@ class DeepHeapProfile {
                             char raw_buffer[],
                             int buffer_size);
 
+  // Appends the command line (/proc/pid/cmdline on Linux) into |buffer|.
+  bool AppendCommandLine(TextBuffer* buffer);
+
   MemoryResidenceInfoGetterInterface* memory_residence_info_getter_;
 
   // Process ID of the last dump.  This can change by fork.

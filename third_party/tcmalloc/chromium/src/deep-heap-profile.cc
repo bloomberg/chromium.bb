@@ -41,6 +41,43 @@ static const char kProcSelfMapsHeader[] = "\nMAPPED_LIBRARIES:\n";
 static const char kVirtualLabel[] = "virtual";
 static const char kCommittedLabel[] = "committed";
 
+#if defined(__linux__)
+
+bool DeepHeapProfile::AppendCommandLine(TextBuffer* buffer) {
+  RawFD fd;
+  char filename[100];
+  char cmdline[4096];
+  snprintf(filename, sizeof(filename), "/proc/%d/cmdline",
+           static_cast<int>(getpid()));
+  fd = open(filename, O_RDONLY);
+  if (fd == kIllegalRawFD) {
+    RAW_LOG(0, "Failed to open /proc/self/cmdline");
+    return false;
+  }
+
+  size_t length = read(fd, cmdline, sizeof(cmdline) - 1);
+  close(fd);
+
+  for (int i = 0; i < length; ++i)
+    if (cmdline[i] == '\0')
+      cmdline[i] = ' ';
+  cmdline[length] = '\0';
+
+  buffer->AppendString("CommandLine: ", 0);
+  buffer->AppendString(cmdline, 0);
+  buffer->AppendChar('\n');
+
+  return true;
+}
+
+#else  // defined(__linux__)
+
+bool DeepHeapProfile::AppendCommandLine(TextBuffer* buffer) {
+  return false;
+}
+
+#endif  // defined(__linux__)
+
 namespace {
 
 #if defined(__linux__)
@@ -268,6 +305,8 @@ void DeepHeapProfile::DumpOrderedProfile(const char* reason,
     buffer.AppendString(reason, 0);
     buffer.AppendChar('\n');
   }
+
+  AppendCommandLine(&buffer);
 
   // Fill buffer with the global stats.
   buffer.AppendString(kMMapListHeader, 0);
