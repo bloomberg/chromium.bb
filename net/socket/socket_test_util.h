@@ -1025,7 +1025,10 @@ class ClientSocketPoolTest {
   // Releases connections until there is nothing to release.
   void ReleaseAllConnections(KeepAlive keep_alive);
 
+  // Note that this uses 0-based indices, while GetOrderOfRequest takes and
+  // returns 0-based indices.
   TestSocketRequest* request(int i) { return requests_[i]; }
+
   size_t requests_size() const { return requests_.size(); }
   ScopedVector<TestSocketRequest>* requests() { return &requests_; }
   size_t completion_count() const { return completion_count_; }

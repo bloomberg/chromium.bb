@@ -19,6 +19,8 @@
 
 using base::TimeDelta;
 
+namespace net {
+
 namespace {
 
 // Indicate whether we should enable idle socket cleanup timer. When timer is
@@ -37,9 +39,29 @@ const int kCleanupInterval = 10;  // DO NOT INCREASE THIS TIMEOUT.
 // after a certain timeout has passed without receiving an ACK.
 bool g_connect_backup_jobs_enabled = true;
 
-}  // namespace
+// Compares the effective priority of two results, and returns 1 if |request1|
+// has greater effective priority than |request2|, 0 if they have the same
+// effective priority, and -1 if |request2| has the greater effective priority.
+// Requests with |ignore_limits| set have higher effective priority than those
+// without.  If both requests have |ignore_limits| set/unset, then the request
+// with the highest Pririoty has the highest effective priority.  Does not take
+// into account the fact that Requests are serviced in FIFO order if they would
+// otherwise have the same priority.
+int CompareEffectiveRequestPriority(
+    const internal::ClientSocketPoolBaseHelper::Request& request1,
+    const internal::ClientSocketPoolBaseHelper::Request& request2) {
+  if (request1.ignore_limits() && !request2.ignore_limits())
+    return 1;
+  if (!request1.ignore_limits() && request2.ignore_limits())
+    return -1;
+  if (request1.priority() > request2.priority())
+    return 1;
+  if (request1.priority() < request2.priority())
+    return -1;
+  return 0;
+}
 
-namespace net {
+}  // namespace
 
 ConnectJob::ConnectJob(const std::string& group_name,
                        base::TimeDelta timeout_duration,
@@ -187,16 +209,16 @@ ClientSocketPoolBaseHelper::CallbackResultPair::CallbackResultPair(
 
 ClientSocketPoolBaseHelper::CallbackResultPair::~CallbackResultPair() {}
 
-// InsertRequestIntoQueue inserts the request into the queue based on
-// priority.  Highest priorities are closest to the front.  Older requests are
-// prioritized over requests of equal priority.
-//
 // static
 void ClientSocketPoolBaseHelper::InsertRequestIntoQueue(
     const Request* r, RequestQueue* pending_requests) {
   RequestQueue::iterator it = pending_requests->begin();
-  while (it != pending_requests->end() && r->priority() <= (*it)->priority())
+  // TODO(mmenke):  Should the network stack require requests with
+  //                |ignore_limits| have the highest priority?
+  while (it != pending_requests->end() &&
+         CompareEffectiveRequestPriority(*r, *(*it)) <= 0) {
     ++it;
+  }
   pending_requests->insert(it, r);
 }
 
@@ -494,8 +516,10 @@ void ClientSocketPoolBaseHelper::CancelRequest(
       req->net_log().AddEvent(NetLog::TYPE_CANCELLED);
       req->net_log().EndEvent(NetLog::TYPE_SOCKET_POOL);
 
-      // We let the job run, unless we're at the socket limit.
-      if (group->jobs().size() && ReachedMaxSocketsLimit()) {
+      // We let the job run, unless we're at the socket limit and there is
+      // not another request waiting on the job.
+      if (group->jobs().size() > group->pending_requests().size() &&
+          ReachedMaxSocketsLimit()) {
         RemoveConnectJob(*group->jobs().begin(), group);
         CheckForStalledSocketGroups();
       }

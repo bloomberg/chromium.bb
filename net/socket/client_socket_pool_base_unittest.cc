@@ -61,7 +61,7 @@ void TestLoadTimingInfoConnectedReused(const ClientSocketHandle& handle) {
 }
 
 // Make sure |handle| sets load times correctly when it has been assigned a
-// fresh socket.  Also runs TestLoadTimingInfoConnectedReused, since the owner
+// fresh socket. Also runs TestLoadTimingInfoConnectedReused, since the owner
 // of a connection where |is_reused| is false may consider the connection
 // reused.
 void TestLoadTimingInfoConnectedNotReused(const ClientSocketHandle& handle) {
@@ -427,7 +427,7 @@ class TestConnectJobFactory
         job_types_(NULL),
         client_socket_factory_(client_socket_factory),
         net_log_(net_log) {
-}
+  }
 
   virtual ~TestConnectJobFactory() {}
 
@@ -700,11 +700,17 @@ class ClientSocketPoolBaseTest : public testing::Test {
                                          connect_job_factory_));
   }
 
-  int StartRequest(const std::string& group_name,
-                   net::RequestPriority priority) {
+  int StartRequestWithParams(
+      const std::string& group_name,
+      RequestPriority priority,
+      const scoped_refptr<TestSocketParams>& params) {
     return test_base_.StartRequestUsingPool<
         TestClientSocketPool, TestSocketParams>(
-            pool_.get(), group_name, priority, params_);
+            pool_.get(), group_name, priority, params);
+  }
+
+  int StartRequest(const std::string& group_name, RequestPriority priority) {
+    return StartRequestWithParams(group_name, priority, params_);
   }
 
   int GetOrderOfRequest(size_t index) const {
@@ -3847,6 +3853,166 @@ TEST_F(ClientSocketPoolBaseTest,
   EXPECT_EQ(OK, callback.WaitForResult());
 }
 
+// Test that when a socket pool and group are at their limits, a request
+// with |ignore_limits| triggers creation of a new socket, and gets the socket
+// instead of a request with the same priority that was issued earlier, but
+// that does not have |ignore_limits| set.
+TEST_F(ClientSocketPoolBaseTest, IgnoreLimits) {
+  scoped_refptr<TestSocketParams> params_ignore_limits(new TestSocketParams());
+  params_ignore_limits->set_ignore_limits(true);
+  CreatePool(1, 1);
+
+  // Issue a request to reach the socket pool limit.
+  EXPECT_EQ(OK, StartRequestWithParams("a", kDefaultPriority, params_));
+  EXPECT_EQ(0, pool_->NumConnectJobsInGroup("a"));
+
+  connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
+
+  EXPECT_EQ(ERR_IO_PENDING, StartRequestWithParams("a", kDefaultPriority,
+                                                   params_));
+  EXPECT_EQ(0, pool_->NumConnectJobsInGroup("a"));
+
+  EXPECT_EQ(ERR_IO_PENDING, StartRequestWithParams("a", kDefaultPriority,
+                                                   params_ignore_limits));
+  ASSERT_EQ(1, pool_->NumConnectJobsInGroup("a"));
+
+  EXPECT_EQ(OK, request(2)->WaitForResult());
+  EXPECT_FALSE(request(1)->have_result());
+}
+
+// Test that when a socket pool and group are at their limits, a request with
+// |ignore_limits| set triggers creation of a new socket, and gets the socket
+// instead of a request with a higher priority that was issued earlier, but
+// that does not have |ignore_limits| set.
+TEST_F(ClientSocketPoolBaseTest, IgnoreLimitsLowPriority) {
+  scoped_refptr<TestSocketParams> params_ignore_limits(new TestSocketParams());
+  params_ignore_limits->set_ignore_limits(true);
+  CreatePool(1, 1);
+
+  // Issue a request to reach the socket pool limit.
+  EXPECT_EQ(OK, StartRequestWithParams("a", HIGHEST, params_));
+  EXPECT_EQ(0, pool_->NumConnectJobsInGroup("a"));
+
+  connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
+
+  EXPECT_EQ(ERR_IO_PENDING, StartRequestWithParams("a", HIGHEST, params_));
+  EXPECT_EQ(0, pool_->NumConnectJobsInGroup("a"));
+
+  EXPECT_EQ(ERR_IO_PENDING, StartRequestWithParams("a", LOW,
+                                                   params_ignore_limits));
+  ASSERT_EQ(1, pool_->NumConnectJobsInGroup("a"));
+
+  EXPECT_EQ(OK, request(2)->WaitForResult());
+  EXPECT_FALSE(request(1)->have_result());
+}
+
+// Test that when a socket pool and group are at their limits, a request with
+// |ignore_limits| set triggers creation of a new socket, and gets the socket
+// instead of a request with a higher priority that was issued later and
+// does not have |ignore_limits| set.
+TEST_F(ClientSocketPoolBaseTest, IgnoreLimitsLowPriority2) {
+  scoped_refptr<TestSocketParams> params_ignore_limits(new TestSocketParams());
+  params_ignore_limits->set_ignore_limits(true);
+  CreatePool(1, 1);
+
+  // Issue a request to reach the socket pool limit.
+  EXPECT_EQ(OK, StartRequestWithParams("a", HIGHEST, params_));
+  EXPECT_EQ(0, pool_->NumConnectJobsInGroup("a"));
+
+  connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
+
+  EXPECT_EQ(ERR_IO_PENDING, StartRequestWithParams("a", LOW,
+                                                   params_ignore_limits));
+  ASSERT_EQ(1, pool_->NumConnectJobsInGroup("a"));
+
+  EXPECT_EQ(ERR_IO_PENDING, StartRequestWithParams("a", HIGHEST, params_));
+  EXPECT_EQ(1, pool_->NumConnectJobsInGroup("a"));
+
+  EXPECT_EQ(OK, request(1)->WaitForResult());
+  EXPECT_FALSE(request(2)->have_result());
+}
+
+// Test that when a socket pool and group are at their limits, a ConnectJob
+// issued for a request with |ignore_limits| set is not cancelled when a request
+// without |ignore_limits| issued to the same group is cancelled.
+TEST_F(ClientSocketPoolBaseTest, IgnoreLimitsCancelOtherJob) {
+  scoped_refptr<TestSocketParams> params_ignore_limits(new TestSocketParams());
+  params_ignore_limits->set_ignore_limits(true);
+  CreatePool(1, 1);
+
+  // Issue a request to reach the socket pool limit.
+  EXPECT_EQ(OK, StartRequestWithParams("a", HIGHEST, params_));
+  EXPECT_EQ(0, pool_->NumConnectJobsInGroup("a"));
+
+  connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
+
+  EXPECT_EQ(ERR_IO_PENDING, StartRequestWithParams("a", HIGHEST, params_));
+  EXPECT_EQ(0, pool_->NumConnectJobsInGroup("a"));
+
+  EXPECT_EQ(ERR_IO_PENDING, StartRequestWithParams("a", HIGHEST,
+                                                   params_ignore_limits));
+  ASSERT_EQ(1, pool_->NumConnectJobsInGroup("a"));
+
+  // Cancel the pending request without ignore_limits set. The ConnectJob
+  // should not be cancelled.
+  request(1)->handle()->Reset();
+  ASSERT_EQ(1, pool_->NumConnectJobsInGroup("a"));
+
+  EXPECT_EQ(OK, request(2)->WaitForResult());
+  EXPECT_FALSE(request(1)->have_result());
+}
+
+// More involved test of ignore limits. Issues a bunch of requests and later
+// checks the order in which they receive sockets.
+TEST_F(ClientSocketPoolBaseTest, IgnoreLimitsOrder) {
+  scoped_refptr<TestSocketParams> params_ignore_limits(new TestSocketParams());
+  params_ignore_limits->set_ignore_limits(true);
+  CreatePool(1, 1);
+
+  connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
+
+  // Requests 0 and 1 do not have ignore_limits set, so they finish last. Since
+  // the maximum number of sockets per pool is 1, the second requests does not
+  // trigger a ConnectJob.
+  EXPECT_EQ(ERR_IO_PENDING, StartRequestWithParams("a", HIGHEST, params_));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequestWithParams("a", HIGHEST, params_));
+
+  // Requests 2 and 3 have ignore_limits set, but have a low priority, so they
+  // finish just before the first two.
+  EXPECT_EQ(ERR_IO_PENDING,
+            StartRequestWithParams("a", LOW, params_ignore_limits));
+  EXPECT_EQ(ERR_IO_PENDING,
+            StartRequestWithParams("a", LOW, params_ignore_limits));
+
+  // Request 4 finishes first, since it is high priority and ignores limits.
+  EXPECT_EQ(ERR_IO_PENDING,
+            StartRequestWithParams("a", HIGHEST, params_ignore_limits));
+
+  // Request 5 and 6 are cancelled right after starting. This should result in
+  // creating two ConnectJobs. Since only one request (Request 1) did not
+  // result in creating a ConnectJob, only one of the ConnectJobs should be
+  // cancelled when the requests are.
+  EXPECT_EQ(ERR_IO_PENDING,
+            StartRequestWithParams("a", HIGHEST, params_ignore_limits));
+  EXPECT_EQ(ERR_IO_PENDING,
+            StartRequestWithParams("a", HIGHEST, params_ignore_limits));
+  EXPECT_EQ(6, pool_->NumConnectJobsInGroup("a"));
+  request(5)->handle()->Reset();
+  EXPECT_EQ(6, pool_->NumConnectJobsInGroup("a"));
+  request(6)->handle()->Reset();
+  ASSERT_EQ(5, pool_->NumConnectJobsInGroup("a"));
+
+  // Wait for the last request to get a socket.
+  EXPECT_EQ(OK, request(1)->WaitForResult());
+
+  // Check order in which requests received sockets.
+  // These are 1-based indices, while request(x) uses 0-based indices.
+  EXPECT_EQ(1, GetOrderOfRequest(5));
+  EXPECT_EQ(2, GetOrderOfRequest(3));
+  EXPECT_EQ(3, GetOrderOfRequest(4));
+  EXPECT_EQ(4, GetOrderOfRequest(1));
+  EXPECT_EQ(5, GetOrderOfRequest(2));
+}
 
 }  // namespace
 

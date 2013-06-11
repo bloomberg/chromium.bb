@@ -443,6 +443,10 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   typedef std::map<const ClientSocketHandle*, CallbackResultPair>
       PendingCallbackMap;
 
+  // Inserts the request into the queue based on order they will receive
+  // sockets. Sockets which ignore the socket pool limits are first. Then
+  // requests are sorted by priority, with higher priorities closer to the
+  // front. Older requests are prioritized over requests of equal priority.
   static void InsertRequestIntoQueue(const Request* r,
                                      RequestQueue* pending_requests);
   static const Request* RemoveRequestFromQueue(const RequestQueue::iterator& it,
