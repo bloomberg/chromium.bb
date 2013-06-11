@@ -249,7 +249,7 @@ void LocalChangeProcessorDelegate::DidUploadExistingFile(
 void LocalChangeProcessorDelegate::Delete(
     const SyncStatusCallback& callback) {
   if (!has_drive_metadata_) {
-    DidDelete(callback, google_apis::HTTP_NOT_FOUND);
+    callback.Run(SYNC_STATUS_OK);
     return;
   }
   api_util()->DeleteFile(
@@ -376,6 +376,7 @@ void LocalChangeProcessorDelegate::UpdateMetadata(
     const std::string& md5,
     DriveMetadata::ResourceType type,
     const SyncStatusCallback& callback) {
+  has_drive_metadata_ = true;
   drive_metadata_.set_resource_id(resource_id);
   drive_metadata_.set_md5_checksum(md5);
   drive_metadata_.set_conflicted(false);
@@ -386,6 +387,7 @@ void LocalChangeProcessorDelegate::UpdateMetadata(
 
 void LocalChangeProcessorDelegate::ResetMetadataMD5(
     const SyncStatusCallback& callback) {
+  has_drive_metadata_ = true;
   drive_metadata_.set_md5_checksum(std::string());
   metadata_store()->UpdateEntry(url_, drive_metadata_, callback);
 }
@@ -393,6 +395,7 @@ void LocalChangeProcessorDelegate::ResetMetadataMD5(
 void LocalChangeProcessorDelegate::SetMetadataToBeFetched(
     DriveMetadata::ResourceType type,
     const SyncStatusCallback& callback) {
+  has_drive_metadata_ = true;
   drive_metadata_.set_md5_checksum(std::string());
   drive_metadata_.set_conflicted(false);
   drive_metadata_.set_to_be_fetched(true);
@@ -402,6 +405,7 @@ void LocalChangeProcessorDelegate::SetMetadataToBeFetched(
 
 void LocalChangeProcessorDelegate::SetMetadataConflict(
     const SyncStatusCallback& callback) {
+  has_drive_metadata_ = true;
   drive_metadata_.set_conflicted(true);
   drive_metadata_.set_to_be_fetched(false);
   metadata_store()->UpdateEntry(url_, drive_metadata_, callback);
