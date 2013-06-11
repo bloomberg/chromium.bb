@@ -14,6 +14,7 @@
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "ui/base/latency_info.h"
 
 using WebKit::WebActiveWheelFlingParameters;
 using WebKit::WebFloatPoint;
@@ -49,6 +50,9 @@ class MockInputHandler : public cc::InputHandler {
                     cc::ScrollDirection direction));
   MOCK_METHOD0(ScrollEnd, void());
   MOCK_METHOD0(FlingScrollBegin, cc::InputHandler::ScrollStatus());
+
+  MOCK_METHOD1(SetLatencyInfoForInputEvent,
+               void(const ui::LatencyInfo& latency_info));
 
   virtual void BindToClient(cc::InputHandlerClient* client) OVERRIDE {}
 

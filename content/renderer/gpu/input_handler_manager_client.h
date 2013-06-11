@@ -9,6 +9,10 @@
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
 
+namespace ui {
+struct LatencyInfo;
+}
+
 namespace WebKit {
 class WebInputEvent;
 }
@@ -22,8 +26,10 @@ class CONTENT_EXPORT InputHandlerManagerClient {
   // The Manager will supply a |handler| when bound to the client. This is valid
   // until the manager shuts down, at which point it supplies a null |handler|.
   // The client should only makes calls to |handler| on the compositor thread.
-  typedef base::Callback<InputEventAckState(
-      int /*routing_id*/, const WebKit::WebInputEvent*)> Handler;
+  typedef base::Callback<
+      InputEventAckState(int /*routing_id*/,
+                         const WebKit::WebInputEvent*,
+                         const ui::LatencyInfo& latency_info)> Handler;
 
   // Called from the main thread.
   virtual void SetBoundHandler(const Handler& handler) = 0;

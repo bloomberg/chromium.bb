@@ -125,6 +125,8 @@ class CC_EXPORT LayerTreeHostImpl
                                        base::TimeDelta duration) OVERRIDE;
   virtual void ScheduleAnimation() OVERRIDE;
   virtual bool HaveTouchEventHandlersAt(gfx::Point viewport_port) OVERRIDE;
+  virtual void SetLatencyInfoForInputEvent(const ui::LatencyInfo& latency_info)
+      OVERRIDE;
 
   // TopControlsManagerClient implementation.
   virtual void DidChangeTopControlsPosition() OVERRIDE;

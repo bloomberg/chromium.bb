@@ -46,7 +46,8 @@ class InputEventRecorder {
   }
 
   InputEventAckState HandleInputEvent(int routing_id,
-                                      const WebInputEvent* event) {
+                                      const WebInputEvent* event,
+                                      const ui::LatencyInfo& latency_info) {
     DCHECK_EQ(kTestRoutingID, routing_id);
 
     records_.push_back(Record(event));
@@ -210,7 +211,7 @@ TEST_F(InputEventFilterTest, Basic) {
     const IPC::Message& message = message_recorder_.message_at(i);
 
     ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
-    const WebInputEvent* event = InputEventFilter::CrackMessage(message);
+    const WebInputEvent* event = InputEventFilter::CrackMessage(message, NULL);
 
     EXPECT_EQ(kEvents[i].size, event->size);
     EXPECT_TRUE(memcmp(&kEvents[i], event, event->size) == 0);

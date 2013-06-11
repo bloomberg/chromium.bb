@@ -80,12 +80,15 @@ bool InputEventFilter::OnMessageReceived(const IPC::Message& message) {
 
 // static
 const WebInputEvent* InputEventFilter::CrackMessage(
-    const IPC::Message& message) {
+    const IPC::Message& message,
+    ui::LatencyInfo* latency_info) {
   DCHECK(message.type() == InputMsg_HandleInputEvent::ID);
 
   PickleIterator iter(message);
   const WebInputEvent* event = NULL;
   IPC::ParamTraits<IPC::WebInputEventPointer>::Read(&message, &iter, &event);
+  if (latency_info)
+    IPC::ParamTraits<ui::LatencyInfo>::Read(&message, &iter, latency_info);
   return event;
 }
 
@@ -108,8 +111,11 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
     return;
   }
 
-  InputEventAckState ack = handler_.Run(message.routing_id(),
-                                        CrackMessage(message));
+  ui::LatencyInfo latency_info;
+  const WebInputEvent* event = CrackMessage(message, &latency_info);
+
+  InputEventAckState ack =
+      handler_.Run(message.routing_id(), event, latency_info);
 
   if (ack == INPUT_EVENT_ACK_STATE_NOT_CONSUMED) {
     TRACE_EVENT0("input", "InputEventFilter::ForwardToHandler");
@@ -127,11 +133,12 @@ void InputEventFilter::SendACK(const IPC::Message& message,
                                InputEventAckState ack_result) {
   DCHECK(target_loop_->BelongsToCurrentThread());
 
-  io_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&InputEventFilter::SendACKOnIOThread, this,
-                 message.routing_id(), CrackMessage(message)->type,
-                 ack_result));
+  io_loop_->PostTask(FROM_HERE,
+                     base::Bind(&InputEventFilter::SendACKOnIOThread,
+                                this,
+                                message.routing_id(),
+                                CrackMessage(message, NULL)->type,
+                                ack_result));
 }
 
 void InputEventFilter::SendACKOnIOThread(

@@ -345,6 +345,8 @@ void LayerTreeImpl::PushPersistedState(LayerTreeImpl* pending_tree) {
   pending_tree->SetCurrentlyScrollingLayer(
       LayerTreeHostCommon::FindLayerInSubtree(pending_tree->root_layer(),
           currently_scrolling_layer_ ? currently_scrolling_layer_->id() : 0));
+  pending_tree->SetLatencyInfo(latency_info_);
+  latency_info_.Clear();
 }
 
 static void DidBecomeActiveRecursive(LayerImpl* layer) {

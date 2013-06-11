@@ -385,6 +385,11 @@ bool LayerTreeHostImpl::HaveTouchEventHandlersAt(gfx::Point viewport_point) {
   return false;
 }
 
+void LayerTreeHostImpl::SetLatencyInfoForInputEvent(
+    const ui::LatencyInfo& latency_info) {
+  active_tree()->SetLatencyInfo(latency_info);
+}
+
 void LayerTreeHostImpl::TrackDamageForAllSurfaces(
     LayerImpl* root_draw_layer,
     const LayerImplList& render_surface_layer_list) {

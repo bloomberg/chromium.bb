@@ -5,6 +5,7 @@
 #include "content/browser/android/in_process/synchronous_input_event_filter.h"
 
 #include "content/public/browser/browser_thread.h"
+#include "ui/base/latency_info.h"
 
 using WebKit::WebInputEvent;
 
@@ -25,7 +26,7 @@ InputEventAckState SynchronousInputEventFilter::HandleInputEvent(
   if (handler_.is_null())
     return INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
 
-  return handler_.Run(routing_id, &input_event);
+  return handler_.Run(routing_id, &input_event, ui::LatencyInfo());
 }
 
 void SynchronousInputEventFilter::SetBoundHandler(const Handler& handler) {

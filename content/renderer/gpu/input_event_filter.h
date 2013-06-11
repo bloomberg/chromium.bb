@@ -54,7 +54,9 @@ class CONTENT_EXPORT InputEventFilter
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Expects a InputMsg_HandleInputEvent message.
-  static const WebKit::WebInputEvent* CrackMessage(const IPC::Message& message);
+  static const WebKit::WebInputEvent* CrackMessage(
+      const IPC::Message& message,
+      ui::LatencyInfo* latency_info);
 
  private:
   friend class IPC::ChannelProxy::MessageFilter;

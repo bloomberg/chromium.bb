@@ -103,7 +103,8 @@ void InputHandlerManager::RemoveInputHandler(int routing_id) {
 
 InputEventAckState InputHandlerManager::HandleInputEvent(
     int routing_id,
-    const WebInputEvent* input_event) {
+    const WebInputEvent* input_event,
+    const ui::LatencyInfo& latency_info) {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
 
   InputHandlerMap::iterator it = input_handlers_.find(routing_id);
@@ -114,8 +115,9 @@ InputEventAckState InputHandlerManager::HandleInputEvent(
     return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
   }
 
+  InputHandlerProxy* proxy = it->second->input_handler_proxy();
   return InputEventDispositionToAck(
-      it->second->input_handler_proxy()->HandleInputEvent(*input_event));
+      proxy->HandleInputEventWithLatencyInfo(*input_event, latency_info));
 }
 
 }  // namespace content

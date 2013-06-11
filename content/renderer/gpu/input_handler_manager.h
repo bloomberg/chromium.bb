@@ -51,7 +51,8 @@ class InputHandlerManager {
 
   // Called from the compositor's thread.
   InputEventAckState HandleInputEvent(int routing_id,
-                                      const WebKit::WebInputEvent* input_event);
+                                      const WebKit::WebInputEvent* input_event,
+                                      const ui::LatencyInfo& latency_info);
 
  private:
   // Called from the compositor's thread.

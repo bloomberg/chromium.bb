@@ -9,6 +9,7 @@
 #include "content/renderer/gpu/input_handler_proxy_client.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "ui/base/latency_info.h"
 
 using WebKit::WebFloatPoint;
 using WebKit::WebFloatSize;
@@ -46,6 +47,18 @@ void InputHandlerProxy::WillShutdown() {
 void InputHandlerProxy::SetClient(InputHandlerProxyClient* client) {
   DCHECK(!client_ || !client);
   client_ = client;
+}
+
+InputHandlerProxy::EventDisposition
+InputHandlerProxy::HandleInputEventWithLatencyInfo(
+    const WebInputEvent& event,
+    const ui::LatencyInfo& latency_info) {
+  DCHECK(input_handler_);
+
+  InputHandlerProxy::EventDisposition disposition = HandleInputEvent(event);
+  if (disposition != DID_NOT_HANDLE)
+    input_handler_->SetLatencyInfoForInputEvent(latency_info);
+  return disposition;
 }
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(

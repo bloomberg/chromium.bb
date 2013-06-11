@@ -37,6 +37,9 @@ class CONTENT_EXPORT InputHandlerProxy
     DID_NOT_HANDLE,
     DROP_EVENT
   };
+  EventDisposition HandleInputEventWithLatencyInfo(
+      const WebKit::WebInputEvent& event,
+      const ui::LatencyInfo& latency_info);
   EventDisposition HandleInputEvent(const WebKit::WebInputEvent& event);
 
   // cc::InputHandlerClient implementation.
