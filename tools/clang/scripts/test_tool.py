@@ -15,10 +15,13 @@ import shutil
 import sys
 
 
-def _GenerateCompileCommands(files):
+def _GenerateCompileCommands(files, include_paths):
   """Returns a JSON string containing a compilation database for the input."""
+  include_path_flags = ''.join('-I %s' % include_path
+                               for include_path in include_paths)
   return json.dumps([{'directory': '.',
-                      'command': 'clang++ -fsyntax-only -c %s' % f,
+                      'command': 'clang++ -fsyntax-only %s -c %s' % (
+                          include_path_flags, f),
                       'file': f} for f in files], indent=2)
 
 
@@ -46,6 +49,9 @@ def main(argv):
                   for source_file in source_files]
   expected_files = ['-'.join([source_file.rsplit('-', 2)[0], 'expected.cc'])
                     for source_file in source_files]
+  include_paths = []
+  include_paths.append(
+      os.path.realpath(os.path.join(tools_clang_directory, '../..')))
 
   try:
     # Set up the test environment.
@@ -58,7 +64,7 @@ def main(argv):
     subprocess.check_call(args)
     # Generate a temporary compilation database to run the tool over.
     with open(compile_database, 'w') as f:
-      f.write(_GenerateCompileCommands(actual_files))
+      f.write(_GenerateCompileCommands(actual_files, include_paths))
 
     args = ['python',
             os.path.join(tools_clang_scripts_directory, 'run_tool.py'),
