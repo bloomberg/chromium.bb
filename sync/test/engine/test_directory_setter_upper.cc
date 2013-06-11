@@ -7,7 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/location.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/in_memory_directory_backing_store.h"
 #include "sync/syncable/mutable_entry.h"

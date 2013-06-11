@@ -12,7 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "net/base/url_util.h"

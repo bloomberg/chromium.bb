@@ -8,7 +8,7 @@
 #include <sys/sysctl.h>
 
 #include "base/mac/scoped_cftyperef.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 
 namespace syncer {

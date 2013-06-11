@@ -12,7 +12,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/time.h"
 #include "sql/connection.h"
 #include "sql/statement.h"

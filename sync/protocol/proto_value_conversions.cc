@@ -9,7 +9,7 @@
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "sync/internal_api/public/base/unique_position.h"
 #include "sync/protocol/app_notification_specifics.pb.h"

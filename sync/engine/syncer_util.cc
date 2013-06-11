@@ -12,7 +12,7 @@
 #include "base/base64.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "sync/engine/conflict_resolver.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/syncer_types.h"

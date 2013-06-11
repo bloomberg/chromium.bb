@@ -11,7 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sync/base/sync_export.h"

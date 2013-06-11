@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/observer_list.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "sync/engine/sync_scheduler.h"
 #include "sync/engine/syncer_types.h"

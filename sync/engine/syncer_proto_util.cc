@@ -5,7 +5,7 @@
 #include "sync/engine/syncer_proto_util.h"
 
 #include "base/format_macros.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "google_apis/google_api_keys.h"
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/engine/syncer.h"

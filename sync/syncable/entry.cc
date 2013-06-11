@@ -7,7 +7,7 @@
 #include <iomanip>
 
 #include "base/json/string_escape.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "sync/syncable/blob.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/syncable_base_transaction.h"

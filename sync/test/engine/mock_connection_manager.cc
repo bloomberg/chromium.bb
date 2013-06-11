@@ -9,9 +9,8 @@
 #include <map>
 
 #include "base/location.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "sync/engine/syncer_proto_util.h"
-#include "sync/test/engine/test_id_factory.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/syncable_write_transaction.h"

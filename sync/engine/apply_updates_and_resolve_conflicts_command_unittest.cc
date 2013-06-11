@@ -6,7 +6,7 @@
 
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "sync/engine/apply_updates_and_resolve_conflicts_command.h"
 #include "sync/engine/syncer.h"
 #include "sync/internal_api/public/test/test_entry_factory.h"

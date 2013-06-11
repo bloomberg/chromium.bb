@@ -8,7 +8,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base_node.h"

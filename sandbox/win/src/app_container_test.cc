@@ -8,7 +8,7 @@
 #include <atlbase.h>
 #include <atlsecurity.h>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/sync_policy_test.h"

@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/location.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "sync/internal_api/public/test/test_entry_factory.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"

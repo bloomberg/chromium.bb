@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"

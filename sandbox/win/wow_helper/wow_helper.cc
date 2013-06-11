@@ -17,7 +17,7 @@
 
 namespace {
 
-// Grabbed from base/string_util.h
+// Grabbed from base/strings/string_util.h
 template <class string_type>
 inline typename string_type::value_type* WriteInto(string_type* str,
                                                    size_t length_with_null) {

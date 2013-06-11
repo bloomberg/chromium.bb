@@ -9,7 +9,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"

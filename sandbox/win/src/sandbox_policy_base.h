@@ -12,7 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/handle_closer.h"
 #include "sandbox/win/src/ipc_tags.h"

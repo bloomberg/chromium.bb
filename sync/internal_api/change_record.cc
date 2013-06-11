@@ -4,7 +4,7 @@
 
 #include "sync/internal_api/public/change_record.h"
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "sync/internal_api/public/base_node.h"
 #include "sync/internal_api/public/read_node.h"

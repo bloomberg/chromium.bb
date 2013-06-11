@@ -9,7 +9,7 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "sandbox/win/src/interception.h"
 #include "sandbox/win/src/sandbox_types.h"
 #include "sandbox/win/src/target_process.h"

@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "sandbox/win/src/sandbox_types.h"
 
 namespace base {

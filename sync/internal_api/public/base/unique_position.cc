@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "sync/protocol/unique_position.pb.h"
 #include "third_party/zlib/zlib.h"
 

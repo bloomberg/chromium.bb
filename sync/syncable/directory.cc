@@ -7,7 +7,7 @@
 #include "base/base64.h"
 #include "base/debug/trace_event.h"
 #include "base/stl_util.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "sync/internal_api/public/base/unique_position.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/syncable/entry.h"

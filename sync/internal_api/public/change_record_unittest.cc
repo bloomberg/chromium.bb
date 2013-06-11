@@ -5,7 +5,7 @@
 #include "sync/internal_api/public/change_record.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "sync/protocol/extension_specifics.pb.h"

@@ -11,7 +11,7 @@
 #include "base/atomicops.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread_checker.h"

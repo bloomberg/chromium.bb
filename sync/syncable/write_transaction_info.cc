@@ -4,7 +4,7 @@
 
 #include "sync/syncable/write_transaction_info.h"
 
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 
 namespace syncer {
 namespace syncable {

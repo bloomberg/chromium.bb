@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "sql/connection.h"
 #include "sql/sql_export.h"
 

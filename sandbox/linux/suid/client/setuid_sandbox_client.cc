@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 
 #include "sandbox/linux/suid/common/sandbox.h"
 #include "sandbox/linux/suid/common/suid_unsafe_environment_variables.h"

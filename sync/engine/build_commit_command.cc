@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/internal_api/public/base/unique_position.h"
 #include "sync/protocol/bookmark_specifics.pb.h"

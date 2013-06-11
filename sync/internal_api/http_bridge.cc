@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_monster.h"

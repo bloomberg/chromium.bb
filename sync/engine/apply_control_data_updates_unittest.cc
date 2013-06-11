@@ -5,7 +5,7 @@
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "sync/engine/apply_control_data_updates.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_util.h"

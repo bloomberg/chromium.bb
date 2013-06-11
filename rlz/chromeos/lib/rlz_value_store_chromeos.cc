@@ -10,7 +10,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "rlz/lib/lib_values.h"
 #include "rlz/lib/recursive_cross_process_lock_posix.h"
