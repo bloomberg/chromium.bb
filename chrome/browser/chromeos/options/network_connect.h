@@ -36,6 +36,16 @@ void ShowMobileSetup(const std::string& service_path);
 ConnectResult ConnectToNetwork(const std::string& service_path,
                                gfx::NativeWindow parent_window);
 
+// Handle an unconfigured network which might do any of the following:
+// * Configure and connect to the network with a matching cert but without
+//   pcks11id and tpm pin / slot configured.
+// * Show the enrollment dialog for the network.
+// * Show the configuration dialog for the network.
+// * Show the activation dialog for the network.
+// * Show the settings UI for the network.
+void HandleUnconfiguredNetwork(const std::string& service_path,
+                               gfx::NativeWindow parent_window);
+
 }  // namespace network_connect
 }  // namespace chromeos
 

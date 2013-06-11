@@ -13,16 +13,9 @@
 namespace chromeos {
 
 NetworkLoginObserver::NetworkLoginObserver() {
-  // NetworkHandler does not get initialized in many unit tests even though
-  // NetworkLibrary which owns this class does. TODO(stevenjb): Eliminate
-  // this class along with NetworkLibrary, crbug.com/154852.
-  if (NetworkHandler::IsInitialized())
-    NetworkHandler::Get()->cert_loader()->AddObserver(this);
 }
 
 NetworkLoginObserver::~NetworkLoginObserver() {
-  if (NetworkHandler::IsInitialized())
-    NetworkHandler::Get()->cert_loader()->RemoveObserver(this);
 }
 
 void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
@@ -85,15 +78,6 @@ void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
         return;  // Only support one failure per notification.
       }
     }
-  }
-}
-
-void NetworkLoginObserver::OnCertificatesLoaded(
-    const net::CertificateList& cert_list,
-    bool initial_load) {
-  if (initial_load) {
-    // Once certificates have loaded, connect to the "best" available network.
-    NetworkHandler::Get()->network_state_handler()->ConnectToBestWifiNetwork();
   }
 }
 

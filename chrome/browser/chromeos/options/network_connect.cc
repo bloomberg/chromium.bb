@@ -10,15 +10,21 @@
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/command_line.h"
+#include "base/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
+#include "chrome/common/url_constants.h"
 #include "chromeos/chromeos_switches.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
+#include "net/base/escape.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -135,14 +141,10 @@ ConnectResult ConnectToNetwork(const std::string& service_path,
   if (network->type() == TYPE_ETHERNET)
     return CONNECT_NOT_STARTED;  // Normally this shouldn't happen
 
-  if (network->type() == TYPE_WIFI) {
-    WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
-    wifi->SetEnrollmentDelegate(
-        chromeos::CreateEnrollmentDelegate(
-            parent_window,
-            wifi->name(),
-            ProfileManager::GetLastUsedProfile()));
-    wifi->AttemptConnection(base::Bind(&DoConnect, wifi, parent_window));
+  if (network->type() == TYPE_WIFI || network->type() == TYPE_VPN) {
+    network->SetEnrollmentDelegate(chromeos::CreateEnrollmentDelegate(
+        parent_window, network->name(), ProfileManager::GetLastUsedProfile()));
+    network->AttemptConnection(base::Bind(&DoConnect, network, parent_window));
     return CONNECT_STARTED;
   }
 
@@ -164,19 +166,62 @@ ConnectResult ConnectToNetwork(const std::string& service_path,
     return CONNECT_STARTED;
   }
 
-  if (network->type() == TYPE_VPN) {
-    VirtualNetwork* vpn = static_cast<VirtualNetwork*>(network);
-    vpn->SetEnrollmentDelegate(
-        chromeos::CreateEnrollmentDelegate(
-            parent_window,
-            vpn->name(),
-            ProfileManager::GetLastUsedProfile()));
-    vpn->AttemptConnection(base::Bind(&DoConnect, vpn, parent_window));
-    return CONNECT_STARTED;
-  }
-
   NOTREACHED();
   return CONNECT_NOT_STARTED;
+}
+
+void HandleUnconfiguredNetwork(const std::string& service_path,
+                               gfx::NativeWindow parent_window) {
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  Network* network = cros->FindNetworkByPath(service_path);
+  if (!network) {
+    LOG(WARNING) << "Unknown network: " << service_path;
+    return;
+  }
+
+  if (network->type() == TYPE_WIFI || network->type() == TYPE_VPN) {
+    network->SetEnrollmentDelegate(chromeos::CreateEnrollmentDelegate(
+        parent_window, network->name(), ProfileManager::GetLastUsedProfile()));
+    // This will connect to the network only if the network just needs to have
+    // its certificate configured. Otherwise it will show an enrollment dialog
+    // if available, or call NetworkConfigView::Show().
+    network->AttemptConnection(
+        base::Bind(&NetworkConfigView::Show, network, parent_window));
+    return;
+  }
+
+  if (network->type() == TYPE_WIMAX) {
+    NetworkConfigView::Show(network, parent_window);
+    return;
+  }
+
+  if (network->type() == TYPE_CELLULAR) {
+    CellularNetwork* cellular = static_cast<CellularNetwork*>(network);
+    if (cellular->NeedsActivation()) {
+      ActivateCellular(service_path);
+      return;
+    } else if (cellular->out_of_credits()) {
+      ShowMobileSetup(service_path);
+      return;
+    }
+  }
+
+  // No special configure or setup for |service_path|, show the settings UI.
+  std::string page = chrome::kInternetOptionsSubPage;
+  std::string name = network->name();
+  if (name.empty() && network->type() == TYPE_ETHERNET)
+    name = l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+  page += base::StringPrintf(
+      "?servicePath=%s&networkType=%d&networkName=%s",
+      net::EscapeUrlEncodedData(service_path, true).c_str(),
+      network->type(),
+      net::EscapeUrlEncodedData(name, false).c_str());
+  content::RecordAction(
+      content::UserMetricsAction("OpenInternetOptionsDialog"));
+  Browser* browser = chrome::FindOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord(),
+      chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::ShowSettingsSubPage(browser, page);
 }
 
 }  // namespace network_connect

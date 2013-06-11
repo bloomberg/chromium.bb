@@ -46,7 +46,8 @@ void NetworkHandler::Init() {
       network_state_handler_.get(),
       network_profile_handler_.get(),
       network_configuration_handler_.get());
-  network_connection_handler_->Init(network_state_handler_.get(),
+  network_connection_handler_->Init(cert_loader_.get(),
+                                    network_state_handler_.get(),
                                     network_configuration_handler_.get());
   geolocation_handler_->Init();
 }

@@ -47,12 +47,20 @@ void OnConnectFailed(const std::string& service_path,
         service_path);
     return;
   }
+  // Shill does not always provide a helpful error. In this case, show the
+  // configuration UI and a notification. See crbug.com/217033 for an example.
+  if (error_name == NetworkConnectionHandler::kErrorConnectFailed) {
+    ash::Shell::GetInstance()->system_tray_delegate()->ConfigureNetwork(
+        service_path);
+  }
   ash::Shell::GetInstance()->system_tray_notifier()->network_state_notifier()->
       ShowNetworkConnectError(error_name, service_path);
 }
 
 void OnConnectSucceeded(const std::string& service_path) {
   VLOG(1) << "Connect Succeeded for " << service_path;
+  ash::Shell::GetInstance()->system_tray_notifier()->NotifyClearNetworkMessage(
+      NetworkObserver::ERROR_CONNECT_FAILED);
 }
 
 }  // namespace
