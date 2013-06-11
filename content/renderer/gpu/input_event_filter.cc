@@ -28,7 +28,8 @@ void InputEventFilter::SetBoundHandler(const Handler& handler) {
   handler_ = handler;
 }
 
-void InputEventFilter::DidAddInputHandler(int routing_id) {
+void InputEventFilter::DidAddInputHandler(int routing_id,
+                                          cc::InputHandler* input_handler) {
   base::AutoLock locked(routes_lock_);
   routes_.insert(routing_id);
 }

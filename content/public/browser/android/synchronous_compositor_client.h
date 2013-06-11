@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_CLIENT_H_
 
 #include "base/basictypes.h"
+#include "ui/gfx/vector2d_f.h"
 
 namespace content {
 
@@ -23,7 +24,9 @@ class SynchronousCompositorClient {
   // SynchronousCompositor::SetClient(NULL) to release the back pointer.
   virtual void DidDestroyCompositor(SynchronousCompositor* compositor) = 0;
 
-  // TODO(joth): Add scroll getters and setters.
+  // See LayerScrollOffsetDelegate for details.
+  virtual void SetTotalRootLayerScrollOffset(gfx::Vector2dF new_value) = 0;
+  virtual gfx::Vector2dF GetTotalRootLayerScrollOffset() = 0;
 
   // When true, should periodically call
   // SynchronousCompositorOutputSurface::DemandDrawHw. Note that this value

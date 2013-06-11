@@ -44,7 +44,8 @@ class CONTENT_EXPORT InputEventFilter
   // InputHostMsg_HandleInputEvent_ACK.
   //
   virtual void SetBoundHandler(const Handler& handler) OVERRIDE;
-  virtual void DidAddInputHandler(int routing_id) OVERRIDE;
+  virtual void DidAddInputHandler(int routing_id,
+                                  cc::InputHandler* input_handler) OVERRIDE;
   virtual void DidRemoveInputHandler(int routing_id) OVERRIDE;
 
   // IPC::ChannelProxy::MessageFilter methods:

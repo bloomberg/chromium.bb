@@ -51,6 +51,11 @@ class SynchronousCompositor {
   // and clip set there-in).
   virtual bool DemandDrawSw(SkCanvas* canvas) = 0;
 
+  // Should be called by the embedder after the embedder had modified the
+  // scroll offset of the root layer (as returned by
+  // SynchronousCompositorClient::GetTotalRootLayerScrollOffset).
+  virtual void DidChangeRootLayerScrollOffset() = 0;
+
  protected:
   virtual ~SynchronousCompositor() {}
 };

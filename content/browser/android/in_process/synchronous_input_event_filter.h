@@ -32,8 +32,9 @@ class SynchronousInputEventFilter : public InputHandlerManagerClient {
 
   // InputHandlerManagerClient implementation.
   virtual void SetBoundHandler(const Handler& handler) OVERRIDE;
-  virtual void DidAddInputHandler(int routing_id) OVERRIDE {}
-  virtual void DidRemoveInputHandler(int routing_id) OVERRIDE {}
+  virtual void DidAddInputHandler(int routing_id,
+                                  cc::InputHandler* input_handler) OVERRIDE;
+  virtual void DidRemoveInputHandler(int routing_id) OVERRIDE;
 
  private:
   void SetBoundHandlerOnUIThread(const Handler& handler);

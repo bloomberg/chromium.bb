@@ -8,16 +8,22 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/input/layer_scroll_offset_delegate.h"
 #include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/web_contents_user_data.h"
+
+namespace cc {
+class InputHandler;
+}
 
 namespace WebKit {
 class WebInputEvent;
 }
 
 namespace content {
+class InputHandlerManager;
 
 // The purpose of this class is to act as the intermediary between the various
 // components that make up the 'synchronous compositor mode' implementation and
@@ -25,7 +31,8 @@ namespace content {
 // This class is created on the main thread but most of the APIs are called
 // from the Compositor thread.
 class SynchronousCompositorImpl
-    : public SynchronousCompositor,
+    : public cc::LayerScrollOffsetDelegate,
+      public SynchronousCompositor,
       public SynchronousCompositorOutputSurfaceDelegate,
       public WebContentsUserData<SynchronousCompositorImpl> {
  public:
@@ -46,6 +53,7 @@ class SynchronousCompositorImpl
       const gfx::Transform& transform,
       gfx::Rect clip) OVERRIDE;
   virtual bool DemandDrawSw(SkCanvas* canvas) OVERRIDE;
+  virtual void DidChangeRootLayerScrollOffset() OVERRIDE;
 
   // SynchronousCompositorOutputSurfaceDelegate
   virtual void DidBindOutputSurface(
@@ -55,6 +63,12 @@ class SynchronousCompositorImpl
   virtual void SetContinuousInvalidate(bool enable) OVERRIDE;
   virtual void UpdateFrameMetaData(
       const cc::CompositorFrameMetadata& frame_info) OVERRIDE;
+
+  // LayerScrollOffsetDelegate
+  virtual void SetTotalScrollOffset(gfx::Vector2dF new_value) OVERRIDE;
+  virtual gfx::Vector2dF GetTotalScrollOffset() OVERRIDE;
+
+  void SetInputHandler(cc::InputHandler* input_handler);
 
  private:
   explicit SynchronousCompositorImpl(WebContents* contents);
@@ -68,6 +82,7 @@ class SynchronousCompositorImpl
   SynchronousCompositorClient* compositor_client_;
   SynchronousCompositorOutputSurface* output_surface_;
   WebContents* contents_;
+  cc::InputHandler* input_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorImpl);
 };

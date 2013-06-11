@@ -53,6 +53,8 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   virtual void DidDestroyCompositor(
       content::SynchronousCompositor* compositor) OVERRIDE;
   virtual void SetContinuousInvalidate(bool invalidate) OVERRIDE;
+  virtual void SetTotalRootLayerScrollOffset(gfx::Vector2dF new_value) OVERRIDE;
+  virtual gfx::Vector2dF GetTotalRootLayerScrollOffset() OVERRIDE;
 
   void WebContentsGone();
 
@@ -90,6 +92,8 @@ class InProcessViewRenderer : public BrowserViewRenderer,
 
   // Last View scroll before hardware rendering is triggered.
   gfx::Point hw_rendering_scroll_;
+
+  gfx::Vector2dF scroll_offset_;
 
   base::WeakPtrFactory<InProcessViewRenderer> weak_factory_;
 

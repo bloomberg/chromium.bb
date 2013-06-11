@@ -569,6 +569,16 @@ void InProcessViewRenderer::SetContinuousInvalidate(bool invalidate) {
   EnsureContinuousInvalidation();
 }
 
+void InProcessViewRenderer::SetTotalRootLayerScrollOffset(
+    gfx::Vector2dF new_value) {
+  // TODO(mkosiba): Plumb this all the way through to the view.
+  scroll_offset_ = new_value;
+}
+
+gfx::Vector2dF InProcessViewRenderer::GetTotalRootLayerScrollOffset() {
+  return scroll_offset_;
+}
+
 void InProcessViewRenderer::Invalidate() {
   continuous_invalidate_task_pending_ = false;
   if (continuous_invalidate_)
