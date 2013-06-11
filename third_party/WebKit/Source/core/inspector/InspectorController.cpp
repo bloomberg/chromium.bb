@@ -292,6 +292,8 @@ void InspectorController::getHighlight(Highlight* highlight) const
 
 void InspectorController::inspect(Node* node)
 {
+    if (!node)
+        return;
     Document* document = node->ownerDocument();
     if (!document)
         return;
