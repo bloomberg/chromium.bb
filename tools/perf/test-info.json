@@ -31,7 +31,7 @@
   "dom_perf": {
     "description": "Performance of DOM operations.",
     "code": [
-      "chrome/tools/build/scripts/slave/chromium/dom_perf.py"
+      "chrome/src/tools/perf/perf_tools/dom_perf.py"
     ]
   },
   "dromaeo_domcoreattr": {
