@@ -211,51 +211,6 @@ class HistoryBackend::URLQuerier {
   DISALLOW_COPY_AND_ASSIGN(URLQuerier);
 };
 
-// KillHistoryDatabaseErrorDelegate -------------------------------------------
-
-class KillHistoryDatabaseErrorDelegate : public sql::ErrorDelegate {
- public:
-  explicit KillHistoryDatabaseErrorDelegate(HistoryBackend* backend)
-      : backend_(backend),
-        scheduled_killing_database_(false) {
-  }
-
-  // sql::ErrorDelegate implementation.
-  virtual int OnError(int error,
-                      sql::Connection* connection,
-                      sql::Statement* stmt) OVERRIDE {
-    // Do not schedule killing database more than once. If the first time
-    // failed, it is unlikely that a second time will be successful.
-    if (!scheduled_killing_database_ && sql::IsErrorCatastrophic(error)) {
-      scheduled_killing_database_ = true;
-
-      // Don't just do the close/delete here, as we are being called by |db| and
-      // that seems dangerous.
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&HistoryBackend::KillHistoryDatabase, backend_));
-    }
-
-    return error;
-  }
-
-  // Returns true if the delegate has previously scheduled killing the database.
-  bool scheduled_killing_database() const {
-    return scheduled_killing_database_;
-  }
-
- private:
-  // Do not increment the count on |HistoryBackend| as that would create a
-  // circular reference (HistoryBackend -> HistoryDatabase -> Connection ->
-  // ErrorDelegate -> HistoryBackend).
-  HistoryBackend* backend_;
-
-  // True if the backend has previously scheduled killing the history database.
-  bool scheduled_killing_database_;
-
-  DISALLOW_COPY_AND_ASSIGN(KillHistoryDatabaseErrorDelegate);
-};
-
 // HistoryBackend --------------------------------------------------------------
 
 HistoryBackend::HistoryBackend(const base::FilePath& history_dir,
@@ -265,6 +220,7 @@ HistoryBackend::HistoryBackend(const base::FilePath& history_dir,
     : delegate_(delegate),
       id_(id),
       history_dir_(history_dir),
+      scheduled_kill_db_(false),
       expirer_(this, bookmark_service),
       recent_redirects_(kMaxRedirectCount),
       backend_destroy_message_loop_(NULL),
@@ -661,24 +617,24 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   // History database.
   db_.reset(new HistoryDatabase());
 
-  // |HistoryDatabase::Init| takes ownership of |error_delegate|.
-  KillHistoryDatabaseErrorDelegate* error_delegate =
-      new KillHistoryDatabaseErrorDelegate(this);
+  // Unretained to avoid a ref loop with db_.
+  db_->set_error_callback(
+      base::Bind(&HistoryBackend::DatabaseErrorCallback,
+                 base::Unretained(this)));
 
-  sql::InitStatus status = db_->Init(history_name, error_delegate);
+  sql::InitStatus status = db_->Init(history_name);
   switch (status) {
     case sql::INIT_OK:
       break;
     case sql::INIT_FAILURE: {
       // A NULL db_ will cause all calls on this object to notice this error
-      // and to not continue. If the error delegate scheduled killing the
+      // and to not continue. If the error callback scheduled killing the
       // database, the task it posted has not executed yet. Try killing the
       // database now before we close it.
-      bool kill_database = error_delegate->scheduled_killing_database();
-      if (kill_database)
+      bool kill_db = scheduled_kill_db_;
+      if (kill_db)
         KillHistoryDatabase();
-      UMA_HISTOGRAM_BOOLEAN("History.AttemptedToFixProfileError",
-                            kill_database);
+      UMA_HISTOGRAM_BOOLEAN("History.AttemptedToFixProfileError", kill_db);
       delegate_->NotifyProfileError(id_, status);
       db_.reset();
       return;
@@ -2844,7 +2800,21 @@ void HistoryBackend::URLsNoLongerBookmarked(const std::set<GURL>& urls) {
   }
 }
 
+void HistoryBackend::DatabaseErrorCallback(int error, sql::Statement* stmt) {
+  if (!scheduled_kill_db_ && sql::IsErrorCatastrophic(error)) {
+    scheduled_kill_db_ = true;
+    // Don't just do the close/delete here, as we are being called by |db| and
+    // that seems dangerous.
+    // TODO(shess): Consider changing KillHistoryDatabase() to use
+    // RazeAndClose().  Then it can be cleared immediately.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&HistoryBackend::KillHistoryDatabase, this));
+  }
+}
+
 void HistoryBackend::KillHistoryDatabase() {
+  scheduled_kill_db_ = false;
   if (!db_)
     return;
 

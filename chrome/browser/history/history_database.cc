@@ -44,12 +44,11 @@ HistoryDatabase::HistoryDatabase()
 HistoryDatabase::~HistoryDatabase() {
 }
 
-sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name,
-                                      sql::ErrorDelegate* error_delegate) {
+sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name) {
   db_.set_histogram_tag("History");
 
   // Set the exceptional sqlite error handler.
-  db_.set_error_delegate(error_delegate);
+  db_.set_error_callback(error_callback_);
 
   // Set the database page size to something a little larger to give us
   // better performance (we're typically seek rather than bandwidth limited).

@@ -467,6 +467,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Callbacks To Kill Database When It Gets Corrupted -------------------------
 
+  // Called by the database to report errors.  Schedules one call to
+  // KillHistoryDatabase() in case of corruption.
+  void DatabaseErrorCallback(int error, sql::Statement* stmt);
+
   // Raze the history database. It will be recreated in a future run. Hopefully
   // things go better then. Continue running but without reading or storing any
   // state into the HistoryBackend databases. Close all of the databases managed
@@ -842,6 +846,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // if it is. The thumbnail DB may be NULL when the history one isn't, but not
   // vice-versa.
   scoped_ptr<HistoryDatabase> db_;
+  bool scheduled_kill_db_;  // Database is being killed due to error.
   scoped_ptr<ThumbnailDatabase> thumbnail_db_;
 
   // Stores old history in a larger, slower database.

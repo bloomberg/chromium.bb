@@ -134,7 +134,7 @@ class ExpireHistoryTest : public testing::Test,
 
     base::FilePath history_name = path().Append(kHistoryFile);
     main_db_.reset(new HistoryDatabase);
-    if (main_db_->Init(history_name, NULL) != sql::INIT_OK)
+    if (main_db_->Init(history_name) != sql::INIT_OK)
       main_db_.reset();
 
     base::FilePath archived_name = path().Append(kArchivedHistoryFile);

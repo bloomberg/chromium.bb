@@ -66,11 +66,17 @@ class HistoryDatabase : public DownloadDatabase,
 
   virtual ~HistoryDatabase();
 
+  // Call before Init() to set the error callback to be used for the
+  // underlying database connection.
+  void set_error_callback(
+      const sql::Connection::ErrorCallback& error_callback) {
+    error_callback_ = error_callback;
+  }
+
   // Must call this function to complete initialization. Will return
   // sql::INIT_OK on success. Otherwise, no other function should be called. You
   // may want to call BeginExclusiveMode after this when you are ready.
-  sql::InitStatus Init(const base::FilePath& history_name,
-                       sql::ErrorDelegate* error_delegate);
+  sql::InitStatus Init(const base::FilePath& history_name);
 
   // Computes and records various metrics for the database. Should only be
   // called once and only upon successful Init.
@@ -191,6 +197,7 @@ class HistoryDatabase : public DownloadDatabase,
 
   // ---------------------------------------------------------------------------
 
+  sql::Connection::ErrorCallback error_callback_;
   sql::Connection db_;
   sql::MetaTable meta_table_;
 
