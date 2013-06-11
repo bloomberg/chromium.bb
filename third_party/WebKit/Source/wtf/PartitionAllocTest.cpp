@@ -36,7 +36,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if OS(LINUX) && CPU(X86_64) && defined(NDEBUG)
+#if OS(UNIX)
+#include <sys/mman.h>
+
+#ifndef MAP_ANONYMOUS
+#define MAP_ANONYMOUS MAP_ANON
+#endif
+#endif // OS(UNIX)
+
+#if OS(UNIX) && defined(NDEBUG)
 
 namespace {
 
@@ -79,6 +87,8 @@ static WTF::PartitionPageHeader* GetFullPage()
     EXPECT_EQ(reinterpret_cast<size_t>(first) & WTF::kPageMask, reinterpret_cast<size_t>(last) & WTF::kPageMask);
     EXPECT_EQ(numSlots, static_cast<size_t>(bucket->currPage->numAllocatedSlots));
     EXPECT_EQ(0, bucket->currPage->freelistHead);
+    EXPECT_TRUE(bucket->currPage);
+    EXPECT_TRUE(bucket->currPage != &root.seedPage);
     return bucket->currPage;
 }
 
@@ -239,6 +249,35 @@ TEST(WTF_PartitionAlloc, PageTransitions)
     TestShutdown();
 }
 
+#if OS(UNIX)
+
+// Test correct handling if our mapping collides with another.
+TEST(WTF_PartitionAlloc, MappingCollision)
+{
+    TestSetup();
+    char* pageBase = root.pageBase;
+
+    WTF::PartitionPageHeader* page1 = GetFullPage();
+    // Map a single system page either side of the mapping for our allocations,
+    // with the goal of tripping up alignment of the next mapping.
+    void* map1 = mmap(pageBase - WTF::kSystemPageSize, WTF::kSystemPageSize, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+    EXPECT_TRUE(map1 && map1 != MAP_FAILED);
+    void* map2 = mmap(pageBase + WTF::kPageSize, WTF::kSystemPageSize, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+    EXPECT_TRUE(map2 && map2 != MAP_FAILED);
+
+    WTF::PartitionPageHeader* page2 = GetFullPage();
+    EXPECT_EQ(0, reinterpret_cast<uintptr_t>(page2) & ~WTF::kPageMask);
+    FreeFullPage(page2);
+
+    FreeFullPage(page1);
+    munmap(map1, WTF::kSystemPageSize);
+    munmap(map2, WTF::kSystemPageSize);
+
+    TestShutdown();
+}
+
+#endif // OS(UNIX)
+
 } // namespace
 
-#endif // OS(LINUX) && CPU(X86_64)
+#endif // OS(UNIX) && defined(NDEBUG)

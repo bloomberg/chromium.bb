@@ -72,7 +72,7 @@ void partitionAllocInit(PartitionRoot* root)
     // We handle the situation gracefully if there is a collision.
     random &= (0x3ffffffff000UL & kPageMask);
 #else
-    random &= 0x3ffff000;
+    random &= (0x3ffff000 & kPageMask);
     random += 0x20000000;
 #endif // CPU(X86_64)
 #else
@@ -144,14 +144,40 @@ static ALWAYS_INLINE PartitionPageHeader* partitionAllocPage(char** pageBasePoin
 // TODO(cevans): When porting more generically, the probable approach
 // is to use the underlying real malloc() as the page source.
 #if OS(UNIX)
-    void* ret = mmap(*pageBasePointer, kPageSize, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-    RELEASE_ASSERT(ret != MAP_FAILED);
+    char* ptr = reinterpret_cast<char*>(mmap(*pageBasePointer, kPageSize, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0));
+    RELEASE_ASSERT(ptr != MAP_FAILED);
+    // If our requested address collided with another mapping, there's a
+    // chance we'll get back an unaligned address. We fix this by attempting
+    // the allocation again, but with enough slack pages that we can find
+    // correct alignment within the allocation.
+    if (UNLIKELY(reinterpret_cast<uintptr_t>(ptr) & ~kPageMask)) {
+        int ret = munmap(ptr, kPageSize);
+        ASSERT(!ret);
+        ptr = reinterpret_cast<char*>(mmap(*pageBasePointer, (kPageSize * 2) - kSystemPageSize, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0));
+        RELEASE_ASSERT(ptr != MAP_FAILED);
+        int numSystemPages = kPageSize / kSystemPageSize;
+        ASSERT(numSystemPages > 1);
+        int numSystemPagesToUnmap = numSystemPages - 1;
+        int numSystemPagesBefore = (numSystemPages - ((reinterpret_cast<uintptr_t>(ptr) & ~kPageMask) / kSystemPageSize)) % numSystemPages;
+        ASSERT(numSystemPagesBefore <= numSystemPagesToUnmap);
+        int numSystemPagesAfter = numSystemPagesToUnmap - numSystemPagesBefore;
+        if (numSystemPagesBefore) {
+            uintptr_t beforeSize = kSystemPageSize * numSystemPagesBefore;
+            ret = munmap(ptr, beforeSize);
+            ASSERT(!ret);
+            ptr += beforeSize;
+        }
+        if (numSystemPagesAfter) {
+            ret = munmap(ptr + kPageSize, kSystemPageSize * numSystemPagesAfter);
+            ASSERT(!ret);
+        }
+    }
 #else
-    void* ret = 0;
+    char* ptr = 0;
     CRASH();
 #endif
     *pageBasePointer += kPageSize;
-    return static_cast<PartitionPageHeader*>(ret);
+    return reinterpret_cast<PartitionPageHeader*>(ptr);
 }
 
 static ALWAYS_INLINE void partitionUnusePage(PartitionPageHeader* page)
