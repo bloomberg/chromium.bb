@@ -116,7 +116,7 @@ def RunBrowserTestSuite(options):
   Args:
     options: options object.
   """
-  args = ['--verbose']
+  args = ['--verbose', '--num_retries=1']
   if options.target == 'Release':
     args.append('--release')
   if options.asan:

@@ -205,22 +205,6 @@ def _GetOptionalDataFilesForTestSuite(test_suite_basename):
   if test_suite_basename == 'content_browsertests':
     # See http://crbug.com/105104 for why these are needed.
     return [
-        'third_party/WebKit/LayoutTests/fast/events',
-        'third_party/WebKit/LayoutTests/fast/files',
-        'third_party/WebKit/LayoutTests/fast/filesystem',
-        'third_party/WebKit/LayoutTests/fast/js/resources',
-        'third_party/WebKit/LayoutTests/fast/workers',
-        'third_party/WebKit/LayoutTests/http/tests',
-        'third_party/WebKit/LayoutTests/storage/indexeddb',
-        'third_party/WebKit/LayoutTests/media',
-        'content/test/data/layout_tests/LayoutTests/fast/events',
-        'content/test/data/layout_tests/LayoutTests/fast/files',
-        'content/test/data/layout_tests/LayoutTests/fast/filesystem',
-        'content/test/data/layout_tests/LayoutTests/fast/js/resources',
-        'content/test/data/layout_tests/LayoutTests/fast/workers',
-        'content/test/data/layout_tests/LayoutTests/http/tests',
-        'content/test/data/layout_tests/LayoutTests/storage/indexeddb',
-        'content/test/data/layout_tests/LayoutTests/media',
     ]
   return []
 
