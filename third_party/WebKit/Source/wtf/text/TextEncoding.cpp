@@ -221,7 +221,7 @@ const TextEncoding& UTF8Encoding()
 
 const TextEncoding& WindowsLatin1Encoding()
 {
-    static TextEncoding globalWindowsLatin1Encoding("WinLatin-1");
+    static TextEncoding globalWindowsLatin1Encoding("WinLatin1");
     return globalWindowsLatin1Encoding;
 }
 

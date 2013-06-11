@@ -178,7 +178,6 @@ private:
     void updateViewMetrics(int, int, double, bool);
     void updateTouchEventEmulationInPage(bool);
 
-    static bool mainResourceContent(Frame*, bool withBase64Encode, String* result);
     static bool dataContent(const char* data, unsigned size, const String& textEncodingName, bool withBase64Encode, String* result);
 
     PassRefPtr<TypeBuilder::Page::Frame> buildObjectForFrame(Frame*);

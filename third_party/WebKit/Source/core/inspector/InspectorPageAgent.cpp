@@ -207,20 +207,10 @@ bool InspectorPageAgent::cachedResourceContent(CachedResource* cachedResource, S
         }
         default:
             SharedBuffer* buffer = cachedResource->resourceBuffer();
-            return decodeBuffer(buffer ? buffer->data() : 0, buffer ? buffer->size() : 0, cachedResource->encoding(), result);
+            return decodeBuffer(buffer ? buffer->data() : 0, buffer ? buffer->size() : 0, cachedResource->response().textEncodingName(), result);
         }
     }
     return false;
-}
-
-bool InspectorPageAgent::mainResourceContent(Frame* frame, bool withBase64Encode, String* result)
-{
-    RefPtr<SharedBuffer> buffer = frame->loader()->documentLoader()->mainResourceData();
-    if (!buffer)
-        return false;
-    String textEncodingName = frame->document()->inputEncoding();
-
-    return InspectorPageAgent::dataContent(buffer->data(), buffer->size(), textEncodingName, withBase64Encode, result);
 }
 
 // static
@@ -250,18 +240,7 @@ void InspectorPageAgent::resourceContent(ErrorString* errorString, Frame* frame,
     DocumentLoader* loader = assertDocumentLoader(errorString, frame);
     if (!loader)
         return;
-
-    RefPtr<SharedBuffer> buffer;
-    bool success = false;
-    if (equalIgnoringFragmentIdentifier(url, loader->url())) {
-        *base64Encoded = false;
-        success = mainResourceContent(frame, *base64Encoded, result);
-    }
-
-    if (!success)
-        success = cachedResourceContent(cachedResource(frame, url), result, base64Encoded);
-
-    if (!success)
+    if (!cachedResourceContent(cachedResource(frame, url), result, base64Encoded))
         *errorString = "No resource with given URL found";
 }
 
@@ -577,7 +556,6 @@ void InspectorPageAgent::getResourceContent(ErrorString* errorString, const Stri
     Frame* frame = assertFrame(errorString, frameId);
     if (!frame)
         return;
-
     resourceContent(errorString, frame, KURL(ParsedURLString, url), content, base64Encoded);
 }
 
@@ -611,14 +589,9 @@ void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, c
 
     String content;
     bool success = false;
-    if (equalIgnoringFragmentIdentifier(kurl, loader->url()))
-        success = mainResourceContent(frame, false, &content);
-
-    if (!success) {
-        CachedResource* resource = cachedResource(frame, kurl);
-        if (resource)
-            success = textContentForCachedResource(resource, &content);
-    }
+    CachedResource* resource = cachedResource(frame, kurl);
+    if (resource)
+        success = textContentForCachedResource(resource, &content);
 
     if (!success)
         return;
@@ -653,11 +626,6 @@ void InspectorPageAgent::searchInResources(ErrorString*, const String& text, con
                 if (matchesCount)
                     searchResults->addItem(buildObjectForSearchResult(frameId(frame), cachedResource->url().string(), matchesCount));
             }
-        }
-        if (mainResourceContent(frame, false, &content)) {
-            int matchesCount = ContentSearchUtils::countRegularExpressionMatches(regex.get(), content);
-            if (matchesCount)
-                searchResults->addItem(buildObjectForSearchResult(frameId(frame), frame->document()->url().string(), matchesCount));
         }
     }
 
