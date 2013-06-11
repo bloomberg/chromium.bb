@@ -17089,6 +17089,7 @@ other types of suffix sets.
 <fieldtrial name="LevelDBEnvRetry" separator="">
   <group name="RenameFile" label="RenameFile"/>
   <group name="LockFile" label="LockFile"/>
+  <group name="CreateDir" label="CreateDir"/>
   <affected-histogram name="LevelDBEnv.IDB.RetryRecoveredFromErrorIn"/>
   <affected-histogram name="LevelDBEnv.IDB.TimeUntilSuccessFor"/>
   <affected-histogram name="LevelDBEnv.RetryRecoveredFromErrorIn"/>

@@ -403,7 +403,8 @@ bool CreateNewTempDirectory(const FilePath::StringType& prefix,
   return CreateTemporaryDirInDir(system_temp_dir, prefix, new_temp_path);
 }
 
-bool CreateDirectory(const FilePath& full_path) {
+bool CreateDirectoryAndGetError(const FilePath& full_path,
+                                base::PlatformFileError* error) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   // If the path exists, we've succeeded if it's a directory, failed otherwise.
@@ -429,7 +430,7 @@ bool CreateDirectory(const FilePath& full_path) {
   if (parent_path.value() == full_path.value()) {
     return false;
   }
-  if (!CreateDirectory(parent_path)) {
+  if (!CreateDirectoryAndGetError(parent_path, error)) {
     DLOG(WARNING) << "Failed to create one of the parent directories.";
     return false;
   }
@@ -443,6 +444,8 @@ bool CreateDirectory(const FilePath& full_path) {
       // race to create the same directory.
       return true;
     } else {
+      if (error)
+        *error = base::LastErrorToPlatformFileError(error_code);
       DLOG(WARNING) << "Failed to create directory " << full_path_str
                     << ", last error is " << error_code << ".";
       return false;

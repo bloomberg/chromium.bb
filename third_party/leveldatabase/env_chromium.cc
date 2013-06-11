@@ -616,10 +616,14 @@ Status ChromiumEnv::DeleteFile(const std::string& fname) {
 
 Status ChromiumEnv::CreateDir(const std::string& name) {
   Status result;
-  if (!::file_util::CreateDirectory(CreateFilePath(name))) {
-    result = MakeIOError(name, "Could not create directory.", kCreateDir);
-    RecordErrorAt(kCreateDir);
-  }
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  Retrier retrier(kCreateDir, this);
+  do {
+    if (::file_util::CreateDirectoryAndGetError(CreateFilePath(name), &error))
+      return result;
+  } while (retrier.ShouldKeepTrying(error));
+  result = MakeIOError(name, "Could not create directory.", kCreateDir);
+  RecordErrorAt(kCreateDir);
   return result;
 }
 

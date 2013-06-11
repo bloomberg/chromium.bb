@@ -518,7 +518,8 @@ bool CreateNewTempDirectory(const FilePath::StringType& prefix,
   return CreateTemporaryDirInDirImpl(tmpdir, TempFileName(), new_temp_path);
 }
 
-bool CreateDirectory(const FilePath& full_path) {
+bool CreateDirectoryAndGetError(const FilePath& full_path,
+                                base::PlatformFileError* error) {
   base::ThreadRestrictions::AssertIOAllowed();  // For call to mkdir().
   std::vector<FilePath> subpaths;
 
@@ -542,8 +543,12 @@ bool CreateDirectory(const FilePath& full_path) {
     // due to the the directory appearing out of thin air. This can occur if
     // two processes are trying to create the same file system tree at the same
     // time. Check to see if it exists and make sure it is a directory.
-    if (!DirectoryExists(*i))
+    int saved_errno = errno;
+    if (!DirectoryExists(*i)) {
+      if (error)
+        *error = base::ErrnoToPlatformFileError(saved_errno);
       return false;
+    }
   }
   return true;
 }

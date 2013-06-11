@@ -269,6 +269,12 @@ BASE_EXPORT bool CreateTemporaryDirInDir(
 // Creates a directory, as well as creating any parent directories, if they
 // don't exist. Returns 'true' on successful creation, or if the directory
 // already exists.  The directory is only readable by the current user.
+// Returns true on success, leaving *error unchanged.
+// Returns false on failure and sets *error appropriately, if it is non-NULL.
+BASE_EXPORT bool CreateDirectoryAndGetError(const base::FilePath& full_path,
+                                            base::PlatformFileError* error);
+
+// Backward-compatible convenience method for the above.
 BASE_EXPORT bool CreateDirectory(const base::FilePath& full_path);
 
 // Returns the file size. Returns true on success.
