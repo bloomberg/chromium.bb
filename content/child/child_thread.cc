@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "base/process.h"
 #include "base/process_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/tracked_objects.h"
 #include "components/tracing/child_trace_message_filter.h"
 #include "content/child/child_histogram_message_filter.h"

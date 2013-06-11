@@ -14,7 +14,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/shared_memory.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/child/request_extra_data.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/resource_messages.h"

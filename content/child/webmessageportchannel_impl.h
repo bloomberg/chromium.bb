@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"

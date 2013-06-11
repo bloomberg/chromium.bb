@@ -4,7 +4,7 @@
 
 #include "content/child/npobject_util.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/child/np_channel_base.h"
 #include "content/child/npobject_proxy.h"
 #include "content/child/plugin_messages.h"

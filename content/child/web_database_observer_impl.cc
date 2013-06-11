@@ -5,7 +5,7 @@
 #include "content/child/web_database_observer_impl.h"
 
 #include "base/metrics/histogram.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/common/database_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/public/platform/WebString.h"

@@ -6,7 +6,7 @@
 
 #include "base/format_macros.h"
 #include "base/lazy_instance.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_local.h"
 #include "content/child/child_thread.h"
 #include "content/child/indexed_db/proxy_webidbcursor_impl.h"
