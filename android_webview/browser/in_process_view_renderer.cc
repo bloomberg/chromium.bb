@@ -257,6 +257,11 @@ bool RenderPictureToCanvas(SkPicture* picture, SkCanvas* canvas) {
   return true;
 }
 
+// TODO(boliu): Remove this when hardware mode is ready.
+bool HardwareEnabled() {
+ return CommandLine::ForCurrentProcess()->HasSwitch("testing-webview-gl-mode");
+}
+
 }  // namespace
 
 InProcessViewRenderer::InProcessViewRenderer(
@@ -318,10 +323,13 @@ bool InProcessViewRenderer::PrepareDrawGL(int x, int y) {
   // No harm in updating |hw_rendering_scroll_| even if we return false.
   hw_rendering_scroll_ = gfx::Point(x, y);
   return attached_to_window_ && compositor_ && !hardware_failed_ &&
-         CommandLine::ForCurrentProcess()->HasSwitch("testing-webview-gl-mode");
+         HardwareEnabled();
 }
 
 void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
+  if (!HardwareEnabled())
+    return;
+
   DCHECK(view_visible_);
 
   // We need to watch if the current Android context has changed and enforce
