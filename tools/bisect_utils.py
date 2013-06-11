@@ -309,7 +309,7 @@ def SetupPlatformBuildEnvironment(opts):
   elif opts.target_platform == 'cros':
     return SetupCrosRepo()
 
-  return False
+  return True
 
 
 def CreateBisectDirectoryAndSetupDepot(opts, reset=False):
