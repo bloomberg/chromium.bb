@@ -18,7 +18,7 @@
 
 // libwebm muxer includes
 #include "mkvmuxer.hpp"
-#include "mkvreadablewriter.hpp"
+#include "mkvwriteeofreader.hpp"
 #include "mkvwriter.hpp"
 #include "mkvmuxerutil.hpp"
 
@@ -272,7 +272,7 @@ int main(int argc, char* argv[]) {
   // Set Segment element attributes
   mkvmuxer::Segment muxer_segment;
 
-  mkvmuxer::MkvReadableWriter writer_temp;
+  mkvmuxer::MkvWriteEOFReader writer_temp;
   if (cues_before_clusters) {
     if (!writer_temp.Open(NULL, true)) {
       printf("\n Filename is invalid or error while opening.\n");

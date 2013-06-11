@@ -51,11 +51,15 @@ class IMkvWriter {
   LIBWEBM_DISALLOW_COPY_AND_ASSIGN(IMkvWriter);
 };
 
-class IMkvReadableWriter : public IMkvWriter {
+// Classes implementing this interface should adhere to the following rule:
+// - There can be any number of calls to Write().
+// - Once the first call to Read() occurs, no more Write()'s are allowed.
+// - Write() should return error if there has been a call to Read() before.
+class IMkvWriteEOFReader : public IMkvWriter {
  public:
-  virtual int Read(long long position, long length,
-                   unsigned char* buffer) = 0;
-  virtual int Length(long long* total, long long* available) = 0;
+  // Reads data of size |length| starting from the offset of |position| into
+  // |buffer|.
+  virtual int Read(int64 position, int32 length, uint8* buffer) = 0;
 };
 
 // Writes out the EBML header for a WebM file. This function must be called
@@ -63,7 +67,7 @@ class IMkvReadableWriter : public IMkvWriter {
 bool WriteEbmlHeader(IMkvWriter* writer);
 
 // Copies in Chunk from source to destination between the given byte positions
-bool ChunkedCopy(IMkvReadableWriter* source, IMkvWriter* dst,
+bool ChunkedCopy(IMkvWriteEOFReader* source, IMkvWriter* dst,
                  int64 start, int64 size);
 
 ///////////////////////////////////////////////////////////////
@@ -943,9 +947,10 @@ class Segment {
   bool Init(IMkvWriter* ptr_writer);
 
   // This function must be called before Init() if Cues are to be written before
-  // the Clusters. Input parameter is a IMkvReadableWriter object which supports
-  // both writing and reading.
-  bool WriteCuesBeforeClusters(IMkvReadableWriter* ptr_writer);
+  // the Clusters. Input parameter is a IMkvWriteEOFReader object, which is to
+  // be used as the temporary storage, while moving the Cues before the
+  // Clusters.
+  bool WriteCuesBeforeClusters(IMkvWriteEOFReader* ptr_writer);
 
   // Adds a generic track to the segment.  Returns the newly-allocated
   // track object (which is owned by the segment) on success, NULL on
@@ -1249,7 +1254,7 @@ class Segment {
 
   // Pointer to actual writer object and temp writer object
   IMkvWriter* writer_;
-  IMkvReadableWriter* writer_temp_;
+  IMkvWriteEOFReader* writer_temp_;
 
   LIBWEBM_DISALLOW_COPY_AND_ASSIGN(Segment);
 };

@@ -7,7 +7,7 @@
 // be found in the AUTHORS file in the root of the source tree.
 
 #include "mkvmuxer.hpp"
-#include "mkvreadablewriter.hpp"
+#include "mkvwriteeofreader.hpp"
 
 #include <cstdio>
 #include <cstdlib>
@@ -91,7 +91,7 @@ bool WriteEbmlHeader(IMkvWriter* writer) {
   return true;
 }
 
-bool ChunkedCopy(mkvmuxer::IMkvReadableWriter* source,
+bool ChunkedCopy(mkvmuxer::IMkvWriteEOFReader* source,
                  mkvmuxer::IMkvWriter* dst,
                  mkvmuxer::int64 start, int64 size) {
   // TODO(vigneshv): Check if this is a reasonable value.
@@ -2091,7 +2091,7 @@ bool Segment::Init(IMkvWriter* ptr_writer) {
   return segment_info_.Init();
 }
 
-bool Segment::WriteCuesBeforeClusters(IMkvReadableWriter* ptr_writer) {
+bool Segment::WriteCuesBeforeClusters(IMkvWriteEOFReader* ptr_writer) {
   if (!ptr_writer || writer_cluster_ || writer_cues_ || writer_header_) {
     return false;
   }
