@@ -24,6 +24,8 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
     DidDrawAllLayers(frame_data);
   }
 
+  virtual void CreatePendingTree() OVERRIDE;
+
   using LayerTreeHostImpl::ActivatePendingTree;
 
  private:

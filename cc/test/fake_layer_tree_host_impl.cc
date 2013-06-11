@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/trees/layer_tree_impl.h"
 
 namespace cc {
 
@@ -27,5 +28,12 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
 }
 
 FakeLayerTreeHostImpl::~FakeLayerTreeHostImpl() {}
+
+void FakeLayerTreeHostImpl::CreatePendingTree() {
+  LayerTreeHostImpl::CreatePendingTree();
+  float arbitrary_large_page_scale = 100000.f;
+  pending_tree()->SetPageScaleFactorAndLimits(
+      1.f, 1.f / arbitrary_large_page_scale, arbitrary_large_page_scale);
+}
 
 }  // namespace cc

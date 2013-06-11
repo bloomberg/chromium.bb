@@ -243,7 +243,7 @@ class CC_EXPORT LayerTreeHostImpl
   LayerTreeImpl* pending_tree() { return pending_tree_.get(); }
   const LayerTreeImpl* pending_tree() const { return pending_tree_.get(); }
   const LayerTreeImpl* recycle_tree() const { return recycle_tree_.get(); }
-  void CreatePendingTree();
+  virtual void CreatePendingTree();
   void CheckForCompletedTileUploads();
   virtual bool ActivatePendingTreeIfNeeded();
 

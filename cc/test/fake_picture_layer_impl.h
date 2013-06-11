@@ -33,6 +33,10 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   using PictureLayerImpl::CanHaveTilings;
   using PictureLayerImpl::MarkVisibleResourcesAsRequired;
 
+  PictureLayerTiling* HighResTiling() const;
+  PictureLayerTiling* LowResTiling() const;
+  size_t num_tilings() const { return tilings_->num_tilings(); }
+
   PictureLayerImpl* twin_layer() { return twin_layer_; }
   PictureLayerTilingSet* tilings() { return tilings_.get(); }
   size_t append_quads_count() { return append_quads_count_; }

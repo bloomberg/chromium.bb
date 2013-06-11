@@ -40,4 +40,30 @@ gfx::Size FakePictureLayerImpl::CalculateTileSize(gfx::Size content_bounds) {
   return fixed_tile_size_;
 }
 
+PictureLayerTiling* FakePictureLayerImpl::HighResTiling() const {
+  PictureLayerTiling* result = NULL;
+  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = tilings_->tiling_at(i);
+    if (tiling->resolution() == HIGH_RESOLUTION) {
+      // There should be only one high res tiling.
+      CHECK(!result);
+      result = tiling;
+    }
+  }
+  return result;
+}
+
+PictureLayerTiling* FakePictureLayerImpl::LowResTiling() const {
+  PictureLayerTiling* result = NULL;
+  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = tilings_->tiling_at(i);
+    if (tiling->resolution() == LOW_RESOLUTION) {
+      // There should be only one low res tiling.
+      CHECK(!result);
+      result = tiling;
+    }
+  }
+  return result;
+}
+
 }  // namespace cc
