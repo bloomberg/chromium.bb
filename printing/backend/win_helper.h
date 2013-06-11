@@ -41,8 +41,26 @@ class PrinterHandleTraits {
   DISALLOW_IMPLICIT_CONSTRUCTORS(PrinterHandleTraits);
 };
 
-typedef base::win::GenericScopedHandle<
-    PrinterHandleTraits, base::win::VerifierTraits> ScopedPrinterHandle;
+class ScopedPrinterHandle
+    : public base::win::GenericScopedHandle<PrinterHandleTraits,
+                                            base::win::VerifierTraits> {
+ public:
+  bool OpenPrinter(const wchar_t* printer) {
+    // ::OpenPrinter may return error but assign some value into handle.
+    if (!::OpenPrinter(const_cast<LPTSTR>(printer), Receive(), NULL)) {
+      Take();
+    }
+    return IsValid();
+  }
+
+ private:
+  typedef base::win::GenericScopedHandle<PrinterHandleTraits,
+                                         base::win::VerifierTraits> Base;
+  // Hide Receive to avoid assigning handle when ::OpenPrinter returned error.
+  Base::Receiver Receive() {
+    return Base::Receive();
+  }
+};
 
 // Wrapper class to wrap the XPS APIs (PTxxx APIs). This is needed because these
 // APIs are not available by default on XP. We could delayload prntvpt.dll but

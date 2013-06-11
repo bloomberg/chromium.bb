@@ -371,7 +371,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
 
   ScopedPrinterHandle printer;
   LPWSTR device_name_wide = const_cast<wchar_t*>(device_name.c_str());
-  if (!OpenPrinter(device_name_wide, printer.Receive(), NULL))
+  if (!printer.OpenPrinter(device_name_wide))
     return OnError();
 
   // Make printer changes local to Chrome.
@@ -441,9 +441,9 @@ PrintingContext::Result PrintingContextWin::InitWithSettings(
 
   // TODO(maruel): settings_.ToDEVMODE()
   ScopedPrinterHandle printer;
-  if (!OpenPrinter(const_cast<wchar_t*>(settings_.device_name().c_str()),
-                   printer.Receive(), NULL))
+  if (!printer.OpenPrinter(settings_.device_name().c_str())) {
     return FAILED;
+  }
 
   Result status = OK;
 

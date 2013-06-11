@@ -80,9 +80,9 @@ bool PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
       reinterpret_cast<PRINTER_INFO_4*>(printer_info_buffer.get());
   for (DWORD index = 0; index < count_returned; index++) {
     ScopedPrinterHandle printer;
-    OpenPrinter(printer_info[index].pPrinterName, printer.Receive(), NULL);
     PrinterBasicInfo info;
-    if (InitBasicPrinterInfo(printer, &info)) {
+    if (printer.OpenPrinter(printer_info[index].pPrinterName) &&
+        InitBasicPrinterInfo(printer, &info)) {
       info.is_default = (info.printer_name == default_printer);
       printer_list->push_back(info);
     }
@@ -102,10 +102,7 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
     const std::string& printer_name,
     PrinterSemanticCapsAndDefaults* printer_info) {
   ScopedPrinterHandle printer_handle;
-  OpenPrinter(const_cast<LPTSTR>(UTF8ToWide(printer_name).c_str()),
-              printer_handle.Receive(), NULL);
-  DCHECK(printer_handle);
-  if (!printer_handle.IsValid()) {
+  if (!printer_handle.OpenPrinter(UTF8ToWide(printer_name).c_str())) {
     LOG(WARNING) << "Failed to open printer, error = " << GetLastError();
     return false;
   }
@@ -199,10 +196,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
       printer_info->caps_mime_type = "text/xml";
     }
     ScopedPrinterHandle printer_handle;
-    OpenPrinter(const_cast<LPTSTR>(printer_name_wide.c_str()),
-                printer_handle.Receive(), NULL);
-    DCHECK(printer_handle);
-    if (printer_handle.IsValid()) {
+    if (printer_handle.OpenPrinter(printer_name_wide.c_str())) {
       LONG devmode_size = DocumentProperties(
           NULL, printer_handle, const_cast<LPTSTR>(printer_name_wide.c_str()),
           NULL, NULL, 0);
@@ -242,8 +236,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
 std::string PrintBackendWin::GetPrinterDriverInfo(
     const std::string& printer_name) {
   ScopedPrinterHandle printer;
-  if (!::OpenPrinter(const_cast<LPTSTR>(UTF8ToWide(printer_name).c_str()),
-                     printer.Receive(), NULL)) {
+  if (!printer.OpenPrinter(UTF8ToWide(printer_name).c_str())) {
     return std::string();
   }
   return GetDriverInfo(printer);
@@ -251,9 +244,7 @@ std::string PrintBackendWin::GetPrinterDriverInfo(
 
 bool PrintBackendWin::IsValidPrinter(const std::string& printer_name) {
   ScopedPrinterHandle printer_handle;
-  OpenPrinter(const_cast<LPTSTR>(UTF8ToWide(printer_name).c_str()),
-              printer_handle.Receive(), NULL);
-  return printer_handle.IsValid();
+  return printer_handle.OpenPrinter(UTF8ToWide(printer_name).c_str());
 }
 
 scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
