@@ -142,6 +142,10 @@ class MESSAGE_CENTER_EXPORT Notification {
     return optional_fields_;
   }
 
+  // Set the priority to SYSTEM. The system priority user needs to call this
+  // method explicitly, to avoid setting it accidentally.
+  void SetSystemPriority();
+
   // Delegate actions.
   void Display() const { delegate()->Display(); }
   void Error() const { delegate()->Error(); }

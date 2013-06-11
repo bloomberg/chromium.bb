@@ -134,11 +134,21 @@ void Notification::SetButtonIcon(size_t index, const gfx::Image& icon) {
   optional_fields_.buttons[index].icon = icon;
 }
 
+void Notification::SetSystemPriority() {
+  optional_fields_.priority = SYSTEM_PRIORITY;
+  optional_fields_.never_timeout = true;
+}
+
 void Notification::ApplyOptionalFields(const DictionaryValue* fields) {
   if (!fields)
     return;
 
-  fields->GetInteger(kPriorityKey, &optional_fields_.priority);
+  int priority = DEFAULT_PRIORITY;
+  if (fields->GetInteger(kPriorityKey, &priority)) {
+    optional_fields_.priority =
+        std::max(std::min(priority, static_cast<int>(MAX_PRIORITY)),
+                 static_cast<int>(MIN_PRIORITY));
+  }
   if (fields->HasKey(kTimestampKey)) {
     std::string time_string;
     fields->GetString(kTimestampKey, &time_string);

@@ -317,6 +317,31 @@ TEST_F(NotificationListTest, HasPopupsWithPriority) {
   EXPECT_EQ(1u, GetPopupCounts());
 }
 
+TEST_F(NotificationListTest, HasPopupsWithSystemPriority) {
+  ASSERT_EQ(0u, notification_list()->NotificationCount());
+  ASSERT_EQ(0u, notification_list()->unread_count());
+
+  std::string normal_id = AddPriorityNotification(DEFAULT_PRIORITY);
+  std::string system_id = AddNotification(NULL);
+  GetNotification(system_id)->SetSystemPriority();
+
+  EXPECT_EQ(2u, GetPopupCounts());
+
+  notification_list()->MarkSinglePopupAsDisplayed(normal_id);
+  notification_list()->MarkSinglePopupAsDisplayed(system_id);
+
+  notification_list()->MarkSinglePopupAsShown(normal_id, false);
+  notification_list()->MarkSinglePopupAsShown(system_id, false);
+
+  notification_list()->SetMessageCenterVisible(true, NULL);
+  notification_list()->SetMessageCenterVisible(false, NULL);
+  EXPECT_EQ(1u, GetPopupCounts());
+
+  // Mark as read -- emulation of mouse click.
+  notification_list()->MarkSinglePopupAsShown(system_id, true);
+  EXPECT_EQ(0u, GetPopupCounts());
+}
+
 TEST_F(NotificationListTest, PriorityPromotion) {
   std::string id0 = AddPriorityNotification(LOW_PRIORITY);
   std::string replaced = id0 + "_replaced";

@@ -41,6 +41,11 @@ enum NotificationPriority {
   DEFAULT_PRIORITY = 0,
   HIGH_PRIORITY = 1,
   MAX_PRIORITY = 2,
+
+  // Top priority for system-level notifications.. This can't be set from
+  // kPriorityKey, instead you have to call SetSystemPriority() of
+  // Notification object.
+  SYSTEM_PRIORITY = 3,
 };
 
 }  // namespace message_center

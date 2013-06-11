@@ -62,7 +62,8 @@ void NotificationList::SetMessageCenterVisible(
   for (Notifications::iterator iter = notifications_.begin();
        iter != notifications_.end(); ++iter) {
     Notification* notification = *iter;
-    notification->set_shown_as_popup(true);
+    if (notification->priority() < SYSTEM_PRIORITY)
+      notification->set_shown_as_popup(true);
     notification->set_is_read(true);
     if (updated_ids &&
         !(notification->shown_as_popup() && notification->is_read())) {
@@ -195,7 +196,6 @@ NotificationList::PopupNotifications NotificationList::GetPopupNotifications() {
   // Collect notifications that should be shown as popups. Start from oldest.
   for (Notifications::const_reverse_iterator iter = notifications_.rbegin();
        iter != notifications_.rend(); iter++) {
-
     if ((*iter)->shown_as_popup())
       continue;
 
@@ -244,7 +244,9 @@ void NotificationList::MarkSinglePopupAsShown(
   if ((*iter)->shown_as_popup())
     return;
 
-  (*iter)->set_shown_as_popup(true);
+  // System notification is marked as shown only when marked as read.
+  if ((*iter)->priority() != SYSTEM_PRIORITY || mark_notification_as_read)
+    (*iter)->set_shown_as_popup(true);
 
   // The popup notification is already marked as read when it's displayed.
   // Set the is_read() back to false if necessary.

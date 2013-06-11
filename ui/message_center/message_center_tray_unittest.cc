@@ -154,6 +154,38 @@ TEST_F(MessageCenterTrayTest, MessageCenterClosesPopups) {
   ASSERT_FALSE(message_center_tray_->message_center_visible());
 }
 
+TEST_F(MessageCenterTrayTest, MessageCenterReopenPopupsForSystemPriority) {
+  ASSERT_FALSE(message_center_tray_->popups_visible());
+  ASSERT_FALSE(message_center_tray_->message_center_visible());
+
+  scoped_ptr<Notification> notification(
+      new Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
+                       "MessageCenterReopnPopupsForSystemPriority",
+                       ASCIIToUTF16("Test Web Notification"),
+                       ASCIIToUTF16("Notification message body."),
+                       gfx::Image(),
+                       ASCIIToUTF16("www.test.org"),
+                       "" /* extension id */,
+                       NULL /* optional_fields */,
+                       NULL /* delegate */));
+  notification->SetSystemPriority();
+  message_center_->AddNotification(notification.Pass());
+
+  ASSERT_TRUE(message_center_tray_->popups_visible());
+  ASSERT_FALSE(message_center_tray_->message_center_visible());
+
+  bool shown = message_center_tray_->ShowMessageCenterBubble();
+  EXPECT_TRUE(shown);
+
+  ASSERT_FALSE(message_center_tray_->popups_visible());
+  ASSERT_TRUE(message_center_tray_->message_center_visible());
+
+  message_center_tray_->HideMessageCenterBubble();
+
+  ASSERT_TRUE(message_center_tray_->popups_visible());
+  ASSERT_FALSE(message_center_tray_->message_center_visible());
+}
+
 TEST_F(MessageCenterTrayTest, ShowBubbleFails) {
   // Now the delegate will signal that it was unable to show a bubble.
   delegate_->show_popups_success_ = false;
