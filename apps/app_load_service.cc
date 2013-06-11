@@ -10,6 +10,8 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
+#include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -20,16 +22,11 @@
 using extensions::Extension;
 using extensions::ExtensionPrefs;
 
-namespace {
-
-enum PostReloadAction {
-  RELOAD_ACTION_LAUNCH,
-  RELOAD_ACTION_RESTART,
-};
-
-}  // namespace
-
 namespace apps {
+
+AppLoadService::PostReloadAction::PostReloadAction()
+    : command_line(CommandLine::NO_PROGRAM) {
+}
 
 AppLoadService::AppLoadService(Profile* profile)
     : profile_(profile) {
@@ -44,15 +41,28 @@ AppLoadService::AppLoadService(Profile* profile)
 AppLoadService::~AppLoadService() {}
 
 void AppLoadService::RestartApplication(const std::string& extension_id) {
-  reload_actions_[extension_id] = RELOAD_ACTION_RESTART;
+  post_reload_actions_[extension_id].action_type = RESTART;
   ExtensionService* service = extensions::ExtensionSystem::Get(profile_)->
       extension_service();
   DCHECK(service);
   service->ReloadExtension(extension_id);
 }
 
-void AppLoadService::ScheduleLaunchOnLoad(const std::string& extension_id) {
-  reload_actions_[extension_id] = RELOAD_ACTION_LAUNCH;
+bool AppLoadService::LoadAndLaunch(const base::FilePath& extension_path,
+                                   const CommandLine& command_line,
+                                   const base::FilePath& current_dir) {
+  std::string extension_id;
+  if (!extensions::UnpackedInstaller::Create(profile_->GetExtensionService())->
+          LoadFromCommandLine(base::FilePath(extension_path), &extension_id)) {
+    return false;
+  }
+
+  // Schedule the app to be launched once loaded.
+  PostReloadAction& action = post_reload_actions_[extension_id];
+  action.action_type = LAUNCH_WITH_COMMAND_LINE;
+  action.command_line = command_line;
+  action.current_dir = current_dir;
+  return true;
 }
 
 // static
@@ -66,23 +76,28 @@ void AppLoadService::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       const Extension* extension = content::Details<Extension>(details).ptr();
-      std::map<std::string, int>::iterator it = reload_actions_.find(
-          extension->id());
-      if (it == reload_actions_.end())
+      std::map<std::string, PostReloadAction>::iterator it =
+          post_reload_actions_.find(extension->id());
+      if (it == post_reload_actions_.end())
         break;
 
-      switch (it->second) {
-        case RELOAD_ACTION_LAUNCH:
+      switch (it->second.action_type) {
+        case LAUNCH:
           extensions::LaunchPlatformApp(profile_, extension);
           break;
-        case RELOAD_ACTION_RESTART:
+        case RESTART:
           extensions::RestartPlatformApp(profile_, extension);
+          break;
+        case LAUNCH_WITH_COMMAND_LINE:
+          extensions::LaunchPlatformAppWithCommandLine(
+              profile_, extension, &it->second.command_line,
+              it->second.current_dir);
           break;
         default:
           NOTREACHED();
       }
 
-      reload_actions_.erase(it);
+      post_reload_actions_.erase(it);
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
@@ -97,7 +112,8 @@ void AppLoadService::Observe(int type,
                 Extension::DISABLE_RELOAD) &&
             !extensions::ShellWindowRegistry::Get(profile_)->
                 GetShellWindowsForApp(unload_info->extension->id()).empty()) {
-          reload_actions_[unload_info->extension->id()] = RELOAD_ACTION_LAUNCH;
+          post_reload_actions_[unload_info->extension->id()].action_type =
+              LAUNCH;
         }
       }
       break;

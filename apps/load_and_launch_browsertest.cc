@@ -58,6 +58,49 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
       process, TestTimeouts::action_timeout()));
 }
 
+// TODO(jackhou): Enable this test once it works on OSX. It currently does not
+// work for the same reason --app-id doesn't. See http://crbug.com/148465
+#if defined(OS_MACOSX)
+#define MAYBE_LoadAndLaunchAppWithFile DISABLED_LoadAndLaunchAppWithFile
+#else
+#define MAYBE_LoadAndLaunchAppWithFile LoadAndLaunchAppWithFile
+#endif
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       MAYBE_LoadAndLaunchAppWithFile) {
+  ExtensionTestMessageListener launched_listener("Launched", false);
+
+  const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
+  CommandLine new_cmdline(cmdline.GetProgram());
+
+  const char* kSwitchNames[] = {
+    switches::kUserDataDir,
+  };
+  new_cmdline.CopySwitchesFrom(cmdline, kSwitchNames, arraysize(kSwitchNames));
+
+  base::FilePath app_path = test_data_dir_
+      .AppendASCII("platform_apps")
+      .AppendASCII("load_and_launch_file");
+
+  base::FilePath test_file_path = test_data_dir_
+      .AppendASCII("platform_apps")
+      .AppendASCII("launch_files")
+      .AppendASCII("test.txt");
+
+  new_cmdline.AppendSwitchNative(apps::kLoadAndLaunchApp,
+                                 app_path.value());
+  new_cmdline.AppendSwitch(content::kLaunchAsBrowser);
+  new_cmdline.AppendArgPath(test_file_path);
+
+  base::ProcessHandle process;
+  base::LaunchProcess(new_cmdline, base::LaunchOptions(), &process);
+  ASSERT_NE(base::kNullProcessHandle, process);
+
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(base::WaitForSingleProcess(
+      process, TestTimeouts::action_timeout()));
+}
+
 namespace {
 
 // TestFixture that appends --load-and-launch-app before calling BrowserMain.

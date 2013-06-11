@@ -8,6 +8,8 @@
 #include <map>
 #include <string>
 
+#include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -21,6 +23,20 @@ namespace apps {
 class AppLoadService : public BrowserContextKeyedService,
                        public content::NotificationObserver {
  public:
+  enum PostReloadActionType {
+    LAUNCH,
+    RESTART,
+    LAUNCH_WITH_COMMAND_LINE,
+  };
+
+  struct PostReloadAction {
+    PostReloadAction();
+
+    PostReloadActionType action_type;
+    CommandLine command_line;
+    base::FilePath current_dir;
+  };
+
   explicit AppLoadService(Profile* profile);
   virtual ~AppLoadService();
 
@@ -28,9 +44,13 @@ class AppLoadService : public BrowserContextKeyedService,
   // event.
   void RestartApplication(const std::string& extension_id);
 
-  // Schedule a launch to happen for the extension with id |extension_id|
-  // when it loads next. This does not cause the extension to be reloaded.
-  void ScheduleLaunchOnLoad(const std::string& extension_id);
+  // Loads (or reloads) the app with |extension_path|, then launches it. Any
+  // command line parameters from |command_line| will be passed along via
+  // launch parameters. Returns true if loading the extension has begun
+  // successfully.
+  bool LoadAndLaunch(const base::FilePath& extension_path,
+                     const CommandLine& command_line,
+                     const base::FilePath& current_dir);
 
   static AppLoadService* Get(Profile* profile);
 
@@ -42,7 +62,7 @@ class AppLoadService : public BrowserContextKeyedService,
 
   // Map of extension id to reload action. Absence from the map implies
   // no action.
-  std::map<std::string, int> reload_actions_;
+  std::map<std::string, PostReloadAction> post_reload_actions_;
   content::NotificationRegistrar registrar_;
   Profile* profile_;
 

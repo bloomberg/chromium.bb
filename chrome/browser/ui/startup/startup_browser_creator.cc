@@ -622,16 +622,11 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
           command_line, last_used_profile->GetPrefs())) {
     CommandLine::StringType path = command_line.GetSwitchValueNative(
         apps::kLoadAndLaunchApp);
-    std::string extension_id;
-    if (!extensions::UnpackedInstaller::Create(
-            last_used_profile->GetExtensionService())->
-                LoadFromCommandLine(base::FilePath(path), &extension_id)) {
+
+    if (!apps::AppLoadService::Get(last_used_profile)->LoadAndLaunch(
+            base::FilePath(path), command_line, cur_dir)) {
       return false;
     }
-
-    // Schedule the app to be launched once loaded.
-    apps::AppLoadService::Get(last_used_profile)->ScheduleLaunchOnLoad(
-        extension_id);
 
     // Return early here since we don't want to open a browser window.
     // The exception is when there are no browser windows, since we don't want
