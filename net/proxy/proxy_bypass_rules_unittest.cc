@@ -4,8 +4,8 @@
 
 #include "net/proxy/proxy_bypass_rules.h"
 
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/stats_counters.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/win/object_watcher.h"
 #include "base/win/windows_version.h"
 #include "net/base/connection_type_histograms.h"

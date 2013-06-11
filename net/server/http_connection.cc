@@ -4,8 +4,8 @@
 
 #include "net/server/http_connection.h"
 
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "net/server/http_server.h"
 #include "net/server/web_socket.h"
 #include "net/socket/stream_listen_socket.h"

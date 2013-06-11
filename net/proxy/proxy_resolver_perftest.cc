@@ -7,7 +7,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/perftimer.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/proxy/proxy_info.h"

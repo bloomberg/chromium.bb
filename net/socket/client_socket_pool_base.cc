@@ -10,7 +10,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/stats_counters.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "net/base/net_log.h"

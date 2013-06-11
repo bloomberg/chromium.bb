@@ -18,7 +18,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "net/base/connection_type_histograms.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"

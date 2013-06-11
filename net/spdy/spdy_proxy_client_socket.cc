@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/auth.h"

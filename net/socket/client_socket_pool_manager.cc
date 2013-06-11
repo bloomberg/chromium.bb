@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_proxy_client_socket_pool.h"
 #include "net/http/http_request_info.h"

@@ -5,7 +5,7 @@
 #include "net/proxy/proxy_config.h"
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/values.h"
 #include "net/proxy/proxy_info.h"

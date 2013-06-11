@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"

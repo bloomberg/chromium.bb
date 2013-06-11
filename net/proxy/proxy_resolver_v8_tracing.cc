@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"

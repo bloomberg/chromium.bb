@@ -9,7 +9,7 @@
 #ifndef NET_PROXY_PROXY_SCRIPT_FETCHER_H_
 #define NET_PROXY_PROXY_SCRIPT_FETCHER_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 

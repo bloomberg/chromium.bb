@@ -5,7 +5,7 @@
 #include "net/spdy/spdy_session_test_util.h"
 
 #include "base/location.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 namespace net {
 

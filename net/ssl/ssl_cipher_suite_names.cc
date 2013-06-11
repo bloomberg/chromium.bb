@@ -7,8 +7,8 @@
 #include <stdlib.h>
 
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
-#include "base/string_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 
 // Rather than storing the names of all the ciphersuites we eliminate the

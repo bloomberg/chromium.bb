@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/http/http_cache.h"

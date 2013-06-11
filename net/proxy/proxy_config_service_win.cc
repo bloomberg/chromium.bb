@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/registry.h"

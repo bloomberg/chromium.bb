@@ -8,7 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "crypto/secure_hash.h"

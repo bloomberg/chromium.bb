@@ -5,7 +5,7 @@
 #include "net/quic/quic_http_stream.h"
 
 #include "base/callback_helpers.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"

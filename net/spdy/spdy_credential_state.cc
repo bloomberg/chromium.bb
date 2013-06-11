@@ -5,7 +5,7 @@
 #include "net/spdy/spdy_credential_state.h"
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "net/ssl/server_bound_cert_service.h"
 
 namespace net {

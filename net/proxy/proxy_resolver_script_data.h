@@ -6,7 +6,7 @@
 #define NET_PROXY_PROXY_RESOLVER_SCRIPT_DATA_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_export.h"
 

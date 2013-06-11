@@ -6,7 +6,7 @@
 #define NET_PROXY_PROXY_RESOLVER_ERROR_OBSERVER_H_
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "net/base/net_export.h"
 
 namespace net {

@@ -5,7 +5,7 @@
 #include "net/quic/quic_stream_factory.h"
 
 #include "base/run_loop.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"

@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_transaction.h"

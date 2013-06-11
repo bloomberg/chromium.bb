@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "net/base/net_util.h"
 #include "net/http/http_util.h"
 

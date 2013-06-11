@@ -4,7 +4,7 @@
 
 #include "net/socket/ssl_client_socket.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 namespace net {
 
