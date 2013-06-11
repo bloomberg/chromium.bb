@@ -371,7 +371,14 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Isolation) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/isolation")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ExtensionWindowingApis) {
+// See crbug.com/248441
+#if defined(OS_WIN)
+#define MAYBE_ExtensionWindowingApis DISABLED_ExtensionWindowingApis
+#else
+#define MAYBE_ExtensionWindowingApis ExtensionWindowingApis
+#endif
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ExtensionWindowingApis) {
   // Initially there should be just the one browser window visible to the
   // extensions API.
   const Extension* extension = LoadExtension(
