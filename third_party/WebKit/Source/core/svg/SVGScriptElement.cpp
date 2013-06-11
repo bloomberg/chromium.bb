@@ -23,7 +23,6 @@
 #include "core/svg/SVGScriptElement.h"
 
 #include "HTMLNames.h"
-#include "SVGNames.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"

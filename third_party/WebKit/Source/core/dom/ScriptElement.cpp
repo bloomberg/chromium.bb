@@ -277,7 +277,12 @@ bool ScriptElement::requestScript(const String& sourceUrl)
 
 bool isHTMLScriptElement(Element* element)
 {
-    return element->isHTMLElement() && element->hasTagName(HTMLNames::scriptTag);
+    return element->hasTagName(HTMLNames::scriptTag);
+}
+
+bool isSVGScriptElement(Element* element)
+{
+    return element->hasTagName(SVGNames::scriptTag);
 }
 
 void ScriptElement::executeScript(const ScriptSourceCode& sourceCode)
@@ -305,7 +310,7 @@ void ScriptElement::executeScript(const ScriptSourceCode& sourceCode)
             IgnoreDestructiveWriteCountIncrementer ignoreDesctructiveWriteCountIncrementer(m_isExternalScript ? document.get() : 0);
 
             if (isHTMLScriptElement(m_element))
-                document->pushCurrentScript(static_cast<HTMLScriptElement*>(m_element));
+                document->pushCurrentScript(toHTMLScriptElement(m_element));
 
             // Create a script from the script element node, using the script
             // block's source and the script block's type.
@@ -425,10 +430,10 @@ String ScriptElement::scriptContent() const
 ScriptElement* toScriptElementIfPossible(Element* element)
 {
     if (isHTMLScriptElement(element))
-        return static_cast<HTMLScriptElement*>(element);
+        return toHTMLScriptElement(element);
 
-    if (element->isSVGElement() && element->hasTagName(SVGNames::scriptTag))
-        return static_cast<SVGScriptElement*>(element);
+    if (isSVGScriptElement(element))
+        return toSVGScriptElement(element);
 
     return 0;
 }
