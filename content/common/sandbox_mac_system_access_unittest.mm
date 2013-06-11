@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "content/common/sandbox_mac.h"
 #include "content/common/sandbox_mac_unittest_helper.h"
+#include "crypto/nss_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -118,6 +119,27 @@ bool MacSandboxedUrandomTestCase::SandboxedTest() {
 
 TEST_F(MacSandboxTest, UrandomAccess) {
   EXPECT_TRUE(RunTestInAllSandboxTypes("MacSandboxedUrandomTestCase", NULL));
+}
+
+//--------------------- NSS Sandboxing ----------------------
+// Test case for checking sandboxing of NSS initialization.
+class MacSandboxedNSSTestCase : public MacSandboxTestCase {
+ public:
+  virtual bool SandboxedTest() OVERRIDE;
+};
+
+REGISTER_SANDBOX_TEST_CASE(MacSandboxedNSSTestCase);
+
+bool MacSandboxedNSSTestCase::SandboxedTest() {
+  // If NSS cannot read from /dev/urandom, NSS initialization will call abort(),
+  // which will cause this test case to fail.
+  crypto::ForceNSSNoDBInit();
+  crypto::EnsureNSSInit();
+  return true;
+}
+
+TEST_F(MacSandboxTest, NSSAccess) {
+  EXPECT_TRUE(RunTestInAllSandboxTypes("MacSandboxedNSSTestCase", NULL));
 }
 
 }  // namespace content

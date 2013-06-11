@@ -37,7 +37,7 @@
 
 ; Allow direct access to /dev/urandom, similar to Linux/POSIX, to allow
 ; third party code (eg: bits of Adobe Flash and NSS) to function properly.
-(allow file-read-data (literal "/dev/urandom"))
+(allow file-read-data file-read-metadata (literal "/dev/urandom"))
 
 ; Component build workaround for a dyld bug, used on OS X <= 10.6.
 ; Enables reading file metadata for the Chrome bundle and its parent paths.
