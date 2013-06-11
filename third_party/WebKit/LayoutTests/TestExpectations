@@ -1721,6 +1721,11 @@ crbug.com/245520 [ Mac ] compositing/repaint/transform-style-change.html [ Image
 # Temporary expectations until I've fixed fast/hidpi
 Bug(jochen) virtual/gpu/fast/hidpi [ Slow ]
 
+# Temporary expectations for crbug.com/247626 until bots cycle
+crbug.com/247626 fast/spatial-navigation/snav-container-white-space.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/247626 fast/spatial-navigation/snav-div-overflow-scrol-hidden.html [ Pass Failure ImageOnlyFailure ]
+crbug.com/247626 fast/spatial-navigation/snav-imagemap-overlapped-areas.html [ Pass Failure ImageOnlyFailure ]
+
 crbug.com/247979 [ Mac Release ] inspector/elements/edit-dom-actions.html [ Slow Failure Pass ]
 crbug.com/247979 [ XP Release ] inspector/elements/edit-dom-actions.html [ Slow Pass Failure ]
 crbug.com/247979 [ Win7 Debug ] inspector/elements/edit-dom-actions.html [ Timeout ]
