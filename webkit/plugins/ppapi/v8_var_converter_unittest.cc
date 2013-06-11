@@ -133,21 +133,19 @@ bool Equals(const PP_Var& var,
 
 class V8VarConverterTest : public testing::Test {
  public:
-  V8VarConverterTest() {}
+  V8VarConverterTest()
+      : isolate_(v8::Isolate::GetCurrent()) {}
   ~V8VarConverterTest() {}
 
   // testing::Test implementation.
   virtual void SetUp() {
     ProxyLock::Acquire();
-    v8::HandleScope handle_scope;
+    v8::HandleScope handle_scope(isolate_);
     v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    // TODO(marja): Use v8::Persistent::Reset here.
-    context_ = v8::Persistent<v8::Context>(
-        isolate, v8::Context::New(isolate, NULL, global));
+    context_.Reset(isolate_, v8::Context::New(isolate_, NULL, global));
   }
   virtual void TearDown() {
-    context_.Dispose(context_->GetIsolate());
+    context_.Dispose();
     ASSERT_TRUE(PpapiGlobals::Get()->GetVarTracker()->GetLiveVars().empty());
     ProxyLock::Release();
   }
@@ -155,14 +153,16 @@ class V8VarConverterTest : public testing::Test {
  protected:
   bool RoundTrip(const PP_Var& var, PP_Var* result) {
     V8VarConverter converter;
-    v8::Context::Scope context_scope(context_);
-    v8::HandleScope handle_scope;
+    v8::HandleScope handle_scope(isolate_);
+    v8::Context::Scope context_scope(isolate_, context_);
+    v8::Local<v8::Context> context =
+        v8::Local<v8::Context>::New(isolate_, context_);
     v8::Handle<v8::Value> v8_result;
-    if (!converter.ToV8Value(var, context_, &v8_result))
+    if (!converter.ToV8Value(var, context, &v8_result))
       return false;
     if (!Equals(var, v8_result))
       return false;
-    if (!converter.FromV8Value(v8_result, context_, result))
+    if (!converter.FromV8Value(v8_result, context, result))
       return false;
     return true;
   }
@@ -176,6 +176,8 @@ class V8VarConverterTest : public testing::Test {
     ScopedPPVar actual(ScopedPPVar::PassRef(), actual_var);
     return TestEqual(expected.get(), actual.get());
   }
+
+  v8::Isolate* isolate_;
 
   // Context for the JavaScript in the test.
   v8::Persistent<v8::Context> context_;
@@ -305,8 +307,8 @@ TEST_F(V8VarConverterTest, StrangeDictionaryKeyTest) {
 
   {
     // Test non-string key types. They should be cast to strings.
-    v8::Context::Scope context_scope(context_);
-    v8::HandleScope handle_scope;
+    v8::HandleScope handle_scope(isolate_);
+    v8::Context::Scope context_scope(isolate_, context_);
 
     const char* source = "(function() {"
         "return {"
@@ -325,7 +327,8 @@ TEST_F(V8VarConverterTest, StrangeDictionaryKeyTest) {
 
     V8VarConverter converter;
     PP_Var actual;
-    ASSERT_TRUE(converter.FromV8Value(object, context_, &actual));
+    ASSERT_TRUE(converter.FromV8Value(
+        object, v8::Local<v8::Context>::New(isolate_, context_), &actual));
     ScopedPPVar release_actual(ScopedPPVar::PassRef(), actual);
 
     scoped_refptr<DictionaryVar> expected(new DictionaryVar);

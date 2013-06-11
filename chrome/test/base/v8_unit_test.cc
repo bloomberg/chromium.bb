@@ -45,7 +45,9 @@ base::FilePath gen_test_data_directory;
 
 }  // namespace
 
-V8UnitTest::V8UnitTest() {
+V8UnitTest::V8UnitTest()
+    : isolate_(v8::Isolate::GetCurrent()),
+      handle_scope_(isolate_) {
   InitPathsAndLibraries();
 }
 
@@ -88,11 +90,13 @@ bool V8UnitTest::RunJavascriptTestF(
   if (!ExecuteJavascriptLibraries())
     return false;
 
-  v8::Context::Scope context_scope(context_);
-  v8::HandleScope handle_scope;
+  v8::Context::Scope context_scope(isolate_, context_);
+  v8::HandleScope handle_scope(isolate_);
+  v8::Local<v8::Context> context =
+      v8::Local<v8::Context>::New(isolate_, context_);
 
   v8::Handle<v8::Value> functionProperty =
-      context_->Global()->Get(v8::String::New("runTest"));
+      context->Global()->Get(v8::String::New("runTest"));
   EXPECT_FALSE(functionProperty.IsEmpty());
   if (::testing::Test::HasNonfatalFailure())
     return false;
@@ -112,7 +116,7 @@ bool V8UnitTest::RunJavascriptTestF(
   };
 
   v8::TryCatch try_catch;
-  v8::Handle<v8::Value> result = function->Call(context_->Global(), 3, args);
+  v8::Handle<v8::Value> result = function->Call(context->Global(), 3, args);
   // The test fails if an exception was thrown.
   EXPECT_FALSE(result.IsEmpty());
   if (::testing::Test::HasNonfatalFailure())
@@ -174,23 +178,21 @@ void V8UnitTest::SetUp() {
   console->Set(v8::String::New("error"),
                v8::FunctionTemplate::New(&V8UnitTest::Error));
 
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  // TODO(marja): Use v8::Persistent::Reset here.
-  context_ = v8::Persistent<v8::Context>(
-      isolate, v8::Context::New(isolate, NULL, global));
+  context_.Reset(isolate_, v8::Context::New(isolate_, NULL, global));
 }
 
 void V8UnitTest::SetGlobalStringVar(const std::string& var_name,
                                     const std::string& value) {
-  v8::Context::Scope context_scope(context_);
-  context_->Global()->Set(v8::String::New(var_name.c_str(), var_name.length()),
-                          v8::String::New(value.c_str(), value.length()));
+  v8::Context::Scope context_scope(isolate_, context_);
+  v8::Local<v8::Context>::New(isolate_, context_)->Global()
+      ->Set(v8::String::New(var_name.c_str(), var_name.length()),
+            v8::String::New(value.c_str(), value.length()));
 }
 
 void V8UnitTest::ExecuteScriptInContext(const base::StringPiece& script_source,
                                         const base::StringPiece& script_name) {
-  v8::Context::Scope context_scope(context_);
-  v8::HandleScope handle_scope;
+  v8::Context::Scope context_scope(isolate_, context_);
+  v8::HandleScope handle_scope(isolate_);
   v8::Handle<v8::String> source = v8::String::New(script_source.data(),
                                                   script_source.size());
   v8::Handle<v8::String> name = v8::String::New(script_name.data(),
@@ -228,18 +230,20 @@ std::string V8UnitTest::ExceptionToString(const v8::TryCatch& try_catch) {
 }
 
 void V8UnitTest::TestFunction(const std::string& function_name) {
-  v8::Context::Scope context_scope(context_);
-  v8::HandleScope handle_scope;
+  v8::Context::Scope context_scope(isolate_, context_);
+  v8::HandleScope handle_scope(isolate_);
+  v8::Local<v8::Context> context =
+      v8::Local<v8::Context>::New(isolate_, context_);
 
   v8::Handle<v8::Value> functionProperty =
-      context_->Global()->Get(v8::String::New(function_name.c_str()));
+      context->Global()->Get(v8::String::New(function_name.c_str()));
   ASSERT_FALSE(functionProperty.IsEmpty());
   ASSERT_TRUE(functionProperty->IsFunction());
   v8::Handle<v8::Function> function =
       v8::Handle<v8::Function>::Cast(functionProperty);
 
   v8::TryCatch try_catch;
-  v8::Handle<v8::Value> result = function->Call(context_->Global(), 0, NULL);
+  v8::Handle<v8::Value> result = function->Call(context->Global(), 0, NULL);
   // The test fails if an exception was thrown.
   if (result.IsEmpty())
     FAIL() << ExceptionToString(try_catch);

@@ -74,11 +74,13 @@ class V8UnitTest : public testing::Test {
   // Initializes paths and libraries.
   void InitPathsAndLibraries();
 
+  v8::Isolate* isolate_;
+
   // Handle scope that is used throughout the life of this class.
   v8::HandleScope handle_scope_;
 
   // Context for the JavaScript in the test.
-  v8::Handle<v8::Context> context_;
+  v8::Persistent<v8::Context> context_;
 
   // User added libraries.
   std::vector<base::FilePath> user_libraries_;
