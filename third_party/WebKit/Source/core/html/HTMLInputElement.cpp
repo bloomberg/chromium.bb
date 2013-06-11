@@ -768,21 +768,24 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
     }
 #if ENABLE(INPUT_SPEECH)
     else if (name == webkitspeechAttr) {
-        if (renderer()) {
-            // This renderer and its children have quite different layouts and styles depending on
-            // whether the speech button is visible or not. So we reset the whole thing and recreate
-            // to get the right styles and layout.
-            m_inputType->destroyShadowSubtree();
-            detach();
-            m_inputType->createShadowSubtree();
-            if (!attached())
-                attach();
-        } else {
-            m_inputType->destroyShadowSubtree();
-            m_inputType->createShadowSubtree();
+        if (m_inputType->shouldRespectSpeechAttribute() && RuntimeEnabledFeatures::speechInputEnabled()) {
+            // This renderer and its children have quite different layouts and
+            // styles depending on whether the speech button is visible or
+            // not. So we reset the whole thing and recreate to get the right
+            // styles and layout.
+            if (attached()) {
+                m_inputType->destroyShadowSubtree();
+                detach();
+                m_inputType->createShadowSubtree();
+                if (!attached())
+                    attach();
+            } else {
+                m_inputType->destroyShadowSubtree();
+                m_inputType->createShadowSubtree();
+            }
+            setFormControlValueMatchesRenderer(false);
+            setNeedsStyleRecalc();
         }
-        setFormControlValueMatchesRenderer(false);
-        setNeedsStyleRecalc();
         UseCounter::count(document(), UseCounter::PrefixedSpeechAttribute);
     } else if (name == onwebkitspeechchangeAttr)
         setAttributeEventListener(eventNames().webkitspeechchangeEvent, createAttributeEventListener(this, name, value));
