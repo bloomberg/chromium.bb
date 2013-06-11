@@ -1643,7 +1643,7 @@ crbug.com/244179 fast/js/date-parse-test.html [ Failure Pass ]
 # Makes the following test crash
 crbug.com/244225 inspector-protocol/dom/setFileInputFiles.html [ Skip ]
 
-crbug.com/244276 [ Debug ] fast/images/gif-loop-count.html [ ImageOnlyFailure Pass ] 
+crbug.com/244276 [ Release ] fast/images/gif-loop-count.html [ ImageOnlyFailure Pass ] 
 crbug.com/244276 crbug.com/245189 [ Release ] virtual/deferred/fast/images/gif-loop-count.html [ ImageOnlyFailure Pass Timeout ]
 
 # Wrong fixed-position layout
