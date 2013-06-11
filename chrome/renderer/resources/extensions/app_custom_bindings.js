@@ -12,7 +12,6 @@ if (!GetAvailability('app').is_available) {
 }
 
 var appNatives = requireNative('app');
-var chrome = requireNative('chrome').GetChrome();
 var process = requireNative('process');
 var extensionId = process.GetExtensionId();
 var logActivity = requireNative('activityLogger');

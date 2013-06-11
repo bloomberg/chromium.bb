@@ -6,7 +6,6 @@
 
 var binding = require('binding').Binding.create('app.runtime');
 
-var chrome = requireNative('chrome').GetChrome();
 var eventBindings = require('event_bindings');
 var fileSystemHelpers = requireNative('file_system_natives');
 var forEach = require('utils').forEach;

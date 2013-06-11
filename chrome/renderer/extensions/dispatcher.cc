@@ -105,18 +105,25 @@ static const char kEventDispatchFunction[] = "dispatchEvent";
 static const char kOnSuspendEvent[] = "runtime.onSuspend";
 static const char kOnSuspendCanceledEvent[] = "runtime.onSuspendCanceled";
 
-static v8::Handle<v8::Object> GetOrCreateChrome(
-    v8::Handle<v8::Context> context) {
+// Returns the global value for "chrome" from |context|. If one doesn't exist
+// creates a new object for it.
+//
+// Note that this isn't necessarily an object, since webpages can write, for
+// example, "window.chrome = true".
+v8::Handle<v8::Value> GetOrCreateChrome(ChromeV8Context* context) {
   v8::Handle<v8::String> chrome_string(v8::String::New("chrome"));
-  v8::Handle<v8::Object> global(context->Global());
+  v8::Handle<v8::Object> global(context->v8_context()->Global());
   v8::Handle<v8::Value> chrome(global->Get(chrome_string));
-  if (chrome.IsEmpty() || chrome->IsUndefined()) {
-    v8::Handle<v8::Object> chrome_object(v8::Object::New());
-    global->Set(chrome_string, chrome_object);
-    return chrome_object;
+  if (chrome->IsUndefined()) {
+    chrome = v8::Object::New();
+    global->Set(chrome_string, chrome);
   }
-  CHECK(chrome->IsObject());
-  return chrome->ToObject();
+  return chrome;
+}
+
+// Returns |value| cast to an object if possible, else an empty handle.
+v8::Handle<v8::Object> AsObjectOrEmpty(v8::Handle<v8::Value> value) {
+  return value->IsObject() ? value.As<v8::Object>() : v8::Handle<v8::Object>();
 }
 
 class TestFeaturesNativeHandler : public ObjectBackedNativeHandler {
@@ -190,7 +197,7 @@ class ChromeNativeHandler : public ObjectBackedNativeHandler {
   }
 
   v8::Handle<v8::Value> GetChrome(const v8::Arguments& args) {
-    return GetOrCreateChrome(context()->v8_context());
+    return GetOrCreateChrome(context());
   }
 };
 
@@ -667,6 +674,7 @@ v8::Handle<v8::Object> Dispatcher::GetOrCreateBindObjectIfAvailable(
   //  app.window on a new object so app does not have to be loaded.
   std::string ancestor_name;
   bool only_ancestor_available = false;
+
   for (size_t i = 0; i < split.size() - 1; ++i) {
     ancestor_name += (i ? ".": "") + split[i];
     if (!ancestor_name.empty() &&
@@ -675,17 +683,23 @@ v8::Handle<v8::Object> Dispatcher::GetOrCreateBindObjectIfAvailable(
       only_ancestor_available = true;
       break;
     }
-    if (bind_object.IsEmpty())
-      bind_object = GetOrCreateChrome(context->v8_context());
+
+    if (bind_object.IsEmpty()) {
+      bind_object = AsObjectOrEmpty(GetOrCreateChrome(context));
+      if (bind_object.IsEmpty())
+        return v8::Handle<v8::Object>();
+    }
     bind_object = GetOrCreateObject(bind_object, split[i]);
   }
+
   if (only_ancestor_available)
     return v8::Handle<v8::Object>();
+
   if (bind_name)
     *bind_name = split.back();
 
   return bind_object.IsEmpty() ?
-      GetOrCreateChrome(context->v8_context()) : bind_object;
+      AsObjectOrEmpty(GetOrCreateChrome(context)) : bind_object;
 }
 
 void Dispatcher::RegisterBinding(const std::string& api_name,
@@ -984,11 +998,12 @@ void Dispatcher::DidCreateScriptContext(
           ChromeRenderProcessObserver::is_incognito_process(),
           manifest_version, send_request_disabled)));
 
-  v8::Handle<v8::Object> chrome = GetOrCreateChrome(v8_context);
 
   // chrome.Event is part of the public API (although undocumented). Make it
   // lazily evalulate to Event from event_bindings.js.
-  module_system->SetLazyField(chrome, "Event", kEventModule, "Event");
+  v8::Handle<v8::Object> chrome = AsObjectOrEmpty(GetOrCreateChrome(context));
+  if (!chrome.IsEmpty())
+    module_system->SetLazyField(chrome, "Event", kEventModule, "Event");
 
   // Loading JavaScript is expensive, so only run the full API bindings
   // generation mechanisms in extension pages (NOT all web pages).

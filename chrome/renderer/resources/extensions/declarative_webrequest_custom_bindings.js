@@ -6,7 +6,6 @@
 
 var binding = require('binding').Binding.create('declarativeWebRequest');
 
-var chrome = requireNative('chrome').GetChrome();
 var utils = require('utils');
 var validate = require('schemaUtils').validate;
 

@@ -6,7 +6,6 @@
 
 var appWindowNatives = requireNative('app_window_natives');
 var Binding = require('binding').Binding;
-var chrome = requireNative('chrome').GetChrome();
 var Event = require('event_bindings').Event;
 var forEach = require('utils').forEach;
 var sendRequest = require('sendRequest').sendRequest;
