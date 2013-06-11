@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/rect.h"
 
 using content::WebContents;
 
@@ -102,6 +103,7 @@ class TestingOmniboxEditController : public OmniboxEditController {
   virtual WebContents* GetWebContents() const OVERRIDE {
     return NULL;
   }
+  virtual gfx::Rect GetOmniboxBounds() const OVERRIDE { return gfx::Rect(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxEditController);

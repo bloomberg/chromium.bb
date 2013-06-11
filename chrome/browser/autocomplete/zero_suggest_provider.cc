@@ -321,10 +321,12 @@ void ZeroSuggestProvider::AddMatchToMap(const string16& query_string,
                                         int accepted_suggestion,
                                         SearchProvider::MatchMap* map) {
   // Pass in query_string as the input_text since we don't want any bolding.
+  // TODO(samarth|melevin): use the actual omnibox margin here as well instead
+  // of passing in -1.
   AutocompleteMatch match = SearchProvider::CreateSearchSuggestion(
       profile_, this, AutocompleteInput(),
       query_string, query_string, relevance, type, accepted_suggestion,
-      false, provider_keyword);
+      false, provider_keyword, -1);
   if (!match.destination_url.is_valid())
     return;
 

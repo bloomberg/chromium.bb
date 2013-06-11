@@ -1132,6 +1132,10 @@ WebContents* LocationBarView::GetWebContents() const {
   return delegate_->GetWebContents();
 }
 
+gfx::Rect LocationBarView::GetOmniboxBounds() const {
+  return bounds();
+}
+
 int LocationBarView::GetHorizontalEdgeThickness() const {
   // In maximized popup mode, there isn't any edge.
   return (is_popup_mode_ && browser_ && browser_->window() &&

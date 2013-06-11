@@ -527,7 +527,8 @@ void OmniboxEditModel::StartAutocomplete(
       (has_selected_text && inline_autocomplete_text_.empty()) ||
       (paste_state_ != NONE),
       keyword_is_selected,
-      keyword_is_selected || allow_exact_keyword_match_);
+      keyword_is_selected || allow_exact_keyword_match_,
+      controller_->GetOmniboxBounds().x());
 }
 
 void OmniboxEditModel::StopAutocomplete() {
@@ -1257,7 +1258,8 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
               autocomplete_controller()->search_provider(), input, text, text,
               0, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
               TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, false,
-              default_provider->keyword());
+              default_provider->keyword(),
+              controller_->GetOmniboxBounds().x());
         } else {
           // Can't create a new search match. Leave |match| as is, with an
           // invalid destination_url. This shouldn't ever happen. For example,

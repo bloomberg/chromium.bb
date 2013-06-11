@@ -75,7 +75,8 @@ class SearchProvider : public AutocompleteProvider,
       AutocompleteMatch::Type type,
       int accepted_suggestion,
       bool is_keyword,
-      const string16& keyword);
+      const string16& keyword,
+      int omnibox_start_margin);
 
   SearchProvider(AutocompleteProviderListener* listener, Profile* profile);
 
@@ -99,6 +100,9 @@ class SearchProvider : public AutocompleteProvider,
   // called repeatedly before Start() if you wish to continually suppress search
   // suggestions.
   void SuppressSearchSuggestions();
+
+  // Update the omnibox start margin used to generate search suggestion URLs.
+  void SetOmniboxStartMargin(int omnibox_start_margin);
 
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
@@ -522,6 +526,9 @@ class SearchProvider : public AutocompleteProvider,
   // If true, suppress search suggestions. Reset to false in Start().
   // See comments for SuppressSearchSuggestions().
   bool suppress_search_suggestions_;
+
+  // Start margin of the omnibox. Used to construct search URLs.
+  int omnibox_start_margin_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchProvider);
 };

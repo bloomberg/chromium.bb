@@ -2800,4 +2800,25 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
       browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec(),
       HasSubstr("q=puppies"));
 }
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxMarginSetForSearchURLs) {
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
+
+  // Create an observer to wait for the instant tab to support Instant.
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
+      content::NotificationService::AllSources());
+
+  SetOmniboxText("flowers");
+  browser()->window()->GetLocationBar()->AcceptInput();
+  observer.Wait();
+
+  const std::string& url =
+      browser()->tab_strip_model()->GetActiveWebContents()->GetURL().spec();
+  // Make sure we actually used search_url, not instant_url.
+  ASSERT_THAT(url, HasSubstr("&is_search"));
+  EXPECT_THAT(url, HasSubstr("&es_sm="));
+}
+
 #endif  // if !defined(HTML_INSTANT_EXTENDED_POPUP)

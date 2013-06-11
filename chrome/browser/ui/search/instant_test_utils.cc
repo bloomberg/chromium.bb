@@ -68,7 +68,8 @@ void InstantTestBase::SetupInstant(Browser* browser) {
   TemplateURLData data;
   // Necessary to use exact URL for both the main URL and the alternate URL for
   // search term extraction to work in InstantExtended.
-  data.SetURL(instant_url_.spec() + "q={searchTerms}");
+  data.SetURL(instant_url_.spec() +
+              "q={searchTerms}&is_search&{google:omniboxStartMarginParameter}");
   data.instant_url = instant_url_.spec();
   data.alternate_urls.push_back(instant_url_.spec() + "#q={searchTerms}");
   data.search_terms_replacement_key = "strk";

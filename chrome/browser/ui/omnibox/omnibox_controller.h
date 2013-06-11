@@ -43,7 +43,8 @@ class OmniboxController : public AutocompleteControllerDelegate {
                          size_t cursor_position,
                          bool prevent_inline_autocomplete,
                          bool prefer_keyword,
-                         bool allow_exact_keyword_match) const;
+                         bool allow_exact_keyword_match,
+                         int omnibox_start_margin) const;
 
   // AutocompleteControllerDelegate:
   virtual void OnResultChanged(bool default_match_changed) OVERRIDE;

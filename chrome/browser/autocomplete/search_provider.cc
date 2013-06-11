@@ -135,7 +135,8 @@ AutocompleteMatch SearchProvider::CreateSearchSuggestion(
     AutocompleteMatch::Type type,
     int accepted_suggestion,
     bool is_keyword,
-    const string16& keyword) {
+    const string16& keyword,
+    int omnibox_start_margin) {
   AutocompleteMatch match(autocomplete_provider, relevance, false, type);
 
   // Bail out now if we don't actually have a valid provider.
@@ -204,6 +205,7 @@ AutocompleteMatch SearchProvider::CreateSearchSuggestion(
       new TemplateURLRef::SearchTermsArgs(query_string));
   match.search_terms_args->original_query = input_text;
   match.search_terms_args->accepted_suggestion = accepted_suggestion;
+  match.search_terms_args->omnibox_start_margin = omnibox_start_margin;
   // This is the destination URL sans assisted query stats.  This must be set
   // so the AutocompleteController can properly de-dupe; the controller will
   // eventually overwrite it before it reaches the user.
@@ -226,7 +228,8 @@ SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
       instant_finalized_(false),
       field_trial_triggered_(false),
       field_trial_triggered_in_session_(false),
-      suppress_search_suggestions_(false) {
+      suppress_search_suggestions_(false),
+      omnibox_start_margin_(-1) {
 }
 
 void SearchProvider::FinalizeInstantQuery(const string16& input_text,
@@ -312,6 +315,10 @@ void SearchProvider::ClearInstantSuggestion() {
 
 void SearchProvider::SuppressSearchSuggestions() {
   suppress_search_suggestions_ = true;
+}
+
+void SearchProvider::SetOmniboxStartMargin(int omnibox_start_margin) {
+  omnibox_start_margin_ = omnibox_start_margin;
 }
 
 void SearchProvider::Start(const AutocompleteInput& input,
@@ -1487,7 +1494,7 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
       providers_.keyword_provider() : providers_.default_provider();
   AutocompleteMatch match = CreateSearchSuggestion(profile_, this, input_,
       query_string, input_text, relevance, type, accepted_suggestion,
-      is_keyword, keyword);
+      is_keyword, keyword, omnibox_start_margin_);
   if (!match.destination_url.is_valid())
     return;
 

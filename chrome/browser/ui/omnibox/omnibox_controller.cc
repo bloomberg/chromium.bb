@@ -44,7 +44,8 @@ void OmniboxController::StartAutocomplete(
     size_t cursor_position,
     bool prevent_inline_autocomplete,
     bool prefer_keyword,
-    bool allow_exact_keyword_match) const {
+    bool allow_exact_keyword_match,
+    int omnibox_start_margin) const {
   ClearPopupKeywordMode();
   popup_->SetHoveredLine(OmniboxPopupModel::kNoMatch);
 
@@ -62,6 +63,10 @@ void OmniboxController::StartAutocomplete(
       autocomplete_controller_->search_provider()->SuppressSearchSuggestions();
   }
 #endif
+  if (chrome::IsInstantExtendedAPIEnabled()) {
+    autocomplete_controller_->search_provider()->
+        SetOmniboxStartMargin(omnibox_start_margin);
+  }
 
   // We don't explicitly clear OmniboxPopupModel::manually_selected_match, as
   // Start ends up invoking OmniboxPopupModel::OnResultChanged which clears it.
