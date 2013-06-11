@@ -1156,8 +1156,9 @@
         '../ui/surface/surface.gyp:surface',
         '../webkit/support/webkit_support.gyp:webkit_common',
         '../webkit/support/webkit_support.gyp:webkit_resources',
-        '../webkit/support/webkit_support.gyp:webkit_storage',
         '../webkit/support/webkit_support.gyp:webkit_strings',
+        '../webkit/storage_browser.gyp:webkit_storage_browser',
+        '../webkit/storage_common.gyp:webkit_storage_common',
       ],
     }],
     ['OS!="mac" and OS!="ios"', {

@@ -12,7 +12,7 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/common/webkit_common_export.h"
 
 namespace dom_storage {
 
@@ -40,7 +40,7 @@ const int kInvalidAreaId = -1;
 
 typedef std::map<base::string16, NullableString16> ValuesMap;
 
-struct WEBKIT_STORAGE_EXPORT LocalStorageUsageInfo {
+struct WEBKIT_COMMON_EXPORT LocalStorageUsageInfo {
   GURL origin;
   size_t data_size;
   base::Time last_modified;
@@ -49,7 +49,7 @@ struct WEBKIT_STORAGE_EXPORT LocalStorageUsageInfo {
   ~LocalStorageUsageInfo();
 };
 
-struct WEBKIT_STORAGE_EXPORT SessionStorageUsageInfo {
+struct WEBKIT_COMMON_EXPORT SessionStorageUsageInfo {
   GURL origin;
   std::string persistent_namespace_id;
 

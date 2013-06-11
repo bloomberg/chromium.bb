@@ -10,11 +10,10 @@
     ['OS != "ios"', {
       'includes': [
         '../../build/win_precompile.gypi',
-        '../base/webkit_base.gypi',
         '../glue/webkit_glue.gypi',
         '../plugins/webkit_plugins.gypi',
         '../renderer/media/webkit_media.gypi',
-        '../storage/webkit_storage.gypi',
+        '../common/webkit_common.gypi',
         'webkit_support.gypi',
       ],
     }],

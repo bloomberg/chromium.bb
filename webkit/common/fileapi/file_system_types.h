@@ -5,7 +5,6 @@
 #ifndef WEBKIT_COMMON_FILEAPI_FILE_SYSTEM_TYPES_H_
 #define WEBKIT_COMMON_FILEAPI_FILE_SYSTEM_TYPES_H_
 
-#include "third_party/WebKit/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/public/platform/WebFileSystemType.h"
 
 namespace fileapi {

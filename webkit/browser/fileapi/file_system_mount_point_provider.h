@@ -17,6 +17,8 @@
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/storage/webkit_storage_export.h"
 
+class GURL;
+
 namespace webkit_blob {
 class FileStreamReader;
 }

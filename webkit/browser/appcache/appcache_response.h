@@ -13,6 +13,7 @@
 #include "net/base/completion_callback.h"
 #include "net/http/http_response_info.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace net {
 class IOBuffer;
@@ -256,4 +257,3 @@ class WEBKIT_STORAGE_EXPORT AppCacheResponseWriter : public AppCacheResponseIO {
 }  // namespace appcache
 
 #endif  // WEBKIT_BROWSER_APPCACHE_APPCACHE_RESPONSE_H_
-

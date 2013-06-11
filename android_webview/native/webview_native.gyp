@@ -20,7 +20,8 @@
         '../../skia/skia.gyp:skia',
         '../../ui/ui.gyp:ui',
         '../../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
-        '../../webkit/support/webkit_support.gyp:webkit_storage',
+        '../../webkit/storage_browser.gyp:webkit_storage_browser',
+        '../../webkit/storage_common.gyp:webkit_storage_common',
         'android_webview_native_jni',
       ],
       'include_dirs': [
