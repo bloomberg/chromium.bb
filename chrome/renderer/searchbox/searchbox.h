@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/common/instant_restricted_id_cache.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/omnibox_focus_state.h"

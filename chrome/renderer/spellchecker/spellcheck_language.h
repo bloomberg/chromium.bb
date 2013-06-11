@@ -11,7 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/renderer/spellchecker/spellcheck_worditerator.h"
 
 class SpellingEngine;

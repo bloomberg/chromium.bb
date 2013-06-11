@@ -8,7 +8,7 @@
 #include <cstring>
 
 #include "base/metrics/histogram.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/public/common/content_constants.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 #include "webkit/plugins/plugin_constants.h"

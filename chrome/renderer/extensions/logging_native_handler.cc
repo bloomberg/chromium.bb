@@ -5,7 +5,7 @@
 #include "chrome/renderer/extensions/logging_native_handler.h"
 
 #include "base/logging.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 
 namespace extensions {
 

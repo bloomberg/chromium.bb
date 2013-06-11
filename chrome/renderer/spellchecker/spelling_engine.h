@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/platform_file.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 // Creates the platform's "native" spelling engine.
 class SpellingEngine* CreateNativeSpellingEngine();

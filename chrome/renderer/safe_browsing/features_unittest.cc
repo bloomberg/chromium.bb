@@ -5,7 +5,7 @@
 #include "chrome/renderer/safe_browsing/features.h"
 
 #include "base/format_macros.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/renderer/safe_browsing/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

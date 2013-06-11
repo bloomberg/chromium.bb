@@ -4,13 +4,13 @@
 
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 
-#include "base/logging.h"
 #include "base/lazy_instance.h"
-#include "base/stringprintf.h"
-#include "base/string_util.h"
+#include "base/logging.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
+#include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "content/public/renderer/render_view.h"

@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/dispatcher.h"
@@ -18,8 +18,8 @@
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "webkit/glue/webkit_glue.h"
 #include "v8/include/v8.h"
+#include "webkit/glue/webkit_glue.h"
 
 namespace extensions {
 

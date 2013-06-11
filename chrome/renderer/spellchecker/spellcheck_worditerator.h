@@ -12,7 +12,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "third_party/icu/public/common/unicode/ubrk.h"
 #include "third_party/icu/public/common/unicode/uscript.h"
 

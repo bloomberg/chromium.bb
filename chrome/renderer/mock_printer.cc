@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/shared_memory.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/print_messages.h"
 #include "ipc/ipc_message_utils.h"

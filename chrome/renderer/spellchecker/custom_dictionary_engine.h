@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 // Custom spellcheck dictionary. Words in this dictionary are always correctly
 // spelled. Words that are not in this dictionary may or may not be correctly

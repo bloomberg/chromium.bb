@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"

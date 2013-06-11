@@ -5,9 +5,9 @@
 #include <vector>
 
 #include "base/format_macros.h"
-#include "base/string16.h"
-#include "base/string_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/common/form_data.h"

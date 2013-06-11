@@ -12,7 +12,7 @@
 #include "base/perftimer.h"
 #include "base/pickle.h"
 #include "base/shared_memory.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
