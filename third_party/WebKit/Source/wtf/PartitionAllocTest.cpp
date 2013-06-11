@@ -266,7 +266,7 @@ TEST(WTF_PartitionAlloc, MappingCollision)
     EXPECT_TRUE(map2 && map2 != MAP_FAILED);
 
     WTF::PartitionPageHeader* page2 = GetFullPage();
-    EXPECT_EQ(0, reinterpret_cast<uintptr_t>(page2) & ~WTF::kPageMask);
+    EXPECT_EQ(0u, reinterpret_cast<uintptr_t>(page2) & ~WTF::kPageMask);
     FreeFullPage(page2);
 
     FreeFullPage(page1);
