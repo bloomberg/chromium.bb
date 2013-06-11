@@ -12,6 +12,8 @@ deps = {
     "https://src.chromium.org/chrome/trunk/src/tools/perf/perf_tools",
   "src/tools/perf/page_sets":
     "https://src.chromium.org/chrome/trunk/src/tools/perf/page_sets",
+  "src/tools/perf/profile_creators":
+    "https://src.chromium.org/chrome/trunk/src/tools/perf/profile_creators",
   }
 
 # perf_tools depends on Telemetry, so pull in the Telemetry deps, too.
