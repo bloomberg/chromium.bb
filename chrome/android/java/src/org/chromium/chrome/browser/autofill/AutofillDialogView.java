@@ -412,14 +412,12 @@ public class AutofillDialogView extends FrameLayout {
      * @param suggestionIcon The suggestion icon.
      * @param suggestionTextExtra The suggestion text extra.
      * @param suggestionIconExtra The suggestion icon extra.
-     * @param suggestionSectionEditable Whether the section is editable.
      * @param items The {@link AutofillDialogMenuItem} array to update the dropdown with.
      * @param selectedMenuItem The index of the selected menu item, or -1.
      */
     public void updateMenuItemsForSection(int section,
             String suggestionText, Bitmap suggestionIcon,
             String suggestionTextExtra, Bitmap suggestionIconExtra,
-            boolean suggestionSectionEditable,
             List<AutofillDialogMenuItem> items, final int selectedMenuItem) {
         final Spinner spinner = mSpinners[section];
         // Set the listener to null and reset it after updating the menu items to avoid getting an

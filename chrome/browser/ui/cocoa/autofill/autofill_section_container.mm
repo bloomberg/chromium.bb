@@ -326,7 +326,7 @@ void BreakSuggestionText(const string16& text,
     NSImage* extraIcon = suggestionState.extra_icon.AsNSImage();
     [suggestContainer_ showTextfield:extraText withIcon:extraIcon];
   }
-  [suggestContainer_ setEditable:suggestionState.editable];
+  [suggestContainer_ setEditable:NO];
   [view_ setShouldHighlightOnHover:showSuggestions];
 }
 
