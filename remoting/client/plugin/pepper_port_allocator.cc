@@ -5,7 +5,7 @@
 #include "remoting/client/plugin/pepper_port_allocator.h"
 
 #include "base/bind.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "net/base/net_util.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"

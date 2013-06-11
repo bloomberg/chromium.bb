@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "remoting/base/capabilities.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

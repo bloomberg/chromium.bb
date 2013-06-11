@@ -5,7 +5,7 @@
 #ifndef REMOTING_HOST_UI_STRINGS_H_
 #define REMOTING_HOST_UI_STRINGS_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 // This struct contains localized strings to be displayed in host dialogs.
 // For the web-app, these are loaded from the appropriate messages.json

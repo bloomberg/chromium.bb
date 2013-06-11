@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/host_window.h"

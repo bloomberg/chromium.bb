@@ -6,7 +6,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "crypto/hmac.h"
 #include "crypto/sha2.h"
 #include "net/base/net_errors.h"

@@ -10,7 +10,7 @@
 #include <windows.h>
 
 #include "base/run_loop.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "remoting/host/setup/win/load_string_from_resource.h"
 #include "remoting/host/setup/win/start_host_window.h"
 

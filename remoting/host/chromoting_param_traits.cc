@@ -4,7 +4,7 @@
 
 #include "remoting/host/chromoting_param_traits.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 
 namespace IPC {
 

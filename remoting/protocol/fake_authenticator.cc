@@ -5,7 +5,7 @@
 #include "remoting/protocol/fake_authenticator.h"
 
 #include "base/message_loop.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "net/base/io_buffer.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"

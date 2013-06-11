@@ -8,7 +8,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/url_request/url_fetcher.h"

@@ -9,7 +9,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/win/message_window.h"

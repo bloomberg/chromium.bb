@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/host_config.h"

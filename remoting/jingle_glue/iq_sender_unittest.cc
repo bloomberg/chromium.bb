@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"

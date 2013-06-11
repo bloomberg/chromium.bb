@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 namespace remoting {
 

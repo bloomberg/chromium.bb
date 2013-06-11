@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "net/base/net_util.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"

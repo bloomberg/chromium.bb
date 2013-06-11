@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"

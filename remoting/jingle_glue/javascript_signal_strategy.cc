@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "remoting/jingle_glue/xmpp_proxy.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 

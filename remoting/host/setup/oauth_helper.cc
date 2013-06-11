@@ -4,7 +4,7 @@
 
 #include "remoting/host/setup/oauth_helper.h"
 
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "google_apis/google_api_keys.h"
 #include "googleurl/src/url_parse.h"
 #include "net/base/escape.h"
