@@ -4124,10 +4124,12 @@
                       ['"<(GENERATOR)"=="xcode"', {
                         'xcode_settings': {
                           'OTHER_LDFLAGS[arch=armv7]': [
+                            '$(inherited)',
                             '-force_load',
                             '<(arc_toolchain_path)/libarclite_iphoneos.a',
                           ],
                           'OTHER_LDFLAGS[arch=i386]': [
+                            '$(inherited)',
                             '-force_load',
                             '<(arc_toolchain_path)/libarclite_iphonesimulator.a',
                           ],
