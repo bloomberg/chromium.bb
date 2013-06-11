@@ -115,7 +115,7 @@ class ErrorPageTest : public InProcessBrowserTest {
 };
 
 // See crbug.com/109669
-#if defined(USE_AURA)
+#if defined(USE_AURA) || defined(OS_WIN)
 #define MAYBE_DNSError_Basic DISABLED_DNSError_Basic
 #else
 #define MAYBE_DNSError_Basic DNSError_Basic
