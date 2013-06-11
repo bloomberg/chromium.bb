@@ -19,6 +19,7 @@
 namespace media {
 
 class AudioManagerMac;
+class ChannelMixer;
 
 // AudioSynchronizedStream allows arbitrary combinations of input and output
 // devices running off different clocks and using different drivers, with
@@ -201,6 +202,11 @@ class AudioSynchronizedStream : public AudioOutputStream {
   bool is_running_;
   int hardware_buffer_size_;
   int channels_;
+
+  // Channel mixer used to transform mono to stereo data. It is only created
+  // if the input_hardware_channels is mono.
+  scoped_ptr<ChannelMixer> channel_mixer_;
+  scoped_ptr<AudioBus> mixer_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioSynchronizedStream);
 };

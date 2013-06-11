@@ -13,6 +13,7 @@
 #include "base/mac/mac_logging.h"
 #include "media/audio/audio_util.h"
 #include "media/audio/mac/audio_manager_mac.h"
+#include "media/base/channel_mixer.h"
 
 namespace media {
 
@@ -714,17 +715,38 @@ OSStatus AudioSynchronizedStream::SetupStreamFormats() {
 }
 
 void AudioSynchronizedStream::AllocateInputData() {
+  // Get the native number of input channels that the hardware supports.
+  int hardware_channels = 0;
+  bool got_hardware_channels = AudioManagerMac::GetDeviceChannels(
+      input_id_, kAudioDevicePropertyScopeInput, &hardware_channels);
+  if (!got_hardware_channels || hardware_channels > 2) {
+    // Only mono and stereo are supported on the input side. When it fails to
+    // get the native channel number or the native channel number is bigger
+    // than 2, we open the device in stereo mode.
+    hardware_channels = 2;
+  }
+
   // Allocate storage for the AudioBufferList used for the
   // input data from the input AudioUnit.
   // We allocate enough space for with one AudioBuffer per channel.
   size_t malloc_size = offsetof(AudioBufferList, mBuffers[0]) +
-      (sizeof(AudioBuffer) * channels_);
+      (sizeof(AudioBuffer) * hardware_channels);
 
   input_buffer_list_ = static_cast<AudioBufferList*>(malloc(malloc_size));
-  input_buffer_list_->mNumberBuffers = channels_;
+  input_buffer_list_->mNumberBuffers = hardware_channels;
 
-  input_bus_ = AudioBus::Create(channels_, hardware_buffer_size_);
+  input_bus_ = AudioBus::Create(hardware_channels, hardware_buffer_size_);
   wrapper_bus_ = AudioBus::CreateWrapper(channels_);
+  if (hardware_channels != params_.input_channels()) {
+    ChannelLayout hardware_channel_layout =
+        GuessChannelLayout(hardware_channels);
+    ChannelLayout requested_channel_layout =
+        GuessChannelLayout(params_.input_channels());
+    channel_mixer_.reset(new ChannelMixer(hardware_channel_layout,
+                                          requested_channel_layout));
+    mixer_bus_ = AudioBus::Create(params_.input_channels(),
+                                  hardware_buffer_size_);
+  }
 
   // Allocate buffers for AudioBufferList.
   UInt32 buffer_size_bytes = input_bus_->frames() * sizeof(Float32);
@@ -762,8 +784,14 @@ OSStatus AudioSynchronizedStream::HandleInputCallback(
 
   // Buffer input into FIFO.
   int available_frames = fifo_.max_frames() - fifo_.frames();
-  if (input_bus_->frames() <= available_frames)
-    fifo_.Push(input_bus_.get());
+  if (input_bus_->frames() <= available_frames) {
+    if (channel_mixer_) {
+      channel_mixer_->Transform(input_bus_.get(), mixer_bus_.get());
+      fifo_.Push(mixer_bus_.get());
+    } else {
+      fifo_.Push(input_bus_.get());
+    }
+  }
 
   return result;
 }
