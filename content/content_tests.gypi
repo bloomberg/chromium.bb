@@ -612,6 +612,14 @@
             '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine',
           ]
         }],
+        ['enable_webrtc==1 and (OS=="linux" or OS=="mac" or OS=="win")', {
+          'sources': [
+            'browser/renderer_host/media/screen_capture_device_unittest.cc',
+          ],
+          'dependencies': [
+            '../third_party/webrtc/modules/modules.gyp:desktop_capture',
+          ],
+        }],
         # TODO(jrg): remove the OS=="android" section?
         # http://crbug.com/113172
         # Understand better how media_stream_ is tied into Chromium.

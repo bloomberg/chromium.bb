@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/video/capture/screen/screen_capture_device.h"
+#include "content/browser/renderer_host/media/screen_capture_device.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -15,7 +15,7 @@
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_shape.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
-namespace media {
+namespace content {
 
 namespace {
 const int kBytesPerPixel = 4;
@@ -175,11 +175,11 @@ void ScreenCaptureDevice::Core::OnCaptureCompleted(
     waiting_for_frame_size_ = false;
 
     // Inform the EventHandler of the video frame dimensions and format.
-    VideoCaptureCapability caps;
+    media::VideoCaptureCapability caps;
     caps.width = frame_size_.width();
     caps.height = frame_size_.height();
     caps.frame_rate = frame_rate_;
-    caps.color = VideoCaptureCapability::kARGB;
+    caps.color = media::VideoCaptureCapability::kARGB;
     caps.expected_capture_delay =
         base::Time::kMillisecondsPerSecond / frame_rate_;
     caps.interlaced = false;
@@ -386,8 +386,8 @@ void ScreenCaptureDevice::DeAllocate() {
   core_->DeAllocate();
 }
 
-const VideoCaptureDevice::Name& ScreenCaptureDevice::device_name() {
+const media::VideoCaptureDevice::Name& ScreenCaptureDevice::device_name() {
   return name_;
 }
 
-}  // namespace media
+}  // namespace content

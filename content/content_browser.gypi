@@ -1151,8 +1151,9 @@
         '../cc/cc.gyp:cc',
         '../net/net.gyp:http_server',
         '../printing/printing.gyp:printing',
-        '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+        '../third_party/WebKit/public/blink.gyp:blink',
+        '../third_party/webrtc/modules/modules.gyp:desktop_capture',
         '../ui/surface/surface.gyp:surface',
         '../webkit/support/webkit_support.gyp:webkit_common',
         '../webkit/support/webkit_support.gyp:webkit_resources',
@@ -1172,9 +1173,6 @@
       ],
     }],
     ['enable_webrtc==1', {
-      'dependencies': [
-        '../third_party/webrtc/modules/modules.gyp:desktop_capture',
-      ],
       'sources': [
         'browser/renderer_host/media/peer_connection_tracker_host.cc',
         'browser/renderer_host/media/peer_connection_tracker_host.h',
@@ -1188,6 +1186,18 @@
         'browser/renderer_host/p2p/socket_host_udp.h',
         'browser/renderer_host/p2p/socket_dispatcher_host.cc',
         'browser/renderer_host/p2p/socket_dispatcher_host.h',
+      ],
+    }],
+    ['enable_webrtc==1 and (OS=="linux" or OS=="mac" or OS=="win")', {
+      'sources': [
+        'browser/renderer_host/media/screen_capture_device.cc',
+        'browser/renderer_host/media/screen_capture_device.h',
+      ],
+      'dependencies': [
+        '../third_party/webrtc/modules/modules.gyp:desktop_capture',
+      ],
+      'defines': [
+        'ENABLE_SCREEN_CAPTURE=1',
       ],
     }],
     ['OS=="win"', {

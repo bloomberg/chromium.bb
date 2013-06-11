@@ -21,14 +21,6 @@
         'media_use_ffmpeg%': 1,
         'media_use_libvpx%': 1,
       }],
-      # Screen capturer works only on Windows, OSX and Linux (with X11).
-      # TODO(sergeyu): Remove this variable once screen_capture_device.cc is
-      # moved to content.
-      ['OS=="win" or OS=="mac" or (OS=="linux" and use_x11==1)', {
-        'screen_capture_supported%': 1,
-      }, {
-        'screen_capture_supported%': 0,
-      }],
       # ALSA usage.
       ['OS=="linux" or OS=="freebsd" or OS=="solaris"', {
         'use_alsa%': 1,
@@ -386,10 +378,6 @@
         'video/capture/mac/video_capture_device_qtkit_mac.h',
         'video/capture/mac/video_capture_device_qtkit_mac.mm',
 
-        # TODO(sergeyu): Move screen_capture_device.cc to content and remove it
-        # from here.
-        'video/capture/screen/screen_capture_device.cc',
-        'video/capture/screen/screen_capture_device.h',
         'video/capture/video_capture.h',
         'video/capture/video_capture_device.h',
         'video/capture/video_capture_device_dummy.cc',
@@ -824,15 +812,6 @@
             'mp4/track_run_iterator.h',
           ],
         }],
-        ['screen_capture_supported==1', {
-          'dependencies': [
-            '../third_party/webrtc/modules/modules.gyp:desktop_capture',
-          ],
-        }, {
-          'sources/': [
-            ['exclude', '^video/capture/screen/'],
-          ],
-        }],
         ['toolkit_uses_gtk==1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
@@ -971,7 +950,6 @@
         'filters/video_decoder_selector_unittest.cc',
         'filters/video_frame_stream_unittest.cc',
         'filters/video_renderer_base_unittest.cc',
-        'video/capture/screen/screen_capture_device_unittest.cc',
         'video/capture/video_capture_device_unittest.cc',
         'webm/cluster_builder.cc',
         'webm/cluster_builder.h',
@@ -1070,15 +1048,6 @@
         ['OS!="ios" and (target_arch=="ia32" or target_arch=="x64")', {
           'sources': [
             'base/simd/convert_rgb_to_yuv_unittest.cc',
-          ],
-        }],
-        ['screen_capture_supported==1', {
-          'dependencies': [
-            '../third_party/webrtc/modules/modules.gyp:desktop_capture',
-          ],
-        }, {
-          'sources/': [
-            ['exclude', '^video/capture/screen/'],
           ],
         }],
         ['proprietary_codecs==1 or branding=="Chrome"', {

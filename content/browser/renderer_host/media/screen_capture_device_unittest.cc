@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/video/capture/screen/screen_capture_device.h"
+#include "content/browser/renderer_host/media/screen_capture_device.h"
 
 #include "base/basictypes.h"
 #include "base/sequenced_task_runner.h"
@@ -14,13 +14,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::InvokeWithoutArgs;
 using ::testing::SaveArg;
 
-namespace media {
+namespace content {
 
 namespace {
 
@@ -32,11 +33,11 @@ const int kBufferSize = kTestFrameWidth2 * kTestFrameHeight2 * 4;
 
 const int kFrameRate = 30;
 
-class MockFrameObserver : public VideoCaptureDevice::EventHandler {
+class MockFrameObserver : public media::VideoCaptureDevice::EventHandler {
  public:
   MOCK_METHOD0(ReserveOutputBuffer, scoped_refptr<media::VideoFrame>());
   MOCK_METHOD0(OnError, void());
-  MOCK_METHOD1(OnFrameInfo, void(const VideoCaptureCapability& info));
+  MOCK_METHOD1(OnFrameInfo, void(const media::VideoCaptureCapability& info));
   MOCK_METHOD6(OnIncomingCapturedFrame, void(const uint8* data,
                                              int length,
                                              base::Time timestamp,
@@ -97,7 +98,7 @@ class ScreenCaptureDeviceTest : public testing::Test {
 TEST_F(ScreenCaptureDeviceTest, Capture) {
   ScreenCaptureDevice capture_device(
       worker_pool_->GetSequencedTaskRunner(worker_pool_->GetSequenceToken()));
-  VideoCaptureCapability caps;
+  media::VideoCaptureCapability caps;
   base::WaitableEvent done_event(false, false);
   int frame_size;
 
@@ -120,7 +121,7 @@ TEST_F(ScreenCaptureDeviceTest, Capture) {
   EXPECT_GT(caps.width, 0);
   EXPECT_GT(caps.height, 0);
   EXPECT_EQ(kFrameRate, caps.frame_rate);
-  EXPECT_EQ(VideoCaptureCapability::kARGB, caps.color);
+  EXPECT_EQ(media::VideoCaptureCapability::kARGB, caps.color);
   EXPECT_FALSE(caps.interlaced);
 
   EXPECT_EQ(caps.width * caps.height * 4, frame_size);
@@ -135,7 +136,7 @@ TEST_F(ScreenCaptureDeviceTest, ScreenResolutionChange) {
   capture_device.SetScreenCapturerForTest(
       scoped_ptr<webrtc::ScreenCapturer>(mock_capturer));
 
-  VideoCaptureCapability caps;
+  media::VideoCaptureCapability caps;
   base::WaitableEvent done_event(false, false);
   int frame_size;
 
@@ -162,10 +163,10 @@ TEST_F(ScreenCaptureDeviceTest, ScreenResolutionChange) {
   EXPECT_EQ(kTestFrameWidth1, caps.width);
   EXPECT_EQ(kTestFrameHeight1, caps.height);
   EXPECT_EQ(kFrameRate, caps.frame_rate);
-  EXPECT_EQ(VideoCaptureCapability::kARGB, caps.color);
+  EXPECT_EQ(media::VideoCaptureCapability::kARGB, caps.color);
   EXPECT_FALSE(caps.interlaced);
 
   EXPECT_EQ(caps.width * caps.height * 4, frame_size);
 }
 
-}  // namespace media
+}  // namespace content

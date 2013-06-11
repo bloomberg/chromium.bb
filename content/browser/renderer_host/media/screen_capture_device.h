@@ -2,25 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_SCREEN_CAPTURER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_SCREEN_CAPTURER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_SCREEN_CAPTURE_DEVICE_H_
+#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_SCREEN_CAPTURE_DEVICE_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "media/base/media_export.h"
+#include "content/common/content_export.h"
 #include "media/video/capture/video_capture_device.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 namespace base {
 class SequencedTaskRunner;
 }  // namespace base
 
-namespace media {
+namespace webrtc {
+class ScreenCapturer;
+}  // namespace webrtc
+
+namespace content {
 
 // ScreenCaptureDevice implements VideoCaptureDevice for the screen. It's
 // essentially an adapter between ScreenCapturer and VideoCaptureDevice.
-class MEDIA_EXPORT ScreenCaptureDevice : public VideoCaptureDevice {
+class CONTENT_EXPORT ScreenCaptureDevice : public media::VideoCaptureDevice {
  public:
   explicit ScreenCaptureDevice(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
@@ -47,6 +49,6 @@ class MEDIA_EXPORT ScreenCaptureDevice : public VideoCaptureDevice {
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureDevice);
 };
 
-}  // namespace media
+}  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_SCREEN_CAPTURER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_SCREEN_CAPTURE_DEVICE_H_
