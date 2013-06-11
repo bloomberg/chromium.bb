@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/sys_byteorder.h"
 #include "content/browser/indexed_db/leveldb/leveldb_slice.h"
 #include "content/common/indexed_db/indexed_db_key.h"

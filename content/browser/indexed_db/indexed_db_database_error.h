@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_DATABASE_ERROR_H_
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
 

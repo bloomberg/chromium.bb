@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/browser/indexed_db/indexed_db_callbacks_wrapper.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks_wrapper.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"

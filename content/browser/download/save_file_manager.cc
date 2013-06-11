@@ -10,7 +10,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "content/browser/download/save_file.h"
 #include "content/browser/download/save_package.h"

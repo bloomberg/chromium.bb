@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"

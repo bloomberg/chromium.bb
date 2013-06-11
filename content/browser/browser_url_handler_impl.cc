@@ -4,7 +4,7 @@
 
 #include "content/browser/browser_url_handler_impl.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/url_constants.h"

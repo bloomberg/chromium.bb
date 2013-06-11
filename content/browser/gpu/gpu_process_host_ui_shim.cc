@@ -8,11 +8,11 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/id_map.h"
 #include "base/lazy_instance.h"
 #include "base/process_util.h"
-#include "base/string_number_conversions.h"
-#include "base/debug/trace_event.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"

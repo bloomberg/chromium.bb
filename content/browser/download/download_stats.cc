@@ -5,7 +5,7 @@
 #include "content/browser/download/download_stats.h"
 
 #include "base/metrics/histogram.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "net/http/http_content_disposition.h"

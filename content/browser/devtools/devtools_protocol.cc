@@ -6,7 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 
 namespace content {
 

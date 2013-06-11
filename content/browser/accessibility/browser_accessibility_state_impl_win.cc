@@ -9,7 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 
 namespace content {
 

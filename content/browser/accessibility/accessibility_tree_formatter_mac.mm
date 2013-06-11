@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_cocoa.h"

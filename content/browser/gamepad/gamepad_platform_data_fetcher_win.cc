@@ -8,9 +8,9 @@
 #include <dinputd.h>
 
 #include "base/debug/trace_event.h"
-#include "base/stringprintf.h"
-#include "content/common/gamepad_messages.h"
+#include "base/strings/stringprintf.h"
 #include "content/common/gamepad_hardware_buffer.h"
+#include "content/common/gamepad_messages.h"
 
 // This was removed from the Windows 8 SDK for some reason.
 // We need it so we can get state for axes without worrying if they

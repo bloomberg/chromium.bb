@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/threading/thread.h"
 #include "content/browser/geolocation/device_data_provider.h"
 #include "content/browser/geolocation/location_provider.h"

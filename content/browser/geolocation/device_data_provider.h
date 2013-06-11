@@ -28,8 +28,8 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "base/string16.h"
-#include "base/string_util.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 

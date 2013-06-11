@@ -14,7 +14,7 @@
 
 #include <map>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 

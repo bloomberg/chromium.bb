@@ -4,7 +4,7 @@
 
 #include "content/browser/devtools/devtools_netlog_observer.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"

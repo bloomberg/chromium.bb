@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "content/browser/geolocation/wifi_data_provider_common.h"

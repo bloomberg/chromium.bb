@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_COMPARATOR_H_
 #define CONTENT_BROWSER_INDEXED_DB_LEVELDB_LEVELDB_COMPARATOR_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace content {
 

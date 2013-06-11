@@ -6,7 +6,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/browser/hyphenator/hyphenator_message_filter.h"
 #include "content/common/hyphenator_messages.h"
 #include "content/public/browser/browser_thread.h"

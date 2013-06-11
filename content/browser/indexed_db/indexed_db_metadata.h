@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 
 namespace content {

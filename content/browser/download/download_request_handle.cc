@@ -5,7 +5,7 @@
 #include "content/browser/download/download_request_handle.h"
 
 #include "base/bind.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"

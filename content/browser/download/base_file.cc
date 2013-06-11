@@ -9,7 +9,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/pickle.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_net_log_parameters.h"

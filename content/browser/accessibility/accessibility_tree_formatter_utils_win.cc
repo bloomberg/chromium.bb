@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/memory/singleton.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 
 namespace content {
