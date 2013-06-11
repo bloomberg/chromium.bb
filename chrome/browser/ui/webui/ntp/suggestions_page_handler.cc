@@ -11,7 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/values.h"

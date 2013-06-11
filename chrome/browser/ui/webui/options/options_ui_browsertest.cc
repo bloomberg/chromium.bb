@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/options_ui_browsertest.h"
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/ntp/android/context_menu_handler.h"
 
 #include "base/bind.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/android/tab_android.h"

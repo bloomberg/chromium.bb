@@ -15,7 +15,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
