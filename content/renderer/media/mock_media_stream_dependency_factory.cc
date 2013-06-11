@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/mock_peer_connection_impl.h"
+#include "content/renderer/media/webrtc_audio_capturer.h"
+#include "content/renderer/media/webrtc_local_audio_track.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/libjingle/source/talk/base/scoped_ref_ptr.h"
 #include "third_party/libjingle/source/talk/media/base/videocapturer.h"
@@ -276,45 +278,6 @@ VideoSourceInterface* MockLocalVideoTrack::GetSource() const {
   return source_.get();
 }
 
-std::string MockLocalAudioTrack::kind() const {
-  NOTIMPLEMENTED();
-  return std::string();
-}
-
-std::string MockLocalAudioTrack::id() const { return id_; }
-
-bool MockLocalAudioTrack::enabled() const { return enabled_; }
-
-MockLocalAudioTrack::TrackState MockLocalAudioTrack::state() const {
-  return state_;
-}
-
-bool MockLocalAudioTrack::set_enabled(bool enable) {
-  enabled_ = enable;
-  return true;
-}
-
-bool MockLocalAudioTrack::set_state(TrackState new_state) {
-  state_ = new_state;
-  if (observer_)
-    observer_->OnChanged();
-  return true;
-}
-
-void MockLocalAudioTrack::RegisterObserver(ObserverInterface* observer) {
-  observer_ = observer;
-}
-
-void MockLocalAudioTrack::UnregisterObserver(ObserverInterface* observer) {
-  DCHECK(observer_ == observer);
-  observer_ = NULL;
-}
-
-AudioSourceInterface* MockLocalAudioTrack::GetSource() const {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 class MockSessionDescription : public SessionDescriptionInterface {
  public:
   MockSessionDescription(const std::string& type,
@@ -490,9 +453,9 @@ MockMediaStreamDependencyFactory::CreateLocalAudioTrack(
     const std::string& id,
     webrtc::AudioSourceInterface* source) {
   DCHECK(mock_pc_factory_created_);
-  scoped_refptr<webrtc::AudioTrackInterface> track(
-      new talk_base::RefCountedObject<MockLocalAudioTrack>(id));
-  return track;
+  scoped_refptr<WebRtcAudioCapturer> capturer(
+      WebRtcAudioCapturer::CreateCapturer());
+  return WebRtcLocalAudioTrack::Create(id, capturer, source);
 }
 
 SessionDescriptionInterface*

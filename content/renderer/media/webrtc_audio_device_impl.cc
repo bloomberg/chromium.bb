@@ -222,13 +222,13 @@ int32_t WebRtcAudioDeviceImpl::Init() {
 
   DCHECK(!capturer_.get());
   capturer_ = WebRtcAudioCapturer::CreateCapturer();
+
   // Add itself as an audio track to the |capturer_|. This is because WebRTC
   // supports only one ADM but multiple audio tracks, so the ADM can't be the
   // sink of certain audio track now.
   // TODO(xians): Register the ADM as the sink of the audio track if WebRTC
-  // supports one ADM for each audio track.
-  if (capturer_.get())
-    capturer_->AddSink(this);
+  // supports one ADM for each audio track. See http://crbug/247027.
+  capturer_->SetDefaultSink(this);
 
   // We need to return a success to continue the initialization of WebRtc VoE
   // because failure on the capturer_ initialization should not prevent WebRTC
@@ -261,7 +261,7 @@ int32_t WebRtcAudioDeviceImpl::Terminate() {
   if (capturer_.get()) {
     // |capturer_| is stopped by the media stream, so do not need to
     // call Stop() here.
-    capturer_->RemoveSink(this);
+    capturer_->SetDefaultSink(NULL);
     capturer_ = NULL;
   }
 
@@ -343,18 +343,27 @@ int32_t WebRtcAudioDeviceImpl::StartRecording() {
     return -1;
   }
 
-  start_capture_time_ = base::Time::Now();
+  {
+    base::AutoLock auto_lock(lock_);
+    if (recording_)
+      return 0;
 
-  base::AutoLock auto_lock(lock_);
-  recording_ = true;
+    recording_ = true;
+  }
+
+  start_capture_time_ = base::Time::Now();
 
   return 0;
 }
 
 int32_t WebRtcAudioDeviceImpl::StopRecording() {
   DVLOG(1) << "WebRtcAudioDeviceImpl::StopRecording()";
-  if (!recording_) {
-    return 0;
+  {
+    base::AutoLock auto_lock(lock_);
+    if (!recording_)
+      return 0;
+
+    recording_ = false;
   }
 
   // Add histogram data to be uploaded as part of an UMA logging event.
@@ -363,9 +372,6 @@ int32_t WebRtcAudioDeviceImpl::StopRecording() {
     base::TimeDelta capture_time = base::Time::Now() - start_capture_time_;
     UMA_HISTOGRAM_LONG_TIMES("WebRTC.AudioCaptureTime", capture_time);
   }
-
-  base::AutoLock auto_lock(lock_);
-  recording_ = false;
 
   return 0;
 }

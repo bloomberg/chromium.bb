@@ -408,16 +408,14 @@ bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
 
   std::string track_id = UTF16ToUTF8(track.id());
   if (source.type() == WebKit::WebMediaStreamSource::TypeAudio) {
-    // TODO(henrika,xians): Refactor how an audio track is created to harmonize
-    // with video tracks.
     scoped_refptr<webrtc::AudioTrackInterface> audio_track(
         CreateLocalAudioTrack(track_id, source_data->local_audio_source()));
     audio_track->set_enabled(track.isEnabled());
-    if (GetWebRtcAudioDevice()) {
-      WebRtcAudioCapturer* capturer = GetWebRtcAudioDevice()->capturer().get();
-      if (!capturer->is_recording())
-        capturer->Start();
-    }
+    // Start the audio track. This will hook the |audio_track| to the capturer
+    // as the sink of the audio, and only start the source of the capturer if
+    // it is the first audio track connecting to the capturer.
+    static_cast<WebRtcLocalAudioTrack*>(audio_track.get())->Start();
+
     return native_stream->AddTrack(audio_track.get());
   } else {
     scoped_refptr<webrtc::VideoTrackInterface> video_track(
@@ -691,12 +689,11 @@ void MediaStreamDependencyFactory::StopLocalAudioSource(
       description.extraData());
   if (extra_data && extra_data->is_local() && extra_data->stream().get() &&
       !extra_data->stream()->GetAudioTracks().empty()) {
-    if (GetWebRtcAudioDevice()) {
-      scoped_refptr<WebRtcAudioCapturer> capturer =
-          GetWebRtcAudioDevice()->capturer();
-      if (capturer.get())
-        capturer->Stop();
-    }
+    // Stop the audio track. This will unhook the audio track from the capturer
+    // and will shutdown the source of the capturer if it is the last audio
+    // track connecting to the capturer.
+    static_cast<WebRtcLocalAudioTrack*>(
+        extra_data->stream()->GetAudioTracks()[0].get())->Stop();
   }
 }
 

@@ -52,15 +52,24 @@ class CONTENT_EXPORT WebRtcAudioCapturer
                   int sample_rate,
                   int session_id);
 
+  // Called by the WebRtcAudioDeviceImpl to add the ADM as the default sink to
+  // the capturer. This function is needed since WebRTC supports only one ADM
+  // but multiple audio tracks, so the ADM can't be the sink of certain audio
+  // track now. And we also need to distinguish the WebRtcAudioDeviceImpl from
+  // the audio track in order to start/stop the source of the capturer
+  // correctly.
+  // TODO(xians): Remove this function after WebRtc supports multiple ADMs.
+  void SetDefaultSink(WebRtcAudioCapturerSink* sink);
+
   // Add a audio track to the sinks of the capturer.
   // WebRtcAudioDeviceImpl calls this method on the main render thread but
   // other clients may call it from other threads. The current implementation
   // does not support multi-thread calling.
-  // Called on the main render thread.
+  // Called on the main render thread or libjingle working thread.
   void AddSink(WebRtcAudioCapturerSink* track);
 
   // Remove a audio track from the sinks of the capturer.
-  // Called on the main render thread.
+  // Called on the main render thread or libjingle working thread.
   void RemoveSink(WebRtcAudioCapturerSink* track);
 
   // SetCapturerSource() is called if the client on the source side desires to
@@ -71,14 +80,6 @@ class CONTENT_EXPORT WebRtcAudioCapturer
       const scoped_refptr<media::AudioCapturerSource>& source,
       media::ChannelLayout channel_layout,
       float sample_rate);
-
-  // Starts recording audio.
-  // Called on the main render thread or a Libjingle working thread.
-  void Start();
-
-  // Stops recording audio.
-  // Called on the main render thread or a Libjingle working thread.
-  void Stop();
 
   // Sets the microphone volume.
   // Called on the AudioInputDevice audio thread.
@@ -117,6 +118,17 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // Must be called without holding the lock. Returns true on success.
   bool Reconfigure(int sample_rate, media::ChannelLayout channel_layout);
 
+  // Starts recording audio.
+  // Triggered by AddSink() on the main render thread or a Libjingle working
+  // thread. It should NOT be called under |lock_|.
+  void Start();
+
+  // Stops recording audio.
+  // Triggered by RemoveSink() on the main render thread or a Libjingle working
+  // thread. It should NOT be called under |lock_|.
+  void Stop();
+
+
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
 
@@ -126,6 +138,10 @@ class CONTENT_EXPORT WebRtcAudioCapturer
 
   // A list of audio tracks that the audio data is fed to.
   TrackList tracks_;
+
+  // A pointer to WebRtcAudioDeviceImpl which is the default destination of
+  // all the audio tracks data flow.
+  WebRtcAudioCapturerSink* default_sink_;
 
   // The audio data source from the browser process.
   scoped_refptr<media::AudioCapturerSource> source_;

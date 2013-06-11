@@ -37,7 +37,6 @@ void WebAudioCapturerSource::setFormat(
     ChannelLayout channel_layout =
         number_of_channels == 1 ? CHANNEL_LAYOUT_MONO : CHANNEL_LAYOUT_STEREO;
     capturer_->SetCapturerSource(this, channel_layout, sample_rate);
-    capturer_->Start();
   } else {
     // TODO(crogers): Handle more than just the mono and stereo cases.
     LOG(WARNING) << "WebAudioCapturerSource::setFormat() : unhandled format.";

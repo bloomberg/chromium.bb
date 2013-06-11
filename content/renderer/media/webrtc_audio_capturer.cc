@@ -164,7 +164,8 @@ bool WebRtcAudioCapturer::Initialize(int render_view_id,
 }
 
 WebRtcAudioCapturer::WebRtcAudioCapturer()
-    : source_(NULL),
+    : default_sink_(NULL),
+      source_(NULL),
       running_(false),
       agc_is_enabled_(false),
       session_id_(0) {
@@ -175,14 +176,32 @@ WebRtcAudioCapturer::~WebRtcAudioCapturer() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(tracks_.empty());
   DCHECK(!running_);
+  DCHECK(!default_sink_);
   DVLOG(1) << "WebRtcAudioCapturer::~WebRtcAudioCapturer()";
 }
 
-void WebRtcAudioCapturer::AddSink(
-    WebRtcAudioCapturerSink* track) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void WebRtcAudioCapturer::SetDefaultSink(WebRtcAudioCapturerSink* sink) {
+  DVLOG(1) << "WebRtcAudioCapturer::SetDefaultSink()";
+  if (sink) {
+    DCHECK(!default_sink_);
+    default_sink_ = sink;
+    AddSink(sink);
+  } else {
+    DCHECK(default_sink_);
+    RemoveSink(default_sink_);
+    default_sink_ = NULL;
+  }
+}
+
+void WebRtcAudioCapturer::AddSink(WebRtcAudioCapturerSink* track) {
   DCHECK(track);
   DVLOG(1) << "WebRtcAudioCapturer::AddSink()";
+
+  // Start the source if an audio track is connected to the capturer.
+  // |default_sink_| is not an audio track.
+  if (track != default_sink_)
+    Start();
+
   base::AutoLock auto_lock(lock_);
   // Verify that |track| is not already added to the list.
   DCHECK(std::find_if(
@@ -208,19 +227,38 @@ void WebRtcAudioCapturer::RemoveSink(
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcAudioCapturer::RemoveSink()";
 
-  base::AutoLock auto_lock(lock_);
+  bool stop_source = false;
+  {
+    base::AutoLock auto_lock(lock_);
 
-  // Get iterator to the first element for which WrapsSink(track) returns true.
-  TrackList::iterator it = std::find_if(
-      tracks_.begin(), tracks_.end(),
-      WebRtcAudioCapturerSinkOwner::WrapsSink(track));
-  if (it != tracks_.end()) {
-    // Clear the delegate to ensure that no more capture callbacks will
-    // be sent to this sink. Also avoids a possible crash which can happen
-    // if this method is called while capturing is active.
-    (*it)->Reset();
-    tracks_.erase(it);
+    // Get iterator to the first element for which WrapsSink(track) returns
+    // true.
+    TrackList::iterator it = std::find_if(
+        tracks_.begin(), tracks_.end(),
+        WebRtcAudioCapturerSinkOwner::WrapsSink(track));
+    if (it != tracks_.end()) {
+      // Clear the delegate to ensure that no more capture callbacks will
+      // be sent to this sink. Also avoids a possible crash which can happen
+      // if this method is called while capturing is active.
+      (*it)->Reset();
+      tracks_.erase(it);
+    }
+
+    // Stop the source if the last audio track is going away.
+    // The |tracks_| might contain the |default_sink_|, we need to stop the
+    // source if the only remaining element is |default_sink_|.
+    if (tracks_.size() == 1 && default_sink_ &&
+        (*tracks_.begin())->IsEqual(default_sink_)) {
+      stop_source = true;
+    } else {
+      // The source might have been stopped, but it is safe to call Stop()
+      // again to make sure the source is stopped correctly.
+      stop_source = tracks_.empty();
+    }
   }
+
+  if (stop_source)
+    Stop();
 }
 
 void WebRtcAudioCapturer::SetCapturerSource(

@@ -29,15 +29,17 @@ WebRtcLocalAudioTrack::WebRtcLocalAudioTrack(
       capturer_(capturer),
       track_source_(track_source) {
   DCHECK(capturer.get());
-  capturer_->AddSink(this);
   DVLOG(1) << "WebRtcLocalAudioTrack::WebRtcLocalAudioTrack()";
 }
 
 WebRtcLocalAudioTrack::~WebRtcLocalAudioTrack() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(sinks_.empty());
-  capturer_->RemoveSink(this);
   DVLOG(1) << "WebRtcLocalAudioTrack::~WebRtcLocalAudioTrack()";
+
+  // Users might not call Stop() on the track.
+  if (capturer_)
+    Stop();
 }
 
 // Content::WebRtcAudioCapturerSink implementation.
@@ -121,6 +123,22 @@ void WebRtcLocalAudioTrack::RemoveSink(
     // if this method is called while capturing is active.
     (*it)->Reset();
     sinks_.erase(it);
+  }
+}
+
+void WebRtcLocalAudioTrack::Start() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "WebRtcLocalAudioTrack::Start()";
+  if (capturer_)
+    capturer_->AddSink(this);
+}
+
+void WebRtcLocalAudioTrack::Stop() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "WebRtcLocalAudioTrack::Stop()";
+  if (capturer_) {
+    capturer_->RemoveSink(this);
+    capturer_ = NULL;
   }
 }
 

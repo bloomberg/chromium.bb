@@ -11,6 +11,7 @@
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_audio_renderer.h"
+#include "content/renderer/media/webrtc_local_audio_track.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/test/webrtc_audio_device_test.h"
 #include "media/audio/audio_manager_base.h"
@@ -586,7 +587,14 @@ TEST_F(WebRTCAudioDeviceTest, MAYBE_StartRecording) {
   ASSERT_EQ(0, err);
 
   EXPECT_TRUE(InitializeCapturer(webrtc_audio_device.get()));
-  webrtc_audio_device->capturer()->Start();
+
+  // Create and start a local audio track. Starting the audio track will connect
+  // the audio track to the capturer and also start the source of the capturer.
+  scoped_refptr<WebRtcLocalAudioTrack> local_audio_track(
+      WebRtcLocalAudioTrack::Create(std::string(),
+                                    webrtc_audio_device->capturer(),
+                                    NULL));
+  local_audio_track->Start();
 
   int ch = base->CreateChannel();
   EXPECT_NE(-1, ch);
@@ -623,7 +631,7 @@ TEST_F(WebRTCAudioDeviceTest, MAYBE_StartRecording) {
       ch, webrtc::kRecordingPerChannel));
   EXPECT_EQ(0, base->StopSend(ch));
 
-  webrtc_audio_device->capturer()->Stop();
+  local_audio_track->Stop();
   EXPECT_EQ(0, base->DeleteChannel(ch));
   EXPECT_EQ(0, base->Terminate());
 }
@@ -749,7 +757,13 @@ TEST_F(WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
   ASSERT_EQ(0, err);
 
   EXPECT_TRUE(InitializeCapturer(webrtc_audio_device.get()));
-  webrtc_audio_device->capturer()->Start();
+  // Create and start a local audio track. Starting the audio track will connect
+  // the audio track to the capturer and also start the source of the capturer.
+  scoped_refptr<WebRtcLocalAudioTrack> local_audio_track(
+      WebRtcLocalAudioTrack::Create(std::string(),
+                                    webrtc_audio_device->capturer(),
+                                    NULL));
+  local_audio_track->Start();
 
   ScopedWebRTCPtr<webrtc::VoEAudioProcessing> audio_processing(engine.get());
   ASSERT_TRUE(audio_processing.valid());
@@ -785,7 +799,7 @@ TEST_F(WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
                                 base::TimeDelta::FromSeconds(2));
   message_loop_.Run();
 
-  webrtc_audio_device->capturer()->Stop();
+  local_audio_track->Stop();
   renderer->Stop();
   EXPECT_EQ(0, base->StopSend(ch));
   EXPECT_EQ(0, base->StopPlayout(ch));
@@ -819,7 +833,13 @@ TEST_F(WebRTCAudioDeviceTest, WebRtcRecordingSetupTime) {
   ASSERT_EQ(0, err);
 
   EXPECT_TRUE(InitializeCapturer(webrtc_audio_device.get()));
-  webrtc_audio_device->capturer()->Start();
+  // Create and start a local audio track. Starting the audio track will connect
+  // the audio track to the capturer and also start the source of the capturer.
+  scoped_refptr<WebRtcLocalAudioTrack> local_audio_track(
+      WebRtcLocalAudioTrack::Create(std::string(),
+                                    webrtc_audio_device->capturer(),
+                                    NULL));
+  local_audio_track->Start();
 
   base::WaitableEvent event(false, false);
   scoped_ptr<MockWebRtcAudioCapturerSink> capturer_sink(
@@ -838,7 +858,7 @@ TEST_F(WebRTCAudioDeviceTest, WebRtcRecordingSetupTime) {
   PrintPerfResultMs("webrtc_recording_setup_c", "t", delay);
 
   capturer->RemoveSink(capturer_sink.get());
-  webrtc_audio_device->capturer()->Stop();
+  local_audio_track->Stop();
   EXPECT_EQ(0, base->StopSend(ch));
   EXPECT_EQ(0, base->DeleteChannel(ch));
   EXPECT_EQ(0, base->Terminate());

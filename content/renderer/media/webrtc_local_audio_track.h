@@ -44,6 +44,14 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   // Called on the main render thread.
   void RemoveSink(WebRtcAudioCapturerSink* sink);
 
+  // Starts the local audio track. Called on the main render thread and
+  // should be called only once when audio track is created.
+  void Start();
+
+  // Stops the local audio track. Called on the main render thread and
+  // should be called only once when audio track going away.
+  void Stop();
+
  protected:
   WebRtcLocalAudioTrack(const std::string& label,
                         const scoped_refptr<WebRtcAudioCapturer>& capturer,
