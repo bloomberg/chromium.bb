@@ -1662,9 +1662,11 @@ class ExpandCommand(Command):
       component_match = policy.find(bucket)
       if component_match == component_name:
         stacktrace_sequence = ''
+        stacktrace_sequence += '(alloc=%d) ' % int(words[ALLOC_COUNT])
+        stacktrace_sequence += '(free=%d) ' % int(words[FREE_COUNT])
         if bucket.typeinfo:
-          stacktrace_sequence += '(type=%s)' % bucket.symbolized_typeinfo
-          stacktrace_sequence += ' (type.name=%s) ' % bucket.typeinfo_name
+          stacktrace_sequence += '(type=%s) ' % bucket.symbolized_typeinfo
+          stacktrace_sequence += '(type.name=%s) ' % bucket.typeinfo_name
         for function, sourcefile in zip(
             bucket.symbolized_stackfunction[
                 0 : min(len(bucket.symbolized_stackfunction), 1 + depth)],
