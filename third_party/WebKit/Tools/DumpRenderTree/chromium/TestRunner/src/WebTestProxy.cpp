@@ -78,6 +78,20 @@ namespace WebTestRunner {
 
 namespace {
 
+class HostMethodTask : public WebMethodTask<WebTestProxyBase> {
+public:
+    typedef void (WebTestProxyBase::*CallbackMethodType)();
+    HostMethodTask(WebTestProxyBase* object, CallbackMethodType callback)
+        : WebMethodTask<WebTestProxyBase>(object)
+        , m_callback(callback)
+    { }
+
+    virtual void runIfValid() { (m_object->*m_callback)(); }
+
+private:
+    CallbackMethodType m_callback;
+};
+
 void printNodeDescription(WebTestDelegate* delegate, const WebNode& node, int exception)
 {
     if (exception) {
@@ -491,6 +505,7 @@ void WebTestProxyBase::reset()
     m_paintRect = WebRect();
     m_canvas.reset();
     m_isPainting = false;
+    m_animateScheduled = false;
     m_resourceIdentifierMap.clear();
     m_logConsoleOutput = true;
     if (m_geolocationClient.get())
@@ -750,30 +765,49 @@ void WebTestProxyBase::didScrollRect(int, int, const WebRect& clipRect)
     didInvalidateRect(clipRect);
 }
 
-void WebTestProxyBase::scheduleComposite()
+void WebTestProxyBase::invalidateAll()
 {
     m_paintRect = WebRect(0, 0, INT_MAX, INT_MAX);
 }
 
+void WebTestProxyBase::scheduleComposite()
+{
+    invalidateAll();
+}
+
 void WebTestProxyBase::scheduleAnimation()
 {
-    scheduleComposite();
+    if (!m_testInterfaces->testRunner()->testIsRunning())
+        return;
+
+    if (!m_animateScheduled) {
+        m_animateScheduled = true;
+        m_delegate->postDelayedTask(new HostMethodTask(this, &WebTestProxyBase::animateNow), 1);
+    }
+}
+
+void WebTestProxyBase::animateNow()
+{
+    if (m_animateScheduled) {
+        m_animateScheduled = false;
+        webWidget()->animate(0.0);
+    }
 }
 
 void WebTestProxyBase::show(WebNavigationPolicy)
 {
-    scheduleComposite();
+    invalidateAll();
 }
 
 void WebTestProxyBase::setWindowRect(const WebRect& rect)
 {
-    scheduleComposite();
+    invalidateAll();
     discardBackingStore();
 }
 
 void WebTestProxyBase::didAutoResize(const WebSize&)
 {
-    scheduleComposite();
+    invalidateAll();
 }
 
 void WebTestProxyBase::postAccessibilityNotification(const WebKit::WebAccessibilityObject& obj, WebKit::WebAccessibilityNotification notification)

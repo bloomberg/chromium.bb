@@ -73,6 +73,7 @@ public:
     WebTaskList* taskList() { return &m_taskList; }
 
     void setTestIsRunning(bool);
+    bool testIsRunning() const { return m_testIsRunning; }
 
     // WebTestRunner implementation.
     virtual bool shouldGeneratePixelResults() OVERRIDE;

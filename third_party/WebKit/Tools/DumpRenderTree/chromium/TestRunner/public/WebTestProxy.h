@@ -41,6 +41,7 @@
 #include "WebKit/chromium/public/WebSecurityOrigin.h"
 #include "WebKit/chromium/public/WebTextAffinity.h"
 #include "WebKit/chromium/public/WebTextDirection.h"
+#include "WebTask.h"
 #include "WebTestCommon.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebURLError.h"
@@ -135,6 +136,8 @@ public:
     MockWebSpeechRecognizer* speechRecognizerMock();
 #endif
 
+    WebTaskList* taskList() { return &m_taskList; }
+
 protected:
     WebTestProxyBase();
     ~WebTestProxyBase();
@@ -218,6 +221,8 @@ private:
     void paintPagesWithBoundaries();
     SkCanvas* canvas();
     void displayRepaintMask();
+    void invalidateAll();
+    void animateNow();
 
     WebKit::WebWidget* webWidget();
     WebKit::WebView* webView();
@@ -226,6 +231,8 @@ private:
     WebTestDelegate* m_delegate;
     WebKit::WebWidget* m_webWidget;
 
+    WebTaskList m_taskList;
+
     std::auto_ptr<SpellCheckClient> m_spellcheck;
     std::auto_ptr<WebUserMediaClientMock> m_userMediaClient;
 
@@ -233,6 +240,7 @@ private:
     std::auto_ptr<SkCanvas> m_canvas;
     WebKit::WebRect m_paintRect;
     bool m_isPainting;
+    bool m_animateScheduled;
     std::map<unsigned, std::string> m_resourceIdentifierMap;
     std::map<unsigned, WebKit::WebURLRequest> m_requestMap;
 
@@ -265,22 +273,18 @@ public:
     virtual void didInvalidateRect(const WebKit::WebRect& rect)
     {
         WebTestProxyBase::didInvalidateRect(rect);
-        Base::didInvalidateRect(rect);
     }
     virtual void didScrollRect(int dx, int dy, const WebKit::WebRect& clipRect)
     {
         WebTestProxyBase::didScrollRect(dx, dy, clipRect);
-        Base::didScrollRect(dx, dy, clipRect);
     }
     virtual void scheduleComposite()
     {
         WebTestProxyBase::scheduleComposite();
-        Base::scheduleComposite();
     }
     virtual void scheduleAnimation()
     {
         WebTestProxyBase::scheduleAnimation();
-        Base::scheduleAnimation();
     }
     virtual void setWindowRect(const WebKit::WebRect& rect)
     {
