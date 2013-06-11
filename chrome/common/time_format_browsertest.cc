@@ -10,7 +10,7 @@
 // icu is used, and that the "wrong" static value doesn't affect other tests,
 // this test is executed on its own process.
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_locale.h"
 #include "chrome/common/time_format.h"

@@ -15,7 +15,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "chrome/common/crash_keys.h"
 #import "chrome/common/mac/objc_method_swizzle.h"

@@ -5,7 +5,7 @@
 #include "chrome/common/omaha_query_params/omaha_query_params.h"
 
 #include "base/compiler_specific.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_version_info.h"
 

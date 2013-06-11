@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/metrics/histogram.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/common/metrics/metrics_log_base.h"
 
 MetricsLogManager::MetricsLogManager()

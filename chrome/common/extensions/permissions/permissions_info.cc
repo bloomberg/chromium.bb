@@ -7,7 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 
 namespace extensions {

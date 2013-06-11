@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/metrics/field_trial.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/common/metrics/variations/variation_ids.h"
 
 // This namespace provides various helpers that extend the functionality around

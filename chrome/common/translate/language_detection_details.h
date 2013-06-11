@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"

@@ -6,8 +6,8 @@
 
 #include "base/base64.h"
 #include "base/format_macros.h"
-#include "base/stringprintf.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/time.h"
 #include "chrome/common/metrics/metrics_log_base.h"
 #include "googleurl/src/gurl.h"

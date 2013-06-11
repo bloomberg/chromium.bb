@@ -5,7 +5,7 @@
 #ifndef CHROME_COMMON_SPELLCHECK_RESULT_H_
 #define CHROME_COMMON_SPELLCHECK_RESULT_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 // This class mirrors WebKit::WebTextCheckingResult which holds a
 // misspelled range inside the checked text. It also contains a

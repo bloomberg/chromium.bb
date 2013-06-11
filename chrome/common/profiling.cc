@@ -10,7 +10,7 @@
 #include "base/debug/profiler.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_switches.h"
 #include "v8/include/v8.h"

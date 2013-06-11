@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/common/autocomplete_match_type.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"

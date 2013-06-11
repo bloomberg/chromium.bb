@@ -6,7 +6,7 @@
 #define CHROME_COMMON_TIME_FORMAT_H_
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 namespace base {
 class Time;

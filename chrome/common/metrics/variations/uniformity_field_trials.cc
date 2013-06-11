@@ -5,7 +5,7 @@
 #include "chrome/common/metrics/variations/uniformity_field_trials.h"
 
 #include "base/metrics/field_trial.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/time.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 

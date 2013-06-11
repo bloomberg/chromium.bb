@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "grit/generated_resources.h"

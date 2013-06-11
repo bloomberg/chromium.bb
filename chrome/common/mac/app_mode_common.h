@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/files/file_path.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 // This file contains constants, interfaces, etc. which are common to the
 // browser application and the app mode loader (a.k.a. shim).
