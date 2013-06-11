@@ -1768,3 +1768,5 @@ Bug(dpranke) [ Linux ] fast/writing-mode/broken-ideographic-font.html [ Failure 
 Bug(dpranke) http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Slow ]
 
 Bug(dpranke) virtual/gpu/compositedscrolling/overflow/remove-overflow-crash2.html [ Slow ]
+
+crbug.com/248541 [ Win7 Release ] virtual/gpu/fast/canvas/webgl/webgl-depth-texture.html [ Pass Crash ]
