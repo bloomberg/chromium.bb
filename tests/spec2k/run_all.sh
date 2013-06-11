@@ -70,7 +70,7 @@ readonly QEMU_TOOL="${ARM_TRUSTED_TC}/run_under_qemu_arm"
 
 readonly PNACL_TC=\
 "${TC_ROOT}/pnacl_${BUILD_PLATFORM}_${BUILD_ARCH}/${PNACL_LIBMODE}"
-readonly ARM_LLC_NEXE=${TC_ROOT}/pnacl_translator/armv7/bin/llc.nexe
+readonly ARM_LLC_NEXE=${TC_ROOT}/pnacl_translator/armv7/bin/pnacl-llc.nexe
 
 readonly NNACL_TC="${TC_ROOT}/${SCONS_BUILD_PLATFORM}_x86"
 readonly RUNNABLE_LD_X8632="${NNACL_TC}/x86_64-nacl/lib32/runnable-ld.so"
