@@ -2437,6 +2437,11 @@ body[new-ui] list.autocomplete-suggestions > li > div[search-icon] {
   background-repeat: no-repeat;
 }
 
+body[new-ui] list.autocomplete-suggestions > li[selected] > div[search-icon],
+body[new-ui] list.autocomplete-suggestions > li[lead] > div[search-icon] {
+  -webkit-filter: brightness(0) invert();
+}
+
 body:not([new-ui]) list.autocomplete-suggestions[hasElementFocus] > [selected],
 body:not([new-ui]) list.autocomplete-suggestions[hasElementFocus] > [lead],
 body:not([new-ui]) list.autocomplete-suggestions:not([hasElementFocus]) >
