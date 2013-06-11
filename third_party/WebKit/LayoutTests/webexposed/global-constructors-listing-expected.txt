@@ -75,7 +75,6 @@ Error
 ErrorEvent
 EvalError
 Event
-EventException
 EventSource
 File
 FileError

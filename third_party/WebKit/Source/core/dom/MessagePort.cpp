@@ -29,7 +29,6 @@
 
 #include <wtf/text/AtomicString.h>
 #include "core/dom/Document.h"
-#include "core/dom/EventException.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MessageEvent.h"

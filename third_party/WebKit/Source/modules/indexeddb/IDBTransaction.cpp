@@ -26,7 +26,6 @@
 #include "config.h"
 #include "modules/indexeddb/IDBTransaction.h"
 
-#include "core/dom/EventException.h"
 #include "core/dom/EventQueue.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/ScriptExecutionContext.h"

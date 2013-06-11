@@ -34,7 +34,7 @@
 
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Event.h"
-#include "core/dom/EventException.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include <wtf/MainThread.h>
 #include <wtf/StdLibExtras.h>
@@ -131,13 +131,8 @@ bool EventTarget::clearAttributeEventListener(const AtomicString& eventType)
 
 bool EventTarget::dispatchEvent(PassRefPtr<Event> event, ExceptionCode& ec)
 {
-    if (!event || event->type().isEmpty()) {
-        ec = EventException::UNSPECIFIED_EVENT_TYPE_ERR;
-        return false;
-    }
-
-    if (event->isBeingDispatched()) {
-        ec = EventException::DISPATCH_REQUEST_ERR;
+    if (!event || event->type().isEmpty() || event->isBeingDispatched()) {
+        ec = INVALID_STATE_ERR;
         return false;
     }
 

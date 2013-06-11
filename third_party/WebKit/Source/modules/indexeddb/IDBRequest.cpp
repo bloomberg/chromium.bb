@@ -30,7 +30,6 @@
 #include "modules/indexeddb/IDBRequest.h"
 
 #include "bindings/v8/IDBBindingUtilities.h"
-#include "core/dom/EventException.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/EventQueue.h"

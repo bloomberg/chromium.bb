@@ -17,7 +17,7 @@ if (window.testRunner)
 jsTestIsAsync = true;
 
 function shouldBeDispatchRequestErr(exception) {
-    var ok = EventException.prototype.isPrototypeOf(exception) && exception.code == EventException.DISPATCH_REQUEST_ERR;
+    var ok = Object.getPrototypeOf(exception) == DOMException.prototype && exception.name == 'InvalidStateError';
     (ok ? testPassed : testFailed)("should have got DISPATCH_REQUEST_ERR EventException");
 }
 

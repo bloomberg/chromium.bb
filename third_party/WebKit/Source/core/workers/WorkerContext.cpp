@@ -37,7 +37,6 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ErrorEvent.h"
 #include "core/dom/Event.h"
-#include "core/dom/EventException.h"
 #include "core/dom/MessagePort.h"
 #include "core/html/DOMURL.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"

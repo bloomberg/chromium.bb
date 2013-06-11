@@ -51,7 +51,6 @@
 #include "core/dom/EventContext.h"
 #include "core/dom/EventDispatchMediator.h"
 #include "core/dom/EventDispatcher.h"
-#include "core/dom/EventException.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"

@@ -56,7 +56,6 @@ var propertyInfo = [
     ["Element", "object"],
     ["Entity", "object"],
     ["Event", "object"],
-    ["EventException", "object"],
     ["HTMLAnchorElement", "object"],
     ["HTMLAppletElement", "object"],
     ["HTMLAreaElement", "object"],
