@@ -192,7 +192,7 @@ TEST_F(IPCChannelTest, ChannelProxyTest) {
 
   // Set up IPC channel proxy.
   GenericChannelListener listener;
-  CreateChannelProxy(&listener, thread.message_loop_proxy());
+  CreateChannelProxy(&listener, thread.message_loop_proxy().get());
   listener.Init(sender());
 
   ASSERT_TRUE(StartClient());

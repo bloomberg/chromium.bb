@@ -16,8 +16,7 @@ StreamHandleImpl::StreamHandleImpl(const base::WeakPtr<Stream>& stream,
       url_(stream->url()),
       original_url_(original_url),
       mime_type_(mime_type),
-      stream_message_loop_(base::MessageLoopProxy::current()) {
-}
+      stream_message_loop_(base::MessageLoopProxy::current().get()) {}
 
 StreamHandleImpl::~StreamHandleImpl() {
   stream_message_loop_->PostTask(FROM_HERE,

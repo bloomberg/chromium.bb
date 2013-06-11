@@ -75,7 +75,7 @@ class VideoCaptureManagerTest : public testing::Test {
                                            message_loop_.get()));
     vcm_ = new VideoCaptureManager();
     vcm_->UseFakeDevice();
-    vcm_->Register(listener_.get(), message_loop_->message_loop_proxy());
+    vcm_->Register(listener_.get(), message_loop_->message_loop_proxy().get());
     frame_observer_.reset(new MockFrameObserver());
   }
 

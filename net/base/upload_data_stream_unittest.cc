@@ -170,9 +170,12 @@ TEST_F(UploadDataStreamTest, File) {
   ASSERT_EQ(static_cast<int>(kTestDataSize),
             file_util::WriteFile(temp_file_path, kTestData, kTestDataSize));
 
-  element_readers_.push_back(new UploadFileElementReader(
-      base::MessageLoopProxy::current(),
-      temp_file_path, 0, kuint64max, base::Time()));
+  element_readers_.push_back(
+      new UploadFileElementReader(base::MessageLoopProxy::current().get(),
+                                  temp_file_path,
+                                  0,
+                                  kuint64max,
+                                  base::Time()));
 
   TestCompletionCallback init_callback;
   UploadDataStream stream(&element_readers_, 0);
@@ -205,9 +208,12 @@ TEST_F(UploadDataStreamTest, FileSmallerThanLength) {
   UploadFileElementReader::ScopedOverridingContentLengthForTests
       overriding_content_length(kFakeSize);
 
-  element_readers_.push_back(new UploadFileElementReader(
-      base::MessageLoopProxy::current(),
-      temp_file_path, 0, kuint64max, base::Time()));
+  element_readers_.push_back(
+      new UploadFileElementReader(base::MessageLoopProxy::current().get(),
+                                  temp_file_path,
+                                  0,
+                                  kuint64max,
+                                  base::Time()));
 
   TestCompletionCallback init_callback;
   UploadDataStream stream(&element_readers_, 0);
@@ -318,9 +324,12 @@ TEST_F(UploadDataStreamTest, FileAndBytes) {
 
   const uint64 kFileRangeOffset = 1;
   const uint64 kFileRangeLength = 4;
-  element_readers_.push_back(new UploadFileElementReader(
-      base::MessageLoopProxy::current(),
-      temp_file_path, kFileRangeOffset, kFileRangeLength, base::Time()));
+  element_readers_.push_back(
+      new UploadFileElementReader(base::MessageLoopProxy::current().get(),
+                                  temp_file_path,
+                                  kFileRangeOffset,
+                                  kFileRangeLength,
+                                  base::Time()));
 
   element_readers_.push_back(new UploadBytesElementReader(
       kTestData, kTestDataSize));
@@ -520,7 +529,7 @@ void UploadDataStreamTest::FileChangedHelper(const base::FilePath& file_path,
   // reusing element_readers_ is wrong.
   ScopedVector<UploadElementReader> element_readers;
   element_readers.push_back(new UploadFileElementReader(
-      base::MessageLoopProxy::current(), file_path, 1, 2, time));
+      base::MessageLoopProxy::current().get(), file_path, 1, 2, time));
 
   TestCompletionCallback init_callback;
   UploadDataStream stream(&element_readers, 0);
@@ -561,9 +570,12 @@ TEST_F(UploadDataStreamTest, MultipleInit) {
   // Prepare data.
   element_readers_.push_back(new UploadBytesElementReader(
       kTestData, kTestDataSize));
-  element_readers_.push_back(new UploadFileElementReader(
-      base::MessageLoopProxy::current(),
-      temp_file_path, 0, kuint64max, base::Time()));
+  element_readers_.push_back(
+      new UploadFileElementReader(base::MessageLoopProxy::current().get(),
+                                  temp_file_path,
+                                  0,
+                                  kuint64max,
+                                  base::Time()));
   UploadDataStream stream(&element_readers_, 0);
 
   std::string expected_data(kTestData, kTestData + kTestDataSize);
@@ -603,9 +615,12 @@ TEST_F(UploadDataStreamTest, MultipleInitAsync) {
   // Prepare data.
   element_readers_.push_back(new UploadBytesElementReader(
       kTestData, kTestDataSize));
-  element_readers_.push_back(new UploadFileElementReader(
-      base::MessageLoopProxy::current(),
-      temp_file_path, 0, kuint64max, base::Time()));
+  element_readers_.push_back(
+      new UploadFileElementReader(base::MessageLoopProxy::current().get(),
+                                  temp_file_path,
+                                  0,
+                                  kuint64max,
+                                  base::Time()));
   UploadDataStream stream(&element_readers_, 0);
 
   std::string expected_data(kTestData, kTestData + kTestDataSize);
@@ -642,9 +657,12 @@ TEST_F(UploadDataStreamTest, InitToReset) {
   // Prepare data.
   element_readers_.push_back(new UploadBytesElementReader(
       kTestData, kTestDataSize));
-  element_readers_.push_back(new UploadFileElementReader(
-      base::MessageLoopProxy::current(),
-      temp_file_path, 0, kuint64max, base::Time()));
+  element_readers_.push_back(
+      new UploadFileElementReader(base::MessageLoopProxy::current().get(),
+                                  temp_file_path,
+                                  0,
+                                  kuint64max,
+                                  base::Time()));
   UploadDataStream stream(&element_readers_, 0);
 
   std::vector<char> expected_data(kTestData, kTestData + kTestDataSize);
@@ -696,9 +714,12 @@ TEST_F(UploadDataStreamTest, InitDuringAsyncInit) {
   // Prepare data.
   element_readers_.push_back(new UploadBytesElementReader(
       kTestData, kTestDataSize));
-  element_readers_.push_back(new UploadFileElementReader(
-      base::MessageLoopProxy::current(),
-      temp_file_path, 0, kuint64max, base::Time()));
+  element_readers_.push_back(
+      new UploadFileElementReader(base::MessageLoopProxy::current().get(),
+                                  temp_file_path,
+                                  0,
+                                  kuint64max,
+                                  base::Time()));
   UploadDataStream stream(&element_readers_, 0);
 
   std::vector<char> expected_data(kTestData, kTestData + kTestDataSize);
@@ -741,9 +762,12 @@ TEST_F(UploadDataStreamTest, InitDuringAsyncRead) {
   // Prepare data.
   element_readers_.push_back(new UploadBytesElementReader(
       kTestData, kTestDataSize));
-  element_readers_.push_back(new UploadFileElementReader(
-      base::MessageLoopProxy::current(),
-      temp_file_path, 0, kuint64max, base::Time()));
+  element_readers_.push_back(
+      new UploadFileElementReader(base::MessageLoopProxy::current().get(),
+                                  temp_file_path,
+                                  0,
+                                  kuint64max,
+                                  base::Time()));
   UploadDataStream stream(&element_readers_, 0);
 
   std::vector<char> expected_data(kTestData, kTestData + kTestDataSize);

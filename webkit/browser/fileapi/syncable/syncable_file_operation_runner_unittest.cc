@@ -44,22 +44,23 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   // Use the current thread as IO thread so that we can directly call
   // operations in the tests.
   SyncableFileOperationRunnerTest()
-    : message_loop_(base::MessageLoop::TYPE_IO),
-      file_system_(GURL("http://example.com"),
-                   base::MessageLoopProxy::current(),
-                   base::MessageLoopProxy::current()),
-      callback_count_(0),
-      write_status_(base::PLATFORM_FILE_ERROR_FAILED),
-      write_bytes_(0),
-      write_complete_(false),
-      url_request_context_(file_system_.file_system_context()),
-      weak_factory_(this) {}
+      : message_loop_(base::MessageLoop::TYPE_IO),
+        file_system_(GURL("http://example.com"),
+                     base::MessageLoopProxy::current().get(),
+                     base::MessageLoopProxy::current().get()),
+        callback_count_(0),
+        write_status_(base::PLATFORM_FILE_ERROR_FAILED),
+        write_bytes_(0),
+        write_complete_(false),
+        url_request_context_(file_system_.file_system_context()),
+        weak_factory_(this) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
     file_system_.SetUp();
-    sync_context_ = new LocalFileSyncContext(base::MessageLoopProxy::current(),
-                                             base::MessageLoopProxy::current());
+    sync_context_ =
+        new LocalFileSyncContext(base::MessageLoopProxy::current().get(),
+                                 base::MessageLoopProxy::current().get());
     ASSERT_EQ(
         SYNC_STATUS_OK,
         file_system_.MaybeInitializeFileSystemContext(sync_context_.get()));

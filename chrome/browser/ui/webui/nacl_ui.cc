@@ -287,7 +287,7 @@ void NaClDomHandler::PopulatePageInformation(DictionaryValue* naclInfo) {
     AddPair(list.get(), nacl_key, ASCIIToUTF16("Disabled"));
   } else {
     PluginPrefs* plugin_prefs =
-        PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui()));
+        PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui())).get();
 
     // Only the 0th plugin is used.
     nacl_version = info_array[0].version + ASCIIToUTF16(" ") +

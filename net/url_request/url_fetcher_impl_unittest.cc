@@ -164,7 +164,7 @@ class URLFetcherMockDnsTest : public URLFetcherTest {
 void URLFetcherTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy(), request_context()));
+      io_message_loop_proxy().get(), request_context()));
   fetcher_->Start();
 }
 
@@ -217,7 +217,7 @@ void URLFetcherMockDnsTest::SetUp() {
 void URLFetcherMockDnsTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy(), request_context()));
+      io_message_loop_proxy().get(), request_context()));
 }
 
 void URLFetcherMockDnsTest::OnURLFetchComplete(const URLFetcher* source) {
@@ -522,9 +522,8 @@ class URLFetcherFileTest : public URLFetcherTest {
 void URLFetcherPostTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, URLFetcher::POST, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy(), request_context()));
-  fetcher_->SetUploadData("application/x-www-form-urlencoded",
-                          "bobsyeruncle");
+      io_message_loop_proxy().get(), request_context()));
+  fetcher_->SetUploadData("application/x-www-form-urlencoded", "bobsyeruncle");
   fetcher_->Start();
 }
 
@@ -548,7 +547,7 @@ URLFetcherPostFileTest::URLFetcherPostFileTest()
 void URLFetcherPostFileTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, URLFetcher::POST, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy(), request_context()));
+      io_message_loop_proxy().get(), request_context()));
   fetcher_->SetUploadFilePath("application/x-www-form-urlencoded",
                               path_,
                               range_offset_,
@@ -594,7 +593,7 @@ void URLFetcherEmptyPostTest::OnURLFetchComplete(const URLFetcher* source) {
 void URLFetcherDownloadProgressTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy(), request_context()));
+      io_message_loop_proxy().get(), request_context()));
   fetcher_->Start();
 }
 
@@ -611,7 +610,7 @@ void URLFetcherDownloadProgressTest::OnURLFetchDownloadProgress(
 void URLFetcherDownloadProgressCancelTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy(), request_context()));
+      io_message_loop_proxy().get(), request_context()));
   cancelled_ = false;
   fetcher_->Start();
 }
@@ -635,7 +634,7 @@ void URLFetcherDownloadProgressCancelTest::OnURLFetchComplete(
 void URLFetcherUploadProgressTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, URLFetcher::POST, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy(), request_context()));
+      io_message_loop_proxy().get(), request_context()));
   previous_progress_ = 0;
   // Large enough data to require more than one read from UploadDataStream.
   chunk_.assign(1<<16, 'a');
@@ -692,7 +691,7 @@ URLFetcherStopOnRedirectTest::~URLFetcherStopOnRedirectTest() {
 void URLFetcherStopOnRedirectTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy(), request_context()));
+      io_message_loop_proxy().get(), request_context()));
   fetcher_->SetStopOnRedirect(true);
   fetcher_->Start();
 }
@@ -710,7 +709,7 @@ void URLFetcherStopOnRedirectTest::OnURLFetchComplete(
 void URLFetcherProtectTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy(), request_context()));
+      io_message_loop_proxy().get(), request_context()));
   start_time_ = Time::Now();
   fetcher_->SetMaxRetriesOn5xx(11);
   fetcher_->Start();
@@ -732,9 +731,8 @@ void URLFetcherProtectTest::OnURLFetchComplete(const URLFetcher* source) {
     static int count = 0;
     count++;
     if (count < 20) {
-      fetcher_->SetRequestContext(
-          new ThrottlingTestURLRequestContextGetter(
-              io_message_loop_proxy(), request_context()));
+      fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
+          io_message_loop_proxy().get(), request_context()));
       fetcher_->Start();
     } else {
       // We have already sent 20 requests continuously. And we expect that
@@ -748,7 +746,7 @@ void URLFetcherProtectTest::OnURLFetchComplete(const URLFetcher* source) {
 void URLFetcherProtectTestPassedThrough::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy(), request_context()));
+      io_message_loop_proxy().get(), request_context()));
   fetcher_->SetAutomaticallyRetryOn5xx(false);
   start_time_ = Time::Now();
   fetcher_->SetMaxRetriesOn5xx(11);
@@ -807,8 +805,7 @@ void URLFetcherBadHTTPSTest::OnURLFetchComplete(
 void URLFetcherCancelTest::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   CancelTestURLRequestContextGetter* context_getter =
-      new CancelTestURLRequestContextGetter(io_message_loop_proxy(),
-                                            url);
+      new CancelTestURLRequestContextGetter(io_message_loop_proxy().get(), url);
   fetcher_->SetRequestContext(context_getter);
   fetcher_->SetMaxRetriesOn5xx(2);
   fetcher_->Start();
@@ -842,7 +839,7 @@ void URLFetcherMultipleAttemptTest::OnURLFetchComplete(
   if (!data.empty() && data_.empty()) {
     data_ = data;
     fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-        io_message_loop_proxy(), request_context()));
+        io_message_loop_proxy().get(), request_context()));
     fetcher_->Start();
   } else {
     EXPECT_EQ(data, data_);
@@ -854,7 +851,7 @@ void URLFetcherFileTest::CreateFetcherForFile(const GURL& url,
                                               const base::FilePath& file_path) {
   fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy(), request_context()));
+      io_message_loop_proxy().get(), request_context()));
 
   // Use the IO message loop to do the file operations in this test.
   fetcher_->SaveResponseToFileAtPath(file_path, io_message_loop_proxy());
@@ -864,7 +861,7 @@ void URLFetcherFileTest::CreateFetcherForFile(const GURL& url,
 void URLFetcherFileTest::CreateFetcherForTempFile(const GURL& url) {
   fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
-      io_message_loop_proxy(), request_context()));
+      io_message_loop_proxy().get(), request_context()));
 
   // Use the IO message loop to do the file operations in this test.
   fetcher_->SaveResponseToTemporaryFile(io_message_loop_proxy());

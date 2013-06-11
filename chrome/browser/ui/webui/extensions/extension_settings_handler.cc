@@ -541,7 +541,7 @@ void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
   for (ExtensionSet::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
     if (Manifest::IsUnpackedLocation((*extension)->location()))
-      unpacked_extensions.push_back(*extension);
+      unpacked_extensions.push_back(extension->get());
   }
 
   for (std::vector<const Extension*>::iterator iter =
@@ -567,8 +567,8 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
        extension != extensions->end(); ++extension) {
     if ((*extension)->ShouldDisplayInExtensionSettings()) {
       extensions_list->Append(CreateExtensionDetailValue(
-          *extension,
-          GetInspectablePagesForExtension(*extension, true),
+          extension->get(),
+          GetInspectablePagesForExtension(extension->get(), true),
           warnings));
     }
   }
@@ -577,8 +577,8 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
        extension != extensions->end(); ++extension) {
     if ((*extension)->ShouldDisplayInExtensionSettings()) {
       extensions_list->Append(CreateExtensionDetailValue(
-          *extension,
-          GetInspectablePagesForExtension(*extension, false),
+          extension->get(),
+          GetInspectablePagesForExtension(extension->get(), false),
           warnings));
     }
   }
@@ -588,7 +588,7 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
        extension != extensions->end(); ++extension) {
     if ((*extension)->ShouldDisplayInExtensionSettings()) {
       extensions_list->Append(CreateExtensionDetailValue(
-          *extension,
+          extension->get(),
           empty_pages,  // Terminated process has no active pages.
           warnings));
     }

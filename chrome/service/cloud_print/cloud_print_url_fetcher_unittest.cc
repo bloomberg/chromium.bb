@@ -213,7 +213,7 @@ class CloudPrintURLFetcherRetryBackoffTest : public CloudPrintURLFetcherTest {
 
 
 void CloudPrintURLFetcherTest::CreateFetcher(const GURL& url, int max_retries) {
-  fetcher_ = new TestCloudPrintURLFetcher(io_message_loop_proxy());
+  fetcher_ = new TestCloudPrintURLFetcher(io_message_loop_proxy().get());
 
   // Registers an entry for test url. It only allows 3 requests to be sent
   // in 200 milliseconds.

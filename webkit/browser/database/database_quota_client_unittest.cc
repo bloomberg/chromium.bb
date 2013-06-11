@@ -210,9 +210,8 @@ class DatabaseQuotaClientTest : public testing::Test {
 
 
 TEST_F(DatabaseQuotaClientTest, GetOriginUsage) {
-  DatabaseQuotaClient client(
-      base::MessageLoopProxy::current(),
-      mock_tracker());
+  DatabaseQuotaClient client(base::MessageLoopProxy::current().get(),
+                             mock_tracker());
 
   EXPECT_EQ(0, GetOriginUsage(&client, kOriginA, kTemp));
   EXPECT_EQ(0, GetOriginUsage(&client, kOriginA, kPerm));
@@ -226,9 +225,8 @@ TEST_F(DatabaseQuotaClientTest, GetOriginUsage) {
 }
 
 TEST_F(DatabaseQuotaClientTest, GetOriginsForHost) {
-  DatabaseQuotaClient client(
-      base::MessageLoopProxy::current(),
-      mock_tracker());
+  DatabaseQuotaClient client(base::MessageLoopProxy::current().get(),
+                             mock_tracker());
 
   EXPECT_EQ(kOriginA.host(), kOriginB.host());
   EXPECT_NE(kOriginA.host(), kOriginOther.host());
@@ -252,9 +250,8 @@ TEST_F(DatabaseQuotaClientTest, GetOriginsForHost) {
 }
 
 TEST_F(DatabaseQuotaClientTest, GetOriginsForType) {
-  DatabaseQuotaClient client(
-      base::MessageLoopProxy::current(),
-      mock_tracker());
+  DatabaseQuotaClient client(base::MessageLoopProxy::current().get(),
+                             mock_tracker());
 
   EXPECT_TRUE(GetOriginsForType(&client, kTemp).empty());
   EXPECT_TRUE(GetOriginsForType(&client, kPerm).empty());
@@ -268,9 +265,8 @@ TEST_F(DatabaseQuotaClientTest, GetOriginsForType) {
 }
 
 TEST_F(DatabaseQuotaClientTest, DeleteOriginData) {
-  DatabaseQuotaClient client(
-      base::MessageLoopProxy::current(),
-      mock_tracker());
+  DatabaseQuotaClient client(base::MessageLoopProxy::current().get(),
+                             mock_tracker());
 
   // Perm deletions are short circuited in the Client and
   // should not reach the DatabaseTracker.

@@ -112,7 +112,7 @@ template<class SuperPrefService, class ConstructionPrefRegistry>
 const Value* TestingPrefServiceBase<
     SuperPrefService, ConstructionPrefRegistry>::GetManagedPref(
         const char* path) const {
-  return GetPref(managed_prefs_, path);
+  return GetPref(managed_prefs_.get(), path);
 }
 
 template<class SuperPrefService, class ConstructionPrefRegistry>
@@ -133,7 +133,7 @@ template<class SuperPrefService, class ConstructionPrefRegistry>
 const Value* TestingPrefServiceBase<
     SuperPrefService, ConstructionPrefRegistry>::GetUserPref(
         const char* path) const {
-  return GetPref(user_prefs_, path);
+  return GetPref(user_prefs_.get(), path);
 }
 
 template<class SuperPrefService, class ConstructionPrefRegistry>

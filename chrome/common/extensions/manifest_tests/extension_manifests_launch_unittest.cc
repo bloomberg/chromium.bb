@@ -24,21 +24,21 @@ TEST_F(AppLaunchManifestTest, AppLaunchContainer) {
 
   extension = LoadAndExpectSuccess("launch_tab.json");
   EXPECT_EQ(extension_misc::LAUNCH_TAB,
-            AppLaunchInfo::GetLaunchContainer(extension));
+            AppLaunchInfo::GetLaunchContainer(extension.get()));
 
   extension = LoadAndExpectSuccess("launch_panel.json");
   EXPECT_EQ(extension_misc::LAUNCH_PANEL,
-            AppLaunchInfo::GetLaunchContainer(extension));
+            AppLaunchInfo::GetLaunchContainer(extension.get()));
 
   extension = LoadAndExpectSuccess("launch_default.json");
   EXPECT_EQ(extension_misc::LAUNCH_TAB,
-            AppLaunchInfo::GetLaunchContainer(extension));
+            AppLaunchInfo::GetLaunchContainer(extension.get()));
 
   extension = LoadAndExpectSuccess("launch_width.json");
-  EXPECT_EQ(640, AppLaunchInfo::GetLaunchWidth(extension));
+  EXPECT_EQ(640, AppLaunchInfo::GetLaunchWidth(extension.get()));
 
   extension = LoadAndExpectSuccess("launch_height.json");
-  EXPECT_EQ(480, AppLaunchInfo::GetLaunchHeight(extension));
+  EXPECT_EQ(480, AppLaunchInfo::GetLaunchHeight(extension.get()));
 
   Testcase testcases[] = {
     Testcase("launch_window.json", errors::kInvalidLaunchContainer),
@@ -110,11 +110,11 @@ TEST_F(AppLaunchManifestTest, AppLaunchURL) {
   scoped_refptr<Extension> extension;
   extension = LoadAndExpectSuccess("launch_local_path.json");
   EXPECT_EQ(extension->url().spec() + "launch.html",
-            AppLaunchInfo::GetFullLaunchURL(extension).spec());
+            AppLaunchInfo::GetFullLaunchURL(extension.get()).spec());
 
   extension = LoadAndExpectSuccess("launch_local_path_localized.json");
   EXPECT_EQ(extension->url().spec() + "launch.html",
-            AppLaunchInfo::GetFullLaunchURL(extension).spec());
+            AppLaunchInfo::GetFullLaunchURL(extension.get()).spec());
 
   LoadAndExpectError("launch_web_url_relative.json",
                      ErrorUtils::FormatErrorMessage(
@@ -123,10 +123,10 @@ TEST_F(AppLaunchManifestTest, AppLaunchURL) {
 
   extension = LoadAndExpectSuccess("launch_web_url_absolute.json");
   EXPECT_EQ(GURL("http://www.google.com/launch.html"),
-            AppLaunchInfo::GetFullLaunchURL(extension));
+            AppLaunchInfo::GetFullLaunchURL(extension.get()));
   extension = LoadAndExpectSuccess("launch_web_url_localized.json");
   EXPECT_EQ(GURL("http://www.google.com/launch.html"),
-            AppLaunchInfo::GetFullLaunchURL(extension));
+            AppLaunchInfo::GetFullLaunchURL(extension.get()));
 }
 
 }  // namespace extensions

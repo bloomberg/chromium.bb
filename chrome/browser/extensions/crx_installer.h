@@ -194,7 +194,7 @@ class CrxInstaller
 
   Profile* profile() { return installer_.profile(); }
 
-  const Extension* extension() { return installer_.extension(); }
+  const Extension* extension() { return installer_.extension().get(); }
 
  private:
   friend class ::ExtensionServiceTest;

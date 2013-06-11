@@ -1685,7 +1685,7 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
     for (ExtensionSet::const_iterator iter = extensions.begin();
          iter != extensions.end(); ++iter) {
       if (notification_service->IsExtensionEnabled((*iter)->id())) {
-        extension = *iter;
+        extension = iter->get();
         break;
       }
     }
@@ -1978,7 +1978,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 #else
   // The user stylesheet watcher may not exist in a testing profile.
   UserStyleSheetWatcher* user_style_sheet_watcher =
-      UserStyleSheetWatcherFactory::GetForProfile(profile);
+      UserStyleSheetWatcherFactory::GetForProfile(profile).get();
   if (user_style_sheet_watcher) {
     web_prefs->user_style_sheet_enabled = true;
     web_prefs->user_style_sheet_location =

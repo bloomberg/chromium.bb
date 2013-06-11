@@ -415,7 +415,8 @@ void ProfileImplIOData::InitializeInternal(
           ChooseCacheBackendType(),
           lazy_params_->cache_path,
           lazy_params_->cache_max_size,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)
+              .get());
   net::HttpNetworkSession::Params network_session_params;
   PopulateNetworkSessionParams(profile_params, &network_session_params);
   net::HttpCache* main_cache = new net::HttpCache(
@@ -538,7 +539,8 @@ ProfileImplIOData::InitializeAppRequestContext(
         ChooseCacheBackendType(),
         cache_path,
         app_cache_max_size_,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)
+            .get());
   }
   net::HttpNetworkSession* main_network_session =
       main_http_factory_->GetSession();
@@ -629,7 +631,8 @@ ProfileImplIOData::InitializeMediaRequestContext(
           ChooseCacheBackendType(),
           cache_path,
           cache_max_size,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)
+              .get());
   net::HttpNetworkSession* main_network_session =
       main_http_factory_->GetSession();
   scoped_ptr<net::HttpTransactionFactory> media_http_cache(

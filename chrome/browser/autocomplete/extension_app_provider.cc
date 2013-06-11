@@ -155,7 +155,7 @@ void ExtensionAppProvider::RefreshAppList() {
   extension_apps_.clear();
   for (ExtensionSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
-    const extensions::Extension* app = *iter;
+    const extensions::Extension* app = iter->get();
     if (!app->ShouldDisplayInAppLauncher())
       continue;
     // Note: Apps that appear in the NTP only are not added here since this

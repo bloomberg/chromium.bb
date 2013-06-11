@@ -99,13 +99,14 @@ TEST(NetworkDelegateErrorObserverTest, CallOnThread) {
   base::Thread thread("test_thread");
   thread.Start();
   TestNetworkDelegate network_delegate;
-  NetworkDelegateErrorObserver
-      observer(&network_delegate,
-               base::MessageLoopProxy::current());
-  thread.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&NetworkDelegateErrorObserver::OnPACScriptError,
-                 base::Unretained(&observer), 42, base::string16()));
+  NetworkDelegateErrorObserver observer(
+      &network_delegate, base::MessageLoopProxy::current().get());
+  thread.message_loop()
+      ->PostTask(FROM_HERE,
+                 base::Bind(&NetworkDelegateErrorObserver::OnPACScriptError,
+                            base::Unretained(&observer),
+                            42,
+                            base::string16()));
   thread.Stop();
   base::MessageLoop::current()->RunUntilIdle();
   ASSERT_TRUE(network_delegate.got_pac_error());
@@ -115,12 +116,14 @@ TEST(NetworkDelegateErrorObserverTest, CallOnThread) {
 TEST(NetworkDelegateErrorObserverTest, NoDelegate) {
   base::Thread thread("test_thread");
   thread.Start();
-  NetworkDelegateErrorObserver
-      observer(NULL, base::MessageLoopProxy::current());
-  thread.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&NetworkDelegateErrorObserver::OnPACScriptError,
-                 base::Unretained(&observer), 42, base::string16()));
+  NetworkDelegateErrorObserver observer(
+      NULL, base::MessageLoopProxy::current().get());
+  thread.message_loop()
+      ->PostTask(FROM_HERE,
+                 base::Bind(&NetworkDelegateErrorObserver::OnPACScriptError,
+                            base::Unretained(&observer),
+                            42,
+                            base::string16()));
   thread.Stop();
   base::MessageLoop::current()->RunUntilIdle();
   // Shouldn't have crashed until here...

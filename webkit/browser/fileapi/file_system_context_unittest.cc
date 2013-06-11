@@ -52,8 +52,8 @@ class FileSystemContextTest : public testing::Test {
     mock_quota_manager_ =
         new quota::MockQuotaManager(false /* is_incognito */,
                                     data_dir_.path(),
-                                    base::MessageLoopProxy::current(),
-                                    base::MessageLoopProxy::current(),
+                                    base::MessageLoopProxy::current().get(),
+                                    base::MessageLoopProxy::current().get(),
                                     storage_policy_.get());
   }
 

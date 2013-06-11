@@ -456,8 +456,7 @@ void ExtensionServiceTestBase::InitializeExtensionService(
   TestingProfile::Builder profile_builder;
   // Create a PrefService that only contains user defined preference values.
   PrefServiceMockBuilder builder;
-  builder.WithUserFilePrefs(
-      params.pref_file, loop_.message_loop_proxy());
+  builder.WithUserFilePrefs(params.pref_file, loop_.message_loop_proxy().get());
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
       new user_prefs::PrefRegistrySyncable);
   scoped_ptr<PrefServiceSyncable> prefs(builder.CreateSyncable(registry.get()));
@@ -479,7 +478,7 @@ void ExtensionServiceTestBase::InitializeExtensionService(
       CommandLine::ForCurrentProcess(),
       params.extensions_install_dir,
       params.autoupdate_enabled);
-  service_->SetFileTaskRunnerForTesting(loop_.message_loop_proxy());
+  service_->SetFileTaskRunnerForTesting(loop_.message_loop_proxy().get());
   service_->set_extensions_enabled(true);
   service_->set_show_extensions_prompts(false);
   service_->set_install_updates_when_idle_for_test(false);
@@ -1880,7 +1879,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   service_->ReloadExtensions();
 
   EXPECT_EQ(1u, service_->disabled_extensions()->size());
-  extension = *service_->disabled_extensions()->begin();
+  extension = service_->disabled_extensions()->begin()->get();
 
   ASSERT_TRUE(prefs->IsExtensionDisabled(extension_id));
   ASSERT_FALSE(service_->IsExtensionEnabled(extension_id));
@@ -1923,7 +1922,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   service_->ReloadExtensions();
 
   EXPECT_EQ(1u, service_->disabled_extensions()->size());
-  extension = *service_->disabled_extensions()->begin();
+  extension = service_->disabled_extensions()->begin()->get();
 
   ASSERT_TRUE(prefs->IsExtensionDisabled(extension_id));
   ASSERT_FALSE(service_->IsExtensionEnabled(extension_id));
@@ -2198,7 +2197,7 @@ TEST_F(ExtensionServiceTest, LoadLocalizedTheme) {
   EXPECT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
   EXPECT_EQ(1u, service_->extensions()->size());
-  const Extension* theme = *service_->extensions()->begin();
+  const Extension* theme = service_->extensions()->begin()->get();
   EXPECT_EQ("name", theme->name());
   EXPECT_EQ("description", theme->description());
 
@@ -3394,7 +3393,7 @@ TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsLoadFromPrefs) {
   extensions::InstalledLoader(service_).Load(extension_info, false);
   EXPECT_EQ(1u, service_->extensions()->size());
 
-  const Extension* extension = *(service_->extensions()->begin());
+  const Extension* extension = (service_->extensions()->begin())->get();
   EXPECT_TRUE(service_->UninstallExtension(extension->id(), false, NULL));
   EXPECT_EQ(0u, service_->extensions()->size());
 

@@ -352,7 +352,7 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   radio_group.radio_items.push_back(radio_block_label);
   HostContentSettingsMap* map = profile()->GetHostContentSettingsMap();
   CookieSettings* cookie_settings =
-      CookieSettings::Factory::GetForProfile(profile());
+      CookieSettings::Factory::GetForProfile(profile()).get();
   ContentSetting most_restrictive_setting;
   SettingSource most_restrictive_setting_source = SETTING_SOURCE_NONE;
 

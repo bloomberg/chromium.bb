@@ -203,7 +203,7 @@ void CannedSyncableFileSystem::SetUp() {
   quota_manager_ = new QuotaManager(false /* is_incognito */,
                                     data_dir_.path(),
                                     io_task_runner_.get(),
-                                    base::MessageLoopProxy::current(),
+                                    base::MessageLoopProxy::current().get(),
                                     storage_policy.get());
 
   file_system_context_ = new FileSystemContext(

@@ -189,8 +189,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_NoFileAccess) {
        it != service->extensions()->end(); ++it) {
     if ((*it)->location() == extensions::Manifest::COMPONENT)
       continue;
-    if (service->AllowFileAccess(*it))
-      extension_list.push_back(*it);
+    if (service->AllowFileAccess(it->get()))
+      extension_list.push_back(it->get());
   }
 
   for (size_t i = 0; i < extension_list.size(); ++i) {

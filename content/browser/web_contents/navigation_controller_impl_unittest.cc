@@ -3593,7 +3593,7 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller.GetEntryAtIndex(i));
     screenshot_manager->TakeScreenshotFor(entry);
-    EXPECT_TRUE(entry->screenshot());
+    EXPECT_TRUE(entry->screenshot().get());
   }
 
   NavigateAndCommit(GURL("https://foo/"));
@@ -3605,13 +3605,14 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
   for (int i = 0; i < 2; ++i) {
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller.GetEntryAtIndex(i));
-    EXPECT_FALSE(entry->screenshot()) << "Screenshot " << i << " not purged";
+    EXPECT_FALSE(entry->screenshot().get()) << "Screenshot " << i
+                                            << " not purged";
   }
 
   for (int i = 2; i < controller.GetEntryCount() - 1; ++i) {
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller.GetEntryAtIndex(i));
-    EXPECT_TRUE(entry->screenshot()) << "Screenshot not found for " << i;
+    EXPECT_TRUE(entry->screenshot().get()) << "Screenshot not found for " << i;
   }
 
   // Navigate to index 5 and then try to assign screenshot to all entries.
@@ -3627,7 +3628,8 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
   for (int i = 10; i <= 12; ++i) {
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller.GetEntryAtIndex(i));
-    EXPECT_FALSE(entry->screenshot()) << "Screenshot " << i << " not purged";
+    EXPECT_FALSE(entry->screenshot().get()) << "Screenshot " << i
+                                            << " not purged";
     screenshot_manager->TakeScreenshotFor(entry);
   }
 
@@ -3644,7 +3646,8 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
   for (int i = 0; i < 2; ++i) {
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller.GetEntryAtIndex(i));
-    EXPECT_FALSE(entry->screenshot()) << "Screenshot " << i << " not purged";
+    EXPECT_FALSE(entry->screenshot().get()) << "Screenshot " << i
+                                            << " not purged";
   }
 
   // Clear all screenshots.
@@ -3655,7 +3658,8 @@ TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
   for (int i = 0; i < controller.GetEntryCount(); ++i) {
     entry = NavigationEntryImpl::FromNavigationEntry(
         controller.GetEntryAtIndex(i));
-    EXPECT_FALSE(entry->screenshot()) << "Screenshot " << i << " not cleared";
+    EXPECT_FALSE(entry->screenshot().get()) << "Screenshot " << i
+                                            << " not cleared";
   }
 }
 

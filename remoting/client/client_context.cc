@@ -32,11 +32,11 @@ base::SingleThreadTaskRunner* ClientContext::main_task_runner() {
 }
 
 base::SingleThreadTaskRunner* ClientContext::decode_task_runner() {
-  return decode_thread_.message_loop_proxy();
+  return decode_thread_.message_loop_proxy().get();
 }
 
 base::SingleThreadTaskRunner* ClientContext::audio_decode_task_runner() {
-  return audio_decode_thread_.message_loop_proxy();
+  return audio_decode_thread_.message_loop_proxy().get();
 }
 
 }  // namespace remoting

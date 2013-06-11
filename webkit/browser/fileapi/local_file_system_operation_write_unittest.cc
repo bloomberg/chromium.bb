@@ -63,11 +63,12 @@ class LocalFileSystemOperationWriteTest
   virtual void SetUp() {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
 
-    quota_manager_ = new quota::MockQuotaManager(
-        false /* is_incognito */, dir_.path(),
-        base::MessageLoopProxy::current(),
-        base::MessageLoopProxy::current(),
-        NULL /* special storage policy */);
+    quota_manager_ =
+        new quota::MockQuotaManager(false /* is_incognito */,
+                                    dir_.path(),
+                                    base::MessageLoopProxy::current().get(),
+                                    base::MessageLoopProxy::current().get(),
+                                    NULL /* special storage policy */);
     virtual_path_ = base::FilePath(FILE_PATH_LITERAL("temporary file"));
 
     file_system_context_ = CreateFileSystemContextForTesting(

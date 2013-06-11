@@ -567,7 +567,7 @@ class DatabaseTracker_TestHelper_Test {
                               false,
                               special_storage_policy.get(),
                               NULL,
-                              base::MessageLoopProxy::current()));
+                              base::MessageLoopProxy::current().get()));
 
       // Open two new databases.
       tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
@@ -647,7 +647,7 @@ class DatabaseTracker_TestHelper_Test {
                               false,
                               special_storage_policy.get(),
                               NULL,
-                              base::MessageLoopProxy::current()));
+                              base::MessageLoopProxy::current().get()));
       tracker->SetForceKeepSessionState();
 
       // Open two new databases.

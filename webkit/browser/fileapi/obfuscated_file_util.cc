@@ -1234,7 +1234,7 @@ std::string ObfuscatedFileUtil::GetDirectoryDatabaseKey(
     return std::string();
   }
   // For isolated origin we just use a type string as a key.
-  if (special_storage_policy_ &&
+  if (special_storage_policy_.get() &&
       special_storage_policy_->HasIsolatedStorage(origin)) {
     return type_string;
   }

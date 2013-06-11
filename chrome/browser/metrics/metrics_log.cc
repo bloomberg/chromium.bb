@@ -192,7 +192,7 @@ PluginPrefs* GetPluginPrefs() {
   if (profiles.empty())
     return NULL;
 
-  return PluginPrefs::GetForProfile(profiles.front());
+  return PluginPrefs::GetForProfile(profiles.front()).get();
 }
 
 // Fills |plugin| with the info contained in |plugin_info| and |plugin_prefs|.

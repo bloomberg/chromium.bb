@@ -15,7 +15,7 @@ namespace fileapi {
 class FileSystemUsageCacheTest : public testing::Test {
  public:
   FileSystemUsageCacheTest()
-      : usage_cache_(base::MessageLoopProxy::current()) {}
+      : usage_cache_(base::MessageLoopProxy::current().get()) {}
 
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());

@@ -1772,7 +1772,7 @@ void PluginInstance::UpdateLayer() {
     return;
 
   gpu::Mailbox mailbox;
-  if (bound_graphics_3d_) {
+  if (bound_graphics_3d_.get()) {
     PluginDelegate::PlatformContext3D* context =
         bound_graphics_3d_->platform_context();
     context->GetBackingMailbox(&mailbox);

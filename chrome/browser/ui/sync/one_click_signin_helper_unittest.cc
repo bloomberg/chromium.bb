@@ -288,11 +288,10 @@ void OneClickSigninHelperTest::AddEmailToOneClickRejectedList(
 }
 
 void OneClickSigninHelperTest::AllowSigninCookies(bool enable) {
-  CookieSettings* cookie_settings =
-      CookieSettings::Factory::GetForProfile(
-          Profile::FromBrowserContext(browser_context_.get()));
-  cookie_settings->SetDefaultCookieSetting(
-      enable ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+  CookieSettings* cookie_settings = CookieSettings::Factory::GetForProfile(
+      Profile::FromBrowserContext(browser_context_.get())).get();
+  cookie_settings->SetDefaultCookieSetting(enable ? CONTENT_SETTING_ALLOW
+                                                  : CONTENT_SETTING_BLOCK);
 }
 
 void OneClickSigninHelperTest::SetAllowedUsernamePattern(
@@ -359,7 +358,7 @@ TestProfileIOData* OneClickSigninHelperIOTest::CreateTestProfileIOData(
   PrefService* pref_service = profile_->GetPrefs();
   PrefService* local_state = g_browser_process->local_state();
   CookieSettings* cookie_settings =
-      CookieSettings::Factory::GetForProfile(profile_);
+      CookieSettings::Factory::GetForProfile(profile_).get();
   TestProfileIOData* io_data = new TestProfileIOData(
       is_incognito, pref_service, local_state, cookie_settings);
   io_data->set_reverse_autologin_pending_email("user@gmail.com");

@@ -127,7 +127,8 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   // Make sure it loaded properly.
   scoped_refptr<const PermissionSet> permissions =
       extension->GetActivePermissions();
-  ASSERT_EQ(*default_permissions.get(), *extension->GetActivePermissions());
+  ASSERT_EQ(*default_permissions.get(),
+            *extension->GetActivePermissions().get());
 
   // Add a few permissions.
   APIPermissionSet apis;
@@ -154,7 +155,8 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   // Make sure the extension's active permissions reflect the change.
   scoped_refptr<PermissionSet> active_permissions =
       PermissionSet::CreateUnion(default_permissions.get(), delta.get());
-  ASSERT_EQ(*active_permissions.get(), *extension->GetActivePermissions());
+  ASSERT_EQ(*active_permissions.get(),
+            *extension->GetActivePermissions().get());
 
   // Verify that the new granted and active permissions were also stored
   // in the extension preferences. In this case, the granted permissions should
@@ -188,7 +190,8 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   // Make sure the extension's active permissions reflect the change.
   active_permissions =
       PermissionSet::CreateDifference(active_permissions.get(), delta.get());
-  ASSERT_EQ(*active_permissions.get(), *extension->GetActivePermissions());
+  ASSERT_EQ(*active_permissions.get(),
+            *extension->GetActivePermissions().get());
 
   // Verify that the extension prefs hold the new active permissions and the
   // same granted permissions.

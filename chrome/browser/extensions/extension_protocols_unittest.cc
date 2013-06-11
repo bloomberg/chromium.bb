@@ -237,7 +237,7 @@ TEST_F(ExtensionProtocolTest, ResourceRequestResponseHeaders) {
   SetProtocolHandler(false);
 
   scoped_refptr<Extension> extension = CreateTestResponseHeaderExtension();
-  extension_info_map_->AddExtension(extension, base::Time::Now(), false);
+  extension_info_map_->AddExtension(extension.get(), base::Time::Now(), false);
 
   {
     net::URLRequest request(extension->GetResourceURL("test.dat"),

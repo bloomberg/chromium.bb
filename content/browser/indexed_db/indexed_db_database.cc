@@ -1020,7 +1020,7 @@ void PutOperation::Perform(IndexedDBTransaction* transaction) {
   for (size_t i = 0; i < index_writers.size(); ++i) {
     IndexedDBObjectStoreImpl::IndexWriter* index_writer = index_writers[i];
     index_writer->WriteIndexKeys(record_identifier,
-                                 backing_store_,
+                                 backing_store_.get(),
                                  transaction->BackingStoreTransaction(),
                                  database_id_,
                                  object_store_.id);
@@ -1520,7 +1520,7 @@ void IndexedDBDatabase::CreateTransaction(
           static_cast<indexed_db::TransactionMode>(mode),
           this);
   DCHECK(transactions_.find(transaction_id) == transactions_.end());
-  transactions_[transaction_id] = transaction;
+  transactions_[transaction_id] = transaction.get();
 }
 
 bool IndexedDBDatabase::IsOpenConnectionBlocked() const {
@@ -1617,7 +1617,7 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
     int64 transaction_id,
     int64 requested_version) {
 
-  DCHECK(callbacks);
+  DCHECK(callbacks.get());
   DCHECK(database_callbacks_set_.has(database_callbacks));
   if (ConnectionCount() > 1) {
     // Front end ensures the event is not fired at connections that have
@@ -1626,7 +1626,7 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
              database_callbacks_set_.begin();
          it != database_callbacks_set_.end();
          ++it) {
-      if (*it != database_callbacks.get())
+      if (it->get() != database_callbacks.get())
         (*it)->OnVersionChange(metadata_.int_version, requested_version);
     }
     // TODO(jsbell): Remove the call to on_blocked and instead wait
@@ -1699,7 +1699,7 @@ bool IndexedDBDatabase::IsDeleteDatabaseBlocked() const {
 void IndexedDBDatabase::DeleteDatabaseFinal(
     scoped_refptr<IndexedDBCallbacksWrapper> callbacks) {
   DCHECK(!IsDeleteDatabaseBlocked());
-  DCHECK(backing_store_);
+  DCHECK(backing_store_.get());
   if (!backing_store_->DeleteDatabase(metadata_.name)) {
     callbacks->OnError(
         IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
@@ -1715,7 +1715,7 @@ void IndexedDBDatabase::DeleteDatabaseFinal(
 
 void IndexedDBDatabase::Close(
     scoped_refptr<IndexedDBDatabaseCallbacksWrapper> callbacks) {
-  DCHECK(callbacks);
+  DCHECK(callbacks.get());
   DCHECK(database_callbacks_set_.has(callbacks));
 
   // Close outstanding transactions from the closing connection. This
@@ -1729,7 +1729,7 @@ void IndexedDBDatabase::Close(
                                         end = transactions.end();
          it != end;
          ++it) {
-      if (it->second->connection() == callbacks)
+      if (it->second->connection() == callbacks.get())
         it->second->Abort(
             IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
                                    "Connection is closing."));
@@ -1738,7 +1738,7 @@ void IndexedDBDatabase::Close(
 
   database_callbacks_set_.erase(callbacks);
   if (pending_second_half_open_ &&
-      pending_second_half_open_->DatabaseCallbacks() == callbacks) {
+      pending_second_half_open_->DatabaseCallbacks().get() == callbacks.get()) {
     pending_second_half_open_->Callbacks()->OnError(
         IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionAbortError,
                                "The connection was closed."));
@@ -1764,7 +1764,7 @@ void IndexedDBDatabase::Close(
 
     // This check should only be false in unit tests.
     // TODO(jsbell): Assert factory_ || we're executing a unit test.
-    if (factory_)
+    if (factory_.get())
       factory_->RemoveIDBDatabaseBackend(identifier_);
   }
 }

@@ -126,8 +126,10 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL(), kNaClUnrestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
+        GURL(),
+        GURL(),
+        kNaClUnrestricted,
+        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
         &params));
     EXPECT_TRUE(AllowsDevInterfaces(params));
   }
@@ -136,8 +138,11 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL(kExtensionUrl), kNaClRestricted,
-        CreateExtension(kExtensionUnrestricted, kExtensionNotFromWebStore),
+        GURL(),
+        GURL(kExtensionUrl),
+        kNaClRestricted,
+        CreateExtension(kExtensionUnrestricted, kExtensionNotFromWebStore)
+            .get(),
         &params));
     EXPECT_TRUE(AllowsDevInterfaces(params));
   }
@@ -146,8 +151,10 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL(kExtensionUrl), kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionFromWebStore),
+        GURL(),
+        GURL(kExtensionUrl),
+        kNaClRestricted,
+        CreateExtension(kExtensionRestricted, kExtensionFromWebStore).get(),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
   }
@@ -155,8 +162,10 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL(kExtensionUrl), kNaClUnrestricted,
-        CreateExtension(kExtensionRestricted, kExtensionFromWebStore),
+        GURL(),
+        GURL(kExtensionUrl),
+        kNaClUnrestricted,
+        CreateExtension(kExtensionRestricted, kExtensionFromWebStore).get(),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
   }
@@ -166,8 +175,10 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
     WebPluginParams params;
     AddFakeDevAttribute(&params);
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL(kExtensionUrl), kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionFromWebStore),
+        GURL(),
+        GURL(kExtensionUrl),
+        kNaClRestricted,
+        CreateExtension(kExtensionRestricted, kExtensionFromWebStore).get(),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
   }
@@ -177,8 +188,9 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
         GURL("chrome-extension://acadkphlmlegjaadjagenfimbpphcgnh"),
-        GURL(), kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionFromWebStore),
+        GURL(),
+        kNaClRestricted,
+        CreateExtension(kExtensionRestricted, kExtensionFromWebStore).get(),
         &params));
     EXPECT_TRUE(AllowsDevInterfaces(params));
   }
@@ -187,39 +199,45 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("http://plus.google.com/foo"),
+        GURL(),
+        GURL("http://plus.google.com/foo"),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
+        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com/foo"),
+        GURL(),
+        GURL("https://plus.google.com/foo"),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
+        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com/209089085730"),
+        GURL(),
+        GURL("https://plus.google.com/209089085730"),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
+        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("http://plus.sandbox.google.com/foo"),
+        GURL(),
+        GURL("http://plus.sandbox.google.com/foo"),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
+        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.sandbox.google.com/foo"),
+        GURL(),
+        GURL("https://plus.sandbox.google.com/foo"),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
+        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com/209089085730"),
+        GURL(),
+        GURL("https://plus.google.com/209089085730"),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
+        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
   }
@@ -227,9 +245,10 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com/209089085730"),
+        GURL(),
+        GURL("https://plus.google.com/209089085730"),
         kNaClUnrestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
+        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
   }
@@ -239,9 +258,10 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
     WebPluginParams params;
     AddFakeDevAttribute(&params);
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com/209089085730"),
+        GURL(),
+        GURL("https://plus.google.com/209089085730"),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
+        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
         &params));
     EXPECT_FALSE(AllowsDevInterfaces(params));
   }
@@ -249,40 +269,49 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com.evil.com/foo1"),
+        GURL(),
+        GURL("https://plus.google.com.evil.com/foo1"),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore),
+        CreateExtension(kExtensionRestricted, kExtensionNotFromWebStore).get(),
         &params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com.evil.com/foo2"),
+        GURL(),
+        GURL("https://plus.google.com.evil.com/foo2"),
         kNaClRestricted,
-        CreateExtension(kExtensionRestricted, kExtensionFromWebStore),
+        CreateExtension(kExtensionRestricted, kExtensionFromWebStore).get(),
         &params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com.evil.com/foo3"),
+        GURL(),
+        GURL("https://plus.google.com.evil.com/foo3"),
         kNaClRestricted,
-        CreateExtension(kExtensionUnrestricted, kExtensionNotFromWebStore),
+        CreateExtension(kExtensionUnrestricted, kExtensionNotFromWebStore)
+            .get(),
         &params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("https://plus.google.com.evil.com/foo4"),
+        GURL(),
+        GURL("https://plus.google.com.evil.com/foo4"),
         kNaClRestricted,
-        CreateExtension(kExtensionUnrestricted, kExtensionFromWebStore),
+        CreateExtension(kExtensionUnrestricted, kExtensionFromWebStore).get(),
         &params));
   }
   // Non chrome-extension:// URLs belonging to hosted apps are allowed.
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("http://example.com/test.html"),
+        GURL(),
+        GURL("http://example.com/test.html"),
         kNaClRestricted,
-        CreateHostedApp(kExtensionRestricted, kExtensionNotFromWebStore,
-                        "http://example.com/"),
+        CreateHostedApp(kExtensionRestricted,
+                        kExtensionNotFromWebStore,
+                        "http://example.com/").get(),
         &params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(), GURL("http://example.evil.com/test.html"),
+        GURL(),
+        GURL("http://example.evil.com/test.html"),
         kNaClRestricted,
-        CreateHostedApp(kExtensionRestricted, kExtensionNotFromWebStore,
-                        "http://example.com/"),
+        CreateHostedApp(kExtensionRestricted,
+                        kExtensionNotFromWebStore,
+                        "http://example.com/").get(),
         &params));
   }
 }

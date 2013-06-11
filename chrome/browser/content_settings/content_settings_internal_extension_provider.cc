@@ -29,8 +29,8 @@ InternalExtensionProvider::InternalExtensionProvider(
   const ExtensionSet* extensions = extension_service->extensions();
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
-    if (extensions::PluginInfo::HasPlugins(*it))
-      SetContentSettingForExtension(*it, CONTENT_SETTING_ALLOW);
+    if (extensions::PluginInfo::HasPlugins(it->get()))
+      SetContentSettingForExtension(it->get(), CONTENT_SETTING_ALLOW);
   }
   Profile* profile = extension_service->profile();
   registrar_->Add(this, chrome::NOTIFICATION_EXTENSION_HOST_CREATED,

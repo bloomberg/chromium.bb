@@ -376,7 +376,8 @@ void RenderThreadImpl::Init() {
   peer_connection_tracker_.reset(new PeerConnectionTracker());
   AddObserver(peer_connection_tracker_.get());
 
-  p2p_socket_dispatcher_ = new P2PSocketDispatcher(GetIOMessageLoopProxy());
+  p2p_socket_dispatcher_ =
+      new P2PSocketDispatcher(GetIOMessageLoopProxy().get());
   AddFilter(p2p_socket_dispatcher_.get());
 #endif  // defined(ENABLE_WEBRTC)
   vc_manager_ = new VideoCaptureImplManager();
@@ -458,7 +459,7 @@ void RenderThreadImpl::Shutdown() {
 
   compositor_thread_.reset();
   input_handler_manager_.reset();
-  if (input_event_filter_) {
+  if (input_event_filter_.get()) {
     RemoveFilter(input_event_filter_.get());
     input_event_filter_ = NULL;
   }
@@ -763,7 +764,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       compositor_message_loop_proxy_ =
           factory->GetCompositorMessageLoop();
 #endif
-    if (!compositor_message_loop_proxy_) {
+    if (!compositor_message_loop_proxy_.get()) {
       compositor_thread_.reset(new base::Thread("Compositor"));
       compositor_thread_->Start();
 #if defined(OS_ANDROID)
@@ -989,9 +990,9 @@ void RenderThreadImpl::OnGpuVDAContextLoss() {
   DCHECK(self);
   if (!self->gpu_vda_context3d_)
     return;
-  if (self->compositor_message_loop_proxy()) {
-    self->compositor_message_loop_proxy()->DeleteSoon(
-        FROM_HERE, self->gpu_vda_context3d_.release());
+  if (self->compositor_message_loop_proxy().get()) {
+    self->compositor_message_loop_proxy()
+        ->DeleteSoon(FROM_HERE, self->gpu_vda_context3d_.release());
   } else {
     self->gpu_vda_context3d_.reset();
   }

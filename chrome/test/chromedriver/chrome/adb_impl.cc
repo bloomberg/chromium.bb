@@ -74,7 +74,7 @@ AdbImpl::AdbImpl(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy,
     Log* log)
     : io_message_loop_proxy_(io_message_loop_proxy), log_(log) {
-  CHECK(io_message_loop_proxy_);
+  CHECK(io_message_loop_proxy_.get());
 }
 
 AdbImpl::~AdbImpl() {}

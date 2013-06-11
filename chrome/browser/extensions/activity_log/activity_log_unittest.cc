@@ -237,7 +237,7 @@ TEST_F(RenderViewActivityLogTest, LogPrerender) {
                        .Set("version", "1.0.0")
                        .Set("manifest_version", 2))
           .Build();
-  extension_service_->AddExtension(extension);
+  extension_service_->AddExtension(extension.get());
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
   ASSERT_TRUE(activity_log->IsLogEnabled());
   GURL url("http://www.google.com");

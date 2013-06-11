@@ -125,7 +125,7 @@ class BlobURLRequestJobTest : public testing::Test {
                                    network_delegate,
                                    test_->blob_data_.get(),
                                    test_->file_system_context_.get(),
-                                   base::MessageLoopProxy::current());
+                                   base::MessageLoopProxy::current().get());
     }
 
    private:

@@ -30,9 +30,8 @@ class ShellWindowGeometryCacheTest : public testing::Test {
   ShellWindowGeometryCacheTest() :
         ui_thread_(BrowserThread::UI, &ui_message_loop_) {
     prefs_.reset(new extensions::TestExtensionPrefs(
-        ui_message_loop_.message_loop_proxy()));
-    cache_.reset(
-        new ShellWindowGeometryCache(&profile_, prefs_->prefs()));
+        ui_message_loop_.message_loop_proxy().get()));
+    cache_.reset(new ShellWindowGeometryCache(&profile_, prefs_->prefs()));
     cache_->SetSyncDelayForTests(0);
   }
 

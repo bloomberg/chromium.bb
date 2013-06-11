@@ -488,7 +488,7 @@ void CollectedCookiesGtk::AddExceptions(GtkTreeSelection* selection,
       Profile* profile =
           Profile::FromBrowserContext(web_contents_->GetBrowserContext());
       host_node->CreateContentException(
-          CookieSettings::Factory::GetForProfile(profile), setting);
+          CookieSettings::Factory::GetForProfile(profile).get(), setting);
     }
   }
   g_list_foreach(paths, reinterpret_cast<GFunc>(gtk_tree_path_free), NULL);

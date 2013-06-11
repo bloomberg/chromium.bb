@@ -196,12 +196,12 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
   // QuotaManager prior to the QuotaManger being used. We do them
   // all together here prior to handing out a reference to anything
   // that utilizes the QuotaManager.
-  scoped_refptr<quota::QuotaManager> quota_manager =
-      new quota::QuotaManager(
-          in_memory, partition_path,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-          context->GetSpecialStoragePolicy());
+  scoped_refptr<quota::QuotaManager> quota_manager = new quota::QuotaManager(
+      in_memory,
+      partition_path,
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
+      context->GetSpecialStoragePolicy());
 
   // Each consumer is responsible for registering its QuotaClient during
   // its construction.
@@ -213,19 +213,23 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
 
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker =
       new webkit_database::DatabaseTracker(
-          partition_path, in_memory,
-          context->GetSpecialStoragePolicy(), quota_manager->proxy(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+          partition_path,
+          in_memory,
+          context->GetSpecialStoragePolicy(),
+          quota_manager->proxy(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
+              .get());
 
   base::FilePath path = in_memory ? base::FilePath() : partition_path;
   scoped_refptr<DOMStorageContextImpl> dom_storage_context =
       new DOMStorageContextImpl(path, context->GetSpecialStoragePolicy());
 
   scoped_refptr<IndexedDBContextImpl> indexed_db_context =
-      new IndexedDBContextImpl(path, context->GetSpecialStoragePolicy(),
+      new IndexedDBContextImpl(path,
+                               context->GetSpecialStoragePolicy(),
                                quota_manager->proxy(),
                                BrowserThread::GetMessageLoopProxyForThread(
-                                   BrowserThread::WEBKIT_DEPRECATED));
+                                   BrowserThread::WEBKIT_DEPRECATED).get());
 
   scoped_refptr<ChromeAppCacheService> appcache_service =
       new ChromeAppCacheService(quota_manager->proxy());

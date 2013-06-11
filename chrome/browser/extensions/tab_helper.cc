@@ -212,7 +212,7 @@ void TabHelper::DidNavigateMainFrame(
   for (ExtensionSet::const_iterator it = service->extensions()->begin();
        it != service->extensions()->end(); ++it) {
     ExtensionAction* browser_action =
-        extension_action_manager->GetBrowserAction(**it);
+        extension_action_manager->GetBrowserAction(*it->get());
     if (browser_action) {
       browser_action->ClearAllValuesForTab(SessionID::IdForTab(web_contents()));
       content::NotificationService::current()->Notify(

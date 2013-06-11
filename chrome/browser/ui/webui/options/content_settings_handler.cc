@@ -233,7 +233,7 @@ void AddExceptionsGrantedByHostedApps(
     for (extensions::URLPatternSet::const_iterator pattern = web_extent.begin();
          pattern != web_extent.end(); ++pattern) {
       std::string url_pattern = pattern->GetAsString();
-      AddExceptionForHostedApp(url_pattern, **extension, exceptions);
+      AddExceptionForHostedApp(url_pattern, *extension->get(), exceptions);
     }
     // Retrieve the launch URL.
     GURL launch_url = extensions::AppLaunchInfo::GetLaunchWebURL(*extension);

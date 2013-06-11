@@ -20,7 +20,7 @@ MockFileChangeObserver::~MockFileChangeObserver() {}
 ChangeObserverList MockFileChangeObserver::CreateList(
     MockFileChangeObserver* observer) {
   ChangeObserverList::Source source;
-  source.AddObserver(observer, base::MessageLoopProxy::current());
+  source.AddObserver(observer, base::MessageLoopProxy::current().get());
   return ChangeObserverList(source);
 }
 

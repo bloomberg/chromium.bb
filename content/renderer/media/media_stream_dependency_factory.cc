@@ -282,7 +282,7 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
     source_data->SetVideoSource(
         CreateLocalVideoSource(source_data->device_info().session_id,
                                is_screencast,
-                               &native_video_constraints));
+                               &native_video_constraints).get());
     source_observer->AddSource(source_data->video_source());
   }
 
@@ -320,7 +320,7 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
 
     // Creates a LocalAudioSource object which holds audio options.
     source_data->SetLocalAudioSource(
-        CreateLocalAudioSource(&native_audio_constraints));
+        CreateLocalAudioSource(&native_audio_constraints).get());
     source_observer->AddSource(source_data->local_audio_source());
   }
 
@@ -622,7 +622,7 @@ bool MediaStreamDependencyFactory::CreateWebAudioSource(
   // third_party/Libjingle.
   WebAudioConstraints webaudio_audio_constraints_all_false;
   source_data->SetLocalAudioSource(
-      CreateLocalAudioSource(&webaudio_audio_constraints_all_false));
+      CreateLocalAudioSource(&webaudio_audio_constraints_all_false).get());
   source->setExtraData(source_data);
 
   // Replace the default source with WebAudio as source instead.

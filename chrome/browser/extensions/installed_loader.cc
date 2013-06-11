@@ -302,9 +302,10 @@ void InstalledLoader::LoadAllExtensions() {
                               (*ex)->manifest_version(), 10);
 
     if (type == Manifest::TYPE_EXTENSION) {
-      BackgroundPageType background_page_type = GetBackgroundPageType(*ex);
-      UMA_HISTOGRAM_ENUMERATION("Extensions.BackgroundPageType",
-                                background_page_type, 10);
+      BackgroundPageType background_page_type =
+          GetBackgroundPageType(ex->get());
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.BackgroundPageType", background_page_type, 10);
     }
 
     // Using an enumeration shows us the total installed ratio across all users.
@@ -355,16 +356,16 @@ void InstalledLoader::LoadAllExtensions() {
       ++item_user_count;
     ExtensionActionManager* extension_action_manager =
         ExtensionActionManager::Get(extension_service_->profile());
-    if (extension_action_manager->GetPageAction(**ex))
+    if (extension_action_manager->GetPageAction(*ex->get()))
       ++page_action_count;
-    if (extension_action_manager->GetBrowserAction(**ex))
+    if (extension_action_manager->GetBrowserAction(*ex->get()))
       ++browser_action_count;
 
-    if (extensions::ManagedModeInfo::IsContentPack(*ex))
+    if (extensions::ManagedModeInfo::IsContentPack(ex->get()))
       ++content_pack_count;
 
     extension_service_->RecordPermissionMessagesHistogram(
-        *ex, "Extensions.Permissions_Load");
+        ex->get(), "Extensions.Permissions_Load");
   }
   const ExtensionSet* disabled_extensions =
       extension_service_->disabled_extensions();

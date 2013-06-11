@@ -334,7 +334,7 @@ void ExtensionToolbarModel::Populate(
   // Create the lists.
   for (ExtensionSet::const_iterator it = service_->extensions()->begin();
        it != service_->extensions()->end(); ++it) {
-    const Extension* extension = *it;
+    const Extension* extension = it->get();
     if (!extension_action_manager->GetBrowserAction(*extension))
       continue;
     if (!extensions::ExtensionActionAPI::GetBrowserActionVisibility(

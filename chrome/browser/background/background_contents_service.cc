@@ -517,7 +517,7 @@ void BackgroundContentsService::LoadBackgroundContentsFromManifests(
       extension_service()->extensions();
   ExtensionSet::const_iterator iter = extensions->begin();
   for (; iter != extensions->end(); ++iter) {
-    const Extension* extension = *iter;
+    const Extension* extension = iter->get();
     if (extension->is_hosted_app() &&
         BackgroundInfo::HasBackgroundPage(extension)) {
       LoadBackgroundContents(profile,

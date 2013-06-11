@@ -792,7 +792,7 @@ bool ExtensionService::UninstallExtension(
   }
 
   GURL launch_web_url_origin(
-      extensions::AppLaunchInfo::GetLaunchWebURL(extension).GetOrigin());
+      extensions::AppLaunchInfo::GetLaunchWebURL(extension.get()).GetOrigin());
   bool is_storage_isolated =
       extensions::AppIsolationInfo::HasIsolatedStorage(extension.get());
 
@@ -1156,7 +1156,7 @@ void ExtensionService::CheckManagementPolicy() {
   // Loop through extensions list, unload installed extensions.
   for (ExtensionSet::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
-    const Extension* extension = (*iter);
+    const Extension* extension = (iter->get());
     if (!system_->management_policy()->UserMayLoad(extension, NULL))
       to_be_removed.push_back(extension->id());
   }
@@ -1694,7 +1694,7 @@ bool ExtensionService::PopulateExtensionErrorUI(
 
   for (ExtensionSet::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
-    const Extension* e = *iter;
+    const Extension* e = iter->get();
 
     // Extensions disabled by policy. Note: this no longer includes blacklisted
     // extensions, though we still show the same UI.
@@ -1754,7 +1754,7 @@ void ExtensionService::UpdateExternalExtensionAlert() {
   const Extension* extension = NULL;
   for (ExtensionSet::const_iterator iter = disabled_extensions_.begin();
        iter != disabled_extensions_.end(); ++iter) {
-    const Extension* e = *iter;
+    const Extension* e = iter->get();
     if (IsUnacknowledgedExternalExtension(e)) {
       extension = e;
       break;
@@ -2118,9 +2118,8 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
     // that requires the user's approval. This could occur because the browser
     // upgraded and recognized additional privileges, or an extension upgrades
     // to a version that requires additional privileges.
-    is_privilege_increase =
-        granted_permissions->HasLessPrivilegesThan(
-            extension->GetActivePermissions());
+    is_privilege_increase = granted_permissions->HasLessPrivilegesThan(
+        extension->GetActivePermissions().get());
   }
 
   if (is_extension_upgrade) {
@@ -2168,7 +2167,7 @@ void ExtensionService::UpdateActiveExtensionsInCrashReporter() {
   std::set<std::string> extension_ids;
   for (ExtensionSet::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
-    const Extension* extension = *iter;
+    const Extension* extension = iter->get();
     if (!extension->is_theme() && extension->location() != Manifest::COMPONENT)
       extension_ids.insert(extension->id());
   }
@@ -2583,7 +2582,7 @@ void ExtensionService::Observe(int type,
            iter != extensions_.end(); ++iter) {
         // Renderers don't need to know about themes.
         if (!(*iter)->is_theme())
-          loaded_extensions.push_back(ExtensionMsg_Loaded_Params(*iter));
+          loaded_extensions.push_back(ExtensionMsg_Loaded_Params(iter->get()));
       }
       process->Send(new ExtensionMsg_Loaded(loaded_extensions));
       break;
@@ -2790,11 +2789,9 @@ void ExtensionService::GarbageCollectIsolatedStorage() {
       new base::hash_set<base::FilePath>());
   for (ExtensionSet::const_iterator it = extensions_.begin();
        it != extensions_.end(); ++it) {
-    if (extensions::AppIsolationInfo::HasIsolatedStorage(*it)) {
-      active_paths->insert(
-          BrowserContext::GetStoragePartitionForSite(
-              profile_,
-              GetSiteForExtensionId((*it)->id()))->GetPath());
+    if (extensions::AppIsolationInfo::HasIsolatedStorage(it->get())) {
+      active_paths->insert(BrowserContext::GetStoragePartitionForSite(
+          profile_, GetSiteForExtensionId((*it)->id()))->GetPath());
     }
   }
 

@@ -73,7 +73,7 @@ TEST_F(SyncWebSocketImplTest, SendReceive) {
 }
 
 TEST_F(SyncWebSocketImplTest, SendReceiveTimeout) {
-  SyncWebSocketImpl sock(context_getter_);
+  SyncWebSocketImpl sock(context_getter_.get());
   ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
   ASSERT_TRUE(sock.Send("hi"));
   std::string message;

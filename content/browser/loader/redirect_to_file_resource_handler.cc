@@ -95,7 +95,7 @@ bool RedirectToFileResourceHandler::OnWillStart(int request_id,
     // network request like this.
     did_defer_ = *defer = true;
     base::FileUtilProxy::CreateTemporary(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get(),
         base::PLATFORM_FILE_ASYNC,
         base::Bind(&RedirectToFileResourceHandler::DidCreateTemporaryFile,
                    weak_factory_.GetWeakPtr()));
@@ -165,12 +165,13 @@ void RedirectToFileResourceHandler::DidCreateTemporaryFile(
     base::PassPlatformFile file_handle,
     const base::FilePath& file_path) {
   deletable_file_ = ShareableFileReference::GetOrCreate(
-      file_path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
-  file_stream_.reset(new net::FileStream(file_handle.ReleaseValue(),
-                                         base::PLATFORM_FILE_WRITE |
-                                         base::PLATFORM_FILE_ASYNC,
-                                         NULL));
+      file_path,
+      ShareableFileReference::DELETE_ON_FINAL_RELEASE,
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get());
+  file_stream_.reset(
+      new net::FileStream(file_handle.ReleaseValue(),
+                          base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC,
+                          NULL));
   host_->RegisterDownloadedTempFile(
       process_id_, request_id_, deletable_file_.get());
   ResumeIfDeferred();

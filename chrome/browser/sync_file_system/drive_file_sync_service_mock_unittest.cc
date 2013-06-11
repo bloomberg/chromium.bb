@@ -282,7 +282,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
         scoped_ptr<DriveUploaderInterface>()).Pass();
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
     metadata_store_.reset(new DriveMetadataStore(
-        base_dir_.path(), base::MessageLoopProxy::current()));
+        base_dir_.path(), base::MessageLoopProxy::current().get()));
 
     bool done = false;
     metadata_store_->Initialize(base::Bind(&DidInitialize, &done));

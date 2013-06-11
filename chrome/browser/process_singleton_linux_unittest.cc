@@ -87,7 +87,7 @@ class ProcessSingletonLinuxTest : public testing::Test {
 
   virtual void TearDown() {
     scoped_refptr<base::ThreadTestHelper> io_helper(new base::ThreadTestHelper(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get()));
     ASSERT_TRUE(io_helper->Run());
 
     // Destruct the ProcessSingleton object before the IO thread so that its
@@ -98,8 +98,8 @@ class ProcessSingletonLinuxTest : public testing::Test {
           base::Bind(&ProcessSingletonLinuxTest::DestructProcessSingleton,
                      base::Unretained(this)));
 
-      scoped_refptr<base::ThreadTestHelper> helper(
-          new base::ThreadTestHelper(worker_thread_->message_loop_proxy()));
+      scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
+          worker_thread_->message_loop_proxy().get()));
       ASSERT_TRUE(helper->Run());
     }
 
@@ -119,8 +119,7 @@ class ProcessSingletonLinuxTest : public testing::Test {
                   base::Unretained(this)));
 
     scoped_refptr<base::ThreadTestHelper> helper(
-        new base::ThreadTestHelper(
-            worker_thread_->message_loop_proxy()));
+        new base::ThreadTestHelper(worker_thread_->message_loop_proxy().get()));
     ASSERT_TRUE(helper->Run());
   }
 

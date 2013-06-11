@@ -276,8 +276,10 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
     host = new ImporterHost;
 #endif
     host->SetObserver(observer);
-    host->StartImportSettings(source_profile, browser()->profile(),
-                              items, make_scoped_refptr(writer));
+    host->StartImportSettings(source_profile,
+                              browser()->profile(),
+                              items,
+                              make_scoped_refptr(writer).get());
     base::MessageLoop::current()->Run();
   }
 

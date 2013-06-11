@@ -24,7 +24,7 @@ TestingPrefServiceBase<PrefServiceSyncable, user_prefs::PrefRegistrySyncable>::
                              NULL,
                              user_prefs,
                              recommended_prefs,
-                             pref_registry->defaults(),
+                             pref_registry->defaults().get(),
                              pref_notifier),
           user_prefs,
           pref_registry,

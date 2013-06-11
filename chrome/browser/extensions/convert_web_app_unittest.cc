@@ -131,7 +131,7 @@ TEST(ExtensionFromWebApp, Basic) {
   EXPECT_EQ("1978.12.11.0", extension->version()->GetString());
   EXPECT_EQ(UTF16ToUTF8(web_app.title), extension->name());
   EXPECT_EQ(UTF16ToUTF8(web_app.description), extension->description());
-  EXPECT_EQ(web_app.app_url, AppLaunchInfo::GetFullLaunchURL(extension));
+  EXPECT_EQ(web_app.app_url, AppLaunchInfo::GetFullLaunchURL(extension.get()));
   EXPECT_EQ(2u, extension->GetActivePermissions()->apis().size());
   EXPECT_TRUE(extension->HasAPIPermission("geolocation"));
   EXPECT_TRUE(extension->HasAPIPermission("notifications"));
@@ -181,7 +181,7 @@ TEST(ExtensionFromWebApp, Minimal) {
   EXPECT_EQ("1978.12.11.0", extension->version()->GetString());
   EXPECT_EQ(UTF16ToUTF8(web_app.title), extension->name());
   EXPECT_EQ("", extension->description());
-  EXPECT_EQ(web_app.app_url, AppLaunchInfo::GetFullLaunchURL(extension));
+  EXPECT_EQ(web_app.app_url, AppLaunchInfo::GetFullLaunchURL(extension.get()));
   EXPECT_EQ(0u, IconsInfo::GetIcons(extension.get()).map().size());
   EXPECT_EQ(0u, extension->GetActivePermissions()->apis().size());
   ASSERT_EQ(1u, extension->web_extent().patterns().size());

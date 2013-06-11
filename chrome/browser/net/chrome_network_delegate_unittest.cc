@@ -285,12 +285,12 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
   ChromeNetworkDelegatePrivacyModeTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         forwarder_(new extensions::EventRouterForwarder()),
-        cookie_settings_(CookieSettings::Factory::GetForProfile(&profile_)),
+        cookie_settings_(CookieSettings::Factory::GetForProfile(&profile_)
+                             .get()),
         kBlockedSite("http://ads.thirdparty.com"),
         kAllowedSite("http://good.allays.com"),
         kFirstPartySite("http://cool.things.com"),
-        kBlockedFirstPartySite("http://no.thirdparties.com") {
-  }
+        kBlockedFirstPartySite("http://no.thirdparties.com") {}
 
   virtual void SetUp() OVERRIDE {
     ChromeNetworkDelegate::InitializePrefsOnUIThread(

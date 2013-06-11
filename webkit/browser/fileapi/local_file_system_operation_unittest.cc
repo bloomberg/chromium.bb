@@ -59,14 +59,14 @@ class LocalFileSystemOperationTest
     change_observers_ = MockFileChangeObserver::CreateList(&change_observer_);
 
     base::FilePath base_dir = base_.path().AppendASCII("filesystem");
-    quota_manager_ = new quota::MockQuotaManager(
-        false /* is_incognito */, base_dir,
-        base::MessageLoopProxy::current(),
-        base::MessageLoopProxy::current(),
-        NULL /* special storage policy */);
+    quota_manager_ =
+        new quota::MockQuotaManager(false /* is_incognito */,
+                                    base_dir,
+                                    base::MessageLoopProxy::current().get(),
+                                    base::MessageLoopProxy::current().get(),
+                                    NULL /* special storage policy */);
     quota_manager_proxy_ = new quota::MockQuotaManagerProxy(
-        quota_manager(),
-        base::MessageLoopProxy::current());
+        quota_manager(), base::MessageLoopProxy::current().get());
     sandbox_file_system_.SetUp(base_dir, quota_manager_proxy_.get());
     sandbox_file_system_.file_system_context()->sandbox_provider()->
         AddFileChangeObserver(sandbox_file_system_.type(),

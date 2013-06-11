@@ -231,8 +231,8 @@ void UserScriptListener::Observe(int type,
       ExtensionService* service = profile->GetExtensionService();
       for (ExtensionSet::const_iterator it = service->extensions()->begin();
            it != service->extensions()->end(); ++it) {
-        if (*it != unloaded_extension)
-          CollectURLPatterns(*it, &new_patterns);
+        if (it->get() != unloaded_extension)
+          CollectURLPatterns(it->get(), &new_patterns);
       }
       BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
           &UserScriptListener::ReplaceURLPatterns, this,

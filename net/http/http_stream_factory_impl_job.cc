@@ -391,8 +391,8 @@ int HttpStreamFactoryImpl::Job::OnHostResolution(
   // ClientSocketPoolManager will be destroyed in the same callback that
   // destroys the SpdySessionPool.
   bool has_session =
-      spdy_session_pool->GetIfExists(spdy_session_key, net_log) != NULL;
-  return has_session ? ERR_SPDY_SESSION_ALREADY_EXISTS  : OK;
+      spdy_session_pool->GetIfExists(spdy_session_key, net_log).get() != NULL;
+  return has_session ? ERR_SPDY_SESSION_ALREADY_EXISTS : OK;
 }
 
 void HttpStreamFactoryImpl::Job::OnIOComplete(int result) {

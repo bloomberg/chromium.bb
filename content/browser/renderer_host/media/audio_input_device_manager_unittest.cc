@@ -59,7 +59,7 @@ class AudioInputDeviceManagerTest : public testing::Test {
     manager_ = new AudioInputDeviceManager(audio_manager_.get());
     audio_input_listener_.reset(new MockAudioInputDeviceManagerListener());
     manager_->Register(audio_input_listener_.get(),
-                       message_loop_->message_loop_proxy());
+                       message_loop_->message_loop_proxy().get());
 
     // Gets the enumerated device list from the AudioInputDeviceManager.
     manager_->EnumerateDevices(MEDIA_DEVICE_AUDIO_CAPTURE);

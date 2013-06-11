@@ -827,7 +827,7 @@ void NaClProcessHost::OnPpapiChannelCreated(
         new IPC::ChannelProxy(channel_handle,
                               IPC::Channel::MODE_CLIENT,
                               &ipc_plugin_listener_,
-                              base::MessageLoopProxy::current()));
+                              base::MessageLoopProxy::current().get()));
     // Create the browser ppapi host and enable PPAPI message dispatching to the
     // browser process.
     ppapi_host_.reset(content::BrowserPpapiHost::CreateExternalPluginProcess(

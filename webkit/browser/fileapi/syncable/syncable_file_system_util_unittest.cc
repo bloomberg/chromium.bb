@@ -119,12 +119,12 @@ TEST(SyncableFileSystemUtilTest, SerializeBeforeOpenFileSystem) {
 
   // Setting up a full syncable filesystem environment.
   CannedSyncableFileSystem file_system(GURL(kOrigin),
-                                       base::MessageLoopProxy::current(),
-                                       base::MessageLoopProxy::current());
+                                       base::MessageLoopProxy::current().get(),
+                                       base::MessageLoopProxy::current().get());
   file_system.SetUp();
   scoped_refptr<LocalFileSyncContext> sync_context =
-      new LocalFileSyncContext(base::MessageLoopProxy::current(),
-                               base::MessageLoopProxy::current());
+      new LocalFileSyncContext(base::MessageLoopProxy::current().get(),
+                               base::MessageLoopProxy::current().get());
 
   // Before calling initialization we would not be able to get a valid
   // deserialized URL.

@@ -36,8 +36,9 @@ void ProfileImportHandler::OnImportStart(
     uint16 items,
     const base::DictionaryValue& localized_strings) {
   bridge_ = new ExternalProcessImporterBridge(
-      localized_strings, content::UtilityThread::Get(),
-      base::MessageLoopProxy::current());
+      localized_strings,
+      content::UtilityThread::Get(),
+      base::MessageLoopProxy::current().get());
   importer_ = importer::CreateImporterByType(source_profile.importer_type);
   if (!importer_.get()) {
     Send(new ProfileImportProcessHostMsg_Import_Finished(

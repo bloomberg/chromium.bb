@@ -111,9 +111,8 @@ void StressTheCache(int iteration) {
           base::Thread::Options(base::MessageLoop::TYPE_IO, 0)))
     return;
 
-  disk_cache::BackendImpl* cache =
-      new disk_cache::BackendImpl(path, mask, cache_thread.message_loop_proxy(),
-                                  NULL);
+  disk_cache::BackendImpl* cache = new disk_cache::BackendImpl(
+      path, mask, cache_thread.message_loop_proxy().get(), NULL);
   cache->SetMaxSize(cache_size);
   cache->SetFlags(disk_cache::kNoLoadProtection);
 

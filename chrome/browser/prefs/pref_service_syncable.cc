@@ -96,7 +96,7 @@ PrefServiceSyncable* PrefServiceSyncable::CreateIncognitoPrefService(
                                             NULL,  // command_line_prefs
                                             incognito_pref_store,
                                             NULL,  // recommended
-                                            forked_registry->defaults(),
+                                            forked_registry->defaults().get(),
                                             pref_notifier),
       incognito_pref_store,
       forked_registry.get(),

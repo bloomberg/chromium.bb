@@ -573,7 +573,7 @@ void RenderWidget::OnUpdateRectAck() {
 bool RenderWidget::SupportsAsynchronousSwapBuffers() {
   // Contexts using the command buffer support asynchronous swapbuffers.
   // See RenderWidget::CreateOutputSurface().
-  if (RenderThreadImpl::current()->compositor_message_loop_proxy())
+  if (RenderThreadImpl::current()->compositor_message_loop_proxy().get())
     return false;
 
   return true;
@@ -1513,7 +1513,7 @@ void RenderWidget::suppressCompositorScheduling(bool enable) {
 void RenderWidget::willBeginCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
 
-  DCHECK(RenderThreadImpl::current()->compositor_message_loop_proxy());
+  DCHECK(RenderThreadImpl::current()->compositor_message_loop_proxy().get());
 
   // The following two can result in further layout and possibly
   // enable GPU acceleration so they need to be called before any painting
@@ -1573,7 +1573,7 @@ void RenderWidget::didCompleteSwapBuffers() {
 
 void RenderWidget::scheduleComposite() {
   TRACE_EVENT0("gpu", "RenderWidget::scheduleComposite");
-  if (RenderThreadImpl::current()->compositor_message_loop_proxy() &&
+  if (RenderThreadImpl::current()->compositor_message_loop_proxy().get() &&
       compositor_) {
     compositor_->setNeedsRedraw();
   } else {

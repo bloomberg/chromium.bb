@@ -164,8 +164,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     fake_remote_processor_.reset(new FakeRemoteChangeProcessor);
 
     metadata_store_ = new DriveMetadataStore(
-        base_dir_,
-        base::MessageLoopProxy::current());
+        base_dir_, base::MessageLoopProxy::current().get());
 
     bool done = false;
     metadata_store_->Initialize(base::Bind(&DidInitialize, &done));
@@ -251,8 +250,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     message_loop_.RunUntilIdle();
 
     metadata_store_ = new DriveMetadataStore(
-        base_dir_,
-        base::MessageLoopProxy::current());
+        base_dir_, base::MessageLoopProxy::current().get());
 
     bool done = false;
     metadata_store_->Initialize(base::Bind(&DidInitialize, &done));

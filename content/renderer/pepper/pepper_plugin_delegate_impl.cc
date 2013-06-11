@@ -286,7 +286,8 @@ void DidOpenFileSystemURL(
   // Make sure we won't leak file handle if the requester has died.
   if (file != base::kInvalidPlatformFileValue) {
     base::FileUtilProxy::Close(
-        RenderThreadImpl::current()->GetFileThreadMessageLoopProxy(), file,
+        RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get(),
+        file,
         base::Bind(&DoNotifyCloseFile, file_open_id));
   }
 }
@@ -965,7 +966,8 @@ void PepperPluginDelegateImpl::OnAsyncFileOpened(
   callback->Run(error_code, base::PassPlatformFile(&file));
   // Make sure we won't leak file handle if the requester has died.
   if (file != base::kInvalidPlatformFileValue)
-    base::FileUtilProxy::Close(GetFileThreadMessageLoopProxy(), file,
+    base::FileUtilProxy::Close(GetFileThreadMessageLoopProxy().get(),
+                               file,
                                base::FileUtilProxy::StatusCallback());
   delete callback;
 }

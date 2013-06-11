@@ -592,11 +592,12 @@ void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
   CHECK(device_thread_->Start());
 
   audio_input_device_manager_ = new AudioInputDeviceManager(audio_manager_);
-  audio_input_device_manager_->Register(this,
-                                        device_thread_->message_loop_proxy());
+  audio_input_device_manager_->Register(
+      this, device_thread_->message_loop_proxy().get());
 
   video_capture_manager_ = new VideoCaptureManager();
-  video_capture_manager_->Register(this, device_thread_->message_loop_proxy());
+  video_capture_manager_->Register(this,
+                                   device_thread_->message_loop_proxy().get());
 
   // We want to be notified of IO message loop destruction to delete the thread
   // and the device managers.

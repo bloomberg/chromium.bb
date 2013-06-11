@@ -106,11 +106,13 @@ ChromeAppCacheServiceTest::CreateAppCacheService(
   scoped_refptr<MockURLRequestContextGetter> mock_request_context_getter =
       new MockURLRequestContextGetter(
           browser_context_.GetResourceContext()->GetRequestContext(),
-          message_loop_.message_loop_proxy());
+          message_loop_.message_loop_proxy().get());
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+      BrowserThread::IO,
+      FROM_HERE,
       base::Bind(&ChromeAppCacheService::InitializeOnIOThread,
-                 appcache_service.get(), appcache_path,
+                 appcache_service.get(),
+                 appcache_path,
                  browser_context_.GetResourceContext(),
                  mock_request_context_getter,
                  mock_policy));

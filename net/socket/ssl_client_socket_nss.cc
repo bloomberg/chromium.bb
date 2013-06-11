@@ -3111,7 +3111,7 @@ int SSLClientSocketNSS::Init() {
 }
 
 void SSLClientSocketNSS::InitCore() {
-  core_ = new Core(base::ThreadTaskRunnerHandle::Get(),
+  core_ = new Core(base::ThreadTaskRunnerHandle::Get().get(),
                    nss_task_runner_.get(),
                    transport_.get(),
                    host_and_port_,
@@ -3419,7 +3419,7 @@ int SSLClientSocketNSS::DoVerifyCert(int result) {
       core_->state().server_cert.get(),
       host_and_port_.host(),
       flags,
-      SSLConfigService::GetCRLSet(),
+      SSLConfigService::GetCRLSet().get(),
       &server_cert_verify_result_,
       base::Bind(&SSLClientSocketNSS::OnHandshakeIOComplete,
                  base::Unretained(this)),

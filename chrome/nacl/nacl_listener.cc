@@ -206,8 +206,8 @@ void NaClListener::Listen() {
   std::string channel_name =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID);
-  channel_.reset(new IPC::SyncChannel(this, io_thread_.message_loop_proxy(),
-                                      &shutdown_event_));
+  channel_.reset(new IPC::SyncChannel(
+      this, io_thread_.message_loop_proxy().get(), &shutdown_event_));
   filter_ = new IPC::SyncMessageFilter(&shutdown_event_);
   channel_->AddFilter(filter_.get());
   channel_->Init(channel_name, IPC::Channel::MODE_CLIENT, true);
@@ -238,7 +238,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     IPC::ChannelHandle handle =
         IPC::Channel::GenerateVerifiedChannelID("nacl");
     scoped_refptr<NaClIPCAdapter> ipc_adapter(
-        new NaClIPCAdapter(handle, io_thread_.message_loop_proxy()));
+        new NaClIPCAdapter(handle, io_thread_.message_loop_proxy().get()));
     ipc_adapter->ConnectChannel();
 
     // Pass a NaClDesc to the untrusted side. This will hold a ref to the

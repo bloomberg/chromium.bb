@@ -69,14 +69,14 @@ void AppRestoreService::HandleStartup(bool should_restore_apps) {
 
   for (ExtensionSet::const_iterator it = extensions->begin();
       it != extensions->end(); ++it) {
-    const Extension* extension = *it;
+    const Extension* extension = it->get();
     if (extension_prefs->IsExtensionRunning(extension->id())) {
       RecordAppStop(extension->id());
       // If we are not restoring apps (e.g., because it is a clean restart), and
       // the app does not have retain permission, explicitly clear the retained
       // entries queue.
       if (should_restore_apps) {
-        RestoreApp(*it);
+        RestoreApp(it->get());
       } else {
         SavedFilesService::Get(profile_)->ClearQueueIfNoRetainPermission(
             extension);

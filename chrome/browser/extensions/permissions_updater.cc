@@ -83,7 +83,7 @@ void PermissionsUpdater::GrantActivePermissions(const Extension* extension) {
     return;
 
   ExtensionPrefs::Get(profile_)->AddGrantedPermissions(
-      extension->id(), extension->GetActivePermissions());
+      extension->id(), extension->GetActivePermissions().get());
 }
 
 void PermissionsUpdater::UpdateActivePermissions(

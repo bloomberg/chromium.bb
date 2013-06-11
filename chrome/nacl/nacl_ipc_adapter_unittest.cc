@@ -31,7 +31,7 @@ class NaClIPCAdapterTest : public testing::Test {
     // loop instead of using a real IO thread. This should work OK since we do
     // not need real IPC for the tests.
     adapter_ = new NaClIPCAdapter(scoped_ptr<IPC::Channel>(sink_),
-                                  base::MessageLoopProxy::current());
+                                  base::MessageLoopProxy::current().get());
   }
   virtual void TearDown() OVERRIDE {
     sink_ = NULL;  // This pointer is actually owned by the IPCAdapter.

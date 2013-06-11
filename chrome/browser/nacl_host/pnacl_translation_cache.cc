@@ -163,7 +163,7 @@ void PNaClTranslationCacheEntry::WriteEntry(int offset, int len) {
   int rv = entry_->WriteData(
       1,
       offset,
-      io_buf,
+      io_buf.get(),
       len,
       base::Bind(&PNaClTranslationCacheEntry::DispatchNext, this),
       false);
@@ -176,7 +176,7 @@ void PNaClTranslationCacheEntry::ReadEntry(int offset, int len) {
   int rv = entry_->ReadData(
       1,
       offset,
-      read_buf_,
+      read_buf_.get(),
       len,
       base::Bind(&PNaClTranslationCacheEntry::DispatchNext, this));
   if (rv != net::ERR_IO_PENDING)
@@ -315,7 +315,7 @@ int PNaClTranslationCache::Init(net::CacheType cache_type,
       cache_dir,
       cache_size,
       true /* force_initialize */,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE).get(),
       NULL, /* dummy net log */
       &disk_cache_,
       base::Bind(&PNaClTranslationCache::OnCreateBackendComplete, AsWeakPtr()));

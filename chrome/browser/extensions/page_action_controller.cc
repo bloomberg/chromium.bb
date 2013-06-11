@@ -41,7 +41,8 @@ std::vector<ExtensionAction*> PageActionController::GetCurrentActions() const {
 
   for (ExtensionSet::const_iterator i = service->extensions()->begin();
        i != service->extensions()->end(); ++i) {
-    ExtensionAction* action = extension_action_manager->GetPageAction(**i);
+    ExtensionAction* action =
+        extension_action_manager->GetPageAction(*i->get());
     if (action)
       current_actions.push_back(action);
   }

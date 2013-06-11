@@ -43,8 +43,9 @@ void ChromeAppCacheService::InitializeOnIOThread(
   Initialize(
       cache_path_,
       BrowserThread::GetMessageLoopProxyForThread(
-          BrowserThread::FILE_USER_BLOCKING),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
+          BrowserThread::FILE_USER_BLOCKING)
+          .get(),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE).get());
   set_appcache_policy(this);
   set_special_storage_policy(special_storage_policy.get());
 }

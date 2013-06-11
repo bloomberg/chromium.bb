@@ -154,9 +154,12 @@ class Worker : public Listener, public Sender {
   }
 
   virtual SyncChannel* CreateChannel() {
-    return new SyncChannel(
-        channel_name_, mode_, this, ipc_thread_.message_loop_proxy(), true,
-        &shutdown_event_);
+    return new SyncChannel(channel_name_,
+                           mode_,
+                           this,
+                           ipc_thread_.message_loop_proxy().get(),
+                           true,
+                           &shutdown_event_);
   }
 
   base::Thread* ListenerThread() {
@@ -325,7 +328,7 @@ class TwoStepServer : public Worker {
 
   virtual SyncChannel* CreateChannel() OVERRIDE {
     SyncChannel* channel = new SyncChannel(
-        this, ipc_thread().message_loop_proxy(), shutdown_event());
+        this, ipc_thread().message_loop_proxy().get(), shutdown_event());
     channel->Init(channel_name(), mode(), create_pipe_now_);
     return channel;
   }
@@ -346,7 +349,7 @@ class TwoStepClient : public Worker {
 
   virtual SyncChannel* CreateChannel() OVERRIDE {
     SyncChannel* channel = new SyncChannel(
-        this, ipc_thread().message_loop_proxy(), shutdown_event());
+        this, ipc_thread().message_loop_proxy().get(), shutdown_event());
     channel->Init(channel_name(), mode(), create_pipe_now_);
     return channel;
   }
@@ -1242,9 +1245,13 @@ class RestrictedDispatchClient : public Worker {
     else
       LOG(ERROR) << "Send failed to dispatch incoming message on same channel";
 
-    non_restricted_channel_.reset(new SyncChannel(
-        "non_restricted_channel", Channel::MODE_CLIENT, this,
-        ipc_thread().message_loop_proxy(), true, shutdown_event()));
+    non_restricted_channel_.reset(
+        new SyncChannel("non_restricted_channel",
+                        Channel::MODE_CLIENT,
+                        this,
+                        ipc_thread().message_loop_proxy().get(),
+                        true,
+                        shutdown_event()));
 
     server_->ListenerThread()->message_loop()->PostTask(
         FROM_HERE, base::Bind(&RestrictedDispatchServer::OnDoPing, server_, 2));
@@ -1630,9 +1637,13 @@ class RestrictedDispatchPipeWorker : public Worker {
     if (is_first())
       event1_->Signal();
     event2_->Wait();
-    other_channel_.reset(new SyncChannel(
-        other_channel_name_, Channel::MODE_CLIENT, this,
-        ipc_thread().message_loop_proxy(), true, shutdown_event()));
+    other_channel_.reset(
+        new SyncChannel(other_channel_name_,
+                        Channel::MODE_CLIENT,
+                        this,
+                        ipc_thread().message_loop_proxy().get(),
+                        true,
+                        shutdown_event()));
     other_channel_->SetRestrictDispatchChannelGroup(group_);
     if (!is_first()) {
       event1_->Signal();
@@ -1706,9 +1717,13 @@ class ReentrantReplyServer1 : public Worker {
         server_ready_(server_ready) { }
 
   virtual void Run() OVERRIDE {
-    server2_channel_.reset(new SyncChannel(
-        "reentrant_reply2", Channel::MODE_CLIENT, this,
-        ipc_thread().message_loop_proxy(), true, shutdown_event()));
+    server2_channel_.reset(
+        new SyncChannel("reentrant_reply2",
+                        Channel::MODE_CLIENT,
+                        this,
+                        ipc_thread().message_loop_proxy().get(),
+                        true,
+                        shutdown_event()));
     server_ready_->Signal();
     Message* msg = new SyncChannelTestMsg_Reentrant1();
     server2_channel_->Send(msg);

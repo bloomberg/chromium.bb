@@ -39,8 +39,8 @@ class DomStorageContextTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     storage_policy_ = new quota::MockSpecialStoragePolicy;
-    task_runner_ = new MockDomStorageTaskRunner(
-            base::MessageLoopProxy::current());
+    task_runner_ =
+        new MockDomStorageTaskRunner(base::MessageLoopProxy::current().get());
     context_ = new DomStorageContext(temp_dir_.path(),
                                      base::FilePath(),
                                      storage_policy_.get(),

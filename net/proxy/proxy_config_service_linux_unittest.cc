@@ -292,8 +292,8 @@ class SynchConfigGetter {
     DCHECK_EQ(base::MessageLoop::TYPE_IO, file_loop->type());
     // We pass the mock IO thread as both the IO and file threads.
     config_service_->SetupAndFetchInitialConfig(
-        base::MessageLoopProxy::current(),
-        io_thread_.message_loop_proxy(),
+        base::MessageLoopProxy::current().get(),
+        io_thread_.message_loop_proxy().get(),
         static_cast<base::MessageLoopForIO*>(file_loop));
   }
   // Synchronously gets the proxy config.

@@ -108,7 +108,7 @@ void PasswordManagerHandler::OnLoginsChanged() {
 
 PasswordStore* PasswordManagerHandler::GetPasswordStore() {
   return PasswordStoreFactory::GetForProfile(Profile::FromWebUI(web_ui()),
-                                             Profile::EXPLICIT_ACCESS);
+                                             Profile::EXPLICIT_ACCESS).get();
 }
 
 void PasswordManagerHandler::UpdatePasswordLists(const ListValue* args) {

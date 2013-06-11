@@ -19,7 +19,7 @@ WebMediaPlayerParams::WebMediaPlayerParams(
       audio_renderer_sink_(audio_renderer_sink),
       gpu_factories_(gpu_factories),
       media_log_(media_log) {
-  DCHECK(media_log_);
+  DCHECK(media_log_.get());
 }
 
 WebMediaPlayerParams::~WebMediaPlayerParams() {}

@@ -300,7 +300,7 @@ void AutomatedUITest::RunAutomatedUITest() {
         // Try and start up again.
         CloseBrowserAndServer();
         LaunchBrowserAndServer();
-        set_active_browser(automation()->GetBrowserWindow(0));
+        set_active_browser(automation()->GetBrowserWindow(0).get());
         if (DidCrash(true)) {
           no_errors = false;
           // We crashed again, so skip to the end of the this command.

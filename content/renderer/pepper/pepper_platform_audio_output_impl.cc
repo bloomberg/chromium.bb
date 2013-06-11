@@ -82,7 +82,7 @@ void PepperPlatformAudioOutputImpl::OnStreamCreated(
 #endif
   DCHECK(length);
 
-  if (base::MessageLoopProxy::current() == main_message_loop_proxy_) {
+  if (base::MessageLoopProxy::current().get() == main_message_loop_proxy_) {
     // Must dereference the client only on the main thread. Shutdown may have
     // occurred while the request was in-flight, so we need to NULL check.
     if (client_)
@@ -107,8 +107,7 @@ PepperPlatformAudioOutputImpl::~PepperPlatformAudioOutputImpl() {
 
 PepperPlatformAudioOutputImpl::PepperPlatformAudioOutputImpl()
     : client_(NULL),
-      main_message_loop_proxy_(base::MessageLoopProxy::current()) {
-}
+      main_message_loop_proxy_(base::MessageLoopProxy::current().get()) {}
 
 bool PepperPlatformAudioOutputImpl::Initialize(
     int sample_rate,

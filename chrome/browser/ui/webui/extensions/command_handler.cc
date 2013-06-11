@@ -127,7 +127,8 @@ void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {
                                                  CommandService::ALL,
                                                  &browser_action,
                                                  &active)) {
-      extensions_list->Append(browser_action.ToValue((*extension), active));
+      extensions_list->Append(
+          browser_action.ToValue((extension->get()), active));
     }
 
     extensions::Command page_action;
@@ -135,7 +136,7 @@ void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {
                                               CommandService::ALL,
                                               &page_action,
                                               &active)) {
-      extensions_list->Append(page_action.ToValue((*extension), active));
+      extensions_list->Append(page_action.ToValue((extension->get()), active));
     }
 
     extensions::Command script_badge;
@@ -143,7 +144,7 @@ void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {
                                               CommandService::ALL,
                                               &script_badge,
                                               &active)) {
-      extensions_list->Append(script_badge.ToValue((*extension), active));
+      extensions_list->Append(script_badge.ToValue((extension->get()), active));
     }
 
     extensions::CommandMap named_commands;
@@ -157,7 +158,8 @@ void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {
                 (*extension)->id(), iter->second.command_name());
         active = (shortcut_assigned.key_code() != ui::VKEY_UNKNOWN);
 
-        extensions_list->Append(iter->second.ToValue((*extension), active));
+        extensions_list->Append(
+            iter->second.ToValue((extension->get()), active));
       }
     }
 

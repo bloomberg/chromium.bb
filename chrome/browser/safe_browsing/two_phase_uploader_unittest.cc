@@ -77,7 +77,7 @@ TEST_F(TwoPhaseUploaderTest, UploadFile) {
   Delegate delegate;
   scoped_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_.get(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
       test_server.GetURL("start"),
       "metadata",
       GetTestFilePath(),
@@ -103,7 +103,7 @@ TEST_F(TwoPhaseUploaderTest, BadPhaseOneResponse) {
   Delegate delegate;
   scoped_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_.get(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
       test_server.GetURL("start?p1code=500"),
       "metadata",
       GetTestFilePath(),
@@ -125,7 +125,7 @@ TEST_F(TwoPhaseUploaderTest, BadPhaseTwoResponse) {
   Delegate delegate;
   scoped_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_.get(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
       test_server.GetURL("start?p2code=500"),
       "metadata",
       GetTestFilePath(),
@@ -151,7 +151,7 @@ TEST_F(TwoPhaseUploaderTest, PhaseOneConnectionClosed) {
   Delegate delegate;
   scoped_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_.get(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
       test_server.GetURL("start?p1close=1"),
       "metadata",
       GetTestFilePath(),
@@ -173,7 +173,7 @@ TEST_F(TwoPhaseUploaderTest, PhaseTwoConnectionClosed) {
   Delegate delegate;
   scoped_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_.get(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
       test_server.GetURL("start?p2close=1"),
       "metadata",
       GetTestFilePath(),

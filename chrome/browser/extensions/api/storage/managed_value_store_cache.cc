@@ -144,7 +144,7 @@ void ManagedValueStoreCache::ExtensionTracker::LoadSchemas(
     // and is valid.
     std::string error;
     scoped_ptr<policy::PolicySchema> schema =
-        StorageSchemaManifestHandler::GetSchema(*it, &error);
+        StorageSchemaManifestHandler::GetSchema(it->get(), &error);
     CHECK(schema) << error;
     descriptor->RegisterComponent((*it)->id(), schema.Pass());
   }

@@ -32,7 +32,7 @@ class CONTENT_EXPORT ChildProcess {
 
   base::MessageLoop* io_message_loop() { return io_thread_.message_loop(); }
   base::MessageLoopProxy* io_message_loop_proxy() {
-    return io_thread_.message_loop_proxy();
+    return io_thread_.message_loop_proxy().get();
   }
 
   // A global event object that is signalled when the main thread's message

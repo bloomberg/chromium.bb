@@ -1286,7 +1286,7 @@ void TestingAutomationProvider::GetBookmarksAsJSON(
   scoped_refptr<BookmarkStorage> storage(
       new BookmarkStorage(browser->profile(),
                           bookmark_model,
-                          browser->profile()->GetIOTaskRunner()));
+                          browser->profile()->GetIOTaskRunner().get()));
   if (!storage->SerializeData(&bookmarks_as_json)) {
     reply.SendError("Failed to serialize bookmarks");
     return;
@@ -3109,7 +3109,8 @@ void TestingAutomationProvider::GetPluginsInfoCallback(
     DictionaryValue* args,
     IPC::Message* reply_message,
     const std::vector<webkit::WebPluginInfo>& plugins) {
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(browser->profile());
+  PluginPrefs* plugin_prefs =
+      PluginPrefs::GetForProfile(browser->profile()).get();
   ListValue* items = new ListValue;
   for (std::vector<webkit::WebPluginInfo>::const_iterator it =
            plugins.begin();
@@ -3162,10 +3163,16 @@ void TestingAutomationProvider::EnablePlugin(Browser* browser,
     AutomationJSONReply(this, reply_message).SendError("path not specified.");
     return;
   }
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(browser->profile());
-  plugin_prefs->EnablePlugin(true, base::FilePath(path),
-      base::Bind(&DidEnablePlugin, AsWeakPtr(), reply_message,
-                 path, "Could not enable plugin for path %s."));
+  PluginPrefs* plugin_prefs =
+      PluginPrefs::GetForProfile(browser->profile()).get();
+  plugin_prefs->EnablePlugin(
+      true,
+      base::FilePath(path),
+      base::Bind(&DidEnablePlugin,
+                 AsWeakPtr(),
+                 reply_message,
+                 path,
+                 "Could not enable plugin for path %s."));
 }
 
 // Sample json input:
@@ -3179,10 +3186,16 @@ void TestingAutomationProvider::DisablePlugin(Browser* browser,
     AutomationJSONReply(this, reply_message).SendError("path not specified.");
     return;
   }
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(browser->profile());
-  plugin_prefs->EnablePlugin(false, base::FilePath(path),
-      base::Bind(&DidEnablePlugin, AsWeakPtr(), reply_message,
-                 path, "Could not disable plugin for path %s."));
+  PluginPrefs* plugin_prefs =
+      PluginPrefs::GetForProfile(browser->profile()).get();
+  plugin_prefs->EnablePlugin(
+      false,
+      base::FilePath(path),
+      base::Bind(&DidEnablePlugin,
+                 AsWeakPtr(),
+                 reply_message,
+                 path,
+                 "Could not disable plugin for path %s."));
 }
 
 // Sample json input:
@@ -3361,7 +3374,7 @@ void TestingAutomationProvider::AddSavedPassword(
 
   // Use IMPLICIT_ACCESS since new passwords aren't added in incognito mode.
   PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
-      browser->profile(), Profile::IMPLICIT_ACCESS);
+      browser->profile(), Profile::IMPLICIT_ACCESS).get();
 
   // The password store does not exist for an incognito window.
   if (password_store == NULL) {
@@ -3407,7 +3420,7 @@ void TestingAutomationProvider::RemoveSavedPassword(
 
   // Use EXPLICIT_ACCESS since passwords can be removed in incognito mode.
   PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
-      browser->profile(), Profile::EXPLICIT_ACCESS);
+      browser->profile(), Profile::EXPLICIT_ACCESS).get();
   if (password_store == NULL) {
     AutomationJSONReply(this, reply_message).SendError(
         "Unable to get password store.");
@@ -3433,7 +3446,7 @@ void TestingAutomationProvider::GetSavedPasswords(
   // Use EXPLICIT_ACCESS since saved passwords can be retrieved in
   // incognito mode.
   PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
-      browser->profile(), Profile::EXPLICIT_ACCESS);
+      browser->profile(), Profile::EXPLICIT_ACCESS).get();
 
   if (password_store == NULL) {
     AutomationJSONReply reply(this, reply_message);

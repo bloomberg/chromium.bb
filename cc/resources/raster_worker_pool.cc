@@ -219,7 +219,7 @@ void RasterWorkerPool::SetRasterTasks(RasterTask::Queue* queue) {
 }
 
 void RasterWorkerPool::ScheduleRasterTasks(const RootTask& root) {
-  WorkerPool::ScheduleTasks(root.internal_);
+  WorkerPool::ScheduleTasks(root.internal_.get());
 }
 
 }  // namespace cc

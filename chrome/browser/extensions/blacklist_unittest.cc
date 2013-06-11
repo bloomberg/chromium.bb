@@ -19,14 +19,12 @@ namespace {
 class BlacklistTest : public testing::Test {
  public:
   BlacklistTest()
-      : prefs_(message_loop_.message_loop_proxy()),
+      : prefs_(message_loop_.message_loop_proxy().get()),
         ui_thread_(content::BrowserThread::UI, &message_loop_),
         io_thread_(content::BrowserThread::IO, &message_loop_),
-        safe_browsing_database_manager_(
-            new FakeSafeBrowsingDatabaseManager()),
+        safe_browsing_database_manager_(new FakeSafeBrowsingDatabaseManager()),
         scoped_blacklist_database_manager_(safe_browsing_database_manager_),
-        blacklist_(prefs_.prefs()) {
-  }
+        blacklist_(prefs_.prefs()) {}
 
   bool IsBlacklisted(const Extension* extension) {
     return TestBlacklist(&blacklist_).IsBlacklisted(extension->id());

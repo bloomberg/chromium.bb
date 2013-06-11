@@ -107,7 +107,7 @@ HostGlobals::~HostGlobals() {
   InstanceMap::iterator found = instance_map_.find(instance);
   if (found == instance_map_.end())
     return NULL;
-  return found->second->module()->GetCallbackTracker();
+  return found->second->module()->GetCallbackTracker().get();
 }
 
 ::ppapi::thunk::PPB_Instance_API* HostGlobals::GetInstanceAPI(

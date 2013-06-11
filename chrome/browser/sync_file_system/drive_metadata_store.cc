@@ -646,11 +646,15 @@ void DriveMetadataStore::DidUpdateOrigin(
 void DriveMetadataStore::WriteToDB(scoped_ptr<leveldb::WriteBatch> batch,
                                    const SyncStatusCallback& callback) {
   base::PostTaskAndReplyWithResult(
-      file_task_runner_, FROM_HERE,
-      base::Bind(&leveldb::DB::Write, base::Unretained(db_.get()),
-                 leveldb::WriteOptions(), base::Owned(batch.release())),
+      file_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&leveldb::DB::Write,
+                 base::Unretained(db_.get()),
+                 leveldb::WriteOptions(),
+                 base::Owned(batch.release())),
       base::Bind(&DriveMetadataStore::UpdateDBStatusAndInvokeCallback,
-                 AsWeakPtr(), callback));
+                 AsWeakPtr(),
+                 callback));
 }
 
 void DriveMetadataStore::UpdateDBStatus(SyncStatusCode status) {

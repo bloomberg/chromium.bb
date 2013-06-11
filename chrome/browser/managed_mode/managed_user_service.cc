@@ -318,7 +318,7 @@ ScopedVector<ManagedModeSiteList> ManagedUserService::GetActiveSiteLists() {
   const ExtensionSet* extensions = extension_service->extensions();
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
-    const extensions::Extension* extension = *it;
+    const extensions::Extension* extension = it->get();
     if (!extension_service->IsExtensionEnabled(extension->id()))
       continue;
 

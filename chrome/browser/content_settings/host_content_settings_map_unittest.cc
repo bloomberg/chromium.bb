@@ -395,7 +395,7 @@ TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
   HostContentSettingsMap* host_content_settings_map =
       profile.GetHostContentSettingsMap();
   CookieSettings* cookie_settings =
-      CookieSettings::Factory::GetForProfile(&profile);
+      CookieSettings::Factory::GetForProfile(&profile).get();
 
   ContentSettingsPattern pattern =
        ContentSettingsPattern::FromString("[*.]example.com");

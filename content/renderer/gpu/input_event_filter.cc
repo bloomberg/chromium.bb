@@ -20,7 +20,7 @@ InputEventFilter::InputEventFilter(
       main_listener_(main_listener),
       sender_(NULL),
       target_loop_(target_loop) {
-  DCHECK(target_loop_);
+  DCHECK(target_loop_.get());
 }
 
 void InputEventFilter::SetBoundHandler(const Handler& handler) {

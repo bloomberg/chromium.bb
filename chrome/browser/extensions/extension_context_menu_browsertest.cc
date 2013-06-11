@@ -128,7 +128,7 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
     ExtensionSet::const_iterator i;
     for (i = extensions->begin(); i != extensions->end(); ++i) {
       if ((*i)->name() == name) {
-        return *i;
+        return i->get();
       }
     }
     return NULL;

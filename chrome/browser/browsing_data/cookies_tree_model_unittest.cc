@@ -1111,7 +1111,7 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
   HostContentSettingsMap* content_settings =
       profile.GetHostContentSettingsMap();
   CookieSettings* cookie_settings =
-      CookieSettings::Factory::GetForProfile(&profile);
+      CookieSettings::Factory::GetForProfile(&profile).get();
   MockSettingsObserver observer;
 
   CookieTreeRootNode* root =

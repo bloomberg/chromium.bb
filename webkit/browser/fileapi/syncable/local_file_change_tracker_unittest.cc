@@ -36,14 +36,15 @@ class LocalFileChangeTrackerTest : public testing::Test {
   LocalFileChangeTrackerTest()
       : message_loop_(base::MessageLoop::TYPE_IO),
         file_system_(GURL("http://example.com"),
-                     base::MessageLoopProxy::current(),
-                     base::MessageLoopProxy::current()) {}
+                     base::MessageLoopProxy::current().get(),
+                     base::MessageLoopProxy::current().get()) {}
 
   virtual void SetUp() OVERRIDE {
     file_system_.SetUp();
 
-    sync_context_ = new LocalFileSyncContext(base::MessageLoopProxy::current(),
-                                             base::MessageLoopProxy::current());
+    sync_context_ =
+        new LocalFileSyncContext(base::MessageLoopProxy::current().get(),
+                                 base::MessageLoopProxy::current().get());
     ASSERT_EQ(
         sync_file_system::SYNC_STATUS_OK,
         file_system_.MaybeInitializeFileSystemContext(sync_context_.get()));

@@ -370,7 +370,7 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
     return false;
   }
 
-  set_message_loop(base::MessageLoopProxy::current());
+  set_message_loop(base::MessageLoopProxy::current().get());
   callback_ = callback;
   target_ = path;
   MessageLoop::current()->AddDestructionObserver(this);

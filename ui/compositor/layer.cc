@@ -518,10 +518,10 @@ void Layer::SetExternalTexture(Texture* texture) {
 void Layer::SetTextureMailbox(const cc::TextureMailbox& mailbox,
                               float scale_factor) {
   DCHECK_EQ(type_, LAYER_TEXTURED);
-  DCHECK(!solid_color_layer_);
+  DCHECK(!solid_color_layer_.get());
   layer_updated_externally_ = true;
   texture_ = NULL;
-  if (!texture_layer_ || !texture_layer_->uses_mailbox()) {
+  if (!texture_layer_.get() || !texture_layer_->uses_mailbox()) {
     scoped_refptr<cc::TextureLayer> new_layer =
         cc::TextureLayer::CreateForMailbox(this);
     new_layer->SetFlipped(false);
@@ -667,7 +667,7 @@ unsigned Layer::PrepareTexture(cc::ResourceUpdateQueue* queue) {
 
 WebKit::WebGraphicsContext3D* Layer::Context3d() {
   DCHECK(texture_layer_.get());
-  if (texture_)
+  if (texture_.get())
     return texture_->HostContext3D();
   return NULL;
 }
@@ -949,7 +949,7 @@ void Layer::RecomputeDrawsContentAndUVRect() {
   if (texture_layer_.get()) {
     gfx::Size texture_size;
     if (!texture_layer_->uses_mailbox()) {
-      DCHECK(texture_);
+      DCHECK(texture_.get());
       float texture_scale_factor = 1.0f / texture_->device_scale_factor();
       texture_size = gfx::ToFlooredSize(
           gfx::ScaleSize(texture_->size(), texture_scale_factor));

@@ -143,10 +143,10 @@ bool ContentSettingsContentSettingGetFunction::RunImpl() {
     }
     map = profile()->GetOffTheRecordProfile()->GetHostContentSettingsMap();
     cookie_settings = CookieSettings::Factory::GetForProfile(
-        profile()->GetOffTheRecordProfile());
+        profile()->GetOffTheRecordProfile()).get();
   } else {
     map = profile()->GetHostContentSettingsMap();
-    cookie_settings = CookieSettings::Factory::GetForProfile(profile());
+    cookie_settings = CookieSettings::Factory::GetForProfile(profile()).get();
   }
 
   ContentSetting setting;

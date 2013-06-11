@@ -71,7 +71,7 @@ class ServiceProcessStateTest : public base::MultiProcessTest {
   virtual ~ServiceProcessStateTest();
   virtual void SetUp();
   base::MessageLoopProxy* IOMessageLoopProxy() {
-    return io_thread_.message_loop_proxy();
+    return io_thread_.message_loop_proxy().get();
   }
   void LaunchAndWait(const std::string& name);
 
@@ -224,7 +224,7 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
   ServiceProcessState state;
   EXPECT_TRUE(state.Initialize());
   EXPECT_TRUE(state.SignalReady(
-      io_thread_.message_loop_proxy(),
+      io_thread_.message_loop_proxy().get(),
       base::Bind(&ShutdownTask, base::MessageLoop::current())));
   message_loop.PostDelayedTask(FROM_HERE,
                                base::MessageLoop::QuitClosure(),

@@ -43,12 +43,12 @@ namespace extensions {
 // Base class for tests.
 class MenuManagerTest : public testing::Test {
  public:
-  MenuManagerTest() : ui_thread_(BrowserThread::UI, &message_loop_),
-                      file_thread_(BrowserThread::FILE, &message_loop_),
-                      manager_(&profile_),
-                      prefs_(message_loop_.message_loop_proxy()),
-                      next_id_(1) {
-  }
+  MenuManagerTest()
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_),
+        manager_(&profile_),
+        prefs_(message_loop_.message_loop_proxy().get()),
+        next_id_(1) {}
 
   virtual void TearDown() OVERRIDE {
     prefs_.pref_service()->CommitPendingWrite();

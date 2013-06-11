@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, AllowCookiesUsingExceptions) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL("files/setcookie.html");
   CookieSettings* settings =
-      CookieSettings::Factory::GetForProfile(browser()->profile());
+      CookieSettings::Factory::GetForProfile(browser()->profile()).get();
   settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
   ui_test_utils::NavigateToURL(browser(), url);
@@ -176,10 +176,10 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BlockCookiesUsingExceptions) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL("files/setcookie.html");
   CookieSettings* settings =
-      CookieSettings::Factory::GetForProfile(browser()->profile());
-  settings->SetCookieSetting(
-      ContentSettingsPattern::FromURL(url),
-      ContentSettingsPattern::Wildcard(), CONTENT_SETTING_BLOCK);
+      CookieSettings::Factory::GetForProfile(browser()->profile()).get();
+  settings->SetCookieSetting(ContentSettingsPattern::FromURL(url),
+                             ContentSettingsPattern::Wildcard(),
+                             CONTENT_SETTING_BLOCK);
 
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest,
   GURL url = URLRequestMockHTTPJob::GetMockUrl(
       base::FilePath(FILE_PATH_LITERAL("setcookie.html")));
   CookieSettings* settings =
-      CookieSettings::Factory::GetForProfile(browser()->profile());
+      CookieSettings::Factory::GetForProfile(browser()->profile()).get();
   settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
   ui_test_utils::NavigateToURL(browser(), url);

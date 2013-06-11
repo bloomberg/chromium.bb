@@ -104,7 +104,7 @@ void PluginLoaderPosix::LoadPluginsInternal() {
 
   UtilityProcessHostImpl* host = new UtilityProcessHostImpl(
       this,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get());
   process_host_ = host->AsWeakPtr();
   process_host_->DisableSandbox();
 #if defined(OS_MACOSX)

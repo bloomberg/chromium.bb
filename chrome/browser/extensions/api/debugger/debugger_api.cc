@@ -277,7 +277,7 @@ base::Value* SerializePageInfo(RenderViewHost* rvh) {
   if (!web_contents)
     return NULL;
 
-  DevToolsAgentHost* agent_host = DevToolsAgentHost::GetOrCreateFor(rvh);
+  DevToolsAgentHost* agent_host = DevToolsAgentHost::GetOrCreateFor(rvh).get();
 
   base::DictionaryValue* dictionary = new base::DictionaryValue();
 

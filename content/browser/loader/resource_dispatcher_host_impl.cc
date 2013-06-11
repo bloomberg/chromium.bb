@@ -1022,7 +1022,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
         request_data.request_body->ResolveElementsAndCreateUploadDataStream(
             filter_->blob_storage_context()->controller(),
             filter_->file_system_context(),
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE))));
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
+                .get())));
   }
 
   bool allow_download = request_data.allow_download &&

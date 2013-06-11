@@ -33,7 +33,8 @@ bool ShouldShowRecordingIndicator(content::WebContents* contents) {
 
 bool IsPlayingAudio(content::WebContents* contents) {
   AudioStreamIndicator* audio_indicator =
-      MediaCaptureDevicesDispatcher::GetInstance()->GetAudioStreamIndicator();
+      MediaCaptureDevicesDispatcher::GetInstance()->GetAudioStreamIndicator()
+          .get();
   return audio_indicator->IsPlayingAudio(contents);
 }
 

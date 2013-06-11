@@ -509,14 +509,14 @@ TEST_F(VideoRendererBaseTest, Preroll_RightAfter) {
 
 TEST_F(VideoRendererBaseTest, GetCurrentFrame_Initialized) {
   Initialize();
-  EXPECT_TRUE(GetCurrentFrame());  // Due to prerolling.
+  EXPECT_TRUE(GetCurrentFrame().get());  // Due to prerolling.
   Shutdown();
 }
 
 TEST_F(VideoRendererBaseTest, GetCurrentFrame_Playing) {
   Initialize();
   Play();
-  EXPECT_TRUE(GetCurrentFrame());
+  EXPECT_TRUE(GetCurrentFrame().get());
   Shutdown();
 }
 
@@ -524,7 +524,7 @@ TEST_F(VideoRendererBaseTest, GetCurrentFrame_Paused) {
   Initialize();
   Play();
   Pause();
-  EXPECT_TRUE(GetCurrentFrame());
+  EXPECT_TRUE(GetCurrentFrame().get());
   Shutdown();
 }
 
@@ -536,7 +536,7 @@ TEST_F(VideoRendererBaseTest, GetCurrentFrame_Flushed) {
   // Frame shouldn't be updated.
   ResetCurrentFrame();
   Flush();
-  EXPECT_FALSE(GetCurrentFrame());
+  EXPECT_FALSE(GetCurrentFrame().get());
 
   Shutdown();
 }
@@ -553,7 +553,7 @@ TEST_F(VideoRendererBaseTest, GetCurrentFrame_EndOfStream) {
   // Frame shouldn't be updated.
   ResetCurrentFrame();
   Preroll(0, PIPELINE_OK);
-  EXPECT_FALSE(GetCurrentFrame());
+  EXPECT_FALSE(GetCurrentFrame().get());
 
   // Start playing, we should immediately get notified of end of stream.
   Play();
@@ -568,7 +568,7 @@ TEST_F(VideoRendererBaseTest, GetCurrentFrame_Shutdown) {
   // Frame shouldn't be updated.
   ResetCurrentFrame();
   Shutdown();
-  EXPECT_FALSE(GetCurrentFrame());
+  EXPECT_FALSE(GetCurrentFrame().get());
 }
 
 // Stop() is called immediately during an error.
@@ -578,7 +578,7 @@ TEST_F(VideoRendererBaseTest, GetCurrentFrame_Error) {
   // Frame shouldn't be updated.
   ResetCurrentFrame();
   Stop();
-  EXPECT_FALSE(GetCurrentFrame());
+  EXPECT_FALSE(GetCurrentFrame().get());
 }
 
 // Verify that a late decoder response doesn't break invariants in the renderer.

@@ -146,11 +146,12 @@ class AppCacheStorageImplTest : public testing::Test {
   class MockQuotaManager : public quota::QuotaManager {
    public:
     MockQuotaManager()
-      : QuotaManager(true /* is_incognito */, base::FilePath(),
-                     io_thread->message_loop_proxy(),
-                     db_thread->message_loop_proxy(),
-                     NULL),
-        async_(false) {}
+        : QuotaManager(true /* is_incognito */,
+                       base::FilePath(),
+                       io_thread->message_loop_proxy().get(),
+                       db_thread->message_loop_proxy().get(),
+                       NULL),
+          async_(false) {}
 
     virtual void GetUsageAndQuota(
         const GURL& origin,
@@ -281,7 +282,7 @@ class AppCacheStorageImplTest : public testing::Test {
     DCHECK(base::MessageLoop::current() == io_thread->message_loop());
     service_.reset(new AppCacheService(NULL));
     service_->Initialize(
-        base::FilePath(), db_thread->message_loop_proxy(), NULL);
+        base::FilePath(), db_thread->message_loop_proxy().get(), NULL);
     mock_quota_manager_proxy_ = new MockQuotaManagerProxy();
     service_->quota_manager_proxy_ = mock_quota_manager_proxy_;
     delegate_.reset(new MockStorageDelegate(this));

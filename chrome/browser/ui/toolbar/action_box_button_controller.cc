@@ -87,7 +87,7 @@ scoped_ptr<ActionBoxMenuModel> ActionBoxButtonController::CreateMenuModel() {
     const ExtensionSet* extensions = extension_service->extensions();
     for (ExtensionSet::const_iterator it = extensions->begin();
          it != extensions->end(); ++it) {
-      const extensions::Extension* extension = *it;
+      const extensions::Extension* extension = it->get();
       if (ActionInfo::GetPageLauncherInfo(extension)) {
         int command_id = GetCommandIdForExtension(*extension);
         menu_model->AddExtension(*extension, command_id);

@@ -127,7 +127,7 @@ void PasswordFormManager::PermanentlyBlacklist() {
   if (!best_matches_.empty()) {
     PasswordFormMap::const_iterator iter;
     PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
-        profile_, Profile::EXPLICIT_ACCESS);
+        profile_, Profile::EXPLICIT_ACCESS).get();
     if (!password_store) {
       NOTREACHED();
       return;
@@ -240,7 +240,7 @@ void PasswordFormManager::FetchMatchingLoginsFromPasswordStore() {
   DCHECK_EQ(state_, PRE_MATCHING_PHASE);
   state_ = MATCHING_PHASE;
   PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
-      profile_, Profile::EXPLICIT_ACCESS);
+      profile_, Profile::EXPLICIT_ACCESS).get();
   if (!password_store) {
     NOTREACHED();
     return;
@@ -398,7 +398,7 @@ void PasswordFormManager::SaveAsNewLogin(bool reset_preferred_login) {
   DCHECK(!profile_->IsOffTheRecord());
 
   PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
-      profile_, Profile::IMPLICIT_ACCESS);
+      profile_, Profile::IMPLICIT_ACCESS).get();
   if (!password_store) {
     NOTREACHED();
     return;
@@ -456,7 +456,7 @@ void PasswordFormManager::UpdateLogin() {
   DCHECK(!profile_->IsOffTheRecord());
 
   PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
-      profile_, Profile::IMPLICIT_ACCESS);
+      profile_, Profile::IMPLICIT_ACCESS).get();
   if (!password_store) {
     NOTREACHED();
     return;

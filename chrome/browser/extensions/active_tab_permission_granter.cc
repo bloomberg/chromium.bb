@@ -107,7 +107,7 @@ void ActiveTabPermissionGranter::ClearActiveExtensionsAndNotify() {
 
   for (ExtensionSet::const_iterator it = granted_extensions_.begin();
        it != granted_extensions_.end(); ++it) {
-    PermissionsData::ClearTabSpecificPermissions(*it, tab_id_);
+    PermissionsData::ClearTabSpecificPermissions(it->get(), tab_id_);
     extension_ids.push_back((*it)->id());
   }
 

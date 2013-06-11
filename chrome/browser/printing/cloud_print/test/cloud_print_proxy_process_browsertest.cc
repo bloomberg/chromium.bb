@@ -96,7 +96,7 @@ class TestServiceProcess : public ServiceProcess {
                   ServiceProcessState* state);
 
   base::MessageLoopProxy* IOMessageLoopProxy() {
-    return io_thread_->message_loop_proxy();
+    return io_thread_->message_loop_proxy().get();
   }
 };
 
@@ -290,7 +290,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
 
   virtual void SetUp();
   base::MessageLoopProxy* IOMessageLoopProxy() {
-    return io_thread_.message_loop_proxy();
+    return io_thread_.message_loop_proxy().get();
   }
   base::ProcessHandle Launch(const std::string& name);
   void WaitForConnect();
@@ -411,10 +411,12 @@ base::ProcessHandle CloudPrintProxyPolicyStartupTest::Launch(
 void CloudPrintProxyPolicyStartupTest::WaitForConnect() {
   observer_.Wait();
   EXPECT_TRUE(CheckServiceProcessReady());
-  EXPECT_TRUE(base::MessageLoopProxy::current());
-  ServiceProcessControl::GetInstance()->SetChannel(new IPC::ChannelProxy(
-      GetServiceProcessChannel(), IPC::Channel::MODE_NAMED_CLIENT,
-      ServiceProcessControl::GetInstance(), IOMessageLoopProxy()));
+  EXPECT_TRUE(base::MessageLoopProxy::current().get());
+  ServiceProcessControl::GetInstance()->SetChannel(
+      new IPC::ChannelProxy(GetServiceProcessChannel(),
+                            IPC::Channel::MODE_NAMED_CLIENT,
+                            ServiceProcessControl::GetInstance(),
+                            IOMessageLoopProxy()));
 }
 
 bool CloudPrintProxyPolicyStartupTest::Send(IPC::Message* message) {

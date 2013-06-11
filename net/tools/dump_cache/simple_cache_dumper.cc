@@ -125,9 +125,15 @@ int SimpleCacheDumper::DoCreateCache() {
   DCHECK(!cache_);
   state_ = STATE_CREATE_CACHE_COMPLETE;
   return disk_cache::CreateCacheBackend(
-      DISK_CACHE, CACHE_BACKEND_DEFAULT, input_path_, 0, false,
-      cache_thread_->message_loop_proxy(),
-      NULL, &cache_, io_callback_);
+      DISK_CACHE,
+      CACHE_BACKEND_DEFAULT,
+      input_path_,
+      0,
+      false,
+      cache_thread_->message_loop_proxy().get(),
+      NULL,
+      &cache_,
+      io_callback_);
 }
 
 int SimpleCacheDumper::DoCreateCacheComplete(int rv) {

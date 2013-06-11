@@ -25,9 +25,8 @@ ProxyService* CreateProxyServiceUsingV8ProxyResolver(
   DCHECK(dhcp_proxy_script_fetcher);
   DCHECK(host_resolver);
 
-  ProxyResolverErrorObserver* error_observer =
-      new NetworkDelegateErrorObserver(
-          network_delegate, base::MessageLoopProxy::current());
+  ProxyResolverErrorObserver* error_observer = new NetworkDelegateErrorObserver(
+      network_delegate, base::MessageLoopProxy::current().get());
 
   ProxyResolver* proxy_resolver =
       new ProxyResolverV8Tracing(host_resolver, error_observer, net_log);

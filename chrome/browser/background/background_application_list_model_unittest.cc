@@ -112,8 +112,8 @@ void RemoveBackgroundPermission(ExtensionService* service,
                                                        service->profile())) {
     return;
   }
-  extensions::PermissionsUpdater(service->profile()).RemovePermissions(
-      extension, extension->GetActivePermissions());
+  extensions::PermissionsUpdater(service->profile())
+      .RemovePermissions(extension, extension->GetActivePermissions().get());
 }
 }  // namespace
 

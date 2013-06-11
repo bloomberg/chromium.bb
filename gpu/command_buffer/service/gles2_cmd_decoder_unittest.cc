@@ -7939,7 +7939,7 @@ TEST_F(GLES2DecoderTest, BindTexImage2DCHROMIUM) {
   Texture* texture = texture_ref->texture();
   EXPECT_EQ(kServiceTextureId, texture->service_id());
 
-  group().image_manager()->AddImage(gfx::GLImage::CreateGLImage(0), 1);
+  group().image_manager()->AddImage(gfx::GLImage::CreateGLImage(0).get(), 1);
   EXPECT_FALSE(group().image_manager()->LookupImage(1) == NULL);
 
   GLsizei width;
@@ -7986,7 +7986,7 @@ TEST_F(GLES2DecoderTest, ReleaseTexImage2DCHROMIUM) {
   Texture* texture = texture_ref->texture();
   EXPECT_EQ(kServiceTextureId, texture->service_id());
 
-  group().image_manager()->AddImage(gfx::GLImage::CreateGLImage(0), 1);
+  group().image_manager()->AddImage(gfx::GLImage::CreateGLImage(0).get(), 1);
   EXPECT_FALSE(group().image_manager()->LookupImage(1) == NULL);
 
   GLsizei width;

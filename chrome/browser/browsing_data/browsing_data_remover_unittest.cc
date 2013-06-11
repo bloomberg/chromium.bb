@@ -627,8 +627,8 @@ class BrowsingDataRemoverTest : public testing::Test,
       quota_manager_ = new quota::MockQuotaManager(
           profile_->IsOffTheRecord(),
           profile_->GetPath(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
           profile_->GetExtensionSpecialStoragePolicy());
     }
     return quota_manager_.get();

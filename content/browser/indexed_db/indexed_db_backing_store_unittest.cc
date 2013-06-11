@@ -418,13 +418,13 @@ TEST(IndexedDBFactoryTest, RejectLongOrigins)
           std::string("http://" + origin + ":81/").c_str()));
   scoped_refptr<IndexedDBBackingStore> diskStore1 =
       factory->TestOpenBackingStore(too_long_origin, base_path);
-  EXPECT_FALSE(diskStore1);
+  EXPECT_FALSE(diskStore1.get());
 
   WebSecurityOrigin ok_origin =
       WebSecurityOrigin::createFromString("http://someorigin.com:82/");
   scoped_refptr<IndexedDBBackingStore> diskStore2 =
       factory->TestOpenBackingStore(ok_origin, base_path);
-  EXPECT_TRUE(diskStore2);
+  EXPECT_TRUE(diskStore2.get());
 }
 
 }  // namespace

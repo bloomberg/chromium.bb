@@ -120,7 +120,8 @@ void OffTheRecordProfileImpl::Init() {
 
 #if defined(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
-      PluginPrefs::GetForProfile(this), io_data_.GetResourceContextNoInit());
+      PluginPrefs::GetForProfile(this).get(),
+      io_data_.GetResourceContextNoInit());
 #endif
 
   BrowserThread::PostTask(
@@ -246,7 +247,7 @@ net::URLRequestContextGetter* OffTheRecordProfileImpl::GetRequestContext() {
 
 net::URLRequestContextGetter* OffTheRecordProfileImpl::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers) {
-  return io_data_.CreateMainRequestContextGetter(protocol_handlers);
+  return io_data_.CreateMainRequestContextGetter(protocol_handlers).get();
 }
 
 net::URLRequestContextGetter*
@@ -274,12 +275,13 @@ net::URLRequestContextGetter*
 OffTheRecordProfileImpl::GetMediaRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory) {
-  return io_data_.GetIsolatedAppRequestContextGetter(partition_path, in_memory);
+  return io_data_.GetIsolatedAppRequestContextGetter(partition_path, in_memory)
+      .get();
 }
 
 net::URLRequestContextGetter*
     OffTheRecordProfileImpl::GetRequestContextForExtensions() {
-  return io_data_.GetExtensionsRequestContextGetter();
+  return io_data_.GetExtensionsRequestContextGetter().get();
 }
 
 net::URLRequestContextGetter*
@@ -288,7 +290,7 @@ net::URLRequestContextGetter*
         bool in_memory,
         content::ProtocolHandlerMap* protocol_handlers) {
   return io_data_.CreateIsolatedAppRequestContextGetter(
-      partition_path, in_memory, protocol_handlers);
+                      partition_path, in_memory, protocol_handlers).get();
 }
 
 content::ResourceContext* OffTheRecordProfileImpl::GetResourceContext() {

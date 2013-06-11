@@ -478,7 +478,7 @@ class ExtensionUpdaterTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    prefs_.reset(new TestExtensionPrefs(loop_.message_loop_proxy()));
+    prefs_.reset(new TestExtensionPrefs(loop_.message_loop_proxy().get()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -1308,7 +1308,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     // Set up 2 mock extensions, one with a google.com update url and one
     // without.
-    prefs_.reset(new TestExtensionPrefs(loop_.message_loop_proxy()));
+    prefs_.reset(new TestExtensionPrefs(loop_.message_loop_proxy().get()));
     ServiceForManifestTests service(prefs_.get());
     ExtensionList tmp;
     GURL url1("http://clients2.google.com/service/update2/crx");

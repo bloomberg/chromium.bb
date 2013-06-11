@@ -70,16 +70,17 @@ DOMStorageContextImpl::DOMStorageContextImpl(
     quota::SpecialStoragePolicy* special_storage_policy) {
   base::SequencedWorkerPool* worker_pool = BrowserThread::GetBlockingPool();
   context_ = new dom_storage::DomStorageContext(
-      data_path.empty() ?
-          data_path : data_path.AppendASCII(kLocalStorageDirectory),
-      data_path.empty() ?
-          data_path : data_path.AppendASCII(kSessionStorageDirectory),
+      data_path.empty() ? data_path
+                        : data_path.AppendASCII(kLocalStorageDirectory),
+      data_path.empty() ? data_path
+                        : data_path.AppendASCII(kSessionStorageDirectory),
       special_storage_policy,
       new DomStorageWorkerPoolTaskRunner(
           worker_pool,
           worker_pool->GetNamedSequenceToken("dom_storage_primary"),
           worker_pool->GetNamedSequenceToken("dom_storage_commit"),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)
+              .get()));
 }
 
 DOMStorageContextImpl::~DOMStorageContextImpl() {

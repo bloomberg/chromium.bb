@@ -2251,7 +2251,7 @@ void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host) {
       profile->GetExtensionService()->extensions();
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
-    if (profile->GetExtensionService()->HasUsedWebRequest(*it)) {
+    if (profile->GetExtensionService()->HasUsedWebRequest(it->get())) {
       if ((*it)->name().find("Adblock Plus") != std::string::npos) {
         adblock_plus = true;
       } else if ((*it)->name().find("AdBlock") != std::string::npos) {

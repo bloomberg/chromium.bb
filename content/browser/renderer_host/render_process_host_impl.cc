@@ -488,15 +488,21 @@ bool RenderProcessHostImpl::Init() {
 #if defined(OS_ANDROID)
       // Android WebView needs to be able to wait from the UI thread to support
       // the synchronous legacy APIs.
-      browser_command_line.HasSwitch(switches::kEnableWebViewSynchronousAPIs) ?
-          new IPC::SyncChannel(
-              channel_id, IPC::Channel::MODE_SERVER, this,
-              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-              true, &dummy_shutdown_event_) :
+      browser_command_line.HasSwitch(switches::kEnableWebViewSynchronousAPIs)
+          ? new IPC::SyncChannel(
+                channel_id,
+                IPC::Channel::MODE_SERVER,
+                this,
+                BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+                true,
+                &dummy_shutdown_event_)
+          :
 #endif
-      new IPC::ChannelProxy(
-          channel_id, IPC::Channel::MODE_SERVER, this,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+          new IPC::ChannelProxy(channel_id,
+                                IPC::Channel::MODE_SERVER,
+                                this,
+                                BrowserThread::GetMessageLoopProxyForThread(
+                                    BrowserThread::IO).get()));
 
   // Call the embedder first so that their IPC filters have priority.
   GetContentClient()->browser()->RenderProcessHostCreated(this);

@@ -40,7 +40,7 @@ void FakeAccessTokenStore::NotifyDelegateTokensLoaded() {
 
 void FakeAccessTokenStore::DefaultLoadAccessTokens(
     const LoadAccessTokensCallbackType& callback) {
-  originating_message_loop_ = MessageLoopProxy::current();
+  originating_message_loop_ = MessageLoopProxy::current().get();
   callback_ = callback;
 }
 

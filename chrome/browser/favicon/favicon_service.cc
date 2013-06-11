@@ -40,7 +40,7 @@ CancelableTaskTracker::TaskId RunWithEmptyResultAsync(
     const FaviconService::FaviconResultsCallback& callback,
     CancelableTaskTracker* tracker) {
   return tracker->PostTask(
-      base::MessageLoopProxy::current(),
+      base::MessageLoopProxy::current().get(),
       FROM_HERE,
       Bind(callback, std::vector<chrome::FaviconBitmapResult>()));
 }

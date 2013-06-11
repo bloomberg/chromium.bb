@@ -41,10 +41,12 @@ void TopSitesBackend::GetMostVisitedThumbnails(
   bool* need_history_migration = new bool(false);
 
   tracker->PostTaskAndReply(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
       FROM_HERE,
       base::Bind(&TopSitesBackend::GetMostVisitedThumbnailsOnDBThread,
-                 this, thumbnails, need_history_migration),
+                 this,
+                 thumbnails,
+                 need_history_migration),
       base::Bind(callback, thumbnails, base::Owned(need_history_migration)));
 }
 
@@ -72,7 +74,7 @@ void TopSitesBackend::ResetDatabase() {
 void TopSitesBackend::DoEmptyRequest(const base::Closure& reply,
                                      CancelableTaskTracker* tracker) {
   tracker->PostTaskAndReply(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
       FROM_HERE,
       base::Bind(&base::DoNothing),
       reply);

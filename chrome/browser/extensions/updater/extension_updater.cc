@@ -302,7 +302,7 @@ void ExtensionUpdater::AddToDownloader(
   InProgressCheck& request = requests_in_progress_[request_id];
   for (ExtensionSet::const_iterator extension_iter = extensions->begin();
        extension_iter != extensions->end(); ++extension_iter) {
-    const Extension& extension = **extension_iter;
+    const Extension& extension = *extension_iter->get();
     if (!Manifest::IsAutoUpdateableLocation(extension.location())) {
       VLOG(2) << "Extension " << extension.id() << " is not auto updateable";
       continue;

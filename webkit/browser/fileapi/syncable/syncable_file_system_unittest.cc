@@ -34,15 +34,16 @@ class SyncableFileSystemTest : public testing::Test {
  public:
   SyncableFileSystemTest()
       : file_system_(GURL("http://example.com/"),
-                     base::MessageLoopProxy::current(),
-                     base::MessageLoopProxy::current()),
+                     base::MessageLoopProxy::current().get(),
+                     base::MessageLoopProxy::current().get()),
         weak_factory_(this) {}
 
   virtual void SetUp() {
     file_system_.SetUp();
 
-    sync_context_ = new LocalFileSyncContext(base::MessageLoopProxy::current(),
-                                             base::MessageLoopProxy::current());
+    sync_context_ =
+        new LocalFileSyncContext(base::MessageLoopProxy::current().get(),
+                                 base::MessageLoopProxy::current().get());
     ASSERT_EQ(
         sync_file_system::SYNC_STATUS_OK,
         file_system_.MaybeInitializeFileSystemContext(sync_context_.get()));

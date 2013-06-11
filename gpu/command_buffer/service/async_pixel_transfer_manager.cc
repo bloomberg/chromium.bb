@@ -38,7 +38,7 @@ AsyncPixelTransferManager::GetPixelTransferState(
   if (it == state_map_.end()) {
     return NULL;
   } else {
-    return it->second;
+    return it->second.get();
   }
 }
 

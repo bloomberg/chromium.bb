@@ -55,7 +55,7 @@ void SimpleThumbnailCrop::ProcessBitmap(
        context->clip_result == CLIP_RESULT_TALLER_THAN_WIDE ||
        context->clip_result == CLIP_RESULT_NOT_CLIPPED);
 
-  callback.Run(*context, thumbnail);
+  callback.Run(*context.get(), thumbnail);
 }
 
 double SimpleThumbnailCrop::CalculateBoringScore(const SkBitmap& bitmap) {

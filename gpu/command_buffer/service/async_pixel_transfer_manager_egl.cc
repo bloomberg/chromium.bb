@@ -134,7 +134,7 @@ base::LazyInstance<TransferThread>
     g_transfer_thread = LAZY_INSTANCE_INITIALIZER;
 
 base::MessageLoopProxy* transfer_message_loop_proxy() {
-  return g_transfer_thread.Pointer()->message_loop_proxy();
+  return g_transfer_thread.Pointer()->message_loop_proxy().get();
 }
 
 SafeSharedMemoryPool* safe_shared_memory_pool() {

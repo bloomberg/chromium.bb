@@ -264,7 +264,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
                    CompareByParams(dispatcher_params));
   if (it != output_dispatchers_.end()) {
     delete dispatcher_params;
-    return new AudioOutputProxy((*it)->dispatcher);
+    return new AudioOutputProxy((*it)->dispatcher.get());
   }
 
   const base::TimeDelta kCloseDelay =

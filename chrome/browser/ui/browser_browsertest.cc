@@ -262,7 +262,7 @@ class BrowserTest : public ExtensionBrowserTest {
     for (ExtensionSet::const_iterator it = extensions->begin();
          it != extensions->end(); ++it) {
       if ((*it)->name() == "App Test")
-        return *it;
+        return it->get();
     }
     NOTREACHED();
     return NULL;

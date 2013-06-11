@@ -85,7 +85,7 @@ class DevToolsDefaultBindingHandler
   }
 
   virtual DevToolsAgentHost* ForIdentifier(const std::string& id) OVERRIDE {
-    return DevToolsAgentHost::GetForId(id);
+    return DevToolsAgentHost::GetForId(id).get();
   }
 };
 

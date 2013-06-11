@@ -74,7 +74,8 @@ void ShortcutsBackendTest::OnShortcutsChanged() {
 }
 
 void ShortcutsBackendTest::InitBackend() {
-  ShortcutsBackend* backend = ShortcutsBackendFactory::GetForProfile(&profile_);
+  ShortcutsBackend* backend =
+      ShortcutsBackendFactory::GetForProfile(&profile_).get();
   ASSERT_TRUE(backend);
   ASSERT_FALSE(load_notified_);
   ASSERT_FALSE(backend_->initialized());

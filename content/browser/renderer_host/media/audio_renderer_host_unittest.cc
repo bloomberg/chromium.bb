@@ -245,7 +245,7 @@ class AudioRendererHostTest : public testing::Test {
   void CreateUnifiedStream() {
     EXPECT_CALL(*observer_,
                 OnSetAudioStreamStatus(_, kStreamId, "created"));
-    EXPECT_CALL(*host_, OnStreamCreated(kStreamId, _))
+    EXPECT_CALL(*host_.get(), OnStreamCreated(kStreamId, _))
         .WillOnce(QuitMessageLoop(message_loop_.get()));
     EXPECT_CALL(mirroring_manager_,
                 AddDiverter(kRenderProcessId, kRenderViewId, NotNull()))

@@ -2619,13 +2619,13 @@ IndexedDBBackingStore::Transaction::~Transaction() {}
 
 void IndexedDBBackingStore::Transaction::begin() {
   IDB_TRACE("IndexedDBBackingStore::Transaction::begin");
-  DCHECK(!transaction_);
+  DCHECK(!transaction_.get());
   transaction_ = LevelDBTransaction::Create(backing_store_->db_.get());
 }
 
 bool IndexedDBBackingStore::Transaction::Commit() {
   IDB_TRACE("IndexedDBBackingStore::Transaction::commit");
-  DCHECK(transaction_);
+  DCHECK(transaction_.get());
   bool result = transaction_->Commit();
   transaction_ = NULL;
   if (!result)
@@ -2635,7 +2635,7 @@ bool IndexedDBBackingStore::Transaction::Commit() {
 
 void IndexedDBBackingStore::Transaction::Rollback() {
   IDB_TRACE("IndexedDBBackingStore::Transaction::rollback");
-  DCHECK(transaction_);
+  DCHECK(transaction_.get());
   transaction_->Rollback();
   transaction_ = NULL;
 }

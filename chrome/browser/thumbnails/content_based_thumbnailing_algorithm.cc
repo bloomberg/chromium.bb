@@ -25,7 +25,7 @@ void CallbackInvocationAdapter(
     const thumbnails::ThumbnailingAlgorithm::ConsumerCallback& callback,
     scoped_refptr<thumbnails::ThumbnailingContext> context,
     const SkBitmap& source_bitmap) {
-  callback.Run(*context, source_bitmap);
+  callback.Run(*context.get(), source_bitmap);
 }
 
 }  // namespace
@@ -60,15 +60,15 @@ void ContentBasedThumbnailingAlgorithm::ProcessBitmap(
     const ConsumerCallback& callback,
     const SkBitmap& bitmap) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(context);
+  DCHECK(context.get());
   if (bitmap.isNull() || bitmap.empty())
     return;
 
   gfx::Size target_thumbnail_size =
       SimpleThumbnailCrop::ComputeTargetSizeAtMaximumScale(target_size_);
 
-  SkBitmap source_bitmap = PrepareSourceBitmap(
-      bitmap, target_thumbnail_size, context);
+  SkBitmap source_bitmap =
+      PrepareSourceBitmap(bitmap, target_thumbnail_size, context.get());
 
   // If the source is same (or smaller) than the target, just return it as
   // the final result. Otherwise, send the shrinking task to the blocking
@@ -83,7 +83,7 @@ void ContentBasedThumbnailingAlgorithm::ProcessBitmap(
          context->clip_result == CLIP_RESULT_NOT_CLIPPED ||
          context->clip_result == CLIP_RESULT_SOURCE_SAME_AS_TARGET);
 
-    callback.Run(*context, source_bitmap);
+    callback.Run(*context.get(), source_bitmap);
     return;
   }
 

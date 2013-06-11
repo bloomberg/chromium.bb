@@ -87,7 +87,7 @@ class ExtensionDisabledGlobalErrorTest : public ExtensionBrowserTest {
     if (service_->disabled_extensions()->size() != 1u)
       return NULL;
 
-    return *service_->disabled_extensions()->begin();
+    return service_->disabled_extensions()->begin()->get();
   }
 
   // Helper function to install an extension and upgrade it to a version

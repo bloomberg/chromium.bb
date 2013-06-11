@@ -524,9 +524,8 @@ class AdbAttachCommand : public base::RefCounted<AdbAttachCommand> {
     else
       delegate = new AgentHostDelegate(id, serial_, bridge->adb_thread_,
                                        socket);
-    DevToolsWindow::OpenExternalFrontend(bridge->profile_,
-                                         frontend_url_,
-                                         delegate->GetAgentHost());
+    DevToolsWindow::OpenExternalFrontend(
+        bridge->profile_, frontend_url_, delegate->GetAgentHost().get());
   }
 
   base::WeakPtr<DevToolsAdbBridge> bridge_;

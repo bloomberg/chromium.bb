@@ -386,7 +386,7 @@ void CrxInstaller::OnUnpackSuccess(const base::FilePath& temp_dir,
   }
 
   if (client_) {
-    IconsInfo::DecodeIcon(installer_.extension(),
+    IconsInfo::DecodeIcon(installer_.extension().get(),
                           extension_misc::EXTENSION_ICON_LARGE,
                           ExtensionIconSet::MATCH_BIGGER,
                           &install_icon_);
@@ -595,7 +595,7 @@ void CrxInstaller::CompleteInstall() {
       version_dir,
       install_source_,
       extension()->creation_flags() | Extension::REQUIRE_KEY,
-      &error));
+      &error).get());
 
   if (extension()) {
     ReportSuccessFromFileThread();

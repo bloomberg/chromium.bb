@@ -56,13 +56,14 @@ class CopyOrMoveOperationTestHelper {
   void SetUp() {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
     base::FilePath base_dir = base_.path();
-    quota_manager_ = new quota::MockQuotaManager(
-        false /* is_incognito */, base_dir,
-        base::MessageLoopProxy::current(),
-        base::MessageLoopProxy::current(),
-        NULL /* special storage policy */);
+    quota_manager_ =
+        new quota::MockQuotaManager(false /* is_incognito */,
+                                    base_dir,
+                                    base::MessageLoopProxy::current().get(),
+                                    base::MessageLoopProxy::current().get(),
+                                    NULL /* special storage policy */);
     quota_manager_proxy_ = new quota::MockQuotaManagerProxy(
-        quota_manager_.get(), base::MessageLoopProxy::current());
+        quota_manager_.get(), base::MessageLoopProxy::current().get());
     file_system_context_ =
         CreateFileSystemContextForTesting(quota_manager_proxy_.get(), base_dir);
 

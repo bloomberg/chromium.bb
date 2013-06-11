@@ -168,7 +168,7 @@ int WebContentsScreenshotManager::GetScreenshotCount() const {
   for (int i = 0; i < entry_count; ++i) {
     NavigationEntryImpl* entry =
         NavigationEntryImpl::FromNavigationEntry(owner_->GetEntryAtIndex(i));
-    if (entry->screenshot())
+    if (entry->screenshot().get())
       screenshot_count++;
   }
   return screenshot_count;
@@ -197,7 +197,7 @@ void WebContentsScreenshotManager::OnScreenshotSet(NavigationEntryImpl* entry) {
 }
 
 bool WebContentsScreenshotManager::ClearScreenshot(NavigationEntryImpl* entry) {
-  if (!entry->screenshot())
+  if (!entry->screenshot().get())
     return false;
 
   entry->SetScreenshotPNGData(NULL);
@@ -214,8 +214,8 @@ void WebContentsScreenshotManager::PurgeScreenshotsIfNecessary() {
   const int current = owner_->GetCurrentEntryIndex();
   const int num_entries = owner_->GetEntryCount();
   int available_slots = kMaxScreenshots;
-  if (NavigationEntryImpl::FromNavigationEntry(
-          owner_->GetEntryAtIndex(current))->screenshot()) {
+  if (NavigationEntryImpl::FromNavigationEntry(owner_->GetEntryAtIndex(current))
+          ->screenshot().get()) {
     --available_slots;
   }
 
@@ -234,7 +234,7 @@ void WebContentsScreenshotManager::PurgeScreenshotsIfNecessary() {
     if (back >= 0) {
       NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
           owner_->GetEntryAtIndex(back));
-      if (entry->screenshot())
+      if (entry->screenshot().get())
         --available_slots;
       --back;
     }
@@ -242,7 +242,7 @@ void WebContentsScreenshotManager::PurgeScreenshotsIfNecessary() {
     if (available_slots > 0 && forward < num_entries) {
       NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
           owner_->GetEntryAtIndex(forward));
-      if (entry->screenshot())
+      if (entry->screenshot().get())
         --available_slots;
       ++forward;
     }

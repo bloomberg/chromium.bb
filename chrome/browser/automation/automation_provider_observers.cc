@@ -1765,8 +1765,9 @@ std::vector<DictionaryValue*>* GetAppInfoFromExtensions(
     // Only return information about extensions that are actually apps.
     if ((*ext)->is_app()) {
       DictionaryValue* app_info = new DictionaryValue();
-      AppLauncherHandler::CreateAppInfo(*ext, ext_service, app_info);
-      app_info->SetBoolean("is_component_extension",
+      AppLauncherHandler::CreateAppInfo(ext->get(), ext_service, app_info);
+      app_info->SetBoolean(
+          "is_component_extension",
           (*ext)->location() == extensions::Manifest::COMPONENT);
 
       // Convert the launch_type integer into a more descriptive string.

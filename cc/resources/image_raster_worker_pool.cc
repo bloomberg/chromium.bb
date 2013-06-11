@@ -81,11 +81,11 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   for (RasterTask::Queue::TaskVector::const_iterator it =
            raster_tasks().begin();
        it != raster_tasks().end(); ++it) {
-    internal::RasterWorkerPoolTask* task = *it;
+    internal::RasterWorkerPoolTask* task = it->get();
 
     TaskMap::iterator image_it = image_tasks_.find(task);
     if (image_it != image_tasks_.end()) {
-      internal::WorkerPoolTask* image_task = image_it->second;
+      internal::WorkerPoolTask* image_task = image_it->second.get();
       tasks.push_back(image_task);
       continue;
     }
@@ -128,7 +128,7 @@ void ImageRasterWorkerPool::OnRasterTaskCompleted(
   TRACE_EVENT1("cc", "ImageRasterWorkerPool::OnRasterTaskCompleted",
                "was_canceled", was_canceled);
 
-  DCHECK(image_tasks_.find(task) != image_tasks_.end());
+  DCHECK(image_tasks_.find(task.get()) != image_tasks_.end());
 
   // Balanced with MapImage() call in ScheduleTasks().
   resource_provider()->UnmapImage(task->resource()->id());
@@ -142,7 +142,7 @@ void ImageRasterWorkerPool::OnRasterTaskCompleted(
   task->DidComplete();
   task->DispatchCompletionCallback();
 
-  image_tasks_.erase(task);
+  image_tasks_.erase(task.get());
 }
 
 }  // namespace cc

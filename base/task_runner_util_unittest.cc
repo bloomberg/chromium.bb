@@ -69,7 +69,7 @@ TEST(TaskRunnerHelpersTest, PostTaskAndReplyWithResult) {
   int result = 0;
 
   MessageLoop message_loop;
-  PostTaskAndReplyWithResult(message_loop.message_loop_proxy(),
+  PostTaskAndReplyWithResult(message_loop.message_loop_proxy().get(),
                              FROM_HERE,
                              Bind(&ReturnFourtyTwo),
                              Bind(&StoreValue, &result));
@@ -83,7 +83,7 @@ TEST(TaskRunnerHelpersTest, PostTaskAndReplyWithResultImplicitConvert) {
   double result = 0;
 
   MessageLoop message_loop;
-  PostTaskAndReplyWithResult(message_loop.message_loop_proxy(),
+  PostTaskAndReplyWithResult(message_loop.message_loop_proxy().get(),
                              FROM_HERE,
                              Bind(&ReturnFourtyTwo),
                              Bind(&StoreDoubleValue, &result));
@@ -98,7 +98,7 @@ TEST(TaskRunnerHelpersTest, PostTaskAndReplyWithResultPassed) {
   g_foo_free_count = 0;
 
   MessageLoop message_loop;
-  PostTaskAndReplyWithResult(message_loop.message_loop_proxy(),
+  PostTaskAndReplyWithResult(message_loop.message_loop_proxy().get(),
                              FROM_HERE,
                              Bind(&CreateFoo),
                              Bind(&ExpectFoo));
@@ -114,7 +114,7 @@ TEST(TaskRunnerHelpersTest, PostTaskAndReplyWithResultPassedFreeProc) {
   g_foo_free_count = 0;
 
   MessageLoop message_loop;
-  PostTaskAndReplyWithResult(message_loop.message_loop_proxy(),
+  PostTaskAndReplyWithResult(message_loop.message_loop_proxy().get(),
                              FROM_HERE,
                              Bind(&CreateScopedFoo),
                              Bind(&ExpectScopedFoo));

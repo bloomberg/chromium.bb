@@ -88,9 +88,9 @@ void MessageCenterSettingsController::GetNotifierList(
       profile, extension_misc::EXTENSION_ICON_SMALL, this));
   for (ExtensionSet::const_iterator iter = extension_set->begin();
        iter != extension_set->end(); ++iter) {
-    const extensions::Extension* extension = *iter;
+    const extensions::Extension* extension = iter->get();
     if (!extension->HasAPIPermission(
-      extensions::APIPermission::kNotification)) {
+            extensions::APIPermission::kNotification)) {
       continue;
     }
 

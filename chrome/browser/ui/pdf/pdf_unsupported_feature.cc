@@ -104,7 +104,7 @@ bool PDFEnableAdobeReaderPromptDelegate::ShouldExpire(
 
 void PDFEnableAdobeReaderPromptDelegate::Accept() {
   content::RecordAction(UserMetricsAction("PDF_EnableReaderInfoBarOK"));
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile_);
+  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile_).get();
   plugin_prefs->EnablePluginGroup(
       true, ASCIIToUTF16(PluginMetadata::kAdobeReaderGroupName));
   plugin_prefs->EnablePluginGroup(

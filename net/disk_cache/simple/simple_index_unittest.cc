@@ -53,7 +53,7 @@ class TestSimpleIndexFile : public SimpleIndexFile,
       scoped_refptr<base::SingleThreadTaskRunner> response_thread,
       const SimpleIndexFile::IndexCompletionCallback&
           completion_callback) OVERRIDE {
-    last_response_thread_ = response_thread;
+    last_response_thread_ = response_thread.get();
     completion_callback_ = completion_callback;
     ++get_index_entries_calls_;
   }

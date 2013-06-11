@@ -158,10 +158,10 @@ TEST_F(DomStorageAreaTest, BackingDatabaseOpened) {
 
   // This should set up a DomStorageArea that is correctly backed to disk.
   {
-    scoped_refptr<DomStorageArea> area(
-        new DomStorageArea(kOrigin,
-            temp_dir.path(),
-            new MockDomStorageTaskRunner(base::MessageLoopProxy::current())));
+    scoped_refptr<DomStorageArea> area(new DomStorageArea(
+        kOrigin,
+        temp_dir.path(),
+        new MockDomStorageTaskRunner(base::MessageLoopProxy::current().get())));
 
     EXPECT_TRUE(area->backing_.get());
     DomStorageDatabase* database = static_cast<LocalStorageDatabaseAdapter*>(
@@ -205,10 +205,10 @@ TEST_F(DomStorageAreaTest, CommitTasks) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  scoped_refptr<DomStorageArea> area(
-      new DomStorageArea(kOrigin,
-          temp_dir.path(),
-          new MockDomStorageTaskRunner(base::MessageLoopProxy::current())));
+  scoped_refptr<DomStorageArea> area(new DomStorageArea(
+      kOrigin,
+      temp_dir.path(),
+      new MockDomStorageTaskRunner(base::MessageLoopProxy::current().get())));
   // Inject an in-memory db to speed up the test.
   area->backing_.reset(new LocalStorageDatabaseAdapter());
 
@@ -283,10 +283,10 @@ TEST_F(DomStorageAreaTest, CommitTasks) {
 TEST_F(DomStorageAreaTest, CommitChangesAtShutdown) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  scoped_refptr<DomStorageArea> area(
-      new DomStorageArea(kOrigin,
-          temp_dir.path(),
-          new MockDomStorageTaskRunner(base::MessageLoopProxy::current())));
+  scoped_refptr<DomStorageArea> area(new DomStorageArea(
+      kOrigin,
+      temp_dir.path(),
+      new MockDomStorageTaskRunner(base::MessageLoopProxy::current().get())));
 
   // Inject an in-memory db to speed up the test and also to verify
   // the final changes are commited in it's dtor.
@@ -310,10 +310,10 @@ TEST_F(DomStorageAreaTest, CommitChangesAtShutdown) {
 TEST_F(DomStorageAreaTest, DeleteOrigin) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  scoped_refptr<DomStorageArea> area(
-      new DomStorageArea(kOrigin,
-          temp_dir.path(),
-          new MockDomStorageTaskRunner(base::MessageLoopProxy::current())));
+  scoped_refptr<DomStorageArea> area(new DomStorageArea(
+      kOrigin,
+      temp_dir.path(),
+      new MockDomStorageTaskRunner(base::MessageLoopProxy::current().get())));
 
   // This test puts files on disk.
   base::FilePath db_file_path = static_cast<LocalStorageDatabaseAdapter*>(
@@ -371,10 +371,10 @@ TEST_F(DomStorageAreaTest, DeleteOrigin) {
 TEST_F(DomStorageAreaTest, PurgeMemory) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  scoped_refptr<DomStorageArea> area(
-      new DomStorageArea(kOrigin,
-          temp_dir.path(),
-          new MockDomStorageTaskRunner(base::MessageLoopProxy::current())));
+  scoped_refptr<DomStorageArea> area(new DomStorageArea(
+      kOrigin,
+      temp_dir.path(),
+      new MockDomStorageTaskRunner(base::MessageLoopProxy::current().get())));
 
   // Inject an in-memory db to speed up the test.
   area->backing_.reset(new LocalStorageDatabaseAdapter());

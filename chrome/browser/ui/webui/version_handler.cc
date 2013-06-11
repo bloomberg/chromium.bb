@@ -137,7 +137,7 @@ void VersionHandler::OnGotPlugins(
   string16 flash_version =
       l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLED_PLUGIN);
   PluginPrefs* plugin_prefs =
-      PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui()));
+      PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui())).get();
   if (plugin_prefs) {
     for (size_t i = 0; i < info_array.size(); ++i) {
       if (plugin_prefs->IsPluginEnabled(info_array[i])) {

@@ -2865,13 +2865,15 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOptimisticWriteReleases) {
   // operations. To ensure the queue is empty, we issue a write and wait until
   // it completes.
   EXPECT_EQ(kWriteSize,
-            WriteData(entry, 0, 0, buffer1, kWriteSize, false));
+            WriteData(entry, 0, 0, buffer1.get(), kWriteSize, false));
   EXPECT_TRUE(buffer1->HasOneRef());
 
   // Finally, we should perform an optimistic write and confirm that all
   // references to the IO buffer have been released.
-  EXPECT_EQ(kWriteSize, entry->WriteData(
-      1, 0, buffer1, kWriteSize, net::CompletionCallback(), false));
+  EXPECT_EQ(
+      kWriteSize,
+      entry->WriteData(
+          1, 0, buffer1.get(), kWriteSize, net::CompletionCallback(), false));
   EXPECT_TRUE(buffer1->HasOneRef());
   entry->Close();
 }
@@ -3218,7 +3220,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheReadCombineCRC) {
   ASSERT_EQ(net::OK, CreateEntry(key, &entry));
   EXPECT_NE(null, entry);
 
-  EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer1, kSize, false));
+  EXPECT_EQ(kSize, WriteData(entry, 0, 0, buffer1.get(), kSize, false));
   entry->Close();
 
   disk_cache::Entry* entry2 = NULL;
@@ -3229,14 +3231,14 @@ TEST_F(DiskCacheEntryTest, SimpleCacheReadCombineCRC) {
   int offset = 0;
   int buf_len = kHalfSize;
   scoped_refptr<net::IOBuffer> buffer1_read1(new net::IOBuffer(buf_len));
-  EXPECT_EQ(buf_len, ReadData(entry2, 0, offset, buffer1_read1, buf_len));
+  EXPECT_EQ(buf_len, ReadData(entry2, 0, offset, buffer1_read1.get(), buf_len));
   EXPECT_EQ(0, memcmp(buffer1->data(), buffer1_read1->data(), buf_len));
 
   // Read the second half of the data.
   offset = buf_len;
   buf_len = kHalfSize;
   scoped_refptr<net::IOBuffer> buffer1_read2(new net::IOBuffer(buf_len));
-  EXPECT_EQ(buf_len, ReadData(entry2, 0, offset, buffer1_read2, buf_len));
+  EXPECT_EQ(buf_len, ReadData(entry2, 0, offset, buffer1_read2.get(), buf_len));
   char* buffer1_data = buffer1->data() + offset;
   EXPECT_EQ(0, memcmp(buffer1_data, buffer1_read2->data(), buf_len));
 
@@ -3274,10 +3276,12 @@ TEST_F(DiskCacheEntryTest, SimpleCacheNonSequentialWrite) {
   int offset = kHalfSize;
   int buf_len = kHalfSize;
 
-  EXPECT_EQ(buf_len, WriteData(entry, 0, offset, buffer2, buf_len, false));
+  EXPECT_EQ(buf_len,
+            WriteData(entry, 0, offset, buffer2.get(), buf_len, false));
   offset = 0;
   buf_len = kHalfSize;
-  EXPECT_EQ(buf_len, WriteData(entry, 0, offset, buffer1, buf_len, false));
+  EXPECT_EQ(buf_len,
+            WriteData(entry, 0, offset, buffer1.get(), buf_len, false));
   entry->Close();
 
   disk_cache::Entry* entry2 = NULL;
@@ -3285,7 +3289,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheNonSequentialWrite) {
   EXPECT_EQ(entry, entry2);
 
   scoped_refptr<net::IOBuffer> buffer1_read1(new net::IOBuffer(kSize));
-  EXPECT_EQ(kSize, ReadData(entry2, 0, 0, buffer1_read1, kSize));
+  EXPECT_EQ(kSize, ReadData(entry2, 0, 0, buffer1_read1.get(), kSize));
   EXPECT_EQ(0, memcmp(buffer1->data(), buffer1_read1->data(), kSize));
 
   // Check that we are not leaking.

@@ -440,7 +440,7 @@ bool MediaGalleriesPrivateGetHandlersFunction::RunImpl() {
   for (ExtensionSet::const_iterator iter = service->extensions()->begin();
        iter != service->extensions()->end();
        ++iter) {
-    const Extension* extension = *iter;
+    const Extension* extension = iter->get();
     if (profile_->IsOffTheRecord() &&
         !service->IsIncognitoEnabled(extension->id()))
       continue;

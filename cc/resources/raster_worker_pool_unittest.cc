@@ -162,17 +162,16 @@ class BasicRasterWorkerPoolTest : public RasterWorkerPoolTest {
     const Resource* const_resource = resource.get();
 
     RasterWorkerPool::Task::Set empty;
-    tasks_.push_back(
-        RasterWorkerPool::RasterTask(
-            picture_pile_impl,
-            const_resource,
-            base::Bind(&BasicRasterWorkerPoolTest::RunRasterTask,
-                       base::Unretained(this)),
-            base::Bind(&BasicRasterWorkerPoolTest::OnTaskCompleted,
-                       base::Unretained(this),
-                       base::Passed(&resource),
-                       id),
-            &empty));
+    tasks_.push_back(RasterWorkerPool::RasterTask(
+        picture_pile_impl.get(),
+        const_resource,
+        base::Bind(&BasicRasterWorkerPoolTest::RunRasterTask,
+                   base::Unretained(this)),
+        base::Bind(&BasicRasterWorkerPoolTest::OnTaskCompleted,
+                   base::Unretained(this),
+                   base::Passed(&resource),
+                   id),
+        &empty));
   }
 
   void ScheduleTasks() {

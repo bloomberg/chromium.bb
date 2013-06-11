@@ -109,7 +109,7 @@ TEST_F(ContentBasedThumbnailingAlgorithmTest, PrepareSourceBitmap) {
   source.allocPixels();
   source.eraseRGB(50, 150, 200);
   SkBitmap result = ContentBasedThumbnailingAlgorithm::PrepareSourceBitmap(
-      source, thumbnail_size, context);
+      source, thumbnail_size, context.get());
   EXPECT_EQ(CLIP_RESULT_SOURCE_SAME_AS_TARGET, context->clip_result);
   EXPECT_GE(result.width(), copy_size.width());
   EXPECT_GE(result.height(), copy_size.height());
@@ -122,7 +122,7 @@ TEST_F(ContentBasedThumbnailingAlgorithmTest, PrepareSourceBitmap) {
   EXPECT_NEAR(result.height(), source.height(), gfx::scrollbar_size());
 
   result = ContentBasedThumbnailingAlgorithm::PrepareSourceBitmap(
-      source, thumbnail_size, context);
+      source, thumbnail_size, context.get());
   EXPECT_EQ(CLIP_RESULT_SOURCE_SAME_AS_TARGET, context->clip_result);
   EXPECT_GE(result.width(), copy_size.width());
   EXPECT_GE(result.height(), copy_size.height());

@@ -38,9 +38,10 @@ void CloudPrintAuth::AuthenticateWithLsid(
   VLOG(1) << "CP_AUTH: Authenticating with LSID";
   scoped_refptr<ServiceGaiaAuthenticator> gaia_auth_for_print(
       new ServiceGaiaAuthenticator(
-          kProxyAuthUserAgent, kCloudPrintGaiaServiceId,
+          kProxyAuthUserAgent,
+          kCloudPrintGaiaServiceId,
           GaiaUrls::GetInstance()->client_login_url(),
-          g_service_process->io_thread()->message_loop_proxy()));
+          g_service_process->io_thread()->message_loop_proxy().get()));
   gaia_auth_for_print->set_message_loop(base::MessageLoop::current());
   if (gaia_auth_for_print->AuthenticateWithLsid(lsid)) {
     // Stash away the user email so we can save it in prefs.

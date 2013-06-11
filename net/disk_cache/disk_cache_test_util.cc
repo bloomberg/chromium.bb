@@ -63,7 +63,7 @@ bool DeleteCache(const base::FilePath& path) {
 bool CheckCacheIntegrity(const base::FilePath& path, bool new_eviction,
                          uint32 mask) {
   scoped_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
-      path, mask, base::MessageLoopProxy::current(), NULL));
+      path, mask, base::MessageLoopProxy::current().get(), NULL));
   if (!cache.get())
     return false;
   if (new_eviction)

@@ -1018,7 +1018,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisabledPlugins) {
   const webkit::WebPluginInfo* flash = GetFlashPlugin(plugins);
   if (!flash)
     return;
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(browser()->profile());
+  PluginPrefs* plugin_prefs =
+      PluginPrefs::GetForProfile(browser()->profile()).get();
   EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
   EXPECT_TRUE(SetPluginEnabled(plugin_prefs, flash, false));
   EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
@@ -1048,7 +1049,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisabledPluginsExceptions) {
   const webkit::WebPluginInfo* flash = GetFlashPlugin(plugins);
   if (!flash)
     return;
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(browser()->profile());
+  PluginPrefs* plugin_prefs =
+      PluginPrefs::GetForProfile(browser()->profile()).get();
   EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
 
   // Disable all plugins.
@@ -1086,7 +1088,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, EnabledPlugins) {
   const webkit::WebPluginInfo* flash = GetFlashPlugin(plugins);
   if (!flash)
     return;
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(browser()->profile());
+  PluginPrefs* plugin_prefs =
+      PluginPrefs::GetForProfile(browser()->profile()).get();
   EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
 
   // The user disables it and then a policy forces it to be enabled.

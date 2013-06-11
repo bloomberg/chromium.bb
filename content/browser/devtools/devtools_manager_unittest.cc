@@ -211,8 +211,7 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   TestDevToolsClientHost client_host;
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
   devtools_manager->RegisterDevToolsClientHostFor(
-      DevToolsAgentHost::GetOrCreateFor(rvh()),
-      &client_host);
+      DevToolsAgentHost::GetOrCreateFor(rvh()).get(), &client_host);
 
   // Navigate to new site which should get a new RenderViewHost.
   const GURL url2("http://www.yahoo.com");

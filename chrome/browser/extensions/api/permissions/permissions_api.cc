@@ -68,7 +68,7 @@ bool PermissionsContainsFunction::RunImpl() {
 
 bool PermissionsGetAllFunction::RunImpl() {
   scoped_ptr<Permissions> permissions =
-      helpers::PackPermissionSet(GetExtension()->GetActivePermissions());
+      helpers::PackPermissionSet(GetExtension()->GetActivePermissions().get());
   results_ = GetAll::Results::Create(*permissions);
   return true;
 }

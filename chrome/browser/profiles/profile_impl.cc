@@ -536,7 +536,7 @@ void ProfileImpl::DoFinalInit() {
 
 #if defined(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
-      PluginPrefs::GetForProfile(this),
+      PluginPrefs::GetForProfile(this).get(),
       io_data_.GetResourceContextNoInit());
 #endif
 
@@ -707,7 +707,7 @@ ExtensionSpecialStoragePolicy*
   if (!extension_special_storage_policy_.get()) {
     TRACE_EVENT0("browser", "ProfileImpl::GetExtensionSpecialStoragePolicy")
     extension_special_storage_policy_ = new ExtensionSpecialStoragePolicy(
-        CookieSettings::Factory::GetForProfile(this));
+        CookieSettings::Factory::GetForProfile(this).get());
   }
   return extension_special_storage_policy_.get();
 }
@@ -816,10 +816,10 @@ base::FilePath ProfileImpl::GetPrefFilePath() {
 
 net::URLRequestContextGetter* ProfileImpl::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers) {
-  return io_data_.CreateMainRequestContextGetter(
-      protocol_handlers,
-      g_browser_process->local_state(),
-      g_browser_process->io_thread());
+  return io_data_
+      .CreateMainRequestContextGetter(protocol_handlers,
+                                      g_browser_process->local_state(),
+                                      g_browser_process->io_thread()).get();
 }
 
 net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
@@ -836,7 +836,7 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContextForRenderProcess(
 
 net::URLRequestContextGetter* ProfileImpl::GetMediaRequestContext() {
   // Return the default media context.
-  return io_data_.GetMediaRequestContextGetter();
+  return io_data_.GetMediaRequestContextGetter().get();
 }
 
 net::URLRequestContextGetter*
@@ -853,8 +853,8 @@ net::URLRequestContextGetter*
 ProfileImpl::GetMediaRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory) {
-  return io_data_.GetIsolatedMediaRequestContextGetter(partition_path,
-                                                       in_memory);
+  return io_data_
+      .GetIsolatedMediaRequestContextGetter(partition_path, in_memory).get();
 }
 
 content::ResourceContext* ProfileImpl::GetResourceContext() {
@@ -862,7 +862,7 @@ content::ResourceContext* ProfileImpl::GetResourceContext() {
 }
 
 net::URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
-  return io_data_.GetExtensionsRequestContextGetter();
+  return io_data_.GetExtensionsRequestContextGetter().get();
 }
 
 net::URLRequestContextGetter*
@@ -871,7 +871,7 @@ ProfileImpl::CreateRequestContextForStoragePartition(
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers) {
   return io_data_.CreateIsolatedAppRequestContextGetter(
-      partition_path, in_memory, protocol_handlers);
+                      partition_path, in_memory, protocol_handlers).get();
 }
 
 net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
@@ -900,7 +900,7 @@ content::GeolocationPermissionContext*
 content::SpeechRecognitionPreferences*
 ProfileImpl::GetSpeechRecognitionPreferences() {
 #if defined(ENABLE_INPUT_SPEECH)
-  return ChromeSpeechRecognitionPreferences::GetForProfile(this);
+  return ChromeSpeechRecognitionPreferences::GetForProfile(this).get();
 #else
   return NULL;
 #endif

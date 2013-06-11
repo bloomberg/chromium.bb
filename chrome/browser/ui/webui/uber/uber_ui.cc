@@ -74,7 +74,7 @@ bool HasExtensionType(Profile* profile, const char* extensionType) {
   for (ExtensionSet::const_iterator iter = extensionSet->begin();
        iter != extensionSet->end(); ++iter) {
     extensions::URLOverrides::URLOverrideMap map =
-        extensions::URLOverrides::GetChromeURLOverrides(*iter);
+        extensions::URLOverrides::GetChromeURLOverrides(iter->get());
     extensions::URLOverrides::URLOverrideMap::const_iterator result =
         map.find(std::string(extensionType));
 

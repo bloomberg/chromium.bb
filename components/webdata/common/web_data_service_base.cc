@@ -61,14 +61,14 @@ void WebDataServiceBase::CancelRequest(Handle h) {
 }
 
 bool WebDataServiceBase::IsDatabaseLoaded() {
-  if (!wdbs_)
+  if (!wdbs_.get())
     return false;
   return wdbs_->db_loaded();
 }
 
 void WebDataServiceBase::RegisterDBLoadedCallback(
     const base::Callback<void(void)>& callback) {
-  if (!wdbs_)
+  if (!wdbs_.get())
     return;
   wdbs_->RegisterDBLoadedCallback(callback);
 }

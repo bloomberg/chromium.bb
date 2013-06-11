@@ -55,8 +55,7 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 
 ExtensionPrefsTest::ExtensionPrefsTest()
     : ui_thread_(BrowserThread::UI, &message_loop_),
-      prefs_(message_loop_.message_loop_proxy()) {
-}
+      prefs_(message_loop_.message_loop_proxy().get()) {}
 
 ExtensionPrefsTest::~ExtensionPrefsTest() {
 }

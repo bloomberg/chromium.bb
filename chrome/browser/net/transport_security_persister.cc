@@ -123,7 +123,8 @@ TransportSecurityPersister::TransportSecurityPersister(
     bool readonly)
     : transport_security_state_(state),
       writer_(profile_path.AppendASCII("TransportSecurity"),
-              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)),
+              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
+                  .get()),
       readonly_(readonly),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

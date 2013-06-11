@@ -909,7 +909,7 @@ void NetInternalsMessageHandler::OnGetExtensionInfo(const ListValue* list) {
            it != extensions->end(); ++it) {
         DictionaryValue* extension_info = new DictionaryValue();
         bool enabled = extension_service->IsExtensionEnabled((*it)->id());
-        extensions::GetExtensionBasicInfo(*it, enabled, extension_info);
+        extensions::GetExtensionBasicInfo(it->get(), enabled, extension_info);
         extension_list->Append(extension_info);
       }
     }

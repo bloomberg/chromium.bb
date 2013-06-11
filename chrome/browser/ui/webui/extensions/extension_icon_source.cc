@@ -129,7 +129,7 @@ void ExtensionIconSource::StartDataRequest(
     // added to |request_map_|.
     // Send back the default application icon (not resized or desaturated) as
     // the default response.
-    callback.Run(BitmapToMemory(GetDefaultAppImage()));
+    callback.Run(BitmapToMemory(GetDefaultAppImage()).get());
     return;
   }
 
@@ -174,7 +174,7 @@ void ExtensionIconSource::FinalizeImage(const SkBitmap* image,
   else
     bitmap = *image;
 
-  request->callback.Run(BitmapToMemory(&bitmap));
+  request->callback.Run(BitmapToMemory(&bitmap).get());
   ClearData(request_id);
 }
 

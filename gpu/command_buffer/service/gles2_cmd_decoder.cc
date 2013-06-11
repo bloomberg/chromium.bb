@@ -3112,7 +3112,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   state_.bound_draw_framebuffer = NULL;
   state_.bound_renderbuffer = NULL;
 
-  if (offscreen_saved_color_texture_info_) {
+  if (offscreen_saved_color_texture_info_.get()) {
     DCHECK(offscreen_target_color_texture_);
     DCHECK_EQ(offscreen_saved_color_texture_info_->service_id(),
               offscreen_saved_color_texture_->id());
@@ -5586,7 +5586,7 @@ bool GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures() {
       if (texture_unit_index < state_.texture_units.size()) {
         TextureUnit& texture_unit = state_.texture_units[texture_unit_index];
         TextureRef* texture =
-            texture_unit.GetInfoForSamplerType(uniform_info->type);
+            texture_unit.GetInfoForSamplerType(uniform_info->type).get();
         if (!texture || !texture_manager()->CanRender(texture)) {
           textures_set = true;
           glActiveTexture(GL_TEXTURE0 + texture_unit_index);
@@ -5658,7 +5658,7 @@ bool GLES2DecoderImpl::ClearUnclearedTextures() {
         if (texture_unit_index < state_.texture_units.size()) {
           TextureUnit& texture_unit = state_.texture_units[texture_unit_index];
           TextureRef* texture_ref =
-              texture_unit.GetInfoForSamplerType(uniform_info->type);
+              texture_unit.GetInfoForSamplerType(uniform_info->type).get();
           if (texture_ref && !texture_ref->texture()->SafeToRenderFrom()) {
             if (!texture_manager()->ClearRenderableLevels(this, texture_ref)) {
               return false;

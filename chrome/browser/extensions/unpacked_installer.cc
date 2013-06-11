@@ -133,12 +133,9 @@ bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
 
   std::string error;
   installer_.set_extension(extension_file_util::LoadExtension(
-      extension_path_,
-      Manifest::COMMAND_LINE,
-      GetFlags(),
-      &error));
+      extension_path_, Manifest::COMMAND_LINE, GetFlags(), &error).get());
 
-  if (!installer_.extension()) {
+  if (!installer_.extension().get()) {
     ReportExtensionLoadError(error);
     return false;
   }
@@ -156,12 +153,11 @@ void UnpackedInstaller::ShowInstallPrompt() {
 
   const ExtensionSet* disabled_extensions =
       service_weak_->disabled_extensions();
-  if (service_weak_->show_extensions_prompts() &&
-      prompt_for_plugins_ &&
-      PluginInfo::HasPlugins(installer_.extension()) &&
+  if (service_weak_->show_extensions_prompts() && prompt_for_plugins_ &&
+      PluginInfo::HasPlugins(installer_.extension().get()) &&
       !disabled_extensions->Contains(installer_.extension()->id())) {
     SimpleExtensionLoadPrompt* prompt = new SimpleExtensionLoadPrompt(
-        installer_.extension(),
+        installer_.extension().get(),
         installer_.profile(),
         base::Bind(&UnpackedInstaller::CallCheckRequirements, this));
     prompt->ShowPrompt();
@@ -244,12 +240,9 @@ void UnpackedInstaller::LoadWithFileAccess(int flags) {
 
   std::string error;
   installer_.set_extension(extension_file_util::LoadExtension(
-      extension_path_,
-      Manifest::UNPACKED,
-      flags,
-      &error));
+      extension_path_, Manifest::UNPACKED, flags, &error).get());
 
-  if (!installer_.extension()) {
+  if (!installer_.extension().get()) {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -279,13 +272,12 @@ void UnpackedInstaller::ConfirmInstall() {
   }
 
   PermissionsUpdater perms_updater(service_weak_->profile());
-  perms_updater.GrantActivePermissions(installer_.extension());
+  perms_updater.GrantActivePermissions(installer_.extension().get());
 
-  service_weak_->OnExtensionInstalled(
-      installer_.extension(),
-      syncer::StringOrdinal(),
-      false /* no requirement errors */,
-      false /* don't wait for idle */);
+  service_weak_->OnExtensionInstalled(installer_.extension().get(),
+                                      syncer::StringOrdinal(),
+                                      false /* no requirement errors */,
+                                      false /* don't wait for idle */);
 }
 
 }  // namespace extensions

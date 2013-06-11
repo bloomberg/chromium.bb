@@ -99,8 +99,8 @@ void DispatchEventToExtensions(
     // TODO(bauerb): Only iterate over registered event listeners.
     if (router->ExtensionHasEventListener(extension_id, event_name) &&
         (*it)->HasAPIPermission(permission) &&
-        (!incognito || IncognitoInfo::IsSplitMode(*it) ||
-         extension_service->CanCrossIncognito(*it))) {
+        (!incognito || IncognitoInfo::IsSplitMode(it->get()) ||
+         extension_service->CanCrossIncognito(it->get()))) {
       // Inject level of control key-value.
       DictionaryValue* dict;
       bool rv = args->GetDictionary(0, &dict);
@@ -115,7 +115,7 @@ void DispatchEventToExtensions(
       //    incognito pref has not alredy been set
       Profile* restrict_to_profile = NULL;
       bool from_incognito = false;
-      if (IncognitoInfo::IsSplitMode(*it)) {
+      if (IncognitoInfo::IsSplitMode(it->get())) {
         if (incognito && extension_service->IsIncognitoEnabled(extension_id)) {
           restrict_to_profile = profile->GetOffTheRecordProfile();
         } else if (!incognito &&

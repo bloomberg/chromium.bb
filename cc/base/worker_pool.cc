@@ -493,7 +493,7 @@ void WorkerPool::DispatchCompletionCallbacks(TaskDeque* completed_tasks) {
   in_dispatch_completion_callbacks_ = true;
 
   while (!completed_tasks->empty()) {
-    internal::WorkerPoolTask* task = completed_tasks->front();
+    internal::WorkerPoolTask* task = completed_tasks->front().get();
 
     task->DidComplete();
     task->DispatchCompletionCallback();

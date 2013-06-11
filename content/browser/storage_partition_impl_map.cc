@@ -82,9 +82,10 @@ class BlobProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
         StreamContext* stream_context,
         fileapi::FileSystemContext* file_system_context)
         : webkit_blob::BlobProtocolHandler(
-              blob_storage_controller, file_system_context,
-              BrowserThread::GetMessageLoopProxyForThread(
-                  BrowserThread::FILE)),
+              blob_storage_controller,
+              file_system_context,
+              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
+                  .get()),
           stream_context_(stream_context) {}
 
     virtual ~WebKitBlobProtocolHandlerImpl() {}

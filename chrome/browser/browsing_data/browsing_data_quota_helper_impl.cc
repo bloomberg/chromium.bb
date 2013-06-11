@@ -23,8 +23,8 @@ using content::BrowserContext;
 // static
 BrowsingDataQuotaHelper* BrowsingDataQuotaHelper::Create(Profile* profile) {
   return new BrowsingDataQuotaHelperImpl(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get(),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
       BrowserContext::GetDefaultStoragePartition(profile)->GetQuotaManager());
 }
 

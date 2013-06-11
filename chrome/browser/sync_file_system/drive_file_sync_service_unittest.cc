@@ -54,8 +54,7 @@ class DriveFileSyncServiceTest : public testing::Test {
     ASSERT_TRUE(scoped_base_dir_.CreateUniqueTempDir());
     base_dir_ = scoped_base_dir_.path();
     metadata_store_ = new DriveMetadataStore(
-        base_dir_,
-        base::MessageLoopProxy::current());
+        base_dir_, base::MessageLoopProxy::current().get());
     bool done = false;
     metadata_store_->Initialize(base::Bind(&DidInitialize, &done));
     message_loop_.RunUntilIdle();

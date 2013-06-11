@@ -281,7 +281,7 @@ const extensions::Extension* ExtensionApiTest::GetSingleLoadedExtension() {
       return NULL;
     }
 
-    extension = *it;
+    extension = it->get();
   }
 
   if (!extension) {

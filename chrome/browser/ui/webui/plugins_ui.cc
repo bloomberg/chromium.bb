@@ -238,7 +238,7 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
   }
   bool enable = enable_str == "true";
 
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
+  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile).get();
   if (is_group_str == "true") {
     string16 group_name;
     if (!args->GetString(0, &group_name)) {
@@ -331,7 +331,7 @@ void PluginsDOMHandler::LoadPlugins() {
 void PluginsDOMHandler::PluginsLoaded(
     const std::vector<webkit::WebPluginInfo>& plugins) {
   Profile* profile = Profile::FromWebUI(web_ui());
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
+  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile).get();
 
   ContentSettingsPattern wildcard = ContentSettingsPattern::Wildcard();
 

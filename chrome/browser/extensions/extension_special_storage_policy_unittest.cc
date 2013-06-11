@@ -316,7 +316,7 @@ TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
 
   TestingProfile profile;
   CookieSettings* cookie_settings =
-      CookieSettings::Factory::GetForProfile(&profile);
+      CookieSettings::Factory::GetForProfile(&profile).get();
   policy_ = new ExtensionSpecialStoragePolicy(cookie_settings);
 
   EXPECT_FALSE(policy_->HasSessionOnlyOrigins());

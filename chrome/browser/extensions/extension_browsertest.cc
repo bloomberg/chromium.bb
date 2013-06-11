@@ -88,7 +88,7 @@ const Extension* ExtensionBrowserTest::GetExtensionByPath(
   for (ExtensionSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
     if ((*iter)->path() == extension_path) {
-      return *iter;
+      return iter->get();
     }
   }
   return NULL;

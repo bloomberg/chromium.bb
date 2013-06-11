@@ -336,9 +336,13 @@ void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
   // the lowest-index audio stream.
   pending_seek_ = true;
   base::PostTaskAndReplyWithResult(
-      blocking_thread_.message_loop_proxy(), FROM_HERE,
-      base::Bind(&av_seek_frame, glue_->format_context(), -1,
-                 time.InMicroseconds(), flags),
+      blocking_thread_.message_loop_proxy().get(),
+      FROM_HERE,
+      base::Bind(&av_seek_frame,
+                 glue_->format_context(),
+                 -1,
+                 time.InMicroseconds(),
+                 flags),
       base::Bind(&FFmpegDemuxer::OnSeekFrameDone, weak_this_, cb));
 }
 
@@ -379,7 +383,8 @@ void FFmpegDemuxer::Initialize(DemuxerHost* host,
   // Open the AVFormatContext using our glue layer.
   CHECK(blocking_thread_.Start());
   base::PostTaskAndReplyWithResult(
-      blocking_thread_.message_loop_proxy(), FROM_HERE,
+      blocking_thread_.message_loop_proxy().get(),
+      FROM_HERE,
       base::Bind(&FFmpegGlue::OpenContext, base::Unretained(glue_.get())),
       base::Bind(&FFmpegDemuxer::OnOpenContextDone, weak_this_, status_cb));
 }
@@ -456,8 +461,10 @@ void FFmpegDemuxer::OnOpenContextDone(const PipelineStatusCB& status_cb,
 
   // Fully initialize AVFormatContext by parsing the stream a little.
   base::PostTaskAndReplyWithResult(
-      blocking_thread_.message_loop_proxy(), FROM_HERE,
-      base::Bind(&avformat_find_stream_info, glue_->format_context(),
+      blocking_thread_.message_loop_proxy().get(),
+      FROM_HERE,
+      base::Bind(&avformat_find_stream_info,
+                 glue_->format_context(),
                  static_cast<AVDictionary**>(NULL)),
       base::Bind(&FFmpegDemuxer::OnFindStreamInfoDone, weak_this_, status_cb));
 }
@@ -620,10 +627,11 @@ void FFmpegDemuxer::ReadFrameIfNeeded() {
 
   pending_read_ = true;
   base::PostTaskAndReplyWithResult(
-      blocking_thread_.message_loop_proxy(), FROM_HERE,
+      blocking_thread_.message_loop_proxy().get(),
+      FROM_HERE,
       base::Bind(&av_read_frame, glue_->format_context(), packet_ptr),
-      base::Bind(&FFmpegDemuxer::OnReadFrameDone, weak_this_,
-                 base::Passed(&packet)));
+      base::Bind(
+          &FFmpegDemuxer::OnReadFrameDone, weak_this_, base::Passed(&packet)));
 }
 
 void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {

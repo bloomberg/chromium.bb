@@ -229,7 +229,8 @@ void NaClBrowser::EnsureIrtAvailable() {
     // TODO(ncbray) use blocking pool.
     if (!base::FileUtilProxy::CreateOrOpen(
             content::BrowserThread::GetMessageLoopProxyForThread(
-                content::BrowserThread::FILE),
+                content::BrowserThread::FILE)
+                .get(),
             irt_filepath_,
             base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
             base::Bind(&NaClBrowser::OnIrtOpened,

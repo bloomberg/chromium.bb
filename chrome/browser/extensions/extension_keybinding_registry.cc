@@ -43,8 +43,8 @@ void ExtensionKeybindingRegistry::Init() {
   const ExtensionSet* extensions = service->extensions();
   ExtensionSet::const_iterator iter = extensions->begin();
   for (; iter != extensions->end(); ++iter)
-    if (ExtensionMatchesFilter(*iter))
-      AddExtensionKeybinding(*iter, std::string());
+    if (ExtensionMatchesFilter(iter->get()))
+      AddExtensionKeybinding(iter->get(), std::string());
 }
 
 bool ExtensionKeybindingRegistry::ShouldIgnoreCommand(

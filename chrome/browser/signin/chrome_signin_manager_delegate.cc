@@ -23,7 +23,7 @@ ChromeSigninManagerDelegate::~ChromeSigninManagerDelegate() {
 // static
 bool ChromeSigninManagerDelegate::ProfileAllowsSigninCookies(Profile* profile) {
   CookieSettings* cookie_settings =
-      CookieSettings::Factory::GetForProfile(profile);
+      CookieSettings::Factory::GetForProfile(profile).get();
   return SettingsAllowSigninCookies(cookie_settings);
 }
 

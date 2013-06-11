@@ -68,7 +68,7 @@ void GetExtensionVoices(Profile* profile, std::vector<VoiceData>* out_voices) {
   const ExtensionSet* extensions = service->extensions();
   ExtensionSet::const_iterator iter;
   for (iter = extensions->begin(); iter != extensions->end(); ++iter) {
-    const Extension* extension = *iter;
+    const Extension* extension = iter->get();
 
     if (!event_router->ExtensionHasEventListener(
             extension->id(), tts_engine_events::kOnSpeak) ||

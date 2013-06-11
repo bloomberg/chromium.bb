@@ -1569,14 +1569,18 @@ TEST_F(TextureTest, GetLevelImage) {
   Texture* texture = texture_ref_->texture();
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 1) == NULL);
   // Set image.
-  manager_->SetLevelImage(
-      texture_ref_.get(), GL_TEXTURE_2D, 1, gfx::GLImage::CreateGLImage(0));
+  manager_->SetLevelImage(texture_ref_.get(),
+                          GL_TEXTURE_2D,
+                          1,
+                          gfx::GLImage::CreateGLImage(0).get());
   EXPECT_FALSE(texture->GetLevelImage(GL_TEXTURE_2D, 1) == NULL);
   // Remove it.
   manager_->SetLevelImage(texture_ref_.get(), GL_TEXTURE_2D, 1, NULL);
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 1) == NULL);
-  manager_->SetLevelImage(
-      texture_ref_.get(), GL_TEXTURE_2D, 1, gfx::GLImage::CreateGLImage(0));
+  manager_->SetLevelImage(texture_ref_.get(),
+                          GL_TEXTURE_2D,
+                          1,
+                          gfx::GLImage::CreateGLImage(0).get());
   // Image should be reset when SetLevelInfo is called.
   manager_->SetLevelInfo(texture_ref_.get(),
                          GL_TEXTURE_2D,

@@ -117,8 +117,8 @@ void SandboxedZipAnalyzer::StartProcessOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   utility_process_host_ = content::UtilityProcessHost::Create(
       this,
-      BrowserThread::GetMessageLoopProxyForThread(
-          BrowserThread::IO))->AsWeakPtr();
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get())
+      ->AsWeakPtr();
   utility_process_host_->Send(new ChromeUtilityMsg_StartupPing);
   // Wait for the startup notification before sending the main IPC to the
   // utility process, so that we can dup the file handle.

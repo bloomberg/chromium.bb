@@ -207,7 +207,7 @@ void AddExtensionInfo(const ExtensionSet& extensions,
                             ExtensionInfoList* extension_list) {
   for (ExtensionSet::const_iterator iter = extensions.begin();
        iter != extensions.end(); ++iter) {
-    const Extension& extension = **iter;
+    const Extension& extension = *iter->get();
 
     if (extension.location() == Manifest::COMPONENT)
       continue;  // Skip built-in extensions.
@@ -297,10 +297,8 @@ class SafeManifestJSONParser : public UtilityProcessHostClient {
 
   void StartWorkOnIOThread() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    UtilityProcessHost* host =
-        UtilityProcessHost::Create(
-            this,
-            base::MessageLoopProxy::current());
+    UtilityProcessHost* host = UtilityProcessHost::Create(
+        this, base::MessageLoopProxy::current().get());
     host->EnableZygote();
     host->Send(new ChromeUtilityMsg_ParseJSON(manifest_));
   }

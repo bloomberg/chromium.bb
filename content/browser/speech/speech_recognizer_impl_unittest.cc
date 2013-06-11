@@ -57,7 +57,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
     recognizer_ = new SpeechRecognizerImpl(
         this, kTestingSessionId, kOneShotMode, sr_engine);
     audio_manager_.reset(new media::MockAudioManager(
-        base::MessageLoop::current()->message_loop_proxy()));
+        base::MessageLoop::current()->message_loop_proxy().get()));
     recognizer_->SetAudioManagerForTests(audio_manager_.get());
 
     int audio_packet_length_bytes =

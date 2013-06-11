@@ -12,32 +12,30 @@
 #include "base/prefs/pref_value_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-template<>
+template <>
 TestingPrefServiceBase<PrefService, PrefRegistry>::TestingPrefServiceBase(
     TestingPrefStore* managed_prefs,
     TestingPrefStore* user_prefs,
     TestingPrefStore* recommended_prefs,
     PrefRegistry* pref_registry,
     PrefNotifierImpl* pref_notifier)
-    : PrefService(pref_notifier,
-                  new PrefValueStore(
-                      managed_prefs,
-                      NULL,
-                      NULL,
-                      user_prefs,
-                      recommended_prefs,
-                      pref_registry->defaults(),
-                      pref_notifier),
-                  user_prefs,
-                  pref_registry,
-                  base::Bind(
-                      &TestingPrefServiceBase<
-                          PrefService, PrefRegistry>::HandleReadError),
-                  false),
+    : PrefService(
+          pref_notifier,
+          new PrefValueStore(managed_prefs,
+                             NULL,
+                             NULL,
+                             user_prefs,
+                             recommended_prefs,
+                             pref_registry->defaults().get(),
+                             pref_notifier),
+          user_prefs,
+          pref_registry,
+          base::Bind(&TestingPrefServiceBase<PrefService,
+                                             PrefRegistry>::HandleReadError),
+          false),
       managed_prefs_(managed_prefs),
       user_prefs_(user_prefs),
-      recommended_prefs_(recommended_prefs) {
-}
+      recommended_prefs_(recommended_prefs) {}
 
 TestingPrefServiceSimple::TestingPrefServiceSimple()
     : TestingPrefServiceBase<PrefService, PrefRegistry>(

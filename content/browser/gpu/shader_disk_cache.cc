@@ -529,7 +529,7 @@ void ShaderDiskCache::Init() {
       cache_path_.Append(kGpuCachePath),
       max_cache_size_,
       true,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE).get(),
       NULL,
       &backend_,
       base::Bind(&ShaderDiskCache::CacheCreatedCallback, this));

@@ -120,7 +120,7 @@ void MemoryPurger::PurgeBrowser() {
     WebDataServiceWrapper* wds_wrapper =
         WebDataServiceFactory::GetForProfileIfExists(
             profiles[i], Profile::EXPLICIT_ACCESS);
-    if (wds_wrapper && wds_wrapper->GetWebData())
+    if (wds_wrapper && wds_wrapper->GetWebData().get())
       wds_wrapper->GetWebData()->UnloadDatabase();
 
     BrowserContext::PurgeMemory(profiles[i]);

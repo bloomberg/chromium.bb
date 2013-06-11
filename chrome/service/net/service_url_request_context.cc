@@ -149,10 +149,9 @@ ServiceURLRequestContextGetter::ServiceURLRequestContextGetter()
   // TODO(sanjeevr): Change CreateSystemProxyConfigService to accept a
   // MessageLoopProxy* instead of MessageLoop*.
   DCHECK(g_service_process);
-  proxy_config_service_.reset(
-      net::ProxyService::CreateSystemProxyConfigService(
-          g_service_process->io_thread()->message_loop_proxy(),
-          g_service_process->file_thread()->message_loop()));
+  proxy_config_service_.reset(net::ProxyService::CreateSystemProxyConfigService(
+      g_service_process->io_thread()->message_loop_proxy().get(),
+      g_service_process->file_thread()->message_loop()));
 }
 
 net::URLRequestContext*

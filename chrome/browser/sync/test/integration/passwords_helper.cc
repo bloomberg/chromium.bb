@@ -128,12 +128,12 @@ bool SetDecryptionPassphrase(int index, const std::string& passphrase) {
 
 PasswordStore* GetPasswordStore(int index) {
   return PasswordStoreFactory::GetForProfile(test()->GetProfile(index),
-                                             Profile::IMPLICIT_ACCESS);
+                                             Profile::IMPLICIT_ACCESS).get();
 }
 
 PasswordStore* GetVerifierPasswordStore() {
   return PasswordStoreFactory::GetForProfile(test()->verifier(),
-                                             Profile::IMPLICIT_ACCESS);
+                                             Profile::IMPLICIT_ACCESS).get();
 }
 
 bool ProfileContainsSamePasswordFormsAsVerifier(int index) {

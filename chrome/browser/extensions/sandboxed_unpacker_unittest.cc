@@ -100,12 +100,14 @@ class SandboxedUnpackerTest : public testing::Test {
         temp_dir_.path().AppendASCII("sandboxed_unpacker_test_Temp");
     ASSERT_TRUE(file_util::CreateDirectory(temp_path_));
 
-    sandboxed_unpacker_ =
-        new SandboxedUnpacker(
-            crx_path, false, Manifest::INTERNAL, Extension::NO_FLAGS,
-            extensions_dir_.path(),
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-            client_);
+    sandboxed_unpacker_ = new SandboxedUnpacker(
+        crx_path,
+        false,
+        Manifest::INTERNAL,
+        Extension::NO_FLAGS,
+        extensions_dir_.path(),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get(),
+        client_);
 
     EXPECT_TRUE(PrepareUnpackerEnv());
   }

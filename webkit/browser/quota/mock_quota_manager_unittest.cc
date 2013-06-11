@@ -44,8 +44,8 @@ class MockQuotaManagerTest : public testing::Test {
     policy_ = new MockSpecialStoragePolicy;
     manager_ = new MockQuotaManager(false /* is_incognito */,
                                     data_dir_.path(),
-                                    base::MessageLoopProxy::current(),
-                                    base::MessageLoopProxy::current(),
+                                    base::MessageLoopProxy::current().get(),
+                                    base::MessageLoopProxy::current().get(),
                                     policy_.get());
   }
 

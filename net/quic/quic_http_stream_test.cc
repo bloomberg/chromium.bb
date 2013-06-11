@@ -351,7 +351,7 @@ TEST_F(QuicHttpStreamTest, GetRequest) {
 
   // Now that the headers have been processed, the callback will return.
   EXPECT_EQ(OK, callback_.WaitForResult());
-  ASSERT_TRUE(response_.headers);
+  ASSERT_TRUE(response_.headers.get());
   EXPECT_EQ(404, response_.headers->response_code());
   EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
 
@@ -393,7 +393,7 @@ TEST_F(QuicHttpStreamTest, GetRequestFullResponseInSinglePacket) {
 
   // Now that the headers have been processed, the callback will return.
   EXPECT_EQ(OK, callback_.WaitForResult());
-  ASSERT_TRUE(response_.headers);
+  ASSERT_TRUE(response_.headers.get());
   EXPECT_EQ(200, response_.headers->response_code());
   EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
 
@@ -443,7 +443,7 @@ TEST_F(QuicHttpStreamTest, SendPostRequest) {
 
   // Since the headers have already arrived, this should return immediately.
   EXPECT_EQ(OK, stream_->ReadResponseHeaders(callback_.callback()));
-  ASSERT_TRUE(response_.headers);
+  ASSERT_TRUE(response_.headers.get());
   EXPECT_EQ(200, response_.headers->response_code());
   EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
 
@@ -505,7 +505,7 @@ TEST_F(QuicHttpStreamTest, SendChunkedPostRequest) {
 
   // Since the headers have already arrived, this should return immediately.
   ASSERT_EQ(OK, stream_->ReadResponseHeaders(callback_.callback()));
-  ASSERT_TRUE(response_.headers);
+  ASSERT_TRUE(response_.headers.get());
   EXPECT_EQ(200, response_.headers->response_code());
   EXPECT_TRUE(response_.headers->HasHeaderValue("Content-Type", "text/plain"));
 

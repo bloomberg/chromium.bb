@@ -96,8 +96,9 @@ void LocalFileSyncService::OriginChangeMap::SetOriginEnabled(
 LocalFileSyncService::LocalFileSyncService(Profile* profile)
     : profile_(profile),
       sync_context_(new LocalFileSyncContext(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)
+              .get())),
       local_change_processor_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   sync_context_->AddOriginChangeObserver(this);

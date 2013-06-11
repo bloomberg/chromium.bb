@@ -592,7 +592,7 @@ void SpeechRecognitionManagerImpl::ResetCapturingSessionId(
 }
 
 void SpeechRecognitionManagerImpl::SessionDelete(Session* session) {
-  DCHECK(session->recognizer == NULL || !session->recognizer->IsActive());
+  DCHECK(session->recognizer.get() == NULL || !session->recognizer->IsActive());
   if (primary_session_id_ == session->id)
     primary_session_id_ = kSessionIDInvalid;
   sessions_.erase(session->id);

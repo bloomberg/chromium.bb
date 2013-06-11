@@ -96,9 +96,8 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     qm->SetTemporaryGlobalOverrideQuota(bytes, quota::QuotaCallback());
     // Don't return until the quota has been set.
-    scoped_refptr<base::ThreadTestHelper> helper(
-        new base::ThreadTestHelper(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
+    scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get()));
     ASSERT_TRUE(helper->Run());
   }
 
@@ -110,7 +109,7 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
                 &IndexedDBBrowserTest::DidGetDiskUsage, this));
     scoped_refptr<base::ThreadTestHelper> helper(
         new base::ThreadTestHelper(BrowserThread::GetMessageLoopProxyForThread(
-            BrowserThread::WEBKIT_DEPRECATED)));
+            BrowserThread::WEBKIT_DEPRECATED).get()));
     EXPECT_TRUE(helper->Run());
     // Wait for DidGetDiskUsage to be called.
     base::MessageLoop::current()->RunUntilIdle();
@@ -256,7 +255,7 @@ class IndexedDBBrowserTestWithPreexistingLevelDB : public IndexedDBBrowserTest {
                    EnclosingLevelDBDir()));
     scoped_refptr<base::ThreadTestHelper> helper(
         new base::ThreadTestHelper(BrowserThread::GetMessageLoopProxyForThread(
-            BrowserThread::WEBKIT_DEPRECATED)));
+            BrowserThread::WEBKIT_DEPRECATED).get()));
     ASSERT_TRUE(helper->Run());
   }
 

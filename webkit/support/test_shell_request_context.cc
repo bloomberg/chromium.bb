@@ -96,8 +96,10 @@ void TestShellRequestContext::Init(
 
   net::HttpCache::DefaultBackend* backend = new net::HttpCache::DefaultBackend(
       cache_path.empty() ? net::MEMORY_CACHE : net::DISK_CACHE,
-      net::CACHE_BACKEND_DEFAULT, cache_path, 0,
-      SimpleResourceLoaderBridge::GetCacheThread());
+      net::CACHE_BACKEND_DEFAULT,
+      cache_path,
+      0,
+      SimpleResourceLoaderBridge::GetCacheThread().get());
 
   net::HttpNetworkSession::Params network_session_params;
   network_session_params.host_resolver = host_resolver();
@@ -127,7 +129,7 @@ void TestShellRequestContext::Init(
       new webkit_blob::BlobProtocolHandler(
           blob_storage_controller_.get(),
           file_system_context_.get(),
-          SimpleResourceLoaderBridge::GetIoThread()));
+          SimpleResourceLoaderBridge::GetIoThread().get()));
   job_factory->SetProtocolHandler(
       "filesystem",
       fileapi::CreateFileSystemProtocolHandler(file_system_context_.get()));

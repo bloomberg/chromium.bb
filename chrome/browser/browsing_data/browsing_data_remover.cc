@@ -454,7 +454,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
   if (remove_mask & REMOVE_PASSWORDS) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Passwords"));
     PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
-        profile_, Profile::EXPLICIT_ACCESS);
+        profile_, Profile::EXPLICIT_ACCESS).get();
 
     if (password_store)
       password_store->RemoveLoginsCreatedBetween(delete_begin_, delete_end_);
@@ -689,7 +689,7 @@ void BrowsingDataRemover::ClearLoggedInPredictor() {
     return;
 
   predictors::LoggedInPredictorTable* logged_in_table =
-      predictor_db->logged_in_table();
+      predictor_db->logged_in_table().get();
   if (!logged_in_table)
     return;
 

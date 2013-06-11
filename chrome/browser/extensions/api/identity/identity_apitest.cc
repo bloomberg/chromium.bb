@@ -927,7 +927,7 @@ class RemoveCachedAuthTokenFunctionTest : public ExtensionBrowserTest {
   bool InvalidateDefaultToken() {
     scoped_refptr<IdentityRemoveCachedAuthTokenFunction> func(
         new IdentityRemoveCachedAuthTokenFunction);
-    func->set_extension(utils::CreateEmptyExtension(kExtensionId));
+    func->set_extension(utils::CreateEmptyExtension(kExtensionId).get());
     return utils::RunFunction(
         func.get(),
         std::string("[{\"token\": \"") + kAccessToken + "\"}]",
@@ -1061,8 +1061,8 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, LoadFailed) {
 
   std::string args = "[{\"interactive\": true, \"url\": \"" +
       auth_url.spec() + "\"}]";
-  std::string error = utils::RunFunctionAndReturnError(function, args,
-                                                       browser());
+  std::string error =
+      utils::RunFunctionAndReturnError(function.get(), args, browser());
 
   EXPECT_EQ(std::string(errors::kPageLoadFailure), error);
 }

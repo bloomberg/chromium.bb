@@ -67,7 +67,7 @@ scoped_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromUUID(
     return result.Pass();
   DCHECK(!(found->second.flags & BEING_BUILT));
   result.reset(new BlobDataHandle(
-      found->second.data.get(), this, base::MessageLoopProxy::current()));
+      found->second.data.get(), this, base::MessageLoopProxy::current().get()));
   return result.Pass();
 }
 

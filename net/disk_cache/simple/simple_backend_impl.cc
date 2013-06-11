@@ -133,12 +133,11 @@ void RecordIndexLoad(base::TimeTicks constructed_since, int result) {
 
 namespace disk_cache {
 
-SimpleBackendImpl::SimpleBackendImpl(
-    const FilePath& path,
-    int max_bytes,
-    net::CacheType type,
-    base::SingleThreadTaskRunner* cache_thread,
-    net::NetLog* net_log)
+SimpleBackendImpl::SimpleBackendImpl(const FilePath& path,
+                                     int max_bytes,
+                                     net::CacheType type,
+                                     base::SingleThreadTaskRunner* cache_thread,
+                                     net::NetLog* net_log)
     : path_(path),
       index_(new SimpleIndex(MessageLoopProxy::current(),  // io_thread
                              path,

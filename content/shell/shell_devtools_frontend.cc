@@ -53,8 +53,8 @@ ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
                                         gfx::Size());
   ShellDevToolsFrontend* devtools_frontend = new ShellDevToolsFrontend(
       shell,
-      DevToolsAgentHost::GetOrCreateFor(
-          inspected_contents->GetRenderViewHost()));
+      DevToolsAgentHost::GetOrCreateFor(inspected_contents->GetRenderViewHost())
+          .get());
 
   ShellDevToolsDelegate* delegate = ShellContentBrowserClient::Get()->
       shell_browser_main_parts()->devtools_delegate();

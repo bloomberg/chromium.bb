@@ -98,7 +98,8 @@ TEST_F(ChromePrefServiceUserFilePrefsTest, PreserveEmptyValue) {
       pref_file));
 
   PrefServiceMockBuilder builder;
-  builder.WithUserFilePrefs(pref_file, message_loop_.message_loop_proxy());
+  builder.WithUserFilePrefs(pref_file,
+                            message_loop_.message_loop_proxy().get());
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
       new user_prefs::PrefRegistrySyncable);
   scoped_ptr<PrefServiceSyncable> prefs(builder.CreateSyncable(registry.get()));

@@ -266,15 +266,15 @@ void DiskCacheTestWithCache::InitDiskCache() {
 void DiskCacheTestWithCache::CreateBackend(uint32 flags, base::Thread* thread) {
   base::MessageLoopProxy* runner;
   if (use_current_thread_)
-    runner = base::MessageLoopProxy::current();
+    runner = base::MessageLoopProxy::current().get();
   else
-    runner = thread->message_loop_proxy();
+    runner = thread->message_loop_proxy().get();
 
   if (simple_cache_mode_) {
     net::TestCompletionCallback cb;
     disk_cache::SimpleBackendImpl* simple_backend =
-        new disk_cache::SimpleBackendImpl(cache_path_, size_, type_,
-                                          make_scoped_refptr(runner), NULL);
+        new disk_cache::SimpleBackendImpl(
+            cache_path_, size_, type_, make_scoped_refptr(runner).get(), NULL);
     int rv = simple_backend->Init(cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
     cache_ = simple_cache_impl_ = simple_backend;

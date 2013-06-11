@@ -702,7 +702,7 @@ void ExtensionProcessManager::CreateBackgroundHostsForProfileStartup() {
   ExtensionService* service = GetProfile()->GetExtensionService();
   for (ExtensionSet::const_iterator extension = service->extensions()->begin();
        extension != service->extensions()->end(); ++extension) {
-    CreateBackgroundHostForExtensionLoad(this, *extension);
+    CreateBackgroundHostForExtensionLoad(this, extension->get());
 
     extensions::RuntimeEventRouter::DispatchOnStartupEvent(
         GetProfile(), (*extension)->id());

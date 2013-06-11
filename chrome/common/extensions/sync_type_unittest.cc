@@ -78,7 +78,7 @@ TEST_F(ExtensionSyncTypeTest, NormalExtensionNoUpdateUrl) {
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Manifest::INTERNAL, 0, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_TRUE(sync_helper::IsSyncableExtension(extension));
+  EXPECT_TRUE(sync_helper::IsSyncableExtension(extension.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, UserScriptValidUpdateUrl) {
@@ -86,7 +86,7 @@ TEST_F(ExtensionSyncTypeTest, UserScriptValidUpdateUrl) {
       MakeSyncTestExtension(USER_SCRIPT, GURL(kValidUpdateUrl1), GURL(),
                             Manifest::INTERNAL, 0, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_TRUE(sync_helper::IsSyncableExtension(extension));
+  EXPECT_TRUE(sync_helper::IsSyncableExtension(extension.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, UserScriptNoUpdateUrl) {
@@ -94,7 +94,7 @@ TEST_F(ExtensionSyncTypeTest, UserScriptNoUpdateUrl) {
       MakeSyncTestExtension(USER_SCRIPT, GURL(), GURL(),
                             Manifest::INTERNAL, 0, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_FALSE(sync_helper::IsSyncableExtension(extension));
+  EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, ThemeNoUpdateUrl) {
@@ -102,8 +102,8 @@ TEST_F(ExtensionSyncTypeTest, ThemeNoUpdateUrl) {
       MakeSyncTestExtension(THEME, GURL(), GURL(),
                             Manifest::INTERNAL, 0, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_FALSE(sync_helper::IsSyncableExtension(extension));
-  EXPECT_FALSE(sync_helper::IsSyncableApp(extension));
+  EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
+  EXPECT_FALSE(sync_helper::IsSyncableApp(extension.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, AppWithLaunchUrl) {
@@ -111,7 +111,7 @@ TEST_F(ExtensionSyncTypeTest, AppWithLaunchUrl) {
       MakeSyncTestExtension(EXTENSION, GURL(), GURL("http://www.google.com"),
                             Manifest::INTERNAL, 0, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_TRUE(sync_helper::IsSyncableApp(extension));
+  EXPECT_TRUE(sync_helper::IsSyncableApp(extension.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, ExtensionExternal) {
@@ -119,7 +119,7 @@ TEST_F(ExtensionSyncTypeTest, ExtensionExternal) {
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Manifest::EXTERNAL_PREF, 0, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_FALSE(sync_helper::IsSyncableExtension(extension));
+  EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, UserScriptThirdPartyUpdateUrl) {
@@ -127,7 +127,7 @@ TEST_F(ExtensionSyncTypeTest, UserScriptThirdPartyUpdateUrl) {
       MakeSyncTestExtension(
           USER_SCRIPT, GURL("http://third-party.update_url.com"), GURL(),
           Manifest::INTERNAL, 0, base::FilePath(), Extension::NO_FLAGS));
-  EXPECT_FALSE(sync_helper::IsSyncableExtension(extension));
+  EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, OnlyDisplayAppsInLauncher) {
@@ -201,13 +201,13 @@ TEST_F(ExtensionSyncTypeTest, OnlySyncInternal) {
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Manifest::INTERNAL, 0, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_TRUE(sync_helper::IsSyncable(extension_internal));
+  EXPECT_TRUE(sync_helper::IsSyncable(extension_internal.get()));
 
   scoped_refptr<Extension> extension_noninternal(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Manifest::COMPONENT, 0, base::FilePath(),
                             Extension::NO_FLAGS));
-  EXPECT_FALSE(sync_helper::IsSyncable(extension_noninternal));
+  EXPECT_FALSE(sync_helper::IsSyncable(extension_noninternal.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, DontSyncDefault) {
@@ -215,7 +215,7 @@ TEST_F(ExtensionSyncTypeTest, DontSyncDefault) {
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
                             Manifest::INTERNAL, 0, base::FilePath(),
                             Extension::WAS_INSTALLED_BY_DEFAULT));
-  EXPECT_FALSE(sync_helper::IsSyncable(extension_default));
+  EXPECT_FALSE(sync_helper::IsSyncable(extension_default.get()));
 }
 
 // These last 2 tests don't make sense on Chrome OS, where extension plugins
@@ -227,7 +227,7 @@ TEST_F(ExtensionSyncTypeTest, ExtensionWithPlugin) {
                             Manifest::INTERNAL, 1, base::FilePath(),
                             Extension::NO_FLAGS));
   if (extension.get())
-    EXPECT_FALSE(sync_helper::IsSyncableExtension(extension));
+    EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, ExtensionWithTwoPlugins) {
@@ -236,7 +236,7 @@ TEST_F(ExtensionSyncTypeTest, ExtensionWithTwoPlugins) {
                             Manifest::INTERNAL, 2, base::FilePath(),
                             Extension::NO_FLAGS));
   if (extension.get())
-    EXPECT_FALSE(sync_helper::IsSyncableExtension(extension));
+    EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
 }
 #endif // !defined(OS_CHROMEOS)
 

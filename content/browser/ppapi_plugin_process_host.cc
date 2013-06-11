@@ -222,7 +222,7 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
                                             false));
 
   process_->GetHost()->AddFilter(filter_.get());
-  process_->GetHost()->AddFilter(host_impl_->message_filter());
+  process_->GetHost()->AddFilter(host_impl_->message_filter().get());
 
   GetContentClient()->browser()->DidCreatePpapiPlugin(host_impl_.get());
 

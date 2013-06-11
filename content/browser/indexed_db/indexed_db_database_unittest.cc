@@ -137,7 +137,7 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
 
   db->Close(connection2);
   EXPECT_TRUE(backing_store->HasOneRef());
-  EXPECT_FALSE(db->BackingStore());
+  EXPECT_FALSE(db->BackingStore().get());
 
   db = NULL;
 }

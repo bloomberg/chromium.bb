@@ -237,7 +237,7 @@ bool GpuChannelHost::CollectRenderingStatsForSurface(
 
 void GpuChannelHost::AddRoute(
     int route_id, base::WeakPtr<IPC::Listener> listener) {
-  DCHECK(MessageLoopProxy::current());
+  DCHECK(MessageLoopProxy::current().get());
 
   scoped_refptr<base::MessageLoopProxy> io_loop = factory_->GetIOLoopProxy();
   io_loop->PostTask(FROM_HERE,

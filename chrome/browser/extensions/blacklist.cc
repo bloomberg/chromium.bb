@@ -180,10 +180,9 @@ void Blacklist::GetBlacklistedIDs(const std::set<std::string>& ids,
       pref_blacklisted_ids.insert(*it);
   }
 
-  if (!g_database_manager.Get().get()) {
+  if (!g_database_manager.Get().get().get()) {
     base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, pref_blacklisted_ids));
+        FROM_HERE, base::Bind(callback, pref_blacklisted_ids));
     return;
   }
 

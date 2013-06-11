@@ -57,7 +57,7 @@ void IndexedDBFactory::GetDatabaseNames(
   IDB_TRACE("IndexedDBFactory::get_database_names");
   scoped_refptr<IndexedDBBackingStore> backing_store =
       OpenBackingStore(database_identifier, data_directory);
-  if (!backing_store) {
+  if (!backing_store.get()) {
     callbacks->OnError(
         IndexedDBDatabaseError(WebKit::WebIDBDatabaseExceptionUnknownError,
                                "Internal error opening backing store for "
@@ -89,7 +89,7 @@ void IndexedDBFactory::DeleteDatabase(
   // TODO(jsbell): Everything from now on should be done on another thread.
   scoped_refptr<IndexedDBBackingStore> backing_store =
       OpenBackingStore(database_identifier, data_directory);
-  if (!backing_store) {
+  if (!backing_store.get()) {
     callbacks->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
         ASCIIToUTF16("Internal error opening backing store "
@@ -99,7 +99,7 @@ void IndexedDBFactory::DeleteDatabase(
 
   scoped_refptr<IndexedDBDatabase> database_backend = IndexedDBDatabase::Create(
       name, backing_store.get(), this, unique_identifier);
-  if (!database_backend) {
+  if (!database_backend.get()) {
     callbacks->OnError(IndexedDBDatabaseError(
         WebKit::WebIDBDatabaseExceptionUnknownError,
         ASCIIToUTF16("Internal error creating database backend for "
@@ -131,7 +131,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
         database_identifier, data_directory, file_identifier);
   }
 
-  if (backing_store) {
+  if (backing_store.get()) {
     CleanWeakMap(&backing_store_map_);
     backing_store_map_[file_identifier] = backing_store->GetWeakPtr();
     // If an in-memory database, bind lifetime to this factory instance.
@@ -166,7 +166,7 @@ void IndexedDBFactory::Open(
   if (it == database_backend_map_.end()) {
     scoped_refptr<IndexedDBBackingStore> backing_store =
         OpenBackingStore(database_identifier, data_directory);
-    if (!backing_store) {
+    if (!backing_store.get()) {
       callbacks->OnError(IndexedDBDatabaseError(
           WebKit::WebIDBDatabaseExceptionUnknownError,
           ASCIIToUTF16(
@@ -176,7 +176,7 @@ void IndexedDBFactory::Open(
 
     database_backend = IndexedDBDatabase::Create(
         name, backing_store.get(), this, unique_identifier);
-    if (!database_backend) {
+    if (!database_backend.get()) {
       callbacks->OnError(IndexedDBDatabaseError(
           WebKit::WebIDBDatabaseExceptionUnknownError,
           ASCIIToUTF16(

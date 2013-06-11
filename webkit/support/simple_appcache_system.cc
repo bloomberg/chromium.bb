@@ -410,8 +410,8 @@ void SimpleAppCacheSystem::InitOnIOThread(
   service_ = new appcache::AppCacheService(NULL);
   backend_impl_ = new appcache::AppCacheBackendImpl();
   service_->Initialize(cache_directory_,
-                       db_thread_.message_loop_proxy(),
-                       SimpleResourceLoaderBridge::GetCacheThread());
+                       db_thread_.message_loop_proxy().get(),
+                       SimpleResourceLoaderBridge::GetCacheThread().get());
   service_->set_request_context(request_context);
   backend_impl_->Initialize(service_, frontend_proxy_.get(), kSingleProcessId);
 

@@ -19,9 +19,8 @@ FileSystemContext* CreateFileSystemContextForTesting(
     quota::QuotaManagerProxy* quota_manager_proxy,
     const base::FilePath& base_path) {
   ScopedVector<FileSystemMountPointProvider> additional_providers;
-  additional_providers.push_back(
-      new TestMountPointProvider(
-          base::MessageLoopProxy::current(), base_path));
+  additional_providers.push_back(new TestMountPointProvider(
+      base::MessageLoopProxy::current().get(), base_path));
   return CreateFileSystemContextWithAdditionalProvidersForTesting(
       quota_manager_proxy, additional_providers.Pass(), base_path);
 }
@@ -33,7 +32,7 @@ FileSystemContext* CreateFileSystemContextWithAdditionalProvidersForTesting(
   return new FileSystemContext(
       FileSystemTaskRunners::CreateMockTaskRunners(),
       ExternalMountPoints::CreateRefCounted().get(),
-      make_scoped_refptr(new quota::MockSpecialStoragePolicy()),
+      make_scoped_refptr(new quota::MockSpecialStoragePolicy()).get(),
       quota_manager_proxy,
       additional_providers.Pass(),
       base_path,

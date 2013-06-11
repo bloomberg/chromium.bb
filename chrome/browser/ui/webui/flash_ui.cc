@@ -272,7 +272,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
     AddPair(list, ASCIIToUTF16(kFlashPlugin), "Not installed");
   } else {
     PluginPrefs* plugin_prefs =
-        PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui()));
+        PluginPrefs::GetForProfile(Profile::FromWebUI(web_ui())).get();
     bool found_enabled = false;
     for (size_t i = 0; i < info_array.size(); ++i) {
       string16 flash_version = info_array[i].version + ASCIIToUTF16(" ") +

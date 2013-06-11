@@ -186,7 +186,7 @@ class ExtensionWebRequestTest : public testing::Test {
         new ChromeNetworkDelegate(event_router_.get(), &enable_referrers_));
     network_delegate_->set_profile(&profile_);
     network_delegate_->set_cookie_settings(
-        CookieSettings::Factory::GetForProfile(&profile_));
+        CookieSettings::Factory::GetForProfile(&profile_).get());
     context_.reset(new net::TestURLRequestContext(true));
     context_->set_network_delegate(network_delegate_.get());
     context_->Init();
@@ -504,10 +504,14 @@ void ExtensionWebRequestTest::FireURLRequestWithData(
   ScopedVector<net::UploadElementReader> element_readers;
   element_readers.push_back(new net::UploadBytesElementReader(
       &(bytes_1[0]), bytes_1.size()));
-  element_readers.push_back(new net::UploadFileElementReader(
-      base::MessageLoopProxy::current(), base::FilePath(), 0, 0, base::Time()));
-  element_readers.push_back(new net::UploadBytesElementReader(
-      &(bytes_2[0]), bytes_2.size()));
+  element_readers.push_back(
+      new net::UploadFileElementReader(base::MessageLoopProxy::current().get(),
+                                       base::FilePath(),
+                                       0,
+                                       0,
+                                       base::Time()));
+  element_readers.push_back(
+      new net::UploadBytesElementReader(&(bytes_2[0]), bytes_2.size()));
   request.set_upload(make_scoped_ptr(
       new net::UploadDataStream(&element_readers, 0)));
   ipc_sender_.PushTask(base::Bind(&base::DoNothing));
@@ -778,7 +782,7 @@ class ExtensionWebRequestHeaderModificationTest
         new ChromeNetworkDelegate(event_router_.get(), &enable_referrers_));
     network_delegate_->set_profile(&profile_);
     network_delegate_->set_cookie_settings(
-        CookieSettings::Factory::GetForProfile(&profile_));
+        CookieSettings::Factory::GetForProfile(&profile_).get());
     context_.reset(new net::TestURLRequestContext(true));
     host_resolver_.reset(new net::MockHostResolver());
     host_resolver_->rules()->AddSimulatedFailure("doesnotexist");

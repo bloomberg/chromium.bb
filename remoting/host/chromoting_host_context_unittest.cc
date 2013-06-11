@@ -23,13 +23,13 @@ TEST(ChromotingHostContextTest, StartAndStop) {
   EXPECT_TRUE(context);
   if (!context)
     return;
-  EXPECT_TRUE(context->audio_task_runner());
-  EXPECT_TRUE(context->video_capture_task_runner());
-  EXPECT_TRUE(context->video_encode_task_runner());
-  EXPECT_TRUE(context->file_task_runner());
-  EXPECT_TRUE(context->input_task_runner());
-  EXPECT_TRUE(context->network_task_runner());
-  EXPECT_TRUE(context->ui_task_runner());
+  EXPECT_TRUE(context->audio_task_runner().get());
+  EXPECT_TRUE(context->video_capture_task_runner().get());
+  EXPECT_TRUE(context->video_encode_task_runner().get());
+  EXPECT_TRUE(context->file_task_runner().get());
+  EXPECT_TRUE(context->input_task_runner().get());
+  EXPECT_TRUE(context->network_task_runner().get());
+  EXPECT_TRUE(context->ui_task_runner().get());
 
   context.reset();
   run_loop.Run();

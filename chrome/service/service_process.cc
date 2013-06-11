@@ -163,7 +163,8 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
       user_data_dir.Append(chrome::kServiceStateFileName);
   service_prefs_.reset(new ServiceProcessPrefs(
       pref_path,
-      JsonPrefStore::GetTaskRunnerForFile(pref_path, blocking_pool_.get())));
+      JsonPrefStore::GetTaskRunnerForFile(pref_path, blocking_pool_.get())
+          .get()));
   service_prefs_->ReadPrefs();
 
   // This switch it required to run connector with test gaia.
@@ -203,8 +204,8 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
   // After the IPC server has started we signal that the service process is
   // ready.
   if (!service_process_state_->SignalReady(
-      io_thread_->message_loop_proxy(),
-      base::Bind(&ServiceProcess::Terminate, base::Unretained(this)))) {
+          io_thread_->message_loop_proxy().get(),
+          base::Bind(&ServiceProcess::Terminate, base::Unretained(this)))) {
     return false;
   }
 

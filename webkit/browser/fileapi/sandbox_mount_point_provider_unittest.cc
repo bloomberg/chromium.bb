@@ -86,12 +86,11 @@ class SandboxMountPointProviderTest : public testing::Test {
 
   void SetUpNewProvider(const FileSystemOptions& options) {
     provider_.reset(
-        new SandboxMountPointProvider(
-            NULL,
-            base::MessageLoopProxy::current(),
-            data_dir_.path(),
-            options,
-            NULL));
+        new SandboxMountPointProvider(NULL,
+                                      base::MessageLoopProxy::current().get(),
+                                      data_dir_.path(),
+                                      options,
+                                      NULL));
   }
 
   SandboxMountPointProvider::OriginEnumerator* CreateOriginEnumerator() const {

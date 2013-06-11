@@ -314,12 +314,12 @@ bool WebRTCAudioDeviceTest::OnMessageReceived(const IPC::Message& message) {
 // Posts a final task to the IO message loop and waits for completion.
 void WebRTCAudioDeviceTest::WaitForIOThreadCompletion() {
   WaitForMessageLoopCompletion(
-      ChildProcess::current()->io_message_loop()->message_loop_proxy());
+      ChildProcess::current()->io_message_loop()->message_loop_proxy().get());
 }
 
 void WebRTCAudioDeviceTest::WaitForAudioManagerCompletion() {
   if (audio_manager_)
-    WaitForMessageLoopCompletion(audio_manager_->GetMessageLoop());
+    WaitForMessageLoopCompletion(audio_manager_->GetMessageLoop().get());
 }
 
 void WebRTCAudioDeviceTest::WaitForMessageLoopCompletion(

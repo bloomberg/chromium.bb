@@ -153,7 +153,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
-  pipeline_.reset(new media::Pipeline(media_loop_, media_log_));
+  pipeline_.reset(new media::Pipeline(media_loop_, media_log_.get()));
 
   // Let V8 know we started new thread if we did not do it yet.
   // Made separate task to avoid deletion of player currently being created.

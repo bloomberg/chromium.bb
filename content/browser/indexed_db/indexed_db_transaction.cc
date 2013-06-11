@@ -160,7 +160,7 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
 #endif
   database_->TransactionFinished(this);
 
-  if (callbacks_)
+  if (callbacks_.get())
     callbacks_->OnAbort(id_, error);
 
   database_->TransactionFinishedAndAbortFired(this);

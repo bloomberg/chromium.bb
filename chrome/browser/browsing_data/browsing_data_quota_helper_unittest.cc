@@ -35,13 +35,14 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     EXPECT_TRUE(dir_.CreateUniqueTempDir());
     quota_manager_ = new quota::QuotaManager(
-        false, dir_.path(),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+        false,
+        dir_.path(),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
         NULL);
     helper_ = new BrowsingDataQuotaHelperImpl(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get(),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
         quota_manager_.get());
   }
 

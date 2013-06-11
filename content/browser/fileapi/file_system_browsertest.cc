@@ -71,9 +71,8 @@ class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     qm->SetTemporaryGlobalOverrideQuota(bytes, quota::QuotaCallback());
     // Don't return until the quota has been set.
-    scoped_refptr<base::ThreadTestHelper> helper(
-        new base::ThreadTestHelper(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
+    scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get()));
     ASSERT_TRUE(helper->Run());
   }
 };

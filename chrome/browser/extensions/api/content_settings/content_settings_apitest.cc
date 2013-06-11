@@ -25,7 +25,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettings) {
   HostContentSettingsMap* map =
       browser()->profile()->GetHostContentSettingsMap();
   CookieSettings* cookie_settings =
-      CookieSettings::Factory::GetForProfile(browser()->profile());
+      CookieSettings::Factory::GetForProfile(browser()->profile()).get();
 
   // Check default content settings by using an unknown URL.
   GURL example_url("http://www.example.com");

@@ -3657,15 +3657,21 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
     path = path.Append(FILE_PATH_LITERAL("data"));
     path = path.Append(FILE_PATH_LITERAL("url_request_unittest"));
     path = path.Append(FILE_PATH_LITERAL("with-headers.html"));
-    element_readers.push_back(new UploadFileElementReader(
-        base::MessageLoopProxy::current(), path, 0, kuint64max, base::Time()));
+    element_readers.push_back(
+        new UploadFileElementReader(base::MessageLoopProxy::current().get(),
+                                    path,
+                                    0,
+                                    kuint64max,
+                                    base::Time()));
 
     // This file should just be ignored in the upload stream.
     element_readers.push_back(new UploadFileElementReader(
-        base::MessageLoopProxy::current(),
+        base::MessageLoopProxy::current().get(),
         base::FilePath(FILE_PATH_LITERAL(
             "c:\\path\\to\\non\\existant\\file.randomness.12345")),
-        0, kuint64max, base::Time()));
+        0,
+        kuint64max,
+        base::Time()));
     r.set_upload(make_scoped_ptr(new UploadDataStream(&element_readers, 0)));
 
     r.Start();

@@ -629,11 +629,15 @@ CancelableTaskTracker::TaskId HistoryService::GetFavicons(
   std::vector<chrome::FaviconBitmapResult>* results =
       new std::vector<chrome::FaviconBitmapResult>();
   return tracker->PostTaskAndReply(
-      thread_->message_loop_proxy(),
+      thread_->message_loop_proxy().get(),
       FROM_HERE,
       base::Bind(&HistoryBackend::GetFavicons,
-                 history_backend_.get(), icon_urls, icon_types,
-                 desired_size_in_dip, desired_scale_factors, results),
+                 history_backend_.get(),
+                 icon_urls,
+                 icon_types,
+                 desired_size_in_dip,
+                 desired_scale_factors,
+                 results),
       base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
 }
 
@@ -650,11 +654,15 @@ CancelableTaskTracker::TaskId HistoryService::GetFaviconsForURL(
   std::vector<chrome::FaviconBitmapResult>* results =
       new std::vector<chrome::FaviconBitmapResult>();
   return tracker->PostTaskAndReply(
-      thread_->message_loop_proxy(),
+      thread_->message_loop_proxy().get(),
       FROM_HERE,
       base::Bind(&HistoryBackend::GetFaviconsForURL,
-                 history_backend_.get(), page_url, icon_types,
-                 desired_size_in_dip, desired_scale_factors, results),
+                 history_backend_.get(),
+                 page_url,
+                 icon_types,
+                 desired_size_in_dip,
+                 desired_scale_factors,
+                 results),
       base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
 }
 
@@ -670,11 +678,14 @@ CancelableTaskTracker::TaskId HistoryService::GetFaviconForID(
   std::vector<chrome::FaviconBitmapResult>* results =
       new std::vector<chrome::FaviconBitmapResult>();
   return tracker->PostTaskAndReply(
-      thread_->message_loop_proxy(),
+      thread_->message_loop_proxy().get(),
       FROM_HERE,
       base::Bind(&HistoryBackend::GetFaviconForID,
-                 history_backend_.get(), favicon_id,
-                 desired_size_in_dip, desired_scale_factor, results),
+                 history_backend_.get(),
+                 favicon_id,
+                 desired_size_in_dip,
+                 desired_scale_factor,
+                 results),
       base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
 }
 
@@ -692,11 +703,16 @@ CancelableTaskTracker::TaskId HistoryService::UpdateFaviconMappingsAndFetch(
   std::vector<chrome::FaviconBitmapResult>* results =
       new std::vector<chrome::FaviconBitmapResult>();
   return tracker->PostTaskAndReply(
-      thread_->message_loop_proxy(),
+      thread_->message_loop_proxy().get(),
       FROM_HERE,
       base::Bind(&HistoryBackend::UpdateFaviconMappingsAndFetch,
-                 history_backend_.get(), page_url, icon_urls, icon_types,
-                 desired_size_in_dip, desired_scale_factors, results),
+                 history_backend_.get(),
+                 page_url,
+                 icon_urls,
+                 icon_types,
+                 desired_size_in_dip,
+                 desired_scale_factors,
+                 results),
       base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
 }
 
@@ -1110,7 +1126,7 @@ void HistoryService::ExpireHistoryBetween(
   DCHECK(thread_);
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(history_backend_.get());
-  tracker->PostTaskAndReply(thread_->message_loop_proxy(),
+  tracker->PostTaskAndReply(thread_->message_loop_proxy().get(),
                             FROM_HERE,
                             base::Bind(&HistoryBackend::ExpireHistoryBetween,
                                        history_backend_,
@@ -1128,7 +1144,7 @@ void HistoryService::ExpireHistory(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(history_backend_.get());
   tracker->PostTaskAndReply(
-      thread_->message_loop_proxy(),
+      thread_->message_loop_proxy().get(),
       FROM_HERE,
       base::Bind(&HistoryBackend::ExpireHistory, history_backend_, expire_list),
       callback);

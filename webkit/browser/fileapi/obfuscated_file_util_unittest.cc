@@ -133,11 +133,12 @@ class ObfuscatedFileUtilTest : public testing::Test {
     scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
         new quota::MockSpecialStoragePolicy();
 
-    quota_manager_ = new quota::QuotaManager(false /* is_incognito */,
-                                             data_dir_.path(),
-                                             base::MessageLoopProxy::current(),
-                                             base::MessageLoopProxy::current(),
-                                             storage_policy.get());
+    quota_manager_ =
+        new quota::QuotaManager(false /* is_incognito */,
+                                data_dir_.path(),
+                                base::MessageLoopProxy::current().get(),
+                                base::MessageLoopProxy::current().get(),
+                                storage_policy.get());
 
     // Every time we create a new sandbox_file_system helper,
     // it creates another context, which creates another path manager,

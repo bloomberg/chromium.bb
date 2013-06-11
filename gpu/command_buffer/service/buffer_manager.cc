@@ -241,8 +241,9 @@ bool BufferManager::IsUsageClientSideArray(GLenum usage) {
 }
 
 bool BufferManager::UseNonZeroSizeForClientSideArrayBuffer() {
-  return feature_info_ && feature_info_->workarounds(
-              ).use_non_zero_size_for_client_side_stream_buffers;
+  return feature_info_.get() &&
+         feature_info_->workarounds()
+             .use_non_zero_size_for_client_side_stream_buffers;
 }
 
 void BufferManager::SetInfo(

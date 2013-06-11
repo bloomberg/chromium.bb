@@ -701,7 +701,7 @@ class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
         network_delegate,
         blob_storage_controller_->GetBlobDataFromUrl(request->url()),
         file_system_context_,
-        base::MessageLoopProxy::current());
+        base::MessageLoopProxy::current().get());
   }
 
  private:

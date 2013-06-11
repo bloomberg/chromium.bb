@@ -595,11 +595,13 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
 
   for (ExtensionSet::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
-    if (extensions::ManifestURL::GetDevToolsPage(*extension).is_empty())
+    if (extensions::ManifestURL::GetDevToolsPage(extension->get()).is_empty())
       continue;
     DictionaryValue* extension_info = new DictionaryValue();
-    extension_info->Set("startPage", new StringValue(
-        extensions::ManifestURL::GetDevToolsPage(*extension).spec()));
+    extension_info->Set(
+        "startPage",
+        new StringValue(
+            extensions::ManifestURL::GetDevToolsPage(extension->get()).spec()));
     extension_info->Set("name", new StringValue((*extension)->name()));
     bool allow_experimental = (*extension)->HasAPIPermission(
         extensions::APIPermission::kExperimental);

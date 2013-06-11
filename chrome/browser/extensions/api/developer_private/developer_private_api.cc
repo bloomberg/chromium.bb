@@ -98,7 +98,7 @@ const Extension* GetExtensionByPath(const ExtensionSet* extensions,
   for (ExtensionSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
     if ((*iter)->path() == extension_path)
-      return *iter;
+      return iter->get();
   }
   return NULL;
 }
@@ -383,7 +383,7 @@ bool DeveloperPrivateGetItemsInfoFunction::RunImpl() {
 
   for (ExtensionSet::const_iterator iter = items.begin();
        iter != items.end(); ++iter) {
-    const Extension& item = **iter;
+    const Extension& item = *iter->get();
 
     // Don't show component extensions because they are only extensions as an
     // implementation detail of Chrome.

@@ -551,7 +551,7 @@ void TwoWayTest::SetUp() {
                  &remote_harness_set_up));
   remote_harness_set_up.Wait();
   local_harness_->SetUpHarnessWithChannel(handle,
-                                          io_thread_.message_loop_proxy(),
+                                          io_thread_.message_loop_proxy().get(),
                                           &shutdown_event_,
                                           true);  // is_client
 }

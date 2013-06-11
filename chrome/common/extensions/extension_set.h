@@ -61,6 +61,9 @@ class ExtensionSet {
     const scoped_refptr<const extensions::Extension> operator*() {
       return it_->second;
     }
+    const scoped_refptr<const extensions::Extension>* operator->() {
+      return &it_->second;
+    }
     bool operator!=(const const_iterator& other) { return it_ != other.it_; }
     bool operator==(const const_iterator& other) { return it_ == other.it_; }
 

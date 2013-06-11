@@ -343,9 +343,11 @@ bool HostProcess::InitWithCommandLine(const CommandLine* cmd_line) {
   std::string channel_name =
       cmd_line->GetSwitchValueASCII(kDaemonPipeSwitchName);
   if (!channel_name.empty()) {
-    daemon_channel_.reset(new IPC::ChannelProxy(
-        channel_name, IPC::Channel::MODE_CLIENT, this,
-        context_->network_task_runner()));
+    daemon_channel_.reset(
+        new IPC::ChannelProxy(channel_name,
+                              IPC::Channel::MODE_CLIENT,
+                              this,
+                              context_->network_task_runner().get()));
   }
 
   base::FilePath default_config_dir = remoting::GetConfigDir();

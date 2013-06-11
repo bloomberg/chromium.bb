@@ -90,7 +90,7 @@ void GetServiceApplications(ExtensionService* service,
   for (ExtensionSet::const_iterator cursor = extensions->begin();
        cursor != extensions->end();
        ++cursor) {
-    const Extension* extension = *cursor;
+    const Extension* extension = cursor->get();
     if (BackgroundApplicationListModel::IsBackgroundApp(*extension,
                                                         service->profile())) {
       applications_result->push_back(extension);
@@ -103,7 +103,7 @@ void GetServiceApplications(ExtensionService* service,
   for (ExtensionSet::const_iterator cursor = extensions->begin();
        cursor != extensions->end();
        ++cursor) {
-    const Extension* extension = *cursor;
+    const Extension* extension = cursor->get();
     if (BackgroundApplicationListModel::IsBackgroundApp(*extension,
                                                         service->profile())) {
       applications_result->push_back(extension);

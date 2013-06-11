@@ -129,7 +129,7 @@ class ChromePluginTest : public InProcessBrowserTest {
     GetFlashPath(&paths);
     ASSERT_FALSE(paths.empty());
 
-    PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
+    PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile).get();
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
     scoped_refptr<CallbackBarrier> callback_barrier(
