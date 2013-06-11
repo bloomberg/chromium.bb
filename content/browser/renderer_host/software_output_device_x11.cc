@@ -65,10 +65,12 @@ void SoftwareOutputDeviceX11::Resize(gfx::Size viewport_size) {
 void SoftwareOutputDeviceX11::EndPaint(cc::SoftwareFrameData* frame_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(device_);
-  DCHECK(frame_data == NULL);
+  DCHECK(frame_data);
 
   if (!device_)
     return;
+
+  SoftwareOutputDevice::EndPaint(frame_data);
 
   gfx::Rect rect = damage_rect_;
   rect.Intersect(gfx::Rect(viewport_size_));

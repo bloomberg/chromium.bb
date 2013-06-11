@@ -179,14 +179,13 @@ SkCanvas* CompositorSoftwareOutputDevice::BeginPaint(gfx::Rect damage_rect) {
 void CompositorSoftwareOutputDevice::EndPaint(
     cc::SoftwareFrameData* frame_data) {
   DCHECK(CalledOnValidThread());
+  DCHECK(frame_data);
 
-  if (frame_data) {
-    Buffer* buffer = buffers_[current_index_];
-    frame_data->id = buffer->id();
-    frame_data->size = viewport_size_;
-    frame_data->damage_rect = damage_rect_;
-    frame_data->handle = buffer->handle();
-  }
+  Buffer* buffer = buffers_[current_index_];
+  frame_data->id = buffer->id();
+  frame_data->size = viewport_size_;
+  frame_data->damage_rect = damage_rect_;
+  frame_data->handle = buffer->handle();
 }
 
 void CompositorSoftwareOutputDevice::ReclaimSoftwareFrame(unsigned id) {

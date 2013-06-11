@@ -33,13 +33,11 @@ SkCanvas* SoftwareOutputDevice::BeginPaint(gfx::Rect damage_rect) {
 }
 
 void SoftwareOutputDevice::EndPaint(SoftwareFrameData* frame_data) {
-  DCHECK(device_);
-  if (frame_data) {
-    frame_data->id = 0;
-    frame_data->size = viewport_size_;
-    frame_data->damage_rect = damage_rect_;
-    frame_data->handle = base::SharedMemory::NULLHandle();
-  }
+  DCHECK(frame_data);
+  frame_data->id = 0;
+  frame_data->size = viewport_size_;
+  frame_data->damage_rect = damage_rect_;
+  frame_data->handle = base::SharedMemory::NULLHandle();
 }
 
 void SoftwareOutputDevice::CopyToBitmap(

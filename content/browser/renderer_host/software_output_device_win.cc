@@ -52,10 +52,12 @@ SkCanvas* SoftwareOutputDeviceWin::BeginPaint(gfx::Rect damage_rect) {
 void SoftwareOutputDeviceWin::EndPaint(cc::SoftwareFrameData* frame_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(contents_);
-  DCHECK(frame_data == NULL);
+  DCHECK(frame_data);
 
   if (!contents_)
     return;
+
+  SoftwareOutputDevice::EndPaint(frame_data);
 
   gfx::Rect rect = damage_rect_;
   rect.Intersect(gfx::Rect(viewport_size_));
