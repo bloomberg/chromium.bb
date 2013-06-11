@@ -180,9 +180,15 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, MAYBE_ProcessOverflow) {
   EXPECT_EQ(extension1_host, extension2_host);
 }
 
+// See
+#if defined(OS_WIN)
+#define MAYBE_ExtensionProcessBalancing DISABLED_ExtensionProcessBalancing
+#else
+#define MAYBE_ExtensionProcessBalancing ExtensionProcessBalancing
+#endif
 // Test to verify that the policy of maximum share of extension processes is
 // properly enforced.
-IN_PROC_BROWSER_TEST_F(ProcessManagementTest, ExtensionProcessBalancing) {
+IN_PROC_BROWSER_TEST_F(ProcessManagementTest, MAYBE_ExtensionProcessBalancing) {
   // Set max renderers to 6 so we can expect 2 extension processes to be
   // allocated.
   content::RenderProcessHost::SetMaxRendererProcessCount(6);
