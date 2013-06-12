@@ -60,7 +60,7 @@ class ScopedPersistent {
   template<typename P>
   void MakeWeak(P* parameters,
                 typename v8::WeakReferenceCallbacks<T, P>::Revivable callback) {
-    handle_.MakeWeak(GetIsolate(handle_), parameters, callback);
+    handle_.MakeWeak(parameters, callback);
   }
 
  private:

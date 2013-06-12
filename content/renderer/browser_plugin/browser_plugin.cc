@@ -1028,8 +1028,8 @@ void BrowserPlugin::PersistRequestObject(
           std::make_pair(id, new_item));
   CHECK(result.second);  // Inserted in the map.
   AliveV8PermissionRequestItem* request_item = result.first->second;
-  weak_request.MakeWeak(
-      isolate, static_cast<void*>(request_item), WeakCallbackForPersistObject);
+  weak_request.MakeWeak(static_cast<void*>(request_item),
+                        WeakCallbackForPersistObject);
 }
 
 // static
