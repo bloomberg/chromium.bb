@@ -28,12 +28,14 @@ PpapiDecryptor::PpapiDecryptor(
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,
     const media::KeyMessageCB& key_message_cb,
-    const media::NeedKeyCB& need_key_cb)
+    const media::NeedKeyCB& need_key_cb,
+    const base::Closure& destroy_plugin_cb)
     : plugin_instance_(plugin_instance),
       key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
       key_message_cb_(key_message_cb),
       need_key_cb_(need_key_cb),
+      destroy_plugin_cb_(destroy_plugin_cb),
       plugin_cdm_delegate_(NULL),
       render_loop_proxy_(base::MessageLoopProxy::current()),
       weak_ptr_factory_(this),
@@ -44,6 +46,7 @@ PpapiDecryptor::PpapiDecryptor(
 PpapiDecryptor::~PpapiDecryptor() {
   plugin_cdm_delegate_ = NULL;
   plugin_instance_ = NULL;
+  destroy_plugin_cb_.Run();
 }
 
 bool PpapiDecryptor::GenerateKeyRequest(const std::string& key_system,

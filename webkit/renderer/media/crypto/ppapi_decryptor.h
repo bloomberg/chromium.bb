@@ -36,7 +36,8 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
       const media::KeyAddedCB& key_added_cb,
       const media::KeyErrorCB& key_error_cb,
       const media::KeyMessageCB& key_message_cb,
-      const media::NeedKeyCB& need_key_cb);
+      const media::NeedKeyCB& need_key_cb,
+      const base::Closure& destroy_plugin_cb);
   virtual ~PpapiDecryptor();
 
   // media::MediaKeys implementation.
@@ -103,6 +104,9 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
   media::KeyErrorCB key_error_cb_;
   media::KeyMessageCB key_message_cb_;
   media::NeedKeyCB need_key_cb_;
+
+  // Called to destroy the helper plugin when this class no longer needs it.
+  base::Closure destroy_plugin_cb_;
 
   webkit::ppapi::ContentDecryptorDelegate* plugin_cdm_delegate_;
 

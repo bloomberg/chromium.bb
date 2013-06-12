@@ -37,17 +37,17 @@ static scoped_refptr<webkit::ppapi::PluginInstance> CreateHelperPlugin(
   if (!web_plugin)
     return NULL;
 
-  DCHECK(!web_plugin->isPlaceholder());  // Prevented by WebKit.
+  DCHECK(!web_plugin->isPlaceholder());  // Prevented by Blink.
   // Only Pepper plugins are supported, so it must be a ppapi object.
   webkit::ppapi::WebPluginImpl* ppapi_plugin =
       static_cast<webkit::ppapi::WebPluginImpl*>(web_plugin);
   return ppapi_plugin->instance();
 }
 
-static void DestroyHelperPlugin(
-    WebKit::WebMediaPlayerClient* web_media_player_client) {
-  web_media_player_client->closeHelperPlugin();
+void ProxyDecryptor::DestroyHelperPlugin() {
+  web_media_player_client_->closeHelperPlugin();
 }
+
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 ProxyDecryptor::ProxyDecryptor(
@@ -59,7 +59,6 @@ ProxyDecryptor::ProxyDecryptor(
     const media::NeedKeyCB& need_key_cb)
     : web_media_player_client_(web_media_player_client),
       web_frame_(web_frame),
-      did_create_helper_plugin_(false),
       key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
       key_message_cb_(key_message_cb),
@@ -73,13 +72,6 @@ ProxyDecryptor::~ProxyDecryptor() {
     base::AutoLock auto_lock(lock_);
     decryptor_.reset();
   }
-
-#if defined(ENABLE_PEPPER_CDMS)
-  if (did_create_helper_plugin_)
-    DestroyHelperPlugin(web_media_player_client_);
-#endif
-
-  web_media_player_client_ = NULL;  // We should be done using it now.
 }
 
 // TODO(xhwang): Support multiple decryptor notification request (e.g. from
@@ -169,18 +161,20 @@ scoped_ptr<media::Decryptor> ProxyDecryptor::CreatePpapiDecryptor(
   DCHECK(!plugin_type.empty());
   const scoped_refptr<webkit::ppapi::PluginInstance>& plugin_instance =
       CreateHelperPlugin(plugin_type, web_media_player_client_, web_frame_);
-  did_create_helper_plugin_ = plugin_instance.get() != NULL;
-  if (!did_create_helper_plugin_) {
+  if (!plugin_instance.get()) {
     DVLOG(1) << "ProxyDecryptor: plugin instance creation failed.";
     return scoped_ptr<media::Decryptor>();
   }
 
+  // The new object will call destroy_plugin_cb to destroy Helper Plugin.
   return scoped_ptr<media::Decryptor>(new PpapiDecryptor(
       plugin_instance,
       base::Bind(&ProxyDecryptor::KeyAdded, weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyDecryptor::KeyError, weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyDecryptor::KeyMessage, weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ProxyDecryptor::NeedKey, weak_ptr_factory_.GetWeakPtr())));
+      base::Bind(&ProxyDecryptor::NeedKey, weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ProxyDecryptor::DestroyHelperPlugin,
+                 weak_ptr_factory_.GetWeakPtr())));
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)
 

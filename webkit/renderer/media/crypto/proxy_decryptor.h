@@ -55,11 +55,13 @@ class ProxyDecryptor : public media::MediaKeys {
 
  private:
   // Helper functions to create decryptors to handle the given |key_system|.
+  scoped_ptr<media::Decryptor> CreateDecryptor(const std::string& key_system);
 #if defined(ENABLE_PEPPER_CDMS)
   scoped_ptr<media::Decryptor> CreatePpapiDecryptor(
       const std::string& key_system);
+  // Callback for cleaning up a Pepper CDM.
+  void DestroyHelperPlugin();
 #endif  // defined(ENABLE_PEPPER_CDMS)
-  scoped_ptr<media::Decryptor> CreateDecryptor(const std::string& key_system);
 
   // Callbacks for firing key events.
   void KeyAdded(const std::string& key_system, const std::string& session_id);
@@ -79,7 +81,6 @@ class ProxyDecryptor : public media::MediaKeys {
   // Needed to create the PpapiDecryptor.
   WebKit::WebMediaPlayerClient* web_media_player_client_;
   WebKit::WebFrame* web_frame_;
-  bool did_create_helper_plugin_;
 
   // Callbacks for firing key events.
   media::KeyAddedCB key_added_cb_;
