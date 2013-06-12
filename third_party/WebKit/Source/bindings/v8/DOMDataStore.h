@@ -64,7 +64,7 @@ public:
             if (ScriptWrappable::wrapperCanBeStoredInObject(object)) {
                 v8::Handle<v8::Object> result = ScriptWrappable::getUnsafeWrapperFromObject(object).handle();
                 // Security: always guard against malicious tampering.
-                RELEASE_ASSERT(result.IsEmpty() || result->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == static_cast<void*>(object));
+                RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(result.IsEmpty() || result->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == static_cast<void*>(object));
                 return result;
             }
             return mainWorldStore()->m_wrapperMap.get(object);
@@ -79,7 +79,7 @@ public:
             if (LIKELY(!DOMWrapperWorld::isolatedWorldsExist())) {
                 v8::Handle<v8::Object> result = ScriptWrappable::getUnsafeWrapperFromObject(object).handle();
                 // Security: always guard against malicious tampering.
-                RELEASE_ASSERT(result.IsEmpty() || result->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == static_cast<void*>(object));
+                RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(result.IsEmpty() || result->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == static_cast<void*>(object));
                 return result;
             }
         }
