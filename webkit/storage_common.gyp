@@ -13,7 +13,7 @@
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/net/net.gyp:net',
-        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
         '<(DEPTH)/webkit/base/webkit_base.gyp:webkit_base',
       ],
       'defines': ['WEBKIT_COMMON_IMPLEMENTATION'],
