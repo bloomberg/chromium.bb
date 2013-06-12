@@ -1360,7 +1360,7 @@ crbug.com/14866009 [ Mac Win ] fast/forms/radio/radio-appearance-basic.html [ Fa
 crbug.com/86338 fast/loader/file-protocol-fragment.html [ Failure Pass ]
 webkit.org/b/81697 fast/notifications/notifications-request-permission.html [ Failure Pass ]
 crbug.com/225883 [ Win ] inspector/profiler/memory-instrumentation-external-array.html [ Failure Pass ]
-crbug.com/225184 [ Win Mac Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure ]
+crbug.com/225184 [ Debug ] scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ ImageOnlyFailure Pass ]
 crbug.com/237270 fast/js/stack-overflow-arrity-catch.html [ Failure Pass ]
 
 crbug.com/238082 [ Win Mac Linux Debug ] media/media-continues-playing-after-replace-source.html [ Crash Pass Timeout ]
