@@ -42,6 +42,8 @@ class PolicyServiceImpl : public PolicyService,
       scoped_refptr<const PolicyDomainDescriptor> descriptor) OVERRIDE;
   virtual const PolicyMap& GetPolicies(
       const PolicyNamespace& ns) const OVERRIDE;
+  virtual scoped_refptr<const PolicyDomainDescriptor> GetPolicyDomainDescriptor(
+      PolicyDomain domain) const OVERRIDE;
   virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
   virtual void RefreshPolicies(const base::Closure& callback) OVERRIDE;
 
@@ -92,6 +94,10 @@ class PolicyServiceImpl : public PolicyService,
 
   // Maps each policy namespace to its current policies.
   PolicyBundle policy_bundle_;
+
+  // Maps each policy domain to its current descriptor.
+  scoped_refptr<const PolicyDomainDescriptor>
+      domain_descriptors_[POLICY_DOMAIN_SIZE];
 
   // Maps each policy domain to its observer list.
   ObserverMap observers_;

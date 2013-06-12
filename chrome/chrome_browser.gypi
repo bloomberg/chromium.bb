@@ -2509,6 +2509,7 @@
         }, {  # configuration_policy==0
           'sources/': [
             ['exclude', '^browser/policy/'],
+            ['include', 'browser/policy/policy_domain_descriptor.h'],
             ['include', 'browser/policy/policy_map.cc'],
             ['include', 'browser/policy/policy_map.h'],
             ['include', 'browser/policy/policy_service.cc'],

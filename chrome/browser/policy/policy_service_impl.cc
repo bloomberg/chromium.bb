@@ -77,6 +77,7 @@ void PolicyServiceImpl::RemoveObserver(PolicyDomain domain,
 
 void PolicyServiceImpl::RegisterPolicyDomain(
     scoped_refptr<const PolicyDomainDescriptor> descriptor) {
+  domain_descriptors_[descriptor->domain()] = descriptor;
   for (Iterator it = providers_.begin(); it != providers_.end(); ++it)
     (*it)->RegisterPolicyDomain(descriptor);
 }
@@ -84,6 +85,11 @@ void PolicyServiceImpl::RegisterPolicyDomain(
 const PolicyMap& PolicyServiceImpl::GetPolicies(
     const PolicyNamespace& ns) const {
   return policy_bundle_.Get(ns);
+}
+
+scoped_refptr<const PolicyDomainDescriptor>
+PolicyServiceImpl::GetPolicyDomainDescriptor(PolicyDomain domain) const {
+  return domain_descriptors_[domain];
 }
 
 bool PolicyServiceImpl::IsInitializationComplete(PolicyDomain domain) const {

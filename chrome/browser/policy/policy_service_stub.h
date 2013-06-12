@@ -30,6 +30,9 @@ class PolicyServiceStub : public PolicyService {
   virtual const PolicyMap& GetPolicies(
       const PolicyNamespace& ns) const OVERRIDE;
 
+  virtual scoped_refptr<const PolicyDomainDescriptor> GetPolicyDomainDescriptor(
+      PolicyDomain domain) const OVERRIDE;
+
   virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
 
   virtual void RefreshPolicies(const base::Closure& callback) OVERRIDE;

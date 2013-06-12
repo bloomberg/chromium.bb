@@ -23,6 +23,8 @@ class MockPolicyService : public PolicyService {
                void(scoped_refptr<const PolicyDomainDescriptor>));
 
   MOCK_CONST_METHOD1(GetPolicies, const PolicyMap&(const PolicyNamespace&));
+  MOCK_CONST_METHOD1(GetPolicyDomainDescriptor,
+                     scoped_refptr<const PolicyDomainDescriptor>(PolicyDomain));
   MOCK_CONST_METHOD1(IsInitializationComplete, bool(PolicyDomain domain));
   MOCK_METHOD1(RefreshPolicies, void(const base::Closure&));
 };

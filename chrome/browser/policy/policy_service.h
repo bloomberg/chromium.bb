@@ -98,6 +98,9 @@ class PolicyService {
 
   virtual const PolicyMap& GetPolicies(const PolicyNamespace& ns) const = 0;
 
+  virtual scoped_refptr<const PolicyDomainDescriptor> GetPolicyDomainDescriptor(
+      PolicyDomain domain) const = 0;
+
   // The PolicyService loads policy from several sources, and some require
   // asynchronous loads. IsInitializationComplete() returns true once all
   // sources have loaded their policies for the given |domain|.
