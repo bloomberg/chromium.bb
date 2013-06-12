@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/root_window_observer.h"
+#include "ui/aura/window_observer.h"
 
 namespace aura {
 class RootWindow;
@@ -29,7 +29,7 @@ namespace internal {
 // briefly dim the screen (e.g. to indicate to the user that we're
 // about to suspend a machine that lacks an internal backlight that
 // can be adjusted).
-class ASH_EXPORT ScreenDimmer : public aura::RootWindowObserver {
+class ASH_EXPORT ScreenDimmer : public aura::WindowObserver {
  public:
   class TestApi {
    public:
@@ -49,9 +49,10 @@ class ASH_EXPORT ScreenDimmer : public aura::RootWindowObserver {
   // Dim or undim the root window.
   void SetDimming(bool should_dim);
 
-  // aura::RootWindowObserver overrides:
-  virtual void OnRootWindowResized(const aura::RootWindow* root,
-                                   const gfx::Size& old_size) OVERRIDE;
+  // aura::WindowObserver overrides:
+  virtual void OnWindowBoundsChanged(aura::Window* root_window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
 
  private:
   friend class TestApi;

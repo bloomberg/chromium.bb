@@ -224,8 +224,6 @@ void MirrorWindowController::Close() {
   if (root_window_.get()) {
     ui::ContextFactory::GetInstance()->RemoveReflector(reflector_);
     reflector_ = NULL;
-    root_window_->RemoveRootWindowObserver(
-        Shell::GetInstance()->display_manager());
     NoneCaptureClient* capture_client = static_cast<NoneCaptureClient*>(
         aura::client::GetCaptureClient(root_window_.get()));
     delete capture_client;
@@ -279,9 +277,8 @@ void MirrorWindowController::SetMirroredCursorVisibility(bool visible) {
     visible ? cursor_window_->Show() : cursor_window_->Hide();
 }
 
-void MirrorWindowController::OnRootWindowResized(
-    const aura::RootWindow* root,
-    const gfx::Size& old_size) {
+void MirrorWindowController::OnRootWindowHostResized(
+    const aura::RootWindow* root) {
   // Do not use |old_size| as it contains RootWindow's (but not host's) size,
   // and this parameter wil be removed soon.
   if (mirror_window_host_size_ == root->GetHostSize())

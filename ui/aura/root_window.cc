@@ -197,7 +197,7 @@ void RootWindow::Init() {
   Window::Init(ui::LAYER_NOT_DRAWN);
   compositor()->SetRootLayer(layer());
   transformer_.reset(new SimpleRootWindowTransformer(this, gfx::Transform()));
-  UpdateWindowSize(host_->GetBounds().size());
+  UpdateRootWindowSize(GetHostSize());
   Env::GetInstance()->NotifyRootWindowInitialized(this);
   Show();
 }
@@ -539,10 +539,10 @@ void RootWindow::SetRootWindowTransformer(
   transformer_ = transformer.Pass();
   host_->SetInsets(transformer_->GetHostInsets());
   Window::SetTransform(transformer_->GetTransform());
-  // If the layer is not animating, then we need to update the host size
-  // immediately.
+  // If the layer is not animating, then we need to update the root window
+  // size immediately.
   if (!layer()->GetAnimator()->is_animating())
-    OnHostResized(host_->GetBounds().size());
+    UpdateRootWindowSize(GetHostSize());
 }
 
 gfx::Transform RootWindow::GetRootTransform() const {
@@ -845,7 +845,7 @@ void RootWindow::CleanupGestureRecognizerState(Window* window) {
   }
 }
 
-void RootWindow::UpdateWindowSize(const gfx::Size& host_size) {
+void RootWindow::UpdateRootWindowSize(const gfx::Size& host_size) {
   SetBounds(transformer_->GetRootWindowBounds(host_size));
 }
 
@@ -869,7 +869,7 @@ bool RootWindow::DispatchCancelTouchEvent(ui::TouchEvent* event) {
 
 void RootWindow::OnLayerAnimationEnded(
     ui::LayerAnimationSequence* animation) {
-  OnHostResized(host_->GetBounds().size());
+  UpdateRootWindowSize(GetHostSize());
 }
 
 void RootWindow::OnLayerAnimationScheduled(
@@ -987,7 +987,7 @@ void RootWindow::OnHostPaint(const gfx::Rect& damage_rect) {
 
 void RootWindow::OnHostMoved(const gfx::Point& origin) {
   FOR_EACH_OBSERVER(RootWindowObserver, observers_,
-                    OnRootWindowMoved(this, origin));
+                    OnRootWindowHostMoved(this, origin));
 }
 
 void RootWindow::OnHostResized(const gfx::Size& size) {
@@ -996,13 +996,11 @@ void RootWindow::OnHostResized(const gfx::Size& size) {
   // Get the latest scale from display because it might have been changed.
   compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(this), size);
 
-  // The layer, and all the observers should be notified of the
+  // The layer, and the observers should be notified of the
   // transformed size of the root window.
-  gfx::Size old(bounds().size());
-  UpdateWindowSize(size);
-  // TODO(oshima): Rename this to OnHostWindowResized.
+  UpdateRootWindowSize(size);
   FOR_EACH_OBSERVER(RootWindowObserver, observers_,
-                    OnRootWindowResized(this, old));
+                    OnRootWindowHostResized(this));
 }
 
 float RootWindow::GetDeviceScaleFactor() {

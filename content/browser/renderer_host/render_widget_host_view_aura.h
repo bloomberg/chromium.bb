@@ -320,8 +320,8 @@ class RenderWidgetHostViewAura
                                aura::Window* lost_focus) OVERRIDE;
 
   // Overridden from aura::RootWindowObserver:
-  virtual void OnRootWindowMoved(const aura::RootWindow* root,
-                                 const gfx::Point& new_origin) OVERRIDE;
+  virtual void OnRootWindowHostMoved(const aura::RootWindow* root,
+                                     const gfx::Point& new_origin) OVERRIDE;
 
 #if defined(OS_WIN)
   // Sets the cutout rects from constrained windows. These are rectangles that

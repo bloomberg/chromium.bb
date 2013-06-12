@@ -353,7 +353,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Updates the root window's size using |host_size|, current
   // transform and insets.
-  void UpdateWindowSize(const gfx::Size& host_size);
+  void UpdateRootWindowSize(const gfx::Size& host_size);
 
   // Overridden from ui::EventDispatcherDelegate.
   virtual bool CanDispatchToTarget(EventTarget* target) OVERRIDE;

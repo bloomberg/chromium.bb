@@ -12,7 +12,7 @@
 #include "base/timer.h"
 #include "ui/app_list/pagination_model_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
-#include "ui/aura/root_window_observer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/events/event_handler.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/rect.h"
@@ -37,7 +37,7 @@ namespace internal {
 // activation state and desktop mouse click to auto dismiss the UI.
 class AppListController : public ui::EventHandler,
                           public aura::client::FocusChangeObserver,
-                          public aura::RootWindowObserver,
+                          public aura::WindowObserver,
                           public ui::ImplicitAnimationObserver,
                           public views::WidgetObserver,
                           public ShellObserver,
@@ -90,9 +90,10 @@ class AppListController : public ui::EventHandler,
   virtual void OnWindowFocused(aura::Window* gained_focus,
                                aura::Window* lost_focus) OVERRIDE;
 
-  // aura::RootWindowObserver overrides:
-  virtual void OnRootWindowResized(const aura::RootWindow* root,
-                                   const gfx::Size& old_size) OVERRIDE;
+  // aura::WindowObserver overrides:
+  virtual void OnWindowBoundsChanged(aura::Window* root,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
 
   // ui::ImplicitAnimationObserver overrides:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;

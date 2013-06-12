@@ -58,8 +58,7 @@ class MirrorWindowController : public aura::RootWindowObserver {
   void SetMirroredCursorVisibility(bool visible);
 
   // aura::RootWindowObserver overrides:
-  virtual void OnRootWindowResized(const aura::RootWindow* root,
-                                   const gfx::Size& old_size) OVERRIDE;
+  virtual void OnRootWindowHostResized(const aura::RootWindow* root) OVERRIDE;
 
  private:
   friend class test::MirrorWindowTestApi;

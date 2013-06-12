@@ -157,7 +157,7 @@ void AppListController::SetView(app_list::AppListView* view) {
   widget->AddObserver(this);
   Shell::GetInstance()->AddPreTargetHandler(this);
   Launcher::ForWindow(widget->GetNativeWindow())->AddIconObserver(this);
-  widget->GetNativeView()->GetRootWindow()->AddRootWindowObserver(this);
+  widget->GetNativeView()->GetRootWindow()->AddObserver(this);
   aura::client::GetFocusClient(widget->GetNativeView())->AddObserver(this);
 
   view_->ShowWhenReady();
@@ -172,7 +172,7 @@ void AppListController::ResetView() {
   GetLayer(widget)->GetAnimator()->RemoveObserver(this);
   Shell::GetInstance()->RemovePreTargetHandler(this);
   Launcher::ForWindow(widget->GetNativeWindow())->RemoveIconObserver(this);
-  widget->GetNativeView()->GetRootWindow()->RemoveRootWindowObserver(this);
+  widget->GetNativeView()->GetRootWindow()->RemoveObserver(this);
   aura::client::GetFocusClient(widget->GetNativeView())->RemoveObserver(this);
   view_ = NULL;
 }
@@ -264,9 +264,10 @@ void AppListController::OnWindowFocused(aura::Window* gained_focus,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AppListController,  aura::RootWindowObserver implementation:
-void AppListController::OnRootWindowResized(const aura::RootWindow* root,
-                                            const gfx::Size& old_size) {
+// AppListController,  aura::WindowObserver implementation:
+void AppListController::OnWindowBoundsChanged(aura::Window* root,
+                                              const gfx::Rect& old_bounds,
+                                              const gfx::Rect& new_bounds) {
   UpdateBounds();
 }
 

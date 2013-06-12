@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura/root_window_observer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/rect.h"
@@ -39,7 +38,6 @@ class WorkspaceManager;
 // See if I can refactor the code to make it easier to share common bits.
 class ASH_EXPORT WorkspaceLayoutManager
     : public aura::LayoutManager,
-      public aura::RootWindowObserver,
       public ash::ShellObserver,
       public aura::WindowObserver {
  public:
@@ -57,10 +55,6 @@ class ASH_EXPORT WorkspaceLayoutManager
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE;
 
-  // RootWindowObserver overrides:
-  virtual void OnRootWindowResized(const aura::RootWindow* root,
-                                   const gfx::Size& old_size) OVERRIDE;
-
   // ash::ShellObserver overrides:
   virtual void OnDisplayWorkAreaInsetsChanged() OVERRIDE;
 
@@ -69,6 +63,9 @@ class ASH_EXPORT WorkspaceLayoutManager
                                        const void* key,
                                        intptr_t old) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+  virtual void OnWindowBoundsChanged(aura::Window* window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
 
  private:
   typedef std::set<aura::Window*> WindowSet;

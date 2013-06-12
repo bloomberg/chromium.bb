@@ -178,8 +178,7 @@ class ASH_EXPORT DisplayManager :
   void ToggleDisplayScaleFactor();
 
   // RootWindowObserver overrides:
-  virtual void OnRootWindowResized(const aura::RootWindow* root,
-                                   const gfx::Size& new_size) OVERRIDE;
+  virtual void OnRootWindowHostResized(const aura::RootWindow* root) OVERRIDE;
 
   // SoftwareMirroringController override:
 #if defined(OS_CHROMEOS)

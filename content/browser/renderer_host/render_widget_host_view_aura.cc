@@ -2670,8 +2670,9 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, aura::RootWindowObserver implementation:
 
-void RenderWidgetHostViewAura::OnRootWindowMoved(const aura::RootWindow* root,
-                                                 const gfx::Point& new_origin) {
+void RenderWidgetHostViewAura::OnRootWindowHostMoved(
+    const aura::RootWindow* root,
+    const gfx::Point& new_origin) {
   UpdateScreenInfo(window_);
 }
 

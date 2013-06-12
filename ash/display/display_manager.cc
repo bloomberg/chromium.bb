@@ -740,23 +740,18 @@ void DisplayManager::ToggleDisplayScaleFactor() {
   UpdateDisplays(new_display_info_list);
 }
 
-void DisplayManager::OnRootWindowResized(const aura::RootWindow* root,
-                                         const gfx::Size& old_size) {
+void DisplayManager::OnRootWindowHostResized(const aura::RootWindow* root) {
   if (change_display_upon_host_resize_) {
     gfx::Display& display = FindDisplayForRootWindow(root);
     gfx::Size old_display_size_in_pixel = display.GetSizeInPixel();
     display_info_[display.id()].SetBounds(
         gfx::Rect(root->GetHostOrigin(), root->GetHostSize()));
-    const gfx::Size& new_root_size = root->bounds().size();
     // It's tricky to support resizing mirror window on desktop.
     if (software_mirroring_enabled_ && mirrored_display_.id() == display.id())
       return;
-    if (old_size != new_root_size) {
-      display.SetSize(display_info_[display.id()].size_in_pixel());
-      Shell::GetInstance()->screen()->NotifyBoundsChanged(display);
-      Shell::GetInstance()->mirror_window_controller()->
-          UpdateWindow();
-    }
+    display.SetSize(display_info_[display.id()].size_in_pixel());
+    Shell::GetInstance()->screen()->NotifyBoundsChanged(display);
+    Shell::GetInstance()->mirror_window_controller()->UpdateWindow();
   }
 }
 

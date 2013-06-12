@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/aura/root_window_observer.h"
+#include "ui/aura/window_observer.h"
 
 namespace aura {
 class RootWindow;
@@ -30,16 +30,17 @@ namespace internal {
 // desktop background image is loaded at startup, or when we scale down all of
 // the other layers as part of a power-button or window-management animation).
 // It should never be transformed or restacked.
-class SystemBackgroundController : public aura::RootWindowObserver {
+class SystemBackgroundController : public aura::WindowObserver {
  public:
   SystemBackgroundController(aura::RootWindow* root_window, SkColor color);
   virtual ~SystemBackgroundController();
 
   void SetColor(SkColor color);
 
-  // aura::RootWindowObserver overrides:
-  virtual void OnRootWindowResized(const aura::RootWindow* root,
-                                   const gfx::Size& old_size) OVERRIDE;
+  // aura::WindowObserver overrides:
+  virtual void OnWindowBoundsChanged(aura::Window* root,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
 
  private:
   class HostContentLayerDelegate;
