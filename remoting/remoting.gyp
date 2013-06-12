@@ -340,6 +340,7 @@
             'host/constants_mac.h',
             'host/continue_window.cc',
             'host/continue_window.h',
+            'host/continue_window_aura.cc',
             'host/continue_window_gtk.cc',
             'host/continue_window_mac.mm',
             'host/continue_window_win.cc',
@@ -351,6 +352,7 @@
             'host/desktop_session_connector.h',
             'host/desktop_session_proxy.cc',
             'host/desktop_session_proxy.h',
+            'host/disconnect_window_aura.cc',
             'host/disconnect_window_gtk.cc',
             'host/disconnect_window_mac.h',
             'host/disconnect_window_mac.mm',
@@ -483,16 +485,15 @@
             'host/win/wts_terminal_observer.h',
           ],
           'conditions': [
-            ['toolkit_uses_gtk==1', {
+            ['OS=="linux"', {
               'dependencies': [
+                # Always use GTK on Linux, even for Aura builds.
+                #
+                # TODO(lambroslambrou): Once the DisconnectWindow and
+                # ContinueWindow classes have been implemented for Aura,
+                # remove this dependency.
                 '../build/linux/system.gyp:gtk',
               ],
-            }, {  # else toolkit_uses_gtk!=1
-              'sources!': [
-                '*_gtk.cc',
-              ],
-            }],
-            ['OS=="linux"', {
               'link_settings': {
                 'libraries': [
                   '-lX11',
@@ -504,6 +505,11 @@
                   '-lpam',
                 ],
               },
+            }, {  # else OS != "linux"
+              'sources!': [
+                'host/continue_window_aura.cc',
+                'host/disconnect_window_aura.cc',
+              ],
             }],
             ['OS=="mac"', {
               'sources': [
