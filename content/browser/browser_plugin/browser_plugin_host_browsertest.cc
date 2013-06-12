@@ -322,6 +322,8 @@ class BrowserPluginHostTest : public ContentBrowserTest {
         embedder_web_contents->GetRenderViewHost());
     // Focus the embedder.
     rvh->Focus();
+    // Activative IME.
+    rvh->SetInputMethodActive(true);
 
     // Allow the test to do some operations on the embedder before we perform
     // the first navigation of the guest.
@@ -1462,6 +1464,16 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, PartialAutosizeAttributes) {
     string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
   }
+}
+
+// This test verifies that if IME is enabled in the embedder, it is also enabled
+// in the guest.
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, VerifyInputMethodActive) {
+  const char* kEmbedderURL = "/browser_plugin_embedder.html";
+  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      test_guest()->web_contents()->GetRenderViewHost());
+  EXPECT_TRUE(rvh->input_method_active());
 }
 
 }  // namespace content

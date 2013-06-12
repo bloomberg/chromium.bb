@@ -332,6 +332,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
     return ignore_input_events_;
   }
 
+  bool input_method_active() const {
+    return input_method_active_;
+  }
+
   bool ShouldForwardTouchEvent() const;
 
   bool has_touch_handler() const { return has_touch_handler_; }
@@ -870,6 +874,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   // Set to true if we shouldn't send input events from the render widget.
   bool ignore_input_events_;
+
+  // Indicates whether IME is active.
+  bool input_method_active_;
 
   // Set when we update the text direction of the selected input element.
   bool text_direction_updated_;

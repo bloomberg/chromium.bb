@@ -165,6 +165,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       abort_get_backing_store_(false),
       view_being_painted_(false),
       ignore_input_events_(false),
+      input_method_active_(false),
       text_direction_updated_(false),
       text_direction_(WebKit::WebTextDirectionLeftToRight),
       text_direction_canceled_(false),
@@ -1479,6 +1480,7 @@ void RenderWidgetHostImpl::NotifyTextDirection() {
 }
 
 void RenderWidgetHostImpl::SetInputMethodActive(bool activate) {
+  input_method_active_ = activate;
   Send(new ViewMsg_SetInputMethodActive(GetRoutingID(), activate));
 }
 

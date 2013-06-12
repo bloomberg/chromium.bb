@@ -442,6 +442,14 @@ void BrowserPluginGuest::Initialize(
     prefs.accelerated_compositing_enabled = false;
     GetWebContents()->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
   }
+
+  // Enable input method for guest if it's enabled for the embedder.
+  if (static_cast<RenderViewHostImpl*>(
+      embedder_web_contents_->GetRenderViewHost())->input_method_active()) {
+    RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
+        GetWebContents()->GetRenderViewHost());
+    guest_rvh->SetInputMethodActive(true);
+  }
 }
 
 BrowserPluginGuest::~BrowserPluginGuest() {

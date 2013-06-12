@@ -252,7 +252,8 @@ void RenderWidgetHostViewGuest::SetIsLoading(bool is_loading) {
 
 void RenderWidgetHostViewGuest::TextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
-  platform_view_->TextInputStateChanged(params);
+  RenderWidgetHostViewPort::FromRWHV(
+      guest_->GetEmbedderRenderWidgetHostView())->TextInputStateChanged(params);
 }
 
 void RenderWidgetHostViewGuest::ImeCancelComposition() {
@@ -358,7 +359,7 @@ void RenderWidgetHostViewGuest::UnlockMouse() {
 
 void RenderWidgetHostViewGuest::GetScreenInfo(WebKit::WebScreenInfo* results) {
   RenderWidgetHostViewPort* embedder_view =
-      static_cast<RenderWidgetHostViewPort*>(
+      RenderWidgetHostViewPort::FromRWHV(
           guest_->GetEmbedderRenderWidgetHostView());
   embedder_view->GetScreenInfo(results);
 }
