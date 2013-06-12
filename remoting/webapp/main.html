@@ -237,7 +237,7 @@ found in the LICENSE file.
           <p id="auth-error-message"
              i18n-content="DESCRIPTION_AUTHORIZE"
              class="message"></p>
-          <div class="centered">
+          <div class="button-row">
             <button id="auth-button"
                     type="button"
                     autofocus="autofocus"
@@ -316,7 +316,7 @@ found in the LICENSE file.
               </td>
             <tr>
           </table>
-          <div id="daemon-pin-error-div" class="message centered" hidden>
+          <div id="daemon-pin-error-div" class="message" hidden>
             <span id="daemon-pin-error-message" class="error-state">
             </span>
           </div>
@@ -326,8 +326,7 @@ found in the LICENSE file.
               <span i18n-content="HOST_SETUP_CRASH_REPORTING_MESSAGE"></span>
             </label>
           </div>
-          <div class="box">
-            <div class="box-spacer"></div>
+          <div class="button-row">
             <button id="daemon-pin-ok" type="submit" i18n-content="OK">
             </button>
             <button id="daemon-pin-cancel" type="button" i18n-content="CANCEL">
@@ -387,7 +386,7 @@ found in the LICENSE file.
            class="kd-modaldialog"
            data-ui-mode="home.host">
 
-        <div data-ui-mode="home.host.waiting-for-code" class="message centered"
+        <div data-ui-mode="home.host.waiting-for-code" class="message"
              i18n-content="MESSAGE_GENERATING">
         </div> <!-- host.waiting-for-code -->
 
@@ -404,9 +403,9 @@ found in the LICENSE file.
         </div> <!-- host.waiting-for-connection -->
 
         <div data-ui-mode="home.host.shared">
-          <div id="host-shared-message" class="message centered"
+          <div id="host-shared-message" class="message"
                i18n-content="MESSAGE_SHARED"></div>
-          <div class="centered">
+          <div class="button-row">
             <button id="stop-sharing-button"
                     type="button"
                     i18n-content="STOP_SHARING_BUTTON">
@@ -414,16 +413,16 @@ found in the LICENSE file.
           </div>
         </div> <!-- host.shared -->
 
-        <div data-ui-mode="home.host.share-failed" class="message centered">
+        <div data-ui-mode="home.host.share-failed" class="message">
           <span id="host-plugin-error" class="error-state"></span>
         </div> <!-- host.share-failed -->
 
-        <div data-ui-mode="home.host.share-finished" class="message centered"
+        <div data-ui-mode="home.host.share-finished" class="message"
              i18n-content="MESSAGE_SESSION_FINISHED">
         </div> <!-- host.share-finished -->
 
-        <div class="centered"
-             data-ui-mode="home.host.share-failed home.host.share-finished">
+        <div data-ui-mode="home.host.share-failed home.host.share-finished"
+             class="button-row">
           <button id="host-finished-button"
                   type="button"
                   autofocus="autofocus"
@@ -466,8 +465,7 @@ found in the LICENSE file.
                        autocomplete="off"/>
                 <div class="box-spacer"></div>
               </div>
-              <div class="box space-before">
-                <div class="box-spacer"></div>
+              <div class="button-row">
                 <button id="connect-button"
                         type="submit"
                         i18n-content="CONNECT_BUTTON">
@@ -505,8 +503,7 @@ found in the LICENSE file.
                target="_blank"
                i18n-content="LEARN_HOW"></a>
           </div>
-          <div class="box">
-            <div class="box-spacer"></div>
+          <div class="button-row">
             <button id="host-needs-update-connect-button"
                     type="button"
                     i18n-content="CONNECT_ANYWAY"
@@ -560,7 +557,7 @@ found in the LICENSE file.
                class="message"></div>
           <div id="third-party-auth-url"
                class="message"></div>
-          <div>
+          <div class="button-row">
             <button id="third-party-auth-button"
                     type="button"
                     autofocus="autofocus"
@@ -570,16 +567,16 @@ found in the LICENSE file.
         </div> <!-- third-party-auth-dialog -->
 
         <div data-ui-mode="home.client.connect-failed"
-             class="message centered">
+             class="message">
           <span id="connect-error-message" class="error-state"></span>
         </div> <!-- client.connect-failed -->
 
         <div data-ui-mode="home.client.session-finished"
-             class="message centered" i18n-content="MESSAGE_SESSION_FINISHED">
+             class="message" i18n-content="MESSAGE_SESSION_FINISHED">
         </div> <!-- client.session-finished -->
 
         <div data-ui-mode="home.client.connect-failed.it2me home.client.session-finished.it2me"
-             class="centered">
+             class="button-row">
           <button id="client-finished-it2me-button"
                   type="button"
                   i18n-content="OK"
@@ -588,7 +585,7 @@ found in the LICENSE file.
         </div> <!-- connect-failed.it2me session-finished.it2me -->
 
         <div data-ui-mode="home.client.connect-failed.me2me home.client.session-finished.me2me"
-             class="centered">
+             class="button-row">
           <button id="client-reconnect-button"
                   type="button"
                   i18n-content="RETRY"
@@ -651,7 +648,7 @@ found in the LICENSE file.
            i18n-content="CONFIRM_HOST_DELETE"
            class="message">
         </p>
-        <div class="centered">
+        <div class="button-row">
           <button id="confirm-host-delete"
                   i18n-content="DISABLE_HOST"
                   type="button">

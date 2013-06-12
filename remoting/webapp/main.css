@@ -287,6 +287,17 @@ section {
   text-align: center;
 }
 
+.button-row {
+  display: -webkit-flex;
+  -webkit-flex-direction: row;
+  -webkit-justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.button-row button {
+  margin-left: 5px;
+}
+
 .clickable {
   cursor: pointer;
 }
@@ -515,7 +526,6 @@ button {
 .space-before {
   margin-top: 20px;
 }
-
 
 #access-code-countdown-container {
   height: 50px;
