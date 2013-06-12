@@ -255,7 +255,7 @@ crbug.com/78376 http/tests/media/video-play-stall-seek.html [ Timeout ]
 # Test is intentionally SLOW as we're waiting for a connection timeout.
 crbug.com/73609 http/tests/media/video-play-stall.html [ Failure Slow ]
 
-crbug.com/100798 [ Mac Debug ] fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
+crbug.com/100798 [ Debug ] fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
 crbug.com/100798 [ Win7 Mac Debug ] fullscreen/full-screen-iframe-allowed-prefixed.html [ Failure Pass ]
 
 # -----------------------------------------------------------------
@@ -1724,6 +1724,7 @@ crbug.com/248121 fast/events/overflow-scroll-fake-mouse-move.html [ Pass Failure
 crbug.com/248128 inspector/console/console-url-and-line.html [ Pass Failure ]
 crbug.com/230326 [ Linux Debug ] inspector/profiler/canvas2d/canvas2d-gradient-capturing.html [ Crash Pass ]
 crbug.com/248973 [ Debug ] webmidi/request-midi-access.html [ Failure Crash ]
+crbug.com/249021 [ Linux Debug ] http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Crash Pass ]
 
 # Rebaselines needed after https://codereview.chromium.org/16667004/
 crbug.com/247789 compositing/culling/filter-occlusion-blur-large.html [ ImageOnlyFailure Pass Slow ]
