@@ -36,6 +36,8 @@ void SetDefaultsToLayoutTestValues(void) {
                forKey:@"AppleOtherHighlightColor"];
   [defaults setObject:[NSArray arrayWithObject:@"en"]
                forKey:@"AppleLanguages"];
+  [defaults setBool:NO
+             forKey:@"AppleScrollAnimationEnabled"];
 }
 
 }  // namespace
