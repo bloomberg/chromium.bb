@@ -1339,6 +1339,34 @@ def CommandWithWrapper(cmd, wrappers, prog):
   return prog
 
 
+def GetDefaultConcurrentLinks():
+  """Returns a best-guess for a number of concurrent links."""
+  if sys.platform in ('win32', 'cygwin'):
+    import ctypes
+
+    class MEMORYSTATUSEX(ctypes.Structure):
+      _fields_ = [
+        ("dwLength", ctypes.c_ulong),
+        ("dwMemoryLoad", ctypes.c_ulong),
+        ("ullTotalPhys", ctypes.c_ulonglong),
+        ("ullAvailPhys", ctypes.c_ulonglong),
+        ("ullTotalPageFile", ctypes.c_ulonglong),
+        ("ullAvailPageFile", ctypes.c_ulonglong),
+        ("ullTotalVirtual", ctypes.c_ulonglong),
+        ("ullAvailVirtual", ctypes.c_ulonglong),
+        ("sullAvailExtendedVirtual", ctypes.c_ulonglong),
+      ]
+
+    stat = MEMORYSTATUSEX()
+    stat.dwLength = ctypes.sizeof(stat)
+    ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat))
+
+    return max(1, stat.ullTotalPhys / (2 ** 31))
+  else:
+    # TODO(scottmg): Implement this for other platforms.
+    return 1
+
+
 def GenerateOutputForConfig(target_list, target_dicts, data, params,
                             config_name):
   options = params['options']
@@ -1399,12 +1427,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   make_global_settings = data[build_file].get('make_global_settings', [])
   build_to_root = gyp.common.InvertRelativePath(build_dir,
                                                 options.toplevel_dir)
-  flock = 'flock'
-  if flavor == 'mac':
-    flock = './gyp-mac-tool flock'
   wrappers = {}
-  if flavor != 'win':
-    wrappers['LINK'] = flock + ' linker.lock'
   for key, value in make_global_settings:
     if key == 'CC':
       cc = os.path.join(build_to_root, value)
@@ -1481,6 +1504,9 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.variable('ld_host', CommandWithWrapper(
         'LINK', wrappers, ld_host))
 
+  master_ninja.newline()
+
+  master_ninja.pool('link_pool', depth=GetDefaultConcurrentLinks())
   master_ninja.newline()
 
   deps = None
@@ -1588,18 +1614,21 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       restat=True,
       command=(mtime_preserving_solink_base % {
           'suffix': '-Wl,--whole-archive $in $solibs -Wl,--no-whole-archive '
-          '$libs'}))
+          '$libs'}),
+      pool='link_pool')
     master_ninja.rule(
       'solink_module',
       description='SOLINK(module) $lib',
       restat=True,
       command=(mtime_preserving_solink_base % {
-          'suffix': '-Wl,--start-group $in $solibs -Wl,--end-group $libs'}))
+          'suffix': '-Wl,--start-group $in $solibs -Wl,--end-group $libs'}),
+      pool='link_pool')
     master_ninja.rule(
       'link',
       description='LINK $out',
       command=('$ld $ldflags -o $out '
-               '-Wl,--start-group $in $solibs -Wl,--end-group $libs'))
+               '-Wl,--start-group $in $solibs -Wl,--end-group $libs'),
+      pool='link_pool')
   elif flavor == 'win':
     master_ninja.rule(
         'alink',
@@ -1622,11 +1651,13 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule('solink', description=dlldesc, command=dllcmd,
                       rspfile='$dll.rsp',
                       rspfile_content='$libs $in_newline $ldflags',
-                      restat=True)
+                      restat=True,
+                      pool='link_pool')
     master_ninja.rule('solink_module', description=dlldesc, command=dllcmd,
                       rspfile='$dll.rsp',
                       rspfile_content='$libs $in_newline $ldflags',
-                      restat=True)
+                      restat=True,
+                      pool='link_pool')
     # Note that ldflags goes at the end so that it has the option of
     # overriding default settings earlier in the command line.
     master_ninja.rule(
@@ -1640,7 +1671,8 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
                  '$mt -nologo -manifest $manifests -out:$out.manifest' %
                  (sys.executable, sys.executable, sys.executable)),
         rspfile='$out.rsp',
-        rspfile_content='$in_newline $libs $ldflags')
+        rspfile_content='$in_newline $libs $ldflags',
+        pool='link_pool')
   else:
     master_ninja.rule(
       'objc',
@@ -1691,19 +1723,22 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       description='SOLINK $lib, POSTBUILDS',
       restat=True,
       command=(mtime_preserving_solink_base % {
-          'suffix': '$in $solibs $libs$postbuilds'}))
+          'suffix': '$in $solibs $libs$postbuilds'}),
+      pool='link_pool')
     master_ninja.rule(
       'solink_module',
       description='SOLINK(module) $lib, POSTBUILDS',
       restat=True,
       command=(mtime_preserving_solink_base % {
-          'suffix': '$in $solibs $libs$postbuilds'}))
+          'suffix': '$in $solibs $libs$postbuilds'}),
+      pool='link_pool')
 
     master_ninja.rule(
       'link',
       description='LINK $out, POSTBUILDS',
       command=('$ld $ldflags -o $out '
-               '$in $solibs $libs$postbuilds'))
+               '$in $solibs $libs$postbuilds'),
+      pool='link_pool')
     master_ninja.rule(
       'infoplist',
       description='INFOPLIST $out',
