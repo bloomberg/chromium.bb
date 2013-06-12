@@ -131,8 +131,7 @@ void BreakSuggestionText(const string16& text,
                    base::SysUTF16ToNSString(labelText)] retain]);
 
   suggestButton_.reset([[self makeSuggestionButton] retain]);
-  suggestContainer_.reset(
-      [[AutofillSuggestionContainer alloc] initWithDelegate:self]);
+  suggestContainer_.reset([[AutofillSuggestionContainer alloc] init]);
 
   [self modelChanged];
   view_.reset([[AutofillSectionView alloc] initWithFrame:NSZeroRect]);
@@ -326,7 +325,6 @@ void BreakSuggestionText(const string16& text,
     NSImage* extraIcon = suggestionState.extra_icon.AsNSImage();
     [suggestContainer_ showTextfield:extraText withIcon:extraIcon];
   }
-  [suggestContainer_ setEditable:NO];
   [view_ setShouldHighlightOnHover:showSuggestions];
 }
 

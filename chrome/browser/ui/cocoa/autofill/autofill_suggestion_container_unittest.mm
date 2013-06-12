@@ -9,32 +9,18 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 
-@interface AutofillSuggestionMockDelegate
-  : NSObject<AutofillSuggestionEditDelegate>
-@end
-
-@implementation AutofillSuggestionMockDelegate
-
-- (void)editLinkClicked {}
-- (NSString*)editLinkTitle { return @"title"; }
-
-@end
-
 namespace {
 
 class AutofillSuggestionContainerTest : public ui::CocoaTest {
  public:
   virtual void SetUp() {
     CocoaTest::SetUp();
-    delegate_.reset([[AutofillSuggestionMockDelegate alloc] init]);
-    container_.reset([[AutofillSuggestionContainer alloc] initWithDelegate:
-        delegate_.get()]);
+    container_.reset([[AutofillSuggestionContainer alloc] init]);
     [[test_window() contentView] addSubview:[container_ view]];
   }
 
  protected:
   scoped_nsobject<AutofillSuggestionContainer> container_;
-  scoped_nsobject<AutofillSuggestionMockDelegate> delegate_;
 };
 
 }  // namespace
@@ -42,10 +28,9 @@ class AutofillSuggestionContainerTest : public ui::CocoaTest {
 TEST_VIEW(AutofillSuggestionContainerTest, [container_ view])
 
 TEST_F(AutofillSuggestionContainerTest, HasSubviews) {
-  ASSERT_EQ(5U, [[[container_ view] subviews] count]);
+  ASSERT_EQ(4U, [[[container_ view] subviews] count]);
 
   int num_text_fields = 0;
-  bool has_link = false;
   bool has_edit_field = false;
   bool has_icon = false;
 
@@ -56,13 +41,10 @@ TEST_F(AutofillSuggestionContainerTest, HasSubviews) {
       has_edit_field = true;
     } else if ([view isKindOfClass:[NSTextField class]]) {
       num_text_fields++;
-    } else if ([[view cell] isKindOfClass:[HyperlinkButtonCell class]]) {
-      has_link = true;
     }
   }
 
   EXPECT_EQ(2, num_text_fields);
   EXPECT_TRUE(has_edit_field);
-  EXPECT_TRUE(has_link);
   EXPECT_TRUE(has_icon);
 }

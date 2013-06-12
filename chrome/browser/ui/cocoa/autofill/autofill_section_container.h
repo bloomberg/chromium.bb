@@ -10,13 +10,13 @@
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
-#import "chrome/browser/ui/cocoa/autofill/autofill_suggestion_container.h"
 
 namespace autofill {
   class AutofillDialogController;
 }
 
 @class AutofillSectionView;
+@class AutofillSuggestionContainer;
 @class LayoutView;
 @class MenuButton;
 @class MenuController;
@@ -25,7 +25,7 @@ namespace autofill {
 // describing the section as well as associated inputs and controls. Built
 // dynamically based on data retrieved from AutofillDialogController.
 @interface AutofillSectionContainer :
-    NSViewController<AutofillLayout, AutofillSuggestionEditDelegate> {
+    NSViewController<AutofillLayout> {
  @private
   scoped_nsobject<LayoutView> inputs_;
   scoped_nsobject<MenuButton> suggestButton_;

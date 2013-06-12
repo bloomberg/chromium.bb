@@ -16,17 +16,6 @@ namespace autofill {
 
 @class AutofillTextField;
 
-// Delegate to notify when the user activates the edit link.
-@protocol AutofillSuggestionEditDelegate
-
-// Called when user clicks |edit_link_|.
-- (void)editLinkClicked;
-
-// Returns the text to display for edit_link_.
-- (NSString*)editLinkTitle;
-
-@end
-
 // Container for the data suggested for a particular input section.
 @interface AutofillSuggestionContainer : NSViewController<AutofillLayout> {
  @private
@@ -42,18 +31,8 @@ namespace autofill {
   // The input set by ShowTextfield.
   scoped_nsobject<AutofillTextField> inputField_;
 
-  // An "Edit" link that flips to editable inputs rather than suggestion text.
-  scoped_nsobject<NSButton> editLink_;
-
-  id<AutofillSuggestionEditDelegate> delegate_;  // weak.
   autofill::AutofillDialogController* controller_;  // Not owned.
 }
-
-// Designated intializer.
-- (id)initWithDelegate:(id<AutofillSuggestionEditDelegate>)delegate;
-
-// Marks the suggestion as editable or not, controls |edit_link_|.
-- (void)setEditable:(BOOL)editable;
 
 // Set the icon for the suggestion.
 - (void)setIcon:(NSImage*)iconImage;

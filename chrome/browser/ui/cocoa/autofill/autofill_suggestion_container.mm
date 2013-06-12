@@ -49,13 +49,6 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
   return label.autorelease();
 }
 
-- (id)initWithDelegate:(id<AutofillSuggestionEditDelegate>)delegate {
-  if ((self = [super init])) {
-    delegate_ = delegate;
-  }
-  return self;
-}
-
 - (void)loadView {
   label_.reset([[self createLabelWithFrame:NSZeroRect] retain]);
   label2_.reset([[self createLabelWithFrame:NSZeroRect] retain]);
@@ -67,18 +60,9 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
   inputField_.reset([[AutofillTextField alloc] initWithFrame:NSZeroRect]);
   [inputField_ setHidden:YES];
 
-  // TODO(estade): The link needs to have a different color when hovered.
-  editLink_.reset([[HyperlinkButtonCell buttonWithString:
-      [delegate_ editLinkTitle]] retain]);
-  [[editLink_ cell] setTextColor:
-      gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor())];
-  [editLink_ sizeToFit];
-  [editLink_ setTarget:delegate_];
-  [editLink_ setAction:@selector(editLinkClicked)];
-
   scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
   [view setSubviews:
-      @[iconImageView_, label_, inputField_, label2_, editLink_]];
+      @[iconImageView_, label_, inputField_, label2_ ]];
   [self setView:view];
 }
 
@@ -89,10 +73,6 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
   [label setDrawsBackground:NO];
   [label setBordered:NO];
   return label.autorelease();
-}
-
-- (void)setEditable:(BOOL)editable {
-  [editLink_ setHidden:!editable];
 }
 
 // TODO(groby): Can we make all the individual setters private and just
@@ -145,13 +125,6 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
         std::ceil(std::max(size.width, size2.width)),
         std::ceil(size.height) + kVerticalPadding + std::ceil(size2.height));
   }
-
-  if (![editLink_ isHidden]) {
-    NSSize linkSize = [[editLink_ cell] cellSize];
-    size = NSMakeSize(
-        std::ceil(std::max(size.width, linkSize.width)),
-        size.height + kVerticalPadding + std::ceil(linkSize.height));
-  }
   return size;
 }
 
@@ -198,8 +171,6 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
   [label2_ setFrameOrigin:NSMakePoint(
           0,
           NSMinY(lineFrame) - kAroundTextPadding - NSHeight([label2_ frame]))];
-  [editLink_ setFrameOrigin:NSMakePoint(0, 0)];
-
   [[self view] setFrameSize:preferredContainerSize];
 }
 
