@@ -92,6 +92,16 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
     return LoadExtension(extension_dir);
   }
 
+  // Helper to load an extension from context_menus/top_level/|subdirectory| in
+  // the extensions test data dir.
+  const extensions::Extension* LoadTopLevelContextMenuExtension(
+      std::string subdirectory) {
+    base::FilePath extension_dir =
+        test_data_dir_.AppendASCII("context_menus").AppendASCII("top_level");
+    extension_dir = extension_dir.AppendASCII(subdirectory);
+    return LoadExtension(extension_dir);
+  }
+
   const extensions::Extension* LoadContextMenuExtensionIncognito(
       std::string subdirectory) {
     base::FilePath extension_dir =
@@ -326,6 +336,64 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, LongTitle) {
   string16 label;
   ASSERT_TRUE(GetItemLabel(menu.get(), item->id(), &label));
   ASSERT_TRUE(label.size() <= limit);
+}
+
+// Checks that Context Menus are ordered alphabetically by their name when
+// extensions have only one single Context Menu item and by the extension name
+// when multiples Context Menu items are created.
+IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, TopLevel) {
+  // We expect to see the following items in the menu:
+  //   An Extension with multiple Context Menus
+  //     Context Menu #1
+  //     Context Menu #2
+  //   Context Menu #1 - Extension #2
+  //   Context Menu #2 - Extension #3
+  //   Context Menu #3 - Extension #1
+  //   Ze Extension with multiple Context Menus
+  //     Context Menu #1
+  //     Context Menu #2
+
+  // Load extensions and wait until it's created a single menu item.
+  ExtensionTestMessageListener listener1("created item", false);
+  ASSERT_TRUE(LoadTopLevelContextMenuExtension("single1"));
+  ASSERT_TRUE(listener1.WaitUntilSatisfied());
+
+  ExtensionTestMessageListener listener2("created item", false);
+  ASSERT_TRUE(LoadTopLevelContextMenuExtension("single2"));
+  ASSERT_TRUE(listener2.WaitUntilSatisfied());
+
+  ExtensionTestMessageListener listener3("created item", false);
+  ASSERT_TRUE(LoadTopLevelContextMenuExtension("single3"));
+  ASSERT_TRUE(listener3.WaitUntilSatisfied());
+
+  // Load extensions and wait until it's created two menu items.
+  ExtensionTestMessageListener listener4("created items", false);
+  ASSERT_TRUE(LoadTopLevelContextMenuExtension("multi4"));
+  ASSERT_TRUE(listener4.WaitUntilSatisfied());
+
+  ExtensionTestMessageListener listener5("created items", false);
+  ASSERT_TRUE(LoadTopLevelContextMenuExtension("multi5"));
+  ASSERT_TRUE(listener5.WaitUntilSatisfied());
+
+  GURL url("http://foo.com/");
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      CreateMenu(browser(), url, GURL(), GURL()));
+
+  int index = 0;
+  MenuModel* model = NULL;
+
+  ASSERT_TRUE(menu->GetMenuModelAndItemIndex(
+      IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST, &model, &index));
+  EXPECT_EQ(UTF8ToUTF16("An Extension with multiple Context Menus"),
+                        model->GetLabelAt(index++));
+  EXPECT_EQ(UTF8ToUTF16("Context Menu #1 - Extension #2"),
+                        model->GetLabelAt(index++));
+  EXPECT_EQ(UTF8ToUTF16("Context Menu #2 - Extension #3"),
+                        model->GetLabelAt(index++));
+  EXPECT_EQ(UTF8ToUTF16("Context Menu #3 - Extension #1"),
+                        model->GetLabelAt(index++));
+  EXPECT_EQ(UTF8ToUTF16("Ze Extension with multiple Context Menus"),
+                        model->GetLabelAt(index++));
 }
 
 // Checks that in |menu|, the item at |index| has type |expected_type| and a

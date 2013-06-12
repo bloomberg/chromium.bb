@@ -40,6 +40,11 @@ class ContextMenuMatcher {
 
   void Clear();
 
+  // This function returns the top level context menu title of an extension
+  // based on a printable selection text.
+  base::string16 GetTopLevelContextMenuTitle(const std::string& extension_id,
+                                             const string16& selection_text);
+
   bool IsCommandIdChecked(int command_id) const;
   bool IsCommandIdEnabled(int command_id) const;
   void ExecuteCommand(int command_id,
@@ -48,6 +53,12 @@ class ContextMenuMatcher {
 
  private:
   friend class ::ExtensionContextMenuBrowserTest;
+
+  bool GetRelevantExtensionTopLevelItems(
+      const std::string& extension_id,
+      const Extension** extension,
+      bool* can_cross_incognito,
+      MenuItem::List& items);
 
   MenuItem::List GetRelevantExtensionItems(
       const MenuItem::List& items,

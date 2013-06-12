@@ -494,35 +494,39 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
     return;  // In unit-tests, we may not have an ExtensionService.
   MenuManager* menu_manager = service->menu_manager();
 
-  // Get a list of extension id's that have context menu items, and sort it by
-  // the extension's name.
+  string16 printable_selection_text = PrintableSelectionText();
+  EscapeAmpersands(&printable_selection_text);
+
+  // Get a list of extension id's that have context menu items, and sort by the
+  // top level context menu title of the extension.
   std::set<std::string> ids = menu_manager->ExtensionIds();
-  std::vector<std::pair<std::string, std::string> > sorted_ids;
+  std::vector<base::string16> sorted_menu_titles;
+  std::map<base::string16, std::string> map_ids;
   for (std::set<std::string>::iterator i = ids.begin(); i != ids.end(); ++i) {
     const Extension* extension = service->GetExtensionById(*i, false);
     // Platform apps have their context menus created directly in
     // AppendPlatformAppItems.
-    if (extension && !extension->is_platform_app())
-      sorted_ids.push_back(
-          std::pair<std::string, std::string>(extension->name(), *i));
+    if (extension && !extension->is_platform_app()) {
+      base::string16 menu_title = extension_items_.GetTopLevelContextMenuTitle(
+          *i, printable_selection_text);
+      map_ids[menu_title] = *i;
+      sorted_menu_titles.push_back(menu_title);
+    }
   }
-  // TODO(asargent) - See if this works properly for i18n names (bug 32363).
-  std::sort(sorted_ids.begin(), sorted_ids.end());
-
-  if (sorted_ids.empty())
+  if (sorted_menu_titles.empty())
     return;
+
+  const std::string app_locale = g_browser_process->GetApplicationLocale();
+  l10n_util::SortStrings16(app_locale, &sorted_menu_titles);
 
   int index = 0;
   base::TimeTicks begin = base::TimeTicks::Now();
-  std::vector<std::pair<std::string, std::string> >::const_iterator i;
-  for (i = sorted_ids.begin();
-       i != sorted_ids.end(); ++i) {
-    string16 printable_selection_text = PrintableSelectionText();
-    EscapeAmpersands(&printable_selection_text);
-
-    extension_items_.AppendExtensionItems(i->second, printable_selection_text,
+  for (size_t i = 0; i < sorted_menu_titles.size(); ++i) {
+    const std::string& id = map_ids[sorted_menu_titles[i]];
+    extension_items_.AppendExtensionItems(id, printable_selection_text,
                                           &index);
   }
+
   UMA_HISTOGRAM_TIMES("Extensions.ContextMenus_BuildTime",
                       base::TimeTicks::Now() - begin);
   UMA_HISTOGRAM_COUNTS("Extensions.ContextMenus_ItemCount", index);

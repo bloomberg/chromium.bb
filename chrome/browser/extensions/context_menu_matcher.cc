@@ -30,23 +30,18 @@ void ContextMenuMatcher::AppendExtensionItems(const std::string& extension_id,
                                               const string16& selection_text,
                                               int* index)
 {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  MenuManager* manager = service->menu_manager();
-  const Extension* extension = service->GetExtensionById(extension_id, false);
   DCHECK_GE(*index, 0);
   int max_index =
       IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST - IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
-  if (!extension || *index >= max_index)
+  if (*index >= max_index)
     return;
 
-  // Find matching items.
-  const MenuItem::List* all_items = manager->MenuItems(extension_id);
-  if (!all_items || all_items->empty())
+  const Extension* extension = NULL;
+  MenuItem::List items;
+  bool can_cross_incognito;
+  if (!GetRelevantExtensionTopLevelItems(extension_id, &extension,
+                                         &can_cross_incognito, items))
     return;
-  bool can_cross_incognito = service->CanCrossIncognito(extension);
-  MenuItem::List items = GetRelevantExtensionItems(*all_items,
-                                                   can_cross_incognito);
 
   if (items.empty())
     return;
@@ -99,6 +94,29 @@ void ContextMenuMatcher::Clear() {
   extension_menu_models_.clear();
 }
 
+base::string16 ContextMenuMatcher::GetTopLevelContextMenuTitle(
+    const std::string& extension_id,
+    const string16& selection_text) {
+  const Extension* extension = NULL;
+  MenuItem::List items;
+  bool can_cross_incognito;
+  GetRelevantExtensionTopLevelItems(extension_id, &extension,
+      &can_cross_incognito, items);
+
+  base::string16 title;
+
+  if (items.empty() ||
+      items.size() > 1 ||
+      items[0]->type() != MenuItem::NORMAL) {
+    title = UTF8ToUTF16(extension->name());
+  } else {
+    MenuItem* item = items[0];
+    title = item->TitleWithReplacement(
+        selection_text, kMaxExtensionItemTitleLength);
+  }
+  return title;
+}
+
 bool ContextMenuMatcher::IsCommandIdChecked(int command_id) const {
   MenuItem* item = GetExtensionMenuItem(command_id);
   if (!item)
@@ -123,6 +141,31 @@ void ContextMenuMatcher::ExecuteCommand(int command_id,
     return;
 
   manager->ExecuteCommand(profile_, web_contents, params, item->id());
+}
+
+bool ContextMenuMatcher::GetRelevantExtensionTopLevelItems(
+    const std::string& extension_id,
+    const Extension** extension,
+    bool* can_cross_incognito,
+    MenuItem::List& items) {
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  MenuManager* manager = service->menu_manager();
+  *extension = service->GetExtensionById(extension_id, false);
+
+  if (!*extension)
+    return false;
+
+  // Find matching items.
+  const MenuItem::List* all_items = manager->MenuItems(extension_id);
+  if (!all_items || all_items->empty())
+    return false;
+
+  *can_cross_incognito = service->CanCrossIncognito(*extension);
+  items = GetRelevantExtensionItems(*all_items,
+                                    *can_cross_incognito);
+
+  return true;
 }
 
 MenuItem::List ContextMenuMatcher::GetRelevantExtensionItems(
