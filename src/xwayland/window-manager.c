@@ -137,9 +137,15 @@ get_atom_name(xcb_connection_t *c, xcb_atom_t atom)
 
 	cookie = xcb_get_atom_name (c, atom);
 	reply = xcb_get_atom_name_reply (c, cookie, &e);
-	snprintf(buffer, sizeof buffer, "%.*s",
-		 xcb_get_atom_name_name_length (reply),
-		 xcb_get_atom_name_name (reply));
+
+	if(reply) {
+		snprintf(buffer, sizeof buffer, "%.*s",
+			 xcb_get_atom_name_name_length (reply),
+			 xcb_get_atom_name_name (reply));
+	} else {
+		snprintf(buffer, sizeof buffer, "(atom %u)", atom);
+	}
+
 	free(reply);
 
 	return buffer;
