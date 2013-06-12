@@ -394,6 +394,10 @@ void Preferences::RegisterUserPrefs(
       2.0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDoublePref(
+      prefs::kPowerPresentationScreenDimDelayFactor,
+      2.0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDoublePref(
       prefs::kPowerUserActivityScreenDimDelayFactor,
       2.0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
@@ -529,8 +533,8 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
       prefs::kPowerUseVideoActivity, prefs, callback);
   power_allow_screen_wake_locks_.Init(
       prefs::kPowerAllowScreenWakeLocks, prefs, callback);
-  power_presentation_idle_delay_factor_.Init(
-      prefs::kPowerPresentationIdleDelayFactor, prefs, callback);
+  power_presentation_screen_dim_delay_factor_.Init(
+      prefs::kPowerPresentationScreenDimDelayFactor, prefs, callback);
   power_user_activity_screen_dim_delay_factor_.Init(
       prefs::kPowerUserActivityScreenDimDelayFactor, prefs, callback);
 }
@@ -856,7 +860,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       *pref_name == prefs::kPowerUseAudioActivity ||
       *pref_name == prefs::kPowerUseVideoActivity ||
       *pref_name == prefs::kPowerAllowScreenWakeLocks ||
-      *pref_name == prefs::kPowerPresentationIdleDelayFactor ||
+      *pref_name == prefs::kPowerPresentationScreenDimDelayFactor ||
       *pref_name == prefs::kPowerUserActivityScreenDimDelayFactor ||
       *pref_name == prefs::kEnableScreenLock) {
     PowerPolicyController::PrefValues values;
@@ -883,8 +887,8 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     values.use_video_activity = power_use_video_activity_.GetValue();
     values.allow_screen_wake_locks = power_allow_screen_wake_locks_.GetValue();
     values.enable_screen_lock = enable_screen_lock_.GetValue();
-    values.presentation_idle_delay_factor =
-        power_presentation_idle_delay_factor_.GetValue();
+    values.presentation_screen_dim_delay_factor =
+        power_presentation_screen_dim_delay_factor_.GetValue();
     values.user_activity_screen_dim_delay_factor =
         power_user_activity_screen_dim_delay_factor_.GetValue();
 

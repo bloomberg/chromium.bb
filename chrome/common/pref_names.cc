@@ -867,10 +867,15 @@ const char kPowerUseVideoActivity[] = "power.use_video_activity";
 // screen-related power management (including locking)?
 const char kPowerAllowScreenWakeLocks[] = "power.allow_screen_wake_locks";
 
-// Amount by which the idle delay should be scaled while the system is in
-// presentation mode.  Values are limited to a minimum of 1.0.
+// DEPRECATED: This is replaced by kPowerPresentationScreenDimDelayFactor
+// and has no effect.
 const char kPowerPresentationIdleDelayFactor[] =
     "power.presentation_idle_delay_factor";
+
+// Amount by which the screen-dim delay should be scaled while the system
+// is in presentation mode. Values are limited to a minimum of 1.0.
+const char kPowerPresentationScreenDimDelayFactor[] =
+    "power.presentation_screen_dim_delay_factor";
 
 // Amount by which the screen-dim delay should be scaled when user activity is
 // observed while the screen is dimmed or soon after the screen has been turned

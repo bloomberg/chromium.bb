@@ -185,7 +185,7 @@ class Preferences : public PrefServiceSyncableObserver {
   BooleanPrefMember power_use_audio_activity_;
   BooleanPrefMember power_use_video_activity_;
   BooleanPrefMember power_allow_screen_wake_locks_;
-  DoublePrefMember power_presentation_idle_delay_factor_;
+  DoublePrefMember power_presentation_screen_dim_delay_factor_;
   DoublePrefMember power_user_activity_screen_dim_delay_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(Preferences);

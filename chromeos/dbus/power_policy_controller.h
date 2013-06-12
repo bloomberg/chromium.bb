@@ -53,7 +53,7 @@ class CHROMEOS_EXPORT PowerPolicyController
     bool use_video_activity;
     bool allow_screen_wake_locks;
     bool enable_screen_lock;
-    double presentation_idle_delay_factor;
+    double presentation_screen_dim_delay_factor;
     double user_activity_screen_dim_delay_factor;
   };
 
@@ -65,7 +65,7 @@ class CHROMEOS_EXPORT PowerPolicyController
   // screen being locked. Used if the |enable_screen_lock| pref is set but
   // |*_screen_lock_delay_ms| are unset or set to higher values than what
   // this constant would imply.
-  const static int kScreenLockAfterOffDelayMs;
+  static const int kScreenLockAfterOffDelayMs;
 
   PowerPolicyController(DBusThreadManager* manager, PowerManagerClient* client);
   virtual ~PowerPolicyController();
