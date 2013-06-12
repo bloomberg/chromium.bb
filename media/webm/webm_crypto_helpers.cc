@@ -29,7 +29,7 @@ scoped_ptr<DecryptConfig> WebMCreateDecryptConfig(
     const uint8* key_id, int key_id_size) {
   if (data_size < kWebMSignalByteSize) {
     DVLOG(1) << "Got a block from an encrypted stream with no data.";
-    return scoped_ptr<DecryptConfig>(NULL);
+    return scoped_ptr<DecryptConfig>();
   }
 
   uint8 signal_byte = data[0];
@@ -43,7 +43,7 @@ scoped_ptr<DecryptConfig> WebMCreateDecryptConfig(
   if (signal_byte & kWebMFlagEncryptedFrame) {
     if (data_size < kWebMSignalByteSize + kWebMIvSize) {
       DVLOG(1) << "Got an encrypted block with not enough data " << data_size;
-      return scoped_ptr<DecryptConfig>(NULL);
+      return scoped_ptr<DecryptConfig>();
     }
     counter_block = GenerateWebMCounterBlock(data + frame_offset, kWebMIvSize);
     frame_offset += kWebMIvSize;

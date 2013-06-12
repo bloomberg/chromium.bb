@@ -84,8 +84,6 @@ class FFmpegTest : public testing::TestWithParam<const char*> {
       : av_format_context_(NULL),
         audio_stream_index_(-1),
         video_stream_index_(-1),
-        audio_buffer_(NULL),
-        video_buffer_(NULL),
         decoded_audio_time_(AV_NOPTS_VALUE),
         decoded_audio_duration_(AV_NOPTS_VALUE),
         decoded_video_time_(AV_NOPTS_VALUE),
