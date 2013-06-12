@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/ash/session_state_delegate_views.h"
 
 #include "base/logging.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 

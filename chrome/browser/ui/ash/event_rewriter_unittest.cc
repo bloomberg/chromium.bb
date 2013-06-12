@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_member.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"

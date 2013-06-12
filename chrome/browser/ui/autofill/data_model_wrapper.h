@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_AUTOFILL_DATA_MODEL_WRAPPER_H_
 
 #include "base/compiler_specific.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "components/autofill/browser/field_types.h"
 #include "components/autofill/content/browser/wallet/wallet_items.h"

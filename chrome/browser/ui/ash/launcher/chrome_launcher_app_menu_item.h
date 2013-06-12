@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_APP_MENU_ITEM_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_CHROME_LAUNCHER_APP_MENU_ITEM_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "ui/gfx/image/image.h"
 
 // A description for a menu item. It contains the menu item description as well

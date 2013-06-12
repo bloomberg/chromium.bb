@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "components/autofill/browser/autofill_manager_delegate.h"
 #include "ui/base/models/simple_menu_model.h"
 

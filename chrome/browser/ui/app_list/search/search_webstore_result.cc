@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/app_list/search/search_webstore_result.h"
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/extensions/extension_constants.h"

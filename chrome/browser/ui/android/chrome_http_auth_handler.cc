@@ -10,7 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "grit/generated_resources.h"
 #include "jni/ChromeHttpAuthHandler_jni.h"
 #include "ui/base/l10n/l10n_util.h"

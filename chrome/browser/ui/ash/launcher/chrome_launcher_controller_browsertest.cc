@@ -12,7 +12,7 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
