@@ -45,6 +45,7 @@ bool PepperFileOpenFlagsToPlatformFileFlags(int32_t pp_open_flags,
   bool pp_create = !!(pp_open_flags & PP_FILEOPENFLAG_CREATE);
   bool pp_truncate = !!(pp_open_flags & PP_FILEOPENFLAG_TRUNCATE);
   bool pp_exclusive = !!(pp_open_flags & PP_FILEOPENFLAG_EXCLUSIVE);
+  bool pp_append = !!(pp_open_flags & PP_FILEOPENFLAG_APPEND);
 
   int flags = 0;
   if (pp_read)
@@ -52,6 +53,11 @@ bool PepperFileOpenFlagsToPlatformFileFlags(int32_t pp_open_flags,
   if (pp_write) {
     flags |= base::PLATFORM_FILE_WRITE;
     flags |= base::PLATFORM_FILE_WRITE_ATTRIBUTES;
+  }
+  if (pp_append) {
+    if (pp_write)
+      return false;
+    flags |= base::PLATFORM_FILE_APPEND;
   }
 
   if (pp_truncate && !pp_write)

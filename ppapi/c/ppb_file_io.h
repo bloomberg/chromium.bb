@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_file_io.idl modified Fri Nov 16 10:46:53 2012. */
+/* From ppb_file_io.idl modified Tue Jun 11 15:21:38 2013. */
 
 #ifndef PPAPI_C_PPB_FILE_IO_H_
 #define PPAPI_C_PPB_FILE_IO_H_
@@ -60,7 +60,14 @@ typedef enum {
    * <code>PP_FILEOPENFLAG_CREATE</code>.  If this flag is specified, and the
    * file already exists, then the FileIO::Open() call will fail.
    */
-  PP_FILEOPENFLAG_EXCLUSIVE = 1 << 4
+  PP_FILEOPENFLAG_EXCLUSIVE = 1 << 4,
+  /**
+   * Requests write access to a file, but writes will always occur at the end of
+   * the file. Mututally exclusive with <code>PP_FILEOPENFLAG_WRITE</code>.
+   *
+   * This is only supported in version 1.2 (Chrome 29) and later.
+   */
+  PP_FILEOPENFLAG_APPEND = 1 << 5
 } PP_FileOpenFlags;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FileOpenFlags, 4);
 /**

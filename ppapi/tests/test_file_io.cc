@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -413,6 +414,22 @@ std::string TestFileIO::TestReadWriteSetLength() {
                       callback_type());
   ASSERT_EQ(PP_OK, rv);
   ASSERT_EQ(std::string("testtest\0\0\0\0", 12), read_buffer);
+
+  // Append to the end of the file.
+  pp::FileIO file_io2(instance_);
+  callback.WaitForResult(file_io2.Open(file_ref,
+                                       PP_FILEOPENFLAG_CREATE |
+                                       PP_FILEOPENFLAG_READ |
+                                       PP_FILEOPENFLAG_APPEND,
+                                       callback.GetCallback()));
+  rv = WriteEntireBuffer(instance_->pp_instance(), &file_io2, 0, "appended",
+                         callback_type());
+  ASSERT_EQ(PP_OK, rv);
+  read_buffer.clear();
+  rv = ReadEntireFile(instance_->pp_instance(), &file_io2, 0, &read_buffer,
+                      callback_type());
+  ASSERT_EQ(PP_OK, rv);
+  ASSERT_EQ(std::string("testtesttest\0\0\0\0appended", 24), read_buffer);
 
   PASS();
 }
