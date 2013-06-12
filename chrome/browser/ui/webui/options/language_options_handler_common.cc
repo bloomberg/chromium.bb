@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "base/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
+#include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -79,6 +81,8 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
     { "restartButton", IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON },
     { "dontTranslateInThisLanguage",
       IDS_OPTIONS_LANGUAGES_DONT_TRANSLATE_IN_THIS_LANGUAGE },
+    { "cannotTranslateInThisLanguage",
+      IDS_OPTIONS_LANGUAGES_CANNOT_TRANSLATE_IN_THIS_LANGUAGE },
   };
 
 #if defined(ENABLE_SETTINGS_APP)
@@ -120,6 +124,17 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
       command_line.HasSwitch(switches::kEnableTranslateSettings);
   localized_strings->SetBoolean("enableTranslateSettings",
                                 enable_translate_settings);
+
+  std::vector<std::string> languages;
+  TranslateManager::GetSupportedLanguages(&languages);
+
+  ListValue* languages_list = new ListValue();
+  for (std::vector<std::string>::iterator it = languages.begin();
+       it != languages.end(); ++it) {
+    languages_list->Append(new StringValue(*it));
+  }
+
+  localized_strings->Set("translateSupportedLanguages", languages_list);
 }
 
 void LanguageOptionsHandlerCommon::Uninitialize() {

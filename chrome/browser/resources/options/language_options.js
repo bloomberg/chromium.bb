@@ -130,6 +130,13 @@ cr.define('options', function() {
     translateLanguageBlacklist_: [],
 
     /**
+     * The list of the languages supported by Translate server
+     * @type {Array}
+     * @private
+     */
+    translateSupportedLanguages_: [],
+
+    /**
      * The preference is a string that describes the spell check dictionary
      * language, like "en-US".
      * @type {string}
@@ -183,6 +190,8 @@ cr.define('options', function() {
           this.handleTranslateLanguageBlacklistPrefChange_.bind(this));
       Preferences.getInstance().addEventListener(SPELL_CHECK_DICTIONARY_PREF,
           this.handleSpellCheckDictionaryPrefChange_.bind(this));
+      this.translateSupportedLanguages_ =
+          loadTimeData.getValue('translateSupportedLanguages');
 
       // Set up add button.
       $('language-options-add-button').onclick = function(e) {
@@ -631,24 +640,38 @@ cr.define('options', function() {
      * @private
      */
     updateDontTranslateCheckbox_: function(languageCode) {
-      var dontTranslate = $('language-options-dont-translate');
-      var checkbox = $('dont-translate-in-this-language');
+      var div = $('language-options-dont-translate');
 
       if (!loadTimeData.getBoolean('enableTranslateSettings')) {
-        dontTranslate.hidden = true;
+        div.hidden = true;
         return;
       }
 
-      // TODO(hajimehoshi): Create more general function to determine this.
-      if (this.isTranslatableLanguage_(languageCode)) {
-        dontTranslate.hidden = false;
+      // Translation server supports Chinese (Transitional) and Chinese
+      // (Simplified) but not 'general' Chinese. To avoid ambiguity, we don't
+      // show this preference when general Chinese is selected.
+      if (languageCode != 'zh') {
+        div.hidden = false;
       } else {
-        dontTranslate.hidden = true;
+        div.hidden = true;
         return;
       }
 
-      var lang = this.convertLangCodeForTranslation_(languageCode);
-      var checked = (this.translateLanguageBlacklist_.indexOf(lang) != -1);
+      var dontTranslate = div.querySelector('div');
+      var cannnotTranslate = $('cannot-translate-in-this-language');
+      var nodes = [dontTranslate, cannnotTranslate];
+
+      var convertedLangCode = this.convertLangCodeForTranslation_(languageCode);
+      if (this.translateSupportedLanguages_.indexOf(convertedLangCode) != -1) {
+        showMutuallyExclusiveNodes(nodes, 0);
+      } else {
+        showMutuallyExclusiveNodes(nodes, 1);
+        return;
+      }
+
+      var checkbox = $('dont-translate-in-this-language');
+      var blacklist = this.translateLanguageBlacklist_;
+      var checked = blacklist.indexOf(convertedLangCode) != -1;
       checkbox.checked = checked;
     },
 
@@ -1177,20 +1200,6 @@ cr.define('options', function() {
       }
 
       return main;
-    },
-
-    /*
-     * Checks whether or not |languageCode| is supported for Translation.
-     * @param {string} languageCode The language code like 'fr'.
-     * @return {boolean} Retruns true if |languageCode| is supported for
-     *    Translation.
-     * @private
-     */
-    isTranslatableLanguage_: function(languageCode) {
-      if (languageCode == 'zh')
-        return false;
-
-      return true;
     },
   };
 

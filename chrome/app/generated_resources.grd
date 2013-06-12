@@ -10131,6 +10131,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_OPTIONS_LANGUAGES_DONT_TRANSLATE_IN_THIS_LANGUAGE" desc="The label for a checkbox which indicates whether or not the language should be translated.">
         Don't translate pages in this language
       </message>
+      <message name="IDS_OPTIONS_LANGUAGES_CANNOT_TRANSLATE_IN_THIS_LANGUAGE" desc="The string displayed to user when the language cannot be translated.">
+        This language cannot be translated
+      </message>
 
       <!-- HTTP POST Warning -->
       <message name="IDS_HTTP_POST_WARNING_TITLE" desc="Title for dialog that warns users about a navigation that results in a repost">
