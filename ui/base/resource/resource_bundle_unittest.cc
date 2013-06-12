@@ -334,8 +334,7 @@ TEST_F(ResourceBundleTest, LocaleDataPakExists) {
 
 class ResourceBundleImageTest : public ResourceBundleTest {
  public:
-  ResourceBundleImageTest() : locale_pack_(NULL) {
-  }
+  ResourceBundleImageTest() {}
 
   virtual ~ResourceBundleImageTest() {
   }
