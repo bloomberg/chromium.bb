@@ -181,6 +181,7 @@ XMLHttpRequest::XMLHttpRequest(ScriptExecutionContext* context, PassRefPtr<Secur
     , m_exceptionCode(0)
     , m_progressEventThrottle(this)
     , m_responseTypeCode(ResponseTypeDefault)
+    , m_protectionTimer(this, &XMLHttpRequest::dropProtection)
     , m_securityOrigin(securityOrigin)
 {
     initializeXMLHttpRequestStaticData();
@@ -834,7 +835,7 @@ void XMLHttpRequest::internalAbort()
     InspectorInstrumentation::didFailXHRLoading(scriptExecutionContext(), this);
 
     if (hadLoader)
-        dropProtection();
+        dropProtectionSoon();
 }
 
 void XMLHttpRequest::clearResponse()
@@ -891,9 +892,15 @@ void XMLHttpRequest::abortError()
     }
 }
 
-void XMLHttpRequest::dropProtection()
+void XMLHttpRequest::dropProtectionSoon()
 {
+    if (m_protectionTimer.isActive())
+        return;
+    m_protectionTimer.startOneShot(0);
+}
 
+void XMLHttpRequest::dropProtection(Timer<XMLHttpRequest>*)
+{
     unsetPendingActivity(this);
 }
 

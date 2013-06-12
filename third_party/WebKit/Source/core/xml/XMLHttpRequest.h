@@ -181,7 +181,8 @@ private:
 
     void changeState(State newState);
     void callReadyStateChangeListener();
-    void dropProtection();
+    void dropProtectionSoon();
+    void dropProtection(Timer<XMLHttpRequest>* = 0);
     void internalAbort();
     void clearResponse();
     void clearResponseBuffers();
@@ -243,7 +244,7 @@ private:
 
     // An enum corresponding to the allowed string values for the responseType attribute.
     ResponseTypeCode m_responseTypeCode;
-
+    Timer<XMLHttpRequest> m_protectionTimer;
     RefPtr<SecurityOrigin> m_securityOrigin;
 };
 
