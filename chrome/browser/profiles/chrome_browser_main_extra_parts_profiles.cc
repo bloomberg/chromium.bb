@@ -33,7 +33,6 @@
 #include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
 #include "chrome/browser/extensions/api/input/input.h"
 #include "chrome/browser/extensions/api/location/location_manager.h"
-#include "chrome/browser/extensions/api/managed_mode_private/managed_mode_private_api.h"
 #include "chrome/browser/extensions/api/management/management_api.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
@@ -209,7 +208,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::InputMethodAPI::GetFactoryInstance();
 #endif
   extensions::LocationManager::GetFactoryInstance();
-  extensions::ManagedModeAPI::GetFactoryInstance();
   extensions::ManagementAPI::GetFactoryInstance();
   extensions::MediaGalleriesPrivateAPI::GetFactoryInstance();
 #if defined(OS_CHROMEOS)

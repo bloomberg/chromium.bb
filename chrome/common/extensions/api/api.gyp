@@ -64,7 +64,6 @@
           'identity.idl',
           'identity_private.idl',
           'idle.json',
-          'managed_mode_private.json',
           'management.json',
           'manifest_types.json',
           'media_galleries.idl',

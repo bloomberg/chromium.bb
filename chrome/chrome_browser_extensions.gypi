@@ -267,8 +267,6 @@
         'browser/extensions/api/location/location_api.h',
         'browser/extensions/api/location/location_manager.cc',
         'browser/extensions/api/location/location_manager.h',
-        'browser/extensions/api/managed_mode_private/managed_mode_private_api.cc',
-        'browser/extensions/api/managed_mode_private/managed_mode_private_api.h',
         'browser/extensions/api/management/management_api.cc',
         'browser/extensions/api/management/management_api.h',
         'browser/extensions/api/management/management_api_constants.cc',

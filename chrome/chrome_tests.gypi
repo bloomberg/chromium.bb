@@ -1324,7 +1324,6 @@
         'browser/extensions/api/idltest/idltest_apitest.cc',
         'browser/extensions/api/input/input_apitest.cc',
         'browser/extensions/api/input_ime/input_ime_apitest_chromeos.cc',
-        'browser/extensions/api/managed_mode_private/managed_mode_apitest.cc',
         'browser/extensions/api/management/management_api_browsertest.cc',
         'browser/extensions/api/management/management_apitest.cc',
         'browser/extensions/api/management/management_browsertest.cc',
