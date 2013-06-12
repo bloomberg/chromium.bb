@@ -599,7 +599,7 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   // This is on a field trial so we can turn it off easily if it blows up
   // again in stable channel.
   scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial("D3D11StatsExperiment", 100,
+      base::FieldTrialList::FactoryGetFieldTrial("D3D11Experiment", 100,
                                                  "Disabled", 2015, 7, 8,
                                                  NULL));
   const int enabled_group =
