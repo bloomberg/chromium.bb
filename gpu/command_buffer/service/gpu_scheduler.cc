@@ -27,19 +27,16 @@ const int64 kRescheduleTimeOutDelay = 1000;
 const int64 kUnscheduleFenceTimeOutDelay = 10000;
 }
 
-GpuScheduler::GpuScheduler(
-    CommandBuffer* command_buffer,
-    AsyncAPIInterface* handler,
-    gles2::GLES2Decoder* decoder)
+GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
+                           AsyncAPIInterface* handler,
+                           gles2::GLES2Decoder* decoder)
     : command_buffer_(command_buffer),
       handler_(handler),
       decoder_(decoder),
-      parser_(NULL),
       unscheduled_count_(0),
       rescheduled_count_(0),
       reschedule_task_factory_(this),
-      was_preempted_(false) {
-}
+      was_preempted_(false) {}
 
 GpuScheduler::~GpuScheduler() {
 }
