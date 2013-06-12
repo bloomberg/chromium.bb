@@ -3373,6 +3373,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Media.InfoLoadDelay" units="milliseconds">
+  <summary>
+    The time it takes to perform redirect tracking and a CORS access check while
+    preparing to play a media file.
+  </summary>
+</histogram>
+
 <histogram name="Media.LinuxAudioIO" enum="LinuxAudioIO">
   <summary>
     Audio IO layer used by the Linux OS, sampled once at startup of the browser.

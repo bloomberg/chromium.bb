@@ -25,6 +25,7 @@
 #include "webkit/renderer/media/android/media_source_delegate.h"
 #include "webkit/renderer/media/android/stream_texture_factory_android.h"
 #include "webkit/renderer/media/crypto/proxy_decryptor.h"
+#include "webkit/renderer/media/media_info_loader.h"
 
 namespace media {
 class Demuxer;
@@ -254,6 +255,7 @@ class WebMediaPlayerAndroid
 
  private:
   void ReallocateVideoFrame();
+  void DidLoadMediaInfo(MediaInfoLoader::Status status);
 
   // Actually do the work for generateKeyRequest/addKey so they can easily
   // report results to UMA.
@@ -335,6 +337,10 @@ class WebMediaPlayerAndroid
   // Whether the video size info is available.
   bool has_size_info_;
 
+  // Whether the video metadata and info are available.
+  bool has_media_metadata_;
+  bool has_media_info_;
+
   // Object for allocating stream textures.
   scoped_ptr<StreamTextureFactory> stream_texture_factory_;
 
@@ -379,6 +385,8 @@ class WebMediaPlayerAndroid
 
   media::MediaLog* media_log_;
   MediaStreamClient* media_stream_client_;
+
+  scoped_ptr<MediaInfoLoader> info_loader_;
 
   // The currently selected key system. Empty string means that no key system
   // has been selected.

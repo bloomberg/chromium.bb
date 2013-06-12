@@ -78,6 +78,8 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       needs_establish_peer_(true),
       stream_texture_proxy_initialized_(false),
       has_size_info_(false),
+      has_media_metadata_(false),
+      has_media_info_(false),
       stream_texture_factory_(factory),
       needs_external_surface_(false),
       video_frame_provider_client_(NULL),
@@ -158,10 +160,9 @@ void WebMediaPlayerAndroid::load(const WebURL& url, CORSMode cors_mode) {
 void WebMediaPlayerAndroid::load(const WebURL& url,
                                  WebMediaSource* media_source,
                                  CORSMode cors_mode) {
-  if (cors_mode != CORSModeUnspecified)
-    NOTIMPLEMENTED() << "No CORS support";
-
   source_type_ = MediaPlayerAndroid::SOURCE_TYPE_URL;
+  has_media_metadata_ = false;
+  has_media_info_ = false;
 
   if (media_source)
     source_type_ = MediaPlayerAndroid::SOURCE_TYPE_MSE;
@@ -173,6 +174,7 @@ void WebMediaPlayerAndroid::load(const WebURL& url,
 #endif
 
   if (source_type_ != MediaPlayerAndroid::SOURCE_TYPE_URL) {
+    has_media_info_ = true;
     media_source_delegate_.reset(
         new MediaSourceDelegate(proxy_, player_id_, media_log_));
     // |media_source_delegate_| is owned, so Unretained() is safe here.
@@ -195,6 +197,14 @@ void WebMediaPlayerAndroid::load(const WebURL& url,
         audio_renderer_->Start();
     }
 #endif
+  } else {
+    info_loader_.reset(
+        new MediaInfoLoader(
+            url,
+            cors_mode,
+            base::Bind(&WebMediaPlayerAndroid::DidLoadMediaInfo,
+                       base::Unretained(this))));
+    info_loader_->Start(frame_);
   }
 
   InitializeMediaPlayer(url);
@@ -209,6 +219,23 @@ void WebMediaPlayerAndroid::InitializeMediaPlayer(const WebURL& url) {
 
   UpdateNetworkState(WebMediaPlayer::NetworkStateLoading);
   UpdateReadyState(WebMediaPlayer::ReadyStateHaveNothing);
+}
+
+void WebMediaPlayerAndroid::DidLoadMediaInfo(
+    MediaInfoLoader::Status status) {
+  DCHECK(!media_source_delegate_);
+  if (status == MediaInfoLoader::kFailed) {
+    info_loader_.reset();
+    UpdateNetworkState(WebMediaPlayer::NetworkStateNetworkError);
+    return;
+  }
+
+  has_media_info_ = true;
+  if (has_media_metadata_ &&
+      ready_state_ != WebMediaPlayer::ReadyStateHaveEnoughData) {
+    UpdateReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
+    UpdateReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
+  }
 }
 
 void WebMediaPlayerAndroid::play() {
@@ -392,14 +419,17 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
 }
 
 bool WebMediaPlayerAndroid::hasSingleSecurityOrigin() const {
-  // TODO(qinmin): fix this for urls that are not file.
-  // https://code.google.com/p/chromium/issues/detail?id=234710
-  if (url_.SchemeIsFile())
-    return true;
-  return false;
+  if (info_loader_)
+    return info_loader_->HasSingleOrigin();
+  // The info loader may have failed.
+  if (source_type_ == MediaPlayerAndroid::SOURCE_TYPE_URL)
+    return false;
+  return true;
 }
 
 bool WebMediaPlayerAndroid::didPassCORSAccessCheck() const {
+  if (info_loader_)
+    return info_loader_->DidPassCORSAccessCheck();
   return false;
 }
 
@@ -461,7 +491,9 @@ void WebMediaPlayerAndroid::OnMediaMetadataChanged(
     }
   }
 
-  if (ready_state_ != WebMediaPlayer::ReadyStateHaveEnoughData) {
+  has_media_metadata_ = true;
+  if (has_media_info_ &&
+      ready_state_ != WebMediaPlayer::ReadyStateHaveEnoughData) {
     UpdateReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
     UpdateReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
   }

@@ -1,0 +1,200 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/bind.h"
+#include "base/message_loop.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/public/platform/WebURLError.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "webkit/mocks/mock_webframeclient.h"
+#include "webkit/mocks/mock_weburlloader.h"
+#include "webkit/renderer/media/media_info_loader.h"
+
+using ::testing::_;
+using ::testing::InSequence;
+using ::testing::NiceMock;
+
+using WebKit::WebString;
+using WebKit::WebURLError;
+using WebKit::WebURLResponse;
+using WebKit::WebView;
+
+using webkit_glue::MockWebFrameClient;
+using webkit_glue::MockWebURLLoader;
+
+namespace webkit_media {
+
+static const char* kHttpUrl = "http://test";
+static const char kHttpRedirectToSameDomainUrl1[] = "http://test/ing";
+static const char kHttpRedirectToSameDomainUrl2[] = "http://test/ing2";
+static const char kHttpRedirectToDifferentDomainUrl1[] = "http://test2";
+
+static const int kHttpOK = 200;
+static const int kHttpNotFound = 404;
+
+class MediaInfoLoaderTest : public testing::Test {
+ public:
+  MediaInfoLoaderTest()
+      : view_(WebView::create(NULL)) {
+    view_->initializeMainFrame(&client_);
+  }
+
+  virtual ~MediaInfoLoaderTest() {
+    view_->close();
+  }
+
+  void Initialize(
+      const char* url,
+      WebKit::WebMediaPlayer::CORSMode cors_mode) {
+    gurl_ = GURL(url);
+
+    loader_.reset(new MediaInfoLoader(
+        gurl_, cors_mode,
+        base::Bind(&MediaInfoLoaderTest::ReadyCallback,
+                   base::Unretained(this))));
+
+    // |test_loader_| will be used when Start() is called.
+    url_loader_ = new NiceMock<MockWebURLLoader>();
+    loader_->test_loader_ = scoped_ptr<WebKit::WebURLLoader>(url_loader_);
+  }
+
+  void Start() {
+    InSequence s;
+    EXPECT_CALL(*url_loader_, loadAsynchronously(_, _));
+    loader_->Start(view_->mainFrame());
+  }
+
+  void Stop() {
+    InSequence s;
+    EXPECT_CALL(*url_loader_, cancel());
+    loader_.reset();
+  }
+
+  void Redirect(const char* url) {
+    GURL redirect_url(url);
+    WebKit::WebURLRequest new_request(redirect_url);
+    WebKit::WebURLResponse redirect_response(gurl_);
+
+    loader_->willSendRequest(url_loader_, new_request, redirect_response);
+
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+
+  void SendResponse(
+      int http_status, MediaInfoLoader::Status expected_status) {
+    EXPECT_CALL(*this, ReadyCallback(expected_status));
+
+    WebURLResponse response(gurl_);
+    response.setHTTPHeaderField(WebString::fromUTF8("Content-Length"),
+                                WebString::fromUTF8("0"));
+    response.setExpectedContentLength(0);
+    response.setHTTPStatusCode(http_status);
+    loader_->didReceiveResponse(url_loader_, response);
+  }
+
+  void FailLoad() {
+    EXPECT_CALL(*this, ReadyCallback(MediaInfoLoader::kFailed));
+    loader_->didFail(url_loader_, WebURLError());
+  }
+
+  MOCK_METHOD1(ReadyCallback, void(MediaInfoLoader::Status));
+
+ protected:
+  GURL gurl_;
+
+  scoped_ptr<MediaInfoLoader> loader_;
+  NiceMock<MockWebURLLoader>* url_loader_;
+
+  MockWebFrameClient client_;
+  WebView* view_;
+
+  base::MessageLoop message_loop_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MediaInfoLoaderTest);
+};
+
+TEST_F(MediaInfoLoaderTest, StartStop) {
+  Initialize(kHttpUrl, WebKit::WebMediaPlayer::CORSModeUnspecified);
+  Start();
+  Stop();
+}
+
+TEST_F(MediaInfoLoaderTest, LoadFailure) {
+  Initialize(kHttpUrl, WebKit::WebMediaPlayer::CORSModeUnspecified);
+  Start();
+  FailLoad();
+  Stop();
+}
+
+TEST_F(MediaInfoLoaderTest, HasSingleOriginNoRedirect) {
+  // Make sure no redirect case works as expected.
+  Initialize(kHttpUrl, WebKit::WebMediaPlayer::CORSModeUnspecified);
+  Start();
+  SendResponse(kHttpOK, MediaInfoLoader::kOk);
+  EXPECT_TRUE(loader_->HasSingleOrigin());
+  Stop();
+}
+
+TEST_F(MediaInfoLoaderTest, HasSingleOriginSingleRedirect) {
+  // Test redirect to the same domain.
+  Initialize(kHttpUrl, WebKit::WebMediaPlayer::CORSModeUnspecified);
+  Start();
+  Redirect(kHttpRedirectToSameDomainUrl1);
+  SendResponse(kHttpOK, MediaInfoLoader::kOk);
+  EXPECT_TRUE(loader_->HasSingleOrigin());
+  Stop();
+}
+
+TEST_F(MediaInfoLoaderTest, HasSingleOriginDoubleRedirect) {
+  // Test redirect twice to the same domain.
+  Initialize(kHttpUrl, WebKit::WebMediaPlayer::CORSModeUnspecified);
+  Start();
+  Redirect(kHttpRedirectToSameDomainUrl1);
+  Redirect(kHttpRedirectToSameDomainUrl2);
+  SendResponse(kHttpOK, MediaInfoLoader::kOk);
+  EXPECT_TRUE(loader_->HasSingleOrigin());
+  Stop();
+}
+
+TEST_F(MediaInfoLoaderTest, HasSingleOriginDifferentDomain) {
+  // Test redirect to a different domain.
+  Initialize(kHttpUrl, WebKit::WebMediaPlayer::CORSModeUnspecified);
+  Start();
+  Redirect(kHttpRedirectToDifferentDomainUrl1);
+  SendResponse(kHttpOK, MediaInfoLoader::kOk);
+  EXPECT_FALSE(loader_->HasSingleOrigin());
+  Stop();
+}
+
+TEST_F(MediaInfoLoaderTest, HasSingleOriginMultipleDomains) {
+  // Test redirect to the same domain and then to a different domain.
+  Initialize(kHttpUrl, WebKit::WebMediaPlayer::CORSModeUnspecified);
+  Start();
+  Redirect(kHttpRedirectToSameDomainUrl1);
+  Redirect(kHttpRedirectToDifferentDomainUrl1);
+  SendResponse(kHttpOK, MediaInfoLoader::kOk);
+  EXPECT_FALSE(loader_->HasSingleOrigin());
+  Stop();
+}
+
+TEST_F(MediaInfoLoaderTest, CORSAccessCheckPassed) {
+  Initialize(kHttpUrl, WebKit::WebMediaPlayer::CORSModeUseCredentials);
+  Start();
+  SendResponse(kHttpOK, MediaInfoLoader::kOk);
+  EXPECT_TRUE(loader_->DidPassCORSAccessCheck());
+  Stop();
+}
+
+TEST_F(MediaInfoLoaderTest, CORSAccessCheckFailed) {
+  Initialize(kHttpUrl, WebKit::WebMediaPlayer::CORSModeUseCredentials);
+  Start();
+  SendResponse(kHttpNotFound, MediaInfoLoader::kFailed);
+  EXPECT_FALSE(loader_->DidPassCORSAccessCheck());
+  Stop();
+}
+
+}  // namespace webkit_media
