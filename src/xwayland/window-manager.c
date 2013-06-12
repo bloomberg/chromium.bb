@@ -89,6 +89,9 @@ struct motif_wm_hints {
 #define _NET_WM_MOVERESIZE_MOVE_KEYBOARD    10   /* move via keyboard */
 #define _NET_WM_MOVERESIZE_CANCEL           11   /* cancel operation */
 
+#define SEND_EVENT_MASK (0x80)
+#define EVENT_TYPE(event) ((event)->response_type & ~SEND_EVENT_MASK)
+
 struct weston_wm_window {
 	struct weston_wm *wm;
 	xcb_window_t id;
@@ -748,7 +751,7 @@ weston_wm_handle_unmap_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	if (our_resource(wm, unmap_notify->window))
 		return;
 
-	if (unmap_notify->response_type & 0x80)
+	if (unmap_notify->response_type & SEND_EVENT_MASK)
 		/* We just ignore the ICCCM 4.1.4 synthetic unmap notify
 		 * as it may come in after we've destroyed the window. */
 		return;
@@ -1333,7 +1336,7 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 			continue;
 		}
 
-		switch (event->response_type & ~0x80) {
+		switch (EVENT_TYPE(event)) {
 		case XCB_BUTTON_PRESS:
 		case XCB_BUTTON_RELEASE:
 			weston_wm_handle_button(wm, event);
