@@ -175,12 +175,16 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
             bounds.setEmpty();
             String name = data[i].mName;
             float width = 0;
-            mNameViewPaint.getTextBounds(name, 0, name.length(), bounds);
+            if (name.length() > 0) {
+                mNameViewPaint.getTextBounds(name, 0, name.length(), bounds);
+            }
             width += bounds.width();
 
             bounds.setEmpty();
             String label = data[i].mLabel;
-            mLabelViewPaint.getTextBounds(label, 0, label.length(), bounds);
+            if (label.length() > 0) {
+                mLabelViewPaint.getTextBounds(label, 0, label.length(), bounds);
+            }
             width += bounds.width();
             maxTextWidth = Math.max(width, maxTextWidth);
         }
