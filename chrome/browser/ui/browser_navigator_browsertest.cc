@@ -993,22 +993,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   RunDoNothingIfIncognitoIsForcedTest(GURL(chrome::kChromeUIBookmarksURL));
 }
 
-// This test verifies that the sync promo page isn't opened in the incognito
-// window.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       Disposition_SyncPromo_UseNonIncognitoWindow) {
-  RunUseNonIncognitoWindowTest(GURL(chrome::kChromeUISyncPromoURL));
-}
-
-// The Sync promo page is expected to always open in normal mode regardless of
-// whether the user is trying to open it in incognito mode or not.  This test
-// verifies that if incognito mode is forced (by policy), the sync promo page
-// doesn't open at all.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       Disposition_SyncPromo_DoNothingIfIncognitoIsForced) {
-  RunDoNothingIfIncognitoIsForcedTest(GURL(chrome::kChromeUISyncPromoURL));
-}
-
 // This test makes sure a crashed singleton tab reloads from a new navigation.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        NavigateToCrashedSingletonTab) {

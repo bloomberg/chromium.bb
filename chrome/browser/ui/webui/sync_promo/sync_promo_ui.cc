@@ -261,15 +261,6 @@ SyncPromoUI::Source SyncPromoUI::GetSourceForSyncPromoURL(const GURL& url) {
 }
 
 // static
-bool SyncPromoUI::UseWebBasedSigninFlow() {
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
-  return true;
-#else
-  return false;
-#endif
-}
-
-// static
 bool SyncPromoUI::IsContinueUrlForWebBasedSigninFlow(const GURL& url) {
   GURL::Replacements replacements;
   replacements.ClearQuery();

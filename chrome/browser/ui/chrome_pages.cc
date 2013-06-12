@@ -18,9 +18,6 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
-#include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -225,27 +222,9 @@ void ShowBrowserSignin(Browser* browser, SyncPromoUI::Source source) {
                                             chrome::HOST_DESKTOP_TYPE_NATIVE);
     }
 
-    const bool use_web_flow = SyncPromoUI::UseWebBasedSigninFlow();
-    const bool show_promo =
-        SyncPromoUI::ShouldShowSyncPromo(browser->profile());
-
-    LoginUIService* login = LoginUIServiceFactory::GetForProfile(
-        original_profile);
-    if (use_web_flow || (show_promo && login->current_login_ui() == NULL)) {
-      NavigateToSingletonTab(browser,
-                             GURL(SyncPromoUI::GetSyncPromoURL(source,
-                                                               false)));
-    } else {
-      if (login->current_login_ui()) {
-        login->current_login_ui()->FocusUI();
-      } else {
-        // Need to navigate to the settings page and display the sync setup UI.
-        // This always displays the signin UI since the user is not yet signed
-        // in.
-        chrome::ShowSettingsSubPage(browser, chrome::kSyncSetupSubPage);
-      }
-    }
-
+    NavigateToSingletonTab(browser,
+                            GURL(SyncPromoUI::GetSyncPromoURL(source,
+                                                              false)));
     DCHECK_GT(browser->tab_strip_model()->count(), 0);
   }
 }

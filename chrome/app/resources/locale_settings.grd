@@ -376,12 +376,8 @@
         http://www.macromedia.com/support/documentation/en/flashplayer/help/settings_manager06.html
       </message>
 
-      <message name="IDS_SYNC_GET_ACCESS_CODE_URL" translateable="false">
+      <message name="IDS_CLOUD_PRINT_GET_ACCESS_CODE_URL" translateable="false">
         https://accounts.google.com/IssuedAuthSubTokens?hl=[GRITLANGCODE]
-      </message>
-
-      <message name="IDS_SYNC_GET_OTP_URL" translateable="false">
-        https://support.google.com/accounts/bin/answer.py?answer=1070457
       </message>
 
       <message name="IDS_SYNC_UNRECOVERABLE_ERROR_HELP_URL" translateable="false">

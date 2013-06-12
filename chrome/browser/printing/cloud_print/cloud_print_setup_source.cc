@@ -89,25 +89,29 @@ void CloudPrintSetupSource::StartDataRequest(
     // None of the strings used here currently have sync-specific wording in
     // them.  There is a unit test to catch if that happens.
     dict->SetString("introduction", std::string());
-    AddString(dict, "signinprefix", IDS_SYNC_LOGIN_SIGNIN_PREFIX);
-    AddString(dict, "signinsuffix", IDS_SYNC_LOGIN_SIGNIN_SUFFIX);
-    AddString(dict, "cannotbeblank", IDS_SYNC_CANNOT_BE_BLANK);
-    AddString(dict, "emaillabel", IDS_SYNC_LOGIN_EMAIL_SAME_LINE);
-    AddString(dict, "passwordlabel", IDS_SYNC_LOGIN_PASSWORD_SAME_LINE);
+    AddString(dict, "signinprefix", IDS_CLOUD_PRINT_LOGIN_SIGNIN_PREFIX);
+    AddString(dict, "signinsuffix", IDS_CLOUD_PRINT_LOGIN_SIGNIN_SUFFIX);
+    AddString(dict, "cannotbeblank", IDS_CLOUD_PRINT_CANNOT_BE_BLANK);
+    AddString(dict, "emaillabel", IDS_CLOUD_PRINT_LOGIN_EMAIL_SAME_LINE);
+    AddString(dict, "passwordlabel", IDS_CLOUD_PRINT_LOGIN_PASSWORD_SAME_LINE);
     AddString(dict, "invalidcredentials", IDS_SYNC_INVALID_USER_CREDENTIALS);
-    AddString(dict, "signin", IDS_SYNC_SIGNIN);
-    AddString(dict, "couldnotconnect", IDS_SYNC_LOGIN_COULD_NOT_CONNECT);
-    AddString(dict, "cannotaccessaccount", IDS_SYNC_CANNOT_ACCESS_ACCOUNT);
-    AddString(dict, "createaccount", IDS_SYNC_CREATE_ACCOUNT);
+    AddString(dict, "signin", IDS_CLOUD_PRINT_SIGNIN);
+    AddString(dict, "couldnotconnect", IDS_CLOUD_PRINT_LOGIN_COULD_NOT_CONNECT);
+    AddString(dict, "cannotaccessaccount",
+              IDS_CLOUD_PRINT_CANNOT_ACCESS_ACCOUNT);
+    AddString(dict, "createaccount", IDS_CLOUD_PRINT_CREATE_ACCOUNT);
     AddString(dict, "cancel", IDS_CANCEL);
     AddString(dict, "settingup", IDS_SYNC_LOGIN_SETTING_UP);
     AddString(dict, "success", IDS_SYNC_SUCCESS);
     AddString(dict, "errorsigningin", IDS_SYNC_ERROR_SIGNING_IN);
-    AddString(dict, "captchainstructions", IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS);
-    AddString(dict, "invalidaccesscode", IDS_SYNC_INVALID_ACCESS_CODE_LABEL);
-    AddString(dict, "enteraccesscode", IDS_SYNC_ENTER_ACCESS_CODE_LABEL);
-    AddString(dict, "getaccesscodehelp", IDS_SYNC_ACCESS_CODE_HELP_LABEL);
-    AddString(dict, "getaccesscodeurl", IDS_SYNC_GET_ACCESS_CODE_URL);
+    AddString(dict, "captchainstructions",
+              IDS_CLOUD_PRINT_GAIA_CAPTCHA_INSTRUCTIONS);
+    AddString(dict, "invalidaccesscode",
+              IDS_CLOUD_PRINT_INVALID_ACCESS_CODE_LABEL);
+    AddString(dict, "enteraccesscode", IDS_CLOUD_PRINT_ENTER_ACCESS_CODE_LABEL);
+    AddString(dict, "getaccesscodehelp",
+              IDS_CLOUD_PRINT_ACCESS_CODE_HELP_LABEL);
+    AddString(dict, "getaccesscodeurl", IDS_CLOUD_PRINT_GET_ACCESS_CODE_URL);
 
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_GAIA_LOGIN_HTML));
@@ -116,7 +120,7 @@ void CloudPrintSetupSource::StartDataRequest(
   } else if (path_raw == kCloudPrintSetupDonePath) {
     AddString(dict, "testpage", IDS_CLOUD_PRINT_SETUP_TEST_PAGE);
     AddString(dict, "success", IDS_SYNC_SUCCESS);
-    AddString(dict, "okay", IDS_SYNC_SETUP_OK_BUTTON_LABEL);
+    AddString(dict, "okay", IDS_CLOUD_PRINT_SETUP_OK_BUTTON_LABEL);
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_CLOUD_PRINT_SETUP_DONE_HTML));
     webui::SetFontAndTextDirection(dict);

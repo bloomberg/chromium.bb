@@ -46,9 +46,6 @@ MATCHER_P(ModelTypeSetMatches, value, "") { return arg.Equals(value); }
 
 const char kTestUser[] = "chrome.p13n.test@gmail.com";
 const char kTestPassword[] = "passwd";
-const char kTestCaptcha[] = "pizzamyheart";
-const char kTestCaptchaImageUrl[] = "http://pizzamyheart/image";
-const char kTestCaptchaUnlockUrl[] = "http://pizzamyheart/unlock";
 
 // Returns a ModelTypeSet with all user selectable types set.
 syncer::ModelTypeSet GetAllTypes() {
@@ -601,7 +598,7 @@ TEST_F(SyncSetupHandlerTest,
 }
 
 TEST_F(SyncSetupHandlerTest,
-       DisplayConfigureWithBackendDisabledAndSigninFalied) {
+       DisplayConfigureWithBackendDisabledAndSigninFailed) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);

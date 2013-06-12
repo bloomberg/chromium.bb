@@ -151,10 +151,6 @@
   margin-bottom: 5px;
 }
 
-#gaia-login-form {
-  margin-bottom: 0;
-}
-
 #captcha-div {
   background: white;
   border: 1px solid #e5e5e5;
@@ -180,26 +176,6 @@
 
 #logging-in-throbber {
   margin: 0 10px;
-}
-
-#top-blurb-error {
-  -webkit-transition: margin-top 330ms ease-out, opacity 660ms ease-out;
-  background: rgb(249, 237, 190);
-  border: 1px solid rgb(240, 195, 109);
-  display: block;
-  font-weight: bold;
-  line-height: 1.5em;
-  margin-bottom: 10px;
-  opacity: 1;
-  padding: 8px 25px;
-  position: relative;
-  text-align: center;
-}
-
-#top-blurb-error[hidden] {
-  display: block;
-  margin-top: -37px;
-  opacity: 0;
 }
 
 #password-row {

@@ -71,7 +71,6 @@ const char kChromeUISettingsFrameURL[] = "chrome://settings-frame/";
 const char kChromeUISuggestionsInternalsURL[] =
     "chrome://suggestions-internals/";
 const char kChromeUISSLClientCertificateSelectorURL[] = "chrome://select-cert/";
-const char kChromeUISyncPromoURL[] = "chrome://signin/";
 const char kChromeUITaskManagerURL[] = "chrome://tasks/";
 const char kChromeUITermsURL[] = "chrome://terms/";
 const char kChromeUIThemeURL[] = "chrome://theme/";
@@ -201,7 +200,6 @@ const char kChromeUIStatsHost[] = "stats";
 const char kChromeUISyncHost[] = "sync";
 const char kChromeUISyncFileSystemInternalsHost[] = "syncfs-internals";
 const char kChromeUISyncInternalsHost[] = "sync-internals";
-const char kChromeUISyncPromoHost[] = "signin";
 const char kChromeUISyncResourcesHost[] = "syncresources";
 const char kChromeUITaskManagerHost[] = "tasks";
 const char kChromeUITermsHost[] = "terms";
@@ -461,14 +459,8 @@ const char kCloudPrintLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_cloud_print";
 #endif
 
-const char kInvalidPasswordHelpURL[] =
-    "https://support.google.com/accounts/bin/answer.py?ctx=ch&answer=27444";
-
 const char kAppLauncherHelpURL[] =
     "https://support.google.com/chrome_webstore/?p=cws_app_launcher";
-
-const char kCanNotAccessAccountURL[] =
-    "https://support.google.com/accounts/bin/answer.py?answer=48598";
 
 const char kSyncEncryptionHelpURL[] =
 #if defined(OS_CHROMEOS)
@@ -479,9 +471,6 @@ const char kSyncEncryptionHelpURL[] =
 
 const char kSyncErrorsHelpURL[] =
     "https://support.google.com/chrome/?p=settings_sync_error";
-
-const char kSyncCreateNewAccountURL[] =
-    "https://accounts.google.com/NewAccount?service=chromiumsync";
 
 const char kChromeToMobileLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ib_chrome_to_mobile";

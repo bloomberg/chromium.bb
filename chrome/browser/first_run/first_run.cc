@@ -592,10 +592,6 @@ void FirstRunBubbleLauncher::Observe(
   }
 
   if (contents && contents->GetURL().SchemeIs(chrome::kChromeUIScheme)) {
-    // Suppress the first run bubble if the sync promo is showing.
-    if (contents->GetURL().host() == chrome::kChromeUISyncPromoHost)
-      return;
-
     // Suppress the first run bubble if 'make chrome metro' flow is showing.
     if (contents->GetURL().host() == chrome::kChromeUIMetroFlowHost)
       return;

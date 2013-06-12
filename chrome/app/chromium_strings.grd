@@ -823,11 +823,6 @@ For Chromium, processes used to display diagnostics information (such as this "a
         </message>
       </if>
 
-      <!-- Sync promo page chrome://signin -->
-      <message name="IDS_SYNC_DIFFERENT_EMAIL" desc="Error message to display when setting up sync for a second time and the user name is different from the previous user name.">
-        You were previously signed in with a different account, signing in will merge your data. Consider creating a new Chromium user via the <ph name="BEGIN_LINK">&lt;a href="chrome://settings/search#Users" target="_parent"&gt;</ph>settings page<ph name="END_LINK">&lt;/a&gt;</ph> for your Chromium stuff.
-      </message>
-
       <!-- One click sign in infobar -->
       <if expr="not pp_ifdef('chromeos')">
         <!-- New one-click signin dialog contents for SAML support -->

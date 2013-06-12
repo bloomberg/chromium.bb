@@ -125,6 +125,8 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   void HandleConfigure(const base::ListValue* args);
   void HandlePassphraseEntry(const base::ListValue* args);
   void HandlePassphraseCancel(const base::ListValue* args);
+  // TODO(atwilson): Not sure if HandleShowErrorUI() is still required.
+  // May be able to combine with HandleShowSetupUI().
   void HandleShowErrorUI(const base::ListValue* args);
   void HandleShowSetupUI(const base::ListValue* args);
   void HandleDoSignOutOnAuthError(const base::ListValue* args);
@@ -132,19 +134,6 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   void HandleStopSyncing(const base::ListValue* args);
   void HandleCloseTimeout(const base::ListValue* args);
 #if !defined(OS_CHROMEOS)
-  void HandleSubmitAuth(const base::ListValue* args);
-
-  // Returns true if the given login data is valid, false otherwise. If the
-  // login data is not valid then on return |error_message| will be set to  a
-  // localized error message. Note, |error_message| must not be NULL.
-  bool IsLoginAuthDataValid(const std::string& username,
-                            string16* error_message);
-
-  // Initiates a login via the signin manager.
-  void TryLogin(const std::string& username,
-                const std::string& password,
-                const std::string& captcha,
-                const std::string& access_code);
   // Displays the GAIA login form. If |fatal_error| is true, displays the fatal
   // error UI.
   void DisplayGaiaLogin(bool fatal_error);
@@ -152,24 +141,11 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // When web-flow is enabled, displays the Gaia login form in a new tab.
   // This function is virtual so that tests can override.
   virtual void DisplayGaiaLoginInNewTabOrWindow();
-
-  // Displays the GAIA login form with a custom error message (used for errors
-  // like "email address already in use by another profile"). No message
-  // displayed if |error_message| is empty. Displays fatal error UI if
-  // |fatal_error| = true.
-  void DisplayGaiaLoginWithErrorMessage(const string16& error_message,
-                                        bool fatal_error);
 #endif
 
   // Helper routine that gets the Profile associated with this object (virtual
   // so tests can override).
   virtual Profile* GetProfile() const;
-
-  // Shows the GAIA login success page then exits.
-  void DisplayGaiaSuccessAndClose();
-
-  // Displays the GAIA login success page then transitions to sync setup.
-  void DisplayGaiaSuccessAndSettingUp();
 
   // A utility function to call before actually showing setup dialog. Makes sure
   // that a new dialog can be shown and sets flag that setup is in progress.

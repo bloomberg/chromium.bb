@@ -8792,8 +8792,50 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_CLOUD_PRINT_ENUM_FAILED" desc="Status message to be sent to the Cloud Print server when enumerating printers failed.">
         There was a problem listing printers. Some of your printers may not have registered successfully with <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>.
       </message>
+      <message name="IDS_CLOUD_PRINT_GAIA_CAPTCHA_INSTRUCTIONS" desc="Explanatory message shown when the user must type letters shown in a captcha image to reauthenticate.">
+        Enter the letters above
+      </message>
+      <message name="IDS_CLOUD_PRINT_LOGIN_EMAIL_SAME_LINE" desc="The user Email address of the Google account. This label appears on the same line as the text field.">
+        Email:
+      </message>
+      <message name="IDS_CLOUD_PRINT_LOGIN_PASSWORD_SAME_LINE" desc="The user password of the Google account. This labe appears on the same line as the text field.">
+        Password:
+      </message>
+      <message name="IDS_CLOUD_PRINT_SIGNIN" desc="The label of the button to log to your Google account">
+        Sign in
+      </message>
+      <message name="IDS_CLOUD_PRINT_CANNOT_ACCESS_ACCOUNT" desc="The text of a hyperlink">
+        Can't access your account?
+      </message>
+      <message name="IDS_CLOUD_PRINT_CREATE_ACCOUNT" desc="The text of a hyperlink to create a Google account">
+        Create a Google Account
+      </message>
+      <message name="IDS_CLOUD_PRINT_CANNOT_BE_BLANK" desc="The input error message when the user hasn't entered a username or password">
+        Required field cannot be left blank
+      </message>
+      <message name="IDS_CLOUD_PRINT_LOGIN_COULD_NOT_CONNECT" desc="The connect error message">
+        Could not connect to the server
+      </message>
+      <message name="IDS_CLOUD_PRINT_ACCESS_CODE_HELP_LABEL" desc="A help link message for users who don't know what an application-specific password (aka access code) is">
+        What's this?
+      </message>
+      <message name="IDS_CLOUD_PRINT_INVALID_ACCESS_CODE_LABEL" desc="A message telling the user the application-specific password (aka access code) they entered is invalid.">
+        Invalid application-specific password.
+      </message>
       <message name="IDS_SERVICE_CRASH_RECOVERY_CONTENT" desc="Text content telling the user the service process has crashed.">
         The <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> connector process has crashed. Restart?
+      </message>
+      <message name="IDS_CLOUD_PRINT_SETUP_OK_BUTTON_LABEL" desc="The button label on the 'OK' button displayed at the end sign in.">
+        OK
+      </message>
+      <message name="IDS_CLOUD_PRINT_LOGIN_SIGNIN_PREFIX" desc="The first part of the sentence that is displayed after the login info">
+        Sign in with your
+      </message>
+      <message name="IDS_CLOUD_PRINT_LOGIN_SIGNIN_SUFFIX" desc="The second part of the sentence. Google will be replaced by the Google logo. The translation of 'Account' will be display in bold">
+        Google Account
+      </message>
+      <message name="IDS_CLOUD_PRINT_ENTER_ACCESS_CODE_LABEL" desc="A message asking the user to enter an application-specific password (aka access code).">
+        Enter your application-specific password:
       </message>
 
       <!-- Print Preview -->
@@ -13338,14 +13380,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_INVALID_USER_CREDENTIALS" desc="Error message to display when the user name or password entered by the user are invalid.">
         Invalid user name or password.
       </message>
-      <message name="IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS" desc="Explanatory message shown when the user must type letters shown in a captcha image to reauthenticate.">
-        Enter the letters above
-      </message>
       <message name="IDS_SYNC_ERROR_SIGNING_IN" desc="An error was encountered while signing the user in.">
         Error signing in.
-      </message>
-      <message name="IDS_SYNC_PROMO_SIGNIN_HEADER" desc="The header at the top of the GAIA sign in box. Note that sync here is intended as a verb, not a noun.">
-        Sign in and sync
       </message>
       <message name="IDS_SYNC_UNRECOVERABLE_ERROR" desc="Message shown when sync setup failed due to an unrecoverable error and can't continue.">
         Oops, Sync has stopped working.
@@ -13566,13 +13602,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_ENCRYPT_ALL_DATA" desc="Text of the radio that when selected causes sync to encrypt all data.">
         Encrypt all synced data
       </message>
-      <message name="IDS_SYNC_ASP_PASSWORD_WARNING_TEXT" desc="Warning shown if the
-        user enters a gaia password resembling an application specific
-        password.">
-        Enter your Google Account password first,
-        <ph name="LINE_BREAK">&lt;br /&gt;<ex>&lt;br /&gt;</ex></ph>
-        not an application specific password.
-      </message>
       <message name="IDS_SYNC_PASSPHRASE_SECTION_TITLE" desc="Title of the section containing sync passphrase preferences.">
         Encryption passphrase
       </message>
@@ -13664,65 +13693,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_SETUP_TITLE" desc="The title of the Sync Setup overlay.">
         Sign in with your Google Account
       </message>
-      <message name="IDS_SYNC_LOGIN_SIGNIN_PREFIX" desc="The first part of the sentence that is displayed after the login info">
-        Sign in with your
-      </message>
-      <message name="IDS_SYNC_LOGIN_SIGNIN_SUFFIX" desc="The second part of the sentence. Google will be replaced by the Google logo. The translation of 'Account' will be display in bold">
-        Google Account
-      </message>
-      <message name="IDS_SYNC_LOGIN_EMAIL_NEW_LINE" desc="The user Email address of the Google account. This label appears on a separate line from the text field.">
-        Email
-      </message>
-      <message name="IDS_SYNC_LOGIN_EMAIL_SAME_LINE" desc="The user Email address of the Google account. This label appears on the same line as the text field.">
-        Email:
-      </message>
-      <message name="IDS_SYNC_LOGIN_PASSWORD_NEW_LINE" desc="The user password of the Google account. This label appears on a separate line from the text field.">
-        Password
-      </message>
-      <message name="IDS_SYNC_LOGIN_PASSWORD_SAME_LINE" desc="The user password of the Google account. This labe appears on the same line as the text field.">
-        Password:
-      </message>
-      <message name="IDS_SYNC_SIGNIN" desc="The label of the button to log to your Google account">
-        Sign in
-      </message>
-      <message name="IDS_SYNC_CANNOT_ACCESS_ACCOUNT" desc="The text of a hyperlink">
-        Can't access your account?
-      </message>
-      <message name="IDS_SYNC_CREATE_ACCOUNT_PREFIX" desc="The text before the create account link">
-        or <ph name="IDS_SYNC_CREATE_ACCOUNT">$1<ex>Create a Google Account</ex></ph>
-      </message>
-      <message name="IDS_SYNC_CREATE_ACCOUNT" desc="The text of a hyperlink to create a Google account">
-        Create a Google Account
-      </message>
-      <message name="IDS_SYNC_CANNOT_BE_BLANK" desc="The input error message when the user hasn't entered a username or password">
-        Required field cannot be left blank
-      </message>
-      <message name="IDS_SYNC_LOGIN_COULD_NOT_CONNECT" desc="The connect error message">
-        Could not connect to the server
-      </message>
       <message name="IDS_SYNC_LOGIN_SETTING_UP" desc="A progress message">
         Setting up...
       </message>
       <message name="IDS_SYNC_SUCCESS" desc="Operation successful">
         Success!
-      </message>
-      <message name="IDS_SYNC_ENTER_ACCESS_CODE_LABEL" desc="A message asking the user to enter an application-specific password (aka access code).">
-        Enter your application-specific password:
-      </message>
-      <message name="IDS_SYNC_ACCESS_CODE_HELP_LABEL" desc="A help link message for users who don't know what an application-specific password (aka access code) is">
-        What's this?
-      </message>
-      <message name="IDS_SYNC_INVALID_ACCESS_CODE_LABEL" desc="A message telling the user the application-specific password (aka access code) they entered is invalid.">
-        Invalid application-specific password.
-      </message>
-      <message name="IDS_SYNC_ENTER_OTP_LABEL" desc="A message asking the user to enter a one-time-password (aka OTP).">
-        Enter your verification code:
-      </message>
-      <message name="IDS_SYNC_OTP_HELP_LABEL" desc="A help link message for users who don't know what a one-time-password (aka OTP) is">
-        What's this?
-      </message>
-      <message name="IDS_SYNC_INVALID_OTP_LABEL" desc="A message telling the user the one-time-password (aka OTP) they entered is invalid.">
-        Invalid verification code.
       </message>
       <message name="IDS_SYNC_SERVICE_UNAVAILABLE" desc="Error message to display when the user domain entered by the user has sync disabled.">
         Sync service is not available for your domain.
@@ -13745,11 +13720,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Signed in as <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>...
         </message>
       </if>
-
-      <!-- Success dialog strings -->
-      <message name="IDS_SYNC_SETUP_OK_BUTTON_LABEL" desc="The button label on the 'OK' button displayed at the end of sync setup.">
-        OK
-      </message>
 
       <!-- Sync sign in global error message-->
       <message name="IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the signin error bubble view.">
@@ -13851,12 +13821,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <!-- Sync promo page chrome://signin -->
       <message name="IDS_SYNC_PROMO_TAB_TITLE" desc="The title of the sync promo tab.">
         Sign in
-      </message>
-      <message name="IDS_SYNC_PROMO_TITLE_SHORT" desc="The title at the top of the sync promo with a short product name.">
-        Welcome to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
-      </message>
-      <message name="IDS_SYNC_PROMO_TITLE_EXISTING_USER" desc="The title at the top of the sync promo shown to existing users.">
-        Sign in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
       </message>
       <message name="IDS_SYNC_PROMO_MESSAGE_TITLE_SHORT" desc="A short sync promo message displayed under the title.">
         Sign in to get your bookmarks, history, and settings on all your devices.

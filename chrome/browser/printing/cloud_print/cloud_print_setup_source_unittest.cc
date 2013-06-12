@@ -23,24 +23,24 @@ void TestStringStillOkForCloudPrint(int resource_id) {
 // CloudPrintSetupSource::StartDataRequest.  If any of these trip, notify the
 // cloud printing team and we'll split the strings.
 TEST(CloudPrintResources, SharedStringsCheck) {
-  TestStringStillOkForCloudPrint(IDS_SYNC_LOGIN_SIGNIN_PREFIX);
-  TestStringStillOkForCloudPrint(IDS_SYNC_LOGIN_SIGNIN_SUFFIX);
-  TestStringStillOkForCloudPrint(IDS_SYNC_CANNOT_BE_BLANK);
-  TestStringStillOkForCloudPrint(IDS_SYNC_LOGIN_EMAIL_SAME_LINE);
-  TestStringStillOkForCloudPrint(IDS_SYNC_LOGIN_PASSWORD_SAME_LINE);
+  TestStringStillOkForCloudPrint(IDS_CLOUD_PRINT_LOGIN_SIGNIN_PREFIX);
+  TestStringStillOkForCloudPrint(IDS_CLOUD_PRINT_LOGIN_SIGNIN_SUFFIX);
+  TestStringStillOkForCloudPrint(IDS_CLOUD_PRINT_CANNOT_BE_BLANK);
+  TestStringStillOkForCloudPrint(IDS_CLOUD_PRINT_LOGIN_EMAIL_SAME_LINE);
+  TestStringStillOkForCloudPrint(IDS_CLOUD_PRINT_LOGIN_PASSWORD_SAME_LINE);
   TestStringStillOkForCloudPrint(IDS_SYNC_INVALID_USER_CREDENTIALS);
-  TestStringStillOkForCloudPrint(IDS_SYNC_SIGNIN);
-  TestStringStillOkForCloudPrint(IDS_SYNC_LOGIN_COULD_NOT_CONNECT);
-  TestStringStillOkForCloudPrint(IDS_SYNC_CANNOT_ACCESS_ACCOUNT);
-  TestStringStillOkForCloudPrint(IDS_SYNC_CREATE_ACCOUNT);
+  TestStringStillOkForCloudPrint(IDS_CLOUD_PRINT_SIGNIN);
+  TestStringStillOkForCloudPrint(IDS_CLOUD_PRINT_LOGIN_COULD_NOT_CONNECT);
+  TestStringStillOkForCloudPrint(IDS_CLOUD_PRINT_CANNOT_ACCESS_ACCOUNT);
+  TestStringStillOkForCloudPrint(IDS_CLOUD_PRINT_CREATE_ACCOUNT);
   TestStringStillOkForCloudPrint(IDS_SYNC_LOGIN_SETTING_UP);
   TestStringStillOkForCloudPrint(IDS_SYNC_SUCCESS);
   TestStringStillOkForCloudPrint(IDS_SYNC_ERROR_SIGNING_IN);
-  TestStringStillOkForCloudPrint(IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS);
-  TestStringStillOkForCloudPrint(IDS_SYNC_INVALID_ACCESS_CODE_LABEL);
-  TestStringStillOkForCloudPrint(IDS_SYNC_ENTER_ACCESS_CODE_LABEL);
-  TestStringStillOkForCloudPrint(IDS_SYNC_ACCESS_CODE_HELP_LABEL);
-  TestStringStillOkForCloudPrint(IDS_SYNC_GET_ACCESS_CODE_URL);
+  TestStringStillOkForCloudPrint(IDS_CLOUD_PRINT_GAIA_CAPTCHA_INSTRUCTIONS);
+  TestStringStillOkForCloudPrint(IDS_CLOUD_PRINT_INVALID_ACCESS_CODE_LABEL);
+  TestStringStillOkForCloudPrint(IDS_CLOUD_PRINT_ENTER_ACCESS_CODE_LABEL);
+  TestStringStillOkForCloudPrint(IDS_CLOUD_PRINT_ACCESS_CODE_HELP_LABEL);
+  TestStringStillOkForCloudPrint(IDS_CLOUD_PRINT_GET_ACCESS_CODE_URL);
   TestStringStillOkForCloudPrint(IDS_SYNC_SUCCESS);
-  TestStringStillOkForCloudPrint(IDS_SYNC_SETUP_OK_BUTTON_LABEL);
+  TestStringStillOkForCloudPrint(IDS_CLOUD_PRINT_SETUP_OK_BUTTON_LABEL);
 }

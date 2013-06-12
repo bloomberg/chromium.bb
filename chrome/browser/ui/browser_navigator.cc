@@ -659,7 +659,6 @@ bool IsURLAllowedInIncognito(const GURL& url,
        url.host() == chrome::kChromeUISettingsFrameHost ||
        url.host() == chrome::kChromeUIExtensionsHost ||
        url.host() == chrome::kChromeUIBookmarksHost ||
-       url.host() == chrome::kChromeUISyncPromoHost ||
        url.host() == chrome::kChromeUIUberHost)) {
     return false;
   }

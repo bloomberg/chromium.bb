@@ -72,11 +72,6 @@ class SyncPromoUI {
   // The source identifies from where the sync promo was opened.
   static Source GetSourceForSyncPromoURL(const GURL& url);
 
-  // Returns true if chrome should use the web-based sign in flow, false if
-  // chrome should use the ClientLogin flow.  This function will return true
-  // only for platforms where |ENABLE_ONE_CLICK_SIGNIN| is defined.
-  static bool UseWebBasedSigninFlow();
-
   // Returns true if the given URL is the standard continue URL used with the
   // sync promo when the web-based flow is enabled.  The query parameters
   // of the URL are ignored for this comparison.

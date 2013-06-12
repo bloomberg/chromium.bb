@@ -66,7 +66,6 @@ extern const char kChromeUISettingsURL[];
 extern const char kChromeUISettingsFrameURL[];
 extern const char kChromeUISuggestionsInternalsURL[];
 extern const char kChromeUISSLClientCertificateSelectorURL[];
-extern const char kChromeUISyncPromoURL[];
 extern const char kChromeUITaskManagerURL[];
 extern const char kChromeUITermsURL[];
 extern const char kChromeUIThemeURL[];
@@ -192,7 +191,6 @@ extern const char kChromeUIStatsHost[];
 extern const char kChromeUISyncHost[];
 extern const char kChromeUISyncFileSystemInternalsHost[];
 extern const char kChromeUISyncInternalsHost[];
-extern const char kChromeUISyncPromoHost[];
 extern const char kChromeUISyncResourcesHost[];
 extern const char kChromeUITaskManagerHost[];
 extern const char kChromeUITermsHost[];
@@ -375,24 +373,14 @@ extern const char kDownloadInterruptedLearnMoreURL[];
 // everything.
 extern const char kSyncEverythingLearnMoreURL[];
 
-// The URL for information on how to recover your password.
-extern const char kInvalidPasswordHelpURL[];
-
 // The URL for information on how to use the app launcher.
 extern const char kAppLauncherHelpURL[];
-
-// The URL for information on what to do if you can't sign in to your Google
-// account.
-extern const char kCanNotAccessAccountURL[];
 
 // The URL for the "Learn more" page on sync encryption.
 extern const char kSyncEncryptionHelpURL[];
 
 // The URL for the "Learn more" link when there is a sync error.
 extern const char kSyncErrorsHelpURL[];
-
-// The URL to create a new Google account via sync.
-extern const char kSyncCreateNewAccountURL[];
 
 // The URL for the "Learn more" link in the Chrome To Mobile bubble.
 extern const char kChromeToMobileLearnMoreURL[];
