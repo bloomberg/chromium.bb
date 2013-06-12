@@ -33,14 +33,25 @@ TEST(AlignedMemoryTest, StaticAlignment) {
 TEST(AlignedMemoryTest, StackAlignment) {
   AlignedMemory<8, 8> raw8;
   AlignedMemory<8, 16> raw16;
-  AlignedMemory<8, 256> raw256;
+  AlignedMemory<8, 128> raw128;
 
   EXPECT_EQ(8u, ALIGNOF(raw8));
   EXPECT_EQ(16u, ALIGNOF(raw16));
-  EXPECT_EQ(256u, ALIGNOF(raw256));
+  EXPECT_EQ(128u, ALIGNOF(raw128));
 
   EXPECT_ALIGNED(raw8.void_data(), 8);
   EXPECT_ALIGNED(raw16.void_data(), 16);
+  EXPECT_ALIGNED(raw128.void_data(), 128);
+
+  // NaCl x86-64 compiler emits non-validating instructions for >128
+  // bytes alignment.
+  // http://www.chromium.org/nativeclient/design-documents/nacl-sfi-model-on-x86-64-systems
+  // TODO(hamaji): Ideally, NaCl compiler for x86-64 should workaround
+  // this limitation and this #if should be removed.
+  // https://code.google.com/p/nativeclient/issues/detail?id=3463
+#if !(defined(OS_NACL) && defined(ARCH_CPU_X86_64))
+  AlignedMemory<8, 256> raw256;
+  EXPECT_EQ(256u, ALIGNOF(raw256));
   EXPECT_ALIGNED(raw256.void_data(), 256);
 
   // TODO(ios): This test hits an armv7 bug in clang. crbug.com/138066
@@ -49,6 +60,7 @@ TEST(AlignedMemoryTest, StackAlignment) {
   EXPECT_EQ(4096u, ALIGNOF(raw4096));
   EXPECT_ALIGNED(raw4096.void_data(), 4096);
 #endif  // !(defined(OS_IOS) && defined(ARCH_CPU_ARM_FAMILY))
+#endif
 }
 
 TEST(AlignedMemoryTest, DynamicAllocation) {
