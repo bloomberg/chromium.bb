@@ -533,9 +533,9 @@ base::PlatformFileError NativeMediaFileUtil::ReadDirectorySync(
   DCHECK(file_list);
   DCHECK(file_list->empty());
   base::PlatformFileInfo file_info;
-  base::FilePath platform_path;
-  base::PlatformFileError error = GetFileInfoSync(context, url, &file_info,
-                                                  &platform_path);
+  base::FilePath dir_path;
+  base::PlatformFileError error =
+      GetFileInfoSync(context, url, &file_info, &dir_path);
 
   if (error != base::PLATFORM_FILE_OK)
     return error;
@@ -544,28 +544,27 @@ base::PlatformFileError NativeMediaFileUtil::ReadDirectorySync(
     return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
 
   base::FileEnumerator file_enum(
-      platform_path,
+      dir_path,
       false /* recursive */,
       base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
-  for (base::FilePath platform_path = file_enum.Next();
-       !platform_path.empty();
-       platform_path = file_enum.Next()) {
+  for (base::FilePath enum_path = file_enum.Next();
+       !enum_path.empty();
+       enum_path = file_enum.Next()) {
     // Skip symlinks.
-    if (file_util::IsLink(platform_path))
+    if (file_util::IsLink(enum_path))
       continue;
 
     base::FileEnumerator::FileInfo info = file_enum.GetInfo();
 
     // NativeMediaFileUtil skip criteria.
-    if (ShouldSkip(platform_path))
+    if (ShouldSkip(enum_path))
       continue;
-    if (!info.IsDirectory() &&
-        !GetMediaPathFilter(context)->Match(platform_path))
+    if (!info.IsDirectory() && !GetMediaPathFilter(context)->Match(enum_path))
       continue;
 
     fileapi::DirectoryEntry entry;
     entry.is_directory = info.IsDirectory();
-    entry.name = platform_path.BaseName().value();
+    entry.name = enum_path.BaseName().value();
     entry.size = info.GetSize();
     entry.last_modified_time = info.GetLastModifiedTime();
 
