@@ -306,9 +306,13 @@ class TestRunner(base_test_runner.BaseTestRunner):
     return 1 * 60
 
   def _RunTest(self, test, timeout):
-    return self.adb.RunInstrumentationTest(
-        test, self.test_pkg.GetPackageName(),
-        self._GetInstrumentationArgs(), timeout)
+    try:
+      return self.adb.RunInstrumentationTest(
+          test, self.test_pkg.GetPackageName(),
+          self._GetInstrumentationArgs(), timeout)
+    except android_commands.errors.WaitForResponseTimedOutError:
+      logging.info('Ran the test with timeout of %ds.' % timeout)
+      raise
 
   #override
   def RunTest(self, test):
