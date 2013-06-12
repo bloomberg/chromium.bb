@@ -369,22 +369,11 @@ scoped_ptr<DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
 #if defined(ENABLE_MANAGED_USERS)
   DCHECK(managed_user_service);
   if (managed_user_service->ProfileIsManaged()) {
-    // URL exceptions take precedence over host exceptions.
-    int manual_behavior = managed_user_service->GetManualBehaviorForURL(url);
-    if (manual_behavior == ManagedUserService::MANUAL_NONE) {
-      manual_behavior =
-          managed_user_service->GetManualBehaviorForHost(url.host());
-    }
-    result->SetInteger("urlManualBehavior", manual_behavior);
-    result->SetInteger("hostManualBehavior",
-        managed_user_service->GetManualBehaviorForHost(url.host()));
-    std::vector<ManagedModeSiteList::Site*> sites;
-    managed_user_service->GetURLFilterForUIThread()->GetSites(url, &sites);
-    result->SetBoolean("urlInContentPack", !sites.empty());
-    sites.clear();
-    managed_user_service->GetURLFilterForUIThread()->GetSites(
-        url.GetWithEmptyPath(), &sites);
-    result->SetBoolean("hostInContentPack", !sites.empty());
+    const ManagedModeURLFilter* url_filter =
+        managed_user_service->GetURLFilterForUIThread();
+    int filtering_behavior =
+        url_filter->GetFilteringBehaviorForURL(url.GetWithEmptyPath());
+    result->SetInteger("hostFilteringBehavior", filtering_behavior);
 
     result->SetBoolean("blockedVisit", blocked_visit);
   }

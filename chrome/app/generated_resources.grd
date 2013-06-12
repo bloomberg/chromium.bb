@@ -495,14 +495,14 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_HISTORY_RANGE_LABEL" desc="Label for the combo box that selects the time range.">
         Show
       </message>
-      <message name="IDS_HISTORY_RANGE_ALL_TIME" desc="Option in the history range combo box. Does not set any time restraints and enables pagination.">
-        all time visits
+      <message name="IDS_HISTORY_RANGE_ALL_TIME" desc="Option in the history range button group. Shows results a page at a time, without grouping them by domain.">
+        All
       </message>
-      <message name="IDS_HISTORY_RANGE_WEEK" desc="Option in the history range combo box. Sets the range to week.">
-        weekly visits
+      <message name="IDS_HISTORY_RANGE_WEEK" desc="Option in the history range button group. Shows results grouped by week.">
+        Week
       </message>
-      <message name="IDS_HISTORY_RANGE_MONTH" desc="Option in the history range combo box. Sets the range to month.">
-        monthly visits
+      <message name="IDS_HISTORY_RANGE_MONTH" desc="Option in the history range button group. Shows results grouped by month.">
+        Month
       </message>
       <message name="IDS_HISTORY_RANGE_TODAY" desc="The text on the button that sets the current time range back to today.">
         Today
@@ -532,7 +532,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         Lock
       </message>
       <message name="IDS_HISTORY_BLOCKED_VISIT_TEXT" desc="Text that describes an attempted visit.">
-        Blocked visit attempt to <ph name="BEGIN_LINK">&lt;a target="_top" href="$1" id="$2"&gt;</ph>page<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
+        Blocked attempt <ph name="BEGIN_LINK">&lt;a target="_top" href="$1" id="$2"&gt;</ph> to visit a page on <ph name="DOMAIN">$3<ex>google.com</ex></ph><ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
       </message>
       <message name="IDS_HISTORY_HAS_SYNCED_RESULTS" desc="The notification at the top of the history page indicating that it is showing visits synced from other devices.">
         Showing history from your signed-in devices. <ph name="BEGIN_LINK">&lt;a href="http://support.google.com/chrome/bin/answer.py?answer=95589"&amp;hl=[GRITLANGCODE]"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>

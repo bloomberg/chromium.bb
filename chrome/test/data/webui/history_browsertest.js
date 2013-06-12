@@ -630,6 +630,8 @@ RangeHistoryWebUITest.prototype = {
 
   setUp: function() {
     // Show the filter controls as if the command line switch was active.
+    $('top-container').hidden = true;
+    $('history-page').classList.add('big-topbar-page');
     $('filter-controls').hidden = false;
     expectFalse($('filter-controls').hidden);
   },
@@ -637,8 +639,7 @@ RangeHistoryWebUITest.prototype = {
 
 TEST_F('RangeHistoryWebUITest', 'allView', function() {
   // Check that we start off in the all time view.
-  expectEquals(parseInt($('timeframe-filter').value, 10),
-               HistoryModel.Range.ALL_TIME);
+  expectTrue($('timeframe-filter-all').checked);
   // See if the correct number of days is shown.
   var dayHeaders = document.querySelectorAll('.day');
   assertEquals(Math.ceil(RESULTS_PER_PAGE / 4), dayHeaders.length);
@@ -669,23 +670,9 @@ function checkGroupedVisits(element) {
   }
 }
 
-TEST_F('RangeHistoryWebUITest', 'weekView', function() {
-  // Change to weekly view.
-  $('timeframe-filter').value = HistoryModel.Range.WEEK;
-  historyView.setRangeInDays(HistoryModel.Range.WEEK);
-  waitForCallback('historyResult', function() {
-    // See if the correct number of days is shown.
-    var dayHeaders = document.querySelectorAll('.day');
-    assertEquals(7, dayHeaders.length);
-    expectFalse(document.querySelector('h2.timeframe').hidden);
-
-    testDone();
-  });
-});
-
 TEST_F('RangeHistoryWebUITest', 'weekViewGrouped', function() {
   // Change to weekly view.
-  setPageState('', 0, true, HistoryModel.Range.WEEK, 0);
+  setPageState('', 0, HistoryModel.Range.WEEK, 0);
   waitForCallback('historyResult', function() {
     // See if the correct number of days is still shown.
     var dayResults = document.querySelectorAll('.day-results');
@@ -699,21 +686,9 @@ TEST_F('RangeHistoryWebUITest', 'weekViewGrouped', function() {
   });
 });
 
-TEST_F('RangeHistoryWebUITest', 'monthView', function() {
-  // Change to monthly view.
-  setPageState('', 0, false, HistoryModel.Range.MONTH, 0);
-  waitForCallback('historyResult', function() {
-    // See if the correct number of days is shown.
-    var dayHeaders = document.querySelectorAll('.day');
-    assertEquals(2, dayHeaders.length);
-    expectFalse(document.querySelector('h2.timeframe').hidden);
-    testDone();
-  });
-});
-
 TEST_F('RangeHistoryWebUITest', 'monthViewGrouped', function() {
   // Change to monthly view.
-  setPageState('', 0, true, HistoryModel.Range.MONTH, 0);
+  setPageState('', 0, HistoryModel.Range.MONTH, 0);
   waitForCallback('historyResult', function() {
     // See if the correct number of days is shown.
     var monthResults = document.querySelectorAll('.month-results');
@@ -727,7 +702,7 @@ TEST_F('RangeHistoryWebUITest', 'monthViewGrouped', function() {
 
 TEST_F('RangeHistoryWebUITest', 'monthViewEmptyMonth', function() {
   // Change to monthly view.
-  setPageState('', 0, true, HistoryModel.Range.MONTH, 2);
+  setPageState('', 0, HistoryModel.Range.MONTH, 2);
 
   waitForCallback('historyResult', function() {
     // See if the correct number of days is shown.

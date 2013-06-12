@@ -6,6 +6,10 @@ html[dir='rtl'] body.uber-frame > .page {
   -webkit-margin-end: 0;
 }
 
+body.uber-frame > .page.big-topbar-page {
+  padding-top: 78px;
+}
+
 #top-container {
   margin-top: 16px;
   overflow: auto;
@@ -51,6 +55,8 @@ html[dir='rtl'] #notification-bar.alone {
 }
 
 #filter-controls {
+  margin-bottom: 4px;
+  margin-top: 4px;
   overflow: auto;
 }
 
@@ -71,35 +77,135 @@ html[dir='rtl'] #editing-controls {
   -webkit-margin-end: 0;
 }
 
+#range-next,
+#range-previous {
+  background-image: url('../disclosure_triangle_small.png'),
+                    -webkit-linear-gradient(rgb(241, 241, 241),
+                                            rgb(241, 241, 241) 38%,
+                                            rgb(230, 230, 230));
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 0 2px 2px 0;
+}
+
+#range-next:disabled,
+#range-previous:disabled {
+  /* Change the gradient manually in order to make it look like the other
+   * disabled buttons since you can't set opacity on background images only. */
+  background-image: url('../disclosure_triangle_small.png'),
+                    -webkit-linear-gradient(rgb(231, 231, 231),
+                                            rgb(231, 231, 231) 38%,
+                                            rgb(220, 220, 220));
+  border-color: rgba(67, 67, 67, 0.5);
+  opacity: 0.5;
+}
+
 html[dir='rtl'] #range-today,
 html[dir='rtl'] #range-previous,
 html[dir='rtl'] #range-next {
+  float: right;
+}
+
+html[dir='rtl'] #range-next,
+#range-previous {
+  -webkit-transform: scalex(-1);
+}
+
+html[dir='rtl'] #range-previous {
+  -webkit-transform: scaleX(1);
+}
+
+#range-today {
+  -webkit-margin-end: 10px;
+}
+
+#range-today,
+#range-previous,
+#range-next {
   float: left;
+  height: 26px;
+  padding-bottom: 4px;
+  padding-top: 4px;
 }
 
-#range-next img,
-#range-previous img {
-  position: relative;
-  top: 1px;
+#range-next {
+  -webkit-margin-start: -1px;
 }
 
-#range-next:disabled img,
-#range-previous:disabled img {
-  opacity: 0.4;
+#range-previous {
+  -webkit-margin-end: 0;
 }
 
 #display-filter-controls {
   float: right;
 }
 
-#display-filter-controls > * {
-  -webkit-margin-start: 8px;
+html[dir='rtl'] #display-filter-controls {
+  float: left;
 }
 
-#display-filter-controls > *:not(:last-child) {
-  -webkit-border-end: 1px solid rgb(151, 156, 160);
-  -webkit-margin-start: 0;
-  padding: 0 6px 0 6px;
+.display-filter-button {
+  float: left;
+}
+
+html[dir='rtl'] .display-filter-button {
+  float: right;
+}
+
+#display-filter-controls label input[type='radio'] {
+  display: none;
+}
+
+#display-filter-controls label span {
+  -webkit-align-items: flex-start;
+  -webkit-appearance: none;
+  -webkit-user-select: none;
+  background-color: buttonface;
+  background-image: -webkit-linear-gradient(rgb(237, 237, 237),
+                                            rgb(237, 237, 237) 38%,
+                                            rgb(222, 222, 222));
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 0;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08),
+              inset 0 1px 2px rgba(255, 255, 255, 0.75);
+  box-sizing: border-box;
+  color: rgb(68, 68, 68);
+  cursor: default;
+  display: inline-block;
+  letter-spacing: normal;
+  line-height: 2em;
+  margin-left: -1px;
+  margin-right: -1px;
+  min-height: 2em;
+  min-width: 4em;
+  text-align: center;
+  text-indent: 0;
+  text-shadow: 0 1px 0 rgb(240, 240, 240);
+  text-transform: none;
+  vertical-align: middle;
+  word-spacing: normal;
+}
+
+html[dir='rtl'] #display-filter-controls label span.last-button-component,
+#display-filter-controls label span.first-button-component {
+  border-bottom-left-radius: 2px;
+  border-top-left-radius: 2px;
+  margin-left: 0;
+}
+
+html[dir='rtl'] #display-filter-controls label span.first-button-component,
+#display-filter-controls label span.last-button-component {
+  border-bottom-right-radius: 2px;
+  border-top-right-radius: 2px;
+  margin-right: 0;
+}
+
+#display-filter-controls input:checked ~ span {
+  background-image: -webkit-linear-gradient(rgb(185, 185, 185),
+                                            rgb(216, 216, 216) 38%,
+                                            rgb(167, 167, 167));
+  border-left-color: rgb(173, 173, 173);
+  border-right-color: rgb(173, 173, 173);
 }
 
 #results-display {
@@ -132,6 +238,10 @@ html[dir='rtl'] #range-next {
   height: 14px;
   margin: 1px 0;
   width: 45px;
+}
+
+.no-checkboxes .gap {
+  width: 25px;
 }
 
 .entry-box,
@@ -205,7 +315,6 @@ h2.timeframe {
   display: none;
 }
 
-
 html[dir='rtl'] .number-visits {
   /* This element contains parentheses, which without the unicode-bidi: embed
    * directive would show up incorrectly (e.g. '(www.google.com (5'). Using
@@ -232,6 +341,10 @@ html[dir='rtl'] .site-domain {
   background-position-x: right;
 }
 
+.no-checkboxes .entry .time {
+  min-width: 68px;
+}
+
 .entry .time {
   color: rgb(151, 156, 160);
   min-width: 55px;
@@ -248,6 +361,11 @@ html[dir='rtl'] .entry .time {
 .search-results .time,
 .month-results .time {
   min-width: 85px;
+}
+
+.no-checkboxes.search-results .time,
+.no-checkboxes.month-results .time {
+  min-width: 90px;
 }
 
 .entry input[type='checkbox'] {
@@ -279,9 +397,7 @@ html[dir='rtl'] .entry .time {
 }
 
 .filter-status {
-  display: -webkit-flex;
-  -webkit-flex: 1 0 auto;
-  -webkit-justify-content: flex-end;
+  -webkit-margin-start: 10px;
 }
 
 .filter-status > div {
@@ -313,8 +429,8 @@ html[dir='rtl'] .entry .time {
 }
 
 .filter-blocked {
-  border: 1px solid rgb(211, 0, 0);
-  background-color: rgb(255, 147, 105);
+  border: 1px solid rgb(207, 207, 207);
+  background-color: rgb(231, 231, 231);
   color: rgb(54, 54, 54);
 }
 
@@ -336,10 +452,6 @@ html[dir='rtl'] .entry .time {
 }
 </if>
 
-#range-previous img {
-  -webkit-transform: scaleX(-1);
-}
-
 .entry-box {
   background-color: none;
 }
@@ -354,7 +466,7 @@ html[dir='rtl'] .entry .time {
   display: -webkit-flex;
 }
 
-.entry .title-and-domain {
+.entry .visit-entry {
   display: -webkit-flex;
   min-width: 0;
 }
@@ -366,7 +478,7 @@ html[dir='rtl'] .entry .time {
   white-space: nowrap;
 }
 
-.entry .title-and-domain,
+.entry .visit-entry,
 .site-domain {
   /* Make room for the favicon. */
   -webkit-padding-start: 20px;
@@ -377,7 +489,7 @@ html[dir='rtl'] .entry .time {
   background-size: 16px;
 }
 
-html[dir='rtl'] .entry .title-and-domain,
+html[dir='rtl'] .entry .visit-entry,
 html[dir='rtl'] .site-domain {
   background-position-x: right;
 }
@@ -466,7 +578,6 @@ body:not(.has-results) #results-pagination {
 #older-button {
   float: right;
 }
-
 
 html[dir='rtl'] #older-button {
   float: left;
