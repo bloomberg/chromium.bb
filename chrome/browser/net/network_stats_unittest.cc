@@ -413,4 +413,25 @@ TEST_F(NetworkStatsTestUDP, VerifyBytes) {
   EXPECT_EQ(1u, network_stats.packets_received_mask());
 }
 
+TEST_F(NetworkStatsTestUDP, DeleteDuringResolve) {
+  ASSERT_TRUE(test_server_.Start());
+  scoped_ptr<NetworkStats> network_stats(new NetworkStats());
+  scoped_ptr<net::MockHostResolver> host_resolver(new net::MockHostResolver());
+  host_resolver->set_ondemand_mode(true);
+  host_resolver->set_synchronous_mode(false);
+  net::TestCompletionCallback cb;
+  EXPECT_FALSE(host_resolver->has_pending_requests());
+  EXPECT_TRUE(network_stats->Start(host_resolver.get(),
+                                   net::HostPortPair::FromURL(
+                                       GURL("http://www.example.com")),
+                                   NetworkStats::HISTOGRAM_PORT_MAX,
+                                   true,
+                                   100,
+                                   1,
+                                   cb.callback()));
+  EXPECT_TRUE(host_resolver->has_pending_requests());
+  network_stats.reset(NULL);
+  EXPECT_FALSE(host_resolver->has_pending_requests());
+}
+
 }  // namespace chrome_browser_net

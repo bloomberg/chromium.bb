@@ -21,6 +21,7 @@
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
+#include "net/dns/single_request_host_resolver.h"
 #include "net/proxy/proxy_service.h"
 #include "net/udp/udp_client_socket.h"
 #include "net/udp/udp_server_socket.h"
@@ -136,14 +137,18 @@ bool NetworkStats::Start(net::HostResolver* host_resolver,
              packets_to_send,
              finished_callback);
 
+  scoped_ptr<net::SingleRequestHostResolver> resolver(
+      new net::SingleRequestHostResolver(host_resolver));
   net::HostResolver::RequestInfo request(server_host_port_pair);
-  int rv = host_resolver->Resolve(
+  int rv = resolver->Resolve(
       request, &addresses_,
       base::Bind(&NetworkStats::OnResolveComplete,
                  base::Unretained(this)),
-      NULL, net::BoundNetLog());
-  if (rv == net::ERR_IO_PENDING)
+      net::BoundNetLog());
+  if (rv == net::ERR_IO_PENDING) {
+    resolver_.swap(resolver);
     return true;
+  }
   return DoConnect(rv);
 }
 
