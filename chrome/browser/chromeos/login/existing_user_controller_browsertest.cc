@@ -40,9 +40,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/mock_notification_observer.h"
+#include "content/public/test/test_utils.h"
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -77,44 +76,6 @@ const int kAutoLoginLongDelay = 10000;
 ACTION_P2(CreateAuthenticator, username, password) {
   return new MockAuthenticator(arg0, username, password);
 }
-
-// Observes a specific notification type and quits the message loop once a
-// condition holds.
-class NotificationWatcher : public content::NotificationObserver {
- public:
-  // Callback invoked on notifications. Should return true when the condition
-  // that the caller is waiting for is satisfied.
-  typedef base::Callback<bool(void)> ConditionTestCallback;
-
-  explicit NotificationWatcher(int notification_type,
-                               const ConditionTestCallback& callback)
-      : type_(notification_type),
-        callback_(callback) {}
-
-  void Run() {
-    if (callback_.Run())
-      return;
-
-    content::NotificationRegistrar registrar;
-    registrar.Add(this, type_, content::NotificationService::AllSources());
-    run_loop_.Run();
-  }
-
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    if (callback_.Run())
-      run_loop_.Quit();
-  }
-
- private:
-  int type_;
-  ConditionTestCallback callback_;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(NotificationWatcher);
-};
 
 }  // namespace
 
@@ -405,11 +366,11 @@ class ExistingUserControllerPublicSessionTest
 
     // Wait for the public session user to be created.
     if (!chromeos::UserManager::Get()->IsKnownUser(public_session_user_id_)) {
-      NotificationWatcher(
+      content::WindowedNotificationObserver(
           chrome::NOTIFICATION_USER_LIST_CHANGED,
           base::Bind(&chromeos::UserManager::IsKnownUser,
                      base::Unretained(chromeos::UserManager::Get()),
-                     public_session_user_id_)).Run();
+                     public_session_user_id_)).Wait();
     }
 
     // Wait for the device local account policy to be installed.

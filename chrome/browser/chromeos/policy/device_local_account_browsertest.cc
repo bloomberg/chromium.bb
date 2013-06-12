@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -51,10 +50,8 @@
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -73,44 +70,6 @@ const char kDisplayName2[] = "display name for account 2";
 const char* kStartupURLs[] = {
   "chrome://policy",
   "chrome://about",
-};
-
-// Observes a specific notification type and quits the message loop once a
-// condition holds.
-class NotificationWatcher : public content::NotificationObserver {
- public:
-  // Callback invoked on notifications. Should return true when the condition
-  // that the caller is waiting for is satisfied.
-  typedef base::Callback<bool(void)> ConditionTestCallback;
-
-  explicit NotificationWatcher(int notification_type,
-                               const ConditionTestCallback& callback)
-      : type_(notification_type),
-        callback_(callback) {}
-
-  void Run() {
-    if (callback_.Run())
-      return;
-
-    content::NotificationRegistrar registrar;
-    registrar.Add(this, type_, content::NotificationService::AllSources());
-    run_loop_.Run();
-  }
-
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    if (callback_.Run())
-      run_loop_.Quit();
-  }
-
- private:
-  int type_;
-  ConditionTestCallback callback_;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(NotificationWatcher);
 };
 
 }  // namespace
@@ -292,10 +251,12 @@ static bool IsKnownUser(const std::string& account_id) {
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LoginScreen) {
-  NotificationWatcher(chrome::NOTIFICATION_USER_LIST_CHANGED,
-                      base::Bind(&IsKnownUser, user_id_1_)).Run();
-  NotificationWatcher(chrome::NOTIFICATION_USER_LIST_CHANGED,
-                      base::Bind(&IsKnownUser, user_id_2_)).Run();
+  content::WindowedNotificationObserver(chrome::NOTIFICATION_USER_LIST_CHANGED,
+                                        base::Bind(&IsKnownUser, user_id_1_))
+      .Wait();
+  content::WindowedNotificationObserver(chrome::NOTIFICATION_USER_LIST_CHANGED,
+                                        base::Bind(&IsKnownUser, user_id_2_))
+      .Wait();
 
   CheckPublicSessionPresent(user_id_1_);
   CheckPublicSessionPresent(user_id_2_);
@@ -312,9 +273,9 @@ static bool DisplayNameMatches(const std::string& account_id,
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DisplayName) {
-  NotificationWatcher(
+  content::WindowedNotificationObserver(
       chrome::NOTIFICATION_USER_LIST_CHANGED,
-      base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName1)).Run();
+      base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName1)).Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyDownload) {
@@ -322,9 +283,9 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyDownload) {
   // sure it gets fetched from the server. Note that the test setup doesn't set
   // up policy for kAccountId2, so the presence of the display name can be used
   // as signal to indicate successful policy download.
-  NotificationWatcher(
+  content::WindowedNotificationObserver(
       chrome::NOTIFICATION_USER_LIST_CHANGED,
-      base::Bind(&DisplayNameMatches, user_id_2_, kDisplayName2)).Run();
+      base::Bind(&DisplayNameMatches, user_id_2_, kDisplayName2)).Wait();
 
   // Sanity check: The policy should be present now.
   ASSERT_FALSE(session_manager_client_->device_local_account_policy(
@@ -337,10 +298,12 @@ static bool IsNotKnownUser(const std::string& account_id) {
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DevicePolicyChange) {
   // Wait until the login screen is up.
-  NotificationWatcher(chrome::NOTIFICATION_USER_LIST_CHANGED,
-                      base::Bind(&IsKnownUser, user_id_1_)).Run();
-  NotificationWatcher(chrome::NOTIFICATION_USER_LIST_CHANGED,
-                      base::Bind(&IsKnownUser, user_id_2_)).Run();
+  content::WindowedNotificationObserver(chrome::NOTIFICATION_USER_LIST_CHANGED,
+                                        base::Bind(&IsKnownUser, user_id_1_))
+      .Wait();
+  content::WindowedNotificationObserver(chrome::NOTIFICATION_USER_LIST_CHANGED,
+                                        base::Bind(&IsKnownUser, user_id_2_))
+      .Wait();
 
   // Update policy to remove kAccountId2.
   em::ChromeDeviceSettingsProto policy;
@@ -356,8 +319,9 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DevicePolicyChange) {
   g_browser_process->policy_service()->RefreshPolicies(base::Closure());
 
   // Make sure the second device-local account disappears.
-  NotificationWatcher(chrome::NOTIFICATION_USER_LIST_CHANGED,
-                      base::Bind(&IsNotKnownUser, user_id_2_)).Run();
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_USER_LIST_CHANGED,
+      base::Bind(&IsNotKnownUser, user_id_2_)).Wait();
 }
 
 static bool IsSessionStarted() {
@@ -368,9 +332,9 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
   // This observes the display name becoming available as this indicates
   // device-local account policy is fully loaded, which is a prerequisite for
   // successful login.
-  NotificationWatcher(
+  content::WindowedNotificationObserver(
       chrome::NOTIFICATION_USER_LIST_CHANGED,
-      base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName1)).Run();
+      base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName1)).Wait();
 
   chromeos::LoginDisplayHost* host =
       chromeos::LoginDisplayHostImpl::default_host();
@@ -382,8 +346,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
   controller->LoginAsPublicAccount(user_id_1_);
 
   // Wait for the session to start.
-  NotificationWatcher(chrome::NOTIFICATION_SESSION_STARTED,
-                      base::Bind(IsSessionStarted)).Run();
+  content::WindowedNotificationObserver(chrome::NOTIFICATION_SESSION_STARTED,
+                                        base::Bind(IsSessionStarted)).Wait();
 
   // Check that the startup pages specified in policy were opened.
   EXPECT_EQ(1U, chrome::GetTotalBrowserCount());

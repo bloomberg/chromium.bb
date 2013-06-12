@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_TEST_TEST_UTILS_H_
 #define CONTENT_PUBLIC_TEST_TEST_UTILS_H_
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
@@ -99,13 +99,23 @@ class MessageLoopRunner : public base::RefCounted<MessageLoopRunner> {
   DISALLOW_COPY_AND_ASSIGN(MessageLoopRunner);
 };
 
-// A WindowedNotificationObserver allows code to watch for a notification
-// over a window of time. Typically testing code will need to do something
-// like this:
+// A WindowedNotificationObserver allows code to wait until a condition is met.
+// Simple conditions are specified by providing a |notification_type| and a
+// |source|. When a notification of the expected type from the expected source
+// is received, the condition is met.
+// More complex conditions can be specified by providing a |notification_type|
+// and a |callback|. The callback encapsulates the logic that determines whether
+// the condition has been met. If the callback returns |true|, the condition is
+// met. Otherwise, the condition is not yet met and the callback will be invoked
+// again every time a notification of the expected type is received until the
+// callback returns |true|.
+//
+// This helper class exists to avoid the following common pattern in tests:
 //   PerformAction()
 //   WaitForCompletionNotification()
-// This leads to flakiness as there's a window between PerformAction returning
-// and the observers getting registered, where a notification will be missed.
+// The pattern leads to flakiness as there is a window between PerformAction
+// returning and the observers getting registered, where a notification will be
+// missed.
 //
 // Rather, one can do this:
 //   WindowedNotificationObserver signal(...)
@@ -113,16 +123,28 @@ class MessageLoopRunner : public base::RefCounted<MessageLoopRunner> {
 //   signal.Wait()
 class WindowedNotificationObserver : public NotificationObserver {
  public:
-  // Register to listen for notifications of the given type from either a
-  // specific source, or from all sources if |source| is
-  // NotificationService::AllSources().
+  // Callback invoked on notifications. Should return |true| when the condition
+  // being waited for is met.
+  typedef base::Callback<bool(void)> ConditionTestCallback;
+
+  // Set up to wait for a simple condition. The condition is met when a
+  // notification of the given |notification_type| from the given |source| is
+  // received. To accept notifications from all sources, specify
+  // NotificationService::AllSources() as |source|.
   WindowedNotificationObserver(int notification_type,
                                const NotificationSource& source);
+
+  // Set up to wait for a complex condition. The condition is met when
+  // |callback| returns |true|. The callback is invoked whenever a notification
+  // of |notification_type| from any source is received.
+  WindowedNotificationObserver(int notification_type,
+                               const ConditionTestCallback& callback);
+
   virtual ~WindowedNotificationObserver();
 
-  // Wait until the specified notification occurs.  If the notification was
-  // emitted between the construction of this object and this call then it
-  // returns immediately.
+  // Wait until the specified condition is met. If the condition is already met
+  // (that is, the expected notification has already been received or the
+  // given callback returns |true| already), Wait() returns immediately.
   void Wait();
 
   // Returns NotificationService::AllSources() if we haven't observed a
@@ -144,6 +166,8 @@ class WindowedNotificationObserver : public NotificationObserver {
   bool seen_;
   bool running_;
   NotificationRegistrar registrar_;
+
+  ConditionTestCallback callback_;
 
   NotificationSource source_;
   NotificationDetails details_;
