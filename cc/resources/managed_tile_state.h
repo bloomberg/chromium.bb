@@ -116,7 +116,7 @@ class CC_EXPORT ManagedTileState {
 
   // Persisted state: valid all the time.
   TileVersion tile_versions[NUM_RASTER_MODES];
-  TileRasterMode raster_mode;
+  RasterMode raster_mode;
 
   bool picture_pile_analyzed;
   PicturePileImpl::Analysis picture_pile_analysis;

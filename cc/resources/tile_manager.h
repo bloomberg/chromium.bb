@@ -24,17 +24,6 @@ class ResourceProvider;
 class Tile;
 class TileVersion;
 
-// Low quality implies no lcd test;
-// high quality implies lcd text.
-// Note that the order of these matters, from "better" to "worse" in terms of
-// quality.
-enum TileRasterMode {
-  HIGH_QUALITY_RASTER_MODE = 0,
-  HIGH_QUALITY_NO_LCD_RASTER_MODE = 1,
-  LOW_QUALITY_RASTER_MODE = 2,
-  NUM_RASTER_MODES = 3
-};
-
 class CC_EXPORT TileManagerClient {
  public:
   virtual void DidInitializeVisibleTile() = 0;
@@ -123,71 +112,36 @@ class CC_EXPORT TileManager {
   virtual void ScheduleTasks();
 
  private:
-  // Data that is passed to raster tasks.
-  struct RasterTaskMetadata {
-      scoped_ptr<base::Value> AsValue() const;
-      bool is_tile_in_pending_tree_now_bin;
-      TileResolution tile_resolution;
-      int layer_id;
-      const void* tile_id;
-      int source_frame_number;
-      TileRasterMode raster_mode;
-  };
-
-  void AssignBinsToTiles();
-  void SortTiles();
-  TileRasterMode DetermineRasterMode(const Tile* tile) const;
-  void AssignGpuMemoryToTiles();
-  void FreeResourceForTile(Tile* tile, TileRasterMode mode);
-  void FreeResourcesForTile(Tile* tile);
-  void FreeUnusedResourcesForTile(Tile* tile);
-  RasterWorkerPool::Task CreateImageDecodeTask(
-      Tile* tile, skia::LazyPixelRef* pixel_ref);
+  // Task callbacks.
   void OnImageDecodeTaskCompleted(
       scoped_refptr<Tile> tile,
       uint32_t pixel_ref_id);
-  RasterTaskMetadata GetRasterTaskMetadata(const Tile& tile) const;
-  RasterWorkerPool::RasterTask CreateRasterTask(
-      Tile* tile,
-      PixelRefSet* decoded_images);
   void OnRasterTaskCompleted(
       scoped_refptr<Tile> tile,
       scoped_ptr<ResourcePool::Resource> resource,
       PicturePileImpl::Analysis* analysis,
-      TileRasterMode raster_mode,
+      RasterMode raster_mode,
       bool was_canceled);
+
+  void AssignBinsToTiles();
+  void SortTiles();
+  RasterMode DetermineRasterMode(const Tile* tile) const;
+  void AssignGpuMemoryToTiles();
+  void FreeResourceForTile(Tile* tile, RasterMode mode);
+  void FreeResourcesForTile(Tile* tile);
+  void FreeUnusedResourcesForTile(Tile* tile);
+  RasterWorkerPool::Task CreateImageDecodeTask(
+      Tile* tile, skia::LazyPixelRef* pixel_ref);
+  RasterTaskMetadata GetRasterTaskMetadata(const Tile& tile) const;
+  RasterWorkerPool::RasterTask CreateRasterTask(
+      Tile* tile,
+      PixelRefSet* decoded_images);
   void DidFinishTileInitialization(Tile* tile);
   void DidTileTreeBinChange(Tile* tile,
                             TileManagerBin new_tree_bin,
                             WhichTree tree);
   scoped_ptr<Value> GetMemoryRequirementsAsValue() const;
   void AddRequiredTileForActivation(Tile* tile);
-
-  static void RunImageDecodeTask(
-      skia::LazyPixelRef* pixel_ref,
-      int layer_id,
-      RenderingStatsInstrumentation* stats_instrumentation);
-  static bool RunAnalyzeAndRasterTask(
-      const base::Callback<void(PicturePileImpl* picture_pile)>& analyze_task,
-      const RasterWorkerPool::RasterTask::Callback& raster_task,
-      SkDevice* device,
-      PicturePileImpl* picture_pile);
-  static void RunAnalyzeTask(
-      PicturePileImpl::Analysis* analysis,
-      gfx::Rect rect,
-      float contents_scale,
-      bool use_color_estimator,
-      const RasterTaskMetadata& metadata,
-      RenderingStatsInstrumentation* stats_instrumentation,
-      PicturePileImpl* picture_pile);
-  static bool RunRasterTask(
-      PicturePileImpl::Analysis* analysis,
-      gfx::Rect rect,
-      float contents_scale,
-      const RasterTaskMetadata& metadata,
-      RenderingStatsInstrumentation* stats_instrumentation,
-      SkDevice* device,
-      PicturePileImpl* picture_pile);
 
   TileManagerClient* client_;
   scoped_ptr<ResourcePool> resource_pool_;

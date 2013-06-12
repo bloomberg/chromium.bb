@@ -163,7 +163,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
          ++iter) {
       SkColor color;
       float width;
-      TileRasterMode raster_mode;
+      RasterMode raster_mode;
       if (*iter && iter->IsReadyToDraw(&raster_mode)) {
         ManagedTileState::TileVersion::Mode mode =
             iter->tile_version(raster_mode).mode();
@@ -209,7 +209,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
        iter;
        ++iter) {
     gfx::Rect geometry_rect = iter.geometry_rect();
-    TileRasterMode raster_mode;
+    RasterMode raster_mode;
     if (!*iter || !iter->IsReadyToDraw(&raster_mode)) {
       if (DrawCheckerboardForMissingTiles()) {
         // TODO(enne): Figure out how to show debug "invalidated checker" color
@@ -620,7 +620,7 @@ ResourceProvider::ResourceId PictureLayerImpl::ContentsResourceId() const {
        iter;
        ++iter) {
     // Mask resource not ready yet.
-    TileRasterMode raster_mode;
+    RasterMode raster_mode;
     if (!*iter || !iter->IsReadyToDraw(&raster_mode))
       return 0;
 

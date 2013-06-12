@@ -62,22 +62,22 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
 
   scoped_ptr<base::Value> AsValue() const;
 
-  bool IsReadyToDraw(TileRasterMode* ready_mode) const {
+  bool IsReadyToDraw(RasterMode* ready_mode) const {
     for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
       if (managed_state_.tile_versions[mode].IsReadyToDraw()) {
         if (ready_mode)
-          *ready_mode = static_cast<TileRasterMode>(mode);
+          *ready_mode = static_cast<RasterMode>(mode);
         return true;
       }
     }
     return false;
   }
 
-  const ManagedTileState::TileVersion& tile_version(TileRasterMode mode) const {
+  const ManagedTileState::TileVersion& tile_version(RasterMode mode) const {
     return managed_state_.tile_versions[mode];
   }
 
-  ManagedTileState::TileVersion& tile_version(TileRasterMode mode) {
+  ManagedTileState::TileVersion& tile_version(RasterMode mode) {
     return managed_state_.tile_versions[mode];
   }
 

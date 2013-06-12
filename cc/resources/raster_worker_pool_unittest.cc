@@ -17,7 +17,27 @@
 
 namespace cc {
 
-namespace {
+class TestRasterTaskImpl : public internal::RasterWorkerPoolTask {
+ public:
+  TestRasterTaskImpl(const Resource* resource,
+                     const RasterWorkerPool::RasterTask::Reply& reply,
+                     internal::WorkerPoolTask::TaskVector* dependencies)
+      : internal::RasterWorkerPoolTask(resource, dependencies),
+        reply_(reply) {}
+
+  virtual bool RunOnThread(SkDevice* device, unsigned thread_index) OVERRIDE {
+    return true;
+  }
+  virtual void DispatchCompletionCallback() OVERRIDE {
+    reply_.Run(!HasFinishedRunning());
+  }
+
+ protected:
+  virtual ~TestRasterTaskImpl() {}
+
+ private:
+  const RasterWorkerPool::RasterTask::Reply reply_;
+};
 
 class RasterWorkerPoolTest : public testing::Test {
  public:
@@ -50,6 +70,14 @@ class RasterWorkerPoolTest : public testing::Test {
 
   RasterWorkerPool* worker_pool() {
     return raster_worker_pool_.get();
+  }
+
+  RasterWorkerPool::RasterTask CreateRasterTask(
+      const Resource* resource,
+      const RasterWorkerPool::RasterTask::Reply& reply,
+      RasterWorkerPool::Task::Set& dependencies) {
+    return RasterWorkerPool::RasterTask(
+        new TestRasterTaskImpl(resource, reply, &dependencies.tasks_));
   }
 
   void RunTest(bool use_map_image) {
@@ -120,6 +148,8 @@ class RasterWorkerPoolTest : public testing::Test {
   bool timed_out_;
 };
 
+namespace {
+
 #define PIXEL_BUFFER_TEST_F(TEST_FIXTURE_NAME)                  \
   TEST_F(TEST_FIXTURE_NAME, RunPixelBuffer) {                   \
     RunTest(false);                                             \
@@ -162,16 +192,13 @@ class BasicRasterWorkerPoolTest : public RasterWorkerPoolTest {
     const Resource* const_resource = resource.get();
 
     RasterWorkerPool::Task::Set empty;
-    tasks_.push_back(RasterWorkerPool::RasterTask(
-        picture_pile_impl.get(),
+    tasks_.push_back(CreateRasterTask(
         const_resource,
-        base::Bind(&BasicRasterWorkerPoolTest::RunRasterTask,
-                   base::Unretained(this)),
         base::Bind(&BasicRasterWorkerPoolTest::OnTaskCompleted,
                    base::Unretained(this),
                    base::Passed(&resource),
                    id),
-        &empty));
+        empty));
   }
 
   void ScheduleTasks() {

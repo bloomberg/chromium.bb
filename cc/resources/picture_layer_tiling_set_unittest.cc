@@ -69,7 +69,7 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
     PictureLayerTilingSet set(&client, layer_bounds);
 
     float scale = min_scale;
-    TileRasterMode mode = HIGH_QUALITY_RASTER_MODE;
+    RasterMode mode = HIGH_QUALITY_RASTER_MODE;
     for (int i = 0; i < num_tilings; ++i, scale += scale_increment) {
       PictureLayerTiling* tiling = set.AddTiling(scale);
       tiling->CreateAllTilesForTesting();
