@@ -880,21 +880,21 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBGraphics3D_InsertSyncPoint,
                            uint32 /* sync_point */)
 
 // PPB_ImageData.
-IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_PPBImageData_Create,
+IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_PPBImageData_CreatePlatform,
                            PP_Instance /* instance */,
                            int32 /* format */,
                            PP_Size /* size */,
                            PP_Bool /* init_to_zero */,
                            ppapi::HostResource /* result_resource */,
-                           std::string /* image_data_desc */,
+                           PP_ImageDataDesc /* image_data_desc */,
                            ppapi::proxy::ImageHandle /* result */)
-IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_PPBImageData_CreateNaCl,
+IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_PPBImageData_CreateSimple,
                            PP_Instance /* instance */,
                            int32 /* format */,
                            PP_Size /* size */,
                            PP_Bool /* init_to_zero */,
                            ppapi::HostResource /* result_resource */,
-                           std::string /* image_data_desc */,
+                           PP_ImageDataDesc /* image_data_desc */,
                            ppapi::proxy::SerializedHandle /* result */)
 
 // PPB_Instance.

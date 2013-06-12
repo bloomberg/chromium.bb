@@ -120,7 +120,8 @@ class ImageDataInstanceCache {
   ImageDataInstanceCache() : next_insertion_point_(0) {}
 
   // These functions have the same spec as the ones in ImageDataCache.
-  scoped_refptr<ImageData> Get(int width, int height,
+  scoped_refptr<ImageData> Get(PPB_ImageData_Shared::ImageDataType type,
+                               int width, int height,
                                PP_ImageDataFormat format);
   void Add(ImageData* image_data);
   void ImageDataUsable(ImageData* image_data);
@@ -142,11 +143,14 @@ class ImageDataInstanceCache {
 };
 
 scoped_refptr<ImageData> ImageDataInstanceCache::Get(
+    PPB_ImageData_Shared::ImageDataType type,
     int width, int height,
     PP_ImageDataFormat format) {
   // Just do a brute-force search since the cache is so small.
   for (int i = 0; i < kCacheSize; i++) {
     if (!images_[i].usable)
+      continue;
+    if (!images_[i].image->type() == type)
       continue;
     const PP_ImageDataDesc& desc = images_[i].image->desc();
     if (desc.format == format &&
@@ -223,9 +227,10 @@ class ImageDataCache {
 
   static ImageDataCache* GetInstance();
 
-  // Retrieves an image data from the cache of the specified size and format if
-  // one exists. If one doesn't exist, this will return a null refptr.
+  // Retrieves an image data from the cache of the specified type, size and
+  // format if one exists. If one doesn't exist, this will return a null refptr.
   scoped_refptr<ImageData> Get(PP_Instance instance,
+                               PPB_ImageData_Shared::ImageDataType type,
                                int width, int height,
                                PP_ImageDataFormat format);
 
@@ -262,13 +267,15 @@ ImageDataCache* ImageDataCache::GetInstance() {
                    LeakySingletonTraits<ImageDataCache> >::get();
 }
 
-scoped_refptr<ImageData> ImageDataCache::Get(PP_Instance instance,
-                                             int width, int height,
-                                             PP_ImageDataFormat format) {
+scoped_refptr<ImageData> ImageDataCache::Get(
+    PP_Instance instance,
+    PPB_ImageData_Shared::ImageDataType type,
+    int width, int height,
+    PP_ImageDataFormat format) {
   CacheMap::iterator found = cache_.find(instance);
   if (found == cache_.end())
     return scoped_refptr<ImageData>();
-  return found->second.Get(width, height, format);
+  return found->second.Get(type, width, height, format);
 }
 
 void ImageDataCache::Add(ImageData* image_data) {
@@ -307,32 +314,14 @@ void ImageDataCache::OnTimer(PP_Instance instance) {
 
 // ImageData -------------------------------------------------------------------
 
-#if !defined(OS_NACL)
 ImageData::ImageData(const HostResource& resource,
-                     const PP_ImageDataDesc& desc,
-                     ImageHandle handle)
+                     PPB_ImageData_Shared::ImageDataType type,
+                     const PP_ImageDataDesc& desc)
     : Resource(OBJECT_IS_PROXY, resource),
+      type_(type),
       desc_(desc),
       is_candidate_for_reuse_(false) {
-#if defined(OS_WIN)
-  transport_dib_.reset(TransportDIB::CreateWithHandle(handle));
-#else
-  transport_dib_.reset(TransportDIB::Map(handle));
-#endif  // defined(OS_WIN)
 }
-#else  // !defined(OS_NACL)
-
-ImageData::ImageData(const HostResource& resource,
-                     const PP_ImageDataDesc& desc,
-                     const base::SharedMemoryHandle& handle)
-    : Resource(OBJECT_IS_PROXY, resource),
-      desc_(desc),
-      shm_(handle, false /* read_only */),
-      size_(desc.size.width * desc.size.height * 4),
-      map_count_(0),
-      is_candidate_for_reuse_(false) {
-}
-#endif  // else, !defined(OS_NACL)
 
 ImageData::~ImageData() {
 }
@@ -358,58 +347,11 @@ PP_Bool ImageData::Describe(PP_ImageDataDesc* desc) {
   return PP_TRUE;
 }
 
-void* ImageData::Map() {
-#if defined(OS_NACL)
-  if (map_count_++ == 0)
-    shm_.Map(size_);
-  return shm_.memory();
-#else
-  if (!mapped_canvas_.get()) {
-    mapped_canvas_.reset(transport_dib_->GetPlatformCanvas(desc_.size.width,
-                                                           desc_.size.height));
-    if (!mapped_canvas_.get())
-      return NULL;
-  }
-  const SkBitmap& bitmap =
-      skia::GetTopDevice(*mapped_canvas_)->accessBitmap(true);
-
-  bitmap.lockPixels();
-  return bitmap.getAddr(0, 0);
-#endif
-}
-
-void ImageData::Unmap() {
-#if defined(OS_NACL)
-  if (--map_count_ == 0)
-    shm_.Unmap();
-#else
-  // TODO(brettw) have a way to unmap a TransportDIB. Currently this isn't
-  // possible since deleting the TransportDIB also frees all the handles.
-  // We need to add a method to TransportDIB to release the handles.
-#endif
-}
-
 int32_t ImageData::GetSharedMemory(int* /* handle */,
                                    uint32_t* /* byte_count */) {
   // Not supported in the proxy (this method is for actually implementing the
   // proxy in the host).
   return PP_ERROR_NOACCESS;
-}
-
-SkCanvas* ImageData::GetPlatformCanvas() {
-#if defined(OS_NACL)
-  return NULL;  // No canvas in NaCl.
-#else
-  return mapped_canvas_.get();
-#endif
-}
-
-SkCanvas* ImageData::GetCanvas() {
-#if defined(OS_NACL)
-  return NULL;  // No canvas in NaCl.
-#else
-  return mapped_canvas_.get();
-#endif
 }
 
 void ImageData::SetIsCandidateForReuse() {
@@ -425,9 +367,53 @@ void ImageData::RecycleToPlugin(bool zero_contents) {
   }
 }
 
+// PlatformImageData -----------------------------------------------------------
+
 #if !defined(OS_NACL)
+PlatformImageData::PlatformImageData(const HostResource& resource,
+                                     const PP_ImageDataDesc& desc,
+                                     ImageHandle handle)
+    : ImageData(resource, PPB_ImageData_Shared::PLATFORM, desc) {
+#if defined(OS_WIN)
+  transport_dib_.reset(TransportDIB::CreateWithHandle(handle));
+#else
+  transport_dib_.reset(TransportDIB::Map(handle));
+#endif  // defined(OS_WIN)
+}
+
+PlatformImageData::~PlatformImageData() {
+}
+
+void* PlatformImageData::Map() {
+  if (!mapped_canvas_.get()) {
+    mapped_canvas_.reset(transport_dib_->GetPlatformCanvas(desc_.size.width,
+                                                           desc_.size.height));
+    if (!mapped_canvas_.get())
+      return NULL;
+  }
+  const SkBitmap& bitmap =
+      skia::GetTopDevice(*mapped_canvas_)->accessBitmap(true);
+
+  bitmap.lockPixels();
+  return bitmap.getAddr(0, 0);
+}
+
+void PlatformImageData::Unmap() {
+  // TODO(brettw) have a way to unmap a TransportDIB. Currently this isn't
+  // possible since deleting the TransportDIB also frees all the handles.
+  // We need to add a method to TransportDIB to release the handles.
+}
+
+SkCanvas* PlatformImageData::GetPlatformCanvas() {
+  return mapped_canvas_.get();
+}
+
+SkCanvas* PlatformImageData::GetCanvas() {
+  return mapped_canvas_.get();
+}
+
 // static
-ImageHandle ImageData::NullHandle() {
+ImageHandle PlatformImageData::NullHandle() {
 #if defined(OS_WIN)
   return NULL;
 #elif defined(TOOLKIT_GTK)
@@ -437,7 +423,7 @@ ImageHandle ImageData::NullHandle() {
 #endif
 }
 
-ImageHandle ImageData::HandleFromInt(int32_t i) {
+ImageHandle PlatformImageData::HandleFromInt(int32_t i) {
 #if defined(OS_WIN)
     return reinterpret_cast<ImageHandle>(i);
 #elif defined(TOOLKIT_GTK)
@@ -447,6 +433,39 @@ ImageHandle ImageData::HandleFromInt(int32_t i) {
 #endif
 }
 #endif  // !defined(OS_NACL)
+
+// SimpleImageData -------------------------------------------------------------
+
+SimpleImageData::SimpleImageData(const HostResource& resource,
+                                 const PP_ImageDataDesc& desc,
+                                 const base::SharedMemoryHandle& handle)
+    : ImageData(resource, PPB_ImageData_Shared::SIMPLE, desc),
+      shm_(handle, false /* read_only */),
+      size_(desc.size.width * desc.size.height * 4),
+      map_count_(0) {
+}
+
+SimpleImageData::~SimpleImageData() {
+}
+
+void* SimpleImageData::Map() {
+  if (map_count_++ == 0)
+    shm_.Map(size_);
+  return shm_.memory();
+}
+
+void SimpleImageData::Unmap() {
+  if (--map_count_ == 0)
+    shm_.Unmap();
+}
+
+SkCanvas* SimpleImageData::GetPlatformCanvas() {
+  return NULL;  // No canvas available.
+}
+
+SkCanvas* SimpleImageData::GetCanvas() {
+  return NULL;  // No canvas available.
+}
 
 // PPB_ImageData_Proxy ---------------------------------------------------------
 
@@ -458,18 +477,20 @@ PPB_ImageData_Proxy::~PPB_ImageData_Proxy() {
 }
 
 // static
-PP_Resource PPB_ImageData_Proxy::CreateProxyResource(PP_Instance instance,
-                                                     PP_ImageDataFormat format,
-                                                     const PP_Size& size,
-                                                     PP_Bool init_to_zero) {
+PP_Resource PPB_ImageData_Proxy::CreateProxyResource(
+    PP_Instance instance,
+    PPB_ImageData_Shared::ImageDataType type,
+    PP_ImageDataFormat format,
+    const PP_Size& size,
+    PP_Bool init_to_zero) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
     return 0;
 
   // Check the cache.
   scoped_refptr<ImageData> cached_image_data =
-      ImageDataCache::GetInstance()->Get(instance, size.width, size.height,
-                                         format);
+      ImageDataCache::GetInstance()->Get(instance, type,
+                                         size.width, size.height, format);
   if (cached_image_data.get()) {
     // We have one we can re-use rather than allocating a new one.
     cached_image_data->RecycleToPlugin(PP_ToBool(init_to_zero));
@@ -477,39 +498,49 @@ PP_Resource PPB_ImageData_Proxy::CreateProxyResource(PP_Instance instance,
   }
 
   HostResource result;
-  std::string image_data_desc;
-#if defined(OS_NACL)
-  ppapi::proxy::SerializedHandle image_handle_wrapper;
-  dispatcher->Send(new PpapiHostMsg_PPBImageData_CreateNaCl(
-      kApiID, instance, format, size, init_to_zero,
-      &result, &image_data_desc, &image_handle_wrapper));
-  if (!image_handle_wrapper.is_shmem())
-    return 0;
-  base::SharedMemoryHandle image_handle = image_handle_wrapper.shmem();
-#else
-  ImageHandle image_handle = ImageData::NullHandle();
-  dispatcher->Send(new PpapiHostMsg_PPBImageData_Create(
-      kApiID, instance, format, size, init_to_zero,
-      &result, &image_data_desc, &image_handle));
-#endif
-
-  if (result.is_null() || image_data_desc.size() != sizeof(PP_ImageDataDesc))
-    return 0;
-
-  // We serialize the PP_ImageDataDesc just by copying to a string.
   PP_ImageDataDesc desc;
-  memcpy(&desc, image_data_desc.data(), sizeof(PP_ImageDataDesc));
+  switch (type) {
+    case PPB_ImageData_Shared::SIMPLE: {
+      ppapi::proxy::SerializedHandle image_handle_wrapper;
+      dispatcher->Send(new PpapiHostMsg_PPBImageData_CreateSimple(
+          kApiID, instance, format, size, init_to_zero,
+          &result, &desc, &image_handle_wrapper));
+      if (image_handle_wrapper.is_shmem()) {
+        base::SharedMemoryHandle image_handle = image_handle_wrapper.shmem();
+        if (!result.is_null())
+          return
+              (new SimpleImageData(result, desc, image_handle))->GetReference();
+      }
+      break;
+    }
+    case PPB_ImageData_Shared::PLATFORM: {
+#if !defined(OS_NACL)
+      ImageHandle image_handle = PlatformImageData::NullHandle();
+      dispatcher->Send(new PpapiHostMsg_PPBImageData_CreatePlatform(
+          kApiID, instance, format, size, init_to_zero,
+          &result, &desc, &image_handle));
+      if (!result.is_null())
+        return
+            (new PlatformImageData(result, desc, image_handle))->GetReference();
+#else
+      // PlatformImageData shouldn't be created in untrusted code.
+      NOTREACHED();
+#endif
+      break;
+    }
+  }
 
-  return (new ImageData(result, desc, image_handle))->GetReference();
+  return 0;
 }
 
 bool PPB_ImageData_Proxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_ImageData_Proxy, msg)
 #if !defined(OS_NACL)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBImageData_Create, OnHostMsgCreate)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBImageData_CreateNaCl,
-                        OnHostMsgCreateNaCl)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBImageData_CreatePlatform,
+                        OnHostMsgCreatePlatform)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBImageData_CreateSimple,
+                        OnHostMsgCreateSimple)
 #endif
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBImageData_NotifyUnusedImageData,
                         OnPluginMsgNotifyUnusedImageData)
@@ -523,10 +554,10 @@ bool PPB_ImageData_Proxy::OnMessageReceived(const IPC::Message& msg) {
 // static
 PP_Resource PPB_ImageData_Proxy::CreateImageData(
     PP_Instance instance,
+    PPB_ImageData_Shared::ImageDataType type,
     PP_ImageDataFormat format,
     const PP_Size& size,
     bool init_to_zero,
-    bool is_nacl_plugin,
     PP_ImageDataDesc* desc,
     IPC::PlatformFileForTransit* image_handle,
     uint32_t* byte_count) {
@@ -541,11 +572,8 @@ PP_Resource PPB_ImageData_Proxy::CreateImageData(
   PP_Bool pp_init_to_zero = init_to_zero ? PP_TRUE : PP_FALSE;
   ppapi::ScopedPPResource resource(
       ppapi::ScopedPPResource::PassRef(),
-      is_nacl_plugin ?
-          enter.functions()->CreateImageDataNaCl(instance, format, &size,
-                                                 pp_init_to_zero) :
-          enter.functions()->CreateImageData(instance, format, &size,
-                                             pp_init_to_zero));
+      enter.functions()->CreateImageData(instance, type,
+                                         format, &size, pp_init_to_zero));
   if (!resource.get())
     return 0;
 
@@ -567,11 +595,13 @@ PP_Resource PPB_ImageData_Proxy::CreateImageData(
   *image_handle = dispatcher->ShareHandleWithRemote(
       reinterpret_cast<HANDLE>(static_cast<intptr_t>(local_fd)), false);
 #elif defined(TOOLKIT_GTK)
-  // On X Windows, a non-nacl handle is a SysV shared memory key.
-  if (is_nacl_plugin)
-    *image_handle = dispatcher->ShareHandleWithRemote(local_fd, false);
-  else
+  // On X Windows, a PlatformImageData is backed by a SysV shared memory key,
+  // so embed that in a fake PlatformFileForTransit and don't share it across
+  // processes.
+  if (type == PPB_ImageData_Shared::PLATFORM)
     *image_handle = IPC::PlatformFileForTransit(local_fd, false);
+  else
+    *image_handle = dispatcher->ShareHandleWithRemote(local_fd, false);
 #elif defined(OS_POSIX)
   *image_handle = dispatcher->ShareHandleWithRemote(local_fd, false);
 #else
@@ -581,27 +611,25 @@ PP_Resource PPB_ImageData_Proxy::CreateImageData(
   return resource.Release();
 }
 
-void PPB_ImageData_Proxy::OnHostMsgCreate(PP_Instance instance,
-                                          int32_t format,
-                                          const PP_Size& size,
-                                          PP_Bool init_to_zero,
-                                          HostResource* result,
-                                          std::string* image_data_desc,
-                                          ImageHandle* result_image_handle) {
-  PP_ImageDataDesc desc;
+void PPB_ImageData_Proxy::OnHostMsgCreatePlatform(
+    PP_Instance instance,
+    int32_t format,
+    const PP_Size& size,
+    PP_Bool init_to_zero,
+    HostResource* result,
+    PP_ImageDataDesc* desc,
+    ImageHandle* result_image_handle) {
   IPC::PlatformFileForTransit image_handle;
   uint32_t byte_count;
   PP_Resource resource =
       CreateImageData(instance,
+                      PPB_ImageData_Shared::PLATFORM,
                       static_cast<PP_ImageDataFormat>(format),
                       size,
                       true /* init_to_zero */,
-                      false /* is_nacl_plugin */,
-                      &desc, &image_handle, &byte_count);
+                      desc, &image_handle, &byte_count);
   result->SetHostResource(instance, resource);
   if (resource) {
-    image_data_desc->resize(sizeof(PP_ImageDataDesc));
-    memcpy(&(*image_data_desc)[0], &desc, sizeof(PP_ImageDataDesc));
 #if defined(TOOLKIT_GTK)
     // On X Windows ImageHandle is a SysV shared memory key.
     *result_image_handle = image_handle.fd;
@@ -609,37 +637,32 @@ void PPB_ImageData_Proxy::OnHostMsgCreate(PP_Instance instance,
     *result_image_handle = image_handle;
 #endif
   } else {
-    image_data_desc->clear();
-    *result_image_handle = ImageData::NullHandle();
+    *result_image_handle = PlatformImageData::NullHandle();
   }
 }
 
-void PPB_ImageData_Proxy::OnHostMsgCreateNaCl(
+void PPB_ImageData_Proxy::OnHostMsgCreateSimple(
     PP_Instance instance,
     int32_t format,
     const PP_Size& size,
     PP_Bool init_to_zero,
     HostResource* result,
-    std::string* image_data_desc,
+    PP_ImageDataDesc* desc,
     ppapi::proxy::SerializedHandle* result_image_handle) {
-  PP_ImageDataDesc desc;
   IPC::PlatformFileForTransit image_handle;
   uint32_t byte_count;
   PP_Resource resource =
       CreateImageData(instance,
+                      PPB_ImageData_Shared::SIMPLE,
                       static_cast<PP_ImageDataFormat>(format),
                       size,
                       true /* init_to_zero */,
-                      true /* is_nacl_plugin */,
-                      &desc, &image_handle, &byte_count);
+                      desc, &image_handle, &byte_count);
 
   result->SetHostResource(instance, resource);
   if (resource) {
-    image_data_desc->resize(sizeof(PP_ImageDataDesc));
-    memcpy(&(*image_data_desc)[0], &desc, sizeof(PP_ImageDataDesc));
     result_image_handle->set_shmem(image_handle, byte_count);
   } else {
-    image_data_desc->clear();
     result_image_handle->set_null_shmem();
   }
 }

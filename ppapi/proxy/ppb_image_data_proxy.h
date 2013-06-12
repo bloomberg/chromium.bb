@@ -31,26 +31,14 @@ namespace proxy {
 
 class SerializedHandle;
 
-// The proxied image data resource. Unlike most resources, this needs to be
-// public in the header since a number of other resources need to access it.
+// ImageData is an abstract base class for image data resources. Unlike most
+// resources, ImageData must be public in the header since a number of other
+// resources need to access it.
 class PPAPI_PROXY_EXPORT ImageData
     : public ppapi::Resource,
       public NON_EXPORTED_BASE(ppapi::thunk::PPB_ImageData_API),
       public ppapi::PPB_ImageData_Shared {
  public:
-#if !defined(OS_NACL)
-  ImageData(const ppapi::HostResource& resource,
-            const PP_ImageDataDesc& desc,
-            ImageHandle handle);
-#else
-  // In NaCl, we only allow creating an ImageData using a SharedMemoryHandle.
-  // ImageHandle can differ by host platform. We need something that is
-  // more consistent across platforms for NaCl, so that we can communicate to
-  // the host OS in a consistent way.
-  ImageData(const ppapi::HostResource& resource,
-            const PP_ImageDataDesc& desc,
-            const base::SharedMemoryHandle& handle);
-#endif
   virtual ~ImageData();
 
   // Resource overrides.
@@ -60,37 +48,23 @@ class PPAPI_PROXY_EXPORT ImageData
 
   // PPB_ImageData API.
   virtual PP_Bool Describe(PP_ImageDataDesc* desc) OVERRIDE;
-  virtual void* Map() OVERRIDE;
-  virtual void Unmap() OVERRIDE;
   virtual int32_t GetSharedMemory(int* handle, uint32_t* byte_count) OVERRIDE;
-  virtual SkCanvas* GetPlatformCanvas() OVERRIDE;
-  virtual SkCanvas* GetCanvas() OVERRIDE;
   virtual void SetIsCandidateForReuse() OVERRIDE;
 
+  PPB_ImageData_Shared::ImageDataType type() const { return type_; }
   const PP_ImageDataDesc& desc() const { return desc_; }
 
-  // Prepares this image data to be recycled to the plugin. The contents will be
-  // cleared if zero_contents is set.
+  // Prepares this image data to be recycled to the plugin. Clears the contents
+  // if zero_contents is true.
   void RecycleToPlugin(bool zero_contents);
 
-#if !defined(OS_NACL)
-  static ImageHandle NullHandle();
-  static ImageHandle HandleFromInt(int32_t i);
-#endif
+ protected:
+  ImageData(const ppapi::HostResource& resource,
+            PPB_ImageData_Shared::ImageDataType type,
+            const PP_ImageDataDesc& desc);
 
- private:
+  PPB_ImageData_Shared::ImageDataType type_;
   PP_ImageDataDesc desc_;
-
-#if defined(OS_NACL)
-  base::SharedMemory shm_;
-  uint32 size_;
-  int map_count_;
-#else
-  scoped_ptr<TransportDIB> transport_dib_;
-
-  // Null when the image isn't mapped.
-  scoped_ptr<SkCanvas> mapped_canvas_;
-#endif
 
   // Set to true when this ImageData is a good candidate for reuse.
   bool is_candidate_for_reuse_;
@@ -98,15 +72,71 @@ class PPAPI_PROXY_EXPORT ImageData
   DISALLOW_COPY_AND_ASSIGN(ImageData);
 };
 
+// PlatformImageData is a full featured image data resource which can access
+// the underlying platform-specific canvas and ImageHandle. This can't be used
+// by NaCl apps.
+#if !defined(OS_NACL)
+class PPAPI_PROXY_EXPORT PlatformImageData : public ImageData {
+ public:
+  PlatformImageData(const ppapi::HostResource& resource,
+                    const PP_ImageDataDesc& desc,
+                    ImageHandle handle);
+  virtual ~PlatformImageData();
+
+  // PPB_ImageData API.
+  virtual void* Map() OVERRIDE;
+  virtual void Unmap() OVERRIDE;
+  virtual SkCanvas* GetPlatformCanvas() OVERRIDE;
+  virtual SkCanvas* GetCanvas() OVERRIDE;
+
+  static ImageHandle NullHandle();
+  static ImageHandle HandleFromInt(int32_t i);
+
+ private:
+  scoped_ptr<TransportDIB> transport_dib_;
+
+  // Null when the image isn't mapped.
+  scoped_ptr<SkCanvas> mapped_canvas_;
+
+  DISALLOW_COPY_AND_ASSIGN(PlatformImageData);
+};
+#endif  // !defined(OS_NACL)
+
+// SimpleImageData is a simple, platform-independent image data resource which
+// can be used by NaCl. It can also be used by trusted apps when access to the
+// platform canvas isn't needed.
+class PPAPI_PROXY_EXPORT SimpleImageData : public ImageData {
+ public:
+  SimpleImageData(const ppapi::HostResource& resource,
+                  const PP_ImageDataDesc& desc,
+                  const base::SharedMemoryHandle& handle);
+  virtual ~SimpleImageData();
+
+  // PPB_ImageData API.
+  virtual void* Map() OVERRIDE;
+  virtual void Unmap() OVERRIDE;
+  virtual SkCanvas* GetPlatformCanvas() OVERRIDE;
+  virtual SkCanvas* GetCanvas() OVERRIDE;
+
+ private:
+  base::SharedMemory shm_;
+  uint32 size_;
+  int map_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleImageData);
+};
+
 class PPB_ImageData_Proxy : public InterfaceProxy {
  public:
   PPB_ImageData_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_ImageData_Proxy();
 
-  static PP_Resource CreateProxyResource(PP_Instance instance,
-                                         PP_ImageDataFormat format,
-                                         const PP_Size& size,
-                                         PP_Bool init_to_zero);
+  static PP_Resource CreateProxyResource(
+      PP_Instance instance,
+      PPB_ImageData_Shared::ImageDataType type,
+      PP_ImageDataFormat format,
+      const PP_Size& size,
+      PP_Bool init_to_zero);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -121,10 +151,10 @@ class PPB_ImageData_Proxy : public InterfaceProxy {
   // to avoid leaking sensitive data to a less privileged process.
   PPAPI_PROXY_EXPORT static PP_Resource CreateImageData(
       PP_Instance instance,
+      PPB_ImageData_Shared::ImageDataType type,
       PP_ImageDataFormat format,
       const PP_Size& size,
       bool init_to_zero,
-      bool is_nacl_plugin,
       PP_ImageDataDesc* desc,
       IPC::PlatformFileForTransit* image_handle,
       uint32_t* byte_count);
@@ -133,20 +163,22 @@ class PPB_ImageData_Proxy : public InterfaceProxy {
 
  private:
   // Plugin->Host message handlers.
-  void OnHostMsgCreate(PP_Instance instance,
-                       int32_t format,
-                       const PP_Size& size,
-                       PP_Bool init_to_zero,
-                       HostResource* result,
-                       std::string* image_data_desc,
-                       ImageHandle* result_image_handle);
-  void OnHostMsgCreateNaCl(PP_Instance instance,
-                           int32_t format,
-                           const PP_Size& size,
-                           PP_Bool init_to_zero,
-                           HostResource* result,
-                           std::string* image_data_desc,
-                           ppapi::proxy::SerializedHandle* result_image_handle);
+  void OnHostMsgCreatePlatform(
+      PP_Instance instance,
+      int32_t format,
+      const PP_Size& size,
+      PP_Bool init_to_zero,
+      HostResource* result,
+      PP_ImageDataDesc* desc,
+      ImageHandle* result_image_handle);
+  void OnHostMsgCreateSimple(
+      PP_Instance instance,
+      int32_t format,
+      const PP_Size& size,
+      PP_Bool init_to_zero,
+      HostResource* result,
+      PP_ImageDataDesc* desc,
+      ppapi::proxy::SerializedHandle* result_image_handle);
 
   // Host->Plugin message handlers.
   void OnPluginMsgNotifyUnusedImageData(const HostResource& old_image_data);

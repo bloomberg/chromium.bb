@@ -40,6 +40,11 @@ PP_Resource Create(PP_Instance instance,
   if (enter.failed())
     return 0;
   return enter.functions()->CreateImageData(instance,
+#if !defined(OS_NACL)
+                                            PPB_ImageData_Shared::PLATFORM,
+#else
+                                            PPB_ImageData_Shared::SIMPLE,
+#endif
                                             format,
                                             size,
                                             init_to_zero);

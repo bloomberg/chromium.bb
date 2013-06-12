@@ -25,17 +25,17 @@ namespace webkit {
 namespace ppapi {
 
 PPB_ImageData_Impl::PPB_ImageData_Impl(PP_Instance instance,
-                                       ImageDataType type)
+                                       PPB_ImageData_Shared::ImageDataType type)
     : Resource(::ppapi::OBJECT_IS_IMPL, instance),
       format_(PP_IMAGEDATAFORMAT_BGRA_PREMUL),
       width_(0),
       height_(0) {
   switch (type) {
-    case PLATFORM:
+    case PPB_ImageData_Shared::PLATFORM:
       backend_.reset(new ImageDataPlatformBackend);
       return;
-    case NACL:
-      backend_.reset(new ImageDataNaClBackend);
+    case PPB_ImageData_Shared::SIMPLE:
+      backend_.reset(new ImageDataSimpleBackend);
       return;
     // No default: so that we get a compiler warning if any types are added.
   }
@@ -64,24 +64,13 @@ bool PPB_ImageData_Impl::Init(PP_ImageDataFormat format,
 }
 
 // static
-PP_Resource PPB_ImageData_Impl::CreatePlatform(PP_Instance instance,
-                                               PP_ImageDataFormat format,
-                                               const PP_Size& size,
-                                               PP_Bool init_to_zero) {
+PP_Resource PPB_ImageData_Impl::Create(PP_Instance instance,
+                                       PPB_ImageData_Shared::ImageDataType type,
+                                       PP_ImageDataFormat format,
+                                       const PP_Size& size,
+                                       PP_Bool init_to_zero) {
   scoped_refptr<PPB_ImageData_Impl>
-      data(new PPB_ImageData_Impl(instance, PLATFORM));
-  if (!data->Init(format, size.width, size.height, !!init_to_zero))
-    return 0;
-  return data->GetReference();
-}
-
-// static
-PP_Resource PPB_ImageData_Impl::CreateNaCl(PP_Instance instance,
-                                               PP_ImageDataFormat format,
-                                               const PP_Size& size,
-                                               PP_Bool init_to_zero) {
-  scoped_refptr<PPB_ImageData_Impl>
-      data(new PPB_ImageData_Impl(instance, NACL));
+      data(new PPB_ImageData_Impl(instance, type));
   if (!data->Init(format, size.width, size.height, !!init_to_zero))
     return 0;
   return data->GetReference();
@@ -135,7 +124,7 @@ const SkBitmap* PPB_ImageData_Impl::GetMappedBitmap() const {
   return backend_->GetMappedBitmap();
 }
 
-// ImageDataPlatformBackend --------------------------------------------------
+// ImageDataPlatformBackend ----------------------------------------------------
 
 ImageDataPlatformBackend::ImageDataPlatformBackend() {
 }
@@ -208,19 +197,19 @@ const SkBitmap* ImageDataPlatformBackend::GetMappedBitmap() const {
   return &skia::GetTopDevice(*mapped_canvas_)->accessBitmap(false);
 }
 
-// ImageDataNaClBackend ------------------------------------------------------
+// ImageDataSimpleBackend ------------------------------------------------------
 
-ImageDataNaClBackend::ImageDataNaClBackend()
+ImageDataSimpleBackend::ImageDataSimpleBackend()
     : map_count_(0) {
 }
 
-ImageDataNaClBackend::~ImageDataNaClBackend() {
+ImageDataSimpleBackend::~ImageDataSimpleBackend() {
 }
 
-bool ImageDataNaClBackend::Init(PPB_ImageData_Impl* impl,
-                                 PP_ImageDataFormat format,
-                                 int width, int height,
-                                 bool init_to_zero) {
+bool ImageDataSimpleBackend::Init(PPB_ImageData_Impl* impl,
+                                  PP_ImageDataFormat format,
+                                  int width, int height,
+                                  bool init_to_zero) {
   skia_bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
                          impl->width(), impl->height());
   PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(impl);
@@ -231,15 +220,15 @@ bool ImageDataNaClBackend::Init(PPB_ImageData_Impl* impl,
   return !!shared_memory_.get();
 }
 
-bool ImageDataNaClBackend::IsMapped() const {
+bool ImageDataSimpleBackend::IsMapped() const {
   return map_count_ > 0;
 }
 
-PluginDelegate::PlatformImage2D* ImageDataNaClBackend::PlatformImage() const {
+PluginDelegate::PlatformImage2D* ImageDataSimpleBackend::PlatformImage() const {
   return NULL;
 }
 
-void* ImageDataNaClBackend::Map() {
+void* ImageDataSimpleBackend::Map() {
   DCHECK(shared_memory_.get());
   if (map_count_++ == 0) {
     shared_memory_->Map(skia_bitmap_.getSize());
@@ -252,12 +241,12 @@ void* ImageDataNaClBackend::Map() {
   return shared_memory_->memory();
 }
 
-void ImageDataNaClBackend::Unmap() {
+void ImageDataSimpleBackend::Unmap() {
   if (--map_count_ == 0)
     shared_memory_->Unmap();
 }
 
-int32_t ImageDataNaClBackend::GetSharedMemory(int* handle,
+int32_t ImageDataSimpleBackend::GetSharedMemory(int* handle,
                                                 uint32_t* byte_count) {
   *byte_count = skia_bitmap_.getSize();
 #if defined(OS_POSIX)
@@ -270,17 +259,17 @@ int32_t ImageDataNaClBackend::GetSharedMemory(int* handle,
   return PP_OK;
 }
 
-skia::PlatformCanvas* ImageDataNaClBackend::GetPlatformCanvas() {
+skia::PlatformCanvas* ImageDataSimpleBackend::GetPlatformCanvas() {
   return NULL;
 }
 
-SkCanvas* ImageDataNaClBackend::GetCanvas() {
+SkCanvas* ImageDataSimpleBackend::GetCanvas() {
   if (!IsMapped())
     return NULL;
   return skia_canvas_.get();
 }
 
-const SkBitmap* ImageDataNaClBackend::GetMappedBitmap() const {
+const SkBitmap* ImageDataSimpleBackend::GetMappedBitmap() const {
   if (!IsMapped())
     return NULL;
   return &skia_bitmap_;

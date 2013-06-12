@@ -21,6 +21,7 @@
 #include "ppapi/c/private/pp_private_font_charset.h"
 #include "ppapi/c/private/ppb_network_monitor_private.h"
 #include "ppapi/shared_impl/api_id.h"
+#include "ppapi/shared_impl/ppb_image_data_shared.h"
 
 struct PP_Flash_Menu;
 struct PP_FontDescription_Dev;
@@ -130,13 +131,10 @@ class ResourceCreationAPI {
                                           const int32_t* attrib_list) = 0;
   virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) = 0;
   virtual PP_Resource CreateImageData(PP_Instance instance,
+                                      PPB_ImageData_Shared::ImageDataType type,
                                       PP_ImageDataFormat format,
                                       const PP_Size* size,
                                       PP_Bool init_to_zero) = 0;
-  virtual PP_Resource CreateImageDataNaCl(PP_Instance instance,
-                                          PP_ImageDataFormat format,
-                                          const PP_Size* size,
-                                          PP_Bool init_to_zero) = 0;
   virtual PP_Resource CreateNetAddressFromIPv4Address(
       PP_Instance instance,
       const PP_NetAddress_IPv4_Dev* ipv4_addr) = 0;

@@ -111,13 +111,14 @@ void VideoSourceResource::OnPluginMsgGetFrameComplete(
       frame->image_data = 0;
 #elif defined(TOOLKIT_GTK)
       frame->image_data =
-          (new ImageData(image_data, image_desc, fd))->GetReference();
+          (new PlatformImageData(image_data, image_desc, fd))->GetReference();
 #elif defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
       base::SharedMemoryHandle handle;
       if (!reply_params.TakeSharedMemoryHandleAtIndex(0, &handle))
         frame->image_data = 0;
       frame->image_data =
-          (new ImageData(image_data, image_desc, handle))->GetReference();
+          (new PlatformImageData(
+              image_data, image_desc, handle))->GetReference();
 #else
 #error Not implemented.
 #endif

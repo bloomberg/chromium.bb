@@ -145,10 +145,10 @@ void PepperVideoSourceHost::SendGetFrameReply() {
       ppapi::ScopedPPResource::PassRef(),
       ppapi::proxy::PPB_ImageData_Proxy::CreateImageData(
           pp_instance(),
+          ppapi::PPB_ImageData_Shared::PLATFORM,
           PP_IMAGEDATAFORMAT_BGRA_PREMUL,
           PP_MakeSize(width, height),
           false /* init_to_zero */,
-          false /* is_nacl_plugin */,
           &image_desc, &image_handle, &byte_count));
   if (!resource.get()) {
     SendGetFrameErrorReply(PP_ERROR_FAILED);

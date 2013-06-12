@@ -363,9 +363,9 @@ bool PepperPDFHost::CreateImageData(
     uint32_t* out_byte_count) {
   PP_Resource resource = ppapi::proxy::PPB_ImageData_Proxy::CreateImageData(
       instance,
+      ppapi::PPB_ImageData_Shared::PLATFORM,
       format, size,
       false /* init_to_zero */,
-      false /* is_nacl_plugin */,
       out_image_data_desc, out_image_handle, out_byte_count);
   if (!resource)
     return false;

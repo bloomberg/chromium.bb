@@ -259,7 +259,7 @@ bool HandleConverter::ConvertNativeHandlesToPosix(
       pending_sync_msgs_.erase(iter);
       switch (type) {
         CASE_FOR_REPLY(PpapiHostMsg_PPBGraphics3D_GetTransferBuffer)
-        CASE_FOR_REPLY(PpapiHostMsg_PPBImageData_CreateNaCl)
+        CASE_FOR_REPLY(PpapiHostMsg_PPBImageData_CreateSimple)
         CASE_FOR_REPLY(PpapiHostMsg_ResourceSyncCall)
         CASE_FOR_REPLY(PpapiHostMsg_SharedMemory_CreateSharedMemory)
         default:

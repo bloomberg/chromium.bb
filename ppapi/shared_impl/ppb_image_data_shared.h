@@ -22,6 +22,18 @@ namespace ppapi {
 // settings.
 class PPAPI_SHARED_EXPORT PPB_ImageData_Shared {
  public:
+  enum ImageDataType {
+    // An ImageData backed by a PlatformCanvas. You must create this type if
+    // you intend the ImageData to be usable in platform-specific APIs (like
+    // font rendering or rendering widgets like scrollbars). This type is not
+    // available in untrusted (NaCl) plugins.
+    PLATFORM,
+    // An ImageData that doesn't need access to the platform-specific canvas.
+    // This is backed by a simple shared memory buffer. This is the only type
+    // of ImageData that can be used by untrusted (NaCl) plugins.
+    SIMPLE
+  };
+
   static PP_ImageDataFormat GetNativeImageDataFormat();
   static PP_Bool IsImageDataFormatSupported(PP_ImageDataFormat format);
   static PP_Bool IsImageDataDescValid(const PP_ImageDataDesc& desc);

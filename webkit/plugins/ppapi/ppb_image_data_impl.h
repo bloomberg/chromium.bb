@@ -28,7 +28,8 @@ class WEBKIT_PLUGINS_EXPORT PPB_ImageData_Impl
  public:
   // We delegate most of our implementation to a back-end class that either uses
   // a PlatformCanvas (for most trusted stuff) or bare shared memory (for use by
-  // NaCl). This makes it cheap & easy to implement Swap.
+  // NaCl, or trusted plugins when the PlatformCanvas isn't needed). This makes
+  // it cheap & easy to implement Swap.
   class Backend {
    public:
     virtual ~Backend() {};
@@ -47,28 +48,19 @@ class WEBKIT_PLUGINS_EXPORT PPB_ImageData_Impl
   // If you call this constructor, you must also call Init before use. Normally
   // you should use the static Create function, but this constructor is needed
   // for some internal uses of ImageData (like Graphics2D).
-  enum ImageDataType { PLATFORM, NACL };
-  PPB_ImageData_Impl(PP_Instance instance, ImageDataType type);
+  PPB_ImageData_Impl(PP_Instance instance,
+                     PPB_ImageData_Shared::ImageDataType type);
   virtual ~PPB_ImageData_Impl();
 
   bool Init(PP_ImageDataFormat format,
             int width, int height,
             bool init_to_zero);
 
-  // Create an ImageData backed by a PlatformCanvas. You must use this if you
-  // intend the ImageData to be usable in platform-specific APIs (like font
-  // rendering or rendering widgets like scrollbars).
-  static PP_Resource CreatePlatform(PP_Instance pp_instance,
-                                    PP_ImageDataFormat format,
-                                    const PP_Size& size,
-                                    PP_Bool init_to_zero);
-
-  // Use this to create an ImageData for use with NaCl. This is backed by a
-  // simple shared memory buffer.
-  static PP_Resource CreateNaCl(PP_Instance pp_instance,
-                                PP_ImageDataFormat format,
-                                const PP_Size& size,
-                                PP_Bool init_to_zero);
+  static PP_Resource Create(PP_Instance pp_instance,
+                            PPB_ImageData_Shared::ImageDataType type,
+                            PP_ImageDataFormat format,
+                            const PP_Size& size,
+                            PP_Bool init_to_zero);
 
   int width() const { return width_; }
   int height() const { return height_; }
@@ -132,10 +124,10 @@ class ImageDataPlatformBackend : public PPB_ImageData_Impl::Backend {
   DISALLOW_COPY_AND_ASSIGN(ImageDataPlatformBackend);
 };
 
-class ImageDataNaClBackend : public PPB_ImageData_Impl::Backend {
+class ImageDataSimpleBackend : public PPB_ImageData_Impl::Backend {
  public:
-  ImageDataNaClBackend();
-  virtual ~ImageDataNaClBackend();
+  ImageDataSimpleBackend();
+  virtual ~ImageDataSimpleBackend();
 
   // PPB_ImageData_Impl::Backend implementation.
   bool Init(PPB_ImageData_Impl* impl, PP_ImageDataFormat format,
@@ -156,7 +148,7 @@ class ImageDataNaClBackend : public PPB_ImageData_Impl::Backend {
   scoped_ptr<SkCanvas> skia_canvas_;
   uint32 map_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(ImageDataNaClBackend);
+  DISALLOW_COPY_AND_ASSIGN(ImageDataSimpleBackend);
 };
 
 // Manages mapping an image resource if necessary. Use this to ensure the
