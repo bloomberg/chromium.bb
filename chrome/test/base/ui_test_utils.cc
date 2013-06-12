@@ -51,6 +51,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/bookmark_load_observer.h"
+#include "chrome/test/base/find_in_page_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/download_item.h"
@@ -95,62 +96,6 @@ using content::WebContents;
 namespace ui_test_utils {
 
 namespace {
-
-class FindInPageNotificationObserver : public content::NotificationObserver {
- public:
-  explicit FindInPageNotificationObserver(WebContents* parent_tab)
-      : active_match_ordinal_(-1),
-        number_of_matches_(0) {
-    FindTabHelper* find_tab_helper =
-        FindTabHelper::FromWebContents(parent_tab);
-    current_find_request_id_ = find_tab_helper->current_find_request_id();
-    registrar_.Add(this, chrome::NOTIFICATION_FIND_RESULT_AVAILABLE,
-                   content::Source<WebContents>(parent_tab));
-    message_loop_runner_ = new content::MessageLoopRunner;
-    message_loop_runner_->Run();
-  }
-
-  int active_match_ordinal() const { return active_match_ordinal_; }
-  int number_of_matches() const { return number_of_matches_; }
-  gfx::Rect selection_rect() const { return selection_rect_; }
-
-  virtual void Observe(int type, const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    if (type == chrome::NOTIFICATION_FIND_RESULT_AVAILABLE) {
-      content::Details<FindNotificationDetails> find_details(details);
-      if (find_details->request_id() == current_find_request_id_) {
-        // We get multiple responses and one of those will contain the ordinal.
-        // This message comes to us before the final update is sent.
-        if (find_details->active_match_ordinal() > -1) {
-          active_match_ordinal_ = find_details->active_match_ordinal();
-          selection_rect_ = find_details->selection_rect();
-        }
-        if (find_details->final_update()) {
-          number_of_matches_ = find_details->number_of_matches();
-          message_loop_runner_->Quit();
-        } else {
-          DVLOG(1) << "Ignoring, since we only care about the final message";
-        }
-      }
-    } else {
-      NOTREACHED();
-    }
-  }
-
- private:
-  content::NotificationRegistrar registrar_;
-  // We will at some point (before final update) be notified of the ordinal and
-  // we need to preserve it so we can send it later.
-  int active_match_ordinal_;
-  int number_of_matches_;
-  gfx::Rect selection_rect_;
-  // The id of the current find request, obtained from WebContents. Allows us
-  // to monitor when the search completes.
-  int current_find_request_id_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(FindInPageNotificationObserver);
-};
 
 const char kSnapshotBaseName[] = "ChromiumSnapshot";
 const char kSnapshotExtension[] = ".png";
@@ -392,6 +337,7 @@ int FindInPage(WebContents* tab, const string16& search_string,
   FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(tab);
   find_tab_helper->StartFinding(search_string, forward, match_case);
   FindInPageNotificationObserver observer(tab);
+  observer.Wait();
   if (ordinal)
     *ordinal = observer.active_match_ordinal();
   if (selection_rect)

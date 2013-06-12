@@ -7,6 +7,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/find_in_page_observer.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/download_manager.h"
@@ -1548,4 +1550,57 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, GlobalPasteboardIncognito) {
   EXPECT_EQ(ASCIIToUTF16("Incognito"),
       GetFindBarTextForBrowser(browser_incognito));
   EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarText());
+}
+
+// Find text in regular window, find different text in incognito, send
+// IDC_FIND_NEXT to incognito. It should search for the second phrase.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, IncognitoFindNextSecret) {
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  // On Mac this updates the find pboard.
+  FindInPageWchar(web_contents, L"bar", kFwd, kIgnoreCase, NULL);
+
+  Browser* browser_incognito = CreateIncognitoBrowser();
+  ui_test_utils::NavigateToURL(browser_incognito,
+                               GURL("data:text/plain,barfoofoo"));
+  WebContents* web_contents_incognito =
+        browser_incognito->tab_strip_model()->GetActiveWebContents();
+  FindInPageWchar(web_contents_incognito, L"foo", true, kIgnoreCase, NULL);
+  EXPECT_EQ(ASCIIToUTF16("foo"),
+      GetFindBarTextForBrowser(browser_incognito));
+  EXPECT_EQ(ASCIIToUTF16("1 of 2"),
+      GetFindBarMatchCountTextForBrowser(browser_incognito));
+
+  // Cmd + G triggers IDC_FIND_NEXT command. Thus we test FindInPage()
+  // method from browser_commands.cc. FindInPageWchar() bypasses it.
+  EXPECT_TRUE(chrome::ExecuteCommand(browser_incognito, IDC_FIND_NEXT));
+  ui_test_utils::FindInPageNotificationObserver observer(
+      web_contents_incognito);
+  observer.Wait();
+  EXPECT_EQ(ASCIIToUTF16("foo"),
+      GetFindBarTextForBrowser(browser_incognito));
+  EXPECT_EQ(ASCIIToUTF16("2 of 2"),
+      GetFindBarMatchCountTextForBrowser(browser_incognito));
+}
+
+// Find text in regular window, send IDC_FIND_NEXT to incognito. It should
+// search for the first phrase.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, IncognitoFindNextShared) {
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  // On Mac this updates the find pboard.
+  FindInPageWchar(web_contents, L"bar", kFwd, kIgnoreCase, NULL);
+
+  Browser* browser_incognito = CreateIncognitoBrowser();
+  ui_test_utils::NavigateToURL(browser_incognito,
+                               GURL("data:text/plain,bar"));
+
+  EXPECT_TRUE(chrome::ExecuteCommand(browser_incognito, IDC_FIND_NEXT));
+  WebContents* web_contents_incognito =
+      browser_incognito->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::FindInPageNotificationObserver observer(
+      web_contents_incognito);
+  observer.Wait();
+  EXPECT_EQ(ASCIIToUTF16("bar"),
+            GetFindBarTextForBrowser(browser_incognito));
 }

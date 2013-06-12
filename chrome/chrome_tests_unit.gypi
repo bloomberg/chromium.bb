@@ -210,6 +210,8 @@
         'test/base/chrome_render_view_host_test_harness.h',
         'test/base/chrome_test_suite.cc',
         'test/base/chrome_test_suite.h',
+        'test/base/find_in_page_observer.cc',
+        'test/base/find_in_page_observer.h',
         'test/base/history_index_restore_observer.cc',
         'test/base/history_index_restore_observer.h',
         'test/base/in_process_browser_test.cc',

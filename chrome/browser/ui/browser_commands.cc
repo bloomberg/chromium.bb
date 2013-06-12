@@ -812,15 +812,17 @@ void FindInPage(Browser* browser, bool find_next, bool forward_direction) {
   ShowFindBar(browser);
   if (find_next) {
     string16 find_text;
+    FindTabHelper* find_helper = FindTabHelper::FromWebContents(
+        browser->tab_strip_model()->GetActiveWebContents());
 #if defined(OS_MACOSX)
     // We always want to search for the contents of the find pasteboard on OS X.
-    find_text = GetFindPboardText();
+    // But Incognito window doesn't write to the find pboard. Therefore, its own
+    // find text has higher priority.
+    if (!browser->profile()->IsOffTheRecord() ||
+        find_helper->find_text().empty())
+      find_text = GetFindPboardText();
 #endif
-    FindTabHelper::FromWebContents(
-        browser->tab_strip_model()->GetActiveWebContents())->
-            StartFinding(find_text,
-                         forward_direction,
-                         false);  // Not case sensitive.
+    find_helper->StartFinding(find_text, forward_direction, false);
   }
 }
 
