@@ -34,8 +34,8 @@ AwFormDatabaseService::AwFormDatabaseService(const base::FilePath path)
           l10n_util::GetDefaultLocale())));
   web_database_->LoadDatabase();
 
-  autofill_data_ .reset(new autofill::AutofillWebDataService(
-      web_database_, base::Bind(&DatabaseErrorCallback)));
+  autofill_data_ = new autofill::AutofillWebDataService(
+      web_database_, base::Bind(&DatabaseErrorCallback));
   autofill_data_->Init();
 }
 
@@ -58,9 +58,9 @@ void AwFormDatabaseService::CancelPendingQuery() {
   }
 }
 
-autofill::AutofillWebDataService*
+scoped_refptr<autofill::AutofillWebDataService>
 AwFormDatabaseService::get_autofill_webdata_service() {
-  return autofill_data_.get();
+  return autofill_data_;
 }
 
 void AwFormDatabaseService::ClearFormData() {

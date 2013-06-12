@@ -275,8 +275,6 @@
         '../components/autofill/browser/test_autofill_manager_delegate.h',
         '../components/autofill/browser/test_personal_data_manager.cc',
         '../components/autofill/browser/test_personal_data_manager.h',
-        '../components/webdata/common/web_data_service_test_util.cc',
-        '../components/webdata/common/web_data_service_test_util.h',
 
         '../ui/gfx/image/image_unittest_util.h',
         '../ui/gfx/image/image_unittest_util.cc',
@@ -1789,6 +1787,8 @@
         '../components/autofill/browser/webdata/autofill_table_unittest.cc',
         '../components/autofill/browser/webdata/web_data_service_unittest.cc',
         '../components/webdata/common/web_database_migration_unittest.cc',
+        '../components/webdata/common/web_data_service_test_util.cc',
+        '../components/webdata/common/web_data_service_test_util.h',
 
         # TODO(joi): Move the google_apis tests to a separate
         # google_apis_unittests executable.

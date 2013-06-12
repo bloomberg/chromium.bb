@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
@@ -34,17 +33,17 @@ class WebDataServiceWrapper : public BrowserContextKeyedService {
   // BrowserContextKeyedService:
   virtual void Shutdown() OVERRIDE;
 
-  virtual autofill::AutofillWebDataService* GetAutofillWebData();
+  virtual scoped_refptr<autofill::AutofillWebDataService> GetAutofillWebData();
 
   virtual scoped_refptr<WebDataService> GetWebData();
 
-  virtual TokenWebData* GetTokenWebData();
+  virtual scoped_refptr<TokenWebData> GetTokenWebData();
 
  private:
   scoped_refptr<WebDatabaseService> web_database_;
 
-  scoped_ptr<autofill::AutofillWebDataService> autofill_web_data_;
-  scoped_ptr<TokenWebData> token_web_data_;
+  scoped_refptr<autofill::AutofillWebDataService> autofill_web_data_;
+  scoped_refptr<TokenWebData> token_web_data_;
   scoped_refptr<WebDataService> web_data_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDataServiceWrapper);

@@ -22,7 +22,9 @@ class Thread;
 }
 
 // Base for WebDataService class hierarchy.
-class WEBDATA_EXPORT WebDataServiceBase {
+class WEBDATA_EXPORT WebDataServiceBase
+    : public base::RefCountedThreadSafe<WebDataServiceBase,
+          content::BrowserThread::DeleteOnUIThread> {
  public:
   // All requests return an opaque handle of the following type.
   typedef int Handle;
@@ -44,8 +46,6 @@ class WEBDATA_EXPORT WebDataServiceBase {
   // the |wdbs| object.
   WebDataServiceBase(scoped_refptr<WebDatabaseService> wdbs,
                      const ProfileErrorCallback& callback);
-
-  virtual ~WebDataServiceBase();
 
   // Cancel any pending request. You need to call this method if your
   // WebDataServiceConsumer is about to be deleted.
@@ -83,13 +83,20 @@ class WEBDATA_EXPORT WebDataServiceBase {
   virtual WebDatabase* GetDatabase();
 
  protected:
+  virtual ~WebDataServiceBase();
+
   // Our database service.
   scoped_refptr<WebDatabaseService> wdbs_;
 
  private:
-  ProfileErrorCallback profile_error_callback_;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<WebDataServiceBase>;
+  // We have to friend RCTS<> so WIN shared-lib build is happy (crbug/112250).
+  friend class base::RefCountedThreadSafe<WebDataServiceBase,
+      content::BrowserThread::DeleteOnUIThread>;
 
-  DISALLOW_COPY_AND_ASSIGN(WebDataServiceBase);
+  ProfileErrorCallback profile_error_callback_;
 };
 
 #endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_BASE_H_

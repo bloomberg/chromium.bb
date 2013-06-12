@@ -49,7 +49,6 @@ const char* kServices[] = {
 
 TokenService::TokenService()
     : profile_(NULL),
-      token_web_data_(NULL),
       token_loading_query_(0),
       tokens_loaded_(false) {
   // Allow constructor to be called outside the UI thread, so it can be mocked
@@ -176,20 +175,20 @@ void TokenService::UpdateCredentialsWithOAuth2(
 
 void TokenService::LoadTokensFromDB() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (token_web_data_)
+  if (token_web_data_.get())
     token_loading_query_ = token_web_data_->GetAllTokens(this);
 }
 
 void TokenService::SaveAuthTokenToDB(const std::string& service,
                                      const std::string& auth_token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (token_web_data_)
+  if (token_web_data_.get())
     token_web_data_->SetTokenForService(service, auth_token);
 }
 
 void TokenService::EraseTokensFromDB() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (token_web_data_)
+  if (token_web_data_.get())
     token_web_data_->RemoveAllTokens();
 
   content::NotificationService::current()->Notify(

@@ -34,8 +34,6 @@ using autofill::CreditCard;
 using autofill::FormFieldData;
 using autofill::PersonalDataManager;
 using autofill::PersonalDataManagerObserver;
-using base::Bind;
-using base::Unretained;
 using base::WaitableEvent;
 using content::BrowserThread;
 using sync_datatype_helper::test;
@@ -82,15 +80,13 @@ void RemoveKeyDontBlockForSync(int profile, const AutofillKey& key) {
   EXPECT_CALL(mock_observer, AutofillEntriesChanged(_))
       .WillOnce(SignalEvent(&done_event));
 
-  AutofillWebDataService* wds =
+  scoped_refptr<AutofillWebDataService> wds =
       autofill_helper::GetWebDataService(profile);
 
   void(AutofillWebDataService::*add_observer_func)(
       AutofillWebDataServiceObserverOnDBThread*) =
       &AutofillWebDataService::AddObserver;
-  RunOnDBThreadAndBlock(Bind(add_observer_func,
-                             Unretained(wds),
-                             &mock_observer));
+  RunOnDBThreadAndBlock(Bind(add_observer_func, wds, &mock_observer));
 
   wds->RemoveFormValueForElementName(key.name(), key.value());
   done_event.Wait();
@@ -98,9 +94,7 @@ void RemoveKeyDontBlockForSync(int profile, const AutofillKey& key) {
   void(AutofillWebDataService::*remove_observer_func)(
       AutofillWebDataServiceObserverOnDBThread*) =
       &AutofillWebDataService::RemoveObserver;
-  RunOnDBThreadAndBlock(Bind(remove_observer_func,
-                             Unretained(wds),
-                             &mock_observer));
+  RunOnDBThreadAndBlock(Bind(remove_observer_func, wds, &mock_observer));
 }
 
 void GetAllAutofillEntriesOnDBThread(AutofillWebDataService* wds,
@@ -169,7 +163,7 @@ AutofillProfile CreateAutofillProfile(ProfileType type) {
   return profile;
 }
 
-AutofillWebDataService* GetWebDataService(int index) {
+scoped_refptr<AutofillWebDataService> GetWebDataService(int index) {
   return AutofillWebDataService::FromBrowserContext(test()->GetProfile(index));
 }
 
@@ -194,14 +188,12 @@ void AddKeys(int profile, const std::set<AutofillKey>& keys) {
   EXPECT_CALL(mock_observer, AutofillEntriesChanged(_))
       .WillOnce(SignalEvent(&done_event));
 
-  AutofillWebDataService* wds = GetWebDataService(profile);
+  scoped_refptr<AutofillWebDataService> wds = GetWebDataService(profile);
 
   void(AutofillWebDataService::*add_observer_func)(
       AutofillWebDataServiceObserverOnDBThread*) =
       &AutofillWebDataService::AddObserver;
-  RunOnDBThreadAndBlock(Bind(add_observer_func,
-                             Unretained(wds),
-                             &mock_observer));
+  RunOnDBThreadAndBlock(Bind(add_observer_func, wds, &mock_observer));
 
   wds->AddFormFields(form_fields);
   done_event.Wait();
@@ -210,9 +202,7 @@ void AddKeys(int profile, const std::set<AutofillKey>& keys) {
   void(AutofillWebDataService::*remove_observer_func)(
       AutofillWebDataServiceObserverOnDBThread*) =
       &AutofillWebDataService::RemoveObserver;
-  RunOnDBThreadAndBlock(Bind(remove_observer_func,
-                             Unretained(wds),
-                             &mock_observer));
+  RunOnDBThreadAndBlock(Bind(remove_observer_func, wds, &mock_observer));
 }
 
 void RemoveKey(int profile, const AutofillKey& key) {
@@ -230,8 +220,8 @@ void RemoveKeys(int profile) {
 }
 
 std::set<AutofillEntry> GetAllKeys(int profile) {
-  AutofillWebDataService* wds = GetWebDataService(profile);
-  std::vector<AutofillEntry> all_entries = GetAllAutofillEntries(wds);
+  scoped_refptr<AutofillWebDataService> wds = GetWebDataService(profile);
+  std::vector<AutofillEntry> all_entries = GetAllAutofillEntries(wds.get());
   std::set<AutofillEntry> all_keys;
   for (std::vector<AutofillEntry>::const_iterator it = all_entries.begin();
        it != all_entries.end(); ++it) {

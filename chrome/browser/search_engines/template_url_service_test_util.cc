@@ -19,8 +19,6 @@
 #include "chrome/test/automation/value_conversion_util.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/webdata/common/web_data_service_test_util.h"
-#include "components/webdata/common/web_database_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,32 +53,6 @@ static void WaitForThreadToProcessRequests(BrowserThread::ID identifier) {
 }
 
 }  // namespace
-
-class MockWebDataServiceWrapperDB : public MockWebDataServiceWrapper {
- public:
-  static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
-    return new MockWebDataServiceWrapperDB(static_cast<Profile*>(profile));
-  }
-
-  explicit MockWebDataServiceWrapperDB(Profile* profile)
-      : MockWebDataServiceWrapper(NULL, NULL, NULL) {
-    base::FilePath profile_path = profile->GetPath();
-    base::FilePath path = profile_path.AppendASCII("TestWebDB");
-    web_database_ = new WebDatabaseService(path);
-    web_database_->AddTable(scoped_ptr<WebDatabaseTable>(new KeywordTable()));
-    fake_web_data_ = new WebDataService(
-        web_database_, WebDataServiceBase::ProfileErrorCallback());
-    fake_web_data_->Init();
-  }
-
-  virtual void Shutdown() OVERRIDE {
-    fake_web_data_->ShutdownDatabase();
-  }
-
- private:
-  scoped_refptr<WebDatabaseService> web_database_;
-  DISALLOW_COPY_AND_ASSIGN(MockWebDataServiceWrapperDB);
-};
 
 // Trivial subclass of TemplateURLService that records the last invocation of
 // SetKeywordSearchTermsForURL.
@@ -128,9 +100,7 @@ void TemplateURLServiceTestUtil::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   profile_.reset(new TestingProfile(temp_dir_.path()));
   db_thread_.Start();
-
-  WebDataServiceFactory::GetInstance()->SetTestingFactory(
-      profile_.get(), MockWebDataServiceWrapperDB::Build);
+  profile_->CreateWebDataService();
 
   TemplateURLService* service = static_cast<TemplateURLService*>(
       TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(

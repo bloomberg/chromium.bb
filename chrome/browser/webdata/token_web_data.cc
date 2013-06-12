@@ -63,9 +63,6 @@ TokenWebData::TokenWebData(scoped_refptr<WebDatabaseService> wdbs,
       token_backend_(new TokenWebDataBackend()) {
 }
 
-TokenWebData::~TokenWebData() {
-}
-
 void TokenWebData::SetTokenForService(const std::string& service,
                                       const std::string& token) {
   wdbs_->ScheduleDBTask(FROM_HERE,
@@ -88,4 +85,7 @@ WebDataServiceBase::Handle TokenWebData::GetAllTokens(
 TokenWebData::TokenWebData()
     : WebDataServiceBase(NULL, ProfileErrorCallback()),
       token_backend_(new TokenWebDataBackend()) {
+}
+
+TokenWebData::~TokenWebData() {
 }

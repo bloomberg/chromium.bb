@@ -25,7 +25,6 @@
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "components/webdata/common/web_database.h"
-#include "content/public/browser/browser_thread.h"
 
 struct DefaultWebIntentService;
 class GURL;
@@ -92,9 +91,7 @@ struct WDKeywordsResult {
 
 class WebDataServiceConsumer;
 
-class WebDataService : public WebDataServiceBase,
-                       public base::RefCountedThreadSafe<WebDataService,
-                          content::BrowserThread::DeleteOnUIThread> {
+class WebDataService : public WebDataServiceBase {
  public:
   // Retrieve a WebDataService for the given context.
   static scoped_refptr<WebDataService> FromBrowserContext(
@@ -226,12 +223,6 @@ class WebDataService : public WebDataServiceBase,
   virtual ~WebDataService();
 
  private:
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::UI>;
-  friend class base::DeleteHelper<WebDataService>;
-  // We have to friend RCTS<> so WIN shared-lib build is happy (crbug/112250).
-  friend class base::RefCountedThreadSafe<WebDataService,
-      content::BrowserThread::DeleteOnUIThread>;
   //////////////////////////////////////////////////////////////////////////////
   //
   // The following methods are only invoked on the DB thread.

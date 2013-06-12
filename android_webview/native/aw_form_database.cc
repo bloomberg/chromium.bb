@@ -14,7 +14,7 @@
 #include "jni/AwFormDatabase_jni.h"
 
 // static
-autofill::AutofillWebDataService*
+scoped_refptr<autofill::AutofillWebDataService>
 autofill::AutofillWebDataService::FromBrowserContext(
     content::BrowserContext* context) {
 
