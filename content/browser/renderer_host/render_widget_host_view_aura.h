@@ -458,9 +458,10 @@ class RenderWidgetHostViewAura
   typedef base::Callback<void(bool, const scoped_refptr<ui::Texture>&)>
       BufferPresentedCallback;
 
-  // The common entry point for full buffer updates from renderer
+  // The common entry point for buffer updates from renderer
   // and GPU process.
-  void BuffersSwapped(const gfx::Size& size,
+  void BuffersSwapped(const gfx::Size& surface_size,
+                      const gfx::Rect& damage_rect,
                       float surface_scale_factor,
                       const std::string& mailbox_name,
                       const ui::LatencyInfo& latency_info,

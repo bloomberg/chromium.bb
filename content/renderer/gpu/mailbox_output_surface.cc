@@ -163,10 +163,6 @@ void MailboxOutputSurface::OnSwapAck(const cc::CompositorFrameAck& ack) {
 
 void MailboxOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   DCHECK(frame->gl_frame_data);
-  DCHECK(frame->gl_frame_data->sub_buffer_rect.size() ==
-         frame->gl_frame_data->size)
-      << "Partial swap not supported with composite-to-mailbox yet.";
-
   DCHECK(!surface_size_.IsEmpty());
   DCHECK(surface_size_ == current_backing_.size);
   DCHECK(frame->gl_frame_data->size == current_backing_.size);

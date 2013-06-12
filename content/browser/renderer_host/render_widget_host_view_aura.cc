@@ -1484,6 +1484,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
       gpu_host_id,
       params_in_pixel.mailbox_name);
   BuffersSwapped(params_in_pixel.size,
+                 gfx::Rect(params_in_pixel.size),
                  params_in_pixel.scale_factor,
                  params_in_pixel.mailbox_name,
                  params_in_pixel.latency_info,
@@ -1641,6 +1642,7 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
       reinterpret_cast<const char*>(frame->gl_frame_data->mailbox.name),
       sizeof(frame->gl_frame_data->mailbox.name));
   BuffersSwapped(frame->gl_frame_data->size,
+                 frame->gl_frame_data->sub_buffer_rect,
                  frame->metadata.device_scale_factor,
                  mailbox_name,
                  frame->metadata.latency_info,
@@ -1658,51 +1660,20 @@ void RenderWidgetHostViewAura::SetParentNativeViewAccessible(
 #endif
 
 void RenderWidgetHostViewAura::BuffersSwapped(
-    const gfx::Size& size,
+    const gfx::Size& surface_size,
+    const gfx::Rect& damage_rect,
     float surface_scale_factor,
     const std::string& mailbox_name,
     const ui::LatencyInfo& latency_info,
     const BufferPresentedCallback& ack_callback) {
-  scoped_refptr<ui::Texture> texture_to_return(current_surface_);
-  const gfx::Rect surface_rect = gfx::Rect(size);
-  if (!SwapBuffersPrepare(surface_rect, surface_scale_factor, surface_rect,
-                          mailbox_name, ack_callback)) {
-    return;
-  }
-
-  previous_damage_.setRect(RectToSkIRect(surface_rect));
-  skipped_damage_.setEmpty();
-
-  ui::Compositor* compositor = GetCompositor();
-  if (compositor) {
-    gfx::Size surface_size = ConvertSizeToDIP(surface_scale_factor, size);
-    window_->SchedulePaintInRect(gfx::Rect(surface_size));
-    compositor->SetLatencyInfo(latency_info);
-  }
-
-  if (paint_observer_)
-    paint_observer_->OnUpdateCompositorContent();
-
-  SwapBuffersCompleted(ack_callback, texture_to_return);
-}
-
-void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
-    const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params_in_pixel,
-    int gpu_host_id) {
   scoped_refptr<ui::Texture> previous_texture(current_surface_);
-  const gfx::Rect surface_rect =
-      gfx::Rect(params_in_pixel.surface_size);
-  gfx::Rect damage_rect(params_in_pixel.x,
-                        params_in_pixel.y,
-                        params_in_pixel.width,
-                        params_in_pixel.height);
-  BufferPresentedCallback ack_callback = base::Bind(
-      &AcknowledgeBufferForGpu, params_in_pixel.route_id, gpu_host_id,
-      params_in_pixel.mailbox_name);
+  const gfx::Rect surface_rect = gfx::Rect(surface_size);
 
-  if (!SwapBuffersPrepare(
-      surface_rect, params_in_pixel.surface_scale_factor, damage_rect,
-      params_in_pixel.mailbox_name, ack_callback)) {
+  if (!SwapBuffersPrepare(surface_rect,
+                          surface_scale_factor,
+                          damage_rect,
+                          mailbox_name,
+                          ack_callback)) {
     return;
   }
 
@@ -1715,7 +1686,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
   DCHECK(surface_rect.Contains(SkIRectToRect(damage.getBounds())));
   ui::Texture* current_texture = current_surface_.get();
 
-  const gfx::Size surface_size_in_pixel = params_in_pixel.surface_size;
+  const gfx::Size surface_size_in_pixel = surface_size;
   DLOG_IF(ERROR, previous_texture &&
       previous_texture->size() != current_texture->size() &&
       SkIRectToRect(damage.getBounds()) != surface_rect) <<
@@ -1736,13 +1707,13 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
   if (compositor) {
     // Co-ordinates come in OpenGL co-ordinate space.
     // We need to convert to layer space.
-    gfx::Rect rect_to_paint = ConvertRectToDIP(
-        params_in_pixel.surface_scale_factor,
-        gfx::Rect(params_in_pixel.x,
-                  surface_size_in_pixel.height() - params_in_pixel.y -
-                      params_in_pixel.height,
-                  params_in_pixel.width,
-                  params_in_pixel.height));
+    gfx::Rect rect_to_paint =
+        ConvertRectToDIP(surface_scale_factor,
+                         gfx::Rect(damage_rect.x(),
+                                   surface_size_in_pixel.height() -
+                                       damage_rect.y() - damage_rect.height(),
+                                   damage_rect.width(),
+                                   damage_rect.height()));
 
     // Damage may not have been DIP aligned, so inflate damage to compensate
     // for any round-off error.
@@ -1752,10 +1723,30 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     if (paint_observer_)
       paint_observer_->OnUpdateCompositorContent();
     window_->SchedulePaintInRect(rect_to_paint);
-    compositor->SetLatencyInfo(params_in_pixel.latency_info);
+    compositor->SetLatencyInfo(latency_info);
   }
 
   SwapBuffersCompleted(ack_callback, previous_texture);
+}
+
+void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
+    const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params_in_pixel,
+    int gpu_host_id) {
+  gfx::Rect damage_rect(params_in_pixel.x,
+                        params_in_pixel.y,
+                        params_in_pixel.width,
+                        params_in_pixel.height);
+  BufferPresentedCallback ack_callback =
+      base::Bind(&AcknowledgeBufferForGpu,
+                 params_in_pixel.route_id,
+                 gpu_host_id,
+                 params_in_pixel.mailbox_name);
+  BuffersSwapped(params_in_pixel.surface_size,
+                 damage_rect,
+                 params_in_pixel.surface_scale_factor,
+                 params_in_pixel.mailbox_name,
+                 params_in_pixel.latency_info,
+                 ack_callback);
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceSuspend() {
