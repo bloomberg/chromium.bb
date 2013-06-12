@@ -69,18 +69,18 @@ class GpuFunctionalTest : public ContentBrowserTest {
     }
   }
 
-  void VerifyGPUProcessOnPage(std::string filename, bool html) {
+  void VerifyGPUProcessOnPage(std::string filename, bool wait) {
     Shell::Initialize();
     ASSERT_TRUE(test_server()->Start());
+    DOMMessageQueue message_queue;
 
-    if (html) {
-      std::string url("files/gpu/");
-      GURL full_url = test_server()->GetURL(url.append(filename));
-      NavigateToURL(shell(), full_url);
-    } else {
-      NavigateToURL(shell(),
-                    GetFileUrlWithQuery(gpu_test_dir_.AppendASCII(filename),
-                                       ""));
+    std::string url("files/gpu/");
+    GURL full_url = test_server()->GetURL(url.append(filename));
+    NavigateToURL(shell(), full_url);
+
+    if (wait) {
+      std::string result_string;
+      ASSERT_TRUE(message_queue.WaitForMessage(&result_string));
     }
 
     bool result = false;
@@ -105,26 +105,22 @@ IN_PROC_BROWSER_TEST_F(GpuFunctionalTest,
 
 // Verify that gpu process is spawned in webgl example.
 IN_PROC_BROWSER_TEST_F(GpuFunctionalTest, MANUAL_TestWebGL) {
-  VerifyGPUProcessOnPage("functional_webgl.html", true);
+  VerifyGPUProcessOnPage("functional_webgl.html", false);
 }
 
 // Verify that gpu process is spawned when viewing a 2D canvas.
 IN_PROC_BROWSER_TEST_F(GpuFunctionalTest, MANUAL_Test2dCanvas) {
-  VerifyGPUProcessOnPage("functional_canvas_demo.html", true);
+  VerifyGPUProcessOnPage("functional_canvas_demo.html", false);
 }
 
 // Verify that gpu process is spawned when viewing a 3D CSS page.
 IN_PROC_BROWSER_TEST_F(GpuFunctionalTest, MANUAL_Test3dCss) {
-  VerifyGPUProcessOnPage("functional_3d_css.html", true);
+  VerifyGPUProcessOnPage("functional_3d_css.html", false);
 }
-
-// TestGpuWithVideo is failing on all platforms
-// http://crbug.com/237208
-#define MANUAL_TestGpuWithVideo DISABLED_MANUAL_TestGpuWithVideo
 
 // Verify that gpu process is started when viewing video.
 IN_PROC_BROWSER_TEST_F(GpuFunctionalTest, MANUAL_TestGpuWithVideo) {
-  VerifyGPUProcessOnPage("functional_color2.ogv", false);
+  VerifyGPUProcessOnPage("functional_video.html", true);
 }
 
 } // namespace content
