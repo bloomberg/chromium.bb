@@ -67,13 +67,13 @@ class StyleSheetContents;
 class ScopedStyleResolver {
     WTF_MAKE_NONCOPYABLE(ScopedStyleResolver); WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<ScopedStyleResolver> create(const ContainerNode* scope) { return adoptPtr(new ScopedStyleResolver(scope)); }
+    static PassOwnPtr<ScopedStyleResolver> create(const ContainerNode* scopingNode) { return adoptPtr(new ScopedStyleResolver(scopingNode)); }
 
-    static const ContainerNode* scopeFor(const CSSStyleSheet*);
+    static const ContainerNode* scopingNodeFor(const CSSStyleSheet*);
 
     // methods for building tree.
-    const ContainerNode* scope() const { return m_scope; }
-    const TreeScope* treeScope() const { return m_scope->treeScope(); }
+    const ContainerNode* scopingNode() const { return m_scopingNode; }
+    const TreeScope* treeScope() const { return m_scopingNode->treeScope(); }
     void prepareEmptyRuleSet() { m_authorStyle = RuleSet::create(); }
     void setParent(ScopedStyleResolver* newParent) { m_parent = newParent; }
     ScopedStyleResolver* parent() { return m_parent; }
@@ -86,19 +86,19 @@ public:
     void matchPageRules(PageRuleCollector&);
     void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, StyleResolver*);
     void postAddRulesFromSheet() { m_authorStyle->shrinkToFit(); }
-    void addHostRule(StyleRuleHost*, bool hasDocumentSecurityOrigin, const ContainerNode* scope);
+    void addHostRule(StyleRuleHost*, bool hasDocumentSecurityOrigin, const ContainerNode* scopingNode);
     void collectFeaturesTo(RuleFeatureSet&);
     void resetAuthorStyle();
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
-    ScopedStyleResolver() : m_scope(0), m_parent(0) { }
-    ScopedStyleResolver(const ContainerNode* scope) : m_scope(scope), m_parent(0) { }
+    ScopedStyleResolver() : m_scopingNode(0), m_parent(0) { }
+    ScopedStyleResolver(const ContainerNode* scopingNode) : m_scopingNode(scopingNode), m_parent(0) { }
 
     RuleSet* ensureAtHostRuleSetFor(const ShadowRoot*);
     RuleSet* atHostRuleSetFor(const ShadowRoot*) const;
 
-    const ContainerNode* m_scope;
+    const ContainerNode* m_scopingNode;
     ScopedStyleResolver* m_parent;
 
     OwnPtr<RuleSet> m_authorStyle;
@@ -108,48 +108,48 @@ private:
 class ScopedStyleTree {
     WTF_MAKE_NONCOPYABLE(ScopedStyleTree); WTF_MAKE_FAST_ALLOCATED;
 public:
-    ScopedStyleTree() : m_scopeResolverForDocument(0) { }
+    ScopedStyleTree() : m_scopedResolverForDocument(0) { }
 
-    ScopedStyleResolver* ensureScopedStyleResolver(const ContainerNode* scope);
-    ScopedStyleResolver* scopedStyleResolverFor(const ContainerNode* scope);
-    ScopedStyleResolver* addScopedStyleResolver(const ContainerNode* scope, bool& isNewEntry);
+    ScopedStyleResolver* ensureScopedStyleResolver(const ContainerNode* scopingNode);
+    ScopedStyleResolver* scopedStyleResolverFor(const ContainerNode* scopingNode);
+    ScopedStyleResolver* addScopedStyleResolver(const ContainerNode* scopingNode, bool& isNewEntry);
     void clear();
 
     // for fast-path.
-    bool hasOnlyScopeResolverForDocument() const { return m_scopeResolverForDocument && m_authorStyles.size() == 1; }
-    ScopedStyleResolver* scopedStyleResolverForDocument() { return m_scopeResolverForDocument; }
+    bool hasOnlyScopedResolverForDocument() const { return m_scopedResolverForDocument && m_authorStyles.size() == 1; }
+    ScopedStyleResolver* scopedStyleResolverForDocument() { return m_scopedResolverForDocument; }
 
-    void resolveScopeStyles(const Element*, Vector<ScopedStyleResolver*, 8>&);
+    void resolveScopedStyles(const Element*, Vector<ScopedStyleResolver*, 8>&);
     ScopedStyleResolver* scopedResolverFor(const Element*);
 
-    void pushStyleCache(const ContainerNode* scope, const ContainerNode* parent);
-    void popStyleCache(const ContainerNode* scope);
+    void pushStyleCache(const ContainerNode* scopingNode, const ContainerNode* parent);
+    void popStyleCache(const ContainerNode* scopingNode);
 
     void collectFeaturesTo(RuleFeatureSet& features);
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 private:
-    void setupScopeStylesTree(ScopedStyleResolver* target);
+    void setupScopedStylesTree(ScopedStyleResolver* target);
 
-    bool cacheIsValid(const ContainerNode* parent) const { return parent && parent == m_cache.nodeForScopeStyles; }
-    void resolveStyleCache(const ContainerNode* scope);
-    ScopedStyleResolver* enclosingScopedStyleResolverFor(const ContainerNode* scope);
+    bool cacheIsValid(const ContainerNode* parent) const { return parent && parent == m_cache.nodeForScopedStyles; }
+    void resolveStyleCache(const ContainerNode* scopingNode);
+    ScopedStyleResolver* enclosingScopedStyleResolverFor(const ContainerNode* scopingNode);
 
 private:
     HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> > m_authorStyles;
-    ScopedStyleResolver* m_scopeResolverForDocument;
+    ScopedStyleResolver* m_scopedResolverForDocument;
 
-    struct ScopeStyleCache {
-        ScopedStyleResolver* scopeResolver;
-        const ContainerNode* nodeForScopeStyles;
+    struct ScopedStyleCache {
+        ScopedStyleResolver* scopedResolver;
+        const ContainerNode* nodeForScopedStyles;
 
         void clear()
         {
-            scopeResolver = 0;
-            nodeForScopeStyles = 0;
+            scopedResolver = 0;
+            nodeForScopedStyles = 0;
         }
     };
-    ScopeStyleCache m_cache;
+    ScopedStyleCache m_cache;
 };
 
 inline ScopedStyleResolver* ScopedStyleTree::scopedResolverFor(const Element* element)
@@ -157,7 +157,7 @@ inline ScopedStyleResolver* ScopedStyleTree::scopedResolverFor(const Element* el
     if (!cacheIsValid(element))
         resolveStyleCache(element);
 
-    return m_cache.scopeResolver;
+    return m_cache.scopedResolver;
 }
 
 } // namespace WebCore

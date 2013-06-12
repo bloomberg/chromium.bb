@@ -275,7 +275,7 @@ void StyleResolver::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefP
             continue;
 
         StyleSheetContents* sheet = cssSheet->contents();
-        ScopedStyleResolver* resolver = ensureScopedStyleResolver(ScopedStyleResolver::scopeFor(cssSheet));
+        ScopedStyleResolver* resolver = ensureScopedStyleResolver(ScopedStyleResolver::scopingNodeFor(cssSheet));
         ASSERT(resolver);
         resolver->addRulesFromSheet(sheet, *m_medium, this);
         m_inspectorCSSOMWrappers.collectFromStyleSheetIfNeeded(cssSheet);
@@ -433,7 +433,7 @@ inline void StyleResolver::matchShadowDistributedRules(ElementRuleCollector& col
 
 void StyleResolver::matchHostRules(ScopedStyleResolver* resolver, ElementRuleCollector& collector, bool includeEmptyRules)
 {
-    if (m_state.element() != resolver->scope())
+    if (m_state.element() != resolver->scopingNode())
         return;
     resolver->matchHostRules(collector, includeEmptyRules);
 }
@@ -441,13 +441,13 @@ void StyleResolver::matchHostRules(ScopedStyleResolver* resolver, ElementRuleCol
 void StyleResolver::matchScopedAuthorRules(ElementRuleCollector& collector, bool includeEmptyRules)
 {
     // fast path
-    if (m_styleTree.hasOnlyScopeResolverForDocument()) {
+    if (m_styleTree.hasOnlyScopedResolverForDocument()) {
         m_styleTree.scopedStyleResolverForDocument()->matchAuthorRules(collector, includeEmptyRules, true);
         return;
     }
 
     Vector<ScopedStyleResolver*, 8> stack;
-    m_styleTree.resolveScopeStyles(m_state.element(), stack);
+    m_styleTree.resolveScopedStyles(m_state.element(), stack);
     if (stack.isEmpty())
         return;
 
@@ -1341,8 +1341,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     collector.matchPageRules(CSSDefaultStyleSheets::defaultPrintStyle);
     collector.matchPageRules(m_ruleSets.userStyle());
 
-    if (ScopedStyleResolver* scopeResolver = m_styleTree.scopedStyleResolverForDocument())
-        scopeResolver->matchPageRules(collector);
+    if (ScopedStyleResolver* scopedResolver = m_styleTree.scopedStyleResolverForDocument())
+        scopedResolver->matchPageRules(collector);
 
     m_state.setLineHeightValue(0);
     bool inheritedOnly = false;
@@ -1729,8 +1729,8 @@ bool StyleResolver::checkRegionStyle(Element* regionElement)
     // FIXME (BUG 72472): We don't add @-webkit-region rules of scoped style sheets for the moment,
     // so all region rules are global by default. Verify whether that can stand or needs changing.
 
-    if (ScopedStyleResolver* scopeResolver = m_styleTree.scopedStyleResolverForDocument())
-        if (scopeResolver->checkRegionStyle(regionElement))
+    if (ScopedStyleResolver* scopedResolver = m_styleTree.scopedStyleResolverForDocument())
+        if (scopedResolver->checkRegionStyle(regionElement))
             return true;
 
     if (m_ruleSets.userStyle()) {
