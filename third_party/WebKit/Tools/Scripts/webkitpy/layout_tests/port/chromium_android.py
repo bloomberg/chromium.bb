@@ -186,7 +186,7 @@ class ContentShellDriverDetails(SharedDriverDetails):
     def command_line_file(self):
         return '/data/local/tmp/content-shell-command-line'
     def additional_command_line_flags(self):
-        return []
+        return ['--dump-render-tree']
     def device_directory(self):
         return DEVICE_SOURCE_ROOT_DIR + 'content_shell/'
 
@@ -210,6 +210,11 @@ class AndroidCommands(object):
 
     def pull(self, device_path, host_path, ignore_error=False):
         return self.run(['pull', device_path, host_path], ignore_error=ignore_error)
+
+    def mkdir(self, device_path, chmod=None):
+        self.run(['shell', 'mkdir', '-p', device_path])
+        if chmod:
+            self.run(['shell', 'chmod', chmod, device_path])
 
     def restart_as_root(self):
         output = self.run(['root'])
@@ -354,9 +359,11 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
 
     def additional_drt_flag(self):
         # Chromium for Android always uses the hardware GPU path.
-        return ['--encode-binary', '--enable-hardware-gpu',
-                '--force-compositing-mode',
-                '--enable-accelerated-fixed-position']
+        flags = ['--encode-binary', '--enable-hardware-gpu',
+                 '--force-compositing-mode',
+                 '--enable-accelerated-fixed-position']
+        flags += self._driver_details.additional_command_line_flags()
+        return flags
 
     def default_timeout_ms(self):
         # Android platform has less computing power than desktop platforms.
@@ -708,15 +715,14 @@ class ChromiumAndroidDriver(driver.Driver):
 
         # Required by webkit_support::GetWebKitRootDirFilePath().
         # Other directories will be created automatically by adb push.
-        self._android_commands.run(['shell', 'mkdir', '-p', DEVICE_SOURCE_ROOT_DIR + 'chrome'])
+        self._android_commands.mkdir(DEVICE_SOURCE_ROOT_DIR + 'chrome')
 
-        # Allow the test driver to get full read and write access to the directory.
-        # The native code needs the permission to write temporary files and create pipes here.
-        self._android_commands.run(['shell', 'mkdir', '-p', self._driver_details.device_directory()])
-        self._android_commands.run(['shell', 'chmod', '777', self._driver_details.device_directory()])
+        # Allow the test driver to get full read and write access to the directory on the device,
+        # as well as for the FIFOs. We'll need a world writable directory.
+        self._android_commands.mkdir(self._driver_details.device_directory(), chmod='777')
+        self._android_commands.mkdir(self._driver_details.device_fifo_directory(), chmod='777')
 
-        # Delete the disk cache if any to ensure a clean test run.
-        # This is like what's done in ChromiumPort.setup_test_run but on the device.
+        # Make sure that the disk cache on the device resets to a clean state.
         self._android_commands.run(['shell', 'rm', '-r', self._driver_details.device_cache_directory()])
 
     def _log_error(self, message):
@@ -837,7 +843,7 @@ class ChromiumAndroidDriver(driver.Driver):
         return self._android_commands.adb_command() + ['shell']
 
     def _android_driver_cmd_line(self, pixel_tests, per_test_args):
-        return driver.Driver.cmd_line(self, pixel_tests, per_test_args) + self._driver_details.additional_command_line_flags()
+        return driver.Driver.cmd_line(self, pixel_tests, per_test_args)
 
     @staticmethod
     def _loop_with_timeout(condition, timeout_secs):
