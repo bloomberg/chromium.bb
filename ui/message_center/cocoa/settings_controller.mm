@@ -17,8 +17,8 @@
 const int kMarginWidth = 16;
 const int kEntryHeight = 38;
 const int kIconSize = 16;
-const int kIconTextPadding = 10;
-const int kCheckmarkIconPadding = 20;
+const int kIconTextPadding = 8;
+const int kCheckmarkIconPadding = 16;
 
 const int kIntrinsicCheckmarkPadding = 4;  // Padding already provided by Cocoa.
 const int kCorrectedCheckmarkPadding =
