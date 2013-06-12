@@ -185,15 +185,7 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
     return file_system_info_list_.get();
   }
 
-
-  // Temporary storage to pass information back from callbacks.
-  base::PlatformFileError open_file_system_result_;
-  ScopedFileSystemInfoList file_system_info_list_;
-
-  scoped_refptr<BrowsingDataFileSystemHelper> helper_;
-  scoped_refptr<CannedBrowsingDataFileSystemHelper> canned_helper_;
-
- private:
+ protected:
   // message_loop_, as well as all the threads associated with it must be
   // defined before profile_ to prevent explosions. The threads also must be
   // defined in the order they're listed here. Oh how I love C++.
@@ -205,6 +197,13 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
   content::TestBrowserThread file_user_blocking_thread_;
   content::TestBrowserThread io_thread_;
   scoped_ptr<TestingProfile> profile_;
+
+  // Temporary storage to pass information back from callbacks.
+  base::PlatformFileError open_file_system_result_;
+  ScopedFileSystemInfoList file_system_info_list_;
+
+  scoped_refptr<BrowsingDataFileSystemHelper> helper_;
+  scoped_refptr<CannedBrowsingDataFileSystemHelper> canned_helper_;
 
   // We don't own this pointer: don't delete it.
   fileapi::SandboxMountPointProvider* sandbox_;

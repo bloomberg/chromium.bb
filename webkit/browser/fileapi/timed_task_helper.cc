@@ -76,8 +76,9 @@ void TimedTaskHelper::OnFired(scoped_ptr<Tracker> tracker) {
     return;
   }
   tracker.reset();
-  user_task_.Run();
+  base::Closure task = user_task_;
   user_task_.Reset();
+  task.Run();
 }
 
 void TimedTaskHelper::PostDelayedTask(scoped_ptr<Tracker> tracker,

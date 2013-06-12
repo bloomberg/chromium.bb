@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
+#include "webkit/browser/fileapi/timed_task_helper.h"
 
 namespace fileapi {
 
@@ -166,7 +167,7 @@ void FileSystemUsageCache::CloseCacheFiles() {
       base::ClosePlatformFile(itr->second);
   }
   cache_files_.clear();
-  timer_.Stop();
+  timer_.reset();
 }
 
 bool FileSystemUsageCache::Read(const base::FilePath& usage_file_path,
@@ -287,15 +288,18 @@ bool FileSystemUsageCache::FlushFile(const base::FilePath& file_path) {
 
 void FileSystemUsageCache::ScheduleCloseTimer() {
   DCHECK(CalledOnValidThread());
-  if (timer_.IsRunning()) {
-    timer_.Reset();
+  if (!timer_)
+    timer_.reset(new TimedTaskHelper(task_runner_));
+
+  if (timer_->IsRunning()) {
+    timer_->Reset();
     return;
   }
 
-  timer_.Start(FROM_HERE,
-               base::TimeDelta::FromSeconds(kCloseDelaySeconds),
-               base::Bind(&FileSystemUsageCache::CloseCacheFiles,
-                          weak_factory_.GetWeakPtr()));
+  timer_->Start(FROM_HERE,
+                base::TimeDelta::FromSeconds(kCloseDelaySeconds),
+                base::Bind(&FileSystemUsageCache::CloseCacheFiles,
+                           weak_factory_.GetWeakPtr()));
 }
 
 bool FileSystemUsageCache::CalledOnValidThread() {
