@@ -964,14 +964,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognition) {
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
-// See http://crbug.com/248718
-#if defined(OS_WIN)
-#define MAYBE_TearDownTest DISABLED_TearDownTest
-#else
-#define MAYBE_TearDownTest TearDownTest
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_TearDownTest) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, TearDownTest) {
   ExtensionTestMessageListener first_loaded_listener("guest-loaded", false);
   const extensions::Extension* extension =
       LoadAndLaunchPlatformApp("web_view/teardown");
