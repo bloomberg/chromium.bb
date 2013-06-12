@@ -57,6 +57,8 @@ void Shell::PlatformCleanUp() {
 }
 
 void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
+  if (headless_)
+    return;
   int id;
   switch (control) {
     case BACK_BUTTON:
@@ -76,6 +78,8 @@ void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
 }
 
 void Shell::PlatformSetAddressBarURL(const GURL& url) {
+  if (headless_)
+    return;
   std::wstring url_string = UTF8ToWide(url.spec());
   SendMessage(url_edit_view_, WM_SETTEXT, 0,
               reinterpret_cast<LPARAM>(url_string.c_str()));
@@ -85,6 +89,8 @@ void Shell::PlatformSetIsLoading(bool loading) {
 }
 
 void Shell::PlatformCreateWindow(int width, int height) {
+  if (headless_)
+    return;
   window_ = CreateWindow(kWindowClass, kWindowTitle,
                          WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
                          CW_USEDEFAULT, 0, CW_USEDEFAULT, 0,
@@ -134,10 +140,14 @@ void Shell::PlatformCreateWindow(int width, int height) {
 }
 
 void Shell::PlatformSetContents() {
+  if (headless_)
+    return;
   SetParent(web_contents_->GetView()->GetNativeView(), window_);
 }
 
 void Shell::SizeTo(int width, int height) {
+  if (headless_)
+    return;
   RECT rc, rw;
   GetClientRect(window_, &rc);
   GetWindowRect(window_, &rw);
@@ -158,6 +168,8 @@ void Shell::SizeTo(int width, int height) {
 }
 
 void Shell::PlatformResizeSubViews() {
+  if (headless_)
+    return;
   RECT rc;
   GetClientRect(window_, &rc);
 
@@ -169,6 +181,10 @@ void Shell::PlatformResizeSubViews() {
 }
 
 void Shell::Close() {
+  if (headless_) {
+    delete this;
+    return;
+  }
   DestroyWindow(window_);
 }
 
@@ -199,6 +215,8 @@ LRESULT CALLBACK Shell::WndProc(HWND hwnd, UINT message, WPARAM wParam,
       int id = LOWORD(wParam);
       switch (id) {
         case IDM_NEW_WINDOW:
+          if (shell->headless_)
+            return 0;
           CreateNewWindow(
               shell->web_contents()->GetBrowserContext(),
               GURL(), NULL, MSG_ROUTING_NONE, gfx::Size());
@@ -279,6 +297,8 @@ LRESULT CALLBACK Shell::EditWndProc(HWND hwnd, UINT message,
 }
 
 void Shell::PlatformSetTitle(const string16& text) {
+  if (headless_)
+    return;
   ::SetWindowText(window_, text.c_str());
 }
 
