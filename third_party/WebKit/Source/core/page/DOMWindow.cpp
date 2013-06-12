@@ -70,7 +70,6 @@
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Console.h"
-#include "core/page/Crypto.h"
 #include "core/page/DOMPoint.h"
 #include "core/page/DOMTimer.h"
 #include "core/page/EventHandler.h"
@@ -440,7 +439,6 @@ DOMWindow::~DOMWindow()
 {
     ASSERT(!m_screen);
     ASSERT(!m_history);
-    ASSERT(!m_crypto);
     ASSERT(!m_locationbar);
     ASSERT(!m_menubar);
     ASSERT(!m_personalbar);
@@ -542,7 +540,6 @@ void DOMWindow::resetDOMWindowProperties()
 
     m_screen = 0;
     m_history = 0;
-    m_crypto = 0;
     m_locationbar = 0;
     m_menubar = 0;
     m_personalbar = 0;
@@ -590,15 +587,6 @@ History* DOMWindow::history() const
     if (!m_history)
         m_history = History::create(m_frame);
     return m_history.get();
-}
-
-Crypto* DOMWindow::crypto() const
-{
-    if (!isCurrentlyDisplayedInFrame())
-        return 0;
-    if (!m_crypto)
-        m_crypto = Crypto::create();
-    return m_crypto.get();
 }
 
 BarProp* DOMWindow::locationbar() const

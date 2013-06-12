@@ -6,13 +6,13 @@
  * are met:
  *
  * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer. 
+ *     notice, this list of conditions and the following disclaimer.
  * 2.  Redistributions in binary form must reproduce the above copyright
  *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution. 
+ *     documentation and/or other materials provided with the distribution.
  * 3.  Neither the name of Google, Inc. ("Google") nor the names of
  *     its contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission. 
+ *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY GOOGLE AND ITS CONTRIBUTORS "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -28,11 +28,11 @@
 
 
 #include "config.h"
-#include "core/page/Crypto.h"
+#include "modules/crypto/Crypto.h"
 
 #include "core/dom/ExceptionCode.h"
-#include <wtf/ArrayBufferView.h>
-#include <wtf/CryptographicallyRandomNumber.h>
+#include "wtf/ArrayBufferView.h"
+#include "wtf/CryptographicallyRandomNumber.h"
 
 namespace WebCore {
 
@@ -42,12 +42,12 @@ bool isIntegerArray(ArrayBufferView* array)
 {
     ArrayBufferView::ViewType type = array->getType();
     return type == ArrayBufferView::TypeInt8
-           || type == ArrayBufferView::TypeUint8
-           || type == ArrayBufferView::TypeUint8Clamped
-           || type == ArrayBufferView::TypeInt16
-           || type == ArrayBufferView::TypeUint16
-           || type == ArrayBufferView::TypeInt32
-           || type == ArrayBufferView::TypeUint32;
+        || type == ArrayBufferView::TypeUint8
+        || type == ArrayBufferView::TypeUint8Clamped
+        || type == ArrayBufferView::TypeInt16
+        || type == ArrayBufferView::TypeUint16
+        || type == ArrayBufferView::TypeInt32
+        || type == ArrayBufferView::TypeUint32;
 }
 
 }

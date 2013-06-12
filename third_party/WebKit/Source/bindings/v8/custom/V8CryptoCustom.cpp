@@ -29,7 +29,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/page/Crypto.h"
+#include "modules/crypto/Crypto.h"
 
 #include "wtf/ArrayBufferView.h"
 

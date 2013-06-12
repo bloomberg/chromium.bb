@@ -9,6 +9,8 @@
     'extra_blink_module_files': [],
 
     'modules_idl_files': [
+      'crypto/Crypto.idl',
+      'crypto/DOMWindowCrypto.idl',
       'device_orientation/DeviceAcceleration.idl',
       'device_orientation/DeviceMotionEvent.idl',
       'device_orientation/DeviceRotationRate.idl',
@@ -180,6 +182,10 @@
     ],
     'modules_files': [
       '<@(extra_blink_module_files)',
+      'crypto/Crypto.cpp',
+      'crypto/Crypto.h',
+      'crypto/DOMWindowCrypto.cpp',
+      'crypto/DOMWindowCrypto.h',
       'device_orientation/DeviceAcceleration.cpp',
       'device_orientation/DeviceAcceleration.h',
       'device_orientation/DeviceMotionClient.h',

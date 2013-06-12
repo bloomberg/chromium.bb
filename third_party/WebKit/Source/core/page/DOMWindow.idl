@@ -42,7 +42,6 @@
     [Replaceable] readonly attribute BarProp toolbar;
     [Replaceable, PerWorldBindings, ActivityLog=GetterForIsolatedWorlds] readonly attribute Navigator navigator;
     [Replaceable] readonly attribute Navigator clientInformation;
-    readonly attribute Crypto crypto;
     [DoNotCheckSecurity, CustomSetter, Unforgeable, Replaceable, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds] readonly attribute Location location;
     [MeasureAs=WindowEvent, NotEnumerable, Replaceable, CustomGetter, CustomSetter] readonly attribute Event event;
 

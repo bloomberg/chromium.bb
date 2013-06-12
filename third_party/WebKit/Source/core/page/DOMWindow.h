@@ -38,7 +38,6 @@ namespace WebCore {
     class CSSRuleList;
     class CSSStyleDeclaration;
     class Console;
-    class Crypto;
     class DOMApplicationCache;
     class DOMPoint;
     class DOMSelection;
@@ -122,7 +121,6 @@ namespace WebCore {
 
         Screen* screen() const;
         History* history() const;
-        Crypto* crypto() const;
         BarProp* locationbar() const;
         BarProp* menubar() const;
         BarProp* personalbar() const;
@@ -409,7 +407,6 @@ namespace WebCore {
 
         mutable RefPtr<Screen> m_screen;
         mutable RefPtr<History> m_history;
-        mutable RefPtr<Crypto>  m_crypto;
         mutable RefPtr<BarProp> m_locationbar;
         mutable RefPtr<BarProp> m_menubar;
         mutable RefPtr<BarProp> m_personalbar;
