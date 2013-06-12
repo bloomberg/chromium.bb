@@ -6,6 +6,8 @@
 
 #include <limits>
 
+#include "cc/test/fake_tile_manager.h"
+
 namespace cc {
 
 class FakeInfinitePicturePileImpl : public PicturePileImpl {
@@ -23,12 +25,7 @@ class FakeInfinitePicturePileImpl : public PicturePileImpl {
 };
 
 FakePictureLayerTilingClient::FakePictureLayerTilingClient()
-    : tile_manager_(TileManager::Create(&tile_manager_client_,
-                                        NULL,
-                                        1,
-                                        false,
-                                        &stats_instrumentation_,
-                                        false)),
+    : tile_manager_(new FakeTileManager(&tile_manager_client_)),
       pile_(new FakeInfinitePicturePileImpl()),
       twin_tiling_(NULL),
       allow_create_tile_(true) {}

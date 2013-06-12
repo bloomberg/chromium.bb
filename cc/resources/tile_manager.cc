@@ -100,7 +100,8 @@ scoped_ptr<TileManager> TileManager::Create(
                           resource_provider, num_raster_threads),
                       num_raster_threads,
                       use_color_estimator,
-                      rendering_stats_instrumentation));
+                      rendering_stats_instrumentation,
+                      resource_provider->best_texture_format()));
 }
 
 TileManager::TileManager(
@@ -109,14 +110,16 @@ TileManager::TileManager(
     scoped_ptr<RasterWorkerPool> raster_worker_pool,
     size_t num_raster_threads,
     bool use_color_estimator,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation)
+    RenderingStatsInstrumentation* rendering_stats_instrumentation,
+    GLenum texture_format)
     : client_(client),
       resource_pool_(ResourcePool::Create(resource_provider)),
       raster_worker_pool_(raster_worker_pool.Pass()),
       ever_exceeded_memory_budget_(false),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       use_color_estimator_(use_color_estimator),
-      did_initialize_visible_tile_(false) {
+      did_initialize_visible_tile_(false),
+      texture_format_(texture_format) {
 }
 
 TileManager::~TileManager() {
@@ -688,14 +691,14 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(
   ManagedTileState& mts = tile->managed_state();
 
   scoped_ptr<ResourcePool::Resource> resource =
-      resource_pool_->AcquireResource(
-          tile->tile_size_.size(),
-          mts.tile_versions[mts.raster_mode].resource_format_);
+      resource_pool_->AcquireResource(tile->tile_size_.size(),
+                                      texture_format_);
   const Resource* const_resource = resource.get();
 
   DCHECK(!mts.tile_versions[mts.raster_mode].resource_id_);
   DCHECK(!mts.tile_versions[mts.raster_mode].forced_upload_);
   mts.tile_versions[mts.raster_mode].resource_id_ = resource->id();
+  mts.tile_versions[mts.raster_mode].resource_format_ = texture_format_;
 
   // TODO(vmpstr): Move analysis into RasterTask.
   PicturePileImpl::Analysis* analysis = new PicturePileImpl::Analysis;

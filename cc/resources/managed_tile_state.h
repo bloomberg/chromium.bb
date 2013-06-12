@@ -98,13 +98,14 @@ class CC_EXPORT ManagedTileState {
       Mode mode_;
       SkColor solid_color_;
 
-      // TODO(reveman): Eliminate the need for both |resource_id_|
-      // and |resource| by re-factoring the "force upload"
-      // mechanism. crbug.com/245767
+      // TODO(reveman): Eliminate the need for |resource_id_|
+      // and |resource_format_| and | forced_upload_| by re-factoring
+      // the "force upload" mechanism. crbug.com/245767
       ResourceProvider::ResourceId resource_id_;
-      scoped_ptr<ResourcePool::Resource> resource_;
       GLenum resource_format_;
       bool forced_upload_;
+
+      scoped_ptr<ResourcePool::Resource> resource_;
       RasterWorkerPool::RasterTask raster_task_;
   };
 
