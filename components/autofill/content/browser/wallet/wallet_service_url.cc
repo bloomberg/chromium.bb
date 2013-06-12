@@ -99,7 +99,7 @@ GURL GetSaveToWalletUrl() {
 }
 
 GURL GetPassiveAuthUrl() {
-  return GetBaseWalletUrl().Resolve("passiveauth");
+  return GetBaseWalletUrl().Resolve("passiveauth?isChromePayments=true");
 }
 
 GURL GetEncryptionUrl() {

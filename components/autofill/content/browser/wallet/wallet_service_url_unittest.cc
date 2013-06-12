@@ -36,7 +36,7 @@ TEST(WalletServiceUrl, CheckDefaultUrls) {
             "autocheckout/v1/saveToWallet",
             GetSaveToWalletUrl().spec());
   EXPECT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/"
-            "passiveauth",
+            "passiveauth?isChromePayments=true",
             GetPassiveAuthUrl().spec());
   EXPECT_EQ("https://wallet-web.sandbox.google.com/online-secure/"
             "temporarydata/cvv?s7e=cvv",
