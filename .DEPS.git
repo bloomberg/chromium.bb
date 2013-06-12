@@ -438,7 +438,20 @@ hooks = [
     'action':
          [
     'python',
-    'src/build/linux/install-debian.wheezy.sysroot.wrapper.py'
+    'src/chrome/installer/linux/sysroot_scripts/install-debian.wheezy.sysroot.py',
+    '--linux-only',
+    '--arch=amd64'
+],
+    'pattern':
+         '.'
+},
+    {
+    'action':
+         [
+    'python',
+    'src/chrome/installer/linux/sysroot_scripts/install-debian.wheezy.sysroot.py',
+    '--linux-only',
+    '--arch=i386'
 ],
     'pattern':
          '.'
