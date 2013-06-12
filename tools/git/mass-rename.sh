@@ -14,15 +14,4 @@
 #   for f in $(git diff --name-only origin); do ./tools/sort-headers.py $f; done
 
 DIR="$( cd "$( dirname "$0" )" && pwd )"
-
-# Make the 'read' used in the while loop split only on tabs/newlines.
-IFS=$'\t\n'
-
-git diff --cached --raw -M | while read attrs from to; do
-    type=$(echo "$attrs" | cut -d' ' -f5)
-    if echo "$type" | grep -q "^R"; then
-        python $DIR/move_source_file.py --already-moved "$from" "$to"
-    else
-        echo "Skipping: $from -- not a rename?"
-    fi
-done
+python $DIR/mass-rename.py "$*"

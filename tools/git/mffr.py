@@ -50,6 +50,8 @@ def MultiFileFindReplace(original, replacement, file_globs):
   # Posix extended regular expressions do not reliably support the "\s"
   # shorthand.
   posix_ere_original = re.sub(r"\\s", "[[:space:]]", original)
+  if sys.platform == 'win32':
+    posix_ere_original = posix_ere_original.replace('"', '""')
   out, err = subprocess.Popen(
       ['git', 'grep', '-E', '--name-only', posix_ere_original,
        '--'] + file_globs,
