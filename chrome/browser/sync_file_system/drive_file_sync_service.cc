@@ -782,8 +782,16 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
   for (iterator itr = feed->entries().begin();
        itr != feed->entries().end(); ++itr) {
     const google_apis::ResourceEntry& entry = **itr;
-    AppendRemoteChange(origin, entry, largest_changestamp,
-                       RemoteChangeHandler::REMOTE_SYNC_TYPE_BATCH);
+    if (entry.deleted())
+      continue;
+
+    SyncFileType file_type = SYNC_FILE_TYPE_UNKNOWN;
+    if (entry.is_file())
+      file_type = SYNC_FILE_TYPE_FILE;
+    else if (entry.is_folder() && IsSyncFSDirectoryOperationEnabled())
+      file_type = SYNC_FILE_TYPE_DIRECTORY;
+    else
+      continue;
 
     // Save to be fetched file to DB for restore in case of crash.
     DriveMetadata metadata;
@@ -800,6 +808,8 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
     // unknown origin.
     metadata_store_->UpdateEntry(url, metadata,
                                  base::Bind(&EmptyStatusCallback));
+
+    AppendFetchChange(origin, path, entry.resource_id(), file_type);
   }
 
   GURL next_feed_url;
