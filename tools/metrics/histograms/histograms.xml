@@ -3110,6 +3110,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Media.AudioSampleFormat" enum="AudioSampleFormat">
+  <summary>
+    Audio sample format in HTML5 media. Logged when Audio Decoder initializes.
+  </summary>
+</histogram>
+
 <histogram name="Media.AudioSamplesPerSecond" enum="AudioSampleRate">
   <summary>Audio samples per second in HTML5 media.</summary>
 </histogram>
@@ -11470,6 +11476,16 @@ other types of suffix sets.
 <enum name="AudioRendererEvents" type="int">
   <int value="0" label="Initialized"/>
   <int value="1" label="Runtime error"/>
+</enum>
+
+<enum name="AudioSampleFormat" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Unsigned 8-bit"/>
+  <int value="2" label="Signed 16-bit"/>
+  <int value="3" label="Signed 32-bit"/>
+  <int value="4" label="Float 32-bit"/>
+  <int value="5" label="Signed 16-bit planar"/>
+  <int value="6" label="Float 32-bit planar"/>
 </enum>
 
 <enum name="AudioSampleRate" type="int">
