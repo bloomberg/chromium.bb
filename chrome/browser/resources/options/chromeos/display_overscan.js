@@ -82,14 +82,12 @@ cr.define('options', function() {
       operationsTable.style.top = buttonsContainer.offsetTop / 2 -
           operationsTable.offsetHeight / 2 + 'px';
 
-      window.addEventListener('blur', DisplayOverscan.onWindowBlur);
       $('display-overscan-operation-cancel').focus();
       chrome.send('start', [this.id_]);
     },
 
     /** @override */
     didClosePage: function() {
-      window.removeEventListener('blur', DisplayOverscan.onWindowBlur);
       window.removeEventListener('keydown', this.keyHandler_);
     },
 
@@ -148,10 +146,6 @@ cr.define('options', function() {
           break;
       }
     }
-  };
-
-  DisplayOverscan.onWindowBlur = function() {
-    DisplayOverscan.getInstance().onOverscanCanceled_();
   };
 
   DisplayOverscan.onOverscanCanceled = function() {
