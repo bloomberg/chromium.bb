@@ -192,16 +192,17 @@ void OutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   DCHECK(context3d_);
   DCHECK(frame->gl_frame_data);
 
-  if (frame->gl_frame_data->partial_swap_allowed) {
+  if (frame->gl_frame_data->sub_buffer_rect ==
+      gfx::Rect(frame->gl_frame_data->size)) {
+    // Note that currently this has the same effect as SwapBuffers; we should
+    // consider exposing a different entry point on WebGraphicsContext3D.
+    context3d()->prepareTexture();
+  } else {
     gfx::Rect sub_buffer_rect = frame->gl_frame_data->sub_buffer_rect;
     context3d()->postSubBufferCHROMIUM(sub_buffer_rect.x(),
                                        sub_buffer_rect.y(),
                                        sub_buffer_rect.width(),
                                        sub_buffer_rect.height());
-  } else {
-    // Note that currently this has the same effect as SwapBuffers; we should
-    // consider exposing a different entry point on WebGraphicsContext3D.
-    context3d()->prepareTexture();
   }
 
   if (!has_swap_buffers_complete_callback_)

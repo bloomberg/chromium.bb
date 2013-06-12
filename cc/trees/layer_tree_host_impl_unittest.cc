@@ -2813,11 +2813,19 @@ TEST_F(LayerTreeHostImplTest, ReshapeNotCalledUntilDraw) {
   reshape_tracker->clear_reshape_called();
 }
 
-class PartialSwapTrackerContext : public TestWebGraphicsContext3D {
+class SwapTrackerContext : public TestWebGraphicsContext3D {
  public:
+  SwapTrackerContext() : last_update_type_(NoUpdate) {}
+
+  virtual void prepareTexture() OVERRIDE {
+    update_rect_ = gfx::Rect(width_, height_);
+    last_update_type_ = PrepareTexture;
+  }
+
   virtual void postSubBufferCHROMIUM(int x, int y, int width, int height)
       OVERRIDE {
-    partial_swap_rect_ = gfx::Rect(x, y, width, height);
+    update_rect_ = gfx::Rect(x, y, width, height);
+    last_update_type_ = PostSubBuffer;
   }
 
   virtual WebKit::WebString getString(WebKit::WGC3Denum name) OVERRIDE {
@@ -2829,10 +2837,21 @@ class PartialSwapTrackerContext : public TestWebGraphicsContext3D {
     return WebKit::WebString();
   }
 
-  gfx::Rect partial_swap_rect() const { return partial_swap_rect_; }
+  gfx::Rect update_rect() const { return update_rect_; }
+
+  enum UpdateType {
+    NoUpdate = 0,
+    PrepareTexture,
+    PostSubBuffer
+  };
+
+  UpdateType last_update_type() {
+    return last_update_type_;
+  }
 
  private:
-  gfx::Rect partial_swap_rect_;
+  gfx::Rect update_rect_;
+  UpdateType last_update_type_;
 };
 
 // Make sure damage tracking propagates all the way to the graphics context,
@@ -2840,9 +2859,9 @@ class PartialSwapTrackerContext : public TestWebGraphicsContext3D {
 TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   scoped_ptr<OutputSurface> output_surface =
       FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(
-          new PartialSwapTrackerContext)).PassAs<OutputSurface>();
-  PartialSwapTrackerContext* partial_swap_tracker =
-      static_cast<PartialSwapTrackerContext*>(output_surface->context3d());
+          new SwapTrackerContext)).PassAs<OutputSurface>();
+  SwapTrackerContext* swap_tracker =
+      static_cast<SwapTrackerContext*>(output_surface->context3d());
 
   // This test creates its own LayerTreeHostImpl, so
   // that we can force partial swap enabled.
@@ -2879,13 +2898,14 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   layer_tree_host_impl->DrawLayers(&frame, base::TimeTicks::Now());
   layer_tree_host_impl->DidDrawAllLayers(frame);
   layer_tree_host_impl->SwapBuffers(frame);
-  gfx::Rect actual_swap_rect = partial_swap_tracker->partial_swap_rect();
+  gfx::Rect actual_swap_rect = swap_tracker->update_rect();
   gfx::Rect expected_swap_rect = gfx::Rect(0, 0, 500, 500);
   EXPECT_EQ(expected_swap_rect.x(), actual_swap_rect.x());
   EXPECT_EQ(expected_swap_rect.y(), actual_swap_rect.y());
   EXPECT_EQ(expected_swap_rect.width(), actual_swap_rect.width());
   EXPECT_EQ(expected_swap_rect.height(), actual_swap_rect.height());
-
+  EXPECT_EQ(swap_tracker->last_update_type(),
+            SwapTrackerContext::PrepareTexture);
   // Second frame, only the damaged area should get swapped. Damage should be
   // the union of old and new child rects.
   // expected damage rect: gfx::Rect(26, 28);
@@ -2896,12 +2916,14 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   layer_tree_host_impl->DrawLayers(&frame, base::TimeTicks::Now());
   host_impl_->DidDrawAllLayers(frame);
   layer_tree_host_impl->SwapBuffers(frame);
-  actual_swap_rect = partial_swap_tracker->partial_swap_rect();
+  actual_swap_rect = swap_tracker->update_rect();
   expected_swap_rect = gfx::Rect(0, 500-28, 26, 28);
   EXPECT_EQ(expected_swap_rect.x(), actual_swap_rect.x());
   EXPECT_EQ(expected_swap_rect.y(), actual_swap_rect.y());
   EXPECT_EQ(expected_swap_rect.width(), actual_swap_rect.width());
   EXPECT_EQ(expected_swap_rect.height(), actual_swap_rect.height());
+  EXPECT_EQ(swap_tracker->last_update_type(),
+            SwapTrackerContext::PostSubBuffer);
 
   // Make sure that partial swap is constrained to the viewport dimensions
   // expected damage rect: gfx::Rect(500, 500);
@@ -2914,12 +2936,14 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   layer_tree_host_impl->DrawLayers(&frame, base::TimeTicks::Now());
   host_impl_->DidDrawAllLayers(frame);
   layer_tree_host_impl->SwapBuffers(frame);
-  actual_swap_rect = partial_swap_tracker->partial_swap_rect();
+  actual_swap_rect = swap_tracker->update_rect();
   expected_swap_rect = gfx::Rect(10, 10);
   EXPECT_EQ(expected_swap_rect.x(), actual_swap_rect.x());
   EXPECT_EQ(expected_swap_rect.y(), actual_swap_rect.y());
   EXPECT_EQ(expected_swap_rect.width(), actual_swap_rect.width());
   EXPECT_EQ(expected_swap_rect.height(), actual_swap_rect.height());
+  EXPECT_EQ(swap_tracker->last_update_type(),
+            SwapTrackerContext::PrepareTexture);
 }
 
 TEST_F(LayerTreeHostImplTest, RootLayerDoesntCreateExtraSurface) {

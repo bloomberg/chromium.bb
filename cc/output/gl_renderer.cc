@@ -2029,11 +2029,9 @@ void GLRenderer::SwapBuffers() {
                   flipped_y_pos_of_rect_bottom,
                   swap_buffer_rect_.width(),
                   swap_buffer_rect_.height());
-    compositor_frame.gl_frame_data->partial_swap_allowed = true;
   } else {
     compositor_frame.gl_frame_data->sub_buffer_rect =
         gfx::Rect(output_surface_->SurfaceSize());
-    compositor_frame.gl_frame_data->partial_swap_allowed = false;
   }
   output_surface_->SwapBuffers(&compositor_frame);
 

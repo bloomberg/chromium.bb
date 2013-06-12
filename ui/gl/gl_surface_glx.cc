@@ -414,11 +414,6 @@ void NativeViewGLSurfaceGLX::Destroy() {
 }
 
 bool NativeViewGLSurfaceGLX::Resize(const gfx::Size& size) {
-  // On Intel drivers, the frame buffer won't be resize until the next swap. If
-  // we only do PostSubBuffer, then we're stuck in the old size. Force a swap
-  // now.
-  if (gfx::g_driver_glx.ext.b_GLX_MESA_copy_sub_buffer && size_ != size)
-    SwapBuffers();
   size_ = size;
   return true;
 }

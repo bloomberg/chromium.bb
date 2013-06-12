@@ -552,10 +552,11 @@ class BrowserCompositorOutputSurface
     command_buffer_proxy->SetLatencyInfo(frame->metadata.latency_info);
 
     if (reflector_.get()) {
-      if (frame->gl_frame_data->partial_swap_allowed)
-        reflector_->OnPostSubBuffer(frame->gl_frame_data->sub_buffer_rect);
-      else
+      if (frame->gl_frame_data->sub_buffer_rect ==
+          gfx::Rect(frame->gl_frame_data->size))
         reflector_->OnSwapBuffers();
+      else
+        reflector_->OnPostSubBuffer(frame->gl_frame_data->sub_buffer_rect);
     }
 
     OutputSurface::SwapBuffers(frame);
