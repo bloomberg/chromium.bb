@@ -68,7 +68,8 @@ struct NaClStartParams {
 struct NaClLaunchParams {
   NaClLaunchParams();
   NaClLaunchParams(const std::string& u, int r, uint32 p, bool uses_irt,
-                   bool enable_dyncode_syscalls);
+                   bool enable_dyncode_syscalls,
+                   bool enable_exception_handling);
   NaClLaunchParams(const NaClLaunchParams& l);
   ~NaClLaunchParams();
 
@@ -77,6 +78,7 @@ struct NaClLaunchParams {
   uint32 permission_bits;
   bool uses_irt;
   bool enable_dyncode_syscalls;
+  bool enable_exception_handling;
 };
 
 }  // namespace nacl
