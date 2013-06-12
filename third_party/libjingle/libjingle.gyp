@@ -22,7 +22,6 @@
       'HAVE_SRTP',
       'HAVE_WEBRTC_VIDEO',
       'HAVE_WEBRTC_VOICE',
-      'HAVE_YUV',
       'JSONCPP_RELATIVE_PATH',
       'LOGGING_INSIDE_LIBJINGLE',
       'NO_MAIN_THREAD_WRAPPING',
@@ -45,6 +44,7 @@
       '../../testing/gtest/include',
       '../../third_party',
       '../../third_party/libyuv/include',
+      '../../third_party/usrsctp',
       '../../third_party/webrtc',
     ],
     'dependencies': [
@@ -766,6 +766,17 @@
               'sources': [
                 'overrides/allocator_shim/allocator_stub.cc',
                 'overrides/allocator_shim/allocator_stub.h',
+              ],
+            }],
+            # TODO(mallinath) - Enable SCTP for Android and iOS platforms.
+            ['OS!="android" and OS!="ios"', {
+              # TODO(mallinath) - Add HAVE_SCTP flag.
+              'sources': [
+                '<(libjingle_source)/talk/media/sctp/sctpdataengine.cc',
+                '<(libjingle_source)/talk/media/sctp/sctpdataengine.h',
+              ],
+              'dependencies': [
+                '<(DEPTH)/third_party/usrsctp/usrsctp.gyp:usrsctplib',
               ],
             }],
             ['enabled_libjingle_device_manager==1', {
