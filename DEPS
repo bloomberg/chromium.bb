@@ -637,13 +637,25 @@ hooks = [
                "--linux-only"],
   },
   {
-    # Downloads the Debian Wheezy sysroot to chrome/installer/linux/internal
-    # if needed. This sysroot updates at about the same rate that the chrome
-    # build deps change. This script is a no-op except for linux users who have
-    # src-internal access and are doing official chrome builds.
+    # Downloads the Debian Wheezy sysroot to chrome/installer/linux if needed.
+    # This sysroot updates at about the same rate that the chrome build deps
+    # change. This script is a no-op except for linux users who are doing
+    # official chrome builds.
     "pattern": ".",
-    "action": ["python",
-               "src/build/linux/install-debian.wheezy.sysroot.wrapper.py"],
+    "action": [
+        "python",
+        "src/chrome/installer/linux/sysroot_scripts/install-debian.wheezy.sysroot.py",
+        "--linux-only",
+        "--arch=amd64"],
+  },
+  {
+    # Same as above, but for 32-bit Linux.
+    "pattern": ".",
+    "action": [
+        "python",
+        "src/chrome/installer/linux/sysroot_scripts/install-debian.wheezy.sysroot.py",
+        "--linux-only",
+        "--arch=i386"],
   },
   {
     # Pull clang on mac. If nothing changed, or on non-mac platforms, this takes
