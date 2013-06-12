@@ -452,6 +452,10 @@ class ChromeLauncherControllerPerApp
   // Get browser shortcut's index from pref.
   int GetChromeIconIndexFromPref() const;
 
+  // Close all windowed V1 applications of a certain extension which was already
+  // deleted.
+  void CloseWindowedAppsFromRemovedExtension(const std::string& app_id);
+
   ash::LauncherModel* model_;
 
   // Profile used for prefs and loading extensions. This is NOT necessarily the

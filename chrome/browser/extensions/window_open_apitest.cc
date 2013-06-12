@@ -305,6 +305,12 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
     num_popups -= 1;
   }
 #endif
+#if defined(USE_ASH)
+#if !defined(OS_WIN)
+  // On linux ash we close all popup applications when closing its extension.
+  num_popups = 0;
+#endif
+#endif
   EXPECT_TRUE(WaitForTabsAndPopups(browser(), 1, num_popups, 0));
 }
 

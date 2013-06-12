@@ -502,8 +502,9 @@ bool ChromeLauncherControllerPerApp::IsPlatformApp(ash::LauncherID id) {
 
   std::string app_id = GetAppIDForLauncherID(id);
   const Extension* extension = GetExtensionForAppID(app_id);
-  DCHECK(extension);
-  return extension->is_platform_app();
+  // An extension can be synced / updated at any time and therefore not be
+  // available.
+  return extension ? extension->is_platform_app() : false;
 }
 
 void ChromeLauncherControllerPerApp::LaunchApp(const std::string& app_id,
@@ -557,6 +558,11 @@ extensions::ExtensionPrefs::LaunchType
 
   const Extension* extension = GetExtensionForAppID(
       id_to_item_controller_map_[id]->app_id());
+
+  // An extension can be unloaded/updated/unavailable at any time.
+  if (!extension)
+    return extensions::ExtensionPrefs::LAUNCH_DEFAULT;
+
   return profile_->GetExtensionService()->extension_prefs()->GetLaunchType(
       extension,
       extensions::ExtensionPrefs::LAUNCH_DEFAULT);
@@ -1035,12 +1041,20 @@ void ChromeLauncherControllerPerApp::Observe(
       const content::Details<extensions::UnloadedExtensionInfo>& unload_info(
           details);
       const Extension* extension = unload_info->extension;
-      if (IsAppPinned(extension->id())) {
+      const std::string& id = extension->id();
+      // Since we might have windowed apps of this type which might have
+      // outstanding locks which needs to be removed.
+      if (GetLauncherIDForAppID(id) &&
+          unload_info->reason == extension_misc::UNLOAD_REASON_UNINSTALL) {
+        CloseWindowedAppsFromRemovedExtension(id);
+      }
+
+      if (IsAppPinned(id)) {
         if (unload_info->reason == extension_misc::UNLOAD_REASON_UNINSTALL) {
-          DoUnpinAppsWithID(extension->id());
-          app_icon_loader_->ClearImage(extension->id());
+          DoUnpinAppsWithID(id);
+          app_icon_loader_->ClearImage(id);
         } else {
-          app_icon_loader_->UpdateImage(extension->id());
+          app_icon_loader_->UpdateImage(id);
         }
       }
       break;
@@ -1172,6 +1186,7 @@ bool ChromeLauncherControllerPerApp::ContentCanBeHandledByGmailApp(
     // overlap with the offline app ("/mail/mu/").
     if (!MatchPattern(url.path(), "/mail/mu/*") &&
         MatchPattern(url.path(), "/mail/*") &&
+        GetExtensionForAppID(kGmailAppId) &&
         GetExtensionForAppID(kGmailAppId)->OverlapsWithOrigin(url))
       return true;
   }
@@ -1598,4 +1613,30 @@ bool ChromeLauncherControllerPerApp::IsIncognito(
   const Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   return profile->IsOffTheRecord() && !profile->IsGuestSession();
+}
+
+void ChromeLauncherControllerPerApp::CloseWindowedAppsFromRemovedExtension(
+    const std::string& app_id) {
+  // This function cannot rely on the controller's enumeration functionality
+  // since the extension has already be unloaded.
+  const BrowserList* ash_browser_list =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  std::vector<Browser*> browser_to_close;
+  for (BrowserList::const_reverse_iterator
+           it = ash_browser_list->begin_last_active();
+       it != ash_browser_list->end_last_active(); ++it) {
+    Browser* browser = *it;
+    if (!browser->is_type_tabbed() &&
+        browser->is_type_popup() &&
+        browser->is_app() &&
+        app_id == web_app::GetExtensionIdFromApplicationName(
+            browser->app_name())) {
+      browser_to_close.push_back(browser);
+    }
+  }
+  while (!browser_to_close.empty()) {
+    TabStripModel* tab_strip = browser_to_close.back()->tab_strip_model();
+    tab_strip->CloseWebContentsAt(0, TabStripModel::CLOSE_NONE);
+    browser_to_close.pop_back();
+  }
 }
