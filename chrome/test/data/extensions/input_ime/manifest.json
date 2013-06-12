@@ -23,13 +23,6 @@
     "language": "en",
     "layouts": ["us::eng"]
   },{
-    "name": "EchoBackIME",
-    "type": "ime",
-    "id": "EchoBackIME",
-    "description": "Just echo back called function name to Chrome.",
-    "language": "en",
-    "layouts": ["us::eng"]
-  },{
     "name": "APIArgumentIME",
     "type": "ime",
     "id": "APIArgumentIME",

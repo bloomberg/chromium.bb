@@ -23,8 +23,6 @@ const char kIdentityIMEID[] =
     "_ext_ime_iafoklpfplgfnoimmaejoeondnjnlcfpIdentityIME";
 const char kToUpperIMEID[] =
     "_ext_ime_iafoklpfplgfnoimmaejoeondnjnlcfpToUpperIME";
-const char kEchoBackIMEID[] =
-    "_ext_ime_iafoklpfplgfnoimmaejoeondnjnlcfpEchoBackIME";
 const char kAPIArgumentIMEID[] =
     "_ext_ime_iafoklpfplgfnoimmaejoeondnjnlcfpAPIArgumentIME";
 
@@ -83,13 +81,12 @@ class InputMethodEngineIBusBrowserTest
     // multiple times. Calling at least once per engine is sufficient for IBus
     // component. Here, there is two engine, thus expectation is at least 4
     // times.
-    EXPECT_LE(4, ibus_client->register_component_call_count());
+    EXPECT_LE(3, ibus_client->register_component_call_count());
 
     // Extension IMEs are not enabled by default.
     std::vector<std::string> extension_ime_ids;
     extension_ime_ids.push_back(kIdentityIMEID);
     extension_ime_ids.push_back(kToUpperIMEID);
-    extension_ime_ids.push_back(kEchoBackIMEID);
     extension_ime_ids.push_back(kAPIArgumentIMEID);
     InputMethodManager::Get()->SetEnabledExtensionImes(&extension_ime_ids);
 
@@ -103,7 +100,7 @@ class InputMethodEngineIBusBrowserTest
     // start with __comp__. The component extension IME is whitelisted and
     // managed by ComponentExtensionIMEManager, but its framework is same as
     // normal extension IME.
-    EXPECT_EQ(4U, extension_imes.size());
+    EXPECT_EQ(3U, extension_imes.size());
   }
 
   bool LoadExtensionWithType(const std::string& extension_name,
@@ -168,7 +165,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
 
   MockIBusEngineFactoryService* factory_service =
       mock_dbus_thread_manager_->mock_ibus_engine_factory_service();
-  factory_service->CallCreateEngine(kEchoBackIMEID);
+  factory_service->CallCreateEngine(kIdentityIMEID);
 
   MockIBusEngineService* engine_service =
       mock_dbus_thread_manager_->mock_ibus_engine_service();
