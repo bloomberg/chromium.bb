@@ -12,13 +12,12 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
-#include "ui/views/focus/focus_manager.h"
+#include "ui/views/focus/external_focus_tracker.h"
 
 namespace ui {
 class MenuModel;
 }
 namespace views {
-class ExternalFocusTracker;
 class ImageButton;
 class ImageView;
 class Label;
@@ -33,7 +32,7 @@ class MenuRunner;
 class InfoBarView : public InfoBar,
                     public views::View,
                     public views::ButtonListener,
-                    public views::FocusChangeListener {
+                    public views::ExternalFocusTracker {
  public:
   InfoBarView(InfoBarService* owner, InfoBarDelegate* delegate);
 
@@ -110,21 +109,15 @@ class InfoBarView : public InfoBar,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
 
-  // views::FocusChangeListener:
+  // views::ExternalFocusTracker:
   virtual void OnWillChangeFocus(View* focused_before,
                                  View* focused_now) OVERRIDE;
-  virtual void OnDidChangeFocus(View* focused_before,
-                                View* focused_now) OVERRIDE;
 
   // The optional icon at the left edge of the InfoBar.
   views::ImageView* icon_;
 
   // The close button at the right edge of the InfoBar.
   views::ImageButton* close_button_;
-
-  // Tracks and stores the last focused view which is not the InfoBar or any of
-  // its children. Used to restore focus once the InfoBar is closed.
-  scoped_ptr<views::ExternalFocusTracker> focus_tracker_;
 
   // The paths for the InfoBarBackground to draw, sized according to the heights
   // above.

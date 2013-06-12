@@ -29,9 +29,9 @@ class ViewStorage;
 class VIEWS_EXPORT ExternalFocusTracker : public FocusChangeListener {
  public:
   ExternalFocusTracker(View* parent_view, FocusManager* focus_manager);
-
   virtual ~ExternalFocusTracker();
-  // FocusChangeListener implementation.
+
+  // FocusChangeListener:
   virtual void OnWillChangeFocus(View* focused_before,
                                  View* focused_now) OVERRIDE;
   virtual void OnDidChangeFocus(View* focused_before,
