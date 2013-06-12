@@ -220,8 +220,7 @@ WebsiteSettingsPopupGtk::WebsiteSettingsPopupGtk(
       identity_contents_(NULL),
       connection_contents_(NULL),
       first_visit_contents_(NULL),
-      notebook_(NULL),
-      presenter_(NULL) {
+      notebook_(NULL) {
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent);
   browser_ = browser_window->browser();

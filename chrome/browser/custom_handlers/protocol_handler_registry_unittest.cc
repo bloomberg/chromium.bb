@@ -86,7 +86,7 @@ void AssertWillHandleIO(
   interceptor->Chain(scoped_ptr<net::URLRequestJobFactory>(
       new FakeURLRequestJobFactory()));
   ASSERT_EQ(expected, interceptor->IsHandledProtocol(scheme));
-  interceptor->Chain(scoped_ptr<net::URLRequestJobFactory>(NULL));
+  interceptor->Chain(scoped_ptr<net::URLRequestJobFactory>());
 }
 
 void AssertWillHandle(

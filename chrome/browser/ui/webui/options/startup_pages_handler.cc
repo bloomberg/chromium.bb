@@ -23,9 +23,7 @@
 
 namespace options {
 
-StartupPagesHandler::StartupPagesHandler()
-    : startup_custom_pages_table_model_(NULL) {
-}
+StartupPagesHandler::StartupPagesHandler() {}
 
 StartupPagesHandler::~StartupPagesHandler() {
 

@@ -58,9 +58,7 @@ class IncrementalTimeProvider : public ExtensionPrefs::TimeProvider {
 }  // namespace
 
 TestExtensionPrefs::TestExtensionPrefs(base::SequencedTaskRunner* task_runner)
-    : pref_service_(NULL),
-      task_runner_(task_runner),
-      extensions_disabled_(false) {
+    : task_runner_(task_runner), extensions_disabled_(false) {
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
   preferences_file_ = temp_dir_.path().AppendASCII("Preferences");
   extensions_dir_ = temp_dir_.path().AppendASCII("Extensions");

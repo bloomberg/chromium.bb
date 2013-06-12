@@ -275,7 +275,7 @@ scoped_ptr<DnsProbeJob> DnsProbeService::CreateProbeJob(
     const DnsConfig& dns_config,
     const DnsProbeJob::CallbackType& job_callback) {
   if (!dns_config.IsValid())
-    return scoped_ptr<DnsProbeJob>(NULL);
+    return scoped_ptr<DnsProbeJob>();
 
   scoped_ptr<DnsClient> dns_client(DnsClient::CreateClient(NULL));
   dns_client->SetConfig(dns_config);

@@ -98,9 +98,7 @@ PerformanceMonitor::PerformanceDataForIOThread::PerformanceDataForIOThread()
     : network_bytes_read(0) {
 }
 
-PerformanceMonitor::PerformanceMonitor() : database_(NULL),
-                                           metrics_map_(new MetricsMap) {
-}
+PerformanceMonitor::PerformanceMonitor() : metrics_map_(new MetricsMap) {}
 
 PerformanceMonitor::~PerformanceMonitor() {
   BrowserThread::PostBlockingPoolSequencedTask(

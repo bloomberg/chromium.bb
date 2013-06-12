@@ -350,7 +350,7 @@ scoped_ptr<DictionaryValue> GetDictionaryFromArray(
       Value* entry = NULL;
       ListValue* list = NULL;
       if (!dictionary->GetWithoutPathExpansion(*name, &entry))
-        return scoped_ptr<DictionaryValue>(NULL);
+        return scoped_ptr<DictionaryValue>();
       switch (entry->GetType()) {
         case Value::TYPE_STRING:  // Replace the present string with a list.
           list = new ListValue;
@@ -366,7 +366,7 @@ scoped_ptr<DictionaryValue> GetDictionaryFromArray(
           break;
         default:
           NOTREACHED();  // We never put other Values here.
-          return scoped_ptr<DictionaryValue>(NULL);
+          return scoped_ptr<DictionaryValue>();
       }
     } else {
       dictionary->SetString(*name, *value);

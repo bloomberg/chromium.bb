@@ -40,12 +40,10 @@ class SQLiteServerBoundCertStore::Backend
   Backend(const base::FilePath& path,
           quota::SpecialStoragePolicy* special_storage_policy)
       : path_(path),
-        db_(NULL),
         num_pending_(0),
         force_keep_session_state_(false),
         special_storage_policy_(special_storage_policy),
-        corruption_detected_(false) {
-  }
+        corruption_detected_(false) {}
 
   // Creates or loads the SQLite database.
   void Load(const LoadedCallback& loaded_callback);

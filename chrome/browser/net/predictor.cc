@@ -126,8 +126,7 @@ class Predictor::LookupRequest {
 };
 
 Predictor::Predictor(bool preconnect_enabled)
-    : initial_observer_(NULL),
-      url_request_context_getter_(NULL),
+    : url_request_context_getter_(NULL),
       predictor_enabled_(true),
       peak_pending_lookups_(0),
       shutdown_(false),

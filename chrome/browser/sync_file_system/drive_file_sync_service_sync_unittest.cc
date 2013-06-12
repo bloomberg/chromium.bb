@@ -50,7 +50,6 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE, &message_loop_),
         fake_api_util_(NULL),
-        fake_remote_processor_(NULL),
         metadata_store_(NULL),
         resource_count_(0) {}
 

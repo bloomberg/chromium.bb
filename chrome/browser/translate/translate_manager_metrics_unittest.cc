@@ -20,10 +20,7 @@ namespace {
 
 class MetricsRecorder {
  public:
-  explicit MetricsRecorder(const char* key)
-      : key_(key),
-        base_samples_(NULL),
-        samples_(NULL) {
+  explicit MetricsRecorder(const char* key) : key_(key) {
     StatisticsRecorder::Initialize();
 
     HistogramBase* histogram = StatisticsRecorder::FindHistogram(key_);

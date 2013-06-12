@@ -107,10 +107,7 @@ typedef std::map<std::string, const char*> CanonicalNameDisplayNameMapType;
 
 class CanonicalEncodingMap {
  public:
-  CanonicalEncodingMap()
-      : id_to_encoding_name_map_(NULL),
-        encoding_name_to_id_map_(NULL),
-        encoding_name_to_display_name_map_(NULL) { }
+  CanonicalEncodingMap() {}
   const IdToCanonicalEncodingNameMapType* GetIdToCanonicalEncodingNameMapData();
   const CanonicalEncodingNameToIdMapType* GetCanonicalEncodingNameToIdMapData();
   const CanonicalNameDisplayNameMapType* GetCanonicalNameDisplayNameMapData();

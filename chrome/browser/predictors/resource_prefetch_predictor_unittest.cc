@@ -174,7 +174,6 @@ ResourcePrefetchPredictorTest::ResourcePrefetchPredictorTest()
       ui_thread_(content::BrowserThread::UI, &loop_),
       db_thread_(content::BrowserThread::DB, &loop_),
       profile_(new TestingProfile()),
-      predictor_(NULL),
       mock_tables_(new StrictMock<MockResourcePrefetchPredictorTables>()),
       empty_url_data_(PREFETCH_KEY_TYPE_URL, std::string()),
       empty_host_data_(PREFETCH_KEY_TYPE_HOST, std::string()) {}

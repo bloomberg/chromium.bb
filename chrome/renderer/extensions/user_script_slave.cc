@@ -126,9 +126,7 @@ void UserScriptSlave::RemoveIsolatedWorld(const std::string& extension_id) {
 }
 
 UserScriptSlave::UserScriptSlave(const ExtensionSet* extensions)
-    : shared_memory_(NULL),
-      script_deleter_(&scripts_),
-      extensions_(extensions) {
+    : script_deleter_(&scripts_), extensions_(extensions) {
   api_js_ = ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_GREASEMONKEY_API_JS);
 }

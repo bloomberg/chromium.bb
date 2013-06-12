@@ -271,7 +271,7 @@ ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
     : user_data_dir_(user_data_dir),
       logged_in_(false),
       will_import_(false),
-      profile_shortcut_manager_(NULL),
+
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
       browser_list_observer_(this),
 #endif

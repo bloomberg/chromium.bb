@@ -185,7 +185,7 @@ class ComponentUpdaterTest : public testing::Test {
     kTestComponent_jebg
   };
 
-  ComponentUpdaterTest() : component_updater_(NULL), test_config_(NULL) {
+  ComponentUpdaterTest() : test_config_(NULL) {
     // The component updater instance under test.
     test_config_ = new TestConfigurator;
     component_updater_.reset(ComponentUpdateServiceFactory(test_config_));

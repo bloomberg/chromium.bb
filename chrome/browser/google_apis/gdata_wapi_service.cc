@@ -98,7 +98,6 @@ GDataWapiService::GDataWapiService(
     const GURL& base_url,
     const std::string& custom_user_agent)
     : url_request_context_getter_(url_request_context_getter),
-      sender_(NULL),
       url_generator_(base_url),
       custom_user_agent_(custom_user_agent) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

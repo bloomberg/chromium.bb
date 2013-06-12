@@ -440,9 +440,6 @@ void SafeBrowsingDatabase::RecordFailure(FailureType failure_type) {
 SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew()
     : creation_loop_(base::MessageLoop::current()),
       browse_store_(new SafeBrowsingStoreFile),
-      download_store_(NULL),
-      csd_whitelist_store_(NULL),
-      download_whitelist_store_(NULL),
       reset_factory_(this),
       corruption_detected_(false),
       change_detected_(false) {

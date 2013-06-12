@@ -55,10 +55,8 @@ ExtensionFunction::ExtensionFunction()
       has_callback_(false),
       include_incognito_(false),
       user_gesture_(false),
-      args_(NULL),
       bad_message_(false),
-      histogram_value_(extensions::functions::UNKNOWN) {
-}
+      histogram_value_(extensions::functions::UNKNOWN) {}
 
 ExtensionFunction::~ExtensionFunction() {
 }

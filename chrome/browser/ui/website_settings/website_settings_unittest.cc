@@ -74,12 +74,7 @@ class MockWebsiteSettingsUI : public WebsiteSettingsUI {
 
 class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
  public:
-  WebsiteSettingsTest()
-      : website_settings_(NULL),
-        mock_ui_(NULL),
-        cert_id_(0),
-        url_("http://www.example.com") {
-  }
+  WebsiteSettingsTest() : cert_id_(0), url_("http://www.example.com") {}
 
   virtual ~WebsiteSettingsTest() {
   }

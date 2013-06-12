@@ -10,14 +10,13 @@
 
 using content::BrowserThread;
 
-IconLoader::IconLoader(const base::FilePath& file_path, IconSize size,
+IconLoader::IconLoader(const base::FilePath& file_path,
+                       IconSize size,
                        Delegate* delegate)
     : target_message_loop_(NULL),
       file_path_(file_path),
       icon_size_(size),
-      image_(NULL),
-      delegate_(delegate) {
-}
+      delegate_(delegate) {}
 
 IconLoader::~IconLoader() {
 }

@@ -201,11 +201,7 @@ void SafeBrowsingStoreFile::CheckForOriginalAndDelete(
 }
 
 SafeBrowsingStoreFile::SafeBrowsingStoreFile()
-    : chunks_written_(0),
-      file_(NULL),
-      empty_(false),
-      corruption_seen_(false) {
-}
+    : chunks_written_(0), empty_(false), corruption_seen_(false) {}
 
 SafeBrowsingStoreFile::~SafeBrowsingStoreFile() {
   Close();

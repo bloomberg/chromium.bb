@@ -74,8 +74,7 @@ SafeBrowsingDatabaseManager::SafeBrowsingCheck::SafeBrowsingCheck(
       full_hash_results(full_hashes.size(), SB_THREAT_TYPE_SAFE),
       client(client),
       need_get_hash(false),
-      check_type(check_type),
-      timeout_factory_(NULL) {
+      check_type(check_type) {
   DCHECK_EQ(urls.empty(), !full_hashes.empty())
       << "Exactly one of urls and full_hashes must be set";
 }

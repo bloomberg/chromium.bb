@@ -82,9 +82,7 @@ class NativeMessagingTest : public ::testing::Test,
  protected:
   NativeMessagingTest()
       : current_channel_(chrome::VersionInfo::CHANNEL_DEV),
-        native_message_process_host_(NULL),
-        thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-  }
+        thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

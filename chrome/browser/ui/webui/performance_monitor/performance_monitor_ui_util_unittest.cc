@@ -42,7 +42,7 @@ class PerformanceMonitorUtilTest : public ::testing::Test {
         break;
       default:
         NOTREACHED();
-        return scoped_ptr<Database::MetricVector>(NULL);
+        return scoped_ptr<Database::MetricVector>();
     }
     return aggregator->AggregateInterval(
         type, &metric, metrics->end(), start, kMaxTime, resolution);

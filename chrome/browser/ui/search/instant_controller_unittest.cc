@@ -50,9 +50,7 @@ class TestableInstantController : public InstantController {
   TestableInstantController()
       : InstantController(NULL, true),
         test_instant_url_("http://test_url"),
-        test_extended_enabled_(true),
-        test_overlay_(NULL) {
-  }
+        test_extended_enabled_(true) {}
 
   // Overrides from InstantController
   virtual std::string GetInstantURL() const OVERRIDE {

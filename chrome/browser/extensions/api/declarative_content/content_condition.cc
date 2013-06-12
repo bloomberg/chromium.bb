@@ -69,18 +69,18 @@ scoped_ptr<ContentCondition> ContentCondition::Create(
   const base::DictionaryValue* condition_dict = NULL;
   if (!condition.GetAsDictionary(&condition_dict)) {
     *error = kExpectedDictionary;
-    return scoped_ptr<ContentCondition>(NULL);
+    return scoped_ptr<ContentCondition>();
   }
 
   // Verify that we are dealing with a Condition whose type we understand.
   std::string instance_type;
   if (!condition_dict->GetString(keys::kInstanceType, &instance_type)) {
     *error = kConditionWithoutInstanceType;
-    return scoped_ptr<ContentCondition>(NULL);
+    return scoped_ptr<ContentCondition>();
   }
   if (instance_type != keys::kPageStateMatcherType) {
     *error = kExpectedOtherConditionType;
-    return scoped_ptr<ContentCondition>(NULL);
+    return scoped_ptr<ContentCondition>();
   }
 
   scoped_refptr<URLMatcherConditionSet> url_matcher_condition_set;
@@ -123,7 +123,7 @@ scoped_ptr<ContentCondition> ContentCondition::Create(
                                   condition_attribute_name.c_str());
     }
     if (!error->empty())
-      return scoped_ptr<ContentCondition>(NULL);
+      return scoped_ptr<ContentCondition>();
   }
 
   if (!url_matcher_condition_set.get()) {

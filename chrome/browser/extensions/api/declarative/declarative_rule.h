@@ -299,7 +299,7 @@ DeclarativeConditionSet<ConditionT>::Create(
     scoped_ptr<ConditionT> condition =
         ConditionT::Create(url_matcher_condition_factory, **i, error);
     if (!error->empty())
-      return scoped_ptr<DeclarativeConditionSet>(NULL);
+      return scoped_ptr<DeclarativeConditionSet>();
     result.push_back(make_linked_ptr(condition.release()));
   }
 
@@ -359,7 +359,7 @@ DeclarativeActionSet<ActionT>::Create(
     scoped_refptr<const ActionT> action =
         ActionT::Create(**i, error, bad_message);
     if (!error->empty() || *bad_message)
-      return scoped_ptr<DeclarativeActionSet>(NULL);
+      return scoped_ptr<DeclarativeActionSet>();
     result.push_back(action);
   }
 

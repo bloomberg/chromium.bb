@@ -223,7 +223,7 @@ scoped_ptr<AboutResource> AboutResource::CreateFrom(const base::Value& value) {
   scoped_ptr<AboutResource> resource(new AboutResource());
   if (!IsResourceKindExpected(value, kAboutKind) || !resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid About resource JSON!";
-    return scoped_ptr<AboutResource>(NULL);
+    return scoped_ptr<AboutResource>();
   }
   return resource.Pass();
 }
@@ -290,7 +290,7 @@ scoped_ptr<DriveAppIcon> DriveAppIcon::CreateFrom(const base::Value& value) {
   scoped_ptr<DriveAppIcon> resource(new DriveAppIcon());
   if (!resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid DriveAppIcon JSON!";
-    return scoped_ptr<DriveAppIcon>(NULL);
+    return scoped_ptr<DriveAppIcon>();
   }
   return resource.Pass();
 }
@@ -384,7 +384,7 @@ scoped_ptr<AppResource> AppResource::CreateFrom(const base::Value& value) {
   scoped_ptr<AppResource> resource(new AppResource());
   if (!IsResourceKindExpected(value, kAppKind) || !resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid AppResource JSON!";
-    return scoped_ptr<AppResource>(NULL);
+    return scoped_ptr<AppResource>();
   }
   return resource.Pass();
 }
@@ -466,7 +466,7 @@ scoped_ptr<AppList> AppList::CreateFrom(const base::Value& value) {
   scoped_ptr<AppList> resource(new AppList());
   if (!IsResourceKindExpected(value, kAppListKind) || !resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid AppList JSON!";
-    return scoped_ptr<AppList>(NULL);
+    return scoped_ptr<AppList>();
   }
   return resource.Pass();
 }
@@ -524,7 +524,7 @@ ParentReference::CreateFrom(const base::Value& value) {
   if (!IsResourceKindExpected(value, kParentReferenceKind) ||
       !reference->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid ParentRefernce JSON!";
-    return scoped_ptr<ParentReference>(NULL);
+    return scoped_ptr<ParentReference>();
   }
   return reference.Pass();
 }
@@ -610,7 +610,7 @@ scoped_ptr<FileResource> FileResource::CreateFrom(const base::Value& value) {
   scoped_ptr<FileResource> resource(new FileResource());
   if (!IsResourceKindExpected(value, kFileKind) || !resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid FileResource JSON!";
-    return scoped_ptr<FileResource>(NULL);
+    return scoped_ptr<FileResource>();
   }
   return resource.Pass();
 }
@@ -675,7 +675,7 @@ scoped_ptr<FileList> FileList::CreateFrom(const base::Value& value) {
   scoped_ptr<FileList> resource(new FileList());
   if (!HasFileListKind(value) || !resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid FileList JSON!";
-    return scoped_ptr<FileList>(NULL);
+    return scoped_ptr<FileList>();
   }
   return resource.Pass();
 }
@@ -713,7 +713,7 @@ ChangeResource::CreateFrom(const base::Value& value) {
   scoped_ptr<ChangeResource> resource(new ChangeResource());
   if (!IsResourceKindExpected(value, kChangeKind) || !resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid ChangeResource JSON!";
-    return scoped_ptr<ChangeResource>(NULL);
+    return scoped_ptr<ChangeResource>();
   }
   return resource.Pass();
 }
@@ -759,7 +759,7 @@ scoped_ptr<ChangeList> ChangeList::CreateFrom(const base::Value& value) {
   scoped_ptr<ChangeList> resource(new ChangeList());
   if (!HasChangeListKind(value) || !resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid ChangeList JSON!";
-    return scoped_ptr<ChangeList>(NULL);
+    return scoped_ptr<ChangeList>();
   }
   return resource.Pass();
 }
@@ -801,7 +801,7 @@ scoped_ptr<FileLabels> FileLabels::CreateFrom(const base::Value& value) {
   scoped_ptr<FileLabels> resource(new FileLabels());
   if (!resource->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid FileLabels JSON!";
-    return scoped_ptr<FileLabels>(NULL);
+    return scoped_ptr<FileLabels>();
   }
   return resource.Pass();
 }

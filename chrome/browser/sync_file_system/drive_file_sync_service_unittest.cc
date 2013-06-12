@@ -44,8 +44,7 @@ class DriveFileSyncServiceTest : public testing::Test {
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE, &message_loop_),
         fake_api_util_(NULL),
-        metadata_store_(NULL),
-        sync_service_(NULL) {}
+        metadata_store_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
     RegisterSyncableFileSystem();

@@ -88,7 +88,7 @@ class TestDnsProbeService : public DnsProbeService {
   virtual scoped_ptr<DnsProbeJob> CreateSystemProbeJob(
       const DnsProbeJob::CallbackType& job_callback) OVERRIDE {
     if (mock_system_fail_)
-      return scoped_ptr<DnsProbeJob>(NULL);
+      return scoped_ptr<DnsProbeJob>();
 
     system_job_created_ = true;
     return scoped_ptr<DnsProbeJob>(

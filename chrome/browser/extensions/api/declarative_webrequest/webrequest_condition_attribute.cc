@@ -379,12 +379,12 @@ scoped_ptr<const HeaderMatcher> HeaderMatcher::Create(
        it != tests->end(); ++it) {
     const DictionaryValue* tests = NULL;
     if (!(*it)->GetAsDictionary(&tests))
-      return scoped_ptr<const HeaderMatcher>(NULL);
+      return scoped_ptr<const HeaderMatcher>();
 
     scoped_ptr<const HeaderMatchTest> header_test(
         HeaderMatchTest::Create(tests));
     if (header_test.get() == NULL)
-      return scoped_ptr<const HeaderMatcher>(NULL);
+      return scoped_ptr<const HeaderMatcher>();
     header_tests.push_back(header_test.release());
   }
 
@@ -489,7 +489,7 @@ HeaderMatcher::HeaderMatchTest::Create(const base::DictionaryValue* tests) {
       match_type = StringMatchTest::kEquals;
     } else {
       NOTREACHED();  // JSON schema type checking should prevent this.
-      return scoped_ptr<const HeaderMatchTest>(NULL);
+      return scoped_ptr<const HeaderMatchTest>();
     }
     const Value* content = &it.value();
 
@@ -513,7 +513,7 @@ HeaderMatcher::HeaderMatchTest::Create(const base::DictionaryValue* tests) {
       }
       default: {
         NOTREACHED();  // JSON schema type checking should prevent this.
-        return scoped_ptr<const HeaderMatchTest>(NULL);
+        return scoped_ptr<const HeaderMatchTest>();
       }
     }
   }
@@ -560,7 +560,7 @@ scoped_ptr<const HeaderMatcher> PrepareHeaderMatcher(
   const ListValue* value_as_list = NULL;
   if (!value->GetAsList(&value_as_list)) {
     *error = ErrorUtils::FormatErrorMessage(kInvalidValue, name);
-    return scoped_ptr<const HeaderMatcher>(NULL);
+    return scoped_ptr<const HeaderMatcher>();
   }
 
   scoped_ptr<const HeaderMatcher> header_matcher(

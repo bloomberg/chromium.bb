@@ -121,9 +121,7 @@ MenuItem::MenuItem(const Id& id,
       type_(type),
       checked_(checked),
       enabled_(enabled),
-      contexts_(contexts),
-      parent_id_(0) {
-}
+      contexts_(contexts) {}
 
 MenuItem::~MenuItem() {
   STLDeleteElements(&children_);

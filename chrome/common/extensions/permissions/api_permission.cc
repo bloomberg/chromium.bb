@@ -55,7 +55,7 @@ class SimpleAPIPermission : public APIPermission {
   }
 
   virtual scoped_ptr<base::Value> ToValue() const OVERRIDE {
-    return scoped_ptr<base::Value>(NULL);
+    return scoped_ptr<base::Value>();
   }
 
   virtual APIPermission* Clone() const OVERRIDE {

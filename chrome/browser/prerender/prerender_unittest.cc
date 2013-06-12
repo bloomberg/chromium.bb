@@ -94,7 +94,6 @@ class UnitTestPrerenderManager : public PrerenderManager {
       : PrerenderManager(profile, prerender_tracker),
         time_(Time::Now()),
         time_ticks_(TimeTicks::Now()),
-        next_prerender_contents_(NULL),
         prerender_tracker_(prerender_tracker) {
     set_rate_limit_enabled(false);
   }

@@ -841,7 +841,7 @@ scoped_ptr<ResourceList> ResourceList::ExtractAndParse(
       as_dict->GetDictionary(kFeedField, &feed_dict)) {
     return ResourceList::CreateFrom(*feed_dict);
   }
-  return scoped_ptr<ResourceList>(NULL);
+  return scoped_ptr<ResourceList>();
 }
 
 // static
@@ -849,7 +849,7 @@ scoped_ptr<ResourceList> ResourceList::CreateFrom(const base::Value& value) {
   scoped_ptr<ResourceList> feed(new ResourceList());
   if (!feed->Parse(value)) {
     DVLOG(1) << "Invalid resource list!";
-    return scoped_ptr<ResourceList>(NULL);
+    return scoped_ptr<ResourceList>();
   }
 
   return feed.Pass();
@@ -1039,7 +1039,7 @@ scoped_ptr<AccountMetadata> AccountMetadata::CreateFrom(
       !dictionary->Get(kEntryField, &entry) ||
       !metadata->Parse(*entry)) {
     LOG(ERROR) << "Unable to create: Invalid account metadata feed!";
-    return scoped_ptr<AccountMetadata>(NULL);
+    return scoped_ptr<AccountMetadata>();
   }
 
   return metadata.Pass();

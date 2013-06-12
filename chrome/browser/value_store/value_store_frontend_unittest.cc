@@ -68,7 +68,7 @@ class ValueStoreFrontendTest : public testing::Test {
 };
 
 TEST_F(ValueStoreFrontendTest, GetExistingData) {
-  scoped_ptr<base::Value> value(NULL);
+  scoped_ptr<base::Value> value;
   ASSERT_FALSE(Get("key0", &value));
 
   // Test existing keys in the DB.
@@ -97,7 +97,7 @@ TEST_F(ValueStoreFrontendTest, ChangesPersistAfterReload) {
   // Reload the DB and test our changes.
   ResetStorage();
 
-  scoped_ptr<base::Value> value(NULL);
+  scoped_ptr<base::Value> value;
   {
     ASSERT_TRUE(Get("key0", &value));
     int result;

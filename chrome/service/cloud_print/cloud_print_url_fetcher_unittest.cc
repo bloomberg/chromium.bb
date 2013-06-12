@@ -34,8 +34,7 @@ class TrackingTestURLRequestContextGetter
       base::MessageLoopProxy* io_message_loop_proxy,
       net::URLRequestThrottlerManager* throttler_manager)
       : TestURLRequestContextGetter(io_message_loop_proxy),
-        throttler_manager_(throttler_manager),
-        context_(NULL) {
+        throttler_manager_(throttler_manager) {
     g_request_context_getter_instances++;
   }
 

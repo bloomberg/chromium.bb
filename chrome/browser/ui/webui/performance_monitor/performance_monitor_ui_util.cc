@@ -172,7 +172,7 @@ scoped_ptr<VectorOfMetricVectors> AggregateMetric(
     const base::TimeDelta& resolution,
     AggregationMethod method) {
   if (!metrics || intervals.empty())
-    return scoped_ptr<VectorOfMetricVectors>(NULL);
+    return scoped_ptr<VectorOfMetricVectors>();
 
   CHECK(resolution > base::TimeDelta());
 
@@ -188,7 +188,7 @@ scoped_ptr<VectorOfMetricVectors> AggregateMetric(
           type, metrics, start, intervals, resolution);
     default:
       NOTREACHED();
-      return scoped_ptr<VectorOfMetricVectors>(NULL);
+      return scoped_ptr<VectorOfMetricVectors>();
   }
 }
 

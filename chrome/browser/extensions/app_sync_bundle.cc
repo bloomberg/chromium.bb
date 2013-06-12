@@ -16,8 +16,7 @@
 namespace extensions {
 
 AppSyncBundle::AppSyncBundle(ExtensionService* extension_service)
-    : extension_service_(extension_service),
-      sync_processor_(NULL) {}
+    : extension_service_(extension_service) {}
 
 AppSyncBundle::~AppSyncBundle() {}
 

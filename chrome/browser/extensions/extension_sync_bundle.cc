@@ -16,7 +16,7 @@
 namespace extensions {
 
 ExtensionSyncBundle::ExtensionSyncBundle(ExtensionService* extension_service)
-    : extension_service_(extension_service), sync_processor_(NULL) {}
+    : extension_service_(extension_service) {}
 
 ExtensionSyncBundle::~ExtensionSyncBundle() {}
 

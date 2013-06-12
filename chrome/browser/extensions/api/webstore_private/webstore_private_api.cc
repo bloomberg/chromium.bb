@@ -86,7 +86,7 @@ scoped_ptr<WebstoreInstaller::Approval> PendingApprovals::PopApproval(
       return scoped_ptr<WebstoreInstaller::Approval>(approval);
     }
   }
-  return scoped_ptr<WebstoreInstaller::Approval>(NULL);
+  return scoped_ptr<WebstoreInstaller::Approval>();
 }
 
 // Uniquely holds the profile and extension id of an install between the time we

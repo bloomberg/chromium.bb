@@ -20,9 +20,7 @@ bool AutomationEventQueue::CompareObserverId::operator()(
 }
 
 AutomationEventQueue::AutomationEventQueue()
-    : observer_id_count_(0),
-      wait_automation_reply_(NULL),
-      wait_observer_id_(-1) {}
+    : observer_id_count_(0), wait_observer_id_(-1) {}
 
 AutomationEventQueue::~AutomationEventQueue() {
   Clear();

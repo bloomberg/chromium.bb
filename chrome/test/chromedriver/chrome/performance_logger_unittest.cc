@@ -103,13 +103,13 @@ scoped_ptr<DictionaryValue> ParseDictionary(const std::string& json) {
     SCOPED_TRACE(json.c_str());
     SCOPED_TRACE(error.c_str());
     ADD_FAILURE();
-    return scoped_ptr<DictionaryValue>(NULL);
+    return scoped_ptr<DictionaryValue>();
   }
   DictionaryValue* dict = NULL;
   if (!value->GetAsDictionary(&dict)) {
     SCOPED_TRACE("JSON object is not a dictionary");
     ADD_FAILURE();
-    return scoped_ptr<DictionaryValue>(NULL);
+    return scoped_ptr<DictionaryValue>();
   }
   return scoped_ptr<DictionaryValue>(dict->DeepCopy());
 }

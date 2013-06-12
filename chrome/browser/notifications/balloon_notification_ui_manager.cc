@@ -20,9 +20,7 @@
 
 BalloonNotificationUIManager::BalloonNotificationUIManager(
     PrefService* local_state)
-    : NotificationUIManagerImpl(),
-      NotificationPrefsManager(local_state),
-      balloon_collection_(NULL) {
+    : NotificationUIManagerImpl(), NotificationPrefsManager(local_state) {
   position_pref_.Init(
       prefs::kDesktopNotificationPosition,
       local_state,

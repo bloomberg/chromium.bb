@@ -37,8 +37,7 @@ class SyncSharedChangeProcessorTest : public testing::Test {
  public:
   SyncSharedChangeProcessorTest()
       : ui_thread_(BrowserThread::UI, &ui_loop_),
-        db_thread_(BrowserThread::DB),
-        db_syncable_service_(NULL) {}
+        db_thread_(BrowserThread::DB) {}
 
   virtual ~SyncSharedChangeProcessorTest() {
     EXPECT_FALSE(db_syncable_service_.get());

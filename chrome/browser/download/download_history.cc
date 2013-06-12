@@ -55,9 +55,7 @@ class DownloadHistoryData : public base::SupportsUserData::Data {
   }
 
   DownloadHistoryData(content::DownloadItem* item, int64 handle)
-    : is_adding_(false),
-      db_handle_(handle),
-      info_(NULL) {
+      : is_adding_(false), db_handle_(handle) {
     item->SetUserData(kKey, this);
   }
 

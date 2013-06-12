@@ -33,10 +33,7 @@ InstantLoader::Delegate::~Delegate() {
 }
 
 InstantLoader::InstantLoader(Delegate* delegate)
-  : delegate_(delegate),
-    contents_(NULL),
-    stale_page_timer_(false, false) {
-}
+    : delegate_(delegate), stale_page_timer_(false, false) {}
 
 InstantLoader::~InstantLoader() {
 }

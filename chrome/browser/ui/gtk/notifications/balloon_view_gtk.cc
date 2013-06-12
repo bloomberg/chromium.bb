@@ -104,11 +104,8 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
       hbox_(NULL),
       html_container_(NULL),
       weak_factory_(this),
-      close_button_(NULL),
-      animation_(NULL),
       menu_showing_(false),
-      pending_close_(false) {
-}
+      pending_close_(false) {}
 
 BalloonViewImpl::~BalloonViewImpl() {
   if (frame_container_) {

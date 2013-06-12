@@ -198,14 +198,12 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
 class DownloadHistoryTest : public testing::Test {
  public:
   DownloadHistoryTest()
-    : ui_thread_(content::BrowserThread::UI, &loop_),
-      manager_(new content::MockDownloadManager()),
-      history_(NULL),
-      download_history_(NULL),
-      manager_observer_(NULL),
-      item_observer_(NULL),
-      download_created_index_(0) {
-  }
+      : ui_thread_(content::BrowserThread::UI, &loop_),
+        manager_(new content::MockDownloadManager()),
+        history_(NULL),
+        manager_observer_(NULL),
+        item_observer_(NULL),
+        download_created_index_(0) {}
   virtual ~DownloadHistoryTest() {
     STLDeleteElements(&items_);
   }

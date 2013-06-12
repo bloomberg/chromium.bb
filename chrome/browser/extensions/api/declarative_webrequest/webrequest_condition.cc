@@ -128,18 +128,18 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
   const base::DictionaryValue* condition_dict = NULL;
   if (!condition.GetAsDictionary(&condition_dict)) {
     *error = kExpectedDictionary;
-    return scoped_ptr<WebRequestCondition>(NULL);
+    return scoped_ptr<WebRequestCondition>();
   }
 
   // Verify that we are dealing with a Condition whose type we understand.
   std::string instance_type;
   if (!condition_dict->GetString(keys::kInstanceTypeKey, &instance_type)) {
     *error = kConditionWithoutInstanceType;
-    return scoped_ptr<WebRequestCondition>(NULL);
+    return scoped_ptr<WebRequestCondition>();
   }
   if (instance_type != keys::kRequestMatcherType) {
     *error = kExpectedOtherConditionType;
-    return scoped_ptr<WebRequestCondition>(NULL);
+    return scoped_ptr<WebRequestCondition>();
   }
 
   WebRequestConditionAttributes attributes;
@@ -180,7 +180,7 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
         attributes.push_back(attribute);
     }
     if (!error->empty())
-      return scoped_ptr<WebRequestCondition>(NULL);
+      return scoped_ptr<WebRequestCondition>();
   }
 
   scoped_ptr<WebRequestCondition> result(
@@ -190,7 +190,7 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
 
   if (!result->stages()) {
     *error = kConditionCannotBeFulfilled;
-    return scoped_ptr<WebRequestCondition>(NULL);
+    return scoped_ptr<WebRequestCondition>();
   }
 
   return result.Pass();
