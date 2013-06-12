@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_service.h"
+#include "chrome/browser/google_apis/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_wapi_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/common/extensions/extension.h"
 #include "extensions/common/constants.h"
-#include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
@@ -56,10 +56,8 @@ bool HasParentLinkTo(const ScopedVector<google_apis::Link>& links,
        itr != links.end(); ++itr) {
     if ((*itr)->type() == google_apis::Link::LINK_PARENT) {
       has_parent = true;
-      std::string resource_id =
-          net::UnescapeURLComponent((*itr)->href().ExtractFileName(),
-                                    net::UnescapeRule::URL_SPECIAL_CHARS);
-      if (resource_id == parent_resource_id)
+      if (google_apis::drive::util::ExtractResourceIdFromUrl((*itr)->href()) ==
+          parent_resource_id)
         return true;
     }
   }

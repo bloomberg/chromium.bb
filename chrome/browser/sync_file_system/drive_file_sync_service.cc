@@ -1658,24 +1658,15 @@ bool DriveFileSyncService::GetOriginForEntry(
        itr != entry.links().end(); ++itr) {
     if ((*itr)->type() != google_apis::Link::LINK_PARENT)
       continue;
-    GURL origin;
-    if (IsDriveAPIEnabled()) {
-      metadata_store_->GetOriginByOriginRootDirectoryId(
-          google_apis::drive::util::ExtractResourceIdFromUrl((*itr)->href()),
-          &origin);
-    } else {
-      origin = drive::APIUtil::DirectoryTitleToOrigin((*itr)->title());
-    }
-    DCHECK(origin.is_valid());
 
-    if (!metadata_store_->IsIncrementalSyncOrigin(origin))
-      continue;
-    std::string resource_id(metadata_store_->GetResourceIdForOrigin(origin));
+    std::string resource_id(
+        google_apis::drive::util::ExtractResourceIdFromUrl((*itr)->href()));
     if (resource_id.empty())
       continue;
-    GURL resource_link(api_util_->ResourceIdToResourceLink(resource_id));
-    if ((*itr)->href().GetOrigin() != resource_link.GetOrigin() ||
-        (*itr)->href().path() != resource_link.path())
+
+    GURL origin;
+    metadata_store_->GetOriginByOriginRootDirectoryId(resource_id, &origin);
+    if (!origin.is_valid() || !metadata_store_->IsIncrementalSyncOrigin(origin))
       continue;
 
     *origin_out = origin;

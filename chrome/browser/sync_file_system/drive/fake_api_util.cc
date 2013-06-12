@@ -210,7 +210,7 @@ void FakeAPIUtil::DeleteFile(const std::string& resource_id,
 
 GURL FakeAPIUtil::ResourceIdToResourceLink(
     const std::string& resource_id) const {
-  return url_generator_.GenerateContentUrl(resource_id);
+  return url_generator_.GenerateEditUrl(resource_id);
 }
 
 void FakeAPIUtil::EnsureSyncRootIsNotInMyDrive(
@@ -238,8 +238,7 @@ scoped_ptr<google_apis::ResourceEntry> FakeAPIUtil::CreateResourceEntry(
   scoped_ptr<google_apis::Link> link(new google_apis::Link());
 
   link->set_type(google_apis::Link::LINK_PARENT);
-  link->set_href(
-      url_generator_.GenerateContentUrl(resource.parent_resource_id));
+  link->set_href(ResourceIdToResourceLink(resource.parent_resource_id));
   link->set_title(resource.parent_title);
   parent_links.push_back(link.release());
 
