@@ -1040,6 +1040,7 @@
                   ['exclude', '^common/gpu/media/video_decode_accelerator_unittest.cc'],
                 ],
                 'dependencies': [
+                  '../media/media.gyp:player_android',
                   '../testing/gmock.gyp:gmock',
                   '../testing/android/native_test.gyp:native_test_native_code',
                   '../gpu/gpu.gyp:gpu_unittest_utils',

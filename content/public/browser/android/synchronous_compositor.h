@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_H_
 #define CONTENT_PUBLIC_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_H_
 
+#include "content/common/content_export.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -23,7 +24,7 @@ class SynchronousCompositorClient;
 // Interface for embedders that wish to direct compositing operations
 // synchronously under their own control. Only meaningful when the
 // kEnableSyncrhonousRendererCompositor flag is specified.
-class SynchronousCompositor {
+class CONTENT_EXPORT SynchronousCompositor {
  public:
   // Must be called once per WebContents instance. Will create the compositor
   // instance as needed, but only if |client| is non-NULL.

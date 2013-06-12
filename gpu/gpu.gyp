@@ -312,6 +312,7 @@
         '../testing/gtest.gyp:gtest',
         '../third_party/khronos/khronos.gyp:khronos_headers',
         '../ui/gl/gl.gyp:gl_unittest_utils',
+        'gpu',
       ],
       'include_dirs': [
         '..',

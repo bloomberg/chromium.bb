@@ -822,6 +822,7 @@
         'base_i18n',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        'third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
       ],
       'export_dependent_settings': [
         'base',

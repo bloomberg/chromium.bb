@@ -11,7 +11,7 @@ namespace base {
 namespace android {
 
 // Implements the C++ counter part of MemoryPressureListener.java
-class MemoryPressureListenerAndroid {
+class BASE_EXPORT MemoryPressureListenerAndroid {
  public:
   static bool Register(JNIEnv* env);
 
