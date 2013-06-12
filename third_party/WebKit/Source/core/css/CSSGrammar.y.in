@@ -566,6 +566,8 @@ media_query_exp:
     '(' maybe_space IDENT maybe_space maybe_media_value closing_parenthesis maybe_space {
         parser->tokenToLowerCase($3);
         $$ = parser->createFloatingMediaQueryExp($3, $5);
+        if (!$$)
+            YYERROR;
     }
     | '(' error error_recovery closing_parenthesis {
         YYERROR;

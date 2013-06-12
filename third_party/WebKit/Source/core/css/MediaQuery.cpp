@@ -41,36 +41,31 @@ namespace WebCore {
 String MediaQuery::serialize() const
 {
     StringBuilder result;
-    if (!m_ignored) {
-        switch (m_restrictor) {
-        case MediaQuery::Only:
-            result.append("only ");
-            break;
-        case MediaQuery::Not:
-            result.append("not ");
-            break;
-        case MediaQuery::None:
-            break;
-        }
+    switch (m_restrictor) {
+    case MediaQuery::Only:
+        result.append("only ");
+        break;
+    case MediaQuery::Not:
+        result.append("not ");
+        break;
+    case MediaQuery::None:
+        break;
+    }
 
-        if (m_expressions->isEmpty()) {
-            result.append(m_mediaType);
-            return result.toString();
-        }
+    if (m_expressions->isEmpty()) {
+        result.append(m_mediaType);
+        return result.toString();
+    }
 
-        if (m_mediaType != "all" || m_restrictor != None) {
-            result.append(m_mediaType);
-            result.append(" and ");
-        }
+    if (m_mediaType != "all" || m_restrictor != None) {
+        result.append(m_mediaType);
+        result.append(" and ");
+    }
 
-        result.append(m_expressions->at(0)->serialize());
-        for (size_t i = 1; i < m_expressions->size(); ++i) {
-            result.append(" and ");
-            result.append(m_expressions->at(i)->serialize());
-        }
-    } else {
-        // If query is invalid, serialized text should turn into "not all".
-        result.append("not all");
+    result.append(m_expressions->at(0)->serialize());
+    for (size_t i = 1; i < m_expressions->size(); ++i) {
+        result.append(" and ");
+        result.append(m_expressions->at(i)->serialize());
     }
     return result.toString();
 }
@@ -84,7 +79,6 @@ MediaQuery::MediaQuery(Restrictor r, const String& mediaType, PassOwnPtr<Vector<
     : m_restrictor(r)
     , m_mediaType(mediaType.lower())
     , m_expressions(exprs)
-    , m_ignored(false)
 {
     if (!m_expressions) {
         m_expressions = adoptPtr(new Vector<OwnPtr<MediaQueryExp> >);
@@ -98,10 +92,6 @@ MediaQuery::MediaQuery(Restrictor r, const String& mediaType, PassOwnPtr<Vector<
     for (int i = m_expressions->size() - 1; i >= 0; --i) {
         MediaQueryExp* exp = m_expressions->at(i).get();
 
-        // If not all of the expressions are valid the media query must be ignored.
-        if (!m_ignored)
-            m_ignored = !exp->isValid();
-
         if (key && *exp == *key)
             m_expressions->remove(i);
         else
@@ -113,7 +103,6 @@ MediaQuery::MediaQuery(const MediaQuery& o)
     : m_restrictor(o.m_restrictor)
     , m_mediaType(o.m_mediaType)
     , m_expressions(adoptPtr(new Vector<OwnPtr<MediaQueryExp> >(o.m_expressions->size())))
-    , m_ignored(o.m_ignored)
     , m_serializationCache(o.m_serializationCache)
 {
     for (unsigned i = 0; i < m_expressions->size(); ++i)

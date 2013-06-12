@@ -197,52 +197,53 @@ bool MediaQueryExp::isViewportDependent() const
         || m_mediaFeature == MediaFeatureNames::maxAspectRatioMediaFeature;
 }
 
-inline MediaQueryExp::MediaQueryExp(const AtomicString& mediaFeature, CSSParserValueList* valueList)
+MediaQueryExp::MediaQueryExp(const AtomicString& mediaFeature, PassRefPtr<CSSValue> value)
     : m_mediaFeature(mediaFeature)
-    , m_value(0)
-    , m_isValid(false)
+    , m_value(value)
 {
-    // Initialize media query expression that must have 1 or more values.
+}
+
+PassOwnPtr<MediaQueryExp> MediaQueryExp::create(const AtomicString& mediaFeature, CSSParserValueList* valueList)
+{
+    RefPtr<CSSValue> cssValue;
+    bool isValid = false;
+
+    // Create value for media query expression that must have 1 or more values.
     if (valueList) {
         if (valueList->size() == 1) {
             CSSParserValue* value = valueList->current();
 
-            // Media features that use CSSValueIDs.
             if (featureWithCSSValueID(mediaFeature, value)) {
-                m_value = CSSPrimitiveValue::createIdentifier(value->id);
-                if (!featureWithValidIdent(mediaFeature, toCSSPrimitiveValue(m_value.get())->getValueID()))
-                    m_value.clear();
+                // Media features that use CSSValueIDs.
+                cssValue = CSSPrimitiveValue::createIdentifier(value->id);
+                if (!featureWithValidIdent(mediaFeature, toCSSPrimitiveValue(cssValue.get())->getValueID()))
+                    cssValue.clear();
+            } else if (featureWithValidDensity(mediaFeature, value)) {
+                // Media features that must have non-negative <density>, ie. dppx, dpi or dpcm.
+                cssValue = CSSPrimitiveValue::create(value->fValue, (CSSPrimitiveValue::UnitTypes) value->unit);
+            } else if (featureWithValidPositiveLenghtOrNumber(mediaFeature, value)) {
+                // Media features that must have non-negative <lenght> or number value.
+                cssValue = CSSPrimitiveValue::create(value->fValue, (CSSPrimitiveValue::UnitTypes) value->unit);
+            } else if (featureWithPositiveInteger(mediaFeature, value)) {
+                // Media features that must have non-negative integer value.
+                cssValue = CSSPrimitiveValue::create(value->fValue, CSSPrimitiveValue::CSS_NUMBER);
+            } else if (featureWithPositiveNumber(mediaFeature, value)) {
+                // Media features that must have non-negative number value.
+                cssValue = CSSPrimitiveValue::create(value->fValue, CSSPrimitiveValue::CSS_NUMBER);
+            } else if (featureWithZeroOrOne(mediaFeature, value)) {
+                // Media features that must have (0|1) value.
+                cssValue = CSSPrimitiveValue::create(value->fValue, CSSPrimitiveValue::CSS_NUMBER);
             }
 
-            // Media features that must have non-negative <density>, ie. dppx, dpi or dpcm.
-            else if (featureWithValidDensity(mediaFeature, value))
-                m_value = CSSPrimitiveValue::create(value->fValue, (CSSPrimitiveValue::UnitTypes) value->unit);
+            isValid = cssValue;
 
-            // Media features that must have non-negative <lenght> or number value.
-            else if (featureWithValidPositiveLenghtOrNumber(mediaFeature, value))
-                m_value = CSSPrimitiveValue::create(value->fValue, (CSSPrimitiveValue::UnitTypes) value->unit);
-
-            // Media features that must have non-negative integer value.
-            else if (featureWithPositiveInteger(mediaFeature, value))
-                m_value = CSSPrimitiveValue::create(value->fValue, CSSPrimitiveValue::CSS_NUMBER);
-
-            // Media features that must have non-negative number value.
-            else if (featureWithPositiveNumber(mediaFeature, value))
-                m_value = CSSPrimitiveValue::create(value->fValue, CSSPrimitiveValue::CSS_NUMBER);
-
-            // Media features that must have (0|1) value.
-            else if (featureWithZeroOrOne(mediaFeature, value))
-                m_value = CSSPrimitiveValue::create(value->fValue, CSSPrimitiveValue::CSS_NUMBER);
-
-            m_isValid = m_value;
         } else if (valueList->size() == 3 && featureWithAspectRatio(mediaFeature)) {
             // Create list of values.
             // Currently accepts only <integer>/<integer>.
             // Applicable to device-aspect-ratio and aspec-ratio.
-            bool isValid = true;
+            isValid = true;
             float numeratorValue = 0;
             float denominatorValue = 0;
-
             // The aspect-ratio must be <integer> (whitespace)? / (whitespace)? <integer>.
             for (unsigned i = 0; i < 3; ++i, valueList->next()) {
                 const CSSParserValue* value = valueList->current();
@@ -251,26 +252,25 @@ inline MediaQueryExp::MediaQueryExp(const AtomicString& mediaFeature, CSSParserV
                         numeratorValue = value->fValue;
                     else
                         denominatorValue = value->fValue;
-                } else if (i == 1 && value->unit == CSSParserValue::Operator && value->iValue == '/')
+                } else if (i == 1 && value->unit == CSSParserValue::Operator && value->iValue == '/') {
                     continue;
-                else {
+                } else {
                     isValid = false;
                     break;
                 }
             }
 
             if (isValid)
-                m_value = CSSAspectRatioValue::create(numeratorValue, denominatorValue);
-
-            m_isValid = m_value;
+                cssValue = CSSAspectRatioValue::create(numeratorValue, denominatorValue);
         }
-    } else if (featureWithoutValue(mediaFeature))
-        m_isValid = true;
-}
+    } else if (featureWithoutValue(mediaFeature)) {
+        isValid = true;
+    }
 
-PassOwnPtr<MediaQueryExp> MediaQueryExp::create(const AtomicString& mediaFeature, CSSParserValueList* values)
-{
-    return adoptPtr(new MediaQueryExp(mediaFeature, values));
+    if (!isValid)
+        return nullptr;
+
+    return adoptPtr(new MediaQueryExp(mediaFeature, cssValue));
 }
 
 MediaQueryExp::~MediaQueryExp()

@@ -54,7 +54,6 @@ public:
     String mediaType() const { return m_mediaType; }
     bool operator==(const MediaQuery& other) const;
     String cssText() const;
-    bool ignored() const { return m_ignored; }
 
     PassOwnPtr<MediaQuery> copy() const { return adoptPtr(new MediaQuery(*this)); }
 
@@ -66,7 +65,6 @@ private:
     Restrictor m_restrictor;
     String m_mediaType;
     OwnPtr<ExpressionVector> m_expressions;
-    bool m_ignored;
     String m_serializationCache;
 
     String serialize() const;

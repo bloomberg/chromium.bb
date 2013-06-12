@@ -290,7 +290,7 @@ void reportMediaQueryWarningIfNeeded(Document* document, const MediaQuerySet* me
 
     for (size_t i = 0; i < queryCount; ++i) {
         const MediaQuery* query = mediaQueries[i].get();
-        if (query->ignored() || equalIgnoringCase(query->mediaType(), "print"))
+        if (equalIgnoringCase(query->mediaType(), "print"))
             continue;
 
         const Vector<OwnPtr<MediaQueryExp> >* exps = query->expressions();

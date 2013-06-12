@@ -131,9 +131,6 @@ bool MediaQueryEvaluator::eval(const MediaQuerySet* querySet, StyleResolver* sty
     for (size_t i = 0; i < queries.size() && !result; ++i) {
         MediaQuery* query = queries[i].get();
 
-        if (query->ignored())
-            continue;
-
         if (mediaTypeMatch(query->mediaType())) {
             const Vector<OwnPtr<MediaQueryExp> >* exps = query->expressions();
             // iterate through expressions, stop if any of them eval to false
@@ -680,9 +677,6 @@ bool MediaQueryEvaluator::eval(const MediaQueryExp* expr) const
 {
     if (!m_frame || !m_style)
         return m_expResult;
-
-    if (!expr->isValid())
-        return false;
 
     if (!gFunctionMap)
         createFunctionMap();

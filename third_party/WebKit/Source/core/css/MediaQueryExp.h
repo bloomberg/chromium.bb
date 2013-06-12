@@ -41,7 +41,7 @@ class CSSParserValueList;
 class MediaQueryExp {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<MediaQueryExp> create(const AtomicString& mediaFeature, CSSParserValueList* values);
+    static PassOwnPtr<MediaQueryExp> create(const AtomicString& mediaFeature, CSSParserValueList*);
     ~MediaQueryExp();
 
     AtomicString mediaFeature() const { return m_mediaFeature; }
@@ -55,8 +55,6 @@ public:
                 || (other.m_value && m_value && other.m_value->equals(*m_value)));
     }
 
-    bool isValid() const { return m_isValid; }
-
     bool isViewportDependent() const;
 
     String serialize() const;
@@ -66,11 +64,10 @@ public:
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
-    MediaQueryExp(const AtomicString& mediaFeature, CSSParserValueList* values);
+    MediaQueryExp(const AtomicString& mediaFeature, PassRefPtr<CSSValue>);
 
     AtomicString m_mediaFeature;
     RefPtr<CSSValue> m_value;
-    bool m_isValid;
 };
 
 } // namespace
