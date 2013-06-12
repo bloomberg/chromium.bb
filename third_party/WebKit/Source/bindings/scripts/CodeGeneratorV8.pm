@@ -2507,7 +2507,7 @@ sub GenerateSingleConstructorCallback
     }
 
     my $raisesExceptions = $function->signature->extendedAttributes->{"RaisesException"};
-    if ($interface->extendedAttributes->{"RaisesException"}) {
+    if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
         $raisesExceptions = 1;
     }
     if (!$raisesExceptions) {
@@ -2539,7 +2539,7 @@ END
     my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheck($function, $interface, "");
     $code .= $parameterCheckString;
 
-    if ($interface->extendedAttributes->{"CallWith"} && $interface->extendedAttributes->{"CallWith"} eq "ScriptExecutionContext") {
+    if ($interface->extendedAttributes->{"ConstructorCallWith"} && $interface->extendedAttributes->{"ConstructorCallWith"} eq "ScriptExecutionContext") {
         push(@beforeArgumentList, "context");
         $code .= <<END;
 
@@ -2547,7 +2547,7 @@ END
 END
     }
 
-    if ($interface->extendedAttributes->{"RaisesException"}) {
+    if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
         push(@afterArgumentList, "ec");
     }
 
@@ -2568,7 +2568,7 @@ END
     $code .= "    RefPtr<${implClassName}> impl = ${implClassName}::create(${argumentString});\n";
     $code .= "    v8::Handle<v8::Object> wrapper = args.Holder();\n";
 
-    if ($interface->extendedAttributes->{"RaisesException"}) {
+    if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
         $code .= "    if (ec) {\n";
         $code .= "        setDOMException(ec, args.GetIsolate());\n";
         $code .= "        return;\n";
@@ -2731,7 +2731,7 @@ sub GenerateNamedConstructor
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $raisesExceptions = $function->signature->extendedAttributes->{"RaisesException"};
-    if ($interface->extendedAttributes->{"RaisesException"}) {
+    if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
         $raisesExceptions = 1;
     }
     if (!$raisesExceptions) {
@@ -2794,7 +2794,7 @@ END
 
     push(@beforeArgumentList, "document");
 
-    if ($interface->extendedAttributes->{"RaisesException"}) {
+    if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
         push(@afterArgumentList, "ec");
     }
 
@@ -2815,7 +2815,7 @@ END
     $code .= "    RefPtr<${implClassName}> impl = ${implClassName}::createForJSConstructor(${argumentString});\n";
     $code .= "    v8::Handle<v8::Object> wrapper = args.Holder();\n";
 
-    if ($interface->extendedAttributes->{"RaisesException"}) {
+    if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
         $code .= "    if (ec) {\n";
         $code .= "        setDOMException(ec, args.GetIsolate());\n";
         $code .= "        return;\n";

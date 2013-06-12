@@ -32,7 +32,6 @@
 [
     NoInterfaceObject,
     ActiveDOMObject,
-    CallWith=ScriptExecutionContext,
     EventTarget
 ] interface FileWriter {
     // ready states

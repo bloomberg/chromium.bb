@@ -27,7 +27,7 @@
     Conditional=ENCRYPTED_MEDIA_V2,
     EnabledAtRuntime=encryptedMedia,
     Constructor(DOMString keySystem),
-    RaisesException
+    ConstructorRaisesException
 ] interface MediaKeys {
     [CallWith=ScriptExecutionContext, RaisesException] MediaKeySession createSession([Default=Undefined] optional DOMString type, [Default=Undefined] optional Uint8Array initData);
 

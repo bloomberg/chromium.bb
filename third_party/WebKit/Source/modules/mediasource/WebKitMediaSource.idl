@@ -34,7 +34,7 @@
     ActiveDOMObject,
     EventTarget,
     Constructor,
-    CallWith=ScriptExecutionContext
+    ConstructorCallWith=ScriptExecutionContext
 ] interface WebKitMediaSource {
     // All the source buffers created by this object.
     readonly attribute WebKitSourceBufferList sourceBuffers;

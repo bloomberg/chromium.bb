@@ -27,7 +27,7 @@
     NoInterfaceObject,
     ActiveDOMObject,
     Constructor,
-    CallWith=ScriptExecutionContext,
+    ConstructorCallWith=ScriptExecutionContext,
     EventTarget
 ] interface SpeechRecognition {
     attribute SpeechGrammarList grammars;

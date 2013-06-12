@@ -30,7 +30,7 @@
 
 [
     Constructor(Dictionary dictionary),
-    RaisesException
+    ConstructorRaisesException
 ] interface RTCSessionDescription {
     [SetterRaisesException] attribute DOMString type;
     [SetterRaisesException] attribute DOMString sdp;

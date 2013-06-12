@@ -27,7 +27,7 @@
 [
     GlobalContext=WindowAndWorker,
     Constructor,
-    CallWith=ScriptExecutionContext,
+    ConstructorCallWith=ScriptExecutionContext,
     CustomConstructor
 ] interface MessageChannel {
 

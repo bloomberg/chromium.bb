@@ -32,7 +32,6 @@
     NoInterfaceObject,
     EnabledAtRuntime=webKitMediaSource,
     EventTarget,
-    CallWith=ScriptExecutionContext
 ] interface WebKitSourceBufferList {
     readonly attribute unsigned long length;
     getter WebKitSourceBuffer item(unsigned long index);

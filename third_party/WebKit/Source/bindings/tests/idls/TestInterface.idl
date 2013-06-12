@@ -31,9 +31,9 @@
 [
     ActiveDOMObject,
     Conditional=Condition1|Condition2,
-    CallWith=ScriptExecutionContext,
+    ConstructorCallWith=ScriptExecutionContext,
     Constructor(DOMString str1, [Default=Undefined] optional DOMString str2),
-    RaisesException
+    ConstructorRaisesException
 ] interface TestInterface {
     [ImplementedAs=getItem] getter (Node or NodeList)(DOMString name);
     [Custom] setter Node (DOMString name, Node value);

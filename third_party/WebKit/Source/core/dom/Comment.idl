@@ -19,7 +19,7 @@
 
 [
     Constructor([Default=NullString] optional DOMString data),
-    CallWith=ScriptExecutionContext
+    ConstructorCallWith=ScriptExecutionContext
 ] interface Comment : CharacterData {
 };
 
