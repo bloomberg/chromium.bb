@@ -244,6 +244,10 @@ bool StrikeRegister::Insert(const uint8 nonce[32],
   return true;
 }
 
+const uint8* StrikeRegister::orbit() const {
+  return orbit_;
+}
+
 void StrikeRegister::Validate() {
   set<uint32> free_internal_nodes;
   for (uint32 i = internal_node_free_head_; i != kNil;

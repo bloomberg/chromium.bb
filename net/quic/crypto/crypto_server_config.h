@@ -5,6 +5,11 @@
 #ifndef NET_QUIC_CRYPTO_CRYPTO_SERVER_CONFIG_H_
 #define NET_QUIC_CRYPTO_CRYPTO_SERVER_CONFIG_H_
 
+#include <map>
+#include <string>
+#include <vector>
+
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
@@ -27,6 +32,8 @@ class QuicRandom;
 class QuicServerConfigProtobuf;
 class StrikeRegister;
 
+struct ClientHelloInfo;
+
 namespace test {
 class QuicCryptoServerConfigPeer;
 }  // namespace test
@@ -48,6 +55,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
     // channel_id_enabled controls whether the server config will indicate
     // support for ChannelIDs.
     bool channel_id_enabled;
+    // id contains the server config id for the resulting config. If empty, a
+    // random id is generated.
+    std::string id;
   };
 
   // |source_address_token_secret|: secret key material used for encrypting and
@@ -72,8 +82,11 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
 
   // AddConfig adds a QuicServerConfigProtobuf to the availible configurations.
   // It returns the SCFG message from the config if successful. The caller
-  // takes ownership of the CryptoHandshakeMessage.
-  CryptoHandshakeMessage* AddConfig(QuicServerConfigProtobuf* protobuf);
+  // takes ownership of the CryptoHandshakeMessage. |now| is used in
+  // conjunction with |protobuf->primary_time()| to determine whether the
+  // config should be made primary.
+  CryptoHandshakeMessage* AddConfig(QuicServerConfigProtobuf* protobuf,
+                                    QuicWallTime now);
 
   // AddDefaultConfig calls DefaultConfig to create a config and then calls
   // AddConfig to add it. See the comment for |DefaultConfig| for details of
@@ -82,6 +95,16 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       QuicRandom* rand,
       const QuicClock* clock,
       const ConfigOptions& options);
+
+  // SetConfigs takes a vector of config protobufs and the current time.
+  // Configs are assumed to be uniquely identified by their server config ID.
+  // Previously unknown configs are added and possibly made the primary config
+  // depending on their |primary_time| and the value of |now|. Configs that are
+  // known, but are missing from the protobufs are deleted, unless they are
+  // currently the primary config. SetConfigs returns false if any errors were
+  // encountered and no changes to the QuicCryptoServerConfig will occur.
+  bool SetConfigs(const std::vector<QuicServerConfigProtobuf*>& protobufs,
+                  QuicWallTime now);
 
   // ProcessClientHello processes |client_hello| and decides whether to accept
   // or reject the connection. If the connection is to be accepted, |out| is
@@ -160,9 +183,10 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
 
   // Config represents a server config: a collection of preferences and
   // Diffie-Hellman public values.
-  struct Config : public QuicCryptoConfig {
+  class NET_EXPORT_PRIVATE Config : public QuicCryptoConfig,
+                                    public base::RefCounted<Config> {
+   public:
     Config();
-    ~Config();
 
     // serialized contains the bytes of this server config, suitable for sending
     // on the wire.
@@ -185,9 +209,52 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
     // ChannelIDs are supported.
     bool channel_id_enabled;
 
+    // is_primary is true if this config is the one that we'll give out to
+    // clients as the current one.
+    bool is_primary;
+
+    // primary_time contains the timestamp when this config should become the
+    // primary config. A value of QuicWallTime::Zero() means that this config
+    // will not be promoted at a specific time.
+    QuicWallTime primary_time;
+
    private:
+    friend class base::RefCounted<Config>;
+    virtual ~Config();
+
     DISALLOW_COPY_AND_ASSIGN(Config);
   };
+
+  // ConfigPrimaryTimeLessThan returns true if a->primary_time <
+  // b->primary_time.
+  static bool ConfigPrimaryTimeLessThan(const scoped_refptr<Config>& a,
+                                        const scoped_refptr<Config>& b);
+
+  // SelectNewPrimaryConfig reevaluates the primary config based on the
+  // "primary_time" deadlines contained in each.
+  void SelectNewPrimaryConfig(QuicWallTime now) const;
+
+  // EvaluateClientHello checks |client_hello| for gross errors and determines
+  // whether it can be shown to be fresh (i.e. not a replay). The results are
+  // written to |info|.
+  QuicErrorCode EvaluateClientHello(
+      const CryptoHandshakeMessage& client_hello,
+      const uint8* orbit,
+      ClientHelloInfo* info,
+      std::string* error_details) const;
+
+  // BuildRejection sets |out| to be a REJ message in reply to |client_hello|.
+  void BuildRejection(
+      const scoped_refptr<Config>& config,
+      const CryptoHandshakeMessage& client_hello,
+      const ClientHelloInfo& info,
+      QuicRandom* rand,
+      CryptoHandshakeMessage* out) const;
+
+  // ParseConfigProtobuf parses the given config protobuf and returns a
+  // scoped_refptr<Config> if successful. The caller adopts the reference to the
+  // Config. On error, ParseConfigProtobuf returns NULL.
+  scoped_refptr<Config> ParseConfigProtobuf(QuicServerConfigProtobuf* protobuf);
 
   // NewSourceAddressToken returns a fresh source address token for the given
   // IP address.
@@ -213,9 +280,21 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   bool ValidateServerNonce(base::StringPiece echoed_server_nonce,
                            QuicWallTime now) const;
 
-  std::map<ServerConfigID, Config*> configs_;
-
-  ServerConfigID active_config_;
+  // configs_ satisfies the following invariants:
+  //   1) configs_.empty() <-> primary_config_ == NULL
+  //   2) primary_config_ != NULL -> primary_config_->is_primary
+  //   3) ∀ c∈configs_, c->is_primary <-> c == primary_config_
+  mutable base::Lock configs_lock_;
+  // configs_ contains all active server configs. It's expected that there are
+  // about half-a-dozen configs active at any one time.
+  typedef std::map<ServerConfigID, scoped_refptr<Config> > ConfigMap;
+  ConfigMap configs_;
+  // primary_config_ points to a Config (which is also in |configs_|) which is
+  // the primary config - i.e. the one that we'll give out to new clients.
+  mutable scoped_refptr<Config> primary_config_;
+  // next_config_promotion_time_ contains the nearest, future time when an
+  // active config will be promoted to primary.
+  mutable QuicWallTime next_config_promotion_time_;
 
   mutable base::Lock strike_register_lock_;
   // strike_register_ contains a data structure that keeps track of previously

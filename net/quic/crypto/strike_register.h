@@ -115,6 +115,10 @@ class NET_EXPORT_PRIVATE StrikeRegister {
   // Otherwise, it inserts |nonce| into the observed set and returns true.
   bool Insert(const uint8 nonce[32], const uint32 current_time);
 
+  // orbit returns a pointer to the 8-byte orbit value for this
+  // strike-register.
+  const uint8* orbit() const;
+
   // This is a debugging aid which checks the tree for sanity.
   void Validate();
 

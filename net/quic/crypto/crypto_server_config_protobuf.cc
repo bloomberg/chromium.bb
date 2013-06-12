@@ -5,10 +5,12 @@
 #include "net/quic/crypto/crypto_server_config_protobuf.h"
 
 #include "base/stl_util.h"
+#include "net/quic/quic_time.h"
 
 namespace net {
 
-QuicServerConfigProtobuf::QuicServerConfigProtobuf() {
+QuicServerConfigProtobuf::QuicServerConfigProtobuf()
+    : primary_time_(QuicWallTime::Zero().ToUNIXSeconds()) {
 }
 
 QuicServerConfigProtobuf::~QuicServerConfigProtobuf() {

@@ -164,7 +164,6 @@ struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParameters {
   std::string forward_secure_premaster_secret;
   CrypterPair initial_crypters;
   CrypterPair forward_secure_crypters;
-  std::string server_config_id;
   // Normalized SNI: converted to lower case and trailing '.' removed.
   std::string sni;
   std::string client_nonce;
