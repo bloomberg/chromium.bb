@@ -124,6 +124,23 @@ class RunTestSuiteTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     self.assertCommandContains(['--quick', '--only_verify'])
 
 
+class ChromeSDKTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
+  """Basic tests for ChromeSDK commands with RunCommand mocked out."""
+  BOARD = 'daisy_foo'
+  CMD = ['bar', 'baz']
+  CWD = 'fooey'
+
+  def testRunCommand(self):
+    """Test that running a command is possible."""
+    commands.ChromeSDK.Run(self.CWD, self.BOARD, self.CMD)
+    self.assertCommandContains([self.BOARD] + self.CMD, cwd=self.CWD)
+
+  def testNinja(self):
+    """Test that running ninja is possible."""
+    commands.ChromeSDK.Ninja(self.CWD, self.BOARD)
+    self.assertCommandContains([self.BOARD], cwd=self.CWD)
+
+
 class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
 
   def setUp(self):

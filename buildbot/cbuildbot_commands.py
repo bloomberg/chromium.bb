@@ -1678,3 +1678,18 @@ def PatchChrome(chrome_root, patch, subdir):
   """
   cmd = ['apply_issue', '-i', patch]
   cros_build_lib.RunCommand(cmd, cwd=os.path.join(chrome_root, subdir))
+
+
+class ChromeSDK(object):
+
+  DEFAULT_TARGETS = ('chrome', 'chrome_sandbox', 'nacl_helper',)
+
+  @staticmethod
+  def Run(cwd, board, cmd):
+    cmd = ['cros', 'chrome-sdk', '--board', board, '--'] + cmd
+    cros_build_lib.RunCommand(cmd, cwd=cwd)
+
+  @classmethod
+  def Ninja(cls, cwd, board, jobs=500, targets=DEFAULT_TARGETS):
+    cmd = ['ninja', '-j', str(jobs)] + list(targets)
+    cls.Run(cwd, board, cmd)
