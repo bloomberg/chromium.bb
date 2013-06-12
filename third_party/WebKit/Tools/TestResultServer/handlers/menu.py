@@ -32,6 +32,7 @@ from google.appengine.api import users
 from google.appengine.ext.webapp import template
 
 dashboards = [
+    ["Overview", "/dashboards/overview.html"],
     ["Results", "/dashboards/flakiness_dashboard.html"],
     ["Timeline", "/dashboards/timeline_explorer.html"],
     ["Treemap", "/dashboards/treemap.html"],
