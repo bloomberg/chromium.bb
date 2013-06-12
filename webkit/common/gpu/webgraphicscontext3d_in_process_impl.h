@@ -13,7 +13,13 @@
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+
+#if defined(ANGLE_DX11)
+#include "third_party/angle_dx11/include/GLSLANG/ShaderLang.h"
+#else
 #include "third_party/angle/include/GLSLANG/ShaderLang.h"
+#endif
+
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/common/gpu/webkit_gpu_export.h"
 

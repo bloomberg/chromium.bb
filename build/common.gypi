@@ -1700,6 +1700,12 @@
       }],
     ],
 
+
+    # The path to the ANGLE library. TODO(apatrick): This is to help
+    # transition to a new version of ANGLE at a new location. After the
+    # transition is complete, this can be removed.
+    'angle_path': '<(DEPTH)/third_party/angle',
+
     # List of default apps to install in new profiles.  The first list contains
     # the source files as found in svn.  The second list, used only for linux,
     # contains the destination location for each of the files.  When a crx
@@ -1811,6 +1817,11 @@
         }],
       ],
     },
+    'defines': [
+      # Set this to use the new DX11 version of ANGLE.
+      # TODO(apatrick): Remove this when the transition is complete.
+      #'ANGLE_DX11',
+    ],
     'conditions': [
       ['(OS=="mac" or OS=="ios") and asan==1', {
         'dependencies': [
