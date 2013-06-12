@@ -438,9 +438,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
       const GURL& origin,
       const google_apis::ResourceEntry& entry,
       int64 changestamp) {
-    return sync_service_->AppendRemoteChange(
-        origin, entry, changestamp,
-        RemoteChangeHandler::REMOTE_SYNC_TYPE_INCREMENTAL);
+    return sync_service_->AppendRemoteChange(origin, entry, changestamp);
   }
 
   bool AppendIncrementalRemoteChange(
@@ -453,8 +451,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
     return sync_service_->AppendRemoteChangeInternal(
         origin, path, is_deleted, resource_id,
         changestamp, remote_file_md5, base::Time(),
-        SYNC_FILE_TYPE_FILE,
-        RemoteChangeHandler::REMOTE_SYNC_TYPE_INCREMENTAL);
+        SYNC_FILE_TYPE_FILE);
   }
 
   // Mock setup helpers ------------------------------------------------------

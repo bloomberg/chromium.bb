@@ -10,27 +10,23 @@
 namespace sync_file_system {
 
 RemoteChangeHandler::ChangeQueueItem::ChangeQueueItem()
-    : changestamp(0), sync_type(REMOTE_SYNC_TYPE_INCREMENTAL) {}
+    : changestamp(0) {}
 
 RemoteChangeHandler::ChangeQueueItem::ChangeQueueItem(
     int64 changestamp,
-    RemoteSyncType sync_type,
     const fileapi::FileSystemURL& url)
-    : changestamp(changestamp), sync_type(sync_type), url(url) {}
+    : changestamp(changestamp), url(url) {}
 
 bool RemoteChangeHandler::ChangeQueueComparator::operator()(
     const ChangeQueueItem& left,
     const ChangeQueueItem& right) {
   if (left.changestamp != right.changestamp)
     return left.changestamp < right.changestamp;
-  if (left.sync_type != right.sync_type)
-    return left.sync_type < right.sync_type;
   return fileapi::FileSystemURL::Comparator()(left.url, right.url);
 }
 
 RemoteChangeHandler::RemoteChange::RemoteChange()
     : changestamp(0),
-      sync_type(REMOTE_SYNC_TYPE_INCREMENTAL),
       change(FileChange::FILE_CHANGE_ADD_OR_UPDATE, SYNC_FILE_TYPE_UNKNOWN) {}
 
 RemoteChangeHandler::RemoteChange::RemoteChange(
@@ -38,14 +34,12 @@ RemoteChangeHandler::RemoteChange::RemoteChange(
     const std::string& resource_id,
     const std::string& md5_checksum,
     const base::Time& updated_time,
-    RemoteSyncType sync_type,
     const fileapi::FileSystemURL& url,
     const FileChange& change)
     : changestamp(changestamp),
       resource_id(resource_id),
       md5_checksum(md5_checksum),
       updated_time(updated_time),
-      sync_type(sync_type),
       url(url),
       change(change) {}
 
@@ -109,7 +103,6 @@ void RemoteChangeHandler::AppendChange(const RemoteChange& remote_change) {
 
   std::pair<PendingChangeQueue::iterator, bool> inserted_to_queue =
       changes_.insert(ChangeQueueItem(remote_change.changestamp,
-                                      remote_change.sync_type,
                                       remote_change.url));
   DCHECK(inserted_to_queue.second);
 

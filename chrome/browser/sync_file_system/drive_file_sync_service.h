@@ -301,8 +301,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
   bool AppendRemoteChange(
       const GURL& origin,
       const google_apis::ResourceEntry& entry,
-      int64 changestamp,
-      RemoteChangeHandler::RemoteSyncType sync_type);
+      int64 changestamp);
   bool AppendFetchChange(
       const GURL& origin,
       const base::FilePath& path,
@@ -316,8 +315,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
       int64 changestamp,
       const std::string& remote_file_md5,
       const base::Time& updated_time,
-      SyncFileType file_type,
-      RemoteChangeHandler::RemoteSyncType sync_type);
+      SyncFileType file_type);
   void RemoveRemoteChange(const fileapi::FileSystemURL& url);
   void MaybeMarkAsIncrementalSyncOrigin(const GURL& origin);
 

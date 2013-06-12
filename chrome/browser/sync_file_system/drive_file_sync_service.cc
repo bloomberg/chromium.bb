@@ -1036,10 +1036,8 @@ void DriveFileSyncService::DidGetTemporaryFileForDownload(
   // We should not use the md5 in metadata for FETCH type to avoid the download
   // finishes due to NOT_MODIFIED.
   std::string md5_checksum;
-  if (param->remote_change.sync_type !=
-      RemoteChangeHandler::REMOTE_SYNC_TYPE_FETCH)
+  if (!param->drive_metadata.to_be_fetched())
     md5_checksum = param->drive_metadata.md5_checksum();
-
   api_util_->DownloadFile(
       resource_id,
       md5_checksum,
@@ -1138,11 +1136,9 @@ void DriveFileSyncService::CompleteRemoteSync(
   }
 
   GURL origin = param->remote_change.url.origin();
-  if (param->remote_change.sync_type ==
-      RemoteChangeHandler::REMOTE_SYNC_TYPE_INCREMENTAL) {
+  int64 changestamp = param->remote_change.changestamp;
+  if (changestamp > 0) {
     DCHECK(metadata_store_->IsIncrementalSyncOrigin(origin));
-    int64 changestamp = param->remote_change.changestamp;
-    DCHECK(changestamp);
     metadata_store_->SetLargestChangeStamp(
         changestamp,
         base::Bind(&DriveFileSyncService::FinalizeRemoteSync,
@@ -1273,8 +1269,7 @@ void DriveFileSyncService::StartOverRemoteSync(
 bool DriveFileSyncService::AppendRemoteChange(
     const GURL& origin,
     const google_apis::ResourceEntry& entry,
-    int64 changestamp,
-    RemoteChangeHandler::RemoteSyncType sync_type) {
+    int64 changestamp) {
   base::FilePath path = TitleToPath(entry.title());
 
   if (!entry.is_folder() && !entry.is_file() && !entry.deleted())
@@ -1290,7 +1285,7 @@ bool DriveFileSyncService::AppendRemoteChange(
       origin, path, entry.deleted(),
       entry.resource_id(), changestamp,
       entry.deleted() ? std::string() : entry.file_md5(),
-      entry.updated_time(), file_type, sync_type);
+      entry.updated_time(), file_type);
 }
 
 bool DriveFileSyncService::AppendFetchChange(
@@ -1305,8 +1300,7 @@ bool DriveFileSyncService::AppendFetchChange(
       0,  // changestamp
       std::string(),  // remote_file_md5
       base::Time(),  // updated_time
-      type,
-      RemoteChangeHandler::REMOTE_SYNC_TYPE_FETCH);
+      type);
 }
 
 bool DriveFileSyncService::AppendRemoteChangeInternal(
@@ -1317,8 +1311,7 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
     int64 changestamp,
     const std::string& remote_file_md5,
     const base::Time& updated_time,
-    SyncFileType file_type,
-    RemoteChangeHandler::RemoteSyncType sync_type) {
+    SyncFileType file_type) {
   fileapi::FileSystemURL url(CreateSyncableFileSystemURL(origin, path));
   DCHECK(url.is_valid());
 
@@ -1394,7 +1387,7 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
 
   RemoteChangeHandler::RemoteChange remote_change(
       changestamp, remote_resource_id, remote_file_md5,
-      updated_time, sync_type, url, file_change);
+      updated_time, url, file_change);
   remote_change_handler_.AppendChange(remote_change);
 
   DVLOG(3) << "Append remote change: " << path.value()
@@ -1630,8 +1623,7 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
              << (entry.deleted() ? " (deleted)" : " ")
              << "[" << origin.spec() << "]";
     has_new_changes = AppendRemoteChange(
-        origin, entry, entry.changestamp(),
-        RemoteChangeHandler::REMOTE_SYNC_TYPE_INCREMENTAL) || has_new_changes;
+        origin, entry, entry.changestamp()) || has_new_changes;
   }
 
   if (reset_sync_root) {

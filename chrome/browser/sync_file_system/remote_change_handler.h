@@ -21,19 +21,11 @@ namespace sync_file_system {
 // Manages pending remote file changes.
 class RemoteChangeHandler {
  public:
-  enum RemoteSyncType {
-    // Smaller number indicates higher priority in ChangeQueue.
-    REMOTE_SYNC_TYPE_FETCH = 0,
-    REMOTE_SYNC_TYPE_INCREMENTAL = 1,
-    REMOTE_SYNC_TYPE_BATCH = 2,
-  };
-
   struct RemoteChange {
     int64 changestamp;
     std::string resource_id;
     std::string md5_checksum;
     base::Time updated_time;
-    RemoteSyncType sync_type;
     fileapi::FileSystemURL url;
     FileChange change;
 
@@ -42,7 +34,6 @@ class RemoteChangeHandler {
                  const std::string& resource_id,
                  const std::string& md5_checksum,
                  const base::Time& updated_time,
-                 RemoteSyncType sync_type,
                  const fileapi::FileSystemURL& url,
                  const FileChange& change);
     ~RemoteChange();
@@ -79,12 +70,10 @@ class RemoteChangeHandler {
  private:
   struct ChangeQueueItem {
     int64 changestamp;
-    RemoteSyncType sync_type;
     fileapi::FileSystemURL url;
 
     ChangeQueueItem();
     ChangeQueueItem(int64 changestamp,
-                    RemoteSyncType sync_type,
                     const fileapi::FileSystemURL& url);
   };
 
