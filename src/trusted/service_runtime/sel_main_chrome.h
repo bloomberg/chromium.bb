@@ -108,6 +108,18 @@ struct NaClChromeMainArgs {
    * optional and may be -1, but this will make
    * sysconf(_SC_NPROCESSORS_ONLN) fail and result in some NaCl
    * modules failing.
+   *
+   * NB: sysconf(_SC_NPROCESSORS_ONLN) is the number of processors
+   * on-line and not the same as sysconf(_SC_NPROCESSORS_CONF) -- the
+   * former is possibly dynamic on systems with hotpluggable CPUs,
+   * whereas the configured number of processors -- what the kernel is
+   * configured to be able to handle or the number of processors
+   * potentially available.  Setting number_of_cores below would
+   * result in reporting a static value, rather than a potentially
+   * changing, dynamic value.
+   *
+   * We are unlikely to ever run on hotpluggable multiprocessor
+   * systems.
    */
   int number_of_cores;
 #endif
