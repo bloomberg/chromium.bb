@@ -78,7 +78,7 @@ deps = {
     'src/third_party/libvpx':
         Var('git_url') + '/chromium/deps/libvpx.git@a2f5366a2017af225506a54ee5cda90f3d9e2ba7',
     'src/third_party/libyuv':
-        Var('git_url') + '/external/libyuv.git@cdd6f4423bf9c0efb6883355fee23854e1edcf75',
+        Var('git_url') + '/external/libyuv.git@d36d2606fc7c9d719190676740b4d7b0cc53942f',
     'src/third_party/mesa/src':
         Var('git_url') + '/chromium/deps/mesa.git@6da96107e2467063c72e1ec5804f0618a6ce83d3',
     'src/third_party/openmax_dl':
