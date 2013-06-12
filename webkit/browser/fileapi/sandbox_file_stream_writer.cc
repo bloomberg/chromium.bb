@@ -70,8 +70,8 @@ int SandboxFileStreamWriter::Write(
       base::Bind(&SandboxFileStreamWriter::DidInitializeForWrite,
                  weak_factory_.GetWeakPtr(),
                  make_scoped_refptr(buf), buf_len, callback);
-  file_system_context_->operation_runner()->GetMetadata(
-      url_, base::Bind(&SandboxFileStreamWriter::DidGetFileInfo,
+  file_system_context_->operation_runner()->CreateSnapshotFile(
+      url_, base::Bind(&SandboxFileStreamWriter::DidCreateSnapshotFile,
                        weak_factory_.GetWeakPtr(), write_task));
   return net::ERR_IO_PENDING;
 }
@@ -110,11 +110,14 @@ int SandboxFileStreamWriter::WriteInternal(
   return result;
 }
 
-void SandboxFileStreamWriter::DidGetFileInfo(
+void SandboxFileStreamWriter::DidCreateSnapshotFile(
     const net::CompletionCallback& callback,
     base::PlatformFileError file_error,
     const base::PlatformFileInfo& file_info,
-    const base::FilePath& platform_path) {
+    const base::FilePath& platform_path,
+    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+  DCHECK(!file_ref);
+
   if (CancelIfRequested())
     return;
   if (file_error != base::PLATFORM_FILE_OK) {

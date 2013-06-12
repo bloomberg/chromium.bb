@@ -12,6 +12,7 @@
 #include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
+#include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/quota/quota_types.h"
 #include "webkit/storage/webkit_storage_export.h"
@@ -49,10 +50,12 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE SandboxFileStreamWriter
 
   // Callbacks that are chained for the first write.  This eventually calls
   // WriteInternal.
-  void DidGetFileInfo(const net::CompletionCallback& callback,
-                      base::PlatformFileError file_error,
-                      const base::PlatformFileInfo& file_info,
-                      const base::FilePath& platform_path);
+  void DidCreateSnapshotFile(
+      const net::CompletionCallback& callback,
+      base::PlatformFileError file_error,
+      const base::PlatformFileInfo& file_info,
+      const base::FilePath& platform_path,
+      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
   void DidGetUsageAndQuota(const net::CompletionCallback& callback,
                            quota::QuotaStatusCode status,
                            int64 usage, int64 quota);
