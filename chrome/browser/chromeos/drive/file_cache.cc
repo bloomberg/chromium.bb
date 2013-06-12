@@ -40,6 +40,30 @@ const base::FilePath::CharType kFileCacheTmpDownloadsDir[] =
 const base::FilePath::CharType kFileCacheTmpDocumentsDir[] =
     FILE_PATH_LITERAL("tmp/documents");
 
+// Returns true if |md5| matches the one in |cache_entry| with some
+// exceptions. See the function definition for details.
+bool CheckIfMd5Matches(const std::string& md5,
+                       const FileCacheEntry& cache_entry) {
+  if (cache_entry.is_dirty()) {
+    // If the entry is dirty, its MD5 may have been replaced by "local"
+    // during cache initialization, so we don't compare MD5.
+    return true;
+  } else if (cache_entry.is_pinned() && cache_entry.md5().empty()) {
+    // If the entry is pinned, it's ok for the entry to have an empty
+    // MD5. This can happen if the pinned file is not fetched. MD5 for pinned
+    // files are collected from files in "persistent" directory, but the
+    // persistent files do not exist if these are not fetched yet.
+    return true;
+  } else if (md5.empty()) {
+    // If the MD5 matching is not requested, don't check MD5.
+    return true;
+  } else if (md5 == cache_entry.md5()) {
+    // Otherwise, compare the MD5.
+    return true;
+  }
+  return false;
+}
+
 // Scans cache subdirectory and build or update |cache_map| with found files.
 //
 // The resource IDs and file paths of discovered files are collected as a
@@ -352,7 +376,8 @@ bool FileCache::GetCacheEntry(const std::string& resource_id,
                               FileCacheEntry* entry) {
   DCHECK(entry);
   AssertOnSequencedWorkerPool();
-  return metadata_->GetCacheEntry(resource_id, md5, entry);
+  return metadata_->GetCacheEntry(resource_id, entry) &&
+      CheckIfMd5Matches(md5, *entry);
 }
 
 void FileCache::IterateOnUIThread(
@@ -671,7 +696,7 @@ FileError FileCache::MarkDirty(const std::string& resource_id,
   // Marking a file dirty means its entry and actual file blob must exist in
   // cache.
   FileCacheEntry cache_entry;
-  if (!GetCacheEntry(resource_id, std::string(), &cache_entry) ||
+  if (!metadata_->GetCacheEntry(resource_id, &cache_entry) ||
       !cache_entry.is_present()) {
     LOG(WARNING) << "Can't mark dirty a file that wasn't cached: res_id="
                  << resource_id
@@ -722,7 +747,7 @@ FileError FileCache::ClearDirty(const std::string& resource_id,
 
   // Clearing a dirty file means its entry and actual file blob must exist in
   // cache.
-  if (!GetCacheEntry(resource_id, std::string(), &cache_entry) ||
+  if (!metadata_->GetCacheEntry(resource_id, &cache_entry) ||
       !cache_entry.is_present()) {
     LOG(WARNING) << "Can't clear dirty state of a file that wasn't cached: "
                  << "res_id=" << resource_id
@@ -792,8 +817,7 @@ FileError FileCache::Remove(const std::string& resource_id) {
   FileCacheEntry cache_entry;
 
   // If entry doesn't exist or is dirty or mounted in cache, nothing to do.
-  const bool entry_found =
-      GetCacheEntry(resource_id, std::string(), &cache_entry);
+  const bool entry_found = metadata_->GetCacheEntry(resource_id, &cache_entry);
   if (!entry_found || cache_entry.is_dirty() || cache_entry.is_mounted()) {
     DVLOG(1) << "Entry is "
              << (entry_found ?
@@ -920,7 +944,7 @@ FileError FileCache::StoreInternal(const std::string& resource_id,
     return FILE_ERROR_NO_SPACE;
 
   FileCacheEntry cache_entry;
-  GetCacheEntry(resource_id, std::string(), &cache_entry);
+  metadata_->GetCacheEntry(resource_id, &cache_entry);
 
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_TMP;
   // If file is dirty or mounted, return error.
@@ -991,7 +1015,7 @@ FileError FileCache::MarkAsMounted(const std::string& resource_id,
 
   // Get cache entry associated with the resource_id and md5
   FileCacheEntry cache_entry;
-  if (!GetCacheEntry(resource_id, std::string(), &cache_entry))
+  if (!metadata_->GetCacheEntry(resource_id, &cache_entry))
     return FILE_ERROR_NOT_FOUND;
 
   if (cache_entry.is_mounted())

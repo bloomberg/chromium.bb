@@ -88,12 +88,9 @@ class FileCacheMetadata {
   // Removes entry corresponding to |resource_id| from cache map.
   void RemoveCacheEntry(const std::string& resource_id);
 
-  // Gets the cache entry for file corresponding to |resource_id| and |md5|
-  // and returns true if entry exists in cache map.  Otherwise, returns false.
-  // |md5| can be empty if only matching |resource_id| is desired.
-  bool GetCacheEntry(const std::string& resource_id,
-                     const std::string& md5,
-                     FileCacheEntry* entry);
+  // Gets the cache entry for file corresponding to |resource_id| and returns
+  // true if entry exists in cache map.  Otherwise, returns false.
+  bool GetCacheEntry(const std::string& resource_id, FileCacheEntry* entry);
 
   // Returns an object to iterate over entries.
   scoped_ptr<Iterator> GetIterator();

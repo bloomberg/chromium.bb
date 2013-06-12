@@ -53,24 +53,13 @@ TEST_F(FileCacheMetadataTest, CacheTest) {
 
   // Test that the entry can be retrieved.
   FileCacheEntry cache_entry;
-  ASSERT_TRUE(metadata_->GetCacheEntry(
-      test_resource_id, test_md5, &cache_entry));
+  ASSERT_TRUE(metadata_->GetCacheEntry(test_resource_id, &cache_entry));
   EXPECT_EQ(test_md5, cache_entry.md5());
   EXPECT_TRUE(cache_entry.is_present());
   EXPECT_TRUE(cache_entry.is_persistent());
 
-  // Empty md5 should also work.
-  ASSERT_TRUE(metadata_->GetCacheEntry(
-      test_resource_id, std::string(), &cache_entry));
-  EXPECT_EQ(test_md5, cache_entry.md5());
-
   // resource_id doesn't exist.
-  EXPECT_FALSE(metadata_->GetCacheEntry(
-      "not_found_resource_id", std::string(), &cache_entry));
-
-  // md5 doesn't match.
-  EXPECT_FALSE(metadata_->GetCacheEntry(
-      test_resource_id, "mismatch_md5", &cache_entry));
+  EXPECT_FALSE(metadata_->GetCacheEntry("not_found_resource_id", &cache_entry));
 
   // Update all attributes.
   test_md5 = "test_md5_2";
@@ -82,15 +71,9 @@ TEST_F(FileCacheMetadataTest, CacheTest) {
   }
 
   // Make sure the values took.
-  ASSERT_TRUE(metadata_->GetCacheEntry(
-      test_resource_id, test_md5, &cache_entry));
+  ASSERT_TRUE(metadata_->GetCacheEntry(test_resource_id, &cache_entry));
   EXPECT_EQ(test_md5, cache_entry.md5());
   EXPECT_TRUE(cache_entry.is_pinned());
-
-  // Empty m5 should work.
-  ASSERT_TRUE(metadata_->GetCacheEntry(
-      test_resource_id, std::string(), &cache_entry));
-  EXPECT_EQ(test_md5, cache_entry.md5());
 
   // Test dirty cache.
   test_md5 = "test_md5_3";
@@ -102,25 +85,13 @@ TEST_F(FileCacheMetadataTest, CacheTest) {
   }
 
   // Make sure the values took.
-  ASSERT_TRUE(metadata_->GetCacheEntry(
-      test_resource_id, test_md5, &cache_entry));
+  ASSERT_TRUE(metadata_->GetCacheEntry(test_resource_id, &cache_entry));
   EXPECT_EQ(test_md5, cache_entry.md5());
   EXPECT_TRUE(cache_entry.is_dirty());
 
-  // Empty md5 should work.
-  ASSERT_TRUE(metadata_->GetCacheEntry(
-      test_resource_id, std::string(), &cache_entry));
-  EXPECT_EQ(test_md5, cache_entry.md5());
-
-  // Mismatched md5 should also work for dirty entries.
-  ASSERT_TRUE(metadata_->GetCacheEntry(
-      test_resource_id, "mismatch_md5", &cache_entry));
-  EXPECT_EQ(test_md5, cache_entry.md5());
-
   // Remove the entry.
   metadata_->RemoveCacheEntry(test_resource_id);
-  EXPECT_FALSE(metadata_->GetCacheEntry(
-      test_resource_id, std::string(), &cache_entry));
+  EXPECT_FALSE(metadata_->GetCacheEntry(test_resource_id, &cache_entry));
 
   // Add another one.
   test_resource_id = "test_resource_id_2";
@@ -133,8 +104,7 @@ TEST_F(FileCacheMetadataTest, CacheTest) {
   }
 
   // Make sure the values took.
-  ASSERT_TRUE(metadata_->GetCacheEntry(
-      test_resource_id, test_md5, &cache_entry));
+  ASSERT_TRUE(metadata_->GetCacheEntry(test_resource_id, &cache_entry));
   EXPECT_EQ(test_md5, cache_entry.md5());
   EXPECT_TRUE(cache_entry.is_present());
 }

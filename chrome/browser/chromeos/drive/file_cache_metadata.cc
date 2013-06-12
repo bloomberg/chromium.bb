@@ -27,30 +27,6 @@ enum DBOpenStatus {
   DB_OPEN_MAX_VALUE,
 };
 
-// Returns true if |md5| matches the one in |cache_entry| with some
-// exceptions. See the function definition for details.
-bool CheckIfMd5Matches(const std::string& md5,
-                       const FileCacheEntry& cache_entry) {
-  if (cache_entry.is_dirty()) {
-    // If the entry is dirty, its MD5 may have been replaced by "local"
-    // during cache initialization, so we don't compare MD5.
-    return true;
-  } else if (cache_entry.is_pinned() && cache_entry.md5().empty()) {
-    // If the entry is pinned, it's ok for the entry to have an empty
-    // MD5. This can happen if the pinned file is not fetched. MD5 for pinned
-    // files are collected from files in "persistent" directory, but the
-    // persistent files do not exist if these are not fetched yet.
-    return true;
-  } else if (md5.empty()) {
-    // If the MD5 matching is not requested, don't check MD5.
-    return true;
-  } else if (md5 == cache_entry.md5()) {
-    // Otherwise, compare the MD5.
-    return true;
-  }
-  return false;
-}
-
 }  // namespace
 
 // static
@@ -184,7 +160,6 @@ void FileCacheMetadata::RemoveCacheEntry(const std::string& resource_id) {
 }
 
 bool FileCacheMetadata::GetCacheEntry(const std::string& resource_id,
-                                      const std::string& md5,
                                       FileCacheEntry* entry) {
   DCHECK(entry);
   AssertOnSequencedWorkerPool();
@@ -198,18 +173,10 @@ bool FileCacheMetadata::GetCacheEntry(const std::string& resource_id,
     return false;
   }
 
-  FileCacheEntry cache_entry;
-  const bool ok = cache_entry.ParseFromString(serialized);
-  if (!ok) {
+  if (!entry->ParseFromString(serialized)) {
     LOG(ERROR) << "Failed to parse " << serialized;
     return false;
   }
-
-  if (!CheckIfMd5Matches(md5, cache_entry)) {
-    return false;
-  }
-
-  *entry = cache_entry;
   return true;
 }
 
