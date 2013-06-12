@@ -402,10 +402,10 @@ cr.define('options', function() {
           this.layout_ = this.dragging_.display.isPrimary ?
               SecondaryDisplayLayout.BOTTOM : SecondaryDisplayLayout.TOP;
       } else {
-        if (newPosition.y > baseDiv.offsetLeft + baseDiv.offsetWidth)
+        if (newPosition.x > baseDiv.offsetLeft + baseDiv.offsetWidth)
           this.layout_ = this.dragging_.display.isPrimary ?
               SecondaryDisplayLayout.LEFT : SecondaryDisplayLayout.RIGHT;
-        else if (newPosition.y + draggingDiv.offsetWidth <
+        else if (newPosition.x + draggingDiv.offsetWidth <
                    baseDiv.offstLeft)
           this.layout_ = this.dragging_.display.isPrimary ?
               SecondaryDisplayLayout.RIGHT : SecondaryDisplayLayout.LEFT;
