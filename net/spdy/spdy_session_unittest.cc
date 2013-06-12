@@ -17,6 +17,7 @@
 #include "net/dns/host_cache.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/socket/next_proto.h"
+#include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/spdy/spdy_session_test_util.h"

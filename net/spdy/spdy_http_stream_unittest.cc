@@ -22,14 +22,13 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/socket/next_proto.h"
+#include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_credential_builder.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session.h"
-#include "net/spdy/spdy_test_util_spdy3.h"
+#include "net/spdy/spdy_test_util_common.h"
 #include "net/ssl/default_server_bound_cert_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using namespace net::test_spdy3;
 
 namespace net {
 
@@ -64,11 +63,12 @@ void TestLoadTimingNotReused(const HttpStream& stream) {
 
 }  // namespace
 
-class SpdyHttpStreamSpdy3Test : public testing::Test {
+class SpdyHttpStreamSpdy2Test : public testing::Test,
+                                public testing::WithParamInterface<NextProto> {
  public:
-  SpdyHttpStreamSpdy3Test()
-      : spdy_util_(kProtoSPDY3),
-        session_deps_(kProtoSPDY3) {
+  SpdyHttpStreamSpdy2Test()
+      : spdy_util_(GetParam()),
+        session_deps_(GetParam()) {
     session_deps_.net_log = &net_log_;
   }
 
@@ -80,6 +80,7 @@ class SpdyHttpStreamSpdy3Test : public testing::Test {
 
  protected:
   virtual void TearDown() OVERRIDE {
+    crypto::ECSignatureCreator::SetFactoryForTesting(NULL);
     base::MessageLoop::current()->RunUntilIdle();
   }
 
@@ -157,32 +158,40 @@ class SpdyHttpStreamSpdy3Test : public testing::Test {
   scoped_refptr<SpdySession> session_;
   scoped_refptr<TransportSocketParams> transport_params_;
 
-  // The SendChunkedPost test is run with SPDY/3 and SPDY/4.
-  //
-  // TODO(akalin): Find a less clunky way to do this once we unfork
-  // the SPDY tests.
-  void RunSendChunkedPostTest(SpdyMajorVersion spdy_version);
-
  private:
   MockECSignatureCreatorFactory ec_signature_creator_factory_;
 };
 
+INSTANTIATE_TEST_CASE_P(
+    NextProto,
+    SpdyHttpStreamSpdy2Test,
+    testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2));
+
+// TODO(akalin): Don't early-exit in the tests below for values >
+// kProtoSPDY3.
+
 // SpdyHttpStream::GetUploadProgress() should still work even before the
 // stream is initialized.
-TEST_F(SpdyHttpStreamSpdy3Test, GetUploadProgressBeforeInitialization) {
+TEST_P(SpdyHttpStreamSpdy2Test, GetUploadProgressBeforeInitialization) {
+  if (GetParam() > kProtoSPDY3)
+    return;
+
   SpdyHttpStream stream(NULL, false);
   UploadProgress progress = stream.GetUploadProgress();
   EXPECT_EQ(0u, progress.size());
   EXPECT_EQ(0u, progress.position());
 }
 
-TEST_F(SpdyHttpStreamSpdy3Test, SendRequest) {
+TEST_P(SpdyHttpStreamSpdy2Test, SendRequest) {
+  if (GetParam() > kProtoSPDY3)
+    return;
+
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   MockWrite writes[] = {
     CreateMockWrite(*req.get(), 1),
   };
-  scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
     CreateMockRead(*resp, 2),
     MockRead(SYNCHRONOUS, 0, 3)  // EOF
@@ -240,7 +249,10 @@ TEST_F(SpdyHttpStreamSpdy3Test, SendRequest) {
   TestLoadTimingNotReused(*http_stream);
 }
 
-TEST_F(SpdyHttpStreamSpdy3Test, LoadTimingTwoRequests) {
+TEST_P(SpdyHttpStreamSpdy2Test, LoadTimingTwoRequests) {
+  if (GetParam() > kProtoSPDY3)
+    return;
+
   scoped_ptr<SpdyFrame> req1(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   scoped_ptr<SpdyFrame> req2(
@@ -249,10 +261,14 @@ TEST_F(SpdyHttpStreamSpdy3Test, LoadTimingTwoRequests) {
     CreateMockWrite(*req1, 0),
     CreateMockWrite(*req2, 1),
   };
-  scoped_ptr<SpdyFrame> resp1(ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdyFrame> body1(ConstructSpdyBodyFrame(1, "", 0, true));
-  scoped_ptr<SpdyFrame> resp2(ConstructSpdyGetSynReply(NULL, 0, 3));
-  scoped_ptr<SpdyFrame> body2(ConstructSpdyBodyFrame(3, "", 0, true));
+  scoped_ptr<SpdyFrame> resp1(
+      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> body1(
+      spdy_util_.ConstructSpdyBodyFrame(1, "", 0, true));
+  scoped_ptr<SpdyFrame> resp2(
+      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+  scoped_ptr<SpdyFrame> body2(
+      spdy_util_.ConstructSpdyBodyFrame(3, "", 0, true));
   MockRead reads[] = {
     CreateMockRead(*resp1, 2),
     CreateMockRead(*body1, 3),
@@ -334,28 +350,26 @@ TEST_F(SpdyHttpStreamSpdy3Test, LoadTimingTwoRequests) {
   TestLoadTimingReused(*http_stream2);
 }
 
-void SpdyHttpStreamSpdy3Test::RunSendChunkedPostTest(
-    SpdyMajorVersion spdy_version) {
-  BufferedSpdyFramer framer(spdy_version, false);
+TEST_P(SpdyHttpStreamSpdy2Test, SendChunkedPost) {
+  BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
 
   scoped_ptr<SpdyFrame> initial_window_update(
       framer.CreateWindowUpdate(
           kSessionFlowControlStreamId,
           kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
   scoped_ptr<SpdyFrame> req(
-      ConstructChunkedSpdyPostWithVersion(spdy_version, NULL, 0));
+      spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
   scoped_ptr<SpdyFrame> body(
       framer.CreateDataFrame(1, kUploadData, kUploadDataSize, DATA_FLAG_FIN));
   std::vector<MockWrite> writes;
   int seq = 0;
-  if (spdy_version == SPDY4) {
+  if (GetParam() >= kProtoSPDY31) {
     writes.push_back(CreateMockWrite(*initial_window_update, seq++));
   }
   writes.push_back(CreateMockWrite(*req, seq++));
   writes.push_back(CreateMockWrite(*body, seq++));  // POST upload frame
 
-  scoped_ptr<SpdyFrame> resp(
-      ConstructSpdyPostSynReplyWithVersion(spdy_version, NULL, 0));
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
   std::vector<MockRead> reads;
   reads.push_back(CreateMockRead(*resp, seq++));
   reads.push_back(CreateMockRead(*body, seq++));
@@ -367,7 +381,7 @@ void SpdyHttpStreamSpdy3Test::RunSendChunkedPostTest(
   EXPECT_EQ(OK, InitSession(vector_as_array(&reads), reads.size(),
                             vector_as_array(&writes), writes.size(),
                             host_port_pair));
-  EXPECT_EQ(spdy_version, session_->GetProtocolVersion());
+  EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
 
   UploadDataStream upload_stream(UploadDataStream::CHUNKED, 0);
   const int kFirstChunkSize = kUploadDataSize/2;
@@ -411,32 +425,27 @@ void SpdyHttpStreamSpdy3Test::RunSendChunkedPostTest(
   EXPECT_TRUE(data()->at_write_eof());
 }
 
-TEST_F(SpdyHttpStreamSpdy3Test, SendChunkedPost) {
-  RunSendChunkedPostTest(SPDY3);
-}
-
-TEST_F(SpdyHttpStreamSpdy3Test, SendChunkedPost4) {
-  session_deps_.protocol = kProtoSPDY4a2;
-  RunSendChunkedPostTest(SPDY4);
-}
-
 // Test to ensure the SpdyStream state machine does not get confused when a
 // chunk becomes available while a write is pending.
-TEST_F(SpdyHttpStreamSpdy3Test, DelayedSendChunkedPost) {
+TEST_P(SpdyHttpStreamSpdy2Test, DelayedSendChunkedPost) {
+  if (GetParam() > kProtoSPDY3)
+    return;
+
   const char kUploadData1[] = "12345678";
   const int kUploadData1Size = arraysize(kUploadData1)-1;
-  scoped_ptr<SpdyFrame> req(ConstructChunkedSpdyPost(NULL, 0));
-  scoped_ptr<SpdyFrame> chunk1(ConstructSpdyBodyFrame(1, false));
+  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+  scoped_ptr<SpdyFrame> chunk1(spdy_util_.ConstructSpdyBodyFrame(1, false));
   scoped_ptr<SpdyFrame> chunk2(
-      ConstructSpdyBodyFrame(1, kUploadData1, kUploadData1Size, false));
-  scoped_ptr<SpdyFrame> chunk3(ConstructSpdyBodyFrame(1, true));
+      spdy_util_.ConstructSpdyBodyFrame(
+          1, kUploadData1, kUploadData1Size, false));
+  scoped_ptr<SpdyFrame> chunk3(spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockWrite writes[] = {
     CreateMockWrite(*req.get(), 0),
     CreateMockWrite(*chunk1, 1),  // POST upload frames
     CreateMockWrite(*chunk2, 2),
     CreateMockWrite(*chunk3, 3),
   };
-  scoped_ptr<SpdyFrame> resp(ConstructSpdyPostSynReply(NULL, 0));
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
     CreateMockRead(*resp, 4),
     CreateMockRead(*chunk1, 5),
@@ -528,14 +537,17 @@ TEST_F(SpdyHttpStreamSpdy3Test, DelayedSendChunkedPost) {
 
 // Test the receipt of a WINDOW_UPDATE frame while waiting for a chunk to be
 // made available is handled correctly.
-TEST_F(SpdyHttpStreamSpdy3Test, DelayedSendChunkedPostWithWindowUpdate) {
-  scoped_ptr<SpdyFrame> req(ConstructChunkedSpdyPost(NULL, 0));
-  scoped_ptr<SpdyFrame> chunk1(ConstructSpdyBodyFrame(1, true));
+TEST_P(SpdyHttpStreamSpdy2Test, DelayedSendChunkedPostWithWindowUpdate) {
+  if (GetParam() != kProtoSPDY3)
+    return;
+
+  scoped_ptr<SpdyFrame> req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+  scoped_ptr<SpdyFrame> chunk1(spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockWrite writes[] = {
     CreateMockWrite(*req.get(), 0),
     CreateMockWrite(*chunk1, 1),
   };
-  scoped_ptr<SpdyFrame> resp(ConstructSpdyPostSynReply(NULL, 0));
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
   scoped_ptr<SpdyFrame> window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, kUploadDataSize));
   MockRead reads[] = {
@@ -642,7 +654,10 @@ TEST_F(SpdyHttpStreamSpdy3Test, DelayedSendChunkedPostWithWindowUpdate) {
 }
 
 // Test case for bug: http://code.google.com/p/chromium/issues/detail?id=50058
-TEST_F(SpdyHttpStreamSpdy3Test, SpdyURLTest) {
+TEST_P(SpdyHttpStreamSpdy2Test, SpdyURLTest) {
+  if (GetParam() > kProtoSPDY3)
+    return;
+
   const char * const full_url = "http://www.google.com/foo?query=what#anchor";
   const char * const base_url = "http://www.google.com/foo?query=what";
   scoped_ptr<SpdyFrame> req(
@@ -650,7 +665,7 @@ TEST_F(SpdyHttpStreamSpdy3Test, SpdyURLTest) {
   MockWrite writes[] = {
     CreateMockWrite(*req.get(), 1),
   };
-  scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
     CreateMockRead(*resp, 2),
     MockRead(SYNCHRONOUS, 0, 3)  // EOF
@@ -714,20 +729,22 @@ void GetECServerBoundCertAndProof(
   EXPECT_EQ(CLIENT_CERT_ECDSA_SIGN, cert_type);
 
   SpdyCredential credential;
-  SpdyCredentialBuilder::Build(MockClientSocket::kTlsUnique, cert_type, key,
-                               *cert, 2, &credential);
+  EXPECT_EQ(OK,
+            SpdyCredentialBuilder::Build(
+                MockClientSocket::kTlsUnique, cert_type, key,
+                *cert, 2, &credential));
 
+  ASSERT_FALSE(credential.certs.empty());
   cert->assign(credential.certs[0]);
   proof->assign(credential.proof);
 }
 
-}  // namespace
-
 // Constructs a standard SPDY SYN_STREAM frame for a GET request with
 // a credential set.
-SpdyFrame* ConstructCredentialRequestFrame(size_t slot, const GURL& url,
+SpdyFrame* ConstructCredentialRequestFrame(NextProto next_proto,
+                                           size_t slot, const GURL& url,
                                            SpdyStreamId stream_id) {
-  SpdyTestUtil util(kProtoSPDY3);
+  SpdyTestUtil util(next_proto);
 
   const SpdyHeaderInfo syn_headers = {
     SYN_STREAM,
@@ -743,39 +760,11 @@ SpdyFrame* ConstructCredentialRequestFrame(size_t slot, const GURL& url,
     DATA_FLAG_NONE
   };
 
-  // TODO(rch): this is ugly.  Clean up.
-  std::string str_path = url.PathForRequest();
-  std::string str_scheme = url.scheme();
-  std::string str_host = url.host();
-  if (url.has_port()) {
-    str_host += ":";
-    str_host += url.port();
-  }
-  scoped_ptr<char[]> req(new char[str_path.size() + 1]);
-  scoped_ptr<char[]> scheme(new char[str_scheme.size() + 1]);
-  scoped_ptr<char[]> host(new char[str_host.size() + 1]);
-  memcpy(req.get(), str_path.c_str(), str_path.size());
-  memcpy(scheme.get(), str_scheme.c_str(), str_scheme.size());
-  memcpy(host.get(), str_host.c_str(), str_host.size());
-  req.get()[str_path.size()] = '\0';
-  scheme.get()[str_scheme.size()] = '\0';
-  host.get()[str_host.size()] = '\0';
-
-  const char* const headers[] = {
-    ":method",
-    "GET",
-    ":path",
-    req.get(),
-    ":host",
-    host.get(),
-    ":scheme",
-    scheme.get(),
-    ":version",
-    "HTTP/1.1"
-  };
-  return util.ConstructSpdyFrame(
-      syn_headers, NULL, 0, headers, arraysize(headers)/2);
+  scoped_ptr<SpdyHeaderBlock> headers(util.ConstructGetHeaderBlock(url.spec()));
+  return util.ConstructSpdyFrame(syn_headers, headers.Pass());
 }
+
+}  // namespace
 
 // TODO(rch): When openssl supports server bound certifictes, this
 // guard can be removed
@@ -783,7 +772,7 @@ SpdyFrame* ConstructCredentialRequestFrame(size_t slot, const GURL& url,
 // Test that if we request a resource for a new origin on a session that
 // used domain bound certificates, that we send a CREDENTIAL frame for
 // the new domain before we send the new request.
-void SpdyHttpStreamSpdy3Test::TestSendCredentials(
+void SpdyHttpStreamSpdy2Test::TestSendCredentials(
     ServerBoundCertService* server_bound_cert_service,
     const std::string& cert,
     const std::string& proof) {
@@ -796,19 +785,19 @@ void SpdyHttpStreamSpdy3Test::TestSendCredentials(
   cred.certs.push_back(cert);
 
   scoped_ptr<SpdyFrame> req(ConstructCredentialRequestFrame(
-      1, GURL(kUrl1), 1));
+      GetParam(), 1, GURL(kUrl1), 1));
   scoped_ptr<SpdyFrame> credential(
       spdy_util_.ConstructSpdyCredential(cred));
   scoped_ptr<SpdyFrame> req2(ConstructCredentialRequestFrame(
-      2, GURL(kUrl2), 3));
+      GetParam(), 2, GURL(kUrl2), 3));
   MockWrite writes[] = {
     CreateMockWrite(*req.get(), 0),
     CreateMockWrite(*credential.get(), 2),
     CreateMockWrite(*req2.get(), 3),
   };
 
-  scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdyFrame> resp2(ConstructSpdyGetSynReply(NULL, 0, 3));
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
   MockRead reads[] = {
     CreateMockRead(*resp, 1),
     CreateMockRead(*resp2, 4),
@@ -827,7 +816,7 @@ void SpdyHttpStreamSpdy3Test::TestSendCredentials(
   SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
   ssl.channel_id_sent = true;
   ssl.server_bound_cert_service = server_bound_cert_service;
-  ssl.protocol_negotiated = kProtoSPDY3;
+  ssl.protocol_negotiated = GetParam();
   socket_factory->AddSSLSocketDataProvider(&ssl);
   http_session_ = SpdySessionDependencies::SpdyCreateSessionDeterministic(
       &session_deps_);
@@ -907,7 +896,10 @@ void SpdyHttpStreamSpdy3Test::TestSendCredentials(
   ASSERT_EQ(200, response.headers->response_code());
 }
 
-TEST_F(SpdyHttpStreamSpdy3Test, SendCredentialsEC) {
+TEST_P(SpdyHttpStreamSpdy2Test, SendCredentialsEC) {
+  if (GetParam() != kProtoSPDY3)
+    return;
+
   scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool =
       new base::SequencedWorkerPool(1, "SpdyHttpStreamSpdy3Test");
   scoped_ptr<ServerBoundCertService> server_bound_cert_service(
@@ -924,7 +916,10 @@ TEST_F(SpdyHttpStreamSpdy3Test, SendCredentialsEC) {
   sequenced_worker_pool->Shutdown();
 }
 
-TEST_F(SpdyHttpStreamSpdy3Test, DontSendCredentialsForHttpUrlsEC) {
+TEST_P(SpdyHttpStreamSpdy2Test, DontSendCredentialsForHttpUrlsEC) {
+  if (GetParam() != kProtoSPDY3)
+    return;
+
   scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool =
       new base::SequencedWorkerPool(1, "SpdyHttpStreamSpdy3Test");
   scoped_ptr<ServerBoundCertService> server_bound_cert_service(
@@ -945,16 +940,16 @@ TEST_F(SpdyHttpStreamSpdy3Test, DontSendCredentialsForHttpUrlsEC) {
   cred.certs.push_back(cert);
 
   scoped_ptr<SpdyFrame> req(ConstructCredentialRequestFrame(
-      0, GURL(kUrl1), 1));
+      GetParam(), 0, GURL(kUrl1), 1));
   scoped_ptr<SpdyFrame> req2(ConstructCredentialRequestFrame(
-      0, GURL(kUrl2), 3));
+      GetParam(), 0, GURL(kUrl2), 3));
   MockWrite writes[] = {
     CreateMockWrite(*req.get(), 0),
     CreateMockWrite(*req2.get(), 2),
   };
 
-  scoped_ptr<SpdyFrame> resp(ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdyFrame> resp2(ConstructSpdyGetSynReply(NULL, 0, 3));
+  scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  scoped_ptr<SpdyFrame> resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
   MockRead reads[] = {
     CreateMockRead(*resp, 1),
     CreateMockRead(*resp2, 3),
@@ -975,7 +970,7 @@ TEST_F(SpdyHttpStreamSpdy3Test, DontSendCredentialsForHttpUrlsEC) {
   SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
   ssl.channel_id_sent = true;
   ssl.server_bound_cert_service = server_bound_cert_service.get();
-  ssl.protocol_negotiated = kProtoSPDY3;
+  ssl.protocol_negotiated = GetParam();
   socket_factory->AddSSLSocketDataProvider(&ssl);
   http_session_ = SpdySessionDependencies::SpdyCreateSessionDeterministic(
       &session_deps_);
