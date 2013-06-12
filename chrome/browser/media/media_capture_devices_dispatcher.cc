@@ -9,6 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
@@ -61,7 +62,8 @@ const content::MediaStreamDevice* FindDefaultDeviceWithId(
 bool IsOriginWhitelistedForScreenCapture(const GURL& origin) {
 #if defined(OFFICIAL_BUILD)
   if (// Google Hangouts.
-      origin.spec() == "https://staging.talkgadget.google.com/" ||
+      (origin.SchemeIs("https") &&
+       EndsWith(origin.spec(), ".talkgadget.google.com/", true)) ||
       origin.spec() == "https://plus.google.com/" ||
       origin.spec() == "chrome-extension://pkedcjkdefgpdelpbcmbmeomcjbeemfm/" ||
       origin.spec() == "chrome-extension://fmfcbgogabcbclcofgocippekhfcmgfj/" ||
