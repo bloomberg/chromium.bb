@@ -45,7 +45,6 @@ void StyleResolverState::cacheBorderAndBackground()
 void StyleResolverState::clear()
 {
     m_element = 0;
-    m_childIndex = 0;
     m_styledElement = 0;
     m_parentStyle = 0;
     m_parentNode = 0;
@@ -55,10 +54,9 @@ void StyleResolverState::clear()
     m_pendingSVGDocuments.clear();
 }
 
-void StyleResolverState::initElement(Element* e, int childIndex)
+void StyleResolverState::initElement(Element* e)
 {
     m_element = e;
-    m_childIndex = childIndex;
     m_styledElement = e && e->isStyledElement() ? static_cast<StyledElement*>(e) : 0;
     m_elementLinkState = e ? e->document()->visitedLinkState()->determineLinkState(e) : NotInsideLink;
 }

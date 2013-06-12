@@ -1673,7 +1673,7 @@ void Document::recalcStyle(StyleChange change)
                 renderer()->setStyle(documentStyle.release());
         }
 
-        for (Node* n = lastChild(); n; n = n->previousSibling()) {
+        for (Node* n = firstChild(); n; n = n->nextSibling()) {
             if (!n->isElementNode())
                 continue;
             Element* element = toElement(n);

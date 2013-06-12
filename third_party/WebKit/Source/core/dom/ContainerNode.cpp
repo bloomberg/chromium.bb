@@ -52,9 +52,7 @@ typedef pair<NodeCallback, RefPtr<Node> > CallbackInfo;
 typedef Vector<CallbackInfo> NodeCallbackQueue;
 
 static NodeCallbackQueue* s_postAttachCallbackQueue;
-static NodeCallbackQueue* s_insertionCallbackQueue;
 
-static size_t s_insertionDepth;
 static size_t s_attachDepth;
 
 ChildNodesLazySnapshot* ChildNodesLazySnapshot::latestSnapshot = 0;
@@ -687,29 +685,6 @@ void ContainerNode::resumePostAttachCallbacks()
     --s_attachDepth;
 }
 
-void ContainerNode::suspendInsertionCallbacks()
-{
-    ++s_insertionDepth;
-}
-
-void ContainerNode::resumeInsertionCallbacks()
-{
-    if (s_insertionDepth == 1 && s_insertionCallbackQueue)
-        dispatchInsertionCallbacks();
-    --s_insertionDepth;
-}
-
-void ContainerNode::queueInsertionCallback(NodeCallback callback, Node* node)
-{
-    if (!s_insertionDepth) {
-        (*callback)(node);
-        return;
-    }
-    if (!s_insertionCallbackQueue)
-        s_insertionCallbackQueue = new NodeCallbackQueue;
-    s_insertionCallbackQueue->append(CallbackInfo(callback, node));
-}
-
 void ContainerNode::queuePostAttachCallback(NodeCallback callback, Node* node)
 {
     if (!s_postAttachCallbackQueue)
@@ -1041,15 +1016,6 @@ static void dispatchChildRemovalEvents(Node* child)
         for (; c; c = NodeTraversal::next(c.get(), child))
             c->dispatchScopedEvent(MutationEvent::create(eventNames().DOMNodeRemovedFromDocumentEvent, false));
     }
-}
-
-void ContainerNode::dispatchInsertionCallbacks()
-{
-    for (size_t i = s_insertionCallbackQueue->size(); i; --i) {
-        const CallbackInfo& info = (*s_insertionCallbackQueue)[i - 1];
-        info.first(info.second.get());
-    }
-    s_insertionCallbackQueue->clear();
 }
 
 static void updateTreeAfterInsertion(ContainerNode* parent, Node* child, AttachBehavior attachBehavior)

@@ -35,7 +35,7 @@ namespace WebCore {
 void ChildNodeInsertionNotifier::notifyDescendantInsertedIntoDocument(ContainerNode* node)
 {
     ChildNodesLazySnapshot snapshot(node);
-    while (RefPtr<Node> child = snapshot.previousNode()) {
+    while (RefPtr<Node> child = snapshot.nextNode()) {
         // If we have been removed from the document during this loop, then
         // we don't want to tell the rest of our children that they've been
         // inserted into the document because they haven't.
@@ -69,7 +69,7 @@ void ChildNodeInsertionNotifier::notifyDescendantInsertedIntoTree(ContainerNode*
 void ChildNodeRemovalNotifier::notifyDescendantRemovedFromDocument(ContainerNode* node)
 {
     ChildNodesLazySnapshot snapshot(node);
-    while (RefPtr<Node> child = snapshot.previousNode()) {
+    while (RefPtr<Node> child = snapshot.nextNode()) {
         // If we have been added to the document during this loop, then we
         // don't want to tell the rest of our children that they've been
         // removed from the document because they haven't.
