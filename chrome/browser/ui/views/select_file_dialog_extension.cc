@@ -326,6 +326,8 @@ void SelectFileDialogExtension::SelectFileImpl(
   }
 
   base::FilePath virtual_path;
+  base::FilePath fallback_path = profile_->last_selected_directory().Append(
+      default_dialog_path.BaseName());
   // If an absolute path is specified as the default path, convert it to the
   // virtual path in the file browser extension. Due to the current design,
   // an invalid temporal cache file path may passed as |default_dialog_path|
@@ -335,8 +337,7 @@ void SelectFileDialogExtension::SelectFileImpl(
       (file_manager_util::ConvertFileToRelativeFileSystemPath(
            profile_, kFileBrowserDomain, default_dialog_path, &virtual_path) ||
        file_manager_util::ConvertFileToRelativeFileSystemPath(
-           profile_, kFileBrowserDomain, profile_->last_selected_directory(),
-           &virtual_path))) {
+           profile_, kFileBrowserDomain, fallback_path, &virtual_path))) {
     virtual_path = base::FilePath("/").Append(virtual_path);
   } else {
     // If the path was relative, or failed to convert, just use the base name,
