@@ -592,7 +592,6 @@
                         '../../core/testing/v8', # for WebCoreTestSupport.h, needed to link in window.internals code.
                     ],
                     'sources': [
-                        '<@(wtf_unittest_files)',
                         '<@(core_unittest_files)',
                         '<@(webkit_unittest_files)',
                         'src/WebTestingSupport.cpp',
