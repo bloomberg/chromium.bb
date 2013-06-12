@@ -408,8 +408,7 @@ inline void DOMWrapperMap<NPObject>::makeWeakCallback(v8::Isolate* isolate, v8::
 
     // Must remove from our map before calling _NPN_ReleaseObject(). _NPN_ReleaseObject can
     // call forgetV8ObjectForNPObject, which uses the table as well.
-    staticNPObjectMap().remove(npObject);
-    wrapper->Dispose(isolate);
+    staticNPObjectMap().removeAndDispose(npObject);
 
     if (_NPN_IsAlive(npObject))
         _NPN_ReleaseObject(npObject);

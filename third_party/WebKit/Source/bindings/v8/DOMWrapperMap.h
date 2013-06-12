@@ -63,12 +63,16 @@ public:
 
     void set(KeyType* key, v8::Handle<v8::Object> wrapper, const WrapperConfiguration& configuration)
     {
-        ASSERT(!m_map.contains(key));
         ASSERT(static_cast<KeyType*>(toNative(wrapper)) == key);
         v8::Persistent<v8::Object> persistent(m_isolate, wrapper);
         configuration.configureWrapper(&persistent, m_isolate);
         persistent.MakeWeak(this, &makeWeakCallback);
-        m_map.set(key, UnsafePersistent<v8::Object>(persistent));
+        typename MapType::AddResult result = m_map.add(key, UnsafePersistent<v8::Object>());
+        ASSERT(result.isNewEntry);
+        // FIXME: Stop handling this case once duplicate wrappers are guaranteed not to be created.
+        if (!result.isNewEntry)
+            result.iterator->value.dispose();
+        result.iterator->value = UnsafePersistent<v8::Object>(persistent);
     }
 
     void clear()
@@ -101,16 +105,6 @@ public:
 private:
     static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Object>* wrapper, DOMWrapperMap<KeyType>*);
 
-    // FIXME: This is only exposed so it can be called by weak callbacks that
-    // take care of disposing the wrapper on their own. Once the map never has
-    // dupicate set() calls, this can be removed.
-    void remove(KeyType* key)
-    {
-        typename MapType::iterator it = m_map.find(key);
-        ASSERT(it != m_map.end());
-        m_map.remove(it);
-    }
-
     v8::Isolate* m_isolate;
     MapType m_map;
 };
@@ -122,8 +116,7 @@ inline void DOMWrapperMap<void>::makeWeakCallback(v8::Isolate* isolate, v8::Pers
     ASSERT(type->derefObjectFunction);
     void* key = static_cast<void*>(toNative(*wrapper));
     ASSERT(map->get(key) == *wrapper);
-    map->remove(key);
-    wrapper->Dispose(isolate);
+    map->removeAndDispose(key);
     type->derefObject(key);
 }
 
