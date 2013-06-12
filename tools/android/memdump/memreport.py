@@ -47,7 +47,7 @@ def _CollectMemoryStats(memdump, region_filters):
       continue
     matched_regions = Set([])
     for region_filter in region_filters:
-      if regexps[region_filter].match(line):
+      if regexps[region_filter].match(line.rstrip('\r\n')):
         matched_regions.add(region_filter)
         if not region_filter in mem_usage_for_regions:
           mem_usage_for_regions[region_filter] = {
