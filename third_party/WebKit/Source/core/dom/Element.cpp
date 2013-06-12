@@ -1258,18 +1258,18 @@ void Element::removedFrom(ContainerNode* insertionPoint)
         document()->accessSVGExtensions()->removeElementFromPendingResources(this);
 }
 
-void Element::createRendererIfNeeded()
+void Element::createRendererIfNeeded(const AttachContext& context)
 {
-    NodeRenderingContext(this).createRendererForElementIfNeeded();
+    NodeRenderingContext(this, context).createRendererForElementIfNeeded();
 }
 
-void Element::attach()
+void Element::attach(const AttachContext& context)
 {
     PostAttachCallbackDisabler callbackDisabler(this);
     StyleResolverParentPusher parentPusher(this);
     WidgetHierarchyUpdatesSuspensionScope suspendWidgetHierarchyUpdates;
 
-    createRendererIfNeeded();
+    createRendererIfNeeded(context);
 
     if (parentElement() && parentElement()->isInCanvasSubtree())
         setIsInCanvasSubtree(true);
@@ -1283,7 +1283,7 @@ void Element::attach()
     } else if (firstChild())
         parentPusher.push();
 
-    ContainerNode::attach();
+    ContainerNode::attach(context);
 
     createPseudoElementIfNeeded(AFTER);
 
@@ -1303,7 +1303,7 @@ void Element::unregisterNamedFlowContentNode()
         document()->renderView()->flowThreadController()->unregisterNamedFlowContentNode(this);
 }
 
-void Element::detach()
+void Element::detach(const AttachContext& context)
 {
     WidgetHierarchyUpdatesSuspensionScope suspendWidgetHierarchyUpdates;
     unregisterNamedFlowContentNode();
@@ -1321,7 +1321,7 @@ void Element::detach()
         detachChildrenIfNeeded();
         shadow->detach();
     }
-    ContainerNode::detach();
+    ContainerNode::detach(context);
 }
 
 bool Element::pseudoStyleCacheIsInvalid(const RenderStyle* currentStyle, RenderStyle* newStyle)
@@ -1405,8 +1405,10 @@ void Element::recalcStyle(StyleChange change)
             localChange = Node::diff(currentStyle.get(), newStyle.get(), document());
         }
         if (localChange == Detach) {
-            // FIXME: The style gets computed twice by calling attach. We could do better if we passed the style along.
-            reattach();
+            AttachContext reattachContext;
+            reattachContext.resolvedStyle = newStyle.get();
+            reattach(reattachContext);
+
             // attach recalculates the style for all children. No need to do it twice.
             clearNeedsStyleRecalc();
             clearChildNeedsStyleRecalc();

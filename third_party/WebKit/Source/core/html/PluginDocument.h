@@ -44,7 +44,7 @@ public:
     Widget* pluginWidget();
     Node* pluginNode();
 
-    virtual void detach() OVERRIDE;
+    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
 
     void cancelManualPluginLoad();
 

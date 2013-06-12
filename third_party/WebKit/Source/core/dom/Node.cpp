@@ -1087,7 +1087,7 @@ bool Node::containsIncludingHostElements(const Node* node) const
     return false;
 }
 
-void Node::attach()
+void Node::attach(const AttachContext&)
 {
     ASSERT(!attached());
     ASSERT(!renderer() || (renderer()->style() && (renderer()->parent() || renderer()->isRenderView())));
@@ -1130,7 +1130,7 @@ bool Node::inDetach() const
 }
 #endif
 
-void Node::detach()
+void Node::detach(const AttachContext& context)
 {
 #ifndef NDEBUG
     ASSERT(!detachingNode);
@@ -1141,13 +1141,17 @@ void Node::detach()
         renderer()->destroyAndCleanupAnonymousWrappers();
     setRenderer(0);
 
-    Document* doc = document();
-    if (isUserActionElement()) {
-        if (hovered())
-            doc->hoveredNodeDetached(this);
-        if (inActiveChain())
-            doc->activeChainNodeDetached(this);
-        doc->userActionElements().didDetach(this);
+    // Do not remove the element's hovered and active status
+    // if performing a reattach.
+    if (!context.performingReattach) {
+        Document* doc = document();
+        if (isUserActionElement()) {
+            if (hovered())
+                doc->hoveredNodeDetached(this);
+            if (inActiveChain())
+                doc->activeChainNodeDetached(this);
+            doc->userActionElements().didDetach(this);
+        }
     }
 
     clearFlag(IsAttachedFlag);

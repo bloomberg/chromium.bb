@@ -708,17 +708,17 @@ void ContainerNode::dispatchPostAttachCallbacks()
     s_postAttachCallbackQueue->clear();
 }
 
-void ContainerNode::attach()
+void ContainerNode::attach(const AttachContext& context)
 {
     attachChildren();
-    Node::attach();
+    Node::attach(context);
 }
 
-void ContainerNode::detach()
+void ContainerNode::detach(const AttachContext& context)
 {
     detachChildren();
     clearChildNeedsStyleRecalc();
-    Node::detach();
+    Node::detach(context);
 }
 
 void ContainerNode::childrenChanged(bool changedByParser, Node*, Node*, int childCountDelta)
@@ -901,6 +901,18 @@ void ContainerNode::setHovered(bool over)
     if (over == hovered()) return;
 
     Node::setHovered(over);
+
+    if (!renderer()) {
+        // When setting hover to false, the style needs to be recalc'd even when
+        // there's no renderer (imagine setting display:none in the :hover class,
+        // if a nil renderer would prevent this element from recalculating its
+        // style, it would never go back to its normal style and remain
+        // stuck in its hovered style).
+        if (!over)
+            setNeedsStyleRecalc();
+
+        return;
+    }
 
     // note that we need to recalc the style
     // FIXME: Move to Element

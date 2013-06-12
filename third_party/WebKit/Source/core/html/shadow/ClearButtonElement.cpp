@@ -51,13 +51,13 @@ PassRefPtr<ClearButtonElement> ClearButtonElement::create(Document* document, Cl
     return element.release();
 }
 
-void ClearButtonElement::detach()
+void ClearButtonElement::detach(const AttachContext& context)
 {
     if (m_capturing) {
         if (Frame* frame = document()->frame())
             frame->eventHandler()->setCapturingMouseEventsNode(0);
     }
-    HTMLDivElement::detach();
+    HTMLDivElement::detach(context);
 }
 
 void ClearButtonElement::releaseCapture()

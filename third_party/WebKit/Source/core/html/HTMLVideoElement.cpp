@@ -69,9 +69,9 @@ RenderObject* HTMLVideoElement::createRenderer(RenderArena* arena, RenderStyle*)
     return new (arena) RenderVideo(this);
 }
 
-void HTMLVideoElement::attach()
+void HTMLVideoElement::attach(const AttachContext& context)
 {
-    HTMLMediaElement::attach();
+    HTMLMediaElement::attach(context);
 
     updateDisplayState();
     if (shouldDisplayPosterImage()) {

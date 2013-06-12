@@ -169,16 +169,16 @@ RenderObject* TextFieldDecorationElement::createRenderer(RenderArena* arena, Ren
     return image;
 }
 
-void TextFieldDecorationElement::attach()
+void TextFieldDecorationElement::attach(const AttachContext& context)
 {
-    HTMLDivElement::attach();
+    HTMLDivElement::attach(context);
     updateImage();
 }
 
-void TextFieldDecorationElement::detach()
+void TextFieldDecorationElement::detach(const AttachContext& context)
 {
     m_textFieldDecorator->willDetach(hostInput());
-    HTMLDivElement::detach();
+    HTMLDivElement::detach(context);
 }
 
 bool TextFieldDecorationElement::isMouseFocusable() const

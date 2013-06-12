@@ -69,7 +69,7 @@ private:
     PickerIndicatorElement(Document*, PickerIndicatorOwner&);
     virtual RenderObject* createRenderer(RenderArena*, RenderStyle*) OVERRIDE;
     virtual void defaultEventHandler(Event*) OVERRIDE;
-    virtual void detach() OVERRIDE;
+    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual bool isPickerIndicatorElement() const OVERRIDE;
 
     HTMLInputElement* hostInput();

@@ -188,13 +188,13 @@ PassRefPtr<SearchFieldCancelButtonElement> SearchFieldCancelButtonElement::creat
     return element.release();
 }
 
-void SearchFieldCancelButtonElement::detach()
+void SearchFieldCancelButtonElement::detach(const AttachContext& context)
 {
     if (m_capturing) {
         if (Frame* frame = document()->frame())
             frame->eventHandler()->setCapturingMouseEventsNode(0);
     }
-    HTMLDivElement::detach();
+    HTMLDivElement::detach(context);
 }
 
 
@@ -399,15 +399,15 @@ void InputFieldSpeechButtonElement::setRecognitionResult(int, const SpeechInputR
         renderer()->repaint();
 }
 
-void InputFieldSpeechButtonElement::attach()
+void InputFieldSpeechButtonElement::attach(const AttachContext& context)
 {
     ASSERT(!m_listenerId);
     if (SpeechInput* input = SpeechInput::from(document()->page()))
         m_listenerId = input->registerListener(this);
-    HTMLDivElement::attach();
+    HTMLDivElement::attach(context);
 }
 
-void InputFieldSpeechButtonElement::detach()
+void InputFieldSpeechButtonElement::detach(const AttachContext& context)
 {
     if (m_capturing) {
         if (Frame* frame = document()->frame())
@@ -421,7 +421,7 @@ void InputFieldSpeechButtonElement::detach()
         m_listenerId = 0;
     }
 
-    HTMLDivElement::detach();
+    HTMLDivElement::detach(context);
 }
 
 void InputFieldSpeechButtonElement::startSpeechInput()

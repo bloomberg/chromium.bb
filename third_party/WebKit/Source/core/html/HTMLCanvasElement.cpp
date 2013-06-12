@@ -119,10 +119,10 @@ RenderObject* HTMLCanvasElement::createRenderer(RenderArena* arena, RenderStyle*
     return HTMLElement::createRenderer(arena, style);
 }
 
-void HTMLCanvasElement::attach()
+void HTMLCanvasElement::attach(const AttachContext& context)
 {
     setIsInCanvasSubtree(true);
-    HTMLElement::attach();
+    HTMLElement::attach(context);
 }
 
 void HTMLCanvasElement::addObserver(CanvasObserver* observer)

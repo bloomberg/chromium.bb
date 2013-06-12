@@ -164,7 +164,7 @@ RenderObject *HTMLFrameSetElement::createRenderer(RenderArena *arena, RenderStyl
     return new (arena) RenderFrameSet(this);
 }
 
-void HTMLFrameSetElement::attach()
+void HTMLFrameSetElement::attach(const AttachContext& context)
 {
     // Inherit default settings from parent frameset
     // FIXME: This is not dynamic.
@@ -185,7 +185,7 @@ void HTMLFrameSetElement::attach()
         }
     }
 
-    HTMLElement::attach();
+    HTMLElement::attach(context);
 }
 
 void HTMLFrameSetElement::defaultEventHandler(Event* evt)

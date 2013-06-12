@@ -90,7 +90,7 @@ public:
 
 private:
     SearchFieldCancelButtonElement(Document*);
-    virtual void detach();
+    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual bool isMouseFocusable() const { return false; }
 
     bool m_capturing;
@@ -111,7 +111,7 @@ public:
     static PassRefPtr<InputFieldSpeechButtonElement> create(Document*);
     virtual ~InputFieldSpeechButtonElement();
 
-    virtual void detach();
+    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual void defaultEventHandler(Event*);
     virtual bool willRespondToMouseClickEvents();
     virtual bool isInputFieldSpeechButtonElement() const { return true; }
@@ -129,7 +129,7 @@ private:
     SpeechInput* speechInput();
     void setState(SpeechInputState state);
     virtual bool isMouseFocusable() const { return false; }
-    virtual void attach();
+    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
 
     bool m_capturing;
     SpeechInputState m_state;

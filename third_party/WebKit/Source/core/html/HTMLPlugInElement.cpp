@@ -79,7 +79,7 @@ bool HTMLPlugInElement::willRespondToMouseClickEvents()
     return true;
 }
 
-void HTMLPlugInElement::detach()
+void HTMLPlugInElement::detach(const AttachContext& context)
 {
     m_instance.clear();
 
@@ -94,7 +94,7 @@ void HTMLPlugInElement::detach()
         m_NPObject = 0;
     }
 
-    HTMLFrameOwnerElement::detach();
+    HTMLFrameOwnerElement::detach(context);
 }
 
 void HTMLPlugInElement::resetInstance()

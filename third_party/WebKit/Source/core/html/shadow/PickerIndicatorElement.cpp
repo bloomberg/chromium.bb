@@ -126,10 +126,10 @@ void PickerIndicatorElement::closePopup()
     m_chooser->endChooser();
 }
 
-void PickerIndicatorElement::detach()
+void PickerIndicatorElement::detach(const AttachContext& context)
 {
     closePopup();
-    HTMLDivElement::detach();
+    HTMLDivElement::detach(context);
 }
 
 bool PickerIndicatorElement::isPickerIndicatorElement() const

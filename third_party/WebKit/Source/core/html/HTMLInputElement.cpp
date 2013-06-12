@@ -821,14 +821,14 @@ RenderObject* HTMLInputElement::createRenderer(RenderArena* arena, RenderStyle* 
     return m_inputType->createRenderer(arena, style);
 }
 
-void HTMLInputElement::attach()
+void HTMLInputElement::attach(const AttachContext& context)
 {
     PostAttachCallbackDisabler disabler(this);
 
     if (!m_hasType)
         updateType();
 
-    HTMLTextFormControlElement::attach();
+    HTMLTextFormControlElement::attach(context);
 
     m_inputType->attach();
 
@@ -836,9 +836,9 @@ void HTMLInputElement::attach()
         document()->updateFocusAppearanceSoon(true /* restore selection */);
 }
 
-void HTMLInputElement::detach()
+void HTMLInputElement::detach(const AttachContext& context)
 {
-    HTMLTextFormControlElement::detach();
+    HTMLTextFormControlElement::detach(context);
     setFormControlValueMatchesRenderer(false);
     m_inputType->detach();
 }

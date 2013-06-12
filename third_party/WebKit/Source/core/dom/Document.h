@@ -497,8 +497,8 @@ public:
 
     CachedResourceLoader* cachedResourceLoader() { return m_cachedResourceLoader.get(); }
 
-    virtual void attach();
-    virtual void detach();
+    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
+    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     void prepareForDestruction();
 
     // Override ScriptExecutionContext methods to do additional work

@@ -61,10 +61,10 @@ PassRefPtr<SpinButtonElement> SpinButtonElement::create(Document* document, Spin
     return element.release();
 }
 
-void SpinButtonElement::detach()
+void SpinButtonElement::detach(const AttachContext& context)
 {
     releaseCapture();
-    HTMLDivElement::detach();
+    HTMLDivElement::detach(context);
 }
 
 void SpinButtonElement::defaultEventHandler(Event* event)

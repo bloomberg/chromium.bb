@@ -113,8 +113,8 @@ public:
 
     void cloneChildNodes(ContainerNode* clone);
 
-    virtual void attach() OVERRIDE;
-    virtual void detach() OVERRIDE;
+    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
+    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual LayoutRect boundingBox() const OVERRIDE;
     virtual void setFocus(bool) OVERRIDE;
     virtual void setActive(bool active = true, bool pause = false) OVERRIDE;

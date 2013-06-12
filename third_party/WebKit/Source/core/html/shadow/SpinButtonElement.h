@@ -69,7 +69,7 @@ public:
 private:
     SpinButtonElement(Document*, SpinButtonOwner&);
 
-    virtual void detach();
+    virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual bool isSpinButtonElement() const { return true; }
     virtual bool isDisabledFormControl() const OVERRIDE { return shadowHost() && shadowHost()->isDisabledFormControl(); }
     virtual bool matchesReadOnlyPseudoClass() const OVERRIDE;

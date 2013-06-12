@@ -78,7 +78,7 @@ public:
     bool isYoungest() const { return !youngerShadowRoot(); }
     bool isOldest() const { return !olderShadowRoot(); }
 
-    virtual void attach();
+    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;

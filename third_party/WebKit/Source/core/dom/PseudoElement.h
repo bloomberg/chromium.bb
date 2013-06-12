@@ -43,7 +43,7 @@ public:
     ~PseudoElement();
 
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
-    virtual void attach() OVERRIDE;
+    virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual bool rendererIsNeeded(const NodeRenderingContext&) OVERRIDE;
 
     virtual bool canStartSelection() const OVERRIDE { return false; }

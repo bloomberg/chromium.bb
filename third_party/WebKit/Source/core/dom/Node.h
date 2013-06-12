@@ -534,20 +534,27 @@ public:
     RenderBox* renderBox() const;
     RenderBoxModelObject* renderBoxModelObject() const;
 
+    struct AttachContext {
+        RenderStyle* resolvedStyle;
+        bool performingReattach;
+
+        AttachContext() : resolvedStyle(0), performingReattach(false) { }
+    };
+
     // Attaches this node to the rendering tree. This calculates the style to be applied to the node and creates an
     // appropriate RenderObject which will be inserted into the tree (except when the style has display: none). This
     // makes the node visible in the FrameView.
-    virtual void attach();
+    virtual void attach(const AttachContext& = AttachContext());
 
     // Detaches the node from the rendering tree, making it invisible in the rendered view. This method will remove
     // the node's rendering object from the rendering tree and delete it.
-    virtual void detach();
+    virtual void detach(const AttachContext& = AttachContext());
 
 #ifndef NDEBUG
     bool inDetach() const;
 #endif
 
-    void reattach();
+    void reattach(const AttachContext& = AttachContext());
     void lazyReattachIfAttached();
     ContainerNode* parentNodeForRenderingAndStyle();
     
@@ -886,11 +893,14 @@ inline ContainerNode* Node::parentNodeGuaranteedHostFree() const
     return parentOrShadowHostNode();
 }
 
-inline void Node::reattach()
+inline void Node::reattach(const AttachContext& context)
 {
+    AttachContext reattachContext(context);
+    reattachContext.performingReattach = true;
+
     if (attached())
-        detach();
-    attach();
+        detach(reattachContext);
+    attach(reattachContext);
 }
 
 inline void Node::lazyReattachIfAttached()
