@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
+#import "chrome/browser/ui/cocoa/history_overlay_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
@@ -33,6 +34,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #import "testing/gtest_mac.h"
 
 namespace {
@@ -642,4 +644,21 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   EXPECT_TRUE(
       [[popupController infoBarContainerController]
           shouldSuppressTopInfoBarTip]);
+}
+
+// Verify that AllowOverlappingViews is set while the history overlay is
+// visible.
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
+                       AllowOverlappingViewsHistoryOverlay) {
+  content::WebContentsView* web_contents_view =
+      browser()->tab_strip_model()->GetActiveWebContents()->GetView();
+  EXPECT_FALSE(web_contents_view->GetAllowOverlappingViews());
+
+  scoped_nsobject<HistoryOverlayController> overlay(
+      [[HistoryOverlayController alloc] initForMode:kHistoryOverlayModeBack]);
+  [overlay showPanelForView:web_contents_view->GetNativeView()];
+  EXPECT_TRUE(web_contents_view->GetAllowOverlappingViews());
+
+  overlay.reset();
+  EXPECT_FALSE(web_contents_view->GetAllowOverlappingViews());
 }

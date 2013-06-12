@@ -75,6 +75,10 @@ gfx::Rect WebContentsViewGuest::GetViewBounds() const {
 void WebContentsViewGuest::SetAllowOverlappingViews(bool overlapping) {
   platform_view_->SetAllowOverlappingViews(overlapping);
 }
+
+bool WebContentsViewGuest::GetAllowOverlappingViews() const {
+  return platform_view_->GetAllowOverlappingViews();
+}
 #endif
 
 void WebContentsViewGuest::CreateView(const gfx::Size& initial_size,

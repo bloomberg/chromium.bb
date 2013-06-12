@@ -79,6 +79,7 @@ class WebContentsViewMac : public WebContentsViewPort,
   virtual WebDropData* GetDropData() const OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual void SetAllowOverlappingViews(bool overlapping) OVERRIDE;
+  virtual bool GetAllowOverlappingViews() const OVERRIDE;
 
   // WebContentsViewPort implementation ----------------------------------------
   virtual void CreateView(

@@ -273,6 +273,10 @@ void WebContentsViewMac::SetAllowOverlappingViews(bool overlapping) {
     view->SetAllowOverlappingViews(allow_overlapping_views_);
 }
 
+bool WebContentsViewMac::GetAllowOverlappingViews() const {
+  return allow_overlapping_views_;
+}
+
 void WebContentsViewMac::CreateView(
     const gfx::Size& initial_size, gfx::NativeView context) {
   WebContentsViewCocoa* view =

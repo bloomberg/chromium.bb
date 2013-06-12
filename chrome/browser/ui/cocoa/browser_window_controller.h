@@ -162,6 +162,9 @@ class WebContents;
   // The offset between the bottom of the toolbar and web contents. This is used
   // to push the web contents below the bookmark bar.
   CGFloat toolbarToWebContentsOffset_;
+
+  // The number of history overlay views being shown.
+  NSUInteger historyOverlayCount_;
 }
 
 // A convenience class method which gets the |BrowserWindowController| for a
@@ -341,9 +344,20 @@ class WebContents;
          returnCode:(NSInteger)code
             context:(void*)context;
 
+// Updates the bookmark bar visibility based on the instant overlay state.
 - (void)updateBookmarkBarStateForInstantOverlay;
 
+// Called when the find bar visibility changes. This is used to update the
+// allowOverlappingViews state.
 - (void)onFindBarVisibilityChanged;
+
+// Called when a history overlay is shown. This is used to update the
+// allowOverlappingViews state.
+- (void)onHistoryOverlayShown;
+
+// Called when a history overlay is hidden. This is used to update the
+// allowOverlappingViews state.
+- (void)onHistoryOverlayHidden;
 
 @end  // @interface BrowserWindowController
 

@@ -52,6 +52,7 @@ class CONTENT_EXPORT WebContentsViewGuest
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
 #if defined(OS_MACOSX)
   virtual void SetAllowOverlappingViews(bool overlapping) OVERRIDE;
+  virtual bool GetAllowOverlappingViews() const OVERRIDE;
 #endif
 
   // WebContentsViewPort implementation ----------------------------------------

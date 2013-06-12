@@ -1992,6 +1992,16 @@ willAnimateFromState:(BookmarkBar::State)oldState
   [self updateAllowOverlappingViews:[self inPresentationMode]];
 }
 
+- (void)onHistoryOverlayShown {
+  ++historyOverlayCount_;
+  [self updateAllowOverlappingViews:[self inPresentationMode]];
+}
+
+- (void)onHistoryOverlayHidden {
+  --historyOverlayCount_;
+  [self updateAllowOverlappingViews:[self inPresentationMode]];
+}
+
 @end  // @implementation BrowserWindowController
 
 

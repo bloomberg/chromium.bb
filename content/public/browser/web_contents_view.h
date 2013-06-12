@@ -86,10 +86,11 @@ class CONTENT_EXPORT WebContentsView {
   // The web contents view assumes that its view will never be overlapped by
   // another view (either partially or fully). This allows it to perform
   // optimizations. If the view is in a view hierarchy where it might be
-  // overlapped by another view, notify the view by calling this with |true|
-  // before it draws for the first time. After the first draw, do not change
-  // this setting.
+  // overlapped by another view, notify the view by calling this with |true|.
   virtual void SetAllowOverlappingViews(bool overlapping) = 0;
+
+  // Returns true if overlapping views are allowed, false otherwise.
+  virtual bool GetAllowOverlappingViews() const = 0;
 #endif
 };
 

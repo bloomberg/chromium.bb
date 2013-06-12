@@ -1030,6 +1030,9 @@ willPositionSheet:(NSWindow*)sheet
       ![[findBarCocoaController_ findBarView] isHidden])
     return YES;
 
+  if (historyOverlayCount_)
+    return YES;
+
   return NO;
 }
 
