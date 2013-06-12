@@ -6,7 +6,6 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_bindings.h"
@@ -34,10 +33,8 @@ int RoundUpSurfaceDimension(int number) {
 
 // We are backed by an offscreen surface for the purposes of creating
 // a context, but use FBOs to render to texture backed IOSurface
-class IOSurfaceImageTransportSurface
-    : public gfx::NoOpGLSurfaceCGL,
-      public ImageTransportSurface,
-      public GpuCommandBufferStub::DestructionObserver {
+class IOSurfaceImageTransportSurface : public gfx::NoOpGLSurfaceCGL,
+                                       public ImageTransportSurface {
  public:
   IOSurfaceImageTransportSurface(GpuChannelManager* manager,
                                  GpuCommandBufferStub* stub,
@@ -64,9 +61,6 @@ class IOSurfaceImageTransportSurface
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
   virtual void SetLatencyInfo(const ui::LatencyInfo&) OVERRIDE;
-
-  // GpuCommandBufferStub::DestructionObserver implementation.
-  virtual void OnWillDestroyStub() OVERRIDE;
 
  private:
   virtual ~IOSurfaceImageTransportSurface() OVERRIDE;
@@ -144,6 +138,7 @@ IOSurfaceImageTransportSurface::IOSurfaceImageTransportSurface(
 }
 
 IOSurfaceImageTransportSurface::~IOSurfaceImageTransportSurface() {
+  Destroy();
 }
 
 bool IOSurfaceImageTransportSurface::Initialize() {
@@ -156,14 +151,7 @@ bool IOSurfaceImageTransportSurface::Initialize() {
 
   if (!helper_->Initialize())
     return false;
-
-  if (!NoOpGLSurfaceCGL::Initialize()) {
-    helper_->Destroy();
-    return false;
-  }
-
-  helper_->stub()->AddDestructionObserver(this);
-  return true;
+  return NoOpGLSurfaceCGL::Initialize();
 }
 
 void IOSurfaceImageTransportSurface::Destroy() {
@@ -323,11 +311,6 @@ void IOSurfaceImageTransportSurface::OnResize(gfx::Size size,
 void IOSurfaceImageTransportSurface::SetLatencyInfo(
     const ui::LatencyInfo& latency_info) {
   latency_info_ = latency_info;
-}
-
-void IOSurfaceImageTransportSurface::OnWillDestroyStub() {
-  helper_->stub()->RemoveDestructionObserver(this);
-  Destroy();
 }
 
 void IOSurfaceImageTransportSurface::UnrefIOSurface() {
