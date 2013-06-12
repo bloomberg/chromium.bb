@@ -1,10 +1,7 @@
 <!doctype html>
 <html>
 <head>
-<script>
-if (window.testRunner)
-    testRunner.dumpAsText(true);
-</script>
+<script src="../js/resources/js-test-pre.js"></script>
 <style>
 .ui-btn-up-c
 {
@@ -27,7 +24,6 @@ if (window.testRunner)
 </head> 
 <body>
 <ul>
-<div>If this test passes, all borders have the same color: #d0d0d0.</div>
 <iframe src="../history/resources/dummy.html" style="display:none"></iframe>
 <li class="ui-btn-up-c">
   <span class="ui-btn-up-c">This span should have borders with #d0d0d0 color.</span>
@@ -38,6 +34,13 @@ if (window.testRunner)
   </a>
 </li>
 </ul>
+<div id="console"></div>
 </body>
+<script>
+description('If this test passes, all borders have the same color: #d0d0d0.');
+var spans = document.getElementsByTagName('span');
+shouldBe('window.getComputedStyle(spans[0]).borderColor', '"rgb(208, 208, 208)"');
+shouldBe('window.getComputedStyle(spans[1]).borderColor', '"rgb(208, 208, 208)"');
+</script>
+<script src="../js/resources/js-test-post.js"></script>
 </html>
-
