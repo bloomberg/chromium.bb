@@ -50,10 +50,11 @@ void ValidatePathOnFileThread(
 typedef std::vector<StorageInfo> StorageInfoList;
 
 bool IsRemovableStorageAttached(const std::string& id) {
-  StorageInfoList devices = StorageMonitor::GetInstance()->GetAttachedStorage();
+  StorageInfoList devices =
+      StorageMonitor::GetInstance()->GetAllAvailableStorages();
   for (StorageInfoList::const_iterator it = devices.begin();
        it != devices.end(); ++it) {
-    if (it->device_id() == id)
+    if (StorageInfo::IsRemovableDevice(id) && it->device_id() == id)
       return true;
   }
   return false;
@@ -61,10 +62,12 @@ bool IsRemovableStorageAttached(const std::string& id) {
 
 base::FilePath::StringType FindRemovableStorageLocationById(
     const std::string& device_id) {
-  StorageInfoList devices = StorageMonitor::GetInstance()->GetAttachedStorage();
+  StorageInfoList devices =
+      StorageMonitor::GetInstance()->GetAllAvailableStorages();
   for (StorageInfoList::const_iterator it = devices.begin();
        it != devices.end(); ++it) {
-    if (it->device_id() == device_id)
+    if (it->device_id() == device_id
+        && StorageInfo::IsRemovableDevice(device_id))
       return it->location();
   }
   return base::FilePath::StringType();

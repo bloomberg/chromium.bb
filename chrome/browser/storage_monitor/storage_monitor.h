@@ -75,7 +75,7 @@ class StorageMonitor {
   // Initialize the storage monitor. The provided callback, if non-null,
   // will be called when initialization is complete. If initialization has
   // already completed, this callback will be invoked within the calling stack.
-  // Before the callback is run, calls to |GetAttachedStorage| and
+  // Before the callback is run, calls to |GetAllAvailableStorages| and
   // |GetStorageInfoForPath| may not return the correct results. In addition,
   // registered observers will not be notified on device attachment/detachment.
   // Should be invoked on the UI thread; callbacks will be run on the UI thread.
@@ -110,8 +110,9 @@ class StorageMonitor {
       media_transfer_protocol_manager() = 0;
 #endif
 
-  // Returns information for attached removable storage.
-  std::vector<StorageInfo> GetAttachedStorage() const;
+  // Returns information for all known storages on the system,
+  // including fixed and removable storages.
+  std::vector<StorageInfo> GetAllAvailableStorages() const;
 
   void AddObserver(RemovableStorageObserver* obs);
   void RemoveObserver(RemovableStorageObserver* obs);
@@ -151,7 +152,7 @@ class StorageMonitor {
   friend class ReceiverImpl;
 
   // Key: device id.
-  typedef std::map<std::string, StorageInfo> RemovableStorageMap;
+  typedef std::map<std::string, StorageInfo> StorageMap;
 
   void ProcessAttach(const StorageInfo& storage);
   void ProcessDetach(const std::string& id);
@@ -168,11 +169,11 @@ class StorageMonitor {
   bool initialized_;
   std::vector<base::Closure> on_initialize_callbacks_;
 
-  // For manipulating removable_storage_map_ structure.
+  // For manipulating storage_map_ structure.
   mutable base::Lock storage_lock_;
 
-  // Map of all the attached removable storage devices.
-  RemovableStorageMap storage_map_;
+  // Map of all known storage devices,including fixed and removable storages.
+  StorageMap storage_map_;
 
   scoped_ptr<TransientDeviceIds> transient_device_ids_;
 };

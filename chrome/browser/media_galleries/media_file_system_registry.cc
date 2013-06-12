@@ -467,9 +467,11 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
   // TODO(gbillock): Move this stanza to MediaGalleriesPreferences init code.
   StorageMonitor* monitor = StorageMonitor::GetInstance();
   DCHECK(monitor->IsInitialized());
-  std::vector<StorageInfo> existing_devices = monitor->GetAttachedStorage();
+  std::vector<StorageInfo> existing_devices =
+      monitor->GetAllAvailableStorages();
   for (size_t i = 0; i < existing_devices.size(); i++) {
-    if (!StorageInfo::IsMediaDevice(existing_devices[i].device_id()))
+    if (!(StorageInfo::IsMediaDevice(existing_devices[i].device_id()) &&
+          StorageInfo::IsRemovableDevice(existing_devices[i].device_id())))
       continue;
     if (!existing_devices[i].name().empty()) {
       preferences->AddGalleryWithName(existing_devices[i].device_id(),

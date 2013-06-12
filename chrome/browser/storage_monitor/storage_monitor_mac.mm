@@ -353,7 +353,6 @@ bool StorageMonitorMac::ShouldPostNotificationForDisk(
   return !info.device_id().empty() &&
          !info.location().empty() &&
          info.model_name() != ASCIIToUTF16(kDiskImageModelName) &&
-         StorageInfo::IsRemovableDevice(info.device_id()) &&
          StorageInfo::IsMassStorageDevice(info.device_id());
 }
 

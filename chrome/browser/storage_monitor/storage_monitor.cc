@@ -49,11 +49,11 @@ StorageMonitor* StorageMonitor::GetInstance() {
   return g_storage_monitor;
 }
 
-std::vector<StorageInfo> StorageMonitor::GetAttachedStorage() const {
+std::vector<StorageInfo> StorageMonitor::GetAllAvailableStorages() const {
   std::vector<StorageInfo> results;
 
   base::AutoLock lock(storage_lock_);
-  for (RemovableStorageMap::const_iterator it = storage_map_.begin();
+  for (StorageMap::const_iterator it = storage_map_.begin();
        it != storage_map_.end();
        ++it) {
     results.push_back(it->second);
@@ -158,15 +158,17 @@ void StorageMonitor::ProcessAttach(const StorageInfo& info) {
 
   DVLOG(1) << "RemovableStorageAttached with name " << UTF16ToUTF8(info.name())
            << " and id " << info.device_id();
-  observer_list_->Notify(
-      &RemovableStorageObserver::OnRemovableStorageAttached, info);
+  if (StorageInfo::IsRemovableDevice(info.device_id())) {
+    observer_list_->Notify(
+        &RemovableStorageObserver::OnRemovableStorageAttached, info);
+  }
 }
 
 void StorageMonitor::ProcessDetach(const std::string& id) {
   StorageInfo info;
   {
     base::AutoLock lock(storage_lock_);
-    RemovableStorageMap::iterator it = storage_map_.find(id);
+    StorageMap::iterator it = storage_map_.find(id);
     if (it == storage_map_.end())
       return;
     info = it->second;
@@ -174,8 +176,10 @@ void StorageMonitor::ProcessDetach(const std::string& id) {
   }
 
   DVLOG(1) << "RemovableStorageDetached for id " << id;
-  observer_list_->Notify(
-      &RemovableStorageObserver::OnRemovableStorageDetached, info);
+  if (StorageInfo::IsRemovableDevice(info.device_id())) {
+    observer_list_->Notify(
+        &RemovableStorageObserver::OnRemovableStorageDetached, info);
+  }
 }
 
 }  // namespace chrome

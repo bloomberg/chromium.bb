@@ -28,8 +28,8 @@ TEST(StorageMonitorTest, TestInitialize) {
 TEST(StorageMonitorTest, DeviceAttachDetachNotifications) {
   base::MessageLoop message_loop;
   const string16 kDeviceName = ASCIIToUTF16("media device");
-  const std::string kDeviceId1 = "1";
-  const std::string kDeviceId2 = "2";
+  const std::string kDeviceId1 = "dcim:UUID:FFF0-0001";
+  const std::string kDeviceId2 = "dcim:UUID:FFF0-0002";
   MockRemovableStorageObserver observer1;
   MockRemovableStorageObserver observer2;
   test::TestStorageMonitor monitor;
@@ -72,37 +72,37 @@ TEST(StorageMonitorTest, DeviceAttachDetachNotifications) {
   monitor.RemoveObserver(&observer2);
 }
 
-TEST(StorageMonitorTest, GetAttachedStorageEmpty) {
+TEST(StorageMonitorTest, GetAllAvailableStoragesEmpty) {
   base::MessageLoop message_loop;
   test::TestStorageMonitor monitor;
-  std::vector<StorageInfo> devices = monitor.GetAttachedStorage();
+  std::vector<StorageInfo> devices = monitor.GetAllAvailableStorages();
   EXPECT_EQ(0U, devices.size());
 }
 
-TEST(StorageMonitorTest, GetRemovableStorageAttachDetach) {
+TEST(StorageMonitorTest, GetAllAvailableStorageAttachDetach) {
   base::MessageLoop message_loop;
   test::TestStorageMonitor monitor;
-  const std::string kDeviceId1 = "42";
+  const std::string kDeviceId1 = "dcim:UUID:FFF0-0042";
   const string16 kDeviceName1 = ASCIIToUTF16("test");
   const base::FilePath kDevicePath1(FILE_PATH_LITERAL("/testfoo"));
   StorageInfo info1(kDeviceId1, kDeviceName1, kDevicePath1.value(),
                     string16(), string16(), string16(), 0);
   monitor.receiver()->ProcessAttach(info1);
   message_loop.RunUntilIdle();
-  std::vector<StorageInfo> devices = monitor.GetAttachedStorage();
+  std::vector<StorageInfo> devices = monitor.GetAllAvailableStorages();
   ASSERT_EQ(1U, devices.size());
   EXPECT_EQ(kDeviceId1, devices[0].device_id());
   EXPECT_EQ(kDeviceName1, devices[0].name());
   EXPECT_EQ(kDevicePath1.value(), devices[0].location());
 
-  const std::string kDeviceId2 = "44";
+  const std::string kDeviceId2 = "dcim:UUID:FFF0-0044";
   const string16 kDeviceName2 = ASCIIToUTF16("test2");
   const base::FilePath kDevicePath2(FILE_PATH_LITERAL("/testbar"));
   StorageInfo info2(kDeviceId2, kDeviceName2, kDevicePath2.value(),
                     string16(), string16(), string16(), 0);
   monitor.receiver()->ProcessAttach(info2);
   message_loop.RunUntilIdle();
-  devices = monitor.GetAttachedStorage();
+  devices = monitor.GetAllAvailableStorages();
   ASSERT_EQ(2U, devices.size());
   EXPECT_EQ(kDeviceId1, devices[0].device_id());
   EXPECT_EQ(kDeviceName1, devices[0].name());
@@ -113,7 +113,7 @@ TEST(StorageMonitorTest, GetRemovableStorageAttachDetach) {
 
   monitor.receiver()->ProcessDetach(kDeviceId1);
   message_loop.RunUntilIdle();
-  devices = monitor.GetAttachedStorage();
+  devices = monitor.GetAllAvailableStorages();
   ASSERT_EQ(1U, devices.size());
   EXPECT_EQ(kDeviceId2, devices[0].device_id());
   EXPECT_EQ(kDeviceName2, devices[0].name());
@@ -121,7 +121,7 @@ TEST(StorageMonitorTest, GetRemovableStorageAttachDetach) {
 
   monitor.receiver()->ProcessDetach(kDeviceId2);
   message_loop.RunUntilIdle();
-  devices = monitor.GetAttachedStorage();
+  devices = monitor.GetAllAvailableStorages();
   EXPECT_EQ(0U, devices.size());
 }
 

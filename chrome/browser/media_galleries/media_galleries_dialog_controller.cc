@@ -32,10 +32,10 @@ bool IsAttachedDevice(const std::string& device_id) {
   if (!StorageInfo::IsRemovableDevice(device_id))
     return false;
 
-  std::vector<StorageInfo> removable_storages =
-      StorageMonitor::GetInstance()->GetAttachedStorage();
-  for (size_t i = 0; i < removable_storages.size(); ++i) {
-    if (removable_storages[i].device_id() == device_id)
+  std::vector<StorageInfo> storages =
+      StorageMonitor::GetInstance()->GetAllAvailableStorages();
+  for (size_t i = 0; i < storages.size(); ++i) {
+    if (storages[i].device_id() == device_id)
       return true;
   }
   return false;

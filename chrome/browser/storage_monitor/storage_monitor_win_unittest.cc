@@ -291,7 +291,7 @@ TEST_F(StorageMonitorWinTest, DevicesAttached) {
 
 TEST_F(StorageMonitorWinTest, PathMountDevices) {
   PreAttachDevices();
-  int init_storages = monitor_->GetAttachedStorage().size();
+  int init_storages = monitor_->GetAllAvailableStorages().size();
 
   volume_mount_watcher_->AddDeviceForTesting(
       base::FilePath(FILE_PATH_LITERAL("F:\\mount1")),
@@ -303,7 +303,7 @@ TEST_F(StorageMonitorWinTest, PathMountDevices) {
       base::FilePath(FILE_PATH_LITERAL("F:\\mount2")),
       "dcim:mount2", L"mount2", 100);
   RunUntilIdle();
-  EXPECT_EQ(init_storages + 3, monitor_->GetAttachedStorage().size());
+  EXPECT_EQ(init_storages + 3, monitor_->GetAllAvailableStorages().size());
 
   StorageInfo info;
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(

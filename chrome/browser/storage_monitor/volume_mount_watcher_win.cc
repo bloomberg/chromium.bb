@@ -490,10 +490,6 @@ void VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread(
 
   DeviceCheckComplete(device_path);
 
-  // Don't call removable storage observers for fixed volumes.
-  if (!StorageInfo::IsRemovableDevice(info.device_id()))
-    return;
-
   if (notifications_)
     notifications_->ProcessAttach(info);
 }

@@ -286,13 +286,14 @@ TEST_F(ImageCaptureDeviceManagerTest, TestAttachDetach) {
   chrome::ImageCaptureDeviceManager manager;
   manager.SetNotifications(monitor_.receiver());
   ICCameraDevice* device = AttachDevice(&manager);
-  std::vector<chrome::StorageInfo> devices = monitor_.GetAttachedStorage();
+  std::vector<chrome::StorageInfo> devices =
+      monitor_.GetAllAvailableStorages();
 
   ASSERT_EQ(1U, devices.size());
   EXPECT_EQ(std::string("ic:") + kDeviceId, devices[0].device_id());
 
   DetachDevice(&manager, device);
-  devices = monitor_.GetAttachedStorage();
+  devices = monitor_.GetAllAvailableStorages();
   ASSERT_EQ(0U, devices.size());
 };
 

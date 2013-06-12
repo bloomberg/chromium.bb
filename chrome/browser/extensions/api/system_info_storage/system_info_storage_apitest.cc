@@ -44,7 +44,7 @@ struct TestUnitInfo kRemovableStorageData[] = {
 };
 
 const char kRemovableStorageDeviceName[] = "deviceName";
-const char kRemovableStorageDeviceId[] = "path://0xbeaf1";
+const char kRemovableStorageDeviceId[] = "dcim:device:0001";
 const base::FilePath::CharType kRemovableStorageLocation[] =
     FILE_PATH_LITERAL("/media/usb1");
 const size_t kTestingIntervalMS = 10;

@@ -510,8 +510,7 @@ void StorageMonitorLinux::AddNewMount(const base::FilePath& mount_device,
   mount_point_info.storage_info = *storage_info;
   mount_info_map_[mount_point] = mount_point_info;
   mount_priority_map_[mount_device][mount_point] = removable;
-  if (removable)
-    receiver()->ProcessAttach(*storage_info);
+  receiver()->ProcessAttach(*storage_info);
 }
 
 }  // namespace chrome

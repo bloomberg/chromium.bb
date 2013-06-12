@@ -74,10 +74,12 @@ bool StorageMonitorWin::GetStorageInfoForPath(const base::FilePath& path,
   // TODO(gbillock): Move this logic up to StorageMonitor.
   // If we already know the StorageInfo for the path, just return it.
   // This will account for portable devices as well.
-  std::vector<StorageInfo> attached_devices = GetAttachedStorage();
+  std::vector<StorageInfo> attached_devices = GetAllAvailableStorages();
   size_t best_parent = attached_devices.size();
   size_t best_length = 0;
   for (size_t i = 0; i < attached_devices.size(); i++) {
+    if (!StorageInfo::IsRemovableDevice(attached_devices[i].device_id()))
+      continue;
     base::FilePath relative;
     if (base::FilePath(attached_devices[i].location()).AppendRelativePath(
             path, &relative)) {
