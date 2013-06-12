@@ -46,6 +46,8 @@ cr.define('extensions', function() {
     },
     // @inheritdoc
     doDrop: function(e) {
+      ExtensionSettings.showOverlay(null);
+
       // Only process files that look like extensions. Other files should
       // navigate the browser normally.
       if (!e.dataTransfer.files.length ||
@@ -54,7 +56,6 @@ cr.define('extensions', function() {
       }
 
       chrome.send('installDroppedFile');
-      ExtensionSettings.showOverlay(null);
       e.preventDefault();
     }
   };
