@@ -6,7 +6,10 @@
   'targets': [
     {
       'target_name': 'browser_context_keyed_service',
-      'type': 'static_library',
+      'type': '<(component)',
+      'defines': [
+        'BROWSER_CONTEXT_KEYED_SERVICE_IMPLEMENTATION',
+      ],
       'include_dirs': [
         '..',
       ],
@@ -20,6 +23,7 @@
         'user_prefs',
       ],
       'sources': [
+        'browser_context_keyed_service/browser_context_keyed_service_export.h',
         'browser_context_keyed_service/browser_context_dependency_manager.cc',
         'browser_context_keyed_service/browser_context_dependency_manager.h',
         'browser_context_keyed_service/browser_context_keyed_base_factory.h',

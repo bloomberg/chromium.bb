@@ -7,13 +7,15 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service_export.h"
 #include "content/public/browser/browser_thread.h"
 
 class RefcountedBrowserContextKeyedService;
 
 namespace impl {
 
-struct RefcountedBrowserContextKeyedServiceTraits {
+struct BROWSER_CONTEXT_KEYED_SERVICE_EXPORT
+    RefcountedBrowserContextKeyedServiceTraits {
   static void Destruct(const RefcountedBrowserContextKeyedService* obj);
 };
 
@@ -32,7 +34,7 @@ struct RefcountedBrowserContextKeyedServiceTraits {
 // content::DeleteOnThread<> directly because
 // RefcountedBrowserContextKeyedService must be one type that
 // RefcountedBrowserContextKeyedServiceFactory can use.
-class RefcountedBrowserContextKeyedService
+class BROWSER_CONTEXT_KEYED_SERVICE_EXPORT RefcountedBrowserContextKeyedService
     : public base::RefCountedThreadSafe<
           RefcountedBrowserContextKeyedService,
           impl::RefcountedBrowserContextKeyedServiceTraits> {
@@ -62,6 +64,8 @@ class RefcountedBrowserContextKeyedService
  private:
   friend struct impl::RefcountedBrowserContextKeyedServiceTraits;
   friend class base::DeleteHelper<RefcountedBrowserContextKeyedService>;
+  friend class base::RefCountedThreadSafe<RefcountedBrowserContextKeyedService,
+      impl::RefcountedBrowserContextKeyedServiceTraits>;
 
   // Do we have to delete this object on a specific thread?
   bool requires_destruction_on_thread_;

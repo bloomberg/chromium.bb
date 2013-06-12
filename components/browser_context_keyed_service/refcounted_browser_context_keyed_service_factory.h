@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service_export.h"
 #include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
 
 class RefcountedBrowserContextKeyedService;
@@ -26,7 +27,8 @@ class BrowserContext;
 // Implementers of RefcountedBrowserContextKeyedService should note that
 // we guarantee that ShutdownOnUIThread() is called on the UI thread, but actual
 // object destruction can happen anywhere.
-class RefcountedBrowserContextKeyedServiceFactory
+class BROWSER_CONTEXT_KEYED_SERVICE_EXPORT
+RefcountedBrowserContextKeyedServiceFactory
     : public BrowserContextKeyedBaseFactory {
  public:
   // A function that supplies the instance of a BrowserContextKeyedService for

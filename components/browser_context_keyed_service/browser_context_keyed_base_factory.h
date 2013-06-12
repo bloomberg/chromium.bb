@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/threading/non_thread_safe.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service_export.h"
 #include "components/browser_context_keyed_service/dependency_node.h"
 
 class BrowserContextDependencyManager;
@@ -29,8 +30,10 @@ class PrefRegistrySyncable;
 // RefcountedBrowserContextKeyedServiceFactory. This object describes general
 // dependency management between Factories; subclasses react to lifecycle
 // events and implement memory management.
-class BrowserContextKeyedBaseFactory : public base::NonThreadSafe,
-                                       public DependencyNode {
+class BROWSER_CONTEXT_KEYED_SERVICE_EXPORT
+BrowserContextKeyedBaseFactory
+    : public base::NonThreadSafe,
+      NON_EXPORTED_BASE(public DependencyNode) {
  public:
   // Registers preferences used in this service on the pref service of
   // |context|. This is the public interface and is safe to be called multiple

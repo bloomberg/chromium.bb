@@ -6,6 +6,7 @@
 #define COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_BROWSER_CONTEXT_DEPENDENCY_MANAGER_H_
 
 #include "base/memory/singleton.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service_export.h"
 #include "components/browser_context_keyed_service/dependency_graph.h"
 
 #ifndef NDEBUG
@@ -21,7 +22,7 @@ class BrowserContext;
 // A singleton that listens for context destruction notifications and
 // rebroadcasts them to each BrowserContextKeyedBaseFactory in a safe order
 // based on the stated dependencies by each service.
-class BrowserContextDependencyManager {
+class BROWSER_CONTEXT_KEYED_SERVICE_EXPORT BrowserContextDependencyManager {
  public:
   // Adds/Removes a component from our list of live components. Removing will
   // also remove live dependency links.

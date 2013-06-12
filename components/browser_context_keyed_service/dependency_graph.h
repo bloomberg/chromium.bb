@@ -11,11 +11,12 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service_export.h"
 
 class DependencyNode;
 
 // Dynamic graph of dependencies between nodes.
-class DependencyGraph {
+class BROWSER_CONTEXT_KEYED_SERVICE_EXPORT DependencyGraph {
  public:
   DependencyGraph();
   ~DependencyGraph();

@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_base_factory.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service_export.h"
 
 class BrowserContextDependencyManager;
 class BrowserContextKeyedService;
@@ -22,7 +23,7 @@ class BrowserContextKeyedService;
 // We do this because services depend on each other and we need to control
 // shutdown/destruction order. In each derived classes' constructors, the
 // implementors must explicitly state which services are depended on.
-class BrowserContextKeyedServiceFactory
+class BROWSER_CONTEXT_KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
     : public BrowserContextKeyedBaseFactory {
  public:
   // A function that supplies the instance of a BrowserContextKeyedService
