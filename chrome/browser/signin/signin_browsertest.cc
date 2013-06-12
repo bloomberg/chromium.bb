@@ -61,7 +61,13 @@ class SigninBrowserTest : public InProcessBrowserTest {
   scoped_ptr<net::URLFetcherImplFactory> factory_;
 };
 
-IN_PROC_BROWSER_TEST_F(SigninBrowserTest, ProcessIsolation) {
+// Disabled on Windows due to flakiness. http://crbug.com/249055
+#if defined(OS_WIN)
+#define MAYBE_ProcessIsolation DISABLED_ProcessIsolation
+#else
+#define MAYBE_ProcessIsolation ProcessIsolation
+#endif
+IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_ProcessIsolation) {
   // If the one-click-signin feature is not enabled (e.g Chrome OS), we
   // never grant signin privileges to any renderer processes.
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
