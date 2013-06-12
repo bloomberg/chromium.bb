@@ -398,16 +398,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndProceed) {
                                  false);  // No interstitial showing
 }
 
-// http://crbug.com/248723
-#if defined(OS_WIN)
-#define MAYBE_TestHTTPSExpiredCertAndDontProceed DISABLED_TestHTTPSExpiredCertAndDontProceed
-#else
-#define MAYBE_TestHTTPSExpiredCertAndDontProceed TestHTTPSExpiredCertAndDontProceed
-#endif
-
 // Visits a page with https error and don't proceed (and ensure we can still
 // navigate at that point):
-IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSExpiredCertAndDontProceed) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndDontProceed) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
