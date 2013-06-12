@@ -127,6 +127,7 @@ _OS_NEGATIVE_FILTER['android'] = [
     'PerformanceLogTypeTest.pageLoadShouldProducePerformanceLogEntries',
     'PerformanceLogTypeTest.shouldBeAbleToEnablePerformanceLog',
     'SelectElementHandlingTest.testShouldBePossibleToDeselectASingleOptionFromASelectWhichAllowsMultipleChoices',
+    'SelectElementTest.shouldAllowOptionsToBeDeselectedByIndex',
     'SelectElementTest.shouldAllowOptionsToBeDeselectedByReturnedValue',
     'SelectElementTest.shouldAllowUserToDeselectAllWhenSelectSupportsMultipleSelections',
     'SelectElementTest.shouldAllowUserToDeselectOptionsByVisibleText',
@@ -154,7 +155,7 @@ _OS_NEGATIVE_FILTER['android'] = [
     "SessionHandlingTest.callingQuitMoreThanOnceOnASessionIsANoOp",
     # Test is written using local files; doesn't work on Android.
     'UploadTest.testFileUploading',
-    # Not applicable on Android.
+    # Not applicable on Chromium Test Shell (doesn't support tabs).
     'WindowSwitchingTest.*',
 ]
 
