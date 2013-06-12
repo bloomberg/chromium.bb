@@ -21,6 +21,7 @@ LocalChangeProcessorDelegate::LocalChangeProcessorDelegate(
     const SyncFileMetadata& local_metadata,
     const fileapi::FileSystemURL& url)
     : sync_service_(sync_service),
+      operation_(LOCAL_SYNC_OPERATION_NONE),
       url_(url),
       local_change_(local_change),
       local_path_(local_path),
@@ -34,6 +35,7 @@ LocalChangeProcessorDelegate::~LocalChangeProcessorDelegate() {}
 void LocalChangeProcessorDelegate::Run(const SyncStatusCallback& callback) {
   // TODO(nhiroki): support directory operations (http://crbug.com/161442).
   DCHECK(IsSyncFSDirectoryOperationEnabled() || !local_change_.IsDirectory());
+  operation_ = LOCAL_SYNC_OPERATION_NONE;
 
   has_drive_metadata_ =
       metadata_store()->ReadEntry(url_, &drive_metadata_) == SYNC_STATUS_OK;
@@ -71,16 +73,17 @@ void LocalChangeProcessorDelegate::DidGetOriginRoot(
               drive_metadata_.type())
       : SYNC_FILE_TYPE_UNKNOWN;
 
-  LocalSyncOperationType operation = LocalSyncOperationResolver::Resolve(
+  DCHECK_EQ(LOCAL_SYNC_OPERATION_NONE, operation_);
+  operation_ = LocalSyncOperationResolver::Resolve(
       local_change_,
       has_remote_change_ ? &remote_change_.change : NULL,
       has_drive_metadata_ ? &drive_metadata_ : NULL);
 
   DVLOG(1) << "ApplyLocalChange for " << url_.DebugString()
            << " local_change:" << local_change_.DebugString()
-           << " ==> operation:" << operation;
+           << " ==> operation:" << operation_;
 
-  switch (operation) {
+  switch (operation_) {
     case LOCAL_SYNC_OPERATION_ADD_FILE:
       UploadNewFile(callback);
       return;
@@ -197,6 +200,11 @@ void LocalChangeProcessorDelegate::DidCreateDirectory(
 void LocalChangeProcessorDelegate::UploadExistingFile(
     const SyncStatusCallback& callback) {
   DCHECK(has_drive_metadata_);
+  if (drive_metadata_.resource_id().empty()) {
+    UploadNewFile(callback);
+    return;
+  }
+
   api_util()->UploadExistingFile(
       drive_metadata_.resource_id(),
       drive_metadata_.md5_checksum(),
@@ -223,19 +231,16 @@ void LocalChangeProcessorDelegate::DidUploadExistingFile(
           SYNC_ACTION_UPDATED,
           SYNC_DIRECTION_LOCAL_TO_REMOTE);
       return;
-    case google_apis::HTTP_CONFLICT: {
+    case google_apis::HTTP_CONFLICT:
       HandleConflict(callback);
       return;
-    }
-    case google_apis::HTTP_NOT_MODIFIED: {
+    case google_apis::HTTP_NOT_MODIFIED:
       DidApplyLocalChange(callback,
                           google_apis::HTTP_SUCCESS, SYNC_STATUS_OK);
       return;
-    }
-    case google_apis::HTTP_NOT_FOUND: {
+    case google_apis::HTTP_NOT_FOUND:
       UploadNewFile(callback);
       return;
-    }
     default: {
       const SyncStatusCode status =
           GDataErrorCodeToSyncStatusCodeWrapper(error);
@@ -252,6 +257,12 @@ void LocalChangeProcessorDelegate::Delete(
     callback.Run(SYNC_STATUS_OK);
     return;
   }
+
+  if (drive_metadata_.resource_id().empty()) {
+    DidDelete(callback, google_apis::HTTP_NOT_FOUND);
+    return;
+  }
+
   api_util()->DeleteFile(
       drive_metadata_.resource_id(),
       drive_metadata_.md5_checksum(),
@@ -265,27 +276,29 @@ void LocalChangeProcessorDelegate::DidDelete(
   DCHECK(has_drive_metadata_);
 
   switch (error) {
-    // Regardless of whether the deletion has succeeded (HTTP_SUCCESS) or
-    // has failed with ETag conflict error (HTTP_PRECONDITION or HTTP_CONFLICT)
-    // we should just delete the drive_metadata.
-    // In the former case the file should be just gone now, and
-    // in the latter case the remote change will be applied in a future
-    // remote sync.
     case google_apis::HTTP_SUCCESS:
-    case google_apis::HTTP_PRECONDITION:
-    case google_apis::HTTP_CONFLICT:
+    case google_apis::HTTP_NOT_FOUND:
       DeleteMetadata(base::Bind(
           &LocalChangeProcessorDelegate::DidApplyLocalChange,
-          weak_factory_.GetWeakPtr(), callback, error));
+          weak_factory_.GetWeakPtr(), callback, google_apis::HTTP_SUCCESS));
       sync_service_->NotifyObserversFileStatusChanged(
           url_,
           SYNC_FILE_STATUS_SYNCED,
           SYNC_ACTION_DELETED,
           SYNC_DIRECTION_LOCAL_TO_REMOTE);
       return;
-    case google_apis::HTTP_NOT_FOUND:
-      DidApplyLocalChange(callback,
-                          google_apis::HTTP_SUCCESS, SYNC_STATUS_OK);
+    case google_apis::HTTP_PRECONDITION:
+    case google_apis::HTTP_CONFLICT:
+      // Delete |drive_metadata| on the conflict case.
+      // Conflicted remote change should be applied as a future remote change.
+      DeleteMetadata(base::Bind(
+          &LocalChangeProcessorDelegate::DidDeleteMetadataForDeletionConflict,
+          weak_factory_.GetWeakPtr(), callback));
+      sync_service_->NotifyObserversFileStatusChanged(
+          url_,
+          SYNC_FILE_STATUS_SYNCED,
+          SYNC_ACTION_DELETED,
+          SYNC_DIRECTION_LOCAL_TO_REMOTE);
       return;
     default: {
       const SyncStatusCode status =
@@ -297,8 +310,19 @@ void LocalChangeProcessorDelegate::DidDelete(
   }
 }
 
+void LocalChangeProcessorDelegate::DidDeleteMetadataForDeletionConflict(
+    const SyncStatusCallback& callback,
+    SyncStatusCode status) {
+  callback.Run(SYNC_STATUS_OK);
+}
+
 void LocalChangeProcessorDelegate::ResolveToLocal(
     const SyncStatusCallback& callback) {
+  if (drive_metadata_.resource_id().empty()) {
+    DidDeleteFileToResolveToLocal(callback, google_apis::HTTP_NOT_FOUND);
+    return;
+  }
+
   api_util()->DeleteFile(
       drive_metadata_.resource_id(),
       drive_metadata_.md5_checksum(),
@@ -312,7 +336,6 @@ void LocalChangeProcessorDelegate::DidDeleteFileToResolveToLocal(
     google_apis::GDataErrorCode error) {
   if (error != google_apis::HTTP_SUCCESS &&
       error != google_apis::HTTP_NOT_FOUND) {
-    remote_change_handler()->RemoveChangeForURL(url_);
     callback.Run(GDataErrorCodeToSyncStatusCodeWrapper(error));
     return;
   }
@@ -364,6 +387,13 @@ void LocalChangeProcessorDelegate::DidApplyLocalChange(
     const SyncStatusCallback& callback,
     const google_apis::GDataErrorCode error,
     SyncStatusCode status) {
+  if ((operation_ == LOCAL_SYNC_OPERATION_DELETE ||
+       operation_ == LOCAL_SYNC_OPERATION_DELETE_METADATA) &&
+      (status == SYNC_FILE_ERROR_NOT_FOUND ||
+       status == SYNC_DATABASE_ERROR_NOT_FOUND)) {
+    status = SYNC_STATUS_OK;
+  }
+
   if (status == SYNC_STATUS_OK) {
     remote_change_handler()->RemoveChangeForURL(url_);
     status = GDataErrorCodeToSyncStatusCodeWrapper(error);

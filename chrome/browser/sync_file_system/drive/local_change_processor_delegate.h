@@ -63,6 +63,9 @@ class LocalChangeProcessorDelegate {
   void Delete(const SyncStatusCallback& callback);
   void DidDelete(const SyncStatusCallback& callback,
                  google_apis::GDataErrorCode error);
+  void DidDeleteMetadataForDeletionConflict(
+      const SyncStatusCallback& callback,
+      SyncStatusCode status);
   void ResolveToLocal(const SyncStatusCallback& callback);
   void DidDeleteFileToResolveToLocal(
       const SyncStatusCallback& callback,
@@ -112,6 +115,8 @@ class LocalChangeProcessorDelegate {
   RemoteChangeHandler* remote_change_handler();
 
   DriveFileSyncService* sync_service_;  // Not owned.
+
+  LocalSyncOperationType operation_;
 
   fileapi::FileSystemURL url_;
   FileChange local_change_;
