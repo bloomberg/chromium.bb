@@ -809,6 +809,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   power_button_observer_.reset();
   screensaver_controller_.reset();
   idle_action_warning_observer_.reset();
+  storage_monitor_.reset();
 
   // Delete ContactManager while |g_browser_process| is still alive.
   contact_manager_.reset();
