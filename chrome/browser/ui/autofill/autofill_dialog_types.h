@@ -142,15 +142,13 @@ struct SuggestionState {
                   gfx::Font::FontStyle text_style,
                   const gfx::Image& icon,
                   const string16& extra_text,
-                  const gfx::Image& extra_icon,
-                  bool editable);
+                  const gfx::Image& extra_icon);
   ~SuggestionState();
   string16 text;
   gfx::Font::FontStyle text_style;
   gfx::Image icon;
   string16 extra_text;
   gfx::Image extra_icon;
-  bool editable;
 };
 
 enum ValidationType {

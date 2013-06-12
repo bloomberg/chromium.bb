@@ -529,7 +529,6 @@ public class AutofillDialog extends Dialog
      * @param suggestionIcon The suggestion icon.
      * @param suggestionTextExtra The suggestion text extra.
      * @param suggestionIconExtra The suggestion icon extra.
-     * @param suggestionSectionEditable Whether the section is editable.
      * @param menuItems The array that contains the dropdown items to be shown for the section.
      * @param selectedMenuItem The menu item that is currently selected or -1 otherwise.
      * @param clobberInputs Whether to clobber the user input.
@@ -537,10 +536,9 @@ public class AutofillDialog extends Dialog
      */
     public void updateSection(int section, boolean visible, AutofillDialogField[] dialogInputs,
             String suggestionText, Bitmap suggestionIcon, String suggestionTextExtra,
-                    Bitmap suggestionIconExtra, boolean suggestionSectionEditable,
-                        AutofillDialogMenuItem[] menuItems,
-                                int selectedMenuItem, boolean clobberInputs,
-                                        int fieldTypeToAlwaysClobber) {
+                    Bitmap suggestionIconExtra, AutofillDialogMenuItem[] menuItems,
+                            int selectedMenuItem, boolean clobberInputs,
+                                    int fieldTypeToAlwaysClobber) {
         View currentField;
         String inputValue;
 
@@ -586,7 +584,7 @@ public class AutofillDialog extends Dialog
 
         updateSectionMenuItems(section,
                 suggestionText, suggestionIcon, suggestionTextExtra, suggestionIconExtra,
-                        suggestionSectionEditable, menuItems, selectedMenuItem);
+                        menuItems, selectedMenuItem);
     }
 
     /**
@@ -596,18 +594,16 @@ public class AutofillDialog extends Dialog
      * @param suggestionIcon The suggestion icon.
      * @param suggestionTextExtra The suggestion text extra.
      * @param suggestionIconExtra The suggestion icon extra.
-     * @param suggestionSectionEditable Whether the section is editable.
      * @param menuItems The array that contains the dropdown items to be shown for the section.
      * @param selectedMenuItem The menu item that is currently selected or -1 otherwise.
      */
     public void updateSectionMenuItems(
             int section, String suggestionText, Bitmap suggestionIcon, String suggestionTextExtra,
-                    Bitmap suggestionIconExtra, boolean suggestionSectionEditable,
-                            AutofillDialogMenuItem[] menuItems, int selectedMenuItem) {
+                    Bitmap suggestionIconExtra, AutofillDialogMenuItem[] menuItems,
+                            int selectedMenuItem) {
         mView.updateMenuItemsForSection(
-                section, suggestionText, suggestionIcon, suggestionTextExtra,
-                        suggestionIconExtra, suggestionSectionEditable,
-                                Arrays.asList(menuItems), selectedMenuItem);
+                section, suggestionText, suggestionIcon, suggestionTextExtra, suggestionIconExtra,
+                        Arrays.asList(menuItems), selectedMenuItem);
     }
 
     /**

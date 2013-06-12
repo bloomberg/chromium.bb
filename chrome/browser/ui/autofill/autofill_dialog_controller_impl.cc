@@ -978,8 +978,7 @@ SuggestionState AutofillDialogControllerImpl::SuggestionStateForSection(
                          SuggestionTextStyleForSection(section),
                          SuggestionIconForSection(section),
                          ExtraSuggestionTextForSection(section),
-                         ExtraSuggestionIconForSection(section),
-                         EditEnabledForSection(section));
+                         ExtraSuggestionIconForSection(section));
 }
 
 string16 AutofillDialogControllerImpl::SuggestionTextForSection(
@@ -1152,19 +1151,6 @@ gfx::Image AutofillDialogControllerImpl::ExtraSuggestionIconForSection(
     return IconForField(CREDIT_CARD_VERIFICATION_CODE, string16());
 
   return gfx::Image();
-}
-
-bool AutofillDialogControllerImpl::EditEnabledForSection(
-    DialogSection section) const {
-  if (SuggestionsMenuModelForSection(section)->GetItemKeyForCheckedItem() ==
-      kSameAsBillingKey) {
-    return false;
-  }
-
-  if (section == SECTION_CC_BILLING && IsSubmitPausedOn(wallet::VERIFY_CVV))
-    return false;
-
-  return true;
 }
 
 void AutofillDialogControllerImpl::EditClickedForSection(
