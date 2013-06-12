@@ -1234,7 +1234,7 @@
 
     <!-- Version 2 of additions -->
 
-    <event name="name">
+    <event name="name" since="2">
       <description summary="unique identifier for this seat">
 	In a multiseat configuration this can be used by the client to help
 	identify which physical devices the seat represents. Based on
