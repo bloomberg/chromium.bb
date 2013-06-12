@@ -347,6 +347,10 @@ bool DownloadResourceHandler::OnResponseCompleted(
     switch(response_code) {
       case -1:                          // Non-HTTP request.
       case net::HTTP_OK:
+      case net::HTTP_CREATED:
+      case net::HTTP_ACCEPTED:
+      case net::HTTP_NON_AUTHORITATIVE_INFORMATION:
+      case net::HTTP_RESET_CONTENT:
       case net::HTTP_PARTIAL_CONTENT:
         // Expected successful codes.
         break;
@@ -365,12 +369,10 @@ bool DownloadResourceHandler::OnResponseCompleted(
         reason = DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
         break;
       default:    // All other errors.
-        // Redirection should have been handled earlier in the stack.
-        DCHECK(3 != response_code / 100);
-
-        // Informational codes should have been handled earlier in the
-        // stack.
-        DCHECK(1 != response_code / 100);
+        // Redirection and informational codes should have been handled earlier
+        // in the stack.
+        DCHECK_NE(3, response_code / 100);
+        DCHECK_NE(1, response_code / 100);
         reason = DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
         break;
     }
