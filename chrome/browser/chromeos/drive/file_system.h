@@ -203,11 +203,17 @@ class FileSystem : public FileSystemInterface,
   void PinAfterGetResourceEntryByPath(const FileOperationCallback& callback,
                                       FileError error,
                                       scoped_ptr<ResourceEntry> entry);
+  void FinishPin(const FileOperationCallback& callback,
+                 const std::string& resource_id,
+                 FileError error);
 
   // Used to implement Unpin().
   void UnpinAfterGetResourceEntryByPath(const FileOperationCallback& callback,
                                         FileError error,
                                         scoped_ptr<ResourceEntry> entry);
+  void FinishUnpin(const FileOperationCallback& callback,
+                   const std::string& resource_id,
+                   FileError error);
 
   // Part of OpenFile(). Called after the file downloading is completed.
   void OpenFileAfterFileDownloaded(

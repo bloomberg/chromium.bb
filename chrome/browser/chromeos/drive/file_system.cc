@@ -344,7 +344,22 @@ void FileSystem::PinAfterGetResourceEntryByPath(
   DCHECK(entry);
 
   cache_->PinOnUIThread(entry->resource_id(),
-                        entry->file_specific_info().md5(), callback);
+                        entry->file_specific_info().md5(),
+                        base::Bind(&FileSystem::FinishPin,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   callback,
+                                   entry->resource_id()));
+}
+
+void FileSystem::FinishPin(const FileOperationCallback& callback,
+                           const std::string& resource_id,
+                           FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error == FILE_ERROR_OK)
+    sync_client_->AddFetchTask(resource_id);
+  callback.Run(error);
 }
 
 void FileSystem::Unpin(const base::FilePath& file_path,
@@ -377,7 +392,22 @@ void FileSystem::UnpinAfterGetResourceEntryByPath(
   DCHECK(entry);
 
   cache_->UnpinOnUIThread(entry->resource_id(),
-                          entry->file_specific_info().md5(), callback);
+                          entry->file_specific_info().md5(),
+                          base::Bind(&FileSystem::FinishUnpin,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     callback,
+                                     entry->resource_id()));
+}
+
+void FileSystem::FinishUnpin(const FileOperationCallback& callback,
+                             const std::string& resource_id,
+                             FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error == FILE_ERROR_OK)
+    sync_client_->RemoveFetchTask(resource_id);
+  callback.Run(error);
 }
 
 void FileSystem::GetFileByPath(const base::FilePath& file_path,

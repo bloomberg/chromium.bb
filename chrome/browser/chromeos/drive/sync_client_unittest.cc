@@ -226,10 +226,8 @@ TEST_F(SyncClientTest, StartProcessingBacklog) {
   EXPECT_FALSE(cache_entry.is_dirty());
 }
 
-TEST_F(SyncClientTest, OnCachePinned) {
-  // This file will be fetched by GetFileByResourceId() as OnCachePinned()
-  // will kick off the sync loop.
-  sync_client_->OnCachePinned(resource_ids_["foo"], std::string());
+TEST_F(SyncClientTest, AddFetchTask) {
+  sync_client_->AddFetchTask(resource_ids_["foo"]);
   base::RunLoop().RunUntilIdle();
 
   FileCacheEntry cache_entry;
@@ -238,15 +236,11 @@ TEST_F(SyncClientTest, OnCachePinned) {
   EXPECT_TRUE(cache_entry.is_present());
 }
 
-TEST_F(SyncClientTest, OnCachePinnedAndCancelled) {
-  drive_service_->set_resource_id_to_be_cancelled(resource_ids_["foo"]);
+TEST_F(SyncClientTest, AddFetchTaskAndCancelled) {
   // Trigger fetching of a file which results in cancellation.
-  FileError error = FILE_ERROR_FAILED;
-  cache_->PinOnUIThread(
-      resource_ids_["foo"], std::string(),
-      google_apis::test_util::CreateCopyResultCallback(&error));
+  drive_service_->set_resource_id_to_be_cancelled(resource_ids_["foo"]);
+  sync_client_->AddFetchTask(resource_ids_["foo"]);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(FILE_ERROR_OK, error);
 
   // The file should be unpinned if the user wants the download to be cancelled.
   FileCacheEntry cache_entry;
@@ -254,15 +248,13 @@ TEST_F(SyncClientTest, OnCachePinnedAndCancelled) {
                                      &cache_entry));
 }
 
-TEST_F(SyncClientTest, OnCacheUnpinned) {
+TEST_F(SyncClientTest, RemoveFetchTask) {
   sync_client_->AddFetchTask(resource_ids_["foo"]);
   sync_client_->AddFetchTask(resource_ids_["bar"]);
   sync_client_->AddFetchTask(resource_ids_["baz"]);
-  ASSERT_EQ(3U,
-            sync_client_->GetResourceIdsForTesting(SyncClient::FETCH).size());
 
-  sync_client_->OnCacheUnpinned(resource_ids_["foo"], std::string());
-  sync_client_->OnCacheUnpinned(resource_ids_["baz"], std::string());
+  sync_client_->RemoveFetchTask(resource_ids_["foo"]);
+  sync_client_->RemoveFetchTask(resource_ids_["baz"]);
   base::RunLoop().RunUntilIdle();
 
   // Only "bar" should be fetched.
@@ -279,19 +271,6 @@ TEST_F(SyncClientTest, OnCacheUnpinned) {
                                     &cache_entry));
   EXPECT_FALSE(cache_entry.is_present());
 
-}
-
-TEST_F(SyncClientTest, Deduplication) {
-  sync_client_->AddFetchTask(resource_ids_["foo"]);
-
-  // Set the delay so that DoSyncLoop() is delayed.
-  sync_client_->set_delay_for_testing(TestTimeouts::action_max_timeout());
-  // Raise OnCachePinned() event. This shouldn't result in adding the second
-  // task, as tasks are de-duplicated.
-  sync_client_->OnCachePinned(resource_ids_["foo"], std::string());
-
-  ASSERT_EQ(1U,
-            sync_client_->GetResourceIdsForTesting(SyncClient::FETCH).size());
 }
 
 TEST_F(SyncClientTest, ExistingPinnedFiles) {

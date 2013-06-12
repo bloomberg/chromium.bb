@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 
 class Profile;
@@ -42,7 +41,6 @@ typedef base::Callback<void(const std::string& resource_id,
 namespace internal {
 
 class FileCacheMetadata;
-class FileCacheObserver;
 
 // Callback for GetFileFromCache.
 typedef base::Callback<void(FileError error,
@@ -114,14 +112,6 @@ class FileCache {
   //
   // Can be called on any thread.
   bool IsUnderFileCacheDirectory(const base::FilePath& path) const;
-
-  // Adds observer.
-  // Must be called on the UI thread.
-  void AddObserver(FileCacheObserver* observer);
-
-  // Removes observer.
-  // Must be called on the UI thread.
-  void RemoveObserver(FileCacheObserver* observer);
 
   // Gets the cache entry for file corresponding to |resource_id| and |md5|
   // and runs |callback| with true and the entry found if entry exists in cache
@@ -343,18 +333,6 @@ class FileCache {
   // Used to implement ClearAllOnUIThread.
   bool ClearAll();
 
-  // Runs callback and notifies the observers when file is pinned.
-  void OnPinned(const std::string& resource_id,
-                const std::string& md5,
-                const FileOperationCallback& callback,
-                FileError error);
-
-  // Runs callback and notifies the observers when file is unpinned.
-  void OnUnpinned(const std::string& resource_id,
-                  const std::string& md5,
-                  const FileOperationCallback& callback,
-                  FileError error);
-
   // Returns true if we have sufficient space to store the given number of
   // bytes, while keeping kMinFreeSpace bytes on the disk.
   bool HasEnoughSpaceFor(int64 num_bytes, const base::FilePath& path);
@@ -368,9 +346,6 @@ class FileCache {
 
   // The cache state data. This member must be access only on the blocking pool.
   scoped_ptr<FileCacheMetadata> metadata_;
-
-  // List of observers, this member must be accessed on UI thread.
-  ObserverList<FileCacheObserver> observers_;
 
   FreeDiskSpaceGetterInterface* free_disk_space_getter_;  // Not owned.
 

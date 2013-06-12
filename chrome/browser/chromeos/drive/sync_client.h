@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/drive/file_cache_observer.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 
 namespace base {
@@ -37,19 +36,12 @@ class FileCache;
 class ResourceMetadata;
 
 // The SyncClient is used to synchronize pinned files on Drive and the
-// cache on the local drive. The sync client works as follows.
-//
-// When the user pins files on Drive, this client is notified about the files
-// that get pinned, and queues tasks and starts fetching these files in the
-// background.
-//
-// When the user unpins files on Drive, this client is notified about the
-// files that get unpinned, cancels tasks if these are still in the queue.
+// cache on the local drive.
 //
 // If the user logs out before fetching of the pinned files is complete, this
 // client resumes fetching operations next time the user logs in, based on
 // the states left in the cache.
-class SyncClient : public FileCacheObserver {
+class SyncClient {
  public:
   // Types of sync tasks.
   enum SyncType {
@@ -64,14 +56,11 @@ class SyncClient : public FileCacheObserver {
              FileCache* cache);
   virtual ~SyncClient();
 
-  // FileCache::Observer overrides.
-  virtual void OnCachePinned(const std::string& resource_id,
-                             const std::string& md5) OVERRIDE;
-  virtual void OnCacheUnpinned(const std::string& resource_id,
-                               const std::string& md5) OVERRIDE;
-
   // Adds a fetch task to the queue.
   void AddFetchTask(const std::string& resource_id);
+
+  // Removes a fetch task from the queue.
+  void RemoveFetchTask(const std::string& resource_id);
 
   // Adds an upload task to the queue.
   void AddUploadTask(const std::string& resource_id);
@@ -85,10 +74,6 @@ class SyncClient : public FileCacheObserver {
   // up-to-date. If stale files are detected, the resource IDs of these files
   // are added to the queue and the sync loop is started.
   void StartCheckingExistingPinnedFiles();
-
-  // Returns the resource IDs in |queue_| for the given sync type. Used only
-  // for testing.
-  std::vector<std::string> GetResourceIdsForTesting(SyncType sync_type) const;
 
   // Sets a delay for testing.
   void set_delay_for_testing(const base::TimeDelta& delay) {

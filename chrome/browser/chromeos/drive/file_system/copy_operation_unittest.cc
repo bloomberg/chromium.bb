@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 
 #include "base/file_util.h"
-#include "chrome/browser/chromeos/drive/file_cache_observer.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"

@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/mock_directory_change_observer.h"
-#include "chrome/browser/chromeos/drive/mock_file_cache_observer.h"
 #include "chrome/browser/chromeos/drive/sync_client.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -91,9 +90,6 @@ class FileSystemTest : public testing::Test {
     cache_.reset(new internal::FileCache(util::GetCacheRootPath(profile_.get()),
                                          blocking_task_runner_,
                                          fake_free_disk_space_getter_.get()));
-
-    mock_cache_observer_.reset(new StrictMock<MockCacheObserver>);
-    cache_->AddObserver(mock_cache_observer_.get());
 
     mock_directory_observer_.reset(new StrictMock<MockDirectoryChangeObserver>);
 
@@ -341,7 +337,6 @@ class FileSystemTest : public testing::Test {
   scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
-  scoped_ptr<StrictMock<MockCacheObserver> > mock_cache_observer_;
   scoped_ptr<StrictMock<MockDirectoryChangeObserver> > mock_directory_observer_;
 };
 
@@ -682,23 +677,58 @@ TEST_F(FileSystemTest, PinAndUnpin) {
 
   // Pin the file.
   FileError error = FILE_ERROR_FAILED;
-  EXPECT_CALL(*mock_cache_observer_,
-              OnCachePinned(entry->resource_id(),
-                            entry->file_specific_info().md5())).Times(1);
   file_system_->Pin(file_path,
                     google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
+  FileCacheEntry cache_entry;
+  EXPECT_TRUE(GetCacheEntryFromOriginThread(
+      entry->resource_id(), std::string(), &cache_entry));
+  EXPECT_TRUE(cache_entry.is_pinned());
+  EXPECT_TRUE(cache_entry.is_present());
+  EXPECT_TRUE(cache_entry.is_persistent());
+
   // Unpin the file.
   error = FILE_ERROR_FAILED;
-  EXPECT_CALL(*mock_cache_observer_,
-              OnCacheUnpinned(entry->resource_id(),
-                              entry->file_specific_info().md5())).Times(1);
   file_system_->Unpin(file_path,
                       google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
+
+  EXPECT_TRUE(GetCacheEntryFromOriginThread(
+      entry->resource_id(), std::string(), &cache_entry));
+  EXPECT_FALSE(cache_entry.is_pinned());
+}
+
+TEST_F(FileSystemTest, PinAndUnpin_NotSynced) {
+  ASSERT_TRUE(LoadFullResourceList());
+
+  base::FilePath file_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
+
+  // Get the file info.
+  scoped_ptr<ResourceEntry> entry(GetResourceEntryByPathSync(file_path));
+  ASSERT_TRUE(entry);
+
+  // Unpin the file just after pinning. File fetch should be cancelled.
+  FileError error_pin = FILE_ERROR_FAILED;
+  file_system_->Pin(
+      file_path,
+      google_apis::test_util::CreateCopyResultCallback(&error_pin));
+
+  FileError error_unpin = FILE_ERROR_FAILED;
+  file_system_->Unpin(
+      file_path,
+      google_apis::test_util::CreateCopyResultCallback(&error_unpin));
+
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error_pin);
+  EXPECT_EQ(FILE_ERROR_OK, error_unpin);
+
+  // No cache file available because the sync was cancelled by Unpin().
+  FileCacheEntry cache_entry;
+  EXPECT_FALSE(GetCacheEntryFromOriginThread(
+      entry->resource_id(), std::string(), &cache_entry));
 }
 
 TEST_F(FileSystemTest, GetAvailableSpace) {

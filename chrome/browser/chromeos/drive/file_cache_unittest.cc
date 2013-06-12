@@ -15,15 +15,11 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/drive/mock_file_cache_observer.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using ::testing::StrictMock;
 
 namespace drive {
 namespace internal {
@@ -70,9 +66,6 @@ class FileCacheTestOnUIThread : public testing::Test {
     cache_.reset(new FileCache(temp_dir_.path(),
                                blocking_task_runner_,
                                fake_free_disk_space_getter_.get()));
-
-    mock_cache_observer_.reset(new StrictMock<MockCacheObserver>);
-    cache_->AddObserver(mock_cache_observer_.get());
 
     bool success = false;
     cache_->RequestInitialize(
@@ -473,7 +466,6 @@ class FileCacheTestOnUIThread : public testing::Test {
 
   scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
-  scoped_ptr<StrictMock<MockCacheObserver> > mock_cache_observer_;
 
   FileError expected_error_;
   int expected_cache_state_;
@@ -578,9 +570,6 @@ TEST_F(FileCacheTestOnUIThread, RemoveFromCacheSimple) {
 TEST_F(FileCacheTestOnUIThread, PinAndUnpin) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(2);
-  EXPECT_CALL(*mock_cache_observer_, OnCacheUnpinned(resource_id, md5))
-      .Times(1);
 
   // First store a file to cache.
   TestStoreToCache(resource_id, md5, dummy_file_path_,
@@ -608,9 +597,6 @@ TEST_F(FileCacheTestOnUIThread, PinAndUnpin) {
 
   // Pin a non-existent file in cache.
   resource_id = "document:1a2b";
-  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
-  EXPECT_CALL(*mock_cache_observer_, OnCacheUnpinned(resource_id, md5))
-      .Times(1);
 
   TestPin(resource_id, md5, FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PINNED,
@@ -624,9 +610,6 @@ TEST_F(FileCacheTestOnUIThread, PinAndUnpin) {
   // Unpin a file that doesn't exist in cache and is not pinned, i.e. cache
   // has zero knowledge of the file.
   resource_id = "not-in-cache:1a2b";
-  // Because unpinning will fail, OnCacheUnpinned() won't be run.
-  EXPECT_CALL(*mock_cache_observer_, OnCacheUnpinned(resource_id, md5))
-      .Times(0);
 
   TestUnpin(resource_id, md5, FILE_ERROR_NOT_FOUND,
             test_util::TEST_CACHE_STATE_NONE,
@@ -636,7 +619,6 @@ TEST_F(FileCacheTestOnUIThread, PinAndUnpin) {
 TEST_F(FileCacheTestOnUIThread, StoreToCachePinned) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
 
   // Pin a non-existent file.
   TestPin(resource_id, md5, FILE_ERROR_OK,
@@ -664,7 +646,6 @@ TEST_F(FileCacheTestOnUIThread, StoreToCachePinned) {
 TEST_F(FileCacheTestOnUIThread, GetFromCachePinned) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
 
   // Pin a non-existent file.
   TestPin(resource_id, md5, FILE_ERROR_OK,
@@ -692,7 +673,6 @@ TEST_F(FileCacheTestOnUIThread, RemoveFromCachePinned) {
   // Use alphanumeric characters for resource_id.
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
 
   // Store a file to cache, and pin it.
   TestStoreToCache(resource_id, md5, dummy_file_path_,
@@ -710,7 +690,6 @@ TEST_F(FileCacheTestOnUIThread, RemoveFromCachePinned) {
   // Repeat using non-alphanumeric characters for resource id, including '.'
   // which is an extension separator.
   resource_id = "pdf:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?";
-  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
 
   TestStoreToCache(resource_id, md5, dummy_file_path_,
                    FILE_ERROR_OK, test_util::TEST_CACHE_STATE_PRESENT,
@@ -749,7 +728,6 @@ TEST_F(FileCacheTestOnUIThread, DirtyCacheSimple) {
 TEST_F(FileCacheTestOnUIThread, DirtyCachePinned) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
 
   // First store a file to cache and pin it.
   TestStoreToCache(resource_id, md5, dummy_file_path_,
@@ -780,9 +758,6 @@ TEST_F(FileCacheTestOnUIThread, DirtyCachePinned) {
 TEST_F(FileCacheTestOnUIThread, PinAndUnpinDirtyCache) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
-  EXPECT_CALL(*mock_cache_observer_, OnCacheUnpinned(resource_id, md5))
-      .Times(1);
 
   // First store a file to cache and mark it as dirty.
   TestStoreToCache(resource_id, md5, dummy_file_path_,
@@ -903,7 +878,6 @@ TEST_F(FileCacheTestOnUIThread, DirtyCacheInvalid) {
 TEST_F(FileCacheTestOnUIThread, RemoveFromDirtyCache) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
 
   // Store a file to cache, pin it, mark it dirty and commit it.
   TestStoreToCache(resource_id, md5, dummy_file_path_,
@@ -965,17 +939,8 @@ TEST_F(FileCacheTestOnUIThread, MountUnmount) {
 TEST_F(FileCacheTestOnUIThread, Iterate) {
   const std::vector<test_util::TestCacheResource> cache_resources(
       test_util::GetDefaultTestCacheResources());
-  // Set mock expectations.
-  for (size_t i = 0; i < cache_resources.size(); ++i) {
-    if (cache_resources[i].is_pinned) {
-      EXPECT_CALL(*mock_cache_observer_,
-                  OnCachePinned(cache_resources[i].resource_id,
-                                cache_resources[i].md5)).Times(1);
-    }
-  }
-  ASSERT_TRUE(test_util::PrepareTestCacheResources(
-      cache_.get(),
-      cache_resources));
+  ASSERT_TRUE(test_util::PrepareTestCacheResources(cache_.get(),
+                                                   cache_resources));
 
   std::vector<std::string> resource_ids;
   std::vector<FileCacheEntry> cache_entries;
@@ -1069,7 +1034,6 @@ TEST_F(FileCacheTestOnUIThread, UpdatePinnedCache) {
                    FileCache::CACHE_TYPE_TMP);
 
   // Pin the file.
-  EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
   TestPin(resource_id, md5,
           FILE_ERROR_OK,
           test_util::TEST_CACHE_STATE_PRESENT |

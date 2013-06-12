@@ -15,7 +15,6 @@
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache_metadata.h"
-#include "chrome/browser/chromeos/drive/file_cache_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "chromeos/chromeos_constants.h"
@@ -345,16 +344,6 @@ bool FileCache::IsUnderFileCacheDirectory(const base::FilePath& path) const {
   return cache_root_path_ == path || cache_root_path_.IsParent(path);
 }
 
-void FileCache::AddObserver(FileCacheObserver* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  observers_.AddObserver(observer);
-}
-
-void FileCache::RemoveObserver(FileCacheObserver* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  observers_.RemoveObserver(observer);
-}
-
 void FileCache::GetCacheEntryOnUIThread(const std::string& resource_id,
                                         const std::string& md5,
                                         const GetCacheEntryCallback& callback) {
@@ -522,10 +511,8 @@ void FileCache::PinOnUIThread(const std::string& resource_id,
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
-      base::Bind(&FileCache::Pin,
-                 base::Unretained(this), resource_id, md5),
-      base::Bind(&FileCache::OnPinned,
-                 weak_ptr_factory_.GetWeakPtr(), resource_id, md5, callback));
+      base::Bind(&FileCache::Pin, base::Unretained(this), resource_id, md5),
+      callback);
 }
 
 FileError FileCache::Pin(const std::string& resource_id,
@@ -581,10 +568,8 @@ void FileCache::UnpinOnUIThread(const std::string& resource_id,
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
-      base::Bind(&FileCache::Unpin,
-                 base::Unretained(this), resource_id, md5),
-      base::Bind(&FileCache::OnUnpinned,
-                 weak_ptr_factory_.GetWeakPtr(), resource_id, md5, callback));
+      base::Bind(&FileCache::Unpin, base::Unretained(this), resource_id, md5),
+      callback);
 }
 
 FileError FileCache::Unpin(const std::string& resource_id,
@@ -637,6 +622,11 @@ FileError FileCache::Unpin(const std::string& resource_id,
     // Remove the existing entry if we are unpinning a non-present file.
     metadata_->RemoveCacheEntry(resource_id);
   }
+
+  // Now the file is moved from "persistent" to "tmp" directory.
+  // It's a chance to free up space if needed.
+  FreeDiskSpaceIfNeededFor(0);
+
   return FILE_ERROR_OK;
 }
 
@@ -1110,44 +1100,6 @@ bool FileCache::ClearAll() {
     return false;
   }
   return true;
-}
-
-void FileCache::OnPinned(const std::string& resource_id,
-                         const std::string& md5,
-                         const FileOperationCallback& callback,
-                         FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  callback.Run(error);
-
-  if (error == FILE_ERROR_OK)
-    FOR_EACH_OBSERVER(FileCacheObserver,
-                      observers_,
-                      OnCachePinned(resource_id, md5));
-}
-
-void FileCache::OnUnpinned(const std::string& resource_id,
-                           const std::string& md5,
-                           const FileOperationCallback& callback,
-                           FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  callback.Run(error);
-
-  if (error == FILE_ERROR_OK)
-    FOR_EACH_OBSERVER(FileCacheObserver,
-                      observers_,
-                      OnCacheUnpinned(resource_id, md5));
-
-  // Now the file is moved from "persistent" to "tmp" directory.
-  // It's a chance to free up space if needed.
-  blocking_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          base::IgnoreResult(&FileCache::FreeDiskSpaceIfNeededFor),
-          base::Unretained(this), 0));
 }
 
 bool FileCache::HasEnoughSpaceFor(int64 num_bytes,
