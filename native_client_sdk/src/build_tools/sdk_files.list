@@ -989,6 +989,7 @@ toolchain/${PLATFORM}_x86_pnacl/newlib/sdk/include/semaphore.h
 toolchain/${PLATFORM}_x86_pnacl/*
 tools/common.mk
 tools/compiler-wrapper.py
+tools/create_html.py
 tools/create_nmf.py
 tools/decode_dump.py
 [linux,mac]tools/dump_syms

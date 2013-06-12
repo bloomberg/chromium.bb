@@ -110,7 +110,10 @@ def ParseElfHeader(path):
   with open(path, 'rb') as f:
     header = f.read(elf_header_size)
 
-  header = struct.unpack(elf_header_format, header)
+  try:
+    header = struct.unpack(elf_header_format, header)
+  except struct.error:
+    raise Error("error parsing elf header: %s" % path)
   e_ident, _, e_machine = header[:3]
 
   elf_magic = '\x7fELF'
@@ -725,7 +728,6 @@ def main(argv):
   return 0
 
 
-# Invoke this file directly for simple testing.
 if __name__ == '__main__':
   try:
     rtn = main(sys.argv[1:])
