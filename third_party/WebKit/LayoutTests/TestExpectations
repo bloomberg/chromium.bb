@@ -978,7 +978,7 @@ webkit.org/b/89820 [ Linux Win ] fast/text/hyphen-min-preferred-width.html [ Ima
 # webkitIsFullScreen does not have the correct value after an iframe exits fullscreen
 webkit.org/b/90704 fullscreen/exit-full-screen-iframe.html [ Failure Pass Timeout ]
 
-webkit.org/b/90746 [ Win ] fast/multicol/column-span-parent-continuation-crash.html [ Pass Timeout ]
+webkit.org/b/90746 fast/multicol/column-span-parent-continuation-crash.html [ Pass Timeout ]
 
 webkit.org/b/90980 fast/forms/textarea/textarea-state-restore.html [ Failure Pass Timeout ]
 
