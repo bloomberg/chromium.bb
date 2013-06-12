@@ -85,6 +85,12 @@ khronos_uint64_t CityHashForAngle(const char* name, unsigned int len) {
 }
 #endif
 
+static bool PrecisionMeetsSpecForHighpFloat(GLint rangeMin,
+                                            GLint rangeMax,
+                                            GLint precision) {
+  return (rangeMin >= 62) && (rangeMax >= 62) && (precision >= 16);
+}
+
 static void GetShaderPrecisionFormatImpl(GLenum shader_type,
                                          GLenum precision_type,
                                          GLint *range, GLint *precision) {
@@ -120,6 +126,24 @@ static void GetShaderPrecisionFormatImpl(GLenum shader_type,
     // platforms.
     glGetShaderPrecisionFormat(shader_type, precision_type,
                                range, precision);
+
+    // TODO(brianderson): Make the following official workarounds.
+
+    // Some drivers have bugs where they report the ranges as a negative number.
+    // Taking the absolute value here shouldn't hurt because negative numbers
+    // aren't expected anyway.
+    range[0] = abs(range[0]);
+    range[1] = abs(range[1]);
+
+    // If the driver reports a precision for highp float that isn't actually
+    // highp, don't pretend like it's supported because shader compilation will
+    // fail anyway.
+    if (precision_type == GL_HIGH_FLOAT &&
+        !PrecisionMeetsSpecForHighpFloat(range[0], range[1], *precision)) {
+      range[0] = 0;
+      range[1] = 0;
+      *precision = 0;
+    }
   }
 }
 
@@ -2511,9 +2535,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   GLint precision = 0;
   GetShaderPrecisionFormatImpl(GL_FRAGMENT_SHADER, GL_HIGH_FLOAT,
                                range, &precision);
-  resources.FragmentPrecisionHigh = ((range[0] >= 62) &&
-                                     (range[1] >= 62) &&
-                                     (precision >= 16));
+  resources.FragmentPrecisionHigh =
+      PrecisionMeetsSpecForHighpFloat(range[0], range[1], precision);
 #endif
 
   if (force_webgl_glsl_validation_) {
