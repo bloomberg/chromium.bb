@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
@@ -234,6 +235,7 @@ bool RenderViewHostImpl::CreateRenderView(
     const string16& frame_name,
     int opener_route_id,
     int32 max_page_id) {
+  TRACE_EVENT0("renderer_host", "RenderViewHostImpl::CreateRenderView");
   DCHECK(!IsRenderViewLive()) << "Creating view twice";
 
   // The process may (if we're sharing a process with another host that already
@@ -304,6 +306,7 @@ void RenderViewHostImpl::SyncRendererPrefs() {
 }
 
 void RenderViewHostImpl::Navigate(const ViewMsg_Navigate_Params& params) {
+  TRACE_EVENT0("renderer_host", "RenderViewHostImpl::Navigate");
   // Browser plugin guests are not allowed to navigate outside web-safe schemes,
   // so do not grant them the ability to request additional URLs.
   if (!GetProcess()->IsGuest()) {
