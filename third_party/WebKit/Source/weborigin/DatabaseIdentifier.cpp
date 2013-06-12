@@ -140,6 +140,13 @@ PassRefPtr<SecurityOrigin> createSecurityOriginFromDatabaseIdentifier(const Stri
     String protocol = databaseIdentifier.substring(0, separator1);
     String host = databaseIdentifier.substring(separator1 + 1, separator2 - separator1 - 1);
 
+    // Make sure the host section contains no characters that should have been escaped when encoding.
+    for (size_t i = 0; i < host.length(); ++i) {
+        UChar c = host[i];
+        if (c > 127 || shouldEscapeUChar(c))
+            return SecurityOrigin::createUnique();
+    }
+
     host = decodeURLEscapeSequences(host);
     return SecurityOrigin::create(KURL(KURL(), protocol + "://" + host + ":" + String::number(port) + "/"));
 }

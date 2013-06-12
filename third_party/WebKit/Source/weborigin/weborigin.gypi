@@ -22,6 +22,7 @@
       'WebOriginExport.h',
     ],
     'weborigin_test_files': [
+      'DatabaseIdentifierTest.cpp',
       'KURLTest.cpp',
     ],
   },

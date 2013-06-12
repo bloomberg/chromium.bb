@@ -227,6 +227,7 @@
         ],
         'wtf_unittest_files': [
             'PartitionAllocTest.cpp',
+            'testing/WTFTestHelpers.h',
             'tests/AtomicString.cpp',
             'tests/CString.cpp',
             'tests/CheckedArithmeticOperations.cpp',
