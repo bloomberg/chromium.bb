@@ -22,6 +22,8 @@ solutions = [
     "custom_deps" : {
       "src/data/page_cycler": "https://chrome-internal.googlesource.com/" +
                               "chrome/data/page_cycler/.git",
+      "src/data/dom_perf": "https://chrome-internal.googlesource.com/" +
+                           "chrome/data/dom_perf/.git",
       "src/tools/perf/data": "https://chrome-internal.googlesource.com/" +
                              "chrome/tools/perf/data/.git",
       "src/v8_bleeding_edge": "git://github.com/v8/v8.git",
