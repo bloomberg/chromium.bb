@@ -305,8 +305,29 @@ CheckBool DisassemblerElf32X86::ParseFile(AssemblyProgram* program) {
           return false;
         file_offset = section_header->sh_offset + section_header->sh_size;
         break;
-      default:
+      case SHT_NOBITS:
+        // Fall through
+      case SHT_INIT_ARRAY:
+        // Fall through
+      case SHT_FINI_ARRAY:
+        while (current_abs_offset != end_abs_offset &&
+               *current_abs_offset >= section_header->sh_offset &&
+               *current_abs_offset <
+               (section_header->sh_offset + section_header->sh_size)) {
+          // Skip any abs_offsets appear in the unsupported INIT_ARRAY section
+          VLOG(1) << "Skipping relocation entry for unsupported section: " <<
+            section_header->sh_type;
+          current_abs_offset++;
+        }
         break;
+      default:
+        if (current_abs_offset != end_abs_offset &&
+               *current_abs_offset >= section_header->sh_offset &&
+               *current_abs_offset <
+               (section_header->sh_offset + section_header->sh_size))
+          VLOG(1) << "Relocation address in unrecognized ELF section: " << \
+            section_header->sh_type;
+      break;
     }
   }
 

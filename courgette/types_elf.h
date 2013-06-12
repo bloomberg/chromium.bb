@@ -82,6 +82,8 @@ enum sh_type_values {
   SHT_REL = 9,
   SHT_SHLIB = 10,
   SHT_DYNSYM = 11,
+  SHT_INIT_ARRAY = 14,
+  SHT_FINI_ARRAY = 15,
   SHT_LOPROC = 0x70000000,
   SHT_HIPROC = 0x7fffffff,
   SHT_LOUSER = 0x80000000,
