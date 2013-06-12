@@ -44,7 +44,6 @@ class CC_EXPORT DirectRenderer : public Renderer {
 
     gfx::Transform projection_matrix;
     gfx::Transform window_matrix;
-    bool flipped_y;
   };
 
   void SetEnlargePassTextureAmountForTesting(gfx::Vector2d amount);
@@ -83,10 +82,8 @@ class CC_EXPORT DirectRenderer : public Renderer {
   void InitializeViewport(DrawingFrame* frame,
                           gfx::Rect draw_rect,
                           gfx::Rect viewport_rect,
-                          gfx::Size surface_size,
-                          bool flip_y);
-  gfx::Rect MoveFromDrawToWindowSpace(const gfx::RectF& draw_rect,
-                                      bool flip_y) const;
+                          gfx::Size surface_size);
+  gfx::Rect MoveFromDrawToWindowSpace(const gfx::RectF& draw_rect) const;
 
   static gfx::RectF ComputeScissorRectForRenderPass(const DrawingFrame* frame);
   void SetScissorStateForQuad(const DrawingFrame* frame, const DrawQuad& quad);

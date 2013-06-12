@@ -58,8 +58,7 @@ namespace cc {
 DirectRenderer::DrawingFrame::DrawingFrame()
     : root_render_pass(NULL),
       current_render_pass(NULL),
-      current_texture(NULL),
-      flipped_y(false) {}
+      current_texture(NULL) {}
 
 DirectRenderer::DrawingFrame::~DrawingFrame() {}
 
@@ -82,8 +81,9 @@ void DirectRenderer::QuadRectTransform(gfx::Transform* quad_rect_transform,
 void DirectRenderer::InitializeViewport(DrawingFrame* frame,
                                         gfx::Rect draw_rect,
                                         gfx::Rect viewport_rect,
-                                        gfx::Size surface_size,
-                                        bool flip_y) {
+                                        gfx::Size surface_size) {
+  bool flip_y = FlippedFramebuffer();
+
   DCHECK_GE(viewport_rect.x(), 0);
   DCHECK_GE(viewport_rect.y(), 0);
   DCHECK_LE(viewport_rect.right(), surface_size.width());
@@ -109,19 +109,17 @@ void DirectRenderer::InitializeViewport(DrawingFrame* frame,
                                        window_rect.height());
   SetDrawViewport(window_rect);
 
-  frame->flipped_y = flip_y;
-
   current_draw_rect_ = draw_rect;
   current_viewport_rect_ = viewport_rect;
   current_surface_size_ = surface_size;
 }
 
 gfx::Rect DirectRenderer::MoveFromDrawToWindowSpace(
-    const gfx::RectF& draw_rect, bool flip_y) const {
+    const gfx::RectF& draw_rect) const {
   gfx::Rect window_rect = gfx::ToEnclosingRect(draw_rect);
   window_rect -= current_draw_rect_.OffsetFromOrigin();
   window_rect += current_viewport_rect_.OffsetFromOrigin();
-  if (flip_y)
+  if (FlippedFramebuffer())
     window_rect.set_y(current_surface_size_.height() - window_rect.bottom());
   return window_rect;
 }
@@ -259,8 +257,7 @@ void DirectRenderer::SetScissorStateForQuad(const DrawingFrame* frame,
                                             const DrawQuad& quad) {
   if (quad.isClipped()) {
     gfx::RectF quad_scissor_rect = quad.clipRect();
-    SetScissorTestRect(
-        MoveFromDrawToWindowSpace(quad_scissor_rect, frame->flipped_y));
+    SetScissorTestRect(MoveFromDrawToWindowSpace(quad_scissor_rect));
   } else {
     EnsureScissorTestDisabled();
   }
@@ -282,8 +279,7 @@ void DirectRenderer::SetScissorStateForQuadWithRenderPassScissor(
   }
 
   *should_skip_quad = false;
-  SetScissorTestRect(
-      MoveFromDrawToWindowSpace(quad_scissor_rect, frame->flipped_y));
+  SetScissorTestRect(MoveFromDrawToWindowSpace(quad_scissor_rect));
 }
 
 void DirectRenderer::FinishDrawingQuadList() {}
@@ -300,8 +296,7 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
 
   if (using_scissor_as_optimization) {
     render_pass_scissor = ComputeScissorRectForRenderPass(frame);
-    SetScissorTestRect(
-        MoveFromDrawToWindowSpace(render_pass_scissor, frame->flipped_y));
+    SetScissorTestRect(MoveFromDrawToWindowSpace(render_pass_scissor));
   }
 
   if (frame->current_render_pass != frame->root_render_pass ||
@@ -347,8 +342,7 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
     InitializeViewport(frame,
                        render_pass->output_rect,
                        client_->DeviceViewport(),
-                       output_surface_->SurfaceSize(),
-                       FlippedFramebuffer());
+                       output_surface_->SurfaceSize());
     return true;
   }
 

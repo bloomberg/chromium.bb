@@ -508,7 +508,7 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
       source_texture_resource->size().height();
   backend_texture_description.fConfig = kSkia8888_GrPixelConfig;
   backend_texture_description.fTextureHandle = lock.texture_id();
-  backend_texture_description.fOrigin = kTopLeft_GrSurfaceOrigin;
+  backend_texture_description.fOrigin = kBottomLeft_GrSurfaceOrigin;
   skia::RefPtr<GrTexture> texture =
       skia::AdoptRef(offscreen_contexts->GrContext()->wrapBackendTexture(
           backend_texture_description));
@@ -529,7 +529,7 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
   desc.fWidth = source.width();
   desc.fHeight = source.height();
   desc.fConfig = kSkia8888_GrPixelConfig;
-  desc.fOrigin = kTopLeft_GrSurfaceOrigin;
+  desc.fOrigin = kBottomLeft_GrSurfaceOrigin;
   GrAutoScratchTexture scratch_texture(
       offscreen_contexts->GrContext(), desc, GrContext::kExact_ScratchTexMatch);
   skia::RefPtr<GrTexture> backing_store =
@@ -650,10 +650,17 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
     Context()->clear(GL_COLOR_BUFFER_BIT);
 #endif
 
+    // The filtered_deveice_background_texture is oriented the same as the frame
+    // buffer. The transform we are copying with has a vertical flip, as well as
+    // the |device_to_framebuffer_transform|, which cancel each other out. So do
+    // not flip the contents in the shader to maintain orientation.
+    bool flip_vertically = false;
+
     CopyTextureToFramebuffer(frame,
                              filtered_device_background_texture_id,
                              device_rect,
-                             device_to_framebuffer_transform);
+                             device_to_framebuffer_transform,
+                             flip_vertically);
   }
 
   UseRenderPass(frame, target_render_pass);
@@ -727,8 +734,17 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     DCHECK(background_texture->size() == quad->rect.size());
     ResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                             background_texture->id());
-    CopyTextureToFramebuffer(
-        frame, lock.texture_id(), quad->rect, quad->quadTransform());
+
+    // The background_texture is oriented the same as the frame buffer. The
+    // transform we are copying with has a vertical flip, so flip the contents
+    // in the shader to maintain orientation
+    bool flip_vertically = true;
+
+    CopyTextureToFramebuffer(frame,
+                             lock.texture_id(),
+                             quad->rect,
+                             quad->quadTransform(),
+                             flip_vertically);
   }
 
   bool clipped = false;
@@ -785,7 +801,6 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   int shader_color_matrix_location = -1;
   int shader_color_offset_location = -1;
   int shader_tex_transform_location = -1;
-  int shader_tex_scale_location = -1;
 
   if (use_aa && mask_texture_id && !use_color_matrix) {
     const RenderPassMaskProgramAA* program =
@@ -804,7 +819,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         program->fragment_shader().mask_tex_coord_offset_location();
     shader_matrix_location = program->vertex_shader().matrix_location();
     shader_alpha_location = program->fragment_shader().alpha_location();
-    shader_tex_scale_location = program->vertex_shader().tex_scale_location();
+    shader_tex_transform_location =
+        program->vertex_shader().tex_transform_location();
   } else if (!use_aa && mask_texture_id && !use_color_matrix) {
     const RenderPassMaskProgram* program =
         GetRenderPassMaskProgram(tex_coord_precision);
@@ -833,7 +849,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     shader_edge_location = program->fragment_shader().edge_location();
     shader_matrix_location = program->vertex_shader().matrix_location();
     shader_alpha_location = program->fragment_shader().alpha_location();
-    shader_tex_scale_location = program->vertex_shader().tex_scale_location();
+    shader_tex_transform_location =
+        program->vertex_shader().tex_transform_location();
   } else if (use_aa && mask_texture_id && use_color_matrix) {
     const RenderPassMaskColorMatrixProgramAA* program =
         GetRenderPassMaskColorMatrixProgramAA(tex_coord_precision);
@@ -843,7 +860,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 
     shader_matrix_location = program->vertex_shader().matrix_location();
     shader_quad_location = program->vertex_shader().quad_location();
-    shader_tex_scale_location = program->vertex_shader().tex_scale_location();
+    shader_tex_transform_location =
+        program->vertex_shader().tex_transform_location();
     shader_edge_location = program->fragment_shader().edge_location();
     shader_alpha_location = program->fragment_shader().alpha_location();
     shader_mask_sampler_location =
@@ -865,7 +883,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 
     shader_matrix_location = program->vertex_shader().matrix_location();
     shader_quad_location = program->vertex_shader().quad_location();
-    shader_tex_scale_location = program->vertex_shader().tex_scale_location();
+    shader_tex_transform_location =
+        program->vertex_shader().tex_transform_location();
     shader_edge_location = program->fragment_shader().edge_location();
     shader_alpha_location = program->fragment_shader().alpha_location();
     shader_color_matrix_location =
@@ -927,34 +946,36 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   DCHECK_LE(tex_scale_x, 1.0f);
   DCHECK_LE(tex_scale_y, 1.0f);
 
-  if (shader_tex_transform_location != -1) {
-    GLC(Context(),
-        Context()->uniform4f(shader_tex_transform_location,
-                             0.0f,
-                             0.0f,
-                             tex_scale_x,
-                             tex_scale_y));
-  } else if (shader_tex_scale_location != -1) {
-    GLC(Context(),
-        Context()->uniform2f(
-            shader_tex_scale_location, tex_scale_x, tex_scale_y));
-  } else {
-    DCHECK(IsContextLost());
-  }
+  DCHECK(shader_tex_transform_location != -1 || IsContextLost());
+  // Flip the content vertically in the shader, as the RenderPass input
+  // texture is already oriented the same way as the framebuffer, but the
+  // projection transform does a flip.
+  GLC(Context(), Context()->uniform4f(shader_tex_transform_location,
+                                      0.0f,
+                                      tex_scale_y,
+                                      tex_scale_x,
+                                      -tex_scale_y));
 
   if (shader_mask_sampler_location != -1) {
     DCHECK_NE(shader_mask_tex_coord_scale_location, 1);
     DCHECK_NE(shader_mask_tex_coord_offset_location, 1);
     GLC(Context(), Context()->activeTexture(GL_TEXTURE1));
     GLC(Context(), Context()->uniform1i(shader_mask_sampler_location, 1));
+
+    float mask_tex_scale_x = quad->mask_uv_rect.width() / tex_scale_x;
+    float mask_tex_scale_y = quad->mask_uv_rect.height() / tex_scale_y;
+
+    // Mask textures are oriented vertically flipped relative to the framebuffer
+    // and the RenderPass contents texture, so we flip the tex coords from the
+    // RenderPass texture to find the mask texture coords.
     GLC(Context(),
         Context()->uniform2f(shader_mask_tex_coord_offset_location,
                              quad->mask_uv_rect.x(),
-                             quad->mask_uv_rect.y()));
+                             quad->mask_uv_rect.y() + mask_tex_scale_y));
     GLC(Context(),
         Context()->uniform2f(shader_mask_tex_coord_scale_location,
-                             quad->mask_uv_rect.width() / tex_scale_x,
-                             quad->mask_uv_rect.height() / tex_scale_y));
+                             mask_tex_scale_x,
+                             -mask_tex_scale_y));
     resource_provider_->BindForSampling(
         quad->mask_resource_id, GL_TEXTURE_2D, GL_LINEAR);
     GLC(Context(), Context()->activeTexture(GL_TEXTURE0));
@@ -1882,7 +1903,6 @@ void GLRenderer::CopyCurrentRenderPassToBitmap(
     DrawingFrame* frame,
     scoped_ptr<CopyOutputRequest> request) {
   GetFramebufferPixelsAsync(frame->current_render_pass->output_rect,
-                            frame->flipped_y,
                             request.Pass());
 }
 
@@ -1946,24 +1966,37 @@ void GLRenderer::DrawQuadGeometry(const DrawingFrame* frame,
 void GLRenderer::CopyTextureToFramebuffer(const DrawingFrame* frame,
                                           int texture_id,
                                           gfx::Rect rect,
-                                          const gfx::Transform& draw_matrix) {
+                                          const gfx::Transform& draw_matrix,
+                                          bool flip_vertically) {
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       context_, &highp_threshold_cache_, highp_threshold_min_,
       rect.bottom_right());
+
   const RenderPassProgram* program = GetRenderPassProgram(tex_coord_precision);
+  SetUseProgram(program->program());
+
+  GLC(Context(), Context()->uniform1i(
+      program->fragment_shader().sampler_location(), 0));
+
+  if (flip_vertically) {
+    GLC(Context(), Context()->uniform4f(
+        program->vertex_shader().tex_transform_location(),
+        0.f,
+        1.f,
+        1.f,
+        -1.f));
+  } else {
+    GLC(Context(), Context()->uniform4f(
+        program->vertex_shader().tex_transform_location(),
+        0.f,
+        0.f,
+        1.f,
+        1.f));
+  }
+
+  SetShaderOpacity(1.f, program->fragment_shader().alpha_location());
 
   GLC(Context(), Context()->bindTexture(GL_TEXTURE_2D, texture_id));
-
-  SetUseProgram(program->program());
-  GLC(Context(),
-      Context()->uniform1i(program->fragment_shader().sampler_location(), 0));
-  GLC(Context(),
-      Context()->uniform4f(program->vertex_shader().tex_transform_location(),
-                           0.0f,
-                           0.0f,
-                           1.0f,
-                           1.0f));
-  SetShaderOpacity(1, program->fragment_shader().alpha_location());
   DrawQuadGeometry(
       frame, draw_matrix, rect, program->vertex_shader().matrix_location());
 }
@@ -2098,7 +2131,6 @@ void GLRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
 
   // This function assumes that it is reading the root frame buffer.
   DCHECK(!current_framebuffer_lock_);
-  bool flipped_y = FlippedFramebuffer();
 
   scoped_ptr<PendingAsyncReadPixels> pending_read(new PendingAsyncReadPixels);
   pending_async_read_pixels_.insert(pending_async_read_pixels_.begin(),
@@ -2107,12 +2139,11 @@ void GLRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
   // This is a syncronous call since the callback is null.
   DoGetFramebufferPixels(static_cast<uint8*>(pixels),
                          rect,
-                         flipped_y,
                          AsyncGetFramebufferPixelsCleanupCallback());
 }
 
 void GLRenderer::GetFramebufferPixelsAsync(
-    gfx::Rect rect, bool flipped_y, scoped_ptr<CopyOutputRequest> request) {
+    gfx::Rect rect, scoped_ptr<CopyOutputRequest> request) {
   DCHECK(!request->IsEmpty());
   if (request->IsEmpty())
     return;
@@ -2140,15 +2171,14 @@ void GLRenderer::GetFramebufferPixelsAsync(
                                     pending_read.Pass());
 
   // This is an asyncronous call since the callback is not null.
-  DoGetFramebufferPixels(pixels, rect, flipped_y, cleanup_callback);
+  DoGetFramebufferPixels(pixels, rect, cleanup_callback);
 }
 
 void GLRenderer::DoGetFramebufferPixels(
     uint8* dest_pixels,
     gfx::Rect rect,
-    bool flipped_y,
     const AsyncGetFramebufferPixelsCleanupCallback& cleanup_callback) {
-  gfx::Rect window_rect = MoveFromDrawToWindowSpace(rect, flipped_y);
+  gfx::Rect window_rect = MoveFromDrawToWindowSpace(rect);
   DCHECK_LE(window_rect.right(), current_surface_size_.width());
   DCHECK_LE(window_rect.bottom(), current_surface_size_.height());
 
@@ -2241,8 +2271,7 @@ void GLRenderer::DoGetFramebufferPixels(
                  cleanup_callback,
                  buffer,
                  dest_pixels,
-                 rect.size(),
-                 flipped_y);
+                 rect.size());
   // Save the finished_callback so it can be cancelled.
   pending_async_read_pixels_.front()->finished_read_pixels_callback.Reset(
       finished_callback);
@@ -2268,8 +2297,7 @@ void GLRenderer::FinishedReadback(
     const AsyncGetFramebufferPixelsCleanupCallback& cleanup_callback,
     unsigned source_buffer,
     uint8* dest_pixels,
-    gfx::Size size,
-    bool flipped_y) {
+    gfx::Size size) {
   DCHECK(!pending_async_read_pixels_.empty());
 
   PendingAsyncReadPixels* current_read = pending_async_read_pixels_.back();
@@ -2291,8 +2319,7 @@ void GLRenderer::FinishedReadback(
       size_t total_bytes = num_rows * row_bytes;
       for (size_t dest_y = 0; dest_y < total_bytes; dest_y += row_bytes) {
         // Flip Y axis.
-        size_t src_y = flipped_y ? total_bytes - dest_y - row_bytes
-                                 : dest_y;
+        size_t src_y = total_bytes - dest_y - row_bytes;
         // Swizzle OpenGL -> Skia byte order.
         for (size_t x = 0; x < row_bytes; x += 4) {
           dest_pixels[dest_y + x + SK_R32_SHIFT/8] = src_pixels[src_y + x + 0];
@@ -2392,8 +2419,7 @@ bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
   InitializeViewport(frame,
                      target_rect,
                      gfx::Rect(target_rect.size()),
-                     target_rect.size(),
-                     false);
+                     target_rect.size());
   return true;
 }
 

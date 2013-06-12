@@ -133,7 +133,11 @@ class VertexShaderPosTexTransform {
 
 class VertexShaderPosTexTransformFlip : public VertexShaderPosTexTransform {
  public:
+  VertexShaderPosTexTransformFlip() {}
   std::string GetShaderString() const;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(VertexShaderPosTexTransformFlip);
 };
 
 class VertexShaderQuad {
@@ -156,9 +160,9 @@ class VertexShaderQuad {
   DISALLOW_COPY_AND_ASSIGN(VertexShaderQuad);
 };
 
-class VertexShaderQuadTex {
+class VertexShaderQuadTexTransform {
  public:
-  VertexShaderQuadTex();
+  VertexShaderQuadTexTransform();
 
   void Init(WebKit::WebGraphicsContext3D* context,
            unsigned program,
@@ -168,14 +172,14 @@ class VertexShaderQuadTex {
 
   int matrix_location() const { return matrix_location_; }
   int quad_location() const { return quad_location_; }
-  int tex_scale_location() const { return tex_scale_location_; }
+  int tex_transform_location() const { return tex_transform_location_; }
 
  private:
   int matrix_location_;
   int quad_location_;
-  int tex_scale_location_;
+  int tex_transform_location_;
 
-  DISALLOW_COPY_AND_ASSIGN(VertexShaderQuadTex);
+  DISALLOW_COPY_AND_ASSIGN(VertexShaderQuadTexTransform);
 };
 
 class VertexShaderTile {

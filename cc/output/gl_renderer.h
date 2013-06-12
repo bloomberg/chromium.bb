@@ -95,7 +95,6 @@ class CC_EXPORT GLRenderer
   }
 
   void GetFramebufferPixelsAsync(gfx::Rect rect,
-                                 bool flipped_y,
                                  scoped_ptr<CopyOutputRequest> request);
   bool GetFramebufferTexture(ScopedResource* resource, gfx::Rect device_rect);
   void ReleaseRenderPassTextures();
@@ -170,7 +169,8 @@ class CC_EXPORT GLRenderer
   void CopyTextureToFramebuffer(const DrawingFrame* frame,
                                 int texture_id,
                                 gfx::Rect rect,
-                                const gfx::Transform& draw_matrix);
+                                const gfx::Transform& draw_matrix,
+                                bool flip_vertically);
 
   // Check if quad needs antialiasing and if so, inflate the quad and
   // fill edge array for fragment shader.  local_quad is set to
@@ -198,14 +198,12 @@ class CC_EXPORT GLRenderer
   void DoGetFramebufferPixels(
       uint8* pixels,
       gfx::Rect rect,
-      bool flipped_y,
       const AsyncGetFramebufferPixelsCleanupCallback& cleanup_callback);
   void FinishedReadback(
       const AsyncGetFramebufferPixelsCleanupCallback& cleanup_callback,
       unsigned source_buffer,
       uint8_t* dest_pixels,
-      gfx::Size size,
-      bool flipped_y);
+      gfx::Size size);
   void PassOnSkBitmap(
       scoped_ptr<SkBitmap> bitmap,
       scoped_ptr<SkAutoLockPixels> lock,
@@ -265,17 +263,18 @@ class CC_EXPORT GLRenderer
                          FragmentShaderRGBATexAlpha> RenderPassProgram;
   typedef ProgramBinding<VertexShaderPosTexTransform,
                          FragmentShaderRGBATexAlphaMask> RenderPassMaskProgram;
-  typedef ProgramBinding<VertexShaderQuadTex, FragmentShaderRGBATexAlphaAA>
-      RenderPassProgramAA;
-  typedef ProgramBinding<VertexShaderQuadTex, FragmentShaderRGBATexAlphaMaskAA>
+  typedef ProgramBinding<VertexShaderQuadTexTransform,
+                         FragmentShaderRGBATexAlphaAA> RenderPassProgramAA;
+  typedef ProgramBinding<VertexShaderQuadTexTransform,
+                         FragmentShaderRGBATexAlphaMaskAA>
       RenderPassMaskProgramAA;
   typedef ProgramBinding<VertexShaderPosTexTransform,
                          FragmentShaderRGBATexColorMatrixAlpha>
       RenderPassColorMatrixProgram;
-  typedef ProgramBinding<VertexShaderQuadTex,
+  typedef ProgramBinding<VertexShaderQuadTexTransform,
                          FragmentShaderRGBATexAlphaMaskColorMatrixAA>
       RenderPassMaskColorMatrixProgramAA;
-  typedef ProgramBinding<VertexShaderQuadTex,
+  typedef ProgramBinding<VertexShaderQuadTexTransform,
                          FragmentShaderRGBATexAlphaColorMatrixAA>
       RenderPassColorMatrixProgramAA;
   typedef ProgramBinding<VertexShaderPosTexTransform,

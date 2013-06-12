@@ -384,19 +384,19 @@ std::string VertexShaderQuad::GetShaderString() const {
 #endif
 }
 
-VertexShaderQuadTex::VertexShaderQuadTex()
+VertexShaderQuadTexTransform::VertexShaderQuadTexTransform()
     : matrix_location_(-1),
       quad_location_(-1),
-      tex_scale_location_(-1) {}
+      tex_transform_location_(-1) {}
 
-void VertexShaderQuadTex::Init(WebGraphicsContext3D* context,
-                               unsigned program,
-                               bool using_bind_uniform,
-                               int* base_uniform_index) {
+void VertexShaderQuadTexTransform::Init(WebGraphicsContext3D* context,
+                                        unsigned program,
+                                        bool using_bind_uniform,
+                                        int* base_uniform_index) {
   static const char* shader_uniforms[] = {
     "matrix",
     "quad",
-    "texScale",
+    "texTrans",
   };
   int locations[3];
 
@@ -411,25 +411,25 @@ void VertexShaderQuadTex::Init(WebGraphicsContext3D* context,
 
   matrix_location_ = locations[0];
   quad_location_ = locations[1];
-  tex_scale_location_ = locations[2];
+  tex_transform_location_ = locations[2];
   DCHECK_NE(matrix_location_, -1);
   DCHECK_NE(quad_location_, -1);
-  DCHECK_NE(tex_scale_location_, -1);
+  DCHECK_NE(tex_transform_location_, -1);
 }
 
-std::string VertexShaderQuadTex::GetShaderString() const {
+std::string VertexShaderQuadTexTransform::GetShaderString() const {
   return VERTEX_SHADER(
     attribute TexCoordPrecision vec4 a_position;
     attribute float a_index;
     uniform mat4 matrix;
     uniform TexCoordPrecision vec2 quad[4];
-    uniform TexCoordPrecision vec2 texScale;
+    uniform TexCoordPrecision vec4 texTrans;
     varying TexCoordPrecision vec2 v_texCoord;
     void main() {
       vec2 pos = quad[int(a_index)];  // NOLINT
       gl_Position = matrix * vec4(
           pos.x, pos.y, a_position.z, a_position.w);
-      v_texCoord = (pos.xy + vec2(0.5)) * texScale;
+      v_texCoord = (pos.xy + vec2(0.5)) * texTrans.zw + texTrans.xy;
     }
   );  // NOLINT(whitespace/parens)
 }

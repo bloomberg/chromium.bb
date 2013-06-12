@@ -147,8 +147,7 @@ bool SoftwareRenderer::BindFramebufferToTexture(
   InitializeViewport(frame,
                      target_rect,
                      gfx::Rect(target_rect.size()),
-                     target_rect.size(),
-                     FlippedFramebuffer());
+                     target_rect.size());
   return true;
 }
 

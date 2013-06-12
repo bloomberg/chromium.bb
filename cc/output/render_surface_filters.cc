@@ -420,7 +420,7 @@ SkBitmap RenderSurfaceFilters::Apply(const WebKit::WebFilterOperations& filters,
         canvas->saveLayer(NULL, &paint);
         canvas->drawBitmap(state.Source(),
                            op.dropShadowOffset().x,
-                           -op.dropShadowOffset().y);
+                           op.dropShadowOffset().y);
         canvas->restore();
         canvas->drawBitmap(state.Source(), 0, 0);
         break;
