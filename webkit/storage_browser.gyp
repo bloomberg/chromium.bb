@@ -220,6 +220,8 @@
         'browser/fileapi/task_runner_bound_observer_list.h',
         'browser/fileapi/test_mount_point_provider.cc',
         'browser/fileapi/test_mount_point_provider.h',
+        'browser/fileapi/timed_task_helper.cc',
+        'browser/fileapi/timed_task_helper.h',
         'browser/fileapi/transient_file_util.cc',
         'browser/fileapi/transient_file_util.h',
         'browser/fileapi/upload_file_system_file_element_reader.cc',

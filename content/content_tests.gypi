@@ -483,6 +483,7 @@
         '../webkit/browser/fileapi/syncable/syncable_file_system_util_unittest.cc',
         '../webkit/browser/fileapi/test_file_set.cc',
         '../webkit/browser/fileapi/test_file_set.h',
+        '../webkit/browser/fileapi/timed_task_helper_unittest.cc',
         '../webkit/browser/fileapi/transient_file_util_unittest.cc',
         '../webkit/browser/fileapi/upload_file_system_file_element_reader_unittest.cc',
         'test/run_all_unittests.cc',
