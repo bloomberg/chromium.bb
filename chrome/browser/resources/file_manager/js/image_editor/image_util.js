@@ -482,22 +482,29 @@ ImageUtil.ImageLoader.prototype.load = function(
 
   // The clients of this class sometimes request the same url repeatedly.
   // The onload fires only if the src is different from the previous value.
-  // To work around that we reset the src temporarily to an 1x1 pixel.
-  // Load an empty 1x1 pixel image first.
+  // To work around that we reset the src temporarily to an 1x1 pixel to force
+  // garbage collecting, and then resetting src to an empty value.
   var resetImage = function(callback) {
-    this.image_.onload = callback;
-    this.image_.onerror = onError.bind(this, 'IMAGE_ERROR');
-    this.image_.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAA' +
+    var clearSrc = function() {
+      this.image_.onload = callback;
+      this.image_.onerror = callback;
+      this.image_.src = '';
+    }.bind(this);
+    var emptyImage = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAA' +
         'AAABAAEAAAICTAEAOw==';
+    if (this.image_.src != emptyImage) {
+      // Load an empty image, then clear src.
+      this.image_.onload = clearSrc;
+      this.image_.onerror = onError.bind(this, 'IMAGE_ERROR');
+      this.image_.src = emptyImage;
+    } else {
+      // Empty image already loaded, so clear src immediately.
+      clearSrc();
+    }
   }.bind(this);
 
-  // Loads the image. If already loaded, then forces reloads.
-  var startLoad = function() {
-    if (this.image_.src == url)
-      resetImage(loadImage);
-    else
-      loadImage();
-  }.bind(this);
+  // Loads the image. If already loaded, then forces a reload.
+  var startLoad = resetImage.bind(this, loadImage);
 
   if (opt_delay) {
     this.timeout_ = setTimeout(startLoad, opt_delay);
