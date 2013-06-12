@@ -16,7 +16,7 @@ URLFetcher* net::URLFetcher::Create(
     const GURL& url,
     URLFetcher::RequestType request_type,
     URLFetcherDelegate* d) {
-  return new URLFetcherImpl(url, request_type, d);
+  return URLFetcher::Create(0, url, request_type, d);
 }
 
 // static
@@ -26,8 +26,8 @@ URLFetcher* net::URLFetcher::Create(
     URLFetcher::RequestType request_type,
     URLFetcherDelegate* d) {
   URLFetcherFactory* factory = URLFetcherImpl::factory();
-  return factory ? factory->CreateURLFetcher(id, url, request_type, d) :
-                   new URLFetcherImpl(url, request_type, d);
+  return factory ? factory->CreateURLFetcher(id, url, request_type, d)
+                 : new URLFetcherImpl(url, request_type, d);
 }
 
 // static
