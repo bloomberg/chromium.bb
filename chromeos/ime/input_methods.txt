@@ -181,6 +181,7 @@ xkb:bg::bul	bg	bg
 xkb:bg:phonetic:bul	bg(phonetic)	bg	
 xkb:ca:eng:eng	ca(eng)	en-CA	
 xkb:cz::cze	cz	cs	
+xkb:cz:qwerty:cze	cz(qwerty)	cs	
 xkb:ee::est	ee	et	
 xkb:es::spa	es	es	
 xkb:es:cat:cat	es(cat)	ca	
@@ -207,5 +208,9 @@ xkb:si::slv	si	sl
 xkb:rs::srp	rs	sr	
 xkb:tr::tur	tr	tr	
 xkb:ua::ukr	ua	uk	
+xkb:by::bel	by	be
+xkb:am:phonetic:arm	am	hy
+xkb:ge::geo	ge	ka
+xkb:mn::mon	mn	mn
 # TODO(yusukes): Support xkb:latam:deadtilde:spa and/or xkb:latam:nodeadkeys:spa
 # if necessary.

@@ -3256,6 +3256,9 @@ Battery full
   <message name="IDS_STATUSBAR_LAYOUT_CZECHIA" desc="In the language menu button, this shows the input mode.">
     Czech keyboard
   </message>
+  <message name="IDS_STATUSBAR_LAYOUT_CZECHIA_QWERTY" desc="In the language menu button, this shows the input mode.">
+    Czech QWERTY keyboard
+  </message>
   <message name="IDS_STATUSBAR_LAYOUT_USA_DVORAK" desc="In the language menu button, this shows the input mode.">
     US Dvorak keyboard
   </message>
@@ -3363,6 +3366,18 @@ Battery full
   </message>
   <message name="IDS_STATUSBAR_LAYOUT_CANADIAN_MULTILINGUAL" desc="In the language menu button, this shows the input mode.">
     Canadian Multilingual keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_GEORGIAN" desc="In the language menu button, this shows the input mode.">
+    Georgian keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_BELARUSIAN" desc="In the language menu button, this shows the input mode.">
+    Belarusian keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_ARMENIAN_PHONETIC" desc="In the language menu button, this shows the input mode.">
+    Armenian Phonetic keyboard
+  </message>
+  <message name="IDS_STATUSBAR_LAYOUT_MONGOLIAN" desc="In the language menu button, this shows the input mode.">
+    Mongolian keyboard
   </message>
   <message name="IDS_INPUT_METHOD_INFOLIST_WINDOW_TITLE" desc="The title of the infolist window where the meanings and the usages of words are displayed.">
     Information

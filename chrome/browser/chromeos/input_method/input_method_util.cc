@@ -232,6 +232,7 @@ const struct EnglishToResouceId {
   { "xkb:br::por", IDS_STATUSBAR_LAYOUT_BRAZIL },
   { "xkb:rs::srp", IDS_STATUSBAR_LAYOUT_SERBIA },
   { "xkb:cz::cze", IDS_STATUSBAR_LAYOUT_CZECHIA },
+  { "xkb:cz:qwerty:cze", IDS_STATUSBAR_LAYOUT_CZECHIA_QWERTY },
   { "xkb:us:dvorak:eng", IDS_STATUSBAR_LAYOUT_USA_DVORAK },
   { "xkb:us:colemak:eng", IDS_STATUSBAR_LAYOUT_USA_COLEMAK },
   { "xkb:ro::rum", IDS_STATUSBAR_LAYOUT_ROMANIA },
@@ -270,6 +271,10 @@ const struct EnglishToResouceId {
   { "xkb:kr:kr104:kor", IDS_STATUSBAR_LAYOUT_KOREA_104 },
   { "xkb:is::ice", IDS_STATUSBAR_LAYOUT_ICELANDIC },
   { "xkb:ca:multix:fra", IDS_STATUSBAR_LAYOUT_CANADIAN_MULTILINGUAL },
+  { "xkb:by::bel", IDS_STATUSBAR_LAYOUT_BELARUSIAN },
+  { "xkb:am:phonetic:arm", IDS_STATUSBAR_LAYOUT_ARMENIAN_PHONETIC },
+  { "xkb:ge::geo", IDS_STATUSBAR_LAYOUT_GEORGIAN },
+  { "xkb:mn::mon", IDS_STATUSBAR_LAYOUT_MONGOLIAN },
 
   { "english-m", IDS_STATUSBAR_LAYOUT_USA_MYSTERY },
 };
