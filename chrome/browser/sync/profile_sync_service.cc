@@ -26,6 +26,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
+#include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/about_signin_internals.h"
@@ -979,6 +980,9 @@ void ProfileSyncService::OnExperimentsChanged(
            << syncer::ModelTypeSetToString(to_add);
   DVLOG(2) << "Enabling types: " << syncer::ModelTypeSetToString(to_register);
 
+  about_flags::PrefServiceFlagsStorage flags_storage_(
+      g_browser_process->local_state());
+
   for (syncer::ModelTypeSet::Iterator it = to_register.First();
        it.Good(); it.Inc()) {
     // Received notice to enable experimental type. Check if the type is
@@ -991,7 +995,7 @@ void ProfileSyncService::OnExperimentsChanged(
     std::string experiment_name = GetExperimentNameForDataType(it.Get());
     if (experiment_name.empty())
       continue;
-    about_flags::SetExperimentEnabled(g_browser_process->local_state(),
+    about_flags::SetExperimentEnabled(&flags_storage_,
                                       experiment_name,
                                       true);
   }
@@ -1017,13 +1021,13 @@ void ProfileSyncService::OnExperimentsChanged(
 
   // Now enable any non-datatype features.
   if (experiments.keystore_encryption) {
-    about_flags::SetExperimentEnabled(g_browser_process->local_state(),
+    about_flags::SetExperimentEnabled(&flags_storage_,
                                       syncer::kKeystoreEncryptionFlag,
                                       true);
   }
 
   if (experiments.favicon_sync) {
-    about_flags::SetExperimentEnabled(g_browser_process->local_state(),
+    about_flags::SetExperimentEnabled(&flags_storage_,
                                       syncer::kFaviconSyncFlag,
                                       true);
   }

@@ -16,6 +16,7 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
@@ -98,7 +99,7 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
 class FlagsDOMHandler : public WebUIMessageHandler {
  public:
   explicit FlagsDOMHandler(PrefService* prefs, about_flags::FlagAccess access)
-      : prefs_(prefs), access_(access) {}
+      : flags_storage_(prefs), access_(access) {}
   virtual ~FlagsDOMHandler() {}
 
   // WebUIMessageHandler implementation.
@@ -117,7 +118,7 @@ class FlagsDOMHandler : public WebUIMessageHandler {
   void HandleResetAllFlags(const ListValue* args);
 
  private:
-  PrefService* prefs_;
+  about_flags::PrefServiceFlagsStorage flags_storage_;
   about_flags::FlagAccess access_;
 
   DISALLOW_COPY_AND_ASSIGN(FlagsDOMHandler);
@@ -141,7 +142,7 @@ void FlagsDOMHandler::RegisterMessages() {
 void FlagsDOMHandler::HandleRequestFlagsExperiments(const ListValue* args) {
   scoped_ptr<ListValue> supported_experiments(new ListValue);
   scoped_ptr<ListValue> unsupported_experiments(new ListValue);
-  about_flags::GetFlagsExperimentsData(prefs_,
+  about_flags::GetFlagsExperimentsData(&flags_storage_,
                                        access_,
                                        supported_experiments.get(),
                                        unsupported_experiments.get());
@@ -176,7 +177,7 @@ void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(
     return;
 
   about_flags::SetExperimentEnabled(
-      prefs_,
+      &flags_storage_,
       experiment_internal_name,
       enable_str == "true");
 }
@@ -186,7 +187,7 @@ void FlagsDOMHandler::HandleRestartBrowser(const ListValue* args) {
 }
 
 void FlagsDOMHandler::HandleResetAllFlags(const ListValue* args) {
-  about_flags::ResetAllFlags(g_browser_process->local_state());
+  about_flags::ResetAllFlags(&flags_storage_);
 }
 
 }  // namespace

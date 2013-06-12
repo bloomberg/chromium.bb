@@ -15,6 +15,7 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
+#include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/shell_integration.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/touch/touch_device.h"
@@ -130,7 +131,9 @@ void ChromeBrowserMainExtraPartsMetrics::PreProfileInit() {
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
-  about_flags::RecordUMAStatistics(g_browser_process->local_state());
+  about_flags::PrefServiceFlagsStorage flags_storage_(
+      g_browser_process->local_state());
+  about_flags::RecordUMAStatistics(&flags_storage_);
 
   // Querying the default browser state can be slow, do it in the background.
   content::BrowserThread::GetBlockingPool()->PostDelayedTask(
