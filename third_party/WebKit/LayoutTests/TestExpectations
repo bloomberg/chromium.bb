@@ -1668,6 +1668,9 @@ crbug.com/247553 http/tests/inspector/compiler-source-mapping-debug.html [ Crash
 
 crbug.com/247614 [ Debug ] printing/print-close-crash.html [ Crash ]
 
+# Seems to have been timing out for a long time.
+crbug.com/248969 [ Win7 Debug ] printing/page-count-with-one-word.html [ Timeout Pass ]
+
 crbug.com/247604 fast/workers/shared-worker-lifecycle.html [ Failure ]
 crbug.com/247604 fast/workers/shared-worker-frame-lifecycle.html [ Skip ]
 
@@ -1694,7 +1697,9 @@ crbug.com/247982 [ Win7 Debug ] virtual/deferred/fast/images/exif-orientation-cs
 crbug.com/247982 [ Win7 Debug ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 crbug.com/247984 [ Win7 Debug ] virtual/gpu/compositedscrolling/overflow/build-paint-order-lists.html [ Timeout Pass ]
 crbug.com/247984 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-composite-image.html [ Timeout Pass ]
-crbug.com/247984 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ Timeout ImageOnlyFailure ]
+# To be rebaselined, then the following line should be uncommented and the subsequent line deleted:
+# crbug.com/247984 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ Timeout ImageOnlyFailure ]
+crbug.com/247984 virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ Timeout ImageOnlyFailure ]
 webkit.org/b/60109 [ Release ] inspector/elements/edit-dom-actions.html [ Slow ]
 crbug.com/248062 css3/compositing/effect-background-blend-mode-stacking.html [ ImageOnlyFailure Pass ]
 crbug.com/248063 [ Debug ] plugins/plugin-clip-subframe.html [ Pass Failure ]
@@ -1717,6 +1722,8 @@ crbug.com/248067 storage/storagequota-query-usage.html [ Pass Failure ]
 crbug.com/248121 fast/events/frame-scroll-fake-mouse-move.html [ Pass Failure ]
 crbug.com/248121 fast/events/overflow-scroll-fake-mouse-move.html [ Pass Failure ]
 crbug.com/248128 inspector/console/console-url-and-line.html [ Pass Failure ]
+crbug.com/230326 [ Linux Debug ] inspector/profiler/canvas2d/canvas2d-gradient-capturing.html [ Crash Pass ]
+crbug.com/248973 [ Debug ] webmidi/request-midi-access.html [ Failure Crash ]
 
 # Rebaselines needed after https://codereview.chromium.org/16667004/
 crbug.com/247789 compositing/culling/filter-occlusion-blur-large.html [ ImageOnlyFailure Pass Slow ]
