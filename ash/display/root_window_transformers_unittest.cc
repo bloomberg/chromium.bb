@@ -120,16 +120,13 @@ float GetStoredUIScale(int64 id) {
 typedef test::AshTestBase AshRootWindowTransformerTest;
 
 #if defined(OS_WIN)
-// On Win8 bots, the host window can't be resized and
-// SetTransform updates the window using the orignal host window
-// size.
+// TODO(scottmg): RootWindow doesn't get resized on Windows
+// Ash. http://crbug.com/247916.
 #define MAYBE_RotateAndMagnify DISABLED_RotateAndMagniy
-#define MAYBE_ScaleAndMagnify DISABLED_ScaleAndMagnify
 #define MAYBE_TouchScaleAndMagnify DISABLED_TouchScaleAndMagnify
 #define MAYBE_ConvertHostToRootCoords DISABLED_ConvertHostToRootCoords
 #else
 #define MAYBE_RotateAndMagnify RotateAndMagniy
-#define MAYBE_ScaleAndMagnify ScaleAndMagnify
 #define MAYBE_TouchScaleAndMagnify TouchScaleAndMagnify
 #define MAYBE_ConvertHostToRootCoords ConvertHostToRootCoords
 #endif
@@ -229,7 +226,10 @@ TEST_F(AshRootWindowTransformerTest, MAYBE_RotateAndMagnify) {
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
-TEST_F(AshRootWindowTransformerTest, MAYBE_ScaleAndMagnify) {
+TEST_F(AshRootWindowTransformerTest, ScaleAndMagnify) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   TestEventHandler event_handler;
   Shell::GetInstance()->AddPreTargetHandler(&event_handler);
 

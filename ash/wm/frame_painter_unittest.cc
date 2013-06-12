@@ -464,6 +464,9 @@ TEST_F(FramePainterTest, UseSoloWindowHeaderConstrained) {
 #endif
 
 TEST_F(FramePainterTest, MAYBE_UseSoloWindowHeaderMultiDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("1000x600,600x400");
 
   // Create two widgets and painters for them.

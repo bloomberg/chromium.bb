@@ -23,6 +23,9 @@ namespace test {
 typedef test::AshTestBase ScreenAshTest;
 
 TEST_F(ScreenAshTest, Bounds) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("600x600,500x500");
   Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager()->
       SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -62,6 +65,9 @@ TEST_F(ScreenAshTest, Bounds) {
 // Test verifies a stable handling of secondary screen widget changes
 // (crbug.com/226132).
 TEST_F(ScreenAshTest, StabilityTest) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("600x600,500x500");
   views::Widget* secondary = views::Widget::CreateWindowWithContextAndBounds(
       NULL, CurrentContext(), gfx::Rect(610, 10, 100, 100));
@@ -76,6 +82,9 @@ TEST_F(ScreenAshTest, StabilityTest) {
 }
 
 TEST_F(ScreenAshTest, ConvertRect) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("600x600,500x500");
 
   views::Widget* primary = views::Widget::CreateWindowWithContextAndBounds(

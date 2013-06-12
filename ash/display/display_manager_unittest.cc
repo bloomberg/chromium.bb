@@ -119,6 +119,9 @@ class DisplayManagerTest : public test::AshTestBase,
 };
 
 TEST_F(DisplayManagerTest, NativeDisplayTest) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
   // Update primary and add seconary.
@@ -210,6 +213,9 @@ TEST_F(DisplayManagerTest, NativeDisplayTest) {
 
 // Test in emulation mode (use_fullscreen_host_window=false)
 TEST_F(DisplayManagerTest, EmulatorTest) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
   display_manager()->AddRemoveDisplay();
@@ -230,6 +236,9 @@ TEST_F(DisplayManagerTest, EmulatorTest) {
 }
 
 TEST_F(DisplayManagerTest, OverscanInsetsTest) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("0+0-500x500,0+501-400x400");
   reset();
   ASSERT_EQ(2u, display_manager()->GetNumDisplays());
@@ -332,6 +341,9 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
 }
 
 TEST_F(DisplayManagerTest, ZeroOverscanInsets) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   // Make sure the display change events is emitted for overscan inset changes.
   UpdateDisplay("0+0-500x500,0+501-400x400");
   ASSERT_EQ(2u, display_manager()->GetNumDisplays());
@@ -371,13 +383,7 @@ DisplayInfo CreateDisplayInfo(int64 id, const gfx::Rect& bounds) {
   return info;
 }
 
-#if defined(OS_WIN)
-// Crashes flakily on Win8 Aura: http://crbug.com/246109.
-#define MAYBE_TestNativeDisplaysChanged DISABLED_TestNativeDisplaysChanged
-#else
-#define MAYBE_TestNativeDisplaysChanged TestNativeDisplaysChanged
-#endif
-TEST_F(DisplayManagerTest, MAYBE_TestNativeDisplaysChanged) {
+TEST_F(DisplayManagerTest, TestNativeDisplaysChanged) {
   const int internal_display_id =
       test::DisplayManagerTestApi(display_manager()).
       SetFirstDisplayAsInternalDisplay();
@@ -404,6 +410,9 @@ TEST_F(DisplayManagerTest, MAYBE_TestNativeDisplaysChanged) {
             display_manager()->GetDisplayAt(0)->bounds().ToString());
   EXPECT_EQ(1U, display_manager()->num_connected_displays());
   EXPECT_FALSE(display_manager()->mirrored_display().is_valid());
+
+  if (!SupportsMultipleDisplays())
+    return;
 
   // External connected while primary was disconnected.
   display_info_list.push_back(external_display_info);
@@ -536,8 +545,8 @@ TEST_F(DisplayManagerTest, MAYBE_TestNativeDisplaysChanged) {
 }
 
 #if defined(OS_WIN)
-// This test currently fails on Win8/Metro as it picks up the actual
-// display size. http://crbug.com/154081
+// TODO(scottmg): RootWindow doesn't get resized on Windows
+// Ash. http://crbug.com/247916.
 #define MAYBE_TestNativeDisplaysChangedNoInternal \
         DISABLED_TestNativeDisplaysChangedNoInternal
 #else
@@ -566,6 +575,9 @@ TEST_F(DisplayManagerTest, MAYBE_TestNativeDisplaysChangedNoInternal) {
 }
 
 TEST_F(DisplayManagerTest, EnsurePointerInDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("200x200,300x300");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
@@ -605,15 +617,10 @@ TEST_F(DisplayManagerTest, EnsurePointerInDisplays) {
   EXPECT_EQ("150,140", env->last_mouse_location().ToString());
 }
 
-#if defined(OS_WIN)
-// Flaky failures on Win8 due to window activation messages. crbug.com/239539
-#define MAYBE_EnsurePointerInDisplays_2ndOnLeft \
-  DISABLED_EnsurePointerInDisplays_2ndOnLeft
-#else
-#define MAYBE_EnsurePointerInDisplays_2ndOnLeft \
-  EnsurePointerInDisplays_2ndOnLeft
-#endif
-TEST_F(DisplayManagerTest, MAYBE_EnsurePointerInDisplays_2ndOnLeft) {
+TEST_F(DisplayManagerTest, EnsurePointerInDisplays_2ndOnLeft) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   // Set the 2nd display on the left.
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
@@ -649,6 +656,9 @@ TEST_F(DisplayManagerTest, MAYBE_EnsurePointerInDisplays_2ndOnLeft) {
 }
 
 TEST_F(DisplayManagerTest, NativeDisplaysChangedAfterPrimaryChange) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   const int64 internal_display_id =
       test::DisplayManagerTestApi(display_manager()).
       SetFirstDisplayAsInternalDisplay();
@@ -681,6 +691,9 @@ TEST_F(DisplayManagerTest, NativeDisplaysChangedAfterPrimaryChange) {
 }
 
 TEST_F(DisplayManagerTest, AutomaticOverscanInsets) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("200x200,400x400");
 
   std::vector<DisplayInfo> display_info_list;
@@ -714,13 +727,10 @@ TEST_F(DisplayManagerTest, AutomaticOverscanInsets) {
             GetDisplayInfoAt(1).size_in_pixel().ToString());
 }
 
-#if defined(OS_WIN)
-// Flaky on Win8 Aura: http://crbug.com/244466
-#define MAYBE_Rotate DISABLED_Rotate
-#else
-#define MAYBE_Rotate Rotate
-#endif
-TEST_F(DisplayManagerTest, MAYBE_Rotate) {
+TEST_F(DisplayManagerTest, Rotate) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("100x200/r,300x400/l");
   EXPECT_EQ("1,1 100x200",
             GetDisplayInfoAt(0).bounds_in_pixel().ToString());
@@ -825,7 +835,8 @@ TEST_F(DisplayManagerTest, UIScale) {
 
 
 #if defined(OS_WIN)
-// TODO(oshima): On Windows, we don't update the origin/size right away.
+// TODO(scottmg): RootWindow doesn't get resized on Windows
+// Ash. http://crbug.com/247916.
 #define MAYBE_UpdateMouseCursorAfterRotateZoom DISABLED_UpdateMouseCursorAfterRotateZoom
 #else
 #define MAYBE_UpdateMouseCursorAfterRotateZoom UpdateMouseCursorAfterRotateZoom
@@ -869,13 +880,6 @@ TEST_F(DisplayManagerTest, MAYBE_UpdateMouseCursorAfterRotateZoom) {
   EXPECT_EQ("750,75", env->last_mouse_location().ToString());
 }
 
-#if defined(OS_WIN)
-// This does not work on metro.
-#define MAYBE_SoftwareMirroring DISABLED_SoftwareMirroring
-#else
-#define MAYBE_SoftwareMirroring SoftwareMirroring
-#endif
-
 class TestDisplayObserver : public gfx::DisplayObserver {
  public:
   TestDisplayObserver() : changed_(false) {}
@@ -910,7 +914,10 @@ class TestDisplayObserver : public gfx::DisplayObserver {
   DISALLOW_COPY_AND_ASSIGN(TestDisplayObserver);
 };
 
-TEST_F(DisplayManagerTest, MAYBE_SoftwareMirroring) {
+TEST_F(DisplayManagerTest, SoftwareMirroring) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("300x400,400x500");
 
   test::MirrorWindowTestApi test_api;

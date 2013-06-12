@@ -264,26 +264,10 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachTop) {
   DetachReattachTest(window.get(), 0, 1);
 }
 
-#if defined(OS_WIN)
-// Multiple displays aren't supported on Windows Metro/Ash.
-// http://crbug.com/165962
-#define MAYBE_PanelDetachReattachMultipleDisplays \
-        DISABLED_PanelDetachReattachMultipleDisplays
-#define MAYBE_DetachThenDragAcrossDisplays DISABLED_DetachThenDragAcrossDisplays
-#define MAYBE_DetachAcrossDisplays DISABLED_DetachAcrossDisplays
-#define MAYBE_DetachThenAttachToSecondDisplay \
-        DISABLED_DetachThenAttachToSecondDisplay
-#define MAYBE_AttachToSecondDisplay DISABLED_AttachToSecondDisplay
-#else
-#define MAYBE_PanelDetachReattachMultipleDisplays \
-        PanelDetachReattachMultipleDisplays
-#define MAYBE_DetachThenDragAcrossDisplays DetachThenDragAcrossDisplays
-#define MAYBE_DetachAcrossDisplays DetachAcrossDisplays
-#define MAYBE_DetachThenAttachToSecondDisplay DetachThenAttachToSecondDisplay
-#define MAYBE_AttachToSecondDisplay AttachToSecondDisplay
-#endif
+TEST_F(PanelWindowResizerTest, PanelDetachReattachMultipleDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
 
-TEST_F(PanelWindowResizerTest, MAYBE_PanelDetachReattachMultipleDisplays) {
   UpdateDisplay("600x400,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
@@ -292,7 +276,10 @@ TEST_F(PanelWindowResizerTest, MAYBE_PanelDetachReattachMultipleDisplays) {
   DetachReattachTest(window.get(), 0, -1);
 }
 
-TEST_F(PanelWindowResizerTest, MAYBE_DetachThenDragAcrossDisplays) {
+TEST_F(PanelWindowResizerTest, DetachThenDragAcrossDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("600x400,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
@@ -320,7 +307,10 @@ TEST_F(PanelWindowResizerTest, MAYBE_DetachThenDragAcrossDisplays) {
             window->parent()->id());
 }
 
-TEST_F(PanelWindowResizerTest, MAYBE_DetachAcrossDisplays) {
+TEST_F(PanelWindowResizerTest, DetachAcrossDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("600x400,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
@@ -338,7 +328,10 @@ TEST_F(PanelWindowResizerTest, MAYBE_DetachAcrossDisplays) {
             window->parent()->id());
 }
 
-TEST_F(PanelWindowResizerTest, MAYBE_DetachThenAttachToSecondDisplay) {
+TEST_F(PanelWindowResizerTest, DetachThenAttachToSecondDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("600x400,600x600");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
@@ -368,7 +361,10 @@ TEST_F(PanelWindowResizerTest, MAYBE_DetachThenAttachToSecondDisplay) {
   EXPECT_EQ(internal::kShellWindowId_PanelContainer, window->parent()->id());
 }
 
-TEST_F(PanelWindowResizerTest, MAYBE_AttachToSecondDisplay) {
+TEST_F(PanelWindowResizerTest, AttachToSecondDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("600x400,600x600");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(

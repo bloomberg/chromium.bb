@@ -1208,6 +1208,9 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_GestureDrag) {
 }
 
 TEST_F(ShelfLayoutManagerTest, WindowVisibilityDisablesAutoHide) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("800x600,800x600");
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   shelf->LayoutShelf();

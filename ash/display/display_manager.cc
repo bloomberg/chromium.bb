@@ -415,6 +415,14 @@ void DisplayManager::UpdateDisplays() {
 
 void DisplayManager::UpdateDisplays(
     const std::vector<DisplayInfo>& updated_display_info_list) {
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    DCHECK_EQ(1u, updated_display_info_list.size()) <<
+        "Multiple display test does not work on Win8 bots. Please "
+        "skip (don't disable) the test using |SupportMultipleDisplay()|";
+  }
+#endif
+
   DisplayInfoList new_display_info_list = updated_display_info_list;
   std::sort(displays_.begin(), displays_.end(), DisplaySortFunctor());
   std::sort(new_display_info_list.begin(),

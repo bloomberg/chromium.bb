@@ -18,6 +18,9 @@ typedef test::AshTestBase KeyboardOverlayDelegateTest;
 
 // Verifies we can show and close the widget for the overlay dialog.
 TEST_F(KeyboardOverlayDelegateTest, ShowAndClose) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("500x400,300x200");
   KeyboardOverlayDelegate delegate(ASCIIToUTF16("Title"),
                                    GURL("chrome://keyboardoverlay/"));

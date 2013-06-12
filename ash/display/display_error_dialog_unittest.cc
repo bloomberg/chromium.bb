@@ -59,6 +59,9 @@ class DisplayErrorDialogTest : public test::AshTestBase {
 // The test cases in this file usually check if the showing dialog doesn't
 // cause any crashes, and the code doesn't cause any memory leaks.
 TEST_F(DisplayErrorDialogTest, Normal) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("200x200,300x300");
   DisplayErrorDialog* dialog =
       DisplayErrorDialog::ShowDialog(chromeos::STATE_DUAL_MIRROR);
@@ -71,6 +74,9 @@ TEST_F(DisplayErrorDialogTest, Normal) {
 }
 
 TEST_F(DisplayErrorDialogTest, CallTwice) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("200x200,300x300");
   observer()->OnDisplayModeChangeFailed(chromeos::STATE_DUAL_MIRROR);
   const DisplayErrorDialog* dialog = observer()->dialog();
@@ -81,6 +87,9 @@ TEST_F(DisplayErrorDialogTest, CallTwice) {
 }
 
 TEST_F(DisplayErrorDialogTest, CallWithDifferentState) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("200x200,300x300");
   observer()->OnDisplayModeChangeFailed(chromeos::STATE_DUAL_MIRROR);
   const DisplayErrorDialog* dialog = observer()->dialog();
@@ -105,6 +114,9 @@ TEST_F(DisplayErrorDialogTest, SingleDisplay) {
 }
 
 TEST_F(DisplayErrorDialogTest, DisplayDisconnected) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("200x200,300x300");
   observer()->OnDisplayModeChangeFailed(chromeos::STATE_DUAL_MIRROR);
   EXPECT_TRUE(observer()->dialog());

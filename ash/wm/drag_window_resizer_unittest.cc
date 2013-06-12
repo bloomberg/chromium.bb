@@ -135,6 +135,9 @@ class DragWindowResizerTest : public test::AshTestBase {
 
 // Verifies a window can be moved from the primary display to another.
 TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   // The secondary display is logically on the right, but on the system (e.g. X)
   // layer, it's below the primary one. See UpdateDisplay() in ash_test_base.cc.
   UpdateDisplay("800x600,800x600");
@@ -197,6 +200,9 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
 
 // Verifies a window can be moved from the secondary display to primary.
 TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplaysRightToLeft) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("800x600,800x600");
   shelf_layout_manager()->LayoutShelf();
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
@@ -221,6 +227,9 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplaysRightToLeft) {
 
 // Verifies the drag window is shown correctly.
 TEST_F(DragWindowResizerTest, DragWindowController) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("800x600,800x600");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
@@ -348,6 +357,9 @@ TEST_F(DragWindowResizerTest, WarpMousePointer) {
 // Verifies cursor's device scale factor is updated whe a window is moved across
 // root windows with different device scale factors (http://crbug.com/154183).
 TEST_F(DragWindowResizerTest, CursorDeviceScaleFactor) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   // The secondary display is logically on the right, but on the system (e.g. X)
   // layer, it's below the primary one. See UpdateDisplay() in ash_test_base.cc.
   UpdateDisplay("400x400,800x800*2");
@@ -401,6 +413,9 @@ TEST_F(DragWindowResizerTest, CursorDeviceScaleFactor) {
 
 // Verifies several kinds of windows can be moved across displays.
 TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   // The secondary display is logically on the right, but on the system (e.g. X)
   // layer, it's below the primary one. See UpdateDisplay() in ash_test_base.cc.
   UpdateDisplay("400x400,400x400");

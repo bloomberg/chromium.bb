@@ -91,6 +91,9 @@ class DisplayControllerShutdownTest : public test::AshTestBase {
  public:
   virtual void TearDown() OVERRIDE {
     test::AshTestBase::TearDown();
+    if (!SupportsMultipleDisplays())
+      return;
+
     // Make sure that primary display is accessible after shutdown.
     gfx::Display primary = Shell::GetScreen()->GetPrimaryDisplay();
     EXPECT_EQ("0,0 444x333", primary.bounds().ToString());
@@ -186,10 +189,16 @@ float GetStoredUIScale(int64 id) {
 typedef test::AshTestBase DisplayControllerTest;
 
 TEST_F(DisplayControllerShutdownTest, Shutdown) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("444x333, 200x200");
 }
 
 TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   TestObserver observer;
   UpdateDisplay("500x500,400x400");
   EXPECT_EQ(1, observer.CountAndReset());  // resize and add
@@ -260,6 +269,9 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
 }
 
 TEST_F(DisplayControllerTest, BoundsUpdated) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   TestObserver observer;
   SetDefaultDisplayLayout(DisplayLayout::BOTTOM);
   UpdateDisplay("200x200,300x300");  // layout, resize and add.
@@ -321,6 +333,9 @@ TEST_F(DisplayControllerTest, BoundsUpdated) {
 }
 
 TEST_F(DisplayControllerTest, MirroredLayout) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
   UpdateDisplay("500x500,400x400");
@@ -372,13 +387,10 @@ TEST_F(DisplayControllerTest, InvertLayout) {
             DisplayLayout(DisplayLayout::BOTTOM, -80).Invert().ToString());
 }
 
-// Crashes flakily on win8 aura bots: crbug.com/237642
-#if defined(OS_WIN) && defined(USE_AURA)
-#define MAYBE_SwapPrimary DISABLED_SwapPrimary
-#else
-#define MAYBE_SwapPrimary SwapPrimary
-#endif
-TEST_F(DisplayControllerTest, MAYBE_SwapPrimary) {
+TEST_F(DisplayControllerTest, SwapPrimary) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
 
@@ -464,13 +476,10 @@ TEST_F(DisplayControllerTest, MAYBE_SwapPrimary) {
   EXPECT_TRUE(primary_root->Contains(launcher_window));
 }
 
-// Crashes flakily on win8 aura bots: crbug.com/237642
-#if defined(OS_WIN) && defined(USE_AURA)
-#define MAYBE_SwapPrimaryById DISABLED_SwapPrimaryById
-#else
-#define MAYBE_SwapPrimaryById SwapPrimaryById
-#endif
-TEST_F(DisplayControllerTest, MAYBE_SwapPrimaryById) {
+TEST_F(DisplayControllerTest, SwapPrimaryById) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
 
@@ -591,15 +600,10 @@ TEST_F(DisplayControllerTest, MAYBE_SwapPrimaryById) {
   EXPECT_TRUE(primary_root->Contains(launcher_window));
 }
 
-#if defined(OS_WIN)
-// Flaky failures on Win8 due to window activation messages. crbug.com/239539
-#define MAYBE_CursorDeviceScaleFactorSwapPrimary \
-    DISABLED_CursorDeviceScaleFactorSwapPrimary
-#else
-#define MAYBE_CursorDeviceScaleFactorSwapPrimary \
-    CursorDeviceScaleFactorSwapPrimary
-#endif
-TEST_F(DisplayControllerTest, MAYBE_CursorDeviceScaleFactorSwapPrimary) {
+TEST_F(DisplayControllerTest, CursorDeviceScaleFactorSwapPrimary) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
 
@@ -652,7 +656,8 @@ TEST_F(DisplayControllerTest, MAYBE_CursorDeviceScaleFactorSwapPrimary) {
 }
 
 #if defined(OS_WIN)
-// TODO(oshima): On Windows, we don't update the origin/size right away.
+// TODO(scottmg): RootWindow doesn't get resized on Windows
+// Ash. http://crbug.com/247916.
 #define MAYBE_UpdateDisplayWithHostOrigin DISABLED_UpdateDisplayWithHostOrigin
 #else
 #define MAYBE_UpdateDisplayWithHostOrigin UpdateDisplayWithHostOrigin
@@ -692,14 +697,10 @@ TEST_F(DisplayControllerTest, MAYBE_UpdateDisplayWithHostOrigin) {
   EXPECT_EQ("200x300", root_windows[1]->GetHostSize().ToString());
 }
 
-#if defined(OS_WIN)
-// TODO(oshima): Windows does not supoprts insets.
-#define MAYBE_OverscanInsets DISABLED_OverscanInsets
-#else
-#define MAYBE_OverscanInsets OverscanInsets
-#endif
+TEST_F(DisplayControllerTest, OverscanInsets) {
+  if (!SupportsMultipleDisplays())
+    return;
 
-TEST_F(DisplayControllerTest, MAYBE_OverscanInsets) {
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
   TestEventHandler event_handler;
@@ -731,22 +732,10 @@ TEST_F(DisplayControllerTest, MAYBE_OverscanInsets) {
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
-#if defined(OS_WIN)
-// On Win8 bots, the host window can't be resized and
-// SetTransform updates the window using the orignal host window
-// size.
-#define MAYBE_Rotate DISABLED_Rotate
-#define MAYBE_ScaleRootWindow DISABLED_ScaleRootWindow
-#define MAYBE_TouchScale DISABLED_TouchScale
-#define MAYBE_ConvertHostToRootCoords DISABLED_ConvertHostToRootCoords
-#else
-#define MAYBE_Rotate Rotate
-#define MAYBE_ScaleRootWindow ScaleRootWindow
-#define MAYBE_TouchScale TouchScale
-#define MAYBE_ConvertHostToRootCoords ConvertHostToRootCoords
-#endif
+TEST_F(DisplayControllerTest, Rotate) {
+  if (!SupportsMultipleDisplays())
+    return;
 
-TEST_F(DisplayControllerTest, MAYBE_Rotate) {
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
   internal::DisplayManager* display_manager =
@@ -814,7 +803,10 @@ TEST_F(DisplayControllerTest, MAYBE_Rotate) {
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
-TEST_F(DisplayControllerTest, MAYBE_ScaleRootWindow) {
+TEST_F(DisplayControllerTest, ScaleRootWindow) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   TestEventHandler event_handler;
   Shell::GetInstance()->AddPreTargetHandler(&event_handler);
 
@@ -849,7 +841,10 @@ TEST_F(DisplayControllerTest, MAYBE_ScaleRootWindow) {
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
-TEST_F(DisplayControllerTest, MAYBE_TouchScale) {
+TEST_F(DisplayControllerTest, TouchScale) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   TestEventHandler event_handler;
   Shell::GetInstance()->AddPreTargetHandler(&event_handler);
 
@@ -878,7 +873,10 @@ TEST_F(DisplayControllerTest, MAYBE_TouchScale) {
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
-TEST_F(DisplayControllerTest, MAYBE_ConvertHostToRootCoords) {
+TEST_F(DisplayControllerTest, ConvertHostToRootCoords) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   TestEventHandler event_handler;
   Shell::GetInstance()->AddPreTargetHandler(&event_handler);
 

@@ -84,6 +84,9 @@ TEST_F(ShelfWidgetTest, TestAlignment) {
                           SHELF_ALIGNMENT_LEFT,
                           "48,0 352x400");
   }
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("300x300,500x500");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   {

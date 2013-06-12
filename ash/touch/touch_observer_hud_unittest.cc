@@ -243,6 +243,9 @@ class TouchHudTest : public test::AshTestBase {
 
 // Checks if touch HUDs are correctly initialized for displays.
 TEST_F(TouchHudTest, Basic) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   // Setup a dual display setting.
   SetupDualDisplays();
 
@@ -254,6 +257,9 @@ TEST_F(TouchHudTest, Basic) {
 
 // Checks if touch HUDs are correctly handled when primary display is changed.
 TEST_F(TouchHudTest, SwapPrimaryDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   // Setup a dual display setting.
   SetupDualDisplays();
 
@@ -278,6 +284,9 @@ TEST_F(TouchHudTest, SwapPrimaryDisplay) {
 
 // Checks if touch HUDs are correctly handled when displays are mirrored.
 TEST_F(TouchHudTest, MirrorDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   // Setup a dual display setting.
   SetupDualDisplays();
 
@@ -301,6 +310,9 @@ TEST_F(TouchHudTest, MirrorDisplays) {
 // Checks if touch HUDs are correctly handled when displays are mirrored after
 // setting the external display as the primary one.
 TEST_F(TouchHudTest, SwapPrimaryThenMirrorDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   // Setup a dual display setting.
   SetupDualDisplays();
 
@@ -328,6 +340,9 @@ TEST_F(TouchHudTest, SwapPrimaryThenMirrorDisplays) {
 // Checks if touch HUDs are correctly handled when the external display, which
 // is the secondary one, is removed.
 TEST_F(TouchHudTest, RemoveSecondaryDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   // Setup a dual display setting.
   SetupDualDisplays();
 
@@ -351,6 +366,9 @@ TEST_F(TouchHudTest, RemoveSecondaryDisplay) {
 // Checks if touch HUDs are correctly handled when the external display, which
 // is set as the primary display, is removed.
 TEST_F(TouchHudTest, RemovePrimaryDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   // Setup a dual display setting.
   SetupDualDisplays();
 
@@ -377,6 +395,9 @@ TEST_F(TouchHudTest, RemovePrimaryDisplay) {
 
 // Checks if touch HUDs are correctly handled when all displays are removed.
 TEST_F(TouchHudTest, Headless) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   // Setup a single display setting.
   SetupSingleDisplay();
 

@@ -318,17 +318,10 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultiWindow) {
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 }
 
-#if defined(OS_WIN)
-// Multiple displays are not supported on Windows Ash. http://crbug.com/165962
-#define MAYBE_AlwaysOnTopMultipleRootWindows \
-        DISABLED_AlwaysOnTopMultipleRootWindows
-#else
-#define MAYBE_AlwaysOnTopMultipleRootWindows \
-        AlwaysOnTopMultipleRootWindows
-#endif
+TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
+  if (!SupportsMultipleDisplays())
+    return;
 
-
-TEST_F(WindowCycleControllerTest, MAYBE_AlwaysOnTopMultipleRootWindows) {
   // Set up a second root window
   UpdateDisplay("1000x600,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();

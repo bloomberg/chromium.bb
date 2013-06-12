@@ -180,6 +180,15 @@ aura::test::EventGenerator& AshTestBase::GetEventGenerator() {
   return *event_generator_.get();
 }
 
+// static
+bool AshTestBase::SupportsMultipleDisplays() {
+#if defined(OS_WIN)
+  return base::win::GetVersion() < base::win::VERSION_WIN8;
+#else
+  return true;
+#endif
+}
+
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {
   DisplayManagerTestApi display_manager_test_api(
       Shell::GetInstance()->display_manager());

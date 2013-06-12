@@ -24,18 +24,10 @@ namespace {
 
 typedef test::AshTestBase WorkspaceLayoutManagerTest;
 
-// Multi root doesn't work on Win8/metro. crbug.com/240628.
-#if defined(OS_WIN) && defined(USE_AURA)
-#define MAYBE_RestoreFromMinimizeKeepsRestore \
-  DISABLED_RestoreFromMinimizeKeepsRestore
-#else
-#define MAYBE_RestoreFromMinimizeKeepsRestore RestoreFromMinimizeKeepsRestore
-#endif
-
 // Verifies that a window containing a restore coordinate will be restored to
 // to the size prior to minimize, keeping the restore rectangle in tact (if
 // there is one).
-TEST_F(WorkspaceLayoutManagerTest, MAYBE_RestoreFromMinimizeKeepsRestore) {
+TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
   gfx::Rect bounds(10, 15, 25, 35);
@@ -46,6 +38,9 @@ TEST_F(WorkspaceLayoutManagerTest, MAYBE_RestoreFromMinimizeKeepsRestore) {
   wm::RestoreWindow(window.get());
   EXPECT_EQ("0,0 100x100", GetRestoreBoundsInScreen(window.get())->ToString());
   EXPECT_EQ("10,15 25x35", window.get()->bounds().ToString());
+
+  if (!SupportsMultipleDisplays())
+    return;
 
   UpdateDisplay("400x300,500x400");
   window->SetBoundsInScreen(gfx::Rect(600, 0, 100, 100),

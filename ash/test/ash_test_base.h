@@ -95,6 +95,10 @@ class AshTestBase : public testing::Test {
   aura::test::EventGenerator& GetEventGenerator();
 
  protected:
+  // True if the running environment supports multiple displays,
+  // or false otherwise (e.g. win8 bot).
+  static bool SupportsMultipleDisplays();
+
   void RunAllPendingInMessageLoop();
 
   // Utility methods to emulate user logged in or not, session started or not

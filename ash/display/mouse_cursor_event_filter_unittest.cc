@@ -34,6 +34,9 @@ typedef test::AshTestBase MouseCursorEventFilterTest;
 // Verifies if the mouse pointer correctly moves to another display when there
 // are two displays.
 TEST_F(MouseCursorEventFilterTest, WarpMouse) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("500x500,500x500");
 
   MouseCursorEventFilter* event_filter =
@@ -94,6 +97,9 @@ TEST_F(MouseCursorEventFilterTest, WarpMouse) {
 // Verifies if the mouse pointer correctly moves to another display even when
 // two displays are not the same size.
 TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentSizeDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("500x500,600x600");  // the second one is larger.
 
   MouseCursorEventFilter* event_filter =
@@ -126,6 +132,9 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentSizeDisplays) {
 // Verifies if the mouse pointer correctly moves between displays with
 // different scale factors.
 TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("500x500,600x600*2");
 
   MouseCursorEventFilter* event_filter =
@@ -159,6 +168,9 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplays) {
 
 // Verifies if MouseCursorEventFilter::set_mouse_warp_mode() works as expected.
 TEST_F(MouseCursorEventFilterTest, SetMouseWarpModeFlag) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("500x500,500x500");
 
   MouseCursorEventFilter* event_filter =
@@ -184,6 +196,9 @@ TEST_F(MouseCursorEventFilterTest, SetMouseWarpModeFlag) {
 
 // Verifies if MouseCursorEventFilter's bounds calculation works correctly.
 TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnRight) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("360x360,700x700");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
@@ -239,6 +254,9 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnRight) {
 }
 
 TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnLeft) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("360x360,700x700");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
@@ -267,6 +285,9 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnLeft) {
 }
 
 TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnTopBottom) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("360x360,700x700");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
@@ -309,6 +330,9 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnTopBottom) {
 // across root windows with different device scale factors
 // (http://crbug.com/154183).
 TEST_F(MouseCursorEventFilterTest, CursorDeviceScaleFactor) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("400x400,800x800*2");
   DisplayController* controller =
       Shell::GetInstance()->display_controller();

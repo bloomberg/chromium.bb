@@ -473,15 +473,8 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3_Compress) {
 }
 
 
-#if defined(OS_WIN)
-// Multiple displays are not supported on Windows Ash. http://crbug.com/165962
-#define MAYBE_Edge DISABLED_Edge
-#else
-#define MAYBE_Edge Edge
-#endif
-
 // Assertions around dragging to the left/right edge of the screen.
-TEST_F(WorkspaceWindowResizerTest, MAYBE_Edge) {
+TEST_F(WorkspaceWindowResizerTest, Edge) {
   int bottom =
       ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
   window_->SetBounds(gfx::Rect(20, 30, 50, 60));
@@ -513,6 +506,10 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_Edge) {
 
   // Test if the restore bounds is correct in multiple displays.
   ClearRestoreBounds(window_.get());
+
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("800x600,200x600");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
@@ -552,14 +549,10 @@ TEST_F(WorkspaceWindowResizerTest, NonResizableWindows) {
   EXPECT_EQ("0,30 50x60", window_->bounds().ToString());
 }
 
-#if defined(OS_WIN)
-// Multiple displays are not supported on Windows Ash. http://crbug.com/165962
-#define MAYBE_CancelSnapPhantom DISABLED_CancelSnapPhantom
-#else
-#define MAYBE_CancelSnapPhantom CancelSnapPhantom
-#endif
+TEST_F(WorkspaceWindowResizerTest, CancelSnapPhantom) {
+  if (!SupportsMultipleDisplays())
+    return;
 
-TEST_F(WorkspaceWindowResizerTest, MAYBE_CancelSnapPhantom) {
   UpdateDisplay("800x600,800x600");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
@@ -637,17 +630,11 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottom) {
             window_->bounds().ToString());
 }
 
-#if defined(OS_WIN)
-// Multiple displays are not supported on Windows Ash. http://crbug.com/165962
-#define MAYBE_DontDragOffBottomWithMultiDisplay \
-        DISABLED_DontDragOffBottomWithMultiDisplay
-#else
-#define MAYBE_DontDragOffBottomWithMultiDisplay \
-        DontDragOffBottomWithMultiDisplay
-#endif
-
 // Makes sure we don't allow dragging on the work area with multidisplay.
-TEST_F(WorkspaceWindowResizerTest, MAYBE_DontDragOffBottomWithMultiDisplay) {
+TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("800x600,800x600");
   ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
 
@@ -769,19 +756,9 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideBottomWorkArea) {
             window_->bounds().ToString());
 }
 
-#if defined(OS_WIN)
-// Multiple displays are not supported on Windows Ash. http://crbug.com/165962
-#define MAYBE_DragWindowOutsideRightToSecondaryDisplay \
-        DISABLED_DragWindowOutsideRightToSecondaryDisplay
-#else
-#define MAYBE_DragWindowOutsideRightToSecondaryDisplay \
-        DragWindowOutsideRightToSecondaryDisplay
-#endif
-
 // Verifies that 'outside' check of the resizer take into account the extended
 // desktop in case of repositions.
-TEST_F(WorkspaceWindowResizerTest,
-       MAYBE_DragWindowOutsideRightToSecondaryDisplay) {
+TEST_F(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
   // Only primary display.  Changes the window position to fit within the
   // display.
   Shell::GetInstance()->SetDisplayWorkAreaInsets(
@@ -801,6 +778,9 @@ TEST_F(WorkspaceWindowResizerTest,
             ",100 " +
             base::IntToString(window_width) +
             "x380", window_->bounds().ToString());
+
+  if (!SupportsMultipleDisplays())
+    return;
 
   // With secondary display.  Operation itself is same but doesn't change
   // the position because the window is still within the secondary display.

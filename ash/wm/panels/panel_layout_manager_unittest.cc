@@ -531,22 +531,10 @@ TEST_F(PanelLayoutManagerTest, MinimizeRestorePanel) {
   EXPECT_TRUE(IsPanelCalloutVisible(window.get()));
 }
 
-#if defined(OS_WIN)
-// Multiple displays aren't supported on Windows Metro/Ash.
-// http://crbug.com/165962
-#define MAYBE_PanelMoveBetweenMultipleDisplays \
-        DISABLED_PanelMoveBetweenMultipleDisplays
-#define MAYBE_PanelAttachPositionMultipleDisplays \
-        DISABLED_PanelAttachPositionMultipleDisplays
-#define MAYBE_PanelAlignmentSecondDisplay DISABLED_PanelAlignmentSecondDisplay
-#else
-#define MAYBE_PanelMoveBetweenMultipleDisplays PanelMoveBetweenMultipleDisplays
-#define MAYBE_PanelAttachPositionMultipleDisplays \
-        PanelAttachPositionMultipleDisplays
-#define MAYBE_PanelAlignmentSecondDisplay PanelAlignmentSecondDisplay
-#endif
+TEST_F(PanelLayoutManagerTest, PanelMoveBetweenMultipleDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
 
-TEST_F(PanelLayoutManagerTest, MAYBE_PanelMoveBetweenMultipleDisplays) {
   // Keep the displays wide so that launchers have enough
   // space for launcher buttons.
   UpdateDisplay("600x400,600x400");
@@ -613,7 +601,10 @@ TEST_F(PanelLayoutManagerTest, MAYBE_PanelMoveBetweenMultipleDisplays) {
       p1_d2->GetBoundsInScreen()));
 }
 
-TEST_F(PanelLayoutManagerTest, MAYBE_PanelAttachPositionMultipleDisplays) {
+TEST_F(PanelLayoutManagerTest, PanelAttachPositionMultipleDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   // Keep the displays wide so that launchers have enough space for launcher
   // buttons. Use differently sized displays so the launcher is in a different
   // position on second display.
@@ -632,7 +623,10 @@ TEST_F(PanelLayoutManagerTest, MAYBE_PanelAttachPositionMultipleDisplays) {
   IsCalloutAboveLauncherIcon(p1_d2.get());
 }
 
-TEST_F(PanelLayoutManagerTest, MAYBE_PanelAlignmentSecondDisplay) {
+TEST_F(PanelLayoutManagerTest, PanelAlignmentSecondDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
   UpdateDisplay("600x400,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
