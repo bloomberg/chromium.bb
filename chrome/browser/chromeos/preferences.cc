@@ -389,11 +389,9 @@ void Preferences::RegisterUserPrefs(
       prefs::kPowerPresentationIdleDelayFactor,
       2.0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  // TODO(derat): Change the default to 2.0 once a policy is added such
-  // that this can be set to 1.0 for public accounts.
   registry->RegisterDoublePref(
       prefs::kPowerUserActivityScreenDimDelayFactor,
-      1.0,
+      2.0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   registry->RegisterStringPref(
