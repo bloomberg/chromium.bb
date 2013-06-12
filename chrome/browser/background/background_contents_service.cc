@@ -84,24 +84,32 @@ class CrashNotificationDelegate : public NotificationDelegate {
   virtual void Close(bool by_user) OVERRIDE {}
 
   virtual void Click() OVERRIDE {
+    // http://crbug.com/247790 involves a crash notification balloon being
+    // clicked while the extension isn't in the TERMINATED state. In that case,
+    // any of the "reload" methods called below can unload the extension, which
+    // indirectly destroys *this, invalidating all the member variables, so we
+    // copy the extension ID before using it.
+    std::string copied_extension_id = extension_id_;
     if (is_hosted_app_) {
       // There can be a race here: user clicks the balloon, and simultaneously
       // reloads the sad tab for the app. So we check here to be safe before
       // loading the background page.
       BackgroundContentsService* service =
           BackgroundContentsServiceFactory::GetForProfile(profile_);
-      if (!service->GetAppBackgroundContents(ASCIIToUTF16(extension_id_)))
-        service->LoadBackgroundContentsForExtension(profile_, extension_id_);
+      if (!service->GetAppBackgroundContents(ASCIIToUTF16(copied_extension_id)))
+        service->LoadBackgroundContentsForExtension(profile_,
+                                                    copied_extension_id);
     } else if (is_platform_app_) {
-      apps::AppLoadService::Get(profile_)->RestartApplication(extension_id_);
+      apps::AppLoadService::Get(profile_)->
+          RestartApplication(copied_extension_id);
     } else {
       extensions::ExtensionSystem::Get(profile_)->extension_service()->
-          ReloadExtension(extension_id_);
+          ReloadExtension(copied_extension_id);
     }
 
     // Closing the balloon here should be OK, but it causes a crash on Mac
     // http://crbug.com/78167
-    ScheduleCloseBalloon(extension_id_);
+    ScheduleCloseBalloon(copied_extension_id);
   }
 
   virtual bool HasClickedListener() OVERRIDE { return true; }
