@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/mirror_window_test_api.h"
+#include "base/strings/stringprintf.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -18,15 +19,26 @@
 namespace ash {
 namespace internal {
 
+namespace {
+DisplayInfo CreateDisplayInfo(int64 id, const gfx::Rect& bounds) {
+  DisplayInfo info(id, base::StringPrintf("x-%d", static_cast<int>(id)), false);
+  info.SetBounds(bounds);
+  return info;
+}
+
+}
+
 typedef test::AshTestBase MirrorWindowControllerTest;
 
 #if defined(OS_WIN)
 // Software mirroring does not work on win.
 #define MAYBE_MirrorCursorBasic DISABLED_MirrorCursorBasic
 #define MAYBE_MirrorCursorLocations DISABLED_MirrorCursorLocations
+#define MAYBE_DockMode DISABLED_DockMode
 #else
 #define MAYBE_MirrorCursorBasic MirrorCursorBasic
 #define MAYBE_MirrorCursorLocations MirrorCursorLocations
+#define MAYBE_DockMode DockMode
 #endif
 
 TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorBasic) {
@@ -127,6 +139,50 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorLocations) {
   cursor_window_origin = test_api.GetCursorWindow()->bounds().origin();
   EXPECT_EQ(30 - hot_point.x(), cursor_window_origin.x());
   EXPECT_EQ(40 - hot_point.y(), cursor_window_origin.y());
+}
+
+// Make sure that the compositor based mirroring can switch
+// from/to dock mode.
+TEST_F(MirrorWindowControllerTest, MAYBE_DockMode) {
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+
+  const int64 internal_id = 1;
+  const int64 external_id = 2;
+  //const int64 invalid_id = gfx::Display::kInvalidDisplayID;
+
+  const DisplayInfo internal_display_info =
+      CreateDisplayInfo(internal_id, gfx::Rect(0, 0, 500, 500));
+  const DisplayInfo external_display_info =
+      CreateDisplayInfo(external_id, gfx::Rect(1, 1, 100, 100));
+  std::vector<DisplayInfo> display_info_list;
+
+  display_manager->SetSoftwareMirroring(true);
+
+  // software mirroring.
+  display_info_list.push_back(internal_display_info);
+  display_info_list.push_back(external_display_info);
+  display_manager->UpdateDisplays(display_info_list);
+  EXPECT_EQ(1U, display_manager->GetNumDisplays());
+  EXPECT_TRUE(display_manager->IsMirrored());
+  EXPECT_EQ(external_id, display_manager->mirrored_display().id());
+
+  // dock mode.
+  display_info_list.clear();
+  display_info_list.push_back(external_display_info);
+  display_manager->SetSoftwareMirroring(true);
+  display_manager->UpdateDisplays(display_info_list);
+  EXPECT_EQ(1U, display_manager->GetNumDisplays());
+  EXPECT_FALSE(display_manager->IsMirrored());
+
+  // back to software mirroring.
+  display_info_list.clear();
+  display_info_list.push_back(internal_display_info);
+  display_info_list.push_back(external_display_info);
+  display_manager->SetSoftwareMirroring(true);
+  display_manager->UpdateDisplays(display_info_list);
+  EXPECT_EQ(1U, display_manager->GetNumDisplays());
+  EXPECT_TRUE(display_manager->IsMirrored());
+  EXPECT_EQ(external_id, display_manager->mirrored_display().id());
 }
 
 }  // namsspace internal
