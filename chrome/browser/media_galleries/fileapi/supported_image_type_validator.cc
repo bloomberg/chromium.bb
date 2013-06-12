@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/image_decoder.h"
 #include "content/public/browser/browser_thread.h"
@@ -78,15 +77,12 @@ class ImageDecoderDelegateAdapter : public ImageDecoder::Delegate {
   // ImageDecoder::Delegate methods.
   virtual void OnImageDecoded(const ImageDecoder* /*decoder*/,
                               const SkBitmap& /*decoded_image*/) OVERRIDE {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(callback_, base::PLATFORM_FILE_OK));
+    callback_.Run(base::PLATFORM_FILE_OK);
     delete this;
   }
 
   virtual void OnDecodeImageFailed(const ImageDecoder* /*decoder*/) OVERRIDE {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(callback_,
-                                       base::PLATFORM_FILE_ERROR_SECURITY));
+    callback_.Run(base::PLATFORM_FILE_ERROR_SECURITY);
     delete this;
   }
 
@@ -147,10 +143,8 @@ void SupportedImageTypeValidator::OnFileOpen(scoped_ptr<std::string> data) {
       new ImageDecoderDelegateAdapter(data.Pass(), callback_);
   decoder_ = new ImageDecoder(adapter, adapter->data(),
                               ImageDecoder::DEFAULT_CODEC);
-  base::SequencedWorkerPool* workerpool = BrowserThread::GetBlockingPool();
-  decoder_->Start(workerpool->GetSequencedTaskRunnerWithShutdownBehavior(
-        workerpool->GetSequenceToken(),
-        base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN));
+  decoder_->Start(content::BrowserThread::GetMessageLoopProxyForThread(
+      BrowserThread::IO));
 }
 
 }  // namespace chrome

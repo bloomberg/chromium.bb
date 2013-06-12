@@ -43,7 +43,8 @@ class ImageDecoder : public content::UtilityProcessHostClient {
                const std::string& image_data,
                ImageCodec image_codec);
 
-  // Starts image decoding on current thread of |task_runner|.
+  // Starts asynchronous image decoding. Once finished, the callback will be
+  // posted back to |task_runner|.
   void Start(scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   const std::vector<unsigned char>& get_image_data() const {
