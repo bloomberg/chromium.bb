@@ -1294,6 +1294,10 @@
         ['include', '^browser/speech/speech_recognition_manager_impl'],
         ['include', '^browser/speech/speech_recognizer\\.h$'],
       ],
+    }, {
+      'sources/': [
+        ['exclude', '^browser/renderer_host/java/'],
+      ],
     }],
     ['OS=="mac"', {
       'sources': [
@@ -1406,15 +1410,6 @@
       ],
       'sources/': [
         ['exclude', '^browser/renderer_host/pepper/'],
-      ],
-    }],
-    ['java_bridge==1', {
-      'defines': [
-        'ENABLE_JAVA_BRIDGE',
-      ],
-    }, {
-      'sources/': [
-        ['exclude', '^browser/renderer_host/java/'],
       ],
     }],
     ['input_speech==0', {

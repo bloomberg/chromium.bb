@@ -445,11 +445,6 @@
         'common/gpu/media/android_video_decode_accelerator.h',
       ],
     }],
-    ['java_bridge==1', {
-      'defines': [
-        'ENABLE_JAVA_BRIDGE',
-      ],
-    }],
     ['target_arch=="arm" and chromeos == 1 and use_x11 == 1', {
       'dependencies': [
         '../media/media.gyp:media',

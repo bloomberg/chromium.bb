@@ -1236,7 +1236,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetHistoryLengthAndPrune,
                         OnSetHistoryLengthAndPrune)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
-#if defined(ENABLE_JAVA_BRIDGE)
+#if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(JavaBridgeMsg_Init, OnJavaBridgeInit)
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_SetAccessibilityMode, OnSetAccessibilityMode)
@@ -6589,7 +6589,7 @@ void RenderViewImpl::OnEnableViewSourceMode() {
   main_frame->enableViewSourceMode(true);
 }
 
-#if defined(ENABLE_JAVA_BRIDGE)
+#if defined(OS_ANDROID)
 void RenderViewImpl::OnJavaBridgeInit() {
   DCHECK(!java_bridge_dispatcher_);
   java_bridge_dispatcher_ = new JavaBridgeDispatcher(this);

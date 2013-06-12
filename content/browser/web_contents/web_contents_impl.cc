@@ -98,7 +98,7 @@
 #include "ui/surface/io_surface_support_mac.h"
 #endif
 
-#if defined(ENABLE_JAVA_BRIDGE)
+#if defined(OS_ANDROID)
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 #endif
 
@@ -1239,7 +1239,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   registrar_.Add(this,
                  NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
                  NotificationService::AllBrowserContextsAndSources());
-#if defined(ENABLE_JAVA_BRIDGE)
+#if defined(OS_ANDROID)
   java_bridge_dispatcher_host_manager_.reset(
       new JavaBridgeDispatcherHostManager(this));
 #endif

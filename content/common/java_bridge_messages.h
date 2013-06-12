@@ -6,7 +6,7 @@
 
 // Multiply-included message file, hence no include guard.
 
-#if defined(ENABLE_JAVA_BRIDGE)
+#if defined(OS_ANDROID)
 
 #include "content/child/plugin_param_traits.h"
 #include "ipc/ipc_channel_handle.h"
@@ -37,4 +37,4 @@ IPC_SYNC_MESSAGE_CONTROL0_1(JavaBridgeMsg_GenerateRouteID,
 IPC_SYNC_MESSAGE_ROUTED0_1(JavaBridgeHostMsg_GetChannelHandle,
                            IPC::ChannelHandle) /* channel handle */
 
-#endif  // defined(ENABLE_JAVA_BRIDGE)
+#endif  // defined(OS_ANDROID)

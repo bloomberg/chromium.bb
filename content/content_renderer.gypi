@@ -374,6 +374,13 @@
       'includes': [
         '../build/android/cpufeatures.gypi',
       ],
+    }, {
+      'sources!': [
+        'renderer/java/java_bridge_channel.cc',
+        'renderer/java/java_bridge_channel.h',
+        'renderer/java/java_bridge_dispatcher.cc',
+        'renderer/java/java_bridge_dispatcher.h',
+      ],
     }],
     # TODO(jrg): remove the OS=="android" section?
     # http://crbug.com/113172
@@ -478,18 +485,6 @@
       'sources!': [
         'renderer/render_widget_fullscreen_pepper.cc',
         'renderer/render_widget_fullscreen_pepper.h',
-      ],
-    }],
-    ['java_bridge==1', {
-      'defines': [
-        'ENABLE_JAVA_BRIDGE',
-      ],
-    }, {
-      'sources!': [
-        'renderer/java/java_bridge_channel.cc',
-        'renderer/java/java_bridge_channel.h',
-        'renderer/java/java_bridge_dispatcher.cc',
-        'renderer/java/java_bridge_dispatcher.h',
       ],
     }],
   ],

@@ -146,7 +146,7 @@ class CONTENT_EXPORT WebContentsImpl
   // Unsets the currently showing interstitial.
   void DetachInterstitialPage();
 
-#if defined(ENABLE_JAVA_BRIDGE)
+#if defined(OS_ANDROID)
   JavaBridgeDispatcherHostManager* java_bridge_dispatcher_host_manager() const {
     return java_bridge_dispatcher_host_manager_.get();
   }
@@ -780,7 +780,7 @@ class CONTENT_EXPORT WebContentsImpl
   // Manages creation and swapping of render views.
   RenderViewHostManager render_manager_;
 
-#if defined(ENABLE_JAVA_BRIDGE)
+#if defined(OS_ANDROID)
   // Manages injecting Java objects into all RenderViewHosts associated with
   // this WebContentsImpl.
   scoped_ptr<JavaBridgeDispatcherHostManager>
