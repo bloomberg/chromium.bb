@@ -643,6 +643,7 @@ class HistoryService : public CancelableRequestProvider,
   friend class history::HistoryBackend;
   friend class history::HistoryQueryTest;
   friend class HistoryOperation;
+  friend class HistoryQuickProviderTest;
   friend class HistoryURLProvider;
   friend class HistoryURLProviderTest;
   friend class history::InMemoryURLIndexTest;

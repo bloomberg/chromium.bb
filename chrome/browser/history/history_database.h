@@ -27,6 +27,8 @@ namespace base {
 class FilePath;
 }
 
+class HistoryQuickProviderTest;
+
 namespace history {
 
 // Encapsulates the SQL connection for the history database. This class holds
@@ -170,6 +172,7 @@ class HistoryDatabase : public DownloadDatabase,
   friend class AndroidProviderBackend;
   FRIEND_TEST_ALL_PREFIXES(AndroidURLsMigrationTest, MigrateToVersion22);
 #endif
+  friend class ::HistoryQuickProviderTest;
   friend class InMemoryURLIndexTest;
   FRIEND_TEST_ALL_PREFIXES(IconMappingMigrationTest, TestIconMappingMigration);
 
