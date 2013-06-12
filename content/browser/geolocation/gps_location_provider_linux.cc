@@ -254,8 +254,11 @@ void GpsLocationProviderLinux::GetPosition(Geoposition* position) {
          position->error_code != Geoposition::ERROR_CODE_NONE);
 }
 
-void GpsLocationProviderLinux::UpdatePosition() {
+void GpsLocationProviderLinux::RequestRefresh() {
   ScheduleNextGpsPoll(0);
+}
+
+void GpsLocationProviderLinux::OnPermissionGranted() {
 }
 
 void GpsLocationProviderLinux::DoGpsPollTask() {
@@ -279,7 +282,7 @@ void GpsLocationProviderLinux::DoGpsPollTask() {
   if (differ || new_position.error_code != Geoposition::ERROR_CODE_NONE) {
     // Update if the new location is interesting or we have an error to report.
     position_ = new_position;
-    UpdateListeners();
+    NotifyCallback(position_);
   }
 }
 
@@ -292,7 +295,7 @@ void GpsLocationProviderLinux::ScheduleNextGpsPoll(int interval) {
       base::TimeDelta::FromMilliseconds(interval));
 }
 
-LocationProviderBase* NewSystemLocationProvider() {
+LocationProvider* NewSystemLocationProvider() {
   return new GpsLocationProviderLinux(LibGps::New);
 }
 

@@ -76,6 +76,7 @@ class BrowserContext;
 class BrowserMainParts;
 class BrowserPpapiHost;
 class BrowserURLHandler;
+class LocationProvider;
 class MediaObserver;
 class QuotaPermissionContext;
 class RenderProcessHost;
@@ -531,6 +532,10 @@ class CONTENT_EXPORT ContentBrowserClient {
       const base::FilePath& storage_partition_path,
       ScopedVector<fileapi::FileSystemMountPointProvider>*
           additional_providers) {}
+
+  // Allows an embedder to return its own LocationProvider implementation.
+  // Return NULL to use the default one for the platform to be created.
+  virtual LocationProvider* OverrideSystemLocationProvider();
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Populates |mappings| with all files that need to be mapped before launching

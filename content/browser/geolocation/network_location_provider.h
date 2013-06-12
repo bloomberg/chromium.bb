@@ -6,15 +6,17 @@
 #define CONTENT_BROWSER_GEOLOCATION_NETWORK_LOCATION_PROVIDER_H_
 
 #include <list>
+#include <map>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "content/browser/geolocation/device_data_provider.h"
-#include "content/browser/geolocation/location_provider.h"
+#include "content/browser/geolocation/location_provider_base.h"
 #include "content/browser/geolocation/network_location_request.h"
 #include "content/common/content_export.h"
 #include "content/public/common/geoposition.h"
@@ -24,7 +26,8 @@ class AccessTokenStore;
 
 
 class NetworkLocationProvider
-    : public LocationProviderBase,
+    : public base::NonThreadSafe,
+      public LocationProviderBase,
       public WifiDataProvider::ListenerInterface,
       public NetworkLocationRequest::ListenerInterface {
  public:
@@ -71,11 +74,11 @@ class NetworkLocationProvider
                           const string16& access_token);
   virtual ~NetworkLocationProvider();
 
-  // LocationProviderBase implementation
+  // LocationProvider implementation
   virtual bool StartProvider(bool high_accuracy) OVERRIDE;
   virtual void StopProvider() OVERRIDE;
   virtual void GetPosition(Geoposition *position) OVERRIDE;
-  virtual void UpdatePosition() OVERRIDE;
+  virtual void RequestRefresh() OVERRIDE;
   virtual void OnPermissionGranted() OVERRIDE;
 
  private:
@@ -129,6 +132,14 @@ class NetworkLocationProvider
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLocationProvider);
 };
+
+// Factory functions for the various types of location provider to abstract
+// over the platform-dependent implementations.
+CONTENT_EXPORT LocationProviderBase* NewNetworkLocationProvider(
+    AccessTokenStore* access_token_store,
+    net::URLRequestContextGetter* context,
+    const GURL& url,
+    const string16& access_token);
 
 }  // namespace content
 

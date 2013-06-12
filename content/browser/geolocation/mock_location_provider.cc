@@ -38,7 +38,7 @@ void MockLocationProvider::HandlePositionChanged(const Geoposition& position) {
     // The location arbitrator unit tests rely on this method running
     // synchronously.
     position_ = position;
-    UpdateListeners();
+    NotifyCallback(position_);
   } else {
     provider_loop_->PostTask(
         FROM_HERE,
@@ -117,19 +117,19 @@ class AutoMockLocationProvider : public MockLocationProvider {
   bool listeners_updated_;
 };
 
-LocationProviderBase* NewMockLocationProvider() {
+LocationProvider* NewMockLocationProvider() {
   return new MockLocationProvider(&MockLocationProvider::instance_);
 }
 
-LocationProviderBase* NewAutoSuccessMockLocationProvider() {
+LocationProvider* NewAutoSuccessMockLocationProvider() {
   return new AutoMockLocationProvider(true, false);
 }
 
-LocationProviderBase* NewAutoFailMockLocationProvider() {
+LocationProvider* NewAutoFailMockLocationProvider() {
   return new AutoMockLocationProvider(false, false);
 }
 
-LocationProviderBase* NewAutoSuccessMockNetworkLocationProvider() {
+LocationProvider* NewAutoSuccessMockNetworkLocationProvider() {
   return new AutoMockLocationProvider(true, true);
 }
 

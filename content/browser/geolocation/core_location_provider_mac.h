@@ -9,7 +9,7 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_CORE_LOCATION_PROVIDER_MAC_H_
 #define CONTENT_BROWSER_GEOLOCATION_CORE_LOCATION_PROVIDER_MAC_H_
 
-#include "content/browser/geolocation/location_provider.h"
+#include "content/browser/geolocation/location_provider_base.h"
 #include "content/public/common/geoposition.h"
 
 namespace content {
@@ -24,6 +24,7 @@ class CoreLocationProviderMac : public LocationProviderBase {
   virtual bool StartProvider(bool high_accuracy) OVERRIDE;
   virtual void StopProvider() OVERRIDE;
   virtual void GetPosition(Geoposition* position) OVERRIDE;
+  virtual void OnPermissionGranted() OVERRIDE;
 
   // Receives new positions and calls UpdateListeners
   void SetPosition(Geoposition* position);

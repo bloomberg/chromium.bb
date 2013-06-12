@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "content/browser/geolocation/network_location_provider.h"
 #include "content/public/browser/access_token_store.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
@@ -28,6 +29,9 @@ const int64 GeolocationArbitratorImpl::kFixStaleTimeoutMilliseconds =
 GeolocationArbitratorImpl::GeolocationArbitratorImpl(
     const LocationUpdateCallback& callback)
     : callback_(callback),
+      provider_callback_(
+          base::Bind(&GeolocationArbitratorImpl::LocationUpdateAvailable,
+                     base::Unretained(this))),
       position_provider_(NULL),
       is_permission_granted_(false),
       is_running_(false) {
@@ -42,7 +46,7 @@ GURL GeolocationArbitratorImpl::DefaultNetworkProviderURL() {
 
 void GeolocationArbitratorImpl::OnPermissionGranted() {
   is_permission_granted_ = true;
-  for (ScopedVector<LocationProviderBase>::iterator i = providers_.begin();
+  for (ScopedVector<LocationProvider>::iterator i = providers_.begin();
       i != providers_.end(); ++i) {
     (*i)->OnPermissionGranted();
   }
@@ -63,7 +67,7 @@ void GeolocationArbitratorImpl::StartProviders(bool use_high_accuracy) {
 }
 
 void GeolocationArbitratorImpl::DoStartProviders() {
-  for (ScopedVector<LocationProviderBase>::iterator i = providers_.begin();
+  for (ScopedVector<LocationProvider>::iterator i = providers_.begin();
        i != providers_.end(); ++i) {
     (*i)->StartProvider(use_high_accuracy_);
   }
@@ -99,25 +103,28 @@ void GeolocationArbitratorImpl::OnAccessTokenStoresLoaded(
             GetAccessTokenStore(), context_getter,
             i->first, i->second));
   }
-  RegisterProvider(NewSystemLocationProvider());
+
+  LocationProvider* provider =
+      GetContentClient()->browser()->OverrideSystemLocationProvider();
+  if (!provider)
+    provider = NewSystemLocationProvider();
+  RegisterProvider(provider);
   DoStartProviders();
 }
 
 void GeolocationArbitratorImpl::RegisterProvider(
-    LocationProviderBase* provider) {
+    LocationProvider* provider) {
   if (!provider)
     return;
-  provider->RegisterListener(this);
+  provider->SetUpdateCallback(provider_callback_);
   if (is_permission_granted_)
     provider->OnPermissionGranted();
   providers_.push_back(provider);
 }
 
 void GeolocationArbitratorImpl::LocationUpdateAvailable(
-    LocationProviderBase* provider) {
-  DCHECK(provider);
-  Geoposition new_position;
-  provider->GetPosition(&new_position);
+    const LocationProvider* provider,
+    const Geoposition& new_position) {
   DCHECK(new_position.Validate() ||
          new_position.error_code != Geoposition::ERROR_CODE_NONE);
   if (!IsNewPositionBetter(position_, new_position,
@@ -138,7 +145,7 @@ AccessTokenStore* GeolocationArbitratorImpl::GetAccessTokenStore() {
   return access_token_store_.get();
 }
 
-LocationProviderBase* GeolocationArbitratorImpl::NewNetworkLocationProvider(
+LocationProvider* GeolocationArbitratorImpl::NewNetworkLocationProvider(
     AccessTokenStore* access_token_store,
     net::URLRequestContextGetter* context,
     const GURL& url,
@@ -147,12 +154,12 @@ LocationProviderBase* GeolocationArbitratorImpl::NewNetworkLocationProvider(
   // Android uses its own SystemLocationProvider.
   return NULL;
 #else
-  return content::NewNetworkLocationProvider(access_token_store, context, url,
-                                             access_token);
+  return new NetworkLocationProvider(access_token_store, context, url,
+                                     access_token);
 #endif
 }
 
-LocationProviderBase* GeolocationArbitratorImpl::NewSystemLocationProvider() {
+LocationProvider* GeolocationArbitratorImpl::NewSystemLocationProvider() {
   return content::NewSystemLocationProvider();
 }
 

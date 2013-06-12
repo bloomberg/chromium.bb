@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "content/browser/geolocation/win7_location_provider_win.h"
 #include "content/browser/geolocation/win7_location_api_win.h"
@@ -60,21 +61,22 @@ class MockWin7LocationApi : public Win7LocationApi {
   }
 };
 
-class LocationProviderListenerLoopQuitter
-    : public LocationProviderBase::ListenerInterface {
+class LocationProviderListenerLoopQuitter {
  public:
   explicit LocationProviderListenerLoopQuitter(base::MessageLoop* message_loop)
       : message_loop_to_quit_(message_loop) {
     CHECK(message_loop_to_quit_ != NULL);
   }
-  virtual void LocationUpdateAvailable(LocationProviderBase* provider) {
+
+  void LocationUpdateAvailable(const LocationProvider* provider,
+                               const Geoposition& position) {
     EXPECT_EQ(base::MessageLoop::current(), message_loop_to_quit_);
     provider_ = provider;
     message_loop_to_quit_->Quit();
   }
 
   base::MessageLoop* message_loop_to_quit_;
-  LocationProviderBase* provider_;
+  const LocationProvider* provider_;
 };
 
 class GeolocationProviderWin7Tests : public testing::Test {
@@ -85,30 +87,35 @@ class GeolocationProviderWin7Tests : public testing::Test {
   virtual void SetUp() {
     api_ = MockWin7LocationApi::CreateMock();
     provider_ = new Win7LocationProvider(api_);
-    provider_->RegisterListener(&location_listener_);
+    provider_->SetUpdateCallback(base::Bind(
+        &LocationProviderListenerLoopQuitter::LocationUpdateAvailable,
+        base::Unretained(&location_listener_)));
   }
   virtual void TearDown() {
-    provider_->UnregisterListener(&location_listener_);
     provider_->StopProvider();
     delete provider_;
     main_message_loop_.RunUntilIdle();
   }
 
  protected:
+  Win7LocationProvider* provider() {
+    return static_cast<Win7LocationProvider*>(provider_);
+  }
+
   MockWin7LocationApi* api_;
   LocationProviderListenerLoopQuitter location_listener_;
   base::MessageLoop main_message_loop_;
-  Win7LocationProvider* provider_;
+  LocationProvider* provider_;
 };
 
 TEST_F(GeolocationProviderWin7Tests, StartStop) {
   EXPECT_CALL(*api_, SetHighAccuracy(true))
       .WillOnce(Return(true));
-  EXPECT_TRUE(provider_->StartProvider(true));
-  provider_->StopProvider();
+  EXPECT_TRUE(provider()->StartProvider(true));
+  provider()->StopProvider();
   EXPECT_CALL(*api_, SetHighAccuracy(false))
       .WillOnce(Return(true));
-  EXPECT_TRUE(provider_->StartProvider(false));
+  EXPECT_TRUE(provider()->StartProvider(false));
 }
 
 TEST_F(GeolocationProviderWin7Tests, GetValidPosition) {
@@ -116,10 +123,10 @@ TEST_F(GeolocationProviderWin7Tests, GetValidPosition) {
       .Times(AtLeast(1));
   EXPECT_CALL(*api_, SetHighAccuracy(true))
       .WillOnce(Return(true));
-  EXPECT_TRUE(provider_->StartProvider(true));
+  EXPECT_TRUE(provider()->StartProvider(true));
   main_message_loop_.Run();
   Geoposition position;
-  provider_->GetPosition(&position);
+  provider()->GetPosition(&position);
   EXPECT_TRUE(position.Validate());
 }
 
@@ -130,10 +137,10 @@ TEST_F(GeolocationProviderWin7Tests, GetInvalidPosition) {
       &MockWin7LocationApi::GetPositionInvalid));
   EXPECT_CALL(*api_, SetHighAccuracy(true))
       .WillOnce(Return(true));
-  EXPECT_TRUE(provider_->StartProvider(true));
+  EXPECT_TRUE(provider()->StartProvider(true));
   main_message_loop_.Run();
   Geoposition position;
-  provider_->GetPosition(&position);
+  provider()->GetPosition(&position);
   EXPECT_FALSE(position.Validate());
 }
 

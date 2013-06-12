@@ -6,7 +6,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/geolocation/fake_access_token_store.h"
 #include "content/browser/geolocation/location_arbitrator_impl.h"
-#include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/mock_location_provider.h"
 #include "content/public/common/geoposition.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -82,7 +81,7 @@ class TestingGeolocationArbitrator : public GeolocationArbitratorImpl {
     return access_token_store_.get();
   }
 
-  virtual LocationProviderBase* NewNetworkLocationProvider(
+  virtual LocationProvider* NewNetworkLocationProvider(
       AccessTokenStore* access_token_store,
       net::URLRequestContextGetter* context,
       const GURL& url,
@@ -90,7 +89,7 @@ class TestingGeolocationArbitrator : public GeolocationArbitratorImpl {
     return new MockLocationProvider(&cell_);
   }
 
-  virtual LocationProviderBase* NewSystemLocationProvider() OVERRIDE {
+  virtual LocationProvider* NewSystemLocationProvider() OVERRIDE {
     return new MockLocationProvider(&gps_);
   }
 
@@ -183,7 +182,6 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   access_token_store_->NotifyDelegateTokensLoaded();
   ASSERT_TRUE(cell());
   EXPECT_TRUE(gps());
-  EXPECT_TRUE(cell()->has_listeners());
   EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, cell()->state_);
   EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, gps()->state_);
   EXPECT_FALSE(observer_->last_position_.Validate());
@@ -312,7 +310,7 @@ TEST_F(GeolocationLocationArbitratorTest, TwoOneShotsIsNewPositionBetter) {
   // To test 240956, perform a throwaway alloc.
   // This convinces the allocator to put the providers in a new memory location.
   MockLocationProvider* fakeMockProvider = NULL;
-  LocationProviderBase* fakeProvider =
+  LocationProvider* fakeProvider =
       new MockLocationProvider(&fakeMockProvider);
 
   arbitrator_->StartProviders(false);

@@ -276,6 +276,10 @@ ui::SelectFilePolicy* ContentBrowserClient::CreateSelectFilePolicy(
   return NULL;
 }
 
+LocationProvider* ContentBrowserClient::OverrideSystemLocationProvider() {
+  return NULL;
+}
+
 #if defined(OS_WIN)
 const wchar_t* ContentBrowserClient::GetResourceDllName() {
   return NULL;

@@ -4,8 +4,8 @@
 
 #include "content/browser/geolocation/core_location_provider_mac.h"
 
-#include "base/logging.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "content/browser/geolocation/core_location_data_provider_mac.h"
 #include "content/public/common/content_switches.h"
 
@@ -45,15 +45,19 @@ void CoreLocationProviderMac::GetPosition(Geoposition* position) {
          position->error_code != Geoposition::ERROR_CODE_NONE);
 }
 
+void CoreLocationProviderMac::OnPermissionGranted() {
+}
+
 void CoreLocationProviderMac::SetPosition(Geoposition* position) {
   DCHECK(position);
   position_ = *position;
   DCHECK(position->Validate() ||
          position->error_code != Geoposition::ERROR_CODE_NONE);
-  UpdateListeners();
+
+  NotifyCallback(position_);
 }
 
-LocationProviderBase* NewSystemLocationProvider() {
+LocationProvider* NewSystemLocationProvider() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kExperimentalLocationFeatures)) {
     return new CoreLocationProviderMac;

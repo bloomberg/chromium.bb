@@ -73,8 +73,11 @@ void Win7LocationProvider::GetPosition(Geoposition* position) {
   *position = position_;
 }
 
-void Win7LocationProvider::UpdatePosition() {
+void Win7LocationProvider::RequestRefresh() {
   ScheduleNextPoll(0);
+}
+
+void Win7LocationProvider::OnPermissionGranted() {
 }
 
 void Win7LocationProvider::DoPollTask() {
@@ -86,7 +89,7 @@ void Win7LocationProvider::DoPollTask() {
   if (differ || new_position.error_code != Geoposition::ERROR_CODE_NONE) {
     // Update if the new location is interesting or we have an error to report
     position_ = new_position;
-    UpdateListeners();
+    NotifyCallback(position_);
   }
 }
 
@@ -97,7 +100,7 @@ void Win7LocationProvider::ScheduleNextPoll(int interval) {
       base::TimeDelta::FromMilliseconds(interval));
 }
 
-LocationProviderBase* NewSystemLocationProvider() {
+LocationProvider* NewSystemLocationProvider() {
   Win7LocationApi* api = Win7LocationApi::Create();
   if (api == NULL)
     return NULL; // API not supported on this machine.

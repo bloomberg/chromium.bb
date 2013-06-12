@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
-#include "content/browser/geolocation/location_provider.h"
+#include "content/browser/geolocation/location_provider_base.h"
 #include "content/public/common/geoposition.h"
 
 namespace content {
@@ -25,7 +25,7 @@ class MockLocationProvider : public LocationProviderBase {
   // Updates listeners with the new position.
   void HandlePositionChanged(const Geoposition& position);
 
-  // LocationProviderBase implementation.
+  // LocationProvider implementation.
   virtual bool StartProvider(bool high_accuracy) OVERRIDE;
   virtual void StopProvider() OVERRIDE;
   virtual void GetPosition(Geoposition* position) OVERRIDE;
@@ -50,17 +50,17 @@ class MockLocationProvider : public LocationProviderBase {
 // MockLocationProvider::instance_ for this, or make a custom factory method).
 
 // Creates a mock location provider with no default behavior.
-LocationProviderBase* NewMockLocationProvider();
+LocationProvider* NewMockLocationProvider();
 // Creates a mock location provider that automatically notifies its
 // listeners with a valid location when StartProvider is called.
-LocationProviderBase* NewAutoSuccessMockLocationProvider();
+LocationProvider* NewAutoSuccessMockLocationProvider();
 // Creates a mock location provider that automatically notifies its
 // listeners with an error when StartProvider is called.
-LocationProviderBase* NewAutoFailMockLocationProvider();
+LocationProvider* NewAutoFailMockLocationProvider();
 // Similar to NewAutoSuccessMockLocationProvider but mimicks the behavior of
 // the Network Location provider, in deferring making location updates until
 // a permission request has been confirmed.
-LocationProviderBase* NewAutoSuccessMockNetworkLocationProvider();
+LocationProvider* NewAutoSuccessMockNetworkLocationProvider();
 
 }  // namespace content
 

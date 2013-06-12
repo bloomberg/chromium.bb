@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/geolocation/location_provider.h"
+#include "content/browser/geolocation/location_provider_base.h"
 #include "content/browser/geolocation/win7_location_api_win.h"
 #include "content/common/content_export.h"
 #include "content/public/common/geoposition.h"
@@ -30,7 +30,8 @@ class CONTENT_EXPORT Win7LocationProvider : public LocationProviderBase {
   virtual bool StartProvider(bool high_accuracy) OVERRIDE;
   virtual void StopProvider() OVERRIDE;
   virtual void GetPosition(Geoposition* position) OVERRIDE;
-  virtual void UpdatePosition() OVERRIDE;
+  virtual void RequestRefresh() OVERRIDE;
+  virtual void OnPermissionGranted() OVERRIDE;
 
  private:
   // Task which runs in the child thread.

@@ -45,7 +45,7 @@ class CoreLocationDataProviderMac
 
   // The wrapper class that supplies this class with position data
   scoped_nsobject<CoreLocationWrapperMac> wrapper_;
-  // The LocationProviderBase class that should receive position data
+  // The LocationProvider class that should receive position data
   CoreLocationProviderMac* provider_;
 };
 

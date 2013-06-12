@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_GEOLOCATION_LOCATION_PROVIDER_ANDROID_H_
 
 #include "base/compiler_specific.h"
-#include "content/browser/geolocation/location_provider.h"
+#include "content/browser/geolocation/location_provider_base.h"
 #include "content/public/common/geoposition.h"
 
 namespace content {
@@ -22,11 +22,11 @@ class LocationProviderAndroid : public LocationProviderBase {
   // Called by the AndroidLocationApiAdapter.
   void NotifyNewGeoposition(const Geoposition& position);
 
-  // LocationProviderBase.
+  // LocationProvider.
   virtual bool StartProvider(bool high_accuracy) OVERRIDE;
   virtual void StopProvider() OVERRIDE;
   virtual void GetPosition(Geoposition* position) OVERRIDE;
-  virtual void UpdatePosition() OVERRIDE;
+  virtual void RequestRefresh() OVERRIDE;
   virtual void OnPermissionGranted() OVERRIDE;
 
  private:
