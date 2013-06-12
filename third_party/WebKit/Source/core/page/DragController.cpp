@@ -70,6 +70,7 @@
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderImage.h"
+#include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "weborigin/SecurityOrigin.h"
 
@@ -803,9 +804,10 @@ bool DragController::startDrag(Frame* src, const DragState& state, DragOperation
         }
 
         if (!dragImage) {
-            FontRenderingMode renderingMode = src->settings() ? src->settings()->fontRenderingMode() : NormalRenderingMode;
+            FontDescription fontDescription;
+            RenderTheme::defaultTheme()->systemFont(WebCore::CSSValueNone, fontDescription);
             float deviceScaleFactor = src->page() ? src->page()->deviceScaleFactor() : 1;
-            dragImage = createDragImageForLink(linkURL, hitTestResult.textContent(), renderingMode, deviceScaleFactor);
+            dragImage = createDragImageForLink(linkURL, hitTestResult.textContent(), fontDescription, deviceScaleFactor);
             IntSize size = dragImageSize(dragImage);
             m_dragOffset = IntPoint(-size.width() / 2, -LinkDragBorderInset);
             dragLoc = IntPoint(mouseDraggedPoint.x() + m_dragOffset.x(), mouseDraggedPoint.y() + m_dragOffset.y());

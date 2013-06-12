@@ -36,6 +36,7 @@
 namespace WebCore {
     
     class CachedImage;
+    class FontDescription;
     class Frame;
     class Image;
     class KURL;
@@ -53,7 +54,7 @@ namespace WebCore {
     DragImageRef createDragImageFromImage(Image*, RespectImageOrientationEnum = DoNotRespectImageOrientation);
     DragImageRef createDragImageForSelection(DragImageRef, float dragImageAlpha);
     DragImageRef createDragImageIconForCachedImage(CachedImage*);
-    DragImageRef createDragImageForLink(const KURL&, const String& label, FontRenderingMode, float deviceScaleFactor);
+    DragImageRef createDragImageForLink(const KURL&, const String& label, const FontDescription&, float deviceScaleFactor);
     void deleteDragImage(DragImageRef);
 }
 
