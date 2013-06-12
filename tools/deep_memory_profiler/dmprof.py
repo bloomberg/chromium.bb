@@ -1048,8 +1048,16 @@ class Dump(object):
       if submatched_dict.get('BUCKETID'):
         region_info['bucket_id'] = int(submatched_dict['BUCKETID'])
 
-      self._map[(int(matched.group(2), 16),
-                 int(matched.group(5), 16))] = (matched.group(7), region_info)
+      if matched.group(1) == '(':
+        start = current_vma['begin']
+      else:
+        start = int(matched.group(2), 16)
+      if matched.group(4) == '(':
+        end = current_vma['end']
+      else:
+        end = int(matched.group(5), 16)
+
+      self._map[(start, end)] = (matched.group(7), region_info)
       ln += 1
 
   def _extract_stacktrace_lines(self, line_number):
@@ -1365,7 +1373,15 @@ class PolicyCommands(Command):
     sizes = dict((c, 0) for c in policy.components)
 
     PolicyCommands._accumulate(dump, policy, bucket_set, sizes)
-    PolicyCommands._accumulate_maps(dump, policy, sizes)
+    verify_global_stats = PolicyCommands._accumulate_maps(dump, policy, sizes)
+
+    # TODO(dmikurube): Remove the verifying code when GLOBAL_STATS is removed.
+    # http://crbug.com/245603.
+    for verify_key, verify_value in verify_global_stats.iteritems():
+      dump_value = dump.global_stat('%s_committed' % verify_key)
+      if dump_value != verify_value:
+        LOGGER.warn('%25s: %12d != %d (%d)' % (
+            verify_key, dump_value, verify_value, dump_value - verify_value))
 
     sizes['mmap-no-log'] = (
         dump.global_stat('profiled-mmap_committed') -
@@ -1386,6 +1402,8 @@ class PolicyCommands(Command):
       sizes['tc-unused'] = 0
     sizes['tc-total'] = sizes['mmap-tcmalloc']
 
+    # TODO(dmikurube): global_stat will be deprecated.
+    # See http://crbug.com/245603.
     for key, value in {
         'total': 'total_committed',
         'filemapped': 'file_committed',
@@ -1445,10 +1463,53 @@ class PolicyCommands(Command):
 
   @staticmethod
   def _accumulate_maps(dump, policy, sizes):
+    # TODO(dmikurube): Remove the dict when GLOBAL_STATS is removed.
+    # http://crbug.com/245603.
+    global_stats = {
+        'total': 0,
+        'file-exec': 0,
+        'file-nonexec': 0,
+        'anonymous': 0,
+        'stack': 0,
+        'other': 0,
+        'nonprofiled-file-exec': 0,
+        'nonprofiled-file-nonexec': 0,
+        'nonprofiled-anonymous': 0,
+        'nonprofiled-stack': 0,
+        'nonprofiled-other': 0,
+        'profiled-mmap': 0,
+        }
+
     for _, value in dump.iter_map:
+      # TODO(dmikurube): Remove the subtotal code when GLOBAL_STATS is removed.
+      # It's temporary verification code for transition described in
+      # http://crbug.com/245603.
+      committed = 0
+      if 'committed' in value[1]:
+        committed = value[1]['committed']
+      global_stats['total'] += committed
+      key = 'other'
+      name = value[1]['vma']['name']
+      if name.startswith('/'):
+        if value[1]['vma']['executable'] == 'x':
+          key = 'file-exec'
+        else:
+          key = 'file-nonexec'
+      elif name == '[stack]':
+        key = 'stack'
+      elif name == '':
+        key = 'anonymous'
+      global_stats[key] += committed
+      if value[0] == 'unhooked':
+        global_stats['nonprofiled-' + key] += committed
+      if value[0] == 'hooked':
+        global_stats['profiled-mmap'] += committed
+
       if value[0] == 'unhooked':
         component_match = policy.find_unhooked(value)
         sizes[component_match] += int(value[1]['committed'])
+
+    return global_stats
 
 
 class CSVCommand(PolicyCommands):
