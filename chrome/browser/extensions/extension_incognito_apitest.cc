@@ -43,7 +43,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoNoScript) {
   EXPECT_TRUE(result);
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoYesScript) {
+#if defined(OS_WIN)
+// This test is very flaky on XP. http://crbug.com/248821
+#define MAYBE_IncognitoYesScript DISABLED_IncognitoYesScript
+#else
+#define MAYBE_IncognitoYesScript IncognitoYesScript
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_IncognitoYesScript) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
 
