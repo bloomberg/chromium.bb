@@ -8,43 +8,21 @@
 
 namespace gpu {
 
-namespace {
-
-class AsyncPixelTransferStateImpl : public AsyncPixelTransferState {
- public:
-  AsyncPixelTransferStateImpl() {}
-
-  // Implement AsyncPixelTransferState:
-  virtual bool TransferIsInProgress() OVERRIDE {
-    return false;
-  }
-
- private:
-  virtual ~AsyncPixelTransferStateImpl() {}
-};
-
-}  // namespace
-
 class AsyncPixelTransferDelegateStub : public AsyncPixelTransferDelegate {
  public:
   AsyncPixelTransferDelegateStub();
   virtual ~AsyncPixelTransferDelegateStub();
 
   // Implement AsyncPixelTransferDelegate:
-  virtual AsyncPixelTransferState* CreatePixelTransferState(
-      GLuint texture_id,
-      const AsyncTexImage2DParams& define_params) OVERRIDE;
   virtual void AsyncTexImage2D(
-      AsyncPixelTransferState* state,
       const AsyncTexImage2DParams& tex_params,
       const AsyncMemoryParams& mem_params,
       const base::Closure& bind_callback) OVERRIDE;
   virtual void AsyncTexSubImage2D(
-      AsyncPixelTransferState* transfer_state,
       const AsyncTexSubImage2DParams& tex_params,
       const AsyncMemoryParams& mem_params) OVERRIDE;
-  virtual void WaitForTransferCompletion(
-      AsyncPixelTransferState* state) OVERRIDE;
+  virtual bool TransferIsInProgress() OVERRIDE;
+  virtual void WaitForTransferCompletion() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateStub);
@@ -54,14 +32,7 @@ AsyncPixelTransferDelegateStub::AsyncPixelTransferDelegateStub() {}
 
 AsyncPixelTransferDelegateStub::~AsyncPixelTransferDelegateStub() {}
 
-AsyncPixelTransferState* AsyncPixelTransferDelegateStub::
-    CreatePixelTransferState(GLuint texture_id,
-                             const AsyncTexImage2DParams& define_params) {
-  return new AsyncPixelTransferStateImpl;
-}
-
 void AsyncPixelTransferDelegateStub::AsyncTexImage2D(
-    AsyncPixelTransferState* transfer_state,
     const AsyncTexImage2DParams& tex_params,
     const AsyncMemoryParams& mem_params,
     const base::Closure& bind_callback) {
@@ -69,17 +40,17 @@ void AsyncPixelTransferDelegateStub::AsyncTexImage2D(
 }
 
 void AsyncPixelTransferDelegateStub::AsyncTexSubImage2D(
-    AsyncPixelTransferState* transfer_state,
     const AsyncTexSubImage2DParams& tex_params,
     const AsyncMemoryParams& mem_params) {
 }
 
-void AsyncPixelTransferDelegateStub::WaitForTransferCompletion(
-    AsyncPixelTransferState* state) {
+bool AsyncPixelTransferDelegateStub::TransferIsInProgress() {
+  return false;
 }
 
-AsyncPixelTransferManagerStub::AsyncPixelTransferManagerStub()
-    : delegate_(new AsyncPixelTransferDelegateStub()) {}
+void AsyncPixelTransferDelegateStub::WaitForTransferCompletion() {}
+
+AsyncPixelTransferManagerStub::AsyncPixelTransferManagerStub() {}
 
 AsyncPixelTransferManagerStub::~AsyncPixelTransferManagerStub() {}
 
@@ -108,8 +79,10 @@ bool AsyncPixelTransferManagerStub::NeedsProcessMorePendingTransfers() {
 }
 
 AsyncPixelTransferDelegate*
-AsyncPixelTransferManagerStub::GetAsyncPixelTransferDelegate() {
-  return delegate_.get();
+AsyncPixelTransferManagerStub::CreatePixelTransferDelegateImpl(
+    gles2::TextureRef* ref,
+    const AsyncTexImage2DParams& define_params) {
+  return new AsyncPixelTransferDelegateStub();
 }
 
 }  // namespace gpu

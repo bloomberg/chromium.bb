@@ -9,8 +9,6 @@
 
 namespace gpu {
 
-class AsyncPixelTransferDelegateStub;
-
 class AsyncPixelTransferManagerStub : public AsyncPixelTransferManager {
  public:
   AsyncPixelTransferManagerStub();
@@ -25,10 +23,12 @@ class AsyncPixelTransferManagerStub : public AsyncPixelTransferManager {
   virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
   virtual void ProcessMorePendingTransfers() OVERRIDE;
   virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
-  virtual AsyncPixelTransferDelegate* GetAsyncPixelTransferDelegate() OVERRIDE;
 
  private:
-  scoped_ptr<AsyncPixelTransferDelegateStub> delegate_;
+  // AsyncPixelTransferManager implementation:
+  virtual AsyncPixelTransferDelegate* CreatePixelTransferDelegateImpl(
+      gles2::TextureRef* ref,
+      const AsyncTexImage2DParams& define_params) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferManagerStub);
 };

@@ -11,41 +11,24 @@
 
 namespace gpu {
 
-class MockAsyncPixelTransferState : public AsyncPixelTransferState {
- public:
-  MockAsyncPixelTransferState();
-
-  // Called in ~MockAsyncPixelTransferState.
-  MOCK_METHOD0(Destroy, void());
-
-  // Implement AsyncPixelTransferState.
-  MOCK_METHOD0(TransferIsInProgress, bool());
-  MOCK_METHOD1(BindTransfer, void(AsyncTexImage2DParams* level_params));
-
- protected:
-  virtual ~MockAsyncPixelTransferState();
-  DISALLOW_COPY_AND_ASSIGN(MockAsyncPixelTransferState);
-};
-
 class MockAsyncPixelTransferDelegate : public AsyncPixelTransferDelegate {
  public:
   MockAsyncPixelTransferDelegate();
   virtual ~MockAsyncPixelTransferDelegate();
 
+  // Called in ~MockAsyncPixelTransferDelegate.
+  MOCK_METHOD0(Destroy, void());
+
   // Implement AsyncPixelTransferDelegate.
-  MOCK_METHOD2(CreatePixelTransferState,
-      AsyncPixelTransferState*(
-          GLuint service_id, const AsyncTexImage2DParams& define_params));
-  MOCK_METHOD4(AsyncTexImage2D,
-      void(AsyncPixelTransferState*,
-          const AsyncTexImage2DParams& tex_params,
-          const AsyncMemoryParams& mem_params,
-          const base::Closure& bind_callback));
-  MOCK_METHOD3(AsyncTexSubImage2D,
-      void(AsyncPixelTransferState*,
-          const AsyncTexSubImage2DParams& tex_params,
-          const AsyncMemoryParams& mem_params));
-  MOCK_METHOD1(WaitForTransferCompletion, void(AsyncPixelTransferState*));
+  MOCK_METHOD3(AsyncTexImage2D,
+               void(const AsyncTexImage2DParams& tex_params,
+                    const AsyncMemoryParams& mem_params,
+                    const base::Closure& bind_callback));
+  MOCK_METHOD2(AsyncTexSubImage2D,
+               void(const AsyncTexSubImage2DParams& tex_params,
+                    const AsyncMemoryParams& mem_params));
+  MOCK_METHOD0(TransferIsInProgress, bool());
+  MOCK_METHOD0(WaitForTransferCompletion, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAsyncPixelTransferDelegate);

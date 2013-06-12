@@ -10,7 +10,6 @@
 #include "gpu/command_buffer/service/async_pixel_transfer_manager.h"
 
 namespace gpu {
-class AsyncPixelTransferDelegateIdle;
 
 class AsyncPixelTransferManagerIdle : public AsyncPixelTransferManager {
  public:
@@ -26,7 +25,6 @@ class AsyncPixelTransferManagerIdle : public AsyncPixelTransferManager {
   virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
   virtual void ProcessMorePendingTransfers() OVERRIDE;
   virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
-  virtual AsyncPixelTransferDelegate* GetAsyncPixelTransferDelegate() OVERRIDE;
 
   struct Task {
     Task(uint64 transfer_id, const base::Closure& task);
@@ -50,8 +48,12 @@ class AsyncPixelTransferManagerIdle : public AsyncPixelTransferManager {
   };
 
  private:
+  // AsyncPixelTransferManager implementation:
+  virtual AsyncPixelTransferDelegate* CreatePixelTransferDelegateImpl(
+      gles2::TextureRef* ref,
+      const AsyncTexImage2DParams& define_params) OVERRIDE;
+
   SharedState shared_state_;
-  scoped_ptr<AsyncPixelTransferDelegateIdle> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferManagerIdle);
 };

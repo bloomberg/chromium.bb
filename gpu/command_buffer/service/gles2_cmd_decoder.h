@@ -179,7 +179,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   virtual void SetStreamTextureManager(StreamTextureManager* manager) = 0;
 
   // Interface to performing async pixel transfers.
-  virtual AsyncPixelTransferDelegate* GetAsyncPixelTransferDelegate() = 0;
   virtual AsyncPixelTransferManager* GetAsyncPixelTransferManager() = 0;
   virtual void ResetAsyncPixelTransferManagerForTest() = 0;
   virtual void SetAsyncPixelTransferManagerForTest(

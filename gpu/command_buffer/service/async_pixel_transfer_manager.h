@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/linked_ptr.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/gpu_export.h"
 
@@ -31,7 +31,6 @@ class GLContext;
 
 namespace gpu {
 class AsyncPixelTransferDelegate;
-class AsyncPixelTransferState;
 struct AsyncMemoryParams;
 struct AsyncTexImage2DParams;
 
@@ -64,16 +63,14 @@ class GPU_EXPORT AsyncPixelTransferManager
   virtual void ProcessMorePendingTransfers() = 0;
   virtual bool NeedsProcessMorePendingTransfers() = 0;
 
-  virtual AsyncPixelTransferDelegate* GetAsyncPixelTransferDelegate() = 0;
-
-  AsyncPixelTransferState* CreatePixelTransferState(
+  AsyncPixelTransferDelegate* CreatePixelTransferDelegate(
       gles2::TextureRef* ref,
       const AsyncTexImage2DParams& define_params);
 
-  AsyncPixelTransferState* GetPixelTransferState(
+  AsyncPixelTransferDelegate* GetPixelTransferDelegate(
       gles2::TextureRef* ref);
 
-  void ClearPixelTransferStateForTest(gles2::TextureRef* ref);
+  void ClearPixelTransferDelegateForTest(gles2::TextureRef* ref);
 
   bool AsyncTransferIsInProgress(gles2::TextureRef* ref);
 
@@ -89,9 +86,15 @@ class GPU_EXPORT AsyncPixelTransferManager
   gles2::TextureManager* manager_;
 
   typedef base::hash_map<gles2::TextureRef*,
-                         scoped_refptr<AsyncPixelTransferState> >
-      TextureToStateMap;
-  TextureToStateMap state_map_;
+                         linked_ptr<AsyncPixelTransferDelegate> >
+      TextureToDelegateMap;
+  TextureToDelegateMap delegate_map_;
+
+  // A factory method called by CreatePixelTransferDelegate that is overriden
+  // by each implementation.
+  virtual AsyncPixelTransferDelegate* CreatePixelTransferDelegateImpl(
+      gles2::TextureRef* ref,
+      const AsyncTexImage2DParams& define_params) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferManager);
 };

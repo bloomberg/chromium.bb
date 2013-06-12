@@ -6,17 +6,11 @@
 
 namespace gpu {
 
-MockAsyncPixelTransferState::MockAsyncPixelTransferState() {
-}
-
-MockAsyncPixelTransferState::~MockAsyncPixelTransferState() {
-  Destroy();
-}
-
 MockAsyncPixelTransferDelegate::MockAsyncPixelTransferDelegate() {
 }
 
 MockAsyncPixelTransferDelegate::~MockAsyncPixelTransferDelegate() {
+  Destroy();
 }
 
 }  // namespace gpu

@@ -24,8 +24,12 @@ class MockAsyncPixelTransferManager : public AsyncPixelTransferManager {
   MOCK_METHOD0(GetTotalTextureUploadTime, base::TimeDelta());
   MOCK_METHOD0(ProcessMorePendingTransfers, void());
   MOCK_METHOD0(NeedsProcessMorePendingTransfers, bool());
-  MOCK_METHOD0(GetAsyncPixelTransferDelegate, AsyncPixelTransferDelegate*());
+  MOCK_METHOD2(
+      CreatePixelTransferDelegateImpl,
+      AsyncPixelTransferDelegate*(gles2::TextureRef* ref,
+                                  const AsyncTexImage2DParams& define_params));
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MockAsyncPixelTransferManager);
 };
 

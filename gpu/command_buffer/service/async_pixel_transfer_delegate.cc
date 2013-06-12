@@ -44,10 +44,6 @@ int AsyncPixelTransferUploadStats::GetStats(
   return texture_upload_count_;
 }
 
-AsyncPixelTransferState::AsyncPixelTransferState(){}
-
-AsyncPixelTransferState::~AsyncPixelTransferState(){}
-
 AsyncPixelTransferDelegate::AsyncPixelTransferDelegate(){}
 
 AsyncPixelTransferDelegate::~AsyncPixelTransferDelegate(){}

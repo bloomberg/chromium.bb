@@ -8,7 +8,6 @@
 #include "gpu/command_buffer/service/async_pixel_transfer_manager.h"
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace gfx {
 class GLContext;
@@ -32,7 +31,6 @@ class AsyncPixelTransferManagerShareGroup : public AsyncPixelTransferManager {
   virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
   virtual void ProcessMorePendingTransfers() OVERRIDE;
   virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
-  virtual AsyncPixelTransferDelegate* GetAsyncPixelTransferDelegate() OVERRIDE;
 
   // State shared between Managers and Delegates.
   struct SharedState {
@@ -40,13 +38,18 @@ class AsyncPixelTransferManagerShareGroup : public AsyncPixelTransferManager {
     ~SharedState();
 
     scoped_refptr<AsyncPixelTransferUploadStats> texture_upload_stats;
-    typedef std::list<base::WeakPtr<AsyncPixelTransferState> > TransferQueue;
+    typedef std::list<base::WeakPtr<AsyncPixelTransferDelegateShareGroup> >
+        TransferQueue;
     TransferQueue pending_allocations;
   };
 
  private:
+  // AsyncPixelTransferManager implementation:
+  virtual AsyncPixelTransferDelegate* CreatePixelTransferDelegateImpl(
+      gles2::TextureRef* ref,
+      const AsyncTexImage2DParams& define_params) OVERRIDE;
+
   SharedState shared_state_;
-  scoped_ptr<AsyncPixelTransferDelegateShareGroup> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferManagerShareGroup);
 };

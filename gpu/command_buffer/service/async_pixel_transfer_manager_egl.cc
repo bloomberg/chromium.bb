@@ -389,36 +389,6 @@ class TransferStateInternal
   bool use_image_preserved_;
 };
 
-// EGL needs thread-safe ref-counting, so this just wraps
-// an internal thread-safe ref-counted state object.
-class AsyncTransferStateImpl : public AsyncPixelTransferState {
- public:
-  AsyncTransferStateImpl(GLuint texture_id,
-                         const AsyncTexImage2DParams& define_params,
-                         bool wait_for_uploads,
-                         bool wait_for_creation,
-                         bool use_image_preserved)
-      : internal_(new TransferStateInternal(texture_id,
-                                            define_params,
-                                            wait_for_uploads,
-                                            wait_for_creation,
-                                            use_image_preserved)) {
-  }
-
-  virtual bool TransferIsInProgress() OVERRIDE {
-      return internal_->TransferIsInProgress();
-  }
-
-  void BindTransfer() {
-    internal_->BindTransfer();
-  }
-
-  scoped_refptr<TransferStateInternal> internal_;
-
- private:
-  virtual ~AsyncTransferStateImpl() {}
-};
-
 }  // namespace
 
 // Class which handles async pixel transfers using EGLImageKHR and another
@@ -427,55 +397,48 @@ class AsyncPixelTransferDelegateEGL
     : public AsyncPixelTransferDelegate,
       public base::SupportsWeakPtr<AsyncPixelTransferDelegateEGL> {
  public:
-  explicit AsyncPixelTransferDelegateEGL(
-      AsyncPixelTransferManagerEGL::SharedState* shared_state);
+  AsyncPixelTransferDelegateEGL(
+      AsyncPixelTransferManagerEGL::SharedState* shared_state,
+      GLuint texture_id,
+      const AsyncTexImage2DParams& define_params);
   virtual ~AsyncPixelTransferDelegateEGL();
 
+  void BindTransfer() { state_->BindTransfer(); }
+
   // Implement AsyncPixelTransferDelegate:
-  virtual AsyncPixelTransferState* CreatePixelTransferState(
-      GLuint texture_id,
-      const AsyncTexImage2DParams& define_params) OVERRIDE;
   virtual void AsyncTexImage2D(
-      AsyncPixelTransferState* state,
       const AsyncTexImage2DParams& tex_params,
       const AsyncMemoryParams& mem_params,
       const base::Closure& bind_callback) OVERRIDE;
   virtual void AsyncTexSubImage2D(
-      AsyncPixelTransferState* state,
       const AsyncTexSubImage2DParams& tex_params,
       const AsyncMemoryParams& mem_params) OVERRIDE;
-  virtual void WaitForTransferCompletion(
-      AsyncPixelTransferState* state) OVERRIDE;
+  virtual bool TransferIsInProgress() OVERRIDE;
+  virtual void WaitForTransferCompletion() OVERRIDE;
 
  private:
   // Returns true if a work-around was used.
   bool WorkAroundAsyncTexImage2D(
-      AsyncPixelTransferState* state,
       const AsyncTexImage2DParams& tex_params,
       const AsyncMemoryParams& mem_params,
       const base::Closure& bind_callback);
   bool WorkAroundAsyncTexSubImage2D(
-      AsyncPixelTransferState* state,
       const AsyncTexSubImage2DParams& tex_params,
       const AsyncMemoryParams& mem_params);
 
   // A raw pointer is safe because the SharedState is owned by the Manager,
   // which owns this Delegate.
   AsyncPixelTransferManagerEGL::SharedState* shared_state_;
+  scoped_refptr<TransferStateInternal> state_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateEGL);
 };
 
 AsyncPixelTransferDelegateEGL::AsyncPixelTransferDelegateEGL(
-    AsyncPixelTransferManagerEGL::SharedState* shared_state)
+    AsyncPixelTransferManagerEGL::SharedState* shared_state,
+    GLuint texture_id,
+    const AsyncTexImage2DParams& define_params)
     : shared_state_(shared_state) {
-}
-
-AsyncPixelTransferDelegateEGL::~AsyncPixelTransferDelegateEGL() {}
-
-AsyncPixelTransferState* AsyncPixelTransferDelegateEGL::
-    CreatePixelTransferState(GLuint texture_id,
-                             const AsyncTexImage2DParams& define_params) {
   // We can't wait on uploads on imagination (it can take 200ms+).
   // In practice, they are complete when the CPU glTexSubImage2D completes.
   bool wait_for_uploads = !shared_state_->is_imagination;
@@ -493,27 +456,27 @@ AsyncPixelTransferState* AsyncPixelTransferDelegateEGL::
   bool use_image_preserved =
       shared_state_->is_qualcomm || shared_state_->is_imagination;
 
-  return new AsyncTransferStateImpl(texture_id,
-                                    define_params,
-                                    wait_for_uploads,
-                                    wait_for_creation,
-                                    use_image_preserved);
+  state_ = new TransferStateInternal(texture_id,
+                                   define_params,
+                                   wait_for_uploads,
+                                   wait_for_creation,
+                                   use_image_preserved);
 }
 
-void AsyncPixelTransferDelegateEGL::WaitForTransferCompletion(
-      AsyncPixelTransferState* transfer_state) {
-  scoped_refptr<TransferStateInternal> state =
-      static_cast<AsyncTransferStateImpl*>(transfer_state)->internal_.get();
-  DCHECK(state.get());
-  DCHECK(state->texture_id_);
+AsyncPixelTransferDelegateEGL::~AsyncPixelTransferDelegateEGL() {}
 
-  if (state->TransferIsInProgress()) {
+bool AsyncPixelTransferDelegateEGL::TransferIsInProgress() {
+  return state_->TransferIsInProgress();
+}
+
+void AsyncPixelTransferDelegateEGL::WaitForTransferCompletion() {
+  if (state_->TransferIsInProgress()) {
 #if defined(OS_ANDROID) || defined(OS_LINUX)
     g_transfer_thread.Pointer()->SetPriority(base::kThreadPriority_Display);
 #endif
 
-    state->WaitForTransferCompletion();
-    DCHECK(!state->TransferIsInProgress());
+    state_->WaitForTransferCompletion();
+    DCHECK(!state_->TransferIsInProgress());
 
 #if defined(OS_ANDROID) || defined(OS_LINUX)
     g_transfer_thread.Pointer()->SetPriority(base::kThreadPriority_Background);
@@ -522,40 +485,34 @@ void AsyncPixelTransferDelegateEGL::WaitForTransferCompletion(
 }
 
 void AsyncPixelTransferDelegateEGL::AsyncTexImage2D(
-    AsyncPixelTransferState* transfer_state,
     const AsyncTexImage2DParams& tex_params,
     const AsyncMemoryParams& mem_params,
     const base::Closure& bind_callback) {
-  if (WorkAroundAsyncTexImage2D(transfer_state, tex_params,
-                                mem_params, bind_callback))
+  if (WorkAroundAsyncTexImage2D(tex_params, mem_params, bind_callback))
     return;
 
-  scoped_refptr<TransferStateInternal> state =
-      static_cast<AsyncTransferStateImpl*>(transfer_state)->internal_.get();
   DCHECK(mem_params.shared_memory);
   DCHECK_LE(mem_params.shm_data_offset + mem_params.shm_data_size,
             mem_params.shm_size);
-  DCHECK(state.get());
-  DCHECK(state->texture_id_);
-  DCHECK(!state->TransferIsInProgress());
-  DCHECK_EQ(state->egl_image_, EGL_NO_IMAGE_KHR);
+  DCHECK(!state_->TransferIsInProgress());
+  DCHECK_EQ(state_->egl_image_, EGL_NO_IMAGE_KHR);
   DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), tex_params.target);
   DCHECK_EQ(tex_params.level, 0);
 
   // Mark the transfer in progress and save the late bind
   // callback, so we can notify the client when it is bound.
-  shared_state_->pending_allocations.push_back(transfer_state->AsWeakPtr());
-  state->bind_callback_ = bind_callback;
+  shared_state_->pending_allocations.push_back(AsWeakPtr());
+  state_->bind_callback_ = bind_callback;
 
   // Mark the transfer in progress.
-  state->MarkAsTransferIsInProgress();
+  state_->MarkAsTransferIsInProgress();
 
   // Duplicate the shared memory so there is no way we can get
   // a use-after-free of the raw pixels.
   transfer_message_loop_proxy()->PostTask(FROM_HERE,
       base::Bind(
           &TransferStateInternal::PerformAsyncTexImage2D,
-          state,
+          state_,
           tex_params,
           mem_params,
           base::Owned(new ScopedSafeSharedMemory(safe_shared_memory_pool(),
@@ -567,19 +524,14 @@ void AsyncPixelTransferDelegateEGL::AsyncTexImage2D(
 }
 
 void AsyncPixelTransferDelegateEGL::AsyncTexSubImage2D(
-    AsyncPixelTransferState* transfer_state,
     const AsyncTexSubImage2DParams& tex_params,
     const AsyncMemoryParams& mem_params) {
   TRACE_EVENT2("gpu", "AsyncTexSubImage2D",
                "width", tex_params.width,
                "height", tex_params.height);
-  if (WorkAroundAsyncTexSubImage2D(transfer_state, tex_params, mem_params))
+  if (WorkAroundAsyncTexSubImage2D(tex_params, mem_params))
     return;
-  scoped_refptr<TransferStateInternal> state =
-      static_cast<AsyncTransferStateImpl*>(transfer_state)->internal_.get();
-
-  DCHECK(state->texture_id_);
-  DCHECK(!state->TransferIsInProgress());
+  DCHECK(!state_->TransferIsInProgress());
   DCHECK(mem_params.shared_memory);
   DCHECK_LE(mem_params.shm_data_offset + mem_params.shm_data_size,
             mem_params.shm_size);
@@ -587,18 +539,18 @@ void AsyncPixelTransferDelegateEGL::AsyncTexSubImage2D(
   DCHECK_EQ(tex_params.level, 0);
 
   // Mark the transfer in progress.
-  state->MarkAsTransferIsInProgress();
+  state_->MarkAsTransferIsInProgress();
 
   // If this wasn't async allocated, we don't have an EGLImage yet.
   // Create the EGLImage if it hasn't already been created.
-  state->CreateEglImageOnMainThreadIfNeeded();
+  state_->CreateEglImageOnMainThreadIfNeeded();
 
   // Duplicate the shared memory so there are no way we can get
   // a use-after-free of the raw pixels.
   transfer_message_loop_proxy()->PostTask(FROM_HERE,
       base::Bind(
           &TransferStateInternal::PerformAsyncTexSubImage2D,
-          state,
+          state_,
           tex_params,
           mem_params,
           base::Owned(new ScopedSafeSharedMemory(safe_shared_memory_pool(),
@@ -625,7 +577,7 @@ bool DimensionsSupportImgFastPath(int width, int height) {
          !(IsPowerOfTwo(width) &&
            IsPowerOfTwo(height));
 }
-} // namespace
+}  // namespace
 
 // It is very difficult to stream uploads on Imagination GPUs:
 // - glTexImage2D defers a swizzle/stall until draw-time
@@ -642,14 +594,11 @@ bool DimensionsSupportImgFastPath(int width, int height) {
 // on purely synchronous allocation/upload on the main thread.
 
 bool AsyncPixelTransferDelegateEGL::WorkAroundAsyncTexImage2D(
-    AsyncPixelTransferState* transfer_state,
     const AsyncTexImage2DParams& tex_params,
     const AsyncMemoryParams& mem_params,
     const base::Closure& bind_callback) {
   if (!shared_state_->is_imagination)
     return false;
-  scoped_refptr<TransferStateInternal> state =
-      static_cast<AsyncTransferStateImpl*>(transfer_state)->internal_.get();
 
   // On imagination we allocate synchronously all the time, even
   // if the dimensions support fast uploads. This is for part a.)
@@ -664,16 +613,16 @@ bool AsyncPixelTransferDelegateEGL::WorkAroundAsyncTexImage2D(
 
   // The allocation has already occured, so mark it as finished
   // and ready for binding.
-  CHECK(!state->TransferIsInProgress());
+  CHECK(!state_->TransferIsInProgress());
 
   // If the dimensions support fast async uploads, create the
   // EGLImage for future uploads. The late bind should not
   // be needed since the EGLImage was created from the main thread
   // texture, but this is required to prevent an imagination driver crash.
   if (DimensionsSupportImgFastPath(tex_params.width, tex_params.height)) {
-    state->CreateEglImageOnMainThreadIfNeeded();
-    shared_state_->pending_allocations.push_back(transfer_state->AsWeakPtr());
-    state->bind_callback_ = bind_callback;
+    state_->CreateEglImageOnMainThreadIfNeeded();
+    shared_state_->pending_allocations.push_back(AsWeakPtr());
+    state_->bind_callback_ = bind_callback;
   }
 
   DCHECK(CHECK_GL());
@@ -681,7 +630,6 @@ bool AsyncPixelTransferDelegateEGL::WorkAroundAsyncTexImage2D(
 }
 
 bool AsyncPixelTransferDelegateEGL::WorkAroundAsyncTexSubImage2D(
-    AsyncPixelTransferState* transfer_state,
     const AsyncTexSubImage2DParams& tex_params,
     const AsyncMemoryParams& mem_params) {
   if (!shared_state_->is_imagination)
@@ -692,22 +640,19 @@ bool AsyncPixelTransferDelegateEGL::WorkAroundAsyncTexSubImage2D(
   if (DimensionsSupportImgFastPath(tex_params.width, tex_params.height))
     return false;
 
-  scoped_refptr<TransferStateInternal> state =
-      static_cast<AsyncTransferStateImpl*>(transfer_state)->internal_.get();
-
   // Fall back on a synchronous stub as we don't have a known fast path.
   // Also, older ICS drivers crash when we do any glTexSubImage2D on the
   // same thread. To work around this we do glTexImage2D instead. Since
   // we didn't create an EGLImage for this texture (see above), this is
   // okay, but it limits this API to full updates for now.
-  DCHECK(!state->egl_image_);
+  DCHECK(!state_->egl_image_);
   DCHECK_EQ(tex_params.xoffset, 0);
   DCHECK_EQ(tex_params.yoffset, 0);
-  DCHECK_EQ(state->define_params_.width, tex_params.width);
-  DCHECK_EQ(state->define_params_.height, tex_params.height);
-  DCHECK_EQ(state->define_params_.level, tex_params.level);
-  DCHECK_EQ(state->define_params_.format, tex_params.format);
-  DCHECK_EQ(state->define_params_.type, tex_params.type);
+  DCHECK_EQ(state_->define_params_.width, tex_params.width);
+  DCHECK_EQ(state_->define_params_.height, tex_params.height);
+  DCHECK_EQ(state_->define_params_.level, tex_params.level);
+  DCHECK_EQ(state_->define_params_.format, tex_params.format);
+  DCHECK_EQ(state_->define_params_.type, tex_params.type);
 
   void* data = GetAddress(mem_params);
   base::TimeTicks begin_time;
@@ -717,7 +662,7 @@ bool AsyncPixelTransferDelegateEGL::WorkAroundAsyncTexSubImage2D(
     TRACE_EVENT0("gpu", "glTexSubImage2D");
     // Note we use define_params_ instead of tex_params.
     // The DCHECKs above verify this is always the same.
-    DoTexImage2D(state->define_params_, data);
+    DoTexImage2D(state_->define_params_, data);
   }
   if (shared_state_->texture_upload_stats.get()) {
     shared_state_->texture_upload_stats
@@ -739,8 +684,7 @@ AsyncPixelTransferManagerEGL::SharedState::SharedState()
 
 AsyncPixelTransferManagerEGL::SharedState::~SharedState() {}
 
-AsyncPixelTransferManagerEGL::AsyncPixelTransferManagerEGL()
-    : delegate_(new AsyncPixelTransferDelegateEGL(&shared_state_)) {}
+AsyncPixelTransferManagerEGL::AsyncPixelTransferManagerEGL() {}
 
 AsyncPixelTransferManagerEGL::~AsyncPixelTransferManagerEGL() {}
 
@@ -752,11 +696,10 @@ void AsyncPixelTransferManagerEGL::BindCompletedAsyncTransfers() {
       shared_state_.pending_allocations.pop_front();
       continue;
     }
-    scoped_refptr<TransferStateInternal> state =
-        static_cast<AsyncTransferStateImpl*>
-            (shared_state_.pending_allocations.front().get())->internal_.get();
+    AsyncPixelTransferDelegateEGL* delegate =
+        shared_state_.pending_allocations.front().get();
     // Terminate early, as all transfers finish in order, currently.
-    if (state->TransferIsInProgress())
+    if (delegate->TransferIsInProgress())
       break;
 
     if (!texture_binder)
@@ -764,7 +707,7 @@ void AsyncPixelTransferManagerEGL::BindCompletedAsyncTransfers() {
 
     // If the transfer is finished, bind it to the texture
     // and remove it from pending list.
-    state->BindTransfer();
+    delegate->BindTransfer();
     shared_state_.pending_allocations.pop_front();
   }
 }
@@ -806,8 +749,11 @@ bool AsyncPixelTransferManagerEGL::NeedsProcessMorePendingTransfers() {
 }
 
 AsyncPixelTransferDelegate*
-AsyncPixelTransferManagerEGL::GetAsyncPixelTransferDelegate() {
-  return delegate_.get();
+AsyncPixelTransferManagerEGL::CreatePixelTransferDelegateImpl(
+    gles2::TextureRef* ref,
+    const AsyncTexImage2DParams& define_params) {
+  return new AsyncPixelTransferDelegateEGL(
+      &shared_state_, ref->service_id(), define_params);
 }
 
 }  // namespace gpu

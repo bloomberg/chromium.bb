@@ -8,23 +8,6 @@
 
 namespace gpu {
 
-namespace {
-
-class AsyncPixelTransferStateImpl : public AsyncPixelTransferState {
- public:
-  AsyncPixelTransferStateImpl() {}
-
-  // Implement AsyncPixelTransferState:
-  virtual bool TransferIsInProgress() OVERRIDE {
-    return false;
-  }
-
- private:
-  virtual ~AsyncPixelTransferStateImpl() {}
-};
-
-}  // namespace
-
 // Class which handles async pixel transfers synchronously.
 class AsyncPixelTransferDelegateSync : public AsyncPixelTransferDelegate {
  public:
@@ -33,20 +16,15 @@ class AsyncPixelTransferDelegateSync : public AsyncPixelTransferDelegate {
   virtual ~AsyncPixelTransferDelegateSync();
 
   // Implement AsyncPixelTransferDelegate:
-  virtual AsyncPixelTransferState* CreatePixelTransferState(
-      GLuint texture_id,
-      const AsyncTexImage2DParams& define_params) OVERRIDE;
   virtual void AsyncTexImage2D(
-      AsyncPixelTransferState* state,
       const AsyncTexImage2DParams& tex_params,
       const AsyncMemoryParams& mem_params,
       const base::Closure& bind_callback) OVERRIDE;
   virtual void AsyncTexSubImage2D(
-      AsyncPixelTransferState* transfer_state,
       const AsyncTexSubImage2DParams& tex_params,
       const AsyncMemoryParams& mem_params) OVERRIDE;
-  virtual void WaitForTransferCompletion(
-      AsyncPixelTransferState* state) OVERRIDE;
+  virtual bool TransferIsInProgress() OVERRIDE;
+  virtual void WaitForTransferCompletion() OVERRIDE;
 
  private:
   // Safe to hold a raw pointer because SharedState is owned by the Manager
@@ -62,20 +40,12 @@ AsyncPixelTransferDelegateSync::AsyncPixelTransferDelegateSync(
 
 AsyncPixelTransferDelegateSync::~AsyncPixelTransferDelegateSync() {}
 
-AsyncPixelTransferState* AsyncPixelTransferDelegateSync::
-    CreatePixelTransferState(GLuint texture_id,
-                             const AsyncTexImage2DParams& define_params) {
-  return new AsyncPixelTransferStateImpl;
-}
-
 void AsyncPixelTransferDelegateSync::AsyncTexImage2D(
-    AsyncPixelTransferState* transfer_state,
     const AsyncTexImage2DParams& tex_params,
     const AsyncMemoryParams& mem_params,
     const base::Closure& bind_callback) {
   // Save the define params to return later during deferred
   // binding of the transfer texture.
-  DCHECK(transfer_state);
   void* data = GetAddress(mem_params);
   glTexImage2D(
       tex_params.target,
@@ -92,11 +62,9 @@ void AsyncPixelTransferDelegateSync::AsyncTexImage2D(
 }
 
 void AsyncPixelTransferDelegateSync::AsyncTexSubImage2D(
-    AsyncPixelTransferState* transfer_state,
     const AsyncTexSubImage2DParams& tex_params,
     const AsyncMemoryParams& mem_params) {
   void* data = GetAddress(mem_params);
-  DCHECK(transfer_state);
   base::TimeTicks begin_time(base::TimeTicks::HighResNow());
   glTexSubImage2D(
       tex_params.target,
@@ -113,8 +81,12 @@ void AsyncPixelTransferDelegateSync::AsyncTexSubImage2D(
       base::TimeTicks::HighResNow() - begin_time;
 }
 
-void AsyncPixelTransferDelegateSync::WaitForTransferCompletion(
-    AsyncPixelTransferState* state) {
+bool AsyncPixelTransferDelegateSync::TransferIsInProgress() {
+  // Already done.
+  return false;
+}
+
+void AsyncPixelTransferDelegateSync::WaitForTransferCompletion() {
   // Already done.
 }
 
@@ -123,8 +95,7 @@ AsyncPixelTransferManagerSync::SharedState::SharedState()
 
 AsyncPixelTransferManagerSync::SharedState::~SharedState() {}
 
-AsyncPixelTransferManagerSync::AsyncPixelTransferManagerSync()
-    : delegate_(new AsyncPixelTransferDelegateSync(&shared_state_)) {}
+AsyncPixelTransferManagerSync::AsyncPixelTransferManagerSync() {}
 
 AsyncPixelTransferManagerSync::~AsyncPixelTransferManagerSync() {}
 
@@ -154,9 +125,10 @@ bool AsyncPixelTransferManagerSync::NeedsProcessMorePendingTransfers() {
 }
 
 AsyncPixelTransferDelegate*
-AsyncPixelTransferManagerSync::GetAsyncPixelTransferDelegate() {
-  return delegate_.get();
+AsyncPixelTransferManagerSync::CreatePixelTransferDelegateImpl(
+    gles2::TextureRef* ref,
+    const AsyncTexImage2DParams& define_params) {
+  return new AsyncPixelTransferDelegateSync(&shared_state_);
 }
 
 }  // namespace gpu
-

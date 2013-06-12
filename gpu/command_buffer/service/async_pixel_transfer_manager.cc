@@ -20,39 +20,39 @@ void AsyncPixelTransferManager::Initialize(gles2::TextureManager* manager) {
   manager_->AddObserver(this);
 }
 
-AsyncPixelTransferState* AsyncPixelTransferManager::CreatePixelTransferState(
+AsyncPixelTransferDelegate*
+AsyncPixelTransferManager::CreatePixelTransferDelegate(
     gles2::TextureRef* ref,
     const AsyncTexImage2DParams& define_params) {
-  DCHECK(!GetPixelTransferState(ref));
-  AsyncPixelTransferState* state =
-      GetAsyncPixelTransferDelegate()->CreatePixelTransferState(
-          ref->texture()->service_id(), define_params);
-  state_map_[ref] = state;
-  return state;
+  DCHECK(!GetPixelTransferDelegate(ref));
+  AsyncPixelTransferDelegate* delegate =
+      CreatePixelTransferDelegateImpl(ref, define_params);
+  delegate_map_[ref] = make_linked_ptr(delegate);
+  return delegate;
 }
 
-AsyncPixelTransferState*
-AsyncPixelTransferManager::GetPixelTransferState(
+AsyncPixelTransferDelegate*
+AsyncPixelTransferManager::GetPixelTransferDelegate(
     gles2::TextureRef* ref) {
-  TextureToStateMap::iterator it = state_map_.find(ref);
-  if (it == state_map_.end()) {
+  TextureToDelegateMap::iterator it = delegate_map_.find(ref);
+  if (it == delegate_map_.end()) {
     return NULL;
   } else {
     return it->second.get();
   }
 }
 
-void AsyncPixelTransferManager::ClearPixelTransferStateForTest(
+void AsyncPixelTransferManager::ClearPixelTransferDelegateForTest(
     gles2::TextureRef* ref) {
-  TextureToStateMap::iterator it = state_map_.find(ref);
-  if (it != state_map_.end())
-    state_map_.erase(it);
+  TextureToDelegateMap::iterator it = delegate_map_.find(ref);
+  if (it != delegate_map_.end())
+    delegate_map_.erase(it);
 }
 
 bool AsyncPixelTransferManager::AsyncTransferIsInProgress(
     gles2::TextureRef* ref) {
-  AsyncPixelTransferState* state = GetPixelTransferState(ref);
-  return state && state->TransferIsInProgress();
+  AsyncPixelTransferDelegate* delegate = GetPixelTransferDelegate(ref);
+  return delegate && delegate->TransferIsInProgress();
 }
 
 void AsyncPixelTransferManager::OnTextureManagerDestroying(
@@ -64,9 +64,9 @@ void AsyncPixelTransferManager::OnTextureManagerDestroying(
 
 void AsyncPixelTransferManager::OnTextureRefDestroying(
     gles2::TextureRef* texture) {
-  TextureToStateMap::iterator it = state_map_.find(texture);
-  if (it != state_map_.end())
-    state_map_.erase(it);
+  TextureToDelegateMap::iterator it = delegate_map_.find(texture);
+  if (it != delegate_map_.end())
+    delegate_map_.erase(it);
 }
 
 }  // namespace gpu
