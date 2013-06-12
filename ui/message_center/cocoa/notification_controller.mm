@@ -369,11 +369,12 @@
 }
 
 - (void)close:(id)sender {
-  messageCenter_->RemoveNotification(notification_->id(), /*by_user=*/true);
+  messageCenter_->RemoveNotification([self notificationID], /*by_user=*/true);
 }
 
 - (void)buttonClicked:(id)button {
-  messageCenter_->ClickOnNotificationButton(notification_->id(), [button tag]);
+  messageCenter_->ClickOnNotificationButton([self notificationID],
+                                            [button tag]);
 }
 
 - (const message_center::Notification*)notification {
