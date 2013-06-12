@@ -443,10 +443,17 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
   RunTest("waitForTestResultsInConsole", std::string());
 }
 
+// Disabled on Windows due to flakiness. http://crbug.com/183649
+#if defined(OS_WIN)
+#define MAYBE_TestDevToolsExtensionMessaging DISABLED_TestDevToolsExtensionMessaging
+#else
+#define MAYBE_TestDevToolsExtensionMessaging TestDevToolsExtensionMessaging
+#endif
+
 // Tests that chrome.devtools extension can communicate with background page
 // using extension messaging.
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
-                       TestDevToolsExtensionMessaging) {
+                       MAYBE_TestDevToolsExtensionMessaging) {
   LoadExtension("devtools_messaging");
   RunTest("waitForTestResultsInConsole", std::string());
 }
