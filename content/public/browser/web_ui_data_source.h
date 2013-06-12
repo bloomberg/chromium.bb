@@ -5,8 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_WEB_UI_DATA_SOURCE_H_
 #define CONTENT_PUBLIC_BROWSER_WEB_UI_DATA_SOURCE_H_
 
-#include "base/string16.h"
 #include "base/callback.h"
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 
 namespace base {

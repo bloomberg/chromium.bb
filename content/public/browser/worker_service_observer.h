@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_WORKER_SERVICE_OBSERVER_H_
 
 #include "base/process.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 class GURL;
 

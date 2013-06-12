@@ -8,7 +8,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"

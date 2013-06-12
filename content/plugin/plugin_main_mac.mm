@@ -6,7 +6,7 @@
 
 #include "base/environment.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/common/plugin_carbon_interpose_constants_mac.h"
 #include "content/plugin/plugin_interpose_util_mac.h"
 #include "content/public/common/content_client.h"

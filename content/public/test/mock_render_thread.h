@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_TEST_MOCK_RENDER_THREAD_H_
 
 #include "base/shared_memory.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_test_sink.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"

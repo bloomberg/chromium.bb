@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
-#include "googleurl/src/gurl.h"
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/ssl_status.h"
+#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "webkit/glue/webmenuitem.h"

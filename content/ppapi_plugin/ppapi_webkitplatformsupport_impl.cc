@@ -7,7 +7,7 @@
 #include <map>
 
 #include "base/logging.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "content/child/child_thread.h"

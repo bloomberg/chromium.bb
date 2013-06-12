@@ -7,11 +7,11 @@
 
 #include <string>
 
-#include "base/string16.h"
 #include "base/memory/weak_ptr.h"
-#include "ipc/ipc_message.h"
+#include "base/strings/string16.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/page_transition_types.h"
+#include "ipc/ipc_message.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageVisibilityState.h"

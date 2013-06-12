@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/common/media_stream_request.h"

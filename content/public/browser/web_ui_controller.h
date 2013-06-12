@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_WEB_UI_CONTROLLER_H_
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 
 class GURL;

@@ -13,7 +13,7 @@
 #include "base/hi_res_timer_manager.h"
 #include "base/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "content/child/child_process.h"
 #include "content/plugin/plugin_thread.h"

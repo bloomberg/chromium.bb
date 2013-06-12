@@ -9,7 +9,7 @@
 #include <gtk/gtk.h>
 #endif  // TOOLKIT_GTK
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 
 #if defined(OS_WIN)
 #include "ui/base/dragdrop/drop_target_win.h"

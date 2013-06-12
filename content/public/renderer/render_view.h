@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_RENDERER_RENDER_VIEW_H_
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/common/top_controls_state.h"
 #include "ipc/ipc_sender.h"
