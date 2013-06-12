@@ -136,7 +136,10 @@ void SynchronousCompositorOutputSurface::SwapBuffers(
     DCHECK(context3d());
     context3d()->shallowFlushCHROMIUM();
   }
-  // TODO(joth): Route page scale to the client, see http://crbug.com/237006
+  SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
+  if (delegate)
+    delegate->UpdateFrameMetaData(frame->metadata);
+
   did_swap_buffer_ = true;
 }
 

@@ -22,6 +22,7 @@
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/size_conversions.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/vector2d_f.h"
 #include "ui/gl/gl_bindings.h"
@@ -320,8 +321,8 @@ void InProcessViewRenderer::WebContentsGone() {
 }
 
 bool InProcessViewRenderer::PrepareDrawGL(int x, int y) {
-  // No harm in updating |hw_rendering_scroll_| even if we return false.
-  hw_rendering_scroll_ = gfx::Point(x, y);
+  // No harm in updating |scroll_at_start_of_frame_| even if we return false.
+  scroll_at_start_of_frame_ = gfx::Point(x, y);
   return attached_to_window_ && compositor_ && !hardware_failed_ &&
          HardwareEnabled();
 }
@@ -365,7 +366,8 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
 
   gfx::Transform transform;
   transform.matrix().setColMajorf(draw_info->transform);
-  transform.Translate(hw_rendering_scroll_.x(), hw_rendering_scroll_.y());
+  transform.Translate(scroll_at_start_of_frame_.x(),
+                      scroll_at_start_of_frame_.y());
   // TODO(joth): Check return value.
   compositor_->DemandDrawHw(
       gfx::Size(draw_info->width, draw_info->height),
@@ -411,7 +413,9 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
       return false;
     }
 
-    if (!RasterizeIntoBitmap(env, jbitmap, clip.x(), clip.y(),
+    if (!RasterizeIntoBitmap(env, jbitmap,
+                             clip.x() - scroll_at_start_of_frame_.x(),
+                             clip.y() - scroll_at_start_of_frame_.y(),
                              base::Bind(&InProcessViewRenderer::RenderSW,
                                         base::Unretained(this)))) {
       TRACE_EVENT_INSTANT0("android_webview", "Rasterize Fail",
@@ -441,14 +445,16 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
       matrix.set(i, pixels->matrix[i]);
     canvas.setMatrix(matrix);
 
-    SkRegion clip;
     if (pixels->clip_region_size) {
-      size_t bytes_read = clip.readFromMemory(pixels->clip_region);
+      SkRegion clip_region;
+      size_t bytes_read = clip_region.readFromMemory(pixels->clip_region);
       DCHECK_EQ(pixels->clip_region_size, bytes_read);
-      canvas.setClipRegion(clip);
+      canvas.setClipRegion(clip_region);
     } else {
-      clip.setRect(SkIRect::MakeWH(pixels->width, pixels->height));
+      canvas.clipRect(gfx::RectToSkRect(clip));
     }
+    canvas.translate(scroll_at_start_of_frame_.x(),
+                     scroll_at_start_of_frame_.y());
 
     succeeded = RenderSW(&canvas);
   }

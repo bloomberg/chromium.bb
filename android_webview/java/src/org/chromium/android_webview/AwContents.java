@@ -459,10 +459,11 @@ public class AwContents {
 
     public void onDraw(Canvas canvas) {
         if (mNativeAwContents == 0) return;
-        if (canvas.isHardwareAccelerated() &&
-                nativePrepareDrawGL(mNativeAwContents,
-                        mContainerView.getScrollX(), mContainerView.getScrollY()) &&
-                mInternalAccessAdapter.requestDrawGL(canvas)) {
+        // TODO(joth): Consolidate most of this logic into nativePrepareDrawGL(), and
+        // rename it to nativeOnDraw().
+        if (nativePrepareDrawGL(mNativeAwContents,
+                mContainerView.getScrollX(), mContainerView.getScrollY()) &&
+            canvas.isHardwareAccelerated() && mInternalAccessAdapter.requestDrawGL(canvas)) {
             return;
         }
         Rect clip = canvas.getClipBounds();

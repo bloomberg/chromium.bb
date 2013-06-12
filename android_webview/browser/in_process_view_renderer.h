@@ -90,8 +90,8 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   // Not to be used between draw calls.
   EGLContext egl_context_at_init_;
 
-  // Last View scroll before hardware rendering is triggered.
-  gfx::Point hw_rendering_scroll_;
+  // Last View scroll when View.onDraw() was called.
+  gfx::Point scroll_at_start_of_frame_;
 
   gfx::Vector2dF scroll_offset_;
 
