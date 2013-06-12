@@ -140,6 +140,11 @@ class TopSites
   // This function also returns false if TopSites isn't loaded yet.
   virtual bool IsKnownURL(const GURL& url) = 0;
 
+  // Follows the cached redirect chain to convert any URL to its
+  // canonical version. If no redirect chain is known for the URL,
+  // return it without modification.
+  virtual const std::string& GetCanonicalURLString(const GURL& url) const = 0;
+
   // Returns true if the top sites list is full (i.e. we already have the
   // maximum number of top sites).  This function also returns false if
   // TopSites isn't loaded yet.

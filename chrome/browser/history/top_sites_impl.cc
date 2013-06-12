@@ -544,6 +544,10 @@ bool TopSitesImpl::IsKnownURL(const GURL& url) {
   return loaded_ && cache_->IsKnownURL(url);
 }
 
+const std::string& TopSitesImpl::GetCanonicalURLString(const GURL& url) const {
+  return cache_->GetCanonicalURL(url).spec();
+}
+
 bool TopSitesImpl::IsFull() {
   return loaded_ && cache_->top_sites().size() >= kTopSitesNumber;
 }
@@ -691,10 +695,6 @@ void TopSitesImpl::ApplyBlacklist(const MostVisitedURLList& urls,
     if (!IsBlacklisted(urls[i].url))
       out->push_back(urls[i]);
   }
-}
-
-std::string TopSitesImpl::GetURLString(const GURL& url) {
-  return cache_->GetCanonicalURL(url).spec();
 }
 
 std::string TopSitesImpl::GetURLHash(const GURL& url) {

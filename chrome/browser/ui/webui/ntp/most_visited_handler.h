@@ -90,7 +90,11 @@ class MostVisitedHandler : public content::WebUIMessageHandler,
   // Returns the key used in url_blacklist_ for the passed |url|.
   std::string GetDictionaryKeyForUrl(const std::string& url);
 
-  // Sends pages_value_ to the javascript side to and resets page_value_.
+  // Looks at the browser's currently open URLs and removes any matching URLs
+  // from |pages_value_|.
+  void RemovePageValuesMatchingOpenTabs();
+
+  // Sends pages_value_ to the javascript side and resets page_value_.
   void SendPagesValue();
 
   content::NotificationRegistrar registrar_;

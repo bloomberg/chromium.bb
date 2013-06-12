@@ -12,6 +12,7 @@
 #include "base/md5.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
@@ -23,6 +24,9 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/ntp/ntp_stats.h"
@@ -45,6 +49,29 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::UserMetricsAction;
+
+namespace {
+
+// Constants for the most visited tile placement field trial.
+const char kMostVisitedFieldTrialName[] = "MostVisitedTilePlacement";
+const char kTabsGroupName[] = "DontShowOpenTabs";
+
+// Minimum number of suggestions that |pages_value_| must hold for the Most
+// Visited Field Trial to remove a URL if already open in the browser.
+const size_t kMinUrlSuggestions = 8;
+
+// Creates a set containing the canonical URLs of the currently open tabs.
+void GetOpenUrls(const TabStripModel& tabs,
+                 const history::TopSites& ts,
+                 std::set<std::string>* urls) {
+  for (int i = 0; i < tabs.count(); ++i) {
+    content::WebContents* web_contents = tabs.GetWebContentsAt(i);
+    if (web_contents)
+      urls->insert(ts.GetCanonicalURLString(web_contents->GetURL()));
+  }
+}
+
+}  // namespace
 
 MostVisitedHandler::MostVisitedHandler()
     : weak_ptr_factory_(this),
@@ -134,17 +161,29 @@ void MostVisitedHandler::HandleGetMostVisited(const ListValue* args) {
 }
 
 void MostVisitedHandler::SendPagesValue() {
-  if (pages_value_.get()) {
+  if (pages_value_) {
     Profile* profile = Profile::FromWebUI(web_ui());
     const DictionaryValue* url_blacklist =
         profile->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
     bool has_blacklisted_urls = !url_blacklist->empty();
     history::TopSites* ts = profile->GetTopSites();
-    if (ts)
+    if (ts) {
       has_blacklisted_urls = ts->HasBlacklistedItems();
+
+      // The following experiment removes recommended URLs if a matching URL is
+      // already open in the Browser. Note: this targets only the
+      // top-level of sites i.e. if www.foo.com/bar is open in browser, and
+      // www.foo.com is a recommended URL, www.foo.com will still appear on the
+      // next NTP open.
+      if (base::FieldTrialList::FindFullName(kMostVisitedFieldTrialName) ==
+          kTabsGroupName) {
+        RemovePageValuesMatchingOpenTabs();
+      }
+    }
+
     base::FundamentalValue has_blacklisted_urls_value(has_blacklisted_urls);
     web_ui()->CallJavascriptFunction("ntp.setMostVisitedPages",
-                                     *(pages_value_.get()),
+                                     *pages_value_,
                                      has_blacklisted_urls_value);
     pages_value_.reset();
   }
@@ -258,6 +297,36 @@ void MostVisitedHandler::BlacklistUrl(const GURL& url) {
 
 std::string MostVisitedHandler::GetDictionaryKeyForUrl(const std::string& url) {
   return base::MD5String(url);
+}
+
+void MostVisitedHandler::RemovePageValuesMatchingOpenTabs() {
+#if !defined(OS_ANDROID)
+  TabStripModel* tab_strip_model = chrome::FindBrowserWithWebContents(
+      web_ui()->GetWebContents())->tab_strip_model();
+  history::TopSites* ts = Profile::FromWebUI(web_ui())->GetTopSites();
+  if (!tab_strip_model || !ts) {
+    NOTREACHED();
+    return;
+  }
+
+  // Iterate through most visited suggestions and remove pages already open in
+  // current browser, making sure to not drop below 8 suggestions.
+  std::set<std::string> open_urls;
+  GetOpenUrls(*tab_strip_model, *ts, &open_urls);
+  size_t i = 0;
+  while (i < pages_value_->GetSize() &&
+         pages_value_->GetSize() > kMinUrlSuggestions) {
+    base::DictionaryValue* page_value;
+    std::string url;
+    if (pages_value_->GetDictionary(i, &page_value) &&
+        page_value->GetString("url", &url) &&
+        open_urls.count(url) != 0) {
+      pages_value_->Remove(*page_value, &i);
+    } else {
+      ++i;
+    }
+  }
+#endif
 }
 
 // static

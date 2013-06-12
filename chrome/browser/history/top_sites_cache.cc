@@ -54,7 +54,7 @@ bool TopSitesCache::GetPageThumbnailScore(const GURL& url,
   return false;
 }
 
-GURL TopSitesCache::GetCanonicalURL(const GURL& url) {
+const GURL& TopSitesCache::GetCanonicalURL(const GURL& url) {
   CanonicalURLs::iterator i = TopSitesCache::GetCanonicalURLsIterator(url);
   return i == canonical_urls_.end() ? url : i->first.first->url;
 }

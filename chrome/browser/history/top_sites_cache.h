@@ -42,7 +42,7 @@ class TopSitesCache {
   bool GetPageThumbnailScore(const GURL& url, ThumbnailScore* score);
 
   // Returns the canonical URL for |url|.
-  GURL GetCanonicalURL(const GURL& url);
+  const GURL& GetCanonicalURL(const GURL& url);
 
   // Returns true if |url| is known.
   bool IsKnownURL(const GURL& url);

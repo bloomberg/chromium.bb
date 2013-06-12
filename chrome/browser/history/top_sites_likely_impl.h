@@ -82,6 +82,8 @@ class TopSitesLikelyImpl : public TopSites {
   virtual void Shutdown() OVERRIDE;
   virtual CancelableRequestProvider::Handle StartQueryForMostVisited() OVERRIDE;
   virtual bool IsKnownURL(const GURL& url) OVERRIDE;
+  virtual const std::string& GetCanonicalURLString(
+      const GURL& url) const OVERRIDE;
   virtual bool IsFull() OVERRIDE;
   virtual MostVisitedURLList GetPrepopulatePages() OVERRIDE;
   virtual bool loaded() const OVERRIDE;
@@ -178,9 +180,6 @@ class TopSitesLikelyImpl : public TopSites {
 
   // Takes |urls|, produces it's copy in |out| after removing blacklisted URLs.
   void ApplyBlacklist(const MostVisitedURLList& urls, MostVisitedURLList* out);
-
-  // Converts a url into a canonical string representation.
-  std::string GetURLString(const GURL& url);
 
   // Returns an MD5 hash of the URL. Hashing is required for blacklisted URLs.
   std::string GetURLHash(const GURL& url);
