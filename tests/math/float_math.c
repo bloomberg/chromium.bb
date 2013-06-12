@@ -1,7 +1,7 @@
 /*
  * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -36,50 +36,64 @@
 
 int test_constants(void) {
   int errs = 0;
+  /* Attempt to prevent constant folding */
+  volatile double x = 1.0;
+  volatile double y = 0.0;
   errs += CHECK_NAN(NAN);
   printf("Print out of NaN: %f\n", NAN);
   errs += CHECK_INF(INFINITY);
   printf("Print out of Infinity: %f\n", INFINITY);
-  errs += CHECK_INF(1.0/0.0);
+  errs += CHECK_INF(x/y);
   return errs;
 }
 
 int test_compares(void) {
   int errs = 0;
+  /* Attempt to prevent constant folding */
+  volatile double x;
+  volatile double y;
 
   printf("Comparing float constants\n");
-  errs += ASSERT_TRUE(NAN != NAN);
-  errs += ASSERT_TRUE(isunordered(NAN, NAN));
-  errs += CHECK_NAN(NAN + 3.0f);
-  errs += CHECK_NAN(NAN + NAN);
-  errs += CHECK_NAN(NAN - NAN);
-  errs += CHECK_NAN(NAN / NAN);
-  errs += CHECK_NAN(0.0 / NAN);
-  errs += CHECK_NAN(0.0 * NAN);
+  x = NAN;
+  errs += ASSERT_TRUE(x != x);
+  errs += ASSERT_TRUE(isunordered(x, x));
+  errs += CHECK_NAN(x + 3.0f);
+  errs += CHECK_NAN(x + x);
+  errs += CHECK_NAN(x - x);
+  errs += CHECK_NAN(x / x);
+  errs += CHECK_NAN(0.0 / x);
+  errs += CHECK_NAN(0.0 * x);
 
-  errs += ASSERT_FALSE(NAN == NAN);
+  errs += ASSERT_FALSE(x == x);
 
-  errs += ASSERT_TRUE(INFINITY == INFINITY);
-  errs += ASSERT_FALSE(INFINITY == -INFINITY);
-  errs += ASSERT_TRUE(-INFINITY == -INFINITY);
-  errs += ASSERT_TRUE(INFINITY + 100.0 == INFINITY);
-  errs += ASSERT_TRUE(INFINITY - 100.0 == INFINITY);
-  errs += ASSERT_TRUE(-INFINITY - 100.0 == -INFINITY);
-  errs += ASSERT_TRUE(-INFINITY + 100.0 == -INFINITY);
-  errs += ASSERT_TRUE(-INFINITY < INFINITY);
-  errs += ASSERT_FALSE(-INFINITY > INFINITY);
+  x = INFINITY;
+  errs += ASSERT_TRUE(x == x);
+  errs += ASSERT_FALSE(x == -x);
+  errs += ASSERT_TRUE(-x == -x);
+  errs += ASSERT_TRUE(x + 100.0 == x);
+  errs += ASSERT_TRUE(x - 100.0 == x);
+  errs += ASSERT_TRUE(-x - 100.0 == -x);
+  errs += ASSERT_TRUE(-x + 100.0 == -x);
+  errs += ASSERT_TRUE(-x < x);
+  errs += ASSERT_FALSE(-x > x);
 
-  errs += CHECK_NAN(0.0 * INFINITY);
-  errs += CHECK_NAN(0.0 / 0.0);
-  errs += CHECK_NAN(INFINITY / INFINITY);
-  errs += CHECK_NAN(INFINITY - INFINITY);
-  errs += CHECK_NAN(INFINITY * NAN);
+  y = 0.0;
+  errs += CHECK_NAN(y * x);
+  errs += CHECK_NAN(y / y);
+  errs += CHECK_NAN(x / x);
+  errs += CHECK_NAN(x - x);
+  y = NAN;
+  errs += CHECK_NAN(x * y);
 
-  errs += CHECK_INF(INFINITY + INFINITY);
-  errs += CHECK_INF(1.0 / 0.0);
+  x = INFINITY;
+  errs += CHECK_INF(x + x);
+  x = 1.0; y = 0.0;
+  errs += CHECK_INF(x / y);
 
-  errs += ASSERT_FALSE(isfinite(INFINITY));
-  errs += ASSERT_FALSE(isfinite(NAN));
+  x = INFINITY;
+  errs += ASSERT_FALSE(isfinite(x));
+  x = NAN;
+  errs += ASSERT_FALSE(isfinite(x));
 
   return errs;
 }
@@ -87,16 +101,29 @@ int test_compares(void) {
 /* Test non-NaN-resulting library calls. */
 int test_defined(void) {
   int errs = 0;
+  /*
+   * Attempt to prevent constant folding and optimization of library
+   * function bodies (when statically linked).
+   */
+  volatile double x;
+  volatile double y;
+  volatile double z;
 
   printf("Checking lib calls that take NaN, etc, but return non-NaN.\n");
-  errs += CHECK_EQ_DOUBLE(pow(0.0, 0.0), 1.0);
-  errs += CHECK_EQ_DOUBLE(pow(NAN, 0.0), 1.0);
-  errs += CHECK_EQ_DOUBLE(pow(INFINITY, 0.0), 1.0);
+  x = 0.0; y = 1.0;
+  errs += CHECK_EQ_DOUBLE(pow(x, x), y);
+  z = NAN;
+  errs += CHECK_EQ_DOUBLE(pow(z, x), y);
+  z = INFINITY;
+  errs += CHECK_EQ_DOUBLE(pow(z, x), y);
 
-  errs += CHECK_INF(sqrt(INFINITY));
-  errs += CHECK_EQ_DOUBLE(sqrt(-0.0), -0.0);
-  errs += CHECK_INF(pow(INFINITY, 2.0));
-  errs += ASSERT_TRUE(log(0) == -INFINITY);
+  errs += CHECK_INF(sqrt(z));
+  x = -0.0;
+  errs += CHECK_EQ_DOUBLE(sqrt(x), x);
+  x = INFINITY; y = 2.0;
+  errs += CHECK_INF(pow(x, y));
+  x = 0.0; y = -INFINITY;
+  errs += ASSERT_TRUE(log(x) == y);
 
   return errs;
 }
@@ -104,17 +131,30 @@ int test_defined(void) {
 /* Test NaN-resulting library calls. */
 int test_errs(void) {
   int errs = 0;
+  /*
+   * Attempt to prevent constant folding and optimization of library
+   * function bodies (when statically linked).
+   */
+  volatile double x;
+  volatile double y;
 
   printf("Checking well-defined library errors\n");
-  errs += CHECK_NAN(pow(-3.0, 4.4));
-  errs += CHECK_NAN(log(-3.0));
-  errs += CHECK_NAN(sqrt(-0.001));
-  errs += CHECK_NAN(asin(1.0001));
-  errs += CHECK_NAN(sin(INFINITY));
-  errs += CHECK_NAN(cos(INFINITY));
-  errs += CHECK_NAN(acosh(0.999));
-  errs += CHECK_NAN(remainder(3.3, 0.0));
-  errs += CHECK_NAN(remainder(INFINITY, 3.3));
+  x = -3.0; y = 4.4;
+  errs += CHECK_NAN(pow(x, y));
+  errs += CHECK_NAN(log(x));
+  x = -0.001;
+  errs += CHECK_NAN(sqrt(x));
+  x = 1.0001;
+  errs += CHECK_NAN(asin(x));
+  x = INFINITY;
+  errs += CHECK_NAN(sin(x));
+  errs += CHECK_NAN(cos(x));
+  x = 0.999;
+  errs += CHECK_NAN(acosh(x));
+  x = 3.3; y = 0.0;
+  errs += CHECK_NAN(remainder(x, y));
+  y = INFINITY;
+  errs += CHECK_NAN(remainder(y, x));
   return errs;
 }
 
@@ -151,25 +191,39 @@ https://www.securecoding.cert.org/confluence/display/seccode/ \
 
 int test_exception(void) {
   int errs = 0;
+  /*
+   * Attempt to prevent constant folding and optimization of library
+   * function bodies (when statically linked).
+   */
+  volatile double x;
+  volatile double y;
+
   printf("Checking that exceptional lib calls set errno\n");
-  errs += CHECK_TRIPPED_ERRNO(pow(-3, 4.4));
-  errs += CHECK_TRIPPED_ERRNO(log(-3.0));
-  errs += CHECK_TRIPPED_ERRNO(sqrt(-0.001));
-  errs += CHECK_TRIPPED_ERRNO(asin(1.0001));
+  x = -3.0; y = 4.4;
+  errs += CHECK_TRIPPED_ERRNO(pow(x, y));
+  errs += CHECK_TRIPPED_ERRNO(log(x));
+  x = -0.001;
+  errs += CHECK_TRIPPED_ERRNO(sqrt(x));
+  x = 1.0001;
+  errs += CHECK_TRIPPED_ERRNO(asin(x));
 
 /* Some versions of libc don't set errno =(
  * http://sourceware.org/bugzilla/show_bug.cgi?id=6780
  * http://sourceware.org/bugzilla/show_bug.cgi?id=6781
-  errs += CHECK_TRIPPED_ERRNO(sin(INFINITY));
-  errs += CHECK_TRIPPED_ERRNO(cos(INFINITY));
-  */
-  errs += CHECK_TRIPPED_ERRNO(acosh(0.999));
-  errs += CHECK_TRIPPED_ERRNO(remainder(3.3, 0.0));
+  x = INFINITY;
+  errs += CHECK_TRIPPED_ERRNO(sin(x));
+  errs += CHECK_TRIPPED_ERRNO(cos(x));
+ */
+  x = 0.999;
+  errs += CHECK_TRIPPED_ERRNO(acosh(x));
+  x = 3.3; y = 0.0;
+  errs += CHECK_TRIPPED_ERRNO(remainder(x, y));
 
 /* Some versions of libc don't set errno =(
  * http://sourceware.org/bugzilla/show_bug.cgi?id=6783
-  errs += CHECK_TRIPPED_ERRNO(remainder(INFINITY, 3.3));
-  */
+  x = INFINITY; y = 3.3;
+  errs += CHECK_TRIPPED_ERRNO(remainder(x, y));
+ */
   return errs;
 }
 
