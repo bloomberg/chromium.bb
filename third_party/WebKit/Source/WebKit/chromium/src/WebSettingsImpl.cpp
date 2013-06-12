@@ -368,6 +368,11 @@ void WebSettingsImpl::setExperimentalCSSGridLayoutEnabled(bool enabled)
     m_settings->setCSSGridLayoutEnabled(enabled);
 }
 
+void WebSettingsImpl::setRegionBasedColumnsEnabled(bool enabled)
+{
+    m_settings->setRegionBasedColumnsEnabled(enabled);
+}
+
 void WebSettingsImpl::setExperimentalCSSCustomFilterEnabled(bool enabled)
 {
     m_settings->setCSSCustomFilterEnabled(enabled);

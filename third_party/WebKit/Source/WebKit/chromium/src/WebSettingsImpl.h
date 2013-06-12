@@ -92,6 +92,7 @@ public:
     virtual void setEnableTouchAdjustment(bool);
     virtual void setExperimentalCSSCustomFilterEnabled(bool);
     virtual void setExperimentalCSSGridLayoutEnabled(bool);
+    virtual void setRegionBasedColumnsEnabled(bool);
     virtual void setCSSStickyPositionEnabled(bool);
     virtual void setExperimentalWebGLEnabled(bool);
     virtual void setExperimentalWebSocketEnabled(bool);
