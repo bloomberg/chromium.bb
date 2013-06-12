@@ -185,7 +185,8 @@ bool TransportSecurityState::GetDomainState(const std::string& host,
 
     // Succeed if we matched the domain exactly or if subdomain matches are
     // allowed.
-    if (i == 0 || j->second.include_subdomains) {
+    if (i == 0 || j->second.sts_include_subdomains ||
+        j->second.pkp_include_subdomains) {
       *result = state;
       return true;
     }
@@ -557,7 +558,8 @@ static bool HasPreload(const struct HSTSPreload* entries, size_t num_entries,
       if (!entries[j].include_subdomains && i != 0) {
         *ret = false;
       } else {
-        out->include_subdomains = entries[j].include_subdomains;
+        out->sts_include_subdomains = entries[j].include_subdomains;
+        out->pkp_include_subdomains = entries[j].include_subdomains;
         *ret = true;
         if (!entries[j].https_required)
           out->upgrade_mode = TransportSecurityState::DomainState::MODE_DEFAULT;
@@ -616,7 +618,7 @@ bool TransportSecurityState::AddHSTSHeader(const std::string& host,
   base::Time now = base::Time::Now();
   base::TimeDelta max_age;
   TransportSecurityState::DomainState domain_state;
-  if (ParseHSTSHeader(value, &max_age, &domain_state.include_subdomains)) {
+  if (ParseHSTSHeader(value, &max_age, &domain_state.sts_include_subdomains)) {
     // Handle max-age == 0
     if (max_age.InSeconds() == 0)
       domain_state.upgrade_mode = DomainState::MODE_DEFAULT;
@@ -661,7 +663,7 @@ bool TransportSecurityState::AddHSTS(const std::string& host,
     domain_state = i->second;
 
   domain_state.created = base::Time::Now();
-  domain_state.include_subdomains = include_subdomains;
+  domain_state.sts_include_subdomains = include_subdomains;
   domain_state.upgrade_expiry = expiry;
   domain_state.upgrade_mode = DomainState::MODE_FORCE_HTTPS;
   EnableHost(host, domain_state);
@@ -682,7 +684,7 @@ bool TransportSecurityState::AddHPKP(const std::string& host,
     domain_state = i->second;
 
   domain_state.created = base::Time::Now();
-  domain_state.include_subdomains = include_subdomains;
+  domain_state.pkp_include_subdomains = include_subdomains;
   domain_state.dynamic_spki_hashes_expiry = expiry;
   domain_state.dynamic_spki_hashes = hashes;
   EnableHost(host, domain_state);
@@ -748,7 +750,8 @@ bool TransportSecurityState::GetStaticDomainState(
   DCHECK(CalledOnValidThread());
 
   out->upgrade_mode = DomainState::MODE_FORCE_HTTPS;
-  out->include_subdomains = false;
+  out->sts_include_subdomains = false;
+  out->pkp_include_subdomains = false;
 
   const bool is_build_timely = IsBuildTimely();
 
@@ -781,7 +784,8 @@ void TransportSecurityState::AddOrUpdateEnabledHosts(
 TransportSecurityState::DomainState::DomainState()
     : upgrade_mode(MODE_FORCE_HTTPS),
       created(base::Time::Now()),
-      include_subdomains(false) {
+      sts_include_subdomains(false),
+      pkp_include_subdomains(false) {
 }
 
 TransportSecurityState::DomainState::~DomainState() {

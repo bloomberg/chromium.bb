@@ -104,12 +104,13 @@ class NET_EXPORT TransportSecurityState
     // UPGRADE_ALWAYS, downgrades to UPGRADE_NEVER.
     base::Time upgrade_expiry;
 
-    // Are subdomains subject to this DomainState?
-    //
-    // TODO(palmer): We need to have separate |pin_subdomains| and
-    // |upgrade_subdomains|. Trevor Perrin is working on a new storage model
-    // that will enable this.
-    bool include_subdomains;
+    // Are subdomains subject to this DomainState, for the purposes of
+    // upgrading to HTTPS?
+    bool sts_include_subdomains;
+
+    // Are subdomains subject to this DomainState, for the purposes of
+    // Pin Validation?
+    bool pkp_include_subdomains;
 
     // Optional; hashes of static pinned SubjectPublicKeyInfos. Unless both
     // are empty, at least one of |static_spki_hashes| and

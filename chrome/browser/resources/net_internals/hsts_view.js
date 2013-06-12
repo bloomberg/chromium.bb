@@ -27,7 +27,8 @@ var HSTSView = (function() {
     superClass.call(this, HSTSView.MAIN_BOX_ID);
 
     this.addInput_ = $(HSTSView.ADD_INPUT_ID);
-    this.addCheck_ = $(HSTSView.ADD_CHECK_ID);
+    this.addStsCheck_ = $(HSTSView.ADD_STS_CHECK_ID);
+    this.addPkpCheck_ = $(HSTSView.ADD_PKP_CHECK_ID);
     this.addPins_ = $(HSTSView.ADD_PINS_ID);
     this.deleteInput_ = $(HSTSView.DELETE_INPUT_ID);
     this.queryInput_ = $(HSTSView.QUERY_INPUT_ID);
@@ -52,7 +53,8 @@ var HSTSView = (function() {
   // IDs for special HTML elements in hsts_view.html
   HSTSView.MAIN_BOX_ID = 'hsts-view-tab-content';
   HSTSView.ADD_INPUT_ID = 'hsts-view-add-input';
-  HSTSView.ADD_CHECK_ID = 'hsts-view-check-input';
+  HSTSView.ADD_STS_CHECK_ID = 'hsts-view-check-sts-input';
+  HSTSView.ADD_PKP_CHECK_ID = 'hsts-view-check-pkp-input';
   HSTSView.ADD_PINS_ID = 'hsts-view-add-pins';
   HSTSView.ADD_FORM_ID = 'hsts-view-add-form';
   HSTSView.ADD_SUBMIT_ID = 'hsts-view-add-submit';
@@ -72,11 +74,13 @@ var HSTSView = (function() {
 
     onSubmitAdd_: function(event) {
       g_browser.sendHSTSAdd(this.addInput_.value,
-                            this.addCheck_.checked,
+                            this.addStsCheck_.checked,
+                            this.addPkpCheck_.checked,
                             this.addPins_.value);
       g_browser.sendHSTSQuery(this.addInput_.value);
       this.queryInput_.value = this.addInput_.value;
-      this.addCheck_.checked = false;
+      this.addStsCheck_.checked = false;
+      this.addPkpCheck_.checked = false;
       this.addInput_.value = '';
       this.addPins_.value = '';
       event.preventDefault();
@@ -117,10 +121,15 @@ var HSTSView = (function() {
       var t = addNode(this.queryOutputDiv_, 'tt');
       t.textContent = modeToString(result.mode);
 
-      addTextNode(this.queryOutputDiv_, ' include_subdomains:');
+      addTextNode(this.queryOutputDiv_, ' sts_include_subdomains:');
 
       t = addNode(this.queryOutputDiv_, 'tt');
-      t.textContent = result.subdomains;
+      t.textContent = result.sts_subdomains;
+
+      addTextNode(this.queryOutputDiv_, ' pkp_include_subdomains:');
+
+      t = addNode(this.queryOutputDiv_, 'tt');
+      t.textContent = result.pkp_subdomains;
 
       addTextNode(this.queryOutputDiv_, ' domain:');
 

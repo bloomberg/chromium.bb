@@ -1285,7 +1285,8 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
       result->SetBoolean("result", found);
       if (found) {
         result->SetInteger("mode", static_cast<int>(state.upgrade_mode));
-        result->SetBoolean("subdomains", state.include_subdomains);
+        result->SetBoolean("sts_subdomains", state.sts_include_subdomains);
+        result->SetBoolean("pkp_subdomains", state.pkp_include_subdomains);
         result->SetString("domain", state.domain);
         result->SetDouble("expiry", state.upgrade_expiry.ToDoubleT());
         result->SetDouble("dynamic_spki_hashes_expiry",
@@ -1304,7 +1305,8 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
 
 void NetInternalsMessageHandler::IOThreadImpl::OnHSTSAdd(
     const ListValue* list) {
-  // |list| should be: [<domain to query>, <include subdomains>, <cert pins>].
+  // |list| should be: [<domain to query>, <STS include subdomains>, <PKP
+  // include subdomains>, <key pins>].
   std::string domain;
   CHECK(list->GetString(0, &domain));
   if (!IsStringASCII(domain)) {
@@ -1312,10 +1314,12 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSAdd(
     // name.
     return;
   }
-  bool include_subdomains;
-  CHECK(list->GetBoolean(1, &include_subdomains));
+  bool sts_include_subdomains;
+  CHECK(list->GetBoolean(1, &sts_include_subdomains));
+  bool pkp_include_subdomains;
+  CHECK(list->GetBoolean(2, &pkp_include_subdomains));
   std::string hashes_str;
-  CHECK(list->GetString(2, &hashes_str));
+  CHECK(list->GetString(3, &hashes_str));
 
   net::TransportSecurityState* transport_security_state =
       GetMainContext()->transport_security_state();
@@ -1329,8 +1333,8 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSAdd(
       return;
   }
 
-  transport_security_state->AddHSTS(domain, expiry, include_subdomains);
-  transport_security_state->AddHPKP(domain, expiry, include_subdomains,
+  transport_security_state->AddHSTS(domain, expiry, sts_include_subdomains);
+  transport_security_state->AddHPKP(domain, expiry, pkp_include_subdomains,
                                     hashes);
 }
 

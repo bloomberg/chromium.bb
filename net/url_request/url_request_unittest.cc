@@ -3803,7 +3803,8 @@ TEST_F(URLRequestTestHTTP, ProcessSTS) {
       SpawnedTestServer::kLocalhost, sni_available, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
             domain_state.upgrade_mode);
-  EXPECT_TRUE(domain_state.include_subdomains);
+  EXPECT_TRUE(domain_state.sts_include_subdomains);
+  EXPECT_FALSE(domain_state.pkp_include_subdomains);
 }
 
 TEST_F(URLRequestTestHTTP, ProcessSTSOnce) {
@@ -3831,7 +3832,8 @@ TEST_F(URLRequestTestHTTP, ProcessSTSOnce) {
       SpawnedTestServer::kLocalhost, sni_available, &domain_state));
   EXPECT_EQ(TransportSecurityState::DomainState::MODE_FORCE_HTTPS,
             domain_state.upgrade_mode);
-  EXPECT_FALSE(domain_state.include_subdomains);
+  EXPECT_FALSE(domain_state.sts_include_subdomains);
+  EXPECT_FALSE(domain_state.pkp_include_subdomains);
 }
 
 TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP) {
@@ -3867,10 +3869,11 @@ TEST_F(URLRequestTestHTTP, ProcessSTSAndPKP) {
   EXPECT_NE(domain_state.upgrade_expiry,
             domain_state.dynamic_spki_hashes_expiry);
 
-  // TODO(palmer): In the (near) future, TransportSecurityState will have a
-  // storage model allowing us to have independent values for
-  // include_subdomains. At that time, extend this test.
-  //EXPECT_FALSE(domain_state.include_subdomains);
+  // Even though there is an HSTS header asserting includeSubdomains, it is
+  // the *second* such header, and we MUST process only the first.
+  EXPECT_FALSE(domain_state.sts_include_subdomains);
+  // includeSubdomains does not occur in the test HPKP header.
+  EXPECT_FALSE(domain_state.pkp_include_subdomains);
 }
 
 TEST_F(URLRequestTestHTTP, ContentTypeNormalizationTest) {
@@ -4837,8 +4840,10 @@ TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
   EXPECT_TRUE(transport_security_state.GetDomainState("www.google.com", true,
                                                       &new_domain_state));
   EXPECT_EQ(new_domain_state.upgrade_mode, domain_state.upgrade_mode);
-  EXPECT_EQ(new_domain_state.include_subdomains,
-            domain_state.include_subdomains);
+  EXPECT_EQ(new_domain_state.sts_include_subdomains,
+            domain_state.sts_include_subdomains);
+  EXPECT_EQ(new_domain_state.pkp_include_subdomains,
+            domain_state.pkp_include_subdomains);
   EXPECT_TRUE(FingerprintsEqual(new_domain_state.static_spki_hashes,
                                 domain_state.static_spki_hashes));
   EXPECT_TRUE(FingerprintsEqual(new_domain_state.dynamic_spki_hashes,

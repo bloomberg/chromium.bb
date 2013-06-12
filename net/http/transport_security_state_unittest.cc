@@ -162,8 +162,8 @@ TEST_F(TransportSecurityStateTest, IsPreloaded) {
 
   EXPECT_TRUE(GetStaticDomainState(&state, paypal, true, &domain_state));
   EXPECT_TRUE(GetStaticDomainState(&state, www_paypal, true, &domain_state));
-  EXPECT_FALSE(GetStaticDomainState(&state, foo_paypal, true, &domain_state));
-  EXPECT_FALSE(domain_state.include_subdomains);
+  EXPECT_FALSE(domain_state.sts_include_subdomains);
+  EXPECT_FALSE(domain_state.pkp_include_subdomains);
   EXPECT_FALSE(GetStaticDomainState(&state, a_www_paypal, true, &domain_state));
   EXPECT_FALSE(GetStaticDomainState(&state, abc_paypal, true, &domain_state));
   EXPECT_FALSE(GetStaticDomainState(&state, example, true, &domain_state));
@@ -229,7 +229,8 @@ TEST_F(TransportSecurityStateTest, Preloaded) {
   EXPECT_TRUE(state.GetDomainState("www.paypal.com", true, &domain_state));
   EXPECT_EQ(domain_state.upgrade_mode,
             TransportSecurityState::DomainState::MODE_FORCE_HTTPS);
-  EXPECT_FALSE(domain_state.include_subdomains);
+  EXPECT_FALSE(domain_state.sts_include_subdomains);
+  EXPECT_FALSE(domain_state.pkp_include_subdomains);
 
   EXPECT_TRUE(HasState("paypal.com"));
   EXPECT_FALSE(HasState("www2.paypal.com"));

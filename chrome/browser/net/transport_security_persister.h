@@ -64,7 +64,8 @@ class TransportSecurityPersister
   // represented as a dictionary containing the following keys and value
   // types (not all keys will always be present):
   //
-  //     "include_subdomains": true|false
+  //     "sts_include_subdomains": true|false
+  //     "pkp_include_subdomains": true|false
   //     "created": double
   //     "expiry": double
   //     "dynamic_spki_hashes_expiry": double
