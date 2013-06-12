@@ -70,21 +70,23 @@ def DeviceInfo(serial):
             '']
 
   errors = []
-  if battery_level < 5:
+  if battery_level < 15:
     errors += ['Device critically low in battery. Do not use for testing.']
   if not setup_wizard_disabled and device_build_type != 'user':
     errors += ['Setup wizard not disabled. Was it provisioned correctly?']
   if device_product_name == 'mantaray' and ac_power != 'true':
     errors += ['Mantaray device not connected to AC power.']
-  if install_speed < 800:
-    errors += ['Device install speed too low. Do not use for testing.']
+  # TODO(navabi): Insert warning once we have a better handle of what install
+  # speeds to expect. The following lines were causing too many alerts.
+  # if install_speed < 500:
+  #   errors += ['Device install speed too low. Do not use for testing.']
 
   # TODO(navabi): Determine if device status check step should fail on slow
   # install speed. The original CL caused the step to fail but was reverted
   # because it caused too many early failures. Determine if it was just flake.
   # Also, do not fail on 'Unknown' caused by offline device, because other
   # devices can still be used for tests.
-  fail_step = (battery_level == 'Unknown' or battery_level >= 5)
+  fail_step = (battery_level == 'Unknown' or battery_level >= 15)
   return device_type, device_build, '\n'.join(report), errors, fail_step
 
 
