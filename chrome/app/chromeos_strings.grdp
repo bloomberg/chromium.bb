@@ -324,7 +324,7 @@ Press any key to continue exploring.
     Spoken feedback
   </message>
   <message name="IDS_OOBE_LARGE_CURSOR_OPTION" desc="Large cursor option shown on OOBE screens accessibility menu.">
-    Large Cursor
+    Large cursor
   </message>
   <message name="IDS_OOBE_HIGH_CONTRAST_MODE_OPTION" desc="High contrast mode option shown on OOBE screens accessibility menu.">
     High contrast
@@ -835,7 +835,7 @@ Press any key to continue exploring.
     Enable accessibility features to make your device easier to use.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_LARGE_CURSOR_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for the large cursor.">
-    Enable Large Cursor
+    Enable large cursor
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SPOKEN_FEEDBACK_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for spoken feedback.">
     Enable spoken feedback

@@ -398,7 +398,7 @@ Press Shift + Alt to switch.
         Screen magnifier
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_LARGE_CURSOR" desc="The label used in the accessibility menu of the system tray to toggle on/off large cursor feature.">
-        Large Cursor
+        Large cursor
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_LEARN_MORE" desc="The label used in the accessibility menu of the system tray
      to open a webpage (article on help center) containing explanation about accessibility feature.">
