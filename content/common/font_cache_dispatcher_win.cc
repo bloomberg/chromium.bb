@@ -4,11 +4,11 @@
 
 #include "content/common/font_cache_dispatcher_win.h"
 
-#include <vector>
 #include <map>
+#include <vector>
 
 #include "base/logging.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/common/child_process_messages.h"
 
 namespace content {

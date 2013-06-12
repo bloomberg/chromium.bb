@@ -17,7 +17,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/time.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gl_helper_scaling.h"

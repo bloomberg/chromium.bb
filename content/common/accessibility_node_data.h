@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/rect.h"
 

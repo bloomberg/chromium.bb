@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_ADDRESS_PARSER_H_
 #define CONTENT_COMMON_ADDRESS_PARSER_H_
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 
 namespace content {

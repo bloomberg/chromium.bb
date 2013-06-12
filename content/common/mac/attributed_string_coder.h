@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/common/mac/font_descriptor.h"
 #include "ipc/ipc_message_utils.h"

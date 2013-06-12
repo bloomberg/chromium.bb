@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/common/gpu/media/h264_parser.h"
 
 using content::H264Parser;

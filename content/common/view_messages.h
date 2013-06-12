@@ -7,7 +7,7 @@
 
 #include "base/process.h"
 #include "base/shared_memory.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "content/common/browser_rendering_stats.h"

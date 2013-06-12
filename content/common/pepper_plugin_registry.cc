@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/native_library.h"
-#include "base/string_util.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"

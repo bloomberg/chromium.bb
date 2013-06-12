@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/child/child_thread.h"
 #include "content/common/gpu/gpu_channel.h"

@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"

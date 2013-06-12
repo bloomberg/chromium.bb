@@ -14,9 +14,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/shared_memory.h"
-#include "base/string16.h"
-#include "ipc/ipc_listener.h"
+#include "base/strings/string16.h"
 #include "content/public/common/child_process_host.h"
+#include "ipc/ipc_listener.h"
 
 namespace base {
 class FilePath;

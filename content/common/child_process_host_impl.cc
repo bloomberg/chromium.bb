@@ -14,7 +14,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
-#include "base/stringprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "content/common/child_process_messages.h"
 #include "content/public/common/child_process_host_delegate.h"

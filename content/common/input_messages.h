@@ -6,7 +6,7 @@
 // order relative to input events.
 // Multiply-included message file, hence no include guard.
 
-#include "base/string16.h"
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/edit_command.h"

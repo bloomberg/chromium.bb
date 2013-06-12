@@ -17,7 +17,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/timer.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_messages.h"

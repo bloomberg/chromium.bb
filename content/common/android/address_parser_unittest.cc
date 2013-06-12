@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/android/address_parser.h"
 #include "content/common/android/address_parser_internal.h"

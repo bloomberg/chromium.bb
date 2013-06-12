@@ -8,7 +8,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/media/gles2_texture_to_egl_image_translator.h"
 #include "media/base/bitstream_buffer.h"

@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "content/common/savable_url_schemes.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
