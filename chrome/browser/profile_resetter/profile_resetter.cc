@@ -5,6 +5,9 @@
 #include "chrome/browser/profile_resetter/profile_resetter.h"
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
@@ -21,7 +24,6 @@ ProfileResetter::ProfileResetter(Profile* profile)
       pending_reset_flags_(0) {
   DCHECK(CalledOnValidThread());
   DCHECK(profile_);
-  DCHECK(template_url_service_);
   registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
                  content::Source<TemplateURLService>(template_url_service_));
 }
@@ -101,6 +103,7 @@ void ProfileResetter::MarkAsDone(Resettable resettable) {
 
 void ProfileResetter::ResetDefaultSearchEngine() {
   DCHECK(CalledOnValidThread());
+  DCHECK(template_url_service_);
 
   // If TemplateURLServiceFactory is ready we can clean it right now.
   // Otherwise, load it and continue from ProfileResetter::Observe.
@@ -150,8 +153,10 @@ void ProfileResetter::ResetCookiesAndSiteData() {
 
 void ProfileResetter::ResetExtensions(ExtensionHandling extension_handling) {
   DCHECK(CalledOnValidThread());
-  NOTIMPLEMENTED();
-  // TODO(battre/vabr): Implement
+  ExtensionService* extension_service = profile_->GetExtensionService();
+  DCHECK(extension_service);
+  extension_service->DisableUserExtensions();
+
   MarkAsDone(EXTENSIONS);
 }
 

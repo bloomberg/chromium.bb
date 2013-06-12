@@ -946,6 +946,29 @@ void ExtensionService::DisableExtension(
   SyncExtensionChangeIfNeeded(*extension);
 }
 
+void ExtensionService::DisableUserExtensions() {
+  extensions::ManagementPolicy* management_policy =
+      system_->management_policy();
+  extensions::ExtensionList to_disable;
+
+  for (ExtensionSet::const_iterator extension = extensions_.begin();
+      extension != extensions_.end(); ++extension) {
+    if (management_policy->UserMayModifySettings(*extension, NULL))
+      to_disable.push_back(*extension);
+  }
+  for (ExtensionSet::const_iterator extension = terminated_extensions_.begin();
+      extension != terminated_extensions_.end(); ++extension) {
+    if (management_policy->UserMayModifySettings(*extension, NULL))
+      to_disable.push_back(*extension);
+  }
+
+  for (extensions::ExtensionList::const_iterator extension = to_disable.begin();
+      extension != to_disable.end(); ++extension) {
+    DisableExtension((*extension)->id(),
+                     extensions::Extension::DISABLE_USER_ACTION);
+  }
+}
+
 void ExtensionService::GrantPermissionsAndEnableExtension(
     const Extension* extension) {
   GrantPermissions(extension);
