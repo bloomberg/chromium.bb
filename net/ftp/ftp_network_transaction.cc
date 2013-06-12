@@ -212,7 +212,6 @@ FtpNetworkTransaction::FtpNetworkTransaction(
       request_(NULL),
       resolver_(session->host_resolver()),
       read_ctrl_buf_(new IOBuffer(kCtrlBufLen)),
-      ctrl_response_buffer_(NULL),
       read_data_buf_len_(0),
       last_error_(OK),
       system_type_(SYSTEM_TYPE_UNKNOWN),
@@ -224,8 +223,7 @@ FtpNetworkTransaction::FtpNetworkTransaction(
       data_connection_port_(0),
       socket_factory_(socket_factory),
       next_state_(STATE_NONE),
-      state_after_data_connect_complete_(STATE_CTRL_WRITE_SIZE) {
-}
+      state_after_data_connect_complete_(STATE_CTRL_WRITE_SIZE) {}
 
 FtpNetworkTransaction::~FtpNetworkTransaction() {
 }

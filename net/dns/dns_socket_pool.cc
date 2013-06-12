@@ -187,7 +187,7 @@ scoped_ptr<DatagramClientSocket> DefaultDnsSocketPool::AllocateSocket(
   FillPool(server_index, kAllocateMinSize);
   if (pool.size() == 0) {
     LOG(WARNING) << "No DNS sockets available in pool " << server_index << "!";
-    return scoped_ptr<DatagramClientSocket>(NULL);
+    return scoped_ptr<DatagramClientSocket>();
   }
 
   if (pool.size() < kAllocateMinSize) {

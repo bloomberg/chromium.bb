@@ -330,7 +330,7 @@ class TransactionHelper {
 
 class DnsTransactionTest : public testing::Test {
  public:
-  DnsTransactionTest() : socket_factory_(NULL) {}
+  DnsTransactionTest() {}
 
   // Generates |nameservers| for DnsConfig.
   void ConfigureNumServers(unsigned num_servers) {

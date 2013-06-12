@@ -173,7 +173,7 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndexFile::LoadFromDisk(
   std::string contents;
   if(!file_util::ReadFileToString(index_filename, &contents)) {
     LOG(WARNING) << "Could not read Simple Index file.";
-    return scoped_ptr<SimpleIndex::EntrySet>(NULL);
+    return scoped_ptr<SimpleIndex::EntrySet>();
   }
 
   return SimpleIndexFile::Deserialize(contents.data(), contents.size());
@@ -186,7 +186,7 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndexFile::Deserialize(const char* data,
   Pickle pickle(data, data_len);
   if (!pickle.data()) {
     LOG(WARNING) << "Corrupt Simple Index File.";
-    return scoped_ptr<SimpleIndex::EntrySet>(NULL);
+    return scoped_ptr<SimpleIndex::EntrySet>();
   }
 
   PickleIterator pickle_it(pickle);
@@ -198,18 +198,18 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndexFile::Deserialize(const char* data,
 
   if (crc_read != crc_calculated) {
     LOG(WARNING) << "Invalid CRC in Simple Index file.";
-    return scoped_ptr<SimpleIndex::EntrySet>(NULL);
+    return scoped_ptr<SimpleIndex::EntrySet>();
   }
 
   SimpleIndexFile::IndexMetadata index_metadata;
   if (!index_metadata.Deserialize(&pickle_it)) {
     LOG(ERROR) << "Invalid index_metadata on Simple Cache Index.";
-    return scoped_ptr<SimpleIndex::EntrySet>(NULL);
+    return scoped_ptr<SimpleIndex::EntrySet>();
   }
 
   if (!index_metadata.CheckIndexMetadata()) {
     LOG(ERROR) << "Invalid index_metadata on Simple Cache Index.";
-    return scoped_ptr<SimpleIndex::EntrySet>(NULL);
+    return scoped_ptr<SimpleIndex::EntrySet>();
   }
 
   scoped_ptr<SimpleIndex::EntrySet> index_file_entries(
@@ -220,7 +220,7 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndexFile::Deserialize(const char* data,
     if (!pickle_it.ReadUInt64(&hash_key) ||
         !entry_metadata.Deserialize(&pickle_it)) {
       LOG(WARNING) << "Invalid EntryMetadata in Simple Index file.";
-      return scoped_ptr<SimpleIndex::EntrySet>(NULL);
+      return scoped_ptr<SimpleIndex::EntrySet>();
     }
     SimpleIndex::InsertInEntrySet(
         hash_key, entry_metadata, index_file_entries.get());

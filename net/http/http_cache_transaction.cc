@@ -175,7 +175,6 @@ HttpCache::Transaction::Transaction(
       cache_(cache->AsWeakPtr()),
       entry_(NULL),
       new_entry_(NULL),
-      network_trans_(NULL),
       new_response_(NULL),
       mode_(NONE),
       target_state_(STATE_NONE),
@@ -194,8 +193,8 @@ HttpCache::Transaction::Transaction(
       effective_load_flags_(0),
       write_len_(0),
       weak_factory_(this),
-      io_callback_(base::Bind(
-          &Transaction::OnIOComplete, weak_factory_.GetWeakPtr())),
+      io_callback_(base::Bind(&Transaction::OnIOComplete,
+                              weak_factory_.GetWeakPtr())),
       transaction_pattern_(PATTERN_UNDEFINED),
       defer_cache_sensitivity_delay_(false),
       transaction_delegate_(transaction_delegate) {

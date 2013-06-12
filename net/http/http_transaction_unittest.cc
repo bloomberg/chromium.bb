@@ -155,9 +155,7 @@ int TestTransactionConsumer::quit_counter_ = 0;
 TestTransactionConsumer::TestTransactionConsumer(
     net::RequestPriority priority,
     net::HttpTransactionFactory* factory)
-    : state_(IDLE),
-      trans_(NULL),
-      error_(net::OK) {
+    : state_(IDLE), error_(net::OK) {
   // Disregard the error code.
   factory->CreateTransaction(priority, &trans_, NULL);
   ++quit_counter_;

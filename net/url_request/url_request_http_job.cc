@@ -222,7 +222,6 @@ URLRequestJob* URLRequestHttpJob::Factory(URLRequest* request,
                                request->context()->http_user_agent_settings());
 }
 
-
 URLRequestHttpJob::URLRequestHttpJob(
     URLRequest* request,
     NetworkDelegate* network_delegate,
@@ -233,13 +232,12 @@ URLRequestHttpJob::URLRequestHttpJob(
       response_cookies_save_index_(0),
       proxy_auth_state_(AUTH_STATE_DONT_NEED_AUTH),
       server_auth_state_(AUTH_STATE_DONT_NEED_AUTH),
-      start_callback_(base::Bind(
-          &URLRequestHttpJob::OnStartCompleted, base::Unretained(this))),
-      notify_before_headers_sent_callback_(base::Bind(
-          &URLRequestHttpJob::NotifyBeforeSendHeadersCallback,
-          base::Unretained(this))),
+      start_callback_(base::Bind(&URLRequestHttpJob::OnStartCompleted,
+                                 base::Unretained(this))),
+      notify_before_headers_sent_callback_(
+          base::Bind(&URLRequestHttpJob::NotifyBeforeSendHeadersCallback,
+                     base::Unretained(this))),
       read_in_progress_(false),
-      transaction_(NULL),
       throttling_entry_(NULL),
       sdch_dictionary_advertised_(false),
       sdch_test_activated_(false),
@@ -253,12 +251,12 @@ URLRequestHttpJob::URLRequestHttpJob(
       final_packet_time_(),
       filter_context_(new HttpFilterContext(this)),
       weak_factory_(this),
-      on_headers_received_callback_(base::Bind(
-          &URLRequestHttpJob::OnHeadersReceivedCallback,
-          base::Unretained(this))),
+      on_headers_received_callback_(
+          base::Bind(&URLRequestHttpJob::OnHeadersReceivedCallback,
+                     base::Unretained(this))),
       awaiting_callback_(false),
-      http_transaction_delegate_(new HttpTransactionDelegateImpl(
-          request, network_delegate)),
+      http_transaction_delegate_(
+          new HttpTransactionDelegateImpl(request, network_delegate)),
       http_user_agent_settings_(http_user_agent_settings) {
   URLRequestThrottlerManager* manager = request->context()->throttler_manager();
   if (manager)

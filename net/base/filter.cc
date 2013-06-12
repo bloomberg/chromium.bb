@@ -322,9 +322,7 @@ Filter::Filter()
       stream_buffer_size_(0),
       next_stream_data_(NULL),
       stream_data_len_(0),
-      next_filter_(NULL),
-      last_status_(FILTER_NEED_MORE_DATA) {
-}
+      last_status_(FILTER_NEED_MORE_DATA) {}
 
 Filter::FilterStatus Filter::CopyOut(char* dest_buffer, int* dest_len) {
   int out_len;

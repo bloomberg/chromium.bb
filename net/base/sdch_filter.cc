@@ -19,7 +19,6 @@ namespace net {
 SdchFilter::SdchFilter(const FilterContext& filter_context)
     : filter_context_(filter_context),
       decoding_status_(DECODING_UNINITIALIZED),
-      vcdiff_streaming_decoder_(NULL),
       dictionary_hash_(),
       dictionary_hash_is_plausible_(false),
       dictionary_(NULL),

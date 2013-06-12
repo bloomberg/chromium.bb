@@ -89,16 +89,13 @@ class HttpProxyClientSocketPoolSpdy2Test : public TestWithHttpParam {
         session_(CreateNetworkSession()),
         http_proxy_histograms_("HttpProxyUnitTest"),
         spdy_util_(kProtoSPDY2),
-        ssl_data_(NULL),
-        data_(NULL),
         pool_(kMaxSockets,
               kMaxSocketsPerGroup,
               &http_proxy_histograms_,
               NULL,
               &transport_socket_pool_,
               &ssl_socket_pool_,
-              NULL) {
-  }
+              NULL) {}
 
   virtual ~HttpProxyClientSocketPoolSpdy2Test() {
   }

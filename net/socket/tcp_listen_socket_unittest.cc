@@ -24,12 +24,7 @@ static const char kLoopback[] = "127.0.0.1";
 static const int kDefaultTimeoutMs = 5000;
 
 TCPListenSocketTester::TCPListenSocketTester()
-    : thread_(NULL),
-      loop_(NULL),
-      server_(NULL),
-      connection_(NULL),
-      cv_(&lock_) {
-}
+    : loop_(NULL), server_(NULL), connection_(NULL), cv_(&lock_) {}
 
 void TCPListenSocketTester::SetUp() {
   base::Thread::Options options;

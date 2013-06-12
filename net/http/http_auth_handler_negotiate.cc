@@ -27,8 +27,7 @@ HttpAuthHandlerNegotiate::Factory::Factory()
       max_token_length_(0),
       first_creation_(true),
 #endif
-      is_unsupported_(false),
-      auth_library_(NULL) {
+      is_unsupported_(false) {
 }
 
 HttpAuthHandlerNegotiate::Factory::~Factory() {

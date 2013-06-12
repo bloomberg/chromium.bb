@@ -68,7 +68,6 @@ class DeterministicSocketDataTest : public PlatformTest {
 
 DeterministicSocketDataTest::DeterministicSocketDataTest()
     : sock_(NULL),
-      data_(NULL),
       read_buf_(NULL),
       connect_data_(SYNCHRONOUS, OK),
       endpoint_("www.google.com", 443),

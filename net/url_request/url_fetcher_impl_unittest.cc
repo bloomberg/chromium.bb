@@ -82,10 +82,7 @@ class ThrottlingTestURLRequestContextGetter
 class URLFetcherTest : public testing::Test,
                        public URLFetcherDelegate {
  public:
-  URLFetcherTest()
-      : fetcher_(NULL),
-        context_(NULL) {
-  }
+  URLFetcherTest() : fetcher_(NULL) {}
 
   static int GetNumFetcherCores() {
     return URLFetcherImpl::GetNumFetcherCores();

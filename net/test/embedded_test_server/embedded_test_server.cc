@@ -43,7 +43,7 @@ scoped_ptr<HttpResponse> HandleFileRequest(
   std::string file_contents;
   if (!file_util::ReadFileToString(
           server_root.AppendASCII(request_path), &file_contents)) {
-    return scoped_ptr<HttpResponse>(NULL);
+    return scoped_ptr<HttpResponse>();
   }
 
   scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);

@@ -152,9 +152,7 @@ int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
 }
 
 QuicStreamRequest::QuicStreamRequest(QuicStreamFactory* factory)
-    : factory_(factory),
-      stream_(NULL){
-}
+    : factory_(factory) {}
 
 QuicStreamRequest::~QuicStreamRequest() {
   if (factory_ && !callback_.is_null())
@@ -299,7 +297,7 @@ scoped_ptr<QuicHttpStream> QuicStreamFactory::CreateIfSessionExists(
     const HostPortProxyPair& host_port_proxy_pair,
     const BoundNetLog& net_log) {
   if (!HasActiveSession(host_port_proxy_pair)) {
-    return scoped_ptr<QuicHttpStream>(NULL);
+    return scoped_ptr<QuicHttpStream>();
   }
 
   QuicClientSession* session = active_sessions_[host_port_proxy_pair];

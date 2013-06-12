@@ -140,8 +140,6 @@ INSTANTIATE_TEST_CASE_P(NextProto,
 
 SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
     : spdy_util_(GetParam()),
-      sock_(NULL),
-      data_(NULL),
       session_(NULL),
       read_buf_(NULL),
       session_deps_(GetParam()),
@@ -153,7 +151,8 @@ SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
       proxy_host_port_(kProxyHost, kProxyPort),
       endpoint_host_port_pair_(kOriginHost, kOriginPort),
       proxy_(ProxyServer::SCHEME_HTTPS, proxy_host_port_),
-      endpoint_spdy_session_key_(endpoint_host_port_pair_, proxy_,
+      endpoint_spdy_session_key_(endpoint_host_port_pair_,
+                                 proxy_,
                                  kPrivacyModeDisabled),
       transport_params_(new TransportSocketParams(proxy_host_port_,
                                                   LOWEST,

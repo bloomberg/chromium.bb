@@ -77,7 +77,6 @@ ProxyScriptFetcherImpl::ProxyScriptFetcherImpl(
       url_request_context_(url_request_context),
       buf_(new IOBuffer(kBufSize)),
       next_id_(0),
-      cur_request_(NULL),
       cur_request_id_(0),
       result_code_(OK),
       result_text_(NULL),

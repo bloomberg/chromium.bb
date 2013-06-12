@@ -229,7 +229,8 @@ scoped_ptr<DnsSession::SocketLease> DnsSession::AllocateSocket(
   scoped_ptr<DatagramClientSocket> socket;
 
   socket = socket_pool_->AllocateSocket(server_index);
-  if (!socket.get()) return scoped_ptr<SocketLease>(NULL);
+  if (!socket.get())
+    return scoped_ptr<SocketLease>();
 
   socket->NetLog().BeginEvent(NetLog::TYPE_SOCKET_IN_USE,
                               source.ToEventParametersCallback());
