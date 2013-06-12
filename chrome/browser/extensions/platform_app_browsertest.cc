@@ -718,7 +718,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, MAYBE_ReOpenedWithID) {
 }
 
 // http://crbug.com/246999
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_ReOpenedWithURL DISABLED_ReOpenedWithURL
 #else
 #define MAYBE_ReOpenedWithURL ReOpenedWithURL
