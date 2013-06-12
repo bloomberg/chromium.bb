@@ -789,6 +789,8 @@ bool ParamTraits<LOGFONT>::Read(const Message* m, PickleIterator* iter,
       memcpy(r, data, sizeof(LOGFONT));
       return true;
     }
+    std::wstring font_name(font->lfFaceName, LF_FACESIZE);
+    LOG(ERROR) << "Invalid LOGFONT '" << WideToUTF8(font_name) << "'";
   }
 
   NOTREACHED();
