@@ -1,9 +1,8 @@
 Name: harfbuzz-ng
 Short Name: harfbuzz-ng
-URL: http://freedesktop.org/wiki/Software/HarfBuzz
-Version: 0.9.14
-Date: 20130321
-Revision: f872a17462a75a3493623747bf3a3fbe54556c7b
+URL: http://harfbuzz.org
+Version: 0.9.17
+Date: 20130520
 Security Critical: yes
 License: MIT
 License File: COPYING
@@ -25,4 +24,4 @@ In addition, all unneeded files from the root directory and src/ directory
 (hb-icu-le, hb-ucdn, hb-old, scripts to generate data tables, automake/conf
 files) are deleted.
 
-_POSIX_C_SOURCE is undefined in src/hb-blob.cc before (re)defining it.
+Besides, _POSIX_C_SOURCE is undefined in src/hb-blob.cc before (re)defining it.

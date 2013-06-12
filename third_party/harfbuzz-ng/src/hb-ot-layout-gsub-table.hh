@@ -275,11 +275,18 @@ struct Sequence
     unsigned int klass = c->buffer->cur().glyph_props() &
 			 HB_OT_LAYOUT_GLYPH_PROPS_LIGATURE ? HB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH : 0;
     unsigned int count = substitute.len;
-    for (unsigned int i = 0; i < count; i++) {
-      set_lig_props_for_component (c->buffer->cur(), i);
-      c->output_glyph (substitute.array[i], klass);
+    if (count == 1) /* Special-case to make it in-place. */
+    {
+      c->replace_glyph (substitute.array[0]);
     }
-    c->buffer->skip_glyph ();
+    else
+    {
+      for (unsigned int i = 0; i < count; i++) {
+	set_lig_props_for_component (c->buffer->cur(), i);
+	c->output_glyph (substitute.array[i], klass);
+      }
+      c->buffer->skip_glyph ();
+    }
 
     return TRACE_RETURN (true);
   }
@@ -1196,38 +1203,38 @@ struct SubstLookup : Lookup
 
     if (likely (!is_reverse ()))
     {
-	/* in/out forward substitution */
-	c->buffer->clear_output ();
-	c->buffer->idx = 0;
+      /* in/out forward substitution */
+      c->buffer->clear_output ();
+      c->buffer->idx = 0;
 
-	while (c->buffer->idx < c->buffer->len)
-	{
-	  if ((c->buffer->cur().mask & c->lookup_mask) &&
-	      digest->may_have (c->buffer->cur().codepoint) &&
-	      apply_once (c))
-	    ret = true;
-	  else
-	    c->buffer->next_glyph ();
-	}
-	if (ret)
-	  c->buffer->swap_buffers ();
+      while (c->buffer->idx < c->buffer->len)
+      {
+	if (digest->may_have (c->buffer->cur().codepoint) &&
+	    (c->buffer->cur().mask & c->lookup_mask) &&
+	    apply_once (c))
+	  ret = true;
+	else
+	  c->buffer->next_glyph ();
+      }
+      if (ret)
+	c->buffer->swap_buffers ();
     }
     else
     {
-	/* in-place backward substitution */
-	c->buffer->remove_output ();
-	c->buffer->idx = c->buffer->len - 1;
-	do
-	{
-	  if ((c->buffer->cur().mask & c->lookup_mask) &&
-	      digest->may_have (c->buffer->cur().codepoint) &&
-	      apply_once (c))
-	    ret = true;
-	  else
-	    c->buffer->idx--;
+      /* in-place backward substitution */
+      c->buffer->remove_output ();
+      c->buffer->idx = c->buffer->len - 1;
+      do
+      {
+	if (digest->may_have (c->buffer->cur().codepoint) &&
+	    (c->buffer->cur().mask & c->lookup_mask) &&
+	    apply_once (c))
+	  ret = true;
+	else
+	  c->buffer->idx--;
 
-	}
-	while ((int) c->buffer->idx >= 0);
+      }
+      while ((int) c->buffer->idx >= 0);
     }
 
     return ret;

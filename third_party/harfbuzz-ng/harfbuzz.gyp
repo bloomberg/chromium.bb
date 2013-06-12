@@ -60,7 +60,6 @@
         'src/hb-ot-shape-complex-indic-machine.hh',
         'src/hb-ot-shape-complex-indic-private.hh',
         'src/hb-ot-shape-complex-indic-table.cc',
-        'src/hb-ot-shape-complex-indic-table.hh',
         'src/hb-ot-shape-complex-indic.cc',
         'src/hb-ot-shape-complex-myanmar-machine.hh',
         'src/hb-ot-shape-complex-myanmar.cc',

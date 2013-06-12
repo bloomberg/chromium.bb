@@ -1,3 +1,32 @@
+Overview of changes leading to 0.9.17
+Monday, May 20, 2013
+=====================================
+
+- Build fixes.
+- Fix bug in hb_set_get_min().
+- Fix regression with Arabic mark positioning / width-zeroing.
+
+Overview of changes leading to 0.9.16
+Friday, April 19, 2013
+=====================================
+
+- Major speedup in OpenType lookup processing.  With the Amiri
+  Arabic font, this release is over 3x faster than previous
+  release.  All scripts / languages should see this speedup.
+
+- New --num-iterations option for hb-shape / hb-view; useful for
+  profiling.
+
+Overview of changes leading to 0.9.15
+Friday, April 05, 2013
+=====================================
+
+- Build fixes.
+- Fix crasher in graphite2 shaper.
+- Fix Arabic mark width zeroing regression.
+- Don't compose Hangul jamo into Unicode syllables.
+
+
 Overview of changes leading to 0.9.14
 Thursday, March 21, 2013
 =====================================
