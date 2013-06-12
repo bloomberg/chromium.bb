@@ -2112,7 +2112,7 @@ llvm-sb-setup() {
   # not in the SDK. libsrpc should have already been built by the
   # build.sh sdk-private-libs step.
   # This is always statically linked.
-  local flags=" -static -DNACL_SRPC -I$(GetAbsolutePath ${NACL_ROOT}/..) "
+  local flags=" -static -I$(GetAbsolutePath ${NACL_ROOT}/..) "
 
   LLVM_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
