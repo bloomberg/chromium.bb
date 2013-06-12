@@ -409,6 +409,7 @@
         'disk_cache/flash/segment.h',
         'disk_cache/flash/storage.cc',
         'disk_cache/flash/storage.h',
+        'disk_cache/v3/disk_format_v3.h',
         'dns/address_sorter.h',
         'dns/address_sorter_posix.cc',
         'dns/address_sorter_posix.h',
