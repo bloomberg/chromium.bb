@@ -27,6 +27,7 @@
               'activity_log_private.json',
               'omnibox.json',
               'storage.json',
+              'usb.idl',
             ]
           }],
           ['chromeos==1', {
