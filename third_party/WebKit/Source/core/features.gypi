@@ -131,6 +131,11 @@
           'ENABLE_DEFAULT_RENDER_THEME=1',
         ],
       }],
+      ['OS!="win"', {
+        'feature_defines': [
+          'ENABLE_PARTITION_ALLOC=1',
+        ],
+      }],
     ],
   },
 }
