@@ -135,6 +135,7 @@ class MediaPlayerManagerImpl
   void OnCancelKeyRequest(int player_id,
                           const std::string& key_system,
                           const std::string& session_id);
+  void OnDurationChanged(int player_id, const base::TimeDelta& duration);
 
 #if defined(GOOGLE_TV)
   virtual void OnNotifyExternalSurface(

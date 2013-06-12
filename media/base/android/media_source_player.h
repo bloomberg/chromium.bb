@@ -154,6 +154,9 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   virtual void ReadFromDemuxerAck(
       const MediaPlayerHostMsg_ReadFromDemuxerAck_Params& params) OVERRIDE;
 
+  // Called when the demuxer has changed the duration.
+  virtual void DurationChanged(const base::TimeDelta& duration) OVERRIDE;
+
  private:
   // Update the timestamps for A/V sync scheduling.
   void UpdateTimestamps(
@@ -190,6 +193,9 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   bool HasVideo();
   bool HasAudio();
 
+  // Determine seekability based on duration.
+  bool Seekable();
+
   enum PendingEventFlags {
     NO_EVENT_PENDING = 0,
     SEEK_EVENT_PENDING = 1 << 0,
@@ -213,7 +219,6 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   VideoCodec video_codec_;
   int num_channels_;
   int sampling_rate_;
-  bool seekable_;
   base::TimeDelta last_presentation_timestamp_;
   std::vector<uint8> audio_extra_data_;
   bool audio_finished_;

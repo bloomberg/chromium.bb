@@ -66,6 +66,8 @@ class WebMediaPlayerProxyImplAndroid
   virtual void CancelKeyRequest(int player_id,
                                 const std::string& key_system,
                                 const std::string& session_id) OVERRIDE;
+  virtual void DurationChanged(int player_id,
+                               const base::TimeDelta& duration) OVERRIDE;
 
 #if defined(GOOGLE_TV)
   virtual void RequestExternalSurface(

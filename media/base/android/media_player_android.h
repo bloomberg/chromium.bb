@@ -85,7 +85,7 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   virtual GURL GetUrl();
   virtual GURL GetFirstPartyForCookies();
 
-  // Methods for DeumxerStreamPlayer.
+  // Methods for DemuxerStreamPlayer.
   // Informs DemuxerStreamPlayer that the demuxer is ready.
   virtual void DemuxerReady(
       const MediaPlayerHostMsg_DemuxerReady_Params& params);
@@ -95,6 +95,9 @@ class MEDIA_EXPORT MediaPlayerAndroid {
 
   // Called when a seek request is acked by the render process.
   virtual void OnSeekRequestAck(unsigned seek_request_id);
+
+  // Called when the demuxer has changed the duration.
+  virtual void DurationChanged(const base::TimeDelta& duration);
 
   int player_id() { return player_id_; }
 

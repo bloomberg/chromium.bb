@@ -80,6 +80,10 @@ class WebMediaPlayerProxyAndroid {
   virtual void CancelKeyRequest(int player_id,
                                 const std::string& key_system,
                                 const std::string& session_id) = 0;
+
+  // Inform the media source player of changed duration from demuxer.
+  virtual void DurationChanged(int player_id,
+                               const base::TimeDelta& duration) = 0;
 };
 
 }  // namespace webkit_media

@@ -243,6 +243,12 @@ void WebMediaPlayerProxyImplAndroid::DemuxerReady(
   Send(new MediaPlayerHostMsg_DemuxerReady(routing_id(), player_id, params));
 }
 
+void WebMediaPlayerProxyImplAndroid::DurationChanged(
+    int player_id, const base::TimeDelta& duration) {
+  Send(new MediaPlayerHostMsg_DurationChanged(
+      routing_id(), player_id, duration));
+}
+
 webkit_media::WebMediaPlayerAndroid*
     WebMediaPlayerProxyImplAndroid::GetWebMediaPlayer(int player_id) {
   return static_cast<webkit_media::WebMediaPlayerAndroid*>(

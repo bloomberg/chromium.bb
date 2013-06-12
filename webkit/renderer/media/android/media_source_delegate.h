@@ -35,6 +35,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
  public:
   typedef base::Callback<void(WebKit::WebMediaPlayer::NetworkState)>
       UpdateNetworkStateCB;
+  typedef base::Callback<void(const base::TimeDelta&)> DurationChangeCB;
 
   // Helper class used by scoped_ptr to destroy an instance of
   // MediaSourceDelegate.
@@ -53,7 +54,8 @@ class MediaSourceDelegate : public media::DemuxerHost {
   void InitializeMediaSource(
       WebKit::WebMediaSource* media_source,
       const media::NeedKeyCB& need_key_cb,
-      const UpdateNetworkStateCB& update_network_state_cb);
+      const UpdateNetworkStateCB& update_network_state_cb,
+      const DurationChangeCB& duration_change_cb);
 #if defined(GOOGLE_TV)
   void InitializeMediaStream(
       media::Demuxer* demuxer,
@@ -130,6 +132,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
 
   scoped_refptr<media::MediaLog> media_log_;
   UpdateNetworkStateCB update_network_state_cb_;
+  DurationChangeCB duration_change_cb_;
 
   scoped_ptr<media::ChunkDemuxer> chunk_demuxer_;
   scoped_ptr<WebKit::WebMediaSource> media_source_;

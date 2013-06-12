@@ -76,6 +76,10 @@ void MediaPlayerAndroid::OnSeekRequestAck(unsigned seek_request_id) {
   NOTREACHED() << "Unexpected ipc received";
 }
 
+void MediaPlayerAndroid::DurationChanged(const base::TimeDelta& duration) {
+  NOTREACHED() << "Unexpected ipc received";
+}
+
 GURL MediaPlayerAndroid::GetUrl() {
   return GURL();
 }

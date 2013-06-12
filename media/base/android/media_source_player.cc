@@ -254,7 +254,6 @@ MediaSourcePlayer::MediaSourcePlayer(
       video_codec_(kUnknownVideoCodec),
       num_channels_(0),
       sampling_rate_(0),
-      seekable_(true),
       audio_finished_(true),
       video_finished_(true),
       playing_(false),
@@ -279,6 +278,15 @@ void MediaSourcePlayer::SetVideoSurface(gfx::ScopedJavaSurface surface) {
   // Or otherwise, the new MediaCodec might crash. See b/8950387.
   pending_event_ |= SEEK_EVENT_PENDING;
   ProcessPendingEvents();
+}
+
+bool MediaSourcePlayer::Seekable() {
+  // If the duration TimeDelta, converted to milliseconds from microseconds,
+  // is >= 2^31, then the media is assumed to be unbounded and unseekable.
+  // 2^31 is the bound due to java player using 32-bit integer for time
+  // values at millisecond resolution.
+  return duration_ <
+         base::TimeDelta::FromMilliseconds(std::numeric_limits<int32>::max());
 }
 
 void MediaSourcePlayer::Start() {
@@ -338,15 +346,15 @@ void MediaSourcePlayer::SetVolume(float leftVolume, float rightVolume) {
 }
 
 bool MediaSourcePlayer::CanPause() {
-  return seekable_;
+  return Seekable();
 }
 
 bool MediaSourcePlayer::CanSeekForward() {
-  return seekable_;
+  return Seekable();
 }
 
 bool MediaSourcePlayer::CanSeekBackward() {
-  return seekable_;
+  return Seekable();
 }
 
 bool MediaSourcePlayer::IsPlayerReady() {
@@ -376,8 +384,6 @@ void MediaSourcePlayer::StartInternal() {
 
 void MediaSourcePlayer::DemuxerReady(
     const MediaPlayerHostMsg_DemuxerReady_Params& params) {
-  if (params.duration_ms == std::numeric_limits<int>::max())
-    seekable_ = false;
   duration_ = base::TimeDelta::FromMilliseconds(params.duration_ms);
   width_ = params.video_size.width();
   height_ = params.video_size.height();
@@ -426,6 +432,10 @@ void MediaSourcePlayer::ReadFromDemuxerAck(
     if (!pending_event_)
       DecodeMoreVideo();
   }
+}
+
+void MediaSourcePlayer::DurationChanged(const base::TimeDelta& duration) {
+  duration_ = duration;
 }
 
 void MediaSourcePlayer::OnSeekRequestAck(unsigned seek_request_id) {

@@ -86,6 +86,7 @@ void MediaSourceDelegate::Destroy() {
     return;
   }
 
+  duration_change_cb_.Reset();
   update_network_state_cb_.Reset();
   media_source_.reset();
   proxy_ = NULL;
@@ -99,11 +100,13 @@ void MediaSourceDelegate::Destroy() {
 void MediaSourceDelegate::InitializeMediaSource(
     WebKit::WebMediaSource* media_source,
     const media::NeedKeyCB& need_key_cb,
-    const UpdateNetworkStateCB& update_network_state_cb) {
+    const UpdateNetworkStateCB& update_network_state_cb,
+    const DurationChangeCB& duration_change_cb) {
   DCHECK(media_source);
   media_source_.reset(media_source);
   need_key_cb_ = need_key_cb;
   update_network_state_cb_ = update_network_state_cb;
+  duration_change_cb_ = duration_change_cb;
 
   chunk_demuxer_.reset(new media::ChunkDemuxer(
       BIND_TO_RENDER_LOOP(&MediaSourceDelegate::OnDemuxerOpened),
@@ -185,7 +188,12 @@ void MediaSourceDelegate::AddBufferedTimeRange(base::TimeDelta start,
 }
 
 void MediaSourceDelegate::SetDuration(base::TimeDelta duration) {
-  // Do nothing
+  DVLOG(1) << "MediaSourceDelegate::SetDuration(" << duration.InSecondsF()
+           << ") : " << player_id_;
+  // Notify our owner (e.g. WebMediaPlayerAndroid) that
+  // duration has changed.
+  if (!duration_change_cb_.is_null())
+    duration_change_cb_.Run(duration);
 }
 
 void MediaSourceDelegate::OnReadFromDemuxer(media::DemuxerStream::Type type,
@@ -377,10 +385,10 @@ int MediaSourceDelegate::GetDurationMs() {
     return -1;
 
   double duration_ms = chunk_demuxer_->GetDuration() * 1000;
-  if (duration_ms > std::numeric_limits<int>::max()) {
+  if (duration_ms > std::numeric_limits<int32>::max()) {
     LOG(WARNING) << "Duration from ChunkDemuxer is too large; probably "
                     "something has gone wrong.";
-    return std::numeric_limits<int>::max();
+    return std::numeric_limits<int32>::max();
   }
   return duration_ms;
 }

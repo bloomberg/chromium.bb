@@ -13,6 +13,7 @@
 #include "cc/layers/video_layer.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/android/media_player_android.h"
+#include "media/base/bind_to_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "net/base/mime_util.h"
@@ -52,6 +53,9 @@ const char* kMediaEme = "Media.EME.";
 
 namespace webkit_media {
 
+#define BIND_TO_RENDER_LOOP(function) \
+  media::BindToLoop(main_loop_, base::Bind(function, AsWeakPtr()))
+
 WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     WebKit::WebFrame* frame,
     WebKit::WebMediaPlayerClient* client,
@@ -62,7 +66,8 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     : frame_(frame),
       client_(client),
       buffered_(1u),
-      main_loop_(base::MessageLoop::current()),
+      main_loop_(base::MessageLoopProxy::current()),
+      ignore_metadata_duration_change_(false),
       pending_seek_(0),
       seeking_(false),
       did_loading_progress_(false),
@@ -76,12 +81,15 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       stream_texture_factory_(factory),
       needs_external_surface_(false),
       video_frame_provider_client_(NULL),
+      source_type_(MediaPlayerAndroid::SOURCE_TYPE_URL),
       proxy_(proxy),
       current_time_(0),
       media_log_(media_log),
       media_stream_client_(NULL) {
   DCHECK(proxy_);
-  main_loop_->AddDestructionObserver(this);
+
+  // We want to be notified of |main_loop_| destruction.
+  base::MessageLoop::current()->AddDestructionObserver(this);
 
   if (manager_)
     player_id_ = manager_->RegisterMediaPlayer(this);
@@ -122,8 +130,8 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
   if (manager_)
     manager_->UnregisterMediaPlayer(player_id_);
 
-  if (main_loop_)
-    main_loop_->RemoveDestructionObserver(this);
+  if (base::MessageLoop::current())
+    base::MessageLoop::current()->RemoveDestructionObserver(this);
 #if defined(GOOGLE_TV)
   if (audio_renderer_) {
     if (audio_renderer_->IsLocalRenderer()) {
@@ -153,31 +161,31 @@ void WebMediaPlayerAndroid::load(const WebURL& url,
   if (cors_mode != CORSModeUnspecified)
     NOTIMPLEMENTED() << "No CORS support";
 
-  MediaPlayerAndroid::SourceType source_type =
-      MediaPlayerAndroid::SOURCE_TYPE_URL;
+  source_type_ = MediaPlayerAndroid::SOURCE_TYPE_URL;
 
   if (media_source)
-    source_type = MediaPlayerAndroid::SOURCE_TYPE_MSE;
+    source_type_ = MediaPlayerAndroid::SOURCE_TYPE_MSE;
 #if defined(GOOGLE_TV)
   if (media_stream_client_) {
     DCHECK(!media_source);
-    source_type = MediaPlayerAndroid::SOURCE_TYPE_STREAM;
+    source_type_ = MediaPlayerAndroid::SOURCE_TYPE_STREAM;
   }
 #endif
 
-  if (source_type != MediaPlayerAndroid::SOURCE_TYPE_URL) {
+  if (source_type_ != MediaPlayerAndroid::SOURCE_TYPE_URL) {
     media_source_delegate_.reset(
         new MediaSourceDelegate(proxy_, player_id_, media_log_));
     // |media_source_delegate_| is owned, so Unretained() is safe here.
-    if (source_type == MediaPlayerAndroid::SOURCE_TYPE_MSE) {
+    if (source_type_ == MediaPlayerAndroid::SOURCE_TYPE_MSE) {
       media_source_delegate_->InitializeMediaSource(
           media_source,
           base::Bind(&WebMediaPlayerAndroid::OnNeedKey, base::Unretained(this)),
           base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
-                     base::Unretained(this)));
+                     base::Unretained(this)),
+          BIND_TO_RENDER_LOOP(&WebMediaPlayerAndroid::OnDurationChange));
     }
 #if defined(GOOGLE_TV)
-    if (source_type == MediaPlayerAndroid::SOURCE_TYPE_STREAM) {
+    if (source_type_ == MediaPlayerAndroid::SOURCE_TYPE_STREAM) {
       media_source_delegate_->InitializeMediaStream(
           demuxer_,
           base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
@@ -189,15 +197,13 @@ void WebMediaPlayerAndroid::load(const WebURL& url,
 #endif
   }
 
-  InitializeMediaPlayer(url, source_type);
+  InitializeMediaPlayer(url);
 }
 
-void WebMediaPlayerAndroid::InitializeMediaPlayer(
-    const WebURL& url,
-    MediaPlayerAndroid::SourceType source_type) {
+void WebMediaPlayerAndroid::InitializeMediaPlayer(const WebURL& url) {
   url_ = url;
   GURL first_party_url = frame_->document().firstPartyForCookies();
-  proxy_->Initialize(player_id_, url, source_type, first_party_url);
+  proxy_->Initialize(player_id_, url, source_type_, first_party_url);
   if (manager_->IsInFullscreen(frame_))
     proxy_->EnterFullscreen(player_id_);
 
@@ -298,6 +304,13 @@ bool WebMediaPlayerAndroid::seeking() const {
 }
 
 double WebMediaPlayerAndroid::duration() const {
+  // HTML5 spec requires duration to be NaN if readyState is HAVE_NOTHING
+  if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
+    return std::numeric_limits<double>::quiet_NaN();
+
+  // TODO(wolenetz): Correctly handle durations that MediaSourcePlayer
+  // considers unseekable, including kInfiniteDuration().
+  // See http://crbug.com/248396
   return duration_.InSecondsF();
 }
 
@@ -327,6 +340,11 @@ const WebTimeRanges& WebMediaPlayerAndroid::buffered() {
 }
 
 double WebMediaPlayerAndroid::maxTimeSeekable() const {
+  // If we haven't even gotten to ReadyStateHaveMetadata yet then just
+  // return 0 so that the seekable range is empty.
+  if (ready_state_ < WebMediaPlayer::ReadyStateHaveMetadata)
+    return 0.0;
+
   // TODO(hclam): If this stream is not seekable this should return 0.
   return duration();
 }
@@ -419,14 +437,37 @@ unsigned WebMediaPlayerAndroid::videoDecodedByteCount() const {
 
 void WebMediaPlayerAndroid::OnMediaMetadataChanged(
     base::TimeDelta duration, int width, int height, bool success) {
+  bool need_to_signal_duration_changed = false;
+
   if (url_.SchemeIs("file"))
     UpdateNetworkState(WebMediaPlayer::NetworkStateLoaded);
+
+  // Update duration, if necessary, prior to ready state updates that may
+  // cause duration() query.
+  // TODO(wolenetz): Correctly handle durations that MediaSourcePlayer
+  // considers unseekable, including kInfiniteDuration().
+  // See http://crbug.com/248396
+  if (!ignore_metadata_duration_change_ && duration_ != duration) {
+    duration_ = duration;
+
+    // Client readyState transition from HAVE_NOTHING to HAVE_METADATA
+    // already triggers a durationchanged event. If this is a different
+    // transition, remember to signal durationchanged.
+    // Do not ever signal durationchanged on metadata change in MSE case
+    // because OnDurationChange() handles this.
+    if (ready_state_ > WebMediaPlayer::ReadyStateHaveNothing &&
+        source_type_ != MediaPlayerAndroid::SOURCE_TYPE_MSE) {
+      need_to_signal_duration_changed = true;
+    }
+  }
 
   if (ready_state_ != WebMediaPlayer::ReadyStateHaveEnoughData) {
     UpdateReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
     UpdateReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
   }
 
+  // TODO(wolenetz): Should we just abort early and set network state to an
+  // error if success == false? See http://crbug.com/248399
   if (success)
     OnVideoSizeChanged(width, height);
 
@@ -436,12 +477,8 @@ void WebMediaPlayerAndroid::OnMediaMetadataChanged(
     client_->setWebLayer(video_weblayer_.get());
   }
 
-  // In we have skipped loading, we have to update webkit about the new
-  // duration.
-  if (duration_ != duration) {
-    duration_ = duration;
+  if (need_to_signal_duration_changed)
     client_->durationChanged();
-  }
 }
 
 void WebMediaPlayerAndroid::OnPlaybackComplete() {
@@ -568,6 +605,27 @@ void WebMediaPlayerAndroid::OnMediaConfigRequest() {
   media_source_delegate_->OnMediaConfigRequest();
 }
 
+void WebMediaPlayerAndroid::OnDurationChange(const base::TimeDelta& duration) {
+  // Only MSE |source_type_| registers this callback.
+  DCHECK(source_type_ == MediaPlayerAndroid::SOURCE_TYPE_MSE);
+
+  // Cache the new duration value and trust it over any subsequent duration
+  // values received in OnMediaMetadataChanged().
+  // TODO(wolenetz): Correctly handle durations that MediaSourcePlayer
+  // considers unseekable, including kInfiniteDuration().
+  // See http://crbug.com/248396
+  duration_ = duration;
+  ignore_metadata_duration_change_ = true;
+
+  // Send message to Android MediaSourcePlayer to update duration.
+  if (proxy_)
+    proxy_->DurationChanged(player_id_, duration_);
+
+  // Notify MediaPlayerClient that duration has changed, if > HAVE_NOTHING.
+  if (ready_state_ > WebMediaPlayer::ReadyStateHaveNothing)
+    client_->durationChanged();
+}
+
 void WebMediaPlayerAndroid::UpdateNetworkState(
     WebMediaPlayer::NetworkState state) {
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing &&
@@ -621,7 +679,6 @@ void WebMediaPlayerAndroid::WillDestroyCurrentMessageLoop() {
   if (manager_)
     manager_->UnregisterMediaPlayer(player_id_);
   Detach();
-  main_loop_ = NULL;
 }
 
 void WebMediaPlayerAndroid::Detach() {

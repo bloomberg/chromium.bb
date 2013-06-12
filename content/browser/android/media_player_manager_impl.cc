@@ -69,6 +69,8 @@ bool MediaPlayerManagerImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnDemuxerReady)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_ReadFromDemuxerAck,
                         OnReadFromDemuxerAck)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DurationChanged,
+                        OnDurationChanged)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_MediaSeekRequestAck,
                         OnMediaSeekRequestAck)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_GenerateKeyRequest,
@@ -277,6 +279,13 @@ void MediaPlayerManagerImpl::OnReadFromDemuxerAck(
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->ReadFromDemuxerAck(params);
+}
+
+void MediaPlayerManagerImpl::OnDurationChanged(
+    int player_id, const base::TimeDelta& duration) {
+  MediaPlayerAndroid* player = GetPlayer(player_id);
+  if (player)
+    player->DurationChanged(duration);
 }
 
 void MediaPlayerManagerImpl::OnMediaSeekRequestAck(

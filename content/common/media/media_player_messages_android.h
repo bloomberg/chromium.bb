@@ -199,6 +199,11 @@ IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_ReadFromDemuxerAck,
                     int /* player_id */,
                     media::MediaPlayerHostMsg_ReadFromDemuxerAck_Params)
 
+// Inform the media source player of changed media duration from demuxer.
+IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_DurationChanged,
+                    int /* player_id */,
+                    base::TimeDelta /* duration */)
+
 #if defined(GOOGLE_TV)
 // Notify the player about the external surface, requesting it if necessary.
 IPC_MESSAGE_ROUTED3(MediaPlayerHostMsg_NotifyExternalSurface,

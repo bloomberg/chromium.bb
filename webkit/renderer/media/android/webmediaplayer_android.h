@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "cc/layers/video_frame_provider.h"
@@ -55,7 +56,8 @@ class MediaStreamAudioRenderer;
 class WebMediaPlayerAndroid
     : public WebKit::WebMediaPlayer,
       public cc::VideoFrameProvider,
-      public base::MessageLoop::DestructionObserver {
+      public base::MessageLoop::DestructionObserver,
+      public base::SupportsWeakPtr<WebMediaPlayerAndroid> {
  public:
   // Construct a WebMediaPlayerAndroid object. This class communicates
   // with the MediaPlayerAndroid object in the browser process through
@@ -156,6 +158,7 @@ class WebMediaPlayerAndroid
   void OnVideoSizeChanged(int width, int height);
   void OnMediaSeekRequest(base::TimeDelta time_to_seek);
   void OnMediaConfigRequest();
+  void OnDurationChange(const base::TimeDelta& duration);
 
   // Called to update the current time.
   void OnTimeUpdate(base::TimeDelta current_time);
@@ -242,9 +245,7 @@ class WebMediaPlayerAndroid
   // Requesting whether the surface texture peer needs to be reestablished.
   void SetNeedsEstablishPeer(bool needs_establish_peer);
 
-  void InitializeMediaPlayer(
-      const WebKit::WebURL& url,
-      media::MediaPlayerAndroid::SourceType source_type);
+  void InitializeMediaPlayer(const WebKit::WebURL& url);
 
 #if defined(GOOGLE_TV)
   // Request external surface for out-of-band composition.
@@ -284,13 +285,18 @@ class WebMediaPlayerAndroid
   scoped_refptr<media::VideoFrame> current_frame_;
 
   // Message loop for main renderer thread.
-  base::MessageLoop* main_loop_;
+  const scoped_refptr<base::MessageLoopProxy> main_loop_;
 
   // URL of the media file to be fetched.
   GURL url_;
 
   // Media duration.
   base::TimeDelta duration_;
+
+  // Flag to remember if we have a trusted duration_ value provided by
+  // MediaSourceDelegate notifying OnDurationChange(). In this case, ignore
+  // any subsequent duration value passed to OnMediaMetadataChange().
+  bool ignore_metadata_duration_change_;
 
   // The time android media player is trying to seek.
   double pending_seek_;
@@ -358,6 +364,8 @@ class WebMediaPlayerAndroid
 
   scoped_ptr<MediaSourceDelegate,
              MediaSourceDelegate::Destroyer> media_source_delegate_;
+
+  media::MediaPlayerAndroid::SourceType source_type_;
 
   // Proxy object that delegates method calls on Render Thread.
   // This object is created on the Render Thread and is only called in the
