@@ -30,6 +30,8 @@ UI_EXPORT float GetDeviceScaleFactor();
 
 UI_EXPORT gfx::Point ScreenToDIPPoint(const gfx::Point& pixel_point);
 
+UI_EXPORT gfx::Point DIPToScreenPoint(const gfx::Point& dip_point);
+
 UI_EXPORT gfx::Rect ScreenToDIPRect(const gfx::Rect& pixel_bounds);
 
 UI_EXPORT gfx::Rect DIPToScreenRect(const gfx::Rect& dip_bounds);

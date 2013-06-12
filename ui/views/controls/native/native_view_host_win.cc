@@ -7,6 +7,7 @@
 #include <oleacc.h>
 
 #include "base/logging.h"
+#include "ui/base/win/dpi.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/base/win/window_impl.h"
 #include "ui/gfx/canvas.h"
@@ -90,6 +91,8 @@ void NativeViewHostWin::ShowWidget(int x, int y, int w, int h) {
                    SWP_NOCOPYBITS |
                    SWP_NOOWNERZORDER |
                    SWP_NOZORDER;
+  gfx::Rect bounds = ui::win::DIPToScreenRect(gfx::Rect(x,y,w,h));
+
   // Only send the SHOWWINDOW flag if we're invisible, to avoid flashing.
   if (!IsWindowVisible(host_->native_view()))
     swp_flags = (swp_flags | SWP_SHOWWINDOW) & ~SWP_NOREDRAW;
@@ -99,12 +102,14 @@ void NativeViewHostWin::ShowWidget(int x, int y, int w, int h) {
     RECT win_rect;
     GetWindowRect(host_->native_view(), &win_rect);
     gfx::Rect rect(win_rect);
-    SetWindowPos(host_->native_view(), 0, x, y, rect.width(), rect.height(),
+    SetWindowPos(host_->native_view(), 0, bounds.x(), bounds.y(),
+                 rect.width(), rect.height(),
                  swp_flags);
 
-    InstallClip(0, 0, w, h);
+    InstallClip(0, 0, bounds.width(), bounds.height());
   } else {
-    SetWindowPos(host_->native_view(), 0, x, y, w, h, swp_flags);
+    SetWindowPos(host_->native_view(), 0, bounds.x(), bounds.y(),
+                 bounds.width(), bounds.height(), swp_flags);
   }
 }
 

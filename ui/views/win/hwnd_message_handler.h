@@ -75,7 +75,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
   void GetWindowPlacement(gfx::Rect* bounds,
                           ui::WindowShowState* show_state) const;
 
-  void SetBounds(const gfx::Rect& bounds);
+  void SetBounds(const gfx::Rect& bounds_in_pixels);
   void SetSize(const gfx::Size& size);
   void CenterWindow(const gfx::Size& size);
 

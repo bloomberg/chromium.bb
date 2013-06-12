@@ -130,7 +130,7 @@ gfx::Size SimpleThumbnailCrop::GetCopySizeForThumbnail(
       DLOG(WARNING) << "Unsupported scale factor. Use the same copy size as "
                     << "ui::SCALE_FACTOR_100P";
       copy_size = gfx::ToFlooredSize(gfx::ScaleSize(
-          copy_size, ui::GetScaleFactorScale(ui::SCALE_FACTOR_200P)));
+          copy_size, ui::GetMaxScaleFactor()));
       break;
   }
   return copy_size;
@@ -244,4 +244,4 @@ SkBitmap SimpleThumbnailCrop::CreateThumbnail(const SkBitmap& bitmap,
   return result;
 }
 
-}
+} // namespace thumbnails

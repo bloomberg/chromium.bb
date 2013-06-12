@@ -522,12 +522,13 @@ void HWNDMessageHandler::GetWindowPlacement(
   }
 }
 
-void HWNDMessageHandler::SetBounds(const gfx::Rect& bounds) {
+void HWNDMessageHandler::SetBounds(const gfx::Rect& bounds_in_pixels) {
   LONG style = GetWindowLong(hwnd(), GWL_STYLE);
   if (style & WS_MAXIMIZE)
     SetWindowLong(hwnd(), GWL_STYLE, style & ~WS_MAXIMIZE);
-  SetWindowPos(hwnd(), NULL, bounds.x(), bounds.y(), bounds.width(),
-               bounds.height(), SWP_NOACTIVATE | SWP_NOZORDER);
+  SetWindowPos(hwnd(), NULL, bounds_in_pixels.x(), bounds_in_pixels.y(),
+               bounds_in_pixels.width(), bounds_in_pixels.height(),
+               SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
 void HWNDMessageHandler::SetSize(const gfx::Size& size) {
@@ -1161,8 +1162,13 @@ void HWNDMessageHandler::RedrawLayeredWindowContents() {
 
   // We need to clip to the dirty rect ourselves.
   layered_window_contents_->sk_canvas()->save(SkCanvas::kClip_SaveFlag);
+  double scale = ui::win::GetDeviceScaleFactor();
+  layered_window_contents_->sk_canvas()->scale(
+      SkScalar(scale),SkScalar(scale));
   layered_window_contents_->ClipRect(invalid_rect_);
   delegate_->PaintLayeredWindow(layered_window_contents_.get());
+  layered_window_contents_->sk_canvas()->scale(
+      SkScalar(1.0/scale),SkScalar(1.0/scale));
   layered_window_contents_->sk_canvas()->restore();
 
   RECT wr;

@@ -6,6 +6,7 @@
 #define UI_GFX_CANVAS_PAINT_WIN_H_
 
 #include "skia/ext/platform_canvas.h"
+#include "ui/base/win/dpi.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_paint.h"
 #include "ui/gfx/size.h"
@@ -110,16 +111,18 @@ class UI_EXPORT CanvasSkiaPaint : public Canvas {
     const int width = ps_.rcPaint.right - ps_.rcPaint.left;
     const int height = ps_.rcPaint.bottom - ps_.rcPaint.top;
 
-    RecreateBackingCanvas(gfx::Size(width, height), ui::SCALE_FACTOR_100P,
-                          opaque);
+    RecreateBackingCanvas(gfx::Size(width, height),
+        ui::GetScaleFactorFromScale(ui::win::GetDeviceScaleFactor()),
+        opaque);
     skia::PlatformCanvas* canvas = platform_canvas();
 
     canvas->clear(SkColorSetARGB(0, 0, 0, 0));
 
     // This will bring the canvas into the screen coordinate system for the
     // dirty rect
-    canvas->translate(SkIntToScalar(-ps_.rcPaint.left),
-                      SkIntToScalar(-ps_.rcPaint.top));
+    canvas->translate(
+        SkScalarRoundToInt(-ps_.rcPaint.left/ui::win::GetDeviceScaleFactor()),
+        SkScalarRoundToInt(-ps_.rcPaint.top/ui::win::GetDeviceScaleFactor()));
   }
 
   // If true, this canvas was created for a BeginPaint.

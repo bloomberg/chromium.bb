@@ -104,6 +104,11 @@ gfx::Point ScreenToDIPPoint(const gfx::Point& pixel_point) {
       gfx::ScalePoint(pixel_point, 1.0f / GetDeviceScaleFactor()));
 }
 
+gfx::Point DIPToScreenPoint(const gfx::Point& dip_point) {
+  return gfx::ToFlooredPoint(
+      gfx::ScalePoint(dip_point, GetDeviceScaleFactor()));
+}
+
 gfx::Rect ScreenToDIPRect(const gfx::Rect& pixel_bounds) {
   // TODO(kevers): Switch to non-deprecated method for float to int conversions.
   return gfx::ToFlooredRectDeprecated(
