@@ -757,7 +757,7 @@ TEST_F(DownloadItemTest, Interrupted) {
 
 // Destination errors that occur before the intermediate rename shouldn't cause
 // the download to be marked as interrupted until after the intermediate rename.
-TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename) {
+TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Restart) {
   DownloadItemImpl* item = CreateDownloadItem();
   DownloadItemImplDelegate::DownloadTargetCallback callback;
   MockDownloadFile* download_file =
@@ -783,6 +783,77 @@ TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename) {
   ::testing::Mock::VerifyAndClearExpectations(download_file);
   mock_delegate()->VerifyAndClearExpectations();
   EXPECT_TRUE(item->IsInterrupted());
+  EXPECT_TRUE(item->GetFullPath().empty());
+  EXPECT_EQ(final_path, item->GetTargetFilePath());
+}
+
+// As above. But if the download can be resumed by continuing, then the
+// intermediate path should be retained when the download is interrupted after
+// the intermediate rename succeeds.
+TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Continue) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDownloadResumption);
+  DownloadItemImpl* item = CreateDownloadItem();
+  DownloadItemImplDelegate::DownloadTargetCallback callback;
+  MockDownloadFile* download_file =
+      AddDownloadFileToDownloadItem(item, &callback);
+  item->DestinationObserverAsWeakPtr()->DestinationError(
+      DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED);
+  ASSERT_TRUE(item->IsInProgress());
+
+  base::FilePath final_path(base::FilePath(kDummyPath).AppendASCII("foo.bar"));
+  base::FilePath intermediate_path(final_path.InsertBeforeExtensionASCII("x"));
+  base::FilePath new_intermediate_path(
+      final_path.InsertBeforeExtensionASCII("y"));
+  EXPECT_CALL(*download_file, RenameAndUniquify(intermediate_path, _))
+      .WillOnce(ScheduleRenameCallback(DOWNLOAD_INTERRUPT_REASON_NONE,
+                                       new_intermediate_path));
+  EXPECT_CALL(*download_file, FullPath())
+      .WillOnce(Return(base::FilePath(new_intermediate_path)));
+  EXPECT_CALL(*download_file, Detach());
+
+  callback.Run(final_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path);
+  RunAllPendingInMessageLoops();
+  // All the callbacks should have happened by now.
+  ::testing::Mock::VerifyAndClearExpectations(download_file);
+  mock_delegate()->VerifyAndClearExpectations();
+  EXPECT_TRUE(item->IsInterrupted());
+  EXPECT_EQ(new_intermediate_path, item->GetFullPath());
+  EXPECT_EQ(final_path, item->GetTargetFilePath());
+}
+
+// As above. If the intermediate rename fails, then the interrupt reason should
+// be set to the destination error and the intermediate path should be empty.
+TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Failed) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDownloadResumption);
+  DownloadItemImpl* item = CreateDownloadItem();
+  DownloadItemImplDelegate::DownloadTargetCallback callback;
+  MockDownloadFile* download_file =
+      AddDownloadFileToDownloadItem(item, &callback);
+  item->DestinationObserverAsWeakPtr()->DestinationError(
+      DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED);
+  ASSERT_TRUE(item->IsInProgress());
+
+  base::FilePath final_path(base::FilePath(kDummyPath).AppendASCII("foo.bar"));
+  base::FilePath intermediate_path(final_path.InsertBeforeExtensionASCII("x"));
+  base::FilePath new_intermediate_path(
+      final_path.InsertBeforeExtensionASCII("y"));
+  EXPECT_CALL(*download_file, RenameAndUniquify(intermediate_path, _))
+      .WillOnce(ScheduleRenameCallback(DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
+                                       new_intermediate_path));
+  EXPECT_CALL(*download_file, Cancel())
+      .Times(1);
+
+  callback.Run(final_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path);
+  RunAllPendingInMessageLoops();
+  // All the callbacks should have happened by now.
+  ::testing::Mock::VerifyAndClearExpectations(download_file);
+  mock_delegate()->VerifyAndClearExpectations();
+  EXPECT_TRUE(item->IsInterrupted());
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED, item->GetLastReason());
   EXPECT_TRUE(item->GetFullPath().empty());
   EXPECT_EQ(final_path, item->GetTargetFilePath());
 }

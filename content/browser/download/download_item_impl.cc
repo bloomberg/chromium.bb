@@ -1161,6 +1161,8 @@ void DownloadItemImpl::OnDownloadRenamedToIntermediateName(
     // Process destination error.  If both |reason| and |destination_error_|
     // refer to actual errors, we want to use the |destination_error_| as the
     // argument to the Interrupt() routine, as it happened first.
+    if (reason == DOWNLOAD_INTERRUPT_REASON_NONE)
+      SetFullPath(full_path);
     Interrupt(destination_error_);
     destination_error_ = DOWNLOAD_INTERRUPT_REASON_NONE;
   } else if (DOWNLOAD_INTERRUPT_REASON_NONE != reason) {
