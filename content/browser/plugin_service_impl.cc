@@ -196,6 +196,9 @@ void PluginServiceImpl::Init() {
   path = command_line->GetSwitchValuePath(switches::kExtraPluginDir);
   if (!path.empty())
     plugin_list_->AddExtraPluginDir(path);
+
+  if (command_line->HasSwitch(switches::kDisablePluginsDiscovery))
+    plugin_list_->DisablePluginsDiscovery();
 }
 
 void PluginServiceImpl::StartWatchingPlugins() {

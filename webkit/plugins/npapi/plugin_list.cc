@@ -79,6 +79,10 @@ bool PluginList::DebugPluginLoading() {
       switches::kDebugPluginLoading);
 }
 
+void PluginList::DisablePluginsDiscovery() {
+  plugins_discovery_disabled_ = true;
+}
+
 void PluginList::RefreshPlugins() {
   base::AutoLock lock(lock_);
   loading_state_ = LOADING_STATE_NEEDS_REFRESH;
@@ -237,7 +241,8 @@ PluginList::PluginList()
 #if defined(OS_WIN)
       dont_load_new_wmp_(false),
 #endif
-      loading_state_(LOADING_STATE_NEEDS_REFRESH) {
+      loading_state_(LOADING_STATE_NEEDS_REFRESH),
+      plugins_discovery_disabled_(false) {
 }
 
 void PluginList::LoadPluginsIntoPluginListInternal(
@@ -346,7 +351,7 @@ void PluginList::GetPluginPathsToLoad(std::vector<base::FilePath>* plugin_paths)
       GetPluginsInDir(directories_to_scan[i], plugin_paths);
 
 #if defined(OS_WIN)
-  GetPluginPathsFromRegistry(plugin_paths);
+    GetPluginPathsFromRegistry(plugin_paths);
 #endif
   }
 }

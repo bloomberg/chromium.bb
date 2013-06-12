@@ -456,9 +456,6 @@ const char kEnableViewport[]                = "enable-viewport";
 // - Location platform support for Windows 7
 const char kExperimentalLocationFeatures[]  = "experimental-location-features";
 
-// Load NPAPI plugins from the specified directory.
-const char kExtraPluginDir[]                = "extra-plugin-dir";
-
 // If accelerated compositing is supported, always enter compositing mode for
 // the base layer even when compositing is not strictly required.
 const char kForceCompositingMode[]          = "force-compositing-mode";
@@ -526,8 +523,16 @@ const char kInProcessPlugins[]              = "in-process-plugins";
 // Specifies the flags passed to JS engine
 const char kJavaScriptFlags[]               = "js-flags";
 
+// Load NPAPI plugins from the specified directory.
+const char kExtraPluginDir[]                = "extra-plugin-dir";
+
 // Load an NPAPI plugin from the specified path.
 const char kLoadPlugin[]                    = "load-plugin";
+
+// Disable discovering third-party plug-ins. Effectively loading only
+// ones shipped with the browser plus third-party ones as specified by
+// --extra-plugin-dir and --load-plugin switches.
+const char kDisablePluginsDiscovery[]       = "disable-plugins-discovery";
 
 // Sets the minimum log level. Valid values are from 0 to 3:
 // INFO = 0, WARNING = 1, LOG_ERROR = 2, LOG_FATAL = 3.

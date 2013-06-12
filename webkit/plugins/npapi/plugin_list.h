@@ -65,6 +65,10 @@ class PluginList {
                            const std::string& mime_type,
                            bool allow_wildcard);
 
+  // Disables discovery of third_party plugins in standard places next time
+  // plugins are loaded.
+  void DisablePluginsDiscovery();
+
   // Cause the plugin list to refresh next time they are accessed, regardless
   // of whether they are already loaded.
   void RefreshPlugins();
@@ -283,6 +287,10 @@ class PluginList {
   // Need synchronization for the above members since this object can be
   // accessed on multiple threads.
   base::Lock lock_;
+
+  // Flag indicating whether third_party plugins will be searched for
+  // in common places.
+  bool plugins_discovery_disabled_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginList);
 };

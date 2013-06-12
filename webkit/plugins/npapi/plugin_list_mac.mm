@@ -275,7 +275,11 @@ bool PluginList::ReadWebPluginInfo(const base::FilePath &filename,
   return false;
 }
 
-void PluginList::GetPluginDirectories(std::vector<base::FilePath>* plugin_dirs) {
+void PluginList::GetPluginDirectories(
+    std::vector<base::FilePath>* plugin_dirs) {
+  if (PluginList::plugins_discovery_disabled_)
+    return;
+
   // Load from the user's area
   GetPluginCommonDirectory(plugin_dirs, true);
 
