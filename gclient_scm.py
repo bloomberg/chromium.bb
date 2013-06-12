@@ -237,6 +237,18 @@ class GitWrapper(SCMWrapper):
 
     gclient_utils.CheckCallAndFilter(cmd4, **kwargs)
 
+  def _FetchAndReset(self, revision, file_list, options):
+    """Equivalent to git fetch; git reset."""
+    quiet = []
+    if not options.verbose:
+      quiet = ['--quiet']
+    self._UpdateBranchHeads(options, fetch=False)
+    self._Run(['fetch', 'origin', '--prune'] + quiet, options)
+    self._Run(['reset', '--hard', revision] + quiet, options)
+    self.UpdateSubmoduleConfig()
+    files = self._Capture(['ls-files']).splitlines()
+    file_list.extend([os.path.join(self.checkout_path, f) for f in files])
+
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
 
@@ -338,16 +350,20 @@ class GitWrapper(SCMWrapper):
       self._CheckClean(rev_str)
       # Switch over to the new upstream
       self._Run(['remote', 'set-url', 'origin', url], options)
-      quiet = []
-      if not options.verbose:
-        quiet = ['--quiet']
-      self._UpdateBranchHeads(options, fetch=False)
-      self._Run(['fetch', 'origin', '--prune'] + quiet, options)
-      self._Run(['reset', '--hard', revision] + quiet, options)
-      self.UpdateSubmoduleConfig()
-      files = self._Capture(['ls-files']).splitlines()
-      file_list.extend([os.path.join(self.checkout_path, f) for f in files])
+      self._FetchAndReset(revision, file_list, options)
       return
+
+    if not self._IsValidGitRepo():
+      # .git directory is hosed for some reason, set it back up.
+      print('_____ %s/.git is corrupted, rebuilding' % self.relpath)
+      self._Run(['init'], options)
+      self._Run(['remote', 'set-url', 'origin', url], options)
+
+    if not self._HasHead():
+      # Previous checkout was aborted before branches could be created in repo,
+      # so we need to reconstruct them here.
+      self._Run(['pull', 'origin', 'master'], options)
+      self._FetchAndReset(revision, file_list, options)
 
     cur_branch = self._GetCurrentBranch()
 
@@ -800,6 +816,28 @@ class GitWrapper(SCMWrapper):
       # Make the output a little prettier. It's nice to have some
       # whitespace between projects when syncing.
       print('')
+
+  def _IsValidGitRepo(self):
+    """Returns if the directory is a valid git repository.
+
+    Checks if git status works.
+    """
+    try:
+      self._Capture(['status'])
+      return True
+    except subprocess2.CalledProcessError:
+      return False
+
+  def _HasHead(self):
+    """Returns True if any commit is checked out.
+
+    This is done by checking if rev-parse HEAD works in the current repository.
+    """
+    try:
+      self._GetCurrentBranch()
+      return True
+    except subprocess2.CalledProcessError:
+      return False
 
   @staticmethod
   def _CheckMinVersion(min_version):
