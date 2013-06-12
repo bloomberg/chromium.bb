@@ -10,6 +10,7 @@
 #include <string>
 
 #import "base/memory/scoped_nsobject.h"
+#import "ui/base/cocoa/tracking_area.h"
 #include "ui/message_center/message_center_export.h"
 
 namespace message_center {
@@ -51,6 +52,9 @@ MESSAGE_CENTER_EXPORT
 
   // Used to play animation when the popup shows, changes bounds and closes.
   scoped_nsobject<NSViewAnimation> boundsAnimation_;
+
+  // Used to track the popup for mouse entered and exited events.
+  ui::ScopedCrTrackingArea trackingArea_;
 }
 
 // Designated initializer.
