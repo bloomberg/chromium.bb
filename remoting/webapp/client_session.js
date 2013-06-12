@@ -80,7 +80,7 @@ remoting.ClientSession = function(hostJid, clientJid, hostPublicKey, accessCode,
   /** @private */
   this.shrinkToFit_ = true;
   /** @private */
-  this.resizeToClient_ = false;
+  this.resizeToClient_ = true;
   /** @private */
   this.remapKeys_ = '';
   /** @private */
