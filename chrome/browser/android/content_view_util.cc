@@ -22,6 +22,13 @@ static jint CreateNativeWebContents(
   return reinterpret_cast<jint>(web_contents);
 }
 
+static void DestroyNativeWebContents(
+    JNIEnv* env, jclass clazz, jint web_contents_ptr) {
+  content::WebContents* web_contents =
+      reinterpret_cast<content::WebContents*>(web_contents_ptr);
+  delete web_contents;
+}
+
 bool RegisterContentViewUtil(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

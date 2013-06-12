@@ -21,5 +21,13 @@ public abstract class ContentViewUtil {
         return nativeCreateNativeWebContents(incognito);
     }
 
+    /**
+     * @param webContentsPtr The WebContents reference to be deleted.
+     */
+    public static void destroyNativeWebContents(int webContentsPtr) {
+        nativeDestroyNativeWebContents(webContentsPtr);
+    }
+
     private static native int nativeCreateNativeWebContents(boolean incognito);
+    private static native void nativeDestroyNativeWebContents(int webContentsPtr);
 }
