@@ -131,15 +131,6 @@ FileGrid.decorateThumbnailBox = function(
   }
 
   var imageUrl = entry.toURL();
-
-  // Failing to fetch a thumbnail likely means that the thumbnail URL
-  // is now stale. Request a refresh of the current directory, to get
-  // the new thumbnail URLs. Once the directory is refreshed, we'll get
-  // notified via onDirectoryChanged event.
-  var onImageLoadError = function() {
-    metadataCache.refreshFileMetadata(imageUrl);
-  };
-
   var metadataTypes = 'thumbnail|filesystem';
 
   if (FileType.isOnDrive(imageUrl)) {
@@ -162,10 +153,9 @@ FileGrid.decorateThumbnailBox = function(
                             undefined,
                             useEmbedded).
             load(box,
-                 fillMode,
-                 ThumbnailLoader.OptimizationMode.DISCARD_DETACHED,
-                 opt_imageLoadCallback,
-                 onImageLoadError);
+                fillMode,
+                ThumbnailLoader.OptimizationMode.DISCARD_DETACHED,
+                opt_imageLoadCallback);
       });
 };
 

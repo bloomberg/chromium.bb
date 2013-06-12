@@ -10,13 +10,12 @@
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {MetadataCache} metadataCache Metadata cache.
  * @param {function} toggleMode Function to switch to the Slide mode.
- * @param {function(string)} onThumbnailError Thumbnail load error handler.
  * @constructor
  */
-function MosaicMode(container, dataModel, selectionModel,
-                    metadataCache, toggleMode, onThumbnailError) {
-  this.mosaic_ = new Mosaic(container.ownerDocument,
-      dataModel, selectionModel, metadataCache, onThumbnailError);
+function MosaicMode(
+    container, dataModel, selectionModel, metadataCache, toggleMode) {
+  this.mosaic_ = new Mosaic(
+      container.ownerDocument, dataModel, selectionModel, metadataCache);
   container.appendChild(this.mosaic_);
 
   this.toggleMode_ = toggleMode;
@@ -68,15 +67,12 @@ MosaicMode.prototype.onKeyDown = function(event) {
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {MetadataCache} metadataCache Metadata cache.
- * @param {function(string)} onThumbnailError Thumbnail load error handler.
  * @return {Element} Mosaic element.
  * @constructor
  */
-function Mosaic(document, dataModel, selectionModel, metadataCache,
-                onThumbnailError) {
+function Mosaic(document, dataModel, selectionModel, metadataCache) {
   var self = document.createElement('div');
-  Mosaic.decorate(self,
-      dataModel, selectionModel, metadataCache, onThumbnailError);
+  Mosaic.decorate(self, dataModel, selectionModel, metadataCache);
   return self;
 }
 
@@ -107,17 +103,14 @@ Mosaic.ANIMATED_SCROLL_DURATION = 500;
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {MetadataCache} metadataCache Metadata cache.
- * @param {function(string)} onThumbnailError Thumbnail load error handler.
  */
-Mosaic.decorate = function(self, dataModel, selectionModel, metadataCache,
-                           onThumbnailError) {
+Mosaic.decorate = function(self, dataModel, selectionModel, metadataCache) {
   self.__proto__ = Mosaic.prototype;
   self.className = 'mosaic';
 
   self.dataModel_ = dataModel;
   self.selectionModel_ = selectionModel;
   self.metadataCache_ = metadataCache;
-  self.onThumbnailError_ = onThumbnailError;
 
   // Initialization is completed lazily on the first call to |init|.
 };
@@ -488,8 +481,7 @@ Mosaic.prototype.onContentChange_ = function(event) {
   this.layoutModel_.invalidateFromTile_(index);
   this.tiles_[index].init(event.metadata, function() {
         this.tiles_[index].load(
-            this.scheduleLayout.bind(this, Mosaic.LAYOUT_DELAY),
-            this.onThumbnailError_);
+            this.scheduleLayout.bind(this, Mosaic.LAYOUT_DELAY));
       }.bind(this));
 };
 
@@ -592,7 +584,7 @@ Mosaic.prototype.loadVisibleTiles_ = function() {
     // Load a thumbnail.
     if (!tile.isLoading() && !tile.isLoaded() && imageRect &&
         imageRect.intersects(visibleRect)) {
-      tile.load(function() {}, this.onThumbnailError_);
+      tile.load(function() {});
       allVisibleLoaded = false;
     }
   }
@@ -605,7 +597,7 @@ Mosaic.prototype.loadVisibleTiles_ = function() {
       // Load a thumbnail.
       if (!tile.isLoading() && !tile.isLoaded() && imageRect &&
           imageRect.intersects(renderableRect)) {
-        tile.load(function() {}, this.onThumbnailError_);
+        tile.load(function() {});
       }
     }
   }
@@ -1763,16 +1755,12 @@ Mosaic.Tile.prototype.init = function(metadata, onImageMeasured) {
  *
  * @param {function(boolean)} onImageLoaded Callback when image is loaded.
  *     The argument is true for success, false for failure.
- * @param {function()=} opt_onThumbnailError Callback for image loading error.
  */
-Mosaic.Tile.prototype.load = function(onImageLoaded, opt_onThumbnailError) {
+Mosaic.Tile.prototype.load = function(onImageLoaded) {
   this.imageLoaded_ = false;
   this.imageLoading_ = true;
   this.thumbnailLoader_.loadDetachedImage(function(success) {
-    if (!success) {
-      if (opt_onThumbnailError)
-        opt_onThumbnailError(this.getItem().getUrl());
-    } else if (this.wrapper_) {
+    if (success && this.wrapper_) {
       this.thumbnailLoader_.attachImage(this.wrapper_,
                                         ThumbnailLoader.FillMode.FILL);
     }

@@ -589,9 +589,6 @@ FileTasks.prototype.openGalleryInternal_ = function(urls) {
       onBack: onBack,
       onClose: onClose,
       onMaximize: onMaximize,
-      onThumbnailError: function(imageURL) {
-        fm.metadataCache_.refreshFileMetadata(imageURL);
-      },
       displayStringFunction: strf
     };
     galleryFrame.contentWindow.Gallery.open(context, allUrls, urls);

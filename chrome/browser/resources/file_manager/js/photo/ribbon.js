@@ -11,15 +11,12 @@
  * @param {MetadataCache} metadataCache MetadataCache instance.
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
- * @param {function(string)} onThumbnailError Thumbnail load error handler.
  * @return {Element} Ribbon element.
  * @constructor
  */
-function Ribbon(document, metadataCache, dataModel, selectionModel,
-                onThumbnailError) {
+function Ribbon(document, metadataCache, dataModel, selectionModel) {
   var self = document.createElement('div');
-  Ribbon.decorate(self,
-      metadataCache, dataModel, selectionModel, onThumbnailError);
+  Ribbon.decorate(self, metadataCache, dataModel, selectionModel);
   return self;
 }
 
@@ -35,15 +32,12 @@ Ribbon.prototype.__proto__ = HTMLDivElement.prototype;
  * @param {MetadataCache} metadataCache MetadataCache instance.
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
- * @param {function(string)} onThumbnailError Thumbnail load error handler.
  */
-Ribbon.decorate = function(self, metadataCache, dataModel, selectionModel,
-                           onThumbnailError) {
+Ribbon.decorate = function(self, metadataCache, dataModel, selectionModel) {
   self.__proto__ = Ribbon.prototype;
   self.metadataCache_ = metadataCache;
   self.dataModel_ = dataModel;
   self.selectionModel_ = selectionModel;
-  self.onThumbnailError_ = onThumbnailError;
 
   self.className = 'ribbon';
 };
@@ -339,9 +333,7 @@ Ribbon.prototype.setThumbnailImage_ = function(thumbnail, url, metadata) {
   new ThumbnailLoader(url, ThumbnailLoader.LoaderType.IMAGE, metadata).load(
       thumbnail.querySelector('.image-wrapper'),
       ThumbnailLoader.FillMode.FILL /* fill */,
-      ThumbnailLoader.OptimizationMode.NEVER_DISCARD,
-      null /* success callback */,
-      this.onThumbnailError_.bind(null, url));
+      ThumbnailLoader.OptimizationMode.NEVER_DISCARD);
 };
 
 /**

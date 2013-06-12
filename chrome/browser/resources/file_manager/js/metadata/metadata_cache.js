@@ -594,18 +594,6 @@ MetadataCache.prototype.refreshDirectory = function(url) {
 };
 
 /**
- * Ask the Drive service to re-fetch the metadata.
- * @param {string} fileURL File URL.
- */
-MetadataCache.prototype.refreshFileMetadata = function(fileURL) {
-  if (!FileType.isOnDrive(fileURL))
-    return;
-  // TODO(kaznacheev) This does not really work with Drive search.
-  var url = fileURL.substr(0, fileURL.lastIndexOf('/'));
-  this.refreshDirectory(url);
-};
-
-/**
  * Resumes refreshes by resreshDirectory.
  * @param {string} url Directory URL.
  */

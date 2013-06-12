@@ -305,21 +305,26 @@ Gallery.prototype.initDom_ = function() {
   this.prompt_ = new ImageEditor.Prompt(
       this.container_, this.displayStringFunction_);
 
-  var onThumbnailError = this.context_.onThumbnailError || function() {};
-
   this.modeButton_ = util.createChild(this.toolbar_, 'button mode', 'button');
   this.modeButton_.addEventListener('click',
       this.toggleMode_.bind(this, null));
 
   this.mosaicMode_ = new MosaicMode(content,
-      this.dataModel_, this.selectionModel_, this.metadataCache_,
-      this.toggleMode_.bind(this, null), onThumbnailError);
+                                    this.dataModel_,
+                                    this.selectionModel_,
+                                    this.metadataCache_,
+                                    this.toggleMode_.bind(this, null));
 
-  this.slideMode_ = new SlideMode(this.container_, content,
-      this.toolbar_, this.prompt_,
-      this.dataModel_, this.selectionModel_, this.context_,
-      this.toggleMode_.bind(this), onThumbnailError,
-      this.displayStringFunction_);
+  this.slideMode_ = new SlideMode(this.container_,
+                                  content,
+                                  this.toolbar_,
+                                  this.prompt_,
+                                  this.dataModel_,
+                                  this.selectionModel_,
+                                  this.context_,
+                                  this.toggleMode_.bind(this),
+                                  this.displayStringFunction_);
+
   this.slideMode_.addEventListener('image-displayed', function() {
     cr.dispatchSimpleEvent(this, 'image-displayed');
   }.bind(this));

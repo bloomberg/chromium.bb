@@ -18,14 +18,13 @@
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {Object} context Context.
  * @param {function(function())} toggleMode Function to toggle the Gallery mode.
- * @param {function} onThumbnailError Thumbnail load error handler.
  * @param {function(string):string} displayStringFunction String formatting
  *     function.
  * @constructor
  */
 function SlideMode(container, content, toolbar, prompt,
                    dataModel, selectionModel, context,
-                   toggleMode, onThumbnailError, displayStringFunction) {
+                   toggleMode, displayStringFunction) {
   this.container_ = container;
   this.document_ = container.ownerDocument;
   this.content = content;
@@ -36,7 +35,6 @@ function SlideMode(container, content, toolbar, prompt,
   this.context_ = context;
   this.metadataCache_ = context.metadataCache;
   this.toggleMode_ = toggleMode;
-  this.onThumbnailError_ = onThumbnailError;
   this.displayStringFunction_ = displayStringFunction;
 
   this.onSelectionBound_ = this.onSelection_.bind(this);
@@ -161,8 +159,7 @@ SlideMode.prototype.initDom_ = function() {
 
   this.ribbonSpacer_ = util.createChild(this.toolbar_, 'ribbon-spacer');
   this.ribbon_ = new Ribbon(this.document_,
-      this.metadataCache_, this.dataModel_, this.selectionModel_,
-      this.onThumbnailError_);
+      this.metadataCache_, this.dataModel_, this.selectionModel_);
   this.ribbonSpacer_.appendChild(this.ribbon_);
 
   // Error indicator.
