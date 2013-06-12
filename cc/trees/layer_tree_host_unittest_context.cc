@@ -1034,8 +1034,8 @@ class LayerTreeHostContextTestLayersNotified
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
-    LayerTreeHostContextTest::TreeActivatedOnThread(host_impl);
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    LayerTreeHostContextTest::DidActivateTreeOnThread(host_impl);
 
     FakeContentLayerImpl* root = static_cast<FakeContentLayerImpl*>(
         host_impl->active_tree()->root_layer());

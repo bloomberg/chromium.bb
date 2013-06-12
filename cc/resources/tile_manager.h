@@ -40,6 +40,7 @@ class CC_EXPORT TileManagerClient {
   virtual void DidInitializeVisibleTile() = 0;
   virtual bool
       ShouldForceTileUploadsRequiredForActivationToComplete() const = 0;
+  virtual void NotifyReadyToActivate() = 0;
 
  protected:
   virtual ~TileManagerClient() {}

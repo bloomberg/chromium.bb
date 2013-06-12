@@ -367,11 +367,15 @@ bool LayerTreeImpl::ContentsTexturesPurged() const {
 }
 
 void LayerTreeImpl::SetContentsTexturesPurged() {
+  if (contents_textures_purged_)
+    return;
   contents_textures_purged_ = true;
   layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }
 
 void LayerTreeImpl::ResetContentsTexturesPurged() {
+  if (!contents_textures_purged_)
+    return;
   contents_textures_purged_ = false;
   layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }

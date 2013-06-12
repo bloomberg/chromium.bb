@@ -81,8 +81,10 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     LayerTreeHostImpl::CommitComplete();
     test_hooks_->CommitCompleteOnThread(this);
 
-    if (!settings().impl_side_painting)
-      test_hooks_->TreeActivatedOnThread(this);
+    if (!settings().impl_side_painting) {
+      test_hooks_->WillActivateTreeOnThread(this);
+      test_hooks_->DidActivateTreeOnThread(this);
+    }
   }
 
   virtual bool PrepareToDraw(FrameData* frame, gfx::Rect damage_rect) OVERRIDE {
@@ -109,17 +111,24 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->SwapBuffersCompleteOnThread(this);
   }
 
-  virtual bool ActivatePendingTreeIfNeeded() OVERRIDE {
+  virtual void ActivatePendingTreeIfNeeded() OVERRIDE {
     if (!pending_tree())
-      return false;
+      return;
 
     if (!test_hooks_->CanActivatePendingTree(this))
-      return false;
+      return;
 
-    bool activated = LayerTreeHostImpl::ActivatePendingTreeIfNeeded();
-    if (activated)
-      test_hooks_->TreeActivatedOnThread(this);
-    return activated;
+    LayerTreeHostImpl::ActivatePendingTreeIfNeeded();
+  }
+
+  virtual void ActivatePendingTree() OVERRIDE {
+    if (!test_hooks_->CanActivatePendingTree(this))
+      return;
+
+    test_hooks_->WillActivateTreeOnThread(this);
+    LayerTreeHostImpl::ActivatePendingTree();
+    DCHECK(!pending_tree());
+    test_hooks_->DidActivateTreeOnThread(this);
   }
 
   virtual bool InitializeRenderer(scoped_ptr<OutputSurface> output_surface)

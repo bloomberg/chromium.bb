@@ -52,7 +52,7 @@ class LayerTreeHostPictureTestTwinLayer
     }
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void WillActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     LayerImpl* pending_root_impl = impl->pending_tree()->root_layer();
     LayerImpl* active_root_impl = impl->active_tree()->root_layer();
 
@@ -88,7 +88,7 @@ class LayerTreeHostPictureTestTwinLayer
     EXPECT_EQ(active_picture_impl, pending_picture_impl->twin_layer());
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     LayerImpl* active_root_impl = impl->active_tree()->root_layer();
 
     if (active_root_impl->children().empty()) {

@@ -615,7 +615,7 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     EXPECT_EQ(gfx::Size(20, 20), impl->device_viewport_size());
     EXPECT_EQ(SK_ColorGRAY, impl->active_tree()->background_color());
     EXPECT_EQ(5.f, impl->active_tree()->page_scale_factor());
@@ -755,7 +755,7 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
     layer_tree_host()->SetPageScaleFactorAndLimits(scale, 0.5f, 2.f);
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     impl->ProcessScrollDeltas();
     // We get one commit before the first draw, and the animation doesn't happen
     // until the second draw.
@@ -959,7 +959,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     // Should only do one commit.
     EXPECT_EQ(0, impl->active_tree()->source_frame_number());
     // Device scale factor should come over to impl.
@@ -1067,7 +1067,7 @@ class LayerTreeHostTestAtomicCommit : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     ASSERT_EQ(0u, layer_tree_host()->settings().max_partial_texture_updates);
 
     TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
@@ -2111,7 +2111,7 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
     EndTest();
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     ++num_commits_;
     switch (num_commits_) {
       case 1:
@@ -2339,7 +2339,7 @@ class LayerTreeHostTestUninvertibleTransformDoesNotBlockActivation
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     EndTest();
   }
 
@@ -2474,7 +2474,7 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     // In WillDraw, the IOSurfaceLayer sets up the io surface texture.
 
     EXPECT_CALL(*mock_context_, activeTexture(_))

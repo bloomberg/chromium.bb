@@ -315,7 +315,7 @@ class LayerTreeHostScrollTestCaseWithChild
     }
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     LayerImpl* root_impl = impl->active_tree()->root_layer();
     LayerImpl* root_scroll_layer_impl = root_impl->children()[0];
     LayerImpl* child_layer_impl = root_scroll_layer_impl->children()[0];

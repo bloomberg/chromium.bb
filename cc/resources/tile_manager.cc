@@ -293,6 +293,10 @@ void TileManager::ManageTiles() {
   SortTiles();
   AssignGpuMemoryToTiles();
 
+  // This could have changed after AssignGpuMemoryToTiles.
+  if (AreTilesRequiredForActivationReady())
+    client_->NotifyReadyToActivate();
+
   TRACE_EVENT_INSTANT1(
       "cc", "DidManage", TRACE_EVENT_SCOPE_THREAD,
       "state", TracedValue::FromValue(BasicStateAsValue().release()));
@@ -815,6 +819,9 @@ void TileManager::DidFinishTileInitialization(Tile* tile) {
     // if it was marked as being required after being dispatched for
     // rasterization but before AssignGPUMemory was called again.
     tiles_that_need_to_be_initialized_for_activation_.erase(tile);
+
+    if (AreTilesRequiredForActivationReady())
+      client_->NotifyReadyToActivate();
   }
 }
 

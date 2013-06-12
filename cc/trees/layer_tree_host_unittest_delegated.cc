@@ -145,7 +145,7 @@ class LayerTreeHostDelegatedTestCreateChildId
                                              gfx::Rect(0, 0, 1, 1)));
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     LayerImpl* root_impl = host_impl->active_tree()->root_layer();
     FakeDelegatedRendererLayerImpl* delegated_impl =
         static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
@@ -394,7 +394,7 @@ class LayerTreeHostDelegatedTestMergeResources
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     LayerImpl* root_impl = host_impl->active_tree()->root_layer();
     FakeDelegatedRendererLayerImpl* delegated_impl =
         static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
@@ -436,7 +436,7 @@ class LayerTreeHostDelegatedTestRemapResourcesInQuads
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     LayerImpl* root_impl = host_impl->active_tree()->root_layer();
     FakeDelegatedRendererLayerImpl* delegated_impl =
         static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
@@ -666,7 +666,7 @@ class LayerTreeHostDelegatedTestFrameBeforeAck
     }
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     if (host_impl->active_tree()->source_frame_number() != 3)
       return;
 
@@ -765,7 +765,7 @@ class LayerTreeHostDelegatedTestFrameBeforeTakeResources
     }
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     if (host_impl->active_tree()->source_frame_number() != 3)
       return;
 
@@ -872,7 +872,7 @@ class LayerTreeHostDelegatedTestBadFrame
     }
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     if (host_impl->active_tree()->source_frame_number() < 1)
       return;
 
@@ -985,7 +985,7 @@ class LayerTreeHostDelegatedTestUnnamedResource
     }
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     if (host_impl->active_tree()->source_frame_number() != 1)
       return;
 
@@ -1048,7 +1048,7 @@ class LayerTreeHostDelegatedTestDontLeakResource
     }
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     if (host_impl->active_tree()->source_frame_number() != 1)
       return;
 
@@ -1125,7 +1125,7 @@ class LayerTreeHostDelegatedTestResourceSentToParent
     }
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     if (host_impl->active_tree()->source_frame_number() < 1)
       return;
 
@@ -1245,7 +1245,7 @@ class LayerTreeHostDelegatedTestCommitWithoutTake
     }
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     if (host_impl->active_tree()->source_frame_number() < 1)
       return;
 

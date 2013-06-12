@@ -199,6 +199,7 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void DidInitializeVisibleTile() OVERRIDE;
   virtual bool ShouldForceTileUploadsRequiredForActivationToComplete() const
       OVERRIDE;
+  virtual void NotifyReadyToActivate() OVERRIDE;
 
   // OutputSurfaceClient implementation.
   virtual bool DeferredInitialize(
@@ -243,7 +244,7 @@ class CC_EXPORT LayerTreeHostImpl
   const LayerTreeImpl* recycle_tree() const { return recycle_tree_.get(); }
   virtual void CreatePendingTree();
   void CheckForCompletedTileUploads();
-  virtual bool ActivatePendingTreeIfNeeded();
+  virtual void ActivatePendingTreeIfNeeded();
 
   // Shortcuts to layers on the active tree.
   LayerImpl* RootLayer() const;
@@ -381,7 +382,7 @@ class CC_EXPORT LayerTreeHostImpl
       LayerTreeHostImplClient* client,
       Proxy* proxy,
       RenderingStatsInstrumentation* rendering_stats_instrumentation);
-  void ActivatePendingTree();
+  virtual void ActivatePendingTree();
 
   // Virtual for testing.
   virtual void AnimateLayers(base::TimeTicks monotonic_time,

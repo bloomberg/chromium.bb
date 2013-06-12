@@ -837,9 +837,11 @@ void ThreadProxy::ScheduledActionCommit() {
   next_frame_is_newly_committed_frame_on_impl_thread_ = true;
 
   if (layer_tree_host_->settings().impl_side_painting &&
-      layer_tree_host_->BlocksPendingCommit()) {
+      layer_tree_host_->BlocksPendingCommit() &&
+      layer_tree_host_impl_->pending_tree()) {
     // For some layer types in impl-side painting, the commit is held until
-    // the pending tree is activated.
+    // the pending tree is activated.  It's also possible that the
+    // pending tree has already activated if there was no work to be done.
     TRACE_EVENT_INSTANT0("cc", "HoldCommit", TRACE_EVENT_SCOPE_THREAD);
     completion_event_for_commit_held_on_tree_activation_ =
         commit_completion_event_on_impl_thread_;
@@ -877,8 +879,6 @@ ScheduledActionDrawAndSwapResult
 ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
   TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionDrawAndSwap");
 
-  base::AutoReset<bool> mark_inside(&inside_draw_, true);
-
   ScheduledActionDrawAndSwapResult result;
   result.did_draw = false;
   result.did_swap = false;
@@ -895,9 +895,16 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
       layer_tree_host_impl_->CurrentFrameTimeTicks();
   base::Time wall_clock_time = layer_tree_host_impl_->CurrentFrameTime();
 
-  layer_tree_host_impl_->ActivatePendingTreeIfNeeded();
+  // TODO(enne): This should probably happen post-animate.
+  if (layer_tree_host_impl_->pending_tree()) {
+    layer_tree_host_impl_->ActivatePendingTreeIfNeeded();
+    if (layer_tree_host_impl_->pending_tree())
+      layer_tree_host_impl_->pending_tree()->UpdateDrawProperties();
+  }
   layer_tree_host_impl_->Animate(monotonic_time, wall_clock_time);
   layer_tree_host_impl_->UpdateBackgroundAnimateTicking(false);
+
+  base::AutoReset<bool> mark_inside(&inside_draw_, true);
 
   // This method is called on a forced draw, regardless of whether we are able
   // to produce a frame, as the calling site on main thread is blocked until its

@@ -462,7 +462,7 @@ class LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity
     PostAddAnimationToMainThread(update_check_layer_.get());
   }
 
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     LayerAnimationController* controller_impl =
         host_impl->active_tree()->root_layer()->layer_animation_controller();
     Animation* animation_impl =

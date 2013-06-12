@@ -35,7 +35,8 @@ class TestHooks : public WebKit::WebAnimationDelegate {
 
   virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) {}
-  virtual void TreeActivatedOnThread(LayerTreeHostImpl* host_impl) {}
+  virtual void WillActivateTreeOnThread(LayerTreeHostImpl* host_impl) {}
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void InitializedRendererOnThread(LayerTreeHostImpl* host_impl,
                                            bool success) {}
   virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,

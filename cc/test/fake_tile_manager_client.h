@@ -17,6 +17,7 @@ class FakeTileManagerClient : public TileManagerClient {
   virtual void DidInitializeVisibleTile() OVERRIDE {}
   virtual bool ShouldForceTileUploadsRequiredForActivationToComplete() const
       OVERRIDE;
+  virtual void NotifyReadyToActivate() OVERRIDE {}
 };
 
 }  // namespace cc

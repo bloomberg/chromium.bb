@@ -105,7 +105,16 @@ class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
           new DebugScopedSetImplThread(layer_tree_host_impl_->proxy()));
     }
 
-    layer_tree_host_impl_->ActivatePendingTreeIfNeeded();
+    // TODO(enne): This should probably happen post-animate.
+    if (layer_tree_host_impl_->pending_tree()) {
+      layer_tree_host_impl_->ActivatePendingTreeIfNeeded();
+
+      if (layer_tree_host_impl_->pending_tree()) {
+        layer_tree_host_impl_->pending_tree()->UpdateDrawProperties();
+        layer_tree_host_impl_->ManageTiles();
+      }
+    }
+
     layer_tree_host_impl_->Animate(
         layer_tree_host_impl_->CurrentFrameTimeTicks(),
         layer_tree_host_impl_->CurrentFrameTime());
@@ -1007,6 +1016,11 @@ bool LayerTreeHostImpl::
          animation_registrar_->active_animation_controllers().empty();
 }
 
+void LayerTreeHostImpl::NotifyReadyToActivate() {
+  if (pending_tree_)
+    ActivatePendingTree();
+}
+
 bool LayerTreeHostImpl::ShouldClearRootRenderPass() const {
   return settings_.should_clear_root_render_pass;
 }
@@ -1329,31 +1343,26 @@ void LayerTreeHostImpl::CheckForCompletedTileUploads() {
     tile_manager_->CheckForCompletedTileUploads();
 }
 
-bool LayerTreeHostImpl::ActivatePendingTreeIfNeeded() {
-  if (!pending_tree_)
-    return false;
-
+void LayerTreeHostImpl::ActivatePendingTreeIfNeeded() {
+  DCHECK(pending_tree_);
   CHECK(settings_.impl_side_painting);
 
-  // TODO(enne): This needs to be moved somewhere else (post-animate?)
-  pending_tree_->UpdateDrawProperties();
-  // Note: This will likely cause ManageTiles to be needed.  However,
-  // it is only out of date as far as the last commit or the last draw.
-  // For performance reasons, don't call ManageTiles again here.
+  // This call may activate the tree.
+  CheckForCompletedTileUploads();
+  if (!pending_tree_)
+    return;
+
+  // The tile manager is usually responsible for notifying activation.
+  // If there is no tile manager, then we need to manually activate.
+  if (!tile_manager_ || tile_manager_->AreTilesRequiredForActivationReady()) {
+    ActivatePendingTree();
+    return;
+  }
 
   TRACE_EVENT_ASYNC_STEP1(
     "cc",
     "PendingTree", pending_tree_.get(), "activate",
     "state", TracedValue::FromValue(ActivationStateAsValue().release()));
-
-  if (tile_manager_) {
-    tile_manager_->CheckForCompletedTileUploads();
-    if (!tile_manager_->AreTilesRequiredForActivationReady())
-      return false;
-  }
-
-  ActivatePendingTree();
-  return true;
 }
 
 void LayerTreeHostImpl::ActivatePendingTree() {
