@@ -4,6 +4,7 @@
 
 #include "cc/scheduler/scheduler_state_machine.h"
 
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 
@@ -12,6 +13,7 @@ namespace cc {
 SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
     : settings_(settings),
       commit_state_(COMMIT_STATE_IDLE),
+      commit_count_(0),
       current_frame_number_(0),
       last_frame_number_where_draw_was_called_(-1),
       last_frame_number_where_tree_activation_attempted_(-1),
@@ -42,6 +44,7 @@ std::string SchedulerStateMachine::ToString() {
                       "settings_.impl_side_painting = %d; ",
                       settings_.impl_side_painting);
   base::StringAppendF(&str, "commit_state_ = %d; ", commit_state_);
+  base::StringAppendF(&str, "commit_count_ = %d; ", commit_count_);
   base::StringAppendF(
       &str, "current_frame_number_ = %d; ", current_frame_number_);
   base::StringAppendF(&str,
@@ -80,6 +83,8 @@ std::string SchedulerStateMachine::ToString() {
                       main_thread_needs_layer_textures_);
   base::StringAppendF(&str, "inside_begin_frame_ = %d; ",
       inside_begin_frame_);
+  base::StringAppendF(&str, "last_frame_time_ = %"PRId64"; ",
+      (last_frame_time_ - base::TimeTicks()).InMilliseconds());
   base::StringAppendF(&str, "visible_ = %d; ", visible_);
   base::StringAppendF(&str, "can_start_ = %d; ", can_start_);
   base::StringAppendF(&str, "can_draw_ = %d; ", can_draw_);
@@ -273,6 +278,7 @@ void SchedulerStateMachine::UpdateState(Action action) {
       return;
 
     case ACTION_COMMIT:
+      commit_count_++;
       if (expect_immediate_begin_frame_for_main_thread_)
         commit_state_ = COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW;
       else
@@ -332,6 +338,11 @@ void SchedulerStateMachine::SetMainThreadNeedsLayerTextures() {
 }
 
 bool SchedulerStateMachine::BeginFrameNeededByImplThread() const {
+  // We should proactively request a BeginFrame if a commit is pending.
+  if (needs_commit_ || needs_forced_commit_ ||
+      commit_state_ != COMMIT_STATE_IDLE)
+    return true;
+
   // If we have a pending tree, need to keep getting notifications until
   // the tree is ready to be swapped.
   if (has_pending_tree_)
@@ -353,6 +364,10 @@ bool SchedulerStateMachine::BeginFrameNeededByImplThread() const {
 
 void SchedulerStateMachine::DidEnterBeginFrame() {
   inside_begin_frame_ = true;
+}
+
+void SchedulerStateMachine::SetFrameTime(base::TimeTicks frame_time) {
+  last_frame_time_ = frame_time;
 }
 
 void SchedulerStateMachine::DidLeaveBeginFrame() {

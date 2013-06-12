@@ -7,23 +7,29 @@
 #include "base/auto_reset.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "cc/base/thread.h"
 
 namespace cc {
 
 Scheduler::Scheduler(SchedulerClient* client,
-                     scoped_ptr<FrameRateController> frame_rate_controller,
                      const SchedulerSettings& scheduler_settings)
     : settings_(scheduler_settings),
       client_(client),
-      frame_rate_controller_(frame_rate_controller.Pass()),
+      weak_factory_(this),
+      last_set_needs_begin_frame_(false),
+      has_pending_begin_frame_(false),
+      last_begin_frame_time_(base::TimeTicks()),
+      // TODO(brianderson): Pass with BeginFrame in the near future.
+      interval_(base::TimeDelta::FromMicroseconds(16666)),
       state_machine_(scheduler_settings),
       inside_process_scheduled_actions_(false) {
   DCHECK(client_);
-  frame_rate_controller_->SetClient(this);
   DCHECK(!state_machine_.BeginFrameNeededByImplThread());
 }
 
-Scheduler::~Scheduler() { frame_rate_controller_->SetActive(false); }
+Scheduler::~Scheduler() {
+  client_->SetNeedsBeginFrameOnImplThread(false);
+}
 
 void Scheduler::SetCanStart() {
   state_machine_.SetCanStart();
@@ -88,23 +94,6 @@ void Scheduler::BeginFrameAbortedByMainThread() {
   ProcessScheduledActions();
 }
 
-void Scheduler::SetMaxFramesPending(int max_frames_pending) {
-  frame_rate_controller_->SetMaxFramesPending(max_frames_pending);
-}
-
-int Scheduler::MaxFramesPending() const {
-  return frame_rate_controller_->MaxFramesPending();
-}
-
-int Scheduler::NumFramesPendingForTesting() const {
-  return frame_rate_controller_->NumFramesPendingForTesting();
-}
-
-void Scheduler::DidSwapBuffersComplete() {
-  TRACE_EVENT0("cc", "Scheduler::DidSwapBuffersComplete");
-  frame_rate_controller_->DidSwapBuffersComplete();
-}
-
 void Scheduler::DidLoseOutputSurface() {
   TRACE_EVENT0("cc", "Scheduler::DidLoseOutputSurface");
   state_machine_.DidLoseOutputSurface();
@@ -113,31 +102,69 @@ void Scheduler::DidLoseOutputSurface() {
 
 void Scheduler::DidCreateAndInitializeOutputSurface() {
   TRACE_EVENT0("cc", "Scheduler::DidCreateAndInitializeOutputSurface");
-  frame_rate_controller_->DidAbortAllPendingFrames();
   state_machine_.DidCreateAndInitializeOutputSurface();
+  has_pending_begin_frame_ = false;
+  last_set_needs_begin_frame_ = false;
   ProcessScheduledActions();
-}
-
-void Scheduler::SetTimebaseAndInterval(base::TimeTicks timebase,
-                                       base::TimeDelta interval) {
-  frame_rate_controller_->SetTimebaseAndInterval(timebase, interval);
 }
 
 base::TimeTicks Scheduler::AnticipatedDrawTime() {
-  return frame_rate_controller_->NextTickTime();
+  TRACE_EVENT0("cc", "Scheduler::AnticipatedDrawTime");
+  base::TimeTicks now = base::TimeTicks::Now();
+  int64 intervals = ((now - last_begin_frame_time_) / interval_) + 1;
+  return last_begin_frame_time_ + (interval_ * intervals);
 }
 
 base::TimeTicks Scheduler::LastBeginFrameOnImplThreadTime() {
-  return frame_rate_controller_->LastTickTime();
+  return last_begin_frame_time_;
 }
 
-void Scheduler::BeginFrame(bool throttled) {
-  TRACE_EVENT1("cc", "Scheduler::BeginFrame", "throttled", throttled);
-  if (!throttled)
-    state_machine_.DidEnterBeginFrame();
+void Scheduler::SetupNextBeginFrameIfNeeded() {
+  // Determine if we need BeginFrame notifications.
+  // If we do, always request the BeginFrame immediately.
+  // If not, only disable on the next BeginFrame to avoid unnecessary toggles.
+  // The synchronous renderer compositor requires immediate disables though.
+  bool needs_begin_frame = state_machine_.BeginFrameNeededByImplThread();
+  if ((needs_begin_frame ||
+       state_machine_.inside_begin_frame() ||
+       settings_.using_synchronous_renderer_compositor) &&
+      (needs_begin_frame != last_set_needs_begin_frame_)) {
+    client_->SetNeedsBeginFrameOnImplThread(needs_begin_frame);
+    last_set_needs_begin_frame_ = needs_begin_frame;
+  }
+
+  // Request another BeginFrame if we haven't drawn for now until we have
+  // deadlines implemented.
+  if (state_machine_.inside_begin_frame() && has_pending_begin_frame_) {
+    has_pending_begin_frame_ = false;
+    client_->SetNeedsBeginFrameOnImplThread(true);
+  }
+}
+
+void Scheduler::BeginFrame(base::TimeTicks frame_time) {
+  TRACE_EVENT0("cc", "Scheduler::BeginFrame");
+  DCHECK(!has_pending_begin_frame_);
+  has_pending_begin_frame_ = true;
+  last_begin_frame_time_ = frame_time;
+  state_machine_.DidEnterBeginFrame();
+  state_machine_.SetFrameTime(frame_time);
   ProcessScheduledActions();
-  if (!throttled)
-    state_machine_.DidLeaveBeginFrame();
+  state_machine_.DidLeaveBeginFrame();
+}
+
+void Scheduler::DrawAndSwapIfPossible() {
+  ScheduledActionDrawAndSwapResult result =
+      client_->ScheduledActionDrawAndSwapIfPossible();
+  state_machine_.DidDrawIfPossibleCompleted(result.did_draw);
+  if (result.did_swap)
+    has_pending_begin_frame_ = false;
+}
+
+void Scheduler::DrawAndSwapForced() {
+  ScheduledActionDrawAndSwapResult result =
+      client_->ScheduledActionDrawAndSwapForced();
+  if (result.did_swap)
+    has_pending_begin_frame_ = false;
 }
 
 void Scheduler::ProcessScheduledActions() {
@@ -151,9 +178,6 @@ void Scheduler::ProcessScheduledActions() {
   SchedulerStateMachine::Action action = state_machine_.NextAction();
   while (action != SchedulerStateMachine::ACTION_NONE) {
     state_machine_.UpdateState(action);
-    TRACE_EVENT1(
-        "cc", "Scheduler::ProcessScheduledActions()", "action", action);
-
     switch (action) {
       case SchedulerStateMachine::ACTION_NONE:
         break;
@@ -169,23 +193,12 @@ void Scheduler::ProcessScheduledActions() {
       case SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED:
         client_->ScheduledActionActivatePendingTreeIfNeeded();
         break;
-      case SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE: {
-        frame_rate_controller_->DidSwapBuffers();
-        ScheduledActionDrawAndSwapResult result =
-            client_->ScheduledActionDrawAndSwapIfPossible();
-        state_machine_.DidDrawIfPossibleCompleted(result.did_draw);
-        if (!result.did_swap)
-          frame_rate_controller_->DidSwapBuffersComplete();
+      case SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE:
+        DrawAndSwapIfPossible();
         break;
-      }
-      case SchedulerStateMachine::ACTION_DRAW_FORCED: {
-        frame_rate_controller_->DidSwapBuffers();
-        ScheduledActionDrawAndSwapResult result =
-            client_->ScheduledActionDrawAndSwapForced();
-        if (!result.did_swap)
-          frame_rate_controller_->DidSwapBuffersComplete();
+      case SchedulerStateMachine::ACTION_DRAW_FORCED:
+        DrawAndSwapForced();
         break;
-      }
       case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
         client_->ScheduledActionBeginOutputSurfaceCreation();
         break;
@@ -196,10 +209,8 @@ void Scheduler::ProcessScheduledActions() {
     action = state_machine_.NextAction();
   }
 
-  // Activate or deactivate the frame rate controller.
-  frame_rate_controller_->SetActive(
-      state_machine_.BeginFrameNeededByImplThread());
-  client_->DidAnticipatedDrawTimeChange(frame_rate_controller_->NextTickTime());
+  SetupNextBeginFrameIfNeeded();
+  client_->DidAnticipatedDrawTimeChange(AnticipatedDrawTime());
 }
 
 bool Scheduler::WillDrawIfNeeded() const {

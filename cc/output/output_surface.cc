@@ -9,12 +9,14 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/scheduler/delay_based_time_source.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -32,7 +34,7 @@ class OutputSurfaceCallbacks
         WebGraphicsSwapBuffersCompleteCallbackCHROMIUM,
       public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
  public:
-  explicit OutputSurfaceCallbacks(OutputSurfaceClient* client)
+  explicit OutputSurfaceCallbacks(OutputSurface* client)
       : client_(client) {
     DCHECK(client_);
   }
@@ -44,50 +46,155 @@ class OutputSurfaceCallbacks
   virtual void onContextLost() { client_->DidLoseOutputSurface(); }
 
  private:
-  OutputSurfaceClient* client_;
+  OutputSurface* client_;
 };
 
 OutputSurface::OutputSurface(
     scoped_ptr<WebKit::WebGraphicsContext3D> context3d)
-    : client_(NULL),
-      context3d_(context3d.Pass()),
+    : context3d_(context3d.Pass()),
       has_gl_discard_backbuffer_(false),
       has_swap_buffers_complete_callback_(false),
       device_scale_factor_(-1),
-      weak_ptr_factory_(this) {
+      weak_ptr_factory_(this),
+      max_frames_pending_(0),
+      pending_swap_buffers_(0),
+      begin_frame_pending_(false),
+      client_(NULL) {
 }
 
 OutputSurface::OutputSurface(
     scoped_ptr<cc::SoftwareOutputDevice> software_device)
-    : client_(NULL),
-      software_device_(software_device.Pass()),
+    : software_device_(software_device.Pass()),
       has_gl_discard_backbuffer_(false),
       has_swap_buffers_complete_callback_(false),
       device_scale_factor_(-1),
-      weak_ptr_factory_(this) {
+      weak_ptr_factory_(this),
+      max_frames_pending_(0),
+      pending_swap_buffers_(0),
+      begin_frame_pending_(false),
+      client_(NULL) {
 }
 
 OutputSurface::OutputSurface(
     scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
     scoped_ptr<cc::SoftwareOutputDevice> software_device)
-    : client_(NULL),
-      context3d_(context3d.Pass()),
+    : context3d_(context3d.Pass()),
       software_device_(software_device.Pass()),
       has_gl_discard_backbuffer_(false),
       has_swap_buffers_complete_callback_(false),
       device_scale_factor_(-1),
-      weak_ptr_factory_(this) {
+      weak_ptr_factory_(this),
+      max_frames_pending_(0),
+      pending_swap_buffers_(0),
+      begin_frame_pending_(false),
+      client_(NULL) {
+}
+
+void OutputSurface::InitializeBeginFrameEmulation(
+    Thread* thread,
+    bool throttle_frame_production,
+    base::TimeDelta interval) {
+  if (throttle_frame_production){
+    frame_rate_controller_.reset(
+        new FrameRateController(
+            DelayBasedTimeSource::Create(interval, thread)));
+  } else {
+    frame_rate_controller_.reset(new FrameRateController(thread));
+  }
+
+  frame_rate_controller_->SetClient(this);
+  frame_rate_controller_->SetMaxSwapsPending(max_frames_pending_);
+
+  // The new frame rate controller will consume the swap acks of the old
+  // frame rate controller, so we set that expectation up here.
+  for (int i = 0; i < pending_swap_buffers_; i++)
+    frame_rate_controller_->DidSwapBuffers();
+}
+
+void OutputSurface::SetMaxFramesPending(int max_frames_pending) {
+  if (frame_rate_controller_)
+    frame_rate_controller_->SetMaxSwapsPending(max_frames_pending);
+  max_frames_pending_ = max_frames_pending;
+}
+
+void OutputSurface::OnVSyncParametersChanged(base::TimeTicks timebase,
+                                             base::TimeDelta interval) {
+  TRACE_EVENT2("cc", "OutputSurface::OnVSyncParametersChanged",
+               "timebase", (timebase - base::TimeTicks()).InSecondsF(),
+               "interval", interval.InSecondsF());
+  if (frame_rate_controller_)
+    frame_rate_controller_->SetTimebaseAndInterval(timebase, interval);
+}
+
+void OutputSurface::FrameRateControllerTick(bool throttled) {
+  DCHECK(frame_rate_controller_);
+  if (!throttled)
+    BeginFrame(frame_rate_controller_->LastTickTime());
+}
+
+// Forwarded to OutputSurfaceClient
+void OutputSurface::SetNeedsRedrawRect(gfx::Rect damage_rect) {
+  TRACE_EVENT0("cc", "OutputSurface::SetNeedsRedrawRect");
+  client_->SetNeedsRedrawRect(damage_rect);
+}
+
+void OutputSurface::SetNeedsBeginFrame(bool enable) {
+  TRACE_EVENT1("cc", "OutputSurface::SetNeedsBeginFrame", "enable", enable);
+  begin_frame_pending_ = false;
+  if (frame_rate_controller_)
+    frame_rate_controller_->SetActive(enable);
+}
+
+void OutputSurface::BeginFrame(base::TimeTicks frame_time) {
+  if (begin_frame_pending_ ||
+      (pending_swap_buffers_ >= max_frames_pending_ && max_frames_pending_ > 0))
+    return;
+  TRACE_EVENT1("cc", "OutputSurface::BeginFrame",
+               "pending_swap_buffers_", pending_swap_buffers_);
+  begin_frame_pending_ = true;
+  client_->BeginFrame(frame_time);
+}
+
+void OutputSurface::DidSwapBuffers() {
+  begin_frame_pending_ = false;
+  pending_swap_buffers_++;
+  TRACE_EVENT1("cc", "OutputSurface::DidSwapBuffers",
+               "pending_swap_buffers_", pending_swap_buffers_);
+  if (frame_rate_controller_)
+    frame_rate_controller_->DidSwapBuffers();
+}
+
+void OutputSurface::OnSwapBuffersComplete(const CompositorFrameAck* ack) {
+  pending_swap_buffers_--;
+  TRACE_EVENT1("cc", "OutputSurface::OnSwapBuffersComplete",
+               "pending_swap_buffers_", pending_swap_buffers_);
+  client_->OnSwapBuffersComplete(ack);
+  if (frame_rate_controller_)
+    frame_rate_controller_->DidSwapBuffersComplete();
+}
+
+void OutputSurface::DidLoseOutputSurface() {
+  TRACE_EVENT0("cc", "OutputSurface::DidLoseOutputSurface");
+  begin_frame_pending_ = false;
+  pending_swap_buffers_ = 0;
+  client_->DidLoseOutputSurface();
+}
+
+void OutputSurface::SetExternalDrawConstraints(const gfx::Transform& transform,
+                                               gfx::Rect viewport) {
+  client_->SetExternalDrawConstraints(transform, viewport);
 }
 
 OutputSurface::~OutputSurface() {
+  if (frame_rate_controller_)
+    frame_rate_controller_->SetActive(false);
 }
 
 bool OutputSurface::ForcedDrawToSoftwareDevice() const {
   return false;
 }
 
-bool OutputSurface::BindToClient(
-    cc::OutputSurfaceClient* client) {
+bool OutputSurface::BindToClient(cc::OutputSurfaceClient* client) {
   DCHECK(client);
   client_ = client;
   bool success = true;
@@ -143,7 +250,7 @@ void OutputSurface::SetContext3D(
 
 
   context3d_ = context3d.Pass();
-  callbacks_.reset(new OutputSurfaceCallbacks(client_));
+  callbacks_.reset(new OutputSurfaceCallbacks(this));
   context3d_->setSwapBuffersCompleteCallbackCHROMIUM(callbacks_.get());
   context3d_->setContextLostCallback(callbacks_.get());
 }
@@ -206,20 +313,16 @@ void OutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
 
   if (!has_swap_buffers_complete_callback_)
     PostSwapBuffersComplete();
+
+  DidSwapBuffers();
 }
 
 void OutputSurface::PostSwapBuffersComplete() {
   base::MessageLoop::current()->PostTask(
        FROM_HERE,
-       base::Bind(&OutputSurface::SwapBuffersComplete,
-                  weak_ptr_factory_.GetWeakPtr()));
-}
-
-void OutputSurface::SwapBuffersComplete() {
-  if (!client_)
-    return;
-
-  client_->OnSwapBuffersComplete(NULL);
+       base::Bind(&OutputSurface::OnSwapBuffersComplete,
+                  weak_ptr_factory_.GetWeakPtr(),
+                  static_cast<CompositorFrameAck*>(NULL)));
 }
 
 }  // namespace cc
