@@ -138,14 +138,12 @@
       {
         // Set duration to a positive double, expect no errors.
         setDurationHelper(101.9, null, runNextTestCase, video);
-        endTest();
       }
 
       function testSetZero(runNextTestCase, video)
       {
-        // Set duration to a positive double, expect no errors.
+        // Set duration to zero, expect no errors.
         setDurationHelper(0, null, runNextTestCase, video);
-        endTest();
       }
 
       function start()
@@ -181,14 +179,15 @@
               testSetNegativeInfinity,
               testSetLowestValue,
               testSetNegativeDouble,
-              testSetPositiveDouble
+              testSetPositiveDouble,
+              testSetZero
           ];
           MediaSourceTest.startSourceOpenTesting(video, testCases);
         });
       }
     </script>
   </head>
-  
+
   <body onload="start()">
     <video autoplay controls></video>
     <p>Tests boundary values for duration attribute on MediaSource object.</p>

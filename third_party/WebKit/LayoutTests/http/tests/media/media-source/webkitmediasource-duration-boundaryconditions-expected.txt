@@ -91,5 +91,22 @@ PASS: Media Source set duration. Got expected exception Error: InvalidAccessErro
 
 running testSetPositiveDouble
 EVENT(webkitsourceopen)
+onDurationChange : video.duration is 6.042
+EXPECTED (mediaSource.duration == 'video.duration') OK
+EVENT(loadedmetadata)
+EXPECTED (mediaSource.duration == 'testDurationValue') OK
+onDurationChange : video.duration is 101.900
+EXPECTED (mediaSource.duration == 'video.duration') OK
+EVENT(durationchange)
+
+running testSetZero
+EVENT(webkitsourceopen)
+onDurationChange : video.duration is 6.042
+EXPECTED (mediaSource.duration == 'video.duration') OK
+EVENT(loadedmetadata)
+EXPECTED (mediaSource.duration == 'testDurationValue') OK
+onDurationChange : video.duration is 0.000
+EXPECTED (mediaSource.duration == 'video.duration') OK
+EVENT(durationchange)
 END OF TEST
 
