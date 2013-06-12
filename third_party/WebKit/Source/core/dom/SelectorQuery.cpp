@@ -163,8 +163,21 @@ void SelectorDataList::execute(Node* rootNode, Vector<RefPtr<Node> >& matchedEle
             matchedElements.append(element);
         return;
     }
+
+    unsigned selectorCount = m_selectors.size();
+    if (selectorCount == 1) {
+        const SelectorData& selector = m_selectors[0];
+        for (Element* element = ElementTraversal::firstWithin(rootNode); element; element = ElementTraversal::next(element, rootNode)) {
+            if (selectorMatches(selector, element, rootNode)) {
+                matchedElements.append(element);
+                if (firstMatchOnly)
+                    return;
+            }
+        }
+        return;
+    }
     for (Element* element = ElementTraversal::firstWithin(rootNode); element; element = ElementTraversal::next(element, rootNode)) {
-        for (unsigned i = 0; i < m_selectors.size(); ++i) {
+        for (unsigned i = 0; i < selectorCount; ++i) {
             if (selectorMatches(m_selectors[i], element, rootNode)) {
                 matchedElements.append(element);
                 if (firstMatchOnly)
