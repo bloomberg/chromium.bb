@@ -80,8 +80,7 @@ private:
 PassRefPtr<DrawingBuffer> DrawingBuffer::create(GraphicsContext3D* context, const IntSize& size, PreserveDrawingBuffer preserve, PassRefPtr<ContextEvictionManager> contextEvictionManager)
 {
     Extensions3D* extensions = context->getExtensions();
-    bool multisampleSupported = extensions->maySupportMultisampling()
-        && extensions->supports("GL_ANGLE_framebuffer_blit")
+    bool multisampleSupported = extensions->supports("GL_ANGLE_framebuffer_blit")
         && extensions->supports("GL_ANGLE_framebuffer_multisample")
         && extensions->supports("GL_OES_rgb8_rgba8");
     if (multisampleSupported) {

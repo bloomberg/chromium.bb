@@ -694,7 +694,6 @@ void WebGLRenderingContext::setupFlags()
 
     m_isGLES2NPOTStrict = !m_context->getExtensions()->isEnabled("GL_OES_texture_npot");
     m_isDepthStencilSupported = m_context->getExtensions()->isEnabled("GL_OES_packed_depth_stencil");
-    m_isRobustnessEXTSupported = m_context->getExtensions()->isEnabled("GL_EXT_robustness");
 }
 
 bool WebGLRenderingContext::allowPrivilegedExtensions() const
@@ -2773,30 +2772,21 @@ WebGLGetInfo WebGLRenderingContext::getUniform(WebGLProgram* program, const WebG
                 switch (baseType) {
                 case GraphicsContext3D::FLOAT: {
                     GC3Dfloat value[16] = {0};
-                    if (m_isRobustnessEXTSupported)
-                        m_context->getExtensions()->getnUniformfvEXT(objectOrZero(program), location, 16 * sizeof(GC3Dfloat), value);
-                    else
-                        m_context->getUniformfv(objectOrZero(program), location, value);
+                    m_context->getUniformfv(objectOrZero(program), location, value);
                     if (length == 1)
                         return WebGLGetInfo(value[0]);
                     return WebGLGetInfo(Float32Array::create(value, length));
                 }
                 case GraphicsContext3D::INT: {
                     GC3Dint value[4] = {0};
-                    if (m_isRobustnessEXTSupported)
-                        m_context->getExtensions()->getnUniformivEXT(objectOrZero(program), location, 4 * sizeof(GC3Dint), value);
-                    else
-                        m_context->getUniformiv(objectOrZero(program), location, value);
+                    m_context->getUniformiv(objectOrZero(program), location, value);
                     if (length == 1)
                         return WebGLGetInfo(value[0]);
                     return WebGLGetInfo(Int32Array::create(value, length));
                 }
                 case GraphicsContext3D::BOOL: {
                     GC3Dint value[4] = {0};
-                    if (m_isRobustnessEXTSupported)
-                        m_context->getExtensions()->getnUniformivEXT(objectOrZero(program), location, 4 * sizeof(GC3Dint), value);
-                    else
-                        m_context->getUniformiv(objectOrZero(program), location, value);
+                    m_context->getUniformiv(objectOrZero(program), location, value);
                     if (length > 1) {
                         bool boolValue[16] = {0};
                         for (unsigned j = 0; j < length; j++)
@@ -3083,16 +3073,14 @@ void WebGLRenderingContext::readPixels(GC3Dint x, GC3Dint y, GC3Dsizei width, GC
     // Calculate array size, taking into consideration of PACK_ALIGNMENT.
     unsigned int totalBytesRequired = 0;
     unsigned int padding = 0;
-    if (!m_isRobustnessEXTSupported) {
-        GC3Denum error = m_context->computeImageSizeInBytes(format, type, width, height, m_packAlignment, &totalBytesRequired, &padding);
-        if (error != GraphicsContext3D::NO_ERROR) {
-            synthesizeGLError(error, "readPixels", "invalid dimensions");
-            return;
-        }
-        if (pixels->byteLength() < totalBytesRequired) {
-            synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "readPixels", "ArrayBufferView not large enough for dimensions");
-            return;
-        }
+    GC3Denum error = m_context->computeImageSizeInBytes(format, type, width, height, m_packAlignment, &totalBytesRequired, &padding);
+    if (error != GraphicsContext3D::NO_ERROR) {
+        synthesizeGLError(error, "readPixels", "invalid dimensions");
+        return;
+    }
+    if (pixels->byteLength() < totalBytesRequired) {
+        synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "readPixels", "ArrayBufferView not large enough for dimensions");
+        return;
     }
 
     clearIfComposited();
@@ -3100,15 +3088,10 @@ void WebGLRenderingContext::readPixels(GC3Dint x, GC3Dint y, GC3Dsizei width, GC
 
     {
         ScopedDrawingBufferBinder binder(m_drawingBuffer.get(), m_framebufferBinding.get());
-        if (m_isRobustnessEXTSupported)
-            m_context->getExtensions()->readnPixelsEXT(x, y, width, height, format, type, pixels->byteLength(), data);
-        else
-            m_context->readPixels(x, y, width, height, format, type, data);
+        m_context->readPixels(x, y, width, height, format, type, data);
     }
 
 #if OS(DARWIN)
-    if (m_isRobustnessEXTSupported) // we haven't computed padding
-        m_context->computeImageSizeInBytes(format, type, width, height, m_packAlignment, &totalBytesRequired, &padding);
     // FIXME: remove this section when GL driver bug on Mac is fixed, i.e.,
     // when alpha is off, readPixels should set alpha to 255 instead of 0.
     if (!m_framebufferBinding && !m_context->getContextAttributes().alpha) {

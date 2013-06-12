@@ -361,13 +361,6 @@ GrContext* GraphicsContext3D::grContext()
 
 DELEGATE_TO_WEBCONTEXT_R(makeContextCurrent, bool)
 
-bool GraphicsContext3D::isResourceSafe()
-{
-    if (m_resourceSafety == ResourceSafetyUnknown)
-        m_resourceSafety = getExtensions()->isEnabled("GL_CHROMIUM_resource_safe") ? ResourceSafe : ResourceUnsafe;
-    return m_resourceSafety == ResourceSafe;
-}
-
 DELEGATE_TO_WEBCONTEXT_1(activeTexture, GC3Denum)
 DELEGATE_TO_WEBCONTEXT_2(attachShader, Platform3DObject, Platform3DObject)
 
@@ -650,22 +643,7 @@ Extensions3D* GraphicsContext3D::getExtensions()
 bool GraphicsContext3D::texImage2DResourceSafe(GC3Denum target, GC3Dint level, GC3Denum internalformat, GC3Dsizei width, GC3Dsizei height, GC3Dint border, GC3Denum format, GC3Denum type, GC3Dint unpackAlignment)
 {
     ASSERT(unpackAlignment == 1 || unpackAlignment == 2 || unpackAlignment == 4 || unpackAlignment == 8);
-    OwnArrayPtr<unsigned char> zero;
-    if (!isResourceSafe() && width > 0 && height > 0) {
-        unsigned int size;
-        GC3Denum error = computeImageSizeInBytes(format, type, width, height, unpackAlignment, &size, 0);
-        if (error != GraphicsContext3D::NO_ERROR) {
-            synthesizeGLError(error);
-            return false;
-        }
-        zero = adoptArrayPtr(new unsigned char[size]);
-        if (!zero) {
-            synthesizeGLError(GraphicsContext3D::INVALID_VALUE);
-            return false;
-        }
-        memset(zero.get(), 0, size);
-    }
-    texImage2D(target, level, internalformat, width, height, border, format, type, zero.get());
+    texImage2D(target, level, internalformat, width, height, border, format, type, 0);
     return true;
 }
 

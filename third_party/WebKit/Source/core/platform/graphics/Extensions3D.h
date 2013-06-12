@@ -266,11 +266,6 @@ public:
     bool canUseCopyTextureCHROMIUM(GC3Denum destFormat, GC3Denum destType, GC3Dint level);
     void copyTextureCHROMIUM(GC3Denum, Platform3DObject, Platform3DObject, GC3Dint, GC3Denum, GC3Denum);
 
-    // EXT Robustness - uses getGraphicsResetStatusARB
-    void readnPixelsEXT(int x, int y, GC3Dsizei width, GC3Dsizei height, GC3Denum format, GC3Denum type, GC3Dsizei bufSize, void *data);
-    void getnUniformfvEXT(GC3Duint program, int location, GC3Dsizei bufSize, float *params);
-    void getnUniformivEXT(GC3Duint program, int location, GC3Dsizei bufSize, int *params);
-
     // GL_EXT_debug_marker
     void insertEventMarkerEXT(const String&);
     void pushGroupMarkerEXT(const String&);
@@ -278,23 +273,6 @@ public:
 
     // GL_ARB_draw_buffers / GL_EXT_draw_buffers
     void drawBuffersEXT(GC3Dsizei n, const GC3Denum* bufs);
-
-    // Some helper methods to detect GPU functionality
-    bool isNVIDIA() { return false; }
-    bool isAMD() { return false; }
-    bool isIntel() { return false; }
-    String vendor() { return ""; }
-
-    // If this method returns false then the system *definitely* does not support multisampling.
-    // It does not necessarily say the system does support it - callers must attempt to construct
-    // multisampled renderbuffers and check framebuffer completeness.
-    // Ports should implement this to return false on configurations where it is known
-    // that multisampling is not available.
-    bool maySupportMultisampling() { return true; }
-
-    // Some configurations have bugs regarding built-in functions in their OpenGL drivers
-    // that must be avoided. Ports should implement this flag such configurations.
-    bool requiresBuiltInFunctionEmulation() { return false; }
 
     // GL_CHROMIUM_map_sub
     void* mapBufferSubDataCHROMIUM(unsigned target, int offset, int size, unsigned access);

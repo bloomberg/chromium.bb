@@ -195,21 +195,6 @@ void Extensions3D::shallowFlushCHROMIUM()
     return m_context->webContext()->shallowFlushCHROMIUM();
 }
 
-void Extensions3D::readnPixelsEXT(int x, int y, GC3Dsizei width, GC3Dsizei height, GC3Denum format, GC3Denum type, GC3Dsizei bufSize, void *data)
-{
-    notImplemented();
-}
-
-void Extensions3D::getnUniformfvEXT(GC3Duint program, int location, GC3Dsizei bufSize, float *params)
-{
-    notImplemented();
-}
-
-void Extensions3D::getnUniformivEXT(GC3Duint program, int location, GC3Dsizei bufSize, int *params)
-{
-    notImplemented();
-}
-
 void Extensions3D::insertEventMarkerEXT(const String& marker)
 {
     m_context->webContext()->insertEventMarkerEXT(marker.utf8().data());

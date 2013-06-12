@@ -812,8 +812,6 @@ private:
 
     void initializeExtensions();
 
-    bool isResourceSafe();
-
     bool preserveDrawingBuffer() const { return m_preserveDrawingBuffer; }
 
     OwnPtr<WebKit::WebGraphicsContext3DProvider> m_provider;

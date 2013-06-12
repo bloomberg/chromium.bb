@@ -498,7 +498,6 @@ public:
 
     bool m_isGLES2NPOTStrict;
     bool m_isDepthStencilSupported;
-    bool m_isRobustnessEXTSupported;
 
     bool m_synthesizedErrorsToConsole;
     int m_numGLErrorsToConsoleAllowed;
