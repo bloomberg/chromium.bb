@@ -32,6 +32,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skia_util.h"
 
 using content::BrowserThread;
@@ -580,6 +581,12 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromExtension(
     // image_skia takes ownership of source.
     gfx::ImageSkia image_skia(source, source_image_skia.size());
     it->second = gfx::Image(image_skia);
+  }
+
+  // Generate raw images (for new-tab-page attribution and background) for
+  // any missing scale from an available scale image.
+  for (size_t i = 0; i < arraysize(kPreloadIDs); ++i) {
+    pack->GenerateRawImageForAllSupportedScales(kPreloadIDs[i]);
   }
 
   // The BrowserThemePack is now in a consistent state.
@@ -1442,4 +1449,87 @@ bool BrowserThemePack::GetScaleFactorFromManifestKey(
     }
   }
   return false;
+}
+
+void BrowserThemePack::GenerateRawImageForAllSupportedScales(int prs_id) {
+  // Compute (by scaling) bitmaps for |prs_id| for any scale factors
+  // for which the theme author did not provide a bitmap. We compute
+  // the bitmaps using the highest scale factor that theme author
+  // provided.
+  // Note: We use only supported scale factors. For example, if scale
+  // factor 2x is supported by the current system, but 1.8x is not and
+  // if the theme author did not provide an image for 2x but one for
+  // 1.8x, we will not use the 1.8x image here. Here we will only use
+  // images provided for scale factors supported by the current system.
+
+  // See if any image is missing. If not, we're done.
+  bool image_missing = false;
+  for (size_t i = 0; i < scale_factors_.size(); ++i) {
+    int raw_id = GetRawIDByPersistentID(prs_id, scale_factors_[i]);
+    if (image_memory_.find(raw_id) == image_memory_.end()) {
+      image_missing = true;
+      break;
+    }
+  }
+  if (!image_missing)
+    return;
+
+  // Find available scale factor with highest scale.
+  ui::ScaleFactor available = ui::SCALE_FACTOR_NONE;
+  for (size_t i = 0; i < scale_factors_.size(); ++i) {
+    int raw_id = GetRawIDByPersistentID(prs_id, scale_factors_[i]);
+    if ((available == ui::SCALE_FACTOR_NONE ||
+         (ui::GetScaleFactorScale(scale_factors_[i]) >
+          ui::GetScaleFactorScale(available))) &&
+        image_memory_.find(raw_id) != image_memory_.end()) {
+      available = scale_factors_[i];
+    }
+  }
+  // If no scale factor is available, we're done.
+  if (available == ui::SCALE_FACTOR_NONE)
+    return;
+
+  // Get bitmap for the available scale factor.
+  int available_raw_id = GetRawIDByPersistentID(prs_id, available);
+  RawImages::const_iterator it = image_memory_.find(available_raw_id);
+  SkBitmap available_bitmap;
+  if (!gfx::PNGCodec::Decode(it->second->front(),
+                             it->second->size(),
+                             &available_bitmap)) {
+    NOTREACHED() << "Unable to decode theme image for prs_id="
+                 << prs_id << " for scale_factor=" << available;
+    return;
+  }
+
+  // Fill in all missing scale factors by scaling the available bitmap.
+  for (size_t i = 0; i < scale_factors_.size(); ++i) {
+    int scaled_raw_id = GetRawIDByPersistentID(prs_id, scale_factors_[i]);
+    if (image_memory_.find(scaled_raw_id) != image_memory_.end())
+      continue;
+    gfx::Size scaled_size = gfx::ToCeiledSize(
+        gfx::ScaleSize(gfx::Size(available_bitmap.width(),
+                                 available_bitmap.height()),
+                       ui::GetScaleFactorScale(scale_factors_[i]) /
+                       ui::GetScaleFactorScale(available)));
+    SkBitmap scaled_bitmap;
+    scaled_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                            scaled_size.width(),
+                            scaled_size.height());
+    if (!scaled_bitmap.allocPixels())
+      SK_CRASH();
+    scaled_bitmap.eraseARGB(0, 0, 0, 0);
+    SkCanvas canvas(scaled_bitmap);
+    SkRect scaled_bounds = RectToSkRect(gfx::Rect(scaled_size));
+    canvas.drawBitmapRect(available_bitmap, NULL, scaled_bounds);
+    std::vector<unsigned char> bitmap_data;
+    if (!gfx::PNGCodec::EncodeBGRASkBitmap(scaled_bitmap,
+                                           false,
+                                           &bitmap_data)) {
+      NOTREACHED() << "Unable to encode theme image for prs_id="
+                   << prs_id << " for scale_factor=" << scale_factors_[i];
+      break;
+    }
+    image_memory_[scaled_raw_id] =
+        base::RefCountedBytes::TakeVector(&bitmap_data);
+  }
 }

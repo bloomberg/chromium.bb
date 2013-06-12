@@ -389,8 +389,6 @@ cr.define('ntp', function() {
   function updateAttribution() {
     var attribution = $('attribution');
     if (document.documentElement.getAttribute('hasattribution') == 'true') {
-      $('attribution-img').src =
-          'chrome://theme/IDR_THEME_NTP_ATTRIBUTION?' + Date.now();
       attribution.hidden = false;
     } else {
       attribution.hidden = true;

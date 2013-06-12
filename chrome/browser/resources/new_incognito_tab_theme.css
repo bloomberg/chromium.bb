@@ -6,12 +6,15 @@
 html {
   background-attachment: fixed;
   background-color: $2;
-  background-image: -webkit-image-set(
-    url(chrome://theme/IDR_THEME_NTP_BACKGROUND?$1) 1x);
+  background-image: url(chrome://theme/IDR_THEME_NTP_BACKGROUND?$1);
   background-position: $3;
   background-repeat: $5;
   height: 100%;
   overflow: auto;
+}
+
+#attribution-img {
+  content: url(chrome://theme/IDR_THEME_NTP_ATTRIBUTION?$1);
 }
 
 html[bookmarkbarattached='true'] {

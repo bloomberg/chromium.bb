@@ -218,6 +218,9 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   bool GetScaleFactorFromManifestKey(const std::string& key,
                                      ui::ScaleFactor* scale_factor) const;
 
+  // Generates raw images for any missing scale from an available scale.
+  void GenerateRawImageForAllSupportedScales(int prs_id);
+
   // Data pack, if we have one.
   scoped_ptr<ui::DataPack> data_pack_;
 
