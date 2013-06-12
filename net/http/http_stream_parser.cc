@@ -544,12 +544,12 @@ int HttpStreamParser::DoReadHeadersComplete(int result) {
       // rather than empty HTTP/0.9 response.
       io_state_ = STATE_DONE;
       return ERR_EMPTY_RESPONSE;
-    } else if (request_->url.SchemeIs("https")) {
+    } else if (request_->url.SchemeIsSecure()) {
       // The connection was closed in the middle of the headers. For HTTPS we
       // don't parse partial headers. Return a different error code so that we
       // know that we shouldn't attempt to retry the request.
       io_state_ = STATE_DONE;
-      return ERR_HEADERS_TRUNCATED;
+      return ERR_RESPONSE_HEADERS_TRUNCATED;
     }
     // Parse things as well as we can and let the caller decide what to do.
     int end_offset;
@@ -897,7 +897,7 @@ bool HttpStreamParser::IsConnectionReusable() const {
 }
 
 void HttpStreamParser::GetSSLInfo(SSLInfo* ssl_info) {
-  if (request_->url.SchemeIs("https") && connection_->socket()) {
+  if (request_->url.SchemeIsSecure() && connection_->socket()) {
     SSLClientSocket* ssl_socket =
         static_cast<SSLClientSocket*>(connection_->socket());
     ssl_socket->GetSSLInfo(ssl_info);
@@ -906,7 +906,7 @@ void HttpStreamParser::GetSSLInfo(SSLInfo* ssl_info) {
 
 void HttpStreamParser::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
-  if (request_->url.SchemeIs("https") && connection_->socket()) {
+  if (request_->url.SchemeIsSecure() && connection_->socket()) {
     SSLClientSocket* ssl_socket =
         static_cast<SSLClientSocket*>(connection_->socket());
     ssl_socket->GetSSLCertRequestInfo(cert_request_info);

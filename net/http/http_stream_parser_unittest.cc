@@ -405,7 +405,7 @@ TEST(HttpStreamParser, TruncatedHeaders) {
           EXPECT_EQ(ERR_CONNECTION_CLOSED, rv);
           EXPECT_TRUE(response_info.headers.get());
         } else {
-          EXPECT_EQ(ERR_HEADERS_TRUNCATED, rv);
+          EXPECT_EQ(ERR_RESPONSE_HEADERS_TRUNCATED, rv);
           EXPECT_FALSE(response_info.headers.get());
         }
       }

@@ -483,7 +483,7 @@ TEST_P(HttpProxyClientSocketPoolSpdy2Test, TunnelUnexpectedClose) {
     // returns ERR_CONNECTION_CLOSED in this case.
     EXPECT_EQ(ERR_CONNECTION_CLOSED, callback_.WaitForResult());
   } else {
-    EXPECT_EQ(ERR_HEADERS_TRUNCATED, callback_.WaitForResult());
+    EXPECT_EQ(ERR_RESPONSE_HEADERS_TRUNCATED, callback_.WaitForResult());
   }
   EXPECT_FALSE(handle_.is_initialized());
   EXPECT_FALSE(handle_.socket());
