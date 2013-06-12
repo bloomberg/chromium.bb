@@ -13,8 +13,6 @@
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
-#include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "grit/chromium_strings.h"
@@ -31,7 +29,6 @@ BrowserRootView::BrowserRootView(BrowserView* browser_view,
                                  views::Widget* widget)
     : views::internal::RootView(widget),
       browser_view_(browser_view),
-      scheduling_immersive_reveal_painting_(false),
       forwarding_to_tab_strip_(false) { }
 
 bool BrowserRootView::GetDropFormats(
@@ -120,23 +117,6 @@ int BrowserRootView::OnPerformDrop(const ui::DropTargetEvent& event) {
 
 const char* BrowserRootView::GetClassName() const {
   return kViewClassName;
-}
-
-void BrowserRootView::SchedulePaintInRect(const gfx::Rect& rect) {
-  views::internal::RootView::SchedulePaintInRect(rect);
-
-  // This function becomes reentrant when redirecting a paint-request to the
-  // reveal-view in immersive mode (because paint-requests all bubble up to the
-  // root-view). So return early in such cases.
-  if (scheduling_immersive_reveal_painting_)
-    return;
-
-  // Paint the frame caption area and window controls during immersive reveal.
-  if (browser_view_ &&
-      browser_view_->immersive_mode_controller()->IsRevealed()) {
-    base::AutoReset<bool> reset(&scheduling_immersive_reveal_painting_, true);
-    browser_view_->top_container()->SchedulePaintInRect(rect);
-  }
 }
 
 bool BrowserRootView::ShouldForwardToTabStrip(

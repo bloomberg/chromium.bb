@@ -83,6 +83,7 @@ class BrowserFrame
   virtual bool GetAccelerator(int command_id,
                               ui::Accelerator* accelerator) OVERRIDE;
   virtual ui::ThemeProvider* GetThemeProvider() const OVERRIDE;
+  virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
   virtual void OnNativeWidgetActivationChanged(bool active) OVERRIDE;
 
   // Overridden from views::ContextMenuController:

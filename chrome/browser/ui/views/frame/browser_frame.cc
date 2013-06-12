@@ -16,8 +16,10 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
 #include "chrome/browser/ui/views/frame/system_menu_model_builder.h"
+#include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -141,6 +143,20 @@ bool BrowserFrame::GetAccelerator(int command_id,
 
 ui::ThemeProvider* BrowserFrame::GetThemeProvider() const {
   return theme_provider_;
+}
+
+void BrowserFrame::SchedulePaintInRect(const gfx::Rect& rect) {
+  views::Widget::SchedulePaintInRect(rect);
+
+  // Paint the frame caption area and window controls during immersive reveal.
+  if (browser_view_ &&
+      browser_view_->immersive_mode_controller()->IsRevealed()) {
+    // This function should not be reentrant because the TopContainerView
+    // paints to a layer for the duration of the immersive reveal.
+    views::View* top_container = browser_view_->top_container();
+    CHECK(top_container->layer());
+    top_container->SchedulePaintInRect(rect);
+  }
 }
 
 void BrowserFrame::OnNativeWidgetActivationChanged(bool active) {

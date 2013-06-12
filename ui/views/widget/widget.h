@@ -496,7 +496,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Adds the specified |rect| in client area coordinates to the rectangle to be
   // redrawn.
-  void SchedulePaintInRect(const gfx::Rect& rect);
+  virtual void SchedulePaintInRect(const gfx::Rect& rect);
 
   // Sets the currently visible cursor. If |cursor| is NULL, the cursor used
   // before the current is restored.
