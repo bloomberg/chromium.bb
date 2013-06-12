@@ -710,7 +710,8 @@ AutofillDialogViews::SuggestionView::SuggestionView(
       icon_(new views::ImageView()),
       label_container_(new SectionRowView()),
       decorated_(
-          new DecoratedTextfield(string16(), string16(), autofill_dialog)) {
+          new DecoratedTextfield(string16(), string16(), autofill_dialog)),
+      edit_link_(new views::Link(edit_label)) {
   // Label and icon.
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_->set_border(CreateLabelAlignmentBorder());
@@ -726,10 +727,26 @@ AutofillDialogViews::SuggestionView::SuggestionView(
   label_line_2_->SetVisible(false);
   AddChildView(label_line_2_);
 
+  // TODO(estade): The link needs to have a different color when hovered.
+  edit_link_->set_listener(autofill_dialog);
+  edit_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  edit_link_->SetUnderline(false);
+
+  // This container prevents the edit link from being horizontally stretched.
+  views::View* link_container = new views::View();
+  link_container->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+  link_container->AddChildView(edit_link_);
+  AddChildView(link_container);
+
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 }
 
 AutofillDialogViews::SuggestionView::~SuggestionView() {}
+
+void AutofillDialogViews::SuggestionView::SetEditable(bool editable) {
+  edit_link_->SetVisible(editable);
+}
 
 void AutofillDialogViews::SuggestionView::SetSuggestionText(
     const string16& text,
@@ -1255,6 +1272,17 @@ void AutofillDialogViews::OnDidChangeFocus(
     ShowErrorBubbleForViewIfNecessary(focused_now);
 }
 
+void AutofillDialogViews::LinkClicked(views::Link* source, int event_flags) {
+  // Edit links.
+  for (DetailGroupMap::iterator iter = detail_groups_.begin();
+       iter != detail_groups_.end(); ++iter) {
+    if (iter->second.suggested_info->Contains(source)) {
+      controller_->EditClickedForSection(iter->first);
+      return;
+    }
+  }
+}
+
 void AutofillDialogViews::OnSelectedIndexChanged(views::Combobox* combobox) {
   DetailsGroup* group = GroupForView(combobox);
   ValidateGroup(*group, VALIDATE_EDIT);
@@ -1528,6 +1556,7 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
   group.suggested_info->SetSuggestionText(suggestion_state.text,
                                           suggestion_state.text_style);
   group.suggested_info->SetSuggestionIcon(suggestion_state.icon);
+  group.suggested_info->SetEditable(suggestion_state.editable);
 
   if (!suggestion_state.extra_text.empty()) {
     group.suggested_info->ShowTextfield(

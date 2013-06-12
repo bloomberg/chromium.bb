@@ -67,6 +67,7 @@ class AutofillDialogViews : public AutofillDialogView,
                             public views::ButtonListener,
                             public views::TextfieldController,
                             public views::FocusChangeListener,
+                            public views::LinkListener,
                             public views::ComboboxListener,
                             public views::StyledLabelListener,
                             public ui::AcceleratorTarget {
@@ -149,6 +150,9 @@ class AutofillDialogViews : public AutofillDialogView,
                                  views::View* focused_now) OVERRIDE;
   virtual void OnDidChangeFocus(views::View* focused_before,
                                 views::View* focused_now) OVERRIDE;
+
+  // views::LinkListener implementation:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // views::ComboboxListener implementation:
   virtual void OnSelectedIndexChanged(views::Combobox* combobox) OVERRIDE;
@@ -368,6 +372,9 @@ class AutofillDialogViews : public AutofillDialogView,
     SuggestionView(const string16& edit_label,
                    AutofillDialogViews* autofill_dialog);
     virtual ~SuggestionView();
+
+    // Whether this section is editable or not.
+    void SetEditable(bool editable);
 
     // Sets the display text of the suggestion.
     void SetSuggestionText(const string16& text, gfx::Font::FontStyle style);
