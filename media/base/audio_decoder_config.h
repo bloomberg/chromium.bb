@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_export.h"
+#include "media/base/sample_format.h"
 
 namespace media {
 
@@ -38,22 +39,6 @@ enum AudioCodec {
 
   // Must always be last!
   kAudioCodecMax
-};
-
-enum SampleFormat {
-  // These values are histogrammed over time; do not change their ordinal
-  // values.  When deleting a sample format replace it with a dummy value; when
-  // adding a sample format, do so at the bottom before kSampleFormatMax.
-  kUnknownSampleFormat = 0,
-  kSampleFormatU8,         // Unsigned 8-bit w/ bias of 128.
-  kSampleFormatS16,        // Signed 16-bit.
-  kSampleFormatS32,        // Signed 32-bit.
-  kSampleFormatF32,        // Float 32-bit.
-  kSampleFormatPlanarS16,  // Signed 16-bit planar.
-  kSampleFormatPlanarF32,  // Float 32-bit planar.
-
-  // Must always be last!
-  kSampleFormatMax
 };
 
 // TODO(dalecurtis): FFmpeg API uses |bytes_per_channel| instead of
@@ -89,7 +74,8 @@ class MEDIA_EXPORT AudioDecoderConfig {
   bool Matches(const AudioDecoderConfig& config) const;
 
   AudioCodec codec() const { return codec_; }
-  int bits_per_channel() const { return bits_per_channel_; }
+  int bits_per_channel() const { return bytes_per_channel_ * 8; }
+  int bytes_per_channel() const { return bytes_per_channel_; }
   ChannelLayout channel_layout() const { return channel_layout_; }
   int samples_per_second() const { return samples_per_second_; }
   SampleFormat sample_format() const { return sample_format_; }
@@ -110,7 +96,7 @@ class MEDIA_EXPORT AudioDecoderConfig {
  private:
   AudioCodec codec_;
   SampleFormat sample_format_;
-  int bits_per_channel_;
+  int bytes_per_channel_;
   ChannelLayout channel_layout_;
   int samples_per_second_;
   int bytes_per_frame_;

@@ -275,6 +275,8 @@
         'base/pipeline_status.h',
         'base/ranges.cc',
         'base/ranges.h',
+        'base/sample_format.cc',
+        'base/sample_format.h',
         'base/scoped_histogram_timer.h',
         'base/seekable_buffer.cc',
         'base/seekable_buffer.h',

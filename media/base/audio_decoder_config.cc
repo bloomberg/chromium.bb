@@ -8,34 +8,14 @@
 #include "base/metrics/histogram.h"
 #include "media/audio/sample_rates.h"
 #include "media/base/limits.h"
+#include "media/base/sample_format.h"
 
 namespace media {
-
-static int SampleFormatToBitsPerChannel(SampleFormat sample_format) {
-  switch (sample_format) {
-    case kUnknownSampleFormat:
-      return 0;
-    case kSampleFormatU8:
-      return 8;
-    case kSampleFormatS16:
-    case kSampleFormatPlanarS16:
-      return 16;
-    case kSampleFormatS32:
-    case kSampleFormatF32:
-    case kSampleFormatPlanarF32:
-      return 32;
-    case kSampleFormatMax:
-      break;
-  }
-
-  NOTREACHED() << "Invalid sample format provided: " << sample_format;
-  return 0;
-}
 
 AudioDecoderConfig::AudioDecoderConfig()
     : codec_(kUnknownAudioCodec),
       sample_format_(kUnknownSampleFormat),
-      bits_per_channel_(0),
+      bytes_per_channel_(0),
       channel_layout_(CHANNEL_LAYOUT_UNSUPPORTED),
       samples_per_second_(0),
       bytes_per_frame_(0),
@@ -83,12 +63,12 @@ void AudioDecoderConfig::Initialize(AudioCodec codec,
   channel_layout_ = channel_layout;
   samples_per_second_ = samples_per_second;
   sample_format_ = sample_format;
-  bits_per_channel_ = SampleFormatToBitsPerChannel(sample_format);
+  bytes_per_channel_ = SampleFormatToBytesPerChannel(sample_format);
   extra_data_.assign(extra_data, extra_data + extra_data_size);
   is_encrypted_ = is_encrypted;
 
   int channels = ChannelLayoutToChannelCount(channel_layout_);
-  bytes_per_frame_ = channels * bits_per_channel_ / 8;
+  bytes_per_frame_ = channels * bytes_per_channel_;
 }
 
 AudioDecoderConfig::~AudioDecoderConfig() {}
@@ -96,8 +76,8 @@ AudioDecoderConfig::~AudioDecoderConfig() {}
 bool AudioDecoderConfig::IsValidConfig() const {
   return codec_ != kUnknownAudioCodec &&
          channel_layout_ != CHANNEL_LAYOUT_UNSUPPORTED &&
-         bits_per_channel_ > 0 &&
-         bits_per_channel_ <= limits::kMaxBitsPerSample &&
+         bytes_per_channel_ > 0 &&
+         bytes_per_channel_ <= limits::kMaxBytesPerSample &&
          samples_per_second_ > 0 &&
          samples_per_second_ <= limits::kMaxSampleRate &&
          sample_format_ != kUnknownSampleFormat;
@@ -105,7 +85,7 @@ bool AudioDecoderConfig::IsValidConfig() const {
 
 bool AudioDecoderConfig::Matches(const AudioDecoderConfig& config) const {
   return ((codec() == config.codec()) &&
-          (bits_per_channel() == config.bits_per_channel()) &&
+          (bytes_per_channel() == config.bytes_per_channel()) &&
           (channel_layout() == config.channel_layout()) &&
           (samples_per_second() == config.samples_per_second()) &&
           (extra_data_size() == config.extra_data_size()) &&

@@ -34,10 +34,11 @@ enum {
   kMaxSampleRate = 192000,
   kMinSampleRate = 3000,
   kMaxChannels = 32,
-  kMaxBitsPerSample = 32,
+  kMaxBytesPerSample = 4,
+  kMaxBitsPerSample = kMaxBytesPerSample * 8,
   kMaxSamplesPerPacket = kMaxSampleRate,
   kMaxPacketSizeInBytes =
-      (kMaxBitsPerSample / 8) * kMaxChannels * kMaxSamplesPerPacket,
+      kMaxBytesPerSample * kMaxChannels * kMaxSamplesPerPacket,
 
   // This limit is used by ParamTraits<VideoCaptureParams>.
   kMaxFramesPerSecond = 1000,
