@@ -68,7 +68,7 @@ CompositorOutputSurface::CompositorOutputSurface(
 
 CompositorOutputSurface::~CompositorOutputSurface() {
   DCHECK(CalledOnValidThread());
-  if (!HasClient())
+  if (!client_)
     return;
   UpdateSmoothnessTakesPriority(false);
   if (output_surface_proxy_.get())
@@ -95,7 +95,6 @@ bool CompositorOutputSurface::BindToClient(
 void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   if (use_swap_compositor_frame_message_) {
     Send(new ViewHostMsg_SwapCompositorFrame(routing_id_, *frame));
-    DidSwapBuffers();
     return;
   }
 
@@ -114,7 +113,7 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
 
 void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
-  if (!HasClient())
+  if (!client_)
     return;
   IPC_BEGIN_MESSAGE_MAP(CompositorOutputSurface, message)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateVSyncParameters, OnUpdateVSyncParameters);
@@ -128,24 +127,23 @@ void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
 void CompositorOutputSurface::OnUpdateVSyncParameters(
     base::TimeTicks timebase, base::TimeDelta interval) {
   DCHECK(CalledOnValidThread());
-  OnVSyncParametersChanged(timebase, interval);
+  client_->OnVSyncParametersChanged(timebase, interval);
 }
 
 #if defined(OS_ANDROID)
 void CompositorOutputSurface::SetNeedsBeginFrame(bool enable) {
   DCHECK(CalledOnValidThread());
   Send(new ViewHostMsg_SetNeedsBeginFrame(routing_id_, enable));
-  OutputSurface::SetNeedsBeginFrame(enable);
 }
 
 void CompositorOutputSurface::OnBeginFrame(base::TimeTicks frame_time) {
   DCHECK(CalledOnValidThread());
-  BeginFrame(frame_time);
+  client_->BeginFrame(frame_time);
 }
 #endif  // defined(OS_ANDROID)
 
 void CompositorOutputSurface::OnSwapAck(const cc::CompositorFrameAck& ack) {
-  OnSwapBuffersComplete(&ack);
+  client_->OnSwapBuffersComplete(&ack);
 }
 
 bool CompositorOutputSurface::Send(IPC::Message* message) {

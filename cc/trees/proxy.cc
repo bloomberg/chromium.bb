@@ -78,8 +78,4 @@ Proxy::~Proxy() {
   DCHECK(IsMainThread());
 }
 
-std::string Proxy::SchedulerStateAsStringForTesting() {
-  return "";
-}
-
 }  // namespace cc

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/scheduler/scheduler_settings.h"
 
@@ -79,9 +78,7 @@ class CC_EXPORT SchedulerStateMachine {
   // The scheduler will not draw more than once in a given BeginFrame
   // callback.
   void DidEnterBeginFrame();
-  void SetFrameTime(base::TimeTicks frame_time);
   void DidLeaveBeginFrame();
-  bool inside_begin_frame() const { return inside_begin_frame_; }
 
   // Indicates whether the LayerTreeHostImpl is visible.
   void SetVisible(bool visible);
@@ -171,7 +168,6 @@ class CC_EXPORT SchedulerStateMachine {
   const SchedulerSettings settings_;
 
   CommitState commit_state_;
-  int commit_count_;
 
   int current_frame_number_;
   int last_frame_number_where_draw_was_called_;
@@ -188,7 +184,6 @@ class CC_EXPORT SchedulerStateMachine {
   bool expect_immediate_begin_frame_for_main_thread_;
   bool main_thread_needs_layer_textures_;
   bool inside_begin_frame_;
-  base::TimeTicks last_frame_time_;
   bool visible_;
   bool can_start_;
   bool can_draw_;
@@ -198,7 +193,6 @@ class CC_EXPORT SchedulerStateMachine {
   OutputSurfaceState output_surface_state_;
   bool did_create_and_initialize_first_output_surface_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);
 };
 

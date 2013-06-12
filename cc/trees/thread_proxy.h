@@ -5,8 +5,6 @@
 #ifndef CC_TREES_THREAD_PROXY_H_
 #define CC_TREES_THREAD_PROXY_H_
 
-#include <string>
-
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
@@ -14,6 +12,7 @@
 #include "cc/base/completion_event.h"
 #include "cc/resources/resource_update_controller.h"
 #include "cc/scheduler/scheduler.h"
+#include "cc/scheduler/vsync_time_source.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/proxy.h"
 
@@ -30,7 +29,8 @@ class Thread;
 class ThreadProxy : public Proxy,
                     LayerTreeHostImplClient,
                     SchedulerClient,
-                    ResourceUpdateControllerClient {
+                    ResourceUpdateControllerClient,
+                    VSyncProvider {
  public:
   static scoped_ptr<Proxy> Create(LayerTreeHost* layer_tree_host,
                                   scoped_ptr<Thread> impl_thread);
@@ -59,7 +59,6 @@ class ThreadProxy : public Proxy,
   virtual skia::RefPtr<SkPicture> CapturePicture() OVERRIDE;
   virtual scoped_ptr<base::Value> AsValue() const OVERRIDE;
   virtual bool CommitPendingForTesting() OVERRIDE;
-  virtual std::string SchedulerStateAsStringForTesting() OVERRIDE;
 
   // LayerTreeHostImplClient implementation
   virtual void DidTryInitializeRendererOnImplThread(
@@ -67,7 +66,10 @@ class ThreadProxy : public Proxy,
       scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE;
   virtual void DidLoseOutputSurfaceOnImplThread() OVERRIDE;
   virtual void OnSwapBuffersCompleteOnImplThread() OVERRIDE;
-  virtual void BeginFrameOnImplThread(base::TimeTicks frame_time) OVERRIDE;
+  virtual void OnVSyncParametersChanged(base::TimeTicks timebase,
+                                        base::TimeDelta interval) OVERRIDE;
+  virtual void BeginFrameOnImplThread(base::TimeTicks frame_time)
+      OVERRIDE;
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE;
   virtual void OnHasPendingTreeStateChanged(bool has_pending_tree) OVERRIDE;
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE;
@@ -89,7 +91,6 @@ class ThreadProxy : public Proxy,
   virtual void DidActivatePendingTree() OVERRIDE;
 
   // SchedulerClient implementation
-  virtual void SetNeedsBeginFrameOnImplThread(bool enable) OVERRIDE;
   virtual void ScheduledActionSendBeginFrameToMainThread() OVERRIDE;
   virtual ScheduledActionDrawAndSwapResult
       ScheduledActionDrawAndSwapIfPossible() OVERRIDE;
@@ -104,6 +105,17 @@ class ThreadProxy : public Proxy,
 
   // ResourceUpdateControllerClient implementation
   virtual void ReadyToFinalizeTextureUpdates() OVERRIDE;
+
+  // VSyncProvider implementation
+  virtual void RequestVSyncNotification(VSyncClient* client) OVERRIDE;
+
+  int MaxFramesPendingForTesting() const {
+    return scheduler_on_impl_thread_->MaxFramesPending();
+  }
+
+  int NumFramesPendingForTesting() const {
+    return scheduler_on_impl_thread_->NumFramesPendingForTesting();
+  }
 
  private:
   ThreadProxy(LayerTreeHost* layer_tree_host, scoped_ptr<Thread> impl_thread);
@@ -131,10 +143,16 @@ class ThreadProxy : public Proxy,
       const RendererCapabilities& capabilities);
 
   // Called on impl thread.
-  struct ReadbackRequest;
-  struct CommitPendingRequest;
-  struct SchedulerStateRequest;
-
+  struct ReadbackRequest {
+    CompletionEvent completion;
+    bool success;
+    void* pixels;
+    gfx::Rect rect;
+  };
+  struct CommitPendingRequest {
+    CompletionEvent completion;
+    bool commit_pending;
+  };
   void ForceCommitOnImplThread(CompletionEvent* completion);
   void StartCommitOnImplThread(
       CompletionEvent* completion,
@@ -164,8 +182,6 @@ class ThreadProxy : public Proxy,
   void ForceSerializeOnSwapBuffersOnImplThread(CompletionEvent* completion);
   void CheckOutputSurfaceStatusOnImplThread();
   void CommitPendingOnImplThreadForTesting(CommitPendingRequest* request);
-  void SchedulerStateAsStringOnImplThreadForTesting(
-      SchedulerStateRequest* request);
   void CapturePictureOnImplThread(CompletionEvent* completion,
                                   skia::RefPtr<SkPicture>* picture);
   void AsValueOnImplThread(CompletionEvent* completion,
@@ -234,6 +250,7 @@ class ThreadProxy : public Proxy,
   bool throttle_frame_production_;
   bool begin_frame_scheduling_enabled_;
   bool using_synchronous_renderer_compositor_;
+  VSyncClient* vsync_client_;
 
   bool inside_draw_;
 

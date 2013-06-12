@@ -35,6 +35,16 @@ void FakeThread::PostDelayedTask(base::Closure cb, base::TimeDelta delay) {
 
 bool FakeThread::BelongsToCurrentThread() const { return true; }
 
+void FakeTimeSource::SetClient(TimeSourceClient* client) { client_ = client; }
+
+void FakeTimeSource::SetActive(bool b) { active_ = b; }
+
+bool FakeTimeSource::Active() const { return active_; }
+
+base::TimeTicks FakeTimeSource::LastTickTime() { return base::TimeTicks(); }
+
+base::TimeTicks FakeTimeSource::NextTickTime() { return base::TimeTicks(); }
+
 base::TimeTicks FakeDelayBasedTimeSource::Now() const { return now_; }
 
 }  // namespace cc

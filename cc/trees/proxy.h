@@ -5,8 +5,6 @@
 #ifndef CC_TREES_PROXY_H_
 #define CC_TREES_PROXY_H_
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -100,7 +98,6 @@ class CC_EXPORT Proxy {
 
   // Testing hooks
   virtual bool CommitPendingForTesting() = 0;
-  virtual std::string SchedulerStateAsStringForTesting();
 
  protected:
   explicit Proxy(scoped_ptr<Thread> impl_thread);

@@ -21,9 +21,7 @@ class FrameRateControllerTimeSourceAdapter : public TimeSourceClient {
   }
   virtual ~FrameRateControllerTimeSourceAdapter() {}
 
-  virtual void OnTimerTick() OVERRIDE {
-    frame_rate_controller_->OnTimerTick();
-  }
+  virtual void OnTimerTick() OVERRIDE { frame_rate_controller_->OnTimerTick(); }
 
  private:
   explicit FrameRateControllerTimeSourceAdapter(
@@ -36,7 +34,7 @@ class FrameRateControllerTimeSourceAdapter : public TimeSourceClient {
 FrameRateController::FrameRateController(scoped_refptr<TimeSource> timer)
     : client_(NULL),
       num_frames_pending_(0),
-      max_swaps_pending_(0),
+      max_frames_pending_(0),
       time_source_(timer),
       active_(false),
       is_time_source_throttling_(true),
@@ -50,7 +48,7 @@ FrameRateController::FrameRateController(scoped_refptr<TimeSource> timer)
 FrameRateController::FrameRateController(Thread* thread)
     : client_(NULL),
       num_frames_pending_(0),
-      max_swaps_pending_(0),
+      max_frames_pending_(0),
       active_(false),
       is_time_source_throttling_(false),
       weak_factory_(this),
@@ -77,9 +75,9 @@ void FrameRateController::SetActive(bool active) {
   }
 }
 
-void FrameRateController::SetMaxSwapsPending(int max_swaps_pending) {
-  DCHECK_GE(max_swaps_pending, 0);
-  max_swaps_pending_ = max_swaps_pending;
+void FrameRateController::SetMaxFramesPending(int max_frames_pending) {
+  DCHECK_GE(max_frames_pending, 0);
+  max_frames_pending_ = max_frames_pending;
 }
 
 void FrameRateController::SetTimebaseAndInterval(base::TimeTicks timebase,
@@ -89,17 +87,15 @@ void FrameRateController::SetTimebaseAndInterval(base::TimeTicks timebase,
 }
 
 void FrameRateController::OnTimerTick() {
-  TRACE_EVENT0("cc", "FrameRateController::OnTimerTick");
   DCHECK(active_);
 
   // Check if we have too many frames in flight.
   bool throttled =
-      max_swaps_pending_ && num_frames_pending_ >= max_swaps_pending_;
+      max_frames_pending_ && num_frames_pending_ >= max_frames_pending_;
   TRACE_COUNTER_ID1("cc", "ThrottledCompositor", thread_, throttled);
 
-  if (client_) {
-    client_->FrameRateControllerTick(throttled);
-  }
+  if (client_)
+    client_->BeginFrame(throttled);
 
   if (!is_time_source_throttling_ && !throttled)
     PostManualTick();
@@ -112,9 +108,7 @@ void FrameRateController::PostManualTick() {
   }
 }
 
-void FrameRateController::ManualTick() {
-  OnTimerTick();
-}
+void FrameRateController::ManualTick() { OnTimerTick(); }
 
 void FrameRateController::DidSwapBuffers() {
   num_frames_pending_++;
