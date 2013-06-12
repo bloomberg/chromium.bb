@@ -211,6 +211,7 @@
           '--defines',
           '<(feature_defines)',
           '<@(generator_include_dirs)',
+          '<@(extra_blink_generator_include_dirs)',
           '--supplementalDependencyFile',
           '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
           '--additionalIdlFiles',

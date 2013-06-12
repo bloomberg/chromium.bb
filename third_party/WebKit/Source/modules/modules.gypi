@@ -9,6 +9,7 @@
     'extra_blink_module_files': [],
 
     'modules_idl_files': [
+      '<@(extra_blink_module_idl_files)',
       'crypto/Crypto.idl',
       'crypto/DOMWindowCrypto.idl',
       'crypto/SubtleCrypto.idl',
