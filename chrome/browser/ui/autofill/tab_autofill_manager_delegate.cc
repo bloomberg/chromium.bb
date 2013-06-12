@@ -139,6 +139,7 @@ void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
 
 void TabAutofillManagerDelegate::ShowAutofillPopup(
     const gfx::RectF& element_bounds,
+    base::i18n::TextDirection text_direction,
     const std::vector<string16>& values,
     const std::vector<string16>& labels,
     const std::vector<string16>& icons,
@@ -155,7 +156,8 @@ void TabAutofillManagerDelegate::ShowAutofillPopup(
       popup_controller_,
       delegate,
       web_contents()->GetView()->GetNativeView(),
-      element_bounds_in_screen_space);
+      element_bounds_in_screen_space,
+      text_direction);
 
   popup_controller_->Show(values, labels, icons, identifiers);
 }

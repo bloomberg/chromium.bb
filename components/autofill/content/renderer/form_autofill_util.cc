@@ -714,9 +714,11 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
 
     field->is_autofilled = input_element->isAutofilled();
     field->is_focusable = input_element->isFocusable();
-    field->should_autocomplete = input_element->autoComplete();
     field->is_checkable = IsCheckableElement(input_element);
     field->is_checked = input_element->isChecked();
+    field->should_autocomplete = input_element->autoComplete();
+    field->text_direction = input_element->directionForFormData() == "rtl" ?
+        base::i18n::RIGHT_TO_LEFT : base::i18n::LEFT_TO_RIGHT;
   } else if (extract_mask & EXTRACT_OPTIONS) {
     // Set option strings on the field if available.
     DCHECK(IsSelectElement(element));

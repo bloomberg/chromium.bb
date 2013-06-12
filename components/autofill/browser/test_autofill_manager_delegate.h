@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_BROWSER_TEST_AUTOFILL_MANAGER_DELEGATE_H_
 
 #include "base/compiler_specific.h"
+#include "base/i18n/rtl.h"
 #include "components/autofill/browser/autofill_manager_delegate.h"
 
 namespace autofill {
@@ -43,6 +44,7 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
                                 const std::string&)>& callback) OVERRIDE;
   virtual void ShowAutofillPopup(
       const gfx::RectF& element_bounds,
+      base::i18n::TextDirection text_direction,
       const std::vector<base::string16>& values,
       const std::vector<base::string16>& labels,
       const std::vector<base::string16>& icons,

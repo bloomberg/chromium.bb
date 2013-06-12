@@ -96,6 +96,8 @@ AutofillMetrics::AutocheckoutBuyFlowMetric AutocheckoutStatusToUmaMetric(
       return AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_MISSING_ADVANCE_ELEMENT;
     case CANNOT_PROCEED:
       return AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_CANNOT_PROCEED;
+    case AUTOCHECKOUT_STATUS_NUM_STATUS:
+      NOTREACHED();
   }
 
   NOTREACHED();

@@ -10,6 +10,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -1459,7 +1460,9 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
       popup_controller_,
       weak_ptr_factory_.GetWeakPtr(),
       parent_view,
-      content_bounds);
+      content_bounds,
+      base::i18n::IsRTL() ?
+          base::i18n::RIGHT_TO_LEFT : base::i18n::LEFT_TO_RIGHT);
   popup_controller_->Show(popup_values,
                           popup_labels,
                           popup_icons,

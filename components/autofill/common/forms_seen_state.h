@@ -15,6 +15,8 @@ enum FormsSeenState {
   PARTIAL_FORMS_SEEN = 1,
   // Forms were added dynamically post-page load.
   DYNAMIC_FORMS_SEEN = 2,
+  // Number of states.
+  FORMS_SEEN_STATE_NUM_STATES = 3,
 };
 
 }  // namespace autofill

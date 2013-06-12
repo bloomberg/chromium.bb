@@ -64,7 +64,9 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   explicit TestAutofillPopupController(
       base::WeakPtr<AutofillExternalDelegate> external_delegate,
       const gfx::RectF& element_bounds)
-      : AutofillPopupControllerImpl(external_delegate, NULL, element_bounds) {}
+      : AutofillPopupControllerImpl(
+            external_delegate, NULL, element_bounds,
+            base::i18n::UNKNOWN_DIRECTION) {}
   virtual ~TestAutofillPopupController() {}
 
   void set_display(const gfx::Display display) {
@@ -364,21 +366,22 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
   WeakPtr<AutofillPopupControllerImpl> controller =
       AutofillPopupControllerImpl::GetOrCreate(
           WeakPtr<AutofillPopupControllerImpl>(), delegate.GetWeakPtr(), NULL,
-          gfx::Rect());
+          gfx::Rect(), base::i18n::UNKNOWN_DIRECTION);
   EXPECT_TRUE(controller.get());
 
   controller->Hide();
 
   controller = AutofillPopupControllerImpl::GetOrCreate(
       WeakPtr<AutofillPopupControllerImpl>(), delegate.GetWeakPtr(), NULL,
-      gfx::Rect());
+      gfx::Rect(), base::i18n::UNKNOWN_DIRECTION);
   EXPECT_TRUE(controller.get());
 
   WeakPtr<AutofillPopupControllerImpl> controller2 =
       AutofillPopupControllerImpl::GetOrCreate(controller,
                                                delegate.GetWeakPtr(),
                                                NULL,
-                                               gfx::Rect());
+                                               gfx::Rect(),
+                                               base::i18n::UNKNOWN_DIRECTION);
   EXPECT_EQ(controller.get(), controller2.get());
   controller->Hide();
 
@@ -393,7 +396,8 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
           test_controller->GetWeakPtr(),
           delegate.GetWeakPtr(),
           NULL,
-          bounds);
+          bounds,
+          base::i18n::UNKNOWN_DIRECTION);
   EXPECT_EQ(
       bounds,
       static_cast<AutofillPopupController*>(controller3.get())->
@@ -416,7 +420,8 @@ TEST_F(AutofillPopupControllerUnitTest, ProperlyResetController) {
           popup_controller()->GetWeakPtr(),
           delegate()->GetWeakPtr(),
           NULL,
-          gfx::Rect());
+          gfx::Rect(),
+          base::i18n::UNKNOWN_DIRECTION);
   EXPECT_NE(0, controller->selected_line());
   EXPECT_TRUE(controller->names().empty());
 }

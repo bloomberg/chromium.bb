@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 
@@ -116,6 +117,7 @@ class AutofillManagerDelegate {
   // notified of popup events.
   virtual void ShowAutofillPopup(
       const gfx::RectF& element_bounds,
+      base::i18n::TextDirection text_direction,
       const std::vector<base::string16>& values,
       const std::vector<base::string16>& labels,
       const std::vector<base::string16>& icons,

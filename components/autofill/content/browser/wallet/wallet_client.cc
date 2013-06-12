@@ -47,6 +47,8 @@ std::string AutocheckoutStatusToString(AutocheckoutStatus status) {
       // SUCCESS cannot be sent to the server as it will result in a failure.
       NOTREACHED();
       return "ERROR";
+    case AUTOCHECKOUT_STATUS_NUM_STATUS:
+      NOTREACHED();
   }
   NOTREACHED();
   return "NOT_POSSIBLE";

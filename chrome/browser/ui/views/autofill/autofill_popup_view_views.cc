@@ -174,7 +174,7 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
   if (controller_->selected_line() == index)
     canvas->FillRect(entry_rect, kHoveredBackgroundColor);
 
-  bool is_rtl = base::i18n::IsRTL();
+  bool is_rtl = controller_->IsRTL();
   int value_text_width = controller_->GetNameFontForRow(index).GetStringWidth(
       controller_->names()[index]);
   int value_content_x = is_rtl ?

@@ -15,7 +15,8 @@ FormFieldData::FormFieldData()
       is_checked(false),
       is_checkable(false),
       is_focusable(false),
-      should_autocomplete(true) {
+      should_autocomplete(true),
+      text_direction(base::i18n::UNKNOWN_DIRECTION) {
 }
 
 FormFieldData::~FormFieldData() {
@@ -64,7 +65,9 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
       << " "
       << (field.is_focusable ? "true" : "false")
       << " "
-      << (field.should_autocomplete ? "true" : "false");
+      << (field.should_autocomplete ? "true" : "false")
+      << " "
+      << field.text_direction;
 }
 
 }  // namespace autofill

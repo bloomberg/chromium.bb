@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "components/autofill/browser/autofill_manager_delegate.h"
@@ -60,6 +61,7 @@ class TabAutofillManagerDelegate
                                 const std::string&)>& callback) OVERRIDE;
   virtual void ShowAutofillPopup(
       const gfx::RectF& element_bounds,
+      base::i18n::TextDirection text_direction,
       const std::vector<string16>& values,
       const std::vector<string16>& labels,
       const std::vector<string16>& icons,

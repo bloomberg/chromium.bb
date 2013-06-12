@@ -133,7 +133,13 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   // Send to display.
   if (autofill_query_field_.is_focusable) {
     autofill_manager_->delegate()->ShowAutofillPopup(
-        element_bounds_, values, labels, icons, ids, GetWeakPtr());
+        element_bounds_,
+        autofill_query_field_.text_direction,
+        values,
+        labels,
+        icons,
+        ids,
+        GetWeakPtr());
   }
 }
 
@@ -153,7 +159,13 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
   std::vector<int> password_ids(suggestions.size(),
                                 WebAutofillClient::MenuItemIDPasswordEntry);
   autofill_manager_->delegate()->ShowAutofillPopup(
-      element_bounds_, suggestions, empty, empty, password_ids, GetWeakPtr());
+      element_bounds_,
+      autofill_query_field_.text_direction,
+      suggestions,
+      empty,
+      empty,
+      password_ids,
+      GetWeakPtr());
 }
 
 void AutofillExternalDelegate::SetCurrentDataListValues(

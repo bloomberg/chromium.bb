@@ -27,8 +27,12 @@
 
 #define IPC_MESSAGE_START AutofillMsgStart
 
-IPC_ENUM_TRAITS(autofill::AutocheckoutStatus)
-IPC_ENUM_TRAITS(autofill::FormsSeenState)
+IPC_ENUM_TRAITS_MAX_VALUE(autofill::AutocheckoutStatus,
+                          autofill::AUTOCHECKOUT_STATUS_NUM_STATUS - 1)
+IPC_ENUM_TRAITS_MAX_VALUE(autofill::FormsSeenState,
+                          autofill::FORMS_SEEN_STATE_NUM_STATES - 1)
+IPC_ENUM_TRAITS_MAX_VALUE(base::i18n::TextDirection,
+                          base::i18n::TEXT_DIRECTION_NUM_DIRECTIONS - 1)
 
 IPC_STRUCT_TRAITS_BEGIN(autofill::WebElementDescriptor)
   IPC_STRUCT_TRAITS_MEMBER(descriptor)
@@ -49,6 +53,7 @@ IPC_STRUCT_TRAITS_BEGIN(autofill::FormFieldData)
   IPC_STRUCT_TRAITS_MEMBER(is_checkable)
   IPC_STRUCT_TRAITS_MEMBER(is_focusable)
   IPC_STRUCT_TRAITS_MEMBER(should_autocomplete)
+  IPC_STRUCT_TRAITS_MEMBER(text_direction)
   IPC_STRUCT_TRAITS_MEMBER(option_values)
   IPC_STRUCT_TRAITS_MEMBER(option_contents)
 IPC_STRUCT_TRAITS_END()

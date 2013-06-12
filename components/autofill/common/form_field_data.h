@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
 
 namespace autofill {
@@ -36,6 +37,7 @@ struct FormFieldData {
   bool is_checkable;
   bool is_focusable;
   bool should_autocomplete;
+  base::i18n::TextDirection text_direction;
 
   // For the HTML snippet |<option value="US">United States</option>|, the
   // value is "US" and the contents are "United States".

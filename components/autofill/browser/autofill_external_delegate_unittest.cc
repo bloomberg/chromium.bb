@@ -52,8 +52,9 @@ class MockAutofillManagerDelegate
  public:
   MockAutofillManagerDelegate() {}
 
-  MOCK_METHOD6(ShowAutofillPopup,
+  MOCK_METHOD7(ShowAutofillPopup,
                void(const gfx::RectF& element_bounds,
+                    base::i18n::TextDirection text_direction,
                     const std::vector<base::string16>& values,
                     const std::vector<base::string16>& labels,
                     const std::vector<base::string16>& icons,
@@ -135,7 +136,7 @@ TEST_F(AutofillExternalDelegateUnitTest, TestExternalDelegateVirtualCalls) {
   // The enums must be cast to ints to prevent compile errors on linux_rel.
   EXPECT_CALL(manager_delegate_,
               ShowAutofillPopup(
-                  _, _, _, _,
+                  _, _, _, _, _,
                   testing::ElementsAre(
                       kAutofillProfileId,
                       static_cast<int>(WebAutofillClient::MenuItemIDSeparator),
@@ -181,7 +182,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateDataList) {
   // The enums must be cast to ints to prevent compile errors on linux_rel.
   EXPECT_CALL(manager_delegate_,
               ShowAutofillPopup(
-                  _, _, _, _,
+                  _, _, _, _, _,
                   testing::ElementsAre(
                       static_cast<int>(
                           WebAutofillClient::MenuItemIDDataListEntry),
@@ -208,7 +209,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateDataList) {
   // The enum must be cast to an int to prevent compile errors on linux_rel.
   EXPECT_CALL(manager_delegate_,
               ShowAutofillPopup(
-                  _, _, _, _,
+                  _, _, _, _, _,
                   testing::ElementsAre(
                       static_cast<int>(
                           WebAutofillClient::MenuItemIDDataListEntry)),
@@ -232,7 +233,7 @@ TEST_F(AutofillExternalDelegateUnitTest, AutofillWarnings) {
   // The enums must be cast to ints to prevent compile errors on linux_rel.
   EXPECT_CALL(manager_delegate_,
               ShowAutofillPopup(
-                  _, _, _, _,
+                  _, _, _, _, _,
                   testing::ElementsAre(
                       static_cast<int>(
                           WebAutofillClient::MenuItemIDWarningMessage)),
@@ -283,7 +284,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearPreviewedForm) {
 // Test that the popup is hidden once we are done editing the autofill field.
 TEST_F(AutofillExternalDelegateUnitTest,
        ExternalDelegateHidePopupAfterEditing) {
-  EXPECT_CALL(manager_delegate_, ShowAutofillPopup(_, _, _, _, _, _));
+  EXPECT_CALL(manager_delegate_, ShowAutofillPopup(_, _, _, _, _, _, _));
   autofill::GenerateTestAutofillPopup(external_delegate_.get());
 
   EXPECT_CALL(manager_delegate_, HideAutofillPopup());
@@ -311,7 +312,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegatePasswordSuggestions) {
   // The enums must be cast to ints to prevent compile errors on linux_rel.
   EXPECT_CALL(manager_delegate_,
               ShowAutofillPopup(
-                  _, _, _, _,
+                  _, _, _, _, _,
                   testing::ElementsAre(
                       static_cast<int>(
                            WebAutofillClient::MenuItemIDPasswordEntry)),

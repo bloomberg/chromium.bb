@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/autofill/autofill_popup_view_cocoa.h"
 
-#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
@@ -196,7 +195,7 @@ NSColor* SubtextColor() {
     [NSBezierPath fillRect:bounds];
   }
 
-  BOOL isRTL = base::i18n::IsRTL();
+  BOOL isRTL = controller_->IsRTL();
 
   NSDictionary* nameAttributes =
       [NSDictionary dictionaryWithObjectsAndKeys:

@@ -6,7 +6,6 @@
 
 #include <gdk/gdkkeysyms.h>
 
-#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
@@ -237,7 +236,7 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
       entry_rect.y() +
           (row_height - controller_->GetNameFontForRow(index).GetHeight()) / 2);
 
-  bool is_rtl = base::i18n::IsRTL();
+  bool is_rtl = controller_->IsRTL();
   int value_content_x = is_rtl ?
       entry_rect.width() - value_text_width - kEndPadding : kEndPadding;
 
