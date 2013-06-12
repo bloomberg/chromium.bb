@@ -1,13 +1,18 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // Helper routines for generating bad load tests.
 // Webpage must have an 'embeds' div for injecting NaCl modules.
 // Depends on nacltest.js.
 
-function createModule(id, src) {
+function createModule(id, src, type) {
   return createNaClEmbed({
     id: id,
     src: src,
     width: 100,
-    height: 20
+    height: 20,
+    type: type
   });
 }
 
@@ -22,9 +27,9 @@ function removeModule(module) {
 }
 
 
-function badLoadTest(tester, id, src, error_string) {
+function badLoadTest(tester, id, src, type, error_string) {
   tester.addAsyncTest(id, function(test){
-    var module = createModule(id, src);
+    var module = createModule(id, src, type);
 
     test.expectEvent(module, 'load', function(e) {
       removeModule(module);

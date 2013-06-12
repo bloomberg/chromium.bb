@@ -34,13 +34,25 @@ setListeners($('body'));
 //]]>
 </script>
 
-<embed id="progress_events"
-       class="naclModule"
-       width=0 height=0
-       src="ppapi_progress_events.nmf"
-       type="application/x-nacl" />
 <script type="text/javascript">
 //<![CDATA[
+function createModule(id, src, type) {
+  return createNaClEmbed({
+    id: id,
+    src: src,
+    width: 0,
+    height: 0,
+    type: type
+  });
+}
+
+var mime = "application/x-nacl";
+if (getTestArguments()["pnacl"] !== undefined) {
+  mime = "application/x-pnacl";
+}
+var embed = createModule("progress_events", "ppapi_progress_events.nmf", mime);
+document.body.appendChild(embed);
+
 runTests();
 //]]>
 </script>

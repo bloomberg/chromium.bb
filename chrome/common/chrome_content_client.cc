@@ -65,10 +65,16 @@ const uint32 kPDFPluginPermissions = ppapi::PERMISSION_PRIVATE |
                                      ppapi::PERMISSION_DEV;
 
 const char kNaClPluginMimeType[] = "application/x-nacl";
-const char kNaClPluginExtension[] = "nexe";
+const char kNaClPluginExtension[] = "";
 const char kNaClPluginDescription[] = "Native Client Executable";
 const uint32 kNaClPluginPermissions = ppapi::PERMISSION_PRIVATE |
                                       ppapi::PERMISSION_DEV;
+
+const char kPnaclPluginMimeType[] = "application/x-pnacl";
+const char kPnaclPluginExtension[] = "";
+const char kPnaclPluginDescription[] = "Portable Native Client Executable";
+const uint32 kPnaclPluginPermissions = ppapi::PERMISSION_PRIVATE |
+                                       ppapi::PERMISSION_DEV;
 
 const char kO3DPluginName[] = "Google Talk Plugin Video Accelerator";
 const char kO3DPluginMimeType[] ="application/vnd.o3d.auto";
@@ -151,10 +157,12 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
     }
   }
 
-  // Handle the Native Client just like the PDF plugin. This means that it is
-  // enabled by default. This allows apps installed from the Chrome Web Store
-  // to use NaCl even if the command line switch isn't set. For other uses of
-  // NaCl we check for the command line switch.
+  // Handle Native Client just like the PDF plugin. This means that it is
+  // enabled by default for the non-portable case.  This allows apps installed
+  // from the Chrome Web Store to use NaCl even if the command line switch
+  // isn't set.  For other uses of NaCl we check for the command line switch.
+  // Specifically, Portable Native Client is only enabled by the command line
+  // switch.
   static bool skip_nacl_file_check = false;
   if (PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
     if (skip_nacl_file_check || file_util::PathExists(path)) {
@@ -165,6 +173,12 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
                                                kNaClPluginExtension,
                                                kNaClPluginDescription);
       nacl.mime_types.push_back(nacl_mime_type);
+      if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePnacl)) {
+        webkit::WebPluginMimeType pnacl_mime_type(kPnaclPluginMimeType,
+                                                  kPnaclPluginExtension,
+                                                  kPnaclPluginDescription);
+        nacl.mime_types.push_back(pnacl_mime_type);
+      }
       nacl.permissions = kNaClPluginPermissions;
       plugins->push_back(nacl);
 

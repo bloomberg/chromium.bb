@@ -15,19 +15,28 @@
 
   <body>
     <h1>Native Client Exit Status Test</h1>
-    <div>
-    <embed id="naclModule"
-           name="naclModule"
-           width=400 height=400
-           src="pm_exit_status_test.nmf"
-           basic_tests="2"
-           stress_tests="0"
-           style="background-color:gray"
-           type="application/x-nacl" />
-    </div>
 
   <script type="text/javascript">
     //<![CDATA[
+function createModule(id, src, type) {
+  return createNaClEmbed({
+    id: id,
+    src: src,
+    width: 400,
+    height: 400,
+    type: type
+  });
+}
+
+var mime = "application/x-nacl";
+if (getTestArguments()["pnacl"] !== undefined) {
+  mime = "application/x-pnacl";
+}
+var embed = createModule("naclModule", "pm_exit_status_test.nmf", mime);
+embed.basic_tests = "2";
+embed.stress_tests = "0";
+document.body.appendChild(embed);
+
 var tester = new Tester($('body'));
 var args = getTestArguments({'expected_exit' :
   'THIS TEST CANNOT RUN STANDALONE -- run using scons instead'});

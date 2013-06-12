@@ -44,12 +44,17 @@ function couldNotLoadNexe(is_pnacl) {
 function declareTests(tester) {
   var test_args = getTestArguments({'is_pnacl': '0'});
   var is_pnacl = parseInt(test_args['is_pnacl']);
+  var mime_type = "application/x-nacl";
+  if (is_pnacl) {
+    mime_type = "application/x-pnacl";
+  }
 
   // 'bad_magic' loads a manifest, then loads a nexe that tests as invalid.
   badLoadTest(
       tester,
       'bad_magic',
       'ppapi_bad_magic.nmf',
+      mime_type,
       'NaCl module load failed: Bad ELF header magic number');
 
   // 'cross_origin' loads a manifest, then tries to load a cross-origin nexe.
@@ -57,6 +62,7 @@ function declareTests(tester) {
       tester,
       'cross_origin',
       'ppapi_bad_crossorigin.nmf',
+      mime_type,
       couldNotAccessNexe(is_pnacl));
 
   // 'cross_manifest' tries to load a cross-origin manifest.
@@ -64,29 +70,23 @@ function declareTests(tester) {
       tester,
       'cross_manifest',
       'http://www.google.com/crossorigin.manifest',
+      mime_type,
       'NaCl module load failed: access to manifest url was denied.');
 
-  // 'nonexistent_nexe' loads a manifest, then tries to load a nonexistent nexe,
-  // given both a nexe and a portable program to choose from.
+  // 'nonexistent_nexe' loads a manifest, then tries to load a nonexistent nexe.
   badLoadTest(
       tester,
       'nonexistent_nexe',
       'ppapi_bad_doesnotexist.nmf',
+      mime_type,
       couldNotLoadNexe(is_pnacl));
-
-  // 'nonexistent_nexe_only' loads a manifest, then tries to load a nonexistent
-  // nexe, given only a nexe to choose from.
-  badLoadTest(
-      tester,
-      'nonexistent_nexe_only',
-      'ppapi_bad_doesnotexist_nexe_only.nmf',
-      'NaCl module load failed: could not load nexe url.');
 
   // 'nonexistent_manifest' tries to load a nonexistent manifest.
   badLoadTest(
       tester,
       'nonexistent_manifest',
       'doesnotexist.manifest',
+      mime_type,
       'NaCl module load failed: could not load manifest url.');
 
   // 'bad_manifest' loads an invalid manifest.
@@ -94,6 +94,7 @@ function declareTests(tester) {
       tester,
       'bad_manifest',
       'ppapi_bad.html',
+      mime_type,
       'NaCl module load failed: manifest JSON parsing failed: * Line 1, Column 1\n  Syntax error: value, object or array expected.\n');
 
   // 'bad_manifest_uses_nexes' loads a manifest with an obsolete 'nexes' section.
@@ -101,6 +102,7 @@ function declareTests(tester) {
       tester,
       'bad_manifest_uses_nexes',
       'ppapi_bad_manifest_uses_nexes.nmf',
+      mime_type,
       'NaCl module load failed: manifest: missing \'program\' section.');
 
   // 'bad_manifest_bad_files' loads a manifest with a bad 'files' section.
@@ -108,9 +110,10 @@ function declareTests(tester) {
       tester,
       'bad_manifest_bad_files',
       'ppapi_bad_manifest_bad_files.nmf',
+      mime_type,
       // Manifest loader expects either 'url' or 'pnacl-translate' key present.
       // If neither is found, it complains about the last one.
-      'NaCl module load failed: manifest: file.txt property \'unknown_arch\' does not have required key: \'pnacl-translate\'.');
+      'NaCl module load failed: manifest: file.txt property \'unknown_arch\' does not have required key: \'url\'.');
 
   // 'bad_manifest_nexe_arch' loads a manifest with no program entry for the
   // user's architecture
@@ -118,6 +121,7 @@ function declareTests(tester) {
       tester,
       'bad_manifest_nexe_arch',
       'ppapi_bad_manifest_nexe_arch.nmf',
+      mime_type,
       'NaCl module load failed: manifest: no version of program given for current arch and no portable version found.');
 
   //////////////////////////////////////
@@ -130,6 +134,7 @@ function declareTests(tester) {
       tester,
       'bad_ppp_initialize',
       'ppapi_bad_ppp_initialize.nmf',
+      mime_type,
       'NaCl module load failed: could not initialize module.');
 
   // 'bad_ppp_initialize_crash' loads a manifest, then loads a nexe that crashes
@@ -138,6 +143,7 @@ function declareTests(tester) {
       tester,
       'bad_ppp_initialize_crash',
       'ppapi_bad_ppp_initialize_crash.nmf',
+      mime_type,
       'NaCl module load failed: could not initialize module.');
 
   // 'bad_no_ppp_instance' loads a manifest, then loads a nexe that fails to
@@ -146,6 +152,7 @@ function declareTests(tester) {
       tester,
       'bad_no_ppp_instance',
       'ppapi_bad_no_ppp_instance.nmf',
+      mime_type,
       'NaCl module load failed: could not initialize module.');
 
   // 'bad_get_ppp_instance_crash' loads a manifest, then loads a nexe that
@@ -154,6 +161,7 @@ function declareTests(tester) {
       tester,
       'bad_get_ppp_instance_crash',
       'ppapi_bad_get_ppp_instance_crash.nmf',
+      mime_type,
       'NaCl module load failed: could not initialize module.');
 
   // 'bad_ppp_instance_didcreate' loads a manifest, then loads a nexe that fails
@@ -162,6 +170,7 @@ function declareTests(tester) {
       tester,
       'bad_ppp_instance_didcreate',
       'ppapi_bad_ppp_instance_didcreate.nmf',
+      mime_type,
       'NaCl module load failed: could not create instance.');
 
   // 'bad_ppp_instance_didcreate_crash' loads a manifest, then loads a nexe that
@@ -170,6 +179,7 @@ function declareTests(tester) {
       tester,
       'bad_ppp_instance_didcreate_crash',
       'ppapi_bad_ppp_instance_didcreate_crash.nmf',
+      mime_type,
       'NaCl module load failed: could not create instance.');
 
 /* TODO(bbudge) Re-enable this test when the IPC proxy can report these errors.
@@ -181,6 +191,7 @@ function declareTests(tester) {
       tester,
       'bad_event_replay_crash',
       'ppapi_bad_event_replay_crash.nmf',
+      mime_type,
       'NaCl module load failed: instance crashed after creation.');
 */
 }
