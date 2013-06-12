@@ -129,9 +129,7 @@ static const int firstDayOfMonth[2][12] = {
 
 static inline void getLocalTime(const time_t* localTime, struct tm* localTM)
 {
-#if COMPILER(MINGW)
-    *localTM = *localtime(localTime);
-#elif COMPILER(MSVC)
+#if COMPILER(MSVC)
     localtime_s(localTM, localTime);
 #else
     localtime_r(localTime, localTM);

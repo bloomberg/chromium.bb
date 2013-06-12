@@ -39,11 +39,7 @@ namespace WTF {
 
 #ifndef NDEBUG
     private:
-#if COMPILER(MINGW)
-        int m_count;
-#else
         volatile int m_count;
-#endif
         const char* m_description;
 #endif
     };

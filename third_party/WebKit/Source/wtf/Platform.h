@@ -153,7 +153,7 @@
 #endif
 
 #if !defined(HAVE_VASPRINTF)
-#if !COMPILER(MSVC) && !COMPILER(MINGW)
+#if !COMPILER(MSVC)
 #define HAVE_VASPRINTF 1
 #endif
 #endif

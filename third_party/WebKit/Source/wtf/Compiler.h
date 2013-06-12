@@ -123,16 +123,6 @@
 #endif /* defined(__GXX_EXPERIMENTAL_CXX0X__) || (defined(__cplusplus) && __cplusplus >= 201103L) */
 #endif /* COMPILER(GCC) */
 
-/* COMPILER(MINGW) - MinGW GCC */
-/* COMPILER(MINGW64) - mingw-w64 GCC - only used as additional check to exclude mingw.org specific functions */
-#if defined(__MINGW32__)
-#define WTF_COMPILER_MINGW 1
-#include <_mingw.h> /* private MinGW header */
-    #if defined(__MINGW64_VERSION_MAJOR) /* best way to check for mingw-w64 vs mingw.org */
-        #define WTF_COMPILER_MINGW64 1
-    #endif /* __MINGW64_VERSION_MAJOR */
-#endif /* __MINGW32__ */
-
 /* ==== Compiler features ==== */
 
 
