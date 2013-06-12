@@ -118,21 +118,21 @@
         document.body.offsetTop;
 
         window.internals.setNeedsCompositedScrolling(parentscrollinglayer, 
-            window.internals.CompositedScrollingAlwaysOff);
+            window.internals.COMPOSITED_SCROLLING_ALWAYS_OFF);
         parentscrollinglayer.style.webkitTransform = '';
 
         var oldStackingOrder = getStackingOrder();
         var oldPaintOrder = getPaintOrder(childscrollinglayer);
 
         window.internals.setNeedsCompositedScrolling(parentscrollinglayer, 
-            window.internals.CompositedScrollingAlwaysOn);
+            window.internals.COMPOSITED_SCROLLING_ALWAYS_ON);
         parentscrollinglayer.style.webkitTransform = 'translateZ(0px)';
 
         var newStackingOrder = getStackingOrder();
         var newPaintOrder = getPaintOrder(childscrollinglayer);
 
         window.internals.setNeedsCompositedScrolling(parentscrollinglayer, 
-            window.internals.DoNotForceCompositedScrolling);
+            window.internals.DO_NOT_FORCE_COMPOSITED_SCROLLING);
 
         // The getPaintOrder() function should return a pair of paint orders.
         // One before promotion and one after. This pair of lists should remain

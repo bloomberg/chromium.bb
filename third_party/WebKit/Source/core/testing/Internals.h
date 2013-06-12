@@ -201,25 +201,12 @@ public:
 
     void setDeviceProximity(Document*, const String& eventType, double value, double min, double max, ExceptionCode&);
 
-    enum {
-        // Values need to be kept in sync with Internals.idl.
-        LAYER_TREE_INCLUDES_VISIBLE_RECTS = 1,
-        LAYER_TREE_INCLUDES_TILE_CACHES = 2,
-        LAYER_TREE_INCLUDES_REPAINT_RECTS = 4,
-        LAYER_TREE_INCLUDES_PAINTING_PHASES = 8
-    };
     String layerTreeAsText(Document*, unsigned flags, ExceptionCode&) const;
     String layerTreeAsText(Document*, ExceptionCode&) const;
 
     PassRefPtr<NodeList> paintOrderListBeforePromote(Element*, ExceptionCode&);
     PassRefPtr<NodeList> paintOrderListAfterPromote(Element*, ExceptionCode&);
 
-    enum {
-        // Values need to be kept in sync with Internals.idl.
-        DoNotForceCompositedScrolling = 0,
-        CompositedScrollingAlwaysOn = 1,
-        CompositedScrollingAlwaysOff = 2
-    };
     void setNeedsCompositedScrolling(Element*, unsigned value, ExceptionCode&);
 
     String repaintRectsAsText(Document*, ExceptionCode&) const;

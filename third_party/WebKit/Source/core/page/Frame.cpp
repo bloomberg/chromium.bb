@@ -522,14 +522,14 @@ void Frame::createView(const IntSize& viewportSize, const Color& backgroundColor
         view()->setCanHaveScrollbars(owner->scrollingMode() != ScrollbarAlwaysOff);
 }
 
-String Frame::layerTreeAsText(LayerTreeFlags flags) const
+String Frame::layerTreeAsText(unsigned flags) const
 {
     document()->updateLayout();
 
     if (!contentRenderer())
         return String();
 
-    return contentRenderer()->compositor()->layerTreeAsText(flags);
+    return contentRenderer()->compositor()->layerTreeAsText(static_cast<LayerTreeFlags>(flags));
 }
 
 String Frame::trackedRepaintRectsAsText() const

@@ -84,19 +84,19 @@
       // change a style property so the style is dirty, and force the style to
       // be cleaned with document.body.offsetTop (inside getStackingOrder()).
       window.internals.setNeedsCompositedScrolling(container, 
-          window.internals.CompositedScrollingAlwaysOff);
+          window.internals.COMPOSITED_SCROLLING_ALWAYS_OFF);
       container.style.webkitTransform = '';
 
       var oldStackingOrder = getStackingOrder(container);
 
       window.internals.setNeedsCompositedScrolling(container, 
-          window.internals.CompositedScrollingAlwaysOn);
+          window.internals.COMPOSITED_SCROLLING_ALWAYS_ON);
       container.style.webkitTransform = 'translateZ(0px)';
 
       var newStackingOrder = getStackingOrder(container);
 
       window.internals.setNeedsCompositedScrolling(container,
-          window.internals.settings.DoNotForceCompositedScrolling);
+          window.internals.settings.DO_NOT_FORCE_COMPOSITED_SCROLLING);
 
       var shouldOptIn = oldStackingOrder.length === newStackingOrder.length;
       for (var i = 0; i < oldStackingOrder.length; ++i) {

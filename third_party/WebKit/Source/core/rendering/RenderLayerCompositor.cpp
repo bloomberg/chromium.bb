@@ -1210,23 +1210,13 @@ String RenderLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
     if (!m_rootContentLayer)
         return String();
 
-    LayerTreeAsTextBehavior layerTreeBehavior = LayerTreeAsTextBehaviorNormal;
-    if (flags & LayerTreeFlagsIncludeDebugInfo)
-        layerTreeBehavior |= LayerTreeAsTextDebug;
-    if (flags & LayerTreeFlagsIncludeVisibleRects)
-        layerTreeBehavior |= LayerTreeAsTextIncludeVisibleRects;
-    if (flags & LayerTreeFlagsIncludeRepaintRects)
-        layerTreeBehavior |= LayerTreeAsTextIncludeRepaintRects;
-    if (flags & LayerTreeFlagsIncludePaintingPhases)
-        layerTreeBehavior |= LayerTreeAsTextIncludePaintingPhases;
-
     // We skip dumping the scroll and clip layers to keep layerTreeAsText output
     // similar between platforms.
-    String layerTreeText = m_rootContentLayer->layerTreeAsText(layerTreeBehavior);
+    String layerTreeText = m_rootContentLayer->layerTreeAsText(flags);
 
     // The true root layer is not included in the dump, so if we want to report
     // its repaint rects, they must be included here.
-    if (flags & LayerTreeFlagsIncludeRepaintRects) {
+    if (flags & LayerTreeIncludesRepaintRects) {
         String layerTreeTextWithRootRepaintRects = m_renderView->frameView()->trackedRepaintRectsAsText();
         layerTreeTextWithRootRepaintRects.append(layerTreeText);
         return layerTreeTextWithRootRepaintRects;

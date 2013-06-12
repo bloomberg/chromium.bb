@@ -100,21 +100,21 @@
       document.body.offsetTop;
 
       window.internals.setNeedsCompositedScrolling(container, 
-          window.internals.CompositedScrollingAlwaysOff);
+          window.internals.COMPOSITED_SCROLLING_ALWAYS_OFF);
       container.style.webkitTransform = '';
 
       var oldStackingOrder = getStackingOrder(container);
       var oldPaintOrder = getPaintOrder(container);
 
       window.internals.setNeedsCompositedScrolling(container, 
-          window.internals.CompositedScrollingAlwaysOn);
+          window.internals.COMPOSITED_SCROLLING_ALWAYS_ON);
       container.style.webkitTransform = 'translateZ(0px)';
 
       var newStackingOrder = getStackingOrder(container);
       var newPaintOrder = getPaintOrder(container);
 
       window.internals.setNeedsCompositedScrolling(container,
-          window.internals.DoNotForceCompositedScrolling);
+          window.internals.DO_NOT_FORCE_COMPOSITED_SCROLLING);
       // The getPaintOrder() function should return a pair of paint orders.
       // One before promotion and one after. This pair of lists should remain
       // identical whether the element is actually currently promoted or not,

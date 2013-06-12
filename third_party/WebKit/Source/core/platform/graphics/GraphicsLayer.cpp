@@ -741,23 +741,23 @@ void GraphicsLayer::writeIndent(TextStream& ts, int indent)
         ts << "  ";
 }
 
-void GraphicsLayer::dumpLayer(TextStream& ts, int indent, LayerTreeAsTextBehavior behavior) const
+void GraphicsLayer::dumpLayer(TextStream& ts, int indent, LayerTreeFlags flags) const
 {
     writeIndent(ts, indent);
     ts << "(" << "GraphicsLayer";
 
-    if (behavior & LayerTreeAsTextDebug) {
+    if (flags & LayerTreeIncludesDebugInfo) {
         ts << " " << static_cast<void*>(const_cast<GraphicsLayer*>(this));
         ts << " \"" << m_name << "\"";
     }
 
     ts << "\n";
-    dumpProperties(ts, indent, behavior);
+    dumpProperties(ts, indent, flags);
     writeIndent(ts, indent);
     ts << ")\n";
 }
 
-void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeAsTextBehavior behavior) const
+void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags flags) const
 {
     if (m_position != FloatPoint()) {
         writeIndent(ts, indent + 1);
@@ -809,7 +809,7 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeAsTextBe
         ts << "(backfaceVisibility " << (m_backfaceVisibility ? "visible" : "hidden") << ")\n";
     }
 
-    if (behavior & LayerTreeAsTextDebug) {
+    if (flags & LayerTreeIncludesDebugInfo) {
         writeIndent(ts, indent + 1);
         ts << "(";
         if (m_client)
@@ -847,21 +847,21 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeAsTextBe
     if (m_replicaLayer) {
         writeIndent(ts, indent + 1);
         ts << "(replica layer";
-        if (behavior & LayerTreeAsTextDebug)
+        if (flags & LayerTreeIncludesDebugInfo)
             ts << " " << m_replicaLayer;
         ts << ")\n";
-        m_replicaLayer->dumpLayer(ts, indent + 2, behavior);
+        m_replicaLayer->dumpLayer(ts, indent + 2, flags);
     }
 
     if (m_replicatedLayer) {
         writeIndent(ts, indent + 1);
         ts << "(replicated layer";
-        if (behavior & LayerTreeAsTextDebug)
+        if (flags & LayerTreeIncludesDebugInfo)
             ts << " " << m_replicatedLayer;
         ts << ")\n";
     }
 
-    if (behavior & LayerTreeAsTextIncludeRepaintRects && repaintRectMap().contains(this) && !repaintRectMap().get(this).isEmpty()) {
+    if ((flags & LayerTreeIncludesRepaintRects) && repaintRectMap().contains(this) && !repaintRectMap().get(this).isEmpty()) {
         writeIndent(ts, indent + 1);
         ts << "(repaint rects\n";
         for (size_t i = 0; i < repaintRectMap().get(this).size(); ++i) {
@@ -879,7 +879,7 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeAsTextBe
         ts << ")\n";
     }
 
-    if (behavior & LayerTreeAsTextIncludePaintingPhases && paintingPhase()) {
+    if ((flags & LayerTreeIncludesPaintingPhases) && paintingPhase()) {
         writeIndent(ts, indent + 1);
         ts << "(paintingPhases\n";
         if (paintingPhase() & GraphicsLayerPaintBackground) {
@@ -906,7 +906,7 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeAsTextBe
         ts << ")\n";
     }
 
-    dumpAdditionalProperties(ts, indent, behavior);
+    dumpAdditionalProperties(ts, indent, flags);
     
     if (m_children.size()) {
         writeIndent(ts, indent + 1);
@@ -914,17 +914,17 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeAsTextBe
         
         unsigned i;
         for (i = 0; i < m_children.size(); i++)
-            m_children[i]->dumpLayer(ts, indent + 2, behavior);
+            m_children[i]->dumpLayer(ts, indent + 2, flags);
         writeIndent(ts, indent + 1);
         ts << ")\n";
     }
 }
 
-String GraphicsLayer::layerTreeAsText(LayerTreeAsTextBehavior behavior) const
+String GraphicsLayer::layerTreeAsText(LayerTreeFlags flags) const
 {
     TextStream ts;
 
-    dumpLayer(ts, 0, behavior);
+    dumpLayer(ts, 0, flags);
     return ts.release();
 }
 
@@ -1368,7 +1368,7 @@ void showGraphicsLayerTree(const WebCore::GraphicsLayer* layer)
     if (!layer)
         return;
 
-    String output = layer->layerTreeAsText(LayerTreeAsTextDebug | LayerTreeAsTextIncludeVisibleRects);
+    String output = layer->layerTreeAsText(WebCore::LayerTreeIncludesDebugInfo);
     fprintf(stderr, "%s\n", output.utf8().data());
 }
 #endif

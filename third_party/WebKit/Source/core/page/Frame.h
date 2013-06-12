@@ -62,15 +62,6 @@ namespace WebCore {
     class TreeScope;
     class VisiblePosition;
 
-    enum {
-        LayerTreeFlagsIncludeDebugInfo = 1 << 0,
-        LayerTreeFlagsIncludeVisibleRects = 1 << 1,
-        LayerTreeFlagsIncludeTileCaches = 1 << 2,
-        LayerTreeFlagsIncludeRepaintRects = 1 << 3,
-        LayerTreeFlagsIncludePaintingPhases = 1 << 4
-    };
-    typedef unsigned LayerTreeFlags;
-
     class Frame : public RefCounted<Frame> {
     public:
         static PassRefPtr<Frame> create(Page*, HTMLFrameOwnerElement*, FrameLoaderClient*);
@@ -118,7 +109,8 @@ namespace WebCore {
 
         bool inScope(TreeScope*) const;
 
-        String layerTreeAsText(LayerTreeFlags = 0) const;
+        // See GraphicsLayerClient.h for accepted flags.
+        String layerTreeAsText(unsigned flags = 0) const;
         String trackedRepaintRectsAsText() const;
 
         static Frame* frameForWidget(const Widget*);

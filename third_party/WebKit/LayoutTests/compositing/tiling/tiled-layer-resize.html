@@ -23,7 +23,7 @@
             document.getElementById('tiled').style.height = '2100px';
 
             if (window.internals)
-                document.getElementById('layers').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_TILE_CACHES);
+                document.getElementById('layers').textContent = window.internals.layerTreeAsText(document);
         }
         window.addEventListener('load', doTest, false);
     </script>

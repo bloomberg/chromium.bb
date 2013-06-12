@@ -173,6 +173,7 @@
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsLayerClient.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"
@@ -2107,8 +2108,7 @@ WebString WebFrameImpl::layerTreeAsText(bool showDebugInfo) const
     if (!frame())
         return WebString();
     
-    LayerTreeFlags flags = showDebugInfo ? LayerTreeFlagsIncludeDebugInfo : 0;
-    return WebString(frame()->layerTreeAsText(flags));
+    return WebString(frame()->layerTreeAsText(showDebugInfo ? LayerTreeIncludesDebugInfo : LayerTreeNormal));
 }
 
 // WebFrameImpl public ---------------------------------------------------------

@@ -53,6 +53,14 @@ enum AnimatedPropertyID {
     AnimatedPropertyWebkitFilter
 };
 
+enum {
+    LayerTreeNormal = 0,
+    LayerTreeIncludesDebugInfo = 1 << 0, // Dump extra debugging info like layer addresses.
+    LayerTreeIncludesRepaintRects = 1 << 1,
+    LayerTreeIncludesPaintingPhases = 1 << 2
+};
+typedef unsigned LayerTreeFlags;
+
 class GraphicsLayerClient {
 public:
     virtual ~GraphicsLayerClient() {}

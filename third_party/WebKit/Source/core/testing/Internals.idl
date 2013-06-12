@@ -25,6 +25,7 @@
  */
 
 [
+    DoNotCheckConstants
 ] interface Internals {
     DOMString address(Node node);
 
@@ -161,19 +162,18 @@
     readonly attribute unsigned long workerThreadCount;
 
     // Flags for layerTreeAsText.
-    const unsigned short LAYER_TREE_INCLUDES_VISIBLE_RECTS = 1;
-    const unsigned short LAYER_TREE_INCLUDES_TILE_CACHES = 2;
-    const unsigned short LAYER_TREE_INCLUDES_REPAINT_RECTS = 4;
-    const unsigned short LAYER_TREE_INCLUDES_PAINTING_PHASES = 8;
+    // The values of these constants must be kept in sync with the values of LayerTreeAsTextBehaviorFlags in GraphicsLayerClient.h.
+    const unsigned short LAYER_TREE_INCLUDES_REPAINT_RECTS = 2;
+    const unsigned short LAYER_TREE_INCLUDES_PAINTING_PHASES = 4;
     [RaisesException] DOMString layerTreeAsText(Document document, optional unsigned short flags);
 
     [RaisesException] NodeList paintOrderListBeforePromote(Element element);
     [RaisesException] NodeList paintOrderListAfterPromote(Element element);
 
     // The values of these constants must be kept in sync with those in RenderLayer.
-    const unsigned short DoNotForceCompositedScrolling = 0;
-    const unsigned short CompositedScrollingAlwaysOn = 1;
-    const unsigned short CompositedScrollingAlwaysOff = 2;
+    const unsigned short DO_NOT_FORCE_COMPOSITED_SCROLLING = 0;
+    const unsigned short COMPOSITED_SCROLLING_ALWAYS_ON = 1;
+    const unsigned short COMPOSITED_SCROLLING_ALWAYS_OFF = 2;
     [RaisesException] void setNeedsCompositedScrolling(Element element, unsigned short value);
 
     [RaisesException] DOMString scrollingStateTreeAsText(Document document);

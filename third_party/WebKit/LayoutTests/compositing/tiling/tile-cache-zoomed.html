@@ -26,8 +26,7 @@
                 eventSender.scalePageBy(1.6, 1.6);
 
             if (window.internals) {
-                document.getElementById('layers').innerText = internals.layerTreeAsText(document,
-                    internals.LAYER_TREE_INCLUDES_VISIBLE_RECTS | internals.LAYER_TREE_INCLUDES_TILE_CACHES);
+                document.getElementById('layers').innerText = internals.layerTreeAsText(document);
             }
         }
         
