@@ -28,7 +28,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
@@ -36,12 +36,13 @@ class WebGLRenderingContext;
 
 class WebGLLoseContext : public WebGLExtension, public ScriptWrappable {
 public:
-    static PassOwnPtr<WebGLLoseContext> create(WebGLRenderingContext*);
+    static PassRefPtr<WebGLLoseContext> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
     static const char* getExtensionName();
 
     virtual ~WebGLLoseContext();
     virtual ExtensionName getName() const;
+    virtual void lose(bool);
 
     void loseContext();
     void restoreContext();

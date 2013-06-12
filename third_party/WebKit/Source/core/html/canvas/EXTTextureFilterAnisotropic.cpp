@@ -46,9 +46,9 @@ WebGLExtension::ExtensionName EXTTextureFilterAnisotropic::getName() const
     return EXTTextureFilterAnisotropicName;
 }
 
-PassOwnPtr<EXTTextureFilterAnisotropic> EXTTextureFilterAnisotropic::create(WebGLRenderingContext* context)
+PassRefPtr<EXTTextureFilterAnisotropic> EXTTextureFilterAnisotropic::create(WebGLRenderingContext* context)
 {
-    return adoptPtr(new EXTTextureFilterAnisotropic(context));
+    return adoptRef(new EXTTextureFilterAnisotropic(context));
 }
 
 bool EXTTextureFilterAnisotropic::supported(WebGLRenderingContext* context)

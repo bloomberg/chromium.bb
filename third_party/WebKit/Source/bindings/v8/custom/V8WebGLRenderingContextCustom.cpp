@@ -351,8 +351,8 @@ void V8WebGLRenderingContext::getExtensionMethodCustom(const v8::FunctionCallbac
         return;
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, args[0]);
-    WebGLExtension* extension = imp->getExtension(name);
-    v8SetReturnValue(args, toV8Object(extension, args.Holder(), args.GetIsolate()));
+    RefPtr<WebGLExtension> extension(imp->getExtension(name));
+    v8SetReturnValue(args, toV8Object(extension.get(), args.Holder(), args.GetIsolate()));
 }
 
 void V8WebGLRenderingContext::getFramebufferAttachmentParameterMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)

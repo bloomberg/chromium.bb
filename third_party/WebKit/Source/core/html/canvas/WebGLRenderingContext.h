@@ -173,7 +173,7 @@ public:
     WebGLGetInfo getBufferParameter(GC3Denum target, GC3Denum pname, ExceptionCode&);
     PassRefPtr<WebGLContextAttributes> getContextAttributes();
     GC3Denum getError();
-    WebGLExtension* getExtension(const String& name);
+    PassRefPtr<WebGLExtension> getExtension(const String& name);
     WebGLGetInfo getFramebufferAttachmentParameter(GC3Denum target, GC3Denum attachment, GC3Denum pname, ExceptionCode&);
     WebGLGetInfo getParameter(GC3Denum pname, ExceptionCode&);
     WebGLGetInfo getProgramParameter(WebGLProgram*, GC3Denum pname, ExceptionCode&);
@@ -367,6 +367,7 @@ public:
 
     // Adds a compressed texture format.
     void addCompressedTextureFormat(GC3Denum);
+    void removeAllCompressedTextureFormats();
 
     PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*, BackingStoreCopy, ExceptionCode&);
 
@@ -503,23 +504,23 @@ public:
     int m_numGLErrorsToConsoleAllowed;
 
     // Enabled extension objects.
-    OwnPtr<EXTFragDepth> m_extFragDepth;
-    OwnPtr<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
-    OwnPtr<OESTextureFloat> m_oesTextureFloat;
-    OwnPtr<OESTextureFloatLinear> m_oesTextureFloatLinear;
-    OwnPtr<OESTextureHalfFloat> m_oesTextureHalfFloat;
-    OwnPtr<OESTextureHalfFloatLinear> m_oesTextureHalfFloatLinear;
-    OwnPtr<OESStandardDerivatives> m_oesStandardDerivatives;
-    OwnPtr<OESVertexArrayObject> m_oesVertexArrayObject;
-    OwnPtr<OESElementIndexUint> m_oesElementIndexUint;
-    OwnPtr<WebGLLoseContext> m_webglLoseContext;
-    OwnPtr<WebGLDebugRendererInfo> m_webglDebugRendererInfo;
-    OwnPtr<WebGLDebugShaders> m_webglDebugShaders;
-    OwnPtr<WebGLDrawBuffers> m_webglDrawBuffers;
-    OwnPtr<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
-    OwnPtr<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
-    OwnPtr<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
-    OwnPtr<WebGLDepthTexture> m_webglDepthTexture;
+    RefPtr<EXTFragDepth> m_extFragDepth;
+    RefPtr<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
+    RefPtr<OESTextureFloat> m_oesTextureFloat;
+    RefPtr<OESTextureFloatLinear> m_oesTextureFloatLinear;
+    RefPtr<OESTextureHalfFloat> m_oesTextureHalfFloat;
+    RefPtr<OESTextureHalfFloatLinear> m_oesTextureHalfFloatLinear;
+    RefPtr<OESStandardDerivatives> m_oesStandardDerivatives;
+    RefPtr<OESVertexArrayObject> m_oesVertexArrayObject;
+    RefPtr<OESElementIndexUint> m_oesElementIndexUint;
+    RefPtr<WebGLLoseContext> m_webglLoseContext;
+    RefPtr<WebGLDebugRendererInfo> m_webglDebugRendererInfo;
+    RefPtr<WebGLDebugShaders> m_webglDebugShaders;
+    RefPtr<WebGLDrawBuffers> m_webglDrawBuffers;
+    RefPtr<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
+    RefPtr<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
+    RefPtr<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
+    RefPtr<WebGLDepthTexture> m_webglDepthTexture;
 
     class ExtensionTracker {
     public:
@@ -528,6 +529,10 @@ public:
             , m_draft(draft)
             , m_prefixed(prefixed)
             , m_prefixes(prefixes)
+        {
+        }
+
+        virtual ~ExtensionTracker()
         {
         }
 
@@ -548,9 +553,10 @@ public:
 
         bool matchesNameWithPrefixes(const String&) const;
 
-        virtual WebGLExtension* getExtension(WebGLRenderingContext*) const = 0;
+        virtual PassRefPtr<WebGLExtension> getExtension(WebGLRenderingContext*) const = 0;
         virtual bool supported(WebGLRenderingContext*) const = 0;
         virtual const char* getExtensionName() const = 0;
+        virtual void loseExtension() = 0;
 
     private:
         bool m_privileged;
@@ -562,18 +568,26 @@ public:
     template <typename T>
     class TypedExtensionTracker : public ExtensionTracker {
     public:
-        TypedExtensionTracker(OwnPtr<T>& extensionField, bool privileged, bool draft, bool prefixed, const char** prefixes)
+        TypedExtensionTracker(RefPtr<T>& extensionField, bool privileged, bool draft, bool prefixed, const char** prefixes)
             : ExtensionTracker(privileged, draft, prefixed, prefixes)
             , m_extensionField(extensionField)
         {
         }
 
-        virtual WebGLExtension* getExtension(WebGLRenderingContext* context) const
+        ~TypedExtensionTracker()
+        {
+            if (m_extensionField) {
+                m_extensionField->lose(true);
+                m_extensionField = 0;
+            }
+        }
+
+        virtual PassRefPtr<WebGLExtension> getExtension(WebGLRenderingContext* context) const
         {
             if (!m_extensionField)
                 m_extensionField = T::create(context);
 
-            return m_extensionField.get();
+            return m_extensionField;
         }
 
         virtual bool supported(WebGLRenderingContext* context) const
@@ -586,14 +600,23 @@ public:
             return T::getExtensionName();
         }
 
+        virtual void loseExtension()
+        {
+            if (m_extensionField) {
+                m_extensionField->lose(false);
+                if (m_extensionField->isLost())
+                    m_extensionField = 0;
+            }
+        }
+
     private:
-        OwnPtr<T>& m_extensionField;
+        RefPtr<T>& m_extensionField;
     };
 
     Vector<ExtensionTracker*> m_extensions;
 
     template <typename T>
-    void registerExtension(OwnPtr<T>& extensionPtr, bool privileged, bool draft, bool prefixed, const char** prefixes)
+    void registerExtension(RefPtr<T>& extensionPtr, bool privileged, bool draft, bool prefixed, const char** prefixes)
     {
         m_extensions.append(new TypedExtensionTracker<T>(extensionPtr, privileged, draft, prefixed, prefixes));
     }

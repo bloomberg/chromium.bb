@@ -30,7 +30,7 @@
 #include "core/html/canvas/WebGLExtension.h"
 #include "core/html/canvas/WebGLVertexArrayObjectOES.h"
 #include "core/platform/graphics/GraphicsTypes3D.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/UnusedParam.h"
 
 namespace WebCore {
@@ -42,7 +42,7 @@ typedef int ExceptionCode;
 
 class OESVertexArrayObject : public WebGLExtension, public ScriptWrappable {
 public:
-    static PassOwnPtr<OESVertexArrayObject> create(WebGLRenderingContext*);
+    static PassRefPtr<OESVertexArrayObject> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
     static const char* getExtensionName();
 

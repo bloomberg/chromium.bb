@@ -41,24 +41,32 @@ WebGLLoseContext::~WebGLLoseContext()
 {
 }
 
+void WebGLLoseContext::lose(bool force)
+{
+    if (force)
+        WebGLExtension::lose(true);
+}
+
 WebGLExtension::ExtensionName WebGLLoseContext::getName() const
 {
     return WebGLLoseContextName;
 }
 
-PassOwnPtr<WebGLLoseContext> WebGLLoseContext::create(WebGLRenderingContext* context)
+PassRefPtr<WebGLLoseContext> WebGLLoseContext::create(WebGLRenderingContext* context)
 {
-    return adoptPtr(new WebGLLoseContext(context));
+    return adoptRef(new WebGLLoseContext(context));
 }
 
 void WebGLLoseContext::loseContext()
 {
-    m_context->forceLostContext(WebGLRenderingContext::SyntheticLostContext);
+    if (!isLost())
+        m_context->forceLostContext(WebGLRenderingContext::SyntheticLostContext);
 }
 
 void WebGLLoseContext::restoreContext()
 {
-    m_context->forceRestoreContext();
+    if (!isLost())
+        m_context->forceRestoreContext();
 }
 
 bool WebGLLoseContext::supported(WebGLRenderingContext*)

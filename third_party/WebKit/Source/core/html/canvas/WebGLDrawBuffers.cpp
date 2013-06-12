@@ -47,9 +47,9 @@ WebGLExtension::ExtensionName WebGLDrawBuffers::getName() const
     return WebGLExtension::WebGLDrawBuffersName;
 }
 
-PassOwnPtr<WebGLDrawBuffers> WebGLDrawBuffers::create(WebGLRenderingContext* context)
+PassRefPtr<WebGLDrawBuffers> WebGLDrawBuffers::create(WebGLRenderingContext* context)
 {
-    return adoptPtr(new WebGLDrawBuffers(context));
+    return adoptRef(new WebGLDrawBuffers(context));
 }
 
 // static
@@ -67,7 +67,7 @@ const char* WebGLDrawBuffers::getExtensionName()
 
 void WebGLDrawBuffers::drawBuffersWEBGL(const Vector<GC3Denum>& buffers)
 {
-    if (m_context->isContextLost())
+    if (isLost())
         return;
     GC3Dsizei n = buffers.size();
     const GC3Denum* bufs = buffers.data();

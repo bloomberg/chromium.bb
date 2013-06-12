@@ -711,6 +711,11 @@ void WebGLRenderingContext::addCompressedTextureFormat(GC3Denum format)
         m_compressedTextureFormats.append(format);
 }
 
+void WebGLRenderingContext::removeAllCompressedTextureFormats()
+{
+    m_compressedTextureFormats.clear();
+}
+
 WebGLRenderingContext::~WebGLRenderingContext()
 {
     // Remove all references to WebGLObjects so if they are the last reference
@@ -732,6 +737,11 @@ WebGLRenderingContext::~WebGLRenderingContext()
     m_blackTextureCubeMap = 0;
 
     detachAndRemoveAllObjects();
+
+    // release all extensions
+    for (size_t i = 0; i < m_extensions.size(); ++i)
+        delete m_extensions[i];
+
     destroyGraphicsContext3D();
     m_contextGroup->removeContext(this);
 
@@ -2144,7 +2154,7 @@ bool WebGLRenderingContext::ExtensionTracker::matchesNameWithPrefixes(const Stri
     return false;
 }
 
-WebGLExtension* WebGLRenderingContext::getExtension(const String& name)
+PassRefPtr<WebGLExtension> WebGLRenderingContext::getExtension(const String& name)
 {
     if (isContextLost())
         return 0;
@@ -4173,6 +4183,14 @@ void WebGLRenderingContext::loseContextImpl(WebGLRenderingContext::LostContextMo
     m_drawingBuffer->setFramebufferBinding(0);
 
     detachAndRemoveAllObjects();
+
+    // Lose all the extensions.
+    for (size_t i = 0; i < m_extensions.size(); ++i) {
+        ExtensionTracker* tracker = m_extensions[i];
+        tracker->loseExtension();
+    }
+
+    removeAllCompressedTextureFormats();
 
     if (mode != RealLostContext)
         destroyGraphicsContext3D();

@@ -28,13 +28,13 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
 class WebGLCompressedTexturePVRTC : public WebGLExtension, public ScriptWrappable {
 public:
-    static PassOwnPtr<WebGLCompressedTexturePVRTC> create(WebGLRenderingContext*);
+    static PassRefPtr<WebGLCompressedTexturePVRTC> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
     static const char* getExtensionName();
 

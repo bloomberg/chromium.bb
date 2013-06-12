@@ -46,9 +46,9 @@ WebGLExtension::ExtensionName OESTextureHalfFloat::getName() const
     return OESTextureHalfFloatName;
 }
 
-PassOwnPtr<OESTextureHalfFloat> OESTextureHalfFloat::create(WebGLRenderingContext* context)
+PassRefPtr<OESTextureHalfFloat> OESTextureHalfFloat::create(WebGLRenderingContext* context)
 {
-    return adoptPtr(new OESTextureHalfFloat(context));
+    return adoptRef(new OESTextureHalfFloat(context));
 }
 
 bool OESTextureHalfFloat::supported(WebGLRenderingContext* context)

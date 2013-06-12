@@ -28,13 +28,13 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
 class OESTextureHalfFloatLinear : public WebGLExtension, public ScriptWrappable {
 public:
-    static PassOwnPtr<OESTextureHalfFloatLinear> create(WebGLRenderingContext*);
+    static PassRefPtr<OESTextureHalfFloatLinear> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
     static const char* getExtensionName();
 

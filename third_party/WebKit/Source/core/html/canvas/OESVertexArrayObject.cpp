@@ -49,14 +49,14 @@ WebGLExtension::ExtensionName OESVertexArrayObject::getName() const
     return OESVertexArrayObjectName;
 }
 
-PassOwnPtr<OESVertexArrayObject> OESVertexArrayObject::create(WebGLRenderingContext* context)
+PassRefPtr<OESVertexArrayObject> OESVertexArrayObject::create(WebGLRenderingContext* context)
 {
-    return adoptPtr(new OESVertexArrayObject(context));
+    return adoptRef(new OESVertexArrayObject(context));
 }
 
 PassRefPtr<WebGLVertexArrayObjectOES> OESVertexArrayObject::createVertexArrayOES()
 {
-    if (m_context->isContextLost())
+    if (isLost())
         return 0;
     
     RefPtr<WebGLVertexArrayObjectOES> o = WebGLVertexArrayObjectOES::create(m_context, WebGLVertexArrayObjectOES::VaoTypeUser);
@@ -66,7 +66,7 @@ PassRefPtr<WebGLVertexArrayObjectOES> OESVertexArrayObject::createVertexArrayOES
 
 void OESVertexArrayObject::deleteVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject)
 {
-    if (!arrayObject || m_context->isContextLost())
+    if (!arrayObject || isLost())
         return;
     
     if (!arrayObject->isDefaultObject() && arrayObject == m_context->m_boundVertexArrayObject)
@@ -77,7 +77,7 @@ void OESVertexArrayObject::deleteVertexArrayOES(WebGLVertexArrayObjectOES* array
 
 GC3Dboolean OESVertexArrayObject::isVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject)
 {
-    if (!arrayObject || m_context->isContextLost())
+    if (!arrayObject || isLost())
         return 0;
     
     if (!arrayObject->hasEverBeenBound())
@@ -90,7 +90,7 @@ GC3Dboolean OESVertexArrayObject::isVertexArrayOES(WebGLVertexArrayObjectOES* ar
 void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject, ExceptionCode& ec)
 {
     UNUSED_PARAM(ec);
-    if (m_context->isContextLost())
+    if (isLost())
         return;
     
     if (arrayObject && (arrayObject->isDeleted() || !arrayObject->validate(0, context()))) {
