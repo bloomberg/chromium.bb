@@ -12,21 +12,6 @@
 
 namespace history {
 
-// Returns a VisitInfoVector that includes |num_visits| spread over the
-// last |frecency|*|num_visits| days (relative to |now|).  A frequency of
-// one means one visit each day, two means every other day, etc.
-VisitInfoVector CreateVisitInfoVector(int num_visits,
-                                      int frequency,
-                                      base::Time now) {
-  VisitInfoVector visits;
-  for (int i = 0; i < num_visits; ++i) {
-    visits.push_back(
-        std::make_pair(now - base::TimeDelta::FromDays(i * frequency),
-                       content::PAGE_TRANSITION_LINK));
-  }
-  return visits;
-}
-
 class ScoredHistoryMatchTest : public testing::Test {
  protected:
   // Convenience function to create a URLRow with basic data for |url|, |title|,
@@ -104,73 +89,161 @@ float ScoredHistoryMatchTest::GetTopicalityScoreOfTermAgainstURLAndTitle(
       1, url, url_matches, title_matches, word_starts);
 }
 
-TEST_F(ScoredHistoryMatchTest, Scoring) {
-  // We use NowFromSystemTime() because MakeURLRow uses the same function
-  // to calculate last visit time when building a row.
-  base::Time now = base::Time::NowFromSystemTime();
+TEST_F(ScoredHistoryMatchTest, MakeTermMatchesOnlyAtWordBoundaries) {
+  TermMatches matches, matches_at_word_boundaries;
+  WordStarts word_starts;
 
+  // no matches but some word starts -> no matches at word boundary
+  matches.clear();
+  word_starts.clear();
+  word_starts.push_back(2);
+  word_starts.push_back(5);
+  word_starts.push_back(10);
+  ScoredHistoryMatch::MakeTermMatchesOnlyAtWordBoundaries(
+      matches, word_starts, &matches_at_word_boundaries);
+  EXPECT_EQ(0u, matches_at_word_boundaries.size());
+
+  // matches but no word starts -> no matches at word boundary
+  matches.clear();
+  matches.push_back(TermMatch(0, 1, 2));  // 2-character match at pos 1
+  matches.push_back(TermMatch(0, 7, 2));  // 2-character match at pos 7
+  word_starts.clear();
+  ScoredHistoryMatch::MakeTermMatchesOnlyAtWordBoundaries(
+      matches, word_starts, &matches_at_word_boundaries);
+  EXPECT_EQ(0u, matches_at_word_boundaries.size());
+
+  // matches and word starts don't overlap -> no matches at word boundary
+  matches.clear();
+  matches.push_back(TermMatch(0, 1, 2));  // 2-character match at pos 1
+  matches.push_back(TermMatch(0, 7, 2));  // 2-character match at pos 7
+  word_starts.clear();
+  word_starts.push_back(2);
+  word_starts.push_back(5);
+  word_starts.push_back(10);
+  ScoredHistoryMatch::MakeTermMatchesOnlyAtWordBoundaries(
+      matches, word_starts, &matches_at_word_boundaries);
+  EXPECT_EQ(0u, matches_at_word_boundaries.size());
+
+  // some matches are at word boundary and some aren't
+  matches.clear();
+  matches.push_back(TermMatch(0, 1, 2));  // 2-character match at pos 1
+  matches.push_back(TermMatch(1, 6, 3));  // 3-character match at pos 6
+  matches.push_back(TermMatch(0, 8, 2));  // 2-character match at pos 8
+  matches.push_back(TermMatch(2, 15, 7));  // 7-character match at pos 15
+  matches.push_back(TermMatch(1, 26, 3));  // 3-character match at pos 26
+  word_starts.clear();
+  word_starts.push_back(0);
+  word_starts.push_back(6);
+  word_starts.push_back(9);
+  word_starts.push_back(15);
+  word_starts.push_back(24);
+  ScoredHistoryMatch::MakeTermMatchesOnlyAtWordBoundaries(
+      matches, word_starts, &matches_at_word_boundaries);
+  EXPECT_EQ(2u, matches_at_word_boundaries.size());
+  EXPECT_EQ(1, matches_at_word_boundaries[0].term_num);
+  EXPECT_EQ(6u, matches_at_word_boundaries[0].offset);
+  EXPECT_EQ(3u, matches_at_word_boundaries[0].length);
+  EXPECT_EQ(2, matches_at_word_boundaries[1].term_num);
+  EXPECT_EQ(15u, matches_at_word_boundaries[1].offset);
+  EXPECT_EQ(7u, matches_at_word_boundaries[1].length);
+
+  // all matches are at word boundary
+  matches.clear();
+  matches.push_back(TermMatch(0, 2, 2));  // 2-character match at pos 2
+  matches.push_back(TermMatch(1, 9, 3));  // 3-character match at pos 9
+  word_starts.clear();
+  word_starts.push_back(0);
+  word_starts.push_back(2);
+  word_starts.push_back(6);
+  word_starts.push_back(9);
+  word_starts.push_back(15);
+  ScoredHistoryMatch::MakeTermMatchesOnlyAtWordBoundaries(
+      matches, word_starts, &matches_at_word_boundaries);
+  EXPECT_EQ(2u, matches_at_word_boundaries.size());
+  EXPECT_EQ(0, matches_at_word_boundaries[0].term_num);
+  EXPECT_EQ(2u, matches_at_word_boundaries[0].offset);
+  EXPECT_EQ(2u, matches_at_word_boundaries[0].length);
+  EXPECT_EQ(1, matches_at_word_boundaries[1].term_num);
+  EXPECT_EQ(9u, matches_at_word_boundaries[1].offset);
+  EXPECT_EQ(3u, matches_at_word_boundaries[1].length);
+}
+
+TEST_F(ScoredHistoryMatchTest, Scoring) {
   URLRow row_a(MakeURLRow("http://fedcba", "abcd bcd", 3, 30, 1));
   RowWordStarts word_starts_a;
   PopulateWordStarts(row_a, &word_starts_a);
-  VisitInfoVector visits_a = CreateVisitInfoVector(3, 30, now);
-  // Mark one visit as typed.
-  visits_a[0].second = content::PAGE_TRANSITION_TYPED;
-  ScoredHistoryMatch scored_a(row_a, visits_a, std::string(),
-                               ASCIIToUTF16("abc"), Make1Term("abc"),
-                               word_starts_a, now, NULL);
+  // We use NowFromSystemTime() because MakeURLRow uses the same function
+  // to calculate last visit time when building a row.
+  base::Time now = base::Time::NowFromSystemTime();
+  VisitInfoVector visits;
+
+  // Test scores based on position.
+  ScoredHistoryMatch scored_a(row_a, visits, std::string(),
+                              ASCIIToUTF16("abc"), Make1Term("abc"),
+                              word_starts_a, now, NULL);
+  ScoredHistoryMatch scored_b(row_a, visits, std::string(),
+                              ASCIIToUTF16("bcd"), Make1Term("bcd"),
+                              word_starts_a, now, NULL);
+  EXPECT_GT(scored_a.raw_score, scored_b.raw_score);
+
+  // Test scores based on length.
+  ScoredHistoryMatch scored_c(row_a, visits, std::string(),
+                              ASCIIToUTF16("abcd"), Make1Term("abcd"),
+                              word_starts_a, now, NULL);
+  EXPECT_LT(scored_a.raw_score, scored_c.raw_score);
+
+  // Test scores based on order.
+  ScoredHistoryMatch scored_d(row_a, visits, std::string(),
+                              ASCIIToUTF16("abc bcd"), Make2Terms("abc", "bcd"),
+                              word_starts_a, now, NULL);
+  ScoredHistoryMatch scored_e(row_a, visits, std::string(),
+                              ASCIIToUTF16("bcd abc"), Make2Terms("bcd", "abc"),
+                              word_starts_a, now, NULL);
+  EXPECT_GT(scored_d.raw_score, scored_e.raw_score);
 
   // Test scores based on visit_count.
   URLRow row_b(MakeURLRow("http://abcdef", "abcd bcd", 10, 30, 1));
   RowWordStarts word_starts_b;
   PopulateWordStarts(row_b, &word_starts_b);
-  VisitInfoVector visits_b = CreateVisitInfoVector(10, 30, now);
-  visits_b[0].second = content::PAGE_TRANSITION_TYPED;
-  ScoredHistoryMatch scored_b(row_b, visits_b, std::string(),
+  ScoredHistoryMatch scored_f(row_b, visits, std::string(),
                               ASCIIToUTF16("abc"), Make1Term("abc"),
                               word_starts_b, now, NULL);
-  EXPECT_GT(scored_b.raw_score, scored_a.raw_score);
+  EXPECT_GT(scored_f.raw_score, scored_a.raw_score);
 
   // Test scores based on last_visit.
   URLRow row_c(MakeURLRow("http://abcdef", "abcd bcd", 3, 10, 1));
   RowWordStarts word_starts_c;
   PopulateWordStarts(row_c, &word_starts_c);
-  VisitInfoVector visits_c = CreateVisitInfoVector(3, 10, now);
-  visits_c[0].second = content::PAGE_TRANSITION_TYPED;
-  ScoredHistoryMatch scored_c(row_c, visits_c, std::string(),
+  ScoredHistoryMatch scored_g(row_c, visits, std::string(),
                               ASCIIToUTF16("abc"), Make1Term("abc"),
                               word_starts_c, now, NULL);
-  EXPECT_GT(scored_c.raw_score, scored_a.raw_score);
+  EXPECT_GT(scored_g.raw_score, scored_a.raw_score);
 
   // Test scores based on typed_count.
-  URLRow row_d(MakeURLRow("http://abcdef", "abcd bcd", 3, 30, 3));
+  URLRow row_d(MakeURLRow("http://abcdef", "abcd bcd", 3, 30, 10));
   RowWordStarts word_starts_d;
   PopulateWordStarts(row_d, &word_starts_d);
-  VisitInfoVector visits_d = CreateVisitInfoVector(3, 30, now);
-  visits_d[0].second = content::PAGE_TRANSITION_TYPED;
-  visits_d[2].second = content::PAGE_TRANSITION_TYPED;
-  visits_d[3].second = content::PAGE_TRANSITION_TYPED;
-  ScoredHistoryMatch scored_d(row_d, visits_d, std::string(),
+  ScoredHistoryMatch scored_h(row_d, visits, std::string(),
                               ASCIIToUTF16("abc"), Make1Term("abc"),
                               word_starts_d, now, NULL);
-  EXPECT_GT(scored_d.raw_score, scored_a.raw_score);
+  EXPECT_GT(scored_h.raw_score, scored_a.raw_score);
 
   // Test scores based on a terms appearing multiple times.
   URLRow row_e(MakeURLRow("http://csi.csi.csi/csi_csi",
-      "CSI Guide to CSI Las Vegas, CSI New York, CSI Provo", 3, 30, 3));
+      "CSI Guide to CSI Las Vegas, CSI New York, CSI Provo", 3, 30, 10));
   RowWordStarts word_starts_e;
   PopulateWordStarts(row_e, &word_starts_e);
-  const VisitInfoVector visits_e = visits_d;
-  ScoredHistoryMatch scored_e(row_e, visits_e, std::string(),
+  ScoredHistoryMatch scored_i(row_e, visits, std::string(),
                               ASCIIToUTF16("csi"), Make1Term("csi"),
                               word_starts_e, now, NULL);
-  EXPECT_LT(scored_e.raw_score, 1400);
+  EXPECT_LT(scored_i.raw_score, 1400);
 
   // Test that a result with only a mid-term match (i.e., not at a word
   // boundary) scores 0.
-  ScoredHistoryMatch scored_f(row_a, visits_a, std::string(),
+  ScoredHistoryMatch scored_j(row_a, visits, std::string(),
                               ASCIIToUTF16("cd"), Make1Term("cd"),
                               word_starts_a, now, NULL);
-  EXPECT_EQ(scored_f.raw_score, 0);
+  EXPECT_EQ(scored_j.raw_score, 0);
 }
 
 TEST_F(ScoredHistoryMatchTest, Inlining) {
@@ -241,6 +314,63 @@ TEST_F(ScoredHistoryMatchTest, Inlining) {
     EXPECT_TRUE(scored_c.can_inline);
     EXPECT_FALSE(scored_c.match_in_scheme);
   }
+}
+
+class BookmarkServiceMock : public BookmarkService {
+ public:
+  explicit BookmarkServiceMock(const GURL& url);
+  virtual ~BookmarkServiceMock() {}
+
+  // Returns true if the given |url| is the same as |url_|.
+  virtual bool IsBookmarked(const GURL& url) OVERRIDE;
+
+  // Required but unused.
+  virtual void GetBookmarks(std::vector<URLAndTitle>* bookmarks) OVERRIDE {}
+  virtual void BlockTillLoaded() OVERRIDE {}
+
+ private:
+  const GURL url_;
+
+  DISALLOW_COPY_AND_ASSIGN(BookmarkServiceMock);
+};
+
+BookmarkServiceMock::BookmarkServiceMock(const GURL& url)
+    : BookmarkService(),
+      url_(url) {
+}
+
+bool BookmarkServiceMock::IsBookmarked(const GURL& url) {
+  return url == url_;
+}
+
+TEST_F(ScoredHistoryMatchTest, ScoringWithBookmarks) {
+  const GURL url("http://www.nanny.org");
+  BookmarkServiceMock bookmark_model_mock(url);
+  URLRow row_a(MakeURLRow("http://www.nanny.org", "Nanny", 3, 30, 1));
+  RowWordStarts word_starts_a;
+  PopulateWordStarts(row_a, &word_starts_a);
+  // We use NowFromSystemTime() because MakeURLRow uses the same function
+  // to calculate last visit time when building a row.
+  base::Time now = base::Time::NowFromSystemTime();
+  VisitInfoVector visits;
+
+  // Identical queries but the first should be boosted by having a bookmark.
+  ScoredHistoryMatch scored_a(row_a, visits, std::string(),
+                              ASCIIToUTF16("nanny"), Make1Term("nanny"),
+                              word_starts_a, now, &bookmark_model_mock);
+  ScoredHistoryMatch scored_b(row_a, visits, std::string(),
+                              ASCIIToUTF16("nanny"), Make1Term("nanny"),
+                              word_starts_a, now, NULL);
+  EXPECT_GT(scored_a.raw_score, scored_b.raw_score);
+
+  // Identical queries, neither should be boosted by having a bookmark.
+  ScoredHistoryMatch scored_c(row_a, visits, std::string(),
+                              ASCIIToUTF16("stick"), Make1Term("stick"),
+                              word_starts_a, now, &bookmark_model_mock);
+  ScoredHistoryMatch scored_d(row_a, visits, std::string(),
+                              ASCIIToUTF16("stick"), Make1Term("stick"),
+                              word_starts_a, now, NULL);
+  EXPECT_EQ(scored_c.raw_score, scored_d.raw_score);
 }
 
 TEST_F(ScoredHistoryMatchTest, GetTopicalityScoreTrailingSlash) {

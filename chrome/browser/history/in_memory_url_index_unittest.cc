@@ -472,7 +472,7 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
 
   // Search which should result in nearly perfect result.
   matches = url_index_->HistoryItemsForTerms(
-      ASCIIToUTF16("Nearly Perfect Result"), string16::npos);
+      ASCIIToUTF16("https NearlyPerfectResult"), string16::npos);
   ASSERT_EQ(1U, matches.size());
   // The results should have a very high score.
   EXPECT_GT(matches[0].raw_score, 900);
@@ -570,8 +570,8 @@ TEST_F(InMemoryURLIndexTest, URLPrefixMatching) {
   ASSERT_EQ(1U, matches.size());
   EXPECT_TRUE(matches[0].can_inline);
 
-  // "drudgere" - found, can inline
-  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("drudgere"),
+  // "http://drudgere" - found, can inline
+  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("http://drudgere"),
                                              string16::npos);
   ASSERT_EQ(1U, matches.size());
   EXPECT_TRUE(matches[0].can_inline);
@@ -593,8 +593,8 @@ TEST_F(InMemoryURLIndexTest, URLPrefixMatching) {
   ASSERT_EQ(1U, matches.size());
   EXPECT_TRUE(matches[0].can_inline);
 
-  // "view.atdmt" - found, can inline
-  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("view.atdmt"),
+  // "http://view.atdmt" - found, can inline
+  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("http://view.atdmt"),
                                              string16::npos);
   ASSERT_EQ(1U, matches.size());
   EXPECT_TRUE(matches[0].can_inline);
@@ -612,14 +612,14 @@ TEST_F(InMemoryURLIndexTest, URLPrefixMatching) {
   ASSERT_EQ(1U, matches.size());
   EXPECT_TRUE(matches[0].can_inline);
 
-  // "ww.cnn.com" - found because we allow mid-term matches in hostnames
+  // "ww.cnn.com" - not found because we don't allow ww as a mid-term match
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("ww.cnn.com"),
                                              string16::npos);
-  ASSERT_EQ(1U, matches.size());
+  ASSERT_EQ(0U, matches.size());
 
-  // "www.cnn.com" - found, can inline
+  // "http://www.cnn.com" - found, can inline
   matches =
-      url_index_->HistoryItemsForTerms(ASCIIToUTF16("www.cnn.com"),
+      url_index_->HistoryItemsForTerms(ASCIIToUTF16("http://www.cnn.com"),
                                        string16::npos);
   ASSERT_EQ(1U, matches.size());
   EXPECT_TRUE(matches[0].can_inline);

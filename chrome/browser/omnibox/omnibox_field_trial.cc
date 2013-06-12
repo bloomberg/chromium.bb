@@ -18,6 +18,8 @@ namespace {
 
 // Field trial names.
 const char kDisallowInlineHQPFieldTrialName[] = "OmniboxDisallowInlineHQP";
+const char kHQPReplaceHUPAndNewScoringFieldTrialName[] =
+    "OmniboxReplaceHUPAndNewScoring";
 const char kHUPCullRedirectsFieldTrialName[] = "OmniboxHUPCullRedirects";
 const char kHUPCreateShorterMatchFieldTrialName[] =
     "OmniboxHUPCreateShorterMatch";
@@ -189,6 +191,18 @@ void OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(
     if (base::FieldTrialList::TrialExists(trial_name))
       field_trial_hashes->push_back(metrics::HashName(trial_name));
   }
+}
+
+bool OmniboxFieldTrial::InHQPNewScoringExperimentGroup() {
+  return base::FieldTrialList::FindFullName(
+              kHQPReplaceHUPAndNewScoringFieldTrialName).find(
+              "NewScoring") != std::string::npos;
+}
+
+bool OmniboxFieldTrial::InHQPReplaceHUPScoringExperimentGroup() {
+  return base::FieldTrialList::FindFullName(
+              kHQPReplaceHUPAndNewScoringFieldTrialName).find(
+              "HQPReplaceHUP") != std::string::npos;
 }
 
 bool OmniboxFieldTrial::InHUPCullRedirectsFieldTrial() {

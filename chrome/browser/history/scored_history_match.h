@@ -43,11 +43,50 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
                      BookmarkService* bookmark_service);
   ~ScoredHistoryMatch();
 
+  // Calculates a component score based on position, ordering, word
+  // boundaries, and total substring match size using metrics recorded
+  // in |matches| and |word_starts|. |max_length| is the length of
+  // the string against which the terms are being searched.
+  // |provided_matches| should already be sorted and de-duped, and
+  // |word_starts| must be sorted.
+  static int ScoreComponentForMatches(const TermMatches& provided_matches,
+                                      const WordStarts& word_starts,
+                                      size_t max_length);
+
+  // Given a set of term matches |provided_matches| and word boundaries
+  // |word_starts|, fills in |matches_at_word_boundaries| with only the
+  // matches in |provided_matches| that are at word boundaries.
+  // |provided_matches| should already be sorted and de-duped, and
+  // |word_starts| must be sorted.
+  static void MakeTermMatchesOnlyAtWordBoundaries(
+      const TermMatches& provided_matches,
+      const WordStarts& word_starts,
+      TermMatches* matches_at_word_boundaries);
+
+  // Converts a raw value for some particular scoring factor into a score
+  // component for that factor.  The conversion function is piecewise linear,
+  // with input values provided in |value_ranks| and resulting output scores
+  // from |kScoreRank| (mathematically, f(value_rank[i]) = kScoreRank[i]).  A
+  // score cannot be higher than kScoreRank[0], and drops directly to 0 if
+  // lower than kScoreRank[3].
+  //
+  // For example, take |value| == 70 and |value_ranks| == { 100, 50, 30, 10 }.
+  // Because 70 falls between ranks 0 (100) and 1 (50), the score is given by
+  // the linear function:
+  //   score = m * value + b, where
+  //   m = (kScoreRank[0] - kScoreRank[1]) / (value_ranks[0] - value_ranks[1])
+  //   b = value_ranks[1]
+  // Any value higher than 100 would be scored as if it were 100, and any value
+  // lower than 10 scored 0.
+  static int ScoreForValue(int value, const int* value_ranks);
+
   // Compares two matches by score.  Functor supporting URLIndexPrivateData's
   // HistoryItemsForTerms function.  Looks at particular fields within
   // with url_info to make tie-breaking a bit smarter.
   static bool MatchScoreGreater(const ScoredHistoryMatch& m1,
                                 const ScoredHistoryMatch& m2);
+
+  // Start of functions used only in "new" scoring ------------------------
 
   // Return a topicality score based on how many matches appear in the
   // |url| and the page's title and where they are (e.g., at word
@@ -88,10 +127,16 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
       float topicality_score,
       float frecency_score);
 
+  // Sets use_new_scoring based on command line flags and/or
+  // field trial state.
+  static void InitializeNewScoringField();
+
   // Sets also_do_hup_like_scoring and
   // max_assigned_score_for_non_inlineable_matches based on the field
   // trial state.
   static void InitializeAlsoDoHUPLikeScoringFieldAndMaxScoreField();
+
+  // End of functions used only in "new" scoring --------------------------
 
   // An interim score taking into consideration location and completeness
   // of the match.
@@ -122,6 +167,14 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
 
   // Used so we initialize static variables only once (on first use).
   static bool initialized_;
+
+  // Whether to use new-scoring or old-scoring.  Set in the
+  // constructor by examining command line flags and field trial
+  // state.  Note that new-scoring has to do with a new version of the
+  // ordinary scoring done here.  It has nothing to do with and no
+  // affect on HistoryURLProvider-like scoring that can happen in this
+  // class as well (see boolean below).
+  static bool use_new_scoring;
 
   // The maximum number of recent visits to examine in GetFrecency().
   static const size_t kMaxVisitsToScore;

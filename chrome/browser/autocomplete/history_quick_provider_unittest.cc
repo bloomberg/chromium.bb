@@ -10,17 +10,13 @@
 #include <string>
 #include <vector>
 
-#include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
-#include "chrome/browser/history/history_backend.h"
-#include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/in_memory_url_index.h"
@@ -34,7 +30,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
-#include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -57,19 +52,19 @@ struct TestURLInfo {
   {"http://news.google.com/", "Google News", 1, 1, 0},
   {"http://foo.com/", "Dir", 200, 100, 0},
   {"http://foo.com/dir/", "Dir", 2, 1, 10},
-  {"http://foo.com/dir/another/", "Dir", 10, 5, 0},
+  {"http://foo.com/dir/another/", "Dir", 5, 10, 0},
   {"http://foo.com/dir/another/again/", "Dir", 5, 1, 0},
-  {"http://foo.com/dir/another/again/myfile.html", "File", 3, 1, 0},
+  {"http://foo.com/dir/another/again/myfile.html", "File", 3, 2, 0},
   {"http://visitedest.com/y/a", "VA", 10, 1, 20},
   {"http://visitedest.com/y/b", "VB", 9, 1, 20},
   {"http://visitedest.com/x/c", "VC", 8, 1, 20},
   {"http://visitedest.com/x/d", "VD", 7, 1, 20},
   {"http://visitedest.com/y/e", "VE", 6, 1, 20},
-  {"http://typeredest.com/y/a", "TA", 5, 5, 0},
-  {"http://typeredest.com/y/b", "TB", 5, 4, 0},
-  {"http://typeredest.com/x/c", "TC", 5, 3, 0},
-  {"http://typeredest.com/x/d", "TD", 5, 2, 0},
-  {"http://typeredest.com/y/e", "TE", 5, 1, 0},
+  {"http://typeredest.com/y/a", "TA", 3, 5, 0},
+  {"http://typeredest.com/y/b", "TB", 3, 4, 0},
+  {"http://typeredest.com/x/c", "TC", 3, 3, 0},
+  {"http://typeredest.com/x/d", "TD", 3, 2, 0},
+  {"http://typeredest.com/y/e", "TE", 3, 1, 0},
   {"http://daysagoest.com/y/a", "DA", 1, 1, 0},
   {"http://daysagoest.com/y/b", "DB", 1, 1, 1},
   {"http://daysagoest.com/x/c", "DC", 1, 1, 2},
@@ -137,6 +132,9 @@ class HistoryQuickProviderTest : public testing::Test,
                bool can_inline_top_result,
                string16 expected_fill_into_edit);
 
+  // Pass-through functions to simplify our friendship with URLIndexPrivateData.
+  bool UpdateURL(const history::URLRow& row);
+
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
@@ -163,12 +161,22 @@ void HistoryQuickProviderTest::SetUp() {
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile_.get(), &HistoryQuickProviderTest::CreateTemplateURLService);
   FillData();
-  provider_->GetIndex()->RebuildFromHistory(
-      history_service_->history_backend_->db());
 }
 
 void HistoryQuickProviderTest::TearDown() {
   provider_ = NULL;
+}
+
+bool HistoryQuickProviderTest::UpdateURL(const history::URLRow& row) {
+  history::URLDatabase* db = history_service_->InMemoryDatabase();
+  DCHECK(db);
+  EXPECT_NE(db->AddURL(row), 0);
+  history::InMemoryURLIndex* index = provider_->GetIndex();
+  DCHECK(index);
+  history::URLIndexPrivateData* private_data = index->private_data();
+  DCHECK(private_data);
+  return private_data->UpdateURL(history_service_, row, index->languages_,
+                                 index->scheme_whitelist_);
 }
 
 void HistoryQuickProviderTest::GetTestData(size_t* data_count,
@@ -180,48 +188,24 @@ void HistoryQuickProviderTest::GetTestData(size_t* data_count,
 }
 
 void HistoryQuickProviderTest::FillData() {
-  sql::Connection& db(history_service_->history_backend_->db()->GetDB());
-  ASSERT_TRUE(db.is_open());
-
+  history::URLDatabase* db = history_service_->InMemoryDatabase();
+  ASSERT_TRUE(db != NULL);
   size_t data_count = 0;
   TestURLInfo* test_data = NULL;
   GetTestData(&data_count, &test_data);
-  size_t visit_id = 1;
   for (size_t i = 0; i < data_count; ++i) {
     const TestURLInfo& cur(test_data[i]);
+    const GURL current_url(cur.url);
     Time visit_time = Time::Now() - TimeDelta::FromDays(cur.days_from_now);
-    sql::Transaction transaction(&db);
 
-    // Add URL.
-    transaction.Begin();
-    std::string sql_cmd_line = base::StringPrintf(
-        "INSERT INTO \"urls\" VALUES(%" PRIuS ", \'%s\', \'%s\', %d, %d, %"
-        PRId64 ", 0, 0)",
-        i + 1, cur.url.c_str(), cur.title.c_str(), cur.visit_count,
-        cur.typed_count, visit_time.ToInternalValue());
-    std::string sql_cmd(sql_cmd_line);
-    sql::Statement sql_stmt(db.GetUniqueStatement(sql_cmd_line.c_str()));
-    EXPECT_TRUE(sql_stmt.Run());
-    transaction.Commit();
-
-    // Add visits.
-    for (int j = 0; j < cur.visit_count; ++j) {
-      // Assume earlier visits are at one-day intervals.
-      visit_time -= TimeDelta::FromDays(1);
-      transaction.Begin();
-      // Mark the most recent |cur.typed_count| visits as typed.
-      std::string sql_cmd_line = base::StringPrintf(
-          "INSERT INTO \"visits\" VALUES(%" PRIuS ", %" PRIuS ", %" PRId64
-          ", 0, %d, 0, 0, 1)",
-          visit_id++, i + 1, visit_time.ToInternalValue(),
-          (j < cur.typed_count) ? content::PAGE_TRANSITION_TYPED :
-                                  content::PAGE_TRANSITION_LINK);
-
-      std::string sql_cmd(sql_cmd_line);
-      sql::Statement sql_stmt(db.GetUniqueStatement(sql_cmd_line.c_str()));
-      EXPECT_TRUE(sql_stmt.Run());
-      transaction.Commit();
-    }
+    history::URLRow url_info(current_url);
+    url_info.set_id(i + 5000);
+    url_info.set_title(UTF8ToUTF16(cur.title));
+    url_info.set_visit_count(cur.visit_count);
+    url_info.set_typed_count(cur.typed_count);
+    url_info.set_last_visit(visit_time);
+    url_info.set_hidden(false);
+    UpdateURL(url_info);
   }
 }
 
@@ -343,8 +327,17 @@ TEST_F(HistoryQuickProviderTest, MultiMatch) {
 TEST_F(HistoryQuickProviderTest, StartRelativeMatch) {
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://xyzabcdefghijklmnopqrstuvw.com/a");
-  RunTest(ASCIIToUTF16("xyza"), expected_urls, true,
+  RunTest(ASCIIToUTF16("xyz"), expected_urls, true,
           ASCIIToUTF16("xyzabcdefghijklmnopqrstuvw.com/a"));
+}
+
+TEST_F(HistoryQuickProviderTest, PrefixOnlyMatch) {
+  std::vector<std::string> expected_urls;
+  expected_urls.push_back("http://foo.com/");
+  expected_urls.push_back("http://popularsitewithroot.com/");
+  expected_urls.push_back("http://slashdot.org/favorite_page.html");
+  RunTest(ASCIIToUTF16("http://"), expected_urls, true,
+          ASCIIToUTF16("http://foo.com"));
 }
 
 TEST_F(HistoryQuickProviderTest, EncodingMatch) {
@@ -502,14 +495,15 @@ TEST_F(HistoryQuickProviderTest, PreventBeatingURLWhatYouTypedMatch) {
   RunTest(ASCIIToUTF16("popularsitewithpathonly.com"), expected_urls, true,
           ASCIIToUTF16("popularsitewithpathonly.com/moo"));
   EXPECT_LT(ac_matches_[0].relevance,
-            HistoryURLProvider::kScoreForUnvisitedIntranetResult);
+            HistoryURLProvider::kScoreForWhatYouTypedResult);
 
   // Verify the same thing happens if the user adds a / to end of the
   // hostname.
   RunTest(ASCIIToUTF16("popularsitewithpathonly.com/"), expected_urls, true,
           ASCIIToUTF16("popularsitewithpathonly.com/moo"));
   EXPECT_LT(ac_matches_[0].relevance,
-            HistoryURLProvider::kScoreForUnvisitedIntranetResult);
+            HistoryURLProvider::kScoreForWhatYouTypedResult);
+
 
   // Check that if the user didn't quite enter the full hostname, this
   // page would've normally scored above the URL-what-you-typed match.
@@ -582,7 +576,7 @@ TestURLInfo ordering_test_db[] = {
       2},
   {"http://store.steampowered.com/", "the steam summer camp sale", 6, 6, 1},
   {"http://www.teamliquid.net/tlpd/korean/players", "tlpd - bw korean - player "
-      "index", 25, 7, 219},
+      "index", 100, 45, 219},
   {"http://slashdot.org/", "slashdot: news for nerds, stuff that matters", 3, 3,
       6},
   {"http://translate.google.com/", "google translate", 3, 3, 0},

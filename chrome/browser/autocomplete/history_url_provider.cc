@@ -323,7 +323,8 @@ HistoryURLProvider::HistoryURLProvider(AutocompleteProviderListener* listener,
           !OmniboxFieldTrial::InHUPCreateShorterMatchFieldTrial() ||
           !OmniboxFieldTrial::
               InHUPCreateShorterMatchFieldTrialExperimentGroup()),
-      search_url_database_(true) {
+      search_url_database_(
+          !OmniboxFieldTrial::InHQPReplaceHUPScoringExperimentGroup()) {
 }
 
 // static

@@ -55,6 +55,24 @@ class OmniboxFieldTrial {
       std::vector<uint32>* field_trial_hash);
 
   // ---------------------------------------------------------
+  // For the HistoryQuick provider field trial that combines replacing
+  // the HistoryURL provider and turning on "new scoring" in HistoryQuick
+  // provider.
+
+  // Returns whether the user should get "new scoring" in HistoryQuick
+  // provider or the default scoring.  "New scoring" is based on the
+  // frequency of recent visits to the URL, a.k.a. "frecency"
+  // scoring).
+  static bool InHQPNewScoringExperimentGroup();
+
+  // Returns whether the user experiment the replace HUP behavior or
+  // the default behavior.  The experiment group simultaneously
+  // disables HistoryURL provider from searching the URL database and
+  // directs HistoryQuick provider to calculate both HUP-style and
+  // HQP-style scores for matches, then return whichever is larger.
+  static bool InHQPReplaceHUPScoringExperimentGroup();
+
+  // ---------------------------------------------------------
   // For the HistoryURL provider disable culling redirects field trial.
 
   // Returns whether the user is in any group for this field trial.
