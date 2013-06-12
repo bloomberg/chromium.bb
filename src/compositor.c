@@ -728,6 +728,8 @@ weston_surface_update_transform(struct weston_surface *surface)
 	weston_surface_damage_below(surface);
 
 	weston_surface_assign_output(surface);
+
+	wl_signal_emit(&surface->compositor->transform_signal, surface);
 }
 
 WL_EXPORT void
@@ -2778,6 +2780,7 @@ weston_compositor_init(struct weston_compositor *ec,
 	ec->wl_display = display;
 	wl_signal_init(&ec->destroy_signal);
 	wl_signal_init(&ec->activate_signal);
+	wl_signal_init(&ec->transform_signal);
 	wl_signal_init(&ec->kill_signal);
 	wl_signal_init(&ec->idle_signal);
 	wl_signal_init(&ec->wake_signal);

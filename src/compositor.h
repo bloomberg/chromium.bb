@@ -94,6 +94,8 @@ struct weston_shell_interface {
 			       uint32_t method,
 			       uint32_t framerate,
 			       struct weston_output *output);
+	void (*set_xwayland)(struct shell_surface *shsurf,
+			       int x, int y, uint32_t flags);
 	int (*move)(struct shell_surface *shsurf, struct weston_seat *ws);
 	int (*resize)(struct shell_surface *shsurf,
 		      struct weston_seat *ws, uint32_t edges);
@@ -502,7 +504,10 @@ struct weston_compositor {
 	struct weston_shell_interface shell_interface;
 	struct weston_config *config;
 
+	/* surface signals */
 	struct wl_signal activate_signal;
+	struct wl_signal transform_signal;
+
 	struct wl_signal kill_signal;
 	struct wl_signal idle_signal;
 	struct wl_signal wake_signal;

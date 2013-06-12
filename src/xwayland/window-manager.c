@@ -593,10 +593,47 @@ weston_wm_window_activate(struct wl_listener *listener, void *data)
 	if (wm->focus_window)
 		weston_wm_window_schedule_repaint(wm->focus_window);
 	wm->focus_window = window;
-	if (window)
-		wm->focus_latest = window;
 	if (wm->focus_window)
 		weston_wm_window_schedule_repaint(wm->focus_window);
+}
+
+static void
+weston_wm_window_transform(struct wl_listener *listener, void *data)
+{
+	struct weston_surface *surface = data;
+	struct weston_wm_window *window = get_wm_window(surface);
+	struct weston_wm *wm =
+		container_of(listener, struct weston_wm, transform_listener);
+	struct weston_output *output = surface->output;
+	uint32_t mask, values[2];
+	float sxf, syf;
+	int sx, sy;
+	static int old_sx = -1, old_sy = -1;
+
+	if (!window || !wm)
+		return;
+
+	if (!weston_surface_is_mapped(surface))
+		return;
+
+	weston_surface_to_global_float(surface, output->x, output->y,
+				       &sxf, &syf);
+
+	sx = (int) sxf;
+	sy = (int) syf;
+
+	if (old_sx == sx && old_sy == sy)
+		return;
+
+	values[0] = sx;
+	values[1] = sy;
+	mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y;
+
+	xcb_configure_window(wm->conn, window->frame_id, mask, values);
+	xcb_flush(wm->conn);
+
+	old_sx = sx;
+	old_sy = sy;
 }
 
 static int
@@ -1684,6 +1721,9 @@ weston_wm_create(struct weston_xserver *wxs)
 	wm->activate_listener.notify = weston_wm_window_activate;
 	wl_signal_add(&wxs->compositor->activate_signal,
 		      &wm->activate_listener);
+	wm->transform_listener.notify = weston_wm_window_transform;
+	wl_signal_add(&wxs->compositor->transform_signal,
+		      &wm->transform_listener);
 	wm->kill_listener.notify = weston_wm_kill_client;
 	wl_signal_add(&wxs->compositor->kill_signal,
 		      &wm->kill_listener);
@@ -1807,9 +1847,7 @@ xserver_map_shell_surface(struct weston_wm *wm,
 {
 	struct weston_shell_interface *shell_interface =
 		&wm->server->compositor->shell_interface;
-	struct weston_wm_window *parent;
 	struct theme *t = window->wm->theme;
-	int parent_id, x = 0, y = 0;
 
 	if (!shell_interface->create_shell_surface)
 		return;
@@ -1827,31 +1865,14 @@ xserver_map_shell_surface(struct weston_wm *wm,
 						0, NULL);
 		return;
 	} else if (!window->override_redirect) {
-		/* ICCCM 4.1.1 */
 		shell_interface->set_toplevel(window->shsurf);
 		return;
+	} else {
+		shell_interface->set_xwayland(window->shsurf,
+					      window->x + t->margin,
+					      window->y + t->margin,
+					      WL_SHELL_SURFACE_TRANSIENT_INACTIVE);
 	}
-
-	/* not all non-toplevel has transient_for set. So we need this
-	 * workaround to guess a parent that will determine the relative
-	 * position of the transient surface */
-	if (!window->transient_for)
-		parent_id = wm->focus_latest->id;
-	else
-		parent_id = window->transient_for->id;
-
-	parent = hash_table_lookup(wm->window_hash, parent_id);
-
-	/* non-decorated and non-toplevel windows, e.g. sub-menus */
-	if (!parent->decorate && parent->override_redirect) {
-		x = parent->x + t->margin;
-		y = parent->y + t->margin;
-	}
-
-	shell_interface->set_transient(window->shsurf, parent->surface,
-				       window->x + t->margin - x,
-				       window->y + t->margin - y,
-				       WL_SHELL_SURFACE_TRANSIENT_INACTIVE);
 }
 
 static void

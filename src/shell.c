@@ -171,7 +171,8 @@ enum shell_surface_type {
 	SHELL_SURFACE_TRANSIENT,
 	SHELL_SURFACE_FULLSCREEN,
 	SHELL_SURFACE_MAXIMIZED,
-	SHELL_SURFACE_POPUP
+	SHELL_SURFACE_POPUP,
+	SHELL_SURFACE_XWAYLAND
 };
 
 struct ping_timer {
@@ -1581,6 +1582,7 @@ reset_shell_surface_type(struct shell_surface *surface)
 	case SHELL_SURFACE_TOPLEVEL:
 	case SHELL_SURFACE_TRANSIENT:
 	case SHELL_SURFACE_POPUP:
+	case SHELL_SURFACE_XWAYLAND:
 		break;
 	}
 
@@ -1620,6 +1622,11 @@ set_surface_type(struct shell_surface *shsurf)
 			weston_surface_geometry_dirty(shsurf->surface);
 			shsurf->saved_rotation_valid = true;
 		}
+		break;
+
+	case SHELL_SURFACE_XWAYLAND:
+		weston_surface_set_position(surface, shsurf->transient.x,
+					    shsurf->transient.y);
 		break;
 
 	default:
@@ -1923,6 +1930,16 @@ shell_surface_set_fullscreen(struct wl_client *client,
 		output = NULL;
 
 	set_fullscreen(shsurf, method, framerate, output);
+}
+
+static void
+set_xwayland(struct shell_surface *shsurf, int x, int y, uint32_t flags)
+{
+	/* XXX: using the same fields for transient type */
+	shsurf->transient.x = x;
+	shsurf->transient.y = y;
+	shsurf->transient.flags = flags;
+	shsurf->next_type = SHELL_SURFACE_XWAYLAND;
 }
 
 static const struct weston_pointer_grab_interface popup_grab_interface;
@@ -3398,6 +3415,7 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 	case SHELL_SURFACE_FULLSCREEN:
 	case SHELL_SURFACE_NONE:
 		break;
+	case SHELL_SURFACE_XWAYLAND:
 	default:
 		ws = get_current_workspace(shell);
 		wl_list_insert(&ws->layer.surface_list, &surface->layer_link);
@@ -3411,6 +3429,8 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 	}
 
 	switch (surface_type) {
+	/* XXX: xwayland's using the same fields for transient type */
+	case SHELL_SURFACE_XWAYLAND:
 	case SHELL_SURFACE_TRANSIENT:
 		if (shsurf->transient.flags ==
 				WL_SHELL_SURFACE_TRANSIENT_INACTIVE)
@@ -3489,6 +3509,7 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32
 {
 	struct shell_surface *shsurf = get_shell_surface(es);
 	struct desktop_shell *shell = shsurf->shell;
+	struct weston_compositor *compositor = shsurf->surface->compositor;
 
 	int type_changed = 0;
 
@@ -4433,6 +4454,7 @@ module_init(struct weston_compositor *ec,
 	ec->shell_interface.set_toplevel = set_toplevel;
 	ec->shell_interface.set_transient = set_transient;
 	ec->shell_interface.set_fullscreen = set_fullscreen;
+	ec->shell_interface.set_xwayland = set_xwayland;
 	ec->shell_interface.move = surface_move;
 	ec->shell_interface.resize = surface_resize;
 
