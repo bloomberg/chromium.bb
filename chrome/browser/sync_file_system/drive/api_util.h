@@ -51,7 +51,6 @@ class APIUtil : public drive::APIUtilInterface,
 
   static scoped_ptr<APIUtil> CreateForTesting(
       Profile* profile,
-      const GURL& base_url,
       scoped_ptr<google_apis::DriveServiceInterface> drive_service,
       scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader);
 

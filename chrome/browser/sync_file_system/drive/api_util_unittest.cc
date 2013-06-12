@@ -5,32 +5,30 @@
 #include "chrome/browser/sync_file_system/drive/api_util.h"
 
 #include "base/json/json_reader.h"
+#include "base/location.h"
 #include "base/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
+#include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
-#include "chrome/browser/google_apis/mock_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "net/base/escape.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 
-using ::testing::Return;
-using ::testing::StrictMock;
-using ::testing::_;
-
+using google_apis::FakeDriveService;
 using google_apis::ResourceEntry;
 using google_apis::ResourceList;
 using google_apis::DriveServiceInterface;
 using google_apis::DriveUploaderInterface;
 using google_apis::GDataErrorCode;
 using google_apis::Link;
-using google_apis::MockDriveService;
 using google_apis::test_util::LoadJSONFile;
 
 namespace sync_file_system {
@@ -38,11 +36,86 @@ namespace drive {
 
 namespace {
 
+const char kOrigin[] = "chrome-extension://example";
+const char kOriginDirectoryName[] = "example";
+const char kOriginDirectoryResourceId[] = "folder:origin_directory_resource_id";
+const char kSyncRootResourceId[] = "folder:sync_root_resource_id";
+
+void EmptyResourceEntryCallback(GDataErrorCode error,
+                                scoped_ptr<ResourceEntry> entry) {}
+
+void VerifyTitleUniqueness(const tracked_objects::Location& from_here,
+                           const std::string& resource_id,
+                           google_apis::DriveEntryKind kind,
+                           GDataErrorCode error,
+                           scoped_ptr<ResourceList> resource_list) {
+  std::string location(" failed at " + from_here.ToString());
+  ASSERT_FALSE(resource_id.empty()) << location;
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error) << location;
+  ASSERT_TRUE(resource_list) << location;
+
+  const ScopedVector<ResourceEntry>& entries = resource_list->entries();
+  ASSERT_EQ(1u, entries.size());
+  EXPECT_EQ(resource_id, entries[0]->resource_id());
+  switch (kind) {
+    case google_apis::ENTRY_KIND_FOLDER:
+      EXPECT_TRUE(entries[0]->is_folder()) << location;
+      return;
+    case google_apis::ENTRY_KIND_FILE:
+      EXPECT_TRUE(entries[0]->is_file()) << location;
+      return;
+    default:
+      NOTREACHED() << "Unexpected DriveEntryKind: " << kind << location;
+      return;
+  }
+}
+
+void VerifyFileDeletion(const tracked_objects::Location& from_here,
+                        GDataErrorCode error,
+                        scoped_ptr<ResourceList> resource_list) {
+  std::string location(" failed at " + from_here.ToString());
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error) << location;
+  ASSERT_TRUE(resource_list) << location;
+  EXPECT_TRUE(resource_list->entries().empty()) << location;
+}
+
+class FakeDriveServiceWrapper : public FakeDriveService {
+ public:
+  FakeDriveServiceWrapper() : make_directory_conflict_(false) {};
+  virtual ~FakeDriveServiceWrapper() {};
+
+  // DriveServiceInterface overrides.
+  virtual void AddNewDirectory(
+      const std::string& parent_resource_id,
+      const std::string& directory_name,
+      const google_apis::GetResourceEntryCallback& callback) OVERRIDE {
+    if (make_directory_conflict_) {
+      FakeDriveService::AddNewDirectory(
+          parent_resource_id,
+          directory_name,
+          base::Bind(&EmptyResourceEntryCallback));
+    }
+    FakeDriveService::AddNewDirectory(
+        parent_resource_id, directory_name, callback);
+  }
+
+  void set_make_directory_conflict(bool enable) {
+    make_directory_conflict_ = enable;
+  }
+
+ private:
+  bool make_directory_conflict_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeDriveServiceWrapper);
+};
+
 // A fake implementation of DriveUploaderInterface, which provides fake
 // behaviors for file uploading.
-class FakeDriveUploader : public google_apis::DriveUploaderInterface {
+class FakeDriveUploader : public DriveUploaderInterface {
  public:
-  FakeDriveUploader() {}
+  explicit FakeDriveUploader(FakeDriveServiceWrapper* fake_drive_service)
+      : fake_drive_service_(fake_drive_service),
+        make_file_conflict_(false) {}
   virtual ~FakeDriveUploader() {}
 
   // DriveUploaderInterface overrides.
@@ -60,9 +133,17 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
     DCHECK(!callback.is_null());
 
     scoped_ptr<base::Value> file_entry_data(
-        LoadJSONFile("chromeos/gdata/file_entry.json").Pass());
+        LoadJSONFile("chromeos/gdata/file_entry.json"));
     scoped_ptr<ResourceEntry> file_entry(
         ResourceEntry::ExtractAndParse(*file_entry_data));
+
+    if (make_file_conflict_) {
+      fake_drive_service_->LoadResourceListForWapi(
+          "chromeos/sync_file_system/conflict_with_file.json");
+    } else {
+      fake_drive_service_->LoadResourceListForWapi(
+          "chromeos/sync_file_system/upload_new_file.json");
+    }
 
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
@@ -86,7 +167,7 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
     DCHECK(!callback.is_null());
 
     scoped_ptr<base::Value> file_entry_data(
-        LoadJSONFile("chromeos/gdata/file_entry.json").Pass());
+        LoadJSONFile("chromeos/gdata/file_entry.json"));
     scoped_ptr<ResourceEntry> file_entry(
         ResourceEntry::ExtractAndParse(*file_entry_data));
 
@@ -109,100 +190,66 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
       const google_apis::ProgressCallback& progress_callback) OVERRIDE {
     NOTREACHED();
   }
+
+  void set_make_file_conflict(bool enable) {
+    make_file_conflict_ = enable;
+  }
+
+ private:
+  FakeDriveServiceWrapper* fake_drive_service_;
+  bool make_file_conflict_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeDriveUploader);
 };
 
 }  // namespace
 
 class APIUtilTest : public testing::Test {
  public:
-  APIUtilTest() : mock_drive_service_(NULL), fake_drive_uploader_(NULL) {}
+  APIUtilTest() : ui_thread_(content::BrowserThread::UI, &message_loop_),
+                  fake_drive_service_(NULL),
+                  fake_drive_uploader_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
-    mock_drive_service_ = new StrictMock<MockDriveService>;
-    fake_drive_uploader_ = new FakeDriveUploader;
-
-    EXPECT_CALL(*mock_drive_service_, Initialize(&profile_)).Times(1);
-    EXPECT_CALL(*mock_drive_service_, AddObserver(_));
+    fake_drive_service_ = new FakeDriveServiceWrapper;
+    fake_drive_uploader_ = new FakeDriveUploader(fake_drive_service_);
 
     api_util_ = APIUtil::CreateForTesting(
         &profile_,
-        GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
-        scoped_ptr<DriveServiceInterface>(mock_drive_service_),
-        scoped_ptr<DriveUploaderInterface>(fake_drive_uploader_)).Pass();
+        scoped_ptr<DriveServiceInterface>(fake_drive_service_),
+        scoped_ptr<DriveUploaderInterface>(fake_drive_uploader_));
   }
 
   virtual void TearDown() OVERRIDE {
-    EXPECT_CALL(*mock_drive_service_, RemoveObserver(_));
-    EXPECT_CALL(*mock_drive_service(), CancelAll());
     api_util_.reset();
   }
 
  protected:
+  std::string GetRootResourceId() { return api_util_->GetRootResourceId(); }
+
   APIUtil* api_util() { return api_util_.get(); }
 
-  StrictMock<MockDriveService>* mock_drive_service() {
-    return mock_drive_service_;
+  FakeDriveServiceWrapper* fake_drive_service() {
+    return fake_drive_service_;
+  }
+
+  FakeDriveUploader* fake_drive_uploader() {
+    return fake_drive_uploader_;
   }
 
   base::MessageLoop* message_loop() { return &message_loop_; }
 
  private:
   base::MessageLoop message_loop_;
+  content::TestBrowserThread ui_thread_;
 
   TestingProfile profile_;
   scoped_ptr<APIUtil> api_util_;
-  StrictMock<MockDriveService>* mock_drive_service_;
+  FakeDriveServiceWrapper* fake_drive_service_;
   FakeDriveUploader* fake_drive_uploader_;
 
   DISALLOW_COPY_AND_ASSIGN(APIUtilTest);
 };
-
-// Invokes |arg0| as a GetAboutResourceCallback.
-ACTION_P2(InvokeGetAboutResourceCallback0, error, result) {
-  scoped_ptr<google_apis::AboutResource> about_resource(result.Pass());
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(arg0, error, base::Passed(&about_resource)));
-}
-
-// Invokes |arg1| as a GetResourceEntryCallback.
-ACTION_P2(InvokeGetResourceEntryCallback1, error, result) {
-  scoped_ptr<google_apis::ResourceEntry> entry(result.Pass());
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(arg1, error, base::Passed(&entry)));
-}
-
-// Invokes |arg2| as a GetResourceEntryCallback.
-ACTION_P2(InvokeGetResourceEntryCallback2, error, result) {
-  scoped_ptr<google_apis::ResourceEntry> entry(result.Pass());
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(arg2, error, base::Passed(&entry)));
-}
-
-// Invokes |arg1| as a GetResourceListCallback.
-ACTION_P2(InvokeGetResourceListCallback1, error, result) {
-  scoped_ptr<google_apis::ResourceList> resource_list(result.Pass());
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(arg1, error, base::Passed(&resource_list)));
-}
-
-// Invokes |arg2| as a GetResourceListCallback.
-ACTION_P2(InvokeGetResourceListCallback2, error, result) {
-  scoped_ptr<google_apis::ResourceList> resource_list(result.Pass());
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(arg2, error, base::Passed(&resource_list)));
-}
-
-// Invokes |arg3| as a DownloadActionCallback.
-ACTION_P2(InvokeDownloadActionCallback3, error, downloaded_file_path) {
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(arg3, error, downloaded_file_path));
-}
-
-// Invokes |arg2| as a EntryActionCallback.
-ACTION_P(InvokeEntryActionCallback2, error) {
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-                                              base::Bind(arg2, error));
-}
 
 void DidGetResourceID(bool* done_out,
                       GDataErrorCode* error_out,
@@ -273,27 +320,8 @@ void DidDeleteFile(bool* done_out,
 }
 
 TEST_F(APIUtilTest, GetSyncRoot) {
-  const std::string kRootResourceId = "folder:root";
-  const std::string kSyncRootResourceId = "folder:sync_root_resource_id";
-  scoped_ptr<base::Value> found_result_value(
-      LoadJSONFile("chromeos/sync_file_system/sync_root_found.json").Pass());
-  scoped_ptr<google_apis::ResourceList> found_result =
-      google_apis::ResourceList::ExtractAndParse(*found_result_value);
-
-  // Expect to call Search from GetDriveDirectoryForSyncRoot.
-  EXPECT_CALL(
-      *mock_drive_service(),
-      SearchByTitle(APIUtil::GetSyncRootDirectoryName(), std::string(), _))
-      .WillOnce(InvokeGetResourceListCallback2(google_apis::HTTP_SUCCESS,
-                                               base::Passed(&found_result)));
-
-  // Expect to call GetRootResourceId and RemoveResourceFromDirectory from
-  // EnsureSyncRootIsNotInMyDrive.
-  EXPECT_CALL(*mock_drive_service(), GetRootResourceId())
-      .WillRepeatedly(Return(kRootResourceId));
-  EXPECT_CALL(
-      *mock_drive_service(),
-      RemoveResourceFromDirectory(kRootResourceId, kSyncRootResourceId, _));
+  fake_drive_service()->LoadResourceListForWapi(
+      "chromeos/sync_file_system/sync_root_found.json");
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -308,49 +336,8 @@ TEST_F(APIUtilTest, GetSyncRoot) {
 }
 
 TEST_F(APIUtilTest, CreateSyncRoot) {
-  const std::string kRootResourceId = "folder:root";
-  const std::string kSyncRootResourceId = "folder:sync_root_resource_id";
-  scoped_ptr<base::Value> not_found_result_value =
-      LoadJSONFile("chromeos/sync_file_system/sync_root_not_found.json").Pass();
-  scoped_ptr<google_apis::ResourceList> not_found_result =
-      google_apis::ResourceList::ExtractAndParse(*not_found_result_value);
-  scoped_ptr<base::Value> found_result_value =
-      LoadJSONFile("chromeos/sync_file_system/sync_root_found.json").Pass();
-  scoped_ptr<google_apis::ResourceList> found_result =
-      google_apis::ResourceList::ExtractAndParse(*found_result_value);
-
-  scoped_ptr<base::Value> created_result_value =
-      LoadJSONFile("chromeos/sync_file_system/sync_root_created.json").Pass();
-  scoped_ptr<google_apis::ResourceEntry> created_result =
-      google_apis::ResourceEntry::ExtractAndParse(*created_result_value);
-
-  // Expect to call Search from GetDriveDirectoryForSyncRoot and
-  // EnsureTitleUniqueness
-  EXPECT_CALL(
-      *mock_drive_service(),
-      SearchByTitle(APIUtil::GetSyncRootDirectoryName(), std::string(), _))
-      .WillOnce(InvokeGetResourceListCallback2(google_apis::HTTP_SUCCESS,
-                                               base::Passed(&not_found_result)))
-      .WillOnce(InvokeGetResourceListCallback2(google_apis::HTTP_SUCCESS,
-                                               base::Passed(&found_result)));
-
-  // Expect to call GetRootResourceId from GetDriveDirectoryForSyncRoot for the
-  // first, and from EnsureSyncRootIsNotInMyDrive for the second.
-  EXPECT_CALL(*mock_drive_service(), GetRootResourceId())
-      .WillRepeatedly(Return(kRootResourceId));
-
-  // Expect to call AddNewDirectory from GetDriveDirectoryForSyncRoot.
-  EXPECT_CALL(
-      *mock_drive_service(),
-      AddNewDirectory(kRootResourceId, APIUtil::GetSyncRootDirectoryName(), _))
-      .WillOnce(InvokeGetResourceEntryCallback2(google_apis::HTTP_CREATED,
-                                                base::Passed(&created_result)));
-
-  // Expect to call RemoveResourceFromDirectory from
-  // EnsureSyncRootIsNotInMyDrive.
-  EXPECT_CALL(
-      *mock_drive_service(),
-      RemoveResourceFromDirectory(kRootResourceId, kSyncRootResourceId, _));
+  fake_drive_service()->LoadResourceListForWapi(
+      "chromeos/sync_file_system/sync_root_not_found.json");
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -361,59 +348,22 @@ TEST_F(APIUtilTest, CreateSyncRoot) {
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_CREATED, error);
-  EXPECT_EQ(kSyncRootResourceId, resource_id);
+  EXPECT_FALSE(resource_id.empty());
+
+  fake_drive_service()->SearchByTitle(
+      APIUtil::GetSyncRootDirectoryName(),
+      std::string(),  // directory_resource_id
+      base::Bind(&VerifyTitleUniqueness,
+                 FROM_HERE,
+                 resource_id,
+                 google_apis::ENTRY_KIND_FOLDER));
+  message_loop()->RunUntilIdle();
 }
 
 TEST_F(APIUtilTest, CreateSyncRoot_Conflict) {
-  const std::string kRootResourceId = "folder:root";
-  const std::string kSyncRootResourceId = "folder:sync_root_resource_id";
-  scoped_ptr<base::Value> not_found_result_value =
-      LoadJSONFile("chromeos/sync_file_system/sync_root_not_found.json").Pass();
-  scoped_ptr<google_apis::ResourceList> not_found_result =
-      google_apis::ResourceList::ExtractAndParse(*not_found_result_value);
-  scoped_ptr<base::Value> duplicated_result_value = LoadJSONFile(
-      "chromeos/sync_file_system/sync_root_duplicated.json").Pass();
-  scoped_ptr<google_apis::ResourceList> duplicated_result =
-      google_apis::ResourceList::ExtractAndParse(*duplicated_result_value);
-
-  scoped_ptr<base::Value> created_result_value =
-      LoadJSONFile("chromeos/sync_file_system/sync_root_created.json").Pass();
-  scoped_ptr<google_apis::ResourceEntry> created_result =
-      google_apis::ResourceEntry::ExtractAndParse(*created_result_value);
-
-  // Expect to call Search from GetDriveDirectoryForSyncRoot and
-  // EnsureTitleUniqueness.
-  EXPECT_CALL(
-      *mock_drive_service(),
-      SearchByTitle(APIUtil::GetSyncRootDirectoryName(), std::string(), _))
-      .WillOnce(InvokeGetResourceListCallback2(google_apis::HTTP_SUCCESS,
-                                               base::Passed(&not_found_result)))
-      .WillOnce(InvokeGetResourceListCallback2(
-           google_apis::HTTP_SUCCESS, base::Passed(&duplicated_result)));
-
-  // Expect to call GetRootResourceId from GetDriveDirectoryForSyncRoot for the
-  // first, and from EnsureSyncRootIsNotInMyDrive for the second.
-  EXPECT_CALL(*mock_drive_service(), GetRootResourceId())
-      .WillRepeatedly(Return(kRootResourceId));
-
-  // Expect to call AddNewDirectory from GetDriveDirectoryForSyncRoot.
-  EXPECT_CALL(
-      *mock_drive_service(),
-      AddNewDirectory(kRootResourceId, APIUtil::GetSyncRootDirectoryName(), _))
-      .WillOnce(InvokeGetResourceEntryCallback2(google_apis::HTTP_CREATED,
-                                                base::Passed(&created_result)));
-
-  // Expect to call DeleteResource from DeleteEntries through
-  // EnsureTitleUniqueness.
-  EXPECT_CALL(*mock_drive_service(),
-              DeleteResource("folder:sync_root_resource_id_duplicated", _, _))
-      .WillOnce(InvokeEntryActionCallback2(google_apis::HTTP_SUCCESS));
-
-  // Expect to call RemoveResourceFromDirectory from
-  // EnsureSyncRootIsNotInMyDrive.
-  EXPECT_CALL(
-      *mock_drive_service(),
-      RemoveResourceFromDirectory(kRootResourceId, kSyncRootResourceId, _));
+  fake_drive_service()->LoadResourceListForWapi(
+      "chromeos/sync_file_system/sync_root_not_found.json");
+  fake_drive_service()->set_make_directory_conflict(true);
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -424,34 +374,29 @@ TEST_F(APIUtilTest, CreateSyncRoot_Conflict) {
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
-  EXPECT_EQ("folder:sync_root_resource_id", resource_id);
+  EXPECT_FALSE(resource_id.empty());
+
+  // Verify that there is no duplicated directory on the remote side.
+  fake_drive_service()->SearchByTitle(
+      APIUtil::GetSyncRootDirectoryName(),
+      std::string(),  // directory_resource_id
+      base::Bind(&VerifyTitleUniqueness,
+                 FROM_HERE,
+                 resource_id,
+                 google_apis::ENTRY_KIND_FOLDER));
+  message_loop()->RunUntilIdle();
 }
 
 TEST_F(APIUtilTest, GetOriginDirectory) {
-  const std::string kParentResourceId("folder:sync_root_resource_id");
-  const std::string kOriginDirectoryResourceId(
-      "folder:origin_directory_resource_id");
-  const GURL kOrigin("chrome-extension://example");
-
-  scoped_ptr<base::Value> found_result_value(LoadJSONFile(
-      "chromeos/sync_file_system/origin_directory_found.json").Pass());
-  scoped_ptr<google_apis::ResourceList> found_result =
-      google_apis::ResourceList::ExtractAndParse(*found_result_value);
-
-  // Expect to call SearchInDirectory from GetDriveDirectoryForOrigin.
-  EXPECT_CALL(
-      *mock_drive_service(),
-      SearchByTitle(
-          APIUtil::OriginToDirectoryTitle(kOrigin), kParentResourceId, _))
-      .WillOnce(InvokeGetResourceListCallback2(google_apis::HTTP_SUCCESS,
-                                               base::Passed(&found_result)));
+  fake_drive_service()->LoadResourceListForWapi(
+      "chromeos/sync_file_system/origin_directory_found.json");
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   std::string resource_id;
   api_util()->GetDriveDirectoryForOrigin(
-      kParentResourceId,
-      kOrigin,
+      kSyncRootResourceId,
+      GURL(kOrigin),
       base::Bind(&DidGetResourceID, &done, &error, &resource_id));
   message_loop()->RunUntilIdle();
 
@@ -461,131 +406,64 @@ TEST_F(APIUtilTest, GetOriginDirectory) {
 }
 
 TEST_F(APIUtilTest, CreateOriginDirectory) {
-  const std::string kParentResourceId("folder:sync_root_resource_id");
-  const GURL kOrigin("chrome-extension://example");
-
-  scoped_ptr<base::Value> not_found_result_value(LoadJSONFile(
-      "chromeos/sync_file_system/origin_directory_not_found.json").Pass());
-  scoped_ptr<google_apis::ResourceList> not_found_result =
-      google_apis::ResourceList::ExtractAndParse(*not_found_result_value);
-  scoped_ptr<base::Value> found_result_value(LoadJSONFile(
-      "chromeos/sync_file_system/origin_directory_found.json").Pass());
-  scoped_ptr<google_apis::ResourceList> found_result =
-      google_apis::ResourceList::ExtractAndParse(*found_result_value);
-
-  scoped_ptr<base::Value> got_parent_result_value(LoadJSONFile(
-      "chromeos/sync_file_system/origin_directory_get_parent.json").Pass());
-  scoped_ptr<google_apis::ResourceEntry> got_parent_result =
-      google_apis::ResourceEntry::ExtractAndParse(*got_parent_result_value);
-  scoped_ptr<base::Value> created_result_value(LoadJSONFile(
-      "chromeos/sync_file_system/origin_directory_created.json").Pass());
-  scoped_ptr<google_apis::ResourceEntry> created_result =
-      google_apis::ResourceEntry::ExtractAndParse(*created_result_value);
-
-  // Expect to call SearchInDirectory from GetDriveDirectoryForOrigin.
-  EXPECT_CALL(*mock_drive_service(),
-              SearchByTitle(APIUtil::OriginToDirectoryTitle(kOrigin),
-                            kParentResourceId,  // directory_resource_id
-                            _))
-      .WillOnce(InvokeGetResourceListCallback2(google_apis::HTTP_SUCCESS,
-                                               base::Passed(&not_found_result)))
-      .WillOnce(InvokeGetResourceListCallback2(google_apis::HTTP_SUCCESS,
-                                               base::Passed(&found_result)));
-
-  std::string dir_title(APIUtil::OriginToDirectoryTitle(kOrigin));
-  // Expect to call AddNewDirectory from GetDriveDirectoryForOrigin.
-  EXPECT_CALL(*mock_drive_service(),
-              AddNewDirectory(kParentResourceId, dir_title, _))
-      .WillOnce(InvokeGetResourceEntryCallback2(google_apis::HTTP_CREATED,
-                                                base::Passed(&created_result)));
+  fake_drive_service()->LoadResourceListForWapi(
+      "chromeos/sync_file_system/sync_root_found.json");
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   std::string resource_id;
   api_util()->GetDriveDirectoryForOrigin(
-      kParentResourceId,
-      kOrigin,
+      kSyncRootResourceId,
+      GURL(kOrigin),
       base::Bind(&DidGetResourceID, &done, &error, &resource_id));
   message_loop()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_CREATED, error);
-  EXPECT_EQ("folder:origin_directory_resource_id", resource_id);
+  EXPECT_FALSE(resource_id.empty());
+
+  fake_drive_service()->SearchByTitle(
+      kOriginDirectoryName,
+      kSyncRootResourceId,
+      base::Bind(&VerifyTitleUniqueness,
+                 FROM_HERE,
+                 resource_id,
+                 google_apis::ENTRY_KIND_FOLDER));
+  message_loop()->RunUntilIdle();
 }
 
 TEST_F(APIUtilTest, CreateOriginDirectory_Conflict) {
-  const std::string kParentResourceId("folder:sync_root_resource_id");
-  const GURL kOrigin("chrome-extension://example");
-
-  scoped_ptr<base::Value> not_found_result_value(LoadJSONFile(
-      "chromeos/sync_file_system/origin_directory_not_found.json").Pass());
-  scoped_ptr<google_apis::ResourceList> not_found_result =
-      google_apis::ResourceList::ExtractAndParse(*not_found_result_value);
-  scoped_ptr<base::Value> duplicated_result_value(LoadJSONFile(
-      "chromeos/sync_file_system/origin_directory_duplicated.json").Pass());
-  scoped_ptr<google_apis::ResourceList> duplicated_result =
-      google_apis::ResourceList::ExtractAndParse(*duplicated_result_value);
-
-  scoped_ptr<base::Value> got_parent_result_value(LoadJSONFile(
-      "chromeos/sync_file_system/origin_directory_get_parent.json").Pass());
-  scoped_ptr<google_apis::ResourceEntry> got_parent_result =
-      google_apis::ResourceEntry::ExtractAndParse(*got_parent_result_value);
-  scoped_ptr<base::Value> created_result_value(LoadJSONFile(
-      "chromeos/sync_file_system/origin_directory_created.json").Pass());
-  scoped_ptr<google_apis::ResourceEntry> created_result =
-      google_apis::ResourceEntry::ExtractAndParse(*created_result_value);
-
-  // Expect to call SearchInDirectory from GetDriveDirectoryForOrigin for the
-  // first, and from EnsureTitleUniqueness for the second.
-  EXPECT_CALL(*mock_drive_service(),
-              SearchByTitle(APIUtil::OriginToDirectoryTitle(kOrigin),
-                            kParentResourceId,  // directory_resource_id
-                            _))
-      .WillOnce(InvokeGetResourceListCallback2(google_apis::HTTP_SUCCESS,
-                                               base::Passed(&not_found_result)))
-      .WillOnce(InvokeGetResourceListCallback2(
-           google_apis::HTTP_SUCCESS, base::Passed(&duplicated_result)));
-
-  std::string dir_title(APIUtil::OriginToDirectoryTitle(kOrigin));
-  // Expect to call AddNewDirectory from GetDriveDirectoryForOrigin.
-  EXPECT_CALL(*mock_drive_service(),
-              AddNewDirectory(kParentResourceId, dir_title, _))
-      .WillOnce(InvokeGetResourceEntryCallback2(google_apis::HTTP_CREATED,
-                                                base::Passed(&created_result)));
-
-  // Expect to call DeleteResource from DeleteEntries through
-  // EnsureTitleUniqueness.
-  EXPECT_CALL(
-      *mock_drive_service(),
-      DeleteResource("folder:origin_directory_resource_id_duplicated", _, _))
-      .WillOnce(InvokeEntryActionCallback2(google_apis::HTTP_SUCCESS));
+  fake_drive_service()->LoadResourceListForWapi(
+      "chromeos/sync_file_system/sync_root_found.json");
+  fake_drive_service()->set_make_directory_conflict(true);
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   std::string resource_id;
   api_util()->GetDriveDirectoryForOrigin(
-      kParentResourceId,
-      kOrigin,
+      kSyncRootResourceId,
+      GURL(kOrigin),
       base::Bind(&DidGetResourceID, &done, &error, &resource_id));
   message_loop()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
-  EXPECT_EQ("folder:origin_directory_resource_id", resource_id);
+  EXPECT_FALSE(resource_id.empty());
+
+  // Verify that there is no duplicated directory on the remote side.
+  fake_drive_service()->SearchByTitle(
+      kOriginDirectoryName,
+      kSyncRootResourceId,
+      base::Bind(&VerifyTitleUniqueness,
+                 FROM_HERE,
+                 resource_id,
+                 google_apis::ENTRY_KIND_FOLDER));
+  message_loop()->RunUntilIdle();
 }
 
 TEST_F(APIUtilTest, GetLargestChangeStamp) {
-  scoped_ptr<base::Value> result(
-      LoadJSONFile("chromeos/sync_file_system/account_metadata.json").Pass());
-  scoped_ptr<google_apis::AboutResource> about_resource(
-      google_apis::AboutResource::CreateFromAccountMetadata(
-          *google_apis::AccountMetadata::CreateFrom(*result), "folder:root"));
-
-  // Expect to call GetAboutResource from GetLargestChangeStamp.
-  EXPECT_CALL(*mock_drive_service(), GetAboutResource(_))
-      .WillOnce(InvokeGetAboutResourceCallback0(google_apis::HTTP_SUCCESS,
-                                                base::Passed(&about_resource)))
-      .RetiresOnSaturation();
+  fake_drive_service()->LoadAccountMetadataForWapi(
+      "chromeos/sync_file_system/account_metadata.json");
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -600,41 +478,16 @@ TEST_F(APIUtilTest, GetLargestChangeStamp) {
 }
 
 TEST_F(APIUtilTest, ListFiles) {
-  const std::string kDirectoryResourceId =
-      "folder:origin_directory_resource_id";
-  const GURL kFeedURL("listing_files_in_directory_first_page.json");
+  fake_drive_service()->LoadResourceListForWapi(
+      "chromeos/sync_file_system/listing_files_in_directory.json");
 
-  scoped_ptr<base::Value> first_result_value(LoadJSONFile(
-      "chromeos/sync_file_system/listing_files_in_directory.json").Pass());
-  scoped_ptr<google_apis::ResourceList> first_result =
-      google_apis::ResourceList::ExtractAndParse(*first_result_value);
-
-  scoped_ptr<base::Value> following_result_value(LoadJSONFile(
-      "chromeos/sync_file_system/listing_files_in_directory_second_page.json")
-                                                     .Pass());
-  scoped_ptr<google_apis::ResourceList> following_result =
-      google_apis::ResourceList::ExtractAndParse(*following_result_value);
-
-  testing::InSequence sequence;
-
-  // Expect to call GetResourceListInDirectory from ListFiles.
-  EXPECT_CALL(*mock_drive_service(),
-              GetResourceListInDirectory(kDirectoryResourceId, _))
-      .WillOnce(InvokeGetResourceListCallback1(google_apis::HTTP_SUCCESS,
-                                               base::Passed(&first_result)))
-      .RetiresOnSaturation();
-
-  // Expect to call ContinueGetResourceList from ContinueListing.
-  EXPECT_CALL(*mock_drive_service(), ContinueGetResourceList(kFeedURL, _))
-      .WillOnce(InvokeGetResourceListCallback1(google_apis::HTTP_SUCCESS,
-                                               base::Passed(&following_result)))
-      .RetiresOnSaturation();
+  fake_drive_service()->set_default_max_results(1);
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> document_feed;
   api_util()->ListFiles(
-      kDirectoryResourceId,
+      kOriginDirectoryResourceId,
       base::Bind(&DidGetResourceList, &done, &error, &document_feed));
   message_loop()->RunUntilIdle();
 
@@ -642,11 +495,15 @@ TEST_F(APIUtilTest, ListFiles) {
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
   EXPECT_FALSE(document_feed->entries().empty());
 
+  GURL feed_url;
+  ASSERT_TRUE(document_feed->GetNextFeedURL(&feed_url));
+
   done = false;
   error = google_apis::GDATA_OTHER_ERROR;
   document_feed.reset();
+
   api_util()->ContinueListing(
-      kFeedURL, base::Bind(&DidGetResourceList, &done, &error, &document_feed));
+      feed_url, base::Bind(&DidGetResourceList, &done, &error, &document_feed));
   message_loop()->RunUntilIdle();
 
   EXPECT_TRUE(done);
@@ -655,40 +512,16 @@ TEST_F(APIUtilTest, ListFiles) {
 }
 
 TEST_F(APIUtilTest, ListChanges) {
-  const std::string kDirectoryResourceId =
-      "folder:origin_directory_resource_id";
   const int64 kStartChangestamp = 123456;
 
-  scoped_ptr<base::Value> first_result_value(LoadJSONFile(
-      "chromeos/sync_file_system/listing_files_in_directory.json").Pass());
-  scoped_ptr<google_apis::ResourceList> first_result =
-      google_apis::ResourceList::ExtractAndParse(*first_result_value);
-  scoped_ptr<base::Value> following_result_value(LoadJSONFile(
-      "chromeos/sync_file_system/listing_changed_files_in_directory.json")
-                                                     .Pass());
-  scoped_ptr<google_apis::ResourceList> following_result =
-      google_apis::ResourceList::ExtractAndParse(*following_result_value);
-
-  testing::InSequence sequence;
-
-  // Expect to call GetResourceListInDirectory from ListFiles.
-  EXPECT_CALL(*mock_drive_service(),
-              GetResourceListInDirectory(kDirectoryResourceId, _))
-      .WillOnce(InvokeGetResourceListCallback1(google_apis::HTTP_SUCCESS,
-                                               base::Passed(&first_result)))
-      .RetiresOnSaturation();
-
-  // Expect to call GetChangeList from ListChanges.
-  EXPECT_CALL(*mock_drive_service(), GetChangeList(kStartChangestamp, _))
-      .WillOnce(InvokeGetResourceListCallback1(google_apis::HTTP_SUCCESS,
-                                               base::Passed(&following_result)))
-      .RetiresOnSaturation();
+  fake_drive_service()->LoadResourceListForWapi(
+      "chromeos/sync_file_system/listing_files_in_directory.json");
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> document_feed;
   api_util()->ListFiles(
-      kDirectoryResourceId,
+      kOriginDirectoryResourceId,
       base::Bind(&DidGetResourceList, &done, &error, &document_feed));
   message_loop()->RunUntilIdle();
 
@@ -710,38 +543,16 @@ TEST_F(APIUtilTest, ListChanges) {
 }
 
 TEST_F(APIUtilTest, DownloadFile) {
-  const std::string kResourceId = "file:resource_id";
+  const std::string kResourceId = "file:file_resource_id";
   const std::string kLocalFileMD5 = "123456";
-  const base::FilePath kLocalFilePath(FPL("/tmp/dir/file"));
+  const std::string kExpectedFileMD5 = "3b4382ebefec6e743578c76bbd0575ce";
 
-  scoped_ptr<base::Value> file_entry_data(
-      LoadJSONFile("chromeos/gdata/file_entry.json").Pass());
-  scoped_ptr<ResourceEntry> file_entry(
-      ResourceEntry::ExtractAndParse(*file_entry_data));
-  // We need another copy as |file_entry| will be passed to
-  // InvokeGetResourceEntryCallback1.
-  scoped_ptr<ResourceEntry> file_entry_copy(
-      ResourceEntry::ExtractAndParse(*file_entry_data));
+  fake_drive_service()->LoadResourceListForWapi(
+      "chromeos/sync_file_system/listing_files_in_directory.json");
 
-  testing::InSequence sequence;
-
-  // Expect to call GetResourceEntry from APIUtil::DownloadFile.
-  EXPECT_CALL(*mock_drive_service(), GetResourceEntry(kResourceId, _))
-      .WillOnce(InvokeGetResourceEntryCallback1(google_apis::HTTP_SUCCESS,
-                                                base::Passed(&file_entry)))
-      .RetiresOnSaturation();
-
-  // Expect to call DriveUploaderInterface::DownloadFile from
-  // DidGetResourceEntryForDownloadFile.
-  EXPECT_CALL(*mock_drive_service(),
-              DownloadFile(_,  // drive_path
-                           kLocalFilePath,
-                           file_entry_copy->download_url(),
-                           _,
-                           _,
-                           _))
-      .WillOnce(InvokeDownloadActionCallback3(
-           google_apis::HTTP_SUCCESS, kLocalFilePath)).RetiresOnSaturation();
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  const base::FilePath kOutputFilePath = temp_dir.path().AppendASCII("file");
 
   bool done = false;
   std::string file_md5;
@@ -749,39 +560,28 @@ TEST_F(APIUtilTest, DownloadFile) {
   api_util()->DownloadFile(
       kResourceId,
       kLocalFileMD5,
-      kLocalFilePath,
+      kOutputFilePath,
       base::Bind(&DidDownloadFile, &done, &file_md5, &error));
   message_loop()->RunUntilIdle();
 
   EXPECT_TRUE(done);
-  EXPECT_EQ(file_entry_copy->file_md5(), file_md5);
+  EXPECT_EQ(kExpectedFileMD5, file_md5);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
 }
 
 TEST_F(APIUtilTest, DownloadFileInNotModified) {
-  const std::string kResourceId = "file:resource_id";
-  const base::FilePath kLocalFilePath(FPL("/tmp/dir/file"));
-
-  scoped_ptr<base::Value> file_entry_data(
-      LoadJSONFile("chromeos/gdata/file_entry.json").Pass());
-  scoped_ptr<ResourceEntry> file_entry(
-      ResourceEntry::ExtractAndParse(*file_entry_data));
-  // We need another copy as |file_entry| will be passed to
-  // InvokeGetResourceEntryCallback1.
-  scoped_ptr<ResourceEntry> file_entry_copy(
-      ResourceEntry::ExtractAndParse(*file_entry_data));
+  const std::string kResourceId = "file:file_resource_id";
 
   // Since local file's hash value is equal to remote file's one, it is expected
   // to cancel download the file and to return NOT_MODIFIED status code.
-  const std::string kLocalFileMD5 = file_entry_copy->file_md5();
+  const std::string kLocalFileMD5 = "3b4382ebefec6e743578c76bbd0575ce";
 
-  testing::InSequence sequence;
+  fake_drive_service()->LoadResourceListForWapi(
+      "chromeos/sync_file_system/listing_files_in_directory.json");
 
-  // Expect to call GetResourceEntry from APIUtil::DownloadFile.
-  EXPECT_CALL(*mock_drive_service(), GetResourceEntry(kResourceId, _))
-      .WillOnce(InvokeGetResourceEntryCallback1(google_apis::HTTP_SUCCESS,
-                                                base::Passed(&file_entry)))
-      .RetiresOnSaturation();
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  const base::FilePath kOutputFilePath = temp_dir.path().AppendASCII("file");
 
   bool done = false;
   std::string file_md5;
@@ -789,117 +589,122 @@ TEST_F(APIUtilTest, DownloadFileInNotModified) {
   api_util()->DownloadFile(
       kResourceId,
       kLocalFileMD5,
-      kLocalFilePath,
+      kOutputFilePath,
       base::Bind(&DidDownloadFile, &done, &file_md5, &error));
   message_loop()->RunUntilIdle();
 
   EXPECT_TRUE(done);
-  EXPECT_EQ(file_entry_copy->file_md5(), file_md5);
+  EXPECT_EQ(kLocalFileMD5, file_md5);
   EXPECT_EQ(google_apis::HTTP_NOT_MODIFIED, error);
 }
 
 TEST_F(APIUtilTest, UploadNewFile) {
-  const std::string kDirectoryResourceId = "folder:sub_dir_folder_resource_id";
   const base::FilePath kLocalFilePath(FPL("/tmp/dir/file"));
-  const std::string kTitle("testfile");
 
-  scoped_ptr<base::Value> verifying_file_found_data(LoadJSONFile(
-      "chromeos/sync_file_system/verifing_file_found.json").Pass());
-  scoped_ptr<ResourceList> verifying_file_found(
-      ResourceList::ExtractAndParse(*verifying_file_found_data));
+  fake_drive_service()->LoadResourceListForWapi(
+      "chromeos/sync_file_system/listing_files_in_directory.json");
 
-  // Expect to call SearchInDirectory from
-  // APIUtil::EnsureTitleUniqueness.
-  EXPECT_CALL(*mock_drive_service(),
-              SearchByTitle(kTitle, kDirectoryResourceId, _))
-      .WillOnce(InvokeGetResourceListCallback2(
-           google_apis::HTTP_SUCCESS, base::Passed(&verifying_file_found)));
+  scoped_ptr<base::Value> file_entry_data(
+      LoadJSONFile("chromeos/gdata/file_entry.json"));
+  scoped_ptr<ResourceEntry> expected_file_entry(
+      ResourceEntry::ExtractAndParse(*file_entry_data));
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   std::string resource_id;
   api_util()->UploadNewFile(
-      kDirectoryResourceId,
+      kOriginDirectoryResourceId,
       kLocalFilePath,
-      kTitle,
+      expected_file_entry->title(),
       base::Bind(&DidUploadFile, &done, &error, &resource_id));
   message_loop()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_CREATED, error);
+  EXPECT_EQ(expected_file_entry->resource_id(), resource_id);
+
+  fake_drive_service()->SearchByTitle(
+      expected_file_entry->title(),
+      kOriginDirectoryResourceId,
+      base::Bind(&VerifyTitleUniqueness,
+                 FROM_HERE,
+                 expected_file_entry->resource_id(),
+                 google_apis::ENTRY_KIND_FILE));
+  message_loop()->RunUntilIdle();
 }
 
 TEST_F(APIUtilTest, UploadNewFile_ConflictWithFile) {
-  const std::string kDirectoryResourceId =
-      "folder:origin_directory_resource_id";
   const base::FilePath kLocalFilePath(FPL("/tmp/dir/file"));
-  const std::string kTitle("test_entry");
 
-  scoped_ptr<base::Value> file_file_conflict_data(
-      LoadJSONFile("chromeos/sync_file_system/file_file_conflict.json").Pass());
-  scoped_ptr<ResourceList> file_file_conflict(
-      ResourceList::ExtractAndParse(*file_file_conflict_data));
+  fake_drive_service()->LoadResourceListForWapi(
+      "chromeos/sync_file_system/upload_new_file.json");
 
-  // Expect to call SearchInDirectory from EnsureTitleUniqueness.
-  EXPECT_CALL(*mock_drive_service(),
-              SearchByTitle(kTitle, kDirectoryResourceId, _))
-      .WillOnce(InvokeGetResourceListCallback2(
-           google_apis::HTTP_SUCCESS, base::Passed(&file_file_conflict)));
+  scoped_ptr<base::Value> file_entry_data(
+      LoadJSONFile("chromeos/gdata/file_entry.json"));
+  scoped_ptr<ResourceEntry> expected_file_entry(
+      ResourceEntry::ExtractAndParse(*file_entry_data));
 
-  // Expect to call DeleteResource to delete this for conflict.
-  EXPECT_CALL(*mock_drive_service(),
-              DeleteResource("file:file_resource_id", _, _))
-      .WillOnce(InvokeEntryActionCallback2(google_apis::HTTP_SUCCESS));
+  fake_drive_uploader()->set_make_file_conflict(true);
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   std::string resource_id;
   api_util()->UploadNewFile(
-      kDirectoryResourceId,
+      kOriginDirectoryResourceId,
       kLocalFilePath,
-      kTitle,
+      expected_file_entry->title(),
       base::Bind(&DidUploadFile, &done, &error, &resource_id));
   message_loop()->RunUntilIdle();
 
   // HTTP_CONFLICT error must be returned with empty resource_id.
   EXPECT_TRUE(done);
-  EXPECT_EQ("file:file_duplicated_resource_id", resource_id);
   EXPECT_EQ(google_apis::HTTP_CONFLICT, error);
+  EXPECT_EQ("file:file_duplicated_resource_id", resource_id);
+
+  // Verify that there is no duplicated file on the remote side.
+  fake_drive_service()->SearchByTitle(
+      expected_file_entry->title(),
+      kOriginDirectoryResourceId,
+      base::Bind(&VerifyTitleUniqueness,
+                 FROM_HERE,
+                 resource_id,
+                 google_apis::ENTRY_KIND_FILE));
+  message_loop()->RunUntilIdle();
 }
 
 TEST_F(APIUtilTest, UploadExistingFile) {
-  const std::string kResourceId = "file:resource_id";
   const base::FilePath kLocalFilePath(FPL("/tmp/dir/file"));
 
+  fake_drive_service()->LoadResourceListForWapi(
+      "chromeos/sync_file_system/upload_new_file.json");
+
   scoped_ptr<base::Value> file_entry_data(
-      LoadJSONFile("chromeos/gdata/file_entry.json").Pass());
-  scoped_ptr<ResourceEntry> file_entry(
+      LoadJSONFile("chromeos/gdata/file_entry.json"));
+  scoped_ptr<ResourceEntry> existing_file_entry(
       ResourceEntry::ExtractAndParse(*file_entry_data));
-  const std::string expected_remote_file_md5 = file_entry->file_md5();
-  const GURL link_url =
-      file_entry->GetLinkByType(Link::LINK_RESUMABLE_EDIT_MEDIA)->href();
-
-  testing::InSequence sequence;
-
-  // Expect to call GetResourceEntry from
-  // APIUtil::UploadExistingFile.
-  EXPECT_CALL(*mock_drive_service(), GetResourceEntry(kResourceId, _))
-      .WillOnce(InvokeGetResourceEntryCallback1(google_apis::HTTP_SUCCESS,
-                                                base::Passed(&file_entry)))
-      .RetiresOnSaturation();
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   std::string resource_id;
   api_util()->UploadExistingFile(
-      kResourceId,
-      expected_remote_file_md5,
+      existing_file_entry->resource_id(),
+      existing_file_entry->file_md5(),
       kLocalFilePath,
       base::Bind(&DidUploadFile, &done, &error, &resource_id));
   message_loop()->RunUntilIdle();
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
+  EXPECT_EQ(existing_file_entry->resource_id(), resource_id);
+
+  fake_drive_service()->SearchByTitle(
+      existing_file_entry->title(),
+      kOriginDirectoryResourceId,
+      base::Bind(&VerifyTitleUniqueness,
+                 FROM_HERE,
+                 existing_file_entry->resource_id(),
+                 google_apis::ENTRY_KIND_FILE));
+  message_loop()->RunUntilIdle();
 }
 
 TEST_F(APIUtilTest, UploadExistingFileInConflict) {
@@ -910,25 +715,19 @@ TEST_F(APIUtilTest, UploadExistingFileInConflict) {
   // expected to cancel upload the file and to return CONFLICT status code.
   const std::string kExpectedRemoteFileMD5 = "123456";
 
+  fake_drive_service()->LoadResourceListForWapi(
+      "chromeos/sync_file_system/upload_new_file.json");
+
   scoped_ptr<base::Value> file_entry_data(
-      LoadJSONFile("chromeos/gdata/file_entry.json").Pass());
-  scoped_ptr<ResourceEntry> file_entry(
+      LoadJSONFile("chromeos/gdata/file_entry.json"));
+  scoped_ptr<ResourceEntry> existing_file_entry(
       ResourceEntry::ExtractAndParse(*file_entry_data));
-
-  testing::InSequence sequence;
-
-  // Expect to call GetResourceEntry from
-  // APIUtil::UploadExistingFile.
-  EXPECT_CALL(*mock_drive_service(), GetResourceEntry(kResourceId, _))
-      .WillOnce(InvokeGetResourceEntryCallback1(google_apis::HTTP_SUCCESS,
-                                                base::Passed(&file_entry)))
-      .RetiresOnSaturation();
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   std::string resource_id;
   api_util()->UploadExistingFile(
-      kResourceId,
+      existing_file_entry->resource_id(),
       kExpectedRemoteFileMD5,
       kLocalFilePath,
       base::Bind(&DidUploadFile, &done, &error, &resource_id));
@@ -936,33 +735,26 @@ TEST_F(APIUtilTest, UploadExistingFileInConflict) {
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_CONFLICT, error);
+  EXPECT_TRUE(resource_id.empty());
+
+  // Verify that there is no duplicated file on the remote side.
+  fake_drive_service()->SearchByTitle(
+      existing_file_entry->title(),
+      kOriginDirectoryResourceId,
+      base::Bind(&VerifyTitleUniqueness,
+                 FROM_HERE,
+                 existing_file_entry->resource_id(),
+                 google_apis::ENTRY_KIND_FILE));
+  message_loop()->RunUntilIdle();
 }
 
 TEST_F(APIUtilTest, DeleteFile) {
-  const std::string kResourceId = "file:2_file_resource_id";
+  const std::string kFileTitle = "testfile";
+  const std::string kResourceId = "file:file_resource_id";
+  const std::string kExpectedRemoteFileMD5 = "3b4382ebefec6e743578c76bbd0575ce";
 
-  scoped_ptr<base::Value> file_entry_data(
-      LoadJSONFile("chromeos/gdata/file_entry.json").Pass());
-  scoped_ptr<ResourceEntry> file_entry(
-      ResourceEntry::ExtractAndParse(*file_entry_data));
-  // Keep the copy of MD5 hash, because file_entry will be passed to
-  // InvokeGetResourceEntryCallback1.
-  const std::string kExpectedRemoteFileMD5 = file_entry->file_md5();
-
-  testing::InSequence sequence;
-
-  // Expect to call GetResourceEntry from APIUtil::DeleteFile.
-  EXPECT_CALL(*mock_drive_service(), GetResourceEntry(kResourceId, _))
-      .WillOnce(InvokeGetResourceEntryCallback1(google_apis::HTTP_SUCCESS,
-                                                base::Passed(&file_entry)))
-      .RetiresOnSaturation();
-
-  // Expect to call DriveUploaderInterface::DeleteResource from
-  // DidGetResourceEntryForDeleteFile.
-  EXPECT_CALL(*mock_drive_service(),
-              DeleteResource(kResourceId, "\"HhMOFgxXHit7ImBr\"", _))
-      .WillOnce(InvokeEntryActionCallback2(google_apis::HTTP_SUCCESS))
-      .RetiresOnSaturation();
+  fake_drive_service()->LoadResourceListForWapi(
+      "chromeos/sync_file_system/listing_files_in_directory.json");
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -974,27 +766,24 @@ TEST_F(APIUtilTest, DeleteFile) {
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
+
+  fake_drive_service()->SearchByTitle(
+      kFileTitle,
+      kOriginDirectoryResourceId,
+      base::Bind(&VerifyFileDeletion, FROM_HERE));
+  message_loop()->RunUntilIdle();
 }
 
 TEST_F(APIUtilTest, DeleteFileInConflict) {
-  const std::string kResourceId = "file:resource_id";
+  const std::string kFileTitle = "testfile";
+  const std::string kResourceId = "file:file_resource_id";
+
+  fake_drive_service()->LoadResourceListForWapi(
+      "chromeos/sync_file_system/listing_files_in_directory.json");
 
   // Since remote file's hash value is different from the expected one, it is
   // expected to cancel delete the file and to return CONFLICT status code.
   const std::string kExpectedRemoteFileMD5 = "123456";
-
-  scoped_ptr<base::Value> file_entry_data(
-      LoadJSONFile("chromeos/gdata/file_entry.json").Pass());
-  scoped_ptr<ResourceEntry> file_entry(
-      ResourceEntry::ExtractAndParse(*file_entry_data));
-
-  testing::InSequence sequence;
-
-  // Expect to call GetResourceEntry from APIUtil::DeleteFile.
-  EXPECT_CALL(*mock_drive_service(), GetResourceEntry(kResourceId, _))
-      .WillOnce(InvokeGetResourceEntryCallback1(google_apis::HTTP_SUCCESS,
-                                                base::Passed(&file_entry)))
-      .RetiresOnSaturation();
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -1006,50 +795,45 @@ TEST_F(APIUtilTest, DeleteFileInConflict) {
 
   EXPECT_TRUE(done);
   EXPECT_EQ(google_apis::HTTP_CONFLICT, error);
+
+  // Verify that the conflict file was not deleted on the remote side.
+  fake_drive_service()->SearchByTitle(
+      kFileTitle,
+      kOriginDirectoryResourceId,
+      base::Bind(&VerifyTitleUniqueness,
+                 FROM_HERE,
+                 kResourceId,
+                 google_apis::ENTRY_KIND_FILE));
+  message_loop()->RunUntilIdle();
 }
 
 TEST_F(APIUtilTest, CreateDirectory) {
-  const std::string kParentResourceId("folder:origin_directory_resource_id");
-  const std::string kDirectory("directory");
+  const std::string kDirectoryTitle("directory");
 
-  scoped_ptr<base::Value> created_result_value(
-      LoadJSONFile("chromeos/sync_file_system/directory_created.json").Pass());
-  scoped_ptr<google_apis::ResourceEntry> created_result =
-      google_apis::ResourceEntry::ExtractAndParse(*created_result_value);
-
-  scoped_ptr<base::Value> duplicated_result_value = LoadJSONFile(
-      "chromeos/sync_file_system/directory_duplicated.json").Pass();
-  scoped_ptr<google_apis::ResourceList> duplicated_result =
-      google_apis::ResourceList::ExtractAndParse(*duplicated_result_value);
-
-  EXPECT_CALL(*mock_drive_service(),
-              AddNewDirectory(kParentResourceId, kDirectory, _))
-      .WillOnce(InvokeGetResourceEntryCallback2(google_apis::HTTP_CREATED,
-                                                base::Passed(&created_result)));
-
-  // Expect to call SearchInDirectory from EnsureTitleUniqueness.
-  EXPECT_CALL(*mock_drive_service(),
-              SearchByTitle(kDirectory, kParentResourceId, _))
-      .WillOnce(InvokeGetResourceListCallback2(
-           google_apis::HTTP_SUCCESS, base::Passed(&duplicated_result)));
-
-  // Expect to call DeleteResource to delete a duplicated directory.
-  EXPECT_CALL(*mock_drive_service(),
-              DeleteResource("folder:directory_resource_id_duplicated", _, _))
-      .WillOnce(InvokeEntryActionCallback2(google_apis::HTTP_SUCCESS));
+  fake_drive_service()->LoadResourceListForWapi(
+      "chromeos/sync_file_system/origin_directory_found.json");
 
   bool done = false;
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   std::string resource_id;
   api_util()->CreateDirectory(
-      kParentResourceId,
-      kDirectory,
+      kOriginDirectoryResourceId,
+      kDirectoryTitle,
       base::Bind(&DidGetResourceID, &done, &error, &resource_id));
   message_loop()->RunUntilIdle();
 
   EXPECT_TRUE(done);
-  EXPECT_EQ(google_apis::HTTP_SUCCESS, error);
-  EXPECT_EQ("folder:directory_resource_id", resource_id);
+  EXPECT_EQ(google_apis::HTTP_CREATED, error);
+  EXPECT_FALSE(resource_id.empty());
+
+  fake_drive_service()->SearchByTitle(
+      kDirectoryTitle,
+      kOriginDirectoryResourceId,
+      base::Bind(&VerifyTitleUniqueness,
+                 FROM_HERE,
+                 resource_id,
+                 google_apis::ENTRY_KIND_FOLDER));
+  message_loop()->RunUntilIdle();
 }
 
 #endif  // !defined(OS_ANDROID)

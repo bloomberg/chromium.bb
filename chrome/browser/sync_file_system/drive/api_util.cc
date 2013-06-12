@@ -16,7 +16,6 @@
 #include "chrome/browser/google_apis/drive_api_service.h"
 #include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_wapi_service.h"
-#include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/logger.h"
@@ -43,6 +42,8 @@ const char kMimeTypeOctetStream[] = "application/octet-stream";
 // This path is not actually used but is required by DriveUploaderInterface.
 const base::FilePath::CharType kDummyDrivePath[] =
     FILE_PATH_LITERAL("/dummy/drive/path");
+
+const char kFakeServerBaseUrl[] = "https://fake_server/";
 
 void EmptyGDataErrorCodeCallback(google_apis::GDataErrorCode error) {}
 
@@ -158,11 +159,13 @@ APIUtil::APIUtil(Profile* profile)
 
 scoped_ptr<APIUtil> APIUtil::CreateForTesting(
     Profile* profile,
-    const GURL& base_url,
     scoped_ptr<google_apis::DriveServiceInterface> drive_service,
     scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader) {
   return make_scoped_ptr(new APIUtil(
-      profile, base_url, drive_service.Pass(), drive_uploader.Pass()));
+      profile,
+      GURL(kFakeServerBaseUrl),
+      drive_service.Pass(),
+      drive_uploader.Pass()));
 }
 
 APIUtil::APIUtil(Profile* profile,

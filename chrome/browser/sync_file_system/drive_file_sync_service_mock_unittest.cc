@@ -277,7 +277,6 @@ class DriveFileSyncServiceMockTest : public testing::Test {
 
     api_util_ = drive::APIUtil::CreateForTesting(
         profile_.get(),
-        GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
         scoped_ptr<DriveServiceInterface>(mock_drive_service_),
         scoped_ptr<DriveUploaderInterface>()).Pass();
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
@@ -549,22 +548,6 @@ class DriveFileSyncServiceMockTest : public testing::Test {
         .RetiresOnSaturation();
   }
 
-  void SetUpDriveServiceExpectCallsForAddNewDirectory(
-      const std::string& parent_directory,
-      const std::string& directory_name) {
-    scoped_ptr<Value> origin_directory_created_value(LoadJSONFile(
-        "chromeos/sync_file_system/origin_directory_created.json"));
-    scoped_ptr<google_apis::ResourceEntry> origin_directory_created
-        = google_apis::ResourceEntry::ExtractAndParse(
-            *origin_directory_created_value);
-    EXPECT_CALL(*mock_drive_service(),
-                AddNewDirectory(parent_directory, directory_name, _))
-        .WillOnce(InvokeGetResourceEntryCallback2(
-            google_apis::HTTP_SUCCESS,
-            base::Passed(&origin_directory_created)))
-        .RetiresOnSaturation();
-  }
-
   // End of mock setup helpers -----------------------------------------------
 
  private:
@@ -624,11 +607,6 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterNewOrigin) {
       "chromeos/sync_file_system/origin_directory_not_found.json",
       drive::APIUtil::OriginToDirectoryTitle(kOrigin),
       kSyncRootResourceId);
-
-  // If the directory for the origin is missing, DriveFileSyncService should
-  // attempt to create it.
-  SetUpDriveServiceExpectCallsForAddNewDirectory(
-      kSyncRootResourceId, drive::APIUtil::OriginToDirectoryTitle(kOrigin));
 
   // Once the directory is created GetAboutResource should be called to get
   // the largest changestamp for the origin as a prepariation of the batch sync.

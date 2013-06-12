@@ -47,7 +47,7 @@
       "gd$resourceId": { "$t": "folder:origin_directory_resource_id" },
       "id": { "$t": "https://origin_directory_id" },
       "link": [ {
-        "href": "https://docs.google.com/feeds/default/private/full/folder%3Async_root_resource_id",
+        "href": "https://fake_server/folder%3Async_root_resource_id",
         "rel": "http://schemas.google.com/docs/2007#parent",
         "title": "Chrome Syncable FileSystem",
         "type": "application/atom+xml"
@@ -60,7 +60,7 @@
         "rel": "http://schemas.google.com/docs/2007#icon",
         "type": "image/png"
       }, {
-        "href": "https://origin_directoyr_create_media_link",
+        "href": "https://origin_directory_create_media_link",
         "rel": "http://schemas.google.com/g/2005#resumable-create-media",
         "type": "application/atom+xml"
       }, {
