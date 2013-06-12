@@ -50,8 +50,7 @@ class ConfirmDiff(AbstractStep):
             return None
 
         try:
-            pretty_patch = PrettyPatch(self._tool.executive,
-                                       self._tool.scm().checkout_root)
+            pretty_patch = PrettyPatch(self._tool.executive)
             pretty_diff_file = pretty_patch.pretty_diff_file(diff)
             url = "file://%s" % urllib.quote(pretty_diff_file.name)
             self._tool.user.open_url(url)

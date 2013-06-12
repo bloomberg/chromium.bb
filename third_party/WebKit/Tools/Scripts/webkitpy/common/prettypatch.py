@@ -31,10 +31,8 @@ import tempfile
 
 
 class PrettyPatch(object):
-    # FIXME: PrettyPatch should not require checkout_root.
-    def __init__(self, executive, checkout_root):
+    def __init__(self, executive):
         self._executive = executive
-        self._checkout_root = checkout_root
 
     def pretty_diff_file(self, diff):
         # Diffs can contain multiple text files of different encodings
@@ -52,9 +50,8 @@ class PrettyPatch(object):
         if not diff:
             return ""
 
-        pretty_patch_path = os.path.join(self._checkout_root,
-                                         "Tools", "Scripts", "webkitruby",
-                                         "PrettyPatch")
+        pretty_patch_path = os.path.join(os.path.dirname(__file__), '..', '..',
+                                         'webkitruby', 'PrettyPatch')
         prettify_path = os.path.join(pretty_patch_path, "prettify.rb")
         args = [
             "ruby",
