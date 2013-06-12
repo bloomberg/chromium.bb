@@ -17,6 +17,9 @@ var CookiesView = options.CookiesView;
 var CreateProfileOverlay = options.CreateProfileOverlay;
 var EditDictionaryOverlay = cr.IsMac ? null : options.EditDictionaryOverlay;
 var FactoryResetOverlay = options.FactoryResetOverlay;
+<if expr="pp_ifdef('enable_google_now')">
+var GeolocationOptions = options.GeolocationOptions;
+</if>
 var ManagedUserCreateConfirmOverlay = options.ManagedUserCreateConfirmOverlay;
 var ManagedUserLearnMoreOverlay = options.ManagedUserLearnMoreOverlay;
 var FontSettings = options.FontSettings;

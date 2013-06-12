@@ -82,6 +82,12 @@ void Profile::RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kSafeBrowsingProceedAnywayDisabled,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#if defined(ENABLE_GOOGLE_NOW)
+  registry->RegisterBooleanPref(
+      prefs::kGoogleGeolocationAccessEnabled,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#endif
   registry->RegisterBooleanPref(
       prefs::kDisableExtensions,
       false,

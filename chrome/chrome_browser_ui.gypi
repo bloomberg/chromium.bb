@@ -2202,6 +2202,8 @@
         'browser/ui/webui/options/font_settings_utils_linux.cc',
         'browser/ui/webui/options/font_settings_utils_mac.mm',
         'browser/ui/webui/options/font_settings_utils_win.cc',
+        'browser/ui/webui/options/geolocation_options_handler.cc',
+        'browser/ui/webui/options/geolocation_options_handler.h',
         'browser/ui/webui/options/handler_options_handler.cc',
         'browser/ui/webui/options/handler_options_handler.h',
         'browser/ui/webui/options/home_page_overlay_handler.cc',
@@ -2988,6 +2990,12 @@
             ['exclude', '^browser/ui/app_list/'],
             ['include', '^browser/ui/app_list/app_list_service.h'],
             ['include', '^browser/ui/app_list/app_list_service_disabled.cc'],
+          ],
+        }],
+        ['enable_google_now==0', {
+          'sources!': [
+            'browser/ui/webui/options/geolocation_options_handler.cc',
+            'browser/ui/webui/options/geolocation_options_handler.h',
           ],
         }],
       ],

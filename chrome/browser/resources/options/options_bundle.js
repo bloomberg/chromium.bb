@@ -74,6 +74,9 @@
 <include src="cookies_view.js"></include>
 <include src="factory_reset_overlay.js"></include>
 <include src="font_settings.js"></include>
+<if expr="pp_ifdef('enable_google_now')">
+<include src="geolocation_options.js"></include>
+</if>
 <include src="handler_options.js"></include>
 <include src="handler_options_list.js"></include>
 <include src="home_page_overlay.js"></include>

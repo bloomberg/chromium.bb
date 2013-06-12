@@ -285,6 +285,24 @@
             </span>
           </span>
         </div>
+<if expr="pp_ifdef('enable_google_now')">
+        <div class="checkbox" id="geolocationCheckbox" hidden>
+          <span class="controlled-setting-with-label">
+            <input id="googleGeolocationAccessEnabled"
+                pref="googlegeolocationaccess.enabled"
+                metric="Options_GoogleGeolocationAccessCheckbox"
+                type="checkbox">
+            <span>
+              <label for="googleGeolocationAccessEnabled"
+                  i18n-content="googleGeolocationAccessEnable">
+              </label>
+              <span class="controlled-setting-indicator"
+                  pref="googlegeolocationaccess.enabled">
+              </span>
+            </span>
+          </span>
+        </div>
+</if>
         <div class="settings-row">
           <button class="exceptions-list-button" contentType="location"
               i18n-content="manageExceptions"></button>

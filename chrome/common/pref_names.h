@@ -686,6 +686,10 @@ extern const char kGeolocationAccessToken[];
 extern const char kGeolocationEnabled[];
 #endif
 
+#if defined(ENABLE_GOOGLE_NOW)
+extern const char kGoogleGeolocationAccessEnabled[];
+#endif
+
 extern const char kDefaultAudioCaptureDevice[];
 extern const char kDefaultVideoCaptureDevice[];
 

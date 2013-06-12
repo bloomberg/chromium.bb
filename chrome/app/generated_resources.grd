@@ -8554,6 +8554,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_GEOLOCATION_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking sites from accessing geolocation data.">
         Do not allow any site to track my physical location
       </message>
+      <message name="IDS_GEOLOCATION_GOOGLE_ACCESS_ENABLE_CHKBOX" desc="The label of the 'Allow Google services to access your location' checkbox">
+        Allow Google services to access your location
+      </message>
       <message name="IDS_GEOLOCATION_SET_BY_HOVER" desc="Hover text for URL in a list of exceptions, preceding the name of the granting hosted app.">
         Set by app:
       </message>

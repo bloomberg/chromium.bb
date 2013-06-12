@@ -88,6 +88,10 @@
 #include "chrome/browser/ui/webui/options/certificate_manager_handler.h"
 #endif
 
+#if defined(ENABLE_GOOGLE_NOW)
+#include "chrome/browser/ui/webui/options/geolocation_options_handler.h"
+#endif
+
 using content::RenderViewHost;
 
 namespace {
@@ -256,6 +260,9 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());
   AddOptionsPageUIHandler(localized_strings, new CookiesViewHandler());
   AddOptionsPageUIHandler(localized_strings, new FontSettingsHandler());
+#if defined(ENABLE_GOOGLE_NOW)
+  AddOptionsPageUIHandler(localized_strings, new GeolocationOptionsHandler());
+#endif
   AddOptionsPageUIHandler(localized_strings, new HomePageOverlayHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new MediaDevicesSelectionHandler());

@@ -298,6 +298,10 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "cookies_show_cookies", IDS_COOKIES_SHOW_COOKIES_BUTTON },
     { "flash_storage_settings", IDS_FLASH_STORAGE_SETTINGS },
     { "flash_storage_url", IDS_FLASH_STORAGE_URL },
+#if defined(ENABLE_GOOGLE_NOW)
+    { "googleGeolocationAccessEnable",
+       IDS_GEOLOCATION_GOOGLE_ACCESS_ENABLE_CHKBOX },
+#endif
     // Image filter.
     { "images_tab_label", IDS_IMAGES_TAB_LABEL },
     { "images_header", IDS_IMAGES_HEADER },

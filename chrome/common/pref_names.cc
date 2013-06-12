@@ -1130,8 +1130,14 @@ const char kPinnedTabs[] = "pinned_tabs";
 #endif
 
 #if defined(OS_ANDROID)
-// Boolean that controls the enabled-state of Geolocation.
+// Boolean that controls the enabled-state of Geolocation in content.
 const char kGeolocationEnabled[] = "geolocation.enabled";
+#endif
+
+#if defined(ENABLE_GOOGLE_NOW)
+// Boolean that is true when Google services can use the user's location.
+const char kGoogleGeolocationAccessEnabled[] =
+    "googlegeolocationaccess.enabled";
 #endif
 
 // The default audio capture device used by the Media content setting.
