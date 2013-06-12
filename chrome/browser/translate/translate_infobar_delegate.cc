@@ -280,12 +280,8 @@ void TranslateInfoBarDelegate::UpdateBackgroundAnimation(
 // static
 string16 TranslateInfoBarDelegate::GetLanguageDisplayableName(
     const std::string& language_code) {
-  string16 name = l10n_util::GetDisplayNameForLocale(
+  return l10n_util::GetDisplayNameForLocale(
       language_code, g_browser_process->GetApplicationLocale(), true);
-  if (!TranslateManager::IsAlphaLanguage(language_code))
-    return name;
-  return l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_ALPHA_LANGUAGE,
-                                    name);
 }
 
 // static

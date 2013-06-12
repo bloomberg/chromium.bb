@@ -13961,9 +13961,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         The translation to <ph name="target_language">$1<ex>German</ex></ph> failed.
       </message>
       </if>
-      <message name="IDS_TRANSLATE_INFOBAR_ALPHA_LANGUAGE" desc="Language display name for alpha languages. Basically it will be shown with (alpha) suffix. See also http://translate.google.com/about/ on what's alpha language.">
-        <ph name="language">$1<ex>Javanese</ex></ph> (Alpha)
-      </message>
 
       <!-- Desktop notifications -->
       <message name="IDS_NOTIFICATION_BALLOON_DISMISS_LABEL" desc="Text on the button which dismisses the balloon.">
