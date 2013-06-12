@@ -30,10 +30,12 @@ class ValidationMessageMessageFilter : public content::BrowserMessageFilter {
  private:
   virtual ~ValidationMessageMessageFilter();
   void OnShowValidationMessage(int route_id,
-                               const gfx::Rect& anchor_in_screen,
+                               const gfx::Rect& anchor_in_root_view,
                                const string16& main_text,
                                const string16& sub_text);
   void OnHideValidationMessage();
+  void OnMoveValidationMessage(int route_id,
+                               const gfx::Rect& anchor_in_root_view);
 
   scoped_ptr<chrome::ValidationMessageBubble> validation_message_bubble_;
   int renderer_id_;

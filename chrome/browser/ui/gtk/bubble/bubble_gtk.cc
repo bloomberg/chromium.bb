@@ -557,6 +557,12 @@ void BubbleGtk::Close() {
   // |this| has been deleted, see OnDestroy.
 }
 
+void BubbleGtk::SetPositionRelativeToAnchor(const gfx::Rect* rect) {
+  rect_ = rect ? *rect : gtk_util::WidgetBounds(anchor_widget_);
+  if (!UpdateFrameStyle(false))
+    MoveWindow();
+}
+
 void BubbleGtk::GrabPointerAndKeyboard() {
   GdkWindow* gdk_window = gtk_widget_get_window(window_);
 

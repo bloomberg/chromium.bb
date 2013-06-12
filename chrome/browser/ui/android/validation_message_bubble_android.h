@@ -28,8 +28,9 @@ class ValidationMessageBubbleAndroid : public chrome::ValidationMessageBubble {
                                  const string16& main_text,
                                  const string16& sub_text);
   virtual ~ValidationMessageBubbleAndroid();
-  virtual void MoveOnAnchor(content::RenderWidgetHost* widget_host,
-                            const gfx::Rect& anchor_in_screen);
+  virtual void SetPositionRelativeToAnchor(
+      content::RenderWidgetHost* widget_host,
+      const gfx::Rect& anchor_in_screen) OVERRIDE;
 
   static bool Register(JNIEnv* env);
 

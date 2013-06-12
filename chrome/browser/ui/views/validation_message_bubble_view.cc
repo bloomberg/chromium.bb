@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/validation_message_bubble.h"
 
 #include "chrome/browser/ui/views/validation_message_bubble_delegate.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -20,7 +22,16 @@ class ValidationMessageBubbleImpl
 
   virtual ~ValidationMessageBubbleImpl() {
     if (delegate_ != NULL)
-      delegate_->Hide();
+      delegate_->Close();
+  }
+
+  virtual void SetPositionRelativeToAnchor(
+      content::RenderWidgetHost* widget_host,
+      const gfx::Rect& anchor_in_root_view) OVERRIDE {
+    if (!delegate_)
+      return;
+    delegate_->SetPositionRelativeToAnchor(anchor_in_root_view +
+        widget_host->GetView()->GetViewBounds().origin().OffsetFromOrigin());
   }
 
   // ValidationMessageBubbleDelegate::Observer override:
@@ -49,10 +60,12 @@ ValidationMessageBubbleImpl::ValidationMessageBubbleImpl(
 namespace chrome {
 
 scoped_ptr<ValidationMessageBubble> ValidationMessageBubble::CreateAndShow(
-    content::RenderWidgetHost*,
-    const gfx::Rect& anchor_in_screen,
+    content::RenderWidgetHost* widget_host,
+    const gfx::Rect& anchor_in_root_view,
     const string16& main_text,
     const string16& sub_text) {
+  const gfx::Rect anchor_in_screen = anchor_in_root_view
+      + widget_host->GetView()->GetViewBounds().origin().OffsetFromOrigin();
   scoped_ptr<ValidationMessageBubble> bubble(
       new ValidationMessageBubbleImpl(anchor_in_screen, main_text, sub_text));
   return bubble.Pass();

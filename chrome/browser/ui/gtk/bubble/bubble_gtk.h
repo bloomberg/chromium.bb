@@ -92,6 +92,9 @@ class BubbleGtk : public content::NotificationObserver {
   // so you shouldn't hold a BubbleGtk pointer after calling Close().
   void Close();
 
+  // Move the window to the new anchor rectangle.
+  void SetPositionRelativeToAnchor(const gfx::Rect* rect);
+
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,

@@ -24,12 +24,19 @@ class ValidationMessageBubble {
   // should not change focus state.
   static scoped_ptr<ValidationMessageBubble> CreateAndShow(
       content::RenderWidgetHost* widget_host,
-      const gfx::Rect& anchor_in_screen,
+      const gfx::Rect& anchor_in_root_view,
       const string16& main_text,
       const string16& sub_text);
 
   // Close the window and destruct the object.
   virtual ~ValidationMessageBubble() {}
+
+  // Move the window to a position such that the bubble arrow points to the
+  // specified anchor.  |anchor_in_root_view| is in DIP unit, and relative to
+  // RWHV for |widget_host|.
+  virtual void SetPositionRelativeToAnchor(
+      content::RenderWidgetHost* widget_host,
+      const gfx::Rect& anchor_in_root_view) = 0;
 };
 
 }  // namespace chrome

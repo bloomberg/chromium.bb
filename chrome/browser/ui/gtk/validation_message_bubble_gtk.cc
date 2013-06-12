@@ -34,6 +34,9 @@ class ValidationMessageBubbleGtk : public chrome::ValidationMessageBubble,
                              const string16& main_text,
                              const string16& sub_text);
   virtual ~ValidationMessageBubbleGtk();
+  virtual void SetPositionRelativeToAnchor(
+      content::RenderWidgetHost* widget_host,
+      const gfx::Rect& anchor_in_root_view) OVERRIDE;
 
   // BubbleDelegateGtk override:
   virtual void BubbleClosing(BubbleGtk*, bool) OVERRIDE;
@@ -47,21 +50,17 @@ class ValidationMessageBubbleGtk : public chrome::ValidationMessageBubble,
 
 ValidationMessageBubbleGtk::ValidationMessageBubbleGtk(
     content::RenderWidgetHost* widget_host,
-    const gfx::Rect& anchor_in_screen,
+    const gfx::Rect& anchor_in_root_view,
     const string16& main_text,
     const string16& sub_text)
     : bubble_(NULL) {
   if (!widget_host->IsRenderView())
     return;
-  gfx::Rect bounds_in_screen = widget_host->GetView()->GetViewBounds();
-  gfx::Rect anchor = anchor_in_screen;
-  anchor.Offset(-bounds_in_screen.x(), -bounds_in_screen.y());
-
   Profile* profile = Profile::FromBrowserContext(
       content::WebContents::FromRenderViewHost(
           content::RenderViewHost::From(widget_host))->GetBrowserContext());
   bubble_ = BubbleGtk::Show(widget_host->GetView()->GetNativeView(),
-                            &anchor,
+                            &anchor_in_root_view,
                             ConstructContent(main_text, sub_text),
                             BubbleGtk::ANCHOR_TOP_LEFT,
                             BubbleGtk::POPUP_WINDOW,
@@ -72,6 +71,13 @@ ValidationMessageBubbleGtk::ValidationMessageBubbleGtk(
 ValidationMessageBubbleGtk::~ValidationMessageBubbleGtk() {
   if (bubble_)
     bubble_->Close();
+}
+
+void ValidationMessageBubbleGtk::SetPositionRelativeToAnchor(
+    content::RenderWidgetHost* widget_host,
+    const gfx::Rect& anchor_in_root_view) {
+  if (bubble_)
+    bubble_->SetPositionRelativeToAnchor(&anchor_in_root_view);
 }
 
 void ValidationMessageBubbleGtk::BubbleClosing(BubbleGtk*, bool) {
@@ -124,11 +130,11 @@ namespace chrome {
 
 scoped_ptr<ValidationMessageBubble> ValidationMessageBubble::CreateAndShow(
     content::RenderWidgetHost* widget_host,
-    const gfx::Rect& anchor_in_screen,
+    const gfx::Rect& anchor_in_root_view,
     const string16& main_text,
     const string16& sub_text) {
   return scoped_ptr<ValidationMessageBubble>(new ValidationMessageBubbleGtk(
-      widget_host, anchor_in_screen, main_text, sub_text)).Pass();
+      widget_host, anchor_in_root_view, main_text, sub_text)).Pass();
 }
 
 }  // namespace chrome

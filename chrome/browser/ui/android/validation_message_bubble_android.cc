@@ -27,7 +27,7 @@ inline ContentViewCore* GetContentViewCoreFrom(RenderWidgetHost* widget_host) {
 
 ValidationMessageBubbleAndroid::ValidationMessageBubbleAndroid(
     RenderWidgetHost* widget_host,
-    const gfx::Rect& anchor_in_screen,
+    const gfx::Rect& anchor_in_root_view,
     const string16& main_text,
     const string16& sub_text) {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -35,10 +35,10 @@ ValidationMessageBubbleAndroid::ValidationMessageBubbleAndroid(
       Java_ValidationMessageBubble_createAndShow(
           env,
           GetContentViewCoreFrom(widget_host)->GetJavaObject().obj(),
-          anchor_in_screen.x(),
-          anchor_in_screen.y(),
-          anchor_in_screen.width(),
-          anchor_in_screen.height(),
+          anchor_in_root_view.x(),
+          anchor_in_root_view.y(),
+          anchor_in_root_view.width(),
+          anchor_in_root_view.height(),
           ConvertUTF16ToJavaString(env, main_text).obj(),
           ConvertUTF16ToJavaString(env, sub_text).obj()));
 }
@@ -48,16 +48,16 @@ ValidationMessageBubbleAndroid::~ValidationMessageBubbleAndroid() {
                                      java_validation_message_bubble_.obj());
 }
 
-void ValidationMessageBubbleAndroid::MoveOnAnchor(
-    RenderWidgetHost* widget_host, const gfx::Rect& anchor_in_screen) {
+void ValidationMessageBubbleAndroid::SetPositionRelativeToAnchor(
+    RenderWidgetHost* widget_host, const gfx::Rect& anchor_in_root_view) {
   Java_ValidationMessageBubble_moveOnAnchor(
       base::android::AttachCurrentThread(),
       java_validation_message_bubble_.obj(),
       GetContentViewCoreFrom(widget_host)->GetJavaObject().obj(),
-      anchor_in_screen.x(),
-      anchor_in_screen.y(),
-      anchor_in_screen.width(),
-      anchor_in_screen.height());
+      anchor_in_root_view.x(),
+      anchor_in_root_view.y(),
+      anchor_in_root_view.width(),
+      anchor_in_root_view.height());
 }
 
 // static
@@ -69,11 +69,11 @@ namespace chrome {
 
 scoped_ptr<ValidationMessageBubble> ValidationMessageBubble::CreateAndShow(
     RenderWidgetHost* widget_host,
-    const gfx::Rect& anchor_in_screen,
+    const gfx::Rect& anchor_in_root_view,
     const string16& main_text,
     const string16& sub_text) {
   return scoped_ptr<ValidationMessageBubble>(new ValidationMessageBubbleAndroid(
-      widget_host, anchor_in_screen, main_text, sub_text)).Pass();
+      widget_host, anchor_in_root_view, main_text, sub_text)).Pass();
 }
 
-}
+}  // namespace chrome

@@ -44,6 +44,8 @@ bool ValidationMessageMessageFilter::OnMessageReceived(
                         OnShowValidationMessage)
     IPC_MESSAGE_HANDLER(ValidationMessageMsg_HideValidationMessage,
                         OnHideValidationMessage)
+    IPC_MESSAGE_HANDLER(ValidationMessageMsg_MoveValidationMessage,
+                        OnMoveValidationMessage)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -52,20 +54,31 @@ bool ValidationMessageMessageFilter::OnMessageReceived(
 void ValidationMessageMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   if (message.type() == ValidationMessageMsg_ShowValidationMessage::ID
-      || message.type() == ValidationMessageMsg_HideValidationMessage::ID)
+      || message.type() == ValidationMessageMsg_HideValidationMessage::ID
+      || message.type() == ValidationMessageMsg_MoveValidationMessage::ID)
     *thread = BrowserThread::UI;
 }
 
 void ValidationMessageMessageFilter::OnShowValidationMessage(
-    int route_id, const gfx::Rect& anchor_in_screen, const string16& main_text,
-    const string16& sub_text) {
+    int route_id, const gfx::Rect& anchor_in_root_view,
+    const string16& main_text, const string16& sub_text) {
   RenderProcessHost* process = RenderProcessHost::FromID(renderer_id_);
   RenderWidgetHost* widget_host = process->GetRenderWidgetHostByID(route_id);
   validation_message_bubble_ = chrome::ValidationMessageBubble::CreateAndShow(
-      widget_host, anchor_in_screen, main_text, sub_text);
+      widget_host, anchor_in_root_view, main_text, sub_text);
 }
 
 void ValidationMessageMessageFilter::OnHideValidationMessage() {
   validation_message_bubble_.reset();
+}
+
+void ValidationMessageMessageFilter::OnMoveValidationMessage(
+    int route_id, const gfx::Rect& anchor_in_root_view) {
+  if (!validation_message_bubble_)
+      return;
+  RenderProcessHost* process = RenderProcessHost::FromID(renderer_id_);
+  RenderWidgetHost* widget_host = process->GetRenderWidgetHostByID(route_id);
+  validation_message_bubble_->SetPositionRelativeToAnchor(
+      widget_host, anchor_in_root_view);
 }
 

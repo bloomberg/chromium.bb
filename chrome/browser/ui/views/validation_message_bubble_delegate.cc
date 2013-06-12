@@ -79,9 +79,15 @@ ValidationMessageBubbleDelegate::ValidationMessageBubbleDelegate(
 
 ValidationMessageBubbleDelegate::~ValidationMessageBubbleDelegate() {}
 
-void ValidationMessageBubbleDelegate::Hide() {
-  GetWidget()->Hide();
+void ValidationMessageBubbleDelegate::Close() {
+  GetWidget()->Close();
   observer_ = NULL;
+}
+
+void ValidationMessageBubbleDelegate::SetPositionRelativeToAnchor(
+    const gfx::Rect& anchor_in_screen) {
+  set_anchor_rect(anchor_in_screen);
+  GetWidget()->SetBounds(GetBubbleBounds());
 }
 
 gfx::Size ValidationMessageBubbleDelegate::GetPreferredSize() {
