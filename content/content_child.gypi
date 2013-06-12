@@ -64,6 +64,8 @@
     'child/request_extra_data.h',
     'child/resource_dispatcher.cc',
     'child/resource_dispatcher.h',
+    'child/runtime_features.cc',
+    'child/runtime_features.h',
     'child/socket_stream_dispatcher.cc',
     'child/socket_stream_dispatcher.h',
     'child/thread_safe_sender.cc',
@@ -78,6 +80,11 @@
     'child/webmessageportchannel_impl.h',
   ],
   'conditions': [
+    ['OS=="android"', {
+      'includes': [
+        '../build/android/cpufeatures.gypi',
+      ],
+    }],
     ['OS=="ios"', {
       'sources/': [
         # iOS only needs a small portion of content; exclude all the

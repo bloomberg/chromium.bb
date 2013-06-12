@@ -175,6 +175,7 @@ bool WorkerProcessHost::Init(int render_process_id) {
 #endif
     switches::kDisableFileSystem,
     switches::kDisableSeccompFilterSandbox,
+    switches::kEnableExperimentalWebKitFeatures,
 #if defined(OS_MACOSX)
     switches::kEnableSandboxLogging,
 #endif

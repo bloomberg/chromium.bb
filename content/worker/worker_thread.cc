@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
 #include "content/child/indexed_db/indexed_db_message_filter.h"
+#include "content/child/runtime_features.h"
 #include "content/child/web_database_observer_impl.h"
 #include "content/common/appcache/appcache_dispatcher.h"
 #include "content/common/db_message_filter.h"
@@ -49,29 +50,7 @@ WorkerThread::WorkerThread() {
   channel()->AddFilter(indexed_db_message_filter_.get());
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  webkit_glue::EnableWebCoreLogChannels(
-      command_line.GetSwitchValueASCII(switches::kWebCoreLogChannels));
-
-  // TODO(eseidel): Workers should not have separate code for initializing
-  // WebRuntimeFeatures.  This should just call WRF::enableStableFeatures()
-  // and share CommandLine handling code with RenderThreadImpl.
-  WebKit::WebRuntimeFeatures::enableDatabase(
-      !command_line.HasSwitch(switches::kDisableDatabases));
-
-  WebKit::WebRuntimeFeatures::enableApplicationCache(
-      !command_line.HasSwitch(switches::kDisableApplicationCache));
-
-#if defined(OS_WIN)
-  // We don't yet support notifications on non-Windows, so hide it from pages.
-  WebRuntimeFeatures::enableNotifications(
-      !command_line.HasSwitch(switches::kDisableDesktopNotifications));
-#endif
-
-  WebRuntimeFeatures::enableFileSystem(
-      !command_line.HasSwitch(switches::kDisableFileSystem));
-
-  WebRuntimeFeatures::enableIndexedDB(true);
+  SetRuntimeFeaturesDefaultsAndUpdateFromArgs(command_line);
 }
 
 WorkerThread::~WorkerThread() {
