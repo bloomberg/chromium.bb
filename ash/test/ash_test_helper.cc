@@ -11,7 +11,7 @@
 #include "ash/test/test_shell_delegate.h"
 #include "base/run_loop.h"
 #include "ui/aura/env.h"
-#include "ui/base/ime/text_input_test_support.h"
+#include "ui/base/ime/input_method_initializer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/message_center/message_center.h"
 
@@ -43,7 +43,7 @@ void AshTestHelper::SetUp() {
   // Disable animations during tests.
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
-  ui::TextInputTestSupport::Initialize();
+  ui::InitializeInputMethodForTesting();
 
   // Creates Shell and hook with Desktop.
   test_shell_delegate_ = new TestShellDelegate;
@@ -83,8 +83,8 @@ void AshTestHelper::TearDown() {
 #endif
 
   aura::Env::DeleteInstance();
-  ui::TextInputTestSupport::Shutdown();
 
+  ui::ShutdownInputMethodForTesting();
   zero_duration_mode_.reset();
 }
 

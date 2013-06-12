@@ -15,6 +15,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/common/show_desktop_notification_params.h"
+#include "ui/base/ime/input_method_initializer.h"
 #include "ui/message_center/message_center.h"
 
 #if defined(USE_ASH)
@@ -27,10 +28,6 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #endif
 
-#if defined(OS_WIN)
-#include "base/win/metro.h"
-#include "ui/base/ime/win/tsf_bridge.h"
-#endif
 
 using content::BrowserThread;
 
@@ -105,10 +102,7 @@ DesktopNotificationsTest::~DesktopNotificationsTest() {
 }
 
 void DesktopNotificationsTest::SetUp() {
-#if defined(OS_WIN)
-  if (base::win::IsTSFAwareRequired())
-    ui::TSFBridge::Initialize();
-#endif
+  ui::InitializeInputMethodForTesting();
 #if defined(USE_ASH)
   WebKit::initialize(webkit_platform_support_.Get());
   ui::ScopedAnimationDurationScaleMode normal_duration_mode(
@@ -144,6 +138,7 @@ void DesktopNotificationsTest::TearDown() {
   aura::Env::DeleteInstance();
   WebKit::shutdown();
 #endif
+  ui::ShutdownInputMethodForTesting();
 }
 
 content::ShowDesktopNotificationHostMsgParams

@@ -8,12 +8,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/gestures/gesture_configuration.h"
-#include "ui/base/ime/text_input_test_support.h"
-
-#if defined(OS_WIN)
-#include "base/win/metro.h"
-#include "ui/base/ime/win/tsf_bridge.h"
-#endif
+#include "ui/base/ime/input_method_initializer.h"
 
 namespace aura {
 namespace test {
@@ -33,7 +28,7 @@ AuraTestBase::~AuraTestBase() {
 void AuraTestBase::SetUp() {
   setup_called_ = true;
   testing::Test::SetUp();
-  ui::TextInputTestSupport::Initialize();
+  ui::InitializeInputMethodForTesting();
 
   // Changing the parameters for gesture recognition shouldn't cause
   // tests to fail, so we use a separate set of parameters for unit
@@ -71,10 +66,6 @@ void AuraTestBase::SetUp() {
 
   helper_.reset(new AuraTestHelper(&message_loop_));
   helper_->SetUp();
-#if defined(OS_WIN)
-    if (base::win::IsTSFAwareRequired())
-      ui::TSFBridge::Initialize();
-#endif
 }
 
 void AuraTestBase::TearDown() {
@@ -85,7 +76,7 @@ void AuraTestBase::TearDown() {
   RunAllPendingInMessageLoop();
 
   helper_->TearDown();
-  ui::TextInputTestSupport::Shutdown();
+  ui::ShutdownInputMethodForTesting();
   testing::Test::TearDown();
 }
 

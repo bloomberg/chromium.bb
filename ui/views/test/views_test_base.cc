@@ -6,16 +6,12 @@
 
 #include "base/run_loop.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/ime/input_method_initializer.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
-#endif
-
-#if defined(OS_WIN)
-#include "base/win/metro.h"
-#include "ui/base/ime/win/tsf_bridge.h"
 #endif
 
 namespace views {
@@ -41,10 +37,7 @@ void ViewsTestBase::SetUp() {
   aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
   aura_test_helper_->SetUp();
 #endif  // USE_AURA
-#if defined(OS_WIN)
-    if (base::win::IsTSFAwareRequired())
-      ui::TSFBridge::Initialize();
-#endif
+  ui::InitializeInputMethodForTesting();
 }
 
 void ViewsTestBase::TearDown() {
@@ -56,6 +49,7 @@ void ViewsTestBase::TearDown() {
   teardown_called_ = true;
   views_delegate_.reset();
   testing::Test::TearDown();
+  ui::ShutdownInputMethodForTesting();
 #if defined(USE_AURA)
   aura_test_helper_->TearDown();
 #endif

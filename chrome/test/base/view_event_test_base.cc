@@ -11,7 +11,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/base/ime/text_input_test_support.h"
+#include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/view.h"
@@ -28,11 +28,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
-#endif
-
-#if defined(OS_WIN)
-#include "base/win/metro.h"
-#include "ui/base/ime/win/tsf_bridge.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -99,7 +94,7 @@ void ViewEventTestBase::Done() {
 }
 
 void ViewEventTestBase::SetUp() {
-  ui::TextInputTestSupport::Initialize();
+  ui::InitializeInputMethodForTesting();
   gfx::NativeView context = NULL;
 #if defined(USE_ASH)
 #if defined(OS_WIN)
@@ -124,10 +119,6 @@ void ViewEventTestBase::SetUp() {
   aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
   aura_test_helper_->SetUp();
   context = aura_test_helper_->root_window();
-#endif
-#if defined(OS_WIN)
-  if (base::win::IsTSFAwareRequired())
-    ui::TSFBridge::Initialize();
 #endif
   window_ = views::Widget::CreateWindowWithContext(this, context);
 }
@@ -158,7 +149,7 @@ void ViewEventTestBase::TearDown() {
 #elif defined(USE_AURA)
   aura_test_helper_->TearDown();
 #endif
-  ui::TextInputTestSupport::Shutdown();
+  ui::ShutdownInputMethodForTesting();
 }
 
 bool ViewEventTestBase::CanResize() const {

@@ -15,11 +15,11 @@
 #include "content/browser/notification_service_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "ui/base/ime/input_method_initializer.h"
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
 #include "base/win/windows_version.h"
-#include "ui/base/ime/win/tsf_bridge.h"
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
 
@@ -88,17 +88,14 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     // are NOT deleted. If you need something to run during WM_ENDSESSION add it
     // to browser_shutdown::Shutdown or BrowserProcess::EndSession.
 
-#if defined(OS_WIN)
-#if !defined(NO_TCMALLOC)
+#if defined(OS_WIN) && !defined(NO_TCMALLOC)
     // When linking shared libraries, NO_TCMALLOC is defined, and dynamic
     // allocator selection is not supported.
 
     // Make this call before going multithreaded, or spawning any subprocesses.
     base::allocator::SetupSubprocessAllocator();
 #endif
-    if (base::win::IsTSFAwareRequired())
-      ui::TSFBridge::Initialize();
-#endif  // OS_WIN
+    ui::InitializeInputMethod();
 
     main_loop_->CreateThreads();
     int result_code = main_loop_->GetResultCode();
@@ -125,9 +122,8 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     if (created_threads_)
       main_loop_->ShutdownThreadsAndCleanUp();
 
+    ui::ShutdownInputMethod();
 #if defined(OS_WIN)
-    if (base::win::IsTSFAwareRequired())
-      ui::TSFBridge::Shutdown();
     ole_initializer_.reset(NULL);
 #endif
 

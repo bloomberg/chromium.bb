@@ -25,6 +25,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/ime/input_method_initializer.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/screen.h"
@@ -36,7 +37,6 @@
 #include "base/win/windows_version.h"
 #include "ui/aura/remote_root_window_host_win.h"
 #include "ui/aura/root_window_host_win.h"
-#include "ui/base/ime/win/tsf_bridge.h"
 #include "win8/test/test_registrar_constants.h"
 #endif
 
@@ -102,9 +102,8 @@ void AshTestBase::SetUp() {
       switches::kAshHostWindowBounds, "1+1-800x600");
 #if defined(OS_WIN)
   aura::test::SetUsePopupAsRootWindowForTest(true);
-  if (base::win::IsTSFAwareRequired())
-    ui::TSFBridge::Initialize();
 #endif
+  ui::InitializeInputMethodForTesting();
 
   ash_test_helper_->SetUp();
 
@@ -152,6 +151,7 @@ void AshTestBase::TearDown() {
 
   ash_test_helper_->TearDown();
 
+  ui::ShutdownInputMethodForTesting();
 #if defined(OS_WIN)
   aura::test::SetUsePopupAsRootWindowForTest(false);
   // Kill the viewer process if we spun one up.
