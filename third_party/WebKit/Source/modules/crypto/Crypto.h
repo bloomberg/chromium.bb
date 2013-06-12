@@ -30,6 +30,7 @@
 #define Crypto_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "modules/crypto/SubtleCrypto.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -44,8 +45,12 @@ public:
 
     void getRandomValues(ArrayBufferView*, ExceptionCode&);
 
+    SubtleCrypto* subtle();
+
 private:
     Crypto();
+
+    RefPtr<SubtleCrypto> m_subtleCrypto;
 };
 
 }

@@ -11,6 +11,7 @@
     'modules_idl_files': [
       'crypto/Crypto.idl',
       'crypto/DOMWindowCrypto.idl',
+      'crypto/SubtleCrypto.idl',
       'device_orientation/DeviceAcceleration.idl',
       'device_orientation/DeviceMotionEvent.idl',
       'device_orientation/DeviceRotationRate.idl',
@@ -186,6 +187,8 @@
       'crypto/Crypto.h',
       'crypto/DOMWindowCrypto.cpp',
       'crypto/DOMWindowCrypto.h',
+      'crypto/SubtleCrypto.cpp',
+      'crypto/SubtleCrypto.h',
       'device_orientation/DeviceAcceleration.cpp',
       'device_orientation/DeviceAcceleration.h',
       'device_orientation/DeviceMotionClient.h',

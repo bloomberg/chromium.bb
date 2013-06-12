@@ -70,4 +70,11 @@ void Crypto::getRandomValues(ArrayBufferView* array, ExceptionCode& ec)
     cryptographicallyRandomValues(array->baseAddress(), array->byteLength());
 }
 
+SubtleCrypto* Crypto::subtle()
+{
+    if (!m_subtleCrypto)
+        m_subtleCrypto = SubtleCrypto::create();
+    return m_subtleCrypto.get();
+}
+
 }
