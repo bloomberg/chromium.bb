@@ -39,7 +39,7 @@ class WebMediaStreamCenterClient {
 public:
     virtual ~WebMediaStreamCenterClient() { }
 
-    virtual void stopLocalMediaStream(WebMediaStream) = 0;
+    virtual void stopLocalMediaStream(const WebMediaStream&) = 0;
 };
 
 } // namespace WebKit

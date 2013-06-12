@@ -29,44 +29,53 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebMediaStreamPrivate_h
-#define WebMediaStreamPrivate_h
+#ifndef MediaStreamDescriptor_h
+#define MediaStreamDescriptor_h
 
-#include "core/platform/chromium/support/WebMediaStreamClient.h"
 #include "core/platform/mediastream/MediaStreamComponent.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
+#include <wtf/RefCounted.h>
+#include <wtf/Vector.h>
 
-namespace WebKit {
+namespace WebCore {
 
-class WebMediaStreamPrivate : public RefCounted<WebMediaStreamPrivate> {
+class MediaStreamDescriptorClient {
+public:
+    virtual ~MediaStreamDescriptorClient() { }
+
+    virtual void trackEnded() = 0;
+    virtual void streamEnded() = 0;
+    virtual void addRemoteTrack(MediaStreamComponent*) = 0;
+    virtual void removeRemoteTrack(MediaStreamComponent*) = 0;
+};
+
+class MediaStreamDescriptor : public RefCounted<MediaStreamDescriptor> {
 public:
     class ExtraData : public RefCounted<ExtraData> {
     public:
         virtual ~ExtraData() { }
     };
 
-    static PassRefPtr<WebMediaStreamPrivate> create(const WebCore::MediaStreamSourceVector& audioSources, const WebCore::MediaStreamSourceVector& videoSources);
+    static PassRefPtr<MediaStreamDescriptor> create(const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources);
 
-    static PassRefPtr<WebMediaStreamPrivate> create(const String& id, const WebCore::MediaStreamComponentVector& audioComponents, const WebCore::MediaStreamComponentVector& videoComponents);
+    static PassRefPtr<MediaStreamDescriptor> create(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents);
 
-    WebKit::WebMediaStreamClient* client() const { return m_client; }
-    void setClient(WebKit::WebMediaStreamClient* client) { m_client = client; }
+    MediaStreamDescriptorClient* client() const { return m_client; }
+    void setClient(MediaStreamDescriptorClient* client) { m_client = client; }
 
     String id() const { return m_id; }
 
     unsigned numberOfAudioComponents() const { return m_audioComponents.size(); }
-    WebCore::MediaStreamComponent* audioComponent(unsigned index) const { return m_audioComponents[index].get(); }
+    MediaStreamComponent* audioComponent(unsigned index) const { return m_audioComponents[index].get(); }
 
     unsigned numberOfVideoComponents() const { return m_videoComponents.size(); }
-    WebCore::MediaStreamComponent* videoComponent(unsigned index) const { return m_videoComponents[index].get(); }
+    MediaStreamComponent* videoComponent(unsigned index) const { return m_videoComponents[index].get(); }
 
-    void addComponent(WebCore::MediaStreamComponent*);
-    void removeComponent(WebCore::MediaStreamComponent*);
+    void addComponent(PassRefPtr<MediaStreamComponent>);
+    void removeComponent(PassRefPtr<MediaStreamComponent>);
 
-    void addRemoteTrack(WebCore::MediaStreamComponent*);
-    void removeRemoteTrack(WebCore::MediaStreamComponent*);
+    void addRemoteTrack(MediaStreamComponent*);
+    void removeRemoteTrack(MediaStreamComponent*);
 
     bool ended() const { return m_ended; }
     void setEnded() { m_ended = true; }
@@ -75,20 +84,20 @@ public:
     void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
 
 private:
-    WebMediaStreamPrivate(const String& id, const WebCore::MediaStreamSourceVector& audioSources, const WebCore::MediaStreamSourceVector& videoSources);
-    WebMediaStreamPrivate(const String& id, const WebCore::MediaStreamComponentVector& audioComponents, const WebCore::MediaStreamComponentVector& videoComponents);
+    MediaStreamDescriptor(const String& id, const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources);
+    MediaStreamDescriptor(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents);
 
-    WebMediaStreamClient* m_client;
+    MediaStreamDescriptorClient* m_client;
     String m_id;
-    Vector<RefPtr<WebCore::MediaStreamComponent> > m_audioComponents;
-    Vector<RefPtr<WebCore::MediaStreamComponent> > m_videoComponents;
+    Vector<RefPtr<MediaStreamComponent> > m_audioComponents;
+    Vector<RefPtr<MediaStreamComponent> > m_videoComponents;
     bool m_ended;
 
     RefPtr<ExtraData> m_extraData;
 };
 
-typedef Vector<RefPtr<WebMediaStreamPrivate> > WebMediaStreamPrivateVector;
+typedef Vector<RefPtr<MediaStreamDescriptor> > MediaStreamDescriptorVector;
 
-} // namespace WebKit
+} // namespace WebCore
 
-#endif // WebMediaStreamPrivate_h
+#endif // MediaStreamDescriptor_h

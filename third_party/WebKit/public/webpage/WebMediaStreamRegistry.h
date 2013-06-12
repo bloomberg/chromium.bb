@@ -40,7 +40,6 @@ class WebURL;
 
 class WebMediaStreamRegistry {
 public:
-    // FIXME: rename this to lookupWebMediaStream since we're no longer using descriptors
     WEBKIT_EXPORT static WebMediaStream lookupMediaStreamDescriptor(const WebURL&);
 };
 

@@ -240,7 +240,7 @@ void WebMediaPlayerClientImpl::loadRequested()
 
 void WebMediaPlayerClientImpl::loadInternal()
 {
-    m_isMediaStream = !(WebCore::MediaStreamRegistry::registry().lookupWebMediaStream(m_url.string()).isNull());
+    m_isMediaStream = WebCore::MediaStreamRegistry::registry().lookupMediaStreamDescriptor(m_url.string());
 
 #if ENABLE(WEB_AUDIO)
     m_audioSourceProvider.wrap(0); // Clear weak reference to m_webMediaPlayer's WebAudioSourceProvider.

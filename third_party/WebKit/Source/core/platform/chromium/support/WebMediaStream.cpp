@@ -27,8 +27,8 @@
 #include "public/platform/WebMediaStream.h"
 
 #include "core/platform/UUID.h"
-#include "core/platform/chromium/support/WebMediaStreamPrivate.h"
 #include "core/platform/mediastream/MediaStreamComponent.h"
+#include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
 #include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebMediaStreamTrack.h"
@@ -43,7 +43,7 @@ namespace WebKit {
 
 namespace {
 
-class ExtraDataContainer : public WebMediaStreamPrivate::ExtraData {
+class ExtraDataContainer : public MediaStreamDescriptor::ExtraData {
 public:
     ExtraDataContainer(WebMediaStream::ExtraData* extraData) : m_extraData(adoptPtr(extraData)) { }
 
@@ -55,8 +55,13 @@ private:
 
 } // namespace
 
-WebMediaStream::WebMediaStream(WebMediaStreamPrivate* stream)
-    : m_private(stream)
+WebMediaStream::WebMediaStream(const PassRefPtr<WebCore::MediaStreamDescriptor>& mediaStreamDescriptor)
+    : m_private(mediaStreamDescriptor)
+{
+}
+
+WebMediaStream::WebMediaStream(WebCore::MediaStreamDescriptor* mediaStreamDescriptor)
+    : m_private(mediaStreamDescriptor)
 {
 }
 
@@ -77,7 +82,7 @@ WebString WebMediaStream::id() const
 
 WebMediaStream::ExtraData* WebMediaStream::extraData() const
 {
-    RefPtr<WebMediaStreamPrivate::ExtraData> data = m_private->extraData();
+    RefPtr<MediaStreamDescriptor::ExtraData> data = m_private->extraData();
     if (!data)
         return 0;
     return static_cast<ExtraDataContainer*>(data.get())->extraData();
@@ -106,68 +111,6 @@ void WebMediaStream::videoTracks(WebVector<WebMediaStreamTrack>& webTracks) cons
     webTracks.swap(result);
 }
 
-unsigned WebMediaStream::numberOfAudioComponents() const
-{
-    return m_private->numberOfAudioComponents();
-}
-
-WebCore::MediaStreamComponent* WebMediaStream::audioComponent(unsigned index) const
-{
-    return m_private->audioComponent(index);
-}
-
-unsigned WebMediaStream::numberOfVideoComponents() const
-{
-    return m_private->numberOfVideoComponents();
-}
-
-WebCore::MediaStreamComponent* WebMediaStream::videoComponent(unsigned index) const
-{
-    return m_private->videoComponent(index);
-}
-
-void WebMediaStream::addComponent(WebCore::MediaStreamComponent* component)
-{
-    ASSERT(!isNull());
-    m_private->addComponent(component);
-}
-
-void WebMediaStream::removeComponent(WebCore::MediaStreamComponent* component)
-{
-    ASSERT(!isNull());
-    m_private->removeComponent(component);
-}
-
-void WebMediaStream::trackEnded()
-{
-    m_private->client()->trackEnded();
-}
-
-void WebMediaStream::streamEnded()
-{
-    m_private->client()->streamEnded();
-}
-
-bool WebMediaStream::ended() const
-{
-    return m_private->ended();
-}
-
-void WebMediaStream::setEnded()
-{
-    m_private->setEnded();
-}
-
-WebMediaStreamClient* WebMediaStream::client()
-{
-    return m_private->client();
-}
-
-void WebMediaStream::setClient(WebMediaStreamClient* client)
-{
-    m_private->setClient(client);
-}
-
 void WebMediaStream::addTrack(const WebMediaStreamTrack& track)
 {
     ASSERT(!isNull());
@@ -178,6 +121,22 @@ void WebMediaStream::removeTrack(const WebMediaStreamTrack& track)
 {
     ASSERT(!isNull());
     m_private->removeRemoteTrack(track);
+}
+
+WebMediaStream& WebMediaStream::operator=(const PassRefPtr<WebCore::MediaStreamDescriptor>& mediaStreamDescriptor)
+{
+    m_private = mediaStreamDescriptor;
+    return *this;
+}
+
+WebMediaStream::operator PassRefPtr<WebCore::MediaStreamDescriptor>() const
+{
+    return m_private.get();
+}
+
+WebMediaStream::operator WebCore::MediaStreamDescriptor*() const
+{
+    return m_private.get();
 }
 
 void WebMediaStream::initialize(const WebString& label, const WebVector<WebMediaStreamSource>& audioSources, const WebVector<WebMediaStreamSource>& videoSources)
@@ -191,12 +150,12 @@ void WebMediaStream::initialize(const WebString& label, const WebVector<WebMedia
         MediaStreamSource* source = videoSources[i];
         video.append(MediaStreamComponent::create(source->id(), source));
     }
-    m_private = WebMediaStreamPrivate::create(label, audio, video);
+    m_private = MediaStreamDescriptor::create(label, audio, video);
 }
 
 void WebMediaStream::initialize(const WebVector<WebMediaStreamTrack>& audioTracks, const WebVector<WebMediaStreamTrack>& videoTracks)
 {
-    initialize(WebCore::createCanonicalUUIDString(), audioTracks, videoTracks);
+    initialize(createCanonicalUUIDString(), audioTracks, videoTracks);
 }
 
 void WebMediaStream::initialize(const WebString& label, const WebVector<WebMediaStreamTrack>& audioTracks, const WebVector<WebMediaStreamTrack>& videoTracks)
@@ -210,7 +169,7 @@ void WebMediaStream::initialize(const WebString& label, const WebVector<WebMedia
         MediaStreamComponent* component = videoTracks[i];
         video.append(component);
     }
-    m_private = WebMediaStreamPrivate::create(label, audio, video);
+    m_private = MediaStreamDescriptor::create(label, audio, video);
 }
 
 void WebMediaStream::assign(const WebMediaStream& other)

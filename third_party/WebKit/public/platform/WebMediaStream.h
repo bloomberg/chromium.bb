@@ -28,19 +28,17 @@
 #include "WebCommon.h"
 #include "WebNonCopyable.h"
 #include "WebPrivatePtr.h"
-#include "WebString.h"
 #include "WebVector.h"
 
 namespace WebCore {
-class MediaStreamComponent;
+class MediaStreamDescriptor;
 }
 
 namespace WebKit {
 
-class WebMediaStreamClient;
-class WebMediaStreamPrivate;
 class WebMediaStreamSource;
 class WebMediaStreamTrack;
+class WebString;
 
 class WebMediaStream {
 public:
@@ -93,37 +91,15 @@ public:
     WEBKIT_EXPORT void setExtraData(ExtraData*);
 
 #if WEBKIT_IMPLEMENTATION
-    WebMediaStream(WebMediaStreamPrivate*);
-    WebMediaStream(const WebString& label, const WebVector<WebMediaStreamSource>& audioSources, const WebVector<WebMediaStreamSource>& videoSources)
-    {
-        this->initialize(label, audioSources, videoSources);
-    }
-    WebMediaStream(const WebVector<WebMediaStreamTrack>& audioTracks, const WebVector<WebMediaStreamTrack>& videoTracks)
-    {
-        this->initialize(audioTracks, videoTracks);
-    }
-
-    unsigned numberOfAudioComponents() const;
-    WebCore::MediaStreamComponent* audioComponent(unsigned index) const;
-
-    unsigned numberOfVideoComponents() const;
-    WebCore::MediaStreamComponent* videoComponent(unsigned index) const;
-
-    void addComponent(WebCore::MediaStreamComponent*);
-    void removeComponent(WebCore::MediaStreamComponent*);
-
-    void trackEnded();
-    void streamEnded();
-
-    bool ended() const;
-    void setEnded();
-
-    WebKit::WebMediaStreamClient* client();
-    void setClient(WebKit::WebMediaStreamClient*);
+    WebMediaStream(WebCore::MediaStreamDescriptor*);
+    WebMediaStream(const WTF::PassRefPtr<WebCore::MediaStreamDescriptor>&);
+    operator WTF::PassRefPtr<WebCore::MediaStreamDescriptor>() const;
+    operator WebCore::MediaStreamDescriptor*() const;
+    WebMediaStream& operator=(const WTF::PassRefPtr<WebCore::MediaStreamDescriptor>&);
 #endif
 
 private:
-    WebPrivatePtr<WebMediaStreamPrivate> m_private;
+    WebPrivatePtr<WebCore::MediaStreamDescriptor> m_private;
 };
 
 } // namespace WebKit

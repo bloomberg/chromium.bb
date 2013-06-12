@@ -113,8 +113,8 @@ public:
     virtual void didChangeSignalingState(SignalingState) OVERRIDE;
     virtual void didChangeIceGatheringState(IceGatheringState) OVERRIDE;
     virtual void didChangeIceConnectionState(IceConnectionState) OVERRIDE;
-    virtual void didAddRemoteStream(WebKit::WebMediaStream) OVERRIDE;
-    virtual void didRemoveRemoteStream(WebKit::WebMediaStream) OVERRIDE;
+    virtual void didAddRemoteStream(PassRefPtr<MediaStreamDescriptor>) OVERRIDE;
+    virtual void didRemoveRemoteStream(MediaStreamDescriptor*) OVERRIDE;
     virtual void didAddRemoteDataChannel(PassOwnPtr<RTCDataChannelHandler>) OVERRIDE;
 
     // EventTarget
