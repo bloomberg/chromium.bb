@@ -2372,11 +2372,11 @@
             '../ui/surface/surface.gyp:surface',
             '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
             '../v8/tools/gyp/v8.gyp:v8',
+            '../webkit/storage_browser.gyp:webkit_storage_browser',
+            '../webkit/storage_common.gyp:webkit_storage_common',
             '../webkit/support/webkit_support.gyp:glue',
             '../webkit/support/webkit_support.gyp:webkit_common',
             '../webkit/support/webkit_support.gyp:webkit_resources',
-            '../webkit/storage_browser.gyp:webkit_storage_browser',
-            '../webkit/storage_common.gyp:webkit_storage_common',
           ],
           'defines': [
             '<@(nacl_defines)',

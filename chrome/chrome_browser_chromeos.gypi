@@ -88,10 +88,10 @@
         '../v8/tools/gyp/v8.gyp:v8',
         '../ui/views/controls/webview/webview.gyp:webview',
         '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
-        '../webkit/support/webkit_support.gyp:glue',
-        '../webkit/support/webkit_support.gyp:webkit_resources',
         '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/storage_common.gyp:webkit_storage_common',
+        '../webkit/support/webkit_support.gyp:glue',
+        '../webkit/support/webkit_support.gyp:webkit_resources',
         'chrome_resources.gyp:chrome_strings',
       ],
       'defines': [
