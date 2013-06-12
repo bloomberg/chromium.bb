@@ -6,7 +6,9 @@
 
 #include <string>
 
+#include "base/base64.h"
 #include "base/logging.h"
+#include "base/rand_util.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_registry_interface.h"
 #include "content/renderer/render_thread_impl.h"
@@ -180,7 +182,12 @@ bool VideoDestinationHandler::Open(
   }
 
   // Create a new native video track and add it to |stream|.
-  std::string track_id = talk_base::ToString(talk_base::CreateRandomId64());
+  std::string track_id;
+  // According to spec, a media stream track's id should be globally unique.
+  // There's no easy way to strictly achieve that. The id generated with this
+  // method should be unique for most of the cases but theoretically it's
+  // possible we can get an id that's duplicated with the existing tracks.
+  base::Base64Encode(base::RandBytesAsString(64), &track_id);
   PpFrameWriter* writer = new PpFrameWriter();
   if (!factory->AddNativeVideoMediaTrack(track_id, &stream, writer)) {
     delete writer;
