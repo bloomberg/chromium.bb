@@ -1,11 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/test/dummy_input_method.h"
+#include "ui/base/ime/dummy_input_method.h"
 
 namespace ui {
-namespace test {
 
 DummyInputMethod::DummyInputMethod() {
 }
@@ -75,6 +74,5 @@ void DummyInputMethod::AddObserver(InputMethodObserver* observer) {
 void DummyInputMethod::RemoveObserver(InputMethodObserver* observer) {
 }
 
-}  // namespace test
 }  // namespace ui
 

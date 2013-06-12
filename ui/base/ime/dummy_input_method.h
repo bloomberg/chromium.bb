@@ -1,17 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_TEST_DUMMY_INPUT_METHOD_H_
-#define UI_BASE_TEST_DUMMY_INPUT_METHOD_H_
+#ifndef UI_BASE_IME_DUMMY_INPUT_METHOD_H_
+#define UI_BASE_IME_DUMMY_INPUT_METHOD_H_
 
 #include "ui/base/ime/input_method.h"
 
 namespace ui {
 
 class InputMethodObserver;
-
-namespace test {
 
 class DummyInputMethod : public InputMethod {
  public:
@@ -43,8 +41,7 @@ class DummyInputMethod : public InputMethod {
   DISALLOW_COPY_AND_ASSIGN(DummyInputMethod);
 };
 
-}  // namespace test
 }  // namespace ui
 
-#endif  // UI_BASE_TEST_DUMMY_INPUT_METHOD_H_
+#endif  // UI_BASE_IME_DUMMY_INPUT_METHOD_H_
 

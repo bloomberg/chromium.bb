@@ -4,6 +4,8 @@
 
 {
   'sources': [
+    'dummy_input_method.cc',
+    'dummy_input_method.h',
     'text_input_test_support.cc',
     'text_input_test_support.h',
     'win/mock_tsf_bridge.cc',

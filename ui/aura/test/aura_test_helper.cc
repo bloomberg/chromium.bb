@@ -15,7 +15,7 @@
 #include "ui/aura/test/test_activation_client.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
-#include "ui/base/test/dummy_input_method.h"
+#include "ui/base/ime/dummy_input_method.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/screen.h"
@@ -62,7 +62,7 @@ void AuraTestHelper::SetUp() {
   test_activation_client_.reset(
       new test::TestActivationClient(root_window_.get()));
   capture_client_.reset(new client::DefaultCaptureClient(root_window_.get()));
-  test_input_method_.reset(new ui::test::DummyInputMethod);
+  test_input_method_.reset(new ui::DummyInputMethod);
   root_window_->SetProperty(
       client::kRootWindowInputMethodKey,
       test_input_method_.get());
