@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_EXPERIMENTAL_BLUETOOTH_INPUT_CLIENT_H_
-#define CHROMEOS_DBUS_EXPERIMENTAL_BLUETOOTH_INPUT_CLIENT_H_
+#ifndef CHROMEOS_DBUS_BLUETOOTH_INPUT_CLIENT_H_
+#define CHROMEOS_DBUS_BLUETOOTH_INPUT_CLIENT_H_
 
 #include <string>
 #include <vector>
@@ -21,9 +21,9 @@ class Bus;
 
 namespace chromeos {
 
-// ExperimentalBluetoothInputClient is used to communicate with Bluetooth
-// Input objects.
-class CHROMEOS_EXPORT ExperimentalBluetoothInputClient {
+// BluetoothInputClient is used to communicate with objects representing
+// Bluetooth Input (HID) devices.
+class CHROMEOS_EXPORT BluetoothInputClient {
  public:
   // Structure of properties associated with bluetooth input devices.
   struct Properties : public dbus::PropertySet {
@@ -58,7 +58,7 @@ class CHROMEOS_EXPORT ExperimentalBluetoothInputClient {
                                       const std::string& property_name) {}
   };
 
-  virtual ~ExperimentalBluetoothInputClient();
+  virtual ~BluetoothInputClient();
 
   // Adds and removes observers for events on all remote bluetooth input
   // devices. Check the |object_path| parameter of observer methods to
@@ -71,17 +71,16 @@ class CHROMEOS_EXPORT ExperimentalBluetoothInputClient {
   virtual Properties* GetProperties(const dbus::ObjectPath& object_path) = 0;
 
   // Creates the instance.
-  static ExperimentalBluetoothInputClient* Create(
-      DBusClientImplementationType type,
-      dbus::Bus* bus);
+  static BluetoothInputClient* Create(DBusClientImplementationType type,
+                                      dbus::Bus* bus);
 
  protected:
-  ExperimentalBluetoothInputClient();
+  BluetoothInputClient();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ExperimentalBluetoothInputClient);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothInputClient);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_EXPERIMENTAL_BLUETOOTH_INPUT_CLIENT_H_
+#endif  // CHROMEOS_DBUS_BLUETOOTH_INPUT_CLIENT_H_

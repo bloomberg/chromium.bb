@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_EXPERIMENTAL_BLUETOOTH_AGENT_MANAGER_CLIENT_H_
-#define CHROMEOS_DBUS_EXPERIMENTAL_BLUETOOTH_AGENT_MANAGER_CLIENT_H_
+#ifndef CHROMEOS_DBUS_BLUETOOTH_AGENT_MANAGER_CLIENT_H_
+#define CHROMEOS_DBUS_BLUETOOTH_AGENT_MANAGER_CLIENT_H_
 
 #include <string>
 #include <vector>
@@ -20,11 +20,11 @@ class Bus;
 
 namespace chromeos {
 
-// ExperimentalBluetoothAgentManagerClient is used to communicate with the
-// agent manager component of the Bluetooth daemon.
-class CHROMEOS_EXPORT ExperimentalBluetoothAgentManagerClient {
+// BluetoothAgentManagerClient is used to communicate with the agent manager
+// object of the Bluetooth daemon.
+class CHROMEOS_EXPORT BluetoothAgentManagerClient {
  public:
-  virtual ~ExperimentalBluetoothAgentManagerClient();
+  virtual ~BluetoothAgentManagerClient();
 
   // The ErrorCallback is used by agent manager methods to indicate failure.
   // It receives two arguments: the name of the error in |error_name| and
@@ -55,20 +55,19 @@ class CHROMEOS_EXPORT ExperimentalBluetoothAgentManagerClient {
                                    const ErrorCallback& error_callback) = 0;
 
  // Creates the instance.
-  static ExperimentalBluetoothAgentManagerClient* Create(
-      DBusClientImplementationType type,
-      dbus::Bus* bus);
+  static BluetoothAgentManagerClient* Create(DBusClientImplementationType type,
+                                             dbus::Bus* bus);
 
   // Constants used to indicate exceptional error conditions.
   static const char kNoResponseError[];
 
  protected:
-  ExperimentalBluetoothAgentManagerClient();
+  BluetoothAgentManagerClient();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ExperimentalBluetoothAgentManagerClient);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothAgentManagerClient);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_EXPERIMENTAL_BLUETOOTH_AGENT_MANAGER_CLIENT_H_
+#endif  // CHROMEOS_DBUS_BLUETOOTH_AGENT_MANAGER_CLIENT_H_

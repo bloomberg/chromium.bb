@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_EXPERIMENTAL_BLUETOOTH_PROFILE_MANAGER_CLIENT_H_
-#define CHROMEOS_DBUS_EXPERIMENTAL_BLUETOOTH_PROFILE_MANAGER_CLIENT_H_
+#ifndef CHROMEOS_DBUS_BLUETOOTH_PROFILE_MANAGER_CLIENT_H_
+#define CHROMEOS_DBUS_BLUETOOTH_PROFILE_MANAGER_CLIENT_H_
 
 #include <string>
 #include <vector>
@@ -20,9 +20,9 @@ class Bus;
 
 namespace chromeos {
 
-// ExperimentalBluetoothProfileManagerClient is used to communicate with
-// Bluetooth profile manager objects.
-class CHROMEOS_EXPORT ExperimentalBluetoothProfileManagerClient {
+// BluetoothProfileManagerClient is used to communicate with the profile
+// manager object of the Bluetooth daemon.
+class CHROMEOS_EXPORT BluetoothProfileManagerClient {
  public:
   // Species the role of the object within the profile. SYMMETRIC should be
   // usually used unless the profile requires you specify as a CLIENT or as a
@@ -72,7 +72,7 @@ class CHROMEOS_EXPORT ExperimentalBluetoothProfileManagerClient {
     uint16 features;
   };
 
-  virtual ~ExperimentalBluetoothProfileManagerClient();
+  virtual ~BluetoothProfileManagerClient();
 
   // The ErrorCallback is used by adapter methods to indicate failure.
   // It receives two arguments: the name of the error in |error_name| and
@@ -98,7 +98,7 @@ class CHROMEOS_EXPORT ExperimentalBluetoothProfileManagerClient {
 
 
   // Creates the instance.
-  static ExperimentalBluetoothProfileManagerClient* Create(
+  static BluetoothProfileManagerClient* Create(
       DBusClientImplementationType type,
       dbus::Bus* bus);
 
@@ -106,12 +106,12 @@ class CHROMEOS_EXPORT ExperimentalBluetoothProfileManagerClient {
   static const char kNoResponseError[];
 
  protected:
-  ExperimentalBluetoothProfileManagerClient();
+  BluetoothProfileManagerClient();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ExperimentalBluetoothProfileManagerClient);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothProfileManagerClient);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_EXPERIMENTAL_BLUETOOTH_PROFILE_MANAGER_CLIENT_H_
+#endif  // CHROMEOS_DBUS_BLUETOOTH_PROFILE_MANAGER_CLIENT_H_

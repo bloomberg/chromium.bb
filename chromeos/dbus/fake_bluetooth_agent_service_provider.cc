@@ -19,8 +19,7 @@ FakeBluetoothAgentServiceProvider::FakeBluetoothAgentServiceProvider(
 
   FakeBluetoothAgentManagerClient* fake_bluetooth_agent_manager_client =
       static_cast<FakeBluetoothAgentManagerClient*>(
-          DBusThreadManager::Get()->
-              GetExperimentalBluetoothAgentManagerClient());
+          DBusThreadManager::Get()->GetBluetoothAgentManagerClient());
   fake_bluetooth_agent_manager_client->RegisterAgentServiceProvider(this);
 }
 
@@ -29,8 +28,7 @@ FakeBluetoothAgentServiceProvider::~FakeBluetoothAgentServiceProvider() {
 
   FakeBluetoothAgentManagerClient* fake_bluetooth_agent_manager_client =
       static_cast<FakeBluetoothAgentManagerClient*>(
-          DBusThreadManager::Get()->
-              GetExperimentalBluetoothAgentManagerClient());
+          DBusThreadManager::Get()->GetBluetoothAgentManagerClient());
   fake_bluetooth_agent_manager_client->UnregisterAgentServiceProvider(this);
 }
 

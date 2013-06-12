@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/experimental_bluetooth_profile_service_provider.h"
+#include "chromeos/dbus/bluetooth_profile_service_provider.h"
 
 #include <string>
 
@@ -20,15 +20,13 @@
 
 namespace chromeos {
 
-// The ExperimentalBluetoothProfileServiceProvider implementation used in
-// production.
-class ExperimentalBluetoothProfileServiceProviderImpl
-    : public ExperimentalBluetoothProfileServiceProvider {
+// The BluetoothProfileServiceProvider implementation used in production.
+class BluetoothProfileServiceProviderImpl
+    : public BluetoothProfileServiceProvider {
  public:
-  ExperimentalBluetoothProfileServiceProviderImpl(
-      dbus::Bus* bus,
-      const dbus::ObjectPath& object_path,
-      Delegate* delegate)
+  BluetoothProfileServiceProviderImpl(dbus::Bus* bus,
+                                      const dbus::ObjectPath& object_path,
+                                      Delegate* delegate)
       : origin_thread_id_(base::PlatformThread::CurrentId()),
         bus_(bus),
         delegate_(delegate),
@@ -41,45 +39,37 @@ class ExperimentalBluetoothProfileServiceProviderImpl
     exported_object_->ExportMethod(
         bluetooth_profile::kBluetoothProfileInterface,
         bluetooth_profile::kRelease,
-        base::Bind(
-            &ExperimentalBluetoothProfileServiceProviderImpl::Release,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(
-            &ExperimentalBluetoothProfileServiceProviderImpl::OnExported,
-            weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&BluetoothProfileServiceProviderImpl::Release,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&BluetoothProfileServiceProviderImpl::OnExported,
+                   weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_profile::kBluetoothProfileInterface,
         bluetooth_profile::kNewConnection,
-        base::Bind(
-            &ExperimentalBluetoothProfileServiceProviderImpl::NewConnection,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(
-            &ExperimentalBluetoothProfileServiceProviderImpl::OnExported,
-            weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&BluetoothProfileServiceProviderImpl::NewConnection,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&BluetoothProfileServiceProviderImpl::OnExported,
+                   weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_profile::kBluetoothProfileInterface,
         bluetooth_profile::kRequestDisconnection,
-        base::Bind(
-         &ExperimentalBluetoothProfileServiceProviderImpl::RequestDisconnection,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(
-            &ExperimentalBluetoothProfileServiceProviderImpl::OnExported,
-            weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&BluetoothProfileServiceProviderImpl::RequestDisconnection,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&BluetoothProfileServiceProviderImpl::OnExported,
+                   weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_profile::kBluetoothProfileInterface,
         bluetooth_profile::kCancel,
-        base::Bind(
-            &ExperimentalBluetoothProfileServiceProviderImpl::Cancel,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(
-            &ExperimentalBluetoothProfileServiceProviderImpl::OnExported,
-            weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&BluetoothProfileServiceProviderImpl::Cancel,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&BluetoothProfileServiceProviderImpl::OnExported,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual ~ExperimentalBluetoothProfileServiceProviderImpl() {
+  virtual ~BluetoothProfileServiceProviderImpl() {
     VLOG(1) << "Cleaning up Bluetooth Profile: " << object_path_.value();
 
     // Unregister the object path so we can reuse with a new agent.
@@ -140,7 +130,7 @@ class ExperimentalBluetoothProfileServiceProviderImpl
     }
 
     Delegate::ConfirmationCallback callback = base::Bind(
-        &ExperimentalBluetoothProfileServiceProviderImpl::OnConfirmation,
+        &BluetoothProfileServiceProviderImpl::OnConfirmation,
         weak_ptr_factory_.GetWeakPtr(),
         method_call,
         response_sender);
@@ -165,7 +155,7 @@ class ExperimentalBluetoothProfileServiceProviderImpl
     }
 
     Delegate::ConfirmationCallback callback = base::Bind(
-        &ExperimentalBluetoothProfileServiceProviderImpl::OnConfirmation,
+        &BluetoothProfileServiceProviderImpl::OnConfirmation,
         weak_ptr_factory_.GetWeakPtr(),
         method_call,
         response_sender);
@@ -246,29 +236,24 @@ class ExperimentalBluetoothProfileServiceProviderImpl
   // than we do.
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<ExperimentalBluetoothProfileServiceProviderImpl>
-      weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothProfileServiceProviderImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExperimentalBluetoothProfileServiceProviderImpl);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothProfileServiceProviderImpl);
 };
 
-ExperimentalBluetoothProfileServiceProvider::
-    ExperimentalBluetoothProfileServiceProvider() {
+BluetoothProfileServiceProvider::BluetoothProfileServiceProvider() {
 }
 
-ExperimentalBluetoothProfileServiceProvider::
-    ~ExperimentalBluetoothProfileServiceProvider() {
+BluetoothProfileServiceProvider::~BluetoothProfileServiceProvider() {
 }
 
 // static
-ExperimentalBluetoothProfileServiceProvider*
-    ExperimentalBluetoothProfileServiceProvider::Create(
-        dbus::Bus* bus,
-        const dbus::ObjectPath& object_path,
-        Delegate* delegate) {
+BluetoothProfileServiceProvider* BluetoothProfileServiceProvider::Create(
+    dbus::Bus* bus,
+    const dbus::ObjectPath& object_path,
+    Delegate* delegate) {
   if (base::chromeos::IsRunningOnChromeOS()) {
-    return new ExperimentalBluetoothProfileServiceProviderImpl(
-        bus, object_path, delegate);
+    return new BluetoothProfileServiceProviderImpl(bus, object_path, delegate);
   } else {
     return new FakeBluetoothProfileServiceProvider(object_path, delegate);
   }

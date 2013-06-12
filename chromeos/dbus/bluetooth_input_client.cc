@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/experimental_bluetooth_input_client.h"
+#include "chromeos/dbus/bluetooth_input_client.h"
 
 #include <map>
 
@@ -18,7 +18,7 @@
 
 namespace chromeos {
 
-ExperimentalBluetoothInputClient::Properties::Properties(
+BluetoothInputClient::Properties::Properties(
     dbus::ObjectProxy* object_proxy,
     const std::string& interface_name,
     const PropertyChangedCallback& callback)
@@ -26,16 +26,16 @@ ExperimentalBluetoothInputClient::Properties::Properties(
   RegisterProperty(bluetooth_input::kReconnectModeProperty, &reconnect_mode);
 }
 
-ExperimentalBluetoothInputClient::Properties::~Properties() {
+BluetoothInputClient::Properties::~Properties() {
 }
 
 
-// The ExperimentalBluetoothInputClient implementation used in production.
-class ExperimentalBluetoothInputClientImpl
-    : public ExperimentalBluetoothInputClient,
+// The BluetoothInputClient implementation used in production.
+class BluetoothInputClientImpl
+    : public BluetoothInputClient,
       public dbus::ObjectManager::Interface {
  public:
-  explicit ExperimentalBluetoothInputClientImpl(dbus::Bus* bus)
+  explicit BluetoothInputClientImpl(dbus::Bus* bus)
       : bus_(bus),
         weak_ptr_factory_(this) {
     object_manager_ = bus_->GetObjectManager(
@@ -46,21 +46,21 @@ class ExperimentalBluetoothInputClientImpl
         bluetooth_input::kBluetoothInputInterface, this);
   }
 
-  virtual ~ExperimentalBluetoothInputClientImpl() {
+  virtual ~BluetoothInputClientImpl() {
     object_manager_->UnregisterInterface(
         bluetooth_input::kBluetoothInputInterface);
   }
 
-  // ExperimentalBluetoothInputClient override.
-  virtual void AddObserver(
-      ExperimentalBluetoothInputClient::Observer* observer) OVERRIDE {
+  // BluetoothInputClient override.
+  virtual void AddObserver(BluetoothInputClient::Observer* observer)
+      OVERRIDE {
     DCHECK(observer);
     observers_.AddObserver(observer);
   }
 
-  // ExperimentalBluetoothInputClient override.
-  virtual void RemoveObserver(
-      ExperimentalBluetoothInputClient::Observer* observer) OVERRIDE {
+  // BluetoothInputClient override.
+  virtual void RemoveObserver(BluetoothInputClient::Observer* observer)
+      OVERRIDE {
     DCHECK(observer);
     observers_.RemoveObserver(observer);
   }
@@ -73,13 +73,13 @@ class ExperimentalBluetoothInputClientImpl
     Properties* properties = new Properties(
         object_proxy,
         interface_name,
-        base::Bind(&ExperimentalBluetoothInputClientImpl::OnPropertyChanged,
+        base::Bind(&BluetoothInputClientImpl::OnPropertyChanged,
                    weak_ptr_factory_.GetWeakPtr(),
                    object_path));
     return static_cast<dbus::PropertySet*>(properties);
   }
 
-  // ExperimentalBluetoothInputClient override.
+  // BluetoothInputClient override.
   virtual Properties* GetProperties(const dbus::ObjectPath& object_path)
       OVERRIDE {
     return static_cast<Properties*>(
@@ -93,7 +93,7 @@ class ExperimentalBluetoothInputClientImpl
   // is created. Informs observers.
   virtual void ObjectAdded(const dbus::ObjectPath& object_path,
                            const std::string& interface_name) OVERRIDE {
-    FOR_EACH_OBSERVER(ExperimentalBluetoothInputClient::Observer, observers_,
+    FOR_EACH_OBSERVER(BluetoothInputClient::Observer, observers_,
                       InputAdded(object_path));
   }
 
@@ -101,7 +101,7 @@ class ExperimentalBluetoothInputClientImpl
   // is removed. Informs observers.
   virtual void ObjectRemoved(const dbus::ObjectPath& object_path,
                              const std::string& interface_name) OVERRIDE {
-    FOR_EACH_OBSERVER(ExperimentalBluetoothInputClient::Observer, observers_,
+    FOR_EACH_OBSERVER(BluetoothInputClient::Observer, observers_,
                       InputRemoved(object_path));
   }
 
@@ -110,7 +110,7 @@ class ExperimentalBluetoothInputClientImpl
   // call. Informs observers.
   void OnPropertyChanged(const dbus::ObjectPath& object_path,
                          const std::string& property_name) {
-    FOR_EACH_OBSERVER(ExperimentalBluetoothInputClient::Observer, observers_,
+    FOR_EACH_OBSERVER(BluetoothInputClient::Observer, observers_,
                       InputPropertyChanged(object_path, property_name));
   }
 
@@ -118,28 +118,28 @@ class ExperimentalBluetoothInputClientImpl
   dbus::ObjectManager* object_manager_;
 
   // List of observers interested in event notifications from us.
-  ObserverList<ExperimentalBluetoothInputClient::Observer> observers_;
+  ObserverList<BluetoothInputClient::Observer> observers_;
 
   // Weak pointer factory for generating 'this' pointers that might live longer
   // than we do.
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<ExperimentalBluetoothInputClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothInputClientImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExperimentalBluetoothInputClientImpl);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothInputClientImpl);
 };
 
-ExperimentalBluetoothInputClient::ExperimentalBluetoothInputClient() {
+BluetoothInputClient::BluetoothInputClient() {
 }
 
-ExperimentalBluetoothInputClient::~ExperimentalBluetoothInputClient() {
+BluetoothInputClient::~BluetoothInputClient() {
 }
 
-ExperimentalBluetoothInputClient* ExperimentalBluetoothInputClient::Create(
+BluetoothInputClient* BluetoothInputClient::Create(
     DBusClientImplementationType type,
     dbus::Bus* bus) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new ExperimentalBluetoothInputClientImpl(bus);
+    return new BluetoothInputClientImpl(bus);
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new FakeBluetoothInputClient();
 }

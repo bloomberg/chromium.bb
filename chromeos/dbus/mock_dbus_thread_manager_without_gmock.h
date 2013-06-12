@@ -57,20 +57,17 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   virtual dbus::Bus* GetSystemBus() OVERRIDE;
   virtual dbus::Bus* GetIBusBus() OVERRIDE;
 
+  virtual BluetoothAdapterClient* GetBluetoothAdapterClient() OVERRIDE;
+  virtual BluetoothAgentManagerClient*
+      GetBluetoothAgentManagerClient() OVERRIDE;
+  virtual BluetoothDeviceClient* GetBluetoothDeviceClient() OVERRIDE;
+  virtual BluetoothInputClient* GetBluetoothInputClient() OVERRIDE;
+  virtual BluetoothProfileManagerClient*
+      GetBluetoothProfileManagerClient() OVERRIDE;
   virtual CrasAudioClient* GetCrasAudioClient() OVERRIDE;
   virtual CrosDisksClient* GetCrosDisksClient() OVERRIDE;
   virtual CryptohomeClient* GetCryptohomeClient() OVERRIDE;
   virtual DebugDaemonClient* GetDebugDaemonClient() OVERRIDE;
-  virtual ExperimentalBluetoothAdapterClient*
-      GetExperimentalBluetoothAdapterClient() OVERRIDE;
-  virtual ExperimentalBluetoothAgentManagerClient*
-      GetExperimentalBluetoothAgentManagerClient() OVERRIDE;
-  virtual ExperimentalBluetoothDeviceClient*
-      GetExperimentalBluetoothDeviceClient() OVERRIDE;
-  virtual ExperimentalBluetoothInputClient*
-      GetExperimentalBluetoothInputClient() OVERRIDE;
-  virtual ExperimentalBluetoothProfileManagerClient*
-      GetExperimentalBluetoothProfileManagerClient() OVERRIDE;
   virtual ShillDeviceClient* GetShillDeviceClient() OVERRIDE;
   virtual ShillIPConfigClient* GetShillIPConfigClient() OVERRIDE;
   virtual ShillManagerClient* GetShillManagerClient() OVERRIDE;
@@ -186,7 +183,6 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   // their c'tors.
   ObserverList<DBusThreadManagerObserver> observers_;
 
-  // These fake_bluetooth_*_client_ are for ExperimentalBluetooth*Client.
   scoped_ptr<FakeBluetoothAdapterClient> fake_bluetooth_adapter_client_;
   scoped_ptr<FakeBluetoothAgentManagerClient>
       fake_bluetooth_agent_manager_client_;

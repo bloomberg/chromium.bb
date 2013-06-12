@@ -11,8 +11,8 @@
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
-#include "chromeos/dbus/experimental_bluetooth_adapter_client.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 
@@ -22,9 +22,9 @@ namespace chromeos {
 // adapter objects and is used both in test cases in place of a mock and on
 // the Linux desktop.
 class CHROMEOS_EXPORT FakeBluetoothAdapterClient
-    : public ExperimentalBluetoothAdapterClient {
+    : public BluetoothAdapterClient {
  public:
-  struct Properties : public ExperimentalBluetoothAdapterClient::Properties {
+  struct Properties : public BluetoothAdapterClient::Properties {
     explicit Properties(const PropertyChangedCallback & callback);
     virtual ~Properties();
 
@@ -39,7 +39,7 @@ class CHROMEOS_EXPORT FakeBluetoothAdapterClient
   FakeBluetoothAdapterClient();
   virtual ~FakeBluetoothAdapterClient();
 
-  // ExperimentalBluetoothAdapterClient override
+  // BluetoothAdapterClient override
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual std::vector<dbus::ObjectPath> GetAdapters() OVERRIDE;

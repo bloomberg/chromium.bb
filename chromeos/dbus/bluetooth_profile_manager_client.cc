@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/experimental_bluetooth_profile_manager_client.h"
+#include "chromeos/dbus/bluetooth_profile_manager_client.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -15,26 +15,25 @@
 
 namespace chromeos {
 
-const char ExperimentalBluetoothProfileManagerClient::kNoResponseError[] =
+const char BluetoothProfileManagerClient::kNoResponseError[] =
     "org.chromium.Error.NoResponse";
 
 
-ExperimentalBluetoothProfileManagerClient::Options::Options()
+BluetoothProfileManagerClient::Options::Options()
     : role(SYMMETRIC),
       require_authentication(false),
       require_authorization(false),
       auto_connect(true) {
 }
 
-ExperimentalBluetoothProfileManagerClient::Options::~Options() {
+BluetoothProfileManagerClient::Options::~Options() {
 }
 
-// The ExperimentalBluetoothProfileManagerClient implementation used in
-// production.
-class ExperimentalBluetoothProfileManagerClientImpl
-    : public ExperimentalBluetoothProfileManagerClient {
+// The BluetoothProfileManagerClient implementation used in production.
+class BluetoothProfileManagerClientImpl
+    : public BluetoothProfileManagerClient {
  public:
-  explicit ExperimentalBluetoothProfileManagerClientImpl(dbus::Bus* bus)
+  explicit BluetoothProfileManagerClientImpl(dbus::Bus* bus)
       : bus_(bus),
         weak_ptr_factory_(this) {
     DCHECK(bus_);
@@ -44,10 +43,10 @@ class ExperimentalBluetoothProfileManagerClientImpl
             bluetooth_profile_manager::kBluetoothProfileManagerServicePath));
   }
 
-  virtual ~ExperimentalBluetoothProfileManagerClientImpl() {
+  virtual ~BluetoothProfileManagerClientImpl() {
   }
 
-  // ExperimentalBluetoothProfileManagerClient override.
+  // BluetoothProfileManagerClient override.
   virtual void RegisterProfile(const dbus::ObjectPath& profile_path,
                                const std::string& uuid,
                                const Options& options,
@@ -166,13 +165,13 @@ class ExperimentalBluetoothProfileManagerClientImpl
     object_proxy_->CallMethodWithErrorCallback(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&ExperimentalBluetoothProfileManagerClientImpl::OnSuccess,
+        base::Bind(&BluetoothProfileManagerClientImpl::OnSuccess,
                    weak_ptr_factory_.GetWeakPtr(), callback),
-        base::Bind(&ExperimentalBluetoothProfileManagerClientImpl::OnError,
+        base::Bind(&BluetoothProfileManagerClientImpl::OnError,
                    weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
-  // ExperimentalBluetoothProfileManagerClient override.
+  // BluetoothProfileManagerClient override.
   virtual void UnregisterProfile(const dbus::ObjectPath& profile_path,
                                  const base::Closure& callback,
                                  const ErrorCallback& error_callback) OVERRIDE {
@@ -186,9 +185,9 @@ class ExperimentalBluetoothProfileManagerClientImpl
     object_proxy_->CallMethodWithErrorCallback(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&ExperimentalBluetoothProfileManagerClientImpl::OnSuccess,
+        base::Bind(&BluetoothProfileManagerClientImpl::OnSuccess,
                    weak_ptr_factory_.GetWeakPtr(), callback),
-        base::Bind(&ExperimentalBluetoothProfileManagerClientImpl::OnError,
+        base::Bind(&BluetoothProfileManagerClientImpl::OnError,
                    weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
@@ -224,26 +223,22 @@ class ExperimentalBluetoothProfileManagerClientImpl
   // than we do.
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<ExperimentalBluetoothProfileManagerClientImpl>
-      weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothProfileManagerClientImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExperimentalBluetoothProfileManagerClientImpl);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothProfileManagerClientImpl);
 };
 
-ExperimentalBluetoothProfileManagerClient::
-    ExperimentalBluetoothProfileManagerClient() {
+BluetoothProfileManagerClient::BluetoothProfileManagerClient() {
 }
 
-ExperimentalBluetoothProfileManagerClient::
-    ~ExperimentalBluetoothProfileManagerClient() {
+BluetoothProfileManagerClient::~BluetoothProfileManagerClient() {
 }
 
-ExperimentalBluetoothProfileManagerClient*
-    ExperimentalBluetoothProfileManagerClient::Create(
-        DBusClientImplementationType type,
-        dbus::Bus* bus) {
+BluetoothProfileManagerClient* BluetoothProfileManagerClient::Create(
+    DBusClientImplementationType type,
+    dbus::Bus* bus) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new ExperimentalBluetoothProfileManagerClientImpl(bus);
+    return new BluetoothProfileManagerClientImpl(bus);
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new FakeBluetoothProfileManagerClient();
 }

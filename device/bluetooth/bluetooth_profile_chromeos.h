@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_PROFILE_EXPERIMENTAL_CHROMEOS_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_PROFILE_EXPERIMENTAL_CHROMEOS_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_PROFILE_CHROMEOS_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_PROFILE_CHROMEOS_H_
 
 #include <string>
 
@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/experimental_bluetooth_profile_service_provider.h"
+#include "chromeos/dbus/bluetooth_profile_service_provider.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_profile.h"
 
@@ -30,13 +30,11 @@ class BluetoothAdapter;
 
 namespace chromeos {
 
-// The BluetoothProfileExperimentalChromeOS class implements BluetoothProfile
-// for the Chrome OS platform using the Bluetooth Smart capable backend (there
-// is no implementation for the older backend). It will be renamed to
-// BluetoothProfileChromeOS, once the backend is the sole implementation.
-class CHROMEOS_EXPORT BluetoothProfileExperimentalChromeOS
+// The BluetoothProfileChromeOS class implements BluetoothProfile for the
+// Chrome OS platform.
+class CHROMEOS_EXPORT BluetoothProfileChromeOS
     : public device::BluetoothProfile,
-      private ExperimentalBluetoothProfileServiceProvider::Delegate {
+      private BluetoothProfileServiceProvider::Delegate {
  public:
   // BluetoothProfile override.
   virtual void Unregister() OVERRIDE;
@@ -49,8 +47,8 @@ class CHROMEOS_EXPORT BluetoothProfileExperimentalChromeOS
  private:
   friend class BluetoothProfile;
 
-  BluetoothProfileExperimentalChromeOS();
-  virtual ~BluetoothProfileExperimentalChromeOS();
+  BluetoothProfileChromeOS();
+  virtual ~BluetoothProfileChromeOS();
 
   // Called by BluetoothProfile::Register to initialize the profile object
   // asynchronously. |uuid|, |options| and |callback| are the arguments to
@@ -59,13 +57,12 @@ class CHROMEOS_EXPORT BluetoothProfileExperimentalChromeOS
             const device::BluetoothProfile::Options& options,
             const ProfileCallback& callback);
 
-  // ExperimentalBluetoothProfileServiceProvider::Delegate override.
+  // BluetoothProfileServiceProvider::Delegate override.
   virtual void Release() OVERRIDE;
   virtual void NewConnection(
       const dbus::ObjectPath& device_path,
       scoped_ptr<dbus::FileDescriptor> fd,
-      const ExperimentalBluetoothProfileServiceProvider::Delegate::Options&
-          options,
+      const BluetoothProfileServiceProvider::Delegate::Options& options,
       const ConfirmationCallback& callback) OVERRIDE;
   virtual void RequestDisconnection(
       const dbus::ObjectPath& device_path,
@@ -94,14 +91,12 @@ class CHROMEOS_EXPORT BluetoothProfileExperimentalChromeOS
   // becomes the result of a PostTaskAndReplyWithResult() call.
   void GetAdapter(
       const dbus::ObjectPath& device_path,
-      const ExperimentalBluetoothProfileServiceProvider::Delegate::Options&
-          options,
+      const BluetoothProfileServiceProvider::Delegate::Options& options,
       const ConfirmationCallback& callback,
       scoped_ptr<dbus::FileDescriptor> fd);
   void OnGetAdapter(
       const dbus::ObjectPath& device_path,
-      const ExperimentalBluetoothProfileServiceProvider::Delegate::Options&
-          options,
+      const BluetoothProfileServiceProvider::Delegate::Options& options,
       const ConfirmationCallback& callback,
       scoped_ptr<dbus::FileDescriptor> fd,
       scoped_refptr<device::BluetoothAdapter>);
@@ -114,7 +109,7 @@ class CHROMEOS_EXPORT BluetoothProfileExperimentalChromeOS
 
   // Local profile D-Bus object used for receiving profile delegate methods
   // from BlueZ.
-  scoped_ptr<ExperimentalBluetoothProfileServiceProvider> profile_;
+  scoped_ptr<BluetoothProfileServiceProvider> profile_;
 
   // Callback used on both outgoing and incoming connections to pass the
   // connected socket to profile object owner.
@@ -122,11 +117,11 @@ class CHROMEOS_EXPORT BluetoothProfileExperimentalChromeOS
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothProfileExperimentalChromeOS> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothProfileChromeOS> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothProfileExperimentalChromeOS);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothProfileChromeOS);
 };
 
 }  // namespace chromeos
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_PROFILE_EXPERIMENTAL_CHROMEOS_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_PROFILE_CHROMEOS_H_

@@ -67,15 +67,15 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_session_manager_client_(new MockSessionManagerClient) {
   EXPECT_CALL(*this, GetCryptohomeClient())
       .WillRepeatedly(Return(mock_cryptohome_client()));
-  EXPECT_CALL(*this, GetExperimentalBluetoothAdapterClient())
+  EXPECT_CALL(*this, GetBluetoothAdapterClient())
       .WillRepeatedly(Return(fake_bluetooth_adapter_client_.get()));
-  EXPECT_CALL(*this, GetExperimentalBluetoothAgentManagerClient())
+  EXPECT_CALL(*this, GetBluetoothAgentManagerClient())
       .WillRepeatedly(Return(fake_bluetooth_agent_manager_client()));
-  EXPECT_CALL(*this, GetExperimentalBluetoothDeviceClient())
+  EXPECT_CALL(*this, GetBluetoothDeviceClient())
       .WillRepeatedly(Return(fake_bluetooth_device_client_.get()));
-  EXPECT_CALL(*this, GetExperimentalBluetoothInputClient())
+  EXPECT_CALL(*this, GetBluetoothInputClient())
       .WillRepeatedly(Return(fake_bluetooth_input_client_.get()));
-  EXPECT_CALL(*this, GetExperimentalBluetoothProfileManagerClient())
+  EXPECT_CALL(*this, GetBluetoothProfileManagerClient())
       .WillRepeatedly(Return(fake_bluetooth_profile_manager_client()));
   EXPECT_CALL(*this, GetShillDeviceClient())
       .WillRepeatedly(Return(mock_shill_device_client()));

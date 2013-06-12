@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_EXPERIMENTAL_BLUETOOTH_AGENT_SERVICE_PROVIDER_H_
-#define CHROMEOS_DBUS_EXPERIMENTAL_BLUETOOTH_AGENT_SERVICE_PROVIDER_H_
+#ifndef CHROMEOS_DBUS_BLUETOOTH_AGENT_SERVICE_PROVIDER_H_
+#define CHROMEOS_DBUS_BLUETOOTH_AGENT_SERVICE_PROVIDER_H_
 
 #include <string>
 
@@ -15,19 +15,20 @@
 
 namespace chromeos {
 
-// ExperimentalBluetoothAgentServiceProvider is used to provide a D-Bus object
-// that BlueZ can communicate with during a remote device pairing request.
+// BluetoothAgentServiceProvider is used to provide a D-Bus object that
+// the bluetooth daemon can communicate with during a remote device pairing
+// request.
 //
 // Instantiate with a chosen D-Bus object path and delegate object, and pass
 // the D-Bus object path as the |agent_path| argument to the
-// chromeos::ExperimentalBluetoothAgentManagerClient::RegisterAgent() method.
+// chromeos::BluetoothAgentManagerClient::RegisterAgent() method.
 //
 // After initiating the pairing process with a device, using the
-// chromeos::ExperimentalBluetoothDeviceClient::Pair() method, the Bluetooth
-// daemon will make calls to this agent object and they will be passed on to
-// your Delegate object for handling. Responses should be returned using the
-// callbacks supplied to those methods.
-class CHROMEOS_EXPORT ExperimentalBluetoothAgentServiceProvider {
+// chromeos::BluetoothDeviceClient::Pair() method, the Bluetooth daemon will
+// make calls to this agent object and they will be passed on to your Delegate
+// object for handling. Responses should be returned using the callbacks
+// supplied to those methods.
+class CHROMEOS_EXPORT BluetoothAgentServiceProvider {
  public:
   // Interface for reacting to agent requests.
   class Delegate {
@@ -155,22 +156,24 @@ class CHROMEOS_EXPORT ExperimentalBluetoothAgentServiceProvider {
     virtual void Cancel() = 0;
   };
 
-  virtual ~ExperimentalBluetoothAgentServiceProvider();
+  virtual ~BluetoothAgentServiceProvider();
 
   // Creates the instance where |bus| is the D-Bus bus connection to export
   // the object onto, |object_path| is the object path that it should have
   // and |delegate| is the object to which all method calls will be passed
   // and responses generated from.
-  static ExperimentalBluetoothAgentServiceProvider* Create(
-      dbus::Bus* bus, const dbus::ObjectPath& object_path, Delegate* delegate);
+  static BluetoothAgentServiceProvider* Create(
+      dbus::Bus* bus,
+      const dbus::ObjectPath& object_path,
+      Delegate* delegate);
 
  protected:
-  ExperimentalBluetoothAgentServiceProvider();
+  BluetoothAgentServiceProvider();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ExperimentalBluetoothAgentServiceProvider);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothAgentServiceProvider);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_EXPERIMENTAL_BLUETOOTH_AGENT_SERVICE_PROVIDER_H_
+#endif  // CHROMEOS_DBUS_BLUETOOTH_AGENT_SERVICE_PROVIDER_H_

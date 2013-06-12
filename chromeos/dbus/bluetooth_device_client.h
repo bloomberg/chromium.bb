@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_EXPERIMENTAL_BLUETOOTH_DEVICE_CLIENT_H_
-#define CHROMEOS_DBUS_EXPERIMENTAL_BLUETOOTH_DEVICE_CLIENT_H_
+#ifndef CHROMEOS_DBUS_BLUETOOTH_DEVICE_CLIENT_H_
+#define CHROMEOS_DBUS_BLUETOOTH_DEVICE_CLIENT_H_
 
 #include <string>
 #include <vector>
@@ -22,9 +22,9 @@ class Bus;
 
 namespace chromeos {
 
-// ExperimentalBluetoothDeviceClient is used to communicate with Bluetooth
-// Device objects.
-class CHROMEOS_EXPORT ExperimentalBluetoothDeviceClient {
+// BluetoothDeviceClient is used to communicate with objects representing
+// remote Bluetooth Devices.
+class CHROMEOS_EXPORT BluetoothDeviceClient {
  public:
   // Structure of properties associated with bluetooth devices.
   struct Properties : public dbus::PropertySet {
@@ -108,7 +108,7 @@ class CHROMEOS_EXPORT ExperimentalBluetoothDeviceClient {
                                        const std::string& property_name) {}
   };
 
-  virtual ~ExperimentalBluetoothDeviceClient();
+  virtual ~BluetoothDeviceClient();
 
   // Adds and removes observers for events on all remote bluetooth
   // devices. Check the |object_path| parameter of observer methods to
@@ -174,21 +174,20 @@ class CHROMEOS_EXPORT ExperimentalBluetoothDeviceClient {
                              const ErrorCallback& error_callback) = 0;
 
   // Creates the instance.
-  static ExperimentalBluetoothDeviceClient* Create(
-      DBusClientImplementationType type,
-      dbus::Bus* bus);
+  static BluetoothDeviceClient* Create(DBusClientImplementationType type,
+                                       dbus::Bus* bus);
 
   // Constants used to indicate exceptional error conditions.
   static const char kNoResponseError[];
   static const char kUnknownDeviceError[];
 
  protected:
-  ExperimentalBluetoothDeviceClient();
+  BluetoothDeviceClient();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ExperimentalBluetoothDeviceClient);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceClient);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_EXPERIMENTAL_BLUETOOTH_DEVICE_CLIENT_H_
+#endif  // CHROMEOS_DBUS_BLUETOOTH_DEVICE_CLIENT_H_

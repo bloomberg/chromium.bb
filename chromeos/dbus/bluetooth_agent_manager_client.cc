@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/experimental_bluetooth_agent_manager_client.h"
+#include "chromeos/dbus/bluetooth_agent_manager_client.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -15,15 +15,14 @@
 
 namespace chromeos {
 
-const char ExperimentalBluetoothAgentManagerClient::kNoResponseError[] =
+const char BluetoothAgentManagerClient::kNoResponseError[] =
     "org.chromium.Error.NoResponse";
 
-// The ExperimentalBluetoothAgentManagerClient implementation used in
-// production.
-class ExperimentalBluetoothAgentManagerClientImpl
-    : public ExperimentalBluetoothAgentManagerClient {
+// The BluetoothAgentManagerClient implementation used in production.
+class BluetoothAgentManagerClientImpl
+    : public BluetoothAgentManagerClient {
  public:
-  explicit ExperimentalBluetoothAgentManagerClientImpl(dbus::Bus* bus)
+  explicit BluetoothAgentManagerClientImpl(dbus::Bus* bus)
       : bus_(bus),
         weak_ptr_factory_(this) {
     DCHECK(bus_);
@@ -33,10 +32,10 @@ class ExperimentalBluetoothAgentManagerClientImpl
             bluetooth_agent_manager::kBluetoothAgentManagerServicePath));
   }
 
-  virtual ~ExperimentalBluetoothAgentManagerClientImpl() {
+  virtual ~BluetoothAgentManagerClientImpl() {
   }
 
-  // ExperimentalBluetoothAgentManagerClient override.
+  // BluetoothAgentManagerClient override.
   virtual void RegisterAgent(const dbus::ObjectPath& agent_path,
                              const std::string& capability,
                              const base::Closure& callback,
@@ -52,13 +51,13 @@ class ExperimentalBluetoothAgentManagerClientImpl
     object_proxy_->CallMethodWithErrorCallback(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&ExperimentalBluetoothAgentManagerClientImpl::OnSuccess,
+        base::Bind(&BluetoothAgentManagerClientImpl::OnSuccess,
                    weak_ptr_factory_.GetWeakPtr(), callback),
-        base::Bind(&ExperimentalBluetoothAgentManagerClientImpl::OnError,
+        base::Bind(&BluetoothAgentManagerClientImpl::OnError,
                    weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
-  // ExperimentalBluetoothAgentManagerClient override.
+  // BluetoothAgentManagerClient override.
   virtual void UnregisterAgent(const dbus::ObjectPath& agent_path,
                                const base::Closure& callback,
                                const ErrorCallback& error_callback) OVERRIDE {
@@ -72,14 +71,14 @@ class ExperimentalBluetoothAgentManagerClientImpl
     object_proxy_->CallMethodWithErrorCallback(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&ExperimentalBluetoothAgentManagerClientImpl::OnSuccess,
+        base::Bind(&BluetoothAgentManagerClientImpl::OnSuccess,
                    weak_ptr_factory_.GetWeakPtr(), callback),
-        base::Bind(&ExperimentalBluetoothAgentManagerClientImpl::OnError,
+        base::Bind(&BluetoothAgentManagerClientImpl::OnError,
                    weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
 
-  // ExperimentalBluetoothAgentManagerClient override.
+  // BluetoothAgentManagerClient override.
   virtual void RequestDefaultAgent(const dbus::ObjectPath& agent_path,
                                    const base::Closure& callback,
                                    const ErrorCallback& error_callback)
@@ -94,9 +93,9 @@ class ExperimentalBluetoothAgentManagerClientImpl
     object_proxy_->CallMethodWithErrorCallback(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&ExperimentalBluetoothAgentManagerClientImpl::OnSuccess,
+        base::Bind(&BluetoothAgentManagerClientImpl::OnSuccess,
                    weak_ptr_factory_.GetWeakPtr(), callback),
-        base::Bind(&ExperimentalBluetoothAgentManagerClientImpl::OnError,
+        base::Bind(&BluetoothAgentManagerClientImpl::OnError,
                    weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
@@ -132,26 +131,23 @@ class ExperimentalBluetoothAgentManagerClientImpl
   // than we do.
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<ExperimentalBluetoothAgentManagerClientImpl>
+  base::WeakPtrFactory<BluetoothAgentManagerClientImpl>
       weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExperimentalBluetoothAgentManagerClientImpl);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothAgentManagerClientImpl);
 };
 
-ExperimentalBluetoothAgentManagerClient::
-    ExperimentalBluetoothAgentManagerClient() {
+BluetoothAgentManagerClient::BluetoothAgentManagerClient() {
 }
 
-ExperimentalBluetoothAgentManagerClient::
-    ~ExperimentalBluetoothAgentManagerClient() {
+BluetoothAgentManagerClient::~BluetoothAgentManagerClient() {
 }
 
-ExperimentalBluetoothAgentManagerClient*
-    ExperimentalBluetoothAgentManagerClient::Create(
-        DBusClientImplementationType type,
-        dbus::Bus* bus) {
+BluetoothAgentManagerClient* BluetoothAgentManagerClient::Create(
+    DBusClientImplementationType type,
+    dbus::Bus* bus) {
   if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new ExperimentalBluetoothAgentManagerClientImpl(bus);
+    return new BluetoothAgentManagerClientImpl(bus);
   DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
   return new FakeBluetoothAgentManagerClient();
 }

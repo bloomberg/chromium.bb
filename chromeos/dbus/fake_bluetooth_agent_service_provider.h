@@ -9,8 +9,8 @@
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/bluetooth_agent_service_provider.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
-#include "chromeos/dbus/experimental_bluetooth_agent_service_provider.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 
@@ -22,7 +22,7 @@ class FakeBluetoothAgentManagerClient;
 // Bluetooth agent object and is used both in test cases in place of a
 // mock and on the Linux desktop.
 class CHROMEOS_EXPORT FakeBluetoothAgentServiceProvider
-    : public ExperimentalBluetoothAgentServiceProvider {
+    : public BluetoothAgentServiceProvider {
  public:
   FakeBluetoothAgentServiceProvider(const dbus::ObjectPath& object_path,
                                     Delegate *delegate);

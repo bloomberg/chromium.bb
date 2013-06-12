@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_socket_experimental_chromeos.h"
+#include "device/bluetooth/bluetooth_socket_chromeos.h"
 
 #include <errno.h>
 #include <poll.h>
@@ -24,8 +24,7 @@
 
 namespace chromeos {
 
-BluetoothSocketExperimentalChromeOS::BluetoothSocketExperimentalChromeOS(
-    int fd)
+BluetoothSocketChromeOS::BluetoothSocketChromeOS(int fd)
     : fd_(fd) {
   // Fetch the socket type so we read from it correctly.
   int optval;
@@ -44,12 +43,11 @@ BluetoothSocketExperimentalChromeOS::BluetoothSocketExperimentalChromeOS(
   }
 }
 
-BluetoothSocketExperimentalChromeOS::~BluetoothSocketExperimentalChromeOS() {
+BluetoothSocketChromeOS::~BluetoothSocketChromeOS() {
   HANDLE_EINTR(close(fd_));
 }
 
-bool BluetoothSocketExperimentalChromeOS::Receive(
-    net::GrowableIOBuffer *buffer) {
+bool BluetoothSocketChromeOS::Receive(net::GrowableIOBuffer *buffer) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   if (socket_type_ == L2CAP) {
@@ -127,8 +125,7 @@ bool BluetoothSocketExperimentalChromeOS::Receive(
   return true;
 }
 
-bool BluetoothSocketExperimentalChromeOS::Send(
-    net::DrainableIOBuffer *buffer) {
+bool BluetoothSocketChromeOS::Send(net::DrainableIOBuffer *buffer) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   ssize_t bytes_written;
@@ -153,18 +150,18 @@ bool BluetoothSocketExperimentalChromeOS::Send(
   return true;
 }
 
-std::string BluetoothSocketExperimentalChromeOS::GetLastErrorMessage() const {
+std::string BluetoothSocketChromeOS::GetLastErrorMessage() const {
   return error_message_;
 }
 
 // static
-scoped_refptr<device::BluetoothSocket>
-BluetoothSocketExperimentalChromeOS::Create(dbus::FileDescriptor* fd) {
+scoped_refptr<device::BluetoothSocket> BluetoothSocketChromeOS::Create(
+    dbus::FileDescriptor* fd) {
   DCHECK(fd->is_valid());
 
-  BluetoothSocketExperimentalChromeOS* bluetooth_socket =
-      new BluetoothSocketExperimentalChromeOS(fd->TakeValue());;
-  return scoped_refptr<BluetoothSocketExperimentalChromeOS>(bluetooth_socket);
+  BluetoothSocketChromeOS* bluetooth_socket =
+      new BluetoothSocketChromeOS(fd->TakeValue());;
+  return scoped_refptr<BluetoothSocketChromeOS>(bluetooth_socket);
 }
 
 }  // namespace chromeos

@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_EXPERIMENTAL_BLUETOOTH_PROFILE_SERVICE_PROVIDER_H_
-#define CHROMEOS_DBUS_EXPERIMENTAL_BLUETOOTH_PROFILE_SERVICE_PROVIDER_H_
+#ifndef CHROMEOS_DBUS_BLUETOOTH_PROFILE_SERVICE_PROVIDER_H_
+#define CHROMEOS_DBUS_BLUETOOTH_PROFILE_SERVICE_PROVIDER_H_
 
 #include <string>
 
@@ -17,20 +17,19 @@
 
 namespace chromeos {
 
-// ExperimentalBluetoothProfileServiceProvider is used to provide a D-Bus
-// object that BlueZ can communicate with to connect application profiles.
+// BluetoothProfileServiceProvider is used to provide a D-Bus object that the
+// Bluetooth daemon can communicate with to connect application profiles.
 //
 // Instantiate with a chosen D-Bus object path and delegate object, and pass
 // the D-Bus object path as the |agent_path| argument to the
-// chromeos::ExperimentalBluetoothProfileManagerClient::RegisterProfile()
-// method.
+// chromeos::BluetoothProfileManagerClient::RegisterProfile() method.
 //
 // When an incoming profile connection occurs, or after initiating a connection
-// using the chromeos::ExperimentalBluetoothDeviceClient::ConnectProfile()
-// method, the Bluetooth daemon will make calls to this profile object and they
-// will be passed on to your Delegate object for handling. Responses should be
-// returned using the callbacks supplied to those methods.
-class CHROMEOS_EXPORT ExperimentalBluetoothProfileServiceProvider {
+// using the chromeos::BluetoothDeviceClient::ConnectProfile() method, the
+// Bluetooth daemon will make calls to this profile object and they will be
+// passed on to your Delegate object for handling. Responses should be returned
+// using the callbacks supplied to those methods.
+class CHROMEOS_EXPORT BluetoothProfileServiceProvider {
  public:
   // Interface for reacting to profile requests.
   class Delegate {
@@ -100,22 +99,24 @@ class CHROMEOS_EXPORT ExperimentalBluetoothProfileServiceProvider {
     virtual void Cancel() = 0;
   };
 
-  virtual ~ExperimentalBluetoothProfileServiceProvider();
+  virtual ~BluetoothProfileServiceProvider();
 
   // Creates the instance where |bus| is the D-Bus bus connection to export
   // the object onto, |object_path| is the object path that it should have
   // and |delegate| is the object to which all method calls will be passed
   // and responses generated from.
-  static ExperimentalBluetoothProfileServiceProvider* Create(
-      dbus::Bus* bus, const dbus::ObjectPath& object_path, Delegate* delegate);
+  static BluetoothProfileServiceProvider* Create(
+      dbus::Bus* bus,
+      const dbus::ObjectPath& object_path,
+      Delegate* delegate);
 
  protected:
-  ExperimentalBluetoothProfileServiceProvider();
+  BluetoothProfileServiceProvider();
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ExperimentalBluetoothProfileServiceProvider);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothProfileServiceProvider);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_EXPERIMENTAL_BLUETOOTH_PROFILE_SERVICE_PROVIDER_H_
+#endif  // CHROMEOS_DBUS_BLUETOOTH_PROFILE_SERVICE_PROVIDER_H_

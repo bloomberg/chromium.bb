@@ -5,7 +5,7 @@
 #include "device/bluetooth/bluetooth_profile.h"
 
 #if defined(OS_CHROMEOS)
-#include "device/bluetooth/bluetooth_profile_experimental_chromeos.h"
+#include "device/bluetooth/bluetooth_profile_chromeos.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "device/bluetooth/bluetooth_profile_mac.h"
@@ -46,8 +46,8 @@ void BluetoothProfile::Register(const std::string& uuid,
                                 const Options& options,
                                 const ProfileCallback& callback) {
 #if defined(OS_CHROMEOS)
-  chromeos::BluetoothProfileExperimentalChromeOS* profile = NULL;
-  profile = new chromeos::BluetoothProfileExperimentalChromeOS();
+  chromeos::BluetoothProfileChromeOS* profile = NULL;
+  profile = new chromeos::BluetoothProfileChromeOS();
   profile->Init(uuid, options, callback);
 #elif defined(OS_MACOSX)
   BluetoothProfile* profile = NULL;

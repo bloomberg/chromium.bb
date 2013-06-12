@@ -13,7 +13,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 
 #if defined(OS_CHROMEOS)
-#include "device/bluetooth/bluetooth_adapter_experimental_chromeos.h"
+#include "device/bluetooth/bluetooth_adapter_chromeos.h"
 #elif defined(OS_WIN)
 #include "device/bluetooth/bluetooth_adapter_win.h"
 #elif defined(OS_MACOSX)
@@ -74,8 +74,8 @@ bool BluetoothAdapterFactory::IsBluetoothAdapterAvailable() {
 void BluetoothAdapterFactory::GetAdapter(const AdapterCallback& callback) {
   if (!default_adapter.Get().get()) {
 #if defined(OS_CHROMEOS)
-    chromeos::BluetoothAdapterExperimentalChromeOS* new_adapter =
-        new chromeos::BluetoothAdapterExperimentalChromeOS();
+    chromeos::BluetoothAdapterChromeOS* new_adapter =
+        new chromeos::BluetoothAdapterChromeOS();
     default_adapter.Get() = new_adapter->weak_ptr_factory_.GetWeakPtr();
 #elif defined(OS_WIN)
     BluetoothAdapterWin* new_adapter = new BluetoothAdapterWin(

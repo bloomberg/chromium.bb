@@ -9,8 +9,8 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/bluetooth_profile_service_provider.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
-#include "chromeos/dbus/experimental_bluetooth_profile_service_provider.h"
 #include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
 
@@ -20,7 +20,7 @@ namespace chromeos {
 // Bluetooth agent object and is used both in test cases in place of a
 // mock and on the Linux desktop.
 class CHROMEOS_EXPORT FakeBluetoothProfileServiceProvider
-    : public ExperimentalBluetoothProfileServiceProvider {
+    : public BluetoothProfileServiceProvider {
  public:
   FakeBluetoothProfileServiceProvider(const dbus::ObjectPath& object_path,
                                       Delegate *delegate);

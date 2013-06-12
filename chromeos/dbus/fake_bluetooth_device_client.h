@@ -12,10 +12,10 @@
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/bluetooth_agent_service_provider.h"
+#include "chromeos/dbus/bluetooth_device_client.h"
+#include "chromeos/dbus/bluetooth_profile_service_provider.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
-#include "chromeos/dbus/experimental_bluetooth_agent_service_provider.h"
-#include "chromeos/dbus/experimental_bluetooth_device_client.h"
-#include "chromeos/dbus/experimental_bluetooth_profile_service_provider.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 
@@ -25,9 +25,9 @@ namespace chromeos {
 // device objects and is used both in test cases in place of a mock and on
 // the Linux desktop.
 class CHROMEOS_EXPORT FakeBluetoothDeviceClient
-    : public ExperimentalBluetoothDeviceClient {
+    : public BluetoothDeviceClient {
  public:
-  struct Properties : public ExperimentalBluetoothDeviceClient::Properties {
+  struct Properties : public BluetoothDeviceClient::Properties {
     explicit Properties(const PropertyChangedCallback & callback);
     virtual ~Properties();
 
@@ -42,7 +42,7 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
   FakeBluetoothDeviceClient();
   virtual ~FakeBluetoothDeviceClient();
 
-  // ExperimentalBluetoothDeviceClient override
+  // BluetoothDeviceClient override
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual std::vector<dbus::ObjectPath> GetDevicesForAdapter(
@@ -168,19 +168,19 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
       const dbus::ObjectPath& object_path,
       const base::Closure& callback,
       const ErrorCallback& error_callback,
-      ExperimentalBluetoothAgentServiceProvider::Delegate::Status status,
+      BluetoothAgentServiceProvider::Delegate::Status status,
       const std::string& pincode);
   void PasskeyCallback(
       const dbus::ObjectPath& object_path,
       const base::Closure& callback,
       const ErrorCallback& error_callback,
-      ExperimentalBluetoothAgentServiceProvider::Delegate::Status status,
+      BluetoothAgentServiceProvider::Delegate::Status status,
       uint32 passkey);
   void ConfirmationCallback(
       const dbus::ObjectPath& object_path,
       const base::Closure& callback,
       const ErrorCallback& error_callback,
-      ExperimentalBluetoothAgentServiceProvider::Delegate::Status status);
+      BluetoothAgentServiceProvider::Delegate::Status status);
   void SimulateKeypress(
       uint16 entered,
       const dbus::ObjectPath& object_path,
@@ -191,12 +191,12 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
       const dbus::ObjectPath& object_path,
       const base::Closure& callback,
       const ErrorCallback& error_callback,
-      ExperimentalBluetoothProfileServiceProvider::Delegate::Status status);
+      BluetoothProfileServiceProvider::Delegate::Status status);
   void DisconnectionCallback(
       const dbus::ObjectPath& object_path,
       const base::Closure& callback,
       const ErrorCallback& error_callback,
-      ExperimentalBluetoothProfileServiceProvider::Delegate::Status status);
+      BluetoothProfileServiceProvider::Delegate::Status status);
 
   // List of observers interested in event notifications from us.
   ObserverList<Observer> observers_;

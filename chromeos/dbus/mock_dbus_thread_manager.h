@@ -51,20 +51,17 @@ class MockDBusThreadManager : public DBusThreadManager {
                                  const base::Closure& closure));
   MOCK_METHOD0(GetSystemBus, dbus::Bus*(void));
   MOCK_METHOD0(GetIBusBus, dbus::Bus*(void));
+  MOCK_METHOD0(GetBluetoothAdapterClient, BluetoothAdapterClient*(void));
+  MOCK_METHOD0(GetBluetoothAgentManagerClient,
+               BluetoothAgentManagerClient*(void));
+  MOCK_METHOD0(GetBluetoothDeviceClient, BluetoothDeviceClient*(void));
+  MOCK_METHOD0(GetBluetoothInputClient, BluetoothInputClient*(void));
+  MOCK_METHOD0(GetBluetoothProfileManagerClient,
+               BluetoothProfileManagerClient*(void));
   MOCK_METHOD0(GetCrasAudioClient, CrasAudioClient*(void));
   MOCK_METHOD0(GetCrosDisksClient, CrosDisksClient*(void));
   MOCK_METHOD0(GetCryptohomeClient, CryptohomeClient*(void));
   MOCK_METHOD0(GetDebugDaemonClient, DebugDaemonClient*(void));
-  MOCK_METHOD0(GetExperimentalBluetoothAdapterClient,
-               ExperimentalBluetoothAdapterClient*(void));
-  MOCK_METHOD0(GetExperimentalBluetoothAgentManagerClient,
-               ExperimentalBluetoothAgentManagerClient*(void));
-  MOCK_METHOD0(GetExperimentalBluetoothDeviceClient,
-               ExperimentalBluetoothDeviceClient*(void));
-  MOCK_METHOD0(GetExperimentalBluetoothInputClient,
-               ExperimentalBluetoothInputClient*(void));
-  MOCK_METHOD0(GetExperimentalBluetoothProfileManagerClient,
-               ExperimentalBluetoothProfileManagerClient*(void));
   MOCK_METHOD0(GetShillDeviceClient, ShillDeviceClient*(void));
   MOCK_METHOD0(GetShillIPConfigClient, ShillIPConfigClient*(void));
   MOCK_METHOD0(GetShillManagerClient, ShillManagerClient*(void));

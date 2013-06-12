@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_EXPERIMENTAL_CHROMEOS_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_EXPERIMENTAL_CHROMEOS_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_CHROMEOS_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_CHROMEOS_H_
 
 #include <string>
 
@@ -27,11 +27,9 @@ class GrowableIOBuffer;
 
 namespace chromeos {
 
-// The BluetoothSocketExperimentalChromeOS class is an alternate implementation
-// of BluetoothSocket for the Chrome OS platform using the Bluetooth Smart
-// capable backend. It will become the sole implementation for Chrome OS, and
-// be renamed to BluetoothSocketChromeOS, once the backend is switched.
-class CHROMEOS_EXPORT BluetoothSocketExperimentalChromeOS
+// The BluetoothSocketChromeOS class implements BluetoothSocket for the
+// Chrome OS platform.
+class CHROMEOS_EXPORT BluetoothSocketChromeOS
     : public device::BluetoothSocket {
  public:
   // BluetoothSocket override.
@@ -46,10 +44,10 @@ class CHROMEOS_EXPORT BluetoothSocketExperimentalChromeOS
       dbus::FileDescriptor* fd);
 
  protected:
-  virtual ~BluetoothSocketExperimentalChromeOS();
+  virtual ~BluetoothSocketChromeOS();
 
  private:
-  BluetoothSocketExperimentalChromeOS(int fd);
+  BluetoothSocketChromeOS(int fd);
 
   // The different socket types have different reading patterns; l2cap sockets
   // have to be read with boundaries between datagrams preserved while rfcomm
@@ -67,9 +65,9 @@ class CHROMEOS_EXPORT BluetoothSocketExperimentalChromeOS
   // GetLastErrorMessage().
   std::string error_message_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketExperimentalChromeOS);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketChromeOS);
 };
 
 }  // namespace chromeos
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_EXPERIMENTAL_CHROMEOS_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_CHROMEOS_H_

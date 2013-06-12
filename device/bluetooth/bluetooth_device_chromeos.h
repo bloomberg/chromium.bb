@@ -1,30 +1,28 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_EXPERIMENTAL_CHROMEOS_H
-#define DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_EXPERIMENTAL_CHROMEOS_H
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_CHROMEOS_H
+#define DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_CHROMEOS_H
 
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/dbus/experimental_bluetooth_agent_service_provider.h"
-#include "chromeos/dbus/experimental_bluetooth_device_client.h"
+#include "chromeos/dbus/bluetooth_agent_service_provider.h"
+#include "chromeos/dbus/bluetooth_device_client.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_device.h"
 
 namespace chromeos {
 
-class BluetoothAdapterExperimentalChromeOS;
+class BluetoothAdapterChromeOS;
 
-// The BluetoothDeviceExperimentalChromeOS class is an alternate implementation
-// of BluetoothDevice for the Chrome OS platform using the Bluetooth Smart
-// capable backend. It will become the sole implementation for Chrome OS, and
-// be renamed to BluetoothDeviceChromeOS, once the backend is switched.
-class BluetoothDeviceExperimentalChromeOS
+// The BluetoothDeviceChromeOS class implements BluetoothDevice for the
+// Chrome OS platform.
+class BluetoothDeviceChromeOS
     : public device::BluetoothDevice,
-      private chromeos::ExperimentalBluetoothAgentServiceProvider::Delegate {
+      private chromeos::BluetoothAgentServiceProvider::Delegate {
  public:
   // BluetoothDevice override
   virtual uint32 GetBluetoothClass() const OVERRIDE;
@@ -79,14 +77,13 @@ class BluetoothDeviceExperimentalChromeOS
   virtual std::string GetDeviceName() const OVERRIDE;
 
  private:
-  friend class BluetoothAdapterExperimentalChromeOS;
+  friend class BluetoothAdapterChromeOS;
 
-  BluetoothDeviceExperimentalChromeOS(
-      BluetoothAdapterExperimentalChromeOS* adapter,
-      const dbus::ObjectPath& object_path);
-  virtual ~BluetoothDeviceExperimentalChromeOS();
+  BluetoothDeviceChromeOS(BluetoothAdapterChromeOS* adapter,
+                          const dbus::ObjectPath& object_path);
+  virtual ~BluetoothDeviceChromeOS();
 
-  // ExperimentalBluetoothAgentServiceProvider::Delegate override.
+  // BluetoothAgentServiceProvider::Delegate override.
   virtual void Release() OVERRIDE;
   virtual void RequestPinCode(const dbus::ObjectPath& device_path,
                               const PinCodeCallback& callback) OVERRIDE;
@@ -182,12 +179,11 @@ class BluetoothDeviceExperimentalChromeOS
                              const std::string& error_name,
                              const std::string& error_message);
 
-  // Return the object path of the device; used by
-  // BluetoothAdapterExperimentalChromeOS
+  // Return the object path of the device; used by BluetoothAdapterChromeOS
   const dbus::ObjectPath& object_path() const { return object_path_; }
 
   // The adapter that owns this device instance.
-  BluetoothAdapterExperimentalChromeOS* adapter_;
+  BluetoothAdapterChromeOS* adapter_;
 
   // The dbus object path of the device object.
   dbus::ObjectPath object_path_;
@@ -206,7 +202,7 @@ class BluetoothDeviceExperimentalChromeOS
 
   // During pairing this is set to an instance of a D-Bus agent object
   // intialized with our own class as its delegate.
-  scoped_ptr<ExperimentalBluetoothAgentServiceProvider> agent_;
+  scoped_ptr<BluetoothAgentServiceProvider> agent_;
 
   // During pairing these callbacks are set to those provided by method calls
   // made on us by |agent_| and are called by our own method calls such as
@@ -217,11 +213,11 @@ class BluetoothDeviceExperimentalChromeOS
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothDeviceExperimentalChromeOS> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothDeviceChromeOS> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceExperimentalChromeOS);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceChromeOS);
 };
 
 }  // namespace chromeos
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_EXPERIMENTAL_CHROMEOS_H
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_CHROMEOS_H

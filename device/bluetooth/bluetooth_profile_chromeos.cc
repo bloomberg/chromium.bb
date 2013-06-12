@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_profile_experimental_chromeos.h"
+#include "device/bluetooth/bluetooth_profile_chromeos.h"
 
 #include <string>
 
@@ -17,19 +17,19 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
+#include "chromeos/dbus/bluetooth_profile_manager_client.h"
+#include "chromeos/dbus/bluetooth_profile_service_provider.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/experimental_bluetooth_profile_manager_client.h"
-#include "chromeos/dbus/experimental_bluetooth_profile_service_provider.h"
 #include "dbus/bus.h"
 #include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
-#include "device/bluetooth/bluetooth_adapter_experimental_chromeos.h"
+#include "device/bluetooth/bluetooth_adapter_chromeos.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "device/bluetooth/bluetooth_device_experimental_chromeos.h"
+#include "device/bluetooth/bluetooth_device_chromeos.h"
 #include "device/bluetooth/bluetooth_profile.h"
 #include "device/bluetooth/bluetooth_socket.h"
-#include "device/bluetooth/bluetooth_socket_experimental_chromeos.h"
+#include "device/bluetooth/bluetooth_socket_chromeos.h"
 
 using device::BluetoothAdapter;
 using device::BluetoothAdapterFactory;
@@ -53,16 +53,16 @@ scoped_ptr<dbus::FileDescriptor> CheckValidity(
 
 namespace chromeos {
 
-BluetoothProfileExperimentalChromeOS::BluetoothProfileExperimentalChromeOS()
+BluetoothProfileChromeOS::BluetoothProfileChromeOS()
     : weak_ptr_factory_(this) {
 }
 
-BluetoothProfileExperimentalChromeOS::~BluetoothProfileExperimentalChromeOS() {
+BluetoothProfileChromeOS::~BluetoothProfileChromeOS() {
   DCHECK(object_path_.value().empty());
   DCHECK(profile_.get() == NULL);
 }
 
-void BluetoothProfileExperimentalChromeOS::Init(
+void BluetoothProfileChromeOS::Init(
     const std::string& uuid,
     const device::BluetoothProfile::Options& options,
     const ProfileCallback& callback) {
@@ -76,7 +76,7 @@ void BluetoothProfileExperimentalChromeOS::Init(
 
   uuid_ = uuid;
 
-  ExperimentalBluetoothProfileManagerClient::Options bluetooth_options;
+  BluetoothProfileManagerClient::Options bluetooth_options;
   bluetooth_options.name = options.name;
   bluetooth_options.service = uuid;
   bluetooth_options.channel = options.channel;
@@ -96,58 +96,53 @@ void BluetoothProfileExperimentalChromeOS::Init(
                                   uuid_path);
 
   dbus::Bus* system_bus = DBusThreadManager::Get()->GetSystemBus();
-  profile_.reset(ExperimentalBluetoothProfileServiceProvider::Create(
+  profile_.reset(BluetoothProfileServiceProvider::Create(
       system_bus, object_path_, this));
   DCHECK(profile_.get());
 
   VLOG(1) << object_path_.value() << ": Register profile";
-  DBusThreadManager::Get()->GetExperimentalBluetoothProfileManagerClient()->
+  DBusThreadManager::Get()->GetBluetoothProfileManagerClient()->
       RegisterProfile(
           object_path_,
           uuid,
           bluetooth_options,
-          base::Bind(
-              &BluetoothProfileExperimentalChromeOS::OnRegisterProfile,
-              weak_ptr_factory_.GetWeakPtr(),
-              callback),
-          base::Bind(
-              &BluetoothProfileExperimentalChromeOS::OnRegisterProfileError,
-              weak_ptr_factory_.GetWeakPtr(),
-              callback));
+          base::Bind(&BluetoothProfileChromeOS::OnRegisterProfile,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     callback),
+          base::Bind(&BluetoothProfileChromeOS::OnRegisterProfileError,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     callback));
 }
 
-void BluetoothProfileExperimentalChromeOS::Unregister() {
+void BluetoothProfileChromeOS::Unregister() {
   DCHECK(!object_path_.value().empty());
   DCHECK(profile_.get());
 
   profile_.reset();
 
   VLOG(1) << object_path_.value() << ": Unregister profile";
-  DBusThreadManager::Get()->GetExperimentalBluetoothProfileManagerClient()->
+  DBusThreadManager::Get()->GetBluetoothProfileManagerClient()->
       UnregisterProfile(
           object_path_,
-          base::Bind(
-              &BluetoothProfileExperimentalChromeOS::OnUnregisterProfile,
-              weak_ptr_factory_.GetWeakPtr()),
-          base::Bind(
-              &BluetoothProfileExperimentalChromeOS::OnUnregisterProfileError,
-              weak_ptr_factory_.GetWeakPtr()));
+          base::Bind(&BluetoothProfileChromeOS::OnUnregisterProfile,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::Bind(&BluetoothProfileChromeOS::OnUnregisterProfileError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void BluetoothProfileExperimentalChromeOS::SetConnectionCallback(
+void BluetoothProfileChromeOS::SetConnectionCallback(
     const ConnectionCallback& callback) {
   connection_callback_ = callback;
 }
 
-void BluetoothProfileExperimentalChromeOS::Release() {
+void BluetoothProfileChromeOS::Release() {
   VLOG(1) << object_path_.value() << ": Release";
 }
 
-void BluetoothProfileExperimentalChromeOS::NewConnection(
+void BluetoothProfileChromeOS::NewConnection(
     const dbus::ObjectPath& device_path,
     scoped_ptr<dbus::FileDescriptor> fd,
-    const ExperimentalBluetoothProfileServiceProvider::Delegate::Options&
-        options,
+    const BluetoothProfileServiceProvider::Delegate::Options& options,
     const ConfirmationCallback& callback) {
   VLOG(1) << object_path_.value() << ": New connection from device: "
           << device_path.value();;
@@ -165,31 +160,31 @@ void BluetoothProfileExperimentalChromeOS::NewConnection(
       base::WorkerPool::GetTaskRunner(false),
       FROM_HERE,
       base::Bind(&CheckValidity, base::Passed(&fd)),
-      base::Bind(&BluetoothProfileExperimentalChromeOS::GetAdapter,
+      base::Bind(&BluetoothProfileChromeOS::GetAdapter,
                  weak_ptr_factory_.GetWeakPtr(),
                  device_path,
                  options,
                  callback));
 }
 
-void BluetoothProfileExperimentalChromeOS::RequestDisconnection(
+void BluetoothProfileChromeOS::RequestDisconnection(
     const dbus::ObjectPath& device_path,
     const ConfirmationCallback& callback) {
   VLOG(1) << object_path_.value() << ": Request disconnection";
   callback.Run(SUCCESS);
 }
 
-void BluetoothProfileExperimentalChromeOS::Cancel() {
+void BluetoothProfileChromeOS::Cancel() {
   VLOG(1) << object_path_.value() << ": Cancel";
 }
 
-void BluetoothProfileExperimentalChromeOS::OnRegisterProfile(
+void BluetoothProfileChromeOS::OnRegisterProfile(
     const ProfileCallback& callback) {
   VLOG(1) << object_path_.value() << ": Profile registered";
   callback.Run(this);
 }
 
-void BluetoothProfileExperimentalChromeOS::OnRegisterProfileError(
+void BluetoothProfileChromeOS::OnRegisterProfileError(
     const ProfileCallback& callback,
     const std::string& error_name,
     const std::string& error_message) {
@@ -200,13 +195,13 @@ void BluetoothProfileExperimentalChromeOS::OnRegisterProfileError(
   Unregister();
 }
 
-void BluetoothProfileExperimentalChromeOS::OnUnregisterProfile() {
+void BluetoothProfileChromeOS::OnUnregisterProfile() {
   VLOG(1) << object_path_.value() << ": Profile unregistered";
   object_path_ = dbus::ObjectPath("");
   delete this;
 }
 
-void BluetoothProfileExperimentalChromeOS::OnUnregisterProfileError(
+void BluetoothProfileChromeOS::OnUnregisterProfileError(
     const std::string& error_name,
     const std::string& error_message) {
   LOG(WARNING) << object_path_.value() << ": Failed to unregister profile: "
@@ -215,10 +210,9 @@ void BluetoothProfileExperimentalChromeOS::OnUnregisterProfileError(
   delete this;
 }
 
-void BluetoothProfileExperimentalChromeOS::GetAdapter(
+void BluetoothProfileChromeOS::GetAdapter(
       const dbus::ObjectPath& device_path,
-      const ExperimentalBluetoothProfileServiceProvider::Delegate::Options&
-          options,
+      const BluetoothProfileServiceProvider::Delegate::Options& options,
       const ConfirmationCallback& callback,
       scoped_ptr<dbus::FileDescriptor> fd) {
   VLOG(1) << object_path_.value() << ": Validity check complete";
@@ -228,7 +222,7 @@ void BluetoothProfileExperimentalChromeOS::GetAdapter(
   }
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothProfileExperimentalChromeOS::OnGetAdapter,
+      base::Bind(&BluetoothProfileChromeOS::OnGetAdapter,
                  weak_ptr_factory_.GetWeakPtr(),
                  device_path,
                  options,
@@ -236,9 +230,9 @@ void BluetoothProfileExperimentalChromeOS::GetAdapter(
                  base::Passed(&fd)));
 }
 
-void BluetoothProfileExperimentalChromeOS::OnGetAdapter(
+void BluetoothProfileChromeOS::OnGetAdapter(
     const dbus::ObjectPath& device_path,
-    const ExperimentalBluetoothProfileServiceProvider::Delegate::Options&
+    const BluetoothProfileServiceProvider::Delegate::Options&
         options,
     const ConfirmationCallback& callback,
     scoped_ptr<dbus::FileDescriptor> fd,
@@ -246,13 +240,13 @@ void BluetoothProfileExperimentalChromeOS::OnGetAdapter(
   VLOG(1) << object_path_.value() << ": Obtained adapter reference";
   callback.Run(SUCCESS);
 
-  BluetoothDeviceExperimentalChromeOS* device =
-      static_cast<BluetoothAdapterExperimentalChromeOS*>(adapter.get())->
+  BluetoothDeviceChromeOS* device =
+      static_cast<BluetoothAdapterChromeOS*>(adapter.get())->
           GetDeviceWithPath(device_path);
   DCHECK(device);
 
   scoped_refptr<BluetoothSocket> socket((
-      BluetoothSocketExperimentalChromeOS::Create(fd.get())));
+      BluetoothSocketChromeOS::Create(fd.get())));
   connection_callback_.Run(device, socket);
 }
 

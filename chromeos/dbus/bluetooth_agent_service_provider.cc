@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/experimental_bluetooth_agent_service_provider.h"
+#include "chromeos/dbus/bluetooth_agent_service_provider.h"
 
 #include <string>
 
@@ -20,15 +20,13 @@
 
 namespace chromeos {
 
-// The ExperimentalBluetoothAgentServiceProvider implementation used in
-// production.
-class ExperimentalBluetoothAgentServiceProviderImpl
-    : public ExperimentalBluetoothAgentServiceProvider {
+// The BluetoothAgentServiceProvider implementation used in production.
+class BluetoothAgentServiceProviderImpl
+    : public BluetoothAgentServiceProvider {
  public:
-  ExperimentalBluetoothAgentServiceProviderImpl(
-      dbus::Bus* bus,
-      const dbus::ObjectPath& object_path,
-      Delegate* delegate)
+  BluetoothAgentServiceProviderImpl(dbus::Bus* bus,
+                                    const dbus::ObjectPath& object_path,
+                                    Delegate* delegate)
       : origin_thread_id_(base::PlatformThread::CurrentId()),
         bus_(bus),
         delegate_(delegate),
@@ -41,95 +39,77 @@ class ExperimentalBluetoothAgentServiceProviderImpl
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kRelease,
-        base::Bind(
-            &ExperimentalBluetoothAgentServiceProviderImpl::Release,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(
-            &ExperimentalBluetoothAgentServiceProviderImpl::OnExported,
-            weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&BluetoothAgentServiceProviderImpl::Release,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&BluetoothAgentServiceProviderImpl::OnExported,
+                   weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kRequestPinCode,
-        base::Bind(
-            &ExperimentalBluetoothAgentServiceProviderImpl::RequestPinCode,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(
-            &ExperimentalBluetoothAgentServiceProviderImpl::OnExported,
-            weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&BluetoothAgentServiceProviderImpl::RequestPinCode,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&BluetoothAgentServiceProviderImpl::OnExported,
+                   weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kDisplayPinCode,
-        base::Bind(
-            &ExperimentalBluetoothAgentServiceProviderImpl::DisplayPinCode,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(
-            &ExperimentalBluetoothAgentServiceProviderImpl::OnExported,
-            weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&BluetoothAgentServiceProviderImpl::DisplayPinCode,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&BluetoothAgentServiceProviderImpl::OnExported,
+                   weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kRequestPasskey,
-        base::Bind(
-            &ExperimentalBluetoothAgentServiceProviderImpl::RequestPasskey,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(
-            &ExperimentalBluetoothAgentServiceProviderImpl::OnExported,
-            weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&BluetoothAgentServiceProviderImpl::RequestPasskey,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&BluetoothAgentServiceProviderImpl::OnExported,
+                   weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kDisplayPasskey,
-        base::Bind(
-            &ExperimentalBluetoothAgentServiceProviderImpl::DisplayPasskey,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(
-            &ExperimentalBluetoothAgentServiceProviderImpl::OnExported,
-            weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&BluetoothAgentServiceProviderImpl::DisplayPasskey,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&BluetoothAgentServiceProviderImpl::OnExported,
+                   weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kRequestConfirmation,
-        base::Bind(
-            &ExperimentalBluetoothAgentServiceProviderImpl::RequestConfirmation,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(
-            &ExperimentalBluetoothAgentServiceProviderImpl::OnExported,
-            weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&BluetoothAgentServiceProviderImpl::RequestConfirmation,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&BluetoothAgentServiceProviderImpl::OnExported,
+                   weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kRequestAuthorization,
-        base::Bind(
-           &ExperimentalBluetoothAgentServiceProviderImpl::RequestAuthorization,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(
-            &ExperimentalBluetoothAgentServiceProviderImpl::OnExported,
-            weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&BluetoothAgentServiceProviderImpl::RequestAuthorization,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&BluetoothAgentServiceProviderImpl::OnExported,
+                   weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kAuthorizeService,
-        base::Bind(
-            &ExperimentalBluetoothAgentServiceProviderImpl::AuthorizeService,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(
-            &ExperimentalBluetoothAgentServiceProviderImpl::OnExported,
-            weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&BluetoothAgentServiceProviderImpl::AuthorizeService,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&BluetoothAgentServiceProviderImpl::OnExported,
+                   weak_ptr_factory_.GetWeakPtr()));
 
     exported_object_->ExportMethod(
         bluetooth_agent::kBluetoothAgentInterface,
         bluetooth_agent::kCancel,
-        base::Bind(
-            &ExperimentalBluetoothAgentServiceProviderImpl::Cancel,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(
-            &ExperimentalBluetoothAgentServiceProviderImpl::OnExported,
-            weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&BluetoothAgentServiceProviderImpl::Cancel,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&BluetoothAgentServiceProviderImpl::OnExported,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
-  virtual ~ExperimentalBluetoothAgentServiceProviderImpl() {
+  virtual ~BluetoothAgentServiceProviderImpl() {
     VLOG(1) << "Cleaning up Bluetooth Agent: " << object_path_.value();
 
     // Unregister the object path so we can reuse with a new agent.
@@ -170,7 +150,7 @@ class ExperimentalBluetoothAgentServiceProviderImpl
     }
 
     Delegate::PinCodeCallback callback = base::Bind(
-        &ExperimentalBluetoothAgentServiceProviderImpl::OnPinCode,
+        &BluetoothAgentServiceProviderImpl::OnPinCode,
         weak_ptr_factory_.GetWeakPtr(),
         method_call,
         response_sender);
@@ -217,7 +197,7 @@ class ExperimentalBluetoothAgentServiceProviderImpl
     }
 
     Delegate::PasskeyCallback callback = base::Bind(
-        &ExperimentalBluetoothAgentServiceProviderImpl::OnPasskey,
+        &BluetoothAgentServiceProviderImpl::OnPasskey,
         weak_ptr_factory_.GetWeakPtr(),
         method_call,
         response_sender);
@@ -270,7 +250,7 @@ class ExperimentalBluetoothAgentServiceProviderImpl
     }
 
     Delegate::ConfirmationCallback callback = base::Bind(
-        &ExperimentalBluetoothAgentServiceProviderImpl::OnConfirmation,
+        &BluetoothAgentServiceProviderImpl::OnConfirmation,
         weak_ptr_factory_.GetWeakPtr(),
         method_call,
         response_sender);
@@ -295,7 +275,7 @@ class ExperimentalBluetoothAgentServiceProviderImpl
     }
 
     Delegate::ConfirmationCallback callback = base::Bind(
-        &ExperimentalBluetoothAgentServiceProviderImpl::OnConfirmation,
+        &BluetoothAgentServiceProviderImpl::OnConfirmation,
         weak_ptr_factory_.GetWeakPtr(),
         method_call,
         response_sender);
@@ -322,7 +302,7 @@ class ExperimentalBluetoothAgentServiceProviderImpl
     }
 
     Delegate::ConfirmationCallback callback = base::Bind(
-        &ExperimentalBluetoothAgentServiceProviderImpl::OnConfirmation,
+        &BluetoothAgentServiceProviderImpl::OnConfirmation,
         weak_ptr_factory_.GetWeakPtr(),
         method_call,
         response_sender);
@@ -473,29 +453,24 @@ class ExperimentalBluetoothAgentServiceProviderImpl
   // than we do.
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<ExperimentalBluetoothAgentServiceProviderImpl>
-      weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothAgentServiceProviderImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExperimentalBluetoothAgentServiceProviderImpl);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothAgentServiceProviderImpl);
 };
 
-ExperimentalBluetoothAgentServiceProvider::
-    ExperimentalBluetoothAgentServiceProvider() {
+BluetoothAgentServiceProvider::BluetoothAgentServiceProvider() {
 }
 
-ExperimentalBluetoothAgentServiceProvider::
-    ~ExperimentalBluetoothAgentServiceProvider() {
+BluetoothAgentServiceProvider::~BluetoothAgentServiceProvider() {
 }
 
 // static
-ExperimentalBluetoothAgentServiceProvider*
-    ExperimentalBluetoothAgentServiceProvider::Create(
-        dbus::Bus* bus,
-        const dbus::ObjectPath& object_path,
-        Delegate* delegate) {
+BluetoothAgentServiceProvider* BluetoothAgentServiceProvider::Create(
+    dbus::Bus* bus,
+    const dbus::ObjectPath& object_path,
+    Delegate* delegate) {
   if (base::chromeos::IsRunningOnChromeOS()) {
-    return new ExperimentalBluetoothAgentServiceProviderImpl(
-        bus, object_path, delegate);
+    return new BluetoothAgentServiceProviderImpl(bus, object_path, delegate);
   } else {
     return new FakeBluetoothAgentServiceProvider(object_path, delegate);
   }

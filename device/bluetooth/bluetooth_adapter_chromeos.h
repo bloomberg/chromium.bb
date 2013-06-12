@@ -1,16 +1,16 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_EXPERIMENTAL_CHROMEOS_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_EXPERIMENTAL_CHROMEOS_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_CHROMEOS_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_CHROMEOS_H_
 
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "chromeos/dbus/experimental_bluetooth_adapter_client.h"
-#include "chromeos/dbus/experimental_bluetooth_device_client.h"
-#include "chromeos/dbus/experimental_bluetooth_input_client.h"
+#include "chromeos/dbus/bluetooth_adapter_client.h"
+#include "chromeos/dbus/bluetooth_device_client.h"
+#include "chromeos/dbus/bluetooth_input_client.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
@@ -22,18 +22,16 @@ class BluetoothAdapterFactory;
 
 namespace chromeos {
 
-class BluetoothDeviceExperimentalChromeOS;
-class BluetoothExperimentalChromeOSTest;
+class BluetoothChromeOSTest;
+class BluetoothDeviceChromeOS;
 
-// The BluetoothAdapterExperimentalChromeOS class is an alternate implementation
-// of BluetoothAdapter for the Chrome OS platform using the Bluetooth Smart
-// capable backend. It will become the sole implementation for Chrome OS, and
-// be renamed to BluetoothAdapterChromeOS, once the backend is switched,
-class BluetoothAdapterExperimentalChromeOS
+// The BluetoothAdapterChromeOS class implements BluetoothAdapter for the
+// Chrome OS platform.
+class BluetoothAdapterChromeOS
     : public device::BluetoothAdapter,
-      private chromeos::ExperimentalBluetoothAdapterClient::Observer,
-      private chromeos::ExperimentalBluetoothDeviceClient::Observer,
-      private chromeos::ExperimentalBluetoothInputClient::Observer {
+      private chromeos::BluetoothAdapterClient::Observer,
+      private chromeos::BluetoothDeviceClient::Observer,
+      private chromeos::BluetoothInputClient::Observer {
  public:
   // BluetoothAdapter override
   virtual void AddObserver(
@@ -63,34 +61,34 @@ class BluetoothAdapterExperimentalChromeOS
 
  private:
   friend class device::BluetoothAdapterFactory;
-  friend class BluetoothDeviceExperimentalChromeOS;
-  friend class BluetoothExperimentalChromeOSTest;
-  friend class BluetoothProfileExperimentalChromeOS;
+  friend class BluetoothChromeOSTest;
+  friend class BluetoothDeviceChromeOS;
+  friend class BluetoothProfileChromeOS;
   friend class BluetoothProfileChromeOSTest;
 
-  BluetoothAdapterExperimentalChromeOS();
-  virtual ~BluetoothAdapterExperimentalChromeOS();
+  BluetoothAdapterChromeOS();
+  virtual ~BluetoothAdapterChromeOS();
 
-  // ExperimentalBluetoothAdapterClient::Observer override.
+  // BluetoothAdapterClient::Observer override.
   virtual void AdapterAdded(const dbus::ObjectPath& object_path) OVERRIDE;
   virtual void AdapterRemoved(const dbus::ObjectPath& object_path) OVERRIDE;
   virtual void AdapterPropertyChanged(
       const dbus::ObjectPath& object_path,
       const std::string& property_name) OVERRIDE;
 
-  // ExperimentalBluetoothDeviceClient::Observer override.
+  // BluetoothDeviceClient::Observer override.
   virtual void DeviceAdded(const dbus::ObjectPath& object_path) OVERRIDE;
   virtual void DeviceRemoved(const dbus::ObjectPath& object_path) OVERRIDE;
   virtual void DevicePropertyChanged(const dbus::ObjectPath& object_path,
                                      const std::string& property_name) OVERRIDE;
 
-  // ExperimentalBluetoothInputClient::Observer override.
+  // BluetoothInputClient::Observer override.
   virtual void InputPropertyChanged(const dbus::ObjectPath& object_path,
                                     const std::string& property_name) OVERRIDE;
 
   // Internal method used to locate the device object by object path
   // (the devices map and BluetoothDevice methods are by address)
-  BluetoothDeviceExperimentalChromeOS* GetDeviceWithPath(
+  BluetoothDeviceChromeOS* GetDeviceWithPath(
       const dbus::ObjectPath& object_path);
 
   // Set the tracked adapter to the one in |object_path|, this object will
@@ -113,7 +111,7 @@ class BluetoothAdapterExperimentalChromeOS
 
   // Announce to observers a change in device state that is not reflected by
   // its D-Bus properties.
-  void NotifyDeviceChanged(BluetoothDeviceExperimentalChromeOS* device);
+  void NotifyDeviceChanged(BluetoothDeviceChromeOS* device);
 
   // Called by dbus:: on completion of the powered property change.
   void OnSetPowered(const base::Closure& callback,
@@ -140,11 +138,11 @@ class BluetoothAdapterExperimentalChromeOS
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothAdapterExperimentalChromeOS> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothAdapterChromeOS> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterExperimentalChromeOS);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterChromeOS);
 };
 
 }  // namespace chromeos
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_EXPERIMENTAL_CHROMEOS_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_CHROMEOS_H_

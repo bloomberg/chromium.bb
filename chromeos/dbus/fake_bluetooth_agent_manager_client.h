@@ -9,8 +9,8 @@
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
-#include "chromeos/dbus/experimental_bluetooth_agent_manager_client.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 
@@ -22,12 +22,12 @@ class FakeBluetoothAgentServiceProvider;
 // Daemon's agent manager object and is used both in test cases in place of a
 // mock and on the Linux desktop.
 class CHROMEOS_EXPORT FakeBluetoothAgentManagerClient
-    : public ExperimentalBluetoothAgentManagerClient {
+    : public BluetoothAgentManagerClient {
  public:
   FakeBluetoothAgentManagerClient();
   virtual ~FakeBluetoothAgentManagerClient();
 
-  // ExperimentalBluetoothAgentManagerClient override
+  // BluetoothAgentManagerClient override
   virtual void RegisterAgent(const dbus::ObjectPath& agent_path,
                              const std::string& capability,
                              const base::Closure& callback,

@@ -88,6 +88,31 @@ dbus::Bus* MockDBusThreadManagerWithoutGMock::GetIBusBus() {
   return ibus_bus_;
 }
 
+BluetoothAdapterClient*
+    MockDBusThreadManagerWithoutGMock::GetBluetoothAdapterClient() {
+  return fake_bluetooth_adapter_client_.get();
+}
+
+BluetoothAgentManagerClient*
+    MockDBusThreadManagerWithoutGMock::GetBluetoothAgentManagerClient() {
+  return fake_bluetooth_agent_manager_client_.get();
+}
+
+BluetoothDeviceClient*
+    MockDBusThreadManagerWithoutGMock::GetBluetoothDeviceClient() {
+  return fake_bluetooth_device_client_.get();
+}
+
+BluetoothInputClient*
+    MockDBusThreadManagerWithoutGMock::GetBluetoothInputClient() {
+  return fake_bluetooth_input_client_.get();
+}
+
+BluetoothProfileManagerClient*
+    MockDBusThreadManagerWithoutGMock::GetBluetoothProfileManagerClient() {
+  return fake_bluetooth_profile_manager_client_.get();
+}
+
 CrasAudioClient* MockDBusThreadManagerWithoutGMock::GetCrasAudioClient() {
   return NULL;
 }
@@ -103,33 +128,6 @@ CryptohomeClient* MockDBusThreadManagerWithoutGMock::GetCryptohomeClient() {
 DebugDaemonClient* MockDBusThreadManagerWithoutGMock::GetDebugDaemonClient() {
   NOTIMPLEMENTED();
   return NULL;
-}
-
-ExperimentalBluetoothAdapterClient*
-    MockDBusThreadManagerWithoutGMock::GetExperimentalBluetoothAdapterClient() {
-  return fake_bluetooth_adapter_client_.get();
-}
-
-ExperimentalBluetoothAgentManagerClient*
-    MockDBusThreadManagerWithoutGMock::
-        GetExperimentalBluetoothAgentManagerClient() {
-  return fake_bluetooth_agent_manager_client_.get();
-}
-
-ExperimentalBluetoothDeviceClient*
-    MockDBusThreadManagerWithoutGMock::GetExperimentalBluetoothDeviceClient() {
-  return fake_bluetooth_device_client_.get();
-}
-
-ExperimentalBluetoothInputClient*
-    MockDBusThreadManagerWithoutGMock::GetExperimentalBluetoothInputClient() {
-  return fake_bluetooth_input_client_.get();
-}
-
-ExperimentalBluetoothProfileManagerClient*
-    MockDBusThreadManagerWithoutGMock::
-        GetExperimentalBluetoothProfileManagerClient() {
-  return fake_bluetooth_profile_manager_client_.get();
 }
 
 ShillDeviceClient*
