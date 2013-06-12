@@ -298,9 +298,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitMaskRepeat,
     CSSPropertyWebkitMaskSize,
     CSSPropertyWebkitOrder,
-#if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
-    CSSPropertyWebkitOverflowScrolling,
-#endif
     CSSPropertyWebkitPerspective,
     CSSPropertyWebkitPerspectiveOrigin,
     CSSPropertyWebkitPrintColorAdjust,
@@ -2415,12 +2412,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitMarginTopCollapse:
         case CSSPropertyWebkitMarginBeforeCollapse:
             return cssValuePool().createValue(style->marginBeforeCollapse());
-#if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
-        case CSSPropertyWebkitOverflowScrolling:
-            if (!style->useTouchOverflowScrolling())
-                return cssValuePool().createIdentifierValue(CSSValueAuto);
-            return cssValuePool().createIdentifierValue(CSSValueTouch);
-#endif
         case CSSPropertyWebkitPerspective:
             if (!style->hasPerspective())
                 return cssValuePool().createIdentifierValue(CSSValueNone);

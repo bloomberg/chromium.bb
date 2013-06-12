@@ -1965,20 +1965,13 @@ bool RenderLayer::needsCompositedScrolling() const
 void RenderLayer::updateNeedsCompositedScrolling()
 {
     updateCanBeStackingContainer();
-
-    bool needsCompositedScrolling = false;
     updateDescendantDependentFlags();
 
     ASSERT(renderer()->view()->frameView() && renderer()->view()->frameView()->containsScrollableArea(this));
-    bool forceUseCompositedScrolling = acceleratedCompositingForOverflowScrollEnabled()
+    bool needsCompositedScrolling = acceleratedCompositingForOverflowScrollEnabled()
         && canBeStackingContainer()
         && !hasUnclippedDescendant();
 
-#if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
-    needsCompositedScrolling = forceUseCompositedScrolling || renderer()->style()->useTouchOverflowScrolling();
-#else
-    needsCompositedScrolling = forceUseCompositedScrolling;
-#endif
     // We gather a boolean value for use with Google UMA histograms to
     // quantify the actual effects of a set of patches attempting to
     // relax composited scrolling requirements, thereby increasing the

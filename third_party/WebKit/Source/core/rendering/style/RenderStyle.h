@@ -884,9 +884,6 @@ public:
     LineBoxContain lineBoxContain() const { return rareInheritedData->m_lineBoxContain; }
     const LineClampValue& lineClamp() const { return rareNonInheritedData->lineClamp; }
     Color tapHighlightColor() const { return rareInheritedData->tapHighlightColor; }
-#if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
-    bool useTouchOverflowScrolling() const { return rareInheritedData->useTouchOverflowScrolling; }
-#endif
     ETextSecurity textSecurity() const { return static_cast<ETextSecurity>(rareInheritedData->textSecurity); }
 
     WritingMode writingMode() const { return static_cast<WritingMode>(inherited_flags.m_writingMode); }
@@ -1313,9 +1310,6 @@ public:
     void setLineBoxContain(LineBoxContain c) { SET_VAR(rareInheritedData, m_lineBoxContain, c); }
     void setLineClamp(LineClampValue c) { SET_VAR(rareNonInheritedData, lineClamp, c); }
     void setTapHighlightColor(const Color& c) { SET_VAR(rareInheritedData, tapHighlightColor, c); }
-#if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
-    void setUseTouchOverflowScrolling(bool v) { SET_VAR(rareInheritedData, useTouchOverflowScrolling, v); }
-#endif
     void setTextSecurity(ETextSecurity aTextSecurity) { SET_VAR(rareInheritedData, textSecurity, aTextSecurity); }
     void setTouchAction(TouchAction t) { SET_VAR(rareNonInheritedData, m_touchAction, t); }
 
@@ -1635,9 +1629,6 @@ public:
     static LineClampValue initialLineClamp() { return LineClampValue(); }
     static ETextSecurity initialTextSecurity() { return TSNONE; }
     static Color initialTapHighlightColor();
-#if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
-    static bool initialUseTouchOverflowScrolling() { return false; }
-#endif
     static const FilterOperations& initialFilter() { DEFINE_STATIC_LOCAL(FilterOperations, ops, ()); return ops; }
     static BlendMode initialBlendMode() { return BlendModeNormal; }
 private:

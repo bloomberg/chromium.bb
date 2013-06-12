@@ -1594,10 +1594,6 @@ void StyleResolver::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         || style->hasBlendMode()
         || style->position() == StickyPosition
         || (style->position() == FixedPosition && e && e->document()->page() && e->document()->page()->settings()->fixedPositionCreatesStackingContext())
-#if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
-        // Touch overflow scrolling creates a stacking context.
-        || ((style->overflowX() != OHIDDEN || style->overflowY() != OHIDDEN) && style->useTouchOverflowScrolling())
-#endif
         || (e && e->isInTopLayer())
         ))
         style->setZIndex(0);
@@ -2844,15 +2840,6 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         state.style()->setTapHighlightColor(col);
         return;
     }
-#if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
-    case CSSPropertyWebkitOverflowScrolling: {
-        HANDLE_INHERIT_AND_INITIAL(useTouchOverflowScrolling, UseTouchOverflowScrolling);
-        if (!primitiveValue)
-            break;
-        state.style()->setUseTouchOverflowScrolling(primitiveValue->getValueID() == CSSValueTouch);
-        return;
-    }
-#endif
     case CSSPropertyInvalid:
         return;
     // Directional properties are resolved by resolveDirectionAwareProperty() before the switch.

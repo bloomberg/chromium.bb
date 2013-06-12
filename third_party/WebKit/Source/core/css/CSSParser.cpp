@@ -833,12 +833,6 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueNone || valueID == CSSValueSlide || valueID == CSSValueScroll || valueID == CSSValueAlternate)
             return true;
         break;
-#if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
-    case CSSPropertyWebkitOverflowScrolling:
-        if (valueID == CSSValueAuto || valueID == CSSValueTouch)
-            return true;
-        break;
-#endif
     case CSSPropertyWebkitPrintColorAdjust:
         if (valueID == CSSValueExact || valueID == CSSValueEconomy)
             return true;
@@ -1013,9 +1007,6 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWebkitMarginTopCollapse:
     case CSSPropertyWebkitMarqueeDirection:
     case CSSPropertyWebkitMarqueeStyle:
-#if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
-    case CSSPropertyWebkitOverflowScrolling:
-#endif
     case CSSPropertyWebkitPrintColorAdjust:
     case CSSPropertyWebkitRegionBreakAfter:
     case CSSPropertyWebkitRegionBreakBefore:
@@ -2812,9 +2803,6 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitMarginTopCollapse:
     case CSSPropertyWebkitMarqueeDirection:
     case CSSPropertyWebkitMarqueeStyle:
-#if ENABLE(ACCELERATED_OVERFLOW_SCROLLING)
-    case CSSPropertyWebkitOverflowScrolling:
-#endif
     case CSSPropertyWebkitPrintColorAdjust:
     case CSSPropertyWebkitRegionBreakAfter:
     case CSSPropertyWebkitRegionBreakBefore:
