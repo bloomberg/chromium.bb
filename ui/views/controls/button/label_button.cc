@@ -145,7 +145,7 @@ void LabelButton::SetStyle(ButtonStyle style) {
     set_focusable(true);
   }
   if (style == STYLE_BUTTON) {
-    set_min_size(gfx::Size(70, 31));
+    set_min_size(gfx::Size(70, 33));
     const SkColor color = GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_WindowBackground);
     label_->SetShadowColors(color, color);

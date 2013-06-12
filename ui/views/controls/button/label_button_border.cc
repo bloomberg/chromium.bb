@@ -67,7 +67,7 @@ void PaintHelper(LabelButtonBorder* border,
 LabelButtonBorder::LabelButtonBorder(Button::ButtonStyle style)
     : style_(style) {
   if (style == Button::STYLE_BUTTON) {
-    set_insets(gfx::Insets(9, 13, 9, 13));
+    set_insets(gfx::Insets(8, 13, 8, 13));
     SetPainter(false, Button::STATE_NORMAL,
                Painter::CreateImageGridPainter(kNormalImages));
     SetPainter(false, Button::STATE_HOVERED,
