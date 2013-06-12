@@ -120,4 +120,14 @@ InputEventAckState InputHandlerManager::HandleInputEvent(
       proxy->HandleInputEventWithLatencyInfo(*input_event, latency_info));
 }
 
+void InputHandlerManager::DidOverscroll(int routing_id,
+                                        gfx::Vector2dF accumulated_overscroll,
+                                        gfx::Vector2dF current_fling_velocity) {
+  client_->DidOverscroll(routing_id,
+                         accumulated_overscroll,
+                         current_fling_velocity);
+}
+
+
+
 }  // namespace content

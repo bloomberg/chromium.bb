@@ -17,6 +17,10 @@ namespace cc {
 class InputHandler;
 }
 
+namespace gfx {
+class Vector2dF;
+}
+
 namespace WebKit {
 class WebInputEvent;
 }
@@ -42,6 +46,9 @@ class CONTENT_EXPORT InputHandlerManagerClient {
   virtual void DidAddInputHandler(int routing_id,
                                   cc::InputHandler* input_handler) = 0;
   virtual void DidRemoveInputHandler(int routing_id) = 0;
+  virtual void DidOverscroll(int routing_id,
+                             gfx::Vector2dF accumulated_overscroll,
+                             gfx::Vector2dF current_fling_velocity) = 0;
 
  protected:
   InputHandlerManagerClient() {}

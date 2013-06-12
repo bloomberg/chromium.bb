@@ -194,10 +194,6 @@ class CONTENT_EXPORT RenderWidget
                          int mouse_event_x,
                          int mouse_event_y);
 
-  // Notifies the host that root scroll layer has overscrolled.
-  void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
-                     gfx::Vector2dF current_fling_velocity);
-
   // Close the underlying WebWidget.
   virtual void Close();
 
@@ -695,9 +691,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Specified whether the compositor will run in its own thread.
   bool is_threaded_compositing_enabled_;
-
-  // Specifies whether overscroll notifications are forwarded to the host.
-  bool overscroll_notifications_enabled_;
 
   // The last set of rendering stats received from the browser. This is only
   // received when using the --enable-gpu-benchmarking flag.

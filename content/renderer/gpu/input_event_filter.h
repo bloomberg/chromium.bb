@@ -47,6 +47,9 @@ class CONTENT_EXPORT InputEventFilter
   virtual void DidAddInputHandler(int routing_id,
                                   cc::InputHandler* input_handler) OVERRIDE;
   virtual void DidRemoveInputHandler(int routing_id) OVERRIDE;
+  virtual void DidOverscroll(int routing_id,
+                             gfx::Vector2dF accumulated_overscroll,
+                             gfx::Vector2dF current_fling_velocity) OVERRIDE;
 
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
@@ -66,8 +69,7 @@ class CONTENT_EXPORT InputEventFilter
   void ForwardToMainListener(const IPC::Message& message);
   void ForwardToHandler(const IPC::Message& message);
   void SendACK(const IPC::Message& message, InputEventAckState ack_result);
-  void SendACKOnIOThread(int routing_id, WebKit::WebInputEvent::Type event_type,
-                         InputEventAckState ack_result);
+  void SendMessageOnIOThread(const IPC::Message& message);
 
   scoped_refptr<base::MessageLoopProxy> main_loop_;
   IPC::Listener* main_listener_;
@@ -85,6 +87,9 @@ class CONTENT_EXPORT InputEventFilter
 
   // Indicates the routing_ids for which input events should be filtered.
   std::set<int> routes_;
+
+  // Specifies whether overscroll notifications are forwarded to the host.
+  bool overscroll_notifications_enabled_;
 };
 
 }  // namespace content

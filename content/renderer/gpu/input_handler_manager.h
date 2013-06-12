@@ -54,6 +54,11 @@ class InputHandlerManager {
                                       const WebKit::WebInputEvent* input_event,
                                       const ui::LatencyInfo& latency_info);
 
+  // Called from the compositor's thread.
+  void DidOverscroll(int routing_id,
+                     gfx::Vector2dF accumulated_overscroll,
+                     gfx::Vector2dF current_fling_velocity);
+
  private:
   // Called from the compositor's thread.
   void AddInputHandlerOnCompositorThread(

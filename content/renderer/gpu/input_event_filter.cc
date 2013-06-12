@@ -3,11 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/common/input_messages.h"
+#include "content/common/view_messages.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/gpu/input_event_filter.h"
+#include "ui/gfx/vector2d_f.h"
 
 using WebKit::WebInputEvent;
 
@@ -19,8 +23,12 @@ InputEventFilter::InputEventFilter(
     : main_loop_(base::MessageLoopProxy::current()),
       main_listener_(main_listener),
       sender_(NULL),
-      target_loop_(target_loop) {
+      target_loop_(target_loop),
+      overscroll_notifications_enabled_(false) {
   DCHECK(target_loop_.get());
+  overscroll_notifications_enabled_ =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableOverscrollNotifications);
 }
 
 void InputEventFilter::SetBoundHandler(const Handler& handler) {
@@ -37,6 +45,22 @@ void InputEventFilter::DidAddInputHandler(int routing_id,
 void InputEventFilter::DidRemoveInputHandler(int routing_id) {
   base::AutoLock locked(routes_lock_);
   routes_.erase(routing_id);
+}
+
+void InputEventFilter::DidOverscroll(int routing_id,
+                                     gfx::Vector2dF accumulated_overscroll,
+                                     gfx::Vector2dF current_fling_velocity) {
+  DCHECK(target_loop_->BelongsToCurrentThread());
+
+  if (!overscroll_notifications_enabled_)
+    return;
+
+  io_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&InputEventFilter::SendMessageOnIOThread, this,
+                 ViewHostMsg_DidOverscroll(routing_id,
+                                           accumulated_overscroll,
+                                           current_fling_velocity)));
 }
 
 void InputEventFilter::OnFilterAdded(IPC::Channel* channel) {
@@ -134,26 +158,22 @@ void InputEventFilter::SendACK(const IPC::Message& message,
                                InputEventAckState ack_result) {
   DCHECK(target_loop_->BelongsToCurrentThread());
 
-  io_loop_->PostTask(FROM_HERE,
-                     base::Bind(&InputEventFilter::SendACKOnIOThread,
-                                this,
-                                message.routing_id(),
-                                CrackMessage(message, NULL)->type,
-                                ack_result));
+  io_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&InputEventFilter::SendMessageOnIOThread, this,
+                 InputHostMsg_HandleInputEvent_ACK(
+                     message.routing_id(),
+                     CrackMessage(message, NULL)->type,
+                     ack_result)));
 }
 
-void InputEventFilter::SendACKOnIOThread(
-    int routing_id,
-    WebInputEvent::Type event_type,
-    InputEventAckState ack_result) {
+void InputEventFilter::SendMessageOnIOThread(const IPC::Message& message) {
   DCHECK(io_loop_->BelongsToCurrentThread());
 
   if (!sender_)
     return;  // Filter was removed.
 
-  sender_->Send(
-      new InputHostMsg_HandleInputEvent_ACK(
-          routing_id, event_type, ack_result));
+  sender_->Send(new IPC::Message(message));
 }
 
 }  // namespace content
