@@ -34,22 +34,27 @@ def DictDiff(d1, d2):
   return '\n'.join(diff)
 
 
-def GetEnvironment(host_obj):
+def GetEnvironment(host_obj, testing):
   init_env = dict(os.environ)
   init_env['GYP_GENERATORS'] = 'ninja'
   init_env['GOMA_DIR'] = bb_utils.GOMA_DIR
   envsetup_cmd = '. build/android/envsetup.sh'
   if host_obj.target_arch:
     envsetup_cmd += ' --target_arch=%s' % host_obj.target_arch
-  print 'Running %s' % envsetup_cmd
+  if testing:
+    # Skip envsetup to avoid presubmit dependence on android deps.
+    print 'Testing mode - skipping "%s"' % envsetup_cmd
+    envsetup_cmd = ':'
+  else:
+    print 'Running %s' % envsetup_cmd
   proc = subprocess.Popen(['bash', '-exc',
     envsetup_cmd + ' >&2; python build/android/buildbot/env_to_json.py'],
     stdout=subprocess.PIPE, stderr=subprocess.PIPE,
     cwd=bb_utils.CHROME_SRC, env=init_env)
   json_env, envsetup_output = proc.communicate()
   if proc.returncode != 0:
-    print 'FATAL Failure in envsetup.'
-    print envsetup_output
+    print >> sys.stderr, 'FATAL Failure in envsetup.'
+    print >> sys.stderr, envsetup_output
     sys.exit(1)
   env = json.loads(json_env)
   env['GYP_DEFINES'] = env.get('GYP_DEFINES', '') + ' fastbuild=1'
@@ -206,8 +211,9 @@ def main(argv):
   commands = GetCommands(options, bot_config)
   for command in commands:
     print 'Will run: ', bb_utils.CommandToString(command)
+  print
 
-  env = GetEnvironment(bot_config.host_obj)
+  env = GetEnvironment(bot_config.host_obj, options.testing)
   print 'Environment changes:'
   print DictDiff(dict(os.environ), env)
 
