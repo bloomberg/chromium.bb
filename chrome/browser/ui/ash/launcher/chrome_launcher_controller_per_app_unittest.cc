@@ -355,7 +355,9 @@ TEST_F(ChromeLauncherControllerPerAppTest, CheckAlreadyPinnedLockApps) {
   EXPECT_FALSE(
       launcher_controller_->IsWindowedAppInLauncher(extension1_->id()));
 
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
   launcher_controller_->PinAppWithID(extension1_->id());
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
 
   EXPECT_EQ(3, model_->item_count());
   EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_->items()[1].type);

@@ -241,4 +241,38 @@ TEST(LauncherModel, LauncherIDTests) {
   EXPECT_NE(model.next_id(), id2);
 }
 
+// This verifies that converting an existing item into a lower weight category
+// (e.g. shortcut to running but not pinned app) will move it to the proper
+// location. See crbug.com/248769.
+TEST(LauncherModel, CorrectMoveItemsWhenStateChange) {
+  LauncherModel model;
+
+  // The app list should be the last item in the list.
+  EXPECT_EQ(1, model.item_count());
+
+  // The first item is the browser.
+  LauncherItem browser_shortcut;
+  browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
+  int browser_shortcut_index = model.Add(browser_shortcut);
+  EXPECT_EQ(0, browser_shortcut_index);
+
+  // Add three shortcuts. They should all be moved between the two.
+  LauncherItem item;
+  item.type = TYPE_APP_SHORTCUT;
+  int app1_index = model.Add(item);
+  EXPECT_EQ(1, app1_index);
+  int app2_index = model.Add(item);
+  EXPECT_EQ(2, app2_index);
+  int app3_index = model.Add(item);
+  EXPECT_EQ(3, app3_index);
+
+  // Now change the type of the second item and make sure that it is moving
+  // behind the shortcuts.
+  item.type = TYPE_PLATFORM_APP;
+  model.Set(app2_index, item);
+
+  // The item should have moved in front of the app launcher.
+  EXPECT_EQ(TYPE_PLATFORM_APP, model.items()[3].type);
+}
+
 }  // namespace ash

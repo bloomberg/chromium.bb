@@ -94,8 +94,18 @@ void LauncherModel::Set(int index, const LauncherItem& item) {
                     LauncherItemChanged(index, old_item));
 
   // If the type changes confirm that the item is still in the right order.
-  if (new_index != index)
+  if (new_index != index) {
+    // The move function works by removing one item and then inserting it at the
+    // new location. However - by removing the item first the order will change
+    // so that our target index needs to be corrected.
+    // TODO(skuhne): Moving this into the Move function breaks lots of unit
+    // tests. So several functions were already using this incorrectly.
+    // That needs to be cleaned up.
+    if (index < new_index)
+      new_index--;
+
     Move(index, new_index);
+  }
 }
 
 int LauncherModel::ItemIndexByID(LauncherID id) const {

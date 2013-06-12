@@ -394,7 +394,7 @@ LauncherView::LauncherView(LauncherModel* model,
       last_hidden_index_(0),
       closing_event_time_(base::TimeDelta()),
       got_deleted_(NULL),
-      drag_and_drop_item_created_(false),
+      drag_and_drop_item_pinned_(false),
       drag_and_drop_launcher_id_(0) {
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
@@ -589,18 +589,20 @@ bool LauncherView::StartDrag(const std::string& app_id,
   // If the AppsGridView (which was dispatching this event) was opened by our
   // button, LauncherView dragging operations are locked and we have to unlock.
   CancelDrag(-1);
-  drag_and_drop_item_created_ = false;
+  drag_and_drop_item_pinned_ = false;
   drag_and_drop_app_id_ = app_id;
   drag_and_drop_launcher_id_ =
       delegate_->GetLauncherIDForAppID(drag_and_drop_app_id_);
-
-  if (!drag_and_drop_launcher_id_) {
+  // Check if the application is known and pinned - if not, we have to pin it so
+  // that we can re-arrange the launcher order accordingly. Note that items have
+  // to be pinned to give them the same (order) possibilities as a shortcut.
+  if (!drag_and_drop_launcher_id_ || !delegate_->IsAppPinned(app_id)) {
     delegate_->PinAppWithID(app_id);
     drag_and_drop_launcher_id_ =
         delegate_->GetLauncherIDForAppID(drag_and_drop_app_id_);
     if (!drag_and_drop_launcher_id_)
       return false;
-    drag_and_drop_item_created_ = true;
+    drag_and_drop_item_pinned_ = true;
   }
   views::View* drag_and_drop_view = view_model_->view_at(
       model_->ItemIndexByID(drag_and_drop_launcher_id_));
@@ -651,7 +653,7 @@ void LauncherView::EndDrag(bool cancel) {
       drag_and_drop_view, LauncherButtonHost::DRAG_AND_DROP, cancel);
 
   // Either destroy the temporarily created item - or - make the item visible.
-  if (drag_and_drop_item_created_ && cancel)
+  if (drag_and_drop_item_pinned_ && cancel)
     delegate_->UnpinAppsWithID(drag_and_drop_app_id_);
   else if (drag_and_drop_view)
     drag_and_drop_view->SetSize(pre_drag_and_drop_size_);

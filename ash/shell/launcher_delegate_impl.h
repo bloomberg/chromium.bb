@@ -42,6 +42,7 @@ class LauncherDelegateImpl : public ash::LauncherDelegate {
   virtual bool IsPerAppLauncher() OVERRIDE;
   virtual LauncherID GetLauncherIDForAppID(const std::string& app_id) OVERRIDE;
   virtual void PinAppWithID(const std::string& app_id) OVERRIDE;
+  virtual bool IsAppPinned(const std::string& app_id) OVERRIDE;
   virtual void UnpinAppsWithID(const std::string& app_id) OVERRIDE;
 
  private:

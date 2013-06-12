@@ -345,9 +345,9 @@ class ASH_EXPORT LauncherView : public views::View,
   // element will be set to false.
   bool* got_deleted_;
 
-  // True if a drag and drop operation created the item in the launcher and it
-  // needs to be deleted again if the operation gets cancelled.
-  bool drag_and_drop_item_created_;
+  // True if a drag and drop operation created/pinned the item in the launcher
+  // and it needs to be deleted/unpinned again if the operation gets cancelled.
+  bool drag_and_drop_item_pinned_;
 
   // The launcher item which is currently used for a drag and a drop operation
   // or 0 otherwise.

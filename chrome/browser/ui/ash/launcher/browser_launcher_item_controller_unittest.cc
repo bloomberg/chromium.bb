@@ -249,7 +249,9 @@ TEST_F(LauncherItemControllerPerAppTest, PersistLauncherItemPositions) {
   app_tab_helper_->SetAppID(tab1.get(), "1");
   app_tab_helper_->SetAppID(tab1.get(), "2");
 
+  EXPECT_FALSE(launcher_delegate_->IsAppPinned("1"));
   launcher_delegate_->PinAppWithID("1");
+  EXPECT_TRUE(launcher_delegate_->IsAppPinned("1"));
   launcher_delegate_->PinAppWithID("2");
 
   EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT,

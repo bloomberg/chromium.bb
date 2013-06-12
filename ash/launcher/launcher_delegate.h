@@ -101,6 +101,9 @@ class ASH_EXPORT LauncherDelegate {
   // pinned.
   virtual void PinAppWithID(const std::string& app_id) = 0;
 
+  // Check if the app with |app_id_| is pinned to the launcher.
+  virtual bool IsAppPinned(const std::string& app_id) = 0;
+
   // Unpins any app item(s) whose id is |app_id|. The new launcher will collect
   // all items under one item, the old launcher might have multiple items.
   virtual void UnpinAppsWithID(const std::string& app_id) = 0;

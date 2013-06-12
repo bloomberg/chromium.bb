@@ -76,6 +76,10 @@ LauncherID LauncherDelegateImpl::GetLauncherIDForAppID(
 void LauncherDelegateImpl::PinAppWithID(const std::string& app_id) {
 }
 
+bool LauncherDelegateImpl::IsAppPinned(const std::string& app_id) {
+  return false;
+}
+
 void LauncherDelegateImpl::UnpinAppsWithID(const std::string& app_id) {
 }
 
