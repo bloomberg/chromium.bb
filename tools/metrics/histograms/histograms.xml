@@ -385,6 +385,40 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="AsyncDNS.SuffixSearchDone">
+  <summary>
+    The number of names from the search name list consumed during a successful
+    transaction (QTYPE A only).
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.SuffixSearchRemain">
+  <summary>
+    The number of names left on the search name list at the end of a successful
+    transaction (QTYPE A only).
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.SuffixSearchStart">
+  <summary>
+    The number of names on the search name list at the start of a transaction
+    (QTYPE A only).
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.TCPAttemptFail" units="milliseconds">
+  <summary>
+    Duration of time taken by DnsTCPAttempt in failed attempts. Excludes
+    timeouts.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.TCPAttemptSuccess" units="milliseconds">
+  <summary>
+    Duration of time taken by DnsTCPAttempt in successful attempts.
+  </summary>
+</histogram>
+
 <histogram name="AsyncDNS.TimeoutErrorHistogram" units="milliseconds">
   <summary>
     Difference between RTT and timeout calculated using Histogram algorithm.
@@ -498,6 +532,13 @@ other types of suffix sets.
   <summary>
     Duration of time since the last empty config result to the time a non-change
     OnHostsChange is received.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.WatchStatus" enum="AsyncDNSWatchStatus">
+  <summary>
+    The result of DnsConfigService watch. Counts STARTED on every initialization
+    and FAILED_* on any failure.
   </summary>
 </histogram>
 
@@ -11443,6 +11484,18 @@ other types of suffix sets.
   <int value="3" label="SUSPECT_NETBIOS">
     Same as PROC_SUCCESS except the hostname fits NetBIOS name criteria.
   </int>
+</enum>
+
+<enum name="AsyncDNSWatchStatus" type="int">
+  <int value="0" label="STARTED">Started.</int>
+  <int value="1" label="FAILED_TO_START_CONFIG">
+    Failed to start watching config.
+  </int>
+  <int value="2" label="FAILED_TO_START_HOSTS">
+    Failed to start watching HOSTS.
+  </int>
+  <int value="3" label="FAILED_CONFIG">Failed during watching config.</int>
+  <int value="4" label="FAILED_HOSTS">Failed during watching HOSTS.</int>
 </enum>
 
 <enum name="AudioCodec" type="int">
