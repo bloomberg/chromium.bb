@@ -122,6 +122,9 @@ class ChromeAppViewAsh
   void OnSearchRequest(const string16& search_string);
   void OnNavigateToUrl(const string16& url);
 
+  HRESULT OnSizeChanged(winui::Core::ICoreWindow* sender,
+                        winui::Core::IWindowSizeChangedEventArgs* args);
+
   mswr::ComPtr<winui::Core::ICoreWindow> window_;
   mswr::ComPtr<winapp::Core::ICoreApplicationView> view_;
   EventRegistrationToken activated_token_;
@@ -136,6 +139,7 @@ class ChromeAppViewAsh
   EventRegistrationToken accel_keydown_token_;
   EventRegistrationToken accel_keyup_token_;
   EventRegistrationToken window_activated_token_;
+  EventRegistrationToken sizechange_token_;
 
   // Keep state about which button is currently down, if any, as PointerMoved
   // events do not contain that state, but Ash's MouseEvents need it.

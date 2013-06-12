@@ -144,6 +144,8 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   void OnSelectFolderDone(bool success, const base::FilePath& folder);
   void OnWindowActivated(bool active);
   void OnSetCursorPosAck();
+  void OnWindowSizeChanged(uint32 width, uint32 height);
+
   // RootWindowHost overrides:
   virtual void SetDelegate(RootWindowHostDelegate* delegate) OVERRIDE;
   virtual RootWindow* GetRootWindow() OVERRIDE;

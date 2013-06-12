@@ -151,3 +151,9 @@ IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_OpenURL,
 
 IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_SearchRequest,
                      string16)  /* search_string */
+
+// Sent from the metro viewer process to the browser process to indicate that
+// the viewer window size has changed.
+IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_WindowSizeChanged,
+                     uint32,   /* width */
+                     uint32)   /* height */

@@ -55,6 +55,10 @@ typedef winfoundtn::ITypedEventHandler<
     winui::Core::CoreWindow*,
     winui::Core::WindowActivatedEventArgs*> WindowActivatedHandler;
 
+typedef winfoundtn::ITypedEventHandler<
+    winui::Core::CoreWindow*,
+    winui::Core::WindowSizeChangedEventArgs*> SizeChangedHandler;
+
 // This function is exported by chrome.exe.
 typedef int (__cdecl *BreakpadExceptionHandler)(EXCEPTION_POINTERS* info);
 
@@ -329,6 +333,11 @@ ChromeAppViewAsh::SetWindow(winui::Core::ICoreWindow* window) {
   hr = interop->get_WindowHandle(&core_window_hwnd_);
   CheckHR(hr);
 
+  hr = window_->add_SizeChanged(mswr::Callback<SizeChangedHandler>(
+      this, &ChromeAppViewAsh::OnSizeChanged).Get(),
+      &sizechange_token_);
+  CheckHR(hr);
+
   // Register for pointer and keyboard notifications. We forward
   // them to the browser process via IPC.
   hr = window_->add_PointerMoved(mswr::Callback<PointerEventHandler>(
@@ -447,6 +456,14 @@ ChromeAppViewAsh::Run() {
   ui_channel_->Send(new MetroViewerHostMsg_SetTargetSurface(
                     gfx::NativeViewId(core_window_hwnd_)));
   DVLOG(1) << "ICoreWindow sent " << core_window_hwnd_;
+
+  // Send an initial size message so that the Ash root window host gets sized
+  // correctly.
+  RECT rect = {0};
+  ::GetWindowRect(core_window_hwnd_, &rect);
+  ui_channel_->Send(
+      new MetroViewerHostMsg_WindowSizeChanged(rect.right - rect.left,
+                                               rect.bottom - rect.top));
 
   // And post the task that'll do the inner Metro message pumping to it.
   ui_loop_.PostTask(FROM_HERE, base::Bind(&RunMessageLoop, dispatcher.Get()));
@@ -911,6 +928,24 @@ void ChromeAppViewAsh::OnNavigateToUrl(const string16& url) {
  ui_channel_->Send(new MetroViewerHostMsg_OpenURL(url));
 }
 
+HRESULT ChromeAppViewAsh::OnSizeChanged(winui::Core::ICoreWindow* sender,
+    winui::Core::IWindowSizeChangedEventArgs* args) {
+  if (!window_) {
+    return S_OK;
+  }
+
+  winfoundtn::Size size;
+  HRESULT hr = args->get_Size(&size);
+  if (FAILED(hr))
+    return hr;
+
+  uint32 cx = static_cast<uint32>(size.Width);
+  uint32 cy = static_cast<uint32>(size.Height);
+
+  DVLOG(1) << "Window size changed: width=" << cx << ", height=" << cy;
+  ui_channel_->Send(new MetroViewerHostMsg_WindowSizeChanged(cx, cy));
+  return S_OK;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

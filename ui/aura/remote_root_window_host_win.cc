@@ -158,6 +158,8 @@ bool RemoteRootWindowHostWin::OnMessageReceived(const IPC::Message& message) {
                         OnWindowActivated)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SetCursorPosAck,
                         OnSetCursorPosAck)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_WindowSizeChanged,
+                        OnWindowSizeChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -497,6 +499,10 @@ void RemoteRootWindowHostWin::OnWindowActivated(bool active) {
 void RemoteRootWindowHostWin::OnSetCursorPosAck() {
   DCHECK(ignore_mouse_moves_until_set_cursor_ack_);
   ignore_mouse_moves_until_set_cursor_ack_ = false;
+}
+
+void RemoteRootWindowHostWin::OnWindowSizeChanged(uint32 width, uint32 height) {
+  SetBounds(gfx::Rect(0, 0, width, height));
 }
 
 void RemoteRootWindowHostWin::DispatchKeyboardMessage(ui::EventType type,
