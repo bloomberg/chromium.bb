@@ -82,6 +82,13 @@ WebView.prototype.createBrowserPluginNode_ = function() {
     if (this.webviewNode_.hasAttribute(attributeName)) {
       browserPluginNode.setAttribute(
         attributeName, this.webviewNode_.getAttribute(attributeName));
+    } else if (this.webviewNode_[attributeName]){
+      // Reading property using has/getAttribute does not work on
+      // document.DOMContentLoaded event (but works on
+      // window.DOMContentLoaded event).
+      // So copy from property if copying from attribute fails.
+      browserPluginNode.setAttribute(
+        attributeName, this.webviewNode_[attributeName]);
     }
   }, this);
 

@@ -1100,3 +1100,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, WhitelistedContentScript) {
   LoadAndLaunchPlatformApp("web_view/content_script_whitelisted");
   ASSERT_TRUE(done_listener.WaitUntilSatisfied());
 }
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, SetPropertyOnDocumentReady) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/document_ready"))
+                  << message_;
+}
