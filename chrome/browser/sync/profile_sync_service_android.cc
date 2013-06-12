@@ -29,6 +29,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "google/cacheinvalidation/types.pb.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -283,6 +284,12 @@ void ProfileSyncServiceAndroid::SignInSync(
       token_service->OnIssueAuthTokenSuccess(GaiaConstants::kSyncService,
                                              token);
     }
+
+    GoogleServiceSigninSuccessDetails details(name, std::string());
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
+        content::Source<Profile>(profile_),
+        content::Details<const GoogleServiceSigninSuccessDetails>(&details));
   }
 
   // Enable sync (if we don't have credentials yet, this will enable sync but
