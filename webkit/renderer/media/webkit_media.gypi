@@ -66,8 +66,6 @@
         'crypto/ppapi_decryptor.h',
         'crypto/proxy_decryptor.cc',
         'crypto/proxy_decryptor.h',
-        'media_info_loader.cc',
-        'media_info_loader.h',
         'media_stream_audio_renderer.cc',
         'media_stream_audio_renderer.h',
         'media_stream_client.h',
