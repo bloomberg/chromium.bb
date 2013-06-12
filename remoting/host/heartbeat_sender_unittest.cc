@@ -34,10 +34,23 @@ using testing::SaveArg;
 namespace remoting {
 
 namespace {
+
 const char kTestBotJid[] = "remotingunittest@bot.talk.google.com";
 const char kHostId[] = "0";
 const char kTestJid[] = "user@gmail.com/chromoting123";
 const char kStanzaId[] = "123";
+
+class MockListener : public HeartbeatSender::Listener {
+ public:
+  // Overridden from HeartbeatSender::Listener
+  virtual void OnUnknownHostIdError() OVERRIDE {
+    NOTREACHED();
+  }
+
+  // Overridden from HeartbeatSender::Listener
+  MOCK_METHOD0(OnHeartbeatSuccessful, void());
+};
+
 }  // namespace
 
 ACTION_P(AddListener, list) {
@@ -49,14 +62,8 @@ ACTION_P(RemoveListener, list) {
 }
 
 class HeartbeatSenderTest
-    : public testing::Test,
-      public HeartbeatSender::Listener {
+    : public testing::Test {
  protected:
-  // Overridden from HeartbeatSender::Listener
-  virtual void OnUnknownHostIdError() OVERRIDE {
-    NOTREACHED();
-  }
-
   virtual void SetUp() OVERRIDE {
     key_pair_ = RsaKeyPair::FromString(kTestRsaKeyPair);
     ASSERT_TRUE(key_pair_.get());
@@ -71,7 +78,7 @@ class HeartbeatSenderTest
         .WillRepeatedly(Return(kTestJid));
 
     heartbeat_sender_.reset(new HeartbeatSender(
-        this, kHostId, &signal_strategy_, key_pair_, kTestBotJid));
+        &mock_listener_, kHostId, &signal_strategy_, key_pair_, kTestBotJid));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -84,6 +91,7 @@ class HeartbeatSenderTest
 
   base::MessageLoop message_loop_;
   MockSignalStrategy signal_strategy_;
+  MockListener mock_listener_;
   std::set<SignalStrategy::Listener*> signal_strategy_listeners_;
   scoped_refptr<RsaKeyPair> key_pair_;
   scoped_ptr<HeartbeatSender> heartbeat_sender_;
@@ -174,6 +182,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
       .WillOnce(Return(kStanzaId + 1));
   EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))
       .WillOnce(DoAll(SaveArg<0>(&sent_iq2), Return(true)));
+  EXPECT_CALL(mock_listener_, OnHeartbeatSuccessful());
 
   scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
   response->AddAttr(QName(std::string(), "type"), "result");
@@ -199,6 +208,8 @@ TEST_F(HeartbeatSenderTest, DoSendStanzaWithExpectedSequenceId) {
 
 // Verify that ProcessResponse parses set-interval result.
 TEST_F(HeartbeatSenderTest, ProcessResponseSetInterval) {
+  EXPECT_CALL(mock_listener_, OnHeartbeatSuccessful());
+
   scoped_ptr<XmlElement> response(new XmlElement(buzz::QN_IQ));
   response->AddAttr(QName(std::string(), "type"), "result");
 

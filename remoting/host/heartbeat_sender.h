@@ -82,6 +82,10 @@ class HeartbeatSender : public SignalStrategy::Listener {
   class Listener {
    public:
     virtual ~Listener() { }
+
+    // Invoked after the first successful heartbeat.
+    virtual void OnHeartbeatSuccessful() = 0;
+
     // Invoked when the host ID is permanently not recognized by the server.
     virtual void OnUnknownHostIdError() = 0;
   };

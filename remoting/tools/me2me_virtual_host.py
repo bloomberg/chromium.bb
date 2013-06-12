@@ -11,6 +11,7 @@
 
 import atexit
 import errno
+import fcntl
 import getpass
 import hashlib
 import json
@@ -196,6 +197,7 @@ class Desktop:
     self.sizes = sizes
     self.pulseaudio_pipe = None
     self.server_supports_exact_resize = False
+    self.host_ready = False
     g_desktops.append(self)
 
   @staticmethod
@@ -327,7 +329,7 @@ class Desktop:
     # Disable the Composite extension iff the X session is the default
     # Unity-2D, since it uses Metacity which fails to generate DAMAGE
     # notifications correctly. See crbug.com/166468.
-    x_session = choose_x_session();
+    x_session = choose_x_session()
     if (len(x_session) == 2 and
         x_session[1] == "/usr/bin/gnome-session --session=ubuntu-2d"):
       extra_x_args.extend(["-extension", "Composite"])
@@ -429,6 +431,19 @@ class Desktop:
       args.append("--audio-pipe-name=%s" % self.pulseaudio_pipe)
     if self.server_supports_exact_resize:
       args.append("--server-supports-exact-resize")
+
+    # Have the host process use SIGUSR1 to signal a successful start.
+    def sigusr1_handler(signum, frame):
+      _ = signum, frame
+      logging.info("Host ready to receive connections.")
+      self.host_ready = True
+      if (ParentProcessLogger.instance() and
+          False not in [desktop.host_ready for desktop in g_desktops]):
+        ParentProcessLogger.instance().release_parent()
+
+    signal.signal(signal.SIGUSR1, sigusr1_handler)
+    args.append("--signal-parent")
+
     self.host_proc = subprocess.Popen(args, env=self.child_env,
                                       stdin=subprocess.PIPE)
     logging.info(args)
@@ -545,9 +560,104 @@ def locate_executable(exe_name):
   raise Exception("Could not locate executable '%s'" % exe_name)
 
 
-def daemonize(log_filename):
+class ParentProcessLogger(object):
+  """Redirects logs to the parent process, until the host is ready or quits.
+
+  This class creates a pipe to allow logging from the daemon process to be
+  copied to the parent process. The daemon process adds a log-handler that
+  directs logging output to the pipe. The parent process reads from this pipe
+  until and writes the content to stderr.  When the pipe is no longer needed
+  (for example, the host signals successful launch or permanent failure), the
+  daemon removes the log-handler and closes the pipe, causing the the parent
+  process to reach end-of-file while reading the pipe and exit.
+
+  The (singleton) logger should be instantiated before forking. The parent
+  process should call wait_for_logs() before exiting. The (grand-)child process
+  should call start_logging() when it starts, and then use logging.* to issue
+  log statements, as usual. When the child has either succesfully started the
+  host or terminated, it must call release_parent() to allow the parent to exit.
+  """
+
+  __instance = None
+
+  def __init__(self):
+    """Constructor. Must be called before forking."""
+    read_pipe, write_pipe = os.pipe()
+    # Ensure write_pipe is closed on exec, otherwise it will be kept open by
+    # child processes (X, host), preventing the read pipe from EOF'ing.
+    old_flags = fcntl.fcntl(write_pipe, fcntl.F_GETFD)
+    fcntl.fcntl(write_pipe, fcntl.F_SETFD, old_flags | fcntl.FD_CLOEXEC)
+    self._read_file = os.fdopen(read_pipe, 'r')
+    self._write_file = os.fdopen(write_pipe, 'a')
+    self._logging_handler = None
+    ParentProcessLogger.__instance = self
+
+  def start_logging(self):
+    """Installs a logging handler that sends log entries to a pipe.
+
+    Must be called by the child process.
+    """
+    self._read_file.close()
+    self._logging_handler = logging.StreamHandler(self._write_file)
+    logging.getLogger().addHandler(self._logging_handler)
+
+  def release_parent(self):
+    """Uninstalls logging handler and closes the pipe, releasing the parent.
+
+    Must be called by the child process.
+    """
+    if self._logging_handler:
+      logging.getLogger().removeHandler(self._logging_handler)
+      self._logging_handler = None
+    if not self._write_file.closed:
+      self._write_file.close()
+
+  def wait_for_logs(self):
+    """Waits and prints log lines from the daemon until the pipe is closed.
+
+    Must be called by the parent process.
+    """
+    # If Ctrl-C is pressed, inform the user that the daemon is still running.
+    # This signal will cause the read loop below to stop with an EINTR IOError.
+    def sigint_handler(signum, frame):
+      _ = signum, frame
+      print >> sys.stderr, ("Interrupted. The daemon is still running in the "
+                            "background.")
+
+    signal.signal(signal.SIGINT, sigint_handler)
+
+    # Install a fallback timeout to release the parent process, in case the
+    # daemon never responds (e.g. host crash-looping, daemon killed).
+    # This signal will cause the read loop below to stop with an EINTR IOError.
+    def sigalrm_handler(signum, frame):
+      _ = signum, frame
+      print >> sys.stderr, ("No response from daemon. It may have crashed, or "
+                            "may still be running in the background.")
+
+    signal.signal(signal.SIGALRM, sigalrm_handler)
+    signal.alarm(30)
+
+    self._write_file.close()
+
+    # Print lines as they're logged to the pipe until EOF is reached or readline
+    # is interrupted by one of the signal handlers above.
+    try:
+      for line in iter(self._read_file.readline, ''):
+        sys.stderr.write(line)
+    except IOError as e:
+      if e.errno != errno.EINTR:
+        raise
+    print >> sys.stderr, "Log file: %s" % os.environ[LOG_FILE_ENV_VAR]
+
+  @staticmethod
+  def instance():
+    """Returns the singleton instance, if it exists."""
+    return ParentProcessLogger.__instance
+
+
+def daemonize():
   """Background this process and detach from controlling terminal, redirecting
-  stdout/stderr to |log_filename|."""
+  stdout/stderr to a log file."""
 
   # TODO(lambroslambrou): Having stdout/stderr redirected to a log file is not
   # ideal - it could create a filesystem DoS if the daemon or a child process
@@ -562,8 +672,19 @@ def daemonize(log_filename):
   # The mode is provided, since Python otherwise sets a default mode of 0777,
   # which would result in the new file having permissions of 0777 & ~umask,
   # possibly leaving the executable bits set.
+  if not os.environ.has_key(LOG_FILE_ENV_VAR):
+    log_file_prefix = "chrome_remote_desktop_%s_" % time.strftime(
+        '%Y%m%d_%H%M%S', time.localtime(time.time()))
+    log_file = tempfile.NamedTemporaryFile(prefix=log_file_prefix, delete=False)
+    os.environ[LOG_FILE_ENV_VAR] = log_file.name
+    log_fd = log_file.file.fileno()
+  else:
+    log_fd = os.open(os.environ[LOG_FILE_ENV_VAR],
+                     os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0600)
+
   devnull_fd = os.open(os.devnull, os.O_RDONLY)
-  log_fd = os.open(log_filename, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0600)
+
+  parent_logger = ParentProcessLogger()
 
   pid = os.fork()
 
@@ -583,11 +704,15 @@ def daemonize(log_filename):
       os._exit(0)  # pylint: disable=W0212
   else:
     # Parent process
+    parent_logger.wait_for_logs()
     os._exit(0)  # pylint: disable=W0212
 
-  logging.info("Daemon process running, logging to '%s'" % log_filename)
+  logging.info("Daemon process started in the background, logging to '%s'" %
+               os.environ[LOG_FILE_ENV_VAR])
 
   os.chdir(HOME_DIR)
+
+  parent_logger.start_logging()
 
   # Copy the file-descriptors to create new stdin, stdout and stderr.  Note
   # that dup2(oldfd, newfd) closes newfd first, so this will close the current
@@ -610,7 +735,8 @@ def cleanup():
       logging.info("Terminating Xvfb")
       desktop.x_proc.terminate()
   g_desktops = []
-
+  if ParentProcessLogger.instance():
+    ParentProcessLogger.instance().release_parent()
 
 class SignalHandler:
   """Reload the config file on SIGHUP. Since we pass the configuration to the
@@ -877,7 +1003,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
     return 1
 
   # Register handler to re-load the configuration in response to signals.
-  for s in [signal.SIGHUP, signal.SIGINT, signal.SIGTERM, signal.SIGUSR1]:
+  for s in [signal.SIGHUP, signal.SIGINT, signal.SIGTERM]:
     signal.signal(s, SignalHandler(host_config))
 
   # Verify that the initial host configuration has the necessary fields.
@@ -901,11 +1027,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
   # Detach a separate "daemon" process to run the session, unless specifically
   # requested to run in the foreground.
   if not options.foreground:
-    if not os.environ.has_key(LOG_FILE_ENV_VAR):
-      log_file = tempfile.NamedTemporaryFile(
-          prefix="chrome_remote_desktop_", delete=False)
-      os.environ[LOG_FILE_ENV_VAR] = log_file.name
-    daemonize(os.environ[LOG_FILE_ENV_VAR])
+    daemonize()
 
   logging.info("Using host_id: " + host.host_id)
 
@@ -1000,6 +1122,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
     if desktop.host_proc is not None and pid == desktop.host_proc.pid:
       logging.info("Host process terminated")
       desktop.host_proc = None
+      desktop.host_ready = False
       host_inhibitor.record_stopped()
 
       # These exit-codes must match the ones used by the host.
@@ -1007,35 +1130,40 @@ Web Store: https://chrome.google.com/remotedesktop"""
       # Delete the host or auth configuration depending on the returned error
       # code, so the next time this script is run, a new configuration
       # will be created and registered.
-      if os.WEXITSTATUS(status) == 100:
-        logging.info("Host configuration is invalid - exiting.")
-        host_config.clear_auth()
-        host_config.clear_host_info()
-        host_config.save_and_log_errors()
-        return 0
-      elif os.WEXITSTATUS(status) == 101:
-        logging.info("Host ID has been deleted - exiting.")
-        host_config.clear_host_info()
-        host_config.save_and_log_errors()
-        return 0
-      elif os.WEXITSTATUS(status) == 102:
-        logging.info("OAuth credentials are invalid - exiting.")
-        host_config.clear_auth()
-        host_config.save_and_log_errors()
-        return 0
-      elif os.WEXITSTATUS(status) == 103:
-        logging.info("Host domain is blocked by policy - exiting.")
-        host_config.clear_auth()
-        host_config.clear_host_info()
-        host_config.save_and_log_errors()
-        return 0
-      # Nothing to do for Mac-only status 104 (login screen unsupported)
-      elif os.WEXITSTATUS(status) == 105:
-        logging.info("Username is blocked by policy - exiting.")
-        host_config.clear_auth()
-        host_config.clear_host_info()
-        host_config.save_and_log_errors()
-        return 0
+      if os.WIFEXITED(status):
+        if os.WEXITSTATUS(status) == 100:
+          logging.info("Host configuration is invalid - exiting.")
+          host_config.clear_auth()
+          host_config.clear_host_info()
+          host_config.save_and_log_errors()
+          return 0
+        elif os.WEXITSTATUS(status) == 101:
+          logging.info("Host ID has been deleted - exiting.")
+          host_config.clear_host_info()
+          host_config.save_and_log_errors()
+          return 0
+        elif os.WEXITSTATUS(status) == 102:
+          logging.info("OAuth credentials are invalid - exiting.")
+          host_config.clear_auth()
+          host_config.save_and_log_errors()
+          return 0
+        elif os.WEXITSTATUS(status) == 103:
+          logging.info("Host domain is blocked by policy - exiting.")
+          host_config.clear_auth()
+          host_config.clear_host_info()
+          host_config.save_and_log_errors()
+          return 0
+        # Nothing to do for Mac-only status 104 (login screen unsupported)
+        elif os.WEXITSTATUS(status) == 105:
+          logging.info("Username is blocked by policy - exiting.")
+          host_config.clear_auth()
+          host_config.clear_host_info()
+          host_config.save_and_log_errors()
+          return 0
+        else:
+          logging.info("Host exited with status %s." % os.WEXITSTATUS(status))
+      elif os.WIFSIGNALED(status):
+        logging.info("Host terminated by signal %s." % os.WTERMSIG(status))
 
 
 if __name__ == "__main__":

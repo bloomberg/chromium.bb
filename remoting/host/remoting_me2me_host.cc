@@ -71,6 +71,8 @@
 
 #if defined(OS_POSIX)
 #include <signal.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "base/file_descriptor_posix.h"
 #include "remoting/host/pam_authorization_factory_posix.h"
 #include "remoting/host/posix/signal_handler.h"
@@ -103,6 +105,10 @@ const char kApplicationName[] = "chromoting";
 // linux.
 const char kAudioPipeSwitchName[] = "audio-pipe-name";
 
+// The command line switch used by the parent to request the host to signal it
+// when it is successfully started.
+const char kSignalParentSwitchName[] = "signal-parent";
+
 void QuitMessageLoop(base::MessageLoop* message_loop) {
   message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
@@ -130,6 +136,7 @@ class HostProcess
   virtual void OnChannelError() OVERRIDE;
 
   // HeartbeatSender::Listener overrides.
+  virtual void OnHeartbeatSuccessful() OVERRIDE;
   virtual void OnUnknownHostIdError() OVERRIDE;
 
   // HostChangeNotificationListener::Listener overrides.
@@ -278,6 +285,7 @@ class HostProcess
 #endif  // defined(REMOTING_MULTI_PROCESS)
 
   int* exit_code_out_;
+  bool signal_parent_;
 };
 
 HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
@@ -290,7 +298,8 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
       desktop_session_connector_(NULL),
 #endif  // defined(REMOTING_MULTI_PROCESS)
       self_(this),
-      exit_code_out_(exit_code_out) {
+      exit_code_out_(exit_code_out),
+      signal_parent_(false) {
   StartOnUiThread();
 }
 
@@ -371,6 +380,9 @@ bool HostProcess::InitWithCommandLine(const CommandLine* cmd_line) {
   }
   xmpp_server_config_.use_tls = service_urls->xmpp_server_use_tls();
   directory_bot_jid_ = service_urls->directory_bot_jid();
+
+  signal_parent_ = cmd_line->HasSwitch(kSignalParentSwitchName);
+
   return true;
 }
 
@@ -620,6 +632,16 @@ void HostProcess::ShutdownOnUiThread() {
 void HostProcess::OnUnknownHostIdError() {
   LOG(ERROR) << "Host ID not found.";
   ShutdownHost(kInvalidHostIdExitCode);
+}
+
+void HostProcess::OnHeartbeatSuccessful() {
+  LOG(INFO) << "Host ready to receive connections.";
+#if defined(OS_POSIX)
+  if (signal_parent_) {
+    kill(getppid(), SIGUSR1);
+    signal_parent_ = false;
+  }
+#endif
 }
 
 void HostProcess::OnHostDeleted() {

@@ -153,6 +153,10 @@ void HeartbeatSender::ProcessResponse(IqRequest* request,
     return;
   }
 
+  // Notify listener of the first successful heartbeat.
+  if (!heartbeat_succeeded_) {
+    listener_->OnHeartbeatSuccessful();
+  }
   heartbeat_succeeded_ = true;
 
   // This method must only be called for error or result stanzas.
