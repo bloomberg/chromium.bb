@@ -680,11 +680,18 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_StoragePersistence) {
   EXPECT_EQ("persist2=true", cookie_value);
 }
 
+#if defined(OS_WIN)
+// This test is very flaky on Win Aura and XP. http://crbug.com/248873
+#define MAYBE_DOMStorageIsolation DISABLED_DOMStorageIsolation
+#else
+#define MAYBE_DOMStorageIsolation DOMStorageIsolation
+#endif
+
 // This tests DOM storage isolation for packaged apps with webview tags. It
 // loads an app with multiple webview tags and each tag sets DOM storage
 // entries, which the test checks to ensure proper storage isolation is
 // enforced.
-IN_PROC_BROWSER_TEST_F(WebViewTest, DOMStorageIsolation) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_DOMStorageIsolation) {
   ASSERT_TRUE(StartTestServer());
   GURL regular_url = test_server()->GetURL("files/title1.html");
 
