@@ -1692,7 +1692,6 @@ crbug.com/247979 [ Mac Release ] inspector/elements/edit-dom-actions.html [ Slow
 crbug.com/247979 [ XP Release ] inspector/elements/edit-dom-actions.html [ Slow Pass Failure ]
 crbug.com/247979 [ Win7 Debug ] inspector/elements/edit-dom-actions.html [ Timeout ]
 crbug.com/247981 [ Win7 Debug ] inspector/profiler/heap-snapshot-get-profile-crash.html [ Pass Crash ]
-crbug.com/247982 [ Win7 Debug ] virtual/deferred/fast/images/gif-large-checkerboard.html [ ImageOnlyFailure ]
 crbug.com/247982 [ Win7 Debug ] virtual/deferred/fast/images/exif-orientation-css.html [ ImageOnlyFailure Pass ]
 crbug.com/247982 [ Win7 Debug ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 crbug.com/247984 [ Win7 Debug ] virtual/gpu/compositedscrolling/overflow/build-paint-order-lists.html [ Timeout Pass ]
