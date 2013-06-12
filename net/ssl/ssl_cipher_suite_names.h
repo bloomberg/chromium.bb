@@ -18,9 +18,11 @@ namespace net {
 // wire and recorded at
 // http://www.iana.org/assignments/tls-parameters/tls-parameters.xml
 // If the cipher suite is unknown, the strings are set to "???".
+// In the case of an AEAD cipher suite, *mac_str is NULL and *is_aead is true.
 NET_EXPORT void SSLCipherSuiteToStrings(const char** key_exchange_str,
                                         const char** cipher_str,
                                         const char** mac_str,
+                                        bool* is_aead,
                                         uint16 cipher_suite);
 
 // SSLVersionToString returns the name of the SSL protocol version

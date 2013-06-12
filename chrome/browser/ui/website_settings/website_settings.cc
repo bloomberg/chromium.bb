@@ -419,12 +419,20 @@ void WebsiteSettings::Init(Profile* profile,
         (ssl.connection_status &
         net::SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION) != 0;
     const char *key_exchange, *cipher, *mac;
-    net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, cipher_suite);
+    bool is_aead;
+    net::SSLCipherSuiteToStrings(
+        &key_exchange, &cipher, &mac, &is_aead, cipher_suite);
 
     site_connection_details_ += ASCIIToUTF16("\n\n");
-    site_connection_details_ += l10n_util::GetStringFUTF16(
-        IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTION_DETAILS,
-        ASCIIToUTF16(cipher), ASCIIToUTF16(mac), ASCIIToUTF16(key_exchange));
+    if (is_aead) {
+      site_connection_details_ += l10n_util::GetStringFUTF16(
+          IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTION_DETAILS_AEAD,
+          ASCIIToUTF16(cipher), ASCIIToUTF16(key_exchange));
+    } else {
+      site_connection_details_ += l10n_util::GetStringFUTF16(
+          IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTION_DETAILS,
+          ASCIIToUTF16(cipher), ASCIIToUTF16(mac), ASCIIToUTF16(key_exchange));
+    }
 
     if (did_fallback) {
       // For now, only SSLv3 fallback will trigger a warning icon.
