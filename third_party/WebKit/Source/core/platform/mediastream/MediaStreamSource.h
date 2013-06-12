@@ -33,11 +33,12 @@
 #define MediaStreamSource_h
 
 #include "core/platform/audio/AudioDestinationConsumer.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "core/platform/mediastream/MediaConstraints.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -80,6 +81,9 @@ public:
     ExtraData* extraData() const { return m_extraData.get(); }
     void setExtraData(ExtraData* extraData) { m_extraData = adoptPtr(extraData); }
 
+    void setConstraints(PassRefPtr<MediaConstraints> constraints) { m_constraints = constraints; }
+    MediaConstraints* constraints() { return m_constraints.get(); }
+
     const String& deviceId() { return m_deviceId; }
     void setDeviceId(const String& deviceId) { m_deviceId = deviceId; }
 
@@ -104,6 +108,7 @@ private:
     Mutex m_audioConsumersLock;
     Vector<RefPtr<AudioDestinationConsumer> > m_audioConsumers;
     OwnPtr<ExtraData> m_extraData;
+    RefPtr<MediaConstraints> m_constraints;
 };
 
 typedef Vector<RefPtr<MediaStreamSource> > MediaStreamSourceVector;

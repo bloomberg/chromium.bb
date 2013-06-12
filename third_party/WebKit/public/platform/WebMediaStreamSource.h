@@ -42,6 +42,7 @@ class MediaStreamSource;
 
 namespace WebKit {
 class WebAudioDestinationConsumer;
+class WebMediaConstraints;
 class WebString;
 
 class WebMediaStreamSource {
@@ -101,6 +102,8 @@ public:
     // extra data pointer to be deleted.
     WEBKIT_EXPORT ExtraData* extraData() const;
     WEBKIT_EXPORT void setExtraData(ExtraData*);
+
+    WEBKIT_EXPORT WebMediaConstraints constraints();
 
     WEBKIT_EXPORT WebString deviceId() const;
     WEBKIT_EXPORT void setDeviceId(const WebString&);
