@@ -348,4 +348,14 @@ public class AwContentsTest extends AwTestBase {
             if (webServer != null) webServer.shutdown();
         }
     }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCreateLoadPageDestroy() throws Throwable {
+        AwTestContainerView awTestContainerView =
+                createAwTestContainerViewOnMainSync(mContentsClient);
+        loadUrlSync(awTestContainerView.getAwContents(),
+                mContentsClient.getOnPageFinishedHelper(), CommonResources.ABOUT_HTML);
+        awTestContainerView.destroy();
+    }
 }

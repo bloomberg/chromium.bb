@@ -122,6 +122,7 @@ SynchronousCompositorImpl::SynchronousCompositorImpl(WebContents* contents)
 SynchronousCompositorImpl::~SynchronousCompositorImpl() {
   if (compositor_client_)
     compositor_client_->DidDestroyCompositor(this);
+  SetInputHandler(NULL);
 }
 
 void SynchronousCompositorImpl::SetClient(

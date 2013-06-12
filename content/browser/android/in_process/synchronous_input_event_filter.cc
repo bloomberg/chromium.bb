@@ -52,8 +52,12 @@ void SynchronousInputEventFilter::DidAddInputHandler(
 }
 
 void SynchronousInputEventFilter::DidRemoveInputHandler(int routing_id) {
-  SynchronousCompositorImpl::FromRoutingID(routing_id)
-      ->SetInputHandler(NULL);
+  // The SynchronusCompositorImpl can be NULL if the WebContents that it's
+  // bound to has already been deleted.
+  SynchronousCompositorImpl* compositor =
+      SynchronousCompositorImpl::FromRoutingID(routing_id);
+  if (compositor)
+    compositor->SetInputHandler(NULL);
 }
 
 }  // namespace content
