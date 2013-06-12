@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
@@ -95,6 +96,27 @@ class WebViewInteractiveTest
      ASSERT_EQ(mouse_click_result_, ui_test_utils::SendMouseEventsSync(
          button, state));
    }
+  }
+
+  void NewWindowTestHelper(const std::string& test_name,
+                           const std::string& app_location) {
+    ASSERT_TRUE(StartTestServer());  // For serving guest pages.
+    ExtensionTestMessageListener launched_listener("Launched", false);
+    LoadAndLaunchPlatformApp(app_location.c_str());
+    ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+    content::WebContents* embedder_web_contents =
+        GetFirstShellWindowWebContents();
+    ASSERT_TRUE(embedder_web_contents);
+
+    ExtensionTestMessageListener done_listener("DoneNewWindowTest.PASSED",
+                                               false);
+    done_listener.AlsoListenForFailureMessage("DoneNewWindowTest.FAILED");
+    EXPECT_TRUE(content::ExecuteScript(
+                    embedder_web_contents,
+                    base::StringPrintf("runNewWindowTest('%s')",
+                                       test_name.c_str())));
+    ASSERT_TRUE(done_listener.WaitUntilSatisfied());
   }
 
   void SetupTest(const std::string& app_name,
@@ -382,16 +404,34 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, EditCommandsNoMenu) {
   ASSERT_TRUE(start_of_line_listener.WaitUntilSatisfied());
 }
 
-// Flaky on Windows. http://crbug.com/248423
-#if defined(OS_WIN)
-#define MAYBE_NewWindow DISABLED_NewWindow
-#else
-#define MAYBE_NewWindow NewWindow
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_NewWindow) {
-  ASSERT_TRUE(StartTestServer());  // For serving guest pages.
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/newwindow"))
-      << message_;
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
+                       NewWindow_NewWindowNameTakesPrecedence) {
+  NewWindowTestHelper("testNewWindowNameTakesPrecedence", "web_view/newwindow");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
+                       NewWindow_WebViewNameTakesPrecedence) {
+  NewWindowTestHelper("testWebViewNameTakesPrecedence", "web_view/newwindow");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_NoName) {
+  NewWindowTestHelper("testNoName", "web_view/newwindow");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_Redirect) {
+  NewWindowTestHelper("testNewWindowRedirect", "web_view/newwindow");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_Close) {
+  NewWindowTestHelper("testNewWindowClose", "web_view/newwindow");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_ExecuteScript) {
+  NewWindowTestHelper("testNewWindowExecuteScript", "web_view/newwindow");
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_WebRequest) {
+  NewWindowTestHelper("testNewWindowWebRequest", "web_view/newwindow");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, ExecuteCode) {
