@@ -706,9 +706,17 @@ def BuildStepUpdateUserProjects(pepperdir, platform, toolchains,
   if not build_experimental:
     filters['EXPERIMENTAL'] = False
   if toolchains:
-    filters['TOOLS'] = toolchains
+    toolchains = toolchains[:]
+
+    # arm isn't a valid toolchain for build_projects
+    if 'arm' in toolchains:
+      toolchains.remove('arm')
+
     if 'host' in toolchains:
-      filters['TOOLS'].append(platform)
+      toolchains.remove('host')
+      toolchains.append(platform)
+
+    filters['TOOLS'] = toolchains
 
   # Update examples and libraries
   filters['DEST'] = [

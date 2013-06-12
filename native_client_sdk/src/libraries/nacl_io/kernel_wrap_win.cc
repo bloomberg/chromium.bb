@@ -103,6 +103,10 @@ int fsync(int fd) {
   return ki_fsync(fd);
 }
 
+int ftruncate(int fd, off_t length) {
+  return ki_ftruncate(fd, length);
+}
+
 char* _getcwd(char* buf, int size) {
   return ki_getcwd(buf, size);
 }

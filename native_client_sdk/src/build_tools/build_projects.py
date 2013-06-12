@@ -28,6 +28,7 @@ LIB_DICT = {
   'mac': [],
   'win': ['x86_32']
 }
+VALID_TOOLCHAINS = ['newlib', 'glibc', 'pnacl', 'win', 'linux', 'mac']
 
 
 def CopyFilesFromTo(filelist, srcdir, dstdir):
@@ -68,6 +69,13 @@ def UpdateHelpers(pepperdir, platform, clobber=False):
                                os.path.join(pepperdir, 'tools', 'make.exe'))
 
 
+def ValidateToolchains(toolchains):
+  invalid_toolchains = set(toolchains) - set(VALID_TOOLCHAINS)
+  if invalid_toolchains:
+    buildbot_common.ErrorExit('Invalid toolchain(s): %s' % (
+        ', '.join(invalid_toolchains)))
+
+
 def UpdateProjects(pepperdir, platform, project_tree, toolchains,
                    clobber=False, configs=None, first_toolchain=False):
   if configs is None:
@@ -77,6 +85,7 @@ def UpdateProjects(pepperdir, platform, project_tree, toolchains,
   if not os.path.exists(os.path.join(pepperdir, 'toolchain')):
     buildbot_common.ErrorExit('Examples depend on missing toolchains.')
 
+  ValidateToolchains(toolchains)
 
   # Create the library output directories
   libdir = os.path.join(pepperdir, 'lib')
@@ -212,8 +221,11 @@ def main(args):
     options.toolchain = ['newlib', 'glibc', 'pnacl', 'host']
 
   if 'host' in options.toolchain:
+    options.toolchain.remove('host')
     options.toolchain.append(platform)
     print 'Adding platform: ' + platform
+
+  ValidateToolchains(options.toolchain)
 
   filters = {}
   if options.toolchain:
