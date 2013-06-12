@@ -16,8 +16,12 @@
 #ifndef NDEBUG
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "content/public/common/content_switches.h"
-#endif
+
+// Dumps dependency information about our browser context keyed services
+// into a dot file in the browser context directory.
+const char kDumpBrowserContextDependencyGraphFlag[] =
+    "dump-browser-context-graph";
+#endif  // NDEBUG
 
 void BrowserContextDependencyManager::AddComponent(
     BrowserContextKeyedBaseFactory* component) {
@@ -143,7 +147,7 @@ void BrowserContextDependencyManager::DumpBrowserContextDependencies(
   // Whenever we try to build a destruction ordering, we should also dump a
   // dependency graph to "/path/to/context/context-dependencies.dot".
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDumpBrowserContextDependencyGraph)) {
+          kDumpBrowserContextDependencyGraphFlag)) {
     base::FilePath dot_file =
         context->GetPath().AppendASCII("browser-context-dependencies.dot");
     std::string contents = dependency_graph_.DumpAsGraphviz(
