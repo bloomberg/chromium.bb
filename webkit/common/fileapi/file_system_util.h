@@ -49,6 +49,9 @@ class WEBKIT_COMMON_EXPORT VirtualPath {
       const base::FilePath& path,
       std::vector<base::FilePath::StringType>* components);
 
+  static void GetComponentsUTF8Unsafe(
+      const base::FilePath& path, std::vector<std::string>* components);
+
   // Returns a path name ensuring that it begins with kRoot and all path
   // separators are forward slashes /.
   static base::FilePath::StringType GetNormalizedFilePath(

@@ -33,24 +33,6 @@ base::PlatformFileError MakeDirectoryFileInfo(
   return base::PLATFORM_FILE_OK;
 }
 
-// Get path components in UTF8.
-std::vector<std::string> GetComponents(const base::FilePath& path) {
-  std::vector<base::FilePath::StringType> stringtype_components;
-  path.GetComponents(&stringtype_components);
-
-  std::vector<std::string> utf8_components;
-  for (size_t i = 0; i < stringtype_components.size(); ++i) {
-    // This is the same as FilePath::AsUTF8Unsafe().
-#if defined(OS_WIN)
-    utf8_components.push_back(base::WideToUTF8(stringtype_components[i]));
-#elif defined(OS_MACOSX)
-    utf8_components.push_back(stringtype_components[i]);
-#endif
-  }
-
-  return utf8_components;
-}
-
 fileapi::DirectoryEntry MakeDirectoryEntry(
     const std::string& name,
     int64 size,
@@ -115,8 +97,8 @@ base::PlatformFileError ItunesFileUtil::GetFileInfoSync(
     const fileapi::FileSystemURL& url,
     base::PlatformFileInfo* file_info,
     base::FilePath* platform_path) {
-  std::vector<std::string> components =
-      GetComponents(url.path().NormalizePathSeparators());
+  std::vector<std::string> components;
+  fileapi::VirtualPath::GetComponentsUTF8Unsafe(url.path(), &components);
 
   if (components.size() == 0)
     return MakeDirectoryFileInfo(file_info);
@@ -171,8 +153,8 @@ base::PlatformFileError ItunesFileUtil::ReadDirectorySync(
     const fileapi::FileSystemURL& url,
     EntryList* file_list) {
   DCHECK(file_list->empty());
-  std::vector<std::string> components =
-      GetComponents(url.path().NormalizePathSeparators());
+  std::vector<std::string> components;
+  fileapi::VirtualPath::GetComponentsUTF8Unsafe(url.path(), &components);
 
   if (components.size() == 0) {
     base::PlatformFileInfo xml_info;
@@ -270,8 +252,8 @@ base::PlatformFileError ItunesFileUtil::GetLocalFilePath(
     const fileapi::FileSystemURL& url,
     base::FilePath* local_file_path) {
   // Should only get here for files, i.e. the xml file and tracks.
-  std::vector<std::string> components =
-      GetComponents(url.path().NormalizePathSeparators());
+  std::vector<std::string> components;
+  fileapi::VirtualPath::GetComponentsUTF8Unsafe(url.path(), &components);
 
   if (components.size() == 1 && components[0] == kiTunesLibraryXML) {
     *local_file_path = GetDataProvider()->library_path();

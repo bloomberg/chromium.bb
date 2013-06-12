@@ -56,34 +56,6 @@ base::PlatformFileError FindAlbumInfo(const std::string& key,
   return base::PLATFORM_FILE_OK;
 }
 
-// Get UTF-8 components of FilePath to match against Picasa's UTF-8 strings.
-std::vector<std::string> GetComponents(
-    const fileapi::FileSystemURL& url) {
-  std::vector<base::FilePath::StringType> stringtype_components;
-
-  url.path().GetComponents(&stringtype_components);
-
-  std::vector<std::string> utf8_components;
-
-  for (std::vector<base::FilePath::StringType>::const_iterator it =
-           stringtype_components.begin();
-       it != stringtype_components.end(); ++it) {
-    // This is ugly and unsafe, but the same as FilePath::AsUTF8Unsafe().
-#if defined(OS_WIN)
-    utf8_components.push_back(base::WideToUTF8(*it));
-#elif defined(OS_MACOSX)
-    utf8_components.push_back(*it);
-#else
-    // TODO(tommycli): Remove whole compilation unit from all but Win/Mac.
-    // NOTIMPLEMENTED();
-    utf8_components.push_back(base::WideToUTF8(base::SysNativeMBToWide(*it)));
-#endif
-  }
-
-  return utf8_components;
-}
-
-
 }  // namespace
 
 const char kPicasaDirAlbums[]  = "albums";
@@ -102,26 +74,27 @@ base::PlatformFileError PicasaFileUtil::GetFileInfoSync(
 
   *platform_path = base::FilePath();
 
-  std::vector<std::string> path_components = GetComponents(url);
+  std::vector<std::string> components;
+  fileapi::VirtualPath::GetComponentsUTF8Unsafe(url.path(), &components);
 
-  switch (path_components.size()) {
+  switch (components.size()) {
     case 0:
       // Root directory.
       file_info->is_directory = true;
       return base::PLATFORM_FILE_OK;
     case 1:
-      if (path_components[0] == kPicasaDirAlbums ||
-          path_components[0] == kPicasaDirFolders) {
+      if (components[0] == kPicasaDirAlbums ||
+          components[0] == kPicasaDirFolders) {
         file_info->is_directory = true;
         return base::PLATFORM_FILE_OK;
       }
 
       break;
     case 2:
-      if (path_components[0] == kPicasaDirAlbums) {
+      if (components[0] == kPicasaDirAlbums) {
         scoped_ptr<AlbumMap> album_map = DataProvider()->GetAlbums();
         base::PlatformFileError error =
-            FindAlbumInfo(path_components[1], album_map.get(), NULL);
+            FindAlbumInfo(components[1], album_map.get(), NULL);
         if (error != base::PLATFORM_FILE_OK)
           return error;
 
@@ -129,7 +102,7 @@ base::PlatformFileError PicasaFileUtil::GetFileInfoSync(
         return base::PLATFORM_FILE_OK;
       }
 
-      if (path_components[0] == kPicasaDirFolders) {
+      if (components[0] == kPicasaDirFolders) {
         return NativeMediaFileUtil::GetFileInfoSync(context, url, file_info,
                                                     platform_path);
       }
@@ -141,8 +114,8 @@ base::PlatformFileError PicasaFileUtil::GetFileInfoSync(
       base::PlatformFileError result = NativeMediaFileUtil::GetFileInfoSync(
           context, url, file_info, platform_path);
 
-      DCHECK(path_components[0] == kPicasaDirAlbums ||
-             path_components[0] == kPicasaDirFolders ||
+      DCHECK(components[0] == kPicasaDirAlbums ||
+             components[0] == kPicasaDirFolders ||
              result == base::PLATFORM_FILE_ERROR_NOT_FOUND);
 
       return result;
@@ -170,11 +143,12 @@ base::PlatformFileError PicasaFileUtil::ReadDirectorySync(
   if (!file_info.is_directory)
     return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
 
-  std::vector<std::string> path_components = GetComponents(url);
+  std::vector<std::string> components;
+  fileapi::VirtualPath::GetComponentsUTF8Unsafe(url.path(), &components);
 
   FilePath folders_path = base::FilePath().AppendASCII(kPicasaDirFolders);
 
-  switch (path_components.size()) {
+  switch (components.size()) {
     case 0: {
       // Root directory.
       FilePath albums_path = base::FilePath().AppendASCII(kPicasaDirAlbums);
@@ -185,7 +159,7 @@ base::PlatformFileError PicasaFileUtil::ReadDirectorySync(
       break;
     }
     case 1:
-      if (path_components[0] == kPicasaDirAlbums) {
+      if (components[0] == kPicasaDirAlbums) {
         scoped_ptr<AlbumMap> albums = DataProvider()->GetAlbums();
         if (!albums)
           return base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -198,7 +172,7 @@ base::PlatformFileError PicasaFileUtil::ReadDirectorySync(
               it->second.timestamp,
               true));
         }
-      } else if (path_components[0] == kPicasaDirFolders) {
+      } else if (components[0] == kPicasaDirFolders) {
         scoped_ptr<AlbumMap> folders = DataProvider()->GetFolders();
         if (!folders)
           return base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -214,11 +188,11 @@ base::PlatformFileError PicasaFileUtil::ReadDirectorySync(
       }
       break;
     case 2:
-      if (path_components[0] == kPicasaDirAlbums) {
+      if (components[0] == kPicasaDirAlbums) {
         // TODO(tommycli): Implement album contents.
       }
 
-      if (path_components[0] == kPicasaDirFolders) {
+      if (components[0] == kPicasaDirFolders) {
         EntryList super_list;
         base::PlatformFileError error =
             NativeMediaFileUtil::ReadDirectorySync(context, url, &super_list);
@@ -243,15 +217,16 @@ base::PlatformFileError PicasaFileUtil::GetLocalFilePath(
     base::FilePath* local_file_path) {
   DCHECK(local_file_path);
   DCHECK(url.is_valid());
-  std::vector<std::string> path_components = GetComponents(url);
+  std::vector<std::string> components;
+  fileapi::VirtualPath::GetComponentsUTF8Unsafe(url.path(), &components);
 
-  switch (path_components.size()) {
+  switch (components.size()) {
     case 2:
-      if (path_components[0] == kPicasaDirFolders) {
+      if (components[0] == kPicasaDirFolders) {
         scoped_ptr<AlbumMap> album_map = DataProvider()->GetFolders();
         AlbumInfo album_info;
         base::PlatformFileError error =
-            FindAlbumInfo(path_components[1], album_map.get(), &album_info);
+            FindAlbumInfo(components[1], album_map.get(), &album_info);
         if (error != base::PLATFORM_FILE_OK)
           return error;
 
@@ -260,10 +235,10 @@ base::PlatformFileError PicasaFileUtil::GetLocalFilePath(
       }
       break;
     case 3:
-      if (path_components[0] == kPicasaDirAlbums) {
+      if (components[0] == kPicasaDirAlbums) {
         scoped_ptr<AlbumMap> album_map = DataProvider()->GetAlbums();
         base::PlatformFileError error =
-            FindAlbumInfo(path_components[1], album_map.get(), NULL);
+            FindAlbumInfo(components[1], album_map.get(), NULL);
         if (error != base::PLATFORM_FILE_OK)
           return error;
 
@@ -271,11 +246,11 @@ base::PlatformFileError PicasaFileUtil::GetLocalFilePath(
         return base::PLATFORM_FILE_ERROR_NOT_FOUND;
       }
 
-      if (path_components[0] == kPicasaDirFolders) {
+      if (components[0] == kPicasaDirFolders) {
         scoped_ptr<AlbumMap> album_map = DataProvider()->GetFolders();
         AlbumInfo album_info;
         base::PlatformFileError error =
-            FindAlbumInfo(path_components[1], album_map.get(), &album_info);
+            FindAlbumInfo(components[1], album_map.get(), &album_info);
         if (error != base::PLATFORM_FILE_OK)
           return error;
 

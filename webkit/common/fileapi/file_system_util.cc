@@ -102,6 +102,23 @@ void VirtualPath::GetComponents(
   }
 }
 
+void VirtualPath::GetComponentsUTF8Unsafe(
+    const base::FilePath& path,
+    std::vector<std::string>* components) {
+  DCHECK(components);
+  if (!components)
+    return;
+  components->clear();
+
+  std::vector<base::FilePath::StringType> stringtype_components;
+  VirtualPath::GetComponents(path, &stringtype_components);
+  std::vector<base::FilePath::StringType>::const_iterator it;
+  for (it = stringtype_components.begin(); it != stringtype_components.end();
+       ++it) {
+    components->push_back(base::FilePath(*it).AsUTF8Unsafe());
+  }
+}
+
 base::FilePath::StringType VirtualPath::GetNormalizedFilePath(
     const base::FilePath& path) {
   base::FilePath::StringType normalized_path = path.value();
