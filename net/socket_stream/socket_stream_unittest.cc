@@ -52,6 +52,9 @@ struct SocketStreamEvent {
 
 class SocketStreamEventRecorder : public SocketStream::Delegate {
  public:
+  // |callback| will be run when the OnClose() or OnError() method is called.
+  // For OnClose(), |callback| is called with OK. For OnError(), it's called
+  // with the error code.
   explicit SocketStreamEventRecorder(const CompletionCallback& callback)
       : callback_(callback) {}
   virtual ~SocketStreamEventRecorder() {}
