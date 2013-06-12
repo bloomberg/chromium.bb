@@ -87,3 +87,8 @@ BookmarkletTest.NonEmptyResult
 MediaSourceTest.Playback_AudioOnly_WebM
 MediaSourceTest.Playback_VideoAudio_WebM
 MediaSourceTest.Playback_VideoOnly_WebM
+
+# http://crbug.com/248796
+ResourceFetcherTests.ResourceFetcher404
+ResourceFetcherTests.ResourceFetcherDeletedInCallback
+ResourceFetcherTests.ResourceFetcherTimeout
