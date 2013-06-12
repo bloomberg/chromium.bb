@@ -73,7 +73,10 @@ class BrowserPluginGuest::PermissionRequest {
 class BrowserPluginGuest::DownloadRequest : public PermissionRequest {
  public:
   explicit DownloadRequest(base::Callback<void(bool)> callback)
-      : callback_(callback) {}
+      : callback_(callback) {
+    RecordAction(
+        UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.Download"));
+  }
   virtual void Respond(bool should_allow) OVERRIDE {
     callback_.Run(should_allow);
   }
@@ -91,7 +94,10 @@ class BrowserPluginGuest::GeolocationRequest : public PermissionRequest {
                      : callback_(callback),
                        bridge_id_(bridge_id),
                        guest_(guest),
-                       weak_ptr_factory_(weak_ptr_factory) {}
+                       weak_ptr_factory_(weak_ptr_factory) {
+    RecordAction(
+        UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.Geolocation"));
+  }
 
   virtual void Respond(bool should_allow) OVERRIDE {
     WebContents* web_contents = guest_->embedder_web_contents();
@@ -139,7 +145,10 @@ class BrowserPluginGuest::MediaRequest : public PermissionRequest {
                BrowserPluginGuest* guest)
                : request_(request),
                  callback_(callback),
-                 guest_(guest) {}
+                 guest_(guest) {
+    RecordAction(
+        UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.Media"));
+  }
 
   virtual void Respond(bool should_allow) OVERRIDE {
     WebContentsImpl* web_contents = guest_->embedder_web_contents();
@@ -164,7 +173,10 @@ class BrowserPluginGuest::NewWindowRequest : public PermissionRequest {
  public:
   NewWindowRequest(int instance_id, BrowserPluginGuest* guest)
       : instance_id_(instance_id),
-        guest_(guest) {}
+        guest_(guest) {
+    RecordAction(
+        UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.NewWindow"));
+  }
 
   virtual void Respond(bool should_allow) OVERRIDE {
     int embedder_render_process_id =
@@ -1202,6 +1214,8 @@ void BrowserPluginGuest::OnLockMouse(bool user_gesture,
     Send(new ViewMsg_LockMouse_ACK(routing_id(), false));
     return;
   }
+  RecordAction(
+      UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.PointerLock"));
   pending_lock_request_ = true;
   int request_id = next_permission_request_id_++;
   base::DictionaryValue request_info;

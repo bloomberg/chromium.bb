@@ -245,6 +245,11 @@
 0xa369e99aa2e21969	BrowserPlugin.Guest.Killed
 0x428cf267aeb35e28	BrowserPlugin.Guest.Navigate
 0xdd4859340407e122	BrowserPlugin.Guest.PermissionRequest
+0x20ba04d2331f9bfa	BrowserPlugin.Guest.PermissionRequest.Download
+0x8d7c904ec99c12fd	BrowserPlugin.Guest.PermissionRequest.Geolocation
+0xf9453f6f98d12f02	BrowserPlugin.Guest.PermissionRequest.Media
+0x2b75a893f779e6df	BrowserPlugin.Guest.PermissionRequest.NewWindow
+0x2ff464e34165d946	BrowserPlugin.Guest.PermissionRequest.PointerLock
 0x69b219de7f17c077	BrowserPlugin.Guest.Responsive
 0x7784cf1f8b1cc3f0	BrowserPlugin.Guest.Terminate
 0x24941c4fd42fb51f	CanCommitURL_BlockedAndKilled
@@ -289,6 +294,8 @@
 0xdf8926d323575ff8	CloseWindow
 0xcd94a7d0199de11d	CloseWindowByKey
 0xa0ebbbdb0eca8d89	ConflictBadge
+0x355517777b3f002e	ConflictingModuleNotificationDismissed
+0x2f1ba1d06c32c45d	ConflictingModuleNotificationShown
 0x33056b44f816c204	CookieBlockingDisabledPerDefault
 0xcc192d44d8f426c7	CookieBlockingEnabledPerDefault
 0x5fb63579fc981698	Copy
@@ -1570,6 +1577,7 @@
 0x6932875212d36f57	WP_EditImage
 0x34a770eb3bbf5632	WP_Gallery
 0x1058b3af68275a1d	WebView.ExecuteScript
+0x50de3f60387a3613	WebView.WebRequest.AddListener
 0x949730a9468e27a1	WebsiteSettings_CookiesDialogOpened
 0xddc2a5698e145d16	WebsiteSettings_Opened
 0x75af94f65efafada	Win8DesktopRestart
