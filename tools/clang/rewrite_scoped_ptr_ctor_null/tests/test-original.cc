@@ -18,13 +18,17 @@ void TestNew() {
 class TestInitializers {
  public:
   TestInitializers() : a(NULL) {}
-  TestInitializers(bool) : a(NULL), b(NULL) {}
-  TestInitializers(double) : a(NULL), b(new int), c() {}
+  TestInitializers(bool) : a(NULL), b(NULL), e(NULL) {}
+  TestInitializers(double)
+      : a(NULL), b(new int), c(), f(static_cast<int*>(malloc(sizeof(int)))) {}
 
  private:
   scoped_ptr<int> a;
   scoped_ptr<int> b;
   scoped_ptr<int> c;
+  scoped_ptr_malloc<int> d;
+  scoped_ptr_malloc<int> e;
+  scoped_ptr_malloc<int> f;
 };
 
 scoped_ptr<int> TestTemporaries(scoped_ptr<int> a, scoped_ptr<int> b) {

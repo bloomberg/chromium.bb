@@ -21,6 +21,7 @@ using clang::ast_matchers::argumentCountIs;
 using clang::ast_matchers::bindTemporaryExpr;
 using clang::ast_matchers::constructorDecl;
 using clang::ast_matchers::constructExpr;
+using clang::ast_matchers::defaultArgExpr;
 using clang::ast_matchers::expr;
 using clang::ast_matchers::forEach;
 using clang::ast_matchers::has;
@@ -31,6 +32,7 @@ using clang::ast_matchers::id;
 using clang::ast_matchers::methodDecl;
 using clang::ast_matchers::newExpr;
 using clang::ast_matchers::ofClass;
+using clang::ast_matchers::unless;
 using clang::ast_matchers::varDecl;
 using clang::tooling::CommonOptionsParser;
 using clang::tooling::Replacement;
@@ -105,7 +107,8 @@ void EmptyStringConverter::SetupMatchers(MatchFinder* match_finder) {
       "call",
       constructExpr(hasDeclaration(methodDecl(ofClass(matchesName(kPattern)))),
                     argumentCountIs(1),
-                    hasArgument(0, id("arg", expr()))));
+                    hasArgument(0, id("arg", expr())),
+                    unless(hasArgument(0, defaultArgExpr()))));
 
   match_finder->addMatcher(varDecl(forEach(constructor_call)),
                            &constructor_callback_);
