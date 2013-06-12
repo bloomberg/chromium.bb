@@ -90,12 +90,10 @@ DatabaseTracker::DatabaseTracker(
       force_keep_session_state_(false),
       shutting_down_(false),
       profile_path_(profile_path),
-      db_dir_(is_incognito_ ?
-              profile_path_.Append(kIncognitoDatabaseDirectoryName) :
-              profile_path_.Append(kDatabaseDirectoryName)),
+      db_dir_(is_incognito_
+                  ? profile_path_.Append(kIncognitoDatabaseDirectoryName)
+                  : profile_path_.Append(kDatabaseDirectoryName)),
       db_(new sql::Connection()),
-      databases_table_(NULL),
-      meta_table_(NULL),
       special_storage_policy_(special_storage_policy),
       quota_manager_proxy_(quota_manager_proxy),
       db_tracker_thread_(db_tracker_thread),

@@ -425,7 +425,6 @@ PluginInstance::PluginInstance(
       fullscreen_container_(NULL),
       flash_fullscreen_(false),
       desired_fullscreen_state_(false),
-      message_channel_(NULL),
       sad_plugin_(NULL),
       input_event_mask_(0),
       filtered_input_event_mask_(0),
