@@ -5,8 +5,9 @@
 
 import json
 import portage
-import sys
 from parallel_emerge import DepGraphGenerator
+from chromite.lib import commandline
+from chromite.lib import cros_build_lib
 
 def FlattenDepTree(deptree, pkgtable=None, parentcpv=None):
   """
@@ -57,6 +58,7 @@ def FlattenDepTree(deptree, pkgtable=None, parentcpv=None):
                        "category": cat,
                        "version": "%s-%s" % (ver, rev),
                        "full_name": cpv,
+                       "cpes": GetCPEFromCPV(cat, nam, ver),
                        "action": record["action"]}
     # If we have a parent, that is a rev_dep for the current package.
     if parentcpv:
@@ -69,39 +71,80 @@ def FlattenDepTree(deptree, pkgtable=None, parentcpv=None):
   return pkgtable
 
 
-def Usage():
-  """Print usage."""
-  print """Usage:
-cros_extract_deps [--board=BOARD] [emerge args] package
+def GetCPEFromCPV(category, package, version):
+  """Look up the CPE for a specified Portage package.
 
-This extracts the dependency tree for the specified package, and outputs it
-to stdout, in a serialized JSON format. Emerge flags such as --root-deps
-can be used to influence what sort of dependency tree is extracted.
-"""
+  Args:
+    category: The Portage package's category, e.g. "net-misc"
+    package: The Portage package's name, e.g. "curl"
+    version: The Portage version, e.g. "7.30.0"
+
+  Returns: A list of CPE Name strings, e.g.
+           ["cpe:/a:curl:curl:7.30.0", "cpe:/a:curl:libcurl:7.30.0"]
+  """
+  equery_cmd = ["equery", "m", "-U", "%s/%s" % (category, package)]
+  lines = cros_build_lib.RunCommand(equery_cmd, error_code_ok=True,
+                                    print_cmd=False,
+                                    redirect_stdout=True).output.splitlines()
+  # Look for lines like "Remote-ID:   cpe:/a:kernel:linux-pam ID: cpe"
+  # and extract the cpe URI.
+  cpes = []
+  for line in lines:
+    if "ID: cpe" not in line:
+      continue
+    cpes.append("%s:%s" % (line.split()[1], version))
+  # Note that we're assuming we can combine the root of the CPE, taken
+  # from metadata.xml, and tack on the version number as used by
+  # Portage, and come up with a legitimate CPE. This works so long as
+  # Portage and CPE agree on the precise formatting of the version
+  # number, which they almost always do. There is one known exception
+  # to this so far. Our code will decide we have
+  # cpe:/a:todd_miller:sudo:1.8.6_p7 yet the advisories use a format
+  # like cpe:/a:todd_miller:sudo:1.8.6p7, without the underscore. (CPE
+  # is "right" in this example, in that it matches www.sudo.ws.)
+  #
+  # This is livable so long as you do some fuzzy version number
+  # comparison in your vulnerability monitoring, between what-we-have
+  # and what-the-advisory-says-is-affected.
+  return cpes
+
+
+def ExtractCPEList(deps_list):
+  cpe_dump = []
+  for cpv, record in deps_list.items():
+    if record["cpes"]:
+      for cpe in record["cpes"]:
+        cpe_dump.append({"Name": cpv, "Target": cpe, "Repository": "cros"})
+    else:
+      cros_build_lib.Warning("No CPE entry for %s", cpv)
+  return cpe_dump
 
 
 def main(argv):
-  if len(argv) == 1:
-    Usage()
-    sys.exit(1)
+  parser = commandline.ArgumentParser(description="""
+This extracts the dependency tree for the specified package, and outputs it
+to stdout, in a serialized JSON format.""")
+  parser.add_argument("--board", required=True,
+                      help="The board to use when computing deps.")
+  parser.add_argument("--format", default="deps",
+                      choices=["deps", "cpe"],
+                      help="Output either traditional deps or CPE-only JSON")
+  # Even though this is really just a pass-through to DepGraphGenerator,
+  # handling it as a known arg here allows us to specify a default more
+  # elegantly than testing for its presence in the unknown_args later.
+  parser.add_argument("--root-deps", default="rdeps",
+                      help="Which deps to report (defaults to rdeps)")
+  known_args, unknown_args = parser.parse_known_args(argv)
 
-  # We want the toolchain to be quiet because we are going to output
-  # a well-formed json payload.
-  argv = ['--quiet', '--pretend']
-
-  # cros_extract_deps defaults to rdeps. However, only use this if
-  # there was no explicit --root-deps command line switch.
-  default_rootdeps_arg = ['--root-deps=rdeps']
-  for arg in argv:
-    if arg.startswith('--root-deps'):
-      default_rootdeps_arg = []
-
-  # Now, assemble the overall argv as the concatenation of the
-  # default list + possible rootdeps-default + actual command line.
-  argv.extend(default_rootdeps_arg)
-  argv.extend(sys.argv[1:])
+  lib_argv = ["--board=%s" % known_args.board,
+              "--root-deps=%s" % known_args.root_deps,
+              "--quiet", "--pretend", "--emptytree"]
+  lib_argv.extend(unknown_args)
 
   deps = DepGraphGenerator()
-  deps.Initialize(argv)
+  deps.Initialize(lib_argv)
   deps_tree, _deps_info = deps.GenDependencyTree()
-  print json.dumps(FlattenDepTree(deps_tree), sort_keys=True, indent=2)
+  deps_list = FlattenDepTree(deps_tree)
+  if known_args.format == "cpe":
+    deps_list = ExtractCPEList(deps_list)
+  print json.dumps(deps_list, sort_keys=True, indent=2)
