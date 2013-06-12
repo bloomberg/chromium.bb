@@ -69,7 +69,7 @@ class WebGraphicsContext3DForUploadTest : public TestWebGraphicsContext3D {
 class ResourceUpdateControllerTest : public Test {
  public:
   ResourceUpdateControllerTest()
-      : proxy_(scoped_ptr<Thread>(NULL)),
+      : proxy_(scoped_ptr<Thread>()),
         queue_(make_scoped_ptr(new ResourceUpdateQueue)),
         resource_manager_(PrioritizedResourceManager::Create(&proxy_)),
         query_results_available_(0),

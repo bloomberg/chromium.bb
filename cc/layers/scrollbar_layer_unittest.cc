@@ -420,7 +420,7 @@ class MockLayerTreeHost : public LayerTreeHost {
   MockLayerTreeHost(LayerTreeHostClient* client,
                     const LayerTreeSettings& settings)
       : LayerTreeHost(client, settings) {
-      Initialize(scoped_ptr<Thread>(NULL));
+    Initialize(scoped_ptr<Thread>());
   }
 };
 

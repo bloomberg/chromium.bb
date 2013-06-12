@@ -73,7 +73,7 @@ class ScopedPtrHashMap {
   scoped_ptr<Value> take(iterator it) {
     DCHECK(it != data_.end());
     if (it == data_.end())
-      return scoped_ptr<Value>(NULL);
+      return scoped_ptr<Value>();
 
     Key key = it->first;
     scoped_ptr<Value> ret(it->second);
@@ -85,7 +85,7 @@ class ScopedPtrHashMap {
   scoped_ptr<Value> take(const Key& k) {
     iterator it = find(k);
     if (it == data_.end())
-      return scoped_ptr<Value>(NULL);
+      return scoped_ptr<Value>();
 
     return take(it);
   }
@@ -93,7 +93,7 @@ class ScopedPtrHashMap {
   scoped_ptr<Value> take_and_erase(iterator it) {
     DCHECK(it != data_.end());
     if (it == data_.end())
-      return scoped_ptr<Value>(NULL);
+      return scoped_ptr<Value>();
 
     scoped_ptr<Value> ret(it->second);
     data_.erase(it);
@@ -103,7 +103,7 @@ class ScopedPtrHashMap {
   scoped_ptr<Value> take_and_erase(const Key& k) {
     iterator it = find(k);
     if (it == data_.end())
-      return scoped_ptr<Value>(NULL);
+      return scoped_ptr<Value>();
 
     return take_and_erase(it);
   }

@@ -72,7 +72,7 @@ class ScopedPtrVector {
 
   scoped_ptr<T> take(iterator position) {
     if (position == end())
-      return scoped_ptr<T>(NULL);
+      return scoped_ptr<T>();
     DCHECK(position < end());
 
     typename std::vector<T*>::iterator writable_position = position;

@@ -1576,7 +1576,7 @@ class LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface
                bool delegating_renderer,
                bool impl_side_painting) {
     scoped_ptr<base::Thread> impl_thread;
-    scoped_ptr<cc::Thread> impl_ccthread(NULL);
+    scoped_ptr<cc::Thread> impl_ccthread;
     if (threaded) {
       impl_thread.reset(new base::Thread("LayerTreeTest"));
       impl_ccthread = cc::ThreadImpl::CreateForDifferentThread(

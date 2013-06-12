@@ -56,9 +56,8 @@ class TiledLayerTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    layer_tree_host_ = LayerTreeHost::Create(&fake_layer_impl_tree_host_client_,
-                                             settings_,
-                                             scoped_ptr<Thread>(NULL));
+    layer_tree_host_ = LayerTreeHost::Create(
+        &fake_layer_impl_tree_host_client_, settings_, scoped_ptr<Thread>());
     proxy_ = layer_tree_host_->proxy();
     resource_manager_ = PrioritizedResourceManager::Create(proxy_);
     layer_tree_host_->InitializeOutputSurfaceIfNeeded();

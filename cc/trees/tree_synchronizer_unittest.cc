@@ -483,7 +483,7 @@ TEST_F(TreeSynchronizerTest, SyncMaskReplicaAndReplicaMaskLayers) {
 
 TEST_F(TreeSynchronizerTest, SynchronizeAnimations) {
   LayerTreeSettings settings;
-  FakeProxy proxy(scoped_ptr<Thread>(NULL));
+  FakeProxy proxy((scoped_ptr<Thread>()));
   DebugScopedSetImplThread impl(&proxy);
   FakeRenderingStatsInstrumentation stats_instrumentation;
   scoped_ptr<LayerTreeHostImpl> host_impl =

@@ -61,7 +61,7 @@ class LayerTreeHostImplTest : public testing::Test,
                               public LayerTreeHostImplClient {
  public:
   LayerTreeHostImplTest()
-      : proxy_(scoped_ptr<Thread>(NULL)),
+      : proxy_(scoped_ptr<Thread>()),
         always_impl_thread_(&proxy_),
         always_main_thread_blocked_(&proxy_),
         did_try_initialize_renderer_(false),

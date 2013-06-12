@@ -305,7 +305,6 @@ LayerTreeTest::LayerTreeTest()
       ended_(false),
       delegating_renderer_(false),
       timeout_seconds_(0),
-      impl_thread_(NULL),
       weak_factory_(this) {
   main_thread_weak_ptr_ = weak_factory_.GetWeakPtr();
 
@@ -386,7 +385,7 @@ void LayerTreeTest::PostSetVisibleToMainThread(bool visible) {
 void LayerTreeTest::DoBeginTest() {
   client_ = LayerTreeHostClientForTesting::Create(this);
 
-  scoped_ptr<cc::Thread> impl_ccthread(NULL);
+  scoped_ptr<cc::Thread> impl_ccthread;
   if (impl_thread_) {
     impl_ccthread = cc::ThreadImpl::CreateForDifferentThread(
         impl_thread_->message_loop_proxy());

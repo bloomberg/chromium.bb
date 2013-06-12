@@ -32,7 +32,7 @@ class MockLayerTreeHost : public LayerTreeHost {
  public:
   explicit MockLayerTreeHost(LayerTreeHostClient* client)
       : LayerTreeHost(client, LayerTreeSettings()) {
-    Initialize(scoped_ptr<Thread>(NULL));
+    Initialize(scoped_ptr<Thread>());
   }
 };
 
