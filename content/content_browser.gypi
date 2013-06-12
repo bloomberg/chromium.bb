@@ -1154,7 +1154,6 @@
         '../printing/printing.gyp:printing',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../third_party/WebKit/public/blink.gyp:blink',
-        '../third_party/webrtc/modules/modules.gyp:desktop_capture',
         '../ui/surface/surface.gyp:surface',
         '../webkit/support/webkit_support.gyp:webkit_common',
         '../webkit/support/webkit_support.gyp:webkit_resources',
