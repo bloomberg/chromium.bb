@@ -52,6 +52,7 @@ LOCAL_SRC_FILES += \
 # android_webview/all_webview.gyp
 LOCAL_GENERATED_SOURCES := \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/base/ActivityState.java \
+$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/base/MemoryPressureLevelList.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/PageTransitionTypes.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/common/ResultCodes.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/CertificateMimeType.java \
