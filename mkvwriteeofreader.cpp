@@ -18,7 +18,7 @@
 namespace mkvmuxer {
 
 MkvWriteEOFReader::MkvWriteEOFReader() : file_(NULL),
-                                             writes_allowed_(true) {
+                                         writes_allowed_(true) {
 }
 
 MkvWriteEOFReader::~MkvWriteEOFReader() {

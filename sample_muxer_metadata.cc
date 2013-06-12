@@ -2,8 +2,6 @@
 #include <string>
 #include "vttreader.h"
 
-using std::string;
-
 SampleMuxerMetadata::SampleMuxerMetadata() : segment_(NULL) {
 }
 
@@ -295,7 +293,7 @@ bool SampleMuxerMetadata::Parse(
   }
 }
 
-void SampleMuxerMetadata::MakeFrame(const cue_t& c, string* pf) {
+void SampleMuxerMetadata::MakeFrame(const cue_t& c, std::string* pf) {
   pf->clear();
   WriteCueIdentifier(c.identifier, pf);
   WriteCueSettings(c.settings, pf);
@@ -303,15 +301,15 @@ void SampleMuxerMetadata::MakeFrame(const cue_t& c, string* pf) {
 }
 
 void SampleMuxerMetadata::WriteCueIdentifier(
-    const string& identifier,
-    string* pf) {
+    const std::string& identifier,
+    std::string* pf) {
   pf->append(identifier);
   pf->push_back('\x0A');  // LF
 }
 
 void SampleMuxerMetadata::WriteCueSettings(
     const cue_t::settings_t& settings,
-    string* pf) {
+    std::string* pf) {
   if (settings.empty()) {
     pf->push_back('\x0A');  // LF
     return;
@@ -340,14 +338,14 @@ void SampleMuxerMetadata::WriteCueSettings(
 
 void SampleMuxerMetadata::WriteCuePayload(
     const cue_t::payload_t& payload,
-    string* pf) {
+    std::string* pf) {
   typedef cue_t::payload_t::const_iterator iter_t;
 
   iter_t i = payload.begin();
   const iter_t j = payload.end();
 
   while (i != j) {
-    const string& line = *i++;
+    const std::string& line = *i++;
     pf->append(line);
     pf->push_back('\x0A');  // LF
   }
@@ -370,7 +368,7 @@ bool SampleMuxerMetadata::SortableCue::Write(
   // Metadata blocks always specify the block duration.
   const mkvmuxer::int64 duration_ns = stop_ns - start_ns;
 
-  string frame;
+  std::string frame;
   MakeFrame(cue, &frame);
 
   typedef const mkvmuxer::uint8* data_t;

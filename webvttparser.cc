@@ -9,8 +9,6 @@
 #include "./webvttparser.h"  // NOLINT
 #include <climits>
 
-using std::string;
-
 namespace libwebvtt {
 
 enum {
@@ -27,11 +25,11 @@ Reader::~Reader() {
 LineReader::~LineReader() {
 }
 
-int LineReader::GetLine(string* line_ptr) {
+int LineReader::GetLine(std::string* line_ptr) {
   if (line_ptr == NULL)
     return -1;
 
-  string& ln = *line_ptr;
+  std::string& ln = *line_ptr;
   ln.clear();
 
   // Consume characters from the stream, until we
@@ -138,7 +136,7 @@ int Parser::Init() {
       return -1;
   }
 
-  string line;
+  std::string line;
 
   e = GetLine(&line);
 
@@ -181,7 +179,7 @@ int Parser::Parse(Cue* cue) {
 
   // Parse first non-blank line
 
-  string line;
+  std::string line;
   int e;
 
   for (;;) {
@@ -200,9 +198,9 @@ int Parser::Parse(Cue* cue) {
   // may not appear in the cue identifier line.
 
   const char kArrow[] = "-->";
-  string::size_type arrow_pos = line.find(kArrow);
+  std::string::size_type arrow_pos = line.find(kArrow);
 
-  if (arrow_pos != string::npos) {
+  if (arrow_pos != std::string::npos) {
     // We found a timings line, which implies that we don't have a cue
     // identifier.
 
@@ -224,7 +222,7 @@ int Parser::Parse(Cue* cue) {
 
     arrow_pos = line.find(kArrow);
 
-    if (arrow_pos == string::npos)  // not a timings line
+    if (arrow_pos == std::string::npos)  // not a timings line
       return -1;
   }
 
@@ -306,23 +304,23 @@ int Parser::ParseBOM() {
 }
 
 int Parser::ParseTimingsLine(
-    string* line_ptr,
-    string::size_type arrow_pos,
+    std::string* line_ptr,
+    std::string::size_type arrow_pos,
     Time* start_time,
     Time* stop_time,
     Cue::settings_t* settings) {
   if (line_ptr == NULL)
     return -1;
 
-  string& line = *line_ptr;
+  std::string& line = *line_ptr;
 
-  if (arrow_pos == string::npos || arrow_pos >= line.length())
+  if (arrow_pos == std::string::npos || arrow_pos >= line.length())
     return -1;
 
   // Place a NUL character at the start of the arrow token, in
   // order to demarcate the start time from remainder of line.
   line[arrow_pos] = kNUL;
-  string::size_type idx = 0;
+  std::string::size_type idx = 0;
 
   int e = ParseTime(line, &idx, start_time);
   if (e)  // error
@@ -356,15 +354,15 @@ int Parser::ParseTimingsLine(
 }
 
 int Parser::ParseTime(
-    const string& line,
-    string::size_type* idx_ptr,
+    const std::string& line,
+    std::string::size_type* idx_ptr,
     Time* time) {
   if (idx_ptr == NULL)
     return -1;
 
-  string::size_type& idx = *idx_ptr;
+  std::string::size_type& idx = *idx_ptr;
 
-  if (idx == string::npos || idx >= line.length())
+  if (idx == std::string::npos || idx >= line.length())
     return -1;
 
   if (time == NULL)
@@ -514,12 +512,12 @@ int Parser::ParseTime(
 }
 
 int Parser::ParseSettings(
-    const string& line,
-    string::size_type idx,
+    const std::string& line,
+    std::string::size_type idx,
     Cue::settings_t* settings) {
   settings->clear();
 
-  if (idx == string::npos || idx >= line.length())
+  if (idx == std::string::npos || idx >= line.length())
     return -1;
 
   for (;;) {
@@ -588,14 +586,14 @@ int Parser::ParseSettings(
 }
 
 int Parser::ParseNumber(
-    const string& line,
-    string::size_type* idx_ptr) {
+    const std::string& line,
+    std::string::size_type* idx_ptr) {
   if (idx_ptr == NULL)
     return -1;
 
-  string::size_type& idx = *idx_ptr;
+  std::string::size_type& idx = *idx_ptr;
 
-  if (idx == string::npos || idx >= line.length())
+  if (idx == std::string::npos || idx >= line.length())
     return -1;
 
   if (!isdigit(line[idx]))
