@@ -719,8 +719,8 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt, float widt
 
         if (deviceScaleFactor == 1) {
             const uint32_t colors[2][6] = {
-                { 0x2A2A0600, 0x57571000,  0xA8A81B00, 0xBFBF1F00,  0x70701200, 0xE0E02400 },
-                { 0x2A001503, 0x57002A08,  0xA800540D, 0xBF005F0F,  0x70003809, 0xE0007012 }
+                { 0x2a2a0600, 0x57571000,  0xa8a81b00, 0xbfbf1f00,  0x70701200, 0xe0e02400 },
+                { 0x2a0f0f0f, 0x571e1e1e,  0xa83d3d3d, 0xbf454545,  0x70282828, 0xe0515151 }
             };
 
             // Pattern: a b a   a b a
@@ -737,8 +737,8 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt, float widt
             const uint32_t colors[2][18] = {
                 { 0x0a090101, 0x33320806, 0x55540f0a,  0x37360906, 0x6e6c120c, 0x6e6c120c,  0x7674140d, 0x8d8b1810, 0x8d8b1810,
                   0x96941a11, 0xb3b01f15, 0xb3b01f15,  0x6d6b130c, 0xd9d62619, 0xd9d62619,  0x19180402, 0x7c7a150e, 0xcecb2418 },
-                { 0x0a000400, 0x33031b06, 0x55062f0b,  0x37041e06, 0x6e083d0d, 0x6e083d0d,  0x7608410e, 0x8d094e11, 0x8d094e11,
-                  0x960a5313, 0xb30d6417, 0xb30d6417,  0x6d073c0d, 0xd90f781c, 0xd90f781c,  0x19010d03, 0x7c094510, 0xce0f731a }
+                { 0x0a020202, 0x33141414, 0x55232323,  0x37161616, 0x6e2e2e2e, 0x6e2e2e2e,  0x76313131, 0x8d3a3a3a, 0x8d3a3a3a,
+                  0x963e3e3e, 0xb34b4b4b, 0xb34b4b4b,  0x6d2d2d2d, 0xd95b5b5b, 0xd95b5b5b,  0x19090909, 0x7c343434, 0xce575757 }
             };
 
             // Pattern: a b c c b a
