@@ -8,14 +8,14 @@
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "ui/base/layout.h"
-#include "webkit/glue/webkitplatformsupport_impl.h"
+#include "webkit/child/webkitplatformsupport_child_impl.h"
 
 namespace content {
 
 // This is a specialization of WebKitPlatformSupportImpl that implements the
 // embedder functions in terms of ContentClient.
 class CONTENT_EXPORT WebKitPlatformSupportImpl
-    : NON_EXPORTED_BASE(public webkit_glue::WebKitPlatformSupportImpl) {
+    : NON_EXPORTED_BASE(public webkit_glue::WebKitPlatformSupportChildImpl) {
  public:
   typedef WebKit::WebGraphicsContext3D* (OffscreenContextFactory)();
 

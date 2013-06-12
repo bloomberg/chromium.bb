@@ -23,6 +23,7 @@
     '../webkit/storage_renderer.gyp:webkit_storage_renderer',
     '../webkit/storage_common.gyp:webkit_storage_common',
     '../webkit/support/webkit_support.gyp:glue',
+    '../webkit/support/webkit_support.gyp:glue_child',
     '../webkit/support/webkit_support.gyp:glue_common',
     '../webkit/support/webkit_support.gyp:glue_renderer',
     '../webkit/support/webkit_support.gyp:plugins',

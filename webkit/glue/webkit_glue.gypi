@@ -56,6 +56,26 @@
     },
 
     {
+      'target_name': 'glue_child',
+      'type': '<(component)',
+      'variables': { 'enable_wexit_time_destructors': 1, },
+      'defines': [
+        'WEBKIT_CHILD_IMPLEMENTATION',
+      ],
+      'dependencies': [
+        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+
+        # TODO(scottmg): crbug.com/237249
+        'glue',
+      ],
+ 
+      'sources': [
+        '../child/webkitplatformsupport_child_impl.cc',
+        '../child/webkitplatformsupport_child_impl.h',
+      ],
+    },
+
+    {
       'target_name': 'glue_common',
       'type': '<(component)',
       'variables': { 'enable_wexit_time_destructors': 1, },
