@@ -336,7 +336,7 @@ void TranslateHelper::ApplyLanguageCodeCorrection(std::string* code) {
   // Convert language code synonym firstly because sometime synonym code is in
   // invalid format, e.g. 'fil'. After validation, such a 3 characters language
   // gets converted to an empty string.
-  TranslateUtil::ConvertLanguageCodeSynonym(code);
+  TranslateUtil::ToTranslateLanguageSynonym(code);
   ResetInvalidLanguageCode(code);
 }
 
@@ -380,7 +380,7 @@ std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
     *cld_language_p = cld_language;
   if (is_cld_reliable_p != NULL)
     *is_cld_reliable_p = is_cld_reliable;
-  TranslateUtil::ConvertLanguageCodeSynonym(&cld_language);
+  TranslateUtil::ToTranslateLanguageSynonym(&cld_language);
 #endif  // defined(ENABLE_LANGUAGE_DETECTION)
 
   // Check if html lang attribute is valid.

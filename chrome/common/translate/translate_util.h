@@ -10,7 +10,10 @@
 namespace TranslateUtil {
 
 // Converts language code synonym to use at Translate server.
-void ConvertLanguageCodeSynonym(std::string* language);
+void ToTranslateLanguageSynonym(std::string* language);
+
+// Converts language code synonym to use at Chrome internal.
+void ToChromeLanguageSynonym(std::string* language);
 
 }  // namapace TranslateUtil
 

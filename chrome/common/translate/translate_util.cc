@@ -11,11 +11,11 @@ namespace TranslateUtil {
 // Language code synonyms. Some languages have changed codes over the years
 // and sometimes the older codes are used, so we must see them as synonyms.
 struct LanguageCodeSynonym {
-  // Code used in supporting list.
-  const char* const to;
+  // Code used in supporting list of Translate.
+  const char* const translate_language;
 
-  // Synonym code.
-  const char* const from;
+  // Code used in Chrome internal.
+  const char* const chrome_language;
 };
 
 const LanguageCodeSynonym kLanguageCodeSynonyms[] = {
@@ -25,11 +25,21 @@ const LanguageCodeSynonym kLanguageCodeSynonyms[] = {
   {"tl", "fil"},
 };
 
-void ConvertLanguageCodeSynonym(std::string* language) {
+void ToTranslateLanguageSynonym(std::string* language) {
   // Apply liner search here because number of items in the list is just four.
   for (size_t i = 0; i < arraysize(kLanguageCodeSynonyms); ++i) {
-    if (language->compare(kLanguageCodeSynonyms[i].from) == 0) {
-      *language = std::string(kLanguageCodeSynonyms[i].to);
+    if (language->compare(kLanguageCodeSynonyms[i].chrome_language) == 0) {
+      *language = std::string(kLanguageCodeSynonyms[i].translate_language);
+      break;
+    }
+  }
+}
+
+void ToChromeLanguageSynonym(std::string* language) {
+  // Apply liner search here because number of items in the list is just four.
+  for (size_t i = 0; i < arraysize(kLanguageCodeSynonyms); ++i) {
+    if (language->compare(kLanguageCodeSynonyms[i].translate_language) == 0) {
+      *language = std::string(kLanguageCodeSynonyms[i].chrome_language);
       break;
     }
   }

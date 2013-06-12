@@ -23,7 +23,8 @@ class TranslateAcceptLanguages : public content::NotificationObserver {
   virtual ~TranslateAcceptLanguages();
 
   // Returns true if the passed language has been configured by the user as an
-  // accept language.
+  // accept language. |language| will be converted if it has the synonym of
+  // accept languages.
   bool IsAcceptLanguage(Profile* profile,
                         const std::string& language);
 

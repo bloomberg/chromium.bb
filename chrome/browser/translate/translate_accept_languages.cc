@@ -14,6 +14,7 @@
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/translate/translate_util.h"
 #include "content/public/browser/notification_source.h"
 #include "net/url_request/url_fetcher.h"
 
@@ -51,7 +52,9 @@ bool TranslateAcceptLanguages::IsAcceptLanguage(Profile* profile,
     iter = accept_languages_.find(pref_service);
   }
 
-  return iter->second.count(language) != 0;
+  std::string accept_language = language;
+  TranslateUtil::ToChromeLanguageSynonym(&accept_language);
+  return iter->second.count(accept_language) != 0;
 }
 
 void TranslateAcceptLanguages::InitAcceptLanguages(PrefService* prefs) {
