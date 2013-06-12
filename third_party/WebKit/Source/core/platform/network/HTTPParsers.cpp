@@ -144,6 +144,9 @@ ContentDispositionType contentDispositionType(const String& contentDisposition)
     Vector<String> parameters;
     contentDisposition.split(';', parameters);
 
+    if (parameters.isEmpty())
+        return ContentDispositionNone;
+
     String dispositionType = parameters[0];
     dispositionType.stripWhiteSpace();
 
