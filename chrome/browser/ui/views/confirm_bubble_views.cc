@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/grid_layout.h"
@@ -101,8 +102,7 @@ namespace chrome {
 void ShowConfirmBubble(gfx::NativeView view,
                        const gfx::Point& origin,
                        ConfirmBubbleModel* model) {
-  views::DialogDelegate::CreateDialogWidget(
-      new ConfirmBubbleViews(model), NULL, view)->Show();
+  CreateBrowserModalDialogViews(new ConfirmBubbleViews(model), view)->Show();
 }
 
 }  // namespace chrome

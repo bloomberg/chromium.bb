@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -189,9 +190,9 @@ void ShowExtensionInstallDialogImpl(
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  views::DialogDelegate::CreateDialogWidget(
+  CreateBrowserModalDialogViews(
       new ExtensionInstallDialogView(show_params.navigator, delegate, prompt),
-      NULL, show_params.parent_window)->Show();
+      show_params.parent_window)->Show();
 }
 
 // A ScrollView that imposes a maximum size on its viewport but sizes its

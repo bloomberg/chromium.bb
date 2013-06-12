@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
@@ -175,7 +176,7 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
                                 MessageBoxType type) {
   scoped_refptr<SimpleMessageBoxViews> dialog(
       new SimpleMessageBoxViews(title, message, type));
-  views::DialogDelegate::CreateDialogWidget(dialog, NULL, parent)->Show();
+  CreateBrowserModalDialogViews(dialog, parent)->Show();
 
 #if defined(USE_AURA)
   // Use the widget's window itself so that the message loop

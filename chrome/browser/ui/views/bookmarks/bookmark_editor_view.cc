@@ -18,6 +18,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "components/user_prefs/user_prefs.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
@@ -218,7 +219,7 @@ void BookmarkEditorView::ExecuteCommand(int command_id, int event_flags) {
 }
 
 void BookmarkEditorView::Show(gfx::NativeWindow parent) {
-  views::DialogDelegate::CreateDialogWidget(this, NULL, parent);
+  CreateBrowserModalDialogViews(this, parent);
   UserInputChanged();
   if (show_tree_ && bb_model_->loaded())
     ExpandAndSelect();

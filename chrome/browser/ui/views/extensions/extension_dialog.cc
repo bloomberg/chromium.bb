@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
@@ -98,7 +99,7 @@ void ExtensionDialog::InitWindow(ui::BaseWindow* base_window,
                                  int width,
                                  int height) {
   gfx::NativeWindow parent = base_window->GetNativeWindow();
-  window_ = views::DialogDelegate::CreateDialogWidget(this, NULL, parent);
+  window_ = CreateBrowserModalDialogViews(this, parent);
 
   // Center the window over the browser.
   gfx::Point center = base_window->GetBounds().CenterPoint();

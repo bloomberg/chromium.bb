@@ -12,6 +12,7 @@
 #include "base/win/registry.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/chromium_strings.h"
@@ -161,7 +162,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
                             GA_ROOT);
   }
 
-  views::DialogDelegate::CreateDialogWidget(this, NULL, root_hwnd)->Show();
+  CreateBrowserModalDialogViews(this, root_hwnd)->Show();
 }
 
 // static

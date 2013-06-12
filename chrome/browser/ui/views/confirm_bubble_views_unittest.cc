@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/browser/ui/test/test_confirm_bubble_model.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -28,7 +29,7 @@ TEST_F(ConfirmBubbleViewsTest, CreateAndClose) {
       new TestConfirmBubbleModel(&model_deleted, NULL, NULL, NULL);
   ConfirmBubbleViews* bubble = new ConfirmBubbleViews(model);
   gfx::NativeView parent = parent_widget->GetNativeView();
-  views::DialogDelegate::CreateDialogWidget(bubble, NULL, parent)->Show();
+  CreateBrowserModalDialogViews(bubble, parent)->Show();
 
   // Clean up.
   bubble->GetWidget()->CloseNow();

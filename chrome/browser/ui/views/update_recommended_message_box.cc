@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -22,8 +23,8 @@
 // static
 void UpdateRecommendedMessageBox::Show(gfx::NativeWindow parent_window) {
   // When the window closes, it will delete itself.
-  views::DialogDelegate::CreateDialogWidget(new UpdateRecommendedMessageBox(),
-                                            NULL, parent_window)->Show();
+  CreateBrowserModalDialogViews(new UpdateRecommendedMessageBox(),
+                                parent_window)->Show();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

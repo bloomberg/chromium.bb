@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_constants.h"
@@ -228,17 +229,17 @@ namespace chrome {
 
 void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
                                      content::WebContents* web_contents) {
-  views::DialogDelegate::CreateDialogWidget(
+  CreateBrowserModalDialogViews(
       new CreateUrlApplicationShortcutView(web_contents),
-      NULL, parent_window)->Show();
+      parent_window)->Show();
 }
 
 void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow parent_window,
                                         Profile* profile,
                                         const extensions::Extension* app) {
-  views::DialogDelegate::CreateDialogWidget(
+  CreateBrowserModalDialogViews(
       new CreateChromeApplicationShortcutView(profile, app),
-      NULL, parent_window)->Show();
+      parent_window)->Show();
 }
 
 }  // namespace chrome

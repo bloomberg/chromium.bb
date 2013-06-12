@@ -12,6 +12,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/theme_image_mapper.h"
@@ -126,6 +127,11 @@ class WebContentsModalDialogHostObserverViews
       // top of the dialog.
       position.set_y(position.y() - border->GetInsets().top());
     }
+
+    if (target_widget_->is_top_level())
+      position += views::Widget::GetWidgetForNativeView(host_->GetHostView())->
+          GetClientAreaBoundsInScreen().OffsetFromOrigin();
+
     target_widget_->SetBounds(gfx::Rect(position, size));
   }
 
@@ -678,6 +684,27 @@ views::Widget* CreateWebContentsModalDialogViews(
   }
 
   return dialog;
+}
+
+views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
+                                             gfx::NativeWindow parent) {
+  views::Widget* widget =
+      views::DialogDelegate::CreateDialogWidget(dialog, NULL, parent);
+  if (!dialog->UseNewStyleForThisDialog())
+    return widget;
+
+  // Get the browser dialog management and hosting components from |parent|.
+  Browser* browser = chrome::FindBrowserWithWindow(parent);
+  if (browser) {
+    ChromeWebModalDialogManagerDelegate* manager = browser;
+    WebContentsModalDialogHost* host = manager->GetWebContentsModalDialogHost();
+    DCHECK_EQ(parent, host->GetHostView());
+    WebContentsModalDialogHostObserver* dialog_host_observer =
+        new WebContentsModalDialogHostObserverViews(
+            host, widget, kWebContentsModalDialogHostObserverViewsKey);
+    dialog_host_observer->OnPositionRequiresUpdate();
+  }
+  return widget;
 }
 
 views::NonClientFrameView* CreateConstrainedStyleNonClientFrameView(

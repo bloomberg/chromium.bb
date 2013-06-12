@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -144,7 +145,7 @@ void ExtensionUninstallDialogViews::Show() {
   }
 
   view_ = new ExtensionUninstallDialogDelegateView(this, extension_, &icon_);
-  views::DialogDelegate::CreateDialogWidget(view_, NULL, parent)->Show();
+  CreateBrowserModalDialogViews(view_, parent)->Show();
 }
 
 void ExtensionUninstallDialogViews::ExtensionUninstallAccepted() {
