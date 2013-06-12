@@ -35,6 +35,8 @@ class MediaFileSystemMountPointProvider
       base::SequencedTaskRunner* media_task_runner);
   virtual ~MediaFileSystemMountPointProvider();
 
+  static bool CurrentlyOnMediaTaskRunnerThread();
+
   // FileSystemMountPointProvider implementation.
   virtual bool CanHandleType(fileapi::FileSystemType type) const OVERRIDE;
   virtual void OpenFileSystem(

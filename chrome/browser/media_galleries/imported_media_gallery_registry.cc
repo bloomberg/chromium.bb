@@ -20,17 +20,9 @@ namespace chrome {
 
 namespace {
 
-bool CurrentlyOnMediaTaskRunnerThread() {
-  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
-  base::SequencedWorkerPool::SequenceToken media_sequence_token =
-      pool->GetNamedSequenceToken(
-          MediaFileSystemMountPointProvider::kMediaTaskRunnerName);
-
-  return pool->IsRunningSequenceOnCurrentThread(media_sequence_token);
-}
-
 scoped_refptr<base::SequencedTaskRunner> MediaTaskRunner() {
-  DCHECK(!CurrentlyOnMediaTaskRunnerThread());
+  DCHECK(
+      !MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   base::SequencedWorkerPool::SequenceToken media_sequence_token =
       pool->GetNamedSequenceToken(
@@ -141,7 +133,7 @@ bool ImportedMediaGalleryRegistry::RevokeImportedFilesystemOnUIThread(
 // static
 picasa::PicasaDataProvider*
 ImportedMediaGalleryRegistry::PicasaDataProvider() {
-  DCHECK(CurrentlyOnMediaTaskRunnerThread());
+  DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(GetInstance()->picasa_data_provider_);
   return GetInstance()->picasa_data_provider_.get();
 }
@@ -149,7 +141,7 @@ ImportedMediaGalleryRegistry::PicasaDataProvider() {
 // static
 itunes::ITunesDataProvider*
 ImportedMediaGalleryRegistry::ITunesDataProvider() {
-  DCHECK(CurrentlyOnMediaTaskRunnerThread());
+  DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(GetInstance()->itunes_data_provider_);
   return GetInstance()->itunes_data_provider_.get();
 }
@@ -163,26 +155,26 @@ ImportedMediaGalleryRegistry::~ImportedMediaGalleryRegistry() {
 
 void ImportedMediaGalleryRegistry::RegisterPicasaFileSystem(
     const base::FilePath& database_path) {
-  DCHECK(CurrentlyOnMediaTaskRunnerThread());
+  DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(!picasa_data_provider_);
   picasa_data_provider_.reset(new picasa::PicasaDataProvider(database_path));
 }
 
 void ImportedMediaGalleryRegistry::RevokePicasaFileSystem() {
-  DCHECK(CurrentlyOnMediaTaskRunnerThread());
+  DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(picasa_data_provider_);
   picasa_data_provider_.reset();
 }
 
 void ImportedMediaGalleryRegistry::RegisterITunesFileSystem(
     const base::FilePath& xml_library_path) {
-  DCHECK(CurrentlyOnMediaTaskRunnerThread());
+  DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(!itunes_data_provider_);
   itunes_data_provider_.reset(new itunes::ITunesDataProvider(xml_library_path));
 }
 
 void ImportedMediaGalleryRegistry::RevokeITunesFileSystem() {
-  DCHECK(CurrentlyOnMediaTaskRunnerThread());
+  DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(itunes_data_provider_);
   itunes_data_provider_.reset();
 }

@@ -12,12 +12,14 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_galleries/fileapi/device_media_async_file_util.h"
 #include "chrome/browser/media_galleries/fileapi/itunes/itunes_file_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_validator_factory.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 #include "chrome/browser/media_galleries/fileapi/picasa/picasa_file_util.h"
+#include "content/public/browser/browser_thread.h"
 #include "webkit/browser/blob/local_file_stream_reader.h"
 #include "webkit/browser/fileapi/async_file_util_adapter.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
@@ -60,6 +62,14 @@ MediaFileSystemMountPointProvider::MediaFileSystemMountPointProvider(
 }
 
 MediaFileSystemMountPointProvider::~MediaFileSystemMountPointProvider() {
+}
+
+// static
+bool MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread() {
+  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
+  base::SequencedWorkerPool::SequenceToken media_sequence_token =
+      pool->GetNamedSequenceToken(kMediaTaskRunnerName);
+  return pool->IsRunningSequenceOnCurrentThread(media_sequence_token);
 }
 
 bool MediaFileSystemMountPointProvider::CanHandleType(

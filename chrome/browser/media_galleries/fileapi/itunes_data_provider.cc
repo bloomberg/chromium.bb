@@ -12,6 +12,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_library_parser.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
+
+using chrome::MediaFileSystemMountPointProvider;
 
 namespace itunes {
 
@@ -92,6 +95,7 @@ ITunesDataProvider::ITunesDataProvider(const base::FilePath& library_path)
     : library_path_(library_path),
       needs_refresh_(true),
       is_valid_(false) {
+  DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
 }
 
 ITunesDataProvider::~ITunesDataProvider() {}
@@ -100,6 +104,7 @@ ITunesDataProvider::~ITunesDataProvider() {}
 // file changes.
 void ITunesDataProvider::RefreshData(
     const base::Callback<void(bool)>& ready_callback) {
+  DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
   if (needs_refresh_) {
     is_valid_ = ParseLibrary();
     needs_refresh_ = false;
@@ -112,12 +117,14 @@ const base::FilePath& ITunesDataProvider::library_path() const {
 }
 
 bool ITunesDataProvider::KnownArtist(const ArtistName& artist) const {
+  DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(!needs_refresh_);
   return ContainsKey(library_, artist);
 }
 
 bool ITunesDataProvider::KnownAlbum(const ArtistName& artist,
                                     const AlbumName& album) const {
+  DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(!needs_refresh_);
   Library::const_iterator library_it = library_.find(artist);
   if (library_it == library_.end())
@@ -129,6 +136,7 @@ bool ITunesDataProvider::KnownAlbum(const ArtistName& artist,
 base::FilePath ITunesDataProvider::GetTrackLocation(
     const ArtistName& artist, const AlbumName& album,
     const TrackName& track) const {
+  DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(!needs_refresh_);
   Library::const_iterator library_it = library_.find(artist);
   if (library_it == library_.end())
@@ -146,6 +154,7 @@ base::FilePath ITunesDataProvider::GetTrackLocation(
 
 std::set<ITunesDataProvider::ArtistName>
 ITunesDataProvider::GetArtistNames() const {
+  DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(!needs_refresh_);
   std::set<ArtistName> result;
   Library::const_iterator it;
@@ -157,6 +166,7 @@ ITunesDataProvider::GetArtistNames() const {
 
 std::set<ITunesDataProvider::AlbumName> ITunesDataProvider::GetAlbumNames(
     const ArtistName& artist) const {
+  DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(!needs_refresh_);
   std::set<AlbumName> result;
   Library::const_iterator artist_lookup = library_.find(artist);
@@ -173,6 +183,7 @@ std::set<ITunesDataProvider::AlbumName> ITunesDataProvider::GetAlbumNames(
 
 ITunesDataProvider::Album ITunesDataProvider::GetAlbum(
     const ArtistName& artist, const AlbumName& album) const {
+  DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
   DCHECK(!needs_refresh_);
   Album empty_result;
   Library::const_iterator artist_lookup = library_.find(artist);
@@ -187,6 +198,7 @@ ITunesDataProvider::Album ITunesDataProvider::GetAlbum(
 }
 
 bool ITunesDataProvider::ParseLibrary() {
+  DCHECK(MediaFileSystemMountPointProvider::CurrentlyOnMediaTaskRunnerThread());
   std::string xml = ReadFile(library_path_);
 
   library_.clear();
