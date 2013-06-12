@@ -7,10 +7,15 @@
 #include "base/file_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_data_provider.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
+#include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
+#include "content/public/browser/browser_thread.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
+#include "webkit/browser/fileapi/native_file_util.h"
+#include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 namespace itunes {
@@ -91,6 +96,15 @@ void ItunesFileUtil::ReadDirectoryOnTaskRunnerThread(
                  weak_factory_.GetWeakPtr(), context, url, callback));
 }
 
+void ItunesFileUtil::CreateSnapshotFileOnTaskRunnerThread(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url,
+    const CreateSnapshotFileCallback& callback) {
+  GetDataProvider()->RefreshData(
+      base::Bind(&ItunesFileUtil::CreateSnapshotFileWithFreshDataProvider,
+                 weak_factory_.GetWeakPtr(), context, url, callback));
+}
+
 // Contents of the iTunes media gallery:
 //   /                                          - root directory
 //   /iTunes Music Library.xml                  - library xml file
@@ -108,8 +122,13 @@ base::PlatformFileError ItunesFileUtil::GetFileInfoSync(
     return MakeDirectoryFileInfo(file_info);
 
   if (components.size() == 1 && components[0] == kiTunesLibraryXML) {
-    return NativeMediaFileUtil::GetFileInfoSync(context, url, file_info,
-                                                platform_path);
+    // We can't just call NativeMediaFileUtil::GetFileInfoSync() here because it
+    // uses the MediaPathFilter. At this point, |library_path_| is known good
+    // because GetFileInfoWithFreshDataProvider() gates access to this method.
+    base::FilePath file_path = GetDataProvider()->library_path();
+    if (platform_path)
+      *platform_path = file_path;
+    return fileapi::NativeFileUtil::GetFileInfo(file_path, file_info);
   }
 
   if (components[0] != kiTunesMediaDir || components.size() > 4)
@@ -197,10 +216,14 @@ base::PlatformFileError ItunesFileUtil::ReadDirectorySync(
         GetDataProvider()->GetAlbum(components[1], components[2]);
     if (album.size() == 0)
       return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    chrome::MediaPathFilter* path_filter =
+        context->GetUserValue<chrome::MediaPathFilter*>(
+            chrome::MediaFileSystemMountPointProvider::kMediaPathFilterKey);
     ITunesDataProvider::Album::const_iterator it;
     for (it = album.begin(); it != album.end(); ++it) {
       base::PlatformFileInfo file_info;
-      if (file_util::GetFileInfo(it->second, &file_info)) {
+      if (path_filter->Match(it->second) &&
+          file_util::GetFileInfo(it->second, &file_info)) {
         file_list->push_back(MakeDirectoryEntry(it->first, file_info.size,
                                                 file_info.last_modified,
                                                 false));
@@ -218,6 +241,28 @@ base::PlatformFileError ItunesFileUtil::ReadDirectorySync(
   if (!location.empty())
     return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
   return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+}
+
+base::PlatformFileError ItunesFileUtil::CreateSnapshotFileSync(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url,
+    base::PlatformFileInfo* file_info,
+    base::FilePath* platform_path,
+    scoped_refptr<webkit_blob::ShareableFileReference>* file_ref) {
+  DCHECK(!url.path().IsAbsolute());
+  if (url.path() != base::FilePath().AppendASCII(kiTunesLibraryXML)) {
+    return NativeMediaFileUtil::CreateSnapshotFileSync(context, url, file_info,
+                                                       platform_path, file_ref);
+  }
+
+  // The following code is different than
+  // NativeMediaFileUtil::CreateSnapshotFileSync in that it knows that the
+  // library xml file is not a directory and it doesn't run mime sniffing on the
+  // file. The only way to get here is by way of
+  // CreateSnapshotFileWithFreshDataProvider() so the file has already been
+  // parsed and deemed valid.
+  *file_ref = scoped_refptr<webkit_blob::ShareableFileReference>();
+  return GetFileInfoSync(context, url, file_info, platform_path);
 }
 
 base::PlatformFileError ItunesFileUtil::GetLocalFilePath(
@@ -248,15 +293,59 @@ base::PlatformFileError ItunesFileUtil::GetLocalFilePath(
 void ItunesFileUtil::GetFileInfoWithFreshDataProvider(
     fileapi::FileSystemOperationContext* context,
     const fileapi::FileSystemURL& url,
-    const GetFileInfoCallback& callback) {
+    const GetFileInfoCallback& callback,
+    bool valid_parse) {
+  if (!valid_parse) {
+    if (!callback.is_null()) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::IO,
+          FROM_HERE,
+          base::Bind(callback, base::PLATFORM_FILE_ERROR_IO,
+                     base::PlatformFileInfo(),  base::FilePath()));
+    }
+    return;
+  }
   NativeMediaFileUtil::GetFileInfoOnTaskRunnerThread(context, url, callback);
 }
 
 void ItunesFileUtil::ReadDirectoryWithFreshDataProvider(
     fileapi::FileSystemOperationContext* context,
     const fileapi::FileSystemURL& url,
-    const ReadDirectoryCallback& callback) {
+    const ReadDirectoryCallback& callback,
+    bool valid_parse) {
+  if (!valid_parse) {
+    if (!callback.is_null()) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::IO,
+          FROM_HERE,
+          base::Bind(callback, base::PLATFORM_FILE_ERROR_IO, EntryList(),
+                     false));
+    }
+    return;
+  }
   NativeMediaFileUtil::ReadDirectoryOnTaskRunnerThread(context, url, callback);
+}
+
+void ItunesFileUtil::CreateSnapshotFileWithFreshDataProvider(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url,
+    const CreateSnapshotFileCallback& callback,
+    bool valid_parse) {
+  if (!valid_parse) {
+    if (!callback.is_null()) {
+      base::PlatformFileInfo file_info;
+      base::FilePath platform_path;
+      scoped_refptr<webkit_blob::ShareableFileReference> file_ref;
+      content::BrowserThread::PostTask(
+          content::BrowserThread::IO,
+          FROM_HERE,
+          base::Bind(callback, base::PLATFORM_FILE_ERROR_IO, file_info,
+                     platform_path, file_ref));
+    }
+    return;
+  }
+  NativeMediaFileUtil::CreateSnapshotFileOnTaskRunnerThread(context, url,
+                                                            callback);
 }
 
 ITunesDataProvider* ItunesFileUtil::GetDataProvider() {

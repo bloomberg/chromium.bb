@@ -90,19 +90,21 @@ ITunesDataProvider::Album MakeUniqueTrackNames(
 
 ITunesDataProvider::ITunesDataProvider(const base::FilePath& library_path)
     : library_path_(library_path),
-      needs_refresh_(true) {
+      needs_refresh_(true),
+      is_valid_(false) {
 }
 
 ITunesDataProvider::~ITunesDataProvider() {}
 
 // TODO(vandebo): add a file watch that resets |needs_refresh_| when the
 // file changes.
-void ITunesDataProvider::RefreshData(const base::Closure& ready_callback) {
+void ITunesDataProvider::RefreshData(
+    const base::Callback<void(bool)>& ready_callback) {
   if (needs_refresh_) {
-    ParseLibrary();
+    is_valid_ = ParseLibrary();
     needs_refresh_ = false;
   }
-  ready_callback.Run();
+  ready_callback.Run(is_valid_);
 }
 
 const base::FilePath& ITunesDataProvider::library_path() const {
@@ -184,13 +186,13 @@ ITunesDataProvider::Album ITunesDataProvider::GetAlbum(
   return album_lookup->second;
 }
 
-void ITunesDataProvider::ParseLibrary() {
+bool ITunesDataProvider::ParseLibrary() {
   std::string xml = ReadFile(library_path_);
 
   library_.clear();
   ITunesLibraryParser parser;
   if (!parser.Parse(xml))
-    return;
+    return false;
 
   ITunesLibraryParser::Library::const_iterator artist_it;
   ITunesLibraryParser::Albums::const_iterator album_it;
@@ -204,6 +206,7 @@ void ITunesDataProvider::ParseLibrary() {
           MakeUniqueTrackNames(album_it->second);
     }
   }
+  return true;
 }
 
 }  // namespace itunes

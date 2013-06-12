@@ -31,6 +31,10 @@ class ItunesFileUtil : public chrome::NativeMediaFileUtil {
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& url,
       const ReadDirectoryCallback& callback) OVERRIDE;
+  virtual void CreateSnapshotFileOnTaskRunnerThread(
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
+      const CreateSnapshotFileCallback& callback) OVERRIDE;
   virtual base::PlatformFileError GetFileInfoSync(
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& url,
@@ -40,6 +44,12 @@ class ItunesFileUtil : public chrome::NativeMediaFileUtil {
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& url,
       EntryList* file_list) OVERRIDE;
+  virtual base::PlatformFileError CreateSnapshotFileSync(
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
+      base::PlatformFileInfo* file_info,
+      base::FilePath* platform_path,
+      scoped_refptr<webkit_blob::ShareableFileReference>* file_ref) OVERRIDE;
   virtual base::PlatformFileError GetLocalFilePath(
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& url,
@@ -49,11 +59,18 @@ class ItunesFileUtil : public chrome::NativeMediaFileUtil {
   void GetFileInfoWithFreshDataProvider(
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& url,
-      const GetFileInfoCallback& callback);
+      const GetFileInfoCallback& callback,
+      bool valid_parse);
   void ReadDirectoryWithFreshDataProvider(
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& url,
-      const ReadDirectoryCallback& callback);
+      const ReadDirectoryCallback& callback,
+      bool valid_parse);
+  virtual void CreateSnapshotFileWithFreshDataProvider(
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
+      const CreateSnapshotFileCallback& callback,
+      bool valid_parse);
 
   ITunesDataProvider* GetDataProvider();
 
