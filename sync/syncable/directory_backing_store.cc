@@ -108,7 +108,7 @@ scoped_ptr<EntryKernel> UnpackEntry(sql::Statement* statement) {
     sync_pb::UniquePosition proto;
     if (!proto.ParseFromString(temp)) {
       DVLOG(1) << "Unpacked invalid position.  Assuming the DB is corrupt";
-      return scoped_ptr<EntryKernel>(NULL);
+      return scoped_ptr<EntryKernel>();
     }
 
     kernel->mutable_ref(static_cast<UniquePositionField>(i)) =

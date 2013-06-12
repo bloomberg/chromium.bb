@@ -48,8 +48,6 @@ MockConnectionManager::MockConnectionManager(syncable::Directory* directory)
       throttling_(false),
       fail_with_auth_invalid_(false),
       fail_non_periodic_get_updates_(false),
-      gu_client_command_(NULL),
-      commit_client_command_(NULL),
       next_position_in_parent_(2),
       use_legacy_bookmarks_protocol_(false),
       num_get_updates_requests_(0) {
