@@ -297,7 +297,7 @@ void BookmarkModel::Remove(const BookmarkNode* parent, int index) {
 }
 
 void BookmarkModel::RemoveAll() {
-  std::set<GURL> changed_urls;
+  std::set<GURL> removed_urls;
   ScopedVector<BookmarkNode> removed_nodes;
 
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
@@ -314,7 +314,7 @@ void BookmarkModel::RemoveAll() {
       for (int j = permanent_node->child_count() - 1; j >= 0; --j) {
         BookmarkNode* child_node = AsMutable(permanent_node->GetChild(j));
         removed_nodes.push_back(child_node);
-        RemoveNodeAndGetRemovedUrls(child_node, &changed_urls);
+        RemoveNodeAndGetRemovedUrls(child_node, &removed_urls);
       }
     }
   }
@@ -322,7 +322,7 @@ void BookmarkModel::RemoveAll() {
   if (store_.get())
     store_->ScheduleSave();
 
-  NotifyHistoryAboutRemovedBookmarks(changed_urls);
+  NotifyHistoryAboutRemovedBookmarks(removed_urls);
 
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
                     BookmarkAllNodesRemoved(this));
@@ -815,16 +815,16 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
                     OnWillRemoveBookmarks(this, parent, index, node.get()));
 
-  std::set<GURL> changed_urls;
+  std::set<GURL> removed_urls;
   {
     base::AutoLock url_lock(url_lock_);
-    RemoveNodeAndGetRemovedUrls(node.get(), &changed_urls);
+    RemoveNodeAndGetRemovedUrls(node.get(), &removed_urls);
   }
 
   if (store_.get())
     store_->ScheduleSave();
 
-  NotifyHistoryAboutRemovedBookmarks(changed_urls);
+  NotifyHistoryAboutRemovedBookmarks(removed_urls);
 
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
                     BookmarkNodeRemoved(this, parent, index, node.get()));
