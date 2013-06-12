@@ -38,16 +38,16 @@ namespace WebCore {
 
 // These functions can be replaced by normal JS operation.
 // Getters
-v8::Handle<v8::Value> npObjectNamedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo&);
-v8::Handle<v8::Value> npObjectIndexedPropertyGetter(uint32_t index, const v8::AccessorInfo&);
-v8::Handle<v8::Value> npObjectGetNamedProperty(v8::Local<v8::Object> self, v8::Local<v8::String> name, const v8::AccessorInfo&);
-v8::Handle<v8::Value> npObjectGetIndexedProperty(v8::Local<v8::Object> self, uint32_t index, const v8::AccessorInfo&);
+void npObjectNamedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
+void npObjectIndexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>&);
+void npObjectGetNamedProperty(v8::Local<v8::Object> self, v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>&);
+void npObjectGetIndexedProperty(v8::Local<v8::Object> self, uint32_t index, const v8::PropertyCallbackInfo<v8::Value>&);
 
 // Setters
-v8::Handle<v8::Value> npObjectNamedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::AccessorInfo&);
-v8::Handle<v8::Value> npObjectIndexedPropertySetter(uint32_t index, const v8::AccessorInfo&);
-v8::Handle<v8::Value> npObjectSetNamedProperty(v8::Local<v8::Object> self, v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::AccessorInfo&);
-v8::Handle<v8::Value> npObjectSetIndexedProperty(v8::Local<v8::Object> self, uint32_t index, v8::Local<v8::Value>, const v8::AccessorInfo&);
+void npObjectNamedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
+void npObjectIndexedPropertySetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>&);
+void npObjectSetNamedProperty(v8::Local<v8::Object> self, v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
+void npObjectSetIndexedProperty(v8::Local<v8::Object> self, uint32_t index, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
 
 void npObjectInvokeDefaultHandler(const v8::FunctionCallbackInfo<v8::Value>&);
 

@@ -1006,39 +1006,39 @@ sub GenerateHeaderNamedAndIndexedPropertyAccessors
 
     if ($indexedGetterFunction) {
         $header{classPublic}->add(<<END);
-    static v8::Handle<v8::Value> indexedPropertyGetter(uint32_t, const v8::AccessorInfo&);
+    static void indexedPropertyGetter(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
 END
     }
 
     if ($indexedSetterFunction) {
         $header{classPublic}->add(<<END);
-    static v8::Handle<v8::Value> indexedPropertySetter(uint32_t, v8::Local<v8::Value>, const v8::AccessorInfo&);
+    static void indexedPropertySetter(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
 END
     }
     if ($indexedDeleterFunction) {
         $header{classPublic}->add(<<END);
-    static v8::Handle<v8::Boolean> indexedPropertyDeleter(uint32_t, const v8::AccessorInfo&);
+    static void indexedPropertyDeleter(uint32_t, const v8::PropertyCallbackInfo<v8::Boolean>&);
 END
     }
     if ($namedGetterFunction) {
         $header{classPublic}->add(<<END);
-    static v8::Handle<v8::Value> namedPropertyGetter(v8::Local<v8::String>, const v8::AccessorInfo&);
+    static void namedPropertyGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>&);
 END
     }
     if ($namedSetterFunction) {
         $header{classPublic}->add(<<END);
-    static v8::Handle<v8::Value> namedPropertySetter(v8::Local<v8::String>, v8::Local<v8::Value>, const v8::AccessorInfo&);
+    static void namedPropertySetter(v8::Local<v8::String>, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
 END
     }
     if ($namedDeleterFunction) {
         $header{classPublic}->add(<<END);
-    static v8::Handle<v8::Boolean> namedPropertyDeleter(v8::Local<v8::String>, const v8::AccessorInfo&);
+    static void namedPropertyDeleter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Boolean>&);
 END
     }
     if ($namedEnumeratorFunction) {
         $header{classPublic}->add(<<END);
-    static v8::Handle<v8::Array> namedPropertyEnumerator(const v8::AccessorInfo&);
-    static v8::Handle<v8::Integer> namedPropertyQuery(v8::Local<v8::String>, const v8::AccessorInfo&);
+    static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>&);
+    static void namedPropertyQuery(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Integer>&);
 END
     }
 }
@@ -1833,7 +1833,7 @@ END
         my $arrayType = GetArrayType($nativeType);
 
         if ($nativeType =~ /^V8StringResource/) {
-            $code .= "    " . ConvertToV8StringResource($attribute->signature, $nativeType, "v", $value, "VOID") . "\n";
+            $code .= "    " . ConvertToV8StringResource($attribute->signature, $nativeType, "v", $value) . "\n";
         } elsif ($arrayType) {
             $code .= "    Vector<$arrayType> v = $value;\n";
         } elsif ($attribute->signature->extendedAttributes->{"EnforceRange"}) {
@@ -2288,18 +2288,10 @@ sub GenerateCallWith
     return ([@callWithArgs], $code);
 }
 
-sub GenerateArgumentsCountCheckOldStyle
-{
-    my $function = shift;
-    my $interface = shift;
-    GenerateArgumentsCountCheck($function, $interface, "old");
-}
-
 sub GenerateArgumentsCountCheck
 {
     my $function = shift;
     my $interface = shift;
-    my $style = shift || "new";
 
     my $numMandatoryParams = 0;
     my $allowNonOptional = 1;
@@ -2314,15 +2306,10 @@ sub GenerateArgumentsCountCheck
 
     my $argumentsCountCheckString = "";
     if ($numMandatoryParams >= 1) {
-        if ($style eq "old") {
-            $argumentsCountCheckString .= "    if (args.Length() < $numMandatoryParams)\n";
-            $argumentsCountCheckString .= "        return throwNotEnoughArgumentsError(args.GetIsolate());\n";
-        } else {
-            $argumentsCountCheckString .= "    if (args.Length() < $numMandatoryParams) {\n";
-            $argumentsCountCheckString .= "        throwNotEnoughArgumentsError(args.GetIsolate());\n";
-            $argumentsCountCheckString .= "        return;\n";
-            $argumentsCountCheckString .= "    }\n";
-        }
+        $argumentsCountCheckString .= "    if (args.Length() < $numMandatoryParams) {\n";
+        $argumentsCountCheckString .= "        throwNotEnoughArgumentsError(args.GetIsolate());\n";
+        $argumentsCountCheckString .= "        return;\n";
+        $argumentsCountCheckString .= "    }\n";
     }
     return $argumentsCountCheckString;
 }
@@ -2415,7 +2402,7 @@ sub GenerateParametersCheck
         } elsif ($nativeType =~ /^V8StringResource/) {
             my $default = defined $parameter->extendedAttributes->{"Default"} ? $parameter->extendedAttributes->{"Default"} : "";
             my $value = JSValueToNative($parameter->type, $parameter->extendedAttributes, $parameter->isOptional && $default eq "NullString" ? "argumentOrNull(args, $paramIndex)" : "args[$paramIndex]", "args.GetIsolate()");
-            $parameterCheckString .= "    " . ConvertToV8StringResource($parameter, $nativeType, $parameterName, $value, "VOID") . "\n";
+            $parameterCheckString .= "    " . ConvertToV8StringResource($parameter, $nativeType, $parameterName, $value) . "\n";
             if (IsEnumType($parameter->type)) {
                 my @enumValues = ValidEnumValues($parameter->type);
                 my @validEqualities = ();
@@ -3237,10 +3224,10 @@ sub GenerateImplementationIndexedPropertyGetter
     my $nativeValue = "element";
     $nativeValue .= ".release()" if (IsRefPtrType($returnType));
     my $isNull = GenerateIsNullExpression($returnType, "element");
-    my $returnJSValueCode = NativeToJSValue($indexedGetterFunction->signature->type, $indexedGetterFunction->signature->extendedAttributes, $nativeValue, "    ", "return", "info.Holder()", "info.GetIsolate()", "info", "collection");
+    my $returnJSValueCode = NativeToJSValue($indexedGetterFunction->signature->type, $indexedGetterFunction->signature->extendedAttributes, $nativeValue, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "collection", "", "", "return");
     my $raisesExceptions = $indexedGetterFunction->signature->extendedAttributes->{"RaisesException"};
     my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "index", $raisesExceptions);
-    my $getterCode = "v8::Handle<v8::Value> ${v8ClassName}::indexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)\n";
+    my $getterCode = "void ${v8ClassName}::indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $getterCode .= "{\n";
     $getterCode .= "    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));\n";
     $getterCode .= "    ${implClassName}* collection = toNative(info.Holder());\n";
@@ -3249,15 +3236,17 @@ sub GenerateImplementationIndexedPropertyGetter
     }
     $getterCode .= $methodCallCode . "\n";
     if ($raisesExceptions) {
-        $getterCode .= "    if (ec)\n";
-        $getterCode .= "        return setDOMException(ec, info.GetIsolate());\n";
+        $getterCode .= "    if (ec) {\n";
+        $getterCode .= "        setDOMException(ec, info.GetIsolate());\n";
+        $getterCode .= "        return;\n";
+        $getterCode .= "    }\n";
     }
     if (IsUnionType($returnType)) {
         $getterCode .= "${returnJSValueCode}\n";
-        $getterCode .= "    return v8Undefined();\n";
+        $getterCode .= "    return;\n";
     } else {
         $getterCode .= "    if (${isNull})\n";
-        $getterCode .= "        return v8Undefined();\n";
+        $getterCode .= "        return;\n";
         $getterCode .= $returnJSValueCode . "\n";
     }
     $getterCode .= "}\n\n";
@@ -3277,7 +3266,7 @@ sub GenerateImplementationIndexedPropertySetter
     my $raisesExceptions = $indexedSetterFunction->signature->extendedAttributes->{"RaisesException"};
     my $treatNullAs = $indexedSetterFunction->parameters->[1]->extendedAttributes->{"TreatNullAs"};
     my $treatUndefinedAs = $indexedSetterFunction->parameters->[1]->extendedAttributes->{"TreatUndefinedAs"};
-    my $code = "v8::Handle<v8::Value> ${v8ClassName}::indexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::AccessorInfo& info)\n";
+    my $code = "void ${v8ClassName}::indexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
     $code .= "    ${implClassName}* collection = toNative(info.Holder());\n";
     $code .= GenerateNativeValueDefinition($indexedSetterFunction, $indexedSetterFunction->parameters->[1], "value", "propertyValue", "info.GetIsolate()");
@@ -3305,12 +3294,14 @@ sub GenerateImplementationIndexedPropertySetter
     $code .= GenerateIfElseStatement("bool", "result", \@conditions, \@statements);
 
     $code .= "    if (!result)\n";
-    $code .= "        return v8Undefined();\n";
+    $code .= "        return;\n";
     if ($raisesExceptions) {
-        $code .= "    if (ec)\n";
-        $code .= "        return setDOMException(ec, info.GetIsolate());\n";
+        $code .= "    if (ec) {\n";
+        $code .= "        setDOMException(ec, info.GetIsolate());\n";
+        $code .= "        return;\n";
+        $code .= "    }\n";
     }
-    $code .= "    return value;\n";
+    $code .= "    v8SetReturnValue(info, value);\n";
     $code .= "}\n\n";
     $implementation{nameSpaceWebCore}->add($code);
 }
@@ -3427,19 +3418,19 @@ sub GenerateImplementationNamedPropertyGetter
     my $isNull = GenerateIsNullExpression($returnType, "element");
     my $nativeValue = "element";
     $nativeValue .= ".release()" if (IsRefPtrType($returnType));
-    my $returnJSValueCode = NativeToJSValue($namedGetterFunction->signature->type, $namedGetterFunction->signature->extendedAttributes, $nativeValue, "    ", "return", "info.Holder()", "info.GetIsolate()", "info", "collection");
+    my $returnJSValueCode = NativeToJSValue($namedGetterFunction->signature->type, $namedGetterFunction->signature->extendedAttributes, $nativeValue, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "collection", "", "", "return");
     my $raisesExceptions = $namedGetterFunction->signature->extendedAttributes->{"RaisesException"};
     my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "propertyName", $raisesExceptions);
 
-    my $code = "v8::Handle<v8::Value> ${v8ClassName}::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)\n";
+    my $code = "void ${v8ClassName}::namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
     if (!$namedGetterFunction->signature->extendedAttributes->{"OverrideBuiltins"}) {
         $code .= "    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())\n";
-        $code .= "        return v8Undefined();\n";
+        $code .= "        return;\n";
         $code .= "    if (info.Holder()->HasRealNamedCallbackProperty(name))\n";
-        $code .= "        return v8Undefined();\n";
+        $code .= "        return;\n";
         $code .= "    if (info.Holder()->HasRealNamedProperty(name))\n";
-        $code .= "        return v8Undefined();\n";
+        $code .= "        return;\n";
     }
     $code .= "\n";
     $code .= "    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));\n";
@@ -3450,15 +3441,17 @@ sub GenerateImplementationNamedPropertyGetter
     }
     $code .= $methodCallCode . "\n";
     if ($raisesExceptions) {
-        $code .= "    if (ec)\n";
-        $code .= "        return setDOMException(ec, info.GetIsolate());\n";
+        $code .= "    if (ec) {\n";
+        $code .= "        setDOMException(ec, info.GetIsolate());\n";
+        $code .= "        return;\n";
+        $code .= "    }\n";
     }
     if (IsUnionType($returnType)) {
         $code .= "${returnJSValueCode}\n";
-        $code .= "    return v8Undefined();\n";
+        $code .= "    return;\n";
     } else {
         $code .= "    if (${isNull})\n";
-        $code .= "        return v8Undefined();\n";
+        $code .= "        return;\n";
         $code .= $returnJSValueCode . "\n";
     }
     $code .= "}\n\n";
@@ -3486,7 +3479,7 @@ sub GenerateNativeValueDefinition
                 $nullCheck = "WithNullCheck";
             }
         }
-        $code .= "    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<${nullCheck}>, ${nativeValueName}, ${jsValue});\n";
+        $code .= "    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<${nullCheck}>, ${nativeValueName}, ${jsValue});\n";
     } else {
         $code .= "    ${nativeType} ${nativeValueName} = ${nativeValue};\n";
     }
@@ -3506,15 +3499,15 @@ sub GenerateImplementationNamedPropertySetter
     my $treatNullAs = $namedSetterFunction->parameters->[1]->extendedAttributes->{"TreatNullAs"};
     my $treatUndefinedAs = $namedSetterFunction->parameters->[1]->extendedAttributes->{"TreatUndefinedAs"};
 
-    my $code = "v8::Handle<v8::Value> ${v8ClassName}::namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)\n";
+    my $code = "void ${v8ClassName}::namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
     if (!$namedSetterFunction->signature->extendedAttributes->{"OverrideBuiltins"}) {
         $code .= "    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())\n";
-        $code .= "        return v8Undefined();\n";
+        $code .= "        return;\n";
         $code .= "    if (info.Holder()->HasRealNamedCallbackProperty(name))\n";
-        $code .= "        return v8Undefined();\n";
+        $code .= "        return;\n";
         $code .= "    if (info.Holder()->HasRealNamedProperty(name))\n";
-        $code .= "        return v8Undefined();\n";
+        $code .= "        return;\n";
     }
     $code .= "    ${implClassName}* collection = toNative(info.Holder());\n";
     $code .= GenerateNativeValueDefinition($namedSetterFunction, $namedSetterFunction->parameters->[0], "name", "propertyName", "info.GetIsolate()");
@@ -3540,12 +3533,14 @@ sub GenerateImplementationNamedPropertySetter
     $code .= GenerateIfElseStatement("bool", "result", \@conditions, \@statements);
 
     $code .= "    if (!result)\n";
-    $code .= "        return v8Undefined();\n";
+    $code .= "        return;\n";
     if ($raisesExceptions) {
-        $code .= "    if (ec)\n";
-        $code .= "        return setDOMException(ec, info.GetIsolate());\n";
+        $code .= "    if (ec) {\n";
+        $code .= "        setDOMException(ec, info.GetIsolate());\n";
+        $code .= "        return;\n";
+        $code .= "    }\n";
     }
-    $code .= "    return value;\n";
+    $code .= "    v8SetReturnValue(info, value);\n";
     $code .= "}\n\n";
     $implementation{nameSpaceWebCore}->add($code);
 }
@@ -3560,7 +3555,7 @@ sub GenerateImplementationIndexedPropertyDeleter
 
     my $raisesExceptions = $indexedDeleterFunction->signature->extendedAttributes->{"RaisesException"};
 
-    my $code = "v8::Handle<v8::Boolean> ${v8ClassName}::indexedPropertyDeleter(unsigned index, const v8::AccessorInfo& info)\n";
+    my $code = "void ${v8ClassName}::indexedPropertyDeleter(unsigned index, const v8::PropertyCallbackInfo<v8::Boolean>& info)\n";
     $code .= "{\n";
     $code .= "    ${implClassName}* collection = toNative(info.Holder());\n";
     my $extraArguments = "";
@@ -3572,10 +3567,10 @@ sub GenerateImplementationIndexedPropertyDeleter
     if ($raisesExceptions) {
         $code .= "    if (ec) {\n";
         $code .= "        setDOMException(ec, info.GetIsolate());\n";
-        $code .= "        return v8::Handle<v8::Boolean>();\n";
+        $code .= "        return;\n";
         $code .= "    }\n";
     }
-    $code .= "    return v8Boolean(result);\n";
+    $code .= "    return v8SetReturnValueBool(info, result);\n";
     $code .= "}\n\n";
     $implementation{nameSpaceWebCore}->add($code);
 }
@@ -3590,7 +3585,7 @@ sub GenerateImplementationNamedPropertyDeleter
 
     my $raisesExceptions = $namedDeleterFunction->signature->extendedAttributes->{"RaisesException"};
 
-    my $code = "v8::Handle<v8::Boolean> ${v8ClassName}::namedPropertyDeleter(v8::Local<v8::String> name, const v8::AccessorInfo& info)\n";
+    my $code = "void ${v8ClassName}::namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)\n";
     $code .= "{\n";
     $code .= "    ${implClassName}* collection = toNative(info.Holder());\n";
     $code .= "    AtomicString propertyName = toWebCoreAtomicString(name);\n";
@@ -3603,10 +3598,10 @@ sub GenerateImplementationNamedPropertyDeleter
     if ($raisesExceptions) {
         $code .= "    if (ec) {\n";
         $code .= "        setDOMException(ec, info.GetIsolate());\n";
-        $code .= "        return v8::Handle<v8::Boolean>();\n";
+        $code .= "        return;\n";
         $code .= "    }\n";
     }
-    $code .= "    return v8Boolean(result);\n";
+    $code .= "    return v8SetReturnValueBool(info, result);\n";
     $code .= "}\n\n";
     $implementation{nameSpaceWebCore}->add($code);
 }
@@ -3618,7 +3613,7 @@ sub GenerateImplementationNamedPropertyEnumerator
     my $v8ClassName = GetV8ClassName($interface);
 
     $implementation{nameSpaceWebCore}->add(<<END);
-v8::Handle<v8::Array> ${v8ClassName}::namedPropertyEnumerator(const v8::AccessorInfo& info)
+void ${v8ClassName}::namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
     ExceptionCode ec = 0;
     ${implClassName}* collection = toNative(info.Holder());
@@ -3626,12 +3621,12 @@ v8::Handle<v8::Array> ${v8ClassName}::namedPropertyEnumerator(const v8::Accessor
     collection->namedPropertyEnumerator(names, ec);
     if (ec) {
         setDOMException(ec, info.GetIsolate());
-        return v8::Handle<v8::Array>();
+        return;
     }
     v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
     for (size_t i = 0; i < names.size(); ++i)
         v8names->Set(v8Integer(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
-    return v8names;
+    v8SetReturnValue(info, v8names);
 }
 
 END
@@ -5299,13 +5294,10 @@ sub ConvertToV8StringResource
     my $nativeType = shift;
     my $variableName = shift;
     my $value = shift;
-    my $suffix = shift;
 
     die "Wrong native type passed: $nativeType" unless $nativeType =~ /^V8StringResource/;
     if ($signature->type eq "DOMString" or IsEnumType($signature->type)) {
-        my $macro = "V8TRYCATCH_FOR_V8STRINGRESOURCE";
-        $macro .= "_$suffix" if $suffix;
-        return "$macro($nativeType, $variableName, $value);"
+        return "V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID($nativeType, $variableName, $value);"
     } else {
         return "$nativeType $variableName($value, true);";
     }

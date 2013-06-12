@@ -38,11 +38,10 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Integer> V8DOMStringMap::namedPropertyQuery(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8DOMStringMap::namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     if (V8DOMStringMap::toNative(info.Holder())->contains(toWebCoreString(name)))
-        return v8Integer(0, info.GetIsolate());
-    return v8::Handle<v8::Integer>();
+        v8SetReturnValueInt(info, 0);
 }
 
 } // namespace WebCore

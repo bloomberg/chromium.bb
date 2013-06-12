@@ -59,7 +59,7 @@ template<class T> static v8::Handle<v8::Value> getV8Object(PassRefPtr<T> impleme
 }
 
 // Get an array containing the names of indexed properties of HTMLSelectElement and HTMLFormElement.
-template<class Collection> static v8::Handle<v8::Array> nodeCollectionIndexedPropertyEnumerator(const v8::AccessorInfo& info)
+template<class Collection> static void nodeCollectionIndexedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
     ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     Collection* collection = toNativeCollection<Collection>(info.Holder());
@@ -70,7 +70,7 @@ template<class Collection> static v8::Handle<v8::Array> nodeCollectionIndexedPro
         v8::Handle<v8::Integer> integer = v8Integer(i, info.GetIsolate());
         properties->Set(integer, integer);
     }
-    return properties;
+    v8SetReturnValue(info, properties);
 }
 
 v8::Handle<v8::Value> toOptionsCollectionSetter(uint32_t index, v8::Handle<v8::Value>, HTMLSelectElement*, v8::Isolate*);

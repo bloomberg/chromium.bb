@@ -272,34 +272,36 @@ static v8::Handle<v8::Value> npObjectGetProperty(v8::Local<v8::Object> self, NPI
     return v8Undefined();
 }
 
-v8::Handle<v8::Value> npObjectNamedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void npObjectNamedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     NPIdentifier identifier = getStringIdentifier(name);
-    return npObjectGetProperty(info.Holder(), identifier, name, info.GetIsolate());
+    v8SetReturnValue(info, npObjectGetProperty(info.Holder(), identifier, name, info.GetIsolate()));
 }
 
-v8::Handle<v8::Value> npObjectIndexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
+void npObjectIndexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     NPIdentifier identifier = _NPN_GetIntIdentifier(index);
-    return npObjectGetProperty(info.Holder(), identifier, v8::Number::New(index), info.GetIsolate());
+    v8SetReturnValue(info, npObjectGetProperty(info.Holder(), identifier, v8::Number::New(index), info.GetIsolate()));
 }
 
-v8::Handle<v8::Value> npObjectGetNamedProperty(v8::Local<v8::Object> self, v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void npObjectGetNamedProperty(v8::Local<v8::Object> self, v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     NPIdentifier identifier = getStringIdentifier(name);
-    return npObjectGetProperty(self, identifier, name, info.GetIsolate());
+    v8SetReturnValue(info, npObjectGetProperty(self, identifier, name, info.GetIsolate()));
 }
 
-v8::Handle<v8::Value> npObjectGetIndexedProperty(v8::Local<v8::Object> self, uint32_t index, const v8::AccessorInfo& info)
+void npObjectGetIndexedProperty(v8::Local<v8::Object> self, uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     NPIdentifier identifier = _NPN_GetIntIdentifier(index);
-    return npObjectGetProperty(self, identifier, v8::Number::New(index), info.GetIsolate());
+    v8SetReturnValue(info, npObjectGetProperty(self, identifier, v8::Number::New(index), info.GetIsolate()));
 }
 
-v8::Handle<v8::Integer> npObjectQueryProperty(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void npObjectQueryProperty(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     NPIdentifier identifier = getStringIdentifier(name);
-    return npObjectGetProperty(info.Holder(), identifier, name, info.GetIsolate()).IsEmpty() ? v8::Handle<v8::Integer>() : v8Integer(0, info.GetIsolate());
+    if (npObjectGetProperty(info.Holder(), identifier, name, info.GetIsolate()).IsEmpty())
+        return;
+    v8SetReturnValueInt(info, 0);
 }
 
 static v8::Handle<v8::Value> npObjectSetProperty(v8::Local<v8::Object> self, NPIdentifier identifier, v8::Local<v8::Value> value, v8::Isolate* isolate)
@@ -328,32 +330,32 @@ static v8::Handle<v8::Value> npObjectSetProperty(v8::Local<v8::Object> self, NPI
 }
 
 
-v8::Handle<v8::Value> npObjectNamedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+void npObjectNamedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     NPIdentifier identifier = getStringIdentifier(name);
-    return npObjectSetProperty(info.Holder(), identifier, value, info.GetIsolate());
+    v8SetReturnValue(info, npObjectSetProperty(info.Holder(), identifier, value, info.GetIsolate()));
 }
 
 
-v8::Handle<v8::Value> npObjectIndexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+void npObjectIndexedPropertySetter(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     NPIdentifier identifier = _NPN_GetIntIdentifier(index);
-    return npObjectSetProperty(info.Holder(), identifier, value, info.GetIsolate());
+    v8SetReturnValue(info, npObjectSetProperty(info.Holder(), identifier, value, info.GetIsolate()));
 }
 
-v8::Handle<v8::Value> npObjectSetNamedProperty(v8::Local<v8::Object> self, v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+void npObjectSetNamedProperty(v8::Local<v8::Object> self, v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     NPIdentifier identifier = getStringIdentifier(name);
-    return npObjectSetProperty(self, identifier, value, info.GetIsolate());
+    v8SetReturnValue(info, npObjectSetProperty(self, identifier, value, info.GetIsolate()));
 }
 
-v8::Handle<v8::Value> npObjectSetIndexedProperty(v8::Local<v8::Object> self, uint32_t index, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+void npObjectSetIndexedProperty(v8::Local<v8::Object> self, uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     NPIdentifier identifier = _NPN_GetIntIdentifier(index);
-    return npObjectSetProperty(self, identifier, value, info.GetIsolate());
+    v8SetReturnValue(info, npObjectSetProperty(self, identifier, value, info.GetIsolate()));
 }
 
-v8::Handle<v8::Array> npObjectPropertyEnumerator(const v8::AccessorInfo& info, bool namedProperty)
+void npObjectPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info, bool namedProperty)
 {
     NPObject* npObject = v8ObjectToNPObject(info.Holder());
 
@@ -375,21 +377,20 @@ v8::Handle<v8::Array> npObjectPropertyEnumerator(const v8::AccessorInfo& info, b
                     properties->Set(v8Integer(i, info.GetIsolate()), v8Integer(identifier->number(), info.GetIsolate()));
             }
 
-            return properties;
+            v8SetReturnValue(info, properties);
+            return;
         }
     }
-
-    return v8::Handle<v8::Array>();
 }
 
-v8::Handle<v8::Array> npObjectNamedPropertyEnumerator(const v8::AccessorInfo& info)
+void npObjectNamedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    return npObjectPropertyEnumerator(info, true);
+    npObjectPropertyEnumerator(info, true);
 }
 
-v8::Handle<v8::Array> npObjectIndexedPropertyEnumerator(const v8::AccessorInfo& info)
+void npObjectIndexedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    return npObjectPropertyEnumerator(info, false);
+    npObjectPropertyEnumerator(info, false);
 }
 
 static DOMWrapperMap<NPObject>& staticNPObjectMap()

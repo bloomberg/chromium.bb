@@ -36,27 +36,22 @@
 
 namespace WebCore {
 
-template<class T>
-static v8::Handle<T> setDOMException(ExceptionCode ec, const v8::AccessorInfo& info)
-{
-    setDOMException(ec, info.GetIsolate());
-    return v8::Handle<T>();
-}
-
-v8::Handle<v8::Integer> V8Storage::namedPropertyQuery(v8::Local<v8::String> v8Name, const v8::AccessorInfo& info)
+void V8Storage::namedPropertyQuery(v8::Local<v8::String> v8Name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     Storage* storage = V8Storage::toNative(info.Holder());
     String name = toWebCoreString(v8Name);
 
     if (name == "length")
-        return v8::Handle<v8::Integer>();
+        return;
     ExceptionCode ec = 0;
     bool found = storage->contains(name, ec);
-    if (ec)
-        return setDOMException<v8::Integer>(ec, info);
+    if (ec) {
+        setDOMException(ec, info.GetIsolate());
+        return;
+    }
     if (!found)
-        return v8::Handle<v8::Integer>();
-    return v8Integer(0, info.GetIsolate());
+        return;
+    v8SetReturnValueInt(info, 0);
 }
 
 } // namespace WebCore

@@ -431,27 +431,29 @@ void V8DOMWindow::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& ar
     v8SetReturnValue(args, toV8Fast(openedWindow.release(), args, impl));
 }
 
-v8::Handle<v8::Value> V8DOMWindow::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8DOMWindow::namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
 
     DOMWindow* window = V8DOMWindow::toNative(info.Holder());
     if (!window)
-        return v8Undefined();
+        return;
 
     Frame* frame = window->frame();
     // window is detached from a frame.
     if (!frame)
-        return v8Undefined();
+        return;
 
     // Search sub-frames.
     AtomicString propName = toWebCoreAtomicString(name);
     Frame* child = frame->tree()->scopedChild(propName);
-    if (child)
-        return toV8Fast(child->document()->domWindow(), info, window);
+    if (child) {
+        v8SetReturnValue(info, toV8Fast(child->document()->domWindow(), info, window));
+        return;
+    }
 
     // Search IDL functions defined in the prototype
     if (!info.Holder()->GetRealNamedProperty(name).IsEmpty())
-        return v8Undefined();
+        return;
 
     // Search named items in the document.
     Document* doc = frame->document();
@@ -460,14 +462,15 @@ v8::Handle<v8::Value> V8DOMWindow::namedPropertyGetter(v8::Local<v8::String> nam
         if (toHTMLDocument(doc)->hasNamedItem(propName.impl()) || doc->hasElementWithId(propName.impl())) {
             RefPtr<HTMLCollection> items = doc->windowNamedItems(propName);
             if (!items->isEmpty()) {
-                if (items->hasExactlyOneItem())
-                    return toV8Fast(items->item(0), info, window);
-                return toV8Fast(items.release(), info, window);
+                if (items->hasExactlyOneItem()) {
+                    v8SetReturnValue(info, toV8Fast(items->item(0), info, window));
+                    return;
+                }
+                v8SetReturnValue(info, toV8Fast(items.release(), info, window));
+                return;
             }
         }
     }
-
-    return v8Undefined();
 }
 
 
