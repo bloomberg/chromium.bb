@@ -745,6 +745,8 @@ const char kLanguageXkbAutoRepeatInterval[] =
 
 // A boolean pref which determines whether the large cursor feature is enabled.
 const char kLargeCursorEnabled[] = "settings.a11y.large_cursor_enabled";
+// A boolean pref which determines whether the sticky keys feature is enabled.
+const char kStickyKeysEnabled[] = "settings.a11y.sticky_keys_enabled";
 // A boolean pref which determines whether spoken feedback is enabled.
 const char kSpokenFeedbackEnabled[] = "settings.accessibility";
 // A boolean pref which determines whether high conrast is enabled.

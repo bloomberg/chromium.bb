@@ -115,6 +115,10 @@ void Preferences::RegisterUserPrefs(
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
+      prefs::kStickyKeysEnabled,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
       prefs::kLargeCursorEnabled,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
