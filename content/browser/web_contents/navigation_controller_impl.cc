@@ -5,6 +5,7 @@
 #include "content/browser/web_contents/navigation_controller_impl.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"  // Temporary
 #include "base/strings/string_util.h"
@@ -628,6 +629,7 @@ void NavigationControllerImpl::LoadURL(
 }
 
 void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
+  TRACE_EVENT0("browser", "NavigationControllerImpl::LoadURLWithParams");
   if (HandleDebugURL(params.url, params.transition_type))
     return;
 

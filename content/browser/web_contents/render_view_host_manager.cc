@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "content/browser/devtools/render_view_devtools_agent_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -118,6 +119,7 @@ void RenderViewHostManager::SetPendingWebUI(const NavigationEntryImpl& entry) {
 
 RenderViewHostImpl* RenderViewHostManager::Navigate(
     const NavigationEntryImpl& entry) {
+  TRACE_EVENT0("browser", "RenderViewHostManager:Navigate");
   // Create a pending RenderViewHost. It will give us the one we should use
   RenderViewHostImpl* dest_render_view_host =
       static_cast<RenderViewHostImpl*>(UpdateRendererStateForNavigate(entry));

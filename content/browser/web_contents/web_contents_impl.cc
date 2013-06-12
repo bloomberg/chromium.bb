@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -426,6 +427,7 @@ WebContentsImpl::~WebContentsImpl() {
 WebContentsImpl* WebContentsImpl::CreateWithOpener(
     const WebContents::CreateParams& params,
     WebContentsImpl* opener) {
+  TRACE_EVENT0("browser", "WebContentsImpl::CreateWithOpener");
   WebContentsImpl* new_contents = new WebContentsImpl(
       params.browser_context, opener);
 
@@ -458,6 +460,7 @@ BrowserPluginGuest* WebContentsImpl::CreateGuest(
 
 WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
                                                const GURL& url) {
+  TRACE_EVENT0("browser", "WebContentsImpl::GetWebkitPrefs");
   WebPreferences prefs;
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -1745,6 +1748,8 @@ void WebContentsImpl::DetachInterstitialPage() {
 bool WebContentsImpl::NavigateToEntry(
     const NavigationEntryImpl& entry,
     NavigationController::ReloadType reload_type) {
+  TRACE_EVENT0("browser", "WebContentsImpl::NavigateToEntry");
+
   // The renderer will reject IPC messages with URLs longer than
   // this limit, so don't attempt to navigate with a longer URL.
   if (entry.GetURL().spec().size() > kMaxURLChars)
@@ -3566,6 +3571,7 @@ NavigationEntry*
 
 bool WebContentsImpl::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host, int opener_route_id) {
+  TRACE_EVENT0("browser", "WebContentsImpl::CreateRenderViewForRenderManager");
   // Can be NULL during tests.
   RenderWidgetHostView* rwh_view = view_->CreateViewForWidget(render_view_host);
 
