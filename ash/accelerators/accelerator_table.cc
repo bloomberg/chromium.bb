@@ -70,16 +70,21 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_T, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, OPEN_CROSH },
   { true, ui::VKEY_G, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     DISABLE_GPU_WATCHDOG },
+  { true, ui::VKEY_I, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+    TOUCH_HUD_MODE_CHANGE },
+  { true, ui::VKEY_I, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN,
+    TOUCH_HUD_CLEAR },
+  // Accessibility: Spoken feedback shortcuts. The first one is to toggle
+  // spoken feedback on or off. The others are only valid when
+  // spoken feedback is enabled.
+  { true, ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+    TOGGLE_SPOKEN_FEEDBACK },
+  { true, ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN, SILENCE_SPOKEN_FEEDBACK},
 #endif  // defined(OS_CHROMEOS)
   { true, ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, OPEN_FEEDBACK_PAGE },
 #if !defined(OS_WIN)
   { true, ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, EXIT },
 #endif
-  { true, ui::VKEY_I, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-    TOUCH_HUD_MODE_CHANGE },
-  { true, ui::VKEY_I, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN,
-    TOUCH_HUD_CLEAR },
-
   { true, ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     NEW_INCOGNITO_WINDOW },
   { true, ui::VKEY_N, ui::EF_CONTROL_DOWN, NEW_WINDOW },
@@ -157,12 +162,6 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_U, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN,
     PRINT_UI_HIERARCHIES },
 
-  // Accessibility: Spoken feedback shortcuts. The first one is to toggle
-  // spoken feedback on or off. The others are only valid when
-  // spoken feedback is enabled.
-  { true, ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-    TOGGLE_SPOKEN_FEEDBACK },
-  { true, ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN, SILENCE_SPOKEN_FEEDBACK},
   { false, ui::VKEY_HOME, ui::EF_SHIFT_DOWN, ACCESSIBLE_FOCUS_PREVIOUS},
   { false, ui::VKEY_PRIOR, ui::EF_SHIFT_DOWN, ACCESSIBLE_FOCUS_PREVIOUS},
   { false, ui::VKEY_END, ui::EF_SHIFT_DOWN, ACCESSIBLE_FOCUS_NEXT},
@@ -189,10 +188,11 @@ const AcceleratorData kDesktopAcceleratorData[] = {
     ADD_REMOVE_DISPLAY },
   { true, ui::VKEY_M, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
     TOGGLE_MIRROR_MODE },
-#endif
+  { true, ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, TOGGLE_WIFI },
   // Extra shortcut for display swaping as alt-f4 is taken on linux desktop.
   { true, ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     SWAP_PRIMARY_DISPLAY },
+#endif
   // Extra shortcut to rotate/scale up/down the screen on linux desktop.
   { true, ui::VKEY_R,
     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, ROTATE_SCREEN },
@@ -200,7 +200,6 @@ const AcceleratorData kDesktopAcceleratorData[] = {
   { true, ui::VKEY_W, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU },
 
   { true, ui::VKEY_F11, ui::EF_CONTROL_DOWN, TOGGLE_ROOT_WINDOW_FULL_SCREEN },
-  { true, ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, TOGGLE_WIFI },
   { true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
       CYCLE_BACKWARD_MRU },
   { true, ui::VKEY_B, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
@@ -272,13 +271,13 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   TAKE_PARTIAL_SCREENSHOT,
   TAKE_SCREENSHOT,
   TOGGLE_CAPS_LOCK,
-  TOGGLE_SPOKEN_FEEDBACK,
   TOGGLE_WIFI,
   TOUCH_HUD_CLEAR,
   VOLUME_DOWN,
   VOLUME_MUTE,
   VOLUME_UP,
 #if defined(OS_CHROMEOS)
+  TOGGLE_SPOKEN_FEEDBACK,
   ADD_REMOVE_DISPLAY,
   DISABLE_GPU_WATCHDOG,
   TOGGLE_MIRROR_MODE,
@@ -318,17 +317,17 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
   PREVIOUS_IME,
   PRINT_UI_HIERARCHIES,
   SHOW_KEYBOARD_OVERLAY,
-  SWAP_PRIMARY_DISPLAY,
   SWITCH_IME,
   TAKE_PARTIAL_SCREENSHOT,
   TAKE_SCREENSHOT,
   TOGGLE_CAPS_LOCK,
-  TOGGLE_SPOKEN_FEEDBACK,
   TOGGLE_WIFI,
   VOLUME_DOWN,
   VOLUME_MUTE,
   VOLUME_UP,
 #if defined(OS_CHROMEOS)
+  SWAP_PRIMARY_DISPLAY,
+  TOGGLE_SPOKEN_FEEDBACK,
 #if !defined(NDEBUG)
   ADD_REMOVE_DISPLAY,
 #endif
@@ -389,16 +388,16 @@ const AcceleratorAction kActionsAllowedInAppMode[] = {
   SCALE_UI_DOWN,
   SCALE_UI_RESET,
   SCALE_UI_UP,
-  SWAP_PRIMARY_DISPLAY,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
   TOGGLE_CAPS_LOCK,
-  TOGGLE_SPOKEN_FEEDBACK,
   TOGGLE_WIFI,
   TOUCH_HUD_CLEAR,
   VOLUME_DOWN,
   VOLUME_MUTE,
   VOLUME_UP,
 #if defined(OS_CHROMEOS)
+  SWAP_PRIMARY_DISPLAY,
+  TOGGLE_SPOKEN_FEEDBACK,
   ADD_REMOVE_DISPLAY,
   DISABLE_GPU_WATCHDOG,
   TOGGLE_MIRROR_MODE,
