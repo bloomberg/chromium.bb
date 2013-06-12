@@ -119,7 +119,8 @@ def GetBotStepMap():
       # Main builders
       B('main-builder-dbg', H(std_build_opts + std_host_tests)),
       B('main-builder-rel', H(std_build_opts)),
-      B('main-clang-builder', H(compile_opt, 'clang=1')),
+      B('main-clang-builder',
+        H(compile_opt, 'clang=1 component=shared_library')),
       B('main-clobber', H(compile_opt)),
       B('main-tests', H(std_test_opts), T(std_tests, [flakiness_server])),
 
