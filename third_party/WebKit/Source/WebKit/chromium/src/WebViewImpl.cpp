@@ -139,6 +139,7 @@
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/Extensions3D.h"
+#include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
@@ -3022,6 +3023,7 @@ WebSize WebViewImpl::contentsPreferredMinimumSize()
         return WebSize();
 
     layout();
+    FontCachePurgePreventer fontCachePurgePreventer; // Required by minPreferredLogicalWidth().
     IntSize preferredMinimumSize(document->renderView()->minPreferredLogicalWidth(), document->documentElement()->scrollHeight());
     preferredMinimumSize.scale(zoomLevelToZoomFactor(zoomLevel()));
     return preferredMinimumSize;
