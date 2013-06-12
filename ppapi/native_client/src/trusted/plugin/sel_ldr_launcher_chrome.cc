@@ -21,8 +21,7 @@ bool SelLdrLauncherChrome::Start(PP_Instance instance,
                                  bool uses_irt,
                                  bool uses_ppapi,
                                  bool enable_ppapi_dev,
-                                 bool enable_dyncode_syscalls,
-                                 bool enable_exception_handling) {
+                                 bool enable_dyncode_syscalls) {
   if (!launch_nacl_process)
     return false;
   // send a synchronous message to the browser process
@@ -32,7 +31,6 @@ bool SelLdrLauncherChrome::Start(PP_Instance instance,
                           PP_FromBool(uses_ppapi),
                           PP_FromBool(enable_ppapi_dev),
                           PP_FromBool(enable_dyncode_syscalls),
-                          PP_FromBool(enable_exception_handling),
                           &channel_) != PP_NACL_OK) {
     return false;
   }

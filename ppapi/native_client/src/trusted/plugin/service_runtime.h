@@ -243,7 +243,6 @@ class ServiceRuntime {
              bool uses_ppapi,
              bool enable_ppapi_dev,
              bool enable_dyncode_syscalls,
-             bool enable_exception_handling,
              pp::CompletionCallback crash_cb);
 
   // Starts the application channel to the nexe.

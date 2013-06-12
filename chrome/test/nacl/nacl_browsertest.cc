@@ -111,10 +111,4 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
       "pnacl_dyncode_syscall_disabled.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
-                       MAYBE_PNACL(PnaclExceptionHandlingDisabled)) {
-  RunNaClIntegrationTest(FILE_PATH_LITERAL(
-      "pnacl_exception_handling_disabled.html"));
-}
-
 }  // namespace anonymous
