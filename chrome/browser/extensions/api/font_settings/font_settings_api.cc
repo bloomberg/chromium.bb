@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/preference/preference_helpers.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -243,11 +244,8 @@ bool FontSettingsClearFontFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(
       profile_->GetPrefs()->FindPreference(pref_path.c_str()));
 
-  ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile_)->
-      extension_service()->extension_prefs();
-  prefs->RemoveExtensionControlledPref(extension_id(),
-                                       pref_path.c_str(),
-                                       kExtensionPrefsScopeRegular);
+  PreferenceAPI::Get(profile_)->RemoveExtensionControlledPref(
+      extension_id(), pref_path.c_str(), kExtensionPrefsScopeRegular);
   return true;
 }
 
@@ -301,9 +299,7 @@ bool FontSettingsSetFontFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(
       profile_->GetPrefs()->FindPreference(pref_path.c_str()));
 
-  ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile_)->
-      extension_service()->extension_prefs();
-  prefs->SetExtensionControlledPref(
+  PreferenceAPI::Get(profile_)->SetExtensionControlledPref(
       extension_id(),
       pref_path.c_str(),
       kExtensionPrefsScopeRegular,
@@ -360,11 +356,8 @@ bool ClearFontPrefExtensionFunction::RunImpl() {
     return false;
   }
 
-  ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile_)->
-      extension_service()->extension_prefs();
-  prefs->RemoveExtensionControlledPref(extension_id(),
-                                       GetPrefName(),
-                                       kExtensionPrefsScopeRegular);
+  PreferenceAPI::Get(profile_)->RemoveExtensionControlledPref(
+      extension_id(), GetPrefName(), kExtensionPrefsScopeRegular);
   return true;
 }
 
@@ -402,12 +395,11 @@ bool SetFontPrefExtensionFunction::RunImpl() {
   Value* value;
   EXTENSION_FUNCTION_VALIDATE(details->Get(GetKey(), &value));
 
-  ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile_)->
-      extension_service()->extension_prefs();
-  prefs->SetExtensionControlledPref(extension_id(),
-                                    GetPrefName(),
-                                    kExtensionPrefsScopeRegular,
-                                    value->DeepCopy());
+  PreferenceAPI::Get(profile_)->SetExtensionControlledPref(
+      extension_id(),
+      GetPrefName(),
+      kExtensionPrefsScopeRegular,
+      value->DeepCopy());
   return true;
 }
 

@@ -45,6 +45,9 @@ class TestExtensionPrefs {
   void ResetPrefRegistry();
   const base::FilePath& temp_dir() const { return temp_dir_.path(); }
   const base::FilePath& extensions_dir() const { return extensions_dir_; }
+  ExtensionPrefValueMap* extension_pref_value_map() {
+    return extension_pref_value_map_.get();
+  }
 
   // This will cause the ExtensionPrefs to be deleted and recreated, based on
   // any existing backing file we had previously created.

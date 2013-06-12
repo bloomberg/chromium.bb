@@ -55,8 +55,11 @@
       'sources': [
         # All .cc, .h, .m, and .mm files under browser/extensions except for
         # tests and mocks.
+        '../extensions/browser/extension_prefs_scope.h',
         '../extensions/browser/file_reader.cc',
         '../extensions/browser/file_reader.h',
+        '../extensions/browser/pref_names.cc',
+        '../extensions/browser/pref_names.h',
         '../extensions/browser/view_type_utils.cc',
         '../extensions/browser/view_type_utils.h',
         'browser/extensions/active_tab_permission_granter.cc',
@@ -601,7 +604,6 @@
         'browser/extensions/extension_prefs.h',
         'browser/extensions/extension_prefs_factory.cc',
         'browser/extensions/extension_prefs_factory.h',
-        'browser/extensions/extension_prefs_scope.h',
         'browser/extensions/extension_process_manager.cc',
         'browser/extensions/extension_process_manager.h',
         'browser/extensions/extension_protocols.cc',
@@ -832,6 +834,7 @@
             ['include', '^browser/extensions/api/messaging/message_service.cc'],
             ['include', '^browser/extensions/api/module/module.cc'],
             ['include', '^browser/extensions/api/omnibox/omnibox_api.cc'],
+            ['include', '^browser/extensions/api/preference/preference_api.cc'],
             ['include', '^browser/extensions/api/processes/processes_api.cc'],
             ['include', '^browser/extensions/api/processes/processes_api_constants.cc'],
             ['include', '^browser/extensions/api/proxy/proxy_api.cc'],

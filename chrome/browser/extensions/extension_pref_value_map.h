@@ -13,8 +13,8 @@
 #include "base/prefs/pref_value_map.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_prefs_scope.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "extensions/browser/extension_prefs_scope.h"
 
 // Non-persistent data container that is shared by ExtensionPrefStores. All
 // extension pref values (incognito and regular) are stored herein and

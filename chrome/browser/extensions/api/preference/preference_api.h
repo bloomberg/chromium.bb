@@ -8,11 +8,14 @@
 #include <string>
 
 #include "base/prefs/pref_change_registrar.h"
+#include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/notification_observer.h"
+#include "extensions/browser/extension_prefs_scope.h"
 
+class ExtensionPrefValueMap;
 class PrefService;
 
 namespace base {
@@ -20,6 +23,7 @@ class Value;
 }
 
 namespace extensions {
+class ExtensionPrefs;
 
 class PreferenceEventRouter {
  public:
@@ -39,8 +43,55 @@ class PreferenceEventRouter {
   DISALLOW_COPY_AND_ASSIGN(PreferenceEventRouter);
 };
 
-class PreferenceAPI : public ProfileKeyedAPI,
-                      public EventRouter::Observer {
+// The class containing the implementation for extension-controlled preference
+// manipulation. This implementation is separate from PreferenceAPI, since
+// we need to be able to use these methods in testing, where we use
+// TestExtensionPrefs and don't construct a profile.
+//
+// See also PreferenceAPI and TestPreferenceAPI.
+class PreferenceAPIBase {
+ public:
+  // Functions for manipulating preference values that are controlled by the
+  // extension. In other words, these are not pref values *about* the extension,
+  // but rather about something global the extension wants to override.
+
+  // Set a new extension-controlled preference value.
+  // Takes ownership of |value|.
+  void SetExtensionControlledPref(const std::string& extension_id,
+                                  const std::string& pref_key,
+                                  ExtensionPrefsScope scope,
+                                  base::Value* value);
+
+  // Remove an extension-controlled preference value.
+  void RemoveExtensionControlledPref(const std::string& extension_id,
+                                     const std::string& pref_key,
+                                     ExtensionPrefsScope scope);
+
+  // Returns true if currently no extension with higher precedence controls the
+  // preference.
+  bool CanExtensionControlPref(const std::string& extension_id,
+                               const std::string& pref_key,
+                               bool incognito);
+
+  // Returns true if extension |extension_id| currently controls the
+  // preference. If |from_incognito| is not NULL, looks at incognito preferences
+  // first, and |from_incognito| is set to true if the effective pref value is
+  // coming from the incognito preferences, false if it is coming from the
+  // normal ones.
+  bool DoesExtensionControlPref(const std::string& extension_id,
+                                const std::string& pref_key,
+                                bool* from_incognito);
+
+ protected:
+  // Virtual for testing.
+  virtual ExtensionPrefs* extension_prefs() = 0;
+  virtual ExtensionPrefValueMap* extension_pref_value_map() = 0;
+};
+
+class PreferenceAPI : public PreferenceAPIBase,
+                      public ProfileKeyedAPI,
+                      public EventRouter::Observer,
+                      public ContentSettingsStore::Observer {
  public:
   explicit PreferenceAPI(Profile* profile);
   virtual ~PreferenceAPI();
@@ -51,11 +102,38 @@ class PreferenceAPI : public ProfileKeyedAPI,
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<PreferenceAPI>* GetFactoryInstance();
 
+  // Convenience method to get the PreferenceAPI for a profile.
+  static PreferenceAPI* Get(Profile* profile);
+
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
 
+  // Loads the preferences controlled by the specified extension from their
+  // dictionary and sets them in the |value_map|.
+  static void LoadExtensionControlledPrefs(ExtensionPrefs* prefs,
+                                           ExtensionPrefValueMap* value_map,
+                                           const std::string& extension_id,
+                                           ExtensionPrefsScope scope);
+
+  // Store extension controlled preference values in the |value_map|,
+  // which then informs the subscribers (ExtensionPrefStores) about the winning
+  // values.
+  static void InitExtensionControlledPrefs(ExtensionPrefs* prefs,
+                                           ExtensionPrefValueMap* value_map);
+
  private:
   friend class ProfileKeyedAPIFactory<PreferenceAPI>;
+
+  // ContentSettingsStore::Observer implementation.
+  virtual void OnContentSettingChanged(const std::string& extension_id,
+                                       bool incognito) OVERRIDE;
+
+  // Clears incognito session-only content settings for all extensions.
+  void ClearIncognitoSessionOnlyContentSettings();
+
+  // PreferenceAPIBase implementation.
+  virtual ExtensionPrefs* extension_prefs() OVERRIDE;
+  virtual ExtensionPrefValueMap* extension_pref_value_map() OVERRIDE;
 
   Profile* profile_;
 
@@ -64,6 +142,7 @@ class PreferenceAPI : public ProfileKeyedAPI,
     return "PreferenceAPI";
   }
   static const bool kServiceIsNULLWhileTesting = true;
+  static const bool kServiceRedirectedInIncognito = true;
 
   // Created lazily upon OnListenerAdded.
   scoped_ptr<PreferenceEventRouter> preference_event_router_;

@@ -746,6 +746,7 @@
         'browser/extensions/api/omnibox/omnibox_unittest.cc',
         'browser/extensions/api/permissions/permissions_api_helpers_unittest.cc',
         'browser/extensions/api/power/power_api_unittest.cc',
+        'browser/extensions/api/preference/preference_api_prefs_unittest.cc',
         'browser/extensions/api/proxy/proxy_api_helpers_unittest.cc',
         'browser/extensions/api/push_messaging/obfuscated_gaia_id_fetcher_unittest.cc',
         'browser/extensions/api/push_messaging/push_messaging_invalidation_handler_unittest.cc',

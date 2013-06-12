@@ -140,7 +140,7 @@ TEST_F(ExtensionSortingPageOrdinal, ExtensionSortingPageOrdinal) {}
 // Ensure that ExtensionSorting is able to properly initialize off a set
 // of old page and app launch indices and properly convert them.
 class ExtensionSortingInitialize
-    : public extensions::ExtensionPrefsPrepopulatedTest {
+    : public extensions::PrefsPrepopulatedTestBase {
  public:
   ExtensionSortingInitialize() {}
   virtual ~ExtensionSortingInitialize() {}
@@ -154,33 +154,33 @@ class ExtensionSortingInitialize
     // Setup the deprecated preferences.
     ExtensionScopedPrefs* scoped_prefs =
         static_cast<ExtensionScopedPrefs*>(prefs());
-    scoped_prefs->UpdateExtensionPref(ext1_->id(),
-                                       kPrefAppLaunchIndexDeprecated,
-                                       Value::CreateIntegerValue(0));
-    scoped_prefs->UpdateExtensionPref(ext1_->id(),
-                                       kPrefPageIndexDeprecated,
-                                       Value::CreateIntegerValue(0));
-
-    scoped_prefs->UpdateExtensionPref(ext2_->id(),
-                                       kPrefAppLaunchIndexDeprecated,
-                                       Value::CreateIntegerValue(1));
-    scoped_prefs->UpdateExtensionPref(ext2_->id(),
-                                       kPrefPageIndexDeprecated,
-                                       Value::CreateIntegerValue(0));
-
-    scoped_prefs->UpdateExtensionPref(ext3_->id(),
+    scoped_prefs->UpdateExtensionPref(extension1()->id(),
                                       kPrefAppLaunchIndexDeprecated,
                                       Value::CreateIntegerValue(0));
-    scoped_prefs->UpdateExtensionPref(ext3_->id(),
+    scoped_prefs->UpdateExtensionPref(extension1()->id(),
+                                      kPrefPageIndexDeprecated,
+                                      Value::CreateIntegerValue(0));
+
+    scoped_prefs->UpdateExtensionPref(extension2()->id(),
+                                      kPrefAppLaunchIndexDeprecated,
+                                      Value::CreateIntegerValue(1));
+    scoped_prefs->UpdateExtensionPref(extension2()->id(),
+                                      kPrefPageIndexDeprecated,
+                                      Value::CreateIntegerValue(0));
+
+    scoped_prefs->UpdateExtensionPref(extension3()->id(),
+                                      kPrefAppLaunchIndexDeprecated,
+                                      Value::CreateIntegerValue(0));
+    scoped_prefs->UpdateExtensionPref(extension3()->id(),
                                       kPrefPageIndexDeprecated,
                                       Value::CreateIntegerValue(1));
 
     // We insert the ids in reserve order so that we have to deal with the
     // element on the 2nd page before the 1st page is seen.
     extensions::ExtensionIdList ids;
-    ids.push_back(ext3_->id());
-    ids.push_back(ext2_->id());
-    ids.push_back(ext1_->id());
+    ids.push_back(extension3()->id());
+    ids.push_back(extension2()->id());
+    ids.push_back(extension1()->id());
 
     prefs()->extension_sorting()->Initialize(ids);
   }
@@ -190,18 +190,18 @@ class ExtensionSortingInitialize
     ExtensionSorting* extension_sorting = prefs()->extension_sorting();
 
     EXPECT_TRUE(first_ordinal.Equals(
-        extension_sorting->GetAppLaunchOrdinal(ext1_->id())));
+        extension_sorting->GetAppLaunchOrdinal(extension1()->id())));
     EXPECT_TRUE(first_ordinal.LessThan(
-        extension_sorting->GetAppLaunchOrdinal(ext2_->id())));
+        extension_sorting->GetAppLaunchOrdinal(extension2()->id())));
     EXPECT_TRUE(first_ordinal.Equals(
-        extension_sorting->GetAppLaunchOrdinal(ext3_->id())));
+        extension_sorting->GetAppLaunchOrdinal(extension3()->id())));
 
     EXPECT_TRUE(first_ordinal.Equals(
-        extension_sorting->GetPageOrdinal(ext1_->id())));
+        extension_sorting->GetPageOrdinal(extension1()->id())));
     EXPECT_TRUE(first_ordinal.Equals(
-        extension_sorting->GetPageOrdinal(ext2_->id())));
+        extension_sorting->GetPageOrdinal(extension2()->id())));
     EXPECT_TRUE(first_ordinal.LessThan(
-        extension_sorting->GetPageOrdinal(ext3_->id())));
+        extension_sorting->GetPageOrdinal(extension3()->id())));
   }
 };
 TEST_F(ExtensionSortingInitialize, ExtensionSortingInitialize) {}
@@ -209,7 +209,7 @@ TEST_F(ExtensionSortingInitialize, ExtensionSortingInitialize) {}
 // Make sure that initialization still works when no extensions are present
 // (i.e. make sure that the web store icon is still loaded into the map).
 class ExtensionSortingInitializeWithNoApps
-    : public extensions::ExtensionPrefsPrepopulatedTest {
+    : public extensions::PrefsPrepopulatedTestBase {
  public:
   ExtensionSortingInitializeWithNoApps() {}
   virtual ~ExtensionSortingInitializeWithNoApps() {}
@@ -256,7 +256,7 @@ TEST_F(ExtensionSortingInitializeWithNoApps,
 // is taken out.
 // http://crbug.com/107376
 class ExtensionSortingMigrateAppIndexInvalid
-    : public extensions::ExtensionPrefsPrepopulatedTest {
+    : public extensions::PrefsPrepopulatedTestBase {
  public:
   ExtensionSortingMigrateAppIndexInvalid() {}
   virtual ~ExtensionSortingMigrateAppIndexInvalid() {}
@@ -270,29 +270,29 @@ class ExtensionSortingMigrateAppIndexInvalid
     // Setup the deprecated preference.
     ExtensionScopedPrefs* scoped_prefs =
         static_cast<ExtensionScopedPrefs*>(prefs());
-    scoped_prefs->UpdateExtensionPref(ext1_->id(),
+    scoped_prefs->UpdateExtensionPref(extension1()->id(),
                                       kPrefAppLaunchIndexDeprecated,
                                       Value::CreateIntegerValue(0));
-    scoped_prefs->UpdateExtensionPref(ext1_->id(),
+    scoped_prefs->UpdateExtensionPref(extension1()->id(),
                                       kPrefPageIndexDeprecated,
                                       Value::CreateIntegerValue(-1));
 
     extensions::ExtensionIdList ids;
-    ids.push_back(ext1_->id());
+    ids.push_back(extension1()->id());
 
     prefs()->extension_sorting()->Initialize(ids);
   }
   virtual void Verify() OVERRIDE {
     // Make sure that the invalid page_index wasn't converted over.
     EXPECT_FALSE(prefs()->extension_sorting()->GetAppLaunchOrdinal(
-        ext1_->id()).IsValid());
+        extension1()->id()).IsValid());
   }
 };
 TEST_F(ExtensionSortingMigrateAppIndexInvalid,
        ExtensionSortingMigrateAppIndexInvalid) {}
 
 class ExtensionSortingFixNTPCollisionsAllCollide
-    : public extensions::ExtensionPrefsPrepopulatedTest {
+    : public extensions::PrefsPrepopulatedTestBase {
  public:
   ExtensionSortingFixNTPCollisionsAllCollide() {}
   virtual ~ExtensionSortingFixNTPCollisionsAllCollide() {}
@@ -302,41 +302,44 @@ class ExtensionSortingFixNTPCollisionsAllCollide
 
     ExtensionSorting* extension_sorting = prefs()->extension_sorting();
 
-    extension_sorting->SetAppLaunchOrdinal(ext1_->id(), repeated_ordinal_);
-    extension_sorting->SetPageOrdinal(ext1_->id(), repeated_ordinal_);
+    extension_sorting->SetAppLaunchOrdinal(extension1()->id(),
+                                           repeated_ordinal_);
+    extension_sorting->SetPageOrdinal(extension1()->id(), repeated_ordinal_);
 
-    extension_sorting->SetAppLaunchOrdinal(ext2_->id(), repeated_ordinal_);
-    extension_sorting->SetPageOrdinal(ext2_->id(), repeated_ordinal_);
+    extension_sorting->SetAppLaunchOrdinal(extension2()->id(),
+                                           repeated_ordinal_);
+    extension_sorting->SetPageOrdinal(extension2()->id(), repeated_ordinal_);
 
-    extension_sorting->SetAppLaunchOrdinal(ext3_->id(), repeated_ordinal_);
-    extension_sorting->SetPageOrdinal(ext3_->id(), repeated_ordinal_);
+    extension_sorting->SetAppLaunchOrdinal(extension3()->id(),
+                                           repeated_ordinal_);
+    extension_sorting->SetPageOrdinal(extension3()->id(), repeated_ordinal_);
 
     extension_sorting->FixNTPOrdinalCollisions();
   }
   virtual void Verify() OVERRIDE {
     ExtensionSorting* extension_sorting = prefs()->extension_sorting();
-    syncer::StringOrdinal ext1_app_launch =
-        extension_sorting->GetAppLaunchOrdinal(ext1_->id());
-    syncer::StringOrdinal ext2_app_launch =
-        extension_sorting->GetAppLaunchOrdinal(ext2_->id());
-    syncer::StringOrdinal ext3_app_launch =
-        extension_sorting->GetAppLaunchOrdinal(ext3_->id());
+    syncer::StringOrdinal extension1_app_launch =
+        extension_sorting->GetAppLaunchOrdinal(extension1()->id());
+    syncer::StringOrdinal extension2_app_launch =
+        extension_sorting->GetAppLaunchOrdinal(extension2()->id());
+    syncer::StringOrdinal extension3_app_launch =
+        extension_sorting->GetAppLaunchOrdinal(extension3()->id());
 
     // The overlapping extensions should have be adjusted so that they are
     // sorted by their id.
-    EXPECT_EQ(ext1_->id() < ext2_->id(),
-              ext1_app_launch.LessThan(ext2_app_launch));
-    EXPECT_EQ(ext1_->id() < ext3_->id(),
-              ext1_app_launch.LessThan(ext3_app_launch));
-    EXPECT_EQ(ext2_->id() < ext3_->id(),
-              ext2_app_launch.LessThan(ext3_app_launch));
+    EXPECT_EQ(extension1()->id() < extension2()->id(),
+              extension1_app_launch.LessThan(extension2_app_launch));
+    EXPECT_EQ(extension1()->id() < extension3()->id(),
+              extension1_app_launch.LessThan(extension3_app_launch));
+    EXPECT_EQ(extension2()->id() < extension3()->id(),
+              extension2_app_launch.LessThan(extension3_app_launch));
 
     // The page ordinal should be unchanged.
-    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext1_->id()).Equals(
+    EXPECT_TRUE(extension_sorting->GetPageOrdinal(extension1()->id()).Equals(
         repeated_ordinal_));
-    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext2_->id()).Equals(
+    EXPECT_TRUE(extension_sorting->GetPageOrdinal(extension2()->id()).Equals(
         repeated_ordinal_));
-    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext3_->id()).Equals(
+    EXPECT_TRUE(extension_sorting->GetPageOrdinal(extension3()->id()).Equals(
         repeated_ordinal_));
   }
 
@@ -347,7 +350,7 @@ TEST_F(ExtensionSortingFixNTPCollisionsAllCollide,
        ExtensionSortingFixNTPCollisionsAllCollide) {}
 
 class ExtensionSortingFixNTPCollisionsSomeCollideAtStart
-    : public extensions::ExtensionPrefsPrepopulatedTest {
+    : public extensions::PrefsPrepopulatedTestBase {
  public:
   ExtensionSortingFixNTPCollisionsSomeCollideAtStart() {}
   virtual ~ExtensionSortingFixNTPCollisionsSomeCollideAtStart() {}
@@ -361,40 +364,40 @@ class ExtensionSortingFixNTPCollisionsSomeCollideAtStart
     // Have the first two extension in the same position, with a third
     // (non-colliding) extension after.
 
-    extension_sorting->SetAppLaunchOrdinal(ext1_->id(), first_ordinal_);
-    extension_sorting->SetPageOrdinal(ext1_->id(), first_ordinal_);
+    extension_sorting->SetAppLaunchOrdinal(extension1()->id(), first_ordinal_);
+    extension_sorting->SetPageOrdinal(extension1()->id(), first_ordinal_);
 
-    extension_sorting->SetAppLaunchOrdinal(ext2_->id(), first_ordinal_);
-    extension_sorting->SetPageOrdinal(ext2_->id(), first_ordinal_);
+    extension_sorting->SetAppLaunchOrdinal(extension2()->id(), first_ordinal_);
+    extension_sorting->SetPageOrdinal(extension2()->id(), first_ordinal_);
 
-    extension_sorting->SetAppLaunchOrdinal(ext3_->id(), second_ordinal);
-    extension_sorting->SetPageOrdinal(ext3_->id(), first_ordinal_);
+    extension_sorting->SetAppLaunchOrdinal(extension3()->id(), second_ordinal);
+    extension_sorting->SetPageOrdinal(extension3()->id(), first_ordinal_);
 
     extension_sorting->FixNTPOrdinalCollisions();
   }
   virtual void Verify() OVERRIDE {
     ExtensionSorting* extension_sorting = prefs()->extension_sorting();
-    syncer::StringOrdinal ext1_app_launch =
-        extension_sorting->GetAppLaunchOrdinal(ext1_->id());
-    syncer::StringOrdinal ext2_app_launch =
-        extension_sorting->GetAppLaunchOrdinal(ext2_->id());
-    syncer::StringOrdinal ext3_app_launch =
-        extension_sorting->GetAppLaunchOrdinal(ext3_->id());
+    syncer::StringOrdinal extension1_app_launch =
+        extension_sorting->GetAppLaunchOrdinal(extension1()->id());
+    syncer::StringOrdinal extension2_app_launch =
+        extension_sorting->GetAppLaunchOrdinal(extension2()->id());
+    syncer::StringOrdinal extension3_app_launch =
+        extension_sorting->GetAppLaunchOrdinal(extension3()->id());
 
     // The overlapping extensions should have be adjusted so that they are
     // sorted by their id, but they both should be before ext3, which wasn't
     // overlapping.
-    EXPECT_EQ(ext1_->id() < ext2_->id(),
-              ext1_app_launch.LessThan(ext2_app_launch));
-    EXPECT_TRUE(ext1_app_launch.LessThan(ext3_app_launch));
-    EXPECT_TRUE(ext2_app_launch.LessThan(ext3_app_launch));
+    EXPECT_EQ(extension1()->id() < extension2()->id(),
+              extension1_app_launch.LessThan(extension2_app_launch));
+    EXPECT_TRUE(extension1_app_launch.LessThan(extension3_app_launch));
+    EXPECT_TRUE(extension2_app_launch.LessThan(extension3_app_launch));
 
     // The page ordinal should be unchanged.
-    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext1_->id()).Equals(
+    EXPECT_TRUE(extension_sorting->GetPageOrdinal(extension1()->id()).Equals(
         first_ordinal_));
-    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext2_->id()).Equals(
+    EXPECT_TRUE(extension_sorting->GetPageOrdinal(extension2()->id()).Equals(
         first_ordinal_));
-    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext3_->id()).Equals(
+    EXPECT_TRUE(extension_sorting->GetPageOrdinal(extension3()->id()).Equals(
         first_ordinal_));
   }
 
@@ -405,7 +408,7 @@ TEST_F(ExtensionSortingFixNTPCollisionsSomeCollideAtStart,
        ExtensionSortingFixNTPCollisionsSomeCollideAtStart) {}
 
 class ExtensionSortingFixNTPCollisionsSomeCollideAtEnd
-    : public extensions::ExtensionPrefsPrepopulatedTest {
+    : public extensions::PrefsPrepopulatedTestBase {
  public:
   ExtensionSortingFixNTPCollisionsSomeCollideAtEnd() {}
   virtual ~ExtensionSortingFixNTPCollisionsSomeCollideAtEnd() {}
@@ -419,40 +422,40 @@ class ExtensionSortingFixNTPCollisionsSomeCollideAtEnd
     // Have the first extension in a non-colliding position, followed by two
     // two extension in the same position.
 
-    extension_sorting->SetAppLaunchOrdinal(ext1_->id(), first_ordinal_);
-    extension_sorting->SetPageOrdinal(ext1_->id(), first_ordinal_);
+    extension_sorting->SetAppLaunchOrdinal(extension1()->id(), first_ordinal_);
+    extension_sorting->SetPageOrdinal(extension1()->id(), first_ordinal_);
 
-    extension_sorting->SetAppLaunchOrdinal(ext2_->id(), second_ordinal);
-    extension_sorting->SetPageOrdinal(ext2_->id(), first_ordinal_);
+    extension_sorting->SetAppLaunchOrdinal(extension2()->id(), second_ordinal);
+    extension_sorting->SetPageOrdinal(extension2()->id(), first_ordinal_);
 
-    extension_sorting->SetAppLaunchOrdinal(ext3_->id(), second_ordinal);
-    extension_sorting->SetPageOrdinal(ext3_->id(), first_ordinal_);
+    extension_sorting->SetAppLaunchOrdinal(extension3()->id(), second_ordinal);
+    extension_sorting->SetPageOrdinal(extension3()->id(), first_ordinal_);
 
     extension_sorting->FixNTPOrdinalCollisions();
   }
   virtual void Verify() OVERRIDE {
     ExtensionSorting* extension_sorting = prefs()->extension_sorting();
-    syncer::StringOrdinal ext1_app_launch =
-        extension_sorting->GetAppLaunchOrdinal(ext1_->id());
-    syncer::StringOrdinal ext2_app_launch =
-        extension_sorting->GetAppLaunchOrdinal(ext2_->id());
-    syncer::StringOrdinal ext3_app_launch =
-        extension_sorting->GetAppLaunchOrdinal(ext3_->id());
+    syncer::StringOrdinal extension1_app_launch =
+        extension_sorting->GetAppLaunchOrdinal(extension1()->id());
+    syncer::StringOrdinal extension2_app_launch =
+        extension_sorting->GetAppLaunchOrdinal(extension2()->id());
+    syncer::StringOrdinal extension3_app_launch =
+        extension_sorting->GetAppLaunchOrdinal(extension3()->id());
 
     // The overlapping extensions should have be adjusted so that they are
     // sorted by their id, but they both should be after ext1, which wasn't
     // overlapping.
-    EXPECT_TRUE(ext1_app_launch.LessThan(ext2_app_launch));
-    EXPECT_TRUE(ext1_app_launch.LessThan(ext3_app_launch));
-    EXPECT_EQ(ext2_->id() < ext3_->id(),
-              ext2_app_launch.LessThan(ext3_app_launch));
+    EXPECT_TRUE(extension1_app_launch.LessThan(extension2_app_launch));
+    EXPECT_TRUE(extension1_app_launch.LessThan(extension3_app_launch));
+    EXPECT_EQ(extension2()->id() < extension3()->id(),
+              extension2_app_launch.LessThan(extension3_app_launch));
 
     // The page ordinal should be unchanged.
-    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext1_->id()).Equals(
+    EXPECT_TRUE(extension_sorting->GetPageOrdinal(extension1()->id()).Equals(
         first_ordinal_));
-    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext2_->id()).Equals(
+    EXPECT_TRUE(extension_sorting->GetPageOrdinal(extension2()->id()).Equals(
         first_ordinal_));
-    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext3_->id()).Equals(
+    EXPECT_TRUE(extension_sorting->GetPageOrdinal(extension3()->id()).Equals(
         first_ordinal_));
   }
 
@@ -463,7 +466,7 @@ TEST_F(ExtensionSortingFixNTPCollisionsSomeCollideAtEnd,
        ExtensionSortingFixNTPCollisionsSomeCollideAtEnd) {}
 
 class ExtensionSortingFixNTPCollisionsTwoCollisions
-    : public extensions::ExtensionPrefsPrepopulatedTest {
+    : public extensions::PrefsPrepopulatedTestBase {
  public:
   ExtensionSortingFixNTPCollisionsTwoCollisions() {}
   virtual ~ExtensionSortingFixNTPCollisionsTwoCollisions() {}
@@ -475,52 +478,52 @@ class ExtensionSortingFixNTPCollisionsTwoCollisions
     ExtensionSorting* extension_sorting = prefs()->extension_sorting();
 
     // Have two extensions colliding, followed by two more colliding extensions.
-    extension_sorting->SetAppLaunchOrdinal(ext1_->id(), first_ordinal_);
-    extension_sorting->SetPageOrdinal(ext1_->id(), first_ordinal_);
+    extension_sorting->SetAppLaunchOrdinal(extension1()->id(), first_ordinal_);
+    extension_sorting->SetPageOrdinal(extension1()->id(), first_ordinal_);
 
-    extension_sorting->SetAppLaunchOrdinal(ext2_->id(), first_ordinal_);
-    extension_sorting->SetPageOrdinal(ext2_->id(), first_ordinal_);
+    extension_sorting->SetAppLaunchOrdinal(extension2()->id(), first_ordinal_);
+    extension_sorting->SetPageOrdinal(extension2()->id(), first_ordinal_);
 
-    extension_sorting->SetAppLaunchOrdinal(ext3_->id(), second_ordinal);
-    extension_sorting->SetPageOrdinal(ext3_->id(), first_ordinal_);
+    extension_sorting->SetAppLaunchOrdinal(extension3()->id(), second_ordinal);
+    extension_sorting->SetPageOrdinal(extension3()->id(), first_ordinal_);
 
-    extension_sorting->SetAppLaunchOrdinal(ext4_->id(), second_ordinal);
-    extension_sorting->SetPageOrdinal(ext4_->id(), first_ordinal_);
+    extension_sorting->SetAppLaunchOrdinal(extension4()->id(), second_ordinal);
+    extension_sorting->SetPageOrdinal(extension4()->id(), first_ordinal_);
 
     extension_sorting->FixNTPOrdinalCollisions();
   }
   virtual void Verify() OVERRIDE {
     ExtensionSorting* extension_sorting = prefs()->extension_sorting();
-    syncer::StringOrdinal ext1_app_launch =
-        extension_sorting->GetAppLaunchOrdinal(ext1_->id());
-    syncer::StringOrdinal ext2_app_launch =
-        extension_sorting->GetAppLaunchOrdinal(ext2_->id());
-    syncer::StringOrdinal ext3_app_launch =
-        extension_sorting->GetAppLaunchOrdinal(ext3_->id());
-    syncer::StringOrdinal ext4_app_launch =
-        extension_sorting->GetAppLaunchOrdinal(ext4_->id());
+    syncer::StringOrdinal extension1_app_launch =
+        extension_sorting->GetAppLaunchOrdinal(extension1()->id());
+    syncer::StringOrdinal extension2_app_launch =
+        extension_sorting->GetAppLaunchOrdinal(extension2()->id());
+    syncer::StringOrdinal extension3_app_launch =
+        extension_sorting->GetAppLaunchOrdinal(extension3()->id());
+    syncer::StringOrdinal extension4_app_launch =
+        extension_sorting->GetAppLaunchOrdinal(extension4()->id());
 
     // The overlapping extensions should have be adjusted so that they are
     // sorted by their id, with |ext1| and |ext2| appearing before |ext3| and
     // |ext4|.
-    EXPECT_TRUE(ext1_app_launch.LessThan(ext3_app_launch));
-    EXPECT_TRUE(ext1_app_launch.LessThan(ext4_app_launch));
-    EXPECT_TRUE(ext2_app_launch.LessThan(ext3_app_launch));
-    EXPECT_TRUE(ext2_app_launch.LessThan(ext4_app_launch));
+    EXPECT_TRUE(extension1_app_launch.LessThan(extension3_app_launch));
+    EXPECT_TRUE(extension1_app_launch.LessThan(extension4_app_launch));
+    EXPECT_TRUE(extension2_app_launch.LessThan(extension3_app_launch));
+    EXPECT_TRUE(extension2_app_launch.LessThan(extension4_app_launch));
 
-    EXPECT_EQ(ext1_->id() < ext2_->id(),
-              ext1_app_launch.LessThan(ext2_app_launch));
-    EXPECT_EQ(ext3_->id() < ext4_->id(),
-              ext3_app_launch.LessThan(ext4_app_launch));
+    EXPECT_EQ(extension1()->id() < extension2()->id(),
+              extension1_app_launch.LessThan(extension2_app_launch));
+    EXPECT_EQ(extension3()->id() < extension4()->id(),
+              extension3_app_launch.LessThan(extension4_app_launch));
 
     // The page ordinal should be unchanged.
-    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext1_->id()).Equals(
+    EXPECT_TRUE(extension_sorting->GetPageOrdinal(extension1()->id()).Equals(
         first_ordinal_));
-    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext2_->id()).Equals(
+    EXPECT_TRUE(extension_sorting->GetPageOrdinal(extension2()->id()).Equals(
         first_ordinal_));
-    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext3_->id()).Equals(
+    EXPECT_TRUE(extension_sorting->GetPageOrdinal(extension3()->id()).Equals(
         first_ordinal_));
-    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext4_->id()).Equals(
+    EXPECT_TRUE(extension_sorting->GetPageOrdinal(extension4()->id()).Equals(
         first_ordinal_));
   }
 
@@ -531,7 +534,7 @@ TEST_F(ExtensionSortingFixNTPCollisionsTwoCollisions,
        ExtensionSortingFixNTPCollisionsTwoCollisions) {}
 
 class ExtensionSortingEnsureValidOrdinals
-    : public extensions::ExtensionPrefsPrepopulatedTest {
+    : public extensions::PrefsPrepopulatedTestBase {
  public :
   ExtensionSortingEnsureValidOrdinals() {}
   virtual ~ExtensionSortingEnsureValidOrdinals() {}
@@ -542,22 +545,25 @@ class ExtensionSortingEnsureValidOrdinals
 
     // Give ext1 invalid ordinals and then check that EnsureValidOrdinals fixes
     // them.
-    extension_sorting->SetAppLaunchOrdinal(ext1_->id(),
+    extension_sorting->SetAppLaunchOrdinal(extension1()->id(),
                                            syncer::StringOrdinal());
-    extension_sorting->SetPageOrdinal(ext1_->id(), syncer::StringOrdinal());
+    extension_sorting->SetPageOrdinal(extension1()->id(),
+                                      syncer::StringOrdinal());
 
-    extension_sorting->EnsureValidOrdinals(ext1_->id(),
+    extension_sorting->EnsureValidOrdinals(extension1()->id(),
                                            syncer::StringOrdinal());
 
-    EXPECT_TRUE(extension_sorting->GetAppLaunchOrdinal(ext1_->id()).IsValid());
-    EXPECT_TRUE(extension_sorting->GetPageOrdinal(ext1_->id()).IsValid());
+    EXPECT_TRUE(
+        extension_sorting->GetAppLaunchOrdinal(extension1()->id()).IsValid());
+    EXPECT_TRUE(
+        extension_sorting->GetPageOrdinal(extension1()->id()).IsValid());
   }
 };
 TEST_F(ExtensionSortingEnsureValidOrdinals,
        ExtensionSortingEnsureValidOrdinals) {}
 
 class ExtensionSortingPageOrdinalMapping
-    : public extensions::ExtensionPrefsPrepopulatedTest {
+    : public extensions::PrefsPrepopulatedTestBase {
  public:
   ExtensionSortingPageOrdinalMapping() {}
   virtual ~ExtensionSortingPageOrdinalMapping() {}
@@ -617,7 +623,7 @@ TEST_F(ExtensionSortingPageOrdinalMapping,
        ExtensionSortingPageOrdinalMapping) {}
 
 class ExtensionSortingPreinstalledAppsBase
-    : public extensions::ExtensionPrefsPrepopulatedTest {
+    : public extensions::PrefsPrepopulatedTestBase {
  public:
   ExtensionSortingPreinstalledAppsBase() {
     DictionaryValue simple_dict;

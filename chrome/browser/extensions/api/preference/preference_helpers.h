@@ -8,7 +8,7 @@
 #include <string>
 
 #include "chrome/common/extensions/permissions/permission_set.h"
-#include "chrome/browser/extensions/extension_prefs_scope.h"
+#include "extensions/browser/extension_prefs_scope.h"
 
 class Profile;
 

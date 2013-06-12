@@ -43,6 +43,10 @@ class ExtensionScopedPrefs {
       const std::string& extension_id,
       const std::string& pref_key,
       const base::DictionaryValue** out_value) const = 0;
+
+  // Returns true if the prefs contain an entry for an extension with id
+  // |extension_id|.
+  virtual bool HasPrefForExtension(const std::string& extension_id) const = 0;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SCOPED_PREFS_H_

@@ -13,8 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
-#include "chrome/browser/extensions/extension_prefs_scope.h"
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/extensions/extension.h"
@@ -32,6 +30,7 @@ class PrefRegistrySyncable;
 }
 
 namespace extensions {
+class ContentSettingsStore;
 class ExtensionPrefsUninstallExtension;
 class URLPatternSet;
 
@@ -50,8 +49,7 @@ class URLPatternSet;
 //       preference. Extension-controlled preferences are stored in
 //       PrefValueStore::extension_prefs(), which this class populates and
 //       maintains as the underlying extensions change.
-class ExtensionPrefs : public ContentSettingsStore::Observer,
-                       public ExtensionScopedPrefs,
+class ExtensionPrefs : public ExtensionScopedPrefs,
                        public BrowserContextKeyedService {
  public:
   // Key name for a preference that keeps track of per-extension settings. This
@@ -152,9 +150,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
 
   virtual ~ExtensionPrefs();
 
-  // BrowserContextKeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
-
   // Convenience function to get the ExtensionPrefs for a Profile.
   static ExtensionPrefs* Get(Profile* profile);
 
@@ -221,6 +216,9 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
       const std::string& extension_id,
       const std::string& pref_key,
       const base::DictionaryValue** out_value) const OVERRIDE;
+
+  virtual bool HasPrefForExtension(const std::string& extension_id) const
+      OVERRIDE;
 
   // Did the extension ask to escalate its permission during an upgrade?
   bool DidExtensionEscalatePermissions(const std::string& id);
@@ -425,40 +423,9 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // launcher by drag and dropping it.
   void SetAppDraggedByUser(const std::string& extension_id);
 
-  // Sets a preference value that is controlled by the extension. In other
-  // words, this is not a pref value *about* the extension but something
-  // global the extension wants to override.
-  // Takes ownership of |value|.
-  void SetExtensionControlledPref(const std::string& extension_id,
-                                  const std::string& pref_key,
-                                  ExtensionPrefsScope scope,
-                                  base::Value* value);
-
-  void RemoveExtensionControlledPref(const std::string& extension_id,
-                                     const std::string& pref_key,
-                                     ExtensionPrefsScope scope);
-
-  // Returns true if currently no extension with higher precedence controls the
-  // preference.
-  bool CanExtensionControlPref(const std::string& extension_id,
-                               const std::string& pref_key,
-                               bool incognito);
-
-  // Returns true if extension |extension_id| currently controls the
-  // preference. If |from_incognito| is not NULL, looks at incognito preferences
-  // first, and |from_incognito| is set to true if the effective pref value is
-  // coming from the incognito preferences, false if it is coming from the
-  // normal ones.
-  bool DoesExtensionControlPref(const std::string& extension_id,
-                                const std::string& pref_key,
-                                bool* from_incognito);
-
   // Returns true if there is an extension which controls the preference value
   //  for |pref_key| *and* it is specific to incognito mode.
   bool HasIncognitoPrefValue(const std::string& pref_key);
-
-  // Clears incognito session-only content settings for all extensions.
-  void ClearIncognitoSessionOnlyContentSettings();
 
   // Returns the creation flags mask for the extension.
   int GetCreationFlags(const std::string& extension_id) const;
@@ -479,6 +446,8 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   base::Time GetInstallTime(const std::string& extension_id) const;
 
   static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  bool extensions_disabled() { return extensions_disabled_; }
 
   ContentSettingsStore* content_settings_store() {
     return content_settings_store_.get();
@@ -527,10 +496,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
                  scoped_ptr<TimeProvider> time_provider,
                  bool extensions_disabled);
 
-  // extensions::ContentSettingsStore::Observer methods:
-  virtual void OnContentSettingChanged(const std::string& extension_id,
-                                       bool incognito) OVERRIDE;
-
   // Converts absolute paths in the pref to paths relative to the
   // install_directory_.
   void MakePathsRelative();
@@ -578,11 +543,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // Returns an immutable dictionary for extension |id|'s prefs, or NULL if it
   // doesn't exist.
   const base::DictionaryValue* GetExtensionPref(const std::string& id) const;
-
-  // Loads the preferences controlled by the specified extension from their
-  // dictionary and sets them in the |pref_value_map_|.
-  void LoadExtensionControlledPrefs(const std::string& id,
-                                    ExtensionPrefsScope scope);
 
   // Fix missing preference entries in the extensions that are were introduced
   // in a later Chrome version.

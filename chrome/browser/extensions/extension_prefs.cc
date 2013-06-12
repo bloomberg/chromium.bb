@@ -11,6 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/value_conversions.h"
 #include "chrome/browser/extensions/admin_policy.h"
+#include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
+#include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_prefs_factory.h"
@@ -29,6 +31,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/url_pattern.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -48,7 +51,7 @@ namespace extensions {
 
 namespace {
 
-// Additional preferences keys
+// Additional preferences keys, which are not needed by external clients.
 
 // True if this extension is running. Note this preference stops getting updated
 // during Chrome shutdown (and won't be updated on a browser crash) and so can
@@ -176,21 +179,6 @@ const char kPrefFromBookmark[] = "from_bookmark";
 // default apps.
 const char kPrefWasInstalledByDefault[] = "was_installed_by_default";
 
-// A preference that contains any extension-controlled preferences.
-const char kPrefPreferences[] = "preferences";
-
-// A preference that contains any extension-controlled incognito preferences.
-const char kPrefIncognitoPreferences[] = "incognito_preferences";
-
-// A preference that contains any extension-controlled regular-only preferences.
-const char kPrefRegularOnlyPreferences[] = "regular_only_preferences";
-
-// A preference that contains extension-set content settings.
-const char kPrefContentSettings[] = "content_settings";
-
-// A preference that contains extension-set content settings.
-const char kPrefIncognitoContentSettings[] = "incognito_content_settings";
-
 // Key for Geometry Cache preference.
 const char kPrefGeometryCache[] = "geometry_cache";
 
@@ -227,60 +215,8 @@ class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
   DISALLOW_COPY_AND_ASSIGN(ScopedExtensionPrefUpdate);
 };
 
-// Provider of write access to a dictionary storing extension controlled prefs.
-class ScopedExtensionControlledPrefUpdate : public ScopedExtensionPrefUpdate {
- public:
-  // |incognito_or_regular_path| indicates the sub-path where the
-  // extension controlled preferences are stored. This has to be a persistent
-  // scope (i.e. one of kPrefPreferences, kPrefRegularOnlyPreferences or
-  // kPrefIncognitoPreferences).
-  ScopedExtensionControlledPrefUpdate(
-      PrefService* service,
-      const std::string& extension_id,
-      const std::string& incognito_or_regular_path)
-      : ScopedExtensionPrefUpdate(service, extension_id),
-        incognito_or_regular_path_(incognito_or_regular_path) {}
-
-  virtual ~ScopedExtensionControlledPrefUpdate() {
-  }
-
-  // ScopedExtensionPrefUpdate overrides:
-  virtual DictionaryValue* Get() OVERRIDE {
-    DictionaryValue* dict = ScopedExtensionPrefUpdate::Get();
-    DictionaryValue* preferences = NULL;
-    if (!dict->GetDictionary(incognito_or_regular_path_, &preferences)) {
-      preferences = new DictionaryValue;
-      dict->SetWithoutPathExpansion(incognito_or_regular_path_, preferences);
-    }
-    return preferences;
-  }
-
- private:
-  const std::string incognito_or_regular_path_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedExtensionControlledPrefUpdate);
-};
-
 std::string JoinPrefs(const std::string& parent, const char* child) {
   return parent + "." + child;
-}
-
-bool ScopeToPrefKey(ExtensionPrefsScope scope, std::string* result) {
-  switch (scope) {
-    case kExtensionPrefsScopeRegular:
-      *result = kPrefPreferences;
-      return true;
-    case kExtensionPrefsScopeRegularOnly:
-      *result = kPrefRegularOnlyPreferences;
-      return true;
-    case kExtensionPrefsScopeIncognitoPersistent:
-      *result = kPrefIncognitoPreferences;
-      return true;
-    case kExtensionPrefsScopeIncognitoSessionOnly:
-      return false;
-  }
-  NOTREACHED();
-  return false;
 }
 
 // Checks if kPrefBlacklist is set to true in the DictionaryValue.
@@ -398,13 +334,6 @@ ExtensionPrefs* ExtensionPrefs::Create(
 }
 
 ExtensionPrefs::~ExtensionPrefs() {
-}
-
-void ExtensionPrefs::Shutdown() {
-  // It's safe to do this for any profile because the regular profile going away
-  // implies its incognito profile going away.
-  if (!extensions_disabled_)
-    ClearIncognitoSessionOnlyContentSettings();
 }
 
 // static
@@ -565,6 +494,11 @@ bool ExtensionPrefs::ReadPrefAsDictionary(
     *out_value = out;
 
   return true;
+}
+
+bool ExtensionPrefs::HasPrefForExtension(
+    const std::string& extension_id) const {
+  return GetExtensionPref(extension_id) != NULL;
 }
 
 bool ExtensionPrefs::ReadPrefAsURLPatternSet(const std::string& extension_id,
@@ -1498,22 +1432,6 @@ void ExtensionPrefs::SetAppDraggedByUser(const std::string& extension_id) {
                       Value::CreateBooleanValue(true));
 }
 
-void ExtensionPrefs::OnContentSettingChanged(
-    const std::string& extension_id,
-    bool incognito) {
-  if (incognito) {
-    UpdateExtensionPref(
-        extension_id, kPrefIncognitoContentSettings,
-        content_settings_store_->GetSettingsForExtension(
-            extension_id, kExtensionPrefsScopeIncognitoPersistent));
-  } else {
-    UpdateExtensionPref(
-        extension_id, kPrefContentSettings,
-        content_settings_store_->GetSettingsForExtension(
-            extension_id, kExtensionPrefsScopeRegular));
-  }
-}
-
 bool ExtensionPrefs::IsFromWebStore(
     const std::string& extension_id) const {
   const DictionaryValue* dictionary = GetExtensionPref(extension_id);
@@ -1629,25 +1547,6 @@ void ExtensionPrefs::FixMissingPrefs(const ExtensionIdList& extension_ids) {
   }
 }
 
-void ExtensionPrefs::LoadExtensionControlledPrefs(
-    const std::string& extension_id,
-    ExtensionPrefsScope scope) {
-  std::string scope_string;
-  bool success = ScopeToPrefKey(scope, &scope_string);
-  DCHECK(success);
-  std::string key = extension_id + "." + scope_string;
-  const DictionaryValue* preferences = NULL;
-  // First try the regular lookup.
-  const DictionaryValue* source_dict = prefs_->GetDictionary(kExtensionsPref);
-  if (!source_dict->GetDictionary(key, &preferences))
-    return;
-
-  for (DictionaryValue::Iterator i(*preferences); !i.IsAtEnd(); i.Advance()) {
-    extension_pref_value_map_->SetExtensionPref(
-        extension_id, i.key(), scope, i.value().DeepCopy());
-  }
-}
-
 void ExtensionPrefs::InitPrefStore() {
   if (extensions_disabled_) {
     extension_pref_value_map_->NotifyInitializationCompleted();
@@ -1672,120 +1571,9 @@ void ExtensionPrefs::InitPrefStore() {
   MigrateDisableReasons(extension_ids);
   extension_sorting_->Initialize(extension_ids);
 
-  // Store extension controlled preference values in the
-  // |extension_pref_value_map_|, which then informs the subscribers
-  // (ExtensionPrefStores) about the winning values.
-  for (ExtensionIdList::iterator ext_id = extension_ids.begin();
-       ext_id != extension_ids.end(); ++ext_id) {
-    extension_pref_value_map_->RegisterExtension(
-        *ext_id,
-        GetInstallTime(*ext_id),
-        !IsExtensionDisabled(*ext_id));
-    content_settings_store_->RegisterExtension(
-        *ext_id,
-        GetInstallTime(*ext_id),
-        !IsExtensionDisabled(*ext_id));
-
-    // Set regular extension controlled prefs.
-    LoadExtensionControlledPrefs(*ext_id, kExtensionPrefsScopeRegular);
-    // Set incognito extension controlled prefs.
-    LoadExtensionControlledPrefs(*ext_id,
-                                 kExtensionPrefsScopeIncognitoPersistent);
-    // Set regular-only extension controlled prefs.
-    LoadExtensionControlledPrefs(*ext_id, kExtensionPrefsScopeRegularOnly);
-
-    // Set content settings.
-    const DictionaryValue* extension_prefs = GetExtensionPref(*ext_id);
-    DCHECK(extension_prefs);
-    const ListValue* content_settings = NULL;
-    if (extension_prefs->GetList(kPrefContentSettings,
-                                 &content_settings)) {
-      content_settings_store_->SetExtensionContentSettingFromList(
-          *ext_id, content_settings,
-          kExtensionPrefsScopeRegular);
-    }
-    if (extension_prefs->GetList(kPrefIncognitoContentSettings,
-                                 &content_settings)) {
-      content_settings_store_->SetExtensionContentSettingFromList(
-          *ext_id, content_settings,
-          kExtensionPrefsScopeIncognitoPersistent);
-    }
-  }
+  PreferenceAPI::InitExtensionControlledPrefs(this, extension_pref_value_map_);
 
   extension_pref_value_map_->NotifyInitializationCompleted();
-}
-
-void ExtensionPrefs::SetExtensionControlledPref(
-    const std::string& extension_id,
-    const std::string& pref_key,
-    ExtensionPrefsScope scope,
-    Value* value) {
-#ifndef NDEBUG
-  const PrefService::Preference* pref =
-      pref_service()->FindPreference(pref_key.c_str());
-  DCHECK(pref) << "Extension controlled preference key " << pref_key
-               << " not registered.";
-  DCHECK_EQ(pref->GetType(), value->GetType())
-      << "Extension controlled preference " << pref_key << " has wrong type.";
-#endif
-
-  std::string scope_string;
-  // ScopeToPrefKey() returns false if the scope is not persisted.
-  if (ScopeToPrefKey(scope, &scope_string)) {
-    // Also store in persisted Preferences file to recover after a
-    // browser restart.
-    ScopedExtensionControlledPrefUpdate update(prefs_, extension_id,
-                                               scope_string);
-    update->SetWithoutPathExpansion(pref_key, value->DeepCopy());
-  }
-
-  extension_pref_value_map_->SetExtensionPref(
-      extension_id, pref_key, scope, value);
-}
-
-void ExtensionPrefs::RemoveExtensionControlledPref(
-    const std::string& extension_id,
-    const std::string& pref_key,
-    ExtensionPrefsScope scope) {
-  DCHECK(pref_service()->FindPreference(pref_key.c_str()))
-      << "Extension controlled preference key " << pref_key
-      << " not registered.";
-
-  std::string scope_string;
-  // ScopeToPrefKey() returns false if the scope is not persisted.
-  if (ScopeToPrefKey(scope, &scope_string)) {
-    // Also store in persisted Preferences file to recover after a
-    // browser restart.
-    ScopedExtensionControlledPrefUpdate update(prefs_, extension_id,
-                                               scope_string);
-    update->RemoveWithoutPathExpansion(pref_key, NULL);
-  }
-
-  extension_pref_value_map_->RemoveExtensionPref(extension_id, pref_key, scope);
-}
-
-bool ExtensionPrefs::CanExtensionControlPref(const std::string& extension_id,
-                                             const std::string& pref_key,
-                                             bool incognito) {
-  DCHECK(pref_service()->FindPreference(pref_key.c_str()))
-      << "Extension controlled preference key " << pref_key
-      << " not registered.";
-
-  return extension_pref_value_map_->CanExtensionControlPref(extension_id,
-                                                            pref_key,
-                                                            incognito);
-}
-
-bool ExtensionPrefs::DoesExtensionControlPref(const std::string& extension_id,
-                                              const std::string& pref_key,
-                                              bool* from_incognito) {
-  DCHECK(pref_service()->FindPreference(pref_key.c_str()))
-      << "Extension controlled preference key " << pref_key
-      << " not registered.";
-
-  return extension_pref_value_map_->DoesExtensionControlPref(extension_id,
-                                                             pref_key,
-                                                             from_incognito);
 }
 
 bool ExtensionPrefs::HasIncognitoPrefValue(const std::string& pref_key) {
@@ -1794,17 +1582,6 @@ bool ExtensionPrefs::HasIncognitoPrefValue(const std::string& pref_key) {
                                                    true,
                                                    &has_incognito_pref_value);
   return has_incognito_pref_value;
-}
-
-void ExtensionPrefs::ClearIncognitoSessionOnlyContentSettings() {
-  ExtensionIdList extension_ids;
-  GetExtensions(&extension_ids);
-  for (ExtensionIdList::iterator ext_id = extension_ids.begin();
-       ext_id != extension_ids.end(); ++ext_id) {
-    content_settings_store_->ClearContentSettingsForExtension(
-        *ext_id,
-        kExtensionPrefsScopeIncognitoSessionOnly);
-  }
 }
 
 URLPatternSet ExtensionPrefs::GetAllowedInstallSites() {
@@ -1881,7 +1658,6 @@ ExtensionPrefs::ExtensionPrefs(
       extensions_disabled_(extensions_disabled) {
   MakePathsRelative();
   InitPrefStore();
-  content_settings_store_->AddObserver(this);
 }
 
 void ExtensionPrefs::SetNeedsStorageGarbageCollection(bool value) {
@@ -2016,11 +1792,13 @@ void ExtensionPrefs::FinishExtensionInfoPrefs(
     const syncer::StringOrdinal& suggested_page_ordinal,
     DictionaryValue* extension_dict) {
   // Reinitializes various preferences with empty dictionaries.
-  extension_dict->Set(kPrefPreferences, new DictionaryValue());
-  extension_dict->Set(kPrefIncognitoPreferences, new DictionaryValue());
-  extension_dict->Set(kPrefRegularOnlyPreferences, new DictionaryValue());
-  extension_dict->Set(kPrefContentSettings, new ListValue());
-  extension_dict->Set(kPrefIncognitoContentSettings, new ListValue());
+  extension_dict->Set(pref_names::kPrefPreferences, new DictionaryValue);
+  extension_dict->Set(pref_names::kPrefIncognitoPreferences,
+                      new DictionaryValue);
+  extension_dict->Set(pref_names::kPrefRegularOnlyPreferences,
+                      new DictionaryValue);
+  extension_dict->Set(pref_names::kPrefContentSettings, new ListValue);
+  extension_dict->Set(pref_names::kPrefIncognitoContentSettings, new ListValue);
 
   // If this point has been reached, any pending installs should be considered
   // out of date.
