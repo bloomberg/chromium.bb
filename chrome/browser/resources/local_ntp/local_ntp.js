@@ -35,12 +35,12 @@ var CLASSES = {
   CUSTOM_THEME: 'custom-theme',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
   DOMAIN: 'mv-domain',
-  FAKEBOX_ANIMATE: 'fakebox-animate', // triggers fakebox animation
+  FAKEBOX_DISABLE: 'fakebox-disable', // Makes fakebox non-interactive
   FAKEBOX_FOCUS: 'fakebox-focused', // Applies focus styles to the fakebox
   FAVICON: 'mv-favicon',
   HIDE_BLACKLIST_BUTTON: 'mv-x-hide', // hides blacklist button during animation
+  HIDE_FAKEBOX_AND_LOGO: 'hide-fakebox-logo',
   HIDE_NOTIFICATION: 'mv-notice-hide',
-  HIDE_NTP: 'hide-ntp', // hides NTP and disables scrollbars
   HIDE_TILE: 'mv-tile-hide', // hides tiles on small browser width
   HOVERED: 'hovered',
   // Vertically centers the most visited section for a non-Google provided page
@@ -56,9 +56,6 @@ var CLASSES = {
   SUGGESTIONS_BOX: 'suggestions-box',
   THUMBNAIL: 'mv-thumb',
   THUMBNAIL_MASK: 'mv-mask',
-  // Applied when user types. Makes fakebox non-interactive and hides
-  // scrollbars. Removed on ESC.
-  USER_TYPED: 'user-typed',
   TILE: 'mv-tile',
   TITLE: 'mv-title'
 };
@@ -100,6 +97,18 @@ var KEYCODE = {
   ENTER: 13,
   ESC: 27,
   UP_ARROW: 38
+};
+
+
+/**
+ * Enum for the state of the NTP when it is disposed.
+ * @enum {number}
+ * @const
+ */
+var NTP_DISPOSE_STATE = {
+  NONE: 0,  // Preserve the NTP appearance and functionality
+  DISABLE_FAKEBOX: 1,
+  HIDE_FAKEBOX_AND_LOGO: 2
 };
 
 // =============================================================================
@@ -188,6 +197,20 @@ var userInitiatedMostVisitedChange = false;
  * @type {Object}
  */
 var ntpApiHandle;
+
+
+/**
+ * The state of the NTP when a query is entered into the Omnibox.
+ * @type {NTP_DISPOSE_STATE}
+ */
+var omniboxInputBehavior = NTP_DISPOSE_STATE.HIDE_FAKEBOX_AND_LOGO;
+
+
+/**
+ * The state of the NTP when a query is entered into the Fakebox.
+ * @type {NTP_DISPOSE_STATE}
+ */
+var fakeboxInputBehavior = NTP_DISPOSE_STATE.HIDE_FAKEBOX_AND_LOGO;
 
 
 /**
@@ -311,9 +334,6 @@ function Tile(elem, opt_rid) {
  * @private
  */
 function onThemeChange() {
-  if (!isNtpVisible())
-    return;
-
   var info = ntpApiHandle.themeBackgroundInfo;
   if (!info)
     return;
@@ -682,33 +702,45 @@ function getTileByRid(rid) {
 
 
 /**
- * Handles when the user first types by animating or disabling the fakebox and
- * hiding the scrollbars.
+ * Handles new input by disposing the NTP, according to where the input was
+ * entered.
  */
-function updateNtpOnUserInput() {
-  document.body.classList.add(CLASSES.USER_TYPED);
-  if (fakebox && isFakeboxFocused() &&
-      !document.body.classList.contains(CLASSES.FAKEBOX_ANIMATE)) {
-    // The user has typed in the fakebox - initiate the fakebox animation,
-    // which upon termination will hide the NTP.
+function onInputStart() {
+  if (fakebox && isFakeboxFocused()) {
     setFakeboxFocus(false);
-    fakebox.addEventListener('webkitTransitionEnd', fakeboxAnimationDone);
-    document.body.classList.add(CLASSES.FAKEBOX_ANIMATE);
+    disposeNtp(true);
+  } else if (!isFakeboxFocused()) {
+    disposeNtp(false);
   }
 }
 
 
 /**
+ * Disposes the NTP, according to where the input was entered.
+ * @param {boolean} wasFakeboxInput True if the input was in the fakebox.
+ */
+function disposeNtp(wasFakeboxInput) {
+  var behavior = wasFakeboxInput ? fakeboxInputBehavior : omniboxInputBehavior;
+  if (behavior == NTP_DISPOSE_STATE.DISABLE_FAKEBOX)
+    setFakeboxActive(false);
+  else if (behavior == NTP_DISPOSE_STATE.HIDE_FAKEBOX_AND_LOGO)
+    setFakeboxAndLogoVisibility(false);
+}
+
+
+/**
  * Restores the NTP (destroys the activeBox if exists, reloads the custom
- * theme, shows the top visible bars, re-enables the fakebox and scrollbars).
+ * theme, shows the top visible bars, re-enables the fakebox and unhides all
+ * NTP elements.
  */
 function restoreNtp() {
   hideActiveSuggestions();
   searchboxApiHandle.showBars();
-  document.body.classList.remove(CLASSES.USER_TYPED);
-  document.body.classList.remove(CLASSES.HIDE_NTP);
+  setFakeboxActive(true);
+  setFakeboxAndLogoVisibility(true);
   onThemeChange();
 }
+
 
 /**
  * Clears the custom theme (if any).
@@ -720,19 +752,12 @@ function clearCustomTheme() {
 
 
 /**
- * @return {boolean} True if the NTP is visible.
- */
-function isNtpVisible() {
-  return !document.body.classList.contains(CLASSES.HIDE_NTP);
-}
-
-
-/**
  * @param {boolean} focus True to focus the fakebox.
  */
 function setFakeboxFocus(focus) {
   return document.body.classList.toggle(CLASSES.FAKEBOX_FOCUS, focus);
 }
+
 
 /**
  * @return {boolean} True if the fakebox has focus.
@@ -743,26 +768,28 @@ function isFakeboxFocused() {
 
 
 /**
+ * @param {boolean} enable True to enable the fakebox.
+ */
+function setFakeboxActive(enable) {
+  document.body.classList.toggle(CLASSES.FAKEBOX_DISABLE, !enable);
+}
+
+
+/**
  * @param {!Event} event The click event.
  * @return {boolean} True if the click occurred in an enabled fakebox.
  */
 function isFakeboxClick(event) {
   return fakebox.contains(event.target) &&
-      !document.body.classList.contains(CLASSES.USER_TYPED);
+      !document.body.classList.contains(CLASSES.FAKEBOX_DISABLE);
 }
 
 
 /**
- * Cleans up the fakebox animation, hides the NTP, and shows suggestions.
- * @param {!Event} e The webkitTransitionEnd event.
+ * @param {boolean} show True to show the fakebox and logo.
  */
-function fakeboxAnimationDone(event) {
-  if (event.propertyName == '-webkit-transform') {
-    document.body.classList.add(CLASSES.HIDE_NTP);
-    clearCustomTheme();
-    document.body.classList.remove(CLASSES.FAKEBOX_ANIMATE);
-    fakebox.removeEventListener('webkitTransitionEnd', fakeboxAnimationDone);
-  }
+function setFakeboxAndLogoVisibility(show) {
+  document.body.classList.toggle(CLASSES.HIDE_FAKEBOX_AND_LOGO, !show);
 }
 
 // =============================================================================
@@ -1480,16 +1507,11 @@ function updateSuggestions() {
   }
   var inputValue = searchboxApiHandle.value;
 
-  // Update the NTP as necessary if input has made it into the omnibox or the
-  // input is undefined, which signifies a sensitive query.
-  if (inputValue != '' && !document.body.classList.contains(CLASSES.USER_TYPED))
-    updateNtpOnUserInput();
-  // Re-enable the fakebox if the user typed in the omnibox then backspaced away
-  // their query.
-  else if (inputValue == '' && isNtpVisible() &&
-      document.body.classList.contains(CLASSES.USER_TYPED)) {
+  // Update the NTP on new or empty input.
+  if (inputValue != '' && lastInputValue == '')
+    onInputStart();
+  else if (inputValue == '')
     restoreNtp();
-  }
 
   if (inputValue != '' && suggestions.length) {
     pendingBox = new SuggestionsBox(inputValue,
@@ -1754,6 +1776,12 @@ function init() {
   ntpApiHandle = topLevelHandle.newTabPage;
   ntpApiHandle.onthemechange = onThemeChange;
   ntpApiHandle.onmostvisitedchange = onMostVisitedChange;
+
+  ntpApiHandle.oninputstart = onInputStart;
+  ntpApiHandle.oninputcancel = restoreNtp;
+
+  if (ntpApiHandle.isInputInProgress)
+    onInputStart();
 
   onThemeChange();
   onMostVisitedChange();

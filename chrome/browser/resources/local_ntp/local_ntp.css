@@ -11,10 +11,6 @@ body {
   overflow-x: hidden;
 }
 
-body.user-typed {
-  overflow: hidden;
-}
-
 #active-suggestions-container {
   position: absolute;
   width: 100%;
@@ -35,35 +31,18 @@ body.user-typed {
   top: -webkit-calc(50% - 155px);
 }
 
-body.hide-ntp #ntp-contents,
-body.hide-ntp #attribution {
-  display: none;
-}
-
-body.user-typed #fakebox {
-  border-color: rgba(185, 185, 185, 0.5);
-  border-top-color: rgba(160, 160, 160, 0.5);
-  cursor: default;
-}
-
-body.user-typed #fakebox > input {
-  cursor: default;
-}
-
-body.fakebox-animate #ntp-contents,
-body.fakebox-animate #attribution {
-  -webkit-transition: opacity 100ms linear;
-  opacity: 0.2;
-}
-
-/* Hide suggestions during the fakebox animation. */
-body.fakebox-animate #active-suggestions-container {
-  height: 0;
+body.hide-fakebox-logo #logo,
+body.hide-fakebox-logo #fakebox {
   visibility: hidden;
 }
 
-body.fakebox-animate .suggestion-contents {
-  visibility: hidden;
+body.fakebox-disable #fakebox {
+  border-color: rgb(238, 238, 238);
+  cursor: default;
+}
+
+body.fakebox-disable #fakebox > input {
+  cursor: default;
 }
 
 #logo {
@@ -107,10 +86,6 @@ body.custom-theme #logo {
 
 body.fakebox-focused #fakebox {
   border: 1px solid rgb(77, 144, 254);
-}
-
-body.fakebox-animate #fakebox {
-  -webkit-transform: translateY(-100px);
 }
 
 #fakebox > input {
