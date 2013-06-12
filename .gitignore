@@ -225,6 +225,7 @@ v8.log
 /third_party/llvm-allocated-type
 /third_party/llvm-build
 /third_party/lss
+/third_party/mesa/src
 /third_party/mingw-w64
 /third_party/mkl
 /third_party/mt19937ar
