@@ -67,6 +67,7 @@ crbug.com/247466 [ Win Debug ] inspector/debugger/live-edit-breakpoints.html [ S
 crbug.com/247466 [ Win Debug ] inspector/debugger/dom-breakpoints.html [ Skip ]
 crbug.com/247466 [ Win Debug ] inspector/debugger/script-formatter-breakpoints.html [ Skip ]
 crbug.com/247466 [ Win Debug ] inspector/profiler/heap-snapshot-comparison-expansion-preserved-when-sorting.html [ Skip ]
+crbug.com/249087 [ Win Debug ] inspector/debugger/debugger-activation-crash2.html [ Pass Failure ]
 
 # Inspector IndexedDB tests are slow in Release as well.
 crbug.com/246190 [ Release ] http/tests/inspector/indexeddb [ Slow ]
@@ -1696,9 +1697,7 @@ crbug.com/247982 [ Win7 Debug ] virtual/deferred/fast/images/exif-orientation-cs
 crbug.com/247982 [ Win7 Debug ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 crbug.com/247984 [ Win7 Debug ] virtual/gpu/compositedscrolling/overflow/build-paint-order-lists.html [ Timeout Pass ]
 crbug.com/247984 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-composite-image.html [ Timeout Pass ]
-# To be rebaselined, then the following line should be uncommented and the subsequent line deleted:
-# crbug.com/247984 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ Timeout ImageOnlyFailure ]
-crbug.com/247984 virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ Timeout ImageOnlyFailure ]
+crbug.com/247984 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-composite-transformclip.html [ Timeout ImageOnlyFailure ]
 webkit.org/b/60109 [ Release ] inspector/elements/edit-dom-actions.html [ Slow ]
 crbug.com/248062 css3/compositing/effect-background-blend-mode-stacking.html [ ImageOnlyFailure Pass ]
 crbug.com/248063 [ Debug ] plugins/plugin-clip-subframe.html [ Pass Failure ]
