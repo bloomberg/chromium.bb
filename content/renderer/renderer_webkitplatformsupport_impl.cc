@@ -39,6 +39,7 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_hardware_config.h"
+#include "net/base/net_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
@@ -901,6 +902,14 @@ WebKit::WebGraphicsContext3DProvider* RendererWebKitPlatformSupportImpl::
 WebKit::WebCompositorSupport*
 RendererWebKitPlatformSupportImpl::compositorSupport() {
   return &compositor_support_;
+}
+
+//------------------------------------------------------------------------------
+
+WebKit::WebString RendererWebKitPlatformSupportImpl::convertIDNToUnicode(
+    const WebKit::WebString& host,
+    const WebKit::WebString& languages) {
+  return net::IDNToUnicode(host.utf8(), languages.utf8());
 }
 
 }  // namespace content

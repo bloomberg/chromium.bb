@@ -4498,6 +4498,10 @@ void RenderViewImpl::willStartUsingPeerConnectionHandler(
 #endif
 }
 
+WebKit::WebString RenderViewImpl::acceptLanguages() {
+  return WebString::fromUTF8(renderer_preferences_.accept_languages);
+}
+
 WebKit::WebString RenderViewImpl::userAgentOverride(
     WebKit::WebFrame* frame,
     const WebKit::WebURL& url) {

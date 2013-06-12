@@ -120,6 +120,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual WebKit::WebGraphicsContext3DProvider*
       createSharedOffscreenGraphicsContext3DProvider();
   virtual WebKit::WebCompositorSupport* compositorSupport();
+  virtual WebKit::WebString convertIDNToUnicode(
+      const WebKit::WebString& host, const WebKit::WebString& languages);
 
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call

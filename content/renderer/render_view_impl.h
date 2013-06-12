@@ -686,6 +686,7 @@ class CONTENT_EXPORT RenderViewImpl
       WebKit::WebFrame* targetFrame,
       WebKit::WebSecurityOrigin targetOrigin,
       WebKit::WebDOMMessageEvent event) OVERRIDE;
+  virtual WebKit::WebString acceptLanguages() OVERRIDE;
   virtual WebKit::WebString userAgentOverride(
       WebKit::WebFrame* frame,
       const WebKit::WebURL& url) OVERRIDE;

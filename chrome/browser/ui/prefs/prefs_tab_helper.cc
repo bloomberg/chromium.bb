@@ -416,6 +416,7 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
   if (prefs) {
     base::Closure renderer_callback = base::Bind(
         &PrefsTabHelper::UpdateRendererPreferences, base::Unretained(this));
+    pref_change_registrar_.Add(prefs::kAcceptLanguages, renderer_callback);
     pref_change_registrar_.Add(prefs::kDefaultZoomLevel, renderer_callback);
     pref_change_registrar_.Add(prefs::kEnableDoNotTrack, renderer_callback);
     pref_change_registrar_.Add(prefs::kEnableReferrers, renderer_callback);

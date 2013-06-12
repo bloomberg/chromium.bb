@@ -79,6 +79,7 @@ GetRendererPreferencesSubpixelRenderingEnum(
 void UpdateFromSystemSettings(
     content::RendererPreferences* prefs, Profile* profile) {
   const PrefService* pref_service = profile->GetPrefs();
+  prefs->accept_languages = pref_service->GetString(prefs::kAcceptLanguages);
   prefs->enable_referrers = pref_service->GetBoolean(prefs::kEnableReferrers);
   prefs->enable_do_not_track =
       pref_service->GetBoolean(prefs::kEnableDoNotTrack);

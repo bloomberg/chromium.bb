@@ -110,6 +110,9 @@ struct CONTENT_EXPORT RendererPreferences {
   // being overridden for the current navigation.
   std::string user_agent_override;
 
+  // The accept-languages of the browser, comma-separated.
+  std::string accept_languages;
+
   // Specifies whether the renderer reports frame name changes to the browser
   // process.
   // TODO(fsamuel): This is a short-term workaround to avoid regressing
