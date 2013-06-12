@@ -32,6 +32,7 @@
 #define CSSCalculationValue_h
 
 #include "core/css/CSSParserValues.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
 #include "core/platform/CalculationValue.h"
 #include <wtf/PassOwnPtr.h>
@@ -75,9 +76,10 @@ public:
     virtual void reportMemoryUsage(MemoryObjectInfo*) const = 0;
     virtual Type type() const = 0;
 
-    CalculationCategory category() const { return m_category; }    
+    CalculationCategory category() const { return m_category; }
+    virtual CSSPrimitiveValue::UnitTypes primitiveType() const = 0;
     bool isInteger() const { return m_isInteger; }
-    
+
 protected:
     CSSCalcExpressionNode(CalculationCategory category, bool isInteger)
         : m_category(category)
@@ -88,7 +90,7 @@ protected:
     CalculationCategory m_category;
     bool m_isInteger;
 };
-        
+
 class CSSCalcValue : public CSSValue {
 public:
     static PassRefPtr<CSSCalcValue> create(CSSParserString name, CSSParserValueList*, CalculationPermittedValueRange);

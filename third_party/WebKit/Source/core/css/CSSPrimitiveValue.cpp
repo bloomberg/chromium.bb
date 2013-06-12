@@ -116,7 +116,7 @@ static inline bool isValidCSSUnitTypeForDoubleConversion(CSSPrimitiveValue::Unit
     return false;
 }
 
-static CSSPrimitiveValue::UnitCategory unitCategory(CSSPrimitiveValue::UnitTypes type)
+CSSPrimitiveValue::UnitCategory CSSPrimitiveValue::unitCategory(CSSPrimitiveValue::UnitTypes type)
 {
     // Here we violate the spec (http://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSSPrimitiveValue) and allow conversions
     // between CSS_PX and relative lengths (see cssPixelsPerInch comment in core/css/CSSHelper.h for the topic treatment).
@@ -583,7 +583,7 @@ void CSSPrimitiveValue::setFloatValue(unsigned short, double, ExceptionCode& ec)
     ec = NO_MODIFICATION_ALLOWED_ERR;
 }
 
-static double conversionToCanonicalUnitsScaleFactor(unsigned short unitType)
+double CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(unsigned short unitType)
 {
     double factor = 1.0;
     // FIXME: the switch can be replaced by an array of scale factors.

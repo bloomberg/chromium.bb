@@ -40,15 +40,15 @@ debug('');
 valueSettingTest('10em', '10em', '100px');
 valueSettingTest('20ex', '20ex', '200px');
 valueSettingTest('50%', '50%', '50%');
-valueSettingTest('calc(10px + 20px)', 'calc(10px + 20px)', '30px');
+valueSettingTest('calc(10px + 20px)', 'calc(30px)', '30px');
 valueSettingTest('10em -webkit-each-line', '10em -webkit-each-line', '100px -webkit-each-line');
 valueSettingTest('-webkit-each-line 10em', '10em -webkit-each-line', '100px -webkit-each-line');
 valueSettingTest('20ex -webkit-each-line', '20ex -webkit-each-line', '200px -webkit-each-line');
 valueSettingTest('-webkit-each-line 20ex', '20ex -webkit-each-line', '200px -webkit-each-line');
 valueSettingTest('30% -webkit-each-line', '30% -webkit-each-line', '30% -webkit-each-line');
 valueSettingTest('-webkit-each-line 30%', '30% -webkit-each-line', '30% -webkit-each-line');
-valueSettingTest('calc(10px + 20px) -webkit-each-line', 'calc(10px + 20px) -webkit-each-line', '30px -webkit-each-line');
-valueSettingTest('-webkit-each-line calc(10px + 20px)', 'calc(10px + 20px) -webkit-each-line', '30px -webkit-each-line');
+valueSettingTest('calc(10px + 20px) -webkit-each-line', 'calc(30px) -webkit-each-line', '30px -webkit-each-line');
+valueSettingTest('-webkit-each-line calc(10px + 20px)', 'calc(30px) -webkit-each-line', '30px -webkit-each-line');
 debug('');
 
 defaultValue = '0px'

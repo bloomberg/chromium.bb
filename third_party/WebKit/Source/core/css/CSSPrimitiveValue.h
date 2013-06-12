@@ -147,6 +147,7 @@ public:
         UResolution,
         UOther
     };
+    static UnitCategory unitCategory(CSSPrimitiveValue::UnitTypes);
 
     bool isAngle() const
     {
@@ -321,6 +322,9 @@ public:
 
     void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
 
+    static UnitTypes canonicalUnitTypeForCategory(UnitCategory);
+    static double conversionToCanonicalUnitsScaleFactor(unsigned short unitType);
+
 private:
     CSSPrimitiveValue(CSSValueID);
     CSSPrimitiveValue(CSSPropertyID);
@@ -347,8 +351,6 @@ private:
     static void create(int); // compile-time guard
     static void create(unsigned); // compile-time guard
     template<typename T> operator T*(); // compile-time guard
-
-    static UnitTypes canonicalUnitTypeForCategory(UnitCategory category);
 
     void init(PassRefPtr<Counter>);
     void init(PassRefPtr<Rect>);
