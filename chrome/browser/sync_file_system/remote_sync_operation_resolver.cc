@@ -33,7 +33,7 @@ bool IsValidCombination(const FileChangeList& local_changes,
 
 }  // namespace
 
-RemoteSyncOperationType
+SyncOperationType
 RemoteSyncOperationResolver::Resolve(const FileChange& remote_file_change,
                                      const FileChangeList& local_changes,
                                      SyncFileType local_file_type,
@@ -52,7 +52,7 @@ RemoteSyncOperationResolver::Resolve(const FileChange& remote_file_change,
               : ResolveForAddDirectory(local_changes, local_file_type);
         case SYNC_FILE_TYPE_UNKNOWN:
           NOTREACHED();
-          return REMOTE_SYNC_OPERATION_FAIL;
+          return SYNC_OPERATION_FAIL;
       }
       break;
     case FileChange::FILE_CHANGE_DELETE:
@@ -68,170 +68,166 @@ RemoteSyncOperationResolver::Resolve(const FileChange& remote_file_change,
               : ResolveForDeleteDirectory(local_changes, local_file_type);
         case SYNC_FILE_TYPE_UNKNOWN:
           NOTREACHED();
-          return REMOTE_SYNC_OPERATION_FAIL;
+          return SYNC_OPERATION_FAIL;
       }
       break;
   }
   NOTREACHED();
-  return REMOTE_SYNC_OPERATION_FAIL;
+  return SYNC_OPERATION_FAIL;
 }
 
-RemoteSyncOperationType
-RemoteSyncOperationResolver::ResolveForAddOrUpdateFile(
+SyncOperationType RemoteSyncOperationResolver::ResolveForAddOrUpdateFile(
     const FileChangeList& local_changes,
     SyncFileType local_file_type) {
   // Invalid combination should never happen.
   if (!IsValidCombination(local_changes, local_file_type, false))
-    return REMOTE_SYNC_OPERATION_FAIL;
+    return SYNC_OPERATION_FAIL;
 
   switch (local_file_type) {
     case SYNC_FILE_TYPE_UNKNOWN:
-      return REMOTE_SYNC_OPERATION_ADD_FILE;
+      return SYNC_OPERATION_ADD_FILE;
     case SYNC_FILE_TYPE_FILE:
       if (local_changes.empty())
-        return REMOTE_SYNC_OPERATION_UPDATE_FILE;
-      return REMOTE_SYNC_OPERATION_CONFLICT;
+        return SYNC_OPERATION_UPDATE_FILE;
+      return SYNC_OPERATION_CONFLICT;
     case SYNC_FILE_TYPE_DIRECTORY:
       // Currently we always prioritize directories over files.
-      return REMOTE_SYNC_OPERATION_RESOLVE_TO_LOCAL;
+      return SYNC_OPERATION_RESOLVE_TO_LOCAL;
   }
-  return REMOTE_SYNC_OPERATION_FAIL;
+  return SYNC_OPERATION_FAIL;
 }
 
-RemoteSyncOperationType
+SyncOperationType
 RemoteSyncOperationResolver::ResolveForAddOrUpdateFileInConflict(
     const FileChangeList& local_changes,
     SyncFileType local_file_type) {
   // Invalid combination should never happen.
   if (!IsValidCombination(local_changes, local_file_type, true))
-    return REMOTE_SYNC_OPERATION_FAIL;
+    return SYNC_OPERATION_FAIL;
 
   switch (local_file_type) {
     case SYNC_FILE_TYPE_UNKNOWN:
-      return REMOTE_SYNC_OPERATION_RESOLVE_TO_REMOTE;
+      return SYNC_OPERATION_RESOLVE_TO_REMOTE;
     case SYNC_FILE_TYPE_FILE:
-      return REMOTE_SYNC_OPERATION_CONFLICT;
+      return SYNC_OPERATION_CONFLICT;
     case SYNC_FILE_TYPE_DIRECTORY:
-      return REMOTE_SYNC_OPERATION_RESOLVE_TO_LOCAL;
+      return SYNC_OPERATION_RESOLVE_TO_LOCAL;
   }
-  return REMOTE_SYNC_OPERATION_FAIL;
+  return SYNC_OPERATION_FAIL;
 }
 
-RemoteSyncOperationType
-RemoteSyncOperationResolver::ResolveForAddDirectory(
+SyncOperationType RemoteSyncOperationResolver::ResolveForAddDirectory(
     const FileChangeList& local_changes,
     SyncFileType local_file_type) {
   // Invalid combination should never happen.
   if (!IsValidCombination(local_changes, local_file_type, false))
-    return REMOTE_SYNC_OPERATION_FAIL;
+    return SYNC_OPERATION_FAIL;
 
   switch (local_file_type) {
     case SYNC_FILE_TYPE_UNKNOWN:
       if (local_changes.empty())
-        return REMOTE_SYNC_OPERATION_ADD_DIRECTORY;
-      return REMOTE_SYNC_OPERATION_RESOLVE_TO_REMOTE;
+        return SYNC_OPERATION_ADD_DIRECTORY;
+      return SYNC_OPERATION_RESOLVE_TO_REMOTE;
     case SYNC_FILE_TYPE_FILE:
-      return REMOTE_SYNC_OPERATION_RESOLVE_TO_REMOTE;
+      return SYNC_OPERATION_RESOLVE_TO_REMOTE;
     case SYNC_FILE_TYPE_DIRECTORY:
-      return REMOTE_SYNC_OPERATION_NONE;
+      return SYNC_OPERATION_NONE;
   }
-  return REMOTE_SYNC_OPERATION_FAIL;
+  return SYNC_OPERATION_FAIL;
 }
 
-RemoteSyncOperationType
+SyncOperationType
 RemoteSyncOperationResolver::ResolveForAddDirectoryInConflict(
     const FileChangeList& local_changes,
     SyncFileType local_file_type) {
   // Invalid combination should never happen.
   if (!IsValidCombination(local_changes, local_file_type, true))
-    return REMOTE_SYNC_OPERATION_FAIL;
+    return SYNC_OPERATION_FAIL;
 
   switch (local_file_type) {
     case SYNC_FILE_TYPE_UNKNOWN:
     case SYNC_FILE_TYPE_FILE:
-      return REMOTE_SYNC_OPERATION_RESOLVE_TO_REMOTE;
+      return SYNC_OPERATION_RESOLVE_TO_REMOTE;
     case SYNC_FILE_TYPE_DIRECTORY:
-      return REMOTE_SYNC_OPERATION_RESOLVE_TO_LOCAL;
+      return SYNC_OPERATION_RESOLVE_TO_LOCAL;
   }
-  return REMOTE_SYNC_OPERATION_FAIL;
+  return SYNC_OPERATION_FAIL;
 }
 
-RemoteSyncOperationType
-RemoteSyncOperationResolver::ResolveForDeleteFile(
+SyncOperationType RemoteSyncOperationResolver::ResolveForDeleteFile(
     const FileChangeList& local_changes,
     SyncFileType local_file_type) {
   // Invalid combination should never happen.
   if (!IsValidCombination(local_changes, local_file_type, false))
-    return REMOTE_SYNC_OPERATION_FAIL;
+    return SYNC_OPERATION_FAIL;
 
   switch (local_file_type) {
     case SYNC_FILE_TYPE_UNKNOWN:
-      return REMOTE_SYNC_OPERATION_DELETE_METADATA;
+      return SYNC_OPERATION_DELETE_METADATA;
     case SYNC_FILE_TYPE_FILE:
       if (local_changes.empty())
-        return REMOTE_SYNC_OPERATION_DELETE_FILE;
-      return REMOTE_SYNC_OPERATION_NONE;
+        return SYNC_OPERATION_DELETE;
+      return SYNC_OPERATION_NONE;
     case SYNC_FILE_TYPE_DIRECTORY:
-      return REMOTE_SYNC_OPERATION_NONE;
+      return SYNC_OPERATION_NONE;
   }
-  return REMOTE_SYNC_OPERATION_FAIL;
+  return SYNC_OPERATION_FAIL;
 }
 
-RemoteSyncOperationType
+SyncOperationType
 RemoteSyncOperationResolver::ResolveForDeleteFileInConflict(
     const FileChangeList& local_changes,
     SyncFileType local_file_type) {
   // Invalid combination should never happen.
   if (!IsValidCombination(local_changes, local_file_type, true))
-    return REMOTE_SYNC_OPERATION_FAIL;
+    return SYNC_OPERATION_FAIL;
 
   switch (local_file_type) {
     case SYNC_FILE_TYPE_UNKNOWN:
-      return REMOTE_SYNC_OPERATION_DELETE_METADATA;
+      return SYNC_OPERATION_DELETE_METADATA;
     case SYNC_FILE_TYPE_FILE:
     case SYNC_FILE_TYPE_DIRECTORY:
-      return REMOTE_SYNC_OPERATION_RESOLVE_TO_LOCAL;
+      return SYNC_OPERATION_RESOLVE_TO_LOCAL;
   }
-  return REMOTE_SYNC_OPERATION_FAIL;
+  return SYNC_OPERATION_FAIL;
 }
 
-RemoteSyncOperationType
-RemoteSyncOperationResolver::ResolveForDeleteDirectory(
+SyncOperationType RemoteSyncOperationResolver::ResolveForDeleteDirectory(
     const FileChangeList& local_changes,
     SyncFileType local_file_type) {
   // Invalid combination should never happen.
   if (!IsValidCombination(local_changes, local_file_type, false))
-    return REMOTE_SYNC_OPERATION_FAIL;
+    return SYNC_OPERATION_FAIL;
 
   switch (local_file_type) {
     case SYNC_FILE_TYPE_UNKNOWN:
-      return REMOTE_SYNC_OPERATION_NONE;
+      return SYNC_OPERATION_NONE;
     case SYNC_FILE_TYPE_FILE:
-      return REMOTE_SYNC_OPERATION_RESOLVE_TO_LOCAL;
+      return SYNC_OPERATION_RESOLVE_TO_LOCAL;
     case SYNC_FILE_TYPE_DIRECTORY:
       if (local_changes.empty())
-        return REMOTE_SYNC_OPERATION_DELETE_DIRECTORY;
-      return REMOTE_SYNC_OPERATION_RESOLVE_TO_LOCAL;
+        return SYNC_OPERATION_DELETE;
+      return SYNC_OPERATION_RESOLVE_TO_LOCAL;
   }
-  return REMOTE_SYNC_OPERATION_FAIL;
+  return SYNC_OPERATION_FAIL;
 }
 
-RemoteSyncOperationType
+SyncOperationType
 RemoteSyncOperationResolver::ResolveForDeleteDirectoryInConflict(
     const FileChangeList& local_changes,
     SyncFileType local_file_type) {
   // Invalid combination should never happen.
   if (!IsValidCombination(local_changes, local_file_type, true))
-    return REMOTE_SYNC_OPERATION_FAIL;
+    return SYNC_OPERATION_FAIL;
 
   switch (local_file_type) {
     case SYNC_FILE_TYPE_UNKNOWN:
-      return REMOTE_SYNC_OPERATION_DELETE_METADATA;
+      return SYNC_OPERATION_DELETE_METADATA;
     case SYNC_FILE_TYPE_FILE:
     case SYNC_FILE_TYPE_DIRECTORY:
-      return REMOTE_SYNC_OPERATION_RESOLVE_TO_LOCAL;
+      return SYNC_OPERATION_RESOLVE_TO_LOCAL;
   }
-  return REMOTE_SYNC_OPERATION_FAIL;
+  return SYNC_OPERATION_FAIL;
 }
 
 }  // namespace sync_file_system

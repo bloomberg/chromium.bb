@@ -2159,6 +2159,8 @@
         'browser/sync_file_system/sync_file_system_service.h',
         'browser/sync_file_system/sync_file_system_service_factory.cc',
         'browser/sync_file_system/sync_file_system_service_factory.h',
+        'browser/sync_file_system/sync_operation_type.cc',
+        'browser/sync_file_system/sync_operation_type.h',
         'browser/sync_file_system/sync_service_state.h',
         'browser/tab_contents/background_contents.cc',
         'browser/tab_contents/background_contents.h',

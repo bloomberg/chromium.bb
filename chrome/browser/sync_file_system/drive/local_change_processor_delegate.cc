@@ -21,7 +21,7 @@ LocalChangeProcessorDelegate::LocalChangeProcessorDelegate(
     const SyncFileMetadata& local_metadata,
     const fileapi::FileSystemURL& url)
     : sync_service_(sync_service),
-      operation_(LOCAL_SYNC_OPERATION_NONE),
+      operation_(SYNC_OPERATION_NONE),
       url_(url),
       local_change_(local_change),
       local_path_(local_path),
@@ -35,7 +35,7 @@ LocalChangeProcessorDelegate::~LocalChangeProcessorDelegate() {}
 void LocalChangeProcessorDelegate::Run(const SyncStatusCallback& callback) {
   // TODO(nhiroki): support directory operations (http://crbug.com/161442).
   DCHECK(IsSyncFSDirectoryOperationEnabled() || !local_change_.IsDirectory());
-  operation_ = LOCAL_SYNC_OPERATION_NONE;
+  operation_ = SYNC_OPERATION_NONE;
 
   has_drive_metadata_ =
       metadata_store()->ReadEntry(url_, &drive_metadata_) == SYNC_STATUS_OK;
@@ -73,7 +73,7 @@ void LocalChangeProcessorDelegate::DidGetOriginRoot(
               drive_metadata_.type())
       : SYNC_FILE_TYPE_UNKNOWN;
 
-  DCHECK_EQ(LOCAL_SYNC_OPERATION_NONE, operation_);
+  DCHECK_EQ(SYNC_OPERATION_NONE, operation_);
   operation_ = LocalSyncOperationResolver::Resolve(
       local_change_,
       has_remote_change_ ? &remote_change_.change : NULL,
@@ -81,39 +81,39 @@ void LocalChangeProcessorDelegate::DidGetOriginRoot(
 
   DVLOG(1) << "ApplyLocalChange for " << url_.DebugString()
            << " local_change:" << local_change_.DebugString()
-           << " ==> operation:" << operation_;
+           << " ==> operation:" << SyncOperationTypeToString(operation_);
 
   switch (operation_) {
-    case LOCAL_SYNC_OPERATION_ADD_FILE:
+    case SYNC_OPERATION_ADD_FILE:
       UploadNewFile(callback);
       return;
-    case LOCAL_SYNC_OPERATION_ADD_DIRECTORY:
+    case SYNC_OPERATION_ADD_DIRECTORY:
       CreateDirectory(callback);
       return;
-    case LOCAL_SYNC_OPERATION_UPDATE_FILE:
+    case SYNC_OPERATION_UPDATE_FILE:
       UploadExistingFile(callback);
       return;
-    case LOCAL_SYNC_OPERATION_DELETE:
+    case SYNC_OPERATION_DELETE:
       Delete(callback);
       return;
-    case LOCAL_SYNC_OPERATION_NONE:
+    case SYNC_OPERATION_NONE:
       callback.Run(SYNC_STATUS_OK);
       return;
-    case LOCAL_SYNC_OPERATION_CONFLICT:
+    case SYNC_OPERATION_CONFLICT:
       HandleConflict(callback);
       return;
-    case LOCAL_SYNC_OPERATION_RESOLVE_TO_LOCAL:
+    case SYNC_OPERATION_RESOLVE_TO_LOCAL:
       ResolveToLocal(callback);
       return;
-    case LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE:
+    case SYNC_OPERATION_RESOLVE_TO_REMOTE:
       ResolveToRemote(callback, remote_file_type);
       return;
-    case LOCAL_SYNC_OPERATION_DELETE_METADATA:
+    case SYNC_OPERATION_DELETE_METADATA:
       DeleteMetadata(base::Bind(
           &LocalChangeProcessorDelegate::DidApplyLocalChange,
           weak_factory_.GetWeakPtr(), callback, google_apis::HTTP_SUCCESS));
       return;
-    case LOCAL_SYNC_OPERATION_FAIL: {
+    case SYNC_OPERATION_FAIL: {
       callback.Run(SYNC_STATUS_FAILED);
       return;
     }
@@ -387,8 +387,8 @@ void LocalChangeProcessorDelegate::DidApplyLocalChange(
     const SyncStatusCallback& callback,
     const google_apis::GDataErrorCode error,
     SyncStatusCode status) {
-  if ((operation_ == LOCAL_SYNC_OPERATION_DELETE ||
-       operation_ == LOCAL_SYNC_OPERATION_DELETE_METADATA) &&
+  if ((operation_ == SYNC_OPERATION_DELETE ||
+       operation_ == SYNC_OPERATION_DELETE_METADATA) &&
       (status == SYNC_FILE_ERROR_NOT_FOUND ||
        status == SYNC_DATABASE_ERROR_NOT_FOUND)) {
     status = SYNC_STATUS_OK;

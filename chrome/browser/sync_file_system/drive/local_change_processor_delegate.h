@@ -116,7 +116,7 @@ class LocalChangeProcessorDelegate {
 
   DriveFileSyncService* sync_service_;  // Not owned.
 
-  LocalSyncOperationType operation_;
+  SyncOperationType operation_;
 
   fileapi::FileSystemURL url_;
   FileChange local_change_;

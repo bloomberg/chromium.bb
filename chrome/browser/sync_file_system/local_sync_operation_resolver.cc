@@ -10,13 +10,13 @@
 
 namespace sync_file_system {
 
-LocalSyncOperationType LocalSyncOperationResolver::Resolve(
+SyncOperationType LocalSyncOperationResolver::Resolve(
     const FileChange& local_file_change,
     const FileChange* remote_file_change,
     const DriveMetadata* drive_metadata) {
   // Invalid combination should never happen.
   if (remote_file_change && remote_file_change->IsTypeUnknown())
-    return LOCAL_SYNC_OPERATION_FAIL;
+    return SYNC_OPERATION_FAIL;
 
   bool is_conflicting = false;
   SyncFileType remote_file_type_in_metadata = SYNC_FILE_TYPE_UNKNOWN;
@@ -42,7 +42,7 @@ LocalSyncOperationType LocalSyncOperationResolver::Resolve(
                                        remote_file_type_in_metadata);
         case SYNC_FILE_TYPE_UNKNOWN:
           NOTREACHED() << "Adding unknown type of local file.";
-          return LOCAL_SYNC_OPERATION_FAIL;
+          return SYNC_OPERATION_FAIL;
       }
     case FileChange::FILE_CHANGE_DELETE:
       return is_conflicting
@@ -51,130 +51,129 @@ LocalSyncOperationType LocalSyncOperationResolver::Resolve(
                              remote_file_type_in_metadata);
   }
   NOTREACHED() << "Detected unknown type of change for local file.";
-  return LOCAL_SYNC_OPERATION_FAIL;
+  return SYNC_OPERATION_FAIL;
 }
 
-LocalSyncOperationType LocalSyncOperationResolver::ResolveForAddOrUpdateFile(
+SyncOperationType LocalSyncOperationResolver::ResolveForAddOrUpdateFile(
     const FileChange* remote_file_change,
     SyncFileType remote_file_type_in_metadata) {
   if (!remote_file_change) {
     switch (remote_file_type_in_metadata) {
       case SYNC_FILE_TYPE_UNKNOWN:
         // Remote file or directory may not exist.
-        return LOCAL_SYNC_OPERATION_ADD_FILE;
+        return SYNC_OPERATION_ADD_FILE;
       case SYNC_FILE_TYPE_FILE:
-        return LOCAL_SYNC_OPERATION_UPDATE_FILE;
+        return SYNC_OPERATION_UPDATE_FILE;
       case SYNC_FILE_TYPE_DIRECTORY:
-        return LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE;
+        return SYNC_OPERATION_RESOLVE_TO_REMOTE;
     }
     NOTREACHED() << "Detected local add-or-update to"
                  << " unknown type of remote file.";
-    return LOCAL_SYNC_OPERATION_FAIL;
+    return SYNC_OPERATION_FAIL;
   }
 
   switch (remote_file_change->change()) {
     case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
       if (remote_file_change->IsFile())
-        return LOCAL_SYNC_OPERATION_CONFLICT;
-      return LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE;
+        return SYNC_OPERATION_CONFLICT;
+      return SYNC_OPERATION_RESOLVE_TO_REMOTE;
     case FileChange::FILE_CHANGE_DELETE:
-      return LOCAL_SYNC_OPERATION_RESOLVE_TO_LOCAL;
+      return SYNC_OPERATION_RESOLVE_TO_LOCAL;
   }
 
   NOTREACHED() << "Local add-or-update conflicted to"
                << " unknown type of remote change.";
-  return LOCAL_SYNC_OPERATION_FAIL;
+  return SYNC_OPERATION_FAIL;
 }
 
-LocalSyncOperationType
+SyncOperationType
 LocalSyncOperationResolver::ResolveForAddOrUpdateFileInConflict(
     const FileChange* remote_file_change) {
   if (!remote_file_change)
-    return LOCAL_SYNC_OPERATION_CONFLICT;
+    return SYNC_OPERATION_CONFLICT;
   switch (remote_file_change->change()) {
     case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
       if (remote_file_change->IsFile())
-        return LOCAL_SYNC_OPERATION_CONFLICT;
-      return LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE;
+        return SYNC_OPERATION_CONFLICT;
+      return SYNC_OPERATION_RESOLVE_TO_REMOTE;
     case FileChange::FILE_CHANGE_DELETE:
-      return LOCAL_SYNC_OPERATION_RESOLVE_TO_LOCAL;
+      return SYNC_OPERATION_RESOLVE_TO_LOCAL;
   }
   NOTREACHED() << "Local add-or-update for conflicting file conflicted to"
                << " unknown type of remote change.";
-  return LOCAL_SYNC_OPERATION_FAIL;
+  return SYNC_OPERATION_FAIL;
 }
 
-LocalSyncOperationType LocalSyncOperationResolver::ResolveForAddDirectory(
+SyncOperationType LocalSyncOperationResolver::ResolveForAddDirectory(
     const FileChange* remote_file_change,
     SyncFileType remote_file_type_in_metadata) {
   if (!remote_file_change) {
     switch (remote_file_type_in_metadata) {
       case SYNC_FILE_TYPE_UNKNOWN:
         // Remote file or directory may not exist.
-        return LOCAL_SYNC_OPERATION_ADD_DIRECTORY;
+        return SYNC_OPERATION_ADD_DIRECTORY;
       case SYNC_FILE_TYPE_FILE:
-        return LOCAL_SYNC_OPERATION_RESOLVE_TO_LOCAL;
+        return SYNC_OPERATION_RESOLVE_TO_LOCAL;
       case SYNC_FILE_TYPE_DIRECTORY:
-        return LOCAL_SYNC_OPERATION_NONE;
+        return SYNC_OPERATION_NONE;
     }
     NOTREACHED() << "Local add directory conflicted to"
                  << " unknown type of remote file.";
-    return LOCAL_SYNC_OPERATION_FAIL;
+    return SYNC_OPERATION_FAIL;
   }
 
   switch (remote_file_change->change()) {
     case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
       if (remote_file_change->IsFile())
-        return LOCAL_SYNC_OPERATION_RESOLVE_TO_LOCAL;
-      return LOCAL_SYNC_OPERATION_NONE;
+        return SYNC_OPERATION_RESOLVE_TO_LOCAL;
+      return SYNC_OPERATION_NONE;
     case FileChange::FILE_CHANGE_DELETE:
       if (remote_file_change->IsFile())
-        return LOCAL_SYNC_OPERATION_ADD_DIRECTORY;
-      return LOCAL_SYNC_OPERATION_RESOLVE_TO_LOCAL;
+        return SYNC_OPERATION_ADD_DIRECTORY;
+      return SYNC_OPERATION_RESOLVE_TO_LOCAL;
   }
 
   NOTREACHED() << "Local add directory conflicted to"
                << " unknown type of remote change.";
-  return LOCAL_SYNC_OPERATION_FAIL;
+  return SYNC_OPERATION_FAIL;
 }
 
-LocalSyncOperationType
+SyncOperationType
 LocalSyncOperationResolver::ResolveForAddDirectoryInConflict() {
-  return LOCAL_SYNC_OPERATION_RESOLVE_TO_LOCAL;
+  return SYNC_OPERATION_RESOLVE_TO_LOCAL;
 }
 
-LocalSyncOperationType LocalSyncOperationResolver::ResolveForDelete(
+SyncOperationType LocalSyncOperationResolver::ResolveForDelete(
     const FileChange* remote_file_change,
     SyncFileType remote_file_type_in_metadata) {
   if (!remote_file_change)
-    return LOCAL_SYNC_OPERATION_DELETE;
+    return SYNC_OPERATION_DELETE;
 
   switch (remote_file_change->change()) {
     case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
-      return LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE;
+      return SYNC_OPERATION_RESOLVE_TO_REMOTE;
     case FileChange::FILE_CHANGE_DELETE:
-      return LOCAL_SYNC_OPERATION_DELETE_METADATA;
+      return SYNC_OPERATION_DELETE_METADATA;
   }
 
   NOTREACHED() << "Local file deletion conflicted to"
                << " unknown type of remote change.";
-  return LOCAL_SYNC_OPERATION_FAIL;
+  return SYNC_OPERATION_FAIL;
 }
 
-LocalSyncOperationType
-LocalSyncOperationResolver::ResolveForDeleteInConflict(
+SyncOperationType LocalSyncOperationResolver::ResolveForDeleteInConflict(
     const FileChange* remote_file_change) {
   if (!remote_file_change)
-    return LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE;
+    return SYNC_OPERATION_RESOLVE_TO_REMOTE;
   switch (remote_file_change->change()) {
     case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
-      return LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE;
+      return SYNC_OPERATION_RESOLVE_TO_REMOTE;
     case FileChange::FILE_CHANGE_DELETE:
-      return LOCAL_SYNC_OPERATION_DELETE_METADATA;
+      return SYNC_OPERATION_DELETE_METADATA;
   }
   NOTREACHED() << "Local file deletion for conflicting file conflicted to"
                << " unknown type of remote change.";
-  return LOCAL_SYNC_OPERATION_FAIL;
+  return SYNC_OPERATION_FAIL;
 }
 
 }  // namespace sync_file_system

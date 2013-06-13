@@ -86,21 +86,21 @@ class LocalSyncOperationResolverTest : public testing::Test {
 
  protected:
   typedef LocalSyncOperationResolver Resolver;
-  typedef std::vector<LocalSyncOperationType> ExpectedTypes;
+  typedef std::vector<SyncOperationType> ExpectedTypes;
 
   DISALLOW_COPY_AND_ASSIGN(LocalSyncOperationResolverTest);
 };
 
 TEST_F(LocalSyncOperationResolverTest, ResolveForAddOrUpdateFile) {
-  const LocalSyncOperationType kExpectedTypes[] = {
-    LOCAL_SYNC_OPERATION_ADD_FILE,
-    LOCAL_SYNC_OPERATION_UPDATE_FILE,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
+  const SyncOperationType kExpectedTypes[] = {
+    SYNC_OPERATION_ADD_FILE,
+    SYNC_OPERATION_UPDATE_FILE,
+    SYNC_OPERATION_RESOLVE_TO_REMOTE,
 
-    LOCAL_SYNC_OPERATION_CONFLICT,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_LOCAL,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_LOCAL,
+    SYNC_OPERATION_CONFLICT,
+    SYNC_OPERATION_RESOLVE_TO_REMOTE,
+    SYNC_OPERATION_RESOLVE_TO_LOCAL,
+    SYNC_OPERATION_RESOLVE_TO_LOCAL,
   };
 
   ExpectedTypes expected_types = CreateList(kExpectedTypes);
@@ -117,15 +117,15 @@ TEST_F(LocalSyncOperationResolverTest, ResolveForAddOrUpdateFile) {
 }
 
 TEST_F(LocalSyncOperationResolverTest, ResolveForAddOrUpdateFileInConflict) {
-  const LocalSyncOperationType kExpectedTypes[] = {
-    LOCAL_SYNC_OPERATION_CONFLICT,
-    LOCAL_SYNC_OPERATION_CONFLICT,
-    LOCAL_SYNC_OPERATION_CONFLICT,
+  const SyncOperationType kExpectedTypes[] = {
+    SYNC_OPERATION_CONFLICT,
+    SYNC_OPERATION_CONFLICT,
+    SYNC_OPERATION_CONFLICT,
 
-    LOCAL_SYNC_OPERATION_CONFLICT,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_LOCAL,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_LOCAL,
+    SYNC_OPERATION_CONFLICT,
+    SYNC_OPERATION_RESOLVE_TO_REMOTE,
+    SYNC_OPERATION_RESOLVE_TO_LOCAL,
+    SYNC_OPERATION_RESOLVE_TO_LOCAL,
   };
 
   ExpectedTypes expected_types = CreateList(kExpectedTypes);
@@ -141,15 +141,15 @@ TEST_F(LocalSyncOperationResolverTest, ResolveForAddOrUpdateFileInConflict) {
 }
 
 TEST_F(LocalSyncOperationResolverTest, ResolveForAddDirectory) {
-  const LocalSyncOperationType kExpectedTypes[] = {
-    LOCAL_SYNC_OPERATION_ADD_DIRECTORY,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_LOCAL,
-    LOCAL_SYNC_OPERATION_NONE,
+  const SyncOperationType kExpectedTypes[] = {
+    SYNC_OPERATION_ADD_DIRECTORY,
+    SYNC_OPERATION_RESOLVE_TO_LOCAL,
+    SYNC_OPERATION_NONE,
 
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_LOCAL,
-    LOCAL_SYNC_OPERATION_NONE,
-    LOCAL_SYNC_OPERATION_ADD_DIRECTORY,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_LOCAL,
+    SYNC_OPERATION_RESOLVE_TO_LOCAL,
+    SYNC_OPERATION_NONE,
+    SYNC_OPERATION_ADD_DIRECTORY,
+    SYNC_OPERATION_RESOLVE_TO_LOCAL,
   };
 
   ExpectedTypes expected_types = CreateList(kExpectedTypes);
@@ -166,20 +166,20 @@ TEST_F(LocalSyncOperationResolverTest, ResolveForAddDirectory) {
 }
 
 TEST_F(LocalSyncOperationResolverTest, ResolveForAddDirectoryInConflict) {
-  EXPECT_EQ(LOCAL_SYNC_OPERATION_RESOLVE_TO_LOCAL,
+  EXPECT_EQ(SYNC_OPERATION_RESOLVE_TO_LOCAL,
             Resolver::ResolveForAddDirectoryInConflict());
 }
 
 TEST_F(LocalSyncOperationResolverTest, ResolveForDelete) {
-  const LocalSyncOperationType kExpectedTypes[] = {
-    LOCAL_SYNC_OPERATION_DELETE,
-    LOCAL_SYNC_OPERATION_DELETE,
-    LOCAL_SYNC_OPERATION_DELETE,
+  const SyncOperationType kExpectedTypes[] = {
+    SYNC_OPERATION_DELETE,
+    SYNC_OPERATION_DELETE,
+    SYNC_OPERATION_DELETE,
 
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
-    LOCAL_SYNC_OPERATION_DELETE_METADATA,
-    LOCAL_SYNC_OPERATION_DELETE_METADATA,
+    SYNC_OPERATION_RESOLVE_TO_REMOTE,
+    SYNC_OPERATION_RESOLVE_TO_REMOTE,
+    SYNC_OPERATION_DELETE_METADATA,
+    SYNC_OPERATION_DELETE_METADATA,
   };
 
   ExpectedTypes expected_types = CreateList(kExpectedTypes);
@@ -196,15 +196,15 @@ TEST_F(LocalSyncOperationResolverTest, ResolveForDelete) {
 }
 
 TEST_F(LocalSyncOperationResolverTest, ResolveForDeleteInConflict) {
-  const LocalSyncOperationType kExpectedTypes[] = {
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
+  const SyncOperationType kExpectedTypes[] = {
+    SYNC_OPERATION_RESOLVE_TO_REMOTE,
+    SYNC_OPERATION_RESOLVE_TO_REMOTE,
+    SYNC_OPERATION_RESOLVE_TO_REMOTE,
 
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
-    LOCAL_SYNC_OPERATION_RESOLVE_TO_REMOTE,
-    LOCAL_SYNC_OPERATION_DELETE_METADATA,
-    LOCAL_SYNC_OPERATION_DELETE_METADATA,
+    SYNC_OPERATION_RESOLVE_TO_REMOTE,
+    SYNC_OPERATION_RESOLVE_TO_REMOTE,
+    SYNC_OPERATION_DELETE_METADATA,
+    SYNC_OPERATION_DELETE_METADATA,
   };
 
   ExpectedTypes expected_types = CreateList(kExpectedTypes);
