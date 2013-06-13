@@ -150,7 +150,8 @@ TEST_F(ScreenCaptureDeviceTest, ScreenResolutionChange) {
           SaveArg<1>(&frame_size),
           InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
-  capture_device.Allocate(640, 480, kFrameRate, &frame_observer);
+  capture_device.Allocate(kTestFrameWidth1, kTestFrameHeight1,
+                          kFrameRate, &frame_observer);
   capture_device.Start();
   // Capture first frame.
   EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));

@@ -9,8 +9,7 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/libyuv/include/libyuv/scale_argb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_shape.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
@@ -50,7 +49,7 @@ class ScreenCaptureDevice::Core
 
   // Helper methods that run on the |task_runner_|. Posted from the
   // corresponding public methods.
-  void DoAllocate(int frame_rate);
+  void DoAllocate(int width, int height, int frame_rate);
   void DoStart();
   void DoStop();
   void DoDeAllocate();
@@ -74,20 +73,27 @@ class ScreenCaptureDevice::Core
   base::Lock event_handler_lock_;
   EventHandler* event_handler_;
 
+  // Requested size specified to Allocate().
+  webrtc::DesktopSize requested_size_;
+
   // Frame rate specified to Allocate().
   int frame_rate_;
 
   // The underlying ScreenCapturer instance used to capture frames.
   scoped_ptr<webrtc::ScreenCapturer> screen_capturer_;
 
-  // After Allocate() is called we need to call OnFrameInfo() method of the
-  // |event_handler_| to specify the size of the frames this capturer will
-  // produce. In order to get screen size from |screen_capturer_| we need to
-  // capture at least one frame. Once screen size is known it's stored in
-  // |frame_size_|.
-  bool waiting_for_frame_size_;
-  webrtc::DesktopSize frame_size_;
-  SkBitmap resized_bitmap_;
+  // Empty until the first frame has been captured, and the output dimensions
+  // chosen based on the capture frame's size, and any caller-supplied
+  // size constraints.
+  webrtc::DesktopSize output_size_;
+
+  // Size of the most recently received frame.
+  webrtc::DesktopSize previous_frame_size_;
+
+  // DesktopFrame into which captured frames are scaled, if the source size does
+  // not match |output_size_|. If the source and output have the same dimensions
+  // then this is NULL.
+  scoped_ptr<webrtc::DesktopFrame> scaled_frame_;
 
   // True between DoStart() and DoStop(). Can't just check |event_handler_|
   // because |event_handler_| is used on the caller thread.
@@ -107,7 +113,6 @@ ScreenCaptureDevice::Core::Core(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : task_runner_(task_runner),
       event_handler_(NULL),
-      waiting_for_frame_size_(false),
       started_(false),
       capture_task_posted_(false),
       capture_in_progress_(false) {
@@ -129,7 +134,8 @@ void ScreenCaptureDevice::Core::Allocate(int width, int height,
   }
 
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Core::DoAllocate, this, frame_rate));
+      FROM_HERE,
+      base::Bind(&Core::DoAllocate, this, width, height, frame_rate));
 }
 
 void ScreenCaptureDevice::Core::Start() {
@@ -170,14 +176,19 @@ void ScreenCaptureDevice::Core::OnCaptureCompleted(
 
   scoped_ptr<webrtc::DesktopFrame> owned_frame(frame);
 
-  if (waiting_for_frame_size_) {
-    frame_size_ = frame->size();
-    waiting_for_frame_size_ = false;
+  // If an |output_size_| hasn't yet been chosen then choose one, based upon
+  // the source frame size and the requested size supplied to Allocate().
+  if (output_size_.is_empty()) {
+    // Treat the requested size as upper bounds on width & height.
+    // TODO(wez): Constraints should be passed from getUserMedia to Allocate.
+    output_size_.set(
+        std::min(frame->size().width(), requested_size_.width()),
+        std::min(frame->size().height(), requested_size_.height()));
 
-    // Inform the EventHandler of the video frame dimensions and format.
+    // Inform the EventHandler of the output dimensions, format and frame rate.
     media::VideoCaptureCapability caps;
-    caps.width = frame_size_.width();
-    caps.height = frame_size_.height();
+    caps.width = output_size_.width();
+    caps.height = output_size_.height();
     caps.frame_rate = frame_rate_;
     caps.color = media::VideoCaptureCapability::kARGB;
     caps.expected_capture_delay =
@@ -192,85 +203,81 @@ void ScreenCaptureDevice::Core::OnCaptureCompleted(
   if (!started_)
     return;
 
-  size_t buffer_size = frame_size_.width() * frame_size_.height() *
+  size_t output_bytes = output_size_.width() * output_size_.height() *
       webrtc::DesktopFrame::kBytesPerPixel;
 
-  if (frame->size().equals(frame_size_)) {
-    // If the captured frame matches the requested size, we don't need to
-    // resize it.
-    resized_bitmap_.reset();
+  if (frame->size().equals(output_size_)) {
+    // If the captured frame matches the output size, we can return the pixel
+    // data directly, without scaling.
+    scaled_frame_.reset();
 
     base::AutoLock auto_lock(event_handler_lock_);
     if (event_handler_) {
       event_handler_->OnIncomingCapturedFrame(
-          frame->data(), buffer_size, base::Time::Now(), 0, false, false);
+          frame->data(), output_bytes, base::Time::Now(), 0, false, false);
     }
     return;
   }
 
-  // In case screen size has changed we need to resize the image. Resized image
-  // is stored to |resized_bitmap_|. Only regions of the screen that are
-  // changing are copied.
+  // If the output size differs from the frame size (e.g. the source has changed
+  // from its original dimensions, or the caller specified size constraints)
+  // then we need to scale the image.
+  if (!scaled_frame_)
+    scaled_frame_.reset(new webrtc::BasicDesktopFrame(output_size_));
+  DCHECK(scaled_frame_->size().equals(output_size_));
 
-  webrtc::DesktopRegion dirty_region = frame->updated_region();
-
-  if (resized_bitmap_.width() != frame_size_.width() ||
-      resized_bitmap_.height() != frame_size_.height()) {
-    resized_bitmap_.setConfig(SkBitmap::kARGB_8888_Config,
-                              frame_size_.width(), frame_size_.height());
-    resized_bitmap_.setIsOpaque(true);
-    resized_bitmap_.allocPixels();
-    dirty_region.SetRect(webrtc::DesktopRect::MakeSize(frame_size_));
+  // If the source frame size changed then clear |scaled_frame_|'s pixels.
+  if (!previous_frame_size_.equals(frame->size())) {
+    previous_frame_size_ = frame->size();
+    memset(scaled_frame_->data(), 0, output_bytes);
   }
 
-  float scale_x = static_cast<float>(frame_size_.width()) /
-      frame->size().width();
-  float scale_y = static_cast<float>(frame_size_.height()) /
-      frame->size().height();
-  float scale;
-  float x, y;
-  // Center the image in case aspect ratio is different.
-  if (scale_x > scale_y) {
-    scale = scale_y;
-    x = (scale_x - scale_y) / scale * frame_size_.width() / 2.0;
-    y = 0.f;
+  // Determine the output size preserving aspect, and center in output buffer.
+  webrtc::DesktopSize scaled_size;
+  uint8* scaled_data = scaled_frame_->data();
+  if (frame->size().width() * output_size_.height() >
+      frame->size().height() * output_size_.width()) {
+    // Source has wider aspect ratio than output.
+    scaled_size.set(
+        output_size_.width(),
+        (frame->size().height() * output_size_.width()) /
+            frame->size().width());
+    scaled_data += scaled_frame_->stride() *
+        ((output_size_.height() - scaled_size.height()) / 2);
   } else {
-    scale = scale_x;
-    x = 0.f;
-    y = (scale_y - scale_x) / scale * frame_size_.height() / 2.0;
+    // Source has taller aspect ratio than output.
+    scaled_size.set(
+        (frame->size().width() * output_size_.height()) /
+            frame->size().height(),
+        output_size_.height());
+    scaled_data += webrtc::DesktopFrame::kBytesPerPixel *
+        ((output_size_.width() - scaled_size.width()) / 2);
   }
 
-  // Create skia device and canvas that draw to |resized_bitmap_|.
-  SkDevice device(resized_bitmap_);
-  SkCanvas canvas(&device);
-  canvas.scale(scale, scale);
-
-  int source_stride = frame->stride();
-  for (webrtc::DesktopRegion::Iterator i(dirty_region); !i.IsAtEnd();
-       i.Advance()) {
-    SkBitmap source_bitmap;
-    source_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                            i.rect().width(), i.rect().height(),
-                            source_stride);
-    source_bitmap.setIsOpaque(true);
-    source_bitmap.setPixels(
-        frame->data() + i.rect().top() * source_stride +
-        i.rect().left() * webrtc::DesktopFrame::kBytesPerPixel);
-    canvas.drawBitmap(source_bitmap, i.rect().left() + x / scale,
-                      i.rect().top() + y / scale, NULL);
-  }
+  // TODO(wez): Optimize this to scale only changed portions of the output,
+  // using ARGBScaleClip().
+  libyuv::ARGBScale(frame->data(), frame->stride(),
+                    frame->size().width(), frame->size().height(),
+                    scaled_data, scaled_frame_->stride(),
+                    scaled_size.width(),
+                    scaled_size.height(),
+                    libyuv::kFilterBilinear);
 
   base::AutoLock auto_lock(event_handler_lock_);
   if (event_handler_) {
     event_handler_->OnIncomingCapturedFrame(
-        reinterpret_cast<uint8*>(resized_bitmap_.getPixels()), buffer_size,
+        scaled_frame_->data(), output_bytes,
         base::Time::Now(), 0, false, false);
   }
 }
 
-void ScreenCaptureDevice::Core::DoAllocate(int frame_rate) {
+void ScreenCaptureDevice::Core::DoAllocate(int width,
+                                           int height,
+                                           int frame_rate) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
+  requested_size_.set(width, height);
+  output_size_.set(0, 0);
   frame_rate_ = frame_rate;
 
   // Create and start frame capturer.
@@ -295,7 +302,6 @@ void ScreenCaptureDevice::Core::DoAllocate(int frame_rate) {
     screen_capturer_->Start(this);
 
   // Capture first frame, so that we can call OnFrameInfo() callback.
-  waiting_for_frame_size_ = true;
   DoCapture();
 }
 
@@ -311,14 +317,14 @@ void ScreenCaptureDevice::Core::DoStart() {
 void ScreenCaptureDevice::Core::DoStop() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   started_ = false;
-  resized_bitmap_.reset();
+  scaled_frame_.reset();
 }
 
 void ScreenCaptureDevice::Core::DoDeAllocate() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DoStop();
   screen_capturer_.reset();
-  waiting_for_frame_size_ = false;
+  output_size_.set(0, 0);
 }
 
 void ScreenCaptureDevice::Core::ScheduleCaptureTimer() {
@@ -369,8 +375,8 @@ void ScreenCaptureDevice::SetScreenCapturerForTest(
 }
 
 void ScreenCaptureDevice::Allocate(int width, int height,
-                              int frame_rate,
-                              EventHandler* event_handler) {
+                                   int frame_rate,
+                                   EventHandler* event_handler) {
   core_->Allocate(width, height, frame_rate, event_handler);
 }
 
