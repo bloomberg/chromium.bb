@@ -108,3 +108,21 @@ class Validator32(Validator):
         spec.ValidateNop,
         lambda insn: spec.ValidateOperandlessInstruction(insn, bitness=32),
     ]
+
+
+class Validator64(Validator):
+
+  # TODO(shcherbina): track restricted_register
+
+  BITNESS = 64
+  MAX_SUPERINSTRUCTION_LENGTH = 5
+
+  def ValidateSuperinstruction(self, superinstruction):
+    spec.ValidateSuperinstruction64(superinstruction)
+
+  def EnumerateInstructionCheckers(self):
+    return [
+        self.ValidateDirectJump,
+        spec.ValidateNop,
+        lambda insn: spec.ValidateOperandlessInstruction(insn, bitness=64),
+    ]

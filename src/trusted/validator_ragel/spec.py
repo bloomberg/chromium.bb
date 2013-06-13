@@ -41,8 +41,15 @@ BUNDLE_SIZE = 32
 
 
 def ValidateNop(instruction):
-  if instruction.disasm == 'nop':
+  if instruction.disasm in [
+      'nop',
+      'xchg %ax,%ax',
+      'nopl (%rax)',
+      'nopl 0x0(%rax)',
+      'nopl 0x0(%rax,%rax,1)',
+      ]:
     return
+
   if re.match(
       r'(data32 )*nopw (%cs:)?0x0\(%[er]ax,%[er]ax,1\)$',
       instruction.disasm):

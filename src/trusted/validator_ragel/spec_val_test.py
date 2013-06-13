@@ -21,7 +21,9 @@ class SpecValTestRunner(test_format.TestRunner):
 
   def GetSectionContent(self, options, hex_content):
       validator.Init(decoder_dll=options.decoder_dll)
-      validator_cls = {32: spec_val.Validator32}[options.bits]
+      validator_cls = {
+          32: spec_val.Validator32,
+          64: spec_val.Validator64}[options.bits]
 
       data = ''.join(test_format.ParseHex(hex_content))
       data += '\x90' * (-len(data) % spec.BUNDLE_SIZE)

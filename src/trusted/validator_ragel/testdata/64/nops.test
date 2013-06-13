@@ -17,6 +17,8 @@
     15:	0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   0F 1F 84 00 00 00 00 00
@@ -31,6 +33,8 @@
     18:	00 00 00 
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   66 66 2E 0F 1F 84 00 00 00 00 00
@@ -42,6 +46,8 @@
     12:	00 00 00 00 00 
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   66 66 66 66 2E 0F 1F 84 00 00 00 00 00
@@ -53,6 +59,8 @@
     14:	1f 84 00 00 00 00 00 
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00
@@ -62,6 +70,8 @@
      e:	00 
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # Test cases for illegal nops
@@ -71,6 +81,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  2: failed to decode instruction
 ----------------------------------------------------------------------
 @hex:
   66 66 66 90
@@ -79,6 +91,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  3: failed to decode instruction
 ----------------------------------------------------------------------
 @hex:
   3E 0F 1F 84 00 00 00 00 00
@@ -88,6 +102,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  2: failed to decode instruction
 ----------------------------------------------------------------------
 @hex:
   66 3E 0F 1F 84 00 00 00 00 00
@@ -97,6 +113,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  3: failed to decode instruction
 ----------------------------------------------------------------------
 @hex:
   66 66 0F 1F 84 00 00 00 00 00
@@ -106,3 +124,5 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  2: failed to decode instruction
