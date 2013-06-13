@@ -86,8 +86,8 @@ PP_Var PPB_X509Certificate_Fields::GetFieldAsPPVar(
 
 PPB_X509Certificate_Private_Shared::PPB_X509Certificate_Private_Shared(
     ResourceObjectType type,
-    PP_Instance instance) : Resource(type, instance), fields_(NULL) {
-}
+    PP_Instance instance)
+    : Resource(type, instance) {}
 
 PPB_X509Certificate_Private_Shared::PPB_X509Certificate_Private_Shared(
     ResourceObjectType type,
