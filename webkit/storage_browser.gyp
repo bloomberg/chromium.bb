@@ -259,5 +259,17 @@
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
     },
+    {
+      'target_name': 'dump_file_system',
+      'type': 'executable',
+      'sources': [
+        'browser/fileapi/dump_file_system.cc',
+      ],
+      'dependencies': [
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/webkit/storage_common.gyp:webkit_storage_common',
+        'webkit_storage_browser',
+      ],
+    },
   ],
 }
