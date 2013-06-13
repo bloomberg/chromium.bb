@@ -380,6 +380,7 @@ webkit.org/b/111004 [ Win7 Debug ] accessibility/svg-remote-element.html [ Failu
 
 # This test is slow due to Mesa slowness.
 crbug.com/233066 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
+crbug.com/233066 virtual/gpu/fast/canvas/canvas-draw-canvas-on-canvas-shadow.html [ Slow ]
 
 crbug.com/174268 webgl [ Skip ]
 
