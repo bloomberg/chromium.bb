@@ -15,11 +15,13 @@ import unittest
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(_THIS_DIR, 'client'))
+sys.path.insert(0, os.path.join(_THIS_DIR, 'server'))
 
 import chrome_paths
 import chromedriver
 import unittest_util
 import util
+import server
 from webelement import WebElement
 import webserver
 
@@ -640,7 +642,7 @@ class PerfTest(ChromeDriverBaseTest):
       ref = []
       new = []
 
-    ref_server = chromedriver.Server(_REFERENCE_CHROMEDRIVER)
+    ref_server = server.Server(_REFERENCE_CHROMEDRIVER)
     results = Results()
     result_url_pairs = zip([results.new, results.ref],
                            [_CHROMEDRIVER_SERVER_URL, ref_server.GetUrl()])
@@ -714,9 +716,9 @@ if __name__ == '__main__':
     parser.error('chromedriver is required or the given path is invalid.' +
                  'Please run "%s --help" for help' % __file__)
 
-  server = chromedriver.Server(os.path.abspath(options.chromedriver))
+  chromedriver_server = server.Server(os.path.abspath(options.chromedriver))
   global _CHROMEDRIVER_SERVER_URL
-  _CHROMEDRIVER_SERVER_URL = server.GetUrl()
+  _CHROMEDRIVER_SERVER_URL = chromedriver_server.GetUrl()
 
   global _REFERENCE_CHROMEDRIVER
   _REFERENCE_CHROMEDRIVER = options.reference_chromedriver
