@@ -463,8 +463,6 @@ void BeginInstallWithManifestFunction::OnWebstoreParseFailure(
   Release();
 }
 
-void BeginInstallWithManifestFunction::GaiaCredentialsValid() {}
-
 void BeginInstallWithManifestFunction::SigninFailed(
     const GoogleServiceAuthError& error) {
   signin_tracker_.reset();

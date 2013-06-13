@@ -113,7 +113,6 @@ ModelTypeNameMap GetSelectableTypeNameMap() {
 
 #if !defined(OS_CHROMEOS)
 // Signin logic not needed on ChromeOS
-
 void BringTabToFront(WebContents* web_contents) {
   DCHECK(web_contents);
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
@@ -146,7 +145,7 @@ void CloseTab(content::WebContents* tab) {
 bool GetConfiguration(const std::string& json, SyncConfigInfo* config) {
   scoped_ptr<Value> parsed_value(base::JSONReader::Read(json));
   DictionaryValue* result;
-  if (!parsed_value.get() || !parsed_value->GetAsDictionary(&result)) {
+  if (!parsed_value || !parsed_value->GetAsDictionary(&result)) {
     DLOG(ERROR) << "GetConfiguration() not passed a Dictionary";
     return false;
   }
@@ -345,6 +344,9 @@ void SyncSetupHandler::GetStaticLocalizedValues(
 
 void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
                                             bool passphrase_failed) {
+  // Should never call this when we are not signed in.
+  DCHECK(!SigninManagerFactory::GetForProfile(
+      GetProfile())->GetAuthenticatedUsername().empty());
   ProfileSyncService* service = GetSyncService();
   DCHECK(service);
   if (!service->sync_initialized()) {
@@ -362,22 +364,21 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
     // (unrecoverable error?), don't bother displaying a spinner that will be
     // immediately closed because this leads to some ugly infinite UI loop (see
     // http://crbug.com/244769).
-    if (SigninTracker::GetSigninState(GetProfile(), NULL) !=
-        SigninTracker::WAITING_FOR_GAIA_VALIDATION) {
+    if (SyncStartupTracker::GetSyncServiceState(GetProfile()) !=
+        SyncStartupTracker::SYNC_STARTUP_ERROR) {
       DisplaySpinner();
     }
 
-    // To listen to the token available notifications, start SigninTracker.
-    signin_tracker_.reset(
-        new SigninTracker(GetProfile(),
-                          this,
-                          SigninTracker::SERVICES_INITIALIZING));
+    // Start SyncSetupTracker to wait for sync to initialize.
+    sync_startup_tracker_.reset(
+        new SyncStartupTracker(GetProfile(), this));
     return;
   }
 
-  // Should only be called if user is signed in, so no longer need our
-  // SigninTracker.
+  // Should only get here if user is signed in and sync is initialized, so no
+  // longer need a SigninTracker or SyncStartupTracker.
   signin_tracker_.reset();
+  sync_startup_tracker_.reset();
   configuring_sync_ = true;
   DCHECK(service->sync_initialized()) <<
       "Cannot configure sync until the sync backend is initialized";
@@ -551,15 +552,14 @@ void SyncSetupHandler::RegisterMessages() {
 
 #if !defined(OS_CHROMEOS)
 void SyncSetupHandler::DisplayGaiaLogin(bool fatal_error) {
+  DCHECK(!sync_startup_tracker_);
   // Advanced options are no longer being configured if the login screen is
   // visible. If the user exits the signin wizard after this without
   // configuring sync, CloseSyncSetup() will ensure they are logged out.
   configuring_sync_ = false;
 
   DisplayGaiaLoginInNewTabOrWindow();
-  signin_tracker_.reset(
-      new SigninTracker(GetProfile(), this,
-                        SigninTracker::WAITING_FOR_GAIA_VALIDATION));
+  signin_tracker_.reset(new SigninTracker(GetProfile(), this));
 }
 
 void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
@@ -621,7 +621,7 @@ void SyncSetupHandler::DisplaySpinner() {
   DictionaryValue args;
 
   const int kTimeoutSec = 30;
-  DCHECK(!backend_start_timer_.get());
+  DCHECK(!backend_start_timer_);
   backend_start_timer_.reset(new base::OneShotTimer<SyncSetupHandler>());
   backend_start_timer_->Start(FROM_HERE,
                               base::TimeDelta::FromSeconds(kTimeoutSec),
@@ -634,11 +634,12 @@ void SyncSetupHandler::DisplaySpinner() {
 // TODO(kochi): Handle error conditions other than timeout.
 // http://crbug.com/128692
 void SyncSetupHandler::DisplayTimeout() {
+  DCHECK(!signin_tracker_);
   // Stop a timer to handle timeout in waiting for checking network connection.
   backend_start_timer_.reset();
 
-  // Do not listen to signin events.
-  signin_tracker_.reset();
+  // Do not listen to sync startup events.
+  sync_startup_tracker_.reset();
 
   StringValue page("timeout");
   DictionaryValue args;
@@ -654,17 +655,27 @@ void SyncSetupHandler::OnDidClosePage(const ListValue* args) {
   CloseSyncSetup();
 }
 
-void SyncSetupHandler::GaiaCredentialsValid() {
-  DCHECK(IsActiveLogin());
-  RecordSignin();
-#if !defined(OS_CHROMEOS)
-  CloseGaiaSigninPage();
-#endif
+void SyncSetupHandler::SyncStartupFailed() {
+  // Stop a timer to handle timeout in waiting for checking network connection.
+  backend_start_timer_.reset();
+
+  // Just close the sync overlay (the idea is that the base settings page will
+  // display the current err
+  CloseOverlay();
+}
+
+void SyncSetupHandler::SyncStartupCompleted() {
+  ProfileSyncService* service = GetSyncService();
+  DCHECK(service->sync_initialized());
+
+  // Stop a timer to handle timeout in waiting for checking network connection.
+  backend_start_timer_.reset();
+
+  DisplayConfigureSync(true, false);
 }
 
 void SyncSetupHandler::SigninFailed(const GoogleServiceAuthError& error) {
-  // Stop a timer to handle timeout in waiting for checking network connection.
-  backend_start_timer_.reset();
+  DCHECK(!backend_start_timer_);
 
 #if defined(OS_CHROMEOS)
   // TODO(peria): Show error dialog for prompting sign in and out on
@@ -690,10 +701,12 @@ ProfileSyncService* SyncSetupHandler::GetSyncService() const {
 }
 
 void SyncSetupHandler::SigninSuccess() {
+  DCHECK(!backend_start_timer_);
   ProfileSyncService* service = GetSyncService();
-  DCHECK(!service || service->sync_initialized());
-  // Stop a timer to handle timeout in waiting for checking network connection.
-  backend_start_timer_.reset();
+
+#if !defined(OS_CHROMEOS)
+  CloseGaiaSigninPage();
+#endif
 
   // If we have signed in while sync is already setup, it must be due to some
   // kind of re-authentication flow. In that case, just close the signin dialog
@@ -707,7 +720,8 @@ void SyncSetupHandler::SigninSuccess() {
 }
 
 void SyncSetupHandler::HandleConfigure(const ListValue* args) {
-  DCHECK(!signin_tracker_.get());
+  DCHECK(!signin_tracker_);
+  DCHECK(!sync_startup_tracker_);
   std::string json;
   if (!args->GetString(0, &json)) {
     NOTREACHED() << "Could not read JSON argument";
@@ -889,6 +903,7 @@ void SyncSetupHandler::CloseSyncSetup() {
   // flag a signin failure.
   bool was_signing_in = (signin_tracker_.get() != NULL);
   signin_tracker_.reset();
+  sync_startup_tracker_.reset();
 
   // TODO(atwilson): Move UMA tracking of signin events out of sync module.
   ProfileSyncService* sync_service = GetSyncService();

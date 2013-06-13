@@ -139,7 +139,6 @@ class BeginInstallWithManifestFunction
 
  private:
   // SigninTracker::Observer override.
-  virtual void GaiaCredentialsValid() OVERRIDE;
   virtual void SigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
   virtual void SigninSuccess() OVERRIDE;
 

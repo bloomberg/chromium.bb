@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/signin/signin_tracker.h"
+#include "chrome/browser/sync/sync_startup_tracker.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -24,6 +25,7 @@ class WebContents;
 
 class SyncSetupHandler : public options::OptionsPageUIHandler,
                          public SigninTracker::Observer,
+                         public SyncStartupTracker::Observer,
 #if !defined(OS_CHROMEOS)
                          public content::WebContentsObserver,
 #endif
@@ -39,9 +41,12 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   virtual void RegisterMessages() OVERRIDE;
 
   // SigninTracker::Observer implementation.
-  virtual void GaiaCredentialsValid() OVERRIDE;
   virtual void SigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
   virtual void SigninSuccess() OVERRIDE;
+
+  // SyncStartupTracker::Observer implementation;
+  virtual void SyncStartupCompleted() OVERRIDE;
+  virtual void SyncStartupFailed() OVERRIDE;
 
   // LoginUIService::LoginUI implementation.
   virtual void FocusUI() OVERRIDE;
@@ -72,6 +77,7 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   void CloseSyncSetup();
 
  protected:
+  friend class SyncSetupHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, DisplayBasicLogin);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest,
                            DisplayConfigureWithBackendDisabledAndCancel);
@@ -176,12 +182,15 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   void CloseGaiaSigninPage();
 #endif
 
+  // Helper object used to wait for the sync backend to startup.
+  scoped_ptr<SyncStartupTracker> sync_startup_tracker_;
+
   // The SigninTracker object used to determine when the user has fully signed
   // in (this requires waiting for various services to initialize and tracking
   // errors from multiple sources). Should only be non-null while the login UI
-  // is visible. Note, this object is also used on ChromeOS to track when the
-  // ProfileSyncService backend is done starting up when restarting sync after
-  // a dashboard clear.
+  // is visible.
+  // TODO(atwilson): Remove references to this on ChromeOS since it will always
+  // be null.
   scoped_ptr<SigninTracker> signin_tracker_;
 
   // Set to true whenever the sync configure UI is visible. This is used to tell

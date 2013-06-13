@@ -35,7 +35,6 @@ class ChromeSigninDelegate : public app_list::SigninDelegate,
   virtual string16 GetSettingsLinkText() OVERRIDE;
 
   // Overridden from SigninTracker::Observer:
-  virtual void GaiaCredentialsValid() OVERRIDE;
   virtual void SigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
   virtual void SigninSuccess() OVERRIDE;
 

@@ -101,16 +101,6 @@ void OneClickSigninSyncStarter::Initialize(Profile* profile, Browser* browser) {
   sync_prefs.SetStartSuppressed(false);
 }
 
-void OneClickSigninSyncStarter::GaiaCredentialsValid() {
-  // TODO(rogerta): We could |delete this| right after calling ConfigureSync(),
-  // but this deletes the |signin_tracker_| member too.  SigninTracker does
-  // handle being deleted from within the GaiaCredentialsValid() callback.
-  // So this object will live until either SigninSuccess() or SigninFailed()
-  // is called, which is fine.
-  if (start_mode_== CONFIGURE_SYNC_FIRST)
-    ConfigureSync();
-}
-
 void OneClickSigninSyncStarter::ConfirmSignin(const std::string& oauth_token) {
   DCHECK(!oauth_token.empty());
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
@@ -359,31 +349,29 @@ void OneClickSigninSyncStarter::SigninFailed(
 }
 
 void OneClickSigninSyncStarter::SigninSuccess() {
-  // TODO(rogerta): For the moment, the calls to ProfileSyncService require
-  // that the sync backend already be initialized.  Therefore the default
-  // settings case needs to be handled in the SigninSuccess() callback.
-  // However, ProfileSyncService should be modified to not require an
-  // initialized backend, at which point this code could be moved to
-  // the GaiaCredentialsValid() callback.  The ProfileSyncService changes are
-  // being tracked in crbug.com/246618.
-  if (start_mode_ == SYNC_WITH_DEFAULT_SETTINGS) {
-    ProfileSyncService* profile_sync_service = GetProfileSyncService();
-    if (profile_sync_service) {
+  switch (start_mode_) {
+    case SYNC_WITH_DEFAULT_SETTINGS: {
+      ProfileSyncService* profile_sync_service = GetProfileSyncService();
       // Just kick off the sync machine, no need to configure it first.
-      profile_sync_service->OnUserChoseDatatypes(true,
-                                                 syncer::ModelTypeSet());
-      profile_sync_service->SetSyncSetupCompleted();
-    }
-    FinishProfileSyncServiceSetup();
-    if (confirmation_required_ == CONFIRM_AFTER_SIGNIN) {
-      string16 message;
-      if (!profile_sync_service) {
-        // Sync is disabled by policy.
-        message = l10n_util::GetStringUTF16(
-            IDS_ONE_CLICK_SIGNIN_BUBBLE_SYNC_DISABLED_MESSAGE);
+      if (profile_sync_service)
+        profile_sync_service->SetSyncSetupCompleted();
+      FinishProfileSyncServiceSetup();
+      if (confirmation_required_ == CONFIRM_AFTER_SIGNIN) {
+        string16 message;
+        if (!profile_sync_service) {
+          // Sync is disabled by policy.
+          message = l10n_util::GetStringUTF16(
+              IDS_ONE_CLICK_SIGNIN_BUBBLE_SYNC_DISABLED_MESSAGE);
+        }
+        DisplayFinalConfirmationBubble(message);
       }
-      DisplayFinalConfirmationBubble(message);
+      break;
     }
+    case CONFIGURE_SYNC_FIRST:
+      ConfigureSync();
+      break;
+    default:
+      NOTREACHED();
   }
   delete this;
 }

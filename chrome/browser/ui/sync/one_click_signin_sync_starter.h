@@ -78,7 +78,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   void Initialize(Profile* profile, Browser* browser);
 
   // SigninTracker::Observer override.
-  virtual void GaiaCredentialsValid() OVERRIDE;
   virtual void SigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
   virtual void SigninSuccess() OVERRIDE;
 

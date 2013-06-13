@@ -1224,6 +1224,7 @@
         'browser/sync/profile_sync_test_util.h',
         'browser/sync/sync_global_error_unittest.cc',
         'browser/sync/sync_prefs_unittest.cc',
+        'browser/sync/sync_startup_tracker_unittest.cc',
         'browser/sync/sync_ui_util_unittest.cc',
         'browser/sync/test/test_http_bridge_factory.cc',
         'browser/sync/test/test_http_bridge_factory.h',

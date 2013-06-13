@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_SIGNIN_SIGNIN_TRACKER_H_
 #define CHROME_BROWSER_SIGNIN_SIGNIN_TRACKER_H_
 
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
@@ -17,11 +16,11 @@ class Profile;
 // responsibilities:
 //
 // SigninTracker (this class) - This class listens to notifications from various
-// services (SigninManager, ProfileSyncService, etc) and coalesces them into
+// services (SigninManager, tokenService, etc) and coalesces them into
 // notifications for the UI layer. This is the class that encapsulates the logic
 // that determines whether a user is fully logged in or not, and exposes
-// callbacks to SyncSetupHandler (login failed, login succeeded, services
-// started up) to help drive the login wizard.
+// callbacks so various pieces of the UI (OneClickSyncStarter, SyncSetupHandler)
+// can track the current startup state.
 //
 // SyncSetupHandler - This class is primarily responsible for interacting with
 // the web UI for performing system login and sync configuration. Receives
@@ -46,16 +45,11 @@ class Profile;
 // sync framework. Listens for notifications from the TokenService to know
 // when to startup sync, and provides an Observer interface to notify the UI
 // layer of changes in sync state so they can be reflected in the UI.
-class SigninTracker : public ProfileSyncServiceObserver,
-                      public content::NotificationObserver {
+class SigninTracker : public content::NotificationObserver {
  public:
   class Observer {
    public:
-    // The GAIA credentials entered by the user have been validated.
-    virtual void GaiaCredentialsValid() = 0;
-
-    // The signin attempt failed. If this is called after GaiaCredentialsValid()
-    // then it means there was an error launching one of the dependent services.
+    // The signin attempt failed, and the cause is passed in |error|.
     virtual void SigninFailed(const GoogleServiceAuthError& error) = 0;
 
     // The signin attempt succeeded.
@@ -73,7 +67,6 @@ class SigninTracker : public ProfileSyncServiceObserver,
   // |profile|, and notifies the |observer| on status changes. |observer| must
   // be non-null and must outlive the SigninTracker.
   SigninTracker(Profile* profile, Observer* observer);
-  SigninTracker(Profile* profile, Observer* observer, LoginState state);
   virtual ~SigninTracker();
 
   // content::NotificationObserver implementation.
@@ -81,21 +74,13 @@ class SigninTracker : public ProfileSyncServiceObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // ProfileSyncServiceObserver implementation.
-  virtual void OnStateChanged() OVERRIDE;
-
-  // Returns true if the various authenticated services are properly signed in
-  // (all tokens loaded, no auth/startup errors, etc).
-  static bool AreServicesSignedIn(Profile* profile);
-
   // Returns true if the tokens are loaded for all signed-in services.
   static bool AreServiceTokensLoaded(Profile* profile);
 
   // Returns the sign in state for |profile|.  If the profile is not signed in,
   // or is authenticating with GAIA, WAITING_FOR_GAIA_VALIDATION is returned.
-  // If SigninManager in has completed but TokenService or
-  // ProfileSyncService are not ready, SERVICES_INITIALIZING is returned.
-  // Otherwise SIGNIN_COMPLETE is returned.
+  // If SigninManager in has completed but TokenService is not ready,
+  // SERVICES_INITIALIZING is returned. Otherwise SIGNIN_COMPLETE is returned.
   static LoginState GetSigninState(Profile* profile,
                                    GoogleServiceAuthError* error);
 

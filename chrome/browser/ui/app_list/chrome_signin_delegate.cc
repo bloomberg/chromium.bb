@@ -100,8 +100,6 @@ string16 ChromeSigninDelegate::GetSettingsLinkText() {
   return rb.GetLocalizedString(IDS_APP_LIST_SIGNIN_SETTINGS_TEXT);
 }
 
-void ChromeSigninDelegate::GaiaCredentialsValid() {}
-
 ChromeSigninDelegate::~ChromeSigninDelegate() {}
 
 void ChromeSigninDelegate::SigninFailed(const GoogleServiceAuthError& error) {}
