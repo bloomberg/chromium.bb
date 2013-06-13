@@ -1527,6 +1527,8 @@ void LauncherView::ShowContextMenuForView(views::View* source,
     view_index = -1;
   }
 
+  tooltip_->Close();
+
   if (view_index == -1) {
     Shell::GetInstance()->ShowContextMenu(point);
     return;
