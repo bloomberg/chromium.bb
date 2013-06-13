@@ -294,6 +294,7 @@ void APIUtil::DidGetDirectory(const std::string& parent_resource_id,
   ParentType parent_type = PARENT_TYPE_DIRECTORY;
   if (parent_resource_id.empty()) {
     resource_id = GetRootResourceId();
+    DCHECK(!resource_id.empty());
     parent_type = PARENT_TYPE_ROOT_OR_EMPTY;
   } else {
     resource_id = parent_resource_id;
@@ -936,6 +937,7 @@ void APIUtil::DidListEntriesToEnsureUniqueness(
   ParentType parent_type = PARENT_TYPE_DIRECTORY;
   if (parent_resource_id.empty()) {
     resource_id = GetRootResourceId();
+    DCHECK(!resource_id.empty());
     parent_type = PARENT_TYPE_ROOT_OR_EMPTY;
   } else {
     resource_id = parent_resource_id;
@@ -1058,10 +1060,8 @@ void APIUtil::CancelAllUploads(google_apis::GDataErrorCode error) {
 }
 
 std::string APIUtil::GetRootResourceId() const {
-  if (IsDriveAPIEnabled()) {
-    DCHECK(!root_resource_id_.empty());
+  if (IsDriveAPIEnabled())
     return root_resource_id_;
-  }
   return drive_service_->GetRootResourceId();
 }
 
