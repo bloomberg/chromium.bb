@@ -56,11 +56,12 @@ bool HeadersContainMultipleCopiesOfField(
   return false;
 }
 
-Value* NetLogSendRequestBodyCallback(int length,
-                                     bool is_chunked,
-                                     bool did_merge,
-                                     net::NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+base::Value* NetLogSendRequestBodyCallback(
+    int length,
+    bool is_chunked,
+    bool did_merge,
+    net::NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("length", length);
   dict->SetBoolean("is_chunked", is_chunked);
   dict->SetBoolean("did_merge", did_merge);

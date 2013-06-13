@@ -14,33 +14,33 @@ namespace net {
 
 namespace {
 
-Value* NetLogSocketErrorCallback(int net_error,
-                                 int os_error,
-                                 NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+base::Value* NetLogSocketErrorCallback(int net_error,
+                                       int os_error,
+                                       NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("net_error", net_error);
   dict->SetInteger("os_error", os_error);
   return dict;
 }
 
-Value* NetLogHostPortPairCallback(const HostPortPair* host_and_port,
-                                  NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+base::Value* NetLogHostPortPairCallback(const HostPortPair* host_and_port,
+                                        NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("host_and_port", host_and_port->ToString());
   return dict;
 }
 
-Value* NetLogIPEndPointCallback(const IPEndPoint* address,
-                                NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+base::Value* NetLogIPEndPointCallback(const IPEndPoint* address,
+                                      NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("address", address->ToString());
   return dict;
 }
 
-Value* NetLogSourceAddressCallback(const struct sockaddr* net_address,
-                                   socklen_t address_len,
-                                   NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+base::Value* NetLogSourceAddressCallback(const struct sockaddr* net_address,
+                                         socklen_t address_len,
+                                         NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("source_address",
                   NetAddressToStringWithPort(net_address, address_len));
   return dict;

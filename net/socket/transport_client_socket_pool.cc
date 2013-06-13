@@ -458,7 +458,7 @@ void TransportClientSocketPool::RemoveLayeredPool(LayeredPool* layered_pool) {
   base_.RemoveLayeredPool(layered_pool);
 }
 
-DictionaryValue* TransportClientSocketPool::GetInfoAsValue(
+base::DictionaryValue* TransportClientSocketPool::GetInfoAsValue(
     const std::string& name,
     const std::string& type,
     bool include_nested_pools) const {

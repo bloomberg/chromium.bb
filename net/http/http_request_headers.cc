@@ -183,18 +183,18 @@ std::string HttpRequestHeaders::ToString() const {
   return output;
 }
 
-Value* HttpRequestHeaders::NetLogCallback(
+base::Value* HttpRequestHeaders::NetLogCallback(
     const std::string* request_line,
     NetLog::LogLevel /* log_level */) const {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("line", *request_line);
-  ListValue* headers = new ListValue();
+  base::ListValue* headers = new base::ListValue();
   for (HeaderVector::const_iterator it = headers_.begin();
        it != headers_.end(); ++it) {
     headers->Append(
-        new StringValue(base::StringPrintf("%s: %s",
-                                           it->key.c_str(),
-                                           it->value.c_str())));
+        new base::StringValue(base::StringPrintf("%s: %s",
+                                                 it->key.c_str(),
+                                                 it->value.c_str())));
   }
   dict->Set("headers", headers);
   return dict;

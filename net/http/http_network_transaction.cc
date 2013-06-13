@@ -96,12 +96,13 @@ bool IsClientCertificateError(int error) {
   }
 }
 
-Value* NetLogSSLVersionFallbackCallback(const GURL* url,
-                                        int net_error,
-                                        uint16 version_before,
-                                        uint16 version_after,
-                                        NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+base::Value* NetLogSSLVersionFallbackCallback(
+    const GURL* url,
+    int net_error,
+    uint16 version_before,
+    uint16 version_after,
+    NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("host_and_port", GetHostAndPort(*url));
   dict->SetInteger("net_error", net_error);
   dict->SetInteger("version_before", version_before);

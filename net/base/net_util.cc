@@ -1939,7 +1939,7 @@ IPv6SupportResult::IPv6SupportResult(bool ipv6_supported,
 
 base::Value* IPv6SupportResult::ToNetLogValue(
     NetLog::LogLevel /* log_level */) const {
-  base::DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetBoolean("ipv6_supported", ipv6_supported);
   dict->SetString("ipv6_support_status",
                   kFinalStatusNames[ipv6_support_status]);

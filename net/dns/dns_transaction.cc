@@ -57,10 +57,10 @@ bool IsIPLiteral(const std::string& hostname) {
   return ParseIPLiteralToNumber(hostname, &ip);
 }
 
-Value* NetLogStartCallback(const std::string* hostname,
+base::Value* NetLogStartCallback(const std::string* hostname,
                            uint16 qtype,
                            NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("hostname", *hostname);
   dict->SetInteger("query_type", qtype);
   return dict;
@@ -100,7 +100,7 @@ class DnsAttempt {
   Value* NetLogResponseCallback(NetLog::LogLevel log_level) const {
     DCHECK(GetResponse()->IsValid());
 
-    DictionaryValue* dict = new DictionaryValue();
+    base::DictionaryValue* dict = new base::DictionaryValue();
     dict->SetInteger("rcode", GetResponse()->rcode());
     dict->SetInteger("answer_count", GetResponse()->answer_count());
     GetSocketNetLog().source().AddToEventParameters(dict);

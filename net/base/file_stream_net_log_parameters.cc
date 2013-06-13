@@ -13,7 +13,7 @@ base::Value* NetLogFileStreamErrorCallback(
     int os_error,
     net::Error net_error,
     NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("operation", GetFileErrorSourceName(source));
   dict->SetInteger("os_error", os_error);

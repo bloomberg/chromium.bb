@@ -4370,7 +4370,7 @@ TEST_P(SpdyNetworkTransactionSpdy3Test, NetLog) {
       net::NetLog::TYPE_SPDY_SESSION_SYN_STREAM,
       net::NetLog::PHASE_NONE);
 
-  ListValue* header_list;
+  base::ListValue* header_list;
   ASSERT_TRUE(entries[pos].params.get());
   ASSERT_TRUE(entries[pos].params->GetList("headers", &header_list));
 

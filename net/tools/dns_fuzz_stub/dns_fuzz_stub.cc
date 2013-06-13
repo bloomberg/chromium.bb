@@ -64,7 +64,7 @@ bool ReadTestCase(const char* filename,
     return false;
   }
 
-  DictionaryValue* dict;
+  base::DictionaryValue* dict;
   if (!value->GetAsDictionary(&dict)) {
     LOG(ERROR) << filename << ": test case is not a dictionary.";
     return false;
@@ -103,7 +103,7 @@ bool ReadTestCase(const char* filename,
   }
   *qtype = static_cast<uint16>(qtype_int);
 
-  ListValue* resp_list;
+  base::ListValue* resp_list;
   if (!dict->GetList("response", &resp_list)) {
     LOG(ERROR) << filename << ": response is missing or not a list.";
     return false;

@@ -201,8 +201,8 @@ void QuicClientSession::CloseSessionOnError(int error) {
   stream_factory_->OnSessionClose(this);
 }
 
-Value* QuicClientSession::GetInfoAsValue(const HostPortPair& pair) const {
-  DictionaryValue* dict = new DictionaryValue();
+base::Value* QuicClientSession::GetInfoAsValue(const HostPortPair& pair) const {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("host_port_pair", pair.ToString());
   dict->SetInteger("open_streams", GetNumOpenStreams());
   dict->SetInteger("total_streams", num_total_streams_);

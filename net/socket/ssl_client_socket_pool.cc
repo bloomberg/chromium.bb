@@ -583,13 +583,13 @@ void SSLClientSocketPool::RemoveLayeredPool(LayeredPool* layered_pool) {
   base_.RemoveLayeredPool(layered_pool);
 }
 
-DictionaryValue* SSLClientSocketPool::GetInfoAsValue(
+base::DictionaryValue* SSLClientSocketPool::GetInfoAsValue(
     const std::string& name,
     const std::string& type,
     bool include_nested_pools) const {
-  DictionaryValue* dict = base_.GetInfoAsValue(name, type);
+  base::DictionaryValue* dict = base_.GetInfoAsValue(name, type);
   if (include_nested_pools) {
-    ListValue* list = new ListValue();
+    base::ListValue* list = new base::ListValue();
     if (transport_pool_) {
       list->Append(transport_pool_->GetInfoAsValue("transport_socket_pool",
                                                    "transport_socket_pool",

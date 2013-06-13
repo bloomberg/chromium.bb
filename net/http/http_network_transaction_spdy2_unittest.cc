@@ -122,10 +122,10 @@ int GetIdleSocketCountInSSLSocketPool(net::HttpNetworkSession* session) {
 // Takes in a Value created from a NetLogHttpResponseParameter, and returns
 // a JSONified list of headers as a single string.  Uses single quotes instead
 // of double quotes for easier comparison.  Returns false on failure.
-bool GetHeaders(DictionaryValue* params, std::string* headers) {
+bool GetHeaders(base::DictionaryValue* params, std::string* headers) {
   if (!params)
     return false;
-  ListValue* header_list;
+  base::ListValue* header_list;
   if (!params->GetList("headers", &header_list))
     return false;
   std::string double_quote_headers;

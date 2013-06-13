@@ -18,34 +18,31 @@
 #include "net/http/http_version.h"
 #include "net/socket/client_socket_handle.h"
 
-using base::DictionaryValue;
-using base::Value;
-
 namespace net {
 
 namespace {
 
-Value* NetLogReceivedHeadersCallback(const NetLog::Source& source,
-                                     const std::string* feedback,
-                                     NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue;
+base::Value* NetLogReceivedHeadersCallback(const NetLog::Source& source,
+                                           const std::string* feedback,
+                                           NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue;
   source.AddToEventParameters(dict);
   dict->SetString("feedback", *feedback);
   return dict;
 }
 
-Value* NetLogStreamClosedCallback(const NetLog::Source& source,
-                                  bool not_reusable,
-                                  NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue;
+base::Value* NetLogStreamClosedCallback(const NetLog::Source& source,
+                                        bool not_reusable,
+                                        NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue;
   source.AddToEventParameters(dict);
   dict->SetBoolean("not_reusable", not_reusable);
   return dict;
 }
 
-Value* NetLogHostPortPairCallback(const HostPortPair* host_port_pair,
-                                  NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue;
+base::Value* NetLogHostPortPairCallback(const HostPortPair* host_port_pair,
+                                        NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue;
   dict->SetString("host_and_port", host_port_pair->ToString());
   return dict;
 }

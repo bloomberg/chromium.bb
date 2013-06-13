@@ -79,12 +79,12 @@ int FtpCtrlResponseBuffer::ConsumeData(const char* data, int data_length) {
 
 namespace {
 
-Value* NetLogFtpCtrlResponseCallback(const FtpCtrlResponse* response,
-                                     NetLog::LogLevel log_level) {
-  ListValue* lines = new ListValue();
+base::Value* NetLogFtpCtrlResponseCallback(const FtpCtrlResponse* response,
+                                           NetLog::LogLevel log_level) {
+  base::ListValue* lines = new base::ListValue();
   lines->AppendStrings(response->lines);
 
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("status_code", response->status_code);
   dict->Set("lines", lines);
   return dict;

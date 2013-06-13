@@ -81,7 +81,7 @@ void HttpServerPropertiesImpl::GetSpdyServerList(
        it != spdy_servers_table_.end(); ++it) {
     const std::string spdy_server_host_port = it->first;
     if (it->second)
-      spdy_server_list->Append(new StringValue(spdy_server_host_port));
+      spdy_server_list->Append(new base::StringValue(spdy_server_host_port));
   }
 }
 

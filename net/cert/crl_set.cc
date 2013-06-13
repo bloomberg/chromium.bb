@@ -178,7 +178,7 @@ static bool ReadCRL(base::StringPiece* data, std::string* out_parent_spki_hash,
 }
 
 bool CRLSet::CopyBlockedSPKIsFromHeader(base::DictionaryValue* header_dict) {
-  ListValue* blocked_spkis_list = NULL;
+  base::ListValue* blocked_spkis_list = NULL;
   if (!header_dict->GetList("BlockedSPKIs", &blocked_spkis_list)) {
     // BlockedSPKIs is optional, so it's fine if we don't find it.
     return true;

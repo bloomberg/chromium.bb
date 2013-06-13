@@ -251,8 +251,8 @@ bool SpdySessionPool::RemoveFromSessionList(
   return true;
 }
 
-Value* SpdySessionPool::SpdySessionPoolInfoToValue() const {
-  ListValue* list = new ListValue();
+base::Value* SpdySessionPool::SpdySessionPoolInfoToValue() const {
+  base::ListValue* list = new base::ListValue();
 
   for (SpdySessionsMap::const_iterator it = sessions_.begin();
        it != sessions_.end(); ++it) {

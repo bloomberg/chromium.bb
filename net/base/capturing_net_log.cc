@@ -15,7 +15,7 @@ CapturingNetLog::CapturedEntry::CapturedEntry(
     const base::TimeTicks& time,
     Source source,
     EventPhase phase,
-    scoped_ptr<DictionaryValue> params)
+    scoped_ptr<base::DictionaryValue> params)
     : type(type),
       time(time),
       source(source),
@@ -105,7 +105,7 @@ void CapturingNetLog::Observer::OnAddEntry(const net::NetLog::Entry& entry) {
 
   // Using Dictionaries instead of Values makes checking values a little
   // simpler.
-  DictionaryValue* param_dict = NULL;
+  base::DictionaryValue* param_dict = NULL;
   Value* param_value = entry.ParametersToValue();
   if (param_value && !param_value->GetAsDictionary(&param_dict))
     delete param_value;
@@ -117,7 +117,7 @@ void CapturingNetLog::Observer::OnAddEntry(const net::NetLog::Entry& entry) {
                     base::TimeTicks::Now(),
                     entry.source(),
                     entry.phase(),
-                    scoped_ptr<DictionaryValue>(param_dict)));
+                    scoped_ptr<base::DictionaryValue>(param_dict)));
 }
 
 CapturingNetLog::CapturingNetLog() {

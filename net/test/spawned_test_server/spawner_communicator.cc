@@ -342,7 +342,8 @@ bool SpawnerCommunicator::StartServer(const std::string& arguments,
   }
 
   // Check whether spawner server returns valid data.
-  DictionaryValue* server_data = static_cast<DictionaryValue*>(value.get());
+  base::DictionaryValue* server_data =
+      static_cast<base::DictionaryValue*>(value.get());
   std::string message;
   if (!server_data->GetString("message", &message) || message != "started") {
     LOG(ERROR) << "Invalid message in server data: ";

@@ -563,7 +563,7 @@ class TestClientSocketPool : public ClientSocketPool {
     base_.RemoveLayeredPool(pool);
   }
 
-  virtual DictionaryValue* GetInfoAsValue(
+  virtual base::DictionaryValue* GetInfoAsValue(
       const std::string& name,
       const std::string& type,
       bool include_nested_pools) const OVERRIDE {

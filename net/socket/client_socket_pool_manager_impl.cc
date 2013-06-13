@@ -19,7 +19,7 @@ namespace {
 
 // Appends information about all |socket_pools| to the end of |list|.
 template <class MapType>
-void AddSocketPoolsToList(ListValue* list,
+void AddSocketPoolsToList(base::ListValue* list,
                           const MapType& socket_pools,
                           const std::string& type,
                           bool include_nested_pools) {
@@ -341,8 +341,8 @@ SSLClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPoolForSSLWithProxy(
   return ret.first->second;
 }
 
-Value* ClientSocketPoolManagerImpl::SocketPoolInfoToValue() const {
-  ListValue* list = new ListValue();
+base::Value* ClientSocketPoolManagerImpl::SocketPoolInfoToValue() const {
+  base::ListValue* list = new base::ListValue();
   list->Append(transport_socket_pool_->GetInfoAsValue("transport_socket_pool",
                                                 "transport_socket_pool",
                                                 false));

@@ -226,12 +226,12 @@ int MapNSSError(PRErrorCode err) {
 // Returns parameters to attach to the NetLog when we receive an error in
 // response to a call to an NSS function.  Used instead of
 // NetLogSSLErrorCallback with events of type TYPE_SSL_NSS_ERROR.
-Value* NetLogSSLFailedNSSFunctionCallback(
+base::Value* NetLogSSLFailedNSSFunctionCallback(
     const char* function,
     const char* param,
     int ssl_lib_error,
     NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("function", function);
   if (param[0] != '\0')
     dict->SetString("param", param);

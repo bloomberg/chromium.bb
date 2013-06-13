@@ -11,10 +11,10 @@ namespace net {
 
 namespace {
 
-Value* NetLogSSLErrorCallback(int net_error,
-                              int ssl_lib_error,
-                              NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+base::Value* NetLogSSLErrorCallback(int net_error,
+                                    int ssl_lib_error,
+                                    NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("net_error", net_error);
   if (ssl_lib_error)
     dict->SetInteger("ssl_lib_error", ssl_lib_error);

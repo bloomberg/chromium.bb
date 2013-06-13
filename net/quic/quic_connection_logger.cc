@@ -14,20 +14,20 @@ namespace net {
 
 namespace {
 
-Value* NetLogQuicPacketCallback(const IPEndPoint* self_address,
-                                const IPEndPoint* peer_address,
-                                size_t packet_size,
-                                NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+base::Value* NetLogQuicPacketCallback(const IPEndPoint* self_address,
+                                      const IPEndPoint* peer_address,
+                                      size_t packet_size,
+                                      NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("self_address", self_address->ToString());
   dict->SetString("peer_address", peer_address->ToString());
   dict->SetInteger("size", packet_size);
   return dict;
 }
 
-Value* NetLogQuicPacketHeaderCallback(const QuicPacketHeader* header,
-                                      NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+base::Value* NetLogQuicPacketHeaderCallback(const QuicPacketHeader* header,
+                                            NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("guid",
                   base::Uint64ToString(header->public_header.guid));
   dict->SetInteger("reset_flag", header->public_header.reset_flag);
@@ -40,9 +40,9 @@ Value* NetLogQuicPacketHeaderCallback(const QuicPacketHeader* header,
   return dict;
 }
 
-Value* NetLogQuicStreamFrameCallback(const QuicStreamFrame* frame,
-                                     NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+base::Value* NetLogQuicStreamFrameCallback(const QuicStreamFrame* frame,
+                                           NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("stream_id", frame->stream_id);
   dict->SetBoolean("fin", frame->fin);
   dict->SetString("offset", base::Uint64ToString(frame->offset));
@@ -50,19 +50,19 @@ Value* NetLogQuicStreamFrameCallback(const QuicStreamFrame* frame,
   return dict;
 }
 
-Value* NetLogQuicAckFrameCallback(const QuicAckFrame* frame,
-                                  NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
-  DictionaryValue* sent_info = new DictionaryValue();
+base::Value* NetLogQuicAckFrameCallback(const QuicAckFrame* frame,
+                                        NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  base::DictionaryValue* sent_info = new base::DictionaryValue();
   dict->Set("sent_info", sent_info);
   sent_info->SetString("least_unacked",
                        base::Uint64ToString(frame->sent_info.least_unacked));
-  DictionaryValue* received_info = new DictionaryValue();
+  base::DictionaryValue* received_info = new base::DictionaryValue();
   dict->Set("received_info", received_info);
   received_info->SetString(
       "largest_observed",
       base::Uint64ToString(frame->received_info.largest_observed));
-  ListValue* missing = new ListValue();
+  base::ListValue* missing = new base::ListValue();
   received_info->Set("missing_packets", missing);
   const SequenceNumberSet& missing_packets =
       frame->received_info.missing_packets;
@@ -73,16 +73,16 @@ Value* NetLogQuicAckFrameCallback(const QuicAckFrame* frame,
   return dict;
 }
 
-Value* NetLogQuicCongestionFeedbackFrameCallback(
+base::Value* NetLogQuicCongestionFeedbackFrameCallback(
     const QuicCongestionFeedbackFrame* frame,
     NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   switch (frame->type) {
     case kInterArrival: {
       dict->SetString("type", "InterArrival");
       dict->SetInteger("accumulated_number_of_lost_packets",
                        frame->inter_arrival.accumulated_number_of_lost_packets);
-      ListValue* received = new ListValue();
+      base::ListValue* received = new base::ListValue();
       dict->Set("received_packets", received);
       for (TimeMap::const_iterator it =
                frame->inter_arrival.received_packet_times.begin();
@@ -109,19 +109,20 @@ Value* NetLogQuicCongestionFeedbackFrameCallback(
   return dict;
 }
 
-Value* NetLogQuicRstStreamFrameCallback(const QuicRstStreamFrame* frame,
-                                        NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+base::Value* NetLogQuicRstStreamFrameCallback(
+    const QuicRstStreamFrame* frame,
+    NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("stream_id", frame->stream_id);
   dict->SetInteger("error_code", frame->error_code);
   dict->SetString("details", frame->error_details);
   return dict;
 }
 
-Value* NetLogQuicConnectionCloseFrameCallback(
+base::Value* NetLogQuicConnectionCloseFrameCallback(
     const QuicConnectionCloseFrame* frame,
     NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("error_code", frame->error_code);
   dict->SetString("details", frame->error_details);
   return dict;

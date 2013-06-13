@@ -12,9 +12,6 @@
 #include "net/http/http_pipelined_host_impl.h"
 #include "net/http/http_server_properties.h"
 
-using base::ListValue;
-using base::Value;
-
 namespace net {
 
 class HttpPipelinedHostImplFactory : public HttpPipelinedHost::Factory {
@@ -135,11 +132,11 @@ void HttpPipelinedHostPool::OnHostDeterminedCapability(
                                                  capability);
 }
 
-Value* HttpPipelinedHostPool::PipelineInfoToValue() const {
-  ListValue* list = new ListValue();
+base::Value* HttpPipelinedHostPool::PipelineInfoToValue() const {
+  base::ListValue* list = new base::ListValue();
   for (HostMap::const_iterator it = host_map_.begin();
        it != host_map_.end(); ++it) {
-    Value* value = it->second->PipelineInfoToValue();
+    base::Value* value = it->second->PipelineInfoToValue();
     list->Append(value);
   }
   return list;

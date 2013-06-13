@@ -9,10 +9,6 @@
 #include "net/http/http_pipelined_connection_impl.h"
 #include "net/http/http_pipelined_stream.h"
 
-using base::DictionaryValue;
-using base::ListValue;
-using base::Value;
-
 namespace net {
 
 // TODO(simonjam): Run experiments to see what value minimizes evictions without
@@ -190,11 +186,11 @@ void HttpPipelinedHostImpl::NotifyAllPipelinesHaveCapacity() {
   }
 }
 
-Value* HttpPipelinedHostImpl::PipelineInfoToValue() const {
-  ListValue* list_value = new ListValue();
+base::Value* HttpPipelinedHostImpl::PipelineInfoToValue() const {
+  base::ListValue* list_value = new base::ListValue();
   for (PipelineInfoMap::const_iterator it = pipelines_.begin();
        it != pipelines_.end(); ++it) {
-    DictionaryValue* pipeline_dict = new DictionaryValue;
+    base::DictionaryValue* pipeline_dict = new base::DictionaryValue;
     pipeline_dict->SetString("host", key_.origin().ToString());
     pipeline_dict->SetBoolean("forced", false);
     pipeline_dict->SetInteger("depth", it->first->depth());

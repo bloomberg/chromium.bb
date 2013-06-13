@@ -45,10 +45,11 @@ std::string GenerateChildName(const std::string& base_name, int child_id) {
 
 // Returns NetLog parameters for the creation of a child MemEntryImpl.  Separate
 // function needed because child entries don't suppport GetKey().
-Value* NetLogChildEntryCreationCallback(const disk_cache::MemEntryImpl* parent,
-                                        int child_id,
-                                        net::NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+base::Value* NetLogChildEntryCreationCallback(
+    const disk_cache::MemEntryImpl* parent,
+    int child_id,
+    net::NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("key", GenerateChildName(parent->GetKey(), child_id));
   dict->SetBoolean("created", true);
   return dict;

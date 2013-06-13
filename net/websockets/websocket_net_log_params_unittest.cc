@@ -12,19 +12,21 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(NetLogWebSocketHandshakeParameterTest, ToValue) {
-  ListValue* list = new ListValue();
-  list->Append(new StringValue("GET /demo HTTP/1.1"));
-  list->Append(new StringValue("Host: example.com"));
-  list->Append(new StringValue("Connection: Upgrade"));
-  list->Append(new StringValue("Sec-WebSocket-Key2: 12998 5 Y3 1  .P00"));
-  list->Append(new StringValue("Sec-WebSocket-Protocol: sample"));
-  list->Append(new StringValue("Upgrade: WebSocket"));
-  list->Append(new StringValue("Sec-WebSocket-Key1: 4 @1  46546xW%0l 1 5"));
-  list->Append(new StringValue("Origin: http://example.com"));
-  list->Append(new StringValue(std::string()));
-  list->Append(new StringValue("\\x00\\x01\\x0a\\x0d\\xff\\xfe\\x0d\\x0a"));
+  base::ListValue* list = new base::ListValue();
+  list->Append(new base::StringValue("GET /demo HTTP/1.1"));
+  list->Append(new base::StringValue("Host: example.com"));
+  list->Append(new base::StringValue("Connection: Upgrade"));
+  list->Append(new base::StringValue("Sec-WebSocket-Key2: 12998 5 Y3 1  .P00"));
+  list->Append(new base::StringValue("Sec-WebSocket-Protocol: sample"));
+  list->Append(new base::StringValue("Upgrade: WebSocket"));
+  list->Append(new base::StringValue(
+      "Sec-WebSocket-Key1: 4 @1  46546xW%0l 1 5"));
+  list->Append(new base::StringValue("Origin: http://example.com"));
+  list->Append(new base::StringValue(std::string()));
+  list->Append(new base::StringValue(
+      "\\x00\\x01\\x0a\\x0d\\xff\\xfe\\x0d\\x0a"));
 
-  DictionaryValue expected;
+  base::DictionaryValue expected;
   expected.Set("headers", list);
 
   const std::string key("\x00\x01\x0a\x0d\xff\xfe\x0d\x0a", 8);
@@ -40,7 +42,7 @@ TEST(NetLogWebSocketHandshakeParameterTest, ToValue) {
     "\r\n" +
     key;
 
-  scoped_ptr<Value> actual(
+  scoped_ptr<base::Value> actual(
       net::NetLogWebSocketHandshakeCallback(&testInput,
                                             net::NetLog::LOG_BASIC));
 

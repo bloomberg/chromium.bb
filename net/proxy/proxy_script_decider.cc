@@ -47,10 +47,10 @@ bool LooksLikePacScript(const base::string16& script) {
 // http://code.google.com/p/chromium/issues/detail?id=18575#c20
 static const char kWpadUrl[] = "http://wpad/wpad.dat";
 
-Value* ProxyScriptDecider::PacSource::NetLogCallback(
+base::Value* ProxyScriptDecider::PacSource::NetLogCallback(
     const GURL* effective_pac_url,
     NetLog::LogLevel /* log_level */) const {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   std::string source;
   switch (type) {
     case PacSource::WPAD_DHCP:

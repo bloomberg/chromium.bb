@@ -20,53 +20,53 @@ namespace {
 // bytes transferred and, if the log level indicates bytes should be logged and
 // |byte_count| > 0, the bytes themselves.  The bytes are hex-encoded, since
 // base::StringValue only supports UTF-8.
-Value* BytesTransferredCallback(int byte_count,
-                                const char* bytes,
-                                NetLog::LogLevel log_level) {
-  DictionaryValue* dict = new DictionaryValue();
+base::Value* BytesTransferredCallback(int byte_count,
+                                      const char* bytes,
+                                      NetLog::LogLevel log_level) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("byte_count", byte_count);
   if (NetLog::IsLoggingBytes(log_level) && byte_count > 0)
     dict->SetString("hex_encoded_bytes", base::HexEncode(bytes, byte_count));
   return dict;
 }
 
-Value* SourceEventParametersCallback(const NetLog::Source source,
-                                     NetLog::LogLevel /* log_level */) {
+base::Value* SourceEventParametersCallback(const NetLog::Source source,
+                                           NetLog::LogLevel /* log_level */) {
   if (!source.IsValid())
     return NULL;
-  DictionaryValue* event_params = new DictionaryValue();
+  base::DictionaryValue* event_params = new base::DictionaryValue();
   source.AddToEventParameters(event_params);
   return event_params;
 }
 
-Value* NetLogIntegerCallback(const char* name,
-                             int value,
-                             NetLog::LogLevel /* log_level */) {
-  DictionaryValue* event_params = new DictionaryValue();
+base::Value* NetLogIntegerCallback(const char* name,
+                                   int value,
+                                   NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* event_params = new base::DictionaryValue();
   event_params->SetInteger(name, value);
   return event_params;
 }
 
-Value* NetLogInt64Callback(const char* name,
-                           int64 value,
-                           NetLog::LogLevel /* log_level */) {
-  DictionaryValue* event_params = new DictionaryValue();
+base::Value* NetLogInt64Callback(const char* name,
+                                 int64 value,
+                                 NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* event_params = new base::DictionaryValue();
   event_params->SetString(name, base::Int64ToString(value));
   return event_params;
 }
 
-Value* NetLogStringCallback(const char* name,
-                            const std::string* value,
-                            NetLog::LogLevel /* log_level */) {
-  DictionaryValue* event_params = new DictionaryValue();
+base::Value* NetLogStringCallback(const char* name,
+                                  const std::string* value,
+                                  NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* event_params = new base::DictionaryValue();
   event_params->SetString(name, *value);
   return event_params;
 }
 
-Value* NetLogString16Callback(const char* name,
-                              const base::string16* value,
-                              NetLog::LogLevel /* log_level */) {
-  DictionaryValue* event_params = new DictionaryValue();
+base::Value* NetLogString16Callback(const char* name,
+                                    const base::string16* value,
+                                    NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* event_params = new base::DictionaryValue();
   event_params->SetString(name, *value);
   return event_params;
 }
@@ -86,8 +86,9 @@ bool NetLog::Source::IsValid() const {
   return id != kInvalidId;
 }
 
-void NetLog::Source::AddToEventParameters(DictionaryValue* event_params) const {
-  DictionaryValue* dict = new DictionaryValue();
+void NetLog::Source::AddToEventParameters(
+    base::DictionaryValue* event_params) const {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("type", static_cast<int>(type));
   dict->SetInteger("id", static_cast<int>(id));
   event_params->Set("source_dependency", dict);
@@ -99,8 +100,8 @@ NetLog::ParametersCallback NetLog::Source::ToEventParametersCallback() const {
 
 // static
 bool NetLog::Source::FromEventParameters(Value* event_params, Source* source) {
-  DictionaryValue* dict;
-  DictionaryValue* source_dict;
+  base::DictionaryValue* dict;
+  base::DictionaryValue* source_dict;
   int source_id;
   int source_type;
   if (!event_params ||
@@ -118,13 +119,13 @@ bool NetLog::Source::FromEventParameters(Value* event_params, Source* source) {
   return true;
 }
 
-Value* NetLog::Entry::ToValue() const {
-  DictionaryValue* entry_dict(new DictionaryValue());
+base::Value* NetLog::Entry::ToValue() const {
+  base::DictionaryValue* entry_dict(new base::DictionaryValue());
 
   entry_dict->SetString("time", TickCountToString(time_));
 
   // Set the entry source.
-  DictionaryValue* source_dict = new DictionaryValue();
+  base::DictionaryValue* source_dict = new base::DictionaryValue();
   source_dict->SetInteger("id", source_.id);
   source_dict->SetInteger("type", static_cast<int>(source_.type));
   entry_dict->Set("source", source_dict);
@@ -143,7 +144,7 @@ Value* NetLog::Entry::ToValue() const {
   return entry_dict;
 }
 
-Value* NetLog::Entry::ParametersToValue() const {
+base::Value* NetLog::Entry::ParametersToValue() const {
   if (parameters_callback_)
     return parameters_callback_->Run(log_level_);
   return NULL;
@@ -299,7 +300,7 @@ const char* NetLog::EventTypeToString(EventType event) {
 
 // static
 base::Value* NetLog::GetEventTypesAsValue() {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   for (int i = 0; i < EVENT_COUNT; ++i) {
     dict->SetInteger(EventTypeToString(static_cast<EventType>(i)), i);
   }
@@ -320,7 +321,7 @@ const char* NetLog::SourceTypeToString(SourceType source) {
 
 // static
 base::Value* NetLog::GetSourceTypesAsValue() {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   for (int i = 0; i < SOURCE_COUNT; ++i) {
     dict->SetInteger(SourceTypeToString(static_cast<SourceType>(i)), i);
   }

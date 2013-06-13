@@ -10,10 +10,6 @@
 #include "net/socket/buffered_write_stream_socket.h"
 #include "net/socket/client_socket_handle.h"
 
-using base::DictionaryValue;
-using base::ListValue;
-using base::Value;
-
 namespace net {
 
 HttpPipelinedHostForced::HttpPipelinedHostForced(
@@ -89,10 +85,10 @@ void HttpPipelinedHostForced::OnPipelineFeedback(
   // We don't care. We always pipeline.
 }
 
-Value* HttpPipelinedHostForced::PipelineInfoToValue() const {
-  ListValue* list_value = new ListValue();
+base::Value* HttpPipelinedHostForced::PipelineInfoToValue() const {
+  base::ListValue* list_value = new base::ListValue();
   if (pipeline_.get()) {
-    DictionaryValue* pipeline_dict = new DictionaryValue;
+    base::DictionaryValue* pipeline_dict = new base::DictionaryValue;
     pipeline_dict->SetString("host", key_.origin().ToString());
     pipeline_dict->SetBoolean("forced", true);
     pipeline_dict->SetInteger("depth", pipeline_->depth());

@@ -9,16 +9,16 @@
 
 namespace net {
 
-Value* SpdyHeaderBlockNetLogCallback(
+base::Value* SpdyHeaderBlockNetLogCallback(
     const SpdyHeaderBlock* headers,
     NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
-  DictionaryValue* headers_dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  base::DictionaryValue* headers_dict = new base::DictionaryValue();
   for (SpdyHeaderBlock::const_iterator it = headers->begin();
        it != headers->end(); ++it) {
     headers_dict->SetWithoutPathExpansion(
         it->first,
-        new StringValue(
+        new base::StringValue(
             ShouldShowHttpHeaderValue(it->first) ? it->second : "[elided]"));
   }
   dict->Set("headers", headers_dict);

@@ -9,10 +9,11 @@
 
 namespace net {
 
-Value* NetLogWebSocketHandshakeCallback(const std::string* headers,
-                                        NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
-  ListValue* header_list = new ListValue();
+base::Value* NetLogWebSocketHandshakeCallback(
+    const std::string* headers,
+    NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  base::ListValue* header_list = new base::ListValue();
 
   size_t last = 0;
   size_t headers_size = headers->size();
@@ -25,7 +26,7 @@ Value* NetLogWebSocketHandshakeCallback(const std::string* headers,
       pos += 2;
       last = pos;
 
-      header_list->Append(new StringValue(entry));
+      header_list->Append(new base::StringValue(entry));
 
       if (entry.empty()) {
         // Dump WebSocket key3.
@@ -33,7 +34,7 @@ Value* NetLogWebSocketHandshakeCallback(const std::string* headers,
         for (; pos < headers_size; ++pos) {
           key += base::StringPrintf("\\x%02x", (*headers)[pos] & 0xff);
         }
-        header_list->Append(new StringValue(key));
+        header_list->Append(new base::StringValue(key));
         break;
       }
     } else {

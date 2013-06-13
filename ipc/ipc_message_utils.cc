@@ -50,10 +50,10 @@ void LogBytes(const std::vector<CharType>& data, std::string* out) {
 #endif
 }
 
-bool ReadValue(const Message* m, PickleIterator* iter, Value** value,
+bool ReadValue(const Message* m, PickleIterator* iter, base::Value** value,
                int recursion);
 
-void WriteValue(Message* m, const Value* value, int recursion) {
+void WriteValue(Message* m, const base::Value* value, int recursion) {
   bool result;
   if (recursion > kMaxRecursionDepth) {
     LOG(WARNING) << "Max recursion depth hit in WriteValue.";
@@ -63,58 +63,60 @@ void WriteValue(Message* m, const Value* value, int recursion) {
   m->WriteInt(value->GetType());
 
   switch (value->GetType()) {
-    case Value::TYPE_NULL:
+    case base::Value::TYPE_NULL:
     break;
-    case Value::TYPE_BOOLEAN: {
+    case base::Value::TYPE_BOOLEAN: {
       bool val;
       result = value->GetAsBoolean(&val);
       DCHECK(result);
       WriteParam(m, val);
       break;
     }
-    case Value::TYPE_INTEGER: {
+    case base::Value::TYPE_INTEGER: {
       int val;
       result = value->GetAsInteger(&val);
       DCHECK(result);
       WriteParam(m, val);
       break;
     }
-    case Value::TYPE_DOUBLE: {
+    case base::Value::TYPE_DOUBLE: {
       double val;
       result = value->GetAsDouble(&val);
       DCHECK(result);
       WriteParam(m, val);
       break;
     }
-    case Value::TYPE_STRING: {
+    case base::Value::TYPE_STRING: {
       std::string val;
       result = value->GetAsString(&val);
       DCHECK(result);
       WriteParam(m, val);
       break;
     }
-    case Value::TYPE_BINARY: {
+    case base::Value::TYPE_BINARY: {
       const base::BinaryValue* binary =
           static_cast<const base::BinaryValue*>(value);
       m->WriteData(binary->GetBuffer(), static_cast<int>(binary->GetSize()));
       break;
     }
-    case Value::TYPE_DICTIONARY: {
-      const DictionaryValue* dict = static_cast<const DictionaryValue*>(value);
+    case base::Value::TYPE_DICTIONARY: {
+      const base::DictionaryValue* dict =
+          static_cast<const base::DictionaryValue*>(value);
 
       WriteParam(m, static_cast<int>(dict->size()));
 
-      for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+      for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
+           it.Advance()) {
         WriteParam(m, it.key());
         WriteValue(m, &it.value(), recursion + 1);
       }
       break;
     }
-    case Value::TYPE_LIST: {
-      const ListValue* list = static_cast<const ListValue*>(value);
+    case base::Value::TYPE_LIST: {
+      const base::ListValue* list = static_cast<const base::ListValue*>(value);
       WriteParam(m, static_cast<int>(list->GetSize()));
-      for (ListValue::const_iterator it = list->begin(); it != list->end();
-           ++it) {
+      for (base::ListValue::const_iterator it = list->begin();
+           it != list->end(); ++it) {
         WriteValue(m, *it, recursion + 1);
       }
       break;
@@ -125,7 +127,7 @@ void WriteValue(Message* m, const Value* value, int recursion) {
 // Helper for ReadValue that reads a DictionaryValue into a pre-allocated
 // object.
 bool ReadDictionaryValue(const Message* m, PickleIterator* iter,
-                         DictionaryValue* value, int recursion) {
+                         base::DictionaryValue* value, int recursion) {
   int size;
   if (!ReadParam(m, iter, &size))
     return false;
@@ -145,13 +147,13 @@ bool ReadDictionaryValue(const Message* m, PickleIterator* iter,
 // Helper for ReadValue that reads a ReadListValue into a pre-allocated
 // object.
 bool ReadListValue(const Message* m, PickleIterator* iter,
-                   ListValue* value, int recursion) {
+                   base::ListValue* value, int recursion) {
   int size;
   if (!ReadParam(m, iter, &size))
     return false;
 
   for (int i = 0; i < size; ++i) {
-    Value* subval;
+    base::Value* subval;
     if (!ReadValue(m, iter, &subval, recursion + 1))
       return false;
     value->Set(i, subval);
@@ -160,7 +162,7 @@ bool ReadListValue(const Message* m, PickleIterator* iter,
   return true;
 }
 
-bool ReadValue(const Message* m, PickleIterator* iter, Value** value,
+bool ReadValue(const Message* m, PickleIterator* iter, base::Value** value,
                int recursion) {
   if (recursion > kMaxRecursionDepth) {
     LOG(WARNING) << "Max recursion depth hit in ReadValue.";
@@ -172,38 +174,38 @@ bool ReadValue(const Message* m, PickleIterator* iter, Value** value,
     return false;
 
   switch (type) {
-    case Value::TYPE_NULL:
-    *value = Value::CreateNullValue();
+    case base::Value::TYPE_NULL:
+    *value = base::Value::CreateNullValue();
     break;
-    case Value::TYPE_BOOLEAN: {
+    case base::Value::TYPE_BOOLEAN: {
       bool val;
       if (!ReadParam(m, iter, &val))
         return false;
       *value = new base::FundamentalValue(val);
       break;
     }
-    case Value::TYPE_INTEGER: {
+    case base::Value::TYPE_INTEGER: {
       int val;
       if (!ReadParam(m, iter, &val))
         return false;
       *value = new base::FundamentalValue(val);
       break;
     }
-    case Value::TYPE_DOUBLE: {
+    case base::Value::TYPE_DOUBLE: {
       double val;
       if (!ReadParam(m, iter, &val))
         return false;
       *value = new base::FundamentalValue(val);
       break;
     }
-    case Value::TYPE_STRING: {
+    case base::Value::TYPE_STRING: {
       std::string val;
       if (!ReadParam(m, iter, &val))
         return false;
       *value = new base::StringValue(val);
       break;
     }
-    case Value::TYPE_BINARY: {
+    case base::Value::TYPE_BINARY: {
       const char* data;
       int length;
       if (!m->ReadData(iter, &data, &length))
@@ -211,15 +213,15 @@ bool ReadValue(const Message* m, PickleIterator* iter, Value** value,
       *value = base::BinaryValue::CreateWithCopiedBuffer(data, length);
       break;
     }
-    case Value::TYPE_DICTIONARY: {
-      scoped_ptr<DictionaryValue> val(new DictionaryValue());
+    case base::Value::TYPE_DICTIONARY: {
+      scoped_ptr<base::DictionaryValue> val(new base::DictionaryValue());
       if (!ReadDictionaryValue(m, iter, val.get(), recursion))
         return false;
       *value = val.release();
       break;
     }
-    case Value::TYPE_LIST: {
-      scoped_ptr<ListValue> val(new ListValue());
+    case base::Value::TYPE_LIST: {
+      scoped_ptr<base::ListValue> val(new base::ListValue());
       if (!ReadListValue(m, iter, val.get(), recursion))
         return false;
       *value = val.release();
@@ -436,11 +438,12 @@ void ParamTraits<std::vector<bool> >::Log(const param_type& p, std::string* l) {
   }
 }
 
-void ParamTraits<DictionaryValue>::Write(Message* m, const param_type& p) {
+void ParamTraits<base::DictionaryValue>::Write(Message* m,
+                                               const param_type& p) {
   WriteValue(m, &p, 0);
 }
 
-bool ParamTraits<DictionaryValue>::Read(
+bool ParamTraits<base::DictionaryValue>::Read(
     const Message* m, PickleIterator* iter, param_type* r) {
   int type;
   if (!ReadParam(m, iter, &type) || type != Value::TYPE_DICTIONARY)
@@ -449,7 +452,8 @@ bool ParamTraits<DictionaryValue>::Read(
   return ReadDictionaryValue(m, iter, r, 0);
 }
 
-void ParamTraits<DictionaryValue>::Log(const param_type& p, std::string* l) {
+void ParamTraits<base::DictionaryValue>::Log(const param_type& p,
+                                             std::string* l) {
   std::string json;
   base::JSONWriter::Write(&p, &json);
   l->append(json);
@@ -506,11 +510,11 @@ void ParamTraits<base::FilePath>::Log(const param_type& p, std::string* l) {
   ParamTraits<base::FilePath::StringType>::Log(p.value(), l);
 }
 
-void ParamTraits<ListValue>::Write(Message* m, const param_type& p) {
+void ParamTraits<base::ListValue>::Write(Message* m, const param_type& p) {
   WriteValue(m, &p, 0);
 }
 
-bool ParamTraits<ListValue>::Read(
+bool ParamTraits<base::ListValue>::Read(
     const Message* m, PickleIterator* iter, param_type* r) {
   int type;
   if (!ReadParam(m, iter, &type) || type != Value::TYPE_LIST)
@@ -519,7 +523,7 @@ bool ParamTraits<ListValue>::Read(
   return ReadListValue(m, iter, r, 0);
 }
 
-void ParamTraits<ListValue>::Log(const param_type& p, std::string* l) {
+void ParamTraits<base::ListValue>::Log(const param_type& p, std::string* l) {
   std::string json;
   base::JSONWriter::Write(&p, &json);
   l->append(json);

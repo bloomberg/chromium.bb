@@ -179,16 +179,16 @@ SSLClientSocketPool* HttpNetworkSession::GetSocketPoolForSSLWithProxy(
       proxy_server);
 }
 
-Value* HttpNetworkSession::SocketPoolInfoToValue() const {
+base::Value* HttpNetworkSession::SocketPoolInfoToValue() const {
   // TODO(yutak): Should merge values from normal pools and WebSocket pools.
   return normal_socket_pool_manager_->SocketPoolInfoToValue();
 }
 
-Value* HttpNetworkSession::SpdySessionPoolInfoToValue() const {
+base::Value* HttpNetworkSession::SpdySessionPoolInfoToValue() const {
   return spdy_session_pool_.SpdySessionPoolInfoToValue();
 }
 
-Value* HttpNetworkSession::QuicInfoToValue() const {
+base::Value* HttpNetworkSession::QuicInfoToValue() const {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->Set("sessions", quic_stream_factory_.QuicStreamFactoryInfoToValue());
   dict->SetBoolean("quic_enabled", params_.enable_quic);

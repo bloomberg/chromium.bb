@@ -275,7 +275,7 @@ base::Value* NetLogProcTaskFailedCallback(uint32 attempt_number,
                                           int net_error,
                                           int os_error,
                                           NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   if (attempt_number)
     dict->SetInteger("attempt_number", attempt_number);
 
@@ -308,7 +308,7 @@ base::Value* NetLogProcTaskFailedCallback(uint32 attempt_number,
 base::Value* NetLogDnsTaskFailedCallback(int net_error,
                                          int dns_error,
                                          NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("net_error", net_error);
   if (dns_error)
     dict->SetInteger("dns_error", dns_error);
@@ -320,7 +320,7 @@ base::Value* NetLogDnsTaskFailedCallback(int net_error,
 base::Value* NetLogRequestInfoCallback(const NetLog::Source& source,
                                        const HostResolver::RequestInfo* info,
                                        NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   source.AddToEventParameters(dict);
 
   dict->SetString("host", info->host_port_pair().ToString());
@@ -336,7 +336,7 @@ base::Value* NetLogRequestInfoCallback(const NetLog::Source& source,
 base::Value* NetLogJobCreationCallback(const NetLog::Source& source,
                                        const std::string* host,
                                        NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   source.AddToEventParameters(dict);
   dict->SetString("host", *host);
   return dict;
@@ -346,7 +346,7 @@ base::Value* NetLogJobCreationCallback(const NetLog::Source& source,
 base::Value* NetLogJobAttachCallback(const NetLog::Source& source,
                                      RequestPriority priority,
                                      NetLog::LogLevel /* log_level */) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   source.AddToEventParameters(dict);
   dict->SetInteger("priority", priority);
   return dict;
@@ -1918,7 +1918,7 @@ base::Value* HostResolverImpl::GetDnsConfigAsValue() const {
   // for it.
   const DnsConfig* dns_config = dns_client_->GetConfig();
   if (dns_config == NULL)
-    return new DictionaryValue();
+    return new base::DictionaryValue();
 
   return dns_config->ToValue();
 }
