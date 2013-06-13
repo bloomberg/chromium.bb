@@ -51,6 +51,7 @@ namespace WebKit {
 
 class WebAudioBus;
 class WebBlobRegistry;
+class WebContentDecryptionModule;
 class WebClipboard;
 class WebCompositorSupport;
 class WebCookieJar;
@@ -128,6 +129,13 @@ public:
 
     // May return null.
     virtual WebSpeechSynthesizer* createSpeechSynthesizer(WebSpeechSynthesizerClient*) { return 0; }
+
+
+    // Media --------------------------------------------------------------
+
+    // May return null.
+    virtual WebContentDecryptionModule* createContentDecryptionModule(const WebString& keySystem) { return 0; }
+
 
     // Audio --------------------------------------------------------------
 
