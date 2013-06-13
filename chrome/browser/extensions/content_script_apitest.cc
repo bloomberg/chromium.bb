@@ -70,19 +70,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptIgnoreHostPermissions) {
       "content_scripts/dont_match_host_permissions")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(
-    ExtensionApiTest, ContentScriptInjectedIntoMultipartPage) {
-  ASSERT_TRUE(StartTestServer());
-
-  // Start with a renderer already open at a URL.
-  GURL url(test_server()->GetURL("multipart-slow"));
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  string16 title;
-  ui_test_utils::GetCurrentTabTitle(browser(), &title);
-  EXPECT_EQ(std::string("PASS"), UTF16ToUTF8(title));
-}
-
 // crbug.com/39249 -- content scripts js should not run on view source.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptViewSource) {
   ASSERT_TRUE(StartTestServer());
