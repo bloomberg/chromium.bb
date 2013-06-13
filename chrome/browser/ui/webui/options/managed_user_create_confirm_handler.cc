@@ -31,12 +31,16 @@ void ManagedUserCreateConfirmHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
-    { "managedUserCreateConfirmTitle", IDS_NEW_LIMITED_USER_SUCCESS_TITLE },
-    { "managedUserCreateConfirmText", IDS_NEW_LIMITED_USER_SUCCESS_TEXT },
-    { "managedUserCreateConfirmDone",
-      IDS_NEW_LIMITED_USER_SUCCESS_DONE_BUTTON },
-    { "managedUserCreateConfirmSwitch",
-      IDS_NEW_LIMITED_USER_SUCCESS_SWITCH_BUTTON },
+    {"managedUserCreateConfirmTitle", IDS_NEW_LIMITED_USER_SUCCESS_TITLE},
+    {"managedUserCreateConfirmTextSlide1",
+     IDS_NEW_LIMITED_USER_SUCCESS_TEXT_SLIDE_1},
+    {"managedUserCreateConfirmTextSlide2",
+     IDS_NEW_LIMITED_USER_SUCCESS_TEXT_SLIDE_2},
+    {"managedUserCreateConfirmTextSlide3",
+     IDS_NEW_LIMITED_USER_SUCCESS_TEXT_SLIDE_3},
+    {"managedUserCreateConfirmDone", IDS_NEW_LIMITED_USER_SUCCESS_DONE_BUTTON},
+    {"managedUserCreateConfirmSwitch",
+     IDS_NEW_LIMITED_USER_SUCCESS_SWITCH_BUTTON},
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));

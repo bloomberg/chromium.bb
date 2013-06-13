@@ -2,17 +2,111 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#managed-user-create-confirm {
+#managed-user-created {
   width: 612px;
 }
 
-#managed-user-create-confirm-text {
+/* Carousel slides. The way the carousel works is by looking at the currently
+ * selected radio box, which tells us which slide is visible now. */
+
+.managed-user-created-slide-text {
   margin-top: 10px;
   white-space: pre-wrap;
   word-wrap: break-word;
 }
 
-#managed-user-create-confirm-image {
-  background-image: url('managed_user_create_confirm.png');
+.managed-user-created-slide-image {
   height: 177px;  /* Placeholder value */
+}
+
+.managed-user-created-slide:nth-child(1) .managed-user-created-slide-image {
+  background-image: url('managed_user_create_confirm_1.png');
+}
+
+.managed-user-created-slide:nth-child(2) .managed-user-created-slide-image {
+  background-image: url('managed_user_create_confirm_2.png');
+}
+
+.managed-user-created-slide:nth-child(3) .managed-user-created-slide-image {
+  background-image: url('managed_user_create_confirm_3.png');
+}
+
+/* Need to be adjusted to the number of slides. */
+#managed-user-created-slide-deck {
+  /* Number of slides multiplied by 100%. */
+  width: 300%;
+}
+
+#managed-user-created-slide-deck .managed-user-created-slide {
+  float: left;
+  /* 100% divided by number of slides. */
+  width: 33.334%;
+}
+
+#managed-user-created-viewport {
+  overflow: hidden;
+  width: 100%;
+}
+
+html[dir='rtl'] #managed-user-created-slide-deck .managed-user-created-slide {
+  float: right;
+}
+
+.content-area #managed-user-created-slide-deck {
+  -webkit-transition: all 750ms cubic-bezier(0.75, 0.00, 0.25, 1.00);
+}
+
+/* The small circular buttons/indicators. They are labels for the radio boxes
+ * that control the slides, so clicking them will actually check the proper
+ * radio box for that slide and change the slide. */
+
+#managed-user-created-small-buttons {
+  -webkit-box-flex: 1;
+  -webkit-margin-start: 274px;
+}
+
+#managed-user-created-small-buttons button {
+  background: rgb(186, 186, 186);
+  border-radius: 4px;
+  border-width: 0;
+  display: inline-block;
+  min-height: 8px;
+  min-width: 8px;
+  padding: 0;
+}
+
+#managed-user-created-small-buttons
+    .managed-user-created-small-button-selected {
+  background: rgb(67, 67, 67);
+}
+
+/* Next and previous arrows. */
+
+#managed-user-created-slide-arrows {
+  height: 30px;
+  position: absolute;
+  /* Needs to be adjusted according to the slide image size. */
+  top: 122px;
+  width: 100%;
+}
+
+#managed-user-created-slide-arrows button {
+  border-radius: 15px;
+  border-width: 0;
+  box-shadow: none;
+  height: 30px;
+  min-height: 30px;
+  min-width: 30px;
+  width: 30px;
+}
+
+#managed-user-created-left-slide-arrow {
+  -webkit-transform: scaleX(-1);
+  background: url('arrow_next.png') no-repeat center, white;
+  float: left;
+}
+
+#managed-user-created-right-slide-arrow {
+  background: url('arrow_next.png') no-repeat center, white;
+  float: right;
 }

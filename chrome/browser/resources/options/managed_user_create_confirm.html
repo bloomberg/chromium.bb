@@ -1,17 +1,41 @@
-<div id="managed-user-create-confirm" class="page" hidden>
+<div id="managed-user-created" class="page" hidden>
   <div class="close-button"></div>
   <!-- Overlay for the confirmation after creating a limited user. -->
-  <h1 id="managed-user-create-confirm-title"></h1>
+  <h1 id="managed-user-created-title"></h1>
   <div class="content-area">
-    <div id="managed-user-create-confirm-image"></div>
-    <div id="managed-user-create-confirm-text"
-        i18n-values=".innerHTML:managedUserCreateConfirmText">
+    <div id="managed-user-created-viewport">
+      <div id="managed-user-created-slide-deck">
+        <div class="managed-user-created-slide">
+          <div class="managed-user-created-slide-image"></div>
+          <div class="managed-user-created-slide-text"
+              i18n-values=".innerHTML:managedUserCreateConfirmTextSlide1">
+          </div>
+        </div>
+        <div class="managed-user-created-slide">
+          <div class="managed-user-created-slide-image"></div>
+          <div class="managed-user-created-slide-text"
+              i18n-values=".innerHTML:managedUserCreateConfirmTextSlide2">
+          </div>
+        </div>
+        <div class="managed-user-created-slide">
+          <div class="managed-user-created-slide-image"></div>
+          <div class="managed-user-created-slide-text"
+              i18n-values=".innerHTML:managedUserCreateConfirmTextSlide3">
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+  <div id="managed-user-created-slide-arrows">
+    <button id="managed-user-created-left-slide-arrow"></button>
+    <button id="managed-user-created-right-slide-arrow"></button>
+  </div>
   <div class="action-area button-strip">
-    <button id="managed-user-create-confirm-done"
+    <div id="managed-user-created-small-buttons">
+    </div>
+    <button id="managed-user-created-done"
         i18n-content="managedUserCreateConfirmDone">
     </button>
-    <button id="managed-user-create-confirm-switch"></button>
+    <button id="managed-user-created-switch"></button>
   </div>
 </div>

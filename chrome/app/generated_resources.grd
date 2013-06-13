@@ -14983,10 +14983,16 @@ First, create a limited user in Chrome on this device. You can then configure th
     <message name="IDS_NEW_LIMITED_USER_SUCCESS_TITLE" desc="Title for the confirmation dialog that appears after a limited user has been created.">
       <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph> has been created as a limited user!
     </message>
-    <message name="IDS_NEW_LIMITED_USER_SUCCESS_TEXT" desc="Informative text for the confirmation dialog that appears after a limited user has been created.">
+    <message name="IDS_NEW_LIMITED_USER_SUCCESS_TEXT_SLIDE_1" desc="Informative text for the confirmation dialog that appears after a limited user has been created. Slide 1.">
       This limited user can currently browse all sites on the web.
+    </message>
+    <message name="IDS_NEW_LIMITED_USER_SUCCESS_TEXT_SLIDE_2" desc="Informative text for the confirmation dialog that appears after a limited user has been created. Slide 2.">
+      Your limited user can access their environment at any time from the user menu.
+    </message>
+    <message name="IDS_NEW_LIMITED_USER_SUCCESS_TEXT_SLIDE_3" desc="Informative text for the confirmation dialog that appears after a limited user has been created. Slide 3.">
+      As the manager of this limited user, you can configure settings for this user.
 
-To configure restrictions for this limited user, please sign into your account at <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://www.chrome.com/manage"&gt;</ph>www.chrome.com/manage<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
+For help, please visit our help center.
     </message>
     <message name="IDS_NEW_LIMITED_USER_SUCCESS_DONE_BUTTON" desc="Text for the button that closes the dialog without making any additional changes, on the limited user creation confirmation dialog.">
       Got it
