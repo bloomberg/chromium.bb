@@ -125,7 +125,7 @@ void AvatarMenuBubbleGtk::OnSwitchProfileLinkClicked(GtkWidget* link) {
 }
 
 void AvatarMenuBubbleGtk::OnRealize(GtkWidget* parent_widget) {
-  if (!managed_user_info_)
+  if (!managed_user_info_ || !theme_service_->UsingNativeTheme())
     return;
 
   // Use the same background color for the GtkTextView as the background color

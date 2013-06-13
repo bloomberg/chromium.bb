@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
+#include "chrome/browser/ui/gtk/avatar_menu_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/avatar_menu_button_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
@@ -819,8 +820,11 @@ void BrowserTitlebar::UpdateAvatar() {
   Profile* profile = browser_window_->browser()->profile();
   if (ManagedUserService::ProfileIsManaged(profile)) {
     avatar_label_ = gtk_label_new(NULL);
+    gtk_misc_set_padding(GTK_MISC(avatar_label_), 2, 2);
     avatar_label_bg_ = gtk_event_box_new();
     gtk_container_add(GTK_CONTAINER(avatar_label_bg_), avatar_label_);
+    g_signal_connect(avatar_label_bg_, "button-press-event",
+                     G_CALLBACK(OnAvatarLabelButtonPressedThunk), this);
     UpdateAvatarLabel();
     gtk_widget_show(avatar_label_bg_);
     gtk_widget_show(avatar_label_);
@@ -959,6 +963,21 @@ gboolean BrowserTitlebar::OnFaviconMenuButtonPressed(GtkWidget* widget,
 
   favicon_menu_->PopupForWidget(app_mode_favicon_, event->button, event->time);
 
+  return TRUE;
+}
+
+gboolean BrowserTitlebar::OnAvatarLabelButtonPressed(GtkWidget* widget,
+                                                     GdkEventButton* event) {
+  if (event->button != 1)
+    return FALSE;
+
+  // Show the avatar menu bubble with the upward arrow at the x position where
+  // the user has clicked.
+  gfx::Rect rect = gtk_util::WidgetBounds(widget);
+  rect.set_x(event->x);
+  rect.set_width(0);
+  new AvatarMenuBubbleGtk(
+      browser_window_->browser(), widget, BubbleGtk::ANCHOR_TOP_RIGHT, &rect);
   return TRUE;
 }
 

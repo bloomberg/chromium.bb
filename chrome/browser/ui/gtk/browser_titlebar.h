@@ -148,6 +148,10 @@ class BrowserTitlebar : public content::NotificationObserver,
   CHROMEGTK_CALLBACK_1(BrowserTitlebar, gboolean,
                        OnFaviconMenuButtonPressed, GdkEventButton*);
 
+  // Callback for avatar menu label.
+  CHROMEGTK_CALLBACK_1(BrowserTitlebar, gboolean,
+                       OnAvatarLabelButtonPressed, GdkEventButton*);
+
   // -- Context Menu -----------------------------------------------------------
 
   // SimpleMenuModel::Delegate implementation:
