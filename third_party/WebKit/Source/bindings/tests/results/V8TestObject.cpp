@@ -4720,35 +4720,35 @@ void V8TestObject::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
     TestObjV8Internal::constructor(args);
 }
 
-v8::Handle<v8::Value> V8TestObject::indexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
+void V8TestObject::indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     TestObj* collection = toNative(info.Holder());
     RefPtr<Node> element = collection->item(index);
     if (!element)
-        return v8Undefined();
-    return toV8Fast(element.release(), info, collection);
+        return;
+    v8SetReturnValue(info, toV8Fast(element.release(), info, collection));
 }
 
-v8::Handle<v8::Value> V8TestObject::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8TestObject::namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return v8Undefined();
+        return;
     if (info.Holder()->HasRealNamedCallbackProperty(name))
-        return v8Undefined();
+        return;
     if (info.Holder()->HasRealNamedProperty(name))
-        return v8Undefined();
+        return;
 
     ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     TestObj* collection = toNative(info.Holder());
     AtomicString propertyName = toWebCoreAtomicString(name);
     String element = collection->namedItem(propertyName);
     if (element.isNull())
-        return v8Undefined();
-    return v8String(element, info.GetIsolate());
+        return;
+    v8SetReturnValue(info, v8String(element, info.GetIsolate()));
 }
 
-v8::Handle<v8::Array> V8TestObject::namedPropertyEnumerator(const v8::AccessorInfo& info)
+void V8TestObject::namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
     ExceptionCode ec = 0;
     TestObj* collection = toNative(info.Holder());
@@ -4756,12 +4756,12 @@ v8::Handle<v8::Array> V8TestObject::namedPropertyEnumerator(const v8::AccessorIn
     collection->namedPropertyEnumerator(names, ec);
     if (ec) {
         setDOMException(ec, info.GetIsolate());
-        return v8::Handle<v8::Array>();
+        return;
     }
     v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
     for (size_t i = 0; i < names.size(); ++i)
         v8names->Set(v8Integer(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
-    return v8names;
+    v8SetReturnValue(info, v8names);
 }
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

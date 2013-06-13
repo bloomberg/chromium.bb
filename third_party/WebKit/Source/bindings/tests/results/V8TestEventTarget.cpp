@@ -165,76 +165,76 @@ static const V8DOMConfiguration::BatchedMethod V8TestEventTargetMethods[] = {
     {"removeEventListener", TestEventTargetV8Internal::removeEventListenerMethodCallback, 0, 2},
 };
 
-v8::Handle<v8::Value> V8TestEventTarget::indexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
+void V8TestEventTarget::indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     TestEventTarget* collection = toNative(info.Holder());
     RefPtr<Node> element = collection->item(index);
     if (!element)
-        return v8Undefined();
-    return toV8Fast(element.release(), info, collection);
+        return;
+    v8SetReturnValue(info, toV8Fast(element.release(), info, collection));
 }
 
-v8::Handle<v8::Boolean> V8TestEventTarget::indexedPropertyDeleter(unsigned index, const v8::AccessorInfo& info)
+void V8TestEventTarget::indexedPropertyDeleter(unsigned index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
     TestEventTarget* collection = toNative(info.Holder());
     ExceptionCode ec = 0;
     bool result = collection->anonymousIndexedDeleter(index, ec);
     if (ec) {
         setDOMException(ec, info.GetIsolate());
-        return v8::Handle<v8::Boolean>();
+        return;
     }
-    return v8Boolean(result);
+    return v8SetReturnValueBool(info, result);
 }
 
-v8::Handle<v8::Value> V8TestEventTarget::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8TestEventTarget::namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return v8Undefined();
+        return;
     if (info.Holder()->HasRealNamedCallbackProperty(name))
-        return v8Undefined();
+        return;
     if (info.Holder()->HasRealNamedProperty(name))
-        return v8Undefined();
+        return;
 
     ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     TestEventTarget* collection = toNative(info.Holder());
     AtomicString propertyName = toWebCoreAtomicString(name);
     RefPtr<Node> element = collection->namedItem(propertyName);
     if (!element)
-        return v8Undefined();
-    return toV8Fast(element.release(), info, collection);
+        return;
+    v8SetReturnValue(info, toV8Fast(element.release(), info, collection));
 }
 
-v8::Handle<v8::Value> V8TestEventTarget::namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+void V8TestEventTarget::namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return v8Undefined();
+        return;
     if (info.Holder()->HasRealNamedCallbackProperty(name))
-        return v8Undefined();
+        return;
     if (info.Holder()->HasRealNamedProperty(name))
-        return v8Undefined();
+        return;
     TestEventTarget* collection = toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, propertyName, name);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE(V8StringResource<>, propertyValue, value);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyName, name);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyValue, value);
     bool result;
     if (value->IsUndefined())
         result = collection->anonymousNamedSetterUndefined(propertyName);
     else
         result = collection->anonymousNamedSetter(propertyName, propertyValue);
     if (!result)
-        return v8Undefined();
-    return value;
+        return;
+    v8SetReturnValue(info, value);
 }
 
-v8::Handle<v8::Boolean> V8TestEventTarget::namedPropertyDeleter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8TestEventTarget::namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
     TestEventTarget* collection = toNative(info.Holder());
     AtomicString propertyName = toWebCoreAtomicString(name);
     bool result = collection->anonymousNamedDeleter(propertyName);
-    return v8Boolean(result);
+    return v8SetReturnValueBool(info, result);
 }
 
-v8::Handle<v8::Array> V8TestEventTarget::namedPropertyEnumerator(const v8::AccessorInfo& info)
+void V8TestEventTarget::namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
     ExceptionCode ec = 0;
     TestEventTarget* collection = toNative(info.Holder());
@@ -242,12 +242,12 @@ v8::Handle<v8::Array> V8TestEventTarget::namedPropertyEnumerator(const v8::Acces
     collection->namedPropertyEnumerator(names, ec);
     if (ec) {
         setDOMException(ec, info.GetIsolate());
-        return v8::Handle<v8::Array>();
+        return;
     }
     v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
     for (size_t i = 0; i < names.size(); ++i)
         v8names->Set(v8Integer(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
-    return v8names;
+    v8SetReturnValue(info, v8names);
 }
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestEventTargetTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

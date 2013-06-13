@@ -547,14 +547,14 @@ void V8TestInterface::constructorCallback(const v8::FunctionCallbackInfo<v8::Val
     TestInterfaceV8Internal::constructor(args);
 }
 
-v8::Handle<v8::Value> V8TestInterface::namedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+void V8TestInterface::namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return v8Undefined();
+        return;
     if (info.Holder()->HasRealNamedCallbackProperty(name))
-        return v8Undefined();
+        return;
     if (info.Holder()->HasRealNamedProperty(name))
-        return v8Undefined();
+        return;
 
     ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
     TestInterface* collection = toNative(info.Holder());
@@ -564,14 +564,20 @@ v8::Handle<v8::Value> V8TestInterface::namedPropertyGetter(v8::Local<v8::String>
     bool element1Enabled = false;
     RefPtr<NodeList> element1;
     collection->getItem(propertyName, element0Enabled, element0, element1Enabled, element1);
-    if (element0Enabled)
-        return toV8Fast(element0.release(), info, collection);
-    if (element1Enabled)
-        return toV8Fast(element1.release(), info, collection);
-    return v8Undefined();
+    if (element0Enabled) {
+        v8SetReturnValue(info, toV8Fast(element0.release(), info, collection));
+        return;
+    }
+
+    if (element1Enabled) {
+        v8SetReturnValue(info, toV8Fast(element1.release(), info, collection));
+        return;
+    }
+
+    return;
 }
 
-v8::Handle<v8::Array> V8TestInterface::namedPropertyEnumerator(const v8::AccessorInfo& info)
+void V8TestInterface::namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
     ExceptionCode ec = 0;
     TestInterface* collection = toNative(info.Holder());
@@ -579,12 +585,12 @@ v8::Handle<v8::Array> V8TestInterface::namedPropertyEnumerator(const v8::Accesso
     collection->namedPropertyEnumerator(names, ec);
     if (ec) {
         setDOMException(ec, info.GetIsolate());
-        return v8::Handle<v8::Array>();
+        return;
     }
     v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
     for (size_t i = 0; i < names.size(); ++i)
         v8names->Set(v8Integer(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
-    return v8names;
+    v8SetReturnValue(info, v8names);
 }
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
