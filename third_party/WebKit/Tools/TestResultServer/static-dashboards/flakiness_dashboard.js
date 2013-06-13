@@ -340,7 +340,11 @@ function individualTestsForSubstringList()
     var testList = substringList();
     // If listing a lot of tests, assume you've passed in an explicit list of tests
     // instead of patterns to match against. The matching code below is super slow.
-    if (testList.length > 10)
+    //
+    // Also, when showChrome is false, we're embedding the dashboard elsewhere and
+    // an explicit test list is passed in. In that case, we don't want
+    // a search for compositing/foo.html to also show virtual/softwarecompositing/foo.html.
+    if (testList.length > 10 || !g_history.dashboardSpecificState.showChrome)
         return testList;
 
     // Put the tests into an object first and then move them into an array

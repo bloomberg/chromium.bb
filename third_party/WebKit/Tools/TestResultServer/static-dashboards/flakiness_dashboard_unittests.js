@@ -166,6 +166,27 @@ test('htmlForIndividualTestOnAllBuildersWithResultsLinks', 1, function() {
         '</div>');
 });
 
+test('individualTestsForSubstringList', 2, function() {
+    var builderName = 'WebKit Linux';
+    g_resultsByBuilder[builderName] = {
+        buildNumbers: [2, 1],
+        blinkRevision: [1234, 1233],
+        failure_map: FAILURE_MAP,
+        tests: {
+            'foo/one.html': { results: [1, 'F'], times: [1, 0] },
+            'virtual/foo/one.html': { results: [1, 'F'], times: [1, 0] },
+        }
+    };
+
+    g_history.dashboardSpecificState.showChrome = true;
+    var testToMatch = 'foo/one.html';
+    g_history.dashboardSpecificState.tests = testToMatch;
+    deepEqual(individualTestsForSubstringList(), [testToMatch, 'virtual/foo/one.html']);
+
+    g_history.dashboardSpecificState.showChrome = false;
+    deepEqual(individualTestsForSubstringList(), [testToMatch]);
+});
+
 test('htmlForIndividualTest', 2, function() {
     var historyInstance = resetGlobals();
     builders.loadBuildersList('@ToT Blink', 'layout-tests');
