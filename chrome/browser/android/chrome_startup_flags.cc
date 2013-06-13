@@ -36,6 +36,10 @@ void SetChromeSpecificCommandLineFlags() {
   // Turn on autologin.
   SetCommandLineSwitch(switches::kEnableAutologin);
 
+  // Use ClientLogin token on android.
+  // TODO(pavely): Remove once sync on android uses oauth2 tokens.
+  SetCommandLineSwitch(switches::kSyncDisableOAuth2Token);
+
   // Enable prerender for the omnibox.
   SetCommandLineSwitchASCII(
       switches::kPrerenderMode, switches::kPrerenderModeSwitchValueEnabled);

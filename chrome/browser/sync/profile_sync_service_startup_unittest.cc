@@ -8,6 +8,9 @@
 #include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
@@ -95,6 +98,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     sync_->RemoveObserver(&observer_);
     ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
         profile_.get(), NULL);
+    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
+        profile_.get(), NULL);
     profile_.reset();
 
     // Pump messages posted by the sync core thread (which may end up
@@ -116,6 +121,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   }
 
   void CreateSyncService() {
+    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
+        profile_.get(), FakeOAuth2TokenService::BuildTokenService);
     sync_ = static_cast<TestProfileSyncService*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), BuildService));
@@ -146,6 +153,8 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
  public:
   virtual void SetUp() {
     ProfileSyncServiceStartupTest::SetUp();
+    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
+        profile_.get(), FakeOAuth2TokenService::BuildTokenService);
     sync_ = static_cast<TestProfileSyncService*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), BuildCrosService));
@@ -217,17 +226,18 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 
   // Create some tokens in the token service.
   TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
-      GaiaConstants::kSyncService, "sync_token");
-  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
+      GaiaConstants::kSyncService, "token");
 
   // Simulate the UI telling sync it has finished setting up.
   sync_->SetSetupInProgress(false);
   EXPECT_TRUE(sync_->ShouldPushChanges());
 }
 
-TEST_F(ProfileSyncServiceStartupTest, StartNoCredentials) {
- // We've never completed startup.
+// TODO(pavely): Reenable test once android is switched to oauth2.
+TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
+  // We've never completed startup.
   profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
   SigninManagerFactory::GetForProfile(
       profile_.get())->Initialize(profile_.get(), NULL);
@@ -235,11 +245,11 @@ TEST_F(ProfileSyncServiceStartupTest, StartNoCredentials) {
       TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile_.get(), BuildFakeTokenService));
   CreateSyncService();
-  DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
-  EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(0);
 
   // Should not actually start, rather just clean things up and wait
   // to be enabled.
+  EXPECT_CALL(*sync_->components_factory_mock(),
+              CreateDataTypeManager(_, _, _, _, _, _)).Times(0);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   sync_->Initialize();
   EXPECT_FALSE(sync_->GetBackendForTest());
@@ -247,19 +257,11 @@ TEST_F(ProfileSyncServiceStartupTest, StartNoCredentials) {
   // Preferences should be back to defaults.
   EXPECT_EQ(0, profile_->GetPrefs()->GetInt64(prefs::kSyncLastSyncedTime));
   EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted));
-  Mock::VerifyAndClearExpectations(data_type_manager);
 
   // Then start things up.
-  EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(1);
-  EXPECT_CALL(*data_type_manager, state()).
-      WillOnce(Return(DataTypeManager::CONFIGURED)).
-      WillOnce(Return(DataTypeManager::CONFIGURED));
-  EXPECT_CALL(*data_type_manager, Stop()).Times(1);
-  EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
-
   sync_->SetSetupInProgress(true);
 
-// Simulate successful signin as test_user.
+  // Simulate successful signin as test_user.
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                   "test_user");
   sync_->signin()->SetAuthenticatedUsername("test_user");
@@ -272,11 +274,15 @@ TEST_F(ProfileSyncServiceStartupTest, StartNoCredentials) {
   token_service->LoadTokensFromDB();
 
   sync_->SetSetupInProgress(false);
-  // Backend should initialize using a bogus GAIA token for credentials.
-  EXPECT_TRUE(sync_->ShouldPushChanges());
+  // ProfileSyncService should try to start by requesting access token.
+  // This request should fail as login token was not issued to TokenService.
+  EXPECT_FALSE(sync_->ShouldPushChanges());
+  EXPECT_EQ(GoogleServiceAuthError::USER_NOT_SIGNED_UP,
+      sync_->GetAuthError().state());
 }
 
-TEST_F(ProfileSyncServiceStartupTest, StartInvalidCredentials) {
+// TODO(pavely): Reenable test once android is switched to oauth2.
+TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartInvalidCredentials) {
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                   "test_user");
   SigninManagerFactory::GetForProfile(
@@ -284,10 +290,9 @@ TEST_F(ProfileSyncServiceStartupTest, StartInvalidCredentials) {
   CreateSyncService();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(0);
-  TokenService* token_service = static_cast<TokenService*>(
-      TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile_.get(), BuildFakeTokenService));
-  token_service->LoadTokensFromDB();
+  // Issue login token so that ProfileSyncServer tries to initialize backend.
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
+      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
 
   // Tell the backend to stall while downloading control types (simulating an
   // auth error).
@@ -297,7 +302,6 @@ TEST_F(ProfileSyncServiceStartupTest, StartInvalidCredentials) {
   sync_->Initialize();
   EXPECT_TRUE(sync_->GetBackendForTest());
   EXPECT_FALSE(sync_->sync_initialized());
-  EXPECT_FALSE(sync_->ShouldPushChanges());
   Mock::VerifyAndClearExpectations(data_type_manager);
 
   // Update the credentials, unstalling the backend.
@@ -315,10 +319,9 @@ TEST_F(ProfileSyncServiceStartupTest, StartInvalidCredentials) {
         content::Source<Profile>(profile_.get()),
         content::Details<const GoogleServiceSigninSuccessDetails>(&details));
 
-  token_service->IssueAuthTokenForTest(
-      GaiaConstants::kSyncService, "sync_token");
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
+      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
   sync_->SetSetupInProgress(false);
-  base::MessageLoop::current()->Run();
 
   // Verify we successfully finish startup and configuration.
   EXPECT_TRUE(sync_->ShouldPushChanges());
@@ -355,6 +358,8 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
+      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
   sync_->Initialize();
   EXPECT_TRUE(sync_->ShouldPushChanges());
@@ -373,6 +378,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
+      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
   TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
 
@@ -405,6 +412,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
+      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
   sync_->Initialize();
 
@@ -431,6 +440,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
+      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
   sync_->Initialize();
 
@@ -452,7 +463,7 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
-      GaiaConstants::kSyncService, "sync_token");
+      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
   sync_->Initialize();
 }
 
@@ -465,7 +476,9 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   EXPECT_CALL(*data_type_manager, Configure(_, _));
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
-      GaiaConstants::kSyncService, "sync_token");
+      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
+      GaiaConstants::kSyncService, "token");
   sync_->Initialize();
 
   // The service should stop when switching to managed mode.
@@ -510,7 +523,9 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
       WillOnce(Return(DataTypeManager::STOPPED));
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
-      GaiaConstants::kSyncService, "sync_token");
+      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
+      GaiaConstants::kSyncService, "token");
   sync_->Initialize();
   EXPECT_TRUE(sync_->HasUnrecoverableError());
 }
@@ -526,10 +541,14 @@ TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {
 
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
-      GaiaConstants::kSyncService, "sync_token");
+      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
+      GaiaConstants::kSyncService, "token");
   sync_->fail_initial_download();
 
+  sync_->SetSetupInProgress(true);
   sync_->Initialize();
+  sync_->SetSetupInProgress(false);
   EXPECT_FALSE(sync_->sync_initialized());
-  EXPECT_FALSE(sync_->GetBackendForTest());
+  EXPECT_TRUE(sync_->GetBackendForTest());
 }

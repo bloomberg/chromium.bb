@@ -21,6 +21,7 @@
 #include "base/timer.h"
 #include "chrome/browser/invalidation/invalidation_frontend.h"
 #include "chrome/browser/invalidation/invalidator_storage.h"
+#include "chrome/browser/signin/oauth2_token_service.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/sync/backend_unrecoverable_error_handler.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
@@ -38,6 +39,7 @@
 #include "content/public/browser/notification_types.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/backoff_entry.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
@@ -164,7 +166,8 @@ class ProfileSyncService : public ProfileSyncServiceBase,
                            public content::NotificationObserver,
                            public BrowserContextKeyedService,
                            public invalidation::InvalidationFrontend,
-                           public browser_sync::DataTypeEncryptionHandler {
+                           public browser_sync::DataTypeEncryptionHandler,
+                           public OAuth2TokenService::Consumer {
  public:
   typedef browser_sync::SyncBackendHost::Status Status;
 
@@ -249,9 +252,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Virtual to enable mocking in tests.
   virtual bool IsSyncEnabledAndLoggedIn();
 
-  // Return whether all sync tokens are loaded and available for the backend to
-  // start up. Virtual to enable mocking in tests.
-  virtual bool IsSyncTokenAvailable();
+  // Return whether OAuth2 refresh token is loaded and available for the backend
+  // to start up. Virtual to enable mocking in tests.
+  virtual bool IsOAuthRefreshTokenAvailable();
 
   // Registers a data type controller with the sync service.  This
   // makes the data type controller available for use, it does not
@@ -612,6 +615,15 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE;
 
+  // OAuth2TokenService::Consumer implementation
+  virtual void OnGetTokenSuccess(
+      const OAuth2TokenService::Request* request,
+      const std::string& access_token,
+      const base::Time& expiration_time) OVERRIDE;
+  virtual void OnGetTokenFailure(
+      const OAuth2TokenService::Request* request,
+      const GoogleServiceAuthError& error) OVERRIDE;
+
   // BrowserContextKeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
   virtual void Shutdown() OVERRIDE;
@@ -721,6 +733,12 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // This routine is invoked once the backend has started up to use the
   // cached passphrase and clear it out when it is done.
   void ConsumeCachedPassphraseIfPossible();
+
+  // RequestAccessToken initiates RPC to request downscoped access token from
+  // refresh token. This happens when TokenService loads OAuth2 login token and
+  // when sync server returns AUTH_ERROR which indicates it is time to refresh
+  // token.
+  virtual void RequestAccessToken();
 
   // If |delete_sync_data_folder| is true, then this method will delete all
   // previous "Sync Data" folders. (useful if the folder is partial/corrupt).
@@ -939,6 +957,24 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Sync's internal debug info listener. Used to record datatype configuration
   // and association information.
   syncer::WeakHandle<syncer::DataTypeDebugInfoListener> debug_info_listener_;
+
+  // Specifies whenever to use oauth2 access token or ClientLogin token in
+  // communications with sync and xmpp servers.
+  // TODO(pavely): Remove once android is converted to oauth2 tokens.
+  bool use_oauth2_token_;
+
+  // ProfileSyncService needs to remember access token in order to invalidate it
+  // with OAuth2TokenService.
+  std::string access_token_;
+
+  // ProfileSyncService needs to hold reference to access_token_request_ for
+  // the duration of request in order to receive callbacks.
+  scoped_ptr<OAuth2TokenService::Request> access_token_request_;
+
+  // If RequestAccessToken fails with transient error then retry requesting
+  // access token with exponential backoff.
+  base::OneShotTimer<ProfileSyncService> request_access_token_retry_timer_;
+  net::BackoffEntry request_access_token_backoff_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

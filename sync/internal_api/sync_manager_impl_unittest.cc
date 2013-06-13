@@ -838,7 +838,8 @@ class SyncManagerTest : public testing::Test,
         scoped_ptr<InternalComponentsFactory>(GetFactory()),
         &encryptor_,
         &handler_,
-        NULL);
+        NULL,
+        false);
 
     sync_manager_.GetEncryptionHandler()->AddObserver(&encryption_observer_);
 

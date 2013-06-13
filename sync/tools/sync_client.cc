@@ -345,7 +345,7 @@ int SyncClientMain(int argc, char* argv[]) {
                         new InternalComponentsFactoryImpl(factory_switches)),
                     &null_encryptor,
                     &unrecoverable_error_handler,
-                    &LogUnrecoverableErrorContext);
+                    &LogUnrecoverableErrorContext, false);
   // TODO(akalin): Avoid passing in model parameters multiple times by
   // organizing handling of model types.
   sync_manager->UpdateEnabledTypes(model_types);

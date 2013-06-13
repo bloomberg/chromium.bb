@@ -34,7 +34,7 @@ static char kValidAuthToken[] = "AuthToken";
 static char kCacheGuid[] = "kqyg7097kro6GSUod+GSg==";
 
 MockConnectionManager::MockConnectionManager(syncable::Directory* directory)
-    : ServerConnectionManager("unused", 0, false),
+    : ServerConnectionManager("unused", 0, false, false),
       server_reachable_(true),
       conflict_all_commits_(false),
       conflict_n_commits_(0),
@@ -52,7 +52,7 @@ MockConnectionManager::MockConnectionManager(syncable::Directory* directory)
       use_legacy_bookmarks_protocol_(false),
       num_get_updates_requests_(0) {
   SetNewTimestamp(0);
-  SetAuthToken(kValidAuthToken, base::Time());
+  SetAuthToken(kValidAuthToken);
 }
 
 MockConnectionManager::~MockConnectionManager() {

@@ -334,7 +334,8 @@ class SyncBackendHost
         syncer::InternalComponentsFactory* internal_components_factory,
         syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
         syncer::ReportUnrecoverableErrorFunction
-            report_unrecoverable_error_function);
+            report_unrecoverable_error_function,
+        bool use_oauth2_token);
     ~DoInitializeOptions();
 
     base::MessageLoop* sync_loop;
@@ -358,6 +359,7 @@ class SyncBackendHost
     syncer::UnrecoverableErrorHandler* unrecoverable_error_handler;
     syncer::ReportUnrecoverableErrorFunction
         report_unrecoverable_error_function;
+    bool use_oauth2_token;
   };
 
   // Allows tests to perform alternate core initialization work.

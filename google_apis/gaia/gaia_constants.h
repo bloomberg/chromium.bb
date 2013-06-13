@@ -21,6 +21,8 @@ extern const char kRemotingService[];
 extern const char kCloudPrintService[];
 extern const char kDeviceManagementServiceOAuth[];
 extern const char kAnyApiOAuth2Scope[];
+extern const char kChromeSyncOAuth2Scope[];
+extern const char kGoogleTalkOAuth2Scope[];
 extern const char kLSOService[];
 
 // Used with uber auth tokens when needed.

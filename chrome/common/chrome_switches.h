@@ -367,6 +367,7 @@ extern const char kSyncTabFavicons[];
 extern const char kSyncThrowUnrecoverableError[];
 extern const char kSyncTrySsltcpFirstForXmpp[];
 extern const char kSyncEnableDeferredStartup[];
+extern const char kSyncDisableOAuth2Token[];
 extern const char kSyncfsEnableDirectoryOperation[];
 extern const char kTabBrowserDragging[];
 extern const char kTabCapture[];

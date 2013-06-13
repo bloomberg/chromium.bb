@@ -1411,7 +1411,7 @@ scoped_ptr<DictionaryValue> BrowserOptionsHandler::GetSyncStateDictionary() {
       "autoLoginVisible",
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAutologin) &&
       service && service->IsSyncEnabledAndLoggedIn() &&
-      service->IsSyncTokenAvailable());
+      service->IsOAuthRefreshTokenAvailable());
 
   return sync_status.Pass();
 }

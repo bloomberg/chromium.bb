@@ -164,10 +164,12 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager {
 
     void GetServerParams(std::string* server,
                          int* server_port,
-                         bool* use_ssl) const {
+                         bool* use_ssl,
+                         bool* use_oauth2_token) const {
       server->assign(scm_->sync_server_);
       *server_port = scm_->sync_server_port_;
       *use_ssl = scm_->use_ssl_;
+      *use_oauth2_token = scm_->use_oauth2_token_;
     }
 
     std::string buffer_;
@@ -180,7 +182,8 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager {
 
   ServerConnectionManager(const std::string& server,
                           int port,
-                          bool use_ssl);
+                          bool use_ssl,
+                          bool use_oauth2_token);
 
   virtual ~ServerConnectionManager();
 
@@ -224,11 +227,8 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager {
     client_id_.assign(client_id);
   }
 
-  // Sets a new auth token and time. |auth_token_time| is an optional parameter
-  // that contains the date the auth token was fetched/refreshed, and is used
-  // for histogramms/logging only.
-  bool SetAuthToken(const std::string& auth_token,
-                    const base::Time& auth_token_time);
+  // Sets a new auth token and time.
+  bool SetAuthToken(const std::string& auth_token);
 
   // Our out-of-band invalidations channel can encounter auth errors,
   // and when it does so it tells us via this method to prevent making more
@@ -288,15 +288,16 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager {
   // Indicates whether or not requests should be made using HTTPS.
   bool use_ssl_;
 
+  // Indicates if token should be handled as OAuth2 token. Connection should set
+  // auth header appropriately.
+  // TODO(pavely): Remove once sync on android switches to oauth2 tokens.
+  bool use_oauth2_token_;
+
   // The paths we post to.
   std::string proto_sync_path_;
 
   // The auth token to use in authenticated requests.
   std::string auth_token_;
-
-  // The time at which this auth token was last created/refreshed.
-  // Used for histogramming.
-  base::Time auth_token_time_;
 
   // The previous auth token that is invalid now.
   std::string previously_invalidated_token;

@@ -69,7 +69,7 @@ class BlockingHttpPostFactory : public HttpPostProviderFactory {
 
 TEST(SyncAPIServerConnectionManagerTest, EarlyAbortPost) {
   SyncAPIServerConnectionManager server(
-      "server", 0, true, new BlockingHttpPostFactory());
+      "server", 0, true, false, new BlockingHttpPostFactory());
 
   ServerConnectionManager::PostBufferParams params;
   ScopedServerStatusWatcher watcher(&server, &params.response);
@@ -85,7 +85,7 @@ TEST(SyncAPIServerConnectionManagerTest, EarlyAbortPost) {
 
 TEST(SyncAPIServerConnectionManagerTest, AbortPost) {
   SyncAPIServerConnectionManager server(
-      "server", 0, true, new BlockingHttpPostFactory());
+      "server", 0, true, false, new BlockingHttpPostFactory());
 
   ServerConnectionManager::PostBufferParams params;
   ScopedServerStatusWatcher watcher(&server, &params.response);

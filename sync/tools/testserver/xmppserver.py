@@ -213,6 +213,7 @@ class HandshakeTask(object):
     '  <mechanisms xmlns="urn:ietf:params:xml:ns:xmpp-sasl">'
     '    <mechanism>PLAIN</mechanism>'
     '    <mechanism>X-GOOGLE-TOKEN</mechanism>'
+    '    <mechanism>X-OAUTH2</mechanism>'
     '  </mechanisms>'
     '</stream:features>')
 

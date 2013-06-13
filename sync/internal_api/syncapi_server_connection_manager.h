@@ -54,6 +54,7 @@ class SYNC_EXPORT_PRIVATE SyncAPIServerConnectionManager
   SyncAPIServerConnectionManager(const std::string& server,
                                  int port,
                                  bool use_ssl,
+                                 bool use_oauth2_token,
                                  HttpPostProviderFactory* factory);
   virtual ~SyncAPIServerConnectionManager();
 

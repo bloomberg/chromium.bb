@@ -127,12 +127,14 @@ class ProfileSyncServiceTestHarness {
   }
 
   void IssueTestTokens() {
+    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
+        profile.get(), FakeOAuth2TokenService::BuildTokenService);
     TokenService* token_service =
         TokenServiceFactory::GetForProfile(profile.get());
     token_service->IssueAuthTokenForTest(
-        GaiaConstants::kSyncService, "token1");
+        GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
     token_service->IssueAuthTokenForTest(
-        GaiaConstants::kGaiaOAuth2LoginRefreshToken, "token2");
+          GaiaConstants::kSyncService, "token");
   }
 
   scoped_ptr<TestProfileSyncService> service;

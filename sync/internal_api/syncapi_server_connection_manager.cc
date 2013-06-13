@@ -31,15 +31,19 @@ bool SyncAPIBridgedConnection::Init(const char* path,
   std::string sync_server;
   int sync_server_port = 0;
   bool use_ssl = false;
-  GetServerParams(&sync_server, &sync_server_port, &use_ssl);
+  bool use_oauth2_token = false;
+  GetServerParams(&sync_server, &sync_server_port, &use_ssl, &use_oauth2_token);
   std::string connection_url = MakeConnectionURL(sync_server, path, use_ssl);
 
   HttpPostProviderInterface* http = post_provider_;
   http->SetURL(connection_url.c_str(), sync_server_port);
 
   if (!auth_token.empty()) {
-    const std::string& headers =
-        "Authorization: GoogleLogin auth=" + auth_token;
+    std::string headers;
+    if (use_oauth2_token)
+      headers = "Authorization: Bearer " + auth_token;
+    else
+      headers = "Authorization: GoogleLogin auth=" + auth_token;
     http->SetExtraRequestHeaders(headers.c_str());
   }
 
@@ -87,8 +91,9 @@ SyncAPIServerConnectionManager::SyncAPIServerConnectionManager(
     const std::string& server,
     int port,
     bool use_ssl,
+    bool use_oauth2_token,
     HttpPostProviderFactory* factory)
-    : ServerConnectionManager(server, port, use_ssl),
+    : ServerConnectionManager(server, port, use_ssl, use_oauth2_token),
       post_provider_factory_(factory) {
   DCHECK(post_provider_factory_.get());
 }

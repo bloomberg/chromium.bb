@@ -27,6 +27,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/test/test_browser_thread.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -379,7 +380,7 @@ class SyncSetupHandlerTest : public testing::Test {
     }
     EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
         .WillRepeatedly(Return(true));
-    EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
+    EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
         .WillRepeatedly(Return(true));
@@ -448,7 +449,7 @@ TEST_F(SyncSetupHandlerTest, Basic) {
 TEST_F(SyncSetupHandlerTest, DisplayBasicLogin) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
+  EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(false));
   const GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
   EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error));
@@ -471,7 +472,7 @@ TEST_F(SyncSetupHandlerTest, DisplayBasicLogin) {
 TEST_F(SyncSetupHandlerTest, ShowSyncSetupWhenNotSignedIn) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
+  EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
@@ -494,7 +495,7 @@ TEST_F(SyncSetupHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
       .WillRepeatedly(Return(true));
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
   mock_signin_->Initialize(profile_.get(), NULL);
-  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
+  EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
@@ -524,7 +525,7 @@ TEST_F(SyncSetupHandlerTest,
       .WillRepeatedly(Return(true));
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
   mock_signin_->Initialize(profile_.get(), NULL);
-  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
+  EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
@@ -584,7 +585,7 @@ TEST_F(SyncSetupHandlerTest,
       .WillRepeatedly(Return(true));
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
   mock_signin_->Initialize(profile_.get(), NULL);
-  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
+  EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
@@ -615,7 +616,7 @@ TEST_F(SyncSetupHandlerTest,
       .WillRepeatedly(Return(true));
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
   mock_signin_->Initialize(profile_.get(), NULL);
-  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
+  EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
@@ -657,7 +658,7 @@ class SyncSetupHandlerNonCrosTest : public SyncSetupHandlerTest {
 TEST_F(SyncSetupHandlerNonCrosTest, HandleGaiaAuthFailure) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
+  EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, HasUnrecoverableError())
       .WillRepeatedly(Return(false));
@@ -674,7 +675,7 @@ TEST_F(SyncSetupHandlerNonCrosTest, HandleGaiaAuthFailure) {
 TEST_F(SyncSetupHandlerNonCrosTest, UnrecoverableErrorInitializingSync) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
+  EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
@@ -688,7 +689,7 @@ TEST_F(SyncSetupHandlerNonCrosTest, UnrecoverableErrorInitializingSync) {
 TEST_F(SyncSetupHandlerNonCrosTest, GaiaErrorInitializingSync) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
+  EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
@@ -937,7 +938,7 @@ TEST_F(SyncSetupHandlerTest, ShowSigninOnAuthError) {
   provider.SetAuthError(error_);
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
+  EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
       .WillRepeatedly(Return(false));

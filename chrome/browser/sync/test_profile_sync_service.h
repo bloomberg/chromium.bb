@@ -11,6 +11,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/invalidation/invalidator_storage.h"
+#include "chrome/browser/signin/oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync/glue/data_type_manager_impl.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -128,6 +131,10 @@ class TestProfileSyncService : public ProfileSyncService {
 
   virtual ~TestProfileSyncService();
 
+  virtual void RequestAccessToken() OVERRIDE;
+  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+      const GoogleServiceAuthError& error) OVERRIDE;
+
   virtual void OnBackendInitialized(
       const syncer::WeakHandle<syncer::JsBackend>& backend,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
@@ -186,6 +193,20 @@ class TestProfileSyncService : public ProfileSyncService {
 
   bool fail_initial_download_;
   syncer::StorageOption storage_option_;
+};
+
+
+class FakeOAuth2TokenService : public ProfileOAuth2TokenService {
+ public:
+  explicit FakeOAuth2TokenService(net::URLRequestContextGetter* getter)
+      : ProfileOAuth2TokenService(getter) {}
+
+  virtual scoped_ptr<OAuth2TokenService::Request> StartRequest(
+      const OAuth2TokenService::ScopeSet& scopes,
+      OAuth2TokenService::Consumer* consumer) OVERRIDE;
+
+  static BrowserContextKeyedService* BuildTokenService(
+      content::BrowserContext* context);
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_PROFILE_SYNC_SERVICE_H_

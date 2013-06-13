@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "build/build_config.h"
 #include "googleurl/src/gurl.h"
@@ -177,10 +176,12 @@ ScopedServerStatusWatcher::~ScopedServerStatusWatcher() {
 ServerConnectionManager::ServerConnectionManager(
     const string& server,
     int port,
-    bool use_ssl)
+    bool use_ssl,
+    bool use_oauth2_token)
     : sync_server_(server),
       sync_server_port_(port),
       use_ssl_(use_ssl),
+      use_oauth2_token_(use_oauth2_token),
       proto_sync_path_(kSyncServerSyncPath),
       server_status_(HttpResponse::NONE),
       terminated_(false),
@@ -213,12 +214,10 @@ void ServerConnectionManager::OnConnectionDestroyed(Connection* connection) {
   active_connection_ = NULL;
 }
 
-bool ServerConnectionManager::SetAuthToken(const std::string& auth_token,
-                                           const base::Time& auth_token_time) {
+bool ServerConnectionManager::SetAuthToken(const std::string& auth_token) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (previously_invalidated_token != auth_token) {
     auth_token_.assign(auth_token);
-    auth_token_time_ = auth_token_time;
     previously_invalidated_token = std::string();
     return true;
   }
@@ -226,18 +225,6 @@ bool ServerConnectionManager::SetAuthToken(const std::string& auth_token,
 }
 
 void ServerConnectionManager::OnInvalidationCredentialsRejected() {
-  if (!auth_token_time_.is_null()) {
-    base::TimeDelta age = base::Time::Now() - auth_token_time_;
-    if (age < base::TimeDelta::FromHours(1)) {
-      UMA_HISTOGRAM_CUSTOM_TIMES("Sync.AuthInvalidationRejectedTokenAgeShort",
-                                 age,
-                                 base::TimeDelta::FromSeconds(1),
-                                 base::TimeDelta::FromHours(1),
-                                 50);
-    }
-    UMA_HISTOGRAM_COUNTS("Sync.AuthInvalidationRejectedTokenAgeLong",
-                         age.InDays());
-  }
   InvalidateAndClearAuthToken();
   SetServerStatus(HttpResponse::SYNC_AUTH_ERROR);
 }
@@ -248,7 +235,6 @@ void ServerConnectionManager::InvalidateAndClearAuthToken() {
   if (!auth_token_.empty()) {
     previously_invalidated_token.assign(auth_token_);
     auth_token_ = std::string();
-    auth_token_time_ = base::Time();
   }
 }
 
@@ -300,18 +286,6 @@ bool ServerConnectionManager::PostBufferToPath(PostBufferParams* params,
       path.c_str(), auth_token, params->buffer_in, &params->response);
 
   if (params->response.server_status == HttpResponse::SYNC_AUTH_ERROR) {
-    if (!auth_token_time_.is_null()) {
-      base::TimeDelta age = base::Time::Now() - auth_token_time_;
-      if (age < base::TimeDelta::FromHours(1)) {
-        UMA_HISTOGRAM_CUSTOM_TIMES("Sync.AuthServerRejectedTokenAgeShort",
-                                   age,
-                                   base::TimeDelta::FromSeconds(1),
-                                   base::TimeDelta::FromHours(1),
-                                   50);
-      }
-      UMA_HISTOGRAM_COUNTS("Sync.AuthServerRejectedTokenAgeLong",
-                           age.InDays());
-    }
     InvalidateAndClearAuthToken();
   }
 

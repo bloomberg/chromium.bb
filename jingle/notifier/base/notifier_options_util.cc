@@ -24,10 +24,13 @@ buzz::XmppClientSettings MakeXmppClientSettings(
   xmpp_client_settings.set_resource("chrome-sync");
   xmpp_client_settings.set_host(jid.domain());
   xmpp_client_settings.set_use_tls(buzz::TLS_ENABLED);
-  xmpp_client_settings.set_auth_token(buzz::AUTH_MECHANISM_GOOGLE_TOKEN,
+  xmpp_client_settings.set_auth_token(notifier_options.auth_mechanism,
       notifier_options.invalidate_xmpp_login ?
       token + "bogus" : token);
-  xmpp_client_settings.set_token_service("chromiumsync");
+  if (notifier_options.auth_mechanism == buzz::AUTH_MECHANISM_OAUTH2)
+    xmpp_client_settings.set_token_service("oauth2");
+  else
+    xmpp_client_settings.set_token_service("chromiumsync");
   if (notifier_options.allow_insecure_connection) {
     xmpp_client_settings.set_allow_plain(true);
     xmpp_client_settings.set_use_tls(buzz::TLS_DISABLED);

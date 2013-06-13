@@ -154,6 +154,8 @@ class ProfileSyncServicePreferenceTest
     SigninManagerBase* signin =
          SigninManagerFactory::GetForProfile(profile_.get());
     signin->SetAuthenticatedUsername("test");
+    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
+        profile_.get(), FakeOAuth2TokenService::BuildTokenService);
     sync_service_ = static_cast<TestProfileSyncService*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), &TestProfileSyncService::BuildAutoStartAsyncInit));
@@ -180,6 +182,8 @@ class ProfileSyncServicePreferenceTest
         WillOnce(CreateAndSaveChangeProcessor(
                      &change_processor_));
     sync_service_->RegisterDataTypeController(dtc_);
+    TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
+        GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
     TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
         GaiaConstants::kSyncService, "token");
 

@@ -85,7 +85,7 @@ void SyncBackendHostForProfileSyncTest::InitCore(
       new TestInternalComponentsFactory(factory_switches, storage);
 
   SyncBackendHost::InitCore(test_options);
-  if (synchronous_init_) {
+  if (synchronous_init_ && !base::MessageLoop::current()->is_running()) {
     // The SyncBackend posts a task to the current loop when
     // initialization completes.
     base::MessageLoop::current()->Run();
@@ -249,6 +249,23 @@ TestProfileSyncService::components_factory_mock() {
   return static_cast<ProfileSyncComponentsFactoryMock*>(factory());
 }
 
+void TestProfileSyncService::RequestAccessToken() {
+  ProfileSyncService::RequestAccessToken();
+  if (synchronous_backend_initialization_) {
+    base::MessageLoop::current()->Run();
+  }
+}
+
+void TestProfileSyncService::OnGetTokenFailure(
+    const OAuth2TokenService::Request* request,
+    const GoogleServiceAuthError& error) {
+  ProfileSyncService::OnGetTokenFailure(request, error);
+  if (synchronous_backend_initialization_) {
+    base::MessageLoop::current()->Quit();
+  }
+}
+
+
 void TestProfileSyncService::OnBackendInitialized(
     const syncer::WeakHandle<syncer::JsBackend>& backend,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
@@ -300,4 +317,24 @@ void TestProfileSyncService::CreateBackend() {
       synchronous_backend_initialization_,
       fail_initial_download_,
       storage_option_));
+}
+
+scoped_ptr<OAuth2TokenService::Request> FakeOAuth2TokenService::StartRequest(
+    const OAuth2TokenService::ScopeSet& scopes,
+    OAuth2TokenService::Consumer* consumer) {
+  // Ensure token in question is cached and never expires. Request will succeed
+  // without network IO.
+  RegisterCacheEntry(GetRefreshToken(), scopes, "access_token",
+      base::Time::Max());
+  return ProfileOAuth2TokenService::StartRequest(scopes, consumer);
+}
+
+BrowserContextKeyedService* FakeOAuth2TokenService::BuildTokenService(
+    content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
+
+  FakeOAuth2TokenService* service =
+      new FakeOAuth2TokenService(context->GetRequestContext());
+  service->Initialize(profile);
+  return service;
 }

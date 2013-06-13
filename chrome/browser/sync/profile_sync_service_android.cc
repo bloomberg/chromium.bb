@@ -252,13 +252,13 @@ void ProfileSyncServiceAndroid::SignInSync(
   // happen normally if (for example) the user closes and reopens the sync
   // settings window quickly during initial startup.
   if (sync_service_->IsSyncEnabledAndLoggedIn() &&
-      sync_service_->IsSyncTokenAvailable() &&
+      sync_service_->IsOAuthRefreshTokenAvailable() &&
       sync_service_->HasSyncSetupCompleted()) {
     return;
   }
 
   if (!sync_service_->IsSyncEnabledAndLoggedIn() ||
-      !sync_service_->IsSyncTokenAvailable()) {
+      !sync_service_->IsOAuthRefreshTokenAvailable()) {
     // Set the currently-signed-in username, fetch an auth token if necessary,
     // and enable sync.
     std::string name = ConvertJavaStringToUTF8(env, username);

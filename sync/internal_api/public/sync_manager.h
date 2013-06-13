@@ -65,8 +65,6 @@ struct SyncCredentials {
   std::string email;
   // The raw authentication token's bytes.
   std::string sync_token;
-  // (optional) The time at which the token was fetched/refreshed.
-  base::Time sync_token_time;
 };
 
 // SyncManager encapsulates syncable::Directory and serves as the parent of all
@@ -324,7 +322,8 @@ class SYNC_EXPORT SyncManager {
       scoped_ptr<InternalComponentsFactory> internal_components_factory,
       Encryptor* encryptor,
       UnrecoverableErrorHandler* unrecoverable_error_handler,
-      ReportUnrecoverableErrorFunction report_unrecoverable_error_function) = 0;
+      ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
+      bool use_oauth2_token) = 0;
 
   // Throw an unrecoverable error from a transaction (mostly used for
   // testing).

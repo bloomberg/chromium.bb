@@ -203,6 +203,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       token_service_ = static_cast<TokenService*>(
           TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
               &profile_, BuildTokenService));
+      ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
+          &profile_, FakeOAuth2TokenService::BuildTokenService);
       sync_service_ = static_cast<TestProfileSyncService*>(
           ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
               &profile_, &TestProfileSyncService::BuildAutoStartAsyncInit));
@@ -224,6 +226,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       EXPECT_CALL(*components, CreateDataTypeManager(_, _, _, _, _, _)).
           WillOnce(ReturnNewDataTypeManager());
 
+      token_service_->IssueAuthTokenForTest(
+          GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
       token_service_->IssueAuthTokenForTest(
           GaiaConstants::kSyncService, "token");
 

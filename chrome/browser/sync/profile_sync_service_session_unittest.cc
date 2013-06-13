@@ -262,6 +262,8 @@ class ProfileSyncServiceSessionTest
     SigninManagerBase* signin =
         SigninManagerFactory::GetForProfile(profile());
     signin->SetAuthenticatedUsername("test_user");
+    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
+        profile(), FakeOAuth2TokenService::BuildTokenService);
     ProfileSyncComponentsFactoryMock* factory =
         new ProfileSyncComponentsFactoryMock();
     sync_service_.reset(new FakeProfileSyncService(
@@ -290,6 +292,8 @@ class ProfileSyncServiceSessionTest
     EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _, _, _, _)).
         WillOnce(ReturnNewDataTypeManager());
 
+    TokenServiceFactory::GetForProfile(profile())->IssueAuthTokenForTest(
+        GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
     TokenServiceFactory::GetForProfile(profile())->IssueAuthTokenForTest(
         GaiaConstants::kSyncService, "token");
     sync_service_->Initialize();

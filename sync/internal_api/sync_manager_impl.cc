@@ -9,7 +9,6 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted.h"
@@ -370,7 +369,8 @@ void SyncManagerImpl::Init(
     scoped_ptr<InternalComponentsFactory> internal_components_factory,
     Encryptor* encryptor,
     UnrecoverableErrorHandler* unrecoverable_error_handler,
-    ReportUnrecoverableErrorFunction report_unrecoverable_error_function) {
+    ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
+    bool use_oauth2_token) {
   CHECK(!initialized_);
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(post_factory.get());
@@ -437,7 +437,8 @@ void SyncManagerImpl::Init(
   }
 
   connection_manager_.reset(new SyncAPIServerConnectionManager(
-      sync_server_and_path, port, use_ssl, post_factory.release()));
+      sync_server_and_path, port, use_ssl, use_oauth2_token,
+      post_factory.release()));
   connection_manager_->set_client_id(directory()->cache_guid());
   connection_manager_->AddListener(this);
 
@@ -625,8 +626,7 @@ void SyncManagerImpl::UpdateCredentials(const SyncCredentials& credentials) {
   DCHECK(!credentials.sync_token.empty());
 
   observing_network_connectivity_changes_ = true;
-  if (!connection_manager_->SetAuthToken(credentials.sync_token,
-                                         credentials.sync_token_time))
+  if (!connection_manager_->SetAuthToken(credentials.sync_token))
     return;  // Auth token is known to be invalid, so exit early.
 
   invalidator_->UpdateCredentials(credentials.email, credentials.sync_token);

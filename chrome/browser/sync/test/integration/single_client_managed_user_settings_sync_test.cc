@@ -21,7 +21,9 @@ class SingleClientManagedUserSettingsSyncTest : public SyncTest {
   virtual ~SingleClientManagedUserSettingsSyncTest() {}
 };
 
-IN_PROC_BROWSER_TEST_F(SingleClientManagedUserSettingsSyncTest, Sanity) {
+// TODO(pavely): Fix this test.
+IN_PROC_BROWSER_TEST_F(SingleClientManagedUserSettingsSyncTest,
+                       DISABLED_Sanity) {
   ASSERT_TRUE(SetupClients());
   for (int i = 0; i < num_clients(); ++i) {
     Profile* profile = GetProfile(i);

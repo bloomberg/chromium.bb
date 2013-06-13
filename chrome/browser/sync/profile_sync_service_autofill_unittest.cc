@@ -525,6 +525,8 @@ class ProfileSyncServiceAutofillTest
     token_service_ = static_cast<TokenService*>(
         TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), BuildTokenService));
+    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
+        profile_.get(), FakeOAuth2TokenService::BuildTokenService);
     EXPECT_CALL(*personal_data_manager_, LoadProfiles()).Times(1);
     EXPECT_CALL(*personal_data_manager_, LoadCreditCards()).Times(1);
 
@@ -588,7 +590,10 @@ class ProfileSyncServiceAutofillTest
         WillRepeatedly(Return(true));
 
      // We need tokens to get the tests going
-    token_service_->IssueAuthTokenForTest(GaiaConstants::kSyncService, "token");
+    token_service_->IssueAuthTokenForTest(
+        GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
+    token_service_->IssueAuthTokenForTest(
+        GaiaConstants::kSyncService, "token");
 
     sync_service_->RegisterDataTypeController(data_type_controller);
     sync_service_->Initialize();
@@ -935,7 +940,7 @@ bool IncludesField(const AutofillProfile& profile1,
   return true;
 }
 
-};
+} // namespace
 
 // TODO(skrul): Test abort startup.
 // TODO(skrul): Test processing of cloud changes.

@@ -323,6 +323,8 @@ notifier::NotifierOptions ParseNotifierOptions(
         request_context_getter) {
   notifier::NotifierOptions notifier_options;
   notifier_options.request_context_getter = request_context_getter;
+  if (!command_line.HasSwitch(switches::kSyncDisableOAuth2Token))
+    notifier_options.auth_mechanism = "X-OAUTH2";
 
   if (command_line.HasSwitch(switches::kSyncNotificationHostPort)) {
     notifier_options.xmpp_host_port =
@@ -480,7 +482,8 @@ void SyncBackendHost::Initialize(
       sync_prefs_->GetKeystoreEncryptionBootstrapToken(),
       new InternalComponentsFactoryImpl(factory_switches),
       unrecoverable_error_handler,
-      report_unrecoverable_error_function));
+      report_unrecoverable_error_function,
+      !cl->HasSwitch(switches::kSyncDisableOAuth2Token)));
 }
 
 void SyncBackendHost::UpdateCredentials(const SyncCredentials& credentials) {
@@ -964,7 +967,8 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     InternalComponentsFactory* internal_components_factory,
     syncer::UnrecoverableErrorHandler* unrecoverable_error_handler,
     syncer::ReportUnrecoverableErrorFunction
-        report_unrecoverable_error_function)
+        report_unrecoverable_error_function,
+    bool use_oauth2_token)
     : sync_loop(sync_loop),
       registrar(registrar),
       routing_info(routing_info),
@@ -984,7 +988,8 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
       internal_components_factory(internal_components_factory),
       unrecoverable_error_handler(unrecoverable_error_handler),
       report_unrecoverable_error_function(
-          report_unrecoverable_error_function) {
+          report_unrecoverable_error_function),
+      use_oauth2_token(use_oauth2_token) {
 }
 
 SyncBackendHost::DoInitializeOptions::~DoInitializeOptions() {}
@@ -1261,7 +1266,8 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
           options.internal_components_factory),
       &encryptor_,
       options.unrecoverable_error_handler,
-      options.report_unrecoverable_error_function);
+      options.report_unrecoverable_error_function,
+      options.use_oauth2_token);
 
   // |sync_manager_| may end up being NULL here in tests (in
   // synchronous initialization mode).

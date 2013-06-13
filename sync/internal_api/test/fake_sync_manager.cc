@@ -111,7 +111,8 @@ void FakeSyncManager::Init(
     Encryptor* encryptor,
     UnrecoverableErrorHandler* unrecoverable_error_handler,
     ReportUnrecoverableErrorFunction
-        report_unrecoverable_error_function) {
+        report_unrecoverable_error_function,
+    bool use_oauth2_token) {
   sync_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   PurgePartiallySyncedTypes();
 

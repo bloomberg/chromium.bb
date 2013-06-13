@@ -189,6 +189,8 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
       token_service_ = static_cast<TokenService*>(
           TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
               &profile_, BuildTokenService));
+      ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
+          &profile_, FakeOAuth2TokenService::BuildTokenService);
 
       PasswordTestProfileSyncService* sync =
           static_cast<PasswordTestProfileSyncService*>(
@@ -224,6 +226,8 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
           WillOnce(ReturnNewDataTypeManager());
 
       // We need tokens to get the tests going
+      token_service_->IssueAuthTokenForTest(
+          GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
       token_service_->IssueAuthTokenForTest(
           GaiaConstants::kSyncService, "token");
 
