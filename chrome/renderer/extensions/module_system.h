@@ -119,7 +119,7 @@ class ModuleSystem : public ObjectBackedNativeHandler {
                     const std::string& field,
                     const std::string& module_name,
                     const std::string& module_field,
-                    v8::AccessorGetter getter);
+                    v8::AccessorGetterCallback getter);
 
   // Make |object|.|field| lazily evaluate to the result of
   // requireNative(|module_name|)[|module_field|].
@@ -142,13 +142,13 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   typedef std::map<std::string, linked_ptr<NativeHandler> > NativeHandlerMap;
 
   // Retrieves the lazily defined field specified by |property|.
-  static v8::Handle<v8::Value> LazyFieldGetter(v8::Local<v8::String> property,
-                                               const v8::AccessorInfo& info);
+  static void LazyFieldGetter(v8::Local<v8::String> property,
+                              const v8::PropertyCallbackInfo<v8::Value>& info);
   // Retrieves the lazily defined field specified by |property| on a native
   // object.
-  static v8::Handle<v8::Value> NativeLazyFieldGetter(
+  static void NativeLazyFieldGetter(
       v8::Local<v8::String> property,
-      const v8::AccessorInfo& info);
+      const v8::PropertyCallbackInfo<v8::Value>& info);
 
   // Called when an exception is thrown but not caught.
   void HandleException(const v8::TryCatch& try_catch);
@@ -168,9 +168,9 @@ class ModuleSystem : public ObjectBackedNativeHandler {
       const std::string&);
   // Base implementation of a LazyFieldGetter which uses |require_fn| to require
   // modules.
-  static v8::Handle<v8::Value> LazyFieldGetterInner(
+  static void LazyFieldGetterInner(
       v8::Local<v8::String> property,
-      const v8::AccessorInfo& info,
+      const v8::PropertyCallbackInfo<v8::Value>& info,
       RequireFunction require_function);
 
   // Return the named source file stored in the source map.
@@ -208,6 +208,6 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   DISALLOW_COPY_AND_ASSIGN(ModuleSystem);
 };
 
-}  // extensions
+}  // namespace extensions
 
 #endif  // CHROME_RENDERER_EXTENSIONS_MODULE_SYSTEM_H_

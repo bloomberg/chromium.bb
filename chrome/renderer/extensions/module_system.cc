@@ -285,23 +285,25 @@ void ModuleSystem::RunString(const std::string& code, const std::string& name) {
 }
 
 // static
-v8::Handle<v8::Value> ModuleSystem::NativeLazyFieldGetter(
-    v8::Local<v8::String> property, const v8::AccessorInfo& info) {
-  return LazyFieldGetterInner(property,
-                              info,
-                              &ModuleSystem::RequireNativeFromString);
-}
-
-// static
-v8::Handle<v8::Value> ModuleSystem::LazyFieldGetter(
-    v8::Local<v8::String> property, const v8::AccessorInfo& info) {
-  return LazyFieldGetterInner(property, info, &ModuleSystem::Require);
-}
-
-// static
-v8::Handle<v8::Value> ModuleSystem::LazyFieldGetterInner(
+void ModuleSystem::NativeLazyFieldGetter(
     v8::Local<v8::String> property,
-    const v8::AccessorInfo& info,
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
+  LazyFieldGetterInner(property,
+                       info,
+                       &ModuleSystem::RequireNativeFromString);
+}
+
+// static
+void ModuleSystem::LazyFieldGetter(
+    v8::Local<v8::String> property,
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
+  LazyFieldGetterInner(property, info, &ModuleSystem::Require);
+}
+
+// static
+void ModuleSystem::LazyFieldGetterInner(
+    v8::Local<v8::String> property,
+    const v8::PropertyCallbackInfo<v8::Value>& info,
     RequireFunction require_function) {
   CHECK(!info.Data().IsEmpty());
   CHECK(info.Data()->IsObject());
@@ -317,7 +319,7 @@ v8::Handle<v8::Value> ModuleSystem::LazyFieldGetterInner(
     // TODO(kalman): See comment in header file.
     console::Warn(v8::Context::GetCalling(),
                   "Module system has been deleted, does extension view exist?");
-    return v8::Undefined();
+    return;
   }
 
   ModuleSystem* module_system = static_cast<ModuleSystem*>(
@@ -335,11 +337,11 @@ v8::Handle<v8::Value> ModuleSystem::LazyFieldGetterInner(
   v8::Handle<v8::Value> module_value = (module_system->*require_function)(name);
   if (try_catch.HasCaught()) {
     module_system->HandleException(try_catch);
-    return v8::Undefined();
+    return;
   }
   if (module_value.IsEmpty() || !module_value->IsObject()) {
     // require_function will have already logged this, we don't need to.
-    return v8::Undefined();
+    return;
   }
 
   v8::Handle<v8::Object> module = v8::Handle<v8::Object>::Cast(module_value);
@@ -351,13 +353,13 @@ v8::Handle<v8::Value> ModuleSystem::LazyFieldGetterInner(
     console::Fatal(v8::Context::GetCalling(),
                    "Lazy require of " + name + "." + field_str + " did not " +
                    "set the " + field_str + " field");
-    return v8::Undefined();
+    return;
   }
 
   v8::Local<v8::Value> new_field = module->Get(field);
   if (try_catch.HasCaught()) {
     module_system->HandleException(try_catch);
-    return v8::Undefined();
+    return;
   }
 
   // Ok for it to be undefined, among other things it's how bindings signify
@@ -369,7 +371,7 @@ v8::Handle<v8::Value> ModuleSystem::LazyFieldGetterInner(
   v8::Handle<v8::Object> object = info.This();
   object->Delete(property);
   object->Set(property, new_field);
-  return handle_scope.Close(new_field);
+  info.GetReturnValue().Set(new_field);
 }
 
 void ModuleSystem::SetLazyField(v8::Handle<v8::Object> object,
@@ -384,7 +386,7 @@ void ModuleSystem::SetLazyField(v8::Handle<v8::Object> object,
                                 const std::string& field,
                                 const std::string& module_name,
                                 const std::string& module_field,
-                                v8::AccessorGetter getter) {
+                                v8::AccessorGetterCallback getter) {
   v8::HandleScope handle_scope;
   v8::Handle<v8::Object> parameters = v8::Object::New();
   parameters->Set(v8::String::New(kModuleName),
@@ -476,4 +478,4 @@ v8::Handle<v8::String> ModuleSystem::WrapSource(v8::Handle<v8::String> source) {
       v8::String::Concat(left, v8::String::Concat(source, right)));
 }
 
-}  // extensions
+}  // namespace extensions
