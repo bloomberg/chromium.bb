@@ -17,7 +17,7 @@
 #include "net/disk_cache/simple/simple_entry_format.h"
 
 namespace base {
-class MessageLoopProxy;
+class TaskRunner;
 }
 
 namespace net {
@@ -219,6 +219,7 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
   base::ThreadChecker io_thread_checker_;
 
   base::WeakPtr<SimpleBackendImpl> backend_;
+  const scoped_refptr<base::TaskRunner> worker_pool_;
   const base::FilePath path_;
   const std::string key_;
   const uint64 entry_hash_;

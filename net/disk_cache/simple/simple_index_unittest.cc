@@ -9,6 +9,7 @@
 #include "base/pickle.h"
 #include "base/sha1.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "net/disk_cache/simple/simple_index.h"
@@ -43,7 +44,7 @@ class TestSimpleIndexFile : public SimpleIndexFile,
                             public base::SupportsWeakPtr<TestSimpleIndexFile> {
  public:
   TestSimpleIndexFile()
-      : SimpleIndexFile(NULL, base::FilePath()),
+      : SimpleIndexFile(NULL, NULL, base::FilePath()),
         get_index_entries_calls_(0),
         doom_entry_set_calls_(0),
         last_response_thread_(NULL),
@@ -568,7 +569,7 @@ TEST_F(SimpleIndexTest, DiskWritePostponed) {
   index()->Insert("key2");
   index()->UpdateEntrySize("key2", 40);
   EXPECT_TRUE(index()->write_to_disk_timer_.IsRunning());
-  EXPECT_LT(expected_trigger,index()->write_to_disk_timer_.desired_run_time());
+  EXPECT_LT(expected_trigger, index()->write_to_disk_timer_.desired_run_time());
   index()->write_to_disk_timer_.Stop();
 }
 

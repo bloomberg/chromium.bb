@@ -4,6 +4,8 @@
 
 #include "net/disk_cache/simple/simple_index_file.h"
 
+#include <vector>
+
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/hash.h"
@@ -12,7 +14,6 @@
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/worker_pool.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
@@ -106,8 +107,10 @@ bool SimpleIndexFile::IndexMetadata::CheckIndexMetadata() {
 
 SimpleIndexFile::SimpleIndexFile(
     base::SingleThreadTaskRunner* cache_thread,
+    base::TaskRunner* worker_pool,
     const base::FilePath& index_file_directory)
     : cache_thread_(cache_thread),
+      worker_pool_(worker_pool),
       index_file_path_(index_file_directory.AppendASCII("the-real-index")) {}
 
 SimpleIndexFile::~SimpleIndexFile() {}
@@ -115,11 +118,10 @@ SimpleIndexFile::~SimpleIndexFile() {}
 void SimpleIndexFile::LoadIndexEntries(
     scoped_refptr<base::SingleThreadTaskRunner> response_thread,
     const IndexCompletionCallback& completion_callback) {
-  base::WorkerPool::PostTask(
+  worker_pool_->PostTask(
       FROM_HERE,
       base::Bind(&SimpleIndexFile::LoadIndexEntriesInternal,
-                 index_file_path_, response_thread, completion_callback),
-      true);
+                 index_file_path_, response_thread, completion_callback));
 }
 
 void SimpleIndexFile::WriteToDisk(const SimpleIndex::EntrySet& entry_set,
@@ -142,14 +144,13 @@ void SimpleIndexFile::DoomEntrySet(
   scoped_ptr<int> result(new int());
   int* result_p(result.get());
 
-  base::WorkerPool::PostTaskAndReply(
+  worker_pool_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&SimpleSynchronousEntry::DoomEntrySet,
                  base::Passed(entry_hashes.Pass()), index_file_path_.DirName(),
                  result_p),
       base::Bind(&DoomEntrySetReply, base::Passed(result.Pass()),
-                 reply_callback),
-      true);
+                 reply_callback));
 }
 
 // static
@@ -171,7 +172,7 @@ bool SimpleIndexFile::IsIndexFileStale(const base::FilePath& index_filename) {
 scoped_ptr<SimpleIndex::EntrySet> SimpleIndexFile::LoadFromDisk(
     const base::FilePath& index_filename) {
   std::string contents;
-  if(!file_util::ReadFileToString(index_filename, &contents)) {
+  if (!file_util::ReadFileToString(index_filename, &contents)) {
     LOG(WARNING) << "Could not read Simple Index file.";
     return scoped_ptr<SimpleIndex::EntrySet>();
   }

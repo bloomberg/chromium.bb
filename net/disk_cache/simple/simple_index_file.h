@@ -18,6 +18,11 @@
 #include "net/base/net_export.h"
 #include "net/disk_cache/simple/simple_index.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+class TaskRunner;
+}
+
 namespace disk_cache {
 
 const uint64 kSimpleIndexMagicNumber = GG_UINT64_C(0x656e74657220796f);
@@ -62,6 +67,7 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
       IndexCompletionCallback;
 
   explicit SimpleIndexFile(base::SingleThreadTaskRunner* cache_thread,
+                           base::TaskRunner* worker_pool,
                            const base::FilePath& index_file_directory);
   virtual ~SimpleIndexFile();
 
@@ -118,7 +124,8 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
     uint32 crc;
   };
 
-  scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
+  const scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
+  const scoped_refptr<base::TaskRunner> worker_pool_;
   const base::FilePath index_file_path_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleIndexFile);

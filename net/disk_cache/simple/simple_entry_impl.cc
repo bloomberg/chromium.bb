@@ -15,7 +15,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_runner.h"
 #include "base/time.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -75,7 +75,7 @@ using base::Closure;
 using base::FilePath;
 using base::MessageLoopProxy;
 using base::Time;
-using base::WorkerPool;
+using base::TaskRunner;
 
 // A helper class to insure that RunNextOperationIfNeeded() is called when
 // exiting the current stack frame.
@@ -97,6 +97,7 @@ SimpleEntryImpl::SimpleEntryImpl(SimpleBackendImpl* backend,
                                  const std::string& key,
                                  const uint64 entry_hash)
     : backend_(backend->AsWeakPtr()),
+      worker_pool_(backend->worker_pool()),
       path_(path),
       key_(key),
       entry_hash_(entry_hash),
@@ -187,7 +188,7 @@ int SimpleEntryImpl::DoomEntry(const CompletionCallback& callback) {
                             entry_hash_, result.get());
   Closure reply = base::Bind(&CallCompletionCallback,
                              callback, base::Passed(&result));
-  WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
+  worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
   return net::ERR_IO_PENDING;
 }
 
@@ -366,7 +367,7 @@ int SimpleEntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
 SimpleEntryImpl::~SimpleEntryImpl() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(0U, pending_operations_.size());
-  DCHECK(STATE_UNINITIALIZED == state_ || STATE_FAILURE == state_);
+  DCHECK(state_ == STATE_UNINITIALIZED || state_ == STATE_FAILURE);
   DCHECK(!synchronous_entry_);
   RemoveSelfFromBackend();
 }
@@ -441,7 +442,7 @@ void SimpleEntryImpl::OpenEntryInternal(const CompletionCallback& callback,
   Closure reply = base::Bind(&SimpleEntryImpl::CreationOperationComplete, this,
                              callback, start_time, base::Passed(&sync_entry),
                              base::Passed(&result), out_entry);
-  WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
+  worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
 }
 
 void SimpleEntryImpl::CreateEntryInternal(const CompletionCallback& callback,
@@ -478,7 +479,7 @@ void SimpleEntryImpl::CreateEntryInternal(const CompletionCallback& callback,
   Closure reply = base::Bind(&SimpleEntryImpl::CreationOperationComplete, this,
                              callback, start_time, base::Passed(&sync_entry),
                              base::Passed(&result), out_entry);
-  WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
+  worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
 }
 
 void SimpleEntryImpl::CloseInternal() {
@@ -510,7 +511,7 @@ void SimpleEntryImpl::CloseInternal() {
                               base::Passed(&crc32s_to_write));
     Closure reply = base::Bind(&SimpleEntryImpl::CloseOperationComplete, this);
     synchronous_entry_ = NULL;
-    WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
+    worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
 
     for (int i = 0; i < kSimpleEntryFileCount; ++i) {
       if (!have_written_[i]) {
@@ -565,7 +566,7 @@ void SimpleEntryImpl::ReadDataInternal(int stream_index,
   Closure reply = base::Bind(&SimpleEntryImpl::ReadOperationComplete, this,
                              stream_index, offset, callback,
                              base::Passed(&read_crc32), base::Passed(&result));
-  WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
+  worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
 }
 
 void SimpleEntryImpl::WriteDataInternal(int stream_index,
@@ -627,7 +628,7 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
                             buf_len, truncate, result.get());
   Closure reply = base::Bind(&SimpleEntryImpl::WriteOperationComplete, this,
                              stream_index, callback, base::Passed(&result));
-  WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
+  worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
 }
 
 void SimpleEntryImpl::CreationOperationComplete(
@@ -732,7 +733,7 @@ void SimpleEntryImpl::ReadOperationComplete(
                                  this, *result, stream_index,
                                  completion_callback,
                                  base::Passed(&new_result));
-      WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
+      worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
       crc_check_state_[stream_index] = CRC_CHECK_DONE;
       return;
     }

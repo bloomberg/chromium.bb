@@ -4,14 +4,19 @@
 
 #include "net/disk_cache/simple/simple_backend_impl.h"
 
+#include <algorithm>
+#include <cstdlib>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
-#include "base/threading/worker_pool.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/backend_impl.h"
@@ -25,19 +30,45 @@
 using base::Closure;
 using base::FilePath;
 using base::MessageLoopProxy;
+using base::SequencedWorkerPool;
 using base::SingleThreadTaskRunner;
 using base::Time;
-using base::WorkerPool;
 using file_util::DirectoryExists;
 using file_util::CreateDirectory;
 
 namespace {
+
+// Maximum number of concurrent worker pool threads, which also is the limit
+// on concurrent IO (as we use one thread per IO request).
+const int kDefaultMaxWorkerThreads = 50;
+
+const char kThreadNamePrefix[] = "SimpleCacheWorker";
 
 // Cache size when all other size heuristics failed.
 const uint64 kDefaultCacheSize = 80 * 1024 * 1024;
 
 // Maximum fraction of the cache that one entry can consume.
 const int kMaxFileRatio = 8;
+
+// A global sequenced worker pool to use for launching all tasks.
+SequencedWorkerPool* g_sequenced_worker_pool = NULL;
+
+void MaybeCreateSequencedWorkerPool() {
+  if (!g_sequenced_worker_pool) {
+    int max_worker_threads = kDefaultMaxWorkerThreads;
+
+    const std::string thread_count_field_trial =
+        base::FieldTrialList::FindFullName("SimpleCacheMaxThreads");
+    if (!thread_count_field_trial.empty()) {
+      max_worker_threads =
+          std::max(1, std::atoi(thread_count_field_trial.c_str()));
+    }
+
+    g_sequenced_worker_pool = new SequencedWorkerPool(max_worker_threads,
+                                                      kThreadNamePrefix);
+    g_sequenced_worker_pool->AddRef();  // Leak it.
+  }
+}
 
 // Must run on IO Thread.
 void DeleteBackendImpl(disk_cache::Backend** backend,
@@ -139,14 +170,8 @@ SimpleBackendImpl::SimpleBackendImpl(const FilePath& path,
                                      base::SingleThreadTaskRunner* cache_thread,
                                      net::NetLog* net_log)
     : path_(path),
-      index_(new SimpleIndex(MessageLoopProxy::current(),  // io_thread
-                             path,
-                             scoped_ptr<SimpleIndexFile>(
-                                 new SimpleIndexFile(cache_thread, path)))),
       cache_thread_(cache_thread),
       orig_max_size_(max_bytes) {
-  index_->ExecuteWhenReady(base::Bind(&RecordIndexLoad,
-                                      base::TimeTicks::Now()));
 }
 
 SimpleBackendImpl::~SimpleBackendImpl() {
@@ -154,6 +179,18 @@ SimpleBackendImpl::~SimpleBackendImpl() {
 }
 
 int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {
+  MaybeCreateSequencedWorkerPool();
+
+  worker_pool_ = g_sequenced_worker_pool->GetTaskRunnerWithShutdownBehavior(
+      SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+
+  index_.reset(new SimpleIndex(MessageLoopProxy::current(), path_,
+                               make_scoped_ptr(new SimpleIndexFile(
+                                   cache_thread_.get(), worker_pool_.get(),
+                                   path_))));
+  index_->ExecuteWhenReady(base::Bind(&RecordIndexLoad,
+                                      base::TimeTicks::Now()));
+
   InitializeIndexCallback initialize_index_callback =
       base::Bind(&SimpleBackendImpl::InitializeIndex,
                  base::Unretained(this),
@@ -247,7 +284,7 @@ void SimpleBackendImpl::IndexReadyForDoom(Time initial_time,
                             new_result.get());
   Closure reply = base::Bind(&CallCompletionCallback,
                              callback, base::Passed(&new_result));
-  WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
+  worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
 }
 
 int SimpleBackendImpl::DoomEntriesBetween(
