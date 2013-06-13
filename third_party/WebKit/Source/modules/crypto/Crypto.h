@@ -43,7 +43,7 @@ class Crypto : public ScriptWrappable, public RefCounted<Crypto> {
 public:
     static PassRefPtr<Crypto> create() { return adoptRef(new Crypto()); }
 
-    void getRandomValues(ArrayBufferView*, ExceptionCode&);
+    static void getRandomValues(ArrayBufferView*, ExceptionCode&);
 
     SubtleCrypto* subtle();
 

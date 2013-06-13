@@ -1,19 +1,13 @@
-<!DOCTYPE html>
-<html>
-<head>
-<script src="../fast/js/resources/js-test-pre.js"></script>
-</head>
-<body>
-<p id="description"></p>
-<div id="console"></div>
-<script>
+if (self.importScripts)
+    importScripts('../../fast/js/resources/js-test-pre.js');
+
 description("Tests the limits of crypto.randomValues.");
 
-if (!window.ArrayBuffer)
+if (!self.ArrayBuffer)
     debug("This test requres ArrayBuffers to run!");
 
-shouldBe("'crypto' in window", "true");
-shouldBe("'getRandomValues' in window.crypto", "true");
+shouldBe("'crypto' in self", "true");
+shouldBe("'getRandomValues' in self.crypto", "true");
 
 try {
     var almostTooLargeArray = new Uint8Array(65536);
@@ -25,9 +19,4 @@ try {
     debug(ex);
 }
 
-</script>
-<script src="../fast/js/resources/js-test-post.js"></script>
-</body>
-</html>
-
-
+finishJSTest();

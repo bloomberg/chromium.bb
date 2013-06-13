@@ -35,6 +35,9 @@
 
 namespace WebCore {
 
+// This custom binding is shared by V8WorkerCrypto. As such:
+//   * Do not call V8Crypto::toNative()
+//   * Must be threadsafe
 void V8Crypto::getRandomValuesMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() < 1) {
@@ -51,9 +54,8 @@ void V8Crypto::getRandomValuesMethodCustom(const v8::FunctionCallbackInfo<v8::Va
     ArrayBufferView* arrayBufferView = V8ArrayBufferView::toNative(v8::Handle<v8::Object>::Cast(buffer));
     ASSERT(arrayBufferView);
 
-    Crypto* crypto = V8Crypto::toNative(args.Holder());
     ExceptionCode ec = 0;
-    crypto->getRandomValues(arrayBufferView, ec);
+    Crypto::getRandomValues(arrayBufferView, ec);
 
     if (ec) {
         setDOMException(ec, args.GetIsolate());

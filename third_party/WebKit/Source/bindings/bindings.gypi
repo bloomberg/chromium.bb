@@ -219,6 +219,7 @@
             'v8/custom/V8WebGLRenderingContextCustom.cpp',
             'v8/custom/V8WebKitPointCustom.cpp',
             'v8/custom/V8WorkerContextCustom.cpp',
+            'v8/custom/V8WorkerCryptoCustom.cpp',
             'v8/custom/V8WorkerCustom.cpp',
             'v8/custom/V8XMLHttpRequestCustom.cpp',
             'v8/custom/V8XSLTProcessorCustom.cpp',

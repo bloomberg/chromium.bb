@@ -1,19 +1,13 @@
-<!DOCTYPE html>
-<html>
-<head>
-<script src="../fast/js/resources/js-test-pre.js"></script>
-</head>
-<body>
-<p id="description"></p>
-<div id="console"></div>
-<script>
+if (self.importScripts)
+    importScripts('../../fast/js/resources/js-test-pre.js');
+
 description("Tests which types are valid for crypto.randomValues.");
 
-if (!window.ArrayBuffer)
+if (!self.ArrayBuffer)
     debug("This test requres ArrayBuffers to run!");
 
-shouldBe("'crypto' in window", "true");
-shouldBe("'getRandomValues' in window.crypto", "true");
+shouldBe("'crypto' in self", "true");
+shouldBe("'getRandomValues' in self.crypto", "true");
 
 function checkIntegerTypes() {
     var integerTypes = [
@@ -48,9 +42,4 @@ function checkNonIntegerTypes() {
 checkIntegerTypes();
 checkNonIntegerTypes();
 
-</script>
-<script src="../fast/js/resources/js-test-post.js"></script>
-</body>
-</html>
-
-
+finishJSTest();

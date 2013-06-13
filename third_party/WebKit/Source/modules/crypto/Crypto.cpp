@@ -57,6 +57,7 @@ Crypto::Crypto()
     ScriptWrappable::init(this);
 }
 
+// Note: This implementation must be thread-safe, as it is used by workers.
 void Crypto::getRandomValues(ArrayBufferView* array, ExceptionCode& ec)
 {
     if (!array || !isIntegerArray(array)) {
