@@ -329,7 +329,8 @@ TEST_F(LocalFileSyncServiceTest, ProcessLocalChange_CreateFile) {
   base::PlatformFileInfo info;
   base::FilePath platform_path;
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            file_system_->GetMetadata(kFile, &info, &platform_path));
+            file_system_->GetMetadataAndPlatformPath(
+                kFile, &info, &platform_path));
 
   ASSERT_FALSE(info.is_directory);
   ASSERT_EQ(kTestFileDataSize, info.size);

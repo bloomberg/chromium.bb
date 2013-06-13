@@ -114,9 +114,10 @@ class CannedSyncableFileSystem
   base::PlatformFileError DirectoryExists(const fileapi::FileSystemURL& url);
   base::PlatformFileError VerifyFile(const fileapi::FileSystemURL& url,
                                      const std::string& expected_data);
-  base::PlatformFileError GetMetadata(const fileapi::FileSystemURL& url,
-                                      base::PlatformFileInfo* info,
-                                      base::FilePath* platform_path);
+  base::PlatformFileError GetMetadataAndPlatformPath(
+      const fileapi::FileSystemURL& url,
+      base::PlatformFileInfo* info,
+      base::FilePath* platform_path);
 
   // Returns the # of bytes written (>=0) or an error code (<0).
   int64 Write(net::URLRequestContext* url_request_context,
@@ -168,10 +169,10 @@ class CannedSyncableFileSystem
   void DoVerifyFile(const fileapi::FileSystemURL& url,
                     const std::string& expected_data,
                     const StatusCallback& callback);
-  void DoGetMetadata(const fileapi::FileSystemURL& url,
-                     base::PlatformFileInfo* info,
-                     base::FilePath* platform_path,
-                     const StatusCallback& callback);
+  void DoGetMetadataAndPlatformPath(const fileapi::FileSystemURL& url,
+                                    base::PlatformFileInfo* info,
+                                    base::FilePath* platform_path,
+                                    const StatusCallback& callback);
   void DoWrite(net::URLRequestContext* url_request_context,
                const fileapi::FileSystemURL& url,
                const GURL& blob_url,

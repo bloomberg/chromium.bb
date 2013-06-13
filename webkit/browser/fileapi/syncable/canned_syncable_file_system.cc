@@ -26,6 +26,7 @@
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 #include "webkit/browser/quota/quota_manager.h"
+#include "webkit/common/blob/shareable_file_reference.h"
 
 using base::PlatformFileError;
 using fileapi::FileSystemContext;
@@ -90,12 +91,13 @@ void VerifySameTaskRunner(
                     base::Bind(&EnsureRunningOn, make_scoped_refptr(runner2)));
 }
 
-void OnGetMetadataAndVerifyData(
+void OnCreateSnapshotFileAndVerifyData(
     const std::string& expected_data,
     const CannedSyncableFileSystem::StatusCallback& callback,
     base::PlatformFileError result,
     const base::PlatformFileInfo& file_info,
-    const base::FilePath& platform_path) {
+    const base::FilePath& platform_path,
+    const scoped_refptr<webkit_blob::ShareableFileReference>& /* file_ref */) {
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
     return;
@@ -108,13 +110,15 @@ void OnGetMetadataAndVerifyData(
   callback.Run(result);
 }
 
-void OnGetMetadata(
+void OnCreateSnapshotFile(
     base::PlatformFileInfo* file_info_out,
     base::FilePath* platform_path_out,
     const CannedSyncableFileSystem::StatusCallback& callback,
     base::PlatformFileError result,
     const base::PlatformFileInfo& file_info,
-    const base::FilePath& platform_path) {
+    const base::FilePath& platform_path,
+    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+  DCHECK(!file_ref);
   DCHECK(file_info_out);
   DCHECK(platform_path_out);
   *file_info_out = file_info;
@@ -397,14 +401,14 @@ PlatformFileError CannedSyncableFileSystem::VerifyFile(
                  expected_data));
 }
 
-PlatformFileError CannedSyncableFileSystem::GetMetadata(
+PlatformFileError CannedSyncableFileSystem::GetMetadataAndPlatformPath(
     const FileSystemURL& url,
     base::PlatformFileInfo* info,
     base::FilePath* platform_path) {
   return RunOnThread<PlatformFileError>(
       io_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&CannedSyncableFileSystem::DoGetMetadata,
+      base::Bind(&CannedSyncableFileSystem::DoGetMetadataAndPlatformPath,
                  base::Unretained(this),
                  url,
                  info,
@@ -561,18 +565,19 @@ void CannedSyncableFileSystem::DoVerifyFile(
     const std::string& expected_data,
     const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
-  operation_runner()->GetMetadata(
-      url, base::Bind(&OnGetMetadataAndVerifyData, expected_data, callback));
+  operation_runner()->CreateSnapshotFile(
+      url,
+      base::Bind(&OnCreateSnapshotFileAndVerifyData,expected_data, callback));
 }
 
-void CannedSyncableFileSystem::DoGetMetadata(
+void CannedSyncableFileSystem::DoGetMetadataAndPlatformPath(
     const FileSystemURL& url,
     base::PlatformFileInfo* info,
     base::FilePath* platform_path,
     const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
-  operation_runner()->GetMetadata(
-      url, base::Bind(&OnGetMetadata, info, platform_path, callback));
+  operation_runner()->CreateSnapshotFile(
+      url, base::Bind(&OnCreateSnapshotFile, info, platform_path, callback));
 }
 
 void CannedSyncableFileSystem::DoWrite(
