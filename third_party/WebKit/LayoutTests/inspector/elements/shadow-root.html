@@ -4,13 +4,10 @@
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function initialize_shadowSettings()
-{
-    WebInspector.settings.showShadowDOM.set(true);
-}
-
 function test()
 {
+    WebInspector.ElementsTreeOutline.showShadowDOMForTest = true;
+
     InspectorTest.expandElementsTree(function() {
         var container = InspectorTest.expandedNodeWithId("container");
         InspectorTest.dumpElementsTree(container);

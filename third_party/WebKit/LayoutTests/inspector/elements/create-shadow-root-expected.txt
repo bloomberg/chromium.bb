@@ -1,0 +1,27 @@
+Tests that elements panel updates dom tree structure upon shadow root creation.
+
+
+Running: testDumpInitial
+========= Original ========
+- <div id="container">
+      <div id="child"></div>
+  </div>
+
+Running: testCreateShadowRoot
+===== After webkitCreateShadowRoot =====
+- <div id="container">
+    - #document-fragment
+          <div id="shadow-1"></div>
+      <div id="child"></div>
+  </div>
+
+Running: testCreateSecondShadowRoot
+===== After second webkitCreateShadowRoot =====
+- <div id="container">
+    - #document-fragment
+          <div id="shadow-1"></div>
+    - #document-fragment
+          <div id="shadow-2"></div>
+      <div id="child"></div>
+  </div>
+

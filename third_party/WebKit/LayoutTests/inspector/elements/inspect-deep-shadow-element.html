@@ -6,7 +6,8 @@
 
 function test()
 {
-    WebInspector.settings.showShadowDOM.set(true);
+    WebInspector.ElementsTreeOutline.showShadowDOMForTest = true;
+
     WebInspector.showPanel("elements").treeOutline.
         addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged, this);
     function selectedNodeChanged(event)

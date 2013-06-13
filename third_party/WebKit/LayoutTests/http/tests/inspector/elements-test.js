@@ -427,12 +427,13 @@ InspectorTest.dumpElementsTree = function(rootNode, depth)
             return;
 
         var children = treeItem.children;
-        for (var i = 0; depth && children && i < children.length - 1; ++i)
-            print(children[i], prefix + "    ", depth - 1);
-
-        // Closing tag.
-        if (children && children.length)
-            print(children[children.length - 1], prefix, depth);
+        var newPrefix = treeItem === treeItem.treeOutline ? "" : prefix + "    ";
+        for (var i = 0; depth && children && i < children.length; ++i) {
+            if (!children[i]._elementCloseTag)
+                print(children[i], newPrefix, depth - 1);
+            else
+                print(children[i], prefix, depth);
+        }
     }
 
     WebInspector.panels.elements.treeOutline._updateModifiedNodes();
@@ -463,19 +464,27 @@ InspectorTest.expandElementsTree = function(callback)
     InspectorTest.findNode(function() { return false; }, onAllNodesAvailable);
 };
 
-InspectorTest.dumpDOMAgentTree = function()
+InspectorTest.dumpDOMAgentTree = function(node)
 {
     if (!WebInspector.domAgent._document)
         return;
 
-    function dump(node, prefix, startIndex)
+    function dump(node, prefix)
     {
-        InspectorTest.addResult(prefix + node.nodeName() + "[" + (node.id - startIndex)+ "]");
-        var children = node.children;
+        InspectorTest.addResult(prefix + node.nodeName());
+        prefix = prefix + "    ";
+
+        if (node.templateContent())
+            dump(node.templateContent(), prefix);
+        var shadowRoots = node.shadowRoots();
+        for (var i = 0; i < shadowRoots.length; ++i)
+            dump(node.shadowRoots()[i], prefix);
+        var children = node.children();
         for (var i = 0; children && i < children.length; ++i)
-            dump(children[i], prefix + "    ", startIndex);
+            dump(children[i], prefix);
     }
-    dump(WebInspector.domAgent._document, "", WebInspector.domAgent._document.id - 1);
+
+    dump(node, "");
 };
 
 InspectorTest.rangeText = function(range)

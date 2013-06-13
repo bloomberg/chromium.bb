@@ -16,12 +16,14 @@ function test()
 
     function step1()
     {
+        InspectorTest.addResult("Before remove doctype");
         InspectorTest.dumpElementsTree(null, 1);
         InspectorTest.evaluateInPage("removeDoctype()", step2);
     }
 
     function step2()
     {
+        InspectorTest.addResult("After remove doctype");
         InspectorTest.dumpElementsTree(null, 1);
         InspectorTest.completeTest();
     }

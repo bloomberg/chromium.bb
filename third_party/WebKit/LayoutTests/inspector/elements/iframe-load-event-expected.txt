@@ -18,12 +18,12 @@ After frame navigate
           </p>
         - <iframe id="myframe" src="resources/iframe-load-event-iframe-2.html" onload="runTest()">
             - #document
-            - <html>
-                  <head></head>
-                - <body>
-                      <div id="iframe-2-element"></div>
-                  </body>
-              </html>
+                - <html>
+                      <head></head>
+                    - <body>
+                          <div id="iframe-2-element"></div>
+                      </body>
+                  </html>
           </iframe>
       </body>
   </html>

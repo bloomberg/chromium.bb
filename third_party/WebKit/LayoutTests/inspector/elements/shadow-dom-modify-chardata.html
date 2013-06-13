@@ -17,7 +17,7 @@ function test()
 {
     var containerNode;
 
-    WebInspector.settings.showShadowDOM.set(true);
+    WebInspector.ElementsTreeOutline.showShadowDOMForTest = true;
 
     InspectorTest.runTestSuite([
         function testDumpInitial(next)
