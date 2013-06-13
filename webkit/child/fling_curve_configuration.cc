@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
-#include "webkit/glue/touch_fling_gesture_curve.h"
+#include "webkit/child/touch_fling_gesture_curve.h"
 
 namespace webkit_glue {
 

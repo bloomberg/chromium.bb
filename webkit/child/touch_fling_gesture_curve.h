@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_TOUCH_FLING_GESTURE_CURVE_H_
-#define WEBKIT_GLUE_TOUCH_FLING_GESTURE_CURVE_H_
+#ifndef WEBKIT_CHILD_TOUCH_FLING_GESTURE_CURVE_H_
+#define WEBKIT_CHILD_TOUCH_FLING_GESTURE_CURVE_H_
 
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatSize.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/child/webkit_child_export.h"
 
 namespace WebKit {
 class WebGestureCurveTarget;
@@ -24,7 +24,7 @@ namespace webkit_glue {
 class TouchFlingGestureCurve : public WebKit::WebGestureCurve {
  public:
 
-  WEBKIT_GLUE_EXPORT static WebGestureCurve* Create(
+  WEBKIT_CHILD_EXPORT static WebGestureCurve* Create(
       const WebKit::WebFloatPoint& initial_velocity,
       float p0, float p1, float p2,
       const WebKit::WebSize& cumulativeScroll);
@@ -52,4 +52,4 @@ class TouchFlingGestureCurve : public WebKit::WebGestureCurve {
 
 } // namespace webkit_glue
 
-#endif // WEBKIT_GLUE_TOUCH_FLING_GESTURE_CURVE_H_
+#endif // WEBKIT_CHILD_TOUCH_FLING_GESTURE_CURVE_H_

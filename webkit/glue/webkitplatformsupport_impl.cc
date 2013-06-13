@@ -45,7 +45,6 @@
 #include "ui/base/layout.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/common/user_agent/user_agent.h"
-#include "webkit/glue/touch_fling_gesture_curve.h"
 #include "webkit/glue/web_discardable_memory_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/websocketstreamhandle_impl.h"
