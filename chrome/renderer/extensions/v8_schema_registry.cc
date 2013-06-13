@@ -43,17 +43,15 @@ class SchemaRegistryNativeHandler : public ObjectBackedNativeHandler {
 V8SchemaRegistry::V8SchemaRegistry() {}
 
 V8SchemaRegistry::~V8SchemaRegistry() {
-  v8::HandleScope handle_scope;
-
   for (SchemaCache::iterator i = schema_cache_.begin();
        i != schema_cache_.end(); ++i) {
-    i->second.Dispose(i->second->CreationContext()->GetIsolate());
+    i->second.dispose();
   }
 }
 
 scoped_ptr<NativeHandler> V8SchemaRegistry::AsNativeHandler() {
   scoped_ptr<ChromeV8Context> context(new ChromeV8Context(
-      GetOrCreateContext(),
+      GetOrCreateContext(v8::Isolate::GetCurrent()),
       NULL,  // no frame
       NULL,  // no extension
       Feature::UNSPECIFIED_CONTEXT));
@@ -63,8 +61,9 @@ scoped_ptr<NativeHandler> V8SchemaRegistry::AsNativeHandler() {
 
 v8::Handle<v8::Array> V8SchemaRegistry::GetSchemas(
     const std::set<std::string>& apis) {
-  v8::HandleScope handle_scope;
-  v8::Context::Scope context_scope(GetOrCreateContext());
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope handle_scope(isolate);
+  v8::Context::Scope context_scope(GetOrCreateContext(isolate));
 
   v8::Handle<v8::Array> v8_apis(v8::Array::New(apis.size()));
   size_t api_index = 0;
@@ -76,13 +75,14 @@ v8::Handle<v8::Array> V8SchemaRegistry::GetSchemas(
 }
 
 v8::Handle<v8::Object> V8SchemaRegistry::GetSchema(const std::string& api) {
-  v8::HandleScope handle_scope;
 
   SchemaCache::iterator maybe_schema = schema_cache_.find(api);
   if (maybe_schema != schema_cache_.end())
-    return handle_scope.Close(maybe_schema->second);
+    return maybe_schema->second.newLocal(v8::Isolate::GetCurrent());
 
-  v8::Handle<v8::Context> context = GetOrCreateContext();
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope handle_scope(isolate);
+  v8::Handle<v8::Context> context = GetOrCreateContext(isolate);
   v8::Context::Scope context_scope(context);
 
   const base::DictionaryValue* schema =
@@ -94,20 +94,22 @@ v8::Handle<v8::Object> V8SchemaRegistry::GetSchema(const std::string& api) {
 
   v8::Persistent<v8::Object> v8_schema(context->GetIsolate(),
                                        v8::Handle<v8::Object>::Cast(value));
-  schema_cache_[api] = v8_schema;
-  return handle_scope.Close(v8_schema);
+  v8::Local<v8::Object> to_return =
+      v8::Local<v8::Object>::New(isolate, v8_schema);
+  schema_cache_[api] = UnsafePersistent<v8::Object>(&v8_schema);
+  return handle_scope.Close(to_return);
 }
 
-v8::Handle<v8::Context> V8SchemaRegistry::GetOrCreateContext() {
+v8::Handle<v8::Context> V8SchemaRegistry::GetOrCreateContext(
+    v8::Isolate* isolate) {
   // It's ok to create local handles in this function, since this is only called
   // when we have a HandleScope.
   if (context_.get().IsEmpty()) {
-    v8::Handle<v8::Context> context =
-        v8::Context::New(v8::Isolate::GetCurrent());
+    v8::Handle<v8::Context> context = v8::Context::New(isolate);
     context_.reset(context);
     return context;
   }
-  return v8::Local<v8::Context>::New(context_.get());
+  return v8::Local<v8::Context>::New(isolate, context_.get());
 }
 
 }  // namespace extensions

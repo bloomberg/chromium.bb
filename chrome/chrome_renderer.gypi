@@ -132,6 +132,7 @@
         'renderer/extensions/tabs_custom_bindings.h',
         'renderer/extensions/tts_custom_bindings.cc',
         'renderer/extensions/tts_custom_bindings.h',
+        'renderer/extensions/unsafe_persistent.h',
         'renderer/extensions/user_script_scheduler.cc',
         'renderer/extensions/user_script_scheduler.h',
         'renderer/extensions/user_script_slave.cc',

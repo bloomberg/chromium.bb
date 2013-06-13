@@ -55,39 +55,41 @@ v8::Handle<v8::Value> ObjectBackedNativeHandler::Router(
 void ObjectBackedNativeHandler::RouteFunction(
     const std::string& name,
     const HandlerFunction& handler_function) {
-  v8::HandleScope handle_scope;
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context_->v8_context());
 
-  v8::Persistent<v8::Object> data(context_->v8_context()->GetIsolate(),
-                                  v8::Object::New());
-  data->Set(v8::String::New(kHandlerFunction),
-            v8::External::New(new HandlerFunction(handler_function)));
-  router_data_.push_back(data);
+  v8::Persistent<v8::Object> data(isolate, v8::Object::New());
+  v8::Local<v8::Object> local_data = v8::Local<v8::Object>::New(isolate, data);
+  local_data->Set(v8::String::New(kHandlerFunction),
+                  v8::External::New(new HandlerFunction(handler_function)));
   v8::Handle<v8::FunctionTemplate> function_template =
-      v8::FunctionTemplate::New(Router, data);
+      v8::FunctionTemplate::New(Router, local_data);
   object_template_->Set(name.c_str(), function_template);
+  router_data_.push_back(UnsafePersistent<v8::Object>(&data));
 }
 
 void ObjectBackedNativeHandler::Invalidate() {
   if (!is_valid())
     return;
-  v8::HandleScope handle_scope;
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context_->v8_context());
 
   for (RouterData::iterator it = router_data_.begin();
        it != router_data_.end(); ++it) {
-    v8::Persistent<v8::Object> data = *it;
+    v8::Handle<v8::Object> data = it->newLocal(isolate);
     v8::Handle<v8::Value> handler_function_value =
         data->Get(v8::String::New(kHandlerFunction));
     CHECK(!handler_function_value.IsEmpty());
     delete static_cast<HandlerFunction*>(
         handler_function_value.As<v8::External>()->Value());
     data->Delete(v8::String::New(kHandlerFunction));
-    data.Dispose(context_->v8_context()->GetIsolate());
+    it->dispose();
   }
   object_template_.reset();
   context_ = NULL;
   NativeHandler::Invalidate();
 }
 
-}   // extensions
+}   // namespace extensions

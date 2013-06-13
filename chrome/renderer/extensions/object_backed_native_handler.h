@@ -12,6 +12,7 @@
 #include "base/memory/linked_ptr.h"
 #include "chrome/renderer/extensions/native_handler.h"
 #include "chrome/renderer/extensions/scoped_persistent.h"
+#include "chrome/renderer/extensions/unsafe_persistent.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -61,7 +62,13 @@ class ObjectBackedNativeHandler : public NativeHandler {
   // So, we use v8::Objects here to hold that data, effectively refcounting
   // the data. When |this| is destroyed we remove the base::Bound function from
   // the object to indicate that it shoudn't be called.
-  typedef std::vector<v8::Persistent<v8::Object> > RouterData;
+  //
+  // Storing UnsafePersistents is safe here, because the corresponding
+  // Persistent handle is created in RouteFunction(), and it keeps the data
+  // pointed by the UnsafePersistent alive. It's not made weak or disposed, and
+  // nobody else has access to it. The Persistent is then disposed in
+  // Invalidate().
+  typedef std::vector<UnsafePersistent<v8::Object> > RouterData;
   RouterData router_data_;
 
   ChromeV8Context* context_;
@@ -71,6 +78,6 @@ class ObjectBackedNativeHandler : public NativeHandler {
   DISALLOW_COPY_AND_ASSIGN(ObjectBackedNativeHandler);
 };
 
-}  // extensions
+}  // namespace extensions
 
 #endif  // CHROME_RENDERER_EXTENSIONS_OBJECT_BACKED_NATIVE_HANDLER_H_
