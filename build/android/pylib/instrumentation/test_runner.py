@@ -89,7 +89,12 @@ class TestRunner(base_test_runner.BaseTestRunner):
     self.forwarder = None
 
   #override
-  def PushDependencies(self):
+  def InstallTestPackage(self):
+    if self.install_apk:
+      self.test_pkg.Install(self.adb)
+
+  #override
+  def PushDataDeps(self):
     # TODO(frankf): Implement a general approach for copying/installing
     # once across test runners.
     if TestRunner._DEVICE_HAS_TEST_FILES.get(self.device, False):
@@ -115,8 +120,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
         self.adb.PushIfNeeded(host_test_files_path,
                               self.adb.GetExternalStorage() + '/' +
                               TestRunner._DEVICE_DATA_DIR + '/' + dst_layer)
-    if self.install_apk:
-      self.test_pkg.Install(self.adb)
     self.tool.CopyFiles()
     TestRunner._DEVICE_HAS_TEST_FILES[self.device] = True
 

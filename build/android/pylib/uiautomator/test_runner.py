@@ -25,7 +25,7 @@ class TestRunner(instr_test_runner.TestRunner):
     self.package_name = options.package_name
 
   #override
-  def PushDependencies(self):
+  def InstallTestPackage(self):
       self.test_pkg.Install(self.adb)
 
   #override

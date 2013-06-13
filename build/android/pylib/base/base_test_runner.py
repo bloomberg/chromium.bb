@@ -81,18 +81,23 @@ class BaseTestRunner(object):
     """
     raise NotImplementedError
 
-  def PushDependencies(self):
-    """Push all dependencies to device once before all tests are run."""
+  def InstallTestPackage(self):
+    """Installs the test package once before all tests are run."""
+    pass
+
+  def PushDataDeps(self):
+    """Push all data deps to device once before all tests are run."""
     pass
 
   def SetUp(self):
     """Run once before all tests are run."""
     Forwarder.KillDevice(self.adb, self.tool)
+    self.InstallTestPackage()
     if self._push_deps:
-      logging.info('Pushing deps to device.')
-      self.PushDependencies()
+      logging.info('Pushing data deps to device.')
+      self.PushDataDeps()
     else:
-      logging.warning('Skipping pushing deps to device.')
+      logging.warning('Skipping pushing data deps to device.')
 
   def TearDown(self):
     """Run once after all tests are run."""
