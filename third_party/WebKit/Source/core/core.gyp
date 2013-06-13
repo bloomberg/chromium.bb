@@ -118,6 +118,7 @@
             'inspector/InspectorInstrumentation.idl',
           ],
           'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorCanvasInstrumentationInl.h',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorConsoleInstrumentationInl.h',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorDatabaseInstrumentationInl.h',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorInstrumentationInl.h',
@@ -303,6 +304,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorTypeBuilder.cpp',
 
         # Additional .cpp files from the inspector_instrumentation_sources list.
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorCanvasInstrumentationInl.h',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorConsoleInstrumentationInl.h',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorDatabaseInstrumentationInl.h',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorInstrumentationInl.h',

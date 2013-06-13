@@ -488,3 +488,15 @@ interface InspectorOverrides {
     [Profiler]
     String getCurrentUserInitiatedProfileName(Page* page, bool incrementProfileNumber);
 }
+
+
+interface InspectorCanvasInstrumentation {
+
+#include "bindings/v8/ScriptObject.h"
+
+    [Canvas]
+    ScriptObject wrapCanvas2DRenderingContextForInstrumentation(Document*, const ScriptObject&);
+
+    [Canvas]
+    ScriptObject wrapWebGLRenderingContextForInstrumentation(Document*, const ScriptObject&);
+}
