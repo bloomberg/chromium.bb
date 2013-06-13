@@ -69,8 +69,7 @@ class PluginDataRemoverImpl::Context
         begin_time_(begin_time),
         is_removing_(false),
         browser_context_path_(browser_context->GetPath()),
-        resource_context_(browser_context->GetResourceContext()),
-        channel_(NULL) {
+        resource_context_(browser_context->GetResourceContext()) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 

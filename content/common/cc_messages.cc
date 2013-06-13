@@ -379,7 +379,7 @@ static scoped_ptr<cc::DrawQuad> ReadDrawQuad(const Message* m,
                                              PickleIterator* iter) {
   scoped_ptr<QuadType> quad = QuadType::Create();
   if (!ReadParam(m, iter, quad.get()))
-    return scoped_ptr<QuadType>(NULL).template PassAs<cc::DrawQuad>();
+    return scoped_ptr<QuadType>().template PassAs<cc::DrawQuad>();
   return quad.template PassAs<cc::DrawQuad>();
 }
 

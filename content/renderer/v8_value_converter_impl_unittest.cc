@@ -365,7 +365,7 @@ TEST_F(V8ValueConverterImplTest, WeirdTypes) {
   TestWeirdType(converter,
                 v8::Undefined(),
                 base::Value::TYPE_NULL,  // Arbitrary type, result is NULL.
-                scoped_ptr<base::Value>(NULL));
+                scoped_ptr<base::Value>());
   TestWeirdType(converter,
                 v8::Date::New(1000),
                 base::Value::TYPE_DICTIONARY,

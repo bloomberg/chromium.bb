@@ -131,16 +131,15 @@ class DownloadFileTest : public testing::Test {
 
     scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
     download_file_.reset(
-        new DownloadFileImpl(
-            save_info.Pass(),
-            base::FilePath(),
-            GURL(),                     // Source
-            GURL(),                     // Referrer
-            calculate_hash,
-            scoped_ptr<ByteStreamReader>(input_stream_),
-            net::BoundNetLog(),
-            scoped_ptr<PowerSaveBlocker>(NULL).Pass(),
-            observer_factory_.GetWeakPtr()));
+        new DownloadFileImpl(save_info.Pass(),
+                             base::FilePath(),
+                             GURL(),  // Source
+                             GURL(),  // Referrer
+                             calculate_hash,
+                             scoped_ptr<ByteStreamReader>(input_stream_),
+                             net::BoundNetLog(),
+                             scoped_ptr<PowerSaveBlocker>().Pass(),
+                             observer_factory_.GetWeakPtr()));
 
     EXPECT_CALL(*input_stream_, Read(_, _))
         .WillOnce(Return(ByteStreamReader::STREAM_EMPTY))

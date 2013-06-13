@@ -170,7 +170,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       enabled_bindings_(0),
       pending_request_id_(-1),
       navigations_suspended_(false),
-      suspended_nav_params_(NULL),
       has_accessed_initial_document_(false),
       is_swapped_out_(swapped_out),
       is_subframe_(false),

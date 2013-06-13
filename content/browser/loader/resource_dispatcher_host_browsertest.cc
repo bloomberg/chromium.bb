@@ -252,7 +252,7 @@ scoped_ptr<net::test_server::HttpResponse> NoContentResponseHandler(
     const std::string& path,
     const net::test_server::HttpRequest& request) {
   if (!StartsWithASCII(path, request.relative_url, true))
-    return scoped_ptr<net::test_server::HttpResponse>(NULL);
+    return scoped_ptr<net::test_server::HttpResponse>();
 
   scoped_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);

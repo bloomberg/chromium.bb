@@ -19,14 +19,14 @@
 namespace content {
 
 WebSharedWorkerStub::WebSharedWorkerStub(
-    const string16& name, int route_id,
+    const string16& name,
+    int route_id,
     const WorkerAppCacheInitInfo& appcache_init_info)
     : route_id_(route_id),
       appcache_init_info_(appcache_init_info),
       client_(route_id, this),
       name_(name),
-      started_(false),
-      worker_devtools_agent_(NULL) {
+      started_(false) {
 
   WorkerThread* worker_thread = WorkerThread::current();
   DCHECK(worker_thread);

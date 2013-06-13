@@ -77,16 +77,7 @@ base::StringPiece PlatformResourceProvider(int key) {
 
 ShellBrowserMainParts::ShellBrowserMainParts(
     const MainFunctionParams& parameters)
-    : BrowserMainParts(),
-      parameters_(parameters),
-      run_message_loop_(true),
-      devtools_delegate_(NULL)
-#if defined(ENABLE_PLUGINS)
-      ,
-      plugin_service_filter_(NULL)
-#endif
-{
-}
+    : BrowserMainParts(), parameters_(parameters), run_message_loop_(true) {}
 
 ShellBrowserMainParts::~ShellBrowserMainParts() {
 }

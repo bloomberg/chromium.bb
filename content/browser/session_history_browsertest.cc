@@ -29,7 +29,7 @@ scoped_ptr<net::test_server::HttpResponse> HandleEchoTitleRequest(
     const std::string& echotitle_path,
     const net::test_server::HttpRequest& request) {
   if (!StartsWithASCII(request.relative_url, echotitle_path, true))
-    return scoped_ptr<net::test_server::HttpResponse>(NULL);
+    return scoped_ptr<net::test_server::HttpResponse>();
 
   scoped_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);

@@ -74,9 +74,7 @@ RenderViewHostTestEnabler::~RenderViewHostTestEnabler() {
 // RenderViewHostTestHarness --------------------------------------------------
 
 RenderViewHostTestHarness::RenderViewHostTestHarness()
-  : contents_(NULL),
-    thread_bundle_options_(TestBrowserThreadBundle::DEFAULT) {
-}
+    : thread_bundle_options_(TestBrowserThreadBundle::DEFAULT) {}
 
 RenderViewHostTestHarness::~RenderViewHostTestHarness() {
 }

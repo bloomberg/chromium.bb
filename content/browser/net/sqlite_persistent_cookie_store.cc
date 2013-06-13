@@ -76,7 +76,6 @@ class SQLitePersistentCookieStore::Backend
       bool restore_old_session_cookies,
       quota::SpecialStoragePolicy* special_storage_policy)
       : path_(path),
-        db_(NULL),
         num_pending_(0),
         force_keep_session_state_(false),
         initialized_(false),
@@ -87,8 +86,7 @@ class SQLitePersistentCookieStore::Backend
         client_task_runner_(client_task_runner),
         background_task_runner_(background_task_runner),
         num_priority_waiting_(0),
-        total_priority_requests_(0) {
-  }
+        total_priority_requests_(0) {}
 
   // Creates or loads the SQLite database.
   void Load(const LoadedCallback& loaded_callback);

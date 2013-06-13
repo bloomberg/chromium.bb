@@ -125,11 +125,7 @@ DevToolsProtocol::Response::Response(int id, DictionaryValue* result)
 DevToolsProtocol::Response::Response(int id,
                                      int error_code,
                                      const std::string& error_message)
-    : id_(id),
-      result_(NULL),
-      error_code_(error_code),
-      error_message_(error_message) {
-}
+    : id_(id), error_code_(error_code), error_message_(error_message) {}
 
 DevToolsProtocol::Response::~Response() {
 }

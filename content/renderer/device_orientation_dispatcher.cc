@@ -13,10 +13,7 @@ namespace content {
 
 DeviceOrientationDispatcher::DeviceOrientationDispatcher(
     RenderViewImpl* render_view)
-    : RenderViewObserver(render_view),
-      controller_(NULL),
-      started_(false) {
-}
+    : RenderViewObserver(render_view), started_(false) {}
 
 DeviceOrientationDispatcher::~DeviceOrientationDispatcher() {
   if (started_)

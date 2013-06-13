@@ -94,12 +94,10 @@ const int GoogleStreamingRemoteEngine::kWebserviceStatusErrorNoMatch = 5;
 GoogleStreamingRemoteEngine::GoogleStreamingRemoteEngine(
     net::URLRequestContextGetter* context)
     : url_context_(context),
-      encoder_(NULL),
       previous_response_length_(0),
       got_last_definitive_result_(false),
       is_dispatching_event_(false),
-      state_(STATE_IDLE) {
-}
+      state_(STATE_IDLE) {}
 
 GoogleStreamingRemoteEngine::~GoogleStreamingRemoteEngine() {}
 

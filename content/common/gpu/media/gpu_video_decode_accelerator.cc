@@ -55,13 +55,11 @@ static bool MakeDecoderContextCurrent(
   return true;
 }
 
-GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
-    int32 host_route_id,
-    GpuCommandBufferStub* stub)
+GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(int32 host_route_id,
+                                                     GpuCommandBufferStub* stub)
     : init_done_msg_(NULL),
       host_route_id_(host_route_id),
       stub_(stub),
-      video_decode_accelerator_(NULL),
       texture_target_(0) {
   DCHECK(stub_);
   stub_->AddDestructionObserver(this);
