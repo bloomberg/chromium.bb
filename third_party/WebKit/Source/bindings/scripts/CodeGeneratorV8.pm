@@ -4573,7 +4573,26 @@ END
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, impl.get(), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
+END
+    if ($interface->name eq "ArrayBuffer") {
+      AddToImplIncludes("bindings/v8/custom/V8ArrayBufferCustom.h");
+      $code .= <<END;
+    if (!impl->hasDeallocationObserver()) {
+        v8::V8::AdjustAmountOfExternalAllocatedMemory(impl->byteLength());
+        impl->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
+    }
+END
+    } elsif (IsTypedArrayType($interface->name)) {
+      AddToImplIncludes("bindings/v8/custom/V8ArrayBufferCustom.h");
+      $code .= <<END;
+    if (!impl->buffer()->hasDeallocationObserver()) {
+        v8::V8::AdjustAmountOfExternalAllocatedMemory(impl->buffer()->byteLength());
+        impl->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
+    }
+END
+    }
 
+    $code .= <<END;
     installPerContextProperties(wrapper, impl.get(), isolate);
     V8DOMWrapper::associateObjectWithWrapper(impl, &info, wrapper, isolate, $wrapperConfiguration);
     return wrapper;
