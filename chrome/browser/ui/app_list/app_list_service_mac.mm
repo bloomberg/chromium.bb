@@ -128,10 +128,30 @@ void CreateAppListShim(const base::FilePath& profile_path) {
       GetAppListShortcutInfo(profile_path);
 
   ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
-  // TODO(tapted): Add more icon scales when the resource bundle will use them
-  // properly. See http://crbug.com/167408 and http://crbug.com/241304 .
-  shortcut_info.favicon.Add(
-      *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_128));
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
+#if defined(GOOGLE_CHROME_BUILD)
+    shortcut_info.favicon.Add(
+        *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_CANARY_16));
+    shortcut_info.favicon.Add(
+        *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_CANARY_32));
+    shortcut_info.favicon.Add(
+        *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_CANARY_128));
+    shortcut_info.favicon.Add(
+        *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_CANARY_256));
+#else
+    NOTREACHED();
+#endif
+  } else {
+    shortcut_info.favicon.Add(
+        *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_16));
+    shortcut_info.favicon.Add(
+        *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_32));
+    shortcut_info.favicon.Add(
+        *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_128));
+    shortcut_info.favicon.Add(
+        *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_256));
+  }
 
   // TODO(tapted): Create a dock icon using chrome/browser/mac/dock.h .
   web_app::CreateShortcuts(shortcut_info,
