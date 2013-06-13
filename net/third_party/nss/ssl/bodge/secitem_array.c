@@ -6,6 +6,7 @@
  * Support routines for SECItemArray data structure.
  */
 
+#include "nssutil.h"
 #include "seccomon.h"
 #include "secitem.h"
 #include "secerr.h"
@@ -13,10 +14,15 @@
 
 typedef struct SECItemArrayStr SECItemArray;
 
+#define NSSUTIL_VERSION_NUM \
+    (NSSUTIL_VMAJOR * 10000 + NSSUTIL_VMINOR * 100 + NSSUTIL_VPATCH)
+#if NSSUTIL_VERSION_NUM < 31500
+// Added in NSS 3.15.
 struct SECItemArrayStr {
     SECItem *items;
     unsigned int len;
 };
+#endif
 
 SECItemArray *
 SECITEM_AllocArray(PLArenaPool *arena, SECItemArray *array, unsigned int len)
