@@ -654,6 +654,10 @@ class ObfuscatedFileUtilTest : public testing::Test {
     return sandbox_file_system_.file_system_context();
   }
 
+  const base::FilePath& data_dir_path() const {
+    return data_dir_.path();
+  }
+
  private:
   base::ScopedTempDir data_dir_;
   base::MessageLoop message_loop_;
@@ -2254,10 +2258,8 @@ TEST_F(ObfuscatedFileUtilTest, TestQuotaOnOpen) {
 }
 
 TEST_F(ObfuscatedFileUtilTest, MaybeDropDatabasesAliveCase) {
-  base::ScopedTempDir data_dir;
-  ASSERT_TRUE(data_dir.CreateUniqueTempDir());
   ObfuscatedFileUtil file_util(NULL,
-                               data_dir.path(),
+                               data_dir_path(),
                                base::MessageLoopProxy::current());
   file_util.InitOriginDatabase(true /*create*/);
   ASSERT_TRUE(file_util.origin_database_ != NULL);
@@ -2274,10 +2276,8 @@ TEST_F(ObfuscatedFileUtilTest, MaybeDropDatabasesAlreadyDeletedCase) {
   // Run message loop after OFU is already deleted to make sure callback doesn't
   // cause a crash for use after free.
   {
-    base::ScopedTempDir data_dir;
-    ASSERT_TRUE(data_dir.CreateUniqueTempDir());
     ObfuscatedFileUtil file_util(NULL,
-                                 data_dir.path(),
+                                 data_dir_path(),
                                  base::MessageLoopProxy::current());
     file_util.InitOriginDatabase(true /*create*/);
     file_util.db_flush_delay_seconds_ = 0;

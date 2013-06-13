@@ -35,6 +35,7 @@ namespace fileapi {
 
 class FileSystemOperationContext;
 class SandboxOriginDatabaseInterface;
+class TimedTaskHelper;
 
 // The overall implementation philosophy of this class is that partial failures
 // should leave us with an intact database; we'd prefer to leak the occasional
@@ -171,12 +172,6 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
   // and destroys the database on the disk.
   bool DestroyDirectoryDatabase(const GURL& origin, FileSystemType type);
 
-  void ResetObjectLifetimeTracker();
-
-  void DropDatabases();
-
-  const base::TimeTicks& db_last_use_time() const { return db_last_use_time_; }
-
   // Computes a cost for storing a given file in the obfuscated FSFU.
   // As the cost of a file is independent of the cost of its parent directories,
   // this ignores all but the BaseName of the supplied path.  In order to
@@ -252,6 +247,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
                             FileSystemType type);
 
   void MarkUsed();
+  void DropDatabases();
   bool InitOriginDatabase(bool create);
 
   base::PlatformFileError GenerateNewLocalPath(
@@ -273,17 +269,12 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
   scoped_ptr<SandboxOriginDatabaseInterface> origin_database_;
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   base::FilePath file_system_directory_;
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   // Used to delete database after a certain period of inactivity.
   int64 db_flush_delay_seconds_;
-  base::TimeTicks db_last_use_time_;
 
-  // Owned by MaybeDropDatabase callback, set to false when dtor runs.
-  // This only becomes valid when the PostDelayedTask callback is posted and
-  // becomes invalid again if the PostDelayedTask callback finishes. (i.e. timer
-  // runs out).
-  bool* object_lifetime_tracker_;
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
+  scoped_ptr<TimedTaskHelper> timer_;
 
   // If this instance is initialized for an isolated partition, this should
   // only see a single origin.
