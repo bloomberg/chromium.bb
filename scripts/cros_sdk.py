@@ -166,6 +166,11 @@ def DeleteChroot(chroot_path):
 def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
                 additional_args):
   """Enters an existing SDK chroot"""
+  st = os.statvfs(os.path.join(chroot_path, 'usr', 'bin', 'sudo'))
+  # The os.ST_NOSUID constant wasn't added until python-3.2.
+  if st.f_flag & 0x2:
+    cros_build_lib.Die('chroot cannot be in a nosuid mount')
+
   cmd = ENTER_CHROOT + ['--chroot', chroot_path, '--cache_dir', cache_dir]
   if chrome_root:
     cmd.extend(['--chrome_root', chrome_root])
