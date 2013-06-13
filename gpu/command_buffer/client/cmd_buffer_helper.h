@@ -131,8 +131,6 @@ class GPU_EXPORT CommandBufferHelper {
     return command_buffer_->GetLastState().get_offset;
   }
 
-  error::Error GetError();
-
   // Common Commands
   void Noop(uint32 skip_count) {
     cmd::Noop* cmd = GetImmediateCmdSpace<cmd::Noop>(

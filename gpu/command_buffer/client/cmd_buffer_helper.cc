@@ -273,9 +273,4 @@ CommandBufferEntry* CommandBufferHelper::GetSpace(uint32 entries) {
   return space;
 }
 
-error::Error CommandBufferHelper::GetError() {
-  CommandBuffer::State state = command_buffer_->GetState();
-  return static_cast<error::Error>(state.error);
-}
-
 }  // namespace gpu
