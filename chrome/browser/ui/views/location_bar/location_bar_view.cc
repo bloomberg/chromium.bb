@@ -417,17 +417,14 @@ void LocationBarView::GetOmniboxPopupPositioningInfo(
     int* popup_width,
     int* left_margin,
     int* right_margin) {
-  gfx::Rect location_bar_bounds(parent()->GetContentsBounds());
-  location_bar_bounds.Inset(kNormalEdgeThickness, 0);
-
   *top_left_screen_coord = gfx::Point(0, parent()->height());
   views::View::ConvertPointToScreen(parent(), top_left_screen_coord);
   *popup_width = parent()->width();
 
-  gfx::Point location_bar_in_toolbar(location_bar_bounds.origin());
-  views::View::ConvertPointToTarget(this, parent(), &location_bar_in_toolbar);
-  *left_margin = location_bar_in_toolbar.x();
-  *right_margin = *popup_width - *left_margin - location_bar_bounds.width();
+  gfx::Rect location_bar_bounds(bounds());
+  location_bar_bounds.Inset(kNormalEdgeThickness, 0);
+  *left_margin = location_bar_bounds.x();
+  *right_margin = *popup_width - location_bar_bounds.right();
 }
 
 // static
