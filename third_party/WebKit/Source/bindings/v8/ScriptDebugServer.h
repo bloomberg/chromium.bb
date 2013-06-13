@@ -32,6 +32,7 @@
 #define ScriptDebugServer_h
 
 
+#include "InspectorTypeBuilder.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "core/inspector/ScriptBreakpoint.h"
 #include <v8-debug.h>
@@ -73,7 +74,7 @@ public:
     void stepOverStatement();
     void stepOutOfFunction();
 
-    bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, ScriptValue* newCallFrames, ScriptObject* result);
+    bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, ScriptValue* newCallFrames, ScriptObject* result, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&);
     void updateCallStack(ScriptValue* callFrame);
 
     void setScriptPreprocessor(const String& preprocessorBody);
