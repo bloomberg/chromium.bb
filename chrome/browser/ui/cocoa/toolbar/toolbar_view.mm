@@ -6,6 +6,7 @@
 
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
+#import "ui/base/cocoa/nsgraphics_context_additions.h"
 
 @implementation ToolbarView
 
@@ -20,7 +21,7 @@
   // The toolbar's background pattern is phased relative to the
   // tab strip view's background pattern.
   NSPoint phase = [[self window] themePatternPhase];
-  [[NSGraphicsContext currentContext] setPatternPhase:phase];
+  [[NSGraphicsContext currentContext] cr_setPatternPhase:phase forView:self];
   [self drawBackgroundWithOpaque:YES];
 }
 

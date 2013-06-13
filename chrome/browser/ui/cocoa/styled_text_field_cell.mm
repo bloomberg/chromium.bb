@@ -10,6 +10,7 @@
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
+#import "ui/base/cocoa/nsgraphics_context_additions.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
@@ -98,7 +99,8 @@
       // Set the phase to match window.
       NSRect trueRect = [controlView convertRect:cellFrame toView:nil];
       NSPoint midPoint = NSMakePoint(NSMinX(trueRect), NSMaxY(trueRect));
-      [[NSGraphicsContext currentContext] setPatternPhase:midPoint];
+      [[NSGraphicsContext currentContext] cr_setPatternPhase:midPoint
+                                                     forView:controlView];
 
       // NOTE(shess): This seems like it should be using a 0.0 inset,
       // but AFAICT using a halfLineWidth inset is important in mixing the

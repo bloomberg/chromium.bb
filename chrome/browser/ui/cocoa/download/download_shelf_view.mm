@@ -12,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "grit/theme_resources.h"
+#import "ui/base/cocoa/nsgraphics_context_additions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 @implementation DownloadShelfView
@@ -49,7 +50,7 @@
   // background matches the toolbar background.
   NSPoint phase = NSMakePoint(
       0, NSHeight([self bounds]) + [TabStripController defaultTabHeight]);
-  [[NSGraphicsContext currentContext] setPatternPhase:phase];
+  [[NSGraphicsContext currentContext] cr_setPatternPhase:phase forView:self];
   [self drawBackgroundWithOpaque:YES];
 
   // Draw top stroke

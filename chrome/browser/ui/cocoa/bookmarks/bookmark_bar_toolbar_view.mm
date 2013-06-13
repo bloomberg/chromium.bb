@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/search/search_ui.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
+#import "ui/base/cocoa/nsgraphics_context_additions.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/rect.h"
@@ -50,7 +51,7 @@ const CGFloat kBorderRadius = 3.0;
       [self drawAsDetachedBubble];
   } else {
     NSPoint phase = [[self window] themePatternPhase];
-    [[NSGraphicsContext currentContext] setPatternPhase:phase];
+    [[NSGraphicsContext currentContext] cr_setPatternPhase:phase forView:self];
     [self drawBackgroundWithOpaque:YES];
   }
 }
@@ -118,7 +119,7 @@ const CGFloat kBorderRadius = 3.0;
     CGContextRef cgContext = static_cast<CGContextRef>([context graphicsPort]);
     CGContextSetAlpha(cgContext, 1 - morph);
     CGContextBeginTransparencyLayer(cgContext, NULL);
-    [context setPatternPhase:[[self window] themePatternPhase]];
+    [context cr_setPatternPhase:[[self window] themePatternPhase] forView:self];
     [self drawBackgroundWithOpaque:YES];
     CGContextEndTransparencyLayer(cgContext);
   }
@@ -171,7 +172,7 @@ const CGFloat kBorderRadius = 3.0;
     CGContextRef cgContext = static_cast<CGContextRef>([context graphicsPort]);
     CGContextSetAlpha(cgContext, 1 - morph);
     CGContextBeginTransparencyLayer(cgContext, NULL);
-    [context setPatternPhase:[[self window] themePatternPhase]];
+    [context cr_setPatternPhase:[[self window] themePatternPhase] forView:self];
     [self drawBackgroundWithOpaque:YES];
     CGContextEndTransparencyLayer(cgContext);
   }

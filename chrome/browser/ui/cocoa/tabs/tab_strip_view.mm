@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#import "ui/base/cocoa/nsgraphics_context_additions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
@@ -55,7 +56,7 @@
   if (NSMinY(dirtyRect) < backgroundHeight) {
     gfx::ScopedNSGraphicsContextSaveGState scopedGState;
     NSGraphicsContext *context = [NSGraphicsContext currentContext];
-    [context setPatternPhase:[[self window] themePatternPhase]];
+    [context cr_setPatternPhase:[[self window] themePatternPhase] forView:self];
 
     // Themes don't have an inactive image so only look for one if there's no
     // theme.

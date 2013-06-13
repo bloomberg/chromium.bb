@@ -120,6 +120,8 @@
         'base/cocoa/menu_controller.mm',
         'base/cocoa/nib_loading.h',
         'base/cocoa/nib_loading.mm',
+        'base/cocoa/nsgraphics_context_additions.h',
+        'base/cocoa/nsgraphics_context_additions.mm',
         'base/cocoa/tracking_area.h',
         'base/cocoa/tracking_area.mm',
         'base/cocoa/underlay_opengl_hosting_window.h',

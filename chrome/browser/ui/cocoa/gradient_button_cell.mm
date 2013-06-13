@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/rect_path_utils.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
+#import "ui/base/cocoa/nsgraphics_context_additions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 @interface GradientButtonCell (Private)
@@ -386,7 +387,8 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
     // Set the phase to match window.
     NSRect trueRect = [controlView convertRect:cellFrame toView:nil];
     [[NSGraphicsContext currentContext]
-        setPatternPhase:NSMakePoint(NSMinX(trueRect), NSMaxY(trueRect))];
+        cr_setPatternPhase:NSMakePoint(NSMinX(trueRect), NSMaxY(trueRect))
+                   forView:controlView];
     [innerPath fill];
   } else {
     if (showClickedGradient) {

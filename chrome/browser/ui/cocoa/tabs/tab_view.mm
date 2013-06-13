@@ -14,6 +14,7 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#import "ui/base/cocoa/nsgraphics_context_additions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
@@ -312,7 +313,7 @@ const CGFloat kRapidCloseDist = 2.5;
 
   ThemeService* themeProvider =
       static_cast<ThemeService*>([[self window] themeProvider]);
-  [context setPatternPhase:[[self window] themePatternPhase]];
+  [context cr_setPatternPhase:[[self window] themePatternPhase] forView:self];
 
 
   CGImageRef mask([self tabClippingMask]);
