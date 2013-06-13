@@ -751,7 +751,7 @@ void CanvasRenderingContext2D::setTransform(float m11, float m12, float m21, flo
         return;
 
     realizeSaves();
-    
+
     c->setCTM(canvas()->baseTransform());
     modifiableState().m_transform = AffineTransform();
     m_path.transform(ctm);
@@ -898,7 +898,7 @@ static bool parseWinding(const String& windingRuleString, WindRule& windRule)
         windRule = RULE_EVENODD;
     else
         return false;
-    
+
     return true;
 }
 
@@ -933,7 +933,7 @@ void CanvasRenderingContext2D::fill(const String& windingRuleString)
             c->fillPath(m_path);
             didDraw(m_path.boundingRect());
         }
-        
+
         c->setFillRule(windRule);
     }
 }
@@ -993,7 +993,7 @@ bool CanvasRenderingContext2D::isPointInPath(const float x, const float y, const
     WindRule windRule = RULE_NONZERO;
     if (!parseWinding(windingRuleString, windRule))
         return false;
-    
+
     return m_path.contains(transformedPoint, windRule);
 }
 
@@ -1833,7 +1833,7 @@ PassRefPtr<ImageData> CanvasRenderingContext2D::getImageData(ImageBuffer::Coordi
     if (sw < 0) {
         sx += sw;
         sw = -sw;
-    }    
+    }
     if (sh < 0) {
         sy += sh;
         sh = -sh;
@@ -1945,6 +1945,8 @@ String CanvasRenderingContext2D::font() const
 
     if (fontDescription.italic())
         serializedFont.appendLiteral("italic ");
+    if (fontDescription.weight() == FontWeightBold)
+        serializedFont.appendLiteral("bold ");
     if (fontDescription.smallCaps() == FontSmallCapsOn)
         serializedFont.appendLiteral("small-caps ");
 

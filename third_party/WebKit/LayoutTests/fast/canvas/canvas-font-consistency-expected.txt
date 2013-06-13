@@ -1,0 +1,15 @@
+Series of tests to ensure that context.font is consistent.
+
+On success, you will see no "FAIL" messages, followed by "TEST COMPLETE".
+
+
+Testing font "bold 13px Arial"
+PASS ctx.font is fontName
+Testing font "italic 13px Arial"
+PASS ctx.font is fontName
+Testing font "small-caps 13px Arial"
+PASS ctx.font is fontName
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
