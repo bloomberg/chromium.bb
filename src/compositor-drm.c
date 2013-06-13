@@ -2005,8 +2005,7 @@ create_sprites(struct drm_compositor *ec)
 		wl_list_insert(&ec->sprite_list, &sprite->link);
 	}
 
-	free(plane_res->planes);
-	free(plane_res);
+	drmModeFreePlaneResources(plane_res);
 }
 
 static void
