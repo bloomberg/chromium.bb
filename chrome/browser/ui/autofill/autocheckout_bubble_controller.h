@@ -7,8 +7,13 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
+
+namespace gfx {
+class Image;
+}
 
 namespace autofill {
 
@@ -31,18 +36,22 @@ class AutocheckoutBubbleController {
                                const base::Callback<void(bool)>& callback);
   ~AutocheckoutBubbleController();
 
-  static int AcceptTextID();
-  static int CancelTextID();
-  int PromptTextID();
+  static base::string16 AcceptText();
+  static base::string16 CancelText();
+  base::string16 PromptText();
 
   void BubbleAccepted();
   void BubbleCanceled();
   void BubbleCreated() const;
   void BubbleDestroyed() const;
 
+  gfx::Image NormalImage();
+  gfx::Image HoverImage();
+  gfx::Image PressedImage();
+
   const gfx::Rect& anchor_rect() const { return anchor_rect_; }
 
-  const gfx::NativeWindow& native_window() {
+  const gfx::NativeWindow& native_window() const {
     return native_window_;
   }
 

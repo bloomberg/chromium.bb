@@ -6,6 +6,10 @@
 
 #include "components/autofill/browser/autofill_metrics.h"
 #include "grit/generated_resources.h"
+#include "grit/ui_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect_conversions.h"
 
 namespace autofill {
@@ -25,18 +29,43 @@ AutocheckoutBubbleController::AutocheckoutBubbleController(
 AutocheckoutBubbleController::~AutocheckoutBubbleController() {}
 
 // static
-int AutocheckoutBubbleController::AcceptTextID() {
-  return IDS_AUTOCHECKOUT_BUBBLE_ACCEPT;
+base::string16 AutocheckoutBubbleController::AcceptText() {
+  return l10n_util::GetStringUTF16(IDS_AUTOCHECKOUT_BUBBLE_ACCEPT);
 }
 
 // static
-int AutocheckoutBubbleController::CancelTextID() {
-  return IDS_AUTOCHECKOUT_BUBBLE_CANCEL;
+base::string16 AutocheckoutBubbleController::CancelText() {
+  return l10n_util::GetStringUTF16(IDS_AUTOCHECKOUT_BUBBLE_CANCEL);
 }
 
-int AutocheckoutBubbleController::PromptTextID() {
-  return is_google_user_ ? IDS_AUTOCHECKOUT_BUBBLE_PROMPT_SIGNED_IN :
-                           IDS_AUTOCHECKOUT_BUBBLE_PROMPT_NOT_SIGNED_IN;
+base::string16 AutocheckoutBubbleController::PromptText() {
+  return l10n_util::GetStringUTF16(
+      is_google_user_ ? IDS_AUTOCHECKOUT_BUBBLE_PROMPT_SIGNED_IN :
+                        IDS_AUTOCHECKOUT_BUBBLE_PROMPT_NOT_SIGNED_IN);
+}
+
+gfx::Image AutocheckoutBubbleController::NormalImage() {
+  if (!is_google_user_)
+    return gfx::Image();
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetImageNamed(IDR_BUY_WITH_GOOGLE_BUTTON);
+}
+
+gfx::Image AutocheckoutBubbleController::HoverImage() {
+  if (!is_google_user_)
+    return gfx::Image();
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetImageNamed(IDR_BUY_WITH_GOOGLE_BUTTON_H);
+}
+
+gfx::Image AutocheckoutBubbleController::PressedImage() {
+  if (!is_google_user_)
+    return gfx::Image();
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetImageNamed(IDR_BUY_WITH_GOOGLE_BUTTON_P);
 }
 
 void AutocheckoutBubbleController::BubbleAccepted() {

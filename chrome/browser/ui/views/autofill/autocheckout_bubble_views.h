@@ -47,7 +47,7 @@ class AutocheckoutBubbleViews : public views::BubbleDelegateView,
                              const ui::Event& event) OVERRIDE;
 
   scoped_ptr<AutocheckoutBubbleController> controller_;
-  views::LabelButton* ok_button_;  // weak
+  views::Button* ok_button_;  // weak
   views::LabelButton* cancel_button_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(AutocheckoutBubbleViews);

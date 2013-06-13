@@ -6,9 +6,10 @@
 
 #include "chrome/browser/ui/autofill/autocheckout_bubble.h"
 #include "chrome/browser/ui/autofill/autocheckout_bubble_controller.h"
-#include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/bubble/bubble_border.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
@@ -46,8 +47,7 @@ void AutocheckoutBubbleViews::Init() {
 
   // Add the message label to the first row.
   views::ColumnSet* cs = layout->AddColumnSet(1);
-  views::Label* message_label = new views::Label(
-      l10n_util::GetStringUTF16(controller_->PromptTextID()));
+  views::Label* message_label = new views::Label(controller_->PromptText());
 
   // Maximum width for the message field in pixels. The message text will be
   // wrapped when its width is wider than this.
@@ -86,18 +86,26 @@ void AutocheckoutBubbleViews::Init() {
                 0,
                 0);
   layout->StartRow(0, 2);
-  ok_button_ =
-      new views::LabelButton(
-          this,
-          l10n_util::GetStringUTF16(
-              AutocheckoutBubbleController::AcceptTextID()));
-  ok_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+
+  if (!controller_->NormalImage().IsEmpty()) {
+    views::ImageButton* image_button = new views::ImageButton(this);
+    image_button->SetImage(views::Button::STATE_NORMAL,
+                           controller_->NormalImage().ToImageSkia());
+    image_button->SetImage(views::Button::STATE_HOVERED,
+                           controller_->HoverImage().ToImageSkia());
+    image_button->SetImage(views::Button::STATE_PRESSED,
+                           controller_->PressedImage().ToImageSkia());
+    ok_button_ = image_button;
+  } else {
+    views::LabelButton* label_button = new views::LabelButton(
+        this, AutocheckoutBubbleController::AcceptText());
+    label_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    ok_button_ = label_button;
+  }
   layout->AddView(ok_button_);
+
   cancel_button_ =
-      new views::LabelButton(
-          this,
-          l10n_util::GetStringUTF16(
-              AutocheckoutBubbleController::CancelTextID()));
+      new views::LabelButton(this, AutocheckoutBubbleController::CancelText());
   cancel_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   layout->AddView(cancel_button_);
 }
