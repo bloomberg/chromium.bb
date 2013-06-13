@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PEPPER_PERMISSION_UTIL_H_
-#define CHROME_BROWSER_PEPPER_PERMISSION_UTIL_H_
+#ifndef CHROME_COMMON_PEPPER_PERMISSION_UTIL_H_
+#define CHROME_COMMON_PEPPER_PERMISSION_UTIL_H_
 
 #include <set>
 #include <string>
 
+class ExtensionSet;
 class GURL;
-class Profile;
 
 namespace chrome {
 
-// Returns true if the extension or it's shared module is whitelisted, or
-// appears in command_line_switch.
+// Returns true if the extension (or an imported module if any) is whitelisted,
+// or appears in command_line_switch.
 bool IsExtensionOrSharedModuleWhitelisted(
-    Profile* profile,
     const GURL& url,
+    const ExtensionSet* extension_set,
     const std::set<std::string>& whitelist,
     const char* command_line_switch);
 
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_PEPPER_PERMISSION_UTIL_H_
+#endif  // CHROME_COMMON_PEPPER_PERMISSION_UTIL_H_

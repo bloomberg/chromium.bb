@@ -134,6 +134,8 @@ void PPAPITestBase::SetUpCommandLine(CommandLine* command_line) {
 
   // For TestRequestOSFileHandle.
   command_line->AppendSwitch(switches::kUnlimitedStorage);
+  command_line->AppendSwitchASCII(switches::kAllowNaClFileHandleAPI,
+                                  "127.0.0.1");
 }
 
 void PPAPITestBase::SetUpOnMainThread() {

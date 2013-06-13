@@ -7,11 +7,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/pepper_permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/pepper_permission_util.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_view_host.h"
@@ -115,8 +115,13 @@ std::string PepperCrxFileSystemMessageFilter::CreateIsolatedFileSystem(
 int32_t PepperCrxFileSystemMessageFilter::OnOpenFileSystem(
     ppapi::host::HostMessageContext* context) {
   Profile* profile = GetProfile();
-  if (!IsExtensionOrSharedModuleWhitelisted(profile,
-                                            document_url_,
+  const ExtensionSet* extension_set = NULL;
+  if (profile) {
+    extension_set = extensions::ExtensionSystem::Get(profile)->
+        extension_service()->extensions();
+  }
+  if (!IsExtensionOrSharedModuleWhitelisted(document_url_,
+                                            extension_set,
                                             allowed_crxfs_origins_,
                                             switches::kAllowNaClCrxFsAPI)) {
     LOG(ERROR) << "Host " << document_url_.host() << " cannot use CrxFs API.";

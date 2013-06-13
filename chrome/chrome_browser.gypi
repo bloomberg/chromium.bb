@@ -1284,8 +1284,6 @@
         'browser/pepper_broker_infobar_delegate.h',
         'browser/pepper_flash_settings_manager.cc',
         'browser/pepper_flash_settings_manager.h',
-        'browser/pepper_permission_util.cc',
-        'browser/pepper_permission_util.h',
         'browser/performance_monitor/constants.cc',
         'browser/performance_monitor/constants.h',
         'browser/performance_monitor/database.cc',

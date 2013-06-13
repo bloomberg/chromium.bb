@@ -18,6 +18,7 @@
 #include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/thunk/enter.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
@@ -418,6 +419,11 @@ int32_t PepperFileIOHost::OnHostMsgRequestOSFileHandle(
 
   RendererPpapiHost* renderer_ppapi_host =
       RendererPpapiHost::GetForPPInstance(pp_instance());
+
+  // Whitelist to make it privately accessible.
+  if (!GetContentClient()->renderer()->IsPluginAllowedToCallRequestOSFileHandle(
+          renderer_ppapi_host->GetContainerForInstance(pp_instance())))
+    return PP_ERROR_NOACCESS;
 
   IPC::PlatformFileForTransit file =
       renderer_ppapi_host->ShareHandleWithRemote(file_, false);

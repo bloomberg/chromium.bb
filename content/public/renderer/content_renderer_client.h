@@ -237,6 +237,11 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual void RegisterPPAPIInterfaceFactories(
       webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) {}
 
+  // Returns true if plugin living in the container can use
+  // pp::FileIO::RequestOSFileHandle.
+  virtual bool IsPluginAllowedToCallRequestOSFileHandle(
+      WebKit::WebPluginContainer* container) const;
+
   // Returns whether BrowserPlugin should be allowed within the |container|.
   virtual bool AllowBrowserPlugin(WebKit::WebPluginContainer* container) const;
 

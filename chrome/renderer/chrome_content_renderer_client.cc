@@ -26,6 +26,7 @@
 #include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "chrome/common/external_ipc_fuzzer.h"
 #include "chrome/common/localized_error.h"
+#include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/benchmarking_extension.h"
@@ -202,12 +203,23 @@ bool ShouldUseJavaScriptSettingForPlugin(const WebPluginInfo& plugin) {
   return false;
 }
 
+#if defined(ENABLE_PLUGINS)
+const char* kPredefinedAllowedFileHandleOrigins[] = {
+  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see crbug.com/234789
+};
+#endif
+
 }  // namespace
 
 namespace chrome {
 
 ChromeContentRendererClient::ChromeContentRendererClient() {
   g_current_client = this;
+
+#if defined(ENABLE_PLUGINS)
+  for (size_t i = 0; i < arraysize(kPredefinedAllowedFileHandleOrigins); ++i)
+    allowed_file_handle_origins_.insert(kPredefinedAllowedFileHandleOrigins[i]);
+#endif
 }
 
 ChromeContentRendererClient::~ChromeContentRendererClient() {
@@ -1196,6 +1208,21 @@ void ChromeContentRendererClient::RegisterPPAPIInterfaceFactories(
     webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) {
 #if defined(ENABLE_PLUGINS)
   factory_manager->RegisterFactory(ChromePPAPIInterfaceFactory);
+#endif
+}
+
+bool ChromeContentRendererClient::IsPluginAllowedToCallRequestOSFileHandle(
+    WebKit::WebPluginContainer* container) const {
+#if defined(ENABLE_PLUGINS)
+  if (!container)
+    return false;
+  return IsExtensionOrSharedModuleWhitelisted(
+      container->element().document().baseURL(),
+      extension_dispatcher_->extensions(),
+      allowed_file_handle_origins_,
+      switches::kAllowNaClFileHandleAPI);
+#else
+  return false;
 #endif
 }
 

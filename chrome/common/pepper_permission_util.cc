@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/pepper_permission_util.h"
+#include "chrome/common/pepper_permission_util.h"
 
 #include <vector>
 
@@ -10,10 +10,6 @@
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/google/google_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
@@ -39,29 +35,23 @@ bool HostIsInSet(const std::string& host, const std::set<std::string>& set) {
 }  // namespace
 
 bool IsExtensionOrSharedModuleWhitelisted(
-    Profile* profile,
     const GURL& url,
+    const ExtensionSet* extension_set,
     const std::set<std::string>& whitelist,
     const char* command_line_switch) {
+  const std::string host = url.host();
   if (!url.is_valid())
     return false;
 
-  const std::string host = url.host();
   if (url.SchemeIs(extensions::kExtensionScheme) &&
       HostIsInSet(host, whitelist)) {
     return true;
   }
 
-  const Extension* extension = NULL;
-  ExtensionService* extension_service = !profile ? NULL :
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (extension_service) {
-    extension = extension_service->extensions()->
-        GetExtensionOrAppByURL(ExtensionURLInfo(url));
-  }
-
   // Check the modules that are imported by this extension to see if any of them
   // is whitelisted.
+  const Extension* extension = extension_set ? extension_set->GetByID(host)
+                                             : NULL;
   if (extension) {
     typedef std::vector<extensions::SharedModuleInfo::ImportInfo>
         ImportInfoVector;
@@ -69,8 +59,8 @@ bool IsExtensionOrSharedModuleWhitelisted(
         extensions::SharedModuleInfo::GetImports(extension);
     for (ImportInfoVector::const_iterator it = imports.begin();
          it != imports.end(); ++it) {
-      const Extension* imported_extension = extension_service->
-          GetExtensionById(it->extension_id, false);
+      const Extension* imported_extension = extension_set->GetByID(
+          it->extension_id);
       if (imported_extension &&
           extensions::SharedModuleInfo::IsSharedModule(imported_extension) &&
           HostIsInSet(it->extension_id, whitelist)) {
@@ -83,7 +73,7 @@ bool IsExtensionOrSharedModuleWhitelisted(
   const std::string allowed_list =
       command_line.GetSwitchValueASCII(command_line_switch);
   if (allowed_list == "*") {
-    // The wildcard allows socket API only for packaged and platform apps.
+    // For now, we only allow packaged and platform apps in this wildcard.
     return extension &&
         (extension->GetType() == Manifest::TYPE_LEGACY_PACKAGED_APP ||
          extension->GetType() == Manifest::TYPE_PLATFORM_APP);

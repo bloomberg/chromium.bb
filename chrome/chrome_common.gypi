@@ -387,6 +387,8 @@
         'common/partial_circular_buffer.h',
         'common/pepper_flash.cc',
         'common/pepper_flash.h',
+        'common/pepper_permission_util.cc',
+        'common/pepper_permission_util.h',
         'common/pref_names_util.cc',
         'common/pref_names_util.h',
         'common/print_messages.cc',

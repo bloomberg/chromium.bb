@@ -50,7 +50,6 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
-#include "chrome/browser/pepper_permission_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugins/plugin_info_message_filter.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -98,6 +97,7 @@
 #include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -1288,6 +1288,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       autofill::switches::kEnableInteractiveAutocomplete,
       switches::kAllowHTTPBackgroundPage,
       switches::kAllowLegacyExtensionManifests,
+      // TODO(victorhsieh): remove the following flag once we move PPAPI FileIO
+      // to browser.
+      switches::kAllowNaClFileHandleAPI,
       switches::kAllowScriptingGallery,
       switches::kAppsCheckoutURL,
       switches::kAppsGalleryURL,
@@ -2168,11 +2171,16 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
     const GURL& url,
     const content::SocketPermissionRequest& params) {
 #if defined(ENABLE_PLUGINS)
-  return IsExtensionOrSharedModuleWhitelisted(
-      Profile::FromBrowserContext(browser_context),
-      url,
-      allowed_socket_origins_,
-      switches::kAllowNaClSocketAPI);
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  const ExtensionSet* extension_set = NULL;
+  if (profile) {
+    extension_set = extensions::ExtensionSystem::Get(profile)->
+        extension_service()->extensions();
+  }
+  return IsExtensionOrSharedModuleWhitelisted(url,
+                                              extension_set,
+                                              allowed_socket_origins_,
+                                              switches::kAllowNaClSocketAPI);
 #else
   return false;
 #endif

@@ -8,6 +8,10 @@
 #include <string>
 #include <vector>
 
+#if defined(ENABLE_PLUGINS)
+#include <set>
+#endif
+
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
@@ -128,6 +132,10 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       WebKit::WebPluginContainer* container) const OVERRIDE;
   virtual void RegisterPPAPIInterfaceFactories(
       webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) OVERRIDE;
+  // TODO(victorhsieh): move to ChromeContentBrowserClient once we migrate
+  // PPAPI FileIO host to browser.
+  virtual bool IsPluginAllowedToCallRequestOSFileHandle(
+      WebKit::WebPluginContainer* container) const OVERRIDE;
   virtual WebKit::WebSpeechSynthesizer* OverrideSpeechSynthesizer(
       WebKit::WebSpeechSynthesizerClient* client) OVERRIDE;
 
@@ -190,6 +198,10 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   scoped_ptr<prerender::PrerenderDispatcher> prerender_dispatcher_;
 #if defined(ENABLE_WEBRTC)
   scoped_refptr<WebRtcLoggingMessageFilter> webrtc_logging_message_filter_;
+#endif
+
+#if defined(ENABLE_PLUGINS)
+  std::set<std::string> allowed_file_handle_origins_;
 #endif
 };
 

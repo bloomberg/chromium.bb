@@ -31,6 +31,7 @@ extern const char kAllowHTTPBackgroundPage[];
 extern const char kAllowHttpScreenCapture[];
 extern const char kAllowLegacyExtensionManifests[];
 extern const char kAllowNaClCrxFsAPI[];
+extern const char kAllowNaClFileHandleAPI[];
 extern const char kAllowNaClSocketAPI[];
 extern const char kAllowOutdatedPlugins[];
 extern const char kAllowRunningInsecureContent[];
