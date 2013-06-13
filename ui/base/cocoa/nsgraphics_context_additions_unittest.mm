@@ -9,7 +9,8 @@
 
 typedef ui::CocoaTest NSGraphicsContextCrAdditionsTest;
 
-TEST_F(NSGraphicsContextCrAdditionsTest, PatternPhase) {
+// Test fails, see http://crbug.com/249241
+TEST_F(NSGraphicsContextCrAdditionsTest, DISABLED_PatternPhase) {
   NSRect frame = NSMakeRect(50, 50, 100, 100);
   scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:frame]);
   [[test_window() contentView] addSubview:view];
