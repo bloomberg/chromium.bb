@@ -270,6 +270,7 @@ void WebRtcAudioCapturer::SetCapturerSource(
            << "sample_rate=" << sample_rate << ")";
   scoped_refptr<media::AudioCapturerSource> old_source;
   scoped_refptr<ConfiguredBuffer> current_buffer;
+  bool restart_source = false;
   {
     base::AutoLock auto_lock(lock_);
     if (source_.get() == source.get())
@@ -279,7 +280,8 @@ void WebRtcAudioCapturer::SetCapturerSource(
     source_ = source;
     current_buffer = buffer_;
 
-    // Reset the flag to allow calling Start() for the new source.
+    // Reset the flag to allow starting the new source.
+    restart_source = running_;
     running_ = false;
   }
 
@@ -310,6 +312,9 @@ void WebRtcAudioCapturer::SetCapturerSource(
     // Make sure to grab the new parameters in case they were reconfigured.
     source->Initialize(current_buffer->params(), this, session_id_);
   }
+
+  if (restart_source)
+    Start();
 }
 
 void WebRtcAudioCapturer::Start() {
