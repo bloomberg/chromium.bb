@@ -5,10 +5,14 @@
 #ifndef CONTENT_SHELL_SHELL_BROWSER_MAIN_H_
 #define CONTENT_SHELL_SHELL_BROWSER_MAIN_H_
 
+#include "base/memory/scoped_ptr.h"
+
 namespace content {
+class BrowserMainRunner;
 struct MainFunctionParams;
 }
 
-int ShellBrowserMain(const content::MainFunctionParams& parameters);
+int ShellBrowserMain(const content::MainFunctionParams& parameters,
+                     scoped_ptr<content::BrowserMainRunner>& main_runner);
 
 #endif  // CONTENT_SHELL_SHELL_BROWSER_MAIN_H_

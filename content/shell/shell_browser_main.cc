@@ -119,10 +119,13 @@ bool GetNextTest(const CommandLine::StringVector& args,
 }  // namespace
 
 // Main routine for running as the Browser process.
-int ShellBrowserMain(const content::MainFunctionParams& parameters) {
+int ShellBrowserMain(const content::MainFunctionParams& parameters,
+                     scoped_ptr<content::BrowserMainRunner>& main_runner) {
   bool layout_test_mode =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree);
   base::ScopedTempDir browser_context_path_for_layout_tests;
+
+  // TODO(beverloo): Create the FIFOs required for Android layout tests.
 
   if (layout_test_mode) {
     CHECK(browser_context_path_for_layout_tests.CreateUniqueTempDir());
@@ -132,10 +135,9 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
         browser_context_path_for_layout_tests.path().MaybeAsASCII());
   }
 
-  scoped_ptr<content::BrowserMainRunner> main_runner_(
-      content::BrowserMainRunner::Create());
-
-  int exit_code = main_runner_->Initialize(parameters);
+  int exit_code = main_runner->Initialize(parameters);
+  DCHECK(exit_code < 0)
+      << "BrowserMainRunner::Initialize failed in ShellBrowserMain";
 
   if (exit_code >= 0)
     return exit_code;
@@ -144,9 +146,9 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
         switches::kCheckLayoutTestSysDeps)) {
     base::MessageLoop::current()->PostTask(FROM_HERE,
                                            base::MessageLoop::QuitClosure());
-    main_runner_->Run();
+    main_runner->Run();
     content::Shell::CloseAllWindows();
-    main_runner_->Shutdown();
+    main_runner->Shutdown();
     return 0;
   }
 
@@ -187,7 +189,7 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
       }
 
       ran_at_least_once = true;
-      main_runner_->Run();
+      main_runner->Run();
 
       if (!content::WebKitTestController::Get()->ResetAfterLayoutTest())
         break;
@@ -195,14 +197,17 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
     if (!ran_at_least_once) {
       base::MessageLoop::current()->PostTask(FROM_HERE,
                                              base::MessageLoop::QuitClosure());
-      main_runner_->Run();
+      main_runner->Run();
     }
     exit_code = 0;
-  } else {
-    exit_code = main_runner_->Run();
   }
 
-  main_runner_->Shutdown();
+#if !defined(OS_ANDROID)
+  if (!layout_test_mode)
+    exit_code = main_runner->Run();
+
+  main_runner->Shutdown();
+#endif
 
   return exit_code;
 }

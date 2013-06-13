@@ -156,16 +156,13 @@ int ShellMainDelegate::RunProcess(
     return -1;
 
 #if !defined(OS_ANDROID)
-  return ShellBrowserMain(main_function_params);
-#else
-  // If no process type is specified, we are creating the main browser process.
-  browser_runner_.reset(BrowserMainRunner::Create());
-  int exit_code = browser_runner_->Initialize(main_function_params);
-  DCHECK(exit_code < 0)
-      << "BrowserRunner::Initialize failed in ShellMainDelegate";
-
-  return exit_code;
+  // Android stores the BrowserMainRunner instance as a scoped member pointer
+  // on the ShellMainDelegate class because of different object lifetime.
+  scoped_ptr<BrowserMainRunner> browser_runner_;
 #endif
+
+  browser_runner_.reset(BrowserMainRunner::Create());
+  return ShellBrowserMain(main_function_params, browser_runner_);
 }
 
 void ShellMainDelegate::InitializeResourceBundle() {
