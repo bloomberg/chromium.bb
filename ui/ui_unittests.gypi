@@ -6,7 +6,6 @@
   'targets': [
     {
       'target_name': 'ui_test_support',
-      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
@@ -30,8 +29,15 @@
       ],
       'conditions': [
         ['OS!="ios"', {
+          'type': 'static_library',
           'includes': [ 'base/ime/ime_test_support.gypi' ],
         }, {  # OS=="ios"
+          # None of the sources in this target are built on iOS, resulting in
+          # link errors when building targets that depend on this target
+          # because the static library isn't found. If this target is changed
+          # to have sources that are built on iOS, the target should be changed
+          # to be of type static_library on all platforms.
+          'type': 'none',
           # The cocoa files don't apply to iOS.
           'sources/': [['exclude', 'cocoa']],
         }],
