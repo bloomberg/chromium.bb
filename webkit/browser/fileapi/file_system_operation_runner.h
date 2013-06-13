@@ -15,6 +15,10 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
+namespace net {
+class URLRequestContext;
+}
+
 namespace fileapi {
 
 class FileSystemURL;

@@ -5,8 +5,11 @@
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 
 #include "base/bind.h"
+#include "net/url_request/url_request_context.h"
 #include "webkit/browser/fileapi/file_observers.h"
+#include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/fileapi/file_system_context.h"
+#include "webkit/browser/fileapi/file_writer_delegate.h"
 #include "webkit/browser/fileapi/local_file_system_operation.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
@@ -214,10 +217,25 @@ OperationID FileSystemOperationRunner::Write(
     callback.Run(error, 0, true);
     return kErrorOperationID;
   }
+
+  scoped_ptr<FileStreamWriter> writer(
+      file_system_context_->CreateFileStreamWriter(url, offset));
+  if (!writer) {
+    // Write is not supported.
+    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY, 0, true);
+    return kErrorOperationID;
+  }
+
+  DCHECK(blob_url.is_valid());
+  scoped_ptr<FileWriterDelegate> writer_delegate(
+      new FileWriterDelegate(writer.Pass()));
+  scoped_ptr<net::URLRequest> blob_request(url_request_context->CreateRequest(
+      blob_url, writer_delegate.get()));
+
   OperationID id = operations_.Add(operation);
   PrepareForWrite(id, url);
   operation->Write(
-      url_request_context, url, blob_url, offset,
+      url, writer_delegate.Pass(), blob_request.Pass(),
       base::Bind(&FileSystemOperationRunner::DidWrite, AsWeakPtr(),
                  id, callback));
   return id;

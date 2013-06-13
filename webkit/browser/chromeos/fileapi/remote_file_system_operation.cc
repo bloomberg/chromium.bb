@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
-#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request.h"
 #include "webkit/browser/chromeos/fileapi/remote_file_stream_writer.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/file_writer_delegate.h"
@@ -103,25 +103,15 @@ void RemoteFileSystemOperation::Move(const FileSystemURL& src_url,
 }
 
 void RemoteFileSystemOperation::Write(
-    const net::URLRequestContext* url_request_context,
     const FileSystemURL& url,
-    const GURL& blob_url,
-    int64 offset,
+    scoped_ptr<fileapi::FileWriterDelegate> writer_delegate,
+    scoped_ptr<net::URLRequest> blob_request,
     const WriteCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationWrite));
-  file_writer_delegate_.reset(
-      new fileapi::FileWriterDelegate(
-          base::Bind(&RemoteFileSystemOperation::DidWrite,
-                     AsWeakPtr(), callback),
-          scoped_ptr<fileapi::FileStreamWriter>(
-              new fileapi::RemoteFileStreamWriter(remote_proxy_,
-                                                  url,
-                                                  offset))));
-
-  scoped_ptr<net::URLRequest> blob_request(url_request_context->CreateRequest(
-      blob_url, file_writer_delegate_.get()));
-
-  file_writer_delegate_->Start(blob_request.Pass());
+  file_writer_delegate_ = writer_delegate.Pass();
+  file_writer_delegate_->Start(
+      blob_request.Pass(),
+      base::Bind(&RemoteFileSystemOperation::DidWrite, AsWeakPtr(), callback));
 }
 
 void RemoteFileSystemOperation::Truncate(const FileSystemURL& url,

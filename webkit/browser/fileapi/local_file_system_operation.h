@@ -18,14 +18,6 @@
 #include "webkit/common/blob/scoped_file.h"
 #include "webkit/common/quota/quota_types.h"
 
-namespace chromeos {
-class CrosMountPointProvider;
-}
-
-namespace sync_file_system {
-class SyncableFileSystemOperation;
-}
-
 namespace fileapi {
 
 class AsyncFileUtil;
@@ -72,10 +64,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileSystemOperation
                              const ReadDirectoryCallback& callback) OVERRIDE;
   virtual void Remove(const FileSystemURL& url, bool recursive,
                       const StatusCallback& callback) OVERRIDE;
-  virtual void Write(const net::URLRequestContext* url_request_context,
-                     const FileSystemURL& url,
-                     const GURL& blob_url,
-                     int64 offset,
+  virtual void Write(const FileSystemURL& url,
+                     scoped_ptr<FileWriterDelegate> writer_delegate,
+                     scoped_ptr<net::URLRequest> blob_request,
                      const WriteCallback& callback) OVERRIDE;
   virtual void Truncate(const FileSystemURL& url, int64 length,
                         const StatusCallback& callback) OVERRIDE;
@@ -168,9 +159,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileSystemOperation
     return file_system_context_.get();
   }
 
- private:
-  friend class sync_file_system::SyncableFileSystemOperation;
-
+ protected:
   // Queries the quota and usage and then runs the given |task|.
   // If an error occurs during the quota query it runs |error_callback| instead.
   void GetUsageAndQuotaThenRunTask(
@@ -188,17 +177,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileSystemOperation
       const base::Closure& error_callback,
       quota::QuotaStatusCode status,
       int64 usage, int64 quota);
-
-  // returns a closure which actually perform the write operation.
-  base::Closure GetWriteClosure(
-      const net::URLRequestContext* url_request_context,
-      const FileSystemURL& url,
-      const GURL& blob_url,
-      int64 offset,
-      const WriteCallback& callback);
-  void DidFailWrite(
-      const WriteCallback& callback,
-      base::PlatformFileError result);
 
   // The 'body' methods that perform the actual work (i.e. posting the
   // file task on proxy_) after the quota check.

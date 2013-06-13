@@ -40,10 +40,8 @@ base::PlatformFileError NetErrorToPlatformFileError(int error) {
 }  // namespace
 
 FileWriterDelegate::FileWriterDelegate(
-    const DelegateWriteCallback& write_callback,
     scoped_ptr<FileStreamWriter> file_stream_writer)
-    : write_callback_(write_callback),
-      file_stream_writer_(file_stream_writer.Pass()),
+    : file_stream_writer_(file_stream_writer.Pass()),
       writing_started_(false),
       bytes_written_backlog_(0),
       bytes_written_(0),
@@ -54,7 +52,9 @@ FileWriterDelegate::FileWriterDelegate(
 FileWriterDelegate::~FileWriterDelegate() {
 }
 
-void FileWriterDelegate::Start(scoped_ptr<net::URLRequest> request) {
+void FileWriterDelegate::Start(scoped_ptr<net::URLRequest> request,
+                               const DelegateWriteCallback& write_callback) {
+  write_callback_ = write_callback;
   request_ = request.Pass();
   request_->Start();
 }

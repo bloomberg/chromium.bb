@@ -33,6 +33,9 @@ namespace {
 const GURL kOrigin("http://example.com");
 const FileSystemType kFileSystemType = kFileSystemTypeTest;
 
+const char kData[] = "The quick brown fox jumps over the lazy dog.\n";
+const int kDataSize = ARRAYSIZE_UNSAFE(kData) - 1;
+
 class Result {
  public:
   Result()
@@ -66,9 +69,6 @@ class Result {
   int64 bytes_written_;
   FileWriterDelegate::WriteProgressStatus write_status_;
 };
-
-const char kData[] = "The quick brown fox jumps over the lazy dog.\n";
-const int kDataSize = ARRAYSIZE_UNSAFE(kData) - 1;
 
 }  // namespace (anonymous)
 
@@ -123,17 +123,18 @@ class FileWriterDelegateTest : public PlatformTest {
   FileWriterDelegate* CreateWriterDelegate(
       const char* test_file_path,
       int64 offset,
-      int64 allowed_growth,
-      Result* result) {
+      int64 allowed_growth) {
     SandboxFileStreamWriter* writer = new SandboxFileStreamWriter(
         file_system_context_.get(),
         GetFileSystemURL(test_file_path),
         offset,
         *file_system_context_->GetUpdateObservers(kFileSystemType));
     writer->set_default_quota(allowed_growth);
-    return new FileWriterDelegate(
-        base::Bind(&Result::DidWrite, base::Unretained(result)),
-        scoped_ptr<FileStreamWriter>(writer));
+    return new FileWriterDelegate(scoped_ptr<FileStreamWriter>(writer));
+  }
+
+  FileWriterDelegate::DelegateWriteCallback GetWriteCallback(Result* result) {
+    return base::Bind(&Result::DidWrite, base::Unretained(result));
   }
 
   // Creates and sets up a FileWriterDelegate for writing the given |blob_url|,
@@ -142,10 +143,8 @@ class FileWriterDelegateTest : public PlatformTest {
                        const GURL& blob_url,
                        int64 offset,
                        int64 allowed_growth) {
-    result_.reset(new Result());
     file_writer_delegate_.reset(
-        CreateWriterDelegate(test_file_path, offset, allowed_growth,
-                             result_.get()));
+        CreateWriterDelegate(test_file_path, offset, allowed_growth));
     request_.reset(empty_context_.CreateRequest(
         blob_url, file_writer_delegate_.get()));
   }
@@ -160,7 +159,6 @@ class FileWriterDelegateTest : public PlatformTest {
   net::URLRequestContext empty_context_;
   scoped_ptr<FileWriterDelegate> file_writer_delegate_;
   scoped_ptr<net::URLRequest> request_;
-  scoped_ptr<Result> result_;
 
   base::ScopedTempDir dir_;
 
@@ -259,17 +257,18 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimit) {
 
   PrepareForWrite("test", kBlobURL, 0, kint64max);
 
+  Result result;
   ASSERT_EQ(0, usage());
-  file_writer_delegate_->Start(request_.Pass());
+  file_writer_delegate_->Start(request_.Pass(), GetWriteCallback(&result));
   base::MessageLoop::current()->Run();
 
-  ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result_->write_status());
+  ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
   file_writer_delegate_.reset();
 
   ASSERT_EQ(kDataSize, usage());
   EXPECT_EQ(GetFileSizeOnDisk("test"), usage());
-  EXPECT_EQ(kDataSize, result_->bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
+  EXPECT_EQ(kDataSize, result.bytes_written());
+  EXPECT_EQ(base::PLATFORM_FILE_OK, result.status());
 }
 
 TEST_F(FileWriterDelegateTest, WriteSuccessWithJustQuota) {
@@ -278,17 +277,18 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithJustQuota) {
   const int64 kAllowedGrowth = kDataSize;
   PrepareForWrite("test", kBlobURL, 0, kAllowedGrowth);
 
+  Result result;
   ASSERT_EQ(0, usage());
-  file_writer_delegate_->Start(request_.Pass());
+  file_writer_delegate_->Start(request_.Pass(), GetWriteCallback(&result));
   base::MessageLoop::current()->Run();
-  ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result_->write_status());
+  ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
   file_writer_delegate_.reset();
 
   ASSERT_EQ(kAllowedGrowth, usage());
   EXPECT_EQ(GetFileSizeOnDisk("test"), usage());
 
-  EXPECT_EQ(kAllowedGrowth, result_->bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
+  EXPECT_EQ(kAllowedGrowth, result.bytes_written());
+  EXPECT_EQ(base::PLATFORM_FILE_OK, result.status());
 }
 
 TEST_F(FileWriterDelegateTest, DISABLED_WriteFailureByQuota) {
@@ -297,18 +297,19 @@ TEST_F(FileWriterDelegateTest, DISABLED_WriteFailureByQuota) {
   const int64 kAllowedGrowth = kDataSize - 1;
   PrepareForWrite("test", kBlobURL, 0, kAllowedGrowth);
 
+  Result result;
   ASSERT_EQ(0, usage());
-  file_writer_delegate_->Start(request_.Pass());
+  file_writer_delegate_->Start(request_.Pass(), GetWriteCallback(&result));
   base::MessageLoop::current()->Run();
-  ASSERT_EQ(FileWriterDelegate::ERROR_WRITE_STARTED, result_->write_status());
+  ASSERT_EQ(FileWriterDelegate::ERROR_WRITE_STARTED, result.write_status());
   file_writer_delegate_.reset();
 
   ASSERT_EQ(kAllowedGrowth, usage());
   EXPECT_EQ(GetFileSizeOnDisk("test"), usage());
 
-  EXPECT_EQ(kAllowedGrowth, result_->bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, result_->status());
-  ASSERT_EQ(FileWriterDelegate::ERROR_WRITE_STARTED, result_->write_status());
+  EXPECT_EQ(kAllowedGrowth, result.bytes_written());
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, result.status());
+  ASSERT_EQ(FileWriterDelegate::ERROR_WRITE_STARTED, result.write_status());
 }
 
 TEST_F(FileWriterDelegateTest, WriteZeroBytesSuccessfullyWithZeroQuota) {
@@ -317,24 +318,24 @@ TEST_F(FileWriterDelegateTest, WriteZeroBytesSuccessfullyWithZeroQuota) {
   int64 kAllowedGrowth = 0;
   PrepareForWrite("test", kBlobURL, 0, kAllowedGrowth);
 
+  Result result;
   ASSERT_EQ(0, usage());
-  file_writer_delegate_->Start(request_.Pass());
+  file_writer_delegate_->Start(request_.Pass(), GetWriteCallback(&result));
   base::MessageLoop::current()->Run();
-  ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result_->write_status());
+  ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
   file_writer_delegate_.reset();
 
   ASSERT_EQ(kAllowedGrowth, usage());
   EXPECT_EQ(GetFileSizeOnDisk("test"), usage());
 
-  EXPECT_EQ(kAllowedGrowth, result_->bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
-  ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result_->write_status());
+  EXPECT_EQ(kAllowedGrowth, result.bytes_written());
+  EXPECT_EQ(base::PLATFORM_FILE_OK, result.status());
+  ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
 }
 
 TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
   scoped_ptr<FileWriterDelegate> file_writer_delegate2;
   scoped_ptr<net::URLRequest> request2;
-  scoped_ptr<Result> result2;
 
   bool created = false;
   file_util()->EnsureFileExists(NewOperationContext().get(),
@@ -349,32 +350,31 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
   PrepareForWrite("test", kBlobURL, 0, kint64max);
 
   // Credate another FileWriterDelegate for concurrent write.
-  result2.reset(new Result());
-  file_writer_delegate2.reset(CreateWriterDelegate(
-      "test2", 0, kint64max, result2.get()));
+  file_writer_delegate2.reset(CreateWriterDelegate("test2", 0, kint64max));
   request2.reset(empty_context_.CreateRequest(
       kBlobURL2, file_writer_delegate2.get()));
 
+  Result result, result2;
   ASSERT_EQ(0, usage());
-  file_writer_delegate_->Start(request_.Pass());
-  file_writer_delegate2->Start(request2.Pass());
+  file_writer_delegate_->Start(request_.Pass(), GetWriteCallback(&result));
+  file_writer_delegate2->Start(request2.Pass(), GetWriteCallback(&result2));
   base::MessageLoop::current()->Run();
-  if (result_->write_status() == FileWriterDelegate::SUCCESS_IO_PENDING ||
-      result2->write_status() == FileWriterDelegate::SUCCESS_IO_PENDING)
+  if (result.write_status() == FileWriterDelegate::SUCCESS_IO_PENDING ||
+      result2.write_status() == FileWriterDelegate::SUCCESS_IO_PENDING)
     base::MessageLoop::current()->Run();
 
-  ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result_->write_status());
-  ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result2->write_status());
+  ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
+  ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result2.write_status());
   file_writer_delegate_.reset();
   file_writer_delegate2.reset();
 
   ASSERT_EQ(kDataSize * 2, usage());
   EXPECT_EQ(GetFileSizeOnDisk("test") + GetFileSizeOnDisk("test2"), usage());
 
-  EXPECT_EQ(kDataSize, result_->bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
-  EXPECT_EQ(kDataSize, result2->bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_OK, result2->status());
+  EXPECT_EQ(kDataSize, result.bytes_written());
+  EXPECT_EQ(base::PLATFORM_FILE_OK, result.status());
+  EXPECT_EQ(kDataSize, result2.bytes_written());
+  EXPECT_EQ(base::PLATFORM_FILE_OK, result2.status());
 }
 
 TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
@@ -387,29 +387,35 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   ASSERT_LT(kDataSize, allowed_growth);
   PrepareForWrite("test", kBlobURL, offset, allowed_growth);
 
-  ASSERT_EQ(0, usage());
-  file_writer_delegate_->Start(request_.Pass());
-  base::MessageLoop::current()->Run();
-  ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result_->write_status());
-  file_writer_delegate_.reset();
+  {
+    Result result;
+    ASSERT_EQ(0, usage());
+    file_writer_delegate_->Start(request_.Pass(), GetWriteCallback(&result));
+    base::MessageLoop::current()->Run();
+    ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
+    file_writer_delegate_.reset();
 
-  ASSERT_EQ(kDataSize, usage());
-  EXPECT_EQ(GetFileSizeOnDisk("test"), usage());
-  EXPECT_EQ(kDataSize, result_->bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
+    ASSERT_EQ(kDataSize, usage());
+    EXPECT_EQ(GetFileSizeOnDisk("test"), usage());
+    EXPECT_EQ(kDataSize, result.bytes_written());
+    EXPECT_EQ(base::PLATFORM_FILE_OK, result.status());
+  }
 
   // Trying to overwrite kDataSize bytes data while allowed_growth is 20.
   offset = 0;
   allowed_growth = 20;
   PrepareForWrite("test", kBlobURL, offset, allowed_growth);
 
-  file_writer_delegate_->Start(request_.Pass());
-  base::MessageLoop::current()->Run();
-  EXPECT_EQ(kDataSize, usage());
-  EXPECT_EQ(GetFileSizeOnDisk("test"), usage());
-  EXPECT_EQ(kDataSize, result_->bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
-  ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result_->write_status());
+  {
+    Result result;
+    file_writer_delegate_->Start(request_.Pass(), GetWriteCallback(&result));
+    base::MessageLoop::current()->Run();
+    EXPECT_EQ(kDataSize, usage());
+    EXPECT_EQ(GetFileSizeOnDisk("test"), usage());
+    EXPECT_EQ(kDataSize, result.bytes_written());
+    EXPECT_EQ(base::PLATFORM_FILE_OK, result.status());
+    ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
+  }
 
   // Trying to write kDataSize bytes data from offset 25 while
   // allowed_growth is 55.
@@ -417,31 +423,37 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   allowed_growth = 55;
   PrepareForWrite("test", kBlobURL, offset, allowed_growth);
 
-  file_writer_delegate_->Start(request_.Pass());
-  base::MessageLoop::current()->Run();
-  ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result_->write_status());
-  file_writer_delegate_.reset();
+  {
+    Result result;
+    file_writer_delegate_->Start(request_.Pass(), GetWriteCallback(&result));
+    base::MessageLoop::current()->Run();
+    ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
+    file_writer_delegate_.reset();
 
-  EXPECT_EQ(offset + kDataSize, usage());
-  EXPECT_EQ(GetFileSizeOnDisk("test"), usage());
-  EXPECT_EQ(kDataSize, result_->bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
+    EXPECT_EQ(offset + kDataSize, usage());
+    EXPECT_EQ(GetFileSizeOnDisk("test"), usage());
+    EXPECT_EQ(kDataSize, result.bytes_written());
+    EXPECT_EQ(base::PLATFORM_FILE_OK, result.status());
+  }
 
   // Trying to overwrite 45 bytes data while allowed_growth is -20.
   offset = 0;
   allowed_growth = -20;
   PrepareForWrite("test", kBlobURL, offset, allowed_growth);
-
   int64 pre_write_usage = GetFileSizeOnDisk("test");
-  file_writer_delegate_->Start(request_.Pass());
-  base::MessageLoop::current()->Run();
-  ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result_->write_status());
-  file_writer_delegate_.reset();
 
-  EXPECT_EQ(pre_write_usage, usage());
-  EXPECT_EQ(GetFileSizeOnDisk("test"), usage());
-  EXPECT_EQ(kDataSize, result_->bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_OK, result_->status());
+  {
+    Result result;
+    file_writer_delegate_->Start(request_.Pass(), GetWriteCallback(&result));
+    base::MessageLoop::current()->Run();
+    ASSERT_EQ(FileWriterDelegate::SUCCESS_COMPLETED, result.write_status());
+    file_writer_delegate_.reset();
+
+    EXPECT_EQ(pre_write_usage, usage());
+    EXPECT_EQ(GetFileSizeOnDisk("test"), usage());
+    EXPECT_EQ(kDataSize, result.bytes_written());
+    EXPECT_EQ(base::PLATFORM_FILE_OK, result.status());
+  }
 
   // Trying to overwrite 45 bytes data with offset pre_write_usage - 20,
   // while allowed_growth is 10.
@@ -450,16 +462,18 @@ TEST_F(FileWriterDelegateTest, WritesWithQuotaAndOffset) {
   allowed_growth = 10;
   PrepareForWrite("test", kBlobURL, offset, allowed_growth);
 
-  file_writer_delegate_->Start(request_.Pass());
-  base::MessageLoop::current()->Run();
-  ASSERT_EQ(FileWriterDelegate::ERROR_WRITE_STARTED, result_->write_status());
-  file_writer_delegate_.reset();
+  {
+    Result result;
+    file_writer_delegate_->Start(request_.Pass(), GetWriteCallback(&result));
+    base::MessageLoop::current()->Run();
+    ASSERT_EQ(FileWriterDelegate::ERROR_WRITE_STARTED, result.write_status());
+    file_writer_delegate_.reset();
 
-  EXPECT_EQ(pre_write_usage + allowed_growth,
-            usage());
-  EXPECT_EQ(GetFileSizeOnDisk("test"), usage());
-  EXPECT_EQ(kOverlap + allowed_growth, result_->bytes_written());
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, result_->status());
+    EXPECT_EQ(pre_write_usage + allowed_growth, usage());
+    EXPECT_EQ(GetFileSizeOnDisk("test"), usage());
+    EXPECT_EQ(kOverlap + allowed_growth, result.bytes_written());
+    EXPECT_EQ(base::PLATFORM_FILE_ERROR_NO_SPACE, result.status());
+  }
 }
 
 }  // namespace fileapi

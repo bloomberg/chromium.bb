@@ -35,12 +35,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileWriterDelegate
                               WriteProgressStatus write_status)>
       DelegateWriteCallback;
 
-  FileWriterDelegate(
-      const DelegateWriteCallback& write_callback,
-      scoped_ptr<FileStreamWriter> file_writer);
+  FileWriterDelegate(scoped_ptr<FileStreamWriter> file_writer);
   virtual ~FileWriterDelegate();
 
-  void Start(scoped_ptr<net::URLRequest> request);
+  void Start(scoped_ptr<net::URLRequest> request,
+             const DelegateWriteCallback& write_callback);
 
   // Cancels the current write operation.  This will synchronously or
   // asynchronously call the given write callback (which may result in

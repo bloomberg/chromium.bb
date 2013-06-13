@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
 #include "net/base/escape.h"
-#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request.h"
 #include "webkit/browser/fileapi/async_file_util.h"
 #include "webkit/browser/fileapi/copy_or_move_operation_delegate.h"
 #include "webkit/browser/fileapi/file_observers.h"
@@ -156,12 +156,16 @@ void LocalFileSystemOperation::Remove(const FileSystemURL& url,
 }
 
 void LocalFileSystemOperation::Write(
-    const net::URLRequestContext* url_request_context,
     const FileSystemURL& url,
-    const GURL& blob_url,
-    int64 offset,
+    scoped_ptr<FileWriterDelegate> writer_delegate,
+    scoped_ptr<net::URLRequest> blob_request,
     const WriteCallback& callback) {
-  GetWriteClosure(url_request_context, url, blob_url, offset, callback).Run();
+  DCHECK(SetPendingOperationType(kOperationWrite));
+  file_writer_delegate_ = writer_delegate.Pass();
+  file_writer_delegate_->Start(
+      blob_request.Pass(),
+      base::Bind(&LocalFileSystemOperation::DidWrite, AsWeakPtr(),
+                 url, callback));
 }
 
 void LocalFileSystemOperation::Truncate(const FileSystemURL& url, int64 length,
@@ -349,43 +353,6 @@ void LocalFileSystemOperation::DidGetUsageAndQuotaAndRunTask(
 
   operation_context_->set_allowed_bytes_growth(quota - usage);
   task.Run();
-}
-
-base::Closure LocalFileSystemOperation::GetWriteClosure(
-    const net::URLRequestContext* url_request_context,
-    const FileSystemURL& url,
-    const GURL& blob_url,
-    int64 offset,
-    const WriteCallback& callback) {
-  DCHECK(SetPendingOperationType(kOperationWrite));
-  scoped_ptr<FileStreamWriter> writer(
-      file_system_context()->CreateFileStreamWriter(url, offset));
-
-  if (!writer) {
-    // Write is not supported.
-    return base::Bind(&LocalFileSystemOperation::DidFailWrite,
-                      AsWeakPtr(), callback,
-                      base::PLATFORM_FILE_ERROR_SECURITY);
-  }
-
-  DCHECK(blob_url.is_valid());
-  file_writer_delegate_.reset(new FileWriterDelegate(
-      base::Bind(&LocalFileSystemOperation::DidWrite, AsWeakPtr(),
-                 url, callback),
-      writer.Pass()));
-
-  scoped_ptr<net::URLRequest> blob_request(url_request_context->CreateRequest(
-      blob_url, file_writer_delegate_.get()));
-
-  return base::Bind(&FileWriterDelegate::Start,
-                    base::Unretained(file_writer_delegate_.get()),
-                    base::Passed(&blob_request));
-}
-
-void LocalFileSystemOperation::DidFailWrite(
-    const WriteCallback& callback,
-    base::PlatformFileError result) {
-  callback.Run(result, 0, false);
 }
 
 void LocalFileSystemOperation::DoCreateFile(

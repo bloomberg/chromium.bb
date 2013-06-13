@@ -5,6 +5,7 @@
 #include "webkit/browser/fileapi/syncable/syncable_file_system_operation.h"
 
 #include "base/logging.h"
+#include "net/url_request/url_request.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
@@ -213,10 +214,9 @@ void SyncableFileSystemOperation::Remove(
 }
 
 void SyncableFileSystemOperation::Write(
-    const net::URLRequestContext* url_request_context,
     const FileSystemURL& url,
-    const GURL& blob_url,
-    int64 offset,
+    scoped_ptr<fileapi::FileWriterDelegate> writer_delegate,
+    scoped_ptr<net::URLRequest> blob_request,
     const WriteCallback& callback) {
   DCHECK(CalledOnValidThread());
   if (!operation_runner_.get()) {
@@ -228,9 +228,12 @@ void SyncableFileSystemOperation::Write(
   completion_callback_ = base::Bind(&WriteCallbackAdapter, callback);
   scoped_ptr<SyncableFileOperationRunner::Task> task(new QueueableTask(
       AsWeakPtr(),
-      NewOperation()->GetWriteClosure(
-          url_request_context, url, blob_url, offset,
-          base::Bind(&self::DidWrite, AsWeakPtr(), callback))));
+      base::Bind(&FileSystemOperation::Write,
+                 NewOperation()->AsWeakPtr(),
+                 url,
+                 base::Passed(&writer_delegate),
+                 base::Passed(&blob_request),
+                 base::Bind(&self::DidWrite, AsWeakPtr(), callback))));
   operation_runner_->PostOperationTask(task.Pass());
 }
 
