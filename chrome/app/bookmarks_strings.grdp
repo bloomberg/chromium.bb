@@ -1,18 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Bookmarks specific strings (included from generated_resources.grd). -->
 <grit-part>
-  <if expr="not is_android and not pp_ifdef('ios') and pp_ifdef('use_titlecase')">
-    <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the Bookmarks Bar folder.">
-      Bookmarks Bar
-    </message>
-  </if>
+  <!-- Begin of Bookmarks Bar strings-->
   <if expr="not is_android and not pp_ifdef('ios') and not pp_ifdef('use_titlecase')">
     <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the Bookmarks Bar folder.">
       Bookmarks bar
     </message>
   </if>
-
-  <!-- Begin of Bookmarks Bar strings-->
+  <if expr="not is_android and not pp_ifdef('ios') and pp_ifdef('use_titlecase')">
+    <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the Bookmarks Bar folder.">
+      Bookmarks Bar
+    </message>
+  </if>
+  <if expr="is_android">
+    <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Mobile: Name shown in the tree for the desktop bookmarks folder">
+      Desktop bookmarks
+    </message>
+  </if>
+  <if expr="pp_ifdef('ios')">
+    <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Mobile: Name shown in the tree for the desktop bookmarks folder">
+      Desktop Bookmarks
+    </message>
+  </if>
 
   <!-- The following two strings are shown when the user has no bookmarks yet. -->
   <message name="IDS_BOOKMARKS_NO_ITEMS" desc="Text shown when the user has no bookmarks">
@@ -59,16 +68,6 @@
     </message>
     <message name="IDS_BOOKMARK_BAR_SHOW_APPS_SHORTCUT" desc="In Title Case: Name shown in the context menu to hide/show the apps shortcut in the bookmakr bar">
       Show Apps Shortcut
-    </message>
-  </if>
-  <if expr="is_android">
-    <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Mobile: Name shown in the tree for the desktop bookmarks folder">
-      Desktop bookmarks
-    </message>
-  </if>
-  <if expr="pp_ifdef('ios')">
-    <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Mobile: Name shown in the tree for the desktop bookmarks folder">
-      Desktop Bookmarks
     </message>
   </if>
   <message name="IDS_BOOKMARK_BAR_APPS_SHORTCUT_NAME" desc="Name shown in the bookmark bar for the apps page shortcut">
@@ -285,17 +284,14 @@
     <message name="IDS_BOOKMARK_MANAGER" desc="The label of the menu item that shows the bookmark manager">
       &amp;Bookmark manager
     </message>
+    <message name="IDS_BOOKMARK_MANAGER_ORGANIZE_MENU" desc="Title of the organize menu in the bookmark manager.">
+      Organize
+    </message>
     <message name="IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER" desc="The label of the menu item in the bookmark manager context menu that changes the selection in the tree to match the folder of the selected item in the table.">
       Show in folder
     </message>
     <message name="IDS_BOOKMARK_MANAGER_SORT" desc="The label of the menu item in the bookmark manager organize menu that alphabetizes the bookmarks/folders by title.">
       Reorder by title
-    </message>
-    <message name="IDS_BOOKMARK_MANAGER_ORGANIZE_MENU" desc="Title of the organize menu in the bookmark manager.">
-      Organize
-    </message>
-    <message name="IDS_BOOKMARK_MANAGER_TOOLS_MENU" desc="Title of the tools menu in the bookmark manager.">
-      Tools
     </message>
     <message name="IDS_BOOKMARK_MANAGER_IMPORT_MENU" desc="Title of the import menu item in the bookmark manager.">
       Import bookmarks from HTML file...
@@ -323,17 +319,14 @@
     <message name="IDS_BOOKMARK_MANAGER" desc="In Title Case: The label of the menu item that shows the bookmark manager">
       &amp;Bookmark Manager
     </message>
+    <message name="IDS_BOOKMARK_MANAGER_ORGANIZE_MENU" desc="In Title Case: Title of the organize menu in the bookmark manager.">
+      Organize
+    </message>
     <message name="IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER" desc="In Title Case: The label of the menu item in the bookmark manager context menu that changes the selection in the tree to match the folder of the selected item in the table.">
       Show in Folder
     </message>
     <message name="IDS_BOOKMARK_MANAGER_SORT" desc="In Title Case: The label of the menu item in the bookmark manager organize menu that alphabetizes the bookmarks/folders by title.">
       Reorder by Title
-    </message>
-    <message name="IDS_BOOKMARK_MANAGER_ORGANIZE_MENU" desc="In Title Case: Title of the organize menu in the bookmark manager.">
-      Organize
-    </message>
-    <message name="IDS_BOOKMARK_MANAGER_TOOLS_MENU" desc="In Title Case: Title of the tools menu in the bookmark manager.">
-      Tools
     </message>
     <message name="IDS_BOOKMARK_MANAGER_IMPORT_MENU" desc="In Title Case: Title of the import menu item in the bookmark manager.">
       Import Bookmarks from HTML File...
