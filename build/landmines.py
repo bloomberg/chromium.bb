@@ -66,6 +66,10 @@ def gyp_defines():
   return dict(arg.split('=', 1)
       for arg in shlex.split(os.environ.get('GYP_DEFINES', '')))
 
+@memoize()
+def gyp_msvs_version():
+  val = os.environ.get('GYP_MSVS_VERSION', '')
+  return int(val) if val else None
 
 @memoize()
 def distributor():
@@ -149,6 +153,11 @@ def get_landmines(target):
     add('Builders switching from make to ninja will clobber on this.')
   if platform() == 'mac':
     add('Switching from bundle to unbundled dylib (issue 14743002).')
+  if (platform() == 'win' and builder() == 'ninja' and
+      gyp_msvs_version() == 2012 and
+      gyp_defines().get('target_arch') == 'x64' and
+      gyp_defines().get('dcheck_always_on') == '1'):
+    add("Switched win x64 trybots from VS2010 to VS2012.")
 
   return landmines
 
