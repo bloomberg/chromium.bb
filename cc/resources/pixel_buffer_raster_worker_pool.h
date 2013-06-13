@@ -34,8 +34,10 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   PixelBufferRasterWorkerPool(ResourceProvider* resource_provider,
                               size_t num_threads);
 
-  void CheckForCompletedRasterTasks();
+  void FlushUploads();
+  void CheckForCompletedUploads();
   void ScheduleCheckForCompletedRasterTasks();
+  void CheckForCompletedRasterTasks();
   void ScheduleMoreTasks();
   void OnRasterTaskCompleted(
       scoped_refptr<internal::RasterWorkerPoolTask> task,
