@@ -6225,19 +6225,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SAVE_PAGE_AS_MHTML_DESCRIPTION" desc="Description of the 'Save Page as MHTML' lab.">
         Disables saving pages as HTML-only or HTML Complete; enables saving pages only as MHTML: a single text file containing HTML and all sub-resources.
       </message>
-      <message name="IDS_FLAGS_CLOUD_PRINT_CONNECTOR_NAME" desc="Title of the Cloud Print Connector lab">
-        Cloud Print Connector
-      </message>
-      <if expr="is_android">
-        <message name="IDS_FLAGS_CLOUD_PRINT_CONNECTOR_DESCRIPTION" desc="Mobile: Description of the Cloud Print Connector lab">
-          Enables a background service that connects the Google Cloud Print service to any printers installed on this device. Once this lab is enabled, you can turn the Google Cloud Print Connector on by logging in with your Google account in the Under the Hood section of Settings.
-        </message>
-      </if>
-      <if expr="not is_android">
-        <message name="IDS_FLAGS_CLOUD_PRINT_CONNECTOR_DESCRIPTION" desc="Description of the Cloud Print Connector lab">
-          Enables a background service that connects the Google Cloud Print service to any printers installed on this computer. Once this lab is enabled, you can turn the Google Cloud Print Connector on by logging in with your Google account in the Under the Hood section of Settings.
-        </message>
-      </if>
       <message name="IDS_FLAGS_ENABLE_DEVICE_DISCOVERY_NAME" desc="Title of the enable 'device discovery' flag.">
         Device Discovery
       </message>
