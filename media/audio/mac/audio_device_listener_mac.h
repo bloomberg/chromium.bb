@@ -19,7 +19,8 @@ namespace media {
 class MEDIA_EXPORT AudioDeviceListenerMac {
  public:
   // |listener_cb| will be called when a device change occurs; it's a permanent
-  // callback and must outlive AudioDeviceListenerMac.
+  // callback and must outlive AudioDeviceListenerMac.  Note that |listener_cb|
+  // might not be executed on the same thread as construction.
   explicit AudioDeviceListenerMac(const base::Closure& listener_cb);
   ~AudioDeviceListenerMac();
 

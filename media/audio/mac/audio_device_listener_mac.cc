@@ -37,10 +37,7 @@ OSStatus AudioDeviceListenerMac::OnDefaultDeviceChanged(
         addresses[i].mScope == kDeviceChangePropertyAddress.mScope &&
         addresses[i].mElement == kDeviceChangePropertyAddress.mElement &&
         context) {
-      AudioDeviceListenerMac* p_this =
-          static_cast<AudioDeviceListenerMac*>(context);
-      DCHECK(p_this->thread_checker_.CalledOnValidThread());
-      p_this->listener_cb_.Run();
+      static_cast<AudioDeviceListenerMac*>(context)->listener_cb_.Run();
       break;
     }
   }

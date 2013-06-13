@@ -584,6 +584,12 @@ void AudioManagerMac::DestroyDeviceListener() {
 }
 
 void AudioManagerMac::HandleDeviceChanges() {
+  if (!GetMessageLoop()->BelongsToCurrentThread()) {
+    GetMessageLoop()->PostTask(FROM_HERE, base::Bind(
+        &AudioManagerMac::HandleDeviceChanges, base::Unretained(this)));
+    return;
+  }
+
   int new_sample_rate = HardwareSampleRate();
   AudioDeviceID new_output_device;
   GetDefaultOutputDevice(&new_output_device);
