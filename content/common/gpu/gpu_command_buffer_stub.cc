@@ -359,23 +359,15 @@ void GpuCommandBufferStub::Destroy() {
                     destruction_observers_,
                     OnWillDestroyStub());
 
-  scoped_refptr<gfx::GLContext> context;
   if (decoder_) {
-    context = decoder_->GetGLContext();
     decoder_->Destroy(have_context);
     decoder_.reset();
   }
 
   command_buffer_.reset();
 
-  // Make sure that context_ is current while we destroy surface_, because
-  // surface_ may have GL resources that it needs to destroy, and will need
-  // context_ to be current in order to not leak these resources.
-  if (context.get())
-    context->MakeCurrent(surface_.get());
+  // Remove this after crbug.com/248395 is sorted out.
   surface_ = NULL;
-  if (context.get())
-    context->ReleaseCurrent(NULL);
 }
 
 void GpuCommandBufferStub::OnInitializeFailed(IPC::Message* reply_message) {
