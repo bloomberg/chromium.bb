@@ -1715,6 +1715,15 @@ crbug.com/249021 [ Linux Debug ] http/tests/security/isolatedWorld/bypass-main-w
 
 crbug.com/248407 [ Debug ] compositing/reflections/animation-inside-reflection.html [ Pass Timeout ]
 
+# Rebaselines needed because of added turbulence case
+crbug.com/229678 css3/filters/effect-reference.html [ Failure ImageOnlyFailure ]
+crbug.com/229678 css3/filters/effect-reference-hw.html [ Failure ImageOnlyFailure ]
+
+# Rebaselines needed because of "turbulance" -> "turbulence" typo fix
+crbug.com/229678 svg/W3C-SVG-1.1-SE/types-dom-04-b.svg [ Failure ]
+crbug.com/229678 svg/W3C-SVG-1.1/filters-turb-01-f.svg [ Failure ]
+crbug.com/229678 svg/W3C-SVG-1.1/filters-turb-02-f.svg [ Failure ]
+
 crbug.com/248146 [ Linux ] editing/selection/after-line-wrap.html [ ImageOnlyFailure Pass ]
 crbug.com/248146 [ Linux ] editing/style/create-block-for-style-012.html [ ImageOnlyFailure Pass ]
 crbug.com/248146 [ Linux ] fast/text/whitespace/nbsp-mode-and-linewraps.html [ ImageOnlyFailure Pass ]

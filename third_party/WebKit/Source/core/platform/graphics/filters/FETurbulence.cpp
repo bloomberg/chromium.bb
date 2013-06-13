@@ -26,7 +26,8 @@
 #include "config.h"
 
 #include "core/platform/graphics/filters/FETurbulence.h"
-
+#include "SkPerlinNoiseShader.h"
+#include "SkRectShaderImageFilter.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/text/TextStream.h"
 #include "core/rendering/RenderTreeAsText.h"
@@ -402,6 +403,41 @@ void FETurbulence::applySoftware()
     fillRegion(pixelArray, paintingData, 0, absolutePaintRect().height());
 }
 
+SkShader* FETurbulence::createShader(const IntRect& filterRegion) const
+{
+    const SkISize size = SkISize::Make(filterRegion.width(), filterRegion.height());
+    return (type() == FETURBULENCE_TYPE_FRACTALNOISE) ?
+        SkPerlinNoiseShader::CreateFractalNoise(SkFloatToScalar(baseFrequencyX()),
+            SkFloatToScalar(baseFrequencyY()), numOctaves(), SkFloatToScalar(seed()),
+            stitchTiles() ? &size : 0) :
+        SkPerlinNoiseShader::CreateTubulence(SkFloatToScalar(baseFrequencyX()),
+            SkFloatToScalar(baseFrequencyY()), numOctaves(), SkFloatToScalar(seed()),
+            stitchTiles() ? &size : 0);
+}
+
+bool FETurbulence::applySkia()
+{
+    // For now, only use the skia implementation for accelerated rendering.
+    if (filter()->renderingMode() != Accelerated)
+        return false;
+
+    ImageBuffer* resultImage = createImageBufferResult();
+    if (!resultImage)
+        return false;
+
+    const IntRect filterRegion = absolutePaintRect();
+
+    SkPaint paint;
+    paint.setShader(createShader(filterRegion))->unref();
+    resultImage->context()->drawRect((SkRect)filterRegion, paint);
+    return true;
+}
+
+SkImageFilter* FETurbulence::createImageFilter(SkiaImageFilterBuilder* builder)
+{
+    return SkRectShaderImageFilter::Create(createShader(IntRect()), SkRect());
+}
+
 static TextStream& operator<<(TextStream& ts, const TurbulenceType& type)
 {
     switch (type) {
@@ -409,7 +445,7 @@ static TextStream& operator<<(TextStream& ts, const TurbulenceType& type)
         ts << "UNKNOWN";
         break;
     case FETURBULENCE_TYPE_TURBULENCE:
-        ts << "TURBULANCE";
+        ts << "TURBULENCE";
         break;
     case FETURBULENCE_TYPE_FRACTALNOISE:
         ts << "NOISE";

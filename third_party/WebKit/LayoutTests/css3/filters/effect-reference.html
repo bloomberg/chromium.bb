@@ -52,6 +52,9 @@
     <filter id="flood" color-interpolation-filters="sRGB">
       <feFlood flood-color="green"/>
     </filter>
+    <filter id="turbulence" color-interpolation-filters="sRGB">
+      <feTurbulence type="turbulence" baseFrequency="0.05" numOctaves="2"/>
+    </filter>
   </defs>
 </svg>
 <style>
@@ -71,3 +74,4 @@ img {
 <img style="-webkit-filter: url(#displacement); filter: url(#displacement);" src="resources/reference.png">
 <img style="-webkit-filter: url(#merge); filter: url(#merge);" src="resources/reference.png">
 <img style="-webkit-filter: url(#flood); filter: url(#flood);" src="resources/reference.png">
+<img style="-webkit-filter: url(#turbulence); filter: url(#turbulence);" src="resources/reference.png">
