@@ -126,9 +126,22 @@ void SetupSandbox(const CommandLine& parsed_command_line) {
     sandbox_binary = LINUX_SANDBOX_PATH;
 #endif
 
+  const bool want_setuid_sandbox =
+      !parsed_command_line.HasSwitch(switches::kNoSandbox) &&
+      !parsed_command_line.HasSwitch(switches::kDisableSetuidSandbox);
+
+  if (want_setuid_sandbox && !sandbox_binary) {
+    // TODO(jln): make this fatal (crbug.com/245376).
+    LOG(ERROR) << "Running without the SUID sandbox! See "
+        "https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment "
+        "for more information on developing with the sandbox on.\n"
+        "This check will be made FATAL. Do it!";
+  }
+
   std::string sandbox_cmd;
-  if (sandbox_binary && !parsed_command_line.HasSwitch(switches::kNoSandbox))
+  if (want_setuid_sandbox && sandbox_binary) {
     sandbox_cmd = sandbox_binary;
+  }
 
   // Tickle the sandbox host and zygote host so they fork now.
   RenderSandboxHostLinux::GetInstance()->Init(sandbox_cmd);

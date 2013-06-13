@@ -187,6 +187,9 @@ const char kDisableSeccompFilterSandbox[]   = "disable-seccomp-filter-sandbox";
 // Disable session storage.
 const char kDisableSessionStorage[]         = "disable-session-storage";
 
+// Disable the setuid sandbox (Linux only).
+const char kDisableSetuidSandbox[]          = "disable-setuid-sandbox";
+
 // Enable shared workers. Functionality not yet complete.
 const char kDisableSharedWorkers[]          = "disable-shared-workers";
 

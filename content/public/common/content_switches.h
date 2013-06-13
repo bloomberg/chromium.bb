@@ -70,6 +70,7 @@ extern const char kDisableRendererAccessibility[];
 extern const char kDisableSSLFalseStart[];
 extern const char kDisableSeccompFilterSandbox[];
 extern const char kDisableSessionStorage[];
+extern const char kDisableSetuidSandbox[];
 extern const char kDisableSharedWorkers[];
 extern const char kDisableSiteSpecificQuirks[];
 CONTENT_EXPORT extern const char kDisableSpeechInput[];

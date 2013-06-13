@@ -118,7 +118,10 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
 
   sandbox_binary_ = sandbox_cmd.c_str();
 
-  if (!sandbox_cmd.empty()) {
+  // A non empty sandbox_cmd means we want a SUID sandbox.
+  using_suid_sandbox_ = !sandbox_cmd.empty();
+
+  if (using_suid_sandbox_) {
     struct stat st;
     if (stat(sandbox_binary_.c_str(), &st) != 0) {
       LOG(FATAL) << "The SUID sandbox helper binary is missing: "
@@ -129,7 +132,6 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
         (st.st_uid == 0) &&
         (st.st_mode & S_ISUID) &&
         (st.st_mode & S_IXOTH)) {
-      using_suid_sandbox_ = true;
       cmd_line.PrependWrapper(sandbox_binary_);
 
       scoped_ptr<sandbox::SetuidSandboxClient>
@@ -141,10 +143,6 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
                     "I'm aborting now. You need to make sure that "
                  << sandbox_binary_ << " is owned by root and has mode 4755.";
     }
-  } else {
-    LOG(ERROR) << "Running without the SUID sandbox! See "
-        "https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment "
-        "for more information on developing with the sandbox on.";
   }
 
   // Start up the sandbox host process and get the file descriptor for the
