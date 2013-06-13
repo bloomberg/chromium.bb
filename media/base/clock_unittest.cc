@@ -4,7 +4,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/test/simple_test_clock.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/time/clock.h"
 #include "media/base/clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -30,7 +30,7 @@ static const int kDurationInSeconds = 120;
 
 class ClockTest : public ::testing::Test {
  public:
-  ClockTest() : clock_(&test_clock_) {
+  ClockTest() : clock_(&test_tick_clock_) {
     SetDuration();
   }
 
@@ -43,10 +43,10 @@ class ClockTest : public ::testing::Test {
   }
 
   void AdvanceSystemTime(base::TimeDelta delta) {
-    test_clock_.Advance(delta);
+    test_tick_clock_.Advance(delta);
   }
 
-  base::SimpleTestClock test_clock_;
+  base::SimpleTestTickClock test_tick_clock_;
   Clock clock_;
   base::TimeDelta time_elapsed_;
 };

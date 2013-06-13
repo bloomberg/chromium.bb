@@ -78,7 +78,7 @@ class PCMQueueInAudioInputStream : public AudioInputStream {
   // True iff Start() has been called successfully.
   bool started_;
   // Used to determine if we need to slow down |callback_| calls.
-  base::Time last_fill_;
+  base::TimeTicks last_fill_;
 
   DISALLOW_COPY_AND_ASSIGN(PCMQueueInAudioInputStream);
 };

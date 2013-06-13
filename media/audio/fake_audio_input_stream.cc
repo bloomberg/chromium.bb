@@ -8,7 +8,7 @@
 #include "base/lazy_instance.h"
 #include "media/audio/audio_manager_base.h"
 
-using base::Time;
+using base::TimeTicks;
 using base::TimeDelta;
 
 namespace media {
@@ -66,7 +66,7 @@ bool FakeAudioInputStream::Open() {
 void FakeAudioInputStream::Start(AudioInputCallback* callback)  {
   DCHECK(!thread_.IsRunning());
   callback_ = callback;
-  last_callback_time_ = Time::Now();
+  last_callback_time_ = TimeTicks::Now();
   thread_.Start();
   thread_.message_loop()->PostDelayedTask(
       FROM_HERE,
@@ -115,7 +115,7 @@ void FakeAudioInputStream::DoCallback() {
   callback_->OnData(this, buffer_.get(), buffer_size_, buffer_size_, 1.0);
   frames_elapsed_ += params_.frames_per_buffer();
 
-  Time now = Time::Now();
+  const TimeTicks now = TimeTicks::Now();
   base::TimeDelta next_callback_time =
       last_callback_time_ + callback_interval_ * 2 - now;
 

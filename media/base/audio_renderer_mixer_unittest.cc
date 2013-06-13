@@ -421,11 +421,11 @@ TEST_P(AudioRendererMixerBehavioralTest, MixerPausesStream) {
 
   // Ensure never playing the input results in a sink pause.
   const base::TimeDelta kSleepTime = base::TimeDelta::FromMilliseconds(100);
-  base::Time start_time = base::Time::Now();
+  base::TimeTicks start_time = base::TimeTicks::Now();
   while (!pause_event.IsSignaled()) {
     mixer_callback_->Render(audio_bus_.get(), 0);
     base::PlatformThread::Sleep(kSleepTime);
-    ASSERT_TRUE(base::Time::Now() - start_time < kTestTimeout);
+    ASSERT_TRUE(base::TimeTicks::Now() - start_time < kTestTimeout);
   }
   pause_event.Reset();
 
@@ -436,11 +436,11 @@ TEST_P(AudioRendererMixerBehavioralTest, MixerPausesStream) {
   mixer_inputs_[0]->Pause();
 
   // Ensure once the input is paused the sink eventually pauses.
-  start_time = base::Time::Now();
+  start_time = base::TimeTicks::Now();
   while (!pause_event.IsSignaled()) {
     mixer_callback_->Render(audio_bus_.get(), 0);
     base::PlatformThread::Sleep(kSleepTime);
-    ASSERT_TRUE(base::Time::Now() - start_time < kTestTimeout);
+    ASSERT_TRUE(base::TimeTicks::Now() - start_time < kTestTimeout);
   }
 
   mixer_inputs_[0]->Stop();

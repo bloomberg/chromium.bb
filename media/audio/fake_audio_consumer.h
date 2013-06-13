@@ -48,7 +48,7 @@ class MEDIA_EXPORT FakeAudioConsumer {
   ReadCB read_cb_;
   scoped_ptr<AudioBus> audio_bus_;
   base::TimeDelta buffer_duration_;
-  base::Time next_read_time_;
+  base::TimeTicks next_read_time_;
 
   // Used to post delayed tasks to the AudioThread that we can cancel.
   base::CancelableClosure read_task_cb_;

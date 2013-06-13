@@ -11,7 +11,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "base/time/default_clock.h"
+#include "base/time/default_tick_clock.h"
 #include "media/base/audio_renderer.h"
 #include "media/base/demuxer.h"
 #include "media/base/media_export.h"
@@ -373,8 +373,8 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // the filters.
   float playback_rate_;
 
-  // base::Clock used by |clock_|.
-  base::DefaultClock default_clock_;
+  // base::TickClock used by |clock_|.
+  base::DefaultTickClock default_tick_clock_;
 
   // Reference clock.  Keeps track of current playback time.  Uses system
   // clock and linear interpolation, but can have its time manually set
@@ -439,7 +439,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
 
   // Time of pipeline creation; is non-zero only until the pipeline first
   // reaches "kStarted", at which point it is used & zeroed out.
-  base::Time creation_time_;
+  base::TimeTicks creation_time_;
 
   scoped_ptr<SerialRunner> pending_callbacks_;
 

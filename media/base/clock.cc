@@ -7,12 +7,12 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/time/clock.h"
+#include "base/time/tick_clock.h"
 #include "media/base/buffers.h"
 
 namespace media {
 
-Clock::Clock(base::Clock* clock) : clock_(clock) {
+Clock::Clock(base::TickClock* clock) : clock_(clock) {
   DCHECK(clock_);
   Reset();
 }
@@ -89,7 +89,8 @@ void Clock::SetDuration(base::TimeDelta duration) {
     max_time_ = ClampToValidTimeRange(max_time_);
 }
 
-base::TimeDelta Clock::ElapsedViaProvidedTime(const base::Time& time) const {
+base::TimeDelta Clock::ElapsedViaProvidedTime(
+    const base::TimeTicks& time) const {
   // TODO(scherkus): floating point badness scaling time by playback rate.
   int64 now_us = (time - reference_).InMicroseconds();
   now_us = static_cast<int64>(now_us * playback_rate_);
@@ -119,11 +120,11 @@ void Clock::UpdateReferencePoints() {
 
 void Clock::UpdateReferencePoints(base::TimeDelta current_time) {
   media_time_ = ClampToValidTimeRange(current_time);
-  reference_ = clock_->Now();
+  reference_ = clock_->NowTicks();
 }
 
 base::TimeDelta Clock::EstimatedElapsedTime() {
-  return ClampToValidTimeRange(ElapsedViaProvidedTime(clock_->Now()));
+  return ClampToValidTimeRange(ElapsedViaProvidedTime(clock_->NowTicks()));
 }
 
 void Clock::Reset() {
@@ -132,7 +133,7 @@ void Clock::Reset() {
   max_time_ = kNoTimestamp();
   duration_ = kNoTimestamp();
   media_time_ = base::TimeDelta();
-  reference_ = base::Time();
+  reference_ = base::TimeTicks();
   underflow_ = false;
 }
 

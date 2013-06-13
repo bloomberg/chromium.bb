@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
-#include "base/test/simple_test_clock.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/threading/simple_thread.h"
 #include "base/time/clock.h"
 #include "media/base/clock.h"
@@ -286,7 +286,7 @@ class PipelineTest : public ::testing::Test {
 
   // Fixture members.
   StrictMock<CallbackHelper> callbacks_;
-  base::SimpleTestClock test_clock_;
+  base::SimpleTestTickClock test_tick_clock_;
   base::MessageLoop message_loop_;
   scoped_ptr<Pipeline> pipeline_;
 
@@ -606,7 +606,7 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
 
   // Replace the clock so we can simulate wallclock time advancing w/o using
   // Sleep().
-  pipeline_->SetClockForTesting(new Clock(&test_clock_));
+  pipeline_->SetClockForTesting(new Clock(&test_tick_clock_));
 
   InitializeDemuxer(&streams, duration);
   InitializeAudioRenderer(audio_stream(), false);
@@ -627,7 +627,7 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
   // Verify that the clock doesn't advance since it hasn't been started by
   // a time update from the audio stream.
   int64 start_time = pipeline_->GetMediaTime().ToInternalValue();
-  test_clock_.Advance(base::TimeDelta::FromMilliseconds(100));
+  test_tick_clock_.Advance(base::TimeDelta::FromMilliseconds(100));
   EXPECT_EQ(pipeline_->GetMediaTime().ToInternalValue(), start_time);
 
   // Signal end of audio stream.
@@ -636,7 +636,7 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
 
   // Verify that the clock advances.
   start_time = pipeline_->GetMediaTime().ToInternalValue();
-  test_clock_.Advance(base::TimeDelta::FromMilliseconds(100));
+  test_tick_clock_.Advance(base::TimeDelta::FromMilliseconds(100));
   EXPECT_GT(pipeline_->GetMediaTime().ToInternalValue(), start_time);
 
   // Signal end of video stream and make sure OnEnded() callback occurs.

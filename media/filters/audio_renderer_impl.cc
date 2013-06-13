@@ -49,7 +49,7 @@ AudioRendererImpl::AudioRendererImpl(
       sink_(sink),
       decoder_selector_(new AudioDecoderSelector(
           message_loop, decoders.Pass(), set_decryptor_ready_cb)),
-      now_cb_(base::Bind(&base::Time::Now)),
+      now_cb_(base::Bind(&base::TimeTicks::Now)),
       state_(kUninitialized),
       sink_playing_(false),
       pending_read_(false),
@@ -524,7 +524,7 @@ uint32 AudioRendererImpl::FillBuffer(uint8* dest,
     // Otherwise the buffer has data we can send to the device.
     frames_written = algorithm_->FillBuffer(dest, requested_frames);
     if (frames_written == 0) {
-      base::Time now = now_cb_.Run();
+      const base::TimeTicks now = now_cb_.Run();
 
       if (received_end_of_stream_ && !rendered_end_of_stream_ &&
           now >= earliest_end_time_) {
@@ -598,7 +598,8 @@ uint32 AudioRendererImpl::FillBuffer(uint8* dest,
 }
 
 void AudioRendererImpl::UpdateEarliestEndTime_Locked(
-    int frames_filled, base::TimeDelta playback_delay, base::Time time_now) {
+    int frames_filled, const base::TimeDelta& playback_delay,
+    const base::TimeTicks& time_now) {
   if (frames_filled <= 0)
     return;
 

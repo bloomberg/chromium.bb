@@ -39,7 +39,7 @@ Pipeline::Pipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
       natural_size_(0, 0),
       volume_(1.0f),
       playback_rate_(0.0f),
-      clock_(new Clock(&default_clock_)),
+      clock_(new Clock(&default_tick_clock_)),
       waiting_for_clock_update_(false),
       status_(PIPELINE_OK),
       has_audio_(false),
@@ -49,7 +49,7 @@ Pipeline::Pipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
       video_ended_(false),
       audio_disabled_(false),
       demuxer_(NULL),
-      creation_time_(base::Time::Now()) {
+      creation_time_(default_tick_clock_.NowTicks()) {
   media_log_->AddEvent(media_log_->CreatePipelineStateChangedEvent(kCreated));
   media_log_->AddEvent(
       media_log_->CreateEvent(MediaLogEvent::PIPELINE_CREATED));
@@ -213,9 +213,9 @@ void Pipeline::SetErrorForTesting(PipelineStatus status) {
 void Pipeline::SetState(State next_state) {
   if (state_ != kStarted && next_state == kStarted &&
       !creation_time_.is_null()) {
-    UMA_HISTOGRAM_TIMES(
-        "Media.TimeToPipelineStarted", base::Time::Now() - creation_time_);
-    creation_time_ = base::Time();
+    UMA_HISTOGRAM_TIMES("Media.TimeToPipelineStarted",
+                        default_tick_clock_.NowTicks() - creation_time_);
+    creation_time_ = base::TimeTicks();
   }
 
   DVLOG(2) << GetStateString(state_) << " -> " << GetStateString(next_state);

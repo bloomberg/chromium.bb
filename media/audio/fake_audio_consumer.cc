@@ -33,7 +33,7 @@ void FakeAudioConsumer::Start(const ReadCB& read_cb)  {
   DCHECK(read_cb_.is_null());
   DCHECK(!read_cb.is_null());
   read_cb_ = read_cb;
-  next_read_time_ = base::Time::Now();
+  next_read_time_ = base::TimeTicks::Now();
   read_task_cb_.Reset(base::Bind(
       &FakeAudioConsumer::DoRead, base::Unretained(this)));
   message_loop_->PostTask(FROM_HERE, read_task_cb_.callback());
@@ -53,7 +53,7 @@ void FakeAudioConsumer::DoRead() {
 
   // Need to account for time spent here due to the cost of |read_cb_| as well
   // as the imprecision of PostDelayedTask().
-  base::Time now = base::Time::Now();
+  const base::TimeTicks now = base::TimeTicks::Now();
   base::TimeDelta delay = next_read_time_ + buffer_duration_ - now;
 
   // If we're behind, find the next nearest ontime interval.

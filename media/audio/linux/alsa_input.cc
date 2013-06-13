@@ -119,7 +119,7 @@ void AlsaPcmInputStream::Start(AudioInputCallback* callback) {
     // buffer might have got filled, to accommodate some delays in the audio
     // driver. This could also give us a smooth read sequence going forward.
     base::TimeDelta delay = buffer_duration_ + buffer_duration_ / 2;
-    next_read_time_ = base::Time::Now() + delay;
+    next_read_time_ = base::TimeTicks::Now() + delay;
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&AlsaPcmInputStream::ReadAudio, weak_factory_.GetWeakPtr()),
@@ -182,7 +182,7 @@ void AlsaPcmInputStream::ReadAudio() {
     // Even Though read callback was behind schedule, there is no data, so
     // reset the next_read_time_.
     if (read_callback_behind_schedule_) {
-      next_read_time_ = base::Time::Now();
+      next_read_time_ = base::TimeTicks::Now();
       read_callback_behind_schedule_ = false;
     }
 
@@ -218,7 +218,7 @@ void AlsaPcmInputStream::ReadAudio() {
   }
 
   next_read_time_ += buffer_duration_;
-  base::TimeDelta delay = next_read_time_ - base::Time::Now();
+  base::TimeDelta delay = next_read_time_ - base::TimeTicks::Now();
   if (delay < base::TimeDelta()) {
     DVLOG(1) << "Audio read callback behind schedule by "
              << (buffer_duration_ - delay).InMicroseconds()

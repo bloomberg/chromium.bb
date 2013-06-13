@@ -63,7 +63,7 @@ class MockUnifiedSourceCallback
 class UnifiedSourceCallback : public AudioOutputStream::AudioSourceCallback {
  public:
   explicit UnifiedSourceCallback()
-      : previous_call_time_(base::Time::Now()),
+      : previous_call_time_(base::TimeTicks::Now()),
         text_file_(NULL),
         elements_to_write_(0) {
     delta_times_.reset(new int[kMaxDeltaSamples]);
@@ -98,8 +98,9 @@ class UnifiedSourceCallback : public AudioOutputStream::AudioSourceCallback {
                            AudioBus* dest,
                            AudioBuffersState buffers_state) {
     // Store time between this callback and the previous callback.
-    int diff = (base::Time::Now() - previous_call_time_).InMilliseconds();
-    previous_call_time_ = base::Time::Now();
+    const base::TimeTicks now_time = base::TimeTicks::Now();
+    const int diff = (now_time - previous_call_time_).InMilliseconds();
+    previous_call_time_ = now_time;
     if (elements_to_write_ < kMaxDeltaSamples) {
       delta_times_[elements_to_write_] = diff;
       ++elements_to_write_;
@@ -134,7 +135,7 @@ class UnifiedSourceCallback : public AudioOutputStream::AudioSourceCallback {
   }
 
  private:
-  base::Time previous_call_time_;
+  base::TimeTicks previous_call_time_;
   scoped_ptr<int[]> delta_times_;
   FILE* text_file_;
   size_t elements_to_write_;

@@ -197,7 +197,7 @@ void PCMQueueInAudioInputStream::HandleInputBuffer(
     // TODO(dalecurtis): This is a HACK.  Long term the AudioQueue path is going
     // away in favor of the AudioUnit based AUAudioInputStream().  Tracked by
     // http://crbug.com/161383.
-    base::TimeDelta elapsed = base::Time::Now() - last_fill_;
+    base::TimeDelta elapsed = base::TimeTicks::Now() - last_fill_;
     const base::TimeDelta kMinDelay = base::TimeDelta::FromMilliseconds(5);
     if (elapsed < kMinDelay)
       base::PlatformThread::Sleep(kMinDelay - elapsed);
@@ -208,7 +208,7 @@ void PCMQueueInAudioInputStream::HandleInputBuffer(
                       audio_buffer->mAudioDataByteSize,
                       0.0);
 
-    last_fill_ = base::Time::Now();
+    last_fill_ = base::TimeTicks::Now();
   }
   // Recycle the buffer.
   OSStatus err = QueueNextBuffer(audio_buffer);

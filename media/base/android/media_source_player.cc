@@ -85,7 +85,7 @@ class VideoDecoderJob : public MediaDecoderJob {
 
 void MediaDecoderJob::Decode(
     const MediaPlayerHostMsg_ReadFromDemuxerAck_Params::AccessUnit& unit,
-    const base::Time& start_wallclock_time,
+    const base::TimeTicks& start_wallclock_time,
     const base::TimeDelta& start_presentation_timestamp,
     const MediaDecoderJob::DecoderCallback& callback) {
   DCHECK(!decoding_);
@@ -99,7 +99,7 @@ void MediaDecoderJob::Decode(
 
 void MediaDecoderJob::DecodeInternal(
     const MediaPlayerHostMsg_ReadFromDemuxerAck_Params::AccessUnit& unit,
-    const base::Time& start_wallclock_time,
+    const base::TimeTicks& start_wallclock_time,
     const base::TimeDelta& start_presentation_timestamp,
     bool needs_flush,
     const MediaDecoderJob::DecoderCallback& callback) {
@@ -151,7 +151,7 @@ void MediaDecoderJob::DecodeInternal(
         break;
       base::TimeDelta time_to_render;
       if (!start_wallclock_time.is_null()) {
-        time_to_render = presentation_timestamp - (base::Time::Now() -
+        time_to_render = presentation_timestamp - (base::TimeTicks::Now() -
             start_wallclock_time + start_presentation_timestamp);
       }
       if (time_to_render >= base::TimeDelta()) {
@@ -188,8 +188,8 @@ void MediaDecoderJob::ReleaseOutputBuffer(
   }
   media_codec_bridge_->ReleaseOutputBuffer(outputBufferIndex, !is_audio_);
   message_loop_->PostTask(FROM_HERE, base::Bind(
-      callback, DECODE_SUCCEEDED, presentation_timestamp, base::Time::Now(),
-      end_of_stream));
+      callback, DECODE_SUCCEEDED, presentation_timestamp,
+      base::TimeTicks::Now(), end_of_stream));
 }
 
 void MediaDecoderJob::OnDecodeCompleted() {
@@ -300,7 +300,7 @@ void MediaSourcePlayer::Start() {
 
 void MediaSourcePlayer::Pause() {
   playing_ = false;
-  start_wallclock_time_ = base::Time();
+  start_wallclock_time_ = base::TimeTicks();
 }
 
 bool MediaSourcePlayer::IsPlaying() {
@@ -449,7 +449,7 @@ void MediaSourcePlayer::OnSeekRequestAck(unsigned seek_request_id) {
 
 void MediaSourcePlayer::UpdateTimestamps(
     const base::TimeDelta& presentation_timestamp,
-    const base::Time& wallclock_time) {
+    const base::TimeTicks& wallclock_time) {
   last_presentation_timestamp_ = presentation_timestamp;
   OnTimeUpdated();
   if (start_wallclock_time_.is_null() && playing_) {
@@ -470,7 +470,7 @@ void MediaSourcePlayer::ProcessPendingEvents() {
     return;
   }
 
-  start_wallclock_time_ = base::Time();
+  start_wallclock_time_ = base::TimeTicks();
   if (pending_event_ & CONFIG_CHANGE_EVENT_PENDING) {
     DCHECK(reconfig_audio_decoder_ || reconfig_video_decoder_);
     manager()->OnMediaConfigRequest(player_id());
@@ -490,7 +490,7 @@ void MediaSourcePlayer::ProcessPendingEvents() {
 void MediaSourcePlayer::MediaDecoderCallback(
     bool is_audio, MediaDecoderJob::DecodeStatus decode_status,
     const base::TimeDelta& presentation_timestamp,
-    const base::Time& wallclock_time, bool end_of_stream) {
+    const base::TimeTicks& wallclock_time, bool end_of_stream) {
   if (active_decoding_tasks_ > 0)
     active_decoding_tasks_--;
 
@@ -601,7 +601,7 @@ void MediaSourcePlayer::PlaybackCompleted(bool is_audio) {
 
   if ((!HasAudio() || audio_finished_) && (!HasVideo() || video_finished_)) {
     playing_ = false;
-    start_wallclock_time_ = base::Time();
+    start_wallclock_time_ = base::TimeTicks();
     OnPlaybackComplete();
   }
 }
@@ -611,7 +611,7 @@ void MediaSourcePlayer::ClearDecodingData() {
     audio_decoder_job_->Flush();
   if (video_decoder_job_)
     video_decoder_job_->Flush();
-  start_wallclock_time_ = base::Time();
+  start_wallclock_time_ = base::TimeTicks();
   received_audio_ = MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
   received_video_ = MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
   audio_access_unit_index_ = 0;

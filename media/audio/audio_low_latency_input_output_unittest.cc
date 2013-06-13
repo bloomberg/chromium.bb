@@ -136,7 +136,7 @@ class FullDuplexAudioSinkSource
       channels_(channels),
       input_elements_to_write_(0),
       output_elements_to_write_(0),
-      previous_write_time_(base::Time::Now()) {
+      previous_write_time_(base::TimeTicks::Now()) {
     // Size in bytes of each audio frame (4 bytes for 16-bit stereo PCM).
     frame_size_ = (16 / 8) * channels_;
 
@@ -186,8 +186,8 @@ class FullDuplexAudioSinkSource
 
     // Update three components in the AudioDelayState for this recorded
     // audio packet.
-    base::Time now_time = base::Time::Now();
-    int diff = (now_time - previous_write_time_).InMilliseconds();
+    const base::TimeTicks now_time = base::TimeTicks::Now();
+    const int diff = (now_time - previous_write_time_).InMilliseconds();
     previous_write_time_ = now_time;
     if (input_elements_to_write_ < kMaxDelayMeasurements) {
       delay_states_[input_elements_to_write_].delta_time_ms = diff;
@@ -277,7 +277,7 @@ class FullDuplexAudioSinkSource
   scoped_ptr<AudioDelayState[]> delay_states_;
   size_t input_elements_to_write_;
   size_t output_elements_to_write_;
-  base::Time previous_write_time_;
+  base::TimeTicks previous_write_time_;
 };
 
 class AudioInputStreamTraits {

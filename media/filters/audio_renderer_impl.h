@@ -88,7 +88,7 @@ class MEDIA_EXPORT AudioRendererImpl
   void DisableUnderflowForTesting();
 
   // Allows injection of a custom time callback for non-realtime testing.
-  typedef base::Callback<base::Time()> NowCB;
+  typedef base::Callback<base::TimeTicks()> NowCB;
   void set_now_cb_for_testing(const NowCB& now_cb) {
     now_cb_ = now_cb;
   }
@@ -131,8 +131,8 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Estimate earliest time when current buffer can stop playing.
   void UpdateEarliestEndTime_Locked(int frames_filled,
-                                    base::TimeDelta playback_delay,
-                                    base::Time time_now);
+                                    const base::TimeDelta& playback_delay,
+                                    const base::TimeTicks& time_now);
 
   void DoPlay();
   void DoPause();
@@ -203,7 +203,7 @@ class MEDIA_EXPORT AudioRendererImpl
   // Callback provided to Preroll().
   PipelineStatusCB preroll_cb_;
 
-  // Typically calls base::Time::Now() but can be overridden by a test.
+  // Typically calls base::TimeTicks::Now() but can be overridden by a test.
   NowCB now_cb_;
 
   // After Initialize() has completed, all variables below must be accessed
@@ -256,7 +256,7 @@ class MEDIA_EXPORT AudioRendererImpl
   // empty till that time. Workaround is not bulletproof, as we don't exactly
   // know when that particular data would start playing, but it is much better
   // than nothing.
-  base::Time earliest_end_time_;
+  base::TimeTicks earliest_end_time_;
   size_t total_frames_filled_;
 
   bool underflow_disabled_;

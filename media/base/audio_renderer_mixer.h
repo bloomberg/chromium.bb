@@ -56,7 +56,7 @@ class MEDIA_EXPORT AudioRendererMixer
   // Handles physical stream pause when no inputs are playing.  For latency
   // reasons we don't want to immediately pause the physical stream.
   base::TimeDelta pause_delay_;
-  base::Time last_play_time_;
+  base::TimeTicks last_play_time_;
   bool playing_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixer);

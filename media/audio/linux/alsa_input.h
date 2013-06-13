@@ -76,7 +76,7 @@ class AlsaPcmInputStream : public AgcAudioStream<AudioInputStream> {
   AlsaWrapper* wrapper_;
   base::TimeDelta buffer_duration_;  // Length of each recorded buffer.
   AudioInputCallback* callback_;  // Valid during a recording session.
-  base::Time next_read_time_;  // Scheduled time for the next read callback.
+  base::TimeTicks next_read_time_;  // Scheduled time for next read callback.
   snd_pcm_t* device_handle_;  // Handle to the ALSA PCM recording device.
   snd_mixer_t* mixer_handle_; // Handle to the ALSA microphone mixer.
   snd_mixer_elem_t* mixer_element_handle_; // Handle to the capture element.

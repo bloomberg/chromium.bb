@@ -19,6 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::base::Time;
+using ::base::TimeTicks;
 using ::base::TimeDelta;
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -334,7 +335,7 @@ class AudioRendererImplTest : public ::testing::Test {
   scoped_ptr<AudioRendererImpl> renderer_;
 
  private:
-  Time GetTime() {
+  TimeTicks GetTime() {
     base::AutoLock auto_lock(lock_);
     return time_;
   }
@@ -367,7 +368,7 @@ class AudioRendererImplTest : public ::testing::Test {
 
   // Used for stubbing out time in the audio callback thread.
   base::Lock lock_;
-  Time time_;
+  TimeTicks time_;
 
   // Used for satisfying reads.
   AudioDecoder::ReadCB read_cb_;

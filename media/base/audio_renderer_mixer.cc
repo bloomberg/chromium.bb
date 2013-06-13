@@ -18,7 +18,7 @@ AudioRendererMixer::AudioRendererMixer(
     : audio_sink_(sink),
       audio_converter_(input_params, output_params, true),
       pause_delay_(base::TimeDelta::FromSeconds(kPauseDelaySeconds)),
-      last_play_time_(base::Time::Now()),
+      last_play_time_(base::TimeTicks::Now()),
       // Initialize |playing_| to true since Start() results in an auto-play.
       playing_(true) {
   audio_sink_->Initialize(output_params, this);
@@ -40,7 +40,7 @@ void AudioRendererMixer::AddMixerInput(AudioConverter::InputCallback* input,
 
   if (!playing_) {
     playing_ = true;
-    last_play_time_ = base::Time::Now();
+    last_play_time_ = base::TimeTicks::Now();
     audio_sink_->Play();
   }
 
@@ -65,7 +65,7 @@ int AudioRendererMixer::Render(AudioBus* audio_bus,
   // If there are no mixer inputs and we haven't seen one for a while, pause the
   // sink to avoid wasting resources when media elements are present but remain
   // in the pause state.
-  base::Time now = base::Time::Now();
+  const base::TimeTicks now = base::TimeTicks::Now();
   if (!mixer_inputs_.empty()) {
     last_play_time_ = now;
   } else if (now - last_play_time_ >= pause_delay_ && playing_) {

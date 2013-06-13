@@ -77,7 +77,7 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
  public:
   explicit ReadFromFileAudioSource(const std::string& name)
     : pos_(0),
-      previous_call_time_(base::Time::Now()),
+      previous_call_time_(base::TimeTicks::Now()),
       text_file_(NULL),
       elements_to_write_(0) {
     // Reads a test file from media/test/data directory.
@@ -116,8 +116,9 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
                          AudioBuffersState buffers_state) {
     // Store time difference between two successive callbacks in an array.
     // These values will be written to a file in the destructor.
-    int diff = (base::Time::Now() - previous_call_time_).InMilliseconds();
-    previous_call_time_ = base::Time::Now();
+    const base::TimeTicks now_time = base::TimeTicks::Now();
+    const int diff = (now_time - previous_call_time_).InMilliseconds();
+    previous_call_time_ = now_time;
     if (elements_to_write_ < kMaxDeltaSamples) {
       delta_times_[elements_to_write_] = diff;
       ++elements_to_write_;
@@ -154,7 +155,7 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
   scoped_refptr<DecoderBuffer> file_;
   scoped_ptr<int[]> delta_times_;
   int pos_;
-  base::Time previous_call_time_;
+  base::TimeTicks previous_call_time_;
   FILE* text_file_;
   size_t elements_to_write_;
 };
