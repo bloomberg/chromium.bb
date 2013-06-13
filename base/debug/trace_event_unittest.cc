@@ -819,10 +819,10 @@ TEST_F(TraceEventTestFixture, DataCaptured) {
 }
 
 class MockEnabledStateChangedObserver :
-      public base::debug::TraceLog::EnabledStateChangedObserver {
+      public base::debug::TraceLog::EnabledStateObserver {
  public:
-  MOCK_METHOD0(OnTraceLogWillEnable, void());
-  MOCK_METHOD0(OnTraceLogWillDisable, void());
+  MOCK_METHOD0(OnTraceLogEnabled, void());
+  MOCK_METHOD0(OnTraceLogDisabled, void());
 };
 
 TEST_F(TraceEventTestFixture, EnabledObserverFiresOnEnable) {
@@ -831,11 +831,12 @@ TEST_F(TraceEventTestFixture, EnabledObserverFiresOnEnable) {
   MockEnabledStateChangedObserver observer;
   TraceLog::GetInstance()->AddEnabledStateObserver(&observer);
 
-  EXPECT_CALL(observer, OnTraceLogWillEnable())
+  EXPECT_CALL(observer, OnTraceLogEnabled())
       .Times(1);
   TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
                                       TraceLog::RECORD_UNTIL_FULL);
   testing::Mock::VerifyAndClear(&observer);
+  EXPECT_TRUE(TraceLog::GetInstance()->IsEnabled());
 
   // Cleanup.
   TraceLog::GetInstance()->RemoveEnabledStateObserver(&observer);
@@ -851,13 +852,14 @@ TEST_F(TraceEventTestFixture, EnabledObserverDoesntFireOnSecondEnable) {
   testing::StrictMock<MockEnabledStateChangedObserver> observer;
   TraceLog::GetInstance()->AddEnabledStateObserver(&observer);
 
-  EXPECT_CALL(observer, OnTraceLogWillEnable())
+  EXPECT_CALL(observer, OnTraceLogEnabled())
       .Times(0);
-  EXPECT_CALL(observer, OnTraceLogWillDisable())
+  EXPECT_CALL(observer, OnTraceLogDisabled())
       .Times(0);
   TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
                                       TraceLog::RECORD_UNTIL_FULL);
   testing::Mock::VerifyAndClear(&observer);
+  EXPECT_TRUE(TraceLog::GetInstance()->IsEnabled());
 
   // Cleanup.
   TraceLog::GetInstance()->RemoveEnabledStateObserver(&observer);
@@ -875,9 +877,9 @@ TEST_F(TraceEventTestFixture, EnabledObserverDoesntFireOnNestedDisable) {
   testing::StrictMock<MockEnabledStateChangedObserver> observer;
   TraceLog::GetInstance()->AddEnabledStateObserver(&observer);
 
-  EXPECT_CALL(observer, OnTraceLogWillEnable())
+  EXPECT_CALL(observer, OnTraceLogEnabled())
       .Times(0);
-  EXPECT_CALL(observer, OnTraceLogWillDisable())
+  EXPECT_CALL(observer, OnTraceLogDisabled())
       .Times(0);
   TraceLog::GetInstance()->SetDisabled();
   testing::Mock::VerifyAndClear(&observer);
@@ -896,13 +898,76 @@ TEST_F(TraceEventTestFixture, EnabledObserverFiresOnDisable) {
   MockEnabledStateChangedObserver observer;
   TraceLog::GetInstance()->AddEnabledStateObserver(&observer);
 
-  EXPECT_CALL(observer, OnTraceLogWillDisable())
+  EXPECT_CALL(observer, OnTraceLogDisabled())
       .Times(1);
   TraceLog::GetInstance()->SetDisabled();
   testing::Mock::VerifyAndClear(&observer);
 
   // Cleanup.
   TraceLog::GetInstance()->RemoveEnabledStateObserver(&observer);
+}
+
+// Tests the IsEnabled() state of TraceLog changes before callbacks.
+class AfterStateChangeEnabledStateObserver
+    : public base::debug::TraceLog::EnabledStateObserver {
+ public:
+  AfterStateChangeEnabledStateObserver() {}
+  virtual ~AfterStateChangeEnabledStateObserver() {}
+
+  // base::debug::TraceLog::EnabledStateObserver overrides:
+  virtual void OnTraceLogEnabled() OVERRIDE {
+    EXPECT_TRUE(TraceLog::GetInstance()->IsEnabled());
+  }
+
+  virtual void OnTraceLogDisabled() OVERRIDE {
+    EXPECT_FALSE(TraceLog::GetInstance()->IsEnabled());
+  }
+};
+
+TEST_F(TraceEventTestFixture, ObserversFireAfterStateChange) {
+  ManualTestSetUp();
+
+  AfterStateChangeEnabledStateObserver observer;
+  TraceLog::GetInstance()->AddEnabledStateObserver(&observer);
+
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+                                      TraceLog::RECORD_UNTIL_FULL);
+  EXPECT_TRUE(TraceLog::GetInstance()->IsEnabled());
+
+  TraceLog::GetInstance()->SetDisabled();
+  EXPECT_FALSE(TraceLog::GetInstance()->IsEnabled());
+
+  TraceLog::GetInstance()->RemoveEnabledStateObserver(&observer);
+}
+
+// Tests that a state observer can remove itself during a callback.
+class SelfRemovingEnabledStateObserver
+    : public base::debug::TraceLog::EnabledStateObserver {
+ public:
+  SelfRemovingEnabledStateObserver() {}
+  virtual ~SelfRemovingEnabledStateObserver() {}
+
+  // base::debug::TraceLog::EnabledStateObserver overrides:
+  virtual void OnTraceLogEnabled() OVERRIDE {}
+
+  virtual void OnTraceLogDisabled() OVERRIDE {
+    TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
+  }
+};
+
+TEST_F(TraceEventTestFixture, SelfRemovingObserver) {
+  ManualTestSetUp();
+  ASSERT_EQ(0u, TraceLog::GetInstance()->GetObserverCountForTest());
+
+  SelfRemovingEnabledStateObserver observer;
+  TraceLog::GetInstance()->AddEnabledStateObserver(&observer);
+  EXPECT_EQ(1u, TraceLog::GetInstance()->GetObserverCountForTest());
+
+  TraceLog::GetInstance()->SetEnabled(CategoryFilter("*"),
+                                      TraceLog::RECORD_UNTIL_FULL);
+  TraceLog::GetInstance()->SetDisabled();
+  // The observer removed itself on disable.
+  EXPECT_EQ(0u, TraceLog::GetInstance()->GetObserverCountForTest());
 }
 
 bool IsNewTrace() {

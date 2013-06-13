@@ -332,21 +332,18 @@ class BASE_EXPORT TraceLog {
   // Enabled state listeners give a callback when tracing is enabled or
   // disabled. This can be used to tie into other library's tracing systems
   // on-demand.
-  class EnabledStateChangedObserver {
+  class EnabledStateObserver {
    public:
-    // Called just before the tracing system becomes
-    // enabled. TraceLog::IsEnabled will return false at this point and trace
-    // macros and methods called within the observer will deadlock.
-    virtual void OnTraceLogWillEnable() { }
+    // Called just after the tracing system becomes enabled, outside of the
+    // |lock_|.  TraceLog::IsEnabled() is true at this point.
+    virtual void OnTraceLogEnabled() = 0;
 
-    // Called just before the tracing system disables. TraceLog::IsEnabled is
-    // still false at this point TRACE macros will still be capturing
-    // data. However, trace macros and methods called within the observer will
-    // deadlock.
-    virtual void OnTraceLogWillDisable() { }
+    // Called just after the tracing system disables, outside of the |lock_|.
+    // TraceLog::IsEnabled() is false at this point.
+    virtual void OnTraceLogDisabled() = 0;
   };
-  void AddEnabledStateObserver(EnabledStateChangedObserver* listener);
-  void RemoveEnabledStateObserver(EnabledStateChangedObserver* listener);
+  void AddEnabledStateObserver(EnabledStateObserver* listener);
+  void RemoveEnabledStateObserver(EnabledStateObserver* listener);
 
   float GetBufferPercentFull() const;
 
@@ -458,6 +455,8 @@ class BASE_EXPORT TraceLog {
   // that should be reported.
   void SetTimeOffset(TimeDelta offset);
 
+  size_t GetObserverCountForTest() const;
+
  private:
   // This allows constructor and destructor to be private and usable only
   // by the Singleton class.
@@ -538,7 +537,7 @@ class BASE_EXPORT TraceLog {
   scoped_ptr<TraceBuffer> logged_events_;
   EventCallback event_callback_;
   bool dispatching_to_observer_list_;
-  ObserverList<EnabledStateChangedObserver> enabled_state_observer_list_;
+  std::vector<EnabledStateObserver*> enabled_state_observer_list_;
 
   base::hash_map<int, std::string> thread_names_;
   base::hash_map<int, std::stack<TimeTicks> > thread_event_start_times_;

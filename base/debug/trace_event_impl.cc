@@ -910,62 +910,71 @@ void TraceLog::GetKnownCategoryGroups(
 
 void TraceLog::SetEnabled(const CategoryFilter& category_filter,
                           Options options) {
-  AutoLock lock(lock_);
+  std::vector<EnabledStateObserver*> observer_list;
+  {
+    AutoLock lock(lock_);
 
-  if (enable_count_++ > 0) {
+    if (enable_count_++ > 0) {
+      if (options != trace_options_) {
+        DLOG(ERROR) << "Attemting to re-enable tracing with a different "
+                    << "set of options.";
+      }
+
+      category_filter_.Merge(category_filter);
+      EnableIncludedCategoryGroups();
+      return;
+    }
+
     if (options != trace_options_) {
-      DLOG(ERROR) << "Attemting to re-enable tracing with a different "
-                  << "set of options.";
+      trace_options_ = options;
+      logged_events_.reset(GetTraceBuffer());
     }
 
-    category_filter_.Merge(category_filter);
+    if (dispatching_to_observer_list_) {
+      DLOG(ERROR) <<
+          "Cannot manipulate TraceLog::Enabled state from an observer.";
+      return;
+    }
+
+    num_traces_recorded_++;
+
+    category_filter_ = CategoryFilter(category_filter);
     EnableIncludedCategoryGroups();
-    return;
-  }
 
-  if (options != trace_options_) {
-    trace_options_ = options;
-    logged_events_.reset(GetTraceBuffer());
-  }
-
-  if (dispatching_to_observer_list_) {
-    DLOG(ERROR) <<
-        "Cannot manipulate TraceLog::Enabled state from an observer.";
-    return;
-  }
-
-  num_traces_recorded_++;
-
-  dispatching_to_observer_list_ = true;
-  FOR_EACH_OBSERVER(EnabledStateChangedObserver, enabled_state_observer_list_,
-                    OnTraceLogWillEnable());
-  dispatching_to_observer_list_ = false;
-
-  category_filter_ = CategoryFilter(category_filter);
-  EnableIncludedCategoryGroups();
-
-  // Not supported in split-dll build. http://crbug.com/237249
-#if !defined(CHROME_SPLIT_DLL)
-  if (options & ENABLE_SAMPLING) {
-    sampling_thread_.reset(new TraceSamplingThread);
-    sampling_thread_->RegisterSampleBucket(
-        &g_trace_state0,
-        "bucket0",
-        Bind(&TraceSamplingThread::DefaultSampleCallback));
-    sampling_thread_->RegisterSampleBucket(
-        &g_trace_state1,
-        "bucket1",
-        Bind(&TraceSamplingThread::DefaultSampleCallback));
-    sampling_thread_->RegisterSampleBucket(
-        &g_trace_state2,
-        "bucket2",
-        Bind(&TraceSamplingThread::DefaultSampleCallback));
-    if (!PlatformThread::Create(
-          0, sampling_thread_.get(), &sampling_thread_handle_)) {
-      DCHECK(false) << "failed to create thread";
+    // Not supported in split-dll build. http://crbug.com/237249
+  #if !defined(CHROME_SPLIT_DLL)
+    if (options & ENABLE_SAMPLING) {
+      sampling_thread_.reset(new TraceSamplingThread);
+      sampling_thread_->RegisterSampleBucket(
+          &g_trace_state0,
+          "bucket0",
+          Bind(&TraceSamplingThread::DefaultSampleCallback));
+      sampling_thread_->RegisterSampleBucket(
+          &g_trace_state1,
+          "bucket1",
+          Bind(&TraceSamplingThread::DefaultSampleCallback));
+      sampling_thread_->RegisterSampleBucket(
+          &g_trace_state2,
+          "bucket2",
+          Bind(&TraceSamplingThread::DefaultSampleCallback));
+      if (!PlatformThread::Create(
+            0, sampling_thread_.get(), &sampling_thread_handle_)) {
+        DCHECK(false) << "failed to create thread";
+      }
     }
+  #endif
+
+    dispatching_to_observer_list_ = true;
+    observer_list = enabled_state_observer_list_;
   }
-#endif
+  // Notify observers outside the lock in case they trigger trace events.
+  for (size_t i = 0; i < observer_list.size(); ++i)
+    observer_list[i]->OnTraceLogEnabled();
+
+  {
+    AutoLock lock(lock_);
+    dispatching_to_observer_list_ = false;
+  }
 }
 
 const CategoryFilter& TraceLog::GetCurrentCategoryFilter() {
@@ -975,39 +984,49 @@ const CategoryFilter& TraceLog::GetCurrentCategoryFilter() {
 }
 
 void TraceLog::SetDisabled() {
-  AutoLock lock(lock_);
-  DCHECK(enable_count_ > 0);
-  if (--enable_count_ != 0)
-    return;
+  std::vector<EnabledStateObserver*> observer_list;
+  {
+    AutoLock lock(lock_);
+    DCHECK(enable_count_ > 0);
+    if (--enable_count_ != 0)
+      return;
 
-  if (dispatching_to_observer_list_) {
-    DLOG(ERROR)
-        << "Cannot manipulate TraceLog::Enabled state from an observer.";
-    return;
+    if (dispatching_to_observer_list_) {
+      DLOG(ERROR)
+          << "Cannot manipulate TraceLog::Enabled state from an observer.";
+      return;
+    }
+
+    if (sampling_thread_.get()) {
+      // Stop the sampling thread.
+      sampling_thread_->Stop();
+      lock_.Release();
+      PlatformThread::Join(sampling_thread_handle_);
+      lock_.Acquire();
+      sampling_thread_handle_ = PlatformThreadHandle();
+      sampling_thread_.reset();
+    }
+
+    category_filter_.Clear();
+    watch_category_ = NULL;
+    watch_event_name_ = "";
+    for (int i = 0; i < g_category_index; i++)
+      SetCategoryGroupEnabled(i, false);
+    AddThreadNameMetadataEvents();
+
+    dispatching_to_observer_list_ = true;
+    observer_list = enabled_state_observer_list_;
   }
 
-  if (sampling_thread_.get()) {
-    // Stop the sampling thread.
-    sampling_thread_->Stop();
-    lock_.Release();
-    PlatformThread::Join(sampling_thread_handle_);
-    lock_.Acquire();
-    sampling_thread_handle_ = PlatformThreadHandle();
-    sampling_thread_.reset();
+  // Dispatch to observers outside the lock in case the observer triggers a
+  // trace event.
+  for (size_t i = 0; i < observer_list.size(); ++i)
+    observer_list[i]->OnTraceLogDisabled();
+
+  {
+    AutoLock lock(lock_);
+    dispatching_to_observer_list_ = false;
   }
-
-  dispatching_to_observer_list_ = true;
-  FOR_EACH_OBSERVER(EnabledStateChangedObserver,
-                    enabled_state_observer_list_,
-                    OnTraceLogWillDisable());
-  dispatching_to_observer_list_ = false;
-
-  category_filter_.Clear();
-  watch_category_ = NULL;
-  watch_event_name_ = "";
-  for (int i = 0; i < g_category_index; i++)
-    SetCategoryGroupEnabled(i, false);
-  AddThreadNameMetadataEvents();
 }
 
 int TraceLog::GetNumTracesRecorded() {
@@ -1017,13 +1036,17 @@ int TraceLog::GetNumTracesRecorded() {
   return num_traces_recorded_;
 }
 
-void TraceLog::AddEnabledStateObserver(EnabledStateChangedObserver* listener) {
-  enabled_state_observer_list_.AddObserver(listener);
+void TraceLog::AddEnabledStateObserver(EnabledStateObserver* listener) {
+  enabled_state_observer_list_.push_back(listener);
 }
 
-void TraceLog::RemoveEnabledStateObserver(
-    EnabledStateChangedObserver* listener) {
-  enabled_state_observer_list_.RemoveObserver(listener);
+void TraceLog::RemoveEnabledStateObserver(EnabledStateObserver* listener) {
+  std::vector<EnabledStateObserver*>::iterator it =
+      std::find(enabled_state_observer_list_.begin(),
+                enabled_state_observer_list_.end(),
+                listener);
+  if (it != enabled_state_observer_list_.end())
+    enabled_state_observer_list_.erase(it);
 }
 
 float TraceLog::GetBufferPercentFull() const {
@@ -1318,6 +1341,10 @@ void TraceLog::SetProcessID(int process_id) {
 
 void TraceLog::SetTimeOffset(TimeDelta offset) {
   time_offset_ = offset;
+}
+
+size_t TraceLog::GetObserverCountForTest() const {
+  return enabled_state_observer_list_.size();
 }
 
 bool CategoryFilter::IsEmptyOrContainsLeadingOrTrailingWhitespace(
