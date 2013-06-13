@@ -352,11 +352,20 @@ void InProcessViewRenderer::WebContentsGone() {
   compositor_ = NULL;
 }
 
-bool InProcessViewRenderer::PrepareDrawGL(int x, int y) {
-  // No harm in updating |scroll_at_start_of_frame_| even if we return false.
-  scroll_at_start_of_frame_ = gfx::Point(x, y);
-  return attached_to_window_ && compositor_ && !hardware_failed_ &&
-         HardwareEnabled();
+bool InProcessViewRenderer::OnDraw(jobject java_canvas,
+                                   bool is_hardware_canvas,
+                                   const gfx::Point& scroll,
+                                   const gfx::Rect& clip) {
+  scroll_at_start_of_frame_  = scroll;
+  if (is_hardware_canvas && attached_to_window_ && compositor_ &&
+      HardwareEnabled() && client_->RequestDrawGL(java_canvas)) {
+    // All set: we'll get a call on DrawGL when the time comes.
+    return true;
+  }
+  // Perform a software draw
+  bool result = DrawSWInternal(java_canvas, clip);
+  EnsureContinuousInvalidation();
+  return result;
 }
 
 void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
@@ -410,13 +419,6 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
                 draw_info->clip_bottom - draw_info->clip_top));
 
   EnsureContinuousInvalidation();
-}
-
-bool InProcessViewRenderer::DrawSW(jobject java_canvas,
-                                   const gfx::Rect& clip) {
-  bool result = DrawSWInternal(java_canvas, clip);
-  EnsureContinuousInvalidation();
-  return result;
 }
 
 bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
@@ -561,7 +563,7 @@ void InProcessViewRenderer::OnAttachedToWindow(int width, int height) {
   width_ = width;
   height_ = height;
   if (compositor_ && !hardware_initialized_)
-    client_->RequestProcessMode();
+    client_->RequestDrawGL(NULL);
 }
 
 void InProcessViewRenderer::OnDetachedFromWindow() {
@@ -589,7 +591,7 @@ void InProcessViewRenderer::DidInitializeCompositor(
   hardware_failed_ = false;
 
   if (attached_to_window_)
-    client_->RequestProcessMode();
+    client_->RequestDrawGL(NULL);
 }
 
 void InProcessViewRenderer::DidDestroyCompositor(

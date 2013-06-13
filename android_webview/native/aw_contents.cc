@@ -515,11 +515,12 @@ void AwContents::OnReceivedTouchIconUrl(const std::string& url,
       env, obj.obj(), ConvertUTF8ToJavaString(env, url).obj(), precomposed);
 }
 
-void AwContents::RequestProcessMode() {
+bool AwContents::RequestDrawGL(jobject canvas) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (!obj.is_null())
-    Java_AwContents_requestProcessMode(env, obj.obj());
+  if (obj.is_null())
+    return false;
+  return Java_AwContents_requestDrawGL(env, obj.obj(), canvas);
 }
 
 void AwContents::Invalidate() {
@@ -644,20 +645,23 @@ jboolean AwContents::RestoreFromOpaqueState(
   return RestoreFromPickle(&iterator, web_contents_.get());
 }
 
-bool AwContents::DrawSW(JNIEnv* env,
+bool AwContents::OnDraw(JNIEnv* env,
                         jobject obj,
                         jobject canvas,
-                        jint clip_x,
-                        jint clip_y,
-                        jint clip_w,
-                        jint clip_h) {
-  return browser_view_renderer_->DrawSW(
-      canvas, gfx::Rect(clip_x, clip_y, clip_w, clip_h));
-}
-
-bool AwContents::PrepareDrawGL(JNIEnv* env, jobject obj,
-                               int scroll_x, int scroll_y) {
-  return browser_view_renderer_->PrepareDrawGL(scroll_x, scroll_y);
+                        jboolean is_hardware_accelerated,
+                        jint scroll_x,
+                        jint scroll_y,
+                        jint clip_left,
+                        jint clip_top,
+                        jint clip_right,
+                        jint clip_bottom) {
+  return browser_view_renderer_->OnDraw(canvas,
+                                        is_hardware_accelerated,
+                                        gfx::Point(scroll_x, scroll_y),
+                                        gfx::Rect(clip_left,
+                                                  clip_top,
+                                                  clip_right - clip_left,
+                                                  clip_bottom - clip_top));
 }
 
 void AwContents::SetPendingWebContentsForPopup(

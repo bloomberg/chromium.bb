@@ -133,7 +133,6 @@ public class AwContents {
 
     private boolean mNewPictureInvalidationOnly;
 
-    private Rect mGlobalVisibleBounds;
     private int mLastGlobalVisibleWidth;
     private int mLastGlobalVisibleHeight;
 
@@ -388,8 +387,10 @@ public class AwContents {
         mDefaultVideoPosterRequestHandler = new DefaultVideoPosterRequestHandler(mContentsClient);
         mSettings.setDefaultVideoPosterURL(
                 mDefaultVideoPosterRequestHandler.getDefaultVideoPosterURL());
-        mGlobalVisibleBounds = new Rect();
     }
+
+    // Only valid within updatePhysicalBackingSizeIfNeeded().
+    private final Rect mGlobalVisibleBoundsTemporary = new Rect();
 
     private void updatePhysicalBackingSizeIfNeeded() {
         // We musn't let the physical backing size get too big, otherwise we
@@ -397,9 +398,9 @@ public class AwContents {
         // cope with. In most cases, limiting the SurfaceTexture size to that
         // of the visible bounds of the WebView will be good enough i.e. the maximum
         // SurfaceTexture dimensions will match the screen dimensions).
-        mContainerView.getGlobalVisibleRect(mGlobalVisibleBounds);
-        int width = mGlobalVisibleBounds.width();
-        int height = mGlobalVisibleBounds.height();
+        mContainerView.getGlobalVisibleRect(mGlobalVisibleBoundsTemporary);
+        int width = mGlobalVisibleBoundsTemporary.width();
+        int height = mGlobalVisibleBoundsTemporary.height();
         if (width != mLastGlobalVisibleWidth || height != mLastGlobalVisibleHeight) {
             mLastGlobalVisibleWidth = width;
             mLastGlobalVisibleHeight = height;
@@ -457,19 +458,18 @@ public class AwContents {
         return nativeGetAwDrawGLViewContext(mNativeAwContents);
     }
 
+    // Only valid within onDraw().
+    private final Rect mClipBoundsTemporary = new Rect();
+
     public void onDraw(Canvas canvas) {
         if (mNativeAwContents == 0) return;
-        // TODO(joth): Consolidate most of this logic into nativePrepareDrawGL(), and
-        // rename it to nativeOnDraw().
-        if (nativePrepareDrawGL(mNativeAwContents,
-                mContainerView.getScrollX(), mContainerView.getScrollY()) &&
-            canvas.isHardwareAccelerated() && mInternalAccessAdapter.requestDrawGL(canvas)) {
-            return;
-        }
-        Rect clip = canvas.getClipBounds();
-        if (!nativeDrawSW(mNativeAwContents, canvas, clip.left, clip.top,
-                clip.right - clip.left, clip.bottom - clip.top)) {
-            Log.w(TAG, "Native DrawSW failed; clearing to background color.");
+
+        canvas.getClipBounds(mClipBoundsTemporary);
+        if (!nativeOnDraw(mNativeAwContents, canvas, canvas.isHardwareAccelerated(),
+                    mContainerView.getScrollX(), mContainerView.getScrollY(),
+                    mClipBoundsTemporary.left, mClipBoundsTemporary.top,
+                    mClipBoundsTemporary.right, mClipBoundsTemporary.bottom )) {
+            Log.w(TAG, "nativeOnDraw failed; clearing to background color.");
             int c = mContentViewCore.getBackgroundColor();
             canvas.drawRGB(Color.red(c), Color.green(c), Color.blue(c));
         }
@@ -1343,8 +1343,8 @@ public class AwContents {
     }
 
     @CalledByNative
-    private void requestProcessMode() {
-        mInternalAccessAdapter.requestDrawGL(null);
+    private boolean requestDrawGL(Canvas canvas) {
+        return mInternalAccessAdapter.requestDrawGL(canvas);
     }
 
     @CalledByNative
@@ -1446,8 +1446,9 @@ public class AwContents {
             InterceptNavigationDelegate navigationInterceptionDelegate);
 
     private native void nativeAddVisitedLinks(int nativeAwContents, String[] visitedLinks);
-
-    private native boolean nativePrepareDrawGL(int nativeAwContents, int scrollX, int scrollY);
+    private native boolean nativeOnDraw(int nativeAwContents, Canvas canvas,
+            boolean isHardwareAccelerated, int scrollX, int ScrollY,
+            int clipLeft, int clipTop, int clipRight, int clipBottom);
     private native void nativeFindAllAsync(int nativeAwContents, String searchString);
     private native void nativeFindNext(int nativeAwContents, boolean forward);
     private native void nativeClearMatches(int nativeAwContents);
@@ -1474,8 +1475,6 @@ public class AwContents {
     private native void nativeSetWebContents(int nativeAwContents, int nativeNewWebContents);
     private native void nativeFocusFirstNode(int nativeAwContents);
 
-    private native boolean nativeDrawSW(int nativeAwContents, Canvas canvas, int clipX, int clipY,
-            int clipW, int clipH);
     private native int nativeGetAwDrawGLViewContext(int nativeAwContents);
     private native Picture nativeCapturePicture(int nativeAwContents);
     private native void nativeEnableOnNewPicture(int nativeAwContents, boolean enabled);

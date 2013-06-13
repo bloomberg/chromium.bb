@@ -94,15 +94,16 @@ class AwContents : public FindHelper::Listener,
       JNIEnv* env, jobject obj);
   jboolean RestoreFromOpaqueState(JNIEnv* env, jobject obj, jbyteArray state);
   void FocusFirstNode(JNIEnv* env, jobject obj);
-  bool DrawSW(JNIEnv* env,
+  bool OnDraw(JNIEnv* env,
               jobject obj,
               jobject canvas,
-              jint clip_x,
-              jint clip_y,
-              jint clip_w,
-              jint clip_h);
-  bool PrepareDrawGL(JNIEnv* env, jobject obj,
-                     int scroll_x, int scroll_y);
+              jboolean is_hardware_accelerated,
+              jint scroll_x,
+              jint scroll_y,
+              jint clip_left,
+              jint clip_top,
+              jint clip_right,
+              jint clip_bottom);
   jint GetAwDrawGLViewContext(JNIEnv* env, jobject obj);
   base::android::ScopedJavaLocalRef<jobject> CapturePicture(JNIEnv* env,
                                                             jobject obj);
@@ -137,7 +138,7 @@ class AwContents : public FindHelper::Listener,
   virtual void OnPageScaleFactorChanged(float page_scale_factor) OVERRIDE;
 
   // BrowserViewRenderer::Client implementation.
-  virtual void RequestProcessMode() OVERRIDE;
+  virtual bool RequestDrawGL(jobject canvas) OVERRIDE;
   virtual void Invalidate() OVERRIDE;
   virtual void OnNewPicture() OVERRIDE;
   virtual gfx::Point GetLocationOnScreen() OVERRIDE;

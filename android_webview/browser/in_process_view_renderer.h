@@ -35,10 +35,11 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   // BrowserViewRenderer overrides
   virtual void SetContents(
       content::ContentViewCore* content_view_core) OVERRIDE;
-  virtual bool PrepareDrawGL(int x, int y) OVERRIDE;
+  virtual bool OnDraw(jobject java_canvas,
+                      bool is_hardware_canvas,
+                      const gfx::Point& scroll,
+                      const gfx::Rect& clip) OVERRIDE;
   virtual void DrawGL(AwDrawGLInfo* draw_info) OVERRIDE;
-  virtual bool DrawSW(jobject java_canvas,
-                      const gfx::Rect& clip_bounds) OVERRIDE;
   virtual base::android::ScopedJavaLocalRef<jobject> CapturePicture() OVERRIDE;
   virtual void EnableOnNewPicture(bool enabled) OVERRIDE;
   virtual void OnVisibilityChanged(
