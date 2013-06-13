@@ -325,10 +325,20 @@ void P2PPortAllocatorSession::AddConfig() {
           allocator_->config_.relay_username,
           allocator_->config_.relay_password);
       turn_config.credentials = credentials;
-      // Using the stun resolved address if available for TURN.
-      turn_config.ports.push_back(cricket::ProtocolAddress(
-          stun_server_address_, cricket::PROTO_UDP));
-      config->AddRelay(turn_config);
+
+      cricket::ProtocolType protocol;
+      if (cricket::StringToProto(
+          allocator_->config_.relay_transport_type.c_str(), &protocol)) {
+        turn_config.ports.push_back(cricket::ProtocolAddress(
+            stun_server_address_, protocol));
+        config->AddRelay(turn_config);
+      } else {
+        DLOG(WARNING) << "Ignoring TURN server "
+                      << allocator_->config_.relay_server << ". "
+                      << "Reason= Incorrect "
+                      << allocator_->config_.relay_transport_type
+                      << " transport parameter.";
+      }
     }
   }
   ConfigReady(config);

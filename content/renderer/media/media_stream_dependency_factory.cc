@@ -111,6 +111,7 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
       config.relay_server_port = turn_configurations[0].server.port();
       config.relay_username = turn_configurations[0].username;
       config.relay_password = turn_configurations[0].password;
+      config.relay_transport_type = turn_configurations[0].transport_type;
       // Use the turn server as the stun server.
       config.stun_server = config.relay_server;
       config.stun_server_port = config.relay_server_port;

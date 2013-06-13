@@ -45,6 +45,9 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
     // Relay server password.
     std::string relay_password;
 
+    // Transport protocol used to communicate with the server.
+    std::string relay_transport_type;
+
     // When set to true relay is a legacy Google relay (not TURN compliant).
     bool legacy_relay;
 
