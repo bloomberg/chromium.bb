@@ -2818,3 +2818,36 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxMarginSetForSearchURLs) {
 }
 
 #endif  // if !defined(HTML_INSTANT_EXTENDED_POPUP)
+
+// Test to verify that switching tabs should not dispatch onmostvisitedchanged
+// events.
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoMostVisitedChangedOnTabSwitch) {
+  // Initialize Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantOverlayAndNTPSupport();
+
+  // Open new tab. Preloaded NTP contents should have been used.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  // Make sure new tab received the onmostvisitedchanged event once.
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(UpdateSearchState(active_tab));
+  EXPECT_EQ(1, on_most_visited_change_calls_);
+
+  // Activate the previous tab.
+  browser()->tab_strip_model()->ActivateTabAt(0, false);
+
+  // Switch back to new tab.
+  browser()->tab_strip_model()->ActivateTabAt(1, false);
+
+  // Confirm that new tab got no onmostvisitedchanged event.
+  active_tab = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(UpdateSearchState(active_tab));
+  EXPECT_EQ(1, on_most_visited_change_calls_);
+}
