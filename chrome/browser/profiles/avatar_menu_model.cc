@@ -5,6 +5,7 @@
 #include "chrome/browser/profiles/avatar_menu_model.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -283,8 +285,13 @@ void AvatarMenuModel::RebuildMenu() {
     bool is_gaia_picture =
         profile_info_->IsUsingGAIAPictureOfProfileAtIndex(i) &&
         profile_info_->GetGAIAPictureOfProfileAtIndex(i);
-    gfx::Image icon = profiles::GetAvatarIconForMenu(
-        profile_info_->GetAvatarIconOfProfileAtIndex(i), is_gaia_picture);
+
+    gfx::Image icon = profile_info_->GetAvatarIconOfProfileAtIndex(i);
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kNewProfileManagement)) {
+      // old avatar menu uses resized-small images
+      icon = profiles::GetAvatarIconForMenu(icon, is_gaia_picture);
+    }
 
     Item* item = new Item(i, icon);
     item->name = profile_info_->GetNameOfProfileAtIndex(i);
@@ -309,8 +316,7 @@ void AvatarMenuModel::ClearMenu() {
 }
 
 
-content::WebContents* AvatarMenuModel::BeginSignOut(
-    const char* logout_override) {
+content::WebContents* AvatarMenuModel::BeginSignOut() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* current_profile = browser_->profile();
 
@@ -321,10 +327,10 @@ content::WebContents* AvatarMenuModel::BeginSignOut(
   std::string landing_url = SyncPromoUI::GetSyncLandingURL("close", 1);
   GURL logout_url(GaiaUrls::GetInstance()->service_logout_url() +
                   "?continue=" + landing_url);
-  if (logout_override) {
+  if (!logout_override_.empty()) {
     // We're testing...
-    landing_url = logout_override;
-    logout_url = GURL(logout_override);
+    landing_url = logout_override_;
+    logout_url = GURL(logout_override_);
   }
 
   content::WebContents::CreateParams create_params(current_profile);

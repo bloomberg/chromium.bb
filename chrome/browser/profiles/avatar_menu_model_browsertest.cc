@@ -37,7 +37,8 @@ IN_PROC_BROWSER_TEST_F(AvatarMenuModelTest, SignOut) {
       content::Source<Browser>(browser()));
 
   EXPECT_FALSE(cache.ProfileIsSigninRequiredAtIndex(index));
-  model.BeginSignOut("about:blank");
+  model.SetLogoutURL("about:blank");
+  model.BeginSignOut();
   EXPECT_TRUE(cache.ProfileIsSigninRequiredAtIndex(index));
 
   window_close_observer.Wait();  // rely on test time-out for failure indication

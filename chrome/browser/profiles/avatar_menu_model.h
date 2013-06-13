@@ -115,7 +115,12 @@ class AvatarMenuModel : public content::NotificationObserver {
   // Parameter |logout_override| alows changing the destination URL for the
   // sign-out process and return value (the WebContents executing the sign-out)
   // are for testing; pass NULL for normal use.
-  content::WebContents* BeginSignOut(const char* logout_override);
+  content::WebContents* BeginSignOut();
+
+  // Use a different URL for logout (for testing only).
+  void SetLogoutURL(const std::string& logout_url) {
+    logout_override_ = logout_url;
+  }
 
  private:
   // Rebuilds the menu from the cache and notifies the |observer_|.
@@ -138,6 +143,9 @@ class AvatarMenuModel : public content::NotificationObserver {
 
   // Listens for notifications from the ProfileInfoCache.
   content::NotificationRegistrar registrar_;
+
+  // Special "override" logout URL used to let tests work.
+  std::string logout_override_;
 
   DISALLOW_COPY_AND_ASSIGN(AvatarMenuModel);
 };

@@ -11741,6 +11741,12 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_PROFILES_EDIT_PROFILE_LINK" desc="Link in the avatar menu bubble to edit a profile.">
         edit
       </message>
+      <message name="IDS_PROFILES_PROFILE_USERS_BUTTON" desc="Button in the avatar menu bubble view for switching users.">
+        Users
+      </message>
+      <message name="IDS_PROFILES_PROFILE_GUEST_BUTTON" desc="Button in the avatar menu bubble view for guest browsing.">
+        Guest browsing
+      </message>
       <message name="IDS_PROFILES_SWITCH_TO_PROFILE_ACCESSIBLE_NAME" desc="Description of the switch to profile button. This is used for accessibility.">
         Switch to user: <ph name="PROFILE_NAME">$1<ex>First user</ex></ph>
       </message>

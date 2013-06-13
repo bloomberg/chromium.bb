@@ -1833,6 +1833,8 @@
         'browser/ui/views/panels/taskbar_window_thumbnailer_win.h',
         'browser/ui/views/password_generation_bubble_view.cc',
         'browser/ui/views/password_generation_bubble_view.h',
+        'browser/ui/views/profile_chooser_view.cc',
+        'browser/ui/views/profile_chooser_view.h',
         'browser/ui/views/reload_button.cc',
         'browser/ui/views/reload_button.h',
         'browser/ui/views/sad_tab_view.cc',

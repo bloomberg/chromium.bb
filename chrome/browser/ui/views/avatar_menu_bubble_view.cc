@@ -641,7 +641,7 @@ void AvatarMenuBubbleView::ButtonPressed(views::Button* sender,
     chrome::ShowSettingsSubPage(browser_, subpage);
     return;
   } else if (sender->tag() == IDS_PROFILES_PROFILE_SIGNOUT_BUTTON) {
-    avatar_menu_model_->BeginSignOut(NULL);
+    avatar_menu_model_->BeginSignOut();
     return;
   }
 

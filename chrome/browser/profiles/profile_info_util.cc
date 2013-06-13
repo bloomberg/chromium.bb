@@ -12,6 +12,7 @@ namespace profiles {
 
 const int kAvatarIconWidth = 38;
 const int kAvatarIconHeight = 31;
+const int kAvatarIconBorder = 2;
 
 gfx::Image GetSizedAvatarIconWithBorder(const gfx::Image& image,
                                         bool is_gaia_picture,
@@ -19,7 +20,7 @@ gfx::Image GetSizedAvatarIconWithBorder(const gfx::Image& image,
   if (!is_gaia_picture)
     return image;
 
-  int length = std::min(width, height) - 2;
+  int length = std::min(width, height) - kAvatarIconBorder;
   SkBitmap bmp = skia::ImageOperations::Resize(
       *image.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST, length, length);
   gfx::Canvas canvas(gfx::Size(width, height), ui::SCALE_FACTOR_100P, false);
@@ -47,7 +48,8 @@ gfx::Image GetAvatarIconForWebUI(const gfx::Image& image,
   if (!is_gaia_picture)
     return image;
 
-  int length = std::min(kAvatarIconWidth, kAvatarIconHeight) - 2;
+  int length =
+      std::min(kAvatarIconWidth, kAvatarIconHeight) - kAvatarIconBorder;
   SkBitmap bmp = skia::ImageOperations::Resize(
       *image.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST, length, length);
   gfx::Canvas canvas(gfx::Size(kAvatarIconWidth, kAvatarIconHeight),
@@ -69,7 +71,7 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
     return image;
 
   int length = std::min(std::min(kAvatarIconWidth, kAvatarIconHeight),
-      std::min(dst_width, dst_height)) - 2;
+      std::min(dst_width, dst_height)) - kAvatarIconBorder;
   SkBitmap bmp = skia::ImageOperations::Resize(
       *image.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST, length, length);
   gfx::Canvas canvas(gfx::Size(dst_width, dst_height), ui::SCALE_FACTOR_100P,
