@@ -41,7 +41,7 @@ public:
         : ordered(true)
         , maxRetransmitTime(-1)
         , maxRetransmits(-1)
-        , negotiated(true)
+        , negotiated(false)
         , id(-1) { }
     bool ordered;
     int maxRetransmitTime;
