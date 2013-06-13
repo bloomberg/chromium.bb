@@ -73,6 +73,7 @@ PP_NaClResult LaunchSelLdr(PP_Instance instance,
                            PP_Bool uses_ppapi,
                            PP_Bool enable_ppapi_dev,
                            PP_Bool enable_dyncode_syscalls,
+                           PP_Bool enable_exception_handling,
                            void* imc_handle) {
   nacl::FileDescriptor result_socket;
   IPC::Sender* sender = content::RenderThread::Get();
@@ -107,7 +108,8 @@ PP_NaClResult LaunchSelLdr(PP_Instance instance,
                                  routing_id,
                                  perm_bits,
                                  PP_ToBool(uses_irt),
-                                 PP_ToBool(enable_dyncode_syscalls)),
+                                 PP_ToBool(enable_dyncode_syscalls),
+                                 PP_ToBool(enable_exception_handling)),
           &result_socket,
           &instance_info.channel_handle,
           &instance_info.plugin_pid,

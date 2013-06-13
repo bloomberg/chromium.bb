@@ -53,6 +53,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
                   uint32 permission_bits,
                   bool uses_irt,
                   bool enable_dyncode_syscalls,
+                  bool enable_exception_handling,
                   bool off_the_record,
                   const base::FilePath& profile_directory);
   virtual ~NaClProcessHost();
@@ -191,12 +192,11 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   scoped_ptr<content::BrowserChildProcessHost> process_;
 
-  bool enable_exception_handling_;
-  bool enable_debug_stub_;
-
   bool uses_irt_;
 
+  bool enable_debug_stub_;
   bool enable_dyncode_syscalls_;
+  bool enable_exception_handling_;
 
   bool off_the_record_;
 

@@ -47,6 +47,8 @@ interface PPB_NaCl_Private {
    * NaCl process.  This is true for ABI stable nexes.
    * The |enable_dyncode_syscalls| flag indicates whether or not the nexe
    * will be able to use dynamic code system calls (e.g., mmap with PROT_EXEC).
+   * The |enable_exception_handling| flag indicates whether or not the nexe
+   * will be able to use hardware exception handling.
    */
   PP_NaClResult LaunchSelLdr([in] PP_Instance instance,
                              [in] str_t alleged_url,
@@ -54,6 +56,7 @@ interface PPB_NaCl_Private {
                              [in] PP_Bool uses_ppapi,
                              [in] PP_Bool enable_ppapi_dev,
                              [in] PP_Bool enable_dyncode_syscalls,
+                             [in] PP_Bool enable_exception_handling,
                              [out] mem_t imc_handle);
 
   /* This function starts the IPC proxy so the nexe can communicate with the

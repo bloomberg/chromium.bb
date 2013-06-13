@@ -380,6 +380,7 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
                                   bool uses_irt,
                                   bool uses_ppapi,
                                   bool enable_dyncode_syscalls,
+                                  bool enable_exception_handling,
                                   ErrorInfo* error_info,
                                   pp::CompletionCallback init_done_cb,
                                   pp::CompletionCallback crash_cb) {
@@ -403,6 +404,7 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
                                  uses_ppapi,
                                  enable_dev_interfaces_,
                                  enable_dyncode_syscalls,
+                                 enable_exception_handling,
                                  crash_cb);
   PLUGIN_PRINTF(("Plugin::LoadNaClModuleCommon (service_runtime_started=%d)\n",
                  service_runtime_started));
@@ -415,6 +417,7 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
 bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
                             ErrorInfo* error_info,
                             bool enable_dyncode_syscalls,
+                            bool enable_exception_handling,
                             pp::CompletionCallback init_done_cb,
                             pp::CompletionCallback crash_cb) {
   // Before forking a new sel_ldr process, ensure that we do not leak
@@ -427,6 +430,7 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
                             true /* uses_irt */,
                             true /* uses_ppapi */,
                             enable_dyncode_syscalls,
+                            enable_exception_handling,
                             error_info, init_done_cb, crash_cb)) {
     return false;
   }
@@ -494,6 +498,7 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
                             false /* uses_irt */,
                             false /* uses_ppapi */,
                             false /* enable_dyncode_syscalls */,
+                            false /* enable_exception_handling */,
                             error_info,
                             pp::BlockUntilComplete(),
                             pp::BlockUntilComplete())) {
@@ -865,6 +870,7 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
   bool was_successful = LoadNaClModule(
       wrapper.get(), &error_info,
       true, /* enable_dyncode_syscalls */
+      true, /* enable_exception_handling */
       callback_factory_.NewCallback(&Plugin::NexeFileDidOpenContinuation),
       callback_factory_.NewCallback(&Plugin::NexeDidCrash));
 
@@ -986,6 +992,7 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
   bool was_successful = LoadNaClModule(
       wrapper.get(), &error_info,
       false, /* enable_dyncode_syscalls */
+      false, /* enable_exception_handling */
       callback_factory_.NewCallback(&Plugin::BitcodeDidTranslateContinuation),
       callback_factory_.NewCallback(&Plugin::NexeDidCrash));
 

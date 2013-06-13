@@ -16,13 +16,15 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 
-typedef PP_NaClResult (*LaunchNaClProcessFunc)(PP_Instance instance,
-                                               const char* alleged_url,
-                                               PP_Bool uses_irt,
-                                               PP_Bool uses_ppapi,
-                                               PP_Bool enable_ppapi_dev,
-                                               PP_Bool enable_dyncode_syscalls,
-                                               NaClHandle* result_socket);
+typedef PP_NaClResult (*LaunchNaClProcessFunc)(
+    PP_Instance instance,
+    const char* alleged_url,
+    PP_Bool uses_irt,
+    PP_Bool uses_ppapi,
+    PP_Bool enable_ppapi_dev,
+    PP_Bool enable_dyncode_syscalls,
+    PP_Bool enable_exception_handling,
+    NaClHandle* result_socket);
 
 
 extern LaunchNaClProcessFunc launch_nacl_process;

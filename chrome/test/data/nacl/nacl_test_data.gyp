@@ -238,6 +238,43 @@
         'ppapi_test_lib',
       ],
     },
+    {
+      'target_name': 'pnacl_exception_handling_disabled_test',
+      'type': 'none',
+      'variables': {
+        # This tests that nexes produced by translation in the browser are not
+        # able to use hardware exception handling.  Pre-translated nexes are
+        # not subject to this constraint, so we do not test them.
+        'enable_x86_32': 0,
+        'enable_x86_64': 0,
+        'enable_arm': 0,
+        'nexe_target': 'pnacl_exception_handling_disabled',
+        'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
+        'link_flags': [
+          '-lppapi',
+          '-lppapi_test_lib',
+          '-lplatform',
+          '-lgio',
+          '-lnacl_exception',
+        ],
+        'sources': [
+          'pnacl_exception_handling_disabled/pnacl_exception_handling_disabled.cc',
+        ],
+        'test_files': [
+          'pnacl_exception_handling_disabled/pnacl_exception_handling_disabled.html',
+        ],
+      },
+      'dependencies': [
+        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
+        '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_exception_lib',
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+        '<(DEPTH)/ppapi/native_client/native_client.gyp:ppapi_lib',
+        '<(DEPTH)/ppapi/ppapi_untrusted.gyp:ppapi_cpp_lib',
+        'ppapi_test_lib',
+      ],
+    },
     # Legacy NaCl PPAPI interface tests being here.
     {
       'target_name': 'ppapi_ppb_core',
