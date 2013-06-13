@@ -113,23 +113,23 @@ unsigned DomStorageArea::Length() {
   return map_->Length();
 }
 
-NullableString16 DomStorageArea::Key(unsigned index) {
+base::NullableString16 DomStorageArea::Key(unsigned index) {
   if (is_shutdown_)
-    return NullableString16(true);
+    return base::NullableString16(true);
   InitialImportIfNeeded();
   return map_->Key(index);
 }
 
-NullableString16 DomStorageArea::GetItem(const base::string16& key) {
+base::NullableString16 DomStorageArea::GetItem(const base::string16& key) {
   if (is_shutdown_)
-    return NullableString16(true);
+    return base::NullableString16(true);
   InitialImportIfNeeded();
   return map_->GetItem(key);
 }
 
 bool DomStorageArea::SetItem(const base::string16& key,
                              const base::string16& value,
-                             NullableString16* old_value) {
+                             base::NullableString16* old_value) {
   if (is_shutdown_)
     return false;
   InitialImportIfNeeded();
@@ -138,7 +138,7 @@ bool DomStorageArea::SetItem(const base::string16& key,
   bool success = map_->SetItem(key, value, old_value);
   if (success && backing_) {
     CommitBatch* commit_batch = CreateCommitBatchIfNeeded();
-    commit_batch->changed_values[key] = NullableString16(value, false);
+    commit_batch->changed_values[key] = base::NullableString16(value, false);
   }
   return success;
 }
@@ -153,7 +153,7 @@ bool DomStorageArea::RemoveItem(const base::string16& key,
   bool success = map_->RemoveItem(key, old_value);
   if (success && backing_) {
     CommitBatch* commit_batch = CreateCommitBatchIfNeeded();
-    commit_batch->changed_values[key] = NullableString16(true);
+    commit_batch->changed_values[key] = base::NullableString16(true);
   }
   return success;
 }

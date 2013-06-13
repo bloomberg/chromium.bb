@@ -23,7 +23,7 @@ TEST(DomStorageMapTest, DomStorageMapBasics) {
 
   scoped_refptr<DomStorageMap> map(new DomStorageMap(kQuota));
   base::string16 old_value;
-  NullableString16 old_nullable_value;
+  base::NullableString16 old_nullable_value;
   ValuesMap swap;
   scoped_refptr<DomStorageMap> copy;
 
@@ -92,7 +92,7 @@ TEST(DomStorageMapTest, EnforcesQuota) {
   const size_t kQuota = 50;
 
   base::string16 old_value;
-  NullableString16 old_nullable_value;
+  base::NullableString16 old_nullable_value;
 
   scoped_refptr<DomStorageMap> map(new DomStorageMap(kQuota));
   EXPECT_TRUE(map->SetItem(kKey, kValue, &old_nullable_value));
@@ -107,8 +107,8 @@ TEST(DomStorageMapTest, EnforcesQuota) {
 
   // Verify that the SwapValues method does not do quota checking.
   ValuesMap swap;
-  swap[kKey] = NullableString16(kValue, false);
-  swap[kKey2] = NullableString16(kValue, false);
+  swap[kKey] = base::NullableString16(kValue, false);
+  swap[kKey2] = base::NullableString16(kValue, false);
   map->SwapValues(&swap);
   EXPECT_GT(map->bytes_used(), kQuota);
 

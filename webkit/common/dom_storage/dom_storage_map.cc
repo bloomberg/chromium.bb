@@ -39,9 +39,9 @@ unsigned DomStorageMap::Length() const {
   return values_.size();
 }
 
-NullableString16 DomStorageMap::Key(unsigned index) {
+base::NullableString16 DomStorageMap::Key(unsigned index) {
   if (index >= values_.size())
-    return NullableString16(true);
+    return base::NullableString16(true);
   while (last_key_index_ != index) {
     if (last_key_index_ > index) {
       --key_iterator_;
@@ -51,22 +51,22 @@ NullableString16 DomStorageMap::Key(unsigned index) {
       ++last_key_index_;
     }
   }
-  return NullableString16(key_iterator_->first, false);
+  return base::NullableString16(key_iterator_->first, false);
 }
 
-NullableString16 DomStorageMap::GetItem(const base::string16& key) const {
+base::NullableString16 DomStorageMap::GetItem(const base::string16& key) const {
   ValuesMap::const_iterator found = values_.find(key);
   if (found == values_.end())
-    return NullableString16(true);
+    return base::NullableString16(true);
   return found->second;
 }
 
 bool DomStorageMap::SetItem(
     const base::string16& key, const base::string16& value,
-    NullableString16* old_value) {
+    base::NullableString16* old_value) {
   ValuesMap::const_iterator found = values_.find(key);
   if (found == values_.end())
-    *old_value = NullableString16(true);
+    *old_value = base::NullableString16(true);
   else
     *old_value = found->second;
 
@@ -80,7 +80,7 @@ bool DomStorageMap::SetItem(
   if (new_item_size > old_item_size && new_bytes_used > quota_)
     return false;
 
-  values_[key] = NullableString16(value, false);
+  values_[key] = base::NullableString16(value, false);
   ResetKeyIterator();
   bytes_used_ = new_bytes_used;
   return true;

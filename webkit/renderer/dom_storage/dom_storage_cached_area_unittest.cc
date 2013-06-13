@@ -156,8 +156,8 @@ TEST_F(DomStorageCachedAreaTest, Basics) {
   EXPECT_EQ(kNamespaceId, cached_area->namespace_id());
   EXPECT_EQ(kOrigin, cached_area->origin());
   EXPECT_FALSE(mock_proxy_->HasOneRef());
-  cached_area->ApplyMutation(NullableString16(kKey, false),
-                             NullableString16(kValue, false));
+  cached_area->ApplyMutation(base::NullableString16(kKey, false),
+                             base::NullableString16(kValue, false));
   EXPECT_FALSE(IsPrimed(cached_area.get()));
 
   ResetAll(cached_area.get());
@@ -251,7 +251,8 @@ TEST_F(DomStorageCachedAreaTest, Setters) {
   // RemoveItem with something to remove, expect a call to load followed
   // by a call to remove.
   ResetAll(cached_area.get());
-  mock_proxy_->load_area_return_values_[kKey] = NullableString16(kValue, false);
+  mock_proxy_->load_area_return_values_[kKey] =
+      base::NullableString16(kValue, false);
   EXPECT_FALSE(IsPrimed(cached_area.get()));
   cached_area->RemoveItem(kConnectionId, kKey, kPageUrl);
   EXPECT_TRUE(IsPrimed(cached_area.get()));
@@ -272,8 +273,8 @@ TEST_F(DomStorageCachedAreaTest, MutationsAreIgnoredUntilLoadCompletion) {
   EXPECT_TRUE(IsIgnoringAllMutations(cached_area.get()));
 
   // Before load completion, the mutation should be ignored.
-  cached_area->ApplyMutation(NullableString16(kKey, false),
-                             NullableString16(kValue, false));
+  cached_area->ApplyMutation(base::NullableString16(kKey, false),
+                             base::NullableString16(kValue, false));
   EXPECT_TRUE(cached_area->GetItem(kConnectionId, kKey).is_null());
 
   // Call the load completion callback.
@@ -281,8 +282,8 @@ TEST_F(DomStorageCachedAreaTest, MutationsAreIgnoredUntilLoadCompletion) {
   EXPECT_FALSE(IsIgnoringAllMutations(cached_area.get()));
 
   // Verify that mutations are now applied.
-  cached_area->ApplyMutation(NullableString16(kKey, false),
-                             NullableString16(kValue, false));
+  cached_area->ApplyMutation(base::NullableString16(kKey, false),
+                             base::NullableString16(kValue, false));
   EXPECT_EQ(kValue, cached_area->GetItem(kConnectionId, kKey).string());
 }
 
@@ -318,8 +319,8 @@ TEST_F(DomStorageCachedAreaTest, KeyMutationsAreIgnoredUntilCompletion) {
   mock_proxy_->CompleteOnePendingCallback(true);  // load completion
   EXPECT_FALSE(IsIgnoringAllMutations(cached_area.get()));
   EXPECT_TRUE(IsIgnoringKeyMutations(cached_area.get(), kKey));
-  cached_area->ApplyMutation(NullableString16(kKey, false),
-                             NullableString16(true));
+  cached_area->ApplyMutation(base::NullableString16(kKey, false),
+                             base::NullableString16(true));
   EXPECT_EQ(kValue, cached_area->GetItem(kConnectionId, kKey).string());
   mock_proxy_->CompleteOnePendingCallback(true);  // set completion
   EXPECT_FALSE(IsIgnoringKeyMutations(cached_area.get(), kKey));

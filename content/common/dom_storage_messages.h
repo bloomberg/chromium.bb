@@ -15,13 +15,13 @@
 // Signals a local storage event.
 IPC_STRUCT_BEGIN(DOMStorageMsg_Event_Params)
   // The key that generated the storage event.  Null if clear() was called.
-  IPC_STRUCT_MEMBER(NullableString16, key)
+  IPC_STRUCT_MEMBER(base::NullableString16, key)
 
   // The old value of this key.  Null on clear() or if it didn't have a value.
-  IPC_STRUCT_MEMBER(NullableString16, old_value)
+  IPC_STRUCT_MEMBER(base::NullableString16, old_value)
 
   // The new value of this key.  Null on removeItem() or clear().
-  IPC_STRUCT_MEMBER(NullableString16, new_value)
+  IPC_STRUCT_MEMBER(base::NullableString16, new_value)
 
   // The origin this is associated with.
   IPC_STRUCT_MEMBER(GURL, origin)

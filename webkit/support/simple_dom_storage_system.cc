@@ -145,13 +145,13 @@ unsigned SimpleDomStorageSystem::AreaImpl::length() {
 WebString SimpleDomStorageSystem::AreaImpl::key(unsigned index) {
   if (Host())
     return Host()->GetAreaKey(connection_id_, index);
-  return NullableString16(true);
+  return base::NullableString16(true);
 }
 
 WebString SimpleDomStorageSystem::AreaImpl::getItem(const WebString& key) {
   if (Host())
     return Host()->GetAreaItem(connection_id_, key);
-  return NullableString16(true);
+  return base::NullableString16(true);
 }
 
 void SimpleDomStorageSystem::AreaImpl::setItem(
@@ -162,7 +162,7 @@ void SimpleDomStorageSystem::AreaImpl::setItem(
     return;
 
   base::AutoReset<AreaImpl*> auto_reset(&parent_->area_being_processed_, this);
-  NullableString16 unused;
+  base::NullableString16 unused;
   if (!Host()->SetAreaItem(connection_id_, key, newValue, pageUrl,
                            &unused))
     return;
@@ -226,11 +226,11 @@ void SimpleDomStorageSystem::OnDomStorageItemSet(
     const dom_storage::DomStorageArea* area,
     const base::string16& key,
     const base::string16& new_value,
-    const NullableString16& old_value,
+    const base::NullableString16& old_value,
     const GURL& page_url) {
   DispatchDomStorageEvent(area, page_url,
-                          NullableString16(key, false),
-                          NullableString16(new_value, false),
+                          base::NullableString16(key, false),
+                          base::NullableString16(new_value, false),
                           old_value);
 }
 
@@ -240,26 +240,26 @@ void SimpleDomStorageSystem::OnDomStorageItemRemoved(
     const base::string16& old_value,
     const GURL& page_url) {
   DispatchDomStorageEvent(area, page_url,
-                          NullableString16(key, false),
-                          NullableString16(true),
-                          NullableString16(old_value, false));
+                          base::NullableString16(key, false),
+                          base::NullableString16(true),
+                          base::NullableString16(old_value, false));
 }
 
 void SimpleDomStorageSystem::OnDomStorageAreaCleared(
     const dom_storage::DomStorageArea* area,
     const GURL& page_url) {
   DispatchDomStorageEvent(area, page_url,
-                          NullableString16(true),
-                          NullableString16(true),
-                          NullableString16(true));
+                          base::NullableString16(true),
+                          base::NullableString16(true),
+                          base::NullableString16(true));
 }
 
 void SimpleDomStorageSystem::DispatchDomStorageEvent(
     const dom_storage::DomStorageArea* area,
     const GURL& page_url,
-    const NullableString16& key,
-    const NullableString16& new_value,
-    const NullableString16& old_value) {
+    const base::NullableString16& key,
+    const base::NullableString16& new_value,
+    const base::NullableString16& old_value) {
   DCHECK(area_being_processed_);
   if (area->namespace_id() == dom_storage::kLocalStorageNamespaceId) {
     WebStorageEventDispatcher::dispatchLocalStorageEvent(

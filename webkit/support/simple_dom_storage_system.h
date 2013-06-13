@@ -49,7 +49,7 @@ class SimpleDomStorageSystem
       const dom_storage::DomStorageArea* area,
       const base::string16& key,
       const base::string16& new_value,
-      const NullableString16& old_value,
+      const base::NullableString16& old_value,
       const GURL& page_url) OVERRIDE;
   virtual void OnDomStorageItemRemoved(
       const dom_storage::DomStorageArea* area,
@@ -63,9 +63,9 @@ class SimpleDomStorageSystem
   void DispatchDomStorageEvent(
       const dom_storage::DomStorageArea* area,
       const GURL& page_url,
-      const NullableString16& key,
-      const NullableString16& new_value,
-      const NullableString16& old_value);
+      const base::NullableString16& key,
+      const base::NullableString16& new_value,
+      const base::NullableString16& old_value);
 
   base::WeakPtrFactory<SimpleDomStorageSystem> weak_factory_;
   scoped_refptr<dom_storage::DomStorageContext> context_;

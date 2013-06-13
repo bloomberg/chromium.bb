@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/nullable_string16.h"
+#include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
@@ -38,7 +38,7 @@ const int64 kMaxInMemoryAreas = 100;
 // Value to indicate an area that not be opened.
 const int kInvalidAreaId = -1;
 
-typedef std::map<base::string16, NullableString16> ValuesMap;
+typedef std::map<base::string16, base::NullableString16> ValuesMap;
 
 struct WEBKIT_STORAGE_COMMON_EXPORT LocalStorageUsageInfo {
   GURL origin;

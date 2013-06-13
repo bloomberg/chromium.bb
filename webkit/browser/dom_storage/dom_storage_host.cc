@@ -80,25 +80,26 @@ unsigned DomStorageHost::GetAreaLength(int connection_id) {
   return area->Length();
 }
 
-NullableString16 DomStorageHost::GetAreaKey(int connection_id, unsigned index) {
+base::NullableString16 DomStorageHost::GetAreaKey(int connection_id,
+                                                  unsigned index) {
   DomStorageArea* area = GetOpenArea(connection_id);
   if (!area)
-    return NullableString16(true);
+    return base::NullableString16(true);
   return area->Key(index);
 }
 
-NullableString16 DomStorageHost::GetAreaItem(int connection_id,
-                                             const base::string16& key) {
+base::NullableString16 DomStorageHost::GetAreaItem(int connection_id,
+                                                   const base::string16& key) {
   DomStorageArea* area = GetOpenArea(connection_id);
   if (!area)
-    return NullableString16(true);
+    return base::NullableString16(true);
   return area->GetItem(key);
 }
 
 bool DomStorageHost::SetAreaItem(
     int connection_id, const base::string16& key,
     const base::string16& value, const GURL& page_url,
-    NullableString16* old_value) {
+    base::NullableString16* old_value) {
   DomStorageArea* area = GetOpenArea(connection_id);
   if (!area) {
     // TODO(michaeln): Fix crbug/134003 and return false here.

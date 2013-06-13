@@ -73,8 +73,8 @@ void CheckValuesMatch(DomStorageDatabase* db,
   ValuesMap::const_iterator it = values_read.begin();
   for (; it != values_read.end(); ++it) {
     base::string16 key = it->first;
-    NullableString16 value = it->second;
-    NullableString16 expected_value = expected.find(key)->second;
+    base::NullableString16 value = it->second;
+    base::NullableString16 expected_value = expected.find(key)->second;
     EXPECT_EQ(expected_value.string(), value.string());
     EXPECT_EQ(expected_value.is_null(), value.is_null());
   }
@@ -87,11 +87,11 @@ void CreateMapWithValues(ValuesMap* values) {
       ASCIIToUTF16("date"),
       ASCIIToUTF16("empty")
   };
-  NullableString16 kCannedValues[] = {
-      NullableString16(ASCIIToUTF16("123"), false),
-      NullableString16(ASCIIToUTF16("Google"), false),
-      NullableString16(ASCIIToUTF16("18-01-2012"), false),
-      NullableString16(base::string16(), false)
+  base::NullableString16 kCannedValues[] = {
+      base::NullableString16(ASCIIToUTF16("123"), false),
+      base::NullableString16(ASCIIToUTF16("Google"), false),
+      base::NullableString16(ASCIIToUTF16("18-01-2012"), false),
+      base::NullableString16(base::string16(), false)
   };
   for (unsigned i = 0; i < sizeof(kCannedKeys) / sizeof(kCannedKeys[0]); i++)
     (*values)[kCannedKeys[i]] = kCannedValues[i];
@@ -110,7 +110,8 @@ TEST(DomStorageDatabaseTest, SimpleOpenAndClose) {
 TEST(DomStorageDatabaseTest, CloseEmptyDatabaseDeletesFile) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath file_name = temp_dir.path().AppendASCII("TestDomStorageDatabase.db");
+  base::FilePath file_name =
+      temp_dir.path().AppendASCII("TestDomStorageDatabase.db");
   ValuesMap storage;
   CreateMapWithValues(&storage);
 
@@ -156,7 +157,7 @@ TEST(DomStorageDatabaseTest, CloseEmptyDatabaseDeletesFile) {
     ASSERT_TRUE(db.CommitChanges(false, storage));
     ValuesMap::iterator it = storage.begin();
     for (; it != storage.end(); ++it)
-      it->second = NullableString16(true);
+      it->second = base::NullableString16(true);
     ASSERT_TRUE(db.CommitChanges(false, storage));
   }
   EXPECT_FALSE(file_util::PathExists(file_name));
@@ -167,7 +168,8 @@ TEST(DomStorageDatabaseTest, TestLazyOpenIsLazy) {
   // open a file that already exists when only invoking ReadAllValues.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath file_name = temp_dir.path().AppendASCII("TestDomStorageDatabase.db");
+  base::FilePath file_name =
+      temp_dir.path().AppendASCII("TestDomStorageDatabase.db");
 
   DomStorageDatabase db(file_name);
   EXPECT_FALSE(db.IsOpen());
@@ -176,7 +178,8 @@ TEST(DomStorageDatabaseTest, TestLazyOpenIsLazy) {
   // Reading an empty db should not open the database.
   EXPECT_FALSE(db.IsOpen());
 
-  values[ASCIIToUTF16("key")] = NullableString16(ASCIIToUTF16("value"), false);
+  values[ASCIIToUTF16("key")] =
+      base::NullableString16(ASCIIToUTF16("value"), false);
   db.CommitChanges(false, values);
   // Writing content should open the database.
   EXPECT_TRUE(db.IsOpen());
@@ -214,7 +217,8 @@ TEST(DomStorageDatabaseTest, TestLazyOpenUpgradesDatabase) {
   // early if the database is already open).
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath file_name = temp_dir.path().AppendASCII("TestDomStorageDatabase.db");
+  base::FilePath file_name =
+      temp_dir.path().AppendASCII("TestDomStorageDatabase.db");
 
   DomStorageDatabase db(file_name);
   db.db_.reset(new sql::Connection());
@@ -248,7 +252,7 @@ TEST(DomStorageDatabaseTest, WriteWithClear) {
   // Insert some values, clearing the database first.
   storage.clear();
   storage[ASCIIToUTF16("another_key")] =
-      NullableString16(ASCIIToUTF16("test"), false);
+      base::NullableString16(ASCIIToUTF16("test"), false);
   ASSERT_TRUE(db.CommitChanges(true, storage));
   CheckValuesMatch(&db, storage);
 
@@ -260,7 +264,7 @@ TEST(DomStorageDatabaseTest, WriteWithClear) {
 
 TEST(DomStorageDatabaseTest, UpgradeFromV1ToV2WithData) {
   const base::string16 kCannedKey = ASCIIToUTF16("foo");
-  const NullableString16 kCannedValue(ASCIIToUTF16("bar"), false);
+  const base::NullableString16 kCannedValue(ASCIIToUTF16("bar"), false);
   ValuesMap expected;
   expected[kCannedKey] = kCannedValue;
 
@@ -282,7 +286,7 @@ TEST(DomStorageDatabaseTest, TestSimpleRemoveOneValue) {
 
   ASSERT_TRUE(db.LazyOpen(true));
   const base::string16 kCannedKey = ASCIIToUTF16("test");
-  const NullableString16 kCannedValue(ASCIIToUTF16("data"), false);
+  const base::NullableString16 kCannedValue(ASCIIToUTF16("data"), false);
   ValuesMap expected;
   expected[kCannedKey] = kCannedValue;
 
@@ -293,7 +297,7 @@ TEST(DomStorageDatabaseTest, TestSimpleRemoveOneValue) {
   ValuesMap values;
   // A null string in the map should mean that that key gets
   // removed.
-  values[kCannedKey] = NullableString16(true);
+  values[kCannedKey] = base::NullableString16(true);
   EXPECT_TRUE(db.CommitChanges(false, values));
 
   expected.clear();
@@ -334,7 +338,8 @@ TEST(DomStorageDatabaseTest, TestCanOpenFileThatIsNotADatabase) {
   // Write into the temporary file first.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath file_name = temp_dir.path().AppendASCII("TestDomStorageDatabase.db");
+  base::FilePath file_name =
+      temp_dir.path().AppendASCII("TestDomStorageDatabase.db");
 
   const char kData[] = "I am not a database.";
   file_util::WriteFile(file_name, kData, strlen(kData));

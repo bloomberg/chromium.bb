@@ -45,12 +45,11 @@
 #error "Please add the noinline property for your new compiler here."
 #endif
 
-class NullableString16;
-
 namespace base {
 class DictionaryValue;
 class FilePath;
 class ListValue;
+class NullableString16;
 class Time;
 class TimeDelta;
 class TimeTicks;
@@ -454,8 +453,8 @@ struct IPC_EXPORT ParamTraits<base::ListValue> {
 };
 
 template <>
-struct IPC_EXPORT ParamTraits<NullableString16> {
-  typedef NullableString16 param_type;
+struct IPC_EXPORT ParamTraits<base::NullableString16> {
+  typedef base::NullableString16 param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter,
                    param_type* r);

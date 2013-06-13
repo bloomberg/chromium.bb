@@ -7,7 +7,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/nullable_string16.h"
+#include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/common/dom_storage/dom_storage_types.h"

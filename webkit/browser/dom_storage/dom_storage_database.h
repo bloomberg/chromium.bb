@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/nullable_string16.h"
+#include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
 #include "sql/connection.h"
 #include "webkit/browser/webkit_storage_browser_export.h"

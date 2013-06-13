@@ -6,7 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/nullable_string16.h"
+#include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
@@ -122,7 +122,7 @@ void DOMStorageMessageFilter::OnSetItem(
   DCHECK_EQ(0, connection_dispatching_message_for_);
   base::AutoReset<int> auto_reset(&connection_dispatching_message_for_,
                             connection_id);
-  NullableString16 not_used;
+  base::NullableString16 not_used;
   bool success = host_->SetAreaItem(connection_id, key, value,
                                     page_url, &not_used);
   Send(new DOMStorageMsg_AsyncOperationComplete(success));
@@ -158,11 +158,11 @@ void DOMStorageMessageFilter::OnDomStorageItemSet(
     const dom_storage::DomStorageArea* area,
     const string16& key,
     const string16& new_value,
-    const NullableString16& old_value,
+    const base::NullableString16& old_value,
     const GURL& page_url) {
   SendDomStorageEvent(area, page_url,
-                      NullableString16(key, false),
-                      NullableString16(new_value, false),
+                      base::NullableString16(key, false),
+                      base::NullableString16(new_value, false),
                       old_value);
 }
 
@@ -172,26 +172,26 @@ void DOMStorageMessageFilter::OnDomStorageItemRemoved(
     const string16& old_value,
     const GURL& page_url) {
   SendDomStorageEvent(area, page_url,
-                      NullableString16(key, false),
-                      NullableString16(true),
-                      NullableString16(old_value, false));
+                      base::NullableString16(key, false),
+                      base::NullableString16(true),
+                      base::NullableString16(old_value, false));
 }
 
 void DOMStorageMessageFilter::OnDomStorageAreaCleared(
     const dom_storage::DomStorageArea* area,
     const GURL& page_url) {
   SendDomStorageEvent(area, page_url,
-                      NullableString16(true),
-                      NullableString16(true),
-                      NullableString16(true));
+                      base::NullableString16(true),
+                      base::NullableString16(true),
+                      base::NullableString16(true));
 }
 
 void DOMStorageMessageFilter::SendDomStorageEvent(
     const dom_storage::DomStorageArea* area,
     const GURL& page_url,
-    const NullableString16& key,
-    const NullableString16& new_value,
-    const NullableString16& old_value) {
+    const base::NullableString16& key,
+    const base::NullableString16& new_value,
+    const base::NullableString16& old_value) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Only send mutation events to processes which have the area open.
   bool originated_in_process = connection_dispatching_message_for_ != 0;

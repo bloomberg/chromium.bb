@@ -78,13 +78,13 @@ void PopulateWebDropData(IDataObject* data_object, WebDropData* drop_data) {
   base::string16 text;
   ui::ClipboardUtil::GetPlainText(data_object, &text);
   if (!text.empty()) {
-    drop_data->text = NullableString16(text, false);
+    drop_data->text = base::NullableString16(text, false);
   }
   base::string16 html;
   std::string html_base_url;
   ui::ClipboardUtil::GetHtml(data_object, &html, &html_base_url);
   if (!html.empty()) {
-    drop_data->html = NullableString16(html, false);
+    drop_data->html = base::NullableString16(html, false);
   }
   if (!html_base_url.empty()) {
     drop_data->html_base_url = GURL(html_base_url);

@@ -210,7 +210,7 @@ void DomStorageContext::NotifyItemSet(
     const DomStorageArea* area,
     const base::string16& key,
     const base::string16& new_value,
-    const NullableString16& old_value,
+    const base::NullableString16& old_value,
     const GURL& page_url) {
   FOR_EACH_OBSERVER(
       EventObserver, event_observers_,

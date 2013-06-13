@@ -32,15 +32,15 @@ WebDropData::FileInfo::FileInfo(const base::string16& path,
 
 WebDropData::WebDropData(const WebDragData& drag_data)
     : referrer_policy(WebKit::WebReferrerPolicyDefault),
-      text(NullableString16(true)),
-      html(NullableString16(true)) {
+      text(base::NullableString16(true)),
+      html(base::NullableString16(true)) {
   const WebVector<WebDragData::Item>& item_list = drag_data.items();
   for (size_t i = 0; i < item_list.size(); ++i) {
     const WebDragData::Item& item = item_list[i];
     switch (item.storageType) {
       case WebDragData::Item::StorageTypeString: {
         if (EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeText)) {
-          text = NullableString16(item.stringData, false);
+          text = base::NullableString16(item.stringData, false);
           break;
         }
         if (EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeURIList)) {
@@ -53,7 +53,7 @@ WebDropData::WebDropData(const WebDragData& drag_data)
           break;
         }
         if (EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeHTML)) {
-          html = NullableString16(item.stringData, false);
+          html = base::NullableString16(item.stringData, false);
           html_base_url = item.baseURL;
           break;
         }
@@ -76,8 +76,8 @@ WebDropData::WebDropData(const WebDragData& drag_data)
 
 WebDropData::WebDropData()
     : referrer_policy(WebKit::WebReferrerPolicyDefault),
-      text(NullableString16(true)),
-      html(NullableString16(true)) {
+      text(base::NullableString16(true)),
+      html(base::NullableString16(true)) {
 }
 
 WebDropData::~WebDropData() {

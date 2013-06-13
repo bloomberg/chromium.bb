@@ -261,7 +261,7 @@ int GetModifierFlags() {
 
   // Get plain text.
   if ([types containsObject:NSStringPboardType]) {
-    data->text = NullableString16(
+    data->text = base::NullableString16(
         base::SysNSStringToUTF16([pboard stringForType:NSStringPboardType]),
         false);
   }
@@ -269,13 +269,13 @@ int GetModifierFlags() {
   // Get HTML. If there's no HTML, try RTF.
   if ([types containsObject:NSHTMLPboardType]) {
     NSString* html = [pboard stringForType:NSHTMLPboardType];
-    data->html = NullableString16(base::SysNSStringToUTF16(html), false);
+    data->html = base::NullableString16(base::SysNSStringToUTF16(html), false);
   } else if ([types containsObject:ui::kChromeDragImageHTMLPboardType]) {
     NSString* html = [pboard stringForType:ui::kChromeDragImageHTMLPboardType];
-    data->html = NullableString16(base::SysNSStringToUTF16(html), false);
+    data->html = base::NullableString16(base::SysNSStringToUTF16(html), false);
   } else if ([types containsObject:NSRTFPboardType]) {
     NSString* html = [pboard htmlFromRtf];
-    data->html = NullableString16(base::SysNSStringToUTF16(html), false);
+    data->html = base::NullableString16(base::SysNSStringToUTF16(html), false);
   }
 
   // Get files.

@@ -71,11 +71,11 @@ class SessionStorageDatabaseTest : public testing::Test {
   const base::string16 kKey1;
   const base::string16 kKey2;
   const base::string16 kKey3;
-  const NullableString16 kValue1;
-  const NullableString16 kValue2;
-  const NullableString16 kValue3;
-  const NullableString16 kValue4;
-  const NullableString16 kValueNull;
+  const base::NullableString16 kValue1;
+  const base::NullableString16 kValue2;
+  const base::NullableString16 kValue3;
+  const base::NullableString16 kValue4;
+  const base::NullableString16 kValueNull;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStorageDatabaseTest);
 };
@@ -89,11 +89,11 @@ SessionStorageDatabaseTest::SessionStorageDatabaseTest()
       kKey1(ASCIIToUTF16("key1")),
       kKey2(ASCIIToUTF16("key2")),
       kKey3(ASCIIToUTF16("key3")),
-      kValue1(NullableString16(ASCIIToUTF16("value1"), false)),
-      kValue2(NullableString16(ASCIIToUTF16("value2"), false)),
-      kValue3(NullableString16(ASCIIToUTF16("value3"), false)),
-      kValue4(NullableString16(ASCIIToUTF16("value4"), false)),
-      kValueNull(NullableString16(true)) { }
+      kValue1(base::NullableString16(ASCIIToUTF16("value1"), false)),
+      kValue2(base::NullableString16(ASCIIToUTF16("value2"), false)),
+      kValue3(base::NullableString16(ASCIIToUTF16("value3"), false)),
+      kValue4(base::NullableString16(ASCIIToUTF16("value4"), false)),
+      kValueNull(base::NullableString16(true)) { }
 
 SessionStorageDatabaseTest::~SessionStorageDatabaseTest() { }
 
@@ -330,8 +330,8 @@ void SessionStorageDatabaseTest::CompareValuesMaps(
   for (ValuesMap::const_iterator it = map1.begin(); it != map1.end(); ++it) {
     base::string16 key = it->first;
     ASSERT_TRUE(map2.find(key) != map2.end());
-    NullableString16 val1 = it->second;
-    NullableString16 val2 = map2.find(key)->second;
+    base::NullableString16 val1 = it->second;
+    base::NullableString16 val2 = map2.find(key)->second;
     EXPECT_EQ(val2.is_null(), val1.is_null());
     EXPECT_EQ(val2.string(), val1.string());
   }
@@ -700,7 +700,7 @@ TEST_F(SessionStorageDatabaseTest, WriteRawBytes) {
   ValuesMap changes;
   base::string16 string_with_raw_data;
   string_with_raw_data.assign(reinterpret_cast<char16*>(raw_data), 5);
-  changes[kKey1] = NullableString16(string_with_raw_data, false);
+  changes[kKey1] = base::NullableString16(string_with_raw_data, false);
   EXPECT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, changes));
   CheckDatabaseConsistency();
   ValuesMap values;

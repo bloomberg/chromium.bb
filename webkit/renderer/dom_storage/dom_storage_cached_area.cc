@@ -27,13 +27,13 @@ unsigned DomStorageCachedArea::GetLength(int connection_id) {
   return map_->Length();
 }
 
-NullableString16 DomStorageCachedArea::GetKey(
+base::NullableString16 DomStorageCachedArea::GetKey(
     int connection_id, unsigned index) {
   PrimeIfNeeded(connection_id);
   return map_->Key(index);
 }
 
-NullableString16 DomStorageCachedArea::GetItem(
+base::NullableString16 DomStorageCachedArea::GetItem(
     int connection_id, const base::string16& key) {
   PrimeIfNeeded(connection_id);
   return map_->GetItem(key);
@@ -48,7 +48,7 @@ bool DomStorageCachedArea::SetItem(
     return false;
 
   PrimeIfNeeded(connection_id);
-  NullableString16 unused;
+  base::NullableString16 unused;
   if (!map_->SetItem(key, value, &unused))
     return false;
 
@@ -90,7 +90,8 @@ void DomStorageCachedArea::Clear(int connection_id, const GURL& page_url) {
 }
 
 void DomStorageCachedArea::ApplyMutation(
-    const NullableString16& key, const NullableString16& new_value) {
+    const base::NullableString16& key,
+    const base::NullableString16& new_value) {
   if (!map_.get() || ignore_all_mutations_)
     return;
 
@@ -104,9 +105,9 @@ void DomStorageCachedArea::ApplyMutation(
     std::map<base::string16, int>::iterator iter =
         ignore_key_mutations_.begin();
     while (iter != ignore_key_mutations_.end()) {
-      NullableString16 value = old->GetItem(iter->first);
+      base::NullableString16 value = old->GetItem(iter->first);
       if (!value.is_null()) {
-        NullableString16 unused;
+        base::NullableString16 unused;
         map_->SetItem(iter->first, value.string(), &unused);
       }
       ++iter;
@@ -128,7 +129,7 @@ void DomStorageCachedArea::ApplyMutation(
   // It's a set item event.
   // We turn off quota checking here to accomodate the over budget
   // allowance that's provided in the browser process.
-  NullableString16 unused;
+  base::NullableString16 unused;
   map_->set_quota(kint32max);
   map_->SetItem(key.string(), new_value.string(), &unused);
   map_->set_quota(dom_storage::kPerAreaQuota);

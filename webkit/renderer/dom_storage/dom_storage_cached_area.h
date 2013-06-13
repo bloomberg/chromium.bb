@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/nullable_string16.h"
+#include "base/strings/nullable_string16.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/renderer/webkit_storage_renderer_export.h"
 
@@ -34,8 +34,8 @@ class WEBKIT_STORAGE_RENDERER_EXPORT DomStorageCachedArea :
   const GURL& origin() const { return origin_; }
 
   unsigned GetLength(int connection_id);
-  NullableString16 GetKey(int connection_id, unsigned index);
-  NullableString16 GetItem(int connection_id, const base::string16& key);
+  base::NullableString16 GetKey(int connection_id, unsigned index);
+  base::NullableString16 GetItem(int connection_id, const base::string16& key);
   bool SetItem(int connection_id,
                const base::string16& key,
                const base::string16& value,
@@ -44,8 +44,8 @@ class WEBKIT_STORAGE_RENDERER_EXPORT DomStorageCachedArea :
                   const GURL& page_url);
   void Clear(int connection_id, const GURL& page_url);
 
-  void ApplyMutation(const NullableString16& key,
-                     const NullableString16& new_value);
+  void ApplyMutation(const base::NullableString16& key,
+                     const base::NullableString16& new_value);
 
   size_t MemoryBytesUsedByCache() const;
 

@@ -78,7 +78,7 @@ void DomStorageDatabase::ReadAllValues(ValuesMap* result) {
     base::string16 key = statement.ColumnString16(0);
     base::string16 value;
     statement.ColumnBlobAsString16(1, &value);
-    (*result)[key] = NullableString16(value, false);
+    (*result)[key] = base::NullableString16(value, false);
   }
   known_to_be_empty_ = result->empty();
 }
@@ -109,7 +109,7 @@ bool DomStorageDatabase::CommitChanges(bool clear_all_first,
   for(; it != changes.end(); ++it) {
     sql::Statement statement;
     base::string16 key = it->first;
-    NullableString16 value = it->second;
+    base::NullableString16 value = it->second;
     if (value.is_null()) {
       statement.Assign(db_->GetCachedStatement(SQL_FROM_HERE,
          "DELETE FROM ItemTable WHERE key=?"));
@@ -289,7 +289,7 @@ bool DomStorageDatabase::UpgradeVersion1To2() {
   ValuesMap values;
   while (statement.Step()) {
     base::string16 key = statement.ColumnString16(0);
-    NullableString16 value(statement.ColumnString16(1), false);
+    base::NullableString16 value(statement.ColumnString16(1), false);
     values[key] = value;
   }
 

@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "base/nullable_string16.h"
+#include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
@@ -62,12 +62,12 @@ struct WEBKIT_COMMON_EXPORT WebDropData {
   base::string16 filesystem_id;
 
   // User is dragging plain text into the webview.
-  NullableString16 text;
+  base::NullableString16 text;
 
   // User is dragging text/html into the webview (e.g., out of Firefox).
   // |html_base_url| is the URL that the html fragment is taken from (used to
   // resolve relative links).  It's ok for |html_base_url| to be empty.
-  NullableString16 html;
+  base::NullableString16 html;
   GURL html_base_url;
 
   // User is dragging data from the webview (e.g., an image).

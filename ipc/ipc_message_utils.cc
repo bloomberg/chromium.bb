@@ -7,7 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/nullable_string16.h"
+#include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
@@ -525,24 +525,27 @@ void ParamTraits<ListValue>::Log(const param_type& p, std::string* l) {
   l->append(json);
 }
 
-void ParamTraits<NullableString16>::Write(Message* m, const param_type& p) {
+void ParamTraits<base::NullableString16>::Write(Message* m,
+                                                const param_type& p) {
   WriteParam(m, p.string());
   WriteParam(m, p.is_null());
 }
 
-bool ParamTraits<NullableString16>::Read(const Message* m, PickleIterator* iter,
-                                         param_type* r) {
+bool ParamTraits<base::NullableString16>::Read(const Message* m,
+                                               PickleIterator* iter,
+                                               param_type* r) {
   string16 string;
   if (!ReadParam(m, iter, &string))
     return false;
   bool is_null;
   if (!ReadParam(m, iter, &is_null))
     return false;
-  *r = NullableString16(string, is_null);
+  *r = base::NullableString16(string, is_null);
   return true;
 }
 
-void ParamTraits<NullableString16>::Log(const param_type& p, std::string* l) {
+void ParamTraits<base::NullableString16>::Log(const param_type& p,
+                                              std::string* l) {
   l->append("(");
   LogParam(p.string(), l);
   l->append(", ");

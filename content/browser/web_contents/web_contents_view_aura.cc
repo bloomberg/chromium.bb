@@ -262,7 +262,7 @@ void PrepareWebDropData(WebDropData* drop_data,
   string16 plain_text;
   data.GetString(&plain_text);
   if (!plain_text.empty())
-    drop_data->text = NullableString16(plain_text, false);
+    drop_data->text = base::NullableString16(plain_text, false);
 
   GURL url;
   string16 url_title;
@@ -276,7 +276,7 @@ void PrepareWebDropData(WebDropData* drop_data,
   GURL html_base_url;
   data.GetHtml(&html, &html_base_url);
   if (!html.empty())
-    drop_data->html = NullableString16(html, false);
+    drop_data->html = base::NullableString16(html, false);
   if (html_base_url.is_valid())
     drop_data->html_base_url = html_base_url;
 

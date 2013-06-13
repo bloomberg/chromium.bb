@@ -10,7 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/id_map.h"
-#include "base/nullable_string16.h"
+#include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/public/platform/WebIDBCallbacks.h"

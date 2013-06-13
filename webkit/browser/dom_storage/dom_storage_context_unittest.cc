@@ -99,7 +99,7 @@ TEST_F(DomStorageContextTest, UsageInfo) {
 
   // Put some data into local storage and shutdown the context
   // to ensure data is written to disk.
-  NullableString16 old_value;
+  base::NullableString16 old_value;
   EXPECT_TRUE(context_->GetStorageNamespace(kLocalStorageNamespaceId)->
       OpenStorageArea(kOrigin)->SetItem(kKey, kValue, &old_value));
   context_->Shutdown();
@@ -129,7 +129,7 @@ TEST_F(DomStorageContextTest, SessionOnly) {
   // Store data for a normal and a session-only origin and then
   // invoke Shutdown() which should delete data for session-only
   // origins.
-  NullableString16 old_value;
+  base::NullableString16 old_value;
   EXPECT_TRUE(context_->GetStorageNamespace(kLocalStorageNamespaceId)->
       OpenStorageArea(kOrigin)->SetItem(kKey, kValue, &old_value));
   EXPECT_TRUE(context_->GetStorageNamespace(kLocalStorageNamespaceId)->
@@ -148,7 +148,7 @@ TEST_F(DomStorageContextTest, SetForceKeepSessionState) {
 
   // Store data for a session-only origin, setup to save session data, then
   // shutdown.
-  NullableString16 old_value;
+  base::NullableString16 old_value;
   EXPECT_TRUE(context_->GetStorageNamespace(kLocalStorageNamespaceId)->
       OpenStorageArea(kSessionOnlyOrigin)->SetItem(kKey, kValue, &old_value));
   context_->SetForceKeepSessionState();  // Should override clear behavior.
@@ -207,7 +207,7 @@ TEST_F(DomStorageContextTest, DeleteSessionStorage) {
   DomStorageArea* area = dom_namespace->OpenStorageArea(kOrigin);
   const base::string16 kKey(ASCIIToUTF16("foo"));
   const base::string16 kValue(ASCIIToUTF16("bar"));
-  NullableString16 old_nullable_value;
+  base::NullableString16 old_nullable_value;
   area->SetItem(kKey, kValue, &old_nullable_value);
   dom_namespace->CloseStorageArea(area);
 
@@ -225,7 +225,7 @@ TEST_F(DomStorageContextTest, DeleteSessionStorage) {
                                    kPersistentId);
   dom_namespace = context_->GetStorageNamespace(kSessionStorageNamespaceId);
   area = dom_namespace->OpenStorageArea(kOrigin);
-  NullableString16 read_value;
+  base::NullableString16 read_value;
   read_value = area->GetItem(kKey);
   EXPECT_EQ(kValue, read_value.string());
   dom_namespace->CloseStorageArea(area);

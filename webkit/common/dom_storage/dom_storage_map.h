@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
-#include "base/nullable_string16.h"
+#include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
 #include "webkit/common/dom_storage/dom_storage_types.h"
 #include "webkit/common/webkit_storage_common_export.h"
@@ -24,10 +24,10 @@ class WEBKIT_STORAGE_COMMON_EXPORT DomStorageMap
   explicit DomStorageMap(size_t quota);
 
   unsigned Length() const;
-  NullableString16 Key(unsigned index);
-  NullableString16 GetItem(const base::string16& key) const;
+  base::NullableString16 Key(unsigned index);
+  base::NullableString16 GetItem(const base::string16& key) const;
   bool SetItem(const base::string16& key, const base::string16& value,
-               NullableString16* old_value);
+               base::NullableString16* old_value);
   bool RemoveItem(const base::string16& key, base::string16* old_value);
 
   // Swaps this instances values_ with |map|.
