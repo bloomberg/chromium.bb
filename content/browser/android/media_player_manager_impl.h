@@ -28,7 +28,7 @@ class WebContents;
 // them to corresponding MediaPlayerAndroid object. Callbacks from
 // MediaPlayerAndroid objects are converted to IPCs and then sent to the
 // render process.
-class MediaPlayerManagerImpl
+class CONTENT_EXPORT MediaPlayerManagerImpl
     : public RenderViewHostObserver,
       public media::MediaPlayerManager {
  public:

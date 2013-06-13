@@ -25,7 +25,7 @@ namespace media {
 static MediaPlayerManager::FactoryFunction g_factory_function = NULL;
 
 // static
-void MediaPlayerManager::RegisterFactoryFunction(
+CONTENT_EXPORT void MediaPlayerManager::RegisterFactoryFunction(
     FactoryFunction factory_function) {
   g_factory_function = factory_function;
 }
