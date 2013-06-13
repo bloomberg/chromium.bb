@@ -26,7 +26,7 @@
 
 @interface AvatarMenuBubbleController (Private)
 - (AvatarMenuModel*)model;
-- (NSTextView*)configureManagedUserInformation:(CGFloat)yOffset;
+- (NSView*)configureManagedUserInformation:(CGFloat)width;
 - (NSButton*)configureNewUserButton:(CGFloat)yOffset
                   updateWidthAdjust:(CGFloat*)widthAdjust;
 - (NSButton*)configureSwitchUserButton:(CGFloat)yOffset
@@ -56,6 +56,9 @@ const CGFloat kBubbleMaxWidth = 800;
 const CGFloat kVerticalSpacing = 10.0;
 const CGFloat kLinkSpacing = 15.0;
 const CGFloat kLabelInset = 49.0;
+
+// The offset of the managed user information label and the "switch user" link.
+const CGFloat kManagedUserSpacing = 26.0;
 
 }  // namespace
 
@@ -263,8 +266,8 @@ const CGFloat kLabelInset = 49.0;
   CGFloat newWidth = kBubbleMinWidth + widthAdjust;
 
   // Add general information about managed users.
-  NSTextView* info = [self configureManagedUserInformation:yOffset
-                                                  setWidth:newWidth];
+  NSView* info = [self configureManagedUserInformation:newWidth];
+  [info setFrameOrigin:NSMakePoint(0, yOffset)];
   [contentView addSubview:info];
   yOffset += NSHeight([info frame]) + kVerticalSpacing;
 
@@ -298,21 +301,34 @@ const CGFloat kLabelInset = 49.0;
     [self initManagedUserContents];
 }
 
-- (NSTextView*)configureManagedUserInformation:(CGFloat)yOffset
-                                      setWidth:(CGFloat)width {
+- (NSView*)configureManagedUserInformation:(CGFloat)width {
+  scoped_nsobject<NSView> container([[NSView alloc] initWithFrame:NSZeroRect]);
+
+  // Add the limited user icon on the left side of the information TextView.
+  scoped_nsobject<NSImageView> iconView(
+      [[NSImageView alloc] initWithFrame:NSMakeRect(5, 0, 16, 16)]);
+  [iconView setImage:model_->GetManagedUserIcon().ToNSImage()];
+  [container addSubview:iconView];
+
   NSString* info =
       base::SysUTF16ToNSString(model_->GetManagedUserInformation());
+  NSDictionary* attributes =
+      @{ NSFontAttributeName : [NSFont labelFontOfSize:12] };
   scoped_nsobject<NSAttributedString> attrString(
-      [[NSAttributedString alloc] initWithString:info attributes:nil]);
-  NSTextView* label =
-      [[[NSTextView alloc] initWithFrame:
-          NSMakeRect(5, yOffset, width - 10, 0)] autorelease];
-  [label setFont:[NSFont labelFontOfSize:12.0]];
+      [[NSAttributedString alloc] initWithString:info attributes:attributes]);
+  scoped_nsobject<NSTextView> label(
+      [[NSTextView alloc] initWithFrame:NSMakeRect(
+          kManagedUserSpacing, 0, width - kManagedUserSpacing - 5, 0)]);
   [[label textStorage] setAttributedString:attrString];
   [label setHorizontallyResizable:NO];
   [label setEditable:NO];
   [label sizeToFit];
-  return label;
+  [container addSubview:label];
+  [container setFrameSize:NSMakeSize(width, NSHeight([label frame]))];
+
+  // Reposition the limited user icon so that it is on top.
+  [iconView setFrameOrigin:NSMakePoint(5, NSHeight([label frame]) - 16)];
+  return container.autorelease();
 }
 
 - (NSButton*)configureNewUserButton:(CGFloat)yOffset
@@ -338,7 +354,7 @@ const CGFloat kLabelInset = 49.0;
                      updateWidthAdjust:(CGFloat*)widthAdjust {
   scoped_nsobject<NSButton> newButton(
       [[NSButton alloc] initWithFrame:NSMakeRect(
-          kLabelInset, yOffset, kBubbleMinWidth - kLabelInset, 16)]);
+          kManagedUserSpacing, yOffset, kBubbleMinWidth - kLabelInset, 16)]);
   scoped_nsobject<HyperlinkButtonCell> buttonCell(
       [[HyperlinkButtonCell alloc] initTextCell:
           l10n_util::GetNSString(IDS_PROFILES_SWITCH_PROFILE_LINK)]);
