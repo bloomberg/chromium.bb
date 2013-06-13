@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.content.browser.ContentViewCore;
@@ -80,7 +81,7 @@ class ValidationMessageBubble {
      * @param anchorHeight Anchor size in the CSS unit.
      */
     @CalledByNative
-    private void moveOnAnchor(ContentViewCore contentViewCore,
+    private void setPositionRelativeToAnchor(ContentViewCore contentViewCore,
             int anchorX, int anchorY, int anchorWidth, int anchorHeight) {
         RectF anchor = makePixRectInScreen(
                 contentViewCore, anchorX, anchorY, anchorWidth, anchorHeight);
@@ -91,10 +92,6 @@ class ValidationMessageBubble {
 
     private static RectF makePixRectInScreen(ContentViewCore contentViewCore,
             int anchorX, int anchorY, int anchorWidth, int anchorHeight) {
-        // The anchor geometry is in the content CSS coordinates on Android
-        // though it's in the screen coordinate on other platforms because
-        // - WebWidgetClient::windowRect on Android always returns (0,0) and
-        // - ChromeClient::rootViewToScreen on Android doesn't take care of page scaling.
         final RenderCoordinates coordinates = contentViewCore.getRenderCoordinates();
         final float yOffset = getWebViewOffsetYPixInScreen(contentViewCore);
         return new RectF(
@@ -138,8 +135,8 @@ class ValidationMessageBubble {
         final View root = mPopup.getContentView();
         final int width = root.getMeasuredWidth();
         final int arrowWidth = root.findViewById(R.id.arrow_image).getMeasuredWidth();
-        return root.getLayoutDirection() != View.LAYOUT_DIRECTION_RTL ?
-                (width / 4 + arrowWidth / 2) : (width * 3 / 4 - arrowWidth / 2);
+        return ApiCompatibilityUtils.isLayoutRtl(root) ?
+                (width * 3 / 4 - arrowWidth / 2) : (width / 4 + arrowWidth / 2);
     }
 
     /**

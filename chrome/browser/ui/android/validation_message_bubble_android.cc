@@ -50,7 +50,7 @@ ValidationMessageBubbleAndroid::~ValidationMessageBubbleAndroid() {
 
 void ValidationMessageBubbleAndroid::SetPositionRelativeToAnchor(
     RenderWidgetHost* widget_host, const gfx::Rect& anchor_in_root_view) {
-  Java_ValidationMessageBubble_moveOnAnchor(
+  Java_ValidationMessageBubble_setPositionRelativeToAnchor(
       base::android::AttachCurrentThread(),
       java_validation_message_bubble_.obj(),
       GetContentViewCoreFrom(widget_host)->GetJavaObject().obj(),
