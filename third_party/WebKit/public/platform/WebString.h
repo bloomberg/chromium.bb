@@ -37,9 +37,9 @@
 #if WEBKIT_IMPLEMENTATION
 #include <wtf/Forward.h>
 #else
-#include <base/nullable_string16.h>
-#include <base/string16.h>
 #include <base/strings/latin1_string_conversions.h>
+#include <base/strings/nullable_string16.h>
+#include <base/strings/string16.h>
 #endif
 
 namespace WTF {
@@ -114,23 +114,23 @@ public:
     operator WTF::AtomicString() const;
 #else
 
-    WebString(const string16& s)
+    WebString(const base::string16& s)
     {
         assign(s.data(), s.length());
     }
 
-    WebString& operator=(const string16& s)
+    WebString& operator=(const base::string16& s)
     {
         assign(s.data(), s.length());
         return *this;
     }
 
-    operator string16() const
+    operator base::string16() const
     {
         return base::Latin1OrUTF16ToUTF16(length(), data8(), data16());
     }
 
-    WebString(const NullableString16& s)
+    WebString(const base::NullableString16& s)
     {
         if (s.is_null())
             reset();
@@ -138,7 +138,7 @@ public:
             assign(s.string().data(), s.string().length());
     }
 
-    WebString& operator=(const NullableString16& s)
+    WebString& operator=(const base::NullableString16& s)
     {
         if (s.is_null())
             reset();
@@ -147,9 +147,9 @@ public:
         return *this;
     }
 
-    operator NullableString16() const
+    operator base::NullableString16() const
     {
-        return NullableString16(operator string16(), m_private.isNull());
+        return base::NullableString16(operator base::string16(), m_private.isNull());
     }
 
     template <class UTF8String>
