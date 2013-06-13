@@ -3,11 +3,15 @@
 // found in the LICENSE file.
 
 #include <errno.h>
-#include <math.h>
+#include <stdint.h>
+#include <stdio.h>
 
+#include <cmath>
 #include <limits>
 
+#include "base/format_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -136,6 +140,70 @@ TEST(StringNumberConversionsTest, StringToInt) {
   EXPECT_EQ(0, output);
 }
 
+TEST(StringNumberConversionsTest, StringToUint) {
+  static const struct {
+    std::string input;
+    unsigned output;
+    bool success;
+  } cases[] = {
+    {"0", 0, true},
+    {"42", 42, true},
+    {"42\x99", 42, false},
+    {"\x99" "42\x99", 0, false},
+    {"-2147483648", 0, false},
+    {"2147483647", INT_MAX, true},
+    {"", 0, false},
+    {" 42", 42, false},
+    {"42 ", 42, false},
+    {"\t\n\v\f\r 42", 42, false},
+    {"blah42", 0, false},
+    {"42blah", 42, false},
+    {"blah42blah", 0, false},
+    {"-273.15", 0, false},
+    {"+98.6", 98, false},
+    {"--123", 0, false},
+    {"++123", 0, false},
+    {"-+123", 0, false},
+    {"+-123", 0, false},
+    {"-", 0, false},
+    {"-2147483649", 0, false},
+    {"-99999999999", 0, false},
+    {"4294967295", UINT_MAX, true},
+    {"4294967296", UINT_MAX, false},
+    {"99999999999", UINT_MAX, false},
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    unsigned output = 0;
+    EXPECT_EQ(cases[i].success, StringToUint(cases[i].input, &output));
+    EXPECT_EQ(cases[i].output, output);
+
+    string16 utf16_input = UTF8ToUTF16(cases[i].input);
+    output = 0;
+    EXPECT_EQ(cases[i].success, StringToUint(utf16_input, &output));
+    EXPECT_EQ(cases[i].output, output);
+  }
+
+  // One additional test to verify that conversion of numbers in strings with
+  // embedded NUL characters.  The NUL and extra data after it should be
+  // interpreted as junk after the number.
+  const char input[] = "6\06";
+  std::string input_string(input, arraysize(input) - 1);
+  unsigned output;
+  EXPECT_FALSE(StringToUint(input_string, &output));
+  EXPECT_EQ(6U, output);
+
+  string16 utf16_input = UTF8ToUTF16(input_string);
+  output = 0;
+  EXPECT_FALSE(StringToUint(utf16_input, &output));
+  EXPECT_EQ(6U, output);
+
+  output = 0;
+  const char16 negative_wide_input[] = { 0xFF4D, '4', '2', 0};
+  EXPECT_FALSE(StringToUint(string16(negative_wide_input), &output));
+  EXPECT_EQ(0U, output);
+}
+
 TEST(StringNumberConversionsTest, StringToInt64) {
   static const struct {
     std::string input;
@@ -199,6 +267,143 @@ TEST(StringNumberConversionsTest, StringToInt64) {
   output = 0;
   EXPECT_FALSE(StringToInt64(utf16_input, &output));
   EXPECT_EQ(6, output);
+}
+
+TEST(StringNumberConversionsTest, StringToUint64) {
+  static const struct {
+    std::string input;
+    uint64 output;
+    bool success;
+  } cases[] = {
+    {"0", 0, true},
+    {"42", 42, true},
+    {"-2147483648", 0, false},
+    {"2147483647", INT_MAX, true},
+    {"-2147483649", 0, false},
+    {"-99999999999", 0, false},
+    {"2147483648", GG_UINT64_C(2147483648), true},
+    {"99999999999", GG_UINT64_C(99999999999), true},
+    {"9223372036854775807", kint64max, true},
+    {"-9223372036854775808", 0, false},
+    {"09", 9, true},
+    {"-09", 0, false},
+    {"", 0, false},
+    {" 42", 42, false},
+    {"42 ", 42, false},
+    {"0x42", 0, false},
+    {"\t\n\v\f\r 42", 42, false},
+    {"blah42", 0, false},
+    {"42blah", 42, false},
+    {"blah42blah", 0, false},
+    {"-273.15", 0, false},
+    {"+98.6", 98, false},
+    {"--123", 0, false},
+    {"++123", 0, false},
+    {"-+123", 0, false},
+    {"+-123", 0, false},
+    {"-", 0, false},
+    {"-9223372036854775809", 0, false},
+    {"-99999999999999999999", 0, false},
+    {"9223372036854775808", GG_UINT64_C(9223372036854775808), true},
+    {"99999999999999999999", kuint64max, false},
+    {"18446744073709551615", kuint64max, true},
+    {"18446744073709551616", kuint64max, false},
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    uint64 output = 0;
+    EXPECT_EQ(cases[i].success, StringToUint64(cases[i].input, &output));
+    EXPECT_EQ(cases[i].output, output);
+
+    string16 utf16_input = UTF8ToUTF16(cases[i].input);
+    output = 0;
+    EXPECT_EQ(cases[i].success, StringToUint64(utf16_input, &output));
+    EXPECT_EQ(cases[i].output, output);
+  }
+
+  // One additional test to verify that conversion of numbers in strings with
+  // embedded NUL characters.  The NUL and extra data after it should be
+  // interpreted as junk after the number.
+  const char input[] = "6\06";
+  std::string input_string(input, arraysize(input) - 1);
+  uint64 output;
+  EXPECT_FALSE(StringToUint64(input_string, &output));
+  EXPECT_EQ(6U, output);
+
+  string16 utf16_input = UTF8ToUTF16(input_string);
+  output = 0;
+  EXPECT_FALSE(StringToUint64(utf16_input, &output));
+  EXPECT_EQ(6U, output);
+}
+
+TEST(StringNumberConversionsTest, StringToSizeT) {
+
+  size_t size_t_max = std::numeric_limits<size_t>::max();
+  std::string size_t_max_string = StringPrintf("%" PRIuS, size_t_max);
+
+  static const struct {
+    std::string input;
+    size_t output;
+    bool success;
+  } cases[] = {
+    {"0", 0, true},
+    {"42", 42, true},
+    {"-2147483648", 0, false},
+    {"2147483647", INT_MAX, true},
+    {"-2147483649", 0, false},
+    {"-99999999999", 0, false},
+    {"2147483648", 2147483648U, true},
+#if SIZE_MAX > 4294967295U
+    {"99999999999", 99999999999U, true},
+#endif
+    {"-9223372036854775808", 0, false},
+    {"09", 9, true},
+    {"-09", 0, false},
+    {"", 0, false},
+    {" 42", 42, false},
+    {"42 ", 42, false},
+    {"0x42", 0, false},
+    {"\t\n\v\f\r 42", 42, false},
+    {"blah42", 0, false},
+    {"42blah", 42, false},
+    {"blah42blah", 0, false},
+    {"-273.15", 0, false},
+    {"+98.6", 98, false},
+    {"--123", 0, false},
+    {"++123", 0, false},
+    {"-+123", 0, false},
+    {"+-123", 0, false},
+    {"-", 0, false},
+    {"-9223372036854775809", 0, false},
+    {"-99999999999999999999", 0, false},
+    {"999999999999999999999999", size_t_max, false},
+    {size_t_max_string, size_t_max, true},
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    size_t output = 0;
+    EXPECT_EQ(cases[i].success, StringToSizeT(cases[i].input, &output));
+    EXPECT_EQ(cases[i].output, output);
+
+    string16 utf16_input = UTF8ToUTF16(cases[i].input);
+    output = 0;
+    EXPECT_EQ(cases[i].success, StringToSizeT(utf16_input, &output));
+    EXPECT_EQ(cases[i].output, output);
+  }
+
+  // One additional test to verify that conversion of numbers in strings with
+  // embedded NUL characters.  The NUL and extra data after it should be
+  // interpreted as junk after the number.
+  const char input[] = "6\06";
+  std::string input_string(input, arraysize(input) - 1);
+  size_t output;
+  EXPECT_FALSE(StringToSizeT(input_string, &output));
+  EXPECT_EQ(6U, output);
+
+  string16 utf16_input = UTF8ToUTF16(input_string);
+  output = 0;
+  EXPECT_FALSE(StringToSizeT(utf16_input, &output));
+  EXPECT_EQ(6U, output);
 }
 
 TEST(StringNumberConversionsTest, HexStringToInt) {
