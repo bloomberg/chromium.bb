@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/media_galleries_private/gallery_watch_state_tracker.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -262,7 +261,8 @@ MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
 }
 
 MediaGalleriesPreferences::~MediaGalleriesPreferences() {
-  StorageMonitor::GetInstance()->RemoveObserver(this);
+  if (StorageMonitor::GetInstance())
+    StorageMonitor::GetInstance()->RemoveObserver(this);
 }
 
 void MediaGalleriesPreferences::AddDefaultGalleriesIfFreshProfile() {
@@ -332,14 +332,17 @@ void MediaGalleriesPreferences::InitFromPrefs(bool notify_observers) {
     }
   }
   if (notify_observers)
-    NotifyChangeObservers(std::string());
+    NotifyChangeObservers(std::string(), kInvalidMediaGalleryPrefId, false);
 }
 
 void MediaGalleriesPreferences::NotifyChangeObservers(
-    const std::string& extension_id) {
+    const std::string& extension_id,
+    MediaGalleryPrefId pref_id,
+    bool has_permission) {
   FOR_EACH_OBSERVER(GalleryChangeObserver,
                     gallery_change_observers_,
-                    OnGalleryChanged(this, extension_id));
+                    OnGalleryChanged(this, extension_id, pref_id,
+                                     has_permission));
 }
 
 void MediaGalleriesPreferences::AddGalleryChangeObserver(
@@ -664,21 +667,11 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
   if (gallery_info == known_galleries_.end())
     return;
 
-#if defined(ENABLE_EXTENSIONS)
-  extensions::GalleryWatchStateTracker* state_tracker =
-      extensions::GalleryWatchStateTracker::GetForProfile(profile_);
-#endif
   bool all_permission = HasAutoDetectedGalleryPermission(extension);
   if (has_permission && all_permission) {
     if (gallery_info->second.type == MediaGalleryPrefInfo::kAutoDetected) {
       UnsetGalleryPermissionInPrefs(extension.id(), pref_id);
-      NotifyChangeObservers(extension.id());
-#if defined(ENABLE_EXTENSIONS)
-      if (state_tracker) {
-        state_tracker->OnGalleryPermissionChanged(extension.id(), pref_id,
-                                                  true, this);
-      }
-#endif
+      NotifyChangeObservers(extension.id(), pref_id, true);
       return;
     }
   }
@@ -688,13 +681,7 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
   } else {
     SetGalleryPermissionInPrefs(extension.id(), pref_id, has_permission);
   }
-  NotifyChangeObservers(extension.id());
-#if defined(ENABLE_EXTENSIONS)
-  if (state_tracker) {
-    state_tracker->OnGalleryPermissionChanged(extension.id(), pref_id,
-                                              has_permission, this);
-  }
-#endif
+  NotifyChangeObservers(extension.id(), pref_id, has_permission);
 }
 
 void MediaGalleriesPreferences::Shutdown() {

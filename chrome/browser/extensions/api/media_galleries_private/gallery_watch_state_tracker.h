@@ -31,7 +31,8 @@ namespace extensions {
 // along with the MediaGalleriesPrivateEventRouter.
 class GalleryWatchStateTracker
     : public content::NotificationObserver,
-      public base::SupportsWeakPtr<GalleryWatchStateTracker> {
+      public base::SupportsWeakPtr<GalleryWatchStateTracker>,
+      public chrome::MediaGalleriesPreferences::GalleryChangeObserver {
  public:
   explicit GalleryWatchStateTracker(Profile* profile);
   virtual ~GalleryWatchStateTracker();
@@ -52,14 +53,16 @@ class GalleryWatchStateTracker
 
   // Updates the state of the gallery watchers on the receipt of access
   // permission changed event for the extension specified by the |extension_id|.
+  // If |extension_id| is empty, the callback is a global event
+  // which this class is not interested in.
   // |has_permission| is set to true if the user granted permission to
   // access the gallery associated with the |gallery_id| and is set to false
   // if the user revoked the gallery permission.
-  void OnGalleryPermissionChanged(
+  virtual void OnGalleryChanged(
+      chrome::MediaGalleriesPreferences* pref,
       const std::string& extension_id,
       chrome::MediaGalleryPrefId gallery_id,
-      bool has_permission,
-      chrome::MediaGalleriesPreferences* preferences);
+      bool has_permission) OVERRIDE;
 
   // Returns a set of watched gallery identifiers for the extension specified
   // by the |extension_id|.

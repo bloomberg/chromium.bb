@@ -392,7 +392,8 @@ void MediaGalleriesDialogController::OnRemovableStorageDetached(
 }
 
 void MediaGalleriesDialogController::OnGalleryChanged(
-    MediaGalleriesPreferences* pref, const std::string& extension_id) {
+    MediaGalleriesPreferences* pref, const std::string& extension_id,
+    MediaGalleryPrefId /* pref_id */, bool /* has_permission */) {
   DCHECK_EQ(preferences_, pref);
   if (extension_id.empty() || extension_id == extension_->id())
     UpdateGalleriesOnPreferencesEvent();

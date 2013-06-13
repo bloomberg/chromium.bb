@@ -82,10 +82,18 @@ GalleryWatchStateTracker::GalleryWatchStateTracker(Profile* profile)
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));
+  chrome::MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(
+          profile);
+  preferences->AddGalleryChangeObserver(this);
 }
 
 GalleryWatchStateTracker::~GalleryWatchStateTracker() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  chrome::MediaGalleriesPreferences* preferences =
+      g_browser_process->media_file_system_registry()->GetPreferences(
+          profile_);
+  preferences->RemoveGalleryChangeObserver(this);
 }
 
 // static
@@ -105,11 +113,13 @@ GalleryWatchStateTracker* GalleryWatchStateTracker::GetForProfile(
   return NULL;
 }
 
-void GalleryWatchStateTracker::OnGalleryPermissionChanged(
+void GalleryWatchStateTracker::OnGalleryChanged(
+    chrome::MediaGalleriesPreferences* preferences,
     const std::string& extension_id,
     chrome::MediaGalleryPrefId gallery_id,
-    bool has_permission,
-    chrome::MediaGalleriesPreferences* preferences) {
+    bool has_permission) {
+  if (extension_id.empty())
+    return;
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // Granted gallery permission.
   if (has_permission && HasGalleryWatchInfo(extension_id, gallery_id, false)) {

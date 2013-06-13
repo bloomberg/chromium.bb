@@ -115,14 +115,18 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
                                   public RemovableStorageObserver {
  public:
   class GalleryChangeObserver {
-   public:
-    // |extension_id| specifies the extension affected by this change.
-    // It is empty if the gallery change affects all extensions.
-    virtual void OnGalleryChanged(MediaGalleriesPreferences* pref,
-                                  const std::string& extension_id) {}
+    public:
+     // |extension_id| specifies the extension affected by this change.
+     // It is empty if the gallery change affects all extensions.
+     // If not empty, |pref_id| and |has_permission| are relevant
+     // and refer to a specific relationship.
+     virtual void OnGalleryChanged(MediaGalleriesPreferences* pref,
+                                   const std::string& extension_id,
+                                   MediaGalleryPrefId pref_id,
+                                   bool has_permission) = 0;
 
-   protected:
-    virtual ~GalleryChangeObserver();
+    protected:
+     virtual ~GalleryChangeObserver();
   };
 
   explicit MediaGalleriesPreferences(Profile* profile);
@@ -221,7 +225,9 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
   void InitFromPrefs(bool notify_observers);
 
   // Notifies |gallery_change_observers_| about changes in |known_galleries_|.
-  void NotifyChangeObservers(const std::string& extension_id);
+  void NotifyChangeObservers(const std::string& extension_id,
+                             MediaGalleryPrefId pref_id,
+                             bool has_permission);
 
   MediaGalleryPrefId AddGalleryInternal(const std::string& device_id,
                                         const string16& display_name,
