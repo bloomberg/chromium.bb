@@ -36,8 +36,6 @@ class CC_EXPORT ResourcePool {
 
   virtual ~ResourcePool();
 
-  ResourceProvider* resource_provider() { return resource_provider_; }
-
   scoped_ptr<ResourcePool::Resource> AcquireResource(gfx::Size size,
                                                      GLenum format);
   void ReleaseResource(scoped_ptr<ResourcePool::Resource>);
