@@ -360,6 +360,8 @@ class ReflectorImpl : public ImageTransportFactoryObserver,
   // Called when the output surface's size has changed.
   // This must be called on ImplThread.
   void OnReshape(gfx::Size size) {
+    if (texture_size_ == size)
+      return;
     texture_size_ = size;
     DCHECK(texture_id_);
     gl_helper_->ResizeTexture(texture_id_, size);
