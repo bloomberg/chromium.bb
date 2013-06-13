@@ -56,10 +56,10 @@ bool Encryptor::Init(SymmetricKey* key,
                      Mode mode,
                      const base::StringPiece& iv) {
   DCHECK(key);
-  DCHECK_EQ(CBC, mode);
+  DCHECK(mode == CBC || mode == CTR);
 
   EnsureOpenSSLInit();
-  if (iv.size() != AES_BLOCK_SIZE)
+  if (mode == CBC && iv.size() != AES_BLOCK_SIZE)
     return false;
 
   if (GetCipherForKey(key) == NULL)
@@ -74,13 +74,17 @@ bool Encryptor::Init(SymmetricKey* key,
 bool Encryptor::Encrypt(const base::StringPiece& plaintext,
                         std::string* ciphertext) {
   CHECK(!plaintext.empty() || (mode_ == CBC));
-  return Crypt(true, plaintext, ciphertext);
+  return (mode_ == CTR) ?
+      CryptCTR(true, plaintext, ciphertext) :
+      Crypt(true, plaintext, ciphertext);
 }
 
 bool Encryptor::Decrypt(const base::StringPiece& ciphertext,
                         std::string* plaintext) {
   CHECK(!ciphertext.empty());
-  return Crypt(false, ciphertext, plaintext);
+  return (mode_ == CTR) ?
+      CryptCTR(false, ciphertext, plaintext) :
+      Crypt(false, ciphertext, plaintext);
 }
 
 bool Encryptor::Crypt(bool do_encrypt,
@@ -127,6 +131,44 @@ bool Encryptor::Crypt(bool do_encrypt,
   out_len += tail_len;
   DCHECK_LE(out_len, static_cast<int>(output_size));
   result.resize(out_len);
+
+  output->swap(result);
+  return true;
+}
+
+bool Encryptor::CryptCTR(bool do_encrypt,
+                         const base::StringPiece& input,
+                         std::string* output) {
+  if (!counter_.get()) {
+    LOG(ERROR) << "Counter value not set in CTR mode.";
+    return false;
+  }
+
+  AES_KEY aes_key;
+  if (AES_set_encrypt_key(reinterpret_cast<const uint8*>(key_->key().data()),
+                          key_->key().size() * 8, &aes_key) != 0) {
+    return false;
+  }
+
+  const size_t out_size = input.size();
+  CHECK_GT(out_size, 0u);
+  CHECK_GT(out_size + 1, input.size());
+
+  std::string result;
+  uint8* out_ptr = reinterpret_cast<uint8*>(WriteInto(&result, out_size + 1));
+
+  uint8_t ivec[AES_BLOCK_SIZE] = { 0 };
+  uint8_t ecount_buf[AES_BLOCK_SIZE] = { 0 };
+  unsigned int block_offset = 0;
+
+  counter_->Write(ivec);
+
+  AES_ctr128_encrypt(reinterpret_cast<const uint8*>(input.data()), out_ptr,
+                     input.size(), &aes_key, ivec, ecount_buf, &block_offset);
+
+  // AES_ctr128_encrypt() updates |ivec|. Update the |counter_| here.
+  SetCounter(base::StringPiece(reinterpret_cast<const char*>(ivec),
+                               AES_BLOCK_SIZE));
 
   output->swap(result);
   return true;
