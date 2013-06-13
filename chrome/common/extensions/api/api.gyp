@@ -77,6 +77,7 @@
           'page_capture.json',
           'page_launcher.idl',
           'permissions.json',
+          'preferences_private.json',
           'power.idl',
           'push_messaging.idl',
           'rtc_private.idl',

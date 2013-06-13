@@ -1,0 +1,17 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+  {
+    "namespace": "preferencesPrivate",
+    "nodoc": true,
+    "properties": {
+      "googleGeolocationAccessEnabled": {
+        "$ref": "types.ChromeSetting",
+        "value": ["googlegeolocationaccessEnabled", {"type":"boolean"}],
+        "description": "If enabled, Google services can access the user's location. This preference's value is a boolean, defaulting to <code>false</code>."
+      }
+    }
+  }
+]

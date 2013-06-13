@@ -110,7 +110,13 @@ PrefMappingEntry kPrefMapping[] = {
   { "translationServiceEnabled",
     prefs::kEnableTranslate,
     APIPermission::kPrivacy
-  }
+  },
+#if defined(ENABLE_GOOGLE_NOW)
+  { "googlegeolocationaccessEnabled",
+    prefs::kGoogleGeolocationAccessEnabled,
+    APIPermission::kPreferencesPrivate
+  },
+#endif
 };
 
 class IdentityPrefTransformer : public PrefTransformerInterface {

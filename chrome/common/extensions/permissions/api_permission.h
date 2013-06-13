@@ -101,6 +101,7 @@ class APIPermission {
     kPointerLock,
     kPlugin,
     kPower,
+    kPreferencesPrivate,
     kPrivacy,
     kProxy,
     kPushMessaging,

@@ -433,6 +433,13 @@
       "extension", "hosted_app", "packaged_app", "platform_app"
     ]
   },
+  "preferencesPrivate":  {
+    "channel": "dev",
+    "extension_types": [
+      "extension"
+    ],
+    "location": "component"
+  },
   "privacy": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
