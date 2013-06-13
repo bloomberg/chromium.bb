@@ -26,15 +26,60 @@
 
 #include "core/platform/graphics/filters/FEOffset.h"
 
+#include "SkFlattenableBuffers.h"
+#include "SkImageFilter.h"
+
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/filters/Filter.h"
+#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "core/platform/text/TextStream.h"
 #include "core/rendering/RenderTreeAsText.h"
 
-#include "SkOffsetImageFilter.h"
-#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
-
 namespace WebCore {
+
+class OffsetImageFilter : public SkImageFilter {
+public:
+    OffsetImageFilter(SkScalar dx, SkScalar dy, SkImageFilter* input) : SkImageFilter(input), m_dx(dx), m_dy(dy)
+    {
+    }
+
+    virtual bool onFilterImage(Proxy* proxy, const SkBitmap& src, const SkMatrix& ctm, SkBitmap* dst, SkIPoint* offset)
+    {
+        SkBitmap source = src;
+        SkImageFilter* input = getInput(0);
+        SkIPoint srcOffset = SkIPoint::Make(0, 0);
+        if (input && !input->filterImage(proxy, src, ctm, &source, &srcOffset))
+            return false;
+
+        SkAutoTUnref<SkDevice> device(proxy->createDevice(source.width(), source.height()));
+        SkCanvas canvas(device);
+        SkPaint paint;
+        paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+        canvas.drawBitmap(source, m_dx, m_dy, &paint);
+        *dst = device->accessBitmap(false);
+        return true;
+    }
+
+    SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(OffsetImageFilter)
+
+protected:
+    explicit OffsetImageFilter(SkFlattenableReadBuffer& buffer)
+        : SkImageFilter(buffer)
+    {
+        m_dx = buffer.readScalar();
+        m_dy = buffer.readScalar();
+    }
+
+    virtual void flatten(SkFlattenableWriteBuffer& buffer) const
+    {
+        this->SkImageFilter::flatten(buffer);
+        buffer.writeScalar(m_dx);
+        buffer.writeScalar(m_dy);
+    }
+
+private:
+    SkScalar m_dx, m_dy;
+};
 
 FEOffset::FEOffset(Filter* filter, float dx, float dy)
     : FilterEffect(filter)
@@ -109,7 +154,7 @@ void FEOffset::applySoftware()
 SkImageFilter* FEOffset::createImageFilter(SkiaImageFilterBuilder* builder)
 {
     SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
-    return new SkOffsetImageFilter(SkFloatToScalar(m_dx), SkFloatToScalar(m_dy), input);
+    return new OffsetImageFilter(SkFloatToScalar(m_dx), SkFloatToScalar(m_dy), input);
 }
 
 TextStream& FEOffset::externalRepresentation(TextStream& ts, int indent) const

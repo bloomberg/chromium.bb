@@ -26,6 +26,10 @@
 
 #include "core/platform/graphics/filters/FEComposite.h"
 
+#include "SkArithmeticMode.h"
+#include "SkFlattenableBuffers.h"
+#include "SkXfermodeImageFilter.h"
+
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/cpu/arm/filters/FECompositeArithmeticNEON.h"
 #include "core/platform/graphics/filters/Filter.h"
@@ -34,8 +38,6 @@
 
 #include <wtf/Uint8ClampedArray.h>
 
-#include "SkFlattenableBuffers.h"
-#include "SkMorphologyImageFilter.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 
 namespace WebCore {
@@ -393,8 +395,10 @@ SkImageFilter* FEComposite::createImageFilter(SkiaImageFilterBuilder* builder)
 {
     SkAutoTUnref<SkImageFilter> foreground(builder->build(inputEffect(0), operatingColorSpace()));
     SkAutoTUnref<SkImageFilter> background(builder->build(inputEffect(1), operatingColorSpace()));
-    if (m_type == FECOMPOSITE_OPERATOR_ARITHMETIC)
-        return 0; // FIXME: Implement arithmetic op
+    if (m_type == FECOMPOSITE_OPERATOR_ARITHMETIC) {
+        SkAutoTUnref<SkXfermode> mode(SkArithmeticMode::Create(SkFloatToScalar(m_k1), SkFloatToScalar(m_k2), SkFloatToScalar(m_k3), SkFloatToScalar(m_k4)));
+        return new SkXfermodeImageFilter(mode, background, foreground);
+    }
     return new CompositeImageFilter(toXfermode(m_type), background, foreground);
 }
 

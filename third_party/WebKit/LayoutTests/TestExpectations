@@ -1595,6 +1595,10 @@ crbug.com/245566 [ Linux Win Debug ] editing/execCommand/delete-no-scroll.html [
 crbug.com/245567 http/tests/xmlhttprequest/send-undefined-and-null.html [ Failure Pass ]
 crbug.com/247575 fast/text/international/hindi-spacing.html [ ImageOnlyFailure Pass ]
 
+# Need to be rebaselined due to test change
+Bug(senorblanco) css3/filters/effect-reference-composite.html [ ImageOnlyFailure Failure ]
+Bug(senorblanco) css3/filters/effect-reference-composite-hw.html [ ImageOnlyFailure Failure ]
+
 # This test seems to intermittently crash.
 crbug.com/245294 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ Crash Pass ]
 

@@ -25,6 +25,11 @@
       <feOffset dx="10" dy="10"/>
       <feComposite in2="transp" operator="xor"/>
     </filter>
+    <filter id="arithmetic" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.5 0" result="transp"/>
+      <feOffset dx="10" dy="10"/>
+      <feComposite in2="transp" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
+    </filter>
   </defs>
 </svg>
 <style>
@@ -37,3 +42,4 @@ img {
 <img style="-webkit-filter: url(#out);  filter: url(#out);  -webkit-transform: translateZ(0);"  src="resources/reference.png">
 <img style="-webkit-filter: url(#atop); filter: url(#atop); -webkit-transform: translateZ(0);" src="resources/reference.png">
 <img style="-webkit-filter: url(#xor);  filter: url(#xor);  -webkit-transform: translateZ(0);"  src="resources/reference.png">
+<img style="-webkit-filter: url(#arithmetic);  filter: url(#arithmetic);  -webkit-transform: translateZ(0);"  src="resources/reference.png">
