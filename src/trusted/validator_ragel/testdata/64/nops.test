@@ -10,28 +10,6 @@
   0F 1F 44 00 00
   66 0F 1F 44 00 00
   0F 1F 80 00 00 00 00
-  90 90 90 90
-  0F 1F 84 00 00 00 00 00
-  66 0F 1F 84 00 00 00 00 00
-  # Large nops
-  66 2E 0F 1F 84 00 00 00 00 00
-  90 90 90 90 90
-  66 66 2E 0F 1F 84 00 00 00 00 00
-  66 66 66 2E 0F 1F 84 00 00 00 00 00
-  90 90 90 90 90 90 90 90 90
-  66 66 66 66 2E 0F 1F 84 00 00 00 00 00
-  66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00
-  90 90 90 90 90
-  66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00
-  
-  # Illegal nops
-  66 66 90
-  66 66 66 90
-  3E 0F 1F 84 00 00 00 00 00
-  90 90 90 90 90 90
-  66 3E 0F 1F 84 00 00 00 00 00
-  66 66 0F 1F 84 00 00 00 00 00
-  
 @dis:
      0:	90                   	nop
      1:	66 90                	xchg   %ax,%ax
@@ -40,64 +18,95 @@
      a:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
      f:	66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
     15:	0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
-    1c:	90                   	nop
-    1d:	90                   	nop
-    1e:	90                   	nop
-    1f:	90                   	nop
-    20:	0f 1f 84 00 00 00 00 	nopl   0x0(%rax,%rax,1)
-    27:	00 
-    28:	66 0f 1f 84 00 00 00 	nopw   0x0(%rax,%rax,1)
-    2f:	00 00 
-    31:	66 2e 0f 1f 84 00 00 	nopw   %cs:0x0(%rax,%rax,1)
-    38:	00 00 00 
-    3b:	90                   	nop
-    3c:	90                   	nop
-    3d:	90                   	nop
-    3e:	90                   	nop
-    3f:	90                   	nop
-    40:	66 66 2e 0f 1f 84 00 	nopw   %cs:0x0(%rax,%rax,1)
-    47:	00 00 00 00 
-    4b:	66 66 66 2e 0f 1f 84 	nopw   %cs:0x0(%rax,%rax,1)
-    52:	00 00 00 00 00 
-    57:	90                   	nop
-    58:	90                   	nop
-    59:	90                   	nop
-    5a:	90                   	nop
-    5b:	90                   	nop
-    5c:	90                   	nop
-    5d:	90                   	nop
-    5e:	90                   	nop
-    5f:	90                   	nop
-    60:	66 66 66 66 2e 0f 1f 	nopw   %cs:0x0(%rax,%rax,1)
-    67:	84 00 00 00 00 00 
-    6d:	66 66 66 66 66 2e 0f 	nopw   %cs:0x0(%rax,%rax,1)
-    74:	1f 84 00 00 00 00 00 
-    7b:	90                   	nop
-    7c:	90                   	nop
-    7d:	90                   	nop
-    7e:	90                   	nop
-    7f:	90                   	nop
-    80:	66 66 66 66 66 66 2e 	nopw   %cs:0x0(%rax,%rax,1)
-    87:	0f 1f 84 00 00 00 00 
-    8e:	00 
-    8f:	66 66 90             	xchg   %ax,%ax
-    92:	66 66 66 90          	xchg   %ax,%ax
-    96:	3e 0f 1f 84 00 00 00 	nopl   %ds:0x0(%rax,%rax,1)
-    9d:	00 00 
-    9f:	90                   	nop
-    a0:	90                   	nop
-    a1:	90                   	nop
-    a2:	90                   	nop
-    a3:	90                   	nop
-    a4:	90                   	nop
-    a5:	66 3e 0f 1f 84 00 00 	nopw   %ds:0x0(%rax,%rax,1)
-    ac:	00 00 00 
-    af:	66 66 0f 1f 84 00 00 	nopw   0x0(%rax,%rax,1)
-    b6:	00 00 00 
 @rdfa_output:
-  8f: [0] unrecognized instruction
-  92: [1] unrecognized instruction
-  96: [2] unrecognized instruction
-  a5: [0] unrecognized instruction
-  af: [1] unrecognized instruction
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # Large nops
+  0F 1F 84 00 00 00 00 00
+  66 0F 1F 84 00 00 00 00 00
+  66 2E 0F 1F 84 00 00 00 00 00
+@dis:
+     0:	0f 1f 84 00 00 00 00 	nopl   0x0(%rax,%rax,1)
+     7:	00 
+     8:	66 0f 1f 84 00 00 00 	nopw   0x0(%rax,%rax,1)
+     f:	00 00 
+    11:	66 2e 0f 1f 84 00 00 	nopw   %cs:0x0(%rax,%rax,1)
+    18:	00 00 00 
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  66 66 2E 0F 1F 84 00 00 00 00 00
+  66 66 66 2E 0F 1F 84 00 00 00 00 00
+@dis:
+     0:	66 66 2e 0f 1f 84 00 	nopw   %cs:0x0(%rax,%rax,1)
+     7:	00 00 00 00 
+     b:	66 66 66 2e 0f 1f 84 	nopw   %cs:0x0(%rax,%rax,1)
+    12:	00 00 00 00 00 
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  66 66 66 66 2E 0F 1F 84 00 00 00 00 00
+  66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00
+@dis:
+     0:	66 66 66 66 2e 0f 1f 	nopw   %cs:0x0(%rax,%rax,1)
+     7:	84 00 00 00 00 00 
+     d:	66 66 66 66 66 2e 0f 	nopw   %cs:0x0(%rax,%rax,1)
+    14:	1f 84 00 00 00 00 00 
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00
+@dis:
+     0:	66 66 66 66 66 66 2e 	nopw   %cs:0x0(%rax,%rax,1)
+     7:	0f 1f 84 00 00 00 00 
+     e:	00 
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # Illegal nops
+  66 66 90
+@dis:
+     0:	66 66 90             	xchg   %ax,%ax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  66 66 66 90
+@dis:
+     0:	66 66 66 90          	xchg   %ax,%ax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  3E 0F 1F 84 00 00 00 00 00
+@dis:
+     0:	3e 0f 1f 84 00 00 00 	nopl   %ds:0x0(%rax,%rax,1)
+     7:	00 00 
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  66 3E 0F 1F 84 00 00 00 00 00
+@dis:
+     0:	66 3e 0f 1f 84 00 00 	nopw   %ds:0x0(%rax,%rax,1)
+     7:	00 00 00 
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  66 66 0F 1F 84 00 00 00 00 00
+@dis:
+     0:	66 66 0f 1f 84 00 00 	nopw   0x0(%rax,%rax,1)
+     7:	00 00 00 
+@rdfa_output:
+  0: [0] unrecognized instruction
   return code: 1
