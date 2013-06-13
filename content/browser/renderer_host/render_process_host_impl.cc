@@ -1690,11 +1690,11 @@ void RenderProcessHostImpl::EndFrameSubscription(int route_id) {
 }
 
 void RenderProcessHostImpl::OnShutdownRequest() {
-  // Don't shut down if there are more active RenderViews than the one asking
-  // to close, or if there are pending RenderViews being swapped back in.
+  // Don't shut down if there are active RenderViews, or if there are pending
+  // RenderViews being swapped back in.
   // In single process mode, we never shutdown the renderer.
   int num_active_views = GetActiveViewCount();
-  if (pending_views_ || num_active_views > 1 || run_renderer_in_process())
+  if (pending_views_ || num_active_views > 0 || run_renderer_in_process())
     return;
 
   // Notify any contents that might have swapped out renderers from this
