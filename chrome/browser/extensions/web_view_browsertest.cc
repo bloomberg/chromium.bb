@@ -942,8 +942,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIAllow_TestAllowAsync) {
 // guests.
 IN_PROC_BROWSER_TEST_F(WebViewTest, ScreenCoordinates) {
   ASSERT_TRUE(StartTestServer());  // For serving guest pages.
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/screen_coordinates"))
-      << message_;
+  ASSERT_TRUE(RunPlatformAppTestWithArg(
+      "platform_apps/web_view/common", "screen_coordinates"))
+          << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognition) {
@@ -1035,8 +1036,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPICancelGeolocation) {
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, ConsoleMessage) {
   ASSERT_TRUE(StartTestServer());  // For serving guest pages.
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/console_messages"))
-      << message_;
+  ASSERT_TRUE(RunPlatformAppTestWithArg(
+      "platform_apps/web_view/common", "console_messages"))
+          << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadPermission) {

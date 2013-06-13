@@ -1,6 +1,6 @@
 {
   "name": "Platform App Test: <webview> New Window",
-  "description": "Loads a guest which opens a new window",
+  "description": "Loads a an to run WebViewTest and WebViewInteractive tests.",
   "version": "1",
   "permissions": [
     "webview"

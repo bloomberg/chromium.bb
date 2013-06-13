@@ -19,6 +19,11 @@
                 "type": "object",
                 "name": "testConfig",
                 "properties": {
+                  "customArg": {
+                    "type": "string",
+                    "optional": true,
+                    "description": "Additional string argument to pass to test."
+                  },
                   "testServer": {
                     "type": "object",
                     "optional": true,

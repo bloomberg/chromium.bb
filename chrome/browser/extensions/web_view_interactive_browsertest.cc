@@ -436,8 +436,8 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, NewWindow_WebRequest) {
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, ExecuteCode) {
   ASSERT_TRUE(StartTestServer());  // For serving guest pages.
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/execute_code"))
-      << message_;
+  ASSERT_TRUE(RunPlatformAppTestWithArg(
+      "platform_apps/web_view/common", "execute_code")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PopupPositioning) {

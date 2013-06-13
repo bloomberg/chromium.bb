@@ -151,6 +151,10 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // Similar to RunExtensionTest, except used for running tests in platform app
   // shell windows.
   bool RunPlatformAppTest(const char* extension_name);
+  // Similar to RunPlatformAppTest, except sets an additional string argument
+  // |customArg| to the test config object.
+  bool RunPlatformAppTestWithArg(
+      const char* extension_name, const char* custom_arg);
 
   // Start the test server, and store details of its state.  Those details
   // will be available to javascript tests using chrome.test.getConfig().
@@ -174,6 +178,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
  private:
   bool RunExtensionTestImpl(const char* extension_name,
                             const std::string& test_page,
+                            const char* custom_arg,
                             int flags);
 
   // Hold details of the test, set in C++, which can be accessed by
