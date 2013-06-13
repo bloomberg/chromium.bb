@@ -1,10 +1,8 @@
-Test that pausing the media element in "playing" event handler pauses the media immediately.
+Test that pausing the media element in "playing" event handler pauses the media element.
 
-RUN(video.play())
-SCRIPT DONE
-EVENT(play)
+EVENT(playing)
 EVENT(timeupdate)
 EVENT(pause)
-EXPECTED (video.paused == 'true') OK
-END OF TEST
+
+PASS Verifies pause actually pauses. 
 
