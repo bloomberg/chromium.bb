@@ -122,9 +122,7 @@ Connection::Connection()
       transaction_nesting_(0),
       needs_rollback_(false),
       in_memory_(false),
-      poisoned_(false),
-      error_delegate_(NULL) {
-}
+      poisoned_(false) {}
 
 Connection::~Connection() {
   Close();
