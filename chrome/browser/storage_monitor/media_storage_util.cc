@@ -41,7 +41,7 @@ const char kRootPath[] = "/";
 
 void ValidatePathOnFileThread(
     const base::FilePath& path,
-    const MediaStorageUtil::BoolCallback& callback) {
+    const base::Callback<void(bool)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(callback, file_util::PathExists(path)));

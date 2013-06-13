@@ -285,9 +285,10 @@ void MediaGalleriesPreferences::AddDefaultGalleriesIfFreshProfile() {
     base::FilePath relative_path;
     StorageInfo info;
     if (MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path)) {
-      // TODO(gbillock): Add in the volume metadata here when available.
-      AddGalleryWithName(info.device_id(), info.name(), relative_path,
-                         false /*user added*/);
+      AddGalleryInternal(info.device_id(), info.name(), relative_path, false,
+                         info.storage_label(), info.vendor_name(),
+                         info.model_name(), info.total_size_in_bytes(),
+                         base::Time(), true, 2);
     }
   }
 }
@@ -298,15 +299,19 @@ void MediaGalleriesPreferences::OnITunesDeviceID(const std::string& device_id) {
   // it is possible for it to move), but we want to preserve the user's
   // permissions for "the" iTunes gallery, we need to Amend any existing
   // iTunes galleries instead of adding a new one.
-  AddGalleryWithName(device_id, ASCIIToUTF16(kITunesGalleryName),
-                     base::FilePath(), false /*not user added*/);
+  AddGalleryInternal(device_id, ASCIIToUTF16(kITunesGalleryName),
+                     base::FilePath(), false /*not user added*/,
+                     string16(), string16(), string16(), 0,
+                     base::Time(), false, 2);
 }
 
 void MediaGalleriesPreferences::OnPicasaDeviceID(const std::string& device_id) {
   // TODO(tommycli): Implement support for location moves.
   DCHECK(!device_id.empty());
-  AddGalleryWithName(device_id, ASCIIToUTF16(kPicasaGalleryName),
-                     base::FilePath(), false /*not user added*/);
+  AddGalleryInternal(device_id, ASCIIToUTF16(kPicasaGalleryName),
+                     base::FilePath(), false /*not user added*/,
+                     string16(), string16(), string16(), 0,
+                     base::Time(), false, 2);
 }
 
 void MediaGalleriesPreferences::InitFromPrefs(bool notify_observers) {
@@ -360,19 +365,13 @@ void MediaGalleriesPreferences::OnRemovableStorageAttached(
   if (!StorageInfo::IsMediaDevice(info.device_id()))
     return;
 
-  if (info.name().empty()) {
-    AddGallery(info.device_id(),
-               base::FilePath(),
-               false /*not user added*/,
-               info.storage_label(),
-               info.vendor_name(),
-               info.model_name(),
-               info.total_size_in_bytes(),
-               base::Time::Now());
-  } else {
-    // TODO(gbillock): get rid of this code path.
-    AddGalleryWithName(info.device_id(), info.name(), base::FilePath(), false);
-  }
+  AddGallery(info.device_id(), base::FilePath(),
+             false /*not user added*/,
+             info.storage_label(),
+             info.vendor_name(),
+             info.model_name(),
+             info.total_size_in_bytes(),
+             base::Time::Now());
 }
 
 bool MediaGalleriesPreferences::LookUpGalleryByPath(
@@ -410,11 +409,16 @@ bool MediaGalleriesPreferences::LookUpGalleryByPath(
   // conflate LookUp.
   if (gallery_info) {
     gallery_info->pref_id = kInvalidMediaGalleryPrefId;
-    gallery_info->display_name = info.name();
     gallery_info->device_id = info.device_id();
     gallery_info->path = relative_path;
     gallery_info->type = MediaGalleryPrefInfo::kUserAdded;
-    // TODO(gbillock): Need to add volume metadata here from |info|.
+    gallery_info->volume_label = info.storage_label();
+    gallery_info->vendor_name = info.vendor_name();
+    gallery_info->model_name = info.model_name();
+    gallery_info->total_size_in_bytes = info.total_size_in_bytes();
+    gallery_info->last_attach_time = base::Time::Now();
+    gallery_info->volume_metadata_valid = true;
+    gallery_info->prefs_version = 2;
   }
   return false;
 }
@@ -451,15 +455,7 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
     base::Time last_attach_time) {
   return AddGalleryInternal(device_id, string16(), relative_path, user_added,
                             volume_label, vendor_name, model_name,
-                            total_size_in_bytes, last_attach_time, true, 1);
-}
-
-MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryWithName(
-    const std::string& device_id, const string16& display_name,
-    const base::FilePath& relative_path, bool user_added) {
-  return AddGalleryInternal(device_id, display_name, relative_path, user_added,
-                            string16(), string16(), string16(),
-                            0, base::Time(), false, 1);
+                            total_size_in_bytes, last_attach_time, true, 2);
 }
 
 MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
@@ -483,14 +479,18 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
 
     bool update_gallery_type =
         user_added && (existing.type == MediaGalleryPrefInfo::kBlackListed);
-    // TODO(gbillock): Once we have all updates adding the device metadata,
-    // we'll change this to always update the gallery name if we have device
-    // metadata.
     // Status quo: In M27 and M28, galleries added manually use version 0,
     // and galleries added automatically (including default galleries) use
     // version 1. The name override is used by default galleries as well
     // as all device attach events.
+    // We want to upgrade the name if the existing version is < 2. Leave it
+    // alone if the existing display name is set with version == 2 and the
+    // proposed new name is empty.
     bool update_gallery_name = existing.display_name != display_name;
+    if (existing.prefs_version == 2 && !existing.display_name.empty() &&
+        display_name.empty()) {
+      update_gallery_name = false;
+    }
     bool update_gallery_metadata = volume_metadata_valid &&
         ((existing.volume_label != volume_label) ||
          (existing.vendor_name != vendor_name) ||

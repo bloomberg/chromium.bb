@@ -19,7 +19,7 @@ function testGalleries(expectedFileSystems, testGalleryName) {
       testResults.push(metadata.name);
     }
   }
-  chrome.test.fail(testResults);
+  chrome.test.fail(testResults + ' vs ' + testGalleryName);
 };
 
 var mediaFileSystemsListCallback = function(results) {

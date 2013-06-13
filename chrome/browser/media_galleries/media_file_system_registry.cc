@@ -473,21 +473,14 @@ MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
     if (!(StorageInfo::IsMediaDevice(existing_devices[i].device_id()) &&
           StorageInfo::IsRemovableDevice(existing_devices[i].device_id())))
       continue;
-    if (!existing_devices[i].name().empty()) {
-      preferences->AddGalleryWithName(existing_devices[i].device_id(),
-                                      existing_devices[i].name(),
-                                      base::FilePath(),
-                                      false /*not user added*/);
-    } else {
-      preferences->AddGallery(existing_devices[i].device_id(),
-                              base::FilePath(),
-                              false,
-                              existing_devices[i].storage_label(),
-                              existing_devices[i].vendor_name(),
-                              existing_devices[i].model_name(),
-                              existing_devices[i].total_size_in_bytes(),
-                              base::Time::Now());
-    }
+    preferences->AddGallery(existing_devices[i].device_id(),
+                            base::FilePath(),
+                            false,
+                            existing_devices[i].storage_label(),
+                            existing_devices[i].vendor_name(),
+                            existing_devices[i].model_name(),
+                            existing_devices[i].total_size_in_bytes(),
+                            base::Time::Now());
   }
   return preferences;
 }

@@ -22,7 +22,6 @@ struct StorageInfo;
 class MediaStorageUtil {
  public:
   typedef std::set<std::string /*device id*/> DeviceIdSet;
-  typedef base::Callback<void(bool)> BoolCallback;
 
   // Check if the file system at the passed mount point looks like a media
   // device using the existence of DCIM directory.

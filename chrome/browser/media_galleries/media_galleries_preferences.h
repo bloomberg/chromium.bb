@@ -169,13 +169,6 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
                                 uint64 total_size_in_bytes,
                                 base::Time last_attach_time);
 
-  // Teaches the registry about a new gallery.
-  // Returns the gallery's pref id.
-  MediaGalleryPrefId AddGalleryWithName(const std::string& device_id,
-                                        const string16& display_name,
-                                        const base::FilePath& relative_path,
-                                        bool user_added);
-
   // Teach the registry about a user added registry simply from the path.
   // Returns the gallery's pref id.
   MediaGalleryPrefId AddGalleryByPath(const base::FilePath& path);

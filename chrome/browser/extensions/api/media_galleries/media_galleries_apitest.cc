@@ -63,8 +63,9 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
         chrome::StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM, kDeviceId);
 
     chrome::StorageMonitor::GetInstance()->receiver()->ProcessAttach(
-        chrome::StorageInfo(device_id_, ASCIIToUTF16(kDeviceName), kDevicePath,
-                            string16(), string16(), string16(), 0));
+        chrome::StorageInfo(device_id_, string16(), kDevicePath,
+                            ASCIIToUTF16(kDeviceName),
+                            string16(), string16(), 0));
     content::RunAllPendingInMessageLoop();
   }
 
