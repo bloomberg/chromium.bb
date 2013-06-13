@@ -67,7 +67,7 @@ crbug.com/247466 [ Win Debug ] inspector/debugger/live-edit-breakpoints.html [ S
 crbug.com/247466 [ Win Debug ] inspector/debugger/dom-breakpoints.html [ Skip ]
 crbug.com/247466 [ Win Debug ] inspector/debugger/script-formatter-breakpoints.html [ Skip ]
 crbug.com/247466 [ Win Debug ] inspector/profiler/heap-snapshot-comparison-expansion-preserved-when-sorting.html [ Skip ]
-crbug.com/249087 [ Win Debug ] inspector/debugger/debugger-activation-crash2.html [ Pass Failure ]
+crbug.com/249087 [ Win Debug ] inspector/debugger/debugger-activation-crash2.html [ Pass Failure Timeout ]
 
 # Inspector IndexedDB tests are slow in Release as well.
 crbug.com/246190 [ Release ] http/tests/inspector/indexeddb [ Slow ]
@@ -1330,6 +1330,7 @@ crbug.com/237270 virtual/gpu/fast/canvas/canvas-composite-alpha.html [ Pass Time
 crbug.com/237270 [ Debug ] fast/dom/SelectorAPI/resig-SelectorsAPI-test.xhtml [ Pass Timeout ]
 # was: webkit.org/b/110873 - Flaky on most platforms
 crbug.com/237270 [ Debug ] fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ ImageOnlyFailure Timeout ]
+crbug.com/237270 [ Win Debug ] http/tests/history/redirect-js-form-submit-0-seconds.html [ ImageOnlyFailure Timeout ]
 
 crbug.com/241851 [ SnowLeopard Lion Linux Debug ] fast/speechsynthesis/speech-synthesis-cancel.html [ Crash Pass Timeout ]
 
@@ -1371,6 +1372,7 @@ crbug.com/237270 fast/css/variables/invalid-font-reference.html [ Pass Timeout ]
 crbug.com/237270 http/tests/history/replacestate-post-to-get-2.html [ Pass Timeout ]
 crbug.com/237270 http/tests/history/replacestate-post-to-get.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/jpeg-partial-load.html [ Pass Timeout ]
+crbug.com/237270 http/tests/images/png-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout ]
 
 
