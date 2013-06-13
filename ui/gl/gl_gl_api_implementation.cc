@@ -195,6 +195,8 @@ GLApi::GLApi() {
 }
 
 GLApi::~GLApi() {
+  if (GetCurrentGLApi() == this)
+    SetGLApi(NULL);
 }
 
 GLApiBase::GLApiBase()

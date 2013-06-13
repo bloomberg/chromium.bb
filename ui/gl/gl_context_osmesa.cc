@@ -62,6 +62,9 @@ bool GLContextOSMesa::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
+  // Set this as soon as the context is current, since we might call into GL.
+  SetRealGLApi();
+
   // Row 0 is at the top.
   OSMesaPixelStore(OSMESA_Y_UP, 0);
 
@@ -76,7 +79,6 @@ bool GLContextOSMesa::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
-  SetRealGLApi();
   return true;
 }
 

@@ -123,6 +123,9 @@ bool GLContextGLX::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
+  // Set this as soon as the context is current, since we might call into GL.
+  SetRealGLApi();
+
   SetCurrent(surface);
   if (!InitializeExtensionBindings()) {
     ReleaseCurrent(surface);
@@ -137,7 +140,6 @@ bool GLContextGLX::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
-  SetRealGLApi();
   return true;
 }
 
