@@ -280,7 +280,14 @@ bool RemoveUberHost(GURL* url) {
     new_path = old_path.substr(separator);
   }
 
+  // Do not allow URLs with paths empty before the first slash since we can't
+  // have an empty host. (e.g "foo://chrome//")
+  if (new_host.empty())
+    return false;
+
   *url = ReplaceURLHostAndPath(*url, new_host, new_path);
+
+  DCHECK(url->is_valid());
 
   return true;
 }

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -29,8 +27,8 @@ class ChromeContentBrowserClientBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
                        UberURLHandler_SettingsPage) {
-  const GURL url_short(std::string("chrome://settings/"));
-  const GURL url_long(std::string("chrome://chrome/settings/"));
+  const GURL url_short("chrome://settings/");
+  const GURL url_long("chrome://chrome/settings/");
 
   ui_test_utils::NavigateToURL(browser(), url_short);
   NavigationEntry* entry = GetLastCommittedEntry();
@@ -42,8 +40,8 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
                        UberURLHandler_ContentSettingsPage) {
-  const GURL url_short(std::string("chrome://settings/content"));
-  const GURL url_long(std::string("chrome://chrome/settings/content"));
+  const GURL url_short("chrome://settings/content");
+  const GURL url_long("chrome://chrome/settings/content");
 
   ui_test_utils::NavigateToURL(browser(), url_short);
   NavigationEntry* entry = GetLastCommittedEntry();
@@ -55,13 +53,25 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
                        UberURLHandler_AboutPage) {
-  const GURL url(std::string("chrome://chrome/"));
+  const GURL url("chrome://chrome/");
 
   ui_test_utils::NavigateToURL(browser(), url);
   NavigationEntry* entry = GetLastCommittedEntry();
 
   ASSERT_TRUE(entry != NULL);
   EXPECT_EQ(url, entry->GetURL());
+  EXPECT_EQ(url, entry->GetVirtualURL());
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
+                       UberURLHandler_EmptyHost) {
+  const GURL url("chrome://chrome//foo");
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  NavigationEntry* entry = GetLastCommittedEntry();
+
+  ASSERT_TRUE(entry != NULL);
+  EXPECT_TRUE(entry->GetVirtualURL().is_valid());
   EXPECT_EQ(url, entry->GetVirtualURL());
 }
 
