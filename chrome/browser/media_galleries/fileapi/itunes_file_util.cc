@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media_galleries/fileapi/itunes/itunes_file_util.h"
+#include "chrome/browser/media_galleries/fileapi/itunes_file_util.h"
 
 #include "base/file_util.h"
 #include "base/strings/utf_string_conversions.h"

@@ -14,7 +14,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_galleries/fileapi/device_media_async_file_util.h"
-#include "chrome/browser/media_galleries/fileapi/itunes/itunes_file_util.h"
+#include "chrome/browser/media_galleries/fileapi/itunes_file_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_validator_factory.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"

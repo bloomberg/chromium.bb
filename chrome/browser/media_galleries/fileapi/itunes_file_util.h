@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_ITUNES_ITUNES_FILE_UTIL_H_
-#define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_ITUNES_ITUNES_FILE_UTIL_H_
+#ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_ITUNES_FILE_UTIL_H_
+#define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_ITUNES_FILE_UTIL_H_
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
@@ -83,5 +83,4 @@ class ItunesFileUtil : public chrome::NativeMediaFileUtil {
 
 }  // namespace itunes
 
-#endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_ITUNES_ITUNES_FILE_UTIL_H_
-
+#endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_ITUNES_FILE_UTIL_H_
