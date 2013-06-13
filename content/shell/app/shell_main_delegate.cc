@@ -117,8 +117,11 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     command_line.AppendSwitch(switches::kProcessPerTab);
     command_line.AppendSwitch(switches::kEnableLogging);
     command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);
+#if !defined(OS_ANDROID)
+    // OSMesa is not yet available for Android. http://crbug.com/248925
     command_line.AppendSwitchASCII(
         switches::kUseGL, gfx::kGLImplementationOSMesaName);
+#endif
     command_line.AppendSwitch(switches::kSkipGpuDataLoading);
     command_line.AppendSwitch(switches::kDisableGpuVsync);
     command_line.AppendSwitch(switches::kEnableExperimentalWebKitFeatures);
