@@ -15,14 +15,19 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/android/devtools_auth.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "grit/devtools_discovery_page_resources.h"
 #include "jni/DevToolsServer_jni.h"
 #include "net/socket/unix_domain_socket_posix.h"
@@ -78,7 +83,16 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
   }
 
   virtual content::RenderViewHost* CreateNewTarget() OVERRIDE {
-    return NULL;
+    Profile* profile =
+        g_browser_process->profile_manager()->GetDefaultProfile();
+    TabModel* tab_model = TabModelList::GetTabModelWithProfile(profile);
+    if (!tab_model)
+      return NULL;
+    content::WebContents* web_contents =
+        tab_model->CreateTabForTesting(GURL(content::kAboutBlankURL));
+    if (!web_contents)
+      return NULL;
+    return web_contents->GetRenderViewHost();
   }
 
   virtual TargetType GetTargetType(content::RenderViewHost*) OVERRIDE {

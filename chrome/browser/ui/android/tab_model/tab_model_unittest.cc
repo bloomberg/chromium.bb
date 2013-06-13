@@ -34,6 +34,9 @@ class TestTabModel : public TabModel {
     return NULL;
   }
   virtual void CreateTab(content::WebContents* web_contents) OVERRIDE {}
+  virtual content::WebContents* CreateTabForTesting(const GURL& url) OVERRIDE {
+    return NULL;
+  }
   virtual bool IsSessionRestoreInProgress() const OVERRIDE { return false; }
   virtual void OpenClearBrowsingData() const OVERRIDE {}
   virtual browser_sync::SyncedTabDelegate* GetTabAt(int index) const OVERRIDE {
