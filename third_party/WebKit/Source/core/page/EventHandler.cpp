@@ -2119,10 +2119,15 @@ bool EventHandler::shouldTurnVerticalTicksIntoHorizontal(const HitTestResult& re
 
 bool EventHandler::handleWheelEvent(const PlatformWheelEvent& e)
 {
+#define RETURN_WHEEL_EVENT_HANDLED() \
+    { \
+        setFrameWasScrolledByUser(); \
+        return true; \
+    }
+
     Document* doc = m_frame->document();
 
-    RenderObject* docRenderer = doc->renderer();
-    if (!docRenderer)
+    if (!doc->renderer())
         return false;
     
     RefPtr<FrameView> protector(m_frame->view());
@@ -2130,14 +2135,12 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& e)
     FrameView* view = m_frame->view();
     if (!view)
         return false;
-    setFrameWasScrolledByUser();
+
     LayoutPoint vPoint = view->windowToContents(e.position());
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::DisallowShadowContent);
     HitTestResult result(vPoint);
     doc->renderView()->hitTest(request, result);
-
-    bool useLatchedWheelEventNode = e.useLatchedEventNode();
 
     Node* node = result.innerNode();
     // Wheel events should not dispatch to text nodes.
@@ -2145,7 +2148,7 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& e)
         node = EventPathWalker::parent(node);
 
     bool isOverWidget;
-    if (useLatchedWheelEventNode) {
+    if (e.useLatchedEventNode()) {
         if (!m_latchedWheelEventNode) {
             m_latchedWheelEventNode = node;
             m_widgetIsLatched = result.isOverWidget();
@@ -2176,20 +2179,22 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& e)
         if (isOverWidget && target && target->isWidget()) {
             Widget* widget = toRenderWidget(target)->widget();
             if (widget && passWheelEventToWidget(e, widget))
-                return true;
+                RETURN_WHEEL_EVENT_HANDLED();
         }
 
         if (node && !node->dispatchWheelEvent(event))
-            return true;
+            RETURN_WHEEL_EVENT_HANDLED();
     }
 
 
     // We do another check on the frame view because the event handler can run JS which results in the frame getting destroyed.
     view = m_frame->view();
-    if (!view)
+    if (!view || !view->wheelEvent(event))
         return false;
-    
-    return view->wheelEvent(event);
+
+    RETURN_WHEEL_EVENT_HANDLED();
+
+#undef RETURN_WHEEL_EVENT_HANDLED
 }
 
 void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEvent)

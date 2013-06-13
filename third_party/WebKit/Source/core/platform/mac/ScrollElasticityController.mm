@@ -141,8 +141,11 @@ bool ScrollElasticityController::handleWheelEvent(const PlatformWheelEvent& whee
     }
 
     if (wheelEvent.phase() == PlatformWheelEventPhaseEnded) {
-        snapRubberBand();
-        return true;
+        if (isRubberBandInProgress()) {
+            snapRubberBand();
+            return true;
+        }
+        return false;
     }
 
     bool isMomentumScrollEvent = (wheelEvent.momentumPhase() != PlatformWheelEventPhaseNone);
