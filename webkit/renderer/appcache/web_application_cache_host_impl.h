@@ -12,7 +12,7 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/renderer/webkit_storage_renderer_export.h"
 
 namespace WebKit {
 class WebFrame;
@@ -20,7 +20,7 @@ class WebFrame;
 
 namespace appcache {
 
-class WEBKIT_STORAGE_EXPORT WebApplicationCacheHostImpl
+class WEBKIT_STORAGE_RENDERER_EXPORT WebApplicationCacheHostImpl
     : NON_EXPORTED_BASE(public WebKit::WebApplicationCacheHost) {
  public:
   // Returns the host having given id or NULL if there is no such host.

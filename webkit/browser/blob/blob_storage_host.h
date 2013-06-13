@@ -11,8 +11,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/blob/blob_data.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 class GURL;
 
@@ -27,7 +27,7 @@ class BlobStorageContext;
 // terminates all blob references attibutable to that process go away upon
 // destruction of the instance. The class is single threaded and should
 // only be used on the IO thread.
-class WEBKIT_STORAGE_EXPORT BlobStorageHost {
+class WEBKIT_STORAGE_BROWSER_EXPORT BlobStorageHost {
  public:
   explicit BlobStorageHost(BlobStorageContext* context);
   ~BlobStorageHost();

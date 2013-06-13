@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "webkit/browser/quota/quota_client.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/quota/quota_types.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace webkit_database {
 
@@ -21,7 +21,7 @@ class DatabaseTracker;
 // A QuotaClient implementation to integrate WebSQLDatabases
 // with the quota  management system. This interface is used
 // on the IO thread by the quota manager.
-class WEBKIT_STORAGE_EXPORT_PRIVATE DatabaseQuotaClient
+class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE DatabaseQuotaClient
     : public quota::QuotaClient {
  public:
   DatabaseQuotaClient(

@@ -15,8 +15,8 @@
 #include "base/memory/ref_counted.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
 #include "webkit/browser/quota/quota_client.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -31,7 +31,7 @@ class FileSystemContext;
 // is called.
 // All of the public methods of this class are called by the quota manager
 // (except for the constructor/destructor).
-class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemQuotaClient
+class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemQuotaClient
     : public NON_EXPORTED_BASE(quota::QuotaClient) {
  public:
   FileSystemQuotaClient(

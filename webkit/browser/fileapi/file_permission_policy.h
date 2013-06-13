@@ -5,14 +5,14 @@
 #ifndef WEBKIT_BROWSER_FILEAPI_FILE_PERMISSION_POLICY_H_
 #define WEBKIT_BROWSER_FILEAPI_FILE_PERMISSION_POLICY_H_
 
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace fileapi {
 
-WEBKIT_STORAGE_EXPORT extern const int kReadFilePermissions;
-WEBKIT_STORAGE_EXPORT extern const int kWriteFilePermissions;
-WEBKIT_STORAGE_EXPORT extern const int kCreateFilePermissions;
-WEBKIT_STORAGE_EXPORT extern const int kOpenFilePermissions;
+WEBKIT_STORAGE_BROWSER_EXPORT extern const int kReadFilePermissions;
+WEBKIT_STORAGE_BROWSER_EXPORT extern const int kWriteFilePermissions;
+WEBKIT_STORAGE_BROWSER_EXPORT extern const int kCreateFilePermissions;
+WEBKIT_STORAGE_BROWSER_EXPORT extern const int kOpenFilePermissions;
 
 enum FilePermissionPolicy {
   // Any access should be always denied.

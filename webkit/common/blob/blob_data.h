@@ -15,11 +15,12 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/base/data_element.h"
 #include "webkit/common/blob/shareable_file_reference.h"
-#include "webkit/common/webkit_common_export.h"
+#include "webkit/common/webkit_storage_common_export.h"
 
 namespace webkit_blob {
 
-class WEBKIT_COMMON_EXPORT BlobData : public base::RefCounted<BlobData> {
+class WEBKIT_STORAGE_COMMON_EXPORT BlobData
+    : public base::RefCounted<BlobData> {
  public:
   typedef webkit_base::DataElement Item;
 

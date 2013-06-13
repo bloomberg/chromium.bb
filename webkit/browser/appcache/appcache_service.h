@@ -14,8 +14,8 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "webkit/browser/appcache/appcache_storage.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace net {
 class URLRequestContext;
@@ -38,7 +38,7 @@ class AppCacheQuotaClient;
 class AppCachePolicy;
 
 // Refcounted container to avoid copying the collection in callbacks.
-struct WEBKIT_STORAGE_EXPORT AppCacheInfoCollection
+struct WEBKIT_STORAGE_BROWSER_EXPORT AppCacheInfoCollection
     : public base::RefCountedThreadSafe<AppCacheInfoCollection> {
   AppCacheInfoCollection();
 
@@ -52,7 +52,7 @@ struct WEBKIT_STORAGE_EXPORT AppCacheInfoCollection
 // Class that manages the application cache service. Sends notifications
 // to many frontends.  One instance per user-profile. Each instance has
 // exclusive access to its cache_directory on disk.
-class WEBKIT_STORAGE_EXPORT AppCacheService {
+class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheService {
  public:
   // If not using quota management, the proxy may be NULL.
   explicit AppCacheService(quota::QuotaManagerProxy* quota_manager_proxy);

@@ -18,7 +18,7 @@
 #include "webkit/browser/appcache/appcache_database.h"
 #include "webkit/browser/appcache/appcache_disk_cache.h"
 #include "webkit/browser/appcache/appcache_storage.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace content {
 class ChromeAppCacheServiceTest;
@@ -131,7 +131,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
       const GURL& namespace_entry_url, const AppCacheEntry& fallback_entry,
       int64 cache_id, int64 group_id, const GURL& manifest_url);
 
-  WEBKIT_STORAGE_EXPORT AppCacheDiskCache* disk_cache();
+  WEBKIT_STORAGE_BROWSER_EXPORT AppCacheDiskCache* disk_cache();
 
   // The directory in which we place files in the file system.
   base::FilePath cache_directory_;

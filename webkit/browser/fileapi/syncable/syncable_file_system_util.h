@@ -9,7 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace fileapi {
 class FileSystemContext;
@@ -20,13 +20,14 @@ class LocalFileSystemOperation;
 namespace sync_file_system {
 
 // Registers a syncable filesystem.
-WEBKIT_STORAGE_EXPORT void RegisterSyncableFileSystem();
+WEBKIT_STORAGE_BROWSER_EXPORT void RegisterSyncableFileSystem();
 
 // Revokes the syncable filesystem.
-WEBKIT_STORAGE_EXPORT void RevokeSyncableFileSystem();
+WEBKIT_STORAGE_BROWSER_EXPORT void RevokeSyncableFileSystem();
 
 // Returns the root URI of the syncable filesystem for |origin|.
-WEBKIT_STORAGE_EXPORT GURL GetSyncableFileSystemRootURI(const GURL& origin);
+WEBKIT_STORAGE_BROWSER_EXPORT GURL GetSyncableFileSystemRootURI(
+    const GURL& origin);
 
 // Creates a FileSystem URL for the |path| in a syncable filesystem for
 // |origin|.
@@ -35,11 +36,12 @@ WEBKIT_STORAGE_EXPORT GURL GetSyncableFileSystemRootURI(const GURL& origin);
 //   origin: 'http://www.example.com/',
 //   path: '/foo/bar',
 // returns 'filesystem:http://www.example.com/external/syncfs/foo/bar'
-WEBKIT_STORAGE_EXPORT fileapi::FileSystemURL CreateSyncableFileSystemURL(
-    const GURL& origin, const base::FilePath& path);
+WEBKIT_STORAGE_BROWSER_EXPORT fileapi::FileSystemURL
+CreateSyncableFileSystemURL(const GURL& origin, const base::FilePath& path);
 
 // Creates a special filesystem URL for synchronizing |syncable_url|.
-WEBKIT_STORAGE_EXPORT fileapi::FileSystemURL CreateSyncableFileSystemURLForSync(
+WEBKIT_STORAGE_BROWSER_EXPORT fileapi::FileSystemURL
+CreateSyncableFileSystemURLForSync(
     fileapi::FileSystemContext* file_system_context,
     const fileapi::FileSystemURL& syncable_url);
 
@@ -58,7 +60,7 @@ WEBKIT_STORAGE_EXPORT fileapi::FileSystemURL CreateSyncableFileSystemURLForSync(
 //   'filesystem:http://www.example.com/external/syncfs/foo\\bar'
 // (on others)
 //   'filesystem:http://www.example.com/external/syncfs/foo/bar'
-WEBKIT_STORAGE_EXPORT bool SerializeSyncableFileSystemURL(
+WEBKIT_STORAGE_BROWSER_EXPORT bool SerializeSyncableFileSystemURL(
     const fileapi::FileSystemURL& url, std::string* serialized_url);
 
 // Deserializes a serialized FileSystem URL string |serialized_url| and sets the
@@ -71,13 +73,13 @@ WEBKIT_STORAGE_EXPORT bool SerializeSyncableFileSystemURL(
 // behavior).
 //
 // See the comment of SerializeSyncableFileSystemURL() for more details.
-WEBKIT_STORAGE_EXPORT bool DeserializeSyncableFileSystemURL(
+WEBKIT_STORAGE_BROWSER_EXPORT bool DeserializeSyncableFileSystemURL(
     const std::string& serialized_url, fileapi::FileSystemURL* url);
 
 // Enables or disables directory operations in Sync FileSystem API.
 // TODO(nhiroki): This method should be used only for testing and should go
 // away when we fully support directory operations. (http://crbug.com/161442)
-WEBKIT_STORAGE_EXPORT void SetEnableSyncFSDirectoryOperation(bool flag);
+WEBKIT_STORAGE_BROWSER_EXPORT void SetEnableSyncFSDirectoryOperation(bool flag);
 
 // Returns true if we allow directory operations in Sync FileSystem API.
 // It is disabled by default but can be overridden by a command-line switch
@@ -85,7 +87,7 @@ WEBKIT_STORAGE_EXPORT void SetEnableSyncFSDirectoryOperation(bool flag);
 // SetEnableSyncFSDirectoryOperation().
 // TODO(nhiroki): This method should be used only for testing and should go
 // away when we fully support directory operations. (http://crbug.com/161442)
-WEBKIT_STORAGE_EXPORT bool IsSyncFSDirectoryOperationEnabled();
+WEBKIT_STORAGE_BROWSER_EXPORT bool IsSyncFSDirectoryOperationEnabled();
 
 }  // namespace sync_file_system
 

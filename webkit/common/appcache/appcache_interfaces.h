@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/common/webkit_common_export.h"
+#include "webkit/common/webkit_storage_common_export.h"
 
 namespace net {
 class URLRequest;
@@ -61,7 +61,7 @@ enum NamespaceType {
   NETWORK_NAMESPACE
 };
 
-struct WEBKIT_COMMON_EXPORT AppCacheInfo {
+struct WEBKIT_STORAGE_COMMON_EXPORT AppCacheInfo {
   AppCacheInfo();
   ~AppCacheInfo();
 
@@ -79,7 +79,7 @@ struct WEBKIT_COMMON_EXPORT AppCacheInfo {
 typedef std::vector<AppCacheInfo> AppCacheInfoVector;
 
 // Type to hold information about a single appcache resource.
-struct WEBKIT_COMMON_EXPORT AppCacheResourceInfo {
+struct WEBKIT_STORAGE_COMMON_EXPORT AppCacheResourceInfo {
   AppCacheResourceInfo();
   ~AppCacheResourceInfo();
 
@@ -96,7 +96,7 @@ struct WEBKIT_COMMON_EXPORT AppCacheResourceInfo {
 
 typedef std::vector<AppCacheResourceInfo> AppCacheResourceInfoVector;
 
-struct WEBKIT_COMMON_EXPORT Namespace {
+struct WEBKIT_STORAGE_COMMON_EXPORT Namespace {
   Namespace();  // Type is set to FALLBACK_NAMESPACE by default.
   Namespace(NamespaceType type, const GURL& url, const GURL& target,
             bool is_pattern);
@@ -116,7 +116,7 @@ struct WEBKIT_COMMON_EXPORT Namespace {
 typedef std::vector<Namespace> NamespaceVector;
 
 // Interface used by backend (browser-process) to talk to frontend (renderer).
-class WEBKIT_COMMON_EXPORT AppCacheFrontend {
+class WEBKIT_STORAGE_COMMON_EXPORT AppCacheFrontend {
  public:
   virtual void OnCacheSelected(
       int host_id, const appcache::AppCacheInfo& info) = 0;
@@ -137,7 +137,7 @@ class WEBKIT_COMMON_EXPORT AppCacheFrontend {
 };
 
 // Interface used by frontend (renderer) to talk to backend (browser-process).
-class WEBKIT_COMMON_EXPORT AppCacheBackend {
+class WEBKIT_STORAGE_COMMON_EXPORT AppCacheBackend {
  public:
   virtual void RegisterHost(int host_id) = 0;
   virtual void UnregisterHost(int host_id) = 0;
@@ -169,22 +169,22 @@ class WEBKIT_COMMON_EXPORT AppCacheBackend {
 // Note: These are also defined elsewhere in the chrome code base in
 // url_contants.h .cc, however the appcache library doesn't not have
 // any dependencies on the chrome library, so we can't use them in here.
-WEBKIT_COMMON_EXPORT extern const char kHttpScheme[];
-WEBKIT_COMMON_EXPORT extern const char kHttpsScheme[];
-WEBKIT_COMMON_EXPORT extern const char kHttpGETMethod[];
-WEBKIT_COMMON_EXPORT extern const char kHttpHEADMethod[];
+WEBKIT_STORAGE_COMMON_EXPORT extern const char kHttpScheme[];
+WEBKIT_STORAGE_COMMON_EXPORT extern const char kHttpsScheme[];
+WEBKIT_STORAGE_COMMON_EXPORT extern const char kHttpGETMethod[];
+WEBKIT_STORAGE_COMMON_EXPORT extern const char kHttpHEADMethod[];
 
 // CommandLine flag to turn this experimental feature on.
-WEBKIT_COMMON_EXPORT extern const char kEnableExecutableHandlers[];
+WEBKIT_STORAGE_COMMON_EXPORT extern const char kEnableExecutableHandlers[];
 
-WEBKIT_COMMON_EXPORT void AddSupportedScheme(const char* scheme);
+WEBKIT_STORAGE_COMMON_EXPORT void AddSupportedScheme(const char* scheme);
 
-WEBKIT_COMMON_EXPORT bool IsSchemeSupported(const GURL& url);
-WEBKIT_COMMON_EXPORT bool IsMethodSupported(const std::string& method);
-WEBKIT_COMMON_EXPORT bool IsSchemeAndMethodSupported(
+WEBKIT_STORAGE_COMMON_EXPORT bool IsSchemeSupported(const GURL& url);
+WEBKIT_STORAGE_COMMON_EXPORT bool IsMethodSupported(const std::string& method);
+WEBKIT_STORAGE_COMMON_EXPORT bool IsSchemeAndMethodSupported(
     const net::URLRequest* request);
 
-WEBKIT_COMMON_EXPORT extern const base::FilePath::CharType
+WEBKIT_STORAGE_COMMON_EXPORT extern const base::FilePath::CharType
     kAppCacheDatabaseName[];
 
 }  // namespace

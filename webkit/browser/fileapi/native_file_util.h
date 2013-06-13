@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace base {
 class Time;
@@ -28,7 +28,7 @@ namespace fileapi {
 //
 // Note that all the methods of this class are static and this does NOT
 // inherit from FileSystemFileUtil.
-class WEBKIT_STORAGE_EXPORT_PRIVATE NativeFileUtil {
+class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE NativeFileUtil {
  public:
   static base::PlatformFileError CreateOrOpen(
       const base::FilePath& path,

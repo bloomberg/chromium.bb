@@ -23,7 +23,7 @@
 #include "webkit/browser/fileapi/syncable/local_file_sync_status.h"
 #include "webkit/browser/fileapi/syncable/sync_callbacks.h"
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -47,7 +47,7 @@ class SyncableFileOperationRunner;
 // object and may exist multiple in a profile).
 // An instance of this class is shared by FileSystemContexts and outlives
 // LocalFileSyncService.
-class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
+class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileSyncContext
     : public base::RefCountedThreadSafe<LocalFileSyncContext>,
       public LocalFileSyncStatus::Observer {
  public:

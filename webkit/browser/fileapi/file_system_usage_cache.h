@@ -13,13 +13,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/sequenced_task_runner.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace fileapi {
 
 class TimedTaskHelper;
 
-class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemUsageCache {
+class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemUsageCache {
  public:
   explicit FileSystemUsageCache(base::SequencedTaskRunner* task_runner);
   ~FileSystemUsageCache();

@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace base {
 class FilePath;
@@ -24,7 +24,8 @@ class FileSystemOperationContext;
 class FileSystemURL;
 
 // An instance of this class is created and owned by *MountPointProvider.
-class WEBKIT_STORAGE_EXPORT_PRIVATE LocalFileUtil : public FileSystemFileUtil {
+class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE LocalFileUtil
+    : public FileSystemFileUtil {
  public:
   LocalFileUtil();
   virtual ~LocalFileUtil();

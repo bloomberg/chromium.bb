@@ -15,8 +15,8 @@
 #include "base/synchronization/lock.h"
 #include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #include "webkit/browser/quota/special_storage_policy.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
 class AsyncFileUtilAdapter;
@@ -63,7 +63,7 @@ class FileAccessPermissions;
 //
 //   filesystem:<origin>/external/<mount_name>/...
 //
-class WEBKIT_STORAGE_EXPORT CrosMountPointProvider
+class WEBKIT_STORAGE_BROWSER_EXPORT CrosMountPointProvider
     : public fileapi::ExternalFileSystemMountPointProvider {
  public:
   using fileapi::FileSystemMountPointProvider::OpenFileSystemCallback;

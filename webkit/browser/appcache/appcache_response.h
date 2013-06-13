@@ -12,8 +12,8 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/http/http_response_info.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace net {
 class IOBuffer;
@@ -27,7 +27,7 @@ static const int kUnkownResponseDataSize = -1;
 
 // Response info for a particular response id. Instances are tracked in
 // the working set.
-class WEBKIT_STORAGE_EXPORT AppCacheResponseInfo
+class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheResponseInfo
     : public base::RefCounted<AppCacheResponseInfo> {
  public:
   // AppCacheResponseInfo takes ownership of the http_info.
@@ -55,7 +55,7 @@ class WEBKIT_STORAGE_EXPORT AppCacheResponseInfo
 
 // A refcounted wrapper for HttpResponseInfo so we can apply the
 // refcounting semantics used with IOBuffer with these structures too.
-struct WEBKIT_STORAGE_EXPORT HttpResponseInfoIOBuffer
+struct WEBKIT_STORAGE_BROWSER_EXPORT HttpResponseInfoIOBuffer
     : public base::RefCountedThreadSafe<HttpResponseInfoIOBuffer> {
   scoped_ptr<net::HttpResponseInfo> http_info;
   int response_data_size;
@@ -69,7 +69,7 @@ struct WEBKIT_STORAGE_EXPORT HttpResponseInfoIOBuffer
 };
 
 // Low level storage API used by the response reader and writer.
-class WEBKIT_STORAGE_EXPORT AppCacheDiskCacheInterface {
+class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheDiskCacheInterface {
  public:
   class Entry {
    public:
@@ -95,7 +95,7 @@ class WEBKIT_STORAGE_EXPORT AppCacheDiskCacheInterface {
 };
 
 // Common base class for response reader and writer.
-class WEBKIT_STORAGE_EXPORT AppCacheResponseIO {
+class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheResponseIO {
  public:
   virtual ~AppCacheResponseIO();
   int64 response_id() const { return response_id_; }
@@ -131,7 +131,8 @@ class WEBKIT_STORAGE_EXPORT AppCacheResponseIO {
 // and there is a read in progress, the implementation will return
 // immediately but will take care of any side effect of cancelling the
 // operation.  In other words, instances are safe to delete at will.
-class WEBKIT_STORAGE_EXPORT AppCacheResponseReader : public AppCacheResponseIO {
+class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheResponseReader
+    : public AppCacheResponseIO {
  public:
   virtual ~AppCacheResponseReader();
 
@@ -193,7 +194,8 @@ class WEBKIT_STORAGE_EXPORT AppCacheResponseReader : public AppCacheResponseIO {
 // and there is a write in progress, the implementation will return
 // immediately but will take care of any side effect of cancelling the
 // operation. In other words, instances are safe to delete at will.
-class WEBKIT_STORAGE_EXPORT AppCacheResponseWriter : public AppCacheResponseIO {
+class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheResponseWriter
+    : public AppCacheResponseIO {
  public:
   virtual ~AppCacheResponseWriter();
 

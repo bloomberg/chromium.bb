@@ -17,7 +17,7 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 class NullableString16;
 
@@ -59,7 +59,7 @@ struct SessionStorageUsageInfo;
 // Classes intended to be used by an embedder are DomStorageContext,
 // DomStorageHost, and DomStorageSession. The other classes are for
 // internal consumption.
-class WEBKIT_STORAGE_EXPORT DomStorageContext
+class WEBKIT_STORAGE_BROWSER_EXPORT DomStorageContext
     : public base::RefCountedThreadSafe<DomStorageContext> {
  public:
   // An interface for observing Local and Session Storage events on the

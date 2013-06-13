@@ -12,11 +12,11 @@
 #include "base/files/file_path.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/syncable/sync_file_type.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace sync_file_system {
 
-class WEBKIT_STORAGE_EXPORT FileChange {
+class WEBKIT_STORAGE_BROWSER_EXPORT FileChange {
  public:
   enum ChangeType {
     FILE_CHANGE_ADD_OR_UPDATE,
@@ -47,7 +47,7 @@ class WEBKIT_STORAGE_EXPORT FileChange {
   SyncFileType file_type_;
 };
 
-class WEBKIT_STORAGE_EXPORT FileChangeList {
+class WEBKIT_STORAGE_BROWSER_EXPORT FileChangeList {
  public:
   typedef std::deque<FileChange> List;
 

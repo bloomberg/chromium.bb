@@ -15,7 +15,7 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace appcache {
 
@@ -27,11 +27,11 @@ class HostObserver;
 
 // Collection of application caches identified by the same manifest URL.
 // A group exists as long as it is in use by a host or is being updated.
-class WEBKIT_STORAGE_EXPORT AppCacheGroup
+class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheGroup
     : public base::RefCounted<AppCacheGroup> {
  public:
 
-  class WEBKIT_STORAGE_EXPORT UpdateObserver {
+  class WEBKIT_STORAGE_BROWSER_EXPORT UpdateObserver {
     public:
       // Called just after an appcache update has completed.
       virtual void OnUpdateComplete(AppCacheGroup* group) = 0;

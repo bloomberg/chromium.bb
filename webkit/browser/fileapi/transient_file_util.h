@@ -7,13 +7,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "webkit/browser/fileapi/isolated_file_util.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace fileapi {
 
 class FileSystemOperationContext;
 
-class WEBKIT_STORAGE_EXPORT_PRIVATE TransientFileUtil
+class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE TransientFileUtil
     : public IsolatedFileUtil {
  public:
   TransientFileUtil() {}

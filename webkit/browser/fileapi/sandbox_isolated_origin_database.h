@@ -9,7 +9,7 @@
 
 namespace fileapi {
 
-class WEBKIT_STORAGE_EXPORT_PRIVATE SandboxIsolatedOriginDatabase
+class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxIsolatedOriginDatabase
     : public SandboxOriginDatabaseInterface {
  public:
   static const base::FilePath::CharType kOriginDirectory[];

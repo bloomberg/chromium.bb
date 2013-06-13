@@ -12,8 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "webkit/browser/fileapi/mount_points.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class FilePath;
@@ -32,7 +32,7 @@ namespace fileapi {
 //
 //   filesystem:<origin>/external/<mount_name>/relative/path
 //
-class WEBKIT_STORAGE_EXPORT ExternalMountPoints
+class WEBKIT_STORAGE_BROWSER_EXPORT ExternalMountPoints
     : public base::RefCountedThreadSafe<ExternalMountPoints>,
       public MountPoints {
  public:
@@ -155,7 +155,7 @@ class WEBKIT_STORAGE_EXPORT ExternalMountPoints
 };
 
 // Registers a scoped external filesystem which gets revoked when it scopes out.
-class WEBKIT_STORAGE_EXPORT ScopedExternalFileSystem {
+class WEBKIT_STORAGE_BROWSER_EXPORT ScopedExternalFileSystem {
  public:
   ScopedExternalFileSystem(const std::string& mount_name,
                            FileSystemType type,

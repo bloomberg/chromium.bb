@@ -16,8 +16,8 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "webkit/browser/fileapi/mount_points.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
 class FileSystemURL;
@@ -37,9 +37,9 @@ namespace fileapi {
 //
 // Some methods of this class are virtual just for mocking.
 //
-class WEBKIT_STORAGE_EXPORT IsolatedContext : public MountPoints {
+class WEBKIT_STORAGE_BROWSER_EXPORT IsolatedContext : public MountPoints {
  public:
-  class WEBKIT_STORAGE_EXPORT FileInfoSet {
+  class WEBKIT_STORAGE_BROWSER_EXPORT FileInfoSet {
    public:
     FileInfoSet();
     ~FileInfoSet();

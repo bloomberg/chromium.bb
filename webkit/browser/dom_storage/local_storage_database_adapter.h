@@ -8,7 +8,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "webkit/browser/dom_storage/dom_storage_database_adapter.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace base {
 class FilePath;
@@ -18,7 +18,7 @@ namespace dom_storage {
 
 class DomStorageDatabase;
 
-class WEBKIT_STORAGE_EXPORT LocalStorageDatabaseAdapter :
+class WEBKIT_STORAGE_BROWSER_EXPORT LocalStorageDatabaseAdapter :
       public DomStorageDatabaseAdapter {
  public:
   explicit LocalStorageDatabaseAdapter(const base::FilePath& path);

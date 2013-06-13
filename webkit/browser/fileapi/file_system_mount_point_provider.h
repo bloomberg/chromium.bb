@@ -14,8 +14,8 @@
 #include "base/platform_file.h"
 #include "webkit/browser/fileapi/file_permission_policy.h"
 #include "webkit/browser/fileapi/open_file_system_mode.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 class GURL;
 
@@ -41,7 +41,7 @@ class RemoteFileSystemProxyInterface;
 // NOTE: when you implement a new MountPointProvider for your own
 // FileSystem module, please contact to kinuko@chromium.org.
 //
-class WEBKIT_STORAGE_EXPORT FileSystemMountPointProvider {
+class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemMountPointProvider {
  public:
   // Callback for OpenFileSystem.
   typedef base::Callback<void(base::PlatformFileError error)>

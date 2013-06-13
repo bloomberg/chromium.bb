@@ -10,23 +10,23 @@
 
 #include "base/files/file_path.h"
 #include "base/platform_file.h"
-#include "third_party/WebKit/public/platform/WebFileSystemType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileError.h"
+#include "third_party/WebKit/public/platform/WebFileSystemType.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/quota/quota_types.h"
-#include "webkit/common/webkit_common_export.h"
+#include "webkit/common/webkit_storage_common_export.h"
 
 class GURL;
 
 namespace fileapi {
 
-WEBKIT_COMMON_EXPORT extern const char kPersistentDir[];
-WEBKIT_COMMON_EXPORT extern const char kTemporaryDir[];
-WEBKIT_COMMON_EXPORT extern const char kExternalDir[];
-WEBKIT_COMMON_EXPORT extern const char kIsolatedDir[];
-WEBKIT_COMMON_EXPORT extern const char kTestDir[];
+WEBKIT_STORAGE_COMMON_EXPORT extern const char kPersistentDir[];
+WEBKIT_STORAGE_COMMON_EXPORT extern const char kTemporaryDir[];
+WEBKIT_STORAGE_COMMON_EXPORT extern const char kExternalDir[];
+WEBKIT_STORAGE_COMMON_EXPORT extern const char kIsolatedDir[];
+WEBKIT_STORAGE_COMMON_EXPORT extern const char kTestDir[];
 
-class WEBKIT_COMMON_EXPORT VirtualPath {
+class WEBKIT_STORAGE_COMMON_EXPORT VirtualPath {
  public:
   static const base::FilePath::CharType kRoot[];
   static const base::FilePath::CharType kSeparator;
@@ -70,7 +70,7 @@ class WEBKIT_COMMON_EXPORT VirtualPath {
 // returns URL without the filesystem ID.
 //
 // |type| needs to be public type as the returned URI is given to the renderer.
-WEBKIT_COMMON_EXPORT GURL GetFileSystemRootURI(const GURL& origin_url,
+WEBKIT_STORAGE_COMMON_EXPORT GURL GetFileSystemRootURI(const GURL& origin_url,
                                          FileSystemType type);
 
 // Returns the name for the filesystem that is specified by a pair of
@@ -84,25 +84,27 @@ WEBKIT_COMMON_EXPORT GURL GetFileSystemRootURI(const GURL& origin_url,
 // Example:
 //   The name for a TEMPORARY filesystem of "http://www.example.com:80/"
 //   should look like: "http_www.example.host_80:temporary"
-WEBKIT_COMMON_EXPORT std::string GetFileSystemName(const GURL& origin_url,
-                                             FileSystemType type);
+WEBKIT_STORAGE_COMMON_EXPORT std::string
+GetFileSystemName(const GURL& origin_url, FileSystemType type);
 
 // Converts FileSystemType |type| to/from the StorageType |storage_type| that
 // is used for the unified quota system.
 // (Basically this naively maps TEMPORARY storage type to TEMPORARY filesystem
 // type, PERSISTENT storage type to PERSISTENT filesystem type and vice versa.)
-WEBKIT_COMMON_EXPORT FileSystemType QuotaStorageTypeToFileSystemType(
-    quota::StorageType storage_type);
-WEBKIT_COMMON_EXPORT quota::StorageType FileSystemTypeToQuotaStorageType(
-    FileSystemType type);
+WEBKIT_STORAGE_COMMON_EXPORT FileSystemType
+QuotaStorageTypeToFileSystemType(quota::StorageType storage_type);
+
+WEBKIT_STORAGE_COMMON_EXPORT quota::StorageType
+FileSystemTypeToQuotaStorageType(FileSystemType type);
 
 // Returns the string representation of the given filesystem |type|.
 // Returns an empty string if the |type| is invalid.
-WEBKIT_COMMON_EXPORT std::string GetFileSystemTypeString(FileSystemType type);
+WEBKIT_STORAGE_COMMON_EXPORT std::string
+GetFileSystemTypeString(FileSystemType type);
 
 // Sets type to FileSystemType enum that corresponds to the string name.
 // Returns false if the |type_string| is invalid.
-WEBKIT_COMMON_EXPORT bool GetFileSystemPublicType(
+WEBKIT_STORAGE_COMMON_EXPORT bool GetFileSystemPublicType(
     std::string type_string,
     WebKit::WebFileSystemType* type);
 
@@ -114,20 +116,20 @@ WEBKIT_COMMON_EXPORT bool GetFileSystemPublicType(
 //
 // TODO(tzik): Replace CreateFilePath and FilePathToString in
 // third_party/leveldatabase/env_chromium.cc with them.
-WEBKIT_COMMON_EXPORT std::string FilePathToString(
+WEBKIT_STORAGE_COMMON_EXPORT std::string FilePathToString(
     const base::FilePath& file_path);
 
 // Decode a file path from |file_path_string|.
-WEBKIT_COMMON_EXPORT base::FilePath StringToFilePath(
+WEBKIT_STORAGE_COMMON_EXPORT base::FilePath StringToFilePath(
     const std::string& file_path_string);
 
 // File error conversion
-WEBKIT_COMMON_EXPORT WebKit::WebFileError PlatformFileErrorToWebFileError(
-    base::PlatformFileError error_code);
+WEBKIT_STORAGE_COMMON_EXPORT WebKit::WebFileError
+PlatformFileErrorToWebFileError(base::PlatformFileError error_code);
 
 // Generate a file system name for the given arguments. Should only be used by
 // platform apps.
-WEBKIT_COMMON_EXPORT std::string GetIsolatedFileSystemName(
+WEBKIT_STORAGE_COMMON_EXPORT std::string GetIsolatedFileSystemName(
     const GURL& origin_url,
     const std::string& filesystem_id);
 
@@ -135,21 +137,21 @@ WEBKIT_COMMON_EXPORT std::string GetIsolatedFileSystemName(
 // platform apps. This function will return false if the file system name is
 // not of the form {origin}:Isolated_{id}, and will also check that there is an
 // origin and id present. It will not check that the origin or id are valid.
-WEBKIT_COMMON_EXPORT bool CrackIsolatedFileSystemName(
+WEBKIT_STORAGE_COMMON_EXPORT bool CrackIsolatedFileSystemName(
     const std::string& filesystem_name,
     std::string* filesystem_id);
 
 // Returns the root URI for an isolated filesystem for origin |origin_url|
 // and |filesystem_id|. If the |optional_root_name| is given the resulting
 // root URI will point to the subfolder within the isolated filesystem.
-WEBKIT_COMMON_EXPORT std::string GetIsolatedFileSystemRootURIString(
+WEBKIT_STORAGE_COMMON_EXPORT std::string GetIsolatedFileSystemRootURIString(
     const GURL& origin_url,
     const std::string& filesystem_id,
     const std::string& optional_root_name);
 
 // Returns the root URI for an external filesystem for origin |origin_url|
 // and |mount_name|.
-WEBKIT_COMMON_EXPORT std::string GetExternalFileSystemRootURIString(
+WEBKIT_STORAGE_COMMON_EXPORT std::string GetExternalFileSystemRootURIString(
     const GURL& origin_url,
     const std::string& mount_name);
 

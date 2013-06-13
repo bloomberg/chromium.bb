@@ -20,7 +20,7 @@
 #include "webkit/browser/fileapi/file_system_quota_util.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/browser/quota/special_storage_policy.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -49,7 +49,7 @@ class SandboxQuotaObserver;
 // profile directory in a sandboxed way.
 // This interface also lets one enumerate and remove storage for the origins
 // that use the filesystem.
-class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
+class WEBKIT_STORAGE_BROWSER_EXPORT SandboxMountPointProvider
     : public FileSystemMountPointProvider,
       public FileSystemQuotaUtil {
  public:

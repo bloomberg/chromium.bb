@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "net/url_request/url_request_job_factory.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -27,7 +27,7 @@ namespace webkit_blob {
 class BlobData;
 class BlobStorageController;
 
-class WEBKIT_STORAGE_EXPORT BlobProtocolHandler
+class WEBKIT_STORAGE_BROWSER_EXPORT BlobProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   // |controller|'s lifetime should exceed the lifetime of the ProtocolHandler.

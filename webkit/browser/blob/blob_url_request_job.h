@@ -13,8 +13,8 @@
 #include "net/http/http_byte_range.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_job.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/blob/blob_data.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -35,7 +35,8 @@ namespace webkit_blob {
 class FileStreamReader;
 
 // A request job that handles reading blob URLs.
-class WEBKIT_STORAGE_EXPORT BlobURLRequestJob : public net::URLRequestJob {
+class WEBKIT_STORAGE_BROWSER_EXPORT BlobURLRequestJob
+    : public net::URLRequestJob {
  public:
   BlobURLRequestJob(net::URLRequest* request,
                     net::NetworkDelegate* network_delegate,

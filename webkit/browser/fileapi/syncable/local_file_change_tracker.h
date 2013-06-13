@@ -19,7 +19,7 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/syncable/file_change.h"
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -35,7 +35,7 @@ namespace sync_file_system {
 // Tracks local file changes for cloud-backed file systems.
 // All methods must be called on the file_task_runner given to the constructor.
 // Owned by FileSystemContext.
-class WEBKIT_STORAGE_EXPORT LocalFileChangeTracker
+class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileChangeTracker
     : public fileapi::FileUpdateObserver,
       public fileapi::FileChangeObserver {
  public:

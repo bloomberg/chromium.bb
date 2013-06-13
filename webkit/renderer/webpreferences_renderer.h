@@ -15,8 +15,9 @@ struct WebPreferences;
 
 namespace webkit_glue {
 
-WEBKIT_RENDERER_EXPORT void ApplyWebPreferences(const WebPreferences& prefs,
-                                                WebKit::WebView* web_view);
+WEBKIT_RENDERER_EXPORT void ApplyWebPreferences(
+    const WebPreferences& prefs,
+    WebKit::WebView* web_view);
 
 }  // namespace webkit_glue
 

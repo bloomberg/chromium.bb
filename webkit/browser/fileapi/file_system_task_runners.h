@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -16,7 +16,7 @@ class SingleThreadTaskRunner;
 namespace fileapi {
 
 // This class holds task runners used for filesystem related stuff.
-class WEBKIT_STORAGE_EXPORT FileSystemTaskRunners {
+class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemTaskRunners {
  public:
   FileSystemTaskRunners(
       base::SingleThreadTaskRunner* io_task_runner,

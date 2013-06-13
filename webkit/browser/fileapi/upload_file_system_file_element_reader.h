@@ -9,7 +9,7 @@
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/upload_element_reader.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace webkit_blob {
 class FileStreamReader;
@@ -20,7 +20,7 @@ namespace fileapi {
 class FileSystemContext;
 
 // An UploadElementReader implementation for filesystem file.
-class WEBKIT_STORAGE_EXPORT UploadFileSystemFileElementReader
+class WEBKIT_STORAGE_BROWSER_EXPORT UploadFileSystemFileElementReader
     : public net::UploadElementReader {
  public:
   UploadFileSystemFileElementReader(

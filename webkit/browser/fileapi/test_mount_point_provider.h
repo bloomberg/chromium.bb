@@ -11,7 +11,7 @@
 #include "webkit/browser/fileapi/async_file_util_adapter.h"
 #include "webkit/browser/fileapi/file_system_mount_point_provider.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -25,7 +25,7 @@ class FileSystemQuotaUtil;
 // This should be only used for testing.
 // This mount point provider uses LocalFileUtil and stores data file
 // under the given directory.
-class WEBKIT_STORAGE_EXPORT_PRIVATE TestMountPointProvider
+class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE TestMountPointProvider
     : public FileSystemMountPointProvider {
  public:
   TestMountPointProvider(

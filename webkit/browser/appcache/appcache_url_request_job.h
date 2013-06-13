@@ -13,13 +13,13 @@
 #include "webkit/browser/appcache/appcache_entry.h"
 #include "webkit/browser/appcache/appcache_response.h"
 #include "webkit/browser/appcache/appcache_storage.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace appcache {
 
 // A net::URLRequestJob derivative that knows how to return a response stored
 // in the appcache.
-class WEBKIT_STORAGE_EXPORT AppCacheURLRequestJob
+class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheURLRequestJob
     : public net::URLRequestJob,
       public AppCacheStorage::Delegate {
  public:

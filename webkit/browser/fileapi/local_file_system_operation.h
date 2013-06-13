@@ -14,9 +14,9 @@
 #include "webkit/browser/fileapi/file_system_operation_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/file_writer_delegate.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/blob/scoped_file.h"
 #include "webkit/common/quota/quota_types.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace chromeos {
 class CrosMountPointProvider;
@@ -33,7 +33,7 @@ class FileSystemContext;
 class RecursiveOperationDelegate;
 
 // FileSystemOperation implementation for local file systems.
-class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
+class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileSystemOperation
     : public NON_EXPORTED_BASE(FileSystemOperation),
       public base::SupportsWeakPtr<LocalFileSystemOperation> {
  public:

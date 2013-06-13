@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/move.h"
-#include "webkit/common/webkit_common_export.h"
+#include "webkit/common/webkit_storage_common_export.h"
 
 namespace base {
 class TaskRunner;
@@ -26,7 +26,7 @@ namespace webkit_blob {
 //
 // TODO(kinuko): Probably this can be moved under base or somewhere more
 // common place.
-class WEBKIT_COMMON_EXPORT ScopedFile {
+class WEBKIT_STORAGE_COMMON_EXPORT ScopedFile {
   // To support destructive assignment from an l-value assignment.
   // This provides Pass() method which creates an r-value for the current
   // instance. (See base/move.h for details)

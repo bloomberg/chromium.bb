@@ -10,8 +10,8 @@
 
 #include "base/platform_file.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
 
@@ -74,7 +74,7 @@ namespace fileapi {
 // illegal on the current platform.
 // To avoid problems, use VirtualPath::BaseName and
 // VirtualPath::GetComponents instead of the base::FilePath methods.
-class WEBKIT_STORAGE_EXPORT FileSystemURL {
+class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemURL {
  public:
   FileSystemURL();
   ~FileSystemURL();
@@ -127,7 +127,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemURL {
 
   bool operator==(const FileSystemURL& that) const;
 
-  struct WEBKIT_STORAGE_EXPORT Comparator {
+  struct WEBKIT_STORAGE_BROWSER_EXPORT Comparator {
     bool operator() (const FileSystemURL& lhs, const FileSystemURL& rhs) const;
   };
 

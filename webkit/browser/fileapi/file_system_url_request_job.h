@@ -14,7 +14,7 @@
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 class GURL;
 
@@ -30,7 +30,7 @@ namespace fileapi {
 class FileSystemContext;
 
 // A request job that handles reading filesystem: URLs
-class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemURLRequestJob
+class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemURLRequestJob
     : public net::URLRequestJob {
  public:
   FileSystemURLRequestJob(

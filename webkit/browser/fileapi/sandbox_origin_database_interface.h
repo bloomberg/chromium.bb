@@ -9,13 +9,13 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace fileapi {
 
-class WEBKIT_STORAGE_EXPORT_PRIVATE SandboxOriginDatabaseInterface {
+class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE SandboxOriginDatabaseInterface {
  public:
-  struct WEBKIT_STORAGE_EXPORT_PRIVATE OriginRecord {
+  struct WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE OriginRecord {
     std::string origin;
     base::FilePath path;
 

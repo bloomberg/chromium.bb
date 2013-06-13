@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "webkit/browser/appcache/appcache_working_set.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 class GURL;
 
@@ -30,11 +30,11 @@ class AppCacheService;
 struct AppCacheInfoCollection;
 struct HttpResponseInfoIOBuffer;
 
-class WEBKIT_STORAGE_EXPORT AppCacheStorage {
+class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheStorage {
  public:
   typedef std::map<GURL, int64> UsageMap;
 
-  class WEBKIT_STORAGE_EXPORT Delegate {
+  class WEBKIT_STORAGE_BROWSER_EXPORT Delegate {
    public:
     // If retrieval fails, 'collection' will be NULL.
     virtual void OnAllInfo(AppCacheInfoCollection* collection) {}
@@ -319,4 +319,3 @@ class WEBKIT_STORAGE_EXPORT AppCacheStorage {
 }  // namespace appcache
 
 #endif  // WEBKIT_BROWSER_APPCACHE_APPCACHE_STORAGE_H_
-

@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -23,7 +23,7 @@ namespace fileapi {
 // runs tasks on it (instead of implicitly bound to a thread).
 // TODO(kinuko): This has nothing to do with fileapi. Move somewhere
 // more common place.
-class WEBKIT_STORAGE_EXPORT TimedTaskHelper {
+class WEBKIT_STORAGE_BROWSER_EXPORT TimedTaskHelper {
  public:
   explicit TimedTaskHelper(base::SequencedTaskRunner* task_runner);
   ~TimedTaskHelper();

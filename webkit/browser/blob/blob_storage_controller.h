@@ -11,8 +11,8 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/process.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/blob/blob_data.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 class GURL;
 
@@ -24,7 +24,7 @@ class Time;
 namespace webkit_blob {
 
 // This class handles the logistics of blob Storage within the browser process.
-class WEBKIT_STORAGE_EXPORT BlobStorageController {
+class WEBKIT_STORAGE_BROWSER_EXPORT BlobStorageController {
  public:
   BlobStorageController();
   ~BlobStorageController();

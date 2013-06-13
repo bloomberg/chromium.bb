@@ -11,13 +11,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/disk_cache/disk_cache.h"
 #include "webkit/browser/appcache/appcache_response.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace appcache {
 
 // An implementation of AppCacheDiskCacheInterface that
 // uses net::DiskCache as the backing store.
-class WEBKIT_STORAGE_EXPORT AppCacheDiskCache
+class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheDiskCache
     : public AppCacheDiskCacheInterface {
  public:
   AppCacheDiskCache();

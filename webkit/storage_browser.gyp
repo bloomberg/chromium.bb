@@ -21,10 +21,9 @@
         '<(DEPTH)/webkit/base/webkit_base.gyp:webkit_base',
         '<(DEPTH)/webkit/storage_common.gyp:webkit_storage_common',
       ],
-      'defines': ['WEBKIT_STORAGE_IMPLEMENTATION'],
+      'defines': ['WEBKIT_STORAGE_BROWSER_IMPLEMENTATION'],
       'sources': [
-        # TODO(kinuko): Fix this export.
-        'storage/webkit_storage_export.h',
+        'browser/webkit_storage_browser_export.h',
         'browser/appcache/appcache.cc',
         'browser/appcache/appcache.h',
         'browser/appcache/appcache_backend_impl.cc',

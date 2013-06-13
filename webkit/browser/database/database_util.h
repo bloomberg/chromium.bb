@@ -7,7 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace base {
 class FilePath;
@@ -17,7 +17,7 @@ namespace webkit_database {
 
 class DatabaseTracker;
 
-class WEBKIT_STORAGE_EXPORT DatabaseUtil {
+class WEBKIT_STORAGE_BROWSER_EXPORT DatabaseUtil {
  public:
   static const char kJournalFileSuffix[];
 

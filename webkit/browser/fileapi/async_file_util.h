@@ -10,8 +10,8 @@
 #include "base/files/file_util_proxy.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/directory_entry.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class Time;
@@ -38,7 +38,7 @@ class FileSystemURL;
 // alive while FileSystemOperationContext given to each operation is kept
 // alive. (Note that this instance might be freed on different thread
 // from the thread it is created.)
-class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
+class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
  public:
   typedef base::Callback<
       void(base::PlatformFileError result)> StatusCallback;

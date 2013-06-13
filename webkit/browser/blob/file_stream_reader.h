@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "net/base/completion_callback.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace net {
 class IOBuffer;
@@ -17,7 +17,7 @@ class IOBuffer;
 namespace webkit_blob {
 
 // A generic interface for reading a file-like object.
-class WEBKIT_STORAGE_EXPORT FileStreamReader {
+class WEBKIT_STORAGE_BROWSER_EXPORT FileStreamReader {
  public:
   // It is valid to delete the reader at any time.  If the stream is deleted
   // while it has a pending read, its callback will not be called.

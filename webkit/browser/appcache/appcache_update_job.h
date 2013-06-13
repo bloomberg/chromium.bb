@@ -21,15 +21,15 @@
 #include "webkit/browser/appcache/appcache_host.h"
 #include "webkit/browser/appcache/appcache_response.h"
 #include "webkit/browser/appcache/appcache_storage.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace appcache {
 
 class HostNotifier;
 
 // Application cache Update algorithm and state.
-class WEBKIT_STORAGE_EXPORT AppCacheUpdateJob
+class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheUpdateJob
     : public AppCacheStorage::Delegate,
       public AppCacheHost::Observer {
  public:

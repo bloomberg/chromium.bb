@@ -15,8 +15,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace sql {
 class Connection;
@@ -27,9 +27,9 @@ class StatementID;
 
 namespace appcache {
 
-class WEBKIT_STORAGE_EXPORT AppCacheDatabase {
+class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheDatabase {
  public:
-  struct WEBKIT_STORAGE_EXPORT GroupRecord {
+  struct WEBKIT_STORAGE_BROWSER_EXPORT GroupRecord {
     GroupRecord();
     ~GroupRecord();
 
@@ -40,7 +40,7 @@ class WEBKIT_STORAGE_EXPORT AppCacheDatabase {
     base::Time last_access_time;
   };
 
-  struct WEBKIT_STORAGE_EXPORT CacheRecord {
+  struct WEBKIT_STORAGE_BROWSER_EXPORT CacheRecord {
     CacheRecord()
         : cache_id(0), group_id(0), online_wildcard(false), cache_size(0) {}
 
@@ -61,7 +61,7 @@ class WEBKIT_STORAGE_EXPORT AppCacheDatabase {
     int64 response_size;
   };
 
-  struct WEBKIT_STORAGE_EXPORT NamespaceRecord {
+  struct WEBKIT_STORAGE_BROWSER_EXPORT NamespaceRecord {
     NamespaceRecord();
     ~NamespaceRecord();
 

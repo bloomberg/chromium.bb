@@ -9,8 +9,8 @@
 #include "base/supports_user_data.h"
 #include "base/threading/thread_checker.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/quota/quota_types.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -26,7 +26,7 @@ class FileSystemContext;
 // the same context (e.g. use the same task runner, share the quota etc).
 // Note that the remaining quota bytes (allowed_bytes_growth) may be
 // updated during the execution of write operations.
-class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext
+class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemOperationContext
     : public base::SupportsUserData {
  public:
   explicit FileSystemOperationContext(FileSystemContext* context);

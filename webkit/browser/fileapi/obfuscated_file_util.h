@@ -16,9 +16,9 @@
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/sandbox_directory_database.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -45,7 +45,7 @@ class TimedTaskHelper;
 //
 // This class must be deleted on the FILE thread, because that's where
 // DropDatabases needs to be called.
-class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
+class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
     : public FileSystemFileUtil {
  public:
   // Origin enumerator interface.

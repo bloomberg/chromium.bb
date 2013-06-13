@@ -9,11 +9,11 @@
 #include "base/time.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/syncable/file_change.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace sync_file_system {
 
-class WEBKIT_STORAGE_EXPORT SyncFileMetadata {
+class WEBKIT_STORAGE_BROWSER_EXPORT SyncFileMetadata {
  public:
   SyncFileMetadata();
   SyncFileMetadata(SyncFileType file_type,
@@ -28,7 +28,7 @@ class WEBKIT_STORAGE_EXPORT SyncFileMetadata {
   bool operator==(const SyncFileMetadata& that) const;
 };
 
-struct WEBKIT_STORAGE_EXPORT LocalFileSyncInfo {
+struct WEBKIT_STORAGE_BROWSER_EXPORT LocalFileSyncInfo {
   LocalFileSyncInfo();
   ~LocalFileSyncInfo();
 

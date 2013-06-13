@@ -16,9 +16,9 @@
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
         '<(DEPTH)/webkit/base/webkit_base.gyp:webkit_base',
       ],
-      'defines': ['WEBKIT_COMMON_IMPLEMENTATION'],
+      'defines': ['WEBKIT_STORAGE_COMMON_IMPLEMENTATION'],
       'sources': [
-        'common/webkit_common_export.h',
+        'common/webkit_storage_common_export.h',
         'common/appcache/appcache_interfaces.cc',
         'common/appcache/appcache_interfaces.h',
         'common/blob/blob_data.cc',

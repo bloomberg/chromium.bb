@@ -16,7 +16,7 @@
 #include "webkit/browser/appcache/appcache_database.h"
 #include "webkit/browser/appcache/appcache_entry.h"
 #include "webkit/browser/appcache/manifest_parser.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace appcache {
 
@@ -27,7 +27,8 @@ class AppCacheStorage;
 // Set of cached resources for an application. A cache exists as long as a
 // host is associated with it, the cache is in an appcache group or the
 // cache is being created during an appcache upate.
-class WEBKIT_STORAGE_EXPORT AppCache : public base::RefCounted<AppCache> {
+class WEBKIT_STORAGE_BROWSER_EXPORT AppCache
+    : public base::RefCounted<AppCache> {
  public:
   typedef std::map<GURL, AppCacheEntry> EntryMap;
   typedef std::set<AppCacheHost*> AppCacheHosts;

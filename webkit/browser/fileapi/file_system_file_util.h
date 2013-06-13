@@ -8,8 +8,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/blob/scoped_file.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class Time;
@@ -25,10 +25,10 @@ class FileSystemURL;
 //
 // Layering structure of the FileSystemFileUtil was split out.
 // See http://crbug.com/128136 if you need it.
-class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
+class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemFileUtil {
  public:
   // It will be implemented by each subclass such as FileSystemFileEnumerator.
-  class WEBKIT_STORAGE_EXPORT AbstractFileEnumerator {
+  class WEBKIT_STORAGE_BROWSER_EXPORT AbstractFileEnumerator {
    public:
     virtual ~AbstractFileEnumerator() {}
 
@@ -44,7 +44,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
     virtual bool IsDirectory() = 0;
   };
 
-  class WEBKIT_STORAGE_EXPORT EmptyFileEnumerator
+  class WEBKIT_STORAGE_BROWSER_EXPORT EmptyFileEnumerator
       : public AbstractFileEnumerator {
     virtual base::FilePath Next() OVERRIDE;
     virtual int64 Size() OVERRIDE;

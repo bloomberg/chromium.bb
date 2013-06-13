@@ -13,9 +13,9 @@
 #include "webkit/browser/appcache/appcache_group.h"
 #include "webkit/browser/appcache/appcache_service.h"
 #include "webkit/browser/appcache/appcache_storage.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
 #include "webkit/glue/resource_type.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace net {
 class URLRequest;
@@ -32,12 +32,12 @@ typedef base::Callback<void(bool, void*)> StartUpdateCallback;
 typedef base::Callback<void(bool, void*)> SwapCacheCallback;
 
 // Server-side representation of an application cache host.
-class WEBKIT_STORAGE_EXPORT AppCacheHost
+class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
     : public AppCacheStorage::Delegate,
       public AppCacheGroup::UpdateObserver {
  public:
 
-  class WEBKIT_STORAGE_EXPORT Observer {
+  class WEBKIT_STORAGE_BROWSER_EXPORT Observer {
    public:
     // Called just after the cache selection algorithm completes.
     virtual void OnCacheSelectionComplete(AppCacheHost* host) = 0;

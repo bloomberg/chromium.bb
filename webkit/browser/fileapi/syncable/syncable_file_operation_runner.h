@@ -15,7 +15,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/syncable/local_file_sync_status.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace fileapi {
 class FileSystemURL;
@@ -25,7 +25,7 @@ namespace sync_file_system {
 
 // This class must run only on IO thread.
 // Owned by LocalFileSyncContext.
-class WEBKIT_STORAGE_EXPORT SyncableFileOperationRunner
+class WEBKIT_STORAGE_BROWSER_EXPORT SyncableFileOperationRunner
     : public base::NonThreadSafe,
       public base::SupportsWeakPtr<SyncableFileOperationRunner>,
       public LocalFileSyncStatus::Observer {

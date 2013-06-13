@@ -29,9 +29,10 @@ namespace sync_file_system {
 //
 // An entry can have multiple writers but sync is exclusive and cannot overwrap
 // with any writes or syncs.
-class WEBKIT_STORAGE_EXPORT LocalFileSyncStatus : public base::NonThreadSafe {
+class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileSyncStatus
+    : public base::NonThreadSafe {
  public:
-  class WEBKIT_STORAGE_EXPORT Observer {
+  class WEBKIT_STORAGE_BROWSER_EXPORT Observer {
    public:
     Observer() {}
     virtual ~Observer() {}

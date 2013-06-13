@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "webkit/browser/fileapi/file_stream_writer.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace net {
 class FileStream;
@@ -23,7 +23,7 @@ class FileStream;
 namespace fileapi {
 
 // This class is a thin wrapper around net::FileStream for writing local files.
-class WEBKIT_STORAGE_EXPORT_PRIVATE LocalFileStreamWriter
+class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE LocalFileStreamWriter
     : public FileStreamWriter {
  public:
   // Create a writer for the existing file in the path |file_path| starting from
