@@ -1836,7 +1836,8 @@ SmoothScrollGesture* RenderWidgetHostViewAura::CreateSmoothScrollGesture(
   return new TouchSmoothScrollGestureAura(scroll_down,
                                           pixels_to_scroll,
                                           mouse_event_x,
-                                          mouse_event_y);
+                                          mouse_event_y,
+                                          window_);
 }
 
 void RenderWidgetHostViewAura::SetHasHorizontalScrollbar(

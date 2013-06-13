@@ -10,6 +10,10 @@
 #include "content/port/browser/smooth_scroll_gesture.h"
 #include "ui/gfx/point.h"
 
+namespace aura {
+class Window;
+}
+
 namespace content {
 
 class TouchSmoothScrollGestureAura : public SmoothScrollGesture {
@@ -17,7 +21,8 @@ class TouchSmoothScrollGestureAura : public SmoothScrollGesture {
   TouchSmoothScrollGestureAura(bool scroll_down,
                                int pixels_to_scroll,
                                int mouse_event_x,
-                               int mouse_event_y);
+                               int mouse_event_y,
+                               aura::Window* window);
  private:
   virtual ~TouchSmoothScrollGestureAura();
 
@@ -29,6 +34,7 @@ class TouchSmoothScrollGestureAura : public SmoothScrollGesture {
   int pixels_to_scroll_;
   int pixels_scrolled_;
   gfx::Point location_;
+  aura::Window* window_;
   SmoothScrollCalculator smooth_scroll_calculator_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchSmoothScrollGestureAura);
