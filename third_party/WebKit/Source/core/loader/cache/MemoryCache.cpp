@@ -24,13 +24,6 @@
 #include "core/loader/cache/MemoryCache.h"
 
 #include <stdio.h>
-#include <wtf/CurrentTime.h>
-#include <wtf/MathExtras.h>
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/MemoryObjectInfo.h>
-#include <wtf/TemporaryChange.h>
-#include <wtf/text/CString.h>
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
@@ -47,10 +40,20 @@
 #include "core/workers/WorkerThread.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityOriginHash.h"
+#include "wtf/Assertions.h"
+#include "wtf/CurrentTime.h"
+#include "wtf/MathExtras.h"
+#include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/MemoryInstrumentationVector.h"
+#include "wtf/MemoryObjectInfo.h"
+#include "wtf/TemporaryChange.h"
+#include "wtf/text/CString.h"
 
 using namespace std;
 
 namespace WebCore {
+
+static MemoryCache* gMemoryCache;
 
 static const int cDefaultCacheCapacity = 8192 * 1024;
 static const double cMinDelayBeforeLiveDecodedPrune = 1; // Seconds.
@@ -59,10 +62,15 @@ static const double cDefaultDecodedDataDeletionInterval = 0;
 
 MemoryCache* memoryCache()
 {
-    static MemoryCache* staticCache = new MemoryCache;
     ASSERT(WTF::isMainThread());
+    if (!gMemoryCache)
+        gMemoryCache = new MemoryCache();
+    return gMemoryCache;
+}
 
-    return staticCache;
+void setMemoryCacheForTesting(MemoryCache* memoryCache)
+{
+    gMemoryCache = memoryCache;
 }
 
 MemoryCache::MemoryCache()
@@ -316,8 +324,7 @@ void MemoryCache::evict(CachedResource* resource)
         // Remove from the appropriate LRU list.
         removeFromLRUList(resource);
         removeFromLiveDecodedResourcesList(resource);
-        if (!resource->isPurgeable())
-            adjustSize(resource->hasClients(), -static_cast<int>(resource->size()));
+        adjustSize(resource->hasClients(), -static_cast<int>(resource->size()));
     } else
         ASSERT(m_resources.get(resource->url()) != resource);
 

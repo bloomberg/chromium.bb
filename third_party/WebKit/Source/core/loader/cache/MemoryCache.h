@@ -63,7 +63,8 @@ struct SecurityOriginHash;
 class MemoryCache {
     WTF_MAKE_NONCOPYABLE(MemoryCache); WTF_MAKE_FAST_ALLOCATED;
 public:
-    friend MemoryCache* memoryCache();
+    MemoryCache();
+    ~MemoryCache() { }
 
     typedef HashMap<String, CachedResource*> CachedResourceMap;
 
@@ -156,9 +157,6 @@ public:
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
-    MemoryCache();
-    ~MemoryCache(); // Not implemented to make sure nobody accidentally calls delete -- WebCore does not delete singletons.
-       
     LRUList* lruListFor(CachedResource*);
 
 #ifdef MEMORY_CACHE_STATS
@@ -209,8 +207,11 @@ private:
 #endif
 };
 
-// Function to obtain the global cache.
+// Returns the global cache.
 MemoryCache* memoryCache();
+
+// Sets the global cache, used to swap in a test instance.
+void setMemoryCacheForTesting(MemoryCache*);
 
 }
 
