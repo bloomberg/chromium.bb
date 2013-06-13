@@ -117,6 +117,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Get bubble bounds from the anchor rect and client view's preferred size.
   virtual gfx::Rect GetBubbleBounds();
 
+  // Returns the duration in milliseconds for the fade animation.
+  virtual int GetFadeDuration();
+
   // View overrides:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
