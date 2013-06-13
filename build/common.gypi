@@ -279,6 +279,11 @@
       # See https://sites.google.com/a/chromium.org/dev/developers/testing/addresssanitizer
       'asan%': 0,
 
+      # Enable building with LSan (Clang's -fsanitize=leak option).
+      # -fsanitize=leak only works with clang, but lsan=1 implies clang=1
+      # See https://sites.google.com/a/chromium.org/dev/developers/testing/leaksanitizer
+      'lsan%': 0,
+
       # Enable building with TSAN (Clang's -fsanitize=thread option).
       # -fsanitize=thread only works with clang, but tsan=1 implies clang=1
       # See http://clang.llvm.org/docs/ThreadSanitizer.html
@@ -777,6 +782,7 @@
     'clang_use_chrome_plugins%': '<(clang_use_chrome_plugins)',
     'mac_want_real_dsym%': '<(mac_want_real_dsym)',
     'asan%': '<(asan)',
+    'lsan%': '<(lsan)',
     'msan%': '<(msan)',
     'tsan%': '<(tsan)',
     'tsan_blacklist%': '<(tsan_blacklist)',
@@ -1090,7 +1096,7 @@
       # platforms except Windows, Mac and iOS.
       # TODO(glider): set clang to 1 earlier for ASan and TSan builds so that
       # it takes effect here.
-      ['os_posix==1 and OS!="mac" and OS!="ios" and clang==0 and asan==0 and tsan==0 and msan==0', {
+      ['os_posix==1 and OS!="mac" and OS!="ios" and clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0', {
         'gcc_version%': '<!(python <(DEPTH)/build/compiler_version.py)',
       }, {
         'gcc_version%': 0,
@@ -1577,6 +1583,9 @@
         # TODO(glider): we do not strip ASan binaries until the dynamic ASan
         # runtime is fully adopted. See http://crbug.com/242503.
         'mac_strip_release': 0,
+      }],
+      ['lsan==1', {
+        'clang%': 1,
       }],
       ['tsan==1', {
         'clang%': 1,
@@ -3136,9 +3145,9 @@
               '-fcolor-diagnostics',
             ],
           }],
-          # Common options for AddressSanitizer, ThreadSanitizer and
-          # MemorySanitizer.
-          ['asan==1 or tsan==1 or msan==1', {
+          # Common options for AddressSanitizer, LeakSanitizer,
+          # ThreadSanitizer and MemorySanitizer.
+          ['asan==1 or lsan==1 or tsan==1 or msan==1', {
             'target_conditions': [
               ['_toolset=="target"', {
                 'cflags': [
@@ -3179,6 +3188,21 @@
               ['OS=="mac"', {
                 'cflags': [
                   '-mllvm -asan-globals=0',  # http://crbug.com/196561
+                ],
+              }],
+            ],
+          }],
+          ['lsan==1', {
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'cflags': [
+                  '-fsanitize=leak',
+                ],
+                'ldflags': [
+                  '-fsanitize=leak',
+                ],
+                'defines': [
+                  'LEAK_SANITIZER',
                 ],
               }],
             ],
