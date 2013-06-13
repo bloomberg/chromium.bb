@@ -62,5 +62,9 @@ Snippet execution result: function doesNothing() {
 Last evaluation source url for snippet: snippets:///1_3
 Snippet script added, sourceURL = snippets:///1_3
 Snippet execution result: undefined
+
+Running: testEvaluateEditReload
+Snippet execution result: undefined
+Page reloaded.
 Debugger was disabled.
 

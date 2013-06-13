@@ -12,13 +12,15 @@ function test()
         WebInspector.scriptSnippetModel.reset();
     }
 
-    var workspace = new WebInspector.Workspace();
-    var snippetWorkspaceProvider = new WebInspector.SimpleWorkspaceProvider(workspace, WebInspector.projectTypes.Snippets);
-    var workspaceController = new WebInspector.WorkspaceController(workspace);
-    WebInspector.scriptSnippetModel = new WebInspector.ScriptSnippetModel(workspace, snippetWorkspaceProvider);
+    var workspace = WebInspector.workspace;
     InspectorTest.runDebuggerTestSuite([
         function testCreateEditRenameRemove(next)
         {
+            function filterSnippet(uiSourceCode)
+            {
+                return uiSourceCode.project().type() === WebInspector.projectTypes.Snippets;
+            }
+
             function uiSourceCodeAdded(event)
             {
                 var uiSourceCode = event.data;
@@ -47,7 +49,7 @@ function test()
                         InspectorTest.addResult("Snippet was not renamed.");
                 }
                 InspectorTest.addResult("UISourceCode name is '" + uiSourceCode.name() + "' now.");
-                InspectorTest.addResult("Number of uiSourceCodes in workspace: " + workspace.uiSourceCodes().length);
+                InspectorTest.addResult("Number of uiSourceCodes in workspace: " + workspace.uiSourceCodes().filter(filterSnippet).length);
                 var storageSnippetsCount = WebInspector.scriptSnippetModel._snippetStorage.snippets().length;
                 InspectorTest.addResult("Number of snippets in the storage: " + storageSnippetsCount);
             }
@@ -86,7 +88,7 @@ function test()
             WebInspector.scriptSnippetModel.deleteScriptSnippet(uiSourceCode3);
             InspectorTest.addResult("Snippet3 deleted.");
 
-            InspectorTest.addResult("Number of uiSourceCodes in workspace: " + workspace.uiSourceCodes().length);
+            InspectorTest.addResult("Number of uiSourceCodes in workspace: " + workspace.uiSourceCodes().filter(filterSnippet).length);
             var storageSnippetsCount = WebInspector.scriptSnippetModel._snippetStorage.snippets().length;
             InspectorTest.addResult("Number of snippets in the storage: " + storageSnippetsCount);
 
@@ -152,6 +154,36 @@ function test()
             {
                 evaluateSnippetAndDumpEvaluationDetails(uiSourceCode1, next);
             }
+        },
+
+        function testEvaluateEditReload(next)
+        {
+            resetSnippetsSettings();
+
+            var uiSourceCode1 = WebInspector.scriptSnippetModel.createScriptSnippet();
+            uiSourceCode1.rename("Snippet1", function() { });
+            var content = "";
+            content += "// This snippet does nothing.\n";
+            content += "var i = 2+2;\n";
+            uiSourceCode1.setWorkingCopy(content);
+
+            function evaluateSnippetAndReloadPage(uiSourceCode, callback)
+            {
+                // JSC does not support compile-and-run for snippet evaluation, so different platforms have slightly different codeflow here, hence two sniffers.
+                InspectorTest.addSniffer(WebInspector.ConsoleView.prototype, "_printResult", snippetFinished);
+                InspectorTest.addSniffer(WebInspector.ScriptSnippetModel.prototype, "_printRunScriptResult", snippetFinished);
+                WebInspector.scriptSnippetModel.evaluateScriptSnippet(uiSourceCode);
+
+                function snippetFinished(result, wasThrown)
+                {
+                    var script = WebInspector.scriptSnippetModel._scriptForUISourceCode.get(uiSourceCode);
+                    InspectorTest.addResult("Snippet execution result: " + result.description);
+
+                    InspectorTest.reloadPage(callback)
+                }
+            }
+
+            evaluateSnippetAndReloadPage(uiSourceCode1, next);
         }
     ]);
 };
