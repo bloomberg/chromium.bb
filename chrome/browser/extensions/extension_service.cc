@@ -106,6 +106,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
+#include "ui/webui/web_ui_util.h"
 #include "webkit/browser/database/database_tracker.h"
 #include "webkit/browser/database/database_util.h"
 
@@ -2588,6 +2589,15 @@ void ExtensionService::Observe(int type,
       // Extensions need to know the channel for API restrictions.
       process->Send(new ExtensionMsg_SetChannel(
           extensions::Feature::GetCurrentChannel()));
+
+      // Platform apps need to know the system font.
+      scoped_ptr<base::DictionaryValue> fonts(new base::DictionaryValue);
+      webui::SetFontAndTextDirection(fonts.get());
+      std::string font_family, font_size;
+      fonts->GetString("fontfamily", &font_family);
+      fonts->GetString("fontsize", &font_size);
+      process->Send(new ExtensionMsg_SetSystemFont(
+          font_family, font_size));
 
       // Valid extension function names, used to setup bindings in renderer.
       std::vector<std::string> function_names;

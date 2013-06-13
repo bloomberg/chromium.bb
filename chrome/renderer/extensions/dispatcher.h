@@ -167,6 +167,8 @@ class Dispatcher : public content::RenderProcessObserver {
   void OnDeliverMessage(int target_port_id, const base::ListValue& message);
   void OnDispatchOnDisconnect(int port_id, const std::string& error_message);
   void OnSetFunctionNames(const std::vector<std::string>& names);
+  void OnSetSystemFont(const std::string& font_family,
+                       const std::string& font_size);
   void OnLoaded(
       const std::vector<ExtensionMsg_Loaded_Params>& loaded_extensions);
   void OnLoadedInternal(scoped_refptr<const Extension> extension);
@@ -294,6 +296,10 @@ class Dispatcher : public content::RenderProcessObserver {
 
   // Sends API requests to the extension host.
   scoped_ptr<RequestSender> request_sender_;
+
+  // The platforms system font family and size;
+  std::string system_font_family_;
+  std::string system_font_size_;
 
   DISALLOW_COPY_AND_ASSIGN(Dispatcher);
 };

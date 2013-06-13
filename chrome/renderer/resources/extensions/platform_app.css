@@ -11,6 +11,8 @@
 body {
   -webkit-user-select: none;
   cursor: default;
+  font-family: $FONTFAMILY;
+  font-size: $FONTSIZE;
 }
 
 webview, adview {

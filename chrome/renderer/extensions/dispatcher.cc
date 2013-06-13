@@ -406,6 +406,7 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnDisconnect,
                         OnDispatchOnDisconnect)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetFunctionNames, OnSetFunctionNames)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_SetSystemFont, OnSetSystemFont)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Loaded, OnLoaded)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Unloaded, OnUnloaded)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetScriptingWhitelist,
@@ -469,6 +470,12 @@ void Dispatcher::OnSetFunctionNames(
   function_names_.clear();
   for (size_t i = 0; i < names.size(); ++i)
     function_names_.insert(names[i]);
+}
+
+void Dispatcher::OnSetSystemFont(const std::string& font_family,
+                                 const std::string& font_size) {
+  system_font_family_ = font_family;
+  system_font_size_ = font_size;
 }
 
 void Dispatcher::OnSetChannel(int channel) {
@@ -1106,10 +1113,15 @@ void Dispatcher::DidCreateDocumentElement(WebKit::WebFrame* frame) {
     // WebKit doesn't let us define an additional user agent stylesheet, so we
     // insert the default platform app stylesheet into all documents that are
     // loaded in each app.
+    std::string stylesheet =
+        ResourceBundle::GetSharedInstance().
+            GetRawDataResource(IDR_PLATFORM_APP_CSS).as_string();
+    ReplaceFirstSubstringAfterOffset(&stylesheet, 0,
+                                     "$FONTFAMILY", system_font_family_);
+    ReplaceFirstSubstringAfterOffset(&stylesheet, 0,
+                                     "$FONTSIZE", system_font_size_);
     frame->document().insertUserStyleSheet(
-        WebString::fromUTF8(ResourceBundle::GetSharedInstance().
-            GetRawDataResource(IDR_PLATFORM_APP_CSS)),
-        WebDocument::UserStyleUserLevel);
+        WebString::fromUTF8(stylesheet), WebDocument::UserStyleUserLevel);
   }
 
   content_watcher_->DidCreateDocumentElement(frame);

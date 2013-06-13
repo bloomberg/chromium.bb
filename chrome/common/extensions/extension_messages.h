@@ -309,6 +309,11 @@ IPC_MESSAGE_ROUTED5(ExtensionMsg_MessageInvoke,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_SetFunctionNames,
                      std::vector<std::string>)
 
+// Tell the renderer process the platforms system font.
+IPC_MESSAGE_CONTROL2(ExtensionMsg_SetSystemFont,
+                     std::string /* font_family */,
+                     std::string /* font_size */)
+
 // Marks an extension as 'active' in an extension process. 'Active' extensions
 // have more privileges than other extension content that might end up running
 // in the process (e.g. because of iframes or content scripts).
