@@ -52,7 +52,6 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list,
       CAUSE_FOR_GPU_LAUNCH_PEPPERPLATFORMCONTEXT3DIMPL_INITIALIZE);
   if (!channel_.get())
     return false;
-  DCHECK(channel_->state() == GpuChannelHost::kConnected);
 
   gfx::Size surface_size;
   std::vector<int32> attribs;

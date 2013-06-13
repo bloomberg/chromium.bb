@@ -62,10 +62,6 @@ bool BrowserGpuChannelHostFactory::IsMainThread() {
   return BrowserThread::CurrentlyOn(BrowserThread::UI);
 }
 
-bool BrowserGpuChannelHostFactory::IsIOThread() {
-  return BrowserThread::CurrentlyOn(BrowserThread::IO);
-}
-
 base::MessageLoop* BrowserGpuChannelHostFactory::GetMainLoop() {
   return BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::UI);
 }
@@ -253,7 +249,7 @@ GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
     CauseForGpuLaunch cause_for_gpu_launch) {
   if (gpu_channel_.get()) {
     // Recreate the channel if it has been lost.
-    if (gpu_channel_->state() == GpuChannelHost::kLost)
+    if (gpu_channel_->IsLost())
       gpu_channel_ = NULL;
     else
       return gpu_channel_.get();
@@ -281,13 +277,10 @@ GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
   if (request.channel_handle.name.empty())
     return NULL;
 
-  gpu_channel_ = new GpuChannelHost(this, request.gpu_host_id, gpu_client_id_);
-  gpu_channel_->set_gpu_info(request.gpu_info);
   GetContentClient()->SetGpuInfo(request.gpu_info);
-
-  // Connect to the GPU process if a channel name was received.
-  gpu_channel_->Connect(request.channel_handle);
-
+  gpu_channel_ = GpuChannelHost::Create(
+      this, request.gpu_host_id, gpu_client_id_,
+      request.gpu_info, request.channel_handle);
   return gpu_channel_.get();
 }
 

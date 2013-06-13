@@ -40,8 +40,6 @@ bool PlatformVideoDecoderImpl::Initialize(media::VideoCodecProfile profile) {
   if (!channel)
     return false;
 
-  DCHECK_EQ(channel->state(), GpuChannelHost::kConnected);
-
   // Send IPC message to initialize decoder in GPU process.
   decoder_ =
       channel->CreateVideoDecoder(command_buffer_route_id_, profile, this);

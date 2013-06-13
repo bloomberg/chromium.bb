@@ -65,7 +65,6 @@ class CONTENT_EXPORT GpuChannelHostFactory {
   virtual ~GpuChannelHostFactory() {}
 
   virtual bool IsMainThread() = 0;
-  virtual bool IsIOThread() = 0;
   virtual base::MessageLoop* GetMainLoop() = 0;
   virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() = 0;
   virtual base::WaitableEvent* GetShutDownEvent() = 0;
@@ -82,39 +81,26 @@ class CONTENT_EXPORT GpuChannelHostFactory {
 
 // Encapsulates an IPC channel between the client and one GPU process.
 // On the GPU process side there's a corresponding GpuChannel.
+// Every method can be called on any thread with a message loop, except for the
+// IO thread.
 class GpuChannelHost : public IPC::Sender,
-                       public base::RefCountedThreadSafe<GpuChannelHost>,
-                       public base::SupportsWeakPtr<GpuChannelHost> {
+                       public base::RefCountedThreadSafe<GpuChannelHost> {
  public:
-  enum State {
-    // Not yet connected.
-    kUnconnected,
-    // Ready to use.
-    kConnected,
-    // An error caused the host to become disconnected. Recreate channel to
-    // reestablish connection.
-    kLost
-  };
+  // Must be called on the main thread (as defined by the factory).
+  static scoped_refptr<GpuChannelHost> Create(
+      GpuChannelHostFactory* factory,
+      int gpu_host_id,
+      int client_id,
+      const gpu::GPUInfo& gpu_info,
+      const IPC::ChannelHandle& channel_handle);
 
-  // Called on the render thread
-  GpuChannelHost(GpuChannelHostFactory* factory,
-                 int gpu_host_id,
-                 int client_id);
-
-  // Connect to GPU process channel.
-  void Connect(const IPC::ChannelHandle& channel_handle);
-
-  State state() const { return state_; }
-
-  // Change state to kLost.
-  void SetStateLost();
+  bool IsLost() const {
+    DCHECK(channel_filter_);
+    return channel_filter_->IsLost();
+  }
 
   // The GPU stats reported by the GPU process.
-  void set_gpu_info(const gpu::GPUInfo& gpu_info);
-  const gpu::GPUInfo& gpu_info() const;
-
-  void OnMessageReceived(const IPC::Message& message);
-  void OnChannelError();
+  const gpu::GPUInfo& gpu_info() const { return gpu_info_; }
 
   // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
@@ -165,7 +151,7 @@ class GpuChannelHost : public IPC::Sender,
   base::SharedMemoryHandle ShareToGpuProcess(
       base::SharedMemoryHandle source_handle);
 
-  // Generates n unique mailbox names that can be used with
+  // Generates |num| unique mailbox names that can be used with
   // GL_texture_mailbox_CHROMIUM. Unlike genMailboxCHROMIUM, this IPC is
   // handled only on the GPU process' IO thread, and so is not effectively
   // a finish.
@@ -176,68 +162,91 @@ class GpuChannelHost : public IPC::Sender,
 
  private:
   friend class base::RefCountedThreadSafe<GpuChannelHost>;
+  GpuChannelHost(GpuChannelHostFactory* factory,
+                 int gpu_host_id,
+                 int client_id,
+                 const gpu::GPUInfo& gpu_info);
   virtual ~GpuChannelHost();
-
-  // Message handlers.
-  void OnGenerateMailboxNamesReply(const std::vector<gpu::Mailbox>& names);
+  void Connect(const IPC::ChannelHandle& channel_handle);
 
   // A filter used internally to route incoming messages from the IO thread
-  // to the correct message loop.
+  // to the correct message loop. It also maintains some shared state between
+  // all the contexts.
   class MessageFilter : public IPC::ChannelProxy::MessageFilter {
    public:
-    MessageFilter(base::WeakPtr<GpuChannelHost> parent,
-                  GpuChannelHostFactory* factory);
+    MessageFilter();
 
+    // Called on the IO thread.
     void AddRoute(int route_id,
                   base::WeakPtr<IPC::Listener> listener,
                   scoped_refptr<base::MessageLoopProxy> loop);
+    // Called on the IO thread.
     void RemoveRoute(int route_id);
 
-    // IPC::ChannelProxy::MessageFilter implementation:
+    // IPC::ChannelProxy::MessageFilter implementation
+    // (called on the IO thread):
     virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
     virtual void OnChannelError() OVERRIDE;
 
+    // The following methods can be called on any thread.
+
+    // Whether the channel is lost.
+    bool IsLost() const;
+
+    // Gets mailboxes from the pool, and return the number of mailboxes to ask
+    // the GPU process to maintain a good pool size. The caller is responsible
+    // for sending the GpuChannelMsg_GenerateMailboxNamesAsync message.
+    size_t GetMailboxNames(size_t num, std::vector<gpu::Mailbox>* names);
+
    private:
     virtual ~MessageFilter();
+    bool OnControlMessageReceived(const IPC::Message& msg);
 
-    // Note: this reference can only be used to post tasks back to the
-    // GpuChannelHost, it is illegal to dereference on the IO thread where the
-    // MessageFilter lives.
-    base::WeakPtr<GpuChannelHost> parent_;
+    // Message handlers.
+    void OnGenerateMailboxNamesReply(const std::vector<gpu::Mailbox>& names);
 
-    scoped_refptr<base::MessageLoopProxy> main_thread_loop_;
-
+    // Threading notes: |listeners_| is only accessed on the IO thread. Every
+    // other field is protected by |lock_|.
     typedef base::hash_map<int, GpuListenerInfo> ListenerMap;
     ListenerMap listeners_;
+
+    // Protexts all fields below this one.
+    mutable base::Lock lock_;
+
+    // Whether the channel has been lost.
+    bool lost_;
+
+    // A pool of valid mailbox names.
+    std::vector<gpu::Mailbox> mailbox_name_pool_;
+
+    // Number of pending mailbox requested from the GPU process.
+    size_t requested_mailboxes_;
   };
 
-  GpuChannelHostFactory* factory_;
-  int client_id_;
-  int gpu_host_id_;
+  // Threading notes: all fields are constant during the lifetime of |this|
+  // except:
+  // - |next_transfer_buffer_id_|, atomic type
+  // - |proxies_|, protected by |context_lock_|
+  GpuChannelHostFactory* const factory_;
+  const int client_id_;
+  const int gpu_host_id_;
 
-  State state_;
-
-  gpu::GPUInfo gpu_info_;
+  const gpu::GPUInfo gpu_info_;
 
   scoped_ptr<IPC::SyncChannel> channel_;
   scoped_refptr<MessageFilter> channel_filter_;
 
-  // Used to look up a proxy from its routing id.
-  typedef base::hash_map<int, CommandBufferProxyImpl*> ProxyMap;
-  ProxyMap proxies_;
-
-  // A lock to guard against concurrent access to members like the proxies map
-  // for calls from contexts that may live on the compositor or main thread.
-  mutable base::Lock context_lock_;
-
   // A filter for sending messages from thread other than the main thread.
   scoped_refptr<IPC::SyncMessageFilter> sync_filter_;
 
-  // A pool of valid mailbox names.
-  std::vector<gpu::Mailbox> mailbox_name_pool_;
-
   // Transfer buffer IDs are allocated in sequence.
   base::AtomicSequenceNumber next_transfer_buffer_id_;
+
+  // Protects proxies_.
+  mutable base::Lock context_lock_;
+  // Used to look up a proxy from its routing id.
+  typedef base::hash_map<int, CommandBufferProxyImpl*> ProxyMap;
+  ProxyMap proxies_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelHost);
 };

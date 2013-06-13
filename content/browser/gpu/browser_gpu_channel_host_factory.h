@@ -22,7 +22,6 @@ class BrowserGpuChannelHostFactory : public GpuChannelHostFactory {
 
   // GpuChannelHostFactory implementation.
   virtual bool IsMainThread() OVERRIDE;
-  virtual bool IsIOThread() OVERRIDE;
   virtual base::MessageLoop* GetMainLoop() OVERRIDE;
   virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() OVERRIDE;
   virtual base::WaitableEvent* GetShutDownEvent() OVERRIDE;

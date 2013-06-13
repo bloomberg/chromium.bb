@@ -1007,11 +1007,6 @@ bool RenderThreadImpl::IsMainThread() {
   return !!current();
 }
 
-bool RenderThreadImpl::IsIOThread() {
-  return base::MessageLoop::current() ==
-         ChildProcess::current()->io_message_loop();
-}
-
 base::MessageLoop* RenderThreadImpl::GetMainLoop() {
   return message_loop();
 }
@@ -1137,9 +1132,8 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
   if (gpu_channel_.get()) {
     // Do nothing if we already have a GPU channel or are already
     // establishing one.
-    if (gpu_channel_->state() == GpuChannelHost::kUnconnected ||
-        gpu_channel_->state() == GpuChannelHost::kConnected)
-      return GetGpuChannel();
+    if (!gpu_channel_->IsLost())
+      return gpu_channel_.get();
 
     // Recreate the channel if it has been lost.
     gpu_channel_ = NULL;
@@ -1158,18 +1152,13 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
 #endif
       channel_handle.name.empty()) {
     // Otherwise cancel the connection.
-    gpu_channel_ = NULL;
     return NULL;
   }
 
-  gpu_channel_ = new GpuChannelHost(this, 0, client_id);
-  gpu_channel_->set_gpu_info(gpu_info);
   GetContentClient()->SetGpuInfo(gpu_info);
-
-  // Connect to the GPU process if a channel name was received.
-  gpu_channel_->Connect(channel_handle);
-
-  return GetGpuChannel();
+  gpu_channel_ = GpuChannelHost::Create(
+      this, 0, client_id, gpu_info, channel_handle);
+  return gpu_channel_.get();
 }
 
 WebKit::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
@@ -1208,7 +1197,7 @@ GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
   if (!gpu_channel_.get())
     return NULL;
 
-  if (gpu_channel_->state() != GpuChannelHost::kConnected)
+  if (gpu_channel_->IsLost())
     return NULL;
 
   return gpu_channel_.get();
