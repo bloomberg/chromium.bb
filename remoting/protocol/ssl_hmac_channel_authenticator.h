@@ -18,6 +18,7 @@ class CertVerifier;
 class DrainableIOBuffer;
 class GrowableIOBuffer;
 class SSLSocket;
+class TransportSecurityState;
 }  // namespace net
 
 namespace remoting {
@@ -89,6 +90,7 @@ class SslHmacChannelAuthenticator : public ChannelAuthenticator,
   // Used in the CLIENT mode only.
   std::string remote_cert_;
   scoped_ptr<net::CertVerifier> cert_verifier_;
+  scoped_ptr<net::TransportSecurityState> transport_security_state_;
 
   scoped_ptr<net::SSLSocket> socket_;
   DoneCallback done_callback_;

@@ -16,6 +16,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
@@ -84,6 +85,7 @@ void TestShellRequestContext::Init(
 
   storage_.set_host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
   storage_.set_cert_verifier(net::CertVerifier::CreateDefault());
+  storage_.set_transport_security_state(new net::TransportSecurityState);
   storage_.set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
       proxy_config_service.release(), 0, NULL));
   storage_.set_ssl_config_service(
@@ -104,6 +106,7 @@ void TestShellRequestContext::Init(
   net::HttpNetworkSession::Params network_session_params;
   network_session_params.host_resolver = host_resolver();
   network_session_params.cert_verifier = cert_verifier();
+  network_session_params.transport_security_state = transport_security_state();
   network_session_params.server_bound_cert_service =
       server_bound_cert_service();
   network_session_params.proxy_service = proxy_service();

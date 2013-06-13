@@ -8843,6 +8843,8 @@ TEST_F(HttpNetworkTransactionSpdy2Test,
   scoped_ptr<ClientSocketHandle> ssl_connection(new ClientSocketHandle);
   SSLClientSocketContext context;
   context.cert_verifier = session_deps_.cert_verifier.get();
+  context.transport_security_state =
+      session_deps_.transport_security_state.get();
   ssl_connection->set_socket(
       session_deps_.socket_factory->CreateSSLClientSocket(
           connection.release(),

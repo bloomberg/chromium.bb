@@ -54,6 +54,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verifier.h"
+#include "net/http/transport_security_state.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
@@ -617,6 +618,9 @@ class SSLChan : public base::MessageLoopForIO::Watcher {
     if (!cert_verifier_.get())
       cert_verifier_.reset(net::CertVerifier::CreateDefault());
     ssl_context.cert_verifier = cert_verifier_.get();
+    if (!transport_security_state_.get())
+      transport_security_state_.reset(new net::TransportSecurityState);
+    ssl_context.transport_security_state = transport_security_state_.get();
     socket_.reset(factory->CreateSSLClientSocket(
         handle, host_port_pair_, ssl_config_, ssl_context));
     if (!socket_.get()) {
@@ -781,6 +785,7 @@ class SSLChan : public base::MessageLoopForIO::Watcher {
   scoped_ptr<net::StreamSocket> socket_;
   net::HostPortPair host_port_pair_;
   scoped_ptr<net::CertVerifier> cert_verifier_;
+  scoped_ptr<net::TransportSecurityState> transport_security_state_;
   net::SSLConfig ssl_config_;
   IOBufferQueue inbound_stream_;
   IOBufferQueue outbound_stream_;

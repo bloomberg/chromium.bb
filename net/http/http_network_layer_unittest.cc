@@ -11,6 +11,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_transaction_unittest.h"
+#include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_session_pool.h"
@@ -32,11 +33,13 @@ class HttpNetworkLayerTest : public PlatformTest {
 
   void ConfigureTestDependencies(ProxyService* proxy_service) {
     cert_verifier_.reset(new MockCertVerifier);
+    transport_security_state_.reset(new TransportSecurityState);
     proxy_service_.reset(proxy_service);
     HttpNetworkSession::Params session_params;
     session_params.client_socket_factory = &mock_socket_factory_;
     session_params.host_resolver = &host_resolver_;
     session_params.cert_verifier = cert_verifier_.get();
+    session_params.transport_security_state = transport_security_state_.get();
     session_params.proxy_service = proxy_service_.get();
     session_params.ssl_config_service = ssl_config_service_.get();
     session_params.http_server_properties = &http_server_properties_;
@@ -47,6 +50,7 @@ class HttpNetworkLayerTest : public PlatformTest {
   MockClientSocketFactory mock_socket_factory_;
   MockHostResolver host_resolver_;
   scoped_ptr<CertVerifier> cert_verifier_;
+  scoped_ptr<TransportSecurityState> transport_security_state_;
   scoped_ptr<ProxyService> proxy_service_;
   const scoped_refptr<SSLConfigService> ssl_config_service_;
   scoped_refptr<HttpNetworkSession> network_session_;

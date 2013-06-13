@@ -14,6 +14,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/http/transport_security_state.h"
 #include "net/ssl/default_server_bound_cert_store.h"
 #include "net/ssl/server_bound_cert_service.h"
 #include "net/url_request/static_http_user_agent_settings.h"
@@ -72,6 +73,8 @@ void TestURLRequestContext::Init() {
     context_storage_.set_proxy_service(ProxyService::CreateDirect());
   if (!cert_verifier())
     context_storage_.set_cert_verifier(CertVerifier::CreateDefault());
+  if (!transport_security_state())
+    context_storage_.set_transport_security_state(new TransportSecurityState);
   if (!ssl_config_service())
     context_storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
   if (!http_auth_handler_factory()) {
@@ -94,6 +97,7 @@ void TestURLRequestContext::Init() {
     params.client_socket_factory = client_socket_factory();
     params.host_resolver = host_resolver();
     params.cert_verifier = cert_verifier();
+    params.transport_security_state = transport_security_state();
     params.proxy_service = proxy_service();
     params.ssl_config_service = ssl_config_service();
     params.http_auth_handler_factory = http_auth_handler_factory();

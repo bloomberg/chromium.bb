@@ -181,6 +181,7 @@ class SSLClientSocketPoolTest : public testing::Test {
     HttpNetworkSession::Params params;
     params.host_resolver = &host_resolver_;
     params.cert_verifier = cert_verifier_.get();
+    params.transport_security_state = transport_security_state_.get();
     params.proxy_service = proxy_service_.get();
     params.client_socket_factory = &socket_factory_;
     params.ssl_config_service = ssl_config_service_.get();
@@ -195,6 +196,7 @@ class SSLClientSocketPoolTest : public testing::Test {
   MockClientSocketFactory socket_factory_;
   MockCachingHostResolver host_resolver_;
   scoped_ptr<CertVerifier> cert_verifier_;
+  scoped_ptr<TransportSecurityState> transport_security_state_;
   const scoped_ptr<ProxyService> proxy_service_;
   const scoped_refptr<SSLConfigService> ssl_config_service_;
   const scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;

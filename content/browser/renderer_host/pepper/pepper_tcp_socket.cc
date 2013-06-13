@@ -138,6 +138,7 @@ void PepperTCPSocket::SSLHandshake(
   net::HostPortPair host_port_pair(server_name, server_port);
   net::SSLClientSocketContext ssl_context;
   ssl_context.cert_verifier = manager_->GetCertVerifier();
+  ssl_context.transport_security_state = manager_->GetTransportSecurityState();
   socket_.reset(factory->CreateSSLClientSocket(
       handle, host_port_pair, manager_->ssl_config(), ssl_context));
   if (!socket_) {

@@ -85,6 +85,7 @@ bool AddHash(const char* sha1_hash,
 
 TransportSecurityState::TransportSecurityState()
   : delegate_(NULL) {
+  DCHECK(CalledOnValidThread());
 }
 
 TransportSecurityState::Iterator::Iterator(const TransportSecurityState& state)
@@ -96,6 +97,7 @@ TransportSecurityState::Iterator::~Iterator() {}
 
 void TransportSecurityState::SetDelegate(
     TransportSecurityState::Delegate* delegate) {
+  DCHECK(CalledOnValidThread());
   delegate_ = delegate;
 }
 
@@ -198,6 +200,7 @@ bool TransportSecurityState::GetDomainState(const std::string& host,
 }
 
 void TransportSecurityState::ClearDynamicData() {
+  DCHECK(CalledOnValidThread());
   enabled_hosts_.clear();
 }
 
@@ -220,7 +223,9 @@ void TransportSecurityState::DeleteAllDynamicDataSince(const base::Time& time) {
     DirtyNotify();
 }
 
-TransportSecurityState::~TransportSecurityState() {}
+TransportSecurityState::~TransportSecurityState() {
+  DCHECK(CalledOnValidThread());
+}
 
 void TransportSecurityState::DirtyNotify() {
   DCHECK(CalledOnValidThread());
@@ -615,6 +620,8 @@ static const struct HSTSPreload* GetHSTSPreload(
 
 bool TransportSecurityState::AddHSTSHeader(const std::string& host,
                                            const std::string& value) {
+  DCHECK(CalledOnValidThread());
+
   base::Time now = base::Time::Now();
   base::TimeDelta max_age;
   TransportSecurityState::DomainState domain_state;
@@ -635,6 +642,8 @@ bool TransportSecurityState::AddHSTSHeader(const std::string& host,
 bool TransportSecurityState::AddHPKPHeader(const std::string& host,
                                            const std::string& value,
                                            const SSLInfo& ssl_info) {
+  DCHECK(CalledOnValidThread());
+
   base::Time now = base::Time::Now();
   base::TimeDelta max_age;
   TransportSecurityState::DomainState domain_state;
@@ -653,6 +662,8 @@ bool TransportSecurityState::AddHPKPHeader(const std::string& host,
 bool TransportSecurityState::AddHSTS(const std::string& host,
                                      const base::Time& expiry,
                                      bool include_subdomains) {
+  DCHECK(CalledOnValidThread());
+
   // Copy-and-modify the existing DomainState for this host (if any).
   TransportSecurityState::DomainState domain_state;
   const std::string canonicalized_host = CanonicalizeHost(host);
@@ -674,6 +685,8 @@ bool TransportSecurityState::AddHPKP(const std::string& host,
                                      const base::Time& expiry,
                                      bool include_subdomains,
                                      const HashValueVector& hashes) {
+  DCHECK(CalledOnValidThread());
+
   // Copy-and-modify the existing DomainState for this host (if any).
   TransportSecurityState::DomainState domain_state;
   const std::string canonicalized_host = CanonicalizeHost(host);
@@ -778,6 +791,7 @@ bool TransportSecurityState::GetStaticDomainState(
 
 void TransportSecurityState::AddOrUpdateEnabledHosts(
     const std::string& hashed_host, const DomainState& state) {
+  DCHECK(CalledOnValidThread());
   enabled_hosts_[hashed_host] = state;
 }
 

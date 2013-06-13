@@ -37,6 +37,7 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/x509_certificate.h"
+#include "net/http/transport_security_state.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
@@ -296,7 +297,8 @@ class SSLServerSocketTest : public PlatformTest {
  public:
   SSLServerSocketTest()
       : socket_factory_(net::ClientSocketFactory::GetDefaultFactory()),
-        cert_verifier_(new MockCertVerifier()) {
+        cert_verifier_(new MockCertVerifier()),
+        transport_security_state_(new TransportSecurityState) {
     cert_verifier_->set_default_result(net::CERT_STATUS_AUTHORITY_INVALID);
   }
 
@@ -341,6 +343,7 @@ class SSLServerSocketTest : public PlatformTest {
     net::HostPortPair host_and_pair("unittest", 0);
     net::SSLClientSocketContext context;
     context.cert_verifier = cert_verifier_.get();
+    context.transport_security_state = transport_security_state_.get();
     client_socket_.reset(
         socket_factory_->CreateSSLClientSocket(
             fake_client_socket, host_and_pair, ssl_config, context));
@@ -354,6 +357,7 @@ class SSLServerSocketTest : public PlatformTest {
   scoped_ptr<net::SSLServerSocket> server_socket_;
   net::ClientSocketFactory* socket_factory_;
   scoped_ptr<net::MockCertVerifier> cert_verifier_;
+  scoped_ptr<net::TransportSecurityState> transport_security_state_;
 };
 
 // SSLServerSocket is only implemented using NSS.

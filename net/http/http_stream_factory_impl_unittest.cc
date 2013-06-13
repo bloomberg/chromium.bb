@@ -18,6 +18,7 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_stream.h"
+#include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/mock_client_socket_pool_manager.h"
@@ -131,6 +132,7 @@ struct SessionDependencies {
   explicit SessionDependencies(ProxyService* proxy_service)
       : host_resolver(new MockHostResolver),
         cert_verifier(new MockCertVerifier),
+        transport_security_state(new TransportSecurityState),
         proxy_service(proxy_service),
         ssl_config_service(new SSLConfigServiceDefaults),
         http_auth_handler_factory(
@@ -139,6 +141,7 @@ struct SessionDependencies {
 
   scoped_ptr<MockHostResolverBase> host_resolver;
   scoped_ptr<CertVerifier> cert_verifier;
+  scoped_ptr<TransportSecurityState> transport_security_state;
   scoped_ptr<ProxyService> proxy_service;
   scoped_refptr<SSLConfigService> ssl_config_service;
   MockClientSocketFactory socket_factory;
@@ -151,6 +154,8 @@ HttpNetworkSession* CreateSession(SessionDependencies* session_deps) {
   HttpNetworkSession::Params params;
   params.host_resolver = session_deps->host_resolver.get();
   params.cert_verifier = session_deps->cert_verifier.get();
+  params.transport_security_state =
+      session_deps->transport_security_state.get();
   params.proxy_service = session_deps->proxy_service.get();
   params.ssl_config_service = session_deps->ssl_config_service.get();
   params.client_socket_factory = &session_deps->socket_factory;

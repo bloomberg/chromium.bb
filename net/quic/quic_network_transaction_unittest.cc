@@ -18,6 +18,7 @@
 #include "net/http/http_stream.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_transaction_unittest.h"
+#include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_service.h"
@@ -225,6 +226,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
     params_.quic_crypto_client_stream_factory = &crypto_client_stream_factory_;
     params_.host_resolver = &host_resolver_;
     params_.cert_verifier = &cert_verifier_;
+    params_.transport_security_state = &transport_security_state_;
     params_.proxy_service = proxy_service_.get();
     params_.ssl_config_service = ssl_config_service_.get();
     params_.http_auth_handler_factory = auth_handler_factory_.get();
@@ -315,6 +317,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
   MockClock* clock_;  // Owned by QuicStreamFactory after CreateSession.
   MockHostResolver host_resolver_;
   MockCertVerifier cert_verifier_;
+  TransportSecurityState transport_security_state_;
   scoped_refptr<SSLConfigServiceDefaults> ssl_config_service_;
   scoped_ptr<ProxyService> proxy_service_;
   scoped_ptr<QuicSpdyCompressor> compressor_;

@@ -16,6 +16,7 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/test_root_certs.h"
 #include "net/dns/host_resolver.h"
+#include "net/http/transport_security_state.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_test_util.h"
@@ -505,9 +506,11 @@ class SSLClientSocketTest : public PlatformTest {
  public:
   SSLClientSocketTest()
       : socket_factory_(net::ClientSocketFactory::GetDefaultFactory()),
-        cert_verifier_(new net::MockCertVerifier) {
+        cert_verifier_(new net::MockCertVerifier),
+        transport_security_state_(new net::TransportSecurityState) {
     cert_verifier_->set_default_result(net::OK);
     context_.cert_verifier = cert_verifier_.get();
+    context_.transport_security_state = transport_security_state_.get();
   }
 
  protected:
@@ -523,6 +526,7 @@ class SSLClientSocketTest : public PlatformTest {
 
   net::ClientSocketFactory* socket_factory_;
   scoped_ptr<net::MockCertVerifier> cert_verifier_;
+  scoped_ptr<net::TransportSecurityState> transport_security_state_;
   net::SSLClientSocketContext context_;
 };
 

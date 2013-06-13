@@ -2935,6 +2935,9 @@ SSLClientSocketNSS::GetNextProto(std::string* proto,
 int SSLClientSocketNSS::Connect(const CompletionCallback& callback) {
   EnterFunction("");
   DCHECK(transport_.get());
+  // It is an error to create an SSLClientSocket whose context has no
+  // TransportSecurityState.
+  DCHECK(transport_security_state_);
   DCHECK_EQ(STATE_NONE, next_handshake_state_);
   DCHECK(user_connect_callback_.is_null());
   DCHECK(!callback.is_null());

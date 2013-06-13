@@ -159,6 +159,13 @@ net::CertVerifier* PepperMessageFilter::GetCertVerifier() {
   return cert_verifier_.get();
 }
 
+net::TransportSecurityState* PepperMessageFilter::GetTransportSecurityState() {
+  if (!transport_security_state_)
+    transport_security_state_.reset(new net::TransportSecurityState);
+
+  return transport_security_state_.get();
+}
+
 uint32 PepperMessageFilter::AddAcceptedTCPSocket(
     int32 routing_id,
     uint32 plugin_dispatcher_id,

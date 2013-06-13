@@ -17,6 +17,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
@@ -193,6 +194,7 @@ struct SpdySessionDependencies {
   // NOTE: host_resolver must be ordered before http_auth_handler_factory.
   scoped_ptr<MockHostResolverBase> host_resolver;
   scoped_ptr<CertVerifier> cert_verifier;
+  scoped_ptr<TransportSecurityState> transport_security_state;
   scoped_ptr<ProxyService> proxy_service;
   scoped_refptr<SSLConfigService> ssl_config_service;
   scoped_ptr<MockClientSocketFactory> socket_factory;

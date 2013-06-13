@@ -25,6 +25,7 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/http/transport_security_state.h"
 #include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
@@ -108,6 +109,7 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     // The rest of the dependencies are standard, and don't depend on the
     // experiment being run.
     storage_.set_cert_verifier(net::CertVerifier::CreateDefault());
+    storage_.set_transport_security_state(new net::TransportSecurityState);
     storage_.set_ssl_config_service(new net::SSLConfigServiceDefaults);
     storage_.set_http_auth_handler_factory(
         net::HttpAuthHandlerFactory::CreateDefault(host_resolver()));
@@ -116,6 +118,7 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     net::HttpNetworkSession::Params session_params;
     session_params.host_resolver = host_resolver();
     session_params.cert_verifier = cert_verifier();
+    session_params.transport_security_state = transport_security_state();
     session_params.proxy_service = proxy_service();
     session_params.ssl_config_service = ssl_config_service();
     session_params.http_auth_handler_factory = http_auth_handler_factory();

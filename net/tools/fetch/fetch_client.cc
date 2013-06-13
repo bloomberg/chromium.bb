@@ -26,6 +26,7 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_transaction.h"
+#include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 
@@ -146,6 +147,8 @@ int main(int argc, char** argv) {
       net::HostResolver::CreateDefaultResolver(NULL));
   scoped_ptr<net::CertVerifier> cert_verifier(
       net::CertVerifier::CreateDefault());
+  scoped_ptr<net::TransportSecurityState> transport_security_state(
+      new net::TransportSecurityState);
   scoped_ptr<net::ProxyService> proxy_service(
       net::ProxyService::CreateDirect());
   scoped_refptr<net::SSLConfigService> ssl_config_service(
@@ -158,6 +161,7 @@ int main(int argc, char** argv) {
   net::HttpNetworkSession::Params session_params;
   session_params.host_resolver = host_resolver.get();
   session_params.cert_verifier = cert_verifier.get();
+  session_params.transport_security_state = transport_security_state.get();
   session_params.proxy_service = proxy_service.get();
   session_params.http_auth_handler_factory = http_auth_handler_factory.get();
   session_params.http_server_properties = &http_server_properties;

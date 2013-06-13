@@ -989,6 +989,7 @@ int SocketStream::DoSecureProxyConnect() {
   DCHECK(factory_);
   SSLClientSocketContext ssl_context;
   ssl_context.cert_verifier = context_->cert_verifier();
+  ssl_context.transport_security_state = context_->transport_security_state();
   ssl_context.server_bound_cert_service = context_->server_bound_cert_service();
   socket_.reset(factory_->CreateSSLClientSocket(
       socket_.release(),
@@ -1042,6 +1043,7 @@ int SocketStream::DoSSLConnect() {
   DCHECK(factory_);
   SSLClientSocketContext ssl_context;
   ssl_context.cert_verifier = context_->cert_verifier();
+  ssl_context.transport_security_state = context_->transport_security_state();
   ssl_context.server_bound_cert_service = context_->server_bound_cert_service();
   socket_.reset(factory_->CreateSSLClientSocket(socket_.release(),
                                                 HostPortPair::FromURL(url_),

@@ -16,6 +16,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/cert/mock_cert_verifier.h"
+#include "net/http/transport_security_state.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_config_service.h"
@@ -107,7 +108,8 @@ class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {
       const net::AddressList& address_list)
           : mock_client_socket_factory_(mock_client_socket_factory),
             address_list_(address_list),
-            cert_verifier_(new net::MockCertVerifier) {
+            cert_verifier_(new net::MockCertVerifier),
+            transport_security_state_(new net::TransportSecurityState) {
   }
 
   // ResolvingClientSocketFactory implementation.
@@ -122,6 +124,7 @@ class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {
       const net::HostPortPair& host_and_port) OVERRIDE {
     net::SSLClientSocketContext context;
     context.cert_verifier = cert_verifier_.get();
+    context.transport_security_state = transport_security_state_.get();
     return mock_client_socket_factory_->CreateSSLClientSocket(
         transport_socket, host_and_port, ssl_config_, context);
   }
@@ -131,6 +134,7 @@ class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {
   net::AddressList address_list_;
   net::SSLConfig ssl_config_;
   scoped_ptr<net::CertVerifier> cert_verifier_;
+  scoped_ptr<net::TransportSecurityState> transport_security_state_;
 };
 
 class ChromeAsyncSocketTest

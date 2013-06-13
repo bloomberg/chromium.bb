@@ -5093,6 +5093,7 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
   HttpNetworkSession::Params params;
   params.host_resolver = default_context_.host_resolver();
   params.cert_verifier = default_context_.cert_verifier();
+  params.transport_security_state = default_context_.transport_security_state();
   params.proxy_service = default_context_.proxy_service();
   params.ssl_config_service = default_context_.ssl_config_service();
   params.http_auth_handler_factory =

@@ -20,6 +20,7 @@
 #include "content/public/common/process_type.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
+#include "net/http/transport_security_state.h"
 #include "net/socket/stream_socket.h"
 #include "net/ssl/ssl_config_service.h"
 #include "ppapi/c/pp_resource.h"
@@ -88,6 +89,7 @@ class PepperMessageFilter
   net::HostResolver* GetHostResolver();
 
   net::CertVerifier* GetCertVerifier();
+  net::TransportSecurityState* GetTransportSecurityState();
 
   // Adds already accepted socket to the internal TCP sockets table. Takes
   // ownership over |socket|. In the case of failure (full socket table)
@@ -217,6 +219,9 @@ class PepperMessageFilter
   net::SSLConfig ssl_config_;
   // This is lazily created. Users should use GetCertVerifier to retrieve it.
   scoped_ptr<net::CertVerifier> cert_verifier_;
+  // This is lazily created. Users should use GetTransportSecurityState to
+  // retrieve it.
+  scoped_ptr<net::TransportSecurityState> transport_security_state_;
 
   uint32 next_socket_id_;
 

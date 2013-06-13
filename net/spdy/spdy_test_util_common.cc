@@ -330,6 +330,7 @@ crypto::ECSignatureCreator* MockECSignatureCreatorFactory::Create(
 SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
     : host_resolver(new MockCachingHostResolver),
       cert_verifier(new MockCertVerifier),
+      transport_security_state(new TransportSecurityState),
       proxy_service(ProxyService::CreateDirect()),
       ssl_config_service(new SSLConfigServiceDefaults),
       socket_factory(new MockClientSocketFactory),
@@ -359,6 +360,7 @@ SpdySessionDependencies::SpdySessionDependencies(
     NextProto protocol, ProxyService* proxy_service)
     : host_resolver(new MockHostResolver),
       cert_verifier(new MockCertVerifier),
+      transport_security_state(new TransportSecurityState),
       proxy_service(proxy_service),
       ssl_config_service(new SSLConfigServiceDefaults),
       socket_factory(new MockClientSocketFactory),
@@ -410,6 +412,8 @@ net::HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   net::HttpNetworkSession::Params params;
   params.host_resolver = session_deps->host_resolver.get();
   params.cert_verifier = session_deps->cert_verifier.get();
+  params.transport_security_state =
+      session_deps->transport_security_state.get();
   params.proxy_service = session_deps->proxy_service.get();
   params.ssl_config_service = session_deps->ssl_config_service.get();
   params.http_auth_handler_factory =
@@ -434,6 +438,7 @@ SpdyURLRequestContext::SpdyURLRequestContext(NextProto protocol)
 
   storage_.set_host_resolver(scoped_ptr<HostResolver>(new MockHostResolver));
   storage_.set_cert_verifier(new MockCertVerifier);
+  storage_.set_transport_security_state(new TransportSecurityState);
   storage_.set_proxy_service(ProxyService::CreateDirect());
   storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
   storage_.set_http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault(
@@ -443,6 +448,7 @@ SpdyURLRequestContext::SpdyURLRequestContext(NextProto protocol)
   params.client_socket_factory = &socket_factory_;
   params.host_resolver = host_resolver();
   params.cert_verifier = cert_verifier();
+  params.transport_security_state = transport_security_state();
   params.proxy_service = proxy_service();
   params.ssl_config_service = ssl_config_service();
   params.http_auth_handler_factory = http_auth_handler_factory();

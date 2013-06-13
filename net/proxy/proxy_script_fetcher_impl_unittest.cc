@@ -19,6 +19,7 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/http/transport_security_state.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/url_request/file_protocol_handler.h"
@@ -52,6 +53,7 @@ class RequestContext : public URLRequestContext {
     ProxyConfig no_proxy;
     storage_.set_host_resolver(scoped_ptr<HostResolver>(new MockHostResolver));
     storage_.set_cert_verifier(new MockCertVerifier);
+    storage_.set_transport_security_state(new TransportSecurityState);
     storage_.set_proxy_service(ProxyService::CreateFixed(no_proxy));
     storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
     storage_.set_http_server_properties(new HttpServerPropertiesImpl);
@@ -59,6 +61,7 @@ class RequestContext : public URLRequestContext {
     HttpNetworkSession::Params params;
     params.host_resolver = host_resolver();
     params.cert_verifier = cert_verifier();
+    params.transport_security_state = transport_security_state();
     params.proxy_service = proxy_service();
     params.ssl_config_service = ssl_config_service();
     params.http_server_properties = http_server_properties();

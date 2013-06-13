@@ -54,10 +54,10 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
   session_params.client_socket_factory = socket_factory;
   session_params.host_resolver = request_context->host_resolver();
   session_params.cert_verifier = request_context->cert_verifier();
+  session_params.transport_security_state =
+      request_context->transport_security_state();
   // TODO(rkn): This is NULL because ServerBoundCertService is not thread safe.
   session_params.server_bound_cert_service = NULL;
-  // transport_security_state is NULL because it's not thread safe.
-  session_params.transport_security_state = NULL;
   session_params.proxy_service = request_context->proxy_service();
   session_params.ssl_config_service = request_context->ssl_config_service();
   session_params.http_auth_handler_factory =

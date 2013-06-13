@@ -12,6 +12,7 @@
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/x509_certificate.h"
+#include "net/http/transport_security_state.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_server_socket.h"
@@ -83,6 +84,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
         &SslHmacChannelAuthenticator::OnConnected, base::Unretained(this)));
   } else {
     cert_verifier_.reset(net::CertVerifier::CreateDefault());
+    transport_security_state_.reset(new net::TransportSecurityState);
 
     net::SSLConfig::CertAndStatus cert_and_status;
     cert_and_status.cert_status = net::CERT_STATUS_AUTHORITY_INVALID;
@@ -100,6 +102,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     net::HostPortPair host_and_port(kSslFakeHostName, 0);
     net::SSLClientSocketContext context;
     context.cert_verifier = cert_verifier_.get();
+    context.transport_security_state = transport_security_state_.get();
     socket_.reset(
         net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
             socket.release(), host_and_port, ssl_config, context));

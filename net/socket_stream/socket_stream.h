@@ -37,6 +37,7 @@ class ServerBoundCertService;
 class SingleRequestHostResolver;
 class StreamSocket;
 class SocketStreamMetrics;
+class TransportSecurityState;
 class URLRequestContext;
 
 // SocketStream is used to implement Web Sockets.
