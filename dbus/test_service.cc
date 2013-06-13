@@ -91,15 +91,15 @@ void TestService::SendTestSignalFromRoot(const std::string& message) {
 }
 
 void TestService::SendTestSignalInternal(const std::string& message) {
-  dbus::Signal signal("org.chromium.TestInterface", "Test");
-  dbus::MessageWriter writer(&signal);
+  Signal signal("org.chromium.TestInterface", "Test");
+  MessageWriter writer(&signal);
   writer.AppendString(message);
   exported_object_->SendSignal(&signal);
 }
 
 void TestService::SendTestSignalFromRootInternal(const std::string& message) {
-  dbus::Signal signal("org.chromium.TestInterface", "Test");
-  dbus::MessageWriter writer(&signal);
+  Signal signal("org.chromium.TestInterface", "Test");
+  MessageWriter writer(&signal);
   writer.AppendString(message);
 
   bus_->RequestOwnership("org.chromium.TestService",
@@ -108,8 +108,7 @@ void TestService::SendTestSignalFromRootInternal(const std::string& message) {
                                     base::Bind(&EmptyCallback)));
 
   // Use "/" just like dbus-send does.
-  ExportedObject* root_object =
-      bus_->GetExportedObject(dbus::ObjectPath("/"));
+  ExportedObject* root_object = bus_->GetExportedObject(ObjectPath("/"));
   root_object->SendSignal(&signal);
 }
 
@@ -166,7 +165,7 @@ void TestService::Run(base::MessageLoop* message_loop) {
                                     base::Bind(&EmptyCallback)));
 
   exported_object_ = bus_->GetExportedObject(
-      dbus::ObjectPath("/org/chromium/TestObject"));
+      ObjectPath("/org/chromium/TestObject"));
 
   int num_methods = 0;
   exported_object_->ExportMethod(
@@ -242,7 +241,7 @@ void TestService::Run(base::MessageLoop* message_loop) {
   ++num_methods;
 
   exported_object_manager_ = bus_->GetExportedObject(
-    dbus::ObjectPath("/org/chromium/TestService"));
+      ObjectPath("/org/chromium/TestService"));
 
   exported_object_manager_->ExportMethod(
        kObjectManagerInterface,
@@ -262,11 +261,11 @@ void TestService::Run(base::MessageLoop* message_loop) {
 }
 
 void TestService::Echo(MethodCall* method_call,
-                       dbus::ExportedObject::ResponseSender response_sender) {
+                       ExportedObject::ResponseSender response_sender) {
   MessageReader reader(method_call);
   std::string text_message;
   if (!reader.PopString(&text_message)) {
-    response_sender.Run(scoped_ptr<dbus::Response>());
+    response_sender.Run(scoped_ptr<Response>());
     return;
   }
 
@@ -276,16 +275,14 @@ void TestService::Echo(MethodCall* method_call,
   response_sender.Run(response.Pass());
 }
 
-void TestService::SlowEcho(
-    MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender response_sender) {
+void TestService::SlowEcho(MethodCall* method_call,
+                           ExportedObject::ResponseSender response_sender) {
   base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   Echo(method_call, response_sender);
 }
 
-void TestService::AsyncEcho(
-    MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender response_sender) {
+void TestService::AsyncEcho(MethodCall* method_call,
+                            ExportedObject::ResponseSender response_sender) {
   // Schedule a call to Echo() to send an asynchronous response after we return.
   message_loop()->PostDelayedTask(FROM_HERE,
                                   base::Bind(&TestService::Echo,
@@ -295,20 +292,19 @@ void TestService::AsyncEcho(
                                   TestTimeouts::tiny_timeout());
 }
 
-void TestService::BrokenMethod(
-    MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender response_sender) {
-  response_sender.Run(scoped_ptr<dbus::Response>());
+void TestService::BrokenMethod(MethodCall* method_call,
+                               ExportedObject::ResponseSender response_sender) {
+  response_sender.Run(scoped_ptr<Response>());
 }
 
 
 void TestService::GetAllProperties(
     MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender response_sender) {
+    ExportedObject::ResponseSender response_sender) {
   MessageReader reader(method_call);
   std::string interface;
   if (!reader.PopString(&interface)) {
-    response_sender.Run(scoped_ptr<dbus::Response>());
+    response_sender.Run(scoped_ptr<Response>());
     return;
   }
 
@@ -320,19 +316,18 @@ void TestService::GetAllProperties(
   response_sender.Run(response.Pass());
 }
 
-void TestService::GetProperty(
-    MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender response_sender) {
+void TestService::GetProperty(MethodCall* method_call,
+                              ExportedObject::ResponseSender response_sender) {
   MessageReader reader(method_call);
   std::string interface;
   if (!reader.PopString(&interface)) {
-    response_sender.Run(scoped_ptr<dbus::Response>());
+    response_sender.Run(scoped_ptr<Response>());
     return;
   }
 
   std::string name;
   if (!reader.PopString(&name)) {
-    response_sender.Run(scoped_ptr<dbus::Response>());
+    response_sender.Run(scoped_ptr<Response>());
     return;
   }
 
@@ -382,42 +377,41 @@ void TestService::GetProperty(
 
     writer.OpenVariant("ao", &variant_writer);
     variant_writer.OpenArray("o", &variant_array_writer);
-    variant_array_writer.AppendObjectPath(dbus::ObjectPath("/TestObjectPath"));
+    variant_array_writer.AppendObjectPath(ObjectPath("/TestObjectPath"));
     variant_writer.CloseContainer(&variant_array_writer);
     writer.CloseContainer(&variant_writer);
 
     response_sender.Run(response.Pass());
   } else {
     // Return error.
-    response_sender.Run(scoped_ptr<dbus::Response>());
+    response_sender.Run(scoped_ptr<Response>());
     return;
   }
 }
 
-void TestService::SetProperty(
-    MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender response_sender) {
+void TestService::SetProperty(MethodCall* method_call,
+                              ExportedObject::ResponseSender response_sender) {
   MessageReader reader(method_call);
   std::string interface;
   if (!reader.PopString(&interface)) {
-    response_sender.Run(scoped_ptr<dbus::Response>());
+    response_sender.Run(scoped_ptr<Response>());
     return;
   }
 
   std::string name;
   if (!reader.PopString(&name)) {
-    response_sender.Run(scoped_ptr<dbus::Response>());
+    response_sender.Run(scoped_ptr<Response>());
     return;
   }
 
   if (name != "Name") {
-    response_sender.Run(scoped_ptr<dbus::Response>());
+    response_sender.Run(scoped_ptr<Response>());
     return;
   }
 
   std::string value;
   if (!reader.PopVariantOfString(&value)) {
-    response_sender.Run(scoped_ptr<dbus::Response>());
+    response_sender.Run(scoped_ptr<Response>());
     return;
   }
 
@@ -428,12 +422,12 @@ void TestService::SetProperty(
 
 void TestService::PerformAction(
       MethodCall* method_call,
-      dbus::ExportedObject::ResponseSender response_sender) {
+      ExportedObject::ResponseSender response_sender) {
   MessageReader reader(method_call);
   std::string action;
-  dbus::ObjectPath object_path;
+  ObjectPath object_path;
   if (!reader.PopString(&action) || !reader.PopObjectPath(&object_path)) {
-    response_sender.Run(scoped_ptr<dbus::Response>());
+    response_sender.Run(scoped_ptr<Response>());
     return;
   }
 
@@ -448,7 +442,7 @@ void TestService::PerformAction(
 
 void TestService::GetManagedObjects(
     MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender response_sender) {
+    ExportedObject::ResponseSender response_sender) {
   scoped_ptr<Response> response = Response::FromMethodCall(method_call);
   MessageWriter writer(response.get());
 
@@ -473,8 +467,7 @@ void TestService::GetManagedObjects(
   writer.OpenArray("{oa{sa{sv}}}", &array_writer);
 
   array_writer.OpenDictEntry(&dict_entry_writer);
-  dict_entry_writer.AppendObjectPath(
-      dbus::ObjectPath("/org/chromium/TestObject"));
+  dict_entry_writer.AppendObjectPath(ObjectPath("/org/chromium/TestObject"));
   dict_entry_writer.OpenArray("{sa{sv}}", &object_array_writer);
 
   object_array_writer.OpenDictEntry(&object_dict_entry_writer);
@@ -490,8 +483,7 @@ void TestService::GetManagedObjects(
   response_sender.Run(response.Pass());
 }
 
-void TestService::AddPropertiesToWriter(MessageWriter* writer)
-{
+void TestService::AddPropertiesToWriter(MessageWriter* writer) {
   // The properties response is a dictionary of strings identifying the
   // property and a variant containing the property value. We return all
   // of the properties, thus the response is:
@@ -501,7 +493,7 @@ void TestService::AddPropertiesToWriter(MessageWriter* writer)
   //   "Version": Variant<10>,
   //   "Methods": Variant<["Echo", "SlowEcho", "AsyncEcho", "BrokenMethod"]>,
   //   "Objects": Variant<[objectpath:"/TestObjectPath"]>
-  // ]
+  // }
 
   MessageWriter array_writer(NULL);
   MessageWriter dict_entry_writer(NULL);
@@ -536,7 +528,7 @@ void TestService::AddPropertiesToWriter(MessageWriter* writer)
   dict_entry_writer.AppendString("Objects");
   dict_entry_writer.OpenVariant("ao", &variant_writer);
   variant_writer.OpenArray("o", &variant_array_writer);
-  variant_array_writer.AppendObjectPath(dbus::ObjectPath("/TestObjectPath"));
+  variant_array_writer.AppendObjectPath(ObjectPath("/TestObjectPath"));
   variant_writer.CloseContainer(&variant_array_writer);
   dict_entry_writer.CloseContainer(&variant_writer);
   array_writer.CloseContainer(&dict_entry_writer);
@@ -544,7 +536,7 @@ void TestService::AddPropertiesToWriter(MessageWriter* writer)
   writer->CloseContainer(&array_writer);
 }
 
-void TestService::AddObject(const dbus::ObjectPath& object_path) {
+void TestService::AddObject(const ObjectPath& object_path) {
   message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&TestService::AddObjectInternal,
@@ -552,9 +544,9 @@ void TestService::AddObject(const dbus::ObjectPath& object_path) {
                  object_path));
 }
 
-void TestService::AddObjectInternal(const dbus::ObjectPath& object_path) {
-  dbus::Signal signal(kObjectManagerInterface, kObjectManagerInterfacesAdded);
-  dbus::MessageWriter writer(&signal);
+void TestService::AddObjectInternal(const ObjectPath& object_path) {
+  Signal signal(kObjectManagerInterface, kObjectManagerInterfacesAdded);
+  MessageWriter writer(&signal);
   writer.AppendObjectPath(object_path);
 
   MessageWriter array_writer(NULL);
@@ -570,17 +562,16 @@ void TestService::AddObjectInternal(const dbus::ObjectPath& object_path) {
   exported_object_manager_->SendSignal(&signal);
 }
 
-void TestService::RemoveObject(const dbus::ObjectPath& object_path) {
-    message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&TestService::RemoveObjectInternal,
-                 base::Unretained(this),
-                 object_path));
+void TestService::RemoveObject(const ObjectPath& object_path) {
+  message_loop()->PostTask(FROM_HERE,
+                           base::Bind(&TestService::RemoveObjectInternal,
+                                      base::Unretained(this),
+                                      object_path));
 }
 
-void TestService::RemoveObjectInternal(const dbus::ObjectPath& object_path) {
-  dbus::Signal signal(kObjectManagerInterface, kObjectManagerInterfacesRemoved);
-  dbus::MessageWriter writer(&signal);
+void TestService::RemoveObjectInternal(const ObjectPath& object_path) {
+  Signal signal(kObjectManagerInterface, kObjectManagerInterfacesRemoved);
+  MessageWriter writer(&signal);
 
   writer.AppendObjectPath(object_path);
 
@@ -600,8 +591,8 @@ void TestService::SendPropertyChangedSignal(const std::string& name) {
 }
 
 void TestService::SendPropertyChangedSignalInternal(const std::string& name) {
-  dbus::Signal signal(kPropertiesInterface, kPropertiesChanged);
-  dbus::MessageWriter writer(&signal);
+  Signal signal(kPropertiesInterface, kPropertiesChanged);
+  MessageWriter writer(&signal);
   writer.AppendString("org.chromium.TestInterface");
 
   MessageWriter array_writer(NULL);

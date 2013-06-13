@@ -123,7 +123,7 @@ class Timeout : public base::RefCountedThreadSafe<Timeout> {
   }
 
   // Starts monitoring the timeout.
-  void StartMonitoring(dbus::Bus* bus) {
+  void StartMonitoring(Bus* bus) {
     bus->PostDelayedTaskToDBusThread(FROM_HERE,
                                      base::Bind(&Timeout::HandleTimeout,
                                                 this),
@@ -227,7 +227,7 @@ ObjectProxy* Bus::GetObjectProxy(const std::string& service_name,
 }
 
 ObjectProxy* Bus::GetObjectProxyWithOptions(const std::string& service_name,
-                                            const dbus::ObjectPath& object_path,
+                                            const ObjectPath& object_path,
                                             int options) {
   AssertOnOriginThread();
 
@@ -255,7 +255,7 @@ bool Bus::RemoveObjectProxy(const std::string& service_name,
 }
 
 bool Bus::RemoveObjectProxyWithOptions(const std::string& service_name,
-                                       const dbus::ObjectPath& object_path,
+                                       const ObjectPath& object_path,
                                        int options,
                                        const base::Closure& callback) {
   AssertOnOriginThread();
@@ -276,9 +276,8 @@ bool Bus::RemoveObjectProxyWithOptions(const std::string& service_name,
   return false;
 }
 
-void Bus::RemoveObjectProxyInternal(
-    scoped_refptr<dbus::ObjectProxy> object_proxy,
-    const base::Closure& callback) {
+void Bus::RemoveObjectProxyInternal(scoped_refptr<ObjectProxy> object_proxy,
+                                    const base::Closure& callback) {
   AssertOnDBusThread();
 
   object_proxy.get()->Detach();
@@ -325,7 +324,7 @@ void Bus::UnregisterExportedObject(const ObjectPath& object_path) {
 }
 
 void Bus::UnregisterExportedObjectInternal(
-    scoped_refptr<dbus::ExportedObject> exported_object) {
+    scoped_refptr<ExportedObject> exported_object) {
   AssertOnDBusThread();
 
   exported_object->Unregister();
@@ -782,7 +781,8 @@ void Bus::ProcessAllIncomingDataIfAny() {
   if (dbus_connection_get_dispatch_status(connection_) ==
       DBUS_DISPATCH_DATA_REMAINS) {
     while (dbus_connection_dispatch(connection_) ==
-           DBUS_DISPATCH_DATA_REMAINS);
+           DBUS_DISPATCH_DATA_REMAINS) {
+    }
   }
 }
 

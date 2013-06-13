@@ -19,26 +19,27 @@
 #include "dbus/test_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace dbus {
+
 // The object manager test exercises the asynchronous APIs in ObjectManager,
 // and by extension PropertySet and Property<>.
 class ObjectManagerTest
     : public testing::Test,
-      public dbus::ObjectManager::Interface {
+      public ObjectManager::Interface {
  public:
   ObjectManagerTest() {
   }
 
-  struct Properties : public dbus::PropertySet {
-    dbus::Property<std::string> name;
-    dbus::Property<int16> version;
-    dbus::Property<std::vector<std::string> > methods;
-    dbus::Property<std::vector<dbus::ObjectPath> > objects;
+  struct Properties : public PropertySet {
+    Property<std::string> name;
+    Property<int16> version;
+    Property<std::vector<std::string> > methods;
+    Property<std::vector<ObjectPath> > objects;
 
-    Properties(dbus::ObjectProxy* object_proxy,
+    Properties(ObjectProxy* object_proxy,
                const std::string& interface_name,
                PropertyChangedCallback property_changed_callback)
-        : dbus::PropertySet(object_proxy, interface_name,
-                            property_changed_callback) {
+        : PropertySet(object_proxy, interface_name, property_changed_callback) {
       RegisterProperty("Name", &name);
       RegisterProperty("Version", &version);
       RegisterProperty("Methods", &methods);
@@ -46,15 +47,15 @@ class ObjectManagerTest
     }
   };
 
-  virtual dbus::PropertySet* CreateProperties(
-      dbus::ObjectProxy* object_proxy,
-      const dbus::ObjectPath& object_path,
+  virtual PropertySet* CreateProperties(
+      ObjectProxy* object_proxy,
+      const ObjectPath& object_path,
       const std::string& interface_name) OVERRIDE {
     Properties* properties = new Properties(
         object_proxy, interface_name,
         base::Bind(&ObjectManagerTest::OnPropertyChanged,
                    base::Unretained(this), object_path));
-    return static_cast<dbus::PropertySet*>(properties);
+    return static_cast<PropertySet*>(properties);
   }
 
   virtual void SetUp() {
@@ -68,24 +69,24 @@ class ObjectManagerTest
     ASSERT_TRUE(dbus_thread_->StartWithOptions(thread_options));
 
     // Start the test service, using the D-Bus thread.
-    dbus::TestService::Options options;
+    TestService::Options options;
     options.dbus_task_runner = dbus_thread_->message_loop_proxy();
-    test_service_.reset(new dbus::TestService(options));
+    test_service_.reset(new TestService(options));
     ASSERT_TRUE(test_service_->StartService());
     ASSERT_TRUE(test_service_->WaitUntilServiceIsStarted());
     ASSERT_TRUE(test_service_->HasDBusThread());
 
     // Create the client, using the D-Bus thread.
-    dbus::Bus::Options bus_options;
-    bus_options.bus_type = dbus::Bus::SESSION;
-    bus_options.connection_type = dbus::Bus::PRIVATE;
+    Bus::Options bus_options;
+    bus_options.bus_type = Bus::SESSION;
+    bus_options.connection_type = Bus::PRIVATE;
     bus_options.dbus_task_runner = dbus_thread_->message_loop_proxy();
-    bus_ = new dbus::Bus(bus_options);
+    bus_ = new Bus(bus_options);
     ASSERT_TRUE(bus_->HasDBusThread());
 
     object_manager_ = bus_->GetObjectManager(
         "org.chromium.TestService",
-        dbus::ObjectPath("/org/chromium/TestService"));
+        ObjectPath("/org/chromium/TestService"));
     object_manager_->RegisterInterface("org.chromium.TestInterface", this);
 
     object_manager_->GetManagedObjects();
@@ -106,28 +107,28 @@ class ObjectManagerTest
     test_service_->Stop();
   }
 
-  void MethodCallback(dbus::Response* response) {
+  void MethodCallback(Response* response) {
     method_callback_called_ = true;
     message_loop_.Quit();
   }
 
-protected:
+ protected:
   // Called when an object is added.
- virtual void ObjectAdded(const dbus::ObjectPath& object_path,
-                          const std::string& interface_name) OVERRIDE {
+  virtual void ObjectAdded(const ObjectPath& object_path,
+                           const std::string& interface_name) OVERRIDE {
     added_objects_.push_back(std::make_pair(object_path, interface_name));
     message_loop_.Quit();
   }
 
   // Called when an object is removed.
-  virtual void ObjectRemoved(const dbus::ObjectPath& object_path,
+  virtual void ObjectRemoved(const ObjectPath& object_path,
                              const std::string& interface_name) OVERRIDE {
     removed_objects_.push_back(std::make_pair(object_path, interface_name));
     message_loop_.Quit();
   }
 
   // Called when a property value is updated.
-  void OnPropertyChanged(const dbus::ObjectPath& object_path,
+  void OnPropertyChanged(const ObjectPath& object_path,
                          const std::string& name) {
     updated_properties_.push_back(name);
     message_loop_.Quit();
@@ -158,19 +159,18 @@ protected:
     method_callback_called_ = false;
   }
 
-  void PerformAction(const std::string& action,
-                     const dbus::ObjectPath& object_path) {
-    dbus::ObjectProxy* object_proxy = bus_->GetObjectProxy(
+  void PerformAction(const std::string& action, const ObjectPath& object_path) {
+    ObjectProxy* object_proxy = bus_->GetObjectProxy(
         "org.chromium.TestService",
-        dbus::ObjectPath("/org/chromium/TestObject"));
+        ObjectPath("/org/chromium/TestObject"));
 
-    dbus::MethodCall method_call("org.chromium.TestInterface", "PerformAction");
-    dbus::MessageWriter writer(&method_call);
+    MethodCall method_call("org.chromium.TestInterface", "PerformAction");
+    MessageWriter writer(&method_call);
     writer.AppendString(action);
     writer.AppendObjectPath(object_path);
 
     object_proxy->CallMethod(&method_call,
-                             dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                             ObjectProxy::TIMEOUT_USE_DEFAULT,
                              base::Bind(&ObjectManagerTest::MethodCallback,
                                         base::Unretained(this)));
     WaitForMethodCallback();
@@ -178,12 +178,12 @@ protected:
 
   base::MessageLoop message_loop_;
   scoped_ptr<base::Thread> dbus_thread_;
-  scoped_refptr<dbus::Bus> bus_;
-  dbus::ObjectManager* object_manager_;
-  scoped_ptr<dbus::TestService> test_service_;
+  scoped_refptr<Bus> bus_;
+  ObjectManager* object_manager_;
+  scoped_ptr<TestService> test_service_;
 
-  std::vector<std::pair<dbus::ObjectPath, std::string> > added_objects_;
-  std::vector<std::pair<dbus::ObjectPath, std::string> > removed_objects_;
+  std::vector<std::pair<ObjectPath, std::string> > added_objects_;
+  std::vector<std::pair<ObjectPath, std::string> > removed_objects_;
   std::vector<std::string> updated_properties_;
 
   bool method_callback_called_;
@@ -191,14 +191,13 @@ protected:
 
 
 TEST_F(ObjectManagerTest, InitialObject) {
-  dbus::ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
-      dbus::ObjectPath("/org/chromium/TestObject"));
+  ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
+      ObjectPath("/org/chromium/TestObject"));
   EXPECT_TRUE(object_proxy != NULL);
 
   Properties* properties = static_cast<Properties*>(
-      object_manager_->GetProperties(
-          dbus::ObjectPath("/org/chromium/TestObject"),
-          "org.chromium.TestInterface"));
+      object_manager_->GetProperties(ObjectPath("/org/chromium/TestObject"),
+                                     "org.chromium.TestInterface"));
   EXPECT_TRUE(properties != NULL);
 
   EXPECT_EQ("TestService", properties->name.value());
@@ -211,129 +210,127 @@ TEST_F(ObjectManagerTest, InitialObject) {
   EXPECT_EQ("AsyncEcho", methods[2]);
   EXPECT_EQ("BrokenMethod", methods[3]);
 
-  std::vector<dbus::ObjectPath> objects = properties->objects.value();
+  std::vector<ObjectPath> objects = properties->objects.value();
   ASSERT_EQ(1U, objects.size());
-  EXPECT_EQ(dbus::ObjectPath("/TestObjectPath"), objects[0]);
+  EXPECT_EQ(ObjectPath("/TestObjectPath"), objects[0]);
 }
 
 TEST_F(ObjectManagerTest, UnknownObjectProxy) {
-  dbus::ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
-      dbus::ObjectPath("/org/chromium/UnknownObject"));
+  ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
+      ObjectPath("/org/chromium/UnknownObject"));
   EXPECT_TRUE(object_proxy == NULL);
 }
 
 TEST_F(ObjectManagerTest, UnknownObjectProperties) {
   Properties* properties = static_cast<Properties*>(
-      object_manager_->GetProperties(
-          dbus::ObjectPath("/org/chromium/UnknownObject"),
-          "org.chromium.TestInterface"));
+      object_manager_->GetProperties(ObjectPath("/org/chromium/UnknownObject"),
+                                     "org.chromium.TestInterface"));
   EXPECT_TRUE(properties == NULL);
 }
 
 TEST_F(ObjectManagerTest, UnknownInterfaceProperties) {
   Properties* properties = static_cast<Properties*>(
-      object_manager_->GetProperties(
-          dbus::ObjectPath("/org/chromium/TestObject"),
-          "org.chromium.UnknownService"));
+      object_manager_->GetProperties(ObjectPath("/org/chromium/TestObject"),
+                                     "org.chromium.UnknownService"));
   EXPECT_TRUE(properties == NULL);
 }
 
 TEST_F(ObjectManagerTest, GetObjects) {
-  std::vector<dbus::ObjectPath> object_paths = object_manager_->GetObjects();
+  std::vector<ObjectPath> object_paths = object_manager_->GetObjects();
   ASSERT_EQ(1U, object_paths.size());
-  EXPECT_EQ(dbus::ObjectPath("/org/chromium/TestObject"), object_paths[0]);
+  EXPECT_EQ(ObjectPath("/org/chromium/TestObject"), object_paths[0]);
 }
 
 TEST_F(ObjectManagerTest, GetObjectsWithInterface) {
-  std::vector<dbus::ObjectPath> object_paths =
+  std::vector<ObjectPath> object_paths =
       object_manager_->GetObjectsWithInterface("org.chromium.TestInterface");
   ASSERT_EQ(1U, object_paths.size());
-  EXPECT_EQ(dbus::ObjectPath("/org/chromium/TestObject"), object_paths[0]);
+  EXPECT_EQ(ObjectPath("/org/chromium/TestObject"), object_paths[0]);
 }
 
 TEST_F(ObjectManagerTest, GetObjectsWithUnknownInterface) {
-  std::vector<dbus::ObjectPath> object_paths =
+  std::vector<ObjectPath> object_paths =
       object_manager_->GetObjectsWithInterface("org.chromium.UnknownService");
   EXPECT_EQ(0U, object_paths.size());
 }
 
 TEST_F(ObjectManagerTest, SameObject) {
-  dbus::ObjectManager* object_manager = bus_->GetObjectManager(
+  ObjectManager* object_manager = bus_->GetObjectManager(
       "org.chromium.TestService",
-      dbus::ObjectPath("/org/chromium/TestService"));
+      ObjectPath("/org/chromium/TestService"));
   EXPECT_EQ(object_manager_, object_manager);
 }
 
 TEST_F(ObjectManagerTest, DifferentObjectForService) {
-  dbus::ObjectManager* object_manager = bus_->GetObjectManager(
+  ObjectManager* object_manager = bus_->GetObjectManager(
       "org.chromium.DifferentService",
-      dbus::ObjectPath("/org/chromium/TestService"));
+      ObjectPath("/org/chromium/TestService"));
   EXPECT_NE(object_manager_, object_manager);
 }
 
 TEST_F(ObjectManagerTest, DifferentObjectForPath) {
-  dbus::ObjectManager* object_manager = bus_->GetObjectManager(
+  ObjectManager* object_manager = bus_->GetObjectManager(
       "org.chromium.TestService",
-      dbus::ObjectPath("/org/chromium/DifferentService"));
+      ObjectPath("/org/chromium/DifferentService"));
   EXPECT_NE(object_manager_, object_manager);
 }
 
 TEST_F(ObjectManagerTest, SecondObject) {
-  PerformAction("AddObject", dbus::ObjectPath("/org/chromium/SecondObject"));
+  PerformAction("AddObject", ObjectPath("/org/chromium/SecondObject"));
   WaitForObject();
 
-  dbus::ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
-      dbus::ObjectPath("/org/chromium/SecondObject"));
+  ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
+      ObjectPath("/org/chromium/SecondObject"));
   EXPECT_TRUE(object_proxy != NULL);
 
   Properties* properties = static_cast<Properties*>(
-      object_manager_->GetProperties(
-          dbus::ObjectPath("/org/chromium/SecondObject"),
-          "org.chromium.TestInterface"));
+      object_manager_->GetProperties(ObjectPath("/org/chromium/SecondObject"),
+                                     "org.chromium.TestInterface"));
   EXPECT_TRUE(properties != NULL);
 
-  std::vector<dbus::ObjectPath> object_paths = object_manager_->GetObjects();
+  std::vector<ObjectPath> object_paths = object_manager_->GetObjects();
   ASSERT_EQ(2U, object_paths.size());
 
   std::sort(object_paths.begin(), object_paths.end());
-  EXPECT_EQ(dbus::ObjectPath("/org/chromium/SecondObject"), object_paths[0]);
-  EXPECT_EQ(dbus::ObjectPath("/org/chromium/TestObject"), object_paths[1]);
+  EXPECT_EQ(ObjectPath("/org/chromium/SecondObject"), object_paths[0]);
+  EXPECT_EQ(ObjectPath("/org/chromium/TestObject"), object_paths[1]);
 
   object_paths =
       object_manager_->GetObjectsWithInterface("org.chromium.TestInterface");
   ASSERT_EQ(2U, object_paths.size());
 
   std::sort(object_paths.begin(), object_paths.end());
-  EXPECT_EQ(dbus::ObjectPath("/org/chromium/SecondObject"), object_paths[0]);
-  EXPECT_EQ(dbus::ObjectPath("/org/chromium/TestObject"), object_paths[1]);
+  EXPECT_EQ(ObjectPath("/org/chromium/SecondObject"), object_paths[0]);
+  EXPECT_EQ(ObjectPath("/org/chromium/TestObject"), object_paths[1]);
 }
 
 TEST_F(ObjectManagerTest, RemoveSecondObject) {
-  PerformAction("AddObject", dbus::ObjectPath("/org/chromium/SecondObject"));
+  PerformAction("AddObject", ObjectPath("/org/chromium/SecondObject"));
   WaitForObject();
 
-  std::vector<dbus::ObjectPath> object_paths = object_manager_->GetObjects();
+  std::vector<ObjectPath> object_paths = object_manager_->GetObjects();
   ASSERT_EQ(2U, object_paths.size());
 
-  PerformAction("RemoveObject", dbus::ObjectPath("/org/chromium/SecondObject"));
+  PerformAction("RemoveObject", ObjectPath("/org/chromium/SecondObject"));
   WaitForRemoveObject();
 
-  dbus::ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
-      dbus::ObjectPath("/org/chromium/SecondObject"));
+  ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
+      ObjectPath("/org/chromium/SecondObject"));
   EXPECT_TRUE(object_proxy == NULL);
 
   Properties* properties = static_cast<Properties*>(
-      object_manager_->GetProperties(
-          dbus::ObjectPath("/org/chromium/SecondObject"),
-          "org.chromium.TestInterface"));
+      object_manager_->GetProperties(ObjectPath("/org/chromium/SecondObject"),
+                                     "org.chromium.TestInterface"));
   EXPECT_TRUE(properties == NULL);
 
   object_paths = object_manager_->GetObjects();
   ASSERT_EQ(1U, object_paths.size());
-  EXPECT_EQ(dbus::ObjectPath("/org/chromium/TestObject"), object_paths[0]);
+  EXPECT_EQ(ObjectPath("/org/chromium/TestObject"), object_paths[0]);
 
   object_paths =
       object_manager_->GetObjectsWithInterface("org.chromium.TestInterface");
   ASSERT_EQ(1U, object_paths.size());
-  EXPECT_EQ(dbus::ObjectPath("/org/chromium/TestObject"), object_paths[0]);
+  EXPECT_EQ(ObjectPath("/org/chromium/TestObject"), object_paths[0]);
 }
+
+}  // namespace dbus

@@ -17,6 +17,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace dbus {
+
 namespace {
 
 // Used to test AddFilterFunction().
@@ -72,26 +74,26 @@ void OnServiceOwnerChanged(RunLoopWithExpectedCount* run_loop_state,
 }  // namespace
 
 TEST(BusTest, GetObjectProxy) {
-  dbus::Bus::Options options;
-  scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);
+  Bus::Options options;
+  scoped_refptr<Bus> bus = new Bus(options);
 
-  dbus::ObjectProxy* object_proxy1 =
+  ObjectProxy* object_proxy1 =
       bus->GetObjectProxy("org.chromium.TestService",
-                          dbus::ObjectPath("/org/chromium/TestObject"));
+                          ObjectPath("/org/chromium/TestObject"));
   ASSERT_TRUE(object_proxy1);
 
   // This should return the same object.
-  dbus::ObjectProxy* object_proxy2 =
+  ObjectProxy* object_proxy2 =
       bus->GetObjectProxy("org.chromium.TestService",
-                          dbus::ObjectPath("/org/chromium/TestObject"));
+                          ObjectPath("/org/chromium/TestObject"));
   ASSERT_TRUE(object_proxy2);
   EXPECT_EQ(object_proxy1, object_proxy2);
 
   // This should not.
-  dbus::ObjectProxy* object_proxy3 =
+  ObjectProxy* object_proxy3 =
       bus->GetObjectProxy(
           "org.chromium.TestService",
-          dbus::ObjectPath("/org/chromium/DifferentTestObject"));
+          ObjectPath("/org/chromium/DifferentTestObject"));
   ASSERT_TRUE(object_proxy3);
   EXPECT_NE(object_proxy1, object_proxy3);
 
@@ -99,31 +101,31 @@ TEST(BusTest, GetObjectProxy) {
 }
 
 TEST(BusTest, GetObjectProxyIgnoreUnknownService) {
-  dbus::Bus::Options options;
-  scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);
+  Bus::Options options;
+  scoped_refptr<Bus> bus = new Bus(options);
 
-  dbus::ObjectProxy* object_proxy1 =
+  ObjectProxy* object_proxy1 =
       bus->GetObjectProxyWithOptions(
           "org.chromium.TestService",
-          dbus::ObjectPath("/org/chromium/TestObject"),
-          dbus::ObjectProxy::IGNORE_SERVICE_UNKNOWN_ERRORS);
+          ObjectPath("/org/chromium/TestObject"),
+          ObjectProxy::IGNORE_SERVICE_UNKNOWN_ERRORS);
   ASSERT_TRUE(object_proxy1);
 
   // This should return the same object.
-  dbus::ObjectProxy* object_proxy2 =
+  ObjectProxy* object_proxy2 =
       bus->GetObjectProxyWithOptions(
           "org.chromium.TestService",
-          dbus::ObjectPath("/org/chromium/TestObject"),
-          dbus::ObjectProxy::IGNORE_SERVICE_UNKNOWN_ERRORS);
+          ObjectPath("/org/chromium/TestObject"),
+          ObjectProxy::IGNORE_SERVICE_UNKNOWN_ERRORS);
   ASSERT_TRUE(object_proxy2);
   EXPECT_EQ(object_proxy1, object_proxy2);
 
   // This should not.
-  dbus::ObjectProxy* object_proxy3 =
+  ObjectProxy* object_proxy3 =
       bus->GetObjectProxyWithOptions(
           "org.chromium.TestService",
-          dbus::ObjectPath("/org/chromium/DifferentTestObject"),
-          dbus::ObjectProxy::IGNORE_SERVICE_UNKNOWN_ERRORS);
+          ObjectPath("/org/chromium/DifferentTestObject"),
+          ObjectProxy::IGNORE_SERVICE_UNKNOWN_ERRORS);
   ASSERT_TRUE(object_proxy3);
   EXPECT_NE(object_proxy1, object_proxy3);
 
@@ -141,20 +143,20 @@ TEST(BusTest, RemoveObjectProxy) {
   dbus_thread.StartWithOptions(thread_options);
 
   // Create the bus.
-  dbus::Bus::Options options;
+  Bus::Options options;
   options.dbus_task_runner = dbus_thread.message_loop_proxy();
-  scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);
+  scoped_refptr<Bus> bus = new Bus(options);
   ASSERT_FALSE(bus->shutdown_completed());
 
   // Try to remove a non existant object proxy should return false.
   ASSERT_FALSE(
       bus->RemoveObjectProxy("org.chromium.TestService",
-                             dbus::ObjectPath("/org/chromium/TestObject"),
+                             ObjectPath("/org/chromium/TestObject"),
                              base::Bind(&base::DoNothing)));
 
-  dbus::ObjectProxy* object_proxy1 =
+  ObjectProxy* object_proxy1 =
       bus->GetObjectProxy("org.chromium.TestService",
-                          dbus::ObjectPath("/org/chromium/TestObject"));
+                          ObjectPath("/org/chromium/TestObject"));
   ASSERT_TRUE(object_proxy1);
 
   // Increment the reference count to the object proxy to avoid destroying it
@@ -166,14 +168,14 @@ TEST(BusTest, RemoveObjectProxy) {
   // at a later time.
   ASSERT_TRUE(
       bus->RemoveObjectProxy("org.chromium.TestService",
-                             dbus::ObjectPath("/org/chromium/TestObject"),
+                             ObjectPath("/org/chromium/TestObject"),
                              base::Bind(&base::DoNothing)));
 
   // This should return a different object because the first object was removed
   // from the bus, but not deleted from memory.
-  dbus::ObjectProxy* object_proxy2 =
+  ObjectProxy* object_proxy2 =
       bus->GetObjectProxy("org.chromium.TestService",
-                          dbus::ObjectPath("/org/chromium/TestObject"));
+                          ObjectPath("/org/chromium/TestObject"));
   ASSERT_TRUE(object_proxy2);
 
   // Compare the new object with the first object. The first object still exists
@@ -190,23 +192,23 @@ TEST(BusTest, RemoveObjectProxy) {
 }
 
 TEST(BusTest, GetExportedObject) {
-  dbus::Bus::Options options;
-  scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);
+  Bus::Options options;
+  scoped_refptr<Bus> bus = new Bus(options);
 
-  dbus::ExportedObject* object_proxy1 =
-      bus->GetExportedObject(dbus::ObjectPath("/org/chromium/TestObject"));
+  ExportedObject* object_proxy1 =
+      bus->GetExportedObject(ObjectPath("/org/chromium/TestObject"));
   ASSERT_TRUE(object_proxy1);
 
   // This should return the same object.
-  dbus::ExportedObject* object_proxy2 =
-      bus->GetExportedObject(dbus::ObjectPath("/org/chromium/TestObject"));
+  ExportedObject* object_proxy2 =
+      bus->GetExportedObject(ObjectPath("/org/chromium/TestObject"));
   ASSERT_TRUE(object_proxy2);
   EXPECT_EQ(object_proxy1, object_proxy2);
 
   // This should not.
-  dbus::ExportedObject* object_proxy3 =
+  ExportedObject* object_proxy3 =
       bus->GetExportedObject(
-          dbus::ObjectPath("/org/chromium/DifferentTestObject"));
+          ObjectPath("/org/chromium/DifferentTestObject"));
   ASSERT_TRUE(object_proxy3);
   EXPECT_NE(object_proxy1, object_proxy3);
 
@@ -221,13 +223,13 @@ TEST(BusTest, UnregisterExportedObject) {
   dbus_thread.StartWithOptions(thread_options);
 
   // Create the bus.
-  dbus::Bus::Options options;
+  Bus::Options options;
   options.dbus_task_runner = dbus_thread.message_loop_proxy();
-  scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);
+  scoped_refptr<Bus> bus = new Bus(options);
   ASSERT_FALSE(bus->shutdown_completed());
 
-  dbus::ExportedObject* object_proxy1 =
-      bus->GetExportedObject(dbus::ObjectPath("/org/chromium/TestObject"));
+  ExportedObject* object_proxy1 =
+      bus->GetExportedObject(ObjectPath("/org/chromium/TestObject"));
   ASSERT_TRUE(object_proxy1);
 
   // Increment the reference count to the object proxy to avoid destroying it
@@ -235,12 +237,12 @@ TEST(BusTest, UnregisterExportedObject) {
   // not freed from memory. See http://crbug.com/137846 for details.
   object_proxy1->AddRef();
 
-  bus->UnregisterExportedObject(dbus::ObjectPath("/org/chromium/TestObject"));
+  bus->UnregisterExportedObject(ObjectPath("/org/chromium/TestObject"));
 
   // This should return a new object because the object_proxy1 is still in
   // alloc'ed memory.
-  dbus::ExportedObject* object_proxy2 =
-      bus->GetExportedObject(dbus::ObjectPath("/org/chromium/TestObject"));
+  ExportedObject* object_proxy2 =
+      bus->GetExportedObject(ObjectPath("/org/chromium/TestObject"));
   ASSERT_TRUE(object_proxy2);
   EXPECT_NE(object_proxy1, object_proxy2);
 
@@ -254,8 +256,8 @@ TEST(BusTest, UnregisterExportedObject) {
 }
 
 TEST(BusTest, ShutdownAndBlock) {
-  dbus::Bus::Options options;
-  scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);
+  Bus::Options options;
+  scoped_refptr<Bus> bus = new Bus(options);
   ASSERT_FALSE(bus->shutdown_completed());
 
   // Shut down synchronously.
@@ -271,9 +273,9 @@ TEST(BusTest, ShutdownAndBlockWithDBusThread) {
   dbus_thread.StartWithOptions(thread_options);
 
   // Create the bus.
-  dbus::Bus::Options options;
+  Bus::Options options;
   options.dbus_task_runner = dbus_thread.message_loop_proxy();
-  scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);
+  scoped_refptr<Bus> bus = new Bus(options);
   ASSERT_FALSE(bus->shutdown_completed());
 
   // Shut down synchronously.
@@ -283,8 +285,8 @@ TEST(BusTest, ShutdownAndBlockWithDBusThread) {
 }
 
 TEST(BusTest, AddFilterFunction) {
-  dbus::Bus::Options options;
-  scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);
+  Bus::Options options;
+  scoped_refptr<Bus> bus = new Bus(options);
   // Should connect before calling AddFilterFunction().
   bus->Connect();
 
@@ -304,9 +306,9 @@ TEST(BusTest, AddFilterFunction) {
 }
 
 TEST(BusTest, DoubleAddAndRemoveMatch) {
-  dbus::Bus::Options options;
-  scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);
-  dbus::ScopedDBusError error;
+  Bus::Options options;
+  scoped_refptr<Bus> bus = new Bus(options);
+  ScopedDBusError error;
 
   bus->Connect();
 
@@ -349,13 +351,13 @@ TEST(BusTest, ListenForServiceOwnerChange) {
   RunLoopWithExpectedCount run_loop_state;
 
   // Create the bus.
-  dbus::Bus::Options bus_options;
-  scoped_refptr<dbus::Bus> bus = new dbus::Bus(bus_options);
+  Bus::Options bus_options;
+  scoped_refptr<Bus> bus = new Bus(bus_options);
 
   // Add a listener.
   std::string service_owner1;
   int num_of_owner_changes1 = 0;
-  dbus::Bus::GetServiceOwnerCallback callback1 =
+  Bus::GetServiceOwnerCallback callback1 =
       base::Bind(&OnServiceOwnerChanged,
                  &run_loop_state,
                  &service_owner1,
@@ -378,7 +380,7 @@ TEST(BusTest, ListenForServiceOwnerChange) {
     // the right value.
     std::string current_service_owner =
         bus->GetServiceOwnerAndBlock("org.chromium.TestService",
-                                     dbus::Bus::REPORT_ERRORS);
+                                     Bus::REPORT_ERRORS);
     ASSERT_FALSE(current_service_owner.empty());
 
     // Make sure the listener heard about the new owner.
@@ -391,7 +393,7 @@ TEST(BusTest, ListenForServiceOwnerChange) {
   // Add a second listener.
   std::string service_owner2;
   int num_of_owner_changes2 = 0;
-  dbus::Bus::GetServiceOwnerCallback callback2 =
+  Bus::GetServiceOwnerCallback callback2 =
       base::Bind(&OnServiceOwnerChanged,
                  &run_loop_state,
                  &service_owner2,
@@ -418,3 +420,5 @@ TEST(BusTest, ListenForServiceOwnerChange) {
   bus->ShutdownAndBlock();
   EXPECT_TRUE(bus->shutdown_completed());
 }
+
+}  // namespace dbus

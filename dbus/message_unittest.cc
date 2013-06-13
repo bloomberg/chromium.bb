@@ -12,16 +12,18 @@
 #include "dbus/test_proto.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace dbus {
+
 // Test that a byte can be properly written and read. We only have this
 // test for byte, as repeating this for other basic types is too redundant.
 TEST(MessageTest, AppendAndPopByte) {
-  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(message.get());
+  scoped_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
   writer.AppendByte(123);  // The input is 123.
 
-  dbus::MessageReader reader(message.get());
+  MessageReader reader(message.get());
   ASSERT_TRUE(reader.HasMoreData());  // Should have data to read.
-  ASSERT_EQ(dbus::Message::BYTE, reader.GetDataType());
+  ASSERT_EQ(Message::BYTE, reader.GetDataType());
 
   bool bool_value = false;
   // Should fail as the type is not bool here.
@@ -38,8 +40,8 @@ TEST(MessageTest, AppendAndPopByte) {
 
 // Check all basic types can be properly written and read.
 TEST(MessageTest, AppendAndPopBasicDataTypes) {
-  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(message.get());
+  scoped_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
 
   // Append 0, 1, 2, 3, 4, 5, 6, 7, 8, "string", "/object/path".
   writer.AppendByte(0);
@@ -52,7 +54,7 @@ TEST(MessageTest, AppendAndPopBasicDataTypes) {
   writer.AppendUint64(7);
   writer.AppendDouble(8.0);
   writer.AppendString("string");
-  writer.AppendObjectPath(dbus::ObjectPath("/object/path"));
+  writer.AppendObjectPath(ObjectPath("/object/path"));
 
   uint8 byte_value = 0;
   bool bool_value = false;
@@ -64,9 +66,9 @@ TEST(MessageTest, AppendAndPopBasicDataTypes) {
   uint64 uint64_value = 0;
   double double_value = 0;
   std::string string_value;
-  dbus::ObjectPath object_path_value;
+  ObjectPath object_path_value;
 
-  dbus::MessageReader reader(message.get());
+  MessageReader reader(message.get());
   ASSERT_TRUE(reader.HasMoreData());
   ASSERT_TRUE(reader.PopByte(&byte_value));
   ASSERT_TRUE(reader.PopBool(&bool_value));
@@ -92,21 +94,21 @@ TEST(MessageTest, AppendAndPopBasicDataTypes) {
   EXPECT_EQ(7U, uint64_value);
   EXPECT_DOUBLE_EQ(8.0, double_value);
   EXPECT_EQ("string", string_value);
-  EXPECT_EQ(dbus::ObjectPath("/object/path"), object_path_value);
+  EXPECT_EQ(ObjectPath("/object/path"), object_path_value);
 }
 
 // Check all basic types can be properly written and read.
 TEST(MessageTest, AppendAndPopFileDescriptor) {
-  if (!dbus::IsDBusTypeUnixFdSupported()) {
+  if (!IsDBusTypeUnixFdSupported()) {
     LOG(WARNING) << "FD passing is not supported";
     return;
   }
 
-  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(message.get());
+  scoped_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
 
   // Append stdout.
-  dbus::FileDescriptor temp(1);
+  FileDescriptor temp(1);
   // Descriptor should not be valid until checked.
   ASSERT_FALSE(temp.is_valid());
   // NB: thread IO requirements not relevant for unit tests.
@@ -114,9 +116,9 @@ TEST(MessageTest, AppendAndPopFileDescriptor) {
   ASSERT_TRUE(temp.is_valid());
   writer.AppendFileDescriptor(temp);
 
-  dbus::FileDescriptor fd_value;
+  FileDescriptor fd_value;
 
-  dbus::MessageReader reader(message.get());
+  MessageReader reader(message.get());
   ASSERT_TRUE(reader.HasMoreData());
   ASSERT_TRUE(reader.PopFileDescriptor(&fd_value));
   ASSERT_FALSE(reader.HasMoreData());
@@ -130,17 +132,17 @@ TEST(MessageTest, AppendAndPopFileDescriptor) {
   // which should be identical.
   struct stat sb_stdout;
   int status_stdout = HANDLE_EINTR(fstat(1, &sb_stdout));
-  ASSERT_TRUE(status_stdout >= 0);
+  ASSERT_GE(status_stdout, 0);
   struct stat sb_fd;
   int status_fd = HANDLE_EINTR(fstat(fd_value.value(), &sb_fd));
-  ASSERT_TRUE(status_fd >= 0);
+  ASSERT_GE(status_fd, 0);
   EXPECT_EQ(sb_stdout.st_rdev, sb_fd.st_rdev);
 }
 
 // Check all variant types can be properly written and read.
 TEST(MessageTest, AppendAndPopVariantDataTypes) {
-  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(message.get());
+  scoped_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
 
   // Append 0, 1, 2, 3, 4, 5, 6, 7, 8, "string", "/object/path".
   writer.AppendVariantOfByte(0);
@@ -153,7 +155,7 @@ TEST(MessageTest, AppendAndPopVariantDataTypes) {
   writer.AppendVariantOfUint64(7);
   writer.AppendVariantOfDouble(8.0);
   writer.AppendVariantOfString("string");
-  writer.AppendVariantOfObjectPath(dbus::ObjectPath("/object/path"));
+  writer.AppendVariantOfObjectPath(ObjectPath("/object/path"));
 
   uint8 byte_value = 0;
   bool bool_value = false;
@@ -165,9 +167,9 @@ TEST(MessageTest, AppendAndPopVariantDataTypes) {
   uint64 uint64_value = 0;
   double double_value = 0;
   std::string string_value;
-  dbus::ObjectPath object_path_value;
+  ObjectPath object_path_value;
 
-  dbus::MessageReader reader(message.get());
+  MessageReader reader(message.get());
   ASSERT_TRUE(reader.HasMoreData());
   ASSERT_TRUE(reader.PopVariantOfByte(&byte_value));
   ASSERT_TRUE(reader.PopVariantOfBool(&bool_value));
@@ -193,19 +195,19 @@ TEST(MessageTest, AppendAndPopVariantDataTypes) {
   EXPECT_EQ(7U, uint64_value);
   EXPECT_DOUBLE_EQ(8.0, double_value);
   EXPECT_EQ("string", string_value);
-  EXPECT_EQ(dbus::ObjectPath("/object/path"), object_path_value);
+  EXPECT_EQ(ObjectPath("/object/path"), object_path_value);
 }
 
 TEST(MessageTest, ArrayOfBytes) {
-  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(message.get());
+  scoped_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
   std::vector<uint8> bytes;
   bytes.push_back(1);
   bytes.push_back(2);
   bytes.push_back(3);
   writer.AppendArrayOfBytes(bytes.data(), bytes.size());
 
-  dbus::MessageReader reader(message.get());
+  MessageReader reader(message.get());
   uint8* output_bytes = NULL;
   size_t length = 0;
   ASSERT_TRUE(reader.PopArrayOfBytes(&output_bytes, &length));
@@ -217,12 +219,12 @@ TEST(MessageTest, ArrayOfBytes) {
 }
 
 TEST(MessageTest, ArrayOfBytes_Empty) {
-  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(message.get());
+  scoped_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
   std::vector<uint8> bytes;
   writer.AppendArrayOfBytes(bytes.data(), bytes.size());
 
-  dbus::MessageReader reader(message.get());
+  MessageReader reader(message.get());
   uint8* output_bytes = NULL;
   size_t length = 0;
   ASSERT_TRUE(reader.PopArrayOfBytes(&output_bytes, &length));
@@ -232,8 +234,8 @@ TEST(MessageTest, ArrayOfBytes_Empty) {
 }
 
 TEST(MessageTest, ArrayOfStrings) {
-  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(message.get());
+  scoped_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
   std::vector<std::string> strings;
   strings.push_back("fee");
   strings.push_back("fie");
@@ -241,7 +243,7 @@ TEST(MessageTest, ArrayOfStrings) {
   strings.push_back("fum");
   writer.AppendArrayOfStrings(strings);
 
-  dbus::MessageReader reader(message.get());
+  MessageReader reader(message.get());
   std::vector<std::string> output_strings;
   ASSERT_TRUE(reader.PopArrayOfStrings(&output_strings));
   ASSERT_FALSE(reader.HasMoreData());
@@ -253,33 +255,33 @@ TEST(MessageTest, ArrayOfStrings) {
 }
 
 TEST(MessageTest, ArrayOfObjectPaths) {
-  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(message.get());
-  std::vector<dbus::ObjectPath> object_paths;
-  object_paths.push_back(dbus::ObjectPath("/object/path/1"));
-  object_paths.push_back(dbus::ObjectPath("/object/path/2"));
-  object_paths.push_back(dbus::ObjectPath("/object/path/3"));
+  scoped_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
+  std::vector<ObjectPath> object_paths;
+  object_paths.push_back(ObjectPath("/object/path/1"));
+  object_paths.push_back(ObjectPath("/object/path/2"));
+  object_paths.push_back(ObjectPath("/object/path/3"));
   writer.AppendArrayOfObjectPaths(object_paths);
 
-  dbus::MessageReader reader(message.get());
-  std::vector<dbus::ObjectPath> output_object_paths;
+  MessageReader reader(message.get());
+  std::vector<ObjectPath> output_object_paths;
   ASSERT_TRUE(reader.PopArrayOfObjectPaths(&output_object_paths));
   ASSERT_FALSE(reader.HasMoreData());
   ASSERT_EQ(3U, output_object_paths.size());
-  EXPECT_EQ(dbus::ObjectPath("/object/path/1"), output_object_paths[0]);
-  EXPECT_EQ(dbus::ObjectPath("/object/path/2"), output_object_paths[1]);
-  EXPECT_EQ(dbus::ObjectPath("/object/path/3"), output_object_paths[2]);
+  EXPECT_EQ(ObjectPath("/object/path/1"), output_object_paths[0]);
+  EXPECT_EQ(ObjectPath("/object/path/2"), output_object_paths[1]);
+  EXPECT_EQ(ObjectPath("/object/path/3"), output_object_paths[2]);
 }
 
 TEST(MessageTest, ProtoBuf) {
-  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(message.get());
+  scoped_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
   TestProto send_message;
   send_message.set_text("testing");
   send_message.set_number(123);
   writer.AppendProtoAsArrayOfBytes(send_message);
 
-  dbus::MessageReader reader(message.get());
+  MessageReader reader(message.get());
   TestProto receive_message;
   ASSERT_TRUE(reader.PopArrayOfBytesAsProto(&receive_message));
   EXPECT_EQ(receive_message.text(), send_message.text());
@@ -291,18 +293,18 @@ TEST(MessageTest, ProtoBuf) {
 // test for array, as repeating this for other container types is too
 // redundant.
 TEST(MessageTest, OpenArrayAndPopArray) {
-  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(message.get());
-  dbus::MessageWriter array_writer(NULL);
+  scoped_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
+  MessageWriter array_writer(NULL);
   writer.OpenArray("s", &array_writer);  // Open an array of strings.
   array_writer.AppendString("foo");
   array_writer.AppendString("bar");
   array_writer.AppendString("baz");
   writer.CloseContainer(&array_writer);
 
-  dbus::MessageReader reader(message.get());
-  ASSERT_EQ(dbus::Message::ARRAY, reader.GetDataType());
-  dbus::MessageReader array_reader(NULL);
+  MessageReader reader(message.get());
+  ASSERT_EQ(Message::ARRAY, reader.GetDataType());
+  MessageReader array_reader(NULL);
   ASSERT_TRUE(reader.PopArray(&array_reader));
   ASSERT_FALSE(reader.HasMoreData());  // Should not have more data to read.
 
@@ -320,16 +322,16 @@ TEST(MessageTest, OpenArrayAndPopArray) {
 // Create a complex message using array, struct, variant, dict entry, and
 // make sure it can be read properly.
 TEST(MessageTest, CreateComplexMessageAndReadIt) {
-  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(message.get());
+  scoped_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
   {
-    dbus::MessageWriter array_writer(NULL);
+    MessageWriter array_writer(NULL);
     // Open an array of variants.
     writer.OpenArray("v", &array_writer);
     {
       // The first value in the array.
       {
-        dbus::MessageWriter variant_writer(NULL);
+        MessageWriter variant_writer(NULL);
         // Open a variant of a boolean.
         array_writer.OpenVariant("b", &variant_writer);
         variant_writer.AppendBool(true);
@@ -338,11 +340,11 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
 
       // The second value in the array.
       {
-        dbus::MessageWriter variant_writer(NULL);
+        MessageWriter variant_writer(NULL);
         // Open a variant of a struct that contains a string and an int32.
         array_writer.OpenVariant("(si)", &variant_writer);
         {
-          dbus::MessageWriter struct_writer(NULL);
+          MessageWriter struct_writer(NULL);
           variant_writer.OpenStruct(&struct_writer);
           struct_writer.AppendString("string");
           struct_writer.AppendInt32(123);
@@ -353,16 +355,16 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
 
       // The third value in the array.
       {
-        dbus::MessageWriter variant_writer(NULL);
+        MessageWriter variant_writer(NULL);
         // Open a variant of an array of string-to-int64 dict entries.
         array_writer.OpenVariant("a{sx}", &variant_writer);
         {
           // Opens an array of string-to-int64 dict entries.
-          dbus::MessageWriter dict_array_writer(NULL);
+          MessageWriter dict_array_writer(NULL);
           variant_writer.OpenArray("{sx}", &dict_array_writer);
           {
             // Opens a string-to-int64 dict entries.
-            dbus::MessageWriter dict_entry_writer(NULL);
+            MessageWriter dict_entry_writer(NULL);
             dict_array_writer.OpenDictEntry(&dict_entry_writer);
             dict_entry_writer.AppendString("foo");
             dict_entry_writer.AppendInt64(GG_INT64_C(1234567890123456789));
@@ -394,8 +396,8 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
             "]\n",
             message->ToString());
 
-  dbus::MessageReader reader(message.get());
-  dbus::MessageReader array_reader(NULL);
+  MessageReader reader(message.get());
+  MessageReader array_reader(NULL);
   ASSERT_TRUE(reader.PopArray(&array_reader));
 
   // The first value in the array.
@@ -405,10 +407,10 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
 
   // The second value in the array.
   {
-    dbus::MessageReader variant_reader(NULL);
+    MessageReader variant_reader(NULL);
     ASSERT_TRUE(array_reader.PopVariant(&variant_reader));
     {
-      dbus::MessageReader struct_reader(NULL);
+      MessageReader struct_reader(NULL);
       ASSERT_TRUE(variant_reader.PopStruct(&struct_reader));
       std::string string_value;
       ASSERT_TRUE(struct_reader.PopString(&string_value));
@@ -423,13 +425,13 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
 
   // The third value in the array.
   {
-    dbus::MessageReader variant_reader(NULL);
+    MessageReader variant_reader(NULL);
     ASSERT_TRUE(array_reader.PopVariant(&variant_reader));
     {
-      dbus::MessageReader dict_array_reader(NULL);
+      MessageReader dict_array_reader(NULL);
       ASSERT_TRUE(variant_reader.PopArray(&dict_array_reader));
       {
-        dbus::MessageReader dict_entry_reader(NULL);
+        MessageReader dict_entry_reader(NULL);
         ASSERT_TRUE(dict_array_reader.PopDictEntry(&dict_entry_reader));
         std::string string_value;
         ASSERT_TRUE(dict_entry_reader.PopString(&string_value));
@@ -447,14 +449,14 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
 }
 
 TEST(MessageTest, MethodCall) {
-  dbus::MethodCall method_call("com.example.Interface", "SomeMethod");
+  MethodCall method_call("com.example.Interface", "SomeMethod");
   EXPECT_TRUE(method_call.raw_message() != NULL);
-  EXPECT_EQ(dbus::Message::MESSAGE_METHOD_CALL, method_call.GetMessageType());
+  EXPECT_EQ(Message::MESSAGE_METHOD_CALL, method_call.GetMessageType());
   EXPECT_EQ("MESSAGE_METHOD_CALL", method_call.GetMessageTypeAsString());
   method_call.SetDestination("com.example.Service");
-  method_call.SetPath(dbus::ObjectPath("/com/example/Object"));
+  method_call.SetPath(ObjectPath("/com/example/Object"));
 
-  dbus::MessageWriter writer(&method_call);
+  MessageWriter writer(&method_call);
   writer.AppendString("payload");
 
   EXPECT_EQ("message_type: MESSAGE_METHOD_CALL\n"
@@ -473,20 +475,19 @@ TEST(MessageTest, MethodCall_FromRawMessage) {
   dbus_message_set_interface(raw_message, "com.example.Interface");
   dbus_message_set_member(raw_message, "SomeMethod");
 
-  scoped_ptr<dbus::MethodCall> method_call(
-      dbus::MethodCall::FromRawMessage(raw_message));
+  scoped_ptr<MethodCall> method_call(MethodCall::FromRawMessage(raw_message));
   EXPECT_EQ("com.example.Interface", method_call->GetInterface());
   EXPECT_EQ("SomeMethod", method_call->GetMember());
 }
 
 TEST(MessageTest, Signal) {
-  dbus::Signal signal("com.example.Interface", "SomeSignal");
+  Signal signal("com.example.Interface", "SomeSignal");
   EXPECT_TRUE(signal.raw_message() != NULL);
-  EXPECT_EQ(dbus::Message::MESSAGE_SIGNAL, signal.GetMessageType());
+  EXPECT_EQ(Message::MESSAGE_SIGNAL, signal.GetMessageType());
   EXPECT_EQ("MESSAGE_SIGNAL", signal.GetMessageTypeAsString());
-  signal.SetPath(dbus::ObjectPath("/com/example/Object"));
+  signal.SetPath(ObjectPath("/com/example/Object"));
 
-  dbus::MessageWriter writer(&signal);
+  MessageWriter writer(&signal);
   writer.AppendString("payload");
 
   EXPECT_EQ("message_type: MESSAGE_SIGNAL\n"
@@ -504,27 +505,26 @@ TEST(MessageTest, Signal_FromRawMessage) {
   dbus_message_set_interface(raw_message, "com.example.Interface");
   dbus_message_set_member(raw_message, "SomeSignal");
 
-  scoped_ptr<dbus::Signal> signal(
-      dbus::Signal::FromRawMessage(raw_message));
+  scoped_ptr<Signal> signal(Signal::FromRawMessage(raw_message));
   EXPECT_EQ("com.example.Interface", signal->GetInterface());
   EXPECT_EQ("SomeSignal", signal->GetMember());
 }
 
 TEST(MessageTest, Response) {
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  scoped_ptr<Response> response(Response::CreateEmpty());
   EXPECT_TRUE(response->raw_message());
-  EXPECT_EQ(dbus::Message::MESSAGE_METHOD_RETURN, response->GetMessageType());
+  EXPECT_EQ(Message::MESSAGE_METHOD_RETURN, response->GetMessageType());
   EXPECT_EQ("MESSAGE_METHOD_RETURN", response->GetMessageTypeAsString());
 }
 
 TEST(MessageTest, Response_FromMethodCall) {
   const uint32 kSerial = 123;
-  dbus::MethodCall method_call("com.example.Interface", "SomeMethod");
+  MethodCall method_call("com.example.Interface", "SomeMethod");
   method_call.SetSerial(kSerial);
 
-  scoped_ptr<dbus::Response> response(
-      dbus::Response::FromMethodCall(&method_call));
-  EXPECT_EQ(dbus::Message::MESSAGE_METHOD_RETURN, response->GetMessageType());
+  scoped_ptr<Response> response(
+      Response::FromMethodCall(&method_call));
+  EXPECT_EQ(Message::MESSAGE_METHOD_RETURN, response->GetMessageType());
   EXPECT_EQ("MESSAGE_METHOD_RETURN", response->GetMessageTypeAsString());
   // The serial should be copied to the reply serial.
   EXPECT_EQ(kSerial, response->GetReplySerial());
@@ -534,30 +534,30 @@ TEST(MessageTest, ErrorResponse_FromMethodCall) {
   const uint32 kSerial = 123;
 const char kErrorMessage[] = "error message";
 
-  dbus::MethodCall method_call("com.example.Interface", "SomeMethod");
+  MethodCall method_call("com.example.Interface", "SomeMethod");
   method_call.SetSerial(kSerial);
 
-  scoped_ptr<dbus::ErrorResponse> error_response(
-      dbus::ErrorResponse::FromMethodCall(&method_call,
-                                          DBUS_ERROR_FAILED,
-                                          kErrorMessage));
-  EXPECT_EQ(dbus::Message::MESSAGE_ERROR, error_response->GetMessageType());
+  scoped_ptr<ErrorResponse> error_response(
+      ErrorResponse::FromMethodCall(&method_call,
+                                    DBUS_ERROR_FAILED,
+                                    kErrorMessage));
+  EXPECT_EQ(Message::MESSAGE_ERROR, error_response->GetMessageType());
   EXPECT_EQ("MESSAGE_ERROR", error_response->GetMessageTypeAsString());
   // The serial should be copied to the reply serial.
   EXPECT_EQ(kSerial, error_response->GetReplySerial());
 
   // Error message should be added to the payload.
-  dbus::MessageReader reader(error_response.get());
+  MessageReader reader(error_response.get());
   std::string error_message;
   ASSERT_TRUE(reader.PopString(&error_message));
   EXPECT_EQ(kErrorMessage, error_message);
 }
 
 TEST(MessageTest, GetAndSetHeaders) {
-  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
+  scoped_ptr<Response> message(Response::CreateEmpty());
 
   EXPECT_EQ("", message->GetDestination());
-  EXPECT_EQ(dbus::ObjectPath(std::string()), message->GetPath());
+  EXPECT_EQ(ObjectPath(std::string()), message->GetPath());
   EXPECT_EQ("", message->GetInterface());
   EXPECT_EQ("", message->GetMember());
   EXPECT_EQ("", message->GetErrorName());
@@ -566,7 +566,7 @@ TEST(MessageTest, GetAndSetHeaders) {
   EXPECT_EQ(0U, message->GetReplySerial());
 
   EXPECT_TRUE(message->SetDestination("org.chromium.destination"));
-  EXPECT_TRUE(message->SetPath(dbus::ObjectPath("/org/chromium/path")));
+  EXPECT_TRUE(message->SetPath(ObjectPath("/org/chromium/path")));
   EXPECT_TRUE(message->SetInterface("org.chromium.interface"));
   EXPECT_TRUE(message->SetMember("member"));
   EXPECT_TRUE(message->SetErrorName("org.chromium.error"));
@@ -575,7 +575,7 @@ TEST(MessageTest, GetAndSetHeaders) {
   message->SetReplySerial(456);
 
   EXPECT_EQ("org.chromium.destination", message->GetDestination());
-  EXPECT_EQ(dbus::ObjectPath("/org/chromium/path"), message->GetPath());
+  EXPECT_EQ(ObjectPath("/org/chromium/path"), message->GetPath());
   EXPECT_EQ("org.chromium.interface", message->GetInterface());
   EXPECT_EQ("member", message->GetMember());
   EXPECT_EQ("org.chromium.error", message->GetErrorName());
@@ -585,9 +585,9 @@ TEST(MessageTest, GetAndSetHeaders) {
 }
 
 TEST(MessageTest, SetInvalidHeaders) {
-  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
+  scoped_ptr<Response> message(Response::CreateEmpty());
   EXPECT_EQ("", message->GetDestination());
-  EXPECT_EQ(dbus::ObjectPath(std::string()), message->GetPath());
+  EXPECT_EQ(ObjectPath(std::string()), message->GetPath());
   EXPECT_EQ("", message->GetInterface());
   EXPECT_EQ("", message->GetMember());
   EXPECT_EQ("", message->GetErrorName());
@@ -596,7 +596,7 @@ TEST(MessageTest, SetInvalidHeaders) {
   // Empty element between periods.
   EXPECT_FALSE(message->SetDestination("org..chromium"));
   // Trailing '/' is only allowed for the root path.
-  EXPECT_FALSE(message->SetPath(dbus::ObjectPath("/org/chromium/")));
+  EXPECT_FALSE(message->SetPath(ObjectPath("/org/chromium/")));
   // Interface name cannot contain '/'.
   EXPECT_FALSE(message->SetInterface("org/chromium/interface"));
   // Member name cannot begin with a digit.
@@ -607,7 +607,7 @@ TEST(MessageTest, SetInvalidHeaders) {
   EXPECT_FALSE(message->SetSender("?!#*"));
 
   EXPECT_EQ("", message->GetDestination());
-  EXPECT_EQ(dbus::ObjectPath(std::string()), message->GetPath());
+  EXPECT_EQ(ObjectPath(std::string()), message->GetPath());
   EXPECT_EQ("", message->GetInterface());
   EXPECT_EQ("", message->GetMember());
   EXPECT_EQ("", message->GetErrorName());
@@ -617,8 +617,8 @@ TEST(MessageTest, SetInvalidHeaders) {
 TEST(MessageTest, ToString_LongString) {
   const std::string kLongString(1000, 'o');
 
-  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(message.get());
+  scoped_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
   writer.AppendString(kLongString);
 
   ASSERT_EQ("message_type: MESSAGE_METHOD_RETURN\n"
@@ -628,3 +628,5 @@ TEST(MessageTest, ToString_LongString) {
             "(1000 bytes in total)\"\n",
             message->ToString());
 }
+
+}  // namespace dbus

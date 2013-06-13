@@ -17,6 +17,8 @@
 #include "dbus/test_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace dbus {
+
 // The test for sender verification in ObjectProxy.
 class SignalSenderVerificationTest : public testing::Test {
  public:
@@ -38,14 +40,14 @@ class SignalSenderVerificationTest : public testing::Test {
     ASSERT_TRUE(dbus_thread_->StartWithOptions(thread_options));
 
     // Create the client, using the D-Bus thread.
-    dbus::Bus::Options bus_options;
-    bus_options.bus_type = dbus::Bus::SESSION;
-    bus_options.connection_type = dbus::Bus::PRIVATE;
+    Bus::Options bus_options;
+    bus_options.bus_type = Bus::SESSION;
+    bus_options.connection_type = Bus::PRIVATE;
     bus_options.dbus_task_runner = dbus_thread_->message_loop_proxy();
-    bus_ = new dbus::Bus(bus_options);
+    bus_ = new Bus(bus_options);
     object_proxy_ = bus_->GetObjectProxy(
         "org.chromium.TestService",
-        dbus::ObjectPath("/org/chromium/TestObject"));
+        ObjectPath("/org/chromium/TestObject"));
     ASSERT_TRUE(bus_->HasDBusThread());
 
     object_proxy_->SetNameOwnerChangedCallback(
@@ -66,9 +68,9 @@ class SignalSenderVerificationTest : public testing::Test {
     message_loop_.Run();
 
     // Start the test service, using the D-Bus thread.
-    dbus::TestService::Options options;
+    TestService::Options options;
     options.dbus_task_runner = dbus_thread_->message_loop_proxy();
-    test_service_.reset(new dbus::TestService(options));
+    test_service_.reset(new TestService(options));
     ASSERT_TRUE(test_service_->StartService());
     ASSERT_TRUE(test_service_->WaitUntilServiceIsStarted());
     ASSERT_TRUE(test_service_->HasDBusThread());
@@ -76,7 +78,7 @@ class SignalSenderVerificationTest : public testing::Test {
 
     // Same setup for the second TestService. This service should not have the
     // ownership of the name at this point.
-    test_service2_.reset(new dbus::TestService(options));
+    test_service2_.reset(new TestService(options));
     ASSERT_TRUE(test_service2_->StartService());
     ASSERT_TRUE(test_service2_->WaitUntilServiceIsStarted());
     ASSERT_TRUE(test_service2_->HasDBusThread());
@@ -118,8 +120,8 @@ class SignalSenderVerificationTest : public testing::Test {
     message_loop_.Quit();
   }
 
-  void OnNameOwnerChanged(bool* called_flag, dbus::Signal* signal) {
-    dbus::MessageReader reader(signal);
+  void OnNameOwnerChanged(bool* called_flag, Signal* signal) {
+    MessageReader reader(signal);
     std::string name, old_owner, new_owner;
     ASSERT_TRUE(reader.PopString(&name));
     ASSERT_TRUE(reader.PopString(&old_owner));
@@ -131,8 +133,8 @@ class SignalSenderVerificationTest : public testing::Test {
 
   // Called when the "Test" signal is received, in the main thread.
   // Copy the string payload to |test_signal_string_|.
-  void OnTestSignal(dbus::Signal* signal) {
-    dbus::MessageReader reader(signal);
+  void OnTestSignal(Signal* signal) {
+    MessageReader reader(signal);
     ASSERT_TRUE(reader.PopString(&test_signal_string_));
     message_loop_.Quit();
   }
@@ -154,10 +156,10 @@ class SignalSenderVerificationTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   scoped_ptr<base::Thread> dbus_thread_;
-  scoped_refptr<dbus::Bus> bus_;
-  dbus::ObjectProxy* object_proxy_;
-  scoped_ptr<dbus::TestService> test_service_;
-  scoped_ptr<dbus::TestService> test_service2_;
+  scoped_refptr<Bus> bus_;
+  ObjectProxy* object_proxy_;
+  scoped_ptr<TestService> test_service_;
+  scoped_ptr<TestService> test_service2_;
   // Text message from "Test" signal.
   std::string test_signal_string_;
 
@@ -248,9 +250,9 @@ TEST_F(SignalSenderVerificationTest, TestOwnerChanged) {
 TEST_F(SignalSenderVerificationTest, DISABLED_TestMultipleObjects) {
   const char kMessage[] = "hello, world";
 
-  dbus::ObjectProxy* object_proxy2 = bus_->GetObjectProxy(
+  ObjectProxy* object_proxy2 = bus_->GetObjectProxy(
       "org.chromium.TestService",
-      dbus::ObjectPath("/org/chromium/DifferentObject"));
+      ObjectPath("/org/chromium/DifferentObject"));
 
   bool second_name_owner_changed_called = false;
   object_proxy2->SetNameOwnerChangedCallback(
@@ -311,3 +313,5 @@ TEST_F(SignalSenderVerificationTest, DISABLED_TestMultipleObjects) {
   WaitForTestSignal();
   ASSERT_EQ(kNewMessage, test_signal_string_);
 }
+
+}  // namespace dbus

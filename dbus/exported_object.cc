@@ -280,7 +280,7 @@ void ExportedObject::OnMethodCompleted(scoped_ptr<MethodCall> method_call,
 
   if (!response) {
     // Something bad happened in the method call.
-    scoped_ptr<dbus::ErrorResponse> error_response(
+    scoped_ptr<ErrorResponse> error_response(
         ErrorResponse::FromMethodCall(
             method_call.get(),
             DBUS_ERROR_FAILED,

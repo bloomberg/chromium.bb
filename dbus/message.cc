@@ -452,9 +452,9 @@ scoped_ptr<ErrorResponse> ErrorResponse::FromMethodCall(
 // MessageWriter implementation.
 //
 
-MessageWriter::MessageWriter(Message* message) :
-    message_(message),
-    container_is_open_(false) {
+MessageWriter::MessageWriter(Message* message)
+    : message_(message),
+      container_is_open_(false) {
   memset(&raw_message_iter_, 0, sizeof(raw_message_iter_));
   if (message)
     dbus_message_iter_init_append(message_->raw_message(), &raw_message_iter_);
@@ -966,7 +966,7 @@ bool MessageReader::PopContainer(int dbus_type, MessageReader* sub_reader) {
 }
 
 bool MessageReader::PopVariantOfBasic(int dbus_type, void* value) {
-  dbus::MessageReader variant_reader(message_);
+  MessageReader variant_reader(message_);
   if (!PopVariant(&variant_reader))
     return false;
   return variant_reader.PopBasic(dbus_type, value);

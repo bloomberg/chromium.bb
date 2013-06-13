@@ -11,6 +11,8 @@
 #include "dbus/test_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace dbus {
+
 // The end-to-end test exercises the synchronous APIs in ObjectProxy and
 // ExportedObject. The test will launch a thread for the service side
 // operations (i.e. ExportedObject side).
@@ -21,20 +23,20 @@ class EndToEndSyncTest : public testing::Test {
 
   virtual void SetUp() {
     // Start the test service;
-    dbus::TestService::Options options;
-    test_service_.reset(new dbus::TestService(options));
+    TestService::Options options;
+    test_service_.reset(new TestService(options));
     ASSERT_TRUE(test_service_->StartService());
     ASSERT_TRUE(test_service_->WaitUntilServiceIsStarted());
     ASSERT_FALSE(test_service_->HasDBusThread());
 
     // Create the client.
-    dbus::Bus::Options client_bus_options;
-    client_bus_options.bus_type = dbus::Bus::SESSION;
-    client_bus_options.connection_type = dbus::Bus::PRIVATE;
-    client_bus_ = new dbus::Bus(client_bus_options);
+    Bus::Options client_bus_options;
+    client_bus_options.bus_type = Bus::SESSION;
+    client_bus_options.connection_type = Bus::PRIVATE;
+    client_bus_ = new Bus(client_bus_options);
     object_proxy_ = client_bus_->GetObjectProxy(
         "org.chromium.TestService",
-        dbus::ObjectPath("/org/chromium/TestObject"));
+        ObjectPath("/org/chromium/TestObject"));
     ASSERT_FALSE(client_bus_->HasDBusThread());
   }
 
@@ -45,27 +47,27 @@ class EndToEndSyncTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<dbus::TestService> test_service_;
-  scoped_refptr<dbus::Bus> client_bus_;
-  dbus::ObjectProxy* object_proxy_;
+  scoped_ptr<TestService> test_service_;
+  scoped_refptr<Bus> client_bus_;
+  ObjectProxy* object_proxy_;
 };
 
 TEST_F(EndToEndSyncTest, Echo) {
   const std::string kHello = "hello";
 
   // Create the method call.
-  dbus::MethodCall method_call("org.chromium.TestInterface", "Echo");
-  dbus::MessageWriter writer(&method_call);
+  MethodCall method_call("org.chromium.TestInterface", "Echo");
+  MessageWriter writer(&method_call);
   writer.AppendString(kHello);
 
   // Call the method.
-  const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
-  scoped_ptr<dbus::Response> response(
+  const int timeout_ms = ObjectProxy::TIMEOUT_USE_DEFAULT;
+  scoped_ptr<Response> response(
       object_proxy_->CallMethodAndBlock(&method_call, timeout_ms));
   ASSERT_TRUE(response.get());
 
   // Check the response. kHello should be echoed back.
-  dbus::MessageReader reader(response.get());
+  MessageReader reader(response.get());
   std::string returned_message;
   ASSERT_TRUE(reader.PopString(&returned_message));
   EXPECT_EQ(kHello, returned_message);
@@ -75,48 +77,48 @@ TEST_F(EndToEndSyncTest, Timeout) {
   const std::string kHello = "hello";
 
   // Create the method call.
-  dbus::MethodCall method_call("org.chromium.TestInterface", "DelayedEcho");
-  dbus::MessageWriter writer(&method_call);
+  MethodCall method_call("org.chromium.TestInterface", "DelayedEcho");
+  MessageWriter writer(&method_call);
   writer.AppendString(kHello);
 
   // Call the method with timeout of 0ms.
   const int timeout_ms = 0;
-  scoped_ptr<dbus::Response> response(
+  scoped_ptr<Response> response(
       object_proxy_->CallMethodAndBlock(&method_call, timeout_ms));
   // Should fail because of timeout.
   ASSERT_FALSE(response.get());
 }
 
 TEST_F(EndToEndSyncTest, NonexistentMethod) {
-  dbus::MethodCall method_call("org.chromium.TestInterface", "Nonexistent");
+  MethodCall method_call("org.chromium.TestInterface", "Nonexistent");
 
-  const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
-  scoped_ptr<dbus::Response> response(
+  const int timeout_ms = ObjectProxy::TIMEOUT_USE_DEFAULT;
+  scoped_ptr<Response> response(
       object_proxy_->CallMethodAndBlock(&method_call, timeout_ms));
   ASSERT_FALSE(response.get());
 }
 
 TEST_F(EndToEndSyncTest, BrokenMethod) {
-  dbus::MethodCall method_call("org.chromium.TestInterface", "BrokenMethod");
+  MethodCall method_call("org.chromium.TestInterface", "BrokenMethod");
 
-  const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
-  scoped_ptr<dbus::Response> response(
+  const int timeout_ms = ObjectProxy::TIMEOUT_USE_DEFAULT;
+  scoped_ptr<Response> response(
       object_proxy_->CallMethodAndBlock(&method_call, timeout_ms));
   ASSERT_FALSE(response.get());
 }
 
 TEST_F(EndToEndSyncTest, InvalidObjectPath) {
   // Trailing '/' is only allowed for the root path.
-  const dbus::ObjectPath invalid_object_path("/org/chromium/TestObject/");
+  const ObjectPath invalid_object_path("/org/chromium/TestObject/");
 
   // Replace object proxy with new one.
   object_proxy_ = client_bus_->GetObjectProxy("org.chromium.TestService",
                                               invalid_object_path);
 
-  dbus::MethodCall method_call("org.chromium.TestInterface", "Echo");
+  MethodCall method_call("org.chromium.TestInterface", "Echo");
 
-  const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
-  scoped_ptr<dbus::Response> response(
+  const int timeout_ms = ObjectProxy::TIMEOUT_USE_DEFAULT;
+  scoped_ptr<Response> response(
       object_proxy_->CallMethodAndBlock(&method_call, timeout_ms));
   ASSERT_FALSE(response.get());
 }
@@ -127,12 +129,14 @@ TEST_F(EndToEndSyncTest, InvalidServiceName) {
 
   // Replace object proxy with new one.
   object_proxy_ = client_bus_->GetObjectProxy(
-      invalid_service_name, dbus::ObjectPath("org.chromium.TestObject"));
+      invalid_service_name, ObjectPath("org.chromium.TestObject"));
 
-  dbus::MethodCall method_call("org.chromium.TestInterface", "Echo");
+  MethodCall method_call("org.chromium.TestInterface", "Echo");
 
-  const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
-  scoped_ptr<dbus::Response> response(
+  const int timeout_ms = ObjectProxy::TIMEOUT_USE_DEFAULT;
+  scoped_ptr<Response> response(
       object_proxy_->CallMethodAndBlock(&method_call, timeout_ms));
   ASSERT_FALSE(response.get());
 }
+
+}  // namespace dbus
