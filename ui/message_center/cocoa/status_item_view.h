@@ -47,9 +47,12 @@ MESSAGE_CENTER_EXPORT
 @property(nonatomic) size_t unreadCount;
 @property(nonatomic) BOOL highlight;
 
-// Designated initializer. This will take ownership of |item| and set self as
-// its view.
-- (id)initWithStatusItem:(NSStatusItem*)item;
+// Designated initializer. Creates a new NSStatusItem in the system menubar.
+- (id)init;
+
+// Removes the status item from the menubar. Must be called to break the
+// retain cycle between self and the NSStatusItem view.
+- (void)removeItem;
 
 @end
 

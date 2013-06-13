@@ -10,24 +10,20 @@
 class StatusItemViewTest : public ui::CocoaTest {
  public:
   StatusItemViewTest()
-      : status_item_([[NSStatusBar systemStatusBar] statusItemWithLength:
-                         NSVariableStatusItemLength]),
-        view_([[MCStatusItemView alloc] initWithStatusItem:status_item_]) {
+      : view_([[MCStatusItemView alloc] init]) {
   }
 
   virtual void SetUp() OVERRIDE {
-    // CocoaTest keeps a list of windows that were open at the time of its
-    // construction, and it will attempt to close all new ones. Using
-    // NSStatusBar creates a non-closeable window. Call Init() again after
-    // creating the NSStatusItem to exclude the status bar window from the
-    // list of windows to attempt to close.
-    ui::CocoaTest::Init();
     ui::CocoaTest::SetUp();
     [[test_window() contentView] addSubview:view_];
   }
 
+  virtual void TearDown() OVERRIDE {
+    [view_ removeItem];
+    ui::CocoaTest::TearDown();
+  }
+
  protected:
-  NSStatusItem* status_item_;  // Weak, owned by |view_|.
   scoped_nsobject<MCStatusItemView> view_;
 };
 

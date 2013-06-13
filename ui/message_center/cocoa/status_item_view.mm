@@ -40,14 +40,21 @@ const CGFloat kUnreadCountMinY = 4;
 @synthesize unreadCount = unreadCount_;
 @synthesize highlight = highlight_;
 
-- (id)initWithStatusItem:(NSStatusItem*)item {
-  CGFloat thickness = [[item statusBar] thickness];
+- (id)init {
+  statusItem_.reset([[[NSStatusBar systemStatusBar] statusItemWithLength:
+      NSVariableStatusItemLength] retain]);
+  CGFloat thickness = [[statusItem_ statusBar] thickness];
+
   NSRect frame = NSMakeRect(0, 0, kStatusItemLength, thickness);
   if ((self = [super initWithFrame:frame])) {
-    statusItem_.reset([item retain]);
     [statusItem_ setView:self];
   }
   return self;
+}
+
+- (void)removeItem {
+  [[NSStatusBar systemStatusBar] removeStatusItem:statusItem_];
+  statusItem_.reset();
 }
 
 - (message_center::StatusItemClickedCallack)callback {

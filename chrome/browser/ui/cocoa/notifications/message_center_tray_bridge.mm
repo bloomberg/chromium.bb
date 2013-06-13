@@ -32,11 +32,6 @@ MessageCenterTrayBridge::MessageCenterTrayBridge(
       tray_(new message_center::MessageCenterTray(this, message_center)),
       updates_pending_(false),
       weak_ptr_factory_(this) {
-  NSStatusBar* status_bar = [NSStatusBar systemStatusBar];
-  status_item_view_.reset(
-      [[MCStatusItemView alloc] initWithStatusItem:
-          [status_bar statusItemWithLength:NSVariableStatusItemLength]]);
-  [status_item_view_ setCallback:^{ tray_->ToggleMessageCenterBubble(); }];
 }
 
 MessageCenterTrayBridge::~MessageCenterTrayBridge() {
@@ -97,6 +92,18 @@ void MessageCenterTrayBridge::HideMessageCenter() {
 }
 
 void MessageCenterTrayBridge::UpdateStatusItem() {
+  // Only show the status item if there are notifications.
+  if (message_center_->NotificationCount() == 0) {
+    [status_item_view_ removeItem];
+    status_item_view_.reset();
+    return;
+  }
+
+  if (!status_item_view_) {
+    status_item_view_.reset([[MCStatusItemView alloc] init]);
+    [status_item_view_ setCallback:^{ tray_->ToggleMessageCenterBubble(); }];
+  }
+
   size_t unread_count = message_center_->UnreadNotificationCount();
   [status_item_view_ setUnreadCount:unread_count];
 

@@ -43,6 +43,8 @@ class MessageCenterTrayBridge :
   message_center::MessageCenter* message_center() { return message_center_; }
 
  private:
+  friend class MessageCenterTrayBridgeTest;
+
   // Updates the unread count on the status item.
   void UpdateStatusItem();
 
