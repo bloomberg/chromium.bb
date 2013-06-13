@@ -14,47 +14,51 @@
 <include src="pref_ui.js"></include>
 <include src="settings_dialog.js"></include>
 <if expr="pp_ifdef('chromeos')">
-  <include src="../chromeos/user_images_grid.js"></include>
-  <include src="../../../../ui/webui/resources/js/chromeos/ui_account_tweaks.js"></include>
-  <include src="chromeos/change_picture_options.js"></include>
-  <include src="chromeos/internet_detail_ip_address_field.js"></include>
-  <include src="chromeos/internet_detail.js"></include>
-  <include src="chromeos/network_list.js"></include>
-  <include src="chromeos/preferred_networks.js"></include>
-  <include src="chromeos/bluetooth_device_list.js"></include>
-  <include src="chromeos/bluetooth_add_device_overlay.js"></include>
-  <include src="chromeos/bluetooth_pair_device_overlay.js"></include>
-  <include src="chromeos/accounts_options.js"></include>
-  <include src="chromeos/proxy_rules_list.js"></include>
-  <include src="chromeos/accounts_user_list.js"></include>
-  <include src="chromeos/accounts_user_name_edit.js"></include>
-  <include src="chromeos/display_options.js"></include>
-  <include src="chromeos/display_overscan.js"></include>
-  <include src="chromeos/keyboard_overlay.js"></include>
-  <include src="chromeos/pointer_overlay.js"></include>
-  var AccountsOptions = options.AccountsOptions;
-  var ChangePictureOptions = options.ChangePictureOptions;
-  var DetailsInternetPage = options.internet.DetailsInternetPage;
-  var DisplayOptions = options.DisplayOptions;
-  var DisplayOverscan = options.DisplayOverscan;
-  var BluetoothOptions = options.BluetoothOptions;
-  var BluetoothPairing = options.BluetoothPairing;
-  var KeyboardOverlay = options.KeyboardOverlay;
-  var PointerOverlay = options.PointerOverlay;
-  var UIAccountTweaks = uiAccountTweaks.UIAccountTweaks;
+<include src="../chromeos/user_images_grid.js"></include>
+// DO NOT BREAK THE FOLLOWING INCLUDE LINE INTO SEPARATE LINES!
+// Even though the include line spans more than 80 characters,
+// The grit html inlining parser will leave the end tag behind,
+// causing a runtime JS break.
+<include src="../../../../ui/webui/resources/js/chromeos/ui_account_tweaks.js"></include>
+<include src="chromeos/change_picture_options.js"></include>
+<include src="chromeos/internet_detail_ip_address_field.js"></include>
+<include src="chromeos/internet_detail.js"></include>
+<include src="chromeos/network_list.js"></include>
+<include src="chromeos/preferred_networks.js"></include>
+<include src="chromeos/bluetooth_device_list.js"></include>
+<include src="chromeos/bluetooth_add_device_overlay.js"></include>
+<include src="chromeos/bluetooth_pair_device_overlay.js"></include>
+<include src="chromeos/accounts_options.js"></include>
+<include src="chromeos/proxy_rules_list.js"></include>
+<include src="chromeos/accounts_user_list.js"></include>
+<include src="chromeos/accounts_user_name_edit.js"></include>
+<include src="chromeos/display_options.js"></include>
+<include src="chromeos/display_overscan.js"></include>
+<include src="chromeos/keyboard_overlay.js"></include>
+<include src="chromeos/pointer_overlay.js"></include>
+var AccountsOptions = options.AccountsOptions;
+var ChangePictureOptions = options.ChangePictureOptions;
+var DetailsInternetPage = options.internet.DetailsInternetPage;
+var DisplayOptions = options.DisplayOptions;
+var DisplayOverscan = options.DisplayOverscan;
+var BluetoothOptions = options.BluetoothOptions;
+var BluetoothPairing = options.BluetoothPairing;
+var KeyboardOverlay = options.KeyboardOverlay;
+var PointerOverlay = options.PointerOverlay;
+var UIAccountTweaks = uiAccountTweaks.UIAccountTweaks;
 </if>
 <if expr="pp_ifdef('use_nss')">
-  <include src="certificate_tree.js"></include>
-  <include src="certificate_manager.js"></include>
-  <include src="certificate_restore_overlay.js"></include>
-  <include src="certificate_backup_overlay.js"></include>
-  <include src="certificate_edit_ca_trust_overlay.js"></include>
-  <include src="certificate_import_error_overlay.js"></include>
-  var CertificateManager = options.CertificateManager;
-  var CertificateRestoreOverlay = options.CertificateRestoreOverlay;
-  var CertificateBackupOverlay = options.CertificateBackupOverlay;
-  var CertificateEditCaTrustOverlay = options.CertificateEditCaTrustOverlay;
-  var CertificateImportErrorOverlay = options.CertificateImportErrorOverlay;
+<include src="certificate_tree.js"></include>
+<include src="certificate_manager.js"></include>
+<include src="certificate_restore_overlay.js"></include>
+<include src="certificate_backup_overlay.js"></include>
+<include src="certificate_edit_ca_trust_overlay.js"></include>
+<include src="certificate_import_error_overlay.js"></include>
+var CertificateManager = options.CertificateManager;
+var CertificateRestoreOverlay = options.CertificateRestoreOverlay;
+var CertificateBackupOverlay = options.CertificateBackupOverlay;
+var CertificateEditCaTrustOverlay = options.CertificateEditCaTrustOverlay;
+var CertificateImportErrorOverlay = options.CertificateImportErrorOverlay;
 </if>
 <include src="alert_overlay.js"></include>
 <include src="autofill_edit_address_overlay.js"></include>
@@ -83,8 +87,8 @@
 <include src="import_data_overlay.js"></include>
 <include src="language_add_language_overlay.js"></include>
 <if expr="not is_macosx">
-  <include src="language_dictionary_overlay_word_list.js"></include>
-  <include src="language_dictionary_overlay.js"></include>
+<include src="language_dictionary_overlay_word_list.js"></include>
+<include src="language_dictionary_overlay.js"></include>
 </if>
 <include src="language_list.js"></include>
 <include src="language_options.js"></include>
@@ -106,5 +110,5 @@
 <include src="../uber/uber_utils.js"></include>
 <include src="options.js"></include>
 <if expr="pp_ifdef('enable_settings_app')">
-  <include src="options_settings_app.js"></include>
+<include src="options_settings_app.js"></include>
 </if>

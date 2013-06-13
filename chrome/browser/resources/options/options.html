@@ -26,7 +26,7 @@
 <link rel="stylesheet" href="home_page_overlay.css">
 <link rel="stylesheet" href="import_data_overlay.css">
 <if expr="not is_macosx">
-  <link rel="stylesheet" href="language_dictionary_overlay.css">
+<link rel="stylesheet" href="language_dictionary_overlay.css">
 </if>
 <link rel="stylesheet" href="language_options.css">
 <link rel="stylesheet" href="manage_profile_overlay.css">
@@ -42,21 +42,21 @@
 <link rel="stylesheet" href="startup_overlay.css">
 <link rel="stylesheet" href="../sync_setup_overlay.css">
 <if expr="pp_ifdef('chromeos')">
-  <link rel="stylesheet" href="chromeos/accounts_options_page.css">
-  <link rel="stylesheet" href="chromeos/bluetooth.css">
-  <link rel="stylesheet" href="chromeos/change_picture_options.css">
-  <link rel="stylesheet" href="chromeos/display_options.css">
-  <link rel="stylesheet" href="chromeos/display_overscan.css">
-  <link rel="stylesheet" href="chromeos/internet_detail.css">
-  <link rel="stylesheet" href="chromeos/pointer_overlay.css">
-  <link rel="stylesheet" href="factory_reset_overlay.css">
+<link rel="stylesheet" href="chromeos/accounts_options_page.css">
+<link rel="stylesheet" href="chromeos/bluetooth.css">
+<link rel="stylesheet" href="chromeos/change_picture_options.css">
+<link rel="stylesheet" href="chromeos/display_options.css">
+<link rel="stylesheet" href="chromeos/display_overscan.css">
+<link rel="stylesheet" href="chromeos/internet_detail.css">
+<link rel="stylesheet" href="chromeos/pointer_overlay.css">
+<link rel="stylesheet" href="factory_reset_overlay.css">
 </if>
 <if expr="pp_ifdef('use_nss')">
-  <link rel="stylesheet" href="certificate_manager.css">
-  <link rel="stylesheet" href="certificate_tree.css">
+<link rel="stylesheet" href="certificate_manager.css">
+<link rel="stylesheet" href="certificate_tree.css">
 </if>
 <if expr="pp_ifdef('enable_settings_app')">
-  <link rel="stylesheet" href="options_settings_app.css">
+<link rel="stylesheet" href="options_settings_app.css">
 </if>
 <script src="chrome://resources/css/tree.css.js"></script>
 <script src="chrome://resources/js/cr.js"></script>
@@ -109,19 +109,19 @@
   <include src="spelling_confirm_overlay.html">
   <include src="startup_overlay.html">
   <include src="../sync_setup_overlay.html">
-  <if expr="pp_ifdef('chromeos')">
-    <include src="chromeos/accounts_options.html">
-    <include src="chromeos/bluetooth_add_device_overlay.html">
-    <include src="chromeos/bluetooth_pair_device_overlay.html">
-    <include src="chromeos/change_picture_options.html">
-    <include src="chromeos/display_options.html">
-    <include src="chromeos/keyboard_overlay.html">
-    <include src="chromeos/pointer_overlay.html">
-    <include src="factory_reset_overlay.html">
-  </if>
-  <if expr="pp_ifdef('use_nss')">
-    <include src="certificate_manager.html">
-  </if>
+<if expr="pp_ifdef('chromeos')">
+  <include src="chromeos/accounts_options.html">
+  <include src="chromeos/bluetooth_add_device_overlay.html">
+  <include src="chromeos/bluetooth_pair_device_overlay.html">
+  <include src="chromeos/change_picture_options.html">
+  <include src="chromeos/display_options.html">
+  <include src="chromeos/keyboard_overlay.html">
+  <include src="chromeos/pointer_overlay.html">
+  <include src="factory_reset_overlay.html">
+</if>
+<if expr="pp_ifdef('use_nss')">
+  <include src="certificate_manager.html">
+</if>
 </div>
 <div id="overlay-container-2" class="overlay transparent" hidden>
   <include src="alert_overlay.html">
@@ -132,25 +132,25 @@
   <include src="handler_options.html">
   <include src="language_add_language_overlay.html">
   <include src="managed_user_learn_more.html">
-  <if expr="not is_macosx">
-    <include src="language_dictionary_overlay.html">
-  </if>
+<if expr="not is_macosx">
+  <include src="language_dictionary_overlay.html">
+</if>
   <include src="media_galleries_manager_overlay.html">
-  <if expr="pp_ifdef('chromeos')">
-    <include src="chromeos/display_overscan.html">
-    <include src="chromeos/internet_detail.html">
-    <include src="chromeos/preferred_networks.html">
-    <include src="chromeos/language_chewing_options.html">
-    <include src="chromeos/language_hangul_options.html">
-    <include src="chromeos/language_mozc_options.html">
-    <include src="chromeos/language_pinyin_options.html">
-  </if>
-  <if expr="not is_win and not is_macosx">
-    <include src="certificate_restore_overlay.html">
-    <include src="certificate_backup_overlay.html">
-    <include src="certificate_edit_ca_trust_overlay.html">
-    <include src="certificate_import_error_overlay.html">
-  </if>
+<if expr="pp_ifdef('chromeos')">
+  <include src="chromeos/display_overscan.html">
+  <include src="chromeos/internet_detail.html">
+  <include src="chromeos/preferred_networks.html">
+  <include src="chromeos/language_chewing_options.html">
+  <include src="chromeos/language_hangul_options.html">
+  <include src="chromeos/language_mozc_options.html">
+  <include src="chromeos/language_pinyin_options.html">
+</if>
+<if expr="not is_win and not is_macosx">
+  <include src="certificate_restore_overlay.html">
+  <include src="certificate_backup_overlay.html">
+  <include src="certificate_edit_ca_trust_overlay.html">
+  <include src="certificate_import_error_overlay.html">
+</if>
 </div>
 <div id="overlay-container-3" class="overlay transparent" hidden>
 </div>
