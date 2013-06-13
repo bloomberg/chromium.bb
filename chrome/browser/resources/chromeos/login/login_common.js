@@ -64,13 +64,6 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Shows the previous screen of workflow.
-   */
-  Oobe.goBack = function() {
-    Oobe.getInstance().goBack();
-  };
-
-  /**
    * Updates version label visibilty.
    * @param {boolean} show True if version label should be visible.
    */

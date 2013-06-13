@@ -142,10 +142,8 @@ const char OobeUI::kScreenErrorMessage[]    = "error-message";
 const char OobeUI::kScreenUserImagePicker[] = "user-image";
 const char OobeUI::kScreenTpmError[]        = "tpm-error-message";
 const char OobeUI::kScreenPasswordChanged[] = "password-changed";
-const char OobeUI::kScreenManagedUserCreationDialog[]
-                                            = "managed-user-creation-dialog";
 const char OobeUI::kScreenManagedUserCreationFlow[]
-                                            = "managed-user-creation-flow";
+                                            = "managed-user-creation";
 const char OobeUI::kScreenTermsOfService[]  = "terms-of-service";
 const char OobeUI::kScreenWrongHWID[]       = "wrong-hwid";
 
@@ -362,8 +360,6 @@ void OobeUI::InitializeScreenMaps() {
   screen_names_[SCREEN_USER_IMAGE_PICKER] = kScreenUserImagePicker;
   screen_names_[SCREEN_TPM_ERROR] = kScreenTpmError;
   screen_names_[SCREEN_PASSWORD_CHANGED] = kScreenPasswordChanged;
-  screen_names_[SCREEN_CREATE_MANAGED_USER_DIALOG] =
-      kScreenManagedUserCreationDialog;
   screen_names_[SCREEN_CREATE_MANAGED_USER_FLOW] =
       kScreenManagedUserCreationFlow;
   screen_names_[SCREEN_TERMS_OF_SERVICE] = kScreenTermsOfService;

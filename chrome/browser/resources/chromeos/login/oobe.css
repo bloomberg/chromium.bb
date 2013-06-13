@@ -30,7 +30,7 @@ button {
 
 /* Follow same focus coloring as in widgets.css */
 /* Do not apply this style to restricted button state. */
-button.custom-appearance:not(.button-restricted) {
+button.custom-appearance:not(.button-restricted):not(.button-fancy) {
   -webkit-transition: border-color 200ms;
   border: 1px solid transparent;
   /* Don't grey out disabled buttons. */
@@ -43,6 +43,42 @@ button.custom-appearance:focus {
 
 button:not(.custom-appearance) {
   min-width: 72px !important;
+}
+
+button.button-fancy {
+  min-width: 72px !important;
+}
+button.button-blue {
+  background-image: -webkit-linear-gradient(rgb(93, 154, 255),
+                                            rgb(93, 154, 255) 38%,
+                                            rgb(88, 145, 240));
+  border: 1px solid rgba(45, 102, 195, 1);
+  border-radius: 2px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15), inset 0 1px 2px
+              rgba(255, 255, 255, 0.4);
+  color: #fff;
+  font-size: 12px;
+  margin: 0 1px 0 0;
+  min-height: 2em;
+  min-width: 4em;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+
+button.button-blue:hover {
+  background-image: -webkit-linear-gradient(rgb(101, 158, 253),
+                                            rgb(101, 158, 253) 38%,
+                                            rgb(96, 151, 241));
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25), inset 0 1px 2px
+              rgba(255, 255, 255, 0.4);
+}
+
+button.button-blue:active {
+  background-image: -webkit-linear-gradient(rgb(96, 149, 237),
+                                            rgb(96, 149, 237) 38%,
+                                            rgb(96, 149, 237));
+  border: 1px solid rgba(38, 84, 160, 1);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
 .label,

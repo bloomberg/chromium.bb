@@ -17,10 +17,8 @@
 /** @const */ var SCREEN_USER_IMAGE_PICKER = 'user-image';
 /** @const */ var SCREEN_TPM_ERROR = 'tpm-error-message';
 /** @const */ var SCREEN_PASSWORD_CHANGED = 'password-changed';
-/** @const */ var SCREEN_CREATE_MANAGED_USER_DIALOG =
-    'managed-user-creation-dialog';
 /** @const */ var SCREEN_CREATE_MANAGED_USER_FLOW =
-    'managed-user-creation-flow';
+    'managed-user-creation';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
@@ -98,12 +96,6 @@ cr.define('cr.ui.login', function() {
      * @type {boolean}
      */
     forceKeyboardFlow_: false,
-
-    /**
-     * List of parameters to showScreen calls.
-     * @type {array}
-     */
-    screenParametersHistory_: [],
 
     /**
      * Gets current screen element.
@@ -359,13 +351,6 @@ cr.define('cr.ui.login', function() {
     showScreen: function(screen) {
       var screenId = screen.id;
 
-      // As for now, support "back" only for create managed user screen.
-      if (screenId != SCREEN_CREATE_MANAGED_USER_DIALOG) {
-        this.screenParametersHistory_ = [];
-      }
-
-      this.screenParametersHistory_.push(screen);
-
       // Make sure the screen is decorated.
       this.preloadScreen(screen);
 
@@ -386,16 +371,6 @@ cr.define('cr.ui.login', function() {
       var index = this.getScreenIndex_(screenId);
       if (index >= 0)
         this.toggleStep_(index, data);
-    },
-
-    /**
-     * Shows the previous screen of workflow.
-     */
-    goBack: function() {
-      if (this.screenParametersHistory_.length >= 2) {
-        this.screenParametersHistory_.pop();
-        this.showScreen(this.screenParametersHistory_.pop());
-      }
     },
 
     /**

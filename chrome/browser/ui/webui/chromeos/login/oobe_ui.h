@@ -53,7 +53,6 @@ class OobeUI : public OobeDisplay,
   static const char kScreenUserImagePicker[];
   static const char kScreenTpmError[];
   static const char kScreenPasswordChanged[];
-  static const char kScreenManagedUserCreationDialog[];
   static const char kScreenManagedUserCreationFlow[];
   static const char kScreenTermsOfService[];
   static const char kScreenWrongHWID[];

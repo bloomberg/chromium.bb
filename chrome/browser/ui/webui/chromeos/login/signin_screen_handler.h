@@ -197,7 +197,6 @@ class SigninScreenHandler
     UI_STATE_UNKNOWN = 0,
     UI_STATE_GAIA_SIGNIN,
     UI_STATE_ACCOUNT_PICKER,
-    UI_STATE_LOCALLY_MANAGED_USER_CREATION
   };
 
   enum FrameState {

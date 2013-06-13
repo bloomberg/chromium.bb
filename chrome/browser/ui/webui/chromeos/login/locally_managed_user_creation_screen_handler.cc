@@ -33,8 +33,6 @@ LocallyManagedUserCreationScreenHandler::
 
 void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
     LocalizedValuesBuilder* builder) {
-  builder->Add("managedUserCreationErrorTitle",
-               IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_TITLE);
   builder->Add(
       "managedUserCreationFlowRetryButtonTitle",
       IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_RETRY_BUTTON_TITLE);
@@ -42,16 +40,40 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
       "managedUserCreationFlowCancelButtonTitle",
       IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_CANCEL_BUTTON_TITLE);
   builder->Add(
-      "managedUserCreationFlowFinishButtonTitle",
-       IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_BUTTON_TITLE);
-  builder->Add("managedUserProfileCreatedMessageTemplate",
-               IDS_CREATE_LOCALLY_MANAGED_USER_PROFILE_CREATED_TEXT);
-  builder->Add("managedUserInstructionTemplate",
-               IDS_CREATE_LOCALLY_MANAGED_USER_INSTRUCTIONS_TEXT);
+      "managedUserCreationFlowGotitButtonTitle",
+       IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_GOT_IT_BUTTON_TITLE);
+
+  builder->Add("createManagedUserIntroText1",
+               IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_1);
+  builder->Add("createManagedUserIntroManagerItem1",
+               IDS_CREATE_LOCALLY_MANAGED_INTRO_MANAGER_ITEM_1);
+  builder->Add("createManagedUserIntroManagerItem2",
+               IDS_CREATE_LOCALLY_MANAGED_INTRO_MANAGER_ITEM_2);
+  builder->Add("createManagedUserIntroManagerItem3",
+               IDS_CREATE_LOCALLY_MANAGED_INTRO_MANAGER_ITEM_3);
+  builder->Add("createManagedUserIntroText2",
+               IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_2);
+  builder->Add("createManagedUserIntroText3",
+               IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_3);
+
+  builder->Add("createManagedUserPickManagerTitle",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PICK_MANAGER_TITLE);
+  builder->Add("createManagedUserPickManagerTitleExplanation",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PICK_MANAGER_EXPLANATION);
+  builder->Add("createManagedUserManagerPasswordHint",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_MANAGER_PASSWORD_HINT);
+  builder->Add("createManagedUserWrongManagerPasswordText",
+               IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_PASSWORD_ERROR);
+
+
   builder->Add("createManagedUserNameTitle",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_TITLE);
+  builder->Add("createManagedUserNameExplanation",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_EXPLANATION);
   builder->Add("createManagedUserPasswordTitle",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TITLE);
+  builder->Add("createManagedUserPasswordExplanation",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_EXPLANATION);
   builder->Add("createManagedUserPasswordHint",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_HINT);
   builder->Add("createManagedUserPasswordConfirmHint",
@@ -68,12 +90,25 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_HANDLE_ERROR_BUTTON_TEXT);
   builder->Add("createManagedUserPasswordMismatchError",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_MISMATCH_ERROR);
-  builder->Add("createManagedUserSelectManagerTitle",
-               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_SELECT_MANAGER_TEXT);
-  builder->Add("createManagedUserManagerPasswordHint",
-               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_MANAGER_PASSWORD_HINT);
-  builder->Add("createManagedUserWrongManagerPasswordText",
-               IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_PASSWORD_ERROR);
+
+  builder->Add("createManagedUserCreated1Text1",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_1_TEXT_1);
+  builder->Add("createManagedUserCreated1Text2",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_1_TEXT_2);
+  builder->Add("createManagedUserCreated1Text3",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_3);
+
+  builder->Add("createManagedUserCreated2Text1",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_2_TEXT_1);
+  builder->Add("createManagedUserCreated2Text2",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_2_TEXT_2);
+
+  builder->Add("createManagedUserCreated3Text1",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_1);
+  builder->Add("createManagedUserCreated3Text2",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_2);
+  builder->Add("createManagedUserCreated3Text3",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_3);
 }
 
 void LocallyManagedUserCreationScreenHandler::Initialize() {}
@@ -122,13 +157,6 @@ void LocallyManagedUserCreationScreenHandler::Show() {
 
 void LocallyManagedUserCreationScreenHandler::Hide() {}
 
-void LocallyManagedUserCreationScreenHandler::
-    ShowManagerInconsistentStateErrorPage() {
-  ShowErrorPage(
-      l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE));
-}
-
 void LocallyManagedUserCreationScreenHandler::ShowIntroPage() {
   CallJS("login.LocallyManagedUserCreationScreen.showIntroPage");
 }
@@ -155,8 +183,11 @@ void LocallyManagedUserCreationScreenHandler::ShowTutorialPage() {
 }
 
 void LocallyManagedUserCreationScreenHandler::ShowErrorPage(
-    const string16& message) {
-  CallJS("login.LocallyManagedUserCreationScreen.showErrorPage", message);
+    const string16& title,
+    const string16& message,
+    const string16& button_text) {
+  CallJS("login.LocallyManagedUserCreationScreen.showErrorPage",
+      title, message, button_text);
 }
 
 void LocallyManagedUserCreationScreenHandler::SetDelegate(Delegate* delegate) {

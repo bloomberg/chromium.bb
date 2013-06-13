@@ -502,10 +502,6 @@ void SigninScreenHandler::UpdateUIState(UIState ui_state,
       ui_state_ = UI_STATE_ACCOUNT_PICKER;
       ShowScreen(OobeUI::kScreenAccountPicker, params);
       break;
-    case UI_STATE_LOCALLY_MANAGED_USER_CREATION:
-      ui_state_ = UI_STATE_LOCALLY_MANAGED_USER_CREATION;
-      ShowScreen(OobeUI::kScreenManagedUserCreationDialog, params);
-      break;
     default:
       NOTREACHED();
       break;

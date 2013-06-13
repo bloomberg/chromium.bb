@@ -5,146 +5,246 @@
  * This is the stylesheet used by the Locally managed user creation flow screen.
  */
 
-#managed-user-creation-flow {
-  height: 488px;
-  padding: 70px 17px 50px;
-  width: 704px;
+#managed-user-creation {
+  height: 609px; /* Same size as GAIA sign in screen.*/
+  padding: 0 0;  /* Some screens have elements right next to borders. */
+  width: 722px;
 }
 
-#managed-user-creation-flow-intro-title {
+#managed-user-creation .step-controls {
+  -webkit-padding-end: 20px;
+  bottom: 20px;
+}
+
+#managed-user-creation .marketing {
+  background-color: green;
+  height: 344px;
+}
+
+#managed-user-creation .below-marketing {
+  font-size: 12px;
+  line-height: 18px;
+  margin: 70px 17px 50px;
+}
+
+#managed-user-creation .page-no-marketing {
+  padding: 70px 17px 50px;
+}
+
+#managed-user-creation .page-title {
+  color: #000;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+#managed-user-creation .progress-dots {
+  position: absolute;
+  text-align: center;
+  top: 560px;
+  width: 100%;
+}
+
+#managed-user-creation .dot-on {
+  background-color: gray;
+  border-radius: 50%;
+  display: inline-block;
+  height: 6px;
+  width: 6px;
+}
+
+#managed-user-creation .dot-off {
+  background-color: lightgray;
+  border-radius: 50%;
+  display: inline-block;
+  height: 6px;
+  width: 6px;
+}
+
+#managed-user-creation strong {
+  color: #000;
+  font-weight: normal;
+}
+
+#managed-user-creation .page-title-explanation {
+  color: rgb(150, 150, 150);
+  font-size: 12px;
+}
+
+#managed-user-creation .page-title.inline {
+  -webkit-margin-end: 1ex;
+  display: inline-block;
+}
+
+#managed-user-creation .page-title-explanation.inline {
+  display: inline;
+}
+
+#managed-user-creation .page-title.centred {
+  text-align: center;
+}
+
+#managed-user-creation .page-title-explanation.centred {
+  text-align: center;
+}
+
+#managed-user-creation-intro-title {
   font-size: x-large;
   text-align: center;
 }
 
-#managed-user-creation-flow-intro-placeholder {
+#managed-user-creation-intro-placeholder {
   background-color: gray;
   font-size: x-large;
   height: 150px;
   text-align: center;
 }
 
-#managed-user-creation-flow-intro-text-1,
-#managed-user-creation-flow-intro-text-2 {
+#managed-user-creation-intro-text-1,
+#managed-user-creation-intro-text-2 {
   margin-top: 25px;
 }
 
-#managed-user-creation-flow-tutorial-created-text {
+#managed-user-creation-intro .below-marketing {
+  margin: 70px 20px 0;
+}
+
+#managed-user-creation-created-1 .below-marketing,
+#managed-user-creation-created-2 .below-marketing,
+#managed-user-creation-created-3 .below-marketing {
+  margin: 50px 130px 0;
+}
+
+#managed-user-creation-tutorial-created-text {
   font-size: x-large;
   text-align: center;
 }
 
-#managed-user-creation-flow-tutorial-instructions-text {
+#managed-user-creation-tutorial-instructions-text {
   font-size: large;
 }
 
-#managed-user-creation-flow-tutorial-placeholder {
+#managed-user-creation-tutorial-placeholder {
   background-color: gray;
   font-size: x-large;
   height: 150px;
   text-align: center;
 }
 
-#managed-user-creation-flow-name-block,
-#managed-user-creation-flow-password-block,
-#managed-user-creation-flow-password-title {
+#managed-user-creation-password-block,
+#managed-user-creation-password-title {
   margin-top: 10px;
 }
 
-#managed-user-creation-flow-password {
+#managed-user-creation-name-block {
+  margin-bottom: 20px;
+  margin-top: 10px;
+}
+
+#managed-user-creation-password {
   padding: 4px 6px;
 }
-#managed-user-creation-flow-password-confirm {
+#managed-user-creation-password-confirm {
   margin-top: 12px;
   padding: 4px 6px;
 }
 
-#managed-user-creation-flow-name-error,
-#managed-user-creation-flow-password-error {
+#managed-user-creation-name-error,
+#managed-user-creation-password-error {
   visibility: hidden;
 }
 
-#managed-user-creation-flow-name-error.error,
-#managed-user-creation-flow-password-error.error {
+#managed-user-creation-name-error.error,
+#managed-user-creation-password-error.error {
   color: rgb(207, 93, 70);
   padding-left: 28px;
   visibility: visible;
 }
 
-#managed-user-creation-flow-managers-pane {
+#managed-user-creation-managers-pane {
   border: 1px solid #f0f0f0;
-  height: 140px;
-  margin-top: 6px;
+  height: 412px;
+  margin-top: 20px;
   overflow-y: auto;
-  width: 645px;
+  width: 686px;
 }
 
-#managed-user-creation-flow-error .error-header {
-  padding-top: 10px;
+#managed-user-creation-error {
+  padding: 100px 50px;
+  text-align: center;
 }
 
 .screen-control-button {
-  padding-left: 12px;
+  margin-left: 10px !important;
 }
 
 .manager-pod {
+  height: 32px;
   opacity: 0.8;
-  padding-bottom: 10px;
-  padding-left: 10px;
-  padding-top: 10px;
-  width: 635px;
+  padding: 20px;
+  width: 646px;
 }
 
-#managed-user-creation-flow-status {
-  margin: 4px 10px;
+.manager-pod .managed-user-creation-manager-info-block {
+  float: left;
+  min-height: 32px;
 }
 
-#managed-user-creation-flow-status .error {
-  color: rgb(207, 93, 70);
-}
-
-#managed-user-creation-flow-status .id-text {
-  margin-top: 2px;
-}
-
-#managed-user-creation-flow-managers-pane .focused {
-  background-color: #f0f0f0;
-  opacity: 1;
-}
-
-.manager-pod .managed-user-creation-flow-manager-info-block {
-  min-height: 40px;
-}
-
-.manager-pod .managed-user-creation-flow-manager-image {
+.manager-pod .managed-user-creation-manager-image {
   border: 1px solid gray;
   display: inline-block;
   height: 30px;
   width: 30px;
 }
 
-.manager-pod .managed-user-creation-flow-manager-info {
+.manager-pod .managed-user-creation-manager-info {
   display: inline-block;
   margin: 0 8px;
-  min-height: 30px;
+  min-height: 32px;
 }
 
-.manager-pod .managed-user-creation-flow-manager-info-text {
+.manager-pod .managed-user-creation-manager-info-text {
   display: inline-block;
-  min-height: 30px;
+  min-height: 32px;
   vertical-align: top;
 }
 
-.manager-pod .managed-user-creation-flow-manager-email {
+.manager-pod .password-block {
+  float: right;
+}
+
+.manager-pod .managed-user-creation-manager-email {
   color: #666;
   font-size: small;
 }
 
-.manager-pod .managed-user-creation-flow-manager-name {
+.manager-pod .managed-user-creation-manager-name {
   color: #000;
   font-size: small;
 }
-.manager-pod .managed-user-creation-flow-manager-wrong-password {
+.manager-pod .managed-user-creation-manager-wrong-password {
   background: url('chrome://theme/IDR_WARNING') left top /24px no-repeat;
   color: red;
   padding-left: 28px;
 }
+
+#managed-user-creation-status {
+  margin: 4px 10px;
+}
+
+#managed-user-creation-status .error {
+  color: rgb(207, 93, 70);
+}
+
+#managed-user-creation-status .id-text {
+  margin-top: 2px;
+}
+
+.manager-pod.focused {
+  background-color: rgb(66, 129, 244);
+  opacity: 1;
+}
+
+.manager-pod.focused .managed-user-creation-manager-name {
+  color: #fff;
+}
+

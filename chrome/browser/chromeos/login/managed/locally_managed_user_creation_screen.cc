@@ -106,7 +106,11 @@ void LocallyManagedUserCreationScreen::
     return;
   actor_->ShowErrorPage(
       l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE));
+          IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE_TITLE),
+      l10n_util::GetStringUTF16(
+          IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE),
+      l10n_util::GetStringUTF16(
+          IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE_BUTTON));
 }
 
 void LocallyManagedUserCreationScreen::ShowInitialScreen() {
@@ -185,29 +189,36 @@ void LocallyManagedUserCreationScreen::OnActorDestroyed(
 
 void LocallyManagedUserCreationScreen::OnCreationError(
     LocallyManagedUserCreationController::ErrorCode code) {
+  string16 title;
   string16 message;
+  string16 button;
   // TODO(antrim) : find out which errors do we really have.
   // We might reuse some error messages from ordinary user flow.
   switch (code) {
     case LocallyManagedUserCreationController::CRYPTOHOME_NO_MOUNT:
     case LocallyManagedUserCreationController::CRYPTOHOME_FAILED_MOUNT:
     case LocallyManagedUserCreationController::CRYPTOHOME_FAILED_TPM:
+      title = l10n_util::GetStringUTF16(
+          IDS_CREATE_LOCALLY_MANAGED_USER_TPM_ERROR_TITLE);
       message = l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_TPM_ERROR);
+          IDS_CREATE_LOCALLY_MANAGED_USER_TPM_ERROR);
+      button = l10n_util::GetStringUTF16(
+          IDS_CREATE_LOCALLY_MANAGED_USER_TPM_ERROR_BUTTON);
       break;
     case LocallyManagedUserCreationController::CLOUD_SERVER_ERROR:
-      message = l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_SERVER_ERROR);
-      break;
     case LocallyManagedUserCreationController::TOKEN_WRITE_FAILED:
+      title = l10n_util::GetStringUTF16(
+          IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR_TITLE);
       message = l10n_util::GetStringUTF16(
-          IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_TOKEN_WRITE_ERROR);
+          IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR);
+      button = l10n_util::GetStringUTF16(
+          IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR_BUTTON);
       break;
     case LocallyManagedUserCreationController::NO_ERROR:
       NOTREACHED();
   }
   if (actor_)
-    actor_->ShowErrorPage(message);
+    actor_->ShowErrorPage(title, message, button);
 }
 
 void LocallyManagedUserCreationScreen::SelectPicture() {

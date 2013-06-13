@@ -7,9 +7,9 @@
  */
 
 login.createScreen('LocallyManagedUserCreationScreen',
-                   'managed-user-creation-flow', function() {
+                   'managed-user-creation', function() {
   var ManagerPod = cr.ui.define(function() {
-    var node = $('managed-user-creation-flow-manager-template').cloneNode(true);
+    var node = $('managed-user-creation-manager-template').cloneNode(true);
     node.removeAttribute('id');
     node.removeAttribute('hidden');
     return node;
@@ -31,7 +31,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       // event later.
       this.addEventListener('mousedown',
                             this.handleMouseDown_.bind(this));
-      var screen = $('managed-user-creation-flow');
+      var screen = $('managed-user-creation');
       var managerPod = this;
       var hideManagerPasswordError = function(element) {
         managerPod.passwordErrorElement.hidden = true;
@@ -74,7 +74,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @type {!HTMLImageElement}
      */
     get imageElement() {
-      return this.querySelector('.managed-user-creation-flow-manager-image');
+      return this.querySelector('.managed-user-creation-manager-image');
     },
 
     /**
@@ -82,7 +82,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @type {!HTMLDivElement}
      */
     get nameElement() {
-      return this.querySelector('.managed-user-creation-flow-manager-name');
+      return this.querySelector('.managed-user-creation-manager-name');
     },
 
     /**
@@ -90,7 +90,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @type {!HTMLDivElement}
      */
     get emailElement() {
-      return this.querySelector('.managed-user-creation-flow-manager-email');
+      return this.querySelector('.managed-user-creation-manager-email');
     },
 
     /**
@@ -98,7 +98,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @type {!HTMLDivElement}
      */
     get passwordElement() {
-      return this.querySelector('.managed-user-creation-flow-manager-password');
+      return this.querySelector('.managed-user-creation-manager-password');
     },
 
     /**
@@ -107,7 +107,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      */
     get passwordErrorElement() {
       return this.
-          querySelector('.managed-user-creation-flow-manager-wrong-password');
+          querySelector('.managed-user-creation-manager-wrong-password');
     },
 
     /**
@@ -115,8 +115,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @type {!HTMLDivElement}
      */
     get passwordBlock() {
-      return this.querySelector(
-          '.managed-user-creation-flow-manager-password-block');
+      return this.querySelector('.password-block');
     },
 
     /** @override */
@@ -140,7 +139,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
     },
   };
 
-  var ManagerPodList = cr.ui.define('managerList');
+  var ManagerPodList = cr.ui.define('div');
 
   /**
    * UI element for selecting manager account for new managed user.
@@ -225,12 +224,12 @@ login.createScreen('LocallyManagedUserCreationScreen',
     /** @override */
     decorate: function() {
       this.managerList_ = new ManagerPodList();
-      $('managed-user-creation-flow-managers-pane').
+      $('managed-user-creation-managers-pane').
           appendChild(this.managerList_);
 
-      var userNameField = $('managed-user-creation-flow-name');
-      var passwordField = $('managed-user-creation-flow-password');
-      var password2Field = $('managed-user-creation-flow-password-confirm');
+      var userNameField = $('managed-user-creation-name');
+      var passwordField = $('managed-user-creation-password');
+      var password2Field = $('managed-user-creation-password-confirm');
 
       var creationScreen = this;
 
@@ -260,6 +259,11 @@ login.createScreen('LocallyManagedUserCreationScreen',
                                 creationScreen.getScreenButton('next').focus();
                               },
                               hideUserPasswordError);
+
+      this.getScreenButton('error').addEventListener('click', function(e) {
+        creationScreen.handleErrorButtonPressed_();
+        e.stopPropagation();
+      });
     },
 
     buttonIds: [],
@@ -274,13 +278,17 @@ login.createScreen('LocallyManagedUserCreationScreen',
      *   buttonId parameter.
      * @param {array} pages -- list of pages where this button should be
      *   displayed.
+     * @param {array} classes -- list of additional CSS classes for button.
      */
-    makeButton: function(buttonId, i18nPrefix, callback, pages) {
+    makeButton: function(buttonId, i18nPrefix, callback, pages, classes) {
       var capitalizedId = buttonId.charAt(0).toUpperCase() + buttonId.slice(1);
       this.buttonIds.push(buttonId);
       var result = this.ownerDocument.createElement('button');
       result.id = this.name() + '-' + buttonId + '-button';
       result.classList.add('screen-control-button');
+      for (var i = 0; i < classes.length; i++) {
+        result.classList.add(classes[i]);
+      }
       result.textContent = loadTimeData.
           getString(i18nPrefix + capitalizedId + 'ButtonTitle');
       result.addEventListener('click', function(e) {
@@ -348,7 +356,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @param {string} templateId -- template will be looked up within screen
      * by class with name "template-<templateId>".
      * @param {string} elementId -- id for result, uinque within screen. Actual
-     *   id will be prefixed with screen name. Uer getScreenElement(id) to find
+     *   id will be prefixed with screen name. Use getScreenElement(id) to find
      *   it later.
      */
     makeFromTemplate: function(templateId, elementId) {
@@ -393,32 +401,29 @@ login.createScreen('LocallyManagedUserCreationScreen',
           'start',
           'managedUserCreationFlow',
           this.startButtonPressed_.bind(this),
-          ['intro']));
+          ['intro'],
+          ['custom-appearance', 'button-fancy', 'button-blue']));
 
       buttons.push(this.makeButton(
           'prev',
           'managedUserCreationFlow',
           this.prevButtonPressed_.bind(this),
-          ['manager']));
+          ['manager'],
+          []));
 
       buttons.push(this.makeButton(
           'next',
           'managedUserCreationFlow',
           this.nextButtonPressed_.bind(this),
-          ['manager', 'username']));
+          ['manager', 'username'],
+          []));
 
       buttons.push(this.makeButton(
-          'finish',
+          'gotit',
           'managedUserCreationFlow',
-          this.finishButtonPressed_.bind(this),
-          ['tutorial']));
-
-      buttons.push(this.makeButton(
-          'handleError',
-          'managedUserCreationFlow',
-          this.handleErrorButtonPressed_.bind(this),
-          ['error']));
-
+          this.gotItButtonPressed_.bind(this),
+          ['created-1', 'created-2', 'created-3'],
+          ['custom-appearance', 'button-fancy', 'button-blue']));
       return buttons;
     },
 
@@ -439,6 +444,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
 
       this.disabled = true;
       this.context_.managerId = managerId;
+      this.context_.managerName = selectedPod.user.displayName;
       chrome.send('authenticateManagerInLocallyManagedUserCreationFlow',
           [managerId, managerPassword]);
     },
@@ -450,10 +456,10 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @private
      */
     validateAndCreateLocallyManagedUser_: function() {
-      var firstPassword = $('managed-user-creation-flow-password').value;
+      var firstPassword = $('managed-user-creation-password').value;
       var secondPassword =
-          $('managed-user-creation-flow-password-confirm').value;
-      var userName = $('managed-user-creation-flow-name').value;
+          $('managed-user-creation-password-confirm').value;
+      var userName = $('managed-user-creation-name').value;
       if (firstPassword != secondPassword) {
         this.showPasswordError(
             loadTimeData.getString('createManagedUserPasswordMismatchError'));
@@ -471,7 +477,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @private
      */
     checkUserName_: function() {
-      var userName = $('managed-user-creation-flow-name').value;
+      var userName = $('managed-user-creation-name').value;
 
       // Avoid flickering
       if (userName == this.lastIncorrectUserName_ ||
@@ -494,7 +500,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
     managedUserNameOk: function(name) {
       this.lastVerifiedName_ = name;
       this.lastIncorrectUserName_ = null;
-      if ($('managed-user-creation-flow-name').value == name)
+      if ($('managed-user-creation-name').value == name)
         this.clearUserNameError_();
       this.updateNextButtonForManager_();
     },
@@ -508,10 +514,10 @@ login.createScreen('LocallyManagedUserCreationScreen',
       this.lastIncorrectUserName_ = name;
       this.lastVerifiedName_ = null;
 
-      var userNameField = $('managed-user-creation-flow-name');
+      var userNameField = $('managed-user-creation-name');
       if (userNameField.value == this.lastIncorrectUserName_) {
         this.nameErrorVisible = true;
-        $('managed-user-creation-flow-name-error').textContent = errorText;
+        $('managed-user-creation-name-error').textContent = errorText;
 
         this.setButtonDisabledStatus('next', true);
       }
@@ -523,7 +529,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      */
     clearUserNameError_: function() {
       // Avoid flickering
-      if ($('managed-user-creation-flow-name').value ==
+      if ($('managed-user-creation-name').value ==
               this.lastIncorrectUserName_) {
         return;
       }
@@ -535,9 +541,9 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @param {string} errorText - reason why this password is invalid.
      */
     showPasswordError: function(errorText) {
-      $('managed-user-creation-flow-password-error').textContent = errorText;
+      $('managed-user-creation-password-error').textContent = errorText;
       this.passwordErrorVisible = true;
-      $('managed-user-creation-flow-password').focus();
+      $('managed-user-creation-password').focus();
 
       this.setButtonDisabledStatus('next', true);
     },
@@ -547,12 +553,12 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @type {boolean}
      */
     set nameErrorVisible(value) {
-      $('managed-user-creation-flow-name-error').
+      $('managed-user-creation-name-error').
           classList.toggle('error', value);
-      $('managed-user-creation-flow-name').
+      $('managed-user-creation-name').
           classList.toggle('duplicate-name', value);
       if (!value)
-        $('managed-user-creation-flow-name-error').textContent = '';
+        $('managed-user-creation-name-error').textContent = '';
     },
 
     /**
@@ -560,10 +566,10 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @type {boolean}
      */
     set passwordErrorVisible(value) {
-      $('managed-user-creation-flow-password-error').
+      $('managed-user-creation-password-error').
           classList.toggle('error', value);
       if (!value)
-        $('managed-user-creation-flow-password-error').textContent = '';
+        $('managed-user-creation-password-error').textContent = '';
     },
 
     /**
@@ -586,10 +592,10 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @private
      */
     updateNextButtonForUser_: function() {
-      var firstPassword = $('managed-user-creation-flow-password').value;
+      var firstPassword = $('managed-user-creation-password').value;
       var secondPassword =
-          $('managed-user-creation-flow-password-confirm').value;
-      var userName = $('managed-user-creation-flow-name').value;
+          $('managed-user-creation-password-confirm').value;
+      var userName = $('managed-user-creation-name').value;
 
       var canProceed =
           (firstPassword.length > 0) &&
@@ -620,14 +626,18 @@ login.createScreen('LocallyManagedUserCreationScreen',
                        'manager',
                        'username',
                        'error',
-                       'tutorial'];
+                       'created-1',
+                       'created-2',
+                       'created-3'];
       var pageButtons = {'intro' : 'start',
-                         'error' : 'handleError',
-                         'tutorial' : 'finish'};
+                         'error' : 'error',
+                         'created-1' : 'gotit',
+                         'created-2' : 'gotit',
+                         'created-3' : 'gotit'};
       this.hideStatus_();
       for (i in pageNames) {
         var pageName = pageNames[i];
-        var page = $('managed-user-creation-flow-' + pageName);
+        var page = $('managed-user-creation-' + pageName);
         page.hidden = (pageName != visiblePage);
         if (pageName == visiblePage)
           $('step-logo').hidden = page.classList.contains('step-no-logo');
@@ -651,11 +661,19 @@ login.createScreen('LocallyManagedUserCreationScreen',
     },
 
     setButtonDisabledStatus: function(buttonName, status) {
-      var button = $('managed-user-creation-flow-' + buttonName + '-button');
+      var button = $('managed-user-creation-' + buttonName + '-button');
       button.disabled = status;
     },
 
-    finishButtonPressed_: function() {
+    gotItButtonPressed_: function() {
+      if (this.currentPage_ == 'created-1') {
+        this.setVisiblePage_('created-2');
+        return;
+      }
+      if (this.currentPage_ == 'created-2') {
+        this.setVisiblePage_('created-3');
+        return;
+      }
       chrome.send('finishLocalManagedUserCreation');
     },
 
@@ -726,7 +744,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * Returns a control which should receive an initial focus.
      */
     get defaultControl() {
-      return $('managed-user-creation-flow-name');
+      return $('managed-user-creation-name');
     },
 
     /**
@@ -753,15 +771,10 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @param {Array} userList - list of users that can be managers.
      */
     loadManagers: function(userList) {
-      $('managed-user-creation-flow-managers-block').hidden = false;
+      $('managed-user-creation-managers-block').hidden = false;
       this.managerList_.clearPods();
       for (var i = 0; i < userList.length; ++i)
         this.managerList_.addPod(userList[i]);
-
-      var usersInPane = Math.min(userList.length, 5);
-      $('managed-user-creation-flow-managers-pane').style.height =
-          (usersInPane * 60 + 28) + 'px';
-
       if (userList.length == 1)
         this.managerList_.selectPod(this.managerList_.pods[0]);
     },
@@ -770,8 +783,9 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * Cancels user creation and drops to user screen (either sign).
      */
     cancel: function() {
-      var notSignedInScreens = ['intro', 'manager'];
-      if (notSignedInScreens.indexOf(this.currentPage_) >= 0) {
+      var notSignedInPages = ['intro', 'manager'];
+      var postCreationPages = ['created-1', 'created-2', 'created-3'];
+      if (notSignedInPages.indexOf(this.currentPage_) >= 0) {
         // Make sure no manager password is kept:
         this.managerList_.clearPods();
 
@@ -781,24 +795,41 @@ login.createScreen('LocallyManagedUserCreationScreen',
         Oobe.resetSigninUI(true);
         return;
       }
+      if (postCreationPages.indexOf(this.currentPage_) >= 0) {
+        chrome.send('finishLocalManagedUserCreation');
+        return;
+      }
       chrome.send('abortLocalManagedUserCreation');
     },
 
     updateText_: function() {
-      $('managed-user-creation-flow-tutorial-created-text').textContent =
-          loadTimeData.getStringF('managedUserProfileCreatedMessageTemplate',
-              this.context_.managedName);
+      var managerId = this.context_.managerId;
+      this.updateElementText_('created-1-text-1',
+          'createManagedUserCreated1Text1',
+          this.context_.managedName);
+      this.updateElementText_('created-1-text-3',
+          'createManagedUserCreated1Text3',
+          managerId);
+      this.updateElementText_('created-3-text-2',
+          'createManagedUserCreated3Text2',
+          managerId);
+      this.updateElementText_('created-3-text-3',
+          'createManagedUserCreated3Text3',
+          managerId);
+      this.updateElementText_('name-explanation',
+          'createManagedUserNameExplanation',
+          managerId);
+    },
 
-      var boldEmail = '<b>' + this.context_.managerId + '</b>';
-      $('managed-user-creation-flow-tutorial-instructions-text').innerHTML =
-          loadTimeData.getStringF('managedUserInstructionTemplate',
-              boldEmail);
+    updateElementText_: function(localId, templateName, value) {
+      this.getScreenElement(localId).innerHTML =
+          loadTimeData.getStringF(templateName, value);
     },
 
     showIntroPage: function() {
-      $('managed-user-creation-flow-password').value = '';
-      $('managed-user-creation-flow-password-confirm').value = '';
-      $('managed-user-creation-flow-name').value = '';
+      $('managed-user-creation-password').value = '';
+      $('managed-user-creation-password-confirm').value = '';
+      $('managed-user-creation-name').value = '';
 
       this.lastVerifiedName_ = null;
       this.lastIncorrectUserName_ = null;
@@ -817,12 +848,14 @@ login.createScreen('LocallyManagedUserCreationScreen',
     },
 
     showTutorialPage: function() {
-      this.setVisiblePage_('tutorial');
+      this.setVisiblePage_('created-1');
     },
 
-    showErrorPage: function(errorText) {
+    showErrorPage: function(errorTitle, errorText, errorButtonText) {
       this.disabled = false;
-      $('managed-user-creation-flow-error-value').innerHTML = errorText;
+      $('managed-user-creation-error-title').innerHTML = errorTitle;
+      $('managed-user-creation-error-text').innerHTML = errorText;
+      $('managed-user-creation-error-button').textContent = errorButtonText;
       this.setVisiblePage_('error');
     },
 

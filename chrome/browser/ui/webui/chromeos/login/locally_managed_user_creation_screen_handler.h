@@ -70,8 +70,9 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
   void ShowStatusMessage(bool is_progress, const string16& message);
   void ShowTutorialPage();
 
-  void ShowManagerInconsistentStateErrorPage();
-  void ShowErrorPage(const string16& message);
+  void ShowErrorPage(const string16& title,
+                     const string16& message,
+                     const string16& button_text);
 
   // BaseScreenHandler implementation:
   virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) OVERRIDE;

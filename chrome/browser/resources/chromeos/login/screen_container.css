@@ -36,7 +36,7 @@
 #oobe.update #inner-container,
 #oobe.user-image #inner-container,
 #oobe.managed-user-creation-dialog #inner-container,
-#oobe.managed-user-creation-flow #inner-container,
+#oobe.managed-user-creation #inner-container,
 #oobe.password-changed #inner-container,
 #oobe.terms-of-service #inner-container,
 #oobe.wrong-hwid #inner-container {
@@ -102,7 +102,7 @@
 #error-message-dot,
 #tpm-error-message-dot,
 #password-changed-dot,
-#managed-user-creation-flow-dot,
+#managed-user-creation-dot,
 #managed-user-creation-dialog-dot,
 #terms-of-service-dot,
 #wrong-hwid-dot {

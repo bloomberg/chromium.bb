@@ -151,6 +151,7 @@ void LocallyManagedUserCreationController::RegistrationCallback(
     TokenFetched(token);
   } else {
     // Do not report error if we cancelled request.
+    LOG(ERROR) << "Managed user creation failed. Error code " << error.state();
     if (error.state() == GoogleServiceAuthError::REQUEST_CANCELED)
       return;
     if (consumer_)

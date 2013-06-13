@@ -453,17 +453,51 @@ Press any key to continue exploring.
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_FEATURE_NAME" desc="Title close to icon shown on side of Google sign-in UI to create a locally managed user.">
     Locally managed user
   </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_1" desc="Managed user dialog, intro page, first paragraph">
+    Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum.
+    As a manager of a managed user on this Chromebook, you can:
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_INTRO_MANAGER_ITEM_1" desc="Managed user dialog, intro page, options available to manager">
+    Review the limited user’s visited websites
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_INTRO_MANAGER_ITEM_2" desc="Managed user dialog, intro page, options available to manager">
+    Determine sites you wish to allow or restrict, and
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_INTRO_MANAGER_ITEM_3" desc="Managed user dialog, intro page, options available to manager">
+    Manage other settings
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_2" desc="Managed user dialog, intro page, second paragraph">
+  A managed user is not a Google account, and applies only to this device.
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_3" desc="Managed user dialog, intro page, third paragraph">
+  After you create a new locally managed users, you can manage the settings at any time from any device at <ph name="MANAGEMENT_URL">$1<ex>www.chrome.com/manage</ex></ph>.
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PICK_MANAGER_TITLE" desc="Managed user dialog, manager selection page, title of the page">
+    Choose the manager for this user
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PICK_MANAGER_EXPLANATION" desc="Managed user dialog, manager selection page, explanation of the page">
+    The manager will be able to configure restrictions and settings for this managed user at www.chrome.com/manage.
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_MANAGER_PASSWORD_HINT" desc="Managed user dialog, manager selection page, text shown as a hint in the user password field.">
+    Enter password
+  </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_NO_MANAGER_TEXT" desc="Text shown when managed user can be created, but no users that can be manager exist.">
-    At least one account must exist on this device before creating a Limited user.
+    At least one account must exist on this device before creating a Locally managed user.
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_HTML" desc="Text with actual name shown on side of Google sign-in UI to create a locally managed user.">
     <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>Create managed user<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph> for this device.
   </message>
-  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_TITLE" desc="Text shown as a title for user name field in locally managed user creation dialog.">
-    Create an account name
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_TITLE" desc="Managed user dialog, new user page, title for name of new user">
+    Create an name -
   </message>
-  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TITLE" desc="Text shown as a title for password fields in locally managed user creation dialog.">
-    Create a password for this account
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_EXPLANATION" desc="Managed user dialog, new user page, explanation for name of new user">
+    This account will be managed by <ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph>.
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_TITLE" desc="Managed user dialog, new user page, title for password for new user.">
+    Create a password -
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_EXPLANATION" desc="Managed user dialog, new user page, explanation for password for new user.">
+    The managed user will need to use this password to sign in, so choose a safe password and rememeber to discuss it with the managed user.
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_HINT" desc="Text shown as a hint in the password field in locally managed user creation dialog.">
     Enter password
@@ -471,17 +505,11 @@ Press any key to continue exploring.
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PASSWORD_CONFIRM_HINT" desc="Text shown as a hint in the password confirmation field in locally managed user creation dialog.">
     Confirm password
   </message>
-  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_SELECT_MANAGER_TEXT" desc="Text shown as a title for list of possible managers (existing accounts) for locally managed user.">
-    Choose the manager for this user
-  </message>
-  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_MANAGER_PASSWORD_HINT" desc="Text shown as a hint in the user password field when this user is selected as a manager for locally managed user.">
-    Manager's password
-  </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_CONTINUE_BUTTON_TEXT" desc="Text shown on continue button in locally managed user creation dialog.">
     Continue
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_START_BUTTON_TEXT" desc="Text shown on start button in locally managed user creation dialog.">
-    Create a profile
+    Create locally managed user.
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_NEXT_BUTTON_TEXT" desc="Text shown on next button in locally managed user creation dialog.">
     Next
@@ -489,17 +517,37 @@ Press any key to continue exploring.
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PREVIOUS_BUTTON_TEXT" desc="Text shown on previous button in locally managed user creation dialog.">
     Previous
   </message>
-  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_SUCCESS_BUTTON_TITLE" desc="Text for button on a screen with successful locally managed user creation text">
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_1_TEXT_1" desc="Managed user dialog, getting started page 1, paragraph 1">
+    A mananged user named <ph name="USER_DISPLAY_NAME">$1<ex>John</ex></ph> has been created.
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_1_TEXT_2" desc="Managed user dialog, getting started page 1, paragraph 2">
+    This locally managed user can now sign in and browse all sites on web
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_1_TEXT_3" desc="Managed user dialog, getting started page 1, paragraph 3">
+    To configure restrictions for this locally managed user, please check your email at <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> for further instructions.
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_2_TEXT_1" desc="Managed user dialog, getting started page 2, paragraph 1">
+    You will see the locally managed users on your Chromebook's sign-in screen.
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_2_TEXT_2" desc="Managed user dialog, getting started page 2, paragraph 2">
+    Lorem ipsum lorem ipsum lorem ipsum lorem ipsum.
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_1" desc="Managed user dialog, getting started page 3, paragraph 1">
+    Manage your locally managed user's activity
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_2" desc="Managed user dialog, getting started page 3, paragraph 2">
+    As a manager of this locally managed user, you can review the locally managed user's visited web sites, determine sites you wish to allow or restrict, and configure other settings
+    by visiting <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>www.chrome.com/manage<ph name="END_BOLD">&lt;/strong&gt;</ph> and signing in as
+    <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>.
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_3" desc="Managed user dialog, getting started page 3, paragraph 3">
+    For help, please check your email at <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> for further instructions.
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_GOT_IT_BUTTON_TITLE" desc="Text for button on a screen with successful locally managed user creation text">
     Got it!
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_HANDLE_ERROR_BUTTON_TEXT" desc="Text for button on an error screen that closes locally managed user creation dialog">
     Okay
-  </message>
-  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_PROFILE_CREATED_TEXT" desc="Messsage indicating that profile was created.">
-    A profile for <ph name="USER_DISPLAY_NAME">$1<ex>John</ex></ph> has been created.
-  </message>
-  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_INSTRUCTIONS_TEXT" desc="Messsage indicating that instructions will be sent to manager's email.">
-    To configure this profile, please check your email at <ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph> for further instructions.
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS" desc="Error text shown in locally managed user creation dialog when local account with suggested name already exists on a device.">
     Whoops, this name is already in use!
@@ -513,20 +561,32 @@ Press any key to continue exploring.
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_PASSWORD_ERROR" desc="Error text shown in locally managed user creation dialog when manager password is incorrect.">
     Incorrect manager password.
   </message>
-  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE" desc="Error text shown in locally managed user creation dialog when account is in inconsistent state.">
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE_TITLE" desc="Managed user dialog, error page, manager account is in inconsistent state, title">
+    Something went wrong while signing in as manager.
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE" desc="Managed user dialog, error page, manager account is in inconsistent state, text">
     Manager account is in inconsistent state. Please log in to manager account first and then try creating locally managed user again.
   </message>
-  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_TITLE" desc="Text shown in a title when locally managed user creation has failed for some reason">
-    Locally managed user creation failed.
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_INCONSISTENT_STATE_BUTTON" desc="Managed user dialog, error page, manager account is in inconsistent state, button title">
+    Take me back to sign-in screen
   </message>
-  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_TPM_ERROR" desc="Text shown in a title when locally managed user creation has failed in case of TPM error">
-    TPM error.
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_TPM_ERROR_TITLE" desc="Managed user dialog, error page, tpm error during creation, title">
+    Oops, TPM error.
   </message>
-  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_SERVER_ERROR" desc="Text shown in a title when locally managed user creation has failed in case when there was server error on a remote side">
-    Server error.
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_TPM_ERROR" desc="Managed user dialog, error page, tpm error during creation, text">
+    Something is wrong with device. Reboot an try again.
   </message>
-  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_TOKEN_WRITE_ERROR" desc="Text shown in a title when locally managed user creation has failed in case when there was an error during writing settings.">
-    Could not write settings for managed user.
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_TPM_ERROR_BUTTON" desc="Managed user dialog, error page, tpm error during creation, button title">
+    OK
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR_TITLE" desc="Managed user dialog, error page, generic error during creation, title">
+    Oops, something went wrong with creating a locally managed user.
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR" desc="Managed user dialog, error page, generic error during creation, text">
+    Due to an error, a locally managed user was not created. Please try again later.
+  </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_GENERIC_ERROR_BUTTON" desc="Managed user dialog, error page, generic error during creation, button title">
+    OK
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_ERROR_CANCEL_BUTTON_TITLE" desc="Text for button on an error reporting screen for locally managed user creation, that is used to abort whole operation">
     Cancel
