@@ -356,6 +356,9 @@ WebView.prototype.setupNewWindowEvent_ = function() {
  * @private
  */
 WebView.prototype.setupExecuteCodeAPI_ = function() {
+  var ERROR_MSG_CANNOT_INJECT_SCRIPT = '<webview>: ' +
+      'Script cannot be injected into content until the page has loaded.';
+
   var self = this;
   var validateCall = function() {
     if (!self.browserPluginNode_.getGuestInstanceId()) {

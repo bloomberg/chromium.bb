@@ -32,10 +32,6 @@ var EXPOSED_PERMISSION_EVENT_ATTRIBS = [
     'userGesture'
 ];
 
-/** @type {string} */
-var ERROR_MSG_CANNOT_INJECT_SCRIPT = '<webview>: ' +
-    'Script cannot be injected into content until the page has loaded.';
-
 /**
  * @private
  */
