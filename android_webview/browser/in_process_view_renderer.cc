@@ -406,7 +406,7 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
   if (pixels == NULL) {
     TRACE_EVENT0("android_webview", "Render to Aux Bitmap");
     ScopedJavaLocalRef<jobject> jbitmap(java_helper_->CreateBitmap(
-        env, clip.width(), clip.height(), true));
+        env, clip.width(), clip.height(), false));
     if (!jbitmap.obj()) {
       TRACE_EVENT_INSTANT0("android_webview", "Bitmap Alloc Fail",
                            TRACE_EVENT_SCOPE_THREAD);
