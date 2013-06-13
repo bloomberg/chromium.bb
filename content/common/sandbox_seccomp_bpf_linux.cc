@@ -195,7 +195,7 @@ intptr_t GpuSIGSYS_Handler(const struct arch_seccomp_data& args,
   RAW_CHECK(aux_broker_process);
   BrokerProcess* broker_process =
       static_cast<BrokerProcess*>(aux_broker_process);
-  switch(args.nr) {
+  switch (args.nr) {
     case __NR_access:
       return broker_process->Access(reinterpret_cast<const char*>(args.args[0]),
                                     static_cast<int>(args.args[1]));
@@ -1442,7 +1442,7 @@ ErrorCode BaselinePolicy(Sandbox* sandbox, int sysno) {
 // Main policy for x86_64/i386. Extended by ArmMaliGpuProcessPolicy.
 ErrorCode GpuProcessPolicy(Sandbox* sandbox, int sysno,
                            void* broker_process) {
-  switch(sysno) {
+  switch (sysno) {
     case __NR_ioctl:
 #if defined(__i386__) || defined(__x86_64__)
     // The Nvidia driver uses flags not in the baseline policy
@@ -1475,7 +1475,7 @@ ErrorCode GpuProcessPolicy(Sandbox* sandbox, int sysno,
 ErrorCode GpuBrokerProcessPolicy(Sandbox* sandbox, int sysno, void* aux) {
   // "aux" would typically be NULL, when called from
   // "EnableGpuBrokerPolicyCallBack"
-  switch(sysno) {
+  switch (sysno) {
     case __NR_access:
     case __NR_open:
     case __NR_openat:
@@ -1488,7 +1488,7 @@ ErrorCode GpuBrokerProcessPolicy(Sandbox* sandbox, int sysno, void* aux) {
 // ARM Mali GPU process sandbox, inheriting from GpuProcessPolicy.
 ErrorCode ArmMaliGpuProcessPolicy(Sandbox* sandbox, int sysno,
                                   void* broker_process) {
-  switch(sysno) {
+  switch (sysno) {
 #if defined(__arm__)
     // ARM GPU sandbox is started earlier so we need to allow networking
     // in the sandbox.
@@ -1521,7 +1521,7 @@ ErrorCode ArmMaliGpuBrokerProcessPolicy(Sandbox* sandbox,
                                         int sysno, void* aux) {
   // "aux" would typically be NULL, when called from
   // "EnableGpuBrokerPolicyCallBack"
-  switch(sysno) {
+  switch (sysno) {
     case __NR_access:
     case __NR_open:
     case __NR_openat:
