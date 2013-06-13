@@ -8,9 +8,6 @@ namespace switches {
 
 const char kDisableSimpleCache[] = "disable-simple-cache";
 
-const char kNoMergeUIAndRendererCompositorThreads[] =
-    "no-merge-ui-and-compositor-threads";
-
 const char kUseZeroCopyBuffers[] = "use-zero-copy-buffers";
 
 }  // namespace switches

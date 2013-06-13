@@ -51,14 +51,6 @@ IPC_MESSAGE_ROUTED2(AwViewMsg_DoHitTest,
                     int /* view_x */,
                     int /* view_y */)
 
-// Enables receiving pictures from the renderer on every new frame.
-IPC_MESSAGE_ROUTED1(AwViewMsg_EnableCapturePictureCallback,
-                    bool /* enable */)
-
-// Requests a new picture with the latest renderer contents synchronously.
-// This message blocks the browser process on the renderer until complete.
-IPC_SYNC_MESSAGE_ROUTED0_0(AwViewMsg_CapturePictureSync)
-
 // Sets the zoom level for text only. Used in layout modes other than
 // Text Autosizing.
 IPC_MESSAGE_ROUTED1(AwViewMsg_SetTextZoomLevel,
@@ -90,8 +82,4 @@ IPC_MESSAGE_ROUTED1(AwViewHostMsg_UpdateHitTestData,
 // Sent whenever the page scale factor (as seen by RenderView) is changed.
 IPC_MESSAGE_ROUTED1(AwViewHostMsg_PageScaleFactorChanged,
                     float /* page_scale_factor */)
-
-// Notification that a new picture becomes available. It is only sent if
-// AwViewMsg_EnableCapturePictureCallback was previously enabled.
-IPC_MESSAGE_ROUTED0(AwViewHostMsg_PictureUpdated)
 

@@ -6,8 +6,8 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
-#include "android_webview/browser/browser_view_renderer_impl.h"
 #include "android_webview/browser/gpu_memory_buffer_impl.h"
+#include "android_webview/browser/in_process_view_renderer.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/common/aw_hit_test_data.h"
@@ -128,7 +128,7 @@ AwContents::AwContents(JNIEnv* env,
       contents_client_bridge_(
           new AwContentsClientBridge(env, contents_client_bridge)),
       browser_view_renderer_(
-          BrowserViewRendererImpl::Create(this, &java_renderer_helper)) {
+          new InProcessViewRenderer(this, &java_renderer_helper)) {
   android_webview::AwBrowserDependencyFactory* dependency_factory =
       android_webview::AwBrowserDependencyFactory::GetInstance();
 

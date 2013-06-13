@@ -4,11 +4,8 @@
 
 #include "android_webview/browser/aw_devtools_delegate.h"
 
-#include "android_webview/browser/browser_view_renderer_impl.h"
 #include "android_webview/browser/in_process_view_renderer.h"
-#include "android_webview/common/aw_switches.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -218,14 +215,8 @@ std::string AwDevToolsDelegate::GetViewDescription(
       content::WebContents::FromRenderViewHost(rvh);
   if (!web_contents) return "";
 
-  BrowserViewRenderer* bvr = NULL;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kNoMergeUIAndRendererCompositorThreads)) {
-    bvr = BrowserViewRendererImpl::FromWebContents(web_contents);
-  } else {
-    bvr = InProcessViewRenderer::FromWebContents(web_contents);
-  }
+  BrowserViewRenderer* bvr
+      = InProcessViewRenderer::FromWebContents(web_contents);
   if (!bvr) return "";
   base::DictionaryValue description;
   description.SetBoolean("attached", bvr->IsAttachedToWindow());

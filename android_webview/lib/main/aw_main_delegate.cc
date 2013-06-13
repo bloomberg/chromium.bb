@@ -6,7 +6,6 @@
 
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
-#include "android_webview/common/aw_switches.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
 #include "android_webview/native/aw_geolocation_permission_context.h"
 #include "android_webview/native/aw_quota_manager_bridge_impl.h"
@@ -27,19 +26,11 @@ namespace android_webview {
 
 namespace {
 
-// TODO(boliu): Remove these global Allows once the underlying issues are
+// TODO(boliu): Remove this global Allow once the underlying issues are
 // resolved - http://crbug.com/240453. See AwMainDelegate::RunProcess below.
-
 base::LazyInstance<scoped_ptr<ScopedAllowWaitForLegacyWebViewApi> >
     g_allow_wait_in_ui_thread = LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<scoped_ptr<base::ThreadRestrictions::ScopedAllowIO> >
-    g_allow_io_in_ui_thread = LAZY_INSTANCE_INITIALIZER;
-
-bool UIAndRendererCompositorThreadsNotMerged() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kNoMergeUIAndRendererCompositorThreads);
-}
 }
 
 AwMainDelegate::AwMainDelegate() {
@@ -55,14 +46,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
       ::EnableVirtualizedContext();
 
   CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (UIAndRendererCompositorThreadsNotMerged()) {
-    cl->AppendSwitch(cc::switches::kEnableCompositorFrameMessage);
-    cl->AppendSwitch(switches::kEnableWebViewSynchronousAPIs);
-  } else {
-    cl->AppendSwitch(switches::kEnableBeginFrameScheduling);
-    if (!cl->HasSwitch("disable-map-image"))
-      cl->AppendSwitch(cc::switches::kUseMapImage);
-  }
+  cl->AppendSwitch(switches::kEnableBeginFrameScheduling);
+  if (!cl->HasSwitch("disable-map-image"))
+    cl->AppendSwitch(cc::switches::kUseMapImage);
 
   // WebView uses the existing Android View edge effect for overscroll glow.
   cl->AppendSwitch(switches::kDisableOverscrollEdgeEffect);
@@ -89,17 +75,8 @@ int AwMainDelegate::RunProcess(
     int exit_code = browser_runner_->Initialize(main_function_params);
     DCHECK(exit_code < 0);
 
-    if (!UIAndRendererCompositorThreadsNotMerged()) {
-      // This is temporary until we remove the browser compositor
-      g_allow_wait_in_ui_thread.Get().reset(
-          new ScopedAllowWaitForLegacyWebViewApi);
-
-      // TODO(boliu): This is a HUGE hack to work around the fact that
-      // cc::WorkerPool joins on worker threads on the UI thread.
-      // See crbug.com/239423.
-      g_allow_io_in_ui_thread.Get().reset(
-          new base::ThreadRestrictions::ScopedAllowIO);
-    }
+    g_allow_wait_in_ui_thread.Get().reset(
+        new ScopedAllowWaitForLegacyWebViewApi);
 
     // Return 0 so that we do NOT trigger the default behavior. On Android, the
     // UI message loop is managed by the Java application.

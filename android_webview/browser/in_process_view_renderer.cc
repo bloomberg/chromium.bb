@@ -16,6 +16,7 @@
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
@@ -41,7 +42,6 @@
 using base::android::AttachCurrentThread;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
-using content::Compositor;
 using content::ContentViewCore;
 
 namespace android_webview {
@@ -263,7 +263,39 @@ bool HardwareEnabled() {
  return CommandLine::ForCurrentProcess()->HasSwitch("testing-webview-gl-mode");
 }
 
+// Provides software rendering functions from the Android glue layer.
+// Allows preventing extra copies of data when rendering.
+AwDrawSWFunctionTable* g_sw_draw_functions = NULL;
+
+// Tells if the Skia library versions in Android and Chromium are compatible.
+// If they are then it's possible to pass Skia objects like SkPictures to the
+// Android glue layer via the SW rendering functions.
+// If they are not, then additional copies and rasterizations are required
+// as a fallback mechanism, which will have an important performance impact.
+bool g_is_skia_version_compatible = false;
+
 }  // namespace
+
+// static
+void BrowserViewRenderer::SetAwDrawSWFunctionTable(
+    AwDrawSWFunctionTable* table) {
+  g_sw_draw_functions = table;
+  g_is_skia_version_compatible =
+      g_sw_draw_functions->is_skia_version_compatible(&SkGraphics::GetVersion);
+  LOG_IF(WARNING, !g_is_skia_version_compatible)
+      << "Skia versions are not compatible, rendering performance will suffer.";
+}
+
+// static
+AwDrawSWFunctionTable* BrowserViewRenderer::GetAwDrawSWFunctionTable() {
+  return g_sw_draw_functions;
+}
+
+// static
+bool BrowserViewRenderer::IsSkiaVersionCompatible() {
+  DCHECK(g_sw_draw_functions);
+  return g_is_skia_version_compatible;
+}
 
 InProcessViewRenderer::InProcessViewRenderer(
     BrowserViewRenderer::Client* client,

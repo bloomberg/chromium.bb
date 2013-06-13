@@ -5,7 +5,7 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_IN_PROCESS_IN_PROCESS_VIEW_RENDERER_H_
 #define ANDROID_WEBVIEW_BROWSER_IN_PROCESS_IN_PROCESS_VIEW_RENDERER_H_
 
-#include "android_webview/browser/browser_view_renderer_impl.h"
+#include "android_webview/browser/browser_view_renderer.h"
 
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
@@ -14,6 +14,9 @@ namespace content {
 class SynchronousCompositor;
 class WebContents;
 }
+
+typedef void* EGLContext;
+class SkCanvas;
 
 namespace android_webview {
 
