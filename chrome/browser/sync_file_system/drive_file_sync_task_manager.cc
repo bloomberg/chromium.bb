@@ -111,15 +111,15 @@ void DriveFileSyncTaskManager::NotifyTaskDone(
   service_->NotifyLastOperationStatus(last_operation_status_,
                                       last_gdata_error_);
 
+  if (!callback.is_null())
+    callback.Run(status);
+
   if (!pending_tasks_.empty()) {
     base::Closure closure = pending_tasks_.front();
     pending_tasks_.pop_front();
     closure.Run();
     return;
   }
-
-  if (!callback.is_null())
-    callback.Run(status);
 
   service_->MaybeScheduleNextTask();
 }
