@@ -116,7 +116,10 @@
     <img data-expected-height="60" style="min-height:60px" src="../images/resources/green-10.png">
     <img data-expected-height="75" style="min-height:150%" src="../images/resources/blue-100.png">
     <img data-expected-height="75" style="min-height:150%" src="../images/resources/green-10.png">
-    <!-- TODO: test min-content, max-content, fill-available, fit-content when these are implemented for height -->
+    <img data-expected-height="10" style="min-height:-webkit-min-content;height:1px" src="../images/resources/blue-10.png">
+    <img data-expected-height="100" style="min-height:-webkit-max-content;height:1px" src="../images/resources/green-100.png">
+    <img data-expected-height="50" style="min-height:-webkit-fill-available" src="../images/resources/blue-10.png">
+    <img data-expected-height="10" style="min-height:-webkit-fit-content;height:1px" src="../images/resources/green-10.png">
 </div>
 
 <!-- tests that max-height shrinks the height of flex items less than the height of the flexbox -->
@@ -125,7 +128,10 @@
     <img data-expected-height="40" style="max-height:40px" src="../images/resources/green-10.png">
     <img data-expected-height="25" style="max-height:50%" src="../images/resources/blue-100.png">
     <img data-expected-height="25" style="max-height:50%" src="../images/resources/green-10.png">
-    <!-- TODO: test min-content, max-content, fill-available, fit-content when these are implemented for height -->
+    <img data-expected-height="10" style="max-height:-webkit-min-content;height:1000px;" src="../images/resources/blue-10.png">
+    <img data-expected-height="100" style="max-height:-webkit-max-content;height:1000px;" src="../images/resources/green-100.png">
+    <img data-expected-height="50" style="max-height:-webkit-fill-available" src="../images/resources/blue-100.png">
+    <img data-expected-height="10" style="max-height:-webkit-fit-content;height:1000px" src="../images/resources/green-10.png">
 </div>
 
 <!-- tests that min-width expands the width of flex items beyond the width of the flexbox -->
