@@ -773,7 +773,13 @@
             }],
             # TODO(mallinath) - Enable SCTP for Android and iOS platforms.
             ['OS!="android" and OS!="ios"', {
-              # TODO(mallinath) - Add HAVE_SCTP flag.
+              'conditions': [
+                ['OS!="win"', {
+                  'defines': [
+                    'HAVE_SCTP',
+                  ],
+                }],
+              ],
               'sources': [
                 '<(libjingle_source)/talk/media/sctp/sctpdataengine.cc',
                 '<(libjingle_source)/talk/media/sctp/sctpdataengine.h',
