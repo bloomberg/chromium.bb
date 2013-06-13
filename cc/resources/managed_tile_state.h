@@ -90,6 +90,10 @@ class CC_EXPORT ManagedTileState {
         resource_id_ = 0;
       }
 
+      void set_has_text(bool has_text) {
+        has_text_ = has_text;
+      }
+
       void set_rasterize_on_demand() {
         mode_ = PICTURE_PILE_MODE;
         resource_id_ = 0;
@@ -97,6 +101,7 @@ class CC_EXPORT ManagedTileState {
 
       Mode mode_;
       SkColor solid_color_;
+      bool has_text_;
 
       // TODO(reveman): Eliminate the need for |resource_id_|
       // and |resource_format_| and | forced_upload_| by re-factoring
@@ -118,9 +123,6 @@ class CC_EXPORT ManagedTileState {
   // Persisted state: valid all the time.
   TileVersion tile_versions[NUM_RASTER_MODES];
   RasterMode raster_mode;
-
-  bool picture_pile_analyzed;
-  PicturePileImpl::Analysis picture_pile_analysis;
 
   // Ephemeral state, valid only during TileManager::ManageTiles.
   bool is_in_never_bin_on_both_trees() const {

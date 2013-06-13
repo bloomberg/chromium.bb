@@ -17,7 +17,10 @@
 namespace cc {
 
 bool PictureLayerTilingClient::TileHasText(Tile* tile) {
-  return tile->has_text();
+  RasterMode raster_mode = HIGH_QUALITY_RASTER_MODE;
+  if (!tile->IsReadyToDraw(&raster_mode))
+    return false;
+  return tile->has_text(raster_mode);
 }
 
 scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(

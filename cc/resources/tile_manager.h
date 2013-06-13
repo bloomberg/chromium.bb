@@ -120,8 +120,8 @@ class CC_EXPORT TileManager {
   void OnRasterTaskCompleted(
       scoped_refptr<Tile> tile,
       scoped_ptr<ResourcePool::Resource> resource,
-      PicturePileImpl::Analysis* analysis,
       RasterMode raster_mode,
+      const PicturePileImpl::Analysis& analysis,
       bool was_canceled);
 
   void AssignBinsToTiles();

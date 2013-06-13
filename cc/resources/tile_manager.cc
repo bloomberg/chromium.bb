@@ -700,9 +700,6 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(
   mts.tile_versions[mts.raster_mode].resource_id_ = resource->id();
   mts.tile_versions[mts.raster_mode].resource_format_ = texture_format_;
 
-  // TODO(vmpstr): Move analysis into RasterTask.
-  PicturePileImpl::Analysis* analysis = new PicturePileImpl::Analysis;
-
   // Create and queue all image decode tasks that this tile depends on.
   RasterWorkerPool::Task::Set decode_tasks;
   for (PicturePileImpl::PixelRefIterator iter(tile->content_rect(),
@@ -739,7 +736,6 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(
   RasterTaskMetadata metadata = GetRasterTaskMetadata(*tile);
   return RasterWorkerPool::CreateRasterTask(
       const_resource,
-      analysis,
       tile->picture_pile(),
       tile->content_rect(),
       tile->contents_scale(),
@@ -751,7 +747,6 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(
                  base::Unretained(this),
                  make_scoped_refptr(tile),
                  base::Passed(&resource),
-                 base::Owned(analysis),
                  mts.raster_mode),
       decode_tasks);
 }
@@ -759,8 +754,8 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(
 void TileManager::OnRasterTaskCompleted(
     scoped_refptr<Tile> tile,
     scoped_ptr<ResourcePool::Resource> resource,
-    PicturePileImpl::Analysis* analysis,
     RasterMode raster_mode,
+    const PicturePileImpl::Analysis& analysis,
     bool was_canceled) {
   TRACE_EVENT1("cc", "TileManager::OnRasterTaskCompleted",
                "was_canceled", was_canceled);
@@ -777,11 +772,9 @@ void TileManager::OnRasterTaskCompleted(
     return;
   }
 
-  mts.picture_pile_analysis = *analysis;
-  mts.picture_pile_analyzed = true;
-
-  if (analysis->is_solid_color) {
-    tile_version.set_solid_color(analysis->solid_color);
+  tile_version.set_has_text(analysis.has_text);
+  if (analysis.is_solid_color) {
+    tile_version.set_solid_color(analysis.solid_color);
     resource_pool_->ReleaseResource(resource.Pass());
   } else {
     tile_version.resource_ = resource.Pass();

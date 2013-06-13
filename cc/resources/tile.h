@@ -82,8 +82,8 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   }
 
   gfx::Rect opaque_rect() const { return opaque_rect_; }
-  bool has_text() const {
-    return managed_state_.picture_pile_analysis.has_text;
+  bool has_text(RasterMode mode) const {
+    return managed_state_.tile_versions[mode].has_text_;
   }
 
   float contents_scale() const { return contents_scale_; }

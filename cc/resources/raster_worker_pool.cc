@@ -69,7 +69,6 @@ class RootWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
  public:
   RasterWorkerPoolTaskImpl(const Resource* resource,
-                           PicturePileImpl::Analysis* analysis,
                            PicturePileImpl* picture_pile,
                            gfx::Rect content_rect,
                            float contents_scale,
@@ -80,7 +79,6 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
                            const RasterWorkerPool::RasterTask::Reply& reply,
                            internal::WorkerPoolTask::TaskVector* dependencies)
       : internal::RasterWorkerPoolTask(resource, dependencies),
-        analysis_(analysis),
         picture_pile_(picture_pile),
         content_rect_(content_rect),
         contents_scale_(contents_scale),
@@ -97,7 +95,6 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
                  TracedValue::FromValue(metadata_.AsValue().release()));
 
     DCHECK(picture_pile_);
-    DCHECK(analysis_);
     DCHECK(rendering_stats_);
 
     PicturePileImpl* picture_clone =
@@ -106,17 +103,17 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     DCHECK(picture_clone);
 
     base::TimeTicks start_time = rendering_stats_->StartRecording();
-    picture_clone->AnalyzeInRect(content_rect_, contents_scale_, analysis_);
+    picture_clone->AnalyzeInRect(content_rect_, contents_scale_, &analysis_);
     base::TimeDelta duration = rendering_stats_->EndRecording(start_time);
 
     // Record the solid color prediction.
     UMA_HISTOGRAM_BOOLEAN("Renderer4.SolidColorTilesAnalyzed",
-                          analysis_->is_solid_color);
+                          analysis_.is_solid_color);
     rendering_stats_->AddTileAnalysisResult(duration,
-                                            analysis_->is_solid_color);
+                                            analysis_.is_solid_color);
 
     // Clear the flag if we're not using the estimator.
-    analysis_->is_solid_color &= use_color_estimator_;
+    analysis_.is_solid_color &= use_color_estimator_;
   }
 
   bool RunRasterOnThread(SkDevice* device, unsigned thread_index) {
@@ -127,10 +124,9 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         devtools_instrumentation::kRasterTask, metadata_.layer_id);
 
     DCHECK(picture_pile_);
-    DCHECK(analysis_);
     DCHECK(device);
 
-    if (analysis_->is_solid_color)
+    if (analysis_.is_solid_color)
       return false;
 
     PicturePileImpl* picture_clone =
@@ -184,14 +180,14 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     return RunRasterOnThread(device, thread_index);
   }
   virtual void DispatchCompletionCallback() OVERRIDE {
-    reply_.Run(!HasFinishedRunning());
+    reply_.Run(analysis_, !HasFinishedRunning());
   }
 
  protected:
   virtual ~RasterWorkerPoolTaskImpl() {}
 
  private:
-  PicturePileImpl::Analysis* analysis_;
+  PicturePileImpl::Analysis analysis_;
   scoped_refptr<PicturePileImpl> picture_pile_;
   gfx::Rect content_rect_;
   float contents_scale_;
@@ -373,7 +369,6 @@ void RasterWorkerPool::Shutdown() {
 
 RasterWorkerPool::RasterTask RasterWorkerPool::CreateRasterTask(
     const Resource* resource,
-    PicturePileImpl::Analysis* analysis,
     PicturePileImpl* picture_pile,
     gfx::Rect content_rect,
     float contents_scale,
@@ -384,7 +379,6 @@ RasterWorkerPool::RasterTask RasterWorkerPool::CreateRasterTask(
     const RasterTask::Reply& reply,
     Task::Set& dependencies) {
   return RasterTask(new RasterWorkerPoolTaskImpl(resource,
-                                       analysis,
                                        picture_pile,
                                        content_rect,
                                        contents_scale,

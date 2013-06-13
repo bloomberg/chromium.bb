@@ -143,7 +143,8 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
 
   class CC_EXPORT RasterTask {
    public:
-    typedef base::Callback<void(bool was_canceled)> Reply;
+    typedef base::Callback<void(const PicturePileImpl::Analysis& analysis,
+                                bool was_canceled)> Reply;
 
     class CC_EXPORT Queue {
      public:
@@ -182,7 +183,6 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
   // TODO(vmpstr): Try to elimiate some variables.
   static RasterTask CreateRasterTask(
       const Resource* resource,
-      PicturePileImpl::Analysis* analysis,
       PicturePileImpl* picture_pile,
       gfx::Rect content_rect,
       float contents_scale,

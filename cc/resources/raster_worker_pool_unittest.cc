@@ -29,7 +29,7 @@ class TestRasterTaskImpl : public internal::RasterWorkerPoolTask {
     return true;
   }
   virtual void DispatchCompletionCallback() OVERRIDE {
-    reply_.Run(!HasFinishedRunning());
+    reply_.Run(PicturePileImpl::Analysis(), !HasFinishedRunning());
   }
 
  protected:
@@ -172,6 +172,7 @@ class BasicRasterWorkerPoolTest : public RasterWorkerPoolTest {
 
   void OnTaskCompleted(scoped_ptr<ScopedResource> resource,
                        unsigned id,
+                       const PicturePileImpl::Analysis& analysis,
                        bool was_canceled) {
     on_task_completed_ids_.push_back(id);
     if (on_task_completed_ids_.size() == 2)
