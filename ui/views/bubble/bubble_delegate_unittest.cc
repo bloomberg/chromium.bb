@@ -2,17 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/run_loop.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_observer.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/env.h"
-#endif
 
 namespace views {
 
@@ -24,10 +18,6 @@ class TestBubbleDelegateView : public BubbleDelegateView {
   virtual ~TestBubbleDelegateView();
 
   virtual View* GetInitiallyFocusedView() OVERRIDE;
-
- protected:
-  // BubbleDelegateView overrides.
-  virtual int GetFadeDuration() OVERRIDE;
 
  private:
   View* view_;
@@ -44,11 +34,6 @@ TestBubbleDelegateView::~TestBubbleDelegateView() {}
 
 View* TestBubbleDelegateView::GetInitiallyFocusedView() {
   return view_;
-}
-
-int TestBubbleDelegateView::GetFadeDuration() {
-  // We cannot return 0 as that causes the animation to never complete.
-  return 1;
 }
 
 }  // namespace
@@ -194,71 +179,6 @@ TEST_F(BubbleDelegateTest, DISABLED_InitiallyFocusedView) {
   EXPECT_EQ(bubble_delegate->GetInitiallyFocusedView(),
             bubble_widget->GetFocusManager()->GetFocusedView());
   bubble_widget->CloseNow();
-}
-
-// This class provides functionality to verify that the BubbleView shows up
-// when we call BubbleDelegateView::StartFade(true) and is destroyed when we
-// call BubbleDelegateView::StartFade(false).
-class BubbleWidgetClosingTest : public BubbleDelegateTest,
-                                public views::WidgetObserver {
- public:
-  BubbleWidgetClosingTest()
-      : bubble_destroyed_(false) {
-#if defined(USE_AURA)
-    loop_.set_dispatcher(aura::Env::GetInstance()->GetDispatcher());
-#endif
-  }
-
-  virtual ~BubbleWidgetClosingTest() {}
-
-  void Observe(views::Widget* widget) {
-    widget->AddObserver(this);
-  }
-
-  // views::WidgetObserver overrides.
-  virtual void OnWidgetDestroyed(Widget* widget) {
-    bubble_destroyed_ = true;
-    widget->RemoveObserver(this);
-    loop_.Quit();
-  }
-
-  bool bubble_destroyed() const { return bubble_destroyed_; }
-
-  void RunNestedLoop() {
-    loop_.Run();
-  }
-
- private:
-  bool bubble_destroyed_;
-  base::RunLoop loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(BubbleWidgetClosingTest);
-};
-
-TEST_F(BubbleWidgetClosingTest, TestBubbleVisibilityAndClose) {
-  // Create the anchor and parent widgets.
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  scoped_ptr<Widget> anchor_widget(new Widget);
-  anchor_widget->Init(params);
-  anchor_widget->Show();
-
-  TestBubbleDelegateView* bubble_delegate =
-      new TestBubbleDelegateView(anchor_widget->GetContentsView());
-  Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
-  EXPECT_FALSE(bubble_widget->IsVisible());
-
-  bubble_delegate->StartFade(true);
-  EXPECT_TRUE(bubble_widget->IsVisible());
-
-  EXPECT_EQ(bubble_delegate->GetInitiallyFocusedView(),
-            bubble_widget->GetFocusManager()->GetFocusedView());
-
-  Observe(bubble_widget);
-
-  bubble_delegate->StartFade(false);
-  RunNestedLoop();
-  EXPECT_TRUE(bubble_destroyed());
 }
 
 }  // namespace views
