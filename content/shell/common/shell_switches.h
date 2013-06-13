@@ -13,7 +13,6 @@ extern const char kAllowExternalPages[];
 extern const char kCheckLayoutTestSysDeps[];
 extern const char kContentBrowserTest[];
 extern const char kContentShellDataPath[];
-extern const char kDisableHeadlessForLayoutTests[];
 extern const char kDumpRenderTree[];
 extern const char kEnableAccelerated2DCanvas[];
 extern const char kEnableSoftwareCompositing[];

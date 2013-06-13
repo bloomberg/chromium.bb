@@ -70,10 +70,8 @@ Shell::Shell(WebContents* web_contents)
 #endif
       headless_(false) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDumpRenderTree) &&
-      !command_line.HasSwitch(switches::kDisableHeadlessForLayoutTests)) {
+  if (command_line.HasSwitch(switches::kDumpRenderTree))
     headless_ = true;
-  }
   registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
       Source<WebContents>(web_contents));
   windows_.push_back(this);
