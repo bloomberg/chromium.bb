@@ -195,7 +195,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   }
 
   // Set correct popup menu. Also, set draggable download on completion.
-  if (downloadModel->download()->IsComplete()) {
+  if (downloadModel->download()->GetState() == DownloadItem::COMPLETE) {
     [progressView_ setMenu:completeDownloadMenu_];
     [progressView_ setDownload:downloadModel->download()->GetTargetFilePath()];
   } else {

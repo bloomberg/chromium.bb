@@ -91,7 +91,7 @@ class DownloadItemDrag::DragData {
 DownloadItemDrag::DragData::DragData(const DownloadItem* item)
     : url_(net::FilePathToFileURL(item->GetTargetFilePath())),
       display_name_(item->GetFileNameToReportUser().LossyDisplayName()) {
-  DCHECK(item->IsComplete());
+  DCHECK_EQ(DownloadItem::COMPLETE, item->GetState());
 }
 
 void DownloadItemDrag::DragData::OnDragDataGet(GtkWidget* widget,

@@ -403,7 +403,7 @@ void DownloadShelfView::DoShow() {
 void DownloadShelfView::DoClose(CloseReason reason) {
   int num_in_progress = 0;
   for (size_t i = 0; i < download_views_.size(); ++i) {
-    if (download_views_[i]->download()->IsInProgress())
+    if (download_views_[i]->download()->GetState() == DownloadItem::IN_PROGRESS)
       ++num_in_progress;
   }
   download_util::RecordShelfClose(download_views_.size(),
@@ -426,9 +426,10 @@ void DownloadShelfView::Closed() {
   size_t i = 0;
   while (i < download_views_.size()) {
     DownloadItem* download = download_views_[i]->download();
-    bool is_transfer_done = download->IsComplete() ||
-                            download->IsCancelled() ||
-                            download->IsInterrupted();
+    DownloadItem::DownloadState state = download->GetState();
+    bool is_transfer_done = state == DownloadItem::COMPLETE ||
+                            state == DownloadItem::CANCELLED ||
+                            state == DownloadItem::INTERRUPTED;
     if (is_transfer_done && !download->IsDangerous()) {
       RemoveDownloadView(download_views_[i]);
     } else {

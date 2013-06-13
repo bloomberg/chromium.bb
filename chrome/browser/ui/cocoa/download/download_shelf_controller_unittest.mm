@@ -119,8 +119,8 @@ id DownloadShelfControllerTest::CreateItemController() {
       new ::testing::NiceMock<content::MockDownloadItem>);
   ON_CALL(*download.get(), GetOpened())
       .WillByDefault(Return(false));
-  ON_CALL(*download.get(), IsInProgress())
-      .WillByDefault(Return(true));
+  ON_CALL(*download.get(), GetState())
+      .WillByDefault(Return(content::DownloadItem::IN_PROGRESS));
 
   scoped_nsobject<WrappedMockDownloadItem> wrappedMockDownload(
       [[WrappedMockDownloadItem alloc] initWithMockDownload:download.Pass()]);

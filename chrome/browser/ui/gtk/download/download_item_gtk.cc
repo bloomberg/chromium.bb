@@ -456,10 +456,10 @@ void DownloadItemGtk::OnLoadSmallIconComplete(gfx::Image* image) {
 
 void DownloadItemGtk::OnLoadLargeIconComplete(gfx::Image* image) {
   icon_large_ = image;
-  if (download()->IsComplete())
+  if (download()->GetState() == DownloadItem::COMPLETE)
     DownloadItemDrag::SetSource(body_.get(), download(), icon_large_);
   // Else, the download will be made draggable once an OnDownloadUpdated()
-  // notification is received with download->IsComplete().
+  // notification is received with a download in COMPLETE state.
 }
 
 void DownloadItemGtk::LoadIcon() {
@@ -849,8 +849,9 @@ gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
 
   // Create a transparent canvas.
   gfx::CanvasSkiaPaint canvas(event, false);
+  DownloadItem::DownloadState state = download()->GetState();
   if (complete_animation_.is_animating()) {
-    if (download()->IsInterrupted()) {
+    if (state == DownloadItem::INTERRUPTED) {
       download_util::PaintDownloadInterrupted(&canvas,
           allocation.x, allocation.y,
           complete_animation_.GetCurrentValue(),
@@ -861,7 +862,7 @@ gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
           complete_animation_.GetCurrentValue(),
           download_util::SMALL);
     }
-  } else if (download()->IsInProgress()) {
+  } else if (state == DownloadItem::IN_PROGRESS) {
     download_util::PaintDownloadProgress(&canvas,
         allocation.x, allocation.y,
         progress_angle_,

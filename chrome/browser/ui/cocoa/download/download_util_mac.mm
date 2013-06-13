@@ -29,7 +29,7 @@ void AddFileToPasteboard(NSPasteboard* pasteboard, const base::FilePath& path) {
 void DragDownload(const DownloadItem* download,
                   gfx::Image* icon,
                   gfx::NativeView view) {
-  DCHECK(download->IsComplete());
+  DCHECK_EQ(DownloadItem::COMPLETE, download->GetState());
   NSPasteboard* pasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
   AddFileToPasteboard(pasteboard, download->GetTargetFilePath());
 

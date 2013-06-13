@@ -302,7 +302,7 @@ void DownloadHandler::OnCreateDirectory(
 }
 
 void DownloadHandler::UploadDownloadItem(DownloadItem* download) {
-  DCHECK(download->IsComplete());
+  DCHECK_EQ(DownloadItem::COMPLETE, download->GetState());
   file_write_helper_->PrepareWritableFileAndRun(
       util::ExtractDrivePath(GetTargetPath(download)),
       base::Bind(&MoveDownloadedFile, download->GetTargetFilePath()));

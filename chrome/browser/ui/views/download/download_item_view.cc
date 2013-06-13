@@ -286,6 +286,8 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download_item) {
         break;
       case DownloadItem::CANCELLED:
         StopDownloadProgress();
+        if (complete_animation_)
+          complete_animation_->Stop();
         LoadIcon();
         break;
       default:
@@ -405,7 +407,7 @@ bool DownloadItemView::OnMouseDragged(const ui::MouseEvent& event) {
     drag_start_point_ = event.location();
   }
   if (dragging_) {
-    if (download()->IsComplete()) {
+    if (download()->GetState() == DownloadItem::COMPLETE) {
       IconManager* im = g_browser_process->icon_manager();
       gfx::Image* icon = im->LookupIconFromFilepath(
           download()->GetTargetFilePath(), IconLoader::SMALL);
@@ -787,19 +789,20 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
   // triggered only when we think the status might change.
   if (icon) {
     if (!IsShowingWarningDialog()) {
-      if (download()->IsInProgress()) {
+      DownloadItem::DownloadState state = download()->GetState();
+      if (state == DownloadItem::IN_PROGRESS) {
         download_util::PaintDownloadProgress(canvas, this, 0, 0,
                                              progress_angle_,
                                              model_.PercentComplete(),
                                              download_util::SMALL);
-      } else if (download()->IsComplete() &&
-                 complete_animation_.get() &&
+      } else if (complete_animation_.get() &&
                  complete_animation_->is_animating()) {
-        if (download()->IsInterrupted()) {
+        if (state == DownloadItem::INTERRUPTED) {
           download_util::PaintDownloadInterrupted(canvas, this, 0, 0,
               complete_animation_->GetCurrentValue(),
               download_util::SMALL);
         } else {
+          DCHECK_EQ(DownloadItem::COMPLETE, state);
           download_util::PaintDownloadComplete(canvas, this, 0, 0,
               complete_animation_->GetCurrentValue(),
               download_util::SMALL);

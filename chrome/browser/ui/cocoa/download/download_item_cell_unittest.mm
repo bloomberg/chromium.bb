@@ -56,7 +56,6 @@ TEST_F(DownloadItemCellTest, ToggleStatusText) {
 
 TEST_F(DownloadItemCellTest, IndeterminateProgress) {
   testing::NiceMock<content::MockDownloadItem> item;
-  ON_CALL(item, IsInProgress()).WillByDefault(Return(true));
   ON_CALL(item, IsPaused()).WillByDefault(Return(false));
   ON_CALL(item, PercentComplete()).WillByDefault(Return(-1));
   ON_CALL(item, GetState())
