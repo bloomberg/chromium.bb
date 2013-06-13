@@ -808,7 +808,8 @@ TEST_F(WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
   EXPECT_EQ(0, base->Terminate());
 }
 
-TEST_F(WebRTCAudioDeviceTest, WebRtcRecordingSetupTime) {
+// Test times out on bots, see http://crbug.com/247447
+TEST_F(WebRTCAudioDeviceTest, DISABLED_WebRtcRecordingSetupTime) {
   if (!has_input_devices_) {
     LOG(WARNING) << "Missing audio capture devices.";
     return;
