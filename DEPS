@@ -437,7 +437,7 @@ deps_os = {
     "src/third_party/libphonenumber/src/test": None,
     "src/third_party/libphonenumber/src/resources": None,
     "src/third_party/libsrtp": None,
-    "src/third_party/usrsctp": None,
+    "src/third_party/usrsctp/usrsctplib": None,
     "src/third_party/libvpx": None,
     "src/third_party/libyuv": None,
     "src/third_party/ots": None,
