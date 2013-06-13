@@ -665,6 +665,8 @@ void EventRouter::IncrementInFlightEventsOnUI(
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Profile* profile = reinterpret_cast<Profile*>(profile_id);
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+    return;
   extensions::EventRouter* event_router =
       extensions::ExtensionSystem::Get(profile)->event_router();
   if (!event_router)
