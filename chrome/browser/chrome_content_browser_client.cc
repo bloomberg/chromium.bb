@@ -187,6 +187,10 @@
 #include "chrome/browser/media/webrtc_logging_handler_host.h"
 #endif
 
+#if defined(FILE_MANAGER_EXTENSION)
+#include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
+#endif
+
 using base::FileDescriptor;
 using content::AccessTokenStore;
 using content::BrowserChildProcessHostIterator;
@@ -2041,7 +2045,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   // Override the default of suppressing HW compositing for WebUI pages for the
   // file manager, which is implemented using WebUI but wants HW acceleration
   // for video decode & render.
-  if (url.spec() == chrome::kChromeUIFileManagerURL) {
+  if (url.SchemeIs(extensions::kExtensionScheme) &&
+      url.host() == kFileBrowserDomain) {
     web_prefs->accelerated_compositing_enabled = true;
     web_prefs->accelerated_2d_canvas_enabled = true;
   }
