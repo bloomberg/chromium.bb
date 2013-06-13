@@ -618,6 +618,7 @@ void CreateNeverStartProtocolHandlerOnIO(const GURL& url) {
 
 }  // namespace
 
+// Many of these tests are flaky. See http://crbug.com/249179
 class PrerenderBrowserTest : virtual public InProcessBrowserTest {
  public:
   PrerenderBrowserTest()
@@ -1399,7 +1400,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderIncognito) {
 }
 
 // Checks that the visibility API works.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibility) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderVisibility) {
   PrerenderTestURL("files/prerender/prerender_visibility.html",
                    FINAL_STATUS_USED,
                    1);
@@ -1546,7 +1548,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttpAuthentication) {
 // This version navigates to the page which issues the redirection, rather
 // than the final destination page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderClientRedirectNavigateToFirst) {
+                       DISABLED_PrerenderClientRedirectNavigateToFirst) {
   PrerenderTestURL(CreateClientRedirect("files/prerender/prerender_page.html"),
                    FINAL_STATUS_USED,
                    2);
@@ -1568,7 +1570,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // This version navigates to the final destination page, rather than the
 // page which does the redirection via a mouse click.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderClientRedirectNavigateToSecondViaClick) {
+    DISABLED_PrerenderClientRedirectNavigateToSecondViaClick) {
   GURL prerender_url = test_server()->GetURL(
       CreateClientRedirect("files/prerender/prerender_page.html"));
   GURL destination_url = test_server()->GetURL(
@@ -1591,7 +1593,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttps) {
 }
 
 // Checks that client-issued redirects to an https page will cancel prerenders.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClientRedirectToHttps) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderClientRedirectToHttps) {
   net::SpawnedTestServer https_server(
       net::SpawnedTestServer::TYPE_HTTPS, net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
@@ -1605,7 +1608,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClientRedirectToHttps) {
 
 // Checks that client-issued redirects within an iframe in a prerendered
 // page will not count as an "alias" for the prerendered page.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClientRedirectInIframe) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderClientRedirectInIframe) {
   std::string redirect_path = CreateClientRedirect(
       "/files/prerender/prerender_embedded_content.html");
   std::vector<net::SpawnedTestServer::StringPair> replacement_text;
@@ -1626,7 +1630,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClientRedirectInIframe) {
 // page to an https page will not cancel the prerender, nor will it
 // count as an "alias" for the prerendered page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderClientRedirectToHttpsInIframe) {
+                       DISABLED_PrerenderClientRedirectToHttpsInIframe) {
   net::SpawnedTestServer https_server(
       net::SpawnedTestServer::TYPE_HTTPS, net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
@@ -1719,7 +1723,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderServerRedirectInIframe) {
 // page to an https page will not cancel the prerender, nor will it
 // count as an "alias" for the prerendered page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderServerRedirectToHttpsInIframe) {
+                       DISABLED_PrerenderServerRedirectToHttpsInIframe) {
   net::SpawnedTestServer https_server(
       net::SpawnedTestServer::TYPE_HTTPS, net::SpawnedTestServer::kLocalhost,
       base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
@@ -1774,7 +1778,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrer) {
 
 // Checks that the referrer is not set when prerendering and the source page is
 // HTTPS.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoSSLReferrer) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderNoSSLReferrer) {
   set_use_https_src(true);
   PrerenderTestURL("files/prerender/prerender_no_referrer.html",
                    FINAL_STATUS_USED,
@@ -1937,12 +1942,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderTaskManager) {
 
 // Checks that audio loads are deferred on prerendering.
 // Times out under AddressSanitizer, see http://crbug.com/108402
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_PrerenderHTML5Audio DISABLED_PrerenderHTML5Audio
-#else
-#define MAYBE_PrerenderHTML5Audio PrerenderHTML5Audio
-#endif
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderHTML5Audio) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderHTML5Audio) {
   PrerenderTestURL("files/prerender/prerender_html5_audio.html",
                   FINAL_STATUS_USED,
                   1);
@@ -1952,13 +1952,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderHTML5Audio) {
 // Checks that audio loads are deferred on prerendering and played back when
 // the prerender is swapped in if autoplay is set.
 // Periodically fails on chrome-os.  See http://crbug.com/145263
-#if defined(OS_CHROMEOS)
-#define MAYBE_PrerenderHTML5AudioAutoplay DISABLED_PrerenderHTML5AudioAutoplay
-#else
-#define MAYBE_PrerenderHTML5AudioAutoplay PrerenderHTML5AudioAutoplay
-#endif
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       MAYBE_PrerenderHTML5AudioAutoplay) {
+                       DISABLED_PrerenderHTML5AudioAutoplay) {
   PrerenderTestURL("files/prerender/prerender_html5_audio_autoplay.html",
                    FINAL_STATUS_USED,
                    1);
@@ -1967,7 +1962,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Checks that audio loads are deferred on prerendering and played back when
 // the prerender is swapped in if js starts playing.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5AudioJsplay) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderHTML5AudioJsplay) {
   PrerenderTestURL("files/prerender/prerender_html5_audio_jsplay.html",
                    FINAL_STATUS_USED,
                    1);
@@ -1975,7 +1971,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5AudioJsplay) {
 }
 
 // Checks that video loads are deferred on prerendering.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5Video) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderHTML5Video) {
   PrerenderTestURL("files/prerender/prerender_html5_video.html",
                    FINAL_STATUS_USED,
                    1);
@@ -1984,7 +1980,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5Video) {
 
 // Checks that video tags inserted by javascript are deferred and played
 // correctly on swap in.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5VideoJs) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderHTML5VideoJs) {
   PrerenderTestURL("files/prerender/prerender_html5_video_script.html",
                    FINAL_STATUS_USED,
                    1);
@@ -1992,7 +1989,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5VideoJs) {
 }
 
 // Checks for correct network events by using a busy sleep the javascript.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5VideoNetwork) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderHTML5VideoNetwork) {
   PrerenderTestURL("files/prerender/prerender_html5_video_network.html",
                    FINAL_STATUS_USED,
                    1,
@@ -2013,15 +2011,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowSize) {
   NavigateToDestURL();
 }
 
-#if defined(OS_CHROMEOS)
 // Flakily times out: http://crbug.com/171546
-#define MAYBE_PrerenderRendererCrash DISABLED_PrerenderRendererCrash
-#else
-#define MAYBE_PrerenderRendererCrash PrerenderRendererCrash
-#endif
-
 // Checks that prerenderers will terminate when the RenderView crashes.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_PrerenderRendererCrash) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderRendererCrash) {
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_RENDERER_CRASHED,
                    1);
@@ -2173,7 +2165,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrTrace) {
 }
 
 // Checks that xhr POST requests allow prerenders.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderXhrPost) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderXhrPost) {
   PrerenderTestURL("files/prerender/prerender_xhr_post.html",
                    FINAL_STATUS_USED,
                    1);
@@ -2435,7 +2427,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderLocalStorageWrite) {
 }
 
 // Checks that the favicon is properly loaded on prerender.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderFavicon) {
   PrerenderTestURL("files/prerender/prerender_favicon.html",
                    FINAL_STATUS_USED,
                    1);
@@ -2560,7 +2553,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderEventsNoLoad) {
 // followed by a navigation to another page from the prerendered page, followed
 // by a back navigation.
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNavigateClickGoBack) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderNavigateClickGoBack) {
   PrerenderTestURL("files/prerender/prerender_page_with_link.html",
                    FINAL_STATUS_USED,
                    1);
@@ -2581,7 +2575,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   GoBackToPrerender();
 }
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickClickGoBack) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderClickClickGoBack) {
   PrerenderTestURL("files/prerender/prerender_page_with_link.html",
                    FINAL_STATUS_USED,
                    1);
@@ -2616,7 +2611,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewForegroundTab) {
   OpenDestURLViaClickNewForegroundTab();
 }
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewBackgroundTab) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderClickNewBackgroundTab) {
   PrerenderTestURL("files/prerender/prerender_page_with_link.html",
                    FINAL_STATUS_APP_TERMINATING,
                    1);
@@ -2641,7 +2637,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // Validate that the sessionStorage namespace remains the same when swapping
 // in a prerendered page.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSessionStorage) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderSessionStorage) {
   set_loader_path("files/prerender/prerender_loader_with_session_storage.html");
   PrerenderTestURL(GetCrossDomainTestUrl("files/prerender/prerender_page.html"),
                    FINAL_STATUS_USED,
@@ -2726,7 +2723,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderReferrerPolicy) {
 }
 
 // Checks that the referrer policy is used when prerendering on HTTPS.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLReferrerPolicy) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_PrerenderSSLReferrerPolicy) {
   set_use_https_src(true);
   set_loader_path("files/prerender/prerender_loader_with_referrer_policy.html");
   PrerenderTestURL("files/prerender/prerender_referrer_policy.html",
@@ -2765,13 +2763,8 @@ class PrerenderBrowserTestWithExtensions : public PrerenderBrowserTest,
 };
 
 // http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_WebNavigation DISABLED_WebNavigation
-#else
-#define MAYBE_WebNavigation WebNavigation
-#endif
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions,
-                       MAYBE_WebNavigation) {
+                       DISABLED_WebNavigation) {
   ASSERT_TRUE(StartTestServer());
   extensions::FrameNavigationState::set_allow_extension_scheme(true);
 
@@ -2827,7 +2820,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, MAYBE_TabsApi) {
 // Checks that non-http/https/chrome-extension subresource cancels the
 // prerender.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderCancelSubresourceUnsupportedScheme) {
+                       DISABLED_PrerenderCancelSubresourceUnsupportedScheme) {
   GURL image_url = GURL("invalidscheme://www.google.com/test.jpg");
   std::vector<net::SpawnedTestServer::StringPair> replacement_text;
   replacement_text.push_back(
