@@ -176,6 +176,8 @@ class HistoryURLProvider : public HistoryProvider {
 #endif
 
   // Returns a match corresponding to exactly what the user has typed.
+  // |trim_http| should not be set to true if |input| contains an http
+  // prefix.
   // NOTE: This does not set the relevance of the returned match, as different
   //       callers want different behavior. Callers must set this manually.
   // This function is static so SearchProvider may construct similar matches.

@@ -73,9 +73,12 @@ class ZeroSuggestProvider : public AutocompleteProvider,
   // Initiates a new fetch for the given |url|, limiting suggestions to those
   // matching |user_text|. |user_text| may be non-empty if the user previously
   // interacted with zero-suggest suggestions and then unfocused the omnibox.
+  // |permanent_text| is the text version of |url| displayed in the omnibox.
   // TODO(jered): Rip out |user_text| once the first match is decoupled from
   // the current typing in the omnibox.
-  void StartZeroSuggest(const GURL& url, const string16& user_text);
+  void StartZeroSuggest(const GURL& url,
+                        const string16& user_text,
+                        const string16& permanent_text);
 
  private:
   ZeroSuggestProvider(AutocompleteProviderListener* listener,
@@ -150,6 +153,8 @@ class ZeroSuggestProvider : public AutocompleteProvider,
 
   // What the user has typed.
   string16 original_user_text_;
+  // Copy of OmniboxEditModel::permanent_text_.
+  string16 permanent_text_;
   // Whether the user has modified the omnibox since the zero suggest request.
   bool user_text_modified_;
 

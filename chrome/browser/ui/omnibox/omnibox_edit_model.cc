@@ -851,7 +851,8 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
     // the actual underlying current URL, e.g. if we're on the NTP and the
     // |permanent_text_| is empty.
     autocomplete_controller()->StartZeroSuggest(delegate_->GetURL(),
-                                                user_text_);
+                                                user_text_,
+                                                permanent_text_);
   }
 
   delegate_->NotifySearchTabHelper(user_input_in_progress_, !in_revert_,

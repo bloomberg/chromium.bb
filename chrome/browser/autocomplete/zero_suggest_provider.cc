@@ -156,7 +156,8 @@ void ZeroSuggestProvider::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 void ZeroSuggestProvider::StartZeroSuggest(const GURL& url,
-                                           const string16& user_text) {
+                                           const string16& user_text,
+                                           const string16& permanent_text) {
   Stop(true);
   field_trial_triggered_ = false;
   field_trial_triggered_in_session_ = false;
@@ -165,6 +166,7 @@ void ZeroSuggestProvider::StartZeroSuggest(const GURL& url,
   verbatim_relevance_ = kDefaultVerbatimZeroSuggestRelevance;
   done_ = false;
   original_user_text_ = user_text;
+  permanent_text_ = permanent_text;
   current_query_ = url.spec();
   current_url_match_ = MatchForCurrentURL();
   user_text_modified_ = false;
@@ -414,7 +416,7 @@ void ZeroSuggestProvider::Run() {
 }
 
 void ZeroSuggestProvider::CheckIfTextModfied(const string16& user_text) {
-  if (!user_text.empty() && user_text != current_url_match_.contents)
+  if (!user_text.empty() && user_text != permanent_text_)
     user_text_modified_ = true;
 }
 
@@ -473,12 +475,13 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches(
 }
 
 AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
-  AutocompleteInput input(ASCIIToUTF16(current_query_), string16::npos,
+  AutocompleteInput input(permanent_text_, string16::npos,
                           string16(), GURL(current_query_),
                           false, false, true, AutocompleteInput::ALL_MATCHES);
 
   AutocompleteMatch match(
-      HistoryURLProvider::SuggestExactInput(this, input, true));
+      HistoryURLProvider::SuggestExactInput(this, input,
+                                            !HasHTTPScheme(input.text())));
   match.is_history_what_you_typed_match = false;
 
   // The placeholder suggestion for the current URL has high relevance so
