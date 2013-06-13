@@ -53,15 +53,15 @@ void RenderSVGRect::updateShapeFromElement()
     SVGRectElement* rect = static_cast<SVGRectElement*>(node());
     ASSERT(rect);
 
+    SVGLengthContext lengthContext(rect);
     // Fallback to RenderSVGShape if rect has rounded corners or a non-scaling stroke.
-    if (rect->hasAttribute(SVGNames::rxAttr) || rect->hasAttribute(SVGNames::ryAttr) || hasNonScalingStroke()) {
+    if (rect->rx().value(lengthContext) > 0 || rect->ry().value(lengthContext) > 0 || hasNonScalingStroke()) {
         RenderSVGShape::updateShapeFromElement();
         m_usePathFallback = true;
         return;
-    } else
-        m_usePathFallback = false;
+    }
 
-    SVGLengthContext lengthContext(rect);
+    m_usePathFallback = false;
     FloatSize boundingBoxSize(rect->width().value(lengthContext), rect->height().value(lengthContext));
     if (boundingBoxSize.isEmpty())
         return;
