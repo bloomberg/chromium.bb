@@ -47,11 +47,7 @@ public:
 
     virtual void reshape(int width, int height) { }
 
-    virtual bool isGLES2Compliant() { return false; }
-
     virtual bool readBackFramebuffer(unsigned char* pixels, size_t bufferSize, WebGLId framebuffer, int width, int height) { return false; }
-
-    virtual WebGLId getPlatformTextureId() { return 0; }
 
     virtual void prepareTexture() { }
 
