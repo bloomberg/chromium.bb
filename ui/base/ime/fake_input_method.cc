@@ -113,12 +113,17 @@ bool FakeInputMethod::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
 void FakeInputMethod::Init(bool focused) {}
 void FakeInputMethod::OnFocus() {}
 void FakeInputMethod::OnBlur() {}
+bool FakeInputMethod::OnUntranslatedIMEMessage(const base::NativeEvent& event,
+                                               NativeEventResult* result) {
+  return false;
+}
 void FakeInputMethod::OnTextInputTypeChanged(const TextInputClient* client) {
   FOR_EACH_OBSERVER(InputMethodObserver, observers_,
                     OnTextInputStateChanged(client));
 }
 void FakeInputMethod::OnCaretBoundsChanged(const TextInputClient* client) {}
 void FakeInputMethod::CancelComposition(const TextInputClient* client) {}
+void FakeInputMethod::OnInputLocaleChanged() {}
 
 std::string FakeInputMethod::GetInputLocale() {
   return "";

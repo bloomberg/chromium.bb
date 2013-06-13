@@ -126,6 +126,11 @@ void InputMethodIBus::OnBlur() {
   UpdateContextFocusState();
 }
 
+bool InputMethodIBus::OnUntranslatedIMEMessage(const base::NativeEvent& event,
+                                               NativeEventResult* result) {
+  return false;
+}
+
 void InputMethodIBus::Init(bool focused) {
   // Initializes the connection to ibus daemon. It may happen asynchronously,
   // and as soon as the connection is established, the |context_| will be
@@ -312,6 +317,10 @@ void InputMethodIBus::OnCaretBoundsChanged(const TextInputClient* client) {
 void InputMethodIBus::CancelComposition(const TextInputClient* client) {
   if (context_focused_ && IsTextInputClientFocused(client))
     ResetContext();
+}
+
+void InputMethodIBus::OnInputLocaleChanged() {
+  // Not supported.
 }
 
 std::string InputMethodIBus::GetInputLocale() {

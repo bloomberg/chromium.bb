@@ -38,10 +38,13 @@ class InputMethodBridge : public InputMethodBase,
   virtual void Init(Widget* widget) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
+  virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
+                                        NativeEventResult* result) OVERRIDE;
   virtual void DispatchKeyEvent(const ui::KeyEvent& key) OVERRIDE;
   virtual void OnTextInputTypeChanged(View* view) OVERRIDE;
   virtual void OnCaretBoundsChanged(View* view) OVERRIDE;
   virtual void CancelComposition(View* view) OVERRIDE;
+  virtual void OnInputLocaleChanged() OVERRIDE;
   virtual std::string GetInputLocale() OVERRIDE;
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
@@ -76,6 +79,8 @@ class InputMethodBridge : public InputMethodBase,
   // Overridden from FocusChangeListener.
   virtual void OnWillChangeFocus(View* focused_before, View* focused) OVERRIDE;
   virtual void OnDidChangeFocus(View* focused_before, View* focused) OVERRIDE;
+
+  ui::InputMethod* GetHostInputMethod() const;
 
  private:
   void UpdateViewFocusState();

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/event_types.h"
 #include "base/i18n/rtl.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/views/views_export.h"
@@ -33,6 +34,13 @@ class Widget;
 // designed to be bound to top-level Widgets.
 class VIEWS_EXPORT InputMethod {
  public:
+  // TODO(yukawa): Move these typedef into ime_constants.h or somewhere.
+#if defined(OS_WIN)
+  typedef LRESULT NativeEventResult;
+#else
+  typedef int32 NativeEventResult;
+#endif
+
   virtual ~InputMethod() {}
 
   // Sets the delegate used by this InputMethod instance.
@@ -47,6 +55,13 @@ class VIEWS_EXPORT InputMethod {
   // These should only be called by the Widget that owns this InputMethod.
   virtual void OnFocus() = 0;
   virtual void OnBlur() = 0;
+
+  // Called when the focused window receives native IME messages that are not
+  // translated into other predefined event callbacks. Currently this method is
+  // used only for IME functionalities specific to Windows.
+  // TODO(ime): Break down these messages into platform-neutral methods.
+  virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
+                                        NativeEventResult* result) = 0;
 
   // Dispatch a key event to the input method. The key event will be dispatched
   // back to the caller via InputMethodDelegate::DispatchKeyEventPostIME(), once
@@ -68,6 +83,12 @@ class VIEWS_EXPORT InputMethod {
   // Called by the focused |view| to cancel the ongoing composition session.
   // This method has no effect if |view| is not focused.
   virtual void CancelComposition(View* view) = 0;
+
+  // Called by the focused client whenever its input locale is changed.
+  // This method is currently used only on Windows.
+  // This method does not take a parameter of View for historical reasons.
+  // TODO(ime): Consider to take a parameter of View.
+  virtual void OnInputLocaleChanged() = 0;
 
   // Returns the locale of current keyboard layout or input method, as a BCP-47
   // tag, or an empty string if the input method cannot provide it.

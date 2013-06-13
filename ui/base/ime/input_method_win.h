@@ -26,12 +26,15 @@ class UI_EXPORT InputMethodWin : public InputMethodBase {
   virtual void Init(bool focused) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
+  virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
+                                        NativeEventResult* result) OVERRIDE;
   virtual bool DispatchKeyEvent(
       const base::NativeEvent& native_key_event) OVERRIDE;
   virtual bool DispatchFabricatedKeyEvent(const ui::KeyEvent& event) OVERRIDE;
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
   virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE;
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE;
+  virtual void OnInputLocaleChanged() OVERRIDE;
   virtual std::string GetInputLocale() OVERRIDE;
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
@@ -39,6 +42,7 @@ class UI_EXPORT InputMethodWin : public InputMethodBase {
   virtual TextInputClient* GetTextInputClient() const OVERRIDE;
 
   // Handles IME messages.
+  // TODO(ime): Remove this method.
   LRESULT OnImeMessages(UINT message,
                         WPARAM wparam,
                         LPARAM lparam,
@@ -46,6 +50,7 @@ class UI_EXPORT InputMethodWin : public InputMethodBase {
 
   // Message handlers. The native widget is responsible for forwarding following
   // messages to the input method.
+  // TODO(ime): Remove this method.
   void OnInputLangChange(DWORD character_set, HKL input_language_id);
 
  protected:

@@ -56,6 +56,59 @@ void InputMethodWin::OnBlur() {
   InputMethodBase::OnBlur();
 }
 
+bool InputMethodWin::OnUntranslatedIMEMessage(const base::NativeEvent& event,
+                                              NativeEventResult* result) {
+  // Don't do traditional IME in Text services mode.
+  if (base::win::IsTSFAwareRequired() &&
+      event.message != WM_CHAR &&
+      event.message != WM_SYSCHAR &&
+      event.message != WM_DEADCHAR &&
+      event.message != WM_SYSDEADCHAR &&
+      event.message != WM_IME_SETCONTEXT) {
+    return false;
+  }
+  BOOL handled = FALSE;
+  LRESULT original_result = 0;
+  switch (event.message) {
+    case WM_IME_SETCONTEXT:
+      original_result = OnImeSetContext(
+          event.message, event.wParam, event.lParam, &handled);
+      break;
+    case WM_IME_STARTCOMPOSITION:
+      original_result = OnImeStartComposition(
+          event.message, event.wParam, event.lParam, &handled);
+      break;
+    case WM_IME_COMPOSITION:
+      original_result = OnImeComposition(
+          event.message, event.wParam, event.lParam, &handled);
+      break;
+    case WM_IME_ENDCOMPOSITION:
+      original_result = OnImeEndComposition(
+          event.message, event.wParam, event.lParam, &handled);
+      break;
+    case WM_IME_REQUEST:
+      original_result = OnImeRequest(
+          event.message, event.wParam, event.lParam, &handled);
+      break;
+    case WM_CHAR:
+    case WM_SYSCHAR:
+      original_result = OnChar(
+          event.message, event.wParam, event.lParam, &handled);
+      break;
+    case WM_DEADCHAR:
+    case WM_SYSDEADCHAR:
+      original_result = OnDeadChar(
+          event.message, event.wParam, event.lParam, &handled);
+      break;
+    default:
+      NOTREACHED() << "Unknown IME message:" << event.message;
+      break;
+  }
+  if (result)
+    *result = original_result;
+  return !!handled;
+}
+
 bool InputMethodWin::DispatchKeyEvent(
     const base::NativeEvent& native_key_event) {
   if (native_key_event.message == WM_CHAR) {
@@ -144,6 +197,13 @@ void InputMethodWin::CancelComposition(const TextInputClient* client) {
     ime_input_.CancelIME(hwnd_);
 }
 
+void InputMethodWin::OnInputLocaleChanged() {
+  active_ = ime_input_.SetInputLanguage();
+  locale_ = ime_input_.GetInputLanguageName();
+  direction_ = ime_input_.GetTextDirection();
+  OnInputMethodChanged();
+}
+
 std::string InputMethodWin::GetInputLocale() {
   return locale_;
 }
@@ -179,44 +239,14 @@ LRESULT InputMethodWin::OnImeMessages(UINT message,
                                       WPARAM w_param,
                                       LPARAM l_param,
                                       BOOL* handled) {
-  // Don't do traditional IME in Text services mode.
-  if (base::win::IsTSFAwareRequired() &&
-      message != WM_CHAR &&
-      message != WM_SYSCHAR &&
-      message != WM_DEADCHAR &&
-      message != WM_SYSDEADCHAR &&
-      message != WM_IME_SETCONTEXT) {
-    return false;
-  }
+  MSG msg = {};
+  msg.hwnd = hwnd_;
+  msg.message = message;
+  msg.wParam = w_param;
+  msg.lParam = l_param;
+
   LRESULT result = 0;
-  switch (message) {
-    case WM_IME_SETCONTEXT:
-      result = OnImeSetContext(message, w_param, l_param, handled);
-      break;
-    case WM_IME_STARTCOMPOSITION:
-      result = OnImeStartComposition(message, w_param, l_param, handled);
-      break;
-    case WM_IME_COMPOSITION:
-      result = OnImeComposition(message, w_param, l_param, handled);
-      break;
-    case WM_IME_ENDCOMPOSITION:
-      result = OnImeEndComposition(message, w_param, l_param, handled);
-      break;
-    case WM_IME_REQUEST:
-      result = OnImeRequest(message, w_param, l_param, handled);
-      break;
-    case WM_CHAR:
-    case WM_SYSCHAR:
-      result = OnChar(message, w_param, l_param, handled);
-      break;
-    case WM_DEADCHAR:
-    case WM_SYSDEADCHAR:
-      result = OnDeadChar(message, w_param, l_param, handled);
-      break;
-    default:
-      NOTREACHED() << "Unknown IME message:" << message;
-      break;
-  }
+  *handled = !!OnUntranslatedIMEMessage(msg, &result);
   return result;
 }
 

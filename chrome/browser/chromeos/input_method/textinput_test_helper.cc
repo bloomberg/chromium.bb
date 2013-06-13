@@ -94,6 +94,10 @@ void TextInputTestHelper::OnBlur() {
     base::MessageLoop::current()->Quit();
 }
 
+void TextInputTestHelper::OnUntranslatedIMEMessage(
+  const base::NativeEvent& event) {
+}
+
 void TextInputTestHelper::OnCaretBoundsChanged(
     const ui::TextInputClient* client) {
   ui::Range text_range;
@@ -103,6 +107,9 @@ void TextInputTestHelper::OnCaretBoundsChanged(
       return;
   if (waiting_type_ == WAIT_ON_CARET_BOUNDS_CHANGED)
     base::MessageLoop::current()->Quit();
+}
+
+void TextInputTestHelper::OnInputLocaleChanged() {
 }
 
 void TextInputTestHelper::OnTextInputStateChanged(

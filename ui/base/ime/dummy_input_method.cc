@@ -24,6 +24,11 @@ void DummyInputMethod::OnFocus() {
 void DummyInputMethod::OnBlur() {
 }
 
+bool DummyInputMethod::OnUntranslatedIMEMessage(const base::NativeEvent& event,
+                                                NativeEventResult* result) {
+  return false;
+}
+
 void DummyInputMethod::SetFocusedTextInputClient(TextInputClient* client) {
 }
 
@@ -46,6 +51,9 @@ void DummyInputMethod::OnCaretBoundsChanged(const TextInputClient* client) {
 }
 
 void DummyInputMethod::CancelComposition(const TextInputClient* client) {
+}
+
+void DummyInputMethod::OnInputLocaleChanged() {
 }
 
 std::string DummyInputMethod::GetInputLocale() {

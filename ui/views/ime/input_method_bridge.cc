@@ -36,6 +36,11 @@ void InputMethodBridge::OnFocus() {
   if (shared_input_method_ || !host_->GetTextInputClient())
     host_->SetFocusedTextInputClient(this);
 
+  // TODO(ime): Refactor this.
+#if defined(OS_WIN) && !defined(USE_AURA)
+  host_->OnFocus();
+#endif
+
   // TODO(yusukes): We don't need to call OnTextInputTypeChanged() once we move
   // text input type tracker code to ui::InputMethodBase.
   if (GetFocusedView())
@@ -44,8 +49,19 @@ void InputMethodBridge::OnFocus() {
 
 void InputMethodBridge::OnBlur() {
   ConfirmCompositionText();
+
+  // TODO(ime): Refactor this.
+#if defined(OS_WIN) && !defined(USE_AURA)
+  host_->OnBlur();
+#endif
+
   if (host_->GetTextInputClient() == this)
     host_->SetFocusedTextInputClient(NULL);
+}
+
+bool InputMethodBridge::OnUntranslatedIMEMessage(const base::NativeEvent& event,
+                                                 NativeEventResult* result) {
+  return host_->OnUntranslatedIMEMessage(event, result);
 }
 
 void InputMethodBridge::DispatchKeyEvent(const ui::KeyEvent& key) {
@@ -70,6 +86,10 @@ void InputMethodBridge::OnCaretBoundsChanged(View* view) {
 void InputMethodBridge::CancelComposition(View* view) {
   if (IsViewFocused(view))
     host_->CancelComposition(this);
+}
+
+void InputMethodBridge::OnInputLocaleChanged() {
+  return host_->OnInputLocaleChanged();
 }
 
 std::string InputMethodBridge::GetInputLocale() {
@@ -221,5 +241,10 @@ void InputMethodBridge::OnDidChangeFocus(View* focused_before, View* focused) {
   OnTextInputTypeChanged(GetFocusedView());
   OnCaretBoundsChanged(GetFocusedView());
 }
+
+ui::InputMethod* InputMethodBridge::GetHostInputMethod() const {
+  return host_;
+}
+
 
 }  // namespace views

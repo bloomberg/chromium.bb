@@ -48,6 +48,13 @@ class TextInputClient;
 // ui::InputMethod and owns it.
 class InputMethod {
  public:
+  // TODO(yukawa): Move these typedef into ime_constants.h or somewhere.
+#if defined(OS_WIN)
+  typedef LRESULT NativeEventResult;
+#else
+  typedef int32 NativeEventResult;
+#endif
+
   virtual ~InputMethod() {}
 
   // Sets the delegate used by this InputMethod instance. It should only be
@@ -63,6 +70,13 @@ class InputMethod {
 
   // Called when the top-level system window loses keyboard focus.
   virtual void OnBlur() = 0;
+
+  // Called when the focused window receives native IME messages that are not
+  // translated into other predefined event callbacks. Currently this method is
+  // used only for IME functionalities specific to Windows.
+  // TODO(ime): Break down these messages into platform-neutral methods.
+  virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
+                                        NativeEventResult* result) = 0;
 
   // Sets the text input client which receives text input events such as
   // SetCompositionText(). |client| can be NULL. A gfx::NativeWindow which
@@ -101,6 +115,13 @@ class InputMethod {
   // composition session. This method has no effect if the client is not the
   // focused client.
   virtual void CancelComposition(const TextInputClient* client) = 0;
+
+  // Called by the focused client whenever its input locale is changed.
+  // This method is currently used only on Windows.
+  // This method does not take a parameter of TextInputClient for historical
+  // reasons.
+  // TODO(ime): Consider to take a parameter of TextInputClient.
+  virtual void OnInputLocaleChanged() = 0;
 
   // Returns the locale of current keyboard layout or input method, as a BCP-47
   // tag, or an empty string if the input method cannot provide it.

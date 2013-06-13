@@ -30,7 +30,9 @@ class UI_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
     virtual void OnTextInputTypeChanged(const TextInputClient* client) = 0;
     virtual void OnFocus() = 0;
     virtual void OnBlur() = 0;
+    virtual void OnUntranslatedIMEMessage(const base::NativeEvent& event) = 0;
     virtual void OnCaretBoundsChanged(const TextInputClient* client) = 0;
+    virtual void OnInputLocaleChanged() = 0;
 
     // InputMethodObserver overrides
     virtual void OnTextInputStateChanged(const TextInputClient* client) = 0;
@@ -44,6 +46,8 @@ class UI_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
   virtual void Init(bool focused) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
+  virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
+                                        NativeEventResult* result) OVERRIDE;
   virtual void SetFocusedTextInputClient(TextInputClient* client) OVERRIDE;
   virtual TextInputClient* GetTextInputClient() const OVERRIDE;
   virtual bool DispatchKeyEvent(const base::NativeEvent& native_event) OVERRIDE;
@@ -51,6 +55,7 @@ class UI_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
   virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE;
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE;
+  virtual void OnInputLocaleChanged() OVERRIDE;
   virtual std::string GetInputLocale() OVERRIDE;
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;

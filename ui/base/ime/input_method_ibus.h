@@ -41,6 +41,8 @@ class UI_EXPORT InputMethodIBus
   // Overridden from InputMethod:
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
+  virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
+                                        NativeEventResult* result) OVERRIDE;
   virtual void Init(bool focused) OVERRIDE;
   virtual bool DispatchKeyEvent(
       const base::NativeEvent& native_key_event) OVERRIDE;
@@ -48,6 +50,7 @@ class UI_EXPORT InputMethodIBus
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
   virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE;
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE;
+  virtual void OnInputLocaleChanged() OVERRIDE;
   virtual std::string GetInputLocale() OVERRIDE;
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;

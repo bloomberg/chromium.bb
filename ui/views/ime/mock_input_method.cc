@@ -16,9 +16,11 @@ namespace views {
 MockInputMethod::MockInputMethod()
     : composition_changed_(false),
       focus_changed_(false),
+      untranslated_ime_message_called_(false),
       text_input_type_changed_(false),
       caret_bounds_changed_(false),
       cancel_composition_called_(false),
+      input_locale_changed_(false),
       locale_("en-US"),
       direction_(base::i18n::LEFT_TO_RIGHT),
       active_(true) {
@@ -27,9 +29,11 @@ MockInputMethod::MockInputMethod()
 MockInputMethod::MockInputMethod(internal::InputMethodDelegate* delegate)
     : composition_changed_(false),
       focus_changed_(false),
+      untranslated_ime_message_called_(false),
       text_input_type_changed_(false),
       caret_bounds_changed_(false),
       cancel_composition_called_(false),
+      input_locale_changed_(false),
       locale_("en-US"),
       direction_(base::i18n::LEFT_TO_RIGHT),
       active_(true) {
@@ -46,6 +50,15 @@ void MockInputMethod::Init(Widget* widget) {
 void MockInputMethod::OnFocus() {}
 
 void MockInputMethod::OnBlur() {}
+
+bool MockInputMethod::OnUntranslatedIMEMessage(
+    const base::NativeEvent& event,
+    NativeEventResult* result) {
+  untranslated_ime_message_called_ = true;
+  if (result)
+    *result = InputMethod::NativeEventResult();
+  return false;
+}
 
 void MockInputMethod::DispatchKeyEvent(const ui::KeyEvent& key) {
   bool handled = (composition_changed_ || result_text_.length()) &&
@@ -101,6 +114,10 @@ void MockInputMethod::CancelComposition(View* view) {
     cancel_composition_called_ = true;
     ClearResult();
   }
+}
+
+void MockInputMethod::OnInputLocaleChanged() {
+  input_locale_changed_ = true;
 }
 
 std::string MockInputMethod::GetInputLocale() {
@@ -166,9 +183,11 @@ void MockInputMethod::SetActive(bool active) {
 
 void MockInputMethod::ClearStates() {
   focus_changed_ = false;
+  untranslated_ime_message_called_ = false;
   text_input_type_changed_ = false;
   caret_bounds_changed_ = false;
   cancel_composition_called_ = false;
+  input_locale_changed_ = false;
 }
 
 void MockInputMethod::ClearResult() {

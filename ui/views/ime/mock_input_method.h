@@ -26,19 +26,26 @@ class VIEWS_EXPORT MockInputMethod : public InputMethodBase {
   virtual void Init(Widget* widget) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
+  virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
+                                        NativeEventResult* result) OVERRIDE;
   virtual void DispatchKeyEvent(const ui::KeyEvent& key) OVERRIDE;
   virtual void OnTextInputTypeChanged(View* view) OVERRIDE;
   virtual void OnCaretBoundsChanged(View* view) OVERRIDE;
   virtual void CancelComposition(View* view) OVERRIDE;
+  virtual void OnInputLocaleChanged() OVERRIDE;
   virtual std::string GetInputLocale() OVERRIDE;
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
   virtual bool IsMock() const OVERRIDE;
 
   bool focus_changed() const { return focus_changed_; }
+  bool untranslated_ime_message_called() const {
+    return untranslated_ime_message_called_;
+  }
   bool text_input_type_changed() const { return text_input_type_changed_; }
   bool caret_bounds_changed() const { return caret_bounds_changed_; }
   bool cancel_composition_called() const { return cancel_composition_called_; }
+  bool input_locale_changed() const { return input_locale_changed_; }
 
   // Clears all internal states and result.
   void Clear();
@@ -72,9 +79,11 @@ class VIEWS_EXPORT MockInputMethod : public InputMethodBase {
   // Record call state of corresponding methods. They will be set to false
   // automatically before dispatching a key event.
   bool focus_changed_;
+  bool untranslated_ime_message_called_;
   bool text_input_type_changed_;
   bool caret_bounds_changed_;
   bool cancel_composition_called_;
+  bool input_locale_changed_;
 
   // To mock corresponding input method prooperties.
   std::string locale_;
