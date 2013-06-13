@@ -21,14 +21,14 @@
 #include "config.h"
 #include "core/platform/graphics/mac/FontCustomPlatformData.h"
 
-#include <ApplicationServices/ApplicationServices.h>
+#include "RuntimeEnabledFeatures.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/graphics/opentype/OpenTypeSanitizer.h"
 #include "core/platform/graphics/skia/SkiaSharedBufferStream.h"
-
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#include <ApplicationServices/ApplicationServices.h>
 
 namespace WebCore {
 
@@ -73,6 +73,8 @@ FontCustomPlatformData* createFontCustomPlatformData(SharedBuffer* buffer)
 
 bool FontCustomPlatformData::supportsFormat(const String& format)
 {
+    if (RuntimeEnabledFeatures::woff2Enabled() && equalIgnoringCase(format, "woff2"))
+        return true;
     return equalIgnoringCase(format, "truetype") || equalIgnoringCase(format, "opentype") || equalIgnoringCase(format, "woff");
 }
 

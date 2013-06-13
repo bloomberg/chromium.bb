@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/platform/graphics/opentype/OpenTypeSanitizer.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/platform/SharedBuffer.h"
 #include "opentype-sanitiser.h"
 #include "ots-memory-stream.h"
@@ -47,6 +48,9 @@ PassRefPtr<SharedBuffer> OpenTypeSanitizer::sanitize()
     static const size_t maxWebFontSize = 30 * 1024 * 1024; // 30 MB
     if (m_buffer->size() > maxWebFontSize)
         return 0;
+
+    if (RuntimeEnabledFeatures::woff2Enabled())
+        ots::EnableWOFF2();
 
     // A transcoded font is usually smaller than an original font.
     // However, it can be slightly bigger than the original one due to

@@ -40,6 +40,7 @@
 #include "core/platform/graphics/skia/SkiaSharedBufferStream.h"
 #endif
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/platform/LayoutTestSupport.h"
 #include "core/platform/NotImplemented.h"
 #include "core/platform/SharedBuffer.h"
@@ -157,6 +158,8 @@ FontCustomPlatformData* createFontCustomPlatformData(SharedBuffer* buffer)
 
 bool FontCustomPlatformData::supportsFormat(const String& format)
 {
+    if (RuntimeEnabledFeatures::woff2Enabled() && equalIgnoringCase(format, "woff2"))
+        return true;
     return equalIgnoringCase(format, "truetype") || equalIgnoringCase(format, "opentype") || equalIgnoringCase(format, "woff");
 }
 
