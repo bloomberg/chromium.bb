@@ -639,7 +639,11 @@ test.util.registerRemoteTestUtils = function() {
     }
     // Call the test utility function and respond the result.
     if (test.util.async[request.func]) {
-      args[test.util.async[request.func].length - 1] = sendResponse;
+      args[test.util.async[request.func].length - 1] = function() {
+        console.debug('Received the result of ' + request.func);
+        sendResponse.apply(null, arguments);
+      };
+      console.debug('Waiting for the result of ' + request.func);
       test.util.async[request.func].apply(null, args);
       return true;
     } else if (test.util.sync[request.func]) {
