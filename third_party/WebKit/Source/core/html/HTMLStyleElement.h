@@ -43,7 +43,7 @@ public:
 
     bool scoped() const;
     void setScoped(bool);
-    Element* scopingElement() const;
+    ContainerNode* scopingNode();
     bool isRegisteredAsScoped() const
     {
         // Note: We cannot rely on the 'scoped' attribute still being present when this method is invoked.

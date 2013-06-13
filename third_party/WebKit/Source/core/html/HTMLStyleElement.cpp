@@ -234,19 +234,18 @@ void HTMLStyleElement::setScoped(bool scopedValue)
     setBooleanAttribute(scopedAttr, scopedValue);
 }
 
-Element* HTMLStyleElement::scopingElement() const
+ContainerNode* HTMLStyleElement::scopingNode()
 {
-    if (!scoped())
+    if (!inDocument())
         return 0;
 
-    // FIXME: This probably needs to be refined for scoped stylesheets within shadow DOM.
-    // As written, such a stylesheet could style the host element, as well as children of the host.
-    // OTOH, this paves the way for a :bound-element implementation.
-    ContainerNode* parentOrShadowHost = parentOrShadowHostNode();
-    if (!parentOrShadowHost || !parentOrShadowHost->isElementNode())
-        return 0;
+    if (!isRegisteredAsScoped())
+        return document();
 
-    return toElement(parentOrShadowHost);
+    if (isRegisteredInShadowRoot())
+        return containingShadowRoot();
+
+    return parentNode();
 }
 
 void HTMLStyleElement::dispatchPendingLoadEvents()
