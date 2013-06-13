@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
@@ -30,6 +31,8 @@ namespace chromeos {
 namespace input_method {
 class XKeyboard;
 }
+
+class CapsLockRewriter;
 }
 #endif
 
@@ -209,6 +212,8 @@ class EventRewriter : public ash::EventRewriterDelegate,
   base::hash_map<unsigned long, unsigned long> keysym_to_keycode_map_;
 
   chromeos::input_method::XKeyboard* xkeyboard_;  // for testing.
+
+  scoped_ptr<chromeos::CapsLockRewriter> caps_lock_rewriter_;
 #endif
 
   const PrefService* pref_service_;  // for testing.

@@ -27,6 +27,7 @@
 
 #include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
+#include "chrome/browser/chromeos/caps_lock_rewriter.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
@@ -129,7 +130,6 @@ bool IsMod3UsedByCurrentInputMethod() {
       chromeos::input_method::InputMethodManager::Get();
   return manager->GetCurrentInputMethod().id() == kNeo2LayoutId ||
       manager->GetCurrentInputMethod().id() == kCaMultixLayoutId;
-
 }
 #endif
 
@@ -146,6 +146,7 @@ EventRewriter::EventRewriter()
     : last_device_id_(kBadDeviceId),
 #if defined(OS_CHROMEOS)
       xkeyboard_(NULL),
+      caps_lock_rewriter_(new chromeos::CapsLockRewriter),
 #endif
       pref_service_(NULL) {
   // The ash shell isn't instantiated for our unit tests.
@@ -357,6 +358,9 @@ void EventRewriter::Rewrite(ui::KeyEvent* event) {
   RewriteNumPadKeys(event);
   RewriteExtendedKeys(event);
   RewriteFunctionKeys(event);
+#if defined(OS_CHROMEOS)
+  caps_lock_rewriter_->RewriteEvent(event, base::TimeTicks::Now());
+#endif
 }
 
 bool EventRewriter::IsAppleKeyboard() const {
@@ -449,11 +453,11 @@ bool EventRewriter::RewriteModifiers(ui::KeyEvent* event) {
   // restart chrome process. In future this is to be changed.
   // TODO(glotov): remove the following condition when we do not restart chrome
   // when user logs in as guest.
- #if defined(OS_CHROMEOS)
-   if (chromeos::UserManager::Get()->IsLoggedInAsGuest() &&
-       chromeos::LoginDisplayHostImpl::default_host())
-     return false;
- #endif  // defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+  if (chromeos::UserManager::Get()->IsLoggedInAsGuest() &&
+      chromeos::LoginDisplayHostImpl::default_host())
+    return false;
+#endif  // defined(OS_CHROMEOS)
   const PrefService* pref_service =
       pref_service_ ? pref_service_ : GetPrefService();
   if (!pref_service)
