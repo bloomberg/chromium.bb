@@ -130,6 +130,7 @@ WebView.prototype.setupWebviewNodeMethods_ = function() {
           self.browserPluginNode_, arguments);
     };
   }, this);
+  this.setupExecuteCodeAPI_();
 };
 
 /**
@@ -349,6 +350,31 @@ WebView.prototype.setupNewWindowEvent_ = function() {
       console.warn('<webview>: A new window was blocked.');
     }
   });
+};
+
+/**
+ * @private
+ */
+WebView.prototype.setupExecuteCodeAPI_ = function() {
+  var self = this;
+  var validateCall = function() {
+    if (!self.browserPluginNode_.getGuestInstanceId()) {
+      throw new Error(ERROR_MSG_CANNOT_INJECT_SCRIPT);
+    }
+  };
+
+  this.webviewNode_['executeScript'] = function(var_args) {
+    validateCall();
+    var args = [self.browserPluginNode_.getGuestInstanceId()].concat(
+        Array.prototype.slice.call(arguments));
+    chrome.webview.executeScript.apply(null, args);
+  }
+  this.webviewNode_['insertCSS'] = function(var_args) {
+    validateCall();
+    var args = [self.browserPluginNode_.getGuestInstanceId()].concat(
+        Array.prototype.slice.call(arguments));
+    chrome.webview.insertCSS.apply(null, args);
+  }
 };
 
 /**
