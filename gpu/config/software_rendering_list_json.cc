@@ -88,7 +88,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.1",
+  "version": "6.2",
   "entries": [
     {
       "id": 1,
@@ -123,6 +123,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     {
       "id": 4,
       "description": "The Intel Mobile 945 Express family of chipsets is not compatible with WebGL.",
+      "cr_bugs": [232035],
       "os": {
         "type": "any"
       },
@@ -131,7 +132,8 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "features": [
         "webgl",
         "flash_3d",
-        "flash_stage3d"
+        "flash_stage3d",
+        "accelerated_2d_canvas"
       ]
     },
     {
@@ -312,7 +314,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     {
       "id": 17,
       "description": "Intel mesa drivers are crash-prone.",
-      "cr_bugs": [76703, 164555],
+      "cr_bugs": [76703, 164555, 225200],
       "os": {
         "type": "linux"
       },
@@ -335,8 +337,8 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         {
           "device_id": ["0x0042", "0x0046"],
           "driver_version": {
-            "op": ">=",
-            "number": "8.0.2"
+            "op": ">",
+            "number": "8.0.4"
           }
         },
         {
