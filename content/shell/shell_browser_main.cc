@@ -26,6 +26,15 @@
 
 namespace {
 
+#if defined(OS_ANDROID)
+// Path to search for when translating a layout test path to an URL.
+const char kAndroidLayoutTestPath[] =
+    "/data/local/tmp/third_party/WebKit/LayoutTests/";
+
+// The base URL from which layout tests are being served on Android.
+const char kAndroidLayoutTestBase[] = "http://127.0.0.1:8000/all-tests/";
+#endif
+
 GURL GetURLForLayoutTest(const std::string& test_name,
                          base::FilePath* current_working_directory,
                          bool* enable_pixel_dumping,
@@ -50,6 +59,19 @@ GURL GetURLForLayoutTest(const std::string& test_name,
   }
   if (expected_pixel_hash)
     *expected_pixel_hash = pixel_hash;
+
+#if defined(OS_ANDROID)
+  // On Android, all passed tests will be paths to a local temporary directory.
+  // However, because we can't transfer all test files to the device, translate
+  // those paths to a local, forwarded URL so the host can serve them.
+  if (path_or_url.find(kAndroidLayoutTestPath) != std::string::npos) {
+    std::string test_location(kAndroidLayoutTestBase);
+    test_location.append(path_or_url.substr(strlen(kAndroidLayoutTestPath)));
+
+    return GURL(test_location);
+  }
+#endif
+
   GURL test_url(path_or_url);
   if (!(test_url.is_valid() && test_url.has_scheme())) {
     // We're outside of the message loop here, and this is a test.
