@@ -188,27 +188,23 @@ class DeleteIndexAbortOperation : public IndexedDBTransaction::Operation {
 class GetOperation : public IndexedDBTransaction::Operation {
  public:
   GetOperation(scoped_refptr<IndexedDBBackingStore> backing_store,
-               const IndexedDBDatabaseMetadata& metadata,
+               int64 database_id,
                int64 object_store_id,
                int64 index_id,
+               const IndexedDBKeyPath& key_path,
+               const bool auto_increment,
                scoped_ptr<IndexedDBKeyRange> key_range,
                indexed_db::CursorType cursor_type,
                scoped_refptr<IndexedDBCallbacksWrapper> callbacks)
       : backing_store_(backing_store),
-        database_id_(metadata.id),
+        database_id_(database_id),
         object_store_id_(object_store_id),
         index_id_(index_id),
-        key_path_(metadata.object_stores.find(object_store_id)
-                      ->second.key_path),
-        auto_increment_(metadata.object_stores.find(object_store_id)
-                            ->second.auto_increment),
+        key_path_(key_path),
+        auto_increment_(auto_increment),
         key_range_(key_range.Pass()),
         cursor_type_(cursor_type),
         callbacks_(callbacks) {
-    DCHECK(metadata.object_stores.find(object_store_id) !=
-           metadata.object_stores.end());
-    DCHECK(metadata.object_stores.find(object_store_id)->second.id ==
-           object_store_id);
   }
   virtual void Perform(IndexedDBTransaction* transaction) OVERRIDE;
 
@@ -714,13 +710,19 @@ void IndexedDBDatabase::Get(
       transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
     return;
+  IndexedDBDatabaseMetadata::ObjectStoreMap::const_iterator store_iterator =
+      metadata_.object_stores.find(object_store_id);
+  if (store_iterator == metadata_.object_stores.end())
+    return;
   IndexedDBTransaction* transaction = trans_iterator->second;
 
   transaction->ScheduleTask(new GetOperation(
       backing_store_,
-      metadata_,
+      metadata_.id,
       object_store_id,
       index_id,
+      store_iterator->second.key_path,
+      store_iterator->second.auto_increment,
       key_range.Pass(),
       key_only ? indexed_db::CURSOR_KEY_ONLY : indexed_db::CURSOR_KEY_AND_VALUE,
       callbacks));
