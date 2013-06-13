@@ -15,18 +15,21 @@ namespace cc {
 
 class Thread;
 class TimeSource;
+class FrameRateController;
 
 class CC_EXPORT FrameRateControllerClient {
- public:
-  // Throttled is true when we have a maximum number of frames pending.
-  virtual void BeginFrame(bool throttled) = 0;
-
  protected:
   virtual ~FrameRateControllerClient() {}
+
+ public:
+  // Throttled is true when we have a maximum number of frames pending.
+  virtual void FrameRateControllerTick(bool throttled) = 0;
 };
 
 class FrameRateControllerTimeSourceAdapter;
 
+// The FrameRateController is used in cases where we self-tick (i.e. BeginFrame
+// is not sent by a parent compositor.
 class CC_EXPORT FrameRateController {
  public:
   enum {
@@ -41,6 +44,7 @@ class CC_EXPORT FrameRateController {
   void SetClient(FrameRateControllerClient* client) { client_ = client; }
 
   void SetActive(bool active);
+  bool IsActive() { return active_; }
 
   // Use the following methods to adjust target frame rate.
   //
@@ -51,9 +55,9 @@ class CC_EXPORT FrameRateController {
   void DidSwapBuffers();
   void DidSwapBuffersComplete();
   void DidAbortAllPendingFrames();
-  void SetMaxFramesPending(int max_frames_pending);  // 0 for unlimited.
-  int MaxFramesPending() const { return max_frames_pending_; }
-  int NumFramesPendingForTesting() const { return num_frames_pending_; }
+  void SetMaxSwapsPending(int max_swaps_pending);  // 0 for unlimited.
+  int MaxSwapsPending() const { return max_swaps_pending_; }
+  int NumSwapsPendingForTesting() const { return num_frames_pending_; }
 
   // This returns null for unthrottled frame-rate.
   base::TimeTicks NextTickTime();
@@ -73,7 +77,7 @@ class CC_EXPORT FrameRateController {
 
   FrameRateControllerClient* client_;
   int num_frames_pending_;
-  int max_frames_pending_;
+  int max_swaps_pending_;
   scoped_refptr<TimeSource> time_source_;
   scoped_ptr<FrameRateControllerTimeSourceAdapter> time_source_client_adapter_;
   bool active_;
@@ -83,6 +87,7 @@ class CC_EXPORT FrameRateController {
   base::WeakPtrFactory<FrameRateController> weak_factory_;
   Thread* thread_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(FrameRateController);
 };
 

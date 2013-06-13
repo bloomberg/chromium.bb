@@ -124,6 +124,7 @@ void SynchronousCompositorOutputSurface::Reshape(
 void SynchronousCompositorOutputSurface::SetNeedsBeginFrame(
     bool enable) {
   DCHECK(CalledOnValidThread());
+  cc::OutputSurface::SetNeedsBeginFrame(enable);
   needs_begin_frame_ = enable;
   SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
   if (delegate)
@@ -141,6 +142,7 @@ void SynchronousCompositorOutputSurface::SwapBuffers(
     delegate->UpdateFrameMetaData(frame->metadata);
 
   did_swap_buffer_ = true;
+  DidSwapBuffers();
 }
 
 namespace {
@@ -153,7 +155,7 @@ void AdjustTransformForClip(gfx::Transform* transform, gfx::Rect clip) {
 
 bool SynchronousCompositorOutputSurface::InitializeHwDraw() {
   DCHECK(CalledOnValidThread());
-  DCHECK(client_);
+  DCHECK(HasClient());
   DCHECK(!context3d_);
 
   // TODO(boliu): Get a context provider in constructor and pass here.
@@ -166,7 +168,7 @@ bool SynchronousCompositorOutputSurface::DemandDrawHw(
     const gfx::Transform& transform,
     gfx::Rect clip) {
   DCHECK(CalledOnValidThread());
-  DCHECK(client_);
+  DCHECK(HasClient());
   DCHECK(context3d());
 
   // Force a GL state restore next time a GLContextVirtual is made current.
@@ -180,7 +182,7 @@ bool SynchronousCompositorOutputSurface::DemandDrawHw(
   gfx::Transform adjusted_transform = transform;
   AdjustTransformForClip(&adjusted_transform, clip);
   surface_size_ = surface_size;
-  client_->SetExternalDrawConstraints(adjusted_transform, clip);
+  SetExternalDrawConstraints(adjusted_transform, clip);
   InvokeComposite(clip.size());
 
   // TODO(boliu): Check if context is lost here.
@@ -204,7 +206,7 @@ bool SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
 
   surface_size_ = gfx::Size(canvas->getDeviceSize().width(),
                             canvas->getDeviceSize().height());
-  client_->SetExternalDrawConstraints(transform, clip);
+  SetExternalDrawConstraints(transform, clip);
 
   InvokeComposite(clip.size());
 
@@ -215,12 +217,12 @@ bool SynchronousCompositorOutputSurface::DemandDrawSw(SkCanvas* canvas) {
 void SynchronousCompositorOutputSurface::InvokeComposite(
     gfx::Size damage_size) {
   did_swap_buffer_ = false;
-  client_->SetNeedsRedrawRect(gfx::Rect(damage_size));
+  SetNeedsRedrawRect(gfx::Rect(damage_size));
   if (needs_begin_frame_)
-    client_->BeginFrame(base::TimeTicks::Now());
+    BeginFrame(base::TimeTicks::Now());
 
   if (did_swap_buffer_)
-    client_->OnSwapBuffersComplete(NULL);
+    OnSwapBuffersComplete(NULL);
 }
 
 // Not using base::NonThreadSafe as we want to enforce a more exacting threading

@@ -1071,11 +1071,6 @@ void LayerTreeHostImpl::SetNeedsRedrawRect(gfx::Rect damage_rect) {
   client_->SetNeedsRedrawRectOnImplThread(damage_rect);
 }
 
-void LayerTreeHostImpl::OnVSyncParametersChanged(base::TimeTicks timebase,
-                                                 base::TimeDelta interval) {
-  client_->OnVSyncParametersChanged(timebase, interval);
-}
-
 void LayerTreeHostImpl::BeginFrame(base::TimeTicks frame_time) {
   client_->BeginFrameOnImplThread(frame_time);
 }
@@ -1513,6 +1508,25 @@ bool LayerTreeHostImpl::DoInitializeRenderer(
 
     resource_provider_ = resource_provider.Pass();
   }
+
+  // Setup BeginFrameEmulation if it's not supported natively
+  if (!settings_.begin_frame_scheduling_enabled) {
+    const base::TimeDelta display_refresh_interval =
+      base::TimeDelta::FromMicroseconds(
+          base::Time::kMicrosecondsPerSecond /
+          settings_.refresh_rate);
+
+    output_surface->InitializeBeginFrameEmulation(
+        proxy_->ImplThread(),
+        settings_.throttle_frame_production,
+        display_refresh_interval);
+  }
+
+  int max_frames_pending =
+      output_surface->capabilities().max_frames_pending;
+  if (max_frames_pending <= 0)
+    max_frames_pending = FrameRateController::DEFAULT_MAX_FRAMES_PENDING;
+  output_surface->SetMaxFramesPending(max_frames_pending);
 
   output_surface_ = output_surface.Pass();
 

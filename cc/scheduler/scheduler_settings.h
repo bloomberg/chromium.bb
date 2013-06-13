@@ -16,6 +16,7 @@ class CC_EXPORT SchedulerSettings {
 
   bool impl_side_painting;
   bool timeout_and_draw_when_animation_checkerboards;
+  bool using_synchronous_renderer_compositor;
 };
 
 }  // namespace cc

@@ -408,6 +408,7 @@ void RenderWidgetHostViewAndroid::OnDidChangeBodyBackgroundColor(
 
 void RenderWidgetHostViewAndroid::SendBeginFrame(
     base::TimeTicks frame_time) {
+  TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::SendBeginFrame");
   if (host_)
     host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(),
                                        frame_time));
@@ -415,6 +416,8 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(
 
 void RenderWidgetHostViewAndroid::OnSetNeedsBeginFrame(
     bool enabled) {
+  TRACE_EVENT1("cc", "RenderWidgetHostViewAndroid::OnSetNeedsBeginFrame",
+               "enabled", enabled);
   if (content_view_core_)
     content_view_core_->SetVSyncNotificationEnabled(enabled);
 }
