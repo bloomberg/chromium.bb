@@ -309,9 +309,10 @@ TEST_F(WorkspaceManagerTest, AddFullscreenWindowWhenEmpty) {
 
   ASSERT_TRUE(w1->layer() != NULL);
   EXPECT_TRUE(w1->layer()->visible());
-  gfx::Rect fullscreen_area = w1->GetRootWindow()->bounds();
-  EXPECT_EQ(fullscreen_area.width(), w1->bounds().width());
-  EXPECT_EQ(fullscreen_area.height(), w1->bounds().height());
+  gfx::Rect work_area(
+      ScreenAsh::GetMaximizedWindowBoundsInParent(w1.get()));
+  EXPECT_EQ(work_area.width(), w1->bounds().width());
+  EXPECT_EQ(work_area.height(), w1->bounds().height());
 
   // Should be 2 workspaces (since we always keep the desktop).
   ASSERT_EQ("0 F1 active=1", StateString());
@@ -338,9 +339,10 @@ TEST_F(WorkspaceManagerTest, FullscreenWithNormalWindow) {
   EXPECT_EQ(w1.get(), workspaces()[0]->window()->children()[0]);
   EXPECT_EQ(w2.get(), workspaces()[1]->window()->children()[0]);
 
-  gfx::Rect fullscreen_area = w1->GetRootWindow()->bounds();
-  EXPECT_EQ(fullscreen_area.width(), w2->bounds().width());
-  EXPECT_EQ(fullscreen_area.height(), w2->bounds().height());
+  gfx::Rect work_area(
+      ScreenAsh::GetMaximizedWindowBoundsInParent(w1.get()));
+  EXPECT_EQ(work_area.width(), w2->bounds().width());
+  EXPECT_EQ(work_area.height(), w2->bounds().height());
 
   // Restore w2, which should then go back to one workspace.
   w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
