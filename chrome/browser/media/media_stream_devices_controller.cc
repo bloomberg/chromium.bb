@@ -162,8 +162,12 @@ const std::string& MediaStreamDevicesController::GetSecurityOriginSpec() const {
 }
 
 void MediaStreamDevicesController::Accept(bool update_content_setting) {
+  // TODO(xians): Remove the following call after the UI handles microphone
+  // and camera seprately.
   if (content_settings_)
     content_settings_->OnMediaStreamAllowed();
+
+  NotifyUIRequestAccepted();
 
   // Get the default devices for the request.
   content::MediaStreamDevices devices;
@@ -213,6 +217,8 @@ void MediaStreamDevicesController::Deny(bool update_content_setting) {
     content_settings_->OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM,
                                         std::string());
   }
+
+  NotifyUIRequestDenied();
 
   if (update_content_setting)
     SetPermission(false);
@@ -380,4 +386,48 @@ void MediaStreamDevicesController::SetPermission(bool allowed) const {
         std::string(),
         content_setting);
   }
+}
+
+void MediaStreamDevicesController::NotifyUIRequestAccepted() const {
+  if (!content_settings_)
+    return;
+
+  // We need to figure out which part of the request is accepted or denied here.
+  // For example, when the request contains both audio and video, but audio is
+  // blocked by the policy, then we will prompt the infobar to ask for video
+  // permission. In case the users approve the permission,
+  // we need to show an allowed icon for video but blocked icon for audio.
+  if (request_.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE) {
+    // The request might contain audio while |webcam_requested_| is false,
+    // this happens when the policy is blocking the audio.
+    if (microphone_requested_)
+      content_settings_->OnMicrophoneAccessed();
+    else
+      content_settings_->OnMicrophoneAccessBlocked();
+  }
+
+  if (request_.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE) {
+    // The request might contain video while |webcam_requested_| is false,
+    // this happens when the policy is blocking the video.
+    if (webcam_requested_)
+      content_settings_->OnCameraAccessed();
+    else
+      content_settings_->OnCameraAccessBlocked();
+  }
+}
+
+void MediaStreamDevicesController::NotifyUIRequestDenied() const {
+  if (!content_settings_)
+    return;
+
+  // Do not show the block icons for tab capture.
+  if (request_.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE ||
+      request_.video_type == content::MEDIA_TAB_VIDEO_CAPTURE) {
+      return;
+  }
+
+  if (request_.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE)
+    content_settings_->OnMicrophoneAccessBlocked();
+  if (request_.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE)
+    content_settings_->OnCameraAccessBlocked();
 }

@@ -82,6 +82,14 @@ class MediaStreamDevicesController {
   // the users deny the request or allow the request for https sites.
   void SetPermission(bool allowed) const;
 
+  // Notifies the content setting UI that the media stream access request or
+  // part of the request is accepted.
+  void NotifyUIRequestAccepted() const;
+
+  // Notifies the content setting UI that the media stream access request or
+  // part of the request is denied.
+  void NotifyUIRequestDenied() const;
+
   content::WebContents* web_contents_;
 
   // The owner of this class needs to make sure it does not outlive the profile.
