@@ -16,6 +16,7 @@
 #include "base/process.h"
 #include "cc/layers/delegated_renderer_layer_client.h"
 #include "cc/layers/texture_layer_client.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -54,6 +55,7 @@ struct NativeWebKeyboardEvent;
 // -----------------------------------------------------------------------------
 class RenderWidgetHostViewAndroid
     : public RenderWidgetHostViewBase,
+      public BrowserAccessibilityDelegate,
       public cc::TextureLayerClient,
       public cc::DelegatedRendererLayerClient {
  public:
@@ -161,6 +163,18 @@ class RenderWidgetHostViewAndroid
   virtual SmoothScrollGesture* CreateSmoothScrollGesture(
       bool scroll_down, int pixels_to_scroll, int mouse_event_x,
       int mouse_event_y) OVERRIDE;
+
+  // Implementation of BrowserAccessibilityDelegate:
+  virtual void SetAccessibilityFocus(int acc_obj_id) OVERRIDE;
+  virtual void AccessibilityDoDefaultAction(int acc_obj_id) OVERRIDE;
+  virtual void AccessibilityScrollToMakeVisible(
+      int acc_obj_id, gfx::Rect subfocus) OVERRIDE;
+  virtual void AccessibilityScrollToPoint(
+      int acc_obj_id, gfx::Point point) OVERRIDE;
+  virtual void AccessibilitySetTextSelection(
+      int acc_obj_id, int start_offset, int end_offset) OVERRIDE;
+  virtual gfx::Point GetLastTouchEventLocation() const OVERRIDE;
+  virtual void FatalAccessibilityTreeError() OVERRIDE;
 
   // cc::TextureLayerClient implementation.
   virtual unsigned PrepareTexture(cc::ResourceUpdateQueue* queue) OVERRIDE;

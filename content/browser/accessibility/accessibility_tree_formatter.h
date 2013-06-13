@@ -112,6 +112,11 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   // into the given dict.
   void AddProperties(const BrowserAccessibility& node, DictionaryValue* dict);
 
+  // Returns true by default; can be overridden by the platform to
+  // prune some children from the tree when they wouldn't be exposed
+  // natively on that platform.
+  virtual bool IncludeChildren(const BrowserAccessibility& node);
+
   string16 FormatCoordinates(const char* name,
                              const char* x_name,
                              const char* y_name,

@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "content/browser/accessibility/browser_accessibility.h"
-#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/common/accessibility_messages.h"
 
 namespace content {
@@ -17,7 +16,8 @@ BrowserAccessibility* BrowserAccessibilityFactory::Create() {
 
 #if !defined(OS_MACOSX) && \
     !defined(OS_WIN) && \
-    !defined(TOOLKIT_GTK)
+    !defined(TOOLKIT_GTK) && \
+    !defined(OS_ANDROID) \
 // We have subclassess of BrowserAccessibilityManager on Mac, Linux/GTK,
 // and Win. For any other platform, instantiate the base class.
 // static
@@ -91,6 +91,10 @@ bool BrowserAccessibilityManager::IsOSKAllowed(const gfx::Rect& bounds) {
   return bounds.Contains(touch_point);
 }
 
+bool BrowserAccessibilityManager::UseRootScrollOffsetsWhenComputingBounds() {
+  return true;
+}
+
 void BrowserAccessibilityManager::RemoveNode(BrowserAccessibility* node) {
   if (node == focus_)
     SetFocus(root_, false);
@@ -156,6 +160,11 @@ void BrowserAccessibilityManager::SetFocus(
 
   if (notify && node && delegate_)
     delegate_->SetAccessibilityFocus(node->renderer_id());
+}
+
+void BrowserAccessibilityManager::SetRoot(BrowserAccessibility* node) {
+  root_ = node;
+  NotifyRootChanged();
 }
 
 void BrowserAccessibilityManager::DoDefaultAction(
@@ -372,14 +381,16 @@ bool BrowserAccessibilityManager::UpdateNode(const AccessibilityNodeData& src) {
     if (root_)
       root_->Destroy();
     if (focus_ == root_)
-      focus_ = instance;
-    root_ = instance;
+      SetFocus(instance, false);
+    SetRoot(instance);
   }
 
   // Keep track of what node is focused.
-  if ((src.state >> AccessibilityNodeData::STATE_FOCUSED) & 1)
+  if (src.role != AccessibilityNodeData::ROLE_ROOT_WEB_AREA &&
+      src.role != AccessibilityNodeData::ROLE_WEB_AREA &&
+      (src.state >> AccessibilityNodeData::STATE_FOCUSED & 1)) {
     SetFocus(instance, false);
-
+  }
   return success;
 }
 

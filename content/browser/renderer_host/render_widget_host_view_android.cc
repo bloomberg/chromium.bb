@@ -18,6 +18,7 @@
 #include "cc/layers/texture_layer.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
+#include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/browser/android/overscroll_glow.h"
@@ -859,6 +860,67 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
 
 void RenderWidgetHostViewAndroid::OnAccessibilityNotifications(
     const std::vector<AccessibilityHostMsg_NotificationParams>& params) {
+  if (!GetBrowserAccessibilityManager()) {
+    SetBrowserAccessibilityManager(
+        new BrowserAccessibilityManagerAndroid(
+            content_view_core_->GetJavaObject(),
+            BrowserAccessibilityManagerAndroid::GetEmptyDocument(),
+            this));
+  }
+  GetBrowserAccessibilityManager()->OnAccessibilityNotifications(params);
+}
+
+void RenderWidgetHostViewAndroid::SetAccessibilityFocus(int acc_obj_id) {
+  if (!host_)
+    return;
+
+  host_->AccessibilitySetFocus(acc_obj_id);
+}
+
+void RenderWidgetHostViewAndroid::AccessibilityDoDefaultAction(int acc_obj_id) {
+  if (!host_)
+    return;
+
+  host_->AccessibilityDoDefaultAction(acc_obj_id);
+}
+
+void RenderWidgetHostViewAndroid::AccessibilityScrollToMakeVisible(
+    int acc_obj_id, gfx::Rect subfocus) {
+  if (!host_)
+    return;
+
+  host_->AccessibilityScrollToMakeVisible(acc_obj_id, subfocus);
+}
+
+void RenderWidgetHostViewAndroid::AccessibilityScrollToPoint(
+    int acc_obj_id, gfx::Point point) {
+  if (!host_)
+    return;
+
+  host_->AccessibilityScrollToPoint(acc_obj_id, point);
+}
+
+void RenderWidgetHostViewAndroid::AccessibilitySetTextSelection(
+    int acc_obj_id, int start_offset, int end_offset) {
+  if (!host_)
+    return;
+
+  host_->AccessibilitySetTextSelection(
+      acc_obj_id, start_offset, end_offset);
+}
+
+gfx::Point RenderWidgetHostViewAndroid::GetLastTouchEventLocation() const {
+  NOTIMPLEMENTED();
+  // Only used on Win8
+  return gfx::Point();
+}
+
+void RenderWidgetHostViewAndroid::FatalAccessibilityTreeError() {
+  if (!host_)
+    return;
+
+  host_->FatalAccessibilityTreeError();
+  SetBrowserAccessibilityManager(NULL);
 }
 
 bool RenderWidgetHostViewAndroid::LockMouse() {

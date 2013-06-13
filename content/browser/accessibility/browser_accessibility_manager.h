@@ -137,6 +137,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   // focus event on a text box?
   bool IsOSKAllowed(const gfx::Rect& bounds);
 
+  // True by default, but some platforms want to treat the root
+  // scroll offsets separately.
+  virtual bool UseRootScrollOffsetsWhenComputingBounds();
+
   // For testing only: update the given nodes as if they were
   // received from the renderer process in OnAccessibilityNotifications.
   // Takes up to 7 nodes at once so tests don't need to create a vector
@@ -157,6 +161,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
       BrowserAccessibilityFactory* factory);
 
   virtual void AddNodeToMap(BrowserAccessibility* node);
+
+  virtual void NotifyRootChanged() {}
 
  private:
   // The following states keep track of whether or not the
@@ -188,6 +194,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   // Update one node from the tree using data received from the renderer
   // process. Returns true on success, false on fatal error.
   bool UpdateNode(const AccessibilityNodeData& src);
+
+  void SetRoot(BrowserAccessibility* root);
 
   BrowserAccessibility* CreateNode(
       BrowserAccessibility* parent,

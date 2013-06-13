@@ -19,7 +19,8 @@ typedef AccessibilityNodeData::StringAttribute StringAttribute;
 
 #if !defined(OS_MACOSX) && \
     !defined(OS_WIN) && \
-    !defined(TOOLKIT_GTK)
+    !defined(TOOLKIT_GTK) && \
+    !defined(OS_ANDROID)
 // We have subclassess of BrowserAccessibility on Mac, Linux/GTK,
 // and Win. For any other platform, instantiate the base class.
 // static
@@ -112,7 +113,7 @@ bool BrowserAccessibility::IsDescendantOf(
   return false;
 }
 
-BrowserAccessibility* BrowserAccessibility::GetChild(uint32 child_index) {
+BrowserAccessibility* BrowserAccessibility::GetChild(uint32 child_index) const {
   DCHECK(child_index < children_.size());
   return children_[child_index];
 }
@@ -134,7 +135,7 @@ BrowserAccessibility* BrowserAccessibility::GetNextSibling() {
   return NULL;
 }
 
-gfx::Rect BrowserAccessibility::GetLocalBoundsRect() {
+gfx::Rect BrowserAccessibility::GetLocalBoundsRect() const {
   gfx::Rect bounds = location_;
 
   // Walk up the parent chain. Every time we encounter a Web Area, offset
@@ -151,6 +152,14 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsRect() {
       bounds.Offset(parent->location().x(), parent->location().y());
       need_to_offset_web_area = false;
     }
+
+    // On some platforms, we don't want to take the root scroll offsets
+    // into account.
+    if (parent->role() == AccessibilityNodeData::ROLE_ROOT_WEB_AREA &&
+        !manager()->UseRootScrollOffsetsWhenComputingBounds()) {
+      break;
+    }
+
     if (parent->role() == AccessibilityNodeData::ROLE_WEB_AREA ||
         parent->role() == AccessibilityNodeData::ROLE_ROOT_WEB_AREA) {
       int sx = 0;
@@ -167,7 +176,7 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsRect() {
   return bounds;
 }
 
-gfx::Rect BrowserAccessibility::GetGlobalBoundsRect() {
+gfx::Rect BrowserAccessibility::GetGlobalBoundsRect() const {
   gfx::Rect bounds = GetLocalBoundsRect();
 
   // Adjust the bounds by the top left corner of the containing view's bounds
@@ -303,6 +312,13 @@ bool BrowserAccessibility::HasState(
 }
 
 bool BrowserAccessibility::IsEditableText() const {
+  // These roles don't have readonly set, but they're not editable text.
+  if (role_ == AccessibilityNodeData::ROLE_SCROLLAREA ||
+      role_ == AccessibilityNodeData::ROLE_COLUMN ||
+      role_ == AccessibilityNodeData::ROLE_TABLE_HEADER_CONTAINER) {
+    return false;
+  }
+
   // Note: STATE_READONLY being false means it's either a text control,
   // or contenteditable. We also check for editable text roles to cover
   // another element that has role=textbox set on it.

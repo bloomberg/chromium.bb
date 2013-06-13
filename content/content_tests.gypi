@@ -912,9 +912,6 @@
               ],
             }],
             ['OS=="android"', {
-              'sources!': [
-                'browser/accessibility/dump_accessibility_tree_browsertest.cc',
-              ],
               'sources': [
                 'shell/android/browsertests_apk/content_browser_tests_android.cc',
               ],
