@@ -20,3 +20,7 @@ per-file video_capture_oracle*=hclam@chromium.org
 per-file video_capture_oracle*=justinlin@chromium.org
 per-file video_capture_oracle*=miu@chromium.org
 per-file video_capture_oracle*=nick@chromium.org
+
+# Screen capture OWNERS.
+per-file screen_capture_*=sergeyu@chromium.org
+per-file screen_capture_*=wez@chromium.org
