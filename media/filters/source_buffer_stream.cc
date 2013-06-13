@@ -1055,7 +1055,13 @@ Ranges<base::TimeDelta> SourceBufferStream::GetBufferedTime() const {
 }
 
 bool SourceBufferStream::IsEndSelected() const {
-  return ranges_.empty() || selected_range_ == ranges_.back();
+  if (ranges_.empty())
+    return true;
+
+  if (seek_pending_)
+    return seek_buffer_timestamp_ >= ranges_.back()->GetBufferedEndTimestamp();
+
+  return selected_range_ == ranges_.back();
 }
 
 const AudioDecoderConfig& SourceBufferStream::GetCurrentAudioDecoderConfig() {

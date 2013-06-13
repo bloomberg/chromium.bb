@@ -88,7 +88,8 @@ class MEDIA_EXPORT SourceBufferStream {
   // Returns a list of the buffered time ranges.
   Ranges<base::TimeDelta> GetBufferedTime() const;
 
-  // Returns true if we don't have any ranges or the last range is selected.
+  // Returns true if we don't have any ranges or the last range is selected
+  // or there is a pending seek beyond any existing ranges.
   bool IsEndSelected() const;
 
   const AudioDecoderConfig& GetCurrentAudioDecoderConfig();
