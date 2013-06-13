@@ -33,6 +33,7 @@
         'common/dom_storage/dom_storage_map.h',
         'common/dom_storage/dom_storage_types.cc',
         'common/dom_storage/dom_storage_types.h',
+        'common/fileapi/directory_entry.cc',
         'common/fileapi/directory_entry.h',
         'common/fileapi/file_system_types.h',
         'common/fileapi/file_system_util.cc',

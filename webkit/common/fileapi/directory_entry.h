@@ -8,11 +8,23 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/time.h"
+#include "webkit/common/webkit_storage_common_export.h"
 
 namespace fileapi {
 
 // Holds metadata for file or directory entry.
-struct DirectoryEntry {
+struct WEBKIT_STORAGE_COMMON_EXPORT DirectoryEntry {
+  enum DirectoryEntryType {
+    FILE,
+    DIRECTORY,
+  };
+
+  DirectoryEntry();
+  DirectoryEntry(const std::string& name,
+                 DirectoryEntryType type,
+                 int64 size,
+                 const base::Time& last_modified_time);
+
   base::FilePath::StringType name;
   bool is_directory;
   int64 size;

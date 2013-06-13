@@ -18,25 +18,13 @@
 #include "webkit/common/fileapi/file_system_util.h"
 
 using base::FilePath;
+using fileapi::DirectoryEntry;
 using fileapi::FileSystemOperationContext;
 using fileapi::FileSystemURL;
 
 namespace picasa {
 
 namespace {
-
-fileapi::DirectoryEntry MakeDirectoryEntry(
-    const base::FilePath& path,
-    int64 size,
-    const base::Time& last_modified_time,
-    bool is_directory) {
-  fileapi::DirectoryEntry entry;
-  entry.name = path.BaseName().value();
-  entry.is_directory = is_directory;
-  entry.size = size;
-  entry.last_modified_time = last_modified_time;
-  return entry;
-}
 
 // |error| is only set when the method fails and the return is NULL.
 base::PlatformFileError FindAlbumInfo(const std::string& key,
@@ -146,16 +134,15 @@ base::PlatformFileError PicasaFileUtil::ReadDirectorySync(
   std::vector<std::string> components;
   fileapi::VirtualPath::GetComponentsUTF8Unsafe(url.path(), &components);
 
-  FilePath folders_path = base::FilePath().AppendASCII(kPicasaDirFolders);
-
   switch (components.size()) {
     case 0: {
       // Root directory.
-      FilePath albums_path = base::FilePath().AppendASCII(kPicasaDirAlbums);
       file_list->push_back(
-          MakeDirectoryEntry(albums_path, 0, base::Time(), true));
+          DirectoryEntry(kPicasaDirAlbums, DirectoryEntry::DIRECTORY, 0,
+                         base::Time()));
       file_list->push_back(
-          MakeDirectoryEntry(folders_path, 0, base::Time(), true));
+          DirectoryEntry(kPicasaDirFolders, DirectoryEntry::DIRECTORY, 0,
+                         base::Time()));
       break;
     }
     case 1:
@@ -166,11 +153,9 @@ base::PlatformFileError PicasaFileUtil::ReadDirectorySync(
 
         for (AlbumMap::const_iterator it = albums->begin();
              it != albums->end(); ++it) {
-          file_list->push_back(MakeDirectoryEntry(
-              folders_path.Append(FilePath::FromUTF8Unsafe(it->first)),
-              0,
-              it->second.timestamp,
-              true));
+          file_list->push_back(
+              DirectoryEntry(it->first, DirectoryEntry::DIRECTORY, 0,
+                             it->second.timestamp));
         }
       } else if (components[0] == kPicasaDirFolders) {
         scoped_ptr<AlbumMap> folders = DataProvider()->GetFolders();
@@ -179,11 +164,9 @@ base::PlatformFileError PicasaFileUtil::ReadDirectorySync(
 
         for (AlbumMap::const_iterator it = folders->begin();
              it != folders->end(); ++it) {
-          file_list->push_back(MakeDirectoryEntry(
-              folders_path.Append(FilePath::FromUTF8Unsafe(it->first)),
-              0,
-              it->second.timestamp,
-              true));
+          file_list->push_back(
+              DirectoryEntry(it->first, DirectoryEntry::DIRECTORY, 0,
+                             it->second.timestamp));
         }
       }
       break;

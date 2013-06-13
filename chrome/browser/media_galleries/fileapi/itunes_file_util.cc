@@ -18,6 +18,8 @@
 #include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
+using fileapi::DirectoryEntry;
+
 namespace itunes {
 
 namespace {
@@ -31,23 +33,6 @@ base::PlatformFileError MakeDirectoryFileInfo(
   result.is_directory = true;
   *file_info = result;
   return base::PLATFORM_FILE_OK;
-}
-
-fileapi::DirectoryEntry MakeDirectoryEntry(
-    const std::string& name,
-    int64 size,
-    const base::Time& last_modified_time,
-    bool is_directory) {
-  fileapi::DirectoryEntry entry;
-#if defined(OS_WIN)
-  entry.name = base::UTF8ToWide(name);
-#else
-  entry.name = name;
-#endif
-  entry.is_directory = is_directory;
-  entry.size = size;
-  entry.last_modified_time = last_modified_time;
-  return entry;
 }
 
 }  // namespace
@@ -160,10 +145,12 @@ base::PlatformFileError ItunesFileUtil::ReadDirectorySync(
     base::PlatformFileInfo xml_info;
     if (!file_util::GetFileInfo(GetDataProvider()->library_path(), &xml_info))
       return base::PLATFORM_FILE_ERROR_IO;
-    file_list->push_back(MakeDirectoryEntry(kiTunesLibraryXML, xml_info.size,
-                                            xml_info.last_modified, false));
-    file_list->push_back(MakeDirectoryEntry(kiTunesMediaDir, 0, base::Time(),
-                                            true));
+    file_list->push_back(DirectoryEntry(kiTunesLibraryXML,
+                                        DirectoryEntry::FILE,
+                                        xml_info.size, xml_info.last_modified));
+    file_list->push_back(DirectoryEntry(kiTunesMediaDir,
+                                        DirectoryEntry::DIRECTORY,
+                                        0, base::Time()));
     return base::PLATFORM_FILE_OK;
   }
 
@@ -178,7 +165,8 @@ base::PlatformFileError ItunesFileUtil::ReadDirectorySync(
         GetDataProvider()->GetArtistNames();
     std::set<ITunesDataProvider::ArtistName>::const_iterator it;
     for (it = artists.begin(); it != artists.end(); ++it)
-      file_list->push_back(MakeDirectoryEntry(*it, 0, base::Time(), true));
+      file_list->push_back(DirectoryEntry(*it, DirectoryEntry::DIRECTORY,
+                                          0, base::Time()));
     return base::PLATFORM_FILE_OK;
   }
 
@@ -189,7 +177,8 @@ base::PlatformFileError ItunesFileUtil::ReadDirectorySync(
       return base::PLATFORM_FILE_ERROR_NOT_FOUND;
     std::set<ITunesDataProvider::AlbumName>::const_iterator it;
     for (it = albums.begin(); it != albums.end(); ++it)
-      file_list->push_back(MakeDirectoryEntry(*it, 0, base::Time(), true));
+      file_list->push_back(DirectoryEntry(*it, DirectoryEntry::DIRECTORY,
+                                          0, base::Time()));
     return base::PLATFORM_FILE_OK;
   }
 
@@ -206,9 +195,9 @@ base::PlatformFileError ItunesFileUtil::ReadDirectorySync(
       base::PlatformFileInfo file_info;
       if (path_filter->Match(it->second) &&
           file_util::GetFileInfo(it->second, &file_info)) {
-        file_list->push_back(MakeDirectoryEntry(it->first, file_info.size,
-                                                file_info.last_modified,
-                                                false));
+        file_list->push_back(DirectoryEntry(it->first, DirectoryEntry::FILE,
+                                            file_info.size,
+                                            file_info.last_modified));
       }
     }
     return base::PLATFORM_FILE_OK;
