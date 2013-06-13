@@ -103,8 +103,12 @@ function test()
     style.textContent = "x{y:*}";
     document.head.appendChild(style);
 
+    if (WebInspector.consoleView._filter._messageSourceFilters["CSS"])
+        WebInspector.consoleView._filter._toggleMessageSourceFilter("CSS");
+
     InspectorTest.expandConsoleMessages();
     InspectorTest.dumpConsoleMessages();
+
     InspectorTest.completeTest();
 }
 
