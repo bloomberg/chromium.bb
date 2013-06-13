@@ -352,7 +352,7 @@ PassRefPtr<RenderStyle> RenderTextControlSingleLine::createInnerTextStyle(const 
 {
     RefPtr<RenderStyle> textBlockStyle = RenderStyle::create();   
     textBlockStyle->inheritFrom(startStyle);
-    adjustInnerTextStyle(startStyle, textBlockStyle.get());
+    adjustInnerTextStyle(textBlockStyle.get());
 
     textBlockStyle->setWhiteSpace(PRE);
     textBlockStyle->setOverflowWrap(NormalOverflowWrap);

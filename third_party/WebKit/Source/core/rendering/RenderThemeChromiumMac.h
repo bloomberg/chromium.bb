@@ -205,7 +205,6 @@ protected:
     virtual bool shouldUseFallbackTheme(RenderStyle*) const OVERRIDE;
 
 private:
-    virtual Color disabledTextColor(const Color& textColor, const Color&) const OVERRIDE { return textColor; }
     virtual void updateActiveState(NSCell*, const RenderObject*);
     virtual String extraDefaultStyleSheet();
     virtual bool shouldShowPlaceholderWhenFocused() const OVERRIDE;

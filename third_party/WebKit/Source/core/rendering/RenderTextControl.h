@@ -43,7 +43,7 @@ protected:
     HTMLElement* innerTextElement() const;
 
     int scrollbarThickness() const;
-    void adjustInnerTextStyle(const RenderStyle* startStyle, RenderStyle* textBlockStyle) const;
+    void adjustInnerTextStyle(RenderStyle* textBlockStyle) const;
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
 

@@ -154,7 +154,6 @@ protected:
     };
 
 private:
-    virtual Color disabledTextColor(const Color& textColor, const Color&) const OVERRIDE { return textColor; }
     virtual bool shouldShowPlaceholderWhenFocused() const OVERRIDE;
 
     int menuListInternalPadding(RenderStyle*, int paddingType) const;

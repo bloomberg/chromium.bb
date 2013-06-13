@@ -70,7 +70,7 @@ void RenderTextControl::styleDidChange(StyleDifference diff, const RenderStyle* 
     textFormControlElement()->updatePlaceholderVisibility(false);
 }
 
-static inline bool updateUserModifyProperty(Node* node, RenderStyle* style)
+static inline void updateUserModifyProperty(Node* node, RenderStyle* style)
 {
     bool isDisabled = false;
     bool isReadOnlyControl = false;
@@ -82,19 +82,16 @@ static inline bool updateUserModifyProperty(Node* node, RenderStyle* style)
     }
 
     style->setUserModify((isReadOnlyControl || isDisabled) ? READ_ONLY : READ_WRITE_PLAINTEXT_ONLY);
-    return isDisabled;
 }
 
-void RenderTextControl::adjustInnerTextStyle(const RenderStyle* startStyle, RenderStyle* textBlockStyle) const
+void RenderTextControl::adjustInnerTextStyle(RenderStyle* textBlockStyle) const
 {
     // The inner block, if present, always has its direction set to LTR,
     // so we need to inherit the direction and unicode-bidi style from the element.
     textBlockStyle->setDirection(style()->direction());
     textBlockStyle->setUnicodeBidi(style()->unicodeBidi());
 
-    bool disabled = updateUserModifyProperty(node(), textBlockStyle);
-    if (disabled)
-        textBlockStyle->setColor(theme()->disabledTextColor(textBlockStyle->visitedDependentColor(CSSPropertyColor), startStyle->visitedDependentColor(CSSPropertyBackgroundColor)));
+    updateUserModifyProperty(node(), textBlockStyle);
 }
 
 int RenderTextControl::textBlockLogicalHeight() const
