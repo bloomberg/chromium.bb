@@ -58,6 +58,8 @@ public class DeviceMotionAndOrientationTest extends AndroidTestCase {
         assertEquals(DeviceMotionAndOrientation.DEVICE_MOTION_SENSORS.size(),
                 mMockSensorManager.numRegistered);
         assertEquals(0, mMockSensorManager.numUnRegistered);
+        assertEquals(DeviceMotionAndOrientation.DEVICE_MOTION_SENSORS.size(),
+                mDeviceMotionAndOrientation.getNumberActiveDeviceMotionSensors());
     }
 
     @SmallTest
@@ -101,6 +103,8 @@ public class DeviceMotionAndOrientationTest extends AndroidTestCase {
         assertTrue(mDeviceMotionAndOrientation.mDeviceOrientationIsActive);
         assertEquals(union.size(), mMockSensorManager.numRegistered);
         assertEquals(0, mMockSensorManager.numUnRegistered);
+        assertEquals(DeviceMotionAndOrientation.DEVICE_MOTION_SENSORS.size(),
+                mDeviceMotionAndOrientation.getNumberActiveDeviceMotionSensors());
     }
 
     @SmallTest
@@ -114,6 +118,7 @@ public class DeviceMotionAndOrientationTest extends AndroidTestCase {
         assertFalse(mDeviceMotionAndOrientation.mDeviceOrientationIsActive);
         assertEquals(DeviceMotionAndOrientation.DEVICE_MOTION_SENSORS.size(),
                 mMockSensorManager.numUnRegistered);
+        assertEquals(0, mDeviceMotionAndOrientation.getNumberActiveDeviceMotionSensors());
     }
 
     @SmallTest
@@ -150,6 +155,7 @@ public class DeviceMotionAndOrientationTest extends AndroidTestCase {
                 mDeviceMotionAndOrientation.mActiveSensors.isEmpty());
         assertEquals(diff.size() + DeviceMotionAndOrientation.DEVICE_ORIENTATION_SENSORS.size(),
                 mMockSensorManager.numUnRegistered);
+        assertEquals(0, mDeviceMotionAndOrientation.getNumberActiveDeviceMotionSensors());
     }
 
     @SmallTest

@@ -57,6 +57,8 @@ class DataFetcherImplAndroid : public DataFetcher {
   bool Start(DeviceData::Type event_type, int rate_in_milliseconds);
   void Stop(DeviceData::Type event_type);
 
+  virtual int GetNumberActiveDeviceMotionSensors();
+
   // Value returned by GetDeviceData.
   scoped_refptr<Orientation> current_orientation_;
 

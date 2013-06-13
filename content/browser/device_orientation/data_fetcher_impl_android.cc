@@ -111,4 +111,10 @@ void DataFetcherImplAndroid::Stop(DeviceData::Type event_type) {
       static_cast<jint>(event_type));
 }
 
+int DataFetcherImplAndroid::GetNumberActiveDeviceMotionSensors() {
+  DCHECK(!device_orientation_.is_null());
+  return Java_DeviceMotionAndOrientation_getNumberActiveDeviceMotionSensors(
+      AttachCurrentThread(), device_orientation_.obj());
+}
+
 }  // namespace content
