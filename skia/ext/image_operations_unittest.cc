@@ -461,6 +461,17 @@ TEST(ImageOperations, HalveSubset) {
   }
 }
 
+TEST(ImageOperations, InvalidParams) {
+  // Make our source bitmap.
+  SkBitmap src;
+  src.setConfig(SkBitmap::kA8_Config, 16, 34);
+  src.allocPixels();
+
+  // Scale it, don't die.
+  SkBitmap full_results = skia::ImageOperations::Resize(
+      src, skia::ImageOperations::RESIZE_BOX, 10, 20);
+}
+
 // Resamples an image to the same image, it should give the same result.
 TEST(ImageOperations, ResampleToSameHamming1) {
   CheckResampleToSame(skia::ImageOperations::RESIZE_HAMMING1);
