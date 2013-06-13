@@ -89,6 +89,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
+#include "core/dom/FullscreenController.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/Text.h"
@@ -807,8 +808,11 @@ bool StyleResolver::canShareStyleWithElement(StyledElement* element) const
     if (element->isWebVTTElement() && state.element()->isWebVTTElement() && toWebVTTElement(element)->isPastNode() != toWebVTTElement(state.element())->isPastNode())
         return false;
 
-    if (element == element->document()->webkitCurrentFullScreenElement() || state.element() == state.document()->webkitCurrentFullScreenElement())
-        return false;
+    if (FullscreenController* fullscreen = FullscreenController::fromIfExists(state.document())) {
+        if (element == fullscreen->webkitCurrentFullScreenElement() || state.element() == fullscreen->webkitCurrentFullScreenElement())
+            return false;
+    }
+
     return true;
 }
 

@@ -44,6 +44,7 @@
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
+#include "core/dom/FullscreenController.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -3492,7 +3493,7 @@ bool HTMLMediaElement::hasPendingActivity() const
 
 bool HTMLMediaElement::isFullscreen() const
 {
-    return document()->webkitIsFullScreen() && document()->webkitCurrentFullScreenElement() == this;
+    return FullscreenController::isActiveFullScreenElement(this);
 }
 
 void HTMLMediaElement::enterFullscreen()
@@ -3500,7 +3501,7 @@ void HTMLMediaElement::enterFullscreen()
     LOG(Media, "HTMLMediaElement::enterFullscreen");
 
     if (document()->settings() && document()->settings()->fullScreenEnabled())
-        document()->requestFullScreenForElement(this, 0, Document::ExemptIFrameAllowFullScreenRequirement);
+        FullscreenController::from(document())->requestFullScreenForElement(this, 0, FullscreenController::ExemptIFrameAllowFullScreenRequirement);
 }
 
 void HTMLMediaElement::exitFullscreen()
@@ -3508,7 +3509,7 @@ void HTMLMediaElement::exitFullscreen()
     LOG(Media, "HTMLMediaElement::exitFullscreen");
 
     if (document()->settings() && document()->settings()->fullScreenEnabled() && isFullscreen())
-        document()->webkitCancelFullScreen();
+        FullscreenController::from(document())->webkitCancelFullScreen();
 }
 
 void HTMLMediaElement::didBecomeFullscreenElement()

@@ -30,6 +30,7 @@
 #include "SVGNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ContainerNode.h"
+#include "core/dom/FullscreenController.h"
 #include "core/dom/Node.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/Text.h"
@@ -214,8 +215,7 @@ void NodeRenderingContext::moveToFlowThreadIfNeeded()
     if (m_node->isInShadowTree())
         return;
 
-    Document* document = m_node->document();
-    if (document->webkitIsFullScreen() && document->webkitCurrentFullScreenElement() == m_node)
+    if (m_node->isElementNode() && FullscreenController::isActiveFullScreenElement(toElement(m_node)))
         return;
 
     // Allow only svg root elements to be directly collected by a render flow thread.
@@ -276,7 +276,7 @@ void NodeRenderingContext::createRendererForElementIfNeeded()
     element->setRenderer(newRenderer);
     newRenderer->setAnimatableStyle(m_style.release()); // setAnimatableStyle() can depend on renderer() already being set.
 
-    if (document->webkitIsFullScreen() && document->webkitCurrentFullScreenElement() == element) {
+    if (FullscreenController::isActiveFullScreenElement(element)) {
         newRenderer = RenderFullScreen::wrapRenderer(newRenderer, parentRenderer, document);
         if (!newRenderer)
             return;

@@ -169,17 +169,6 @@
     [RaisesException] Element querySelector(DOMString selectors);
     [RaisesException] NodeList querySelectorAll(DOMString selectors);
 
-    // Mozilla version
-    [EnabledAtRuntime=fullscreen] readonly attribute boolean webkitIsFullScreen;
-    [EnabledAtRuntime=fullscreen] readonly attribute boolean webkitFullScreenKeyboardInputAllowed;
-    [EnabledAtRuntime=fullscreen] readonly attribute Element webkitCurrentFullScreenElement;
-    [EnabledAtRuntime=fullscreen] void webkitCancelFullScreen();
-
-    // W3C version
-    [EnabledAtRuntime=fullscreen] readonly attribute boolean webkitFullscreenEnabled;
-    [EnabledAtRuntime=fullscreen] readonly attribute Element webkitFullscreenElement;
-    [EnabledAtRuntime=fullscreen] void webkitExitFullscreen();
-
     void webkitExitPointerLock();
     readonly attribute Element webkitPointerLockElement;
 

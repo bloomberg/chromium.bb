@@ -90,6 +90,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
+#include "core/dom/FullscreenController.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/Text.h"
@@ -1660,7 +1661,7 @@ void WebViewImpl::willEnterFullScreen()
     // Ensure that this element's document is still attached.
     Document* doc = m_provisionalFullScreenElement->document();
     if (doc->frame()) {
-        doc->webkitWillEnterFullScreenForElement(m_provisionalFullScreenElement.get());
+        FullscreenController::from(doc)->webkitWillEnterFullScreenForElement(m_provisionalFullScreenElement.get());
         m_fullScreenFrame = doc->frame();
     }
     m_provisionalFullScreenElement.clear();
@@ -1672,8 +1673,8 @@ void WebViewImpl::didEnterFullScreen()
         return;
 
     if (Document* doc = m_fullScreenFrame->document()) {
-        if (doc->webkitIsFullScreen())
-            doc->webkitDidEnterFullScreenForElement(0);
+        if (FullscreenController::isFullScreen(doc))
+            FullscreenController::from(doc)->webkitDidEnterFullScreenForElement(0);
     }
 }
 
@@ -1683,13 +1684,16 @@ void WebViewImpl::willExitFullScreen()
         return;
 
     if (Document* doc = m_fullScreenFrame->document()) {
-        if (doc->webkitIsFullScreen()) {
+        FullscreenController* fullscreen = FullscreenController::fromIfExists(doc);
+        if (!fullscreen)
+            return;
+        if (fullscreen->isFullScreen(doc)) {
             // When the client exits from full screen we have to call webkitCancelFullScreen to
             // notify the document. While doing that, suppress notifications back to the client.
             m_isCancelingFullScreen = true;
-            doc->webkitCancelFullScreen();
+            fullscreen->webkitCancelFullScreen();
             m_isCancelingFullScreen = false;
-            doc->webkitWillExitFullScreenForElement(0);
+            fullscreen->webkitWillExitFullScreenForElement(0);
         }
     }
 }
@@ -1700,8 +1704,10 @@ void WebViewImpl::didExitFullScreen()
         return;
 
     if (Document* doc = m_fullScreenFrame->document()) {
-        if (doc->webkitIsFullScreen())
-            doc->webkitDidExitFullScreenForElement(0);
+        if (FullscreenController* fullscreen = FullscreenController::fromIfExists(doc)) {
+            if (fullscreen->webkitIsFullScreen())
+                fullscreen->webkitDidExitFullScreenForElement(0);
+        }
     }
 
     m_fullScreenFrame.clear();

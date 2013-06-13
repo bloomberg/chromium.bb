@@ -82,6 +82,8 @@ class DOMWindow;
 class Database;
 class DatabaseThread;
 class DocumentFragment;
+class DocumentLifecycleNotifier;
+class DocumentLifecycleObserver;
 class DocumentLoader;
 class DocumentMarkerController;
 class DocumentParser;
@@ -131,7 +133,6 @@ class ProcessingInstruction;
 class Range;
 class RegisteredEventListener;
 class RenderArena;
-class RenderFullScreen;
 class RenderView;
 class RequestAnimationFrameCallback;
 class SVGDocumentExtensions;
@@ -967,39 +968,9 @@ public:
     virtual DocumentEventQueue* eventQueue() const { return m_eventQueue.get(); }
 
     const QualifiedName& idAttributeName() const { return m_idAttributeName; }
-    
-    bool webkitIsFullScreen() const { return m_fullScreenElement.get(); }
-    bool webkitFullScreenKeyboardInputAllowed() const { return m_fullScreenElement.get() && m_areKeysEnabledInFullScreen; }
-    Element* webkitCurrentFullScreenElement() const { return m_fullScreenElement.get(); }
-    
-    enum FullScreenCheckType {
-        EnforceIFrameAllowFullScreenRequirement,
-        ExemptIFrameAllowFullScreenRequirement,
-    };
 
-    void requestFullScreenForElement(Element*, unsigned short flags, FullScreenCheckType);
-    void webkitCancelFullScreen();
-    
-    void webkitWillEnterFullScreenForElement(Element*);
-    void webkitDidEnterFullScreenForElement(Element*);
-    void webkitWillExitFullScreenForElement(Element*);
-    void webkitDidExitFullScreenForElement(Element*);
-    
-    void setFullScreenRenderer(RenderFullScreen*);
-    RenderFullScreen* fullScreenRenderer() const { return m_fullScreenRenderer; }
-    void fullScreenRendererDestroyed();
-
-    void fullScreenChangeDelayTimerFired(Timer<Document>*);
-    bool fullScreenIsAllowedForElement(Element*) const;
-    void fullScreenElementRemoved();
-    void removeFullScreenElementOfSubtree(Node*, bool amongChildrenOnly = false);
-    bool isAnimatingFullScreen() const { return m_isAnimatingFullScreen; }
-    void setAnimatingFullScreen(bool);
-
-    // W3C API
-    bool webkitFullscreenEnabled() const;
-    Element* webkitFullscreenElement() const { return !m_fullScreenElementStack.isEmpty() ? m_fullScreenElementStack.last().get() : 0; }
-    void webkitExitFullscreen();
+    bool hasFullscreenController() const { return m_hasFullscreenController; }
+    void setHasFullscreenController() { m_hasFullscreenController = true; }
 
     void webkitExitPointerLock();
     Element* webkitPointerLockElement() const;
@@ -1107,6 +1078,8 @@ public:
 
     PassRefPtr<FontLoader> fontloader();
 
+    void addLifecycleObserver(DocumentLifecycleObserver*);
+
 protected:
     Document(Frame*, const KURL&, DocumentClassFlags = DefaultDocumentClass);
 
@@ -1170,11 +1143,6 @@ private:
     PageVisibilityState visibilityState() const;
 
     PassRefPtr<HTMLCollection> ensureCachedCollection(CollectionType);
-
-    void clearFullscreenElementStack();
-    void popFullscreenElementStack();
-    void pushFullscreenElementStack(Element*);
-    void addDocumentToFullScreenChangeEventQueue(Document*);
 
     // Note that dispatching a window load event may cause the DOMWindow to be detached from
     // the Frame, so callers should take a reference to the DOMWindow (which owns us) to
@@ -1371,16 +1339,7 @@ private:
 
     QualifiedName m_idAttributeName;
 
-    bool m_areKeysEnabledInFullScreen;
-    RefPtr<Element> m_fullScreenElement;
-    Vector<RefPtr<Element> > m_fullScreenElementStack;
-    RenderFullScreen* m_fullScreenRenderer;
-    Timer<Document> m_fullScreenChangeDelayTimer;
-    Deque<RefPtr<Node> > m_fullScreenChangeEventTargetQueue;
-    Deque<RefPtr<Node> > m_fullScreenErrorEventTargetQueue;
-    bool m_isAnimatingFullScreen;
-    LayoutRect m_savedPlaceholderFrameRect;
-    RefPtr<RenderStyle> m_savedPlaceholderRenderStyle;
+    bool m_hasFullscreenController; // For early return in FullscreenController::fromIfExists()
 
     Vector<RefPtr<Element> > m_topLayerElements;
 
@@ -1444,6 +1403,7 @@ private:
     Timer<Document> m_didAssociateFormControlsTimer;
     HashSet<RefPtr<Element> > m_associatedFormControls;
 
+    OwnPtr<DocumentLifecycleNotifier> m_lifecycleNotifier;
 };
 
 inline void Document::notifyRemovePendingSheetIfNeeded()

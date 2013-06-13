@@ -23,8 +23,9 @@
  */
 
 #include "config.h"
-
 #include "core/rendering/RenderFullScreen.h"
+
+#include "core/dom/FullscreenController.h"
 
 using namespace WebCore;
 
@@ -73,8 +74,11 @@ void RenderFullScreen::willBeDestroyed()
 
     // RenderObjects are unretained, so notify the document (which holds a pointer to a RenderFullScreen)
     // if it's RenderFullScreen is destroyed.
-    if (document() && document()->fullScreenRenderer() == this)
-        document()->fullScreenRendererDestroyed();
+    if (document()) {
+        FullscreenController* controller = FullscreenController::from(document());
+        if (controller->fullScreenRenderer() == this)
+            controller->fullScreenRendererDestroyed();
+    }
 
     RenderFlexibleBox::willBeDestroyed();
 }
@@ -135,7 +139,8 @@ RenderObject* RenderFullScreen::wrapRenderer(RenderObject* object, RenderObject*
         fullscreenRenderer->addChild(object);
         fullscreenRenderer->setNeedsLayoutAndPrefWidthsRecalc();
     }
-    document->setFullScreenRenderer(fullscreenRenderer);
+
+    FullscreenController::from(document)->setFullScreenRenderer(fullscreenRenderer);
     return fullscreenRenderer;
 }
 
@@ -157,7 +162,7 @@ void RenderFullScreen::unwrapRenderer()
     if (placeholder())
         placeholder()->remove();
     remove();
-    document()->setFullScreenRenderer(0);
+    FullscreenController::from(document())->setFullScreenRenderer(0);
 }
 
 void RenderFullScreen::setPlaceholder(RenderBlock* placeholder)

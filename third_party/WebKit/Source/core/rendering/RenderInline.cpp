@@ -23,6 +23,7 @@
 #include "config.h"
 #include "core/rendering/RenderInline.h"
 
+#include "core/dom/FullscreenController.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/page/Chrome.h"
@@ -351,9 +352,11 @@ void RenderInline::splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock,
     // that renderer is wrapped in a RenderFullScreen, so |this| is not its
     // parent. Since the splitting logic expects |this| to be the parent, set
     // |beforeChild| to be the RenderFullScreen.
-    const Element* fullScreenElement = document()->webkitCurrentFullScreenElement();
-    if (fullScreenElement && beforeChild && beforeChild->node() == fullScreenElement)
-        beforeChild = document()->fullScreenRenderer();
+    if (FullscreenController* fullscreen = FullscreenController::fromIfExists(document())) {
+        const Element* fullScreenElement = fullscreen->webkitCurrentFullScreenElement();
+        if (fullScreenElement && beforeChild && beforeChild->node() == fullScreenElement)
+            beforeChild = fullscreen->fullScreenRenderer();
+    }
 
     // Now take all of the children from beforeChild to the end and remove
     // them from |this| and place them in the clone.

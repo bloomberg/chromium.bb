@@ -33,6 +33,7 @@
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/RuleSet.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/dom/FullscreenController.h"
 #include "core/rendering/RenderTheme.h"
 
 namespace WebCore {
@@ -172,7 +173,7 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element,
         changedDefaultStyle = true;
     }
 
-    if (!fullscreenStyleSheet && element->document()->webkitIsFullScreen()) {
+    if (!fullscreenStyleSheet && FullscreenController::isFullScreen(element->document())) {
         String fullscreenRules = String(fullscreenUserAgentStyleSheet, sizeof(fullscreenUserAgentStyleSheet)) + RenderTheme::defaultTheme()->extraFullScreenStyleSheet();
         fullscreenStyleSheet = parseUASheet(fullscreenRules);
         defaultStyle->addRulesFromSheet(fullscreenStyleSheet, screenEval());
