@@ -52,3 +52,7 @@ crbug.com/173366 [ Linux ] fast/js/string-replacement-outofmemory.html [ Skip ]
 crbug.com/231357 [ Linux ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure ]
 crbug.com/231357 [ Linux ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 crbug.com/14885 [ Linux ] fast/js/JSON-stringify.html [ Failure ]
+
+# These have been failing since at least chrome r203901, blink r151723 (no memory errors, just text failure):
+crbug.com/231357 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure ]
+crbug.com/231357 [ Linux ] perf/mouse-event.html [ Crash ]
