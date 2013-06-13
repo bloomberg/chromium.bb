@@ -170,7 +170,7 @@
     }
   ],
   "downloads": {
-    "channel": "beta",
+    "channel": "stable",
     "extension_types": [
       "extension", "packaged_app"
     ]
