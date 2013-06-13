@@ -33,6 +33,7 @@
 #include "ppapi/proxy/ppb_network_monitor_private_proxy.h"
 #include "ppapi/proxy/ppb_tcp_server_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_tcp_socket_private_proxy.h"
+#include "ppapi/proxy/ppb_tcp_socket_proxy.h"
 #include "ppapi/proxy/ppb_video_decoder_proxy.h"
 #include "ppapi/proxy/ppb_x509_certificate_private_proxy.h"
 #include "ppapi/proxy/printing_resource.h"
@@ -278,6 +279,13 @@ PP_Resource ResourceCreationProxy::CreateNetAddressFromIPv6Address(
                                  *ipv6_addr))->GetReference();
 }
 
+PP_Resource ResourceCreationProxy::CreateNetAddressFromNetAddressPrivate(
+    PP_Instance instance,
+    const PP_NetAddress_Private& private_addr) {
+  return (new NetAddressResource(GetConnection(), instance,
+                                 private_addr))->GetReference();
+}
+
 PP_Resource ResourceCreationProxy::CreateNetworkMonitor(
     PP_Instance instance,
     PPB_NetworkMonitor_Callback callback,
@@ -293,6 +301,11 @@ PP_Resource ResourceCreationProxy::CreatePrinting(PP_Instance instance) {
 PP_Resource ResourceCreationProxy::CreateTCPServerSocketPrivate(
     PP_Instance instance) {
   return PPB_TCPServerSocket_Private_Proxy::CreateProxyResource(instance);
+}
+
+PP_Resource ResourceCreationProxy::CreateTCPSocket(
+    PP_Instance instance) {
+  return PPB_TCPSocket_Proxy::CreateProxyResource(instance);
 }
 
 PP_Resource ResourceCreationProxy::CreateTCPSocketPrivate(

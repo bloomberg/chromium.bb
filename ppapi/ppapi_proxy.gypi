@@ -123,6 +123,8 @@
           'proxy/ppb_network_monitor_private_proxy.h',
           'proxy/ppb_tcp_server_socket_private_proxy.cc',
           'proxy/ppb_tcp_server_socket_private_proxy.h',
+          'proxy/ppb_tcp_socket_proxy.cc',
+          'proxy/ppb_tcp_socket_proxy.h',
           'proxy/ppb_tcp_socket_private_proxy.cc',
           'proxy/ppb_tcp_socket_private_proxy.h',
           'proxy/ppb_testing_proxy.cc',

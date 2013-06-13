@@ -102,6 +102,8 @@ PpapiThread::PpapiThread(const CommandLine& command_line, bool is_broker)
   // note that only those InterfaceProxy-based ones require registration.
   AddRoute(ppapi::API_ID_PPB_TCPSERVERSOCKET_PRIVATE,
            &dispatcher_message_listener_);
+  AddRoute(ppapi::API_ID_PPB_TCPSOCKET,
+           &dispatcher_message_listener_);
   AddRoute(ppapi::API_ID_PPB_TCPSOCKET_PRIVATE,
            &dispatcher_message_listener_);
   AddRoute(ppapi::API_ID_PPB_UDPSOCKET_PRIVATE,

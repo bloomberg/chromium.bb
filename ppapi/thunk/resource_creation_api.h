@@ -28,6 +28,7 @@ struct PP_FontDescription_Dev;
 struct PP_BrowserFont_Trusted_Description;
 struct PP_NetAddress_IPv4_Dev;
 struct PP_NetAddress_IPv6_Dev;
+struct PP_NetAddress_Private;
 struct PP_Size;
 
 namespace ppapi {
@@ -141,12 +142,16 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateNetAddressFromIPv6Address(
       PP_Instance instance,
       const PP_NetAddress_IPv6_Dev* ipv6_addr) = 0;
+  virtual PP_Resource CreateNetAddressFromNetAddressPrivate(
+      PP_Instance instance,
+      const PP_NetAddress_Private& private_addr) = 0;
   virtual PP_Resource CreateNetworkMonitor(
       PP_Instance instance,
       PPB_NetworkMonitor_Callback callback,
       void* user_data) = 0;
   virtual PP_Resource CreatePrinting(PP_Instance instance) = 0;
   virtual PP_Resource CreateTCPServerSocketPrivate(PP_Instance instance) = 0;
+  virtual PP_Resource CreateTCPSocket(PP_Instance instace) = 0;
   virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instace) = 0;
   virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instace) = 0;
   virtual PP_Resource CreateWebSocket(PP_Instance instance) = 0;

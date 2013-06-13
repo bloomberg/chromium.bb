@@ -199,6 +199,12 @@ PP_Resource ResourceCreationImpl::CreateNetAddressFromIPv6Address(
   return 0;  // Not supported in-process.
 }
 
+PP_Resource ResourceCreationImpl::CreateNetAddressFromNetAddressPrivate(
+    PP_Instance instance,
+    const PP_NetAddress_Private& private_addr) {
+  return 0;  // Not supported in-process.
+}
+
 PP_Resource ResourceCreationImpl::CreateTouchInputEvent(
     PP_Instance instance,
     PP_InputEvent_Type type,
@@ -236,6 +242,10 @@ PP_Resource ResourceCreationImpl::CreateResourceArray(
 PP_Resource ResourceCreationImpl::CreateTCPServerSocketPrivate(
     PP_Instance instance) {
   return PPB_TCPServerSocket_Private_Impl::CreateResource(instance);
+}
+
+PP_Resource ResourceCreationImpl::CreateTCPSocket(PP_Instance instance) {
+  return 0;  // Not supported in-process.
 }
 
 PP_Resource ResourceCreationImpl::CreateTCPSocketPrivate(PP_Instance instance) {

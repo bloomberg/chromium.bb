@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #if defined(_MSC_VER)
 #include <windows.h>
 #else
@@ -13,7 +14,11 @@
 #endif
 
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/cpp/dev/net_address_dev.h"
+#include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/private/host_resolver_private.h"
+#include "ppapi/cpp/private/net_address_private.h"
 #include "ppapi/cpp/var.h"
 
 namespace {
@@ -96,6 +101,82 @@ uint16_t ConvertToNetEndian16(uint16_t x) {
     return x;
   else
     return (x << 8) | (x >> 8);
+}
+
+bool EqualNetAddress(const pp::NetAddress_Dev& addr1,
+                     const pp::NetAddress_Dev& addr2) {
+  if (addr1.GetFamily() == PP_NETADDRESS_FAMILY_UNSPECIFIED ||
+      addr2.GetFamily() == PP_NETADDRESS_FAMILY_UNSPECIFIED) {
+    return false;
+  }
+
+  if (addr1.GetFamily() == PP_NETADDRESS_FAMILY_IPV4) {
+    PP_NetAddress_IPv4_Dev ipv4_addr1, ipv4_addr2;
+    if (!addr1.DescribeAsIPv4Address(&ipv4_addr1) ||
+        !addr2.DescribeAsIPv4Address(&ipv4_addr2)) {
+      return false;
+    }
+
+    return ipv4_addr1.port == ipv4_addr2.port &&
+           !memcmp(ipv4_addr1.addr, ipv4_addr2.addr, sizeof(ipv4_addr1.addr));
+  } else {
+    PP_NetAddress_IPv6_Dev ipv6_addr1, ipv6_addr2;
+    if (!addr1.DescribeAsIPv6Address(&ipv6_addr1) ||
+        !addr2.DescribeAsIPv6Address(&ipv6_addr2)) {
+      return false;
+    }
+
+    return ipv6_addr1.port == ipv6_addr2.port &&
+           !memcmp(ipv6_addr1.addr, ipv6_addr2.addr, sizeof(ipv6_addr1.addr));
+  }
+}
+
+bool ResolveHost(PP_Instance instance,
+                 const std::string& host,
+                 uint16_t port,
+                 pp::NetAddress_Dev* addr) {
+  // TODO(yzshen): Change to use the public host resolver once it is supported.
+  pp::InstanceHandle instance_handle(instance);
+  pp::HostResolverPrivate host_resolver(instance_handle);
+  PP_HostResolver_Private_Hint hint = { PP_NETADDRESSFAMILY_UNSPECIFIED, 0 };
+
+  TestCompletionCallback callback(instance);
+  callback.WaitForResult(
+      host_resolver.Resolve(host, port, hint, callback.GetCallback()));
+
+  PP_NetAddress_Private addr_private;
+  if (callback.result() != PP_OK || host_resolver.GetSize() == 0 ||
+      !host_resolver.GetNetAddress(0, &addr_private)) {
+    return false;
+  }
+
+  switch (pp::NetAddressPrivate::GetFamily(addr_private)) {
+    case PP_NETADDRESSFAMILY_IPV4: {
+      PP_NetAddress_IPv4_Dev ipv4_addr;
+      ipv4_addr.port = ConvertToNetEndian16(
+          pp::NetAddressPrivate::GetPort(addr_private));
+      if (!pp::NetAddressPrivate::GetAddress(addr_private, ipv4_addr.addr,
+                                             sizeof(ipv4_addr.addr))) {
+        return false;
+      }
+      *addr = pp::NetAddress_Dev(instance_handle, ipv4_addr);
+      return true;
+    }
+    case PP_NETADDRESSFAMILY_IPV6: {
+      PP_NetAddress_IPv6_Dev ipv6_addr;
+      ipv6_addr.port = ConvertToNetEndian16(
+          pp::NetAddressPrivate::GetPort(addr_private));
+      if (!pp::NetAddressPrivate::GetAddress(addr_private, ipv6_addr.addr,
+                                             sizeof(ipv6_addr.addr))) {
+        return false;
+      }
+      *addr = pp::NetAddress_Dev(instance_handle, ipv6_addr);
+      return true;
+    }
+    default: {
+      return false;
+    }
+  }
 }
 
 void NestedEvent::Wait() {

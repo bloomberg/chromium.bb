@@ -7,6 +7,8 @@
 
 #include "ppapi/thunk/interfaces_preamble.h"
 
+PROXIED_API(PPB_TCPSocket)
+
 // Map the old dev console interface to the stable one (which is the same) to
 // keep Flash, etc. working.
 PROXIED_IFACE(PPB_Instance, "PPB_Console(Dev);0.1", PPB_Console_1_0)
@@ -34,6 +36,8 @@ PROXIED_IFACE(NoAPIName, PPB_PRINTING_DEV_INTERFACE_0_7,
               PPB_Printing_Dev_0_7)
 PROXIED_IFACE(NoAPIName, PPB_RESOURCEARRAY_DEV_INTERFACE_0_1,
               PPB_ResourceArray_Dev_0_1)
+PROXIED_IFACE(PPB_TCPSocket, PPB_TCPSOCKET_DEV_INTERFACE_0_1,
+              PPB_TCPSocket_Dev_0_1)
 PROXIED_IFACE(PPB_Instance, PPB_TEXTINPUT_DEV_INTERFACE_0_2,
               PPB_TextInput_Dev_0_2)
 PROXIED_IFACE(NoAPIName, PPB_TRUETYPEFONT_DEV_INTERFACE_0_1,

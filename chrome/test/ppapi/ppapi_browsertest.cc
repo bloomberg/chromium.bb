@@ -300,6 +300,36 @@ TEST_PPAPI_OUT_OF_PROCESS(BrowserFont)
 TEST_PPAPI_IN_PROCESS(Buffer)
 TEST_PPAPI_OUT_OF_PROCESS(Buffer)
 
+// TCPSocket tests.
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocket) {
+  RunTestViaHTTP(
+      LIST_TEST(TCPSocket_Connect)
+      LIST_TEST(TCPSocket_ReadWrite)
+      LIST_TEST(TCPSocket_SetOption)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, TCPSocket) {
+  RunTestViaHTTP(
+      LIST_TEST(TCPSocket_Connect)
+      LIST_TEST(TCPSocket_ReadWrite)
+      LIST_TEST(TCPSocket_SetOption)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(TCPSocket)) {
+  RunTestViaHTTP(
+      LIST_TEST(TCPSocket_Connect)
+      LIST_TEST(TCPSocket_ReadWrite)
+      LIST_TEST(TCPSocket_SetOption)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, TCPSocket) {
+  RunTestViaHTTP(
+      LIST_TEST(TCPSocket_Connect)
+      LIST_TEST(TCPSocket_ReadWrite)
+      LIST_TEST(TCPSocket_SetOption)
+  );
+}
+
 TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivate)
 TEST_PPAPI_IN_PROCESS_WITH_SSL_SERVER(TCPSocketPrivate)
 TEST_PPAPI_NACL_WITH_SSL_SERVER(TCPSocketPrivate)

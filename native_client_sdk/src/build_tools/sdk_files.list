@@ -283,6 +283,7 @@ include/ppapi/c/dev/ppb_opengles2ext_dev.h
 include/ppapi/c/dev/ppb_printing_dev.h
 include/ppapi/c/dev/ppb_resource_array_dev.h
 include/ppapi/c/dev/ppb_scrollbar_dev.h
+include/ppapi/c/dev/ppb_tcp_socket_dev.h
 include/ppapi/c/dev/ppb_testing_dev.h
 include/ppapi/c/dev/ppb_text_input_dev.h
 include/ppapi/c/dev/ppb_trace_event_dev.h
@@ -385,6 +386,7 @@ include/ppapi/cpp/dev/resource_array_dev.h
 include/ppapi/cpp/dev/scriptable_object_deprecated.h
 include/ppapi/cpp/dev/scrollbar_dev.h
 include/ppapi/cpp/dev/selection_dev.h
+include/ppapi/cpp/dev/tcp_socket_dev.h
 include/ppapi/cpp/dev/text_input_dev.h
 include/ppapi/cpp/dev/truetype_font_dev.h
 include/ppapi/cpp/dev/url_util_dev.h

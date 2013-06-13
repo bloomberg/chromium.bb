@@ -23,6 +23,7 @@
 #include "ppapi/c/dev/ppb_printing_dev.h"
 #include "ppapi/c/dev/ppb_resource_array_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
+#include "ppapi/c/dev/ppb_tcp_socket_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/dev/ppb_trace_event_dev.h"
@@ -198,6 +199,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Printing_Dev_0_7;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_ResourceArray_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Scrollbar_Dev_0_5;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_7;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_8;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_9;
@@ -1716,6 +1718,55 @@ static int32_t Pnacl_M23_PPB_Printing_Dev_GetDefaultPrintSettings(PP_Resource re
 /* Not generating wrapper methods for PPB_ResourceArray_Dev_0_1 */
 
 /* Not generating wrapper methods for PPB_Scrollbar_Dev_0_5 */
+
+/* Begin wrapper methods for PPB_TCPSocket_Dev_0_1 */
+
+static PP_Resource Pnacl_M29_PPB_TCPSocket_Dev_Create(PP_Instance instance) {
+  const struct PPB_TCPSocket_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_Dev_0_1.real_iface;
+  return iface->Create(instance);
+}
+
+static PP_Bool Pnacl_M29_PPB_TCPSocket_Dev_IsTCPSocket(PP_Resource resource) {
+  const struct PPB_TCPSocket_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_Dev_0_1.real_iface;
+  return iface->IsTCPSocket(resource);
+}
+
+static int32_t Pnacl_M29_PPB_TCPSocket_Dev_Connect(PP_Resource tcp_socket, PP_Resource addr, struct PP_CompletionCallback* callback) {
+  const struct PPB_TCPSocket_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_Dev_0_1.real_iface;
+  return iface->Connect(tcp_socket, addr, *callback);
+}
+
+static PP_Resource Pnacl_M29_PPB_TCPSocket_Dev_GetLocalAddress(PP_Resource tcp_socket) {
+  const struct PPB_TCPSocket_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_Dev_0_1.real_iface;
+  return iface->GetLocalAddress(tcp_socket);
+}
+
+static PP_Resource Pnacl_M29_PPB_TCPSocket_Dev_GetRemoteAddress(PP_Resource tcp_socket) {
+  const struct PPB_TCPSocket_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_Dev_0_1.real_iface;
+  return iface->GetRemoteAddress(tcp_socket);
+}
+
+static int32_t Pnacl_M29_PPB_TCPSocket_Dev_Read(PP_Resource tcp_socket, char* buffer, int32_t bytes_to_read, struct PP_CompletionCallback* callback) {
+  const struct PPB_TCPSocket_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_Dev_0_1.real_iface;
+  return iface->Read(tcp_socket, buffer, bytes_to_read, *callback);
+}
+
+static int32_t Pnacl_M29_PPB_TCPSocket_Dev_Write(PP_Resource tcp_socket, const char* buffer, int32_t bytes_to_write, struct PP_CompletionCallback* callback) {
+  const struct PPB_TCPSocket_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_Dev_0_1.real_iface;
+  return iface->Write(tcp_socket, buffer, bytes_to_write, *callback);
+}
+
+static void Pnacl_M29_PPB_TCPSocket_Dev_Close(PP_Resource tcp_socket) {
+  const struct PPB_TCPSocket_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_Dev_0_1.real_iface;
+  iface->Close(tcp_socket);
+}
+
+static int32_t Pnacl_M29_PPB_TCPSocket_Dev_SetOption(PP_Resource tcp_socket, PP_TCPSocket_Option_Dev name, struct PP_Var* value, struct PP_CompletionCallback* callback) {
+  const struct PPB_TCPSocket_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_TCPSocket_Dev_0_1.real_iface;
+  return iface->SetOption(tcp_socket, name, *value, *callback);
+}
+
+/* End wrapper methods for PPB_TCPSocket_Dev_0_1 */
 
 /* Not generating wrapper methods for PPB_Testing_Dev_0_7 */
 
@@ -4183,6 +4234,18 @@ struct PPB_Printing_Dev_0_7 Pnacl_Wrappers_PPB_Printing_Dev_0_7 = {
 
 /* Not generating wrapper interface for PPB_Scrollbar_Dev_0_5 */
 
+struct PPB_TCPSocket_Dev_0_1 Pnacl_Wrappers_PPB_TCPSocket_Dev_0_1 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M29_PPB_TCPSocket_Dev_Create,
+    .IsTCPSocket = (PP_Bool (*)(PP_Resource resource))&Pnacl_M29_PPB_TCPSocket_Dev_IsTCPSocket,
+    .Connect = (int32_t (*)(PP_Resource tcp_socket, PP_Resource addr, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_TCPSocket_Dev_Connect,
+    .GetLocalAddress = (PP_Resource (*)(PP_Resource tcp_socket))&Pnacl_M29_PPB_TCPSocket_Dev_GetLocalAddress,
+    .GetRemoteAddress = (PP_Resource (*)(PP_Resource tcp_socket))&Pnacl_M29_PPB_TCPSocket_Dev_GetRemoteAddress,
+    .Read = (int32_t (*)(PP_Resource tcp_socket, char* buffer, int32_t bytes_to_read, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_TCPSocket_Dev_Read,
+    .Write = (int32_t (*)(PP_Resource tcp_socket, const char* buffer, int32_t bytes_to_write, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_TCPSocket_Dev_Write,
+    .Close = (void (*)(PP_Resource tcp_socket))&Pnacl_M29_PPB_TCPSocket_Dev_Close,
+    .SetOption = (int32_t (*)(PP_Resource tcp_socket, PP_TCPSocket_Option_Dev name, struct PP_Var value, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_TCPSocket_Dev_SetOption
+};
+
 /* Not generating wrapper interface for PPB_Testing_Dev_0_7 */
 
 /* Not generating wrapper interface for PPB_Testing_Dev_0_8 */
@@ -5160,6 +5223,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Scrollbar_Dev_0_5 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_Dev_0_1 = {
+  .iface_macro = PPB_TCPSOCKET_DEV_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_TCPSocket_Dev_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Testing_Dev_0_7 = {
   .iface_macro = PPB_TESTING_DEV_INTERFACE_0_7,
   .wrapped_iface = NULL /* Still need slot for real_iface */,
@@ -5710,6 +5779,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Printing_Dev_0_7,
   &Pnacl_WrapperInfo_PPB_ResourceArray_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_Scrollbar_Dev_0_5,
+  &Pnacl_WrapperInfo_PPB_TCPSocket_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_Testing_Dev_0_7,
   &Pnacl_WrapperInfo_PPB_Testing_Dev_0_8,
   &Pnacl_WrapperInfo_PPB_Testing_Dev_0_9,
