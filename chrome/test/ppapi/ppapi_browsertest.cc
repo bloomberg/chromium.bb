@@ -337,6 +337,46 @@ TEST_PPAPI_NACL_WITH_SSL_SERVER(TCPSocketPrivate)
 TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivateTrusted)
 TEST_PPAPI_IN_PROCESS_WITH_SSL_SERVER(TCPSocketPrivateTrusted)
 
+// UDPSocket tests.
+// UDPSocket_Broadcast is disabled for OSX because it requires root permissions
+// on OSX 10.7+.
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, UDPSocket) {
+  RunTestViaHTTP(
+      LIST_TEST(UDPSocket_ReadWrite)
+      LIST_TEST(UDPSocket_SetOption)
+#if !defined(OS_MACOSX)
+      LIST_TEST(UDPSocket_Broadcast)
+#endif
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, UDPSocket) {
+  RunTestViaHTTP(
+      LIST_TEST(UDPSocket_ReadWrite)
+      LIST_TEST(UDPSocket_SetOption)
+#if !defined(OS_MACOSX)
+      LIST_TEST(UDPSocket_Broadcast)
+#endif
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(UDPSocket)) {
+  RunTestViaHTTP(
+      LIST_TEST(UDPSocket_ReadWrite)
+      LIST_TEST(UDPSocket_SetOption)
+#if !defined(OS_MACOSX)
+      LIST_TEST(UDPSocket_Broadcast)
+#endif
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, UDPSocket) {
+  RunTestViaHTTP(
+      LIST_TEST(UDPSocket_ReadWrite)
+      LIST_TEST(UDPSocket_SetOption)
+#if !defined(OS_MACOSX)
+      LIST_TEST(UDPSocket_Broadcast)
+#endif
+  );
+}
+
 // UDPSocketPrivate tests.
 // UDPSocketPrivate_Broadcast is disabled for OSX because it requires
 // root permissions on OSX 10.7+.

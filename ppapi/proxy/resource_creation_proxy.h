@@ -140,6 +140,7 @@ class ResourceCreationProxy : public InterfaceProxy,
       PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateTCPSocket(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateUDPSocket(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateWebSocket(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateX509CertificatePrivate(

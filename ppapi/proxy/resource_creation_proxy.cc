@@ -40,6 +40,7 @@
 #include "ppapi/proxy/talk_resource.h"
 #include "ppapi/proxy/truetype_font_resource.h"
 #include "ppapi/proxy/udp_socket_private_resource.h"
+#include "ppapi/proxy/udp_socket_resource.h"
 #include "ppapi/proxy/url_loader_resource.h"
 #include "ppapi/proxy/url_request_info_resource.h"
 #include "ppapi/proxy/url_response_info_resource.h"
@@ -311,6 +312,10 @@ PP_Resource ResourceCreationProxy::CreateTCPSocket(
 PP_Resource ResourceCreationProxy::CreateTCPSocketPrivate(
     PP_Instance instance) {
   return PPB_TCPSocket_Private_Proxy::CreateProxyResource(instance);
+}
+
+PP_Resource ResourceCreationProxy::CreateUDPSocket(PP_Instance instance) {
+  return (new UDPSocketResource(GetConnection(), instance))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateUDPSocketPrivate(

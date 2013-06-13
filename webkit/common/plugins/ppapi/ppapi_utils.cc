@@ -29,6 +29,7 @@
 #include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/dev/ppb_trace_event_dev.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
+#include "ppapi/c/dev/ppb_udp_socket_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/dev/ppb_var_array_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"

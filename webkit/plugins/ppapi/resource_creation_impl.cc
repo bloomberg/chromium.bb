@@ -252,6 +252,10 @@ PP_Resource ResourceCreationImpl::CreateTCPSocketPrivate(PP_Instance instance) {
   return PPB_TCPSocket_Private_Impl::CreateResource(instance);
 }
 
+PP_Resource ResourceCreationImpl::CreateUDPSocket(PP_Instance instance) {
+  return 0;  // Not supported in-process.
+}
+
 PP_Resource ResourceCreationImpl::CreateUDPSocketPrivate(PP_Instance instance) {
   return 0;  // Not supported in-process.
 }
