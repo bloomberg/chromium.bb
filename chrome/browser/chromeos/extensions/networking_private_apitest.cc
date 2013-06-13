@@ -107,9 +107,6 @@ class ExtensionNetworkingPrivateApiTest :
     ShillServiceClient::TestInterface* service_test =
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
 
-    g_browser_process->browser_policy_connector()->
-        GetNetworkConfigurationUpdater()->OnUserPolicyInitialized(
-            false, userhash_);
     device_test->ClearDevices();
     service_test->ClearServices();
 

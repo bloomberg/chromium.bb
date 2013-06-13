@@ -33,9 +33,12 @@ class NetworkConfigurationUpdaterImpl : public NetworkConfigurationUpdater {
   virtual ~NetworkConfigurationUpdaterImpl();
 
   // NetworkConfigurationUpdater overrides.
-  virtual void OnUserPolicyInitialized(
+  virtual void SetUserPolicyService(
       bool allow_trusted_certs_from_policy,
-      const std::string& hashed_username) OVERRIDE;
+      const std::string& hashed_username,
+      PolicyService* user_policy_service) OVERRIDE;
+
+  virtual void UnsetUserPolicyService() OVERRIDE;
 
  private:
   // Callback that's called by |policy_service_| if the respective ONC policy

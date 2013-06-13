@@ -18,7 +18,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/bind.h"
-#include "base/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -36,56 +35,6 @@
 #endif
 
 namespace policy {
-
-#if defined(OS_CHROMEOS)
-class ProfilePolicyConnector::PolicyInitializationObserver
-    : public PolicyService::Observer {
- public:
-  PolicyInitializationObserver(const base::Closure& closure,
-                               PolicyService* policy_service)
-      : closure_(closure),
-        policy_service_(policy_service),
-        weak_ptr_factory_(this) {
-    if (policy_service_->IsInitializationComplete(POLICY_DOMAIN_CHROME))
-      OnPolicyServiceInitialized(POLICY_DOMAIN_CHROME);
-    else
-      policy_service_->AddObserver(POLICY_DOMAIN_CHROME, this);
-  }
-
-  virtual ~PolicyInitializationObserver() {
-    policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, this);
-  }
-
-  // PolicyService::Observer overrides.
-  virtual void OnPolicyUpdated(const PolicyNamespace& ns,
-                               const PolicyMap& previous,
-                               const PolicyMap& current) OVERRIDE {
-    // Ignore policy changes.
-  }
-
-  virtual void OnPolicyServiceInitialized(PolicyDomain domain) OVERRIDE {
-    if (domain != POLICY_DOMAIN_CHROME)
-      return;
-    policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, this);
-    // Delay one cycle, so that the policies are propagated to the device policy
-    // service before calling the closure.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&PolicyInitializationObserver::RunClosure,
-                              weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  void RunClosure() {
-    closure_.Run();
-  }
-
- private:
-  base::Closure closure_;
-  PolicyService* policy_service_;
-  base::WeakPtrFactory<PolicyInitializationObserver> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(PolicyInitializationObserver);
-};
-#endif
 
 ProfilePolicyConnector::ProfilePolicyConnector(Profile* profile)
     : profile_(profile),
@@ -175,8 +124,12 @@ void ProfilePolicyConnector::InitForTesting(scoped_ptr<PolicyService> service) {
 void ProfilePolicyConnector::Shutdown() {
 #if defined(OS_CHROMEOS)
   if (is_primary_user_) {
-    g_browser_process->browser_policy_connector()->SetUserPolicyDelegate(NULL);
-    user_policy_init_observer_.reset();
+    BrowserPolicyConnector* connector =
+        g_browser_process->browser_policy_connector();
+    connector->SetUserPolicyDelegate(NULL);
+    NetworkConfigurationUpdater* network_updater =
+        connector->GetNetworkConfigurationUpdater();
+    network_updater->UnsetUserPolicyService();
   }
   if (device_local_account_policy_provider_)
     device_local_account_policy_provider_->Shutdown();
@@ -222,13 +175,8 @@ void ProfilePolicyConnector::InitializeNetworkConfigurationUpdater(
       g_browser_process->browser_policy_connector();
   NetworkConfigurationUpdater* network_updater =
       connector->GetNetworkConfigurationUpdater();
-
-  user_policy_init_observer_.reset(new PolicyInitializationObserver(
-      base::Bind(&NetworkConfigurationUpdater::OnUserPolicyInitialized,
-                 base::Unretained(network_updater),
-                 is_managed,
-                 hashed_username),
-      policy_service()));
+  network_updater->SetUserPolicyService(
+      is_managed, hashed_username, policy_service());
 }
 #endif
 

@@ -15,6 +15,8 @@ class CertTrustAnchorProvider;
 
 namespace policy {
 
+class PolicyService;
+
 // Keeps track of the network configuration policy settings and pushes changes
 // to the respective configuration backend, which in turn writes configurations
 // to Shill.
@@ -23,14 +25,20 @@ class NetworkConfigurationUpdater {
   NetworkConfigurationUpdater();
   virtual ~NetworkConfigurationUpdater();
 
-  // Notifies this updater that the user policy is initialized. Before this
-  // function is called, the user policy is not applied. This function may
-  // trigger immediate policy applications.
-  // Web trust isn't given to certificates imported from ONC by default. Setting
+  // Provides the user policy service to the updater. Before this function is
+  // called and the policy service is completely initialized, the user policy is
+  // not applied. This function may trigger immediate policy applications.  Web
+  // trust isn't given to certificates imported from ONC by default. Setting
   // |allow_trust_certs_from_policy| to true allows giving Web trust to the
-  // certificates that request it.
-  virtual void OnUserPolicyInitialized(bool allow_trusted_certs_from_policy,
-                                       const std::string& hashed_username) = 0;
+  // certificates that request it. The pointer |user_policy_service| is
+  // stored until UnsetUserPolicyService is called.
+  virtual void SetUserPolicyService(bool allow_trusted_certs_from_policy,
+                                    const std::string& hashed_username,
+                                    PolicyService* user_policy_service) = 0;
+
+  // Unregisters from the PolicyService previously provided by
+  // SetUserPolicyService and unsets the stored pointer.
+  virtual void UnsetUserPolicyService() = 0;
 
   // Returns a CertTrustAnchorProvider that provides the list of server and
   // CA certificates with the Web trust flag set that were retrieved from the

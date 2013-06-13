@@ -20,6 +20,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/network_configuration_updater.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #endif
 
@@ -43,9 +45,14 @@ class CertificateManagerBrowserTest : public options::OptionsBrowserTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
 #if defined(OS_CHROMEOS)
+    Profile* profile = browser()->profile();
+    policy::ProfilePolicyConnector* connector =
+        policy::ProfilePolicyConnectorFactory::GetForProfile(profile);
+
     // Enable web trust certs from policy.
     g_browser_process->browser_policy_connector()->
-        GetNetworkConfigurationUpdater()->OnUserPolicyInitialized(true, "");
+        GetNetworkConfigurationUpdater()->SetUserPolicyService(
+            true, "", connector->policy_service());
 #endif
   }
 

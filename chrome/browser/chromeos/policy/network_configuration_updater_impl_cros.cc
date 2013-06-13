@@ -20,15 +20,16 @@
 namespace policy {
 
 NetworkConfigurationUpdaterImplCros::NetworkConfigurationUpdaterImplCros(
-    PolicyService* policy_service,
+    PolicyService* device_policy_service,
     chromeos::NetworkLibrary* network_library,
     scoped_ptr<chromeos::CertificateHandler> certificate_handler)
     : policy_change_registrar_(
-          policy_service, PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())),
+          device_policy_service,
+          PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())),
       network_library_(network_library),
       certificate_handler_(certificate_handler.Pass()),
-      user_policy_initialized_(false),
-      policy_service_(policy_service) {
+      user_policy_service_(NULL),
+      device_policy_service_(device_policy_service) {
   DCHECK(network_library_);
   policy_change_registrar_.Observe(
       key::kDeviceOpenNetworkConfiguration,
@@ -42,13 +43,19 @@ NetworkConfigurationUpdaterImplCros::NetworkConfigurationUpdaterImplCros(
                  chromeos::onc::ONC_SOURCE_USER_POLICY));
 
   network_library_->AddNetworkProfileObserver(this);
-
-  // Apply the current policies immediately.
-  ApplyNetworkConfigurations();
+  if (device_policy_service_->IsInitializationComplete(POLICY_DOMAIN_CHROME)) {
+    // Apply the current policies immediately.
+    VLOG(1) << "Device policy service is already initialized.";
+    ApplyNetworkConfigurations();
+  } else {
+    device_policy_service_->AddObserver(POLICY_DOMAIN_CHROME, this);
+  }
 }
 
 NetworkConfigurationUpdaterImplCros::~NetworkConfigurationUpdaterImplCros() {
   network_library_->RemoveNetworkProfileObserver(this);
+  DCHECK(!user_policy_service_);
+  device_policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, this);
 }
 
 void NetworkConfigurationUpdaterImplCros::OnProfileListChanged() {
@@ -56,13 +63,55 @@ void NetworkConfigurationUpdaterImplCros::OnProfileListChanged() {
   ApplyNetworkConfigurations();
 }
 
-void NetworkConfigurationUpdaterImplCros::OnUserPolicyInitialized(
+void NetworkConfigurationUpdaterImplCros::SetUserPolicyService(
     bool allow_trust_certs_from_policy,
-    const std::string& hashed_username) {
-  VLOG(1) << "User policy initialized, applying policies.";
-  user_policy_initialized_ = true;
+    const std::string& hashed_username,
+    PolicyService* user_policy_service) {
+  VLOG(1) << "Got user policy service.";
+  user_policy_service_ = user_policy_service;
   if (allow_trust_certs_from_policy)
     SetAllowTrustedCertsFromPolicy();
+
+  if (user_policy_service_->IsInitializationComplete(POLICY_DOMAIN_CHROME)) {
+    VLOG(1) << "User policy service is already initialized.";
+    ApplyNetworkConfigurations();
+  } else {
+    user_policy_service_->AddObserver(POLICY_DOMAIN_CHROME, this);
+  }
+}
+
+void NetworkConfigurationUpdaterImplCros::UnsetUserPolicyService() {
+  if (!user_policy_service_)
+    return;
+
+  user_policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, this);
+  user_policy_service_ = NULL;
+}
+
+void NetworkConfigurationUpdaterImplCros::OnPolicyUpdated(
+    const PolicyNamespace& ns,
+    const PolicyMap& previous,
+    const PolicyMap& current) {
+  // Ignore this call. Policy changes are already observed by the registrar.
+}
+
+void NetworkConfigurationUpdaterImplCros::OnPolicyServiceInitialized(
+    PolicyDomain domain) {
+  if (domain != POLICY_DOMAIN_CHROME)
+    return;
+
+  // We don't know which policy service called this function, thus check
+  // both. Multiple removes are handled gracefully.
+  if (device_policy_service_->IsInitializationComplete(POLICY_DOMAIN_CHROME)) {
+    VLOG(1) << "Device policy service initialized.";
+    device_policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, this);
+  }
+  if (user_policy_service_ &&
+      user_policy_service_->IsInitializationComplete(POLICY_DOMAIN_CHROME)) {
+    VLOG(1) << "User policy service initialized.";
+    user_policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, this);
+  }
+
   ApplyNetworkConfigurations();
 }
 
@@ -76,20 +125,27 @@ void NetworkConfigurationUpdaterImplCros::OnPolicyChanged(
 }
 
 void NetworkConfigurationUpdaterImplCros::ApplyNetworkConfigurations() {
+  if (!device_policy_service_->IsInitializationComplete(POLICY_DOMAIN_CHROME))
+    return;
+
   ApplyNetworkConfiguration(key::kDeviceOpenNetworkConfiguration,
-                            chromeos::onc::ONC_SOURCE_DEVICE_POLICY);
-  if (user_policy_initialized_) {
+                            chromeos::onc::ONC_SOURCE_DEVICE_POLICY,
+                            device_policy_service_);
+  if (user_policy_service_ &&
+      user_policy_service_->IsInitializationComplete(POLICY_DOMAIN_CHROME)) {
     ApplyNetworkConfiguration(key::kOpenNetworkConfiguration,
-                              chromeos::onc::ONC_SOURCE_USER_POLICY);
+                              chromeos::onc::ONC_SOURCE_USER_POLICY,
+                              user_policy_service_);
   }
 }
 
 void NetworkConfigurationUpdaterImplCros::ApplyNetworkConfiguration(
     const std::string& policy_key,
-    chromeos::onc::ONCSource onc_source) {
+    chromeos::onc::ONCSource onc_source,
+    PolicyService* policy_service) {
   VLOG(1) << "Apply policy for ONC source "
           << chromeos::onc::GetSourceAsString(onc_source);
-  const PolicyMap& policies = policy_service_->GetPolicies(
+  const PolicyMap& policies = policy_service->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   const base::Value* policy_value = policies.GetValue(policy_key);
 

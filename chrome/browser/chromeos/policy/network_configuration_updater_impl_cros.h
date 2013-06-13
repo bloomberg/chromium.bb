@@ -34,10 +34,13 @@ class PolicyMap;
 // only the device policy is applied.
 class NetworkConfigurationUpdaterImplCros
     : public NetworkConfigurationUpdater,
-      public chromeos::NetworkLibrary::NetworkProfileObserver {
+      public chromeos::NetworkLibrary::NetworkProfileObserver,
+      public PolicyService::Observer {
  public:
+  // The pointer |device_policy_service| is stored. The caller must guarantee
+  // that it's outliving the updater.
   NetworkConfigurationUpdaterImplCros(
-      PolicyService* policy_service,
+      PolicyService* device_policy_service,
       chromeos::NetworkLibrary* network_library,
       scoped_ptr<chromeos::CertificateHandler> certificate_handler);
   virtual ~NetworkConfigurationUpdaterImplCros();
@@ -48,9 +51,18 @@ class NetworkConfigurationUpdaterImplCros
   // NetworkConfigurationUpdater overrides.
 
   // In this implementation, this function applies both device and user policy.
-  virtual void OnUserPolicyInitialized(
+  virtual void SetUserPolicyService(
       bool allow_trusted_certs_from_policy,
-      const std::string& hashed_username) OVERRIDE;
+      const std::string& hashed_username,
+      PolicyService* user_policy_service) OVERRIDE;
+
+  virtual void UnsetUserPolicyService() OVERRIDE;
+
+  // PolicyService::Observer overrides for both device and user policies.
+  virtual void OnPolicyUpdated(const PolicyNamespace& ns,
+                               const PolicyMap& previous,
+                               const PolicyMap& current) OVERRIDE;
+  virtual void OnPolicyServiceInitialized(PolicyDomain domain) OVERRIDE;
 
  private:
   // Callback that's called by |policy_service_| if the respective ONC policy
@@ -67,7 +79,8 @@ class NetworkConfigurationUpdaterImplCros
   // Push the policy stored at |policy_key| for |onc_source| to
   // |network_library_|.
   void ApplyNetworkConfiguration(const std::string& policy_key,
-                                 chromeos::onc::ONCSource onc_source);
+                                 chromeos::onc::ONCSource onc_source,
+                                 PolicyService* policy_service);
 
   // Wraps the policy service we read network configuration from.
   PolicyChangeRegistrar policy_change_registrar_;
@@ -77,11 +90,14 @@ class NetworkConfigurationUpdaterImplCros
 
   scoped_ptr<chromeos::CertificateHandler> certificate_handler_;
 
-  // Whether the user policy is already available.
-  bool user_policy_initialized_;
+  // Needed to check whether user policies are ready.
+  // Unowned.
+  PolicyService* user_policy_service_;
 
-  // The policy service storing the ONC policies.
-  PolicyService* policy_service_;
+  // The device policy service storing the ONC policies. Also needed to check
+  // whether device policies are ready.
+  // Unowned.
+  PolicyService* device_policy_service_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationUpdaterImplCros);
 };

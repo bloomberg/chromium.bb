@@ -44,14 +44,19 @@ NetworkConfigurationUpdaterImpl::NetworkConfigurationUpdaterImpl(
 NetworkConfigurationUpdaterImpl::~NetworkConfigurationUpdaterImpl() {
 }
 
-void NetworkConfigurationUpdaterImpl::OnUserPolicyInitialized(
+void NetworkConfigurationUpdaterImpl::SetUserPolicyService(
     bool allow_trusted_certs_from_policy,
-    const std::string& hashed_username) {
+    const std::string& hashed_username,
+    PolicyService* user_policy_service) {
+  // TODO(pneubeck): observe user_policy_service for the actual initialization.
   VLOG(1) << "User policy initialized.";
   hashed_username_ = hashed_username;
   if (allow_trusted_certs_from_policy)
     SetAllowTrustedCertsFromPolicy();
   ApplyNetworkConfiguration(chromeos::onc::ONC_SOURCE_USER_POLICY);
+}
+
+void NetworkConfigurationUpdaterImpl::UnsetUserPolicyService() {
 }
 
 void NetworkConfigurationUpdaterImpl::OnPolicyChanged(
