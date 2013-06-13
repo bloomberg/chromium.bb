@@ -10795,6 +10795,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="UMA.LowEntropySourceValue">
+  <summary>
+    Distribution of the low entropy source value used for field trial
+    randomization, recorded on startup.
+  </summary>
+</histogram>
+
 <histogram name="UMA.Perf.GetData" enum="GetPerfDataOutcome">
   <summary>
     A count of successes and various failure modes related to collecting and

@@ -536,12 +536,15 @@ scoped_ptr<const base::FieldTrial::EntropyProvider>
   //  1) It makes the entropy source less identifiable for parties that do not
   //     know the low entropy source.
   //  2) It makes the final entropy source resettable.
+  const int low_entropy_source_value = GetLowEntropySource();
+  UMA_HISTOGRAM_SPARSE_SLOWLY("UMA.LowEntropySourceValue",
+                              low_entropy_source_value);
   if (reporting_will_be_enabled) {
     if (entropy_source_returned_ == LAST_ENTROPY_NONE)
       entropy_source_returned_ = LAST_ENTROPY_HIGH;
     DCHECK_EQ(LAST_ENTROPY_HIGH, entropy_source_returned_);
     const std::string high_entropy_source =
-        client_id_ + base::IntToString(GetLowEntropySource());
+        client_id_ + base::IntToString(low_entropy_source_value);
     return scoped_ptr<const base::FieldTrial::EntropyProvider>(
         new metrics::SHA1EntropyProvider(high_entropy_source));
   }
@@ -554,11 +557,11 @@ scoped_ptr<const base::FieldTrial::EntropyProvider>
   return scoped_ptr<const base::FieldTrial::EntropyProvider>(
       new metrics::CachingPermutedEntropyProvider(
           g_browser_process->local_state(),
-          GetLowEntropySource(),
+          low_entropy_source_value,
           kMaxLowEntropySize));
 #else
   return scoped_ptr<const base::FieldTrial::EntropyProvider>(
-      new metrics::PermutedEntropyProvider(GetLowEntropySource(),
+      new metrics::PermutedEntropyProvider(low_entropy_source_value,
                                            kMaxLowEntropySize));
 #endif
 }
