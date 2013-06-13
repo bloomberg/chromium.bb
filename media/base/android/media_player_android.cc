@@ -54,12 +54,12 @@ void MediaPlayerAndroid::OnMediaMetadataChanged(
 
 void MediaPlayerAndroid::RequestMediaResourcesFromManager() {
   if (manager_)
-    manager_->RequestMediaResources(this);
+    manager_->RequestMediaResources(player_id_);
 }
 
 void MediaPlayerAndroid::ReleaseMediaResourcesFromManager() {
   if (manager_)
-    manager_->ReleaseMediaResources(this);
+    manager_->ReleaseMediaResources(player_id_);
 }
 
 void MediaPlayerAndroid::DemuxerReady(

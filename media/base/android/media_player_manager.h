@@ -16,6 +16,7 @@ class RenderViewHost;
 
 namespace media {
 
+class MediaDrmBridge;
 class MediaPlayerAndroid;
 class MediaResourceGetter;
 
@@ -45,11 +46,11 @@ class MEDIA_EXPORT MediaPlayerManager {
   // media streams. This helps the manager object maintain an array
   // of active MediaPlayerAndroid objects and release the resources
   // when needed.
-  virtual void RequestMediaResources(MediaPlayerAndroid* player) = 0;
+  virtual void RequestMediaResources(int player_id) = 0;
 
   // Called when a MediaPlayerAndroid object releases all its decoding
   // resources.
-  virtual void ReleaseMediaResources(MediaPlayerAndroid* player) = 0;
+  virtual void ReleaseMediaResources(int player_id) = 0;
 
   // Return a pointer to the MediaResourceGetter object.
   virtual MediaResourceGetter* GetMediaResourceGetter() = 0;
@@ -106,24 +107,27 @@ class MEDIA_EXPORT MediaPlayerManager {
   // Called when player wants to read the config data from the demuxer.
   virtual void OnMediaConfigRequest(int player_id) = 0;
 
+  // Get the MediaDrmBridge object for the given media key Id.
+  virtual media::MediaDrmBridge* GetDrmBridge(int media_keys_id) = 0;
+
   // TODO(xhwang): The following three methods needs to be decoupled from
   // MediaPlayerManager to support the W3C Working Draft version of the EME
   // spec.
 
-  // Called when the player wants to send a KeyAdded.
-  virtual void OnKeyAdded(int player_id,
+  // Called when the DRM engine wants to send a KeyAdded.
+  virtual void OnKeyAdded(int key_id,
                           const std::string& key_system,
                           const std::string& session_id) = 0;
 
-  // Called when the player wants to send a KeyError.
-  virtual void OnKeyError(int player_id,
+  // Called when the DRM engine wants to send a KeyError.
+  virtual void OnKeyError(int key_id,
                           const std::string& key_system,
                           const std::string& session_id,
                           media::MediaKeys::KeyError error_code,
                           int system_code) = 0;
 
-  // Called when the player wants to send a KeyMessage.
-  virtual void OnKeyMessage(int player_id,
+  // Called when the DRM engine wants to send a KeyMessage.
+  virtual void OnKeyMessage(int key_id,
                             const std::string& key_system,
                             const std::string& session_id,
                             const std::string& message,
