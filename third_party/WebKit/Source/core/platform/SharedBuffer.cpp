@@ -34,6 +34,13 @@
 #include <wtf/unicode/Unicode.h>
 #include <wtf/unicode/UTF8.h>
 
+#undef SHARED_BUFFER_STATS
+
+#ifdef SHARED_BUFFER_STATS
+#include "wtf/DataLog.h"
+#include "wtf/MainThread.h"
+#endif
+
 using namespace std;
 
 namespace WebCore {
@@ -61,15 +68,96 @@ static inline void freeSegment(char* p)
     fastFree(p);
 }
 
+#ifdef SHARED_BUFFER_STATS
+
+static Mutex& statsMutex()
+{
+    DEFINE_STATIC_LOCAL(Mutex, mutex, ());
+    return mutex;
+}
+
+static HashSet<SharedBuffer*>& liveBuffers()
+{
+    DEFINE_STATIC_LOCAL(HashSet<SharedBuffer*>, buffers, ());
+    return buffers;
+}
+
+static bool sizeComparator(SharedBuffer* a, SharedBuffer* b)
+{
+    return a->size() > b->size();
+}
+
+static CString snippetForBuffer(SharedBuffer* sharedBuffer)
+{
+    const unsigned kMaxSnippetLength = 64;
+    char* snippet = 0;
+    unsigned snippetLength = std::min(sharedBuffer->size(), kMaxSnippetLength);
+    CString result = CString::newUninitialized(snippetLength, snippet);
+
+    const char* segment;
+    unsigned offset = 0;
+    while (unsigned segmentLength = sharedBuffer->getSomeData(segment, offset)) {
+        unsigned length = std::min(segmentLength, snippetLength - offset);
+        memcpy(snippet + offset, segment, length);
+        offset += segmentLength;
+        if (offset >= snippetLength)
+            break;
+    }
+
+    for (unsigned i = 0; i < snippetLength; ++i) {
+        if (!isASCIIPrintable(snippet[i]))
+            snippet[i] = '?';
+    }
+
+    return result;
+}
+
+static void printStats(void*)
+{
+    MutexLocker locker(statsMutex());
+    Vector<SharedBuffer*> buffers;
+    for (HashSet<SharedBuffer*>::const_iterator iter = liveBuffers().begin(); iter != liveBuffers().end(); ++iter)
+        buffers.append(*iter);
+    std::sort(buffers.begin(), buffers.end(), sizeComparator);
+
+    dataLogF("---- Shared Buffer Stats ----\n");
+    for (size_t i = 0; i < buffers.size() && i < 64; ++i) {
+        CString snippet = snippetForBuffer(buffers[i]);
+        dataLogF("Buffer size=%8u %s\n", buffers[i]->size(), snippet.data());
+    }
+}
+
+static void didCreateSharedBuffer(SharedBuffer* buffer)
+{
+    MutexLocker locker(statsMutex());
+    liveBuffers().add(buffer);
+
+    callOnMainThread(printStats, 0);
+}
+
+static void willDestroySharedBuffer(SharedBuffer* buffer)
+{
+    MutexLocker locker(statsMutex());
+    liveBuffers().remove(buffer);
+}
+
+#endif
+
 SharedBuffer::SharedBuffer()
     : m_size(0)
 {
+#ifdef SHARED_BUFFER_STATS
+    didCreateSharedBuffer(this);
+#endif
 }
 
 SharedBuffer::SharedBuffer(size_t size)
     : m_size(size)
     , m_buffer(size)
 {
+#ifdef SHARED_BUFFER_STATS
+    didCreateSharedBuffer(this);
+#endif
 }
 
 SharedBuffer::SharedBuffer(const char* data, int size)
@@ -80,6 +168,10 @@ SharedBuffer::SharedBuffer(const char* data, int size)
         CRASH();
 
     append(data, size);
+
+#ifdef SHARED_BUFFER_STATS
+    didCreateSharedBuffer(this);
+#endif
 }
 
 SharedBuffer::SharedBuffer(const unsigned char* data, int size)
@@ -90,11 +182,19 @@ SharedBuffer::SharedBuffer(const unsigned char* data, int size)
         CRASH();
 
     append(reinterpret_cast<const char*>(data), size);
+
+#ifdef SHARED_BUFFER_STATS
+    didCreateSharedBuffer(this);
+#endif
 }
     
 SharedBuffer::~SharedBuffer()
 {
     clear();
+
+#ifdef SHARED_BUFFER_STATS
+    willDestroySharedBuffer(this);
+#endif
 }
 
 PassRefPtr<SharedBuffer> SharedBuffer::adoptVector(Vector<char>& vector)
