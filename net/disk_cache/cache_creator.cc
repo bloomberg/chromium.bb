@@ -84,8 +84,8 @@ int CacheCreator::Run() {
   // appropriate.
   if (backend_type_ == net::CACHE_BACKEND_SIMPLE && type_ == net::DISK_CACHE) {
     disk_cache::SimpleBackendImpl* simple_cache =
-        new disk_cache::SimpleBackendImpl(
-            path_, max_bytes_, type_, thread_.get(), net_log_);
+        new disk_cache::SimpleBackendImpl(path_, max_bytes_, type_,
+                                          thread_.get(), net_log_);
     created_cache_ = simple_cache;
     return simple_cache->Init(
         base::Bind(&CacheCreator::OnIOComplete, base::Unretained(this)));

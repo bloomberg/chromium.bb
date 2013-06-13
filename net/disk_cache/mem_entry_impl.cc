@@ -378,11 +378,8 @@ int MemEntryImpl::InternalReadSparseData(int64 offset, IOBuffer* buf,
           CreateNetLogSparseReadWriteCallback(child->net_log().source(),
                                               io_buf->BytesRemaining()));
     }
-    int ret = child->ReadData(kSparseData,
-                              child_offset,
-                              io_buf.get(),
-                              io_buf->BytesRemaining(),
-                              CompletionCallback());
+    int ret = child->ReadData(kSparseData, child_offset, io_buf.get(),
+                              io_buf->BytesRemaining(), CompletionCallback());
     if (net_log_.IsLoggingAllEvents()) {
       net_log_.EndEventWithNetErrorCode(
           net::NetLog::TYPE_SPARSE_READ_CHILD_DATA, ret);
@@ -443,12 +440,8 @@ int MemEntryImpl::InternalWriteSparseData(int64 offset, IOBuffer* buf,
     // previously written.
     // TODO(hclam): if there is data in the entry and this write is not
     // continuous we may want to discard this write.
-    int ret = child->WriteData(kSparseData,
-                               child_offset,
-                               io_buf.get(),
-                               write_len,
-                               CompletionCallback(),
-                               true);
+    int ret = child->WriteData(kSparseData, child_offset, io_buf.get(),
+                               write_len, CompletionCallback(), true);
     if (net_log_.IsLoggingAllEvents()) {
       net_log_.EndEventWithNetErrorCode(
           net::NetLog::TYPE_SPARSE_WRITE_CHILD_DATA, ret);
