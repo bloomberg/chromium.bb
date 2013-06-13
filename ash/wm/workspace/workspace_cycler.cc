@@ -31,7 +31,6 @@ bool IsCyclingAllowed() {
 
 WorkspaceCycler::WorkspaceCycler(WorkspaceManager* workspace_manager)
     : workspace_manager_(workspace_manager),
-      animator_(NULL),
       state_(NOT_CYCLING),
       scroll_x_(0.0f),
       scroll_y_(0.0f) {

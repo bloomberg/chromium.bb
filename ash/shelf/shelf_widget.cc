@@ -427,15 +427,13 @@ void ShelfWidget::DelegateView::UpdateBackground(int alpha) {
   SchedulePaint();
 }
 
-ShelfWidget::ShelfWidget(
-    aura::Window* shelf_container,
-    aura::Window* status_container,
-    internal::WorkspaceController* workspace_controller) :
-    launcher_(NULL),
-    delegate_view_(new DelegateView(this)),
-    background_animator_(delegate_view_, 0, kLauncherBackgroundAlpha),
-    activating_as_fallback_(false),
-    window_container_(shelf_container) {
+ShelfWidget::ShelfWidget(aura::Window* shelf_container,
+                         aura::Window* status_container,
+                         internal::WorkspaceController* workspace_controller)
+    : delegate_view_(new DelegateView(this)),
+      background_animator_(delegate_view_, 0, kLauncherBackgroundAlpha),
+      activating_as_fallback_(false),
+      window_container_(shelf_container) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.transparent = true;

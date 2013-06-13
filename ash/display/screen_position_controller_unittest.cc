@@ -47,7 +47,7 @@ internal::ScreenPositionController* GetScreenPositionController() {
 
 class ScreenPositionControllerTest : public test::AshTestBase {
  public:
-  ScreenPositionControllerTest() : window_(NULL) {}
+  ScreenPositionControllerTest() {}
   virtual ~ScreenPositionControllerTest() {}
 
   virtual void SetUp() OVERRIDE {

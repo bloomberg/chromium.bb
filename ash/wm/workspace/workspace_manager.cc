@@ -116,8 +116,7 @@ WorkspaceManager::WorkspaceManager(Window* contents_window)
       clear_unminimizing_workspace_factory_(this),
       unminimizing_workspace_(NULL),
       app_terminating_(false),
-      creating_fade_(false),
-      workspace_cycler_(NULL) {
+      creating_fade_(false) {
   // Clobber any existing event filter.
   contents_window->SetEventFilter(NULL);
   // |contents_window| takes ownership of LayoutManagerImpl.

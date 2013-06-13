@@ -230,9 +230,7 @@ FramePainter::FramePainter()
       crossfade_theme_frame_id_(0),
       crossfade_theme_frame_overlay_id_(0),
       crossfade_opacity_(0),
-      crossfade_animation_(NULL),
-      size_button_behavior_(SIZE_BUTTON_MAXIMIZES) {
-}
+      size_button_behavior_(SIZE_BUTTON_MAXIMIZES) {}
 
 FramePainter::~FramePainter() {
   // Sometimes we are destroyed before the window closes, so ensure we clean up.

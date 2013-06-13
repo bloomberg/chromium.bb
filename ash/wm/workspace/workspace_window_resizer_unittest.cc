@@ -67,7 +67,7 @@ class TestWindowDelegate : public aura::test::TestWindowDelegate {
 
 class WorkspaceWindowResizerTest : public test::AshTestBase {
  public:
-  WorkspaceWindowResizerTest() : window_(NULL) {}
+  WorkspaceWindowResizerTest() {}
   virtual ~WorkspaceWindowResizerTest() {}
 
   virtual void SetUp() OVERRIDE {

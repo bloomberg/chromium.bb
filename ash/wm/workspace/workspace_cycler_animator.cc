@@ -362,10 +362,7 @@ WorkspaceCyclerAnimator::WorkspaceCyclerAnimator(Delegate* delegate)
       initial_active_workspace_index_(0),
       selected_workspace_index_(0),
       scroll_delta_(0),
-      animation_type_(NONE),
-      launcher_background_controller_(NULL),
-      style_calculator_(NULL) {
-}
+      animation_type_(NONE) {}
 
 WorkspaceCyclerAnimator::~WorkspaceCyclerAnimator() {
   StopObservingImplicitAnimations();

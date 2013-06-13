@@ -240,11 +240,9 @@ class LongPressAffordanceHandler::LongPressAffordanceView
 
 LongPressAffordanceHandler::LongPressAffordanceHandler()
     : ui::LinearAnimation(kAffordanceFrameRateHz, this),
-      view_(NULL),
       tap_down_touch_id_(-1),
       tap_down_display_id_(0),
-      current_animation_type_(NONE) {
-}
+      current_animation_type_(NONE) {}
 
 LongPressAffordanceHandler::~LongPressAffordanceHandler() {}
 

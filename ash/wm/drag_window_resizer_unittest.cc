@@ -32,7 +32,7 @@ const int kRootHeight = 600;
 
 class DragWindowResizerTest : public test::AshTestBase {
  public:
-  DragWindowResizerTest() : window_(NULL) {}
+  DragWindowResizerTest() {}
   virtual ~DragWindowResizerTest() {}
 
   virtual void SetUp() OVERRIDE {

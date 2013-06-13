@@ -139,8 +139,7 @@ class DragDropTrackerDelegate : public aura::WindowDelegate {
 // DragDropController, public:
 
 DragDropController::DragDropController()
-    : drag_image_(NULL),
-      drag_data_(NULL),
+    : drag_data_(NULL),
       drag_operation_(0),
       drag_window_(NULL),
       drag_source_window_(NULL),

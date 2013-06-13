@@ -166,7 +166,6 @@ namespace internal {
 RootWindowController::RootWindowController(aura::RootWindow* root_window)
     : root_window_(root_window),
       root_window_layout_(NULL),
-      shelf_(NULL),
       panel_layout_manager_(NULL),
       touch_observer_hud_(NULL) {
   SetRootWindowController(root_window, this);
