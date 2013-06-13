@@ -183,9 +183,9 @@ class PolicyTest(unittest.TestCase):
     bucket3 = dmprof.Bucket([0x18242, 0x181], 'malloc', 0x949, '_Z')
     bucket3.symbolize(symbol_mapping_cache)
 
-    self.assertEqual('malloc-v8', policy.find(bucket1))
-    self.assertEqual('malloc-WebKit', policy.find(bucket2))
-    self.assertEqual('malloc-catch-all', policy.find(bucket3))
+    self.assertEqual('malloc-v8', policy.find_malloc(bucket1))
+    self.assertEqual('malloc-WebKit', policy.find_malloc(bucket2))
+    self.assertEqual('malloc-catch-all', policy.find_malloc(bucket3))
 
 
 class BucketsCommandTest(unittest.TestCase):

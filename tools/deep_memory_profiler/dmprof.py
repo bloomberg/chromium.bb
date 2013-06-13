@@ -458,7 +458,14 @@ class Policy(object):
   def components(self):
     return self._components
 
-  def find(self, bucket):
+  def find_rule(self, component_name):
+    """Finds a rule whose name is |component_name|. """
+    for rule in self._rules:
+      if rule.name == component_name:
+        return rule
+    return None
+
+  def find_malloc(self, bucket):
     """Finds a matching component name which a given |bucket| belongs to.
 
     Args:
@@ -467,6 +474,8 @@ class Policy(object):
     Returns:
         A string representing a component name.
     """
+    assert not bucket or bucket.allocator_type == 'malloc'
+
     if not bucket:
       return 'no-bucket'
     if bucket.component_cache:
@@ -479,7 +488,7 @@ class Policy(object):
       typeinfo = bucket.typeinfo_name
 
     for rule in self._rules:
-      if (bucket.allocator_type == rule.allocator_type and
+      if (rule.allocator_type == 'malloc' and
           (not rule.stackfunction_pattern or
            rule.stackfunction_pattern.match(stackfunction)) and
           (not rule.stacksourcefile_pattern or
@@ -490,10 +499,62 @@ class Policy(object):
 
     assert False
 
-  def find_unhooked(self, region):
+  def find_mmap(self, region, bucket_set):
+    """Finds a matching component which a given mmap |region| belongs to.
+
+    It uses |bucket_set| to match with backtraces.
+
+    NOTE: Don't use Bucket's |component_cache| for mmap regions because they're
+    classified not only with bucket information (mappedpathname for example).
+
+    Args:
+        region: A tuple representing a memory region.
+        bucket_set: A BucketSet object to look up backtraces.
+
+    Returns:
+        A string representing a component name.
+    """
+    assert region[0] == 'hooked'
+    bucket = bucket_set.get(region[1]['bucket_id'])
+    assert not bucket or bucket.allocator_type == 'mmap'
+
+    if not bucket:
+      return 'no-bucket', None
+
+    stackfunction = bucket.symbolized_joined_stackfunction
+    stacksourcefile = bucket.symbolized_joined_stacksourcefile
+
     for rule in self._rules:
-      if (region[0] == 'unhooked' and
-          rule.allocator_type == 'unhooked' and
+      if (rule.allocator_type == 'mmap' and
+          (not rule.stackfunction_pattern or
+           rule.stackfunction_pattern.match(stackfunction)) and
+          (not rule.stacksourcefile_pattern or
+           rule.stacksourcefile_pattern.match(stacksourcefile)) and
+          (not rule.mappedpathname_pattern or
+           rule.mappedpathname_pattern.match(region[1]['vma']['name'])) and
+          (not rule.mappedpermission_pattern or
+           rule.mappedpermission_pattern.match(
+               region[1]['vma']['readable'] +
+               region[1]['vma']['writable'] +
+               region[1]['vma']['executable'] +
+               region[1]['vma']['private']))):
+        return rule.name, bucket
+
+    assert False
+
+  def find_unhooked(self, region):
+    """Finds a matching component which a given unhooked |region| belongs to.
+
+    Args:
+        region: A tuple representing a memory region.
+
+    Returns:
+        A string representing a component name.
+    """
+    assert region[0] == 'unhooked'
+
+    for rule in self._rules:
+      if (rule.allocator_type == 'unhooked' and
           (not rule.mappedpathname_pattern or
            rule.mappedpathname_pattern.match(region[1]['vma']['name'])) and
           (not rule.mappedpermission_pattern or
@@ -1372,8 +1433,9 @@ class PolicyCommands(Command):
     LOGGER.info('  %s' % dump.path)
     sizes = dict((c, 0) for c in policy.components)
 
-    PolicyCommands._accumulate(dump, policy, bucket_set, sizes)
-    verify_global_stats = PolicyCommands._accumulate_maps(dump, policy, sizes)
+    PolicyCommands._accumulate_malloc(dump, policy, bucket_set, sizes)
+    verify_global_stats = PolicyCommands._accumulate_maps(
+        dump, policy, bucket_set, sizes)
 
     # TODO(dmikurube): Remove the verifying code when GLOBAL_STATS is removed.
     # http://crbug.com/245603.
@@ -1447,22 +1509,26 @@ class PolicyCommands(Command):
     return sizes
 
   @staticmethod
-  def _accumulate(dump, policy, bucket_set, sizes):
+  def _accumulate_malloc(dump, policy, bucket_set, sizes):
     for line in dump.iter_stacktrace:
       words = line.split()
       bucket = bucket_set.get(int(words[BUCKET_ID]))
-      component_match = policy.find(bucket)
+      if not bucket or bucket.allocator_type == 'malloc':
+        component_match = policy.find_malloc(bucket)
+      elif bucket.allocator_type == 'mmap':
+        continue
+      else:
+        assert False
       sizes[component_match] += int(words[COMMITTED])
 
+      assert not component_match.startswith('mmap-')
       if component_match.startswith('tc-'):
         sizes['tc-total-log'] += int(words[COMMITTED])
-      elif component_match.startswith('mmap-'):
-        sizes['mmap-total-log'] += int(words[COMMITTED])
       else:
         sizes['other-total-log'] += int(words[COMMITTED])
 
   @staticmethod
-  def _accumulate_maps(dump, policy, sizes):
+  def _accumulate_maps(dump, policy, bucket_set, sizes):
     # TODO(dmikurube): Remove the dict when GLOBAL_STATS is removed.
     # http://crbug.com/245603.
     global_stats = {
@@ -1508,6 +1574,16 @@ class PolicyCommands(Command):
       if value[0] == 'unhooked':
         component_match = policy.find_unhooked(value)
         sizes[component_match] += int(value[1]['committed'])
+      elif value[0] == 'hooked':
+        component_match, _ = policy.find_mmap(value, bucket_set)
+        sizes[component_match] += int(value[1]['committed'])
+        assert not component_match.startswith('tc-')
+        if component_match.startswith('mmap-'):
+          sizes['mmap-total-log'] += int(value[1]['committed'])
+        else:
+          sizes['other-total-log'] += int(value[1]['committed'])
+      else:
+        LOGGER.error('Unrecognized mapping status: %s' % value[0])
 
     return global_stats
 
@@ -1652,20 +1728,17 @@ class MapCommand(Command):
       out.write('%x-%x\n' % (begin, end))
       if len(attr) < max_dump_count:
         attr[max_dump_count] = None
-      for index, x in enumerate(attr[1:]):
+      for index, value in enumerate(attr[1:]):
         out.write('  #%0*d: ' % (max_dump_count_digit, index + 1))
-        if not x:
+        if not value:
           out.write('None\n')
-        elif x[0] == 'hooked':
-          region_info = x[1]
-          bucket_id = region_info['bucket_id']
-          bucket = bucket_set.get(bucket_id)
-          component = policy.find(bucket)
+        elif value[0] == 'hooked':
+          component_match, _ = policy.find_mmap(value, bucket_set)
           out.write('hooked %s: %s @ %d\n' % (
-              region_info['type'] if 'type' in region_info else 'None',
-              component, bucket_id))
+              value[1]['type'] if 'type' in value[1] else 'None',
+              component_match, value[1]['bucket_id']))
         else:
-          region_info = x[1]
+          region_info = value[1]
           size = region_info['committed']
           out.write('unhooked %s: %d bytes committed\n' % (
               region_info['type'] if 'type' in region_info else 'None', size))
@@ -1716,27 +1789,50 @@ class ExpandCommand(Command):
     LOGGER.info('total: %d\n' % total)
 
   @staticmethod
+  def _add_size(precedence, bucket, depth, committed, sizes):
+    stacktrace_sequence = precedence
+    for function, sourcefile in zip(
+        bucket.symbolized_stackfunction[
+            0 : min(len(bucket.symbolized_stackfunction), 1 + depth)],
+        bucket.symbolized_stacksourcefile[
+            0 : min(len(bucket.symbolized_stacksourcefile), 1 + depth)]):
+      stacktrace_sequence += '%s(@%s) ' % (function, sourcefile)
+    if not stacktrace_sequence in sizes:
+      sizes[stacktrace_sequence] = 0
+    sizes[stacktrace_sequence] += committed
+
+  @staticmethod
   def _accumulate(dump, policy, bucket_set, component_name, depth, sizes):
-    for line in dump.iter_stacktrace:
-      words = line.split()
-      bucket = bucket_set.get(int(words[BUCKET_ID]))
-      component_match = policy.find(bucket)
-      if component_match == component_name:
-        stacktrace_sequence = ''
-        stacktrace_sequence += '(alloc=%d) ' % int(words[ALLOC_COUNT])
-        stacktrace_sequence += '(free=%d) ' % int(words[FREE_COUNT])
-        if bucket.typeinfo:
-          stacktrace_sequence += '(type=%s) ' % bucket.symbolized_typeinfo
-          stacktrace_sequence += '(type.name=%s) ' % bucket.typeinfo_name
-        for function, sourcefile in zip(
-            bucket.symbolized_stackfunction[
-                0 : min(len(bucket.symbolized_stackfunction), 1 + depth)],
-            bucket.symbolized_stacksourcefile[
-                0 : min(len(bucket.symbolized_stacksourcefile), 1 + depth)]):
-          stacktrace_sequence += '%s(@%s) ' % (function, sourcefile)
-        if not stacktrace_sequence in sizes:
-          sizes[stacktrace_sequence] = 0
-        sizes[stacktrace_sequence] += int(words[COMMITTED])
+    rule = policy.find_rule(component_name)
+    if not rule:
+      pass
+    elif rule.allocator_type == 'malloc':
+      for line in dump.iter_stacktrace:
+        words = line.split()
+        bucket = bucket_set.get(int(words[BUCKET_ID]))
+        if not bucket or bucket.allocator_type == 'malloc':
+          component_match = policy.find_malloc(bucket)
+        elif bucket.allocator_type == 'mmap':
+          continue
+        else:
+          assert False
+        if component_match == component_name:
+          precedence = ''
+          precedence += '(alloc=%d) ' % int(words[ALLOC_COUNT])
+          precedence += '(free=%d) ' % int(words[FREE_COUNT])
+          if bucket.typeinfo:
+            precedence += '(type=%s) ' % bucket.symbolized_typeinfo
+            precedence += '(type.name=%s) ' % bucket.typeinfo_name
+          ExpandCommand._add_size(precedence, bucket, depth,
+                                  int(words[COMMITTED]), sizes)
+    elif rule.allocator_type == 'mmap':
+      for _, region in dump.iter_map:
+        if region[0] != 'hooked':
+          continue
+        component_match, bucket = policy.find_mmap(region, bucket_set)
+        if component_match == component_name:
+          ExpandCommand._add_size('', bucket, depth,
+                                  region[1]['committed'], sizes)
 
 
 class PProfCommand(Command):
@@ -1807,11 +1903,30 @@ class PProfCommand(Command):
     """
     com_committed = 0
     com_allocs = 0
+
+    for _, region in dump.iter_map:
+      if region[0] != 'hooked':
+        continue
+      component_match, bucket = policy.find_mmap(region, bucket_set)
+
+      if (component_name and component_name != component_match) or (
+          region[1]['committed'] == 0):
+        continue
+
+      com_committed += region[1]['committed']
+      com_allocs += 1
+
     for line in dump.iter_stacktrace:
       words = line.split()
       bucket = bucket_set.get(int(words[BUCKET_ID]))
+      if not bucket or bucket.allocator_type == 'malloc':
+        component_match = policy.find_malloc(bucket)
+      elif bucket.allocator_type == 'mmap':
+        continue
+      else:
+        assert False
       if (not bucket or
-          (component_name and component_name != policy.find(bucket))):
+          (component_name and component_name != component_match)):
         continue
 
       com_committed += int(words[COMMITTED])
@@ -1830,11 +1945,32 @@ class PProfCommand(Command):
         component_name: A name of component for filtering.
         out: An IO object to output.
     """
+    for _, region in dump.iter_map:
+      if region[0] != 'hooked':
+        continue
+      component_match, bucket = policy.find_mmap(region, bucket_set)
+
+      if (component_name and component_name != component_match) or (
+          region[1]['committed'] == 0):
+        continue
+
+      out.write('     1: %8s [     1: %8s] @' % (
+          region[1]['committed'], region[1]['committed']))
+      for address in bucket.stacktrace:
+        out.write(' 0x%016x' % address)
+      out.write('\n')
+
     for line in dump.iter_stacktrace:
       words = line.split()
       bucket = bucket_set.get(int(words[BUCKET_ID]))
+      if not bucket or bucket.allocator_type == 'malloc':
+        component_match = policy.find_malloc(bucket)
+      elif bucket.allocator_type == 'mmap':
+        continue
+      else:
+        assert False
       if (not bucket or
-          (component_name and component_name != policy.find(bucket))):
+          (component_name and component_name != component_match)):
         continue
 
       out.write('%6d: %8s [%6d: %8s] @' % (
