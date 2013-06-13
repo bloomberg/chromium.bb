@@ -614,6 +614,20 @@ TEST_F(RenderTextTest, MoveCursorLeftRight_ComplexScript) {
 }
 #endif
 
+TEST_F(RenderTextTest, MoveCursorLeftRight_MeiryoUILigatures) {
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  // Meiryo UI uses single-glyph ligatures for 'ff' and 'ffi', but each letter
+  // (code point) has unique bounds, so mid-glyph cursoring should be possible.
+  render_text->SetFont(Font("Meiryo UI", 12));
+  render_text->SetText(WideToUTF16(L"ff ffi"));
+  EXPECT_EQ(0U, render_text->cursor_position());
+  for (size_t i = 0; i < render_text->text().length(); ++i) {
+    render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
+    EXPECT_EQ(i + 1, render_text->cursor_position());
+  }
+  EXPECT_EQ(6U, render_text->cursor_position());
+}
+
 TEST_F(RenderTextTest, GraphemePositions) {
   // LTR 2-character grapheme, LTR abc, LTR 2-character grapheme.
   const base::string16 kText1 =
@@ -1012,12 +1026,12 @@ TEST_F(RenderTextTest, StringSizeBoldWidth) {
   EXPECT_GT(plain_width, 0);
 
   // Apply a bold style and check that the new width is greater.
-  render_text->SetStyle(gfx::BOLD, true);
+  render_text->SetStyle(BOLD, true);
   const int bold_width = render_text->GetStringSize().width();
   EXPECT_GT(bold_width, plain_width);
 
   // Now, apply a plain style over the first word only.
-  render_text->ApplyStyle(gfx::BOLD, false, ui::Range(0, 5));
+  render_text->ApplyStyle(BOLD, false, ui::Range(0, 5));
   const int plain_bold_width = render_text->GetStringSize().width();
   EXPECT_GT(plain_bold_width, plain_width);
   EXPECT_LT(plain_bold_width, bold_width);
@@ -1081,8 +1095,8 @@ TEST_F(RenderTextTest, GetTextOffset) {
   render_text->SetFontList(FontList("Arial, 13px"));
 
   // Set display area's size equal to the font size.
-  const gfx::Size font_size(render_text->GetContentWidth(),
-                            render_text->GetStringSize().height());
+  const Size font_size(render_text->GetContentWidth(),
+                       render_text->GetStringSize().height());
   Rect display_rect(font_size);
   render_text->SetDisplayRect(display_rect);
 
@@ -1133,8 +1147,8 @@ TEST_F(RenderTextTest, GetTextOffsetHorizontalDefaultInRTL) {
   render_text->SetText(ASCIIToUTF16("abcdefg"));
   render_text->SetFontList(FontList("Arial, 13px"));
   const int kEnlargement = 2;
-  const gfx::Size font_size(render_text->GetContentWidth() + kEnlargement,
-                            render_text->GetStringSize().height());
+  const Size font_size(render_text->GetContentWidth() + kEnlargement,
+                       render_text->GetStringSize().height());
   Rect display_rect(font_size);
   render_text->SetDisplayRect(display_rect);
   Vector2d offset = render_text->GetTextOffset();

@@ -409,20 +409,12 @@ size_t RenderTextWin::LayoutIndexToTextIndex(size_t index) const {
 bool RenderTextWin::IsCursorablePosition(size_t position) {
   if (position == 0 || position == text().length())
     return true;
-
   EnsureLayout();
-  const size_t run_index =
-      GetRunContainingCaret(SelectionModel(position, CURSOR_FORWARD));
-  if (run_index >= runs_.size())
-    return false;
 
-  internal::TextRun* run = runs_[run_index];
-  const size_t start = run->range.start();
-  const size_t layout_position = TextIndexToLayoutIndex(position);
-  if (layout_position == start)
-    return true;
-  return run->logical_clusters[layout_position - start] !=
-         run->logical_clusters[layout_position - start - 1];
+  // Check if the index is at a valid code point (not mid-surrgate-pair) with
+  // distinct glyph bounds (not mid-multi-character-grapheme, eg. \x0915\x093f).
+  return ui::IsValidCodePointIndex(text(), position) &&
+         GetGlyphBounds(position) != GetGlyphBounds(position - 1);
 }
 
 void RenderTextWin::ResetLayout() {
