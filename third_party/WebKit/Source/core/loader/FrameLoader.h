@@ -91,7 +91,6 @@ public:
     MixedContentChecker* mixedContentChecker() const { return &m_mixedContentChecker; }
 
     void prepareForHistoryNavigation();
-    void setupForReplace();
 
     // FIXME: These are all functions which start loads. We have too many.
     void loadURLIntoChildFrame(const ResourceRequest&, Frame*);

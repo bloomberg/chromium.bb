@@ -989,6 +989,7 @@ void WebFrameImpl::loadData(const WebData& data, const WebString& mimeType, cons
     if (replace) {
         // Do this to force WebKit to treat the load as replacing the currently
         // loaded page.
+        // FIXME: Can we use lock history instead?
         frame()->loader()->setReplacing();
     }
 }

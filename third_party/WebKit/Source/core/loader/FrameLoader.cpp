@@ -977,14 +977,6 @@ void FrameLoader::prepareForLoadStart()
     }
 }
 
-void FrameLoader::setupForReplace()
-{
-    setState(FrameStateProvisional);
-    m_provisionalDocumentLoader = m_documentLoader;
-    m_documentLoader = 0;
-    detachChildren();
-}
-
 void FrameLoader::loadFrameRequest(const FrameLoadRequest& request, bool lockBackForwardList,
     PassRefPtr<Event> event, PassRefPtr<FormState> formState, ShouldSendReferrer shouldSendReferrer)
 {    

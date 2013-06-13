@@ -322,9 +322,7 @@ void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse&
     if (m_options.sendLoadCallbacks == SendCallbacks)
         frameLoader()->notifier()->dispatchDidReceiveResponse(m_documentLoader.get(), m_resource->identifier(), response);
 
-    // FIXME: Main resources have a different set of rules for multipart than images do.
-    // Hopefully we can merge those 2 paths.
-    if (response.isMultipart() && m_resource->type() != CachedResource::MainResource) {
+    if (response.isMultipart()) {
         m_loadingMultipartContent = true;
 
         // We don't count multiParts in a CachedResourceLoader's request count

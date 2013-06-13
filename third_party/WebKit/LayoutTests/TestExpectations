@@ -777,8 +777,6 @@ webkit.org/b/72039 editing/pasteboard/drag-files-to-editable-element.html [ Miss
 Bug(crogers) webaudio/waveshaper-oversample-2x.html [ Pass Failure ]
 Bug(crogers) webaudio/waveshaper-oversample-4x.html [ Pass Failure ]
 
-webkit.org/b/110929 http/tests/multipart/policy-ignore-crash.php [ Missing Pass ]
-webkit.org/b/110929 http/tests/multipart/multipart-html.php [ Missing Pass ]
 webkit.org/b/111023 fast/loader/unload-hyperlink-targeted.html [ Pass Timeout ]
 webkit.org/b/111023 fast/dom/Window/Location/set-location-after-close.html [ Pass Timeout ]
 webkit.org/b/111044 fast/loader/display-image-unset-can-block-image-and-can-reload-in-place.html [ Pass Timeout ]

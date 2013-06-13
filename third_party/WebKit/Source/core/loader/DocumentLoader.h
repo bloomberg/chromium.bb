@@ -140,7 +140,6 @@ namespace WebCore {
         void cancelMainResourceLoad(const ResourceError&);
 
         bool isLoadingMainResource() const { return m_loadingMainResource; }
-        bool isLoadingMultipartContent() const { return m_isLoadingMultipartContent; }
 
         void stopLoadingSubresources();
         void addResourceLoader(ResourceLoader*);
@@ -181,9 +180,6 @@ namespace WebCore {
         void clearMainResourceLoader();
         ResourceLoader* mainResourceLoader() const;
 
-        void setupForReplace();
-        void maybeFinishLoadingMultipartContent();
-        
         bool maybeCreateArchive();
         void clearArchiveResources();
 
@@ -200,7 +196,6 @@ namespace WebCore {
 
         bool maybeLoadEmpty();
 
-        bool isMultipartReplacingLoad() const;
         bool isPostOrRedirectAfterPost(const ResourceRequest&, const ResourceResponse&);
 
         bool shouldContinueForResponse() const;
@@ -247,7 +242,6 @@ namespace WebCore {
         bool m_isStopping;
         bool m_gotFirstByte;
         bool m_isClientRedirect;
-        bool m_isLoadingMultipartContent;
 
         // FIXME: Document::m_processingLoadEvent and DocumentLoader::m_wasOnloadHandled are roughly the same
         // and should be merged.

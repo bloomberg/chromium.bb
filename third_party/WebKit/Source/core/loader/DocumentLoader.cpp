@@ -100,7 +100,6 @@ DocumentLoader::DocumentLoader(const ResourceRequest& req, const SubstituteData&
     , m_isStopping(false)
     , m_gotFirstByte(false)
     , m_isClientRedirect(false)
-    , m_isLoadingMultipartContent(false)
     , m_wasOnloadHandled(false)
     , m_loadingMainResource(false)
     , m_timeOfLastDataReceived(0.0)
@@ -330,8 +329,6 @@ void DocumentLoader::finishedLoading(double finishTime)
         frameLoader()->notifier()->dispatchDidFinishLoading(this, m_identifierForLoadWithoutResourceLoader, finishTime);
         m_identifierForLoadWithoutResourceLoader = 0;
     }
-
-    maybeFinishLoadingMultipartContent();
 
     double responseEndTime = finishTime;
     if (!responseEndTime)
@@ -564,14 +561,6 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
 
     ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading());
 
-    if (m_isLoadingMultipartContent) {
-        setupForReplace();
-        m_mainResource->clear();
-    } else if (response.isMultipart()) {
-        UseCounter::count(m_frame->document(), UseCounter::MultipartMainResource);
-        m_isLoadingMultipartContent = true;
-    }
-
     m_response = response;
 
     if (m_identifierForLoadWithoutResourceLoader)
@@ -653,10 +642,8 @@ void DocumentLoader::commitData(const char* bytes, size_t length)
         if (m_archive)
             m_frame->document()->setBaseURLOverride(m_archive->mainResource()->url());
 
-        // Call receivedFirstData() exactly once per load. We should only reach this point multiple times
-        // for multipart loads, and FrameLoader::isReplacing() will be true after the first time.
-        if (!isMultipartReplacingLoad())
-            frameLoader()->receivedFirstData();
+        // Call receivedFirstData() exactly once per load.
+        frameLoader()->receivedFirstData();
 
         bool userChosen = true;
         String encoding = overrideEncoding();
@@ -704,23 +691,7 @@ void DocumentLoader::dataReceived(CachedResource* resource, const char* data, in
     m_applicationCacheHost->mainResourceDataReceived(data, length);
     m_timeOfLastDataReceived = monotonicallyIncreasingTime();
 
-    if (!isMultipartReplacingLoad())
-        commitLoad(data, length);
-}
-
-void DocumentLoader::setupForReplace()
-{
-    if (!mainResourceData())
-        return;
-    
-    maybeFinishLoadingMultipartContent();
-    maybeCreateArchive();
-    m_writer.end();
-    frameLoader()->setReplacing();
-    m_gotFirstByte = false;
-    
-    stopLoadingSubresources();
-    clearArchiveResources();
+    commitLoad(data, length);
 }
 
 void DocumentLoader::checkLoadComplete()
@@ -945,11 +916,6 @@ void DocumentLoader::removeResourceLoader(ResourceLoader* loader)
         frame->loader()->checkLoadComplete();
 }
 
-bool DocumentLoader::isMultipartReplacingLoad() const
-{
-    return isLoadingMultipartContent() && frameLoader()->isReplacing();
-}
-
 bool DocumentLoader::maybeLoadEmpty()
 {
     bool shouldLoadEmpty = !m_substituteData.isValid() && (m_request.url().isEmpty() || SchemeRegistry::shouldLoadURLSchemeAsEmptyDocument(m_request.url().protocol()));
@@ -1039,17 +1005,6 @@ void DocumentLoader::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* loa
     checkLoadComplete();
     if (Frame* frame = m_frame)
         frame->loader()->checkLoadComplete();    
-}
-
-void DocumentLoader::maybeFinishLoadingMultipartContent()
-{
-    if (!isMultipartReplacingLoad())
-        return;
-
-    frameLoader()->setupForReplace();
-    m_committed = false;
-    RefPtr<SharedBuffer> resourceData = mainResourceData();
-    commitLoad(resourceData->data(), resourceData->size());
 }
 
 void DocumentLoader::handledOnloadEvents()
