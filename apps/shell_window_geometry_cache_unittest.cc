@@ -79,7 +79,7 @@ void ShellWindowGeometryCacheTest::WaitForSync() {
 
 void ShellWindowGeometryCacheTest::LoadExtension(
     const std::string& extension_id) {
-  cache_->OnExtensionLoaded(extension_id);
+  cache_->LoadGeometryFromStorage(extension_id);
   WaitForSync();
 }
 
@@ -170,10 +170,6 @@ TEST_F(ShellWindowGeometryCacheTest, SaveGeometryAndStateToStore) {
   ASSERT_EQ(bounds.height(), v);
   ASSERT_TRUE(dict->GetInteger(window_id + ".state", &v));
   ASSERT_EQ(state, v);
-
-  // check to make sure cache indeed doesn't know about this extension anymore
-  ASSERT_FALSE(cache_->GetGeometry(
-      extension_id, window_id, &new_bounds, &new_state));
 
   // reload extension
   LoadExtension(extension_id);

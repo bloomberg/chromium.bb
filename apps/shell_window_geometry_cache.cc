@@ -124,14 +124,19 @@ bool ShellWindowGeometryCache::GetGeometry(
     const std::string& extension_id,
     const std::string& window_id,
     gfx::Rect* bounds,
-    ui::WindowShowState* window_state) const {
+    ui::WindowShowState* window_state) {
 
   std::map<std::string, ExtensionData>::const_iterator
       extension_data_it = cache_.find(extension_id);
 
-  // Not in the map means loading data for the extension didn't finish yet.
-  if (extension_data_it == cache_.end())
-    return false;
+  // Not in the map means loading data for the extension didn't finish yet or
+  // the cache was not constructed until after the extension was loaded.
+  // Attempt to load from sync to address the latter case.
+  if (extension_data_it == cache_.end()) {
+    LoadGeometryFromStorage(extension_id);
+    extension_data_it = cache_.find(extension_id);
+    DCHECK(extension_data_it != cache_.end());
+  }
 
   ExtensionData::const_iterator window_data = extension_data_it->second.find(
       window_id);
@@ -157,7 +162,7 @@ void ShellWindowGeometryCache::Observe(
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       std::string extension_id =
           content::Details<const extensions::Extension>(details).ptr()->id();
-      OnExtensionLoaded(extension_id);
+      LoadGeometryFromStorage(extension_id);
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
@@ -177,7 +182,7 @@ void ShellWindowGeometryCache::SetSyncDelayForTests(int timeout_ms) {
   sync_delay_ = base::TimeDelta::FromMilliseconds(timeout_ms);
 }
 
-void ShellWindowGeometryCache::OnExtensionLoaded(
+void ShellWindowGeometryCache::LoadGeometryFromStorage(
     const std::string& extension_id) {
   ExtensionData& extension_data = cache_[extension_id];
 

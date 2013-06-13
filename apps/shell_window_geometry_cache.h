@@ -77,7 +77,7 @@ class ShellWindowGeometryCache
   bool GetGeometry(const std::string& extension_id,
                    const std::string& window_id,
                    gfx::Rect* bounds,
-                   ui::WindowShowState* state) const;
+                   ui::WindowShowState* state);
 
   // BrowserContextKeyedService
   virtual void Shutdown() OVERRIDE;
@@ -110,7 +110,7 @@ class ShellWindowGeometryCache
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  void OnExtensionLoaded(const std::string& extension_id);
+  void LoadGeometryFromStorage(const std::string& extension_id);
   void OnExtensionUnloaded(const std::string& extension_id);
   void SyncToStorage();
 
