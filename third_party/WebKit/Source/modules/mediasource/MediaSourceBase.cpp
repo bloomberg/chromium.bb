@@ -176,8 +176,10 @@ bool MediaSourceBase::hasPendingActivity() const
 
 void MediaSourceBase::stop()
 {
+    m_asyncEventQueue->close();
+    if (!isClosed())
+        setReadyState(closedKeyword());
     m_private.clear();
-    m_asyncEventQueue->cancelAllEvents();
 }
 
 PassOwnPtr<SourceBufferPrivate> MediaSourceBase::createSourceBufferPrivate(const String& type, const MediaSourcePrivate::CodecsArray& codecs, ExceptionCode& ec)

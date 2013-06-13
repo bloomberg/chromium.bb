@@ -164,6 +164,14 @@ namespace WebCore {
     macro(enter) \
     macro(exit) \
     \
+    macro(addsourcebuffer) \
+    macro(removesourcebuffer) \
+    macro(sourceopen) \
+    macro(sourceended) \
+    macro(sourceclose) \
+    macro(update) \
+    macro(updateend) \
+    macro(updatestart) \
     macro(webkitaddsourcebuffer) \
     macro(webkitremovesourcebuffer) \
     macro(webkitsourceopen) \

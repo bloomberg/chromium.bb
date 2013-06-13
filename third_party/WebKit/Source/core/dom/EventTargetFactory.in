@@ -25,6 +25,9 @@ modules/indexeddb/IDBDatabase
 modules/indexeddb/IDBOpenDBRequest
 modules/indexeddb/IDBRequest
 modules/indexeddb/IDBTransaction
+modules/mediasource/MediaSource
+modules/mediasource/SourceBuffer
+modules/mediasource/SourceBufferList
 modules/mediasource/WebKitMediaSource
 modules/mediasource/WebKitSourceBufferList
 modules/mediastream/MediaStream

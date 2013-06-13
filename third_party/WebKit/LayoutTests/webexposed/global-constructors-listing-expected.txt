@@ -194,6 +194,7 @@ MediaKeyNeededEvent
 MediaKeySession
 MediaKeys
 MediaList
+MediaSource
 MediaStreamAudioDestinationNode
 MediaStreamAudioSourceNode
 MediaStreamEvent

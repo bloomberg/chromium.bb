@@ -68,8 +68,6 @@ namespace WebCore {
     class SharedWorkerContext;
     class TextTrack;
     class TextTrackCue;
-    class WebKitMediaSource;
-    class WebKitSourceBufferList;
     class WebSocket;
     class Worker;
     class XMLHttpRequest;
