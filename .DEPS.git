@@ -44,7 +44,7 @@ deps = {
     'src/third_party/bidichecker':
         Var('git_url') + '/external/bidichecker/lib.git@97f2aa645b74c28c57eca56992235c79850fa9e0',
     'src/third_party/cacheinvalidation/src':
-        Var('git_url') + '/external/google-cache-invalidation-api/src.git@f24b608b94826c4f593030081d7fbbf3b9d4a00f',
+        Var('git_url') + '/external/google-cache-invalidation-api/src.git@7f2db96c800ac833fba9af7b446feb3fd73bd9e6',
     'src/third_party/ffmpeg':
         Var('git_url') + '/chromium/third_party/ffmpeg.git' + Var('ffmpeg_hash'),
     'src/third_party/flac':
@@ -136,7 +136,7 @@ deps = {
     'src/tools/grit':
         Var('git_url') + '/external/grit-i18n.git@7b854f86ce62131d507041a6ac1072babd03a6c6',
     'src/tools/gyp':
-        Var('git_url') + '/external/gyp.git@8f42386eafcd7ddf1947cab2808a76c315ff30cc',
+        Var('git_url') + '/external/gyp.git@38a04225b5ae1effcfea3aad585baefdd2266785',
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@6be0a66a1ebd7ebc5abc1b2f405a945f6d871521',
     'src/tools/swarm_client':
