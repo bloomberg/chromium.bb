@@ -157,10 +157,8 @@ JsonPrefStore::JsonPrefStore(const base::FilePath& filename,
       prefs_(new DictionaryValue()),
       read_only_(false),
       writer_(filename, sequenced_task_runner),
-      error_delegate_(NULL),
       initialized_(false),
-      read_error_(PREF_READ_ERROR_OTHER) {
-}
+      read_error_(PREF_READ_ERROR_OTHER) {}
 
 bool JsonPrefStore::GetValue(const std::string& key,
                              const Value** result) const {

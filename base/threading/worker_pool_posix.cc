@@ -123,15 +123,13 @@ bool WorkerPool::RunsTasksOnCurrentThread() {
   return g_worker_pool_running_on_this_thread.Get().Get();
 }
 
-PosixDynamicThreadPool::PosixDynamicThreadPool(
-    const std::string& name_prefix,
-    int idle_seconds_before_exit)
+PosixDynamicThreadPool::PosixDynamicThreadPool(const std::string& name_prefix,
+                                               int idle_seconds_before_exit)
     : name_prefix_(name_prefix),
       idle_seconds_before_exit_(idle_seconds_before_exit),
       pending_tasks_available_cv_(&lock_),
       num_idle_threads_(0),
-      terminated_(false),
-      num_idle_threads_cv_(NULL) {}
+      terminated_(false) {}
 
 PosixDynamicThreadPool::~PosixDynamicThreadPool() {
   while (!pending_tasks_.empty())

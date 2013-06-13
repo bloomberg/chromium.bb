@@ -774,7 +774,6 @@ TraceLog::Options TraceLog::TraceOptionsFromString(const std::string& options) {
 TraceLog::TraceLog()
     : enable_count_(0),
       num_traces_recorded_(0),
-      logged_events_(NULL),
       dispatching_to_observer_list_(false),
       watch_category_(NULL),
       trace_options_(RECORD_UNTIL_FULL),

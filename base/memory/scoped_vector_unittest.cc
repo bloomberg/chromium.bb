@@ -61,9 +61,7 @@ enum LifeCycleState {
 // Anything more complicated than that should start another test.
 class LifeCycleWatcher : public LifeCycleObject::Observer {
  public:
-  LifeCycleWatcher()
-      : life_cycle_state_(LC_INITIAL),
-        constructed_life_cycle_object_(NULL) {}
+  LifeCycleWatcher() : life_cycle_state_(LC_INITIAL) {}
   virtual ~LifeCycleWatcher() {}
 
   // Assert INITIAL -> CONSTRUCTED and no LifeCycleObject associated with this
