@@ -154,6 +154,10 @@ cr.define('login', function() {
           this.handleRemoveCommandKeyDown_.bind(this));
       this.actionBoxMenuRemoveElement.addEventListener('blur',
           this.handleRemoveCommandBlur_.bind(this));
+      this.actionBoxRemoveManagedUserWarningButtonElement.addEventListener(
+          'click',
+          this.handleRemoveUserConfirmationClick_.bind(this));
+
     },
 
     /**
@@ -264,6 +268,14 @@ cr.define('login', function() {
     },
 
     /**
+     * Gets action box menu title.
+     * @type {!HTMLInputElement}
+     */
+    get actionBoxMenuTitleElement() {
+      return this.querySelector('.action-box-menu-title');
+    },
+
+    /**
      * Gets action box menu title, user name item.
      * @type {!HTMLInputElement}
      */
@@ -293,6 +305,23 @@ cr.define('login', function() {
      */
     get actionBoxMenuRemoveElement() {
       return this.querySelector('.action-box-menu-remove');
+    },
+
+    /**
+     * Gets action box menu, remove user command item div.
+     * @type {!HTMLInputElement}
+     */
+    get actionBoxRemoveManagedUserWarningElement() {
+      return this.querySelector('.action-box-remove-managed-user-warning');
+    },
+
+    /**
+     * Gets action box menu, remove user command item div.
+     * @type {!HTMLInputElement}
+     */
+    get actionBoxRemoveManagedUserWarningButtonElement() {
+      return this.querySelector(
+          '.remove-warning-button');
     },
 
     /**
@@ -378,6 +407,9 @@ cr.define('login', function() {
         return;
 
       if (active) {
+        this.actionBoxMenuRemoveElement.hidden = false;
+        this.actionBoxRemoveManagedUserWarningElement.hidden = true;
+
         // Clear focus first if another pod is focused.
         if (!this.parentNode.isFocused(this)) {
           this.parentNode.focusPod(undefined, true);
@@ -517,6 +549,27 @@ cr.define('login', function() {
      * @param {Event} e Click event.
      */
     handleRemoveCommandClick_: function(e) {
+      if (this.user.locallyManagedUser) {
+        this.showRemoveWarning_();
+        return;
+      }
+      if (this.isActionBoxMenuActive)
+        chrome.send('removeUser', [this.user.username]);
+    },
+
+    /**
+     * Shows remove warning for managed users.
+     */
+    showRemoveWarning_: function() {
+      this.actionBoxMenuRemoveElement.hidden = true;
+      this.actionBoxRemoveManagedUserWarningElement.hidden = false;
+    },
+
+    /**
+     * Handles a click event on remove user confirmation button.
+     * @param {Event} e Click event.
+     */
+    handleRemoveUserConfirmationClick_: function(e) {
       if (this.isActionBoxMenuActive)
         chrome.send('removeUser', [this.user.username]);
     },

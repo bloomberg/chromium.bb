@@ -434,6 +434,10 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("publicAccountEnter", IDS_LOGIN_PUBLIC_ACCOUNT_ENTER);
   builder->Add("publicAccountEnterAccessibleName",
                IDS_LOGIN_PUBLIC_ACCOUNT_ENTER_ACCESSIBLE_NAME);
+  builder->Add("removeManagedUserWarningText",
+               IDS_USER_IS_LOCALLY_MANAGED_REMOVE_WARNING);
+  builder->Add("removeManagedUserWarningButtonTitle",
+               IDS_USER_IS_LOCALLY_MANAGED_REMOVE_WARNING_BUTTON);
 
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
     builder->Add("demoLoginMessage", IDS_KIOSK_MODE_LOGIN_MESSAGE);

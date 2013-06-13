@@ -606,6 +606,12 @@ Press any key to continue exploring.
   <message name="IDS_USER_IS_LOCALLY_MANAGED_BY_NOTICE" desc="Text for notifications showing that this user is locally managed">
     This user is managed by <ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph>. Device usage and history may be tracked.
   </message>
+  <message name="IDS_USER_IS_LOCALLY_MANAGED_REMOVE_WARNING" desc="Text shown as a warning when attempting to remove locally managed user.">
+    All files and local data will be permanently deleted once this managed user is removed. However, any synced history will still be viewable in the manager's settings for this user.
+  </message>
+  <message name="IDS_USER_IS_LOCALLY_MANAGED_REMOVE_WARNING_BUTTON" desc="Text shown on a button that confirms removal of locally managed user.">
+    Remove this user
+  </message>
   <message name="IDS_OFFLINE_LOGIN_HTML" desc="Text which suggests enter as an existing user when valid network isn't presented.">
     If you've already registered on this device, you can <ph name="LINK2_START">$1<ex>&gt;a&lt;</ex></ph>sign in as an existing user<ph name="LINK2_END">$2<ex>&gt;/a&lt;</ex></ph>.
   </message>
