@@ -449,16 +449,18 @@ TEST(URLMatcherConditionSetTest, Matching) {
 
   // Test scheme filters.
   scoped_refptr<URLMatcherConditionSet> condition_set2(
-      new URLMatcherConditionSet(1, conditions,
-          scoped_ptr<URLMatcherSchemeFilter>(
-              new URLMatcherSchemeFilter("https")),
-          scoped_ptr<URLMatcherPortFilter>(NULL)));
+      new URLMatcherConditionSet(1,
+                                 conditions,
+                                 scoped_ptr<URLMatcherSchemeFilter>(
+                                     new URLMatcherSchemeFilter("https")),
+                                 scoped_ptr<URLMatcherPortFilter>()));
   EXPECT_FALSE(condition_set2->IsMatch(matching_patterns, url1));
   scoped_refptr<URLMatcherConditionSet> condition_set3(
-      new URLMatcherConditionSet(1, conditions,
-          scoped_ptr<URLMatcherSchemeFilter>(
-              new URLMatcherSchemeFilter("http")),
-          scoped_ptr<URLMatcherPortFilter>(NULL)));
+      new URLMatcherConditionSet(1,
+                                 conditions,
+                                 scoped_ptr<URLMatcherSchemeFilter>(
+                                     new URLMatcherSchemeFilter("http")),
+                                 scoped_ptr<URLMatcherPortFilter>()));
   EXPECT_TRUE(condition_set3->IsMatch(matching_patterns, url1));
 
   // Test port filters.
@@ -466,8 +468,8 @@ TEST(URLMatcherConditionSetTest, Matching) {
   ranges.push_back(URLMatcherPortFilter::CreateRange(80));
   scoped_ptr<URLMatcherPortFilter> filter(new URLMatcherPortFilter(ranges));
   scoped_refptr<URLMatcherConditionSet> condition_set4(
-      new URLMatcherConditionSet(1, conditions,
-          scoped_ptr<URLMatcherSchemeFilter>(NULL), filter.Pass()));
+      new URLMatcherConditionSet(
+          1, conditions, scoped_ptr<URLMatcherSchemeFilter>(), filter.Pass()));
   EXPECT_TRUE(condition_set4->IsMatch(matching_patterns, url1));
   EXPECT_TRUE(condition_set4->IsMatch(matching_patterns, url3));
   EXPECT_FALSE(condition_set4->IsMatch(matching_patterns, url4));

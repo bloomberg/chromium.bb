@@ -224,14 +224,14 @@ scoped_ptr<URLMatcherSchemeFilter> URLMatcherFactory::CreateURLMatcherScheme(
   if (!helpers::GetAsStringVector(value, &schemas)) {
     *error = ErrorUtils::FormatErrorMessage(kVectorOfStringsExpected,
                                             keys::kSchemesKey);
-    return scoped_ptr<URLMatcherSchemeFilter>(NULL);
+    return scoped_ptr<URLMatcherSchemeFilter>();
   }
   for (std::vector<std::string>::const_iterator it = schemas.begin();
        it != schemas.end(); ++it) {
     if (ContainsUpperCase(*it)) {
       *error = ErrorUtils::FormatErrorMessage(kLowerCaseExpected,
                                               "Scheme");
-      return scoped_ptr<URLMatcherSchemeFilter>(NULL);
+      return scoped_ptr<URLMatcherSchemeFilter>();
     }
   }
   return scoped_ptr<URLMatcherSchemeFilter>(
@@ -246,7 +246,7 @@ scoped_ptr<URLMatcherPortFilter> URLMatcherFactory::CreateURLMatcherPorts(
   const base::ListValue* value_list = NULL;
   if (!value->GetAsList(&value_list)) {
     *error = kInvalidPortRanges;
-    return scoped_ptr<URLMatcherPortFilter>(NULL);
+    return scoped_ptr<URLMatcherPortFilter>();
   }
 
   for (ListValue::const_iterator i = value_list->begin();
@@ -262,12 +262,12 @@ scoped_ptr<URLMatcherPortFilter> URLMatcherFactory::CreateURLMatcherPorts(
           !range->GetInteger(0, &from) ||
           !range->GetInteger(1, &to)) {
         *error = kInvalidPortRanges;
-        return scoped_ptr<URLMatcherPortFilter>(NULL);
+        return scoped_ptr<URLMatcherPortFilter>();
       }
       ranges.push_back(URLMatcherPortFilter::CreateRange(from, to));
     } else {
       *error = kInvalidPortRanges;
-      return scoped_ptr<URLMatcherPortFilter>(NULL);
+      return scoped_ptr<URLMatcherPortFilter>();
     }
   }
 
