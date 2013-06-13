@@ -27,6 +27,7 @@
 #include "grit/ash_resources.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
@@ -917,6 +918,47 @@ TEST_F(LauncherViewTest, ShouldHideTooltipWithAppListWindowTest) {
   views::View* app_list_button = launcher_view_->GetAppListButtonView();
   EXPECT_TRUE(launcher_view_->ShouldHideTooltip(
       app_list_button->GetMirroredBounds().CenterPoint()));
+}
+
+// Test that by moving the mouse cursor off the button onto the bubble it closes
+// the bubble.
+TEST_F(LauncherViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
+  internal::LauncherTooltipManager* tooltip_manager =
+      launcher_view_->tooltip_manager();
+  tooltip_manager->CreateZeroDelayTimerForTest();
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+
+  // Move the mouse off any item and check that no tooltip is shown.
+  generator.MoveMouseTo(gfx::Point(0, 0));
+  EXPECT_FALSE(tooltip_manager->IsVisible());
+
+  // Move the mouse over the button and check that it is visible.
+  views::View* app_list_button = launcher_view_->GetAppListButtonView();
+  gfx::Rect bounds = app_list_button->GetBoundsInScreen();
+  generator.MoveMouseTo(bounds.CenterPoint());
+  // Wait for the timer to go off.
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(tooltip_manager->IsVisible());
+
+  // Move the mouse cursor slightly to the right of the item. The tooltip should
+  // stay open.
+  generator.MoveMouseBy(-(bounds.width() / 2 + 5), 0);
+  // Make sure there is no delayed close.
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(tooltip_manager->IsVisible());
+
+  // Move back - it should still stay open.
+  generator.MoveMouseBy(bounds.width() / 2 + 5, 0);
+  // Make sure there is no delayed close.
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(tooltip_manager->IsVisible());
+
+  // Now move the mouse cursor slightly above the item - so that it is over the
+  // tooltip bubble. Now it should disappear.
+  generator.MoveMouseBy(0, -(bounds.height() / 2 + 5));
+  // Wait until the delayed close kicked in.
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(tooltip_manager->IsVisible());
 }
 
 // Resizing launcher view while an add animation without fade-in is running,
