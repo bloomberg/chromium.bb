@@ -27,6 +27,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/IntSize.h"
+#include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
@@ -78,6 +79,15 @@ static const Vector<QualifiedName>& formInputTags()
         formInputTags.append(selectTag);
     }
     return formInputTags;
+}
+
+static RenderListItem* getAncestorListItem(const RenderObject* renderer)
+{
+    RenderObject* ancestor = renderer->parent();
+    while (ancestor && (ancestor->isRenderInline() || ancestor->isAnonymousBlock()))
+        ancestor = ancestor->parent();
+
+    return (ancestor && ancestor->isListItem()) ? toRenderListItem(ancestor) : 0;
 }
 
 TextAutosizer::TextAutosizer(Document* document)
@@ -206,8 +216,11 @@ void TextAutosizer::processContainer(float multiplier, RenderBlock* container, T
             if (localMultiplier != 1 && descendant->style()->textAutosizingMultiplier() == 1) {
                 setMultiplier(descendant, localMultiplier);
                 setMultiplier(descendant->parent(), localMultiplier); // Parent does line spacing.
+                if (RenderListItem* listItemAncestor = getAncestorListItem(descendant)) {
+                    if (listItemAncestor->style()->textAutosizingMultiplier() == 1)
+                        setMultiplier(listItemAncestor, localMultiplier);
+                }
             }
-            // FIXME: Increase list marker size proportionately.
         } else if (isAutosizingContainer(descendant)) {
             RenderBlock* descendantBlock = toRenderBlock(descendant);
             TextAutosizingClusterInfo descendantClusterInfo(descendantBlock);
