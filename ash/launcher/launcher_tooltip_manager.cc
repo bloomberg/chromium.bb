@@ -226,7 +226,14 @@ void LauncherTooltipManager::ResetTimer() {
   if (shelf_layout_manager_ && !shelf_layout_manager_->IsVisible())
     return;
 
-  CreateTimer(kTooltipAppearanceDelay);
+  base::OneShotTimer<LauncherTooltipManager>* new_timer =
+      new base::OneShotTimer<LauncherTooltipManager>();
+  new_timer->Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kTooltipAppearanceDelay),
+      this,
+      &LauncherTooltipManager::ShowInternal);
+  timer_.reset(new_timer);
 }
 
 void LauncherTooltipManager::StopTimer() {
@@ -240,13 +247,9 @@ bool LauncherTooltipManager::IsVisible() {
   return widget_ && widget_->IsVisible();
 }
 
-void LauncherTooltipManager::CreateZeroDelayTimerForTest() {
-  CreateTimer(0);
-}
-
 void LauncherTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
-  DCHECK(event);
   DCHECK(event->target());
+  DCHECK(event);
   if (!widget_ || !widget_->IsVisible())
     return;
 
@@ -264,7 +267,13 @@ void LauncherTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
       target, launcher_view_->GetWidget()->GetNativeWindow(),
       &location_in_launcher_view);
 
-  if (launcher_view_->ShouldHideTooltip(location_in_launcher_view)) {
+  gfx::Point location_on_screen = event->location();
+  aura::Window::ConvertPointToTarget(
+      target, target->GetRootWindow(), &location_on_screen);
+  gfx::Rect bubble_rect = widget_->GetWindowBoundsInScreen();
+
+  if (launcher_view_->ShouldHideTooltip(location_in_launcher_view) &&
+      !bubble_rect.Contains(location_on_screen)) {
     // Because this mouse event may arrive to |view_|, here we just schedule
     // the closing event rather than directly calling Close().
     CloseSoon();
@@ -356,17 +365,6 @@ void LauncherTooltipManager::CreateBubble(views::View* anchor,
       native_view, views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
   views::corewm::SetWindowVisibilityAnimationTransition(
       native_view, views::corewm::ANIMATE_HIDE);
-}
-
-void LauncherTooltipManager::CreateTimer(int delay_in_ms) {
-  base::OneShotTimer<LauncherTooltipManager>* new_timer =
-      new base::OneShotTimer<LauncherTooltipManager>();
-  new_timer->Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(delay_in_ms),
-      this,
-      &LauncherTooltipManager::ShowInternal);
-  timer_.reset(new base::OneShotTimer<LauncherTooltipManager>());
 }
 
 }  // namespace internal
