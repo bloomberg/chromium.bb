@@ -45,7 +45,7 @@
                 '../../core/core.gyp:webcore',
                 '../../modules/modules.gyp:modules',
                 '<(DEPTH)/skia/skia.gyp:skia',
-                '<(DEPTH)/third_party/angle/src/build_angle.gyp:translator_glsl',
+                '<(angle_path)/src/build_angle.gyp:translator_glsl',
                 '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
                 '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',

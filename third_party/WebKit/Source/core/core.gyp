@@ -370,7 +370,7 @@
         '<(DEPTH)/third_party/ots/ots.gyp:ots',
         '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
-        '<(DEPTH)/third_party/angle/src/build_angle.gyp:translator_glsl',
+        '<(angle_path)/src/build_angle.gyp:translator_glsl',
         '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(libjpeg_gyp_path):libjpeg',
@@ -390,7 +390,7 @@
         '<(DEPTH)/third_party/ots/ots.gyp:ots',
         '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
-        '<(DEPTH)/third_party/angle/src/build_angle.gyp:translator_glsl',
+        '<(angle_path)/src/build_angle.gyp:translator_glsl',
         '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(libjpeg_gyp_path):libjpeg',
@@ -403,7 +403,7 @@
         'include_dirs': [
           '<@(webcore_include_dirs)',
           '<(DEPTH)/gpu',
-          '<(DEPTH)/third_party/angle/include/GLSLANG',
+          '<(angle_path)/include/GLSLANG',
         ],
         'msvs_disabled_warnings': [
           4138, 4244, 4291, 4305, 4344, 4355, 4521, 4099,
