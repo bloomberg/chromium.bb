@@ -113,9 +113,10 @@ TEST(OutputUtilTest, ParseEDID) {
   EXPECT_EQ("", human_readable_name);
 
   // Internal display doesn't have name.
-  EXPECT_FALSE(ParseOutputDeviceData(
+  EXPECT_TRUE(ParseOutputDeviceData(
       kInternalDisplay, charsize(kInternalDisplay),
       NULL, &human_readable_name));
+  EXPECT_TRUE(human_readable_name.empty());
 
   manufacturer_id = 0;
   human_readable_name.clear();

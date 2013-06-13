@@ -212,11 +212,6 @@ bool ParseOutputDeviceData(const unsigned char* prop,
     }
   }
 
-  if (human_readable_name->empty()) {
-    LOG(ERROR) << "invalid EDID: empty readable name";
-    return false;
-  }
-
   // Verify if the |human_readable_name| consists of printable characters only.
   for (size_t i = 0; i < human_readable_name->size(); ++i) {
     char c = (*human_readable_name)[i];
