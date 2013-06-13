@@ -702,11 +702,11 @@ void UserManagerImpl::Observe(int type,
           if (!CommandLine::ForCurrentProcess()->
                   HasSwitch(::switches::kMultiProfiles)) {
             DCHECK(NULL == observed_sync_service_);
+            observed_sync_service_ =
+                ProfileSyncServiceFactory::GetForProfile(profile);
+            if (observed_sync_service_)
+              observed_sync_service_->AddObserver(this);
           }
-          observed_sync_service_ =
-              ProfileSyncServiceFactory::GetForProfile(profile);
-          if (observed_sync_service_)
-            observed_sync_service_->AddObserver(this);
         }
       }
       break;
@@ -1107,8 +1107,8 @@ void UserManagerImpl::RegularUserLoggedIn(const std::string& email,
   active_user_ = RemoveRegularOrLocallyManagedUserFromList(email);
 
   // If the user was not found on the user list, create a new user.
+  is_current_user_new_ = !active_user_;
   if (!active_user_) {
-    is_current_user_new_ = true;
     active_user_ = User::CreateRegularUser(email);
     active_user_->set_oauth_token_status(LoadUserOAuthStatus(email));
     SaveUserDisplayName(active_user_->email(),
@@ -1162,6 +1162,8 @@ void UserManagerImpl::LocallyManagedUserLoggedIn(
     if (prefs_new_users_update->Remove(base::StringValue(username), NULL)) {
       is_current_user_new_ = true;
       WallpaperManager::Get()->SetInitialUserWallpaper(username, true);
+    } else {
+      is_current_user_new_ = false;
     }
   }
 

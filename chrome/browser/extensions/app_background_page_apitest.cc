@@ -485,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, UnloadExtensionWhileHidden) {
           GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
 
   // Close all browsers - app should continue running.
-  SetExitWhenLastBrowserCloses(false);
+  set_exit_when_last_browser_closes(false);
   CloseBrowser(browser());
 
   // Post a task to unload the extension - this should cause Chrome to exit

@@ -307,7 +307,7 @@ class KioskTest : public chromeos::CrosInProcessBrowserTest,
      : chromeos::CrosInProcessBrowserTest(),
        original_content_browser_client_(NULL),
        test_server_(NULL) {
-    SetExitWhenLastBrowserCloses(false);
+    set_exit_when_last_browser_closes(false);
   }
 
   virtual ~KioskTest() {}

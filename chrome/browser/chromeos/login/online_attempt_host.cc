@@ -16,8 +16,7 @@
 namespace chromeos {
 
 OnlineAttemptHost::OnlineAttemptHost(Delegate* delegate)
-    : delegate_(delegate) {
-}
+    : delegate_(delegate), weak_ptr_factory_(this) {}
 
 OnlineAttemptHost::~OnlineAttemptHost() {
   Reset();
@@ -61,9 +60,11 @@ void OnlineAttemptHost::Resolve() {
   if (state_->online_complete()) {
     bool success = state_->online_outcome().reason() == LoginFailure::NONE;
     content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
+        content::BrowserThread::UI,
+        FROM_HERE,
         base::Bind(&OnlineAttemptHost::ResolveOnUIThread,
-                   base::Unretained(this), success));
+                   weak_ptr_factory_.GetWeakPtr(),
+                   success));
   }
 }
 
@@ -73,4 +74,4 @@ void OnlineAttemptHost::ResolveOnUIThread(bool success) {
   Reset();
 }
 
-}  // chromeos
+}  // namespace chromeos

@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
+#include "chrome/browser/chromeos/login/fake_login_utils.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -46,6 +47,12 @@ class MockLoginUtils : public LoginUtils {
   MOCK_METHOD2(TransferDefaultAuthCache, void(Profile*, Profile*));
   MOCK_METHOD0(StopBackgroundFetchers, void(void));
   MOCK_METHOD1(InitRlzDelayed, void(Profile*));
+
+  void DelegateToFake();
+  FakeLoginUtils* GetFakeLoginUtils();
+
+ private:
+  scoped_ptr<FakeLoginUtils> fake_login_utils_;
 };
 
 }  // namespace chromeos

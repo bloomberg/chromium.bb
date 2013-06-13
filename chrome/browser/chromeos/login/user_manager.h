@@ -357,10 +357,10 @@ class UserManager {
   static UserManager* SetForTesting(UserManager* user_manager);
 };
 
-// Helper class for tests. Initializes the UserManager singleton to the given
-// |user_manager| and tears it down again on destruction. If the singleton had
-// already been initialized, its previous value is restored after tearing down
-// |user_manager|.
+// Helper class for unit tests. Initializes the UserManager singleton to the
+// given |user_manager| and tears it down again on destruction. If the singleton
+// had already been initialized, its previous value is restored after tearing
+// down |user_manager|.
 class ScopedUserManagerEnabler {
  public:
   // Takes ownership of |user_manager|.
@@ -373,8 +373,8 @@ class ScopedUserManagerEnabler {
   DISALLOW_COPY_AND_ASSIGN(ScopedUserManagerEnabler);
 };
 
-// Helper class for tests. Initializes the UserManager singleton on construction
-// and tears it down again on destruction.
+// Helper class for unit tests. Initializes the UserManager singleton on
+// construction and tears it down again on destruction.
 class ScopedTestUserManager {
  public:
   ScopedTestUserManager();

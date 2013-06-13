@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state_resolver.h"
 
 class Profile;
@@ -54,10 +55,12 @@ class OnlineAttemptHost : public AuthAttemptStateResolver {
   std::string current_username_;
   scoped_ptr<OnlineAttempt> online_attempt_;
   scoped_ptr<AuthAttemptState> state_;
+  base::WeakPtrFactory<OnlineAttemptHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OnlineAttemptHost);
 };
 
-}  // chromeos
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_ONLINE_ATTEMPT_HOST_H_
+

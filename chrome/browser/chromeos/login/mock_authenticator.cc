@@ -94,4 +94,11 @@ void MockAuthenticator::OnLoginFailure(const LoginFailure& failure) {
     consumer_->OnLoginFailure(failure);
 }
 
+void MockAuthenticator::SetExpectedCredentials(
+    const std::string& expected_username,
+    const std::string& expected_password) {
+  expected_username_ = expected_username;
+  expected_password_ = expected_password;
+}
+
 }  // namespace chromeos

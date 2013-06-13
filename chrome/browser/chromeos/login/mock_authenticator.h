@@ -58,6 +58,9 @@ class MockAuthenticator : public Authenticator {
                          const std::string& login_token,
                          const std::string& login_captcha) OVERRIDE {}
 
+  virtual void SetExpectedCredentials(const std::string& expected_username,
+                                      const std::string& expected_password);
+
  protected:
   virtual ~MockAuthenticator() {}
 

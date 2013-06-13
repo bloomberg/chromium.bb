@@ -173,7 +173,7 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   }
 #endif  // OS_MACOSX
 
-  void SetExitWhenLastBrowserCloses(bool value) {
+  void set_exit_when_last_browser_closes(bool value) {
     exit_when_last_browser_closes_ = value;
   }
 
