@@ -64,42 +64,38 @@ class NetBenchmarkingWrapper : public v8::Extension {
     return v8::Handle<v8::FunctionTemplate>();
   }
 
-  static v8::Handle<v8::Value> ClearCache(const v8::Arguments& args) {
+  static void ClearCache(const v8::FunctionCallbackInfo<v8::Value>& args) {
     int rv;
     content::RenderThread::Get()->Send(new ChromeViewHostMsg_ClearCache(&rv));
     WebCache::clear();
-    return v8::Undefined();
   }
 
-  static v8::Handle<v8::Value> ClearHostResolverCache(
-      const v8::Arguments& args) {
+  static void ClearHostResolverCache(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
     int rv;
     content::RenderThread::Get()->Send(
         new ChromeViewHostMsg_ClearHostResolverCache(&rv));
-    return v8::Undefined();
   }
 
-  static v8::Handle<v8::Value> ClearPredictorCache(
-      const v8::Arguments& args) {
+  static void ClearPredictorCache(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
     int rv;
     content::RenderThread::Get()->Send(
         new ChromeViewHostMsg_ClearPredictorCache(&rv));
-    return v8::Undefined();
   }
 
-  static v8::Handle<v8::Value> CloseConnections(const v8::Arguments& args) {
+  static void CloseConnections(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
     content::RenderThread::Get()->Send(
         new ChromeViewHostMsg_CloseCurrentConnections());
-    return v8::Undefined();
   }
 
-  static v8::Handle<v8::Value> EnableSpdy(const v8::Arguments& args) {
+  static void EnableSpdy(const v8::FunctionCallbackInfo<v8::Value>& args) {
     if (!args.Length() || !args[0]->IsBoolean())
-      return v8::Undefined();
+      return;
 
     content::RenderThread::Get()->Send(new ChromeViewHostMsg_EnableSpdy(
         args[0]->BooleanValue()));
-    return v8::Undefined();
   }
 };
 

@@ -51,12 +51,13 @@ class MemoryBenchmarkingWrapper : public v8::Extension {
     return v8::Handle<v8::FunctionTemplate>();
   }
 
-  static v8::Handle<v8::Value> IsHeapProfilerRunning(
-      const v8::Arguments& args) {
-    return v8::Boolean::New(::IsHeapProfilerRunning());
+  static void IsHeapProfilerRunning(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
+    args.GetReturnValue().Set(::IsHeapProfilerRunning());
   }
 
-  static v8::Handle<v8::Value> HeapProfilerDump(const v8::Arguments& args) {
+  static void HeapProfilerDump(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
     std::string process_type;
     if (args.Length() && args[0]->IsString())
       process_type = *v8::String::AsciiValue(args[0]);
@@ -69,7 +70,6 @@ class MemoryBenchmarkingWrapper : public v8::Extension {
     } else {
       ::HeapProfilerDump(reason.c_str());
     }
-    return v8::Undefined();
   }
 };
 

@@ -244,65 +244,62 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     return v8::Handle<v8::FunctionTemplate>();
   }
 
-  static v8::Handle<v8::Value> SetNeedsDisplayOnAllLayers(
-      const v8::Arguments& args) {
+  static void SetNeedsDisplayOnAllLayers(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
     WebFrame* web_frame = WebFrame::frameForCurrentContext();
     if (!web_frame)
-      return v8::Undefined();
+      return;
 
     WebView* web_view = web_frame->view();
     if (!web_view)
-      return v8::Undefined();
+      return;
 
     RenderViewImpl* render_view_impl = RenderViewImpl::FromWebView(web_view);
     if (!render_view_impl)
-      return v8::Undefined();
+      return;
 
     RenderWidgetCompositor* compositor = render_view_impl->compositor();
     if (!compositor)
-      return v8::Undefined();
+      return;
 
     compositor->SetNeedsDisplayOnAllLayers();
-
-    return v8::Undefined();
   }
 
-  static v8::Handle<v8::Value> SetRasterizeOnlyVisibleContent(
-      const v8::Arguments& args) {
+  static void SetRasterizeOnlyVisibleContent(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
     WebFrame* web_frame = WebFrame::frameForCurrentContext();
     if (!web_frame)
-      return v8::Undefined();
+      return;
 
     WebView* web_view = web_frame->view();
     if (!web_view)
-      return v8::Undefined();
+      return;
 
     RenderViewImpl* render_view_impl = RenderViewImpl::FromWebView(web_view);
     if (!render_view_impl)
-      return v8::Undefined();
+      return;
 
     RenderWidgetCompositor* compositor = render_view_impl->compositor();
     if (!compositor)
-      return v8::Undefined();
+      return;
 
     compositor->SetRasterizeOnlyVisibleContent();
-
-    return v8::Undefined();
   }
 
-  static v8::Handle<v8::Value> GetRenderingStats(const v8::Arguments& args) {
+  static void GetRenderingStats(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
 
     WebFrame* web_frame = WebFrame::frameForCurrentContext();
     if (!web_frame)
-      return v8::Undefined();
+      return;
 
     WebView* web_view = web_frame->view();
     if (!web_view)
-      return v8::Undefined();
+      return;
 
     RenderViewImpl* render_view_impl = RenderViewImpl::FromWebView(web_view);
     if (!render_view_impl)
-      return v8::Undefined();
+      return;
 
     WebRenderingStatsImpl stats;
     render_view_impl->GetRenderingStats(stats);
@@ -318,28 +315,29 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     gpu_stats.EnumerateFields(&enumerator);
     browser_stats.EnumerateFields(&enumerator);
 
-    return stats_object;
+    args.GetReturnValue().Set(stats_object);
   }
 
-  static v8::Handle<v8::Value> PrintToSkPicture(const v8::Arguments& args) {
+  static void PrintToSkPicture(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
     if (args.Length() != 1)
-      return v8::Undefined();
+      return;
 
     v8::String::AsciiValue dirname(args[0]);
     if (dirname.length() == 0)
-      return v8::Undefined();
+      return;
 
     WebFrame* web_frame = WebFrame::frameForCurrentContext();
     if (!web_frame)
-      return v8::Undefined();
+      return;
 
     WebView* web_view = web_frame->view();
     if (!web_view)
-      return v8::Undefined();
+      return;
 
     WebViewBenchmarkSupport* benchmark_support = web_view->benchmarkSupport();
     if (!benchmark_support)
-      return v8::Undefined();
+      return;
 
     base::FilePath dirpath(
         base::FilePath::StringType(*dirname, *dirname + dirname.length()));
@@ -347,14 +345,14 @@ class GpuBenchmarkingWrapper : public v8::Extension {
         !file_util::PathIsWritable(dirpath)) {
       std::string msg("Path is not writable: ");
       msg.append(dirpath.MaybeAsASCII());
-      return v8::ThrowException(v8::Exception::Error(
+      v8::ThrowException(v8::Exception::Error(
           v8::String::New(msg.c_str(), msg.length())));
+      return;
     }
 
     SkPictureRecorder recorder(dirpath);
     benchmark_support->paint(&recorder,
                              WebViewBenchmarkSupport::PaintModeEverything);
-    return v8::Undefined();
   }
 
   static void OnSmoothScrollCompleted(
@@ -369,26 +367,29 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     }
   }
 
-  static v8::Handle<v8::Value> BeginSmoothScroll(const v8::Arguments& args) {
+  static void BeginSmoothScroll(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
     WebFrame* web_frame = WebFrame::frameForCurrentContext();
     if (!web_frame)
-      return v8::Undefined();
+      return;
 
     WebView* web_view = web_frame->view();
     if (!web_view)
-      return v8::Undefined();
+      return;
 
     RenderViewImpl* render_view_impl = RenderViewImpl::FromWebView(web_view);
     if (!render_view_impl)
-      return v8::Undefined();
+      return;
 
     // Account for the 2 optional arguments, mouse_event_x and mouse_event_y.
     int arglen = args.Length();
     if (arglen < 3 ||
         !args[0]->IsBoolean() ||
         !args[1]->IsFunction() ||
-        !args[2]->IsNumber())
-      return v8::False();
+        !args[2]->IsNumber()) {
+      args.GetReturnValue().Set(false);
+      return;
+    }
 
     bool scroll_down = args[0]->BooleanValue();
     v8::Local<v8::Function> callback_local =
@@ -411,8 +412,10 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     } else {
       if (arglen != 5 ||
           !args[3]->IsNumber() ||
-          !args[4]->IsNumber())
-        return v8::False();
+          !args[4]->IsNumber()) {
+        args.GetReturnValue().Set(false);
+        return;
+      }
 
       mouse_event_x = args[3]->IntegerValue() * web_view->pageScaleFactor();
       mouse_event_y = args[4]->IntegerValue() * web_view->pageScaleFactor();
@@ -429,17 +432,17 @@ class GpuBenchmarkingWrapper : public v8::Extension {
         mouse_event_x,
         mouse_event_y);
 
-    return v8::True();
+    args.GetReturnValue().Set(true);
   }
 
-  static v8::Handle<v8::Value> RunRenderingBenchmarks(
-      const v8::Arguments& args) {
+  static void RunRenderingBenchmarks(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
     // For our name filter, the argument can be undefined or null to run
     // all benchmarks, or a string for filtering by name.
     if (!args.Length() ||
         (!args[0]->IsString() &&
          !(args[0]->IsNull() || args[0]->IsUndefined()))) {
-      return v8::Undefined();
+      return;
     }
 
     std::string name_filter;
@@ -453,15 +456,15 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
     WebFrame* web_frame = WebFrame::frameForCurrentContext();
     if (!web_frame)
-      return v8::Undefined();
+      return;
 
     WebView* web_view = web_frame->view();
     if (!web_view)
-      return v8::Undefined();
+      return;
 
     WebViewBenchmarkSupport* support = web_view->benchmarkSupport();
     if (!support)
-      return v8::Undefined();
+      return;
 
     ScopedVector<RenderingBenchmark> benchmarks = AllRenderingBenchmarks();
 
@@ -485,7 +488,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       results->Set(results->Length(), result_object);
     }
 
-    return results;
+    args.GetReturnValue().Set(results);
   }
 
   static void OnSnapshotCompleted(CallbackAndContext* callback_and_context,
@@ -528,22 +531,22 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     }
   }
 
-  static v8::Handle<v8::Value> BeginWindowSnapshotPNG(
-      const v8::Arguments& args) {
+  static void BeginWindowSnapshotPNG(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
     WebFrame* web_frame = WebFrame::frameForCurrentContext();
     if (!web_frame)
-      return v8::Undefined();
+      return;
 
     WebView* web_view = web_frame->view();
     if (!web_view)
-      return v8::Undefined();
+      return;
 
     RenderViewImpl* render_view_impl = RenderViewImpl::FromWebView(web_view);
     if (!render_view_impl)
-      return v8::Undefined();
+      return;
 
     if (!args[0]->IsFunction())
-      return v8::Undefined();
+      return;
 
     v8::Local<v8::Function> callback_local =
         v8::Local<v8::Function>::Cast(args[0]);
@@ -555,15 +558,11 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
     render_view_impl->GetWindowSnapshot(
         base::Bind(&OnSnapshotCompleted, callback_and_context));
-
-    return v8::Undefined();
   }
 
-  static v8::Handle<v8::Value> ClearImageCache(
-      const v8::Arguments& args) {
+  static void ClearImageCache(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
     WebImageCache::clear();
-
-    return v8::Undefined();
   }
 };
 

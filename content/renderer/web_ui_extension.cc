@@ -50,8 +50,8 @@ class WebUIExtensionWrapper : public v8::Extension {
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
       v8::Handle<v8::String> name) OVERRIDE;
-  static v8::Handle<v8::Value> Send(const v8::Arguments& args);
-  static v8::Handle<v8::Value> GetVariableValue(const v8::Arguments& args);
+  static void Send(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetVariableValue(const v8::FunctionCallbackInfo<v8::Value>& args);
 
  private:
   static bool ShouldRespondToRequest(WebKit::WebFrame** frame_ptr,
@@ -102,16 +102,17 @@ bool WebUIExtensionWrapper::ShouldRespondToRequest(
 }
 
 // static
-v8::Handle<v8::Value> WebUIExtensionWrapper::Send(const v8::Arguments& args) {
+void WebUIExtensionWrapper::Send(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   WebKit::WebFrame* frame;
   RenderView* render_view;
   if (!ShouldRespondToRequest(&frame, &render_view))
-    return v8::Undefined();
+    return;
 
   // We expect at least two parameters - a string message identifier, and
   // an object parameter. The object param can be undefined.
   if (args.Length() != 2 || !args[0]->IsString())
-    return v8::Undefined();
+    return;
 
   const std::string message = *v8::String::Utf8Value(args[0]->ToString());
 
@@ -122,7 +123,7 @@ v8::Handle<v8::Value> WebUIExtensionWrapper::Send(const v8::Arguments& args) {
     content.reset(new ListValue());
   } else {
     if (!args[1]->IsObject())
-      return v8::Undefined();
+      return;
 
     scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
 
@@ -139,23 +140,22 @@ v8::Handle<v8::Value> WebUIExtensionWrapper::Send(const v8::Arguments& args) {
                                               frame->document().url(),
                                               message,
                                               *content));
-  return v8::Undefined();
 }
 
 // static
-v8::Handle<v8::Value> WebUIExtensionWrapper::GetVariableValue(
-    const v8::Arguments& args) {
+void WebUIExtensionWrapper::GetVariableValue(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   WebKit::WebFrame* frame;
   RenderView* render_view;
   if (!ShouldRespondToRequest(&frame, &render_view))
-    return v8::Undefined();
+    return;
 
   if (!args.Length() || !args[0]->IsString())
-    return v8::Undefined();
+    return;
 
   std::string key = *v8::String::Utf8Value(args[0]->ToString());
   std::string value = WebUIExtensionData::Get(render_view)->GetValue(key);
-  return v8::String::New(value.c_str(), value.length());
+  args.GetReturnValue().Set(v8::String::New(value.c_str(), value.length()));
 }
 
 // static

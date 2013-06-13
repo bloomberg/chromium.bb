@@ -15,7 +15,7 @@ namespace {
 
 // |args| are passed through the various JavaScript logging functions such as
 // console.log. Returns a string appropriate for logging with LOG(severity).
-std::string LogArgs2String(const v8::Arguments& args) {
+std::string LogArgs2String(const v8::FunctionCallbackInfo<v8::Value>& args) {
   std::string message;
   bool first = true;
   for (int i = 0; i < args.Length(); i++) {
@@ -250,40 +250,37 @@ void V8UnitTest::TestFunction(const std::string& function_name) {
 }
 
 // static
-v8::Handle<v8::Value> V8UnitTest::Log(const v8::Arguments& args) {
+void V8UnitTest::Log(const v8::FunctionCallbackInfo<v8::Value>& args) {
   LOG(INFO) << LogArgs2String(args);
-  return v8::Undefined();
 }
 
-v8::Handle<v8::Value> V8UnitTest::Error(const v8::Arguments& args) {
+void V8UnitTest::Error(const v8::FunctionCallbackInfo<v8::Value>& args) {
   had_errors = true;
   LOG(ERROR) << LogArgs2String(args);
-  return v8::Undefined();
 }
 
-v8::Handle<v8::Value> V8UnitTest::ChromeSend(const v8::Arguments& args) {
+void V8UnitTest::ChromeSend(const v8::FunctionCallbackInfo<v8::Value>& args) {
   v8::HandleScope handle_scope;
   // We expect to receive 2 args: ("testResult", [ok, message]). However,
   // chrome.send may pass only one. Therefore we need to ensure we have at least
   // 1, then ensure that the first is "testResult" before checking again for 2.
   EXPECT_LE(1, args.Length());
   if (::testing::Test::HasNonfatalFailure())
-    return v8::Undefined();
+    return;
   v8::String::Utf8Value message(args[0]);
   EXPECT_EQ("testResult", std::string(*message, message.length()));
   if (::testing::Test::HasNonfatalFailure())
-    return v8::Undefined();
+    return;
   EXPECT_EQ(2, args.Length());
   if (::testing::Test::HasNonfatalFailure())
-    return v8::Undefined();
+    return;
   v8::Handle<v8::Array> testResult(args[1].As<v8::Array>());
   EXPECT_EQ(2U, testResult->Length());
   if (::testing::Test::HasNonfatalFailure())
-    return v8::Undefined();
+    return;
   testResult_ok = testResult->Get(0)->BooleanValue();
   if (!testResult_ok) {
     v8::String::Utf8Value message(testResult->Get(1));
     LOG(ERROR) << *message;
   }
-  return v8::Undefined();
 }

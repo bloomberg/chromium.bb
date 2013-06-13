@@ -55,17 +55,17 @@ class V8UnitTest : public testing::Test {
   // to log, warn, and info of the console object. Scripts running in the
   // context can call this with |args| to print out logging information to the
   // console.
-  static v8::Handle<v8::Value> Log(const v8::Arguments& args);
+  static void Log(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // This method is bound to console.error in the context. Any calls to this
   // will log |args| to the console and also signal an error condition causing
   // |RunJavascriptF| to fail.
-  static v8::Handle<v8::Value> Error(const v8::Arguments& args);
+  static void Error(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // This method is bound to a method "chrome.send" in the context. When
   // test_api calls testDone with |args| to report its results, this will
   // capture and hold the results for analysis by |RunJavascriptF|.
-  static v8::Handle<v8::Value> ChromeSend(const v8::Arguments& args);
+  static void ChromeSend(const v8::FunctionCallbackInfo<v8::Value>& args);
 
  private:
   // Executes all added javascript libraries. Returns true if no errors.

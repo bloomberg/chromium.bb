@@ -198,7 +198,8 @@ bool V8ObjectToUTF16String(v8::Handle<v8::Value> object,
 
 // Extracts an hostname argument from |args|. On success returns true
 // and fills |*hostname| with the result.
-bool GetHostnameArgument(const v8::Arguments& args, std::string* hostname) {
+bool GetHostnameArgument(const v8::FunctionCallbackInfo<v8::Value>& args,
+                         std::string* hostname) {
   // The first argument should be a string.
   if (args.Length() == 0 || args[0].IsEmpty() || !args[0]->IsString())
     return false;
@@ -536,7 +537,7 @@ class ProxyResolverV8::Context {
   }
 
   // V8 callback for when "alert()" is invoked by the PAC script.
-  static v8::Handle<v8::Value> AlertCallback(const v8::Arguments& args) {
+  static void AlertCallback(const v8::FunctionCallbackInfo<v8::Value>& args) {
     Context* context =
         static_cast<Context*>(v8::External::Cast(*args.Data())->Value());
 
@@ -547,38 +548,41 @@ class ProxyResolverV8::Context {
       message = ASCIIToUTF16("undefined");
     } else {
       if (!V8ObjectToUTF16String(args[0], &message))
-        return v8::Undefined();  // toString() threw an exception.
+        return;  // toString() threw an exception.
     }
 
     context->js_bindings()->Alert(message);
-    return v8::Undefined();
   }
 
   // V8 callback for when "myIpAddress()" is invoked by the PAC script.
-  static v8::Handle<v8::Value> MyIpAddressCallback(const v8::Arguments& args) {
-    return DnsResolveCallbackHelper(args, JSBindings::MY_IP_ADDRESS);
+  static void MyIpAddressCallback(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
+    DnsResolveCallbackHelper(args, JSBindings::MY_IP_ADDRESS);
   }
 
   // V8 callback for when "myIpAddressEx()" is invoked by the PAC script.
-  static v8::Handle<v8::Value> MyIpAddressExCallback(
-      const v8::Arguments& args) {
-    return DnsResolveCallbackHelper(args, JSBindings::MY_IP_ADDRESS_EX);
+  static void MyIpAddressExCallback(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
+    DnsResolveCallbackHelper(args, JSBindings::MY_IP_ADDRESS_EX);
   }
 
   // V8 callback for when "dnsResolve()" is invoked by the PAC script.
-  static v8::Handle<v8::Value> DnsResolveCallback(const v8::Arguments& args) {
-    return DnsResolveCallbackHelper(args, JSBindings::DNS_RESOLVE);
+  static void DnsResolveCallback(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
+    DnsResolveCallbackHelper(args, JSBindings::DNS_RESOLVE);
   }
 
   // V8 callback for when "dnsResolveEx()" is invoked by the PAC script.
-  static v8::Handle<v8::Value> DnsResolveExCallback(const v8::Arguments& args) {
-    return DnsResolveCallbackHelper(args, JSBindings::DNS_RESOLVE_EX);
+  static void DnsResolveExCallback(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
+    DnsResolveCallbackHelper(args, JSBindings::DNS_RESOLVE_EX);
   }
 
   // Shared code for implementing:
   //   - myIpAddress(), myIpAddressEx(), dnsResolve(), dnsResolveEx().
-  static v8::Handle<v8::Value> DnsResolveCallbackHelper(
-      const v8::Arguments& args, JSBindings::ResolveDnsOperation op) {
+  static void DnsResolveCallbackHelper(
+      const v8::FunctionCallbackInfo<v8::Value>& args,
+      JSBindings::ResolveDnsOperation op) {
     Context* context =
         static_cast<Context*>(v8::External::Cast(*args.Data())->Value());
 
@@ -586,8 +590,11 @@ class ProxyResolverV8::Context {
 
     // dnsResolve() and dnsResolveEx() need at least 1 argument.
     if (op == JSBindings::DNS_RESOLVE || op == JSBindings::DNS_RESOLVE_EX) {
-      if (!GetHostnameArgument(args, &hostname))
-        return (op == JSBindings::DNS_RESOLVE) ? v8::Null() : v8::Undefined();
+      if (!GetHostnameArgument(args, &hostname)) {
+        if (op == JSBindings::DNS_RESOLVE)
+          args.GetReturnValue().SetNull();
+        return;
+      }
     }
 
     std::string result;
@@ -603,56 +610,74 @@ class ProxyResolverV8::Context {
     if (terminate)
       v8::V8::TerminateExecution(args.GetIsolate());
 
-    if (success)
-      return ASCIIStringToV8String(result);
+    if (success) {
+      args.GetReturnValue().Set(ASCIIStringToV8String(result));
+      return;
+    }
 
     // Each function handles resolution errors differently.
     switch (op) {
       case JSBindings::DNS_RESOLVE:
-        return v8::Null();
+        args.GetReturnValue().SetNull();
+        return;
       case JSBindings::DNS_RESOLVE_EX:
-        return v8::String::Empty();
+        args.GetReturnValue().SetEmptyString();
+        return;
       case JSBindings::MY_IP_ADDRESS:
-        return ASCIILiteralToV8String("127.0.0.1");
+        args.GetReturnValue().Set(ASCIILiteralToV8String("127.0.0.1"));
+        return;
       case JSBindings::MY_IP_ADDRESS_EX:
-        return v8::String::Empty();
+        args.GetReturnValue().SetEmptyString();
+        return;
     }
 
     NOTREACHED();
-    return v8::Undefined();
   }
 
   // V8 callback for when "sortIpAddressList()" is invoked by the PAC script.
-  static v8::Handle<v8::Value> SortIpAddressListCallback(
-      const v8::Arguments& args) {
+  static void SortIpAddressListCallback(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
     // We need at least one string argument.
-    if (args.Length() == 0 || args[0].IsEmpty() || !args[0]->IsString())
-      return v8::Null();
+    if (args.Length() == 0 || args[0].IsEmpty() || !args[0]->IsString()) {
+      args.GetReturnValue().SetNull();
+      return;
+    }
 
     std::string ip_address_list = V8StringToUTF8(args[0]->ToString());
-    if (!IsStringASCII(ip_address_list))
-      return v8::Null();
+    if (!IsStringASCII(ip_address_list)) {
+      args.GetReturnValue().SetNull();
+      return;
+    }
     std::string sorted_ip_address_list;
     bool success = SortIpAddressList(ip_address_list, &sorted_ip_address_list);
-    if (!success)
-      return v8::False();
-    return ASCIIStringToV8String(sorted_ip_address_list);
+    if (!success) {
+      args.GetReturnValue().Set(false);
+      return;
+    }
+    args.GetReturnValue().Set(ASCIIStringToV8String(sorted_ip_address_list));
   }
 
   // V8 callback for when "isInNetEx()" is invoked by the PAC script.
-  static v8::Handle<v8::Value> IsInNetExCallback(const v8::Arguments& args) {
+  static void IsInNetExCallback(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
     // We need at least 2 string arguments.
     if (args.Length() < 2 || args[0].IsEmpty() || !args[0]->IsString() ||
-        args[1].IsEmpty() || !args[1]->IsString())
-      return v8::Null();
+        args[1].IsEmpty() || !args[1]->IsString()) {
+      args.GetReturnValue().SetNull();
+      return;
+    }
 
     std::string ip_address = V8StringToUTF8(args[0]->ToString());
-    if (!IsStringASCII(ip_address))
-      return v8::False();
+    if (!IsStringASCII(ip_address)) {
+      args.GetReturnValue().Set(false);
+      return;
+    }
     std::string ip_prefix = V8StringToUTF8(args[1]->ToString());
-    if (!IsStringASCII(ip_prefix))
-      return v8::False();
-    return IsInNetEx(ip_address, ip_prefix) ? v8::True() : v8::False();
+    if (!IsStringASCII(ip_prefix)) {
+      args.GetReturnValue().Set(false);
+      return;
+    }
+    args.GetReturnValue().Set(IsInNetEx(ip_address, ip_prefix));
   }
 
   mutable base::Lock lock_;

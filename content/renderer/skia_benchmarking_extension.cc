@@ -55,13 +55,13 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     return v8::Handle<v8::FunctionTemplate>();
   }
 
-  static v8::Handle<v8::Value> Rasterize(const v8::Arguments& args) {
+  static void Rasterize(const v8::FunctionCallbackInfo<v8::Value>& args) {
     if (args.Length() < 1)
-      return v8::Undefined();
+      return;
 
     WebFrame* web_frame = WebFrame::frameForCurrentContext();
     if (!web_frame)
-      return v8::Undefined();
+      return;
 
     scoped_ptr<content::V8ValueConverter> converter(
         content::V8ValueConverter::create());
@@ -71,12 +71,12 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
         converter->FromV8Value(
             args[0], v8::Context::GetCurrent()));
     if (!picture_value)
-      return v8::Undefined();
+      return;
 
     scoped_refptr<cc::Picture> picture =
         cc::Picture::CreateFromValue(picture_value.get());
     if (!picture.get())
-      return v8::Undefined();
+      return;
 
     float scale = 1.0f;
     if (args.Length() > 1 && args[1]->IsNumber())
@@ -104,13 +104,13 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     const int kMaxBitmapSize = 4096;
     if (snapped_clip.width() > kMaxBitmapSize
         || snapped_clip.height() > kMaxBitmapSize)
-      return v8::Undefined();
+      return;
 
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, snapped_clip.width(),
                      snapped_clip.height());
     if (!bitmap.allocPixels())
-      return v8::Undefined();
+      return;
 
     bitmap.eraseARGB(0, 0, 0, 0);
     SkCanvas canvas(bitmap);
@@ -138,7 +138,7 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
                 v8::Number::New(snapped_clip.height()));
     result->Set(v8::String::New("data"), buffer.toV8Value());
 
-    return result;
+    args.GetReturnValue().Set(result);
   }
 };
 

@@ -48,11 +48,12 @@ class ExternalExtensionWrapper : public v8::Extension {
   static RenderView* GetRenderView();
 
   // Implementation of window.external.AddSearchProvider.
-  static v8::Handle<v8::Value> AddSearchProvider(const v8::Arguments& args);
+  static void AddSearchProvider(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Implementation of window.external.IsSearchProviderInstalled.
-  static v8::Handle<v8::Value> IsSearchProviderInstalled(
-      const v8::Arguments& args);
+  static void IsSearchProviderInstalled(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExternalExtensionWrapper);
@@ -89,15 +90,15 @@ RenderView* ExternalExtensionWrapper::GetRenderView() {
 }
 
 // static
-v8::Handle<v8::Value> ExternalExtensionWrapper::AddSearchProvider(
-    const v8::Arguments& args) {
-  if (!args.Length()) return v8::Undefined();
+void ExternalExtensionWrapper::AddSearchProvider(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  if (!args.Length()) return;
 
   std::string name = std::string(*v8::String::Utf8Value(args[0]));
-  if (!name.length()) return v8::Undefined();
+  if (!name.length()) return;
 
   RenderView* render_view = GetRenderView();
-  if (!render_view) return v8::Undefined();
+  if (!render_view) return;
 
   GURL osd_url(name);
   if (!osd_url.is_empty() && osd_url.is_valid()) {
@@ -105,23 +106,21 @@ v8::Handle<v8::Value> ExternalExtensionWrapper::AddSearchProvider(
         render_view->GetRoutingID(), render_view->GetPageId(), osd_url,
         search_provider::EXPLICIT_PROVIDER));
   }
-
-  return v8::Undefined();
 }
 
 // static
-v8::Handle<v8::Value> ExternalExtensionWrapper::IsSearchProviderInstalled(
-    const v8::Arguments& args) {
-  if (!args.Length()) return v8::Undefined();
+void ExternalExtensionWrapper::IsSearchProviderInstalled(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  if (!args.Length()) return;
   v8::String::Utf8Value utf8name(args[0]);
-  if (!utf8name.length()) return v8::Undefined();
+  if (!utf8name.length()) return;
 
   std::string name = std::string(*utf8name);
   RenderView* render_view = GetRenderView();
-  if (!render_view) return v8::Undefined();
+  if (!render_view) return;
 
   WebFrame* webframe = WebFrame::frameForCurrentContext();
-  if (!webframe) return v8::Undefined();
+  if (!webframe) return;
 
   search_provider::InstallState install = search_provider::DENIED;
   GURL inquiry_url = GURL(name);
@@ -135,9 +134,10 @@ v8::Handle<v8::Value> ExternalExtensionWrapper::IsSearchProviderInstalled(
 
   if (install == search_provider::DENIED) {
     // FIXME: throw access denied exception.
-    return v8::ThrowException(v8::Exception::Error(v8::String::Empty()));
+    v8::ThrowException(v8::Exception::Error(v8::String::Empty()));
+    return;
   }
-  return v8::Integer::New(install);
+  args.GetReturnValue().Set(static_cast<int32_t>(install));
 }
 
 v8::Extension* ExternalExtension::Get() {

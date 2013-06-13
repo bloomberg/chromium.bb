@@ -68,9 +68,9 @@ class BenchmarkingWrapper : public v8::Extension {
     return v8::Handle<v8::FunctionTemplate>();
   }
 
-  static v8::Handle<v8::Value> GetCounter(const v8::Arguments& args) {
+  static void GetCounter(const v8::FunctionCallbackInfo<v8::Value>& args) {
     if (!args.Length() || !args[0]->IsString() || !base::StatsTable::current())
-      return v8::Undefined();
+      return;
 
     // Extract the name argument
     char name[256];
@@ -79,16 +79,16 @@ class BenchmarkingWrapper : public v8::Extension {
     args[0]->ToString()->WriteUtf8(&name[2], sizeof(name) - 3);
 
     int counter = base::StatsTable::current()->GetCounterValue(name);
-    return v8::Integer::New(counter);
+    args.GetReturnValue().Set(static_cast<int32_t>(counter));
   }
 
-  static v8::Handle<v8::Value> IsSingleProcess(const v8::Arguments& args) {
-    return v8::Boolean::New(
+  static void IsSingleProcess(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    args.GetReturnValue().Set(
        CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
   }
 
-  static v8::Handle<v8::Value> HiResTime(const v8::Arguments& args) {
-    return v8::Number::New(
+  static void HiResTime(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    args.GetReturnValue().Set(
         static_cast<double>(base::TimeTicks::HighResNow().ToInternalValue()));
   }
 };
