@@ -38,7 +38,7 @@ class EncryptionEscrowClientObserver {
 
   // Called when a request fails due to a network error or if the response was
   // invalid.
-  virtual void OnNetworkError(int response_code) = 0;
+  virtual void OnNetworkError() = 0;
 
   // Called when a request fails due to a malformed response.
   virtual void OnMalformedResponse() = 0;

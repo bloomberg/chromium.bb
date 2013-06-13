@@ -38,7 +38,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
                                      base::Bind(MockCallback)),
         metric_logger_(metric_logger) ,
         runner_(runner) {
-    DisableWallet();
+    DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
   }
 
   virtual ~TestAutofillDialogController() {}

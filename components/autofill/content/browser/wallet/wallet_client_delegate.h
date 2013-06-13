@@ -106,14 +106,8 @@ class WalletClientDelegate {
       const std::vector<RequiredAction>& required_actions,
       const std::vector<FormFieldError>& form_field_errors) = 0;
 
-  // Called when a request fails due to an Online Wallet error.
+  // Called when a request fails.
   virtual void OnWalletError(WalletClient::ErrorType error_type) = 0;
-
-  // Called when a request fails due to a malformed response.
-  virtual void OnMalformedResponse() = 0;
-
-  // Called when a request fails due to a network error.
-  virtual void OnNetworkError(int response_code) = 0;
 
  protected:
   virtual ~WalletClientDelegate() {}

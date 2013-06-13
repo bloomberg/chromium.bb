@@ -217,8 +217,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
       const std::vector<wallet::FormFieldError>& form_field_errors) OVERRIDE;
   virtual void OnWalletError(
       wallet::WalletClient::ErrorType error_type) OVERRIDE;
-  virtual void OnMalformedResponse() OVERRIDE;
-  virtual void OnNetworkError(int response_code) OVERRIDE;
 
   // PersonalDataManagerObserver implementation.
   virtual void OnPersonalDataChanged() OVERRIDE;
@@ -266,7 +264,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Call to disable communication to Online Wallet for this dialog.
   // Exposed for testing.
-  void DisableWallet();
+  void DisableWallet(wallet::WalletClient::ErrorType error_type);
 
   // Returns whether Wallet is the current data source. Exposed for testing.
   virtual bool IsPayingWithWallet() const;

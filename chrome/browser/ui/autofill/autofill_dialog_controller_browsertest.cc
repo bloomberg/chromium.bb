@@ -283,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutError) {
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
-  controller()->DisableWallet();
+  controller()->DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
 
   AutofillProfile full_profile(test::GetFullProfile());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
@@ -361,7 +361,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 // expected when Autofill is used to fill text inputs.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillComboboxFromAutofill) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
-  controller()->DisableWallet();
+  controller()->DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
 
   CreditCard card1;
   test::SetCreditCardInfo(&card1, "JJ Smith", "4111111111111111", "12", "2018");
@@ -485,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, WalletCreditCardDisabled) {
 // Ensure that expired cards trigger invalid suggestions.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, ExpiredCard) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
-  controller()->DisableWallet();
+  controller()->DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
 
   CreditCard verified_card(test::GetCreditCard());
   verified_card.set_origin("Chrome settings");

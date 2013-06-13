@@ -144,7 +144,7 @@ void EncryptionEscrowClient::OnURLFetchComplete(
   DVLOG(1) << "Response body: " << data;
 
   if (source->GetResponseCode() != net::HTTP_OK) {
-    observer_->OnNetworkError(source->GetResponseCode());
+    observer_->OnNetworkError();
     return;
   }
 

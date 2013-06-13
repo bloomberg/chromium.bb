@@ -705,8 +705,6 @@ class MockWalletClientDelegate : public WalletClientDelegate {
                     const std::vector<RequiredAction>& required_actions,
                     const std::vector<FormFieldError>& form_field_errors));
   MOCK_METHOD1(OnWalletError, void(WalletClient::ErrorType error_type));
-  MOCK_METHOD0(OnMalformedResponse, void());
-  MOCK_METHOD1(OnNetworkError, void(int response_code));
 
   virtual void OnDidGetFullWallet(scoped_ptr<FullWallet> full_wallet) OVERRIDE {
     EXPECT_TRUE(full_wallet);
@@ -824,7 +822,7 @@ TEST_F(WalletClientTest, WalletErrorResponseMissing) {
 }
 
 TEST_F(WalletClientTest, NetworkFailureOnExpectedVoidResponse) {
-  EXPECT_CALL(delegate_, OnNetworkError(net::HTTP_UNAUTHORIZED)).Times(1);
+  EXPECT_CALL(delegate_, OnWalletError(WalletClient::NETWORK_ERROR)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SEND_STATUS, 1);
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
@@ -838,7 +836,7 @@ TEST_F(WalletClientTest, NetworkFailureOnExpectedVoidResponse) {
 }
 
 TEST_F(WalletClientTest, NetworkFailureOnExpectedResponse) {
-  EXPECT_CALL(delegate_, OnNetworkError(net::HTTP_UNAUTHORIZED)).Times(1);
+  EXPECT_CALL(delegate_, OnWalletError(WalletClient::NETWORK_ERROR)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
                                            1);
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
@@ -909,8 +907,7 @@ TEST_F(WalletClientTest, GetFullWalletWithRiskCapabilitesSuccess) {
 }
 
 TEST_F(WalletClientTest, GetFullWalletEncryptionDown) {
-  EXPECT_CALL(delegate_,
-              OnNetworkError(net::HTTP_INTERNAL_SERVER_ERROR)).Times(1);
+  EXPECT_CALL(delegate_, OnWalletError(WalletClient::NETWORK_ERROR)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_FULL_WALLET, 0);
   delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, NO_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
@@ -929,7 +926,8 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionDown) {
 }
 
 TEST_F(WalletClientTest, GetFullWalletEncryptionMalformed) {
-  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_,
+              OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_FULL_WALLET, 0);
   delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, NO_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
@@ -949,7 +947,8 @@ TEST_F(WalletClientTest, GetFullWalletEncryptionMalformed) {
 }
 
 TEST_F(WalletClientTest, GetFullWalletMalformedResponse) {
-  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_,
+              OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_FULL_WALLET, 1);
   delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
@@ -1035,8 +1034,7 @@ TEST_F(WalletClientTest, AuthenticateInstrumentFailed) {
 }
 
 TEST_F(WalletClientTest, AuthenticateInstrumentEscrowDown) {
-  EXPECT_CALL(delegate_,
-              OnNetworkError(net::HTTP_INTERNAL_SERVER_ERROR)).Times(1);
+  EXPECT_CALL(delegate_, OnWalletError(WalletClient::NETWORK_ERROR)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::AUTHENTICATE_INSTRUMENT,
       0);
@@ -1051,7 +1049,8 @@ TEST_F(WalletClientTest, AuthenticateInstrumentEscrowDown) {
 }
 
 TEST_F(WalletClientTest, AuthenticateInstrumentEscrowMalformed) {
-  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_,
+              OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::AUTHENTICATE_INSTRUMENT,
       0);
@@ -1066,7 +1065,8 @@ TEST_F(WalletClientTest, AuthenticateInstrumentEscrowMalformed) {
 }
 
 TEST_F(WalletClientTest, AuthenticateInstrumentFailedMalformedResponse) {
-  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_,
+              OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::AUTHENTICATE_INSTRUMENT,
       1);
@@ -1143,7 +1143,8 @@ TEST_F(WalletClientTest, SaveAddressWithRequiredActionsSucceeded) {
 }
 
 TEST_F(WalletClientTest, SaveAddressFailedInvalidRequiredAction) {
-  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_,
+              OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_ADDRESS, 1);
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
@@ -1156,7 +1157,8 @@ TEST_F(WalletClientTest, SaveAddressFailedInvalidRequiredAction) {
 }
 
 TEST_F(WalletClientTest, SaveAddressFailedMalformedResponse) {
-  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_,
+              OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_ADDRESS, 1);
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
@@ -1226,7 +1228,8 @@ TEST_F(WalletClientTest, SaveInstrumentFailedInvalidRequiredActions) {
   delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
 
-  EXPECT_CALL(delegate_, OnMalformedResponse());
+  EXPECT_CALL(delegate_,
+              OnWalletError(WalletClient::MALFORMED_RESPONSE));
 
   scoped_ptr<Instrument> instrument = GetTestInstrument();
   wallet_client_->SaveInstrument(*instrument,
@@ -1241,8 +1244,7 @@ TEST_F(WalletClientTest, SaveInstrumentFailedInvalidRequiredActions) {
 }
 
 TEST_F(WalletClientTest, SaveInstrumentEscrowDown) {
-  EXPECT_CALL(delegate_,
-              OnNetworkError(net::HTTP_INTERNAL_SERVER_ERROR)).Times(1);
+  EXPECT_CALL(delegate_, OnWalletError(WalletClient::NETWORK_ERROR)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_INSTRUMENT, 0);
   delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, NO_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_NETWORK_ERROR);
@@ -1256,7 +1258,8 @@ TEST_F(WalletClientTest, SaveInstrumentEscrowDown) {
 }
 
 TEST_F(WalletClientTest, SaveInstrumentEscrowMalformed) {
-  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_,
+              OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_INSTRUMENT, 0);
   delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, NO_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
@@ -1270,7 +1273,8 @@ TEST_F(WalletClientTest, SaveInstrumentEscrowMalformed) {
 }
 
 TEST_F(WalletClientTest, SaveInstrumentFailedMalformedResponse) {
-  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_,
+              OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::SAVE_INSTRUMENT, 1);
   delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, HAS_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
@@ -1352,7 +1356,8 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressWithRequiredActionsSucceeded) {
 }
 
 TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInvalidRequiredAction) {
-  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_,
+              OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::SAVE_INSTRUMENT_AND_ADDRESS,
       1);
@@ -1374,8 +1379,7 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInvalidRequiredAction) {
 }
 
 TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowDown) {
-  EXPECT_CALL(delegate_,
-              OnNetworkError(net::HTTP_INTERNAL_SERVER_ERROR)).Times(1);
+  EXPECT_CALL(delegate_, OnWalletError(WalletClient::NETWORK_ERROR)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::SAVE_INSTRUMENT_AND_ADDRESS,
       0);
@@ -1393,7 +1397,8 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowDown) {
 }
 
 TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowMalformed) {
-  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_,
+              OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::SAVE_INSTRUMENT_AND_ADDRESS,
       0);
@@ -1411,7 +1416,8 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressEscrowMalformed) {
 }
 
 TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedAddressMissing) {
-  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_,
+              OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::SAVE_INSTRUMENT_AND_ADDRESS,
       1);
@@ -1433,7 +1439,8 @@ TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedAddressMissing) {
 }
 
 TEST_F(WalletClientTest, SaveInstrumentAndAddressFailedInstrumentMissing) {
-  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_,
+              OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(
       AutofillMetrics::SAVE_INSTRUMENT_AND_ADDRESS,
       1);
@@ -1501,7 +1508,8 @@ TEST_F(WalletClientTest, UpdateAddressWithRequiredActionsSucceeded) {
 }
 
 TEST_F(WalletClientTest, UpdateAddressFailedInvalidRequiredAction) {
-  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_,
+              OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_ADDRESS, 1);
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
@@ -1516,7 +1524,8 @@ TEST_F(WalletClientTest, UpdateAddressFailedInvalidRequiredAction) {
 }
 
 TEST_F(WalletClientTest, UpdateAddressMalformedResponse) {
-  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_,
+              OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_ADDRESS, 1);
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
   delegate_.ExpectWalletErrorMetric(AutofillMetrics::WALLET_MALFORMED_RESPONSE);
@@ -1662,7 +1671,8 @@ TEST_F(WalletClientTest, UpdateInstrumentWithRequiredActionsSucceeded) {
 }
 
 TEST_F(WalletClientTest, UpdateInstrumentFailedInvalidRequiredAction) {
-  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_,
+              OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
                                            1);
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);
@@ -1680,8 +1690,7 @@ TEST_F(WalletClientTest, UpdateInstrumentFailedInvalidRequiredAction) {
 }
 
 TEST_F(WalletClientTest, UpdateInstrumentEscrowFailed) {
-  EXPECT_CALL(delegate_,
-              OnNetworkError(net::HTTP_INTERNAL_SERVER_ERROR)).Times(1);
+  EXPECT_CALL(delegate_, OnWalletError(WalletClient::NETWORK_ERROR)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
                                            0);
   delegate_.ExpectBaselineMetrics(HAS_ESCROW_REQUEST, NO_WALLET_REQUEST);
@@ -1700,7 +1709,8 @@ TEST_F(WalletClientTest, UpdateInstrumentEscrowFailed) {
 }
 
 TEST_F(WalletClientTest, UpdateInstrumentMalformedResponse) {
-  EXPECT_CALL(delegate_, OnMalformedResponse()).Times(1);
+  EXPECT_CALL(delegate_,
+              OnWalletError(WalletClient::MALFORMED_RESPONSE)).Times(1);
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::UPDATE_INSTRUMENT,
                                            1);
   delegate_.ExpectBaselineMetrics(NO_ESCROW_REQUEST, HAS_WALLET_REQUEST);

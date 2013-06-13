@@ -118,14 +118,6 @@ void AutocheckoutRequestManager::OnWalletError(
   // Nothing to be done. |error_type| is logged by |metric_logger_|.
 }
 
-void AutocheckoutRequestManager::OnMalformedResponse() {
-  // Nothing to be done.
-}
-
-void AutocheckoutRequestManager::OnNetworkError(int response_code) {
-  // Nothing to be done. |response_code| is logged by |metric_logger_|.
-}
-
 AutocheckoutRequestManager::AutocheckoutRequestManager(
     net::URLRequestContextGetter* request_context_getter)
     : wallet_client_(request_context_getter, this) {

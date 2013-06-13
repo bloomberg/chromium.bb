@@ -90,8 +90,6 @@ WalletClient::ErrorType StringToErrorType(const std::string& error_type) {
     return WalletClient::INVALID_PARAMS;
   if (LowerCaseEqualsASCII(trimmed, "service_unavailable"))
     return WalletClient::SERVICE_UNAVAILABLE;
-  if (LowerCaseEqualsASCII(trimmed, "spending_limit_exceeded"))
-    return WalletClient::SPENDING_LIMIT_EXCEEDED;
   if (LowerCaseEqualsASCII(trimmed, "unsupported_api_version"))
     return WalletClient::UNSUPPORTED_API_VERSION;
   return WalletClient::UNKNOWN_ERROR;
@@ -150,10 +148,12 @@ AutofillMetrics::WalletErrorMetric ErrorTypeToUmaMetric(
       return AutofillMetrics::WALLET_INVALID_PARAMS;
     case WalletClient::SERVICE_UNAVAILABLE:
       return AutofillMetrics::WALLET_SERVICE_UNAVAILABLE;
-    case WalletClient::SPENDING_LIMIT_EXCEEDED:
-      return AutofillMetrics::WALLET_SPENDING_LIMIT_EXCEEDED;
     case WalletClient::UNSUPPORTED_API_VERSION:
       return AutofillMetrics::WALLET_UNSUPPORTED_API_VERSION;
+    case WalletClient::MALFORMED_RESPONSE:
+      return AutofillMetrics::WALLET_MALFORMED_RESPONSE;
+    case WalletClient::NETWORK_ERROR:
+      return AutofillMetrics::WALLET_NETWORK_ERROR;
     case WalletClient::UNKNOWN_ERROR:
       return AutofillMetrics::WALLET_UNKNOWN_ERROR;
   }
@@ -683,7 +683,7 @@ void WalletClient::OnURLFetchComplete(
     // HTTP_BAD_REQUEST means the arguments are invalid. No point retrying.
     case net::HTTP_BAD_REQUEST: {
       request_type_ = NO_PENDING_REQUEST;
-      HandleWalletError(WalletClient::BAD_REQUEST);
+      HandleWalletError(BAD_REQUEST);
       return;
     }
     // HTTP_OK holds a valid response and HTTP_INTERNAL_SERVER_ERROR holds an
@@ -701,7 +701,7 @@ void WalletClient::OnURLFetchComplete(
 
         std::string error_type;
         if (!response_dict->GetString(kErrorTypeKey, &error_type)) {
-          HandleWalletError(WalletClient::UNKNOWN_ERROR);
+          HandleWalletError(UNKNOWN_ERROR);
           return;
         }
 
@@ -714,7 +714,7 @@ void WalletClient::OnURLFetchComplete(
     // Anything else is an error.
     default:
       request_type_ = NO_PENDING_REQUEST;
-      HandleNetworkError(response_code);
+      HandleWalletError(NETWORK_ERROR);
       return;
   }
 
@@ -891,16 +891,7 @@ void WalletClient::StartNextPendingRequest() {
 void WalletClient::HandleMalformedResponse() {
   // Called to inform exponential backoff logic of the error.
   request_->ReceivedContentWasMalformed();
-  delegate_->OnMalformedResponse();
-
-  delegate_->GetMetricLogger().LogWalletErrorMetric(
-      delegate_->GetDialogType(), AutofillMetrics::WALLET_MALFORMED_RESPONSE);
-}
-
-void WalletClient::HandleNetworkError(int response_code) {
-  delegate_->OnNetworkError(response_code);
-  delegate_->GetMetricLogger().LogWalletErrorMetric(
-      delegate_->GetDialogType(), AutofillMetrics::WALLET_NETWORK_ERROR);
+  HandleWalletError(MALFORMED_RESPONSE);
 }
 
 void WalletClient::HandleWalletError(WalletClient::ErrorType error_type) {
@@ -959,14 +950,12 @@ void WalletClient::OnDidMakeRequest() {
       AutofillMetrics::WALLET_ERROR_BASELINE_ISSUED_REQUEST);
 }
 
-void WalletClient::OnNetworkError(int response_code) {
-  HandleNetworkError(response_code);
+void WalletClient::OnNetworkError() {
+  HandleWalletError(NETWORK_ERROR);
 }
 
 void WalletClient::OnMalformedResponse() {
-  delegate_->OnMalformedResponse();
-  delegate_->GetMetricLogger().LogWalletErrorMetric(
-      delegate_->GetDialogType(), AutofillMetrics::WALLET_MALFORMED_RESPONSE);
+  HandleWalletError(MALFORMED_RESPONSE);
 }
 
 // Logs an UMA metric for each of the |required_actions|.

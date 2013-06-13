@@ -10745,6 +10745,20 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Warning: You are not connected to production Wallet servers. Issued cards are probably invalid.
       </message>
 
+      <!--- Autofill dialog: Wallet error messages -->
+      <message name="IDS_AUTOFILL_WALLET_BUYER_ACCOUNT_ERROR" desc="Text explaining that the user's Wallet account cannot be used.">
+        There's something wrong with your Google Wallet account.
+      </message>
+      <message name="IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR" desc="Text explaining that user must upgrade Chrome to use Wallet.">
+        You must upgrade Chrome to use Google Wallet.
+      </message>
+      <message name="IDS_AUTOFILL_WALLET_SERVICE_UNAVAILABLE_ERROR" desc="Text explaining that Wallet is currently unavailable.">
+        Google Wallet is currently unavailable.
+      </message>
+      <message name="IDS_AUTOFILL_WALLET_UNKNOWN_ERROR" desc="Text explaining that Wallet encountered an unknown error.">
+        Google Wallet has encounted an unknown error.
+      </message>
+
       <!-- Autofill dialog: detail section -->
       <message name="IDS_AUTOFILL_DIALOG_EDIT" desc="Text of link in autofill dialog which allows user to edit address + payment info.">
         Edit

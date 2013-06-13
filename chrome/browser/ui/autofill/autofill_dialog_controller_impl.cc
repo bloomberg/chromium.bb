@@ -343,6 +343,32 @@ DialogSection SectionFromLocation(wallet::FormFieldError::Location location) {
   return SECTION_MAX;
 }
 
+base::string16 WalletErrorMessage(wallet::WalletClient::ErrorType error_type) {
+  switch (error_type) {
+    case wallet::WalletClient::BUYER_ACCOUNT_ERROR:
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_WALLET_BUYER_ACCOUNT_ERROR);
+
+    case wallet::WalletClient::BAD_REQUEST:
+    case wallet::WalletClient::INVALID_PARAMS:
+    case wallet::WalletClient::UNSUPPORTED_API_VERSION:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR);
+
+    case wallet::WalletClient::SERVICE_UNAVAILABLE:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_WALLET_SERVICE_UNAVAILABLE_ERROR);
+
+    case wallet::WalletClient::INTERNAL_ERROR:
+    case wallet::WalletClient::MALFORMED_RESPONSE:
+    case wallet::WalletClient::NETWORK_ERROR:
+    case wallet::WalletClient::UNKNOWN_ERROR:
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_WALLET_UNKNOWN_ERROR);
+  }
+
+  NOTREACHED();
+  return base::string16();
+}
+
 }  // namespace
 
 AutofillDialogController::~AutofillDialogController() {}
@@ -596,7 +622,7 @@ string16 AutofillDialogControllerImpl::LegalDocumentsText() {
 }
 
 DialogSignedInState AutofillDialogControllerImpl::SignedInState() const {
-  if (account_chooser_model_.had_wallet_error())
+  if (account_chooser_model_.HadWalletError())
     return SIGN_IN_DISABLED;
 
   if (signin_helper_ || !wallet_items_)
@@ -778,7 +804,7 @@ void AutofillDialogControllerImpl::OnWalletFormFieldError(
 
   // Unrecoverable validation errors.
   if (!wallet_server_validation_recoverable_)
-    DisableWallet();
+    DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
 
   if (view_)
     view_->UpdateForErrors();
@@ -915,7 +941,7 @@ ui::MenuModel* AutofillDialogControllerImpl::MenuModelForSectionHack(
 ui::MenuModel* AutofillDialogControllerImpl::MenuModelForAccountChooser() {
   // If there were unrecoverable Wallet errors, or if there are choices other
   // than "Pay without the wallet", show the full menu.
-  if (account_chooser_model_.had_wallet_error() ||
+  if (account_chooser_model_.HadWalletError() ||
       account_chooser_model_.HasAccountsToChoose()) {
     return &account_chooser_model_;
   }
@@ -1487,13 +1513,13 @@ std::vector<DialogNotification> AutofillDialogControllerImpl::
     CurrentNotifications() {
   std::vector<DialogNotification> notifications;
 
-  if (account_chooser_model_.had_wallet_error()) {
-    // TODO(dbeam): pass along the Wallet error or remove from the translation.
+  if (account_chooser_model_.HadWalletError()) {
     // TODO(dbeam): figure out a way to dismiss this error after a while.
     notifications.push_back(DialogNotification(
         DialogNotification::WALLET_ERROR,
-        l10n_util::GetStringFUTF16(IDS_AUTOFILL_DIALOG_COMPLETE_WITHOUT_WALLET,
-                                   ASCIIToUTF16("[Wallet-Error]."))));
+        l10n_util::GetStringFUTF16(
+            IDS_AUTOFILL_DIALOG_COMPLETE_WITHOUT_WALLET,
+            account_chooser_model_.wallet_error_message())));
   } else if (should_show_wallet_promo_) {
     if (IsPayingWithWallet() && HasCompleteWallet()) {
       notifications.push_back(DialogNotification(
@@ -1771,7 +1797,7 @@ void AutofillDialogControllerImpl::OnDidAuthenticateInstrument(bool success) {
   if (success)
     GetFullWallet();
   else
-    DisableWallet();
+    DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
 }
 
 void AutofillDialogControllerImpl::OnDidGetFullWallet(
@@ -1801,7 +1827,7 @@ void AutofillDialogControllerImpl::OnDidGetFullWallet(
       break;
 
     default:
-      DisableWallet();
+      DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
       break;
   }
 }
@@ -1915,16 +1941,7 @@ void AutofillDialogControllerImpl::OnDidUpdateInstrument(
 
 void AutofillDialogControllerImpl::OnWalletError(
     wallet::WalletClient::ErrorType error_type) {
-  // TODO(dbeam): Do something with |error_type|. http://crbug.com/164410
-  DisableWallet();
-}
-
-void AutofillDialogControllerImpl::OnMalformedResponse() {
-  DisableWallet();
-}
-
-void AutofillDialogControllerImpl::OnNetworkError(int response_code) {
-  DisableWallet();
+  DisableWallet(error_type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2108,13 +2125,14 @@ void AutofillDialogControllerImpl::OnWalletSigninError() {
   LogDialogLatencyToShow();
 }
 
-void AutofillDialogControllerImpl::DisableWallet() {
+void AutofillDialogControllerImpl::DisableWallet(
+    wallet::WalletClient::ErrorType error_type) {
   signin_helper_.reset();
   wallet_items_.reset();
   wallet_errors_.clear();
   GetWalletClient()->CancelRequests();
   SetIsSubmitting(false);
-  account_chooser_model_.SetHadWalletError();
+  account_chooser_model_.SetHadWalletError(WalletErrorMessage(error_type));
 }
 
 void AutofillDialogControllerImpl::SuggestionsUpdated() {
@@ -2804,7 +2822,7 @@ void AutofillDialogControllerImpl::HandleSaveOrUpdateRequiredActions(
        iter != required_actions.end(); ++iter) {
     if (*iter != wallet::INVALID_FORM_FIELD) {
       // TODO(dbeam): handle this more gracefully.
-      DisableWallet();
+      DisableWallet(wallet::WalletClient::UNKNOWN_ERROR);
     }
   }
 
@@ -2853,7 +2871,7 @@ void AutofillDialogControllerImpl::FinishSubmit() {
   // stop trying to pay with Wallet on future runs of the dialog. On the other
   // hand, if there was an error that prevented the user from having the choice
   // of using Wallet, leave the pref alone.
-  if (!account_chooser_model_.had_wallet_error() &&
+  if (!account_chooser_model_.HadWalletError() &&
       account_chooser_model_.HasAccountsToChoose()) {
     profile_->GetPrefs()->SetBoolean(
         ::prefs::kAutofillDialogPayWithoutWallet,

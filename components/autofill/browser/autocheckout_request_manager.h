@@ -80,8 +80,6 @@ class AutocheckoutRequestManager : public base::SupportsUserData::Data,
       const std::vector<wallet::FormFieldError>& form_field_errors) OVERRIDE;
   virtual void OnWalletError(
       wallet::WalletClient::ErrorType error_type) OVERRIDE;
-  virtual void OnMalformedResponse() OVERRIDE;
-  virtual void OnNetworkError(int response_code) OVERRIDE;
 
  private:
   // |request_context_getter| is passed in to construct |wallet_client_|.

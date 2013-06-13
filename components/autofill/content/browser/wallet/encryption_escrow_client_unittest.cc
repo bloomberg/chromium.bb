@@ -46,7 +46,7 @@ class MockEncryptionEscrowClientObserver :
                void(const std::string& escrow_handle));
   MOCK_METHOD0(OnDidMakeRequest, void());
   MOCK_METHOD0(OnMalformedResponse, void());
-  MOCK_METHOD1(OnNetworkError, void(int response_code));
+  MOCK_METHOD0(OnNetworkError, void());
 };
 
 }  // namespace
@@ -119,7 +119,7 @@ class EncryptionEscrowClientTest : public testing::Test {
 
 TEST_F(EncryptionEscrowClientTest, NetworkError) {
   EXPECT_CALL(observer_, OnDidMakeRequest()).Times(1);
-  EXPECT_CALL(observer_, OnNetworkError(net::HTTP_UNAUTHORIZED)).Times(1);
+  EXPECT_CALL(observer_, OnNetworkError()).Times(1);
 
   encryption_escrow_client_->EscrowInstrumentInformation(*instrument_,
                                                          "obfuscated_gaia_id");
