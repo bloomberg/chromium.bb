@@ -14,6 +14,9 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_structs.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace content {
@@ -102,10 +105,16 @@ int32_t PepperAudioInputHost::OnOpen(
   if (!plugin_delegate)
     return PP_ERROR_FAILED;
 
+  webkit::ppapi::PluginInstance* instance =
+      renderer_ppapi_host_->GetPluginInstance(pp_instance());
+  if (!instance)
+    return PP_ERROR_FAILED;
+
   // When it is done, we'll get called back on StreamCreated() or
   // StreamCreationFailed().
   audio_input_ = plugin_delegate->CreateAudioInput(
-      device_id, sample_rate, sample_frame_count, this);
+      device_id, instance->container()->element().document().url(),
+      sample_rate, sample_frame_count, this);
   if (audio_input_) {
     open_context_.reset(new ppapi::host::ReplyMessageContext(
         context->MakeReplyMessageContext()));

@@ -12,6 +12,7 @@
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
 #include "content/renderer/render_thread_impl.h"
+#include "googleurl/src/gurl.h"
 #include "media/audio/audio_manager_base.h"
 
 namespace content {
@@ -20,13 +21,14 @@ namespace content {
 PepperPlatformAudioInputImpl* PepperPlatformAudioInputImpl::Create(
     const base::WeakPtr<PepperPluginDelegateImpl>& plugin_delegate,
     const std::string& device_id,
+    const GURL& document_url,
     int sample_rate,
     int frames_per_buffer,
     webkit::ppapi::PluginDelegate::PlatformAudioInputClient* client) {
   scoped_refptr<PepperPlatformAudioInputImpl> audio_input(
       new PepperPlatformAudioInputImpl());
-  if (audio_input->Initialize(plugin_delegate, device_id, sample_rate,
-                              frames_per_buffer, client)) {
+  if (audio_input->Initialize(plugin_delegate, device_id, document_url,
+                              sample_rate, frames_per_buffer, client)) {
     // Balanced by Release invoked in
     // PepperPlatformAudioInputImpl::ShutDownOnIOThread().
     audio_input->AddRef();
@@ -132,6 +134,7 @@ PepperPlatformAudioInputImpl::PepperPlatformAudioInputImpl()
 bool PepperPlatformAudioInputImpl::Initialize(
     const base::WeakPtr<PepperPluginDelegateImpl>& plugin_delegate,
     const std::string& device_id,
+    const GURL& document_url,
     int sample_rate,
     int frames_per_buffer,
     webkit::ppapi::PluginDelegate::PlatformAudioInputClient* client) {
@@ -155,6 +158,7 @@ bool PepperPlatformAudioInputImpl::Initialize(
   plugin_delegate_->OpenDevice(
       PP_DEVICETYPE_DEV_AUDIOCAPTURE,
       device_id.empty() ? media::AudioManagerBase::kDefaultDeviceId : device_id,
+      document_url,
       base::Bind(&PepperPlatformAudioInputImpl::OnDeviceOpened, this));
 
   return true;

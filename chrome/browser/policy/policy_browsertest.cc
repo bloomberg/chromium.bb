@@ -2281,26 +2281,32 @@ class MediaStreamDevicesControllerBrowserTest
 
   void FinishAudioTest() {
     content::MediaStreamRequest request(0, 0, request_url_.GetOrigin(),
-                                        content::MEDIA_OPEN_DEVICE, "fake_dev",
+                                        content::MEDIA_DEVICE_ACCESS,
+                                        "fake_dev",
                                         content::MEDIA_DEVICE_AUDIO_CAPTURE,
                                         content::MEDIA_NO_SERVICE);
+    // TODO(raymes): Test MEDIA_DEVICE_OPEN (Pepper) which grants both webcam
+    // and microphone permissions at the same time.
     MediaStreamDevicesController controller(
         browser()->tab_strip_model()->GetActiveWebContents(), request,
         base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept, this));
-    controller.DismissInfoBarAndTakeActionOnSettings();
+    controller.Accept(false);
 
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
   void FinishVideoTest() {
+    // TODO(raymes): Test MEDIA_DEVICE_OPEN (Pepper) which grants both webcam
+    // and microphone permissions at the same time.
     content::MediaStreamRequest request(0, 0, request_url_.GetOrigin(),
-                                        content::MEDIA_OPEN_DEVICE, "fake_dev",
+                                        content::MEDIA_DEVICE_ACCESS,
+                                        "fake_dev",
                                         content::MEDIA_NO_SERVICE,
                                         content::MEDIA_DEVICE_VIDEO_CAPTURE);
     MediaStreamDevicesController controller(
         browser()->tab_strip_model()->GetActiveWebContents(), request,
         base::Bind(&MediaStreamDevicesControllerBrowserTest::Accept, this));
-    controller.DismissInfoBarAndTakeActionOnSettings();
+    controller.Accept(false);
 
     base::MessageLoop::current()->QuitWhenIdle();
   }

@@ -61,10 +61,14 @@ MediaStreamDevicesController::MediaStreamDevicesController(
     : web_contents_(web_contents),
       request_(request),
       callback_(callback),
+      // For MEDIA_OPEN_DEVICE requests (Pepper) we always request both webcam
+      // and microphone to avoid popping two infobars.
       microphone_requested_(
-          request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE),
+          request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
+          request.request_type == content::MEDIA_OPEN_DEVICE),
       webcam_requested_(
-          request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE) {
+          request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE ||
+          request.request_type == content::MEDIA_OPEN_DEVICE) {
   profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
   content_settings_ = TabSpecificContentSettings::FromWebContents(web_contents);
 
@@ -107,13 +111,6 @@ void MediaStreamDevicesController::RegisterUserPrefs(
 
 
 bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
-  // If this is a no UI check for policies only go straight to accept - policy
-  // check will be done automatically on the way.
-  if (request_.request_type == content::MEDIA_OPEN_DEVICE) {
-    Accept(false);
-    return true;
-  }
-
   // Tab capture is allowed for extensions only and infobar is not shown for
   // extensions.
   if (request_.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE ||
@@ -178,8 +175,8 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
         // first available of the given type.
         MediaCaptureDevicesDispatcher::GetInstance()->GetRequestedDevice(
             request_.requested_device_id,
-            microphone_requested_,
-            webcam_requested_,
+            request_.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE,
+            request_.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE,
             &devices);
         break;
       case content::MEDIA_DEVICE_ACCESS:

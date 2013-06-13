@@ -99,6 +99,7 @@ MockPluginDelegate::CreateVideoDecoder(
 MockPluginDelegate::PlatformVideoCapture*
 MockPluginDelegate::CreateVideoCapture(
     const std::string& device_id,
+    const GURL& document_url,
     PlatformVideoCaptureEventHandler* handler){
   return NULL;
 }
@@ -120,6 +121,7 @@ MockPluginDelegate::PlatformAudioOutput* MockPluginDelegate::CreateAudioOutput(
 
 MockPluginDelegate::PlatformAudioInput* MockPluginDelegate::CreateAudioInput(
     const std::string& device_id,
+    const GURL& document_url,
     uint32_t sample_rate,
     uint32_t sample_count,
     PlatformAudioInputClient* client) {

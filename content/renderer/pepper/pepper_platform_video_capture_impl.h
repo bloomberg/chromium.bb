@@ -15,6 +15,8 @@
 #include "media/video/capture/video_capture_types.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
+class GURL;
+
 namespace media {
 class VideoCaptureHandlerProxy;
 }
@@ -30,6 +32,7 @@ class PepperPlatformVideoCaptureImpl
   PepperPlatformVideoCaptureImpl(
       const base::WeakPtr<PepperPluginDelegateImpl>& plugin_delegate,
       const std::string& device_id,
+      const GURL& document_url,
       webkit::ppapi::PluginDelegate::PlatformVideoCaptureEventHandler* handler);
 
   // webkit::ppapi::PluginDelegate::PlatformVideoCapture implementation.

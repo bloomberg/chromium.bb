@@ -832,8 +832,10 @@ webkit::ppapi::PluginDelegate::PlatformContext3D*
 webkit::ppapi::PluginDelegate::PlatformVideoCapture*
 PepperPluginDelegateImpl::CreateVideoCapture(
     const std::string& device_id,
+    const GURL& document_url,
     PlatformVideoCaptureEventHandler* handler) {
-  return new PepperPlatformVideoCaptureImpl(AsWeakPtr(), device_id, handler);
+  return new PepperPlatformVideoCaptureImpl(AsWeakPtr(), device_id,
+                                            document_url, handler);
 }
 
 webkit::ppapi::PluginDelegate::PlatformVideoDecoder*
@@ -878,11 +880,12 @@ PepperPluginDelegateImpl::CreateAudioOutput(
 webkit::ppapi::PluginDelegate::PlatformAudioInput*
 PepperPluginDelegateImpl::CreateAudioInput(
     const std::string& device_id,
+    const GURL& document_url,
     uint32_t sample_rate,
     uint32_t sample_count,
     webkit::ppapi::PluginDelegate::PlatformAudioInputClient* client) {
   return PepperPlatformAudioInputImpl::Create(
-      AsWeakPtr(), device_id, static_cast<int>(sample_rate),
+      AsWeakPtr(), device_id, document_url, static_cast<int>(sample_rate),
       static_cast<int>(sample_count), client);
 }
 
@@ -1606,6 +1609,7 @@ int PepperPluginDelegateImpl::GetRoutingID() const {
 
 int PepperPluginDelegateImpl::OpenDevice(PP_DeviceType_Dev type,
                                          const std::string& device_id,
+                                         const GURL& document_url,
                                          const OpenDeviceCallback& callback) {
   int request_id =
       device_enumeration_event_handler_->RegisterOpenDeviceCallback(callback);
@@ -1616,7 +1620,7 @@ int PepperPluginDelegateImpl::OpenDevice(PP_DeviceType_Dev type,
       device_enumeration_event_handler_.get()->AsWeakPtr(),
       device_id,
       PepperDeviceEnumerationEventHandler::FromPepperDeviceType(type),
-      GURL());
+      document_url.GetOrigin());
 #else
   base::MessageLoop::current()->PostTask(
       FROM_HERE,

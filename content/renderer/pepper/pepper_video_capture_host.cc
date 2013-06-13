@@ -11,6 +11,9 @@
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
@@ -259,18 +262,16 @@ int32_t PepperVideoCaptureHost::OnOpen(
 
   SetRequestedInfo(requested_info, buffer_count);
 
+  webkit::ppapi::PluginInstance* instance =
+      renderer_ppapi_host_->GetPluginInstance(pp_instance());
+  if (!instance)
+    return PP_ERROR_FAILED;
+
   platform_video_capture_ =
-      plugin_delegate->CreateVideoCapture(device_id, this);
+      plugin_delegate->CreateVideoCapture(device_id,
+          instance->container()->element().document().url(), this);
 
   open_reply_context_ = context->MakeReplyMessageContext();
-
-  // It is able to complete synchronously if the default device is used.
-  bool sync_completion = device_id.empty();
-  if (sync_completion) {
-    // Send OpenACK directly, but still need to return PP_OK_COMPLETIONPENDING
-    // to make PluginResource happy.
-    OnInitialized(platform_video_capture_.get(), true);
-  }
 
   return PP_OK_COMPLETIONPENDING;
 }
