@@ -71,6 +71,8 @@
             'chromium/TestRunner/src/MockWebSpeechInputController.h',
             'chromium/TestRunner/src/MockWebSpeechRecognizer.cpp',
             'chromium/TestRunner/src/MockWebSpeechRecognizer.h',
+            'chromium/TestRunner/src/MockWebValidationMessageClient.cpp',
+            'chromium/TestRunner/src/MockWebValidationMessageClient.h',
             'chromium/TestRunner/src/NotificationPresenter.h',
             'chromium/TestRunner/src/NotificationPresenter.cpp',
             'chromium/TestRunner/src/SpellCheckClient.cpp',

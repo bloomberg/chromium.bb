@@ -86,11 +86,6 @@ function createFormControlDataSet() {
     return formControlDataSet;
 }
 
-function getValidationMessageBubbleNode(host) {
-    // FIXME: We should search for a pseudo ID.
-    return internals.shadowRoot(host).lastChild;
-}
-
 function getAbsoluteRect(element) {
     var rect = element.getBoundingClientRect();
     rect.top += document.body.scrollTop;

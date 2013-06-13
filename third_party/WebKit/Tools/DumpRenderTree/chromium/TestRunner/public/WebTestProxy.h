@@ -78,6 +78,7 @@ class WebString;
 class WebURL;
 class WebURLResponse;
 class WebUserMediaClient;
+class WebValidationMessageClient;
 class WebView;
 class WebWidget;
 struct WebConsoleMessage;
@@ -95,6 +96,7 @@ namespace WebTestRunner {
 
 class MockWebSpeechInputController;
 class MockWebSpeechRecognizer;
+class MockWebValidationMessageClient;
 class SpellCheckClient;
 class TestInterfaces;
 class WebTestDelegate;
@@ -111,6 +113,7 @@ public:
     void reset();
 
     WebKit::WebSpellCheckClient *spellCheckClient() const;
+    WebKit::WebValidationMessageClient* validationMessageClient();
     WebKit::WebColorChooser* createColorChooser(WebKit::WebColorChooserClient*, const WebKit::WebColor&);
 
     std::string captureTree(bool debugRenderTree);
@@ -251,6 +254,7 @@ private:
     std::auto_ptr<WebKit::WebDeviceOrientationClientMock> m_deviceOrientationClient;
     std::auto_ptr<MockWebSpeechRecognizer> m_speechRecognizer;
     std::auto_ptr<MockWebSpeechInputController> m_speechInputController;
+    std::auto_ptr<MockWebValidationMessageClient> m_validationMessageClient;
 
 private:
     WebTestProxyBase(WebTestProxyBase&);

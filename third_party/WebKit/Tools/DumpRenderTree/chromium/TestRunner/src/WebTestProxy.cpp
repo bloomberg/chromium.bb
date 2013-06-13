@@ -36,6 +36,7 @@
 #include "MockColorChooser.h"
 #include "MockWebSpeechInputController.h"
 #include "MockWebSpeechRecognizer.h"
+#include "MockWebValidationMessageClient.h"
 #include "SpellCheckClient.h"
 #include "TestCommon.h"
 #include "TestInterfaces.h"
@@ -456,6 +457,7 @@ WebTestProxyBase::WebTestProxyBase()
     , m_webWidget(0)
     , m_spellcheck(new SpellCheckClient)
     , m_chooserCount(0)
+    , m_validationMessageClient(new MockWebValidationMessageClient())
 {
     reset();
 }
@@ -475,6 +477,7 @@ void WebTestProxyBase::setDelegate(WebTestDelegate* delegate)
 {
     m_delegate = delegate;
     m_spellcheck->setDelegate(delegate);
+    m_validationMessageClient->setDelegate(delegate);
 #if ENABLE_INPUT_SPEECH
     if (m_speechInputController.get())
         m_speechInputController->setDelegate(delegate);
@@ -519,6 +522,11 @@ void WebTestProxyBase::reset()
 WebSpellCheckClient* WebTestProxyBase::spellCheckClient() const
 {
     return m_spellcheck.get();
+}
+
+WebValidationMessageClient* WebTestProxyBase::validationMessageClient()
+{
+    return m_validationMessageClient.get();
 }
 
 WebColorChooser* WebTestProxyBase::createColorChooser(WebColorChooserClient* client, const WebKit::WebColor& color)

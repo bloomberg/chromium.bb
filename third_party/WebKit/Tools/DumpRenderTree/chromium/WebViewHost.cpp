@@ -765,6 +765,7 @@ void WebViewHost::setWebWidget(WebKit::WebWidget* widget)
     m_webWidget = widget;
     m_proxy->setWidget(widget);
     webView()->setSpellCheckClient(proxy()->spellCheckClient());
+    webView()->setValidationMessageClient(proxy()->validationMessageClient());
     webView()->setPrerendererClient(this);
 }
 
