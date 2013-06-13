@@ -19,9 +19,9 @@ FileSystemTaskRunners::FileSystemTaskRunners(
 // static
 scoped_ptr<FileSystemTaskRunners>
 FileSystemTaskRunners::CreateMockTaskRunners() {
-  return make_scoped_ptr(new FileSystemTaskRunners(
-      base::MessageLoopProxy::current(),
-      base::MessageLoopProxy::current()));
+  return make_scoped_ptr(
+      new FileSystemTaskRunners(base::MessageLoopProxy::current().get(),
+                                base::MessageLoopProxy::current().get()));
 }
 
 FileSystemTaskRunners::~FileSystemTaskRunners() {

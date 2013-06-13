@@ -225,7 +225,7 @@ void AddExceptionsGrantedByHostedApps(
 
   for (ExtensionSet::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
-    if (!app_filter(**extension, profile))
+    if (!app_filter(*extension->get(), profile))
       continue;
 
     extensions::URLPatternSet web_extent = (*extension)->web_extent();
@@ -236,11 +236,12 @@ void AddExceptionsGrantedByHostedApps(
       AddExceptionForHostedApp(url_pattern, *extension->get(), exceptions);
     }
     // Retrieve the launch URL.
-    GURL launch_url = extensions::AppLaunchInfo::GetLaunchWebURL(*extension);
+    GURL launch_url =
+        extensions::AppLaunchInfo::GetLaunchWebURL(extension->get());
     // Skip adding the launch URL if it is part of the web extent.
     if (web_extent.MatchesURL(launch_url))
       continue;
-    AddExceptionForHostedApp(launch_url.spec(), **extension, exceptions);
+    AddExceptionForHostedApp(launch_url.spec(), *extension->get(), exceptions);
   }
 }
 

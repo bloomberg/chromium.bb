@@ -83,7 +83,7 @@ OSStatus CopyCertChain(SecCertificateRef cert_handle,
 bool IsIssuedByInKeychain(const std::vector<std::string>& valid_issuers,
                           scoped_refptr<X509Certificate>* cert) {
   DCHECK(cert);
-  DCHECK(*cert);
+  DCHECK(cert->get());
 
   X509Certificate::OSCertHandle cert_handle = (*cert)->os_cert_handle();
   CFArrayRef cert_chain = NULL;
@@ -128,7 +128,7 @@ bool GetClientCertsImpl(const scoped_refptr<X509Certificate>& preferred_cert,
                         bool query_keychain,
                         CertificateList* selected_certs) {
   CertificateList preliminary_list;
-  if (preferred_cert)
+  if (preferred_cert.get())
     preliminary_list.push_back(preferred_cert);
   preliminary_list.insert(preliminary_list.end(), regular_certs.begin(),
                           regular_certs.end());
@@ -162,9 +162,8 @@ bool GetClientCertsImpl(const scoped_refptr<X509Certificate>& preferred_cert,
   // sorting.
   CertificateList::iterator sort_begin = selected_certs->begin();
   CertificateList::iterator sort_end = selected_certs->end();
-  if (preferred_cert &&
-      sort_begin != sort_end &&
-      *sort_begin == preferred_cert) {
+  if (preferred_cert.get() && sort_begin != sort_end &&
+      sort_begin->get() == preferred_cert.get()) {
     ++sort_begin;
   }
   sort(sort_begin, sort_end, x509_util::ClientCertSorter());
@@ -231,7 +230,7 @@ bool ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
 
     if (preferred_identity && CFEqual(preferred_identity, identity)) {
       // Only one certificate should match.
-      DCHECK(!preferred_cert);
+      DCHECK(!preferred_cert.get());
       preferred_cert = cert;
     } else {
       regular_certs.push_back(cert);

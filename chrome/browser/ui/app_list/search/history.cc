@@ -34,7 +34,8 @@ History::History(content::BrowserContext* context)
   const base::FilePath data_file =
       browser_context_->GetPath().AppendASCII(kStoreDataFileName);
   store_ = new HistoryDataStore(data_file);
-  data_.reset(new HistoryData(store_, kMaxQueryEntries, kMaxSecondaryQueries));
+  data_.reset(
+      new HistoryData(store_.get(), kMaxQueryEntries, kMaxSecondaryQueries));
   data_->AddObserver(this);
 }
 

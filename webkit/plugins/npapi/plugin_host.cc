@@ -773,7 +773,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
     case NPNVpluginDrawingModel: {
       // return the drawing model that was negotiated when we initialized.
       scoped_refptr<PluginInstance> plugin(FindInstance(id));
-      if (!plugin) {
+      if (!plugin.get()) {
         NOTREACHED();
         return NPERR_INVALID_INSTANCE_ERROR;
       }

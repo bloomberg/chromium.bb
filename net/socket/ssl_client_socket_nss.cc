@@ -1403,7 +1403,7 @@ SECStatus SSLClientSocketNSS::Core::PlatformClientAuthHandler(
   return SECWouldBlock;
 #elif defined(OS_MACOSX)
   if (core->ssl_config_.send_client_cert) {
-    if (core->ssl_config_.client_cert) {
+    if (core->ssl_config_.client_cert.get()) {
       OSStatus os_error = noErr;
       SecIdentityRef identity = NULL;
       SecKeyRef private_key = NULL;

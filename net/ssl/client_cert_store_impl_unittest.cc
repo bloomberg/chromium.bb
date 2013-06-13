@@ -124,7 +124,7 @@ TEST_F(ClientCertStoreImplTest, CertAuthorityFiltering) {
 TEST_F(ClientCertStoreImplTest, FilterOutThePreferredCert) {
   scoped_refptr<X509Certificate> cert_1(
       ImportCertFromFile(GetTestCertsDirectory(), "client_1.pem"));
-  ASSERT_TRUE(cert_1);
+  ASSERT_TRUE(cert_1.get());
 
   std::vector<std::string> authority_2(
       1, std::string(reinterpret_cast<const char*>(kAuthority2DN),
@@ -136,8 +136,8 @@ TEST_F(ClientCertStoreImplTest, FilterOutThePreferredCert) {
   request->cert_authorities = authority_2;
 
   std::vector<scoped_refptr<X509Certificate> > selected_certs;
-  bool rv =
-      SelectClientCertsGivenPreferred(cert_1, certs, *request, &selected_certs);
+  bool rv = SelectClientCertsGivenPreferred(
+      cert_1, certs, *request.get(), &selected_certs);
   EXPECT_TRUE(rv);
   EXPECT_EQ(0u, selected_certs.size());
 }
@@ -147,22 +147,22 @@ TEST_F(ClientCertStoreImplTest, FilterOutThePreferredCert) {
 TEST_F(ClientCertStoreImplTest, PreferredCertGoesFirst) {
   scoped_refptr<X509Certificate> cert_1(
       ImportCertFromFile(GetTestCertsDirectory(), "client_1.pem"));
-  ASSERT_TRUE(cert_1);
+  ASSERT_TRUE(cert_1.get());
   scoped_refptr<X509Certificate> cert_2(
       ImportCertFromFile(GetTestCertsDirectory(), "client_2.pem"));
-  ASSERT_TRUE(cert_2);
+  ASSERT_TRUE(cert_2.get());
 
   std::vector<scoped_refptr<X509Certificate> > certs;
   certs.push_back(cert_2);
   scoped_refptr<SSLCertRequestInfo> request(new SSLCertRequestInfo());
 
   std::vector<scoped_refptr<X509Certificate> > selected_certs;
-  bool rv =
-      SelectClientCertsGivenPreferred(cert_1, certs, *request, &selected_certs);
+  bool rv = SelectClientCertsGivenPreferred(
+      cert_1, certs, *request.get(), &selected_certs);
   EXPECT_TRUE(rv);
   ASSERT_EQ(2u, selected_certs.size());
-  EXPECT_TRUE(selected_certs[0]->Equals(cert_1));
-  EXPECT_TRUE(selected_certs[1]->Equals(cert_2));
+  EXPECT_TRUE(selected_certs[0]->Equals(cert_1.get()));
+  EXPECT_TRUE(selected_certs[1]->Equals(cert_2.get()));
 }
 #endif
 

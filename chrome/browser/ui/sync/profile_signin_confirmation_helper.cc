@@ -78,7 +78,7 @@ bool HasSyncedExtensions(Profile* profile) {
       // The webstore is synced so that it stays put on the new tab
       // page, but since it's installed by default we don't want to
       // consider it when determining if the profile is dirty.
-      if (extensions::sync_helper::IsSyncable(*iter) &&
+      if (extensions::sync_helper::IsSyncable(iter->get()) &&
           (*iter)->id() != extension_misc::kWebStoreAppId) {
         VLOG(1) << "ProfileSigninConfirmationHelper: "
                 << "profile contains a synced extension: " << (*iter)->id();

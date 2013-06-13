@@ -146,13 +146,12 @@ class TestPicasaFileUtil : public PicasaFileUtil {
 class TestMediaFileSystemMountPointProvider
     : public chrome::MediaFileSystemMountPointProvider {
  public:
-  TestMediaFileSystemMountPointProvider(
-      const base::FilePath& profile_path,
-      PicasaFileUtil* picasa_file_util)
+  TestMediaFileSystemMountPointProvider(const base::FilePath& profile_path,
+                                        PicasaFileUtil* picasa_file_util)
       : chrome::MediaFileSystemMountPointProvider(
-          profile_path, base::MessageLoopProxy::current()),
-        test_file_util_(picasa_file_util) {
-  }
+            profile_path,
+            base::MessageLoopProxy::current().get()),
+        test_file_util_(picasa_file_util) {}
 
   virtual fileapi::AsyncFileUtil*
   GetAsyncFileUtil(fileapi::FileSystemType type) OVERRIDE {

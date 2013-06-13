@@ -128,7 +128,7 @@ class NativeMediaFileUtilTest : public testing::Test {
 
     ScopedVector<fileapi::FileSystemMountPointProvider> additional_providers;
     additional_providers.push_back(new MediaFileSystemMountPointProvider(
-        data_dir_.path(), base::MessageLoopProxy::current()));
+        data_dir_.path(), base::MessageLoopProxy::current().get()));
 
     file_system_context_ = new fileapi::FileSystemContext(
         fileapi::FileSystemTaskRunners::CreateMockTaskRunners(),

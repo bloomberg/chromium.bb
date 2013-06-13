@@ -80,7 +80,7 @@ void AppSearchProvider::RefreshApps() {
   apps_.clear();
   for (ExtensionSet::const_iterator iter = extensions->begin();
        iter != extensions->end(); ++iter) {
-    const extensions::Extension* app = *iter;
+    const extensions::Extension* app = iter->get();
     if (!app->ShouldDisplayInAppLauncher())
       continue;
 

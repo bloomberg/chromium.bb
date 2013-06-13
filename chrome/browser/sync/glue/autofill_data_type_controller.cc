@@ -59,7 +59,7 @@ bool AutofillDataTypeController::StartModels() {
   DCHECK_EQ(MODEL_STARTING, state());
 
   autofill::AutofillWebDataService* web_data_service =
-      autofill::AutofillWebDataService::FromBrowserContext(profile());
+      autofill::AutofillWebDataService::FromBrowserContext(profile()).get();
 
   if (!web_data_service)
     return false;

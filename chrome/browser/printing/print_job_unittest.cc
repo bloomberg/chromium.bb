@@ -104,7 +104,7 @@ TEST_F(PrintJobTest, SimplePrint) {
   EXPECT_EQ(base::MessageLoop::current(), job->message_loop());
   scoped_refptr<TestOwner> owner(new TestOwner);
   TestSource source;
-  job->Initialize(owner, &source, 1);
+  job->Initialize(owner.get(), &source, 1);
   job->Stop();
   EXPECT_FALSE(job->is_stopped());
   EXPECT_TRUE(job->is_stopping());

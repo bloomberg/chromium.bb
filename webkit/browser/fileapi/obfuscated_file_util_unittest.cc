@@ -2260,7 +2260,7 @@ TEST_F(ObfuscatedFileUtilTest, TestQuotaOnOpen) {
 TEST_F(ObfuscatedFileUtilTest, MaybeDropDatabasesAliveCase) {
   ObfuscatedFileUtil file_util(NULL,
                                data_dir_path(),
-                               base::MessageLoopProxy::current());
+                               base::MessageLoopProxy::current().get());
   file_util.InitOriginDatabase(true /*create*/);
   ASSERT_TRUE(file_util.origin_database_ != NULL);
 
@@ -2278,7 +2278,7 @@ TEST_F(ObfuscatedFileUtilTest, MaybeDropDatabasesAlreadyDeletedCase) {
   {
     ObfuscatedFileUtil file_util(NULL,
                                  data_dir_path(),
-                                 base::MessageLoopProxy::current());
+                                 base::MessageLoopProxy::current().get());
     file_util.InitOriginDatabase(true /*create*/);
     file_util.db_flush_delay_seconds_ = 0;
     file_util.MarkUsed();

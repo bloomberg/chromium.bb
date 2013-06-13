@@ -51,7 +51,7 @@ void AutofillProfileDataTypeController::OnPersonalDataChanged() {
 
   personal_data_->RemoveObserver(this);
   autofill::AutofillWebDataService* web_data_service =
-      autofill::AutofillWebDataService::FromBrowserContext(profile());
+      autofill::AutofillWebDataService::FromBrowserContext(profile()).get();
 
   if (!web_data_service)
     return;
@@ -88,7 +88,7 @@ bool AutofillProfileDataTypeController::StartModels() {
   }
 
   autofill::AutofillWebDataService* web_data_service =
-      AutofillWebDataService::FromBrowserContext(profile());
+      AutofillWebDataService::FromBrowserContext(profile()).get();
 
   if (!web_data_service)
     return false;

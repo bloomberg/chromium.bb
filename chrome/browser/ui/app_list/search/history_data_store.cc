@@ -123,7 +123,8 @@ HistoryDataStore::HistoryDataStore(const base::FilePath& data_file)
   file_task_runner_ = pool->GetSequencedTaskRunnerWithShutdownBehavior(
       pool->GetNamedSequenceToken(token),
       base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-  writer_.reset(new base::ImportantFileWriter(data_file, file_task_runner_));
+  writer_.reset(
+      new base::ImportantFileWriter(data_file, file_task_runner_.get()));
 
   cached_json_.reset(new base::DictionaryValue);
   cached_json_->SetString(kKeyVersion, kCurrentVersion);
@@ -148,7 +149,7 @@ void HistoryDataStore::Flush(const OnFlushedCallback& on_flushed) {
 void HistoryDataStore::Load(
     const HistoryDataStore::OnLoadedCallback& on_loaded) {
   base::PostTaskAndReplyWithResult(
-      file_task_runner_,
+      file_task_runner_.get(),
       FROM_HERE,
       base::Bind(&HistoryDataStore::LoadOnBlockingPool, this),
       on_loaded);

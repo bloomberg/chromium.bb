@@ -2205,7 +2205,7 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemMountPointProviders(
   additional_providers->push_back(new MediaFileSystemMountPointProvider(
       storage_partition_path,
       pool->GetSequencedTaskRunner(pool->GetNamedSequenceToken(
-          MediaFileSystemMountPointProvider::kMediaTaskRunnerName))));
+          MediaFileSystemMountPointProvider::kMediaTaskRunnerName)).get()));
 #endif
 }
 

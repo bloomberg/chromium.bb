@@ -223,9 +223,8 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     // construction needs ot happen on the UI thread.
     return net::ERR_NOT_IMPLEMENTED;
 #else
-    config_service->reset(
-        net::ProxyService::CreateSystemProxyConfigService(
-            base::ThreadTaskRunnerHandle::Get(), NULL));
+    config_service->reset(net::ProxyService::CreateSystemProxyConfigService(
+        base::ThreadTaskRunnerHandle::Get().get(), NULL));
     return net::OK;
 #endif
   }

@@ -91,10 +91,9 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
 
     ScopedVector<fileapi::FileSystemMountPointProvider> additional_providers;
     additional_providers.push_back(new fileapi::TestMountPointProvider(
-        base::MessageLoopProxy::current(), src_path));
-    additional_providers.push_back(
-        new MediaFileSystemMountPointProvider(
-            base, base::MessageLoopProxy::current()));
+        base::MessageLoopProxy::current().get(), src_path));
+    additional_providers.push_back(new MediaFileSystemMountPointProvider(
+        base, base::MessageLoopProxy::current().get()));
     file_system_context_ =
         fileapi::CreateFileSystemContextWithAdditionalProvidersForTesting(
             NULL, additional_providers.Pass(), base);

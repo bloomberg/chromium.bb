@@ -53,8 +53,9 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
     quota::QuotaManagerProxy* quota_manager_proxy) {
   scoped_ptr<fileapi::FileSystemTaskRunners> task_runners(
       new fileapi::FileSystemTaskRunners(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
+              .get()));
 
   // Setting up additional mount point providers.
   ScopedVector<fileapi::FileSystemMountPointProvider> additional_providers;

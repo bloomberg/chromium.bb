@@ -92,7 +92,7 @@ AudioManagerBase::AudioManagerBase()
   // TODO(dalecurtis): We should require the message loop to be passed in.
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(switches::kDisableMainThreadAudio) &&
-      base::MessageLoopProxy::current() &&
+      base::MessageLoopProxy::current().get() &&
       base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_UI)) {
     message_loop_ = base::MessageLoopProxy::current();
     return;

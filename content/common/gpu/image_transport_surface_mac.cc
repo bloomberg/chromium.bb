@@ -495,7 +495,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
         return scoped_refptr<gfx::GLSurface>();
       }
       scoped_refptr<gfx::GLSurface> surface(new DRTSurfaceOSMesa());
-      if (!surface || !surface->Initialize())
+      if (!surface.get() || !surface->Initialize())
         return surface;
       return scoped_refptr<gfx::GLSurface>(new PassThroughImageTransportSurface(
           manager, stub, surface.get(), false));

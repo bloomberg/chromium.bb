@@ -223,7 +223,7 @@ URLRequestContext* URLRequestContextBuilder::Build() {
 #else
   ProxyConfigService* proxy_config_service =
       ProxyService::CreateSystemProxyConfigService(
-          base::ThreadTaskRunnerHandle::Get(),
+          base::ThreadTaskRunnerHandle::Get().get(),
           context->file_message_loop());
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
   storage->set_proxy_service(
