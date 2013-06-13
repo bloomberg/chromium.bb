@@ -119,8 +119,8 @@ public:
         if (xhr->readyState() != XMLHttpRequest::DONE)
             return;
 
-        String responseText = xhr->responseText(IGNORE_EXCEPTION);
-        m_callback->sendSuccess(responseText);
+        ScriptString responseText = xhr->responseText(IGNORE_EXCEPTION);
+        m_callback->sendSuccess(responseText.flattenToString());
     }
 
 private:
@@ -422,12 +422,12 @@ void InspectorResourceAgent::didFailXHRLoading(ThreadableLoaderClient* client)
     m_pendingXHRReplayData.remove(client);
 }
 
-void InspectorResourceAgent::didFinishXHRLoading(ThreadableLoaderClient* client, unsigned long identifier, const String& sourceString, const String&, const String&, unsigned)
+void InspectorResourceAgent::didFinishXHRLoading(ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const String&, const String&, unsigned)
 {
     // For Asynchronous XHRs, the inspector can grab the data directly off of the CachedResource. For sync XHRs, we need to
     // provide the data here, since no CachedResource was involved.
     if (m_loadingXHRSynchronously)
-        m_resourcesData->setResourceContent(IdentifiersFactory::requestId(identifier), sourceString);
+        m_resourcesData->setResourceContent(IdentifiersFactory::requestId(identifier), sourceString.flattenToString());
     m_pendingXHRReplayData.remove(client);
 }
 

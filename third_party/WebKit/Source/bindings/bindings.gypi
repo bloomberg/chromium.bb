@@ -59,6 +59,8 @@
             'v8/ScriptSourceCode.h',
             'v8/ScriptState.cpp',
             'v8/ScriptState.h',
+            'v8/ScriptString.cpp',
+            'v8/ScriptString.h',
             'v8/ScriptValue.cpp',
             'v8/ScriptValue.h',
             'v8/ScriptWrappable.h',

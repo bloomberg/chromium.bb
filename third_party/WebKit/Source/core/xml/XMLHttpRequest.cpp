@@ -214,13 +214,13 @@ XMLHttpRequest::State XMLHttpRequest::readyState() const
     return m_state;
 }
 
-String XMLHttpRequest::responseText(ExceptionCode& ec)
+ScriptString XMLHttpRequest::responseText(ExceptionCode& ec)
 {
     if (m_responseTypeCode != ResponseTypeDefault && m_responseTypeCode != ResponseTypeText) {
         ec = INVALID_STATE_ERR;
-        return "";
+        return ScriptString();
     }
-    return m_responseBuilder.toStringPreserveCapacity();
+    return m_responseText;
 }
 
 Document* XMLHttpRequest::responseXML(ExceptionCode& ec)
@@ -248,7 +248,7 @@ Document* XMLHttpRequest::responseXML(ExceptionCode& ec)
             else
                 m_responseDocument = Document::create(0, m_url);
             // FIXME: Set Last-Modified.
-            m_responseDocument->setContent(m_responseBuilder.toStringPreserveCapacity());
+            m_responseDocument->setContent(m_responseText.flattenToString());
             m_responseDocument->setSecurityOrigin(securityOrigin());
             m_responseDocument->setContextFeatures(document()->contextFeatures());
             if (!m_responseDocument->wellFormed())
@@ -846,7 +846,7 @@ void XMLHttpRequest::clearResponse()
 
 void XMLHttpRequest::clearResponseBuffers()
 {
-    m_responseBuilder.clear();
+    m_responseText.clear();
     m_createdDocument = false;
     m_responseDocument = 0;
     m_responseBlob = 0;
@@ -1092,11 +1092,9 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
         changeState(HEADERS_RECEIVED);
 
     if (m_decoder)
-        m_responseBuilder.append(m_decoder->flush());
+        m_responseText = m_responseText.concatenateWith(m_decoder->flush());
 
-    m_responseBuilder.shrinkToFit();
-
-    InspectorInstrumentation::didFinishXHRLoading(scriptExecutionContext(), this, identifier, m_responseBuilder.toStringPreserveCapacity(), m_url, m_lastSendURL, m_lastSendLineNumber);
+    InspectorInstrumentation::didFinishXHRLoading(scriptExecutionContext(), this, identifier, m_responseText, m_url, m_lastSendURL, m_lastSendLineNumber);
 
     bool hadLoader = m_loader;
     m_loader = 0;
@@ -1168,7 +1166,7 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
         len = strlen(data);
 
     if (useDecoder)
-        m_responseBuilder.append(m_decoder->decode(data, len));
+        m_responseText = m_responseText.concatenateWith(m_decoder->decode(data, len));
     else if (m_responseTypeCode == ResponseTypeArrayBuffer || m_responseTypeCode == ResponseTypeBlob) {
         // Buffer binary data.
         if (!m_binaryResponseBuilder)
@@ -1286,7 +1284,7 @@ void XMLHttpRequest::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_response, "response");
     info.addMember(m_responseEncoding, "responseEncoding");
     info.addMember(m_decoder, "decoder");
-    info.addMember(m_responseBuilder, "responseBuilder");
+    info.addMember(m_responseText, "responseText");
     info.addMember(m_responseDocument, "responseDocument");
     info.addMember(m_binaryResponseBuilder, "binaryResponseBuilder");
     info.addMember(m_responseArrayBuffer, "responseArrayBuffer");

@@ -22,6 +22,7 @@
 #ifndef XMLHttpRequest_h
 #define XMLHttpRequest_h
 
+#include "bindings/v8/ScriptString.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventListener.h"
@@ -32,9 +33,9 @@
 #include "core/platform/network/ResourceResponse.h"
 #include "core/xml/XMLHttpRequestProgressEventThrottle.h"
 #include "weborigin/SecurityOrigin.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/text/AtomicStringHash.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/text/AtomicStringHash.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
@@ -104,7 +105,7 @@ public:
     void overrideMimeType(const String& override);
     String getAllResponseHeaders(ExceptionCode&) const;
     String getResponseHeader(const AtomicString& name, ExceptionCode&) const;
-    String responseText(ExceptionCode&);
+    ScriptString responseText(ExceptionCode&);
     Document* responseXML(ExceptionCode&);
     Document* optionalResponseXML() const { return m_responseDocument.get(); }
     Blob* responseBlob(ExceptionCode&);
@@ -216,7 +217,7 @@ private:
 
     RefPtr<TextResourceDecoder> m_decoder;
 
-    StringBuilder m_responseBuilder;
+    ScriptString m_responseText;
     mutable bool m_createdDocument;
     mutable RefPtr<Document> m_responseDocument;
     

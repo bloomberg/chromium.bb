@@ -70,12 +70,16 @@ void V8XMLHttpRequest::responseTextAttrGetterCustom(v8::Local<v8::String> name, 
 {
     XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toNative(info.Holder());
     ExceptionCode ec = 0;
-    const String& text = xmlHttpRequest->responseText(ec);
+    ScriptValue text = xmlHttpRequest->responseText(ec);
     if (ec) {
         setDOMException(ec, info.GetIsolate());
         return;
     }
-    v8SetReturnValue(info, v8String(text, info.GetIsolate()));
+    if (text.hasNoValue()) {
+        v8SetReturnValue(info, v8String(emptyString(), info.GetIsolate()));
+        return;
+    }
+    v8SetReturnValue(info, text.v8Value());
 }
 
 void V8XMLHttpRequest::responseAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
