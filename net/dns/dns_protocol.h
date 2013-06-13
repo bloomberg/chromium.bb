@@ -13,6 +13,7 @@ namespace net {
 namespace dns_protocol {
 
 static const uint16 kDefaultPort = 53;
+static const uint16 kDefaultPortMulticast = 5353;
 
 // DNS packet consists of a header followed by questions and/or answers.
 // For the meaning of specific fields, please see RFC 1035 and 2535
@@ -100,6 +101,10 @@ static const int kMaxNameLength = 255;
 // RFC 1035, section 4.2.1: Messages carried by UDP are restricted to 512
 // bytes (not counting the IP nor UDP headers).
 static const int kMaxUDPSize = 512;
+
+// RFC 6762, section 17: Messages over the local link are restricted by the
+// medium's MTU, and must be under 9000 bytes
+static const int kMaxMulticastSize = 9000;
 
 // DNS class types.
 static const uint16 kClassIN = 1;

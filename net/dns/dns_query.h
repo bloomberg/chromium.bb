@@ -38,6 +38,8 @@ class NET_EXPORT_PRIVATE DnsQuery {
   // IOBuffer accessor to be used for writing out the query.
   IOBufferWithSize* io_buffer() const { return io_buffer_.get(); }
 
+  void set_flags(uint16 flags);
+
  private:
   DnsQuery(const DnsQuery& orig, uint16 id);
 

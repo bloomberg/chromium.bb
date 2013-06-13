@@ -80,4 +80,10 @@ DnsQuery::DnsQuery(const DnsQuery& orig, uint16 id) {
   header->id = base::HostToNet16(id);
 }
 
+void DnsQuery::set_flags(uint16 flags) {
+  dns_protocol::Header* header =
+      reinterpret_cast<dns_protocol::Header*>(io_buffer_->data());
+  header->flags = flags;
+}
+
 }  // namespace net

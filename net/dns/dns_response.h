@@ -130,7 +130,9 @@ class NET_EXPORT_PRIVATE DnsResponse {
   // Accessors for the header.
   uint16 flags() const;  // excluding rcode
   uint8 rcode() const;
+
   unsigned answer_count() const;
+  unsigned additional_answer_count() const;
 
   // Accessors to the question. The qname is unparsed.
   base::StringPiece qname() const;

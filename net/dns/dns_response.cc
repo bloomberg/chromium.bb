@@ -231,6 +231,11 @@ unsigned DnsResponse::answer_count() const {
   return base::NetToHost16(header()->ancount);
 }
 
+unsigned DnsResponse::additional_answer_count() const {
+  DCHECK(parser_.IsValid());
+  return base::NetToHost16(header()->arcount);
+}
+
 base::StringPiece DnsResponse::qname() const {
   DCHECK(parser_.IsValid());
   // The response is HEADER QNAME QTYPE QCLASS ANSWER.
