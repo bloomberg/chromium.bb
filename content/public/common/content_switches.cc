@@ -212,12 +212,10 @@ const char kDisableWebRTC[]                 = "disable-webrtc";
 // Enable the recognition part of the Web Speech API.
 const char kEnableSpeechRecognition[]       = "enable-speech-recognition";
 
-// Enable web audio API.
-const char kEnableWebAudio[]                = "enable-webaudio";
-#else
+#endif
+
 // Disable web audio API.
 const char kDisableWebAudio[]               = "disable-webaudio";
-#endif
 
 #if defined(ENABLE_WEBRTC)
 // Enables WebRTC AEC recordings.

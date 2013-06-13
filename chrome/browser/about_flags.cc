@@ -432,11 +432,11 @@ const Experiment kExperiments[] = {
 #endif
 #if defined(OS_ANDROID)
   {
-    "enable-webaudio",
-    IDS_FLAGS_ENABLE_WEBAUDIO_NAME,
-    IDS_FLAGS_ENABLE_WEBAUDIO_DESCRIPTION,
+    "disable-webaudio",
+    IDS_FLAGS_DISABLE_WEBAUDIO_NAME,
+    IDS_FLAGS_DISABLE_WEBAUDIO_DESCRIPTION,
     kOsAndroid,
-    SINGLE_VALUE_TYPE(switches::kEnableWebAudio)
+    SINGLE_VALUE_TYPE(switches::kDisableWebAudio)
   },
 #endif
   {

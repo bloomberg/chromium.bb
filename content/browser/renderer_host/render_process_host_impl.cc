@@ -856,10 +856,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if defined(OS_ANDROID)
     switches::kDisableWebRTC,
     switches::kEnableSpeechRecognition,
-    switches::kEnableWebAudio,
-#else
-    switches::kDisableWebAudio,
 #endif
+    switches::kDisableWebAudio,
 #if defined(ENABLE_WEBRTC)
     switches::kEnableSCTPDataChannels,
 #endif

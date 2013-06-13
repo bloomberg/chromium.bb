@@ -24,7 +24,12 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
 #endif
 
 #if defined(OS_ANDROID)
-  WebRuntimeFeatures::enableWebAudio(false);
+    bool enable_webaudio = true;
+#if defined(ARCH_CPU_ARMEL)
+    enable_webaudio =
+        ((android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0);
+#endif
+  WebRuntimeFeatures::enableWebAudio(enable_webaudio);
   // Android does not support the Gamepad API.
   WebRuntimeFeatures::enableGamepad(false);
   // input[type=week] in Android is incomplete. crbug.com/135938
@@ -79,19 +84,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (!command_line.HasSwitch(switches::kEnableSpeechRecognition))
     WebRuntimeFeatures::enableScriptedSpeech(false);
-
-  if (command_line.HasSwitch(switches::kEnableWebAudio)) {
-    bool enable_webaudio = true;
-#if defined(ARCH_CPU_ARMEL)
-    enable_webaudio =
-        ((android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0);
 #endif
-    WebRuntimeFeatures::enableWebAudio(enable_webaudio);
-  }
-#else
+
   if (command_line.HasSwitch(switches::kDisableWebAudio))
     WebRuntimeFeatures::enableWebAudio(false);
-#endif
 
   if (command_line.HasSwitch(switches::kDisableFullScreen))
     WebRuntimeFeatures::enableFullscreen(false);

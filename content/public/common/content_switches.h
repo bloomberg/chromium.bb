@@ -79,10 +79,8 @@ CONTENT_EXPORT extern const char kEnableSpeechSynthesis[];
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const char kDisableWebRTC[];
 CONTENT_EXPORT extern const char kEnableSpeechRecognition[];
-CONTENT_EXPORT extern const char kEnableWebAudio[];
-#else
-CONTENT_EXPORT extern const char kDisableWebAudio[];
 #endif
+CONTENT_EXPORT extern const char kDisableWebAudio[];
 #if defined(ENABLE_WEBRTC)
 extern const char kEnableWebRtcAecRecordings[];
 CONTENT_EXPORT extern const char kEnableSCTPDataChannels[];
