@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_status.h"
 
 namespace notifier {
 
@@ -18,41 +19,29 @@ NotificationBitmapFetcher::NotificationBitmapFetcher(
 NotificationBitmapFetcher::~NotificationBitmapFetcher() {}
 
 void NotificationBitmapFetcher::Start(Profile* profile) {
-  if (url_fetcher_ == NULL) {
-    url_fetcher_.reset(
-        net::URLFetcher::Create(url_, net::URLFetcher::GET, this));
-    // The RequestContext is coming from the current profile.
-    // TODO(petewil): Make sure this is the right profile to use.
-    // It seems to work, but we might prefer to use a blank profile with
-    // no cookies.
-    url_fetcher_->SetRequestContext(profile->GetRequestContext());
-  }
+  url_fetcher_.reset(
+      net::URLFetcher::Create(url_, net::URLFetcher::GET, this));
+  // The RequestContext is coming from the current profile.
+  // TODO(petewil): Make sure this is the right profile to use.
+  // It seems to work, but we might prefer to use a blank profile with
+  // no cookies.
+  url_fetcher_->SetRequestContext(profile->GetRequestContext());
   url_fetcher_->Start();
-}
-
-void NotificationBitmapFetcher::SetURLFetcherForTest(
-    scoped_ptr<net::URLFetcher> url_fetcher) {
-  url_fetcher_ = url_fetcher.Pass();
 }
 
 // Methods inherited from URLFetcherDelegate.
 
 void NotificationBitmapFetcher::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  std::string image_data;
-
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  // Copy the data into the string.  Keep in mind it may have embedded nulls.
-  source->GetResponseAsString(&image_data);
-
-  // Handle fetch failure.  If it failed, set failed to true, and fire
-  // notification to listeners.
-  if (image_data.length() == 0) {
+  if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS) {
     OnDecodeImageFailed(NULL);
     return;
   }
 
+  std::string image_data;
+  source->GetResponseAsString(&image_data);
   // Create an ImageDecoder with the data and assign it to the refptr.
   image_decoder_ = new ImageDecoder(this, image_data,
                                     ImageDecoder::DEFAULT_CODEC);

@@ -69,9 +69,6 @@ class NotificationBitmapFetcher
   // Called when decoding image failed.
   virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE;
 
-  // Used to pass in a fetcher for dependency injection in tests.
-  void SetURLFetcherForTest(scoped_ptr<net::URLFetcher> url_fetcher);
-
  private:
   scoped_ptr<net::URLFetcher> url_fetcher_;
   scoped_refptr<ImageDecoder> image_decoder_;
