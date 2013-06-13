@@ -34,6 +34,7 @@
 #include "../platform/WebCommon.h"
 #include "../platform/WebPrivatePtr.h"
 #include "../platform/WebString.h"
+#include "../platform/WebURL.h"
 
 namespace v8 {
 class Value;
@@ -57,9 +58,11 @@ public:
     }
 
     WEBKIT_EXPORT static WebBlob createFromFile(const WebString& path, long long size);
+    WEBKIT_EXPORT static WebBlob fromV8Value(v8::Handle<v8::Value>);
 
     WEBKIT_EXPORT void reset();
     WEBKIT_EXPORT void assign(const WebBlob&);
+    WEBKIT_EXPORT WebURL url();
 
     bool isNull() const { return m_private.isNull(); }
 

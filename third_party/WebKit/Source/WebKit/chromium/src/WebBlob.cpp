@@ -32,6 +32,7 @@
 #include "WebBlob.h"
 
 #include "V8Blob.h"
+#include "bindings/v8/V8Binding.h"
 #include "core/fileapi/Blob.h"
 #include "core/platform/network/BlobData.h"
 #include <wtf/PassOwnPtr.h>
@@ -48,6 +49,17 @@ WebBlob WebBlob::createFromFile(const WebString& path, long long size)
     return WebBlob(blob);
 }
 
+WebBlob WebBlob::fromV8Value(v8::Handle<v8::Value> value)
+{
+    if (V8Blob::HasInstanceInAnyWorld(value, v8::Isolate::GetCurrent())) {
+        v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
+        Blob* blob = V8Blob::toNative(object);
+        ASSERT(blob);
+        return WebBlob(blob);
+    }
+    return WebBlob();
+}
+
 void WebBlob::reset()
 {
     m_private.reset();
@@ -56,6 +68,13 @@ void WebBlob::reset()
 void WebBlob::assign(const WebBlob& other)
 {
     m_private = other.m_private;
+}
+
+WebURL WebBlob::url()
+{
+    if (!m_private.get())
+        return WebURL();
+    return m_private->url();
 }
 
 v8::Handle<v8::Value>  WebBlob::toV8Value()
