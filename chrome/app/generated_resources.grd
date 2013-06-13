@@ -14974,8 +14974,6 @@ You need to be signed in to use this feature.
       By creating a limited user, you can provide a managed environment for another user to explore the web.
 
 As the manager of a limited user in Chrome on this device, you can determine the sites you wish to allow or restrict, review past visits, and manage other settings. A limited user is not a Google account &#8212; it applies only to this device.
-
-First, create a limited user in Chrome on this device. You can then configure the limited user's settings online anytime, from any device.
     </message>
     <message name="IDS_NEW_LIMITED_USER_LEARN_MORE_DONE_BUTTON" desc="Text for the 'OK' button on the 'Learn more' dialog for the limited user feature.">
       OK, got it!
