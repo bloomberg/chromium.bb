@@ -15,9 +15,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "cc/base/cc_export.h"
+#include "cc/base/scoped_ptr_hash_map.h"
 
 namespace cc {
-
 namespace internal {
 
 class CC_EXPORT WorkerPoolTask
@@ -54,6 +54,19 @@ class CC_EXPORT WorkerPoolTask
 };
 
 }  // namespace internal
+}  // namespace cc
+
+#if defined(COMPILER_GCC)
+namespace BASE_HASH_NAMESPACE {
+template <> struct hash<cc::internal::WorkerPoolTask*> {
+  size_t operator()(cc::internal::WorkerPoolTask* ptr) const {
+    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
+  }
+};
+}  // namespace BASE_HASH_NAMESPACE
+#endif  // COMPILER
+
+namespace cc {
 
 // A worker thread pool that runs tasks provided by task graph and
 // guarantees completion of all pending tasks at shutdown.
@@ -69,9 +82,58 @@ class CC_EXPORT WorkerPool {
   virtual void CheckForCompletedTasks();
 
  protected:
+  class CC_EXPORT GraphNode {
+   public:
+    GraphNode(internal::WorkerPoolTask* dependent, unsigned priority);
+    ~GraphNode();
+
+    void AddDependent(internal::WorkerPoolTask* dependent);
+
+    const internal::WorkerPoolTask::TaskVector& dependents() const {
+      return dependents_;
+    }
+    unsigned priority() const { return priority_; }
+
+   private:
+    internal::WorkerPoolTask::TaskVector dependents_;
+    unsigned priority_;
+
+    DISALLOW_COPY_AND_ASSIGN(GraphNode);
+  };
+  typedef ScopedPtrHashMap<internal::WorkerPoolTask*, GraphNode> GraphNodeMap;
+  typedef GraphNodeMap TaskGraph;
+
   WorkerPool(size_t num_threads, const std::string& thread_name_prefix);
 
-  void ScheduleTasks(internal::WorkerPoolTask* root);
+  // Schedule running of tasks in |graph|. Any previously scheduled tasks
+  // that are not already running will be canceled. Canceled tasks don't run
+  // but completion of them is still processed.
+  void SetTaskGraph(TaskGraph* graph);
+
+  // BuildTaskGraph() takes a task tree as input and constructs a
+  // unique set of tasks with edges between dependencies pointing in
+  // the direction of the dependents. Each task is given a unique priority
+  // which is currently the same as the DFS traversal order.
+  //
+  // Input:             Output:
+  //
+  //       root               task4          Task | Priority (lower is better)
+  //     /      \           /       \      -------+---------------------------
+  //  task1    task2      task3    task2     root | 4
+  //    |        |          |        |      task1 | 2
+  //  task3      |        task1      |      task2 | 3
+  //    |        |           \      /       task3 | 1
+  //  task4    task4           root         task4 | 0
+  //
+  // The output can be used to efficiently maintain a queue of
+  // "ready to run" tasks.
+  static unsigned BuildTaskGraphRecursive(
+      internal::WorkerPoolTask* task,
+      internal::WorkerPoolTask* dependent,
+      unsigned priority,
+      TaskGraph* tasks);
+  static void BuildTaskGraph(
+      internal::WorkerPoolTask* root, TaskGraph* tasks);
 
  private:
   class Inner;

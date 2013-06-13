@@ -18,17 +18,6 @@
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/scoped_ptr_deque.h"
-#include "cc/base/scoped_ptr_hash_map.h"
-
-#if defined(COMPILER_GCC)
-namespace BASE_HASH_NAMESPACE {
-template <> struct hash<cc::internal::WorkerPoolTask*> {
-  size_t operator()(cc::internal::WorkerPoolTask* ptr) const {
-    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
-  }
-};
-}  // namespace BASE_HASH_NAMESPACE
-#endif  // COMPILER
 
 namespace cc {
 
@@ -105,47 +94,18 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
 
   void Shutdown();
 
-  // Schedule running of |root| task and all its dependencies. Tasks
-  // previously scheduled but no longer needed to run |root| will be
-  // canceled unless already running. Canceled tasks are moved to
-  // |completed_tasks_| without being run. The result is that once
-  // scheduled, a task is guaranteed to end up in the |completed_tasks_|
-  // queue even if they later get canceled by another call to
-  // ScheduleTasks().
-  void ScheduleTasks(internal::WorkerPoolTask* root);
+  // Schedule running of tasks in |graph|. Tasks previously scheduled but
+  // no longer needed will be canceled unless already running. Canceled
+  // tasks are moved to |completed_tasks_| without being run. The result
+  // is that once scheduled, a task is guaranteed to end up in the
+  // |completed_tasks_| queue even if they later get canceled by another
+  // call to SetTaskGraph().
+  void SetTaskGraph(TaskGraph* graph);
 
   // Collect all completed tasks in |completed_tasks|.
   void CollectCompletedTasks(TaskDeque* completed_tasks);
 
  private:
-  class ScheduledTask {
-   public:
-    ScheduledTask(internal::WorkerPoolTask* dependent, unsigned priority)
-        : priority_(priority) {
-      if (dependent)
-        dependents_.push_back(dependent);
-    }
-
-    internal::WorkerPoolTask::TaskVector& dependents() { return dependents_; }
-    unsigned priority() const { return priority_; }
-
-   private:
-    internal::WorkerPoolTask::TaskVector dependents_;
-    unsigned priority_;
-  };
-  typedef internal::WorkerPoolTask* ScheduledTaskMapKey;
-  typedef ScopedPtrHashMap<ScheduledTaskMapKey, ScheduledTask>
-      ScheduledTaskMap;
-
-  // This builds a ScheduledTaskMap from a root task.
-  static unsigned BuildScheduledTaskMapRecursive(
-      internal::WorkerPoolTask* task,
-      internal::WorkerPoolTask* dependent,
-      unsigned priority,
-      ScheduledTaskMap* scheduled_tasks);
-  static void BuildScheduledTaskMap(
-      internal::WorkerPoolTask* root, ScheduledTaskMap* scheduled_tasks);
-
   // Overridden from base::DelegateSimpleThread:
   virtual void Run() OVERRIDE;
 
@@ -166,11 +126,8 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
   // are pending.
   bool shutdown_;
 
-  // The root task that is a dependent of all other tasks.
-  scoped_refptr<internal::WorkerPoolTask> root_;
-
   // This set contains all pending tasks.
-  ScheduledTaskMap pending_tasks_;
+  GraphNodeMap pending_tasks_;
 
   // Ordered set of tasks that are ready to run.
   // TODO(reveman): priority_queue might be more efficient.
@@ -178,7 +135,7 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
   TaskMap ready_to_run_tasks_;
 
   // This set contains all currently running tasks.
-  ScheduledTaskMap running_tasks_;
+  GraphNodeMap running_tasks_;
 
   // Completed tasks not yet collected by origin thread.
   TaskDeque completed_tasks_;
@@ -241,19 +198,15 @@ void WorkerPool::Inner::Shutdown() {
   }
 }
 
-void WorkerPool::Inner::ScheduleTasks(internal::WorkerPoolTask* root) {
-  // It is OK to call ScheduleTasks() after shutdown if |root| is NULL.
-  DCHECK(!root || !shutdown_);
+void WorkerPool::Inner::SetTaskGraph(TaskGraph* graph) {
+  // It is OK to call SetTaskGraph() after shutdown if |graph| is empty.
+  DCHECK(graph->empty() || !shutdown_);
 
-  scoped_refptr<internal::WorkerPoolTask> new_root(root);
-
-  ScheduledTaskMap new_pending_tasks;
-  ScheduledTaskMap new_running_tasks;
+  GraphNodeMap new_pending_tasks;
+  GraphNodeMap new_running_tasks;
   TaskMap new_ready_to_run_tasks;
 
-  // Build scheduled task map before acquiring |lock_|.
-  if (root)
-    BuildScheduledTaskMap(root, &new_pending_tasks);
+  new_pending_tasks.swap(*graph);
 
   {
     base::AutoLock lock(lock_);
@@ -266,7 +219,7 @@ void WorkerPool::Inner::ScheduleTasks(internal::WorkerPoolTask* root) {
     }
 
     // Move tasks not present in |new_pending_tasks| to |completed_tasks_|.
-    for (ScheduledTaskMap::iterator it = pending_tasks_.begin();
+    for (GraphNodeMap::iterator it = pending_tasks_.begin();
          it != pending_tasks_.end(); ++it) {
       internal::WorkerPoolTask* task = it->first;
 
@@ -276,7 +229,7 @@ void WorkerPool::Inner::ScheduleTasks(internal::WorkerPoolTask* root) {
     }
 
     // Build new running task set.
-    for (ScheduledTaskMap::iterator it = running_tasks_.begin();
+    for (GraphNodeMap::iterator it = running_tasks_.begin();
          it != running_tasks_.end(); ++it) {
       internal::WorkerPoolTask* task = it->first;
       // Transfer scheduled task value from |new_pending_tasks| to
@@ -287,7 +240,7 @@ void WorkerPool::Inner::ScheduleTasks(internal::WorkerPoolTask* root) {
     }
 
     // Build new "ready to run" tasks queue.
-    for (ScheduledTaskMap::iterator it = new_pending_tasks.begin();
+    for (GraphNodeMap::iterator it = new_pending_tasks.begin();
          it != new_pending_tasks.end(); ++it) {
       internal::WorkerPoolTask* task = it->first;
 
@@ -303,9 +256,8 @@ void WorkerPool::Inner::ScheduleTasks(internal::WorkerPoolTask* root) {
         new_ready_to_run_tasks[it->second->priority()] = task;
     }
 
-    // Swap root taskand task sets.
+    // Swap task sets.
     // Note: old tasks are intentionally destroyed after releasing |lock_|.
-    root_.swap(new_root);
     pending_tasks_.swap(new_pending_tasks);
     running_tasks_.swap(new_running_tasks);
     ready_to_run_tasks_.swap(new_ready_to_run_tasks);
@@ -372,19 +324,21 @@ void WorkerPool::Inner::Run() {
     task->DidRun();
 
     // Now iterate over all dependents to check if they are ready to run.
-    scoped_ptr<ScheduledTask> scheduled_task =
-        running_tasks_.take_and_erase(task.get());
-    if (scheduled_task) {
+    scoped_ptr<GraphNode> node = running_tasks_.take_and_erase(task.get());
+    if (node) {
       typedef internal::WorkerPoolTask::TaskVector TaskVector;
-      for (TaskVector::iterator it = scheduled_task->dependents().begin();
-           it != scheduled_task->dependents().end(); ++it) {
-        internal::WorkerPoolTask* dependent = it->get();
+      for (TaskVector::const_iterator it = node->dependents().begin();
+           it != node->dependents().end(); ++it) {
+        GraphNodeMap::iterator dependent_it = pending_tasks_.find(it->get());
+        DCHECK(dependent_it != pending_tasks_.end());
+
+        internal::WorkerPoolTask* dependent = dependent_it->first;
         if (!dependent->IsReadyToRun())
           continue;
 
         // Task is ready. Add it to |ready_to_run_tasks_|.
-        DCHECK(pending_tasks_.contains(dependent));
-        unsigned priority = pending_tasks_.get(dependent)->priority();
+        GraphNode* dependent_node = dependent_it->second;
+        unsigned priority = dependent_node->priority();
         DCHECK(!ready_to_run_tasks_.count(priority) ||
                ready_to_run_tasks_[priority] == dependent);
         ready_to_run_tasks_[priority] = dependent;
@@ -400,63 +354,19 @@ void WorkerPool::Inner::Run() {
   has_ready_to_run_tasks_cv_.Signal();
 }
 
-// BuildScheduledTaskMap() takes a task tree as input and constructs
-// a unique set of tasks with edges between dependencies pointing in
-// the direction of the dependents. Each task is given a unique priority
-// which is currently the same as the DFS traversal order.
-//
-// Input:             Output:
-//
-//       root               task4          Task | Priority (lower is better)
-//     /      \           /       \      -------+---------------------------
-//  task1    task2      task3    task2     root | 4
-//    |        |          |        |      task1 | 2
-//  task3      |        task1      |      task2 | 3
-//    |        |           \      /       task3 | 1
-//  task4    task4           root         task4 | 0
-//
-// The output can be used to efficiently maintain a queue of
-// "ready to run" tasks.
-
-// static
-unsigned WorkerPool::Inner::BuildScheduledTaskMapRecursive(
-    internal::WorkerPoolTask* task,
-    internal::WorkerPoolTask* dependent,
-    unsigned priority,
-    ScheduledTaskMap* scheduled_tasks) {
-  // Skip sub-tree if task has already completed.
-  if (task->HasCompleted())
-    return priority;
-
-  ScheduledTaskMap::iterator scheduled_it = scheduled_tasks->find(task);
-  if (scheduled_it != scheduled_tasks->end()) {
-    DCHECK(dependent);
-    scheduled_it->second->dependents().push_back(dependent);
-    return priority;
-  }
-
-  typedef internal::WorkerPoolTask::TaskVector TaskVector;
-  for (TaskVector::iterator it = task->dependencies().begin();
-       it != task->dependencies().end(); ++it) {
-    internal::WorkerPoolTask* dependency = it->get();
-    priority = BuildScheduledTaskMapRecursive(
-        dependency, task, priority, scheduled_tasks);
-  }
-
-  scheduled_tasks->set(task,
-                       make_scoped_ptr(new ScheduledTask(dependent,
-                                                         priority)));
-
-  return priority + 1;
+WorkerPool::GraphNode::GraphNode(
+    internal::WorkerPoolTask* dependent, unsigned priority)
+    : priority_(priority) {
+  if (dependent)
+    dependents_.push_back(dependent);
 }
 
-// static
-void WorkerPool::Inner::BuildScheduledTaskMap(
-    internal::WorkerPoolTask* root,
-    ScheduledTaskMap* scheduled_tasks) {
-  const unsigned kBasePriority = 0u;
-  DCHECK(root);
-  BuildScheduledTaskMapRecursive(root, NULL, kBasePriority, scheduled_tasks);
+WorkerPool::GraphNode::~GraphNode() {
+}
+
+void WorkerPool::GraphNode::AddDependent(internal::WorkerPoolTask* dependent) {
+  DCHECK(dependent);
+  dependents_.push_back(dependent);
 }
 
 WorkerPool::WorkerPool(size_t num_threads,
@@ -504,12 +414,48 @@ void WorkerPool::DispatchCompletionCallbacks(TaskDeque* completed_tasks) {
   in_dispatch_completion_callbacks_ = false;
 }
 
-void WorkerPool::ScheduleTasks(internal::WorkerPoolTask* root) {
-  TRACE_EVENT0("cc", "WorkerPool::ScheduleTasks");
+void WorkerPool::SetTaskGraph(TaskGraph* graph) {
+  TRACE_EVENT0("cc", "WorkerPool::SetTaskGraph");
 
   DCHECK(!in_dispatch_completion_callbacks_);
 
-  inner_->ScheduleTasks(root);
+  inner_->SetTaskGraph(graph);
+}
+
+// static
+unsigned WorkerPool::BuildTaskGraphRecursive(
+    internal::WorkerPoolTask* task,
+    internal::WorkerPoolTask* dependent,
+    unsigned priority,
+    TaskGraph* tasks) {
+  // Skip sub-tree if task has already completed.
+  if (task->HasCompleted())
+    return priority;
+
+  GraphNodeMap::iterator it = tasks->find(task);
+  if (it != tasks->end()) {
+    it->second->AddDependent(dependent);
+    return priority;
+  }
+
+  typedef internal::WorkerPoolTask::TaskVector TaskVector;
+  for (TaskVector::iterator dependency_it = task->dependencies().begin();
+       dependency_it != task->dependencies().end(); ++dependency_it) {
+    internal::WorkerPoolTask* dependency = dependency_it->get();
+    priority = BuildTaskGraphRecursive(dependency, task, priority, tasks);
+  }
+
+  tasks->set(task, make_scoped_ptr(new GraphNode(dependent, priority)));
+
+  return priority + 1;
+}
+
+// static
+void WorkerPool::BuildTaskGraph(
+    internal::WorkerPoolTask* root, TaskGraph* tasks) {
+  const unsigned kBasePriority = 0u;
+  if (root)
+    BuildTaskGraphRecursive(root, NULL, kBasePriority, tasks);
 }
 
 }  // namespace cc

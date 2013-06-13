@@ -68,9 +68,17 @@ class PerfWorkerPool : public WorkerPool {
     return make_scoped_ptr(new PerfWorkerPool);
   }
 
-  void ScheduleTasks(internal::WorkerPoolTask* root) {
-    WorkerPool::ScheduleTasks(root);
+  void BuildTaskGraph(internal::WorkerPoolTask* root) {
+    graph_.clear();
+    WorkerPool::BuildTaskGraph(root, &graph_);
   }
+
+  void ScheduleTasks() {
+    SetTaskGraph(&graph_);
+  }
+
+ private:
+  TaskGraph graph_;
 };
 
 class WorkerPoolPerfTest : public testing::Test {
@@ -97,17 +105,17 @@ class WorkerPoolPerfTest : public testing::Test {
            num_runs_ / elapsed_.InSecondsF());
   }
 
-  void BuildTaskGraph(internal::WorkerPoolTask::TaskVector* dependencies,
-                      unsigned current_depth,
-                      unsigned max_depth,
-                      unsigned num_children_per_node) {
+  void CreateTasks(internal::WorkerPoolTask::TaskVector* dependencies,
+                   unsigned current_depth,
+                   unsigned max_depth,
+                   unsigned num_children_per_node) {
     internal::WorkerPoolTask::TaskVector children;
     if (current_depth < max_depth) {
       for (unsigned i = 0; i < num_children_per_node; ++i) {
-        BuildTaskGraph(&children,
-                       current_depth + 1,
-                       max_depth,
-                       num_children_per_node);
+        CreateTasks(&children,
+                    current_depth + 1,
+                    max_depth,
+                    num_children_per_node);
       }
     } else if (leaf_task_.get()) {
       children.push_back(leaf_task_);
@@ -136,9 +144,12 @@ class WorkerPoolPerfTest : public testing::Test {
                              unsigned num_children_per_node) {
     start_time_ = base::TimeTicks();
     num_runs_ = 0;
+    internal::WorkerPoolTask::TaskVector children;
+    CreateTasks(&children, 0, max_depth, num_children_per_node);
+    scoped_refptr<PerfTaskImpl> root_task(
+        make_scoped_refptr(new PerfTaskImpl(&children)));
     do {
-      internal::WorkerPoolTask::TaskVector children;
-      BuildTaskGraph(&children, 0, max_depth, num_children_per_node);
+      worker_pool_->BuildTaskGraph(root_task.get());
     } while (DidRun());
 
     AfterTest(test_name);
@@ -153,13 +164,15 @@ class WorkerPoolPerfTest : public testing::Test {
       internal::WorkerPoolTask::TaskVector empty;
       leaf_task_ = make_scoped_refptr(new PerfControlTaskImpl(&empty));
       internal::WorkerPoolTask::TaskVector children;
-      BuildTaskGraph(&children, 0, max_depth, num_children_per_node);
+      CreateTasks(&children, 0, max_depth, num_children_per_node);
       scoped_refptr<PerfTaskImpl> root_task(
           make_scoped_refptr(new PerfTaskImpl(&children)));
 
-      worker_pool_->ScheduleTasks(root_task.get());
+      worker_pool_->BuildTaskGraph(root_task.get());
+      worker_pool_->ScheduleTasks();
       leaf_task_->WaitForTaskToStartRunning();
-      worker_pool_->ScheduleTasks(NULL);
+      worker_pool_->BuildTaskGraph(NULL);
+      worker_pool_->ScheduleTasks();
       worker_pool_->CheckForCompletedTasks();
       leaf_task_->AllowTaskToFinish();
     } while (DidRun());
@@ -174,11 +187,12 @@ class WorkerPoolPerfTest : public testing::Test {
     num_runs_ = 0;
     do {
       internal::WorkerPoolTask::TaskVector children;
-      BuildTaskGraph(&children, 0, max_depth, num_children_per_node);
+      CreateTasks(&children, 0, max_depth, num_children_per_node);
       scoped_refptr<PerfControlTaskImpl> root_task(
           make_scoped_refptr(new PerfControlTaskImpl(&children)));
 
-      worker_pool_->ScheduleTasks(root_task.get());
+      worker_pool_->BuildTaskGraph(root_task.get());
+      worker_pool_->ScheduleTasks();
       root_task->WaitForTaskToStartRunning();
       root_task->AllowTaskToFinish();
       worker_pool_->CheckForCompletedTasks();

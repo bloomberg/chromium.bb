@@ -414,7 +414,13 @@ void RasterWorkerPool::SetRasterTasks(RasterTask::Queue* queue) {
 }
 
 void RasterWorkerPool::ScheduleRasterTasks(const RootTask& root) {
-  WorkerPool::ScheduleTasks(root.internal_.get());
+  scoped_refptr<internal::WorkerPoolTask> new_root(root.internal_);
+
+  TaskGraph graph;
+  BuildTaskGraph(new_root, &graph);
+  WorkerPool::SetTaskGraph(&graph);
+
+  root_.swap(new_root);
 }
 
 }  // namespace cc

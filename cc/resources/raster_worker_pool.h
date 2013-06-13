@@ -248,6 +248,9 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
  private:
   ResourceProvider* resource_provider_;
   RasterTask::Queue::TaskVector raster_tasks_;
+
+  // The root task that is a dependent of all other tasks.
+  scoped_refptr<internal::WorkerPoolTask> root_;
 };
 
 }  // namespace cc

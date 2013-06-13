@@ -72,7 +72,11 @@ class FakeWorkerPool : public WorkerPool {
                          &tasks));
 
     scheduled_tasks_completion_.reset(new CompletionEvent);
-    WorkerPool::ScheduleTasks(completion_task.get());
+
+    TaskGraph graph;
+    BuildTaskGraph(completion_task.get(), &graph);
+    WorkerPool::SetTaskGraph(&graph);
+    root_.swap(completion_task);
   }
 
   void WaitForTasksToComplete() {
@@ -86,6 +90,7 @@ class FakeWorkerPool : public WorkerPool {
     scheduled_tasks_completion_->Signal();
   }
 
+  scoped_refptr<FakeTaskImpl> root_;
   scoped_ptr<CompletionEvent> scheduled_tasks_completion_;
 };
 
