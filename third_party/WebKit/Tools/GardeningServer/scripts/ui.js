@@ -47,12 +47,12 @@ ui.urlForTest = function(testName)
 ui.urlForFlakinessDashboard = function(opt_testNameList)
 {
     var testsParameter = opt_testNameList ? opt_testNameList.join(',') : '';
-    return 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=' + encodeURIComponent(testsParameter) + '&group=' + encodeURIComponent('@ToT - chromium.org');
+    return 'http://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=' + encodeURIComponent(testsParameter);
 }
 
 ui.urlForEmbeddedFlakinessDashboard = function(opt_testNameList)
 {
-    return ui.urlForFlakinessDashboard(opt_testNameList) + '&showChrome=false&group=' + encodeURIComponent('@ToT - chromium.org');
+    return ui.urlForFlakinessDashboard(opt_testNameList) + '&showChrome=false';
 }
 
 ui.rolloutReasonForTestNameList = function(testNameList)
