@@ -14,6 +14,10 @@
 // For a description of the WebM elements see
 // http://www.webmproject.org/code/specs/container/.
 
+namespace mkvparser {
+  class IMkvReader;
+}  // end namespace
+
 namespace mkvmuxer {
 
 class MkvWriter;
@@ -51,23 +55,12 @@ class IMkvWriter {
   LIBWEBM_DISALLOW_COPY_AND_ASSIGN(IMkvWriter);
 };
 
-// Classes implementing this interface should adhere to the following rule:
-// - There can be any number of calls to Write().
-// - Once the first call to Read() occurs, no more Write()'s are allowed.
-// - Write() should return error if there has been a call to Read() before.
-class IMkvWriteEOFReader : public IMkvWriter {
- public:
-  // Reads data of size |length| starting from the offset of |position| into
-  // |buffer|.
-  virtual int Read(int64 position, int32 length, uint8* buffer) = 0;
-};
-
 // Writes out the EBML header for a WebM file. This function must be called
 // before any other libwebm writing functions are called.
 bool WriteEbmlHeader(IMkvWriter* writer);
 
 // Copies in Chunk from source to destination between the given byte positions
-bool ChunkedCopy(IMkvWriteEOFReader* source, IMkvWriter* dst,
+bool ChunkedCopy(mkvparser::IMkvReader* source, IMkvWriter* dst,
                  int64 start, int64 size);
 
 ///////////////////////////////////////////////////////////////
@@ -946,12 +939,6 @@ class Segment {
   // |ptr_writer| is NULL.
   bool Init(IMkvWriter* ptr_writer);
 
-  // This function must be called before Init() if Cues are to be written before
-  // the Clusters. Input parameter is a IMkvWriteEOFReader object, which is to
-  // be used as the temporary storage, while moving the Cues before the
-  // Clusters.
-  bool WriteCuesBeforeClusters(IMkvWriteEOFReader* ptr_writer);
-
   // Adds a generic track to the segment.  Returns the newly-allocated
   // track object (which is owned by the segment) on success, NULL on
   // error. |number| is the number to use for the track.  |number|
@@ -1024,6 +1011,19 @@ class Segment {
   // |number| must be >= 0. If |number| == 0 then the muxer will decide on
   // the track number.
   uint64 AddVideoTrack(int32 width, int32 height, int32 number);
+
+  // This function must be called after Finalize() if you need a copy of the
+  // output with Cues written before the Clusters.
+  // Input parameters:
+  // reader - an IMkvReader object created with the same underlying file of the
+  //          current writer object. Make sure to close the existing writer
+  //          object before creating this so that all the data is properly
+  //          flushed and available for reading.
+  // writer - an IMkvWriter object pointing to a *different* file than the one
+  //          pointed by the current writer object. This file will contain the
+  //          Cues element before the Clusters.
+  bool CopyAndMoveCuesBeforeClusters(mkvparser::IMkvReader* reader,
+                                     IMkvWriter* writer);
 
   // Sets which track to use for the Cues element. Must have added the track
   // before calling this function. Returns true on success. |track_number| is
@@ -1181,6 +1181,9 @@ class Segment {
   // Base filename for the chunked files.
   char* chunking_base_name_;
 
+  // File position offset where the Clusters end.
+  int64 cluster_end_offset_;
+
   // List of clusters.
   Cluster** cluster_list_;
 
@@ -1251,10 +1254,6 @@ class Segment {
   IMkvWriter* writer_cluster_;
   IMkvWriter* writer_cues_;
   IMkvWriter* writer_header_;
-
-  // Pointer to actual writer object and temp writer object
-  IMkvWriter* writer_;
-  IMkvWriteEOFReader* writer_temp_;
 
   LIBWEBM_DISALLOW_COPY_AND_ASSIGN(Segment);
 };

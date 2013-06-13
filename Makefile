@@ -2,7 +2,7 @@ CXX       := g++
 CXXFLAGS  := -W -Wall -g
 LIBWEBMA  := libwebm.a
 LIBWEBMSO := libwebm.so
-WEBMOBJS  := mkvparser.o mkvreader.o mkvmuxer.o mkvmuxerutil.o mkvwriter.o mkvwriteeofreader.o
+WEBMOBJS  := mkvparser.o mkvreader.o mkvmuxer.o mkvmuxerutil.o mkvwriter.o
 OBJSA     := $(WEBMOBJS:.o=_a.o)
 OBJSSO    := $(WEBMOBJS:.o=_so.o)
 OBJECTS1  := sample.o

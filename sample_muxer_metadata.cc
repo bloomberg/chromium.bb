@@ -168,7 +168,7 @@ bool SampleMuxerMetadata::AddChapter(const cue_t& cue) {
   iter_t i = cue.payload.begin();
   const iter_t j = cue.payload.end();
 
-  string title;
+  std::string title;
 
   for (;;) {
     title += *i++;

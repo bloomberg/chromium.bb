@@ -18,7 +18,6 @@
 
 // libwebm muxer includes
 #include "mkvmuxer.hpp"
-#include "mkvwriteeofreader.hpp"
 #include "mkvwriter.hpp"
 #include "mkvmuxerutil.hpp"
 
@@ -264,7 +263,8 @@ int main(int argc, char* argv[]) {
   // Set muxer header info
   mkvmuxer::MkvWriter writer;
 
-  if (!writer.Open(output)) {
+  char* temp_file = tmpnam(NULL);
+  if (!writer.Open(cues_before_clusters ? temp_file : output)) {
     printf("\n Filename is invalid or error while opening.\n");
     return EXIT_FAILURE;
   }
@@ -272,14 +272,6 @@ int main(int argc, char* argv[]) {
   // Set Segment element attributes
   mkvmuxer::Segment muxer_segment;
 
-  mkvmuxer::MkvWriteEOFReader writer_temp;
-  if (cues_before_clusters) {
-    if (!writer_temp.Open(NULL, true)) {
-      printf("\n Filename is invalid or error while opening.\n");
-      return EXIT_FAILURE;
-    }
-    muxer_segment.WriteCuesBeforeClusters(&writer_temp);
-  }
   if (!muxer_segment.Init(&writer)) {
     printf("\n Could not initialize muxer segment!\n");
     return EXIT_FAILURE;
@@ -520,13 +512,29 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
+  reader.Close();
+  writer.Close();
+
+  if (cues_before_clusters) {
+    if (reader.Open(temp_file)) {
+      printf("\n Filename is invalid or error while opening.\n");
+      return EXIT_FAILURE;
+    }
+    if (!writer.Open(output)) {
+      printf("\n Filename is invalid or error while opening.\n");
+      return EXIT_FAILURE;
+    }
+    if (!muxer_segment.CopyAndMoveCuesBeforeClusters(&reader, &writer)) {
+      printf("\n Unable to copy and move cues before clusters.\n");
+      return EXIT_FAILURE;
+    }
+    reader.Close();
+    writer.Close();
+    remove(temp_file);
+  }
+
   delete [] data;
   delete parser_segment;
-
-  writer.Close();
-  if (cues_before_clusters)
-    writer_temp.Close();
-  reader.Close();
 
   return EXIT_SUCCESS;
 }

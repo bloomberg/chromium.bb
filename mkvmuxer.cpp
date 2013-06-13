@@ -7,7 +7,6 @@
 // be found in the AUTHORS file in the root of the source tree.
 
 #include "mkvmuxer.hpp"
-#include "mkvwriteeofreader.hpp"
 
 #include <cstdio>
 #include <cstdlib>
@@ -16,6 +15,7 @@
 #include <new>
 
 #include "mkvmuxerutil.hpp"
+#include "mkvparser.hpp"
 #include "mkvwriter.hpp"
 #include "webmids.hpp"
 
@@ -91,7 +91,7 @@ bool WriteEbmlHeader(IMkvWriter* writer) {
   return true;
 }
 
-bool ChunkedCopy(mkvmuxer::IMkvWriteEOFReader* source,
+bool ChunkedCopy(mkvparser::IMkvReader* source,
                  mkvmuxer::IMkvWriter* dst,
                  mkvmuxer::int64 start, int64 size) {
   // TODO(vigneshv): Check if this is a reasonable value.
@@ -2078,25 +2078,36 @@ bool Segment::Init(IMkvWriter* ptr_writer) {
   if (!ptr_writer) {
     return false;
   }
-  writer_ = ptr_writer;
-  if (cues_position_ == kAfterClusters) {
-    writer_cluster_ = writer_;
-    writer_cues_ = writer_;
-    writer_header_ = writer_;
-  } else {
-    writer_cluster_ = writer_temp_;
-    writer_cues_ = writer_temp_;
-    writer_header_ = writer_temp_;
-  }
+  writer_cluster_ = ptr_writer;
+  writer_cues_ = ptr_writer;
+  writer_header_ = ptr_writer;
   return segment_info_.Init();
 }
 
-bool Segment::WriteCuesBeforeClusters(IMkvWriteEOFReader* ptr_writer) {
-  if (!ptr_writer || writer_cluster_ || writer_cues_ || writer_header_) {
+bool Segment::CopyAndMoveCuesBeforeClusters(mkvparser::IMkvReader* reader,
+                                            IMkvWriter* writer) {
+  const int64 cluster_offset = cluster_list_[0]->size_position() -
+                               GetUIntSize(kMkvCluster);
+
+  // Copy the headers.
+  if (!ChunkedCopy(reader, writer, 0, cluster_offset))
     return false;
-  }
-  writer_temp_ = ptr_writer;
-  cues_position_ = kBeforeClusters;
+
+  // Recompute cue positions and seek entries.
+  MoveCuesBeforeClusters();
+
+  // Write cues and seek entries.
+  // TODO(vigneshv): As of now, it's safe to call seek_head_.Finalize() for the
+  // second time with a different writer object. But the name Finalize() doesn't
+  // indicate something we want to call more than once. So consider renaming it
+  // to write() or some such.
+  if (!cues_.Write(writer) || !seek_head_.Finalize(writer))
+    return false;
+
+  // Copy the Clusters.
+  if (!ChunkedCopy(reader, writer, cluster_offset,
+                   cluster_end_offset_ - cluster_offset))
+    return false;
   return true;
 }
 
@@ -2142,16 +2153,7 @@ bool Segment::Finalize() {
         return false;
     }
 
-    const int64 current_offset = writer_cluster_->Position();
-    const int64 cluster_offset = cluster_list_[0]->size_position() -
-                                 GetUIntSize(kMkvCluster);
-    if (cues_position_ == kBeforeClusters) {
-      writer_cluster_ = writer_;
-      writer_cues_ = writer_;
-      writer_header_ = writer_;
-      ChunkedCopy(writer_temp_, writer_cluster_, 0, cluster_offset);
-      MoveCuesBeforeClusters();
-    }
+    cluster_end_offset_ = writer_cluster_->Position();
 
     // Write the seek headers and cues
     if (output_cues_)
@@ -2160,11 +2162,6 @@ bool Segment::Finalize() {
 
     if (!seek_head_.Finalize(writer_header_))
       return false;
-
-    if (cues_position_ == kBeforeClusters) {
-      ChunkedCopy(writer_temp_, writer_cluster_,
-                  cluster_offset, current_offset - cluster_offset);
-    }
 
     if (writer_header_->Seekable()) {
       if (size_position_ == -1)
