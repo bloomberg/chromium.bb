@@ -161,45 +161,6 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     self.assertEquals('failed-with-error-PERMISSION_DENIED',
                       self.GetUserMedia(tab_index=0, action='dismiss'))
 
-  def testMediaStreamTrackEnable(self):
-    """Tests MediaStreamTrack.enable on tracks connected to a PeerConnection.
-
-    This test will check that if a local track is muted, the remote end don't
-    get video. Also test that if a remote track is disabled, the video is not
-    updated in the video tag."""
-    if self.PlatformIsWinXP():
-      print 'Skipping this test on Windows XP due to flakiness.'
-      return
-
-    # TODO(perkj): Also verify that the local preview is muted when the
-    # feature is implemented.
-    # TODO(perkj): Verify that audio is muted.
-
-    self.LoadTestPageInTwoTabs()
-    self._SetupCall(request_video=True, request_audio=True)
-    select_video_function = \
-        'function(local) { return local.getVideoTracks()[0]; }'
-    self.assertEquals('ok-video-toggled-to-false', self.ExecuteJavascript(
-        'toggleLocalStream(' + select_video_function + ', "video")',
-        tab_index=0))
-    self._WaitForVideo(tab_index=1, expect_playing=False)
-
-    self.assertEquals('ok-video-toggled-to-true', self.ExecuteJavascript(
-        'toggleLocalStream(' + select_video_function + ', "video")',
-        tab_index=0))
-    self._WaitForVideo(tab_index=1, expect_playing=True)
-
-    # Test disabling a remote stream. The remote video is not played."""
-    self.assertEquals('ok-video-toggled-to-false', self.ExecuteJavascript(
-        'toggleRemoteStream(' + select_video_function + ', "video")',
-        tab_index=1))
-    self._WaitForVideo(tab_index=1, expect_playing=False)
-
-    self.assertEquals('ok-video-toggled-to-true', self.ExecuteJavascript(
-        'toggleRemoteStream(' + select_video_function + ', "video")',
-        tab_index=1))
-    self._WaitForVideo(tab_index=1, expect_playing=True)
-
   def _SetupCall(self, request_video, request_audio):
     """Gets user media and establishes a call.
 

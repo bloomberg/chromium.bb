@@ -158,8 +158,13 @@ class WebrtcBrowserTest : public InProcessBrowserTest {
     EXPECT_EQ("ok-started", ExecuteJavascript(javascript, tab_contents));
   }
 
-  void WaitForVideo(content::WebContents* tab_contents) {
+  void WaitForVideoToPlay(content::WebContents* tab_contents) {
     EXPECT_TRUE(UglyPollingWaitUntil("isVideoPlaying()", "video-playing",
+                                     tab_contents));
+  }
+
+  void WaitForVideoToStopPlaying(content::WebContents* tab_contents) {
+    EXPECT_TRUE(UglyPollingWaitUntil("isVideoPlaying()", "video-not-playing",
                                      tab_contents));
   }
 
@@ -170,6 +175,20 @@ class WebrtcBrowserTest : public InProcessBrowserTest {
   void WaitUntilHangupVerified(content::WebContents* tab_contents) {
     EXPECT_TRUE(UglyPollingWaitUntil("getPeerConnectionReadyState()",
                                      "no-peer-connection", tab_contents));
+  }
+
+  std::string ToggleLocalVideoTrack(content::WebContents* tab_contents) {
+    // Toggle the only video track in the page (e.g. video track 0).
+    return ExecuteJavascript("toggleLocalStream("
+        "function(local) { return local.getVideoTracks()[0]; }, "
+        "'video');", tab_contents);
+  }
+
+  std::string ToggleRemoteVideoTrack(content::WebContents* tab_contents) {
+    // Toggle the only video track in the page (e.g. video track 0).
+    return ExecuteJavascript("toggleRemoteStream("
+        "function(local) { return local.getVideoTracks()[0]; }, "
+        "'video');", tab_contents);
   }
 
  private:
@@ -223,8 +242,55 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   StartDetectingVideo(left_tab, "remote-view");
   StartDetectingVideo(right_tab, "remote-view");
 
-  WaitForVideo(left_tab);
-  WaitForVideo(right_tab);
+  WaitForVideoToPlay(left_tab);
+  WaitForVideoToPlay(right_tab);
+
+  HangUp(left_tab);
+  WaitUntilHangupVerified(left_tab);
+  WaitUntilHangupVerified(right_tab);
+
+  AssertNoAsynchronousErrors(left_tab);
+  AssertNoAsynchronousErrors(right_tab);
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
+                       MANUAL_TestMediaStreamTrackEnableDisable) {
+  EXPECT_TRUE(test_server()->Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(), test_server()->GetURL(kMainWebrtcTestHtmlPage));
+  content::WebContents* left_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GetUserMedia(left_tab);
+
+  chrome::AddBlankTabAt(browser(), -1, true);
+  content::WebContents* right_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(
+        browser(), test_server()->GetURL(kMainWebrtcTestHtmlPage));
+  GetUserMedia(right_tab);
+
+  ConnectToPeerConnectionServer("peer 1", left_tab);
+  ConnectToPeerConnectionServer("peer 2", right_tab);
+
+  EstablishCall(left_tab, right_tab);
+
+  AssertNoAsynchronousErrors(left_tab);
+  AssertNoAsynchronousErrors(right_tab);
+
+  StartDetectingVideo(left_tab, "remote-view");
+  StartDetectingVideo(right_tab, "remote-view");
+
+  WaitForVideoToPlay(left_tab);
+  WaitForVideoToPlay(right_tab);
+
+  EXPECT_EQ("ok-video-toggled-to-false", ToggleLocalVideoTrack(left_tab));
+
+  WaitForVideoToStopPlaying(right_tab);
+
+  EXPECT_EQ("ok-video-toggled-to-true", ToggleLocalVideoTrack(left_tab));
+
+  WaitForVideoToPlay(right_tab);
 
   HangUp(left_tab);
   WaitUntilHangupVerified(left_tab);
