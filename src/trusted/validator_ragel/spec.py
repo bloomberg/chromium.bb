@@ -76,6 +76,24 @@ def ValidateOperandlessInstruction(instruction, bitness):
   raise DoNotMatchError(instruction)
 
 
+def ValidateRegularInstruction(instruction, bitness):
+  assert bitness in [32, 64]
+
+  try:
+    ValidateNop(instruction)
+    return
+  except DoNotMatchError:
+    pass
+
+  try:
+    ValidateOperandlessInstruction(instruction, bitness)
+    return
+  except DoNotMatchError:
+    pass
+
+  raise DoNotMatchError(instruction)
+
+
 def ImmediateRE(group_name='immediate'):
   return r'(?P<%s>0x[\da-f]+)' % group_name
 

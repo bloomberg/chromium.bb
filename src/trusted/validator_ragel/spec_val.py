@@ -16,20 +16,12 @@ class Validator(object):
   def ValidateSuperinstruction(self, superinstruction):
     raise NotImplementedError()
 
-  def EnumerateInstructionCheckers(self):
-    """Enumerate checkers for different kinds of (singleton) instructions.
-
-    Returns:
-      Sequence of callables that accept single instruction and follow usual
-      spec convention (return / raise SandboxingError / raise DoNotMatchError).
-      Each such callable is responsible for validation logic specific to a
-      respective instruction class.
-    """
-    raise NotImplementedError()
-
   def ValidateDirectJump(self, instruction):
     destination = spec.ValidateDirectJump(instruction)
     self.jumps[instruction.address] = destination
+
+  def ValidateRegularInstruction(self, instruction):
+    raise NotImplementedError()
 
   def FitsWithinBundle(self, insns):
     offset = insns[0].address
@@ -67,7 +59,8 @@ class Validator(object):
           except spec.DoNotMatchError:
             continue
         else:
-          for checker in self.EnumerateInstructionCheckers():
+          checkers = [self.ValidateDirectJump, self.ValidateRegularInstruction]
+          for checker in checkers:
             try:
               checker(insns[i])
               if not self.FitsWithinBundle(insns[i:i+1]):
@@ -102,12 +95,8 @@ class Validator32(Validator):
   def ValidateSuperinstruction(self, superinstruction):
     spec.ValidateSuperinstruction32(superinstruction)
 
-  def EnumerateInstructionCheckers(self):
-    return [
-        self.ValidateDirectJump,
-        spec.ValidateNop,
-        lambda insn: spec.ValidateOperandlessInstruction(insn, bitness=32),
-    ]
+  def ValidateRegularInstruction(self, instruction):
+    spec.ValidateRegularInstruction(instruction, bitness=32)
 
 
 class Validator64(Validator):
@@ -120,9 +109,5 @@ class Validator64(Validator):
   def ValidateSuperinstruction(self, superinstruction):
     spec.ValidateSuperinstruction64(superinstruction)
 
-  def EnumerateInstructionCheckers(self):
-    return [
-        self.ValidateDirectJump,
-        spec.ValidateNop,
-        lambda insn: spec.ValidateOperandlessInstruction(insn, bitness=64),
-    ]
+  def ValidateRegularInstruction(self, instruction):
+    spec.ValidateRegularInstruction(instruction, bitness=64)
