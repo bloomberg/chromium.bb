@@ -8,8 +8,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "remoting/base/constants.h"
-#include "remoting/jingle_glue/javascript_signal_strategy.h"
-#include "remoting/jingle_glue/xmpp_signal_strategy.h"
+#include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/protocol/audio_reader.h"
 #include "remoting/protocol/audio_stub.h"
 #include "remoting/protocol/auth_util.h"
@@ -36,11 +35,22 @@ ConnectionToHost::ConnectionToHost(
       clipboard_stub_(NULL),
       video_stub_(NULL),
       audio_stub_(NULL),
+      signal_strategy_(NULL),
       state_(INITIALIZING),
       error_(OK) {
 }
 
 ConnectionToHost::~ConnectionToHost() {
+  CloseChannels();
+
+  if (session_.get())
+    session_.reset();
+
+  if (session_manager_.get())
+    session_manager_.reset();
+
+  if (signal_strategy_)
+    signal_strategy_->RemoveListener(this);
 }
 
 ClipboardStub* ConnectionToHost::clipboard_stub() {
@@ -56,8 +66,7 @@ InputStub* ConnectionToHost::input_stub() {
   return &event_forwarder_;
 }
 
-void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
-                               const std::string& local_jid,
+void ConnectionToHost::Connect(SignalStrategy* signal_strategy,
                                const std::string& host_jid,
                                const std::string& host_public_key,
                                scoped_ptr<TransportFactory> transport_factory,
@@ -67,6 +76,7 @@ void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
                                ClipboardStub* clipboard_stub,
                                VideoStub* video_stub,
                                AudioStub* audio_stub) {
+  signal_strategy_ = signal_strategy;
   event_callback_ = event_callback;
   client_stub_ = client_stub;
   clipboard_stub_ = clipboard_stub;
@@ -79,36 +89,14 @@ void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
   host_jid_ = host_jid;
   host_public_key_ = host_public_key;
 
-  JavascriptSignalStrategy* strategy = new JavascriptSignalStrategy(local_jid);
-  strategy->AttachXmppProxy(xmpp_proxy);
-  signal_strategy_.reset(strategy);
   signal_strategy_->AddListener(this);
   signal_strategy_->Connect();
 
   session_manager_.reset(new JingleSessionManager(
       transport_factory.Pass(), allow_nat_traversal_));
-  session_manager_->Init(signal_strategy_.get(), this);
+  session_manager_->Init(signal_strategy_, this);
 
   SetState(CONNECTING, OK);
-}
-
-void ConnectionToHost::Disconnect(const base::Closure& shutdown_task) {
-  DCHECK(CalledOnValidThread());
-
-  CloseChannels();
-
-  if (session_.get())
-    session_.reset();
-
-  if (session_manager_.get())
-    session_manager_.reset();
-
-  if (signal_strategy_.get()) {
-    signal_strategy_->RemoveListener(this);
-    signal_strategy_.reset();
-  }
-
-  shutdown_task.Run();
 }
 
 const SessionConfig& ConnectionToHost::config() {

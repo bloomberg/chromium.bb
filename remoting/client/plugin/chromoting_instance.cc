@@ -16,7 +16,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
@@ -38,7 +37,7 @@
 #include "remoting/client/plugin/pepper_port_allocator.h"
 #include "remoting/client/plugin/pepper_token_fetcher.h"
 #include "remoting/client/plugin/pepper_view.h"
-#include "remoting/client/plugin/pepper_xmpp_proxy.h"
+#include "remoting/client/plugin/pepper_signal_strategy.h"
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
@@ -213,12 +212,9 @@ ChromotingInstance::~ChromotingInstance() {
   // PepperView must be destroyed before the client.
   view_.reset();
 
-  if (client_.get()) {
-    client_->Stop(base::Bind(&PluginThreadTaskRunner::Quit,
-                  plugin_task_runner_));
-  } else {
-    plugin_task_runner_->Quit();
-  }
+  client_.reset();
+
+  plugin_task_runner_->Quit();
 
   // Ensure that nothing touches the plugin thread delegate after this point.
   plugin_task_runner_->DetachAndRunShutdownLoop();
@@ -680,11 +676,10 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   LOG(INFO) << "Connecting to " << config.host_jid
             << ". Local jid: " << config.local_jid << ".";
 
-  // Setup the XMPP Proxy.
-  xmpp_proxy_ = new PepperXmppProxy(
-      base::Bind(&ChromotingInstance::SendOutgoingIq, AsWeakPtr()),
-      plugin_task_runner_.get(),
-      context_.main_task_runner());
+  // Setup the PepperSignalStrategy.
+  signal_strategy_.reset(new PepperSignalStrategy(
+      config.local_jid,
+      base::Bind(&ChromotingInstance::SendOutgoingIq, AsWeakPtr())));
 
   scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator(
       PepperPortAllocator::Create(this));
@@ -692,7 +687,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
       new protocol::LibjingleTransportFactory(port_allocator.Pass(), false));
 
   // Kick off the connection.
-  client_->Start(xmpp_proxy_, transport_factory.Pass());
+  client_->Start(signal_strategy_.get(), transport_factory.Pass());
 
   // Start timer that periodically sends perf stats.
   plugin_task_runner_->PostDelayedTask(
@@ -707,14 +702,8 @@ void ChromotingInstance::Disconnect() {
   view_.reset();
 
   LOG(INFO) << "Disconnecting from host.";
-  if (client_.get()) {
-    // TODO(sergeyu): Should we disconnect asynchronously?
-    base::WaitableEvent done_event(true, false);
-    client_->Stop(base::Bind(&base::WaitableEvent::Signal,
-                             base::Unretained(&done_event)));
-    done_event.Wait();
-    client_.reset();
-  }
+
+  client_.reset();
 
   // Disconnect the input pipeline and teardown the connection.
   mouse_input_filter_.set_input_stub(NULL);
@@ -724,8 +713,8 @@ void ChromotingInstance::Disconnect() {
 void ChromotingInstance::OnIncomingIq(const std::string& iq) {
   // Just ignore the message if it's received before Connect() is called. It's
   // likely to be a leftover from a previous session, so it's safe to ignore it.
-  if (xmpp_proxy_.get())
-    xmpp_proxy_->OnIq(iq);
+  if (signal_strategy_)
+    signal_strategy_->OnIncomingMessage(iq);
 }
 
 void ChromotingInstance::ReleaseAllKeys() {

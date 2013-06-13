@@ -1977,8 +1977,8 @@
         'client/plugin/pepper_view.h',
         'client/plugin/pepper_util.cc',
         'client/plugin/pepper_util.h',
-        'client/plugin/pepper_xmpp_proxy.cc',
-        'client/plugin/pepper_xmpp_proxy.h',
+        'client/plugin/pepper_signal_strategy.cc',
+        'client/plugin/pepper_signal_strategy.h',
       ],
     },  # end of target 'remoting_client_plugin'
 
@@ -2447,12 +2447,9 @@
         'jingle_glue/chromium_socket_factory.h',
         'jingle_glue/iq_sender.cc',
         'jingle_glue/iq_sender.h',
-        'jingle_glue/javascript_signal_strategy.cc',
-        'jingle_glue/javascript_signal_strategy.h',
         'jingle_glue/jingle_info_request.cc',
         'jingle_glue/jingle_info_request.h',
         'jingle_glue/signal_strategy.h',
-        'jingle_glue/xmpp_proxy.h',
         'jingle_glue/xmpp_signal_strategy.cc',
         'jingle_glue/xmpp_signal_strategy.h',
       ],

@@ -61,7 +61,7 @@ class FrameConsumerProxy;
 class PepperAudioPlayer;
 class PepperTokenFetcher;
 class PepperView;
-class PepperXmppProxy;
+class PepperSignalStrategy;
 class RectangleUpdateDecoder;
 
 struct ClientConfig;
@@ -205,7 +205,7 @@ class ChromotingInstance :
   // Posts trapped keys to the web-app to handle.
   void SendTrappedKey(uint32 usb_keycode, bool pressed);
 
-  // Callback for PepperXmppProxy.
+  // Callback for PepperSignalStrategy.
   void SendOutgoingIq(const std::string& iq);
 
   void SendPerfStats();
@@ -233,6 +233,8 @@ class ChromotingInstance :
   scoped_ptr<PepperView> view_;
   pp::View plugin_view_;
 
+  scoped_ptr<PepperSignalStrategy> signal_strategy_;
+
   scoped_ptr<protocol::ConnectionToHost> host_connection_;
   scoped_ptr<ChromotingClient> client_;
 
@@ -244,12 +246,6 @@ class ChromotingInstance :
 #endif
   KeyEventMapper key_mapper_;
   PepperInputHandler input_handler_;
-
-  // XmppProxy is a refcounted interface used to perform thread-switching and
-  // detaching between objects whose lifetimes are controlled by pepper, and
-  // jingle_glue objects. This is used when if we start a sandboxed jingle
-  // connection.
-  scoped_refptr<PepperXmppProxy> xmpp_proxy_;
 
   // PIN Fetcher.
   bool use_async_pin_dialog_;
