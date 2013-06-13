@@ -279,7 +279,7 @@ deps_os = {
             None,
         'src/third_party/undoview':
             None,
-        'src/third_party/usrsctp':
+        'src/third_party/usrsctp/usrsctplib':
             None,
         'src/third_party/v8-i18n':
             None,
