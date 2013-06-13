@@ -72,7 +72,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
   virtual scoped_refptr<cc::ContextProvider>
       GetOffscreenContextProviderForCompositorThread() OVERRIDE {
-    if (!offscreen_context_for_compositor_thread_ ||
+    if (!offscreen_context_for_compositor_thread_.get() ||
         offscreen_context_for_compositor_thread_->DestroyedOnMainThread()) {
       offscreen_context_for_compositor_thread_ =
           webkit::gpu::ContextProviderInProcess::Create();

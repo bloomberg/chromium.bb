@@ -176,20 +176,20 @@ TEST_F(ExtensionsResetTest, ResetExtensionsByDisabling) {
       base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
       Manifest::INVALID_LOCATION,
       false);
-  service_->AddExtension(ext2);
+  service_->AddExtension(ext2.get());
   // Components and external policy extensions shouldn't be deleted.
   scoped_refptr<Extension> ext3 = CreateExtension(
       "example3",
       base::FilePath(FILE_PATH_LITERAL("//nonexistent2")),
       Manifest::COMPONENT,
       false);
-  service_->AddExtension(ext3);
-  scoped_refptr<Extension> ext4 = CreateExtension(
-      "example4",
-      base::FilePath(FILE_PATH_LITERAL("//nonexistent3")),
-      Manifest::EXTERNAL_POLICY_DOWNLOAD,
-      false);
-  service_->AddExtension(ext4);
+  service_->AddExtension(ext3.get());
+  scoped_refptr<Extension> ext4 =
+      CreateExtension("example4",
+                      base::FilePath(FILE_PATH_LITERAL("//nonexistent3")),
+                      Manifest::EXTERNAL_POLICY_DOWNLOAD,
+                      false);
+  service_->AddExtension(ext4.get());
   EXPECT_EQ(4u, service_->extensions()->size());
 
   resetter_->Reset(

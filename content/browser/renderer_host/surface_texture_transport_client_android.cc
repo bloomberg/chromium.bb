@@ -105,7 +105,7 @@ scoped_refptr<media::VideoFrame> SurfaceTextureTransportClient::
     context->flush();
     surface_texture_->AttachToGLContext();
   }
-  if (!video_frame_) {
+  if (!video_frame_.get()) {
     const gfx::Size size = video_layer_->bounds();
     video_frame_ = media::VideoFrame::WrapNativeTexture(
         texture_id_, kGLTextureExternalOES,

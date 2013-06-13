@@ -124,7 +124,7 @@ RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
         texture_id_in_layer_);
   }
 
-  if (texture_layer_)
+  if (texture_layer_.get())
     texture_layer_->ClearClient();
 }
 

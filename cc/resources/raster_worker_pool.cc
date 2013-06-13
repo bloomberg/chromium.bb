@@ -94,7 +94,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
                  "metadata",
                  TracedValue::FromValue(metadata_.AsValue().release()));
 
-    DCHECK(picture_pile_);
+    DCHECK(picture_pile_.get());
     DCHECK(rendering_stats_);
 
     PicturePileImpl* picture_clone =
@@ -123,7 +123,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     devtools_instrumentation::ScopedLayerTask raster_task(
         devtools_instrumentation::kRasterTask, metadata_.layer_id);
 
-    DCHECK(picture_pile_);
+    DCHECK(picture_pile_.get());
     DCHECK(device);
 
     if (analysis_.is_solid_color)

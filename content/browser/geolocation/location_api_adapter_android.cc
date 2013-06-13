@@ -41,7 +41,7 @@ AndroidLocationApiAdapter::AndroidLocationApiAdapter()
 
 AndroidLocationApiAdapter::~AndroidLocationApiAdapter() {
   CHECK(!location_provider_);
-  CHECK(!message_loop_);
+  CHECK(!message_loop_.get());
   CHECK(java_location_provider_android_object_.is_null());
 }
 
@@ -151,7 +151,7 @@ void AndroidLocationApiAdapter::CreateJavaObject(JNIEnv* env) {
 void AndroidLocationApiAdapter::OnNewGeopositionInternal(
     const Geoposition& geoposition) {
   base::AutoLock lock(lock_);
-  if (!message_loop_)
+  if (!message_loop_.get())
     return;
   message_loop_->PostTask(
       FROM_HERE,

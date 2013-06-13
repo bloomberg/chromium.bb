@@ -61,7 +61,7 @@ AwBrowserContext* AwBrowserContext::FromWebContents(
 }
 
 void AwBrowserContext::InitializeBeforeThreadCreation() {
-  DCHECK(!url_request_context_getter_);
+  DCHECK(!url_request_context_getter_.get());
   url_request_context_getter_ = new AwURLRequestContextGetter(this);
 }
 
@@ -78,7 +78,7 @@ void AwBrowserContext::AddVisitedURLs(const std::vector<GURL>& urls) {
 
 net::URLRequestContextGetter* AwBrowserContext::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers) {
-  CHECK(url_request_context_getter_);
+  CHECK(url_request_context_getter_.get());
   url_request_context_getter_->SetProtocolHandlers(protocol_handlers);
   return url_request_context_getter_.get();
 }
@@ -88,7 +88,7 @@ AwBrowserContext::CreateRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers) {
-  CHECK(url_request_context_getter_);
+  CHECK(url_request_context_getter_.get());
   return url_request_context_getter_.get();
 }
 
@@ -159,9 +159,9 @@ AwBrowserContext::GetMediaRequestContextForStoragePartition(
 
 content::ResourceContext* AwBrowserContext::GetResourceContext() {
   if (!resource_context_) {
-    CHECK(url_request_context_getter_);
-    resource_context_.reset(new AwResourceContext(
-        url_request_context_getter_.get()));
+    CHECK(url_request_context_getter_.get());
+    resource_context_.reset(
+        new AwResourceContext(url_request_context_getter_.get()));
   }
   return resource_context_.get();
 }
@@ -173,11 +173,11 @@ AwBrowserContext::GetDownloadManagerDelegate() {
 
 content::GeolocationPermissionContext*
 AwBrowserContext::GetGeolocationPermissionContext() {
-  if (!geolocation_permission_context_) {
+  if (!geolocation_permission_context_.get()) {
     geolocation_permission_context_ =
         native_factory_->CreateGeolocationPermission(this);
   }
-  return geolocation_permission_context_;
+  return geolocation_permission_context_.get();
 }
 
 content::SpeechRecognitionPreferences*

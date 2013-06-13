@@ -185,7 +185,7 @@ CryptoHandshakeMessage* QuicCryptoServerConfig::AddConfig(
 
     configs_[config->id] = config;
     SelectNewPrimaryConfig(now);
-    DCHECK(primary_config_);
+    DCHECK(primary_config_.get());
   }
 
   return msg.release();

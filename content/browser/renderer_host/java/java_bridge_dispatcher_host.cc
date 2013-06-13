@@ -140,7 +140,7 @@ void JavaBridgeDispatcherHost::CreateObjectStub(NPObject* object,
                                                 int route_id) {
   DCHECK_EQ(g_background_thread.Get().message_loop(),
             base::MessageLoop::current());
-  if (!channel_) {
+  if (!channel_.get()) {
     channel_ = JavaBridgeChannelHost::GetJavaBridgeChannelHost(
         render_view_host()->GetProcess()->GetID(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
@@ -156,8 +156,8 @@ void JavaBridgeDispatcherHost::CreateObjectStub(NPObject* object,
   // window message queue when a method on a renderer-side object causes a
   // dialog to be displayed, and the Java Bridge does not need this
   // functionality. The page URL is also not required.
-  stubs_.push_back(
-      (new NPObjectStub(object, channel_, route_id, 0, GURL()))->AsWeakPtr());
+  stubs_.push_back((new NPObjectStub(
+      object, channel_.get(), route_id, 0, GURL()))->AsWeakPtr());
 
   // The NPObjectStub takes a reference to the NPObject. Release the ref added
   // in CreateNPVariantParam().

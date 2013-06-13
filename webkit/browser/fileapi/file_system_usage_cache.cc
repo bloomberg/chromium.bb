@@ -289,7 +289,7 @@ bool FileSystemUsageCache::FlushFile(const base::FilePath& file_path) {
 void FileSystemUsageCache::ScheduleCloseTimer() {
   DCHECK(CalledOnValidThread());
   if (!timer_)
-    timer_.reset(new TimedTaskHelper(task_runner_));
+    timer_.reset(new TimedTaskHelper(task_runner_.get()));
 
   if (timer_->IsRunning()) {
     timer_->Reset();

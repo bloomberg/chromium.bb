@@ -41,7 +41,7 @@ void AwHttpAuthHandler::Proceed(JNIEnv* env,
                                 jstring user,
                                 jstring password) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (login_delegate_) {
+  if (login_delegate_.get()) {
     login_delegate_->Proceed(ConvertJavaStringToUTF16(env, user),
                              ConvertJavaStringToUTF16(env, password));
     login_delegate_ = NULL;
@@ -50,7 +50,7 @@ void AwHttpAuthHandler::Proceed(JNIEnv* env,
 
 void AwHttpAuthHandler::Cancel(JNIEnv* env, jobject obj) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (login_delegate_) {
+  if (login_delegate_.get()) {
     login_delegate_->Cancel();
     login_delegate_ = NULL;
   }

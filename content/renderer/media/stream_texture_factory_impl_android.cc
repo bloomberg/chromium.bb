@@ -57,7 +57,7 @@ StreamTextureProxyImpl::StreamTextureProxyImpl(
 
 void StreamTextureProxyImpl::Release() {
   SetClient(NULL);
-  if (loop_ && loop_ != base::MessageLoopProxy::current())
+  if (loop_.get() && loop_.get() != base::MessageLoopProxy::current())
     loop_->DeleteSoon(FROM_HERE, this);
   else
     delete this;

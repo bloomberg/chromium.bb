@@ -22,7 +22,7 @@ JavaBridgeDispatcher::JavaBridgeDispatcher(RenderView* render_view)
 }
 
 bool JavaBridgeDispatcher::EnsureChannelIsSetUp() {
-  if (channel_) {
+  if (channel_.get()) {
     return true;
   }
 

@@ -60,7 +60,7 @@ void SurfaceTexturePeerBrowserImpl::EstablishSurfaceTexturePeer(
     scoped_refptr<gfx::SurfaceTextureBridge> surface_texture_bridge,
     int render_view_id,
     int player_id) {
-  if (!surface_texture_bridge)
+  if (!surface_texture_bridge.get())
     return;
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(

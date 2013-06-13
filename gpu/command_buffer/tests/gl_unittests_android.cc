@@ -47,7 +47,7 @@ TEST_F(GLSurfaceTextureTest, SimpleTest) {
       gfx::GLSurface::CreateViewGLSurface(false, window);
   EXPECT_TRUE(gl_surface.get() != NULL);
 
-  gl_.SetSurface(gl_surface);
+  gl_.SetSurface(gl_surface.get());
 
   glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);

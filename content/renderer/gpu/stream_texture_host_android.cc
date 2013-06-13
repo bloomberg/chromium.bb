@@ -53,7 +53,7 @@ bool StreamTextureHost::OnMessageReceived(const IPC::Message& message) {
 }
 
 void StreamTextureHost::EstablishPeer(int32 primary_id, int32 secondary_id) {
-  if (channel_) {
+  if (channel_.get()) {
     channel_->Send(new GpuChannelMsg_EstablishStreamTexture(
         stream_id_, primary_id, secondary_id));
   }

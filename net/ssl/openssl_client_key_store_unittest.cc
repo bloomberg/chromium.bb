@@ -48,7 +48,7 @@ TEST_F(OpenSSLClientKeyStoreTest, Flush) {
 
   scoped_refptr<X509Certificate> cert_1(
       ImportCertFromFile(GetTestCertsDirectory(), "client_1.pem"));
-  ASSERT_TRUE(cert_1);
+  ASSERT_TRUE(cert_1.get());
 
   ScopedEVP_PKEY priv_key(EVP_PKEY_new());
   ASSERT_TRUE(priv_key.get());
@@ -72,7 +72,7 @@ TEST_F(OpenSSLClientKeyStoreTest, FetchEmptyPrivateKey) {
 
   scoped_refptr<X509Certificate> cert_1(
       ImportCertFromFile(GetTestCertsDirectory(), "client_1.pem"));
-  ASSERT_TRUE(cert_1);
+  ASSERT_TRUE(cert_1.get());
 
   // Retrieve the private key now. This should fail because it was
   // never recorded in the store.
@@ -92,7 +92,7 @@ TEST_F(OpenSSLClientKeyStoreTest, RecordAndFetchPrivateKey) {
   // JNI reference, with no way to access the real private key bits.
   scoped_refptr<X509Certificate> cert_1(
       ImportCertFromFile(GetTestCertsDirectory(), "client_1.pem"));
-  ASSERT_TRUE(cert_1);
+  ASSERT_TRUE(cert_1.get());
 
   ScopedEVP_PKEY priv_key(EVP_PKEY_new());
   ASSERT_TRUE(priv_key.get());
@@ -126,11 +126,11 @@ TEST_F(OpenSSLClientKeyStoreTest, RecordAndFetchPrivateKey) {
 TEST_F(OpenSSLClientKeyStoreTest, RecordAndFetchTwoPrivateKeys) {
   scoped_refptr<X509Certificate> cert_1(
       ImportCertFromFile(GetTestCertsDirectory(), "client_1.pem"));
-  ASSERT_TRUE(cert_1);
+  ASSERT_TRUE(cert_1.get());
 
   scoped_refptr<X509Certificate> cert_2(
       ImportCertFromFile(GetTestCertsDirectory(), "client_2.pem"));
-  ASSERT_TRUE(cert_2);
+  ASSERT_TRUE(cert_2.get());
 
   ScopedEVP_PKEY priv_key1(EVP_PKEY_new());
   ASSERT_TRUE(priv_key1.get());

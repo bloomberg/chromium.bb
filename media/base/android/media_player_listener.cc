@@ -25,7 +25,7 @@ MediaPlayerListener::MediaPlayerListener(
     base::WeakPtr<MediaPlayerBridge> media_player)
     : message_loop_(message_loop),
       media_player_(media_player) {
-  DCHECK(message_loop_);
+  DCHECK(message_loop_.get());
   DCHECK(media_player_);
 }
 

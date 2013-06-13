@@ -257,8 +257,11 @@ void AwContentBrowserClient::AllowCertificateError(
       AwContentsClientBridgeBase::FromID(render_process_id, render_view_id);
   bool cancel_request = true;
   if (client)
-    client->AllowCertificateError(cert_error, ssl_info.cert, request_url,
-                                  callback, &cancel_request);
+    client->AllowCertificateError(cert_error,
+                                  ssl_info.cert.get(),
+                                  request_url,
+                                  callback,
+                                  &cancel_request);
   if (cancel_request)
     *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY;
 }

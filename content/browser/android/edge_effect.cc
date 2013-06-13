@@ -139,8 +139,8 @@ EdgeEffect::EdgeEffect(scoped_refptr<cc::Layer> edge,
   , pull_distance_(0)
   , dpi_scale_(1) {
   // Prevent the provided layers from drawing until the effect is activated.
-  DisableLayer(edge_);
-  DisableLayer(glow_);
+  DisableLayer(edge_.get());
+  DisableLayer(glow_.get());
 
   dpi_scale_ =
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().device_scale_factor();
@@ -153,8 +153,8 @@ bool EdgeEffect::IsFinished() const {
 }
 
 void EdgeEffect::Finish() {
-  DisableLayer(edge_);
-  DisableLayer(glow_);
+  DisableLayer(edge_.get());
+  DisableLayer(glow_.get());
   pull_distance_ = 0;
   state_ = STATE_IDLE;
 }
@@ -338,8 +338,8 @@ void EdgeEffect::ApplyToLayers(gfx::SizeF size, Edge edge) {
   // An empty effect size, while meaningless, is also relatively harmless, and
   // will simply prevent any drawing of the layers.
   if (size.IsEmpty()) {
-    DisableLayer(edge_);
-    DisableLayer(glow_);
+    DisableLayer(edge_.get());
+    DisableLayer(glow_.get());
     return;
   }
 
@@ -354,7 +354,7 @@ void EdgeEffect::ApplyToLayers(gfx::SizeF size, Edge edge) {
   const int glow_bottom = static_cast<int>(std::min(
       glow_height * glow_scale_y_ * kGlowImageAspectRatioInverse * 0.6f,
       glow_height * kMaxGlowHeight) * dpi_scale_ + 0.5f);
-  UpdateLayer(glow_, edge, size, glow_bottom, glow_alpha_);
+  UpdateLayer(glow_.get(), edge, size, glow_bottom, glow_alpha_);
 
   // Edge
   gfx::Size edge_image_bounds;
@@ -364,7 +364,7 @@ void EdgeEffect::ApplyToLayers(gfx::SizeF size, Edge edge) {
   const int edge_height = edge_image_bounds.height();
   const int edge_bottom = static_cast<int>(
       edge_height * edge_scale_y_ * dpi_scale_);
-  UpdateLayer(edge_, edge, size, edge_bottom, edge_alpha_);
+  UpdateLayer(edge_.get(), edge, size, edge_bottom, edge_alpha_);
 }
 
 } // namespace content
