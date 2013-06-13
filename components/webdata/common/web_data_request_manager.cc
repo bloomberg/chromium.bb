@@ -16,10 +16,7 @@
 
 WebDataRequest::WebDataRequest(WebDataServiceConsumer* consumer,
                                WebDataRequestManager* manager)
-    : manager_(manager),
-      cancelled_(false),
-      consumer_(consumer),
-      result_(NULL) {
+    : manager_(manager), cancelled_(false), consumer_(consumer) {
   handle_ = manager_->GetNextRequestHandle();
   message_loop_ = base::MessageLoop::current();
   manager_->RegisterRequest(this);

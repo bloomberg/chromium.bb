@@ -1236,7 +1236,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
     // no form in the page. This give |autocheckout_manager| a chance to
     // terminate Autocheckout and send Autocheckout status.
     autocheckout_manager_.OnLoadedPageMetaData(
-        scoped_ptr<autofill::AutocheckoutPageMetaData>(NULL));
+        scoped_ptr<autofill::AutocheckoutPageMetaData>());
   } else if (download_manager_) {
     // Query the server if we have at least one of the forms were parsed.
     download_manager_->StartQueryRequest(form_structures_.get(),

@@ -104,12 +104,13 @@ class MockResourceController : public content::ResourceController {
 
 class TestIOThreadState {
  public:
-  TestIOThreadState(const GURL& url, int render_process_id, int render_view_id,
+  TestIOThreadState(const GURL& url,
+                    int render_process_id,
+                    int render_view_id,
                     const std::string& request_method,
                     MockInterceptCallbackReceiver* callback_receiver)
-      : request_(url, NULL, resource_context_.GetRequestContext()),
-        throttle_(NULL) {
-      DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+      : request_(url, NULL, resource_context_.GetRequestContext()) {
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
       if (render_process_id != MSG_ROUTING_NONE &&
           render_view_id != MSG_ROUTING_NONE) {
         content::ResourceRequestInfo::AllocateForTesting(

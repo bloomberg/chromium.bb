@@ -228,8 +228,7 @@ bool PhoneNumbersMatch(const base::string16& number_a,
 
 PhoneObject::PhoneObject(const base::string16& number,
                          const std::string& region)
-    : region_(region),
-      i18n_number_(NULL) {
+    : region_(region) {
   DCHECK_EQ(2u, region.size());
   // TODO(isherman): Autofill profiles should always have a |region| set, but in
   // some cases it should be marked as implicit.  Otherwise, phone numbers
@@ -250,12 +249,9 @@ PhoneObject::PhoneObject(const base::string16& number,
   }
 }
 
-PhoneObject::PhoneObject(const PhoneObject& other) : i18n_number_(NULL) {
-  *this = other;
-}
+PhoneObject::PhoneObject(const PhoneObject& other) { *this = other; }
 
-PhoneObject::PhoneObject() : i18n_number_(NULL) {
-}
+PhoneObject::PhoneObject() {}
 
 PhoneObject::~PhoneObject() {
 }

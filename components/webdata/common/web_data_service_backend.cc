@@ -106,7 +106,7 @@ scoped_ptr<WDTypedResult> WebDataServiceBackend::ExecuteReadTask(
   if (db_ && init_status_ == sql::INIT_OK) {
     return task.Run(db_.get());
   }
-  return scoped_ptr<WDTypedResult>(NULL);
+  return scoped_ptr<WDTypedResult>();
 }
 
 WebDataServiceBackend::~WebDataServiceBackend() {
