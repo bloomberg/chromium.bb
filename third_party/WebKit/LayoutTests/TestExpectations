@@ -319,9 +319,9 @@ webkit.org/b/84230 [ Mac ] svg/as-image/img-preserveAspectRatio-support-1.html [
 
 webkit.org/b/84719 [ Win ] svg/text/select-text-svgfont.html [ Failure Pass ]
 
-# webkit.org/b/84854 [ Linux ] svg/batik/text/textOnPath.svg [ ImageOnlyFailure Pass ]
+webkit.org/b/84854 [ Linux ] svg/batik/text/textOnPath.svg [ ImageOnlyFailure Pass ]
 webkit.org/b/84854 [ Linux ] svg/batik/text/verticalTextOnPath.svg [ ImageOnlyFailure Pass ]
-# webkit.org/b/84854 [ Win ] svg/batik/text/textOnPath.svg [ Failure ImageOnlyFailure Pass ]
+webkit.org/b/84854 [ Win ] svg/batik/text/textOnPath.svg [ Failure ImageOnlyFailure Pass ]
 webkit.org/b/84854 [ Win ] svg/batik/text/verticalTextOnPath.svg [ Failure ImageOnlyFailure Pass ]
 
 webkit.org/b/85107 svg/as-image/animated-svg-as-image.html [ ImageOnlyFailure Pass ]
@@ -1284,11 +1284,6 @@ crbug.com/234891 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 
 # These tests use paths and need a rebaseline after crbug.com/227397
 crbug.com/227397 svg/animations/animateMotion-additive-1.svg [ ImageOnlyFailure Pass ]
-# Note, after the rebaseline, need to uncomment the 2 other instances of textOnPath.svg above.
-crbug.com/227397 svg/batik/text/textOnPath.svg [ Failure Pass ]
-crbug.com/227397 svg/batik/text/textOnPath2.svg [ Failure Pass ]
-crbug.com/227397 svg/batik/text/textOnPath3.svg [ Failure Pass ]
-crbug.com/227397 svg/batik/text/textOnPathSpaces.svg [ Failure Pass ]
 crbug.com/227397 svg/W3C-SVG-1.1/types-basicDOM-01-b.svg [ Failure Pass ]
 
 # These tests need a rebasline after crbug.com/224317
