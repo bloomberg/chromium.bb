@@ -18,6 +18,7 @@
 #include "chrome/browser/google_apis/mock_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/sync_file_system/drive/api_util.h"
+#include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/file_status_observer.h"
 #include "chrome/browser/sync_file_system/mock_remote_change_processor.h"
@@ -260,6 +261,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
     AddTestExtension(extension_service_, FPL("example1"));
     AddTestExtension(extension_service_, FPL("example2"));
 
+    SetDisableDriveAPI(true);
     RegisterSyncableFileSystem();
 
     mock_drive_service_ = new NiceMock<google_apis::MockDriveService>;
@@ -315,6 +317,7 @@ class DriveFileSyncServiceMockTest : public testing::Test {
     mock_drive_service_ = NULL;
 
     RevokeSyncableFileSystem();
+    SetDisableDriveAPI(false);
 
     extension_service_ = NULL;
     profile_.reset();

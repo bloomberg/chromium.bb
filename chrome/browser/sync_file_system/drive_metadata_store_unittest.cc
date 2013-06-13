@@ -16,6 +16,7 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/sync_file_system/drive/metadata_db_migration_util.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_service.h"
+#include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/file_metadata.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "content/public/browser/browser_thread.h"
@@ -90,11 +91,13 @@ class DriveMetadataStoreTest : public testing::Test {
     file_task_runner_ = file_thread_->message_loop_proxy();
 
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
+    SetDisableDriveAPI(true);
     RegisterSyncableFileSystem();
   }
 
   virtual void TearDown() OVERRIDE {
     RevokeSyncableFileSystem();
+    SetDisableDriveAPI(false);
 
     DropDatabase();
     file_thread_->Stop();

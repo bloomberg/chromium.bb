@@ -136,15 +136,15 @@ APIUtil::APIUtil(Profile* profile)
       drive_api_url_generator_(
           GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction)),
       upload_next_key_(0) {
-  if (IsDriveAPIEnabled()) {
-    drive_service_.reset(new google_apis::DriveAPIService(
-        profile->GetRequestContext(),
-        GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
-        std::string() /* custom_user_agent */));
-  } else {
+  if (IsDriveAPIDisabled()) {
     drive_service_.reset(new google_apis::GDataWapiService(
         profile->GetRequestContext(),
         GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
+        std::string() /* custom_user_agent */));
+  } else {
+    drive_service_.reset(new google_apis::DriveAPIService(
+        profile->GetRequestContext(),
+        GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
         std::string() /* custom_user_agent */));
   }
 
@@ -200,7 +200,7 @@ void APIUtil::RemoveObserver(APIUtilObserver* observer) {
 
 void APIUtil::GetDriveRootResourceId(const GDataErrorCallback& callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK(IsDriveAPIEnabled());
+  DCHECK(!IsDriveAPIDisabled());
   DVLOG(2) << "Getting resource id for Drive root";
 
   drive_service_->GetAboutResource(
@@ -573,8 +573,9 @@ void APIUtil::DeleteFile(const std::string& resource_id,
 }
 
 GURL APIUtil::ResourceIdToResourceLink(const std::string& resource_id) const {
-  return IsDriveAPIEnabled() ? drive_api_url_generator_.GetFileUrl(resource_id)
-                             : wapi_url_generator_.GenerateEditUrl(resource_id);
+  return IsDriveAPIDisabled()
+      ? wapi_url_generator_.GenerateEditUrl(resource_id)
+      : drive_api_url_generator_.GetFileUrl(resource_id);
 }
 
 void APIUtil::EnsureSyncRootIsNotInMyDrive(
@@ -1060,9 +1061,9 @@ void APIUtil::CancelAllUploads(google_apis::GDataErrorCode error) {
 }
 
 std::string APIUtil::GetRootResourceId() const {
-  if (IsDriveAPIEnabled())
-    return root_resource_id_;
-  return drive_service_->GetRootResourceId();
+  if (IsDriveAPIDisabled())
+    return drive_service_->GetRootResourceId();
+  return root_resource_id_;
 }
 
 }  // namespace drive

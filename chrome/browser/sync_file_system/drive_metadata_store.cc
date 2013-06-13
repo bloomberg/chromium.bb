@@ -208,7 +208,7 @@ SyncStatusCode ReadContents(DBContents* contents) {
 
     if (key == kSyncRootDirectoryKey) {
       std::string resource_id = itr->value().ToString();
-      if (!IsDriveAPIEnabled())
+      if (IsDriveAPIDisabled())
         resource_id = drive::AddWapiFolderPrefix(resource_id);
       contents->sync_root_directory_resource_id = resource_id;
       continue;
@@ -223,7 +223,7 @@ SyncStatusCode ReadContents(DBContents* contents) {
       bool success = metadata.ParseFromString(itr->value().ToString());
       DCHECK(success);
 
-      if (!IsDriveAPIEnabled()) {
+      if (IsDriveAPIDisabled()) {
         metadata.set_resource_id(
             drive::AddWapiIdPrefix(metadata.resource_id(), metadata.type()));
       }
@@ -238,9 +238,9 @@ SyncStatusCode ReadContents(DBContents* contents) {
       GURL origin(RemovePrefix(key, kDriveIncrementalSyncOriginKeyPrefix));
       DCHECK(origin.is_valid());
 
-      std::string origin_resource_id = IsDriveAPIEnabled()
-          ? itr->value().ToString()
-          : drive::AddWapiFolderPrefix(itr->value().ToString());
+      std::string origin_resource_id = IsDriveAPIDisabled()
+          ? drive::AddWapiFolderPrefix(itr->value().ToString())
+          : itr->value().ToString();
 
       DCHECK(!ContainsKey(contents->incremental_sync_origins, origin));
       contents->incremental_sync_origins[origin] = origin_resource_id;
@@ -251,9 +251,9 @@ SyncStatusCode ReadContents(DBContents* contents) {
       GURL origin(RemovePrefix(key, kDriveDisabledOriginKeyPrefix));
       DCHECK(origin.is_valid());
 
-      std::string origin_resource_id = IsDriveAPIEnabled()
-          ? itr->value().ToString()
-          : drive::AddWapiFolderPrefix(itr->value().ToString());
+      std::string origin_resource_id = IsDriveAPIDisabled()
+          ? drive::AddWapiFolderPrefix(itr->value().ToString())
+          : itr->value().ToString();
 
       DCHECK(!ContainsKey(contents->disabled_origins, origin));
       contents->disabled_origins[origin] = origin_resource_id;
@@ -441,7 +441,7 @@ void DriveMetadataStore::UpdateEntry(
     result.first->second = metadata;
 
   std::string value;
-  if (!IsDriveAPIEnabled()) {
+  if (IsDriveAPIDisabled()) {
     DriveMetadata metadata_in_db(metadata);
     metadata_in_db.set_resource_id(
         drive::RemoveWapiIdPrefix(metadata.resource_id()));

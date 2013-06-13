@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sync_file_system/drive/fake_api_util.h"
+#include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/fake_remote_change_processor.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
@@ -58,11 +59,13 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     SetEnableSyncFSDirectoryOperation(true);
+    SetDisableDriveAPI(true);
     RegisterSyncableFileSystem();
   }
 
   virtual void TearDown() OVERRIDE {
     RevokeSyncableFileSystem();
+    SetDisableDriveAPI(false);
     SetEnableSyncFSDirectoryOperation(false);
   }
 

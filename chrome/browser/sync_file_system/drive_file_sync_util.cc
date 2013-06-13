@@ -12,12 +12,12 @@ namespace sync_file_system {
 
 namespace {
 
-// A command switch to enable Drive API instead of WAPI in Sync FileSystem API.
-// (http://crbug.com/234557)
+// A command-line switch to disable Drive API and to make Sync FileSystem API
+// work on WAPI (http://crbug.com/234557)
 // TODO(nhiroki): this command-line switch should be temporary.
-const char kEnableDriveAPI[] = "enable-drive-api-for-syncfs";
+const char kDisableDriveAPI[] = "disable-drive-api-for-syncfs";
 
-bool is_drive_api_enabled = false;
+bool is_drive_api_disabled = false;
 
 }  // namespace
 
@@ -85,13 +85,13 @@ SyncStatusCode GDataErrorCodeToSyncStatusCode(
   return SYNC_STATUS_FAILED;
 }
 
-void SetEnableDriveAPI(bool flag) {
-  is_drive_api_enabled = flag;
+void SetDisableDriveAPI(bool flag) {
+  is_drive_api_disabled = flag;
 }
 
-bool IsDriveAPIEnabled() {
-  return is_drive_api_enabled ||
-      CommandLine::ForCurrentProcess()->HasSwitch(kEnableDriveAPI);
+bool IsDriveAPIDisabled() {
+  return is_drive_api_disabled ||
+      CommandLine::ForCurrentProcess()->HasSwitch(kDisableDriveAPI);
 }
 
 }  // namespace sync_file_system

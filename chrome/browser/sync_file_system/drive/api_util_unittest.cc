@@ -14,6 +14,7 @@
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/test_util.h"
+#include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
@@ -211,6 +212,8 @@ class APIUtilTest : public testing::Test {
                   fake_drive_uploader_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
+    SetDisableDriveAPI(true);
+
     fake_drive_service_ = new FakeDriveServiceWrapper;
     fake_drive_uploader_ = new FakeDriveUploader(fake_drive_service_);
 
@@ -222,6 +225,7 @@ class APIUtilTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     api_util_.reset();
+    SetDisableDriveAPI(false);
   }
 
  protected:

@@ -14,18 +14,17 @@ namespace sync_file_system {
 SyncStatusCode GDataErrorCodeToSyncStatusCode(
     google_apis::GDataErrorCode error);
 
-// Enables or disabled Drive API in Sync FileSystem API.
+// Enables or disables Drive API in Sync FileSystem API.
 // TODO(nhiroki): This method should go away when we completely migrate to
 // DriveAPI. (http://crbug.com/234557)
-void SetEnableDriveAPI(bool flag);
+void SetDisableDriveAPI(bool flag);
 
-// Returns true if we enable Drive API in Sync FileSystem API.
-// It is disabled by default but can be overridden by a command-line switch
-// (--enable-drive-api-for-syncfs) or by calling
-// SetEnableDriveAPI().
+// Returns true if we disable Drive API in Sync FileSystem API.
+// It is enabled by default but can be overridden by a command-line switch
+// (--disable-drive-api-for-syncfs) or by calling SetDisableDriveAPI().
 // TODO(nhiroki): This method should go away when we completely migrate to
 // DriveAPI. (http://crbug.com/234557)
-bool IsDriveAPIEnabled();
+bool IsDriveAPIDisabled();
 
 }  // namespace sync_file_system
 
