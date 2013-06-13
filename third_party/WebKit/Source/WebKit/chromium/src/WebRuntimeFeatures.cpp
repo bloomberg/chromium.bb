@@ -97,6 +97,16 @@ bool WebRuntimeFeatures::isCSSExclusionsEnabled()
     return RuntimeEnabledFeatures::cssExclusionsEnabled();
 }
 
+void WebRuntimeFeatures::enableCSSGridLayout(bool enable)
+{
+    RuntimeEnabledFeatures::setCSSGridLayoutEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isCSSGridLayoutEnabled()
+{
+    return RuntimeEnabledFeatures::cssGridLayoutEnabled();
+}
+
 void WebRuntimeFeatures::enableCSSRegions(bool enable)
 {
     RuntimeEnabledFeatures::setCSSRegionsEnabled(enable);

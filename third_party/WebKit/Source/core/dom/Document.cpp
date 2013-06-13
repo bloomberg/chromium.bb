@@ -1114,11 +1114,6 @@ bool Document::cssCompositingEnabled() const
     return RuntimeEnabledFeatures::cssCompositingEnabled();
 }
 
-bool Document::cssGridLayoutEnabled() const
-{
-    return settings() && settings()->cssGridLayoutEnabled();
-}
-
 PassRefPtr<DOMNamedFlowCollection> Document::webkitGetNamedFlows()
 {
     if (!RuntimeEnabledFeatures::cssRegionsEnabled() || !renderer())

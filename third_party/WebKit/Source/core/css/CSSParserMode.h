@@ -70,7 +70,6 @@ public:
     bool isCSSCustomFilterEnabled;
     bool isCSSStickyPositionEnabled;
     bool isCSSCompositingEnabled;
-    bool isCSSGridLayoutEnabled;
     bool isCSSTouchActionEnabled;
     bool needsSiteSpecificQuirks;
 };

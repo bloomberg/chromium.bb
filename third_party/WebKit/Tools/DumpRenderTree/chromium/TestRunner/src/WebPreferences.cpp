@@ -84,7 +84,7 @@ void WebPreferences::reset()
     experimentalWebGLEnabled = false;
     experimentalCSSExclusionsEnabled = true;
     experimentalCSSRegionsEnabled = true;
-    experimentalCSSGridLayoutEnabled = false;
+    experimentalCSSGridLayoutEnabled = true;
     javaEnabled = false;
     javaScriptCanAccessClipboard = true;
     javaScriptCanOpenWindowsAutomatically = true;
@@ -155,7 +155,7 @@ void WebPreferences::applyTo(WebView* webView)
     settings->setExperimentalWebGLEnabled(experimentalWebGLEnabled);
     WebRuntimeFeatures::enableCSSRegions(experimentalCSSRegionsEnabled);
     WebRuntimeFeatures::enableCSSExclusions(experimentalCSSExclusionsEnabled);
-    settings->setExperimentalCSSGridLayoutEnabled(experimentalCSSGridLayoutEnabled);
+    WebRuntimeFeatures::enableCSSGridLayout(experimentalCSSGridLayoutEnabled);
     settings->setExperimentalCSSCustomFilterEnabled(cssCustomFilterEnabled);
     settings->setJavaEnabled(javaEnabled);
     settings->setJavaScriptCanAccessClipboard(javaScriptCanAccessClipboard);

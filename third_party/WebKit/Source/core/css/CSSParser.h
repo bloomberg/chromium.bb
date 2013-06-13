@@ -162,7 +162,6 @@ public:
     bool parseTransitionShorthand(CSSPropertyID, bool important);
     bool parseAnimationShorthand(bool important);
 
-    bool cssGridLayoutEnabled() const;
     PassRefPtr<CSSValue> parseGridPosition();
     bool parseIntegerOrStringFromGridPosition(RefPtr<CSSPrimitiveValue>& numericValue, RefPtr<CSSPrimitiveValue>& gridLineName);
     bool parseGridItemPositionShorthand(CSSPropertyID, bool important);

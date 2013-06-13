@@ -206,7 +206,6 @@ CSSParserContext::CSSParserContext(CSSParserMode mode, const KURL& baseURL)
     , isHTMLDocument(false)
     , isCSSCustomFilterEnabled(false)
     , isCSSStickyPositionEnabled(false)
-    , isCSSGridLayoutEnabled(false)
     , needsSiteSpecificQuirks(false)
 {
 }
@@ -218,7 +217,6 @@ CSSParserContext::CSSParserContext(Document* document, const KURL& baseURL, cons
     , isHTMLDocument(document->isHTMLDocument())
     , isCSSCustomFilterEnabled(document->settings() ? document->settings()->isCSSCustomFilterEnabled() : false)
     , isCSSStickyPositionEnabled(document->cssStickyPositionEnabled())
-    , isCSSGridLayoutEnabled(document->cssGridLayoutEnabled())
     , needsSiteSpecificQuirks(document->settings() ? document->settings()->needsSiteSpecificQuirks() : false)
 {
 }
@@ -231,7 +229,6 @@ bool operator==(const CSSParserContext& a, const CSSParserContext& b)
         && a.isHTMLDocument == b.isHTMLDocument
         && a.isCSSCustomFilterEnabled == b.isCSSCustomFilterEnabled
         && a.isCSSStickyPositionEnabled == b.isCSSStickyPositionEnabled
-        && a.isCSSGridLayoutEnabled == b.isCSSGridLayoutEnabled
         && a.needsSiteSpecificQuirks == b.needsSiteSpecificQuirks;
 }
 
@@ -605,8 +602,8 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         // -webkit-flex | -webkit-inline-flex | -webkit-grid | -webkit-inline-grid | lazy-block
         if ((valueID >= CSSValueInline && valueID <= CSSValueWebkitInlineFlex) || valueID == CSSValueNone)
             return true;
-        if (parserContext.isCSSGridLayoutEnabled && (valueID == CSSValueGrid || valueID == CSSValueInlineGrid))
-            return true;
+        if (valueID == CSSValueGrid || valueID == CSSValueInlineGrid)
+            return RuntimeEnabledFeatures::cssGridLayoutEnabled();
         if (valueID == CSSValueLazyBlock)
             return RuntimeEnabledFeatures::lazyLayoutEnabled();
         break;
@@ -803,7 +800,7 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         break;
     case CSSPropertyGridAutoFlow:
         if (valueID == CSSValueNone || valueID == CSSValueRow || valueID == CSSValueColumn)
-            return true;
+            return RuntimeEnabledFeatures::cssGridLayoutEnabled();
         break;
     case CSSPropertyWebkitLineAlign:
         if (valueID == CSSValueNone || valueID == CSSValueEdges)
@@ -2416,14 +2413,14 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
 
     case CSSPropertyGridAutoColumns:
     case CSSPropertyGridAutoRows:
-        if (!cssGridLayoutEnabled())
+        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
             return false;
         parsedValue = parseGridTrackSize();
         break;
 
     case CSSPropertyGridColumns:
     case CSSPropertyGridRows:
-        if (!cssGridLayoutEnabled())
+        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
             return false;
         return parseGridTrackList(propId, important);
 
@@ -2431,20 +2428,17 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyGridEnd:
     case CSSPropertyGridBefore:
     case CSSPropertyGridAfter:
-        if (!cssGridLayoutEnabled())
+        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
             return false;
-
         parsedValue = parseGridPosition();
         break;
 
     case CSSPropertyGridColumn:
     case CSSPropertyGridRow:
-    case CSSPropertyGridArea: {
-        if (!cssGridLayoutEnabled())
+    case CSSPropertyGridArea:
+        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
             return false;
-
         return parseGridItemPositionShorthand(propId, important);
-    }
 
     case CSSPropertyWebkitMarginCollapse: {
         if (num == 1) {
@@ -4489,6 +4483,8 @@ bool CSSParser::parseIntegerOrStringFromGridPosition(RefPtr<CSSPrimitiveValue>& 
 
 PassRefPtr<CSSValue> CSSParser::parseGridPosition()
 {
+    ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+
     CSSParserValue* value = m_valueList->current();
     if (value->id == CSSValueAuto) {
         m_valueList->next();
@@ -4537,6 +4533,8 @@ PassRefPtr<CSSValue> CSSParser::parseGridPosition()
 
 bool CSSParser::parseGridItemPositionShorthand(CSSPropertyID shorthandId, bool important)
 {
+    ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+
     ShorthandScope scope(this, shorthandId);
     const StylePropertyShorthand& shorthand = shorthandForProperty(shorthandId);
     if (!parseValue(shorthand.properties()[0], important))
@@ -4567,6 +4565,8 @@ bool CSSParser::parseGridItemPositionShorthand(CSSPropertyID shorthandId, bool i
 
 bool CSSParser::parseGridTrackList(CSSPropertyID propId, bool important)
 {
+    ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+
     CSSParserValue* value = m_valueList->current();
     if (value->id == CSSValueNone) {
         if (m_valueList->next())
@@ -4601,6 +4601,8 @@ bool CSSParser::parseGridTrackList(CSSPropertyID propId, bool important)
 
 PassRefPtr<CSSPrimitiveValue> CSSParser::parseGridTrackSize()
 {
+    ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+
     CSSParserValue* currentValue = m_valueList->current();
     m_valueList->next();
 
@@ -8662,11 +8664,6 @@ static bool validFlowName(const String& flowName)
             || equalIgnoringCase(flowName, "inherit")
             || equalIgnoringCase(flowName, "initial")
             || equalIgnoringCase(flowName, "none"));
-}
-
-bool CSSParser::cssGridLayoutEnabled() const
-{
-    return m_context.isCSSGridLayoutEnabled;
 }
 
 bool CSSParser::parseFlowThread(const String& flowName)

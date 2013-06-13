@@ -61,6 +61,9 @@ public:
     WEBKIT_EXPORT static void enableCSSExclusions(bool);
     WEBKIT_EXPORT static bool isCSSExclusionsEnabled();
 
+    WEBKIT_EXPORT static void enableCSSGridLayout(bool);
+    WEBKIT_EXPORT static bool isCSSGridLayoutEnabled();
+
     WEBKIT_EXPORT static void enableCSSRegions(bool);
     WEBKIT_EXPORT static bool isCSSRegionsEnabled();
 

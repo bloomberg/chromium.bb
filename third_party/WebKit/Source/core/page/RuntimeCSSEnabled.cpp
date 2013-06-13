@@ -69,6 +69,21 @@ static void setPropertySwitchesFromRuntimeFeatures(BoolVector& properties)
         CSSPropertyTextDecorationStyle,
     };
     setCSSPropertiesEnabled(css3TextDecorationProperties, WTF_ARRAY_LENGTH(css3TextDecorationProperties), RuntimeEnabledFeatures::css3TextDecorationsEnabled());
+    CSSPropertyID cssGridLayoutProperties[] = {
+        CSSPropertyGridAutoColumns,
+        CSSPropertyGridAutoRows,
+        CSSPropertyGridColumns,
+        CSSPropertyGridRows,
+        CSSPropertyGridStart,
+        CSSPropertyGridEnd,
+        CSSPropertyGridBefore,
+        CSSPropertyGridAfter,
+        CSSPropertyGridColumn,
+        CSSPropertyGridRow,
+        CSSPropertyGridArea,
+        CSSPropertyGridAutoFlow
+    };
+    setCSSPropertiesEnabled(cssGridLayoutProperties, WTF_ARRAY_LENGTH(cssGridLayoutProperties), RuntimeEnabledFeatures::cssGridLayoutEnabled());
 
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyBackgroundBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyMixBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());

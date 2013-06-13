@@ -19,6 +19,7 @@ CanvasPath status=test
 Crypto status=test
 CSSCompositing status=experimental
 CSSExclusions status=experimental
+CSSGridLayout status=experimental
 CSSRegions status=experimental
 CSSTouchAction status=test
 CSSVariables status=experimental
