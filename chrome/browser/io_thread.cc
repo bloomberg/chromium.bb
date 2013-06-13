@@ -681,6 +681,10 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
     globals_->max_spdy_concurrent_streams_limit.set(
         GetSwitchValueAsInt(command_line, switches::kMaxSpdyConcurrentStreams));
   }
+  if (command_line.HasSwitch(switches::kTrustedSpdyProxy)) {
+    globals_->trusted_spdy_proxy.set(
+        command_line.GetSwitchValueASCII(switches::kTrustedSpdyProxy));
+  }
   if (command_line.HasSwitch(switches::kIgnoreUrlFetcherCertRequests))
     net::URLFetcher::SetIgnoreCertificateRequests(true);
 
@@ -877,6 +881,8 @@ void IOThread::InitializeNetworkSessionParams(
       &params->enable_spdy_ping_based_connection_checking);
   globals_->spdy_default_protocol.CopyToIfSet(
       &params->spdy_default_protocol);
+  globals_->trusted_spdy_proxy.CopyToIfSet(
+      &params->trusted_spdy_proxy);
   globals_->enable_quic.CopyToIfSet(&params->enable_quic);
   globals_->origin_to_force_quic_on.CopyToIfSet(
       &params->origin_to_force_quic_on);

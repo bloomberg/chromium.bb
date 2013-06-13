@@ -163,6 +163,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> enable_spdy_compression;
     Optional<bool> enable_spdy_ping_based_connection_checking;
     Optional<net::NextProto> spdy_default_protocol;
+    Optional<string> trusted_spdy_proxy;
     Optional<bool> enable_quic;
     Optional<net::HostPortPair> origin_to_force_quic_on;
     bool enable_user_alternate_protocol_ports;
