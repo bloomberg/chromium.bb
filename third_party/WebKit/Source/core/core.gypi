@@ -3652,6 +3652,7 @@
             'platform/DecimalTest.cpp',
             'platform/SharedBufferTest.cpp',
             'platform/chromium/ClipboardChromiumTest.cpp',
+            'platform/graphics/UnitBezierTest.cpp',
             'platform/graphics/chromium/AnimationTranslationUtilTest.cpp',
             'platform/image-decoders/ImageDecoderTest.cpp',
             'platform/image-decoders/gif/GIFImageDecoderTest.cpp',

@@ -62,6 +62,9 @@ namespace WebCore {
         // Given an x value, find a parametric value it came from.
         double solveCurveX(double x, double epsilon)
         {
+            ASSERT(x >= 0.0);
+            ASSERT(x <= 1.0);
+
             double t0;
             double t1;
             double t2;
@@ -85,11 +88,6 @@ namespace WebCore {
             t1 = 1.0;
             t2 = x;
 
-            if (t2 < t0)
-                return t0;
-            if (t2 > t1)
-                return t1;
-
             while (t0 < t1) {
                 x2 = sampleCurveX(t2);
                 if (fabs(x2 - x) < epsilon)
@@ -109,6 +107,10 @@ namespace WebCore {
         // accuracy and is not guaranteed.
         double solve(double x, double epsilon)
         {
+            if (x < 0.0)
+                return 0.0;
+            if (x > 1.0)
+                return 1.0;
             return sampleCurveY(solveCurveX(x, epsilon));
         }
         
