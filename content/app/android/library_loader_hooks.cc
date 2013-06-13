@@ -18,6 +18,7 @@
 #include "base/tracked_objects.h"
 #include "content/app/android/app_jni_registrar.h"
 #include "content/browser/android/browser_jni_registrar.h"
+#include "content/child/android/child_jni_registrar.h"
 #include "content/common/android/command_line.h"
 #include "content/common/android/common_jni_registrar.h"
 #include "content/public/common/content_switches.h"
@@ -84,6 +85,9 @@ static jint LibraryLoaded(JNIEnv* env, jclass clazz,
     return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   if (!ui::shell_dialogs::RegisterJni(env))
+    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
+
+  if (!content::android::RegisterChildJni(env))
     return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   if (!content::android::RegisterCommonJni(env))

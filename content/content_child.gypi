@@ -16,6 +16,8 @@
     '../base/base.gyp:base',
   ],
   'sources': [
+    'child/android/child_jni_registrar.cc',
+    'child/android/child_jni_registrar.h',
     'child/child_histogram_message_filter.cc',
     'child/child_histogram_message_filter.h',
     'child/child_process.cc',
@@ -96,7 +98,7 @@
         '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/npapi/npapi.gyp:npapi',
         '../webkit/base/webkit_base.gyp:webkit_base',
-        '../webkit/support/webkit_support.gyp:glue',
+        '../webkit/support/webkit_support.gyp:glue_child',
       ],
     }],
   ],

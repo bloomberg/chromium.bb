@@ -10,14 +10,12 @@
 #include "content/common/android/device_telephony_info.h"
 #include "content/common/android/hash_set.h"
 #include "content/common/android/trace_event_binding.h"
-#include "webkit/glue/fling_animator_impl_android.h"
 
 namespace {
 base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "CommandLine", RegisterCommandLine },
   { "DeviceTelephonyInfo",
         content::DeviceTelephonyInfo::RegisterDeviceTelephonyInfo },
-  { "FlingAnimator", webkit_glue::FlingAnimatorImpl::RegisterJni },
   { "HashSet", content::RegisterHashSet },
   { "TraceEvent", RegisterTraceEvent },
 };

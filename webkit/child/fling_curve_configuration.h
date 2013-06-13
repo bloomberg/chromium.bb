@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_FLINGCURVECONFIGURATION_H_
-#define WEBKIT_GLUE_FLINGCURVECONFIGURATION_H_
+#ifndef WEBKIT_CHILD_FLING_CURVE_CONFIGURATION_H_
+#define WEBKIT_CHILD_FLING_CURVE_CONFIGURATION_H_
 
 #include <vector>
 
@@ -55,4 +55,4 @@ class FlingCurveConfiguration {
 
 } // namespace webkit_glue
 
-#endif // WEBKIT_GLUE_FLINGCURVECONFIGURATION_H_
+#endif // WEBKIT_CHILD_FLING_CURVE_CONFIGURATION_H_

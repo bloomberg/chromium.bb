@@ -159,6 +159,7 @@
           ],
         }, {  # OS != "ios"
           'dependencies': [
+            'content_child',
             'content_ppapi_plugin',
             'content_utility',
             'content_worker',
@@ -551,6 +552,7 @@
         }, {  # OS != "ios"
           'dependencies': [
             'content_browser',
+            'content_child',
             'content_gpu',
             'content_plugin',
             'content_renderer',
@@ -750,6 +752,7 @@
             '../ui/ui.gyp:shell_dialogs',
             '../ui/ui.gyp:ui',
             '../webkit/support/webkit_support.gyp:glue',
+            '../webkit/support/webkit_support.gyp:glue_child',
             '../webkit/support/webkit_support.gyp:glue_renderer',
           ],
           'include_dirs': [

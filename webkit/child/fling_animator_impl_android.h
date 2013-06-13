@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_FLING_ANIMATOR_IMPL_ANDROID_H_
-#define WEBKIT_GLUE_FLING_ANIMATOR_IMPL_ANDROID_H_
+#ifndef WEBKIT_CHILD_FLING_ANIMATOR_IMPL_ANDROID_H_
+#define WEBKIT_CHILD_FLING_ANIMATOR_IMPL_ANDROID_H_
 
 #include "base/android/scoped_java_ref.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
@@ -11,7 +11,7 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/point_f.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/child/webkit_child_export.h"
 
 namespace WebKit {
 class WebGestureCurveTarget;
@@ -19,7 +19,7 @@ class WebGestureCurveTarget;
 
 namespace webkit_glue {
 
-class WEBKIT_GLUE_EXPORT FlingAnimatorImpl : public WebKit::WebGestureCurve {
+class WEBKIT_CHILD_EXPORT FlingAnimatorImpl : public WebKit::WebGestureCurve {
  public:
   FlingAnimatorImpl();
   virtual ~FlingAnimatorImpl();
@@ -55,4 +55,4 @@ class WEBKIT_GLUE_EXPORT FlingAnimatorImpl : public WebKit::WebGestureCurve {
 
 } // namespace webkit_glue
 
-#endif // WEBKIT_GLUE_FLING_ANIMATOR_IMPL_ANDROID_H_
+#endif // WEBKIT_CHILD_FLING_ANIMATOR_IMPL_ANDROID_H_

@@ -63,21 +63,33 @@
         'WEBKIT_CHILD_IMPLEMENTATION',
       ],
       'dependencies': [
+        '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '<(DEPTH)/ui/ui.gyp:ui',
 
         # TODO(scottmg): crbug.com/237249
         'glue',
       ],
- 
+
+      'include_dirs': [
+        # For JNI generated header.
+        '<(SHARED_INTERMEDIATE_DIR)/webkit',
+      ],
+
       'sources': [
+        '../child/fling_animator_impl_android.cc',
+        '../child/fling_animator_impl_android.h',
+        '../child/fling_curve_configuration.cc',
+        '../child/fling_curve_configuration.h',
+        '../child/webkit_child_export.h',
         '../child/webkitplatformsupport_child_impl.cc',
         '../child/webkitplatformsupport_child_impl.h',
       ],
 
       'conditions': [
-        ['component=="shared_library"', {
+        ['OS=="android"', {
           'dependencies': [
-            '<(DEPTH)/base/base.gyp:base',
+            'overscroller_jni_headers',
           ],
         }],
       ],
@@ -220,10 +232,6 @@
       'sources': [
         'cursor_utils.cc',
         'cursor_utils.h',
-        'fling_curve_configuration.cc',
-        'fling_curve_configuration.h',
-        'fling_animator_impl_android.cc',
-        'fling_animator_impl_android.h',
         'ftp_directory_listing_response_delegate.cc',
         'ftp_directory_listing_response_delegate.h',
         'glue_serialize_deprecated.cc',
@@ -348,12 +356,6 @@
             }],
           ],
         }],
-        ['OS=="android"', {
-          'dependencies': [
-            'overscroller_jni_headers',
-          ],
-        }],
-
       ],
     },
   ],

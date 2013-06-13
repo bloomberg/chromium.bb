@@ -300,6 +300,7 @@
             '../ipc/ipc.gyp:test_support_ipc',
             '../ppapi/ppapi_internal.gyp:ppapi_shared',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+            '../webkit/support/webkit_support.gyp:glue_child',
           ],
           'export_dependent_settings': [
             'renderer',

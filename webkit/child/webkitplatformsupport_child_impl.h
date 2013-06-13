@@ -10,11 +10,24 @@
 
 namespace webkit_glue {
 
+class FlingCurveConfiguration;
+
 class WEBKIT_CHILD_EXPORT WebKitPlatformSupportChildImpl :
     public WebKitPlatformSupportImpl {
  public:
   WebKitPlatformSupportChildImpl();
   virtual ~WebKitPlatformSupportChildImpl();
+
+  void SetFlingCurveParameters(
+    const std::vector<float>& new_touchpad,
+    const std::vector<float>& new_touchscreen);
+
+  virtual WebKit::WebGestureCurve* createFlingAnimationCurve(
+      int device_source,
+      const WebKit::WebFloatPoint& velocity,
+      const WebKit::WebSize& cumulative_scroll) OVERRIDE;
+
+  scoped_ptr<FlingCurveConfiguration> fling_curve_configuration_;
 };
 
 }  // namespace webkit_glue

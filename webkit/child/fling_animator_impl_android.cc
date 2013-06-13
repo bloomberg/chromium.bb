@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/fling_animator_impl_android.h"
+#include "webkit/child/fling_animator_impl_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"

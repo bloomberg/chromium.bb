@@ -42,7 +42,6 @@ class WebSocketStreamHandle;
 
 namespace webkit_glue {
 
-  class FlingCurveConfiguration;
 class WebSocketStreamHandleDelegate;
 class WebSocketStreamHandleBridge;
 
@@ -51,10 +50,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
  public:
   WebKitPlatformSupportImpl();
   virtual ~WebKitPlatformSupportImpl();
-
-  void SetFlingCurveParameters(
-    const std::vector<float>& new_touchpad,
-    const std::vector<float>& new_touchscreen);
 
   // Platform methods (partial implementation):
   virtual WebKit::WebThemeEngine* themeEngine();
@@ -169,11 +164,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   virtual void didStopWorkerRunLoop(
       const WebKit::WebWorkerRunLoop& runLoop) OVERRIDE;
 
-  virtual WebKit::WebGestureCurve* createFlingAnimationCurve(
-      int device_source,
-      const WebKit::WebFloatPoint& velocity,
-      const WebKit::WebSize& cumulative_scroll) OVERRIDE;
-
 #if defined(OS_ANDROID)
   virtual webkit_media::WebAudioMediaCodecRunner
       GetWebAudioMediaCodecRunner();
@@ -194,7 +184,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   WebThemeEngineImpl native_theme_engine_;
   WebFallbackThemeEngineImpl fallback_theme_engine_;
   base::ThreadLocalStorage::Slot current_thread_slot_;
-  scoped_ptr<FlingCurveConfiguration> fling_curve_configuration_;
 };
 
 }  // namespace webkit_glue

@@ -3,6 +3,7 @@ include_rules = [
   "+media/audio",
   "+media/base",
   "-webkit/browser",
+  "-webkit/child",
   "-webkit/renderer",
 ]
 
