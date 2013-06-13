@@ -1070,9 +1070,6 @@ crbug.com/b/242955 [ Linux ] compositing/gestures/gesture-tapHighlight-simple-lo
 
 webkit.org/b/98275 media/event-queue-crash.html [ Skip ]
 
-webkit.org/b/95959 css3/device-adapt/viewport-properties-validation.html [ Failure Pass ]
-webkit.org/b/95959 css3/device-adapt/viewport-at-rule-parsing.html [ Failure Pass ]
-
 webkit.org/b/98699 [ Lion ] fast/writing-mode/vertical-subst-font-vert-no-dflt.html [ Crash ]
 webkit.org/b/98811 [ Mac ] fast/transforms/transformed-focused-text-input.html [ ImageOnlyFailure Pass ]
 

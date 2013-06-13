@@ -11470,11 +11470,11 @@ bool CSSParser::parseViewportProperty(CSSPropertyID propId, bool important)
     bool validPrimitive = false;
 
     switch (propId) {
-    case CSSPropertyMinWidth: // auto | device-width | device-height | <length> | <percentage>
+    case CSSPropertyMinWidth: // auto | <length> | <percentage>
     case CSSPropertyMaxWidth:
     case CSSPropertyMinHeight:
     case CSSPropertyMaxHeight:
-        if (id == CSSValueAuto || id == CSSValueDeviceWidth || id == CSSValueDeviceHeight)
+        if (id == CSSValueAuto)
             validPrimitive = true;
         else
             validPrimitive = (!id && validUnit(value, FLength | FPercent | FNonNeg));

@@ -45,11 +45,6 @@
 
             @import url('../../resources/testharness.css');
         }
-
-        /* Should ignore unprefixed viewport rule. We need to change this
-           test if at some point we remove the prefix. */
-        @viewport {
-        }
     </style>
     <meta charset="utf-8" />
     <link rel="help" href="http://www.w3.org/TR/css-device-adapt/#syntax" />
@@ -85,12 +80,6 @@
         test(function() {
             assert_equals(rules.item(6).cssText, "@viewport { max-height: 50px; min-height: 50px; }");
         }, "Rules inside a viewport rule");
-
-        // The total number of parsed rules should be 6, meaning that the parser
-        // ignored the last two rules.
-        test(function() {
-            assert_equals(rules.length, 7)
-        }, "Should ignore unprefixed at-rule");
     </script>
 </head>
 <body>

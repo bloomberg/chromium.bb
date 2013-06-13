@@ -158,8 +158,6 @@
                 "@viewport {" +
                 " min-width: 50%;" +
                 " max-width: 100px;" +
-                " min-height: device-width;" +
-                " max-height: device-height;" +
                 " min-zoom: 50%;" +
                 " max-zoom: 0.5;" +
                 " orientation: landscape;" +
@@ -182,8 +180,6 @@
         test(function() {
             assert_equals(rules.item(9).cssText,
                 "@viewport {" +
-                " min-width: device-width;" +
-                " max-width: device-height;" +
                 " min-height: 500px;" +
                 " max-height: 50%;" +
                 " min-zoom: 0.5;" +
