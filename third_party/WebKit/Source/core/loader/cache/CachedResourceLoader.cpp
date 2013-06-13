@@ -707,6 +707,11 @@ CachedResourceLoader::RevalidationPolicy CachedResourceLoader::determineRevalida
         return Reload;
     }
 
+    // Do not load from cache if images are not enabled. The load for this image will be blocked
+    // in CachedImage::load.
+    if (CachedResourceRequest::DeferredByClient == defer)
+        return Reload;
+
     // Always use data uris.
     // FIXME: Extend this to non-images.
     if (type == CachedResource::ImageResource && request.url().protocolIsData())
@@ -721,11 +726,6 @@ CachedResourceLoader::RevalidationPolicy CachedResourceLoader::determineRevalida
     if (request.isConditional())
         return Reload;
 
-    // Do not load from cache if images are not enabled. The load for this image will be blocked
-    // in CachedImage::load.
-    if (CachedResourceRequest::DeferredByClient == defer)
-        return Reload;
-    
     // Don't reload resources while pasting.
     if (m_allowStaleResources)
         return Use;
