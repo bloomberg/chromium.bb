@@ -340,6 +340,8 @@ namespace WebCore {
     WrapperWorldType worldType(v8::Isolate*);
     WrapperWorldType worldTypeInMainThread(v8::Isolate*);
 
+    DOMWrapperWorld* isolatedWorldForIsolate(v8::Isolate*);
+
     template<class T> struct NativeValueTraits;
 
     template<>

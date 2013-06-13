@@ -3447,20 +3447,20 @@ void Document::textNodeSplit(Text* oldNode)
     // FIXME: This should update markers for spelling and grammar checking.
 }
 
-void Document::setWindowAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener)
+void Document::setWindowAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, DOMWrapperWorld* isolatedWorld)
 {
     DOMWindow* domWindow = this->domWindow();
     if (!domWindow)
         return;
-    domWindow->setAttributeEventListener(eventType, listener);
+    domWindow->setAttributeEventListener(eventType, listener, isolatedWorld);
 }
 
-EventListener* Document::getWindowAttributeEventListener(const AtomicString& eventType)
+EventListener* Document::getWindowAttributeEventListener(const AtomicString& eventType, DOMWrapperWorld* isolatedWorld)
 {
     DOMWindow* domWindow = this->domWindow();
     if (!domWindow)
         return 0;
-    return domWindow->getAttributeEventListener(eventType);
+    return domWindow->getAttributeEventListener(eventType, isolatedWorld);
 }
 
 void Document::dispatchWindowEvent(PassRefPtr<Event> event,  PassRefPtr<EventTarget> target)

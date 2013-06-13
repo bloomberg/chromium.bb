@@ -332,7 +332,7 @@ namespace WebCore {
         DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationiteration, webkitAnimationIteration);
         DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationend, webkitAnimationEnd);
         DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkittransitionend, webkitTransitionEnd);
-        DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(transitionend, transitionend);
+        DEFINE_ATTRIBUTE_EVENT_LISTENER(transitionend);
 
         void finishedLoading();
 

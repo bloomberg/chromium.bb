@@ -433,4 +433,15 @@ WrapperWorldType worldTypeInMainThread(v8::Isolate* isolate)
     return MainWorld;
 }
 
+DOMWrapperWorld* isolatedWorldForIsolate(v8::Isolate* isolate)
+{
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
+    if (data->workerDOMDataStore())
+        return 0;
+    if (!DOMWrapperWorld::isolatedWorldsExist())
+        return 0;
+    ASSERT(!v8::Context::GetEntered().IsEmpty());
+    return DOMWrapperWorld::isolatedWorld(v8::Context::GetEntered());
+}
+
 } // namespace WebCore

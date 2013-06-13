@@ -82,12 +82,12 @@ public:
 
     bool hasPendingActivity();
 
-    void setOnmessage(PassRefPtr<EventListener> listener)
+    void setOnmessage(PassRefPtr<EventListener> listener, DOMWrapperWorld* world)
     {
-        setAttributeEventListener(eventNames().messageEvent, listener);
+        setAttributeEventListener(eventNames().messageEvent, listener, world);
         start();
     }
-    EventListener* onmessage() { return getAttributeEventListener(eventNames().messageEvent); }
+    EventListener* onmessage(DOMWrapperWorld* world) { return getAttributeEventListener(eventNames().messageEvent, world); }
 
     // Returns null if there is no entangled port, or if the entangled port is run by a different thread.
     // This is used solely to enable a GC optimization. Some platforms may not be able to determine ownership

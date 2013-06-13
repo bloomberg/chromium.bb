@@ -1596,6 +1596,13 @@ END
     v8SetReturnValue(info, value);
     return;
 END
+    } elsif ($attribute->signature->type eq "EventListener") {
+        AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
+        my $getterFunc = ToMethodName($attribute->signature->name);
+        # FIXME: Pass the main world ID for main-world-only getters.
+        $code .= "    EventListener* listener = imp->${getterFunc}(isolatedWorldForIsolate(info.GetIsolate()));\n";
+        $code .= "    v8SetReturnValue(info, listener ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(listener)->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8Null(info.GetIsolate())));\n";
+        $code .= "    return;\n";
     } else {
         my $nativeValue = NativeToJSValue($attribute->signature->type, $attribute->signature->extendedAttributes, $expression, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "imp", "ReturnUnsafeHandle", $forMainWorldSuffix, "return");
         $code .= "${nativeValue}\n";
@@ -1881,17 +1888,15 @@ END
             AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
             if (!InheritsInterface($interface, "Node")) {
                 my $attrImplName = GetImplName($attribute->signature);
-                $code .= "    transferHiddenDependency(info.Holder(), imp->${attrImplName}(), value, ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());\n";
+                $code .= "    transferHiddenDependency(info.Holder(), imp->${attrImplName}(isolatedWorldForIsolate(info.GetIsolate())), value, ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());\n";
             }
             AddToImplIncludes("bindings/v8/V8EventListenerList.h");
             if (($interfaceName eq "DOMWindow" or $interfaceName eq "WorkerContext") and $attribute->signature->name eq "onerror") {
                 AddToImplIncludes("bindings/v8/V8ErrorHandler.h");
-                $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(value, true)";
+                $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(value, true), isolatedWorldForIsolate(info.GetIsolate()));\n";
             } else {
-                $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::getEventListener(value, true, ListenerFindOrCreate)";
+                $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::getEventListener(value, true, ListenerFindOrCreate), isolatedWorldForIsolate(info.GetIsolate()));\n";
             }
-            $code .= ", ec" if $useExceptions;
-            $code .= ");\n";
         } else {
             my ($functionName, @arguments) = SetterExpression($interfaceName, $attribute);
             push(@arguments, $expression);
@@ -5248,13 +5253,6 @@ sub NativeToJSValue
       # FIXME: Use safe handles
       return "${indent}v8SetReturnValue(${getHolderContainer}, toV8($nativeValue, $getCreationContext, $getIsolate));" if $isReturnValue;
       return "$indent$receiver toV8($nativeValue, $getCreationContext, $getIsolate);";
-    }
-
-    if ($type eq "EventListener") {
-        AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
-        my $returnValue = "$nativeValue ? v8::Handle<v8::Value>(static_cast<V8AbstractEventListener*>(${nativeValue})->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8Null($getIsolate))";
-        return "${indent}v8SetReturnValue(${getHolderContainer}, $returnValue);" if $isReturnValue;
-        return "$indent$receiver $returnValue;";
     }
 
     if ($type eq "SerializedScriptValue") {
