@@ -23,7 +23,7 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 
 def main():
-  popen = subprocess.Popen(['git', 'diff', '--cached', '--raw', '-M'],
+  popen = subprocess.Popen('git diff --cached --raw -M',
                            shell=True, stdout=subprocess.PIPE)
   out, _ = popen.communicate()
   if popen.returncode != 0:
