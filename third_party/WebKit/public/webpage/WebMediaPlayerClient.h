@@ -52,6 +52,12 @@ public:
         MediaKeyErrorCodeOutput,
         MediaKeyErrorCodeHardwareChange,
         MediaKeyErrorCodeDomain,
+        UnknownError = MediaKeyErrorCodeUnknown,
+        ClientError = MediaKeyErrorCodeClient,
+        ServiceError = MediaKeyErrorCodeService,
+        OutputError = MediaKeyErrorCodeOutput,
+        HardwareChangeError = MediaKeyErrorCodeHardwareChange,
+        DomainError = MediaKeyErrorCodeDomain,
     };
 
     virtual void networkStateChanged() = 0;
