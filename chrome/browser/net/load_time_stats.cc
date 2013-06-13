@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/load_time_stats.h"
 
+#include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -301,6 +302,7 @@ void LoadTimeStatsTabHelper::NotifyLoadTimeStats(
 }
 
 LoadTimeStats::LoadTimeStats() {
+  TRACE_EVENT0("browser", "LoadTimeStats::ctor");
   for (int status = REQUEST_STATUS_CACHE_WAIT;
        status <= REQUEST_STATUS_ACTIVE;
        status++) {
