@@ -76,7 +76,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
                          gfx::Image(),
                          string16() /* display_source */,
                          "" /* extension_id */,
-                         NULL /* optional_fields */,
+                         message_center::RichNotificationData(),
                          NULL /* delegate */));
     MessageCenter::Get()->AddNotification(notification.Pass());
     return id;

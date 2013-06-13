@@ -46,31 +46,6 @@ Notification::Notification(NotificationType type,
                            const gfx::Image& icon,
                            const string16& display_source,
                            const std::string& extension_id,
-                           const DictionaryValue* optional_fields,
-                           NotificationDelegate* delegate)
-    : type_(type),
-      id_(id),
-      title_(title),
-      message_(message),
-      icon_(icon),
-      display_source_(display_source),
-      extension_id_(extension_id),
-      serial_number_(g_next_serial_number_++),
-      shown_as_popup_(false),
-      is_read_(false),
-      is_expanded_(false),
-      delegate_(delegate) {
-  // This can override some data members initialized to default values above.
-  ApplyOptionalFields(optional_fields);
-}
-
-Notification::Notification(NotificationType type,
-                           const std::string& id,
-                           const string16& title,
-                           const string16& message,
-                           const gfx::Image& icon,
-                           const string16& display_source,
-                           const std::string& extension_id,
                            const RichNotificationData& optional_fields,
                            NotificationDelegate* delegate)
     : type_(type),
@@ -137,52 +112,6 @@ void Notification::SetButtonIcon(size_t index, const gfx::Image& icon) {
 void Notification::SetSystemPriority() {
   optional_fields_.priority = SYSTEM_PRIORITY;
   optional_fields_.never_timeout = true;
-}
-
-void Notification::ApplyOptionalFields(const DictionaryValue* fields) {
-  if (!fields)
-    return;
-
-  int priority = DEFAULT_PRIORITY;
-  if (fields->GetInteger(kPriorityKey, &priority)) {
-    optional_fields_.priority =
-        std::max(std::min(priority, static_cast<int>(MAX_PRIORITY)),
-                 static_cast<int>(MIN_PRIORITY));
-  }
-  if (fields->HasKey(kTimestampKey)) {
-    std::string time_string;
-    fields->GetString(kTimestampKey, &time_string);
-    base::Time::FromString(time_string.c_str(), &optional_fields_.timestamp);
-  }
-  if (fields->HasKey(kButtonOneTitleKey) ||
-      fields->HasKey(kButtonOneIconUrlKey)) {
-    string16 title;
-    string16 icon;
-    if (fields->GetString(kButtonOneTitleKey, &title) ||
-        fields->GetString(kButtonOneIconUrlKey, &icon)) {
-      optional_fields_.buttons.push_back(ButtonInfo(title));
-      if (fields->GetString(kButtonTwoTitleKey, &title) ||
-          fields->GetString(kButtonTwoIconUrlKey, &icon)) {
-        optional_fields_.buttons.push_back(ButtonInfo(title));
-      }
-    }
-  }
-  fields->GetString(kExpandedMessageKey, &optional_fields_.expanded_message);
-  if (fields->HasKey(kItemsKey)) {
-    const ListValue* items;
-    CHECK(fields->GetList(kItemsKey, &items));
-    for (size_t i = 0; i < items->GetSize(); ++i) {
-      string16 title;
-      string16 message;
-      const base::DictionaryValue* item;
-      items->GetDictionary(i, &item);
-      item->GetString(kItemTitleKey, &title);
-      item->GetString(kItemMessageKey, &message);
-      optional_fields_.items.push_back(NotificationItem(title, message));
-    }
-  }
-
-  fields->GetBoolean(kPrivateNeverTimeoutKey, &optional_fields_.never_timeout);
 }
 
 }  // namespace message_center

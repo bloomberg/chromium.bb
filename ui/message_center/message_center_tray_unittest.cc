@@ -66,7 +66,7 @@ class MessageCenterTrayTest : public testing::Test {
                          gfx::Image(),
                          ASCIIToUTF16("www.test.org"),
                          "" /* extension id */,
-                         NULL /* optional_fields */,
+                         message_center::RichNotificationData(),
                          NULL /* delegate */));
     message_center_->AddNotification(notification.Pass());
   }
@@ -166,7 +166,7 @@ TEST_F(MessageCenterTrayTest, MessageCenterReopenPopupsForSystemPriority) {
                        gfx::Image(),
                        ASCIIToUTF16("www.test.org"),
                        "" /* extension id */,
-                       NULL /* optional_fields */,
+                       message_center::RichNotificationData(),
                        NULL /* delegate */));
   notification->SetSystemPriority();
   message_center_->AddNotification(notification.Pass());

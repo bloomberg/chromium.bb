@@ -56,16 +56,6 @@ class MESSAGE_CENTER_EXPORT Notification {
                const gfx::Image& icon,
                const string16& display_source,
                const std::string& extension_id,
-               const DictionaryValue* optional_fields,  // May be NULL.
-               NotificationDelegate* delegate);         // May be NULL.
-
-  Notification(NotificationType type,
-               const std::string& id,
-               const string16& title,
-               const string16& message,
-               const gfx::Image& icon,
-               const string16& display_source,
-               const std::string& extension_id,
                const RichNotificationData& optional_fields,
                NotificationDelegate* delegate);
 
@@ -170,10 +160,6 @@ class MESSAGE_CENTER_EXPORT Notification {
   string16 display_source_;
 
  private:
-  // Unpacks the provided |optional_fields| and applies the values to override
-  // the notification's data members.
-  void ApplyOptionalFields(const DictionaryValue* optional_fields);
-
   std::string extension_id_;
   unsigned serial_number_;
   RichNotificationData optional_fields_;

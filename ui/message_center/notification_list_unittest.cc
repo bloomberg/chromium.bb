@@ -30,7 +30,8 @@ class NotificationListTest : public testing::Test {
   // Currently NotificationListTest doesn't care about some fields like title or
   // message, so put a simple template on it. Returns the id of the new
   // notification.
-  std::string AddNotification(const base::DictionaryValue* optional_fields) {
+  std::string AddNotification(
+      const message_center::RichNotificationData& optional_fields) {
     std::string new_id = base::StringPrintf(kIdFormat, counter_);
     scoped_ptr<Notification> notification(new Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE,
@@ -47,17 +48,15 @@ class NotificationListTest : public testing::Test {
     return new_id;
   }
 
+  std::string AddNotification() {
+    return AddNotification(message_center::RichNotificationData());
+  }
+
   // Utility methods of AddNotification.
   std::string AddPriorityNotification(NotificationPriority priority) {
-    base::DictionaryValue optional;
-    optional.SetInteger(message_center::kPriorityKey,
-                        static_cast<int>(priority));
-    return AddNotification(&optional);
-  }
-  void SetupTimestampKey(const base::Time& time,
-                         base::DictionaryValue* optional) {
-    string16 time_formatted = base::TimeFormatShortDateAndTime(time);
-    optional->SetString(message_center::kTimestampKey, time_formatted);
+    message_center::RichNotificationData optional;
+    optional.priority = priority;
+    return AddNotification(optional);
   }
 
   size_t GetPopupCounts() {
@@ -107,9 +106,9 @@ TEST_F(NotificationListTest, Basic) {
   ASSERT_EQ(0u, notification_list()->NotificationCount());
   ASSERT_EQ(0u, notification_list()->unread_count());
 
-  std::string id0 = AddNotification(NULL);
+  std::string id0 = AddNotification();
   EXPECT_EQ(1u, notification_list()->NotificationCount());
-  std::string id1 = AddNotification(NULL);
+  std::string id1 = AddNotification();
   EXPECT_EQ(2u, notification_list()->NotificationCount());
   EXPECT_EQ(2u, notification_list()->unread_count());
 
@@ -128,7 +127,7 @@ TEST_F(NotificationListTest, Basic) {
   EXPECT_EQ(1u, notification_list()->NotificationCount());
   EXPECT_EQ(1u, notification_list()->unread_count());
 
-  AddNotification(NULL);
+  AddNotification();
   EXPECT_EQ(2u, notification_list()->NotificationCount());
 
   notification_list()->RemoveAllNotifications();
@@ -137,7 +136,7 @@ TEST_F(NotificationListTest, Basic) {
 }
 
 TEST_F(NotificationListTest, MessageCenterVisible) {
-  AddNotification(NULL);
+  AddNotification();
   EXPECT_EQ(1u, notification_list()->NotificationCount());
   ASSERT_EQ(1u, notification_list()->unread_count());
   ASSERT_EQ(1u, GetPopupCounts());
@@ -150,8 +149,8 @@ TEST_F(NotificationListTest, MessageCenterVisible) {
 }
 
 TEST_F(NotificationListTest, UnreadCount) {
-  std::string id0 = AddNotification(NULL);
-  std::string id1 = AddNotification(NULL);
+  std::string id0 = AddNotification();
+  std::string id1 = AddNotification();
   ASSERT_EQ(2u, notification_list()->unread_count());
 
   notification_list()->MarkSinglePopupAsDisplayed(id0);
@@ -163,7 +162,7 @@ TEST_F(NotificationListTest, UnreadCount) {
 }
 
 TEST_F(NotificationListTest, UpdateNotification) {
-  std::string id0 = AddNotification(NULL);
+  std::string id0 = AddNotification();
   std::string replaced = id0 + "_replaced";
   EXPECT_EQ(1u, notification_list()->NotificationCount());
   scoped_ptr<Notification> notification(
@@ -174,7 +173,7 @@ TEST_F(NotificationListTest, UpdateNotification) {
                        gfx::Image(),
                        UTF8ToUTF16(kDisplaySource),
                        kExtensionId,
-                       NULL,
+                       message_center::RichNotificationData(),
                        NULL));
   notification_list()->UpdateNotificationMessage(id0, notification.Pass());
   EXPECT_EQ(1u, notification_list()->NotificationCount());
@@ -194,7 +193,7 @@ TEST_F(NotificationListTest, GetNotificationsBySourceOrExtensions) {
                        gfx::Image(),
                        UTF8ToUTF16("source0"),
                        "ext0",
-                       NULL,
+                       message_center::RichNotificationData(),
                        NULL));
   notification_list()->AddNotification(notification.Pass());
   notification.reset(new Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
@@ -204,7 +203,7 @@ TEST_F(NotificationListTest, GetNotificationsBySourceOrExtensions) {
                                       gfx::Image(),
                                       UTF8ToUTF16("source0"),
                                       "ext0",
-                                      NULL,
+                                      message_center::RichNotificationData(),
                                       NULL));
   notification_list()->AddNotification(notification.Pass());
   notification.reset(new Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
@@ -214,7 +213,7 @@ TEST_F(NotificationListTest, GetNotificationsBySourceOrExtensions) {
                                       gfx::Image(),
                                       UTF8ToUTF16("source1"),
                                       "ext0",
-                                      NULL,
+                                      message_center::RichNotificationData(),
                                       NULL));
   notification_list()->AddNotification(notification.Pass());
   notification.reset(new Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
@@ -224,7 +223,7 @@ TEST_F(NotificationListTest, GetNotificationsBySourceOrExtensions) {
                                       gfx::Image(),
                                       UTF8ToUTF16("source2"),
                                       "ext1",
-                                      NULL,
+                                      message_center::RichNotificationData(),
                                       NULL));
   notification_list()->AddNotification(notification.Pass());
 
@@ -246,7 +245,7 @@ TEST_F(NotificationListTest, GetNotificationsBySourceOrExtensions) {
 TEST_F(NotificationListTest, OldPopupShouldNotBeHidden) {
   std::vector<std::string> ids;
   for (size_t i = 0; i <= kMaxVisiblePopupNotifications; i++)
-    ids.push_back(AddNotification(NULL));
+    ids.push_back(AddNotification());
 
   NotificationList::PopupNotifications popups =
       notification_list()->GetPopupNotifications();
@@ -273,7 +272,7 @@ TEST_F(NotificationListTest, Priority) {
 
   // Default priority has the limit on the number of the popups.
   for (size_t i = 0; i <= kMaxVisiblePopupNotifications; ++i)
-    AddNotification(NULL);
+    AddNotification();
   EXPECT_EQ(kMaxVisiblePopupNotifications + 1,
             notification_list()->NotificationCount());
   EXPECT_EQ(kMaxVisiblePopupNotifications, GetPopupCounts());
@@ -322,7 +321,7 @@ TEST_F(NotificationListTest, HasPopupsWithSystemPriority) {
   ASSERT_EQ(0u, notification_list()->unread_count());
 
   std::string normal_id = AddPriorityNotification(DEFAULT_PRIORITY);
-  std::string system_id = AddNotification(NULL);
+  std::string system_id = AddNotification();
   GetNotification(system_id)->SetSystemPriority();
 
   EXPECT_EQ(2u, GetPopupCounts());
@@ -347,8 +346,8 @@ TEST_F(NotificationListTest, PriorityPromotion) {
   std::string replaced = id0 + "_replaced";
   EXPECT_EQ(1u, notification_list()->NotificationCount());
   EXPECT_EQ(0u, GetPopupCounts());
-  base::DictionaryValue optional;
-  optional.SetInteger(message_center::kPriorityKey, 1);
+  message_center::RichNotificationData optional;
+  optional.priority = 1;
   scoped_ptr<Notification> notification(
       new Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
                        replaced,
@@ -357,7 +356,7 @@ TEST_F(NotificationListTest, PriorityPromotion) {
                        gfx::Image(),
                        UTF8ToUTF16(kDisplaySource),
                        kExtensionId,
-                       &optional,
+                       optional,
                        NULL));
   notification_list()->UpdateNotificationMessage(id0, notification.Pass());
   EXPECT_EQ(1u, notification_list()->NotificationCount());
@@ -378,9 +377,8 @@ TEST_F(NotificationListTest, PriorityPromotionWithPopups) {
   EXPECT_EQ(0u, GetPopupCounts());
 
   // id0 promoted to LOW->DEFAULT, it'll appear as toast (popup).
-  base::DictionaryValue priority_default;
-  priority_default.SetInteger(message_center::kPriorityKey,
-                              static_cast<int>(DEFAULT_PRIORITY));
+  message_center::RichNotificationData priority;
+  priority.priority = DEFAULT_PRIORITY;
   scoped_ptr<Notification> notification(
       new Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
                        id0,
@@ -389,7 +387,7 @@ TEST_F(NotificationListTest, PriorityPromotionWithPopups) {
                        gfx::Image(),
                        UTF8ToUTF16(kDisplaySource),
                        kExtensionId,
-                       &priority_default,
+                       priority,
                        NULL));
   notification_list()->UpdateNotificationMessage(id0, notification.Pass());
   EXPECT_EQ(1u, GetPopupCounts());
@@ -404,15 +402,13 @@ TEST_F(NotificationListTest, PriorityPromotionWithPopups) {
                                       gfx::Image(),
                                       UTF8ToUTF16(kDisplaySource),
                                       kExtensionId,
-                                      NULL,
+                                      priority,
                                       NULL));
   notification_list()->UpdateNotificationMessage(id0, notification.Pass());
   EXPECT_EQ(0u, GetPopupCounts());
 
   // id1 promoted to DEFAULT->HIGH, it'll appear as toast (popup).
-  base::DictionaryValue priority_high;
-  priority_high.SetInteger(message_center::kPriorityKey,
-                           static_cast<int>(HIGH_PRIORITY));
+  priority.priority = HIGH_PRIORITY;
   notification.reset(new Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
                                       id1,
                                       UTF8ToUTF16("newtitle"),
@@ -420,7 +416,7 @@ TEST_F(NotificationListTest, PriorityPromotionWithPopups) {
                                       gfx::Image(),
                                       UTF8ToUTF16(kDisplaySource),
                                       kExtensionId,
-                                      &priority_high,
+                                      priority,
                                       NULL));
   notification_list()->UpdateNotificationMessage(id1, notification.Pass());
   EXPECT_EQ(1u, GetPopupCounts());
@@ -428,9 +424,7 @@ TEST_F(NotificationListTest, PriorityPromotionWithPopups) {
   EXPECT_EQ(0u, GetPopupCounts());
 
   // id1 promoted to HIGH->MAX, it'll appear as toast again.
-  base::DictionaryValue priority_max;
-  priority_max.SetInteger(message_center::kPriorityKey,
-                          static_cast<int>(MAX_PRIORITY));
+  priority.priority = MAX_PRIORITY;
   notification.reset(new Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
                                       id1,
                                       UTF8ToUTF16("newtitle2"),
@@ -438,7 +432,7 @@ TEST_F(NotificationListTest, PriorityPromotionWithPopups) {
                                       gfx::Image(),
                                       UTF8ToUTF16(kDisplaySource),
                                       kExtensionId,
-                                      &priority_max,
+                                      priority,
                                       NULL));
   notification_list()->UpdateNotificationMessage(id1, notification.Pass());
   EXPECT_EQ(1u, GetPopupCounts());
@@ -446,6 +440,7 @@ TEST_F(NotificationListTest, PriorityPromotionWithPopups) {
   EXPECT_EQ(0u, GetPopupCounts());
 
   // id1 demoted to MAX->DEFAULT, no appearing as toast.
+  priority.priority = DEFAULT_PRIORITY;
   notification.reset(new Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
                                       id1,
                                       UTF8ToUTF16("newtitle3"),
@@ -453,7 +448,7 @@ TEST_F(NotificationListTest, PriorityPromotionWithPopups) {
                                       gfx::Image(),
                                       UTF8ToUTF16(kDisplaySource),
                                       kExtensionId,
-                                      &priority_default,
+                                      priority,
                                       NULL));
   notification_list()->UpdateNotificationMessage(id1, notification.Pass());
   EXPECT_EQ(0u, GetPopupCounts());
@@ -461,18 +456,20 @@ TEST_F(NotificationListTest, PriorityPromotionWithPopups) {
 
 TEST_F(NotificationListTest, NotificationOrderAndPriority) {
   base::Time now = base::Time::Now();
-  base::DictionaryValue optional;
-  SetupTimestampKey(now, &optional);
-  optional.SetInteger(message_center::kPriorityKey, 2);
-  std::string max_id = AddNotification(&optional);
+  message_center::RichNotificationData optional;
+  optional.timestamp = now;
+  optional.priority = 2;
+  std::string max_id = AddNotification(optional);
+
   now += base::TimeDelta::FromSeconds(1);
-  SetupTimestampKey(now, &optional);
-  optional.SetInteger(message_center::kPriorityKey, 1);
-  std::string high_id = AddNotification(&optional);
+  optional.timestamp = now;
+  optional.priority = 1;
+  std::string high_id = AddNotification(optional);
+
   now += base::TimeDelta::FromSeconds(1);
-  SetupTimestampKey(now, &optional);
-  optional.SetInteger(message_center::kPriorityKey, 0);
-  std::string default_id = AddNotification(&optional);
+  optional.timestamp = now;
+  optional.priority = 0;
+  std::string default_id = AddNotification(optional);
 
   {
     // Popups: latest comes first.
@@ -502,9 +499,9 @@ TEST_F(NotificationListTest, NotificationOrderAndPriority) {
 }
 
 TEST_F(NotificationListTest, MarkSinglePopupAsShown) {
-  std::string id1 = AddNotification(NULL);
-  std::string id2 = AddNotification(NULL);
-  std::string id3 = AddNotification(NULL);
+  std::string id1 = AddNotification();
+  std::string id2 = AddNotification();
+  std::string id3 = AddNotification();
   ASSERT_EQ(3u, notification_list()->NotificationCount());
   ASSERT_EQ(std::min(static_cast<size_t>(3u), kMaxVisiblePopupNotifications),
             GetPopupCounts());
@@ -533,9 +530,9 @@ TEST_F(NotificationListTest, MarkSinglePopupAsShown) {
 
   // Trickier scenario.
   notification_list()->MarkPopupsAsShown(message_center::DEFAULT_PRIORITY);
-  std::string id4 = AddNotification(NULL);
-  std::string id5 = AddNotification(NULL);
-  std::string id6 = AddNotification(NULL);
+  std::string id4 = AddNotification();
+  std::string id5 = AddNotification();
+  std::string id6 = AddNotification();
   notification_list()->MarkSinglePopupAsShown(id5, true);
 
   {
@@ -566,8 +563,8 @@ TEST_F(NotificationListTest, MarkSinglePopupAsShown) {
 }
 
 TEST_F(NotificationListTest, UpdateAfterMarkedAsShown) {
-  std::string id1 = AddNotification(NULL);
-  std::string id2 = AddNotification(NULL);
+  std::string id1 = AddNotification();
+  std::string id2 = AddNotification();
   notification_list()->MarkSinglePopupAsDisplayed(id1);
   notification_list()->MarkSinglePopupAsDisplayed(id2);
 
@@ -592,7 +589,7 @@ TEST_F(NotificationListTest, UpdateAfterMarkedAsShown) {
                        gfx::Image(),
                        UTF8ToUTF16(kDisplaySource),
                        kExtensionId,
-                       NULL,
+                       message_center::RichNotificationData(),
                        NULL));
   notification_list()->UpdateNotificationMessage(id1, notification.Pass());
   n1 = GetNotification(id1);
@@ -604,7 +601,7 @@ TEST_F(NotificationListTest, UpdateAfterMarkedAsShown) {
 
 TEST_F(NotificationListTest, QuietMode) {
   notification_list()->SetQuietMode(true);
-  AddNotification(NULL);
+  AddNotification();
   AddPriorityNotification(HIGH_PRIORITY);
   AddPriorityNotification(MAX_PRIORITY);
   EXPECT_EQ(3u, notification_list()->NotificationCount());
@@ -614,7 +611,7 @@ TEST_F(NotificationListTest, QuietMode) {
   EXPECT_EQ(0u, notification_list()->unread_count());
 
   notification_list()->SetQuietMode(false);
-  AddNotification(NULL);
+  AddNotification();
   EXPECT_EQ(4u, notification_list()->NotificationCount());
   EXPECT_EQ(1u, GetPopupCounts());
 

@@ -65,7 +65,7 @@ class WebNotificationTrayTest : public test::AshTestBase {
         gfx::Image(),
         ASCIIToUTF16("www.test.org"),
         "" /* extension id */,
-        NULL /* optional_fields */,
+        message_center::RichNotificationData(),
         NULL /* delegate */));
     GetMessageCenter()->AddNotification(notification.Pass());
   }
@@ -81,7 +81,7 @@ class WebNotificationTrayTest : public test::AshTestBase {
         gfx::Image(),
         ASCIIToUTF16("www.test.org"),
         "" /* extension id */,
-        NULL /* optional_fields */,
+        message_center::RichNotificationData(),
         NULL /* delegate */));
     GetMessageCenter()->UpdateNotification(old_id, notification.Pass());
   }

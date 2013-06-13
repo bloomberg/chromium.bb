@@ -13,6 +13,7 @@ const int kNotificationButtonIconSize = 16;
 const int kNotificationIconSize = 80;
 // Same as kNotificationWidth.
 const int kNotificationPreferredImageSize = 360;
+const float kNotificationPreferredImageRatio = 1.5;
 const int kSettingsIconSize = 16;
 
 // Limits.
@@ -43,7 +44,8 @@ const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
 // Limits.
 
 gfx::Size GetImageSizeForWidth(int width, const gfx::Size& image_size) {
-  const int kNotificationMaximumImageHeight = kNotificationWidth * 1.5;
+  const int kNotificationMaximumImageHeight =
+      kNotificationWidth * kNotificationPreferredImageRatio;
 
   gfx::Size size = image_size;
   if (width > 0 && !size.IsEmpty()) {

@@ -356,7 +356,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
         gfx::Image(),
         ASCIIToUTF16("www.testshell.org"),
         "" /* extension id */,
-        NULL /* optional_fields */,
+        message_center::RichNotificationData(),
         NULL /* delegate */));
 
     ash::Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget()

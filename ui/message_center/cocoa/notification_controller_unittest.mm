@@ -106,7 +106,7 @@ TEST_F(NotificationControllerTest, BasicLayout) {
           gfx::Image(),
           string16(),
           std::string(),
-          NULL,
+          message_center::RichNotificationData(),
           NULL));
   notification->set_icon(gfx::Image([TestIcon() retain]));
 
@@ -136,7 +136,7 @@ TEST_F(NotificationControllerTest, OverflowText) {
           gfx::Image(),
           string16(),
           std::string(),
-          NULL,
+          message_center::RichNotificationData(),
           NULL));
   scoped_nsobject<MCNotificationController> controller(
       [[MCNotificationController alloc] initWithNotification:notification.get()
@@ -157,7 +157,7 @@ TEST_F(NotificationControllerTest, Close) {
           gfx::Image(),
           string16(),
           std::string(),
-          NULL,
+          message_center::RichNotificationData(),
           NULL));
   MockMessageCenter message_center;
 
@@ -184,7 +184,7 @@ TEST_F(NotificationControllerTest, Update) {
           gfx::Image(),
           string16(),
           std::string(),
-          NULL,
+          message_center::RichNotificationData(),
           NULL));
   scoped_nsobject<MCNotificationController> controller(
       [[MCNotificationController alloc] initWithNotification:notification.get()
@@ -205,9 +205,11 @@ TEST_F(NotificationControllerTest, Update) {
 }
 
 TEST_F(NotificationControllerTest, Buttons) {
-  base::DictionaryValue buttons;
-  buttons.SetString(message_center::kButtonOneTitleKey, "button1");
-  buttons.SetString(message_center::kButtonTwoTitleKey, "button2");
+  message_center::RichNotificationData optional;
+  message_center::ButtonInfo button1(UTF8ToUTF16("button1"));
+  optional.buttons.push_back(button1);
+  message_center::ButtonInfo button2(UTF8ToUTF16("button2"));
+  optional.buttons.push_back(button2);
 
   scoped_ptr<message_center::Notification> notification(
       new message_center::Notification(
@@ -218,7 +220,7 @@ TEST_F(NotificationControllerTest, Buttons) {
           gfx::Image(),
           string16(),
           std::string(),
-          &buttons,
+          optional,
           NULL));
   MockMessageCenter message_center;
 
@@ -243,7 +245,7 @@ TEST_F(NotificationControllerTest, Image) {
           gfx::Image(),
           string16(),
           std::string(),
-          NULL,
+          message_center::RichNotificationData(),
           NULL));
   NSImage* image = [NSImage imageNamed:NSImageNameFolder];
   notification->set_image(gfx::Image([image retain]));
@@ -262,21 +264,14 @@ TEST_F(NotificationControllerTest, Image) {
 }
 
 TEST_F(NotificationControllerTest, List) {
-  base::ListValue* list = new base::ListValue;
-
-  base::DictionaryValue* item0 = new base::DictionaryValue;
-  item0->SetString(message_center::kItemTitleKey, "First title");
-  item0->SetString(message_center::kItemMessageKey, "first message");
-  list->Append(item0);
-
-  base::DictionaryValue* item1 = new base::DictionaryValue;
-  item1->SetString(message_center::kItemTitleKey, "Second title");
-  item1->SetString(message_center::kItemMessageKey,
-                   "second slightly longer message");
-  list->Append(item1);
-
-  base::DictionaryValue items;
-  items.Set(message_center::kItemsKey, list);
+  message_center::RichNotificationData optional;
+  message_center::NotificationItem item1(
+      UTF8ToUTF16("First title"), UTF8ToUTF16("first message"));
+  optional.items.push_back(item1);
+  message_center::NotificationItem item2(
+      UTF8ToUTF16("Second title"),
+      UTF8ToUTF16("second slightly longer message"));
+  optional.items.push_back(item2);
 
   scoped_ptr<message_center::Notification> notification(
       new message_center::Notification(
@@ -287,7 +282,7 @@ TEST_F(NotificationControllerTest, List) {
           gfx::Image(),
           string16(),
           std::string(),
-          &items,
+          optional,
           NULL));
 
   MockMessageCenter message_center;

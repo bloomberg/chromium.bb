@@ -6,7 +6,7 @@
 // corresponding to the internet URL to be translated - and optionally
 // |width| and |height| which are the maximum dimensions to be used when
 // converting the image.
-function loadDataUrl(imageSpec, callbacks) {
+function loadImageData(imageSpec, callbacks) {
   var path = imageSpec.path;
   var img = new Image();
   if (typeof callbacks.onerror === 'function') {
@@ -39,9 +39,11 @@ function loadDataUrl(imageSpec, callbacks) {
     canvas_context.clearRect(0, 0, canvas.width, canvas.height);
     canvas_context.drawImage(img, 0, 0, canvas.width, canvas.height);
     try {
-      var dataUrl = canvas.toDataURL();
+      var imageData = canvas_context.getImageData(
+          0, 0, canvas.width, canvas.height);
       if (typeof callbacks.oncomplete === 'function') {
-        callbacks.oncomplete(dataUrl);
+        callbacks.oncomplete(
+            imageData.width, imageData.height, imageData.data.buffer);
       }
     } catch (e) {
       if (typeof callbacks.onerror === 'function') {
@@ -53,9 +55,9 @@ function loadDataUrl(imageSpec, callbacks) {
 }
 
 function on_complete_index(index, err, loading, finished, callbacks) {
-  return function(imageData) {
+  return function(width, height, imageData) {
     delete loading[index];
-    finished[index] = imageData;
+    finished[index] = { width: width, height: height, data: imageData };
     if (err)
       callbacks.onerror(index);
     if (Object.keys(loading).length == 0)
@@ -69,12 +71,12 @@ function loadAllImages(imageSpecs, callbacks) {
 
   for (var index = 0; index < imageSpecs.length; index++) {
     loading[index] = imageSpecs[index];
-    loadDataUrl(imageSpecs[index], {
+    loadImageData(imageSpecs[index], {
       oncomplete: on_complete_index(index, false, loading, finished, callbacks),
       onerror: on_complete_index(index, true, loading, finished, callbacks)
     });
   }
 }
 
-exports.loadDataUrl = loadDataUrl;
+exports.loadImageData = loadImageData;
 exports.loadAllImages = loadAllImages;

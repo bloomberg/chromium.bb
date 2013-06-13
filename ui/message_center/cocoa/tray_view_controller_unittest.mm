@@ -49,7 +49,7 @@ TEST_F(TrayViewControllerTest, AddRemoveOne) {
       gfx::Image(),
       string16(),
       std::string(),
-      NULL,
+      message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification_data.Pass());
   [tray_ onMessageCenterTrayChanged];
@@ -83,7 +83,7 @@ TEST_F(TrayViewControllerTest, AddThreeClearAll) {
       gfx::Image(),
       string16(),
       std::string(),
-      NULL,
+      message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
   notification.reset(new message_center::Notification(
@@ -94,7 +94,7 @@ TEST_F(TrayViewControllerTest, AddThreeClearAll) {
       gfx::Image(),
       string16(),
       std::string(),
-      NULL,
+      message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
   notification.reset(new message_center::Notification(
@@ -105,7 +105,7 @@ TEST_F(TrayViewControllerTest, AddThreeClearAll) {
       gfx::Image(),
       string16(),
       std::string(),
-      NULL,
+      message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
   [tray_ onMessageCenterTrayChanged];
@@ -137,7 +137,7 @@ TEST_F(TrayViewControllerTest, NoClearAllWhenNoNotifications) {
       gfx::Image(),
       string16(),
       std::string(),
-      NULL,
+      message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
   [tray_ onMessageCenterTrayChanged];
@@ -156,7 +156,7 @@ TEST_F(TrayViewControllerTest, NoClearAllWhenNoNotifications) {
       gfx::Image(),
       string16(),
       std::string(),
-      NULL,
+      message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
   [tray_ onMessageCenterTrayChanged];

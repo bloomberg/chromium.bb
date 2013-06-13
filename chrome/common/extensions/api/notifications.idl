@@ -22,9 +22,16 @@ namespace notifications {
     DOMString message;
   };
 
+  [nodoc] dictionary NotificationBitmap {
+    long width;
+    long height;
+    ArrayBuffer? data;
+  };
+
   dictionary NotificationButton {
     DOMString title;
     DOMString? iconUrl;
+    [nodoc] NotificationBitmap? iconBitmap;
   };
 
   dictionary NotificationOptions {
@@ -33,6 +40,7 @@ namespace notifications {
 
     // Sender's avatar, app icon, or a thumbnail for image notifications.
     DOMString iconUrl;
+    [nodoc] NotificationBitmap? iconBitmap;
 
     // Title of the notification (e.g. sender name for email).
     DOMString title;
@@ -56,6 +64,7 @@ namespace notifications {
 
     // Image thumbnail for image-type notifications.
     DOMString? imageUrl;
+    [nodoc] NotificationBitmap? imageBitmap;
 
     // Items for multi-item notifications.
     NotificationItem[]? items;

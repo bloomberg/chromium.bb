@@ -25,9 +25,8 @@ class NotificationsApiFunction : public ApiFunction {
   NotificationsApiFunction();
   virtual ~NotificationsApiFunction();
 
-  void CreateNotification(
-      const std::string& id,
-      api::notifications::NotificationOptions* options);
+  bool CreateNotification(const std::string& id,
+                          api::notifications::NotificationOptions* options);
 
   bool IsNotificationsApiEnabled();
 

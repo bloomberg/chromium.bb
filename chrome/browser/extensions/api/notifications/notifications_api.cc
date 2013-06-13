@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -21,6 +22,11 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
+#include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_util.h"
 
 namespace extensions {
@@ -28,6 +34,69 @@ namespace extensions {
 namespace {
 
 const char kResultKey[] = "result";
+
+// Converts an object with width, height, and data in RGBA format into an
+// gfx::Image (in ARGB format).
+bool NotificationBitmapToGfxImage(
+    api::notifications::NotificationBitmap* notification_bitmap,
+    gfx::Image* return_image) {
+  if (!notification_bitmap)
+    return false;
+
+  // Ensure a sane set of dimensions.
+  const int max_width = message_center::kNotificationPreferredImageSize;
+  const int max_height =
+      message_center::kNotificationPreferredImageRatio * max_width;
+  const int BYTES_PER_PIXEL = 4;
+
+  const int width = notification_bitmap->width;
+  const int height = notification_bitmap->height;
+
+  if (width < 0 || height < 0 || width > max_width || height > max_height)
+    return false;
+
+  // Ensure we have rgba data.
+  std::string* rgba_data = notification_bitmap->data.get();
+  if (!rgba_data)
+    return false;
+
+  const size_t rgba_data_length = rgba_data->length();
+  const size_t rgba_area = width * height;
+
+  if (rgba_data_length != rgba_area * BYTES_PER_PIXEL)
+    return false;
+
+  // Now configure the bitmap with the sanitized dimensions.
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+
+  // Allocate the actual backing store.
+  if (!bitmap.allocPixels())
+    return false;
+
+  // Ensure that our bitmap and our data now refer to the same number of pixels.
+  if (rgba_data_length != bitmap.getSafeSize())
+    return false;
+
+  uint32_t* pixels = bitmap.getAddr32(0, 0);
+  const char* c_rgba_data = rgba_data->data();
+
+  for (size_t t = 0; t < rgba_area; ++t) {
+    // |c_rgba_data| is RGBA, pixels is ARGB.
+    size_t rgba_index = t * BYTES_PER_PIXEL;
+    pixels[t] = SkPreMultiplyColor(
+        ((c_rgba_data[rgba_index + 3] & 0xFF) << 24) |
+        ((c_rgba_data[rgba_index + 0] & 0xFF) << 16) |
+        ((c_rgba_data[rgba_index + 1] & 0xFF) << 8) |
+        ((c_rgba_data[rgba_index + 2] & 0xFF) << 0));
+  }
+
+  // TODO(dewittj): Handle HiDPI images.
+  ui::ScaleFactor scale_factor(ui::SCALE_FACTOR_100P);
+  gfx::ImageSkia skia(gfx::ImageSkiaRep(bitmap, scale_factor));
+  *return_image = gfx::Image(skia);
+  return true;
+}
 
 // Given an extension id and another id, returns an id that is unique
 // relative to other extensions.
@@ -154,98 +223,68 @@ NotificationsApiFunction::NotificationsApiFunction() {
 NotificationsApiFunction::~NotificationsApiFunction() {
 }
 
-void NotificationsApiFunction::CreateNotification(
+bool NotificationsApiFunction::CreateNotification(
     const std::string& id,
     api::notifications::NotificationOptions* options) {
-  // If older notification runtime is used, use simpler bridge.
-  if (!message_center::IsRichNotificationEnabled()) {
-    message_center::NotificationType type =
-        MapApiTemplateTypeToType(options->type);
-    GURL icon_url(UTF8ToUTF16(options->icon_url));
-    string16 title(UTF8ToUTF16(options->title));
-    string16 message(UTF8ToUTF16(options->message));
 
-    // Ignore options if running on the old notification runtime.
-    scoped_ptr<DictionaryValue> optional_fields(new DictionaryValue());
-
-    NotificationsApiDelegate* api_delegate(new NotificationsApiDelegate(
-        this,
-        profile(),
-        extension_->id(),
-        id));  // ownership is passed to Notification
-    Notification notification(type, extension_->url(), icon_url, title, message,
-                              WebKit::WebTextDirectionDefault,
-                              UTF8ToUTF16(extension_->name()),
-                              UTF8ToUTF16(api_delegate->id()),
-                              optional_fields.get(), api_delegate);
-
-    g_browser_process->notification_ui_manager()->Add(notification, profile());
-    return;
-  }
-
+  // First, extract required fields: type, title, message, and icon.
   message_center::NotificationType type =
       MapApiTemplateTypeToType(options->type);
-  GURL icon_url(UTF8ToUTF16(options->icon_url));
-  string16 title(UTF8ToUTF16(options->title));
-  string16 message(UTF8ToUTF16(options->message));
+  const string16 title(UTF8ToUTF16(options->title));
+  const string16 message(UTF8ToUTF16(options->message));
+  gfx::Image icon;
 
-  scoped_ptr<DictionaryValue> optional_fields(new DictionaryValue());
+  // TODO(dewittj): Return error if this fails.
+  NotificationBitmapToGfxImage(options->icon_bitmap.get(), &icon);
 
-  // For all notification types.
-  if (options->priority.get())
-    optional_fields->SetInteger(message_center::kPriorityKey,
-                                *options->priority);
-  if (options->event_time.get())
-    optional_fields->SetDouble(message_center::kTimestampKey,
-                               *options->event_time);
-  if (options->buttons.get()) {
-    if (options->buttons->size() > 0) {
-      linked_ptr<api::notifications::NotificationButton> button =
-          (*options->buttons)[0];
-      optional_fields->SetString(message_center::kButtonOneTitleKey,
-                                 UTF8ToUTF16(button->title));
-      if (button->icon_url.get())
-        optional_fields->SetString(message_center::kButtonOneIconUrlKey,
-                                   UTF8ToUTF16(*button->icon_url));
+  // Then, handle any optional data that's been provided.
+  message_center::RichNotificationData optional_fields;
+  if (message_center::IsRichNotificationEnabled()) {
+    if (options->priority.get())
+      optional_fields.priority = *options->priority;
+
+    if (options->event_time.get())
+      optional_fields.timestamp = base::Time::FromJsTime(*options->event_time);
+
+    if (options->buttons.get()) {
+      // Currently we allow up to 2 buttons.
+      size_t number_of_buttons = options->buttons->size();
+      number_of_buttons = number_of_buttons > 2 ? 2 : number_of_buttons;
+
+      for (size_t i = 0; i < number_of_buttons; i++) {
+        message_center::ButtonInfo info(
+            UTF8ToUTF16((*options->buttons)[i]->title));
+        NotificationBitmapToGfxImage((*options->buttons)[i]->icon_bitmap.get(),
+                                     &info.icon);
+        optional_fields.buttons.push_back(info);
+      }
     }
-    if (options->buttons->size() > 1) {
-      linked_ptr<api::notifications::NotificationButton> button =
-          (*options->buttons)[1];
-      optional_fields->SetString(message_center::kButtonTwoTitleKey,
-                                 UTF8ToUTF16(button->title));
-      if (button->icon_url.get())
-        optional_fields->SetString(message_center::kButtonTwoIconUrlKey,
-                                   UTF8ToUTF16(*button->icon_url));
-    }
-  }
-  if (options->expanded_message.get())
-    optional_fields->SetString(message_center::kExpandedMessageKey,
-                               UTF8ToUTF16(*options->expanded_message));
 
-  // For image notifications (type == 'image').
-  // TODO(dharcourt): Fail if (type == 'image' && !options->image_url.get())
-  // TODO(dharcourt): Fail if (type != 'image' && options->image_url.get())
-  if (options->image_url.get())
-    optional_fields->SetString(message_center::kImageUrlKey,
-                               UTF8ToUTF16(*options->image_url));
-
-  // For list notifications (type == 'multiple').
-  // TODO(dharcourt): Fail if (type == 'multiple' && !options->items.get())
-  // TODO(dharcourt): Fail if (type != 'multiple' && options->items.get())
-  if (options->items.get()) {
-    base::ListValue* items = new base::ListValue();
-    std::vector<
-      linked_ptr<
-        api::notifications::NotificationItem> >::iterator i;
-    for (i = options->items->begin(); i != options->items->end(); ++i) {
-      base::DictionaryValue* item = new base::DictionaryValue();
-      item->SetString(message_center::kItemTitleKey,
-                      UTF8ToUTF16(i->get()->title));
-      item->SetString(message_center::kItemMessageKey,
-                      UTF8ToUTF16(i->get()->message));
-      items->Append(item);
+    if (options->expanded_message.get()) {
+      optional_fields.expanded_message =
+          UTF8ToUTF16(*options->expanded_message);
     }
-    optional_fields->Set(message_center::kItemsKey, items);
+
+    bool has_image = NotificationBitmapToGfxImage(options->image_bitmap.get(),
+                                                  &optional_fields.image);
+    // We should have an image if and only if the type is an image type.
+    if (has_image != (type == message_center::NOTIFICATION_TYPE_IMAGE))
+      return false;
+
+    // We should have list items if and only if the type is a multiple type.
+    bool has_list_items = options->items.get() && options->items->size() > 0;
+    if (has_list_items != (type == message_center::NOTIFICATION_TYPE_MULTIPLE))
+      return false;
+
+    if (has_list_items) {
+      using api::notifications::NotificationItem;
+      std::vector<linked_ptr<NotificationItem> >::iterator i;
+      for (i = options->items->begin(); i != options->items->end(); ++i) {
+        message_center::NotificationItem item(UTF8ToUTF16(i->get()->title),
+                                              UTF8ToUTF16(i->get()->message));
+        optional_fields.items.push_back(item);
+      }
+    }
   }
 
   NotificationsApiDelegate* api_delegate(new NotificationsApiDelegate(
@@ -253,13 +292,19 @@ void NotificationsApiFunction::CreateNotification(
       profile(),
       extension_->id(),
       id));  // ownership is passed to Notification
-  Notification notification(type, extension_->url(), icon_url, title, message,
+  Notification notification(type,
+                            extension_->url(),
+                            title,
+                            message,
+                            icon,
                             WebKit::WebTextDirectionDefault,
                             UTF8ToUTF16(extension_->name()),
                             UTF8ToUTF16(api_delegate->id()),
-                            optional_fields.get(), api_delegate);
+                            optional_fields,
+                            api_delegate);
 
   g_browser_process->notification_ui_manager()->Add(notification, profile());
+  return true;
 }
 
 bool NotificationsApiFunction::IsNotificationsApiEnabled() {
@@ -321,9 +366,11 @@ bool NotificationsCreateFunction::RunNotificationsApi() {
   else
     notification_id = kNotificationPrefix + base::Uint64ToString(next_id_++);
 
-  CreateNotification(notification_id, &params_->options);
-
   SetResult(Value::CreateStringValue(notification_id));
+
+  // TODO(dewittj): Add more human-readable error strings if this fails.
+  if (!CreateNotification(notification_id, &params_->options))
+    return false;
 
   SendResponse(true);
 
@@ -340,16 +387,28 @@ bool NotificationsUpdateFunction::RunNotificationsApi() {
   params_ = api::notifications::Update::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
-  if (g_browser_process->notification_ui_manager()->DoesIdExist(
+  // We are in update.  If the ID doesn't exist, succeed but call the callback
+  // with "false".
+  if (!g_browser_process->notification_ui_manager()->DoesIdExist(
           CreateScopedIdentifier(extension_->id(), params_->notification_id))) {
-    CreateNotification(params_->notification_id, &params_->options);
-    SetResult(Value::CreateBooleanValue(true));
-  } else {
     SetResult(Value::CreateBooleanValue(false));
+    SendResponse(true);
+    return true;
   }
 
-  SendResponse(true);
+  // If we have trouble creating the notification (could be improper use of API
+  // or some other reason), mark the function as failed, calling the callback
+  // with false.
+  // TODO(dewittj): Add more human-readable error strings if this fails.
+  bool could_create_notification =
+      CreateNotification(params_->notification_id, &params_->options);
+  SetResult(Value::CreateBooleanValue(could_create_notification));
+  if (!could_create_notification)
+    return false;
 
+  // No trouble, created the notification, send true to the callback and
+  // succeed.
+  SendResponse(true);
   return true;
 }
 

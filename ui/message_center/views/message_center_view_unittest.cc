@@ -134,7 +134,7 @@ void MessageCenterViewTest::SetUp() {
                             gfx::Image(),
                             UTF8ToUTF16("display source"),
                             std::string("extension id"),
-                            NULL,
+                            message_center::RichNotificationData(),
                             NULL);
 
   // ...and a list for it.

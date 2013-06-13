@@ -21,7 +21,7 @@ Notification::Notification(const GURL& origin_url,
                                    gfx::Image(),
                                    display_source,
                                    origin_url.spec(),
-                                   NULL,
+                                   message_center::RichNotificationData(),
                                    delegate),
       origin_url_(origin_url),
       is_html_(true),
@@ -44,7 +44,7 @@ Notification::Notification(const GURL& origin_url,
                                    gfx::Image(),
                                    display_source,
                                    origin_url.spec(),
-                                   NULL,
+                                   message_center::RichNotificationData(),
                                    delegate),
       origin_url_(origin_url),
       icon_url_(icon_url),
@@ -52,38 +52,6 @@ Notification::Notification(const GURL& origin_url,
       replace_id_(replace_id),
       delegate_(delegate) {
   // "Upconvert" the string parameters to a data: URL.
-  content_url_ = GURL(DesktopNotificationService::CreateDataUrl(
-      icon_url, title, body, dir));
-}
-
-Notification::Notification(message_center::NotificationType type,
-                           const GURL& origin_url,
-                           const GURL& icon_url,
-                           const string16& title,
-                           const string16& body,
-                           WebKit::WebTextDirection dir,
-                           const string16& display_source,
-                           const string16& replace_id,
-                           const DictionaryValue* optional_fields,
-                           NotificationDelegate* delegate)
-    : message_center::Notification(type,
-                                   delegate->id(),
-                                   title,
-                                   body,
-                                   gfx::Image(),
-                                   display_source,
-                                   origin_url.spec(),
-                                   optional_fields,
-                                   delegate),
-      origin_url_(origin_url),
-      icon_url_(icon_url),
-      is_html_(false),
-      replace_id_(replace_id),
-      delegate_(delegate) {
-  if (optional_fields)
-    ApplyOptionalFields(optional_fields);
-  // "Upconvert" the string parameters to a data: URL.  Some balloon views
-  // require content URL to render anything, so this serves as a backup.
   content_url_ = GURL(DesktopNotificationService::CreateDataUrl(
       icon_url, title, body, dir));
 }
@@ -138,7 +106,7 @@ Notification::Notification(const GURL& origin_url,
                                    icon,
                                    display_source,
                                    origin_url.spec(),
-                                   NULL,
+                                   message_center::RichNotificationData(),
                                    delegate),
       origin_url_(origin_url),
       is_html_(false),
@@ -171,20 +139,4 @@ Notification& Notification::operator=(const Notification& notification) {
   replace_id_ = notification.replace_id();
   delegate_ = notification.delegate();
   return *this;
-}
-
-void Notification::ApplyOptionalFields(const DictionaryValue* optional_fields) {
-  if (!optional_fields)
-    return;
-
-  string16 url;
-  if (optional_fields->GetString(message_center::kButtonOneIconUrlKey, &url)) {
-    button_one_icon_url_ = GURL(url);
-  }
-  if (optional_fields->GetString(message_center::kButtonTwoIconUrlKey, &url)) {
-    button_two_icon_url_ = GURL(url);
-  }
-  if (optional_fields->GetString(message_center::kImageUrlKey, &url)) {
-    image_url_ = GURL(url);
-  }
 }

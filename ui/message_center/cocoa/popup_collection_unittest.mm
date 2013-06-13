@@ -57,7 +57,7 @@ class PopupCollectionTest : public ui::CocoaTest {
         gfx::Image(),
         string16(),
         std::string(),
-        NULL,
+        message_center::RichNotificationData(),
         NULL));
     center_->AddNotification(notification.Pass());
 
@@ -69,7 +69,7 @@ class PopupCollectionTest : public ui::CocoaTest {
         gfx::Image(),
         string16(),
         std::string(),
-        NULL,
+        message_center::RichNotificationData(),
         NULL));
     center_->AddNotification(notification.Pass());
 
@@ -85,7 +85,7 @@ class PopupCollectionTest : public ui::CocoaTest {
         gfx::Image(),
         string16(),
         std::string(),
-        NULL,
+        message_center::RichNotificationData(),
         NULL));
     center_->AddNotification(notification.Pass());
     WaitForAnimationEnded();
@@ -145,7 +145,7 @@ TEST_F(PopupCollectionTest, AttemptFourOneOffscreen) {
       gfx::Image(),
       string16(),
       std::string(),
-      NULL,
+      message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
   WaitForAnimationEnded();
@@ -183,9 +183,8 @@ TEST_F(PopupCollectionTest, LayoutSpacing) {
                                   [popups objectAtIndex:2]));
 
   // Set priority so that kMaxVisiblePopupNotifications does not hide it.
-  scoped_ptr<base::DictionaryValue> optional(new base::DictionaryValue);
-  optional->SetInteger(message_center::kPriorityKey,
-                       message_center::HIGH_PRIORITY);
+  message_center::RichNotificationData optional;
+  optional.priority = message_center::HIGH_PRIORITY;
   scoped_ptr<message_center::Notification> notification;
   notification.reset(new message_center::Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
@@ -195,7 +194,7 @@ TEST_F(PopupCollectionTest, LayoutSpacing) {
       gfx::Image(),
       string16(),
       std::string(),
-      optional.get(),
+      optional,
       NULL));
   center_->AddNotification(notification.Pass());
   WaitForAnimationEnded();
@@ -233,7 +232,7 @@ TEST_F(PopupCollectionTest, TinyScreen) {
       gfx::Image(),
       string16(),
       std::string(),
-      NULL,
+      message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
   WaitForAnimationEnded();
@@ -255,7 +254,7 @@ TEST_F(PopupCollectionTest, TinyScreen) {
       gfx::Image(),
       string16(),
       std::string(),
-      NULL,
+      message_center::RichNotificationData(),
       NULL));
   center_->UpdateNotification("1", notification.Pass());
   WaitForAnimationEnded();
@@ -299,7 +298,7 @@ TEST_F(PopupCollectionTest, UpdateIconAndBody) {
       gfx::Image(),
       string16(),
       std::string(),
-      NULL,
+      message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
   WaitForAnimationEnded();
@@ -330,7 +329,7 @@ TEST_F(PopupCollectionTest,
       gfx::Image(),
       string16(),
       std::string(),
-      NULL,
+      message_center::RichNotificationData(),
       NULL));
   center_->AddNotification(notification.Pass());
 
@@ -363,7 +362,7 @@ TEST_F(PopupCollectionTest, CloseCollectionBeforeUpdatePopupAnimationEnds) {
       gfx::Image(),
       string16(),
       std::string(),
-      NULL,
+      message_center::RichNotificationData(),
       NULL));
   center_->UpdateNotification("1", notification.Pass());
 

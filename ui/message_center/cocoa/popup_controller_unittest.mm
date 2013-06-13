@@ -24,7 +24,7 @@ TEST_F(PopupControllerTest, Creation) {
           gfx::Image(),
           string16(),
           std::string(),
-          NULL,
+          message_center::RichNotificationData(),
           NULL));
 
   scoped_nsobject<MCPopupController> controller(
