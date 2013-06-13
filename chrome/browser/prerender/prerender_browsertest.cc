@@ -2896,4 +2896,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToDestURL();
 }
 
+// Checks that media source video loads are deferred on prerendering.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5MediaSourceVideo) {
+  PrerenderTestURL("files/prerender/prerender_html5_video_media_source.html",
+                   FINAL_STATUS_USED,
+                   1);
+  NavigateToDestUrlAndWaitForPassTitle();
+}
+
 }  // namespace prerender

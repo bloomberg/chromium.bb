@@ -1,0 +1,40 @@
+<html>
+  <!--
+  This test checks that video tags created by javascript are are deferred
+  during prerendering and the autoplay is enabled during swap ins.
+  -->
+<head>
+<title>Prerender for HTML5 Media Source Video.</title>
+</head>
+
+<body>
+<video id="mediaEl" autoplay controls></video>
+
+<script>
+  var willPlay = true;
+  var testNetworkEvents = false;
+</script>
+
+<script src="prerender_html5_common.js"></script>
+
+<script>
+
+  function onSourceOpen(e) {
+    var srcBuffer = mediaSource.addSourceBuffer('video/webm; codecs="vp8"');
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'bear-320x240-video-only.webm');
+    xhr.responseType = 'arraybuffer';
+    xhr.addEventListener('load', function(e) {
+      srcBuffer.append(new Uint8Array(e.target.response));
+      mediaSource.endOfStream();
+    });
+    xhr.send();
+  }
+
+  var mediaSource = new WebKitMediaSource();
+  mediaSource.addEventListener('webkitsourceopen', onSourceOpen);
+  mediaEl.src = window.URL.createObjectURL(mediaSource);
+</script>
+
+</body>
+</html>

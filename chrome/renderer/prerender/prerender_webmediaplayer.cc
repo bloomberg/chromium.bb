@@ -7,6 +7,7 @@
 #include "chrome/common/prerender_messages.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaSource.h"
 #include "webkit/renderer/media/webmediaplayer_delegate.h"
 
 namespace prerender {
@@ -31,11 +32,27 @@ void PrerenderWebMediaPlayer::load(const WebKit::WebURL& url,
   DCHECK(!url_loaded_);
   if (is_prerendering_) {
     url_to_load_.reset(new WebKit::WebURL(url));
+    media_source_to_load_.reset();
     cors_mode_ = cors_mode;
     return;
   }
   url_loaded_ = true;
   WebMediaPlayerImpl::load(url, cors_mode);
+}
+
+void PrerenderWebMediaPlayer::load(const WebKit::WebURL& url,
+                                   WebKit::WebMediaSource* media_source,
+                                   CORSMode cors_mode) {
+  DCHECK(!url_loaded_);
+  if (is_prerendering_) {
+    url_to_load_.reset(new WebKit::WebURL(url));
+    media_source_to_load_.reset(media_source);
+    cors_mode_ = cors_mode;
+    return;
+  }
+
+  url_loaded_ = true;
+  WebMediaPlayerImpl::load(url, media_source, cors_mode);
 }
 
 bool PrerenderWebMediaPlayer::OnMessageReceived(const IPC::Message& message) {
@@ -51,11 +68,17 @@ void PrerenderWebMediaPlayer::OnSetIsPrerendering(bool is_prerendering) {
   // navigation, so no PrerenderWebMediaPlayer should see the notification
   // that enables prerendering.
   DCHECK(!is_prerendering);
-  if (is_prerendering_ && !is_prerendering) {
-    is_prerendering_ = false;
-    if (url_to_load_.get())
-      load(*url_to_load_, cors_mode_);
-  }
+  if (!is_prerendering_ || is_prerendering)
+    return;
+
+  is_prerendering_ = false;
+  if (!url_to_load_)
+    return;
+
+  if (media_source_to_load_)
+    load(*url_to_load_, media_source_to_load_.release(), cors_mode_);
+  else
+    load(*url_to_load_, cors_mode_);
 }
 
 }  // namespace prerender
