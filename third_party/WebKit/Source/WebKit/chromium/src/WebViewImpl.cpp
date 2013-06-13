@@ -3373,7 +3373,10 @@ void WebViewImpl::inspectElementAt(const WebPoint& point)
 
         HitTestResult result(m_page->mainFrame()->view()->windowToContents(point));
         m_page->mainFrame()->contentRenderer()->hitTest(request, result);
-        m_page->inspectorController()->inspect(result.innerNode());
+        Node* node = result.innerNode();
+        if (!node && m_page->mainFrame()->document())
+            node = m_page->mainFrame()->document()->documentElement();
+        m_page->inspectorController()->inspect(node);
     }
 }
 
