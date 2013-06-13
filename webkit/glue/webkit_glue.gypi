@@ -73,6 +73,14 @@
         '../child/webkitplatformsupport_child_impl.cc',
         '../child/webkitplatformsupport_child_impl.h',
       ],
+
+      'conditions': [
+        ['component=="shared_library"', {
+          'dependencies': [
+            '<(DEPTH)/base/base.gyp:base',
+          ],
+        }],
+      ],
     },
 
     {
