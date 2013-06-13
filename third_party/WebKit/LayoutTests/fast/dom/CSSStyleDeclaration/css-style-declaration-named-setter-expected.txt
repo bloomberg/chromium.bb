@@ -1,0 +1,9 @@
+PASS document.body.style.margin is "0px"
+PASS document.body.style.margin = 1 is 1
+PASS document.body.style.margin is "1px"
+PASS document.body.style.__proto__.margin = 777 is 777
+PASS document.body.style.__proto__.margin is 777
+PASS document.body.style.margin is "1px"
+PASS document.body.style.margin = 2 is 2
+PASS document.body.style.margin is "2px"
+

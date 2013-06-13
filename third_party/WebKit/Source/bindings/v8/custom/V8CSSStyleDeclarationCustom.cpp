@@ -193,11 +193,7 @@ void V8CSSStyleDeclaration::namedPropertyQuery(v8::Local<v8::String> v8Name, con
 void V8CSSStyleDeclaration::namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     // First look for API defined attributes on the style declaration object.
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return;
     if (info.Holder()->HasRealNamedCallbackProperty(name))
-        return;
-    if (info.Holder()->HasRealNamedProperty(name))
         return;
 
     // Search the style declaration.
@@ -229,13 +225,6 @@ void V8CSSStyleDeclaration::namedPropertyGetter(v8::Local<v8::String> name, cons
 
 void V8CSSStyleDeclaration::namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return;
-    if (info.Holder()->HasRealNamedCallbackProperty(name))
-        return;
-    if (info.Holder()->HasRealNamedProperty(name))
-        return;
-
     CSSStyleDeclaration* imp = V8CSSStyleDeclaration::toNative(info.Holder());
     CSSPropertyInfo* propInfo = cssPropertyInfo(name);
     if (!propInfo)
