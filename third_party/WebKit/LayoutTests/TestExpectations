@@ -966,6 +966,7 @@ webkit.org/b/88939 fast/events/before-unload-adopt-subframe-to-outside.html [ Fa
 webkit.org/b/88833 media/video-played-collapse.html [ Failure Pass ]
 
 webkit.org/b/88833 [ Win Debug ] media/track/track-kind.html [ Pass Timeout ]
+crbug.com/249293   [ Linux Debug ] media/track/track-removal-crash.html [ Pass Crash ]
 
 webkit.org/b/88832 [ Win ] http/tests/xmlhttprequest/origin-exact-matching.html [ Pass Timeout ]
 
