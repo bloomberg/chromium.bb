@@ -24,9 +24,6 @@ const char kDisableTouchEditing[] = "disable-touch-editing";
 // Disables the Views textfield on Windows.
 const char kDisableViewsTextfield[] = "disable-views-textfield";
 
-// Enables support for bezel touch.
-const char kEnableBezelTouch[] = "enable-bezel-touch";
-
 // Enables the new visual style for application dialogs and controls.
 const char kEnableNewDialogStyle[] = "enable-new-dialog-style";
 

@@ -213,8 +213,6 @@ class SystemGestureEventFilterTest : public AshTestBase {
   virtual void SetUp() OVERRIDE {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kAshEnableAdvancedGestures);
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        ::switches::kEnableBezelTouch);
     test::AshTestBase::SetUp();
     // Enable brightness key.
     test::DisplayManagerTestApi(Shell::GetInstance()->display_manager()).

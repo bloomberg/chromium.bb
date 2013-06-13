@@ -6274,12 +6274,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ENABLE_BACKLOADER_DESCRIPTION" desc="Description of the enable background loader flag.">
         Enable background loader component for hosted applications.
       </message>
-      <message name="IDS_ENABLE_BEZEL_TOUCH_NAME" desc="Title of the enble bezel touch actions flag." >
-        Enable bezel touch actions
-      </message>
-      <message name="IDS_ENABLE_BEZEL_TOUCH_DESCRIPTION" desc="Description of the enable bezel touch actions flag.">
-        Enable bezel touch actions.
-      </message>
       <message name="IDS_ENABLE_SCREENSAVER_EXTENSION_NAME" desc="Title of the enble screensaver extensions flag." >
         Enable screensaver extensions.
       </message>

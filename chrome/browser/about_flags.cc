@@ -913,13 +913,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableBackgroundLoader)
   },
   {
-    "enable-bezel-touch",
-    IDS_ENABLE_BEZEL_TOUCH_NAME,
-    IDS_ENABLE_BEZEL_TOUCH_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableBezelTouch)
-  },
-  {
     "enable-screensaver-extension",
     IDS_ENABLE_SCREENSAVER_EXTENSION_NAME,
     IDS_ENABLE_SCREENSAVER_EXTENSION_DESCRIPTION,
