@@ -537,7 +537,7 @@ MediaStreamDependencyFactory::CreatePeerConnection(
             socket_factory_.get(),
             web_frame);
   return pc_factory_->CreatePeerConnection(
-                          ice_servers, constraints, pa_factory.get(), observer)
+      ice_servers, constraints, pa_factory.get(), NULL, observer)
       .get();
 }
 

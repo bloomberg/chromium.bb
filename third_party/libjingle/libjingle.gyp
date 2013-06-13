@@ -634,6 +634,8 @@
 
             '<(libjingle_source)/talk/app/webrtc/audiotrack.cc',
             '<(libjingle_source)/talk/app/webrtc/audiotrack.h',
+            '<(libjingle_source)/talk/app/webrtc/audiotrackrenderer.cc',
+            '<(libjingle_source)/talk/app/webrtc/audiotrackrenderer.h',
             '<(libjingle_source)/talk/app/webrtc/datachannel.cc',
             '<(libjingle_source)/talk/app/webrtc/datachannel.h',
             '<(libjingle_source)/talk/app/webrtc/dtmfsender.cc',
@@ -682,6 +684,7 @@
             '<(libjingle_source)/talk/app/webrtc/webrtcsdp.h',
             '<(libjingle_source)/talk/app/webrtc/webrtcsession.cc',
             '<(libjingle_source)/talk/app/webrtc/webrtcsession.h',
+            '<(libjingle_source)/talk/media/base/audiorenderer.h',
             '<(libjingle_source)/talk/media/base/capturemanager.cc',
             '<(libjingle_source)/talk/media/base/capturemanager.h',
             '<(libjingle_source)/talk/media/base/capturerenderadapter.cc',

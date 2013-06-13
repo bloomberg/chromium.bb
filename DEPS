@@ -18,7 +18,7 @@ vars = {
   "nacl_tools_revision": "11437",  # native_client/DEPS: tools_rev
   "gtm_revision": "608",
 
-  "libjingle_revision": "338",
+  "libjingle_revision": "342",
   "libphonenumber_revision": "456",
   "libvpx_revision": "197977",
   "lss_revision": "20",
