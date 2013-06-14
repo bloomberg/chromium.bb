@@ -55,7 +55,7 @@ void ChromeV8Context::Invalidate() {
   v8_context_.reset();
 }
 
-std::string ChromeV8Context::GetExtensionID() {
+std::string ChromeV8Context::GetExtensionID() const {
   return extension_.get() ? extension_->id() : std::string();
 }
 
@@ -67,7 +67,8 @@ content::RenderView* ChromeV8Context::GetRenderView() const {
 }
 
 GURL ChromeV8Context::GetURL() const {
-  return UserScriptSlave::GetDataSourceURLForFrame(web_frame_);
+  return web_frame_ ?
+      UserScriptSlave::GetDataSourceURLForFrame(web_frame_) : GURL();
 }
 
 v8::Local<v8::Value> ChromeV8Context::CallFunction(

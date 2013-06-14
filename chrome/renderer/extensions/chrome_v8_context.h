@@ -69,7 +69,7 @@ class ChromeV8Context : public RequestSender::Source {
 
   // Returns the ID of the extension associated with this context, or empty
   // string if there is no such extension.
-  std::string GetExtensionID();
+  std::string GetExtensionID() const;
 
   // Returns the RenderView associated with this context. Can return NULL if the
   // context is in the process of being destroyed.

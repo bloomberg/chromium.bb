@@ -70,15 +70,17 @@ function checkResponse(response, reply) {
   return false;
 }
 
+var sendToBrowser = domAutomationController.send.bind(domAutomationController);
+
 return {
   canConnectAndSendMessages: function(extensionId) {
     if (!chrome.runtime) {
-      reply(results.NAMESPACE_NOT_DEFINED);
+      sendToBrowser(results.NAMESPACE_NOT_DEFINED);
       return;
     }
 
     if (!chrome.runtime.sendMessage || !chrome.runtime.connect) {
-      reply(results.FUNCTION_NOT_DEFINED);
+      sendToBrowser(results.FUNCTION_NOT_DEFINED);
       return;
     }
 
@@ -107,22 +109,25 @@ return {
       });
     }
 
-    var done = domAutomationController.send.bind(domAutomationController);
     canSendMessage(function(result) {
       if (result != results.OK)
-        done(result);
+        sendToBrowser(result);
       else
-        canConnectAndSendMessages(done);
+        canConnectAndSendMessages(sendToBrowser);
     });
   },
 
-  isDefined: function(name) {
-    var result = results.OK;
-    if (!chrome.runtime)
-      result = results.NAMESPACE_NOT_DEFINED;
-    else if (!chrome.runtime[name])
-      result = results.FUNCTION_NOT_DEFINED;
-    domAutomationController.send(result);
+  areAnyRuntimePropertiesDefined: function(names) {
+    var result = false;
+    if (chrome.runtime) {
+      names.forEach(function(name) {
+        if (chrome.runtime[name]) {
+          console.log('runtime.' + name + ' is defined');
+          result = true;
+        }
+      });
+    }
+    sendToBrowser(result);
   }
 };
 

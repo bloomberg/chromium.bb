@@ -209,9 +209,13 @@ class Dispatcher : public content::RenderProcessObserver {
       const Extension* extension,
       const URLPatternSet& origins);
 
+  // Adds or removes bindings for every context belonging to |extension_id|, or
+  // or all contexts if |extension_id| is empty.
+  void AddOrRemoveBindings(const std::string& extension_id);
+
   void RegisterNativeHandlers(ModuleSystem* module_system,
                               ChromeV8Context* context);
-  void AddOrRemoveBindings(ChromeV8Context* context);
+  void AddOrRemoveBindingsForContext(ChromeV8Context* context);
   void RegisterBinding(const std::string& api_name,
                        ChromeV8Context* context);
   void DeregisterBinding(const std::string& api_name, ChromeV8Context* context);

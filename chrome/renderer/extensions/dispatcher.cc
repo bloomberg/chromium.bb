@@ -18,10 +18,12 @@
 #include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
@@ -532,6 +534,10 @@ void Dispatcher::OnLoaded(
     }
     OnLoadedInternal(extension);
   }
+  // Update the available bindings for all contexts. These may have changed if
+  // an externally_connectable extension was loaded that can connect to an
+  // open webpage.
+  AddOrRemoveBindings("");
 }
 
 void Dispatcher::OnLoadedInternal(scoped_refptr<const Extension> extension) {
@@ -555,6 +561,11 @@ void Dispatcher::OnUnloaded(const std::string& id) {
        it != removed_contexts.end(); ++it) {
     request_sender_->InvalidateSource(*it);
   }
+
+  // Update the available bindings for the remaining contexts. These may have
+  // changed if an externally_connectable extension is unloaded and a webpage
+  // is no longer accessible.
+  AddOrRemoveBindings("");
 
   // Invalidates the messages map for the extension in case the extension is
   // reloaded with a new messages map.
@@ -626,40 +637,78 @@ v8::Handle<v8::Object> Dispatcher::GetOrCreateObject(
   return new_object;
 }
 
-void Dispatcher::AddOrRemoveBindings(ChromeV8Context* context) {
+void Dispatcher::AddOrRemoveBindingsForContext(ChromeV8Context* context) {
   v8::HandleScope handle_scope;
   v8::Context::Scope context_scope(context->v8_context());
 
-  FeatureProvider* feature_provider = BaseFeatureProvider::GetByName("api");
-  const std::vector<std::string>& apis = feature_provider->GetAllFeatureNames();
-  for (std::vector<std::string>::const_iterator it = apis.begin();
-       it != apis.end(); ++it) {
-    const std::string& api_name = *it;
-    Feature* feature = feature_provider->GetFeature(api_name);
-    DCHECK(feature);
-    if (feature->IsInternal())
-      continue;
+  // TODO(kalman): Make the bindings registration have zero overhead then run
+  // the same code regardless of context type.
+  switch (context->context_type()) {
+    case Feature::UNSPECIFIED_CONTEXT:
+    case Feature::WEB_PAGE_CONTEXT: {
+      // Web page context; it's too expensive to run the full bindings code.
+      // Hard-code that the app and webstore APIs are available...
+      RegisterBinding("app", context);
+      RegisterBinding("webstore", context);
 
-    // If this API name has parent features, then this must be a function or
-    // event, so we should not register.
-    bool parent_feature_available = false;
-    for (Feature* parent_feature = feature_provider->GetParent(feature);
-         parent_feature;
-         parent_feature = feature_provider->GetParent(parent_feature)) {
-      if (context->IsAnyFeatureAvailableToContext(parent_feature->name())) {
-        parent_feature_available = true;
-        break;
+      // ... and that the runtime API might be available if any extension can
+      // connect to it.
+      bool runtime_is_available = false;
+      for (ExtensionSet::const_iterator it = extensions_.begin();
+           it != extensions_.end(); ++it) {
+        ExternallyConnectableInfo* info =
+            static_cast<ExternallyConnectableInfo*>((*it)->GetManifestData(
+                extension_manifest_keys::kExternallyConnectable));
+        if (info && info->matches.MatchesURL(context->GetURL())) {
+          runtime_is_available = true;
+          break;
+        }
       }
-    }
-    if (parent_feature_available)
-      continue;
-
-    if (!context->IsAnyFeatureAvailableToContext(api_name)) {
-      DeregisterBinding(api_name, context);
-      continue;
+      if (runtime_is_available)
+        RegisterBinding("runtime", context);
+      else
+        DeregisterBinding("runtime", context);
+      break;
     }
 
-    RegisterBinding(api_name, context);
+    case Feature::BLESSED_EXTENSION_CONTEXT:
+    case Feature::UNBLESSED_EXTENSION_CONTEXT:
+    case Feature::CONTENT_SCRIPT_CONTEXT: {
+      // Extension context; iterate through all the APIs and bind the available
+      // ones.
+      FeatureProvider* feature_provider = BaseFeatureProvider::GetByName("api");
+      const std::vector<std::string>& apis =
+          feature_provider->GetAllFeatureNames();
+      for (std::vector<std::string>::const_iterator it = apis.begin();
+          it != apis.end(); ++it) {
+        const std::string& api_name = *it;
+        Feature* feature = feature_provider->GetFeature(api_name);
+        DCHECK(feature);
+        if (feature->IsInternal())
+          continue;
+
+        // If this API name has parent features, then this must be a function or
+        // event, so we should not register.
+        bool parent_feature_available = false;
+        for (Feature* parent = feature_provider->GetParent(feature);
+             parent != NULL; parent = feature_provider->GetParent(parent)) {
+          if (context->IsAnyFeatureAvailableToContext(parent->name())) {
+            parent_feature_available = true;
+            break;
+          }
+        }
+        if (parent_feature_available)
+          continue;
+
+        if (!context->IsAnyFeatureAvailableToContext(api_name)) {
+          DeregisterBinding(api_name, context);
+          continue;
+        }
+
+        RegisterBinding(api_name, context);
+      }
+      break;
+    }
   }
 }
 
@@ -1026,25 +1075,7 @@ void Dispatcher::DidCreateScriptContext(
   if (!chrome.IsEmpty())
     module_system->SetLazyField(chrome, "Event", kEventModule, "Event");
 
-  // Loading JavaScript is expensive, so only run the full API bindings
-  // generation mechanisms in extension pages (NOT all web pages).
-  switch (context_type) {
-    case Feature::UNSPECIFIED_CONTEXT:
-    case Feature::WEB_PAGE_CONTEXT:
-      RegisterBinding("app", context);
-      RegisterBinding("runtime", context);  // for connect() and sendMessage()
-      RegisterBinding("webstore", context);
-      break;
-    case Feature::BLESSED_EXTENSION_CONTEXT:
-    case Feature::UNBLESSED_EXTENSION_CONTEXT:
-    case Feature::CONTENT_SCRIPT_CONTEXT:
-      // TODO(kalman): move this code back out of the switch and execute it
-      // regardless of |context_type|. ExtensionAPI knows how to return the
-      // correct APIs, however, until it doesn't have a 2MB overhead we can't
-      // load it in every process.
-      AddOrRemoveBindings(context);
-      break;
-  }
+  AddOrRemoveBindingsForContext(context);
 
   bool is_within_platform_app = IsWithinPlatformApp(frame);
   // Inject custom JS into the platform app context.
@@ -1221,6 +1252,14 @@ void Dispatcher::AddOrRemoveOriginPermissions(
   }
 }
 
+void Dispatcher::AddOrRemoveBindings(const std::string& extension_id) {
+  v8_context_set().ForEach(
+      extension_id,
+      NULL,  // all render views
+      base::Bind(&Dispatcher::AddOrRemoveBindingsForContext,
+                 base::Unretained(this)));
+}
+
 void Dispatcher::OnUpdatePermissions(int reason_id,
                                      const std::string& extension_id,
                                      const APIPermissionSet& apis,
@@ -1250,10 +1289,7 @@ void Dispatcher::OnUpdatePermissions(int reason_id,
 
   PermissionsData::SetActivePermissions(extension, new_active);
   AddOrRemoveOriginPermissions(reason, extension, explicit_hosts);
-  v8_context_set().ForEach(
-      extension_id,
-      NULL,
-      base::Bind(&Dispatcher::AddOrRemoveBindings, base::Unretained(this)));
+  AddOrRemoveBindings(extension->id());
 }
 
 void Dispatcher::OnUpdateTabSpecificPermissions(

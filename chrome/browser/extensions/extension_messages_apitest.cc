@@ -24,6 +24,8 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
+using extensions::Extension;
+
 namespace {
 
 class MessageSender : public content::NotificationObserver {
@@ -154,7 +156,7 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
 
   testing::AssertionResult AreAnyNonWebApisDefined() {
     // All runtime API methods are non-web except for sendRequest and connect.
-    const std::string non_messaging_apis[] = {
+    const char* non_messaging_apis[] = {
         "getBackgroundPage",
         "getManifest",
         "getURL",
@@ -174,9 +176,22 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
         "onMessageExternal",
         "id",
     };
-    return AreAnyRuntimePropertiesDefined(std::vector<std::string>(
-        non_messaging_apis,
-        non_messaging_apis + arraysize(non_messaging_apis)));
+
+    // Turn the array into a JS array, which effectively gets eval()ed.
+    std::string as_js_array;
+    for (size_t i = 0; i < arraysize(non_messaging_apis); ++i) {
+      as_js_array += as_js_array.empty() ? "[" : ",";
+      as_js_array += base::StringPrintf("'%s'", non_messaging_apis[i]);
+    }
+    as_js_array += "]";
+
+    bool any_defined;
+    CHECK(content::ExecuteScriptAndExtractBool(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        "assertions.areAnyRuntimePropertiesDefined(" + as_js_array + ")",
+        &any_defined));
+    return any_defined ?
+        testing::AssertionSuccess() : testing::AssertionFailure();
   }
 
   GURL GetURLForPath(const std::string& host, const std::string& path) {
@@ -187,93 +202,113 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
     return embedded_test_server()->GetURL(path).ReplaceComponents(replacements);
   }
 
- private:
-  testing::AssertionResult AreAnyRuntimePropertiesDefined(
-      const std::vector<std::string>& names) {
-    for (size_t i = 0; i < names.size(); ++i) {
-      if (IsRuntimePropertyDefined(names[i]) == OK)
-        return testing::AssertionSuccess() << names[i] << " is defined";
-    }
-    return testing::AssertionFailure()
-        << "none of " << names.size() << " properties are defined";
+  GURL chromium_org_url() {
+    return GetURLForPath("www.chromium.org", "/sites/chromium.org.html");
   }
 
-  Result IsRuntimePropertyDefined(const std::string& name) {
-    int result_int;
-    CHECK(content::ExecuteScriptAndExtractInt(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        "assertions.isDefined('" + name + "')",
-        &result_int));
-    return static_cast<Result>(result_int);
+  GURL google_com_url() {
+    return GetURLForPath("www.google.com", "/sites/google.com.html");
+  }
+
+  scoped_refptr<const Extension> LoadTestExtension(const std::string& name) {
+    return LoadExtension(test_data_dir_.AppendASCII(extension_dir())
+                                       .AppendASCII(name));
+  }
+
+  void InitializeTestServer() {
+    base::FilePath test_data;
+    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data));
+    embedded_test_server()->ServeFilesFromDirectory(
+        test_data.AppendASCII("extensions/api_test")
+                 .AppendASCII(extension_dir()));
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+    host_resolver()->AddRule("*", embedded_test_server()->base_url().host());
+  }
+
+ private:
+  const char* extension_dir() {
+    return "messaging/externally_connectable";
   }
 };
 
-// Flaky on Windows. http://crbug.com/248413
-#if defined(OS_WIN)
-#define MAYBE_ExternallyConnectableMessaging \
-        DISABLED_ExternallyConnectableMessaging
-#else
-#define MAYBE_ExternallyConnectableMessaging ExternallyConnectableMessaging
-#endif
+IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, NotInstalled) {
+  InitializeTestServer();
+
+  const char kFakeId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+
+  ui_test_utils::NavigateToURL(browser(), chromium_org_url());
+  EXPECT_EQ(NAMESPACE_NOT_DEFINED, CanConnectAndSendMessages(kFakeId));
+  EXPECT_FALSE(AreAnyNonWebApisDefined());
+
+  ui_test_utils::NavigateToURL(browser(), google_com_url());
+  EXPECT_EQ(NAMESPACE_NOT_DEFINED, CanConnectAndSendMessages(kFakeId));
+  EXPECT_FALSE(AreAnyNonWebApisDefined());
+}
+
+// Tests two extensions on the same sites: one web connectable, one not.
 IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
-                       MAYBE_ExternallyConnectableMessaging) {
-  const char kExtensionDir[] = "messaging/externally_connectable";
-
-  // The extension allows connections from chromium.org but not google.com.
-  const char kChromiumOrg[] = "www.chromium.org";
-  const char kGoogleCom[] = "www.google.com";
-
-  base::FilePath test_data;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data));
-  embedded_test_server()->ServeFilesFromDirectory(
-      test_data.AppendASCII("extensions/api_test").AppendASCII(kExtensionDir));
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-  host_resolver()->AddRule("*", embedded_test_server()->base_url().host());
-
-  const GURL kChromiumOrgUrl =
-      GetURLForPath(kChromiumOrg, "/sites/chromium.org.html");
-  const GURL kGoogleComUrl =
-      GetURLForPath(kGoogleCom, "/sites/google.com.html");
-
-  // When an extension isn't installed all attempts to connect to it should
-  // fail.
-  const std::string kFakeId = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-  ui_test_utils::NavigateToURL(browser(), kChromiumOrgUrl);
-  EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
-            CanConnectAndSendMessages(kFakeId));
-  EXPECT_FALSE(AreAnyNonWebApisDefined());
-
-  ui_test_utils::NavigateToURL(browser(), kGoogleComUrl);
-  EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
-            CanConnectAndSendMessages(kFakeId));
-  EXPECT_FALSE(AreAnyNonWebApisDefined());
+                       WebConnectableAndNotConnectable) {
+  InitializeTestServer();
 
   // Install the web connectable extension. chromium.org can connect to it,
   // google.com can't.
-  const extensions::Extension* web_connectable = LoadExtension(
-      test_data_dir_.AppendASCII(kExtensionDir).AppendASCII("web_connectable"));
+  scoped_refptr<const Extension> web_connectable =
+      LoadTestExtension("web_connectable");
 
-  ui_test_utils::NavigateToURL(browser(), kChromiumOrgUrl);
+  ui_test_utils::NavigateToURL(browser(), chromium_org_url());
   EXPECT_EQ(OK, CanConnectAndSendMessages(web_connectable->id()));
   EXPECT_FALSE(AreAnyNonWebApisDefined());
 
-  ui_test_utils::NavigateToURL(browser(), kGoogleComUrl);
-  EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
+  ui_test_utils::NavigateToURL(browser(), google_com_url());
+  EXPECT_EQ(NAMESPACE_NOT_DEFINED,
             CanConnectAndSendMessages(web_connectable->id()));
   EXPECT_FALSE(AreAnyNonWebApisDefined());
 
   // Install the non-connectable extension. Nothing can connect to it.
-  const extensions::Extension* not_connectable = LoadExtension(
-      test_data_dir_.AppendASCII(kExtensionDir).AppendASCII("not_connectable"));
+  scoped_refptr<const Extension> not_connectable =
+      LoadTestExtension("not_connectable");
 
-  ui_test_utils::NavigateToURL(browser(), kChromiumOrgUrl);
+  ui_test_utils::NavigateToURL(browser(), chromium_org_url());
+  // Namespace will be defined here because |web_connectable| can connect to
+  // it - so this will be the "cannot establish connection" error.
   EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
             CanConnectAndSendMessages(not_connectable->id()));
   EXPECT_FALSE(AreAnyNonWebApisDefined());
 
-  ui_test_utils::NavigateToURL(browser(), kGoogleComUrl);
-  EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
+  ui_test_utils::NavigateToURL(browser(), google_com_url());
+  EXPECT_EQ(NAMESPACE_NOT_DEFINED,
             CanConnectAndSendMessages(not_connectable->id()));
   EXPECT_FALSE(AreAnyNonWebApisDefined());
+}
+
+// Tests that enabling and disabling an extension makes the runtime bindings
+// appear and disappear.
+//
+// TODO(kalman): Test with multiple extensions that can be accessed by the same
+// host.
+IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
+                       EnablingAndDisabling) {
+  InitializeTestServer();
+
+  scoped_refptr<const Extension> web_connectable =
+      LoadTestExtension("web_connectable");
+  scoped_refptr<const Extension> not_connectable =
+      LoadTestExtension("not_connectable");
+
+  ui_test_utils::NavigateToURL(browser(), chromium_org_url());
+  EXPECT_EQ(OK, CanConnectAndSendMessages(web_connectable->id()));
+  EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
+            CanConnectAndSendMessages(not_connectable->id()));
+
+  // Unloading the extension is the same as it never existing - so the bindings
+  // will no longer exist.
+  DisableExtension(web_connectable->id());
+  EXPECT_EQ(NAMESPACE_NOT_DEFINED,
+            CanConnectAndSendMessages(web_connectable->id()));
+
+  EnableExtension(web_connectable->id());
+  EXPECT_EQ(OK, CanConnectAndSendMessages(web_connectable->id()));
+  EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
+            CanConnectAndSendMessages(not_connectable->id()));
 }
