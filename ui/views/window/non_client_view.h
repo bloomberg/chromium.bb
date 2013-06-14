@@ -145,6 +145,9 @@ class VIEWS_EXPORT NonClientView : public View {
   // Replaces the current NonClientFrameView (if any) with the specified one.
   void SetFrameView(NonClientFrameView* frame_view);
 
+  // Replaces the current |overlay_view_| (if any) with the specified one.
+  void SetOverlayView(View* view);
+
   // Returns true if the ClientView determines that the containing window can be
   // closed, false otherwise.
   bool CanClose();
@@ -232,6 +235,10 @@ class VIEWS_EXPORT NonClientView : public View {
   // This object is not owned by the view hierarchy because it can be replaced
   // dynamically as the system settings change.
   scoped_ptr<NonClientFrameView> frame_view_;
+
+  // The overlay view, when non-NULL and visible, takes up the entire widget and
+  // is placed on top of the ClientView and NonClientFrameView.
+  View* overlay_view_;
 
   // The accessible name of this view.
   string16 accessible_name_;

@@ -8,6 +8,10 @@
 
 namespace autofill {
 
+int const kSplashDisplayDurationMs = 1200;
+int const kSplashFadeOutDurationMs = 200;
+int const kSplashFadeInDialogDurationMs = 150;
+
 DialogNotification::DialogNotification() : type_(NONE) {}
 
 DialogNotification::DialogNotification(Type type, const string16& display_text)

@@ -27,12 +27,14 @@ const char NonClientView::kViewClassName[] =
 // handling mouse messages.
 static const int kFrameViewIndex = 0;
 static const int kClientViewIndex = 1;
+// The overlay view is always on top (index == child_count() - 1).
 
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientView, public:
 
 NonClientView::NonClientView()
-    : client_view_(NULL) {
+    : client_view_(NULL),
+      overlay_view_(NULL) {
 }
 
 NonClientView::~NonClientView() {
@@ -49,6 +51,18 @@ void NonClientView::SetFrameView(NonClientFrameView* frame_view) {
   frame_view_.reset(frame_view);
   if (parent())
     AddChildViewAt(frame_view_.get(), kFrameViewIndex);
+}
+
+void NonClientView::SetOverlayView(View* view) {
+  if (overlay_view_)
+    RemoveChildView(overlay_view_);
+
+  if (!view)
+    return;
+
+  overlay_view_ = view;
+  if (parent())
+    AddChildView(overlay_view_);
 }
 
 bool NonClientView::CanClose() {
@@ -147,6 +161,9 @@ void NonClientView::Layout() {
   // We need to manually call Layout on the ClientView as well for the same
   // reason as above.
   client_view_->Layout();
+
+  if (overlay_view_ && overlay_view_->visible())
+    overlay_view_->SetBoundsRect(GetLocalBounds());
 }
 
 void NonClientView::ViewHierarchyChanged(
@@ -157,6 +174,8 @@ void NonClientView::ViewHierarchyChanged(
   if (details.is_add && GetWidget() && details.child == this) {
     AddChildViewAt(frame_view_.get(), kFrameViewIndex);
     AddChildViewAt(client_view_, kClientViewIndex);
+    if (overlay_view_)
+      AddChildView(overlay_view_);
   }
 }
 

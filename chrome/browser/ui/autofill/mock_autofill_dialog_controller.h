@@ -66,6 +66,8 @@ class MockAutofillDialogController : public AutofillDialogController {
 
   virtual void FocusMoved() OVERRIDE;
 
+  virtual gfx::Image SplashPageImage() const OVERRIDE;
+
   virtual void ViewClosed() OVERRIDE;
 
   virtual std::vector<DialogNotification> CurrentNotifications() OVERRIDE;

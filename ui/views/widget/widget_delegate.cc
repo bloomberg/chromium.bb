@@ -146,6 +146,10 @@ NonClientFrameView* WidgetDelegate::CreateNonClientFrameView(Widget* widget) {
   return NULL;
 }
 
+View* WidgetDelegate::CreateOverlayView() {
+  return NULL;
+}
+
 bool WidgetDelegate::WillProcessWorkAreaChange() const {
   return false;
 }

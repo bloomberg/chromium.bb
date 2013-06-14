@@ -20,6 +20,15 @@ namespace autofill {
 
 class AutofillField;
 
+// The time (in milliseconds) to show the splash page when the dialog is first
+// started.
+extern int const kSplashDisplayDurationMs;
+// The time (in milliseconds) spend fading out the splash image.
+extern int const kSplashFadeOutDurationMs;
+// The time (in milliseconds) spend fading in the dialog (after the splash image
+// has been faded out).
+extern int const kSplashFadeInDialogDurationMs;
+
 // This struct describes a single input control for the imperative autocomplete
 // dialog.
 struct DetailInput {

@@ -23,11 +23,15 @@
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/multi_animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/path.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -124,6 +128,88 @@ void DrawArrow(gfx::Canvas* canvas, int tip_x, const SkColor& color) {
   canvas->ClipPath(arrow);
   canvas->DrawColor(color);
 }
+
+typedef ui::MultiAnimation::Part Part;
+typedef ui::MultiAnimation::Parts Parts;
+
+class OverlayView : public views::View,
+                    public ui::AnimationDelegate {
+ public:
+  OverlayView() {
+    SetLayoutManager(new views::FillLayout());
+
+    set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
+        GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
+
+    Parts parts;
+    // For this part of the animation, simply show the splash image.
+    parts.push_back(Part(kSplashDisplayDurationMs, ui::Tween::ZERO));
+    // For this part of the animation, fade out the splash image.
+    parts.push_back(Part(kSplashFadeOutDurationMs, ui::Tween::EASE_IN));
+    // For this part of the animation, fade out |this| (fade in the dialog).
+    parts.push_back(Part(kSplashFadeInDialogDurationMs, ui::Tween::EASE_OUT));
+    fade_out_.reset(
+        new ui::MultiAnimation(parts,
+                               ui::MultiAnimation::GetDefaultTimerInterval()));
+    fade_out_->set_delegate(this);
+    fade_out_->set_continuous(false);
+    fade_out_->Start();
+  }
+
+  virtual ~OverlayView() {}
+
+  // ui::AnimationDelegate implementation:
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+    DCHECK_EQ(animation, fade_out_.get());
+    if (fade_out_->current_part_index() != 0)
+      SchedulePaint();
+  }
+
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
+    DCHECK_EQ(animation, fade_out_.get());
+    SetVisible(false);
+  }
+
+  // views::View implementation:
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    // BubbleFrameView doesn't mask the window, it just draws the border via
+    // image assets. Match that rounding here.
+    static const SkScalar kCornerRadius = SkIntToScalar(2);
+    gfx::Rect rect =
+        GetWidget()->non_client_view()->frame_view()->GetLocalBounds();
+    rect.Inset(12, 12, 12, 12);
+    gfx::Path window_mask;
+    window_mask.addRoundRect(gfx::RectToSkRect(rect),
+                             kCornerRadius, kCornerRadius);
+    canvas->ClipPath(window_mask);
+
+    if (fade_out_->current_part_index() == 2) {
+      canvas->SaveLayerAlpha((1 - fade_out_->GetCurrentValue()) * 255);
+      views::View::OnPaint(canvas);
+      canvas->Restore();
+    } else {
+      views::View::OnPaint(canvas);
+    }
+  }
+
+  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE {
+    if (fade_out_->current_part_index() == 0) {
+      views::View::PaintChildren(canvas);
+    } else if (fade_out_->current_part_index() == 1) {
+      canvas->SaveLayerAlpha((1 - fade_out_->GetCurrentValue()) * 255);
+      views::View::PaintChildren(canvas);
+      canvas->Restore();
+    }
+  }
+
+ private:
+  // This MultiAnimation is used to first fade out the contents of the overlay,
+  // then fade out the background of the overlay (revealing the dialog behind
+  // the overlay). This avoids cross-fade.
+  scoped_ptr<ui::MultiAnimation> fade_out_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverlayView);
+};
 
 // This class handles layout for the first row of a SuggestionView.
 // It exists to circumvent shortcomings of GridLayout and BoxLayout (namely that
@@ -797,6 +883,7 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
       main_container_(NULL),
       scrollable_area_(NULL),
       details_container_(NULL),
+      overlay_view_(NULL),
       button_strip_extra_view_(NULL),
       save_in_chrome_checkbox_(NULL),
       autocheckout_progress_bar_view_(NULL),
@@ -1144,6 +1231,19 @@ views::View* AutofillDialogViews::CreateFootnoteView() {
   footnote_view_->SetVisible(false);
 
   return footnote_view_;
+}
+
+views::View* AutofillDialogViews::CreateOverlayView() {
+  gfx::Image splash_image = controller_->SplashPageImage();
+  if (splash_image.IsEmpty())
+    return NULL;
+
+  overlay_view_ = new OverlayView();
+  views::ImageView* image = new views::ImageView();
+  image->SetImage(splash_image.ToImageSkia());
+  overlay_view_->AddChildView(image);
+
+  return overlay_view_;
 }
 
 bool AutofillDialogViews::Cancel() {

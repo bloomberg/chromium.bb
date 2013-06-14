@@ -141,19 +141,20 @@ void MockAutofillDialogController::UserEditedOrActivatedInput(
     gfx::NativeView parent_view,
     const gfx::Rect& content_bounds,
     const string16& field_contents,
-    bool was_edit) {
-}
+    bool was_edit) {}
 
 bool MockAutofillDialogController::HandleKeyPressEventInInput(
      const content::NativeWebKeyboardEvent& event) {
   return false;
 }
 
-void MockAutofillDialogController::FocusMoved() {
+void MockAutofillDialogController::FocusMoved() {}
+
+gfx::Image MockAutofillDialogController::SplashPageImage() const {
+  return gfx::Image();
 }
 
-void MockAutofillDialogController::ViewClosed() {
-}
+void MockAutofillDialogController::ViewClosed() {}
 
 std::vector<DialogNotification> MockAutofillDialogController::
     CurrentNotifications() {

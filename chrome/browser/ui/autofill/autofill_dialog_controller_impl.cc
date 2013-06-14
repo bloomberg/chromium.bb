@@ -403,6 +403,10 @@ base::WeakPtr<AutofillDialogControllerImpl>
 // static
 void AutofillDialogControllerImpl::RegisterUserPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(
+      ::prefs::kAutofillDialogShowCount,
+      0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
       ::prefs::kAutofillDialogHasPaidWithWallet,
       false,
@@ -529,6 +533,11 @@ void AutofillDialogControllerImpl::Show() {
 
   SuggestionsUpdated();
 
+  int show_count =
+      profile_->GetPrefs()->GetInteger(::prefs::kAutofillDialogShowCount);
+  profile_->GetPrefs()->SetInteger(::prefs::kAutofillDialogShowCount,
+                                   show_count + 1);
+
   // TODO(estade): don't show the dialog if the site didn't specify the right
   // fields. First we must figure out what the "right" fields are.
   view_.reset(CreateView());
@@ -541,7 +550,7 @@ void AutofillDialogControllerImpl::Show() {
   GetWalletItems();
 
   if (!account_chooser_model_.WalletIsSelected())
-   LogDialogLatencyToShow();
+    LogDialogLatencyToShow();
 }
 
 void AutofillDialogControllerImpl::Hide() {
@@ -1498,6 +1507,19 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
 
 void AutofillDialogControllerImpl::FocusMoved() {
   HidePopup();
+}
+
+gfx::Image AutofillDialogControllerImpl::SplashPageImage() const {
+  // Only show the splash page the first few times the dialog is opened.
+  int show_count =
+      profile_->GetPrefs()->GetInteger(::prefs::kAutofillDialogShowCount);
+  if (show_count <= 4) {
+    // TODO(estade): this logo is not the right size.
+    return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        IDR_PRODUCT_LOGO);
+  }
+
+  return gfx::Image();
 }
 
 void AutofillDialogControllerImpl::ViewClosed() {
