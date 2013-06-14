@@ -54,6 +54,7 @@ class Element;
 class InspectorCSSOMWrappers;
 class InspectorFrontend;
 class InstrumentingAgents;
+class MediaList;
 class NameNodeMap;
 class Node;
 class NodeList;
@@ -72,6 +73,13 @@ class InspectorCSSAgent
     , public InspectorStyleSheet::Listener {
     WTF_MAKE_NONCOPYABLE(InspectorCSSAgent);
 public:
+    enum MediaListSource {
+        MediaListSourceLinkedSheet,
+        MediaListSourceInlineSheet,
+        MediaListSourceMediaRule,
+        MediaListSourceImportRule
+    };
+
     class InlineStyleOverrideScope {
     public:
         InlineStyleOverrideScope(SecurityContext* context)
@@ -139,6 +147,8 @@ public:
     void didMatchRule(bool);
     void willProcessRule(StyleRule*, StyleResolver*);
     void didProcessRule();
+    PassRefPtr<TypeBuilder::CSS::CSSMedia> buildMediaObject(const MediaList*, MediaListSource, const String&);
+    PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > buildMediaListChain(CSSRule*);
 
 private:
     class StyleSheetAction;

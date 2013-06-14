@@ -29,15 +29,19 @@
 #include "InspectorTypeBuilder.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSImportRule.h"
+#include "core/css/CSSMediaRule.h"
 #include "core/css/CSSParser.h"
+#include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSRule.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSStyleSheet.h"
+#include "core/css/MediaList.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StylePropertyShorthand.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheet.h"
+#include "core/css/StyleSheetContents.h"
 #include "core/css/StyleSheetList.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
@@ -1000,7 +1004,17 @@ void InspectorCSSAgent::getStyleSheet(ErrorString* errorString, const String& st
     if (!inspectorStyleSheet)
         return;
 
-    styleSheetObject = inspectorStyleSheet->buildObjectForStyleSheet();
+    Document* doc = inspectorStyleSheet->pageStyleSheet() ? inspectorStyleSheet->pageStyleSheet()->ownerDocument() : 0;
+    if (!doc || !doc->styleResolver())
+        return;
+
+    RefPtr<TypeBuilder::CSS::CSSStyleSheetBody> result = TypeBuilder::CSS::CSSStyleSheetBody::create()
+        .setStyleSheetId(styleSheetId)
+        .setRules(buildArrayForRuleList(inspectorStyleSheet->pageStyleSheet()->rules().get(), doc->styleResolver()));
+
+    bool success = inspectorStyleSheet->fillObjectForStyleSheet(result);
+    if (success)
+        styleSheetObject = result;
 }
 
 void InspectorCSSAgent::getStyleSheetText(ErrorString* errorString, const String& styleSheetId, String* result)
@@ -1083,8 +1097,10 @@ void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const RefPtr<I
     ExceptionCode ec = 0;
     bool success = m_domAgent->history()->perform(adoptPtr(new SetRuleSelectorAction(inspectorStyleSheet, compoundId, selector)), ec);
 
-    if (success)
-        result = inspectorStyleSheet->buildObjectForRule(inspectorStyleSheet->ruleForId(compoundId));
+    if (success) {
+        CSSStyleRule* rule = inspectorStyleSheet->ruleForId(compoundId);
+        result = inspectorStyleSheet->buildObjectForRule(rule, buildMediaListChain(rule));
+    }
     *errorString = InspectorDOMAgent::toErrorString(ec);
 }
 
@@ -1111,7 +1127,7 @@ void InspectorCSSAgent::addRule(ErrorString* errorString, const int contextNodeI
 
     InspectorCSSId ruleId = rawAction->newRuleId();
     CSSStyleRule* rule = inspectorStyleSheet->ruleForId(ruleId);
-    result = inspectorStyleSheet->buildObjectForRule(rule);
+    result = inspectorStyleSheet->buildObjectForRule(rule, buildMediaListChain(rule));
 }
 
 void InspectorCSSAgent::getSupportedCSSProperties(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSPropertyInfo> >& cssProperties)
@@ -1175,6 +1191,101 @@ void InspectorCSSAgent::getNamedFlowCollection(ErrorString* errorString, int doc
     result = namedFlows.release();
 }
 
+PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const MediaList* media, MediaListSource mediaListSource, const String& sourceURL)
+{
+    // Make certain compilers happy by initializing |source| up-front.
+    TypeBuilder::CSS::CSSMedia::Source::Enum source = TypeBuilder::CSS::CSSMedia::Source::InlineSheet;
+    switch (mediaListSource) {
+    case MediaListSourceMediaRule:
+        source = TypeBuilder::CSS::CSSMedia::Source::MediaRule;
+        break;
+    case MediaListSourceImportRule:
+        source = TypeBuilder::CSS::CSSMedia::Source::ImportRule;
+        break;
+    case MediaListSourceLinkedSheet:
+        source = TypeBuilder::CSS::CSSMedia::Source::LinkedSheet;
+        break;
+    case MediaListSourceInlineSheet:
+        source = TypeBuilder::CSS::CSSMedia::Source::InlineSheet;
+        break;
+    }
+
+    RefPtr<TypeBuilder::CSS::CSSMedia> mediaObject = TypeBuilder::CSS::CSSMedia::create()
+        .setText(media->mediaText())
+        .setSource(source);
+
+    if (!sourceURL.isEmpty()) {
+        mediaObject->setSourceURL(sourceURL);
+        mediaObject->setSourceLine(media->queries()->lastLine());
+    }
+    return mediaObject.release();
+}
+
+PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > InspectorCSSAgent::buildMediaListChain(CSSRule* rule)
+{
+    if (!rule)
+        return 0;
+    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > mediaArray = TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>::create();
+    bool hasItems = false;
+    MediaList* mediaList;
+    CSSRule* parentRule = rule;
+    String sourceURL;
+    while (parentRule) {
+        CSSStyleSheet* parentStyleSheet = 0;
+        bool isMediaRule = true;
+        if (parentRule->type() == CSSRule::MEDIA_RULE) {
+            CSSMediaRule* mediaRule = static_cast<CSSMediaRule*>(parentRule);
+            mediaList = mediaRule->media();
+            parentStyleSheet = mediaRule->parentStyleSheet();
+        } else if (parentRule->type() == CSSRule::IMPORT_RULE) {
+            CSSImportRule* importRule = static_cast<CSSImportRule*>(parentRule);
+            mediaList = importRule->media();
+            parentStyleSheet = importRule->parentStyleSheet();
+            isMediaRule = false;
+        } else {
+            mediaList = 0;
+        }
+
+        if (parentStyleSheet) {
+            sourceURL = parentStyleSheet->contents()->baseURL();
+            if (sourceURL.isEmpty())
+                sourceURL = InspectorDOMAgent::documentURLString(parentStyleSheet->ownerDocument());
+        } else {
+            sourceURL = "";
+        }
+
+        if (mediaList && mediaList->length()) {
+            mediaArray->addItem(buildMediaObject(mediaList, isMediaRule ? MediaListSourceMediaRule : MediaListSourceImportRule, sourceURL));
+            hasItems = true;
+        }
+
+        if (parentRule->parentRule()) {
+            parentRule = parentRule->parentRule();
+        } else {
+            CSSStyleSheet* styleSheet = parentRule->parentStyleSheet();
+            while (styleSheet) {
+                mediaList = styleSheet->media();
+                if (mediaList && mediaList->length()) {
+                    Document* doc = styleSheet->ownerDocument();
+                    if (doc)
+                        sourceURL = doc->url();
+                    else if (!styleSheet->contents()->baseURL().isEmpty())
+                        sourceURL = styleSheet->contents()->baseURL();
+                    else
+                        sourceURL = "";
+                    mediaArray->addItem(buildMediaObject(mediaList, styleSheet->ownerNode() ? MediaListSourceLinkedSheet : MediaListSourceInlineSheet, sourceURL));
+                    hasItems = true;
+                }
+                parentRule = styleSheet->ownerRule();
+                if (parentRule)
+                    break;
+                styleSheet = styleSheet->parentStyleSheet();
+            }
+        }
+    }
+    return hasItems ? mediaArray : 0;
+}
+
 void InspectorCSSAgent::startSelectorProfiler(ErrorString*)
 {
     m_currentSelectorProfile = adoptPtr(new SelectorProfile());
@@ -1200,7 +1311,6 @@ PassRefPtr<TypeBuilder::CSS::SelectorProfile> InspectorCSSAgent::stopSelectorPro
 
 void InspectorCSSAgent::willMatchRule(StyleRule* rule, InspectorCSSOMWrappers& inspectorCSSOMWrappers, DocumentStyleSheetCollection* styleSheetCollection)
 {
-//    printf("InspectorCSSAgent::willMatchRule %s\n", rule->selectorList().selectorsText().utf8().data());
     if (m_currentSelectorProfile)
         m_currentSelectorProfile->startSelector(inspectorCSSOMWrappers.getWrapperForRuleInSheets(rule, styleSheetCollection));
 }
@@ -1232,7 +1342,7 @@ InspectorStyleSheetForInlineStyle* InspectorCSSAgent::asInspectorStyleSheet(Elem
             return 0;
 
         String newStyleSheetId = String::number(m_lastStyleSheetId++);
-        RefPtr<InspectorStyleSheetForInlineStyle> inspectorStyleSheet = InspectorStyleSheetForInlineStyle::create(m_domAgent->pageAgent(), newStyleSheetId, element, TypeBuilder::CSS::StyleSheetOrigin::Regular, this);
+        RefPtr<InspectorStyleSheetForInlineStyle> inspectorStyleSheet = InspectorStyleSheetForInlineStyle::create(m_pageAgent, newStyleSheetId, element, TypeBuilder::CSS::StyleSheetOrigin::Regular, this);
         m_idToInspectorStyleSheet.set(newStyleSheetId, inspectorStyleSheet);
         m_nodeToInspectorStyleSheet.set(element, inspectorStyleSheet);
         return inspectorStyleSheet.get();
@@ -1297,7 +1407,7 @@ InspectorStyleSheet* InspectorCSSAgent::bindStyleSheet(CSSStyleSheet* styleSheet
     if (!inspectorStyleSheet) {
         String id = String::number(m_lastStyleSheetId++);
         Document* document = styleSheet->ownerDocument();
-        inspectorStyleSheet = InspectorStyleSheet::create(m_domAgent->pageAgent(), id, styleSheet, detectOrigin(styleSheet, document), InspectorDOMAgent::documentURLString(document), this);
+        inspectorStyleSheet = InspectorStyleSheet::create(m_pageAgent, id, styleSheet, detectOrigin(styleSheet, document), InspectorDOMAgent::documentURLString(document), this);
         m_idToInspectorStyleSheet.set(id, inspectorStyleSheet);
         m_cssStyleSheetToInspectorStyleSheet.set(styleSheet, inspectorStyleSheet);
         if (m_creatingViaInspectorStyleSheet)
@@ -1397,7 +1507,7 @@ PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorCSSAgent::buildObjectForRule(CSSS
         if (!rule)
             return 0;
     }
-    return bindStyleSheet(rule->parentStyleSheet())->buildObjectForRule(rule);
+    return bindStyleSheet(rule->parentStyleSheet())->buildObjectForRule(rule, buildMediaListChain(rule));
 }
 
 PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSRule> > InspectorCSSAgent::buildArrayForRuleList(CSSRuleList* ruleList, StyleResolver* styleResolver)
@@ -1406,13 +1516,13 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSRule> > InspectorCSSAgent::bu
     if (!ruleList)
         return result.release();
 
-    for (unsigned i = 0, size = ruleList->length(); i < size; ++i) {
-        CSSStyleRule* rule = asCSSStyleRule(ruleList->item(i));
-        RefPtr<TypeBuilder::CSS::CSSRule> ruleObject = buildObjectForRule(rule, styleResolver);
-        if (!ruleObject)
-            continue;
-        result->addItem(ruleObject);
-    }
+    RefPtr<CSSRuleList> refRuleList = ruleList;
+    CSSStyleRuleVector rules;
+    InspectorStyleSheet::collectFlatRules(refRuleList, &rules);
+
+    for (unsigned i = 0, size = rules.size(); i < size; ++i)
+        result->addItem(buildObjectForRule(rules.at(i).get(), styleResolver));
+
     return result.release();
 }
 
