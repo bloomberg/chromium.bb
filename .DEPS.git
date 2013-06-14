@@ -185,40 +185,6 @@ deps_os = {
             None,
         'src/chrome/test/data/perf/frame_rate/content':
             None,
-        'src/content/test/data/layout_tests/LayoutTests/editing/pasteboard/resources':
-            None,
-        'src/content/test/data/layout_tests/LayoutTests/fast/events':
-            None,
-        'src/content/test/data/layout_tests/LayoutTests/fast/filesystem_temp':
-            None,
-        'src/content/test/data/layout_tests/LayoutTests/fast/js/resources':
-            None,
-        'src/content/test/data/layout_tests/LayoutTests/fast/workers':
-            None,
-        'src/content/test/data/layout_tests/LayoutTests/http/tests/appcache':
-            None,
-        'src/content/test/data/layout_tests/LayoutTests/http/tests/resources':
-            None,
-        'src/content/test/data/layout_tests/LayoutTests/http/tests/websocket/tests':
-            None,
-        'src/content/test/data/layout_tests/LayoutTests/http/tests/workers':
-            None,
-        'src/content/test/data/layout_tests/LayoutTests/http/tests/xmlhttprequest':
-            None,
-        'src/content/test/data/layout_tests/LayoutTests/media':
-            None,
-        'src/content/test/data/layout_tests/LayoutTests/platform/chromium-win/fast/events':
-            None,
-        'src/content/test/data/layout_tests/LayoutTests/platform/chromium-win/fast/workers':
-            None,
-        'src/content/test/data/layout_tests/LayoutTests/platform/chromium-win/http/tests/workers':
-            None,
-        'src/content/test/data/layout_tests/LayoutTests/platform/chromium-win/storage/domstorage':
-            None,
-        'src/content/test/data/layout_tests/LayoutTests/storage/domstorage':
-            None,
-        'src/content/test/data/layout_tests/LayoutTests/storage/indexeddb':
-            None,
         'src/native_client':
             None,
         'src/native_client/src/third_party/ppapi':
