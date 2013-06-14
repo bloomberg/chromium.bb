@@ -181,7 +181,8 @@ struct ping_timer {
 };
 
 struct shell_surface {
-	struct wl_resource resource;
+	struct wl_resource *resource;
+	struct wl_signal destroy_signal;
 
 	struct weston_surface *surface;
 	struct wl_listener surface_destroy_listener;
@@ -327,7 +328,7 @@ shell_grab_start(struct shell_grab *grab,
 	grab->grab.interface = interface;
 	grab->shsurf = shsurf;
 	grab->shsurf_destroy_listener.notify = destroy_shell_grab_shsurf;
-	wl_signal_add(&shsurf->resource.destroy_signal,
+	wl_signal_add(&shsurf->destroy_signal,
 		      &grab->shsurf_destroy_listener);
 
 	grab->pointer = pointer;
@@ -521,8 +522,7 @@ replace_focus_state(struct desktop_shell *shell, struct workspace *ws,
 	wl_list_for_each(state, &ws->focus_list, link) {
 		if (state->seat == seat) {
 			surface = seat->keyboard->focus;
-			state->keyboard_focus =
-				(struct weston_surface *) surface;
+			state->keyboard_focus = surface;
 			return;
 		}
 	}
@@ -672,12 +672,15 @@ workspace_translate_in(struct workspace *ws, double fraction)
 static void
 broadcast_current_workspace_state(struct desktop_shell *shell)
 {
-	struct wl_resource *resource;
+	struct wl_list *link;
 
-	wl_list_for_each(resource, &shell->workspaces.client_list, link)
-		workspace_manager_send_state(resource,
+	for (link = shell->workspaces.client_list.next;
+	     link != &shell->workspaces.client_list;
+	     link = link->next) {
+		workspace_manager_send_state(wl_resource_from_link(link),
 					     shell->workspaces.current,
 					     shell->workspaces.num);
+	}
 }
 
 static void
@@ -983,7 +986,7 @@ workspace_manager_move_surface(struct wl_client *client,
 			       struct wl_resource *surface_resource,
 			       uint32_t workspace)
 {
-	struct desktop_shell *shell = resource->data;
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 	struct weston_surface *surface =
 		wl_resource_get_user_data(surface_resource);
 	struct weston_surface *main_surface;
@@ -999,7 +1002,7 @@ static const struct workspace_manager_interface workspace_manager_implementation
 static void
 unbind_resource(struct wl_resource *resource)
 {
-	wl_list_remove(&resource->link);
+	wl_list_remove(wl_resource_get_link(resource));
 	free(resource);
 }
 
@@ -1019,8 +1022,9 @@ bind_workspace_manager(struct wl_client *client,
 		return;
 	}
 
-	resource->destroy = unbind_resource;
-	wl_list_insert(&shell->workspaces.client_list, &resource->link);
+	wl_resource_set_destructor(resource, unbind_resource);
+	wl_list_insert(&shell->workspaces.client_list,
+		       wl_resource_get_link(resource));
 
 	workspace_manager_send_state(resource,
 				     shell->workspaces.current,
@@ -1106,7 +1110,7 @@ shell_surface_move(struct wl_client *client, struct wl_resource *resource,
 		   struct wl_resource *seat_resource, uint32_t serial)
 {
 	struct weston_seat *seat = seat_resource->data;
-	struct shell_surface *shsurf = resource->data;
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 	struct weston_surface *surface;
 
 	surface = weston_surface_get_main_surface(seat->pointer->focus);
@@ -1168,7 +1172,7 @@ send_configure(struct weston_surface *surface,
 {
 	struct shell_surface *shsurf = get_shell_surface(surface);
 
-	wl_shell_surface_send_configure(&shsurf->resource,
+	wl_shell_surface_send_configure(shsurf->resource,
 					edges, width, height);
 }
 
@@ -1266,7 +1270,7 @@ shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
 		     uint32_t edges)
 {
 	struct weston_seat *seat = seat_resource->data;
-	struct shell_surface *shsurf = resource->data;
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 	struct weston_surface *surface;
 
 	if (shsurf->type == SHELL_SURFACE_FULLSCREEN)
@@ -1391,7 +1395,7 @@ ping_handler(struct weston_surface *surface, uint32_t serial)
 
 	if (!shsurf)
 		return;
-	if (!shsurf->resource.client)
+	if (!shsurf->resource)
 		return;
 
 	if (shsurf->surface == shsurf->shell->grab_surface)
@@ -1408,7 +1412,7 @@ ping_handler(struct weston_surface *surface, uint32_t serial)
 			wl_event_loop_add_timer(loop, ping_timeout_handler, shsurf);
 		wl_event_source_timer_update(shsurf->ping_timer->source, ping_timeout);
 
-		wl_shell_surface_send_ping(&shsurf->resource, serial);
+		wl_shell_surface_send_ping(shsurf->resource, serial);
 	}
 }
 
@@ -1416,8 +1420,7 @@ static void
 handle_pointer_focus(struct wl_listener *listener, void *data)
 {
 	struct weston_pointer *pointer = data;
-	struct weston_surface *surface =
-		(struct weston_surface *) pointer->focus;
+	struct weston_surface *surface = pointer->focus;
 	struct weston_compositor *compositor;
 	struct shell_surface *shsurf;
 	uint32_t serial;
@@ -1453,7 +1456,7 @@ static void
 shell_surface_pong(struct wl_client *client, struct wl_resource *resource,
 							uint32_t serial)
 {
-	struct shell_surface *shsurf = resource->data;
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 	struct weston_seat *seat;
 	struct weston_compositor *ec = shsurf->surface->compositor;
 
@@ -1475,7 +1478,7 @@ static void
 shell_surface_set_title(struct wl_client *client,
 			struct wl_resource *resource, const char *title)
 {
-	struct shell_surface *shsurf = resource->data;
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 
 	free(shsurf->title);
 	shsurf->title = strdup(title);
@@ -1485,7 +1488,7 @@ static void
 shell_surface_set_class(struct wl_client *client,
 			struct wl_resource *resource, const char *class)
 {
-	struct shell_surface *shsurf = resource->data;
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 
 	free(shsurf->class);
 	shsurf->class = strdup(class);
@@ -1644,7 +1647,7 @@ static void
 shell_surface_set_toplevel(struct wl_client *client,
 			   struct wl_resource *resource)
 {
-	struct shell_surface *surface = resource->data;
+	struct shell_surface *surface = wl_resource_get_user_data(resource);
 
 	set_toplevel(surface);
 }
@@ -1667,7 +1670,7 @@ shell_surface_set_transient(struct wl_client *client,
 			    struct wl_resource *parent_resource,
 			    int x, int y, uint32_t flags)
 {
-	struct shell_surface *shsurf = resource->data;
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 	struct weston_surface *parent =
 		wl_resource_get_user_data(parent_resource);
 
@@ -1705,7 +1708,7 @@ shell_surface_set_maximized(struct wl_client *client,
 			    struct wl_resource *resource,
 			    struct wl_resource *output_resource )
 {
-	struct shell_surface *shsurf = resource->data;
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 	struct weston_surface *es = shsurf->surface;
 	struct desktop_shell *shell = NULL;
 	uint32_t edges = 0, panel_height = 0;
@@ -1922,7 +1925,7 @@ shell_surface_set_fullscreen(struct wl_client *client,
 			     uint32_t framerate,
 			     struct wl_resource *output_resource)
 {
-	struct shell_surface *shsurf = resource->data;
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 	struct weston_output *output;
 
 	if (output_resource)
@@ -2055,7 +2058,7 @@ popup_grab_button(struct weston_pointer_grab *grab,
 
 	resource = grab->pointer->focus_resource;
 	if (resource) {
-		display = wl_client_get_display(resource->client);
+		display = wl_client_get_display(wl_resource_get_client(resource));
 		serial = wl_display_get_serial(display);
 		wl_pointer_send_button(resource, serial, time, button, state);
 	} else if (state == WL_POINTER_BUTTON_STATE_RELEASED &&
@@ -2090,7 +2093,7 @@ popup_grab_end(struct weston_pointer *pointer)
 		assert(!wl_list_empty(&shseat->popup_grab.surfaces_list));
 		/* Send the popup_done event to all the popups open */
 		wl_list_for_each(shsurf, &shseat->popup_grab.surfaces_list, popup.grab_link) {
-			wl_shell_surface_send_popup_done(&shsurf->resource);
+			wl_shell_surface_send_popup_done(shsurf->resource);
 			shsurf->popup.shseat = NULL;
 			if (prev) {
 				wl_list_init(&prev->popup.grab_link);
@@ -2108,7 +2111,7 @@ add_popup_grab(struct shell_surface *shsurf, struct shell_seat *shseat)
 	struct weston_seat *seat = shseat->seat;
 
 	if (wl_list_empty(&shseat->popup_grab.surfaces_list)) {
-		shseat->popup_grab.client = shsurf->resource.client;
+		shseat->popup_grab.client = wl_resource_get_client(shsurf->resource);
 		shseat->popup_grab.grab.interface = &popup_grab_interface;
 		/* We must make sure here that this popup was opened after
 		 * a mouse press, and not just by moving around with other
@@ -2150,7 +2153,7 @@ shell_map_popup(struct shell_surface *shsurf)
 	if (shseat->seat->pointer->grab_serial == shsurf->popup.serial) {
 		add_popup_grab(shsurf, shseat);
 	} else {
-		wl_shell_surface_send_popup_done(&shsurf->resource);
+		wl_shell_surface_send_popup_done(shsurf->resource);
 		shseat->popup_grab.client = NULL;
 	}
 }
@@ -2163,10 +2166,10 @@ shell_surface_set_popup(struct wl_client *client,
 			struct wl_resource *parent_resource,
 			int32_t x, int32_t y, uint32_t flags)
 {
-	struct shell_surface *shsurf = resource->data;
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 
 	shsurf->type = SHELL_SURFACE_POPUP;
-	shsurf->parent = parent_resource->data;
+	shsurf->parent = wl_resource_get_user_data(parent_resource);
 	shsurf->popup.shseat = get_shell_seat(seat_resource->data);
 	shsurf->popup.serial = serial;
 	shsurf->popup.x = x;
@@ -2189,6 +2192,8 @@ static const struct wl_shell_surface_interface shell_surface_implementation = {
 static void
 destroy_shell_surface(struct shell_surface *shsurf)
 {
+	wl_signal_emit(&shsurf->destroy_signal, shsurf);
+
 	if (!wl_list_empty(&shsurf->popup.grab_link)) {
 		remove_popup_grab(shsurf);
 	}
@@ -2215,7 +2220,7 @@ destroy_shell_surface(struct shell_surface *shsurf)
 static void
 shell_destroy_shell_surface(struct wl_resource *resource)
 {
-	struct shell_surface *shsurf = resource->data;
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 
 	destroy_shell_surface(shsurf);
 }
@@ -2227,13 +2232,10 @@ shell_handle_surface_destroy(struct wl_listener *listener, void *data)
 						    struct shell_surface,
 						    surface_destroy_listener);
 
-	if (shsurf->resource.client) {
-		wl_resource_destroy(&shsurf->resource);
-	} else {
-		wl_signal_emit(&shsurf->resource.destroy_signal,
-			       &shsurf->resource);
+	if (shsurf->resource)
+		wl_resource_destroy(shsurf->resource);
+	else
 		destroy_shell_surface(shsurf);
-	}
 }
 
 static void
@@ -2279,7 +2281,7 @@ create_shell_surface(void *shell, struct weston_surface *surface,
 	shsurf->ping_timer = NULL;
 	wl_list_init(&shsurf->fullscreen.transform.link);
 
-	wl_signal_init(&shsurf->resource.destroy_signal);
+	wl_signal_init(&shsurf->destroy_signal);
 	shsurf->surface_destroy_listener.notify = shell_handle_surface_destroy;
 	wl_signal_add(&surface->destroy_signal,
 		      &shsurf->surface_destroy_listener);
@@ -2310,7 +2312,7 @@ shell_get_shell_surface(struct wl_client *client,
 {
 	struct weston_surface *surface =
 		wl_resource_get_user_data(surface_resource);
-	struct desktop_shell *shell = resource->data;
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 	struct shell_surface *shsurf;
 
 	if (get_shell_surface(surface)) {
@@ -2328,14 +2330,12 @@ shell_get_shell_surface(struct wl_client *client,
 		return;
 	}
 
-	shsurf->resource.destroy = shell_destroy_shell_surface;
-	shsurf->resource.object.id = id;
-	shsurf->resource.object.interface = &wl_shell_surface_interface;
-	shsurf->resource.object.implementation =
-		(void (**)(void)) &shell_surface_implementation;
-	shsurf->resource.data = shsurf;
-
-	wl_client_add_resource(client, &shsurf->resource);
+	shsurf->resource = wl_client_add_object(client,
+						&wl_shell_surface_interface,
+						&shell_surface_implementation,
+						id, shsurf);
+	wl_resource_set_destructor(shsurf->resource,
+				   shell_destroy_shell_surface);
 }
 
 static const struct wl_shell_interface shell_implementation = {
@@ -2435,7 +2435,7 @@ desktop_shell_set_background(struct wl_client *client,
 			     struct wl_resource *output_resource,
 			     struct wl_resource *surface_resource)
 {
-	struct desktop_shell *shell = resource->data;
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 	struct weston_surface *surface =
 		wl_resource_get_user_data(surface_resource);
 
@@ -2469,7 +2469,7 @@ desktop_shell_set_panel(struct wl_client *client,
 			struct wl_resource *output_resource,
 			struct wl_resource *surface_resource)
 {
-	struct desktop_shell *shell = resource->data;
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 	struct weston_surface *surface =
 		wl_resource_get_user_data(surface_resource);
 
@@ -2524,7 +2524,7 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 			       struct wl_resource *resource,
 			       struct wl_resource *surface_resource)
 {
-	struct desktop_shell *shell = resource->data;
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 	struct weston_surface *surface =
 		wl_resource_get_user_data(surface_resource);
 
@@ -2536,7 +2536,7 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 	shell->lock_surface = surface;
 
 	shell->lock_surface_listener.notify = handle_lock_surface_destroy;
-	wl_signal_add(&surface_resource->destroy_signal,
+	wl_signal_add(&surface->destroy_signal,
 		      &shell->lock_surface_listener);
 
 	surface->configure = lock_surface_configure;
@@ -2575,7 +2575,7 @@ static void
 desktop_shell_unlock(struct wl_client *client,
 		     struct wl_resource *resource)
 {
-	struct desktop_shell *shell = resource->data;
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 
 	shell->prepare_event_sent = false;
 
@@ -2588,7 +2588,7 @@ desktop_shell_set_grab_surface(struct wl_client *client,
 			       struct wl_resource *resource,
 			       struct wl_resource *surface_resource)
 {
-	struct desktop_shell *shell = resource->data;
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 
 	shell->grab_surface = wl_resource_get_user_data(surface_resource);
 }
@@ -2597,7 +2597,7 @@ static void
 desktop_shell_desktop_ready(struct wl_client *client,
 			    struct wl_resource *resource)
 {
-	struct desktop_shell *shell = resource->data;
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 
 	shell_fade_startup(shell);
 }
@@ -3605,7 +3605,7 @@ bind_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 static void
 unbind_desktop_shell(struct wl_resource *resource)
 {
-	struct desktop_shell *shell = resource->data;
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 
 	if (shell->locked)
 		resume_desktop(shell);
@@ -3627,7 +3627,7 @@ bind_desktop_shell(struct wl_client *client,
 					id, shell);
 
 	if (client == shell->child.client) {
-		resource->destroy = unbind_desktop_shell;
+		wl_resource_set_destructor(resource, unbind_desktop_shell);
 		shell->child.desktop_shell = resource;
 
 		if (version < 2)
@@ -3671,7 +3671,7 @@ screensaver_set_surface(struct wl_client *client,
 			struct wl_resource *surface_resource,
 			struct wl_resource *output_resource)
 {
-	struct desktop_shell *shell = resource->data;
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 	struct weston_surface *surface =
 		wl_resource_get_user_data(surface_resource);
 	struct weston_output *output = output_resource->data;
@@ -3688,7 +3688,7 @@ static const struct screensaver_interface screensaver_implementation = {
 static void
 unbind_screensaver(struct wl_resource *resource)
 {
-	struct desktop_shell *shell = resource->data;
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 
 	shell->screensaver.binding = NULL;
 	free(resource);
@@ -3706,7 +3706,7 @@ bind_screensaver(struct wl_client *client,
 					id, shell);
 
 	if (shell->screensaver.binding == NULL) {
-		resource->destroy = unbind_screensaver;
+		wl_resource_set_destructor(resource, unbind_screensaver);
 		shell->screensaver.binding = resource;
 		return;
 	}
@@ -3873,7 +3873,7 @@ input_panel_get_input_panel_surface(struct wl_client *client,
 {
 	struct weston_surface *surface =
 		wl_resource_get_user_data(surface_resource);
-	struct desktop_shell *shell = resource->data;
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 	struct input_panel_surface *ipsurf;
 
 	if (get_input_panel_surface(surface)) {
@@ -3908,7 +3908,7 @@ static const struct wl_input_panel_interface input_panel_implementation = {
 static void
 unbind_input_panel(struct wl_resource *resource)
 {
-	struct desktop_shell *shell = resource->data;
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 
 	shell->input_panel.binding = NULL;
 	free(resource);
@@ -4175,7 +4175,7 @@ debug_binding_key(struct weston_keyboard_grab *grab, uint32_t time,
 		resource = grab->keyboard->focus_resource;
 
 		if (resource) {
-			display = wl_client_get_display(resource->client);
+			display = wl_client_get_display(wl_resource_get_client(resource));
 			serial = wl_display_next_serial(display);
 			wl_keyboard_send_key(resource, serial, time, key, state);
 		}
