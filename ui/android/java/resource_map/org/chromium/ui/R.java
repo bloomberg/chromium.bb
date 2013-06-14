@@ -21,7 +21,7 @@ public final class R {
         public static int color_picker_button_more;
         public static int color_picker_hue;
         public static int color_picker_saturation;
-        public static int color_picker_lightness;
+        public static int color_picker_value;
         public static int color_picker_button_set;
         public static int color_picker_button_cancel;
         public static int color_picker_dialog_title;
