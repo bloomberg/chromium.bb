@@ -16,7 +16,8 @@
 
 #define STUB(sym) \
   void sym() { \
-    char msg[] = "Aborting: " #sym " called\n"; \
+    char msg[] = "Aborting: " #sym " called " \
+                 "(C++ exception handling is disabled)\n"; \
     write(2, msg, sizeof(msg) - 1); \
     abort(); \
   }
