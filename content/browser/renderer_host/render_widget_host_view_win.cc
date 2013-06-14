@@ -1963,9 +1963,15 @@ LRESULT RenderWidgetHostViewWin::OnWheelEvent(UINT message, WPARAM wparam,
   }
 
   if (render_widget_host_) {
-    render_widget_host_->ForwardWheelEvent(
-        WebInputEventFactory::mouseWheelEvent(m_hWnd, message, wparam,
-                                              lparam));
+    WebKit::WebMouseWheelEvent wheel_event =
+        WebInputEventFactory::mouseWheelEvent(m_hWnd, message, wparam, lparam);
+    float scale = ui::win::GetDeviceScaleFactor();
+    wheel_event.x /= scale;
+    wheel_event.y /= scale;
+    wheel_event.deltaX /= scale;
+    wheel_event.deltaY /= scale;
+
+    render_widget_host_->ForwardWheelEvent(wheel_event);
   }
   handled = TRUE;
   return 0;
@@ -2132,9 +2138,11 @@ bool WebTouchState::UpdateTouchPoint(
   if (touch_input->dwMask & TOUCHINPUTMASKF_CONTACTAREA) {
     // Some touch drivers send a contact area of "-1", yet flag it as valid.
     radius_x = std::max(1,
-        static_cast<int>(TOUCH_COORD_TO_PIXEL(touch_input->cxContact)));
+        static_cast<int>(TOUCH_COORD_TO_PIXEL(touch_input->cxContact) /
+                         ui::win::GetUndocumentedDPIScale()));
     radius_y = std::max(1,
-        static_cast<int>(TOUCH_COORD_TO_PIXEL(touch_input->cyContact)));
+        static_cast<int>(TOUCH_COORD_TO_PIXEL(touch_input->cyContact) /
+                         ui::win::GetUndocumentedDPIScale()));
   }
 
   // Detect and exclude stationary moves.
@@ -2150,8 +2158,9 @@ bool WebTouchState::UpdateTouchPoint(
   touch_point->screenPosition.x = coordinates.x;
   touch_point->screenPosition.y = coordinates.y;
   window_->ScreenToClient(&coordinates);
-  touch_point->position.x = coordinates.x;
-  touch_point->position.y = coordinates.y;
+  static float scale = ui::win::GetDeviceScaleFactor();
+  touch_point->position.x = coordinates.x / scale;
+  touch_point->position.y = coordinates.y / scale;
   touch_point->radiusX = radius_x;
   touch_point->radiusY = radius_y;
   touch_point->force = 0;
@@ -2849,7 +2858,7 @@ void RenderWidgetHostViewWin::ForwardMouseEventToRenderer(UINT message,
   gfx::Point point = ui::win::ScreenToDIPPoint(
       gfx::Point(static_cast<short>(LOWORD(lparam)),
                  static_cast<short>(HIWORD(lparam))));
-  lparam = (point.y() << 16) + point.x();
+  lparam = MAKELPARAM(point.x(), point.y());
 
   WebMouseEvent event(
       WebInputEventFactory::mouseEvent(m_hWnd, message, wparam, lparam));
