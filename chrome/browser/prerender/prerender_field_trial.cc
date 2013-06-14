@@ -9,6 +9,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -26,17 +27,22 @@ namespace {
 const char kOmniboxTrialName[] = "PrerenderFromOmnibox";
 int g_omnibox_trial_default_group_number = kint32min;
 
+const char kDisabledGroup[] = "Disabled";
+const char kEnabledGroup[] = "Enabled";
+
 const char kLocalPredictorTrialName[] = "PrerenderLocalPredictor";
-const char kLocalPredictorEnabledGroup[] = "Enabled";
-const char kLocalPredictorDisabledGroup[] = "Disabled";
-
-const char kLoggedInPredictorTrialName[] = "PrerenderLoggedInPredictor";
-const char kLoggedInPredictorEnabledGroup[] = "Enabled";
-const char kLoggedInPredictorDisabledGroup[] = "Disabled";
-
-const char kSideEffectFreeWhitelistTrialName[] = "SideEffectFreeWhitelist";
-const char kSideEffectFreeWhitelistEnabledGroup[] = "Enabled";
-const char kSideEffectFreeWhitelistDisabledGroup[] = "Disabled";
+const char kSideEffectFreeWhitelistTrialName[] =
+    "PrerenderSideEffectFreeWhitelist";
+const char kLocalPredictorPrerenderLaunchTrialName[] =
+    "PrerenderLocalPredictorPrerenderLanch";
+const char kLocalPredictorPrerenderAlwaysControlTrialName[] =
+    "PrerenderLocalPredictorPrerenderAlwaysControl";
+const char kLocalPredictorPrerenderTTLTrialName[] =
+    "PrerenderLocalPredictorPrerenderTTLSeconds";
+const char kLocalPredictorPrerenderPriorityHalfLifeTimeTrialName[] =
+    "PrerenderLocalPredictorPrerenderPriorityHalfLifeTimeSeconds";
+const char kLocalPredictorMaxConcurrentPrerenderTrialName[] =
+    "PrerenderLocalPredictorMaxConcurrentPrerenders";
 
 void SetupPrefetchFieldTrial() {
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
@@ -151,8 +157,6 @@ void SetupPrerenderFieldTrial() {
 
 void ConfigureOmniboxPrerender();
 void ConfigureLocalPredictor();
-void ConfigureLoggedInPredictor();
-void ConfigureSideEffectFreeWhitelist();
 
 void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
   enum PrerenderOption {
@@ -210,8 +214,6 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
 
   ConfigureOmniboxPrerender();
   ConfigureLocalPredictor();
-  ConfigureLoggedInPredictor();
-  ConfigureSideEffectFreeWhitelist();
 }
 
 void ConfigureOmniboxPrerender() {
@@ -240,36 +242,8 @@ void ConfigureLocalPredictor() {
   }
   scoped_refptr<FieldTrial> local_predictor_trial(
       FieldTrialList::FactoryGetFieldTrial(
-          kLocalPredictorTrialName, 100,
-          kLocalPredictorDisabledGroup, 2013, 12, 31, NULL));
-  local_predictor_trial->AppendGroup(kLocalPredictorEnabledGroup, 100);
-}
-
-void ConfigureLoggedInPredictor() {
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
-      channel == chrome::VersionInfo::CHANNEL_BETA) {
-    return;
-  }
-  scoped_refptr<FieldTrial> logged_in_predictor_trial(
-      FieldTrialList::FactoryGetFieldTrial(
-          kLoggedInPredictorTrialName, 100,
-          kLoggedInPredictorDisabledGroup, 2013, 12, 31, NULL));
-  logged_in_predictor_trial->AppendGroup(kLoggedInPredictorEnabledGroup, 100);
-}
-
-void ConfigureSideEffectFreeWhitelist() {
-  scoped_refptr<FieldTrial> side_effect_free_whitelist_trial(
-      FieldTrialList::FactoryGetFieldTrial(
-          kSideEffectFreeWhitelistTrialName, 100,
-          kSideEffectFreeWhitelistDisabledGroup, 2013, 12, 31, NULL));
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
-      channel == chrome::VersionInfo::CHANNEL_BETA) {
-    return;
-  }
-  side_effect_free_whitelist_trial->AppendGroup(
-      kSideEffectFreeWhitelistEnabledGroup, 100);
+          kLocalPredictorTrialName, 100, kDisabledGroup, 2013, 12, 31, NULL));
+  local_predictor_trial->AppendGroup(kEnabledGroup, 100);
 }
 
 bool IsOmniboxEnabled(Profile* profile) {
@@ -309,17 +283,67 @@ bool IsLocalPredictorEnabled() {
     return false;
   }
   return base::FieldTrialList::FindFullName(kLocalPredictorTrialName) ==
-      kLocalPredictorEnabledGroup;
+      kEnabledGroup;
 }
 
 bool IsLoggedInPredictorEnabled() {
-  return base::FieldTrialList::FindFullName(kLoggedInPredictorTrialName) ==
-      kLoggedInPredictorEnabledGroup;
+  return IsLocalPredictorEnabled();
 }
 
 bool IsSideEffectFreeWhitelistEnabled() {
-  return base::FieldTrialList::FindFullName(kSideEffectFreeWhitelistTrialName)
-      == kSideEffectFreeWhitelistEnabledGroup;
+  return IsLocalPredictorEnabled() &&
+      base::FieldTrialList::FindFullName(kSideEffectFreeWhitelistTrialName) !=
+      kDisabledGroup;
 }
+
+bool IsLocalPredictorPrerenderLaunchEnabled() {
+  return base::FieldTrialList::FindFullName(
+      kLocalPredictorPrerenderLaunchTrialName) !=
+      kDisabledGroup;
+}
+
+bool IsLocalPredictorPrerenderAlwaysControlEnabled() {
+  return base::FieldTrialList::FindFullName(
+      kLocalPredictorPrerenderAlwaysControlTrialName) ==
+      kEnabledGroup;
+}
+
+int GetLocalPredictorTTLSeconds() {
+  int ttl;
+  base::StringToInt(
+      base::FieldTrialList::FindFullName(kLocalPredictorPrerenderTTLTrialName),
+      &ttl);
+  // If the value is outside of 10s or 600s, use a default value of 180s.
+  if (ttl < 10 || ttl > 600)
+    ttl = 180;
+  return ttl;
+}
+
+int GetLocalPredictorPrerenderPriorityHalfLifeTimeSeconds() {
+  int half_life_time;
+  base::StringToInt(
+      base::FieldTrialList::FindFullName(
+          kLocalPredictorPrerenderPriorityHalfLifeTimeTrialName),
+      &half_life_time);
+  // Sanity check: Ensure the half life time is non-negative.
+  if (half_life_time < 0)
+    half_life_time = 0;
+  return half_life_time;
+}
+
+int GetLocalPredictorMaxConcurrentPrerenders() {
+  int num_prerenders;
+  base::StringToInt(
+      base::FieldTrialList::FindFullName(
+          kLocalPredictorMaxConcurrentPrerenderTrialName),
+      &num_prerenders);
+  // Sanity check: Ensure the number of prerenders is at least 1.
+  if (num_prerenders < 1)
+    num_prerenders = 1;
+  // Sanity check: Ensure the number of prerenders is at most 10.
+  if (num_prerenders > 10)
+    num_prerenders = 10;
+  return num_prerenders;
+};
 
 }  // namespace prerender
