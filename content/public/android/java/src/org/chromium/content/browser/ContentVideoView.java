@@ -222,7 +222,6 @@ public class ContentVideoView extends FrameLayout implements MediaPlayerControl,
         mVideoSurfaceView.setOnKeyListener(this);
         mVideoSurfaceView.setOnTouchListener(this);
         mVideoSurfaceView.getHolder().addCallback(this);
-        mVideoSurfaceView.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         mVideoSurfaceView.setFocusable(true);
         mVideoSurfaceView.setFocusableInTouchMode(true);
         mVideoSurfaceView.requestFocus();
