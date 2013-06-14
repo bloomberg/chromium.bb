@@ -1125,10 +1125,11 @@ bool DeveloperPrivateGetStringsFunction::RunImpl() {
   SET_STRING("extensionSettingsMoreDetailsButton", IDS_EXTENSIONS_MORE_DETAILS);
   SET_STRING("extensionSettingsVersion", IDS_EXTENSIONS_VERSION);
   SET_STRING("extensionSettingsDelete", IDS_EXTENSIONS_DELETE);
+  SET_STRING("extensionSettingsPack", IDS_EXTENSIONS_PACK);
 
 // Pack Extension strings
   SET_STRING("packExtensionOverlay", IDS_EXTENSION_PACK_DIALOG_TITLE);
-  SET_STRING("packExtensionHeading", IDS_EXTENSION_PACK_DIALOG_HEADING);
+  SET_STRING("packExtensionHeading", IDS_EXTENSION_ADT_PACK_DIALOG_HEADING);
   SET_STRING("packExtensionCommit", IDS_EXTENSION_PACK_BUTTON);
   SET_STRING("ok",IDS_OK);
   SET_STRING("cancel",IDS_CANCEL);

@@ -248,12 +248,14 @@ cr.define('apps_dev_tool', function() {
       var idLabel = node.querySelector('.extension-id');
       idLabel.textContent = ' ' + item.id;
 
-      // Then the path, if provided by unpacked app / extension.
+      // Set the path and show the pack button, if provided by unpacked
+      // app / extension.
       if (item.is_unpacked) {
         var loadPath = node.querySelector('.load-path');
         loadPath.hidden = false;
         loadPath.querySelector('span:nth-of-type(2)').textContent =
             ' ' + item.path;
+        this.setPackButton_(item, node);
       }
 
       // Then the 'managed, cannot uninstall/disable' message.
@@ -274,7 +276,7 @@ cr.define('apps_dev_tool', function() {
     /**
      * Sets the webstore link.
      * @param {!Object} item A dictionary of item metadata.
-     * @param {HTMLElement} el HTML element containing all items.
+     * @param {!HTMLElement} el HTML element containing all items.
      * @private
      */
     setWebstoreLink_: function(item, el) {
@@ -289,7 +291,7 @@ cr.define('apps_dev_tool', function() {
     /**
      * Sets the reload link handler.
      * @param {!Object} item A dictionary of item metadata.
-     * @param {HTMLElement} el HTML element containing all items.
+     * @param {!HTMLElement} el HTML element containing all items.
      * @private
      */
     setReloadLink_: function(item, el) {
@@ -305,7 +307,7 @@ cr.define('apps_dev_tool', function() {
     /**
      * Sets the terminated reload link handler.
      * @param {!Object} item A dictionary of item metadata.
-     * @param {HTMLElement} el HTML element containing all items.
+     * @param {!HTMLElement} el HTML element containing all items.
      * @private
      */
     setTerminatedReloadLink_: function(item, el) {
@@ -319,7 +321,7 @@ cr.define('apps_dev_tool', function() {
     /**
      * Sets the permissions link handler.
      * @param {!Object} item A dictionary of item metadata.
-     * @param {HTMLElement} el HTML element containing all items.
+     * @param {!HTMLElement} el HTML element containing all items.
      * @private
      */
     setPermissionsLink_: function(item, el) {
@@ -330,9 +332,24 @@ cr.define('apps_dev_tool', function() {
     },
 
     /**
+     * Sets the pack button handler.
+     * @param {!Object} item A dictionary of item metadata.
+     * @param {!HTMLElement} el HTML element containing all items.
+     * @private
+     */
+    setPackButton_: function(item, el) {
+      var packButton = el.querySelector('.pack-link');
+      packButton.addEventListener('click', function(e) {
+        $('item-root-dir').value = item.path;
+        AppsDevTool.showOverlay($('packItemOverlay'));
+      });
+      packButton.hidden = false;
+    },
+
+    /**
      * Sets the remove button handler.
      * @param {!Object} item A dictionary of item metadata.
-     * @param {HTMLElement} el HTML element containing all items.
+     * @param {!HTMLElement} el HTML element containing all items.
      * @private
      */
     setRemoveButton_: function(item, el) {
@@ -348,7 +365,7 @@ cr.define('apps_dev_tool', function() {
     /**
      * Sets the handler for enable checkbox.
      * @param {!Object} item A dictionary of item metadata.
-     * @param {HTMLElement} el HTML element containing all items.
+     * @param {!HTMLElement} el HTML element containing all items.
      * @private
      */
     setEnabledCheckbox_: function(item, el) {
@@ -371,7 +388,7 @@ cr.define('apps_dev_tool', function() {
     /**
      * Sets the handler for the allow_file_access checkbox.
      * @param {!Object} item A dictionary of item metadata.
-     * @param {HTMLElement} el HTML element containing all items.
+     * @param {!HTMLElement} el HTML element containing all items.
      * @private
      */
     setAllowFileAccessCheckbox_: function(item, el) {
@@ -386,7 +403,7 @@ cr.define('apps_dev_tool', function() {
     /**
      * Sets the handler for the allow_incognito checkbox.
      * @param {!Object} item A dictionary of item metadata.
-     * @param {HTMLElement} el HTML element containing all items.
+     * @param {!HTMLElement} el HTML element containing all items.
      * @private
      */
     setAllowIncognitoCheckbox_: function(item, el) {
@@ -407,7 +424,7 @@ cr.define('apps_dev_tool', function() {
      * Sets the active views link of an item. Clicking on the link
      * opens devtools window to inspect.
      * @param {!Object} item A dictionary of item metadata.
-     * @param {HTMLElement} el HTML element containing all items.
+     * @param {!HTMLElement} el HTML element containing all items.
      * @private
      */
     setActiveViews_: function(item, el) {

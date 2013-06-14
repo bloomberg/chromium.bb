@@ -5616,6 +5616,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PACK_DIALOG_HEADING" desc="The heading of the pack extension dialog.">
         Select the root directory of the extension to pack. To update an extension, also select the private key file to reuse.
       </message>
+      <message name="IDS_EXTENSION_ADT_PACK_DIALOG_HEADING" desc="The heading of the pack extension dialog in the Apps Developer Tool.">
+        The packed extension and the private key will be written in the parent directory of the root directory of the extension to pack. To update an extension, select the private key file to reuse.
+      </message>
       <message name="IDS_EXTENSION_PACK_DIALOG_ROOT_DIRECTORY_LABEL" desc="Label in the pack extension dialog for the control that lets the user select the extension to pack.">
         Extension root directory:
       </message>
@@ -5770,6 +5773,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXTENSIONS_DELETE" desc="Text for the link to delete the extension / app.">
         Delete
+      </message>
+      <message name="IDS_EXTENSIONS_PACK" desc="Text for the link to pack the extension / app.">
+        Pack
       </message>
 
       <!-- chrome://settings-frame/options_settings_app.html for the App Launcher Settings App -->

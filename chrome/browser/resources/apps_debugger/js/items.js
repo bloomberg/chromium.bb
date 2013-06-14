@@ -24,8 +24,6 @@ cr.define('apps_dev_tool', function() {
       // Set up the three buttons (load unpacked, pack and update).
       $('load-unpacked').addEventListener('click',
           this.handleLoadUnpackedItem_.bind(this));
-      $('pack-item').addEventListener('click',
-          this.handlePackItem_.bind(this));
       $('update-items-now').addEventListener('click',
           this.handleUpdateItemNow_.bind(this));
       var packItemOverlay =
@@ -43,14 +41,6 @@ cr.define('apps_dev_tool', function() {
       chrome.developerPrivate.loadUnpacked(function(success) {
         apps_dev_tool.ItemsList.loadItemsInfo();
       });
-    },
-
-    /** Handles the Pack Extension button.
-     * @param {Event} e Change event.
-     * @private
-     */
-    handlePackItem_: function(e) {
-      AppsDevTool.showOverlay($('packItemOverlay'));
     },
 
     /**
