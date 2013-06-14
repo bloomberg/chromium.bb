@@ -36,11 +36,6 @@ void InputMethodBridge::OnFocus() {
   if (shared_input_method_ || !host_->GetTextInputClient())
     host_->SetFocusedTextInputClient(this);
 
-  // TODO(ime): Refactor this.
-#if defined(OS_WIN) && !defined(USE_AURA)
-  host_->OnFocus();
-#endif
-
   // TODO(yusukes): We don't need to call OnTextInputTypeChanged() once we move
   // text input type tracker code to ui::InputMethodBase.
   if (GetFocusedView())
@@ -49,11 +44,6 @@ void InputMethodBridge::OnFocus() {
 
 void InputMethodBridge::OnBlur() {
   ConfirmCompositionText();
-
-  // TODO(ime): Refactor this.
-#if defined(OS_WIN) && !defined(USE_AURA)
-  host_->OnBlur();
-#endif
 
   if (host_->GetTextInputClient() == this)
     host_->SetFocusedTextInputClient(NULL);
