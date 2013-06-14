@@ -545,7 +545,6 @@
     'aura': ['ben+watch@chromium.org', 'sadrul@chromium.org'],
     'autofill': ['isherman@chromium.org',
                  'dyu@chromium.org', 'abodenha@chromium.org',
-                 'dbeam+watch-autofill@chromium.org',
                  'estade+watch@chromium.org', 'ahutter@chromium.org',
                  'dgwallinga@chromium.org', 'ramankk@chromium.org',
                  'benquan@chromium.org', 'rouslan+autofillwatch@chromium.org'],
