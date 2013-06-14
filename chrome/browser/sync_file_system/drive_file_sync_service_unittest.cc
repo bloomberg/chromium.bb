@@ -179,6 +179,30 @@ TEST_F(DriveFileSyncServiceTest, UninstallOrigin) {
       origin_dir_resource_id)->second.deleted);
 }
 
+TEST_F(DriveFileSyncServiceTest, UninstallOriginWithoutOriginDirectory) {
+  // Not add fake app origin directory.
+  std::string origin_dir_resource_id = "uninstalledappresourceid";
+
+  // Add meta_data entry so GURL->resourse_id mapping is there.
+  const GURL origin_gurl("chrome-extension://uninstallme");
+  metadata_store()->AddIncrementalSyncOrigin(origin_gurl,
+                                             origin_dir_resource_id);
+
+  // Delete the origin directory (but not found).
+  bool done = false;
+  sync_service()->UninstallOrigin(
+      origin_gurl,
+      base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
+  message_loop()->RunUntilIdle();
+  EXPECT_TRUE(done);
+
+  // Assert the App's origin folder does not exist.
+  const drive::FakeAPIUtil::RemoteResourceByResourceId& remote_resources =
+      fake_api_util()->remote_resources();
+  EXPECT_TRUE(remote_resources.find(origin_dir_resource_id) ==
+              remote_resources.end());
+}
+
 TEST_F(DriveFileSyncServiceTest, DisableOriginForTrackingChangesPendingOrigin) {
   // Disable a pending origin after DriveFileSystemService has already started.
   const GURL origin("chrome-extension://app");

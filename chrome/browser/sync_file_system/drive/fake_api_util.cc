@@ -191,8 +191,12 @@ bool FakeAPIUtil::IsAuthenticated() const { return true; }
 void FakeAPIUtil::DeleteFile(const std::string& resource_id,
                              const std::string& remote_file_md5,
                              const GDataErrorCallback& callback) {
-  google_apis::GDataErrorCode error = google_apis::HTTP_NOT_FOUND;
-  DCHECK(ContainsKey(remote_resources_, resource_id));
+  if (!ContainsKey(remote_resources_, resource_id)) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, google_apis::HTTP_NOT_FOUND));
+    return;
+  }
 
   const RemoteResource& deleted_directory = remote_resources_[resource_id];
   PushRemoteChange(deleted_directory.parent_resource_id,
@@ -203,9 +207,9 @@ void FakeAPIUtil::DeleteFile(const std::string& resource_id,
                    SYNC_FILE_TYPE_UNKNOWN,
                    true /* deleted */);
 
-  error = google_apis::HTTP_SUCCESS;
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-                                              base::Bind(callback, error));
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, google_apis::HTTP_SUCCESS));
 }
 
 GURL FakeAPIUtil::ResourceIdToResourceLink(

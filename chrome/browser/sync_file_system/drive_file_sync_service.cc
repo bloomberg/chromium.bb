@@ -725,7 +725,7 @@ void DriveFileSyncService::DidUninstallOrigin(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error) {
   SyncStatusCode status = GDataErrorCodeToSyncStatusCodeWrapper(error);
-  if (status != SYNC_STATUS_OK) {
+  if (status != SYNC_STATUS_OK && status != SYNC_FILE_ERROR_NOT_FOUND) {
     callback.Run(status);
     return;
   }
