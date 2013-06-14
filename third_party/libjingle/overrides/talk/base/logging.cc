@@ -13,6 +13,7 @@
 #include "base/atomicops.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
+#include "third_party/libjingle/source/talk/base/ipaddress.h"
 #include "third_party/libjingle/source/talk/base/stream.h"
 #include "third_party/libjingle/source/talk/base/stringencode.h"
 #include "third_party/libjingle/source/talk/base/stringutils.h"
@@ -283,6 +284,9 @@ void InitDiagnosticLoggingDelegateFunction(
 #endif
   CHECK(!g_logging_delegate_function);
   CHECK(delegate);
+#ifdef NDEBUG
+  IPAddress::set_strip_sensitive(true);
+#endif
   g_logging_delegate_function = delegate;
 }
 
