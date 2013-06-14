@@ -26,6 +26,8 @@
 #ifndef RTCDTMFSenderHandlerClient_h
 #define RTCDTMFSenderHandlerClient_h
 
+#include "wtf/text/WTFString.h"
+
 namespace WebCore {
 
 class RTCDTMFSenderHandlerClient {

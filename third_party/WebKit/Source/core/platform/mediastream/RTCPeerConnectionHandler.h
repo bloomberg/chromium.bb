@@ -32,10 +32,14 @@
 #define RTCPeerConnectionHandler_h
 
 #include "core/platform/mediastream/MediaStreamDescriptor.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
+#include "core/platform/mediastream/RTCPeerConnectionHandler.h"
+#include "public/platform/WebRTCPeerConnectionHandler.h"
+#include "public/platform/WebRTCPeerConnectionHandlerClient.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebKit {
+class WebMediaStream;
 class WebRTCICECandidate;
 class WebRTCSessionDescription;
 struct WebRTCDataChannelInit;
@@ -53,30 +57,47 @@ class RTCSessionDescriptionRequest;
 class RTCStatsRequest;
 class RTCVoidRequest;
 
-class RTCPeerConnectionHandler {
+class RTCPeerConnectionHandler : public WebKit::WebRTCPeerConnectionHandlerClient {
 public:
     static PassOwnPtr<RTCPeerConnectionHandler> create(RTCPeerConnectionHandlerClient*);
-    virtual ~RTCPeerConnectionHandler() { }
+    virtual ~RTCPeerConnectionHandler();
 
-    virtual bool initialize(PassRefPtr<RTCConfiguration>, PassRefPtr<MediaConstraints>) = 0;
+    bool createWebHandler();
 
-    virtual void createOffer(PassRefPtr<RTCSessionDescriptionRequest>, PassRefPtr<MediaConstraints>) = 0;
-    virtual void createAnswer(PassRefPtr<RTCSessionDescriptionRequest>, PassRefPtr<MediaConstraints>) = 0;
-    virtual void setLocalDescription(PassRefPtr<RTCVoidRequest>, WebKit::WebRTCSessionDescription) = 0;
-    virtual void setRemoteDescription(PassRefPtr<RTCVoidRequest>, WebKit::WebRTCSessionDescription) = 0;
-    virtual WebKit::WebRTCSessionDescription localDescription() = 0;
-    virtual WebKit::WebRTCSessionDescription remoteDescription() = 0;
-    virtual bool updateIce(PassRefPtr<RTCConfiguration>, PassRefPtr<MediaConstraints>) = 0;
-    virtual bool addIceCandidate(WebKit::WebRTCICECandidate) = 0;
-    virtual bool addStream(PassRefPtr<MediaStreamDescriptor>, PassRefPtr<MediaConstraints>) = 0;
-    virtual void removeStream(PassRefPtr<MediaStreamDescriptor>) = 0;
-    virtual void getStats(PassRefPtr<RTCStatsRequest>) = 0;
-    virtual PassOwnPtr<RTCDataChannelHandler> createDataChannel(const String& label, const WebKit::WebRTCDataChannelInit&) = 0;
-    virtual PassOwnPtr<RTCDTMFSenderHandler> createDTMFSender(PassRefPtr<MediaStreamComponent>) = 0;
-    virtual void stop() = 0;
+    bool initialize(PassRefPtr<RTCConfiguration>, PassRefPtr<MediaConstraints>);
 
-protected:
-    RTCPeerConnectionHandler() { }
+    void createOffer(PassRefPtr<RTCSessionDescriptionRequest>, PassRefPtr<MediaConstraints>);
+    void createAnswer(PassRefPtr<RTCSessionDescriptionRequest>, PassRefPtr<MediaConstraints>);
+    void setLocalDescription(PassRefPtr<RTCVoidRequest>, WebKit::WebRTCSessionDescription);
+    void setRemoteDescription(PassRefPtr<RTCVoidRequest>, WebKit::WebRTCSessionDescription);
+    WebKit::WebRTCSessionDescription localDescription();
+    WebKit::WebRTCSessionDescription remoteDescription();
+    bool updateIce(PassRefPtr<RTCConfiguration>, PassRefPtr<MediaConstraints>);
+    bool addIceCandidate(WebKit::WebRTCICECandidate);
+    bool addStream(PassRefPtr<MediaStreamDescriptor>, PassRefPtr<MediaConstraints>);
+    void removeStream(PassRefPtr<MediaStreamDescriptor>);
+    void getStats(PassRefPtr<RTCStatsRequest>);
+    PassOwnPtr<RTCDataChannelHandler> createDataChannel(const String& label, const WebKit::WebRTCDataChannelInit&);
+    PassOwnPtr<RTCDTMFSenderHandler> createDTMFSender(PassRefPtr<MediaStreamComponent>);
+    void stop();
+
+    // WebKit::WebRTCPeerConnectionHandlerClient implementation.
+    virtual void negotiationNeeded() OVERRIDE;
+    virtual void didGenerateICECandidate(const WebKit::WebRTCICECandidate&) OVERRIDE;
+    virtual void didChangeSignalingState(WebKit::WebRTCPeerConnectionHandlerClient::SignalingState) OVERRIDE;
+    virtual void didChangeICEGatheringState(WebKit::WebRTCPeerConnectionHandlerClient::ICEGatheringState) OVERRIDE;
+    virtual void didChangeICEConnectionState(WebKit::WebRTCPeerConnectionHandlerClient::ICEConnectionState) OVERRIDE;
+    virtual void didAddRemoteStream(const WebKit::WebMediaStream&) OVERRIDE;
+    virtual void didRemoveRemoteStream(const WebKit::WebMediaStream&) OVERRIDE;
+    virtual void didAddRemoteDataChannel(WebKit::WebRTCDataChannelHandler*) OVERRIDE;
+
+    static WebKit::WebRTCPeerConnectionHandler* toWebRTCPeerConnectionHandler(RTCPeerConnectionHandler*);
+
+private:
+    explicit RTCPeerConnectionHandler(RTCPeerConnectionHandlerClient*);
+
+    OwnPtr<WebKit::WebRTCPeerConnectionHandler> m_webHandler;
+    RTCPeerConnectionHandlerClient* m_client;
 };
 
 } // namespace WebCore

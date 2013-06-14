@@ -26,22 +26,37 @@
 #ifndef RTCDTMFSenderHandler_h
 #define RTCDTMFSenderHandler_h
 
-#include <wtf/text/WTFString.h>
+#include "core/platform/mediastream/RTCDTMFSenderHandler.h"
+#include "core/platform/mediastream/RTCDTMFSenderHandlerClient.h"
+#include "public/platform/WebRTCDTMFSenderHandler.h"
+#include "public/platform/WebRTCDTMFSenderHandlerClient.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
 class RTCDTMFSenderHandlerClient;
 
-class RTCDTMFSenderHandler {
+class RTCDTMFSenderHandler : public WebKit::WebRTCDTMFSenderHandlerClient {
 public:
-    virtual ~RTCDTMFSenderHandler() { }
+    static PassOwnPtr<RTCDTMFSenderHandler> create(WebKit::WebRTCDTMFSenderHandler*);
+    virtual ~RTCDTMFSenderHandler();
 
-    virtual void setClient(RTCDTMFSenderHandlerClient*) = 0;
+    void setClient(RTCDTMFSenderHandlerClient*);
 
-    virtual String currentToneBuffer() = 0;
+    String currentToneBuffer();
 
-    virtual bool canInsertDTMF() = 0;
-    virtual bool insertDTMF(const String& tones, long duration, long interToneGap) = 0;
+    bool canInsertDTMF();
+    bool insertDTMF(const String& tones, long duration, long interToneGap);
+
+    // WebKit::WebRTCDTMFSenderHandlerClient implementation.
+    virtual void didPlayTone(const WebKit::WebString& tone) const OVERRIDE;
+
+private:
+    explicit RTCDTMFSenderHandler(WebKit::WebRTCDTMFSenderHandler*);
+
+    OwnPtr<WebKit::WebRTCDTMFSenderHandler> m_webHandler;
+    RTCDTMFSenderHandlerClient* m_client;
 };
 
 } // namespace WebCore

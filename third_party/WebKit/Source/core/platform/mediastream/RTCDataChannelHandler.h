@@ -25,25 +25,42 @@
 #ifndef RTCDataChannelHandler_h
 #define RTCDataChannelHandler_h
 
-#include <wtf/text/WTFString.h>
+#include "core/platform/mediastream/RTCDataChannelHandler.h"
+#include "core/platform/mediastream/RTCDataChannelHandlerClient.h"
+#include "public/platform/WebRTCDataChannelHandler.h"
+#include "public/platform/WebRTCDataChannelHandlerClient.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
 class RTCDataChannelHandlerClient;
 
-class RTCDataChannelHandler {
+class RTCDataChannelHandler : public WebKit::WebRTCDataChannelHandlerClient {
 public:
-    virtual ~RTCDataChannelHandler() { }
+    static PassOwnPtr<RTCDataChannelHandler> create(WebKit::WebRTCDataChannelHandler*);
+    virtual ~RTCDataChannelHandler();
 
-    virtual void setClient(RTCDataChannelHandlerClient*) = 0;
+    void setClient(RTCDataChannelHandlerClient*);
 
-    virtual String label() = 0;
-    virtual bool isReliable() = 0;
-    virtual unsigned long bufferedAmount() = 0;
+    String label();
+    bool isReliable();
+    unsigned long bufferedAmount();
+    bool sendStringData(const String&);
+    bool sendRawData(const char*, size_t);
+    void close();
 
-    virtual bool sendStringData(const String&) = 0;
-    virtual bool sendRawData(const char*, size_t) = 0;
-    virtual void close() = 0;
+    // WebKit::WebRTCDataChannelHandlerClient implementation.
+    virtual void didChangeReadyState(ReadyState) const OVERRIDE;
+    virtual void didReceiveStringData(const WebKit::WebString&) const OVERRIDE;
+    virtual void didReceiveRawData(const char*, size_t) const OVERRIDE;
+    virtual void didDetectError() const OVERRIDE;
+
+private:
+    explicit RTCDataChannelHandler(WebKit::WebRTCDataChannelHandler*);
+
+    OwnPtr<WebKit::WebRTCDataChannelHandler> m_webHandler;
+    RTCDataChannelHandlerClient* m_client;
 };
 
 } // namespace WebCore

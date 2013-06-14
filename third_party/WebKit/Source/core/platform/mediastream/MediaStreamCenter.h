@@ -33,11 +33,16 @@
 #define MediaStreamCenter_h
 
 #include "modules/mediastream/SourceInfo.h"
+#include "public/platform/WebMediaStreamCenterClient.h"
 #include "public/platform/WebVector.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebKit {
+class WebMediaStream;
+class WebMediaStreamCenter;
+class WebMediaStreamTrack;
 class WebSourceInfo;
 }
 
@@ -47,26 +52,27 @@ class MediaStreamComponent;
 class MediaStreamDescriptor;
 class MediaStreamSourcesQueryClient;
 
-class MediaStreamCenter {
+class MediaStreamCenter : public WebKit::WebMediaStreamCenterClient {
 public:
-    virtual ~MediaStreamCenter();
+    ~MediaStreamCenter();
 
     static MediaStreamCenter& instance();
 
-    virtual void queryMediaStreamSources(PassRefPtr<MediaStreamSourcesQueryClient>) = 0;
-    virtual bool getSourceInfos(const String& url, WebKit::WebVector<WebKit::WebSourceInfo>&) = 0;
+    void queryMediaStreamSources(PassRefPtr<MediaStreamSourcesQueryClient>);
+    bool getSourceInfos(const String& url, WebKit::WebVector<WebKit::WebSourceInfo>&);
+    void didSetMediaStreamTrackEnabled(MediaStreamDescriptor*, MediaStreamComponent*);
+    bool didAddMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*);
+    bool didRemoveMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*);
+    void didStopLocalMediaStream(MediaStreamDescriptor*);
+    void didCreateMediaStream(MediaStreamDescriptor*);
 
-    // Calls from the DOM objects to notify the platform
-    virtual void didSetMediaStreamTrackEnabled(MediaStreamDescriptor*, MediaStreamComponent*) = 0;
-    virtual bool didAddMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*) = 0;
-    virtual bool didRemoveMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*) = 0;
-    virtual void didStopLocalMediaStream(MediaStreamDescriptor*) = 0;
-    virtual void didCreateMediaStream(MediaStreamDescriptor*) = 0;
+    // WebKit::WebMediaStreamCenterClient
+    virtual void stopLocalMediaStream(const WebKit::WebMediaStream&) OVERRIDE;
 
-protected:
+private:
     MediaStreamCenter();
 
-    void endLocalMediaStream(MediaStreamDescriptor*);
+    OwnPtr<WebKit::WebMediaStreamCenter> m_private;
 };
 
 } // namespace WebCore

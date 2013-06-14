@@ -25,6 +25,8 @@
 #ifndef RTCDataChannelHandlerClient_h
 #define RTCDataChannelHandlerClient_h
 
+#include "wtf/text/WTFString.h"
+
 namespace WebCore {
 
 class RTCDataChannelHandlerClient {

@@ -50,7 +50,7 @@
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/platform/MIMETypeRegistry.h"
-#include "core/platform/mediastream/chromium/RTCPeerConnectionHandlerChromium.h"
+#include "core/platform/mediastream/RTCPeerConnectionHandler.h"
 #include "core/platform/network/HTTPParsers.h"
 #include "core/platform/network/ResourceHandleInternal.h"
 #include "core/plugins/PluginData.h"
@@ -1330,7 +1330,7 @@ void FrameLoaderClientImpl::dispatchWillOpenSocketStream(SocketStreamHandle* han
 
 void FrameLoaderClientImpl::dispatchWillStartUsingPeerConnectionHandler(RTCPeerConnectionHandler* handler)
 {
-    m_webFrame->client()->willStartUsingPeerConnectionHandler(webFrame(), RTCPeerConnectionHandlerChromium::toWebRTCPeerConnectionHandler(handler));
+    m_webFrame->client()->willStartUsingPeerConnectionHandler(webFrame(), RTCPeerConnectionHandler::toWebRTCPeerConnectionHandler(handler));
 }
 
 void FrameLoaderClientImpl::didRequestAutocomplete(PassRefPtr<FormState> formState)

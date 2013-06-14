@@ -25,53 +25,53 @@
 
 #include "config.h"
 
-#include "core/platform/mediastream/chromium/RTCDTMFSenderHandlerChromium.h"
+#include "core/platform/mediastream/RTCDTMFSenderHandler.h"
 
 #include "core/platform/mediastream/RTCDTMFSenderHandlerClient.h"
 #include "public/platform/WebRTCDTMFSenderHandler.h"
-#include <wtf/PassOwnPtr.h>
+#include "wtf/PassOwnPtr.h"
 
 using namespace WebKit;
 
 namespace WebCore {
 
-PassOwnPtr<RTCDTMFSenderHandler> RTCDTMFSenderHandlerChromium::create(WebRTCDTMFSenderHandler* webHandler)
+PassOwnPtr<RTCDTMFSenderHandler> RTCDTMFSenderHandler::create(WebRTCDTMFSenderHandler* webHandler)
 {
-    return adoptPtr(new RTCDTMFSenderHandlerChromium(webHandler));
+    return adoptPtr(new RTCDTMFSenderHandler(webHandler));
 }
 
-RTCDTMFSenderHandlerChromium::RTCDTMFSenderHandlerChromium(WebRTCDTMFSenderHandler* webHandler)
+RTCDTMFSenderHandler::RTCDTMFSenderHandler(WebRTCDTMFSenderHandler* webHandler)
     : m_webHandler(adoptPtr(webHandler))
     , m_client(0)
 {
 }
 
-RTCDTMFSenderHandlerChromium::~RTCDTMFSenderHandlerChromium()
+RTCDTMFSenderHandler::~RTCDTMFSenderHandler()
 {
 }
 
-void RTCDTMFSenderHandlerChromium::setClient(RTCDTMFSenderHandlerClient* client)
+void RTCDTMFSenderHandler::setClient(RTCDTMFSenderHandlerClient* client)
 {
     m_client = client;
     m_webHandler->setClient(m_client ? this : 0);
 }
 
-String RTCDTMFSenderHandlerChromium::currentToneBuffer()
+String RTCDTMFSenderHandler::currentToneBuffer()
 {
     return m_webHandler->currentToneBuffer();
 }
 
-bool RTCDTMFSenderHandlerChromium::canInsertDTMF()
+bool RTCDTMFSenderHandler::canInsertDTMF()
 {
     return m_webHandler->canInsertDTMF();
 }
 
-bool RTCDTMFSenderHandlerChromium::insertDTMF(const String& tones, long duration, long interToneGap)
+bool RTCDTMFSenderHandler::insertDTMF(const String& tones, long duration, long interToneGap)
 {
     return m_webHandler->insertDTMF(tones, duration, interToneGap);
 }
 
-void RTCDTMFSenderHandlerChromium::didPlayTone(const WebString& tone) const
+void RTCDTMFSenderHandler::didPlayTone(const WebString& tone) const
 {
     if (m_client)
         m_client->didPlayTone(tone);

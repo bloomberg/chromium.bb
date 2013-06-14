@@ -24,84 +24,84 @@
 
 #include "config.h"
 
-#include "core/platform/mediastream/chromium/RTCDataChannelHandlerChromium.h"
+#include "core/platform/mediastream/RTCDataChannelHandler.h"
 
 #include "core/platform/mediastream/RTCDataChannelHandlerClient.h"
 #include "public/platform/WebRTCDataChannelHandler.h"
-#include <wtf/PassOwnPtr.h>
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
-PassOwnPtr<RTCDataChannelHandler> RTCDataChannelHandlerChromium::create(WebKit::WebRTCDataChannelHandler* webHandler)
+PassOwnPtr<RTCDataChannelHandler> RTCDataChannelHandler::create(WebKit::WebRTCDataChannelHandler* webHandler)
 {
-    return adoptPtr(new RTCDataChannelHandlerChromium(webHandler));
+    return adoptPtr(new RTCDataChannelHandler(webHandler));
 }
 
-RTCDataChannelHandlerChromium::RTCDataChannelHandlerChromium(WebKit::WebRTCDataChannelHandler* webHandler)
+RTCDataChannelHandler::RTCDataChannelHandler(WebKit::WebRTCDataChannelHandler* webHandler)
     : m_webHandler(adoptPtr(webHandler))
     , m_client(0)
 {
 }
 
-RTCDataChannelHandlerChromium::~RTCDataChannelHandlerChromium()
+RTCDataChannelHandler::~RTCDataChannelHandler()
 {
 }
 
-void RTCDataChannelHandlerChromium::setClient(RTCDataChannelHandlerClient* client)
+void RTCDataChannelHandler::setClient(RTCDataChannelHandlerClient* client)
 {
     m_client = client;
     m_webHandler->setClient(m_client ? this : 0);
 }
 
-String RTCDataChannelHandlerChromium::label()
+String RTCDataChannelHandler::label()
 {
     return m_webHandler->label();
 }
 
-bool RTCDataChannelHandlerChromium::isReliable()
+bool RTCDataChannelHandler::isReliable()
 {
     return m_webHandler->isReliable();
 }
 
-unsigned long RTCDataChannelHandlerChromium::bufferedAmount()
+unsigned long RTCDataChannelHandler::bufferedAmount()
 {
     return m_webHandler->bufferedAmount();
 }
 
-bool RTCDataChannelHandlerChromium::sendStringData(const String& data)
+bool RTCDataChannelHandler::sendStringData(const String& data)
 {
     return m_webHandler->sendStringData(data);
 }
 
-bool RTCDataChannelHandlerChromium::sendRawData(const char* data, size_t size)
+bool RTCDataChannelHandler::sendRawData(const char* data, size_t size)
 {
     return m_webHandler->sendRawData(data, size);
 }
 
-void RTCDataChannelHandlerChromium::close()
+void RTCDataChannelHandler::close()
 {
     m_webHandler->close();
 }
 
-void RTCDataChannelHandlerChromium::didChangeReadyState(WebRTCDataChannelHandlerClient::ReadyState state) const
+void RTCDataChannelHandler::didChangeReadyState(WebRTCDataChannelHandlerClient::ReadyState state) const
 {
     if (m_client)
         m_client->didChangeReadyState(static_cast<RTCDataChannelHandlerClient::ReadyState>(state));
 }
 
-void RTCDataChannelHandlerChromium::didReceiveStringData(const WebKit::WebString& data) const
+void RTCDataChannelHandler::didReceiveStringData(const WebKit::WebString& data) const
 {
     if (m_client)
         m_client->didReceiveStringData(data);
 }
 
-void RTCDataChannelHandlerChromium::didReceiveRawData(const char* data, size_t size) const
+void RTCDataChannelHandler::didReceiveRawData(const char* data, size_t size) const
 {
     if (m_client)
         m_client->didReceiveRawData(data, size);
 }
 
-void RTCDataChannelHandlerChromium::didDetectError() const
+void RTCDataChannelHandler::didDetectError() const
 {
     if (m_client)
         m_client->didDetectError();
