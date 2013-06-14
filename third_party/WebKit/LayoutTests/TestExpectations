@@ -1690,6 +1690,7 @@ Bug(jochen) virtual/gpu/fast/hidpi [ Slow ]
 
 crbug.com/249237 fast/forms/interactive-validation-remove-node-in-handler.html [ Crash Pass ]
 crbug.com/249237 fast/forms/interactive-validation-required-checkbox.html [ Crash Pass ]
+crbug.com/249237 fast/forms/interactive-validation-attach-assertion.html [ Crash Pass ]
 
 crbug.com/247979 [ Mac Release ] inspector/elements/edit-dom-actions.html [ Slow Failure Pass ]
 crbug.com/247979 [ XP Release ] inspector/elements/edit-dom-actions.html [ Slow Pass Failure ]
