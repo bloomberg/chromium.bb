@@ -793,7 +793,7 @@ webkit.org/b/111023 fast/dom/Window/Location/set-location-after-close.html [ Pas
 webkit.org/b/111044 fast/loader/display-image-unset-can-block-image-and-can-reload-in-place.html [ Pass Timeout ]
 webkit.org/b/111044 fast/loader/images-enabled-unset-can-block-image-and-can-reload-in-place.html [ Pass Timeout ]
 
-webkit.org/b/70988 [ Mac Win Debug ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
+webkit.org/b/70988 [ Debug ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
 
 # BUGWK70988 MAC DEBUG SLOW : fast/frames/calculate-fixed.html = PASS
 # Crashing since on or before r122699, please uncomment previous line before removing.
@@ -1343,6 +1343,9 @@ crbug.com/241851 [ SnowLeopard Lion Linux Debug ] fast/speechsynthesis/speech-sy
 
 # Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
 crbug.com/14885 [ Debug ] fast/js/JSON-stringify.html [ Failure ]
+
+# started failing around the V8 roll in http://crrev.com/206035
+crbug.com/249894 [ Debug ] fast/js/regress/inline-arguments-access.html  [ Pass Failure Crash ]
 
 # Caused by http://trac.webkit.org/changeset/56394.
 crbug.com/143475 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-dispatch.html [ Failure Pass Timeout ]
