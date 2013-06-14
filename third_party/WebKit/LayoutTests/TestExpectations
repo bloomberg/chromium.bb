@@ -958,8 +958,8 @@ webkit.org/b/102349 fast/dom/shadow/pseudoclass-update-enabled-area.html [ Image
 # Requires setUseDeferredFrameLoading() API from LayoutTestController.
 webkit.org/b/87652 http/tests/appcache/load-from-appcache-defer-resume-crash.html [ Skip ]
 
-# Started flaky crashing on Linux around r152400.
-crbug.com/249706 [ Linux Release ] fast/dom/shadow/insertion-point-resetStyleInheritance-with-pseudo-element-crash.html [ Crash Pass ]
+# Started flaky crashing on Linux around r152400, and on Win near r152459.
+crbug.com/249706 [ Win Linux Release ] fast/dom/shadow/insertion-point-resetStyleInheritance-with-pseudo-element-crash.html [ Crash Pass ]
 
 webkit.org/b/87772 [ Release ] svg/dom/viewspec-parser-1.html [ Slow ]
 webkit.org/b/87772 [ Debug ] svg/dom/viewspec-parser-1.html [ Pass Timeout ]
