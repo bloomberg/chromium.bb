@@ -35,6 +35,11 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
+static bool needsCenteredPositioning(const RenderStyle* style)
+{
+    return style->position() == AbsolutePosition && style->hasAutoTopAndBottom();
+}
+
 HTMLDialogElement::HTMLDialogElement(const QualifiedName& tagName, Document* document)
     : HTMLElement(tagName, document)
     , m_topIsValid(false)
@@ -61,11 +66,6 @@ void HTMLDialogElement::close(ExceptionCode& ec)
     m_topIsValid = false;
 }
 
-static bool needsCenteredPositioning(const RenderStyle* style)
-{
-    return style->position() == AbsolutePosition && style->hasAutoTopAndBottom();
-}
-
 PassRefPtr<RenderStyle> HTMLDialogElement::customStyleForRenderer()
 {
     RefPtr<RenderStyle> originalStyle = originalStyleForRenderer();
@@ -78,7 +78,7 @@ PassRefPtr<RenderStyle> HTMLDialogElement::customStyleForRenderer()
     return style.release();
 }
 
-void HTMLDialogElement::positionAndReattach()
+void HTMLDialogElement::reposition()
 {
     // Layout because we need to know our ancestors' positions and our own height.
     document()->updateLayoutIgnorePendingStylesheets();
@@ -97,8 +97,7 @@ void HTMLDialogElement::positionAndReattach()
         m_top += (visibleHeight - box->height()) / 2;
     m_topIsValid = true;
 
-    // FIXME: It's inefficient to reattach here. We could do better by mutating style directly and forcing another layout.
-    reattach();
+    setNeedsStyleRecalc(InlineStyleChange);
 }
 
 void HTMLDialogElement::show()
@@ -106,7 +105,7 @@ void HTMLDialogElement::show()
     if (fastHasAttribute(openAttr))
         return;
     setBooleanAttribute(openAttr, true);
-    positionAndReattach();
+    reposition();
 }
 
 void HTMLDialogElement::showModal(ExceptionCode& ec)
@@ -117,7 +116,7 @@ void HTMLDialogElement::showModal(ExceptionCode& ec)
     }
     document()->addToTopLayer(this);
     setBooleanAttribute(openAttr, true);
-    positionAndReattach();
+    reposition();
 }
 
 bool HTMLDialogElement::isPresentationAttribute(const QualifiedName& name) const
