@@ -124,6 +124,51 @@ TEST_F(ActivityDatabaseTest, RecordAPIAction) {
   ASSERT_EQ("woof", statement.ColumnString(4));
 }
 
+// Check that DOM actions are recorded in the db.
+TEST_F(ActivityDatabaseTest, RecordDOMAction) {
+  base::ScopedTempDir temp_dir;
+  base::FilePath db_file;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  db_file = temp_dir.path().AppendASCII("ActivityRecord.db");
+  file_util::Delete(db_file, false);
+
+  ActivityDatabase* activity_db = new ActivityDatabase();
+  activity_db->Init(db_file);
+  activity_db->SetBatchModeForTesting(false);
+  ASSERT_TRUE(activity_db->is_db_valid());
+  scoped_refptr<DOMAction> action = new DOMAction(
+      "punky",
+      base::Time::Now(),
+      DomActionType::MODIFIED,
+      GURL("http://www.google.com/foo?bar"),
+      string16(),
+      "lets",
+      "vamoose",
+      "extra");
+  activity_db->RecordAction(action);
+  activity_db->Close();
+
+  sql::Connection db;
+  ASSERT_TRUE(db.Open(db_file));
+
+  ASSERT_TRUE(db.DoesTableExist(APIAction::kTableName));
+  std::string sql_str = "SELECT * FROM " +
+      std::string(DOMAction::kTableName);
+  sql::Statement statement(db.GetUniqueStatement(sql_str.c_str()));
+  ASSERT_TRUE(statement.Step());
+  ASSERT_EQ("punky", statement.ColumnString(0));
+  ASSERT_EQ(DomActionType::MODIFIED, statement.ColumnInt(2));
+  ASSERT_EQ("http://www.google.com", statement.ColumnString(3));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableExtensionActivityLogTesting))
+    ASSERT_EQ("/foo?bar", statement.ColumnString(4));
+  else
+    ASSERT_EQ("/foo", statement.ColumnString(4));
+  ASSERT_EQ("lets", statement.ColumnString(6));
+  ASSERT_EQ("vamoose", statement.ColumnString(7));
+  ASSERT_EQ("extra", statement.ColumnString(8));
+}
+
 // Check that blocked actions are recorded in the db.
 TEST_F(ActivityDatabaseTest, RecordBlockedAction) {
   base::ScopedTempDir temp_dir;

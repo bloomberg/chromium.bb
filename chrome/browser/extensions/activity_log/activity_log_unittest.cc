@@ -76,6 +76,21 @@ class ActivityLogTest : public testing::Test {
     ASSERT_EQ(2, static_cast<int>(i->size()));
   }
 
+  static void RetrieveActions_LogAndFetchPathActions(
+      scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
+    std::string args;
+    ASSERT_EQ(1U, i->size());
+    scoped_refptr<Action> last = i->front();
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableExtensionActivityLogTesting))
+      args = "Injected scripts () onto "
+              "http://www.google.com/foo?bar extra";
+    else
+      args = "Injected scripts () onto "
+              "http://www.google.com/foo extra";
+    ASSERT_EQ(args, last->PrintForDebug());
+  }
+
   static void Arguments_Missing(
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     scoped_refptr<Action> last = i->front();
@@ -198,6 +213,24 @@ TEST_F(ActivityLogTest, LogAndFetchActions) {
       kExtensionId,
       0,
       base::Bind(ActivityLogTest::RetrieveActions_LogAndFetchActions));
+}
+
+TEST_F(ActivityLogTest, LogAndFetchPathActions) {
+  ActivityLog* activity_log = ActivityLog::GetInstance(profile_.get());
+  scoped_ptr<ListValue> args(new ListValue());
+  ASSERT_TRUE(activity_log->IsLogEnabled());
+
+  activity_log->LogDOMAction(kExtensionId,
+                             GURL("http://www.google.com/foo?bar"),
+                             string16(),
+                             std::string("document.write"),
+                             args.get(),
+                             DomActionType::INSERTED,
+                             std::string("extra"));
+  activity_log->GetActions(
+      kExtensionId,
+      0,
+      base::Bind(ActivityLogTest::RetrieveActions_LogAndFetchPathActions));
 }
 
 TEST_F(ActivityLogTest, LogWithoutArguments) {

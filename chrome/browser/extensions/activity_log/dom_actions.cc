@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/activity_log/dom_actions.h"
 #include "chrome/browser/history/url_database.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -20,10 +22,11 @@ using api::activity_log_private::BlockedChromeActivityDetail;
 
 const char* DOMAction::kTableName = "activitylog_urls";
 const char* DOMAction::kTableContentFields[] =
-    {"url_action_type", "url", "url_title", "api_call", "args", "extra"};
+    {"url_action_type", "url_tld", "url_path", "url_title", "api_call",
+     "args", "extra"};
 const char* DOMAction::kTableFieldTypes[] =
     {"INTEGER", "LONGVARCHAR", "LONGVARCHAR", "LONGVARCHAR", "LONGVARCHAR",
-    "LONGVARCHAR"};
+     "LONGVARCHAR", "LONGVARCHAR"};
 
 DOMAction::DOMAction(const std::string& extension_id,
                      const base::Time& time,
@@ -46,11 +49,11 @@ DOMAction::DOMAction(const sql::Statement& s)
              base::Time::FromInternalValue(s.ColumnInt64(1)),
              ExtensionActivity::ACTIVITY_TYPE_DOM),
       verb_(static_cast<DomActionType::Type>(s.ColumnInt(2))),
-      url_(GURL(s.ColumnString(3))),
-      url_title_(s.ColumnString16(4)),
-      api_call_(s.ColumnString(5)),
-      args_(s.ColumnString(6)),
-      extra_(s.ColumnString(7)) { }
+      url_(GURL(s.ColumnString(3)+ s.ColumnString(4))),
+      url_title_(s.ColumnString16(5)),
+      api_call_(s.ColumnString(6)),
+      args_(s.ColumnString(7)),
+      extra_(s.ColumnString(8)) { }
 
 DOMAction::~DOMAction() {
 }
@@ -86,6 +89,14 @@ bool DOMAction::InitializeTable(sql::Connection* db) {
     if (!db->Execute(drop_table.c_str()))
       return false;
   }
+  // The url field is now broken into two parts - url_tld and url_path.
+  // ulr_tld contains the scheme, host, and port of the url and
+  // url_path contains the path.
+  if (db->DoesColumnExist(kTableName, "url")) {
+    std::string drop_table = base::StringPrintf("DROP TABLE %s", kTableName);
+    if (!db->Execute(drop_table.c_str()))
+      return false;
+  }
   // We also now use INTEGER instead of VARCHAR for url_action_type.
   if (db->DoesColumnExist(kTableName, "url_action_type")) {
     std::string select = base::StringPrintf(
@@ -108,18 +119,31 @@ bool DOMAction::InitializeTable(sql::Connection* db) {
 
 bool DOMAction::Record(sql::Connection* db) {
   std::string sql_str = "INSERT INTO " + std::string(kTableName) +
-      " (extension_id, time, url_action_type, url, url_title, api_call, args,"
-      "  extra) VALUES (?,?,?,?,?,?,?,?)";
+      " (extension_id, time, url_action_type, url_tld, url_path, url_title,"
+      "  api_call, args, extra) VALUES (?,?,?,?,?,?,?,?,?)";
   sql::Statement statement(db->GetCachedStatement(
       sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
+  std::string url_tld;
+  std::string url_path;
   statement.BindString(0, extension_id());
   statement.BindInt64(1, time().ToInternalValue());
   statement.BindInt(2, static_cast<int>(verb_));
-  statement.BindString(3, history::URLDatabase::GURLToDatabaseURL(url_));
-  statement.BindString16(4, url_title_);
-  statement.BindString(5, api_call_);
-  statement.BindString(6, args_);
-  statement.BindString(7, extra_);
+  url_tld = url_.GetOrigin().spec();
+  // delete the extra "/"
+  if ((url_tld.size() > 0) && (url_tld[url_tld.size()-1] == '/'))
+    url_tld.erase(url_tld.size()-1);
+  statement.BindString(3, url_tld);
+  // If running in activity testing mode, store the parameters as well.
+  if ((CommandLine::ForCurrentProcess()->HasSwitch(
+       switches::kEnableExtensionActivityLogTesting)) && (url_.has_query()))
+    url_path = url_.path()+"?"+url_.query();
+  else
+    url_path = url_.path();
+  statement.BindString(4, url_path);
+  statement.BindString16(5, url_title_);
+  statement.BindString(6, api_call_);
+  statement.BindString(7, args_);
+  statement.BindString(8, extra_);
   if (!statement.Run()) {
     LOG(ERROR) << "Activity log database I/O failed: " << sql_str;
     statement.Clear();
