@@ -36,7 +36,6 @@ KNOWN_INCOMPATIBLE = {
         'breakpad',
         'chrome/installer/mac/third_party/xz',
         'chrome/test/data',
-        'third_party/JSON',
         'third_party/active_doc',
         'third_party/apple_apsl',
         'third_party/apple_sample_code',
