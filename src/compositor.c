@@ -1004,7 +1004,7 @@ weston_surface_unmap(struct weston_surface *surface)
 }
 
 struct weston_frame_callback {
-	struct wl_resource resource;
+	struct wl_resource *resource;
 	struct wl_list link;
 };
 
@@ -1029,7 +1029,7 @@ weston_surface_destroy(struct weston_surface *surface)
 
 	wl_list_for_each_safe(cb, next,
 			      &surface->pending.frame_callback_list, link)
-		wl_resource_destroy(&cb->resource);
+		wl_resource_destroy(cb->resource);
 
 	pixman_region32_fini(&surface->pending.input);
 	pixman_region32_fini(&surface->pending.opaque);
@@ -1049,7 +1049,7 @@ weston_surface_destroy(struct weston_surface *surface)
 	pixman_region32_fini(&surface->input);
 
 	wl_list_for_each_safe(cb, next, &surface->frame_callback_list, link)
-		wl_resource_destroy(&cb->resource);
+		wl_resource_destroy(cb->resource);
 
 	weston_surface_set_transform_parent(surface, NULL);
 
@@ -1306,8 +1306,8 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 	wl_event_loop_dispatch(ec->input_loop, 0);
 
 	wl_list_for_each_safe(cb, cnext, &frame_callback_list, link) {
-		wl_callback_send_done(&cb->resource, msecs);
-		wl_resource_destroy(&cb->resource);
+		wl_callback_send_done(cb->resource, msecs);
+		wl_resource_destroy(cb->resource);
 	}
 
 	wl_list_for_each_safe(animation, next, &output->animation_list, link) {
@@ -1446,7 +1446,7 @@ surface_damage(struct wl_client *client,
 static void
 destroy_frame_callback(struct wl_resource *resource)
 {
-	struct weston_frame_callback *cb = resource->data;
+	struct weston_frame_callback *cb = wl_resource_get_user_data(resource);
 
 	wl_list_remove(&cb->link);
 	free(cb);
@@ -1465,13 +1465,10 @@ surface_frame(struct wl_client *client,
 		return;
 	}
 
-	cb->resource.object.interface = &wl_callback_interface;
-	cb->resource.object.id = callback;
-	cb->resource.destroy = destroy_frame_callback;
-	cb->resource.client = client;
-	cb->resource.data = cb;
+	cb->resource = wl_client_add_object(client, &wl_callback_interface,
+					    NULL, callback, cb);
+	wl_resource_set_destructor(cb->resource, destroy_frame_callback);
 
-	wl_client_add_resource(client, &cb->resource);
 	wl_list_insert(surface->pending.frame_callback_list.prev, &cb->link);
 }
 
@@ -2128,7 +2125,7 @@ weston_subsurface_cache_fini(struct weston_subsurface *sub)
 	struct weston_frame_callback *cb, *tmp;
 
 	wl_list_for_each_safe(cb, tmp, &sub->cached.frame_callback_list, link)
-		wl_resource_destroy(&cb->resource);
+		wl_resource_destroy(cb->resource);
 
 	weston_buffer_reference(&sub->cached.buffer_ref, NULL);
 	pixman_region32_fini(&sub->cached.damage);
