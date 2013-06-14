@@ -1029,6 +1029,31 @@ uint64 WebContentsImpl::GetUploadPosition() const {
   return upload_position_;
 }
 
+std::set<GURL> WebContentsImpl::GetSitesInTab() const {
+  BrowserContext* browser_context = GetBrowserContext();
+  std::set<GURL> sites;
+  if (!frame_tree_root_.get())
+    return sites;
+
+  // Iterates over the FrameTreeNodes to find each unique site URL that is
+  // currently committed.
+  FrameTreeNode* node = NULL;
+  std::queue<FrameTreeNode*> queue;
+  queue.push(frame_tree_root_.get());
+
+  while (!queue.empty()) {
+    node = queue.front();
+    queue.pop();
+    sites.insert(SiteInstance::GetSiteForURL(browser_context,
+                                             node->current_url()));
+
+    for (size_t i = 0; i < node->child_count(); ++i)
+      queue.push(node->child_at(i));
+  }
+
+  return sites;
+}
+
 const std::string& WebContentsImpl::GetEncoding() const {
   return encoding_;
 }
@@ -2939,6 +2964,13 @@ void WebContentsImpl::DidNavigate(
 
   LoadCommittedDetails details;
   bool did_navigate = controller_.RendererDidNavigate(params, &details);
+
+  // For now, keep track of each frame's URL in its FrameTreeNode.  This lets
+  // us estimate our process count for implementing OOP iframes.
+  // TODO(creis): Remove this when we track which pages commit in each frame.
+  FrameTreeNode* node = FindFrameTreeNodeByID(params.frame_id);
+  if (node)
+    node->set_current_url(params.url);
 
   // Send notification about committed provisional loads. This notification is
   // different from the NAV_ENTRY_COMMITTED notification which doesn't include

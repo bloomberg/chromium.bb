@@ -502,8 +502,7 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     // GetRelatedSiteInstance() for this, which will eagerly set the site and
     // thus use the correct process.
     bool use_process_per_site =
-        RenderProcessHostImpl::ShouldUseProcessPerSite(browser_context,
-                                                       dest_url) &&
+        RenderProcessHost::ShouldUseProcessPerSite(browser_context, dest_url) &&
         RenderProcessHostImpl::GetProcessHostForSite(browser_context, dest_url);
     if (curr_site_instance->HasRelatedSiteInstance(dest_url) ||
         use_process_per_site) {

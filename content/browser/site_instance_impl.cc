@@ -74,7 +74,7 @@ bool SiteInstanceImpl::HasProcess() const {
   BrowserContext* browser_context =
       browsing_instance_->browser_context();
   if (has_site_ &&
-      RenderProcessHostImpl::ShouldUseProcessPerSite(browser_context, site_) &&
+      RenderProcessHost::ShouldUseProcessPerSite(browser_context, site_) &&
       RenderProcessHostImpl::GetProcessHostForSite(browser_context, site_)) {
     return true;
   }
@@ -97,7 +97,7 @@ RenderProcessHost* SiteInstanceImpl::GetProcess() {
     // If we should use process-per-site mode (either in general or for the
     // given site), then look for an existing RenderProcessHost for the site.
     bool use_process_per_site = has_site_ &&
-        RenderProcessHostImpl::ShouldUseProcessPerSite(browser_context, site_);
+        RenderProcessHost::ShouldUseProcessPerSite(browser_context, site_);
     if (use_process_per_site) {
       process_ = RenderProcessHostImpl::GetProcessHostForSite(browser_context,
                                                               site_);
@@ -171,8 +171,7 @@ void SiteInstanceImpl::SetSite(const GURL& url) {
     LockToOrigin();
 
     // Ensure the process is registered for this site if necessary.
-    if (RenderProcessHostImpl::ShouldUseProcessPerSite(browser_context,
-                                                       site_)) {
+    if (RenderProcessHost::ShouldUseProcessPerSite(browser_context, site_)) {
       RenderProcessHostImpl::RegisterProcessHostForSite(
           browser_context, process_, site_);
     }

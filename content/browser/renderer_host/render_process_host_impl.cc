@@ -1523,7 +1523,7 @@ RenderProcessHost* RenderProcessHost::GetExistingProcessHost(
 }
 
 // static
-bool RenderProcessHostImpl::ShouldUseProcessPerSite(
+bool RenderProcessHost::ShouldUseProcessPerSite(
     BrowserContext* browser_context,
     const GURL& url) {
   // Returns true if we should use the process-per-site model.  This will be

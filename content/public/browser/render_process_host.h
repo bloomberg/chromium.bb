@@ -232,6 +232,12 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // not correspond to a live RenderProcessHost.
   static RenderProcessHost* FromID(int render_process_id);
 
+  // Returns whether the process-per-site model is in use (globally or just for
+  // the current site), in which case we should ensure there is only one
+  // RenderProcessHost per site for the entire browser context.
+  static bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
+                                      const GURL& url);
+
   // Returns true if the caller should attempt to use an existing
   // RenderProcessHost rather than creating a new one.
   static bool ShouldTryToUseExistingProcessHost(

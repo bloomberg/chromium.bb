@@ -156,12 +156,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
                              BrowserContext* browser_context,
                              const GURL& site_url);
 
-  // Returns whether the process-per-site model is in use (globally or just for
-  // the current site), in which case we should ensure there is only one
-  // RenderProcessHost per site for the entire browser context.
-  static bool ShouldUseProcessPerSite(BrowserContext* browser_context,
-                                      const GURL& url);
-
   // Returns an existing RenderProcessHost for |url| in |browser_context|,
   // if one exists.  Otherwise a new RenderProcessHost should be created and
   // registered using RegisterProcessHostForSite().

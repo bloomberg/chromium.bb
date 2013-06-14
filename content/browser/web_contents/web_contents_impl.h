@@ -228,6 +228,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual const string16& GetLoadStateHost() const OVERRIDE;
   virtual uint64 GetUploadSize() const OVERRIDE;
   virtual uint64 GetUploadPosition() const OVERRIDE;
+  virtual std::set<GURL> GetSitesInTab() const OVERRIDE;
   virtual const std::string& GetEncoding() const OVERRIDE;
   virtual bool DisplayedInsecureContent() const OVERRIDE;
   virtual void IncrementCapturerCount() OVERRIDE;

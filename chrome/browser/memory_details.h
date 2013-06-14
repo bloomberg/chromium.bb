@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/process_util.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/site_details.h"
 #include "content/public/common/process_type.h"
 
 // We collect data about each browser process.  A browser may
@@ -76,6 +77,10 @@ struct ProcessData {
   string16 name;
   string16 process_name;
   ProcessMemoryInformationList processes;
+
+  // Track site data for predicting process counts with out-of-process iframes.
+  // See site_details.h.
+  BrowserContextSiteDataMap site_data;
 };
 
 #if defined(OS_MACOSX)

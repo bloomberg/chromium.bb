@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
+#include "googleurl/src/gurl.h"
 
 namespace content {
 
@@ -42,6 +43,14 @@ class CONTENT_EXPORT FrameTreeNode {
     return children_[index];
   }
 
+  const GURL& current_url() const {
+    return current_url_;
+  }
+
+  void set_current_url(const GURL& url) {
+    current_url_ = url;
+  }
+
  private:
   // The unique identifier for the frame in the page.
   int64 frame_id_;
@@ -52,6 +61,12 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // The immediate children of this specific frame.
   std::vector<FrameTreeNode*> children_;
+
+  // Track the current frame's last committed URL, so we can estimate the
+  // process impact of out-of-process iframes.
+  // TODO(creis): Remove this when we can store subframe URLs in the
+  // NavigationController.
+  GURL current_url_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTreeNode);
 };

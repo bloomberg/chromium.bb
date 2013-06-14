@@ -1868,6 +1868,8 @@
         'browser/signin/token_service_factory.h',
         'browser/signin/ubertoken_fetcher.cc',
         'browser/signin/ubertoken_fetcher.h',
+        'browser/site_details.cc',
+        'browser/site_details.h',
         'browser/speech/chrome_speech_recognition_manager_delegate.cc',
         'browser/speech/chrome_speech_recognition_manager_delegate.h',
         'browser/speech/chrome_speech_recognition_preferences.cc',

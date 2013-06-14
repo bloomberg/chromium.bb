@@ -250,8 +250,12 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
             RenderViewHost::From(const_cast<RenderWidgetHost*>(widget));
         WebContents* contents = WebContents::FromRenderViewHost(host);
         GURL url;
-        if (contents)
+        if (contents) {
           url = contents->GetURL();
+          SiteData* site_data =
+              &chrome_browser->site_data[contents->GetBrowserContext()];
+          SiteDetails::CollectSiteInfo(contents, site_data);
+        }
         extensions::ViewType type = extensions::GetViewType(contents);
         if (host->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI) {
           process.renderer_type = ProcessMemoryInformation::RENDERER_CHROME;
@@ -381,6 +385,7 @@ void MemoryDetails::UpdateHistograms() {
   int renderer_count = 0;
   int other_count = 0;
   int worker_count = 0;
+  int process_limit = content::RenderProcessHost::GetMaxRendererProcessCount();
   for (size_t index = 0; index < browser.processes.size(); index++) {
     int sample = static_cast<int>(browser.processes[index].working_set.priv);
     aggregate_memory += sample;
@@ -467,6 +472,7 @@ void MemoryDetails::UpdateHistograms() {
     UMA_HISTOGRAM_MEMORY_MB("Memory.Graphics", meminfo.gem_size / 1024 / 1024);
 #endif
 
+  UMA_HISTOGRAM_COUNTS_100("Memory.ProcessLimit", process_limit);
   UMA_HISTOGRAM_COUNTS_100("Memory.ProcessCount",
       static_cast<int>(browser.processes.size()));
   UMA_HISTOGRAM_COUNTS_100("Memory.ChromeProcessCount", chrome_count);
@@ -484,4 +490,11 @@ void MemoryDetails::UpdateHistograms() {
 
   int total_sample = static_cast<int>(aggregate_memory / 1000);
   UMA_HISTOGRAM_MEMORY_MB("Memory.Total", total_sample);
+
+  // Predict the number of processes needed when isolating all sites and when
+  // isolating only HTTPS sites.
+  int all_renderer_count = renderer_count + chrome_count + extension_count;
+  int non_renderer_count = browser.processes.size() - all_renderer_count;
+  SiteDetails::UpdateHistograms(browser.site_data, all_renderer_count,
+                                non_renderer_count);
 }
