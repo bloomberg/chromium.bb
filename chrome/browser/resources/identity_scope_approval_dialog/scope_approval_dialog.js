@@ -13,6 +13,13 @@ var webview;
  *     window.
  */
 function loadAuthUrlAndShowWindow(url, win) {
+  // Send popups from the webview to a normal browser window.
+  webview.addEventListener('newwindow', function(e) {
+    e.window.discard();
+    window.open(e.targetUrl);
+  });
+
+  // Request a customized view from GAIA.
   webview.onBeforeSendHeaders.addListener(function(details) {
     headers = details.requestHeaders || [];
     headers.push({'name': 'X-Browser-View',
@@ -21,6 +28,7 @@ function loadAuthUrlAndShowWindow(url, win) {
   }, {
     urls: ['https://accounts.google.com/*'],
   }, ['blocking', 'requestHeaders']);
+
   webview.src = url;
   if (win) {
     webview.addEventListener('loadstop', function() {
