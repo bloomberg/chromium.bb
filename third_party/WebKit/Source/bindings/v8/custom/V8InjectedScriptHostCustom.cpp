@@ -65,7 +65,8 @@ Node* InjectedScriptHost::scriptValueAsNode(ScriptValue value)
 {
     if (!value.isObject() || value.isNull())
         return 0;
-    return V8Node::toNative(v8::Handle<v8::Object>::Cast(value.v8ValueRaw()));
+    v8::HandleScope scope(v8::Isolate::GetCurrent());
+    return V8Node::toNative(v8::Handle<v8::Object>::Cast(value.v8Value()));
 }
 
 ScriptValue InjectedScriptHost::nodeAsScriptValue(ScriptState* state, Node* node)
@@ -406,4 +407,3 @@ void V8InjectedScriptHost::removeBreakpointMethodCustom(const v8::FunctionCallba
 
 
 } // namespace WebCore
-

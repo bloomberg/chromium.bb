@@ -79,7 +79,11 @@ public:
 
     bool operator==(const ScriptValue& value) const
     {
-        return v8ValueRaw() == value.v8ValueRaw();
+        if (hasNoValue())
+            return value.hasNoValue();
+        if (value.hasNoValue())
+            return false;
+        return *m_value == *value.m_value;
     }
 
     bool isEqual(ScriptState*, const ScriptValue& value) const
@@ -90,7 +94,7 @@ public:
     bool isFunction() const
     {
         ASSERT(!hasNoValue());
-        return v8ValueRaw()->IsFunction();
+        return m_value->isFunction();
     }
 
     bool operator!=(const ScriptValue& value) const
@@ -101,24 +105,24 @@ public:
     bool isNull() const
     {
         ASSERT(!hasNoValue());
-        return v8ValueRaw()->IsNull();
+        return m_value->isNull();
     }
 
     bool isUndefined() const
     {
         ASSERT(!hasNoValue());
-        return v8ValueRaw()->IsUndefined();
+        return m_value->isUndefined();
     }
 
     bool isObject() const
     {
         ASSERT(!hasNoValue());
-        return v8ValueRaw()->IsObject();
+        return m_value->isObject();
     }
 
     bool hasNoValue() const
     {
-        return !m_value.get() || m_value->get().IsEmpty();
+        return !m_value.get() || m_value->isEmpty();
     }
 
     PassRefPtr<SerializedScriptValue> serialize(ScriptState*);
@@ -132,17 +136,12 @@ public:
 
     v8::Handle<v8::Value> v8Value() const
     {
-        return v8::Local<v8::Value>::New(v8ValueRaw());
+        return m_value.get() ? m_value->newLocal(v8::Isolate::GetCurrent()) : v8::Handle<v8::Value>();
     }
 
-    // FIXME: This function should be private. 
-    v8::Handle<v8::Value> v8ValueRaw() const
-    {
-        return m_value.get() ? m_value->get() : v8::Handle<v8::Value>();
-    }
-
-    bool getString(ScriptState*, String& result) const { return getString(result); }
-    bool getString(String& result) const;
+    bool getString(ScriptState* scriptState, String& result) const { return getString(result, scriptState->isolate()); }
+    bool getString(String& result) const { return getString(result, v8::Isolate::GetCurrent()); }
+    bool getString(String& result, v8::Isolate*) const;
     String toString(ScriptState*) const;
 
     PassRefPtr<InspectorValue> toInspectorValue(ScriptState*) const;

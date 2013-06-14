@@ -40,15 +40,30 @@ namespace WebCore {
 
     template <typename T>
     class SharedPersistent : public RefCounted<SharedPersistent<T> > {
+    WTF_MAKE_NONCOPYABLE(SharedPersistent);
     public:
         static PassRefPtr<SharedPersistent<T> > create(v8::Handle<T> value)
         {
             return adoptRef(new SharedPersistent<T>(value));
         }
-        inline v8::Handle<T> get()
+
+        v8::Local<T> newLocal(v8::Isolate* isolate) const
         {
-            return m_value.get();
+            return m_value.newLocal(isolate);
         }
+
+        bool isEmpty() { return m_value.isEmpty(); }
+        bool isNull() { return m_value.isNull(); }
+        bool isUndefined() { return m_value.isUndefined(); }
+        bool isFunction() { return m_value.isFunction(); }
+        bool isString() { return m_value.isString(); }
+        bool isObject() { return m_value.isObject(); }
+
+        bool operator==(const SharedPersistent<T>& other)
+        {
+            return m_value == other.m_value;
+        }
+
     private:
         explicit SharedPersistent(v8::Handle<T> value) : m_value(value) { }
         ScopedPersistent<T> m_value;

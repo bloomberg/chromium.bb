@@ -71,6 +71,11 @@ public:
     }
 
     bool isEmpty() const { return m_handle.IsEmpty(); }
+    bool isNull() { return get()->IsNull(); }
+    bool isUndefined() { return get()->IsUndefined(); }
+    bool isFunction() { return get()->IsFunction(); }
+    bool isObject() { return get()->IsObject(); }
+    bool isString() { return get()->IsString(); }
 
     void set(v8::Isolate* isolate, v8::Handle<T> handle)
     {
@@ -84,6 +89,11 @@ public:
             return;
         m_handle.Dispose();
         m_handle.Clear();
+    }
+
+    bool operator==(const ScopedPersistent<T>& other)
+    {
+        return m_handle == other.m_handle;
     }
 
 private:
