@@ -48,11 +48,7 @@ namespace views {
 
 class NativeScrollBarTest : public ViewsTestBase {
  public:
-  NativeScrollBarTest()
-    : widget_(NULL),
-      scrollbar_(NULL),
-      controller_(NULL) {
-  }
+  NativeScrollBarTest() : widget_(NULL), scrollbar_(NULL) {}
 
   virtual void SetUp() {
     ViewsTestBase::SetUp();

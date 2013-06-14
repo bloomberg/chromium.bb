@@ -79,9 +79,7 @@ class NativeComboboxViewsTest : public ViewsTestBase {
       : widget_(NULL),
         combobox_(NULL),
         combobox_view_(NULL),
-        model_(NULL),
-        input_method_(NULL) {
-  }
+        input_method_(NULL) {}
 
   // ::testing::Test:
   virtual void SetUp() {

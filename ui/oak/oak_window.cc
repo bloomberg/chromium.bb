@@ -29,8 +29,7 @@ views::Widget* OakWindow::instance = NULL;
 ////////////////////////////////////////////////////////////////////////////////
 // OakWindow, public:
 
-OakWindow::OakWindow() : tree_(NULL), tree_container_(NULL), details_(NULL) {
-}
+OakWindow::OakWindow() : tree_container_(NULL) {}
 
 OakWindow::~OakWindow() {
   // The tree/table need to be destroyed before the model.

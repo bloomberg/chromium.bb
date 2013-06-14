@@ -83,8 +83,7 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
       skip_input_method_cancel_composition_(false),
       initiating_drag_(false),
       cursor_timer_(this),
-      aggregated_clicks_(0),
-      touch_selection_controller_(NULL) {
+      aggregated_clicks_(0) {
   set_border(text_border_);
 
 #if defined(OS_CHROMEOS)
