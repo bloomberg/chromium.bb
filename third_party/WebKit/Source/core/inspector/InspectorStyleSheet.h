@@ -203,6 +203,7 @@ public:
     virtual bool getText(String* result) const;
     virtual CSSStyleDeclaration* styleForId(const InspectorCSSId&) const;
     void fireStyleSheetChanged();
+    PassRefPtr<TypeBuilder::CSS::SourceRange> ruleHeaderSourceRange(const CSSRule*);
 
     InspectorCSSId ruleId(CSSStyleRule*) const;
     InspectorCSSId styleId(CSSStyleDeclaration* style) const { return ruleOrStyleId(style); }
@@ -212,8 +213,9 @@ protected:
 
     InspectorCSSId ruleOrStyleId(CSSStyleDeclaration* style) const;
     virtual Document* ownerDocument() const;
-    virtual PassRefPtr<CSSRuleSourceData> ruleSourceDataFor(CSSStyleDeclaration* style) const;
+    virtual PassRefPtr<CSSRuleSourceData> ruleSourceDataFor(CSSStyleDeclaration*) const;
     virtual unsigned ruleIndexByStyle(CSSStyleDeclaration*) const;
+    virtual unsigned ruleIndexByRule(const CSSRule*) const;
     virtual bool ensureParsedDataReady();
     virtual PassRefPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&);
     virtual String sourceMapURL() const;

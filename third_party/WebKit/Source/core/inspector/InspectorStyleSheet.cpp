@@ -1399,6 +1399,17 @@ void InspectorStyleSheet::fireStyleSheetChanged()
         m_listener->styleSheetChanged(this);
 }
 
+PassRefPtr<TypeBuilder::CSS::SourceRange> InspectorStyleSheet::ruleHeaderSourceRange(const CSSRule* rule)
+{
+    if (!ensureParsedDataReady())
+        return 0;
+
+    RefPtr<CSSRuleSourceData> sourceData = m_parsedStyleSheet->ruleSourceDataAt(ruleIndexByRule(rule));
+    if (!sourceData)
+        return 0;
+    return buildSourceRangeObject(sourceData->ruleHeaderRange, lineEndings().get());
+}
+
 PassRefPtr<InspectorStyle> InspectorStyleSheet::inspectorStyleForId(const InspectorCSSId& id)
 {
     CSSStyleDeclaration* style = styleForId(id);
@@ -1519,6 +1530,13 @@ unsigned InspectorStyleSheet::ruleIndexByStyle(CSSStyleDeclaration* pageStyle) c
             return i;
     }
     return UINT_MAX;
+}
+
+unsigned InspectorStyleSheet::ruleIndexByRule(const CSSRule* rule) const
+{
+    ensureFlatRules();
+    size_t index = m_flatRules.find(rule);
+    return index == notFound ? UINT_MAX : static_cast<unsigned>(index);
 }
 
 bool InspectorStyleSheet::checkPageStyleSheet(ExceptionCode& ec) const

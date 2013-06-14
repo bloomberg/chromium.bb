@@ -603,7 +603,7 @@ private:
 // static
 CSSStyleRule* InspectorCSSAgent::asCSSStyleRule(CSSRule* rule)
 {
-    if (rule->type() != CSSRule::STYLE_RULE)
+    if (!rule || rule->type() != CSSRule::STYLE_RULE)
         return 0;
     return static_cast<CSSStyleRule*>(rule);
 }
@@ -1217,6 +1217,14 @@ PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const
     if (!sourceURL.isEmpty()) {
         mediaObject->setSourceURL(sourceURL);
         mediaObject->setSourceLine(media->queries()->lastLine());
+
+        CSSRule* parentRule = media->parentRule();
+        if (!parentRule)
+            return mediaObject.release();
+        InspectorStyleSheet* inspectorStyleSheet = bindStyleSheet(const_cast<CSSStyleSheet*>(parentRule->parentStyleSheet()));
+        RefPtr<TypeBuilder::CSS::SourceRange> mediaRange = inspectorStyleSheet->ruleHeaderSourceRange(parentRule);
+        if (mediaRange)
+            mediaObject->setRange(mediaRange);
     }
     return mediaObject.release();
 }
