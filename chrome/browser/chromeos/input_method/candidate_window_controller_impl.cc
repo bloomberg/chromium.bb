@@ -105,9 +105,7 @@ void CandidateWindowControllerImpl::CreateView() {
 
 CandidateWindowControllerImpl::CandidateWindowControllerImpl()
     : candidate_window_(NULL),
-      infolist_window_(NULL),
-      latest_infolist_focused_index_(InfolistWindowView::InvalidFocusIndex()) {
-}
+      latest_infolist_focused_index_(InfolistWindowView::InvalidFocusIndex()) {}
 
 CandidateWindowControllerImpl::~CandidateWindowControllerImpl() {
   if (DBusThreadManager::Get()->GetIBusPanelService())

@@ -114,7 +114,6 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   BookmarkBarViewEventTestBase()
       : ViewEventTestBase(),
         model_(NULL),
-        bb_view_(NULL),
         file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {}
 
   virtual void SetUp() OVERRIDE {

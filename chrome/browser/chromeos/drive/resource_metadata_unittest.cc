@@ -860,8 +860,7 @@ TEST_F(ResourceMetadataTestOnUIThread, Reset) {
 class ResourceMetadataTest : public testing::Test {
  protected:
   ResourceMetadataTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        resource_metadata_(NULL) {}
+      : ui_thread_(content::BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

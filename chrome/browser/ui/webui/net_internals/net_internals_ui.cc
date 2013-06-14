@@ -929,7 +929,6 @@ NetInternalsMessageHandler::SystemLogsGetter::SystemLogsGetter(
     chromeos::system::SyslogsProvider* syslogs_provider)
     : handler_(handler),
       syslogs_provider_(syslogs_provider),
-      logs_(NULL),
       logs_received_(false),
       logs_requested_(false) {
   if (!syslogs_provider_)

@@ -169,7 +169,6 @@ class LoginUtilsTest : public testing::Test,
         mock_input_method_manager_(NULL),
         mock_async_method_caller_(NULL),
         connector_(NULL),
-        cryptohome_(NULL),
         prepared_profile_(NULL) {}
 
   virtual void SetUp() OVERRIDE {

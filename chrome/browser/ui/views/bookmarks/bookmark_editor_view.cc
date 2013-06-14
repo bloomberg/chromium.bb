@@ -65,7 +65,6 @@ BookmarkEditorView::BookmarkEditorView(
     BookmarkEditor::Configuration configuration)
     : profile_(profile),
       tree_view_(NULL),
-      new_folder_button_(NULL),
       url_label_(NULL),
       url_tf_(NULL),
       title_label_(NULL),

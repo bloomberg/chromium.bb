@@ -117,8 +117,7 @@ const int BrowserViewLayout::kToolbarTabStripVerticalOverlap = 3;
 // BrowserViewLayout, public:
 
 BrowserViewLayout::BrowserViewLayout()
-    : delegate_(NULL),
-      browser_(NULL),
+    : browser_(NULL),
       browser_view_(NULL),
       top_container_(NULL),
       tab_strip_(NULL),
@@ -131,8 +130,7 @@ BrowserViewLayout::BrowserViewLayout()
       download_shelf_(NULL),
       immersive_mode_controller_(NULL),
       dialog_host_(new WebContentsModalDialogHostViews(this)),
-      web_contents_modal_dialog_top_y_(-1) {
-}
+      web_contents_modal_dialog_top_y_(-1) {}
 
 BrowserViewLayout::~BrowserViewLayout() {
 }

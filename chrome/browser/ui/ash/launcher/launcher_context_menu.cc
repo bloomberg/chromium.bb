@@ -42,7 +42,6 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
       controller_(controller),
       item_(*item),
       launcher_alignment_menu_(root),
-      extension_items_(NULL),
       root_window_(root) {
   DCHECK(item);
   DCHECK(root_window_);

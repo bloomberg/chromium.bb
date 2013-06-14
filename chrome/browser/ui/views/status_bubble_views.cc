@@ -548,7 +548,6 @@ const int StatusBubbleViews::kShadowThickness = 1;
 StatusBubbleViews::StatusBubbleViews(views::View* base_view)
     : contains_mouse_(false),
       offset_(0),
-      popup_(NULL),
       opacity_(0),
       base_view_(base_view),
       view_(NULL),

@@ -97,10 +97,7 @@ class SystemInfoHandler : public WebUIMessageHandler,
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-SystemInfoUIHTMLSource::SystemInfoUIHTMLSource()
-    : response_(NULL),
-      weak_ptr_factory_(this) {
-}
+SystemInfoUIHTMLSource::SystemInfoUIHTMLSource() : weak_ptr_factory_(this) {}
 
 std::string SystemInfoUIHTMLSource::GetSource() const {
   return chrome::kChromeUISystemInfoHost;

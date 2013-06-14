@@ -451,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,
   chrome::ToggleFullscreenMode(browser());
   ASSERT_TRUE(controller()->IsEnabled());
 
-  scoped_ptr<ImmersiveRevealedLock> lock(NULL);
+  scoped_ptr<ImmersiveRevealedLock> lock;
 
   // 1) Test that if the mouse becomes hovered without the mouse moving due to a
   // lock causing the top-of-window views to be revealed (and the mouse
@@ -496,8 +496,8 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,
 
 // GetRevealedLock() specific tests.
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, RevealedLock) {
-  scoped_ptr<ImmersiveRevealedLock> lock1(NULL);
-  scoped_ptr<ImmersiveRevealedLock> lock2(NULL);
+  scoped_ptr<ImmersiveRevealedLock> lock1;
+  scoped_ptr<ImmersiveRevealedLock> lock2;
 
   // Immersive mode is not on by default.
   EXPECT_FALSE(controller()->IsEnabled());

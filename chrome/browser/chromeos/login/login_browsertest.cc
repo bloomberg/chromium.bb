@@ -36,9 +36,7 @@ namespace {
 
 class LoginTestBase : public chromeos::CrosInProcessBrowserTest {
  public:
-  LoginTestBase()
-    : mock_cryptohome_library_(NULL) {
-  }
+  LoginTestBase() {}
 
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {

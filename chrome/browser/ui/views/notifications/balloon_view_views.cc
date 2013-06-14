@@ -94,10 +94,7 @@ BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
       collection_(collection),
       frame_container_(NULL),
       html_container_(NULL),
-      html_contents_(NULL),
       close_button_(NULL),
-      animation_(NULL),
-      options_menu_model_(NULL),
       options_menu_button_(NULL),
       enable_web_ui_(false),
       closed_by_user_(false) {

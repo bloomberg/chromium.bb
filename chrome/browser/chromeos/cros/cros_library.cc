@@ -21,10 +21,7 @@ namespace chromeos {
 
 static CrosLibrary* g_cros_library = NULL;
 
-CrosLibrary::CrosLibrary(bool use_stub)
-    : use_stub_impl_(use_stub),
-      test_api_(NULL) {
-}
+CrosLibrary::CrosLibrary(bool use_stub) : use_stub_impl_(use_stub) {}
 
 CrosLibrary::~CrosLibrary() {
 }

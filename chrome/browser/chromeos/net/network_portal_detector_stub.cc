@@ -8,9 +8,7 @@
 
 namespace chromeos {
 
-NetworkPortalDetectorStub::NetworkPortalDetectorStub()
-  : default_network_(NULL) {
-}
+NetworkPortalDetectorStub::NetworkPortalDetectorStub() {}
 
 NetworkPortalDetectorStub::~NetworkPortalDetectorStub() {
 }

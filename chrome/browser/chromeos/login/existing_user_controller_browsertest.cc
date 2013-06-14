@@ -83,10 +83,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest,
                                    public testing::WithParamInterface<bool> {
  protected:
   ExistingUserControllerTest()
-     :  mock_login_display_(NULL),
-        mock_user_manager_(NULL),
-        testing_profile_(NULL) {
-  }
+      : mock_login_display_(NULL), mock_user_manager_(NULL) {}
 
   ExistingUserController* existing_user_controller() {
     return ExistingUserController::current_controller();

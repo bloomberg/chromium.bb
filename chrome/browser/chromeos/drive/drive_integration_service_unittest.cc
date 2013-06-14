@@ -16,9 +16,8 @@ namespace drive {
 
 class DriveIntegrationServiceTest : public testing::Test {
  public:
-  DriveIntegrationServiceTest() :
-      ui_thread_(content::BrowserThread::UI, &message_loop_),
-      integration_service_(NULL) {}
+  DriveIntegrationServiceTest()
+      : ui_thread_(content::BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile);
