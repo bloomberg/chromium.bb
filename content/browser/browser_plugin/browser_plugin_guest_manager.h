@@ -80,8 +80,7 @@ class CONTENT_EXPORT BrowserPluginGuestManager :
   bool CanEmbedderAccessInstanceIDMaybeKill(int embedder_render_process_id,
                                             int instance_id) const;
 
-  void DidSendScreenRects(WebContents* embedder_web_contents,
-                          RenderWidgetHostImpl* rwh);
+  void DidSendScreenRects(WebContentsImpl* embedder_web_contents);
 
   void OnMessageReceived(const IPC::Message& message, int render_process_id);
 

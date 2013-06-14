@@ -1706,7 +1706,7 @@ void WebContentsImpl::RequestMediaAccessPermission(
 
 void WebContentsImpl::DidSendScreenRects(RenderWidgetHostImpl* rwh) {
   if (browser_plugin_embedder_)
-    browser_plugin_embedder_->DidSendScreenRects(rwh);
+    browser_plugin_embedder_->DidSendScreenRects();
 }
 
 void WebContentsImpl::UpdatePreferredSize(const gfx::Size& pref_size) {

@@ -231,7 +231,7 @@ void BrowserPluginGuestManager::OnUnhandledSwapBuffersACK(
 }
 
 void BrowserPluginGuestManager::DidSendScreenRects(
-    WebContents* embedder_web_contents, RenderWidgetHostImpl* rwh) {
+    WebContentsImpl* embedder_web_contents) {
   // TODO(lazyboy): Generalize iterating over guest instances and performing
   // actions on the guests.
   for (GuestInstanceMap::iterator it =

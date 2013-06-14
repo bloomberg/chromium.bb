@@ -51,7 +51,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
       const WebContents::GetRenderViewHostCallback& callback);
 
   // Called when embedder's |rwh| has sent screen rects to renderer.
-  void DidSendScreenRects(RenderWidgetHostImpl* rwh);
+  void DidSendScreenRects();
 
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.

@@ -76,8 +76,9 @@ void BrowserPluginEmbedder::GetRenderViewHostAtPosition(
   ++next_get_render_view_request_id_;
 }
 
-void BrowserPluginEmbedder::DidSendScreenRects(RenderWidgetHostImpl* rwh) {
-  GetBrowserPluginGuestManager()->DidSendScreenRects(web_contents(), rwh);
+void BrowserPluginEmbedder::DidSendScreenRects() {
+  GetBrowserPluginGuestManager()->DidSendScreenRects(
+      static_cast<WebContentsImpl*>(web_contents()));
 }
 
 void BrowserPluginEmbedder::RenderViewGone(base::TerminationStatus status) {
