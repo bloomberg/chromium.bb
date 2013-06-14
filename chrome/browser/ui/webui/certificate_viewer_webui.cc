@@ -86,7 +86,7 @@ GURL CertificateViewerDialog::GetDialogContentURL() const {
 
 void CertificateViewerDialog::GetWebUIMessageHandlers(
     std::vector<WebUIMessageHandler*>* handlers) const {
-  handlers->push_back(new CertificateViewerDialogHandler(window_, cert_));
+  handlers->push_back(new CertificateViewerDialogHandler(window_, cert_.get()));
 }
 
 void CertificateViewerDialog::GetDialogSize(gfx::Size* size) const {

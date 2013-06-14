@@ -421,7 +421,7 @@ void RasterWorkerPool::ScheduleRasterTasks(const RootTask& root) {
   scoped_refptr<internal::WorkerPoolTask> new_root(root.internal_);
 
   TaskGraph graph;
-  BuildTaskGraph(new_root, &graph);
+  BuildTaskGraph(new_root.get(), &graph);
   WorkerPool::SetTaskGraph(&graph);
 
   root_.swap(new_root);

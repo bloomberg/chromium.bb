@@ -498,7 +498,7 @@ void LoginUtilsImpl::CompleteProfileCreate(Profile* user_profile) {
 
 void LoginUtilsImpl::RestoreAuthSession(Profile* user_profile,
                                         bool restore_from_auth_cookies) {
-  CHECK((authenticator_ && authenticator_->authentication_profile()) ||
+  CHECK((authenticator_.get() && authenticator_->authentication_profile()) ||
         !restore_from_auth_cookies);
   if (!login_manager_.get())
     return;
@@ -514,9 +514,9 @@ void LoginUtilsImpl::RestoreAuthSession(Profile* user_profile,
   // all other tokens and user_context.
   login_manager_->RestoreSession(
       user_profile,
-      authenticator_ && authenticator_->authentication_profile() ?
-          authenticator_->authentication_profile()->GetRequestContext() :
-          NULL,
+      authenticator_.get() && authenticator_->authentication_profile()
+          ? authenticator_->authentication_profile()->GetRequestContext()
+          : NULL,
       session_restore_strategy_,
       oauth2_refresh_token_,
       user_context_.auth_code);
@@ -722,12 +722,12 @@ scoped_refptr<Authenticator> LoginUtilsImpl::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
   // Screen locker needs new Authenticator instance each time.
   if (ScreenLocker::default_screen_locker()) {
-    if (authenticator_)
+    if (authenticator_.get())
       authenticator_->SetConsumer(NULL);
     authenticator_ = NULL;
   }
 
-  if (authenticator_ == NULL) {
+  if (authenticator_.get() == NULL) {
     authenticator_ = new ParallelAuthenticator(consumer);
   } else {
     // TODO(nkostylev): Fix this hack by improving Authenticator dependencies.

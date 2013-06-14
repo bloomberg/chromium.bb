@@ -77,7 +77,7 @@ class DeviceCloudPolicyManagerChromeOSTest
     request_context_getter_ = new net::TestURLRequestContextGetter(
         loop_.message_loop_proxy());
     TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
-        request_context_getter_);
+        request_context_getter_.get());
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
     chromeos::DeviceOAuth2TokenServiceFactory::Initialize();
     chromeos::CryptohomeLibrary::SetForTest(cryptohome_library_.get());

@@ -98,7 +98,7 @@ TEST(FileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
   scoped_refptr<fileapi::FileSystemContext> context(
       new fileapi::FileSystemContext(
           fileapi::FileSystemTaskRunners::CreateMockTaskRunners(),
-          mount_points,
+          mount_points.get(),
           NULL,  // special_storage_policy
           NULL,  // quota_manager_proxy,
           ScopedVector<fileapi::FileSystemMountPointProvider>(),

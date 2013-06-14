@@ -157,7 +157,7 @@ void BluetoothProfileChromeOS::NewConnection(
   // base::Passed is used to take ownership of the file descriptor during the
   // CheckValidity() call and pass that ownership to the GetAdapter() call.
   base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(false),
+      base::WorkerPool::GetTaskRunner(false).get(),
       FROM_HERE,
       base::Bind(&CheckValidity, base::Passed(&fd)),
       base::Bind(&BluetoothProfileChromeOS::GetAdapter,

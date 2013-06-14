@@ -133,11 +133,10 @@ void CopyOperation::OnGetFileCompleteForTransferFile(
   // copied to the actual destination path on the local file system using
   // CopyLocalFileOnBlockingPool.
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&CopyLocalFileOnBlockingPool,
-                 local_file_path,
-                 local_dest_file_path),
+      base::Bind(
+          &CopyLocalFileOnBlockingPool, local_file_path, local_dest_file_path),
       callback);
 }
 
@@ -208,7 +207,7 @@ void CopyOperation::ScheduleTransferRegularFileAfterGetResourceEntry(
 
   ResourceEntry* entry_ptr = entry.get();
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&StoreAndMarkDirty,
                  cache_,
@@ -384,7 +383,7 @@ void CopyOperation::OnCopyResourceCompleted(
   // The copy on the server side is completed successfully. Update the local
   // metadata.
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&internal::ResourceMetadata::AddEntry,
                  base::Unretained(metadata_),
@@ -434,7 +433,7 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterGetResourceEntry(
 
   if (util::HasGDocFileExtension(local_src_file_path)) {
     base::PostTaskAndReplyWithResult(
-        blocking_task_runner_,
+        blocking_task_runner_.get(),
         FROM_HERE,
         base::Bind(&util::ReadResourceIdFromGDocFile, local_src_file_path),
         base::Bind(&CopyOperation::TransferFileForResourceId,

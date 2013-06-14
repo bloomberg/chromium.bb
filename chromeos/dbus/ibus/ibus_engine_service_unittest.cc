@@ -396,77 +396,87 @@ class IBusEngineServiceTest : public testing::Test {
                 GetExportedObject(dbus::ObjectPath(kObjectPath)))
         .WillOnce(Return(mock_exported_object_.get()));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::engine::kServiceInterface,
-        ibus::engine::kFocusInMethod , _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusEngineServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::engine::kServiceInterface,
+                             ibus::engine::kFocusInMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusEngineServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::engine::kServiceInterface,
-        ibus::engine::kFocusOutMethod , _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusEngineServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::engine::kServiceInterface,
+                             ibus::engine::kFocusOutMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusEngineServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::engine::kServiceInterface,
-        ibus::engine::kEnableMethod , _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusEngineServiceTest::OnMethodExported));
+    EXPECT_CALL(
+        *mock_exported_object_.get(),
+        ExportMethod(
+            ibus::engine::kServiceInterface, ibus::engine::kEnableMethod, _, _))
+        .WillRepeatedly(Invoke(this, &IBusEngineServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::engine::kServiceInterface,
-        ibus::engine::kDisableMethod , _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusEngineServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::engine::kServiceInterface,
+                             ibus::engine::kDisableMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusEngineServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::engine::kServiceInterface,
-        ibus::engine::kPropertyActivateMethod , _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusEngineServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::engine::kServiceInterface,
+                             ibus::engine::kPropertyActivateMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusEngineServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::engine::kServiceInterface,
-        ibus::engine::kPropertyShowMethod , _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusEngineServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::engine::kServiceInterface,
+                             ibus::engine::kPropertyShowMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusEngineServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::engine::kServiceInterface,
-        ibus::engine::kPropertyHideMethod , _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusEngineServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::engine::kServiceInterface,
+                             ibus::engine::kPropertyHideMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusEngineServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::engine::kServiceInterface,
-        ibus::engine::kSetCapabilityMethod , _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusEngineServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::engine::kServiceInterface,
+                             ibus::engine::kSetCapabilityMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusEngineServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::engine::kServiceInterface,
-        ibus::engine::kResetMethod , _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusEngineServiceTest::OnMethodExported));
+    EXPECT_CALL(
+        *mock_exported_object_.get(),
+        ExportMethod(
+            ibus::engine::kServiceInterface, ibus::engine::kResetMethod, _, _))
+        .WillRepeatedly(Invoke(this, &IBusEngineServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::engine::kServiceInterface,
-        ibus::engine::kProcessKeyEventMethod , _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusEngineServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::engine::kServiceInterface,
+                             ibus::engine::kProcessKeyEventMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusEngineServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::engine::kServiceInterface,
-        ibus::engine::kCandidateClickedMethod , _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusEngineServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::engine::kServiceInterface,
+                             ibus::engine::kCandidateClickedMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusEngineServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::engine::kServiceInterface,
-        ibus::engine::kSetSurroundingTextMethod , _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusEngineServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::engine::kServiceInterface,
+                             ibus::engine::kSetSurroundingTextMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusEngineServiceTest::OnMethodExported));
 
     // Suppress uninteresting mock function call warning.
     EXPECT_CALL(*mock_bus_.get(),
@@ -1021,9 +1031,8 @@ TEST_F(IBusEngineServiceTest, RegisterProperties) {
   property_list[0]->set_checked(true);
 
   RegisterPropertiesExpectation expectation(property_list);
-  EXPECT_CALL(*mock_exported_object_, SendSignal(_))
-      .WillOnce(Invoke(&expectation,
-                       &RegisterPropertiesExpectation::Evaluate));
+  EXPECT_CALL(*mock_exported_object_.get(), SendSignal(_))
+      .WillOnce(Invoke(&expectation, &RegisterPropertiesExpectation::Evaluate));
   // Emit signal.
   service_->RegisterProperties(property_list);
 }
@@ -1038,7 +1047,7 @@ TEST_F(IBusEngineServiceTest, UpdatePreeditTest) {
       IBusEngineService::IBUS_ENGINE_PREEEDIT_FOCUS_OUT_MODE_CLEAR;
   UpdatePreeditExpectation expectation(ibus_text, kCursorPos, kIsVisible,
                                        kPreeditMode);
-  EXPECT_CALL(*mock_exported_object_, SendSignal(_))
+  EXPECT_CALL(*mock_exported_object_.get(), SendSignal(_))
       .WillOnce(Invoke(&expectation, &UpdatePreeditExpectation::Evaluate));
 
   // Emit signal.
@@ -1051,9 +1060,8 @@ TEST_F(IBusEngineServiceTest, UpdateAuxiliaryText) {
   const bool kIsVisible = false;
   UpdateAuxiliaryTextExpectation expectation(ibus_text, kIsVisible);
 
-  EXPECT_CALL(*mock_exported_object_, SendSignal(_))
-      .WillOnce(Invoke(&expectation,
-                       &UpdateAuxiliaryTextExpectation::Evaluate));
+  EXPECT_CALL(*mock_exported_object_.get(), SendSignal(_)).WillOnce(
+      Invoke(&expectation, &UpdateAuxiliaryTextExpectation::Evaluate));
 
   // Emit signal.
   service_->UpdateAuxiliaryText(ibus_text, kIsVisible);
@@ -1067,9 +1075,8 @@ TEST_F(IBusEngineServiceTest, UpdateLookupTableTest) {
   const bool kIsVisible = true;
 
   UpdateLookupTableExpectation expectation(lookup_table, kIsVisible);
-  EXPECT_CALL(*mock_exported_object_, SendSignal(_))
-      .WillOnce(Invoke(&expectation,
-                       &UpdateLookupTableExpectation::Evaluate));
+  EXPECT_CALL(*mock_exported_object_.get(), SendSignal(_))
+      .WillOnce(Invoke(&expectation, &UpdateLookupTableExpectation::Evaluate));
 
   // Emit signal.
   service_->UpdateLookupTable(lookup_table, kIsVisible);
@@ -1085,9 +1092,8 @@ TEST_F(IBusEngineServiceTest, UpdatePropertyTest) {
   property.set_checked(true);
 
   UpdatePropertyExpectation expectation(property);
-  EXPECT_CALL(*mock_exported_object_, SendSignal(_))
-      .WillOnce(Invoke(&expectation,
-                       &UpdatePropertyExpectation::Evaluate));
+  EXPECT_CALL(*mock_exported_object_.get(), SendSignal(_))
+      .WillOnce(Invoke(&expectation, &UpdatePropertyExpectation::Evaluate));
 
   // Emit signal.
   service_->UpdateProperty(property);
@@ -1100,9 +1106,8 @@ TEST_F(IBusEngineServiceTest, ForwardKeyEventTest) {
 
   ForwardKeyEventExpectation expectation(keyval, keycode, state);
 
-  EXPECT_CALL(*mock_exported_object_, SendSignal(_))
-      .WillOnce(Invoke(&expectation,
-                       &ForwardKeyEventExpectation::Evaluate));
+  EXPECT_CALL(*mock_exported_object_.get(), SendSignal(_))
+      .WillOnce(Invoke(&expectation, &ForwardKeyEventExpectation::Evaluate));
 
   // Emit signal.
   service_->ForwardKeyEvent(keyval, keycode, state);
@@ -1110,9 +1115,8 @@ TEST_F(IBusEngineServiceTest, ForwardKeyEventTest) {
 
 TEST_F(IBusEngineServiceTest, RequireSurroundingTextTest) {
   RequireSurroundingTextExpectation expectation;
-  EXPECT_CALL(*mock_exported_object_, SendSignal(_))
-      .WillOnce(Invoke(&expectation,
-                       &RequireSurroundingTextExpectation::Evaluate));
+  EXPECT_CALL(*mock_exported_object_.get(), SendSignal(_)).WillOnce(
+      Invoke(&expectation, &RequireSurroundingTextExpectation::Evaluate));
 
   // Emit signal.
   service_->RequireSurroundingText();

@@ -99,7 +99,7 @@ void DriveURLRequestJob::Start() {
 
   // Initialize the stream reader.
   stream_reader_.reset(
-      new DriveFileStreamReader(file_system_getter_, file_task_runner_));
+      new DriveFileStreamReader(file_system_getter_, file_task_runner_.get()));
   stream_reader_->Initialize(
       drive_file_path,
       byte_range_,

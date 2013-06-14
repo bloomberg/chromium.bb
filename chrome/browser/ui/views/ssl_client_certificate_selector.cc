@@ -64,7 +64,7 @@ class CertificateSelectorTableModel : public ui::TableModel {
 CertificateSelectorTableModel::CertificateSelectorTableModel(
     net::SSLCertRequestInfo* cert_request_info) {
   for (size_t i = 0; i < cert_request_info->client_certs.size(); ++i) {
-    net::X509Certificate* cert = cert_request_info->client_certs[i];
+    net::X509Certificate* cert = cert_request_info->client_certs[i].get();
     string16 text = l10n_util::GetStringFUTF16(
         IDS_CERT_SELECTOR_TABLE_CERT_FORMAT,
         UTF8ToUTF16(cert->subject().GetDisplayName()),
@@ -161,7 +161,7 @@ net::X509Certificate* SSLClientCertificateSelector::GetSelectedCert() const {
   if (selected >= 0 &&
       selected < static_cast<int>(
           cert_request_info()->client_certs.size()))
-    return cert_request_info()->client_certs[selected];
+    return cert_request_info()->client_certs[selected].get();
   return NULL;
 }
 

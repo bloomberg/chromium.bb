@@ -137,14 +137,14 @@ class IBusClientTest : public testing::Test {
                                             ibus::kServiceName,
                                             dbus::ObjectPath(
                                                 ibus::bus::kServicePath));
-    EXPECT_CALL(*mock_bus_, GetObjectProxy(ibus::kServiceName,
-                                           dbus::ObjectPath(
-                                               ibus::bus::kServicePath)))
+    EXPECT_CALL(*mock_bus_.get(),
+                GetObjectProxy(ibus::kServiceName,
+                               dbus::ObjectPath(ibus::bus::kServicePath)))
         .WillOnce(Return(mock_proxy_.get()));
 
-    EXPECT_CALL(*mock_bus_, ShutdownAndBlock());
-    client_.reset(IBusClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION,
-                                     mock_bus_));
+    EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock());
+    client_.reset(
+        IBusClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION, mock_bus_.get()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -168,7 +168,7 @@ TEST_F(IBusClientTest, CreateInputContextTest) {
   // Set expectations.
   const dbus::ObjectPath kInputContextObjectPath =
       dbus::ObjectPath("/some/object/path");
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(this, &IBusClientTest::OnCreateInputContext));
   MockCreateInputContextCallback callback;
   EXPECT_CALL(callback, Run(kInputContextObjectPath));
@@ -195,7 +195,7 @@ TEST_F(IBusClientTest, CreateInputContextTest) {
 
 TEST_F(IBusClientTest, CreateInputContext_NullResponseFail) {
   // Set expectations.
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(this, &IBusClientTest::OnCreateInputContext));
   MockCreateInputContextCallback callback;
   EXPECT_CALL(callback, Run(_)).Times(0);
@@ -219,7 +219,7 @@ TEST_F(IBusClientTest, CreateInputContext_NullResponseFail) {
 
 TEST_F(IBusClientTest, CreateInputContext_InvalidResponseFail) {
   // Set expectations.
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(this, &IBusClientTest::OnCreateInputContext));
   MockCreateInputContextCallback callback;
   EXPECT_CALL(callback, Run(_)).Times(0);
@@ -244,7 +244,7 @@ TEST_F(IBusClientTest, CreateInputContext_InvalidResponseFail) {
 
 TEST_F(IBusClientTest, CreateInputContext_MethodCallFail) {
   // Set expectations
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(this, &IBusClientTest::OnCreateInputContextFail));
   MockCreateInputContextCallback callback;
   EXPECT_CALL(callback, Run(_)).Times(0);
@@ -268,7 +268,7 @@ TEST_F(IBusClientTest, CreateInputContext_MethodCallFail) {
 
 TEST_F(IBusClientTest, SetGlobalEngineTest) {
   // Set expectations
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(this, &IBusClientTest::OnSetGlobalEngine));
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run()).Times(0);
@@ -292,7 +292,7 @@ TEST_F(IBusClientTest, SetGlobalEngineTest) {
 
 TEST_F(IBusClientTest, SetGlobalEngineTest_InvalidResponse) {
   // Set expectations
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(this, &IBusClientTest::OnSetGlobalEngineFail));
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run());
@@ -315,7 +315,7 @@ TEST_F(IBusClientTest, SetGlobalEngineTest_InvalidResponse) {
 
 TEST_F(IBusClientTest, SetGlobalEngineTest_MethodCallFail) {
   // Set expectations
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(this, &IBusClientTest::OnSetGlobalEngineFail));
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run());
@@ -339,7 +339,7 @@ TEST_F(IBusClientTest, SetGlobalEngineTest_MethodCallFail) {
 
 TEST_F(IBusClientTest, ExitTest) {
   // Set expectations
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(this, &IBusClientTest::OnExit));
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run()).Times(0);
@@ -363,7 +363,7 @@ TEST_F(IBusClientTest, ExitTest) {
 
 TEST_F(IBusClientTest, ExitTest_InvalidResponse) {
   // Set expectations
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(this, &IBusClientTest::OnExit));
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run());
@@ -386,7 +386,7 @@ TEST_F(IBusClientTest, ExitTest_InvalidResponse) {
 
 TEST_F(IBusClientTest, ExitTest_MethodCallFail) {
   // Set expectations
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(this, &IBusClientTest::OnExitFail));
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run());

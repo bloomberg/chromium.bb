@@ -644,7 +644,7 @@ class GpuProcessTransportFactory
         new BrowserCompositorOutputSurface(
             context,
             per_compositor_data_[compositor]->surface_id,
-            output_surface_proxy_,
+            output_surface_proxy_.get(),
             base::MessageLoopProxy::current(),
             compositor->AsWeakPtr());
     if (data->reflector.get()) {
@@ -664,8 +664,7 @@ class GpuProcessTransportFactory
       RemoveObserver(data->reflector.get());
 
     data->reflector = new ReflectorImpl(
-        source, target, output_surface_proxy_,
-        data->surface_id);
+        source, target, output_surface_proxy_.get(), data->surface_id);
     AddObserver(data->reflector.get());
     return data->reflector;
   }
@@ -718,8 +717,8 @@ class GpuProcessTransportFactory
 
   virtual scoped_refptr<ui::Texture> CreateTransportClient(
       float device_scale_factor) OVERRIDE {
-    if (!shared_contexts_main_thread_)
-        return NULL;
+    if (!shared_contexts_main_thread_.get())
+      return NULL;
     scoped_refptr<ImageTransportClientTexture> image(
         new ImageTransportClientTexture(
             shared_contexts_main_thread_->Context3d(),
@@ -731,8 +730,8 @@ class GpuProcessTransportFactory
       const gfx::Size& size,
       float device_scale_factor,
       unsigned int texture_id) OVERRIDE {
-    if (!shared_contexts_main_thread_)
-        return NULL;
+    if (!shared_contexts_main_thread_.get())
+      return NULL;
     scoped_refptr<OwnedTexture> image(new OwnedTexture(
         shared_contexts_main_thread_->Context3d(),
         size,
@@ -752,13 +751,13 @@ class GpuProcessTransportFactory
   }
 
   virtual uint32 InsertSyncPoint() OVERRIDE {
-    if (!shared_contexts_main_thread_)
+    if (!shared_contexts_main_thread_.get())
       return 0;
     return shared_contexts_main_thread_->Context3d()->insertSyncPoint();
   }
 
   virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE {
-    if (!shared_contexts_main_thread_)
+    if (!shared_contexts_main_thread_.get())
       return;
     shared_contexts_main_thread_->Context3d()->waitSyncPoint(sync_point);
   }
@@ -888,10 +887,10 @@ class GpuProcessTransportFactory
 
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForMainThread() OVERRIDE {
-    if (!shared_contexts_main_thread_ ||
+    if (!shared_contexts_main_thread_.get() ||
         shared_contexts_main_thread_->DestroyedOnMainThread()) {
       shared_contexts_main_thread_ = MainThreadContextProvider::Create(this);
-      if (shared_contexts_main_thread_ &&
+      if (shared_contexts_main_thread_.get() &&
           !shared_contexts_main_thread_->BindToCurrentThread())
         shared_contexts_main_thread_ = NULL;
     }
@@ -925,7 +924,7 @@ class GpuProcessTransportFactory
 
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProviderForCompositorThread() OVERRIDE {
-    if (!shared_contexts_compositor_thread_ ||
+    if (!shared_contexts_compositor_thread_.get() ||
         shared_contexts_compositor_thread_->DestroyedOnMainThread()) {
       shared_contexts_compositor_thread_ =
           CompositorThreadContextProvider::Create(this);
@@ -936,7 +935,7 @@ class GpuProcessTransportFactory
   void CreateSharedContextLazy() {
     scoped_refptr<cc::ContextProvider> provider =
         OffscreenContextProviderForMainThread();
-    if (!provider) {
+    if (!provider.get()) {
       // If we can't recreate contexts, we won't be able to show the UI.
       // Better crash at this point.
       FatalGPUError("Failed to initialize UI shared context.");

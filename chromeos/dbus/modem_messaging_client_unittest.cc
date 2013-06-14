@@ -75,24 +75,26 @@ class ModemMessagingClientTest : public testing::Test {
 
     // Set an expectation so mock_proxy's ConnectToSignal() will use
     // OnConnectToSignal() to run the callback.
-    EXPECT_CALL(*mock_proxy_, ConnectToSignal(
-        modemmanager::kModemManager1MessagingInterface,
-        modemmanager::kSMSAddedSignal, _, _))
+    EXPECT_CALL(*mock_proxy_.get(),
+                ConnectToSignal(modemmanager::kModemManager1MessagingInterface,
+                                modemmanager::kSMSAddedSignal,
+                                _,
+                                _))
         .WillRepeatedly(
-            Invoke(this, &ModemMessagingClientTest::OnConnectToSignal));
+             Invoke(this, &ModemMessagingClientTest::OnConnectToSignal));
 
     // Set an expectation so mock_bus's GetObjectProxy() for the given
     // service name and the object path will return mock_proxy_.
-    EXPECT_CALL(*mock_bus_, GetObjectProxy(kServiceName,
-                                           dbus::ObjectPath(kObjectPath)))
+    EXPECT_CALL(*mock_bus_.get(),
+                GetObjectProxy(kServiceName, dbus::ObjectPath(kObjectPath)))
         .WillOnce(Return(mock_proxy_.get()));
 
     // ShutdownAndBlock() will be called in TearDown().
-    EXPECT_CALL(*mock_bus_, ShutdownAndBlock()).WillOnce(Return());
+    EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
 
     // Create a client with the mock bus.
     client_.reset(ModemMessagingClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION,
-                                               mock_bus_));
+                                               mock_bus_.get()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -199,7 +201,7 @@ TEST_F(ModemMessagingClientTest, Delete) {
   // Set expectations.
   const dbus::ObjectPath kSmsPath("/SMS/0");
   expected_sms_path_ = kSmsPath;
-  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethod(_, _, _))
       .WillOnce(Invoke(this, &ModemMessagingClientTest::OnDelete));
   MockDeleteCallback callback;
   EXPECT_CALL(callback, Run()).Times(1);
@@ -217,7 +219,7 @@ TEST_F(ModemMessagingClientTest, Delete) {
 
 TEST_F(ModemMessagingClientTest, List) {
   // Set expectations.
-  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethod(_, _, _))
       .WillOnce(Invoke(this, &ModemMessagingClientTest::OnList));
   MockListCallback callback;
   EXPECT_CALL(callback, Run(_))

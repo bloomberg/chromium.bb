@@ -42,7 +42,7 @@ class CrosDBusServiceTest : public testing::Test {
     mock_bus_ = new dbus::MockBus(options);
 
     // ShutdownAndBlock() will be called in TearDown().
-    EXPECT_CALL(*mock_bus_, ShutdownAndBlock()).WillOnce(Return());
+    EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
 
     // Create a mock exported object that behaves as
     // org.chromium.CrosDBusService.
@@ -52,8 +52,8 @@ class CrosDBusServiceTest : public testing::Test {
 
     // |mock_bus_|'s GetExportedObject() will return mock_exported_object_|
     // for the given service name and the object path.
-    EXPECT_CALL(*mock_bus_, GetExportedObject(
-        dbus::ObjectPath(kLibCrosServicePath)))
+    EXPECT_CALL(*mock_bus_.get(),
+                GetExportedObject(dbus::ObjectPath(kLibCrosServicePath)))
         .WillOnce(Return(mock_exported_object_.get()));
 
     // Create a mock proxy resolution service.
@@ -65,7 +65,7 @@ class CrosDBusServiceTest : public testing::Test {
                 Start(Eq(mock_exported_object_))).WillOnce(Return());
     // Initialize the cros service with the mocks injected.
     CrosDBusService::InitializeForTesting(
-        mock_bus_, mock_proxy_resolution_service_provider);
+        mock_bus_.get(), mock_proxy_resolution_service_provider);
   }
 
   virtual void TearDown() {

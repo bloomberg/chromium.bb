@@ -88,7 +88,7 @@ class FileSystemTest : public testing::Test {
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
     cache_.reset(new internal::FileCache(util::GetCacheRootPath(profile_.get()),
-                                         blocking_task_runner_,
+                                         blocking_task_runner_.get(),
                                          fake_free_disk_space_getter_.get()));
 
     mock_directory_observer_.reset(new StrictMock<MockDirectoryChangeObserver>);
@@ -112,7 +112,7 @@ class FileSystemTest : public testing::Test {
                                       fake_drive_service_.get(),
                                       scheduler_.get(),
                                       resource_metadata_.get(),
-                                      blocking_task_runner_));
+                                      blocking_task_runner_.get()));
     file_system_->AddObserver(mock_directory_observer_.get());
     file_system_->Initialize();
 

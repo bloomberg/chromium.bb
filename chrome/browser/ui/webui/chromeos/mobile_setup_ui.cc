@@ -235,7 +235,7 @@ void MobileSetupUIHTMLSource::StartDataRequest(
   if (!network || (!network->SupportsActivation() && !network->activated())) {
     LOG(WARNING) << "Can't find device to activate for service path " << path;
     scoped_refptr<base::RefCountedBytes> html_bytes(new base::RefCountedBytes);
-    callback.Run(html_bytes);
+    callback.Run(html_bytes.get());
     return;
   }
 

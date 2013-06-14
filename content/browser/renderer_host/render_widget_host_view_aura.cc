@@ -302,8 +302,8 @@ void SendCompositorFrameAck(
     const scoped_refptr<ui::Texture>& texture_to_produce) {
   cc::CompositorFrameAck ack;
   ack.gl_frame_data.reset(new cc::GLFrameData());
-  DCHECK(!texture_to_produce || !skip_frame);
-  if (texture_to_produce) {
+  DCHECK(!texture_to_produce.get() || !skip_frame);
+  if (texture_to_produce.get()) {
     std::string mailbox_name = texture_to_produce->Produce();
     std::copy(mailbox_name.data(),
               mailbox_name.data() + mailbox_name.length(),
@@ -330,8 +330,8 @@ void AcknowledgeBufferForGpu(
     const scoped_refptr<ui::Texture>& texture_to_produce) {
   AcceleratedSurfaceMsg_BufferPresented_Params ack;
   uint32 sync_point = 0;
-  DCHECK(!texture_to_produce || !skip_frame);
-  if (texture_to_produce) {
+  DCHECK(!texture_to_produce.get() || !skip_frame);
+  if (texture_to_produce.get()) {
     ack.mailbox_name = texture_to_produce->Produce();
     sync_point =
         content::ImageTransportFactory::GetInstance()->InsertSyncPoint();
@@ -729,7 +729,7 @@ void RenderWidgetHostViewAura::WasShown() {
   if (cursor_client)
     NotifyRendererOfCursorVisibilityState(cursor_client->IsCursorVisible());
 
-  if (!current_surface_ && host_->is_accelerated_compositing_active() &&
+  if (!current_surface_.get() && host_->is_accelerated_compositing_active() &&
       !released_front_lock_.get()) {
     released_front_lock_ = GetCompositor()->GetCompositorLock();
   }
@@ -948,9 +948,8 @@ bool RenderWidgetHostViewAura::HasFocus() const {
 }
 
 bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
-  return current_surface_ ||
-      current_software_frame_.IsValid() ||
-      !!host_->GetBackingStore(false);
+  return current_surface_.get() || current_software_frame_.IsValid() ||
+         !!host_->GetBackingStore(false);
 }
 
 void RenderWidgetHostViewAura::Show() {
@@ -1213,7 +1212,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback) {
-  if (!current_surface_) {
+  if (!current_surface_.get()) {
     callback.Run(false, SkBitmap());
     return;
   }
@@ -1229,7 +1228,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
       const base::Callback<void(bool)>& callback) {
   base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
 
-  if (!current_surface_)
+  if (!current_surface_.get())
     return;
 
   // Compute the dest size we want after the letterboxing resize. Make the
@@ -1292,14 +1291,13 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
 
   scoped_callback_runner.Release();
   yuv_readback_pipeline_->ReadbackYUV(
-      current_surface_->PrepareTexture(),
-      target,
-      callback);
+      current_surface_->PrepareTexture(), target.get(), callback);
 }
 
 bool RenderWidgetHostViewAura::CanCopyToVideoFrame() const {
   // TODO(skaslev): Implement this path for s/w compositing.
-  return current_surface_ != NULL && host_->is_accelerated_compositing_active();
+  return current_surface_.get() != NULL &&
+         host_->is_accelerated_compositing_active();
 }
 
 bool RenderWidgetHostViewAura::CanSubscribeFrame() const {
@@ -1360,7 +1358,7 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
     accelerated_compositing_state_changed_ = false;
 
   bool is_compositing_active = host_->is_accelerated_compositing_active();
-  if (is_compositing_active && current_surface_) {
+  if (is_compositing_active && current_surface_.get()) {
     window_->layer()->SetExternalTexture(current_surface_.get());
     current_frame_size_ = ConvertSizeToDIP(
         current_surface_->device_scale_factor(), current_surface_->size());
@@ -1406,7 +1404,7 @@ bool RenderWidgetHostViewAura::SwapBuffersPrepare(
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   current_surface_ =
       factory->CreateTransportClient(surface_scale_factor);
-  if (!current_surface_) {
+  if (!current_surface_.get()) {
     LOG(ERROR) << "Failed to create ImageTransport texture";
     ack_callback.Run(true, scoped_refptr<ui::Texture>());
     return false;
@@ -1424,7 +1422,7 @@ void RenderWidgetHostViewAura::SwapBuffersCompleted(
     const scoped_refptr<ui::Texture>& texture_to_return) {
   ui::Compositor* compositor = GetCompositor();
 
-  if (frame_subscriber() && current_surface_ != NULL) {
+  if (frame_subscriber() && current_surface_.get() != NULL) {
     const base::Time present_time = base::Time::Now();
     scoped_refptr<media::VideoFrame> frame;
     RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
@@ -1687,7 +1685,7 @@ void RenderWidgetHostViewAura::BuffersSwapped(
       previous_texture->size() != current_texture->size() &&
       SkIRectToRect(damage.getBounds()) != surface_rect) <<
       "Expected full damage rect after size change";
-  if (previous_texture && !previous_damage_.isEmpty() &&
+  if (previous_texture.get() && !previous_damage_.isEmpty() &&
       previous_texture->size() == current_texture->size()) {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     GLHelper* gl_helper = factory->GetGLHelper();
@@ -1750,7 +1748,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceSuspend() {
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceRelease() {
   // This really tells us to release the frontbuffer.
-  if (current_surface_) {
+  if (current_surface_.get()) {
     ui::Compositor* compositor = GetCompositor();
     if (compositor) {
       // We need to wait for a commit to clear to guarantee that all we
@@ -2278,7 +2276,7 @@ scoped_refptr<ui::Texture> RenderWidgetHostViewAura::CopyTexture() {
   if (!gl_helper)
     return scoped_refptr<ui::Texture>();
 
-  if (!current_surface_)
+  if (!current_surface_.get())
     return scoped_refptr<ui::Texture>();
 
   WebKit::WebGLId texture_id =

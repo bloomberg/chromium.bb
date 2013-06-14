@@ -61,7 +61,7 @@ class FileCacheTestOnUIThread : public testing::Test {
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
     cache_.reset(new FileCache(temp_dir_.path(),
-                               blocking_task_runner_,
+                               blocking_task_runner_.get(),
                                fake_free_disk_space_getter_.get()));
 
     bool success = false;
@@ -243,11 +243,12 @@ class FileCacheTestOnUIThread : public testing::Test {
 
     FileError error = FILE_ERROR_OK;
     PostTaskAndReplyWithResult(
-        blocking_task_runner_,
+        blocking_task_runner_.get(),
         FROM_HERE,
         base::Bind(&FileCache::ClearDirty,
                    base::Unretained(cache_.get()),
-                   resource_id, md5),
+                   resource_id,
+                   md5),
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
     VerifyCacheFileState(error, resource_id, md5);

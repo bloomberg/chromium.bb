@@ -106,7 +106,7 @@ class PolicyCertVerifierTest : public testing::Test {
 TEST_F(PolicyCertVerifierTest, VerifyUntrustedCert) {
   scoped_refptr<net::X509Certificate> cert =
       LoadCertificate("ok_cert.pem", net::SERVER_CERT);
-  ASSERT_TRUE(cert);
+  ASSERT_TRUE(cert.get());
 
   // |cert| is untrusted, so Verify() fails.
   net::CertVerifyResult verify_result;
@@ -114,9 +114,14 @@ TEST_F(PolicyCertVerifierTest, VerifyUntrustedCert) {
   net::CertVerifier::RequestHandle request_handle;
   EXPECT_CALL(trust_provider_, GetAdditionalTrustAnchors())
       .WillOnce(ReturnRef(empty_cert_list_));
-  int error = cert_verifier_->Verify(cert, "127.0.0.1", 0, NULL,
-                                     &verify_result, callback.callback(),
-                                     &request_handle, net::BoundNetLog());
+  int error = cert_verifier_->Verify(cert.get(),
+                                     "127.0.0.1",
+                                     0,
+                                     NULL,
+                                     &verify_result,
+                                     callback.callback(),
+                                     &request_handle,
+                                     net::BoundNetLog());
   Mock::VerifyAndClearExpectations(&trust_provider_);
   ASSERT_EQ(net::ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle);
@@ -127,9 +132,14 @@ TEST_F(PolicyCertVerifierTest, VerifyUntrustedCert) {
   // path.
   EXPECT_CALL(trust_provider_, GetAdditionalTrustAnchors())
       .WillOnce(ReturnRef(empty_cert_list_));
-  error = cert_verifier_->Verify(cert, "127.0.0.1", 0, NULL,
-                                 &verify_result, callback.callback(),
-                                 &request_handle, net::BoundNetLog());
+  error = cert_verifier_->Verify(cert.get(),
+                                 "127.0.0.1",
+                                 0,
+                                 NULL,
+                                 &verify_result,
+                                 callback.callback(),
+                                 &request_handle,
+                                 net::BoundNetLog());
   Mock::VerifyAndClearExpectations(&trust_provider_);
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID, error);
 
@@ -143,10 +153,10 @@ TEST_F(PolicyCertVerifierTest, VerifyTrustedCert) {
   // |ca_cert| is the issuer of |cert|.
   scoped_refptr<net::X509Certificate> ca_cert =
       LoadCertificate("root_ca_cert.crt", net::CA_CERT);
-  ASSERT_TRUE(ca_cert);
+  ASSERT_TRUE(ca_cert.get());
   scoped_refptr<net::X509Certificate> cert =
       LoadCertificate("ok_cert.pem", net::SERVER_CERT);
-  ASSERT_TRUE(cert);
+  ASSERT_TRUE(cert.get());
 
   // Make the database trust |ca_cert|.
   net::CertificateList import_list;
@@ -167,9 +177,14 @@ TEST_F(PolicyCertVerifierTest, VerifyTrustedCert) {
   net::CertVerifier::RequestHandle request_handle;
   EXPECT_CALL(trust_provider_, GetAdditionalTrustAnchors())
       .WillOnce(ReturnRef(empty_cert_list_));
-  int error = cert_verifier_->Verify(cert, "127.0.0.1", 0, NULL,
-                                     &verify_result, callback.callback(),
-                                     &request_handle, net::BoundNetLog());
+  int error = cert_verifier_->Verify(cert.get(),
+                                     "127.0.0.1",
+                                     0,
+                                     NULL,
+                                     &verify_result,
+                                     callback.callback(),
+                                     &request_handle,
+                                     net::BoundNetLog());
   Mock::VerifyAndClearExpectations(&trust_provider_);
   ASSERT_EQ(net::ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle);
@@ -192,10 +207,10 @@ TEST_F(PolicyCertVerifierTest, VerifyUsingAdditionalTrustAnchor) {
   // |ca_cert| is the issuer of |cert|.
   scoped_refptr<net::X509Certificate> ca_cert =
       LoadCertificate("root_ca_cert.crt", net::CA_CERT);
-  ASSERT_TRUE(ca_cert);
+  ASSERT_TRUE(ca_cert.get());
   scoped_refptr<net::X509Certificate> cert =
       LoadCertificate("ok_cert.pem", net::SERVER_CERT);
-  ASSERT_TRUE(cert);
+  ASSERT_TRUE(cert.get());
 
   net::CertificateList additional_trust_anchors;
   additional_trust_anchors.push_back(ca_cert);
@@ -207,9 +222,14 @@ TEST_F(PolicyCertVerifierTest, VerifyUsingAdditionalTrustAnchor) {
   net::CertVerifier::RequestHandle request_handle;
   EXPECT_CALL(trust_provider_, GetAdditionalTrustAnchors())
       .WillOnce(ReturnRef(additional_trust_anchors));
-  int error = cert_verifier_->Verify(cert, "127.0.0.1", 0, NULL,
-                                     &verify_result, callback.callback(),
-                                     &request_handle, net::BoundNetLog());
+  int error = cert_verifier_->Verify(cert.get(),
+                                     "127.0.0.1",
+                                     0,
+                                     NULL,
+                                     &verify_result,
+                                     callback.callback(),
+                                     &request_handle,
+                                     net::BoundNetLog());
   Mock::VerifyAndClearExpectations(&trust_provider_);
   ASSERT_EQ(net::ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle);
@@ -232,10 +252,10 @@ TEST_F(PolicyCertVerifierTest, ProfileRemainsTainted) {
   // |ca_cert| is the issuer of |cert|.
   scoped_refptr<net::X509Certificate> ca_cert =
       LoadCertificate("root_ca_cert.crt", net::CA_CERT);
-  ASSERT_TRUE(ca_cert);
+  ASSERT_TRUE(ca_cert.get());
   scoped_refptr<net::X509Certificate> cert =
       LoadCertificate("ok_cert.pem", net::SERVER_CERT);
-  ASSERT_TRUE(cert);
+  ASSERT_TRUE(cert.get());
 
   net::CertificateList additional_trust_anchors;
   additional_trust_anchors.push_back(ca_cert);
@@ -246,9 +266,14 @@ TEST_F(PolicyCertVerifierTest, ProfileRemainsTainted) {
   net::CertVerifier::RequestHandle request_handle;
   EXPECT_CALL(trust_provider_, GetAdditionalTrustAnchors())
       .WillOnce(ReturnRef(empty_cert_list_));
-  int error = cert_verifier_->Verify(cert, "127.0.0.1", 0, NULL,
-                                     &verify_result, callback.callback(),
-                                     &request_handle, net::BoundNetLog());
+  int error = cert_verifier_->Verify(cert.get(),
+                                     "127.0.0.1",
+                                     0,
+                                     NULL,
+                                     &verify_result,
+                                     callback.callback(),
+                                     &request_handle,
+                                     net::BoundNetLog());
   Mock::VerifyAndClearExpectations(&trust_provider_);
   ASSERT_EQ(net::ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle);
@@ -263,9 +288,14 @@ TEST_F(PolicyCertVerifierTest, ProfileRemainsTainted) {
   // Verify() again with the additional trust anchors.
   EXPECT_CALL(trust_provider_, GetAdditionalTrustAnchors())
       .WillOnce(ReturnRef(additional_trust_anchors));
-  error = cert_verifier_->Verify(cert, "127.0.0.1", 0, NULL,
-                                 &verify_result, callback.callback(),
-                                 &request_handle, net::BoundNetLog());
+  error = cert_verifier_->Verify(cert.get(),
+                                 "127.0.0.1",
+                                 0,
+                                 NULL,
+                                 &verify_result,
+                                 callback.callback(),
+                                 &request_handle,
+                                 net::BoundNetLog());
   Mock::VerifyAndClearExpectations(&trust_provider_);
   ASSERT_EQ(net::ERR_IO_PENDING, error);
   ASSERT_TRUE(request_handle);
@@ -281,9 +311,14 @@ TEST_F(PolicyCertVerifierTest, ProfileRemainsTainted) {
   // Verifying after removing the trust anchors should now fail.
   EXPECT_CALL(trust_provider_, GetAdditionalTrustAnchors())
       .WillOnce(ReturnRef(empty_cert_list_));
-  error = cert_verifier_->Verify(cert, "127.0.0.1", 0, NULL,
-                                 &verify_result, callback.callback(),
-                                 &request_handle, net::BoundNetLog());
+  error = cert_verifier_->Verify(cert.get(),
+                                 "127.0.0.1",
+                                 0,
+                                 NULL,
+                                 &verify_result,
+                                 callback.callback(),
+                                 &request_handle,
+                                 net::BoundNetLog());
   Mock::VerifyAndClearExpectations(&trust_provider_);
   // Note: this hits the cached result from the first Verify() in this test.
   EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID, error);

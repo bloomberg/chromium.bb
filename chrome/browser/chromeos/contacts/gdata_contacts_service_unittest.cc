@@ -91,9 +91,8 @@ class GDataContactsServiceTest : public testing::Test {
     test_server_->RegisterRequestHandler(
         base::Bind(&GDataContactsServiceTest::HandleDownloadRequest,
                    base::Unretained(this)));
-    service_.reset(new GDataContactsService(
-        request_context_getter_,
-        profile_.get()));
+    service_.reset(new GDataContactsService(request_context_getter_.get(),
+                                            profile_.get()));
     service_->Initialize();
     service_->auth_service_for_testing()->set_access_token_for_testing(
         kTestGDataAuthToken);

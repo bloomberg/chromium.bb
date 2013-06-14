@@ -322,7 +322,7 @@ void DownloadOperation::EnsureFileDownloadedByResourceId(
   ResourceEntry* entry = new ResourceEntry;
   base::FilePath* cache_file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&CheckPreConditionForEnsureFileDownloadedByResourceId,
                  base::Unretained(metadata_),
@@ -353,7 +353,7 @@ void DownloadOperation::EnsureFileDownloadedByPath(
   ResourceEntry* entry = new ResourceEntry;
   base::FilePath* cache_file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&CheckPreConditionForEnsureFileDownloadedByPath,
                  base::Unretained(metadata_),
@@ -442,7 +442,7 @@ void DownloadOperation::EnsureFileDownloadedAfterGetResourceEntry(
   // the cache space.
   DownloadParams* params = new DownloadParams(context, download_url);
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&PrepareForDownloadFile,
                  base::Unretained(metadata_),
@@ -501,7 +501,7 @@ void DownloadOperation::EnsureFileDownloadedAfterDownloadFile(
   ResourceEntry* entry_ptr = entry.get();
   base::FilePath* cache_file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&UpdateLocalStateForDownloadFile,
                  base::Unretained(cache_),

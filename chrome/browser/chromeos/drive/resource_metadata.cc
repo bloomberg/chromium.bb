@@ -139,7 +139,7 @@ void ResourceMetadata::Initialize(const FileOperationCallback& callback) {
   DCHECK(!callback.is_null());
 
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&ResourceMetadata::InitializeOnBlockingPool,
                  base::Unretained(this)),
@@ -161,10 +161,9 @@ void ResourceMetadata::ResetOnUIThread(const FileOperationCallback& callback) {
   DCHECK(!callback.is_null());
 
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&ResourceMetadata::Reset,
-                 base::Unretained(this)),
+      base::Bind(&ResourceMetadata::Reset, base::Unretained(this)),
       callback);
 }
 
@@ -232,7 +231,7 @@ void ResourceMetadata::GetLargestChangestampOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&ResourceMetadata::GetLargestChangestamp,
                  base::Unretained(this)),
@@ -245,7 +244,7 @@ void ResourceMetadata::SetLargestChangestampOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&ResourceMetadata::SetLargestChangestamp,
                  base::Unretained(this),
@@ -273,11 +272,10 @@ void ResourceMetadata::AddEntryOnUIThread(const ResourceEntry& entry,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  PostFileMoveTask(blocking_task_runner_,
-                   base::Bind(&AddEntryWithFilePath,
-                              base::Unretained(this),
-                              entry),
-                   callback);
+  PostFileMoveTask(
+      blocking_task_runner_.get(),
+      base::Bind(&AddEntryWithFilePath, base::Unretained(this), entry),
+      callback);
 }
 
 FileError ResourceMetadata::AddEntry(const ResourceEntry& entry) {
@@ -309,7 +307,7 @@ void ResourceMetadata::MoveEntryToDirectoryOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  PostFileMoveTask(blocking_task_runner_,
+  PostFileMoveTask(blocking_task_runner_.get(),
                    base::Bind(&ResourceMetadata::MoveEntryToDirectory,
                               base::Unretained(this),
                               file_path,
@@ -323,7 +321,7 @@ void ResourceMetadata::RenameEntryOnUIThread(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  PostFileMoveTask(blocking_task_runner_,
+  PostFileMoveTask(blocking_task_runner_.get(),
                    base::Bind(&ResourceMetadata::RenameEntry,
                               base::Unretained(this),
                               file_path,
@@ -359,15 +357,13 @@ void ResourceMetadata::GetResourceEntryByIdOnUIThread(
   scoped_ptr<ResourceEntry> entry(new ResourceEntry);
   ResourceEntry* entry_ptr = entry.get();
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&ResourceMetadata::GetResourceEntryById,
                  base::Unretained(this),
                  resource_id,
                  entry_ptr),
-      base::Bind(&RunGetResourceEntryCallback,
-                 callback,
-                 base::Passed(&entry)));
+      base::Bind(&RunGetResourceEntryCallback, callback, base::Passed(&entry)));
 }
 
 FileError ResourceMetadata::GetResourceEntryById(
@@ -394,15 +390,13 @@ void ResourceMetadata::GetResourceEntryByPathOnUIThread(
   scoped_ptr<ResourceEntry> entry(new ResourceEntry);
   ResourceEntry* entry_ptr = entry.get();
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&ResourceMetadata::GetResourceEntryByPath,
                  base::Unretained(this),
                  file_path,
                  entry_ptr),
-      base::Bind(&RunGetResourceEntryCallback,
-                 callback,
-                 base::Passed(&entry)));
+      base::Bind(&RunGetResourceEntryCallback, callback, base::Passed(&entry)));
 }
 
 FileError ResourceMetadata::GetResourceEntryByPath(const base::FilePath& path,
@@ -427,15 +421,13 @@ void ResourceMetadata::ReadDirectoryByPathOnUIThread(
   scoped_ptr<ResourceEntryVector> entries(new ResourceEntryVector);
   ResourceEntryVector* entries_ptr = entries.get();
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&ResourceMetadata::ReadDirectoryByPath,
                  base::Unretained(this),
                  file_path,
                  entries_ptr),
-      base::Bind(&RunReadDirectoryCallback,
-                 callback,
-                 base::Passed(&entries)));
+      base::Bind(&RunReadDirectoryCallback, callback, base::Passed(&entries)));
 }
 
 FileError ResourceMetadata::ReadDirectoryByPath(
@@ -501,7 +493,7 @@ void ResourceMetadata::RefreshDirectoryOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  PostFileMoveTask(blocking_task_runner_,
+  PostFileMoveTask(blocking_task_runner_.get(),
                    base::Bind(&ResourceMetadata::RefreshDirectory,
                               base::Unretained(this),
                               directory_fetch_info,

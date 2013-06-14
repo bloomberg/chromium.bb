@@ -223,71 +223,80 @@ class IBusPanelServiceTest : public testing::Test {
                     ibus::panel::kServicePath)))
         .WillOnce(Return(mock_exported_object_.get()));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::panel::kServiceInterface,
-        ibus::panel::kUpdateLookupTableMethod, _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusPanelServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::panel::kServiceInterface,
+                             ibus::panel::kUpdateLookupTableMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusPanelServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::panel::kServiceInterface,
-        ibus::panel::kHideLookupTableMethod, _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusPanelServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::panel::kServiceInterface,
+                             ibus::panel::kHideLookupTableMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusPanelServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::panel::kServiceInterface,
-        ibus::panel::kUpdateAuxiliaryTextMethod, _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusPanelServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::panel::kServiceInterface,
+                             ibus::panel::kUpdateAuxiliaryTextMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusPanelServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::panel::kServiceInterface,
-        ibus::panel::kHideAuxiliaryTextMethod, _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusPanelServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::panel::kServiceInterface,
+                             ibus::panel::kHideAuxiliaryTextMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusPanelServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::panel::kServiceInterface,
-        ibus::panel::kUpdatePreeditTextMethod, _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusPanelServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::panel::kServiceInterface,
+                             ibus::panel::kUpdatePreeditTextMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusPanelServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::panel::kServiceInterface,
-        ibus::panel::kHidePreeditTextMethod, _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusPanelServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::panel::kServiceInterface,
+                             ibus::panel::kHidePreeditTextMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusPanelServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::panel::kServiceInterface,
-        ibus::panel::kRegisterPropertiesMethod, _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusPanelServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::panel::kServiceInterface,
+                             ibus::panel::kRegisterPropertiesMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusPanelServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::panel::kServiceInterface,
-        ibus::panel::kUpdatePropertyMethod, _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusPanelServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::panel::kServiceInterface,
+                             ibus::panel::kUpdatePropertyMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusPanelServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::panel::kServiceInterface,
-        ibus::panel::kFocusInMethod, _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusPanelServiceTest::OnMethodExported));
+    EXPECT_CALL(
+        *mock_exported_object_.get(),
+        ExportMethod(
+            ibus::panel::kServiceInterface, ibus::panel::kFocusInMethod, _, _))
+        .WillRepeatedly(Invoke(this, &IBusPanelServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::panel::kServiceInterface,
-        ibus::panel::kFocusOutMethod, _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusPanelServiceTest::OnMethodExported));
+    EXPECT_CALL(
+        *mock_exported_object_.get(),
+        ExportMethod(
+            ibus::panel::kServiceInterface, ibus::panel::kFocusOutMethod, _, _))
+        .WillRepeatedly(Invoke(this, &IBusPanelServiceTest::OnMethodExported));
 
-    EXPECT_CALL(*mock_exported_object_, ExportMethod(
-        ibus::panel::kServiceInterface,
-        ibus::panel::kStateChangedMethod, _, _))
-        .WillRepeatedly(
-            Invoke(this, &IBusPanelServiceTest::OnMethodExported));
+    EXPECT_CALL(*mock_exported_object_.get(),
+                ExportMethod(ibus::panel::kServiceInterface,
+                             ibus::panel::kStateChangedMethod,
+                             _,
+                             _))
+        .WillRepeatedly(Invoke(this, &IBusPanelServiceTest::OnMethodExported));
 
     // Suppress uninteresting mock function call warning.
     EXPECT_CALL(*mock_bus_.get(),
@@ -520,7 +529,7 @@ TEST_F(IBusPanelServiceTest, UpdatePreeditTextTest) {
 TEST_F(IBusPanelServiceTest, CursorUpTest) {
   // Set expectations.
   NullArgumentVerifier evaluator(ibus::panel::kCursorUpSignal);
-  EXPECT_CALL(*mock_exported_object_, SendSignal(_))
+  EXPECT_CALL(*mock_exported_object_.get(), SendSignal(_))
       .WillOnce(Invoke(&evaluator, &NullArgumentVerifier::Verify));
 
   // Emit signal.
@@ -530,7 +539,7 @@ TEST_F(IBusPanelServiceTest, CursorUpTest) {
 TEST_F(IBusPanelServiceTest, CursorDownTest) {
   // Set expectations.
   NullArgumentVerifier evaluator(ibus::panel::kCursorDownSignal);
-  EXPECT_CALL(*mock_exported_object_, SendSignal(_))
+  EXPECT_CALL(*mock_exported_object_.get(), SendSignal(_))
       .WillOnce(Invoke(&evaluator, &NullArgumentVerifier::Verify));
 
   // Emit signal.
@@ -540,7 +549,7 @@ TEST_F(IBusPanelServiceTest, CursorDownTest) {
 TEST_F(IBusPanelServiceTest, PageUpTest) {
   // Set expectations.
   NullArgumentVerifier evaluator(ibus::panel::kPageUpSignal);
-  EXPECT_CALL(*mock_exported_object_, SendSignal(_))
+  EXPECT_CALL(*mock_exported_object_.get(), SendSignal(_))
       .WillOnce(Invoke(&evaluator, &NullArgumentVerifier::Verify));
 
   // Emit signal.
@@ -550,7 +559,7 @@ TEST_F(IBusPanelServiceTest, PageUpTest) {
 TEST_F(IBusPanelServiceTest, PageDownTest) {
   // Set expectations.
   NullArgumentVerifier evaluator(ibus::panel::kPageDownSignal);
-  EXPECT_CALL(*mock_exported_object_, SendSignal(_))
+  EXPECT_CALL(*mock_exported_object_.get(), SendSignal(_))
       .WillOnce(Invoke(&evaluator, &NullArgumentVerifier::Verify));
 
   // Emit signal.

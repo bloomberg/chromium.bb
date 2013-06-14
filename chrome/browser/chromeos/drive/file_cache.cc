@@ -214,7 +214,7 @@ FileCache::FileCache(const base::FilePath& cache_root_path,
       blocking_task_runner_(blocking_task_runner),
       free_disk_space_getter_(free_disk_space_getter),
       weak_ptr_factory_(this) {
-  DCHECK(blocking_task_runner_);
+  DCHECK(blocking_task_runner_.get());
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -256,7 +256,7 @@ base::FilePath FileCache::GetCacheFilePath(const std::string& resource_id,
 }
 
 void FileCache::AssertOnSequencedWorkerPool() {
-  DCHECK(!blocking_task_runner_ ||
+  DCHECK(!blocking_task_runner_.get() ||
          blocking_task_runner_->RunsTasksOnCurrentThread());
 }
 
@@ -272,12 +272,15 @@ void FileCache::GetCacheEntryOnUIThread(const std::string& resource_id,
 
   FileCacheEntry* cache_entry = new FileCacheEntry;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&FileCache::GetCacheEntry,
-                 base::Unretained(this), resource_id, md5, cache_entry),
-      base::Bind(&RunGetCacheEntryCallback,
-                 callback, base::Owned(cache_entry)));
+                 base::Unretained(this),
+                 resource_id,
+                 md5,
+                 cache_entry),
+      base::Bind(
+          &RunGetCacheEntryCallback, callback, base::Owned(cache_entry)));
 }
 
 bool FileCache::GetCacheEntry(const std::string& resource_id,
@@ -321,7 +324,7 @@ void FileCache::FreeDiskSpaceIfNeededForOnUIThread(
   DCHECK(!callback.is_null());
 
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&FileCache::FreeDiskSpaceIfNeededFor,
                  base::Unretained(this),
@@ -374,13 +377,16 @@ void FileCache::GetFileOnUIThread(const std::string& resource_id,
   DCHECK(!callback.is_null());
 
   base::FilePath* cache_file_path = new base::FilePath;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&FileCache::GetFile,
-                 base::Unretained(this), resource_id, md5, cache_file_path),
-      base::Bind(&RunGetFileFromCacheCallback,
-                 callback, base::Owned(cache_file_path)));
+  base::PostTaskAndReplyWithResult(blocking_task_runner_.get(),
+                                   FROM_HERE,
+                                   base::Bind(&FileCache::GetFile,
+                                              base::Unretained(this),
+                                              resource_id,
+                                              md5,
+                                              cache_file_path),
+                                   base::Bind(&RunGetFileFromCacheCallback,
+                                              callback,
+                                              base::Owned(cache_file_path)));
 }
 
 FileError FileCache::GetFile(const std::string& resource_id,
@@ -416,13 +422,15 @@ void FileCache::StoreOnUIThread(const std::string& resource_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&FileCache::Store,
-                 base::Unretained(this),
-                 resource_id, md5, source_path, file_operation_type),
-      callback);
+  base::PostTaskAndReplyWithResult(blocking_task_runner_.get(),
+                                   FROM_HERE,
+                                   base::Bind(&FileCache::Store,
+                                              base::Unretained(this),
+                                              resource_id,
+                                              md5,
+                                              source_path,
+                                              file_operation_type),
+                                   callback);
 }
 
 FileError FileCache::Store(const std::string& resource_id,
@@ -440,7 +448,7 @@ void FileCache::PinOnUIThread(const std::string& resource_id,
   DCHECK(!callback.is_null());
 
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&FileCache::Pin, base::Unretained(this), resource_id, md5),
       callback);
@@ -465,7 +473,7 @@ void FileCache::UnpinOnUIThread(const std::string& resource_id,
   DCHECK(!callback.is_null());
 
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&FileCache::Unpin, base::Unretained(this), resource_id, md5),
       callback);
@@ -508,12 +516,14 @@ void FileCache::MarkAsMountedOnUIThread(
 
   base::FilePath* cache_file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&FileCache::MarkAsMounted,
-                 base::Unretained(this), resource_id, cache_file_path),
-      base::Bind(RunGetFileFromCacheCallback,
-                 callback, base::Owned(cache_file_path)));
+                 base::Unretained(this),
+                 resource_id,
+                 cache_file_path),
+      base::Bind(
+          RunGetFileFromCacheCallback, callback, base::Owned(cache_file_path)));
 }
 
 void FileCache::MarkAsUnmountedOnUIThread(
@@ -523,10 +533,10 @@ void FileCache::MarkAsUnmountedOnUIThread(
   DCHECK(!callback.is_null());
 
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&FileCache::MarkAsUnmounted,
-                 base::Unretained(this), file_path),
+      base::Bind(
+          &FileCache::MarkAsUnmounted, base::Unretained(this), file_path),
       callback);
 }
 
@@ -537,10 +547,10 @@ void FileCache::MarkDirtyOnUIThread(const std::string& resource_id,
   DCHECK(!callback.is_null());
 
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&FileCache::MarkDirty,
-                 base::Unretained(this), resource_id, md5),
+      base::Bind(
+          &FileCache::MarkDirty, base::Unretained(this), resource_id, md5),
       callback);
 }
 
@@ -631,10 +641,9 @@ void FileCache::RemoveOnUIThread(const std::string& resource_id,
   DCHECK(!callback.is_null());
 
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&FileCache::Remove,
-                 base::Unretained(this), resource_id),
+      base::Bind(&FileCache::Remove, base::Unretained(this), resource_id),
       callback);
 }
 
@@ -670,7 +679,7 @@ void FileCache::ClearAllOnUIThread(const InitializeCacheCallback& callback) {
   DCHECK(!callback.is_null());
 
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&FileCache::ClearAll, base::Unretained(this)),
       callback);
@@ -681,7 +690,7 @@ void FileCache::RequestInitialize(const InitializeCacheCallback& callback) {
   DCHECK(!callback.is_null());
 
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&FileCache::InitializeOnBlockingPool, base::Unretained(this)),
       callback);
@@ -709,7 +718,7 @@ bool FileCache::InitializeOnBlockingPool() {
 
   MigrateFilesFromOldDirectories();
 
-  metadata_.reset(new FileCacheMetadata(blocking_task_runner_));
+  metadata_.reset(new FileCacheMetadata(blocking_task_runner_.get()));
 
   switch (metadata_->Initialize(cache_paths_[CACHE_TYPE_META])) {
     case FileCacheMetadata::INITIALIZE_FAILED:

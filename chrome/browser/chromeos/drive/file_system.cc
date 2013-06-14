@@ -101,27 +101,50 @@ void FileSystem::Initialize() {
   SetupChangeListLoader();
 
   file_system::OperationObserver* observer = this;
-  copy_operation_.reset(new file_system::CopyOperation(
-      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_,
-      drive_service_));
+  copy_operation_.reset(
+      new file_system::CopyOperation(blocking_task_runner_.get(),
+                                     observer,
+                                     scheduler_,
+                                     resource_metadata_,
+                                     cache_,
+                                     drive_service_));
   create_directory_operation_.reset(new file_system::CreateDirectoryOperation(
-      blocking_task_runner_, observer, scheduler_, resource_metadata_));
-  create_file_operation_.reset(new file_system::CreateFileOperation(
-      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_));
-  move_operation_.reset(new file_system::MoveOperation(
-      observer, scheduler_, resource_metadata_));
-  remove_operation_.reset(new file_system::RemoveOperation(
-      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_));
+      blocking_task_runner_.get(), observer, scheduler_, resource_metadata_));
+  create_file_operation_.reset(
+      new file_system::CreateFileOperation(blocking_task_runner_.get(),
+                                           observer,
+                                           scheduler_,
+                                           resource_metadata_,
+                                           cache_));
+  move_operation_.reset(
+      new file_system::MoveOperation(observer, scheduler_, resource_metadata_));
+  remove_operation_.reset(
+      new file_system::RemoveOperation(blocking_task_runner_.get(),
+                                       observer,
+                                       scheduler_,
+                                       resource_metadata_,
+                                       cache_));
   touch_operation_.reset(new file_system::TouchOperation(
-      blocking_task_runner_, observer, scheduler_, resource_metadata_));
-  download_operation_.reset(new file_system::DownloadOperation(
-      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_));
-  update_operation_.reset(new file_system::UpdateOperation(
-      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_));
+      blocking_task_runner_.get(), observer, scheduler_, resource_metadata_));
+  download_operation_.reset(
+      new file_system::DownloadOperation(blocking_task_runner_.get(),
+                                         observer,
+                                         scheduler_,
+                                         resource_metadata_,
+                                         cache_));
+  update_operation_.reset(
+      new file_system::UpdateOperation(blocking_task_runner_.get(),
+                                       observer,
+                                       scheduler_,
+                                       resource_metadata_,
+                                       cache_));
   search_operation_.reset(new file_system::SearchOperation(
-      blocking_task_runner_, scheduler_, resource_metadata_));
-  sync_client_.reset(new internal::SyncClient(
-      blocking_task_runner_, observer, scheduler_, resource_metadata_, cache_));
+      blocking_task_runner_.get(), scheduler_, resource_metadata_));
+  sync_client_.reset(new internal::SyncClient(blocking_task_runner_.get(),
+                                              observer,
+                                              scheduler_,
+                                              resource_metadata_,
+                                              cache_));
 
   PrefService* pref_service = profile_->GetPrefs();
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableDriveHostedFiles);
@@ -146,7 +169,7 @@ void FileSystem::ReloadAfterReset(FileError error) {
 
 void FileSystem::SetupChangeListLoader() {
   change_list_loader_.reset(new internal::ChangeListLoader(
-      blocking_task_runner_, resource_metadata_, scheduler_));
+      blocking_task_runner_.get(), resource_metadata_, scheduler_));
   change_list_loader_->AddObserver(this);
 }
 
@@ -1094,7 +1117,7 @@ void FileSystem::CheckLocalModificationAndRunAfterGetCacheFile(
   // If the cache is dirty, obtain the file info from the cache file itself.
   base::PlatformFileInfo* file_info = new base::PlatformFileInfo;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&file_util::GetFileInfo,
                  local_cache_path,

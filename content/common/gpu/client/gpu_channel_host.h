@@ -95,7 +95,7 @@ class GpuChannelHost : public IPC::Sender,
       const IPC::ChannelHandle& channel_handle);
 
   bool IsLost() const {
-    DCHECK(channel_filter_);
+    DCHECK(channel_filter_.get());
     return channel_filter_->IsLost();
   }
 

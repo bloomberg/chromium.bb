@@ -100,7 +100,7 @@ void ScreensaverUnpackerClient::LoadScreensaverExtension(
                                          extensions::Manifest::COMPONENT,
                                          Extension::NO_FLAGS,
                                          &error);
-  if (!screensaver_extension) {
+  if (!screensaver_extension.get()) {
     LOG(ERROR) << "Could not load screensaver extension from: "
                << screensaver_extension_path.value() << " due to: " << error;
     NotifyAppPackOfDamagedFile();
@@ -221,10 +221,10 @@ void KioskModeScreensaver::SetupScreensaver(
   Profile* default_profile = ProfileManager::GetDefaultProfile();
   // Add the extension to the extension service and display the screensaver.
   if (default_profile) {
-    extensions::ExtensionSystem::Get(default_profile)->extension_service()->
-        AddExtension(extension);
+    extensions::ExtensionSystem::Get(default_profile)->extension_service()
+        ->AddExtension(extension.get());
     ash::ShowScreensaver(
-        extensions::AppLaunchInfo::GetFullLaunchURL(extension));
+        extensions::AppLaunchInfo::GetFullLaunchURL(extension.get()));
   } else {
     LOG(ERROR) << "Couldn't get default profile. Unable to load screensaver!";
     ShutdownKioskModeScreensaver();

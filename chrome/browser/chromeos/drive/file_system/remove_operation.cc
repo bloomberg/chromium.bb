@@ -86,13 +86,9 @@ void RemoveOperation::Remove(const base::FilePath& path,
 
   ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&CheckLocalState,
-                 metadata_,
-                 path,
-                 is_recursive,
-                 entry),
+      base::Bind(&CheckLocalState, metadata_, path, is_recursive, entry),
       base::Bind(&RemoveOperation::RemoveAfterCheckLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
@@ -134,7 +130,7 @@ void RemoveOperation::RemoveAfterDeleteResource(
 
   base::FilePath* changed_directory_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&UpdateLocalState,
                  metadata_,

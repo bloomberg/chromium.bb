@@ -36,7 +36,7 @@ void ServiceProviderTestHelper::SetUp(
   mock_bus_ = new dbus::MockBus(options);
 
   // ShutdownAndBlock() will be called in TearDown().
-  EXPECT_CALL(*mock_bus_, ShutdownAndBlock()).WillOnce(Return());
+  EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
 
   // Create a mock exported object that behaves as
   // org.chromium.CrosDBusService.
@@ -46,9 +46,9 @@ void ServiceProviderTestHelper::SetUp(
 
   // |mock_exported_object_|'s ExportMethod() will use
   // |MockExportedObject().
-  EXPECT_CALL(*mock_exported_object_,
-              ExportMethod(kLibCrosServiceInterface,
-                           exported_method_name, _, _))
+  EXPECT_CALL(
+      *mock_exported_object_.get(),
+      ExportMethod(kLibCrosServiceInterface, exported_method_name, _, _))
       .WillOnce(Invoke(this, &ServiceProviderTestHelper::MockExportMethod));
 
   // Create a mock object proxy, with which we call a method of
@@ -59,18 +59,15 @@ void ServiceProviderTestHelper::SetUp(
                                 dbus::ObjectPath(kLibCrosServicePath));
   // |mock_object_proxy_|'s MockCallMethodAndBlock() will use
   // MockCallMethodAndBlock() to return responses.
-  EXPECT_CALL(*mock_object_proxy_,
+  EXPECT_CALL(*mock_object_proxy_.get(),
               MockCallMethodAndBlock(
-                  AllOf(
-                      ResultOf(
-                          std::mem_fun(&dbus::MethodCall::GetInterface),
-                          kLibCrosServiceInterface),
-                      ResultOf(
-                          std::mem_fun(&dbus::MethodCall::GetMember),
-                          exported_method_name)),
+                  AllOf(ResultOf(std::mem_fun(&dbus::MethodCall::GetInterface),
+                                 kLibCrosServiceInterface),
+                        ResultOf(std::mem_fun(&dbus::MethodCall::GetMember),
+                                 exported_method_name)),
                   _))
-      .WillOnce(Invoke(this,
-                       &ServiceProviderTestHelper::MockCallMethodAndBlock));
+      .WillOnce(
+           Invoke(this, &ServiceProviderTestHelper::MockCallMethodAndBlock));
 
   service_provider->Start(mock_exported_object_.get());
 }
@@ -89,12 +86,12 @@ void ServiceProviderTestHelper::SetUpReturnSignal(
     dbus::ObjectProxy::OnConnectedCallback on_connected_callback) {
   // |mock_exported_object_|'s SendSignal() will use
   // MockSendSignal().
-  EXPECT_CALL(*mock_exported_object_, SendSignal(_))
+  EXPECT_CALL(*mock_exported_object_.get(), SendSignal(_))
       .WillOnce(Invoke(this, &ServiceProviderTestHelper::MockSendSignal));
 
   // |mock_object_proxy_|'s ConnectToSignal will use
   // MockConnectToSignal().
-  EXPECT_CALL(*mock_object_proxy_,
+  EXPECT_CALL(*mock_object_proxy_.get(),
               ConnectToSignal(interface_name, signal_name, _, _))
       .WillOnce(Invoke(this, &ServiceProviderTestHelper::MockConnectToSignal));
 

@@ -79,7 +79,7 @@ bool HandleRequestCallback(
       !ScreenLocker::default_screen_locker()) {
     scoped_refptr<base::RefCountedBytes> empty_bytes =
         new base::RefCountedBytes();
-    callback.Run(empty_bytes);
+    callback.Run(empty_bytes.get());
     return true;
   }
 

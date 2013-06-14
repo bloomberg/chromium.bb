@@ -282,9 +282,9 @@ class IBusConfigClientTest : public testing::Test {
                                             ibus::kServiceName,
                                             dbus::ObjectPath(
                                                 ibus::config::kServicePath));
-    EXPECT_CALL(*mock_bus_, ShutdownAndBlock());
+    EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock());
     client_.reset(IBusConfigClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION,
-                                           mock_bus_));
+                                           mock_bus_.get()));
 
     // Surpress uninteresting mock function call warning.
     EXPECT_CALL(*mock_bus_.get(), AssertOnOriginThread())
@@ -297,31 +297,30 @@ class IBusConfigClientTest : public testing::Test {
 
   // Initialize |client_| by replying valid owner name synchronously.
   void InitializeSync() {
-    EXPECT_CALL(*mock_bus_, GetObjectProxy(ibus::config::kServiceName,
-                                           dbus::ObjectPath(
-                                               ibus::config::kServicePath)))
+    EXPECT_CALL(*mock_bus_.get(),
+                GetObjectProxy(ibus::config::kServiceName,
+                               dbus::ObjectPath(ibus::config::kServicePath)))
         .WillOnce(Return(mock_proxy_.get()));
 
     scoped_refptr<dbus::MockObjectProxy> mock_dbus_proxy
         = new dbus::MockObjectProxy(mock_bus_.get(),
                                     ibus::kDBusServiceName,
                                     dbus::ObjectPath(ibus::kDBusObjectPath));
-    EXPECT_CALL(*mock_bus_,
+    EXPECT_CALL(*mock_bus_.get(),
                 GetObjectProxy(ibus::kDBusServiceName,
                                dbus::ObjectPath(ibus::kDBusObjectPath)))
         .WillOnce(Return(mock_dbus_proxy.get()));
 
     MockGetNameOwnerMethodCallHandler mock_get_name_owner_method_call;
-    EXPECT_CALL(*mock_dbus_proxy, CallMethodWithErrorCallback(_, _, _, _))
+    EXPECT_CALL(*mock_dbus_proxy.get(), CallMethodWithErrorCallback(_, _, _, _))
         .WillOnce(Invoke(&mock_get_name_owner_method_call,
                          &MockGetNameOwnerMethodCallHandler::Run));
     NameOwnerChangedHandler handler;
-    EXPECT_CALL(*mock_dbus_proxy, ConnectToSignal(
-        ibus::kDBusInterface,
-        ibus::kNameOwnerChangedSignal,
-        _,
-        _)).WillOnce(Invoke(&handler,
-                            &NameOwnerChangedHandler::OnConnectToSignal));
+    EXPECT_CALL(*mock_dbus_proxy.get(),
+                ConnectToSignal(
+                    ibus::kDBusInterface, ibus::kNameOwnerChangedSignal, _, _))
+        .WillOnce(
+             Invoke(&handler, &NameOwnerChangedHandler::OnConnectToSignal));
     client_->InitializeAsync(base::Bind(&base::DoNothing));
     mock_get_name_owner_method_call.EmitReplyCallback(":0.1");
   }
@@ -340,7 +339,7 @@ TEST_F(IBusConfigClientTest, SetStringValueTest) {
   InitializeSync();
   const char value[] = "value";
   SetStringValueHandler handler(kSection, kKey, value, HANDLER_SUCCESS);
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(&handler, &SetValueVerifierBase::Run));
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run()).Times(0);
@@ -356,7 +355,7 @@ TEST_F(IBusConfigClientTest, SetStringValueTest_Fail) {
   InitializeSync();
   const char value[] = "value";
   SetStringValueHandler handler(kSection, kKey, value, HANDLER_FAIL);
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(&handler, &SetValueVerifierBase::Run));
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run());
@@ -372,7 +371,7 @@ TEST_F(IBusConfigClientTest, SetIntValueTest) {
   InitializeSync();
   const int value = 1234;
   SetIntValueHandler handler(kSection, kKey, value, HANDLER_SUCCESS);
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(&handler, &SetValueVerifierBase::Run));
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run()).Times(0);
@@ -388,7 +387,7 @@ TEST_F(IBusConfigClientTest, SetIntValueTest_Fail) {
   InitializeSync();
   const int value = 1234;
   SetIntValueHandler handler(kSection, kKey, value, HANDLER_FAIL);
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(&handler, &SetValueVerifierBase::Run));
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run());
@@ -404,7 +403,7 @@ TEST_F(IBusConfigClientTest, SetBoolValueTest) {
   InitializeSync();
   const bool value = true;
   SetBoolValueHandler handler(kSection, kKey, value, HANDLER_SUCCESS);
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(&handler, &SetValueVerifierBase::Run));
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run()).Times(0);
@@ -420,7 +419,7 @@ TEST_F(IBusConfigClientTest, SetBoolValueTest_Fail) {
   InitializeSync();
   const bool value = true;
   SetBoolValueHandler handler(kSection, kKey, value, HANDLER_FAIL);
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(&handler, &SetValueVerifierBase::Run));
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run());
@@ -439,7 +438,7 @@ TEST_F(IBusConfigClientTest, SetStringListValueTest) {
   value.push_back("Sample value 2");
 
   SetStringListValueHandler handler(kSection, kKey, value, HANDLER_SUCCESS);
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(&handler, &SetValueVerifierBase::Run));
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run()).Times(0);
@@ -458,7 +457,7 @@ TEST_F(IBusConfigClientTest, SetStringListValueTest_Fail) {
   value.push_back("Sample value 2");
 
   SetStringListValueHandler handler(kSection, kKey, value, HANDLER_FAIL);
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(&handler, &SetValueVerifierBase::Run));
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run());
@@ -472,29 +471,27 @@ TEST_F(IBusConfigClientTest, SetStringListValueTest_Fail) {
 TEST_F(IBusConfigClientTest, IBusConfigDaemon_NotAvailableTest) {
   MockGetNameOwnerMethodCallHandler mock_get_name_owner_method_call;
 
-  EXPECT_CALL(*mock_bus_, GetObjectProxy(ibus::kServiceName,
-                                         dbus::ObjectPath(
-                                             ibus::config::kServicePath)))
+  EXPECT_CALL(*mock_bus_.get(),
+              GetObjectProxy(ibus::kServiceName,
+                             dbus::ObjectPath(ibus::config::kServicePath)))
       .Times(0);
 
   scoped_refptr<dbus::MockObjectProxy> mock_dbus_proxy
       = new dbus::MockObjectProxy(mock_bus_.get(),
                                   ibus::kDBusServiceName,
                                   dbus::ObjectPath(ibus::kDBusObjectPath));
-  EXPECT_CALL(*mock_bus_,
+  EXPECT_CALL(*mock_bus_.get(),
               GetObjectProxy(ibus::kDBusServiceName,
                              dbus::ObjectPath(ibus::kDBusObjectPath)))
       .WillOnce(Return(mock_dbus_proxy.get()));
-  EXPECT_CALL(*mock_dbus_proxy, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_dbus_proxy.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(&mock_get_name_owner_method_call,
                        &MockGetNameOwnerMethodCallHandler::Run));
   NameOwnerChangedHandler handler;
-  EXPECT_CALL(*mock_dbus_proxy, ConnectToSignal(
-      ibus::kDBusInterface,
-      ibus::kNameOwnerChangedSignal,
-      _,
-      _)).WillOnce(Invoke(&handler,
-                          &NameOwnerChangedHandler::OnConnectToSignal));
+  EXPECT_CALL(*mock_dbus_proxy.get(),
+              ConnectToSignal(
+                  ibus::kDBusInterface, ibus::kNameOwnerChangedSignal, _, _))
+      .WillOnce(Invoke(&handler, &NameOwnerChangedHandler::OnConnectToSignal));
   client_->InitializeAsync(base::Bind(&base::DoNothing));
 
   // Passing empty string means there is no owner, thus ibus-config daemon is
@@ -503,7 +500,8 @@ TEST_F(IBusConfigClientTest, IBusConfigDaemon_NotAvailableTest) {
 
   // Make sure not crashing by function call without initialize.
   const bool value = true;
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
+      .Times(0);
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run()).Times(0);
   client_->SetBoolValue(kKey, kSection, value,
@@ -514,29 +512,28 @@ TEST_F(IBusConfigClientTest, IBusConfigDaemon_NotAvailableTest) {
 TEST_F(IBusConfigClientTest, IBusConfigDaemon_SlowInitializeTest) {
   MockGetNameOwnerMethodCallHandler mock_get_name_owner_method_call;
 
-  EXPECT_CALL(*mock_bus_, GetObjectProxy(ibus::config::kServiceName,
-                                         dbus::ObjectPath(
-                                             ibus::config::kServicePath)))
+  EXPECT_CALL(*mock_bus_.get(),
+              GetObjectProxy(ibus::config::kServiceName,
+                             dbus::ObjectPath(ibus::config::kServicePath)))
       .WillOnce(Return(mock_proxy_.get()));
 
   scoped_refptr<dbus::MockObjectProxy> mock_dbus_proxy
       = new dbus::MockObjectProxy(mock_bus_.get(),
                                   ibus::kDBusServiceName,
                                   dbus::ObjectPath(ibus::kDBusObjectPath));
-  EXPECT_CALL(*mock_bus_,
+  EXPECT_CALL(*mock_bus_.get(),
               GetObjectProxy(ibus::kDBusServiceName,
                              dbus::ObjectPath(ibus::kDBusObjectPath)))
       .WillOnce(Return(mock_dbus_proxy.get()));
-  EXPECT_CALL(*mock_dbus_proxy, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_dbus_proxy.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(&mock_get_name_owner_method_call,
                        &MockGetNameOwnerMethodCallHandler::Run));
   NameOwnerChangedHandler name_owner_changed_handler;
-  EXPECT_CALL(*mock_dbus_proxy, ConnectToSignal(
-      ibus::kDBusInterface,
-      ibus::kNameOwnerChangedSignal,
-      _,
-      _)).WillOnce(Invoke(&name_owner_changed_handler,
-                          &NameOwnerChangedHandler::OnConnectToSignal));
+  EXPECT_CALL(*mock_dbus_proxy.get(),
+              ConnectToSignal(
+                  ibus::kDBusInterface, ibus::kNameOwnerChangedSignal, _, _))
+      .WillOnce(Invoke(&name_owner_changed_handler,
+                       &NameOwnerChangedHandler::OnConnectToSignal));
   client_->InitializeAsync(base::Bind(&base::DoNothing));
 
   // Passing empty string means there is no owner, thus ibus-config daemon is
@@ -552,7 +549,7 @@ TEST_F(IBusConfigClientTest, IBusConfigDaemon_SlowInitializeTest) {
   // Make sure it is possible to emit method calls.
   const bool value = true;
   SetBoolValueHandler handler(kSection, kKey, value, HANDLER_FAIL);
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(&handler, &SetValueVerifierBase::Run));
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run());
@@ -566,34 +563,33 @@ TEST_F(IBusConfigClientTest, IBusConfigDaemon_SlowInitializeTest) {
 TEST_F(IBusConfigClientTest, IBusConfigDaemon_ShutdownTest) {
   MockGetNameOwnerMethodCallHandler mock_get_name_owner_method_call;
 
-  EXPECT_CALL(*mock_bus_, GetObjectProxy(ibus::config::kServiceName,
-                                         dbus::ObjectPath(
-                                             ibus::config::kServicePath)))
+  EXPECT_CALL(*mock_bus_.get(),
+              GetObjectProxy(ibus::config::kServiceName,
+                             dbus::ObjectPath(ibus::config::kServicePath)))
       .WillRepeatedly(Return(mock_proxy_.get()));
 
   scoped_refptr<dbus::MockObjectProxy> mock_dbus_proxy
       = new dbus::MockObjectProxy(mock_bus_.get(),
                                   ibus::kDBusServiceName,
                                   dbus::ObjectPath(ibus::kDBusObjectPath));
-  EXPECT_CALL(*mock_bus_,
+  EXPECT_CALL(*mock_bus_.get(),
               GetObjectProxy(ibus::kDBusServiceName,
                              dbus::ObjectPath(ibus::kDBusObjectPath)))
       .WillOnce(Return(mock_dbus_proxy.get()));
-  EXPECT_CALL(*mock_dbus_proxy, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_dbus_proxy.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(&mock_get_name_owner_method_call,
                        &MockGetNameOwnerMethodCallHandler::Run));
   NameOwnerChangedHandler name_owner_changed_handler;
-  EXPECT_CALL(*mock_dbus_proxy, ConnectToSignal(
-      ibus::kDBusInterface,
-      ibus::kNameOwnerChangedSignal,
-      _,
-      _)).WillOnce(Invoke(&name_owner_changed_handler,
-                          &NameOwnerChangedHandler::OnConnectToSignal));
+  EXPECT_CALL(*mock_dbus_proxy.get(),
+              ConnectToSignal(
+                  ibus::kDBusInterface, ibus::kNameOwnerChangedSignal, _, _))
+      .WillOnce(Invoke(&name_owner_changed_handler,
+                       &NameOwnerChangedHandler::OnConnectToSignal));
   client_->InitializeAsync(base::Bind(&base::DoNothing));
 
   const bool value = true;
   SetBoolValueHandler handler(kSection, kKey, value, HANDLER_FAIL);
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillRepeatedly(Invoke(&handler, &SetValueVerifierBase::Run));
   MockErrorCallback error_callback;
   EXPECT_CALL(error_callback, Run()).WillRepeatedly(Return());

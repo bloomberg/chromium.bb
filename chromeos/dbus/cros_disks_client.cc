@@ -434,11 +434,9 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
 
     // Perform fake mount.
     base::PostTaskAndReplyWithResult(
-        base::WorkerPool::GetTaskRunner(true /* task_is_slow */),
+        base::WorkerPool::GetTaskRunner(true /* task_is_slow */).get(),
         FROM_HERE,
-        base::Bind(&PerformFakeMount,
-                   source_path,
-                   mounted_path),
+        base::Bind(&PerformFakeMount, source_path, mounted_path),
         base::Bind(&CrosDisksClientStubImpl::ContinueMount,
                    weak_ptr_factory_.GetWeakPtr(),
                    source_path,

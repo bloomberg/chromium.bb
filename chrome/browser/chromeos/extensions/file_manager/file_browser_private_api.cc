@@ -1096,7 +1096,8 @@ bool SetDefaultTaskFileBrowserFunction::RunImpl() {
       BrowserContext::GetStoragePartition(profile(), site_instance)->
           GetFileSystemContext();
 
-  std::set<std::string> suffixes = GetUniqueSuffixes(file_url_list, context);
+  std::set<std::string> suffixes =
+      GetUniqueSuffixes(file_url_list, context.get());
 
   // MIME types are an optional parameter.
   base::ListValue* mime_type_list;

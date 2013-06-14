@@ -115,42 +115,41 @@ void ShillClientUnittestBase::SetUp() {
 
   // Set an expectation so mock_proxy's CallMethodAndBlock() will use
   // OnCallMethodAndBlock() to return responses.
-  EXPECT_CALL(*mock_proxy_, MockCallMethodAndBlock(_, _))
-      .WillRepeatedly(Invoke(
-          this, &ShillClientUnittestBase::OnCallMethodAndBlock));
+  EXPECT_CALL(*mock_proxy_.get(), MockCallMethodAndBlock(_, _)).WillRepeatedly(
+      Invoke(this, &ShillClientUnittestBase::OnCallMethodAndBlock));
 
   // Set an expectation so mock_proxy's CallMethod() will use OnCallMethod()
   // to return responses.
-  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethod(_, _, _))
       .WillRepeatedly(Invoke(this, &ShillClientUnittestBase::OnCallMethod));
 
   // Set an expectation so mock_proxy's CallMethodWithErrorCallback() will use
   // OnCallMethodWithErrorCallback() to return responses.
-  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethodWithErrorCallback(_, _, _, _))
       .WillRepeatedly(Invoke(
-          this, &ShillClientUnittestBase::OnCallMethodWithErrorCallback));
+           this, &ShillClientUnittestBase::OnCallMethodWithErrorCallback));
 
   // Set an expectation so mock_proxy's ConnectToSignal() will use
   // OnConnectToSignal() to run the callback.
-  EXPECT_CALL(*mock_proxy_, ConnectToSignal(
-      interface_name_,
-      flimflam::kMonitorPropertyChanged, _, _))
-      .WillRepeatedly(Invoke(this,
-                             &ShillClientUnittestBase::OnConnectToSignal));
+  EXPECT_CALL(
+      *mock_proxy_.get(),
+      ConnectToSignal(interface_name_, flimflam::kMonitorPropertyChanged, _, _))
+      .WillRepeatedly(
+           Invoke(this, &ShillClientUnittestBase::OnConnectToSignal));
 
   // Set an expectation so mock_bus's GetObjectProxy() for the given
   // service name and the object path will return mock_proxy_.
-  EXPECT_CALL(*mock_bus_, GetObjectProxy(flimflam::kFlimflamServiceName,
-                                         object_path_))
+  EXPECT_CALL(*mock_bus_.get(),
+              GetObjectProxy(flimflam::kFlimflamServiceName, object_path_))
       .WillOnce(Return(mock_proxy_.get()));
 
   // Set an expectation so mock_bus's PostTaskToDBusThread() will run the
   // given task.
-  EXPECT_CALL(*mock_bus_, PostTaskToDBusThread(_, _))
+  EXPECT_CALL(*mock_bus_.get(), PostTaskToDBusThread(_, _))
       .WillRepeatedly(Invoke(&RunTask));
 
   // ShutdownAndBlock() will be called in TearDown().
-  EXPECT_CALL(*mock_bus_, ShutdownAndBlock()).WillOnce(Return());
+  EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
 }
 
 void ShillClientUnittestBase::TearDown() {

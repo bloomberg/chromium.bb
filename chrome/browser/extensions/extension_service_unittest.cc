@@ -1263,7 +1263,7 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
 
   // We don't parse the plugins section on Chrome OS.
 #if defined(OS_CHROMEOS)
-  EXPECT_TRUE(!extensions::PluginInfo::HasPlugins(loaded_[1]));
+  EXPECT_TRUE(!extensions::PluginInfo::HasPlugins(loaded_[1].get()));
 #else
   ASSERT_TRUE(extensions::PluginInfo::HasPlugins(loaded_[1].get()));
   const std::vector<extensions::PluginInfo>* plugins =

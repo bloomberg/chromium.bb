@@ -713,7 +713,7 @@ class ExtensionTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
         handler_pid_(handler_pid),
         action_id_(action_id),
         urls_(file_urls) {
-    DCHECK(executor_);
+    DCHECK(executor_.get());
   }
 
   // Checks legitimacy of file url and grants file RO access permissions from
@@ -796,12 +796,12 @@ bool ExtensionTaskExecutor::ExecuteAndNotify(
     return false;
 
   // Forbid calling undeclared handlers.
-  if (!FindFileBrowserHandler(extension, action_id_))
+  if (!FindFileBrowserHandler(extension.get(), action_id_))
     return false;
 
   int extension_pid = ExtractProcessFromExtensionId(profile(), extension->id());
   if (extension_pid <= 0) {
-    if (!extensions::BackgroundInfo::HasLazyBackgroundPage(extension))
+    if (!extensions::BackgroundInfo::HasLazyBackgroundPage(extension.get()))
       return false;
   }
 

@@ -139,7 +139,7 @@ class ShillManagerClientTest : public ShillClientUnittestBase {
     ShillClientUnittestBase::SetUp();
     // Create a client with the mock bus.
     client_.reset(ShillManagerClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION,
-                                                mock_bus_));
+                                             mock_bus_.get()));
     // Run the message loop to run the signal connection result callback.
     message_loop_.RunUntilIdle();
   }

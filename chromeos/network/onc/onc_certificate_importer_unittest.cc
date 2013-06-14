@@ -140,7 +140,8 @@ class ONCCertificateImporterTest : public testing::Test {
     bool ok = true;
     net::CertificateList certs = ListCertsInSlot();
     for (size_t i = 0; i < certs.size(); ++i) {
-      if (!net::NSSCertDatabase::GetInstance()->DeleteCertAndKey(certs[i]))
+      if (!net::NSSCertDatabase::GetInstance()->DeleteCertAndKey(certs[i]
+                                                                     .get()))
         ok = false;
     }
     return ok;

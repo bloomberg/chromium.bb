@@ -76,7 +76,7 @@ class SearchMetadataTest : public testing::Test {
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
     cache_.reset(new internal::FileCache(temp_dir_.path(),
-                                         blocking_task_runner_,
+                                         blocking_task_runner_.get(),
                                          fake_free_disk_space_getter_.get()));
 
     bool success = false;

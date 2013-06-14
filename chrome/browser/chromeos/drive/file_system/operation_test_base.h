@@ -91,7 +91,7 @@ class OperationTestBase : public testing::Test {
   LoggingObserver* observer() { return &observer_; }
   JobScheduler* scheduler() { return scheduler_.get(); }
   base::SequencedTaskRunner* blocking_task_runner() {
-    return blocking_task_runner_;
+    return blocking_task_runner_.get();
   }
   internal::ResourceMetadata* metadata() { return metadata_.get(); }
   FakeFreeDiskSpaceGetter* fake_free_disk_space_getter() {

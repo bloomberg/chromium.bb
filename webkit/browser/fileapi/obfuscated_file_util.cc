@@ -1283,7 +1283,7 @@ void ObfuscatedFileUtil::InvalidateUsageCache(
 
 void ObfuscatedFileUtil::MarkUsed() {
   if (!timer_)
-    timer_.reset(new TimedTaskHelper(file_task_runner_));
+    timer_.reset(new TimedTaskHelper(file_task_runner_.get()));
 
   if (timer_->IsRunning()) {
     timer_->Reset();

@@ -326,7 +326,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   void InitializeOnAdapterReady(
       scoped_refptr<device::BluetoothAdapter> adapter) {
     bluetooth_adapter_ = adapter;
-    CHECK(bluetooth_adapter_);
+    CHECK(bluetooth_adapter_.get());
     bluetooth_adapter_->AddObserver(this);
 
     local_state_registrar_.reset(new PrefChangeRegistrar);

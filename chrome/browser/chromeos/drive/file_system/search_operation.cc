@@ -137,7 +137,7 @@ void SearchOperation::SearchAfterGetResourceList(
 
   std::vector<SearchResultInfo>* result_ptr = result.get();
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&RefreshEntriesOnBlockingPool,
                  metadata_,

@@ -212,7 +212,7 @@ class WebGLBench : public BenchCompositorObserver {
     texture_ = new WebGLTexture(context_.get(), bounds.size());
     fbo_ = context_->createFramebuffer();
     compositor->AddObserver(this);
-    webgl_.SetExternalTexture(texture_);
+    webgl_.SetExternalTexture(texture_.get());
     context_->bindFramebuffer(GL_FRAMEBUFFER, fbo_);
     context_->framebufferTexture2D(
         GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
@@ -237,7 +237,7 @@ class WebGLBench : public BenchCompositorObserver {
       context_->clear(GL_COLOR_BUFFER_BIT);
       context_->flush();
     }
-    webgl_.SetExternalTexture(texture_);
+    webgl_.SetExternalTexture(texture_.get());
     webgl_.SchedulePaint(gfx::Rect(webgl_.bounds().size()));
     compositor_->ScheduleDraw();
   }

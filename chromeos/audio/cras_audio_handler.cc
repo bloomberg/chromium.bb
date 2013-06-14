@@ -275,7 +275,7 @@ CrasAudioHandler::CrasAudioHandler(
       has_alternative_output_(false),
       output_mute_locked_(false),
       input_mute_locked_(false) {
-  if (!audio_pref_handler)
+  if (!audio_pref_handler.get())
     return;
   // If the DBusThreadManager or the CrasAudioClient aren't available, there
   // isn't much we can do. This should only happen when running tests.
@@ -295,7 +295,7 @@ CrasAudioHandler::~CrasAudioHandler() {
     return;
   chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
       RemoveObserver(this);
-  if (audio_pref_handler_)
+  if (audio_pref_handler_.get())
     audio_pref_handler_->RemoveAudioPrefObserver(this);
   audio_pref_handler_ = NULL;
 }

@@ -145,15 +145,20 @@ void CreateFileOperation::CreateFile(const base::FilePath& file_path,
   std::string* parent_resource_id = new std::string;
   std::string* mime_type = new std::string;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&CheckPreConditionForCreateFile,
-                 metadata_, file_path, is_exclusive,
-                 parent_resource_id, mime_type),
+                 metadata_,
+                 file_path,
+                 is_exclusive,
+                 parent_resource_id,
+                 mime_type),
       base::Bind(&CreateFileOperation::CreateFileAfterCheckPreCondition,
                  weak_ptr_factory_.GetWeakPtr(),
-                 file_path, callback,
-                 base::Owned(parent_resource_id), base::Owned(mime_type)));
+                 file_path,
+                 callback,
+                 base::Owned(parent_resource_id),
+                 base::Owned(mime_type)));
 }
 
 void CreateFileOperation::CreateFileAfterCheckPreCondition(
@@ -201,13 +206,17 @@ void CreateFileOperation::CreateFileAfterUpload(
 
   base::FilePath* file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&UpdateLocalStateForCreateFile,
-                 metadata_, cache_, base::Passed(&resource_entry), file_path),
+                 metadata_,
+                 cache_,
+                 base::Passed(&resource_entry),
+                 file_path),
       base::Bind(&CreateFileOperation::CreateFileAfterUpdateLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback, base::Owned(file_path)));
+                 callback,
+                 base::Owned(file_path)));
 }
 
 void CreateFileOperation::CreateFileAfterUpdateLocalState(

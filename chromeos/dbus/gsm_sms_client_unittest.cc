@@ -82,23 +82,25 @@ class GsmSMSClientTest : public testing::Test {
 
     // Set an expectation so mock_proxy's ConnectToSignal() will use
     // OnConnectToSignal() to run the callback.
-    EXPECT_CALL(*mock_proxy_, ConnectToSignal(
-        modemmanager::kModemManagerSMSInterface,
-        modemmanager::kSMSReceivedSignal, _, _))
+    EXPECT_CALL(*mock_proxy_.get(),
+                ConnectToSignal(modemmanager::kModemManagerSMSInterface,
+                                modemmanager::kSMSReceivedSignal,
+                                _,
+                                _))
         .WillRepeatedly(Invoke(this, &GsmSMSClientTest::OnConnectToSignal));
 
     // Set an expectation so mock_bus's GetObjectProxy() for the given
     // service name and the object path will return mock_proxy_.
-    EXPECT_CALL(*mock_bus_, GetObjectProxy(kServiceName,
-                                           dbus::ObjectPath(kObjectPath)))
+    EXPECT_CALL(*mock_bus_.get(),
+                GetObjectProxy(kServiceName, dbus::ObjectPath(kObjectPath)))
         .WillOnce(Return(mock_proxy_.get()));
 
     // ShutdownAndBlock() will be called in TearDown().
-    EXPECT_CALL(*mock_bus_, ShutdownAndBlock()).WillOnce(Return());
+    EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
 
     // Create a client with the mock bus.
-    client_.reset(GsmSMSClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION,
-                                       mock_bus_));
+    client_.reset(
+        GsmSMSClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION, mock_bus_.get()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -221,7 +223,7 @@ TEST_F(GsmSMSClientTest, Delete) {
   // Set expectations.
   const uint32 kIndex = 42;
   expected_index_ = kIndex;
-  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethod(_, _, _))
       .WillOnce(Invoke(this, &GsmSMSClientTest::OnDelete));
   MockDeleteCallback callback;
   EXPECT_CALL(callback, Run()).Times(1);
@@ -241,7 +243,7 @@ TEST_F(GsmSMSClientTest, Get) {
   // Set expectations.
   const uint32 kIndex = 42;
   expected_index_ = kIndex;
-  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethod(_, _, _))
       .WillOnce(Invoke(this, &GsmSMSClientTest::OnGet));
   MockGetCallback callback;
   EXPECT_CALL(callback, Run(_))
@@ -279,7 +281,7 @@ TEST_F(GsmSMSClientTest, Get) {
 
 TEST_F(GsmSMSClientTest, List) {
   // Set expectations.
-  EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
+  EXPECT_CALL(*mock_proxy_.get(), CallMethod(_, _, _))
       .WillOnce(Invoke(this, &GsmSMSClientTest::OnList));
   MockListCallback callback;
   EXPECT_CALL(callback, Run(_))

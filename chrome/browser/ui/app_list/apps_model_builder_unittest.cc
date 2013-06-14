@@ -104,7 +104,7 @@ TEST_F(AppsModelBuilderTest, HideWebStore) {
               "0.0",
               "http://google.com",
               std::string(extension_misc::kWebStoreAppId));
-  service_->AddExtension(store);
+  service_->AddExtension(store.get());
 
   // Install an "enterprise web store" app.
   scoped_refptr<extensions::Extension> enterprise_store =
@@ -112,7 +112,7 @@ TEST_F(AppsModelBuilderTest, HideWebStore) {
               "0.0",
               "http://google.com",
               std::string(extension_misc::kEnterpriseWebStoreAppId));
-  service_->AddExtension(enterprise_store);
+  service_->AddExtension(enterprise_store.get());
 
   // Web stores should be present in the AppListModel.
   app_list::AppListModel::Apps model1;

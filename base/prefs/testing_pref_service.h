@@ -168,7 +168,7 @@ template<class SuperPrefService, class ConstructionPrefRegistry>
 void TestingPrefServiceBase<
     SuperPrefService, ConstructionPrefRegistry>::RemoveRecommendedPref(
         const char* path) {
-  RemovePref(recommended_prefs_, path);
+  RemovePref(recommended_prefs_.get(), path);
 }
 
 template<class SuperPrefService, class ConstructionPrefRegistry>

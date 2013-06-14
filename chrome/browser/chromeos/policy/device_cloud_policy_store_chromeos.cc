@@ -35,8 +35,8 @@ void DeviceCloudPolicyStoreChromeOS::Store(
   scoped_refptr<chromeos::OwnerKey> owner_key(
       device_settings_service_->GetOwnerKey());
   if (!install_attributes_->IsEnterpriseDevice() ||
-      !device_settings_service_->policy_data() ||
-      !owner_key || !owner_key->public_key()) {
+      !device_settings_service_->policy_data() || !owner_key.get() ||
+      !owner_key->public_key()) {
     status_ = STATUS_BAD_STATE;
     NotifyStoreError();
     return;

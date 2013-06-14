@@ -48,7 +48,7 @@ class BluetoothProfileChromeOSTest : public testing::Test {
     device::BluetoothAdapterFactory::GetAdapter(
         base::Bind(&BluetoothProfileChromeOSTest::AdapterCallback,
                    base::Unretained(this)));
-    ASSERT_TRUE(adapter_ != NULL);
+    ASSERT_TRUE(adapter_.get() != NULL);
     ASSERT_TRUE(adapter_->IsInitialized());
     ASSERT_TRUE(adapter_->IsPresent());
 
@@ -171,7 +171,7 @@ TEST_F(BluetoothProfileChromeOSTest, L2capEndToEnd) {
   // Read data from the socket; since no data should be waiting, this should
   // return success but no data.
   read_buffer = new net::GrowableIOBuffer;
-  success = socket->Receive(read_buffer);
+  success = socket->Receive(read_buffer.get());
   EXPECT_TRUE(success);
   EXPECT_EQ(0, read_buffer->capacity());
   EXPECT_EQ(0, read_buffer->offset());
@@ -179,8 +179,9 @@ TEST_F(BluetoothProfileChromeOSTest, L2capEndToEnd) {
 
   // Write data to the socket; the data should be consumed and no bytes should
   // be remaining.
-  write_buffer = new net::DrainableIOBuffer(base_buffer, base_buffer->size());
-  success = socket->Send(write_buffer);
+  write_buffer =
+      new net::DrainableIOBuffer(base_buffer.get(), base_buffer->size());
+  success = socket->Send(write_buffer.get());
   EXPECT_TRUE(success);
   EXPECT_EQ(base_buffer->size(), write_buffer->BytesConsumed());
   EXPECT_EQ(0, write_buffer->BytesRemaining());
@@ -191,7 +192,7 @@ TEST_F(BluetoothProfileChromeOSTest, L2capEndToEnd) {
   // to read.
   read_buffer = new net::GrowableIOBuffer;
   do {
-    success = socket->Receive(read_buffer);
+    success = socket->Receive(read_buffer.get());
   } while (success && read_buffer->offset() == 0);
   EXPECT_TRUE(success);
   EXPECT_NE(0, read_buffer->capacity());
@@ -204,8 +205,9 @@ TEST_F(BluetoothProfileChromeOSTest, L2capEndToEnd) {
 
   // Write data to the socket; since the socket is closed, this should return
   // an error without writing the data and "Disconnected" as the message.
-  write_buffer = new net::DrainableIOBuffer(base_buffer, base_buffer->size());
-  success = socket->Send(write_buffer);
+  write_buffer =
+      new net::DrainableIOBuffer(base_buffer.get(), base_buffer->size());
+  success = socket->Send(write_buffer.get());
   EXPECT_FALSE(success);
   EXPECT_EQ(0, write_buffer->BytesConsumed());
   EXPECT_EQ(base_buffer->size(), write_buffer->BytesRemaining());
@@ -214,7 +216,7 @@ TEST_F(BluetoothProfileChromeOSTest, L2capEndToEnd) {
   // Read data from the socket; since the socket is closed, this should return
   // an error with "Disconnected" as the last message.
   read_buffer = new net::GrowableIOBuffer;
-  success = socket->Receive(read_buffer);
+  success = socket->Receive(read_buffer.get());
   EXPECT_FALSE(success);
   EXPECT_EQ(0, read_buffer->capacity());
   EXPECT_EQ(0, read_buffer->offset());
@@ -295,15 +297,16 @@ TEST_F(BluetoothProfileChromeOSTest, RfcommEndToEnd) {
   // Read data from the socket; since no data should be waiting, this should
   // return success but no data.
   read_buffer = new net::GrowableIOBuffer;
-  success = socket->Receive(read_buffer);
+  success = socket->Receive(read_buffer.get());
   EXPECT_TRUE(success);
   EXPECT_EQ(0, read_buffer->offset());
   EXPECT_EQ("", socket->GetLastErrorMessage());
 
   // Write data to the socket; the data should be consumed and no bytes should
   // be remaining.
-  write_buffer = new net::DrainableIOBuffer(base_buffer, base_buffer->size());
-  success = socket->Send(write_buffer);
+  write_buffer =
+      new net::DrainableIOBuffer(base_buffer.get(), base_buffer->size());
+  success = socket->Send(write_buffer.get());
   EXPECT_TRUE(success);
   EXPECT_EQ(base_buffer->size(), write_buffer->BytesConsumed());
   EXPECT_EQ(0, write_buffer->BytesRemaining());
@@ -314,7 +317,7 @@ TEST_F(BluetoothProfileChromeOSTest, RfcommEndToEnd) {
   // to read.
   read_buffer = new net::GrowableIOBuffer;
   do {
-    success = socket->Receive(read_buffer);
+    success = socket->Receive(read_buffer.get());
   } while (success && read_buffer->offset() == 0);
   EXPECT_TRUE(success);
   EXPECT_NE(0, read_buffer->capacity());
@@ -327,8 +330,9 @@ TEST_F(BluetoothProfileChromeOSTest, RfcommEndToEnd) {
 
   // Write data to the socket; since the socket is closed, this should return
   // an error without writing the data and "Disconnected" as the message.
-  write_buffer = new net::DrainableIOBuffer(base_buffer, base_buffer->size());
-  success = socket->Send(write_buffer);
+  write_buffer =
+      new net::DrainableIOBuffer(base_buffer.get(), base_buffer->size());
+  success = socket->Send(write_buffer.get());
   EXPECT_FALSE(success);
   EXPECT_EQ(0, write_buffer->BytesConsumed());
   EXPECT_EQ(base_buffer->size(), write_buffer->BytesRemaining());
@@ -337,7 +341,7 @@ TEST_F(BluetoothProfileChromeOSTest, RfcommEndToEnd) {
   // Read data from the socket; since the socket is closed, this should return
   // an error with "Disconnected" as the last message.
   read_buffer = new net::GrowableIOBuffer;
-  success = socket->Receive(read_buffer);
+  success = socket->Receive(read_buffer.get());
   EXPECT_FALSE(success);
   EXPECT_EQ(0, read_buffer->offset());
   EXPECT_EQ("Disconnected", socket->GetLastErrorMessage());

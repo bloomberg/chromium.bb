@@ -39,25 +39,24 @@ class BlockingMethodCallerTest : public testing::Test {
 
     // Set an expectation so mock_proxy's CallMethodAndBlock() will use
     // CreateMockProxyResponse() to return responses.
-    EXPECT_CALL(*mock_proxy_, MockCallMethodAndBlock(_, _))
-        .WillRepeatedly(Invoke(
-            this, &BlockingMethodCallerTest::CreateMockProxyResponse));
+    EXPECT_CALL(*mock_proxy_.get(), MockCallMethodAndBlock(_, _))
+        .WillRepeatedly(
+             Invoke(this, &BlockingMethodCallerTest::CreateMockProxyResponse));
 
     // Set an expectation so mock_bus's GetObjectProxy() for the given
     // service name and the object path will return mock_proxy_.
-    EXPECT_CALL(*mock_bus_, GetObjectProxy(
-        "org.chromium.TestService",
-        dbus::ObjectPath("/org/chromium/TestObject")))
+    EXPECT_CALL(*mock_bus_.get(),
+                GetObjectProxy("org.chromium.TestService",
+                               dbus::ObjectPath("/org/chromium/TestObject")))
         .WillOnce(Return(mock_proxy_.get()));
 
     // Set an expectation so mock_bus's PostTaskToDBusThread() will run the
     // given task.
-    EXPECT_CALL(*mock_bus_, PostTaskToDBusThread(_, _))
-        .WillRepeatedly(Invoke(
-            this, &BlockingMethodCallerTest::RunTask));
+    EXPECT_CALL(*mock_bus_.get(), PostTaskToDBusThread(_, _))
+        .WillRepeatedly(Invoke(this, &BlockingMethodCallerTest::RunTask));
 
     // ShutdownAndBlock() will be called in TearDown().
-    EXPECT_CALL(*mock_bus_, ShutdownAndBlock()).WillOnce(Return());
+    EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
   }
 
   virtual void TearDown() {

@@ -165,7 +165,7 @@ FileSelectorImpl::~FileSelectorImpl() {
   if (dialog_.get())
     dialog_->ListenerDestroyed();
   // Send response if needed.
-  if (function_)
+  if (function_.get())
     SendResponse(false, base::FilePath());
 }
 

@@ -44,13 +44,18 @@ void TouchOperation::TouchFile(const base::FilePath& file_path,
 
   ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&internal::ResourceMetadata::GetResourceEntryByPath,
-                 base::Unretained(metadata_), file_path, entry),
+                 base::Unretained(metadata_),
+                 file_path,
+                 entry),
       base::Bind(&TouchOperation::TouchFileAfterGetResourceEntry,
                  weak_ptr_factory_.GetWeakPtr(),
-                 file_path, last_access_time, last_modified_time, callback,
+                 file_path,
+                 last_access_time,
+                 last_modified_time,
+                 callback,
                  base::Owned(entry)));
 }
 
@@ -94,13 +99,15 @@ void TouchOperation::TouchFileAfterServerTimeStampUpdated(
   }
 
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&internal::ResourceMetadata::RefreshEntry,
                  base::Unretained(metadata_),
                  ConvertToResourceEntry(*resource_entry)),
       base::Bind(&TouchOperation::TouchFileAfterRefreshMetadata,
-                 weak_ptr_factory_.GetWeakPtr(), file_path, callback));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 file_path,
+                 callback));
 }
 
 void TouchOperation::TouchFileAfterRefreshMetadata(

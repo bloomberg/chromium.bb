@@ -244,7 +244,7 @@ class BluetoothChromeOSTest : public testing::Test {
   // Call to fill the adapter_ member with a BluetoothAdapter instance.
   void GetAdapter() {
     adapter_ = new BluetoothAdapterChromeOS();
-    ASSERT_TRUE(adapter_ != NULL);
+    ASSERT_TRUE(adapter_.get() != NULL);
     ASSERT_TRUE(adapter_->IsInitialized());
   }
 
@@ -254,7 +254,7 @@ class BluetoothChromeOSTest : public testing::Test {
   // The correct behavior of discovery is tested by the "Discovery" test case
   // without using this function.
   void DiscoverDevice(const std::string& address) {
-    ASSERT_TRUE(adapter_ != NULL);
+    ASSERT_TRUE(adapter_.get() != NULL);
 
     if (base::MessageLoop::current() == NULL) {
       base::MessageLoop message_loop(base::MessageLoop::TYPE_DEFAULT);

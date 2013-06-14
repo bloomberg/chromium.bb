@@ -145,8 +145,7 @@ fileapi::ExternalMountPoints* BrowserContext::GetMountPoints(
         fileapi::ExternalMountPoints::CreateRefCounted();
     context->SetUserData(
         kMountPointsKey,
-        new UserDataAdapter<fileapi::ExternalMountPoints>(
-            mount_points));
+        new UserDataAdapter<fileapi::ExternalMountPoints>(mount_points.get()));
   }
 
   return UserDataAdapter<fileapi::ExternalMountPoints>::Get(

@@ -105,7 +105,7 @@ bool ProcessProxy::StartWatchingOnThread(
 
 void ProcessProxy::OnProcessOutput(ProcessOutputType type,
                                    const std::string& output) {
-  if (!callback_runner_)
+  if (!callback_runner_.get())
     return;
 
   callback_runner_->PostTask(

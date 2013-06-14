@@ -368,7 +368,7 @@ void BurnManager::FetchConfigFile() {
 
   config_fetcher_.reset(net::URLFetcher::Create(
       config_file_url_, net::URLFetcher::GET, this));
-  config_fetcher_->SetRequestContext(url_request_context_getter_);
+  config_fetcher_->SetRequestContext(url_request_context_getter_.get());
   config_fetcher_->Start();
 }
 
@@ -388,7 +388,7 @@ void BurnManager::FetchImage() {
   image_fetcher_.reset(net::URLFetcher::Create(image_download_url_,
                                                net::URLFetcher::GET,
                                                this));
-  image_fetcher_->SetRequestContext(url_request_context_getter_);
+  image_fetcher_->SetRequestContext(url_request_context_getter_.get());
   image_fetcher_->SaveResponseToFileAtPath(
       zip_image_file_path_,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));

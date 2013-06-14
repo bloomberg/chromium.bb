@@ -71,7 +71,7 @@ void OperationTestBase::SetUp() {
 
   fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
   cache_.reset(new internal::FileCache(temp_dir_.path(),
-                                       blocking_task_runner_,
+                                       blocking_task_runner_.get(),
                                        fake_free_disk_space_getter_.get()));
   bool success = false;
   cache_->RequestInitialize(
@@ -81,7 +81,7 @@ void OperationTestBase::SetUp() {
 
   // Makes sure the FakeDriveService's content is loaded to the metadata_.
   internal::ChangeListLoader change_list_loader(
-      blocking_task_runner_, metadata_.get(), scheduler_.get());
+      blocking_task_runner_.get(), metadata_.get(), scheduler_.get());
 
   change_list_loader.LoadIfNeeded(
       DirectoryFetchInfo(),

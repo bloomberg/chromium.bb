@@ -243,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, InstallNewExtension) {
   result_listener.AlsoListenForFailureMessage("fail");
   scoped_refptr<const extensions::Extension> extension2 =
       LoadExtension(kTestExtension2Path);
-  ASSERT_TRUE(extension2);
+  ASSERT_TRUE(extension2.get());
   ASSERT_EQ(kTestExtension2, extension2->id());
 
   // This extension only sends the 'policy' signal once it receives the policy,

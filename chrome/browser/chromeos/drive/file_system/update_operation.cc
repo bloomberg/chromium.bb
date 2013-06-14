@@ -98,7 +98,7 @@ void UpdateOperation::UpdateFileByResourceId(
   base::FilePath* drive_file_path = new base::FilePath;
   base::FilePath* cache_file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&GetFileLocalState,
                  metadata_,
@@ -158,7 +158,7 @@ void UpdateOperation::UpdateFileAfterUpload(
 
   base::FilePath* drive_file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&UpdateFileLocalState,
                  metadata_,

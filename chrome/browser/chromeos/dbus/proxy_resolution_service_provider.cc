@@ -116,7 +116,7 @@ class ProxyResolverImpl : public ProxyResolverInterface {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
     // Check if we have the URLRequestContextGetter.
-    if (!getter) {
+    if (!getter.get()) {
       request->error_ = "No URLRequestContextGetter";
       request->OnCompletion(net::ERR_UNEXPECTED);
       return;

@@ -338,7 +338,7 @@ SigninScreenHandler::SigninScreenHandler(
       last_network_state_(NetworkStateInformer::UNKNOWN),
       has_pending_auth_ui_(false),
       ignore_next_user_abort_frame_error_(false) {
-  DCHECK(network_state_informer_);
+  DCHECK(network_state_informer_.get());
   DCHECK(error_screen_actor_);
   network_state_informer_->AddObserver(this);
   CrosSettings::Get()->AddSettingsObserver(kAccountsPrefAllowNewUser, this);

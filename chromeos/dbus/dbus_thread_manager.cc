@@ -181,7 +181,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   virtual void InitIBusBus(
       const std::string &ibus_address,
       const base::Closure& on_disconnected_callback) OVERRIDE {
-    DCHECK(!ibus_bus_);
+    DCHECK(!ibus_bus_.get());
     dbus::Bus::Options ibus_bus_options;
     ibus_bus_options.bus_type = dbus::Bus::CUSTOM_ADDRESS;
     ibus_bus_options.address = ibus_address;

@@ -118,9 +118,9 @@ DriveIntegrationService::DriveIntegrationService(
   }
   scheduler_.reset(new JobScheduler(profile_, drive_service_.get()));
   cache_.reset(new internal::FileCache(
-      !test_cache_root.empty() ? test_cache_root :
-      util::GetCacheRootPath(profile),
-      blocking_task_runner_,
+      !test_cache_root.empty() ? test_cache_root
+                               : util::GetCacheRootPath(profile),
+      blocking_task_runner_.get(),
       NULL /* free_disk_space_getter */));
   drive_app_registry_.reset(new DriveAppRegistry(scheduler_.get()));
 
@@ -130,13 +130,14 @@ DriveIntegrationService::DriveIntegrationService(
       cache_->GetCacheDirectoryPath(internal::FileCache::CACHE_TYPE_META),
       blocking_task_runner_));
 
-  file_system_.reset(test_file_system ? test_file_system :
-                     new FileSystem(profile_,
-                                    cache_.get(),
-                                    drive_service_.get(),
-                                    scheduler_.get(),
-                                    resource_metadata_.get(),
-                                    blocking_task_runner_));
+  file_system_.reset(test_file_system
+                         ? test_file_system
+                         : new FileSystem(profile_,
+                                          cache_.get(),
+                                          drive_service_.get(),
+                                          scheduler_.get(),
+                                          resource_metadata_.get(),
+                                          blocking_task_runner_.get()));
   file_write_helper_.reset(new FileWriteHelper(file_system()));
   download_handler_.reset(new DownloadHandler(file_write_helper(),
                                               file_system()));
@@ -259,7 +260,7 @@ void DriveIntegrationService::AddDriveMountPoint() {
   bool success = mount_points->RegisterRemoteFileSystem(
       drive_mount_point.BaseName().AsUTF8Unsafe(),
       fileapi::kFileSystemTypeDrive,
-      file_system_proxy_,
+      file_system_proxy_.get(),
       drive_mount_point);
 
   if (success) {
@@ -283,7 +284,7 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
 
   mount_points->RevokeFileSystem(
       util::GetDriveMountPointPath().BaseName().AsUTF8Unsafe());
-  if (file_system_proxy_) {
+  if (file_system_proxy_.get()) {
     file_system_proxy_->DetachFromFileSystem();
     file_system_proxy_ = NULL;
   }

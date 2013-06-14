@@ -180,7 +180,7 @@ void PeripheralBatteryObserver::DeviceRemoved(device::BluetoothAdapter* adapter,
 void PeripheralBatteryObserver::InitializeOnBluetoothReady(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   bluetooth_adapter_ = adapter;
-  CHECK(bluetooth_adapter_);
+  CHECK(bluetooth_adapter_.get());
   bluetooth_adapter_->AddObserver(this);
 }
 

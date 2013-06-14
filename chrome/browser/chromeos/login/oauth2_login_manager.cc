@@ -141,7 +141,7 @@ void OAuth2LoginManager::FetchOAuth2Tokens() {
   // SID/LSID cookies through OAuthLogin call.
   if (restore_strategy_ == RESTORE_FROM_COOKIE_JAR) {
     oauth2_token_fetcher_.reset(
-        new OAuth2TokenFetcher(this, auth_request_context_));
+        new OAuth2TokenFetcher(this, auth_request_context_.get()));
     oauth2_token_fetcher_->StartExchangeFromCookies();
   } else if (restore_strategy_ == RESTORE_FROM_AUTH_CODE) {
     DCHECK(!auth_code_.empty());

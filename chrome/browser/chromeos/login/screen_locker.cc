@@ -399,7 +399,7 @@ ScreenLocker::~ScreenLocker() {
   VLOG(1) << "Destroying ScreenLocker " << this;
   DCHECK(base::MessageLoop::current()->type() == base::MessageLoop::TYPE_UI);
 
-  if (authenticator_)
+  if (authenticator_.get())
     authenticator_->SetConsumer(NULL);
   ClearErrors();
 

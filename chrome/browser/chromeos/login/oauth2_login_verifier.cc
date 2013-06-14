@@ -74,12 +74,13 @@ void OAuth2LoginVerifier::StartFetchingOAuthLoginAccessToken() {
   gaia_token_.clear();
   std::vector<std::string> scopes;
   scopes.push_back(GaiaUrls::GetInstance()->oauth1_login_scope());
-  token_fetcher_.reset(new OAuth2AccessTokenFetcher(
-      this, system_request_context_)),
-  token_fetcher_->Start(GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
-                        GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
-                        refresh_token_,
-                        scopes);
+  token_fetcher_
+      .reset(new OAuth2AccessTokenFetcher(this, system_request_context_.get())),
+      token_fetcher_
+      ->Start(GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
+              GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
+              refresh_token_,
+              scopes);
 }
 
 void OAuth2LoginVerifier::OnGetTokenSuccess(
@@ -105,9 +106,10 @@ void OAuth2LoginVerifier::OnGetTokenFailure(
 
 void OAuth2LoginVerifier::StartOAuthLoginForUberToken() {
   // No service will fetch us uber auth token.
-  gaia_system_fetcher_.reset(new GaiaAuthFetcher(
-      this, std::string(GaiaConstants::kChromeOSSource),
-      system_request_context_));
+  gaia_system_fetcher_.reset(
+      new GaiaAuthFetcher(this,
+                          std::string(GaiaConstants::kChromeOSSource),
+                          system_request_context_.get()));
   gaia_system_fetcher_->StartTokenFetchForUberAuthExchange(access_token_);
 }
 
@@ -134,9 +136,10 @@ void OAuth2LoginVerifier::OnUberAuthTokenFailure(
 
 void OAuth2LoginVerifier::StartOAuthLoginForGaiaCredentials() {
   // No service will fetch us uber auth token.
-  gaia_system_fetcher_.reset(new GaiaAuthFetcher(
-      this, std::string(GaiaConstants::kChromeOSSource),
-      system_request_context_));
+  gaia_system_fetcher_.reset(
+      new GaiaAuthFetcher(this,
+                          std::string(GaiaConstants::kChromeOSSource),
+                          system_request_context_.get()));
   gaia_system_fetcher_->StartOAuthLogin(access_token_, EmptyString());
 }
 
@@ -163,9 +166,10 @@ void OAuth2LoginVerifier::OnClientLoginFailure(
 
 void OAuth2LoginVerifier::StartMergeSession() {
   DCHECK(!gaia_token_.empty());
-  gaia_fetcher_.reset(new GaiaAuthFetcher(
-      this, std::string(GaiaConstants::kChromeOSSource),
-      user_request_context_));
+  gaia_fetcher_.reset(
+      new GaiaAuthFetcher(this,
+                          std::string(GaiaConstants::kChromeOSSource),
+                          user_request_context_.get()));
   gaia_fetcher_->StartMergeSession(gaia_token_);
 }
 

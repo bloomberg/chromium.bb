@@ -176,7 +176,7 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
                                 MessageBoxType type) {
   scoped_refptr<SimpleMessageBoxViews> dialog(
       new SimpleMessageBoxViews(title, message, type));
-  CreateBrowserModalDialogViews(dialog, parent)->Show();
+  CreateBrowserModalDialogViews(dialog.get(), parent)->Show();
 
 #if defined(USE_AURA)
   // Use the widget's window itself so that the message loop
@@ -184,8 +184,8 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
   // |Cancel| or |Accept|.
   aura::Window* anchor = parent ?
       parent : dialog->GetWidget()->GetNativeWindow();
-  aura::client::GetDispatcherClient(anchor->GetRootWindow())->
-      RunWithDispatcher(dialog, anchor, true);
+  aura::client::GetDispatcherClient(anchor->GetRootWindow())
+      ->RunWithDispatcher(dialog.get(), anchor, true);
 #else
   {
     base::MessageLoop::ScopedNestableTaskAllower allow(

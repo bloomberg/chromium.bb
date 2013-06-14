@@ -71,15 +71,20 @@ void CreateDirectoryOperation::CreateDirectory(
 
   ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&CreateDirectoryOperation::GetExistingDeepestDirectory,
-                 metadata_, directory_path, entry),
-      base::Bind(&CreateDirectoryOperation
-                     ::CreateDirectoryAfterGetExistingDeepestDirectory,
+                 metadata_,
+                 directory_path,
+                 entry),
+      base::Bind(&CreateDirectoryOperation::
+                     CreateDirectoryAfterGetExistingDeepestDirectory,
                  weak_ptr_factory_.GetWeakPtr(),
-                 directory_path, is_exclusive, is_recursive,
-                 callback, base::Owned(entry)));
+                 directory_path,
+                 is_exclusive,
+                 is_recursive,
+                 callback,
+                 base::Owned(entry)));
 }
 
 // static
@@ -197,15 +202,19 @@ void CreateDirectoryOperation::CreateDirectoryRecursivelyAfterAddNewDirectory(
   // to create).
   base::FilePath* file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
+      blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&UpdateLocalStateForCreateDirectoryRecursively,
-                 metadata_, ConvertToResourceEntry(*resource_entry), file_path),
-      base::Bind(&CreateDirectoryOperation
-                     ::CreateDirectoryRecursivelyAfterUpdateLocalState,
+                 metadata_,
+                 ConvertToResourceEntry(*resource_entry),
+                 file_path),
+      base::Bind(&CreateDirectoryOperation::
+                     CreateDirectoryRecursivelyAfterUpdateLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
                  resource_entry->resource_id(),
-                 remaining_path, callback, base::Owned(file_path)));
+                 remaining_path,
+                 callback,
+                 base::Owned(file_path)));
 }
 
 void CreateDirectoryOperation::CreateDirectoryRecursivelyAfterUpdateLocalState(

@@ -198,16 +198,15 @@ void SearchMetadata(
 
   // TODO(hashimoto): Report error code from ResourceMetadata::IterateEntries
   // and stop binding FILE_ERROR_OK to |callback|.
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner,
-      FROM_HERE,
-      base::Bind(&SearchMetadataOnBlockingPool,
-                 resource_metadata,
-                 cache,
-                 query,
-                 options,
-                 at_most_num_matches),
-      base::Bind(callback, FILE_ERROR_OK));
+  base::PostTaskAndReplyWithResult(blocking_task_runner.get(),
+                                   FROM_HERE,
+                                   base::Bind(&SearchMetadataOnBlockingPool,
+                                              resource_metadata,
+                                              cache,
+                                              query,
+                                              options,
+                                              at_most_num_matches),
+                                   base::Bind(callback, FILE_ERROR_OK));
 }
 
 bool FindAndHighlight(const std::string& text,

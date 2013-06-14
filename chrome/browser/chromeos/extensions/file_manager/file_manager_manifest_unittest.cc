@@ -75,7 +75,7 @@ TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandler) {
 
   ASSERT_TRUE(extension.get());
   FileBrowserHandler::List* handlers =
-      FileBrowserHandler::GetHandlers(extension);
+      FileBrowserHandler::GetHandlers(extension.get());
   ASSERT_TRUE(handlers != NULL);
   ASSERT_EQ(handlers->size(), 1U);
   const FileBrowserHandler* action = handlers->at(0).get();
@@ -111,7 +111,7 @@ TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandlerMIMETypes) {
 
   ASSERT_TRUE(extension.get());
   FileBrowserHandler::List* handlers =
-      FileBrowserHandler::GetHandlers(extension);
+      FileBrowserHandler::GetHandlers(extension.get());
   ASSERT_TRUE(handlers != NULL);
   ASSERT_EQ(handlers->size(), 1U);
   const FileBrowserHandler* action = handlers->at(0).get();
@@ -142,7 +142,7 @@ TEST_F(FileBrowserHandlerManifestTest, ValidFileBrowserHandlerWithCreate) {
 
   ASSERT_TRUE(extension.get());
   FileBrowserHandler::List* handlers =
-      FileBrowserHandler::GetHandlers(extension);
+      FileBrowserHandler::GetHandlers(extension.get());
   ASSERT_TRUE(handlers != NULL);
   ASSERT_EQ(handlers->size(), 1U);
   const FileBrowserHandler* action = handlers->at(0).get();

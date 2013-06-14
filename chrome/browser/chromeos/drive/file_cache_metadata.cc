@@ -189,7 +189,7 @@ scoped_ptr<FileCacheMetadata::Iterator> FileCacheMetadata::GetIterator() {
 }
 
 void FileCacheMetadata::AssertOnSequencedWorkerPool() {
-  DCHECK(!blocking_task_runner_ ||
+  DCHECK(!blocking_task_runner_.get() ||
          blocking_task_runner_->RunsTasksOnCurrentThread());
 }
 

@@ -234,7 +234,7 @@ TEST_F(ParallelAuthenticatorTest, OnLoginSuccess) {
       .Times(1)
       .RetiresOnSaturation();
 
-  SetAttemptState(auth_, state_.release());
+  SetAttemptState(auth_.get(), state_.release());
   auth_->OnLoginSuccess(false);
 }
 
@@ -242,13 +242,13 @@ TEST_F(ParallelAuthenticatorTest, OnPasswordChangeDetected) {
   EXPECT_CALL(consumer_, OnPasswordChangeDetected())
       .Times(1)
       .RetiresOnSaturation();
-  SetAttemptState(auth_, state_.release());
+  SetAttemptState(auth_.get(), state_.release());
   auth_->OnPasswordChangeDetected();
 }
 
 TEST_F(ParallelAuthenticatorTest, ResolveNothingDone) {
   EXPECT_EQ(ParallelAuthenticator::CONTINUE,
-            SetAndResolveState(auth_, state_.release()));
+            SetAndResolveState(auth_.get(), state_.release()));
 }
 
 TEST_F(ParallelAuthenticatorTest, ResolvePossiblePwChange) {
@@ -260,7 +260,7 @@ TEST_F(ParallelAuthenticatorTest, ResolvePossiblePwChange) {
   state_->PresetCryptohomeStatus(false, cryptohome::MOUNT_ERROR_KEY_FAILURE);
 
   EXPECT_EQ(ParallelAuthenticator::POSSIBLE_PW_CHANGE,
-            SetAndResolveState(auth_, state_.release()));
+            SetAndResolveState(auth_.get(), state_.release()));
 }
 
 TEST_F(ParallelAuthenticatorTest, ResolvePossiblePwChangeToFailedMount) {
@@ -270,7 +270,7 @@ TEST_F(ParallelAuthenticatorTest, ResolvePossiblePwChangeToFailedMount) {
 
   // When there is no online attempt and online results, POSSIBLE_PW_CHANGE
   EXPECT_EQ(ParallelAuthenticator::FAILED_MOUNT,
-            SetAndResolveState(auth_, state_.release()));
+            SetAndResolveState(auth_.get(), state_.release()));
 }
 
 TEST_F(ParallelAuthenticatorTest, ResolveNeedOldPw) {
@@ -281,7 +281,7 @@ TEST_F(ParallelAuthenticatorTest, ResolveNeedOldPw) {
   state_->PresetOnlineLoginStatus(LoginFailure::LoginFailureNone());
 
   EXPECT_EQ(ParallelAuthenticator::NEED_OLD_PW,
-            SetAndResolveState(auth_, state_.release()));
+            SetAndResolveState(auth_.get(), state_.release()));
 }
 
 TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededDirectFailedMount) {
@@ -294,7 +294,7 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededDirectFailedMount) {
   SetOwnerState(true, false);
 
   EXPECT_EQ(ParallelAuthenticator::OWNER_REQUIRED,
-            SetAndResolveState(auth_, state_.release()));
+            SetAndResolveState(auth_.get(), state_.release()));
 }
 
 TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededMount) {
@@ -315,7 +315,7 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededMount) {
                                     false));
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   EXPECT_EQ(ParallelAuthenticator::OFFLINE_LOGIN,
-            SetAndResolveState(auth_, state_.release()));
+            SetAndResolveState(auth_.get(), state_.release()));
 }
 
 TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
@@ -346,7 +346,7 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
   CrosSettings::Get()->SetBoolean(kPolicyMissingMitigationMode, true);
 
   EXPECT_EQ(ParallelAuthenticator::CONTINUE,
-            SetAndResolveState(auth_, state_.release()));
+            SetAndResolveState(auth_.get(), state_.release()));
   // Let the owner verification run.
   device_settings_test_helper_.Flush();
   // and test that the mount has succeeded.
@@ -360,7 +360,7 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
                                     false));
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   EXPECT_EQ(ParallelAuthenticator::OWNER_REQUIRED,
-            SetAndResolveState(auth_, state_.release()));
+            SetAndResolveState(auth_.get(), state_.release()));
 
   EXPECT_TRUE(
       CrosSettings::Get()->RemoveSettingsProvider(&stub_settings_provider));
@@ -375,7 +375,7 @@ TEST_F(ParallelAuthenticatorTest, DriveFailedMount) {
   // Set up state as though a cryptohome mount attempt has occurred
   // and failed.
   state_->PresetCryptohomeStatus(false, cryptohome::MOUNT_ERROR_NONE);
-  SetAttemptState(auth_, state_.release());
+  SetAttemptState(auth_.get(), state_.release());
 
   RunResolve(auth_.get());
 }
@@ -463,7 +463,7 @@ TEST_F(ParallelAuthenticatorTest, DriveDataResync) {
       .RetiresOnSaturation();
 
   state_->PresetOnlineLoginStatus(LoginFailure::LoginFailureNone());
-  SetAttemptState(auth_, state_.release());
+  SetAttemptState(auth_.get(), state_.release());
 
   auth_->ResyncEncryptedData();
   message_loop_.Run();
@@ -479,7 +479,7 @@ TEST_F(ParallelAuthenticatorTest, DriveResyncFail) {
       .Times(1)
       .RetiresOnSaturation();
 
-  SetAttemptState(auth_, state_.release());
+  SetAttemptState(auth_.get(), state_.release());
 
   auth_->ResyncEncryptedData();
   message_loop_.Run();
@@ -491,7 +491,7 @@ TEST_F(ParallelAuthenticatorTest, DriveRequestOldPassword) {
 
   state_->PresetCryptohomeStatus(false, cryptohome::MOUNT_ERROR_KEY_FAILURE);
   state_->PresetOnlineLoginStatus(LoginFailure::LoginFailureNone());
-  SetAttemptState(auth_, state_.release());
+  SetAttemptState(auth_.get(), state_.release());
 
   RunResolve(auth_.get());
 }
@@ -520,7 +520,7 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecover) {
       .RetiresOnSaturation();
 
   state_->PresetOnlineLoginStatus(LoginFailure::LoginFailureNone());
-  SetAttemptState(auth_, state_.release());
+  SetAttemptState(auth_.get(), state_.release());
 
   auth_->RecoverEncryptedData(std::string());
   message_loop_.Run();
@@ -540,7 +540,7 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecoverButFail) {
       .WillOnce(Return(std::string()))
       .RetiresOnSaturation();
 
-  SetAttemptState(auth_, state_.release());
+  SetAttemptState(auth_.get(), state_.release());
 
   auth_->RecoverEncryptedData(std::string());
   message_loop_.Run();
@@ -556,7 +556,7 @@ TEST_F(ParallelAuthenticatorTest, ResolveNoMount) {
                                  cryptohome::MOUNT_ERROR_USER_DOES_NOT_EXIST);
 
   EXPECT_EQ(ParallelAuthenticator::NO_MOUNT,
-            SetAndResolveState(auth_, state_.release()));
+            SetAndResolveState(auth_.get(), state_.release()));
 }
 
 TEST_F(ParallelAuthenticatorTest, ResolveNoMountToFailedMount) {
@@ -568,7 +568,7 @@ TEST_F(ParallelAuthenticatorTest, ResolveNoMountToFailedMount) {
   // When there is no online attempt and online results, NO_MOUNT will be
   // resolved to FAILED_MOUNT.
   EXPECT_EQ(ParallelAuthenticator::FAILED_MOUNT,
-            SetAndResolveState(auth_, state_.release()));
+            SetAndResolveState(auth_.get(), state_.release()));
 }
 
 TEST_F(ParallelAuthenticatorTest, ResolveCreateNew) {
@@ -580,7 +580,7 @@ TEST_F(ParallelAuthenticatorTest, ResolveCreateNew) {
   state_->PresetOnlineLoginStatus(LoginFailure::LoginFailureNone());
 
   EXPECT_EQ(ParallelAuthenticator::CREATE_NEW,
-            SetAndResolveState(auth_, state_.release()));
+            SetAndResolveState(auth_.get(), state_.release()));
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveCreateForNewUser) {
@@ -607,7 +607,7 @@ TEST_F(ParallelAuthenticatorTest, DriveCreateForNewUser) {
   state_->PresetCryptohomeStatus(false,
                                  cryptohome::MOUNT_ERROR_USER_DOES_NOT_EXIST);
   state_->PresetOnlineLoginStatus(LoginFailure::LoginFailureNone());
-  SetAttemptState(auth_, state_.release());
+  SetAttemptState(auth_.get(), state_.release());
 
   RunResolve(auth_.get());
 }
@@ -622,7 +622,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLogin) {
   GoogleServiceAuthError error =
       GoogleServiceAuthError::FromConnectionError(net::ERR_CONNECTION_RESET);
   state_->PresetOnlineLoginStatus(LoginFailure::FromNetworkAuthFailure(error));
-  SetAttemptState(auth_, state_.release());
+  SetAttemptState(auth_.get(), state_.release());
 
   RunResolve(auth_.get());
 }
@@ -635,7 +635,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginDelayedOnline) {
   // succeeded.
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   // state_ is released further down.
-  SetAttemptState(auth_, state_.get());
+  SetAttemptState(auth_.get(), state_.get());
   RunResolve(auth_.get());
 
   // Offline login has completed, so now we "complete" the online request.
@@ -668,7 +668,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
   // succeeded; also, an online request that never made it.
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   // state_ is released further down.
-  SetAttemptState(auth_, state_.get());
+  SetAttemptState(auth_.get(), state_.get());
   RunResolve(auth_.get());
 
   // Offline login has completed, so now we "complete" the online request.
@@ -707,7 +707,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetCaptchad) {
   // succeeded; also, an online request that never made it.
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   // state_ is released further down.
-  SetAttemptState(auth_, state_.get());
+  SetAttemptState(auth_.get(), state_.get());
   RunResolve(auth_.get());
 
   // Offline login has completed, so now we "complete" the online request.
@@ -748,7 +748,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOnlineLogin) {
   // succeeded.
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   state_->PresetOnlineLoginStatus(LoginFailure::LoginFailureNone());
-  SetAttemptState(auth_, state_.release());
+  SetAttemptState(auth_.get(), state_.release());
 
   RunResolve(auth_.get());
 }
@@ -767,7 +767,7 @@ TEST_F(ParallelAuthenticatorTest, DISABLED_DriveNeedNewPassword) {
   // succeeded.
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
   state_->PresetOnlineLoginStatus(failure);
-  SetAttemptState(auth_, state_.release());
+  SetAttemptState(auth_.get(), state_.release());
 
   RunResolve(auth_.get());
 }

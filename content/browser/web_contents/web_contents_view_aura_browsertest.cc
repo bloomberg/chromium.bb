@@ -69,7 +69,7 @@ class ScreenshotTracker : public WebContentsScreenshotManager {
   virtual void OnScreenshotSet(NavigationEntryImpl* entry) OVERRIDE {
     --waiting_for_screenshots_;
     WebContentsScreenshotManager::OnScreenshotSet(entry);
-    if (waiting_for_screenshots_ == 0 && message_loop_runner_)
+    if (waiting_for_screenshots_ == 0 && message_loop_runner_.get())
       message_loop_runner_->Quit();
   }
 

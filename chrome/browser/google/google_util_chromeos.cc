@@ -64,7 +64,7 @@ std::string GetBrand() {
 
 void SetBrandFromFile(const base::Closure& callback) {
   base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(false /* task_is_slow */),
+      base::WorkerPool::GetTaskRunner(false /* task_is_slow */).get(),
       FROM_HERE,
       base::Bind(&ReadBrandFromFile),
       base::Bind(&SetBrand, callback));

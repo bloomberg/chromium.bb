@@ -174,7 +174,7 @@ gfx::ImageSkia DesktopBackgroundController::GetCurrentWallpaperImage() {
 }
 
 int DesktopBackgroundController::GetWallpaperIDR() const {
-  if (wallpaper_loader_)
+  if (wallpaper_loader_.get())
     return wallpaper_loader_->idr();
   else if (current_wallpaper_)
     return current_wallpaper_->wallpaper_info().idr;
@@ -242,7 +242,7 @@ void DesktopBackgroundController::SetCustomWallpaper(
 
 void DesktopBackgroundController::CancelPendingWallpaperOperation() {
   // Set canceled flag of previous request to skip unneeded loading.
-  if (wallpaper_loader_)
+  if (wallpaper_loader_.get())
     wallpaper_loader_->Cancel();
 
   // Cancel reply callback for previous request.

@@ -49,7 +49,7 @@ class ExtensionEchoPrivateApiTest : public ExtensionApiTest {
     function->set_has_callback(true);
 
     scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-        function,
+        function.get(),
         "[{\"serviceName\":\"some_name\",\"origin\":\"http://chromium.org\"}]",
         browser()));
 

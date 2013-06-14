@@ -325,9 +325,9 @@ UserAffiliation BrowserPolicyConnector::GetUserAffiliation(
 #if defined(OS_CHROMEOS)
 AppPackUpdater* BrowserPolicyConnector::GetAppPackUpdater() {
   // request_context_ is NULL in unit tests.
-  if (!app_pack_updater_ && request_context_) {
+  if (!app_pack_updater_ && request_context_.get()) {
     app_pack_updater_.reset(
-        new AppPackUpdater(request_context_, install_attributes_.get()));
+        new AppPackUpdater(request_context_.get(), install_attributes_.get()));
   }
   return app_pack_updater_.get();
 }

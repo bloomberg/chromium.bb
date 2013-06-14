@@ -117,7 +117,7 @@ LocalFileReader::LocalFileReader(
     : sequenced_task_runner_(sequenced_task_runner),
       platform_file_(base::kInvalidPlatformFileValue),
       weak_ptr_factory_(this) {
-  DCHECK(sequenced_task_runner_);
+  DCHECK(sequenced_task_runner_.get());
 }
 
 LocalFileReader::~LocalFileReader() {
@@ -131,15 +131,16 @@ void LocalFileReader::Open(const base::FilePath& file_path,
   DCHECK_EQ(base::kInvalidPlatformFileValue, platform_file_);
 
   ScopedPlatformFile* platform_file =
-      new ScopedPlatformFile(sequenced_task_runner_);
+      new ScopedPlatformFile(sequenced_task_runner_.get());
   base::PostTaskAndReplyWithResult(
-      sequenced_task_runner_,
+      sequenced_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&OpenAndSeekOnBlockingPool,
-                 file_path, offset, platform_file->ptr()),
+      base::Bind(
+          &OpenAndSeekOnBlockingPool, file_path, offset, platform_file->ptr()),
       base::Bind(&LocalFileReader::OpenAfterBlockingPoolTask,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback, base::Owned(platform_file)));
+                 callback,
+                 base::Owned(platform_file)));
 }
 
 void LocalFileReader::Read(net::IOBuffer* in_buffer,
@@ -150,7 +151,7 @@ void LocalFileReader::Read(net::IOBuffer* in_buffer,
 
   scoped_refptr<net::IOBuffer> buffer(in_buffer);
   base::PostTaskAndReplyWithResult(
-      sequenced_task_runner_,
+      sequenced_task_runner_.get(),
       FROM_HERE,
       base::Bind(&ReadOnBlockingPool, platform_file_, buffer, buffer_length),
       callback);

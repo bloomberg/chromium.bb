@@ -152,10 +152,10 @@ void BrowserActionsContainer::CreateBrowserActionViews() {
   const extensions::ExtensionList& toolbar_items = model_->toolbar_items();
   for (extensions::ExtensionList::const_iterator i(toolbar_items.begin());
        i != toolbar_items.end(); ++i) {
-    if (!ShouldDisplayBrowserAction(*i))
+    if (!ShouldDisplayBrowserAction(i->get()))
       continue;
 
-    BrowserActionView* view = new BrowserActionView(*i, browser_, this);
+    BrowserActionView* view = new BrowserActionView(i->get(), browser_, this);
     browser_action_views_.push_back(view);
     AddChildView(view);
   }

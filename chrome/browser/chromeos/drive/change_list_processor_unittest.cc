@@ -118,7 +118,7 @@ class ChangeListProcessorTest : public testing::Test {
     FileError error = FILE_ERROR_FAILED;
     scoped_ptr<ResourceEntry> entry(new ResourceEntry);
     base::PostTaskAndReplyWithResult(
-        blocking_task_runner_,
+        blocking_task_runner_.get(),
         FROM_HERE,
         base::Bind(&internal::ResourceMetadata::GetResourceEntryByPath,
                    base::Unretained(metadata_.get()),
@@ -135,12 +135,12 @@ class ChangeListProcessorTest : public testing::Test {
   int64 GetChangestamp() {
     int64 changestamp = -1;
     base::PostTaskAndReplyWithResult(
-        blocking_task_runner_,
+        blocking_task_runner_.get(),
         FROM_HERE,
         base::Bind(&internal::ResourceMetadata::GetLargestChangestamp,
                    base::Unretained(metadata_.get())),
-        base::Bind(google_apis::test_util::CreateCopyResultCallback(
-            &changestamp)));
+        base::Bind(
+            google_apis::test_util::CreateCopyResultCallback(&changestamp)));
     google_apis::test_util::RunBlockingPoolTask();
     return changestamp;
   }

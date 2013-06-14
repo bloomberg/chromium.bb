@@ -143,7 +143,7 @@ int NetworkReaderProxy::Read(net::IOBuffer* buffer, int buffer_length,
                              const net::CompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Check if there is no pending Read operation.
-  DCHECK(!buffer_);
+  DCHECK(!buffer_.get());
   DCHECK_EQ(buffer_length_, 0);
   DCHECK(callback_.is_null());
   // Validate the arguments.
@@ -197,7 +197,7 @@ void NetworkReaderProxy::OnGetContent(scoped_ptr<std::string> data) {
   }
 
   pending_data_.push_back(data.release());
-  if (!buffer_) {
+  if (!buffer_.get()) {
     // No pending Read operation.
     return;
   }
@@ -380,7 +380,7 @@ void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
 
   // Otherwise, open the stream for file.
   scoped_ptr<util::LocalFileReader> file_reader(
-      new util::LocalFileReader(file_task_runner_));
+      new util::LocalFileReader(file_task_runner_.get()));
   util::LocalFileReader* file_reader_ptr = file_reader.get();
   file_reader_ptr->Open(
       local_cache_file_path,

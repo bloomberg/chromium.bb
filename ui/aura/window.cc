@@ -158,7 +158,7 @@ ui::Layer* Window::RecreateLayer() {
   cc::TextureMailbox old_mailbox =
       old_layer->GetTextureMailbox(&mailbox_scale_factor);
   scoped_refptr<ui::Texture> old_texture = old_layer->external_texture();
-  if (delegate_ && old_texture)
+  if (delegate_ && old_texture.get())
     old_layer->SetExternalTexture(delegate_->CopyTexture());
 
   layer_ = new ui::Layer(old_layer->type());
@@ -170,8 +170,8 @@ ui::Layer* Window::RecreateLayer() {
   // Move the original texture to the new layer if the old layer has a
   // texture and we could copy it into the old layer,
   // crbug.com/175211.
-  if (delegate_ && old_texture) {
-    layer_->SetExternalTexture(old_texture);
+  if (delegate_ && old_texture.get()) {
+    layer_->SetExternalTexture(old_texture.get());
   } else if (old_mailbox.IsSharedMemory()) {
     base::SharedMemory* old_buffer = old_mailbox.shared_memory();
     const size_t size = old_mailbox.shared_memory_size_in_bytes();

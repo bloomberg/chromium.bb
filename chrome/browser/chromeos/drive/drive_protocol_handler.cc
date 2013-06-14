@@ -52,7 +52,7 @@ net::URLRequestJob* DriveProtocolHandler::MaybeCreateJob(
     net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   DVLOG(1) << "Handling url: " << request->url().spec();
   return new DriveURLRequestJob(base::Bind(&GetFileSystem, profile_id_),
-                                blocking_task_runner_,
+                                blocking_task_runner_.get(),
                                 request,
                                 network_delegate);
 }
