@@ -186,43 +186,37 @@ int WebsiteSettingsUI::GetPermissionIconID(ContentSettingsType type,
   int resource_id = IDR_INFO;
   switch (type) {
     case CONTENT_SETTINGS_TYPE_IMAGES:
-      resource_id = use_blocked ? IDR_BLOCKED_IMAGES
-                                : IDR_ALLOWED_IMAGES;
+      resource_id = use_blocked ? IDR_BLOCKED_IMAGES : IDR_ALLOWED_IMAGES;
       break;
     case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-      resource_id = use_blocked ? IDR_BLOCKED_JAVASCRIPT
-                                : IDR_ALLOWED_JAVASCRIPT;
+      resource_id =
+          use_blocked ? IDR_BLOCKED_JAVASCRIPT : IDR_ALLOWED_JAVASCRIPT;
       break;
     case CONTENT_SETTINGS_TYPE_COOKIES:
-      resource_id = use_blocked ? IDR_BLOCKED_COOKIES
-                                : IDR_ACCESSED_COOKIES;
+      resource_id = use_blocked ? IDR_BLOCKED_COOKIES : IDR_ACCESSED_COOKIES;
       break;
     case CONTENT_SETTINGS_TYPE_POPUPS:
-      resource_id = use_blocked ? IDR_BLOCKED_POPUPS
-                                : IDR_ALLOWED_POPUPS;
+      resource_id = use_blocked ? IDR_BLOCKED_POPUPS : IDR_ALLOWED_POPUPS;
       break;
     case CONTENT_SETTINGS_TYPE_PLUGINS:
-      resource_id = use_blocked ? IDR_BLOCKED_PLUGINS
-                                : IDR_ALLOWED_PLUGINS;
+      resource_id = use_blocked ? IDR_BLOCKED_PLUGINS : IDR_ALLOWED_PLUGINS;
       break;
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      resource_id = use_blocked ? IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON
-                                : IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON;
+      resource_id = use_blocked ? IDR_BLOCKED_LOCATION : IDR_ALLOWED_LOCATION;
       break;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      resource_id = use_blocked ? IDR_BLOCKED_NOTIFICATION
-                                : IDR_ALLOWED_NOTIFICATION;
+      resource_id =
+          use_blocked ? IDR_BLOCKED_NOTIFICATION : IDR_ALLOWED_NOTIFICATION;
       break;
     case CONTENT_SETTINGS_TYPE_FULLSCREEN:
       resource_id = IDR_ALLOWED_FULLSCREEN;
       break;
     case CONTENT_SETTINGS_TYPE_MOUSELOCK:
-      resource_id = use_blocked ? IDR_BLOCKED_MOUSE_CURSOR
-                                : IDR_ALLOWED_MOUSE_CURSOR;
+      resource_id =
+          use_blocked ? IDR_BLOCKED_MOUSE_CURSOR : IDR_ALLOWED_MOUSE_CURSOR;
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
-      resource_id = use_blocked ? IDR_BLOCKED_MEDIA
-                                : IDR_ASK_MEDIA;
+      resource_id = use_blocked ? IDR_BLOCKED_MEDIA : IDR_ASK_MEDIA;
       break;
     default:
       NOTREACHED();

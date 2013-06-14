@@ -180,8 +180,7 @@ void ContentSettingGeolocationImageModel::UpdateFromWebContents(
   settings_state.GetDetailedInfo(NULL, &tab_state_flags);
   bool allowed =
       !!(tab_state_flags & GeolocationSettingsState::TABSTATE_HAS_ANY_ALLOWED);
-  set_icon(allowed ? IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON :
-      IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON);
+  set_icon(allowed ? IDR_ALLOWED_LOCATION : IDR_BLOCKED_LOCATION);
   set_tooltip(l10n_util::GetStringUTF8(allowed ?
       IDS_GEOLOCATION_ALLOWED_TOOLTIP : IDS_GEOLOCATION_BLOCKED_TOOLTIP));
 }
@@ -217,7 +216,7 @@ void ContentSettingMediaImageModel::UpdateFromWebContents(
 ContentSettingRPHImageModel::ContentSettingRPHImageModel()
     : ContentSettingImageModel(
         CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
-  set_icon(IDR_REGISTER_PROTOCOL_HANDLER_LOCATIONBAR_ICON);
+  set_icon(IDR_REGISTER_PROTOCOL_HANDLER);
   set_tooltip(l10n_util::GetStringUTF8(IDS_REGISTER_PROTOCOL_HANDLER_TOOLTIP));
 }
 
