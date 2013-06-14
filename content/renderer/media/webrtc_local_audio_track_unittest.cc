@@ -310,26 +310,14 @@ TEST_F(WebRtcLocalAudioTrackTest, StartAndStopAudioTracks) {
 
 // Set new source to the capturer.
 TEST_F(WebRtcLocalAudioTrackTest, SetNewSourceForCapturerAfterStartTrack) {
-  // Setup the default sink for receiving package.
-  scoped_ptr<MockWebRtcAudioCapturerSink> default_sink(
-      new MockWebRtcAudioCapturerSink());
-  EXPECT_CALL(*default_sink, SetCaptureFormat(_)).WillOnce(Return());
-  capturer_->SetDefaultSink(default_sink.get());
-
   // Setup the audio track and start the track.
   EXPECT_CALL(*capturer_source_.get(), Start()).Times(1);
   scoped_refptr<WebRtcLocalAudioTrack> track =
       WebRtcLocalAudioTrack::Create(std::string(), capturer_, NULL);
   track->Start();
 
-  base::WaitableEvent event(false, false);
-  EXPECT_CALL(*default_sink, CaptureData(_, _, _, 0, 0))
-      .Times(AtLeast(1)).WillRepeatedly(SignalEvent(&event));
-  EXPECT_TRUE(event.TimedWait(TestTimeouts::tiny_timeout()));
-
   // Setting new source to the capturer and the track should still get packets.
   scoped_refptr<MockCapturerSource> new_source(new MockCapturerSource());
-  EXPECT_CALL(*default_sink, SetCaptureFormat(_)).WillOnce(Return());
   EXPECT_CALL(*capturer_source_.get(), Stop());
   EXPECT_CALL(*new_source.get(), SetAutomaticGainControl(false));
   EXPECT_CALL(*new_source.get(), Initialize(_, capturer_.get(), 0))
@@ -338,17 +326,11 @@ TEST_F(WebRtcLocalAudioTrackTest, SetNewSourceForCapturerAfterStartTrack) {
   capturer_->SetCapturerSource(new_source,
                                media::CHANNEL_LAYOUT_STEREO,
                                48000);
-  event.Reset();
-  EXPECT_CALL(*default_sink, CaptureData(_, _, _, 0, 0))
-      .Times(AtLeast(1)).WillRepeatedly(SignalEvent(&event));
-  EXPECT_TRUE(event.TimedWait(TestTimeouts::tiny_timeout()));
 
   // Stop the track.
   EXPECT_CALL(*new_source.get(), Stop());
   track->Stop();
   track = NULL;
-
-  capturer_->SetDefaultSink(NULL);
 }
 
 }  // namespace content
