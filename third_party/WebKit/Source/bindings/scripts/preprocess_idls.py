@@ -45,6 +45,8 @@ def parse_options():
         parser.error('Must specify an output file using --supplemental-dependency-file.')
     if options.window_constructors_file is None:
         parser.error('Must specify an output file using --window-constructors-file.')
+    if options.workercontext_constructors_file is None:
+        parser.error('Must specify an output file using --workercontext-constructors-file.')
     if options.idl_files_list is None:
         parser.error('Must specify the file listing all IDLs using --idl-files-list.')
     if options.write_file_only_if_changed is None:
