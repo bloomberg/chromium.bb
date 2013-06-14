@@ -280,7 +280,7 @@ void ScriptDebugServer::stepOutOfFunction()
     continueProgram();
 }
 
-bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, ScriptValue* newCallFrames, ScriptObject* result, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData)
+bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, ScriptValue* newCallFrames, ScriptObject* result)
 {
     class EnableLiveEditScope {
     public:
@@ -314,35 +314,13 @@ bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& ne
         }
     }
     ASSERT(!v8result.IsEmpty());
-    v8::Local<v8::Object> resultTuple = v8result->ToObject();
-    int code = static_cast<int>(resultTuple->Get(0)->ToInteger()->Value());
-    switch (code) {
-    case 0:
-        {
-            v8::Local<v8::Value> normalResult = resultTuple->Get(1);
-            if (normalResult->IsObject())
-                *result = ScriptObject(ScriptState::current(), normalResult->ToObject());
-            // Call stack may have changed after if the edited function was on the stack.
-            if (!preview && isPaused())
-                *newCallFrames = currentCallFrame();
-            return true;
-        }
-    // Compile error.
-    case 1:
-        {
-            RefPtr<TypeBuilder::Debugger::SetScriptSourceError::CompileError> compileError =
-                TypeBuilder::Debugger::SetScriptSourceError::CompileError::create()
-                    .setMessage(toWebCoreStringWithUndefinedOrNullCheck(resultTuple->Get(1)))
-                    .setLineNumber(resultTuple->Get(2)->ToInteger()->Value())
-                    .setColumnNumber(resultTuple->Get(3)->ToInteger()->Value());
+    if (v8result->IsObject())
+        *result = ScriptObject(ScriptState::current(), v8result->ToObject());
 
-            errorData = TypeBuilder::Debugger::SetScriptSourceError::create();
-            errorData->setCompileError(compileError);
-            return false;
-        }
-    }
-    *error = "Unknown error.";
-    return false;
+    // Call stack may have changed after if the edited function was on the stack.
+    if (!preview && isPaused())
+        *newCallFrames = currentCallFrame();
+    return true;
 }
 
 
