@@ -126,7 +126,8 @@ MediaGalleriesDialogController::MediaGalleriesDialogController()
       preferences_(NULL) {}
 
 MediaGalleriesDialogController::~MediaGalleriesDialogController() {
-  StorageMonitor::GetInstance()->RemoveObserver(this);
+  if (chrome::StorageMonitor::GetInstance())
+    StorageMonitor::GetInstance()->RemoveObserver(this);
 
   if (select_folder_dialog_.get())
     select_folder_dialog_->ListenerDestroyed();
