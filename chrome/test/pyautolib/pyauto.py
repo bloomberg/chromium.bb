@@ -4938,7 +4938,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                         provider_type,
                         username,
                         password,
-                        cert_nss='',
                         cert_id='',
                         key=''):
     """Add and connect to a private network.
@@ -4956,7 +4955,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                      also work.
       username: Username for connecting to the virtual network.
       password: Passphrase for connecting to the virtual network.
-      cert_nss: Certificate nss nickname for a L2TP_IPSEC_USER_CERT network.
       cert_id: Certificate id for a L2TP_IPSEC_USER_CERT network.
       key: Pre-shared key for a L2TP_IPSEC_PSK network.
 
@@ -4974,7 +4972,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'provider_type': provider_type,
         'username': username,
         'password': password,
-        'cert_nss': cert_nss,
         'cert_id': cert_id,
         'key': key,
     }

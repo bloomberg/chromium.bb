@@ -880,7 +880,6 @@ void TestingAutomationProvider::ConnectToHiddenWifiNetwork(
     config_data.identity = eap_identity;
 
     // TODO(stevenjb): Parse cert values?
-    config_data.server_ca_cert_nss_nickname = "";
     config_data.use_system_cas = false;
     config_data.client_cert_pkcs11_id = "";
 
@@ -910,8 +909,8 @@ void TestingAutomationProvider::DisconnectFromWifiNetwork(
 
 void TestingAutomationProvider::AddPrivateNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
-  std::string hostname, service_name, provider_type, key, cert_id, cert_nss,
-      username, password;
+  std::string hostname, service_name, provider_type, key, cert_id, username,
+      password;
   if (!args->GetString("hostname", &hostname) ||
       !args->GetString("service_name", &service_name) ||
       !args->GetString("provider_type", &provider_type) ||
@@ -945,8 +944,7 @@ void TestingAutomationProvider::AddPrivateNetwork(
         config_data);
   } else if (provider_type == VPNProviderTypeToString(
       chromeos::PROVIDER_TYPE_L2TP_IPSEC_USER_CERT)) {
-    if (!args->GetString("cert_id", &cert_id) ||
-        !args->GetString("cert_nss", &cert_nss)) {
+    if (!args->GetString("cert_id", &cert_id)) {
       AutomationJSONReply(this, reply_message)
           .SendError("Missing a certificate arg.");
       return;
@@ -954,7 +952,6 @@ void TestingAutomationProvider::AddPrivateNetwork(
     new VirtualConnectObserver(this, reply_message, service_name);
     // Connect using a user certificate.
     chromeos::NetworkLibrary::VPNConfigData config_data;
-    config_data.server_ca_cert_nss_nickname = cert_nss;
     config_data.client_cert_pkcs11_id = cert_id;
     config_data.username = username;
     config_data.user_passphrase = password;
@@ -969,7 +966,6 @@ void TestingAutomationProvider::AddPrivateNetwork(
     args->GetString("otp", &otp);
     // Connect using OPEN_VPN.
     chromeos::NetworkLibrary::VPNConfigData config_data;
-    config_data.server_ca_cert_nss_nickname = cert_nss;
     config_data.client_cert_pkcs11_id = cert_id;
     config_data.username = username;
     config_data.user_passphrase = password;
@@ -1036,7 +1032,6 @@ void TestingAutomationProvider::GetPrivateNetworkInfo(
                     VPNProviderTypeToString(virt->provider_type()));
     item->SetString("hostname", virt->server_hostname());
     item->SetString("key", virt->psk_passphrase());
-    item->SetString("cert_nss", virt->ca_cert_nss());
     item->SetString("cert_id", virt->client_cert_id());
     item->SetString("username", virt->username());
     item->SetString("password", virt->user_passphrase());
