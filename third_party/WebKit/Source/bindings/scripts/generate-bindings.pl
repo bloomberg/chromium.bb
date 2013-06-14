@@ -84,12 +84,12 @@ my @supplementedIdlFiles;
 if ($supplementalDependencyFile) {
     # The format of a supplemental dependency file:
     #
-    # Window.idl P.idl Q.idl R.idl
+    # DOMWindow.idl P.idl Q.idl R.idl
     # Document.idl S.idl
     # Event.idl
     # ...
     #
-    # The above indicates that Window.idl is supplemented by P.idl, Q.idl and R.idl,
+    # The above indicates that DOMWindow.idl is supplemented by P.idl, Q.idl and R.idl,
     # Document.idl is supplemented by S.idl, and Event.idl is supplemented by no IDLs.
     # The IDL that supplements another IDL (e.g. P.idl) never appears in the dependency file.
     open FH, "< $supplementalDependencyFile" or die "Cannot open $supplementalDependencyFile\n";
@@ -150,8 +150,9 @@ foreach my $idlFile (@supplementedIdlFiles) {
                 $attribute->signature->extendedAttributes->{"ImplementedBy"} = $interfaceName;
 
                 # Add interface-wide extended attributes to each attribute.
-                applyInterfaceExtendedAttributes($interface, $attribute->signature->extendedAttributes);
-
+                foreach my $extendedAttributeName (keys %{$interface->extendedAttributes}) {
+                    $attribute->signature->extendedAttributes->{$extendedAttributeName} = $interface->extendedAttributes->{$extendedAttributeName};
+                }
                 push(@{$targetDataNode->attributes}, $attribute);
             }
 
@@ -161,8 +162,9 @@ foreach my $idlFile (@supplementedIdlFiles) {
                 $function->signature->extendedAttributes->{"ImplementedBy"} = $interfaceName;
 
                 # Add interface-wide extended attributes to each method.
-                applyInterfaceExtendedAttributes($interface, $function->signature->extendedAttributes);
-
+                foreach my $extendedAttributeName (keys %{$interface->extendedAttributes}) {
+                    $function->signature->extendedAttributes->{$extendedAttributeName} = $interface->extendedAttributes->{$extendedAttributeName};
+                }
                 push(@{$targetDataNode->functions}, $function);
             }
 
@@ -172,8 +174,9 @@ foreach my $idlFile (@supplementedIdlFiles) {
                 $constant->extendedAttributes->{"ImplementedBy"} = $interfaceName;
 
                 # Add interface-wide extended attributes to each constant.
-                applyInterfaceExtendedAttributes($interface, $constant->extendedAttributes);
-
+                foreach my $extendedAttributeName (keys %{$interface->extendedAttributes}) {
+                    $constant->extendedAttributes->{$extendedAttributeName} = $interface->extendedAttributes->{$extendedAttributeName};
+                }
                 push(@{$targetDataNode->constants}, $constant);
             }
         } else {
@@ -269,17 +272,6 @@ sub checkIDLAttributes
                 checkIfIDLAttributesExists($idlAttributes, $parameter->extendedAttributes, $idlFile);
             }
         }
-    }
-}
-
-sub applyInterfaceExtendedAttributes
-{
-    my $interface = shift;
-    my $extendedAttributes = shift;
-
-    foreach my $extendedAttributeName (keys %{$interface->extendedAttributes}) {
-        next if $extendedAttributeName eq "ImplementedAs";
-        $extendedAttributes->{$extendedAttributeName} = $interface->extendedAttributes->{$extendedAttributeName};
     }
 }
 

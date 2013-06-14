@@ -32,11 +32,11 @@
 #include "bindings/v8/PageScriptDebugServer.h"
 
 
-#include "V8Window.h"
+#include "V8DOMWindow.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMWindowShell.h"
 #include "bindings/v8/V8ScriptRunner.h"
-#include "bindings/v8/V8WindowShell.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "core/page/Frame.h"
@@ -57,7 +57,7 @@ static Frame* retrieveFrameWithGlobalObjectCheck(v8::Handle<v8::Context> context
     if (global.IsEmpty())
         return 0;
 
-    global = global->FindInstanceInPrototypeChain(V8Window::GetTemplate(context->GetIsolate(), worldTypeInMainThread(context->GetIsolate())));
+    global = global->FindInstanceInPrototypeChain(V8DOMWindow::GetTemplate(context->GetIsolate(), worldTypeInMainThread(context->GetIsolate())));
     if (global.IsEmpty())
         return 0;
 
@@ -93,7 +93,7 @@ void PageScriptDebugServer::addListener(ScriptDebugListener* listener, Page* pag
     }
     m_listenersMap.set(page, listener);
 
-    V8WindowShell* shell = scriptController->existingWindowShell(mainThreadNormalWorld());
+    V8DOMWindowShell* shell = scriptController->existingWindowShell(mainThreadNormalWorld());
     if (!shell || !shell->isContextInitialized())
         return;
     v8::Local<v8::Context> context = shell->context();

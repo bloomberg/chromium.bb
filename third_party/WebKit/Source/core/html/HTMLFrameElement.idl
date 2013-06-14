@@ -33,7 +33,7 @@ interface HTMLFrameElement : HTMLElement {
     [CheckSecurityForNode] readonly attribute Document contentDocument;
 
     // Extensions
-    readonly attribute Window contentWindow;
+    readonly attribute DOMWindow contentWindow;
 
     [CheckSecurityForNode, RaisesException] SVGDocument getSVGDocument();
 

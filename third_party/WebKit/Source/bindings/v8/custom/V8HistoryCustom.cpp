@@ -31,7 +31,7 @@
 #include "config.h"
 #include "V8History.h"
 
-#include "V8Window.h"
+#include "V8DOMWindow.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenPropertyName.h"

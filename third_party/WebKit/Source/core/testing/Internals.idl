@@ -192,7 +192,7 @@
     unsigned long numberOfLiveNodes();
     unsigned long numberOfLiveDocuments();
     sequence<DOMString> consoleMessageArgumentCounts(Document document);
-    Window openDummyInspectorFrontend(DOMString url);
+    DOMWindow openDummyInspectorFrontend(DOMString url);
     void closeDummyInspectorFrontend();
     [RaisesException] void setInspectorResourcesDataSizeLimits(long maximumResourcesContentSize, long maximumSingleResourceContentSize);
 

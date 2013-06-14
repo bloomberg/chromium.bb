@@ -24,9 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    ImplementedAs=DOMWindowWebDatabase
-] partial interface Window {
-    [EnabledAtRuntime=database, MeasureAs=OpenWebDatabase, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, optional DatabaseCallback creationCallback);
+partial interface DOMWindow {
+    const unsigned short TEMPORARY = 0;
+    const unsigned short PERSISTENT = 1;
+
+    [EnabledAtRuntime=FileSystem] void webkitRequestFileSystem(unsigned short type, long long size,
+            FileSystemCallback successCallback, optional ErrorCallback errorCallback);
+    [EnabledAtRuntime=FileSystem] void webkitResolveLocalFileSystemURL(DOMString url,
+            EntryCallback successCallback, optional ErrorCallback errorCallback);
 };
 

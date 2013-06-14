@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,9 +24,7 @@
  */
 
 [
-    ImplementedAs=DOMWindowIndexedDatabase
-] partial interface Window {
-    [ImplementedAs=indexedDB,MeasureAs=PrefixedIndexedDB] readonly attribute IDBFactory webkitIndexedDB;
-
-    [MeasureAs=UnprefixedIndexedDB] readonly attribute IDBFactory indexedDB;
+    EnabledAtRuntime=speechSynthesis
+] partial interface DOMWindow {
+    readonly attribute SpeechSynthesis speechSynthesis;
 };

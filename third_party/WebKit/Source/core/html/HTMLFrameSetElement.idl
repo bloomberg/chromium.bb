@@ -19,7 +19,7 @@
  */
 
 interface HTMLFrameSetElement : HTMLElement {
-    [ImplementedAs=anonymousNamedGetter, OverrideBuiltins, NotEnumerable] getter Window (DOMString name);
+    [ImplementedAs=anonymousNamedGetter, OverrideBuiltins, NotEnumerable] getter DOMWindow (DOMString name);
     [Reflect] attribute DOMString cols;
     [Reflect] attribute DOMString rows;
 

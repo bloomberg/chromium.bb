@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- *
+ * 
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8WindowShell_h
-#define V8WindowShell_h
+#ifndef V8DOMWindowShell_h
+#define V8DOMWindowShell_h
 
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "weborigin/SecurityOrigin.h"
+#include <v8.h>
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
-#include <v8.h>
 
 namespace WebCore {
 
@@ -52,9 +52,9 @@ class HTMLDocument;
 
 // V8WindowShell represents all the per-global object state for a Frame that
 // persist between navigations.
-class V8WindowShell {
+class V8DOMWindowShell {
 public:
-    static PassOwnPtr<V8WindowShell> create(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
+    static PassOwnPtr<V8DOMWindowShell> create(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
 
     v8::Local<v8::Context> context() const { return v8::Local<v8::Context>::New(m_context.get()); }
 
@@ -80,7 +80,7 @@ public:
     DOMWrapperWorld* world() { return m_world.get(); }
 
 private:
-    V8WindowShell(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
+    V8DOMWindowShell(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
 
     void disposeContext();
 
@@ -96,7 +96,7 @@ private:
     void createContext();
     bool installDOMWindow();
 
-    static V8WindowShell* enteredIsolatedWorldContext();
+    static V8DOMWindowShell* enteredIsolatedWorldContext();
 
     Frame* m_frame;
     RefPtr<DOMWrapperWorld> m_world;
@@ -111,4 +111,4 @@ private:
 
 } // namespace WebCore
 
-#endif // V8WindowShell_h
+#endif // V8DOMWindowShell_h

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "bindings/v8/ScriptState.h"
 
-#include "V8Window.h"
+#include "V8DOMWindow.h"
 #include "V8WorkerContext.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8HiddenPropertyName.h"

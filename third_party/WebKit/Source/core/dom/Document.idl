@@ -86,7 +86,7 @@ callback CustomElementConstructor = Element ();
 
     // DOM Level 2 Abstract Views (DocumentView interface)
 
-    readonly attribute Window defaultView;
+    readonly attribute DOMWindow defaultView;
 
     // DOM Level 2 Style (DocumentStyle interface)
 
@@ -256,7 +256,7 @@ callback CustomElementConstructor = Element ();
     [NotEnumerable] attribute EventListener onwebkitpointerlockerror;
     [NotEnumerable, EnabledAtRuntime=experimentalContentSecurityPolicyFeatures] attribute EventListener onsecuritypolicyviolation;
 
-    [EnabledAtRuntime=touch] Touch createTouch([Default=Undefined] optional Window window,
+    [EnabledAtRuntime=touch] Touch createTouch([Default=Undefined] optional DOMWindow window,
                                                [Default=Undefined] optional EventTarget target,
                                                [Default=Undefined] optional long identifier,
                                                [Default=Undefined] optional long pageX,

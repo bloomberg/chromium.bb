@@ -32,6 +32,7 @@
 
 #include "V8SVGPathSeg.h"
 
+#include "V8DOMWindow.h"
 #include "V8SVGPathSegArcAbs.h"
 #include "V8SVGPathSegArcRel.h"
 #include "V8SVGPathSegClosePath.h"
@@ -51,7 +52,6 @@
 #include "V8SVGPathSegLinetoVerticalRel.h"
 #include "V8SVGPathSegMovetoAbs.h"
 #include "V8SVGPathSegMovetoRel.h"
-#include "V8Window.h"
 #include "bindings/v8/V8DOMWrapper.h"
 
 namespace WebCore {

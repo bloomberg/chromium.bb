@@ -32,8 +32,8 @@
 #include "bindings/v8/ScriptProfiler.h"
 
 #include "V8ArrayBufferView.h"
+#include "V8DOMWindow.h"
 #include "V8Node.h"
-#include "V8Window.h"
 #include "bindings/v8/RetainedDOMInfo.h"
 #include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/V8Binding.h"
@@ -167,8 +167,8 @@ class GlobalObjectNameResolver : public v8::HeapProfiler::ObjectNameResolver {
 public:
     virtual const char* GetName(v8::Handle<v8::Object> object)
     {
-        if (V8DOMWrapper::isWrapperOfType(object, &V8Window::info)) {
-            DOMWindow* window = V8Window::toNative(object);
+        if (V8DOMWrapper::isWrapperOfType(object, &V8DOMWindow::info)) {
+            DOMWindow* window = V8DOMWindow::toNative(object);
             if (window) {
                 CString url = window->document()->url().string().utf8();
                 m_strings.append(url);

@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/inspector/InjectedScriptManager.h"
 
+#include "V8DOMWindow.h"
 #include "V8InjectedScriptHost.h"
-#include "V8Window.h"
 #include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/ScriptDebugServer.h"
 #include "bindings/v8/ScriptObject.h"
@@ -104,12 +104,12 @@ bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
     v8::Local<v8::Object> global = context->Global();
     if (global.IsEmpty())
         return false;
-    v8::Handle<v8::Object> holder = global->FindInstanceInPrototypeChain(V8Window::GetTemplate(context->GetIsolate(), MainWorld));
+    v8::Handle<v8::Object> holder = global->FindInstanceInPrototypeChain(V8DOMWindow::GetTemplate(context->GetIsolate(), MainWorld));
     if (holder.IsEmpty())
-        holder = global->FindInstanceInPrototypeChain(V8Window::GetTemplate(context->GetIsolate(), IsolatedWorld));
+        holder = global->FindInstanceInPrototypeChain(V8DOMWindow::GetTemplate(context->GetIsolate(), IsolatedWorld));
     if (holder.IsEmpty())
         return false;
-    Frame* frame = V8Window::toNative(holder)->frame();
+    Frame* frame = V8DOMWindow::toNative(holder)->frame();
 
     v8::Context::Scope contextScope(context);
     return BindingSecurity::shouldAllowAccessToFrame(frame, DoNotReportSecurityError);

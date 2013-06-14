@@ -52,8 +52,8 @@
 #include "V8XPathNSResolver.h"
 #include "V8XPathResult.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMWindowShell.h"
 #include "bindings/v8/V8DOMWrapper.h"
-#include "bindings/v8/V8WindowShell.h"
 #include "bindings/v8/custom/V8CustomXPathNSResolver.h"
 
 #include "wtf/RefPtr.h"

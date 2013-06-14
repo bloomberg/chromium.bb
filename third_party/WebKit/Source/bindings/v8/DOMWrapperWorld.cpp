@@ -31,7 +31,7 @@
 #include "config.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 
-#include "V8Window.h"
+#include "V8DOMWindow.h"
 #include "bindings/v8/DOMDataStore.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMActivityLogger.h"
@@ -69,7 +69,7 @@ DOMWrapperWorld* DOMWrapperWorld::current()
 {
     ASSERT(v8::Context::InContext());
     v8::Handle<v8::Context> context = v8::Context::GetCurrent();
-    if (!V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8Window::info))
+    if (!V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8DOMWindow::info))
         return 0;
     ASSERT(isMainThread());
     if (DOMWrapperWorld* world = isolatedWorld(context))
@@ -96,7 +96,7 @@ bool DOMWrapperWorld::contextHasCorrectPrototype(v8::Handle<v8::Context> context
     ASSERT(isMainThread());
     if (initializingWindow)
         return true;
-    return V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8Window::info);
+    return V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8DOMWindow::info);
 }
 
 void DOMWrapperWorld::setIsolatedWorldField(v8::Handle<v8::Context> context)

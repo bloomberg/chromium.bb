@@ -26,9 +26,9 @@
 #include "config.h"
 #include "bindings/v8/V8Initializer.h"
 
+#include "V8DOMWindow.h"
 #include "V8History.h"
 #include "V8Location.h"
-#include "V8Window.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptProfiler.h"
 #include "bindings/v8/V8Binding.h"
@@ -49,11 +49,11 @@ static Frame* findFrame(v8::Local<v8::Object> host, v8::Local<v8::Value> data, v
 {
     WrapperTypeInfo* type = WrapperTypeInfo::unwrap(data);
 
-    if (V8Window::info.equals(type)) {
-        v8::Handle<v8::Object> windowWrapper = host->FindInstanceInPrototypeChain(V8Window::GetTemplate(isolate, worldTypeInMainThread(isolate)));
+    if (V8DOMWindow::info.equals(type)) {
+        v8::Handle<v8::Object> windowWrapper = host->FindInstanceInPrototypeChain(V8DOMWindow::GetTemplate(isolate, worldTypeInMainThread(isolate)));
         if (windowWrapper.IsEmpty())
             return 0;
-        return V8Window::toNative(windowWrapper)->frame();
+        return V8DOMWindow::toNative(windowWrapper)->frame();
     }
 
     if (V8History::info.equals(type))

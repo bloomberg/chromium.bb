@@ -32,9 +32,9 @@
 #include "config.h"
 #include "bindings/v8/ScriptController.h"
 
+#include "V8DOMWindow.h"
 #include "V8Event.h"
 #include "V8HTMLElement.h"
-#include "V8Window.h"
 #include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/NPObjectWrapper.h"
 #include "bindings/v8/NPV8Object.h"
@@ -42,12 +42,12 @@
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMWindowShell.h"
 #include "bindings/v8/V8GCController.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8NPObject.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "bindings/v8/V8ScriptRunner.h"
-#include "bindings/v8/V8WindowShell.h"
 #include "bindings/v8/npruntime_impl.h"
 #include "bindings/v8/npruntime_priv.h"
 #include "core/dom/Document.h"
@@ -92,7 +92,7 @@ ScriptController::ScriptController(Frame* frame)
     : m_frame(frame)
     , m_sourceURL(0)
     , m_isolate(v8::Isolate::GetCurrent())
-    , m_windowShell(V8WindowShell::create(frame, mainThreadNormalWorld(), m_isolate))
+    , m_windowShell(V8DOMWindowShell::create(frame, mainThreadNormalWorld(), m_isolate))
     , m_paused(false)
     , m_wrappedWindowScriptNPObject(0)
 {
@@ -254,7 +254,7 @@ bool ScriptController::initializeMainWorld()
     return windowShell(mainThreadNormalWorld())->isContextInitialized();
 }
 
-V8WindowShell* ScriptController::existingWindowShell(DOMWrapperWorld* world)
+V8DOMWindowShell* ScriptController::existingWindowShell(DOMWrapperWorld* world)
 {
     ASSERT(world);
 
@@ -271,11 +271,11 @@ V8WindowShell* ScriptController::existingWindowShell(DOMWrapperWorld* world)
     return iter->value->isContextInitialized() ? iter->value.get() : 0;
 }
 
-V8WindowShell* ScriptController::windowShell(DOMWrapperWorld* world)
+V8DOMWindowShell* ScriptController::windowShell(DOMWrapperWorld* world)
 {
     ASSERT(world);
 
-    V8WindowShell* shell = 0;
+    V8DOMWindowShell* shell = 0;
     if (world->isMainWorld())
         shell = m_windowShell.get();
     else {
@@ -283,7 +283,7 @@ V8WindowShell* ScriptController::windowShell(DOMWrapperWorld* world)
         if (iter != m_isolatedWorlds.end())
             shell = iter->value.get();
         else {
-            OwnPtr<V8WindowShell> isolatedWorldShell = V8WindowShell::create(m_frame, world, m_isolate);
+            OwnPtr<V8DOMWindowShell> isolatedWorldShell = V8DOMWindowShell::create(m_frame, world, m_isolate);
             shell = isolatedWorldShell.get();
             m_isolatedWorlds.set(world->worldId(), isolatedWorldShell.release());
         }
@@ -540,7 +540,7 @@ void ScriptController::collectIsolatedContexts(Vector<std::pair<ScriptState*, Se
 {
     v8::HandleScope handleScope;
     for (IsolatedWorldMap::iterator it = m_isolatedWorlds.begin(); it != m_isolatedWorlds.end(); ++it) {
-        V8WindowShell* isolatedWorldShell = it->value.get();
+        V8DOMWindowShell* isolatedWorldShell = it->value.get();
         SecurityOrigin* origin = isolatedWorldShell->world()->isolatedWorldSecurityOrigin();
         if (!origin)
             continue;
@@ -699,7 +699,7 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<Sc
     {
         v8::HandleScope evaluateHandleScope;
         RefPtr<DOMWrapperWorld> world = DOMWrapperWorld::ensureIsolatedWorld(worldID, extensionGroup);
-        V8WindowShell* isolatedWorldShell = windowShell(world.get());
+        V8DOMWindowShell* isolatedWorldShell = windowShell(world.get());
 
         if (!isolatedWorldShell->isContextInitialized())
             return;
