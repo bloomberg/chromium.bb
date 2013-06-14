@@ -29,6 +29,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ash {
@@ -143,6 +144,7 @@ class CursorWindowDelegate : public aura::WindowDelegate {
 
 MirrorWindowController::MirrorWindowController()
     : current_cursor_type_(ui::kCursorNone),
+      current_cursor_rotation_(gfx::Display::ROTATE_0),
       cursor_window_(NULL),
       cursor_window_delegate_(new CursorWindowDelegate) {
 }
@@ -249,11 +251,13 @@ void MirrorWindowController::UpdateCursorLocation() {
 }
 
 void MirrorWindowController::SetMirroredCursor(gfx::NativeCursor cursor) {
-  if (current_cursor_type_ == cursor.native_type())
+  const gfx::Display& display = Shell::GetScreen()->GetPrimaryDisplay();
+  if (current_cursor_type_ == cursor.native_type() &&
+      current_cursor_rotation_ == display.rotation())
     return;
   current_cursor_type_ = cursor.native_type();
+  current_cursor_rotation_ = display.rotation();
   int resource_id;
-  const gfx::Display& display = Shell::GetScreen()->GetPrimaryDisplay();
   bool success = ui::GetCursorDataFor(
       current_cursor_type_,
       display.device_scale_factor(),
@@ -263,7 +267,34 @@ void MirrorWindowController::SetMirroredCursor(gfx::NativeCursor cursor) {
     return;
   const gfx::ImageSkia* image =
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
-  cursor_window_delegate_->SetCursorImage(*image, display);
+  gfx::ImageSkia rotated = *image;
+  switch (current_cursor_rotation_) {
+    case gfx::Display::ROTATE_0:
+      break;
+    case gfx::Display::ROTATE_90:
+      rotated = gfx::ImageSkiaOperations::CreateRotatedImage(
+          *image, SkBitmapOperations::ROTATION_90_CW);
+      hot_point_.SetPoint(
+          rotated.width() - hot_point_.y(),
+          hot_point_.x());
+      break;
+    case gfx::Display::ROTATE_180:
+      rotated = gfx::ImageSkiaOperations::CreateRotatedImage(
+          *image, SkBitmapOperations::ROTATION_180_CW);
+      hot_point_.SetPoint(
+          rotated.height() - hot_point_.x(),
+          rotated.width() - hot_point_.y());
+      break;
+    case gfx::Display::ROTATE_270:
+      rotated = gfx::ImageSkiaOperations::CreateRotatedImage(
+          *image, SkBitmapOperations::ROTATION_270_CW);
+      hot_point_.SetPoint(
+          hot_point_.y(),
+          rotated.height() - hot_point_.x());
+      break;
+  }
+  cursor_window_delegate_->SetCursorImage(rotated, display);
+
   if (cursor_window_) {
     cursor_window_->SetBounds(gfx::Rect(cursor_window_delegate_->size()));
     cursor_window_->SchedulePaintInRect(

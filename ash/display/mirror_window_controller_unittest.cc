@@ -34,10 +34,12 @@ typedef test::AshTestBase MirrorWindowControllerTest;
 // Software mirroring does not work on win.
 #define MAYBE_MirrorCursorBasic DISABLED_MirrorCursorBasic
 #define MAYBE_MirrorCursorLocations DISABLED_MirrorCursorLocations
+#define MAYBE_MirrorCursorRotate DISABLED_MirrorCursorRotate
 #define MAYBE_DockMode DISABLED_DockMode
 #else
 #define MAYBE_MirrorCursorBasic MirrorCursorBasic
 #define MAYBE_MirrorCursorLocations MirrorCursorLocations
+#define MAYBE_MirrorCursorRotate MirrorCursorRotate
 #define MAYBE_DockMode DockMode
 #endif
 
@@ -98,6 +100,70 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorBasic) {
   EXPECT_TRUE(test_api.GetCursorWindow()->IsVisible());
 }
 
+TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorRotate) {
+  test::MirrorWindowTestApi test_api;
+  aura::test::TestWindowDelegate test_window_delegate;
+  test_window_delegate.set_window_component(HTTOP);
+
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  display_manager->SetSoftwareMirroring(true);
+  UpdateDisplay("400x400,400x400");
+  aura::RootWindow* root = Shell::GetInstance()->GetPrimaryRootWindow();
+  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
+      &test_window_delegate,
+      0,
+      gfx::Rect(50, 50, 100, 100),
+      root));
+  window->Show();
+  window->SetName("foo");
+
+  EXPECT_TRUE(test_api.GetCursorWindow());
+  EXPECT_EQ("50,50 100x100", window->bounds().ToString());
+
+  aura::test::EventGenerator generator(root);
+  generator.MoveMouseToInHost(100, 100);
+
+  // Test if cursor movement is propertly reflected in mirror window.
+  gfx::Point hot_point = test_api.GetCursorHotPoint();
+  gfx::Point cursor_window_origin =
+      test_api.GetCursorWindow()->bounds().origin();
+  EXPECT_EQ("11,12", hot_point.ToString());
+  EXPECT_EQ(100 - hot_point.x(), cursor_window_origin.x());
+  EXPECT_EQ(100 - hot_point.y(), cursor_window_origin.y());
+  EXPECT_EQ(ui::kCursorNorthResize, test_api.GetCurrentCursorType());
+
+  UpdateDisplay("400x400/r,400x400");  // 90 degrees.
+  generator.MoveMouseToInHost(300, 100);
+  hot_point = test_api.GetCursorHotPoint();
+  cursor_window_origin = test_api.GetCursorWindow()->bounds().origin();
+  EXPECT_EQ(ui::kCursorNorthResize, test_api.GetCurrentCursorType());
+  // The size of cursor image is 25x25, so the rotated hot point must
+  // be (25-12, 11).
+  EXPECT_EQ("13,11", hot_point.ToString());
+  EXPECT_EQ(300 - hot_point.x(), cursor_window_origin.x());
+  EXPECT_EQ(100 - hot_point.y(), cursor_window_origin.y());
+
+  UpdateDisplay("400x400/u,400x400");  // 180 degrees.
+  generator.MoveMouseToInHost(300, 300);
+  hot_point = test_api.GetCursorHotPoint();
+  cursor_window_origin = test_api.GetCursorWindow()->bounds().origin();
+  EXPECT_EQ(ui::kCursorNorthResize, test_api.GetCurrentCursorType());
+  // Rotated hot point must be (25-11, 25-12).
+  EXPECT_EQ("14,13", hot_point.ToString());
+  EXPECT_EQ(300 - hot_point.x(), cursor_window_origin.x());
+  EXPECT_EQ(300 - hot_point.y(), cursor_window_origin.y());
+
+  UpdateDisplay("400x400/l,400x400");  // 270 degrees.
+  generator.MoveMouseToInHost(100, 300);
+  hot_point = test_api.GetCursorHotPoint();
+  cursor_window_origin = test_api.GetCursorWindow()->bounds().origin();
+  EXPECT_EQ(ui::kCursorNorthResize, test_api.GetCurrentCursorType());
+  // Rotated hot point must be (12, 25-11).
+  EXPECT_EQ("12,14", hot_point.ToString());
+  EXPECT_EQ(100 - hot_point.x(), cursor_window_origin.x());
+  EXPECT_EQ(300 - hot_point.y(), cursor_window_origin.y());
+}
+
 // Make sure that the mirror cursor's location is same as
 // the source display's host location in the mirror root window's
 // coordinates.
@@ -135,7 +201,7 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorLocations) {
   generator.MoveMouseToInHost(30, 40);
 
   hot_point = test_api.GetCursorHotPoint();
-  EXPECT_EQ("4,4", hot_point.ToString());
+  EXPECT_EQ("21,4", hot_point.ToString());
   cursor_window_origin = test_api.GetCursorWindow()->bounds().origin();
   EXPECT_EQ(30 - hot_point.x(), cursor_window_origin.x());
   EXPECT_EQ(40 - hot_point.y(), cursor_window_origin.y());

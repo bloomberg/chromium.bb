@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/root_window_observer.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
@@ -69,6 +70,7 @@ class ASH_EXPORT MirrorWindowController : public aura::RootWindowObserver {
   scoped_ptr<aura::RootWindowTransformer> CreateRootWindowTransformer() const;
 
   int current_cursor_type_;
+  gfx::Display::Rotation current_cursor_rotation_;
   aura::Window* cursor_window_;  // owned by root window.
   scoped_ptr<aura::RootWindow> root_window_;
   scoped_ptr<CursorWindowDelegate> cursor_window_delegate_;
