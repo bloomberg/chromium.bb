@@ -42,7 +42,7 @@ ActivityLogAPI::ActivityLogAPI(Profile* profile)
     : profile_(profile),
       initialized_(false) {
   if (!ExtensionSystem::Get(profile_)->event_router()) {  // Check for testing.
-    LOG(ERROR) << "ExtensionSystem event_router does not exist.";
+    DVLOG(1) << "ExtensionSystem event_router does not exist.";
     return;
   }
   activity_log_ = extensions::ActivityLog::GetInstance(profile_);
@@ -58,7 +58,7 @@ ActivityLogAPI::~ActivityLogAPI() {
 
 void ActivityLogAPI::Shutdown() {
   if (!initialized_) {  // Check for testing.
-    LOG(ERROR) << "ExtensionSystem event_router does not exist.";
+    DVLOG(1) << "ExtensionSystem event_router does not exist.";
     return;
   }
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
