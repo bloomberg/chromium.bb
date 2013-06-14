@@ -150,8 +150,10 @@ PassRefPtr<CustomElementConstructor> CustomElementRegistry::registerElement(Scri
         return 0;
     }
 
-    RefPtr<CustomElementDefinition> definition = CustomElementDefinition::create(state, type, name, namespaceURI, prototypeValue);
+    ASSERT(name == type || QualifiedName(nullAtom, name, namespaceURI) == *CustomElementHelpers::findLocalName(prototypeValue));
+    ASSERT(namespaceURI == HTMLNames::xhtmlNamespaceURI || namespaceURI == SVGNames::svgNamespaceURI);
 
+    RefPtr<CustomElementDefinition> definition = CustomElementDefinition::create(type, name, namespaceURI);
     RefPtr<CustomElementConstructor> constructor = CustomElementConstructor::create(document(), definition->tagQName(), definition->isTypeExtension() ? definition->type() : nullAtom);
     if (!CustomElementHelpers::initializeConstructorWrapper(constructor.get(), prototypeValue, state)) {
         ec = INVALID_STATE_ERR;
@@ -162,7 +164,7 @@ PassRefPtr<CustomElementConstructor> CustomElementRegistry::registerElement(Scri
 
     // Upgrade elements that were waiting for this definition.
     CustomElementUpgradeCandidateMap::ElementSet upgradeCandidates = m_candidates.takeUpgradeCandidatesFor(definition.get());
-    CustomElementHelpers::upgradeWrappers(document(), upgradeCandidates, definition->prototype());
+    CustomElementHelpers::didRegisterDefinition(definition.get(), document(), upgradeCandidates, prototypeValue);
     for (CustomElementUpgradeCandidateMap::ElementSet::iterator it = upgradeCandidates.begin(); it != upgradeCandidates.end(); ++it) {
         (*it)->setNeedsStyleRecalc(); // :unresolved has changed
         activate(CustomElementInvocation(*it));

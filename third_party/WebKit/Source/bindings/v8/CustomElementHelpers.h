@@ -51,17 +51,21 @@ class ScriptState;
 
 class CustomElementHelpers {
 public:
+    static void didRegisterDefinition(CustomElementDefinition*, ScriptExecutionContext*, const HashSet<Element*>& upgradeCandidates, const ScriptValue& prototypeValue);
+
     static bool initializeConstructorWrapper(CustomElementConstructor*, const ScriptValue& prototype, ScriptState*);
+
     static bool isValidPrototypeParameter(const ScriptValue&, ScriptState*, AtomicString& namespaceURI);
     static bool isValidPrototypeParameter(const ScriptValue&, ScriptState*);
+
     static bool isFeatureAllowed(ScriptState*);
+    static bool isFeatureAllowed(v8::Handle<v8::Context>);
+
+    static WrapperTypeInfo* findWrapperType(v8::Handle<v8::Value> chain);
+
+    static const QualifiedName* findLocalName(v8::Handle<v8::Object> chain);
     static const QualifiedName* findLocalName(const ScriptValue& prototype);
 
-    static bool isFeatureAllowed(v8::Handle<v8::Context>);
-    static WrapperTypeInfo* findWrapperType(v8::Handle<v8::Value> chain);
-    static const QualifiedName* findLocalName(v8::Handle<v8::Object> chain);
-
-    static void upgradeWrappers(ScriptExecutionContext*, const HashSet<Element*>&, const ScriptValue& prototype);
     static void invokeReadyCallbacksIfNeeded(ScriptExecutionContext*, const Vector<CustomElementInvocation>&);
 
     typedef v8::Handle<v8::Object> (*CreateSVGWrapperFunction)(SVGElement*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
@@ -91,9 +95,11 @@ public:
     static v8::Handle<v8::Object> wrap(Element*, v8::Handle<v8::Object> creationContext, v8::Isolate*, const CreateWrapperFunction& createTypeExtensionUpgradeCandidateWrapper);
 
 private:
-    static void invokeReadyCallbackIfNeeded(Element*, v8::Handle<v8::Context>);
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<Element>, v8::Handle<v8::Object>, v8::Isolate*, const CreateWrapperFunction& createTypeExtensionUpgradeCandidateWrapper);
     static v8::Handle<v8::Object> createUpgradeCandidateWrapper(PassRefPtr<Element>, v8::Handle<v8::Object> creationContext, v8::Isolate*, const CreateWrapperFunction& createTypeExtensionUpgradeCandidateWrapper);
+    static void upgradeWrappers(v8::Handle<v8::Context>, const HashSet<Element*>&, v8::Handle<v8::Object> prototype);
+
+    static void invokeReadyCallbackIfNeeded(Element*, v8::Handle<v8::Context>);
 };
 
 inline v8::Handle<v8::Object> CustomElementHelpers::wrap(Element* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate, const CreateWrapperFunction& createWrapper)

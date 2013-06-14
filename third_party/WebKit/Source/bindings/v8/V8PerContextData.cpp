@@ -37,24 +37,24 @@
 
 namespace WebCore {
 
+template<typename Map>
+static void disposeMapWithUnsafePersistentValues(Map* map)
+{
+    typename Map::iterator it = map->begin();
+    for (; it != map->end(); ++it)
+        it->value.dispose();
+    map->clear();
+}
+
 void V8PerContextData::dispose()
 {
     v8::HandleScope handleScope(m_isolate);
     v8::Local<v8::Context>::New(m_isolate, m_context)->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, 0);
 
-    {
-        WrapperBoilerplateMap::iterator it = m_wrapperBoilerplates.begin();
-        for (; it != m_wrapperBoilerplates.end(); ++it)
-            it->value.dispose();
-        m_wrapperBoilerplates.clear();
-    }
+    disposeMapWithUnsafePersistentValues(&m_wrapperBoilerplates);
+    disposeMapWithUnsafePersistentValues(&m_constructorMap);
+    disposeMapWithUnsafePersistentValues(&m_customElementPrototypeMap);
 
-    {
-        ConstructorMap::iterator it = m_constructorMap.begin();
-        for (; it != m_constructorMap.end(); ++it)
-            it->value.dispose();
-        m_constructorMap.clear();
-    }
     m_context.Dispose();
 }
 

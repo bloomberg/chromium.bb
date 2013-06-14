@@ -39,6 +39,8 @@
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 
@@ -105,6 +107,13 @@ public:
         m_activityLogger = logger;
     }
 
+    typedef WTF::HashMap<AtomicString, UnsafePersistent<v8::Object> > CustomElementPrototypeMap;
+
+    CustomElementPrototypeMap* customElementPrototypes()
+    {
+        return &m_customElementPrototypeMap;
+    }
+
 private:
     explicit V8PerContextData(v8::Handle<v8::Context> context)
         : m_activityLogger(0)
@@ -134,6 +143,8 @@ private:
     v8::Isolate* m_isolate;
     v8::Persistent<v8::Context> m_context;
     ScopedPersistent<v8::Value> m_errorPrototype;
+
+    CustomElementPrototypeMap m_customElementPrototypeMap;
 };
 
 class V8PerContextDebugData {

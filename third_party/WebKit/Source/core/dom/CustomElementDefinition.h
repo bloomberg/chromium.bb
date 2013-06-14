@@ -43,7 +43,7 @@ class ScriptState;
 
 class CustomElementDefinition : public RefCounted<CustomElementDefinition> {
 public:
-    static PassRefPtr<CustomElementDefinition> create(ScriptState*, const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI, const ScriptValue& prototype);
+    static PassRefPtr<CustomElementDefinition> create(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI);
 
     virtual ~CustomElementDefinition() {}
 
@@ -72,12 +72,8 @@ public:
     CustomElementKind kind() const { return isTypeExtension() ? TypeExtension : CustomTag; }
     bool isTypeExtension() const { return type() != name(); }
 
-    const ScriptValue& prototype() { return m_prototype; }
-
 private:
-    CustomElementDefinition(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI, const ScriptValue& prototype);
-
-    ScriptValue m_prototype;
+    CustomElementDefinition(const AtomicString& type, const AtomicString& name, const AtomicString& namespaceURI);
 
     AtomicString m_type;
     QualifiedName m_tag;
