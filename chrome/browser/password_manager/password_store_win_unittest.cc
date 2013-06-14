@@ -117,7 +117,8 @@ class PasswordStoreWinTest : public testing::Test {
     ASSERT_TRUE(login_db_->Init(temp_dir_.path().Append(
         FILE_PATH_LITERAL("login_test"))));
     base::FilePath path = temp_dir_.path().AppendASCII("web_data_test");
-    wdbs_ = new WebDatabaseService(path);
+    wdbs_ = new WebDatabaseService(path,
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI));
     // Need to add at least one table so the database gets created.
     wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new LoginsTable()));
     wdbs_->LoadDatabase();

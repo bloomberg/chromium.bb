@@ -277,6 +277,7 @@
           'memory/raw_scoped_refptr_mismatch_checker.h',
           'memory/ref_counted.cc',
           'memory/ref_counted.h',
+          'memory/ref_counted_delete_on_message_loop.h',
           'memory/ref_counted_memory.cc',
           'memory/ref_counted_memory.h',
           'memory/scoped_handle.h',

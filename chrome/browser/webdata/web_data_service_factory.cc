@@ -69,7 +69,8 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
   base::FilePath profile_path = profile->GetPath();
   base::FilePath path = profile_path.Append(kWebDataFilename);
 
-  web_database_ = new WebDatabaseService(path);
+  web_database_ = new WebDatabaseService(path,
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI));
 
   // All tables objects that participate in managing the database must
   // be added here.

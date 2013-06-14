@@ -72,7 +72,8 @@ class WebDataServiceTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");
 
-    wdbs_ = new WebDatabaseService(path);
+    wdbs_ = new WebDatabaseService(path,
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI));
     wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new AutofillTable("en-US")));
     wdbs_->LoadDatabase();
 

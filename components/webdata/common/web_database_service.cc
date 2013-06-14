@@ -38,12 +38,14 @@ class WebDatabaseService::BackendDelegate :
 };
 
 WebDatabaseService::WebDatabaseService(
-    const base::FilePath& path)
-    : path_(path),
+    const base::FilePath& path,
+    const scoped_refptr<base::MessageLoopProxy>& ui_thread)
+    : base::RefCountedDeleteOnMessageLoop<WebDatabaseService>(ui_thread),
+      path_(path),
       weak_ptr_factory_(this),
       db_loaded_(false) {
   // WebDatabaseService should be instantiated on UI thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(ui_thread->BelongsToCurrentThread());
   // WebDatabaseService requires DB thread if instantiated.
   DCHECK(BrowserThread::IsWellKnownThread(BrowserThread::DB));
 }
