@@ -1449,32 +1449,12 @@ void DOMWindow::resizeTo(float width, float height) const
     page->chrome().setWindowRect(adjustWindowRect(page, update));
 }
 
-int DOMWindow::setTimeout(PassOwnPtr<ScheduledAction> action, int timeout, ExceptionCode& ec)
-{
-    ScriptExecutionContext* context = scriptExecutionContext();
-    if (!context) {
-        ec = INVALID_ACCESS_ERR;
-        return -1;
-    }
-    return DOMTimer::install(context, action, timeout, true);
-}
-
 void DOMWindow::clearTimeout(int timeoutId)
 {
     ScriptExecutionContext* context = scriptExecutionContext();
     if (!context)
         return;
     DOMTimer::removeById(context, timeoutId);
-}
-
-int DOMWindow::setInterval(PassOwnPtr<ScheduledAction> action, int timeout, ExceptionCode& ec)
-{
-    ScriptExecutionContext* context = scriptExecutionContext();
-    if (!context) {
-        ec = INVALID_ACCESS_ERR;
-        return -1;
-    }
-    return DOMTimer::install(context, action, timeout, false);
 }
 
 void DOMWindow::clearInterval(int timeoutId)
