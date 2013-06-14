@@ -2077,7 +2077,10 @@
             'Profile': 'true',
           },
         },
-        'defines': ['ADDRESS_SANITIZER'],
+        'defines': [
+            'ADDRESS_SANITIZER'
+            'MEMORY_TOOL_REPLACES_ALLOCATOR',
+        ],
       }],  # asan==1 and OS=="win"
       ['coverage!=0', {
         'conditions': [
@@ -2599,6 +2602,7 @@
             ],
           }, {
             'defines': [
+              'MEMORY_TOOL_REPLACES_ALLOCATOR',
               'DYNAMIC_ANNOTATIONS_ENABLED=1',
               'WTF_USE_DYNAMIC_ANNOTATIONS=1',
             ],
@@ -3160,6 +3164,9 @@
                   # http://crbug.com/234010. As workaround, disable --as-needed.
                   '-Wl,--as-needed',
                 ],
+                'defines': [
+                  'MEMORY_TOOL_REPLACES_ALLOCATOR',
+                ],
               }],
               ['_toolset=="target" and OS=="linux"', {
                 'ldflags': [
@@ -3289,7 +3296,10 @@
           }],
           ['linux_use_heapchecker==1', {
             'variables': {'linux_use_tcmalloc%': 1},
-            'defines': ['USE_HEAPCHECKER'],
+            'defines': [
+                'USE_HEAPCHECKER'
+                'MEMORY_TOOL_REPLACES_ALLOCATOR',
+            ],
             'conditions': [
               ['component=="shared_library"', {
                 # See crbug.com/112389
@@ -3836,6 +3846,7 @@
             },
             'defines': [
               'ADDRESS_SANITIZER',
+              'MEMORY_TOOL_REPLACES_ALLOCATOR',
             ],
           }],
         ],
