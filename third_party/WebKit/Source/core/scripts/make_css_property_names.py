@@ -183,7 +183,10 @@ class CSSPropertiesWriter(in_generator.Writer):
             # Aliases do not get an enum_value.
 
         self._properties = filter(lambda property: not property['alias_for'] and not property['condition'] or property['condition'] in self._enabled_conditions, all_properties)
-        self._first_property_id = 1001  # Historical, unclear why.
+        if len(self._properties) > 1024:
+            print "ERROR : There is more than 1024 CSS Properties, you need to update CSSProperty.h/StylePropertyMetadata m_propertyID accordingly."
+            exit(1)
+        self._first_property_id = 2  # We start after CSSPropertyInvalid and CSSPropertyVariable.
         property_id = self._first_property_id
         for offset, property in enumerate(self._properties):
             property['enum_name'] = self._enum_name_from_property_name(property['name'])

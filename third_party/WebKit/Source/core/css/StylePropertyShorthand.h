@@ -1,6 +1,7 @@
 /*
  * (C) 1999-2003 Lars Knoll (knoll@kde.org)
  * Copyright (C) 2004, 2005, 2006, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2013 Intel Corporation. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -22,6 +23,7 @@
 #define StylePropertyShorthand_h
 
 #include "CSSPropertyNames.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -32,31 +34,36 @@ public:
         : m_properties(0)
         , m_propertiesForInitialization(0)
         , m_length(0)
+        , m_shorthandID(CSSPropertyInvalid)
     {
     }
 
-    StylePropertyShorthand(const CSSPropertyID* properties, unsigned numProperties)
+    StylePropertyShorthand(CSSPropertyID id, const CSSPropertyID* properties, unsigned numProperties)
         : m_properties(properties)
         , m_propertiesForInitialization(0)
         , m_length(numProperties)
+        , m_shorthandID(id)
     {
     }
 
-    StylePropertyShorthand(const CSSPropertyID* properties, const StylePropertyShorthand** propertiesForInitialization, unsigned numProperties)
+    StylePropertyShorthand(CSSPropertyID id, const CSSPropertyID* properties, const StylePropertyShorthand** propertiesForInitialization, unsigned numProperties)
         : m_properties(properties)
         , m_propertiesForInitialization(propertiesForInitialization)
         , m_length(numProperties)
+        , m_shorthandID(id)
     {
     }
 
     const CSSPropertyID* properties() const { return m_properties; }
     const StylePropertyShorthand** propertiesForInitialization() const { return m_propertiesForInitialization; }
     unsigned length() const { return m_length; }
+    CSSPropertyID id() const { return m_shorthandID; }
 
 private:
     const CSSPropertyID* m_properties;
     const StylePropertyShorthand** m_propertiesForInitialization;
     unsigned m_length;
+    CSSPropertyID m_shorthandID;
 };
 
 const StylePropertyShorthand& backgroundShorthand();
@@ -104,8 +111,12 @@ const StylePropertyShorthand& webkitTextStrokeShorthand();
 const StylePropertyShorthand& webkitTransitionShorthand();
 const StylePropertyShorthand& webkitTransformOriginShorthand();
 
-// Returns an empty list if the property is not a shorthand
+// Returns an empty list if the property is not a shorthand.
 const StylePropertyShorthand& shorthandForProperty(CSSPropertyID);
+
+// Return the list of shorthands for a given longhand.
+const Vector<StylePropertyShorthand> matchingShorthandsForLonghand(CSSPropertyID);
+unsigned indexOfShorthandForLonghand(CSSPropertyID, const Vector<StylePropertyShorthand>&);
 
 bool isExpandedShorthand(CSSPropertyID);
 

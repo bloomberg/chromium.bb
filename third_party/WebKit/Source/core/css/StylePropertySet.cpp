@@ -258,21 +258,31 @@ void MutableStylePropertySet::setProperty(const CSSProperty& property, CSSProper
     appendPrefixingVariantProperty(property);
 }
 
+unsigned getIndexInShorthandVectorForPrefixingVariant(const CSSProperty& property, CSSPropertyID prefixingVariant)
+{
+    if (!property.isSetFromShorthand())
+        return 0;
+
+    CSSPropertyID prefixedShorthand = prefixingVariantForPropertyId(property.shorthandID());
+    return indexOfShorthandForLonghand(prefixedShorthand, matchingShorthandsForLonghand(prefixingVariant));
+}
+
 void MutableStylePropertySet::appendPrefixingVariantProperty(const CSSProperty& property)
 {
     m_propertyVector.append(property);
     CSSPropertyID prefixingVariant = prefixingVariantForPropertyId(property.id());
     if (prefixingVariant == property.id())
         return;
-    m_propertyVector.append(CSSProperty(prefixingVariant, property.value(), property.isImportant(), property.shorthandID(), property.metadata().m_implicit));
+
+    m_propertyVector.append(CSSProperty(prefixingVariant, property.value(), property.isImportant(), property.isSetFromShorthand(), getIndexInShorthandVectorForPrefixingVariant(property, prefixingVariant), property.metadata().m_implicit));
 }
 
 void MutableStylePropertySet::setPrefixingVariantProperty(const CSSProperty& property)
 {
     CSSPropertyID prefixingVariant = prefixingVariantForPropertyId(property.id());
     CSSProperty* toReplace = findCSSPropertyWithID(prefixingVariant);
-    if (toReplace)
-        *toReplace = CSSProperty(prefixingVariant, property.value(), property.isImportant(), property.shorthandID(), property.metadata().m_implicit);
+    if (toReplace && prefixingVariant != property.id())
+        *toReplace = CSSProperty(prefixingVariant, property.value(), property.isImportant(), property.isSetFromShorthand(), getIndexInShorthandVectorForPrefixingVariant(property, prefixingVariant), property.metadata().m_implicit);
 }
 
 bool MutableStylePropertySet::setProperty(CSSPropertyID propertyID, CSSValueID identifier, bool important)

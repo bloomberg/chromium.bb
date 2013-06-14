@@ -57,7 +57,7 @@ public:
         }
 
         CSSPropertyID id() const { return static_cast<CSSPropertyID>(propertyMetadata().m_propertyID); }
-        CSSPropertyID shorthandID() const { return static_cast<CSSPropertyID>(propertyMetadata().m_shorthandID); }
+        CSSPropertyID shorthandID() const { return propertyMetadata().shorthandID(); }
 
         bool isImportant() const { return propertyMetadata().m_important; }
         bool isInherited() const { return propertyMetadata().m_inherited; }
