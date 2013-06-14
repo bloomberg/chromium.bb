@@ -3462,6 +3462,21 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Media.Netflix.DelayedAndDroppedFramesPer5Sec"
+    units="frames/5s">
+  <summary>
+    The average number of delayed and dropped frames for the Netflix
+    application.  Reported every 5 seconds.
+  </summary>
+</histogram>
+
+<histogram name="Media.Netflix.DisplayedFramesPerSecond" units="frames/s">
+  <summary>
+    The average number of displayed frames for the Netflix application. Reported
+    every 5 seconds.
+  </summary>
+</histogram>
+
 <histogram name="Media.Netflix.VideoBitrate" units="kbps">
   <summary>
     Video bit rate as reported by the Netflix application.  May be reported
@@ -3493,6 +3508,21 @@ other types of suffix sets.
   <summary>
     Vertical video resolution rounded to the nearest bucket. (Corresponds
     roughly to the number in 720p.)
+  </summary>
+</histogram>
+
+<histogram name="Media.PlayMovies.DelayedAndDroppedFramesPer5Sec"
+    units="frames/5s">
+  <summary>
+    The average number of delayed and dropped frames for the PlayMovies
+    application.  Reported every 5 seconds.
+  </summary>
+</histogram>
+
+<histogram name="Media.PlayMovies.DisplayedFramesPerSecond" units="frames/s">
+  <summary>
+    The average number of displayed frames for the PlayMovies application.
+    Reported every 5 seconds.
   </summary>
 </histogram>
 
