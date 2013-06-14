@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_pump_libevent.h"
+#include "base/message_pump_libevent.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -11,6 +11,9 @@
 #include "base/auto_reset.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#if defined(OS_MACOSX)
+#include "base/mac/scoped_nsautorelease_pool.h"
+#endif
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/posix/eintr_wrapper.h"
@@ -218,7 +221,7 @@ static void timer_callback(int fd, short events, void *context)
 // Reentrant!
 void MessagePumpLibevent::Run(Delegate* delegate) {
   DCHECK(keep_running_) << "Quit must have been called outside of Run!";
-  AutoReset<bool> auto_reset_in_run(&in_run_, true);
+  base::AutoReset<bool> auto_reset_in_run(&in_run_, true);
 
   // event_base_loopexit() + EVLOOP_ONCE is leaky, see http://crbug.com/25641.
   // Instead, make our own timer and reuse it on each call to event_base_loop().
@@ -340,7 +343,7 @@ bool MessagePumpLibevent::Init() {
 // static
 void MessagePumpLibevent::OnLibeventNotification(int fd, short flags,
                                                  void* context) {
-  WeakPtr<FileDescriptorWatcher> controller =
+  base::WeakPtr<FileDescriptorWatcher> controller =
       static_cast<FileDescriptorWatcher*>(context)->weak_factory_.GetWeakPtr();
   DCHECK(controller.get());
 
@@ -360,7 +363,8 @@ void MessagePumpLibevent::OnLibeventNotification(int fd, short flags,
 // Called if a byte is received on the wakeup pipe.
 // static
 void MessagePumpLibevent::OnWakeup(int socket, short flags, void* context) {
-  MessagePumpLibevent* that = static_cast<MessagePumpLibevent*>(context);
+  base::MessagePumpLibevent* that =
+              static_cast<base::MessagePumpLibevent*>(context);
   DCHECK(that->wakeup_pipe_out_ == socket);
 
   // Remove and discard the wakeup byte.

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_nsobject.h"
-#include "base/message_loop/message_pump_mac.h"
+#include "base/message_pump_mac.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_animation.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 

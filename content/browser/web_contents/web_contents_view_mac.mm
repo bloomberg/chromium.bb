@@ -9,8 +9,8 @@
 #include <string>
 
 #import "base/mac/scoped_sending_event.h"
-#include "base/message_loop/message_loop.h"
-#import "base/message_loop/message_pump_mac.h"
+#include "base/message_loop.h"
+#import "base/message_pump_mac.h"
 #include "content/browser/renderer_host/popup_menu_helper_mac.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"

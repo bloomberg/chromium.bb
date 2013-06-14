@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_ANDROID_H_
-#define BASE_MESSAGE_LOOP_MESSAGE_PUMP_ANDROID_H_
+#ifndef BASE_MESSAGE_PUMP_ANDROID_H_
+#define BASE_MESSAGE_PUMP_ANDROID_H_
 
 #include <jni.h>
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_pump.h"
+#include "base/message_pump.h"
 
 namespace base {
 
@@ -35,11 +35,11 @@ class BASE_EXPORT MessagePumpForUI : public MessagePump {
   virtual ~MessagePumpForUI();
 
  private:
-  RunLoop* run_loop_;
+  base::RunLoop* run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpForUI);
 };
 
 }  // namespace base
 
-#endif  // BASE_MESSAGE_LOOP_MESSAGE_PUMP_ANDROID_H_
+#endif  // BASE_MESSAGE_PUMP_ANDROID_H_

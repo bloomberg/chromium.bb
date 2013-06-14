@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_pump_libevent.h"
+#include "base/message_pump_libevent.h"
 
 #include <unistd.h>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"

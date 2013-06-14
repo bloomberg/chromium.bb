@@ -6,7 +6,7 @@
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/stacking_client.h"
@@ -23,7 +23,7 @@
 #include "ui/gfx/rect.h"
 
 #if defined(USE_X11)
-#include "base/message_loop/message_pump_aurax11.h"
+#include "base/message_pump_aurax11.h"
 #endif
 
 namespace {

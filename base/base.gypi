@@ -301,16 +301,16 @@
           'message_loop/message_loop_proxy.h',
           'message_loop/message_loop_proxy_impl.cc',
           'message_loop/message_loop_proxy_impl.h',
-          'message_loop/message_pump.cc',
-          'message_loop/message_pump.h',
-          'message_loop/message_pump_android.cc',
-          'message_loop/message_pump_android.h',
-          'message_loop/message_pump_default.cc',
-          'message_loop/message_pump_default.h',
-          'message_loop/message_pump_ozone.cc',
-          'message_loop/message_pump_ozone.h',
-          'message_loop/message_pump_win.cc',
-          'message_loop/message_pump_win.h',
+          'message_pump.cc',
+          'message_pump.h',
+          'message_pump_android.cc',
+          'message_pump_android.h',
+          'message_pump_default.cc',
+          'message_pump_default.h',
+          'message_pump_ozone.cc',
+          'message_pump_ozone.h',
+          'message_pump_win.cc',
+          'message_pump_win.h',
           'metrics/sample_map.cc',
           'metrics/sample_map.h',
           'metrics/sample_vector.cc',
@@ -648,12 +648,12 @@
               ],
               'sources!': [
                 'atomicops_internals_x86_gcc.cc',
-                'message_loop/message_pump_glib.cc',
-                'message_loop/message_pump_aurax11.cc',
+                'message_pump_glib.cc',
+                'message_pump_aurax11.cc',
               ],
           }],
           ['<(toolkit_uses_gtk)==0 or >(nacl_untrusted_build)==1', {
-            'sources!': ['message_loop/message_pump_gtk.cc'],
+            'sources!': ['message_pump_gtk.cc'],
           }],
           ['(OS != "linux" and <(os_bsd) != 1 and OS != "android") or >(nacl_untrusted_build)==1', {
               'sources!': [
@@ -736,7 +736,7 @@
               ['include', '^mac/scoped_mach_port\\.'],
               ['include', '^mac/scoped_nsautorelease_pool\\.'],
               ['include', '^memory/discardable_memory_mac\\.'],
-              ['include', '^message_loop/message_pump_mac\\.'],
+              ['include', '^message_pump_mac\\.'],
               ['include', '^threading/platform_thread_mac\\.'],
               ['include', '^strings/sys_string_conversions_mac\\.'],
               ['include', '^time_mac\\.'],
@@ -747,7 +747,7 @@
               ['include', '^process_util_ios\\.mm$'],
             ],
             'sources!': [
-              'message_loop/message_pump_libevent.cc'
+              'message_pump_libevent.cc'
             ],
           }],
           ['OS == "ios" and _toolset == "host"', {
@@ -790,7 +790,7 @@
               'event_recorder_stubs.cc',
               'files/file_path_watcher_kqueue.cc',
               'files/file_path_watcher_stub.cc',
-              'message_loop/message_pump_libevent.cc',
+              'message_pump_libevent.cc',
               'posix/file_descriptor_shuffle.cc',
               # Not using sha1_win.cc because it may have caused a
               # regression to page cycler moz.
@@ -800,8 +800,8 @@
           },],
           ['<(use_ozone) == 1', {
             'sources!': [
-              'message_loop/message_pump_glib.cc',
-              'message_loop/message_pump_aurax11.cc',
+              'message_pump_glib.cc',
+              'message_pump_aurax11.cc',
             ]
           }],
           ['OS == "linux" and >(nacl_untrusted_build)==0', {

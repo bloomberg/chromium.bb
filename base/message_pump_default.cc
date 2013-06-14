@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_pump_default.h"
+#include "base/message_pump_default.h"
 
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
@@ -44,7 +44,7 @@ void MessagePumpDefault::Run(Delegate* delegate) {
     if (did_work)
       continue;
 
-    ThreadRestrictions::ScopedAllowWait allow_wait;
+    base::ThreadRestrictions::ScopedAllowWait allow_wait;
     if (delayed_work_time_.is_null()) {
       event_.Wait();
     } else {

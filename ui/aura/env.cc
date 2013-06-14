@@ -12,7 +12,7 @@
 #include "ui/compositor/compositor_switches.h"
 
 #if defined(USE_X11)
-#include "base/message_loop/message_pump_aurax11.h"
+#include "base/message_pump_aurax11.h"
 #endif
 
 namespace aura {

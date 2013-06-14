@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop.h"
 #include "base/pending_task.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
@@ -20,7 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
-#include "base/message_loop/message_pump_win.h"
+#include "base/message_pump_win.h"
 #include "base/win/scoped_handle.h"
 #endif
 
@@ -29,8 +29,8 @@ namespace base {
 class MessageLoopLockTest {
  public:
   static void LockWaitUnLock(MessageLoop* loop,
-                             WaitableEvent* caller_wait,
-                             WaitableEvent* caller_signal) {
+                             base::WaitableEvent* caller_wait,
+                             base::WaitableEvent* caller_signal) {
 
     loop->incoming_queue_lock_.Acquire();
     caller_wait->Signal();
@@ -121,7 +121,7 @@ void RunTest_PostTask(MessageLoop::Type message_loop_type) {
   thread.Start();
   thread.message_loop()->PostTask(
       FROM_HERE,
-      Bind(&MessageLoopLockTest::LockWaitUnLock,
+      base::Bind(&MessageLoopLockTest::LockWaitUnLock,
       MessageLoop::current(),
       &wait,
       &signal));
@@ -1419,7 +1419,7 @@ void RunTest_RecursivePosts(MessageLoop::Type message_loop_type,
 
 #if defined(OS_WIN)
 
-class DispatcherImpl : public MessageLoopForUI::Dispatcher {
+class DispatcherImpl : public base::MessageLoopForUI::Dispatcher {
  public:
   DispatcherImpl() : dispatch_count_(0) {}
 

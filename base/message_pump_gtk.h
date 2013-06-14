@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_GTK_H_
-#define BASE_MESSAGE_LOOP_MESSAGE_PUMP_GTK_H_
+#ifndef BASE_MESSAGE_PUMP_GTK_H_
+#define BASE_MESSAGE_PUMP_GTK_H_
 
-#include "base/message_loop/message_pump_glib.h"
+#include "base/message_pump_glib.h"
 
 typedef union _GdkEvent GdkEvent;
 typedef struct _XDisplay Display;
@@ -73,4 +73,4 @@ typedef MessagePumpGtk MessagePumpForUI;
 
 }  // namespace base
 
-#endif  // BASE_MESSAGE_LOOP_MESSAGE_PUMP_GTK_H_
+#endif  // BASE_MESSAGE_PUMP_GTK_H_

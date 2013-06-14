@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_AURAX11_H
-#define BASE_MESSAGE_LOOP_MESSAGE_PUMP_AURAX11_H
+#ifndef BASE_MESSAGE_PUMP_AURAX11_H
+#define BASE_MESSAGE_PUMP_AURAX11_H
 
 #include <bitset>
 #include <map>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_pump.h"
-#include "base/message_loop/message_pump_dispatcher.h"
-#include "base/message_loop/message_pump_glib.h"
-#include "base/message_loop/message_pump_observer.h"
+#include "base/message_pump.h"
+#include "base/message_pump_glib.h"
+#include "base/message_pump_dispatcher.h"
+#include "base/message_pump_observer.h"
 #include "base/observer_list.h"
 
 // It would be nice to include the X11 headers here so that we use Window
@@ -92,10 +92,11 @@ class BASE_EXPORT MessagePumpAuraX11 : public MessagePumpGlib,
   void DidProcessXEvent(XEvent* xevent);
 
   // Returns the Dispatcher based on the event's target window.
-  MessagePumpDispatcher* GetDispatcherForXEvent(const NativeEvent& xev) const;
+  MessagePumpDispatcher* GetDispatcherForXEvent(
+      const base::NativeEvent& xev) const;
 
   // Overridden from MessagePumpDispatcher:
-  virtual bool Dispatch(const NativeEvent& event) OVERRIDE;
+  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   // The event source for X events.
   GSource* x_source_;
@@ -119,4 +120,4 @@ typedef MessagePumpAuraX11 MessagePumpForUI;
 
 }  // namespace base
 
-#endif  // BASE_MESSAGE_LOOP_MESSAGE_PUMP_AURAX11_H
+#endif  // BASE_MESSAGE_PUMP_AURAX11_H

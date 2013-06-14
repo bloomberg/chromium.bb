@@ -9,7 +9,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 
-#include "base/message_loop/message_pump_aurax11.h"
+#include "base/message_pump_aurax11.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/events/event.h"

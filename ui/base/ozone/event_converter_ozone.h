@@ -6,7 +6,7 @@
 #define UI_BASE_OZONE_EVENT_CONVERTER_OZONE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_pump_libevent.h"
+#include "base/message_pump_libevent.h"
 
 namespace ui {
 class Event;

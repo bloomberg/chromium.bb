@@ -13,8 +13,8 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_libevent.h"
+#include "base/message_loop.h"
+#include "base/message_pump_libevent.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/platform_thread.h"
 

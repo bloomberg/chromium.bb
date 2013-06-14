@@ -5,8 +5,8 @@
 #ifndef CONTENT_SHELL_SHELL_APPLICATION_MAC_H_
 #define CONTENT_SHELL_SHELL_APPLICATION_MAC_H_
 
+#include "base/message_pump_mac.h"
 #include "base/mac/scoped_sending_event.h"
-#include "base/message_loop/message_pump_mac.h"
 
 @interface ShellCrApplication : NSApplication<CrAppProtocol,
                                               CrAppControlProtocol> {

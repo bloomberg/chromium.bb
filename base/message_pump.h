@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_H_
-#define BASE_MESSAGE_LOOP_MESSAGE_PUMP_H_
+#ifndef BASE_MESSAGE_PUMP_H_
+#define BASE_MESSAGE_PUMP_H_
 
 #include "base/base_export.h"
 #include "base/memory/ref_counted.h"
@@ -126,4 +126,4 @@ class BASE_EXPORT MessagePump : public RefCountedThreadSafe<MessagePump> {
 
 }  // namespace base
 
-#endif  // BASE_MESSAGE_LOOP_MESSAGE_PUMP_H_
+#endif  // BASE_MESSAGE_PUMP_H_

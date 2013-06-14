@@ -14,7 +14,7 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "base/message_loop/message_pump_aurax11.h"
+#include "base/message_pump_aurax11.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/display/output_util.h"

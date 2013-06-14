@@ -5,8 +5,8 @@
 #include "ui/base/ozone/event_converter_ozone.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_ozone.h"
+#include "base/message_loop.h"
+#include "base/message_pump_ozone.h"
 #include "ui/base/events/event.h"
 
 namespace {

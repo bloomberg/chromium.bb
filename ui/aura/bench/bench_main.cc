@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop.h"
 #include "base/strings/string_split.h"
 #include "base/time.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -35,7 +35,7 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 
 #if defined(USE_X11)
-#include "base/message_loop/message_pump_aurax11.h"
+#include "base/message_pump_aurax11.h"
 #endif
 
 using base::TimeTicks;

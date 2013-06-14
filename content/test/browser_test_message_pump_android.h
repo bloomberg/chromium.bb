@@ -7,7 +7,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_pump_android.h"
+#include "base/message_pump_android.h"
 
 namespace content {
 

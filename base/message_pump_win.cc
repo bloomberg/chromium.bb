@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_pump_win.h"
+#include "base/message_pump_win.h"
 
 #include <math.h>
 
 #include "base/debug/trace_event.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
 #include "base/stringprintf.h"
 #include "base/win/wrapped_window_proc.h"
-
-namespace base {
 
 namespace {
 
@@ -25,6 +23,8 @@ enum MessageLoopProblems {
 };
 
 }  // namespace
+
+namespace base {
 
 static const wchar_t kWndClassFormat[] = L"Chrome_MessagePumpWindow_%p";
 
@@ -105,7 +105,7 @@ MessagePumpForUI::MessagePumpForUI()
 MessagePumpForUI::~MessagePumpForUI() {
   DestroyWindow(message_hwnd_);
   UnregisterClass(MAKEINTATOM(atom_),
-                  GetModuleFromAddress(&WndProcThunk));
+                  base::GetModuleFromAddress(&WndProcThunk));
 }
 
 void MessagePumpForUI::ScheduleWork() {
@@ -271,9 +271,9 @@ void MessagePumpForUI::DoRunLoop() {
 
 void MessagePumpForUI::InitMessageWnd() {
   // Generate a unique window class name.
-  string16 class_name = StringPrintf(kWndClassFormat, this);
+  string16 class_name = base::StringPrintf(kWndClassFormat, this);
 
-  HINSTANCE instance = GetModuleFromAddress(&WndProcThunk);
+  HINSTANCE instance = base::GetModuleFromAddress(&WndProcThunk);
   WNDCLASSEX wc = {0};
   wc.cbSize = sizeof(wc);
   wc.lpfnWndProc = base::win::WrappedWindowProc<WndProcThunk>;
