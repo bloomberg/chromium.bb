@@ -326,10 +326,10 @@ void WorkerPool::Inner::Run() {
     // Now iterate over all dependents to check if they are ready to run.
     scoped_ptr<GraphNode> node = running_tasks_.take_and_erase(task.get());
     if (node) {
-      typedef internal::WorkerPoolTask::TaskVector TaskVector;
+      typedef GraphNode::TaskVector TaskVector;
       for (TaskVector::const_iterator it = node->dependents().begin();
            it != node->dependents().end(); ++it) {
-        GraphNodeMap::iterator dependent_it = pending_tasks_.find(it->get());
+        GraphNodeMap::iterator dependent_it = pending_tasks_.find(*it);
         DCHECK(dependent_it != pending_tasks_.end());
 
         internal::WorkerPoolTask* dependent = dependent_it->first;

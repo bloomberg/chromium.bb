@@ -84,18 +84,20 @@ class CC_EXPORT WorkerPool {
  protected:
   class CC_EXPORT GraphNode {
    public:
+    typedef std::vector<internal::WorkerPoolTask*> TaskVector;
+
     GraphNode(internal::WorkerPoolTask* dependent, unsigned priority);
     ~GraphNode();
 
     void AddDependent(internal::WorkerPoolTask* dependent);
 
-    const internal::WorkerPoolTask::TaskVector& dependents() const {
+    const TaskVector& dependents() const {
       return dependents_;
     }
     unsigned priority() const { return priority_; }
 
    private:
-    internal::WorkerPoolTask::TaskVector dependents_;
+    TaskVector dependents_;
     unsigned priority_;
 
     DISALLOW_COPY_AND_ASSIGN(GraphNode);
