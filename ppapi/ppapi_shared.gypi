@@ -23,6 +23,8 @@
           'shared_impl/file_io_state_manager.h',
           'shared_impl/file_path.cc',
           'shared_impl/file_path.h',
+          'shared_impl/file_ref_util.cc',
+          'shared_impl/file_ref_util.h',
           'shared_impl/file_type_conversion.cc',
           'shared_impl/file_type_conversion.h',
           'shared_impl/flash_clipboard_format_registry.cc',
