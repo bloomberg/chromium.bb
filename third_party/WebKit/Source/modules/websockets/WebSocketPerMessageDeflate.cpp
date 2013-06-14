@@ -86,10 +86,10 @@ bool CompressionMessageExtensionProcessor::processResponse(const HashMap<String,
     WebSocketDeflater::ContextTakeOverMode mode = WebSocketDeflater::TakeOverContext;
     int windowBits = 15;
 
-    // Although the spec allows s2c_no_context_takeover or s2c_max_window_bits to be passed for a client,
-    // we don't allow them because they are not in accordance with a negotiation request by this implementation.
     HashMap<String, String>::const_iterator c2sNoContextTakeover = parameters.find("c2s_no_context_takeover");
     HashMap<String, String>::const_iterator c2sMaxWindowBits = parameters.find("c2s_max_window_bits");
+    HashMap<String, String>::const_iterator s2cNoContextTakeover = parameters.find("s2c_no_context_takeover");
+    HashMap<String, String>::const_iterator s2cMaxWindowBits = parameters.find("s2c_max_window_bits");
 
     if (c2sNoContextTakeover != parameters.end()) {
         if (!c2sNoContextTakeover->value.isNull()) {
@@ -112,6 +112,26 @@ bool CompressionMessageExtensionProcessor::processResponse(const HashMap<String,
         }
         ++numProcessedParameters;
     }
+    if (s2cNoContextTakeover != parameters.end()) {
+        if (!s2cNoContextTakeover->value.isNull()) {
+            m_failureReason = "Received invalid s2c_no_context_takeover parameter";
+            return false;
+        }
+        ++numProcessedParameters;
+    }
+    if (s2cMaxWindowBits != parameters.end()) {
+        if (!s2cMaxWindowBits->value.length()) {
+            m_failureReason = "s2c_max_window_bits parameter must have value";
+            return false;
+        }
+        bool ok = false;
+        int bits = s2cMaxWindowBits->value.toIntStrict(&ok);
+        if (!ok || bits < 8 || bits > 15 || s2cMaxWindowBits->value[0] == '+' || s2cMaxWindowBits->value[0] == '0') {
+            m_failureReason = "Received invalid s2c_max_window_bits parameter";
+            return false;
+        }
+        ++numProcessedParameters;
+    }
 
     if (numProcessedParameters != parameters.size()) {
         m_failureReason = "Received an unexpected permessage-deflate extension parameter";
@@ -119,6 +139,7 @@ bool CompressionMessageExtensionProcessor::processResponse(const HashMap<String,
     }
     HistogramSupport::histogramEnumeration("WebCore.WebSocket.PerMessageDeflateContextTakeOverMode", mode, WebSocketDeflater::ContextTakeOverModeMax);
     m_compress.enable(windowBits, mode);
+    // Since we don't request s2c_no_context_takeover and s2c_max_window_bits, they should be ignored.
     return true;
 }
 

@@ -385,6 +385,18 @@ TEST(WebSocketPerMessageDeflateTest, TestValidNegotiationResponse)
         params.add("c2s_no_context_takeover", String());
         EXPECT_TRUE(processResponse(params));
     }
+    {
+        // Unsolicited s2c_no_context_takeover should be ignored.
+        HashMap<String, String> params;
+        params.add("s2c_no_context_takeover", String());
+        EXPECT_TRUE(processResponse(params));
+    }
+    {
+        // Unsolicited s2c_max_window_bits should be ignored.
+        HashMap<String, String> params;
+        params.add("s2c_max_window_bits", "15");
+        EXPECT_TRUE(processResponse(params));
+    }
 }
 
 TEST(WebSocketPerMessageDeflateTest, TestInvalidNegotiationResponse)
@@ -434,16 +446,34 @@ TEST(WebSocketPerMessageDeflateTest, TestInvalidNegotiationResponse)
         params.add("c2s_max_window_bits", "08");
         EXPECT_FALSE(processResponse(params));
     }
-    // Although the spec allows s2c_no_context_takeover or s2c_max_window_bits to be passed for a client,
-    // we don't allow it because it is not in accordance with a negotiation request by this implementation.
     {
+        // Unsolicited s2c_no_context_takeover should be verified though it is not used.
         HashMap<String, String> params;
-        params.add("s2c_no_context_takeover", String());
+        params.add("s2c_no_context_takeover", "foo");
         EXPECT_FALSE(processResponse(params));
     }
     {
+        // Unsolicited s2c_max_window_bits should be verified though it is not used.
         HashMap<String, String> params;
-        params.add("s2c_max_window_bits", "15");
+        params.add("s2c_max_window_bits", "7");
+        EXPECT_FALSE(processResponse(params));
+    }
+    {
+        // Unsolicited s2c_max_window_bits should be verified though it is not used.
+        HashMap<String, String> params;
+        params.add("s2c_max_window_bits", "bar");
+        EXPECT_FALSE(processResponse(params));
+    }
+    {
+        // Unsolicited s2c_max_window_bits should be verified though it is not used.
+        HashMap<String, String> params;
+        params.add("s2c_max_window_bits", "16");
+        EXPECT_FALSE(processResponse(params));
+    }
+    {
+        // Unsolicited s2c_max_window_bits should be verified though it is not used.
+        HashMap<String, String> params;
+        params.add("s2c_max_window_bits", "08");
         EXPECT_FALSE(processResponse(params));
     }
 }
