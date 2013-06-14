@@ -82,8 +82,7 @@ const CGFloat kTrayBottomMargin = 75;
   [view setFillColor:gfx::SkColorToCalibratedNSColor(
       message_center::kMessageCenterBackgroundColor)];
   [view setTitlePosition:NSNoTitle];
-  // TODO(rsesek): See if this fixes a perf regression.
-  // [view setWantsLayer:YES];  // Needed for notification view shadows.
+  [view setWantsLayer:YES];  // Needed for notification view shadows.
   [self setView:view];
 
   [self layoutControlArea];
