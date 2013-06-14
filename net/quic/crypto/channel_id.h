@@ -44,15 +44,6 @@ class NET_EXPORT_PRIVATE ChannelIDVerifier {
   static bool Verify(base::StringPiece key,
                      base::StringPiece signed_data,
                      base::StringPiece signature);
-
-  // FOR TESTING ONLY: VerifyRaw returns true iff |signature| is a valid
-  // signature of |signed_data| by |key|. |is_channel_id_signature| indicates
-  // whether |signature| is a ChannelID signature (with kContextStr prepended
-  // to the data to be signed).
-  static bool VerifyRaw(base::StringPiece key,
-                        base::StringPiece signed_data,
-                        base::StringPiece signature,
-                        bool is_channel_id_signature);
 };
 
 }  // namespace net

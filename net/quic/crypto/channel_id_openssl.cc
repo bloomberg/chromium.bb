@@ -20,14 +20,6 @@ namespace net {
 bool ChannelIDVerifier::Verify(StringPiece key,
                                StringPiece signed_data,
                                StringPiece signature) {
-  return VerifyRaw(key, signed_data, signature, true);
-}
-
-// static
-bool ChannelIDVerifier::VerifyRaw(StringPiece key,
-                                  StringPiece signed_data,
-                                  StringPiece signature,
-                                  bool is_channel_id_signature) {
   if (key.size() != 32 * 2 ||
       signature.size() != 32 * 2) {
     return false;
@@ -73,10 +65,10 @@ bool ChannelIDVerifier::VerifyRaw(StringPiece key,
 
   SHA256_CTX sha256;
   SHA256_Init(&sha256);
-  if (is_channel_id_signature) {
-    SHA256_Update(&sha256, kContextStr, strlen(kContextStr) + 1);
-    SHA256_Update(&sha256, kClientToServerStr, strlen(kClientToServerStr) + 1);
-  }
+  SHA256_Update(&sha256, ChannelIDVerifier::kContextStr,
+                strlen(ChannelIDVerifier::kContextStr) + 1);
+  SHA256_Update(&sha256, ChannelIDVerifier::kClientToServerStr,
+                strlen(ChannelIDVerifier::kClientToServerStr) + 1);
   SHA256_Update(&sha256, signed_data.data(), signed_data.size());
 
   unsigned char digest[SHA256_DIGEST_LENGTH];
