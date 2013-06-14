@@ -1632,8 +1632,6 @@ void Browser::ConfirmAddSearchProvider(TemplateURL* template_url,
 
 void Browser::SetWebContentsBlocked(content::WebContents* web_contents,
                                     bool blocked) {
-  ChromeWebModalDialogManagerDelegate::SetWebContentsBlocked(web_contents,
-                                                             blocked);
   int index = tab_strip_model_->GetIndexOfWebContents(web_contents);
   if (index == TabStripModel::kNoTab) {
     NOTREACHED();

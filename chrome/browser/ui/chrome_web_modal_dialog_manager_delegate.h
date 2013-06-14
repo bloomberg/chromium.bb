@@ -17,8 +17,6 @@ class ChromeWebModalDialogManagerDelegate
 
  protected:
   // Overridden from web_modal::WebContentsModalDialogManagerDelegate:
-  virtual void SetWebContentsBlocked(content::WebContents* web_contents,
-                                     bool blocked) OVERRIDE;
   virtual bool IsWebContentsVisible(
       content::WebContents* web_contents) OVERRIDE;
 

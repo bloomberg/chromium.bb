@@ -5,8 +5,6 @@
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 
 #include "chrome/browser/platform_util.h"
-#include "chrome/common/render_messages.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 
@@ -14,17 +12,6 @@ ChromeWebModalDialogManagerDelegate::ChromeWebModalDialogManagerDelegate() {
 }
 
 ChromeWebModalDialogManagerDelegate::~ChromeWebModalDialogManagerDelegate() {
-}
-
-void ChromeWebModalDialogManagerDelegate::SetWebContentsBlocked(
-    content::WebContents* web_contents,
-    bool blocked) {
-  // RenderViewHost may be NULL during shutdown.
-  content::RenderViewHost* host = web_contents->GetRenderViewHost();
-  if (host) {
-    host->Send(new ChromeViewMsg_SetVisuallyDeemphasized(
-        host->GetRoutingID(), blocked));
-  }
 }
 
 bool ChromeWebModalDialogManagerDelegate::IsWebContentsVisible(

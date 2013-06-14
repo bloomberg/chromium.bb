@@ -316,25 +316,17 @@ void ChromeRenderViewObserver::OnSetClientSidePhishingDetection(
 }
 
 void ChromeRenderViewObserver::OnSetVisuallyDeemphasized(bool deemphasized) {
-  // TODO(msw|wittman): Remove this function entirely once new style constrained
-  // window is enabled on the other platforms.
-#if defined(OS_MACOSX) || defined(OS_WIN)
-  return;
-#endif
+  bool already_deemphasized = !!dimmed_color_overlay_.get();
+  if (already_deemphasized == deemphasized)
+    return;
 
-  if (switches::IsNewDialogStyleEnabled()) {
-    bool already_deemphasized = !!dimmed_color_overlay_.get();
-    if (already_deemphasized == deemphasized)
-      return;
-
-    if (deemphasized) {
-      // 70% opaque grey.
-      SkColor greyish = SkColorSetARGB(178, 0, 0, 0);
-      dimmed_color_overlay_.reset(
-          new WebViewColorOverlay(render_view(), greyish));
-    } else {
-      dimmed_color_overlay_.reset();
-    }
+  if (deemphasized) {
+    // 70% opaque grey.
+    SkColor greyish = SkColorSetARGB(178, 0, 0, 0);
+    dimmed_color_overlay_.reset(
+        new WebViewColorOverlay(render_view(), greyish));
+  } else {
+    dimmed_color_overlay_.reset();
   }
 }
 
