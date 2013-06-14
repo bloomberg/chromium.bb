@@ -37,8 +37,9 @@
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/Path.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/HashMap.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebKit { class WebLayer; }
 
@@ -57,6 +58,7 @@ class ImageData;
 class TextMetrics;
 
 typedef int ExceptionCode;
+typedef HashMap<String, RefPtr<MutableStylePropertySet> > MutableStylePropertyMap;
 
 class CanvasRenderingContext2D : public CanvasRenderingContext, public CanvasPathMethods {
 public:
@@ -327,6 +329,7 @@ private:
     unsigned m_unrealizedSaveCount;
     bool m_usesCSSCompatibilityParseMode;
     bool m_hasAlpha;
+    MutableStylePropertyMap m_cachedFonts;
 };
 
 } // namespace WebCore
