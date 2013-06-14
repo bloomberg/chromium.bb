@@ -77,6 +77,7 @@ public:
     }
 
     void handleEvent(Event* e);
+    void didChangeHREF() { m_hadHREFChanged = true; }
 
 private:
     explicit PrefetchEventHandler(HTMLAnchorElement*);
@@ -97,6 +98,7 @@ private:
     double m_mouseOverTimestamp;
     double m_mouseDownTimestamp;
     double m_tapDownTimestamp;
+    bool m_hadHREFChanged;
     bool m_hadTapUnconfirmed;
     bool m_hasIssuedPreconnect;
 };
@@ -285,6 +287,9 @@ void HTMLAnchorElement::parseAttribute(const QualifiedName& name, const AtomicSt
                 if (protocolIs(parsedURL, "http") || protocolIs(parsedURL, "https") || parsedURL.startsWith("//"))
                     prefetchDNS(document()->completeURL(parsedURL).host());
             }
+
+            if (wasLink)
+                prefetchEventHandler()->didChangeHREF();
         }
         invalidateCachedVisitedLinkHash();
     } else if (name == nameAttr || name == titleAttr) {
@@ -684,6 +689,7 @@ HTMLAnchorElement::PrefetchEventHandler::PrefetchEventHandler(HTMLAnchorElement*
 
 void HTMLAnchorElement::PrefetchEventHandler::reset()
 {
+    m_hadHREFChanged = false;
     m_mouseOverTimestamp = 0;
     m_mouseDownTimestamp = 0;
     m_hadTapUnconfirmed = false;
@@ -791,6 +797,9 @@ void HTMLAnchorElement::PrefetchEventHandler::handleClick(Event* event)
 
 bool HTMLAnchorElement::PrefetchEventHandler::shouldPrefetch(const KURL& url)
 {
+    if (m_hadHREFChanged)
+        return false;
+
     if (m_anchorElement->hasEventListeners(eventNames().clickEvent))
         return false;
 
