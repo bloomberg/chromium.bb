@@ -19,10 +19,7 @@ IBusObjectReader::IBusObjectReader(const std::string& type_name,
                                    dbus::MessageReader* reader)
     : type_name_(type_name),
       original_reader_(reader),
-      top_variant_reader_(NULL),
-      contents_reader_(NULL),
-      check_result_(IBUS_OBJECT_NOT_CHECKED) {
-}
+      check_result_(IBUS_OBJECT_NOT_CHECKED) {}
 
 IBusObjectReader::~IBusObjectReader() {
   for (std::map<std::string, base::Value*>::iterator ite = attachments_.begin();

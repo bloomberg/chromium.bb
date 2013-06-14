@@ -44,8 +44,7 @@ class PipeReader {
   typedef base::Callback<void(void)>IOCompleteCallback;
 
   explicit PipeReader(IOCompleteCallback callback)
-      : data_stream_(NULL),
-        io_buffer_(new net::IOBufferWithSize(4096)),
+      : io_buffer_(new net::IOBufferWithSize(4096)),
         callback_(callback),
         weak_ptr_factory_(this) {
     pipe_fd_[0] = pipe_fd_[1] = -1;
@@ -143,7 +142,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
  public:
   explicit DebugDaemonClientImpl(dbus::Bus* bus)
       : debugdaemon_proxy_(NULL),
-        pipe_reader_(NULL),
         weak_ptr_factory_(this) {
     debugdaemon_proxy_ = bus->GetObjectProxy(
         debugd::kDebugdServiceName,
