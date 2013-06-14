@@ -73,6 +73,12 @@ static inline EventDispatchBehavior determineDispatchBehavior(Event* event, Shad
     return RetargetEvent;
 }
 
+void EventRetargeter::ensureEventPath(Node* node, Event* event)
+{
+    calculateEventPath(node, event);
+    calculateAdjustedEventPathForEachNode(event->eventPath());
+}
+
 void EventRetargeter::calculateEventPath(Node* node, Event* event)
 {
     EventPath& eventPath = event->eventPath();
@@ -95,18 +101,20 @@ void EventRetargeter::calculateEventPath(Node* node, Event* event)
         else
             eventPath.append(adoptPtr(new EventContext(node, eventTargetRespectingTargetRules(node), targetStack.last())));
         if (!inDocument)
-            return;
+            break;
         if (!node->isShadowRoot())
             continue;
         if (determineDispatchBehavior(event, toShadowRoot(node), targetStack.last()) == StayInsideShadowDOM)
-            return;
+            break;
         if (!isSVGElement) {
             ASSERT(!targetStack.isEmpty());
             targetStack.removeLast();
         }
     }
+}
 
-    // Calculates eventPath for each node for Event.path() API.
+void EventRetargeter::calculateAdjustedEventPathForEachNode(EventPath& eventPath)
+{
     if (!RuntimeEnabledFeatures::experimentalShadowDOMEnabled())
         return;
     TreeScope* lastScope = 0;

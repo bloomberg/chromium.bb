@@ -46,7 +46,7 @@ enum EventDispatchBehavior {
 
 class EventRetargeter {
 public:
-    static void calculateEventPath(Node*, Event*);
+    static void ensureEventPath(Node*, Event*);
     static void adjustForMouseEvent(Node*, MouseEvent&);
     static void adjustForFocusEvent(Node*, FocusEvent&);
     typedef Vector<RefPtr<TouchList> > EventPathTouchLists;
@@ -60,6 +60,9 @@ private:
         StopAtBoundaryIfNeeded,
         DoesNotStopAtBoundary
     };
+    static void calculateEventPath(Node*, Event*);
+    static void calculateAdjustedEventPathForEachNode(EventPath&);
+
     static void adjustForRelatedTarget(const Node*, EventTarget* relatedTarget, EventPath&);
     static void calculateAdjustedNodes(const Node*, const Node* relatedNode, EventWithRelatedTargetDispatchBehavior, EventPath&, AdjustedNodes&);
     static void buildRelatedNodeMap(const Node*, RelatedNodeMap&);
