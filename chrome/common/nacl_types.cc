@@ -26,18 +26,18 @@ NaClLaunchParams::NaClLaunchParams()
       enable_exception_handling(false)  {
 }
 
-NaClLaunchParams::NaClLaunchParams(const std::string& manifest_url_,
-                                   int render_view_id_,
-                                   uint32 permission_bits_,
-                                   bool uses_irt_,
-                                   bool enable_dyncode_syscalls_,
-                                   bool enable_exception_handling_)
-    : manifest_url(manifest_url_),
-      render_view_id(render_view_id_),
-      permission_bits(permission_bits_),
-      uses_irt(uses_irt_),
-      enable_dyncode_syscalls(enable_dyncode_syscalls_),
-      enable_exception_handling(enable_exception_handling_)  {
+NaClLaunchParams::NaClLaunchParams(const std::string& manifest_url,
+                                   int render_view_id,
+                                   uint32 permission_bits,
+                                   bool uses_irt,
+                                   bool enable_dyncode_syscalls,
+                                   bool enable_exception_handling)
+    : manifest_url(manifest_url),
+      render_view_id(render_view_id),
+      permission_bits(permission_bits),
+      uses_irt(uses_irt),
+      enable_dyncode_syscalls(enable_dyncode_syscalls),
+      enable_exception_handling(enable_exception_handling)  {
 }
 
 NaClLaunchParams::NaClLaunchParams(const NaClLaunchParams& l) {
