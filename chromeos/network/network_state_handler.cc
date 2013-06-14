@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/format_macros.h"
+#include "base/location.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -93,13 +94,24 @@ NetworkStateHandler* NetworkStateHandler::InitializeForTest() {
   return handler;
 }
 
-void NetworkStateHandler::AddObserver(NetworkStateHandlerObserver* observer) {
+void NetworkStateHandler::AddObserver(
+    NetworkStateHandlerObserver* observer,
+    const tracked_objects::Location& from_here) {
   observers_.AddObserver(observer);
+  network_event_log::internal::AddEntry(
+      from_here.file_name(), from_here.line_number(),
+      network_event_log::LOG_LEVEL_DEBUG,
+      "NetworkStateHandler::AddObserver", "");
 }
 
 void NetworkStateHandler::RemoveObserver(
-    NetworkStateHandlerObserver* observer) {
+    NetworkStateHandlerObserver* observer,
+    const tracked_objects::Location& from_here) {
   observers_.RemoveObserver(observer);
+  network_event_log::internal::AddEntry(
+      from_here.file_name(), from_here.line_number(),
+      network_event_log::LOG_LEVEL_DEBUG,
+      "NetworkStateHandler::RemoveObserver", "");
 }
 
 NetworkStateHandler::TechnologyState NetworkStateHandler::GetTechnologyState(

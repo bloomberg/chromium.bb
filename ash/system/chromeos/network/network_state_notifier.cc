@@ -113,14 +113,17 @@ namespace ash {
 NetworkStateNotifier::NetworkStateNotifier()
     : cellular_out_of_credits_(false) {
   if (NetworkHandler::IsInitialized()) {
-    NetworkHandler::Get()->network_state_handler()->AddObserver(this);
+    NetworkHandler::Get()->network_state_handler()->AddObserver(
+        this, FROM_HERE);
     InitializeNetworks();
   }
 }
 
 NetworkStateNotifier::~NetworkStateNotifier() {
-  if (NetworkHandler::IsInitialized())
-    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(
+        this, FROM_HERE);
+  }
 }
 
 void NetworkStateNotifier::DefaultNetworkChanged(const NetworkState* network) {

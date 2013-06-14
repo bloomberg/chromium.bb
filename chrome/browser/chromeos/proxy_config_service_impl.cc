@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -58,13 +59,15 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* pref_service)
   // Register for changes to the default network.
   NetworkStateHandler* state_handler =
       NetworkHandler::Get()->network_state_handler();
-  state_handler->AddObserver(this);
+  state_handler->AddObserver(this, FROM_HERE);
   DefaultNetworkChanged(state_handler->DefaultNetwork());
 }
 
 ProxyConfigServiceImpl::~ProxyConfigServiceImpl() {
-  if (NetworkHandler::IsInitialized())
-    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(
+        this, FROM_HERE);
+  }
 }
 
 void ProxyConfigServiceImpl::OnProxyConfigChanged(

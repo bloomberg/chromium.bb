@@ -46,6 +46,7 @@ NetworkingPrivateEventRouter::NetworkingPrivateEventRouter(Profile* profile)
 }
 
 NetworkingPrivateEventRouter::~NetworkingPrivateEventRouter() {
+  DCHECK(!listening_);
 }
 
 void NetworkingPrivateEventRouter::Shutdown() {
@@ -56,8 +57,10 @@ void NetworkingPrivateEventRouter::Shutdown() {
   if (event_router)
     event_router->UnregisterObserver(this);
 
-  if (listening_)
-    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
+  if (listening_) {
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(
+        this, FROM_HERE);
+  }
   listening_ = false;
 }
 
@@ -79,12 +82,12 @@ void NetworkingPrivateEventRouter::StartOrStopListeningForNetworkChanges() {
   bool should_listen = event_router->HasEventListener(kOnNetworksChanged) ||
       event_router->HasEventListener(kOnNetworkListChanged);
 
-  if (should_listen) {
-    if (!listening_)
-      NetworkHandler::Get()->network_state_handler()->AddObserver(this);
-  } else {
-    if (listening_)
-      NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
+  if (should_listen && !listening_) {
+    NetworkHandler::Get()->network_state_handler()->AddObserver(
+        this, FROM_HERE);
+  } else if (!should_listen && listening_) {
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(
+        this, FROM_HERE);
   }
   listening_ = should_listen;
 }

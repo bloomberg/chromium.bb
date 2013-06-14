@@ -117,7 +117,7 @@ NetworkDropdown::NetworkDropdown(content::WebUI* web_ui,
   DCHECK(NetworkHandler::IsInitialized());
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   handler->RequestScan();
-  handler->AddObserver(this);
+  handler->AddObserver(this, FROM_HERE);
   Refresh();
   network_scan_timer_.Start(
       FROM_HERE,
@@ -126,8 +126,10 @@ NetworkDropdown::NetworkDropdown(content::WebUI* web_ui,
 }
 
 NetworkDropdown::~NetworkDropdown() {
-  if (NetworkHandler::IsInitialized())
-    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(
+        this, FROM_HERE);
+  }
 }
 
 void NetworkDropdown::OnItemChosen(int id) {

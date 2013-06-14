@@ -163,7 +163,7 @@ NetworkConnectionHandler::NetworkConnectionHandler()
 
 NetworkConnectionHandler::~NetworkConnectionHandler() {
   if (network_state_handler_)
-    network_state_handler_->RemoveObserver(this);
+    network_state_handler_->RemoveObserver(this, FROM_HERE);
   if (cert_loader_)
     cert_loader_->RemoveObserver(this);
   if (LoginState::IsInitialized())
@@ -189,7 +189,7 @@ void NetworkConnectionHandler::Init(
   }
   if (network_state_handler) {
     network_state_handler_ = network_state_handler;
-    network_state_handler_->AddObserver(this);
+    network_state_handler_->AddObserver(this, FROM_HERE);
   }
   network_configuration_handler_ = network_configuration_handler;
 }

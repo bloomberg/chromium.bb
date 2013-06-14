@@ -101,7 +101,8 @@ void NetworkPortalDetectorImpl::Init() {
   DCHECK(CalledOnValidThread());
 
   state_ = STATE_IDLE;
-  NetworkHandler::Get()->network_state_handler()->AddObserver(this);
+  NetworkHandler::Get()->network_state_handler()->AddObserver(
+      this, FROM_HERE);
 }
 
 void NetworkPortalDetectorImpl::Shutdown() {
@@ -113,8 +114,10 @@ void NetworkPortalDetectorImpl::Shutdown() {
   captive_portal_detector_->Cancel();
   captive_portal_detector_.reset();
   observers_.Clear();
-  if (NetworkHandler::IsInitialized())
-    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(
+        this, FROM_HERE);
+  }
 }
 
 void NetworkPortalDetectorImpl::AddObserver(Observer* observer) {

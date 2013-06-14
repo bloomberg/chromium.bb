@@ -31,8 +31,10 @@ NetworkStateInformer::NetworkStateInformer()
 }
 
 NetworkStateInformer::~NetworkStateInformer() {
-  if (NetworkHandler::IsInitialized())
-    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(
+        this, FROM_HERE);
+  }
   if (NetworkPortalDetector::IsEnabledInCommandLine() &&
       NetworkPortalDetector::GetInstance()) {
     NetworkPortalDetector::GetInstance()->RemoveObserver(this);
@@ -41,7 +43,8 @@ NetworkStateInformer::~NetworkStateInformer() {
 
 void NetworkStateInformer::Init() {
   UpdateState();
-  NetworkHandler::Get()->network_state_handler()->AddObserver(this);
+  NetworkHandler::Get()->network_state_handler()->AddObserver(
+      this, FROM_HERE);
 
   if (NetworkPortalDetector::IsEnabledInCommandLine() &&
       NetworkPortalDetector::GetInstance()) {

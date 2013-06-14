@@ -129,11 +129,11 @@ void ConnectivityStateHelper::RemoveNetworkManagerObserver(
 
 ConnectivityStateHelperImpl::ConnectivityStateHelperImpl() {
   network_state_handler_ = NetworkHandler::Get()->network_state_handler();
-  network_state_handler_->AddObserver(this);
+  network_state_handler_->AddObserver(this, FROM_HERE);
 }
 
 ConnectivityStateHelperImpl::~ConnectivityStateHelperImpl() {
-  network_state_handler_->RemoveObserver(this);
+  network_state_handler_->RemoveObserver(this, FROM_HERE);
 }
 
 bool ConnectivityStateHelperImpl::IsConnected() {

@@ -58,7 +58,7 @@ NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() {
 
 void NetworkChangeNotifierChromeos::Initialize() {
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-  NetworkHandler::Get()->network_state_handler()->AddObserver(this);
+  NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
 
   dns_config_service_.reset(new DnsConfigService());
   dns_config_service_->WatchConfig(
@@ -71,7 +71,8 @@ void NetworkChangeNotifierChromeos::Initialize() {
 
 void NetworkChangeNotifierChromeos::Shutdown() {
   dns_config_service_.reset();
-  NetworkHandler::Get()->network_state_handler()->RemoveObserver(this);
+  NetworkHandler::Get()->network_state_handler()->RemoveObserver(
+      this, FROM_HERE);
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
 }
 

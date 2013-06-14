@@ -26,6 +26,10 @@ class ListValue;
 class Value;
 }
 
+namespace tracked_objects {
+class Location;
+}
+
 namespace chromeos {
 
 class DeviceState;
@@ -69,8 +73,10 @@ class CHROMEOS_EXPORT NetworkStateHandler
   virtual ~NetworkStateHandler();
 
   // Add/remove observers.
-  void AddObserver(NetworkStateHandlerObserver* observer);
-  void RemoveObserver(NetworkStateHandlerObserver* observer);
+  void AddObserver(NetworkStateHandlerObserver* observer,
+                   const tracked_objects::Location& from_here);
+  void RemoveObserver(NetworkStateHandlerObserver* observer,
+                      const tracked_objects::Location& from_here);
 
   // Returns the state for technology |type|. kMatchTypeMobile (only) is
   // also supported.

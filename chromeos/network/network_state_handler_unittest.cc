@@ -135,8 +135,9 @@ class NetworkStateHandlerTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    network_state_handler_.reset();
+    network_state_handler_->RemoveObserver(test_observer_.get(), FROM_HERE);
     test_observer_.reset();
+    network_state_handler_.reset();
     DBusThreadManager::Shutdown();
   }
 
@@ -144,7 +145,7 @@ class NetworkStateHandlerTest : public testing::Test {
     SetupDefaultShillState();
     network_state_handler_.reset(new NetworkStateHandler);
     test_observer_.reset(new TestObserver(network_state_handler_.get()));
-    network_state_handler_->AddObserver(test_observer_.get());
+    network_state_handler_->AddObserver(test_observer_.get(), FROM_HERE);
     network_state_handler_->InitShillPropertyHandler();
   }
 
