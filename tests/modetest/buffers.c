@@ -1038,12 +1038,29 @@ create_test_buffer(struct kms_driver *kms, unsigned int format,
 		   unsigned int handles[4], unsigned int pitches[4],
 		   unsigned int offsets[4], enum fill_pattern pattern)
 {
+	unsigned int virtual_height;
 	struct kms_bo *bo;
 	void *planes[3] = { 0, };
 	void *virtual;
 	int ret;
 
-	bo = allocate_buffer(kms, width, height, &pitches[0]);
+	switch (format) {
+	case DRM_FORMAT_NV12:
+	case DRM_FORMAT_NV21:
+		virtual_height = height * 3 / 2;
+		break;
+
+	case DRM_FORMAT_NV16:
+	case DRM_FORMAT_NV61:
+		virtual_height = height * 2;
+		break;
+
+	default:
+		virtual_height = height;
+		break;
+	}
+
+	bo = allocate_buffer(kms, width, virtual_height, &pitches[0]);
 	if (!bo)
 		return NULL;
 
