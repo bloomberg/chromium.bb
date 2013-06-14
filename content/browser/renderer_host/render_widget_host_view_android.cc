@@ -297,8 +297,7 @@ void RenderWidgetHostViewAndroid::Focus() {
 }
 
 void RenderWidgetHostViewAndroid::Blur() {
-  host_->Send(new InputMsg_ExecuteEditCommand(
-      host_->GetRoutingID(), "Unselect", ""));
+  host_->ExecuteEditCommand("Unselect", "");
   host_->SetInputMethodActive(false);
   host_->Blur();
 

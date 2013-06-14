@@ -129,6 +129,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   virtual void PasteAndMatchStyle() = 0;
   virtual void Delete() = 0;
   virtual void SelectAll() = 0;
+  virtual void Unselect() = 0;
 
   // Update the text direction of the focused input element and notify it to a
   // renderer process.

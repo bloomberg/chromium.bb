@@ -2439,6 +2439,12 @@ void RenderWidgetHostImpl::SelectAll() {
   Send(new InputMsg_SelectAll(GetRoutingID()));
   RecordAction(UserMetricsAction("SelectAll"));
 }
+
+void RenderWidgetHostImpl::Unselect() {
+  Send(new InputMsg_Unselect(GetRoutingID()));
+  RecordAction(UserMetricsAction("Unselect"));
+}
+
 bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
   if (!allowed) {
     RejectMouseLockOrUnlockIfNecessary();

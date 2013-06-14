@@ -113,6 +113,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void PasteAndMatchStyle() OVERRIDE;
   virtual void Delete() OVERRIDE;
   virtual void SelectAll() OVERRIDE;
+  virtual void Unselect() OVERRIDE;
   virtual void UpdateTextDirection(WebKit::WebTextDirection direction) OVERRIDE;
   virtual void NotifyTextDirection() OVERRIDE;
   virtual void Focus() OVERRIDE;
