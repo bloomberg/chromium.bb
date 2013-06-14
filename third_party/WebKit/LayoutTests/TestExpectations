@@ -1359,7 +1359,7 @@ Bug(ojan) [ Win Mac ] http/tests/history/redirect-js-document-location-0-seconds
 webkit.org/b/92811 [ Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 webkit.org/b/92811 [ Mac ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 webkit.org/b/92811 [ Win Linux Debug ] virtual/softwarecompositing/video-page-visibility.html [ ImageOnlyFailure ]
-webkit.org/b/83875 svg/text/font-size-below-point-five.svg [ Failure ImageOnlyFailure Pass ]
+webkit.org/b/83875 [ Linux ] svg/text/font-size-below-point-five.svg [ Failure Pass ]
 
 # See http://crbug.com/244167 for the failure
 crbug.com/236344 fast/forms/calendar-picker/week-picker-key-operations.html [ Slow Failure Pass ]
