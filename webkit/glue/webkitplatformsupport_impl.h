@@ -159,11 +159,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   void ResumeSharedTimer();
   virtual void OnStartSharedTimer(base::TimeDelta delay) {}
 
-  virtual void didStartWorkerRunLoop(
-      const WebKit::WebWorkerRunLoop& runLoop) OVERRIDE;
-  virtual void didStopWorkerRunLoop(
-      const WebKit::WebWorkerRunLoop& runLoop) OVERRIDE;
-
 #if defined(OS_ANDROID)
   virtual webkit_media::WebAudioMediaCodecRunner
       GetWebAudioMediaCodecRunner();

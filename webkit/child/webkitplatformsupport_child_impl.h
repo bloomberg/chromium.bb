@@ -27,6 +27,11 @@ class WEBKIT_CHILD_EXPORT WebKitPlatformSupportChildImpl :
       const WebKit::WebFloatPoint& velocity,
       const WebKit::WebSize& cumulative_scroll) OVERRIDE;
 
+  virtual void didStartWorkerRunLoop(
+      const WebKit::WebWorkerRunLoop& runLoop) OVERRIDE;
+  virtual void didStopWorkerRunLoop(
+      const WebKit::WebWorkerRunLoop& runLoop) OVERRIDE;
+
   scoped_ptr<FlingCurveConfiguration> fling_curve_configuration_;
 };
 

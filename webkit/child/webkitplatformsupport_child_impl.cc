@@ -6,6 +6,7 @@
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/child/fling_curve_configuration.h"
+#include "webkit/child/worker_task_runner.h"
 
 #if defined(OS_ANDROID)
 #include "webkit/child/fling_animator_impl_android.h"
@@ -40,6 +41,18 @@ WebKitPlatformSupportChildImpl::createFlingAnimationCurve(
 
   return fling_curve_configuration_->CreateForTouchPad(velocity,
                                                        cumulative_scroll);
+}
+
+void WebKitPlatformSupportChildImpl::didStartWorkerRunLoop(
+    const WebKit::WebWorkerRunLoop& runLoop) {
+  WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
+  worker_task_runner->OnWorkerRunLoopStarted(runLoop);
+}
+
+void WebKitPlatformSupportChildImpl::didStopWorkerRunLoop(
+    const WebKit::WebWorkerRunLoop& runLoop) {
+  WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
+  worker_task_runner->OnWorkerRunLoopStopped(runLoop);
 }
 
 }  // namespace webkit_glue

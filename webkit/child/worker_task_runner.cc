@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "webkit/glue/worker_task_runner.h"
+#include "webkit/child/worker_task_runner.h"
 
 using WebKit::WebWorkerRunLoop;
 

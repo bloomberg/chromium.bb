@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_WORKER_TASK_RUNNER_H_
-#define WEBKIT_GLUE_WORKER_TASK_RUNNER_H_
+#ifndef WEBKIT_CHILD_WORKER_TASK_RUNNER_H_
+#define WEBKIT_CHILD_WORKER_TASK_RUNNER_H_
 
 #include <map>
 
@@ -12,11 +12,11 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
 #include "third_party/WebKit/public/platform/WebWorkerRunLoop.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/child/webkit_child_export.h"
 
 namespace webkit_glue {
 
-class WEBKIT_GLUE_EXPORT WorkerTaskRunner {
+class WEBKIT_CHILD_EXPORT WorkerTaskRunner {
  public:
   WorkerTaskRunner();
 
@@ -24,7 +24,7 @@ class WEBKIT_GLUE_EXPORT WorkerTaskRunner {
   int CurrentWorkerId();
   static WorkerTaskRunner* Instance();
 
-  class WEBKIT_GLUE_EXPORT Observer {
+  class WEBKIT_CHILD_EXPORT Observer {
    public:
     virtual ~Observer() {}
     virtual void OnWorkerRunLoopStopped() = 0;
@@ -36,7 +36,7 @@ class WEBKIT_GLUE_EXPORT WorkerTaskRunner {
   void RemoveStopObserver(Observer* observer);
 
  private:
-  friend class WebKitPlatformSupportImpl;
+  friend class WebKitPlatformSupportChildImpl;
   friend class WorkerTaskRunnerTest;
 
   typedef std::map<int, WebKit::WebWorkerRunLoop> IDToLoopMap;
@@ -55,4 +55,4 @@ class WEBKIT_GLUE_EXPORT WorkerTaskRunner {
 
 }  // namespace webkit_glue
 
-#endif // WEBKIT_GLUE_WORKER_TASK_RUNNER_H_
+#endif // WEBKIT_CHILD_WORKER_TASK_RUNNER_H_

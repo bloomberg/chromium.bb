@@ -11,7 +11,7 @@
 #include "content/child/child_thread.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
-#include "webkit/glue/worker_task_runner.h"
+#include "webkit/child/worker_task_runner.h"
 
 using webkit_glue::WorkerTaskRunner;
 

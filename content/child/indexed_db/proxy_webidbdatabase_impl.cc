@@ -13,7 +13,7 @@
 #include "third_party/WebKit/public/platform/WebIDBMetadata.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "webkit/glue/worker_task_runner.h"
+#include "webkit/child/worker_task_runner.h"
 
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBDatabaseCallbacks;
