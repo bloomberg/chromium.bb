@@ -9,6 +9,8 @@
      6:	65 a1 04 00 00 00    	mov    %gs:0x4,%eax
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # Access with something besides 'mov'
@@ -19,6 +21,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  1: failed to decode instruction
 ----------------------------------------------------------------------
 @hex:
   # Forbidden forms
@@ -38,6 +42,8 @@
   7: [1] unrecognized instruction
   e: [2] unrecognized instruction
   return code: 1
+@spec:
+  1: failed to decode instruction
 ----------------------------------------------------------------------
 @hex:
   # Access through fs.
@@ -60,6 +66,8 @@
   c: [2] unrecognized instruction
   13: [3] unrecognized instruction
   return code: 1
+@spec:
+  0: failed to decode instruction
 ----------------------------------------------------------------------
 @hex:
   # Can we write to gs segment?
@@ -70,6 +78,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  1: failed to decode instruction
 ----------------------------------------------------------------------
 @hex:
   # Fixed offsets besides 0 and 4
@@ -90,3 +100,5 @@
   6: [1] unrecognized instruction
   c: [2] unrecognized instruction
   return code: 1
+@spec:
+  2: failed to decode instruction

@@ -94,6 +94,13 @@ def ValidateStringInstruction(instruction):
   raise DoNotMatchError(instruction)
 
 
+def ValidateTlsInstruction(instruction):
+  if re.match(r'mov %gs:(0x0|0x4),%e[a-z][a-z]$', instruction.disasm):
+    return
+
+  raise DoNotMatchError(instruction)
+
+
 def ValidateRegularInstruction(instruction, bitness):
   assert bitness in [32, 64]
 
@@ -112,6 +119,12 @@ def ValidateRegularInstruction(instruction, bitness):
   if bitness == 32:
     try:
       ValidateStringInstruction(instruction)
+      return
+    except DoNotMatchError:
+      pass
+
+    try:
+      ValidateTlsInstruction(instruction)
       return
     except DoNotMatchError:
       pass
