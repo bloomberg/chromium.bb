@@ -43,7 +43,7 @@ const int kMenuBorderWidthRight = 1;
 const int kMenuBorderWidthBottom = 2;
 
 // Limit how small a combobox can be.
-const int kMinComboboxWidth = 148;
+const int kMinComboboxWidth = 25;
 
 // Size of the combobox arrow margins
 const int kDisclosureArrowLeftPadding = 7;
@@ -244,12 +244,11 @@ gfx::Size NativeComboboxViews::GetPreferredSize() {
   // The preferred size will drive the local bounds which in turn is used to set
   // the minimum width for the dropdown list.
   gfx::Insets insets = GetInsets();
-  int total_width = content_width_ + insets.width() +
-      kDisclosureArrowLeftPadding + disclosure_arrow_->width() +
-      kDisclosureArrowRightPadding;
+  int total_width = std::max(kMinComboboxWidth, content_width_) +
+      insets.width() + kDisclosureArrowLeftPadding +
+      disclosure_arrow_->width() + kDisclosureArrowRightPadding;
 
-  return gfx::Size(std::min(kMinComboboxWidth, total_width),
-                   content_height_ + insets.height());
+  return gfx::Size(total_width, content_height_ + insets.height());
 }
 
 View* NativeComboboxViews::GetView() {
