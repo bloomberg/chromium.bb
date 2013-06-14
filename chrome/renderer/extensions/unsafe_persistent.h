@@ -27,12 +27,16 @@ template<typename T> class UnsafePersistent {
     value_ = persistent.ClearAndLeak();
   }
 
+  // Usage of this function requires
+  // V8_ALLOW_ACCESS_TO_RAW_HANDLE_CONSTRUCTOR to be defined
   void dispose() {
     v8::Persistent<T> handle(value_);
     handle.Dispose();
     value_ = 0;
   }
 
+  // Usage of this function requires
+  // V8_ALLOW_ACCESS_TO_RAW_HANDLE_CONSTRUCTOR to be defined
   v8::Local<T> newLocal(v8::Isolate* isolate) {
     return v8::Local<T>::New(isolate, v8::Local<T>(value_));
   }
