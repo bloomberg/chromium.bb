@@ -125,6 +125,10 @@ PP_Resource ResourceCreationImpl::CreateGraphics3DRaw(
   return PPB_Graphics3D_Impl::CreateRaw(instance, share_context, attrib_list);
 }
 
+PP_Resource ResourceCreationImpl::CreateHostResolver(PP_Instance instance) {
+  return 0;  // Not supported in-process.
+}
+
 PP_Resource ResourceCreationImpl::CreateHostResolverPrivate(
     PP_Instance instance) {
   return 0;  // Not supported in-process.

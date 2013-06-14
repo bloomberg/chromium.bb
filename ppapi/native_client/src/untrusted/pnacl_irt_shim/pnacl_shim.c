@@ -16,6 +16,7 @@
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_graphics_2d_dev.h"
+#include "ppapi/c/dev/ppb_host_resolver_dev.h"
 #include "ppapi/c/dev/ppb_ime_input_event_dev.h"
 #include "ppapi/c/dev/ppb_keyboard_input_event_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
@@ -192,6 +193,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Find_Dev_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Font_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_Dev_0_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_HostResolver_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_1;
@@ -1586,6 +1588,40 @@ static int32_t Pnacl_M14_PPB_Font_Dev_PixelOffsetForCharacter(PP_Resource font, 
 /* End wrapper methods for PPB_Font_Dev_0_6 */
 
 /* Not generating wrapper methods for PPB_Graphics2D_Dev_0_1 */
+
+/* Begin wrapper methods for PPB_HostResolver_Dev_0_1 */
+
+static PP_Resource Pnacl_M29_PPB_HostResolver_Dev_Create(PP_Instance instance) {
+  const struct PPB_HostResolver_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_HostResolver_Dev_0_1.real_iface;
+  return iface->Create(instance);
+}
+
+static PP_Bool Pnacl_M29_PPB_HostResolver_Dev_IsHostResolver(PP_Resource resource) {
+  const struct PPB_HostResolver_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_HostResolver_Dev_0_1.real_iface;
+  return iface->IsHostResolver(resource);
+}
+
+static int32_t Pnacl_M29_PPB_HostResolver_Dev_Resolve(PP_Resource host_resolver, const char* host, uint16_t port, const struct PP_HostResolver_Hint_Dev* hint, struct PP_CompletionCallback* callback) {
+  const struct PPB_HostResolver_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_HostResolver_Dev_0_1.real_iface;
+  return iface->Resolve(host_resolver, host, port, hint, *callback);
+}
+
+static void Pnacl_M29_PPB_HostResolver_Dev_GetCanonicalName(struct PP_Var* _struct_result, PP_Resource host_resolver) {
+  const struct PPB_HostResolver_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_HostResolver_Dev_0_1.real_iface;
+  *_struct_result = iface->GetCanonicalName(host_resolver);
+}
+
+static uint32_t Pnacl_M29_PPB_HostResolver_Dev_GetNetAddressCount(PP_Resource host_resolver) {
+  const struct PPB_HostResolver_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_HostResolver_Dev_0_1.real_iface;
+  return iface->GetNetAddressCount(host_resolver);
+}
+
+static PP_Resource Pnacl_M29_PPB_HostResolver_Dev_GetNetAddress(PP_Resource host_resolver, uint32_t index) {
+  const struct PPB_HostResolver_Dev_0_1 *iface = Pnacl_WrapperInfo_PPB_HostResolver_Dev_0_1.real_iface;
+  return iface->GetNetAddress(host_resolver, index);
+}
+
+/* End wrapper methods for PPB_HostResolver_Dev_0_1 */
 
 /* Begin wrapper methods for PPB_IMEInputEvent_Dev_0_1 */
 
@@ -4238,6 +4274,15 @@ struct PPB_Font_Dev_0_6 Pnacl_Wrappers_PPB_Font_Dev_0_6 = {
 
 /* Not generating wrapper interface for PPB_Graphics2D_Dev_0_1 */
 
+struct PPB_HostResolver_Dev_0_1 Pnacl_Wrappers_PPB_HostResolver_Dev_0_1 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M29_PPB_HostResolver_Dev_Create,
+    .IsHostResolver = (PP_Bool (*)(PP_Resource resource))&Pnacl_M29_PPB_HostResolver_Dev_IsHostResolver,
+    .Resolve = (int32_t (*)(PP_Resource host_resolver, const char* host, uint16_t port, const struct PP_HostResolver_Hint_Dev* hint, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_HostResolver_Dev_Resolve,
+    .GetCanonicalName = (struct PP_Var (*)(PP_Resource host_resolver))&Pnacl_M29_PPB_HostResolver_Dev_GetCanonicalName,
+    .GetNetAddressCount = (uint32_t (*)(PP_Resource host_resolver))&Pnacl_M29_PPB_HostResolver_Dev_GetNetAddressCount,
+    .GetNetAddress = (PP_Resource (*)(PP_Resource host_resolver, uint32_t index))&Pnacl_M29_PPB_HostResolver_Dev_GetNetAddress
+};
+
 struct PPB_IMEInputEvent_Dev_0_1 Pnacl_Wrappers_PPB_IMEInputEvent_Dev_0_1 = {
     .IsIMEInputEvent = (PP_Bool (*)(PP_Resource resource))&Pnacl_M16_PPB_IMEInputEvent_Dev_IsIMEInputEvent,
     .GetText = (struct PP_Var (*)(PP_Resource ime_event))&Pnacl_M16_PPB_IMEInputEvent_Dev_GetText,
@@ -5232,6 +5277,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_Dev_0_1 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_HostResolver_Dev_0_1 = {
+  .iface_macro = PPB_HOSTRESOLVER_DEV_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_HostResolver_Dev_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1 = {
   .iface_macro = PPB_IME_INPUT_EVENT_DEV_INTERFACE_0_1,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_IMEInputEvent_Dev_0_1,
@@ -5834,6 +5885,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Find_Dev_0_3,
   &Pnacl_WrapperInfo_PPB_Font_Dev_0_6,
   &Pnacl_WrapperInfo_PPB_Graphics2D_Dev_0_1,
+  &Pnacl_WrapperInfo_PPB_HostResolver_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_KeyboardInputEvent_Dev_0_1,

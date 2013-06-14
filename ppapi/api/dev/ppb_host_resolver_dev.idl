@@ -1,0 +1,82 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/**
+ * This file defines the <code>PPB_HostResolver_Dev</code> interface.
+ * TODO(yzshen): Tidy up the document.
+ */
+
+[generate_thunk]
+
+label Chrome {
+  M29 = 0.1
+};
+
+/**
+ * The <code>PP_HostResolver_Flags_Dev</code> is an enumeration of the
+ * different types of flags, that can be OR-ed and passed to host
+ * resolver.
+ */
+[assert_size(4)]
+enum PP_HostResolver_Flags_Dev {
+  /**
+   * AI_CANONNAME
+   */
+  PP_HOSTRESOLVER_FLAGS_CANONNAME = 1 << 0,
+  /**
+   * Hint to the resolver that only loopback addresses are configured.
+   */
+  PP_HOSTRESOLVER_FLAGS_LOOPBACK_ONLY = 1 << 1
+};
+
+[assert_size(8)]
+struct PP_HostResolver_Hint_Dev {
+  PP_NetAddress_Family_Dev family;
+  int32_t flags;
+};
+
+interface PPB_HostResolver_Dev {
+  /**
+   * Allocates a Host Resolver resource.
+   */
+  PP_Resource Create([in] PP_Instance instance);
+
+  /**
+   * Determines if a given resource is a Host Resolver.
+   */
+  PP_Bool IsHostResolver([in] PP_Resource resource);
+
+  /**
+   * Creates a new request to Host Resolver. |callback| is invoked when request
+   * is processed and a list of network addresses is obtained. These addresses
+   * can be used in Connect, Bind or Listen calls to connect to a given |host|
+   * and |port|.
+   */
+  int32_t Resolve([in] PP_Resource host_resolver,
+                  [in] str_t host,
+                  [in] uint16_t port,
+                  [in] PP_HostResolver_Hint_Dev hint,
+                  [in] PP_CompletionCallback callback);
+
+  /**
+   * Gets canonical name of host. Returns an undefined var if there is a pending
+   * Resolve call or the previous Resolve call failed.
+   */
+  PP_Var GetCanonicalName([in] PP_Resource host_resolver);
+
+  /**
+   * Gets number of network addresses obtained after Resolve call. Returns 0 if
+   * there is a pending Resolve call or the previous Resolve call failed.
+   */
+  uint32_t GetNetAddressCount([in] PP_Resource host_resolver);
+
+  /**
+   * Gets the |index|-th network address.
+   * Returns 0 if there is a pending Resolve call or the previous Resolve call
+   * failed, or |index| is not less than the number of available addresses.
+   */
+  PP_Resource GetNetAddress([in] PP_Resource host_resolver,
+                            [in] uint32_t index);
+};

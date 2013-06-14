@@ -388,6 +388,36 @@ TEST_PPAPI_IN_PROCESS_VIA_HTTP(TCPServerSocketPrivate)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(TCPServerSocketPrivate)
 TEST_PPAPI_NACL(TCPServerSocketPrivate)
 
+// HostResolver tests.
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, HostResolver) {
+  RunTestViaHTTP(
+      LIST_TEST(HostResolver_Empty)
+      LIST_TEST(HostResolver_Resolve)
+      LIST_TEST(HostResolver_ResolveIPv4)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, HostResolver) {
+  RunTestViaHTTP(
+      LIST_TEST(HostResolver_Empty)
+      LIST_TEST(HostResolver_Resolve)
+      LIST_TEST(HostResolver_ResolveIPv4)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(HostResolver)) {
+  RunTestViaHTTP(
+      LIST_TEST(HostResolver_Empty)
+      LIST_TEST(HostResolver_Resolve)
+      LIST_TEST(HostResolver_ResolveIPv4)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, HostResolver) {
+  RunTestViaHTTP(
+      LIST_TEST(HostResolver_Empty)
+      LIST_TEST(HostResolver_Resolve)
+      LIST_TEST(HostResolver_ResolveIPv4)
+  );
+}
+
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(HostResolverPrivate_Resolve)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(HostResolverPrivate_ResolveIPv4)
 TEST_PPAPI_NACL(HostResolverPrivate_Resolve)

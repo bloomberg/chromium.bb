@@ -18,6 +18,7 @@
 #include "ppapi/proxy/flash_menu_resource.h"
 #include "ppapi/proxy/graphics_2d_resource.h"
 #include "ppapi/proxy/host_resolver_private_resource.h"
+#include "ppapi/proxy/host_resolver_resource.h"
 #include "ppapi/proxy/net_address_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
@@ -248,6 +249,10 @@ PP_Resource ResourceCreationProxy::CreateGraphics3DRaw(
   // Not proxied. The raw creation function is used only in the implementation
   // of the proxy on the host side.
   return 0;
+}
+
+PP_Resource ResourceCreationProxy::CreateHostResolver(PP_Instance instance) {
+  return (new HostResolverResource(GetConnection(), instance))->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateHostResolverPrivate(

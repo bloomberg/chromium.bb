@@ -116,6 +116,7 @@ class ResourceCreationProxy : public InterfaceProxy,
       PP_Instance instance,
       PP_Resource share_context,
       const int32_t* attrib_list) OVERRIDE;
+  virtual PP_Resource CreateHostResolver(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateImageData(PP_Instance instance,
                                       PPB_ImageData_Shared::ImageDataType type,

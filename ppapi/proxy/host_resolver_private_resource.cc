@@ -4,17 +4,15 @@
 
 #include "ppapi/proxy/host_resolver_private_resource.h"
 
-#include "ppapi/c/pp_errors.h"
-#include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/shared_impl/var.h"
+#include "ppapi/proxy/net_address_resource.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 
 namespace ppapi {
 namespace proxy {
 
 HostResolverPrivateResource::HostResolverPrivateResource(Connection connection,
                                                          PP_Instance instance)
-    : PluginResource(connection, instance) {
-  SendCreate(BROWSER, PpapiHostMsg_HostResolverPrivate_Create());
+    : HostResolverResourceBase(connection, instance) {
 }
 
 HostResolverPrivateResource::~HostResolverPrivateResource() {
@@ -30,67 +28,29 @@ int32_t HostResolverPrivateResource::Resolve(
     uint16_t port,
     const PP_HostResolver_Private_Hint* hint,
     scoped_refptr<TrackedCallback> callback) {
-  if (!host)
-    return PP_ERROR_BADARGUMENT;
-  if (ResolveInProgress())
-    return PP_ERROR_INPROGRESS;
-
-  resolve_callback_ = callback;
-
-  HostPortPair host_port;
-  host_port.host = host;
-  host_port.port = port;
-
-  SendResolve(host_port, hint);
-  return PP_OK_COMPLETIONPENDING;
+  return ResolveImpl(host, port, hint, callback);
 }
 
 PP_Var HostResolverPrivateResource::GetCanonicalName() {
-  return StringVar::StringToPPVar(canonical_name_);
+  return GetCanonicalNameImpl();
 }
 
 uint32_t HostResolverPrivateResource::GetSize() {
-  if (ResolveInProgress())
-    return 0;
-  return static_cast<uint32_t>(net_address_list_.size());
+  return GetSizeImpl();
 }
 
 bool HostResolverPrivateResource::GetNetAddress(
-    uint32 index,
+    uint32_t index,
     PP_NetAddress_Private* address) {
-  if (ResolveInProgress() || index >= GetSize())
+  if (!address)
     return false;
-  *address = net_address_list_[index];
+
+  scoped_refptr<NetAddressResource> addr_resource = GetNetAddressImpl(index);
+  if (!addr_resource.get())
+    return false;
+
+  *address = addr_resource->GetNetAddressPrivate();
   return true;
-}
-
-void HostResolverPrivateResource::OnPluginMsgResolveReply(
-    const ResourceMessageReplyParams& params,
-    const std::string& canonical_name,
-    const std::vector<PP_NetAddress_Private>& net_address_list) {
-  if (params.result() == PP_OK) {
-    canonical_name_ = canonical_name;
-    net_address_list_ = net_address_list;
-  } else {
-    canonical_name_.clear();
-    net_address_list_.clear();
-  }
-  resolve_callback_->Run(params.result());
-}
-
-void HostResolverPrivateResource::SendResolve(
-    const HostPortPair& host_port,
-    const PP_HostResolver_Private_Hint* hint) {
-  PpapiHostMsg_HostResolverPrivate_Resolve msg(host_port, *hint);
-  Call<PpapiPluginMsg_HostResolverPrivate_ResolveReply>(
-      BROWSER,
-      msg,
-      base::Bind(&HostResolverPrivateResource::OnPluginMsgResolveReply,
-                 base::Unretained(this)));
-}
-
-bool HostResolverPrivateResource::ResolveInProgress() const {
-  return TrackedCallback::IsPending(resolve_callback_);
 }
 
 }  // namespace proxy

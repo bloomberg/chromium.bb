@@ -18,6 +18,7 @@
 #include "ppapi/cpp/dev/find_dev.h"
 #include "ppapi/cpp/dev/font_dev.h"
 #include "ppapi/cpp/dev/graphics_2d_dev.h"
+#include "ppapi/cpp/dev/host_resolver_dev.h"
 #include "ppapi/cpp/dev/ime_input_event_dev.h"
 #include "ppapi/cpp/dev/memory_dev.h"
 #include "ppapi/cpp/dev/net_address_dev.h"

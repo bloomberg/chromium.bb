@@ -47,6 +47,7 @@
   F(PPB_Gamepad_API) \
   F(PPB_Graphics2D_API) \
   F(PPB_Graphics3D_API) \
+  F(PPB_HostResolver_API) \
   F(PPB_HostResolver_Private_API) \
   F(PPB_ImageData_API) \
   F(PPB_InputEvent_API) \

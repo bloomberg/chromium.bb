@@ -190,6 +190,8 @@
           'thunk/ppb_graphics_2d_thunk.cc',
           'thunk/ppb_graphics_3d_api.h',
           'thunk/ppb_graphics_3d_thunk.cc',
+          'thunk/ppb_host_resolver_api.h',
+          'thunk/ppb_host_resolver_dev_thunk.cc',
           'thunk/ppb_host_resolver_private_api.h',
           'thunk/ppb_host_resolver_private_thunk.cc',
           'thunk/ppb_image_data_api.h',
