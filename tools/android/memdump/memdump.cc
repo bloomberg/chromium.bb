@@ -293,6 +293,33 @@ void DumpProcessesMemoryMaps(
   }
 }
 
+void DumpProcessesMemoryMapsInShortFormat(
+    const std::vector<ProcessMemory>& processes_memory) {
+  std::string buf;
+  const int KB_PER_PAGE = PAGE_SIZE >> 10;
+  std::cout << "pid\tprivate\t\tshared_app\tshared_other (KB)\n";
+  for (std::vector<ProcessMemory>::const_iterator it = processes_memory.begin();
+       it != processes_memory.end(); ++it) {
+    const ProcessMemory& process_memory = *it;
+    long total_private = 0, total_app_shared = 0, total_other_shared = 0;
+    const std::vector<MemoryMap>& memory_maps = process_memory.memory_maps;
+    for (std::vector<MemoryMap>::const_iterator it = memory_maps.begin();
+         it != memory_maps.end(); ++it) {
+      const MemoryMap& memory_map = *it;
+      total_private += memory_map.private_count;
+      total_app_shared += memory_map.app_shared_count;
+      total_other_shared += memory_map.other_shared_count;
+    }
+    base::SStringPrintf(
+        &buf, "%d\t%d\t\t%d\t\t%d\n",
+        process_memory.pid,
+        total_private * KB_PER_PAGE,
+        total_app_shared * KB_PER_PAGE,
+        total_other_shared * KB_PER_PAGE);
+    std::cout << buf;
+  }
+}
+
 bool CollectProcessMemoryInformation(int page_count_fd,
                                      ProcessMemory* process_memory) {
   const pid_t pid = process_memory->pid;
@@ -325,9 +352,18 @@ void KillAll(const std::vector<pid_t>& pids, int signal_number) {
 }  // namespace
 
 int main(int argc, char** argv) {
+  bool short_output = false;
   if (argc == 1) {
-    LOG(ERROR) << "Usage: " << argv[0] << " <PID1>... <PIDN>";
+    LOG(ERROR) << "Usage: " << argv[0] << " [-a] <PID1>... <PIDN>";
     return EXIT_FAILURE;
+  }
+  if (!strncmp(argv[1], "-a", 2)) {
+    if (argc == 2) {
+      LOG(ERROR) << "Usage: " << argv[0] << " [-a] <PID1>... <PIDN>";
+      return EXIT_FAILURE;
+    }
+    short_output = true;
+    ++argv;
   }
   std::vector<pid_t> pids;
   for (const char* const* ptr = argv + 1; *ptr; ++ptr) {
@@ -336,6 +372,16 @@ int main(int argc, char** argv) {
       return EXIT_FAILURE;
     pids.push_back(pid);
   }
+
+  // Currently memdump does not count pages shared by more than
+  // 2 browser and render processes correctly.
+  // Bail out early in -a mode if more than 2 pids are given to avoid
+  // confusion.
+  if (short_output && pids.size() > 2) {
+    LOG(ERROR) << "Sorry, '-a' cannot be used for more than 2 PIDs.";
+    return EXIT_FAILURE;
+  }
+
   std::vector<ProcessMemory> processes_memory(pids.size());
   {
     int page_count_fd = open("/proc/kpagecount", O_RDONLY);
@@ -357,6 +403,9 @@ int main(int argc, char** argv) {
     }
   }
   ClassifyPages(&processes_memory);
-  DumpProcessesMemoryMaps(processes_memory);
+  if (short_output)
+    DumpProcessesMemoryMapsInShortFormat(processes_memory);
+  else
+    DumpProcessesMemoryMaps(processes_memory);
   return EXIT_SUCCESS;
 }
