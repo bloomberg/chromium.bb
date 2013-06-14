@@ -40,7 +40,7 @@ const char kRemoteContent[] = "World!";
 class SyncClientTestDriveService : public google_apis::FakeDriveService {
  public:
   // FakeDriveService override:
-  virtual void GetResourceEntry(
+  virtual google_apis::CancelCallback GetResourceEntry(
       const std::string& resource_id,
       const google_apis::GetResourceEntryCallback& callback) OVERRIDE {
     if (resource_id == resource_id_to_be_cancelled_) {
@@ -50,9 +50,9 @@ class SyncClientTestDriveService : public google_apis::FakeDriveService {
           base::Bind(callback,
                      google_apis::GDATA_CANCELLED,
                      base::Passed(&null)));
-      return;
+      return google_apis::CancelCallback();
     }
-    FakeDriveService::GetResourceEntry(resource_id, callback);
+    return FakeDriveService::GetResourceEntry(resource_id, callback);
   }
 
   void set_resource_id_to_be_cancelled(const std::string& resource_id) {

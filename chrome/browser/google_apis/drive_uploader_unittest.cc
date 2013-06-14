@@ -60,7 +60,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
  private:
   // DriveServiceInterface overrides.
   // Handles a request for obtaining an upload location URL.
-  virtual void InitiateUploadNewFile(
+  virtual CancelCallback InitiateUploadNewFile(
       const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
@@ -76,9 +76,10 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
     // InitiateUpload is an asynchronous function, so don't callback directly.
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadNewFileURL)));
+    return CancelCallback();
   }
 
-  virtual void InitiateUploadExistingFile(
+  virtual CancelCallback InitiateUploadExistingFile(
       const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
@@ -92,17 +93,18 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
     if (!etag.empty() && etag != kTestETag) {
       base::MessageLoop::current()->PostTask(FROM_HERE,
           base::Bind(callback, HTTP_PRECONDITION, GURL()));
-      return;
+      return CancelCallback();
     }
 
     // Calls back the upload URL for subsequent ResumeUpload requests.
     // InitiateUpload is an asynchronous function, so don't callback directly.
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadExistingFileURL)));
+    return CancelCallback();
   }
 
   // Handles a request for uploading a chunk of bytes.
-  virtual void ResumeUpload(
+  virtual CancelCallback ResumeUpload(
       const base::FilePath& drive_file_path,
       const GURL& upload_location,
       int64 start_position,
@@ -143,19 +145,22 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
     }
 
     SendUploadRangeResponse(upload_location, callback);
+    return CancelCallback();
   }
 
   // Handles a request to fetch the current upload status.
-  virtual void GetUploadStatus(const base::FilePath& drive_file_path,
-                               const GURL& upload_location,
-                               int64 content_length,
-                               const UploadRangeCallback& callback) OVERRIDE {
+  virtual CancelCallback GetUploadStatus(
+      const base::FilePath& drive_file_path,
+      const GURL& upload_location,
+      int64 content_length,
+      const UploadRangeCallback& callback) OVERRIDE {
     EXPECT_EQ(expected_content_length_, content_length);
     // The upload URL returned by InitiateUpload() must be used.
     EXPECT_TRUE(GURL(kTestUploadNewFileURL) == upload_location ||
                 GURL(kTestUploadExistingFileURL) == upload_location);
 
     SendUploadRangeResponse(upload_location, callback);
+    return CancelCallback();
   }
 
   // Runs |callback| with the current upload status.
@@ -191,7 +196,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
 // Mock DriveService that returns a failure at InitiateUpload().
 class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
   // Returns error.
-  virtual void InitiateUploadNewFile(
+  virtual CancelCallback InitiateUploadNewFile(
       const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
@@ -200,9 +205,10 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
       const InitiateUploadCallback& callback) OVERRIDE {
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, GDATA_NO_CONNECTION, GURL()));
+    return CancelCallback();
   }
 
-  virtual void InitiateUploadExistingFile(
+  virtual CancelCallback InitiateUploadExistingFile(
       const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
@@ -211,10 +217,11 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
       const InitiateUploadCallback& callback) OVERRIDE {
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, GDATA_NO_CONNECTION, GURL()));
+    return CancelCallback();
   }
 
   // Should not be used.
-  virtual void ResumeUpload(
+  virtual CancelCallback ResumeUpload(
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 start_position,
@@ -225,13 +232,14 @@ class MockDriveServiceNoConnectionAtInitiate : public DummyDriveService {
       const UploadRangeCallback& callback,
       const ProgressCallback& progress_callback) OVERRIDE {
     NOTREACHED();
+    return CancelCallback();
   }
 };
 
 // Mock DriveService that returns a failure at ResumeUpload().
 class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
   // Succeeds and returns an upload location URL.
-  virtual void InitiateUploadNewFile(
+  virtual CancelCallback InitiateUploadNewFile(
       const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
@@ -240,9 +248,10 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
       const InitiateUploadCallback& callback) OVERRIDE {
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadNewFileURL)));
+    return CancelCallback();
   }
 
-  virtual void InitiateUploadExistingFile(
+  virtual CancelCallback InitiateUploadExistingFile(
       const base::FilePath& drive_file_path,
       const std::string& content_type,
       int64 content_length,
@@ -251,10 +260,11 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
       const InitiateUploadCallback& callback) OVERRIDE {
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(callback, HTTP_SUCCESS, GURL(kTestUploadExistingFileURL)));
+    return CancelCallback();
   }
 
   // Returns error.
-  virtual void ResumeUpload(
+  virtual CancelCallback ResumeUpload(
       const base::FilePath& drive_file_path,
       const GURL& upload_url,
       int64 start_position,
@@ -268,6 +278,7 @@ class MockDriveServiceNoConnectionAtResume : public DummyDriveService {
         base::Bind(callback,
                    UploadRangeResponse(GDATA_NO_CONNECTION, -1, -1),
                    base::Passed(scoped_ptr<ResourceEntry>())));
+    return CancelCallback();
   }
 };
 

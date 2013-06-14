@@ -39,8 +39,9 @@ struct UploadNewFileParams {
 };
 
 // Helper function to work around the arity limitation of base::Bind.
-void RunUploadNewFile(google_apis::DriveUploaderInterface* uploader,
-                      const UploadNewFileParams& params) {
+google_apis::CancelCallback RunUploadNewFile(
+    google_apis::DriveUploaderInterface* uploader,
+    const UploadNewFileParams& params) {
   uploader->UploadNewFile(params.parent_resource_id,
                           params.drive_file_path,
                           params.local_file_path,
@@ -48,6 +49,8 @@ void RunUploadNewFile(google_apis::DriveUploaderInterface* uploader,
                           params.content_type,
                           params.callback,
                           params.progress_callback);
+  // TODO(kinaba): crbug.com/231209 Return a proper CancelCallback.
+  return google_apis::CancelCallback();
 }
 
 // Parameter struct for RunUploadExistingFile.
@@ -62,8 +65,9 @@ struct UploadExistingFileParams {
 };
 
 // Helper function to work around the arity limitation of base::Bind.
-void RunUploadExistingFile(google_apis::DriveUploaderInterface* uploader,
-                           const UploadExistingFileParams& params) {
+google_apis::CancelCallback RunUploadExistingFile(
+    google_apis::DriveUploaderInterface* uploader,
+    const UploadExistingFileParams& params) {
   uploader->UploadExistingFile(params.resource_id,
                                params.drive_file_path,
                                params.local_file_path,
@@ -71,6 +75,32 @@ void RunUploadExistingFile(google_apis::DriveUploaderInterface* uploader,
                                params.etag,
                                params.callback,
                                params.progress_callback);
+  // TODO(kinaba): crbug.com/231209 Return a proper CancelCallback.
+  return google_apis::CancelCallback();
+}
+
+// Parameter struct for RunResumeUploadFile.
+struct ResumeUploadFileParams {
+  GURL upload_location;
+  base::FilePath drive_file_path;
+  base::FilePath local_file_path;
+  std::string content_type;
+  google_apis::UploadCompletionCallback callback;
+  google_apis::ProgressCallback progress_callback;
+};
+
+// Helper function to adjust the return type.
+google_apis::CancelCallback RunResumeUploadFile(
+    google_apis::DriveUploaderInterface* uploader,
+    const ResumeUploadFileParams& params) {
+  uploader->ResumeUploadFile(params.upload_location,
+                             params.drive_file_path,
+                             params.local_file_path,
+                             params.content_type,
+                             params.callback,
+                             params.progress_callback);
+  // TODO(kinaba): crbug.com/231209 Return a proper CancelCallback.
+  return google_apis::CancelCallback();
 }
 
 }  // namespace
@@ -855,21 +885,21 @@ void JobScheduler::OnUploadCompletionJobDone(
     // so OnJobDone called below will be in charge to re-queue the job.
     JobEntry* job_entry = job_map_.Lookup(job_id);
     DCHECK(job_entry);
-    job_entry->task = base::Bind(
-        &google_apis::DriveUploaderInterface::ResumeUploadFile,
-        base::Unretained(uploader_.get()),
-        upload_location,
-        resume_params.drive_file_path,
-        resume_params.local_file_path,
-        resume_params.content_type,
-        base::Bind(&JobScheduler::OnUploadCompletionJobDone,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   job_id,
-                   resume_params,
-                   callback),
-        base::Bind(&JobScheduler::UpdateProgress,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   job_id));
+
+    ResumeUploadFileParams params;
+    params.upload_location = upload_location;
+    params.drive_file_path = resume_params.drive_file_path;
+    params.local_file_path = resume_params.local_file_path;
+    params.content_type = resume_params.content_type;
+    params.callback = base::Bind(&JobScheduler::OnUploadCompletionJobDone,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 job_id,
+                                 resume_params,
+                                 callback);
+    params.progress_callback = base::Bind(&JobScheduler::UpdateProgress,
+                                          weak_ptr_factory_.GetWeakPtr(),
+                                          job_id);
+    job_entry->task = base::Bind(&RunResumeUploadFile, uploader_.get(), params);
   }
 
   if (OnJobDone(job_id, error))

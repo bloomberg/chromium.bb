@@ -132,6 +132,7 @@ ACTION(InvokeCompletionCallback) {
 ACTION_P(InvokeEntryActionCallback, error) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(arg2, error));
+  return google_apis::CancelCallback();
 }
 
 // Invokes |arg0| as a GetDataCallback.
@@ -140,6 +141,7 @@ ACTION_P2(InvokeGetAboutResourceCallback0, error, result) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(arg0, error, base::Passed(&about_resource)));
+  return google_apis::CancelCallback();
 }
 
 // Invokes |arg1| as a GetResourceEntryCallback.
@@ -148,6 +150,7 @@ ACTION_P2(InvokeGetResourceEntryCallback1, error, result) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(arg1, error, base::Passed(&entry)));
+  return google_apis::CancelCallback();
 }
 
 // Invokes |arg2| as a GetResourceEntryCallback.
@@ -156,6 +159,7 @@ ACTION_P2(InvokeGetResourceEntryCallback2, error, result) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(arg2, error, base::Passed(&entry)));
+  return google_apis::CancelCallback();
 }
 
 // Invokes |arg1| as a GetResourceListCallback.
@@ -164,6 +168,7 @@ ACTION_P2(InvokeGetResourceListCallback1, error, result) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(arg1, error, base::Passed(&resource_list)));
+  return google_apis::CancelCallback();
 }
 
 // Invokes |arg2| as a GetResourceListCallback.
@@ -172,6 +177,7 @@ ACTION_P2(InvokeGetResourceListCallback2, error, result) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(arg2, error, base::Passed(&resource_list)));
+  return google_apis::CancelCallback();
 }
 
 ACTION(PrepareForRemoteChange_Busy) {
@@ -204,6 +210,7 @@ ACTION(PrepareForRemoteChange_NotModified) {
 ACTION(InvokeDidDownloadFile) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(arg3, google_apis::HTTP_SUCCESS, arg1));
+  return google_apis::CancelCallback();
 }
 
 ACTION(InvokeDidApplyRemoteChange) {

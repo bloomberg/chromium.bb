@@ -41,104 +41,107 @@ std::string DummyDriveService::GetRootResourceId() const {
   return "dummy_root";
 }
 
-void DummyDriveService::GetAllResourceList(
-    const GetResourceListCallback& callback) {}
+CancelCallback DummyDriveService::GetAllResourceList(
+    const GetResourceListCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::GetResourceListInDirectory(
+CancelCallback DummyDriveService::GetResourceListInDirectory(
     const std::string& directory_resource_id,
-    const GetResourceListCallback& callback) {}
+    const GetResourceListCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::Search(
+CancelCallback DummyDriveService::Search(
     const std::string& search_query,
-    const GetResourceListCallback& callback) {}
+    const GetResourceListCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::SearchByTitle(
+CancelCallback DummyDriveService::SearchByTitle(
     const std::string& title,
     const std::string& directory_resource_id,
-    const GetResourceListCallback& callback) {}
+    const GetResourceListCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::GetChangeList(
+CancelCallback DummyDriveService::GetChangeList(
     int64 start_changestamp,
-    const GetResourceListCallback& callback) {}
+    const GetResourceListCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::ContinueGetResourceList(
+CancelCallback DummyDriveService::ContinueGetResourceList(
     const GURL& override_url,
-    const GetResourceListCallback& callback) {}
+    const GetResourceListCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::GetResourceEntry(
+CancelCallback DummyDriveService::GetResourceEntry(
     const std::string& resource_id,
-    const GetResourceEntryCallback& callback) {}
+    const GetResourceEntryCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::GetAboutResource(
-    const GetAboutResourceCallback& callback) {}
+CancelCallback DummyDriveService::GetAboutResource(
+    const GetAboutResourceCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::GetAppList(const GetAppListCallback& callback) {}
+CancelCallback DummyDriveService::GetAppList(
+    const GetAppListCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::DeleteResource(const std::string& resource_id,
-                                       const std::string& etag,
-                                       const EntryActionCallback& callback) {}
+CancelCallback DummyDriveService::DeleteResource(
+    const std::string& resource_id,
+    const std::string& etag,
+    const EntryActionCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::DownloadFile(
+CancelCallback DummyDriveService::DownloadFile(
     const base::FilePath& virtual_path,
     const base::FilePath& local_cache_path,
     const GURL& download_url,
     const DownloadActionCallback& download_action_callback,
     const GetContentCallback& get_content_callback,
-    const ProgressCallback& progress_callback) {}
+    const ProgressCallback& progress_callback) { return CancelCallback(); }
 
-void DummyDriveService::CopyResource(
+CancelCallback DummyDriveService::CopyResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,
     const std::string& new_name,
-    const GetResourceEntryCallback& callback) {}
+    const GetResourceEntryCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::CopyHostedDocument(
+CancelCallback DummyDriveService::CopyHostedDocument(
     const std::string& resource_id,
     const std::string& new_name,
-    const GetResourceEntryCallback& callback) {}
+    const GetResourceEntryCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::RenameResource(const std::string& resource_id,
-                                       const std::string& new_name,
-                                       const EntryActionCallback& callback) {}
+CancelCallback DummyDriveService::RenameResource(
+    const std::string& resource_id,
+    const std::string& new_name,
+    const EntryActionCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::TouchResource(
+CancelCallback DummyDriveService::TouchResource(
     const std::string& resource_id,
     const base::Time& modified_date,
     const base::Time& last_viewed_by_me_date,
-    const GetResourceEntryCallback& callback) {}
+    const GetResourceEntryCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::AddResourceToDirectory(
+CancelCallback DummyDriveService::AddResourceToDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
-    const EntryActionCallback& callback) {}
+    const EntryActionCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::RemoveResourceFromDirectory(
+CancelCallback DummyDriveService::RemoveResourceFromDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
-    const EntryActionCallback& callback) {}
+    const EntryActionCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::AddNewDirectory(
+CancelCallback DummyDriveService::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_name,
-    const GetResourceEntryCallback& callback) {}
+    const GetResourceEntryCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::InitiateUploadNewFile(
+CancelCallback DummyDriveService::InitiateUploadNewFile(
     const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length,
     const std::string& parent_resource_id,
     const std::string& title,
-    const InitiateUploadCallback& callback) {}
+    const InitiateUploadCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::InitiateUploadExistingFile(
+CancelCallback DummyDriveService::InitiateUploadExistingFile(
     const base::FilePath& drive_file_path,
     const std::string& content_type,
     int64 content_length,
     const std::string& resource_id,
     const std::string& etag,
-    const InitiateUploadCallback& callback) {}
+    const InitiateUploadCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::ResumeUpload(
+CancelCallback DummyDriveService::ResumeUpload(
     const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 start_position,
@@ -147,16 +150,17 @@ void DummyDriveService::ResumeUpload(
     const std::string& content_type,
     const base::FilePath& local_file_path,
     const UploadRangeCallback& callback,
-    const ProgressCallback& progress_callback) {}
+    const ProgressCallback& progress_callback) { return CancelCallback(); }
 
-void DummyDriveService::GetUploadStatus(
+CancelCallback DummyDriveService::GetUploadStatus(
     const base::FilePath& drive_file_path,
     const GURL& upload_url,
     int64 content_length,
-    const UploadRangeCallback& callback) {}
+    const UploadRangeCallback& callback) { return CancelCallback(); }
 
-void DummyDriveService::AuthorizeApp(const std::string& resource_id,
-                                     const std::string& app_id,
-                                     const AuthorizeAppCallback& callback) {}
+CancelCallback DummyDriveService::AuthorizeApp(
+    const std::string& resource_id,
+    const std::string& app_id,
+    const AuthorizeAppCallback& callback) { return CancelCallback(); }
 
 }  // namespace google_apis

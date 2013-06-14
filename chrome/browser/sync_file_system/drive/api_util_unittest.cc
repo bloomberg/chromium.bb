@@ -86,7 +86,7 @@ class FakeDriveServiceWrapper : public FakeDriveService {
   virtual ~FakeDriveServiceWrapper() {};
 
   // DriveServiceInterface overrides.
-  virtual void AddNewDirectory(
+  virtual google_apis::CancelCallback AddNewDirectory(
       const std::string& parent_resource_id,
       const std::string& directory_name,
       const google_apis::GetResourceEntryCallback& callback) OVERRIDE {
@@ -96,7 +96,7 @@ class FakeDriveServiceWrapper : public FakeDriveService {
           directory_name,
           base::Bind(&EmptyResourceEntryCallback));
     }
-    FakeDriveService::AddNewDirectory(
+    return FakeDriveService::AddNewDirectory(
         parent_resource_id, directory_name, callback);
   }
 

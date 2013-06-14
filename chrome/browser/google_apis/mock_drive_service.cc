@@ -46,7 +46,7 @@ MockDriveService::MockDriveService() {
 
 MockDriveService::~MockDriveService() {}
 
-void MockDriveService::GetChangeListStub(
+CancelCallback MockDriveService::GetChangeListStub(
     int64 start_changestamp,
     const GetResourceListCallback& callback) {
   scoped_ptr<ResourceList> resource_list(new ResourceList());
@@ -54,18 +54,20 @@ void MockDriveService::GetChangeListStub(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS,
                  base::Passed(&resource_list)));
+  return CancelCallback();
 }
 
-void MockDriveService::DeleteResourceStub(
+CancelCallback MockDriveService::DeleteResourceStub(
     const std::string& resource_id,
     const std::string& etag,
     const EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS));
+  return CancelCallback();
 }
 
-void MockDriveService::CopyHostedDocumentStub(
+CancelCallback MockDriveService::CopyHostedDocumentStub(
     const std::string& resource_id,
     const std::string& new_name,
     const GetResourceEntryCallback& callback) {
@@ -75,36 +77,40 @@ void MockDriveService::CopyHostedDocumentStub(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS,
                  base::Passed(&resource_entry)));
+  return CancelCallback();
 }
 
-void MockDriveService::RenameResourceStub(
+CancelCallback MockDriveService::RenameResourceStub(
     const std::string& resource_id,
     const std::string& new_name,
     const EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS));
+  return CancelCallback();
 }
 
-void MockDriveService::AddResourceToDirectoryStub(
+CancelCallback MockDriveService::AddResourceToDirectoryStub(
     const std::string& parent_resource_id,
     const std::string& resource_id,
     const EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS));
+  return CancelCallback();
 }
 
-void MockDriveService::RemoveResourceFromDirectoryStub(
+CancelCallback MockDriveService::RemoveResourceFromDirectoryStub(
     const std::string& parent_resource_id,
     const std::string& resource_id,
     const EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS));
+  return CancelCallback();
 }
 
-void MockDriveService::CreateDirectoryStub(
+CancelCallback MockDriveService::CreateDirectoryStub(
     const std::string& parent_resource_id,
     const std::string& directory_name,
     const GetResourceEntryCallback& callback) {
@@ -114,9 +120,10 @@ void MockDriveService::CreateDirectoryStub(
       FROM_HERE,
       base::Bind(callback, HTTP_SUCCESS,
                  base::Passed(&resource_entry)));
+  return CancelCallback();
 }
 
-void MockDriveService::DownloadFileStub(
+CancelCallback MockDriveService::DownloadFileStub(
     const base::FilePath& virtual_path,
     const base::FilePath& local_tmp_path,
     const GURL& download_url,
@@ -125,11 +132,13 @@ void MockDriveService::DownloadFileStub(
     const ProgressCallback& progress_callback) {
   GDataErrorCode error = HTTP_SUCCESS;
   if (file_data_.get()) {
-    ASSERT_TRUE(test_util::WriteStringToFile(local_tmp_path, *file_data_));
+    if (!test_util::WriteStringToFile(local_tmp_path, *file_data_))
+      error = GDATA_FILE_ERROR;
   }
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(download_action_callback, error, local_tmp_path));
+  return CancelCallback();
 }
 
 }  // namespace google_apis

@@ -201,7 +201,7 @@ class JobScheduler
 
     int retry_count;
 
-    base::Closure task;
+    base::Callback<google_apis::CancelCallback()> task;
   };
 
   // Parameters for DriveUploader::ResumeUploadFile.
