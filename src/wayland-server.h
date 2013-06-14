@@ -260,8 +260,14 @@ uint32_t
 wl_resource_get_id(struct wl_resource *resource);
 struct wl_list *
 wl_resource_get_link(struct wl_resource *resource);
+struct wl_resource *
+wl_resource_from_link(struct wl_list *resource);
+struct wl_resource *
+wl_resource_find_for_client(struct wl_list *list, struct wl_client *client);
 struct wl_client *
 wl_resource_get_client(struct wl_resource *resource);
+void
+wl_resource_set_user_data(struct wl_resource *resource, void *data);
 void *
 wl_resource_get_user_data(struct wl_resource *resource);
 void

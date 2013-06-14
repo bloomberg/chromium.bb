@@ -452,10 +452,40 @@ wl_resource_get_link(struct wl_resource *resource)
 	return &resource->link;
 }
 
+WL_EXPORT struct wl_resource *
+wl_resource_from_link(struct wl_list *link)
+{
+	struct wl_resource *resource;
+
+	return wl_container_of(link, resource, link);
+}
+
+WL_EXPORT struct wl_resource *
+wl_resource_find_for_client(struct wl_list *list, struct wl_client *client)
+{
+	struct wl_resource *resource;
+
+	if (client == NULL)
+		return NULL;
+
+        wl_list_for_each(resource, list, link) {
+                if (resource->client == client)
+                        return resource;
+        }
+
+        return NULL;
+}
+
 WL_EXPORT struct wl_client *
 wl_resource_get_client(struct wl_resource *resource)
 {
 	return resource->client;
+}
+
+WL_EXPORT void
+wl_resource_set_user_data(struct wl_resource *resource, void *data)
+{
+	resource->data = data;
 }
 
 WL_EXPORT void *
