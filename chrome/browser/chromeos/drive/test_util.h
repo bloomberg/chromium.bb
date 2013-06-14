@@ -32,7 +32,6 @@ enum TestFileCacheState {
   TEST_CACHE_STATE_PRESENT    = 1 << 1,
   TEST_CACHE_STATE_DIRTY      = 1 << 2,
   TEST_CACHE_STATE_MOUNTED    = 1 << 3,
-  TEST_CACHE_STATE_PERSISTENT = 1 << 4,
 };
 
 // Test data type of file cache

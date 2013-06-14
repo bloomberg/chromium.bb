@@ -71,10 +71,7 @@ class FileCache {
   // This indexes into |FileCache::cache_paths_| vector.
   enum CacheSubDirectoryType {
     CACHE_TYPE_META = 0,       // Resource metadata.
-    CACHE_TYPE_PERSISTENT,     // Files that are pinned or modified locally,
-                               // not evictable, hopefully.
-    CACHE_TYPE_TMP,            // Files that don't meet criteria to be in
-                               // persistent dir, and hence evictable.
+    CACHE_TYPE_FILES,          // Cached files.
     CACHE_TYPE_TMP_DOWNLOADS,  // Downloaded files.
     CACHE_TYPE_TMP_DOCUMENTS,  // Temporary JSON files for hosted documents.
     NUM_CACHE_TYPES,           // This must be at the end.
@@ -279,10 +276,6 @@ class FileCache {
   static bool CreateCacheDirectories(
       const std::vector<base::FilePath>& paths_to_create);
 
-  // Returns the type of the sub directory where the cache file is stored.
-  static CacheSubDirectoryType GetSubDirectoryType(
-      const FileCacheEntry& cache_entry);
-
  private:
   friend class FileCacheTest;
   friend class FileCacheTestOnUIThread;
@@ -301,7 +294,6 @@ class FileCache {
   // Can be called on any thread.
   base::FilePath GetCacheFilePath(const std::string& resource_id,
                                   const std::string& md5,
-                                  CacheSubDirectoryType sub_dir_type,
                                   CachedFileOrigin file_origin) const;
 
 
@@ -314,6 +306,11 @@ class FileCache {
 
   // Destroys the cache on the blocking pool.
   void DestroyOnBlockingPool();
+
+  // Migrates files from old "persistent" and "tmp" directories to the new
+  // "files" directory (see crbug.com/248905).
+  // TODO(hashimoto): Remove this method at some point.
+  void MigrateFilesFromOldDirectories();
 
   // Used to implement Store and StoreLocallyModifiedOnUIThread.
   // TODO(hidehiko): Merge this method with Store(), after

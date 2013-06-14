@@ -82,7 +82,6 @@ function updateCacheContents(cacheEntry) {
   tr.appendChild(createElementFromText('td', cacheEntry.is_pinned));
   tr.appendChild(createElementFromText('td', cacheEntry.is_dirty));
   tr.appendChild(createElementFromText('td', cacheEntry.is_mounted));
-  tr.appendChild(createElementFromText('td', cacheEntry.is_persistent));
 
   $('cache-contents').appendChild(tr);
 }

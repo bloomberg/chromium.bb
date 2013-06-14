@@ -42,7 +42,7 @@ std::vector<TestCacheResource> GetDefaultTestCacheResources() {
                       "md5_tmp_non_alphanumeric",
                       false,
                       false),
-    // Cache resource that is pinned and persistent.
+    // Cache resource that is pinned and present.
     TestCacheResource("pinned/cache.mp3",
                       "pinned:existing",
                       "md5_pinned_existing",
@@ -78,16 +78,14 @@ FileCacheEntry ToCacheEntry(int cache_state) {
   cache_entry.set_is_pinned(cache_state & TEST_CACHE_STATE_PINNED);
   cache_entry.set_is_dirty(cache_state & TEST_CACHE_STATE_DIRTY);
   cache_entry.set_is_mounted(cache_state & TEST_CACHE_STATE_MOUNTED);
-  cache_entry.set_is_persistent(cache_state & TEST_CACHE_STATE_PERSISTENT);
   return cache_entry;
 }
 
 bool CacheStatesEqual(const FileCacheEntry& a, const FileCacheEntry& b) {
-  return (a.is_present() == b.is_present() &&
-          a.is_pinned() == b.is_pinned() &&
-          a.is_dirty() == b.is_dirty() &&
-          a.is_mounted() == b.is_mounted() &&
-          a.is_persistent() == b.is_persistent());
+  return a.is_present() == b.is_present() &&
+      a.is_pinned() == b.is_pinned() &&
+      a.is_dirty() == b.is_dirty() &&
+      a.is_mounted() == b.is_mounted();
 }
 
 bool PrepareTestCacheResources(

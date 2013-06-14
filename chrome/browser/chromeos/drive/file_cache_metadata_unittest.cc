@@ -47,7 +47,6 @@ TEST_F(FileCacheMetadataTest, CacheTest) {
     FileCacheEntry new_cache_entry;
     new_cache_entry.set_md5(test_md5);
     new_cache_entry.set_is_present(true);
-    new_cache_entry.set_is_persistent(true);
     metadata_->AddOrUpdateCacheEntry(test_resource_id, new_cache_entry);
   }
 
@@ -56,7 +55,6 @@ TEST_F(FileCacheMetadataTest, CacheTest) {
   ASSERT_TRUE(metadata_->GetCacheEntry(test_resource_id, &cache_entry));
   EXPECT_EQ(test_md5, cache_entry.md5());
   EXPECT_TRUE(cache_entry.is_present());
-  EXPECT_TRUE(cache_entry.is_persistent());
 
   // resource_id doesn't exist.
   EXPECT_FALSE(metadata_->GetCacheEntry("not_found_resource_id", &cache_entry));

@@ -687,7 +687,6 @@ TEST_F(FileSystemTest, PinAndUnpin) {
       entry->resource_id(), std::string(), &cache_entry));
   EXPECT_TRUE(cache_entry.is_pinned());
   EXPECT_TRUE(cache_entry.is_present());
-  EXPECT_TRUE(cache_entry.is_persistent());
 
   // Unpin the file.
   error = FILE_ERROR_FAILED;
@@ -803,7 +802,6 @@ TEST_F(FileSystemTest, OpenAndCloseFile) {
                                             &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
   EXPECT_TRUE(cache_entry.is_dirty());
-  EXPECT_TRUE(cache_entry.is_persistent());
 
   base::FilePath cache_file_path;
   cache_->GetFileOnUIThread(file_resource_id, md5,
