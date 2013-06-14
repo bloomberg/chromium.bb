@@ -211,6 +211,14 @@ void BrowserInstantController::FocusOmnibox(bool caret_visibility) {
       GetLocationEntry();
   omnibox_view->SetFocus();
   omnibox_view->model()->SetCaretVisibility(caret_visibility);
+  if (!caret_visibility) {
+    // If the user clicked on the fakebox, any text already in the omnibox
+    // should get cleared when they start typing. Selecting all the existing
+    // text is a convenient way to accomplish this. It also gives a slight
+    // visual cue to users who really understand selection state about what will
+    // happen if they start typing.
+    omnibox_view->SelectAll(false);
+  }
 }
 
 content::WebContents* BrowserInstantController::GetActiveWebContents() const {

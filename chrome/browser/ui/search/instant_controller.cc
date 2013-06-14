@@ -976,8 +976,11 @@ void InstantController::OmniboxFocusChanged(
   if (extended_enabled()) {
     if (overlay_)
       overlay_->FocusChanged(omnibox_focus_state_, reason);
-    if (instant_tab_)
+
+    if (instant_tab_) {
       instant_tab_->FocusChanged(omnibox_focus_state_, reason);
+      instant_tab_->SetInputInProgress(IsInputInProgress());
+    }
   }
 
   if (state == OMNIBOX_FOCUS_VISIBLE && old_focus_state == OMNIBOX_FOCUS_NONE) {
@@ -1008,6 +1011,10 @@ void InstantController::SearchModeChanged(const SearchMode& old_mode,
     HideOverlay();
 
   ResetInstantTab();
+
+  if (instant_tab_ &&
+      old_mode.is_search_suggestions() != new_mode.is_search_suggestions())
+    instant_tab_->SetInputInProgress(IsInputInProgress());
 }
 
 void InstantController::ActiveTabChanged() {
@@ -1655,7 +1662,13 @@ void InstantController::UpdateInfoForInstantTab() {
     UpdateMostVisitedItems();
     instant_tab_->FocusChanged(omnibox_focus_state_,
                                omnibox_focus_change_reason_);
+    instant_tab_->SetInputInProgress(IsInputInProgress());
   }
+}
+
+bool InstantController::IsInputInProgress() const {
+  return search_mode_.is_search_suggestions() &&
+      omnibox_focus_state_ == OMNIBOX_FOCUS_VISIBLE;
 }
 
 void InstantController::HideOverlay() {

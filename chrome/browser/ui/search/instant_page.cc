@@ -117,6 +117,11 @@ void InstantPage::FocusChanged(OmniboxFocusState state,
   Send(new ChromeViewMsg_SearchBoxFocusChanged(routing_id(), state, reason));
 }
 
+void InstantPage::SetInputInProgress(bool input_in_progress) {
+  Send(new ChromeViewMsg_SearchBoxSetInputInProgress(
+      routing_id(), input_in_progress));
+}
+
 void InstantPage::SendMostVisitedItems(
     const std::vector<InstantMostVisitedItem>& items) {
   Send(new ChromeViewMsg_SearchBoxMostVisitedItemsChanged(routing_id(), items));

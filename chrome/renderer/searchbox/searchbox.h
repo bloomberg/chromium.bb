@@ -69,6 +69,7 @@ class SearchBox : public content::RenderViewObserver,
   size_t selection_end() const { return selection_end_; }
   bool is_focused() const { return is_focused_; }
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }
+  bool is_input_in_progress() const { return is_input_in_progress_; }
   bool display_instant_results() const { return display_instant_results_; }
   const string16& omnibox_font() const { return omnibox_font_; }
   size_t omnibox_font_size() const { return omnibox_font_size_; }
@@ -158,6 +159,7 @@ class SearchBox : public content::RenderViewObserver,
                          size_t selection_end);
   void OnFocusChanged(OmniboxFocusState new_focus_state,
                       OmniboxFocusChangeReason reason);
+  void OnSetInputInProgress(bool input_in_progress);
   void OnSetDisplayInstantResults(bool display_instant_results);
   void OnThemeChanged(const ThemeBackgroundInfo& theme_info);
   void OnThemeAreaHeightChanged(int height);
@@ -188,6 +190,7 @@ class SearchBox : public content::RenderViewObserver,
   gfx::Rect popup_bounds_;
   bool is_focused_;
   bool is_key_capture_enabled_;
+  bool is_input_in_progress_;
   ThemeBackgroundInfo theme_info_;
   bool display_instant_results_;
   string16 omnibox_font_;

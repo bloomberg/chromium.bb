@@ -203,7 +203,7 @@ var ntpApiHandle;
  * The state of the NTP when a query is entered into the Omnibox.
  * @type {NTP_DISPOSE_STATE}
  */
-var omniboxInputBehavior = NTP_DISPOSE_STATE.HIDE_FAKEBOX_AND_LOGO;
+var omniboxInputBehavior = NTP_DISPOSE_STATE.NONE;
 
 
 /**

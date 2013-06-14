@@ -458,6 +458,28 @@ static const char kDispatchFocusChangedScript[] =
     "  true;"
     "}";
 
+static const char kDispatchInputStartScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.embeddedSearch &&"
+    "    window.chrome.embeddedSearch.newTabPage &&"
+    "    window.chrome.embeddedSearch.newTabPage.oninputstart &&"
+    "    typeof window.chrome.embeddedSearch.newTabPage.oninputstart =="
+    "         'function') {"
+    "  window.chrome.embeddedSearch.newTabPage.oninputstart();"
+    "  true;"
+    "}";
+
+static const char kDispatchInputCancelScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.embeddedSearch &&"
+    "    window.chrome.embeddedSearch.newTabPage &&"
+    "    window.chrome.embeddedSearch.newTabPage.oninputcancel &&"
+    "    typeof window.chrome.embeddedSearch.newTabPage.oninputcancel =="
+    "         'function') {"
+    "  window.chrome.embeddedSearch.newTabPage.oninputcancel();"
+    "  true;"
+    "}";
+
 static const char kDispatchToggleVoiceSearchScript[] =
     "if (window.chrome &&"
     "    window.chrome.embeddedSearch &&"
@@ -624,6 +646,10 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // Gets whether the omnibox has focus or not.
   static void IsFocused(const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // Gets whether user input is in progress.
+  static void IsInputInProgress(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchBoxExtensionWrapper);
 };
@@ -709,6 +735,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(GetMostVisitedItemData);
   if (name->Equals(v8::String::New("IsFocused")))
     return v8::FunctionTemplate::New(IsFocused);
+  if (name->Equals(v8::String::New("IsInputInProgress")))
+    return v8::FunctionTemplate::New(IsInputInProgress);
   return v8::Handle<v8::FunctionTemplate>();
 }
 
@@ -1425,6 +1453,18 @@ void SearchBoxExtensionWrapper::IsFocused(
 }
 
 // static
+void SearchBoxExtensionWrapper::IsInputInProgress(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return;
+
+  bool is_input_in_progress =
+      SearchBox::Get(render_view)->is_input_in_progress();
+  DVLOG(1) << render_view << " IsInputInProgress: " << is_input_in_progress;
+  args.GetReturnValue().Set(is_input_in_progress);
+}
+
+// static
 void SearchBoxExtension::DispatchChange(WebKit::WebFrame* frame) {
   Dispatch(frame, kDispatchChangeEventScript);
 }
@@ -1492,6 +1532,16 @@ void SearchBoxExtension::DispatchBarsHidden(WebKit::WebFrame* frame) {
 // static
 void SearchBoxExtension::DispatchFocusChange(WebKit::WebFrame* frame) {
   Dispatch(frame, kDispatchFocusChangedScript);
+}
+
+// static
+void SearchBoxExtension::DispatchInputStart(WebKit::WebFrame* frame) {
+  Dispatch(frame, kDispatchInputStartScript);
+}
+
+// static
+void SearchBoxExtension::DispatchInputCancel(WebKit::WebFrame* frame) {
+  Dispatch(frame, kDispatchInputCancelScript);
 }
 
 // static

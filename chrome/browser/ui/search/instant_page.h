@@ -191,6 +191,9 @@ class InstantPage : public content::WebContentsObserver {
   // Tells the page that the omnibox focus has changed.
   void FocusChanged(OmniboxFocusState state, OmniboxFocusChangeReason reason);
 
+  // Tells the page that user input started or stopped.
+  void SetInputInProgress(bool input_in_progress);
+
   // Tells the page about new Most Visited data.
   void SendMostVisitedItems(
       const std::vector<InstantMostVisitedItem>& items);

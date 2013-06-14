@@ -402,6 +402,10 @@ class InstantController : public InstantPage::Delegate {
   // Sends theme info, omnibox bounds, font info, etc. down to the Instant tab.
   void UpdateInfoForInstantTab();
 
+  // Returns whether input is in progress, i.e. if the omnibox has focus and the
+  // active tab is in mode SEARCH_SUGGESTIONS.
+  bool IsInputInProgress() const;
+
   // Hide the overlay. Also sends an onchange event (with blank query) to the
   // overlay, telling it to clear out results for any old queries.
   void HideOverlay();
@@ -416,8 +420,6 @@ class InstantController : public InstantPage::Delegate {
 
   // Send the omnibox popup bounds to the page.
   void SendPopupBoundsToPage();
-
-
 
   // If possible, tries to mutate |suggestion| to a valid suggestion. Returns
   // true if successful. (Note that |suggestion| may be modified even if this

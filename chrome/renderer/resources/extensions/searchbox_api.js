@@ -253,6 +253,7 @@ if (!chrome.embeddedSearch) {
       native function UndoAllMostVisitedDeletions();
       native function UndoMostVisitedDeletion();
       native function NavigateNewTabPage();
+      native function IsInputInProgress();
 
       function GetMostVisitedItemsWrapper() {
         var mostVisitedItems = GetMostVisitedItems();
@@ -272,6 +273,7 @@ if (!chrome.embeddedSearch) {
       // =======================================================================
       this.__defineGetter__('mostVisited', GetMostVisitedItemsWrapper);
       this.__defineGetter__('themeBackgroundInfo', GetThemeBackgroundInfo);
+      this.__defineGetter__('isInputInProgress', IsInputInProgress);
 
       this.deleteMostVisitedItem = function(restrictedId) {
         DeleteMostVisitedItem(restrictedId);
@@ -288,6 +290,8 @@ if (!chrome.embeddedSearch) {
 
       this.onmostvisitedchange = null;
       this.onthemechange = null;
+      this.oninputstart = null;
+      this.oninputcancel = null;
     };
 
     // Export legacy searchbox API.
