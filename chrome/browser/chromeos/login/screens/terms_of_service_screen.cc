@@ -12,13 +12,11 @@
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
-#include "chrome/browser/chromeos/login/user.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
-#include "google_apis/gaia/gaia_auth_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
@@ -49,8 +47,8 @@ void TermsOfServiceScreen::Show() {
     return;
 
   // Set the domain name whose Terms of Service are being shown.
-  actor_->SetDomain(gaia::ExtractDomainName(
-      UserManager::Get()->GetLoggedInUser()->email()));
+  actor_->SetDomain(
+      g_browser_process->browser_policy_connector()->GetEnterpriseDomain());
 
   // Show the screen.
   actor_->Show();
