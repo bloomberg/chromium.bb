@@ -31,12 +31,9 @@ namespace remoting {
 
 VideoEncoderVp8::VideoEncoderVp8()
     : initialized_(false),
-      codec_(NULL),
-      image_(NULL),
       active_map_width_(0),
       active_map_height_(0),
-      last_timestamp_(0) {
-}
+      last_timestamp_(0) {}
 
 VideoEncoderVp8::~VideoEncoderVp8() {
   Destroy();

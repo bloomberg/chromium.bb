@@ -74,7 +74,7 @@ scoped_ptr<AudioPacket> AudioDecoderSpeex::Decode(
       (packet->sampling_rate() == AudioPacket::SAMPLING_RATE_INVALID) ||
       (packet->channels() != AudioPacket::CHANNELS_STEREO)) {
     LOG(WARNING) << "Received an unsupported packet.";
-    return scoped_ptr<AudioPacket>(NULL);
+    return scoped_ptr<AudioPacket>();
   }
   if (packet->data_size() > kMaxFramesPerPacket) {
     LOG(WARNING) << "Received an packet with too many frames.";
@@ -105,7 +105,7 @@ scoped_ptr<AudioPacket> AudioDecoderSpeex::Decode(
     int status = speex_decode_int(speex_state_, speex_bits_.get(), samples);
     if (status < 0) {
       LOG(ERROR) << "Error in decoding Speex data.";
-      return scoped_ptr<AudioPacket>(NULL);
+      return scoped_ptr<AudioPacket>();
     }
     // Transform mono to stereo.
     speex_decode_stereo_int(samples, speex_frame_size_, speex_stereo_state_);

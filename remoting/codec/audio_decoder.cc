@@ -25,7 +25,7 @@ scoped_ptr<AudioDecoder> AudioDecoder::CreateAudioDecoder(
   }
 
   NOTIMPLEMENTED();
-  return scoped_ptr<AudioDecoder>(NULL);
+  return scoped_ptr<AudioDecoder>();
 }
 
 }  // namespace remoting

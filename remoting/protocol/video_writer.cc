@@ -18,7 +18,7 @@ scoped_ptr<VideoWriter> VideoWriter::Create(const SessionConfig& config) {
   if (video_config.transport == ChannelConfig::TRANSPORT_STREAM) {
     return scoped_ptr<VideoWriter>(new ProtobufVideoWriter());
   }
-  return scoped_ptr<VideoWriter>(NULL);
+  return scoped_ptr<VideoWriter>();
 }
 
 }  // namespace protocol

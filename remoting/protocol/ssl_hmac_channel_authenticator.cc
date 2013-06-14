@@ -266,7 +266,7 @@ void SslHmacChannelAuthenticator::CheckDone(bool* callback_called) {
 
 void SslHmacChannelAuthenticator::NotifyError(int error) {
   done_callback_.Run(static_cast<net::Error>(error),
-                     scoped_ptr<net::StreamSocket>(NULL));
+                     scoped_ptr<net::StreamSocket>());
 }
 
 }  // namespace protocol

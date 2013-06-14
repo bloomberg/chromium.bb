@@ -417,7 +417,7 @@ scoped_ptr<VideoEncoder> ClientSession::CreateVideoEncoder(
   }
 
   NOTIMPLEMENTED();
-  return scoped_ptr<VideoEncoder>(NULL);
+  return scoped_ptr<VideoEncoder>();
 }
 
 // static
@@ -434,7 +434,7 @@ scoped_ptr<AudioEncoder> ClientSession::CreateAudioEncoder(
   }
 
   NOTIMPLEMENTED();
-  return scoped_ptr<AudioEncoder>(NULL);
+  return scoped_ptr<AudioEncoder>();
 }
 
 }  // namespace remoting

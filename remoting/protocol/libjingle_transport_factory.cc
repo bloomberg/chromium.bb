@@ -312,7 +312,7 @@ void LibjingleStreamTransport::NotifyConnectFailed() {
 
   authenticator_.reset();
 
-  NotifyConnected(scoped_ptr<net::StreamSocket>(NULL));
+  NotifyConnected(scoped_ptr<net::StreamSocket>());
 }
 
 }  // namespace
@@ -379,7 +379,7 @@ scoped_ptr<StreamTransport> LibjingleTransportFactory::CreateStreamTransport() {
 scoped_ptr<DatagramTransport>
 LibjingleTransportFactory::CreateDatagramTransport() {
   NOTIMPLEMENTED();
-  return scoped_ptr<DatagramTransport>(NULL);
+  return scoped_ptr<DatagramTransport>();
 }
 
 }  // namespace protocol

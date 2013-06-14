@@ -28,7 +28,7 @@ scoped_ptr<VideoReader> VideoReader::Create(const SessionConfig& config) {
     }
   }
   NOTREACHED();
-  return scoped_ptr<VideoReader>(NULL);
+  return scoped_ptr<VideoReader>();
 }
 
 }  // namespace protocol
