@@ -859,7 +859,6 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../ui/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui',
       ],
       'sources': [
@@ -891,7 +890,6 @@
         'audio/win/audio_unified_win_unittest.cc',
         'audio/win/core_audio_util_win_unittest.cc',
         'base/android/media_codec_bridge_unittest.cc',
-        'base/android/media_source_player_unittest.cc',
         'base/audio_bus_unittest.cc',
         'base/audio_converter_unittest.cc',
         'base/audio_fifo_unittest.cc',
@@ -1503,7 +1501,6 @@
           ],
           'dependencies': [
             '../base/base.gyp:base',
-            '../url/url.gyp:url_lib',
             'media_android_jni_headers',
           ],
           'include_dirs': [

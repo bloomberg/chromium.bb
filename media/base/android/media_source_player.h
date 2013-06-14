@@ -69,9 +69,7 @@ class MediaDecoderJob {
   void OnDecodeCompleted();
 
  protected:
-  MediaDecoderJob(base::Thread* thread,
-                  MediaCodecBridge* media_codec_bridge,
-                  bool is_audio);
+  MediaDecoderJob(base::Thread* thread, bool is_audio);
 
   // Release the output buffer and render it.
   void ReleaseOutputBuffer(
@@ -259,7 +257,6 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   // Weak pointer passed to media decoder jobs for callbacks.
   base::WeakPtrFactory<MediaSourcePlayer> weak_this_;
 
-  friend class MediaSourcePlayerTest;
   DISALLOW_COPY_AND_ASSIGN(MediaSourcePlayer);
 };
 
