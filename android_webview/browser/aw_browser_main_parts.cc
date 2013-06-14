@@ -23,10 +23,6 @@
 
 namespace android_webview {
 
-bool UseCompositorDirectDraw() {
-  return base::android::BuildInfo::GetInstance()->sdk_int() >= 16;
-}
-
 AwBrowserMainParts::AwBrowserMainParts(AwBrowserContext* browser_context)
     : browser_context_(browser_context) {
 }
