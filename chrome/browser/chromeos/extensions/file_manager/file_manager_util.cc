@@ -71,7 +71,6 @@ using content::UserMetricsAction;
 using extensions::app_file_handler_util::FindFileHandlersForFiles;
 using extensions::app_file_handler_util::PathAndMimeTypeSet;
 using extensions::Extension;
-using file_handler_util::FileTaskExecutor;
 using fileapi::FileSystemURL;
 
 const char kFileBrowserDomain[] = "hhaomjibdihmijegdhdafkllkbggdgoj";
@@ -292,10 +291,17 @@ void ExecuteHandler(Profile* profile,
   const GURL source_url = GetFileBrowserUrl();
   std::vector<FileSystemURL> urls;
   urls.push_back(file_system_context->CrackURL(url));
-  scoped_refptr<FileTaskExecutor> executor = FileTaskExecutor::Create(profile,
-      source_url, kFileBrowserDomain, 0 /* no tab id */, extension_id,
-      task_type, action_id);
-  executor->Execute(urls);
+
+  file_handler_util::ExecuteFileTask(
+      profile,
+      source_url,
+      kFileBrowserDomain,
+      0, // no tab id
+      extension_id,
+      task_type,
+      action_id,
+      urls,
+      file_handler_util::FileTaskFinishedCallback());
 }
 
 void OpenFileBrowserImpl(const base::FilePath& path,

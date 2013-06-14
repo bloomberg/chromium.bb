@@ -101,63 +101,19 @@ bool GetTaskForURLAndPath(Profile* profile,
 // Used for returning success or failure from task executions.
 typedef base::Callback<void(bool)> FileTaskFinishedCallback;
 
-// Helper class for executing file browser file action.
-class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
- public:
-  // Creates the appropriate FileTaskExecutor for the given |extension_id|.
-  static FileTaskExecutor* Create(Profile* profile,
-                                  const GURL& source_url,
-                                  const std::string& file_browser_id,
-                                  int32 tab_id,
-                                  const std::string& extension_id,
-                                  const std::string& task_type,
-                                  const std::string& action_id);
-
-  // Same as ExecuteAndNotify, but no notification is performed.
-  virtual bool Execute(const std::vector<fileapi::FileSystemURL>& file_urls);
-
-  // Initiates execution of file handler task for each element of |file_urls|.
-  // Return |false| if the execution cannot be initiated. Otherwise returns
-  // |true| and then eventually calls |done| when all the files have
-  // been handled. If there is an error during processing the list of files, the
-  // caller will be informed of the failure via |done|, and the rest of
-  // the files will not be processed.
-  virtual bool ExecuteAndNotify(
-      const std::vector<fileapi::FileSystemURL>& file_urls,
-      const FileTaskFinishedCallback& done) = 0;
-
- protected:
-  explicit FileTaskExecutor(Profile* profile,
-                            const GURL& source_url,
-                            const std::string& file_browser_id,
-                            const std::string& extension_id);
-  virtual ~FileTaskExecutor();
-
-  // Checks if the file browser extension had file access permissions for the
-  // list of files.
-  bool FileBrowserHasAccessPermissionForFiles(
-      const std::vector<fileapi::FileSystemURL>& files);
-
-  // Returns the profile that this task was created with.
-  Profile* profile() { return profile_; }
-
-  // Returns a browser to use for the current browser.
-  Browser* GetBrowser() const;
-
-  // Returns the extension for this profile.
-  const extensions::Extension* GetExtension();
-
-  // Returns the extension ID set for this FileTaskExecutor.
-  const std::string& extension_id() { return extension_id_; }
-
- private:
-  friend class base::RefCountedThreadSafe<FileTaskExecutor>;
-
-  Profile* profile_;
-  const GURL source_url_;
-  const std::string file_browser_id_;
-  const std::string extension_id_;
-};
+// Executes file handler task for each element of |file_urls|.
+// Returns |false| if the execution cannot be initiated. Otherwise returns
+// |true| and then eventually calls |done| when all the files have been handled.
+// |done| can be a null callback.
+bool ExecuteFileTask(Profile* profile,
+                     const GURL& source_url,
+                     const std::string& file_browser_id,
+                     int32 tab_id,
+                     const std::string& extension_id,
+                     const std::string& task_type,
+                     const std::string& action_id,
+                     const std::vector<fileapi::FileSystemURL>& file_urls,
+                     const FileTaskFinishedCallback& done);
 
 }  // namespace file_handler_util
 

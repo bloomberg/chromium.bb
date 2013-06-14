@@ -84,7 +84,6 @@ using content::ChildProcessSecurityPolicy;
 using content::WebContents;
 using extensions::Extension;
 using extensions::ZipFileCreator;
-using file_handler_util::FileTaskExecutor;
 using fileapi::FileSystemURL;
 using google_apis::InstalledApp;
 
@@ -1060,21 +1059,16 @@ bool ExecuteTasksFileBrowserFunction::RunImpl() {
   if (web_contents)
     tab_id = ExtensionTabUtil::GetTabId(web_contents);
 
-  scoped_refptr<FileTaskExecutor> executor(
-      FileTaskExecutor::Create(profile(),
-                               source_url(),
-                               extension_->id(),
-                               tab_id,
-                               extension_id,
-                               task_type,
-                               action_id));
-
-  if (!executor->ExecuteAndNotify(
+  return file_handler_util::ExecuteFileTask(
+      profile(),
+      source_url(),
+      extension_->id(),
+      tab_id,
+      extension_id,
+      task_type,
+      action_id,
       file_urls,
-      base::Bind(&ExecuteTasksFileBrowserFunction::OnTaskExecuted, this)))
-    return false;
-
-  return true;
+      base::Bind(&ExecuteTasksFileBrowserFunction::OnTaskExecuted, this));
 }
 
 SetDefaultTaskFileBrowserFunction::SetDefaultTaskFileBrowserFunction() {}

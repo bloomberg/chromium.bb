@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_handler_util.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
@@ -21,35 +22,31 @@ class ResourceEntry;
 // needs to find the file resource IDs and pass them to a server-side function
 // that will authorize the app to open the given document and return a URL
 // for opening the document in that app directly.
-class FileTaskExecutor : public file_handler_util::FileTaskExecutor {
+class FileTaskExecutor {
  public:
-  // FileTaskExecutor overrides
-  virtual bool ExecuteAndNotify(
-      const std::vector<fileapi::FileSystemURL>& file_urls,
-      const file_handler_util::FileTaskFinishedCallback& done) OVERRIDE;
+  FileTaskExecutor(Profile* profile, const std::string& app_id);
+
+  // Executes file tasks, runs |done| and deletes |this|.
+  void Execute(const std::vector<fileapi::FileSystemURL>& file_urls,
+               const file_handler_util::FileTaskFinishedCallback& done);
 
  private:
-  // FileTaskExecutor is the only class allowed to create one.
-  friend class file_handler_util::FileTaskExecutor;
+  ~FileTaskExecutor();
 
-  FileTaskExecutor(Profile* profile,
-                   const std::string& app_id,
-                   const std::string& action_id);
-  virtual ~FileTaskExecutor();
-
-  void OnFileEntryFetched(FileError error,
-                          scoped_ptr<ResourceEntry> entry);
+  void OnFileEntryFetched(FileError error, scoped_ptr<ResourceEntry> entry);
   void OnAppAuthorized(const std::string& resource_id,
                        google_apis::GDataErrorCode error,
                        const GURL& open_link);
 
-  // Calls |done_| with |success| status.
+  // Calls |done_| with |success| status and deletes |this|.
   void Done(bool success);
 
-  const GURL source_url_;
-  const std::string action_id_;
+  Profile* profile_;
+  std::string app_id_;
   int current_index_;
   file_handler_util::FileTaskFinishedCallback done_;
+
+  base::WeakPtrFactory<FileTaskExecutor> weak_ptr_factory_;
 };
 
 }  // namespace drive

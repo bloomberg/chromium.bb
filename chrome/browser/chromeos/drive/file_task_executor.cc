@@ -11,69 +11,67 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
-using file_handler_util::FileTaskExecutor;
 using fileapi::FileSystemURL;
 
 namespace drive {
 
 FileTaskExecutor::FileTaskExecutor(Profile* profile,
-                                   const std::string& app_id,
-                                   const std::string& action_id)
-  : file_handler_util::FileTaskExecutor(profile, GURL(), "", app_id),
-    action_id_(action_id),
-    current_index_(0) {
-  DCHECK("open-with" == action_id_);
+                                   const std::string& app_id)
+  : profile_(profile),
+    app_id_(app_id),
+    current_index_(0),
+    weak_ptr_factory_(this) {
 }
 
 FileTaskExecutor::~FileTaskExecutor() {
 }
 
-bool FileTaskExecutor::ExecuteAndNotify(
+void FileTaskExecutor::Execute(
     const std::vector<FileSystemURL>& file_urls,
     const file_handler_util::FileTaskFinishedCallback& done) {
-  std::vector<base::FilePath> raw_paths;
-  for (std::vector<FileSystemURL>::const_iterator url = file_urls.begin();
-       url != file_urls.end(); ++url) {
-    base::FilePath path = util::ExtractDrivePathFromFileSystemUrl(*url);
-    if (path.empty())
-      return false;
-    raw_paths.push_back(path);
+  std::vector<base::FilePath> paths;
+  for (size_t i = 0; i < file_urls.size(); ++i) {
+    base::FilePath path = util::ExtractDrivePathFromFileSystemUrl(file_urls[i]);
+    if (path.empty()) {
+      Done(false);
+      return;
+    }
+    paths.push_back(path);
   }
 
   DriveIntegrationService* integration_service =
-      DriveIntegrationServiceFactory::GetForProfile(profile());
-  DCHECK(current_index_ == 0);
-  if (!integration_service || !integration_service->file_system())
-    return false;
+      DriveIntegrationServiceFactory::GetForProfile(profile_);
+  DCHECK_EQ(current_index_, 0);
+  if (!integration_service || !integration_service->file_system()) {
+    Done(false);
+    return;
+  }
   FileSystemInterface* file_system = integration_service->file_system();
 
+  done_ = done;
   // Reset the index, so we know when we're done.
-  current_index_ = raw_paths.size();
+  current_index_ = paths.size();
 
-  for (std::vector<base::FilePath>::const_iterator iter = raw_paths.begin();
-      iter != raw_paths.end(); ++iter) {
+  for (size_t i = 0; i < paths.size(); ++i) {
     file_system->GetResourceEntryByPath(
-        *iter,
-        base::Bind(&FileTaskExecutor::OnFileEntryFetched, this));
+        paths[i],
+        base::Bind(&FileTaskExecutor::OnFileEntryFetched,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
-  return true;
 }
 
-void FileTaskExecutor::OnFileEntryFetched(
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
-  // If we aborted, then this will be zero.
-  if (!current_index_)
-    return;
-
+void FileTaskExecutor::OnFileEntryFetched(FileError error,
+                                          scoped_ptr<ResourceEntry> entry) {
   DriveIntegrationService* integration_service =
-      DriveIntegrationServiceFactory::GetForProfile(profile());
+      DriveIntegrationServiceFactory::GetForProfile(profile_);
 
   // Here, we are only interested in files.
   if (entry.get() && !entry->has_file_specific_info())
@@ -90,26 +88,20 @@ void FileTaskExecutor::OnFileEntryFetched(
   // Send off a request for the drive service to authorize the apps for the
   // current document entry for this document so we can get the
   // open-with-<app_id> urls from the document entry.
-  drive_service->AuthorizeApp(
-      entry->resource_id(),
-      extension_id(),  // really app_id
-      base::Bind(&FileTaskExecutor::OnAppAuthorized,
-                 this,
-                 entry->resource_id()));
+  drive_service->AuthorizeApp(entry->resource_id(),
+                              app_id_,
+                              base::Bind(&FileTaskExecutor::OnAppAuthorized,
+                                         weak_ptr_factory_.GetWeakPtr(),
+                                         entry->resource_id()));
 }
 
-void FileTaskExecutor::OnAppAuthorized(
-    const std::string& resource_id,
-    google_apis::GDataErrorCode error,
-    const GURL& open_link) {
+void FileTaskExecutor::OnAppAuthorized(const std::string& resource_id,
+                                       google_apis::GDataErrorCode error,
+                                       const GURL& open_link) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  // If we aborted, then this will be zero.
-  if (!current_index_)
-    return;
-
   DriveIntegrationService* integration_service =
-      DriveIntegrationServiceFactory::GetForProfile(profile());
+      DriveIntegrationServiceFactory::GetForProfile(profile_);
 
   if (!integration_service || error != google_apis::HTTP_SUCCESS) {
     Done(false);
@@ -121,7 +113,10 @@ void FileTaskExecutor::OnAppAuthorized(
     return;
   }
 
-  Browser* browser = GetBrowser();
+  Browser* browser = chrome::FindOrCreateTabbedBrowser(
+      profile_ ? profile_ : ProfileManager::GetDefaultProfileOrOffTheRecord(),
+      chrome::HOST_DESKTOP_TYPE_ASH);
+
   chrome::AddSelectedTabWithURL(browser, open_link,
                                 content::PAGE_TRANSITION_LINK);
   // If the current browser is not tabbed then the new tab will be created
@@ -130,17 +125,16 @@ void FileTaskExecutor::OnAppAuthorized(
 
   // We're done with this file.  If this is the last one, then we're done.
   current_index_--;
-  DCHECK(current_index_ >= 0);
+  DCHECK_GE(current_index_, 0);
   if (current_index_ == 0)
     Done(true);
 }
 
 void FileTaskExecutor::Done(bool success) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  current_index_ = 0;
   if (!done_.is_null())
     done_.Run(success);
-  done_.Reset();
+  delete this;
 }
 
 }  // namespace drive
