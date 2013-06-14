@@ -44,7 +44,10 @@
 #endif
 #endif // OS(UNIX)
 
-#if OS(UNIX) && defined(NDEBUG)
+// Generally, our customer allocators delegate through to normal malloc() and
+// free() when they are in a memory tool environment. The test won't work
+// properly in such cases, so do not run it.
+#if OS(UNIX) && !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
 namespace {
 
@@ -280,4 +283,4 @@ TEST(WTF_PartitionAlloc, MappingCollision)
 
 } // namespace
 
-#endif // OS(UNIX) && defined(NDEBUG)
+#endif // OS(UNIX) && !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
