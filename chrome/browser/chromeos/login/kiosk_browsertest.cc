@@ -58,6 +58,26 @@ const base::FilePath kServiceLogin("chromeos/service_login.html");
 //       detail/ggbflgnkafappblpkiflbgpmkfdpnhhe
 const char kTestKioskApp[] = "ggbflgnkafappblpkiflbgpmkfdpnhhe";
 
+// Helper method for GetConsumerKioskModeStatusCallback.
+void ConsumerKioskModeStatusCheck(
+    KioskAppManager::ConsumerKioskModeStatus* out_status,
+    const base::Closure& runner_quit_task,
+    KioskAppManager::ConsumerKioskModeStatus in_status) {
+  LOG(INFO) << "KioskAppManager::ConsumerKioskModeStatus = " << in_status;
+  *out_status = in_status;
+  runner_quit_task.Run();
+}
+
+// Helper KioskAppManager::EnableKioskModeCallback implementation.
+void ConsumerKioskModeLockCheck(
+    bool* out_locked,
+    const base::Closure& runner_quit_task,
+    bool in_locked) {
+  LOG(INFO) << "kioks locked  = " << in_locked;
+  *out_locked = in_locked;
+  runner_quit_task.Run();
+}
+
 class TestBrowserMainExtraParts
     : public ChromeBrowserMainExtraParts,
       public content::NotificationObserver {
@@ -66,7 +86,6 @@ class TestBrowserMainExtraParts
   virtual ~TestBrowserMainExtraParts() {}
 
   void set_quit_task(const base::Closure& quit_task) { quit_task_ = quit_task; }
-  void set_gaia_url(const GURL& url) { gaia_url_ = url; }
 
   void SetupSigninScreen() {
     chromeos::ExistingUserController* controller =
@@ -76,14 +95,12 @@ class TestBrowserMainExtraParts
         static_cast<chromeos::WebUILoginDisplay*>(
             controller->login_display());
     CHECK(webui_login_display);
-    webui_login_display->SetGaiaUrlForTesting(gaia_url_);
     webui_login_display->ShowSigninScreenForCreds("username", "password");
   }
 
  protected:
   content::NotificationRegistrar registrar_;
   base::Closure quit_task_;
-  GURL gaia_url_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserMainExtraParts);
 };
@@ -252,12 +269,85 @@ class AutostartWarningConfirmScenarioHandler
   DISALLOW_COPY_AND_ASSIGN(AutostartWarningConfirmScenarioHandler);
 };
 
+
+class KioskEnableScenarioHandler
+    : public TestBrowserMainExtraParts {
+ public:
+  explicit KioskEnableScenarioHandler(bool enable_kiosk)
+      : enable_kiosk_(enable_kiosk) {
+  }
+
+  virtual ~KioskEnableScenarioHandler() {}
+
+ private:
+  // ChromeBrowserMainExtraParts implementation.
+  virtual void PreEarlyInitialization() OVERRIDE {
+    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+                   content::NotificationService::AllSources());
+    registrar_.Add(this, chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE,
+                   content::NotificationService::AllSources());
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_COMPLETED,
+                   content::NotificationService::AllSources());
+    registrar_.Add(this, chrome::NOTIFICATION_KIOSK_ENABLED,
+                   content::NotificationService::AllSources());
+  }
+
+  // Overridden from content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    switch (type) {
+      case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE: {
+        LOG(INFO) << "NOTIFICATION_LOGIN_WEBUI_VISIBLE";
+        SetupSigninScreen();
+        content::WebUI* web_ui = static_cast<chromeos::LoginDisplayHostImpl*>(
+            chromeos::LoginDisplayHostImpl::default_host())->
+                GetOobeUI()->web_ui();
+        web_ui->CallJavascriptFunction("cr.ui.Oobe.handleAccelerator",
+                                       base::StringValue("kiosk_enable"));
+        break;
+      }
+      case chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE: {
+        LOG(INFO) << "chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE";
+        content::WebUI* web_ui = static_cast<chromeos::LoginDisplayHostImpl*>(
+            chromeos::LoginDisplayHostImpl::default_host())->
+                GetOobeUI()->web_ui();
+        web_ui->CallJavascriptFunction(
+            "login.KioskEnableScreen.enableKioskForTesting",
+            base::FundamentalValue(enable_kiosk_));
+        break;
+      }
+      case chrome::NOTIFICATION_KIOSK_ENABLED: {
+        LOG(INFO) << "chrome::NOTIFICATION_KIOSK_ENABLED";
+        ASSERT_TRUE(enable_kiosk_);
+        quit_task_.Run();
+        break;
+      }
+      case chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_COMPLETED: {
+        LOG(INFO) << "chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_COMPLETED";
+        quit_task_.Run();
+        break;
+      }
+      default: {
+        NOTREACHED();
+        break;
+      }
+    }
+  }
+
+  bool enable_kiosk_;
+  DISALLOW_COPY_AND_ASSIGN(KioskEnableScenarioHandler);
+};
+
 class TestContentBrowserClient : public chrome::ChromeContentBrowserClient {
  public:
   enum LaunchEventSequence {
     KioskAppLaunch,
     AutostartWarningCanceled,
     AutostartWarningConfirmed,
+    KioskEnableRejected,
+    KioskEnableConfirmed,
   };
 
   explicit TestContentBrowserClient(LaunchEventSequence sequence)
@@ -281,6 +371,14 @@ class TestContentBrowserClient : public chrome::ChromeContentBrowserClient {
       case AutostartWarningConfirmed:
         browser_main_extra_parts_ =
             new AutostartWarningConfirmScenarioHandler();
+        break;
+      case KioskEnableRejected:
+        browser_main_extra_parts_ =
+            new KioskEnableScenarioHandler(false);
+        break;
+      case KioskEnableConfirmed:
+        browser_main_extra_parts_ =
+            new KioskEnableScenarioHandler(true);
         break;
     }
 
@@ -325,13 +423,14 @@ class KioskTest : public chromeos::CrosInProcessBrowserTest,
     LOG(INFO) << "Set up http server at " << test_server_->base_url();
 
     const GURL gaia_url("http://localhost:" + test_server_->base_url().port());
-    content_browser_client_->browser_main_extra_parts_->set_gaia_url(gaia_url);
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        ::switches::kGaiaUrl, gaia_url.spec());
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
     // Clean up while main thread still runs.
     // See http://crbug.com/176659.
-    chromeos::KioskAppManager::Get()->CleanUp();
+    KioskAppManager::Get()->CleanUp();
 
     LOG(INFO) << "Stopping the http server.";
     EXPECT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
@@ -406,12 +505,24 @@ class KioskTest : public chromeos::CrosInProcessBrowserTest,
   }
 
   void ReloadKioskApps() {
-    chromeos::KioskAppManager::Get()->AddApp(kTestKioskApp);
+    KioskAppManager::Get()->AddApp(kTestKioskApp);
   }
 
   void ReloadAutolaunchKioskApps() {
-    chromeos::KioskAppManager::Get()->AddApp(kTestKioskApp);
-    chromeos::KioskAppManager::Get()->SetAutoLaunchApp(kTestKioskApp);
+    KioskAppManager::Get()->AddApp(kTestKioskApp);
+    KioskAppManager::Get()->SetAutoLaunchApp(kTestKioskApp);
+  }
+
+  void EnableConsumerKioskMode() {
+    scoped_ptr<bool> locked(new bool(false));
+    scoped_refptr<content::MessageLoopRunner> runner =
+        new content::MessageLoopRunner;
+    KioskAppManager::Get()->EnableConsumerModeKiosk(
+        base::Bind(&ConsumerKioskModeLockCheck,
+                   locked.get(),
+                   runner->QuitClosure()));
+    runner->Run();
+    EXPECT_TRUE(*locked.get());
   }
 
   scoped_ptr<TestContentBrowserClient> content_browser_client_;
@@ -434,6 +545,7 @@ class KioskLaunchTest : public KioskTest {
 };
 
 IN_PROC_BROWSER_TEST_P(KioskLaunchTest, InstallAndLaunchApp) {
+  EnableConsumerKioskMode();
   // Start UI, find menu entry for this app and launch it.
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
@@ -499,6 +611,7 @@ class KioskAutolaunchCancelTest : public KioskTest {
 };
 
 IN_PROC_BROWSER_TEST_P(KioskAutolaunchCancelTest, AutolaunchWarningCancel) {
+  EnableConsumerKioskMode();
   // Start UI, find menu entry for this app and launch it.
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
@@ -508,9 +621,9 @@ IN_PROC_BROWSER_TEST_P(KioskAutolaunchCancelTest, AutolaunchWarningCancel) {
   wizard_controller->SkipToLoginForTesting();
 
   EXPECT_FALSE(
-      chromeos::KioskAppManager::Get()->GetAutoLaunchApp().empty());
+      KioskAppManager::Get()->GetAutoLaunchApp().empty());
   EXPECT_FALSE(
-      chromeos::KioskAppManager::Get()->IsAutoLaunchEnabled());
+      KioskAppManager::Get()->IsAutoLaunchEnabled());
 
   // The loop exits after we receive
   // NOTIFICATION_KIOSK_AUTOLAUNCH_WARNING_COMPLETED after
@@ -523,7 +636,7 @@ IN_PROC_BROWSER_TEST_P(KioskAutolaunchCancelTest, AutolaunchWarningCancel) {
   runner->Run();
 
   EXPECT_FALSE(
-      chromeos::KioskAppManager::Get()->IsAutoLaunchEnabled());
+      KioskAppManager::Get()->IsAutoLaunchEnabled());
 }
 
 class KioskAutolaunchConfirmTest : public KioskTest {
@@ -540,6 +653,7 @@ class KioskAutolaunchConfirmTest : public KioskTest {
 };
 
 IN_PROC_BROWSER_TEST_P(KioskAutolaunchConfirmTest, AutolaunchWarningConfirm) {
+  EnableConsumerKioskMode();
   // Start UI, find menu entry for this app and launch it.
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
@@ -549,9 +663,9 @@ IN_PROC_BROWSER_TEST_P(KioskAutolaunchConfirmTest, AutolaunchWarningConfirm) {
 
   ReloadAutolaunchKioskApps();
   EXPECT_FALSE(
-      chromeos::KioskAppManager::Get()->GetAutoLaunchApp().empty());
+      KioskAppManager::Get()->GetAutoLaunchApp().empty());
   EXPECT_FALSE(
-      chromeos::KioskAppManager::Get()->IsAutoLaunchEnabled());
+      KioskAppManager::Get()->IsAutoLaunchEnabled());
 
   // The loop exits after we receive NOTIFICATION_KIOSK_APP_LAUNCHED
   // notification - right at app launch.
@@ -562,9 +676,9 @@ IN_PROC_BROWSER_TEST_P(KioskAutolaunchConfirmTest, AutolaunchWarningConfirm) {
   runner->Run();
 
   EXPECT_FALSE(
-      chromeos::KioskAppManager::Get()->GetAutoLaunchApp().empty());
+      KioskAppManager::Get()->GetAutoLaunchApp().empty());
   EXPECT_TRUE(
-      chromeos::KioskAppManager::Get()->IsAutoLaunchEnabled());
+      KioskAppManager::Get()->IsAutoLaunchEnabled());
 
   // Check installer status.
   EXPECT_EQ(chromeos::KioskAppLaunchError::NONE,
@@ -586,6 +700,139 @@ IN_PROC_BROWSER_TEST_P(KioskAutolaunchConfirmTest, AutolaunchWarningConfirm) {
   runner2->Run();
 }
 
+class KioskEnableTest : public KioskTest {
+ public:
+  KioskEnableTest() : login_display_host_(NULL) {}
+  virtual ~KioskEnableTest() {}
+
+ private:
+  // Overrides from KioskTest.
+  virtual void SetUpOnMainThread() OVERRIDE {
+    login_display_host_ = LoginDisplayHostImpl::default_host();
+    KioskTest::SetUpOnMainThread();
+  }
+
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    // LoginDisplayHost owns controllers and all windows.
+    base::MessageLoopForUI::current()->DeleteSoon(FROM_HERE,
+                                                  login_display_host_);
+    KioskTest::CleanUpOnMainThread();
+  }
+
+  LoginDisplayHost* login_display_host_;
+};
+
+class KioskEnableCancelTest : public KioskEnableTest {
+ public:
+  KioskEnableCancelTest() {}
+  virtual ~KioskEnableCancelTest() {}
+
+ private:
+  // Overrides from KioskTest.
+  virtual void InitializeKioskTest() OVERRIDE {
+    content_browser_client_.reset(new TestContentBrowserClient(
+            TestContentBrowserClient::KioskEnableRejected));
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(KioskEnableCancelTest, KioskEnableCancel) {
+  // Start UI, find menu entry for this app and launch it.
+  chromeos::WizardController::SkipPostLoginScreensForTesting();
+  chromeos::WizardController* wizard_controller =
+      chromeos::WizardController::default_controller();
+  CHECK(wizard_controller);
+
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
+  // Check the intial state of the consumer kiosk.
+  scoped_ptr<KioskAppManager::ConsumerKioskModeStatus> status(
+      new KioskAppManager::ConsumerKioskModeStatus(
+          KioskAppManager::CONSUMER_KIOSK_MODE_DISABLED));
+  KioskAppManager::Get()->GetConsumerKioskModeStatus(
+      base::Bind(&ConsumerKioskModeStatusCheck,
+                 status.get(),
+                 runner->QuitClosure()));
+  runner->Run();
+  EXPECT_EQ(*status.get(),  KioskAppManager::CONSUMER_KIOSK_MODE_CONFIGURABLE);
+
+  wizard_controller->SkipToLoginForTesting();
+  // The loop exits after we receive
+  // NOTIFICATION_KIOSK_ENABLE_WARNING_COMPLETED after
+  // NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE notification - right after
+  // enable consumer kiosk screen is canceled.
+  scoped_refptr<content::MessageLoopRunner> runner2 =
+      new content::MessageLoopRunner;
+  content_browser_client_->browser_main_extra_parts_->set_quit_task(
+      runner2->QuitClosure());
+  runner2->Run();
+
+  scoped_refptr<content::MessageLoopRunner> runner3 =
+      new content::MessageLoopRunner;
+  // Check the end state of the consumer kiosk after disabling the feature.
+  KioskAppManager::Get()->GetConsumerKioskModeStatus(
+      base::Bind(&ConsumerKioskModeStatusCheck,
+                 status.get(),
+                 runner3->QuitClosure()));
+  runner3->Run();
+  EXPECT_EQ(*status.get(),  KioskAppManager::CONSUMER_KIOSK_MODE_CONFIGURABLE);
+}
+
+
+class KioskEnableConfirmedTest : public KioskEnableTest {
+ public:
+  KioskEnableConfirmedTest() {}
+  virtual ~KioskEnableConfirmedTest() {}
+
+ private:
+  // Overrides from KioskTest.
+  virtual void InitializeKioskTest() OVERRIDE {
+    content_browser_client_.reset(new TestContentBrowserClient(
+            TestContentBrowserClient::KioskEnableConfirmed));
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(KioskEnableConfirmedTest, KioskEnableConfirmed) {
+  // Start UI, find menu entry for this app and launch it.
+  chromeos::WizardController::SkipPostLoginScreensForTesting();
+  chromeos::WizardController* wizard_controller =
+      chromeos::WizardController::default_controller();
+  CHECK(wizard_controller);
+
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
+  // Check the intial state of the consumer kiosk.
+  scoped_ptr<KioskAppManager::ConsumerKioskModeStatus> status(
+      new KioskAppManager::ConsumerKioskModeStatus(
+          KioskAppManager::CONSUMER_KIOSK_MODE_DISABLED));
+  KioskAppManager::Get()->GetConsumerKioskModeStatus(
+      base::Bind(&ConsumerKioskModeStatusCheck,
+                 status.get(),
+                 runner->QuitClosure()));
+  runner->Run();
+  EXPECT_EQ(*status.get(),  KioskAppManager::CONSUMER_KIOSK_MODE_CONFIGURABLE);
+
+  wizard_controller->SkipToLoginForTesting();
+  // The loop exits after we receive
+  // NOTIFICATION_KIOSK_ENABLED after
+  // NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE notification - right after
+  // enable consumer kiosk screen is canceled.
+  scoped_refptr<content::MessageLoopRunner> runner2 =
+      new content::MessageLoopRunner;
+  content_browser_client_->browser_main_extra_parts_->set_quit_task(
+      runner2->QuitClosure());
+  runner2->Run();
+
+  scoped_refptr<content::MessageLoopRunner> runner3 =
+      new content::MessageLoopRunner;
+  // Check the end state of the consumer kiosk after disabling the feature.
+  KioskAppManager::Get()->GetConsumerKioskModeStatus(
+      base::Bind(&ConsumerKioskModeStatusCheck,
+                 status.get(),
+                 runner3->QuitClosure()));
+  runner3->Run();
+  EXPECT_EQ(*status.get(),  KioskAppManager::CONSUMER_KIOSK_MODE_ENABLED);
+}
+
 INSTANTIATE_TEST_CASE_P(KioskLaunchTestInstantiation,
                         KioskLaunchTest,
                         testing::Bool());
@@ -597,4 +844,13 @@ INSTANTIATE_TEST_CASE_P(KioskAutolaunchCancelTestInstantiation,
 INSTANTIATE_TEST_CASE_P(KioskAutolaunchConfirmTestInstantiation,
                         KioskAutolaunchConfirmTest,
                         testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(KioskEnableCancelTestInstantiation,
+                        KioskEnableCancelTest,
+                        testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(KioskEnableConfirmedTestInstantiation,
+                        KioskEnableConfirmedTest,
+                        testing::Bool());
+
 }  // namespace chromeos

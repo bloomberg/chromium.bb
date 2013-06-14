@@ -23,6 +23,7 @@ cr.define('extensions', function() {
      * Initialize the page.
      */
     initialize: function() {
+      chrome.send('initializeKioskAppSettings');
       extensions.KioskAppList.decorate($('kiosk-app-list'));
 
       var overlay = $('kiosk-apps-page');
@@ -108,6 +109,14 @@ cr.define('extensions', function() {
    */
   KioskAppsOverlay.showError = function(appName) {
     KioskAppsOverlay.getInstance().showError(appName);
+  };
+
+  /**
+   * Enables consumer kiosk.
+   * @param {!boolean} enable True if consumer kiosk feature is enabled.
+   */
+  KioskAppsOverlay.enableKiosk = function(enable) {
+    $('add-kiosk-app').hidden = !enable;
   };
 
   // Export

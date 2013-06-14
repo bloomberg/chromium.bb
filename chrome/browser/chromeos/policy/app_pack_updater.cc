@@ -85,14 +85,14 @@ AppPackUpdater::AppPackUpdater(net::URLRequestContextGetter* request_context,
       install_attributes_(install_attributes) {
   chromeos::CrosSettings::Get()->AddSettingsObserver(chromeos::kAppPack, this);
 
-  if (install_attributes_->GetMode() == DEVICE_MODE_KIOSK) {
+  if (install_attributes_->GetMode() == DEVICE_MODE_RETAIL_KIOSK) {
     // Already in Kiosk mode, start loading.
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(&AppPackUpdater::Init,
                                        weak_ptr_factory_.GetWeakPtr()));
   } else {
-    // Linger until the device switches to DEVICE_MODE_KIOSK and the app pack
-    // device setting appears.
+    // Linger until the device switches to DEVICE_MODE_RETAIL_KIOSK and the
+    // app pack device setting appears.
   }
 }
 
@@ -147,7 +147,7 @@ void AppPackUpdater::Observe(int type,
     case chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED:
       DCHECK_EQ(chromeos::kAppPack,
                 *content::Details<const std::string>(details).ptr());
-      if (install_attributes_->GetMode() == DEVICE_MODE_KIOSK) {
+      if (install_attributes_->GetMode() == DEVICE_MODE_RETAIL_KIOSK) {
         if (!initialized_)
           Init();
         else

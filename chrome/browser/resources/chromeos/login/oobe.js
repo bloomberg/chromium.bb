@@ -59,6 +59,7 @@ cr.define('cr.ui.Oobe', function() {
       login.UpdateScreen.register();
       login.ResetScreen.register();
       login.AutolaunchScreen.register();
+      login.KioskEnableScreen.register();
       login.AccountPickerScreen.register();
       login.GaiaSigninScreen.register();
       login.UserImageScreen.register(/* lazyInit= */ false);

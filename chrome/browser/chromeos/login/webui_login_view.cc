@@ -52,6 +52,7 @@ namespace {
 // These strings must be kept in sync with handleAccelerator() in oobe.js.
 const char kAccelNameCancel[] = "cancel";
 const char kAccelNameEnrollment[] = "enrollment";
+const char kAccelNameKioskEnable[] = "kiosk_enable";
 const char kAccelNameVersion[] = "version";
 const char kAccelNameReset[] = "reset";
 const char kAccelNameLeft[] = "left";
@@ -161,6 +162,9 @@ WebUILoginView::WebUILoginView()
   accel_map_[ui::Accelerator(ui::VKEY_E,
                              ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
       kAccelNameEnrollment;
+  accel_map_[ui::Accelerator(ui::VKEY_K,
+                             ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
+      kAccelNameKioskEnable;
   accel_map_[ui::Accelerator(ui::VKEY_V, ui::EF_ALT_DOWN)] =
       kAccelNameVersion;
   accel_map_[ui::Accelerator(ui::VKEY_R,

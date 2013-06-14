@@ -152,9 +152,9 @@ TEST_F(EnterpriseInstallAttributesTest, GetMode) {
   ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
             LockDeviceAndWaitForResult(
                 kTestUser,
-                DEVICE_MODE_KIOSK,
+                DEVICE_MODE_RETAIL_KIOSK,
                 kTestDeviceId));
-  EXPECT_EQ(DEVICE_MODE_KIOSK,
+  EXPECT_EQ(DEVICE_MODE_RETAIL_KIOSK,
             install_attributes_.GetMode());
 }
 
@@ -169,6 +169,21 @@ TEST_F(EnterpriseInstallAttributesTest, ConsumerDevice) {
 
   ASSERT_FALSE(cryptohome_->InstallAttributesIsFirstInstall());
   EXPECT_EQ(DEVICE_MODE_CONSUMER, install_attributes_.GetMode());
+}
+
+TEST_F(EnterpriseInstallAttributesTest, ConsumerKioskDevice) {
+  install_attributes_.ReadCacheFile(GetTempPath());
+  EXPECT_EQ(DEVICE_MODE_PENDING, install_attributes_.GetMode());
+  // Lock the attributes for consumer kiosk.
+  ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
+            LockDeviceAndWaitForResult(
+                std::string(),
+                DEVICE_MODE_CONSUMER_KIOSK,
+                std::string()));
+
+  ASSERT_FALSE(cryptohome_->InstallAttributesIsFirstInstall());
+  EXPECT_EQ(DEVICE_MODE_CONSUMER_KIOSK, install_attributes_.GetMode());
+  ASSERT_TRUE(install_attributes_.IsConsumerKioskDevice());
 }
 
 TEST_F(EnterpriseInstallAttributesTest, DeviceLockedFromOlderVersion) {
@@ -204,6 +219,20 @@ TEST_F(EnterpriseInstallAttributesTest, ReadCacheFile) {
   EXPECT_EQ(DEVICE_MODE_ENTERPRISE, install_attributes_.GetMode());
   EXPECT_EQ(kTestDomain, install_attributes_.GetDomain());
   EXPECT_EQ(kTestUser, install_attributes_.GetRegistrationUser());
+  EXPECT_EQ("", install_attributes_.GetDeviceId());
+}
+
+TEST_F(EnterpriseInstallAttributesTest, ReadCacheFileForConsumerKiosk) {
+  cryptohome::SerializedInstallAttributes install_attrs_proto;
+  SetAttribute(&install_attrs_proto,
+               EnterpriseInstallAttributes::kAttrConsumerKioskEnabled, "true");
+  const std::string blob(install_attrs_proto.SerializeAsString());
+  ASSERT_EQ(static_cast<int>(blob.size()),
+            file_util::WriteFile(GetTempPath(), blob.c_str(), blob.size()));
+  install_attributes_.ReadCacheFile(GetTempPath());
+  EXPECT_EQ(DEVICE_MODE_CONSUMER_KIOSK, install_attributes_.GetMode());
+  EXPECT_EQ("", install_attributes_.GetDomain());
+  EXPECT_EQ("", install_attributes_.GetRegistrationUser());
   EXPECT_EQ("", install_attributes_.GetDeviceId());
 }
 

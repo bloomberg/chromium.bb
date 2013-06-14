@@ -773,6 +773,8 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("removeUser", &SigninScreenHandler::HandleRemoveUser);
   AddCallback("toggleEnrollmentScreen",
               &SigninScreenHandler::HandleToggleEnrollmentScreen);
+  AddCallback("toggleKioskEnableScreen",
+              &SigninScreenHandler::HandleToggleKioskEnableScreen);
   AddCallback("toggleResetScreen",
               &SigninScreenHandler::HandleToggleResetScreen);
   AddCallback("launchHelpApp", &SigninScreenHandler::HandleLaunchHelpApp);
@@ -900,10 +902,6 @@ void SigninScreenHandler::ShowSigninScreenForCreds(
   test_user_ = username;
   test_pass_ = password;
   HandleShowAddUser(NULL);
-}
-
-void SigninScreenHandler::SetGaiaUrlForTesting(const GURL& gaia_url) {
-  gaia_url_for_test_ = gaia_url;
 }
 
 void SigninScreenHandler::OnCookiesCleared(base::Closure on_clear_callback) {
@@ -1052,9 +1050,11 @@ void SigninScreenHandler::LoadAuthExtension(
     params.Set("localizedStrings", localized_strings);
   }
 
-  const GURL gaia_url = gaia_url_for_test_.is_empty() ?
-      GaiaUrls::GetInstance()->gaia_url() :
-      gaia_url_for_test_;
+  const GURL gaia_url =
+      CommandLine::ForCurrentProcess()->HasSwitch(::switches::kGaiaUrl) ?
+          GURL(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                    ::switches::kGaiaUrl)) :
+          GaiaUrls::GetInstance()->gaia_url();
   params.SetString("gaiaUrl", gaia_url.spec());
 
   // Test automation data:
@@ -1197,6 +1197,13 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
 void SigninScreenHandler::HandleToggleEnrollmentScreen() {
   if (delegate_)
     delegate_->ShowEnterpriseEnrollmentScreen();
+}
+
+void SigninScreenHandler::HandleToggleKioskEnableScreen() {
+  if (delegate_ &&
+      !g_browser_process->browser_policy_connector()->IsEnterpriseManaged()) {
+    delegate_->ShowKioskEnableScreen();
+  }
 }
 
 void SigninScreenHandler::HandleToggleResetScreen() {

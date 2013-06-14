@@ -119,11 +119,10 @@ cr.define('extensions', function() {
       extensionCommandsOverlay.initializePage();
 
       // Initialize the kiosk overlay.
-      if (cr.isChromeOS && loadTimeData.getBoolean('enableKiosk')) {
+      if (cr.isChromeOS) {
         var kioskOverlay = extensions.KioskAppsOverlay.getInstance();
         kioskOverlay.initialize();
 
-        $('add-kiosk-app').hidden = false;
         $('add-kiosk-app').addEventListener('click', function() {
           ExtensionSettings.showOverlay($('kiosk-apps-page'));
           kioskOverlay.didShowPage();

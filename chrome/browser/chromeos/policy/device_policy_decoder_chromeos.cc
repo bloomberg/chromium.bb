@@ -183,7 +183,7 @@ void DecodeKioskPolicies(const em::ChromeDeviceSettingsProto& policy,
                          PolicyMap* policies,
                          EnterpriseInstallAttributes* install_attributes) {
   // No policies if this is not KIOSK.
-  if (install_attributes->GetMode() != DEVICE_MODE_KIOSK)
+  if (install_attributes->GetMode() != DEVICE_MODE_RETAIL_KIOSK)
     return;
 
   if (policy.has_forced_logout_timeouts()) {
@@ -273,7 +273,7 @@ void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
 
     // Figure out the level. Proxy policy is mandatory in kiosk mode.
     PolicyLevel level = POLICY_LEVEL_RECOMMENDED;
-    if (install_attributes->GetMode() == DEVICE_MODE_KIOSK)
+    if (install_attributes->GetMode() == DEVICE_MODE_RETAIL_KIOSK)
       level = POLICY_LEVEL_MANDATORY;
 
     if (!proxy_settings->empty()) {

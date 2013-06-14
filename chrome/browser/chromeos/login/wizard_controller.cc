@@ -35,6 +35,7 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
+#include "chrome/browser/chromeos/login/screens/kiosk_enable_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
@@ -124,6 +125,7 @@ const char WizardController::kUserImageScreenName[] = "image";
 const char WizardController::kEulaScreenName[] = "eula";
 const char WizardController::kEnrollmentScreenName[] = "enroll";
 const char WizardController::kResetScreenName[] = "reset";
+const char WizardController::kKioskEnableScreenName[] = "kiosk-enable";
 const char WizardController::kKioskAutolaunchScreenName[] = "autolaunch";
 const char WizardController::kErrorScreenName[] = "error-message";
 const char WizardController::kTermsOfServiceScreenName[] = "tos";
@@ -257,6 +259,16 @@ chromeos::ResetScreen* WizardController::GetResetScreen() {
   return reset_screen_.get();
 }
 
+chromeos::KioskEnableScreen* WizardController::GetKioskEnableScreen() {
+  if (!kiosk_enable_screen_.get()) {
+    kiosk_enable_screen_.reset(
+        new chromeos::KioskEnableScreen(
+            this,
+            oobe_display_->GetKioskEnableScreenActor()));
+  }
+  return kiosk_enable_screen_.get();
+}
+
 chromeos::KioskAutolaunchScreen* WizardController::GetKioskAutolaunchScreen() {
   if (!autolaunch_screen_.get()) {
     autolaunch_screen_.reset(
@@ -386,6 +398,12 @@ void WizardController::ShowResetScreen() {
   VLOG(1) << "Showing reset screen.";
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetResetScreen());
+}
+
+void WizardController::ShowKioskEnableScreen() {
+  VLOG(1) << "Showing kiosk enable screen.";
+  SetStatusAreaVisible(false);
+  SetCurrentScreen(GetKioskEnableScreen());
 }
 
 void WizardController::ShowKioskAutolaunchScreen() {
@@ -584,6 +602,10 @@ void WizardController::OnKioskAutolaunchConfirmed() {
   AutoLaunchKioskApp();
 }
 
+void WizardController::OnKioskEnableCompleted() {
+  ShowLoginScreen();
+}
+
 void WizardController::OnWrongHWIDWarningSkipped() {
   if (previous_screen_)
     SetCurrentScreen(previous_screen_);
@@ -705,6 +727,8 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
     ShowEulaScreen();
   } else if (screen_name == kResetScreenName) {
     ShowResetScreen();
+  } else if (screen_name == kKioskEnableScreenName) {
+    ShowKioskEnableScreen();
   } else if (screen_name == kKioskAutolaunchScreenName) {
     ShowKioskAutolaunchScreen();
   } else if (screen_name == kEnrollmentScreenName) {
@@ -765,6 +789,9 @@ void WizardController::OnExit(ExitCodes exit_code) {
       break;
     case KIOSK_AUTOLAUNCH_CONFIRMED:
       OnKioskAutolaunchConfirmed();
+      break;
+    case KIOSK_ENABLE_COMPLETED:
+      OnKioskEnableCompleted();
       break;
     case ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED:
       OnAutoEnrollmentDone();

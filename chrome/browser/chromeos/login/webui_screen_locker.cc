@@ -239,6 +239,10 @@ void WebUIScreenLocker::OnStartEnterpriseEnrollment() {
   NOTREACHED();
 }
 
+void WebUIScreenLocker::OnStartKioskEnableScreen() {
+  NOTREACHED();
+}
+
 void WebUIScreenLocker::OnStartDeviceReset() {
   NOTREACHED();
 }

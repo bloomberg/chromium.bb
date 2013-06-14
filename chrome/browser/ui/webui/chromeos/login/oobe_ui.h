@@ -24,6 +24,7 @@ class BaseScreenHandler;
 class CoreOobeHandler;
 class ErrorScreenHandler;
 class KioskAppMenuHandler;
+class KioskEnableScreenActor;
 class NativeWindowDelegate;
 class NetworkStateInformer;
 class SigninScreenHandler;
@@ -49,6 +50,7 @@ class OobeUI : public OobeDisplay,
   static const char kScreenGaiaSignin[];
   static const char kScreenAccountPicker[];
   static const char kScreenKioskAutolaunch[];
+  static const char kScreenKioskEnable[];
   static const char kScreenErrorMessage[];
   static const char kScreenUserImagePicker[];
   static const char kScreenTpmError[];
@@ -69,6 +71,7 @@ class OobeUI : public OobeDisplay,
   virtual EnrollmentScreenActor* GetEnrollmentScreenActor() OVERRIDE;
   virtual ResetScreenActor* GetResetScreenActor() OVERRIDE;
   virtual KioskAutolaunchScreenActor* GetKioskAutolaunchScreenActor() OVERRIDE;
+  virtual KioskEnableScreenActor* GetKioskEnableScreenActor() OVERRIDE;
   virtual TermsOfServiceScreenActor*
       GetTermsOfServiceScreenActor() OVERRIDE;
   virtual UserImageScreenActor* GetUserImageScreenActor() OVERRIDE;
@@ -127,6 +130,7 @@ class OobeUI : public OobeDisplay,
   EnrollmentScreenActor* enrollment_screen_actor_;
   ResetScreenActor* reset_screen_actor_;
   KioskAutolaunchScreenActor* autolaunch_screen_actor_;
+  KioskEnableScreenActor* kiosk_enable_screen_actor_;
   WrongHWIDScreenActor* wrong_hwid_screen_actor_;
   LocallyManagedUserCreationScreenHandler*
       locally_managed_user_creation_screen_actor_;

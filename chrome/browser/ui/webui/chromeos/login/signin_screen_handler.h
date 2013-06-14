@@ -60,8 +60,6 @@ class LoginDisplayWebUIHandler {
   // Show sign-in screen for the given credentials.
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) = 0;
-  // TODO(achuith): Get rid of this in favor of --gaia-url. crbug.com/240502
-  virtual void SetGaiaUrlForTesting(const GURL& gaia_url) = 0;
  protected:
   virtual ~LoginDisplayWebUIHandler() {}
 };
@@ -117,6 +115,9 @@ class SigninScreenHandlerDelegate {
 
   // Shows Enterprise Enrollment screen.
   virtual void ShowEnterpriseEnrollmentScreen() = 0;
+
+  // Shows Kiosk Enable screen.
+  virtual void ShowKioskEnableScreen() = 0;
 
   // Shows Reset screen.
   virtual void ShowResetScreen() = 0;
@@ -251,7 +252,6 @@ class SigninScreenHandler
   virtual void ShowErrorScreen(LoginDisplay::SigninError error_id) OVERRIDE;
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) OVERRIDE;
-  virtual void SetGaiaUrlForTesting(const GURL& gaia_url) OVERRIDE;
 
   // SystemKeyEventListener::CapsLockObserver overrides.
   virtual void OnCapsLockChange(bool enabled) OVERRIDE;
@@ -301,6 +301,7 @@ class SigninScreenHandler
   void HandleRemoveUser(const std::string& email);
   void HandleShowAddUser(const base::ListValue* args);
   void HandleToggleEnrollmentScreen();
+  void HandleToggleKioskEnableScreen();
   void HandleToggleResetScreen();
   void HandleToggleKioskAutolaunchScreen();
   void HandleLaunchHelpApp(double help_topic_id);
@@ -459,9 +460,6 @@ class SigninScreenHandler
   // ReloadGaiaExtension() sets this flag to true to ignore potential
   // ERR_ABORTED triggered from its reload request. See http://crbug.com/242527.
   bool ignore_next_user_abort_frame_error_;
-
-  // Testing helper, specifies new value for gaia url.
-  GURL gaia_url_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninScreenHandler);
 };

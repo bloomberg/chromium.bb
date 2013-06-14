@@ -161,7 +161,7 @@ KioskModeSettings::KioskModeSettings() : is_initialized_(false) {
     policy::BrowserPolicyConnector* bpc =
         g_browser_process->browser_policy_connector();
     policy::DeviceMode device_mode = bpc->GetDeviceMode();
-    if (device_mode == policy::DEVICE_MODE_KIOSK) {
+    if (device_mode == policy::DEVICE_MODE_RETAIL_KIOSK) {
       is_kiosk_mode_ = true;
       return;
     } else if (device_mode == policy::DEVICE_MODE_PENDING){
@@ -195,7 +195,7 @@ void KioskModeSettings::VerifyModeIsKnown(
                        base::Unretained(this), status, is_owner),
             base::TimeDelta::FromMilliseconds(kDeviceModeFetchRetryDelayMs));
         break;
-      case policy::DEVICE_MODE_KIOSK:
+      case policy::DEVICE_MODE_RETAIL_KIOSK:
         chrome::ExitCleanly();
         break;
       default:

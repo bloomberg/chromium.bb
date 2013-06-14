@@ -299,6 +299,11 @@ void WebUILoginDisplay::ShowEnterpriseEnrollmentScreen() {
     delegate_->OnStartEnterpriseEnrollment();
 }
 
+void WebUILoginDisplay::ShowKioskEnableScreen() {
+  if (delegate_)
+    delegate_->OnStartKioskEnableScreen();
+}
+
 void WebUILoginDisplay::ShowResetScreen() {
   if (delegate_)
     delegate_->OnStartDeviceReset();
@@ -324,11 +329,6 @@ void WebUILoginDisplay::ShowSigninScreenForCreds(
     const std::string& password) {
   if (webui_handler_)
     webui_handler_->ShowSigninScreenForCreds(username, password);
-}
-
-void WebUILoginDisplay::SetGaiaUrlForTesting(const GURL& gaia_url) {
-  if (webui_handler_)
-    webui_handler_->SetGaiaUrlForTesting(gaia_url);
 }
 
 const UserList& WebUILoginDisplay::GetUsers() const {

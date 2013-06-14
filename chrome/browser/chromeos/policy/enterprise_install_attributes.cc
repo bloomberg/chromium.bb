@@ -27,8 +27,10 @@ std::string GetDeviceModeString(DeviceMode mode) {
       return EnterpriseInstallAttributes::kConsumerDeviceMode;
     case DEVICE_MODE_ENTERPRISE:
       return EnterpriseInstallAttributes::kEnterpiseDeviceMode;
-    case DEVICE_MODE_KIOSK:
-      return EnterpriseInstallAttributes::kKioskDeviceMode;
+    case DEVICE_MODE_RETAIL_KIOSK:
+      return EnterpriseInstallAttributes::kRetailKioskDeviceMode;
+    case DEVICE_MODE_CONSUMER_KIOSK:
+      return EnterpriseInstallAttributes::kConsumerKioskDeviceMode;
     case DEVICE_MODE_PENDING:
     case DEVICE_MODE_NOT_SET:
       break;
@@ -44,8 +46,10 @@ DeviceMode GetDeviceModeFromString(
     return DEVICE_MODE_CONSUMER;
   else if (mode == EnterpriseInstallAttributes::kEnterpiseDeviceMode)
     return DEVICE_MODE_ENTERPRISE;
-  else if (mode == EnterpriseInstallAttributes::kKioskDeviceMode)
-    return DEVICE_MODE_KIOSK;
+  else if (mode == EnterpriseInstallAttributes::kRetailKioskDeviceMode)
+    return DEVICE_MODE_RETAIL_KIOSK;
+  else if (mode == EnterpriseInstallAttributes::kConsumerKioskDeviceMode)
+    return DEVICE_MODE_CONSUMER_KIOSK;
   NOTREACHED() << "Unknown device mode string: " << mode;
   return DEVICE_MODE_NOT_SET;
 }
@@ -65,7 +69,9 @@ bool ReadMapKey(const std::map<std::string, std::string>& map,
 
 const char EnterpriseInstallAttributes::kConsumerDeviceMode[] = "consumer";
 const char EnterpriseInstallAttributes::kEnterpiseDeviceMode[] = "enterprise";
-const char EnterpriseInstallAttributes::kKioskDeviceMode[] = "kiosk";
+const char EnterpriseInstallAttributes::kRetailKioskDeviceMode[] = "kiosk";
+const char EnterpriseInstallAttributes::kConsumerKioskDeviceMode[] =
+    "consumer_kiosk";
 const char EnterpriseInstallAttributes::kUnknownDeviceMode[] = "unknown";
 
 const char EnterpriseInstallAttributes::kAttrEnterpriseDeviceId[] =
@@ -78,6 +84,8 @@ const char EnterpriseInstallAttributes::kAttrEnterpriseOwned[] =
     "enterprise.owned";
 const char EnterpriseInstallAttributes::kAttrEnterpriseUser[] =
     "enterprise.user";
+const char EnterpriseInstallAttributes::kAttrConsumerKioskEnabled[] =
+    "consumer.app_kiosk_enabled";
 
 EnterpriseInstallAttributes::EnterpriseInstallAttributes(
     chromeos::CryptohomeLibrary* cryptohome,
@@ -154,6 +162,7 @@ void EnterpriseInstallAttributes::ReadAttributesIfReady(
         kAttrEnterpriseMode,
         kAttrEnterpriseOwned,
         kAttrEnterpriseUser,
+        kAttrConsumerKioskEnabled,
       };
       std::map<std::string, std::string> attr_map;
       for (size_t i = 0; i < arraysize(kEnterpriseAttributes); ++i) {
@@ -177,13 +186,17 @@ void EnterpriseInstallAttributes::LockDevice(
   CHECK_NE(device_mode, DEVICE_MODE_PENDING);
   CHECK_NE(device_mode, DEVICE_MODE_NOT_SET);
 
-  std::string domain = gaia::ExtractDomainName(user);
-
   // Check for existing lock first.
   if (device_locked_) {
-    callback.Run(
-        !registration_domain_.empty() && domain == registration_domain_ ?
-            LOCK_SUCCESS : LOCK_WRONG_USER);
+    if (device_mode == DEVICE_MODE_CONSUMER_KIOSK) {
+      callback.Run((registration_mode_ == device_mode) ? LOCK_SUCCESS :
+                                                         LOCK_NOT_READY);
+    } else {
+      std::string domain = gaia::ExtractDomainName(user);
+      callback.Run(
+          (!registration_domain_.empty() && domain == registration_domain_) ?
+              LOCK_SUCCESS : LOCK_WRONG_USER);
+    }
     return;
   }
 
@@ -203,7 +216,6 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
     const LockResultCallback& callback,
     chromeos::DBusMethodCallStatus call_status,
     bool result) {
-  std::string domain = gaia::ExtractDomainName(user);
   if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS || !result) {
     callback.Run(LOCK_NOT_READY);
     return;
@@ -230,15 +242,26 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
 
   std::string mode = GetDeviceModeString(device_mode);
 
-  // Set values in the InstallAttrs and lock it.
-  if (!cryptohome_->InstallAttributesSet(kAttrEnterpriseOwned, "true") ||
-      !cryptohome_->InstallAttributesSet(kAttrEnterpriseUser, user) ||
-      !cryptohome_->InstallAttributesSet(kAttrEnterpriseDomain, domain) ||
-      !cryptohome_->InstallAttributesSet(kAttrEnterpriseMode, mode) ||
-      !cryptohome_->InstallAttributesSet(kAttrEnterpriseDeviceId, device_id)) {
-    LOG(ERROR) << "Failed writing attributes";
-    callback.Run(LOCK_BACKEND_ERROR);
-    return;
+  if (device_mode == DEVICE_MODE_CONSUMER_KIOSK) {
+    // Set values in the InstallAttrs and lock it.
+    if (!cryptohome_->InstallAttributesSet(kAttrConsumerKioskEnabled, "true")) {
+      LOG(ERROR) << "Failed writing attributes";
+      callback.Run(LOCK_BACKEND_ERROR);
+      return;
+    }
+  } else {
+    std::string domain = gaia::ExtractDomainName(user);
+    // Set values in the InstallAttrs and lock it.
+    if (!cryptohome_->InstallAttributesSet(kAttrEnterpriseOwned, "true") ||
+        !cryptohome_->InstallAttributesSet(kAttrEnterpriseUser, user) ||
+        !cryptohome_->InstallAttributesSet(kAttrEnterpriseDomain, domain) ||
+        !cryptohome_->InstallAttributesSet(kAttrEnterpriseMode, mode) ||
+        !cryptohome_->InstallAttributesSet(kAttrEnterpriseDeviceId,
+                                           device_id)) {
+      LOG(ERROR) << "Failed writing attributes";
+      callback.Run(LOCK_BACKEND_ERROR);
+      return;
+    }
   }
 
   if (!cryptohome_->InstallAttributesFinalize() ||
@@ -272,6 +295,10 @@ bool EnterpriseInstallAttributes::IsEnterpriseDevice() {
   return device_locked_ && !registration_user_.empty();
 }
 
+bool EnterpriseInstallAttributes::IsConsumerKioskDevice() {
+  return device_locked_ && registration_mode_ == DEVICE_MODE_CONSUMER_KIOSK;
+}
+
 std::string EnterpriseInstallAttributes::GetRegistrationUser() {
   if (!device_locked_)
     return std::string();
@@ -301,6 +328,7 @@ void EnterpriseInstallAttributes::DecodeInstallAttributes(
     const std::map<std::string, std::string>& attr_map) {
   std::string enterprise_owned;
   std::string enterprise_user;
+  std::string consumer_kiosk_enabled;
   if (ReadMapKey(attr_map, kAttrEnterpriseOwned, &enterprise_owned) &&
       ReadMapKey(attr_map, kAttrEnterpriseUser, &enterprise_user) &&
       enterprise_owned == "true" &&
@@ -325,6 +353,11 @@ void EnterpriseInstallAttributes::DecodeInstallAttributes(
     std::string mode;
     if (ReadMapKey(attr_map, kAttrEnterpriseMode, &mode))
       registration_mode_ = GetDeviceModeFromString(mode);
+  } else if (ReadMapKey(attr_map,
+                        kAttrConsumerKioskEnabled,
+                        &consumer_kiosk_enabled) &&
+             consumer_kiosk_enabled == "true") {
+    registration_mode_ = DEVICE_MODE_CONSUMER_KIOSK;
   } else if (enterprise_user.empty() && enterprise_owned != "true") {
     // |registration_user_| is empty on consumer devices.
     registration_mode_ = DEVICE_MODE_CONSUMER;

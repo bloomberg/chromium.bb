@@ -56,7 +56,6 @@ class TestBrowserMainExtraParts
   }
 
   void set_quit_task(const base::Closure& quit_task) { quit_task_ = quit_task; }
-  void set_gaia_url(const GURL& url) { gaia_url_ = url; }
 
  private:
   // Overridden from content::NotificationObserver:
@@ -93,7 +92,6 @@ class TestBrowserMainExtraParts
         static_cast<chromeos::WebUILoginDisplay*>(
             controller->login_display());
     CHECK(webui_login_display);
-    webui_login_display->SetGaiaUrlForTesting(gaia_url_);
     webui_login_display->ShowSigninScreenForCreds("username", "password");
     // TODO(glotov): mock GAIA server (test_server_) should support
     // username/password configuration.
@@ -162,7 +160,8 @@ class OobeTest : public chromeos::CrosInProcessBrowserTest {
     LOG(INFO) << "Set up http server at " << test_server_->base_url();
 
     const GURL gaia_url("http://localhost:" + test_server_->base_url().port());
-    content_browser_client_->browser_main_extra_parts_->set_gaia_url(gaia_url);
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        ::switches::kGaiaUrl, gaia_url.spec());
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {

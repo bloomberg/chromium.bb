@@ -11,6 +11,7 @@
 /** @const */ var SCREEN_OOBE_EULA = 'eula';
 /** @const */ var SCREEN_OOBE_UPDATE = 'update';
 /** @const */ var SCREEN_OOBE_ENROLLMENT = 'oauth-enrollment';
+/** @const */ var SCREEN_OOBE_KIOSK_ENABLE = 'kiosk-enable';
 /** @const */ var SCREEN_GAIA_SIGNIN = 'gaia-signin';
 /** @const */ var SCREEN_ACCOUNT_PICKER = 'account-picker';
 /** @const */ var SCREEN_ERROR_MESSAGE = 'error-message';
@@ -23,6 +24,7 @@
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
 /** @const */ var ACCELERATOR_ENROLLMENT = 'enrollment';
+/** @const */ var ACCELERATOR_KIOSK_ENABLE = 'kiosk_enable';
 /** @const */ var ACCELERATOR_VERSION = 'version';
 /** @const */ var ACCELERATOR_RESET = 'reset';
 /** @const */ var ACCELERATOR_LEFT = 'left';
@@ -156,6 +158,12 @@ cr.define('cr.ui.login', function() {
           // This accelerator is also used to manually cancel auto-enrollment.
           if (this.currentScreen.cancelAutoEnrollment)
             this.currentScreen.cancelAutoEnrollment();
+        }
+      } else if (name == ACCELERATOR_KIOSK_ENABLE) {
+        var currentStepId = this.screens_[this.currentStep_];
+        if (currentStepId == SCREEN_GAIA_SIGNIN ||
+            currentStepId == SCREEN_ACCOUNT_PICKER) {
+          chrome.send('toggleKioskEnableScreen');
         }
       } else if (name == ACCELERATOR_VERSION) {
         if (this.allowToggleVersion_)

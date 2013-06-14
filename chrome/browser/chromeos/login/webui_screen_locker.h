@@ -77,6 +77,7 @@ class WebUIScreenLocker : public WebUILoginView,
   virtual void OnSigninScreenReady() OVERRIDE;
   virtual void OnUserSelected(const std::string& username) OVERRIDE;
   virtual void OnStartEnterpriseEnrollment() OVERRIDE;
+  virtual void OnStartKioskEnableScreen() OVERRIDE;
   virtual void OnStartDeviceReset() OVERRIDE;
   virtual void OnStartKioskAutolaunchScreen() OVERRIDE;
   virtual void ShowWrongHWIDScreen() OVERRIDE;

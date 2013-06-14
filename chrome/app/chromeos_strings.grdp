@@ -260,6 +260,21 @@ Press any key to continue exploring.
   <message name="IDS_KIOSK_AUTOSTART_CONFIRM" desc="Confirm button text">
     Confirm
   </message>
+  <message name="IDS_KIOSK_ENABLE_SCREEN_WARNING" desc="Title of the kiosk enable screen">
+    Enable Kiosk Mode
+  </message>
+  <message name="IDS_KIOSK_ENABLE_SCREEN_WARNING_DETAILS" desc="Warning text shown on kiosk enable screen above the exclamation icon.">
+    Would you like to be able to run kiosk applications on this device?
+  </message>
+  <message name="IDS_KIOSK_ENABLE_SCREEN_SUCCESS" desc="Confirmation text shown on kiosk enable screen after the feature is successfully enabled.">
+    Kiosk applications can now be installed on this device.
+  </message>
+  <message name="IDS_KIOSK_ENABLE_SCREEN_ERROR" desc="Error text shown on kiosk enable screen after we failed enabling this feature.">
+   An error occurred. Kiosk mode will not be available on this device.
+  </message>
+  <message name="IDS_KIOSK_ENABLE_SCREEN_ENABLE_BUTTON" desc="Enable button text">
+    Enable
+  </message>
   <message name="IDS_RESET_SCREEN_TITLE" desc="Title of the reset screen">
     Factory reset
   </message>

@@ -1981,6 +1981,8 @@
         'browser/ui/webui/chromeos/login/kiosk_app_menu_handler.h',
         'browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.cc',
         'browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h',
+        'browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.cc',
+        'browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h',
         'browser/ui/webui/chromeos/login/locally_managed_user_creation_screen_handler.cc',
         'browser/ui/webui/chromeos/login/locally_managed_user_creation_screen_handler.h',
         'browser/ui/webui/chromeos/login/network_dropdown.cc',

@@ -593,6 +593,12 @@ void ExistingUserController::OnStartEnterpriseEnrollment() {
                  weak_factory_.GetWeakPtr()));
 }
 
+void ExistingUserController::OnStartKioskEnableScreen() {
+  KioskAppManager::Get()->GetConsumerKioskModeStatus(
+      base::Bind(&ExistingUserController::OnConsumerKioskModeCheckCompleted,
+                 weak_factory_.GetWeakPtr()));
+}
+
 void ExistingUserController::OnStartDeviceReset() {
   ShowResetScreen();
 }
@@ -621,6 +627,12 @@ void ExistingUserController::Signout() {
   NOTREACHED();
 }
 
+void ExistingUserController::OnConsumerKioskModeCheckCompleted(
+    KioskAppManager::ConsumerKioskModeStatus status) {
+  if (status == KioskAppManager::CONSUMER_KIOSK_MODE_CONFIGURABLE)
+    ShowKioskEnableScreen();
+}
+
 void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
     DeviceSettingsService::OwnershipStatus status,
     bool current_user_is_owner) {
@@ -633,9 +645,11 @@ void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
         CrosSettings::Get()->PrepareTrustedValues(
             base::Bind(
                 &ExistingUserController::OnEnrollmentOwnershipCheckCompleted,
-                weak_factory_.GetWeakPtr(), status, current_user_is_owner));
-    if (trusted_status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED)
+                weak_factory_.GetWeakPtr(),
+                status, current_user_is_owner));
+    if (trusted_status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
       ShowEnrollmentScreen(false, std::string());
+    }
   } else {
     // OwnershipService::GetStatusAsync is supposed to return either
     // OWNERSHIP_NONE or OWNERSHIP_TAKEN.
@@ -659,6 +673,12 @@ void ExistingUserController::ShowEnrollmentScreen(bool is_auto_enrollment,
 void ExistingUserController::ShowResetScreen() {
   scoped_ptr<DictionaryValue> params;
   host_->StartWizard(WizardController::kResetScreenName, params.Pass());
+  login_display_->OnFadeOut();
+}
+
+void ExistingUserController::ShowKioskEnableScreen() {
+  scoped_ptr<DictionaryValue> params;
+  host_->StartWizard(WizardController::kKioskEnableScreenName, params.Pass());
   login_display_->OnFadeOut();
 }
 

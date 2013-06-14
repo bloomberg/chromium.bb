@@ -25,6 +25,7 @@ namespace policy {
 
 // Brokers access to the enterprise-related installation-time attributes on
 // ChromeOS.
+// TODO(zelidrag, mnissler): Rename + move this class - http://crbug.com/249513.
 class EnterpriseInstallAttributes {
  public:
   // Return codes for LockDevice().
@@ -41,7 +42,8 @@ class EnterpriseInstallAttributes {
   // Constants for the possible device modes that can be stored in the lockbox.
   static const char kConsumerDeviceMode[];
   static const char kEnterpiseDeviceMode[];
-  static const char kKioskDeviceMode[];
+  static const char kRetailKioskDeviceMode[];
+  static const char kConsumerKioskDeviceMode[];
   static const char kUnknownDeviceMode[];
 
   // Field names in the lockbox.
@@ -50,6 +52,7 @@ class EnterpriseInstallAttributes {
   static const char kAttrEnterpriseMode[];
   static const char kAttrEnterpriseOwned[];
   static const char kAttrEnterpriseUser[];
+  static const char kAttrConsumerKioskEnabled[];
 
   EnterpriseInstallAttributes(
       chromeos::CryptohomeLibrary* cryptohome,
@@ -78,6 +81,9 @@ class EnterpriseInstallAttributes {
 
   // Checks whether this is an enterprise device.
   bool IsEnterpriseDevice();
+
+  // Checks whether this is a consumer kiosk enabled device.
+  bool IsConsumerKioskDevice();
 
   // Gets the domain this device belongs to or an empty string if the device is
   // not an enterprise device.

@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -15,16 +16,20 @@
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
+#include "chrome/browser/chromeos/settings/owner_key_util.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/cryptohome/cryptohome_library.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 
@@ -44,6 +49,12 @@ void OnRemoveAppCryptohomeComplete(const std::string& app,
     LOG(ERROR) << "Remove cryptohome for " << app
         << " failed, return code: " << return_code;
   }
+}
+
+// Check for presence of machine owner public key file.
+void CheckOwnerFilePresence(bool *present) {
+  scoped_refptr<OwnerKeyUtil> util = OwnerKeyUtil::Create();
+  *present = util->IsPublicKeyPresent();
 }
 
 }  // namespace
@@ -102,6 +113,87 @@ void KioskAppManager::SetAutoLaunchApp(const std::string& app_id) {
       app_id.empty() ? std::string() : GenerateKioskAppAccountId(app_id));
   CrosSettings::Get()->SetInteger(
       kAccountsPrefDeviceLocalAccountAutoLoginDelay, 0);
+}
+
+void KioskAppManager::EnableConsumerModeKiosk(
+    const KioskAppManager::EnableKioskModeCallback& callback) {
+  g_browser_process->browser_policy_connector()->GetInstallAttributes()->
+      LockDevice(std::string(),  // user
+                 policy::DEVICE_MODE_CONSUMER_KIOSK,
+                 std::string(),  // device_id
+                 base::Bind(&KioskAppManager::OnLockDevice,
+                            base::Unretained(this),
+                            callback));
+}
+
+void KioskAppManager::GetConsumerKioskModeStatus(
+    const KioskAppManager::GetConsumerKioskModeStatusCallback& callback) {
+  g_browser_process->browser_policy_connector()->GetInstallAttributes()->
+      ReadImmutableAttributes(
+          base::Bind(&KioskAppManager::OnReadImmutableAttributes,
+                     base::Unretained(this),
+                     callback));
+}
+
+void KioskAppManager::OnLockDevice(
+    const KioskAppManager::EnableKioskModeCallback& callback,
+    policy::EnterpriseInstallAttributes::LockResult result) {
+  if (callback.is_null())
+    return;
+
+  callback.Run(result == policy::EnterpriseInstallAttributes::LOCK_SUCCESS);
+}
+
+void KioskAppManager::OnOwnerFileChecked(
+    const KioskAppManager::GetConsumerKioskModeStatusCallback& callback,
+    bool *owner_present) {
+  ownership_established_ = *owner_present;
+
+  if (callback.is_null())
+    return;
+
+  // If we have owner already established on the machine, don't let
+  // consumer kiosk to be enabled.
+  if (ownership_established_)
+    callback.Run(CONSUMER_KIOSK_MODE_DISABLED);
+  else
+    callback.Run(CONSUMER_KIOSK_MODE_CONFIGURABLE);
+}
+
+void KioskAppManager::OnReadImmutableAttributes(
+    const KioskAppManager::GetConsumerKioskModeStatusCallback& callback) {
+  if (callback.is_null())
+    return;
+
+  ConsumerKioskModeStatus status = CONSUMER_KIOSK_MODE_DISABLED;
+  policy::EnterpriseInstallAttributes* attributes =
+      g_browser_process->browser_policy_connector()->GetInstallAttributes();
+  switch (attributes->GetMode()) {
+    case policy::DEVICE_MODE_NOT_SET: {
+      if (!base::chromeos::IsRunningOnChromeOS()) {
+        status = CONSUMER_KIOSK_MODE_CONFIGURABLE;
+      } else if (!ownership_established_) {
+        bool* owner_present = new bool(false);
+        content::BrowserThread::PostBlockingPoolTaskAndReply(
+            FROM_HERE,
+            base::Bind(&CheckOwnerFilePresence,
+                       owner_present),
+            base::Bind(&KioskAppManager::OnOwnerFileChecked,
+                       base::Unretained(this),
+                       callback,
+                       base::Owned(owner_present)));
+        return;
+      }
+      break;
+    }
+    case policy::DEVICE_MODE_CONSUMER_KIOSK:
+      status = CONSUMER_KIOSK_MODE_ENABLED;
+      break;
+    default:
+      break;
+  }
+
+  callback.Run(status);
 }
 
 void KioskAppManager::SetEnableAutoLaunch(bool value) {
@@ -218,7 +310,7 @@ void KioskAppManager::RemoveObserver(KioskAppManagerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-KioskAppManager::KioskAppManager() {
+KioskAppManager::KioskAppManager() : ownership_established_(false) {
   UpdateAppData();
   CrosSettings::Get()->AddSettingsObserver(
       kAccountsPrefDeviceLocalAccounts, this);

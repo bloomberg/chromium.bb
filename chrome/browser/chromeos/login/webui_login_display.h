@@ -68,6 +68,7 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual void RemoveUser(const std::string& username) OVERRIDE;
   virtual void ResyncUserData() OVERRIDE;
   virtual void ShowEnterpriseEnrollmentScreen() OVERRIDE;
+  virtual void ShowKioskEnableScreen() OVERRIDE;
   virtual void ShowResetScreen() OVERRIDE;
   virtual void ShowKioskAutolaunchScreen() OVERRIDE;
   virtual void ShowWrongHWIDScreen() OVERRIDE;
@@ -86,8 +87,6 @@ class WebUILoginDisplay : public LoginDisplay,
 
   // UserActivityDetector implementation:
   virtual void OnUserActivity() OVERRIDE;
-
-  void SetGaiaUrlForTesting(const GURL& gaia_url);
 
  private:
   void StartPasswordClearTimer();

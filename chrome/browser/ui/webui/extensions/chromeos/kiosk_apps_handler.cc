@@ -14,7 +14,6 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
@@ -92,7 +91,9 @@ bool ExtractsAppIdFromInput(const std::string& input,
 
 KioskAppsHandler::KioskAppsHandler()
     : kiosk_app_manager_(KioskAppManager::Get()),
-      initialized_(false) {
+      initialized_(false),
+      is_kiosk_enabled_(false),
+      weak_ptr_factory_(this) {
   kiosk_app_manager_->AddObserver(this);
 }
 
@@ -101,6 +102,9 @@ KioskAppsHandler::~KioskAppsHandler() {
 }
 
 void KioskAppsHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback("initializeKioskAppSettings",
+      base::Bind(&KioskAppsHandler::HandleInitializeKioskAppSettings,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("getKioskAppSettings",
       base::Bind(&KioskAppsHandler::HandleGetKioskAppSettings,
                  base::Unretained(this)));
@@ -122,12 +126,6 @@ void KioskAppsHandler::RegisterMessages() {
 }
 
 void KioskAppsHandler::GetLocalizedValues(content::WebUIDataSource* source) {
-  source->AddBoolean(
-      "enableKiosk",
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableAppMode) &&
-      (chromeos::UserManager::Get()->IsCurrentUserOwner() ||
-          !base::chromeos::IsRunningOnChromeOS()));
   source->AddString(
       "addKioskAppButton",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ADD_KIOSK_APP_BUTTON));
@@ -194,12 +192,31 @@ void KioskAppsHandler::OnKioskAppDataLoadFailure(const std::string& app_id) {
                                    app_id_value);
 }
 
+
+void KioskAppsHandler::OnGetConsumerKioskModeStatus(
+    chromeos::KioskAppManager::ConsumerKioskModeStatus status) {
+  initialized_ = true;
+  is_kiosk_enabled_ =
+     !CommandLine::ForCurrentProcess()->HasSwitch(
+         chromeos::switches::kDisableAppMode) &&
+     (((status == KioskAppManager::CONSUMER_KIOSK_MODE_ENABLED) &&
+         chromeos::UserManager::Get()->IsCurrentUserOwner()) ||
+         !base::chromeos::IsRunningOnChromeOS());
+
+  if (is_kiosk_enabled_) {
+    base::FundamentalValue enabled(is_kiosk_enabled_);
+    web_ui()->CallJavascriptFunction("extensions.KioskAppsOverlay.enableKiosk",
+                                     enabled);
+  }
+}
+
+
 void KioskAppsHandler::OnKioskAppsSettingsChanged() {
   SendKioskAppSettings();
 }
 
 void KioskAppsHandler::SendKioskAppSettings() {
-  if (!initialized_)
+  if (!initialized_ || !is_kiosk_enabled_)
     return;
 
   bool enable_bailout_shortcut;
@@ -229,12 +246,22 @@ void KioskAppsHandler::SendKioskAppSettings() {
                                    settings);
 }
 
+void KioskAppsHandler::HandleInitializeKioskAppSettings(
+    const base::ListValue* args) {
+  KioskAppManager::Get()->GetConsumerKioskModeStatus(
+      base::Bind(&KioskAppsHandler::OnGetConsumerKioskModeStatus,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
 void KioskAppsHandler::HandleGetKioskAppSettings(const base::ListValue* args) {
-  initialized_ = true;
   SendKioskAppSettings();
 }
 
+
 void KioskAppsHandler::HandleAddKioskApp(const base::ListValue* args) {
+  if (!initialized_ || !is_kiosk_enabled_)
+    return;
+
   std::string input;
   CHECK(args->GetString(0, &input));
 
@@ -248,6 +275,9 @@ void KioskAppsHandler::HandleAddKioskApp(const base::ListValue* args) {
 }
 
 void KioskAppsHandler::HandleRemoveKioskApp(const base::ListValue* args) {
+  if (!initialized_ || !is_kiosk_enabled_)
+    return;
+
   std::string app_id;
   CHECK(args->GetString(0, &app_id));
 
@@ -256,6 +286,9 @@ void KioskAppsHandler::HandleRemoveKioskApp(const base::ListValue* args) {
 
 void KioskAppsHandler::HandleEnableKioskAutoLaunch(
     const base::ListValue* args) {
+  if (!initialized_ || !is_kiosk_enabled_)
+    return;
+
   std::string app_id;
   CHECK(args->GetString(0, &app_id));
 
@@ -264,6 +297,9 @@ void KioskAppsHandler::HandleEnableKioskAutoLaunch(
 
 void KioskAppsHandler::HandleDisableKioskAutoLaunch(
     const base::ListValue* args) {
+  if (!initialized_ || !is_kiosk_enabled_)
+    return;
+
   std::string app_id;
   CHECK(args->GetString(0, &app_id));
 
@@ -276,6 +312,9 @@ void KioskAppsHandler::HandleDisableKioskAutoLaunch(
 
 void KioskAppsHandler::HandleSetDisableBailoutShortcut(
     const base::ListValue* args) {
+  if (!initialized_ || !is_kiosk_enabled_)
+    return;
+
   bool disable_bailout_shortcut;
   CHECK(args->GetBoolean(0, &disable_bailout_shortcut));
 

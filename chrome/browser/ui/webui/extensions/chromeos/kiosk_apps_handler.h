@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -45,6 +47,7 @@ class KioskAppsHandler : public content::WebUIMessageHandler,
   void SendKioskAppSettings();
 
   // JS callbacks.
+  void HandleInitializeKioskAppSettings(const base::ListValue* args);
   void HandleGetKioskAppSettings(const base::ListValue* args);
   void HandleAddKioskApp(const base::ListValue* args);
   void HandleRemoveKioskApp(const base::ListValue* args);
@@ -52,8 +55,14 @@ class KioskAppsHandler : public content::WebUIMessageHandler,
   void HandleDisableKioskAutoLaunch(const base::ListValue* args);
   void HandleSetDisableBailoutShortcut(const base::ListValue* args);
 
+  // Callback for KioskAppManager::GetConsumerKioskModeStatus().
+  void OnGetConsumerKioskModeStatus(
+      chromeos::KioskAppManager::ConsumerKioskModeStatus status);
+
   KioskAppManager* kiosk_app_manager_;  // not owned.
   bool initialized_;
+  bool is_kiosk_enabled_;
+  base::WeakPtrFactory<KioskAppsHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppsHandler);
 };

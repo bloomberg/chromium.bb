@@ -9,7 +9,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launcher.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chromeos/chromeos_switches.h"
@@ -23,7 +22,8 @@
 namespace chromeos {
 
 KioskAppMenuHandler::KioskAppMenuHandler()
-    : initialized_(false) {
+    : initialized_(false),
+      weak_ptr_factory_(this) {
   KioskAppManager::Get()->AddObserver(this);
 }
 
@@ -87,7 +87,15 @@ void KioskAppMenuHandler::SendKioskApps() {
 
 void KioskAppMenuHandler::HandleInitializeKioskApps(
     const base::ListValue* args) {
-  initialized_ = true;
+  KioskAppManager::Get()->GetConsumerKioskModeStatus(
+      base::Bind(&KioskAppMenuHandler::OnGetConsumerKioskModeStatus,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void KioskAppMenuHandler::OnGetConsumerKioskModeStatus(
+    KioskAppManager::ConsumerKioskModeStatus status) {
+  initialized_ =
+      status == KioskAppManager::CONSUMER_KIOSK_MODE_ENABLED;
   SendKioskApps();
 }
 

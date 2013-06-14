@@ -31,6 +31,7 @@ class ErrorScreen;
 class EulaScreen;
 class FocusRingController;
 class KioskAutolaunchScreen;
+class KioskEnableScreen;
 class LocallyManagedUserCreationScreen;
 class LoginDisplayHost;
 class NetworkScreen;
@@ -118,6 +119,7 @@ class WizardController : public ScreenObserver {
   EnrollmentScreen* GetEnrollmentScreen();
   ResetScreen* GetResetScreen();
   KioskAutolaunchScreen* GetKioskAutolaunchScreen();
+  KioskEnableScreen* GetKioskEnableScreen();
   TermsOfServiceScreen* GetTermsOfServiceScreen();
   WrongHWIDScreen* GetWrongHWIDScreen();
   LocallyManagedUserCreationScreen* GetLocallyManagedUserCreationScreen();
@@ -138,6 +140,7 @@ class WizardController : public ScreenObserver {
   static const char kEulaScreenName[];
   static const char kEnrollmentScreenName[];
   static const char kResetScreenName[];
+  static const char kKioskEnableScreenName[];
   static const char kKioskAutolaunchScreenName[];
   static const char kErrorScreenName[];
   static const char kTermsOfServiceScreenName[];
@@ -153,6 +156,7 @@ class WizardController : public ScreenObserver {
   void ShowEnrollmentScreen();
   void ShowResetScreen();
   void ShowKioskAutolaunchScreen();
+  void ShowKioskEnableScreen();
   void ShowTermsOfServiceScreen();
   void ShowWrongHWIDScreen();
   void ShowLocallyManagedUserCreationScreen();
@@ -178,6 +182,7 @@ class WizardController : public ScreenObserver {
   void OnResetCanceled();
   void OnKioskAutolaunchCanceled();
   void OnKioskAutolaunchConfirmed();
+  void OnKioskEnableCompleted();
   void OnWrongHWIDWarningSkipped();
   void OnOOBECompleted();
   void OnTermsOfServiceDeclined();
@@ -245,6 +250,7 @@ class WizardController : public ScreenObserver {
   scoped_ptr<EulaScreen> eula_screen_;
   scoped_ptr<ResetScreen> reset_screen_;
   scoped_ptr<KioskAutolaunchScreen> autolaunch_screen_;
+  scoped_ptr<KioskEnableScreen> kiosk_enable_screen_;
   scoped_ptr<EnrollmentScreen> enrollment_screen_;
   scoped_ptr<ErrorScreen> error_screen_;
   scoped_ptr<TermsOfServiceScreen> terms_of_service_screen_;

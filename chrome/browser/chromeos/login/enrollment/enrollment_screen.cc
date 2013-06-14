@@ -167,7 +167,7 @@ void EnrollmentScreen::OnConfirmationClosed() {
   // If the machine has been put in KIOSK mode we have to restart the session
   // here to go in the proper KIOSK mode login screen.
   if (g_browser_process->browser_policy_connector()->GetDeviceMode() ==
-          policy::DEVICE_MODE_KIOSK) {
+          policy::DEVICE_MODE_RETAIL_KIOSK) {
     DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
     return;
   }
@@ -213,7 +213,7 @@ void EnrollmentScreen::RegisterForDevicePolicy(
 
   policy::DeviceCloudPolicyManagerChromeOS::AllowedDeviceModes modes;
   modes[policy::DEVICE_MODE_ENTERPRISE] = true;
-  modes[policy::DEVICE_MODE_KIOSK] = !is_auto_enrollment_;
+  modes[policy::DEVICE_MODE_RETAIL_KIOSK] = !is_auto_enrollment_;
   connector->ScheduleServiceInitialization(0);
   connector->GetDeviceCloudPolicyManager()->StartEnrollment(
       token, is_auto_enrollment_, modes,
