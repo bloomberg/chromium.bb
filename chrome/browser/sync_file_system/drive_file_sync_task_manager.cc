@@ -6,7 +6,6 @@
 
 #include "base/debug/trace_event.h"
 #include "base/location.h"
-#include "chrome/browser/sync_file_system/drive_file_sync_service.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "webkit/browser/fileapi/syncable/sync_file_metadata.h"
 
@@ -28,12 +27,12 @@ class DriveFileSyncTaskManager::TaskToken {
   const tracked_objects::Location& location() const { return location_; }
 
   ~TaskToken() {
-    // All task on DriveFileSyncService must hold TaskToken instance to ensure
+    // All task on Client must hold TaskToken instance to ensure
     // no other tasks are running. Also, as soon as a task finishes to work,
-    // it must return the token to DriveFileSyncService.
-    // Destroying a token with valid |sync_service_| indicates the token was
+    // it must return the token to TaskManager.
+    // Destroying a token with valid |client| indicates the token was
     // dropped by a task without returning.
-    if (manager_.get() && manager_->service_.get()) {
+    if (manager_.get() && manager_->client_.get()) {
       NOTREACHED()
           << "Unexpected TaskToken deletion from: " << location_.ToString();
 
@@ -53,14 +52,14 @@ class DriveFileSyncTaskManager::TaskToken {
 };
 
 DriveFileSyncTaskManager::DriveFileSyncTaskManager(
-    base::WeakPtr<DriveFileSyncService> service)
-    : service_(service),
+    base::WeakPtr<Client> client)
+    : client_(client),
       last_operation_status_(SYNC_STATUS_OK),
       last_gdata_error_(google_apis::HTTP_SUCCESS) {
 }
 
 DriveFileSyncTaskManager::~DriveFileSyncTaskManager() {
-  service_.reset();
+  client_.reset();
   token_.reset();
 }
 
@@ -108,8 +107,7 @@ void DriveFileSyncTaskManager::NotifyTaskDone(
            << " (" << SyncStatusCodeToString(status) << ")"
            << " " << token_->location().ToString();
 
-  service_->NotifyLastOperationStatus(last_operation_status_,
-                                      last_gdata_error_);
+  client_->NotifyLastOperationStatus(last_operation_status_, last_gdata_error_);
 
   if (!callback.is_null())
     callback.Run(status);
@@ -121,7 +119,7 @@ void DriveFileSyncTaskManager::NotifyTaskDone(
     return;
   }
 
-  service_->MaybeScheduleNextTask();
+  client_->MaybeScheduleNextTask();
 }
 
 scoped_ptr<DriveFileSyncTaskManager::TaskToken>

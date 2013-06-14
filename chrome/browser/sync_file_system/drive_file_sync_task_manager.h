@@ -23,8 +23,6 @@ class Location;
 
 namespace sync_file_system {
 
-class DriveFileSyncService;
-
 class DriveFileSyncTaskManager
     : public base::NonThreadSafe,
       public base::SupportsWeakPtr<DriveFileSyncTaskManager> {
@@ -32,8 +30,20 @@ class DriveFileSyncTaskManager
   class TaskToken;
   typedef base::Callback<void(const SyncStatusCallback& callback)> Task;
 
-  explicit DriveFileSyncTaskManager(
-      base::WeakPtr<DriveFileSyncService> service);
+  class Client {
+   public:
+    virtual ~Client() {}
+
+    // Called when the manager is idle.
+    virtual void MaybeScheduleNextTask() = 0;
+
+    // Called when the manager is notified a task is done.
+    virtual void NotifyLastOperationStatus(
+        SyncStatusCode last_operation_status,
+        google_apis::GDataErrorCode last_gdata_error) = 0;
+  };
+
+  explicit DriveFileSyncTaskManager(base::WeakPtr<Client> client);
   virtual ~DriveFileSyncTaskManager();
 
   // This needs to be called to start task scheduling.
@@ -62,7 +72,7 @@ class DriveFileSyncTaskManager
       scoped_ptr<TaskToken> token,
       const SyncStatusCallback& callback);
 
-  base::WeakPtr<DriveFileSyncService> service_;
+  base::WeakPtr<Client> client_;
 
   SyncStatusCode last_operation_status_;
   google_apis::GDataErrorCode last_gdata_error_;

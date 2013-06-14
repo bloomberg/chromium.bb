@@ -18,6 +18,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/google_apis/drive_notification_observer.h"
 #include "chrome/browser/sync_file_system/drive/api_util_interface.h"
+#include "chrome/browser/sync_file_system/drive_file_sync_task_manager.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/local_change_processor.h"
 #include "chrome/browser/sync_file_system/local_sync_operation_resolver.h"
@@ -53,6 +54,7 @@ class DriveFileSyncTaskManager;
 class DriveFileSyncService : public RemoteFileSyncService,
                              public LocalChangeProcessor,
                              public drive::APIUtilObserver,
+                             public DriveFileSyncTaskManager::Client,
                              public base::NonThreadSafe,
                              public base::SupportsWeakPtr<DriveFileSyncService>,
                              public google_apis::DriveNotificationObserver {
@@ -131,12 +133,11 @@ class DriveFileSyncService : public RemoteFileSyncService,
   virtual void OnNotificationReceived() OVERRIDE;
   virtual void OnPushNotificationEnabled(bool enabled) OVERRIDE;
 
-  // Called from DriveFileSyncTaskManager.
-  // TODO: factor out as an interface.
-  void MaybeScheduleNextTask();
-  void NotifyLastOperationStatus(
+  // DriveFileSyncTaskManager::Client overrides.
+  virtual void MaybeScheduleNextTask() OVERRIDE;
+  virtual void NotifyLastOperationStatus(
       SyncStatusCode sync_status,
-      google_apis::GDataErrorCode gdata_error);
+      google_apis::GDataErrorCode gdata_error) OVERRIDE;
 
   static std::string PathToTitle(const base::FilePath& path);
   static base::FilePath TitleToPath(const std::string& title);
