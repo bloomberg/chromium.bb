@@ -37,10 +37,10 @@ namespace WebCore {
 
     class TreeWalker : public ScriptWrappable, public RefCounted<TreeWalker>, public Traversal {
     public:
-        static PassRefPtr<TreeWalker> create(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPtr<NodeFilter> filter, bool expandEntityReferences)
+        static PassRefPtr<TreeWalker> create(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPtr<NodeFilter> filter)
         {
-            return adoptRef(new TreeWalker(rootNode, whatToShow, filter, expandEntityReferences));
-        }                            
+            return adoptRef(new TreeWalker(rootNode, whatToShow, filter));
+        }
 
         Node* currentNode() const { return m_current.get(); }
         void setCurrentNode(PassRefPtr<Node>, ExceptionCode&);
@@ -54,8 +54,8 @@ namespace WebCore {
         Node* nextNode(ScriptState*);
 
     private:
-        TreeWalker(PassRefPtr<Node>, unsigned whatToShow, PassRefPtr<NodeFilter>, bool expandEntityReferences);
-        
+        TreeWalker(PassRefPtr<Node>, unsigned whatToShow, PassRefPtr<NodeFilter>);
+
         Node* setCurrent(PassRefPtr<Node>);
 
         RefPtr<Node> m_current;

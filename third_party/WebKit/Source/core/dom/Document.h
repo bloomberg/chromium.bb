@@ -467,11 +467,15 @@ public:
 
     PassRefPtr<Range> createRange();
 
-    PassRefPtr<NodeIterator> createNodeIterator(Node* root, unsigned whatToShow,
-        PassRefPtr<NodeFilter>, bool expandEntityReferences, ExceptionCode&);
+    PassRefPtr<NodeIterator> createNodeIterator(Node* root, ExceptionCode&);
+    PassRefPtr<NodeIterator> createNodeIterator(Node* root, unsigned whatToShow, ExceptionCode&);
+    PassRefPtr<NodeIterator> createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter>, ExceptionCode&);
+    PassRefPtr<NodeIterator> createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter>, bool expandEntityReferences, ExceptionCode&);
 
-    PassRefPtr<TreeWalker> createTreeWalker(Node* root, unsigned whatToShow,
-        PassRefPtr<NodeFilter>, bool expandEntityReferences, ExceptionCode&);
+    PassRefPtr<TreeWalker> createTreeWalker(Node* root, ExceptionCode&);
+    PassRefPtr<TreeWalker> createTreeWalker(Node* root, unsigned whatToShow, ExceptionCode&);
+    PassRefPtr<TreeWalker> createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter>, ExceptionCode&);
+    PassRefPtr<TreeWalker> createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter>, bool expandEntityReferences, ExceptionCode&);
 
     // Special support for editing
     PassRefPtr<CSSStyleDeclaration> createCSSStyleDeclaration();

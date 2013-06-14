@@ -1,0 +1,12 @@
+This test checks the basic functionality of NodeIterator.
+
+
+PASS Construct a NodeIterator by document.createNodeIterator(). 
+PASS Give an invalid root node to document.createNodeIterator(). 
+PASS Iterate over all nodes forward then backward. 
+PASS Iterate over all elements forward then backward. 
+PASS Iterate over all text nodes forward then backward. 
+PASS Iterate over all comment nodes forward then backward. 
+PASS Test the behavior of NodeIterator when no nodes match with the given filter. 
+PASS Test the behavior of NodeIterator when NodeFilter is specified. 
+

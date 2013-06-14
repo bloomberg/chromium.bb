@@ -28,16 +28,6 @@
 #include "config.h"
 #include "core/dom/Document.h"
 
-#include <wtf/CurrentTime.h>
-#include <wtf/HashFunctions.h>
-#include <wtf/MainThread.h>
-#include <wtf/MemoryInstrumentationHashCountedSet.h>
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/StringBuffer.h>
 #include "CSSValueKeywords.h"
 #include "HTMLElementFactory.h"
 #include "HTMLNames.h"
@@ -205,6 +195,17 @@
 #include "weborigin/SchemeRegistry.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityPolicy.h"
+#include "wtf/CurrentTime.h"
+#include "wtf/HashFunctions.h"
+#include "wtf/MainThread.h"
+#include "wtf/MemoryInstrumentationHashCountedSet.h"
+#include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/MemoryInstrumentationHashSet.h"
+#include "wtf/MemoryInstrumentationVector.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/UnusedParam.h"
+#include "wtf/text/StringBuffer.h"
 
 using namespace std;
 using namespace WTF;
@@ -1534,24 +1535,83 @@ PassRefPtr<Range> Document::createRange()
     return Range::create(this);
 }
 
-PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow,
-    PassRefPtr<NodeFilter> filter, bool expandEntityReferences, ExceptionCode& ec)
+PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, ExceptionCode& ec)
 {
+    // FIXME: Probably this should be handled within the bindings layer and TypeError should be thrown.
     if (!root) {
         ec = NOT_SUPPORTED_ERR;
         return 0;
     }
-    return NodeIterator::create(root, whatToShow, filter, expandEntityReferences);
+    return NodeIterator::create(root, NodeFilter::SHOW_ALL, PassRefPtr<NodeFilter>());
 }
 
-PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow,
-    PassRefPtr<NodeFilter> filter, bool expandEntityReferences, ExceptionCode& ec)
+PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, ExceptionCode& ec)
 {
     if (!root) {
         ec = NOT_SUPPORTED_ERR;
         return 0;
     }
-    return TreeWalker::create(root, whatToShow, filter, expandEntityReferences);
+    // FIXME: It might be a good idea to emit a warning if |whatToShow| contains a bit that is not defined in
+    // NodeFilter.
+    return NodeIterator::create(root, whatToShow, PassRefPtr<NodeFilter>());
+}
+
+PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, ExceptionCode& ec)
+{
+    if (!root) {
+        ec = NOT_SUPPORTED_ERR;
+        return 0;
+    }
+    // FIXME: Ditto.
+    return NodeIterator::create(root, whatToShow, filter);
+}
+
+PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, bool expandEntityReferences, ExceptionCode& ec)
+{
+    if (!root) {
+        ec = NOT_SUPPORTED_ERR;
+        return 0;
+    }
+    // FIXME: Warn if |expandEntityReferences| is specified. This optional argument is deprecated in DOM4.
+    UNUSED_PARAM(expandEntityReferences);
+    return NodeIterator::create(root, whatToShow, filter);
+}
+
+PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, ExceptionCode& ec)
+{
+    if (!root) {
+        ec = NOT_SUPPORTED_ERR;
+        return 0;
+    }
+    return TreeWalker::create(root, NodeFilter::SHOW_ALL, PassRefPtr<NodeFilter>());
+}
+
+PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, ExceptionCode& ec)
+{
+    if (!root) {
+        ec = NOT_SUPPORTED_ERR;
+        return 0;
+    }
+    return TreeWalker::create(root, whatToShow, PassRefPtr<NodeFilter>());
+}
+
+PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, ExceptionCode& ec)
+{
+    if (!root) {
+        ec = NOT_SUPPORTED_ERR;
+        return 0;
+    }
+    return TreeWalker::create(root, whatToShow, filter);
+}
+
+PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, bool expandEntityReferences, ExceptionCode& ec)
+{
+    UNUSED_PARAM(expandEntityReferences);
+    if (!root) {
+        ec = NOT_SUPPORTED_ERR;
+        return 0;
+    }
+    return TreeWalker::create(root, whatToShow, filter);
 }
 
 void Document::scheduleForcedStyleRecalc()

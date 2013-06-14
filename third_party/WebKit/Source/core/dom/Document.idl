@@ -65,20 +65,22 @@
 
     [RaisesException] Event              createEvent([Default=Undefined] optional DOMString eventType);
 
-    // DOM Level 2 Tranversal and Range (DocumentRange interface)
+    // DOM Level 2 Traversal and Range (DocumentRange interface)
 
     Range              createRange();
 
-    // DOM Level 2 Tranversal and Range (DocumentTraversal interface)
-
-     [RaisesException] NodeIterator createNodeIterator([Default=Undefined] optional Node root,
-                                                   [Default=Undefined] optional unsigned long whatToShow,
-                                                   [Default=Undefined] optional NodeFilter filter,
-                                                   [Default=Undefined] optional boolean expandEntityReferences);
-     [RaisesException] TreeWalker createTreeWalker([Default=Undefined] optional Node root,
-                                               [Default=Undefined] optional unsigned long whatToShow,
-                                               [Default=Undefined] optional NodeFilter filter,
-                                               [Default=Undefined] optional boolean expandEntityReferences);
+    // DOM Level 2 Traversal and Range (DocumentTraversal interface)
+    // In DOM4, the fourth argument |expandEntityReferences| is removed.
+    // Historically, this argument was never implemented and has been ignored.
+    // We still receive the argument to keep compatibility, but don't do anything if it's specified.
+    [RaisesException] NodeIterator createNodeIterator(Node root,
+                                                      optional unsigned long whatToShow,
+                                                      optional NodeFilter filter,
+                                                      optional boolean expandEntityReferences);
+    [RaisesException] TreeWalker createTreeWalker(Node root,
+                                                  optional unsigned long whatToShow,
+                                                  optional NodeFilter filter,
+                                                  optional boolean expandEntityReferences);
 
     // DOM Level 2 Abstract Views (DocumentView interface)
 

@@ -38,17 +38,19 @@ namespace WebCore {
         Node* root() const { return m_root.get(); }
         unsigned whatToShow() const { return m_whatToShow; }
         NodeFilter* filter() const { return m_filter.get(); }
-        bool expandEntityReferences() const { return m_expandEntityReferences; }
+        // |expandEntityReferences| first appeared in "DOM Level 2 Traversal and Range". However, this argument was
+        // never implemented, and, in DOM4, the function argument |expandEntityReferences| is removed from
+        // Document.createNodeIterator() and Document.createTreeWalker().
+        bool expandEntityReferences() const { return false; }
 
     protected:
-        Traversal(PassRefPtr<Node>, unsigned whatToShow, PassRefPtr<NodeFilter>, bool expandEntityReferences);
+        Traversal(PassRefPtr<Node>, unsigned whatToShow, PassRefPtr<NodeFilter>);
         short acceptNode(ScriptState*, Node*) const;
 
     private:
         RefPtr<Node> m_root;
         unsigned m_whatToShow;
         RefPtr<NodeFilter> m_filter;
-        bool m_expandEntityReferences;
     };
 
 } // namespace WebCore

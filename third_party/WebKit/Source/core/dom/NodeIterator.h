@@ -37,9 +37,9 @@ namespace WebCore {
 
     class NodeIterator : public ScriptWrappable, public RefCounted<NodeIterator>, public Traversal {
     public:
-        static PassRefPtr<NodeIterator> create(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPtr<NodeFilter> filter, bool expandEntityReferences)
+        static PassRefPtr<NodeIterator> create(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPtr<NodeFilter> filter)
         {
-            return adoptRef(new NodeIterator(rootNode, whatToShow, filter, expandEntityReferences));
+            return adoptRef(new NodeIterator(rootNode, whatToShow, filter));
         }
         ~NodeIterator();
 
@@ -54,7 +54,7 @@ namespace WebCore {
         void nodeWillBeRemoved(Node*);
 
     private:
-        NodeIterator(PassRefPtr<Node>, unsigned whatToShow, PassRefPtr<NodeFilter>, bool expandEntityReferences);
+        NodeIterator(PassRefPtr<Node>, unsigned whatToShow, PassRefPtr<NodeFilter>);
 
         struct NodePointer {
             RefPtr<Node> node;
