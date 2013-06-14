@@ -7,6 +7,7 @@ webkit.org/b/92287 fast/canvas/webgl/context-creation-and-destruction.html [ Fai
 webkit.org/b/92287 virtual/gpu/fast/canvas/webgl/context-creation-and-destruction.html [ Failure Pass Timeout ]
 crbug.com/24182 [ Debug ] fast/css/large-list-of-rules-crash.html [ Slow ]
 crbug.com/24182 [ Debug ] fast/dom/shadow/tree-scope-crash.html [ Slow ]
+crbug.com/24182 [ Debug ] fast/dom/HTMLSelectElement/option-add-crash.html [ Slow ]
 crbug.com/24182 [ Debug ] fast/dom/Window/window-postmessage-clone-really-deep-array.html [ Slow ]
 crbug.com/24182 [ Debug ] fast/frames/calculate-percentage.html [ Slow ]
 crbug.com/24182 [ Debug ] fast/frames/frameset-frameborder-boolean-values.html [ Slow ]
