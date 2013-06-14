@@ -80,6 +80,7 @@ FileTableColumnModel.prototype.normalizeWidths = function(contentWidth) {
   for (var i = 0; i < this.size - 1; i++) {
     var column = this.columns_[i];
     sum += column.width;
+    // Faster alternative to Math.floor for non-negative numbers.
     positions[i + 1] = ~~(newTotalWidth * sum / totalWidth);
   }
   this.applyColumnPositions_(positions);
@@ -246,6 +247,10 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
   }
 
   var columnModel = Object.create(tableColumnModelClass.prototype, {
+    /**
+     * The number of columns.
+     * @type {number}
+     */
     size: {
       get: function() {
         if (util.platform.newUI())
@@ -254,15 +259,40 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
       }
     },
 
+    /**
+     * The number of columns.
+     * @type {number}
+     */
     totalSize: {
       get: function() {
         return columns.length;
       }
     },
 
+    /**
+     * Whether to show the offline column or not.
+     * @type {boolean}
+     */
     showOfflineColumn: {
       writable: true,
       value: false
+    },
+
+    /**
+     * Obtains a column by the specified horizontal positon.
+     * @param {number} x Horizontal position.
+     * @return {object} The object that contains column index, column width, and
+     *     hitPosition where the horizontal position is hit in the column.
+     */
+    getHitColumn: {
+      value: function(x) {
+        for (var i = 0; x >= this.columns_[i].width; i++) {
+          x -= this.columns_[i].width;
+        }
+        if (i >= this.columns_.length)
+          return null;
+        return {index: i, hitPosition: x, width: this.columns_[i].width};
+      }
     }
   });
 
@@ -320,6 +350,11 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
       FileTableSplitter.decorate(splitters[i]);
     }
   };
+
+  // Save the last selection. This is used by shouldStartDragSelection.
+  self.list.addEventListener('mousedown', function(e) {
+    this.lastSelection_ = this.selectionModel.selectedIndexes;
+  }.bind(self), true);
 };
 
 /**
@@ -347,6 +382,61 @@ FileTable.prototype.setDateTimeFormat = function(use12hourClock) {
         {year: 'numeric', month: 'short', day: 'numeric',
          hour: 'numeric', minute: 'numeric',
          hour12: use12hourClock});
+};
+
+/**
+ * Obtains if the drag selection should be start or not by referring the mouse
+ * event.
+ * @param {MouseEvent} event Drag start event.
+ * @return {boolean} True if the mouse is hit to the background of the list.
+ */
+FileTable.prototype.shouldStartDragSelection = function(event) {
+  // If the shift key is pressed, it should starts drag selection.
+  if (event.shiftKey)
+    return true;
+
+  // If the position values are negative, it points the out of list.
+  // It should start the drag selection.
+  var pos = DragSelector.getScrolledPosition(this.list, event);
+  if (!pos)
+    return false;
+  if (pos.x < 0 || pos.y < 0)
+    return true;
+
+  // If the item index is out of range, it should start the drag selection.
+  var itemHeight = this.list.measureItem().height;
+  // Faster alternative to Math.floor for non-negative numbers.
+  var itemIndex = ~~(pos.y / itemHeight);
+  if (itemIndex >= this.list.dataModel.length)
+    return true;
+
+  // If the pointed item is already selected, it should not start the drag
+  // selection.
+  if (this.lastSelection_.indexOf(itemIndex) != -1)
+    return false;
+
+  // If the horizontal value is not hit to column, it shoud start the drag
+  // selection.
+  var hitColumn = this.columnModel.getHitColumn(pos.x);
+  if (!hitColumn)
+    return true;
+
+  // Check if the point is on the column contents or not.
+  var item = this.list.getListItemByIndex(itemIndex);
+  switch (this.columnModel.columns_[hitColumn.index].id) {
+    case 'name':
+      var spanElement = item.querySelector('.filename-label span');
+      var spanRect = spanElement.getBoundingClientRect();
+      // The this.list.cachedBounds_ object is set by
+      // DragSelector.getScrolledPosition.
+      if (!this.list.cachedBounds)
+        return true;
+      var textRight =
+          spanRect.left - this.list.cachedBounds.left + spanRect.width;
+      return textRight <= hitColumn.hitPosition;
+    default:
+      return true;
+  }
 };
 
 /**

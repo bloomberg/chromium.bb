@@ -68,6 +68,27 @@ DragSelector.SelectionFlag_ = {
 };
 
 /**
+ * Obtains the scrolled position in the element of mouse pointer from the mouse
+ * event.
+ *
+ * @param {HTMLElement} element Element that has the scroll bars.
+ * @param {Event} event The mouse event.
+ * @return {object} Scrolled position.
+ */
+DragSelector.getScrolledPosition = function(element, event) {
+  if (!element.cachedBounds) {
+    element.cachedBounds = element.getBoundingClientRect();
+    if (!element.cachedBounds)
+      return null;
+  }
+  var rect = element.cachedBounds;
+  return {
+    x: event.clientX - rect.left + element.scrollLeft,
+    y: event.clientY - rect.top + element.scrollTop
+  };
+};
+
+/**
  * Starts drag selection by reacting dragstart event.
  * This function must be called from handlers of dragstart event.
  *
@@ -83,29 +104,30 @@ DragSelector.prototype.startDragSelection = function(list, event) {
   // Set the target of the drag selection
   this.target_ = list;
 
+  // Prevent the default action.
+  event.preventDefault();
+
+  // Save the start state.
+  var startPos = DragSelector.getScrolledPosition(list, event);
+  if (!startPos)
+    return;
+  this.startX_ = startPos.x;
+  this.startY_ = startPos.y;
+  this.lastSelection_ = [];
+  this.originalSelection_ = this.target_.selectionModel_.selectedIndexes;
+
   // Create and add the border element
   if (!this.border_) {
     this.border_ = this.target_.ownerDocument.createElement('div');
     this.border_.className = 'drag-selection-border';
   }
-  list.appendChild(this.border_);
-
-  // Prevent default action.
-  event.preventDefault();
-
-  // If no modifier key is pressed, clear the original selection.
-  if (!event.shiftKey && !event.ctrlKey) {
-    this.target_.selectionModel_.unselectAll();
-  }
-
-  // Save the start state.
-  var rect = list.getBoundingClientRect();
-  this.startX_ = event.clientX - rect.left + list.scrollLeft;
-  this.startY_ = event.clientY - rect.top + list.scrollTop;
   this.border_.style.left = this.startX_ + 'px';
   this.border_.style.top = this.startY_ + 'px';
-  this.lastSelection_ = [];
-  this.originalSelection_ = this.target_.selectionModel_.selectedIndexes;
+  list.appendChild(this.border_);
+
+  // If no modifier key is pressed, clear the original selection.
+  if (!event.shiftKey && !event.ctrlKey)
+    this.target_.selectionModel_.unselectAll();
 
   // Register event handlers.
   // The handlers are bounded at the constructor.
@@ -122,14 +144,12 @@ DragSelector.prototype.startDragSelection = function(list, event) {
  */
 DragSelector.prototype.onMouseMove_ = function(event) {
   // Get the selection bounds.
-  var inRect = this.target_.getBoundingClientRect();
-  var x = event.clientX - inRect.left + this.target_.scrollLeft;
-  var y = event.clientY - inRect.top + this.target_.scrollTop;
+  var pos = DragSelector.getScrolledPosition(this.target_, event);
   var borderBounds = {
-    left: Math.max(Math.min(this.startX_, x), 0),
-    top: Math.max(Math.min(this.startY_, y), 0),
-    right: Math.min(Math.max(this.startX_, x), this.target_.scrollWidth),
-    bottom: Math.min(Math.max(this.startY_, y), this.target_.scrollHeight)
+    left: Math.max(Math.min(this.startX_, pos.x), 0),
+    top: Math.max(Math.min(this.startY_, pos.y), 0),
+    right: Math.min(Math.max(this.startX_, pos.x), this.target_.scrollWidth),
+    bottom: Math.min(Math.max(this.startY_, pos.y), this.target_.scrollHeight)
   };
   borderBounds.width = borderBounds.right - borderBounds.left;
   borderBounds.height = borderBounds.bottom - borderBounds.top;
@@ -145,7 +165,7 @@ DragSelector.prototype.onMouseMove_ = function(event) {
         itemMetrics.bottom >= borderBounds.top) {
       currentSelection.push(i);
     }
-    var pointed = itemMetrics.top <= y && y < itemMetrics.bottom;
+    var pointed = itemMetrics.top <= pos.y && pos.y < itemMetrics.bottom;
     if (pointed)
       leadIndex = i;
   }
@@ -218,6 +238,7 @@ DragSelector.prototype.onMouseUp_ = function(event) {
       'mousemove', this.onMouseMoveBound_, true);
   this.target_.ownerDocument.removeEventListener(
       'mouseup', this.onMouseUpBound_, true);
+  this.target_.cachedBounds = null;
   event.stopPropagation();
   this.target_ = null;
 };
