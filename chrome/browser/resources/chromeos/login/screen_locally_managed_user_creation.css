@@ -11,9 +11,17 @@
   width: 722px;
 }
 
+#managed-user-creation .step-contents {
+  height: 100%;
+}
+
 #managed-user-creation .step-controls {
   -webkit-padding-end: 20px;
   bottom: 20px;
+}
+
+#managed-user-creation .logo-padded-text {
+  padding: 0 17px 0;
 }
 
 #managed-user-creation .marketing {
@@ -24,17 +32,17 @@
 #managed-user-creation .below-marketing {
   font-size: 12px;
   line-height: 18px;
-  margin: 70px 17px 50px;
 }
 
 #managed-user-creation .page-no-marketing {
-  padding: 70px 17px 50px;
+  height: 470px;
+  padding: 70px 17px 0;
 }
 
 #managed-user-creation .page-title {
   color: #000;
   font-size: 15px;
-  margin-bottom: 8px;
+  line-height: 24px;
 }
 
 #managed-user-creation .progress-dots {
@@ -105,29 +113,20 @@
 }
 
 #managed-user-creation-intro .below-marketing {
-  margin: 70px 20px 0;
+  margin: 40px 40px 0;
 }
 
 #managed-user-creation-created-1 .below-marketing,
 #managed-user-creation-created-2 .below-marketing,
 #managed-user-creation-created-3 .below-marketing {
-  margin: 50px 130px 0;
+  margin: 55px 100px 0;
 }
 
-#managed-user-creation-tutorial-created-text {
-  font-size: x-large;
-  text-align: center;
-}
-
-#managed-user-creation-tutorial-instructions-text {
-  font-size: large;
-}
-
-#managed-user-creation-tutorial-placeholder {
-  background-color: gray;
-  font-size: x-large;
-  height: 150px;
-  text-align: center;
+#managed-user-creation-created-1-text-3,
+#managed-user-creation-created-2-text-2,
+#managed-user-creation-created-3-text-2,
+#managed-user-creation-created-3-text-3 {
+  margin-top: 20px;
 }
 
 #managed-user-creation-password-block,
@@ -160,12 +159,17 @@
   visibility: visible;
 }
 
+#managed-user-creation-managers-block {
+  -webkit-flex-direction: column;
+  display: -webkit-flex;
+  height: 100%;
+}
+
 #managed-user-creation-managers-pane {
-  border: 1px solid #f0f0f0;
-  height: 412px;
+  border: 1px solid #c8c8c8;
+  height: 100%;
   margin-top: 20px;
   overflow-y: auto;
-  width: 686px;
 }
 
 #managed-user-creation-error {
@@ -242,6 +246,10 @@
 .manager-pod.focused {
   background-color: rgb(66, 129, 244);
   opacity: 1;
+}
+
+.manager-pod.focused .managed-user-creation-manager-email {
+  color: #fff;
 }
 
 .manager-pod.focused .managed-user-creation-manager-name {
