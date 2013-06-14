@@ -5,9 +5,11 @@
 #include "content/renderer/p2p/port_allocator.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/p2p/host_address_request.h"
 #include "jingle/glue/utils.h"
 #include "net/base/escape.h"
@@ -76,7 +78,10 @@ P2PPortAllocator::P2PPortAllocator(
   set_flags(flags);
   // TODO(ronghuawu): crbug/138185 add ourselves to the firewall list in browser
   // process and then remove below line.
-  set_allow_tcp_listen(false);
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebRtcTcpServerSocket)) {
+    set_allow_tcp_listen(false);
+  }
 }
 
 P2PPortAllocator::~P2PPortAllocator() {

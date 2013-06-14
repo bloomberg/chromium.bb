@@ -225,6 +225,9 @@ const char kEnableWebRtcAecRecordings[]     = "enable-webrtc-aec-recordings";
 const char kEnableSCTPDataChannels[]        = "enable-sctp-data-channels";
 #endif
 
+// Enable WebRTC to open TCP server sockets.
+const char kEnableWebRtcTcpServerSocket[]   = "enable-webrtc-tcp-server-socket";
+
 // Enables Web MIDI API.
 const char kEnableWebMIDI[]                 = "enable-web-midi";
 
