@@ -103,41 +103,16 @@ PageScaleConstraints ViewportArguments::resolve(const FloatSize& initialViewport
     }
 
     if (type == ViewportArguments::CSSDeviceAdaptation) {
-        switch (int(resultMinWidth)) {
-        case ViewportArguments::ValueDeviceWidth:
-            resultMinWidth = deviceSize.width();
-            break;
-        case ViewportArguments::ValueDeviceHeight:
-            resultMinWidth = deviceSize.height();
-            break;
-        }
 
-        switch (int(resultMaxWidth)) {
-        case ViewportArguments::ValueDeviceWidth:
-            resultMaxWidth = deviceSize.width();
-            break;
-        case ViewportArguments::ValueDeviceHeight:
-            resultMaxWidth = deviceSize.height();
-            break;
-        }
-
-        switch (int(resultMinHeight)) {
-        case ViewportArguments::ValueDeviceWidth:
-            resultMinHeight = deviceSize.width();
-            break;
-        case ViewportArguments::ValueDeviceHeight:
-            resultMinHeight = deviceSize.height();
-            break;
-        }
-
-        switch (int(resultMaxHeight)) {
-        case ViewportArguments::ValueDeviceWidth:
-            resultMaxHeight = deviceSize.width();
-            break;
-        case ViewportArguments::ValueDeviceHeight:
-            resultMaxHeight = deviceSize.height();
-            break;
-        }
+        // device-width/device-height not supported for @viewport.
+        ASSERT(resultMinWidth != ViewportArguments::ValueDeviceWidth);
+        ASSERT(resultMinWidth != ViewportArguments::ValueDeviceHeight);
+        ASSERT(resultMaxWidth != ViewportArguments::ValueDeviceWidth);
+        ASSERT(resultMaxWidth != ViewportArguments::ValueDeviceHeight);
+        ASSERT(resultMinHeight != ViewportArguments::ValueDeviceWidth);
+        ASSERT(resultMinHeight != ViewportArguments::ValueDeviceHeight);
+        ASSERT(resultMaxHeight != ViewportArguments::ValueDeviceWidth);
+        ASSERT(resultMaxHeight != ViewportArguments::ValueDeviceHeight);
 
         if (resultMinWidth != ViewportArguments::ValueAuto || resultMaxWidth != ViewportArguments::ValueAuto)
             resultWidth = compareIgnoringAuto(resultMinWidth, compareIgnoringAuto(resultMaxWidth, deviceSize.width(), min), max);
