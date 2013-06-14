@@ -62,7 +62,6 @@ def AddIntrinsicTest(test_env, src, exit_status, has_golden_file=False):
 AddIntrinsicTest(env, 'setlongjmp.c', '55')
 AddIntrinsicTest(env, 'intrinsics.cc', '55'),
 AddIntrinsicTest(env, 'float2.c', '0', has_golden_file=True)
-AddIntrinsicTest(env, 'memcpy_move_set.c', '0', has_golden_file=True)
 
 # Some of the intrinsic tests cover intrinsics that we do not want to
 # support. For example, llvm.frameaddress. If that is the case, we will
