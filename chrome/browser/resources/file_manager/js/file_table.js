@@ -21,6 +21,14 @@ function FileTableColumnModel(tableColumns) {
 }
 
 /**
+ * The columns whose index is less than the constant are resizable.
+ * @const
+ * @type {number}
+ * @private
+ */
+FileTableColumnModel.RESIZABLE_LENGTH_ = 4;
+
+/**
  * Inherits from cr.ui.TableColumnModel.
  */
 FileTableColumnModel.prototype.__proto__ =
@@ -28,9 +36,9 @@ FileTableColumnModel.prototype.__proto__ =
 
 /**
  * Minimum width of column.
- * @private
  * @const
  * @type {number}
+ * @private
  */
 FileTableColumnModel.MIN_WIDTH_ = 10;
 
@@ -55,7 +63,7 @@ FileTableColumnModel.prototype.applyColumnPositions_ = function(newPos) {
     }
   }
   // Set the new width of columns
-  for (var i = 0; i < this.columns_.length - 1; i++) {
+  for (var i = 0; i < FileTableColumnModel.RESIZABLE_LENGTH_; i++) {
     this.columns_[i].width = newPos[i + 1] - newPos[i];
   }
 };
@@ -69,15 +77,18 @@ FileTableColumnModel.prototype.applyColumnPositions_ = function(newPos) {
  */
 FileTableColumnModel.prototype.normalizeWidths = function(contentWidth) {
   var totalWidth = 0;
+  var fixedWidth = 0;
   // Some columns have fixed width.
-  for (var i = 0; i < this.size - 1; i++) {
-    totalWidth += this.columns_[i].width;
+  for (var i = 0; i < this.columns_.length; i++) {
+    if (i < FileTableColumnModel.RESIZABLE_LENGTH_)
+      totalWidth += this.columns_[i].width;
+    else
+      fixedWidth += this.columns_[i].width;
   }
-  var newTotalWidth =
-      Math.max(contentWidth - this.columns_[this.size - 1].width, 0);
+  var newTotalWidth = Math.max(contentWidth - fixedWidth, 0);
   var positions = [0];
   var sum = 0;
-  for (var i = 0; i < this.size - 1; i++) {
+  for (var i = 0; i < FileTableColumnModel.RESIZABLE_LENGTH_; i++) {
     var column = this.columns_[i];
     sum += column.width;
     // Faster alternative to Math.floor for non-negative numbers.
@@ -110,25 +121,25 @@ FileTableColumnModel.prototype.handleSplitterDragEnd = function() {
  */
 FileTableColumnModel.prototype.setWidthAndKeepTotal = function(
     columnIndex, columnWidth) {
-  if (columnIndex < 0 ||
-      columnIndex >= this.columns_.length - 1 ||
-      !this.columnPos_)
-    return;
-
   // Skip to resize 'selection' column
-  var nextColumn = this.columns_[columnIndex + 1];
-  if (nextColumn && nextColumn.id == 'selection')
+  if (columnIndex < 0 ||
+      columnIndex >= FileTableColumnModel.RESIZABLE_LENGTH_ ||
+      !this.columnPos_) {
     return;
+  }
+
   // Calculate new positions of column splitters.
   var newPosStart =
       this.columnPos_[columnIndex] + Math.max(columnWidth,
                                               FileTableColumnModel.MIN_WIDTH_);
   var newPos = [];
-  var posEnd = this.columnPos_[this.columns_.length - 1];
+  var posEnd = this.columnPos_[FileTableColumnModel.RESIZABLE_LENGTH_];
   for (var i = 0; i < columnIndex + 1; i++) {
     newPos[i] = this.columnPos_[i];
   }
-  for (var i = columnIndex + 1; i < this.columns_.length - 1; i++) {
+  for (var i = columnIndex + 1;
+       i < FileTableColumnModel.RESIZABLE_LENGTH_;
+       i++) {
     var posStart = this.columnPos_[columnIndex + 1];
     newPos[i] = (posEnd - newPosStart) *
                 (this.columnPos_[i] - posStart) /
@@ -138,7 +149,7 @@ FileTableColumnModel.prototype.setWidthAndKeepTotal = function(
     newPos[i] = ~~newPos[i];
   }
   newPos[columnIndex] = this.columnPos_[columnIndex];
-  newPos[this.columns_.length - 1] = posEnd;
+  newPos[FileTableColumnModel.RESIZABLE_LENGTH_] = posEnd;
   this.applyColumnPositions_(newPos);
 
   // Notifiy about resizing
@@ -230,12 +241,15 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
   var tableColumnModelClass;
   if (util.platform.newUI()) {
     tableColumnModelClass = FileTableColumnModel;
-    columns.push(new cr.ui.table.TableColumn('selection',
-                                             '',
-                                             50, true));
-    columns[4].renderFunction = self.renderSelection_.bind(self);
-    columns[4].headerRenderFunction =
-        self.renderSelectionColumnHeader_.bind(self);
+    if (!self.noCheckboxes) {
+      columns.push(new cr.ui.table.TableColumn('selection',
+                                               '',
+                                               50, true));
+      columns[4].renderFunction = self.renderSelection_.bind(self);
+      columns[4].headerRenderFunction =
+          self.renderSelectionColumnHeader_.bind(self);
+      columns[4].fixed = true;
+    }
   } else {
     tableColumnModelClass = cr.ui.table.TableColumnModel;
     columns.push(new cr.ui.table.TableColumn('offline',

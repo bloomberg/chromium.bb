@@ -12356,11 +12356,17 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <!-- File Manager -->
-      <message name="IDS_FLAGS_FILE_MANAGER_LEGACY_UI_NAME" desc="Name of about:flag option to launch the Files app with the old ui.">
+      <message name="IDS_FLAGS_FILE_MANAGER_LEGACY_UI_NAME" desc="Name of the about:flag option to launch the Files app with the old ui.">
         Files.app's legacy UI
       </message>
-      <message name="IDS_FLAGS_FILE_MANAGER_LEGACY_UI_DESCRIPTION" desc="Description of about:flag option to launch the Files app with the old ui.">
+      <message name="IDS_FLAGS_FILE_MANAGER_LEGACY_UI_DESCRIPTION" desc="Description of the about:flag option to launch the Files app with the old ui.">
         Run Files app with the legacy user interface.
+      </message>
+      <message name="IDS_FLAGS_FILE_MANAGER_NO_CHECKBOXES_NAME" desc="Name of the about:flag option to hide the selecting checkboxes to in the Files app.">
+        No selecting checkboxes
+      </message>
+      <message name="IDS_FLAGS_FILE_MANAGER_NO_CHECKBOXES_DESCRIPTION" desc="Description of the about:flag option to hide the selecting checkboxes to in the Files app.">
+        Hide selecting checkboxes in the Files.app.
       </message>
       <message name="IDS_FILE_BROWSER_ROOT_DIRECTORY_LABEL" desc="Root directory label.">
         Files

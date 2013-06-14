@@ -1059,6 +1059,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kFileManagerLegacyUI),
   },
   {
+    "file-manager-no-checkboxes",
+    IDS_FLAGS_FILE_MANAGER_NO_CHECKBOXES_NAME,
+    IDS_FLAGS_FILE_MANAGER_NO_CHECKBOXES_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kFileManagerNoCheckboxes)
+  },
+  {
     "disable-app-mode",
     IDS_FLAGS_DISABLE_KIOSK_APPS_NAME,
     IDS_FLAGS_DISABLE_KIOSK_APPS_DESCRIPTION,

@@ -19,6 +19,7 @@
     "mediaPlayerPrivate",
     "mediaGalleriesPrivate",
     "metricsPrivate",
+    "commandLinePrivate",
     "unlimitedStorage",
     // Comment out chrome:// permissions to debug on a desktop browser.
     "chrome://extension-icon/",

@@ -124,6 +124,9 @@ const char kEnterpriseEnrollmentModulusLimit[] =
 // Loads the File Manager with the legacy UI.
 const char kFileManagerLegacyUI[]           = "file-manager-legacy-ui";
 
+// Hides the selecting checkboxes in the Files.app.
+const char kFileManagerNoCheckboxes[]       = "file-manager-no-checkboxes";
+
 // Passed to Chrome on first boot. Not passed on restart after sign out.
 const char kFirstBoot[]                     = "first-boot";
 

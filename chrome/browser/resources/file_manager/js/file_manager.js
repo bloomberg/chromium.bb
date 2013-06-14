@@ -359,6 +359,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }.bind(this));
     }.bind(this));
 
+    // Get the command line option.
+    group.add(function(done) {
+      chrome.commandLinePrivate.hasSwitch(
+          'file-manager-no-checkboxes', function(flag) {
+        this.noCheckboxes_ = flag;
+        done();
+      }.bind(this));
+    }.bind(this));
+
     group.run(callback);
   };
 
@@ -964,6 +973,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.searchBreadcrumbs_.setHideLast(true);
     else
       this.searchBreadcrumbs_.setHideLast(false);
+
+    // Check the option to hide the selecting checkboxes.
+    this.table_.noCheckboxes = this.noCheckboxes_;
 
     var fullPage = this.dialogType == DialogType.FULL_PAGE;
     FileTable.decorate(this.table_, this.metadataCache_, fullPage);
