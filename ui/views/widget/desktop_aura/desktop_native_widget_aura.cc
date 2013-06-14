@@ -862,4 +862,11 @@ void DesktopNativeWidgetAura::OnRootWindowHostCloseRequested(
   Close();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// DesktopNativeWidgetAura, NativeWidget implementation:
+
+ui::EventHandler* DesktopNativeWidgetAura::GetEventHandler() {
+  return this;
+}
+
 }  // namespace views

@@ -450,6 +450,14 @@ ui::NativeTheme* NativeWidgetWin::GetNativeTheme() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetWin, NativeWidget implementation:
+
+ui::EventHandler* NativeWidgetWin::GetEventHandler() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetWin, protected:
 
 void NativeWidgetWin::OnFinalMessage(HWND window) {

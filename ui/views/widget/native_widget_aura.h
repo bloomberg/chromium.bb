@@ -173,6 +173,9 @@ class VIEWS_EXPORT NativeWidgetAura
   virtual void OnDragExited() OVERRIDE;
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
 
+  // Overridden from NativeWidget:
+  virtual ui::EventHandler* GetEventHandler() OVERRIDE;
+
  protected:
   virtual ~NativeWidgetAura();
 

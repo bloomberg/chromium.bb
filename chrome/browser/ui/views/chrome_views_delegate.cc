@@ -188,6 +188,24 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
   bool use_non_toplevel_window =
       params->parent && params->type != views::Widget::InitParams::TYPE_MENU;
+
+#if defined(OS_WIN)
+  // On desktop Linux Chrome must run in an environment that supports a variety
+  // of window managers, some of which do not play nicely with parts of our UI
+  // that have specific expectations about window sizing and placement. For this
+  // reason windows opened as top level (params.top_level) are always
+  // constrained by the browser frame, so we can position them correctly. This
+  // has some negative side effects, like dialogs being clipped by the browser
+  // frame, but the side effects are not as bad as the poor window manager
+  // interactions. On Windows however these WM interactions are not an issue, so
+  // we open windows requested as top_level as actual top level windows on the
+  // desktop.
+  use_non_toplevel_window = use_non_toplevel_window &&
+      (!params->top_level ||
+       chrome::GetHostDesktopTypeForNativeView(params->parent) !=
+          chrome::HOST_DESKTOP_TYPE_NATIVE);
+#endif  // defined(OS_WIN)
+
 #if defined(OS_WIN)
   // If we're on Vista+ with composition enabled, then we can use toplevel
   // windows for most things (they get blended via WS_EX_COMPOSITED, which

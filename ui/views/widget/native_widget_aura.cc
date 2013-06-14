@@ -874,6 +874,13 @@ int NativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetAura, NativeWidget implementation:
+
+ui::EventHandler* NativeWidgetAura::GetEventHandler() {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, protected:
 
 NativeWidgetAura::~NativeWidgetAura() {

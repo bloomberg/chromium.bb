@@ -215,6 +215,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
 
   // Overridden from NativeWidget:
   virtual internal::NativeWidgetPrivate* AsNativeWidgetPrivate() OVERRIDE;
+  virtual ui::EventHandler* GetEventHandler() = 0;
 };
 
 }  // namespace internal

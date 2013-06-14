@@ -146,6 +146,9 @@ class VIEWS_EXPORT NativeWidgetWin : public internal::NativeWidgetPrivate,
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) OVERRIDE;
   virtual ui::NativeTheme* GetNativeTheme() const OVERRIDE;
 
+  // Overridden from NativeWidget:
+  virtual ui::EventHandler* GetEventHandler() OVERRIDE;
+
  protected:
   // Deletes this window as it is destroyed, override to provide different
   // behavior.

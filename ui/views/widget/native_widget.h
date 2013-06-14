@@ -7,6 +7,10 @@
 
 #include "ui/views/widget/widget.h"
 
+namespace ui {
+class EventHandler;
+}
+
 namespace views {
 namespace internal {
 class NativeWidgetPrivate;
@@ -25,6 +29,9 @@ class NativeWidgetPrivate;
 class VIEWS_EXPORT NativeWidget {
  public:
   virtual ~NativeWidget() {}
+
+  // Retrieves the event handler
+  virtual ui::EventHandler* GetEventHandler() = 0;
 
  private:
   friend class Widget;

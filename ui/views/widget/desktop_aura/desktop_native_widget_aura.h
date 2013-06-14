@@ -69,6 +69,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
     return root_window_event_filter_;
   }
 
+  // Overridden from NativeWidget:
+  virtual ui::EventHandler* GetEventHandler() OVERRIDE;
+
  protected:
   // Overridden from internal::NativeWidgetPrivate:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
