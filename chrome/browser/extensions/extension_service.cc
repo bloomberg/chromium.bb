@@ -153,6 +153,10 @@ static const int kUpdateIdleDelay = 5;
 // Wait this many seconds before trying to garbage collect extensions again.
 static const int kGarbageCollectRetryDelay = 30;
 
+// Wait this many seconds after startup to see if there are any extensions
+// which can be garbage collected.
+static const int kGarbageCollectStartupDelay = 30;
+
 }  // namespace
 
 ExtensionService::ExtensionRuntimeData::ExtensionRuntimeData()
@@ -573,8 +577,10 @@ void ExtensionService::Init() {
       // rather than running immediately at startup.
       CheckForExternalUpdates();
 
-      // TODO(erikkay) this should probably be deferred as well.
-      GarbageCollectExtensions();
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&ExtensionService::GarbageCollectExtensions, AsWeakPtr()),
+          base::TimeDelta::FromSeconds(kGarbageCollectStartupDelay));
     }
 
     if (extension_prefs_->NeedsStorageGarbageCollection()) {

@@ -1351,6 +1351,10 @@ TEST_F(ExtensionServiceTest, CleanupOnStartup) {
   }
 
   service_->Init();
+  // A delayed task to call GarbageCollectExtensions is posted by
+  // ExtensionService::Init. As the test won't wait for the delayed task to
+  // be called, call it manually instead.
+  service_->GarbageCollectExtensions();
   // Wait for GarbageCollectExtensions task to complete.
   loop_.RunUntilIdle();
 
@@ -1423,6 +1427,10 @@ TEST_F(ExtensionServiceTest, UpdateOnStartup) {
       "hpiknbiabeeppbpihjehijgoemciehgk/3")));
 
   service_->Init();
+  // A delayed task to call GarbageCollectExtensions is posted by
+  // ExtensionService::Init. As the test won't wait for the delayed task to
+  // be called, call it manually instead.
+  service_->GarbageCollectExtensions();
   // Wait for GarbageCollectExtensions task to complete.
   loop_.RunUntilIdle();
 
