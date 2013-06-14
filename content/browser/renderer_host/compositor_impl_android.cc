@@ -15,7 +15,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread.h"
 #include "cc/base/thread_impl.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
@@ -35,6 +34,7 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
+#include "webkit/glue/webthread_impl.h"
 
 namespace gfx {
 class JavaBitmap;
@@ -57,7 +57,7 @@ class DirectOutputSurface : public cc::OutputSurface {
 };
 
 static bool g_initialized = false;
-static base::Thread* g_impl_thread = NULL;
+static webkit_glue::WebThreadImpl* g_impl_thread = NULL;
 static bool g_use_direct_gl = false;
 
 } // anonymous namespace
@@ -87,8 +87,7 @@ void Compositor::InitializeWithFlags(uint32 flags) {
   if (flags & ENABLE_COMPOSITOR_THREAD) {
     TRACE_EVENT_INSTANT0("test_gpu", "ThreadedCompositingInitialization",
                          TRACE_EVENT_SCOPE_THREAD);
-    g_impl_thread = new base::Thread("Browser Compositor");
-    g_impl_thread->Start();
+    g_impl_thread = new webkit_glue::WebThreadImpl("Browser Compositor");
   }
   Compositor::Initialize();
 }

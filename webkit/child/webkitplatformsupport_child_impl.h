@@ -5,7 +5,6 @@
 #ifndef WEBKIT_CHILD_WEBKITPLATFORMSUPPORT_CHILD_IMPL_H_
 #define WEBKIT_CHILD_WEBKITPLATFORMSUPPORT_CHILD_IMPL_H_
 
-#include "base/threading/thread_local_storage.h"
 #include "webkit/child/webkit_child_export.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 
@@ -28,18 +27,11 @@ class WEBKIT_CHILD_EXPORT WebKitPlatformSupportChildImpl :
       const WebKit::WebFloatPoint& velocity,
       const WebKit::WebSize& cumulative_scroll) OVERRIDE;
 
-  virtual WebKit::WebThread* createThread(const char* name);
-  virtual WebKit::WebThread* currentThread();
-
   virtual void didStartWorkerRunLoop(
       const WebKit::WebWorkerRunLoop& runLoop) OVERRIDE;
   virtual void didStopWorkerRunLoop(
       const WebKit::WebWorkerRunLoop& runLoop) OVERRIDE;
 
- private:
-  static void DestroyCurrentThread(void*);
-
-  base::ThreadLocalStorage::Slot current_thread_slot_;
   scoped_ptr<FlingCurveConfiguration> fling_curve_configuration_;
 };
 

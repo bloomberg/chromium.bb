@@ -10,7 +10,7 @@
 #include "cc/base/thread_impl.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/software_output_device.h"
-#include "webkit/child/webthread_impl.h"
+#include "webkit/glue/webthread_impl.h"
 #include "webkit/renderer/compositor_bindings/web_animation_impl.h"
 #include "webkit/renderer/compositor_bindings/web_content_layer_impl.h"
 #include "webkit/renderer/compositor_bindings/web_external_texture_layer_impl.h"
