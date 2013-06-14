@@ -169,20 +169,15 @@ void OneClickSigninSyncStarter::OnRegisteredForPolicy(
   policy_client_.swap(client);
 
   // Allow user to create a new profile before continuing with sign-in.
-  Browser* browser =
-      chrome::FindBrowserWithProfile(profile_, chrome::GetActiveDesktop());
-  if (!browser) {
-    CancelSigninAndDelete();
-    return;
-  }
+  EnsureBrowser();
   content::WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
+      browser_->tab_strip_model()->GetActiveWebContents();
   if (!web_contents) {
     CancelSigninAndDelete();
     return;
   }
   chrome::ShowProfileSigninConfirmationDialog(
-      browser,
+      browser_,
       web_contents,
       profile_,
       signin->GetUsernameForAuthInProgress(),
