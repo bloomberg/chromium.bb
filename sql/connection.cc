@@ -74,9 +74,6 @@ bool StatementID::operator<(const StatementID& other) const {
   return strcmp(str_, other.str_) < 0;
 }
 
-ErrorDelegate::~ErrorDelegate() {
-}
-
 Connection::StatementRef::StatementRef(Connection* connection,
                                        sqlite3_stmt* stmt,
                                        bool was_valid)
@@ -122,7 +119,8 @@ Connection::Connection()
       transaction_nesting_(0),
       needs_rollback_(false),
       in_memory_(false),
-      poisoned_(false) {}
+      poisoned_(false) {
+}
 
 Connection::~Connection() {
   Close();
@@ -761,11 +759,6 @@ int Connection::OnSqliteError(int err, sql::Statement *stmt) {
     error_callback_.Run(err, stmt);
     return err;
   }
-
-  // TODO(shess): Remove |error_delegate_| once everything is
-  // converted to |error_callback_|.
-  if (error_delegate_.get())
-    return error_delegate_->OnError(err, this, stmt);
 
   // The default handling is to assert on debug and to ignore on release.
   DLOG(FATAL) << GetErrorMessage();

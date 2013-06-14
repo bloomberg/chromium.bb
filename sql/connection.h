@@ -78,30 +78,6 @@ class StatementID {
 
 class Connection;
 
-// ErrorDelegate defines the interface to implement error handling and recovery
-// for sqlite operations. This allows the rest of the classes to return true or
-// false while the actual error code and causing statement are delivered using
-// the OnError() callback.
-// The tipical usage is to centralize the code designed to handle database
-// corruption, low-level IO errors or locking violations.
-class SQL_EXPORT ErrorDelegate {
- public:
-  virtual ~ErrorDelegate();
-
-  // |error| is an sqlite result code as seen in sqlite3.h. |connection| is the
-  // db connection where the error happened and |stmt| is our best guess at the
-  // statement that triggered the error. Do not store these pointers.
-  //
-  // |stmt| MAY BE NULL if there is no statement causing the problem (i.e. on
-  // initialization).
-  //
-  // If the error condition has been fixed and the original statement succesfuly
-  // re-tried then returning SQLITE_OK is appropriate; otherwise it is
-  // recommended that you return the original |error| or the appropriate error
-  // code.
-  virtual int OnError(int error, Connection* connection, Statement* stmt) = 0;
-};
-
 class SQL_EXPORT Connection {
  private:
   class StatementRef;  // Forward declaration, see real one below.
@@ -145,29 +121,12 @@ class SQL_EXPORT Connection {
   //
   // If no callback is set, the default action is to crash in debug
   // mode or return failure in release mode.
-  //
-  // TODO(shess): ErrorDelegate allowed for returning a different
-  // error.  Determine if this is necessary for the callback.  In my
-  // experience, this is not well-tested and probably not safe, and
-  // current clients always return the same error passed.
-  // Additionally, most errors don't admit to a clean way to retry the
-  // failed operation, so converting an error to SQLITE_OK is probably
-  // not feasible.
   typedef base::Callback<void(int, Statement*)> ErrorCallback;
   void set_error_callback(const ErrorCallback& callback) {
     error_callback_ = callback;
   }
   void reset_error_callback() {
     error_callback_.Reset();
-  }
-
-  // Sets the object that will handle errors. Recomended that it should be set
-  // before calling Open(). If not set, the default is to ignore errors on
-  // release and assert on debug builds.
-  // Takes ownership of |delegate|.
-  // NOTE(shess): Deprecated, use set_error_callback().
-  void set_error_delegate(ErrorDelegate* delegate) {
-    error_delegate_.reset(delegate);
   }
 
   // Set this tag to enable additional connection-type histogramming
@@ -528,10 +487,6 @@ class SQL_EXPORT Connection {
   bool poisoned_;
 
   ErrorCallback error_callback_;
-
-  // This object handles errors resulting from all forms of executing sqlite
-  // commands or statements. It can be null which means default handling.
-  scoped_ptr<ErrorDelegate> error_delegate_;
 
   // Tag for auxiliary histograms.
   std::string histogram_tag_;

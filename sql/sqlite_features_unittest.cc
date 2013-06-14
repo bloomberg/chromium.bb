@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "sql/connection.h"
@@ -15,28 +16,12 @@
 
 namespace {
 
-class StatementErrorHandler : public sql::ErrorDelegate {
- public:
-  StatementErrorHandler(int* error, std::string* sql_text)
-    : error_(error),
-      sql_text_(sql_text) {}
-
-  virtual ~StatementErrorHandler() {}
-
-  virtual int OnError(int error, sql::Connection* connection,
-                      sql::Statement* stmt) OVERRIDE {
-    *error_ = error;
-    const char* sql_txt = stmt ? stmt->GetSQLStatement() : NULL;
-    *sql_text_ = sql_txt ? sql_txt : "no statement available";
-    return error;
-  }
-
- private:
-  int* error_;
-  std::string* sql_text_;
-
- DISALLOW_COPY_AND_ASSIGN(StatementErrorHandler);
-};
+void CaptureErrorCallback(int* error_pointer, std::string* sql_text,
+                          int error, sql::Statement* stmt) {
+  *error_pointer = error;
+  const char* text = stmt ? stmt->GetSQLStatement() : NULL;
+  *sql_text = text ? text : "no statement available";
+}
 
 class SQLiteFeaturesTest : public testing::Test {
  public:
@@ -48,7 +33,8 @@ class SQLiteFeaturesTest : public testing::Test {
 
     // The error delegate will set |error_| and |sql_text_| when any sqlite
     // statement operation returns an error code.
-    db_.set_error_delegate(new StatementErrorHandler(&error_, &sql_text_));
+    db_.set_error_callback(base::Bind(&CaptureErrorCallback,
+                                      &error_, &sql_text_));
   }
 
   virtual void TearDown() {
