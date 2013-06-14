@@ -7,9 +7,11 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <list>
 #include <map>
 #include <string>
 
+#include "base/mac/scoped_block.h"
 #import "base/memory/scoped_nsobject.h"
 #include "ui/message_center/message_center_export.h"
 
@@ -22,6 +24,11 @@ class MessageCenter;
 }
 
 @class HoverImageButton;
+@class MCClipView;
+
+namespace message_center {
+typedef void(^TrayAnimationEndedCallback)();
+}
 
 // The view controller responsible for the content of the message center tray
 // UI. This hosts a scroll view of all the notifications, as well as buttons
@@ -41,6 +48,9 @@ MESSAGE_CENTER_EXPORT
   // The scroll view that contains all the notifications in its documentView.
   scoped_nsobject<NSScrollView> scrollView_;
 
+  // The clip view that manages how scrollView_'s documentView is clipped.
+  scoped_nsobject<MCClipView> clipView_;
+
   // Array of MCNotificationController objects, which the array owns.
   scoped_nsobject<NSMutableArray> notifications_;
 
@@ -54,6 +64,9 @@ MESSAGE_CENTER_EXPORT
   // The clear all notifications button. Hidden when there are no notifications.
   scoped_nsobject<HoverImageButton> clearAllButton_;
 
+  // The settings button that shows the settings UI.
+  scoped_nsobject<HoverImageButton> settingsButton_;
+
   // Array of MCNotificationController objects pending removal by the user.
   // The object is owned by the array.
   scoped_nsobject<NSMutableArray> notificationsPendingRemoval_;
@@ -64,10 +77,41 @@ MESSAGE_CENTER_EXPORT
 
   // The controller of the settings view. Only set while the view is open.
   scoped_nsobject<MCSettingsController> settingsController_;
+
+  // The flag which is set when the notification removal animation is still
+  // in progress and the user clicks "Clear All" button. The clear-all animation
+  // will be delayed till the existing animation completes.
+  BOOL clearAllDelayed_;
+
+  // The flag which is set when the clear-all animation is in progress.
+  BOOL clearAllInProgress_;
+
+  // List of weak pointers of the view controllers that are visible in the
+  // scroll view and waiting to slide off one by one when the user clicks
+  // "Clear All" button.
+  std::list<MCNotificationController*> visibleNotificationsPendingClear_;
+
+  // Array of NSViewAnimation objects, which the array owns.
+  scoped_nsobject<NSMutableArray> clearAllAnimations_;
+
+  // The duration of the bounds animation, in the number of seconds.
+  NSTimeInterval animationDuration_;
+
+  // The delay to start animating clearing next notification, in the number of
+  // seconds.
+  NSTimeInterval animateClearingNextNotificationDelay_;
+
+  // For testing only. If set, the callback will be called when the animation
+  // ends.
+  base::mac::ScopedBlock<message_center::TrayAnimationEndedCallback>
+      testingAnimationEndedCallback_;
 }
 
 // Designated initializer.
 - (id)initWithMessageCenter:(message_center::MessageCenter*)messageCenter;
+
+// Called when the window is being closed.
+- (void)onWindowClosing;
 
 // Callback for when the MessageCenter model changes.
 - (void)onMessageCenterTrayChanged;
@@ -87,6 +131,9 @@ MESSAGE_CENTER_EXPORT
 // Scroll to the topmost notification in the tray.
 - (void)scrollToTop;
 
+// Returns true if an animation is being played.
+- (BOOL)isAnimating;
+
 // Returns the maximum height of the client area of the notifications tray.
 + (CGFloat)maxTrayClientHeight;
 
@@ -101,6 +148,19 @@ MESSAGE_CENTER_EXPORT
 - (NSScrollView*)scrollView;
 - (HoverImageButton*)pauseButton;
 - (HoverImageButton*)clearAllButton;
+
+// Setter for changing the animation duration. The testing code could set it
+// to a very small value to expedite the test running.
+- (void)setAnimationDuration:(NSTimeInterval)duration;
+
+// Setter for changing the clear-all animation delay. The testing code could set
+// it to a very small value to expedite the test running.
+- (void)setAnimateClearingNextNotificationDelay:(NSTimeInterval)delay;
+
+// Setter for testingAnimationEndedCallback_. The testing code could set it
+// to get called back when the animation ends.
+- (void)setAnimationEndedCallback:
+    (message_center::TrayAnimationEndedCallback)callback;
 @end
 
 #endif  // UI_MESSAGE_CENTER_COCOA_TRAY_VIEW_CONTROLLER_H_

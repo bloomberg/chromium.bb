@@ -124,7 +124,8 @@ class PopupCollectionObserver : public message_center::MessageCenterObserver {
   if (![self isAnimating])
     [self layoutNotifications];
 
-  // Quit the test run loop when no more animation is being played.
+  // Give the testing code a chance to do something, i.e. quitting the test
+  // run loop.
   if (![self isAnimating] && testingAnimationEndedCallback_)
     testingAnimationEndedCallback_.get()();
 }

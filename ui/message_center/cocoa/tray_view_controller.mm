@@ -21,6 +21,25 @@
 
 const int kBackButtonSize = 16;
 
+// NSClipView subclass.
+@interface MCClipView : NSClipView {
+  // If this is set, the visible document area will remain intact no matter how
+  // the user scrolls or drags the thumb.
+  BOOL frozen_;
+}
+@end
+
+@implementation MCClipView
+- (void)setFrozen:(BOOL)frozen {
+  frozen_ = frozen;
+}
+
+-(NSPoint)constrainScrollPoint:(NSPoint)proposedNewOrigin {
+  return frozen_ ? [self documentVisibleRect].origin :
+      [super constrainScrollPoint:proposedNewOrigin];
+}
+@end
+
 @interface MCTrayViewController (Private)
 // Creates all the views for the control area of the tray.
 - (void)layoutControlArea;
@@ -41,12 +60,24 @@ const int kBackButtonSize = 16;
 
 // Step 3: finalize the tray view and window to get rid of the empty space.
 - (void)finalizeTrayViewAndWindow;
+
+// Clear a notification by sliding it out from left to right. This occurs when
+// "Clear All" is clicked.
+- (void)clearOneNotification;
+
+// When all visible notificatons slide out, re-enable controls and remove
+// notifications from the message center.
+- (void)finalizeClearAll;
 @end
 
 namespace {
 
 // The duration of fade-out and bounds animation.
 const NSTimeInterval kAnimationDuration = 0.2;
+
+// The delay to start animating clearing next notification since current
+// animation starts.
+const NSTimeInterval kAnimateClearingNextNotificationDelay = 0.04;
 
 // The height of the bar at the top of the tray that contains buttons.
 const CGFloat kControlAreaHeight = 50;
@@ -66,10 +97,29 @@ const CGFloat kTrayBottomMargin = 75;
 - (id)initWithMessageCenter:(message_center::MessageCenter*)messageCenter {
   if ((self = [super initWithNibName:nil bundle:nil])) {
     messageCenter_ = messageCenter;
+    animationDuration_ = kAnimationDuration;
+    animateClearingNextNotificationDelay_ =
+        kAnimateClearingNextNotificationDelay;
     notifications_.reset([[NSMutableArray alloc] init]);
     notificationsPendingRemoval_.reset([[NSMutableArray alloc] init]);
   }
   return self;
+}
+
+- (void)onWindowClosing {
+  if (animation_) {
+    [animation_ stopAnimation];
+    [animation_ setDelegate:nil];
+    animation_.reset();
+  }
+  if (clearAllInProgress_) {
+    for (NSViewAnimation* animation in clearAllAnimations_.get()) {
+      [animation stopAnimation];
+      [animation setDelegate:nil];
+    }
+    [clearAllAnimations_ removeAllObjects];
+    [self finalizeClearAll];
+  }
 }
 
 - (void)loadView {
@@ -91,6 +141,9 @@ const CGFloat kTrayBottomMargin = 75;
   scoped_nsobject<NSView> documentView(
       [[NSView alloc] initWithFrame:NSZeroRect]);
   scrollView_.reset([[NSScrollView alloc] initWithFrame:[view frame]]);
+  clipView_.reset(
+      [[MCClipView alloc] initWithFrame:[[scrollView_ contentView] frame]]);
+  [scrollView_ setContentView:clipView_];
   [scrollView_ setAutohidesScrollers:YES];
   [scrollView_ setAutoresizingMask:NSViewHeightSizable | NSViewMaxYMargin];
   [scrollView_ setDocumentView:documentView];
@@ -192,7 +245,35 @@ const CGFloat kTrayBottomMargin = 75;
 }
 
 - (void)clearAllNotifications:(id)sender {
-  messageCenter_->RemoveAllNotifications(true);
+  if ([self isAnimating]) {
+    clearAllDelayed_ = YES;
+    return;
+  }
+
+  // Build a list for all notifications within the visible scroll range
+  // in preparation to slide them out one by one.
+  NSRect visibleScrollRect = [scrollView_ documentVisibleRect];
+  for (MCNotificationController* notification in notifications_.get()) {
+    NSRect rect = [[notification view] frame];
+    if (!NSIsEmptyRect(NSIntersectionRect(visibleScrollRect, rect))) {
+      visibleNotificationsPendingClear_.push_back(notification);
+    }
+  }
+  if (visibleNotificationsPendingClear_.empty())
+    return;
+
+  // Disbale buttons and freeze scroll bar to prevent the user from clicking on
+  // them accidentally.
+  [pauseButton_ setEnabled:NO];
+  [clearAllButton_ setEnabled:NO];
+  [settingsButton_ setEnabled:NO];
+  [clipView_ setFrozen:YES];
+
+  // Start sliding out the top notification.
+  clearAllAnimations_.reset([[NSMutableArray alloc] init]);
+  [self clearOneNotification];
+
+  clearAllInProgress_ = YES;
 }
 
 - (void)showSettings:(id)sender {
@@ -247,6 +328,10 @@ const CGFloat kTrayBottomMargin = 75;
   [[scrollView_ documentView] scrollPoint:topPoint];
 }
 
+- (BOOL)isAnimating {
+  return [animation_ isAnimating] || [clearAllAnimations_ count];
+}
+
 + (CGFloat)maxTrayClientHeight {
   NSRect screenFrame = [[[NSScreen screens] objectAtIndex:0] visibleFrame];
   return NSHeight(screenFrame) - kTrayBottomMargin - kControlAreaHeight;
@@ -269,6 +354,19 @@ const CGFloat kTrayBottomMargin = 75;
 
 - (HoverImageButton*)clearAllButton {
   return clearAllButton_.get();
+}
+
+- (void)setAnimationDuration:(NSTimeInterval)duration {
+  animationDuration_ = duration;
+}
+
+- (void)setAnimateClearingNextNotificationDelay:(NSTimeInterval)delay {
+  animateClearingNextNotificationDelay_ = delay;
+}
+
+- (void)setAnimationEndedCallback:
+    (message_center::TrayAnimationEndedCallback)callback {
+  testingAnimationEndedCallback_.reset(Block_copy(callback));
 }
 
 // Private /////////////////////////////////////////////////////////////////////
@@ -353,18 +451,18 @@ const CGFloat kTrayBottomMargin = 75;
   NSRect settingsButtonFrame = getButtonFrame(
       NSWidth([view frame]) - message_center::kMarginBetweenItems,
       defaultImage);
-  scoped_nsobject<HoverImageButton> settingsButton(
+  settingsButton_.reset(
       [[HoverImageButton alloc] initWithFrame:settingsButtonFrame]);
-  [settingsButton setDefaultImage:defaultImage];
-  [settingsButton setHoverImage:
+  [settingsButton_ setDefaultImage:defaultImage];
+  [settingsButton_ setHoverImage:
       rb.GetNativeImageNamed(IDR_NOTIFICATION_SETTINGS_HOVER).ToNSImage()];
-  [settingsButton setPressedImage:
+  [settingsButton_ setPressedImage:
       rb.GetNativeImageNamed(IDR_NOTIFICATION_SETTINGS_PRESSED).ToNSImage()];
-  [settingsButton setToolTip:
+  [settingsButton_ setToolTip:
       l10n_util::GetNSString(IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL)];
-  [settingsButton setAction:@selector(showSettings:)];
-  configureButton(settingsButton);
-  [view addSubview:settingsButton];
+  [settingsButton_ setAction:@selector(showSettings:)];
+  configureButton(settingsButton_);
+  [view addSubview:settingsButton_];
 
   // Create the clear all button.
   defaultImage = rb.GetNativeImageNamed(IDR_NOTIFICATION_CLEAR_ALL).ToNSImage();
@@ -455,14 +553,37 @@ const CGFloat kTrayBottomMargin = 75;
 }
 
 - (void)animationDidEnd:(NSAnimation*)animation {
-  if ([notificationsPendingRemoval_ count])
-    [self moveUpRemainingNotifications];
-  else
-    [self finalizeTrayViewAndWindow];
+  if (clearAllInProgress_) {
+    // For clear-all animation.
+    [clearAllAnimations_ removeObject:animation];
+    if (![clearAllAnimations_ count] &&
+        visibleNotificationsPendingClear_.empty()) {
+      [self finalizeClearAll];
+    }
+  } else {
+    // For notification removal and reposition animation.
+    if ([notificationsPendingRemoval_ count]) {
+      [self moveUpRemainingNotifications];
+    } else {
+      [self finalizeTrayViewAndWindow];
+
+      if (clearAllDelayed_)
+        [self clearAllNotifications:nil];
+    }
+  }
+
+  // Give the testing code a chance to do something, i.e. quitting the test
+  // run loop.
+  if (![self isAnimating] && testingAnimationEndedCallback_)
+    testingAnimationEndedCallback_.get()();
 }
 
 - (void)closeNotificationsByUser {
-  if ([animation_ isAnimating])
+  // No need to close individual notification if clear-all is in progress.
+  if (clearAllInProgress_)
+    return;
+
+  if ([self isAnimating])
     return;
   [self hideNotificationsPendingRemoval];
 }
@@ -493,7 +614,7 @@ const CGFloat kTrayBottomMargin = 75;
   // Start the animation.
   animation_.reset([[NSViewAnimation alloc]
       initWithViewAnimations:animationDataArray]);
-  [animation_ setDuration:kAnimationDuration];
+  [animation_ setDuration:animationDuration_];
   [animation_ setDelegate:self];
   [animation_ startAnimation];
 }
@@ -536,7 +657,7 @@ const CGFloat kTrayBottomMargin = 75;
   // Start the animation.
   animation_.reset([[NSViewAnimation alloc]
       initWithViewAnimations:animationDataArray]);
-  [animation_ setDuration:kAnimationDuration];
+  [animation_ setDuration:animationDuration_];
   [animation_ setDelegate:self];
   [animation_ startAnimation];
 }
@@ -558,6 +679,51 @@ const CGFloat kTrayBottomMargin = 75;
 
   // Check if there're more notifications pending removal.
   [self closeNotificationsByUser];
+}
+
+- (void)clearOneNotification {
+  DCHECK(!visibleNotificationsPendingClear_.empty());
+
+  MCNotificationController* notification =
+      visibleNotificationsPendingClear_.back();
+  visibleNotificationsPendingClear_.pop_back();
+
+  // Slide out the notification from left to right with fade-out simultaneously.
+  NSRect newFrame = [[notification view] frame];
+  newFrame.origin.x = NSMaxX(newFrame) + message_center::kMarginBetweenItems;
+  NSDictionary* animationDict = @{
+    NSViewAnimationTargetKey : [notification view],
+    NSViewAnimationEndFrameKey : [NSValue valueWithRect:newFrame],
+    NSViewAnimationEffectKey : NSViewAnimationFadeOutEffect
+  };
+  scoped_nsobject<NSViewAnimation> animation([[NSViewAnimation alloc]
+      initWithViewAnimations:[NSArray arrayWithObject:animationDict]]);
+  [animation setDuration:animationDuration_];
+  [animation setDelegate:self];
+  [animation startAnimation];
+  [clearAllAnimations_ addObject:animation];
+
+  // Schedule to start sliding out next notification after a short delay.
+  if (!visibleNotificationsPendingClear_.empty()) {
+    [self performSelector:@selector(clearOneNotification)
+               withObject:nil
+               afterDelay:animateClearingNextNotificationDelay_];
+  }
+}
+
+- (void)finalizeClearAll {
+  DCHECK(clearAllInProgress_);
+  clearAllInProgress_ = NO;
+
+  DCHECK(![clearAllAnimations_ count]);
+  clearAllAnimations_.reset();
+
+  [pauseButton_ setEnabled:YES];
+  [clearAllButton_ setEnabled:YES];
+  [settingsButton_ setEnabled:YES];
+  [clipView_ setFrozen:NO];
+
+  messageCenter_->RemoveAllNotifications(true);
 }
 
 @end

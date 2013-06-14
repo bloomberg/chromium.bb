@@ -5,6 +5,8 @@
 #import "ui/message_center/cocoa/tray_view_controller.h"
 
 #include "base/memory/scoped_nsobject.h"
+#include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #include "ui/message_center/fake_notifier_settings_provider.h"
@@ -16,12 +18,23 @@
 
 class TrayViewControllerTest : public ui::CocoaTest {
  public:
+  TrayViewControllerTest()
+    : center_(NULL),
+      message_loop_(base::MessageLoop::TYPE_UI) {
+  }
+
   virtual void SetUp() OVERRIDE {
     ui::CocoaTest::SetUp();
     message_center::MessageCenter::Initialize();
     center_ = message_center::MessageCenter::Get();
     center_->DisableTimersForTest();
     tray_.reset([[MCTrayViewController alloc] initWithMessageCenter:center_]);
+    [tray_ setAnimationDuration:0.002];
+    [tray_ setAnimateClearingNextNotificationDelay:0.001];
+    [tray_ setAnimationEndedCallback:^{
+        if (nested_run_loop_.get())
+          nested_run_loop_->Quit();
+    }];
     [tray_ view];  // Create the view.
   }
 
@@ -31,9 +44,19 @@ class TrayViewControllerTest : public ui::CocoaTest {
     ui::CocoaTest::TearDown();
   }
 
+  void WaitForAnimationEnded() {
+    if (![tray_ isAnimating])
+      return;
+    nested_run_loop_.reset(new base::RunLoop());
+    nested_run_loop_->Run();
+    nested_run_loop_.reset();
+  }
+
  protected:
   message_center::MessageCenter* center_;  // Weak, global.
 
+  base::MessageLoop message_loop_;
+  scoped_ptr<base::RunLoop> nested_run_loop_;
   scoped_nsobject<MCTrayViewController> tray_;
 };
 
@@ -112,6 +135,7 @@ TEST_F(TrayViewControllerTest, AddThreeClearAll) {
   ASSERT_EQ(3u, [[view subviews] count]);
 
   [tray_ clearAllNotifications:nil];
+  WaitForAnimationEnded();
   [tray_ onMessageCenterTrayChanged];
 
   EXPECT_EQ(0u, [[view subviews] count]);
@@ -166,6 +190,7 @@ TEST_F(TrayViewControllerTest, NoClearAllWhenNoNotifications) {
 
   // Clear all notifications.
   [tray_ clearAllNotifications:nil];
+  WaitForAnimationEnded();
   [tray_ onMessageCenterTrayChanged];
 
   // The button should be hidden again.

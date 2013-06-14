@@ -52,6 +52,11 @@
   return self;
 }
 
+- (void)close {
+  [viewController_ onWindowClosing];
+  [super close];
+}
+
 - (void)showTrayAtRightOf:(NSPoint)rightPoint atLeftOf:(NSPoint)leftPoint {
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
   NSRect screenFrame = [screen visibleFrame];

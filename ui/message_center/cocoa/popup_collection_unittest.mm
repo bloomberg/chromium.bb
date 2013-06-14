@@ -33,7 +33,8 @@ class PopupCollectionTest : public ui::CocoaTest {
         [[MCPopupCollection alloc] initWithMessageCenter:center_]);
     [collection_ setAnimationDuration:0.001];
     [collection_ setAnimationEndedCallback:^{
-        OnAnimationEnded();
+        if (nested_run_loop_.get())
+          nested_run_loop_->Quit();
     }];
   }
 
@@ -105,11 +106,6 @@ class PopupCollectionTest : public ui::CocoaTest {
     nested_run_loop_.reset(new base::RunLoop());
     nested_run_loop_->Run();
     nested_run_loop_.reset();
-  }
-
-  void OnAnimationEnded() {
-    if (nested_run_loop_.get())
-      nested_run_loop_->Quit();
   }
 
   base::MessageLoop message_loop_;
