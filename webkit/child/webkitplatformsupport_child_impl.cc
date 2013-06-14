@@ -6,6 +6,7 @@
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/child/fling_curve_configuration.h"
+#include "webkit/child/webthread_impl.h"
 #include "webkit/child/worker_task_runner.h"
 
 #if defined(OS_ANDROID)
@@ -15,7 +16,8 @@
 namespace webkit_glue {
 
 WebKitPlatformSupportChildImpl::WebKitPlatformSupportChildImpl()
-    : fling_curve_configuration_(new FlingCurveConfiguration) {}
+    : current_thread_slot_(&DestroyCurrentThread),
+      fling_curve_configuration_(new FlingCurveConfiguration) {}
 
 WebKitPlatformSupportChildImpl::~WebKitPlatformSupportChildImpl() {}
 
@@ -43,6 +45,27 @@ WebKitPlatformSupportChildImpl::createFlingAnimationCurve(
                                                        cumulative_scroll);
 }
 
+WebKit::WebThread* WebKitPlatformSupportChildImpl::createThread(
+    const char* name) {
+  return new WebThreadImpl(name);
+}
+
+WebKit::WebThread* WebKitPlatformSupportChildImpl::currentThread() {
+  WebThreadImplForMessageLoop* thread =
+      static_cast<WebThreadImplForMessageLoop*>(current_thread_slot_.Get());
+  if (thread)
+    return (thread);
+
+  scoped_refptr<base::MessageLoopProxy> message_loop =
+      base::MessageLoopProxy::current();
+  if (!message_loop.get())
+    return NULL;
+
+  thread = new WebThreadImplForMessageLoop(message_loop.get());
+  current_thread_slot_.Set(thread);
+  return thread;
+}
+
 void WebKitPlatformSupportChildImpl::didStartWorkerRunLoop(
     const WebKit::WebWorkerRunLoop& runLoop) {
   WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
@@ -53,6 +76,13 @@ void WebKitPlatformSupportChildImpl::didStopWorkerRunLoop(
     const WebKit::WebWorkerRunLoop& runLoop) {
   WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
   worker_task_runner->OnWorkerRunLoopStopped(runLoop);
+}
+
+// static
+void WebKitPlatformSupportChildImpl::DestroyCurrentThread(void* thread) {
+  WebThreadImplForMessageLoop* impl =
+      static_cast<WebThreadImplForMessageLoop*>(thread);
+  delete impl;
 }
 
 }  // namespace webkit_glue

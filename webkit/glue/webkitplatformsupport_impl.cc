@@ -48,7 +48,6 @@
 #include "webkit/glue/web_discardable_memory_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/websocketstreamhandle_impl.h"
-#include "webkit/glue/webthread_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/webplugininfo.h"
@@ -365,8 +364,7 @@ WebKitPlatformSupportImpl::WebKitPlatformSupportImpl()
       shared_timer_func_(NULL),
       shared_timer_fire_time_(0.0),
       shared_timer_fire_time_was_set_while_suspended_(false),
-      shared_timer_suspended_(0),
-      current_thread_slot_(&DestroyCurrentThread) {}
+      shared_timer_suspended_(0) {}
 
 WebKitPlatformSupportImpl::~WebKitPlatformSupportImpl() {
 }
@@ -819,26 +817,6 @@ void WebKitPlatformSupportImpl::callOnMainThread(
   main_loop_->PostTask(FROM_HERE, base::Bind(func, context));
 }
 
-WebKit::WebThread* WebKitPlatformSupportImpl::createThread(const char* name) {
-  return new WebThreadImpl(name);
-}
-
-WebKit::WebThread* WebKitPlatformSupportImpl::currentThread() {
-  WebThreadImplForMessageLoop* thread =
-      static_cast<WebThreadImplForMessageLoop*>(current_thread_slot_.Get());
-  if (thread)
-    return (thread);
-
-  scoped_refptr<base::MessageLoopProxy> message_loop =
-      base::MessageLoopProxy::current();
-  if (!message_loop.get())
-    return NULL;
-
-  thread = new WebThreadImplForMessageLoop(message_loop.get());
-  current_thread_slot_.Set(thread);
-  return thread;
-}
-
 base::PlatformFile WebKitPlatformSupportImpl::databaseOpenFile(
     const WebKit::WebString& vfs_file_name, int desired_flags) {
   return base::kInvalidPlatformFileValue;
@@ -951,13 +929,6 @@ void WebKitPlatformSupportImpl::ResumeSharedTimer() {
     setSharedTimerFireInterval(
         shared_timer_fire_time_ - monotonicallyIncreasingTime());
   }
-}
-
-// static
-void WebKitPlatformSupportImpl::DestroyCurrentThread(void* thread) {
-  WebThreadImplForMessageLoop* impl =
-      static_cast<WebThreadImplForMessageLoop*>(thread);
-  delete impl;
 }
 
 WebKit::WebDiscardableMemory*

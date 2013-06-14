@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
 #include "base/platform_file.h"
-#include "base/threading/thread_local_storage.h"
 #include "base/timer.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -126,8 +125,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   virtual void setSharedTimerFireInterval(double interval_seconds);
   virtual void stopSharedTimer();
   virtual void callOnMainThread(void (*func)(void*), void* context);
-  virtual WebKit::WebThread* createThread(const char* name);
-  virtual WebKit::WebThread* currentThread();
   virtual WebKit::WebDiscardableMemory* allocateAndLockDiscardableMemory(
       size_t bytes);
 
@@ -168,7 +165,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
     if (shared_timer_func_ && !shared_timer_suspended_)
       shared_timer_func_();
   }
-  static void DestroyCurrentThread(void*);
 
   base::MessageLoop* main_loop_;
   base::OneShotTimer<WebKitPlatformSupportImpl> shared_timer_;
@@ -178,7 +174,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   int shared_timer_suspended_;  // counter
   WebThemeEngineImpl native_theme_engine_;
   WebFallbackThemeEngineImpl fallback_theme_engine_;
-  base::ThreadLocalStorage::Slot current_thread_slot_;
 };
 
 }  // namespace webkit_glue

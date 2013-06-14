@@ -5,7 +5,7 @@
 // An implementation of WebThread in terms of base::MessageLoop and
 // base::Thread
 
-#include "webkit/glue/webthread_impl.h"
+#include "webkit/child/webthread_impl.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

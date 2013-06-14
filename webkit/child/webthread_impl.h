@@ -1,15 +1,15 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef WEBKIT_GLUE_WEBTHREAD_IMPL_H_
-#define WEBKIT_GLUE_WEBTHREAD_IMPL_H_
+#ifndef WEBKIT_CHILD_WEBTHREAD_IMPL_H_
+#define WEBKIT_CHILD_WEBTHREAD_IMPL_H_
 
 #include <map>
 
-#include "base/threading/thread.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/child/webkit_child_export.h"
 
 namespace webkit_glue {
 
@@ -34,8 +34,8 @@ class WebThreadBase : public WebKit::WebThread {
 
 class WebThreadImpl : public WebThreadBase {
  public:
-  WEBKIT_GLUE_EXPORT explicit WebThreadImpl(const char* name);
-  WEBKIT_GLUE_EXPORT virtual ~WebThreadImpl();
+  WEBKIT_CHILD_EXPORT explicit WebThreadImpl(const char* name);
+  WEBKIT_CHILD_EXPORT virtual ~WebThreadImpl();
 
   virtual void postTask(Task* task);
   virtual void postDelayedTask(Task* task, long long delay_ms);
@@ -52,9 +52,9 @@ class WebThreadImpl : public WebThreadBase {
 
 class WebThreadImplForMessageLoop : public WebThreadBase {
  public:
-  WEBKIT_GLUE_EXPORT explicit WebThreadImplForMessageLoop(
+  WEBKIT_CHILD_EXPORT explicit WebThreadImplForMessageLoop(
       base::MessageLoopProxy* message_loop);
-  WEBKIT_GLUE_EXPORT virtual ~WebThreadImplForMessageLoop();
+  WEBKIT_CHILD_EXPORT virtual ~WebThreadImplForMessageLoop();
 
   virtual void postTask(Task* task);
   virtual void postDelayedTask(Task* task, long long delay_ms);
@@ -69,4 +69,4 @@ class WebThreadImplForMessageLoop : public WebThreadBase {
 
 } // namespace webkit_glue
 
-#endif
+#endif  // WEBKIT_CHILD_WEBTHREAD_IMPL_H_
