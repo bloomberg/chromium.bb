@@ -359,7 +359,9 @@ cr.define('apps_dev_tool', function() {
       if (item.may_disable) {
         enable.addEventListener('click', function(e) {
           chrome.developerPrivate.enable(
-              item.id, !!e.target.checked, ItemsList.loadItemsInfo);
+              item.id, !!e.target.checked, function() {
+                ItemsList.loadItemsInfo();
+              });
         });
       }
 
@@ -496,11 +498,16 @@ cr.define('apps_dev_tool', function() {
 
   /**
    * Fetches items info and reloads the app.
+   * @param {Function=} opt_callback An optional callback to be run when
+   *     reloading is finished.
    */
-  ItemsList.loadItemsInfo = function() {
+  ItemsList.loadItemsInfo = function(callback) {
     chrome.developerPrivate.getItemsInfo(true, true, function(info) {
       completeList = info.sort(compareByName);
       ItemsList.onSearchInput();
+      assert(/undefined|function/.test(typeof callback));
+      if (callback)
+        callback();
     });
   };
 
@@ -510,8 +517,32 @@ cr.define('apps_dev_tool', function() {
    */
   ItemsList.launchApp = function(id) {
     chrome.management.launchApp(id, function() {
-      ItemsList.loadItemsInfo();
+      ItemsList.loadItemsInfo(function() {
+        var unpacked = new ItemsList($('unpacked-list'), unpackedList);
+        unpacked.setExtensionDetailsVisible_($(id), true);
+      });
     });
+  };
+
+  /**
+   * Selects the unpacked apps / extensions tab, scrolls to the app /extension
+   * with the given |id| and expand its details.
+   * @param {string} id Identifier of the app / extension.
+   */
+  ItemsList.makeUnpackedExtensionVisible = function(id) {
+    var tabbox = document.querySelector('tabbox');
+    // Unpacked tab is the first tab.
+    tabbox.selectedIndex = 0;
+
+    var firstItem =
+        document.querySelector('#unpacked-list .extension-list-item-wrapper');
+    if (!firstItem)
+      return;
+    // Scroll relatively to the position of the first item.
+    var node = $(id);
+    document.body.scrollTop = node.offsetTop - firstItem.offsetTop;
+    var unpacked = new ItemsList($('unpacked-list'), unpackedList);
+    unpacked.setExtensionDetailsVisible_(node, true);
   };
 
   return {
