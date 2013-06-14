@@ -180,7 +180,7 @@ tablet_shell_set_lockscreen(struct wl_client *client,
 			    struct wl_resource *surface_resource)
 {
 	struct tablet_shell *shell = resource->data;
-	struct weston_surface *es = surface_resource->data;
+	struct weston_surface *es = wl_resource_get_user_data(surface_resource);
 
 	weston_surface_set_position(es, 0, 0);
 	shell->lockscreen_surface = es;
@@ -207,7 +207,7 @@ tablet_shell_set_switcher(struct wl_client *client,
 			  struct wl_resource *surface_resource)
 {
 	struct tablet_shell *shell = resource->data;
-	struct weston_surface *es = surface_resource->data;
+	struct weston_surface *es = wl_resource_get_user_data(surface_resource);
 
 	/* FIXME: Switcher should be centered and the compositor
 	 * should do the tinting of the background.  With the cache
@@ -227,7 +227,7 @@ tablet_shell_set_homescreen(struct wl_client *client,
 {
 	struct tablet_shell *shell = resource->data;
 
-	shell->home_surface = surface_resource->data;
+	shell->home_surface = wl_resource_get_user_data(surface_resource);
 	shell->home_surface->configure = tablet_shell_surface_configure;
 
 	weston_surface_set_position(shell->home_surface, 0, 0);
@@ -280,7 +280,7 @@ tablet_shell_show_grid(struct wl_client *client,
 		       struct wl_resource *surface_resource)
 {
 	struct tablet_shell *shell = resource->data;
-	struct weston_surface *es = surface_resource->data;
+	struct weston_surface *es = wl_resource_get_user_data(surface_resource);
 
 	tablet_shell_switch_to(shell, es);
 }
@@ -291,7 +291,7 @@ tablet_shell_show_panels(struct wl_client *client,
 			 struct wl_resource *surface_resource)
 {
 	struct tablet_shell *shell = resource->data;
-	struct weston_surface *es = surface_resource->data;
+	struct weston_surface *es = wl_resource_get_user_data(surface_resource);
 
 	tablet_shell_switch_to(shell, es);
 }

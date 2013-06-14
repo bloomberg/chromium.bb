@@ -1108,7 +1108,7 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 	struct weston_surface *surface = NULL;
 
 	if (surface_resource)
-		surface = surface_resource->data;
+		surface = wl_resource_get_user_data(surface_resource);
 
 	if (pointer->focus == NULL)
 		return;

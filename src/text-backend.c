@@ -188,7 +188,7 @@ text_input_activate(struct wl_client *client,
 	wl_list_insert(&text_input->input_methods, &input_method->link);
 	input_method_init_seat(weston_seat);
 
-	text_input->surface = surface->data;
+	text_input->surface = wl_resource_get_user_data(surface);
 
 	input_method_context_create(text_input, input_method);
 

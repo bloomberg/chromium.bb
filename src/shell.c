@@ -985,7 +985,7 @@ workspace_manager_move_surface(struct wl_client *client,
 {
 	struct desktop_shell *shell = resource->data;
 	struct weston_surface *surface =
-		(struct weston_surface *) surface_resource;
+		wl_resource_get_user_data(surface_resource);
 	struct weston_surface *main_surface;
 
 	main_surface = weston_surface_get_main_surface(surface);
@@ -1668,7 +1668,8 @@ shell_surface_set_transient(struct wl_client *client,
 			    int x, int y, uint32_t flags)
 {
 	struct shell_surface *shsurf = resource->data;
-	struct weston_surface *parent = parent_resource->data;
+	struct weston_surface *parent =
+		wl_resource_get_user_data(parent_resource);
 
 	set_transient(shsurf, parent, x, y, flags);
 }
@@ -2307,7 +2308,8 @@ shell_get_shell_surface(struct wl_client *client,
 			uint32_t id,
 			struct wl_resource *surface_resource)
 {
-	struct weston_surface *surface = surface_resource->data;
+	struct weston_surface *surface =
+		wl_resource_get_user_data(surface_resource);
 	struct desktop_shell *shell = resource->data;
 	struct shell_surface *shsurf;
 
@@ -2434,7 +2436,8 @@ desktop_shell_set_background(struct wl_client *client,
 			     struct wl_resource *surface_resource)
 {
 	struct desktop_shell *shell = resource->data;
-	struct weston_surface *surface = surface_resource->data;
+	struct weston_surface *surface =
+		wl_resource_get_user_data(surface_resource);
 
 	if (surface->configure) {
 		wl_resource_post_error(surface_resource,
@@ -2467,7 +2470,8 @@ desktop_shell_set_panel(struct wl_client *client,
 			struct wl_resource *surface_resource)
 {
 	struct desktop_shell *shell = resource->data;
-	struct weston_surface *surface = surface_resource->data;
+	struct weston_surface *surface =
+		wl_resource_get_user_data(surface_resource);
 
 	if (surface->configure) {
 		wl_resource_post_error(surface_resource,
@@ -2521,7 +2525,8 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 			       struct wl_resource *surface_resource)
 {
 	struct desktop_shell *shell = resource->data;
-	struct weston_surface *surface = surface_resource->data;
+	struct weston_surface *surface =
+		wl_resource_get_user_data(surface_resource);
 
 	shell->prepare_event_sent = false;
 
@@ -2585,7 +2590,7 @@ desktop_shell_set_grab_surface(struct wl_client *client,
 {
 	struct desktop_shell *shell = resource->data;
 
-	shell->grab_surface = surface_resource->data;
+	shell->grab_surface = wl_resource_get_user_data(surface_resource);
 }
 
 static void
@@ -3667,7 +3672,8 @@ screensaver_set_surface(struct wl_client *client,
 			struct wl_resource *output_resource)
 {
 	struct desktop_shell *shell = resource->data;
-	struct weston_surface *surface = surface_resource->data;
+	struct weston_surface *surface =
+		wl_resource_get_user_data(surface_resource);
 	struct weston_output *output = output_resource->data;
 
 	surface->configure = screensaver_configure;
@@ -3865,7 +3871,8 @@ input_panel_get_input_panel_surface(struct wl_client *client,
 				    uint32_t id,
 				    struct wl_resource *surface_resource)
 {
-	struct weston_surface *surface = surface_resource->data;
+	struct weston_surface *surface =
+		wl_resource_get_user_data(surface_resource);
 	struct desktop_shell *shell = resource->data;
 	struct input_panel_surface *ipsurf;
 

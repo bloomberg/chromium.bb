@@ -1410,7 +1410,7 @@ surface_attach(struct wl_client *client,
 	       struct wl_resource *resource,
 	       struct wl_resource *buffer_resource, int32_t sx, int32_t sy)
 {
-	struct weston_surface *surface = resource->data;
+	struct weston_surface *surface = wl_resource_get_user_data(resource);
 	struct wl_buffer *buffer = NULL;
 
 	if (buffer_resource)
@@ -1436,7 +1436,7 @@ surface_damage(struct wl_client *client,
 	       struct wl_resource *resource,
 	       int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	struct weston_surface *surface = resource->data;
+	struct weston_surface *surface = wl_resource_get_user_data(resource);
 
 	pixman_region32_union_rect(&surface->pending.damage,
 				   &surface->pending.damage,
@@ -1457,7 +1457,7 @@ surface_frame(struct wl_client *client,
 	      struct wl_resource *resource, uint32_t callback)
 {
 	struct weston_frame_callback *cb;
-	struct weston_surface *surface = resource->data;
+	struct weston_surface *surface = wl_resource_get_user_data(resource);
 
 	cb = malloc(sizeof *cb);
 	if (cb == NULL) {
@@ -1480,7 +1480,7 @@ surface_set_opaque_region(struct wl_client *client,
 			  struct wl_resource *resource,
 			  struct wl_resource *region_resource)
 {
-	struct weston_surface *surface = resource->data;
+	struct weston_surface *surface = wl_resource_get_user_data(resource);
 	struct weston_region *region;
 
 	if (region_resource) {
@@ -1497,7 +1497,7 @@ surface_set_input_region(struct wl_client *client,
 			 struct wl_resource *resource,
 			 struct wl_resource *region_resource)
 {
-	struct weston_surface *surface = resource->data;
+	struct weston_surface *surface = wl_resource_get_user_data(resource);
 	struct weston_region *region;
 
 	if (region_resource) {
@@ -1607,7 +1607,7 @@ weston_subsurface_parent_commit(struct weston_subsurface *sub,
 static void
 surface_commit(struct wl_client *client, struct wl_resource *resource)
 {
-	struct weston_surface *surface = resource->data;
+	struct weston_surface *surface = wl_resource_get_user_data(resource);
 	struct weston_subsurface *sub = weston_surface_to_subsurface(surface);
 
 	if (sub) {
@@ -1627,7 +1627,7 @@ static void
 surface_set_buffer_transform(struct wl_client *client,
 			     struct wl_resource *resource, int transform)
 {
-	struct weston_surface *surface = resource->data;
+	struct weston_surface *surface = wl_resource_get_user_data(resource);
 
 	surface->pending.buffer_transform = transform;
 }
@@ -1637,7 +1637,7 @@ surface_set_buffer_scale(struct wl_client *client,
 			 struct wl_resource *resource,
 			 int32_t scale)
 {
-	struct weston_surface *surface = resource->data;
+	struct weston_surface *surface = wl_resource_get_user_data(resource);
 
 	surface->pending.buffer_scale = scale;
 }
@@ -2058,7 +2058,8 @@ subsurface_place_above(struct wl_client *client,
 		       struct wl_resource *sibling_resource)
 {
 	struct weston_subsurface *sub = resource->data;
-	struct weston_surface *surface = sibling_resource->data;
+	struct weston_surface *surface =
+		wl_resource_get_user_data(sibling_resource);
 	struct weston_subsurface *sibling;
 
 	if (!sub)
@@ -2079,7 +2080,8 @@ subsurface_place_below(struct wl_client *client,
 		       struct wl_resource *sibling_resource)
 {
 	struct weston_subsurface *sub = resource->data;
-	struct weston_surface *surface = sibling_resource->data;
+	struct weston_surface *surface =
+		wl_resource_get_user_data(sibling_resource);
 	struct weston_subsurface *sibling;
 
 	if (!sub)
@@ -2321,8 +2323,10 @@ subcompositor_get_subsurface(struct wl_client *client,
 			     struct wl_resource *surface_resource,
 			     struct wl_resource *parent_resource)
 {
-	struct weston_surface *surface = surface_resource->data;
-	struct weston_surface *parent = parent_resource->data;
+	struct weston_surface *surface =
+		wl_resource_get_user_data(surface_resource);
+	struct weston_surface *parent =
+		wl_resource_get_user_data(parent_resource);
 	struct weston_subsurface *sub;
 	static const char where[] = "get_subsurface: wl_subsurface@";
 

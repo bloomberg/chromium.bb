@@ -372,13 +372,13 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 
 	if (seat->pointer->button_count == 0 ||
 	    seat->pointer->grab_serial != serial ||
-	    seat->pointer->focus != origin_resource->data)
+	    seat->pointer->focus != wl_resource_get_user_data(origin_resource))
 		return;
 
 	/* FIXME: Check that the data source type array isn't empty. */
 
 	if (icon_resource)
-		icon = icon_resource->data;
+		icon = wl_resource_get_user_data(icon_resource);
 	if (icon && icon->configure) {
 		wl_resource_post_error(icon_resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
@@ -493,7 +493,7 @@ data_device_set_selection(struct wl_client *client,
 		return;
 
 	/* FIXME: Store serial and check against incoming serial here. */
-	weston_seat_set_selection(resource->data, source_resource->data,
+	weston_seat_set_selection(resource->data, wl_resource_get_user_data(source_resource),
 				  serial);
 }
 
