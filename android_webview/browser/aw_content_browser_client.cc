@@ -29,8 +29,6 @@
 namespace android_webview {
 namespace {
 
-AwBrowserContext* g_browser_context;
-
 class AwAccessTokenStore : public content::AccessTokenStore {
  public:
   AwAccessTokenStore() { }
@@ -67,7 +65,7 @@ std::string AwContentBrowserClient::GetAcceptLangsImpl() {
 }
 
 AwBrowserContext* AwContentBrowserClient::GetAwBrowserContext() {
-  return g_browser_context;
+  return AwBrowserContext::GetDefault();
 }
 
 AwContentBrowserClient::AwContentBrowserClient(
@@ -79,11 +77,9 @@ AwContentBrowserClient::AwContentBrowserClient(
   }
   browser_context_.reset(
       new AwBrowserContext(user_data_dir, native_factory_));
-  g_browser_context = browser_context_.get();
 }
 
 AwContentBrowserClient::~AwContentBrowserClient() {
-  g_browser_context = NULL;
 }
 
 void AwContentBrowserClient::AddCertificate(net::URLRequest* request,

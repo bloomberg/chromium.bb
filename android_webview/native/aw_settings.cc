@@ -24,11 +24,19 @@ using base::android::ScopedJavaLocalRef;
 
 namespace android_webview {
 
-AwSettings::AwSettings(JNIEnv* env, jobject obj)
-    : aw_settings_(env, obj) {
+AwSettings::AwSettings(JNIEnv* env, jobject obj, jint web_contents)
+    : WebContentsObserver(
+          reinterpret_cast<content::WebContents*>(web_contents)),
+      aw_settings_(env, obj) {
 }
 
 AwSettings::~AwSettings() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> scoped_obj = aw_settings_.get(env);
+  jobject obj = scoped_obj.obj();
+  if (!obj) return;
+  Java_AwSettings_nativeAwSettingsGone(env, obj,
+                                       reinterpret_cast<jint>(this));
 }
 
 void AwSettings::Destroy(JNIEnv* env, jobject obj) {
@@ -46,15 +54,6 @@ void AwSettings::ResetScrollAndScaleState(JNIEnv* env, jobject obj) {
   AwRenderViewHostExt* rvhe = GetAwRenderViewHostExt();
   if (!rvhe) return;
   rvhe->ResetScrollAndScaleState();
-}
-
-void AwSettings::SetWebContentsLocked(
-    JNIEnv* env, jobject obj, jint jweb_contents) {
-  content::WebContents* web_contents =
-      reinterpret_cast<content::WebContents*>(jweb_contents);
-  Observe(web_contents);
-
-  UpdateEverythingLocked(env, obj);
 }
 
 void AwSettings::UpdateEverything() {
@@ -250,12 +249,14 @@ void AwSettings::RenderViewCreated(content::RenderViewHost* render_view_host) {
   UpdateEverything();
 }
 
-// Assumed to be called from the Java object's constructor, thus is "Locked".
+void AwSettings::WebContentsDestroyed(content::WebContents* web_contents) {
+  delete this;
+}
+
 static jint Init(JNIEnv* env,
                  jobject obj,
                  jint web_contents) {
-  AwSettings* settings = new AwSettings(env, obj);
-  settings->SetWebContentsLocked(env, obj, web_contents);
+  AwSettings* settings = new AwSettings(env, obj, web_contents);
   return reinterpret_cast<jint>(settings);
 }
 

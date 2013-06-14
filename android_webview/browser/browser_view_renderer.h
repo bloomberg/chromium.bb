@@ -78,9 +78,6 @@ class BrowserViewRenderer {
   static AwDrawSWFunctionTable* GetAwDrawSWFunctionTable();
   static bool IsSkiaVersionCompatible();
 
-  // Content control methods.
-  virtual void SetContents(content::ContentViewCore* content_view_core) = 0;
-
   // Rendering methods.
 
   // Main handler for view drawing: performs a SW draw immediately, or sets up

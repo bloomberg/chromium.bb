@@ -47,8 +47,12 @@ void SynchronousInputEventFilter::SetBoundHandlerOnUIThread(
 void SynchronousInputEventFilter::DidAddInputHandler(
     int routing_id,
     cc::InputHandler* input_handler) {
-  SynchronousCompositorImpl::FromRoutingID(routing_id)
-      ->SetInputHandler(input_handler);
+  // The SynchronusCompositorImpl can be NULL if the WebContents that it's
+  // bound to has already been deleted.
+  SynchronousCompositorImpl* compositor =
+      SynchronousCompositorImpl::FromRoutingID(routing_id);
+  if (compositor)
+    compositor->SetInputHandler(input_handler);
 }
 
 void SynchronousInputEventFilter::DidRemoveInputHandler(int routing_id) {

@@ -26,15 +26,14 @@ class InProcessViewRenderer : public BrowserViewRenderer,
                               public content::SynchronousCompositorClient {
  public:
   InProcessViewRenderer(BrowserViewRenderer::Client* client,
-                        JavaHelper* java_helper);
+                        JavaHelper* java_helper,
+                        content::WebContents* web_contents);
   virtual ~InProcessViewRenderer();
 
   static InProcessViewRenderer* FromWebContents(
       content::WebContents* contents);
 
   // BrowserViewRenderer overrides
-  virtual void SetContents(
-      content::ContentViewCore* content_view_core) OVERRIDE;
   virtual bool OnDraw(jobject java_canvas,
                       bool is_hardware_canvas,
                       const gfx::Point& scroll,

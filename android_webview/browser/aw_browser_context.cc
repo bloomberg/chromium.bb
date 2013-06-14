@@ -41,6 +41,8 @@ class AwResourceContext : public content::ResourceContext {
   DISALLOW_COPY_AND_ASSIGN(AwResourceContext);
 };
 
+AwBrowserContext* g_browser_context = NULL;
+
 }  // namespace
 
 AwBrowserContext::AwBrowserContext(
@@ -48,9 +50,20 @@ AwBrowserContext::AwBrowserContext(
     JniDependencyFactory* native_factory)
     : context_storage_path_(path),
       native_factory_(native_factory) {
+  DCHECK(g_browser_context == NULL);
+  g_browser_context = this;
 }
 
 AwBrowserContext::~AwBrowserContext() {
+  DCHECK(g_browser_context == this);
+  g_browser_context = NULL;
+}
+
+// static
+AwBrowserContext* AwBrowserContext::GetDefault() {
+  // TODO(joth): rather than store in a global here, lookup this instance
+  // from the Java-side peer.
+  return g_browser_context;
 }
 
 // static

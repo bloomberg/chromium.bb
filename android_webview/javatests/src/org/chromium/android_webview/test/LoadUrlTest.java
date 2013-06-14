@@ -58,9 +58,9 @@ public class LoadUrlTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testDataUrlCharset() throws Throwable {
-        // Note that the '£' is the important character in the following
+        // Note that the \u00a3 (pound sterling) is the important character in the following
         // string as it's not in the US_ASCII character set.
-        final String expectedTitle = "You win £100!";
+        final String expectedTitle = "You win \u00a3100!";
         final String data =
             "<html><head><title>" + expectedTitle + "</title></head><body>foo</body></html>";
         final TestAwContentsClient contentsClient = new TestAwContentsClient();

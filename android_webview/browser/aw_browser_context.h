@@ -46,6 +46,9 @@ class AwBrowserContext : public content::BrowserContext,
                    JniDependencyFactory* native_factory);
   virtual ~AwBrowserContext();
 
+  // Currently only one instance per process is supported.
+  static AwBrowserContext* GetDefault();
+
   // Convenience method to returns the AwBrowserContext corresponding to the
   // given WebContents.
   static AwBrowserContext* FromWebContents(

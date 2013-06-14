@@ -36,6 +36,15 @@ class AwWebContentsDelegate;
 // Provides the ownership of and access to browser components required for
 // WebView functionality; analogous to chrome's TabContents, but with a
 // level of indirection provided by the AwContentsContainer abstraction.
+//
+// Object lifetime:
+// For most purposes the java and native objects can be considered to have
+// 1:1 lifetime and relationship. The exception is the java instance that
+// hosts a popup will be rebound to a second native instance (carrying the
+// popup content) and discard the 'default' native instance it made on
+// construction. A native instance is only bound to at most one Java peer over
+// its entire lifetime - see Init() and SetPendingWebContentsForPopup() for the
+// construction points, and SetJavaPeers() where these paths join.
 class AwContents : public FindHelper::Listener,
                    public IconHelper::Listener,
                    public AwRenderViewHostExtClient,
@@ -48,10 +57,7 @@ class AwContents : public FindHelper::Listener,
   // render_process_id and render_view_id, or NULL.
   static AwContents* FromID(int render_process_id, int render_view_id);
 
-  AwContents(JNIEnv* env,
-             jobject obj,
-             jobject web_contents_delegate,
-             jobject contents_client_bridge);
+  AwContents(scoped_ptr<content::WebContents> web_contents);
   virtual ~AwContents();
 
   AwRenderViewHostExt* render_view_host_ext() {
@@ -67,18 +73,19 @@ class AwContents : public FindHelper::Listener,
                                  const std::string& realm);
 
   // Methods called from Java.
+  void SetJavaPeers(JNIEnv* env,
+                    jobject obj,
+                    jobject aw_contents,
+                    jobject web_contents_delegate,
+                    jobject contents_client_bridge,
+                    jobject io_thread_client,
+                    jobject intercept_navigation_delegate);
   jint GetWebContents(JNIEnv* env, jobject obj);
-  void SetWebContents(JNIEnv* env, jobject obj, jint web_contents);
   jint GetAwContentsClientBridge(JNIEnv* env, jobject obj);
 
-  void DidInitializeContentViewCore(JNIEnv* env, jobject obj,
-                                    jint content_view_core);
   void Destroy(JNIEnv* env, jobject obj);
   void DocumentHasImages(JNIEnv* env, jobject obj, jobject message);
   void GenerateMHTML(JNIEnv* env, jobject obj, jstring jpath, jobject callback);
-  void SetIoThreadClient(JNIEnv* env, jobject obj, jobject client);
-  void SetInterceptNavigationDelegate(JNIEnv* env, jobject obj,
-                                      jobject delegate);
   void AddVisitedLinks(JNIEnv* env, jobject obj, jobjectArray jvisited_links);
   base::android::ScopedJavaLocalRef<jbyteArray> GetCertificate(
       JNIEnv* env, jobject obj);
@@ -145,12 +152,11 @@ class AwContents : public FindHelper::Listener,
 
   void ClearCache(JNIEnv* env, jobject obj, jboolean include_disk_files);
   void SetPendingWebContentsForPopup(scoped_ptr<content::WebContents> pending);
-  jint ReleasePopupWebContents(JNIEnv* env, jobject obj);
+  jint ReleasePopupAwContents(JNIEnv* env, jobject obj);
 
   void SetSaveFormData(bool enabled);
 
  private:
-  void SetWebContents(content::WebContents* web_contents);
   void InitAutofillIfNecessary(bool enabled);
 
   JavaObjectWeakGlobalRef java_ref_;
@@ -160,7 +166,7 @@ class AwContents : public FindHelper::Listener,
   scoped_ptr<AwRenderViewHostExt> render_view_host_ext_;
   scoped_ptr<FindHelper> find_helper_;
   scoped_ptr<IconHelper> icon_helper_;
-  scoped_ptr<content::WebContents> pending_contents_;
+  scoped_ptr<AwContents> pending_contents_;
   scoped_ptr<BrowserViewRenderer> browser_view_renderer_;
 
   // GURL is supplied by the content layer as requesting frame.

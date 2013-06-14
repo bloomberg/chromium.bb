@@ -299,10 +299,11 @@ bool BrowserViewRenderer::IsSkiaVersionCompatible() {
 
 InProcessViewRenderer::InProcessViewRenderer(
     BrowserViewRenderer::Client* client,
-    JavaHelper* java_helper)
+    JavaHelper* java_helper,
+    content::WebContents* web_contents)
     : client_(client),
       java_helper_(java_helper),
-      web_contents_(NULL),
+      web_contents_(web_contents),
       compositor_(NULL),
       view_visible_(false),
       continuous_invalidate_(false),
@@ -314,37 +315,24 @@ InProcessViewRenderer::InProcessViewRenderer(
       hardware_failed_(false),
       egl_context_at_init_(NULL),
       weak_factory_(this) {
+  CHECK(web_contents_);
+  web_contents_->SetUserData(kUserDataKey, new UserData(this));
+  content::SynchronousCompositor::SetClientForWebContents(web_contents_, this);
+  // Currently the logic in this class relies on |compositor_| remaining NULL
+  // until the DidInitializeCompositor() call, hence it is not set here.
 }
 
 InProcessViewRenderer::~InProcessViewRenderer() {
-  SetContents(NULL);
-  DCHECK(compositor_ == NULL);
+  CHECK(web_contents_);
+  content::SynchronousCompositor::SetClientForWebContents(web_contents_, NULL);
+  web_contents_->SetUserData(kUserDataKey, NULL);
+  DCHECK(web_contents_ == NULL);  // WebContentsGone should have been called.
 }
 
 // static
 InProcessViewRenderer* InProcessViewRenderer::FromWebContents(
     content::WebContents* contents) {
   return UserData::GetInstance(contents);
-}
-
-void InProcessViewRenderer::SetContents(
-    content::ContentViewCore* content_view_core) {
-  // First remove association from the prior ContentViewCore / WebContents.
-  if (web_contents_) {
-    content::SynchronousCompositor::SetClientForWebContents(web_contents_,
-                                                            NULL);
-    web_contents_->SetUserData(kUserDataKey, NULL);
-    DCHECK(!web_contents_);  // WebContentsGone should have been called.
-  }
-
-  if (!content_view_core)
-    return;
-
-  web_contents_ = content_view_core->GetWebContents();
-  web_contents_->SetUserData(kUserDataKey, new UserData(this));
-  content::SynchronousCompositor::SetClientForWebContents(web_contents_, this);
-  // Currently the logic in this class relies on |compositor_| remaining NULL
-  // until the DidInitializeCompositor() call, hence it is not set here.
 }
 
 void InProcessViewRenderer::WebContentsGone() {

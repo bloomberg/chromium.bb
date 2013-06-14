@@ -21,7 +21,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   // This is what AwContentBrowserClient::GetAcceptLangs uses.
   static std::string GetAcceptLangsImpl();
 
-  // Returns the one AwBrowserContext for this process.
+  // Deprecated: use AwBrowserContext::GetDefault() instead.
   static AwBrowserContext* GetAwBrowserContext();
 
   AwContentBrowserClient(JniDependencyFactory* native_factory);
