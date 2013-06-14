@@ -62,12 +62,10 @@ class FileSystemOperation {
   typedef base::Callback<void(base::PlatformFileError result)> StatusCallback;
 
   // Used for GetMetadata(). |result| is the return code of the operation,
-  // |file_info| is the obtained file info, and |platform_path| is the path
-  // of the file.
+  // |file_info| is the obtained file info.
   typedef base::Callback<
       void(base::PlatformFileError result,
-           const base::PlatformFileInfo& file_info,
-           const base::FilePath& platform_path)> GetMetadataCallback;
+           const base::PlatformFileInfo& file_info)> GetMetadataCallback;
 
   // Used for OpenFile(). |result| is the return code of the operation.
   // |on_close_callback| will be called after the file is closed in the child

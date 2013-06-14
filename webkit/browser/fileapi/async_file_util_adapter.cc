@@ -66,7 +66,7 @@ class GetFileInfoHelper {
 
   void ReplyFileInfo(const AsyncFileUtil::GetFileInfoCallback& callback) {
     if (!callback.is_null())
-      callback.Run(error_, file_info_, platform_path_);
+      callback.Run(error_, file_info_);
   }
 
   void ReplySnapshotFile(

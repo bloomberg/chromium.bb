@@ -594,10 +594,10 @@ void FileAPIMessageFilter::DidFinish(int request_id,
 void FileAPIMessageFilter::DidGetMetadata(
     int request_id,
     base::PlatformFileError result,
-    const base::PlatformFileInfo& info,
-    const base::FilePath& platform_path) {
+    const base::PlatformFileInfo& info) {
+  // TODO(satorux): Remove the third parameter. crbug.com/248480
   if (result == base::PLATFORM_FILE_OK)
-    Send(new FileSystemMsg_DidReadMetadata(request_id, info, platform_path));
+    Send(new FileSystemMsg_DidReadMetadata(request_id, info, base::FilePath()));
   else
     Send(new FileSystemMsg_DidFail(request_id, result));
   operations_.erase(request_id);

@@ -214,12 +214,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileSystemOperation
                           base::PlatformFileError rv);
   void DidDirectoryExists(const StatusCallback& callback,
                           base::PlatformFileError rv,
-                          const base::PlatformFileInfo& file_info,
-                          const base::FilePath& unused);
+                          const base::PlatformFileInfo& file_info);
   void DidFileExists(const StatusCallback& callback,
                      base::PlatformFileError rv,
-                     const base::PlatformFileInfo& file_info,
-                     const base::FilePath& unused);
+                     const base::PlatformFileInfo& file_info);
   void DidWrite(const FileSystemURL& url,
                 const WriteCallback& callback,
                 base::PlatformFileError rv,

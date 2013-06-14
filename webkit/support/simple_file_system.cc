@@ -330,16 +330,13 @@ void SimpleFileSystem::DidFinish(WebFileSystemCallbacks* callbacks,
 
 void SimpleFileSystem::DidGetMetadata(WebFileSystemCallbacks* callbacks,
                                       base::PlatformFileError result,
-                                      const base::PlatformFileInfo& info,
-                                      const base::FilePath& platform_path) {
+                                      const base::PlatformFileInfo& info) {
   if (result == base::PLATFORM_FILE_OK) {
     WebFileInfo web_file_info;
     web_file_info.length = info.size;
     web_file_info.modificationTime = info.last_modified.ToDoubleT();
     web_file_info.type = info.is_directory ?
         WebFileInfo::TypeDirectory : WebFileInfo::TypeFile;
-    web_file_info.platformPath =
-        webkit_base::FilePathToWebString(platform_path);
     callbacks->didReadMetadata(web_file_info);
   } else {
     callbacks->didFail(fileapi::PlatformFileErrorToWebFileError(result));

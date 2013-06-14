@@ -324,6 +324,7 @@ void NativeMediaFileUtil::GetFileInfoOnTaskRunnerThread(
     const GetFileInfoCallback& callback) {
   DCHECK(IsOnTaskRunnerThread(context));
   base::PlatformFileInfo file_info;
+  // TODO(thestig): remove this.
   base::FilePath platform_path;
   base::PlatformFileError error =
       GetFileInfoSync(context, url, &file_info, &platform_path);
@@ -332,7 +333,7 @@ void NativeMediaFileUtil::GetFileInfoOnTaskRunnerThread(
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(callback, error, file_info, platform_path));
+      base::Bind(callback, error, file_info));
 }
 
 void NativeMediaFileUtil::ReadDirectoryOnTaskRunnerThread(

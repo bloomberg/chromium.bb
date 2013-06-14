@@ -62,8 +62,12 @@ class AsyncFileTestHelper {
   // Retrieves PlatformFileInfo for |url| and populates |file_info|.
   static base::PlatformFileError GetMetadata(FileSystemContext* context,
                                              const FileSystemURL& url,
-                                             base::PlatformFileInfo* file_info,
-                                             base::FilePath* platform_path);
+                                             base::PlatformFileInfo* file_info);
+
+  // Retrieves FilePath for |url| and populates |platform_path|.
+  static base::PlatformFileError GetPlatformPath(FileSystemContext* context,
+                                                 const FileSystemURL& url,
+                                                 base::FilePath* platform_path);
 
   // Returns true if a file exists at |url| with |size|. If |size| is
   // kDontCheckSize it doesn't check the file size (but just check its

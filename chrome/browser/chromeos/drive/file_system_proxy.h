@@ -122,7 +122,6 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // Helper callback for relaying reply for metadata retrieval request to the
   // calling thread.
   void OnGetMetadata(
-      const base::FilePath& file_path,
       const fileapi::FileSystemOperation::GetMetadataCallback&
           callback,
       FileError error,
@@ -210,6 +209,6 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   FileSystemInterface* file_system_;
 };
 
-}  // namespace chromeos
+}  // namespace drive
 
 #endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_PROXY_H_

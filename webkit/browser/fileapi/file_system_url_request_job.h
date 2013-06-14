@@ -62,8 +62,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileSystemURLRequestJob
   void StartAsync();
   void DidGetMetadata(
       base::PlatformFileError error_code,
-      const base::PlatformFileInfo& file_info,
-      const base::FilePath& platform_path);
+      const base::PlatformFileInfo& file_info);
   void DidRead(int result);
   void NotifyFailed(int rv);
 

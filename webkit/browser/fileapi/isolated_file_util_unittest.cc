@@ -159,19 +159,25 @@ class IsolatedFileUtilTest : public testing::Test {
 
   void VerifyFilesHaveSameContent(const FileSystemURL& url1,
                                   const FileSystemURL& url2) {
-    // Get the file info for url1.
+    // Get the file info and the platform path for url1.
     base::PlatformFileInfo info1;
+    ASSERT_EQ(base::PLATFORM_FILE_OK,
+              AsyncFileTestHelper::GetMetadata(
+                  file_system_context(), url1, &info1));
     base::FilePath platform_path1;
     ASSERT_EQ(base::PLATFORM_FILE_OK,
-              AsyncFileTestHelper::GetMetadata(
-                  file_system_context(), url1, &info1, &platform_path1));
+              AsyncFileTestHelper::GetPlatformPath(
+                  file_system_context(), url1, &platform_path1));
 
-    // Get the file info for url2.
+    // Get the file info and the platform path  for url2.
     base::PlatformFileInfo info2;
-    base::FilePath platform_path2;
     ASSERT_EQ(base::PLATFORM_FILE_OK,
               AsyncFileTestHelper::GetMetadata(
-                  file_system_context(), url2, &info2, &platform_path2));
+                  file_system_context(), url2, &info2));
+    base::FilePath platform_path2;
+    ASSERT_EQ(base::PLATFORM_FILE_OK,
+              AsyncFileTestHelper::GetPlatformPath(
+                  file_system_context(), url2, &platform_path2));
 
     // See if file info matches with the other one.
     EXPECT_EQ(info1.is_directory, info2.is_directory);

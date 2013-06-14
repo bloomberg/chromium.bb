@@ -154,7 +154,7 @@ OperationID FileSystemOperationRunner::GetMetadata(
   FileSystemOperation* operation =
       file_system_context_->CreateFileSystemOperation(url, &error);
   if (!operation) {
-    callback.Run(error, base::PlatformFileInfo(), base::FilePath());
+    callback.Run(error, base::PlatformFileInfo());
     return kErrorOperationID;
   }
   OperationID id = operations_.Add(operation);
@@ -463,9 +463,8 @@ void FileSystemOperationRunner::DidGetMetadata(
     OperationID id,
     const GetMetadataCallback& callback,
     base::PlatformFileError rv,
-    const base::PlatformFileInfo& file_info,
-    const base::FilePath& platform_path) {
-  callback.Run(rv, file_info, platform_path);
+    const base::PlatformFileInfo& file_info) {
+  callback.Run(rv, file_info);
   FinishOperation(id);
 }
 

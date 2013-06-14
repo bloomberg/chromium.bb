@@ -51,8 +51,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AsyncFileUtil {
 
   typedef base::Callback<
       void(base::PlatformFileError result,
-           const base::PlatformFileInfo& file_info,
-           const base::FilePath& platform_path)> GetFileInfoCallback;
+           const base::PlatformFileInfo& file_info)> GetFileInfoCallback;
 
   typedef std::vector<DirectoryEntry> EntryList;
   typedef base::Callback<

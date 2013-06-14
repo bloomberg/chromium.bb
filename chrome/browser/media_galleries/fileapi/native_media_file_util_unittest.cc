@@ -77,8 +77,7 @@ void ExpectMetadataEqHelper(const std::string& test_name,
                             base::PlatformFileError expected,
                             bool expected_is_directory,
                             base::PlatformFileError actual,
-                            const base::PlatformFileInfo& file_info,
-                            const base::FilePath& /*platform_path*/) {
+                            const base::PlatformFileInfo& file_info) {
   EXPECT_EQ(expected, actual) << test_name;
   if (actual == base::PLATFORM_FILE_OK)
     EXPECT_EQ(expected_is_directory, file_info.is_directory) << test_name;

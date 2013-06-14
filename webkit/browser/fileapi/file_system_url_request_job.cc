@@ -165,8 +165,7 @@ void FileSystemURLRequestJob::StartAsync() {
 
 void FileSystemURLRequestJob::DidGetMetadata(
     base::PlatformFileError error_code,
-    const base::PlatformFileInfo& file_info,
-    const base::FilePath& platform_path) {
+    const base::PlatformFileInfo& file_info) {
   if (error_code != base::PLATFORM_FILE_OK) {
     NotifyFailed(error_code == base::PLATFORM_FILE_ERROR_INVALID_URL ?
                  net::ERR_INVALID_URL : net::ERR_FILE_NOT_FOUND);

@@ -272,7 +272,7 @@ void ItunesFileUtil::GetFileInfoWithFreshDataProvider(
           content::BrowserThread::IO,
           FROM_HERE,
           base::Bind(callback, base::PLATFORM_FILE_ERROR_IO,
-                     base::PlatformFileInfo(),  base::FilePath()));
+                     base::PlatformFileInfo()));
     }
     return;
   }

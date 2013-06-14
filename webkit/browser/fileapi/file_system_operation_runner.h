@@ -237,8 +237,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationRunner
   void DidGetMetadata(OperationID id,
                       const GetMetadataCallback& callback,
                       base::PlatformFileError rv,
-                      const base::PlatformFileInfo& file_info,
-                      const base::FilePath& platform_path);
+                      const base::PlatformFileInfo& file_info);
   void DidReadDirectory(OperationID id,
                         const ReadDirectoryCallback& callback,
                         base::PlatformFileError rv,

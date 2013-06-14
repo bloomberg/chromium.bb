@@ -121,8 +121,7 @@ class SimpleFileSystem
                  base::PlatformFileError result);
   void DidGetMetadata(WebKit::WebFileSystemCallbacks* callbacks,
                       base::PlatformFileError result,
-                      const base::PlatformFileInfo& info,
-                      const base::FilePath& platform_path);
+                      const base::PlatformFileInfo& info);
   void DidReadDirectory(
       WebKit::WebFileSystemCallbacks* callbacks,
       base::PlatformFileError result,

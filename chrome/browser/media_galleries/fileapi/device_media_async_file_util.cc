@@ -283,18 +283,20 @@ DeviceMediaAsyncFileUtil::DeviceMediaAsyncFileUtil(
 
 void DeviceMediaAsyncFileUtil::OnDidGetFileInfo(
     const AsyncFileUtil::GetFileInfoCallback& callback,
+    // TODO(thestig): remove this.
     const base::FilePath& platform_path,
     const base::PlatformFileInfo& file_info) {
   if (!callback.is_null())
-    callback.Run(base::PLATFORM_FILE_OK, file_info, platform_path);
+    callback.Run(base::PLATFORM_FILE_OK, file_info);
 }
 
 void DeviceMediaAsyncFileUtil::OnGetFileInfoError(
     const AsyncFileUtil::GetFileInfoCallback& callback,
+    // TODO(thestig): remove this.
     const base::FilePath& platform_path,
     base::PlatformFileError error) {
   if (!callback.is_null())
-    callback.Run(error, base::PlatformFileInfo(), platform_path);
+    callback.Run(error, base::PlatformFileInfo());
 }
 
 void DeviceMediaAsyncFileUtil::OnDidReadDirectory(

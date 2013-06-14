@@ -88,12 +88,10 @@ class RemoteFileSystemOperation
   // Generic callback that translates platform errors to WebKit error codes.
   void DidDirectoryExists(const StatusCallback& callback,
                           base::PlatformFileError rv,
-                          const base::PlatformFileInfo& file_info,
-                          const base::FilePath& unused);
+                          const base::PlatformFileInfo& file_info);
   void DidFileExists(const StatusCallback& callback,
                      base::PlatformFileError rv,
-                     const base::PlatformFileInfo& file_info,
-                     const base::FilePath& unused);
+                     const base::PlatformFileInfo& file_info);
   void DidWrite(const WriteCallback& write_callback,
                 base::PlatformFileError result,
                 int64 bytes,

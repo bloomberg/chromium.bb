@@ -189,8 +189,7 @@ void FileSystemProxy::GetFileInfo(
         FROM_HERE,
         base::Bind(callback,
                    base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                   base::PlatformFileInfo(),
-                   base::FilePath()));
+                   base::PlatformFileInfo()));
     return;
   }
 
@@ -201,7 +200,6 @@ void FileSystemProxy::GetFileInfo(
                  google_apis::CreateRelayCallback(
                      base::Bind(&FileSystemProxy::OnGetMetadata,
                                 this,
-                                file_path,
                                 callback))));
 }
 
@@ -776,7 +774,6 @@ void FileSystemProxy::OnStatusCallback(
 }
 
 void FileSystemProxy::OnGetMetadata(
-    const base::FilePath& file_path,
     const FileSystemOperation::GetMetadataCallback& callback,
     FileError error,
     scoped_ptr<ResourceEntry> entry) {
@@ -784,8 +781,7 @@ void FileSystemProxy::OnGetMetadata(
 
   if (error != FILE_ERROR_OK) {
     callback.Run(FileErrorToPlatformError(error),
-                 base::PlatformFileInfo(),
-                 base::FilePath());
+                 base::PlatformFileInfo());
     return;
   }
   DCHECK(entry.get());
@@ -793,7 +789,7 @@ void FileSystemProxy::OnGetMetadata(
   base::PlatformFileInfo file_info;
   util::ConvertResourceEntryToPlatformFileInfo(entry->file_info(), &file_info);
 
-  callback.Run(base::PLATFORM_FILE_OK, file_info, file_path);
+  callback.Run(base::PLATFORM_FILE_OK, file_info);
 }
 
 void FileSystemProxy::OnReadDirectory(

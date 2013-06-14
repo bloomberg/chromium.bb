@@ -135,8 +135,7 @@ class FileAPIMessageFilter : public BrowserMessageFilter {
   void DidCancel(int request_id, base::PlatformFileError result);
   void DidGetMetadata(int request_id,
                       base::PlatformFileError result,
-                      const base::PlatformFileInfo& info,
-                      const base::FilePath& platform_path);
+                      const base::PlatformFileInfo& info);
   void DidReadDirectory(int request_id,
                         base::PlatformFileError result,
                         const std::vector<fileapi::DirectoryEntry>& entries,

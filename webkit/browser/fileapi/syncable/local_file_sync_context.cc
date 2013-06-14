@@ -702,8 +702,7 @@ void LocalFileSyncContext::DidApplyRemoteChange(
 void LocalFileSyncContext::DidGetFileMetadata(
     const SyncFileMetadataCallback& callback,
     base::PlatformFileError file_error,
-    const base::PlatformFileInfo& file_info,
-    const base::FilePath& platform_path) {
+    const base::PlatformFileInfo& file_info) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   SyncFileMetadata metadata;
   if (file_error == base::PLATFORM_FILE_OK) {

@@ -35,13 +35,24 @@ AssignAndQuitCallback(base::RunLoop* run_loop,
 void GetMetadataCallback(base::RunLoop* run_loop,
                          base::PlatformFileError* result_out,
                          base::PlatformFileInfo* file_info_out,
-                         base::FilePath* platform_path_out,
                          base::PlatformFileError result,
-                         const base::PlatformFileInfo& file_info,
-                         const base::FilePath& platform_path) {
+                         const base::PlatformFileInfo& file_info) {
   *result_out = result;
   if (file_info_out)
     *file_info_out = file_info;
+  run_loop->Quit();
+}
+
+void CreateSnapshotFileCallback(
+    base::RunLoop* run_loop,
+    base::PlatformFileError* result_out,
+    base::FilePath* platform_path_out,
+    base::PlatformFileError result,
+    const base::PlatformFileInfo& file_info,
+    const base::FilePath& platform_path,
+    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+  DCHECK(!file_ref);
+  *result_out = result;
   if (platform_path_out)
     *platform_path_out = platform_path;
   run_loop->Quit();
@@ -168,13 +179,25 @@ base::PlatformFileError AsyncFileTestHelper::TruncateFile(
 base::PlatformFileError AsyncFileTestHelper::GetMetadata(
     FileSystemContext* context,
     const FileSystemURL& url,
-    base::PlatformFileInfo* file_info,
-    base::FilePath* platform_path) {
+    base::PlatformFileInfo* file_info) {
   base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   context->operation_runner()->GetMetadata(
       url, base::Bind(&GetMetadataCallback, &run_loop, &result,
-                      file_info, platform_path));
+                      file_info));
+  run_loop.Run();
+  return result;
+}
+
+base::PlatformFileError AsyncFileTestHelper::GetPlatformPath(
+    FileSystemContext* context,
+    const FileSystemURL& url,
+    base::FilePath* platform_path) {
+  base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
+  base::RunLoop run_loop;
+  context->operation_runner()->CreateSnapshotFile(
+      url, base::Bind(&CreateSnapshotFileCallback, &run_loop, &result,
+                      platform_path));
   run_loop.Run();
   return result;
 }
@@ -184,7 +207,7 @@ bool AsyncFileTestHelper::FileExists(
     const FileSystemURL& url,
     int64 expected_size) {
   base::PlatformFileInfo file_info;
-  base::PlatformFileError result = GetMetadata(context, url, &file_info, NULL);
+  base::PlatformFileError result = GetMetadata(context, url, &file_info);
   if (result != base::PLATFORM_FILE_OK || file_info.is_directory)
     return false;
   return expected_size == kDontCheckSize || file_info.size == expected_size;
@@ -194,7 +217,7 @@ bool AsyncFileTestHelper::DirectoryExists(
     FileSystemContext* context,
     const FileSystemURL& url) {
   base::PlatformFileInfo file_info;
-  base::PlatformFileError result = GetMetadata(context, url, &file_info, NULL);
+  base::PlatformFileError result = GetMetadata(context, url, &file_info);
   return (result == base::PLATFORM_FILE_OK) && file_info.is_directory;
 }
 

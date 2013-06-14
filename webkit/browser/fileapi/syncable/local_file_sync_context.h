@@ -247,8 +247,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileSyncContext
   void DidGetFileMetadata(
       const SyncFileMetadataCallback& callback,
       base::PlatformFileError file_error,
-      const base::PlatformFileInfo& file_info,
-      const base::FilePath& platform_path);
+      const base::PlatformFileInfo& file_info);
 
   base::TimeDelta NotifyChangesDuration();
 
