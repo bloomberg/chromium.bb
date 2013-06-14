@@ -110,12 +110,12 @@ void TranslateInternalsHandler::OnRemovePrefItem(const base::ListValue* args) {
     return;
   }
 
-  base::ListValue unused;
   SendPrefsToJs();
 }
 
 void TranslateInternalsHandler::OnRequestInfo(const base::ListValue* /*args*/) {
   SendPrefsToJs();
+  SendSupportedLanguagesToJs();
 }
 
 void TranslateInternalsHandler::SendMessageToJs(const std::string& message,
@@ -150,4 +150,29 @@ void TranslateInternalsHandler::SendPrefsToJs() {
   }
 
   SendMessageToJs("prefsUpdated", dict);
+}
+
+void TranslateInternalsHandler::SendSupportedLanguagesToJs() {
+  base::DictionaryValue dict;
+
+  std::vector<std::string> languages;
+  TranslateManager::GetSupportedLanguages(&languages);
+  base::Time last_updated =
+      TranslateManager::GetSupportedLanguagesLastUpdated();
+
+  ListValue* languages_list = new ListValue();
+  ListValue* alpha_languages_list = new ListValue();
+  for (std::vector<std::string>::iterator it = languages.begin();
+       it != languages.end(); ++it) {
+    const std::string& lang = *it;
+    languages_list->Append(new StringValue(lang));
+    if (TranslateManager::IsAlphaLanguage(lang))
+      alpha_languages_list->Append(new StringValue(lang));
+  }
+
+  dict.Set("languages", languages_list);
+  dict.Set("alpha_languages", alpha_languages_list);
+  dict.Set("last_updated",
+           new base::FundamentalValue(last_updated.ToJsTime()));
+  SendMessageToJs("supportedLanguagesUpdated", dict);
 }

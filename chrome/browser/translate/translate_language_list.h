@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -25,6 +26,10 @@ class TranslateLanguageList {
  public:
   TranslateLanguageList();
   virtual ~TranslateLanguageList();
+
+  // Returns the last-updated time when the language list is fetched from the
+  // Translate server. Returns null time if the list is yet to be fetched.
+  base::Time last_updated() { return last_updated_; }
 
   // Fills |languages| with the list of languages that the translate server can
   // translate to and from. |languages| will include alpha languages.
@@ -128,6 +133,9 @@ class TranslateLanguageList {
   // A LanguageListFetcher instance to fetch a server providing supported alpha
   // language list.
   scoped_ptr<LanguageListFetcher> alpha_language_list_fetcher_;
+
+  // The last-updated time when the language list is sent.
+  base::Time last_updated_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateLanguageList);
 };

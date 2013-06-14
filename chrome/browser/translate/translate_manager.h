@@ -59,6 +59,10 @@ class TranslateManager : public content::NotificationObserver,
   // translate to and from.
   static void GetSupportedLanguages(std::vector<std::string>* languages);
 
+  // Returns the last-updated time when Chrome receives a language list from a
+  // Translate server. Returns null time if Chrome hasn't received any lists.
+  static base::Time GetSupportedLanguagesLastUpdated();
+
   // Returns the language code that can be used with the Translate method for a
   // specified |chrome_locale|.
   static std::string GetLanguageCode(const std::string& chrome_locale);

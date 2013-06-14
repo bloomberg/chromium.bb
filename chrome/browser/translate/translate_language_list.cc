@@ -340,17 +340,21 @@ void TranslateLanguageList::OnLanguageListFetchComplete(
     alpha_language_list_fetcher_.reset();
   }
   UpdateSupportedLanguages();
+
+  last_updated_ = base::Time::Now();
 }
 
 void TranslateLanguageList::UpdateSupportedLanguages() {
   all_supported_languages_.clear();
   std::set<std::string>::const_iterator iter;
   for (iter = supported_languages_.begin();
-      iter != supported_languages_.end();
-      ++iter)
+       iter != supported_languages_.end();
+       ++iter) {
     all_supported_languages_.insert(*iter);
+  }
   for (iter = supported_alpha_languages_.begin();
-      iter != supported_alpha_languages_.end();
-      ++iter)
+       iter != supported_alpha_languages_.end();
+       ++iter) {
     all_supported_languages_.insert(*iter);
+  }
 }

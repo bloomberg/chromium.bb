@@ -143,6 +143,15 @@ void TranslateManager::GetSupportedLanguages(
 }
 
 // static
+base::Time TranslateManager::GetSupportedLanguagesLastUpdated() {
+  if (GetInstance()->language_list_.get()) {
+    return GetInstance()->language_list_->last_updated();
+  }
+  NOTREACHED();
+  return base::Time();
+}
+
+// static
 std::string TranslateManager::GetLanguageCode(
     const std::string& chrome_locale) {
   if (GetInstance()->language_list_.get())

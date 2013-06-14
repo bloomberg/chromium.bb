@@ -56,6 +56,9 @@ class TranslateInternalsHandler : public content::WebUIMessageHandler,
   // Sends the current preference to Javascript.
   void SendPrefsToJs();
 
+  // Sends the languages currently supported by the server to JavaScript.
+  void SendSupportedLanguagesToJs();
+
   DISALLOW_COPY_AND_ASSIGN(TranslateInternalsHandler);
 };
 

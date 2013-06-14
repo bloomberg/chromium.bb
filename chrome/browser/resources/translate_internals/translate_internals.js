@@ -157,6 +157,33 @@
     }
 
     /**
+     * Handles the message of 'supportedLanguagesUpdated' from the browser.
+     *
+     * @param {Object} details the object which represents the supported
+     *     languages by the Translate server.
+     */
+    function onSupportedLanguagesUpdated(details) {
+      var span =
+          $('prefs-supported-languages-last-updated').querySelector('span');
+      span.textContent = formatDate(new Date(details['last_updated']));
+
+      var ul = $('prefs-supported-languages-languages');
+      ul.innerHTML = '';
+      var languages = details['languages'];
+      for (var i = 0; i < languages.length; i++) {
+        var language = languages[i];
+        var li = document.createElement('li');
+
+        var text = formatLanguageCode(language);
+        if (details['alpha_languages'].indexOf(language) != -1)
+          text += ' - alpha';
+        li.innerText = text;
+
+        ul.appendChild(li);
+      }
+    }
+
+    /**
      * Addes '0's to |number| as a string. |width| is length of the string
      * including '0's.
      *
@@ -298,16 +325,19 @@
     function messageHandler(message, details) {
       switch (message) {
         case 'languageDetectionInfoAdded':
-          cr.translateInternals.onLanguageDetectionInfoAdded(details);
+          onLanguageDetectionInfoAdded(details);
           break;
         case 'prefsUpdated':
-          cr.translateInternals.onPrefsUpdated(details);
+          onPrefsUpdated(details);
+          break;
+        case 'supportedLanguagesUpdated':
+          onSupportedLanguagesUpdated(details);
           break;
         case 'translateErrorDetailsAdded':
-          cr.translateInternals.onTranslateErrorDetailsAdded(details);
+          onTranslateErrorDetailsAdded(details);
           break;
         case 'translateEventDetailsAdded':
-          cr.translateInternals.onTranslateEventDetailsAdded(details);
+          onTranslateEventDetailsAdded(details);
           break;
         default:
           console.error('Unknown message:', message);
@@ -338,10 +368,6 @@
       detectionLogs: detectionLogs,
       initialize: initialize,
       messageHandler: messageHandler,
-      onLanguageDetectionInfoAdded: onLanguageDetectionInfoAdded,
-      onPrefsUpdated: onPrefsUpdated,
-      onTranslateErrorDetailsAdded: onTranslateErrorDetailsAdded,
-      onTranslateEventDetailsAdded: onTranslateEventDetailsAdded,
     };
   });
 
