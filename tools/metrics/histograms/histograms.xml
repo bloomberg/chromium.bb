@@ -11022,6 +11022,37 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebCore.FeatureObserver.CSSProperties"
+    enum="MappedCSSProperties">
+  <summary>
+    Records usage of CSS properties used on a page, either statically or
+    dynamically, from the time the page is initialised to when it is closed or
+    navigated away from. Each property is counted at most once per page per
+    view.
+  </summary>
+  <details>
+    Every time a CSS property is parsed on a page, that property is recorded as
+    having been used. The histogram is updated with this data whenever a page is
+    closed, or a page navigation happens. Each histogram bucket corresponds to a
+    CSS property (eg width, border-radius). The exception is the bucket numbered
+    '1' - this counts the number of pages that CSS properties were counted on.
+
+    These numbers give the percentage of pages that use a CSS property. For
+    example, if the 'border-radius' histogram bucket has a count of 250, and the
+    page count bucket (i.e. bucket number 1) has a count of 1000 - this means
+    that 1000 pages were recorded, and border-radius was used on 25% of those
+    pages.
+
+    Internally, each WebCore::Page has a WebCore::UseCounter instance, with
+    booleans recording use of each CSS property - one boolean per property. Upon
+    destruction of the WebCore::Page (e.g. by the user closing the tab), or a
+    page navigation happening, the histogram is updated. For each boolean that
+    is set to True, the corresponding histogram bucket for that CSS property is
+    incremented by 1. The page count bucket (i.e. bucket number 1) is always
+    incremented by 1 on each histogram update.
+  </details>
+</histogram>
+
 <histogram name="WebCore.IndexedDB.BackingStore.ConsistencyError"
     enum="IDBLevelDBBackingStoreInternalErrorType">
   <summary>
@@ -14825,6 +14856,433 @@ other types of suffix sets.
     Allow stale data (avoid doing a re-post)
   </int>
   <int value="9" label="PRERENDER_LOAD">Speculative prerendering of a page</int>
+</enum>
+
+<enum name="MappedCSSProperties" type="int">
+<!-- See http://src.chromium.org/viewvc/blink/trunk/Source/core/page/UseCounter.cpp -->
+
+  <int value="1" label="Total Pages Measured"/>
+  <int value="2" label="color"/>
+  <int value="3" label="direction"/>
+  <int value="4" label="display"/>
+  <int value="5" label="font"/>
+  <int value="6" label="font-family"/>
+  <int value="7" label="font-size"/>
+  <int value="8" label="font-style"/>
+  <int value="9" label="font-variant"/>
+  <int value="10" label="font-weight"/>
+  <int value="11" label="text-rendering"/>
+  <int value="12" label="webkit-font-feature-settings"/>
+  <int value="13" label="webkit-font-kerning"/>
+  <int value="14" label="webkit-font-smoothing"/>
+  <int value="15" label="webkit-font-variant-ligatures"/>
+  <int value="16" label="webkit-locale"/>
+  <int value="17" label="webkit-text-orientation"/>
+  <int value="18" label="webkit-writing-mode"/>
+  <int value="19" label="zoom"/>
+  <int value="20" label="line-height"/>
+  <int value="21" label="background"/>
+  <int value="22" label="background-attachment"/>
+  <int value="23" label="background-clip"/>
+  <int value="24" label="background-color"/>
+  <int value="25" label="background-image"/>
+  <int value="26" label="background-origin"/>
+  <int value="27" label="background-position"/>
+  <int value="28" label="background-position-x"/>
+  <int value="29" label="background-position-y"/>
+  <int value="30" label="background-repeat"/>
+  <int value="31" label="background-repeat-x"/>
+  <int value="32" label="background-repeat-y"/>
+  <int value="33" label="background-size"/>
+  <int value="34" label="border"/>
+  <int value="35" label="border-bottom"/>
+  <int value="36" label="border-bottom-color"/>
+  <int value="37" label="border-bottom-left-radius"/>
+  <int value="38" label="border-bottom-right-radius"/>
+  <int value="39" label="border-bottom-style"/>
+  <int value="40" label="border-bottom-width"/>
+  <int value="41" label="border-collapse"/>
+  <int value="42" label="border-color"/>
+  <int value="43" label="border-image"/>
+  <int value="44" label="border-image-outset"/>
+  <int value="45" label="border-image-repeat"/>
+  <int value="46" label="border-image-slice"/>
+  <int value="47" label="border-image-source"/>
+  <int value="48" label="border-image-width"/>
+  <int value="49" label="border-left"/>
+  <int value="50" label="border-left-color"/>
+  <int value="51" label="border-left-style"/>
+  <int value="52" label="border-left-width"/>
+  <int value="53" label="border-radius"/>
+  <int value="54" label="border-right"/>
+  <int value="55" label="border-right-color"/>
+  <int value="56" label="border-right-style"/>
+  <int value="57" label="border-right-width"/>
+  <int value="58" label="border-spacing"/>
+  <int value="59" label="border-style"/>
+  <int value="60" label="border-top"/>
+  <int value="61" label="border-top-color"/>
+  <int value="62" label="border-top-left-radius"/>
+  <int value="63" label="border-top-right-radius"/>
+  <int value="64" label="border-top-style"/>
+  <int value="65" label="border-top-width"/>
+  <int value="66" label="border-width"/>
+  <int value="67" label="bottom"/>
+  <int value="68" label="box-shadow"/>
+  <int value="69" label="box-sizing"/>
+  <int value="70" label="caption-side"/>
+  <int value="71" label="clear"/>
+  <int value="72" label="clip"/>
+  <int value="73" label="webkit-clip-path"/>
+  <int value="74" label="content"/>
+  <int value="75" label="counter-increment"/>
+  <int value="76" label="counter-reset"/>
+  <int value="77" label="cursor"/>
+  <int value="78" label="empty-cells"/>
+  <int value="79" label="float"/>
+  <int value="80" label="font-stretch"/>
+  <int value="81" label="height"/>
+  <int value="82" label="image-rendering"/>
+  <int value="83" label="left"/>
+  <int value="84" label="letter-spacing"/>
+  <int value="85" label="list-style"/>
+  <int value="86" label="list-style-image"/>
+  <int value="87" label="list-style-position"/>
+  <int value="88" label="list-style-type"/>
+  <int value="89" label="margin"/>
+  <int value="90" label="margin-bottom"/>
+  <int value="91" label="margin-left"/>
+  <int value="92" label="margin-right"/>
+  <int value="93" label="margin-top"/>
+  <int value="94" label="max-height"/>
+  <int value="95" label="max-width"/>
+  <int value="96" label="min-height"/>
+  <int value="97" label="min-width"/>
+  <int value="98" label="opacity"/>
+  <int value="99" label="orphans"/>
+  <int value="100" label="outline"/>
+  <int value="101" label="outline-color"/>
+  <int value="102" label="outline-offset"/>
+  <int value="103" label="outline-style"/>
+  <int value="104" label="outline-width"/>
+  <int value="105" label="overflow"/>
+  <int value="106" label="overflow-wrap"/>
+  <int value="107" label="overflow-x"/>
+  <int value="108" label="overflow-y"/>
+  <int value="109" label="padding"/>
+  <int value="110" label="padding-bottom"/>
+  <int value="111" label="padding-left"/>
+  <int value="112" label="padding-right"/>
+  <int value="113" label="padding-top"/>
+  <int value="114" label="page"/>
+  <int value="115" label="page-break-after"/>
+  <int value="116" label="page-break-before"/>
+  <int value="117" label="page-break-inside"/>
+  <int value="118" label="pointer-events"/>
+  <int value="119" label="position"/>
+  <int value="120" label="quotes"/>
+  <int value="121" label="resize"/>
+  <int value="122" label="right"/>
+  <int value="123" label="size"/>
+  <int value="124" label="src"/>
+  <int value="125" label="speak"/>
+  <int value="126" label="table-layout"/>
+  <int value="127" label="tab-size"/>
+  <int value="128" label="text-align"/>
+  <int value="129" label="text-decoration"/>
+  <int value="130" label="text-indent"/>
+  <int value="131" label="text-line-through"/>
+  <int value="132" label="text-line-through-color"/>
+  <int value="133" label="text-line-through-mode"/>
+  <int value="134" label="text-line-through-style"/>
+  <int value="135" label="text-line-through-width"/>
+  <int value="136" label="text-overflow"/>
+  <int value="137" label="text-overline"/>
+  <int value="138" label="text-overline-color"/>
+  <int value="139" label="text-overline-mode"/>
+  <int value="140" label="text-overline-style"/>
+  <int value="141" label="text-overline-width"/>
+  <int value="142" label="text-shadow"/>
+  <int value="143" label="text-transform"/>
+  <int value="144" label="text-underline"/>
+  <int value="145" label="text-underline-color"/>
+  <int value="146" label="text-underline-mode"/>
+  <int value="147" label="text-underline-style"/>
+  <int value="148" label="text-underline-width"/>
+  <int value="149" label="top"/>
+  <int value="150" label="transition"/>
+  <int value="151" label="transition-delay"/>
+  <int value="152" label="transition-duration"/>
+  <int value="153" label="transition-property"/>
+  <int value="154" label="transition-timing-function"/>
+  <int value="155" label="unicode-bidi"/>
+  <int value="156" label="unicode-range"/>
+  <int value="157" label="vertical-align"/>
+  <int value="158" label="visibility"/>
+  <int value="159" label="white-space"/>
+  <int value="160" label="widows"/>
+  <int value="161" label="width"/>
+  <int value="162" label="word-break"/>
+  <int value="163" label="word-spacing"/>
+  <int value="164" label="word-wrap"/>
+  <int value="165" label="z-index"/>
+  <int value="166" label="webkit-animation"/>
+  <int value="167" label="webkit-animation-delay"/>
+  <int value="168" label="webkit-animation-direction"/>
+  <int value="169" label="webkit-animation-duration"/>
+  <int value="170" label="webkit-animation-fill-mode"/>
+  <int value="171" label="webkit-animation-iteration-count"/>
+  <int value="172" label="webkit-animation-name"/>
+  <int value="173" label="webkit-animation-play-state"/>
+  <int value="174" label="webkit-animation-timing-function"/>
+  <int value="175" label="webkit-appearance"/>
+  <int value="176" label="webkit-aspect-ratio"/>
+  <int value="177" label="webkit-backface-visibility"/>
+  <int value="178" label="webkit-background-clip"/>
+  <int value="179" label="webkit-background-composite"/>
+  <int value="180" label="webkit-background-origin"/>
+  <int value="181" label="webkit-background-size"/>
+  <int value="182" label="webkit-border-after"/>
+  <int value="183" label="webkit-border-after-color"/>
+  <int value="184" label="webkit-border-after-style"/>
+  <int value="185" label="webkit-border-after-width"/>
+  <int value="186" label="webkit-border-before"/>
+  <int value="187" label="webkit-border-before-color"/>
+  <int value="188" label="webkit-border-before-style"/>
+  <int value="189" label="webkit-border-before-width"/>
+  <int value="190" label="webkit-border-end"/>
+  <int value="191" label="webkit-border-end-color"/>
+  <int value="192" label="webkit-border-end-style"/>
+  <int value="193" label="webkit-border-end-width"/>
+  <int value="194" label="webkit-border-fit"/>
+  <int value="195" label="webkit-border-horizontal-spacing"/>
+  <int value="196" label="webkit-border-image"/>
+  <int value="197" label="webkit-border-radius"/>
+  <int value="198" label="webkit-border-start"/>
+  <int value="199" label="webkit-border-start-color"/>
+  <int value="200" label="webkit-border-start-style"/>
+  <int value="201" label="webkit-border-start-width"/>
+  <int value="202" label="webkit-border-vertical-spacing"/>
+  <int value="203" label="webkit-box-align"/>
+  <int value="204" label="webkit-box-direction"/>
+  <int value="205" label="webkit-box-flex"/>
+  <int value="206" label="webkit-box-flex-group"/>
+  <int value="207" label="webkit-box-lines"/>
+  <int value="208" label="webkit-box-ordinal-group"/>
+  <int value="209" label="webkit-box-orient"/>
+  <int value="210" label="webkit-box-pack"/>
+  <int value="211" label="webkit-box-reflect"/>
+  <int value="212" label="webkit-box-shadow"/>
+  <int value="213" label="webkit-color-correction"/>
+  <int value="214" label="webkit-column-axis"/>
+  <int value="215" label="webkit-column-break-after"/>
+  <int value="216" label="webkit-column-break-before"/>
+  <int value="217" label="webkit-column-break-inside"/>
+  <int value="218" label="webkit-column-count"/>
+  <int value="219" label="webkit-column-gap"/>
+  <int value="220" label="webkit-column-progression"/>
+  <int value="221" label="webkit-column-rule"/>
+  <int value="222" label="webkit-column-rule-color"/>
+  <int value="223" label="webkit-column-rule-style"/>
+  <int value="224" label="webkit-column-rule-width"/>
+  <int value="225" label="webkit-column-span"/>
+  <int value="226" label="webkit-column-width"/>
+  <int value="227" label="webkit-columns"/>
+  <int value="228" label="webkit-box-decoration-break"/>
+  <int value="229" label="webkit-filter"/>
+  <int value="230" label="webkit-align-content"/>
+  <int value="231" label="webkit-align-items"/>
+  <int value="232" label="webkit-align-self"/>
+  <int value="233" label="webkit-flex"/>
+  <int value="234" label="webkit-flex-basis"/>
+  <int value="235" label="webkit-flex-direction"/>
+  <int value="236" label="webkit-flex-flow"/>
+  <int value="237" label="webkit-flex-grow"/>
+  <int value="238" label="webkit-flex-shrink"/>
+  <int value="239" label="webkit-flex-wrap"/>
+  <int value="240" label="webkit-justify-content"/>
+  <int value="241" label="webkit-font-size-delta"/>
+  <int value="242" label="webkit-grid-columns"/>
+  <int value="243" label="webkit-grid-rows"/>
+  <int value="244" label="webkit-grid-start"/>
+  <int value="245" label="webkit-grid-end"/>
+  <int value="246" label="webkit-grid-before"/>
+  <int value="247" label="webkit-grid-after"/>
+  <int value="248" label="webkit-grid-column"/>
+  <int value="249" label="webkit-grid-row"/>
+  <int value="250" label="webkit-grid-auto-flow"/>
+  <int value="251" label="webkit-highlight"/>
+  <int value="252" label="webkit-hyphenate-character"/>
+  <int value="253" label="webkit-hyphenate-limit-after"/>
+  <int value="254" label="webkit-hyphenate-limit-before"/>
+  <int value="255" label="webkit-hyphenate-limit-lines"/>
+  <int value="256" label="webkit-hyphens"/>
+  <int value="257" label="webkit-line-box-contain"/>
+  <int value="258" label="webkit-line-align"/>
+  <int value="259" label="webkit-line-break"/>
+  <int value="260" label="webkit-line-clamp"/>
+  <int value="261" label="webkit-line-grid"/>
+  <int value="262" label="webkit-line-snap"/>
+  <int value="263" label="webkit-logical-width"/>
+  <int value="264" label="webkit-logical-height"/>
+  <int value="265" label="webkit-margin-after-collapse"/>
+  <int value="266" label="webkit-margin-before-collapse"/>
+  <int value="267" label="webkit-margin-bottom-collapse"/>
+  <int value="268" label="webkit-margin-top-collapse"/>
+  <int value="269" label="webkit-margin-collapse"/>
+  <int value="270" label="webkit-margin-after"/>
+  <int value="271" label="webkit-margin-before"/>
+  <int value="272" label="webkit-margin-end"/>
+  <int value="273" label="webkit-margin-start"/>
+  <int value="274" label="webkit-marquee"/>
+  <int value="275" label="webkit-marquee-direction"/>
+  <int value="276" label="webkit-marquee-increment"/>
+  <int value="277" label="webkit-marquee-repetition"/>
+  <int value="278" label="webkit-marquee-speed"/>
+  <int value="279" label="webkit-marquee-style"/>
+  <int value="280" label="webkit-mask"/>
+  <int value="281" label="webkit-mask-box-image"/>
+  <int value="282" label="webkit-mask-box-image-outset"/>
+  <int value="283" label="webkit-mask-box-image-repeat"/>
+  <int value="284" label="webkit-mask-box-image-slice"/>
+  <int value="285" label="webkit-mask-box-image-source"/>
+  <int value="286" label="webkit-mask-box-image-width"/>
+  <int value="287" label="webkit-mask-clip"/>
+  <int value="288" label="webkit-mask-composite"/>
+  <int value="289" label="webkit-mask-image"/>
+  <int value="290" label="webkit-mask-origin"/>
+  <int value="291" label="webkit-mask-position"/>
+  <int value="292" label="webkit-mask-position-x"/>
+  <int value="293" label="webkit-mask-position-y"/>
+  <int value="294" label="webkit-mask-repeat"/>
+  <int value="295" label="webkit-mask-repeat-x"/>
+  <int value="296" label="webkit-mask-repeat-y"/>
+  <int value="297" label="webkit-mask-size"/>
+  <int value="298" label="webkit-max-logical-width"/>
+  <int value="299" label="webkit-max-logical-height"/>
+  <int value="300" label="webkit-min-logical-width"/>
+  <int value="301" label="webkit-min-logical-height"/>
+  <int value="302" label="webkit-nbsp-mode"/>
+  <int value="303" label="webkit-order"/>
+  <int value="304" label="webkit-padding-after"/>
+  <int value="305" label="webkit-padding-before"/>
+  <int value="306" label="webkit-padding-end"/>
+  <int value="307" label="webkit-padding-start"/>
+  <int value="308" label="webkit-perspective"/>
+  <int value="309" label="webkit-perspective-origin"/>
+  <int value="310" label="webkit-perspective-origin-x"/>
+  <int value="311" label="webkit-perspective-origin-y"/>
+  <int value="312" label="webkit-print-color-adjust"/>
+  <int value="313" label="webkit-rtl-ordering"/>
+  <int value="314" label="webkit-ruby-position"/>
+  <int value="315" label="webkit-text-combine"/>
+  <int value="316" label="webkit-text-decorations-in-effect"/>
+  <int value="317" label="webkit-text-emphasis"/>
+  <int value="318" label="webkit-text-emphasis-color"/>
+  <int value="319" label="webkit-text-emphasis-position"/>
+  <int value="320" label="webkit-text-emphasis-style"/>
+  <int value="321" label="webkit-text-fill-color"/>
+  <int value="322" label="webkit-text-security"/>
+  <int value="323" label="webkit-text-stroke"/>
+  <int value="324" label="webkit-text-stroke-color"/>
+  <int value="325" label="webkit-text-stroke-width"/>
+  <int value="326" label="webkit-transform"/>
+  <int value="327" label="webkit-transform-origin"/>
+  <int value="328" label="webkit-transform-origin-x"/>
+  <int value="329" label="webkit-transform-origin-y"/>
+  <int value="330" label="webkit-transform-origin-z"/>
+  <int value="331" label="webkit-transform-style"/>
+  <int value="332" label="webkit-transition"/>
+  <int value="333" label="webkit-transition-delay"/>
+  <int value="334" label="webkit-transition-duration"/>
+  <int value="335" label="webkit-transition-property"/>
+  <int value="336" label="webkit-transition-timing-function"/>
+  <int value="337" label="webkit-user-drag"/>
+  <int value="338" label="webkit-user-modify"/>
+  <int value="339" label="webkit-user-select"/>
+  <int value="340" label="webkit-flow-into"/>
+  <int value="341" label="webkit-flow-from"/>
+  <int value="342" label="webkit-region-overflow"/>
+  <int value="343" label="webkit-region-break-after"/>
+  <int value="344" label="webkit-region-break-before"/>
+  <int value="345" label="webkit-region-break-inside"/>
+  <int value="346" label="webkit-shape-inside"/>
+  <int value="347" label="webkit-shape-outside"/>
+  <int value="348" label="webkit-shape-margin"/>
+  <int value="349" label="webkit-shape-padding"/>
+  <int value="350" label="webkit-wrap-flow"/>
+  <int value="351" label="webkit-wrap-through"/>
+  <int value="352" label="webkit-wrap"/>
+  <int value="353" label="webkit-tap-highlight-color"/>
+  <int value="354" label="webkit-app-region"/>
+  <int value="355" label="clip-path"/>
+  <int value="356" label="clip-rule"/>
+  <int value="357" label="mask"/>
+  <int value="358" label="enable-background"/>
+  <int value="359" label="filter"/>
+  <int value="360" label="flood-color"/>
+  <int value="361" label="flood-opacity"/>
+  <int value="362" label="lighting-color"/>
+  <int value="363" label="stop-color"/>
+  <int value="364" label="stop-opacity"/>
+  <int value="365" label="color-interpolation"/>
+  <int value="366" label="color-interpolation-filters"/>
+  <int value="367" label="color-profile"/>
+  <int value="368" label="color-rendering"/>
+  <int value="369" label="fill"/>
+  <int value="370" label="fill-opacity"/>
+  <int value="371" label="fill-rule"/>
+  <int value="372" label="marker"/>
+  <int value="373" label="marker-end"/>
+  <int value="374" label="marker-mid"/>
+  <int value="375" label="marker-start"/>
+  <int value="376" label="mask-type"/>
+  <int value="377" label="shape-rendering"/>
+  <int value="378" label="stroke"/>
+  <int value="379" label="stroke-dasharray"/>
+  <int value="380" label="stroke-dashoffset"/>
+  <int value="381" label="stroke-linecap"/>
+  <int value="382" label="stroke-linejoin"/>
+  <int value="383" label="stroke-miterlimit"/>
+  <int value="384" label="stroke-opacity"/>
+  <int value="385" label="stroke-width"/>
+  <int value="386" label="alignment-baseline"/>
+  <int value="387" label="baseline-shift"/>
+  <int value="388" label="dominant-baseline"/>
+  <int value="389" label="glyph-orientation-horizontal"/>
+  <int value="390" label="glyph-orientation-vertical"/>
+  <int value="391" label="kerning"/>
+  <int value="392" label="text-anchor"/>
+  <int value="393" label="vector-effect"/>
+  <int value="394" label="writing-mode"/>
+  <int value="395" label="webkit-svg-shadow"/>
+  <int value="396" label="webkit-cursor-visibility"/>
+  <int value="397" label="image-orientation"/>
+  <int value="398" label="image-resolution"/>
+  <int value="399" label="webkit-blend-mode"/>
+  <int value="400" label="webkit-background-blend-mode"/>
+  <int value="401" label="webkit-text-decoration-line"/>
+  <int value="402" label="webkit-text-decoration-style"/>
+  <int value="403" label="webkit-text-decoration-color"/>
+  <int value="404" label="webkit-text-align-last"/>
+  <int value="405" label="webkit-text-underline-position"/>
+  <int value="406" label="max-zoom"/>
+  <int value="407" label="min-zoom"/>
+  <int value="408" label="orientation"/>
+  <int value="409" label="user-zoom"/>
+  <int value="410" label="webkit-dashboard-region"/>
+  <int value="411" label="webkit-overflow-scrolling"/>
+  <int value="412" label="webkit-app-region"/>
+  <int value="413" label="webkit-filter"/>
+  <int value="414" label="webkit-box-decoration-break"/>
+  <int value="415" label="webkit-tap-highlight-color"/>
+  <int value="416" label="buffered-rendering"/>
+  <int value="417" label="grid-auto-rows"/>
+  <int value="418" label="grid-auto-columns"/>
+  <int value="419" label="background-blend-mode"/>
+  <int value="420" label="mix-blend-mode"/>
+  <int value="421" label="touch-action"/>
+  <int value="422" label="grid-area"/>
 </enum>
 
 <enum name="MediaContainers" type="int">
