@@ -32,14 +32,13 @@ enum Error {
 
 }  // namespace
 
-using base::DictionaryValue;
 using base::Value;
 
 DevToolsProtocol::Message::~Message() {
 }
 
 DevToolsProtocol::Message::Message(const std::string& method,
-                                   DictionaryValue* params)
+                                   base::DictionaryValue* params)
     : method_(method),
       params_(params) {
   size_t pos = method.find(".");
@@ -51,7 +50,7 @@ DevToolsProtocol::Command::~Command() {
 }
 
 std::string DevToolsProtocol::Command::Serialize() {
-  DictionaryValue command;
+  base::DictionaryValue command;
   command.SetInteger(kIdParam, id_);
   command.SetString(kMethodParam, method_);
   if (params_)
@@ -63,7 +62,7 @@ std::string DevToolsProtocol::Command::Serialize() {
 }
 
 scoped_ptr<DevToolsProtocol::Response>
-DevToolsProtocol::Command::SuccessResponse(DictionaryValue* result) {
+DevToolsProtocol::Command::SuccessResponse(base::DictionaryValue* result) {
   return scoped_ptr<DevToolsProtocol::Response>(
       new DevToolsProtocol::Response(id_, result));
 }
@@ -90,19 +89,19 @@ DevToolsProtocol::Command::NoSuchMethodErrorResponse() {
 
 DevToolsProtocol::Command::Command(int id,
                                    const std::string& method,
-                                   DictionaryValue* params)
+                                   base::DictionaryValue* params)
     : Message(method, params),
       id_(id) {
 }
 
 std::string DevToolsProtocol::Response::Serialize() {
-  DictionaryValue response;
+  base::DictionaryValue response;
 
   if (id_ != kNoId)
     response.SetInteger(kIdParam, id_);
 
   if (error_code_) {
-    DictionaryValue* error_object = new DictionaryValue();
+    base::DictionaryValue* error_object = new base::DictionaryValue();
     response.Set(kErrorParam, error_object);
     error_object->SetInteger(kErrorCodeParam, error_code_);
     if (!error_message_.empty())
@@ -116,7 +115,7 @@ std::string DevToolsProtocol::Response::Serialize() {
   return json_response;
 }
 
-DevToolsProtocol::Response::Response(int id, DictionaryValue* result)
+DevToolsProtocol::Response::Response(int id, base::DictionaryValue* result)
     : id_(id),
       result_(result),
       error_code_(0) {
@@ -131,7 +130,7 @@ DevToolsProtocol::Response::~Response() {
 }
 
 DevToolsProtocol::Notification::Notification(const std::string& method,
-                                             DictionaryValue* params)
+                                             base::DictionaryValue* params)
     : Message(method, params) {
 }
 
@@ -139,7 +138,7 @@ DevToolsProtocol::Notification::~Notification() {
 }
 
 std::string DevToolsProtocol::Notification::Serialize() {
-  DictionaryValue notification;
+  base::DictionaryValue notification;
   notification.SetString(kMethodParam, method_);
   if (params_)
     notification.Set(kParamsParam, params_->DeepCopy());
@@ -176,13 +175,13 @@ void DevToolsProtocol::Handler::RegisterCommandHandler(
 
 void DevToolsProtocol::Handler::SendNotification(
     const std::string& method,
-    DictionaryValue* params) {
+    base::DictionaryValue* params) {
   DevToolsProtocol::Notification notification(method, params);
   if (!notifier_.is_null())
     notifier_.Run(notification.Serialize());
 }
 
-static bool ParseMethod(DictionaryValue* command,
+static bool ParseMethod(base::DictionaryValue* command,
                         std::string* method) {
   if (!command->GetString(kMethodParam, method))
     return false;
@@ -196,7 +195,8 @@ static bool ParseMethod(DictionaryValue* command,
 DevToolsProtocol::Command* DevToolsProtocol::ParseCommand(
     const std::string& json,
     std::string* error_response) {
-  scoped_ptr<DictionaryValue> command_dict(ParseMessage(json, error_response));
+  scoped_ptr<base::DictionaryValue> command_dict(
+      ParseMessage(json, error_response));
   if (!command_dict)
     return NULL;
 
@@ -210,7 +210,7 @@ DevToolsProtocol::Command* DevToolsProtocol::ParseCommand(
     return NULL;
   }
 
-  DictionaryValue* params = NULL;
+  base::DictionaryValue* params = NULL;
   command_dict->GetDictionary(kParamsParam, &params);
   return new Command(id, method, params ? params->DeepCopy() : NULL);
 }
@@ -218,7 +218,7 @@ DevToolsProtocol::Command* DevToolsProtocol::ParseCommand(
 // static
 DevToolsProtocol::Notification*
 DevToolsProtocol::ParseNotification(const std::string& json) {
-  scoped_ptr<DictionaryValue> dict(ParseMessage(json, NULL));
+  scoped_ptr<base::DictionaryValue> dict(ParseMessage(json, NULL));
   if (!dict)
     return NULL;
 
@@ -227,7 +227,7 @@ DevToolsProtocol::ParseNotification(const std::string& json) {
   if (!ok)
     return NULL;
 
-  DictionaryValue* params = NULL;
+  base::DictionaryValue* params = NULL;
   dict->GetDictionary(kParamsParam, &params);
   return new Notification(method, params ? params->DeepCopy() : NULL);
 }
@@ -235,12 +235,12 @@ DevToolsProtocol::ParseNotification(const std::string& json) {
 //static
 DevToolsProtocol::Notification* DevToolsProtocol::CreateNotification(
     const std::string& method,
-    DictionaryValue* params) {
+    base::DictionaryValue* params) {
   return new Notification(method, params);
 }
 
 // static
-DictionaryValue* DevToolsProtocol::ParseMessage(
+base::DictionaryValue* DevToolsProtocol::ParseMessage(
     const std::string& json,
     std::string* error_response) {
   int parse_error_code;
@@ -256,7 +256,7 @@ DictionaryValue* DevToolsProtocol::ParseMessage(
     return NULL;
   }
 
-  return static_cast<DictionaryValue*>(message.release());
+  return static_cast<base::DictionaryValue*>(message.release());
 }
 
 }  // namespace content

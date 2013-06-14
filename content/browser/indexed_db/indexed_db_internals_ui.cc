@@ -127,7 +127,7 @@ void IndexedDBInternalsUI::OnOriginsReady(
   for (std::vector<IndexedDBInfo>::const_iterator iter = origins->begin();
        iter != origins->end();
        ++iter) {
-    base::DictionaryValue* info = new DictionaryValue;
+    base::DictionaryValue* info = new base::DictionaryValue;
     info->SetString("url", iter->origin_.spec());
     info->SetDouble("size", iter->size_);
     info->SetDouble("last_modified", iter->last_modified_.ToJsTime());

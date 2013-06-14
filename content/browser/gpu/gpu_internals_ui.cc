@@ -66,7 +66,7 @@ base::DictionaryValue* NewDescriptionValuePair(const std::string& desc,
 }
 
 base::DictionaryValue* NewDescriptionValuePair(const std::string& desc,
-    Value* value) {
+    base::Value* value) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("description", desc);
   dict->Set("value", value);
@@ -83,7 +83,7 @@ base::Value* NewStatusValue(const char* name, const char* status) {
 #if defined(OS_WIN)
 // Output DxDiagNode tree as nested array of {description,value} pairs
 base::ListValue* DxDiagNodeToList(const gpu::DxDiagNode& node) {
-  base::ListValue* list = new ListValue();
+  base::ListValue* list = new base::ListValue();
   for (std::map<std::string, std::string>::const_iterator it =
       node.values.begin();
       it != node.values.end();

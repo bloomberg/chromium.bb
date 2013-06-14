@@ -34,8 +34,9 @@ const char* kHeightDictAttr = "height";
 const char* kRangeLocDictAttr = "loc";
 const char* kRangeLenDictAttr = "len";
 
-scoped_ptr<DictionaryValue> PopulatePosition(const BrowserAccessibility& node) {
-  scoped_ptr<DictionaryValue> position(new DictionaryValue);
+scoped_ptr<base::DictionaryValue> PopulatePosition(
+    const BrowserAccessibility& node) {
+  scoped_ptr<base::DictionaryValue> position(new base::DictionaryValue);
   // The NSAccessibility position of an object is in global coordinates and
   // based on the lower-left corner of the object. To make this easier and less
   // confusing, convert it to local window coordinates using the top-left
@@ -59,17 +60,17 @@ scoped_ptr<DictionaryValue> PopulatePosition(const BrowserAccessibility& node) {
   return position.Pass();
 }
 
-scoped_ptr<DictionaryValue>
+scoped_ptr<base::DictionaryValue>
 PopulateSize(const BrowserAccessibilityCocoa* cocoa_node) {
-  scoped_ptr<DictionaryValue> size(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> size(new base::DictionaryValue);
   NSSize node_size = [[cocoa_node size] sizeValue];
   size->SetInteger(kHeightDictAttr, static_cast<int>(node_size.height));
   size->SetInteger(kWidthDictAttr, static_cast<int>(node_size.width));
   return size.Pass();
 }
 
-scoped_ptr<DictionaryValue> PopulateRange(NSRange range) {
-  scoped_ptr<DictionaryValue> rangeDict(new DictionaryValue);
+scoped_ptr<base::DictionaryValue> PopulateRange(NSRange range) {
+  scoped_ptr<base::DictionaryValue> rangeDict(new base::DictionaryValue);
   rangeDict->SetInteger(kRangeLocDictAttr, static_cast<int>(range.location));
   rangeDict->SetInteger(kRangeLenDictAttr, static_cast<int>(range.length));
   return rangeDict.Pass();
@@ -123,7 +124,7 @@ void AccessibilityTreeFormatter::Initialize() {
 
 
 void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
-                                               DictionaryValue* dict) {
+                                               base::DictionaryValue* dict) {
   BrowserAccessibilityCocoa* cocoa_node =
       const_cast<BrowserAccessibility*>(&node)->ToBrowserAccessibilityCocoa();
   NSArray* supportedAttributes = [cocoa_node accessibilityAttributeNames];
@@ -159,7 +160,7 @@ void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
   dict->Set(kSizeDictAttr, PopulateSize(cocoa_node).release());
 }
 
-string16 AccessibilityTreeFormatter::ToString(const DictionaryValue& dict,
+string16 AccessibilityTreeFormatter::ToString(const base::DictionaryValue& dict,
                                               const string16& indent) {
   string16 line;
   NSArray* defaultAttributes =
@@ -181,7 +182,7 @@ string16 AccessibilityTreeFormatter::ToString(const DictionaryValue& dict,
   CR_DEFINE_STATIC_LOCAL(NSArray*, all_attributes, (BuildAllAttributesArray()));
   for (NSString* requestedAttribute in all_attributes) {
     string requestedAttributeUTF8 = SysNSStringToUTF8(requestedAttribute);
-    const DictionaryValue* d_value;
+    const base::DictionaryValue* d_value;
     if (dict.GetDictionary(requestedAttributeUTF8, &d_value)) {
       std::string json_value;
       base::JSONWriter::Write(d_value, &json_value);
@@ -200,7 +201,7 @@ string16 AccessibilityTreeFormatter::ToString(const DictionaryValue& dict,
                                 s_value.c_str()),
                    &line);
   }
-  const DictionaryValue* d_value = NULL;
+  const base::DictionaryValue* d_value = NULL;
   if (dict.GetDictionary(kPositionDictAttr, &d_value)) {
     WriteAttribute(false,
                    FormatCoordinates(kPositionDictAttr,

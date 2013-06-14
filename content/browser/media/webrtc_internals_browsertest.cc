@@ -331,60 +331,64 @@ class WebRTCInternalsBrowserTest: public ContentBrowserTest {
 
   // Verifies |dump| contains |peer_connection_number| peer connection dumps,
   // each containing |update_number| updates and |stats_number| stats tables.
-  void VerifyPageDumpStructure(Value* dump,
+  void VerifyPageDumpStructure(base::Value* dump,
                                int peer_connection_number,
                                int update_number,
                                int stats_number) {
-    EXPECT_NE((Value*)NULL, dump);
-    EXPECT_EQ(Value::TYPE_DICTIONARY, dump->GetType());
+    EXPECT_NE((base::Value*)NULL, dump);
+    EXPECT_EQ(base::Value::TYPE_DICTIONARY, dump->GetType());
 
-    DictionaryValue* dict_dump = static_cast<DictionaryValue*>(dump);
+    base::DictionaryValue* dict_dump =
+        static_cast<base::DictionaryValue*>(dump);
     EXPECT_EQ((size_t) peer_connection_number, dict_dump->size());
 
-    DictionaryValue::Iterator it(*dict_dump);
+    base::DictionaryValue::Iterator it(*dict_dump);
     for (; !it.IsAtEnd(); it.Advance()) {
-      Value* value = NULL;
+      base::Value* value = NULL;
       dict_dump->Get(it.key(), &value);
-      EXPECT_EQ(Value::TYPE_DICTIONARY, value->GetType());
-      DictionaryValue* pc_dump = static_cast<DictionaryValue*>(value);
+      EXPECT_EQ(base::Value::TYPE_DICTIONARY, value->GetType());
+      base::DictionaryValue* pc_dump =
+          static_cast<base::DictionaryValue*>(value);
       EXPECT_TRUE(pc_dump->HasKey("updateLog"));
       EXPECT_TRUE(pc_dump->HasKey("stats"));
 
       // Verifies the number of updates.
       pc_dump->Get("updateLog", &value);
-      EXPECT_EQ(Value::TYPE_LIST, value->GetType());
-      ListValue* list = static_cast<ListValue*>(value);
+      EXPECT_EQ(base::Value::TYPE_LIST, value->GetType());
+      base::ListValue* list = static_cast<base::ListValue*>(value);
       EXPECT_EQ((size_t) update_number, list->GetSize());
 
       // Verifies the number of stats tables.
       pc_dump->Get("stats", &value);
-      EXPECT_EQ(Value::TYPE_DICTIONARY, value->GetType());
-      DictionaryValue* dict = static_cast<DictionaryValue*>(value);
+      EXPECT_EQ(base::Value::TYPE_DICTIONARY, value->GetType());
+      base::DictionaryValue* dict = static_cast<base::DictionaryValue*>(value);
       EXPECT_EQ((size_t) stats_number, dict->size());
     }
   }
 
   // Verifies |dump| contains the correct statsTable and statsDataSeries for
   // |pc|.
-  void VerifyStatsDump(Value* dump,
+  void VerifyStatsDump(base::Value* dump,
                        const PeerConnectionEntry& pc,
                        const string& report_type,
                        const string& report_id,
                        const StatsUnit& stats) {
-    EXPECT_NE((Value*)NULL, dump);
-    EXPECT_EQ(Value::TYPE_DICTIONARY, dump->GetType());
+    EXPECT_NE((base::Value*)NULL, dump);
+    EXPECT_EQ(base::Value::TYPE_DICTIONARY, dump->GetType());
 
-    DictionaryValue* dict_dump = static_cast<DictionaryValue*>(dump);
-    Value* value = NULL;
+    base::DictionaryValue* dict_dump =
+        static_cast<base::DictionaryValue*>(dump);
+    base::Value* value = NULL;
     dict_dump->Get(pc.getIdString(), &value);
-    DictionaryValue* pc_dump = static_cast<DictionaryValue*>(value);
+    base::DictionaryValue* pc_dump = static_cast<base::DictionaryValue*>(value);
 
     // Verifies there is one data series per stats name.
     value = NULL;
     pc_dump->Get("stats", &value);
-    EXPECT_EQ(Value::TYPE_DICTIONARY, value->GetType());
+    EXPECT_EQ(base::Value::TYPE_DICTIONARY, value->GetType());
 
-    DictionaryValue* dataSeries = static_cast<DictionaryValue*>(value);
+    base::DictionaryValue* dataSeries =
+        static_cast<base::DictionaryValue*>(value);
     EXPECT_EQ(stats.values.size(), dataSeries->size());
   }
 };
@@ -681,7 +685,7 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, CreatePageDump) {
       "window.domAutomationController.send("
       "JSON.stringify(peerConnectionDataStore));",
       &dump_json));
-  scoped_ptr<Value> dump;
+  scoped_ptr<base::Value> dump;
   dump.reset(base::JSONReader::Read(dump_json));
   VerifyPageDumpStructure(dump.get(),
                           2 /*peer_connection_number*/,

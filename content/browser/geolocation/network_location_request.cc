@@ -297,7 +297,7 @@ bool GetAsDouble(const base::DictionaryValue& object,
                  const std::string& property_name,
                  double* out) {
   DCHECK(out);
-  const Value* value = NULL;
+  const base::Value* value = NULL;
   if (!object.Get(property_name, &value))
     return false;
   int value_as_int;
@@ -327,7 +327,7 @@ bool ParseServerResponse(const std::string& response_body,
 
   // Parse the response, ignoring comments.
   std::string error_msg;
-  scoped_ptr<Value> response_value(base::JSONReader::ReadAndReturnError(
+  scoped_ptr<base::Value> response_value(base::JSONReader::ReadAndReturnError(
       response_body, base::JSON_PARSE_RFC, NULL, &error_msg));
   if (response_value == NULL) {
     LOG(WARNING) << "ParseServerResponse() : JSONReader failed : "
@@ -335,7 +335,7 @@ bool ParseServerResponse(const std::string& response_body,
     return false;
   }
 
-  if (!response_value->IsType(Value::TYPE_DICTIONARY)) {
+  if (!response_value->IsType(base::Value::TYPE_DICTIONARY)) {
     VLOG(1) << "ParseServerResponse() : Unexpected response type "
             << response_value->GetType();
     return false;
@@ -347,7 +347,7 @@ bool ParseServerResponse(const std::string& response_body,
   response_object->GetString(kAccessTokenString, access_token);
 
   // Get the location
-  const Value* location_value = NULL;
+  const base::Value* location_value = NULL;
   if (!response_object->Get(kLocationString, &location_value)) {
     VLOG(1) << "ParseServerResponse() : Missing location attribute.";
     // GLS returns a response with no location property to represent
@@ -356,8 +356,8 @@ bool ParseServerResponse(const std::string& response_body,
   }
   DCHECK(location_value);
 
-  if (!location_value->IsType(Value::TYPE_DICTIONARY)) {
-    if (!location_value->IsType(Value::TYPE_NULL)) {
+  if (!location_value->IsType(base::Value::TYPE_DICTIONARY)) {
+    if (!location_value->IsType(base::Value::TYPE_NULL)) {
       VLOG(1) << "ParseServerResponse() : Unexpected location type "
               << location_value->GetType();
       // If the network provider was unable to provide a position fix, it should

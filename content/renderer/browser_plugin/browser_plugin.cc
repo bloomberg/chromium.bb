@@ -441,7 +441,7 @@ void BrowserPlugin::OnAddMessageToConsole(
     int guest_instance_id, const base::DictionaryValue& message_info) {
   std::map<std::string, base::Value*> props;
   // Fill in the info provided by the browser.
-  for (DictionaryValue::Iterator iter(message_info); !iter.IsAtEnd();
+  for (base::DictionaryValue::Iterator iter(message_info); !iter.IsAtEnd();
            iter.Advance()) {
     props[iter.key()] = iter.value().DeepCopy();
   }

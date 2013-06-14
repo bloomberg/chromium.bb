@@ -71,7 +71,7 @@ class CONTENT_EXPORT MediaInternals {
   // (host, stream_id) is a unique id for the audio stream.
   // |host| will never be dereferenced.
   void UpdateAudioStream(void* host, int stream_id,
-                         const std::string& property, Value* value);
+                         const std::string& property, base::Value* value);
 
   // Removes |item| from |data_|.
   void DeleteItem(const std::string& item);
@@ -79,12 +79,12 @@ class CONTENT_EXPORT MediaInternals {
   // Sets data_.id.property = value and notifies attached UIs using update_fn.
   // id may be any depth, e.g. "video.decoders.1.2.3"
   void UpdateItem(const std::string& update_fn, const std::string& id,
-                  const std::string& property, Value* value);
+                  const std::string& property, base::Value* value);
 
   // Calls javascript |function|(|value|) on each attached UI.
-  void SendUpdate(const std::string& function, Value* value);
+  void SendUpdate(const std::string& function, base::Value* value);
 
-  DictionaryValue data_;
+  base::DictionaryValue data_;
 
   std::vector<UpdateCallback> update_callbacks_;
 

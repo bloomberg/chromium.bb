@@ -28,9 +28,6 @@
 #include "grit/content_resources.h"
 #include "net/base/escape.h"
 
-using base::FundamentalValue;
-using base::ListValue;
-
 static const char kDataFile[] = "targets-data.json";
 
 static const char kProcessIdField[]  = "processId";
@@ -45,7 +42,7 @@ namespace content {
 
 namespace {
 
-DictionaryValue* BuildTargetDescriptor(
+base::DictionaryValue* BuildTargetDescriptor(
     const GURL& url,
     const std::string& name,
     const GURL& favicon_url,
@@ -53,7 +50,7 @@ DictionaryValue* BuildTargetDescriptor(
     int route_id,
     AccessibilityMode accessibility_mode,
     base::ProcessHandle handle = base::kNullProcessHandle) {
-  DictionaryValue* target_data = new DictionaryValue();
+  base::DictionaryValue* target_data = new base::DictionaryValue();
   target_data->SetInteger(kProcessIdField, process_id);
   target_data->SetInteger(kRouteIdField, route_id);
   target_data->SetString(kUrlField, url.spec());
@@ -65,7 +62,7 @@ DictionaryValue* BuildTargetDescriptor(
   return target_data;
 }
 
-DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh) {
+base::DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh) {
   WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
   std::string title;
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rvh);
@@ -92,7 +89,7 @@ DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh) {
 
 void SendTargetsData(
     const WebUIDataSource::GotDataCallback& callback) {
-  scoped_ptr<ListValue> rvh_list(new ListValue());
+  scoped_ptr<base::ListValue> rvh_list(new base::ListValue());
 
   for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
@@ -118,9 +115,9 @@ void SendTargetsData(
     }
   }
 
-  scoped_ptr<DictionaryValue> data(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->Set("list", rvh_list.release());
-  scoped_ptr<FundamentalValue> a11y_mode(new FundamentalValue(
+  scoped_ptr<base::FundamentalValue> a11y_mode(new base::FundamentalValue(
       BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode()));
   data->Set("global_a11y_mode", a11y_mode.release());
 
@@ -225,19 +222,20 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
 
   RenderViewHost* rvh = RenderViewHost::FromID(process_id, route_id);
   if (!rvh) {
-    scoped_ptr<DictionaryValue> result(new DictionaryValue());
+    scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
     result->SetInteger(kProcessIdField, process_id);
     result->SetInteger(kRouteIdField, route_id);
-    result->Set("error", new StringValue("Renderer no longer exists."));
+    result->Set("error", new base::StringValue("Renderer no longer exists."));
     web_ui()->CallJavascriptFunction("accessibility.showTree", *(result.get()));
     return;
   }
 
-  scoped_ptr<DictionaryValue> result(BuildTargetDescriptor(rvh));
+  scoped_ptr<base::DictionaryValue> result(BuildTargetDescriptor(rvh));
   RenderWidgetHostViewPort* host_view = static_cast<RenderWidgetHostViewPort*>(
       WebContents::FromRenderViewHost(rvh)->GetRenderWidgetHostView());
   if (!host_view) {
-    result->Set("error", new StringValue("Could not get accessibility tree."));
+    result->Set("error",
+                new base::StringValue("Could not get accessibility tree."));
     web_ui()->CallJavascriptFunction("accessibility.showTree", *(result.get()));
     return;
   }
@@ -247,7 +245,8 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
   BrowserAccessibilityManager* manager =
       host_view->GetBrowserAccessibilityManager();
   if (!manager) {
-    result->Set("error", new StringValue("Could not get accessibility tree."));
+    result->Set("error",
+                new base::StringValue("Could not get accessibility tree."));
     web_ui()->CallJavascriptFunction("accessibility.showTree", *(result.get()));
     return;
   }
@@ -259,7 +258,7 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
   formatter->FormatAccessibilityTree(&accessibility_contents_utf16);
 
   result->Set("tree",
-              new StringValue(UTF16ToUTF8(accessibility_contents_utf16)));
+              new base::StringValue(UTF16ToUTF8(accessibility_contents_utf16)));
   web_ui()->CallJavascriptFunction("accessibility.showTree", *(result.get()));
 }
 

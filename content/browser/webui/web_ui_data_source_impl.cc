@@ -104,7 +104,7 @@ void WebUIDataSourceImpl::AddLocalizedString(const std::string& name,
 }
 
 void WebUIDataSourceImpl::AddLocalizedStrings(
-    const DictionaryValue& localized_strings) {
+    const base::DictionaryValue& localized_strings) {
   localized_strings_.MergeDictionary(&localized_strings);
 }
 

@@ -10,35 +10,33 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::Value;
-using base::DictionaryValue;
-using std::string;
-
 namespace content {
 
 namespace {
-static const string kContraints = "c";
-static const string kServers = "s";
-static const string kUrl = "u";
+
+static const std::string kContraints = "c";
+static const std::string kServers = "s";
+static const std::string kUrl = "u";
 
 class MockWebRTCInternalsProxy : public WebRTCInternalsUIObserver {
  public:
-  virtual void OnUpdate(const string& command, const Value* value) OVERRIDE {
+  virtual void OnUpdate(const std::string& command,
+                        const base::Value* value) OVERRIDE {
     command_ = command;
     value_.reset(value->DeepCopy());
   }
 
-  string command() {
+  std::string command() {
     return command_;
   }
 
-  Value* value() {
+  base::Value* value() {
     return value_.get();
   }
 
  private:
-   string command_;
-   scoped_ptr<Value> value_;
+   std::string command_;
+   scoped_ptr<base::Value> value_;
 };
 
 class WebRTCInternalsTest : public testing::Test {
@@ -46,12 +44,12 @@ class WebRTCInternalsTest : public testing::Test {
   WebRTCInternalsTest() : io_thread_(BrowserThread::UI, &io_loop_) {}
 
  protected:
-  string ExpectedInfo(string prefix,
-                           string id,
-                           string suffix) {
-    static const string  kstatic_part1 = string(
+  std::string ExpectedInfo(std::string prefix,
+                           std::string id,
+                           std::string suffix) {
+    static const std::string  kstatic_part1 = std::string(
         "{\"constraints\":\"c\",");
-    static const string kstatic_part2 = string(
+    static const std::string kstatic_part2 = std::string(
         ",\"servers\":\"s\",\"url\":\"u\"}");
     return prefix + kstatic_part1 + id + kstatic_part2 + suffix;
   }
@@ -82,7 +80,7 @@ TEST_F(WebRTCInternalsTest, SendAddPeerConnectionUpdate) {
       0, 1, 2, kUrl, kServers, kContraints);
   EXPECT_EQ("addPeerConnection", observer->command());
 
-  DictionaryValue* dict = NULL;
+  base::DictionaryValue* dict = NULL;
   EXPECT_TRUE(observer->value()->GetAsDictionary(&dict));
 
   int int_value;
@@ -91,7 +89,7 @@ TEST_F(WebRTCInternalsTest, SendAddPeerConnectionUpdate) {
   EXPECT_TRUE(dict->GetInteger("lid", &int_value));
   EXPECT_EQ(2, int_value);
 
-  string value;
+  std::string value;
   EXPECT_TRUE(dict->GetString("url", &value));
   EXPECT_EQ(kUrl, value);
   EXPECT_TRUE(dict->GetString("servers", &value));
@@ -112,7 +110,7 @@ TEST_F(WebRTCInternalsTest, SendRemovePeerConnectionUpdate) {
   WebRTCInternals::GetInstance()->OnRemovePeerConnection(1, 2);
   EXPECT_EQ("removePeerConnection", observer->command());
 
-  DictionaryValue* dict = NULL;
+  base::DictionaryValue* dict = NULL;
   EXPECT_TRUE(observer->value()->GetAsDictionary(&dict));
 
   int int_value;
@@ -131,14 +129,14 @@ TEST_F(WebRTCInternalsTest, SendUpdatePeerConnectionUpdate) {
   WebRTCInternals::GetInstance()->OnAddPeerConnection(
       0, 1, 2, kUrl, kServers, kContraints);
 
-  const string update_type = "fakeType";
-  const string update_value = "fakeValue";
+  const std::string update_type = "fakeType";
+  const std::string update_value = "fakeValue";
   WebRTCInternals::GetInstance()->OnUpdatePeerConnection(
       1, 2, update_type, update_value);
 
   EXPECT_EQ("updatePeerConnection", observer->command());
 
-  DictionaryValue* dict = NULL;
+  base::DictionaryValue* dict = NULL;
   EXPECT_TRUE(observer->value()->GetAsDictionary(&dict));
 
   int int_value;
@@ -147,7 +145,7 @@ TEST_F(WebRTCInternalsTest, SendUpdatePeerConnectionUpdate) {
   EXPECT_TRUE(dict->GetInteger("lid", &int_value));
   EXPECT_EQ(2, int_value);
 
-  string value;
+  std::string value;
   EXPECT_TRUE(dict->GetString("type", &value));
   EXPECT_EQ(update_type, value);
   EXPECT_TRUE(dict->GetString("value", &value));

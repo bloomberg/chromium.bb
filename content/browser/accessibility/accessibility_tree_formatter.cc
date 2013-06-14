@@ -47,21 +47,21 @@ AccessibilityTreeFormatter* AccessibilityTreeFormatter::Create(
 AccessibilityTreeFormatter::~AccessibilityTreeFormatter() {
 }
 
-scoped_ptr<DictionaryValue>
+scoped_ptr<base::DictionaryValue>
 AccessibilityTreeFormatter::BuildAccessibilityTree() {
-  scoped_ptr<DictionaryValue> dict(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   RecursiveBuildAccessibilityTree(*root_, dict.get());
   return dict.Pass();
 }
 
 void AccessibilityTreeFormatter::FormatAccessibilityTree(
     string16* contents) {
-  scoped_ptr<DictionaryValue> dict = BuildAccessibilityTree();
+  scoped_ptr<base::DictionaryValue> dict = BuildAccessibilityTree();
   RecursiveFormatAccessibilityTree(*(dict.get()), contents);
 }
 
 void AccessibilityTreeFormatter::RecursiveBuildAccessibilityTree(
-    const BrowserAccessibility& node, DictionaryValue* dict) {
+    const BrowserAccessibility& node, base::DictionaryValue* dict) {
   AddProperties(node, dict);
 
   ListValue* children = new ListValue;
@@ -71,22 +71,22 @@ void AccessibilityTreeFormatter::RecursiveBuildAccessibilityTree(
 
   for (size_t i = 0; i < node.children().size(); ++i) {
     BrowserAccessibility* child_node = node.children()[i];
-    DictionaryValue* child_dict = new DictionaryValue;
+    base::DictionaryValue* child_dict = new base::DictionaryValue;
     children->Append(child_dict);
     RecursiveBuildAccessibilityTree(*child_node, child_dict);
   }
 }
 
 void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
-    const DictionaryValue& dict, string16* contents, int depth) {
+    const base::DictionaryValue& dict, string16* contents, int depth) {
   string16 line = ToString(dict, string16(depth * kIndentSpaces, ' '));
   if (line.find(ASCIIToUTF16(kSkipString)) != string16::npos)
     return;
 
   *contents += line;
-  const ListValue* children;
+  const base::ListValue* children;
   dict.GetList(kChildrenDictAttr, &children);
-  const DictionaryValue* child_dict;
+  const base::DictionaryValue* child_dict;
   for (size_t i = 0; i < children->GetSize(); i++) {
     children->GetDictionary(i, &child_dict);
     RecursiveFormatAccessibilityTree(*child_dict, contents, depth + 1);
@@ -102,11 +102,11 @@ bool AccessibilityTreeFormatter::IncludeChildren(
 
 #if (!defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_ANDROID))
 void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
-                                               DictionaryValue* dict) {
+                                               base::DictionaryValue* dict) {
   dict->SetInteger("id", node.renderer_id());
 }
 
-string16 AccessibilityTreeFormatter::ToString(const DictionaryValue& node,
+string16 AccessibilityTreeFormatter::ToString(const base::DictionaryValue& node,
                                               const string16& indent) {
   int id_value;
   node.GetInteger("id", &id_value);
@@ -168,7 +168,7 @@ bool AccessibilityTreeFormatter::MatchesFilters(
 
 string16 AccessibilityTreeFormatter::FormatCoordinates(
     const char* name, const char* x_name, const char* y_name,
-    const DictionaryValue& value) {
+    const base::DictionaryValue& value) {
   int x, y;
   value.GetInteger(x_name, &x);
   value.GetInteger(y_name, &y);

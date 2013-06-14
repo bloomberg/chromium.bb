@@ -289,7 +289,7 @@ Value* V8ValueConverterImpl::FromV8ValueImpl(
   return NULL;
 }
 
-Value* V8ValueConverterImpl::FromV8Array(
+base::Value* V8ValueConverterImpl::FromV8Array(
     v8::Handle<v8::Array> val,
     FromV8ValueState* state) const {
   if (!state->UpdateAndCheckUniqueness(val))
@@ -352,7 +352,7 @@ base::BinaryValue* V8ValueConverterImpl::FromV8Buffer(
     return NULL;
 }
 
-Value* V8ValueConverterImpl::FromV8Object(
+base::Value* V8ValueConverterImpl::FromV8Object(
     v8::Handle<v8::Object> val,
     FromV8ValueState* state) const {
   if (!state->UpdateAndCheckUniqueness(val))
@@ -415,7 +415,7 @@ Value* V8ValueConverterImpl::FromV8Object(
     // there *is* a "windowId" property, but since it should be an int, code
     // on the browser which doesn't additionally check for null will fail.
     // We can avoid all bugs related to this by stripping null.
-    if (strip_null_from_objects_ && child->IsType(Value::TYPE_NULL))
+    if (strip_null_from_objects_ && child->IsType(base::Value::TYPE_NULL))
       continue;
 
     result->SetWithoutPathExpansion(std::string(*name_utf8, name_utf8.length()),

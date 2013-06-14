@@ -46,20 +46,20 @@ bool ParseServerResponse(const std::string& response_body,
 
   // Parse the response, ignoring comments.
   std::string error_msg;
-  scoped_ptr<Value> response_value(base::JSONReader::ReadAndReturnError(
+  scoped_ptr<base::Value> response_value(base::JSONReader::ReadAndReturnError(
       response_body, base::JSON_PARSE_RFC, NULL, &error_msg));
   if (response_value == NULL) {
     LOG(WARNING) << "ParseServerResponse: JSONReader failed : " << error_msg;
     return false;
   }
 
-  if (!response_value->IsType(Value::TYPE_DICTIONARY)) {
+  if (!response_value->IsType(base::Value::TYPE_DICTIONARY)) {
     VLOG(1) << "ParseServerResponse: Unexpected response type "
             << response_value->GetType();
     return false;
   }
-  const DictionaryValue* response_object =
-      static_cast<const DictionaryValue*>(response_value.get());
+  const base::DictionaryValue* response_object =
+      static_cast<const base::DictionaryValue*>(response_value.get());
 
   // Get the status.
   int status;
@@ -87,40 +87,40 @@ bool ParseServerResponse(const std::string& response_body,
   }
 
   // Get the hypotheses.
-  const Value* hypotheses_value = NULL;
+  const base::Value* hypotheses_value = NULL;
   if (!response_object->Get(kHypothesesString, &hypotheses_value)) {
     VLOG(1) << "ParseServerResponse: Missing hypotheses attribute.";
     return false;
   }
 
   DCHECK(hypotheses_value);
-  if (!hypotheses_value->IsType(Value::TYPE_LIST)) {
+  if (!hypotheses_value->IsType(base::Value::TYPE_LIST)) {
     VLOG(1) << "ParseServerResponse: Unexpected hypotheses type "
             << hypotheses_value->GetType();
     return false;
   }
 
-  const ListValue* hypotheses_list =
-      static_cast<const ListValue*>(hypotheses_value);
+  const base::ListValue* hypotheses_list =
+      static_cast<const base::ListValue*>(hypotheses_value);
 
   // For now we support only single shot recognition, so we are giving only a
   // final result, consisting of one fragment (with one or more hypotheses).
   size_t index = 0;
   for (; index < hypotheses_list->GetSize(); ++index) {
-    const Value* hypothesis = NULL;
+    const base::Value* hypothesis = NULL;
     if (!hypotheses_list->Get(index, &hypothesis)) {
       LOG(WARNING) << "ParseServerResponse: Unable to read hypothesis value.";
       break;
     }
     DCHECK(hypothesis);
-    if (!hypothesis->IsType(Value::TYPE_DICTIONARY)) {
+    if (!hypothesis->IsType(base::Value::TYPE_DICTIONARY)) {
       LOG(WARNING) << "ParseServerResponse: Unexpected value type "
                    << hypothesis->GetType();
       break;
     }
 
-    const DictionaryValue* hypothesis_value =
-        static_cast<const DictionaryValue*>(hypothesis);
+    const base::DictionaryValue* hypothesis_value =
+        static_cast<const base::DictionaryValue*>(hypothesis);
     string16 utterance;
 
     if (!hypothesis_value->GetString(kUtteranceString, &utterance)) {

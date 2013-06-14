@@ -847,7 +847,7 @@ void GpuDataManagerImplPrivate::GetDriverBugWorkarounds(
 
 void GpuDataManagerImplPrivate::AddLogMessage(
     int level, const std::string& header, const std::string& message) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("level", level);
   dict->SetString("header", header);
   dict->SetString("message", message);

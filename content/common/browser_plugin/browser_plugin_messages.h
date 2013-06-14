@@ -314,7 +314,7 @@ IPC_MESSAGE_ROUTED2(BrowserPluginMsg_AllocateInstanceID_ACK,
 
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_AddMessageToConsole,
                      int /* instance_id */,
-                     DictionaryValue /* message_info */)
+                     base::DictionaryValue /* message_info */)
 
 // This message is sent in response to a completed attachment of a guest
 // to a BrowserPlugin. This message carries information about the guest
@@ -454,7 +454,7 @@ IPC_MESSAGE_CONTROL4(BrowserPluginMsg_RequestPermission,
                      int /* instance_id */,
                      BrowserPluginPermissionType /* permission_type */,
                      int /* request_id */,
-                     DictionaryValue /* request_info */)
+                     base::DictionaryValue /* request_info */)
 
 // Forwards a PointerLock Unlock request to the BrowserPlugin.
 IPC_MESSAGE_CONTROL1(BrowserPluginMsg_UnlockMouse, int /* instance_id */)

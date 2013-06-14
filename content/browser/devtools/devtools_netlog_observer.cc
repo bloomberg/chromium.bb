@@ -59,7 +59,7 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
   if (entry.type() == net::NetLog::TYPE_URL_REQUEST_START_JOB) {
     if (is_begin) {
       int load_flags;
-      scoped_ptr<Value> event_param(entry.ParametersToValue());
+      scoped_ptr<base::Value> event_param(entry.ParametersToValue());
       if (!net::StartEventLoadFlagsFromEventParams(event_param.get(),
                                                    &load_flags)) {
         return;
@@ -100,7 +100,7 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
 
   switch (entry.type()) {
     case net::NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST_HEADERS: {
-      scoped_ptr<Value> event_params(entry.ParametersToValue());
+      scoped_ptr<base::Value> event_params(entry.ParametersToValue());
       std::string request_line;
       net::HttpRequestHeaders request_headers;
 
@@ -122,7 +122,7 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
       break;
     }
     case net::NetLog::TYPE_HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS: {
-      scoped_ptr<Value> event_params(entry.ParametersToValue());
+      scoped_ptr<base::Value> event_params(entry.ParametersToValue());
       net::SpdyHeaderBlock request_headers;
 
       if (!net::SpdyHeaderBlockFromNetLogParam(event_params.get(),
@@ -142,7 +142,7 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
       break;
     }
     case net::NetLog::TYPE_HTTP_TRANSACTION_READ_RESPONSE_HEADERS: {
-      scoped_ptr<Value> event_params(entry.ParametersToValue());
+      scoped_ptr<base::Value> event_params(entry.ParametersToValue());
 
       scoped_refptr<net::HttpResponseHeaders> response_headers;
 
@@ -169,7 +169,7 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
       break;
     }
     case net::NetLog::TYPE_HTTP_STREAM_REQUEST_BOUND_TO_JOB: {
-      scoped_ptr<Value> event_params(entry.ParametersToValue());
+      scoped_ptr<base::Value> event_params(entry.ParametersToValue());
       net::NetLog::Source http_stream_job_source;
       if (!net::NetLog::Source::FromEventParameters(event_params.get(),
                                                     &http_stream_job_source)) {
@@ -204,7 +204,7 @@ void DevToolsNetLogObserver::OnAddHTTPStreamJobEntry(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (entry.type() == net::NetLog::TYPE_SOCKET_POOL_BOUND_TO_SOCKET) {
-    scoped_ptr<Value> event_params(entry.ParametersToValue());
+    scoped_ptr<base::Value> event_params(entry.ParametersToValue());
     net::NetLog::Source socket_source;
     if (!net::NetLog::Source::FromEventParameters(event_params.get(),
                                                   &socket_source)) {
@@ -248,11 +248,12 @@ void DevToolsNetLogObserver::OnAddSocketEntry(
 
   if (net::NetLog::TYPE_SOCKET_BYTES_RECEIVED == entry.type()) {
     int byte_count = 0;
-    scoped_ptr<Value> value(entry.ParametersToValue());
-    if (!value->IsType(Value::TYPE_DICTIONARY))
+    scoped_ptr<base::Value> value(entry.ParametersToValue());
+    if (!value->IsType(base::Value::TYPE_DICTIONARY))
       return;
 
-    DictionaryValue* dValue = static_cast<DictionaryValue*>(value.get());
+    base::DictionaryValue* dValue =
+        static_cast<base::DictionaryValue*>(value.get());
     if (!dValue->GetInteger("byte_count", &byte_count))
       return;
 

@@ -58,7 +58,7 @@ void AccessibilityTreeFormatter::Initialize() {
 }
 
 void AccessibilityTreeFormatter::AddProperties(
-    const BrowserAccessibility& node, DictionaryValue* dict) {
+    const BrowserAccessibility& node, base::DictionaryValue* dict) {
   BrowserAccessibilityWin* acc_obj =
       const_cast<BrowserAccessibility*>(&node)->ToBrowserAccessibilityWin();
 
@@ -86,7 +86,7 @@ void AccessibilityTreeFormatter::AddProperties(
 
   IAccessibleStateToStringVector(ia_state, &state_strings);
   IAccessible2StateToStringVector(acc_obj->ia2_state(), &state_strings);
-  ListValue* states = new ListValue;
+  base::ListValue* states = new base::ListValue;
   for (std::vector<string16>::const_iterator it = state_strings.begin();
        it != state_strings.end();
        ++it) {
@@ -95,7 +95,7 @@ void AccessibilityTreeFormatter::AddProperties(
   dict->Set("states", states);
 
   const std::vector<string16>& ia2_attributes = acc_obj->ia2_attributes();
-  ListValue* attributes = new ListValue;
+  base::ListValue* attributes = new base::ListValue;
   for (std::vector<string16>::const_iterator it = ia2_attributes.begin();
        it != ia2_attributes.end();
        ++it) {
@@ -141,12 +141,12 @@ void AccessibilityTreeFormatter::AddProperties(
       && root->ToBrowserAccessibilityWin()->accLocation(
           &root_left, &root_top, &root_width, &root_height, variant_self)
       != S_FALSE) {
-    DictionaryValue* location = new DictionaryValue;
+    base::DictionaryValue* location = new base::DictionaryValue;
     location->SetInteger("x", left - root_left);
     location->SetInteger("y", top - root_top);
     dict->Set("location", location);
 
-    DictionaryValue* size = new DictionaryValue;
+    base::DictionaryValue* size = new base::DictionaryValue;
     size->SetInteger("width", width);
     size->SetInteger("height", height);
     dict->Set("size", size);
@@ -199,7 +199,7 @@ void AccessibilityTreeFormatter::AddProperties(
   }
 }
 
-string16 AccessibilityTreeFormatter::ToString(const DictionaryValue& dict,
+string16 AccessibilityTreeFormatter::ToString(const base::DictionaryValue& dict,
                                               const string16& indent) {
   string16 line;
 
@@ -214,12 +214,12 @@ string16 AccessibilityTreeFormatter::ToString(const DictionaryValue& dict,
 
   for (int i = 0; i < arraysize(ALL_ATTRIBUTES); i++) {
     const char* attribute_name = ALL_ATTRIBUTES[i];
-    const Value* value;
+    const base::Value* value;
     if (!dict.Get(attribute_name, &value))
       continue;
 
     switch (value->GetType()) {
-      case Value::TYPE_STRING: {
+      case base::Value::TYPE_STRING: {
         string16 string_value;
         value->GetAsString(&string_value);
         WriteAttribute(false,
@@ -229,7 +229,7 @@ string16 AccessibilityTreeFormatter::ToString(const DictionaryValue& dict,
                        &line);
         break;
       }
-      case Value::TYPE_INTEGER: {
+      case base::Value::TYPE_INTEGER: {
         int int_value;
         value->GetAsInteger(&int_value);
         WriteAttribute(false,
@@ -239,7 +239,7 @@ string16 AccessibilityTreeFormatter::ToString(const DictionaryValue& dict,
                        &line);
         break;
       }
-      case Value::TYPE_DOUBLE: {
+      case base::Value::TYPE_DOUBLE: {
         double double_value;
         value->GetAsDouble(&double_value);
         WriteAttribute(false,
@@ -249,12 +249,12 @@ string16 AccessibilityTreeFormatter::ToString(const DictionaryValue& dict,
                        &line);
         break;
       }
-      case Value::TYPE_LIST: {
+      case base::Value::TYPE_LIST: {
         // Currently all list values are string and are written without
         // attribute names.
-        const ListValue* list_value;
+        const base::ListValue* list_value;
         value->GetAsList(&list_value);
-        for (ListValue::const_iterator it = list_value->begin();
+        for (base::ListValue::const_iterator it = list_value->begin();
              it != list_value->end();
              ++it) {
           string16 string_value;
@@ -263,10 +263,10 @@ string16 AccessibilityTreeFormatter::ToString(const DictionaryValue& dict,
         }
         break;
       }
-      case Value::TYPE_DICTIONARY: {
+      case base::Value::TYPE_DICTIONARY: {
         // Currently all dictionary values are coordinates.
         // Revisit this if that changes.
-        const DictionaryValue* dict_value;
+        const base::DictionaryValue* dict_value;
         value->GetAsDictionary(&dict_value);
         if (strcmp(attribute_name, "size") == 0) {
           WriteAttribute(false,

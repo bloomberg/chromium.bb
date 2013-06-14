@@ -155,16 +155,17 @@ static string GetIceGatheringStateString(
 // Note:
 // The format must be consistent with what webrtc_internals.js expects.
 // If you change it here, you must change webrtc_internals.js as well.
-static DictionaryValue* GetDictValueStats(const webrtc::StatsReport& report) {
+static base::DictionaryValue* GetDictValueStats(
+    const webrtc::StatsReport& report) {
   if (report.values.empty())
     return NULL;
 
-  DictionaryValue* dict = new DictionaryValue();
+  DictionaryValue* dict = new base::DictionaryValue();
   if (!dict)
     return NULL;
   dict->SetDouble("timestamp", report.timestamp);
 
-  ListValue* values = new ListValue();
+  base::ListValue* values = new base::ListValue();
   if (!values) {
     delete dict;
     return NULL;
@@ -180,14 +181,14 @@ static DictionaryValue* GetDictValueStats(const webrtc::StatsReport& report) {
 
 // Builds a DictionaryValue from the StatsReport.
 // The caller takes the ownership of the returned value.
-static DictionaryValue* GetDictValue(const webrtc::StatsReport& report) {
-  scoped_ptr<DictionaryValue> stats, result;
+static base::DictionaryValue* GetDictValue(const webrtc::StatsReport& report) {
+  scoped_ptr<base::DictionaryValue> stats, result;
 
   stats.reset(GetDictValueStats(report));
   if (!stats)
     return NULL;
 
-  result.reset(new DictionaryValue());
+  result.reset(new base::DictionaryValue());
   if (!result)
     return NULL;
 
@@ -209,10 +210,10 @@ class InternalStatsObserver : public webrtc::StatsObserver {
 
   virtual void OnComplete(
       const std::vector<webrtc::StatsReport>& reports) OVERRIDE {
-    ListValue list;
+    base::ListValue list;
 
     for (size_t i = 0; i < reports.size(); ++i) {
-      DictionaryValue* report = GetDictValue(reports[i]);
+      base::DictionaryValue* report = GetDictValue(reports[i]);
       if (report)
         list.Append(report);
     }
