@@ -215,34 +215,20 @@ TEST_PPAPI_IN_PROCESS(Core)
 TEST_PPAPI_OUT_OF_PROCESS(Core)
 TEST_PPAPI_NACL(Core)
 
-#if defined(OS_CHROMEOS)
-#define MAYBE_InputEvent InputEvent
-#elif defined(OS_LINUX)
-// Times out on Linux. http://crbug.com/108859
-#define MAYBE_InputEvent DISABLED_InputEvent
-#elif defined(OS_MACOSX)
-// Flaky on Mac. http://crbug.com/109258
-#define MAYBE_InputEvent DISABLED_InputEvent
-#else
-#define MAYBE_InputEvent InputEvent
-#endif
+TEST_PPAPI_IN_PROCESS(InputEvent)
+TEST_PPAPI_OUT_OF_PROCESS(InputEvent)
+TEST_PPAPI_NACL(InputEvent)
 
-// Flaky on Linux and Windows. http://crbug.com/135403
-#if defined(OS_LINUX) || defined(OS_WIN)
+// Flaky on Linux. http://crbug.com/135403
+#if defined(OS_LINUX)
 #define MAYBE_ImeInputEvent DISABLED_ImeInputEvent
 #else
 #define MAYBE_ImeInputEvent ImeInputEvent
 #endif
 
-TEST_PPAPI_IN_PROCESS(MAYBE_InputEvent)
-TEST_PPAPI_OUT_OF_PROCESS(MAYBE_InputEvent)
-// TODO(bbudge) Enable when input events are proxied correctly for NaCl.
-TEST_PPAPI_NACL(DISABLED_InputEvent)
-
 TEST_PPAPI_IN_PROCESS(MAYBE_ImeInputEvent)
 TEST_PPAPI_OUT_OF_PROCESS(MAYBE_ImeInputEvent)
-// TODO(kinaba) Enable when IME events are proxied correctly for NaCl.
-TEST_PPAPI_NACL(DISABLED_ImeInputEvent)
+TEST_PPAPI_NACL(MAYBE_ImeInputEvent)
 
 TEST_PPAPI_IN_PROCESS(Instance_ExecuteScript);
 TEST_PPAPI_OUT_OF_PROCESS(Instance_ExecuteScript)
