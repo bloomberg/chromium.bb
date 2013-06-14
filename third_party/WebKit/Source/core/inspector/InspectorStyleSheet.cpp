@@ -77,6 +77,7 @@ public:
     PassRefPtr<WebCore::CSSRuleSourceData> ruleSourceDataAt(unsigned) const;
 
 private:
+    void flattenSourceData(RuleSourceDataList*);
 
     // StyleSheet constructed while parsing m_text.
     WebCore::CSSStyleSheet* m_parserOutput;
@@ -98,18 +99,22 @@ void ParsedStyleSheet::setText(const String& text)
     setSourceData(nullptr);
 }
 
-static void flattenSourceData(RuleSourceDataList* dataList, RuleSourceDataList* target)
+void ParsedStyleSheet::flattenSourceData(RuleSourceDataList* dataList)
 {
     for (size_t i = 0; i < dataList->size(); ++i) {
         RefPtr<CSSRuleSourceData>& data = dataList->at(i);
-        if (data->type == CSSRuleSourceData::STYLE_RULE)
-            target->append(data);
-        else if (data->type == CSSRuleSourceData::MEDIA_RULE)
-            flattenSourceData(&data->childRules, target);
-        else if (data->type == CSSRuleSourceData::HOST_RULE)
-            flattenSourceData(&data->childRules, target);
-        else if (data->type == CSSRuleSourceData::SUPPORTS_RULE)
-            flattenSourceData(&data->childRules, target);
+        if (data->type == CSSRuleSourceData::STYLE_RULE) {
+            m_sourceData->append(data);
+        } else if (data->type == CSSRuleSourceData::IMPORT_RULE) {
+            m_sourceData->append(data);
+        } else if (data->type == CSSRuleSourceData::MEDIA_RULE) {
+            m_sourceData->append(data);
+            flattenSourceData(&data->childRules);
+        } else if (data->type == CSSRuleSourceData::HOST_RULE) {
+            flattenSourceData(&data->childRules);
+        } else if (data->type == CSSRuleSourceData::SUPPORTS_RULE) {
+            flattenSourceData(&data->childRules);
+        }
     }
 }
 
@@ -125,7 +130,7 @@ void ParsedStyleSheet::setSourceData(PassOwnPtr<RuleSourceDataList> sourceData)
     // FIXME: This is a temporary solution to retain the original flat sourceData structure
     // containing only style rules, even though CSSParser now provides the full rule source data tree.
     // Normally, we should just assign m_sourceData = sourceData;
-    flattenSourceData(sourceData.get(), m_sourceData.get());
+    flattenSourceData(sourceData.get());
 }
 
 PassRefPtr<WebCore::CSSRuleSourceData> ParsedStyleSheet::ruleSourceDataAt(unsigned index) const
@@ -954,21 +959,29 @@ String InspectorStyleSheet::styleSheetURL(CSSStyleSheet* pageStyleSheet)
 }
 
 // static
-void InspectorStyleSheet::collectFlatRules(PassRefPtr<CSSRuleList> ruleList, CSSStyleRuleVector* result)
+void InspectorStyleSheet::collectFlatRules(PassRefPtr<CSSRuleList> ruleList, CSSRuleVector* result)
 {
     if (!ruleList)
         return;
 
     for (unsigned i = 0, size = ruleList->length(); i < size; ++i) {
         CSSRule* rule = ruleList->item(i);
-        CSSStyleRule* styleRule = InspectorCSSAgent::asCSSStyleRule(rule);
-        if (styleRule) {
-            result->append(styleRule);
-        } else {
-            RefPtr<CSSRuleList> childRuleList = asCSSRuleList(rule);
-            if (childRuleList)
-                collectFlatRules(childRuleList, result);
+
+        // The result->append()'ed types should be exactly the same as in ParsedStyleSheet::flattenSourceData().
+        switch (rule->type()) {
+        case CSSRule::STYLE_RULE:
+            result->append(rule);
+            continue;
+        case CSSRule::IMPORT_RULE:
+        case CSSRule::MEDIA_RULE:
+            result->append(rule);
+            break;
+        default:
+            break;
         }
+        RefPtr<CSSRuleList> childRuleList = asCSSRuleList(rule);
+        if (childRuleList)
+            collectFlatRules(childRuleList, result);
     }
 }
 
@@ -1161,8 +1174,7 @@ CSSStyleRule* InspectorStyleSheet::ruleForId(const InspectorCSSId& id) const
 
     ASSERT(!id.isEmpty());
     ensureFlatRules();
-    return id.ordinal() >= m_flatRules.size() ? 0 : m_flatRules.at(id.ordinal()).get();
-
+    return InspectorCSSAgent::asCSSStyleRule(id.ordinal() >= m_flatRules.size() ? 0 : m_flatRules.at(id.ordinal()).get());
 }
 
 bool InspectorStyleSheet::fillObjectForStyleSheet(PassRefPtr<TypeBuilder::CSS::CSSStyleSheetBody> prpResult)
@@ -1501,12 +1513,10 @@ PassOwnPtr<Vector<size_t> > InspectorStyleSheet::lineEndings() const
 unsigned InspectorStyleSheet::ruleIndexByStyle(CSSStyleDeclaration* pageStyle) const
 {
     ensureFlatRules();
-    unsigned index = 0;
     for (unsigned i = 0, size = m_flatRules.size(); i < size; ++i) {
-        if (m_flatRules.at(i)->style() == pageStyle)
-            return index;
-
-        ++index;
+        CSSStyleRule* styleRule = InspectorCSSAgent::asCSSStyleRule(m_flatRules.at(i).get());
+        if (styleRule && styleRule->style() == pageStyle)
+            return i;
     }
     return UINT_MAX;
 }
@@ -1622,8 +1632,8 @@ void InspectorStyleSheet::revalidateStyle(CSSStyleDeclaration* pageStyle)
     m_isRevalidating = true;
     ensureFlatRules();
     for (unsigned i = 0, size = m_flatRules.size(); i < size; ++i) {
-        CSSStyleRule* parsedRule = m_flatRules.at(i).get();
-        if (parsedRule->style() == pageStyle) {
+        CSSStyleRule* parsedRule = InspectorCSSAgent::asCSSStyleRule(m_flatRules.at(i).get());
+        if (parsedRule && parsedRule->style() == pageStyle) {
             if (parsedRule->styleRule()->properties()->asText() != pageStyle->cssText())
                 setStyleText(pageStyle, pageStyle->cssText());
             break;

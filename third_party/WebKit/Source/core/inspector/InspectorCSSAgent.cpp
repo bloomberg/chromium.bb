@@ -1517,11 +1517,15 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSRule> > InspectorCSSAgent::bu
         return result.release();
 
     RefPtr<CSSRuleList> refRuleList = ruleList;
-    CSSStyleRuleVector rules;
+    CSSRuleVector rules;
     InspectorStyleSheet::collectFlatRules(refRuleList, &rules);
 
-    for (unsigned i = 0, size = rules.size(); i < size; ++i)
-        result->addItem(buildObjectForRule(rules.at(i).get(), styleResolver));
+    for (unsigned i = 0, size = rules.size(); i < size; ++i) {
+        CSSStyleRule* styleRule = asCSSStyleRule(rules.at(i).get());
+        if (!styleRule)
+            continue;
+        result->addItem(buildObjectForRule(styleRule, styleResolver));
+    }
 
     return result.release();
 }

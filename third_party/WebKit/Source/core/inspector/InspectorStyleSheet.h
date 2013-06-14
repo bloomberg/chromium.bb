@@ -53,7 +53,7 @@ class InspectorPageAgent;
 class InspectorStyleSheet;
 class Node;
 
-typedef Vector<RefPtr<CSSStyleRule> > CSSStyleRuleVector;
+typedef Vector<RefPtr<CSSRule> > CSSRuleVector;
 typedef String ErrorString;
 
 class InspectorCSSId {
@@ -175,7 +175,7 @@ public:
     typedef HashMap<CSSStyleDeclaration*, RefPtr<InspectorStyle> > InspectorStyleMap;
     static PassRefPtr<InspectorStyleSheet> create(InspectorPageAgent*, const String& id, PassRefPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, Listener*);
     static String styleSheetURL(CSSStyleSheet* pageStyleSheet);
-    static void collectFlatRules(PassRefPtr<CSSRuleList>, CSSStyleRuleVector* result);
+    static void collectFlatRules(PassRefPtr<CSSRuleList>, CSSRuleVector* result);
 
     virtual ~InspectorStyleSheet();
 
@@ -248,7 +248,7 @@ private:
     bool m_isRevalidating;
     bool m_isReparsing;
     ParsedStyleSheet* m_parsedStyleSheet;
-    mutable CSSStyleRuleVector m_flatRules;
+    mutable CSSRuleVector m_flatRules;
     Listener* m_listener;
     mutable String m_sourceURL;
 };
