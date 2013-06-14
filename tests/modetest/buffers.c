@@ -337,13 +337,13 @@ fill_smpte_yuv_packed(const struct yuv_info *yuv, unsigned char *mem,
 	for (y = 0; y < height * 6 / 9; ++y) {
 		for (x = 0; x < width; ++x)
 			y_mem[2*x] = colors_top[x * 7 / width].y;
-		y_mem += stride * 2;
+		y_mem += stride;
 	}
 
 	for (; y < height * 7 / 9; ++y) {
 		for (x = 0; x < width; ++x)
 			y_mem[2*x] = colors_middle[x * 7 / width].y;
-		y_mem += stride * 2;
+		y_mem += stride;
 	}
 
 	for (; y < height; ++y) {
@@ -354,7 +354,7 @@ fill_smpte_yuv_packed(const struct yuv_info *yuv, unsigned char *mem,
 						   / (width / 7) + 4].y;
 		for (; x < width; ++x)
 			y_mem[2*x] = colors_bottom[7].y;
-		y_mem += stride * 2;
+		y_mem += stride;
 	}
 
 	/* Chroma */
@@ -363,7 +363,7 @@ fill_smpte_yuv_packed(const struct yuv_info *yuv, unsigned char *mem,
 			c_mem[2*x+u] = colors_top[x * 7 / width].u;
 			c_mem[2*x+v] = colors_top[x * 7 / width].v;
 		}
-		c_mem += stride * 2;
+		c_mem += stride;
 	}
 
 	for (; y < height * 7 / 9; ++y) {
@@ -371,7 +371,7 @@ fill_smpte_yuv_packed(const struct yuv_info *yuv, unsigned char *mem,
 			c_mem[2*x+u] = colors_middle[x * 7 / width].u;
 			c_mem[2*x+v] = colors_middle[x * 7 / width].v;
 		}
-		c_mem += stride * 2;
+		c_mem += stride;
 	}
 
 	for (; y < height; ++y) {
@@ -389,7 +389,7 @@ fill_smpte_yuv_packed(const struct yuv_info *yuv, unsigned char *mem,
 			c_mem[2*x+u] = colors_bottom[7].u;
 			c_mem[2*x+v] = colors_bottom[7].v;
 		}
-		c_mem += stride * 2;
+		c_mem += stride;
 	}
 }
 
