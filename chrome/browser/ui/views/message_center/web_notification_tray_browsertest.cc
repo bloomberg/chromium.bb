@@ -46,14 +46,18 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
   class TestNotificationDelegate : public ::NotificationDelegate {
    public:
     explicit TestNotificationDelegate(std::string id) : id_(id) {}
-    virtual void Display() {}
-    virtual void Error() {}
-    virtual void Close(bool by_user) {}
-    virtual void Click() {}
-    virtual std::string id() const { return id_; }
-    virtual content::RenderViewHost* GetRenderViewHost() const { return NULL; }
+    virtual void Display() OVERRIDE {}
+    virtual void Error() OVERRIDE {}
+    virtual void Close(bool by_user) OVERRIDE {}
+    virtual void Click() OVERRIDE {}
+    virtual std::string id() const OVERRIDE { return id_; }
+    virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
+      return NULL;
+    }
 
    private:
+    virtual ~TestNotificationDelegate() {}
+
     std::string id_;
   };
 
