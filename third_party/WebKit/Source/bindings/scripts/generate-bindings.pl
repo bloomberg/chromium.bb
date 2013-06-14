@@ -38,6 +38,7 @@ use Cwd;
 
 use IDLParser;
 use CodeGeneratorV8;
+use IDLSerializer;
 
 my @idlDirectories;
 my $outputDirectory;
@@ -183,6 +184,10 @@ foreach my $idlFile (@supplementedIdlFiles) {
         }
     }
 }
+
+# FIXME: This code will be removed once IDLParser.pm and CodeGeneratorV8.pm
+# are connected via JSON files. See http://crbug.com/242795
+$targetDocument = deserializeJSON(serializeJSON($targetDocument));
 
 # Generate desired output for the target IDL file.
 my @dependentIdlFiles = ($targetDocument->fileName(), @supplementedIdlFiles);

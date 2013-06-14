@@ -42,6 +42,7 @@ class BindingsTests:
         cmd = ['perl', '-w',
                '-Ibindings/scripts',
                '-Icore/scripts',
+               '-I../../JSON/out/lib/perl5',
                'bindings/scripts/generate-bindings.pl',
                # idl include directories (path relative to generate-bindings.pl)
                '--include', '.',
