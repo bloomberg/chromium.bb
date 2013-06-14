@@ -319,6 +319,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   void SetTextInputActive(bool active);
 
+  // Change this view to use CoreAnimation to draw.
+  void EnableCoreAnimation();
+
   // Sends completed plugin IME notification and text back to the renderer.
   void PluginImeCompositionCompleted(const string16& text, int plugin_id);
 
@@ -445,8 +448,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // invoke it from the message loop.
   void ShutdownHost();
 
-  // Change this view to use CoreAnimation to draw.
-  void EnableCoreAnimation();
+  bool CreateCompositedIOSurfaceAndLayer();
+  void DestroyCompositedIOSurfaceAndLayer();
 
   // Called when a GPU SwapBuffers is received.
   void GotAcceleratedFrame();
@@ -472,7 +475,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   gfx::Rect GetScaledOpenGLPixelRect(const gfx::Rect& rect);
 
   // The associated view. This is weak and is inserted into the view hierarchy
-  // to own this RenderWidgetHostViewMac object.
+  // to own this RenderWidgetHostViewMac object. Set to nil at the start of the
+  // destructor.
   RenderWidgetHostViewCocoa* cocoa_view_;
 
   // Indicates if the page is loading.

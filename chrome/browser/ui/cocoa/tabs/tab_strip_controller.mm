@@ -66,6 +66,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "ui/base/animation/animation_container.h"
+#include "ui/base/cocoa/animation_utils.h"
 #import "ui/base/cocoa/tracking_area.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/list_selection_model.h"
@@ -656,6 +657,10 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   DCHECK(modelIndex >= 0 && modelIndex < tabStripModel_->count());
   NSInteger index = [self indexFromModelIndex:modelIndex];
   TabContentsController* controller = [tabContentsArray_ objectAtIndex:index];
+
+  // Make sure that any layers that move are not animated to their new
+  // positions.
+  ScopedCAActionDisabler disabler;
 
   // Resize the new view to fit the window. Calling |view| may lazily
   // instantiate the TabContentsController from the nib. Until we call

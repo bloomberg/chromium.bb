@@ -267,9 +267,13 @@ enum {
     NSWindow* window = [self window];
     windowShim_.reset(new BrowserWindowCocoa(browser, self));
 
+    // Eagerly enable core animation if requested.
     if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kUseCoreAnimation))
+            switches::kUseCoreAnimation) &&
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kUseCoreAnimation) != "lazy") {
       [[[self window] contentView] setWantsLayer:YES];
+    }
 
     // Set different minimum sizes on tabbed windows vs non-tabbed, e.g. popups.
     // This has to happen before -enforceMinWindowSize: is called further down.

@@ -76,6 +76,22 @@ using WebKit::WebInputEventFactory;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 
+enum CoreAnimationStatus {
+  CORE_ANIMATION_DISABLED,
+  CORE_ANIMATION_ENABLED_LAZY,
+  CORE_ANIMATION_ENABLED_ALWAYS,
+};
+
+static CoreAnimationStatus GetCoreAnimationStatus() {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseCoreAnimation))
+    return CORE_ANIMATION_DISABLED;
+  if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kUseCoreAnimation) == "lazy")
+    return CORE_ANIMATION_ENABLED_LAZY;
+  return CORE_ANIMATION_ENABLED_ALWAYS;
+}
+
 // These are not documented, so use only after checking -respondsToSelector:.
 @interface NSApplication (UndocumentedSpeechMethods)
 - (void)speakString:(NSString*)string;
@@ -367,20 +383,25 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
   // |GetNativeView()| into the view hierarchy right after calling us.
   cocoa_view_ = [[[RenderWidgetHostViewCocoa alloc]
                   initWithRenderWidgetHostViewMac:this] autorelease];
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCoreAnimation))
+
+  if (GetCoreAnimationStatus() == CORE_ANIMATION_ENABLED_ALWAYS) {
     EnableCoreAnimation();
+  }
+
   render_widget_host_->SetView(this);
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
+  // This is being called from |cocoa_view_|'s destructor, so invalidate the
+  // pointer.
+  cocoa_view_ = nil;
+
   AckPendingSwapBuffers();
   UnlockMouse();
 
   // Make sure that the layer doesn't reach into the now-invalid object.
-  compositing_iosurface_.reset();
-  if (compositing_iosurface_layer_)
-    [compositing_iosurface_layer_ disableCompositing];
-  compositing_iosurface_layer_.reset();
+  DestroyCompositedIOSurfaceAndLayer();
+  software_layer_.reset();
 
   // We are owned by RenderWidgetHostViewCocoa, so if we go away before the
   // RenderWidgetHost does we need to tell it not to hold a stale pointer to
@@ -395,8 +416,15 @@ void RenderWidgetHostViewMac::SetDelegate(
 }
 
 void RenderWidgetHostViewMac::SetAllowOverlappingViews(bool overlapping) {
-  if (use_core_animation_)
-    return;
+  if (GetCoreAnimationStatus() == CORE_ANIMATION_ENABLED_LAZY) {
+    if (overlapping) {
+      ScopedCAActionDisabler disabler;
+      [[[cocoa_view_ window] contentView] setWantsLayer:YES];
+      EnableCoreAnimation();
+      return;
+    }
+  }
+
   if (allow_overlapping_views_ == overlapping)
     return;
   allow_overlapping_views_ = overlapping;
@@ -410,16 +438,74 @@ void RenderWidgetHostViewMac::SetAllowOverlappingViews(bool overlapping) {
 void RenderWidgetHostViewMac::EnableCoreAnimation() {
   if (use_core_animation_)
     return;
+
   use_core_animation_ = true;
 
   software_layer_.reset([[CALayer alloc] init]);
+  if (!software_layer_)
+    LOG(WARNING) << "Failed to create CALayer for software rendering";
+  [software_layer_ setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
   [software_layer_ setDelegate:cocoa_view_];
   [software_layer_ setAutoresizingMask:kCALayerWidthSizable |
                                        kCALayerHeightSizable];
   [software_layer_ setContentsGravity:kCAGravityTopLeft];
+  [software_layer_ setFrame:NSRectToCGRect([cocoa_view_ bounds])];
+  [software_layer_ setNeedsDisplay];
   [cocoa_view_ updateSoftwareLayerScaleFactor];
+
   [cocoa_view_ setLayer:software_layer_];
   [cocoa_view_ setWantsLayer:YES];
+
+  if (compositing_iosurface_) {
+    if (!CreateCompositedIOSurfaceAndLayer()) {
+      LOG(WARNING) << "Failed to create CALayer for existing IOSurface";
+    }
+  }
+}
+
+bool RenderWidgetHostViewMac::CreateCompositedIOSurfaceAndLayer() {
+  if (compositing_iosurface_layer_ &&
+      [compositing_iosurface_layer_ context] &&
+      compositing_iosurface_) {
+    return true;
+  }
+
+  ScopedCAActionDisabler disabler;
+  if (!compositing_iosurface_layer_) {
+    compositing_iosurface_layer_.reset([[CompositingIOSurfaceLayer alloc]
+        initWithRenderWidgetHostViewMac:this]);
+    if (!compositing_iosurface_layer_) {
+      LOG(WARNING) << "Failed to create CALayer for IOSurface";
+      return false;
+    }
+    [cocoa_view_ setLayer:compositing_iosurface_layer_];
+  }
+  if (![compositing_iosurface_layer_ ensureContext]) {
+    LOG(WARNING) << "Failed to create context for IOSurface";
+    return false;
+  }
+  if (!compositing_iosurface_) {
+    compositing_iosurface_.reset(CompositingIOSurfaceMac::Create(
+        [compositing_iosurface_layer_ context]));
+    if (!compositing_iosurface_) {
+      LOG(WARNING) << "Failed to create CompositingIOSurface";
+      return false;
+    }
+  }
+  return true;
+}
+
+void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceAndLayer() {
+  ScopedCAActionDisabler disabler;
+  compositing_iosurface_.reset();
+  if (compositing_iosurface_layer_) {
+    if (cocoa_view_) {
+      DCHECK([[cocoa_view_ layer] isEqual:compositing_iosurface_layer_]);
+      [cocoa_view_ setLayer:software_layer_];
+    }
+    [compositing_iosurface_layer_ disableCompositing];
+    compositing_iosurface_layer_.reset();
+  }
 }
 
 bool RenderWidgetHostViewMac::OnMessageReceived(const IPC::Message& message) {
@@ -555,8 +641,7 @@ void RenderWidgetHostViewMac::WasShown() {
   if (!use_core_animation_)
     [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
 
-  if (compositing_iosurface_layer_)
-    [compositing_iosurface_layer_ setNeedsDisplay];
+  [compositing_iosurface_layer_ setNeedsDisplay];
 }
 
 void RenderWidgetHostViewMac::WasHidden() {
@@ -1126,33 +1211,23 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(
   }
 
   bool should_post_notification = false;
-  if (!compositing_iosurface_) {
-    if (use_core_animation_) {
-      if (!compositing_iosurface_layer_) {
-        compositing_iosurface_layer_.reset([[CompositingIOSurfaceLayer alloc]
-            initWithRenderWidgetHostViewMac:this]);
-      }
-      if (!compositing_iosurface_layer_) {
-        LOG(WARNING) << "Failed to create CALayer for IOSurface";
-        return true;
-      }
-      if (![compositing_iosurface_layer_ ensureContext]) {
-        LOG(WARNING) << "Failed to create context for IOSurface";
-        return true;
-      }
-      compositing_iosurface_.reset(CompositingIOSurfaceMac::Create(
-          [compositing_iosurface_layer_ context]));
-    } else {
+
+  if (use_core_animation_) {
+    if (!CreateCompositedIOSurfaceAndLayer()) {
+      LOG(WARNING) << "Failed to create CompositingIOSurface or its layer";
+      return true;
+    }
+  } else {
+    if (!compositing_iosurface_) {
       compositing_iosurface_.reset(
           CompositingIOSurfaceMac::Create(window_number()));
     }
-    should_post_notification = true;
+    if (!compositing_iosurface_) {
+      LOG(WARNING) << "Failed to create CompositingIOSurfaceMac";
+      return true;
+    }
   }
-
-  if (!compositing_iosurface_) {
-    LOG(WARNING) << "Failed to create CompositingIOSurfaceMac";
-    return true;
-  }
+  should_post_notification = true;
 
   compositing_iosurface_->SetIOSurface(
       surface_handle, size, surface_scale_factor, latency_info);
@@ -1402,10 +1477,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSuspend() {
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceRelease() {
-  compositing_iosurface_.reset();
-  if (compositing_iosurface_layer_)
-    [compositing_iosurface_layer_ disableCompositing];
-  compositing_iosurface_layer_.reset();
+  DestroyCompositedIOSurfaceAndLayer();
 }
 
 bool RenderWidgetHostViewMac::HasAcceleratedSurface(
@@ -1511,8 +1583,7 @@ void RenderWidgetHostViewMac::ShutdownHost() {
 void RenderWidgetHostViewMac::GotAcceleratedFrame() {
   // Update the scale factor of the layer to match the scale factor of the
   // IOSurface.
-  if (compositing_iosurface_layer_)
-    [compositing_iosurface_layer_ updateScaleFactor];
+  [compositing_iosurface_layer_ updateScaleFactor];
 
   if (!last_frame_was_accelerated_) {
     last_frame_was_accelerated_ = true;
@@ -1536,10 +1607,7 @@ void RenderWidgetHostViewMac::GotSoftwareFrame() {
 
     // Forget IOSurface since we are drawing a software frame now.
     if (use_core_animation_) {
-      compositing_iosurface_.reset();
-      if (compositing_iosurface_layer_)
-        [compositing_iosurface_layer_ disableCompositing];
-      compositing_iosurface_layer_.reset();
+      DestroyCompositedIOSurfaceAndLayer();
     }
     else {
       if (compositing_iosurface_ &&
@@ -2220,12 +2288,19 @@ void RenderWidgetHostViewMac::FrameSwapped() {
 }
 
 - (void)viewWillMoveToWindow:(NSWindow*)newWindow {
-  // We're messing with the window, so do this to ensure no flashes. This one
-  // prevents a flash when the current tab is closed.
   NSWindow* oldWindow = [self window];
 
+  // We're messing with the window, so do this to ensure no flashes. This one
+  // prevents a flash when the current tab is closed.
   if (!renderWidgetHostView_->use_core_animation_)
     [oldWindow disableScreenUpdatesUntilFlush];
+
+  // If the new window for this view is using CoreAnimation then enable
+  // CoreAnimation on this view.
+  if (GetCoreAnimationStatus() == CORE_ANIMATION_ENABLED_LAZY &&
+      [[newWindow contentView] wantsLayer]) {
+    renderWidgetHostView_->EnableCoreAnimation();
+  }
 
   NSNotificationCenter* notificationCenter =
       [NSNotificationCenter defaultCenter];
@@ -3282,6 +3357,13 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
     hasOpenMouseDown_ = NO;
   }
+
+  // Resize the view's layers to match the new window size.
+  ScopedCAActionDisabler disabler;
+  [renderWidgetHostView_->software_layer_
+      setFrame:NSRectToCGRect([self bounds])];
+  [renderWidgetHostView_->compositing_iosurface_layer_
+      setFrame:NSRectToCGRect([self bounds])];
 }
 
 - (void)undo:(id)sender {
