@@ -370,7 +370,7 @@ void HTMLObjectElement::renderFallbackContent()
         if (!isImageType()) {
             // If we don't think we have an image type anymore, then clear the image from the loader.
             m_imageLoader->setImage(0);
-            reattach();
+            lazyReattach();
             return;
         }
     }
@@ -378,8 +378,7 @@ void HTMLObjectElement::renderFallbackContent()
     m_useFallbackContent = true;
 
     // FIXME: Style gets recalculated which is suboptimal.
-    detach();
-    attach();
+    lazyReattach();
 }
 
 // FIXME: This should be removed, all callers are almost certainly wrong.
