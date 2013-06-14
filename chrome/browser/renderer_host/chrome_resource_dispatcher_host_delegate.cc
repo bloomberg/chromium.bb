@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_request_limiter.h"
@@ -140,6 +141,53 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamHandle> stream,
       extension_id, web_contents, stream.Pass(), expected_content_size);
 }
 
+enum PrerenderSchemeCancelReason {
+  PRERENDER_SCHEME_CANCEL_REASON_EXTERNAL_PROTOCOL,
+  PRERENDER_SCHEME_CANCEL_REASON_DATA,
+  PRERENDER_SCHEME_CANCEL_REASON_BLOB,
+  PRERENDER_SCHEME_CANCEL_REASON_FILE,
+  PRERENDER_SCHEME_CANCEL_REASON_FILESYSTEM,
+  PRERENDER_SCHEME_CANCEL_REASON_WEBSOCKET,
+  PRERENDER_SCHEME_CANCEL_REASON_FTP,
+  PRERENDER_SCHEME_CANCEL_REASON_CHROME,
+  PRERENDER_SCHEME_CANCEL_REASON_CHROME_EXTENSION,
+  PRERENDER_SCHEME_CANCEL_REASON_ABOUT,
+  PRERENDER_SCHEME_CANCEL_REASON_UNKNOWN,
+  PRERENDER_SCHEME_CANCEL_REASON_MAX,
+};
+
+void ReportPrerenderSchemeCancelReason(PrerenderSchemeCancelReason reason) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Prerender.SchemeCancelReason", reason,
+      PRERENDER_SCHEME_CANCEL_REASON_MAX);
+}
+
+void ReportUnsupportedPrerenderScheme(const GURL& url) {
+  if (url.SchemeIs("data")) {
+    ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_DATA);
+  } else if (url.SchemeIs("blob")) {
+    ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_BLOB);
+  } else if (url.SchemeIsFile()) {
+    ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_FILE);
+  } else if (url.SchemeIsFileSystem()) {
+    ReportPrerenderSchemeCancelReason(
+        PRERENDER_SCHEME_CANCEL_REASON_FILESYSTEM);
+  } else if (url.SchemeIs("ws") || url.SchemeIs("wss")) {
+    ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_WEBSOCKET);
+  } else if (url.SchemeIs("ftp")) {
+    ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_FTP);
+  } else if (url.SchemeIs("chrome")) {
+    ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_CHROME);
+  } else if (url.SchemeIs("chrome-extension")) {
+    ReportPrerenderSchemeCancelReason(
+        PRERENDER_SCHEME_CANCEL_REASON_CHROME_EXTENSION);
+  } else if (url.SchemeIs("about")) {
+    ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_ABOUT);
+  } else {
+    ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_UNKNOWN);
+  }
+}
+
 }  // end namespace
 
 ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate(
@@ -184,6 +232,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
       return false;
     }
     if (!prerender::PrerenderManager::DoesURLHaveValidScheme(url)) {
+      ReportUnsupportedPrerenderScheme(url);
       prerender_tracker_->TryCancelOnIOThread(
           child_id, route_id, prerender::FINAL_STATUS_UNSUPPORTED_SCHEME);
       return false;
@@ -367,6 +416,8 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
 #else
 
   if (prerender_tracker_->IsPrerenderingOnIOThread(child_id, route_id)) {
+    ReportPrerenderSchemeCancelReason(
+        PRERENDER_SCHEME_CANCEL_REASON_EXTERNAL_PROTOCOL);
     prerender_tracker_->TryCancel(
         child_id, route_id, prerender::FINAL_STATUS_UNSUPPORTED_SCHEME);
     return false;
@@ -584,6 +635,7 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
       ResourceRequestInfo::ForRequest(request)->GetAssociatedRenderView(
           &child_id, &route_id) &&
       prerender_tracker_->IsPrerenderingOnIOThread(child_id, route_id)) {
+    ReportUnsupportedPrerenderScheme(redirect_url);
     prerender_tracker_->TryCancel(
         child_id, route_id, prerender::FINAL_STATUS_UNSUPPORTED_SCHEME);
     request->Cancel();
