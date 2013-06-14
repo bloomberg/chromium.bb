@@ -191,8 +191,15 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
         break;
     }
 
-    if (update_content_setting && IsSchemeSecure() && !devices.empty())
-      SetPermission(true);
+    // TODO(raymes): We currently set the content permission for non-https
+    // websites for Pepper requests as well. This is temporary and should be
+    // removed.
+    if (update_content_setting) {
+      if ((IsSchemeSecure() && !devices.empty()) ||
+          request_.request_type == content::MEDIA_OPEN_DEVICE) {
+        SetPermission(true);
+      }
+    }
   }
 
   scoped_ptr<content::MediaStreamUI> ui;
@@ -291,13 +298,23 @@ bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
 
     DevicePolicy policy = GetDevicePolicy(device_checks[i].policy_name,
                                           device_checks[i].list_policy_name);
-    if (policy == ALWAYS_DENY ||
-        (policy == POLICY_NOT_SET &&
-         profile_->GetHostContentSettingsMap()->GetContentSetting(
-            request_.security_origin, request_.security_origin,
-            device_checks[i].settings_type, NO_RESOURCE_IDENTIFIER) !=
-         CONTENT_SETTING_ALLOW)) {
+
+    if (policy == ALWAYS_DENY)
       return false;
+
+    if (policy == POLICY_NOT_SET) {
+      // Only load content settings from secure origins unless it is a
+      // content::MEDIA_OPEN_DEVICE (Pepper) request.
+      if (!IsSchemeSecure() &&
+          request_.request_type != content::MEDIA_OPEN_DEVICE) {
+        return false;
+      }
+      if (profile_->GetHostContentSettingsMap()->GetContentSetting(
+              request_.security_origin, request_.security_origin,
+              device_checks[i].settings_type, NO_RESOURCE_IDENTIFIER) !=
+              CONTENT_SETTING_ALLOW) {
+        return false;
+      }
     }
     // If we get here, then either policy is set to ALWAYS_ALLOW or the content
     // settings allow the request by default.
