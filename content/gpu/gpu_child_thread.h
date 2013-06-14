@@ -5,6 +5,7 @@
 #ifndef CONTENT_GPU_GPU_CHILD_THREAD_H_
 #define CONTENT_GPU_GPU_CHILD_THREAD_H_
 
+#include <queue>
 #include <string>
 
 #include "base/basictypes.h"
@@ -34,9 +35,12 @@ class GpuWatchdogThread;
 // commands to the GPU.
 class GpuChildThread : public ChildThread {
  public:
+  typedef std::queue<IPC::Message*> DeferredMessages;
+
   explicit GpuChildThread(GpuWatchdogThread* gpu_watchdog_thread,
                           bool dead_on_arrival,
-                          const gpu::GPUInfo& gpu_info);
+                          const gpu::GPUInfo& gpu_info,
+                          const DeferredMessages& deferred_messages);
 
   // For single-process mode.
   explicit GpuChildThread(const std::string& channel_id);
@@ -83,6 +87,9 @@ class GpuChildThread : public ChildThread {
 
   // Information about the GPU, such as device and vendor ID.
   gpu::GPUInfo gpu_info_;
+
+  // Error messages collected in gpu_main() before the thread is created.
+  DeferredMessages deferred_messages_;
 
   // Whether the GPU thread is running in the browser process.
   bool in_browser_process_;

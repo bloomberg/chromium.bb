@@ -9,6 +9,7 @@
 #endif
 
 #include "base/debug/trace_event.h"
+#include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -17,6 +18,7 @@
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/common/gpu/gpu_config.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/common/sandbox_linux.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
@@ -53,14 +55,31 @@
 const int kGpuTimeout = 10000;
 
 namespace content {
+
 namespace {
+
 bool WarmUpSandbox(const CommandLine& command_line);
 #if defined(OS_LINUX)
 bool StartSandboxLinux(const gpu::GPUInfo&, GpuWatchdogThread*, bool);
 #elif defined(OS_WIN)
 bool StartSandboxWindows(const sandbox::SandboxInterfaceInfo*);
 #endif
+
+base::LazyInstance<GpuChildThread::DeferredMessages> deferred_messages =
+    LAZY_INSTANCE_INITIALIZER;
+
+bool GpuProcessLogMessageHandler(int severity,
+                                 const char* file, int line,
+                                 size_t message_start,
+                                 const std::string& str) {
+  std::string header = str.substr(0, message_start);
+  std::string message = str.substr(message_start);
+  deferred_messages.Get().push(new GpuHostMsg_OnLogMessage(
+      severity, header, message));
+  return false;
 }
+
+}  // namespace anonymous
 
 // Main function for starting the Gpu process.
 int GpuMain(const MainFunctionParams& parameters) {
@@ -73,7 +92,10 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   base::Time start_time = base::Time::Now();
 
-  if (!command_line.HasSwitch(switches::kSingleProcess)) {
+  bool in_browser_process = command_line.HasSwitch(switches::kSingleProcess) ||
+                            command_line.HasSwitch(switches::kInProcessGPU);
+
+  if (!in_browser_process) {
 #if defined(OS_WIN)
     // Prevent Windows from displaying a modal dialog on failures like not being
     // able to load a DLL.
@@ -84,6 +106,8 @@ int GpuMain(const MainFunctionParams& parameters) {
 #elif defined(USE_X11)
     ui::SetDefaultX11ErrorHandlers();
 #endif
+
+    logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
   }
 
   if (command_line.HasSwitch(switches::kSupportsDualGpus) &&
@@ -198,7 +222,7 @@ int GpuMain(const MainFunctionParams& parameters) {
       // crash.
       // By skipping the following code on Mac, we don't really lose anything,
       // because the basic GPU information is passed down from browser process
-    // and we already registered them through SetGpuInfo() above.
+      // and we already registered them through SetGpuInfo() above.
 #if !defined(OS_MACOSX)
       if (!gpu::CollectContextGraphicsInfo(&gpu_info))
         VLOG(1) << "gpu::CollectGraphicsInfo failed";
@@ -250,12 +274,20 @@ int GpuMain(const MainFunctionParams& parameters) {
 #elif defined(OS_WIN)
     gpu_info.sandboxed = StartSandboxWindows(parameters.sandbox_info);
 #endif
+  } else {
+    dead_on_arrival = true;
   }
+
+  logging::SetLogMessageHandler(NULL);
 
   GpuProcess gpu_process;
 
   GpuChildThread* child_thread = new GpuChildThread(watchdog_thread.get(),
-                                                    dead_on_arrival, gpu_info);
+                                                    dead_on_arrival,
+                                                    gpu_info,
+                                                    deferred_messages.Get());
+  while (!deferred_messages.Get().empty())
+    deferred_messages.Get().pop();
 
   child_thread->Init(start_time);
 

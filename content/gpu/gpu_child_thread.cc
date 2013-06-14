@@ -4,11 +4,7 @@
 
 #include "content/gpu/gpu_child_thread.h"
 
-#include <string>
-#include <vector>
-
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
@@ -49,9 +45,11 @@ bool GpuProcessLogMessageHandler(int severity,
 
 GpuChildThread::GpuChildThread(GpuWatchdogThread* watchdog_thread,
                                bool dead_on_arrival,
-                               const gpu::GPUInfo& gpu_info)
+                               const gpu::GPUInfo& gpu_info,
+                               const DeferredMessages& deferred_messages)
     : dead_on_arrival_(dead_on_arrival),
       gpu_info_(gpu_info),
+      deferred_messages_(deferred_messages),
       in_browser_process_(false) {
   watchdog_thread_ = watchdog_thread;
 #if defined(OS_WIN)
@@ -119,6 +117,10 @@ bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
 
 void GpuChildThread::OnInitialize() {
   Send(new GpuHostMsg_Initialized(!dead_on_arrival_, gpu_info_));
+  while (!deferred_messages_.empty()) {
+    Send(deferred_messages_.front());
+    deferred_messages_.pop();
+  }
 
   if (dead_on_arrival_) {
     VLOG(1) << "Exiting GPU process due to errors during initialization";
