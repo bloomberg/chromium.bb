@@ -2078,7 +2078,7 @@
           },
         },
         'defines': [
-            'ADDRESS_SANITIZER'
+            'ADDRESS_SANITIZER',
             'MEMORY_TOOL_REPLACES_ALLOCATOR',
         ],
       }],  # asan==1 and OS=="win"
@@ -3297,7 +3297,7 @@
           ['linux_use_heapchecker==1', {
             'variables': {'linux_use_tcmalloc%': 1},
             'defines': [
-                'USE_HEAPCHECKER'
+                'USE_HEAPCHECKER',
                 'MEMORY_TOOL_REPLACES_ALLOCATOR',
             ],
             'conditions': [
