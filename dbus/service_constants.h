@@ -750,6 +750,7 @@ const char kIPConfigProperty[] = "IPConfig";
 const char kL2tpIpsecCaCertPemProperty[] = "L2TPIPsec.CACertPEM";
 const char kL2tpIpsecTunnelGroupProperty[] = "L2TPIPsec.TunnelGroup";
 const char kOpenVPNCaCertPemProperty[] = "OpenVPN.CACertPEM";
+const char kOpenVPNExtraCertPemProperty[] = "OpenVPN.ExtraCertPEM";
 const char kOutOfCreditsProperty[] = "Cellular.OutOfCredits";
 const char kPhysicalTechnologyProperty[] = "PhysicalTechnology";
 const char kStaticIPAddressProperty[] = "StaticIP.Address";
