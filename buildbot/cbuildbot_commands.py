@@ -55,7 +55,8 @@ class TestFailure(results_lib.StepFailure):
 # =========================== Command Helpers =================================
 
 
-def _RunBuildScript(buildroot, cmd, capture_output=False, **kwargs):
+def _RunBuildScript(buildroot, cmd, capture_output=False, chromite_cmd=False,
+                    **kwargs):
   """Run a build script, wrapping exceptions as needed.
 
   This wraps RunCommand(cmd, cwd=buildroot, **kwargs), adding extra logic to
@@ -77,12 +78,20 @@ def _RunBuildScript(buildroot, cmd, capture_output=False, **kwargs):
   """
   assert not kwargs.get('shell', False), 'Cannot execute shell commands'
   kwargs.setdefault('cwd', buildroot)
+  enter_chroot = kwargs.get('enter_chroot', False)
+
+  if chromite_cmd:
+    cmd = cmd[:]
+    if enter_chroot:
+      cmd[0] = git.ReinterpretPathForChroot(
+          os.path.join(constants.CHROMITE_BIN_SUBDIR, cmd[0]))
+    else:
+      cmd[0] = os.path.join(buildroot, constants.CHROMITE_BIN_SUBDIR, cmd[0])
 
   # If we are entering the chroot, create status file for tracking what
   # packages failed to build.
   chroot_tmp = os.path.join(buildroot, 'chroot', 'tmp')
   status_file = None
-  enter_chroot = kwargs.get('enter_chroot', False)
   with cros_build_lib.ContextManagerStack() as stack:
     if enter_chroot and os.path.exists(chroot_tmp):
       kwargs['extra_env'] = (kwargs.get('extra_env') or {}).copy()
@@ -241,15 +250,12 @@ def RunChrootUpgradeHooks(buildroot, chrome_root=None):
 
 def RefreshPackageStatus(buildroot, boards, debug):
   """Wrapper around refresh_package_status"""
-  cwd = os.path.join(buildroot, 'src', 'scripts')
-  chromite_bin_dir = os.path.join('..', '..', constants.CHROMITE_BIN_SUBDIR)
-
   # First run check_gdata_token to validate or refresh auth token.
-  cmd = [os.path.join(chromite_bin_dir, 'check_gdata_token')]
-  _RunBuildScript(buildroot, cmd, cwd=cwd)
+  cmd = ['check_gdata_token']
+  _RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
   # Prepare refresh_package_status command to update the package spreadsheet.
-  cmd = [os.path.join(chromite_bin_dir, 'refresh_package_status')]
+  cmd = ['refresh_package_status']
 
   # Skip the host board if present.
   board = ':'.join([b for b in boards if b != 'amd64-host'])
@@ -260,11 +266,11 @@ def RefreshPackageStatus(buildroot, boards, debug):
     cmd.append('--test-spreadsheet')
 
   # Actually run prepared refresh_package_status command.
-  _RunBuildScript(buildroot, cmd, enter_chroot=True)
+  _RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
 
   # Run sync_package_status to create Tracker issues for outdated
   # packages.  At the moment, this runs only for groups that have opted in.
-  basecmd = [os.path.join(chromite_bin_dir, 'sync_package_status')]
+  basecmd = ['sync_package_status']
   if debug:
     basecmd.extend(['--pretend', '--test-spreadsheet'])
 
@@ -274,7 +280,7 @@ def RefreshPackageStatus(buildroot, boards, debug):
 
   for cmdargs in cmdargslist:
     cmd = basecmd + cmdargs
-    _RunBuildScript(buildroot, cmd, enter_chroot=True)
+    _RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
 
 
 def SetSharedUserPassword(buildroot, password):
@@ -752,30 +758,27 @@ def CleanupChromeKeywordsFile(boards, buildroot):
 def UprevPackages(buildroot, boards, overlays, enter_chroot=True):
   """Uprevs non-browser chromium os packages that have changed."""
   drop_file = _PACKAGE_FILE % {'buildroot': buildroot}
-  path = constants.CHROMITE_BIN_DIR
   if enter_chroot:
-    path = git.ReinterpretPathForChroot(path)
     overlays = [git.ReinterpretPathForChroot(x) for x in overlays]
     drop_file = git.ReinterpretPathForChroot(drop_file)
-  cmd = [os.path.join(path, 'cros_mark_as_stable'), '--all',
+  cmd = ['cros_mark_as_stable', '--all',
          '--boards=%s' % ':'.join(boards),
          '--overlays=%s' % ':'.join(overlays),
          '--drop_file=%s' % drop_file,
          'commit']
-  _RunBuildScript(buildroot, cmd, enter_chroot=enter_chroot)
+  _RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=enter_chroot)
 
 
 def UprevPush(buildroot, overlays, dryrun):
   """Pushes uprev changes to the main line."""
-  cwd = os.path.join(buildroot, constants.CHROMITE_BIN_SUBDIR)
-  cmd = ['./cros_mark_as_stable',
+  cmd = ['cros_mark_as_stable',
          '--srcroot=%s' % os.path.join(buildroot, 'src'),
          '--overlays=%s' % ':'.join(overlays)
         ]
   if dryrun:
     cmd.append('--dryrun')
   cmd.append('push')
-  _RunBuildScript(buildroot, cmd, cwd=cwd)
+  _RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
 
 def AddPackagesForPrebuilt(filename):
