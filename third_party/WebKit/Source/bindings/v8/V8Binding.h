@@ -282,6 +282,32 @@ namespace WebCore {
         // FIXME: Implement Clamp
     };
 
+    // Convert a value to a 8-bit signed integer. The conversion fails if the
+    // value cannot be converted to a number or the range violated per WebIDL:
+    // http://www.w3.org/TR/WebIDL/#es-byte
+    int8_t toInt8(v8::Handle<v8::Value>, IntegerConversionConfiguration, bool& ok);
+    inline int8_t toInt8(v8::Handle<v8::Value> value, bool& ok) { return toInt8(value, NormalConversion, ok); }
+
+    // Convert a value to a 8-bit integer assuming the conversion cannot fail.
+    inline int8_t toInt8(v8::Handle<v8::Value> value)
+    {
+        bool ok;
+        return toInt8(value, NormalConversion, ok);
+    }
+
+    // Convert a value to a 8-bit unsigned integer. The conversion fails if the
+    // value cannot be converted to a number or the range violated per WebIDL:
+    // http://www.w3.org/TR/WebIDL/#es-octet
+    uint8_t toUInt8(v8::Handle<v8::Value>, IntegerConversionConfiguration, bool& ok);
+    inline uint8_t toUInt8(v8::Handle<v8::Value> value, bool& ok) { return toUInt8(value, NormalConversion, ok); }
+
+    // Convert a value to a 8-bit unsigned integer assuming the conversion cannot fail.
+    inline uint8_t toUInt8(v8::Handle<v8::Value> value)
+    {
+        bool ok;
+        return toUInt8(value, NormalConversion, ok);
+    }
+
     // Convert a value to a 32-bit signed integer. The conversion fails if the
     // value cannot be converted to a number or the range violated per WebIDL:
     // http://www.w3.org/TR/WebIDL/#es-long

@@ -152,6 +152,8 @@ my %implementation;
 my %primitiveTypeHash = ("boolean" => 1,
                          "void" => 1,
                          "Date" => 1,
+                         "byte" => 1,
+                         "octet" => 1,
                          "short" => 1,
                          "long" => 1,
                          "long long" => 1,
@@ -4832,8 +4834,8 @@ sub GetNativeType
 
     return "float" if $type eq "float";
     return "double" if $type eq "double";
-    return "int" if $type eq "long" or $type eq "int" or $type eq "short" or $type eq "unsigned short";
-    return "unsigned" if $type eq "unsigned long" or $type eq "unsigned int";
+    return "int" if $type eq "long" or $type eq "int" or $type eq "short" or $type eq "byte";
+    return "unsigned" if $type eq "unsigned long" or $type eq "unsigned int" or $type eq "unsigned short" or $type eq "octet";
     return "long long" if $type eq "long long";
     return "unsigned long long" if $type eq "unsigned long long";
     return "bool" if $type eq "boolean";
@@ -4898,11 +4900,15 @@ sub JSValueToNative
     return "static_cast<$type>($value->NumberValue())" if $type eq "float" or $type eq "double";
 
     if ($intConversion ne "NormalConversion") {
+        return "toInt8($value, $intConversion, ok)" if $type eq "byte";
+        return "toUInt8($value, $intConversion, ok)" if $type eq "octet";
         return "toInt32($value, $intConversion, ok)" if $type eq "long" or $type eq "short";
         return "toUInt32($value, $intConversion, ok)" if $type eq "unsigned long" or $type eq "unsigned short";
         return "toInt64($value, $intConversion, ok)" if $type eq "long long";
         return "toUInt64($value, $intConversion, ok)" if $type eq "unsigned long long";
     } else {
+        return "toInt8($value)" if $type eq "byte";
+        return "toUInt8($value)" if $type eq "octet";
         return "toInt32($value)" if $type eq "long" or $type eq "short";
         return "toUInt32($value)" if $type eq "unsigned long" or $type eq "unsigned short";
         return "toInt64($value)" if $type eq "long long";

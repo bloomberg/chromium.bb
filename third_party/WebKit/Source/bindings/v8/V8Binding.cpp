@@ -115,6 +115,9 @@ PassRefPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value> callback)
     return NodeFilter::create(V8NodeFilterCondition::create(callback));
 }
 
+static const int8_t kMaxInt8 = 127;
+static const int8_t kMinInt8 = -128;
+static const uint8_t kMaxUInt8 = 255;
 const int32_t kMaxInt32 = 0x7fffffff;
 const int32_t kMinInt32 = -kMaxInt32 - 1;
 const uint32_t kMaxUInt32 = 0xffffffff;
@@ -132,6 +135,79 @@ static double enforceRange(double x, double minimum, double maximum, bool& ok)
         return 0;
     }
     return x;
+}
+
+int8_t toInt8(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
+{
+    ok = true;
+
+    // Fast case. The value is already a 32-bit integer in the right range.
+    if (value->IsInt32()) {
+        int32_t result = value->Int32Value();
+        if (result >= kMinInt8 && result <= kMaxInt8)
+            return static_cast<int8_t>(result);
+        if (configuration == EnforceRange) {
+            ok = false;
+            return 0;
+        }
+        result %= 256; // 2^8.
+        return static_cast<int8_t>(result > kMaxInt8 ? result - 256 : result);
+    }
+
+    // Can the value be converted to a number?
+    v8::Local<v8::Number> numberObject = value->ToNumber();
+    if (numberObject.IsEmpty()) {
+        ok = false;
+        return 0;
+    }
+
+    if (configuration == EnforceRange)
+        return enforceRange(numberObject->Value(), kMinInt8, kMaxInt8, ok);
+
+    double numberValue = numberObject->Value();
+    if (std::isnan(numberValue) || std::isinf(numberValue) || !numberValue)
+        return 0;
+
+    numberValue = numberValue < 0 ? -floor(abs(numberValue)) : floor(abs(numberValue));
+    numberValue = fmod(numberValue, 256); // 2^8.
+
+    return static_cast<int8_t>(numberValue > kMaxInt8 ? numberValue - 256 : numberValue);
+}
+
+uint8_t toUInt8(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
+{
+    ok = true;
+
+    // Fast case. The value is a 32-bit signed integer - possibly positive?
+    if (value->IsInt32()) {
+        int32_t result = value->Int32Value();
+        if (result >= 0 && result <= kMaxUInt8)
+            return static_cast<uint8_t>(result);
+        if (configuration == EnforceRange) {
+            ok = false;
+            return 0;
+        }
+        // Converting to uint8_t will cause the resulting value to be the value modulo 2^8.
+        return static_cast<uint8_t>(result);
+    }
+
+    // Can the value be converted to a number?
+    v8::Local<v8::Number> numberObject = value->ToNumber();
+    if (numberObject.IsEmpty()) {
+        ok = false;
+        return 0;
+    }
+
+    if (configuration == EnforceRange)
+        return enforceRange(numberObject->Value(), 0, kMaxUInt8, ok);
+
+    // Does the value convert to nan or to an infinity?
+    double numberValue = numberObject->Value();
+    if (std::isnan(numberValue) || std::isinf(numberValue) || !numberValue)
+        return 0;
+
+    numberValue = numberValue < 0 ? -floor(abs(numberValue)) : floor(abs(numberValue));
+    return static_cast<uint8_t>(fmod(numberValue, 256)); // 2^8.
 }
 
 int32_t toInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)

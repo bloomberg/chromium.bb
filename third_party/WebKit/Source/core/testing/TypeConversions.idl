@@ -34,4 +34,9 @@
     [EnforceRange] attribute long long testEnforceRangeLongLong;
     attribute unsigned long long testUnsignedLongLong;
     [EnforceRange] attribute unsigned long long testEnforceRangeUnsignedLongLong;
+
+    attribute byte testByte;
+    [EnforceRange] attribute byte testEnforceRangeByte;
+    attribute octet testOctet;
+    [EnforceRange] attribute octet testEnforceRangeOctet;
 };

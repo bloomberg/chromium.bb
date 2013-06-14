@@ -45,6 +45,8 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     static readonly attribute TestSubObjConstructor TestSubObj;
     attribute TestEnumType             enumAttr;
     readonly attribute TestEnumType    readOnlyEnumAttr;
+    attribute byte                     byteAttr;
+    attribute octet                    octetAttr;
     attribute short                    shortAttr;
     attribute unsigned short           unsignedShortAttr;
     attribute long                     longAttr;
@@ -148,11 +150,15 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
     static void    staticMethodWithCallbackArg(TestCallback callback);
 
     // 'EnforceRange' extended attribute
+    void    methodWithEnforceRangeInt8([EnforceRange] byte value);
+    void    methodWithEnforceRangeUInt8([EnforceRange] octet value);
     void    methodWithEnforceRangeInt32([EnforceRange] long value);
     void    methodWithEnforceRangeUInt32([EnforceRange] unsigned long value);
     void    methodWithEnforceRangeInt64([EnforceRange] long long value);
     void    methodWithEnforceRangeUInt64([EnforceRange] unsigned long long value);
 
+    [EnforceRange] attribute byte enforcedRangeByteAttr;
+    [EnforceRange] attribute octet enforcedRangeOctetAttr;
     [EnforceRange] attribute long enforcedRangeLongAttr;
     [EnforceRange] attribute unsigned long enforcedRangeUnsignedLongAttr;
     [EnforceRange] attribute long long enforcedRangeLongLongAttr;
