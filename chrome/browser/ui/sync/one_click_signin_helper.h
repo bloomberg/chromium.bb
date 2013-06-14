@@ -189,7 +189,6 @@ class OneClickSigninHelper
                                   int child_id,
                                   int route_id);
 
-  void RedirectToNtpOrAppsPage();
   void RedirectToSignin();
   void ShowSigninErrorBubble(Browser* browser, const std::string& error);
 

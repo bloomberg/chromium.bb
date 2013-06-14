@@ -103,6 +103,7 @@ struct StartSyncArgs {
   std::string password;
   bool force_same_tab_navigation;
   OneClickSigninSyncStarter::ConfirmationRequired confirmation_required;
+  SyncPromoUI::Source source;
 };
 
 StartSyncArgs::StartSyncArgs(
@@ -121,7 +122,8 @@ StartSyncArgs::StartSyncArgs(
       session_index(session_index),
       email(email),
       password(password),
-      force_same_tab_navigation(force_same_tab_navigation) {
+      force_same_tab_navigation(force_same_tab_navigation),
+      source(source) {
   if (untrusted_confirmation_required) {
     confirmation_required = OneClickSigninSyncStarter::CONFIRM_UNTRUSTED_SIGNIN;
   } else if (source == SyncPromoUI::SOURCE_SETTINGS ||
@@ -195,6 +197,30 @@ void LogOneClickHistogramValue(int action) {
                             one_click_signin::HISTOGRAM_MAX);
 }
 
+void RedirectToNtpOrAppsPage(content::WebContents* contents,
+                             SyncPromoUI::Source source) {
+  VLOG(1) << "RedirectToNtpOrAppsPage";
+  // Redirect to NTP/Apps page and display a confirmation bubble
+  GURL url(source == SyncPromoUI::SOURCE_APPS_PAGE_LINK ?
+           chrome::kChromeUIAppsURL : chrome::kChromeUINewTabURL);
+  content::OpenURLParams params(url,
+                                content::Referrer(),
+                                CURRENT_TAB,
+                                content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                false);
+  contents->OpenURL(params);
+}
+
+// If the |source| is not settings page/webstore, redirects to
+// the NTP/Apps page.
+void RedirectToNtpOrAppsPageIfNecessary(content::WebContents* contents,
+                                        SyncPromoUI::Source source) {
+  if (source != SyncPromoUI::SOURCE_SETTINGS &&
+      source != SyncPromoUI::SOURCE_WEBSTORE_INSTALL) {
+    RedirectToNtpOrAppsPage(contents, source);
+  }
+}
+
 // Start syncing with the given user information.
 void StartSync(const StartSyncArgs& args,
                OneClickSigninSyncStarter::StartSyncMode start_mode) {
@@ -254,6 +280,7 @@ void StartExplicitSync(const StartSyncArgs& args,
                                 std::string(chrome::kSearchUsersSubPage));
   } else {
     StartSync(args, start_mode);
+    RedirectToNtpOrAppsPageIfNecessary(contents, args.source);
   }
 }
 
@@ -876,20 +903,6 @@ void OneClickSigninHelper::ShowSigninErrorBubble(Browser* browser,
       BrowserWindow::StartSyncCallback());
 }
 
-void OneClickSigninHelper::RedirectToNtpOrAppsPage() {
-  VLOG(1) << "OneClickSigninHelper::RedirectToNtpOrAppsPage";
-  // Redirect to NTP/Apps page and display a confirmation bubble
-  content::WebContents* contents = web_contents();
-  GURL url(source_ == SyncPromoUI::SOURCE_APPS_PAGE_LINK ?
-           chrome::kChromeUIAppsURL : chrome::kChromeUINewTabURL);
-  content::OpenURLParams params(url,
-                                content::Referrer(),
-                                CURRENT_TAB,
-                                content::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                false);
-  contents->OpenURL(params);
-}
-
 void OneClickSigninHelper::RedirectToSignin() {
   VLOG(1) << "OneClickSigninHelper::RedirectToSignin";
 
@@ -1009,7 +1022,7 @@ void OneClickSigninHelper::DidStopLoading(
     Browser* browser = chrome::FindBrowserWithWebContents(contents);
 
     // Redirect to the landing page and display an error popup.
-    RedirectToNtpOrAppsPage();
+    RedirectToNtpOrAppsPage(web_contents(), source_);
     ShowSigninErrorBubble(browser, error_message_);
     CleanTransientState();
     return;
@@ -1048,7 +1061,7 @@ void OneClickSigninHelper::DidStopLoading(
     std::string unused_value;
     if (net::GetValueForKeyInQuery(url, "ntp", &unused_value)) {
       SyncPromoUI::SetUserSkippedSyncPromo(profile);
-      RedirectToNtpOrAppsPage();
+      RedirectToNtpOrAppsPage(web_contents(), source_);
     }
 
     if (!continue_url_match && !IsValidGaiaSigninRedirectOrResponseURL(url) &&
@@ -1187,6 +1200,12 @@ void OneClickSigninHelper::DidStopLoading(
                           email_, password_, force_same_tab_navigation,
                           untrusted_confirmation_required_, source_),
             start_mode);
+
+        // If this explicit sign in is not from settings page/webstore, show
+        // the NTP/Apps page after sign in completes. In the case of the
+        // settings page, it will get closed by SyncSetupHandler. In the case
+        // of webstore, it will redirect back to webstore.
+        RedirectToNtpOrAppsPageIfNecessary(web_contents(), source_);
       }
 
       if (source_ == SyncPromoUI::SOURCE_SETTINGS &&
@@ -1197,15 +1216,6 @@ void OneClickSigninHelper::DidStopLoading(
           ProfileSyncServiceFactory::GetForProfile(profile);
         if (sync_service)
           sync_service->AddObserver(this);
-      }
-
-      // If this explicit sign in is not from settings page/webstore, show the
-      // NTP/Apps page after sign in completes. In the case of the settings
-      // page, it will get closed by SyncSetupHandler. In the case of webstore,
-      // it will redirect back to webstore.
-      if (source_ != SyncPromoUI::SOURCE_SETTINGS &&
-          source_ != SyncPromoUI::SOURCE_WEBSTORE_INSTALL) {
-        RedirectToNtpOrAppsPage();
       }
       break;
     }
