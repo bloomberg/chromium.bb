@@ -512,8 +512,10 @@ void OmniboxResultView::Elide(Runs* runs, int remaining_width) const {
       first_classification = false;
 
       // Can we fit at least an ellipsis?
-      string16 elided_text = ui::ElideText((*j)->text(), (*j)->GetFont(),
-                                           remaining_width, ui::ELIDE_AT_END);
+      gfx::Font font((*j)->GetStyle(gfx::BOLD) ?
+          (*j)->GetFont().DeriveFont(0, gfx::Font::BOLD) : (*j)->GetFont());
+      string16 elided_text(
+          ui::ElideText((*j)->text(), font, remaining_width, ui::ELIDE_AT_END));
       Classifications::reverse_iterator prior(j + 1);
       const bool on_first_classification = (prior == i->classifications.rend());
       if (elided_text.empty() && (remaining_width >= ellipsis_width_) &&
@@ -535,12 +537,9 @@ void OmniboxResultView::Elide(Runs* runs, int remaining_width) const {
         // If we could only fit an ellipsis, then only make it bold if there was
         // an immediate prior classification in this run that was also bold, or
         // it will look orphaned.
-        if ((((*j)->GetFont().GetStyle() & gfx::BOLD) != 0) &&
-            (elided_text.length() == 1) &&
-            (on_first_classification ||
-             (((*prior)->GetFont().GetStyle() & gfx::BOLD) == 0))) {
+        if ((*j)->GetStyle(gfx::BOLD) && (elided_text.length() == 1) &&
+            (on_first_classification || !(*prior)->GetStyle(gfx::BOLD)))
           (*j)->SetStyle(gfx::BOLD, false);
-        }
 
         // Erase any other classifications that come after the elided one.
         i->classifications.erase(j.base(), i->classifications.end());

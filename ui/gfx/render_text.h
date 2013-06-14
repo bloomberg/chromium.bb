@@ -269,6 +269,10 @@ class UI_EXPORT RenderText {
   void SetStyle(TextStyle style, bool value);
   void ApplyStyle(TextStyle style, bool value, const ui::Range& range);
 
+  // Returns whether this style is enabled consistently across the entire
+  // RenderText.
+  bool GetStyle(TextStyle style) const;
+
   // Set the text directionality mode and get the text direction yielded.
   void SetDirectionalityMode(DirectionalityMode mode);
   base::i18n::TextDirection GetTextDirection();

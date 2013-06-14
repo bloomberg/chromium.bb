@@ -581,6 +581,11 @@ void RenderText::ApplyStyle(TextStyle style,
   }
 }
 
+bool RenderText::GetStyle(TextStyle style) const {
+  return (styles_[style].breaks().size() == 1) &&
+      styles_[style].breaks().front().second;
+}
+
 void RenderText::SetDirectionalityMode(DirectionalityMode mode) {
   if (mode == directionality_mode_)
     return;
