@@ -13,12 +13,10 @@
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
-#include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
-#include "third_party/WebKit/public/platform/WebIDBMetadata.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 
 using WebKit::WebString;
-using WebKit::WebData;
 using WebKit::WebIDBDatabaseError;
 
 namespace content {

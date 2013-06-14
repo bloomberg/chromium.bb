@@ -8,16 +8,9 @@
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/webidbcursor_impl.h"
 #include "content/browser/indexed_db/webidbdatabase_impl.h"
-#include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
-#include "third_party/WebKit/public/platform/WebIDBKey.h"
-#include "third_party/WebKit/public/platform/WebIDBMetadata.h"
 
 namespace content {
-
-using WebKit::WebData;
-using WebKit::WebIDBKey;
-using WebKit::WebIDBMetadata;
 
 IndexedDBCallbacksWrapper::IndexedDBCallbacksWrapper(
     IndexedDBCallbacksBase* callbacks)
@@ -43,9 +36,6 @@ void IndexedDBCallbacksWrapper::OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
                                           const IndexedDBKey& primary_key,
                                           std::vector<char>* value) {
   DCHECK(callbacks_);
-  WebData web_value;
-  if (value && value->size())
-    web_value.assign(&value->front(), value->size());
   callbacks_->onSuccess(new WebIDBCursorImpl(cursor), key, primary_key, value);
   callbacks_.reset();
 }
@@ -57,10 +47,6 @@ void IndexedDBCallbacksWrapper::OnSuccess(const IndexedDBKey& key) {
 }
 
 void IndexedDBCallbacksWrapper::OnSuccess(std::vector<char>* value) {
-  WebData web_value;
-  if (value && value->size())
-    web_value.assign(&value->front(), value->size());
-
   DCHECK(callbacks_);
   callbacks_->onSuccess(value);
   callbacks_.reset();

@@ -20,8 +20,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/indexed_db_info.h"
 #include "content/public/common/content_switches.h"
-#include "third_party/WebKit/public/platform/WebCString.h"
-#include "third_party/WebKit/public/platform/WebIDBDatabase.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/base/origin_url_conversions.h"
