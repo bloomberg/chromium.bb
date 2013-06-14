@@ -115,8 +115,6 @@ deps = {
         Var('git_url') + '/chromium/deps/swig/Lib.git@549f0b084ad9c40ef42d111303d831eb8d91252e',
     'src/third_party/trace-viewer':
         Var('git_url') + '/external/trace-viewer.git@1c7f2724410e34bdafd1d321501a2bdee36f6666',
-    'src/third_party/undoview':
-        Var('git_url') + '/chromium/deps/undoview.git@3ba503e248f3cdbd81b78325a24ece0984637559',
     'src/third_party/usrsctp/usrsctplib':
         Var('git_url') + '/external/usrsctplib.git@062bff767b4ad4c70476e94c7d0e2a62f57306bb',
     'src/third_party/v8-i18n':
@@ -341,6 +339,8 @@ deps_os = {
             Var('git_url') + '/chromiumos/third_party/pyelftools.git@bdc1d380acd88d4bfaf47265008091483b0d614e',
         'src/third_party/swig/linux':
             Var('git_url') + '/chromium/deps/swig/linux.git@866b8e0e0e0cfe99ebe608260030916ca0c3f92d',
+        'src/third_party/undoview':
+            Var('git_url') + '/chromium/deps/undoview.git@3ba503e248f3cdbd81b78325a24ece0984637559',
         'src/third_party/xdg-utils':
             Var('git_url') + '/chromium/deps/xdg-utils.git@d80274d5869b17b8c9067a1022e4416ee7ed5e0d',
     },
