@@ -16,7 +16,7 @@ namespace content {
 namespace {
 
 // How many milliseconds apart synthetic scroll messages should be sent.
-const int kSyntheticScrollMessageIntervalMs = 8;
+const int kSyntheticScrollMessageIntervalMs = 7;
 
 }  // namespace
 
