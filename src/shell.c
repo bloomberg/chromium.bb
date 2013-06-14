@@ -73,7 +73,8 @@ struct workspace {
 };
 
 struct input_panel_surface {
-	struct wl_resource resource;
+	struct wl_resource *resource;
+	struct wl_signal destroy_signal;
 
 	struct desktop_shell *shell;
 
@@ -3763,6 +3764,8 @@ input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy, in
 static void
 destroy_input_panel_surface(struct input_panel_surface *input_panel_surface)
 {
+	wl_signal_emit(&input_panel_surface->destroy_signal, input_panel_surface);
+
 	wl_list_remove(&input_panel_surface->surface_destroy_listener.link);
 	wl_list_remove(&input_panel_surface->link);
 
@@ -3788,14 +3791,13 @@ input_panel_handle_surface_destroy(struct wl_listener *listener, void *data)
 							     struct input_panel_surface,
 							     surface_destroy_listener);
 
-	if (ipsurface->resource.client) {
-		wl_resource_destroy(&ipsurface->resource);
+	if (ipsurface->resource) {
+		wl_resource_destroy(ipsurface->resource);
 	} else {
-		wl_signal_emit(&ipsurface->resource.destroy_signal,
-			       &ipsurface->resource);
 		destroy_input_panel_surface(ipsurface);
 	}
 }
+
 static struct input_panel_surface *
 create_input_panel_surface(struct desktop_shell *shell,
 			   struct weston_surface *surface)
@@ -3813,7 +3815,7 @@ create_input_panel_surface(struct desktop_shell *shell,
 
 	input_panel_surface->surface = surface;
 
-	wl_signal_init(&input_panel_surface->resource.destroy_signal);
+	wl_signal_init(&input_panel_surface->destroy_signal);
 	input_panel_surface->surface_destroy_listener.notify = input_panel_handle_surface_destroy;
 	wl_signal_add(&surface->destroy_signal,
 		      &input_panel_surface->surface_destroy_listener);
@@ -3829,7 +3831,8 @@ input_panel_surface_set_toplevel(struct wl_client *client,
 				 struct wl_resource *output_resource,
 				 uint32_t position)
 {
-	struct input_panel_surface *input_panel_surface = resource->data;
+	struct input_panel_surface *input_panel_surface =
+		wl_resource_get_user_data(resource);
 	struct desktop_shell *shell = input_panel_surface->shell;
 
 	wl_list_insert(&shell->input_panel.surfaces,
@@ -3843,7 +3846,8 @@ static void
 input_panel_surface_set_overlay_panel(struct wl_client *client,
 				      struct wl_resource *resource)
 {
-	struct input_panel_surface *input_panel_surface = resource->data;
+	struct input_panel_surface *input_panel_surface =
+		wl_resource_get_user_data(resource);
 	struct desktop_shell *shell = input_panel_surface->shell;
 
 	wl_list_insert(&shell->input_panel.surfaces,
@@ -3860,7 +3864,8 @@ static const struct wl_input_panel_surface_interface input_panel_surface_impleme
 static void
 destroy_input_panel_surface_resource(struct wl_resource *resource)
 {
-	struct input_panel_surface *ipsurf = resource->data;
+	struct input_panel_surface *ipsurf =
+		wl_resource_get_user_data(resource);
 
 	destroy_input_panel_surface(ipsurf);
 }
@@ -3891,14 +3896,13 @@ input_panel_get_input_panel_surface(struct wl_client *client,
 		return;
 	}
 
-	ipsurf->resource.destroy = destroy_input_panel_surface_resource;
-	ipsurf->resource.object.id = id;
-	ipsurf->resource.object.interface = &wl_input_panel_surface_interface;
-	ipsurf->resource.object.implementation =
-		(void (**)(void)) &input_panel_surface_implementation;
-	ipsurf->resource.data = ipsurf;
+	ipsurf->resource = wl_client_add_object(client,
+						&wl_input_panel_surface_interface,
+						&input_panel_surface_implementation,
+						id, ipsurf);
 
-	wl_client_add_resource(client, &ipsurf->resource);
+	wl_resource_set_destructor(ipsurf->resource,
+				   destroy_input_panel_surface_resource);
 }
 
 static const struct wl_input_panel_interface input_panel_implementation = {
@@ -3926,7 +3930,7 @@ bind_input_panel(struct wl_client *client,
 					id, shell);
 
 	if (shell->input_panel.binding == NULL) {
-		resource->destroy = unbind_input_panel;
+		wl_resource_set_destructor(resource, unbind_input_panel);
 		shell->input_panel.binding = resource;
 		return;
 	}
