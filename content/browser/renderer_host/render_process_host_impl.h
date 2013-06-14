@@ -15,6 +15,7 @@
 #include "base/timer.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/render_process_host.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -76,8 +77,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual void EnableSendQueue() OVERRIDE;
   virtual bool Init() OVERRIDE;
   virtual int GetNextRoutingID() OVERRIDE;
-  virtual void SimulateSwapOutACK(const ViewMsg_SwapOut_Params& params)
-      OVERRIDE;
   virtual bool WaitForBackingStoreMsg(int render_widget_id,
                                       const base::TimeDelta& max_delay,
                                       IPC::Message* msg) OVERRIDE;
@@ -127,6 +126,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // ChildProcessLauncher::Client implementation.
   virtual void OnProcessLaunched() OVERRIDE;
+
+  // Tells the ResourceDispatcherHost to resume a deferred navigation without
+  // transferring it to a new renderer process.
+  void ResumeDeferredNavigation(const GlobalRequestID& request_id);
 
   // Call this function when it is evident that the child process is actively
   // performing some operation, for example if we just received an IPC message.

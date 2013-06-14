@@ -294,14 +294,11 @@ class CONTENT_EXPORT RenderViewHostImpl
   // exits, in case we come back.  The renderer can exit if it has no other
   // active RenderViews, but not until WasSwappedOut is called (when it is no
   // longer visible).
-  //
-  // Please see ViewMsg_SwapOut_Params in view_messages.h for a description
-  // of the parameters.
-  void SwapOut(int new_render_process_host_id, int new_request_id);
+  void SwapOut();
 
-  // Called by ResourceDispatcherHost after the SwapOutACK is received or the
-  // response times out.
-  void OnSwapOutACK(bool timed_out);
+  // Called when either the SwapOut request has been acknowledged or has timed
+  // out.
+  void OnSwappedOut(bool timed_out);
 
   // Called to notify the renderer that it has been visibly swapped out and
   // replaced by another RenderViewHost, after an earlier call to SwapOut.
@@ -314,16 +311,16 @@ class CONTENT_EXPORT RenderViewHostImpl
   // and the user has agreed to continue with closing the page.
   void ClosePageIgnoringUnloadEvents();
 
+  // Returns whether this RenderViewHost has an outstanding cross-site request.
+  // Cleared when we hear the response and start to swap out the old
+  // RenderViewHost, or if we hear a commit here without a network request.
+  bool HasPendingCrossSiteRequest();
+
   // Sets whether this RenderViewHost has an outstanding cross-site request,
   // for which another renderer will need to run an onunload event handler.
   // This is called before the first navigation event for this RenderViewHost,
-  // and again after the corresponding OnCrossSiteResponse.
-  void SetHasPendingCrossSiteRequest(bool has_pending_request, int request_id);
-
-  // Returns the request_id for the pending cross-site request.
-  // This is just needed in case the unload of the current page
-  // hangs, in which case we need to swap to the pending RenderViewHost.
-  int GetPendingRequestId();
+  // and cleared when we hear the response or commit.
+  void SetHasPendingCrossSiteRequest(bool has_pending_request);
 
   // Notifies the RenderView that the JavaScript message that was shown was
   // closed by the user.
@@ -432,7 +429,11 @@ class CONTENT_EXPORT RenderViewHostImpl
   void SetAccessibilityOtherCallbackForTesting(
       const base::Closure& callback);
 
-  bool is_waiting_for_unload_ack_for_testing() {
+  bool is_waiting_for_beforeunload_ack() {
+    return is_waiting_for_beforeunload_ack_;
+  }
+
+  bool is_waiting_for_unload_ack() {
     return is_waiting_for_unload_ack_;
   }
 
@@ -554,6 +555,7 @@ class CONTENT_EXPORT RenderViewHostImpl
       const base::TimeTicks& renderer_before_unload_start_time,
       const base::TimeTicks& renderer_before_unload_end_time);
   void OnClosePageACK();
+  void OnSwapOutACK();
   void OnAccessibilityNotifications(
       const std::vector<AccessibilityHostMsg_NotificationParams>& params);
   void OnScriptEvalResponse(int id, const base::ListValue& result);
@@ -610,13 +612,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // A bitwise OR of bindings types that have been enabled for this RenderView.
   // See BindingsPolicy for details.
   int enabled_bindings_;
-
-  // The request_id for the pending cross-site request. Set to -1 if
-  // there is a pending request, but we have not yet started the unload
-  // for the current page. Set to the request_id value of the pending
-  // request once we have gotten the some data for the pending page
-  // and thus started the unload process.
-  int pending_request_id_;
 
   // Whether we should buffer outgoing Navigate messages rather than sending
   // them.  This will be true when a RenderViewHost is created for a cross-site

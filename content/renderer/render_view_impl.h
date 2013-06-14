@@ -79,7 +79,6 @@ struct PP_NetAddress_Private;
 struct ViewMsg_Navigate_Params;
 struct ViewMsg_PostMessage_Params;
 struct ViewMsg_StopFinding_Params;
-struct ViewMsg_SwapOut_Params;
 struct WebDropData;
 
 namespace ui {
@@ -1042,7 +1041,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnShouldClose();
   void OnStop();
   void OnStopFinding(StopFindAction action);
-  void OnSwapOut(const ViewMsg_SwapOut_Params& params);
+  void OnSwapOut();
   void OnThemeChanged();
   void OnUpdateTargetURLAck();
   void OnUpdateTimezone();

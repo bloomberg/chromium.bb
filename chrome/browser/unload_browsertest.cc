@@ -218,8 +218,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, CrossSiteInfiniteUnloadSync) {
 // we don't get confused and think we're closing the tab.
 // This test is flaky on the valgrind UI bots. http://crbug.com/39057 and
 // http://crbug.com/86469
-IN_PROC_BROWSER_TEST_F(UnloadTest,
-                       DISABLED_CrossSiteInfiniteBeforeUnloadAsync) {
+IN_PROC_BROWSER_TEST_F(UnloadTest, CrossSiteInfiniteBeforeUnloadAsync) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
@@ -232,8 +231,8 @@ IN_PROC_BROWSER_TEST_F(UnloadTest,
 // Navigate to a page with an infinite beforeunload handler.
 // Then two two sync crosssite requests to ensure
 // we correctly nav to each one.
-// If this flakes, reopen bug http://crbug.com/86469.
-IN_PROC_BROWSER_TEST_F(UnloadTest, DISABLED_CrossSiteInfiniteBeforeUnloadSync) {
+// If this flakes, see bug http://crbug.com/86469.
+IN_PROC_BROWSER_TEST_F(UnloadTest, CrossSiteInfiniteBeforeUnloadSync) {
   // Tests makes no sense in single-process mode since the renderer is hung.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;

@@ -5624,7 +5624,7 @@ void RenderViewImpl::OnShouldClose() {
                                        before_unload_end_time));
 }
 
-void RenderViewImpl::OnSwapOut(const ViewMsg_SwapOut_Params& params) {
+void RenderViewImpl::OnSwapOut() {
   // Only run unload if we're not swapped out yet, but send the ack either way.
   if (!is_swapped_out_) {
     // Swap this RenderView out so the tab can navigate to a page rendered by a
@@ -5657,8 +5657,7 @@ void RenderViewImpl::OnSwapOut(const ViewMsg_SwapOut_Params& params) {
     webview()->setVisibilityState(WebKit::WebPageVisibilityStateHidden, false);
   }
 
-  // Just echo back the params in the ACK.
-  Send(new ViewHostMsg_SwapOut_ACK(routing_id_, params));
+  Send(new ViewHostMsg_SwapOut_ACK(routing_id_));
 }
 
 void RenderViewImpl::NavigateToSwappedOutURL(WebKit::WebFrame* frame) {

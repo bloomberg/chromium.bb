@@ -30,7 +30,8 @@ class CrossSiteRequestManager {
   // Returns whether the RenderViewHost specified by the given IDs currently
   // has a pending cross-site request.  If so, we will have to delay the
   // response until the previous RenderViewHost runs its onunload handler.
-  // Called by ResourceDispatcherHost on the IO thread.
+  // Called by ResourceDispatcherHost on the IO thread and RenderViewHost on
+  // the UI thread.
   bool HasPendingCrossSiteRequest(int renderer_id, int render_view_id);
 
   // Sets whether the RenderViewHost specified by the given IDs currently has a

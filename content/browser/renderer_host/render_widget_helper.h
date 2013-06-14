@@ -16,6 +16,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/gfx/native_widget_types.h"
@@ -125,7 +126,7 @@ class RenderWidgetHelper
   // These three functions provide the backend implementation of the
   // corresponding functions in RenderProcessHost. See those declarations
   // for documentation.
-  void SimulateSwapOutACK(const ViewMsg_SwapOut_Params& params);
+  void ResumeDeferredNavigation(const GlobalRequestID& request_id);
   bool WaitForBackingStoreMsg(int render_widget_id,
                               const base::TimeDelta& max_delay,
                               IPC::Message* msg);
@@ -211,9 +212,9 @@ class RenderWidgetHelper
   // Called on the UI thread to create a fullscreen widget.
   void OnCreateFullscreenWidgetOnUI(int opener_id, int route_id);
 
-  // Called on the IO thread to resume a cross-site response, if the ack is
-  // not received as expected.
-  void OnSimulateSwapOutACK(const ViewMsg_SwapOut_Params& params);
+  // Called on the IO thread to resume a paused navigation in the network
+  // stack without transferring it to a new renderer process.
+  void OnResumeDeferredNavigation(const GlobalRequestID& request_id);
 
 #if defined(OS_POSIX)
   // Called on destruction to release all allocated transport DIBs

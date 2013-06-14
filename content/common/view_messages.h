@@ -719,29 +719,6 @@ IPC_STRUCT_BEGIN(ViewMsg_PostMessage_Params)
   IPC_STRUCT_MEMBER(string16, target_origin)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(ViewMsg_SwapOut_Params)
-  // The identifier of the RenderProcessHost for the currently closing view.
-  //
-  // These first two parameters are technically redundant since they are
-  // needed only when processing the ACK message, and the processor
-  // theoretically knows both the process and route ID. However, this is
-  // difficult to figure out with our current implementation, so this
-  // information is duplicated here.
-  IPC_STRUCT_MEMBER(int, closing_process_id)
-
-  // The route identifier for the currently closing RenderView.
-  IPC_STRUCT_MEMBER(int, closing_route_id)
-
-  // The identifier of the RenderProcessHost for the new view attempting to
-  // replace the closing one above.
-  IPC_STRUCT_MEMBER(int, new_render_process_host_id)
-
-  // The identifier of the *request* the new view made that is causing the
-  // cross-site transition. This is *not* a route_id, but the request that we
-  // will resume once the ACK from the closing view has been received.
-  IPC_STRUCT_MEMBER(int, new_request_id)
-IPC_STRUCT_END()
-
 // Messages sent from the browser to the renderer.
 
 // Tells the renderer to cancel an opened date/time dialog.
@@ -1125,12 +1102,9 @@ IPC_MESSAGE_ROUTED0(ViewMsg_CantFocus)
 IPC_MESSAGE_ROUTED0(ViewMsg_ShouldClose)
 
 // Instructs the renderer to swap out for a cross-site transition, including
-// running the unload event handler. See the struct above for more details.
-//
-// Expects a SwapOut_ACK message when finished, where the parameters are
-// echoed back.
-IPC_MESSAGE_ROUTED1(ViewMsg_SwapOut,
-                    ViewMsg_SwapOut_Params)
+// running the unload event handler. Expects a SwapOut_ACK message when
+// finished.
+IPC_MESSAGE_ROUTED0(ViewMsg_SwapOut)
 
 // Instructs the renderer to close the current page, including running the
 // onunload event handler.
@@ -1495,9 +1469,8 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_ShouldClose_ACK,
                     base::TimeTicks /* before_unload_end_time */)
 
 // Indicates that the current renderer has swapped out, after a SwapOut
-// message. The parameters are just echoed from the SwapOut request.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_SwapOut_ACK,
-                    ViewMsg_SwapOut_Params)
+// message.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_SwapOut_ACK)
 
 // Indicates that the current page has been closed, after a ClosePage
 // message.

@@ -3102,6 +3102,9 @@ void WebContentsImpl::Close(RenderViewHost* rvh) {
 void WebContentsImpl::SwappedOut(RenderViewHost* rvh) {
   if (delegate_ && rvh == GetRenderViewHost())
     delegate_->SwappedOut(this);
+
+  // Allow the navigation to proceed.
+  render_manager_.SwappedOut(rvh);
 }
 
 void WebContentsImpl::RequestMove(const gfx::Rect& new_bounds) {

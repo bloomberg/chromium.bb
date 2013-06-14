@@ -722,9 +722,9 @@ int RenderProcessHostImpl::GetNextRoutingID() {
   return widget_helper_->GetNextRoutingID();
 }
 
-void RenderProcessHostImpl::SimulateSwapOutACK(
-    const ViewMsg_SwapOut_Params& params) {
-  widget_helper_->SimulateSwapOutACK(params);
+void RenderProcessHostImpl::ResumeDeferredNavigation(
+    const GlobalRequestID& request_id) {
+  widget_helper_->ResumeDeferredNavigation(request_id);
 }
 
 bool RenderProcessHostImpl::WaitForBackingStoreMsg(

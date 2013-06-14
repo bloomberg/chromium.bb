@@ -101,7 +101,7 @@ TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
   test_rvh()->SendShouldCloseACK(true);
   contents()->Stop();
   controller().Reload(false);
-  EXPECT_FALSE(test_rvh()->is_waiting_for_unload_ack_for_testing());
+  EXPECT_FALSE(test_rvh()->is_waiting_for_unload_ack());
 }
 
 // Ensure we do not grant bindings to a process shared with unprivileged views.

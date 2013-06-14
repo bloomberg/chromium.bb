@@ -90,11 +90,11 @@ class CONTENT_EXPORT RenderViewHostDelegate {
         bool proceed,
         const base::TimeTicks& proceed_time) = 0;
 
-    // Called by ResourceDispatcherHost when a response for a pending cross-site
-    // request is received.  The ResourceDispatcherHost will pause the response
-    // until the onunload handler of the previous renderer is run.
-    virtual void OnCrossSiteResponse(int new_render_process_host_id,
-                                     int new_request_id) = 0;
+    // The |pending_render_view_host| is ready to commit a page.  The delegate
+    // should ensure that the old RenderViewHost runs its unload handler first.
+    virtual void OnCrossSiteResponse(
+        RenderViewHost* pending_render_view_host,
+        const GlobalRequestID& global_request_id) = 0;
 
    protected:
     virtual ~RendererManagement() {}

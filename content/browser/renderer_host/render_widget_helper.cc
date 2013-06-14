@@ -127,13 +127,13 @@ RenderWidgetHelper* RenderWidgetHelper::FromProcessHostID(
   return (ci == g_widget_helpers.Get().end())? NULL : ci->second;
 }
 
-void RenderWidgetHelper::SimulateSwapOutACK(
-    const ViewMsg_SwapOut_Params& params) {
+void RenderWidgetHelper::ResumeDeferredNavigation(
+    const GlobalRequestID& request_id) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&RenderWidgetHelper::OnSimulateSwapOutACK,
+      base::Bind(&RenderWidgetHelper::OnResumeDeferredNavigation,
                  this,
-                 params));
+                 request_id));
 }
 
 bool RenderWidgetHelper::WaitForBackingStoreMsg(
@@ -240,9 +240,9 @@ void RenderWidgetHelper::OnDispatchBackingStoreMsg(
     host->OnMessageReceived(proxy->message());
 }
 
-void RenderWidgetHelper::OnSimulateSwapOutACK(
-    const ViewMsg_SwapOut_Params& params) {
-  resource_dispatcher_host_->OnSimulateSwapOutACK(params);
+void RenderWidgetHelper::OnResumeDeferredNavigation(
+    const GlobalRequestID& request_id) {
+  resource_dispatcher_host_->ResumeDeferredNavigation(request_id);
 }
 
 void RenderWidgetHelper::CreateNewWindow(

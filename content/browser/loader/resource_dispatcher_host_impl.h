@@ -44,7 +44,6 @@
 
 class ResourceHandler;
 struct ResourceHostMsg_Request;
-struct ViewMsg_SwapOut_Params;
 
 namespace net {
 class URLRequestJobFactory;
@@ -133,6 +132,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // redirected cross-site and needs to be resumed by a new render view.
   void MarkAsTransferredNavigation(const GlobalRequestID& id);
 
+  // Resumes the request without transferring it to a new render view.
+  void ResumeDeferredNavigation(const GlobalRequestID& id);
+
   // Returns the number of pending requests. This is designed for the unittests
   int pending_requests() const {
     return static_cast<int>(pending_loaders_.size());
@@ -156,14 +158,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   SaveFileManager* save_file_manager() const {
     return save_file_manager_.get();
   }
-
-  // Called when the unload handler for a cross-site request has finished.
-  void OnSwapOutACK(const ViewMsg_SwapOut_Params& params);
-
-  // Called when we want to simulate the renderer process sending
-  // ViewHostMsg_SwapOut_ACK in cases where the renderer has died or is
-  // unresponsive.
-  void OnSimulateSwapOutACK(const ViewMsg_SwapOut_Params& params);
 
   // Called when the renderer loads a resource from its internal cache.
   void OnDidLoadResourceFromMemoryCache(const GURL& url,
@@ -291,12 +285,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // A shutdown helper that runs on the IO thread.
   void OnShutdown();
-
-  // The real implementation of the OnSwapOutACK logic. OnSwapOutACK and
-  // OnSimulateSwapOutACK just call this method, supplying the |timed_out|
-  // parameter, which indicates whether the call is due to a timeout while
-  // waiting for SwapOut acknowledgement from the renderer process.
-  void HandleSwapOutACK(const ViewMsg_SwapOut_Params& params, bool timed_out);
 
   // Helper function for regular and download requests.
   void BeginRequestInternal(scoped_ptr<net::URLRequest> request,

@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/common/resource_response.h"
 #include "net/http/http_response_headers.h"
@@ -27,7 +28,7 @@ void OnCrossSiteResponseHelper(int render_process_id,
                                                        render_view_id);
   if (rvh && rvh->GetDelegate()->GetRendererManagementDelegate()) {
     rvh->GetDelegate()->GetRendererManagementDelegate()->OnCrossSiteResponse(
-        render_process_id, request_id);
+        rvh, GlobalRequestID(render_process_id, request_id));
   }
 }
 

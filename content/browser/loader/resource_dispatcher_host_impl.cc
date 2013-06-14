@@ -215,15 +215,6 @@ void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
 #pragma warning(default: 4748)
 #endif
 
-void OnSwapOutACKHelper(int render_process_id,
-                        int render_view_id,
-                        bool timed_out) {
-  RenderViewHostImpl* rvh = RenderViewHostImpl::FromID(render_process_id,
-                                                       render_view_id);
-  if (rvh)
-    rvh->OnSwapOutACK(timed_out);
-}
-
 net::Error CallbackAndReturn(
     const DownloadResourceHandler::OnStartedCallback& started_cb,
     net::Error net_error) {
@@ -852,7 +843,6 @@ bool ResourceDispatcherHostImpl::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ResourceHostMsg_DataDownloaded_ACK, OnDataDownloadedACK)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_UploadProgress_ACK, OnUploadProgressACK)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_CancelRequest, OnCancelRequest)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SwapOut_ACK, OnSwapOutACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -1223,40 +1213,6 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
 }
 
 
-void ResourceDispatcherHostImpl::OnSwapOutACK(
-  const ViewMsg_SwapOut_Params& params) {
-  HandleSwapOutACK(params, false);
-}
-
-void ResourceDispatcherHostImpl::OnSimulateSwapOutACK(
-    const ViewMsg_SwapOut_Params& params) {
-  // Call the real implementation with true, which means that we timed out.
-  HandleSwapOutACK(params, true);
-}
-
-void ResourceDispatcherHostImpl::HandleSwapOutACK(
-    const ViewMsg_SwapOut_Params& params, bool timed_out) {
-  // Closes for cross-site transitions are handled such that the cross-site
-  // transition continues.
-  ResourceLoader* loader = GetLoader(params.new_render_process_host_id,
-                                     params.new_request_id);
-  if (loader) {
-    // The response we were meant to resume could have already been canceled.
-    ResourceRequestInfoImpl* info = loader->GetRequestInfo();
-    if (info->cross_site_handler())
-      info->cross_site_handler()->ResumeResponse();
-  }
-
-  // Update the RenderViewHost's internal state after the ACK.
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&OnSwapOutACKHelper,
-                 params.closing_process_id,
-                 params.closing_route_id,
-                 timed_out));
-}
-
 void ResourceDispatcherHostImpl::OnDidLoadResourceFromMemoryCache(
     const GURL& url,
     const std::string& security_info,
@@ -1344,6 +1300,17 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
 void ResourceDispatcherHostImpl::MarkAsTransferredNavigation(
     const GlobalRequestID& id) {
   GetLoader(id)->MarkAsTransferring();
+}
+
+void ResourceDispatcherHostImpl::ResumeDeferredNavigation(
+    const GlobalRequestID& id) {
+  ResourceLoader* loader = GetLoader(id);
+  if (loader) {
+    // The response we were meant to resume could have already been canceled.
+    ResourceRequestInfoImpl* info = loader->GetRequestInfo();
+    if (info->cross_site_handler())
+      info->cross_site_handler()->ResumeResponse();
+  }
 }
 
 // The object died, so cancel and detach all requests associated with it except

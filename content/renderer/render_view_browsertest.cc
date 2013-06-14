@@ -425,32 +425,20 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   int initial_page_id = view()->GetPageId();
 
   // Respond to a swap out request.
-  ViewMsg_SwapOut_Params params;
-  params.closing_process_id = 10;
-  params.closing_route_id = 11;
-  params.new_render_process_host_id = 12;
-  params.new_request_id = 13;
-  view()->OnSwapOut(params);
+  view()->OnSwapOut();
 
   // Ensure the swap out commits synchronously.
   EXPECT_NE(initial_page_id, view()->GetPageId());
 
-  // Check for a valid OnSwapOutACK with echoed params.
+  // Check for a valid OnSwapOutACK.
   const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_SwapOut_ACK::ID);
   ASSERT_TRUE(msg);
-  ViewHostMsg_SwapOut_ACK::Param reply_params;
-  ViewHostMsg_SwapOut_ACK::Read(msg, &reply_params);
-  EXPECT_EQ(params.closing_process_id, reply_params.a.closing_process_id);
-  EXPECT_EQ(params.closing_route_id, reply_params.a.closing_route_id);
-  EXPECT_EQ(params.new_render_process_host_id,
-            reply_params.a.new_render_process_host_id);
-  EXPECT_EQ(params.new_request_id, reply_params.a.new_request_id);
 
   // It is possible to get another swap out request.  Ensure that we send
   // an ACK, even if we don't have to do anything else.
   render_thread_->sink().ClearMessages();
-  view()->OnSwapOut(params);
+  view()->OnSwapOut();
   const IPC::Message* msg2 = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_SwapOut_ACK::ID);
   ASSERT_TRUE(msg2);
@@ -505,12 +493,7 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   ProcessPendingMessages();
 
   // Respond to a swap out request.
-  ViewMsg_SwapOut_Params params;
-  params.closing_process_id = 10;
-  params.closing_route_id = 11;
-  params.new_render_process_host_id = 12;
-  params.new_request_id = 13;
-  view()->OnSwapOut(params);
+  view()->OnSwapOut();
 
   // Check for a OnSwapOutACK.
   const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(

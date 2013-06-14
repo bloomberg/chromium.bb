@@ -109,7 +109,7 @@ class RenderViewHostManagerTest
     // Simulate the SwapOut_ACK that fires if you commit a cross-site navigation
     // without making any network requests.
     if (old_rvh != active_rvh())
-      old_rvh->OnSwapOutACK(false);
+      old_rvh->OnSwappedOut(false);
   }
 
   bool ShouldSwapProcesses(RenderViewHostManager* manager,
@@ -161,7 +161,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   ASSERT_TRUE(dest_rvh2);
   ntp_rvh2->SendShouldCloseACK(true);
   dest_rvh2->SendNavigate(101, kDestUrl);
-  ntp_rvh2->OnSwapOutACK(false);
+  ntp_rvh2->OnSwappedOut(false);
 
   // The two RVH's should be different in every way.
   EXPECT_NE(active_rvh()->GetProcess(), dest_rvh2->GetProcess());
@@ -178,7 +178,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   dest_rvh2->SendShouldCloseACK(true);
   static_cast<TestRenderViewHost*>(contents2->GetRenderManagerForTesting()->
      pending_render_view_host())->SendNavigate(102, kChromeUrl);
-  dest_rvh2->OnSwapOutACK(false);
+  dest_rvh2->OnSwappedOut(false);
 
   EXPECT_NE(active_rvh()->GetSiteInstance(),
             contents2->GetRenderViewHost()->GetSiteInstance());
@@ -512,14 +512,13 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   test_host->SendShouldCloseACK(true);
 
   // CrossSiteResourceHandler::StartCrossSiteTransition triggers a
-  // call of RenderViewHostManager::OnCrossSiteResponse before
+  // call of RenderViewHostManager::SwapOutOldPage before
   // RenderViewHostManager::DidNavigateMainFrame is called.
   // The RVH is not swapped out until the commit.
-  manager.OnCrossSiteResponse(host2->GetProcess()->GetID(),
-                              host2->GetPendingRequestId());
+  manager.SwapOutOldPage();
   EXPECT_TRUE(test_process_host->sink().GetUniqueMessageMatching(
       ViewMsg_SwapOut::ID));
-  test_host->OnSwapOutACK(false);
+  test_host->OnSwappedOut(false);
 
   EXPECT_EQ(host, manager.current_host());
   EXPECT_FALSE(static_cast<RenderViewHostImpl*>(
@@ -559,15 +558,13 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   test_host->SendShouldCloseACK(true);
 
   // CrossSiteResourceHandler::StartCrossSiteTransition triggers a
-  // call of RenderViewHostManager::OnCrossSiteResponse before
+  // call of RenderViewHostManager::SwapOutOldPage before
   // RenderViewHostManager::DidNavigateMainFrame is called.
   // The RVH is not swapped out until the commit.
-  manager.OnCrossSiteResponse(host3->GetProcess()->GetID(),
-                              static_cast<RenderViewHostImpl*>(
-                                  host3)->GetPendingRequestId());
+  manager.SwapOutOldPage();
   EXPECT_TRUE(test_process_host->sink().GetUniqueMessageMatching(
       ViewMsg_SwapOut::ID));
-  test_host->OnSwapOutACK(false);
+  test_host->OnSwappedOut(false);
 
   // Commit.
   manager.DidNavigateMainFrame(host3);
@@ -755,7 +752,7 @@ TEST_F(RenderViewHostManagerTest, NavigateAfterMissingSwapOutACK) {
   EXPECT_TRUE(rvh2->is_waiting_for_beforeunload_ack());
   contents()->ProceedWithCrossSiteNavigation();
   EXPECT_FALSE(rvh2->is_waiting_for_beforeunload_ack());
-  rvh2->SwapOut(1, 1);
+  rvh2->SwapOut();
   EXPECT_TRUE(rvh2->is_waiting_for_unload_ack());
 
   // The back navigation commits.  We should proactively clear the

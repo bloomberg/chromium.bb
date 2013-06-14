@@ -168,7 +168,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       instance_(static_cast<SiteInstanceImpl*>(instance)),
       waiting_for_drag_context_response_(false),
       enabled_bindings_(0),
-      pending_request_id_(-1),
       navigations_suspended_(false),
       has_accessed_initial_document_(false),
       is_swapped_out_(swapped_out),
@@ -430,8 +429,7 @@ void RenderViewHostImpl::FirePageBeforeUnload(bool for_cross_site_transition) {
   }
 }
 
-void RenderViewHostImpl::SwapOut(int new_render_process_host_id,
-                                 int new_request_id) {
+void RenderViewHostImpl::SwapOut() {
   // This will be set back to false in OnSwapOutACK, just before we replace
   // this RVH with the pending RVH.
   is_waiting_for_unload_ack_ = true;
@@ -441,22 +439,20 @@ void RenderViewHostImpl::SwapOut(int new_render_process_host_id,
   increment_in_flight_event_count();
   StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
 
-  ViewMsg_SwapOut_Params params;
-  params.closing_process_id = GetProcess()->GetID();
-  params.closing_route_id = GetRoutingID();
-  params.new_render_process_host_id = new_render_process_host_id;
-  params.new_request_id = new_request_id;
   if (IsRenderViewLive()) {
-    Send(new ViewMsg_SwapOut(GetRoutingID(), params));
+    Send(new ViewMsg_SwapOut(GetRoutingID()));
   } else {
     // This RenderViewHost doesn't have a live renderer, so just skip the unload
-    // event.  We must notify the ResourceDispatcherHost on the IO thread,
-    // which we will do through the RenderProcessHost's widget helper.
-    GetProcess()->SimulateSwapOutACK(params);
+    // event.
+    OnSwappedOut(true);
   }
 }
 
-void RenderViewHostImpl::OnSwapOutACK(bool timed_out) {
+void RenderViewHostImpl::OnSwapOutACK() {
+  OnSwappedOut(false);
+}
+
+void RenderViewHostImpl::OnSwappedOut(bool timed_out) {
   // Stop the hang monitor now that the unload handler has finished.
   decrement_in_flight_event_count();
   StopHangMonitorTimeout();
@@ -560,15 +556,15 @@ void RenderViewHostImpl::ClosePageIgnoringUnloadEvents() {
   delegate_->Close(this);
 }
 
-void RenderViewHostImpl::SetHasPendingCrossSiteRequest(bool has_pending_request,
-                                                       int request_id) {
-  CrossSiteRequestManager::GetInstance()->SetHasPendingCrossSiteRequest(
-      GetProcess()->GetID(), GetRoutingID(), has_pending_request);
-  pending_request_id_ = request_id;
+bool RenderViewHostImpl::HasPendingCrossSiteRequest() {
+  return CrossSiteRequestManager::GetInstance()->HasPendingCrossSiteRequest(
+      GetProcess()->GetID(), GetRoutingID());
 }
 
-int RenderViewHostImpl::GetPendingRequestId() {
-  return pending_request_id_;
+void RenderViewHostImpl::SetHasPendingCrossSiteRequest(
+    bool has_pending_request) {
+  CrossSiteRequestManager::GetInstance()->SetHasPendingCrossSiteRequest(
+      GetProcess()->GetID(), GetRoutingID(), has_pending_request);
 }
 
 #if defined(OS_ANDROID)
@@ -985,6 +981,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnShouldCloseACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SwapOut_ACK, OnSwapOutACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnSelectionChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionBoundsChanged,
                         OnSelectionBoundsChanged)

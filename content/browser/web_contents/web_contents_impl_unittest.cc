@@ -12,6 +12,7 @@
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_details.h"
@@ -697,10 +698,8 @@ TEST_F(WebContentsImplTest, CrossSiteUnloadHandlers) {
       contents()->GetPendingRenderViewHost());
 
   // We won't hear DidNavigate until the onunload handler has finished running.
-  // (No way to simulate that here, but it involves a call from RDH to
-  // WebContentsImpl::OnCrossSiteResponse.)
 
-  // DidNavigate from the pending page
+  // DidNavigate from the pending page.
   contents()->TestDidNavigate(
       pending_rvh, 1, url2, PAGE_TRANSITION_TYPED);
   SiteInstance* instance2 = contents()->GetSiteInstance();
@@ -946,7 +945,8 @@ TEST_F(WebContentsImplTest, CrossSiteCantPreemptAfterUnload) {
 
   // Simulate the pending renderer's response, which leads to an unload request
   // being sent to orig_rvh.
-  contents()->GetRenderManagerForTesting()->OnCrossSiteResponse(0, 0);
+  contents()->GetRenderManagerForTesting()->OnCrossSiteResponse(
+      pending_rvh, GlobalRequestID(0, 0));
 
   // Suppose the original renderer navigates now, while the unload request is in
   // flight.  We should ignore it, wait for the unload ack, and let the pending
