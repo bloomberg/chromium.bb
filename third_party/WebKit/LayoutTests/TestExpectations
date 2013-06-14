@@ -866,7 +866,8 @@ webkit.org/b/91946 fast/events/rtl-scrollbar.html [ Failure Pass ]
 
 webkit.org/b/81050 fast/forms/file/recover-file-input-in-unposted-form.html [ Failure Pass ]
 
-webkit.org/b/81145 [ Lion MountainLion ] animations/cross-fade-webkit-mask-box-image.html [ ImageOnlyFailure Pass ]
+crbug.com/249595 animations/cross-fade-webkit-mask-box-image.html [ ImageOnlyFailure Pass ]
+
 webkit.org/b/81145 [ Mac ] fast/frames/invalid.html [ ImageOnlyFailure Pass Slow ]
 webkit.org/b/81145 [ Lion ] fast/writing-mode/broken-ideograph-small-caps.html [ Crash ]
 webkit.org/b/81145 [ Lion ] fast/writing-mode/broken-ideographic-font.html [ Crash ]
