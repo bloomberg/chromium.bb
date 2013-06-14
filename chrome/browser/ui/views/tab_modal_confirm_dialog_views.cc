@@ -17,7 +17,9 @@
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/views/controls/message_box_view.h"
+#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -38,10 +40,17 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     TabModalConfirmDialogDelegate* delegate,
     content::WebContents* web_contents)
     : delegate_(delegate),
-      message_box_view_(new views::MessageBoxView(
-          views::MessageBoxView::InitParams(delegate->GetMessage()))),
       dialog_(NULL),
       browser_context_(web_contents->GetBrowserContext()) {
+  views::MessageBoxView::InitParams init_params(delegate->GetMessage());
+  init_params.inter_row_vertical_spacing =
+      views::kUnrelatedControlVerticalSpacing;
+  message_box_view_ = new views::MessageBoxView(init_params);
+
+  string16 link_text(delegate->GetLinkText());
+  if (!link_text.empty())
+    message_box_view_->SetLink(link_text, this);
+
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
   dialog_ = CreateWebContentsModalDialogViews(
@@ -66,6 +75,14 @@ void TabModalConfirmDialogViews::CancelTabModalDialog() {
 
 void TabModalConfirmDialogViews::CloseDialog() {
   dialog_->Close();
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// TabModalConfirmDialogViews, views::LinkListener implementation:
+
+void TabModalConfirmDialogViews::LinkClicked(views::Link* source,
+                                             int event_flags) {
+  delegate_->LinkClicked(ui::DispositionFromEventFlags(event_flags));
 }
 
 //////////////////////////////////////////////////////////////////////////////

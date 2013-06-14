@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace content {
 class WebContents;
@@ -43,15 +44,18 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
 
   // Accepts the confirmation prompt and calls |OnAccepted|.
   // This method is safe to call even from an |OnAccepted| or |OnCanceled|
-  // callback. It is guaranteed that exactly one of |OnAccepted| or |OnCanceled|
-  // is eventually called.
+  // callback.
   void Accept();
 
   // Cancels the confirmation prompt and calls |OnCanceled|.
   // This method is safe to call even from an |OnAccepted| or |OnCanceled|
-  // callback. It is guaranteed that exactly one of |OnAccepted| or |OnCanceled|
-  // is eventually called.
+  // callback.
   void Cancel();
+
+  // Called when the link (if any) is clicked. Calls |OnLinkClicked| and closes
+  // the dialog. The |disposition| specifies how the resulting document should
+  // be loaded (based on the event flags present when the link was clicked).
+  void LinkClicked(WindowOpenDisposition disposition);
 
   // The title of the dialog. Note that the title is not shown on all platforms.
   virtual string16 GetTitle() = 0;
@@ -65,6 +69,10 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
   // The default implementation uses IDS_OK and IDS_CANCEL.
   virtual string16 GetAcceptButtonTitle();
   virtual string16 GetCancelButtonTitle();
+
+  // Returns the text of the link to be displayed, if any. Otherwise returns
+  // an empty string.
+  virtual string16 GetLinkText() const;
 
   // GTK stock icon names for the accept and cancel buttons, respectively.
   // The icons are only used on GTK. If these methods are not overriden,
@@ -86,9 +94,17 @@ class TabModalConfirmDialogDelegate : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
 
  private:
+  // It is guaranteed that exactly one of |OnAccepted|, |OnCanceled| or
+  // |OnLinkClicked| is eventually called. These method are private to
+  // enforce this guarantee. Access to them is controlled by |Accept|,
+  // |Cancel| and |LinkClicked|.
+
   // Called when the user accepts or cancels the dialog, respectively.
   virtual void OnAccepted();
   virtual void OnCanceled();
+
+  // Called when the user clicks on the link (if any).
+  virtual void OnLinkClicked(WindowOpenDisposition disposition);
 
   // Close the dialog.
   void CloseDialog();

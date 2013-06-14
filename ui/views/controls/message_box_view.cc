@@ -14,11 +14,13 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
+#include "ui/views/window/dialog_delegate.h"
 
 namespace {
 
@@ -76,6 +78,7 @@ MessageBoxView::MessageBoxView(const InitParams& params)
     : prompt_field_(NULL),
       icon_(NULL),
       checkbox_(NULL),
+      link_(NULL),
       message_width_(params.message_width) {
   Init(params);
 }
@@ -110,6 +113,23 @@ void MessageBoxView::SetCheckBoxSelected(bool selected) {
   if (!checkbox_)
     return;
   checkbox_->SetChecked(selected);
+}
+
+void MessageBoxView::SetLink(const string16& text, LinkListener* listener) {
+  if (text.empty()) {
+    DCHECK(!listener);
+    delete link_;
+    link_ = NULL;
+  } else {
+    DCHECK(listener);
+    if (!link_) {
+      link_ = new Link();
+      link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    }
+    link_->SetText(text);
+    link_->set_listener(listener);
+  }
+  ResetLayoutManager();
 }
 
 void MessageBoxView::GetAccessibleState(ui::AccessibleViewState* state) {
@@ -213,22 +233,10 @@ void MessageBoxView::ResetLayoutManager() {
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::FIXED, message_width_, 0);
 
-  // Column set for prompt Textfield, if one has been set.
-  const int textfield_column_view_set_id = 1;
-  if (prompt_field_) {
-    column_set = layout->AddColumnSet(textfield_column_view_set_id);
-    if (icon_) {
-      column_set->AddPaddingColumn(
-          0, icon_size.width() + kUnrelatedControlHorizontalSpacing);
-    }
-    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                          GridLayout::USE_PREF, 0, 0);
-  }
-
-  // Column set for checkbox, if one has been set.
-  const int checkbox_column_view_set_id = 2;
-  if (checkbox_) {
-    column_set = layout->AddColumnSet(checkbox_column_view_set_id);
+  // Column set for extra elements, if any.
+  const int extra_column_view_set_id = 1;
+  if (prompt_field_ || checkbox_ || link_) {
+    column_set = layout->AddColumnSet(extra_column_view_set_id);
     if (icon_) {
       column_set->AddPaddingColumn(
           0, icon_size.width() + kUnrelatedControlHorizontalSpacing);
@@ -250,17 +258,21 @@ void MessageBoxView::ResetLayoutManager() {
 
   if (prompt_field_) {
     layout->AddPaddingRow(0, inter_row_vertical_spacing_);
-    layout->StartRow(0, textfield_column_view_set_id);
+    layout->StartRow(0, extra_column_view_set_id);
     layout->AddView(prompt_field_);
   }
 
   if (checkbox_) {
     layout->AddPaddingRow(0, inter_row_vertical_spacing_);
-    layout->StartRow(0, checkbox_column_view_set_id);
+    layout->StartRow(0, extra_column_view_set_id);
     layout->AddView(checkbox_);
   }
 
-  layout->AddPaddingRow(0, inter_row_vertical_spacing_);
+  if (link_) {
+    layout->AddPaddingRow(0, inter_row_vertical_spacing_);
+    layout->StartRow(0, extra_column_view_set_id);
+    layout->AddView(link_);
+  }
 }
 
 }  // namespace views

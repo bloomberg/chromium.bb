@@ -53,6 +53,15 @@ void TabModalConfirmDialogDelegate::Accept() {
   CloseDialog();
 }
 
+void TabModalConfirmDialogDelegate::LinkClicked(
+    WindowOpenDisposition disposition) {
+  if (closing_)
+    return;
+  // Make sure we won't do anything when another action occurs.
+  closing_ = true;
+  OnLinkClicked(disposition);
+  CloseDialog();
+}
 
 void TabModalConfirmDialogDelegate::Observe(
     int type,
@@ -80,6 +89,10 @@ string16 TabModalConfirmDialogDelegate::GetCancelButtonTitle() {
   return l10n_util::GetStringUTF16(IDS_CANCEL);
 }
 
+string16 TabModalConfirmDialogDelegate::GetLinkText() const {
+  return string16();
+}
+
 const char* TabModalConfirmDialogDelegate::GetAcceptButtonIcon() {
   return NULL;
 }
@@ -92,6 +105,10 @@ void TabModalConfirmDialogDelegate::OnAccepted() {
 }
 
 void TabModalConfirmDialogDelegate::OnCanceled() {
+}
+
+void TabModalConfirmDialogDelegate::OnLinkClicked(
+    WindowOpenDisposition disposition) {
 }
 
 void TabModalConfirmDialogDelegate::CloseDialog() {

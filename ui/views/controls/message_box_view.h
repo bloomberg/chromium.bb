@@ -19,6 +19,8 @@ namespace views {
 class Checkbox;
 class ImageView;
 class Label;
+class Link;
+class LinkListener;
 class Textfield;
 
 // This class displays the contents of a message box. It is intended for use
@@ -76,6 +78,10 @@ class VIEWS_EXPORT MessageBoxView : public View {
   // Sets the state of the check-box.
   void SetCheckBoxSelected(bool selected);
 
+  // Sets the text and the listener of the link. If |text| is empty, the link
+  // is removed.
+  void SetLink(const string16& text, LinkListener* listener);
+
   // View:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
@@ -106,6 +112,9 @@ class VIEWS_EXPORT MessageBoxView : public View {
 
   // Checkbox for the message box.
   Checkbox* checkbox_;
+
+  // Link displayed at the bottom of the view.
+  Link* link_;
 
   // Maximum width of the message label.
   int message_width_;
