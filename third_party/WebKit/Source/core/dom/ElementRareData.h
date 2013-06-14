@@ -46,7 +46,6 @@ public:
 
     void setPseudoElement(PseudoId, PassRefPtr<PseudoElement>);
     PseudoElement* pseudoElement(PseudoId) const;
-    bool hasPseudoElements() const { return m_generatedBefore || m_generatedAfter; }
 
     void resetComputedStyle();
     void resetDynamicRestyleObservations();

@@ -47,14 +47,14 @@ void ParentDetails::didTraverseShadowRoot(const ShadowRoot* root)
     m_resetStyleInheritance  = m_resetStyleInheritance || root->resetStyleInheritance();
 }
 
-ContainerNode* parentSlow(const Node* node, ParentDetails* details)
+ContainerNode* parent(const Node* node, ParentDetails* details)
 {
     ComposedShadowTreeWalker walker(node, ComposedShadowTreeWalker::CrossUpperBoundary, ComposedShadowTreeWalker::CanStartFromShadowBoundary);
     ContainerNode* found = toContainerNode(walker.traverseParent(walker.get(), details));
     return details->outOfComposition() ? 0 : found;
 }
 
-Node* nextSiblingSlow(const Node* node)
+Node* nextSibling(const Node* node)
 {
     ComposedShadowTreeWalker walker(node);
     if (node->isBeforePseudoElement()) {
@@ -73,7 +73,7 @@ Node* nextSiblingSlow(const Node* node)
     return 0;
 }
 
-Node* previousSiblingSlow(const Node* node)
+Node* previousSibling(const Node* node)
 {
     ComposedShadowTreeWalker walker(node);
     if (node->isAfterPseudoElement()) {

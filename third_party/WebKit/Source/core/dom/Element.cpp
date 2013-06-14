@@ -2285,7 +2285,7 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleChange change)
         // when RenderObject::isChildAllowed on our parent returns false for the
         // PseudoElement's renderer for each style recalc.
         if (!renderer() || !pseudoElementRendererIsNeeded(renderer()->getCachedPseudoStyle(pseudoId)))
-            setPseudoElement(pseudoId, 0);
+            elementRareData()->setPseudoElement(pseudoId, 0);
     } else if (change >= Inherit || needsStyleRecalc())
         createPseudoElementIfNeeded(pseudoId);
 }
@@ -2304,23 +2304,12 @@ void Element::createPseudoElementIfNeeded(PseudoId pseudoId)
     ASSERT(!isPseudoElement());
     RefPtr<PseudoElement> element = PseudoElement::create(this, pseudoId);
     element->attach();
-    setPseudoElement(pseudoId, element.release());
-}
-
-bool Element::hasPseudoElements() const
-{
-    return hasRareData() && elementRareData()->hasPseudoElements();
+    ensureElementRareData()->setPseudoElement(pseudoId, element.release());
 }
 
 PseudoElement* Element::pseudoElement(PseudoId pseudoId) const
 {
     return hasRareData() ? elementRareData()->pseudoElement(pseudoId) : 0;
-}
-
-void Element::setPseudoElement(PseudoId pseudoId, PassRefPtr<PseudoElement> element)
-{
-    ensureElementRareData()->setPseudoElement(pseudoId, element);
-    resetNeedsShadowTreeWalker();
 }
 
 RenderObject* Element::pseudoElementRenderer(PseudoId pseudoId) const

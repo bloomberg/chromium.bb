@@ -66,11 +66,8 @@ private:
 
 ContainerNode* parent(const Node*);
 ContainerNode* parent(const Node*, ParentDetails*);
-ContainerNode* parentSlow(const Node*, ParentDetails*);
 Node* nextSibling(const Node*);
-Node* nextSiblingSlow(const Node*);
 Node* previousSibling(const Node*);
-Node* previousSiblingSlow(const Node*);
 
 Node* nextInScope(const Node*);
 Node* previousInScope(const Node*);
@@ -81,46 +78,6 @@ inline ContainerNode* parent(const Node* node)
 {
     ParentDetails unusedDetails;
     return parent(node, &unusedDetails);
-}
-
-inline ContainerNode* parent(const Node* node, ParentDetails* details)
-{
-    if (!node->needsShadowTreeWalker()) {
-#ifndef NDEBUG
-        ParentDetails slowDetails;
-        ASSERT(node->parentNode() == parentSlow(node, &slowDetails));
-        ASSERT(slowDetails == *details);
-#endif
-        return node->parentNodeGuaranteedHostFree();
-    }
-
-    return parentSlow(node, details);
-}
-
-inline Node* nextSibling(const Node* node)
-{
-    if (!node->needsShadowTreeWalker()) {
-        Node* next = node->nextSibling();
-        if (!next || !next->isInsertionPoint()) {
-            ASSERT(nextSiblingSlow(node) == next);
-            return next;
-        }
-    }
-
-    return nextSiblingSlow(node);
-}
-
-inline Node* previousSibling(const Node* node)
-{
-    if (!node->needsShadowTreeWalker()) {
-        Node* prev = node->previousSibling();
-        if (!prev || !prev->isInsertionPoint()) {
-            ASSERT(previousSiblingSlow(node) == prev);
-            return prev;
-        }
-    }
-
-    return previousSiblingSlow(node);
 }
 
 }

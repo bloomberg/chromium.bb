@@ -494,11 +494,8 @@ public:
     virtual void finishParsingChildren();
     virtual void beginParsingChildren() OVERRIDE FINAL;
 
-    bool hasPseudoElements() const;
     PseudoElement* pseudoElement(PseudoId) const;
     RenderObject* pseudoElementRenderer(PseudoId) const;
-    bool childNeedsShadowWalker() const;
-    void didShadowTreeAwareChildrenChange();
 
     virtual bool matchesReadOnlyPseudoClass() const;
     virtual bool matchesReadWritePseudoClass() const;
@@ -635,7 +632,6 @@ protected:
 private:
     void updatePseudoElement(PseudoId, StyleChange);
     void createPseudoElementIfNeeded(PseudoId);
-    void setPseudoElement(PseudoId, PassRefPtr<PseudoElement>);
 
     virtual bool areAuthorShadowsAllowed() const { return true; }
     virtual void didAddUserAgentShadowRoot(ShadowRoot*) { }

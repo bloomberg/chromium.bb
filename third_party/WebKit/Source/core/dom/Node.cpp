@@ -1314,11 +1314,6 @@ Element* Node::parentOrShadowHostElement() const
     return toElement(parent);
 }
 
-bool Node::needsShadowTreeWalkerSlow() const
-{
-    return (isShadowRoot() || (isElementNode() && (isInsertionPoint() || isPseudoElement() || toElement(this)->hasPseudoElements() || toElement(this)->shadow())));
-}
-
 bool Node::isBlockFlowElement() const
 {
     return isElementNode() && renderer() && renderer()->isBlockFlow();
