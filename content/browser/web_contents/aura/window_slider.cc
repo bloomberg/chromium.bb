@@ -17,6 +17,12 @@ namespace content {
 
 namespace {
 
+void DeleteLayerAndShadow(ui::Layer* layer,
+                          ShadowLayerDelegate* shadow) {
+  delete shadow;
+  delete layer;
+}
+
 // An animation observer that runs a callback at the end of the animation, and
 // destroys itself.
 class CallbackAnimationObserver : public ui::ImplicitAnimationObserver {
@@ -175,11 +181,11 @@ void WindowSlider::ResetScroll() {
     settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     settings.SetTweenType(ui::Tween::EASE_OUT);
+
+    // Delete the layer and the shadow at the end of the animation.
     settings.AddObserver(new CallbackAnimationObserver(
-        base::Bind(&base::DeletePointer<ui::Layer>,
-                   base::Unretained(layer))));
-    settings.AddObserver(new CallbackAnimationObserver(
-        base::Bind(&base::DeletePointer<ShadowLayerDelegate>,
+        base::Bind(&DeleteLayerAndShadow,
+                   base::Unretained(layer),
                    base::Unretained(shadow_.release()))));
 
     gfx::Transform transform;
