@@ -1717,7 +1717,7 @@ shell_surface_set_maximized(struct wl_client *client,
 	/* get the default output, if the client set it as NULL
 	   check whether the ouput is available */
 	if (output_resource)
-		shsurf->output = output_resource->data;
+		shsurf->output = wl_resource_get_user_data(output_resource);
 	else if (es->output)
 		shsurf->output = es->output;
 	else
@@ -1930,7 +1930,7 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	struct weston_output *output;
 
 	if (output_resource)
-		output = output_resource->data;
+		output = wl_resource_get_user_data(output_resource);
 	else
 		output = NULL;
 
@@ -2449,7 +2449,7 @@ desktop_shell_set_background(struct wl_client *client,
 
 	surface->configure = background_configure;
 	surface->configure_private = shell;
-	surface->output = output_resource->data;
+	surface->output = wl_resource_get_user_data(output_resource);
 	desktop_shell_send_configure(resource, 0,
 				     surface_resource,
 				     surface->output->width,
@@ -2483,7 +2483,7 @@ desktop_shell_set_panel(struct wl_client *client,
 
 	surface->configure = panel_configure;
 	surface->configure_private = shell;
-	surface->output = output_resource->data;
+	surface->output = wl_resource_get_user_data(output_resource);
 	desktop_shell_send_configure(resource, 0,
 				     surface_resource,
 				     surface->output->width,
@@ -3675,7 +3675,7 @@ screensaver_set_surface(struct wl_client *client,
 	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 	struct weston_surface *surface =
 		wl_resource_get_user_data(surface_resource);
-	struct weston_output *output = output_resource->data;
+	struct weston_output *output = wl_resource_get_user_data(output_resource);
 
 	surface->configure = screensaver_configure;
 	surface->configure_private = shell;
@@ -3838,7 +3838,7 @@ input_panel_surface_set_toplevel(struct wl_client *client,
 	wl_list_insert(&shell->input_panel.surfaces,
 		       &input_panel_surface->link);
 
-	input_panel_surface->output = output_resource->data;
+	input_panel_surface->output = wl_resource_get_user_data(output_resource);
 	input_panel_surface->panel = 0;
 }
 

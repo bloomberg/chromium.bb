@@ -175,7 +175,8 @@ screenshooter_shoot(struct wl_client *client,
 		    struct wl_resource *output_resource,
 		    struct wl_resource *buffer_resource)
 {
-	struct weston_output *output = output_resource->data;
+	struct weston_output *output =
+		wl_resource_get_user_data(output_resource);
 	struct screenshooter_frame_listener *l;
 	struct wl_buffer *buffer = buffer_resource->data;
 

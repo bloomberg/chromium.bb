@@ -366,8 +366,8 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 		       struct wl_resource *origin_resource,
 		       struct wl_resource *icon_resource, uint32_t serial)
 {
-	struct weston_seat *seat = resource->data;
-	struct weston_drag *drag = resource->data;
+	struct weston_seat *seat = wl_resource_get_user_data(resource);
+	struct weston_drag *drag = wl_resource_get_user_data(resource);
 	struct weston_surface *icon = NULL;
 
 	if (seat->pointer->button_count == 0 ||
@@ -573,7 +573,7 @@ get_data_device(struct wl_client *client,
 		struct wl_resource *manager_resource,
 		uint32_t id, struct wl_resource *seat_resource)
 {
-	struct weston_seat *seat = seat_resource->data;
+	struct weston_seat *seat = wl_resource_get_user_data(seat_resource);
 	struct wl_resource *resource;
 
 	resource = wl_client_add_object(client, &wl_data_device_interface,

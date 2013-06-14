@@ -502,19 +502,6 @@ weston_surface_damage_below(struct weston_surface *surface)
 	pixman_region32_fini(&damage);
 }
 
-static struct wl_resource *
-find_resource_for_client(struct wl_list *list, struct wl_client *client)
-{
-        struct wl_resource *r;
-
-        wl_list_for_each(r, list, link) {
-                if (r->client == client)
-                        return r;
-        }
-
-        return NULL;
-}
-
 static void
 weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 {
@@ -536,7 +523,7 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 	wl_list_for_each(output, &es->compositor->output_list, link) {
 		if (1 << output->id & different)
 			resource =
-				find_resource_for_client(&output->resource_list,
+				wl_resource_find_for_client(&output->resource_list,
 							 client);
 		if (resource == NULL)
 			continue;
@@ -2489,7 +2476,7 @@ weston_compositor_stack_plane(struct weston_compositor *ec,
 
 static void unbind_resource(struct wl_resource *resource)
 {
-	wl_list_remove(&resource->link);
+	wl_list_remove(wl_resource_get_link(resource));
 	free(resource);
 }
 
@@ -2504,8 +2491,8 @@ bind_output(struct wl_client *client,
 	resource = wl_client_add_object(client,
 					&wl_output_interface, NULL, id, data);
 
-	wl_list_insert(&output->resource_list, &resource->link);
-	resource->destroy = unbind_resource;
+	wl_list_insert(&output->resource_list, wl_resource_get_link(resource));
+	wl_resource_set_destructor(resource, unbind_resource);
 
 	wl_output_send_geometry(resource,
 				output->x,
