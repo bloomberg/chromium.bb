@@ -906,6 +906,13 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_CHROMEOS)
   {
+      "ash-use-alt-shelf",
+      IDS_FLAGS_ALTERNATE_SHELF_LAYOUT_NAME,
+      IDS_FLAGS_ALTERNATE_SHELF_LAYOUT_DESCRIPTION,
+      kOsCrOS,
+      SINGLE_VALUE_TYPE(ash::switches::kAshUseAlternateShelfLayout)
+  },
+  {
     "enable-background-loader",
     IDS_ENABLE_BACKLOADER_NAME,
     IDS_ENABLE_BACKLOADER_DESCRIPTION,

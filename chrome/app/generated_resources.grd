@@ -6154,6 +6154,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_FLAGS_ALTERNATE_SHELF_LAYOUT_NAME">
+          Alternative shelf layout
+        </message>
+        <message name="IDS_FLAGS_ALTERNATE_SHELF_LAYOUT_DESCRIPTION">
+          Use the alternative shelf layout.
+        </message>
         <message name="IDS_FLAGS_RELAUNCH_BUTTON" desc="Text on a button that restarts Chrome OS when clicked. ">
           Restart Now
         </message>

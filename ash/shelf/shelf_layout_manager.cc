@@ -70,6 +70,11 @@ bool IsDraggingTrayEnabled() {
   return dragging_tray_allowed;
 }
 
+int GetPreferredShelfSize() {
+  return ash::switches::UseAlternateShelfLayout() ?
+      ShelfLayoutManager::kShelfSize : kLauncherPreferredSize;
+}
+
 }  // namespace
 
 // static
@@ -80,6 +85,9 @@ const int ShelfLayoutManager::kWorkspaceAreaAutoHideInset = 5;
 
 // static
 const int ShelfLayoutManager::kAutoHideSize = 3;
+
+// static
+const int ShelfLayoutManager::kShelfSize = 47;
 
 // ShelfLayoutManager::AutoHideEventFilter -------------------------------------
 
@@ -659,9 +667,9 @@ void ShelfLayoutManager::GetShelfSize(int* width, int* height) {
   gfx::Size status_size(
       shelf_->status_area_widget()->GetWindowBoundsInScreen().size());
   if (IsHorizontalAlignment())
-    *height = kLauncherPreferredSize;
+    *height = GetPreferredShelfSize();
   else
-    *width = kLauncherPreferredSize;
+    *width = GetPreferredShelfSize();
 }
 
 void ShelfLayoutManager::AdjustBoundsBasedOnAlignment(int inset,
@@ -713,7 +721,7 @@ void ShelfLayoutManager::CalculateTargetBounds(
       gfx::Rect(available_bounds.x(), available_bounds.y(),
                     available_bounds.width(), shelf_height));
 
-  int status_inset = std::max(0, kLauncherPreferredSize -
+  int status_inset = std::max(0, GetPreferredShelfSize() -
       PrimaryAxisValue(status_size.height(), status_size.width()));
 
   target_bounds->status_bounds_in_shelf = SelectValueForShelfAlignment(
@@ -780,7 +788,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     // changed since then, e.g. because the tray-menu was shown because of the
     // drag), then allow the drag some resistance-free region at first to make
     // sure the shelf sticks with the finger until the shelf is visible.
-    resistance_free_region = kLauncherPreferredSize - kAutoHideSize;
+    resistance_free_region = GetPreferredShelfSize() - kAutoHideSize;
   }
 
   bool resist = SelectValueForShelfAlignment(
