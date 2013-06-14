@@ -11,7 +11,6 @@ layer at (0,0) size 800x600
         RenderBlock {DIV} at (0,0) size 784x20
           RenderText {#text} at (382,0) size 20x19
             text run at (382,0) width 20: "foo"
-        RenderBlock (anonymous) at (0,20) size 784x0
         RenderBlock {DIV} at (0,20) size 784x40
           RenderBlock {DIV} at (0,0) size 784x20
             RenderText {#text} at (382,0) size 20x19

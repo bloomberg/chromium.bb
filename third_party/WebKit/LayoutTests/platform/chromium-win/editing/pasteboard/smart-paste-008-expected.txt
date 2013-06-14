@@ -29,5 +29,4 @@ layer at (0,0) size 800x600
         RenderBlock {DIV} at (0,0) size 784x20
           RenderText {#text} at (0,0) size 52x19
             text run at (0,0) width 52: "f foo bar"
-        RenderBlock (anonymous) at (0,20) size 784x0
 caret: position 5 of child 0 {#text} of child 0 {DIV} of child 4 {DIV} of body
