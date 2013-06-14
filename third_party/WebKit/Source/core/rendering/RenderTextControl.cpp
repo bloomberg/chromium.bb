@@ -32,10 +32,10 @@ using namespace std;
 
 namespace WebCore {
 
-RenderTextControl::RenderTextControl(Element* element)
+RenderTextControl::RenderTextControl(HTMLTextFormControlElement* element)
     : RenderBlock(element)
 {
-    ASSERT(isHTMLTextFormControlElement(element));
+    ASSERT(element);
 }
 
 RenderTextControl::~RenderTextControl()
@@ -70,18 +70,9 @@ void RenderTextControl::styleDidChange(StyleDifference diff, const RenderStyle* 
     textFormControlElement()->updatePlaceholderVisibility(false);
 }
 
-static inline void updateUserModifyProperty(Node* node, RenderStyle* style)
+static inline void updateUserModifyProperty(HTMLTextFormControlElement* node, RenderStyle* style)
 {
-    bool isDisabled = false;
-    bool isReadOnlyControl = false;
-
-    if (node->isElementNode()) {
-        Element* element = toElement(node);
-        isDisabled = element->isDisabledFormControl();
-        isReadOnlyControl = element->isTextFormControl() && toHTMLTextFormControlElement(element)->isReadOnly();
-    }
-
-    style->setUserModify((isReadOnlyControl || isDisabled) ? READ_ONLY : READ_WRITE_PLAINTEXT_ONLY);
+    style->setUserModify(node->isDisabledOrReadOnly() ? READ_ONLY : READ_WRITE_PLAINTEXT_ONLY);
 }
 
 void RenderTextControl::adjustInnerTextStyle(RenderStyle* textBlockStyle) const
@@ -91,7 +82,7 @@ void RenderTextControl::adjustInnerTextStyle(RenderStyle* textBlockStyle) const
     textBlockStyle->setDirection(style()->direction());
     textBlockStyle->setUnicodeBidi(style()->unicodeBidi());
 
-    updateUserModifyProperty(node(), textBlockStyle);
+    updateUserModifyProperty(textFormControlElement(), textBlockStyle);
 }
 
 int RenderTextControl::textBlockLogicalHeight() const
@@ -115,7 +106,7 @@ void RenderTextControl::updateFromElement()
 {
     Element* innerText = innerTextElement();
     if (innerText && innerText->renderer())
-        updateUserModifyProperty(node(), innerText->renderer()->style());
+        updateUserModifyProperty(textFormControlElement(), innerText->renderer()->style());
 }
 
 int RenderTextControl::scrollbarThickness() const

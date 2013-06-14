@@ -31,7 +31,7 @@ class HTMLInputElement;
 
 class RenderSearchField FINAL : public RenderTextControlSingleLine {
 public:
-    RenderSearchField(Element*);
+    RenderSearchField(HTMLInputElement*);
     virtual ~RenderSearchField();
 
     void updateCancelButtonVisibility() const;

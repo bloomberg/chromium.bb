@@ -34,10 +34,10 @@ using namespace HTMLNames;
 
 // ----------------------------
 
-RenderSearchField::RenderSearchField(Element* element)
+RenderSearchField::RenderSearchField(HTMLInputElement* element)
     : RenderTextControlSingleLine(element)
 {
-    ASSERT(toHTMLInputElement(element)->isSearchField());
+    ASSERT(element->isSearchField());
 }
 
 RenderSearchField::~RenderSearchField()

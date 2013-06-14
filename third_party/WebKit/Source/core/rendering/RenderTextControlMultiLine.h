@@ -26,9 +26,11 @@
 
 namespace WebCore {
 
+class HTMLTextAreaElement;
+
 class RenderTextControlMultiLine FINAL : public RenderTextControl {
 public:
-    RenderTextControlMultiLine(Element*);
+    RenderTextControlMultiLine(HTMLTextAreaElement*);
     virtual ~RenderTextControlMultiLine();
 
 private:
