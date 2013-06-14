@@ -54,6 +54,7 @@ class CertificateManagerBrowserTest : public options::OptionsBrowserTest {
         GetNetworkConfigurationUpdater()->SetUserPolicyService(
             true, "", connector->policy_service());
 #endif
+    content::RunAllPendingInMessageLoop();
   }
 
 #if defined(OS_CHROMEOS)

@@ -40,6 +40,7 @@ NetworkHandler::~NetworkHandler() {
 }
 
 void NetworkHandler::Init() {
+  cert_loader_->Init();
   network_state_handler_->InitShillPropertyHandler();
   network_configuration_handler_->Init(network_state_handler_.get());
   managed_network_configuration_handler_->Init(

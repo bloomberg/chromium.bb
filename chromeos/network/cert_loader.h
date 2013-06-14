@@ -19,6 +19,10 @@
 #include "net/cert/cert_database.h"
 #include "net/cert/x509_certificate.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace crypto {
 class SymmetricKey;
 }
@@ -52,6 +56,13 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
 
   virtual ~CertLoader();
 
+  // |crypto_task_runner| is the task runner that any synchronous crypto calls
+  // should be made from. e.g. in Chrome this is the IO thread. Must be called
+  // after the thread is started. Certificate loading will not happen unless
+  // this is set.
+  void SetCryptoTaskRunner(
+      const scoped_refptr<base::SequencedTaskRunner>& crypto_task_runner);
+
   void AddObserver(CertLoader::Observer* observer);
   void RemoveObserver(CertLoader::Observer* observer);
 
@@ -78,12 +89,14 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   friend class NetworkHandler;
   CertLoader();
 
-  void RequestCertificates();
+  void Init();
+  void MaybeRequestCertificates();
 
   // This is the cyclic chain of callbacks to initialize the TPM token and to
   // kick off the update of the certificate list.
   void InitializeTokenAndLoadCertificates();
   void RetryTokenInitializationLater();
+  void OnPersistentNSSDBOpened();
   void OnTpmIsEnabled(DBusMethodCallStatus call_status,
                       bool tpm_is_enabled);
   void OnPkcs11IsTpmTokenReady(DBusMethodCallStatus call_status,
@@ -91,7 +104,7 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   void OnPkcs11GetTpmTokenInfo(DBusMethodCallStatus call_status,
                                const std::string& token_name,
                                const std::string& user_pin);
-  void InitializeNSSForTPMToken();
+  void OnTPMTokenInitialized(bool success);
 
   // These calls handle the updating of the certificate list after the TPM token
   // was initialized.
@@ -119,11 +132,12 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   // be left.
   enum TPMTokenState {
     TPM_STATE_UNKNOWN,
+    TPM_DB_OPENED,
     TPM_DISABLED,
     TPM_ENABLED,
     TPM_TOKEN_READY,
     TPM_TOKEN_INFO_RECEIVED,
-    TPM_TOKEN_NSS_INITIALIZED,
+    TPM_TOKEN_INITIALIZED,
   };
   TPMTokenState tpm_token_state_;
 
@@ -140,6 +154,9 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   net::CertificateList cert_list_;
 
   base::ThreadChecker thread_checker_;
+
+  // TaskRunner for crypto calls.
+  scoped_refptr<base::SequencedTaskRunner> crypto_task_runner_;
 
   // This factory should be used only for callbacks during TPMToken
   // initialization.
