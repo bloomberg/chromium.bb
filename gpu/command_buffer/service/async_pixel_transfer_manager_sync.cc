@@ -47,6 +47,7 @@ void AsyncPixelTransferDelegateSync::AsyncTexImage2D(
   // Save the define params to return later during deferred
   // binding of the transfer texture.
   void* data = GetAddress(mem_params);
+  base::TimeTicks begin_time(base::TimeTicks::HighResNow());
   glTexImage2D(
       tex_params.target,
       tex_params.level,
@@ -57,6 +58,9 @@ void AsyncPixelTransferDelegateSync::AsyncTexImage2D(
       tex_params.format,
       tex_params.type,
       data);
+  shared_state_->texture_upload_count++;
+  shared_state_->total_texture_upload_time +=
+      base::TimeTicks::HighResNow() - begin_time;
   // The texture is already fully bound so just call it now.
   bind_callback.Run();
 }

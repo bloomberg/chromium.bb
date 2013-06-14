@@ -186,9 +186,11 @@ class TransferStateInternal
     bind_callback_ = bind_callback;
   }
 
-  void PerformAsyncTexImage2D(AsyncTexImage2DParams tex_params,
-                              AsyncMemoryParams mem_params,
-                              ScopedSafeSharedMemory* safe_shared_memory) {
+  void PerformAsyncTexImage2D(
+      AsyncTexImage2DParams tex_params,
+      AsyncMemoryParams mem_params,
+      ScopedSafeSharedMemory* safe_shared_memory,
+      scoped_refptr<AsyncPixelTransferUploadStats> texture_upload_stats) {
     base::AutoLock locked(upload_lock_);
     if (cancel_upload_flag_.IsSet())
       return;
@@ -200,6 +202,10 @@ class TransferStateInternal
                  "height",
                  tex_params.height);
     DCHECK_EQ(0, tex_params.level);
+
+    base::TimeTicks begin_time;
+    if (texture_upload_stats.get())
+      begin_time = base::TimeTicks::HighResNow();
 
     void* data =
         AsyncPixelTransferDelegate::GetAddress(safe_shared_memory, mem_params);
@@ -220,6 +226,11 @@ class TransferStateInternal
     }
 
     MarkAsCompleted();
+
+    if (texture_upload_stats.get()) {
+      texture_upload_stats->AddUpload(base::TimeTicks::HighResNow() -
+                                      begin_time);
+    }
   }
 
   void PerformAsyncTexSubImage2D(
@@ -392,7 +403,8 @@ void AsyncPixelTransferDelegateShareGroup::AsyncTexImage2D(
           mem_params,
           base::Owned(new ScopedSafeSharedMemory(safe_shared_memory_pool(),
                                                  mem_params.shared_memory,
-                                                 mem_params.shm_size))));
+                                                 mem_params.shm_size)),
+          shared_state_->texture_upload_stats));
 }
 
 void AsyncPixelTransferDelegateShareGroup::AsyncTexSubImage2D(

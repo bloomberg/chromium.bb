@@ -247,9 +247,11 @@ class TransferStateInternal
     transfer_completion_.Wait();
   }
 
-  void PerformAsyncTexImage2D(AsyncTexImage2DParams tex_params,
-                              AsyncMemoryParams mem_params,
-                              ScopedSafeSharedMemory* safe_shared_memory) {
+  void PerformAsyncTexImage2D(
+      AsyncTexImage2DParams tex_params,
+      AsyncMemoryParams mem_params,
+      ScopedSafeSharedMemory* safe_shared_memory,
+      scoped_refptr<AsyncPixelTransferUploadStats> texture_upload_stats) {
     TRACE_EVENT2("gpu",
                  "PerformAsyncTexImage",
                  "width",
@@ -262,6 +264,11 @@ class TransferStateInternal
 
     void* data =
         AsyncPixelTransferDelegate::GetAddress(safe_shared_memory, mem_params);
+
+    base::TimeTicks begin_time;
+    if (texture_upload_stats.get())
+      begin_time = base::TimeTicks::HighResNow();
+
     {
       TRACE_EVENT0("gpu", "glTexImage2D no data");
       glGenTextures(1, &thread_texture_id_);
@@ -294,6 +301,10 @@ class TransferStateInternal
     MarkAsCompleted();
 
     DCHECK(CHECK_GL());
+    if (texture_upload_stats.get()) {
+      texture_upload_stats->AddUpload(base::TimeTicks::HighResNow() -
+                                      begin_time);
+    }
   }
 
   void PerformAsyncTexSubImage2D(
@@ -517,8 +528,8 @@ void AsyncPixelTransferDelegateEGL::AsyncTexImage2D(
           mem_params,
           base::Owned(new ScopedSafeSharedMemory(safe_shared_memory_pool(),
                                                  mem_params.shared_memory,
-                                                 mem_params.shm_size))));
-
+                                                 mem_params.shm_size)),
+          shared_state_->texture_upload_stats));
 
   DCHECK(CHECK_GL());
 }

@@ -7783,16 +7783,22 @@ void GLES2DecoderImpl::DoTexImage2D(
   }
 
   if (!teximage2d_faster_than_texsubimage2d_ && level_is_same && pixels) {
-    glTexSubImage2D(target, level, 0, 0, width, height, format, type, pixels);
+    {
+      ScopedTextureUploadTimer timer(this);
+      glTexSubImage2D(target, level, 0, 0, width, height, format, type, pixels);
+    }
     texture_manager()->SetLevelCleared(texture_ref, target, level, true);
     tex_image_2d_failed_ = false;
     return;
   }
 
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glTexImage2D");
-  glTexImage2D(
-      target, level, internal_format, width, height, border, format, type,
-      pixels);
+  {
+    ScopedTextureUploadTimer timer(this);
+    glTexImage2D(
+        target, level, internal_format, width, height, border, format, type,
+        pixels);
+  }
   GLenum error = LOCAL_PEEK_GL_ERROR("glTexImage2D");
   if (error == GL_NO_ERROR) {
     texture_manager()->SetLevelInfo(
