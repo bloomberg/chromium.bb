@@ -1121,7 +1121,8 @@ class ValidationPool(object):
       pool.changes, pool.non_manifest_changes = change_filter(
           pool, pool.changes, pool.non_manifest_changes)
 
-      if pool.changes or pool.non_manifest_changes or dryrun or time_left < 0:
+      if (pool.changes or pool.non_manifest_changes or dryrun or time_left < 0
+          or cls.ShouldExitEarly()):
         break
 
       logging.info('Waiting for new CLs (%d minutes left)...', time_left / 60)
@@ -1170,6 +1171,14 @@ class ValidationPool(object):
             'Could not find change defined by %s' % pending_commit)
 
     return pool
+
+  @classmethod
+  def ShouldExitEarly(cls):
+    """Return whether we should exit early.
+
+    This function is intended to be overridden by tests or by subclasses.
+    """
+    return False
 
   @staticmethod
   def _FilterNonCrosProjects(changes, manifest):

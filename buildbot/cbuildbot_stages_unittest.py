@@ -1556,7 +1556,6 @@ class BaseCQTest(StageTest):
                     [lkgm_manager, 'GenerateBlameList']])
     self.PatchObject(repository.RepoRepository, 'ExportManifest',
                      return_value=self.MANIFEST_CONTENTS, autospec=True)
-    self.PatchObject(validation_pool.ValidationPool, 'MAX_TIMEOUT', 0.5)
     self.StartPatcher(git_unittest.ManifestMock())
     self.StartPatcher(git_unittest.ManifestCheckoutMock())
     version_file = os.path.join(self.build_root, constants.VERSION_FILE)
@@ -1571,7 +1570,7 @@ class BaseCQTest(StageTest):
     osutils.WriteFile(self.manifest_path, self.MANIFEST_CONTENTS)
 
   def PerformSync(self, remote='cros', committed=False, tree_open=True,
-                  tracking_branch='master', num_patches=1):
+                  tracking_branch='master', num_patches=1, runs=0):
     """Helper to perform a basic sync for master commit queue."""
     p = MockPatch(remote=remote, tracking_branch=tracking_branch)
     my_patches = [p] * num_patches
@@ -1581,6 +1580,9 @@ class BaseCQTest(StageTest):
                      autospec=True)
     self.PatchObject(cros_build_lib, 'TreeOpen', return_value=tree_open,
                      autospec=True)
+    exit_it = itertools.chain([False] * runs, itertools.repeat(True))
+    self.PatchObject(validation_pool.ValidationPool, 'ShouldExitEarly',
+                     side_effect=exit_it)
     self.sync_stage.PerformStage()
 
   def ReloadPool(self):
@@ -1643,7 +1645,7 @@ class MasterCQSyncTest(BaseCQTest):
   def testNoGerritHelper(self):
     """Test that setting a non-standard remote raises an exception."""
     self.assertRaises(validation_pool.GerritHelperNotAvailable,
-                      self.testCommitNonManifestChange, remote='foo')
+                      self.testCommitNonManifestChange, remote='foo', runs=1)
 
 
 class ExtendedMasterCQSyncTest(MasterCQSyncTest):
@@ -1664,6 +1666,7 @@ class ExtendedMasterCQSyncTest(MasterCQSyncTest):
     """Test that tree closures block commits."""
     self.assertRaises(SystemExit, self.testCommitNonManifestChange,
                       tree_open=False)
+
 
 class PreCQStatusMock(partial_mock.PartialMock):
   """Partial mock for PreCQStatus methods in ValidationPool."""
@@ -1692,8 +1695,7 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
   STATUS_FAILED = validation_pool.ValidationPool.STATUS_FAILED
 
   def setUp(self):
-    old_sleep = time.sleep
-    self.PatchObject(time, 'sleep', side_effect=lambda x: old_sleep(0.01))
+    self.PatchObject(time, 'sleep', autospec=True)
     self.pre_cq = PreCQStatusMock()
     self.StartPatcher(self.pre_cq)
     self.sync_stage = stages.PreCQLauncherStage(self.options, self.build_config)
@@ -1708,26 +1710,24 @@ class PreCQLauncherStageTest(MasterCQSyncTest):
     self.assertEqual(self.pre_cq.status.values(), [self.STATUS_LAUNCHING])
     self.assertEqual(self.pre_cq.calls.keys(), [self.STATUS_LAUNCHING])
 
+  def runTrybotTest(self, launching, waiting, failed, runs):
+    self.testCommitManifestChange(runs=runs)
+    self.assertEqual(self.pre_cq.calls.get(self.STATUS_LAUNCHING, 0), launching)
+    self.assertEqual(self.pre_cq.calls.get(self.STATUS_WAITING, 0), waiting)
+    self.assertEqual(self.pre_cq.calls.get(self.STATUS_FAILED, 0), failed)
+
   def testLaunchTrybotTimesOutOnce(self):
     """Test what happens when a trybot launch times out."""
     it = itertools.chain([True], itertools.repeat(False))
     self.PatchObject(stages.PreCQLauncherStage, '_HasLaunchTimedOut',
                      side_effect=it)
-    self.PatchObject(validation_pool.ValidationPool, 'MAX_TIMEOUT', 2)
-    self.testCommitManifestChange()
-    self.assertTrue(self.pre_cq.calls.get(self.STATUS_WAITING, 0) > 0)
-    self.assertTrue(self.pre_cq.calls.get(self.STATUS_LAUNCHING, 0) > 0)
-    self.assertEqual(self.pre_cq.calls.get(self.STATUS_FAILED, 0), 0)
+    self.runTrybotTest(launching=2, waiting=1, failed=0, runs=3)
 
   def testLaunchTrybotTimesOutTwice(self):
     """Test what happens when a trybot launch times out."""
     self.PatchObject(stages.PreCQLauncherStage, '_HasLaunchTimedOut',
                      return_value=True)
-    self.PatchObject(validation_pool.ValidationPool, 'MAX_TIMEOUT', 2)
-    self.testCommitManifestChange()
-    self.assertTrue(self.pre_cq.calls.get(self.STATUS_WAITING, 0) > 0)
-    self.assertTrue(self.pre_cq.calls.get(self.STATUS_LAUNCHING, 0) > 0)
-    self.assertTrue(self.pre_cq.calls.get(self.STATUS_FAILED, 0) > 0)
+    self.runTrybotTest(launching=2, waiting=1, failed=1, runs=3)
 
 
 if __name__ == '__main__':
