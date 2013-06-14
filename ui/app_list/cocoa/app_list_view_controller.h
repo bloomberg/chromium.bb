@@ -23,7 +23,7 @@ class AppListModel;
 
 // Controller for the top-level view of the app list UI. It creates and hosts an
 // AppsGridController (displaying an AppListModel), pager control to navigate
-// between pages in the grid, and search entry box with a pop up menu.
+// between pages in the grid, and search entry box.
 APP_LIST_EXPORT
 @interface AppListViewController : NSViewController<AppsPaginationModelObserver,
                                                     AppsSearchBoxDelegate> {

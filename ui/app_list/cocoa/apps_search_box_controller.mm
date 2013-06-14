@@ -6,31 +6,19 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "grit/ui_resources.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
-#include "ui/app_list/app_list_menu.h"
-#import "ui/app_list/cocoa/current_user_menu_item_view.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_box_model_observer.h"
-#import "ui/base/cocoa/controls/hover_image_menu_button.h"
-#import "ui/base/cocoa/controls/hover_image_menu_button_cell.h"
-#import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 
 namespace {
 
-// Padding either side of the search icon and menu button.
+// Padding either side of the search icon.
 const CGFloat kPadding = 14;
 
 // Size of the search icon.
 const CGFloat kSearchIconDimension = 32;
-
-// Size of the menu button on the right.
-const CGFloat kMenuButtonDimension = 29;
-
-// Vertical offset that the menu should appear below the menu button.
-const CGFloat kMenuOffsetFromButton = 2;
 
 }
 
@@ -124,15 +112,6 @@ void SearchBoxModelObserverBridge::TextChanged() {
 
 @end
 
-@interface AppListMenuController : MenuController {
- @private
-  AppsSearchBoxController* searchBoxController_;  // Weak. Owns us.
-}
-
-- (id)initWithSearchBoxController:(AppsSearchBoxController*)parent;
-
-@end
-
 @implementation AppsSearchBoxController
 
 @synthesize delegate = delegate_;
@@ -152,34 +131,16 @@ void SearchBoxModelObserverBridge::TextChanged() {
 }
 
 - (void)setDelegate:(id<AppsSearchBoxDelegate>)delegate {
-  [[menuButton_ menu] removeAllItems];
-  menuController_.reset();
-  appListMenu_.reset();
   bridge_.reset();  // Ensure observers are cleared before updating |delegate_|.
   delegate_ = delegate;
   if (!delegate_)
     return;
 
   bridge_.reset(new app_list::SearchBoxModelObserverBridge(self));
-  if (![delegate_ appListDelegate])
-    return;
-
-  appListMenu_.reset(new app_list::AppListMenu([delegate_ appListDelegate]));
-  menuController_.reset([[AppListMenuController alloc]
-      initWithSearchBoxController:self]);
-  [menuButton_ setMenu:[menuController_ menu]];  // Menu will populate here.
 }
 
 - (NSTextField*)searchTextField {
   return searchTextField_;
-}
-
-- (NSPopUpButton*)menuControl {
-  return menuButton_;
-}
-
-- (app_list::AppListMenu*)appListMenu {
-  return appListMenu_.get();
 }
 
 - (NSImageView*)searchImageView {
@@ -192,32 +153,15 @@ void SearchBoxModelObserverBridge::TextChanged() {
       kPadding, 0, kSearchIconDimension, NSHeight(viewBounds))]);
 
   searchTextField_.reset([[SearchTextField alloc] initWithFrame:viewBounds]);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   [searchTextField_ setDelegate:self];
-  [searchTextField_ setFont:rb.GetFont(
+  [searchTextField_ setFont:ui::ResourceBundle::GetSharedInstance().GetFont(
       ui::ResourceBundle::MediumFont).GetNativeFont()];
   [searchTextField_
       setMarginsWithLeftMargin:NSMaxX([searchImageView_ frame]) + kPadding
-                   rightMargin:kMenuButtonDimension + 2 * kPadding];
-
-  // Add the drop-down menu, with a custom button.
-  NSRect buttonFrame = NSMakeRect(
-      NSWidth(viewBounds) - kMenuButtonDimension - kPadding,
-      floor(NSMidY(viewBounds) - kMenuButtonDimension / 2),
-      kMenuButtonDimension,
-      kMenuButtonDimension);
-  menuButton_.reset([[HoverImageMenuButton alloc] initWithFrame:buttonFrame
-                                                      pullsDown:YES]);
-  [[menuButton_ hoverImageMenuButtonCell] setImage:
-      rb.GetNativeImageNamed(IDR_APP_LIST_TOOLS_NORMAL).AsNSImage()];
-  [[menuButton_ hoverImageMenuButtonCell] setAlternateImage:
-      rb.GetNativeImageNamed(IDR_APP_LIST_TOOLS_PRESSED).AsNSImage()];
-  [[menuButton_ hoverImageMenuButtonCell] setHoverImage:
-      rb.GetNativeImageNamed(IDR_APP_LIST_TOOLS_HOVER).AsNSImage()];
+                   rightMargin:kPadding];
 
   [[self view] addSubview:searchImageView_];
   [[self view] addSubview:searchTextField_];
-  [[self view] addSubview:menuButton_];
 }
 
 - (BOOL)control:(NSControl*)control
@@ -344,51 +288,6 @@ void SearchBoxModelObserverBridge::TextChanged() {
                 delegate:delegate
                    start:start
                   length:length];
-}
-
-@end
-
-@implementation AppListMenuController
-
-- (id)initWithSearchBoxController:(AppsSearchBoxController*)parent {
-  // Need to initialze super with a NULL model, otherwise it will immediately
-  // try to populate, which can't be done until setting the parent.
-  if ((self = [super initWithModel:NULL
-            useWithPopUpButtonCell:YES])) {
-    searchBoxController_ = parent;
-    [super setModel:[parent appListMenu]->menu_model()];
-  }
-  return self;
-}
-
-- (void)addItemToMenu:(NSMenu*)menu
-              atIndex:(NSInteger)index
-            fromModel:(ui::MenuModel*)model {
-  [super addItemToMenu:menu
-               atIndex:index
-             fromModel:model];
-  if (model->GetCommandIdAt(index) != app_list::AppListMenu::CURRENT_USER)
-    return;
-
-  scoped_nsobject<NSView> customItemView([[CurrentUserMenuItemView alloc]
-      initWithDelegate:[[searchBoxController_ delegate] appListDelegate]]);
-  [[menu itemAtIndex:index] setView:customItemView];
-}
-
-- (NSRect)confinementRectForMenu:(NSMenu*)menu
-                        onScreen:(NSScreen*)screen {
-  NSPopUpButton* menuButton = [searchBoxController_ menuControl];
-  // Ensure the menu comes up below the menu button by trimming the window frame
-  // to a point anchored below the bottom right of the button.
-  NSRect anchorRect = [menuButton convertRect:[menuButton bounds]
-                                       toView:nil];
-  NSPoint anchorPoint = [[menuButton window] convertBaseToScreen:NSMakePoint(
-      NSMaxX(anchorRect),
-      NSMinY(anchorRect) - kMenuOffsetFromButton)];
-  NSRect confinementRect = [[menuButton window] frame];
-  confinementRect.size = NSMakeSize(anchorPoint.x - NSMinX(confinementRect),
-                                    anchorPoint.y - NSMinY(confinementRect));
-  return confinementRect;
 }
 
 @end
