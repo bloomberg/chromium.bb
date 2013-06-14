@@ -1,8 +1,10 @@
 {
   "test1": {
+    "channel": "trunk",
     "contexts": ["content_script", "blessed_extension", "unblessed_extension"]
   },
   "test2": {
+    "channel": "trunk",
     "contexts": ["web_page"],
     "matches": ["<all_urls>"]
   },
@@ -10,6 +12,7 @@
     "contexts": ["content_script"]
   },
   "test3": {
+    "channel": "trunk",
     "contexts": ["content_script"]
   },
   "test3.foo": {
@@ -17,6 +20,7 @@
     "matches": ["<all_urls>"]
   },
   "test4": {
+    "channel": "trunk",
     "contexts": ["blessed_extension"],
     "dependencies": ["api:test3.foo"]
   },
@@ -25,19 +29,23 @@
     "dependencies": ["api:test4"]
   },
   "test4.foo.foo": {
-    "contexts": ["content_script"]
+    "contexts": ["content_script"],
+    "dependencies": []
   },
   "test5": {
+    "channel": "trunk",
     "contexts": ["web_page"],
     "matches": ["http://foo.com/*"]
   },
   "test6": {
+    "channel": "trunk",
     "contexts": ["content_script"]
   },
   "test6.foo": {
     "contexts": ["blessed_extension"]
   },
   "test7": {
+    "channel": "trunk",
     "contexts": ["web_page"],
     "matches": ["http://foo.com/*"]
   },
@@ -50,5 +58,37 @@
     "contexts": ["web_page"],
     "matches": ["http://bar.com/*"],
     "dependencies": ["test7.foo"]
+  },
+
+  "parent1": {
+    "channel": "trunk",
+    "contexts": ["content_script"]
+  },
+  "parent1.child1": {
+    "contexts": ["web_page"],
+    "matches": ["<all_urls>"]
+  },
+  "parent1.child2": {
+  },
+  "parent2": {
+    "channel": "trunk",
+    "contexts": ["content_script", "blessed_extension", "unblessed_extension"]
+  },
+  "parent2.child3": {
+    "contexts": ["blessed_extension"]
+  },
+  "parent2.child3.child.child": {
+    "contexts": ["content_script", "unblessed_extension"]
+  },
+  "parent3": {
+    "dependencies": ["api:parent1"],
+    "contexts": ["content_script", "blessed_extension", "unblessed_extension"]
+  },
+  "parent3.noparent": {
+    "channel": "trunk",
+    "noparent": true,
+    "contexts": ["content_script", "blessed_extension", "unblessed_extension"]
+  },
+  "parent3.noparent.child": {
   }
 }

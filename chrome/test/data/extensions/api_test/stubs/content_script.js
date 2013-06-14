@@ -16,10 +16,14 @@ console.log("asking for api ...");
 chrome.extension.sendRequest("getApi", function(apis) {
   var apiFeatures = chrome.test.getApiFeatures();
   function isAvailableToContentScripts(namespace, path) {
+    function checkContexts(contextList) {
+      return contextList == 'all' ||
+          contextList.indexOf('content_script') != -1;
+    }
     if (apiFeatures.hasOwnProperty(path))
-      return apiFeatures[path]['contexts'].indexOf('content_script') != -1
+      return checkContexts(apiFeatures[path]['contexts']);
     return apiFeatures.hasOwnProperty(namespace) &&
-        apiFeatures[namespace]['contexts'].indexOf('content_script') != -1;
+        checkContexts(apiFeatures[namespace]['contexts']);
   }
 
   console.log("got api response");

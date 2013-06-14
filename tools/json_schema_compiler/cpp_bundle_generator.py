@@ -215,13 +215,22 @@ class _SchemasHGenerator(object):
     c.Append()
     c.Append('class GeneratedSchemas {')
     c.Sblock(' public:')
-    c.Append('// Puts all API schemas in |schemas|.')
-    c.Append('static void Get('
-                 'std::map<std::string, base::StringPiece>* schemas);')
+    c.Append('// Determines if schema named |name| is generated.')
+    c.Append('static bool IsGenerated(std::string name);')
+    c.Append()
+    c.Append('// Gets the API schema named |name|.')
+    c.Append('static base::StringPiece Get(const std::string& name);')
     c.Eblock('};');
     c.Append()
     c.Concat(cpp_util.CloseNamespace(self._bundle._cpp_namespace))
     return self._bundle._GenerateHeader('generated_schemas', c)
+
+def _FormatNameAsConstant(name):
+  """Formats a name to be a C++ constant of the form kConstantName"""
+  name = '%s%s' % (name[0].upper(), name[1:])
+  return 'k%s' % re.sub('_[a-z]',
+                        lambda m: m.group(0)[1].upper(),
+                        name.replace('.', '_'))
 
 class _SchemasCCGenerator(object):
   """Generates a code.Code object for the generated schemas .cc file"""
@@ -236,11 +245,9 @@ class _SchemasCCGenerator(object):
     c.Append('#include "%s"' % (os.path.join(SOURCE_BASE_PATH,
                                              'generated_schemas.h')))
     c.Append()
-    c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
+    c.Append('#include "base/lazy_instance.h"')
     c.Append()
-    c.Append('// static')
-    c.Sblock('void GeneratedSchemas::Get('
-                 'std::map<std::string, base::StringPiece>* schemas) {')
+    c.Append('namespace {')
     for api in self._bundle._api_defs:
       namespace = self._bundle._model.namespaces[api.get('namespace')]
       # JSON parsing code expects lists of schemas, so dump a singleton list.
@@ -249,7 +256,34 @@ class _SchemasCCGenerator(object):
       # Escape all double-quotes and backslashes. For this to output a valid
       # JSON C string, we need to escape \ and ".
       json_content = json_content.replace('\\', '\\\\').replace('"', '\\"')
-      c.Append('(*schemas)["%s"] = "%s";' % (namespace.name, json_content))
+      c.Append('const char %s[] = "%s";' %
+          (_FormatNameAsConstant(namespace.name), json_content))
+    c.Append('}')
+    c.Concat(cpp_util.OpenNamespace(self._bundle._cpp_namespace))
+    c.Append()
+    c.Sblock('struct Static {')
+    c.Sblock('Static() {')
+    for api in self._bundle._api_defs:
+      namespace = self._bundle._model.namespaces[api.get('namespace')]
+      c.Append('schemas["%s"] = %s;' % (namespace.name,
+                                        _FormatNameAsConstant(namespace.name)))
+    c.Eblock('}');
+    c.Append()
+    c.Append('std::map<std::string, const char*> schemas;')
+    c.Eblock('};');
+    c.Append()
+    c.Append('base::LazyInstance<Static> g_lazy_instance;')
+    c.Append()
+    c.Append('// static')
+    c.Sblock('base::StringPiece GeneratedSchemas::Get('
+                  'const std::string& name) {')
+    c.Append('return IsGenerated(name) ? '
+             'g_lazy_instance.Get().schemas[name] : "";')
+    c.Eblock('}')
+    c.Append()
+    c.Append('// static')
+    c.Sblock('bool GeneratedSchemas::IsGenerated(std::string name) {')
+    c.Append('return g_lazy_instance.Get().schemas.count(name) > 0;')
     c.Eblock('}')
     c.Append()
     c.Concat(cpp_util.CloseNamespace(self._bundle._cpp_namespace))

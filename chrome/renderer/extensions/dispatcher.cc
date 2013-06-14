@@ -631,20 +631,34 @@ void Dispatcher::AddOrRemoveBindings(ChromeV8Context* context) {
   v8::HandleScope handle_scope;
   v8::Context::Scope context_scope(context->v8_context());
 
-  std::set<std::string> apis =
-      ExtensionAPI::GetSharedInstance()->GetAllAPINames();
-  for (std::set<std::string>::iterator it = apis.begin();
+  FeatureProvider* feature_provider = BaseFeatureProvider::GetByName("api");
+  const std::vector<std::string>& apis = feature_provider->GetAllFeatureNames();
+  for (std::vector<std::string>::const_iterator it = apis.begin();
        it != apis.end(); ++it) {
     const std::string& api_name = *it;
+    Feature* feature = feature_provider->GetFeature(api_name);
+    DCHECK(feature);
+    if (feature->IsInternal())
+      continue;
+
+    // If this API name has parent features, then this must be a function or
+    // event, so we should not register.
+    bool parent_feature_available = false;
+    for (Feature* parent_feature = feature_provider->GetParent(feature);
+         parent_feature;
+         parent_feature = feature_provider->GetParent(parent_feature)) {
+      if (context->IsAnyFeatureAvailableToContext(parent_feature->name())) {
+        parent_feature_available = true;
+        break;
+      }
+    }
+    if (parent_feature_available)
+      continue;
+
     if (!context->IsAnyFeatureAvailableToContext(api_name)) {
       DeregisterBinding(api_name, context);
       continue;
     }
-
-    Feature* feature =
-        BaseFeatureProvider::GetByName("api")->GetFeature(api_name);
-    if (feature && feature->IsInternal())
-      continue;
 
     RegisterBinding(api_name, context);
   }
@@ -679,12 +693,13 @@ v8::Handle<v8::Object> Dispatcher::GetOrCreateBindObjectIfAvailable(
   //  If app is available and app.window is not, just install app.
   //  If app.window is available and app is not, delete app and install
   //  app.window on a new object so app does not have to be loaded.
+  FeatureProvider* feature_provider = BaseFeatureProvider::GetByName("api");
   std::string ancestor_name;
   bool only_ancestor_available = false;
 
   for (size_t i = 0; i < split.size() - 1; ++i) {
     ancestor_name += (i ? ".": "") + split[i];
-    if (!ancestor_name.empty() &&
+    if (feature_provider->GetFeature(ancestor_name) &&
         context->GetAvailability(ancestor_name).is_available() &&
         !context->GetAvailability(api_name).is_available()) {
       only_ancestor_available = true;
@@ -1375,28 +1390,6 @@ bool Dispatcher::CheckContextAccessToExtensionAPI(
     return false;
   }
 
-  if (!context->extension()->HasAPIPermission(function_name)) {
-    static const char kMessage[] =
-        "You do not have permission to use '%s'. Be sure to declare"
-        " in your manifest what permissions you need.";
-    std::string error_msg = base::StringPrintf(kMessage, function_name.c_str());
-    APIActivityLogger::LogBlockedCall(context->extension()->id(),
-                                      function_name);
-    v8::ThrowException(
-        v8::Exception::Error(v8::String::New(error_msg.c_str())));
-    return false;
-  }
-
-  if (ExtensionAPI::GetSharedInstance()->IsPrivileged(function_name) &&
-      context->context_type() != Feature::BLESSED_EXTENSION_CONTEXT) {
-    static const char kMessage[] =
-        "%s can only be used in an extension process.";
-    std::string error_msg = base::StringPrintf(kMessage, function_name.c_str());
-    v8::ThrowException(
-        v8::Exception::Error(v8::String::New(error_msg.c_str())));
-    return false;
-  }
-
   // Theoretically we could end up with bindings being injected into sandboxed
   // frames, for example content scripts. Don't let them execute API functions.
   WebKit::WebFrame* frame = context->web_frame();
@@ -1411,7 +1404,13 @@ bool Dispatcher::CheckContextAccessToExtensionAPI(
     return false;
   }
 
-  return true;
+  Feature::Availability availability = context->GetAvailability(function_name);
+  if (!availability.is_available()) {
+    v8::ThrowException(v8::Exception::Error(
+        v8::String::New(availability.message().c_str())));
+  }
+
+  return availability.is_available();
 }
 
 void Dispatcher::DispatchEvent(const std::string& extension_id,

@@ -104,9 +104,11 @@ TEST(BaseFeatureProviderTest, Validation) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
 
   base::DictionaryValue* feature1 = new base::DictionaryValue();
+  feature1->SetString("channel", "trunk");
   value->Set("feature1", feature1);
 
   base::DictionaryValue* feature2 = new base::DictionaryValue();
+  feature2->SetString("channel", "trunk");
   base::ListValue* extension_types = new base::ListValue();
   extension_types->Append(new base::StringValue("extension"));
   feature2->Set("extension_types", extension_types);
@@ -125,6 +127,11 @@ TEST(BaseFeatureProviderTest, Validation) {
   feature1->Set("extension_types", extension_types->DeepCopy());
   provider.reset(new BaseFeatureProvider(*value, CreatePermissionFeature));
   EXPECT_TRUE(provider->GetFeature("feature1"));
+
+  // Remove the channel, and feature1 won't validate.
+  feature1->Remove("channel", NULL);
+  provider.reset(new BaseFeatureProvider(*value, CreatePermissionFeature));
+  EXPECT_FALSE(provider->GetFeature("feature1"));
 
   // feature2 won't validate because of the presence of "contexts".
   EXPECT_FALSE(provider->GetFeature("feature2"));

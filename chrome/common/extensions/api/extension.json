@@ -23,7 +23,6 @@
       "lastError": {
         "type": "object",
         "optional": true,
-        "unprivileged": true,
         "description": "Set for the lifetime of a callback if an ansychronous extension api has resulted in an error. If no error has occured lastError will be <var>undefined</var>.",
         "properties": {
           "message": { "type": "string", "description": "Description of the error that has taken place." }
@@ -32,7 +31,6 @@
       "inIncognitoContext": {
         "type": "boolean",
         "optional": true,
-        "unprivileged": true,
         "description": "True for content scripts running inside incognito tabs, and for extension pages running inside an incognito process. The latter only applies to extensions with 'split' incognito_behavior."
       }
     },
@@ -43,7 +41,6 @@
         "nodoc": true,
         "type": "function",
         "allowAmbiguousOptionalArguments": true,
-        "unprivileged": true,
         "description": "Deprecated: Please use sendMessage.",
         "parameters": [
           {"type": "string", "name": "extensionId", "optional": true, "description": "The extension ID of the extension you want to connect to. If omitted, default is your own extension."},
@@ -66,7 +63,6 @@
         "name": "getURL",
         "nocompile": true,
         "type": "function",
-        "unprivileged": true,
         "description": "Converts a relative path within an extension install directory to a fully-qualified URL.",
         "parameters": [
           {
@@ -204,7 +200,6 @@
         "nodoc": true,
         "type": "function",
         "anonymous": true,
-        "unprivileged": true,
         "description": "Deprecated: please use onMessage.",
         "parameters": [
           {"name": "request", "type": "any", "description": "The request sent by the calling script."},

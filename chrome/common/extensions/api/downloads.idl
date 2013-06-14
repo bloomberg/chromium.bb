@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-[permissions=downloads]
 namespace downloads {
   [inline_doc] dictionary HeaderNameValuePair {
     // Name of the HTTP header.

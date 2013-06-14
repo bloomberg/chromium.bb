@@ -4,8 +4,12 @@
 
 #include "chrome/common/extensions/features/base_feature_provider.h"
 
+#include <stack>
+
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "chrome/common/extensions/features/api_feature.h"
 #include "chrome/common/extensions/features/complex_feature.h"
 #include "chrome/common/extensions/features/manifest_feature.h"
@@ -36,7 +40,11 @@ class LazyFeatureProvider : public FeatureProvider {
     return GetBaseFeatureProvider()->GetFeature(name);
   }
 
-  virtual std::set<std::string> GetAllFeatureNames() OVERRIDE {
+  virtual Feature* GetParent(Feature* feature) OVERRIDE {
+    return GetBaseFeatureProvider()->GetParent(feature);
+  }
+
+  virtual const std::vector<std::string>& GetAllFeatureNames() OVERRIDE {
     return GetBaseFeatureProvider()->GetAllFeatureNames();
   }
 
@@ -125,9 +133,42 @@ BaseFeatureProvider::BaseFeatureProvider(const DictionaryValue& root,
     if (iter.value().GetType() == Value::TYPE_DICTIONARY) {
       linked_ptr<SimpleFeature> feature((*factory_)());
 
-      if (!ParseFeature(static_cast<const DictionaryValue*>(&iter.value()),
-                        iter.key(),
-                        feature.get()))
+      std::vector<std::string> split;
+      base::SplitString(iter.key(), '.', &split);
+
+      // Push parent features on the stack, starting with the current feature.
+      // If one of the features has "noparent" set, stop pushing features on
+      // the stack. The features will then be parsed in order, starting with
+      // the farthest parent that is either top level or has "noparent" set.
+      std::stack<std::pair<std::string, const DictionaryValue*> > parse_stack;
+      while (!split.empty()) {
+        std::string parent_name = JoinString(split, '.');
+        split.pop_back();
+        if (root.HasKey(parent_name)) {
+          const DictionaryValue* parent = NULL;
+          CHECK(root.GetDictionaryWithoutPathExpansion(parent_name, &parent));
+          parse_stack.push(std::make_pair(parent_name, parent));
+          bool no_parent = false;
+          parent->GetBoolean("noparent", &no_parent);
+          if (no_parent)
+            break;
+        }
+      }
+
+      CHECK(!parse_stack.empty());
+      // Parse all parent features.
+      bool parse_error = false;
+      while (!parse_stack.empty()) {
+        if (!ParseFeature(parse_stack.top().second,
+                          parse_stack.top().first,
+                          feature.get())) {
+          parse_error = true;
+          break;
+        }
+        parse_stack.pop();
+      }
+
+      if (parse_error)
         continue;
 
       features_[iter.key()] = feature;
@@ -176,13 +217,14 @@ FeatureProvider* BaseFeatureProvider::GetByName(
   return g_static.Get().LazyGetFeatures(name);
 }
 
-std::set<std::string> BaseFeatureProvider::GetAllFeatureNames() {
-  std::set<std::string> result;
-  for (FeatureMap::const_iterator iter = features_.begin();
-       iter != features_.end(); ++iter) {
-    result.insert(iter->first);
+const std::vector<std::string>& BaseFeatureProvider::GetAllFeatureNames() {
+  if (feature_names_.empty()) {
+    for (FeatureMap::const_iterator iter = features_.begin();
+         iter != features_.end(); ++iter) {
+      feature_names_.push_back(iter->first);
+    }
   }
-  return result;
+  return feature_names_;
 }
 
 Feature* BaseFeatureProvider::GetFeature(const std::string& name) {
@@ -193,4 +235,17 @@ Feature* BaseFeatureProvider::GetFeature(const std::string& name) {
     return NULL;
 }
 
-}  // namespace
+Feature* BaseFeatureProvider::GetParent(Feature* feature) {
+  CHECK(feature);
+  if (feature->no_parent())
+    return NULL;
+
+  std::vector<std::string> split;
+  base::SplitString(feature->name(), '.', &split);
+  if (split.size() < 2)
+    return NULL;
+  split.pop_back();
+  return GetFeature(JoinString(split, '.'));
+}
+
+} // namespace extensions

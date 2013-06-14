@@ -37,47 +37,10 @@ using api::GeneratedSchemas;
 
 namespace {
 
-const char kUnavailableMessage[] = "You do not have permission to access this "
-                                   "API. Ensure that the required permission "
-                                   "or manifest property is included in your "
-                                   "manifest.json.";
 const char* kChildKinds[] = {
   "functions",
   "events"
 };
-
-// Returns true if |dict| has an unprivileged "true" property.
-bool IsUnprivileged(const DictionaryValue* dict) {
-  bool unprivileged = false;
-  return dict->GetBoolean("unprivileged", &unprivileged) && unprivileged;
-}
-
-// Returns whether the list at |name_space_node|.|child_kind| contains any
-// children with an { "unprivileged": true } property.
-bool HasUnprivilegedChild(const DictionaryValue* name_space_node,
-                          const std::string& child_kind) {
-  const ListValue* child_list = NULL;
-  const DictionaryValue* child_dict = NULL;
-
-  if (name_space_node->GetList(child_kind, &child_list)) {
-    for (size_t i = 0; i < child_list->GetSize(); ++i) {
-      const DictionaryValue* item = NULL;
-      CHECK(child_list->GetDictionary(i, &item));
-      if (IsUnprivileged(item))
-        return true;
-    }
-  } else if (name_space_node->GetDictionary(child_kind, &child_dict)) {
-    for (DictionaryValue::Iterator it(*child_dict); !it.IsAtEnd();
-         it.Advance()) {
-      const DictionaryValue* item = NULL;
-      CHECK(it.value().GetAsDictionary(&item));
-      if (IsUnprivileged(item))
-        return true;
-    }
-  }
-
-  return false;
-}
 
 base::StringPiece ReadFromResource(int resource_id) {
   return ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -252,25 +215,12 @@ void ExtensionAPI::LoadSchema(const std::string& name,
     CHECK(schema->GetString("namespace", &schema_namespace));
     PrefixWithNamespace(schema_namespace, schema);
     schemas_[schema_namespace] = make_linked_ptr(schema);
-    CHECK_EQ(1u, unloaded_schemas_.erase(schema_namespace));
-
-    // Populate |{completely,partially}_unprivileged_apis_|.
-
-    // For "partially", only need to look at functions/events; even though
-    // there are unprivileged properties (e.g. in extensions), access to those
-    // never reaches C++ land.
-    bool unprivileged = false;
-    if (schema->GetBoolean("unprivileged", &unprivileged) && unprivileged) {
-      completely_unprivileged_apis_.insert(schema_namespace);
-    } else if (HasUnprivilegedChild(schema, "functions") ||
-               HasUnprivilegedChild(schema, "events") ||
-               HasUnprivilegedChild(schema, "properties")) {
-      partially_unprivileged_apis_.insert(schema_namespace);
-    }
+    if (!GeneratedSchemas::IsGenerated(schema_namespace))
+      CHECK_EQ(1u, unloaded_schemas_.erase(schema_namespace));
   }
 }
 
-ExtensionAPI::ExtensionAPI() {
+ExtensionAPI::ExtensionAPI() : default_configuration_initialized_(false) {
 }
 
 ExtensionAPI::~ExtensionAPI() {
@@ -286,66 +236,49 @@ void ExtensionAPI::InitDefaultConfiguration() {
 
   // Schemas to be loaded from resources.
   CHECK(unloaded_schemas_.empty());
-  RegisterSchema("app", ReadFromResource(
-      IDR_EXTENSION_API_JSON_APP));
-  RegisterSchema("browserAction", ReadFromResource(
-      IDR_EXTENSION_API_JSON_BROWSERACTION));
-  RegisterSchema("browsingData", ReadFromResource(
-      IDR_EXTENSION_API_JSON_BROWSINGDATA));
-  RegisterSchema("commands", ReadFromResource(
-      IDR_EXTENSION_API_JSON_COMMANDS));
-  RegisterSchema("declarativeContent", ReadFromResource(
-      IDR_EXTENSION_API_JSON_DECLARATIVE_CONTENT));
-  RegisterSchema("declarativeWebRequest", ReadFromResource(
-      IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST));
-  RegisterSchema("experimental.input.virtualKeyboard", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_VIRTUALKEYBOARD));
-  RegisterSchema("experimental.processes", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_PROCESSES));
-  RegisterSchema("experimental.rlz", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_RLZ));
-  RegisterSchema("runtime", ReadFromResource(
-      IDR_EXTENSION_API_JSON_RUNTIME));
-  RegisterSchema("fileBrowserHandler", ReadFromResource(
-      IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER));
-  RegisterSchema("fileBrowserPrivate", ReadFromResource(
-      IDR_EXTENSION_API_JSON_FILEBROWSERPRIVATE));
-  RegisterSchema("input.ime", ReadFromResource(
-      IDR_EXTENSION_API_JSON_INPUT_IME));
-  RegisterSchema("inputMethodPrivate", ReadFromResource(
-      IDR_EXTENSION_API_JSON_INPUTMETHODPRIVATE));
-  RegisterSchema("pageAction", ReadFromResource(
-      IDR_EXTENSION_API_JSON_PAGEACTION));
-  RegisterSchema("pageActions", ReadFromResource(
-      IDR_EXTENSION_API_JSON_PAGEACTIONS));
-  RegisterSchema("privacy", ReadFromResource(
-      IDR_EXTENSION_API_JSON_PRIVACY));
-  RegisterSchema("proxy", ReadFromResource(
-      IDR_EXTENSION_API_JSON_PROXY));
-  RegisterSchema("scriptBadge", ReadFromResource(
-      IDR_EXTENSION_API_JSON_SCRIPTBADGE));
-  RegisterSchema("streamsPrivate", ReadFromResource(
-      IDR_EXTENSION_API_JSON_STREAMSPRIVATE));
-  RegisterSchema("ttsEngine", ReadFromResource(
-      IDR_EXTENSION_API_JSON_TTSENGINE));
-  RegisterSchema("tts", ReadFromResource(
-      IDR_EXTENSION_API_JSON_TTS));
-  RegisterSchema("types", ReadFromResource(
-      IDR_EXTENSION_API_JSON_TYPES));
-  RegisterSchema("webRequestInternal", ReadFromResource(
-      IDR_EXTENSION_API_JSON_WEBREQUESTINTERNAL));
-  RegisterSchema("webstore", ReadFromResource(
-      IDR_EXTENSION_API_JSON_WEBSTORE));
-  RegisterSchema("webstorePrivate", ReadFromResource(
-      IDR_EXTENSION_API_JSON_WEBSTOREPRIVATE));
-
-  // Schemas to be loaded via JSON generated from IDL files.
-  GeneratedSchemas::Get(&unloaded_schemas_);
+  RegisterSchemaResource("app", IDR_EXTENSION_API_JSON_APP);
+  RegisterSchemaResource("browserAction", IDR_EXTENSION_API_JSON_BROWSERACTION);
+  RegisterSchemaResource("browsingData", IDR_EXTENSION_API_JSON_BROWSINGDATA);
+  RegisterSchemaResource("commands", IDR_EXTENSION_API_JSON_COMMANDS);
+  RegisterSchemaResource("declarativeContent",
+      IDR_EXTENSION_API_JSON_DECLARATIVE_CONTENT);
+  RegisterSchemaResource("declarativeWebRequest",
+      IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST);
+  RegisterSchemaResource("experimental.input.virtualKeyboard",
+      IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_VIRTUALKEYBOARD);
+  RegisterSchemaResource("experimental.processes",
+      IDR_EXTENSION_API_JSON_EXPERIMENTAL_PROCESSES);
+  RegisterSchemaResource("experimental.rlz",
+      IDR_EXTENSION_API_JSON_EXPERIMENTAL_RLZ);
+  RegisterSchemaResource("runtime", IDR_EXTENSION_API_JSON_RUNTIME);
+  RegisterSchemaResource("fileBrowserHandler",
+      IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER);
+  RegisterSchemaResource("fileBrowserPrivate",
+      IDR_EXTENSION_API_JSON_FILEBROWSERPRIVATE);
+  RegisterSchemaResource("input.ime", IDR_EXTENSION_API_JSON_INPUT_IME);
+  RegisterSchemaResource("inputMethodPrivate",
+      IDR_EXTENSION_API_JSON_INPUTMETHODPRIVATE);
+  RegisterSchemaResource("pageAction", IDR_EXTENSION_API_JSON_PAGEACTION);
+  RegisterSchemaResource("pageActions", IDR_EXTENSION_API_JSON_PAGEACTIONS);
+  RegisterSchemaResource("privacy", IDR_EXTENSION_API_JSON_PRIVACY);
+  RegisterSchemaResource("proxy", IDR_EXTENSION_API_JSON_PROXY);
+  RegisterSchemaResource("scriptBadge", IDR_EXTENSION_API_JSON_SCRIPTBADGE);
+  RegisterSchemaResource("streamsPrivate",
+      IDR_EXTENSION_API_JSON_STREAMSPRIVATE);
+  RegisterSchemaResource("ttsEngine", IDR_EXTENSION_API_JSON_TTSENGINE);
+  RegisterSchemaResource("tts", IDR_EXTENSION_API_JSON_TTS);
+  RegisterSchemaResource("types", IDR_EXTENSION_API_JSON_TYPES);
+  RegisterSchemaResource("webRequestInternal",
+      IDR_EXTENSION_API_JSON_WEBREQUESTINTERNAL);
+  RegisterSchemaResource("webstore", IDR_EXTENSION_API_JSON_WEBSTORE);
+  RegisterSchemaResource("webstorePrivate",
+      IDR_EXTENSION_API_JSON_WEBSTOREPRIVATE);
+  default_configuration_initialized_ = true;
 }
 
-void ExtensionAPI::RegisterSchema(const std::string& name,
-                                  const base::StringPiece& source) {
-  unloaded_schemas_[name] = source;
+void ExtensionAPI::RegisterSchemaResource(const std::string& name,
+                                          int resource_id) {
+  unloaded_schemas_[name] = resource_id;
 }
 
 void ExtensionAPI::RegisterDependencyProvider(const std::string& name,
@@ -358,11 +291,12 @@ bool ExtensionAPI::IsAnyFeatureAvailableToContext(const std::string& api_name,
                                                   const GURL& url) {
   FeatureProviderMap::iterator provider = dependency_providers_.find("api");
   CHECK(provider != dependency_providers_.end());
-  std::set<std::string> features = provider->second->GetAllFeatureNames();
+  const std::vector<std::string>& features =
+      provider->second->GetAllFeatureNames();
 
   // Check to see if there are any parts of this API that are allowed in this
   // context.
-  for (std::set<std::string>::iterator i = features.begin();
+  for (std::vector<std::string>::const_iterator i = features.begin();
        i != features.end(); ++i) {
     const std::string& feature_name = *i;
     if (feature_name != api_name && feature_name.find(api_name + ".") == 0) {
@@ -381,19 +315,8 @@ Feature::Availability ExtensionAPI::IsAvailable(const std::string& full_name,
   std::string feature_name;
   SplitDependencyName(full_name, &feature_type, &feature_name);
 
-  std::string child_name;
-  std::string api_name = GetAPINameFromFullName(feature_name, &child_name);
-
   Feature* feature = GetFeatureDependency(full_name);
-
-  // Check APIs not using the feature system first.
-  if (!feature) {
-    return IsNonFeatureAPIAvailable(api_name, context, extension, url)
-               ? Feature::CreateAvailability(Feature::IS_AVAILABLE,
-                                             std::string())
-               : Feature::CreateAvailability(Feature::INVALID_CONTEXT,
-                                             kUnavailableMessage);
-  }
+  CHECK(feature) << full_name;
 
   Feature::Availability availability =
       feature->IsAvailableToContext(extension, context, url);
@@ -412,37 +335,12 @@ Feature::Availability ExtensionAPI::IsAvailable(const std::string& full_name,
 }
 
 bool ExtensionAPI::IsPrivileged(const std::string& full_name) {
-  std::string child_name;
-  std::string api_name = GetAPINameFromFullName(full_name, &child_name);
   Feature* feature = GetFeatureDependency(full_name);
-
-  // First try to use the feature system.
-  if (feature) {
-    // An API is 'privileged' if it can only be run in a blessed context.
-    return feature->GetContexts()->size() ==
-        feature->GetContexts()->count(Feature::BLESSED_EXTENSION_CONTEXT);
-  }
-
-  // Get the schema now to populate |completely_unprivileged_apis_|.
-  const DictionaryValue* schema = GetSchema(api_name);
-  // If this API hasn't been converted yet, fall back to the old system.
-  if (completely_unprivileged_apis_.count(api_name))
-    return false;
-
-  if (partially_unprivileged_apis_.count(api_name))
-    return IsChildNamePrivileged(schema, child_name);
-
-  return true;
-}
-
-bool ExtensionAPI::IsChildNamePrivileged(const DictionaryValue* name_space_node,
-                                         const std::string& child_name) {
-  bool unprivileged = false;
-  const DictionaryValue* child = GetSchemaChild(name_space_node, child_name);
-  if (!child || !child->GetBoolean("unprivileged", &unprivileged))
-    return true;
-
-  return !unprivileged;
+  CHECK(feature);
+  DCHECK(!feature->GetContexts()->empty());
+  // An API is 'privileged' if it can only be run in a blessed context.
+  return feature->GetContexts()->size() ==
+      feature->GetContexts()->count(Feature::BLESSED_EXTENSION_CONTEXT);
 }
 
 const DictionaryValue* ExtensionAPI::GetSchema(const std::string& full_name) {
@@ -455,12 +353,18 @@ const DictionaryValue* ExtensionAPI::GetSchema(const std::string& full_name) {
     result = maybe_schema->second.get();
   } else {
     // Might not have loaded yet; or might just not exist.
-    std::map<std::string, base::StringPiece>::iterator maybe_schema_resource =
+   UnloadedSchemaMap::iterator maybe_schema_resource =
         unloaded_schemas_.find(api_name);
-    if (maybe_schema_resource == unloaded_schemas_.end())
+    if (maybe_schema_resource != unloaded_schemas_.end()) {
+      LoadSchema(maybe_schema_resource->first,
+                 ReadFromResource(maybe_schema_resource->second));
+    } else if (default_configuration_initialized_ &&
+               GeneratedSchemas::IsGenerated(api_name)) {
+      LoadSchema(api_name, GeneratedSchemas::Get(api_name));
+    } else {
       return NULL;
+    }
 
-    LoadSchema(maybe_schema_resource->first, maybe_schema_resource->second);
     maybe_schema = schemas_.find(api_name);
     CHECK(schemas_.end() != maybe_schema);
     result = maybe_schema->second.get();
@@ -469,80 +373,6 @@ const DictionaryValue* ExtensionAPI::GetSchema(const std::string& full_name) {
   if (!child_name.empty())
     result = GetSchemaChild(result, child_name);
 
-  return result;
-}
-
-namespace {
-
-const char* kDisallowedPlatformAppFeatures[] = {
-  // "app" refers to the the legacy app namespace for hosted apps.
-  "app",
-  "extension",
-  "tabs",
-  "windows"
-};
-
-bool IsFeatureAllowedForExtension(const std::string& feature,
-                                  const extensions::Extension& extension) {
-  if (extension.is_platform_app()) {
-    for (size_t i = 0; i < arraysize(kDisallowedPlatformAppFeatures); ++i) {
-      if (feature == kDisallowedPlatformAppFeatures[i])
-        return false;
-    }
-  }
-
-  return true;
-}
-
-}  // namespace
-
-bool ExtensionAPI::IsNonFeatureAPIAvailable(const std::string& name,
-                                            Feature::Context context,
-                                            const Extension* extension,
-                                            const GURL& url) {
-  // Make sure schema is loaded.
-  GetSchema(name);
-  switch (context) {
-    case Feature::UNSPECIFIED_CONTEXT:
-      break;
-
-    case Feature::BLESSED_EXTENSION_CONTEXT:
-      if (extension) {
-        // Availability is determined by the permissions of the extension.
-        if (!IsAPIAllowed(name, extension))
-          return false;
-        if (!IsFeatureAllowedForExtension(name, *extension))
-          return false;
-      }
-      break;
-
-    case Feature::UNBLESSED_EXTENSION_CONTEXT:
-    case Feature::CONTENT_SCRIPT_CONTEXT:
-      if (extension) {
-        // Same as BLESSED_EXTENSION_CONTEXT, but only those APIs that are
-        // unprivileged.
-        if (!IsAPIAllowed(name, extension))
-          return false;
-        if (!IsPrivilegedAPI(name))
-          return false;
-      }
-      break;
-
-    case Feature::WEB_PAGE_CONTEXT:
-      return false;
-  }
-
-  return true;
-}
-
-std::set<std::string> ExtensionAPI::GetAllAPINames() {
-  std::set<std::string> result;
-  for (SchemaMap::iterator i = schemas_.begin(); i != schemas_.end(); ++i)
-    result.insert(i->first);
-  for (UnloadedSchemaMap::iterator i = unloaded_schemas_.begin();
-       i != unloaded_schemas_.end(); ++i) {
-    result.insert(i->first);
-  }
   return result;
 }
 
@@ -571,6 +401,7 @@ std::string ExtensionAPI::GetAPINameFromFullName(const std::string& full_name,
   std::string api_name_candidate = full_name;
   while (true) {
     if (schemas_.find(api_name_candidate) != schemas_.end() ||
+        GeneratedSchemas::IsGenerated(api_name_candidate) ||
         unloaded_schemas_.find(api_name_candidate) != unloaded_schemas_.end()) {
       std::string result = api_name_candidate;
 
@@ -593,19 +424,6 @@ std::string ExtensionAPI::GetAPINameFromFullName(const std::string& full_name,
 
   *child_name = "";
   return std::string();
-}
-
-bool ExtensionAPI::IsAPIAllowed(const std::string& name,
-                                const Extension* extension) {
-  return PermissionsData::GetRequiredPermissions(extension)->
-          HasAnyAccessToAPI(name) ||
-      PermissionsData::GetOptionalPermissions(extension)->
-          HasAnyAccessToAPI(name);
-}
-
-bool ExtensionAPI::IsPrivilegedAPI(const std::string& name) {
-  return completely_unprivileged_apis_.count(name) ||
-      partially_unprivileged_apis_.count(name);
 }
 
 }  // namespace extensions

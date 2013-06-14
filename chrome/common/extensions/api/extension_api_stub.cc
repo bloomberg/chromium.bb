@@ -35,10 +35,6 @@ bool ExtensionAPI::IsAnyFeatureAvailableToContext(const std::string& api_name,
   return false;
 }
 
-std::set<std::string> ExtensionAPI::GetAllAPINames() {
-  return std::set<std::string>();
-}
-
 bool ExtensionAPI::IsPrivileged(const std::string& full_name) {
   return false;
 }

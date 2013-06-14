@@ -20,8 +20,11 @@ class FeatureProvider {
   // Returns the feature with the specified name.
   virtual Feature* GetFeature(const std::string& name) = 0;
 
+  // Returns the parent feature of |feature|, or NULL if there isn't one.
+  virtual Feature* GetParent(Feature* feature) = 0;
+
   // Returns all features described by this instance.
-  virtual std::set<std::string> GetAllFeatureNames() = 0;
+  virtual const std::vector<std::string>& GetAllFeatureNames() = 0;
 };
 
 }  // namespace extensions

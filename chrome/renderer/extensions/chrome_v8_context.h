@@ -75,6 +75,9 @@ class ChromeV8Context : public RequestSender::Source {
   // context is in the process of being destroyed.
   content::RenderView* GetRenderView() const;
 
+  // Get the URL of this context's web frame.
+  GURL GetURL() const;
+
   // Runs |function| with appropriate scopes. Doesn't catch exceptions, callers
   // must do that if they want.
   //

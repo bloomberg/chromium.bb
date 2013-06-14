@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/dispatcher.h"
@@ -64,8 +65,11 @@ v8::Handle<v8::Value> RuntimeCustomBindings::OpenChannelToExtension(
 v8::Handle<v8::Value> RuntimeCustomBindings::OpenChannelToNativeApp(
     const v8::Arguments& args) {
   // Verify that the extension has permission to use native messaging.
-  if (!dispatcher()->CheckContextAccessToExtensionAPI(
-          "nativeMessaging", context())) {
+  if (!BaseFeatureProvider::GetByName("permission")->GetFeature(
+        "nativeMessaging")->IsAvailableToContext(
+            GetExtensionForRenderView(),
+            context()->context_type(),
+            context()->GetURL()).is_available()) {
     return v8::Undefined();
   }
 

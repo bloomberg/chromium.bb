@@ -66,6 +66,10 @@ content::RenderView* ChromeV8Context::GetRenderView() const {
     return NULL;
 }
 
+GURL ChromeV8Context::GetURL() const {
+  return UserScriptSlave::GetDataSourceURLForFrame(web_frame_);
+}
+
 v8::Local<v8::Value> ChromeV8Context::CallFunction(
     v8::Handle<v8::Function> function,
     int argc,
@@ -95,11 +99,10 @@ bool ChromeV8Context::IsAnyFeatureAvailableToContext(
 
 Feature::Availability ChromeV8Context::GetAvailability(
     const std::string& api_name) {
-  return ExtensionAPI::GetSharedInstance()->IsAvailable(
-      api_name,
-      extension_.get(),
-      context_type_,
-      UserScriptSlave::GetDataSourceURLForFrame(web_frame_));
+  return ExtensionAPI::GetSharedInstance()->IsAvailable(api_name,
+                                                        extension_.get(),
+                                                        context_type_,
+                                                        GetURL());
 }
 
 void ChromeV8Context::DispatchOnUnloadEvent() {

@@ -8,8 +8,8 @@
 var binding = require('binding').Binding.create('test');
 
 var chrome = requireNative('chrome').GetChrome();
-var GetExtensionAPIDefinitions =
-    requireNative('apiDefinitions').GetExtensionAPIDefinitions;
+var GetExtensionAPIDefinitionsForTest =
+    requireNative('apiDefinitions').GetExtensionAPIDefinitionsForTest;
 var GetAvailability = requireNative('v8_context').GetAvailability;
 var GetAPIFeatures = requireNative('test_features').GetAPIFeatures;
 
@@ -290,9 +290,7 @@ binding.registerCustomHook(function(api) {
   });
 
   apiFunctions.setHandleRequest('getApiDefinitions', function() {
-    return GetExtensionAPIDefinitions().filter(function(api) {
-      return GetAvailability(api.namespace).is_available;
-    });
+    return GetExtensionAPIDefinitionsForTest();
   });
 
   apiFunctions.setHandleRequest('getApiFeatures', function() {

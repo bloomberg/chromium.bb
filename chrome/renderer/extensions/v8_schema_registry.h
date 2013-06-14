@@ -6,8 +6,8 @@
 #define CHROME_RENDERER_EXTENSIONS_V8_SCHEMA_REGISTRY_H_
 
 #include <map>
-#include <set>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -29,7 +29,7 @@ class V8SchemaRegistry {
   scoped_ptr<NativeHandler> AsNativeHandler();
 
   // Returns a v8::Array with all the schemas for the APIs in |apis|.
-  v8::Handle<v8::Array> GetSchemas(const std::set<std::string>& apis);
+  v8::Handle<v8::Array> GetSchemas(const std::vector<std::string>& apis);
 
   // Returns a v8::Object for the schema for |api|, possibly from the cache.
   v8::Handle<v8::Object> GetSchema(const std::string& api);

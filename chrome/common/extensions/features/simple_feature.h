@@ -111,6 +111,8 @@ class SimpleFeature : public Feature {
   int min_manifest_version_;
   int max_manifest_version_;
   chrome::VersionInfo::Channel channel_;
+  bool has_parent_;
+  bool channel_has_been_set_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionSimpleFeatureTest, Context);
 };

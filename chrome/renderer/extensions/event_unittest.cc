@@ -63,7 +63,7 @@ class EventUnittest : public ModuleSystemTest {
     OverrideNativeHandler("sendRequest",
         "exports.sendRequest = function() {};");
     OverrideNativeHandler("apiDefinitions",
-        "exports.GetExtensionAPIDefinition = function() {};");
+        "exports.GetExtensionAPIDefinitionsForTest = function() {};");
     OverrideNativeHandler("logging",
         "exports.DCHECK = function() {};");
     OverrideNativeHandler("schema_registry",

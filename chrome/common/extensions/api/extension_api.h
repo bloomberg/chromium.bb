@@ -6,10 +6,10 @@
 #define CHROME_COMMON_EXTENSIONS_API_EXTENSION_API_H_
 
 #include <map>
-#include <set>
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -61,8 +61,7 @@ class ExtensionAPI {
   ExtensionAPI();
   virtual ~ExtensionAPI();
 
-  void RegisterSchema(const std::string& api_name,
-                      const base::StringPiece& source);
+  void RegisterSchemaResource(const std::string& api_name, int resource_id);
 
   void RegisterDependencyProvider(const std::string& name,
                                   FeatureProvider* provider);
@@ -92,8 +91,6 @@ class ExtensionAPI {
   // Ownership remains with this object.
   const base::DictionaryValue* GetSchema(const std::string& full_name);
 
-  std::set<std::string> GetAllAPINames();
-
   // Splits a full name from the extension API into its API and child name
   // parts. Some examples:
   //
@@ -106,58 +103,30 @@ class ExtensionAPI {
   std::string GetAPINameFromFullName(const std::string& full_name,
                                      std::string* child_name);
 
+ private:
+  FRIEND_TEST_ALL_PREFIXES(ExtensionAPITest, DefaultConfigurationFeatures);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionAPITest, TypesHaveNamespace);
+  friend struct DefaultSingletonTraits<ExtensionAPI>;
+
   void InitDefaultConfiguration();
+
+  bool default_configuration_initialized_;
 
   // Gets a feature from any dependency provider registered with ExtensionAPI.
   // Returns NULL if the feature could not be found.
   Feature* GetFeatureDependency(const std::string& dependency_name);
 
- private:
-  friend struct DefaultSingletonTraits<ExtensionAPI>;
-
   // Loads a schema.
   void LoadSchema(const std::string& name, const base::StringPiece& schema);
 
-  // Returns true if the function or event under |namespace_node| with
-  // the specified |child_name| is privileged, or false otherwise. If the name
-  // is not found, defaults to privileged.
-  bool IsChildNamePrivileged(const base::DictionaryValue* namespace_node,
-                             const std::string& child_name);
-
-  // NOTE: This IsAPIAllowed() and IsNonFeatureAPIAvailable only work for
-  // non-feature-controlled APIs.
-  // TODO(aa): Remove these when all APIs are converted to the feature system.
-
-  // Checks if API |name| is allowed.
-  bool IsAPIAllowed(const std::string& name, const Extension* extension);
-
-  // Check if an API is available to |context| given an |extension| and |url|.
-  // The extension or URL may not be relevant to all contexts, and may be left
-  // NULL/empty.
-  bool IsNonFeatureAPIAvailable(const std::string& name,
-                                Feature::Context context,
-                                const Extension* extension,
-                                const GURL& url);
-
-  // Checks if an API is *entirely* privileged. This won't include APIs such as
-  // "storage" which is entirely unprivileged, nor "extension" which has
-  // unprivileged components.
-  bool IsPrivilegedAPI(const std::string& name);
-
   // Map from each API that hasn't been loaded yet to the schema which defines
   // it. Note that there may be multiple APIs per schema.
-  typedef std::map<std::string, base::StringPiece> UnloadedSchemaMap;
+  typedef std::map<std::string, int> UnloadedSchemaMap;
   UnloadedSchemaMap unloaded_schemas_;
 
   // Schemas for each namespace.
   typedef std::map<std::string, linked_ptr<const DictionaryValue> > SchemaMap;
   SchemaMap schemas_;
-
-  // APIs that are entirely unprivileged.
-  std::set<std::string> completely_unprivileged_apis_;
-
-  // APIs that are not entirely unprivileged, but have unprivileged components.
-  std::set<std::string> partially_unprivileged_apis_;
 
   // FeatureProviders used for resolving dependencies.
   typedef std::map<std::string, FeatureProvider*> FeatureProviderMap;
@@ -166,6 +135,6 @@ class ExtensionAPI {
   DISALLOW_COPY_AND_ASSIGN(ExtensionAPI);
 };
 
-}  // extensions
+} // namespace extensions
 
 #endif  // CHROME_COMMON_EXTENSIONS_API_EXTENSION_API_H_

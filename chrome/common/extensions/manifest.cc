@@ -142,8 +142,10 @@ bool Manifest::ValidateManifest(
   // checking to let developers know when they screw up.
 
   FeatureProvider* provider = BaseFeatureProvider::GetByName("manifest");
-  std::set<std::string> feature_names = provider->GetAllFeatureNames();
-  for (std::set<std::string>::iterator feature_name = feature_names.begin();
+  const std::vector<std::string>& feature_names =
+      provider->GetAllFeatureNames();
+  for (std::vector<std::string>::const_iterator feature_name =
+           feature_names.begin();
        feature_name != feature_names.end(); ++feature_name) {
     // Use Get instead of HasKey because the former uses path expansion.
     if (!value_->Get(*feature_name, NULL))

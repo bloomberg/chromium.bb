@@ -63,15 +63,15 @@ scoped_ptr<NativeHandler> V8SchemaRegistry::AsNativeHandler() {
 }
 
 v8::Handle<v8::Array> V8SchemaRegistry::GetSchemas(
-    const std::set<std::string>& apis) {
+    const std::vector<std::string>& apis) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(GetOrCreateContext(isolate));
 
   v8::Handle<v8::Array> v8_apis(v8::Array::New(apis.size()));
   size_t api_index = 0;
-  for (std::set<std::string>::const_iterator i = apis.begin(); i != apis.end();
-      ++i) {
+  for (std::vector<std::string>::const_iterator i = apis.begin();
+       i != apis.end(); ++i) {
     v8_apis->Set(api_index++, GetSchema(*i));
   }
   return handle_scope.Close(v8_apis);

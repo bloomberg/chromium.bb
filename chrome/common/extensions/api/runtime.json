@@ -5,7 +5,6 @@
 [
   {
     "namespace": "runtime",
-    "documentation_permissions_required": ["runtime"],
     "types": [
       {
         "id": "Port",

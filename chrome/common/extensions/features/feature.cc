@@ -61,7 +61,7 @@ Feature::Availability Feature::CreateAvailability(AvailabilityResult result,
   return Availability(result, message);
 }
 
-Feature::Feature() {}
+Feature::Feature() : no_parent_(false) {}
 
 Feature::~Feature() {}
 

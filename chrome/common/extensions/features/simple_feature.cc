@@ -141,6 +141,7 @@ void ParseURLPatterns(const DictionaryValue* value,
                       URLPatternSet* set) {
   const ListValue* matches = NULL;
   if (value->GetList(key, &matches)) {
+    set->ClearPatterns();
     for (size_t i = 0; i < matches->GetSize(); ++i) {
       std::string pattern;
       CHECK(matches->GetString(i, &pattern));
@@ -187,7 +188,9 @@ SimpleFeature::SimpleFeature()
     platform_(UNSPECIFIED_PLATFORM),
     min_manifest_version_(0),
     max_manifest_version_(0),
-    channel_(VersionInfo::CHANNEL_UNKNOWN) {
+    channel_(VersionInfo::CHANNEL_UNKNOWN),
+    has_parent_(false),
+    channel_has_been_set_(false) {
 }
 
 SimpleFeature::SimpleFeature(const SimpleFeature& other)
@@ -199,7 +202,9 @@ SimpleFeature::SimpleFeature(const SimpleFeature& other)
       platform_(other.platform_),
       min_manifest_version_(other.min_manifest_version_),
       max_manifest_version_(other.max_manifest_version_),
-      channel_(other.channel_) {
+      channel_(other.channel_),
+      has_parent_(other.has_parent_),
+      channel_has_been_set_(other.channel_has_been_set_) {
 }
 
 SimpleFeature::~SimpleFeature() {
@@ -214,7 +219,9 @@ bool SimpleFeature::Equals(const SimpleFeature& other) const {
       platform_ == other.platform_ &&
       min_manifest_version_ == other.min_manifest_version_ &&
       max_manifest_version_ == other.max_manifest_version_ &&
-      channel_ == other.channel_;
+      channel_ == other.channel_ &&
+      has_parent_ == other.has_parent_ &&
+      channel_has_been_set_ == other.channel_has_been_set_;
 }
 
 std::string SimpleFeature::Parse(const DictionaryValue* value) {
@@ -234,10 +241,21 @@ std::string SimpleFeature::Parse(const DictionaryValue* value) {
   ParseEnum<VersionInfo::Channel>(
       value, "channel", &channel_,
       g_mappings.Get().channels);
+
+  no_parent_ = false;
+  value->GetBoolean("noparent", &no_parent_);
+
+  // The "trunk" channel uses VersionInfo::CHANNEL_UNKNOWN, so we need to keep
+  // track of whether the channel has been set or not separately.
+  channel_has_been_set_ |= value->HasKey("channel");
+  if (!channel_has_been_set_ && dependencies_.empty())
+    return name() + ": Must supply a value for channel or dependencies.";
+
   if (matches_.is_empty() && contexts_.count(WEB_PAGE_CONTEXT) != 0) {
     return name() + ": Allowing web_page contexts requires supplying a value " +
         "for matches.";
   }
+
   return std::string();
 }
 
@@ -288,7 +306,7 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
   if (max_manifest_version_ != 0 && manifest_version > max_manifest_version_)
     return CreateAvailability(INVALID_MAX_MANIFEST_VERSION, type);
 
-  if (channel_ <  Feature::GetCurrentChannel())
+  if (channel_has_been_set_ && channel_ < Feature::GetCurrentChannel())
     return CreateAvailability(UNSUPPORTED_CHANNEL, type);
 
   return CreateAvailability(IS_AVAILABLE, type);
