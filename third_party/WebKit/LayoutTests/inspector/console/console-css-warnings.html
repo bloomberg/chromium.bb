@@ -103,11 +103,11 @@ function test()
     style.textContent = "x{y:*}";
     document.head.appendChild(style);
 
-    if (WebInspector.consoleView._filter._messageSourceFilters["CSS"])
-        WebInspector.consoleView._filter._toggleMessageSourceFilter("CSS");
-
-    InspectorTest.expandConsoleMessages();
-    InspectorTest.dumpConsoleMessages();
+    var messages = WebInspector.console.messages;
+    for (var i = 0; i < messages.length; i++) {
+        if (messages[i].source === WebInspector.ConsoleMessage.MessageSource.CSS)
+            InspectorTest.addResult(messages[i].message + " (line: " + messages[i].line + ")");
+    }
 
     InspectorTest.completeTest();
 }

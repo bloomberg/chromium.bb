@@ -1,25 +1,25 @@
 Tests CSS warnings are properly exposed.
 
-Invalid CSS property declaration at: # console-css-warnings.html:10
-Invalid CSS property declaration at: { console-css-warnings.html:15
-Invalid CSS property declaration at: # console-css-warnings.html:18
-Invalid CSS property declaration at: # console-css-warnings.html:22
-Invalid CSS property value: red {} console-css-warnings.html:26
-Invalid CSS property value: # console-css-warnings.html:27
-Invalid CSS property declaration at: # console-css-warnings.html:32
-Invalid CSS property value: @ console-css-warnings.html:33
-Invalid CSS property declaration at: { console-css-warnings.html:37
-Invalid CSS property declaration at: { console-css-warnings.html:38
-Invalid CSS property declaration at: { console-css-warnings.html:39
-Invalid CSS property declaration at: { console-css-warnings.html:40
-Invalid CSS property value: @ console-css-warnings.html:45
-Invalid CSS property value: -webkit-linear-gradient(10) console-css-warnings.html:53
-Invalid CSS property name: invalidproperty console-css-warnings.html:66
-Invalid CSS property declaration at: - console-css-warnings.html:67
-Invalid CSS property name: -webkit-invalidproperty console-css-warnings.html:70
-Invalid CSS property value: invalid-linear-gradient(top,rgba(0,0,0,0) 0,rgba(0,0,0,1) 100%) console-css-warnings.html:77
-Invalid CSS selector: x, console-css-warnings.html:81
-Invalid CSS @supports condition: # console-css-warnings.html:87
-Invalid CSS @supports condition: # console-css-warnings.html:90
-Invalid CSS @supports condition: # console-css-warnings.html:92
+Invalid CSS property declaration at: # (line: 10)
+Invalid CSS property declaration at: { (line: 15)
+Invalid CSS property declaration at: # (line: 18)
+Invalid CSS property declaration at: # (line: 22)
+Invalid CSS property value: red {} (line: 26)
+Invalid CSS property value: # (line: 27)
+Invalid CSS property declaration at: # (line: 32)
+Invalid CSS property value: @ (line: 33)
+Invalid CSS property declaration at: { (line: 37)
+Invalid CSS property declaration at: { (line: 38)
+Invalid CSS property declaration at: { (line: 39)
+Invalid CSS property declaration at: { (line: 40)
+Invalid CSS property value: @ (line: 45)
+Invalid CSS property value: -webkit-linear-gradient(10) (line: 53)
+Invalid CSS property name: invalidproperty (line: 66)
+Invalid CSS property declaration at: - (line: 67)
+Invalid CSS property name: -webkit-invalidproperty (line: 70)
+Invalid CSS property value: invalid-linear-gradient(top,rgba(0,0,0,0) 0,rgba(0,0,0,1) 100%) (line: 77)
+Invalid CSS selector: x, (line: 81)
+Invalid CSS @supports condition: # (line: 87)
+Invalid CSS @supports condition: # (line: 90)
+Invalid CSS @supports condition: # (line: 92)
 
