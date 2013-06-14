@@ -161,67 +161,6 @@ deps = {
   "src/third_party/webgl_conformance":
     "/trunk/deps/third_party/webgl/sdk/tests@202601",
 
-  # We run these layout tests as UI tests. Since many of the buildbots that
-  # run layout tests do NOT have access to the LayoutTest directory, we need
-  # to map them here. In practice, these do not take up much space.
-  #
-  # TODO: crbug.com/230215. Remove these and update the tests to pull directly
-  # from the Blink repo since the layout tests are now always checked out.
-  "src/content/test/data/layout_tests/LayoutTests/fast/events":
-    Var("webkit_trunk") + "/LayoutTests/fast/events@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/fast/js/resources":
-    Var("webkit_trunk") + "/LayoutTests/fast/js/resources@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/fast/workers":
-    Var("webkit_trunk") + "/LayoutTests/fast/workers@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/http/tests/resources":
-    Var("webkit_trunk") + "/LayoutTests/http/tests/resources@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/http/tests/workers":
-    Var("webkit_trunk") + "/LayoutTests/http/tests/workers@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/http/tests/xmlhttprequest":
-    Var("webkit_trunk") + "/LayoutTests/http/tests/xmlhttprequest@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/http/tests/websocket/tests":
-    Var("webkit_trunk") + "/LayoutTests/http/tests/websocket/tests@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/platform/chromium-win/fast/events":
-    Var("webkit_trunk") + "/LayoutTests/platform/chromium-win/fast/events@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/platform/chromium-win/fast/workers":
-    Var("webkit_trunk") + "/LayoutTests/platform/chromium-win/fast/workers@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/http/tests/appcache":
-    Var("webkit_trunk") + "/LayoutTests/http/tests/appcache@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/platform/chromium-win/http/tests/workers":
-    Var("webkit_trunk") + "/LayoutTests/platform/chromium-win/http/tests/workers@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/platform/chromium-win/storage/domstorage":
-    Var("webkit_trunk") + "/LayoutTests/platform/chromium-win/storage/domstorage@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/storage/domstorage":
-    Var("webkit_trunk") + "/LayoutTests/storage/domstorage@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/storage/indexeddb":
-    Var("webkit_trunk") + "/LayoutTests/storage/indexeddb@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/fast/files":
-    Var("webkit_trunk") + "/LayoutTests/fast/files@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/fast/filesystem":
-    Var("webkit_trunk") + "/LayoutTests/fast/filesystem@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/media":
-    Var("webkit_trunk") + "/LayoutTests/media@" +
-    Var("webkit_revision"),
-  "src/content/test/data/layout_tests/LayoutTests/editing/pasteboard/resources":
-    Var("webkit_trunk") + "/LayoutTests/editing/pasteboard/resources@" +
-    Var("webkit_revision"),
-
   "src/third_party/swig/Lib":
     "/trunk/deps/third_party/swig/Lib@" + Var("swig_revision"),
 
@@ -400,23 +339,6 @@ deps_os = {
     # Code that's not needed due to not building everything
     "src/build/util/support": None,
     "src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin": None,
-    "src/content/test/data/layout_tests/LayoutTests/editing/pasteboard/resources": None,
-    "src/content/test/data/layout_tests/LayoutTests/fast/events": None,
-    "src/content/test/data/layout_tests/LayoutTests/fast/filesystem_temp": None,
-    "src/content/test/data/layout_tests/LayoutTests/fast/js/resources": None,
-    "src/content/test/data/layout_tests/LayoutTests/fast/workers": None,
-    "src/content/test/data/layout_tests/LayoutTests/http/tests/appcache": None,
-    "src/content/test/data/layout_tests/LayoutTests/http/tests/resources": None,
-    "src/content/test/data/layout_tests/LayoutTests/http/tests/websocket/tests": None,
-    "src/content/test/data/layout_tests/LayoutTests/http/tests/workers": None,
-    "src/content/test/data/layout_tests/LayoutTests/http/tests/xmlhttprequest": None,
-    "src/content/test/data/layout_tests/LayoutTests/media": None,
-    "src/content/test/data/layout_tests/LayoutTests/platform/chromium-win/fast/events": None,
-    "src/content/test/data/layout_tests/LayoutTests/platform/chromium-win/fast/workers": None,
-    "src/content/test/data/layout_tests/LayoutTests/platform/chromium-win/http/tests/workers": None,
-    "src/content/test/data/layout_tests/LayoutTests/platform/chromium-win/storage/domstorage": None,
-    "src/content/test/data/layout_tests/LayoutTests/storage/indexeddb": None,
-    "src/content/test/data/layout_tests/LayoutTests/storage/domstorage": None,
     "src/chrome/test/data/perf/canvas_bench": None,
     "src/chrome/test/data/perf/frame_rate/content": None,
     "src/native_client": None,
