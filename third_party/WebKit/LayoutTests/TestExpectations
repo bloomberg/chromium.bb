@@ -1289,7 +1289,6 @@ crbug.com/234891 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 
 # These tests use paths and need a rebaseline after crbug.com/227397
 crbug.com/227397 svg/animations/animateMotion-additive-1.svg [ ImageOnlyFailure Pass ]
-crbug.com/227397 svg/W3C-SVG-1.1/types-basicDOM-01-b.svg [ Failure Pass ]
 
 # These tests need a rebasline after crbug.com/224317
 # Note, after the rebaseline need to uncomment another more-specific instance of each of these.
