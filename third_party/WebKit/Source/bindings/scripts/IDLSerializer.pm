@@ -96,10 +96,7 @@ sub determineClassFromKeys
     my @keys = shift;
 
     # Detect objects as hashes where all keys are of the form CLASS::KEY.
-    # One exception: overloadedIndex is not part of domFunction struct,
-    # (just a hash key, not an object member), so need to special case.
     my $firstKey = $keys[0];
-    $firstKey = $keys[1] if $firstKey eq "overloadedIndex";
     my $isObject = $firstKey =~ /::/;
 
     return unless $isObject;
@@ -119,13 +116,10 @@ sub jsonHashToPerlObject
 
     my %keysValues = ();
     foreach my $classAndKey (keys %{$jsonHash}) {
-        next if $classAndKey eq "overloadedIndex";
         my $key = (split('::', $classAndKey))[1];
         $keysValues{$key} = jsonToPerl($jsonHash->{$classAndKey});
     }
     my $object = $class->new(%keysValues);  # Build object
-    # overloadedIndex not part of constructor; add separately
-    $object->{overloadedIndex} = $jsonHash->{overloadedIndex} if exists $jsonHash->{overloadedIndex};
     return $object;
 }
 

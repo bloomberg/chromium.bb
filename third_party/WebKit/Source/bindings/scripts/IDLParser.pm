@@ -60,6 +60,7 @@ struct( domFunction => {
     isStatic => '$',
     signature => '$',    # Return type/Object name/extended attributes
     parameters => '@',    # List of 'domSignature'
+    overloadedIndex => '$',
 });
 
 # Used to represent domInterface contents (name of attribute, signature)
@@ -2196,7 +2197,7 @@ sub applyExtendedAttributeList
             $constructor->signature->name("Constructor");
             $constructor->signature->extendedAttributes($extendedAttributeList);
             $constructor->parameters($param);
-            $constructor->{overloadedIndex} = $index++;
+            $constructor->overloadedIndex($index++);
             push(@{$interface->constructors}, $constructor);
         }
         delete $extendedAttributeList->{"Constructors"};
@@ -2222,7 +2223,7 @@ sub applyExtendedAttributeList
             $customConstructor->signature->name("CustomConstructor");
             $customConstructor->signature->extendedAttributes($extendedAttributeList);
             $customConstructor->parameters($param);
-            $customConstructor->{overloadedIndex} = $index++;
+            $customConstructor->overloadedIndex($index++);
             push(@{$interface->customConstructors}, $customConstructor);
         }
         delete $extendedAttributeList->{"CustomConstructors"};

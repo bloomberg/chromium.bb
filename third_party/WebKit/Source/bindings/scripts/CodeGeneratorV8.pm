@@ -2477,7 +2477,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
 END
     my $leastNumMandatoryParams = 255;
     foreach my $constructor (@{$interface->constructors}) {
-        my $name = "constructor" . $constructor->{overloadedIndex};
+        my $name = "constructor" . $constructor->overloadedIndex;
         my ($numMandatoryParams, $parametersCheck) = GenerateFunctionParametersCheck($constructor);
         $leastNumMandatoryParams = $numMandatoryParams if ($numMandatoryParams < $leastNumMandatoryParams);
         $code .= "    if ($parametersCheck) {\n";
@@ -2507,8 +2507,8 @@ sub GenerateSingleConstructorCallback
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $overloadedIndexString = "";
-    if ($function->{overloadedIndex} > 0) {
-        $overloadedIndexString .= $function->{overloadedIndex};
+    if ($function->overloadedIndex > 0) {
+        $overloadedIndexString .= $function->overloadedIndex;
     }
 
     my $raisesExceptions = $function->signature->extendedAttributes->{"RaisesException"};
@@ -2531,7 +2531,7 @@ static void constructor${overloadedIndexString}(const v8::FunctionCallbackInfo<v
 {
 END
 
-    if ($function->{overloadedIndex} == 0) {
+    if ($function->overloadedIndex == 0) {
         $code .= GenerateArgumentsCountCheck($function, $interface);
     }
 
