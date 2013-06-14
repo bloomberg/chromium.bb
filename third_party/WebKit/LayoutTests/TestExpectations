@@ -1315,7 +1315,6 @@ crbug.com/234758 [ Lion ] virtual/softwarecompositing/scrollbars/custom-composit
 crbug.com/234758 [ Debug ] fast/parser/nested-fragment-parser-crash.html [ Pass Timeout ]
 crbug.com/234758 [ Debug ] http/tests/workers/terminate-during-sync-operation.html [ Pass Timeout ]
 crbug.com/234758 [ Win7 ] fast/frames/seamless/seamless-nested-crash.html [ Crash Pass Timeout ]
-crbug.com/237812 [ Debug ] storage/indexeddb/dont-wedge.html [ Crash Pass ]
 crbug.com/234758 [ Mac Debug ] fast/workers/worker-document-leak.html [ Pass Timeout ]
 crbug.com/234758 webaudio/audiobuffersource-multi-channels.html [ Crash Pass ]
 crbug.com/234758 [ Debug ] virtual/gpu/fast/canvas/canvas-strokePath-gradient-shadow.html [ Pass Timeout ]
