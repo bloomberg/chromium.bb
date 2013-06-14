@@ -15,8 +15,5 @@ proper file paths and generate a static lib.
 The patch in chromium.patch was applied to CpuArch.c to fix compile error on
 32bit Linux.
 
-2013-06-10: Removed chromium.patch and the associated changes, which caused a
-runtime segmentation fault.
-
 An #include <stdlib.h> needs to be added to CpuArch.h to avoid a warning on
 Win32.

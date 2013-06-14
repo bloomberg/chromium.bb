@@ -1,0 +1,10 @@
+76,78c76
+<     "mov %%ebx, %%edi\n"
+<     "cpuid\n"
+<     "xchg %%edi, %%ebx\n"
+---
+>     "cpuid"
+80c78
+<       "=D" (*b) ,
+---
+>       "=b" (*b) ,
