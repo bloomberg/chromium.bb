@@ -41,6 +41,8 @@ DevToolsFrontendHost::~DevToolsFrontendHost() {
 
 void DevToolsFrontendHost::DispatchOnInspectorFrontend(
     const std::string& message) {
+  if (!web_contents())
+    return;
   RenderViewHostImpl* target_host =
       static_cast<RenderViewHostImpl*>(web_contents()->GetRenderViewHost());
   target_host->Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
