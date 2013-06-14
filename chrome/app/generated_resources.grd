@@ -5753,6 +5753,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ABORT_BUTTON" desc="Button on the external install prompt to remove an extension installed by a third party.">
         Remove from Chrome
       </message>
+      <message name="IDS_EXTENSIONS_DISABLED" desc="(Disabled) label next to the application name when the application is disabled.">
+        (Disabled)
+      </message>
+      <message name="IDS_EXTENSIONS_SHOW_LOGS" desc="Text for the link to show logs.">
+        Show Logs
+      </message>
+      <message name="IDS_EXTENSIONS_MORE_DETAILS" desc="Text for the link to show more details about the extension / app.">
+        More Details
+      </message>
+      <message name="IDS_EXTENSIONS_VERSION" desc="The Version label in front of the version number of the extension / app.">
+        Version
+      </message>
+      <message name="IDS_EXTENSIONS_DELETE" desc="Text for the link to delete the extension / app.">
+        Delete
+      </message>
 
       <!-- chrome://settings-frame/options_settings_app.html for the App Launcher Settings App -->
       <if expr="pp_ifdef('enable_settings_app')">

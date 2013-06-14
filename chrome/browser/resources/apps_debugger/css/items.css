@@ -30,7 +30,7 @@ hr {
   border-bottom: none;
   margin: 5px auto 0;
   padding: 0 5px;
-  width: 800px;
+  width: 710px;
 }
 
 tabs tab {
@@ -60,7 +60,7 @@ tabs > :not([selected]):hover {
 }
 
 tabpanels {
-  height: 100%;
+  height: calc(100% - 20px);
   padding: 0;
   width: 100%;
 }
@@ -68,7 +68,7 @@ tabpanels {
 tabpanel {
   margin: 0 auto;
   padding-top: 80px;
-  width: 800px;
+  width: 710px;
 }
 
 /* Header */
@@ -139,6 +139,12 @@ html[dir='rtl'] #search {
   margin: 10px;
 }
 
+#packed-app-list,
+#unpacked-list,
+#packed-extension-list {
+  margin-top: 30px;
+}
+
 .loading #no-extensions,
 .loading #no-apps,
 .loading #no-unpacked,
@@ -150,7 +156,7 @@ html[dir='rtl'] #search {
 }
 
 .extension-list-item-wrapper {
-  margin: 30px 0;
+  padding: 0 0 15px;
 }
 
 .extension-list-item {
@@ -205,17 +211,8 @@ html[dir='rtl'] .extension-list-item {
   color: rgb(151, 156, 160);
 }
 
-.active-views {
-  margin-top: 15px;
-}
-
 .site-link {
   font-size: 90%;
-}
-
-.enable-controls {
-  float: right;
-  position: relative;
 }
 
 html[dir='rtl'] .enable-control {
@@ -239,6 +236,13 @@ html[dir='rtl'] .enable-control {
   display: inline-block;
 }
 
+.file-access-control,
+.incognito-control,
+.checkbox label {
+  margin: 5px 0;
+  padding: 0;
+}
+
 .enabled-text {
   font-weight: bold;
 }
@@ -251,10 +255,6 @@ html[dir='rtl'] .enable-control {
 
 .load-path > span {
   word-wrap: break-word;
-}
-
-.load-path {
-  margin-top: 15px;
 }
 
 .terminated-reload-link {
@@ -270,6 +270,159 @@ html[dir='rtl'] .enable-control {
 
 .install-warnings a {
   -webkit-margin-start: 0;
+}
+
+.extension-run-button,
+.extension-restart-button,
+.extension-show-logs-button,
+.extension-more-details-button {
+  opacity: 0;
+  transition: 250ms opacity ease-in;
+}
+
+.extension-list-item-wrapper:hover .extension-run-button,
+.extension-list-item-wrapper:hover .extension-restart-button,
+.extension-list-item-wrapper:hover .extension-show-logs-button,
+.extension-list-item-wrapper:hover .extension-more-details-button {
+  opacity: 1;
+  transition-duration: 100ms;
+}
+
+.extension-details.expanded .extension-run-button,
+.extension-details.expanded .extension-restart-button,
+.extension-details.expanded .extension-show-logs-button,
+.extension-details.expanded .extension-more-details-button {
+  opacity: 1;
+}
+
+.extension-run-button,
+.extension-restart-button {
+  background-position: center;
+  background-repeat: no-repeat;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  display: inline-block;
+  font-size: 12px;
+  height: 16px;
+  padding: 5px;
+  width: 16px;
+}
+
+.extension-run-button:hover,
+.extension-restart-button:hover {
+  border-color: #ddd;
+}
+
+.extension-run-button:active,
+.extension-restart-button:active {
+  background-color: #f8f8f8;
+  border-color: #ddd;
+}
+
+.extension-run-button {
+  background-image: url(../images/run.png);
+}
+
+.extension-restart-button {
+  background-image: url(../images/restart.png);
+}
+
+.extension-show-logs-button,
+.extension-more-details-button {
+  color: #aaa;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 12px;
+  text-decoration: underline;
+}
+
+.extension-show-logs-button {
+  position: relative;
+  top: -9px;
+}
+
+.extension-more-details-button {
+  float: right;
+  padding: 8px 0;
+}
+
+html[dir='rtl'] .extension-more-details-button {
+  float: left;
+}
+
+.extension-details-all {
+  height: 0;
+  margin-top: -5px;
+  opacity: 0;
+  overflow: hidden;
+  transition: height 250ms ease-in, opacity 250ms ease-in;
+}
+
+.extension-details.expanded .extension-details-all {
+  opacity: 1;
+}
+
+.extension-details-all-container {
+  position: relative;
+}
+
+.extension-details-all-arrow {
+  border: 9px solid transparent;
+  border-bottom-color: #f8f8f8;
+  height: 0;
+  position: absolute;
+  right: 21px;
+  top: -17px;
+  width: 0;
+}
+
+html[dir='rtl'] .extension-details-all-arrow {
+  left: 21px;
+  right: auto;
+}
+
+.extension-details-all-arrow-border {
+  border: 10px solid transparent;
+  border-bottom-color: #ddd;
+  height: 0;
+  position: absolute;
+  right: 20px;
+  top: -19px;
+  width: 0;
+}
+
+html[dir='rtl'] .extension-details-all-arrow-border {
+  left: 20px;
+  right: auto;
+}
+
+.extension-details-all-bubble {
+  background-color: #f8f8f8;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-top: 10px;
+  padding: 0 10px;
+}
+
+.extension-details-all-bubble > div {
+  margin: 10px 0;
+}
+
+.delete-link {
+  float: right;
+}
+
+html[dir='rtl'] .delete-link {
+  float: left;
+}
+
+.enable-checkbox-text {
+  -webkit-margin-end: 0;
+}
+
+:-webkit-any(.checkbox, .radio) label input ~ span {
+  -webkit-margin-start: 0;
+  display: inline;
 }
 
 #tabs {
@@ -333,10 +486,6 @@ html[dir='rtl'] #extension-settings .trash {
 
 .may-not-disable .optional-controls .optional-controls-disableable {
   display: none;
-}
-
-.optional-controls {
-  margin-top: 15px;
 }
 
 a {
