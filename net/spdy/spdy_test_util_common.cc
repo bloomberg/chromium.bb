@@ -562,6 +562,22 @@ scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructGetHeaderBlock(
   return header_block.Pass();
 }
 
+scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructGetHeaderBlockForProxy(
+    base::StringPiece url) const {
+  std::string scheme, host, path;
+  ParseUrl(url.data(), &scheme, &host, &path);
+  const char* const headers[] = {
+    GetMethodKey(),  "GET",
+    GetPathKey(),    is_spdy2() ? url.data() : path.c_str(),
+    GetHostKey(),    host.c_str(),
+    GetSchemeKey(),  scheme.c_str(),
+    GetVersionKey(), "HTTP/1.1"
+  };
+  scoped_ptr<SpdyHeaderBlock> header_block(new SpdyHeaderBlock());
+  AppendToHeaderBlock(headers, arraysize(headers) / 2, header_block.get());
+  return header_block.Pass();
+}
+
 scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructPostHeaderBlock(
     base::StringPiece url,
     int64 content_length) const {

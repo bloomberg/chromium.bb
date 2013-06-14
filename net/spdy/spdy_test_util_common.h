@@ -257,6 +257,8 @@ class SpdyTestUtil {
 
   scoped_ptr<SpdyHeaderBlock> ConstructGetHeaderBlock(
       base::StringPiece url) const;
+  scoped_ptr<SpdyHeaderBlock> ConstructGetHeaderBlockForProxy(
+      base::StringPiece url) const;
   scoped_ptr<SpdyHeaderBlock> ConstructPostHeaderBlock(
       base::StringPiece url,
       int64 content_length) const;
@@ -351,6 +353,11 @@ class SpdyTestUtil {
                               bool compressed,
                               SpdyStreamId stream_id,
                               RequestPriority request_priority) const;
+
+  SpdyFrame* ConstructSpdyGetForProxy(const char* const url,
+                                      bool compressed,
+                                      SpdyStreamId stream_id,
+                                      RequestPriority request_priority) const;
 
   // Constructs a standard SPDY GET SYN frame, optionally compressed.
   // |extra_headers| are the extra header-value pairs, which typically

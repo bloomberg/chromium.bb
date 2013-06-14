@@ -89,17 +89,15 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
  private:
   friend class HttpNetworkTransactionSSLTest;
 
-  FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionSpdy2Test,
+  FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionTest,
                            ResetStateForRestart);
-  FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionSpdy3Test,
-                           ResetStateForRestart);
-  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionSpdy2Test,
+  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest,
                            WindowUpdateReceived);
-  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionSpdy2Test,
+  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest,
                            WindowUpdateSent);
-  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionSpdy2Test,
+  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest,
                            WindowUpdateOverflow);
-  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionSpdy2Test,
+  FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest,
                            FlowControlStallResume);
   FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionSpdy3Test,
                            WindowUpdateReceived);
