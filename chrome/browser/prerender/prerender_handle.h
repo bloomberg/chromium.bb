@@ -74,6 +74,10 @@ class PrerenderHandle : public base::NonThreadSafe,
       const GURL& url,
       const content::SessionStorageNamespace* session_storage_namespace) const;
 
+  // Returns whether this PrerenderHandle represents the same prerender as
+  // the other PrerenderHandle object specified.
+  bool RepresentingSamePrerenderAs(PrerenderHandle* other) const;
+
  private:
   friend class PrerenderManager;
 

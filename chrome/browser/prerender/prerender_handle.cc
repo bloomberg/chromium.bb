@@ -129,4 +129,10 @@ void PrerenderHandle::OnPrerenderCreatedMatchCompleteReplacement(
   replacement->AddObserver(this);
 }
 
+bool PrerenderHandle::RepresentingSamePrerenderAs(
+    PrerenderHandle* other) const {
+  return other && other->prerender_data_.get() && prerender_data_.get()
+      && prerender_data_.get() == other->prerender_data_.get();
+}
+
 }  // namespace prerender
