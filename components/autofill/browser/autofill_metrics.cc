@@ -443,6 +443,10 @@ void AutofillMetrics::LogAutocheckoutDuration(
     AutocheckoutCompletionStatus status) const {
   std::string suffix;
   switch (status) {
+    case AUTOCHECKOUT_CANCELLED:
+      suffix = "Cancelled";
+      break;
+
     case AUTOCHECKOUT_FAILED:
       suffix = "Failed";
       break;

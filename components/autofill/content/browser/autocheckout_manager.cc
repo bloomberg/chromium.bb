@@ -308,6 +308,58 @@ void AutocheckoutManager::MaybeShowAutocheckoutBubble(
                                    task);
 }
 
+void AutocheckoutManager::ReturnAutocheckoutData(
+    const FormStructure* result,
+    const std::string& google_transaction_id) {
+  if (!result) {
+    in_autocheckout_flow_ = false;
+    return;
+  }
+
+  google_transaction_id_ = google_transaction_id;
+  in_autocheckout_flow_ = true;
+  metric_logger_->LogAutocheckoutBuyFlowMetric(
+      AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_STARTED);
+
+  profile_.reset(new AutofillProfile());
+  credit_card_.reset(new CreditCard());
+  billing_address_.reset(new AutofillProfile());
+
+  for (size_t i = 0; i < result->field_count(); ++i) {
+    AutofillFieldType type = result->field(i)->type();
+    const base::string16& value = result->field(i)->value;
+    if (type == CREDIT_CARD_VERIFICATION_CODE) {
+      cvv_ = result->field(i)->value;
+      continue;
+    }
+    FieldTypeGroup group = AutofillType(type).group();
+    if (group == AutofillType::CREDIT_CARD) {
+      credit_card_->SetRawInfo(type, value);
+    } else if (type == ADDRESS_HOME_COUNTRY) {
+      profile_->SetInfo(type, value, autofill_manager_->app_locale());
+    } else if (type == ADDRESS_BILLING_COUNTRY) {
+      billing_address_->SetInfo(type, value, autofill_manager_->app_locale());
+    } else if (IsBillingGroup(group)) {
+      billing_address_->SetRawInfo(type, value);
+    } else {
+      profile_->SetRawInfo(type, value);
+    }
+  }
+
+  // Add 1.0 since page numbers are 0-indexed.
+  autofill_manager_->delegate()->UpdateProgressBar(
+      (1.0 + page_meta_data_->current_page_number) /
+          page_meta_data_->total_pages);
+  FillForms();
+
+  // If the current page is the last page in the flow, close the dialog.
+  if (page_meta_data_->IsEndOfAutofillableFlow()) {
+    SendAutocheckoutStatus(SUCCESS);
+    autofill_manager_->delegate()->OnAutocheckoutSuccess();
+    in_autocheckout_flow_ = false;
+  }
+}
+
 void AutocheckoutManager::set_metric_logger(
     scoped_ptr<AutofillMetrics> metric_logger) {
   metric_logger_ = metric_logger.Pass();
@@ -357,56 +409,6 @@ bool AutocheckoutManager::IsStartOfAutofillableFlow() const {
 
 bool AutocheckoutManager::IsInAutofillableFlow() const {
   return page_meta_data_ && page_meta_data_->IsInAutofillableFlow();
-}
-
-void AutocheckoutManager::ReturnAutocheckoutData(
-    const FormStructure* result,
-    const std::string& google_transaction_id) {
-  if (!result)
-    return;
-
-  google_transaction_id_ = google_transaction_id;
-  in_autocheckout_flow_ = true;
-  metric_logger_->LogAutocheckoutBuyFlowMetric(
-      AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_STARTED);
-
-  profile_.reset(new AutofillProfile());
-  credit_card_.reset(new CreditCard());
-  billing_address_.reset(new AutofillProfile());
-
-  for (size_t i = 0; i < result->field_count(); ++i) {
-    AutofillFieldType type = result->field(i)->type();
-    const base::string16& value = result->field(i)->value;
-    if (type == CREDIT_CARD_VERIFICATION_CODE) {
-      cvv_ = result->field(i)->value;
-      continue;
-    }
-    FieldTypeGroup group = AutofillType(type).group();
-    if (group == AutofillType::CREDIT_CARD) {
-      credit_card_->SetRawInfo(type, value);
-    } else if (type == ADDRESS_HOME_COUNTRY) {
-      profile_->SetInfo(type, value, autofill_manager_->app_locale());
-    } else if (type == ADDRESS_BILLING_COUNTRY) {
-      billing_address_->SetInfo(type, value, autofill_manager_->app_locale());
-    } else if (IsBillingGroup(group)) {
-      billing_address_->SetRawInfo(type, value);
-    } else {
-      profile_->SetRawInfo(type, value);
-    }
-  }
-
-  // Add 1.0 since page numbers are 0-indexed.
-  autofill_manager_->delegate()->UpdateProgressBar(
-      (1.0 + page_meta_data_->current_page_number) /
-          page_meta_data_->total_pages);
-  FillForms();
-
-  // If the current page is the last page in the flow, close the dialog.
-  if (page_meta_data_->IsEndOfAutofillableFlow()) {
-    SendAutocheckoutStatus(SUCCESS);
-    autofill_manager_->delegate()->OnAutocheckoutSuccess();
-    in_autocheckout_flow_ = false;
-  }
 }
 
 void AutocheckoutManager::SetValue(const AutofillField& field,

@@ -1424,7 +1424,7 @@ TEST_F(AutofillDialogControllerTest, VerifyCvv) {
   EXPECT_TRUE(controller()->SectionIsActive(SECTION_SHIPPING));
   EXPECT_TRUE(controller()->SectionIsActive(SECTION_CC_BILLING));
   EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
-  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
+  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
 
   SuggestionState suggestion_state =
       controller()->SuggestionStateForSection(SECTION_CC_BILLING);
@@ -1460,7 +1460,7 @@ TEST_F(AutofillDialogControllerTest, ErrorDuringSubmit) {
   controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
 
   EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
-  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
+  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
 
   controller()->OnWalletError(wallet::WalletClient::UNKNOWN_ERROR);
 
@@ -1481,7 +1481,7 @@ TEST_F(AutofillDialogControllerTest, ChangeAccountDuringSubmit) {
   controller()->OnDidLoadRiskFingerprintData(GetFakeFingerprint().Pass());
 
   EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
-  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
+  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
 
   SwitchToWallet();
   SwitchToAutofill();

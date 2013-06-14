@@ -688,10 +688,8 @@ bool AutofillDialogControllerImpl::IsDialogButtonEnabled(
   }
 
   DCHECK_EQ(ui::DIALOG_BUTTON_CANCEL, button);
-  // TODO(ahutter): Make it possible for the user to cancel out of the dialog
-  // while Autocheckout is in progress.
-  return autocheckout_state_ != AUTOCHECKOUT_IN_PROGRESS ||
-         !callback_.is_null();
+  return !is_submitting_ || autocheckout_state_ != AUTOCHECKOUT_NOT_STARTED ||
+         IsSubmitPausedOn(wallet::VERIFY_CVV);
 }
 
 const std::vector<ui::Range>& AutofillDialogControllerImpl::
@@ -1635,18 +1633,14 @@ void AutofillDialogControllerImpl::LegalDocumentLinkClicked(
 
 void AutofillDialogControllerImpl::OnCancel() {
   HidePopup();
-
-  // If the submit was successful, |callback_| will have already been |.Run()|
-  // and nullified. If this is the case, no further actions are required. If
-  // Autocheckout has an error, it's possible that the dialog will be submitted
-  // to start the flow and then cancelled to close the dialog after the error.
-  if (callback_.is_null())
-    return;
-
-  LogOnCancelMetrics();
-
+  if (autocheckout_state_ == AUTOCHECKOUT_NOT_STARTED && !is_submitting_)
+    LogOnCancelMetrics();
+  if (autocheckout_state_ == AUTOCHECKOUT_IN_PROGRESS) {
+    GetMetricLogger().LogAutocheckoutDuration(
+        base::Time::Now() - autocheckout_started_timestamp_,
+        AutofillMetrics::AUTOCHECKOUT_CANCELLED);
+  }
   callback_.Run(NULL, std::string());
-  callback_ = base::Callback<void(const FormStructure*, const std::string&)>();
 }
 
 void AutofillDialogControllerImpl::OnAccept() {
@@ -2897,7 +2891,6 @@ void AutofillDialogControllerImpl::FinishSubmit() {
   // Callback should be called as late as possible.
   callback_.Run(&form_structure_, !wallet_items_ ? std::string() :
       wallet_items_->google_transaction_id());
-  callback_ = base::Callback<void(const FormStructure*, const std::string&)>();
 
   // This might delete us.
   if (GetDialogType() == DIALOG_TYPE_REQUEST_AUTOCOMPLETE)

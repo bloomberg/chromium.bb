@@ -262,6 +262,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutSuccess) {
 
   EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_SUCCEEDED,
             metric_logger().autocheckout_status());
+
+  // Ensure closing the dialog doesn't fire any new metrics.
+  EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
+            metric_logger().dialog_dismissal_action());
+  EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger().dialog_type());
 }
 
 // Test Autocheckout failure metric.
@@ -279,6 +284,31 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutError) {
 
   EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_FAILED,
             metric_logger().autocheckout_status());
+
+  // Ensure closing the dialog doesn't fire any new metrics.
+  EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
+            metric_logger().dialog_dismissal_action());
+  EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger().dialog_type());
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutCancelled) {
+  InitializeControllerOfType(DIALOG_TYPE_AUTOCHECKOUT);
+  controller()->view()->GetTestableView()->SubmitForTesting();
+
+  EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
+            metric_logger().dialog_dismissal_action());
+  EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger().dialog_type());
+
+  controller()->view()->GetTestableView()->CancelForTesting();
+  RunMessageLoop();
+
+  EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_CANCELLED,
+            metric_logger().autocheckout_status());
+
+  // Ensure closing the dialog doesn't fire any new metrics.
+  EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
+            metric_logger().dialog_dismissal_action());
+  EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger().dialog_type());
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {

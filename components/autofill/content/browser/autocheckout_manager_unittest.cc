@@ -347,6 +347,7 @@ class TestAutocheckoutManager: public AutocheckoutManager {
   using AutocheckoutManager::in_autocheckout_flow;
   using AutocheckoutManager::autocheckout_offered;
   using AutocheckoutManager::MaybeShowAutocheckoutDialog;
+  using AutocheckoutManager::ReturnAutocheckoutData;
 };
 
 }  // namespace
@@ -768,6 +769,29 @@ TEST_F(AutocheckoutManagerTest, FullAutocheckoutFlow) {
   CheckFillFormsAndClickIpc();
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_TRUE(autofill_manager_delegate_->request_autocomplete_dialog_open());
+}
+
+TEST_F(AutocheckoutManagerTest, CancelledAutocheckoutFlow) {
+  // Test for progression through last page.
+  OpenRequestAutocompleteDialog();
+  // Go to second page.
+  EXPECT_CALL(*autofill_manager_delegate_,
+              UpdateProgressBar(testing::DoubleEq(2.0/3.0))).Times(1);
+  autocheckout_manager_->OnLoadedPageMetaData(CreateInFlowMetaData());
+  EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
+  CheckFillFormsAndClickIpc();
+
+  // Cancel the flow.
+  autocheckout_manager_->ReturnAutocheckoutData(NULL, std::string());
+  EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
+
+  // Go to third page.
+  EXPECT_CALL(*autofill_manager_delegate_,
+              UpdateProgressBar(testing::_)).Times(0);
+  EXPECT_CALL(autocheckout_manager_->metric_logger(),
+              LogAutocheckoutBuyFlowMetric(testing::_)).Times(0);
+  autocheckout_manager_->OnLoadedPageMetaData(CreateEndOfFlowMetaData());
+  EXPECT_EQ(0U, process()->sink().message_count());
 }
 
 TEST_F(AutocheckoutManagerTest, SinglePageFlow) {

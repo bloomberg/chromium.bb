@@ -86,6 +86,10 @@ class AutocheckoutManager {
                                            const content::SSLStatus& ssl_status,
                                            bool show_dialog);
 
+  // Callback called from AutofillDialogController on filling up the UI form.
+  void ReturnAutocheckoutData(const FormStructure* result,
+                              const std::string& google_transaction_id);
+
   const AutofillMetrics& metric_logger() const { return *metric_logger_; }
   void set_metric_logger(scoped_ptr<AutofillMetrics> metric_logger);
 
@@ -104,10 +108,6 @@ class AutocheckoutManager {
 
   // Whether or not the current page is part of a multipage Autofill flow.
   bool IsInAutofillableFlow() const;
-
-  // Callback called from AutofillDialogController on filling up the UI form.
-  void ReturnAutocheckoutData(const FormStructure* result,
-                              const std::string& google_transaction_id);
 
   // Sends |status| to Online Wallet using AutocheckoutRequestManager.
   void SendAutocheckoutStatus(AutocheckoutStatus status);
