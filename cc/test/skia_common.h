@@ -43,6 +43,7 @@ class TestLazyPixelRef : public skia::LazyPixelRef {
   virtual void* onLockPixels(SkColorTable** color_table) OVERRIDE;
   virtual void onUnlockPixels() OVERRIDE {}
   virtual bool PrepareToDecode(const PrepareParams& params) OVERRIDE;
+  virtual bool MaybeDecoded() OVERRIDE;
   virtual SkPixelRef* deepCopy(
       SkBitmap::Config config,
       const SkIRect* subset) OVERRIDE;

@@ -46,6 +46,10 @@ bool TestLazyPixelRef::PrepareToDecode(const PrepareParams& params) {
   return true;
 }
 
+bool TestLazyPixelRef::MaybeDecoded() {
+  return true;
+}
+
 SkPixelRef* TestLazyPixelRef::deepCopy(
     SkBitmap::Config config,
     const SkIRect* subset) {

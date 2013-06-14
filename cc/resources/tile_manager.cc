@@ -680,8 +680,7 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(
     if (decoded_images->find(id) != decoded_images->end())
       continue;
 
-    // TODO(qinmin): passing correct image size to PrepareToDecode().
-    if (pixel_ref->PrepareToDecode(skia::LazyPixelRef::PrepareParams())) {
+    if (pixel_ref->MaybeDecoded()) {
       decoded_images->insert(id);
       rendering_stats_instrumentation_->IncrementDeferredImageCacheHitCount();
       continue;
