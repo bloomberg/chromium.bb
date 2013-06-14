@@ -177,11 +177,10 @@ weston_wm_get_selection_targets(struct weston_wm *wm)
 	if (source == NULL)
 		return;
 
-	wl_signal_init(&source->base.resource.destroy_signal);
+	wl_signal_init(&source->base.destroy_signal);
 	source->base.accept = data_source_accept;
 	source->base.send = data_source_send;
 	source->base.cancel = data_source_cancel;
-	source->base.resource.data = source;
 	source->wm = wm;
 
 	wl_array_init(&source->base.mime_types);

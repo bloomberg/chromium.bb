@@ -60,8 +60,8 @@ clipboard_source_unref(struct clipboard_source *source)
 
 	if (source->event_source)
 		wl_event_source_remove(source->event_source);
-	wl_signal_emit(&source->base.resource.destroy_signal,
-		       &source->base.resource);
+	wl_signal_emit(&source->base.destroy_signal,
+		       &source->base);
 	s = source->base.mime_types.data;
 	free(*s);
 	wl_array_release(&source->base.mime_types);
@@ -136,11 +136,11 @@ clipboard_source_create(struct clipboard *clipboard,
 	source = malloc(sizeof *source);
 	wl_array_init(&source->contents);
 	wl_array_init(&source->base.mime_types);
+	source->base.resource = NULL;
 	source->base.accept = clipboard_source_accept;
 	source->base.send = clipboard_source_send;
 	source->base.cancel = clipboard_source_cancel;
-	source->base.resource.data = &source->base;
-	wl_signal_init(&source->base.resource.destroy_signal);
+	wl_signal_init(&source->base.destroy_signal);
 	source->refcount = 1;
 	source->clipboard = clipboard;
 	source->serial = serial;
