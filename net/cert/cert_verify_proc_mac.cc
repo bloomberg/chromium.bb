@@ -345,6 +345,179 @@ bool IsIssuedByKnownRoot(CFArrayRef chain) {
       hash, &kKnownRootCertSHA1Hashes[0][0], sizeof(kKnownRootCertSHA1Hashes));
 }
 
+// Builds and evaluates a SecTrustRef for the certificate chain contained
+// in |cert_array|, using the verification policies in |trust_policies|. On
+// success, returns OK, and updates |trust_ref|, |trust_result|,
+// |verified_chain|, and |chain_info| with the verification results. On
+// failure, no output parameters are modified.
+//
+// Note: An OK return does not mean that |cert_array| is trusted, merely that
+// verification was performed successfully.
+//
+// This function should only be called while the Mac Security Services lock is
+// held.
+int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
+                                CFArrayRef trust_policies,
+                                int flags,
+                                ScopedCFTypeRef<SecTrustRef>* trust_ref,
+                                SecTrustResultType* trust_result,
+                                ScopedCFTypeRef<CFArrayRef>* verified_chain,
+                                CSSM_TP_APPLE_EVIDENCE_INFO** chain_info) {
+  SecTrustRef tmp_trust = NULL;
+  OSStatus status = SecTrustCreateWithCertificates(cert_array, trust_policies,
+                                                   &tmp_trust);
+  if (status)
+    return NetErrorFromOSStatus(status);
+  ScopedCFTypeRef<SecTrustRef> scoped_tmp_trust(tmp_trust);
+
+  if (TestRootCerts::HasInstance()) {
+    status = TestRootCerts::GetInstance()->FixupSecTrustRef(tmp_trust);
+    if (status)
+      return NetErrorFromOSStatus(status);
+  }
+
+  CSSM_APPLE_TP_ACTION_DATA tp_action_data;
+  memset(&tp_action_data, 0, sizeof(tp_action_data));
+  tp_action_data.Version = CSSM_APPLE_TP_ACTION_VERSION;
+  // Allow CSSM to download any missing intermediate certificates if an
+  // authorityInfoAccess extension or issuerAltName extension is present.
+  tp_action_data.ActionFlags = CSSM_TP_ACTION_FETCH_CERT_FROM_NET |
+                               CSSM_TP_ACTION_TRUST_SETTINGS;
+
+  // Note: For EV certificates, the Apple TP will handle setting these flags
+  // as part of EV evaluation.
+  if (flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED) {
+    // Require a positive result from an OCSP responder or a CRL (or both)
+    // for every certificate in the chain. The Apple TP automatically
+    // excludes the self-signed root from this requirement. If a certificate
+    // is missing both a crlDistributionPoints extension and an
+    // authorityInfoAccess extension with an OCSP responder URL, then we
+    // will get a kSecTrustResultRecoverableTrustFailure back from
+    // SecTrustEvaluate(), with a
+    // CSSMERR_APPLETP_INCOMPLETE_REVOCATION_CHECK error code. In that case,
+    // we'll set our own result to include
+    // CERT_STATUS_NO_REVOCATION_MECHANISM. If one or both extensions are
+    // present, and a check fails (server unavailable, OCSP retry later,
+    // signature mismatch), then we'll set our own result to include
+    // CERT_STATUS_UNABLE_TO_CHECK_REVOCATION.
+    tp_action_data.ActionFlags |= CSSM_TP_ACTION_REQUIRE_REV_PER_CERT;
+
+    // Note, even if revocation checking is disabled, SecTrustEvaluate() will
+    // modify the OCSP options so as to attempt OCSP checking if it believes a
+    // certificate may chain to an EV root. However, because network fetches
+    // are disabled in CreateTrustPolicies() when revocation checking is
+    // disabled, these will only go against the local cache.
+  }
+
+  CFDataRef action_data_ref =
+      CFDataCreateWithBytesNoCopy(kCFAllocatorDefault,
+                                  reinterpret_cast<UInt8*>(&tp_action_data),
+                                  sizeof(tp_action_data), kCFAllocatorNull);
+  if (!action_data_ref)
+    return ERR_OUT_OF_MEMORY;
+  ScopedCFTypeRef<CFDataRef> scoped_action_data_ref(action_data_ref);
+  status = SecTrustSetParameters(tmp_trust, CSSM_TP_ACTION_DEFAULT,
+                                 action_data_ref);
+  if (status)
+    return NetErrorFromOSStatus(status);
+
+  // Verify the certificate. A non-zero result from SecTrustGetResult()
+  // indicates that some fatal error occurred and the chain couldn't be
+  // processed, not that the chain contains no errors. We need to examine the
+  // output of SecTrustGetResult() to determine that.
+  SecTrustResultType tmp_trust_result;
+  status = SecTrustEvaluate(tmp_trust, &tmp_trust_result);
+  if (status)
+    return NetErrorFromOSStatus(status);
+  CFArrayRef tmp_verified_chain = NULL;
+  CSSM_TP_APPLE_EVIDENCE_INFO* tmp_chain_info;
+  status = SecTrustGetResult(tmp_trust, &tmp_trust_result, &tmp_verified_chain,
+                             &tmp_chain_info);
+  if (status)
+    return NetErrorFromOSStatus(status);
+
+  trust_ref->swap(scoped_tmp_trust);
+  *trust_result = tmp_trust_result;
+  verified_chain->reset(tmp_verified_chain);
+  *chain_info = tmp_chain_info;
+
+  return OK;
+}
+
+// OS X ships with both "GTE CyberTrust Global Root" and "Baltimore CyberTrust
+// Root" as part of its trusted root store. However, a cross-certified version
+// of the "Baltimore CyberTrust Root" exists that chains to "GTE CyberTrust
+// Global Root". When OS X/Security.framework attempts to evaluate such a
+// certificate chain, it disregards the "Baltimore CyberTrust Root" that exists
+// within Keychain and instead attempts to terminate the chain in the "GTE
+// CyberTrust Global Root". However, the GTE root is scheduled to be removed in
+// a future OS X update (for sunsetting purposes), and once removed, such
+// chains will fail validation, even though a trust anchor still exists.
+//
+// Rather than over-generalizing a solution that may mask a number of TLS
+// misconfigurations, attempt to specifically match the affected
+// cross-certified certificate and remove it from certificate chain processing.
+bool IsBadBaltimoreGTECertificate(SecCertificateRef cert) {
+  // Matches the GTE-signed Baltimore CyberTrust Root
+  // https://cacert.omniroot.com/Baltimore-to-GTE-04-12.pem
+  static const SHA1HashValue kBadBaltimoreHashNew =
+    { { 0x4D, 0x34, 0xEA, 0x92, 0x76, 0x4B, 0x3A, 0x31, 0x49, 0x11,
+        0x99, 0x52, 0xF4, 0x19, 0x30, 0xCA, 0x11, 0x34, 0x83, 0x61 } };
+  // Matches the legacy GTE-signed Baltimore CyberTrust Root
+  // https://cacert.omniroot.com/gte-2-2025.pem
+  static const SHA1HashValue kBadBaltimoreHashOld =
+    { { 0x54, 0xD8, 0xCB, 0x49, 0x1F, 0xA1, 0x6D, 0xF8, 0x87, 0xDC,
+        0x94, 0xA9, 0x34, 0xCC, 0x83, 0x6B, 0xDA, 0xA8, 0xA3, 0x69 } };
+
+  SHA1HashValue fingerprint = X509Certificate::CalculateFingerprint(cert);
+
+  return fingerprint.Equals(kBadBaltimoreHashNew) ||
+         fingerprint.Equals(kBadBaltimoreHashOld);
+}
+
+// Attempts to re-verify |cert_array| after adjusting the inputs to work around
+// known issues in OS X. To be used if BuildAndEvaluateSecTrustRef fails to
+// return a positive result for verification.
+//
+// This function should only be called while the Mac Security Services lock is
+// held.
+void RetrySecTrustEvaluateWithAdjustedChain(
+    CFArrayRef cert_array,
+    CFArrayRef trust_policies,
+    int flags,
+    ScopedCFTypeRef<SecTrustRef>* trust_ref,
+    SecTrustResultType* trust_result,
+    ScopedCFTypeRef<CFArrayRef>* verified_chain,
+    CSSM_TP_APPLE_EVIDENCE_INFO** chain_info) {
+  CFIndex count = CFArrayGetCount(*verified_chain);
+  CFIndex slice_point = 0;
+
+  for (CFIndex i = 1; i < count; ++i) {
+    SecCertificateRef cert = reinterpret_cast<SecCertificateRef>(
+        const_cast<void*>(CFArrayGetValueAtIndex(*verified_chain, i)));
+    if (cert == NULL)
+      return;  // Strange times; can't fix things up.
+
+    if (IsBadBaltimoreGTECertificate(cert)) {
+      slice_point = i;
+      break;
+    }
+  }
+  if (slice_point == 0)
+    return;  // Nothing to do.
+
+  ScopedCFTypeRef<CFMutableArrayRef> adjusted_cert_array(
+      CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks));
+  // Note: This excludes the certificate at |slice_point|.
+  CFArrayAppendArray(adjusted_cert_array, cert_array,
+                     CFRangeMake(0, slice_point));
+
+  // Ignore the result; failure will preserve the old verification results.
+  BuildAndEvaluateSecTrustRef(
+      adjusted_cert_array, trust_policies, flags, trust_ref, trust_result,
+      verified_chain, chain_info);
+}
+
 }  // namespace
 
 CertVerifyProcMac::CertVerifyProcMac() {}
@@ -378,85 +551,30 @@ int CertVerifyProcMac::VerifyInternal(
   // issues in OS X 10.6+ with multi-threaded access to Security.framework.
   base::AutoLock lock(crypto::GetMacSecurityServicesLock());
 
-  SecTrustRef trust_ref = NULL;
-  status = SecTrustCreateWithCertificates(cert_array, trust_policies,
-                                          &trust_ref);
-  if (status)
-    return NetErrorFromOSStatus(status);
-  ScopedCFTypeRef<SecTrustRef> scoped_trust_ref(trust_ref);
+  ScopedCFTypeRef<SecTrustRef> trust_ref;
+  SecTrustResultType trust_result = kSecTrustResultDeny;
+  ScopedCFTypeRef<CFArrayRef> completed_chain;
+  CSSM_TP_APPLE_EVIDENCE_INFO* chain_info = NULL;
 
-  if (TestRootCerts::HasInstance()) {
-    status = TestRootCerts::GetInstance()->FixupSecTrustRef(trust_ref);
-    if (status)
-      return NetErrorFromOSStatus(status);
+  int rv = BuildAndEvaluateSecTrustRef(
+      cert_array, trust_policies, flags, &trust_ref, &trust_result,
+      &completed_chain, &chain_info);
+  if (rv != OK)
+    return rv;
+  if (trust_result != kSecTrustResultUnspecified &&
+      trust_result != kSecTrustResultProceed) {
+    RetrySecTrustEvaluateWithAdjustedChain(
+        cert_array, trust_policies, flags, &trust_ref, &trust_result,
+        &completed_chain, &chain_info);
   }
 
-  CSSM_APPLE_TP_ACTION_DATA tp_action_data;
-  memset(&tp_action_data, 0, sizeof(tp_action_data));
-  tp_action_data.Version = CSSM_APPLE_TP_ACTION_VERSION;
-  // Allow CSSM to download any missing intermediate certificates if an
-  // authorityInfoAccess extension or issuerAltName extension is present.
-  tp_action_data.ActionFlags = CSSM_TP_ACTION_FETCH_CERT_FROM_NET |
-                               CSSM_TP_ACTION_TRUST_SETTINGS;
-
-  // Note: For EV certificates, the Apple TP will handle setting these flags
-  // as part of EV evaluation.
-  if (flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED) {
-    // Require a positive result from an OCSP responder or a CRL (or both)
-    // for every certificate in the chain. The Apple TP automatically
-    // excludes the self-signed root from this requirement. If a certificate
-    // is missing both a crlDistributionPoints extension and an
-    // authorityInfoAccess extension with an OCSP responder URL, then we
-    // will get a kSecTrustResultRecoverableTrustFailure back from
-    // SecTrustEvaluate(), with a
-    // CSSMERR_APPLETP_INCOMPLETE_REVOCATION_CHECK error code. In that case,
-    // we'll set our own result to include
-    // CERT_STATUS_NO_REVOCATION_MECHANISM. If one or both extensions are
-    // present, and a check fails (server unavailable, OCSP retry later,
-    // signature mismatch), then we'll set our own result to include
-    // CERT_STATUS_UNABLE_TO_CHECK_REVOCATION.
-    tp_action_data.ActionFlags |= CSSM_TP_ACTION_REQUIRE_REV_PER_CERT;
+  if (flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED)
     verify_result->cert_status |= CERT_STATUS_REV_CHECKING_ENABLED;
-
-    // Note, even if revocation checking is disabled, SecTrustEvaluate() will
-    // modify the OCSP options so as to attempt OCSP checking if it believes a
-    // certificate may chain to an EV root. However, because network fetches
-    // are disabled in CreateTrustPolicies() when revocation checking is
-    // disabled, these will only go against the local cache.
-  }
-
-  CFDataRef action_data_ref =
-      CFDataCreateWithBytesNoCopy(kCFAllocatorDefault,
-                                  reinterpret_cast<UInt8*>(&tp_action_data),
-                                  sizeof(tp_action_data), kCFAllocatorNull);
-  if (!action_data_ref)
-    return ERR_OUT_OF_MEMORY;
-  ScopedCFTypeRef<CFDataRef> scoped_action_data_ref(action_data_ref);
-  status = SecTrustSetParameters(trust_ref, CSSM_TP_ACTION_DEFAULT,
-                                 action_data_ref);
-  if (status)
-    return NetErrorFromOSStatus(status);
-
-  // Verify the certificate. A non-zero result from SecTrustGetResult()
-  // indicates that some fatal error occurred and the chain couldn't be
-  // processed, not that the chain contains no errors. We need to examine the
-  // output of SecTrustGetResult() to determine that.
-  SecTrustResultType trust_result;
-  status = SecTrustEvaluate(trust_ref, &trust_result);
-  if (status)
-    return NetErrorFromOSStatus(status);
-  CFArrayRef completed_chain = NULL;
-  CSSM_TP_APPLE_EVIDENCE_INFO* chain_info;
-  status = SecTrustGetResult(trust_ref, &trust_result, &completed_chain,
-                             &chain_info);
-  if (status)
-    return NetErrorFromOSStatus(status);
-  ScopedCFTypeRef<CFArrayRef> scoped_completed_chain(completed_chain);
 
   if (crl_set && !CheckRevocationWithCRLSet(completed_chain, crl_set))
     verify_result->cert_status |= CERT_STATUS_REVOKED;
 
-  GetCertChainInfo(scoped_completed_chain.get(), chain_info, verify_result);
+  GetCertChainInfo(completed_chain, chain_info, verify_result);
 
   // As of Security Update 2012-002/OS X 10.7.4, when an RSA key < 1024 bits
   // is encountered, CSSM returns CSSMERR_TP_VERIFY_ACTION_FAILED and adds

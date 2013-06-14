@@ -77,12 +77,18 @@ OSStatus TestRootCerts::FixupSecTrustRef(SecTrustRef trust_ref) const {
                                                     temporary_roots_);
     if (status)
       return status;
-    // Trust system store in addition to trusting |temporary_roots_|.
-    return SecTrustSetAnchorCertificatesOnly(trust_ref, false);
+    return SecTrustSetAnchorCertificatesOnly(trust_ref, !allow_system_trust_);
   }
 
-  // For OS X 10.6, emulate the functionality by copying the system roots
-  // in addition to |temporary_roots_|.
+  if (!allow_system_trust_) {
+    // Avoid any copying if system roots are not to be trusted. This acts as
+    // an exclusive list on 10.6, replacing the built-ins.
+    return SecTrustSetAnchorCertificates(trust_ref, temporary_roots_);
+  }
+
+  // Otherwise, both system trust and temporary_roots_ must be trusted.
+  // Emulate the functionality of SecTrustSetAnchorCertificatesOnly by
+  // creating a copy of the system roots and merging with temporary_roots_.
   CFArrayRef system_roots = NULL;
   OSStatus status = SecTrustCopyAnchorCertificates(&system_roots);
   if (status)
@@ -96,11 +102,16 @@ OSStatus TestRootCerts::FixupSecTrustRef(SecTrustRef trust_ref) const {
   return SecTrustSetAnchorCertificates(trust_ref, scoped_roots);
 }
 
+void TestRootCerts::SetAllowSystemTrust(bool allow_system_trust) {
+  allow_system_trust_ = allow_system_trust;
+}
+
 TestRootCerts::~TestRootCerts() {}
 
 void TestRootCerts::Init() {
   temporary_roots_.reset(CFArrayCreateMutable(kCFAllocatorDefault, 0,
                                               &kCertArrayCallbacks));
+  allow_system_trust_ = true;
 }
 
 }  // namespace net
