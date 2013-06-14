@@ -22,6 +22,7 @@
 #include "ui/views/examples/link_example.h"
 #include "ui/views/examples/menu_example.h"
 #include "ui/views/examples/message_box_example.h"
+#include "ui/views/examples/multiline_example.h"
 #include "ui/views/examples/progress_bar_example.h"
 #include "ui/views/examples/radio_button_example.h"
 #include "ui/views/examples/scroll_view_example.h"
@@ -164,6 +165,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
     combobox_model_.AddExample(new LinkExample);
     combobox_model_.AddExample(new MenuExample);
     combobox_model_.AddExample(new MessageBoxExample);
+    combobox_model_.AddExample(new MultilineExample);
     combobox_model_.AddExample(new ProgressBarExample);
     combobox_model_.AddExample(new RadioButtonExample);
     combobox_model_.AddExample(new ScrollViewExample);
