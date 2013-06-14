@@ -1132,7 +1132,7 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug,
         UpdateUploadedList(filename, archive_path, upload_url, debug)
 
 
-def UploadSymbols(buildroot, board, official):
+def UploadSymbols(buildroot, board, official, cnt):
   """Upload debug symbols for this build."""
   # TODO(build): Convert this to an import.  This is troublesome though
   # because uploading symbols requires `sym_upload` which is a compiled
@@ -1144,6 +1144,8 @@ def UploadSymbols(buildroot, board, official):
       '--debug',
   ]
 
+  if not cnt is None:
+    cmd += ['--upload-count', str(cnt)]
   if official:
     cmd += ['--official_build']
 

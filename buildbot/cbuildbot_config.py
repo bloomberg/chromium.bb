@@ -77,7 +77,6 @@ def OverrideConfigForTrybot(build_config, options):
     if not options.remote_trybot:
       my_config['manifest'] = my_config['dev_manifest']
 
-    my_config['upload_symbols'] = False
     my_config['push_image'] = False
     if options.hwtest:
       my_config['upload_hw_test_artifacts'] = True

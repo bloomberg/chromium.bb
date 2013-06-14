@@ -272,13 +272,19 @@ ca-t3/pk-g4-4.0.1-r333
     self.testBuild(extra_env=extra_env)
     self.assertCommandContains(['./build_packages'], extra_env=extra_env)
 
-  def testUploadSymbols(self, official=False):
+  def testUploadSymbols(self, official=False, cnt=None):
     """Test UploadSymbols Command."""
-    commands.UploadSymbols(self.tempdir, self._board, official=official)
+    commands.UploadSymbols(self.tempdir, self._board, official, cnt)
     self.assertCommandContains(['--official_build'], expected=official)
+    self.assertCommandContains(['--upload-count'], expected=bool(cnt))
 
   def testOfficialUploadSymbols(self):
+    """Test uploading symbols for official builds"""
     self.testUploadSymbols(official=True)
+
+  def testLimitUploadSymbols(self):
+    """Test uploading a limited number of symbols"""
+    self.testUploadSymbols(cnt=10)
 
   def testPushImages(self, profile=None):
     """Test PushImages Command."""

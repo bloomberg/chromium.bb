@@ -2238,8 +2238,15 @@ class ArchiveStage(ArchivingStage):
 
     def UploadSymbols():
       """Upload generated debug symbols."""
-      if not debug:
-        commands.UploadSymbols(buildroot, board, config['chromeos_official'])
+      if self._options.remote_trybot or self.debug:
+        # For debug builds, limit ourselves to just uploading 1 symbol.
+        # This way trybots and such still exercise this code.
+        cnt = 1
+        official = False
+      else:
+        cnt = None
+        official = config['chromeos_official']
+      commands.UploadSymbols(buildroot, board, official, cnt)
 
     def BuildAndArchiveFactoryImages():
       """Build and archive the factory zip file.
