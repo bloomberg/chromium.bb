@@ -1464,7 +1464,10 @@ libgcc_eh-setup() {
       RANLIB="${PNACL_RANLIB}")
   else
     LIBGCC_EH_ENV=(
-      CC="$(GetNNaClTool ${arch}) ${flags}")
+      CC="$(GetNNaClTool ${arch}) ${flags}" \
+      AR="${PNACL_AR}" \
+      NM="${PNACL_NM}" \
+      RANLIB="${PNACL_RANLIB}")
   fi
 }
 
