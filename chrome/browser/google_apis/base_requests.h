@@ -76,6 +76,11 @@ class AuthenticatedRequestInterface {
   // TODO(kinaba): crbug.com/134814 use more clean life time management than
   // using weak pointers, while deprecating RequestRegistry.
   virtual base::WeakPtr<AuthenticatedRequestInterface> GetWeakPtr() = 0;
+
+  // TODO(kinaba): crbug.com/{164089, 231209} This is temporarily added during
+  // migration of cancellation from RequestRegistry to JobScheduler. It should
+  // go away *very soon*.
+  virtual RequestRegistry::Request* AsRequestRegistryRequest() = 0;
 };
 
 //============================ UrlFetchRequestBase ===========================
@@ -177,6 +182,7 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
 
   // AuthenticatedRequestInterface overrides.
   virtual void OnAuthFailed(GDataErrorCode code) OVERRIDE;
+  virtual RequestRegistry::Request* AsRequestRegistryRequest() OVERRIDE;
 
   net::URLRequestContextGetter* url_request_context_getter_;
   ReAuthenticateCallback re_authenticate_callback_;

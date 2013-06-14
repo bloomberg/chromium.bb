@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
@@ -56,7 +57,10 @@ class RequestSender {
   // Starts a request implementing the AuthenticatedRequestInterface
   // interface, and makes the request retry upon authentication failures by
   // calling back to RetryRequest.
-  void StartRequestWithRetry(AuthenticatedRequestInterface* request);
+  //
+  // Returns a closure to cancel the request. The closure cancels the request
+  // if it is in-flight, and does nothing if it is already terminated.
+  base::Closure StartRequestWithRetry(AuthenticatedRequestInterface* request);
 
  private:
   // Called when the access token is fetched.
@@ -68,6 +72,11 @@ class RequestSender {
   // Clears any authentication token and retries the request, which forces
   // an authentication token refresh.
   void RetryRequest(AuthenticatedRequestInterface* request);
+
+  // Cancels the request. Used for implementing the returned closure of
+  // StartRequestWithRetry.
+  void CancelRequest(
+      const base::WeakPtr<AuthenticatedRequestInterface>& request);
 
   Profile* profile_;  // Not owned.
 

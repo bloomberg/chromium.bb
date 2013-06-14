@@ -301,6 +301,10 @@ void UrlFetchRequestBase::OnAuthFailed(GDataErrorCode code) {
   NotifyFinish(REQUEST_FAILED);
 }
 
+RequestRegistry::Request* UrlFetchRequestBase::AsRequestRegistryRequest() {
+  return this;
+}
+
 base::WeakPtr<AuthenticatedRequestInterface>
 UrlFetchRequestBase::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();

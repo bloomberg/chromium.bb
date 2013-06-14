@@ -95,6 +95,9 @@ class RequestRegistry {
   // the request was found and canceled.
   bool CancelForFilePath(const base::FilePath& file_path);
 
+  // Cancels the specified request.
+  void CancelRequest(Request* request);
+
  private:
   // Handlers for notifications from Requests.
   friend class Request;
@@ -105,9 +108,6 @@ class RequestRegistry {
   void OnRequestSuspend(RequestID request_id);
   void OnRequestResume(Request* request,
                        RequestProgressStatus* new_status);
-
-  // Cancels the specified request.
-  void CancelRequest(Request* request);
 
   typedef IDMap<Request, IDMapOwnPointer> RequestIDMap;
   RequestIDMap in_flight_requests_;

@@ -40,9 +40,16 @@ void RequestSender::CancelAll() {
   request_registry_->CancelAll();
 }
 
-void RequestSender::StartRequestWithRetry(
+base::Closure RequestSender::StartRequestWithRetry(
     AuthenticatedRequestInterface* request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // TODO(kinaba): Stop relying on weak pointers. Move lifetime management
+  // of the requests to request sender.
+  base::Closure cancel_closure =
+      base::Bind(&RequestSender::CancelRequest,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 request->GetWeakPtr());
 
   if (!auth_service_->HasAccessToken()) {
     // Fetch OAuth2 access token from the refresh token first.
@@ -50,13 +57,14 @@ void RequestSender::StartRequestWithRetry(
         base::Bind(&RequestSender::OnAccessTokenFetched,
                    weak_ptr_factory_.GetWeakPtr(),
                    request->GetWeakPtr()));
-    return;
+  } else {
+    request->Start(auth_service_->access_token(),
+                   custom_user_agent_,
+                   base::Bind(&RequestSender::RetryRequest,
+                              weak_ptr_factory_.GetWeakPtr()));
   }
 
-  request->Start(auth_service_->access_token(),
-                 custom_user_agent_,
-                 base::Bind(&RequestSender::RetryRequest,
-                            weak_ptr_factory_.GetWeakPtr()));
+  return cancel_closure;
 }
 
 void RequestSender::OnAccessTokenFetched(
@@ -77,14 +85,23 @@ void RequestSender::OnAccessTokenFetched(
   }
 }
 
-void RequestSender::RetryRequest(
-    AuthenticatedRequestInterface* request) {
+void RequestSender::RetryRequest(AuthenticatedRequestInterface* request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   auth_service_->ClearAccessToken();
   // User authentication might have expired - rerun the request to force
   // auth token refresh.
   StartRequestWithRetry(request);
+}
+
+void RequestSender::CancelRequest(
+    const base::WeakPtr<AuthenticatedRequestInterface>& request) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Do nothing if the request is already finished.
+  if (!request.get())
+    return;
+  request_registry_->CancelRequest(request->AsRequestRegistryRequest());
 }
 
 }  // namespace google_apis
