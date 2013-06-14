@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // This file intentionally does not have header guards, it's included
-// inside a macro to generate enum.
+// inside a macro to generate enum values.
 
 #ifndef DEFINE_ACTIVITY_STATE
 #error "DEFINE_ACTIVITY_STATE should be defined before including this file"
