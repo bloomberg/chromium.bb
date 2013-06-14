@@ -61,6 +61,22 @@ AudioDestinationChromium::AudioDestinationChromium(AudioIOCallback& callback, co
     // Use the optimal buffer size recommended by the audio backend.
     m_callbackBufferSize = WebKit::Platform::current()->audioHardwareBufferSize();
 
+#if OS(ANDROID)
+    // The optimum low-latency hardware buffer size is usually too small on Android for WebAudio to
+    // render without glitching. So, if it is small, use a larger size. If it was already large, use
+    // the requested size.
+    //
+    // Since WebAudio renders in 128-frame blocks, the small buffer sizes (144 for a Galaxy Nexus),
+    // cause significant processing jitter. Sometimes multiple blocks will processed, but other
+    // times will not be since the FIFO can satisfy the request. By using a larger
+    // callbackBufferSize, we smooth out the jitter.
+    const size_t kSmallBufferSize = 1024;
+    const size_t kDefaultCallbackBufferSize = 2048;
+
+    if (m_callbackBufferSize <= kSmallBufferSize)
+        m_callbackBufferSize = kDefaultCallbackBufferSize;
+#endif
+
     // Quick exit if the requested size is too large.
     ASSERT(m_callbackBufferSize + renderBufferSize <= fifoSize);
     if (m_callbackBufferSize + renderBufferSize > fifoSize)
