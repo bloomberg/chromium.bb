@@ -624,12 +624,13 @@ TEST_F(TranslateManagerBrowserTest, FetchLanguagesFromTranslateServer) {
   std::vector<std::string> server_languages;
   // A list of languages to fake being returned by the translate server.
   server_languages.push_back("aa");
-  server_languages.push_back("bb");
+  server_languages.push_back("ak");
   server_languages.push_back("ab");
   server_languages.push_back("en-CA");
-  server_languages.push_back("zz");
-  server_languages.push_back("yy");
+  server_languages.push_back("zh");
+  server_languages.push_back("yi");
   server_languages.push_back("fr-FR");
+  server_languages.push_back("xx");
 
   // First, get the default languages list:
   std::vector<std::string> default_supported_languages;
@@ -658,9 +659,12 @@ TEST_F(TranslateManagerBrowserTest, FetchLanguagesFromTranslateServer) {
   SimulateSupportedLanguagesURLFetch(true, server_languages);
   current_supported_languages.clear();
   TranslateManager::GetSupportedLanguages(&current_supported_languages);
+  // "xx" can't be displayed in the Translate inforbar, so this is eliminated.
+  EXPECT_EQ(server_languages.size() - 1, current_supported_languages.size());
   // Not sure we need to guarantee the order of languages, so we find them.
-  EXPECT_EQ(server_languages.size(), current_supported_languages.size());
   for (size_t i = 0; i < server_languages.size(); ++i) {
+    if (server_languages[i] == "xx")
+      continue;
     EXPECT_NE(current_supported_languages.end(),
               std::find(current_supported_languages.begin(),
                         current_supported_languages.end(),

@@ -10726,6 +10726,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Translate.ServerReportedUnsupportedLanguage">
+  <obsolete>
+    Deprecated 5/2013 by Translate.UndisplayableLanguage
+  </obsolete>
   <summary>
     The number of times the detected language is not supported by Translate
     Element.
@@ -10782,6 +10785,15 @@ other types of suffix sets.
   <summary>
     The number of times the translate button was clicked in the translate
     infobar.
+  </summary>
+</histogram>
+
+<histogram name="Translate.UndisplayableLanguage" enum="LanguageCode">
+  <summary>
+    Logs an undisplayable language included in the language list sent by the
+    Translate server. The Translate server sends the list each time the user
+    runs Chrome. This metrics tells us that there is a language which UI should
+    support but doesn't.
   </summary>
 </histogram>
 

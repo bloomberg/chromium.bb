@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/translate/translate_manager_metrics.h"
+#include "chrome/browser/translate/translate_browser_metrics.h"
 
 #include <string>
 
@@ -19,38 +19,38 @@ const char kTranslateInitiationStatus[] =
     "Translate.InitiationStatus";
 const char kTranslateReportLanguageDetectionError[] =
     "Translate.ReportLanguageDetectionError";
-const char kTranslateServerReportedUnsupportedLanguage[] =
-    "Translate.ServerReportedUnsupportedLanguage";
-const char kTranslateUnsupportedLanguageAtInitiation[] =
-    "Translate.UnsupportedLanguageAtInitiation";
 const char kTranslateLocalesOnDisabledByPrefs[] =
     "Translate.LocalesOnDisabledByPrefs";
+const char kTranslateUndisplayableLanguage[] =
+    "Translate.UndisplayableLanguage";
+const char kTranslateUnsupportedLanguageAtInitiation[] =
+    "Translate.UnsupportedLanguageAtInitiation";
 
 struct MetricsEntry {
-  TranslateManagerMetrics::MetricsNameIndex index;
+  TranslateBrowserMetrics::MetricsNameIndex index;
   const char* const name;
 };
 
 // This entry table should be updated when new UMA items are added.
 const MetricsEntry kMetricsEntries[] = {
-  { TranslateManagerMetrics::UMA_INITIATION_STATUS,
+  { TranslateBrowserMetrics::UMA_INITIATION_STATUS,
     kTranslateInitiationStatus },
-  { TranslateManagerMetrics::UMA_LANGUAGE_DETECTION_ERROR,
+  { TranslateBrowserMetrics::UMA_LANGUAGE_DETECTION_ERROR,
     kTranslateReportLanguageDetectionError },
-  { TranslateManagerMetrics::UMA_SERVER_REPORTED_UNSUPPORTED_LANGUAGE,
-    kTranslateServerReportedUnsupportedLanguage },
-  { TranslateManagerMetrics::UMA_UNSUPPORTED_LANGUAGE_AT_INITIATION,
-    kTranslateUnsupportedLanguageAtInitiation },
-  { TranslateManagerMetrics::UMA_LOCALES_ON_DISABLED_BY_PREFS,
+  { TranslateBrowserMetrics::UMA_LOCALES_ON_DISABLED_BY_PREFS,
     kTranslateLocalesOnDisabledByPrefs },
+  { TranslateBrowserMetrics::UMA_UNDISPLAYABLE_LANGUAGE,
+    kTranslateUndisplayableLanguage },
+  { TranslateBrowserMetrics::UMA_UNSUPPORTED_LANGUAGE_AT_INITIATION,
+    kTranslateUnsupportedLanguageAtInitiation },
 };
 
-COMPILE_ASSERT(arraysize(kMetricsEntries) == TranslateManagerMetrics::UMA_MAX,
+COMPILE_ASSERT(arraysize(kMetricsEntries) == TranslateBrowserMetrics::UMA_MAX,
                arraysize_of_kMetricsEntries_should_be_UMA_MAX);
 
 }  // namespace
 
-namespace TranslateManagerMetrics {
+namespace TranslateBrowserMetrics {
 
 void ReportInitiationStatus(InitiationStatusType type) {
   UMA_HISTOGRAM_ENUMERATION(kTranslateInitiationStatus,
@@ -62,19 +62,21 @@ void ReportLanguageDetectionError() {
   UMA_HISTOGRAM_BOOLEAN(kTranslateReportLanguageDetectionError, true);
 }
 
-void ReportUnsupportedLanguage() {
-  UMA_HISTOGRAM_BOOLEAN(kTranslateServerReportedUnsupportedLanguage, true);
+void ReportLocalesOnDisabledByPrefs(const std::string& locale) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY(kTranslateLocalesOnDisabledByPrefs,
+                              LanguageUsageMetrics::ToLanguageCode(locale));
+}
+
+void ReportUndisplayableLanguage(const std::string& language) {
+  int language_code = LanguageUsageMetrics::ToLanguageCode(language);
+  UMA_HISTOGRAM_SPARSE_SLOWLY(kTranslateUndisplayableLanguage,
+                              language_code);
 }
 
 void ReportUnsupportedLanguageAtInitiation(const std::string& language) {
   int language_code = LanguageUsageMetrics::ToLanguageCode(language);
   UMA_HISTOGRAM_SPARSE_SLOWLY(kTranslateUnsupportedLanguageAtInitiation,
                               language_code);
-}
-
-void ReportLocalesOnDisabledByPrefs(const std::string& locale) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kTranslateLocalesOnDisabledByPrefs,
-                              LanguageUsageMetrics::ToLanguageCode(locale));
 }
 
 const char* GetMetricsName(MetricsNameIndex index) {
@@ -86,4 +88,4 @@ const char* GetMetricsName(MetricsNameIndex index) {
   return NULL;
 }
 
-}  // namespace TranslateManagerMetrics
+}  // namespace TranslateBrowserMetrics

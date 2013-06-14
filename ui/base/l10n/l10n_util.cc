@@ -208,19 +208,6 @@ bool IsDuplicateName(const std::string& locale_name) {
   return false;
 }
 
-bool IsLocaleNameTranslated(const char* locale,
-                            const std::string& display_locale) {
-  string16 display_name =
-      l10n_util::GetDisplayNameForLocale(locale, display_locale, false);
-  // Because ICU sets the error code to U_USING_DEFAULT_WARNING whether or not
-  // uloc_getDisplayName returns the actual translation or the default
-  // value (locale code), we have to rely on this hack to tell whether
-  // the translation is available or not.  If ICU doesn't have a translated
-  // name for this locale, GetDisplayNameForLocale will just return the
-  // locale code.
-  return !IsStringASCII(display_name) || UTF16ToASCII(display_name) != locale;
-}
-
 // We added 30+ minimally populated locales with only a few entries
 // (exemplar character set, script, writing direction and its own
 // lanaguage name). These locales have to be distinguished from the
@@ -230,7 +217,7 @@ bool IsLocalePartiallyPopulated(const std::string& locale_name) {
   // is not available. A more robust/elegant way to check is to add a special
   // field (say, 'isPartial' to our version of ICU locale files) and
   // check its value, but this hack seems to work well.
-  return !IsLocaleNameTranslated("en", locale_name);
+  return !l10n_util::IsLocaleNameTranslated("en", locale_name);
 }
 
 #if !defined(OS_MACOSX)
@@ -503,6 +490,19 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
   return std::string();
 
 #endif
+}
+
+bool IsLocaleNameTranslated(const char* locale,
+                            const std::string& display_locale) {
+  string16 display_name =
+      l10n_util::GetDisplayNameForLocale(locale, display_locale, false);
+  // Because ICU sets the error code to U_USING_DEFAULT_WARNING whether or not
+  // uloc_getDisplayName returns the actual translation or the default
+  // value (locale code), we have to rely on this hack to tell whether
+  // the translation is available or not.  If ICU doesn't have a translated
+  // name for this locale, GetDisplayNameForLocale will just return the
+  // locale code.
+  return !IsStringASCII(display_name) || UTF16ToASCII(display_name) != locale;
 }
 
 string16 GetDisplayNameForLocale(const std::string& locale,
@@ -843,7 +843,8 @@ const std::vector<std::string>& GetAvailableLocales() {
 void GetAcceptLanguagesForLocale(const std::string& display_locale,
                                  std::vector<std::string>* locale_codes) {
   for (size_t i = 0; i < arraysize(kAcceptLanguageList); ++i) {
-    if (!IsLocaleNameTranslated(kAcceptLanguageList[i], display_locale))
+    if (!l10n_util::IsLocaleNameTranslated(kAcceptLanguageList[i],
+                                           display_locale))
       // TODO(jungshik) : Put them at the of the list with language codes
       // enclosed by brackets instead of skipping.
         continue;

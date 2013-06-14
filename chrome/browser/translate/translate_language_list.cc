@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/translate/translate_browser_metrics.h"
 #include "chrome/browser/translate/translate_event_details.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_url_util.h"
@@ -23,6 +24,7 @@
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -162,6 +164,8 @@ void SetSupportedLanguages(const std::string& language_list,
     return;
   }
 
+  const std::string& locale = g_browser_process->GetApplicationLocale();
+
   // Now we can clear language list.
   set->clear();
   std::string message;
@@ -170,11 +174,16 @@ void SetSupportedLanguages(const std::string& language_list,
        !iter.IsAtEnd();
        iter.Advance()) {
     // TODO(toyoshim): Check if UI libraries support adding locale.
-    set->insert(iter.key());
+    const std::string& lang = iter.key();
+    if (!l10n_util::IsLocaleNameTranslated(lang.c_str(), locale)) {
+      TranslateBrowserMetrics::ReportUndisplayableLanguage(lang);
+      continue;
+    }
+    set->insert(lang);
     if (message.empty())
-      message += iter.key();
+      message += lang;
     else
-      message += ", " + iter.key();
+      message += ", " + lang;
   }
   NotifyEvent(__LINE__, message);
 }
