@@ -32,14 +32,14 @@
 #include "bindings/v8/V8Binding.h"
 
 #include "V8DOMStringList.h"
-#include "V8DOMWindow.h"
 #include "V8Element.h"
+#include "V8Window.h"
 #include "V8WorkerContext.h"
 #include "V8XPathNSResolver.h"
 #include "bindings/v8/ScriptController.h"
-#include "bindings/v8/V8DOMWindowShell.h"
 #include "bindings/v8/V8NodeFilterCondition.h"
 #include "bindings/v8/V8ObjectConstructor.h"
+#include "bindings/v8/V8WindowShell.h"
 #include "bindings/v8/WorkerScriptController.h"
 #include "bindings/v8/custom/V8CustomXPathNSResolver.h"
 #include "core/dom/DOMStringList.h"
@@ -383,23 +383,23 @@ DOMWindow* toDOMWindow(v8::Handle<v8::Context> context)
 {
     v8::Handle<v8::Object> global = context->Global();
     ASSERT(!global.IsEmpty());
-    v8::Handle<v8::Object> window = global->FindInstanceInPrototypeChain(V8DOMWindow::GetTemplate(context->GetIsolate(), MainWorld));
+    v8::Handle<v8::Object> window = global->FindInstanceInPrototypeChain(V8Window::GetTemplate(context->GetIsolate(), MainWorld));
     if (!window.IsEmpty())
-        return V8DOMWindow::toNative(window);
-    window = global->FindInstanceInPrototypeChain(V8DOMWindow::GetTemplate(context->GetIsolate(), IsolatedWorld));
+        return V8Window::toNative(window);
+    window = global->FindInstanceInPrototypeChain(V8Window::GetTemplate(context->GetIsolate(), IsolatedWorld));
     ASSERT(!window.IsEmpty());
-    return V8DOMWindow::toNative(window);
+    return V8Window::toNative(window);
 }
 
 ScriptExecutionContext* toScriptExecutionContext(v8::Handle<v8::Context> context)
 {
     v8::Handle<v8::Object> global = context->Global();
-    v8::Handle<v8::Object> windowWrapper = global->FindInstanceInPrototypeChain(V8DOMWindow::GetTemplate(context->GetIsolate(), MainWorld));
+    v8::Handle<v8::Object> windowWrapper = global->FindInstanceInPrototypeChain(V8Window::GetTemplate(context->GetIsolate(), MainWorld));
     if (!windowWrapper.IsEmpty())
-        return V8DOMWindow::toNative(windowWrapper)->scriptExecutionContext();
-    windowWrapper = global->FindInstanceInPrototypeChain(V8DOMWindow::GetTemplate(context->GetIsolate(), IsolatedWorld));
+        return V8Window::toNative(windowWrapper)->scriptExecutionContext();
+    windowWrapper = global->FindInstanceInPrototypeChain(V8Window::GetTemplate(context->GetIsolate(), IsolatedWorld));
     if (!windowWrapper.IsEmpty())
-        return V8DOMWindow::toNative(windowWrapper)->scriptExecutionContext();
+        return V8Window::toNative(windowWrapper)->scriptExecutionContext();
     v8::Handle<v8::Object> workerWrapper = global->FindInstanceInPrototypeChain(V8WorkerContext::GetTemplate(context->GetIsolate(), WorkerWorld));
     if (!workerWrapper.IsEmpty())
         return V8WorkerContext::toNative(workerWrapper)->scriptExecutionContext();

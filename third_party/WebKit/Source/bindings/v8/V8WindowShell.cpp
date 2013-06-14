@@ -29,18 +29,13 @@
  */
 
 #include "config.h"
-#include "bindings/v8/V8DOMWindowShell.h"
+#include "bindings/v8/V8WindowShell.h"
 
-#include <v8-debug.h>
-#include <v8-i18n/include/extension.h>
-#include <v8.h>
-#include <algorithm>
-#include <utility>
 #include "RuntimeEnabledFeatures.h"
-#include "V8DOMWindow.h"
 #include "V8Document.h"
 #include "V8HTMLCollection.h"
 #include "V8HTMLDocument.h"
+#include "V8Window.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/DateExtension.h"
 #include "bindings/v8/ScriptController.h"
@@ -65,6 +60,11 @@
 #include "wtf/OwnArrayPtr.h"
 #include "wtf/StringExtras.h"
 #include "wtf/text/CString.h"
+#include <algorithm>
+#include <utility>
+#include <v8-debug.h>
+#include <v8-i18n/include/extension.h>
+#include <v8.h>
 
 namespace WebCore {
 
@@ -79,19 +79,19 @@ static void setInjectedScriptContextDebugId(v8::Handle<v8::Context> targetContex
     V8PerContextDebugData::setContextDebugData(targetContext, "injected", debugId);
 }
 
-PassOwnPtr<V8DOMWindowShell> V8DOMWindowShell::create(Frame* frame, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)
+PassOwnPtr<V8WindowShell> V8WindowShell::create(Frame* frame, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)
 {
-    return adoptPtr(new V8DOMWindowShell(frame, world, isolate));
+    return adoptPtr(new V8WindowShell(frame, world, isolate));
 }
 
-V8DOMWindowShell::V8DOMWindowShell(Frame* frame, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)
+V8WindowShell::V8WindowShell(Frame* frame, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)
     : m_frame(frame)
     , m_world(world)
     , m_isolate(isolate)
 {
 }
 
-void V8DOMWindowShell::disposeContext()
+void V8WindowShell::disposeContext()
 {
     m_perContextData.clear();
 
@@ -110,7 +110,7 @@ void V8DOMWindowShell::disposeContext()
     V8GCForContextDispose::instance().notifyContextDisposed(isMainFrame);
 }
 
-void V8DOMWindowShell::clearForClose(bool destroyGlobal)
+void V8WindowShell::clearForClose(bool destroyGlobal)
 {
     if (destroyGlobal)
         m_global.clear();
@@ -122,7 +122,7 @@ void V8DOMWindowShell::clearForClose(bool destroyGlobal)
     disposeContext();
 }
 
-void V8DOMWindowShell::clearForNavigation()
+void V8WindowShell::clearForNavigation()
 {
     if (m_context.isEmpty())
         return;
@@ -138,7 +138,7 @@ void V8DOMWindowShell::clearForNavigation()
     // will be protected by the security checks on the DOMWindow wrapper.
     clearDocumentProperty();
 
-    v8::Handle<v8::Object> windowWrapper = m_global.newLocal(m_isolate)->FindInstanceInPrototypeChain(V8DOMWindow::GetTemplate(m_isolate, worldTypeInMainThread(m_isolate)));
+    v8::Handle<v8::Object> windowWrapper = m_global.newLocal(m_isolate)->FindInstanceInPrototypeChain(V8Window::GetTemplate(m_isolate, worldTypeInMainThread(m_isolate)));
     ASSERT(!windowWrapper.IsEmpty());
     windowWrapper->TurnOnAccessCheck();
     context->DetachGlobal();
@@ -180,7 +180,7 @@ void V8DOMWindowShell::clearForNavigation()
 // the frame. However, a new inner window is created for the new page.
 // If there are JS code holds a closure to the old inner window,
 // it won't be able to reach the outer window via its global object.
-bool V8DOMWindowShell::initializeIfNeeded()
+bool V8WindowShell::initializeIfNeeded()
 {
     if (!m_context.isEmpty())
         return true;
@@ -210,7 +210,7 @@ bool V8DOMWindowShell::initializeIfNeeded()
     }
 
     if (!isMainWorld) {
-        V8DOMWindowShell* mainWindow = m_frame->script()->existingWindowShell(mainThreadNormalWorld());
+        V8WindowShell* mainWindow = m_frame->script()->existingWindowShell(mainThreadNormalWorld());
         if (mainWindow && !mainWindow->context().IsEmpty())
             setInjectedScriptContextDebugId(context, m_frame->script()->contextDebugId(mainWindow->context()));
     }
@@ -253,7 +253,7 @@ bool V8DOMWindowShell::initializeIfNeeded()
     return true;
 }
 
-void V8DOMWindowShell::createContext()
+void V8WindowShell::createContext()
 {
     // The activeDocumentLoader pointer could be 0 during frame shutdown.
     // FIXME: Can we remove this check?
@@ -262,7 +262,7 @@ void V8DOMWindowShell::createContext()
 
     // Create a new environment using an empty template for the shadow
     // object. Reuse the global object if one has been created earlier.
-    v8::Handle<v8::ObjectTemplate> globalTemplate = V8DOMWindow::GetShadowObjectTemplate(m_isolate, m_world->isMainWorld() ? MainWorld : IsolatedWorld);
+    v8::Handle<v8::ObjectTemplate> globalTemplate = V8Window::GetShadowObjectTemplate(m_isolate, m_world->isMainWorld() ? MainWorld : IsolatedWorld);
     if (globalTemplate.IsEmpty())
         return;
 
@@ -295,23 +295,23 @@ void V8DOMWindowShell::createContext()
     m_context.set(m_isolate, v8::Context::New(m_isolate, &extensionConfiguration, globalTemplate, m_global.newLocal(m_isolate)));
 
     double contextCreationDurationInMilliseconds = (currentTime() - contextCreationStartInSeconds) * 1000;
-    const char* histogramName = "WebCore.V8DOMWindowShell.createContext.MainWorld";
+    const char* histogramName = "WebCore.V8WindowShell.createContext.MainWorld";
     if (!m_world->isMainWorld())
-        histogramName = "WebCore.V8DOMWindowShell.createContext.IsolatedWorld";
+        histogramName = "WebCore.V8WindowShell.createContext.IsolatedWorld";
     HistogramSupport::histogramCustomCounts(histogramName, contextCreationDurationInMilliseconds, 0, 10000, 50);
 }
 
-bool V8DOMWindowShell::installDOMWindow()
+bool V8WindowShell::installDOMWindow()
 {
     DOMWrapperWorld::setInitializingWindow(true);
     DOMWindow* window = m_frame->document()->domWindow();
-    v8::Local<v8::Object> windowWrapper = V8ObjectConstructor::newInstance(V8PerContextData::from(m_context.get())->constructorForType(&V8DOMWindow::info));
+    v8::Local<v8::Object> windowWrapper = V8ObjectConstructor::newInstance(V8PerContextData::from(m_context.get())->constructorForType(&V8Window::info));
     if (windowWrapper.IsEmpty())
         return false;
 
-    V8DOMWindow::installPerContextProperties(windowWrapper, window, m_isolate);
+    V8Window::installPerContextProperties(windowWrapper, window, m_isolate);
 
-    V8DOMWrapper::setNativeInfo(v8::Handle<v8::Object>::Cast(windowWrapper->GetPrototype()), &V8DOMWindow::info, window);
+    V8DOMWrapper::setNativeInfo(v8::Handle<v8::Object>::Cast(windowWrapper->GetPrototype()), &V8Window::info, window);
 
     // Install the windowWrapper as the prototype of the innerGlobalObject.
     // The full structure of the global object is as follows:
@@ -327,20 +327,20 @@ bool V8DOMWindowShell::installDOMWindow()
     //       JavaScript object.
     //
     v8::Handle<v8::Object> innerGlobalObject = toInnerGlobalObject(m_context.newLocal(m_isolate));
-    V8DOMWrapper::setNativeInfo(innerGlobalObject, &V8DOMWindow::info, window);
+    V8DOMWrapper::setNativeInfo(innerGlobalObject, &V8Window::info, window);
     innerGlobalObject->SetPrototype(windowWrapper);
-    V8DOMWrapper::associateObjectWithWrapper(PassRefPtr<DOMWindow>(window), &V8DOMWindow::info, windowWrapper, m_isolate, WrapperConfiguration::Dependent);
+    V8DOMWrapper::associateObjectWithWrapper(PassRefPtr<DOMWindow>(window), &V8Window::info, windowWrapper, m_isolate, WrapperConfiguration::Dependent);
     DOMWrapperWorld::setInitializingWindow(false);
     return true;
 }
 
-void V8DOMWindowShell::updateDocumentWrapper(v8::Handle<v8::Object> wrapper)
+void V8WindowShell::updateDocumentWrapper(v8::Handle<v8::Object> wrapper)
 {
     ASSERT(m_world->isMainWorld());
     m_document.set(m_isolate, wrapper);
 }
 
-void V8DOMWindowShell::updateDocumentProperty()
+void V8WindowShell::updateDocumentProperty()
 {
     if (!m_world->isMainWorld())
         return;
@@ -370,7 +370,7 @@ void V8DOMWindowShell::updateDocumentProperty()
     toInnerGlobalObject(context)->SetHiddenValue(V8HiddenPropertyName::document(), documentWrapper);
 }
 
-void V8DOMWindowShell::clearDocumentProperty()
+void V8WindowShell::clearDocumentProperty()
 {
     ASSERT(!m_context.isEmpty());
     if (!m_world->isMainWorld())
@@ -379,7 +379,7 @@ void V8DOMWindowShell::clearDocumentProperty()
     m_context.newLocal(m_isolate)->Global()->ForceDelete(v8::String::NewSymbol("document"));
 }
 
-void V8DOMWindowShell::setSecurityToken()
+void V8WindowShell::setSecurityToken()
 {
     ASSERT(m_world->isMainWorld());
 
@@ -417,7 +417,7 @@ void V8DOMWindowShell::setSecurityToken()
     context->SetSecurityToken(v8::String::NewSymbol(utf8Token.data(), utf8Token.length()));
 }
 
-void V8DOMWindowShell::updateDocument()
+void V8WindowShell::updateDocument()
 {
     ASSERT(m_world->isMainWorld());
     if (m_global.isEmpty())
@@ -465,7 +465,7 @@ static void getter(v8::Local<v8::String> property, const v8::PropertyCallbackInf
     }
 }
 
-void V8DOMWindowShell::namedItemAdded(HTMLDocument* document, const AtomicString& name)
+void V8WindowShell::namedItemAdded(HTMLDocument* document, const AtomicString& name)
 {
     ASSERT(m_world->isMainWorld());
 
@@ -481,7 +481,7 @@ void V8DOMWindowShell::namedItemAdded(HTMLDocument* document, const AtomicString
     documentHandle->SetAccessor(v8String(name, m_isolate), getter);
 }
 
-void V8DOMWindowShell::namedItemRemoved(HTMLDocument* document, const AtomicString& name)
+void V8WindowShell::namedItemRemoved(HTMLDocument* document, const AtomicString& name)
 {
     ASSERT(m_world->isMainWorld());
 
@@ -500,7 +500,7 @@ void V8DOMWindowShell::namedItemRemoved(HTMLDocument* document, const AtomicStri
     documentHandle->Delete(v8String(name, m_isolate));
 }
 
-void V8DOMWindowShell::updateSecurityOrigin()
+void V8WindowShell::updateSecurityOrigin()
 {
     ASSERT(m_world->isMainWorld());
     if (m_context.isEmpty())

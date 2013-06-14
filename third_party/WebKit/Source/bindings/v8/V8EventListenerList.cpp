@@ -31,7 +31,7 @@
 #include "config.h"
 #include "bindings/v8/V8EventListenerList.h"
 
-#include "V8DOMWindow.h"
+#include "V8Window.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8WorkerContextEventListener.h"
 
@@ -44,7 +44,7 @@ PassRefPtr<EventListener> V8EventListenerList::getEventListener(v8::Local<v8::Va
         return 0;
     if (lookup == ListenerFindOnly)
         return V8EventListenerList::findWrapper(value, isAttribute);
-    if (V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8DOMWindow::info))
+    if (V8DOMWrapper::isWrapperOfType(toInnerGlobalObject(context), &V8Window::info))
         return V8EventListenerList::findOrCreateWrapper<V8EventListener>(value, isAttribute);
     return V8EventListenerList::findOrCreateWrapper<V8WorkerContextEventListener>(value, isAttribute);
 }

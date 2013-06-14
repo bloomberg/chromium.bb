@@ -110,7 +110,7 @@
        ],
        'outputs': [
          '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
-         '<(SHARED_INTERMEDIATE_DIR)/DOMWindowConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/WindowConstructors.idl',
          '<(SHARED_INTERMEDIATE_DIR)/WorkerContextConstructors.idl',
        ],
        'msvs_cygwin_shell': 0,
@@ -122,7 +122,7 @@
          '--supplemental-dependency-file',
          '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
          '--window-constructors-file',
-         '<(SHARED_INTERMEDIATE_DIR)/DOMWindowConstructors.idl',
+         '<(SHARED_INTERMEDIATE_DIR)/WindowConstructors.idl',
          '--workercontext-constructors-file',
          '<(SHARED_INTERMEDIATE_DIR)/WorkerContextConstructors.idl',
          '<@(write_file_only_if_changed)',
@@ -171,7 +171,7 @@
           'scripts/IDLAttributes.txt',
           '../core/scripts/preprocessor.pm',
           '<!@pymod_do_main(supplemental_idl_files <@(idl_files))',
-          '<(SHARED_INTERMEDIATE_DIR)/DOMWindowConstructors.idl',
+          '<(SHARED_INTERMEDIATE_DIR)/WindowConstructors.idl',
           '<(SHARED_INTERMEDIATE_DIR)/WorkerContextConstructors.idl',
         ],
         'outputs': [

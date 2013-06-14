@@ -315,7 +315,7 @@ sub ParseInterface
     my $document = $parser->Parse($filename, $defines, $preprocessor);
 
     foreach my $interface (@{$document->interfaces}) {
-        if ($interface->name eq $interfaceName) {
+        if ($interface->name eq $interfaceName or $interface->isPartial) {
             $cachedInterfaces->{$interfaceName} = $interface;
             return $interface;
         }
@@ -691,7 +691,7 @@ END
         $header{classPublic}->add("    static EventTarget* toEventTarget(v8::Handle<v8::Object>);\n");
     }
 
-    if ($interfaceName eq "DOMWindow") {
+    if ($interfaceName eq "Window") {
         $header{classPublic}->add(<<END);
     static v8::Handle<v8::ObjectTemplate> GetShadowObjectTemplate(v8::Isolate*, WrapperWorldType);
 END
@@ -752,7 +752,7 @@ END
     GenerateHeaderLegacyCall($interface);
     GenerateHeaderCustomInternalFieldIndices($interface);
 
-    if ($interface->name eq "DOMWindow") {
+    if ($interface->name eq "Window") {
         $header{classPublic}->add(<<END);
     static bool namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType, v8::Local<v8::Value> data);
     static bool indexedSecurityCheckCustom(v8::Local<v8::Object> host, uint32_t index, v8::AccessType, v8::Local<v8::Value> data);
@@ -1119,6 +1119,14 @@ sub GetImplName
     return $interfaceOrSignature->extendedAttributes->{"ImplementedAs"} || $interfaceOrSignature->name;
 }
 
+sub GetImplNameFromImplementedBy
+{
+    my $implementedBy = shift;
+
+    my $interface = ParseInterface($implementedBy);
+    return $interface->extendedAttributes->{"ImplementedAs"} || $implementedBy;
+}
+
 sub GenerateDomainSafeFunctionGetter
 {
     my $function = shift;
@@ -1368,7 +1376,7 @@ END
             }
         }
     } elsif ($attrExt->{"OnProto"} || $attrExt->{"Unforgeable"}) {
-        if ($interfaceName eq "DOMWindow") {
+        if ($interfaceName eq "Window") {
             $code .= <<END;
     v8::Handle<v8::Object> holder = info.Holder();
 END
@@ -1444,9 +1452,10 @@ END
         push(@arguments, "ec") if $useExceptions;
         if ($attribute->signature->extendedAttributes->{"ImplementedBy"}) {
             my $implementedBy = $attribute->signature->extendedAttributes->{"ImplementedBy"};
-            AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedBy));
+            my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
+            AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedByImplName));
             unshift(@arguments, "imp") if !$attribute->isStatic;
-            $functionName = "${implementedBy}::${functionName}";
+            $functionName = "${implementedByImplName}::${functionName}";
         } elsif ($attribute->isStatic) {
             $functionName = "${implClassName}::${functionName}";
         } else {
@@ -1461,7 +1470,7 @@ END
     }
 
     my $expression;
-    if ($attribute->signature->type eq "EventListener" && $interface->name eq "DOMWindow") {
+    if ($attribute->signature->type eq "EventListener" && $interface->name eq "Window") {
         $code .= "    if (!imp->document())\n";
         $code .= "        return;\n";
     }
@@ -1637,7 +1646,7 @@ sub ShouldKeepAttributeAlive
     # FIXME: Remove these hard-coded hacks.
     return 0 if $returnType eq "EventTarget";
     return 0 if $returnType eq "SerializedScriptValue";
-    return 0 if $returnType eq "DOMWindow";
+    return 0 if $returnType eq "Window";
     return 0 if $returnType =~ /SVG/;
     return 0 if $returnType =~ /HTML/;
 
@@ -1827,7 +1836,7 @@ END
 
     my $nativeType = GetNativeTypeFromSignature($attribute->signature, 0);
     if ($attribute->signature->type eq "EventListener") {
-        if ($interface->name eq "DOMWindow") {
+        if ($interface->name eq "Window") {
             $code .= "    if (!imp->document())\n";
             $code .= "        return;\n";
         }
@@ -1887,7 +1896,7 @@ END
                 $code .= "    transferHiddenDependency(info.Holder(), imp->${attrImplName}(isolatedWorldForIsolate(info.GetIsolate())), value, ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());\n";
             }
             AddToImplIncludes("bindings/v8/V8EventListenerList.h");
-            if (($interfaceName eq "DOMWindow" or $interfaceName eq "WorkerContext") and $attribute->signature->name eq "onerror") {
+            if (($interfaceName eq "Window" or $interfaceName eq "WorkerContext") and $attribute->signature->name eq "onerror") {
                 AddToImplIncludes("bindings/v8/V8ErrorHandler.h");
                 $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(value, true), isolatedWorldForIsolate(info.GetIsolate()));\n";
             } else {
@@ -1899,9 +1908,10 @@ END
             push(@arguments, "ec") if $useExceptions;
             if ($attribute->signature->extendedAttributes->{"ImplementedBy"}) {
                 my $implementedBy = $attribute->signature->extendedAttributes->{"ImplementedBy"};
-                AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedBy));
+                my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
+                AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedByImplName));
                 unshift(@arguments, "imp") if !$attribute->isStatic;
-                $functionName = "${implementedBy}::${functionName}";
+                $functionName = "${implementedByImplName}::${functionName}";
             } elsif ($attribute->isStatic) {
                 $functionName = "${implClassName}::${functionName}";
             } else {
@@ -3009,7 +3019,7 @@ sub IsStandardFunction
     return 0 if $attrExt->{"EnabledPerContext"};
     return 0 if RequiresCustomSignature($function);
     return 0 if $attrExt->{"DoNotCheckSignature"};
-    return 0 if ($attrExt->{"DoNotCheckSecurity"} && ($interface->extendedAttributes->{"CheckSecurity"} || $interfaceName eq "DOMWindow"));
+    return 0 if ($attrExt->{"DoNotCheckSecurity"} && ($interface->extendedAttributes->{"CheckSecurity"} || $interfaceName eq "Window"));
     return 0 if $attrExt->{"NotEnumerable"};
     return 0 if $attrExt->{"ReadOnly"};
     return 1;
@@ -3190,11 +3200,11 @@ sub GenerateImplementationIndexedPropertyAccessors
 
     my $setOn = "Instance";
 
-    # V8 has access-check callback API (see ObjectTemplate::SetAccessCheckCallbacks) and it's used on DOMWindow
+    # V8 has access-check callback API (see ObjectTemplate::SetAccessCheckCallbacks) and it's used on Window
     # instead of deleters or enumerators. In addition, the getter should be set on prototype template, to
-    # get implementation straight out of the DOMWindow prototype regardless of what prototype is actually set
+    # get implementation straight out of the Window prototype regardless of what prototype is actually set
     # on the object.
-    if ($interfaceName eq "DOMWindow") {
+    if ($interfaceName eq "Window") {
         $setOn = "Prototype";
     }
 
@@ -3350,11 +3360,11 @@ sub GenerateImplementationNamedPropertyAccessors
     if ($namedGetterFunction || $namedSetterFunction || $namedDeleterFunction || $namedEnumeratorFunction || $hasQuery) {
         my $setOn = "Instance";
 
-        # V8 has access-check callback API (see ObjectTemplate::SetAccessCheckCallbacks) and it's used on DOMWindow
+        # V8 has access-check callback API (see ObjectTemplate::SetAccessCheckCallbacks) and it's used on Window
         # instead of deleters or enumerators. In addition, the getter should be set on prototype template, to
-        # get implementation straight out of the DOMWindow prototype regardless of what prototype is actually set
+        # get implementation straight out of the Window prototype regardless of what prototype is actually set
         # on the object.
-        if ($interfaceName eq "DOMWindow") {
+        if ($interfaceName eq "Window") {
             $setOn = "Prototype";
         }
 
@@ -3751,7 +3761,7 @@ END
             next;
         }
 
-        if ($attrType eq "EventListener" && $interfaceName eq "DOMWindow") {
+        if ($attrType eq "EventListener" && $interfaceName eq "Window") {
             $attrExt->{"OnProto"} = 1;
         }
 
@@ -3790,7 +3800,7 @@ END
         GenerateOpaqueRootForGC($interface);
     }
 
-    if ($interface->extendedAttributes->{"CheckSecurity"} && $interface->name ne "DOMWindow") {
+    if ($interface->extendedAttributes->{"CheckSecurity"} && $interface->name ne "Window") {
         GenerateSecurityCheckFunctions($interface);
     }
 
@@ -3859,7 +3869,7 @@ END
     # Attributes
     my $attributes = $interface->attributes;
 
-    # For the DOMWindow interface we partition the attributes into the
+    # For the Window interface we partition the attributes into the
     # ones that disallows shadowing and the rest.
     my @disallowsShadowing;
     # Also separate out attributes that are enabled at runtime so we can process them specially.
@@ -3868,7 +3878,7 @@ END
     my @normalAttributes;
     foreach my $attribute (@$attributes) {
 
-        if ($interfaceName eq "DOMWindow" && $attribute->signature->extendedAttributes->{"Unforgeable"}) {
+        if ($interfaceName eq "Window" && $attribute->signature->extendedAttributes->{"Unforgeable"}) {
             push(@disallowsShadowing, $attribute);
         } elsif ($attribute->signature->extendedAttributes->{"EnabledAtRuntime"} || $attribute->signature->extendedAttributes->{"EnabledPerContext"}) {
             if ($attribute->signature->extendedAttributes->{"EnabledPerContext"}) {
@@ -3947,7 +3957,8 @@ END
         my $attrExt = $constant->extendedAttributes;
         my $implementedBy = $attrExt->{"ImplementedBy"};
         if ($implementedBy) {
-            AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedBy));
+            my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
+            AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedByImplName));
         }
         if ($attrExt->{"EnabledAtRuntime"}) {
             push(@constantsEnabledAtRuntime, $constant);
@@ -3987,21 +3998,21 @@ END
     }
 
     my $access_check = "";
-    if ($interface->extendedAttributes->{"CheckSecurity"} && $interfaceName ne "DOMWindow") {
+    if ($interface->extendedAttributes->{"CheckSecurity"} && $interfaceName ne "Window") {
         $access_check = "instance->SetAccessCheckCallbacks(${implClassName}V8Internal::namedSecurityCheck, ${implClassName}V8Internal::indexedSecurityCheck, v8::External::New(&${v8ClassName}::info));";
     }
 
-    # For the DOMWindow interface, generate the shadow object template
+    # For the Window interface, generate the shadow object template
     # configuration method.
-    if ($interfaceName eq "DOMWindow") {
+    if ($interfaceName eq "Window") {
         $implementation{nameSpaceWebCore}->add(<<END);
 static void ConfigureShadowObjectTemplate(v8::Handle<v8::ObjectTemplate> templ, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8DOMConfiguration::batchConfigureAttributes(templ, v8::Handle<v8::ObjectTemplate>(), shadowAttrs, WTF_ARRAY_LENGTH(shadowAttrs), isolate, currentWorldType);
 
     // Install a security handler with V8.
-    templ->SetAccessCheckCallbacks(V8DOMWindow::namedSecurityCheckCustom, V8DOMWindow::indexedSecurityCheckCustom, v8::External::New(&V8DOMWindow::info));
-    templ->SetInternalFieldCount(V8DOMWindow::internalFieldCount);
+    templ->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(&V8Window::info));
+    templ->SetInternalFieldCount(V8Window::internalFieldCount);
 }
 END
     }
@@ -4133,16 +4144,16 @@ END
     }
 
     # Special cases
-    if ($interfaceName eq "DOMWindow") {
+    if ($interfaceName eq "Window") {
         $code .= <<END;
 
-    proto->SetInternalFieldCount(V8DOMWindow::internalFieldCount);
+    proto->SetInternalFieldCount(V8Window::internalFieldCount);
     desc->SetHiddenPrototype(true);
-    instance->SetInternalFieldCount(V8DOMWindow::internalFieldCount);
+    instance->SetInternalFieldCount(V8Window::internalFieldCount);
     // Set access check callbacks, but turned off initially.
     // When a context is detached from a frame, turn on the access check.
     // Turning on checks also invalidates inline caches of the object.
-    instance->SetAccessCheckCallbacks(V8DOMWindow::namedSecurityCheckCustom, V8DOMWindow::indexedSecurityCheckCustom, v8::External::New(&V8DOMWindow::info), false);
+    instance->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(&V8Window::info), false);
 END
     }
     if ($interfaceName eq "HTMLDocument" or $interfaceName eq "DedicatedWorkerContext" or $interfaceName eq "SharedWorkerContext") {
@@ -4287,28 +4298,28 @@ EventTarget* ${v8ClassName}::toEventTarget(v8::Handle<v8::Object> object)
 END
     }
 
-    if ($interfaceName eq "DOMWindow") {
+    if ($interfaceName eq "Window") {
         $implementation{nameSpaceWebCore}->add(<<END);
-v8::Handle<v8::ObjectTemplate> V8DOMWindow::GetShadowObjectTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::ObjectTemplate> V8Window::GetShadowObjectTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     if (currentWorldType == MainWorld) {
-        static v8::Persistent<v8::ObjectTemplate> V8DOMWindowShadowObjectCacheForMainWorld;
-        if (V8DOMWindowShadowObjectCacheForMainWorld.IsEmpty()) {
+        static v8::Persistent<v8::ObjectTemplate> V8WindowShadowObjectCacheForMainWorld;
+        if (V8WindowShadowObjectCacheForMainWorld.IsEmpty()) {
             v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New();
             ConfigureShadowObjectTemplate(templ, isolate, currentWorldType);
-            V8DOMWindowShadowObjectCacheForMainWorld.Reset(isolate, templ);
+            V8WindowShadowObjectCacheForMainWorld.Reset(isolate, templ);
             return templ;
         }
-        return v8::Local<v8::ObjectTemplate>::New(isolate, V8DOMWindowShadowObjectCacheForMainWorld);
+        return v8::Local<v8::ObjectTemplate>::New(isolate, V8WindowShadowObjectCacheForMainWorld);
     } else {
-        static v8::Persistent<v8::ObjectTemplate> V8DOMWindowShadowObjectCacheForNonMainWorld;
-        if (V8DOMWindowShadowObjectCacheForNonMainWorld.IsEmpty()) {
+        static v8::Persistent<v8::ObjectTemplate> V8WindowShadowObjectCacheForNonMainWorld;
+        if (V8WindowShadowObjectCacheForNonMainWorld.IsEmpty()) {
             v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New();
             ConfigureShadowObjectTemplate(templ, isolate, currentWorldType);
-            V8DOMWindowShadowObjectCacheForNonMainWorld.Reset(isolate, templ);
+            V8WindowShadowObjectCacheForNonMainWorld.Reset(isolate, templ);
             return templ;
         }
-        return v8::Local<v8::ObjectTemplate>::New(isolate, V8DOMWindowShadowObjectCacheForNonMainWorld);
+        return v8::Local<v8::ObjectTemplate>::New(isolate, V8WindowShadowObjectCacheForNonMainWorld);
     }
 }
 
@@ -4667,9 +4678,10 @@ sub GenerateFunctionCallString
     my $functionName;
     my $implementedBy = $function->signature->extendedAttributes->{"ImplementedBy"};
     if ($implementedBy) {
-        AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedBy));
+        my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
+        AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedByImplName));
         unshift(@arguments, "imp") if !$function->isStatic;
-        $functionName = "${implementedBy}::${name}";
+        $functionName = "${implementedByImplName}::${name}";
     } elsif ($function->isStatic) {
         $functionName = "${implClassName}::${name}";
     } else {
@@ -4851,7 +4863,7 @@ sub GetNativeType
 
     die "UnionType is not supported" if IsUnionType($type);
 
-    # We need to check [ImplementedBy] extended attribute for wrapper types.
+    # We need to check [ImplementedAs] extended attribute for wrapper types.
     if (IsWrapperType($type)) {
         my $interface = ParseInterface($type);
         my $implClassName = GetImplName($interface);
@@ -5804,7 +5816,8 @@ sub GenerateCompileTimeCheckForEnumsIfNeeded
             push(@checks, "#if ${conditionalString}\n") if $conditionalString;
 
             if ($constant->extendedAttributes->{"ImplementedBy"}) {
-                push(@checks, "COMPILE_ASSERT($value == " . $constant->extendedAttributes->{"ImplementedBy"} . "::$name, ${implClassName}Enum${name}IsWrongUseDoNotCheckConstants);\n");
+                my $implementedByImplName = GetImplNameFromImplementedBy($constant->extendedAttributes->{"ImplementedBy"});
+                push(@checks, "COMPILE_ASSERT($value == " . $implementedByImplName . "::$name, ${implClassName}Enum${name}IsWrongUseDoNotCheckConstants);\n");
             } else {
                 push(@checks, "COMPILE_ASSERT($value == ${implClassName}::$name, ${implClassName}Enum${name}IsWrongUseDoNotCheckConstants);\n");
             }

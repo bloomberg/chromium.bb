@@ -31,7 +31,7 @@
 ] interface MessageEvent : Event {
     [InitializedByEventConstructor] readonly attribute DOMString origin;
     [InitializedByEventConstructor] readonly attribute DOMString lastEventId;
-    [InitializedByEventConstructor] readonly attribute DOMWindow source;
+    [InitializedByEventConstructor] readonly attribute Window source;
     [InitializedByEventConstructor, CustomGetter] readonly attribute any data;
     [InitializedByEventConstructor] readonly attribute MessagePort[] ports;
 
@@ -41,7 +41,7 @@
                                    [Default=Undefined] optional any dataArg, 
                                    [Default=Undefined] optional DOMString originArg, 
                                    [Default=Undefined] optional DOMString lastEventIdArg, 
-                                   [Default=Undefined] optional DOMWindow sourceArg, 
+                                   [Default=Undefined] optional Window sourceArg, 
                                    [Default=Undefined] optional Array messagePorts);
 
     [Custom] void webkitInitMessageEvent([Default=Undefined] optional DOMString typeArg,
@@ -50,7 +50,7 @@
                                          [Default=Undefined] optional any dataArg,
                                          [Default=Undefined] optional DOMString originArg,
                                          [Default=Undefined] optional DOMString lastEventIdArg,
-                                         [Default=Undefined] optional DOMWindow sourceArg,
+                                         [Default=Undefined] optional Window sourceArg,
                                          [Default=Undefined] optional Array transferables);
 };
 

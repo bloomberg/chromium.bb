@@ -31,9 +31,9 @@
 #include "config.h"
 #include "bindings/v8/V8DOMWrapper.h"
 
-#include "V8DOMWindow.h"
 #include "V8HTMLCollection.h"
 #include "V8HTMLDocument.h"
+#include "V8Window.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8ObjectConstructor.h"
