@@ -55,9 +55,7 @@ public:
     virtual ~IDBRequest();
 
     PassRefPtr<IDBAny> result(ExceptionCode&) const;
-    unsigned short errorCode(ExceptionCode&) const;
     PassRefPtr<DOMError> error(ExceptionCode&) const;
-    String webkitErrorMessage(ExceptionCode&) const;
     PassRefPtr<IDBAny> source() const;
     PassRefPtr<IDBTransaction> transaction() const;
     void preventPropagation() { m_preventPropagation = true; }
@@ -120,8 +118,6 @@ protected:
     void onSuccessInternal(const ScriptValue&);
 
     RefPtr<IDBAny> m_result;
-    unsigned short m_errorCode;
-    String m_errorMessage;
     RefPtr<DOMError> m_error;
     bool m_contextStopped;
     RefPtr<IDBTransaction> m_transaction;

@@ -47,13 +47,13 @@ function unexpectedSuccessCallback()
 
 function unexpectedErrorCallback(event)
 {
-    testFailed("Error function called unexpectedly: (" + event.target.error.name + ") " + event.target.webkitErrorMessage);
+    testFailed("Error function called unexpectedly: (" + event.target.error.name + ") " + event.target.error.message);
     finishJSTest();
 }
 
 function unexpectedAbortCallback(e)
 {
-    testFailed("Abort function called unexpectedly! Message: [" + e.target.webkitErrorMessage + "]");
+    testFailed("Abort function called unexpectedly! Message: [" + e.target.error.message + "]");
     finishJSTest();
 }
 

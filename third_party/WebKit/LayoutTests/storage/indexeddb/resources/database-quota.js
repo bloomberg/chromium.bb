@@ -84,7 +84,7 @@ function addData()
 
 function logError()
 {
-    debug("Error function called: (" + event.target.error.name + ") " + event.target.webkitErrorMessage);
+    debug("Error function called: (" + event.target.error.name + ") " + event.target.error.message);
     evalAndLog("event.preventDefault()");
 }
 

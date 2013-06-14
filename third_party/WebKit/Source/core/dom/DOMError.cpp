@@ -36,4 +36,11 @@ DOMError::DOMError(const String& name)
     ScriptWrappable::init(this);
 }
 
+DOMError::DOMError(const String& name, const String& message)
+    : m_name(name)
+    , m_message(message)
+{
+    ScriptWrappable::init(this);
+}
+
 } // namespace WebCore

@@ -33,7 +33,6 @@
     readonly attribute DOMString mode;
     readonly attribute IDBDatabase db;
     readonly attribute DOMError error;
-    [TreatReturnedNullStringAs=Undefined] readonly attribute DOMString webkitErrorMessage;
 
     // Methods
     [RaisesException] IDBObjectStore objectStore (DOMString name);

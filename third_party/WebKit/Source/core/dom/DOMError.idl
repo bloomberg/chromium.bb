@@ -29,5 +29,6 @@
     NoInterfaceObject
 ] interface  DOMError {
     readonly attribute DOMString name;
+    readonly attribute DOMString message;
   };
 

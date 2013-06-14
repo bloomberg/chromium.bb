@@ -39,13 +39,20 @@ public:
     {
         return adoptRef(new DOMError(name));
     }
+    static PassRefPtr<DOMError> create(const String& name, const String& message)
+    {
+        return adoptRef(new DOMError(name, message));
+    }
 
     const String& name() const { return m_name; }
+    const String& message() const { return m_message; }
 
 private:
     explicit DOMError(const String& name);
+    explicit DOMError(const String& name, const String& message);
 
     const String m_name;
+    const String m_message;
 };
 
 } // namespace WebCore
