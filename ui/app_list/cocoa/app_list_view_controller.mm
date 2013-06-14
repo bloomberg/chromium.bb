@@ -189,6 +189,10 @@ const CGFloat kMaxSegmentWidth = 80;
   return appListModel ? appListModel->search_box() : NULL;
 }
 
+- (app_list::AppListViewDelegate*)appListDelegate {
+  return [self delegate];
+}
+
 - (BOOL)control:(NSControl*)control
                textView:(NSTextView*)textView
     doCommandBySelector:(SEL)command {
