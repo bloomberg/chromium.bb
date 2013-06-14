@@ -73,6 +73,9 @@ class ASH_EXPORT LauncherTooltipManager : public ui::EventHandler,
   // Returns true if the tooltip is currently visible.
   bool IsVisible();
 
+  // Create an instant timer for test purposes.
+  void CreateZeroDelayTimerForTest();
+
 protected:
   // ui::EventHandler overrides:
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
@@ -95,6 +98,7 @@ protected:
   void CloseSoon();
   void ShowInternal();
   void CreateBubble(views::View* anchor, const base::string16& text);
+  void CreateTimer(int delay_in_ms);
 
   LauncherTooltipBubble* view_;
   views::Widget* widget_;
