@@ -136,6 +136,13 @@ function test()
             {
                 InspectorTest.evaluateInPage("dumpObject('Set non-finite numbers')", next);
             }
+        },
+
+        function testReleaseObjectIsCalled(next)
+        {
+            // If failed, this test will time out.
+            InspectorTest.addSniffer(RuntimeAgent, "releaseObject", next);
+            obj1.setPropertyValue("foo", "[1,2,3]", function(){});
         }
     ]);
 }

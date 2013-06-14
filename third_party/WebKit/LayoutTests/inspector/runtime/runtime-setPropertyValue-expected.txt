@@ -47,3 +47,5 @@ exception
 
 Running: testSetNonFiniteNumbers
 
+Running: testReleaseObjectIsCalled
+

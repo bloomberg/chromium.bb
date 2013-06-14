@@ -77,10 +77,15 @@ function bind(func, thisObject, var_args)
  */
 var InjectedScript = function()
 {
+    /** @type {number} */
     this._lastBoundObjectId = 1;
+    /** @type {!Object.<number, Object>} */
     this._idToWrappedObject = {};
+    /** @type {!Object.<number, string>} */
     this._idToObjectGroupName = {};
+    /** @type {!Object.<string, Array.<number>>} */
     this._objectGroups = {};
+    /** @type {!Object.<string, Object>} */
     this._modules = {};
 }
 
@@ -217,7 +222,7 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {*} object
+     * @param {Object} object
      * @param {string=} objectGroupName
      * @return {string}
      */
@@ -367,7 +372,7 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {string} id
+     * @param {number} id
      */
     _releaseObject: function(id)
     {
