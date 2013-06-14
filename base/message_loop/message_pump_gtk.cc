@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_pump_gtk.h"
+#include "base/message_loop/message_pump_gtk.h"
 
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 
-#include "base/profiler/scoped_profile.h"
 #include "base/debug/trace_event.h"
+#include "base/profiler/scoped_profile.h"
+
+namespace base {
 
 namespace {
 
@@ -57,9 +59,7 @@ const char* EventToTypeString(const GdkEvent* event) {
   }
 }
 
-}
-
-namespace base {
+}  // namespace
 
 MessagePumpGtk::MessagePumpGtk() : MessagePumpGlib() {
   gdk_event_handler_set(&EventDispatcher, this, NULL);

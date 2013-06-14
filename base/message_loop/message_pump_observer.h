@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MESSAGE_PUMP_OBSERVER_H
-#define BASE_MESSAGE_PUMP_OBSERVER_H
+#ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_OBSERVER_H
+#define BASE_MESSAGE_LOOP_MESSAGE_PUMP_OBSERVER_H
 
 #include "base/base_export.h"
 #include "base/event_types.h"
@@ -44,4 +44,4 @@ class BASE_EXPORT MessagePumpObserver {
 
 }  // namespace base
 
-#endif  // BASE_MESSAGE_PUMP_OBSERVER_VIEWS_H
+#endif  // BASE_MESSAGE_LOOP_MESSAGE_PUMP_OBSERVER_H

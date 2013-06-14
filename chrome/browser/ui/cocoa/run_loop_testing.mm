@@ -7,7 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/memory/scoped_nsobject.h"
-#include "base/message_pump_mac.h"
+#include "base/message_loop/message_pump_mac.h"
 
 // This class is scheduled with a delayed selector to quit the message pump.
 @interface CocoaQuitTask : NSObject {

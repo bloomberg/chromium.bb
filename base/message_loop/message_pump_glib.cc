@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_pump_glib.h"
+#include "base/message_loop/message_pump_glib.h"
 
 #include <fcntl.h>
 #include <math.h>
@@ -13,11 +13,13 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/platform_thread.h"
 
+namespace base {
+
 namespace {
 
 // Return a timeout suitable for the glib loop, -1 to block forever,
 // 0 to return right away, or a timeout in milliseconds from now.
-int GetTimeIntervalMilliseconds(const base::TimeTicks& from) {
+int GetTimeIntervalMilliseconds(const TimeTicks& from) {
   if (from.is_null())
     return -1;
 
@@ -25,7 +27,7 @@ int GetTimeIntervalMilliseconds(const base::TimeTicks& from) {
   // value in milliseconds.  If there are 5.5ms left, should the delay be 5 or
   // 6?  It should be 6 to avoid executing delayed work too early.
   int delay = static_cast<int>(
-      ceil((from - base::TimeTicks::Now()).InMillisecondsF()));
+      ceil((from - TimeTicks::Now()).InMillisecondsF()));
 
   // If this value is negative, then we need to run delayed work soon.
   return delay < 0 ? 0 : delay;
@@ -81,7 +83,7 @@ int GetTimeIntervalMilliseconds(const base::TimeTicks& from) {
 // loop, around event handling.
 
 struct WorkSource : public GSource {
-  base::MessagePumpGlib* pump;
+  MessagePumpGlib* pump;
 };
 
 gboolean WorkSourcePrepare(GSource* source,
@@ -116,9 +118,6 @@ GSourceFuncs WorkSourceFuncs = {
 };
 
 }  // namespace
-
-
-namespace base {
 
 struct MessagePumpGlib::RunState {
   Delegate* delegate;
@@ -166,8 +165,8 @@ void MessagePumpGlib::RunWithDispatcher(Delegate* delegate,
 #ifndef NDEBUG
   // Make sure we only run this on one thread. X/GTK only has one message pump
   // so we can only have one UI loop per process.
-  static base::PlatformThreadId thread_id = base::PlatformThread::CurrentId();
-  DCHECK(thread_id == base::PlatformThread::CurrentId()) <<
+  static PlatformThreadId thread_id = PlatformThread::CurrentId();
+  DCHECK(thread_id == PlatformThread::CurrentId()) <<
       "Running MessagePumpGlib on two different threads; "
       "this is unsupported by GLib!";
 #endif

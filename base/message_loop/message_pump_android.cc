@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_pump_android.h"
+#include "base/message_loop/message_pump_android.h"
 
 #include <jni.h>
 
@@ -18,7 +18,7 @@ using base::android::ScopedJavaLocalRef;
 
 namespace {
 
-base::LazyInstance<base::android::ScopedJavaGlobalRef<jobject> >
+LazyInstance<android::ScopedJavaGlobalRef<jobject> >
     g_system_message_handler_obj = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -75,7 +75,7 @@ void MessagePumpForUI::Run(Delegate* delegate) {
 }
 
 void MessagePumpForUI::Start(Delegate* delegate) {
-  run_loop_ = new base::RunLoop();
+  run_loop_ = new RunLoop();
   // Since the RunLoop was just created above, BeforeRun should be guaranteed to
   // return true (it only returns false if the RunLoop has been Quit already).
   if (!run_loop_->BeforeRun())
@@ -124,7 +124,7 @@ void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
   DCHECK(env);
 
   jlong millis =
-      (delayed_work_time - base::TimeTicks::Now()).InMillisecondsRoundedUp();
+      (delayed_work_time - TimeTicks::Now()).InMillisecondsRoundedUp();
   // Note that we're truncating to milliseconds as required by the java side,
   // even though delayed_work_time is microseconds resolution.
   Java_SystemMessageHandler_setDelayedTimer(env,

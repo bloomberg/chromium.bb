@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MESSAGE_PUMP_DEFAULT_H_
-#define BASE_MESSAGE_PUMP_DEFAULT_H_
+#ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_DEFAULT_H_
+#define BASE_MESSAGE_LOOP_MESSAGE_PUMP_DEFAULT_H_
 
-#include "base/message_pump.h"
-#include "base/time.h"
+#include "base/message_loop/message_pump.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/time.h"
 
 namespace base {
 
@@ -39,4 +39,4 @@ class MessagePumpDefault : public MessagePump {
 
 }  // namespace base
 
-#endif  // BASE_MESSAGE_PUMP_DEFAULT_H_
+#endif  // BASE__MESSAGE_LOOPMESSAGE_PUMP_DEFAULT_H_

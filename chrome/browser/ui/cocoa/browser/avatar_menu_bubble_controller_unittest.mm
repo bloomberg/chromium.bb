@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/browser/avatar_menu_bubble_controller.h"
 
 #include "base/memory/scoped_nsobject.h"
-#include "base/message_pump_mac.h"
+#include "base/message_loop/message_pump_mac.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"

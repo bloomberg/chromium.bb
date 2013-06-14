@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/scoped_nsobject.h"
-#include "base/message_loop.h"
-#include "base/message_pump_default.h"
+#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_default.h"
 #include "base/test/test_suite.h"
 
 // Springboard will kill any iOS app that fails to check in after launch within

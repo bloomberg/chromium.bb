@@ -17,7 +17,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
-#include "base/message_pump_aurax11.h"
+#include "base/message_loop/message_pump_aurax11.h"
 #include "chromeos/display/output_util.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"

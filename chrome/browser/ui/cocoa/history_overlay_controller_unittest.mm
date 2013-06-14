@@ -7,7 +7,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/memory/ref_counted.h"
-#include "base/message_pump_mac.h"
+#include "base/message_loop/message_pump_mac.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/OCMock/OCMock.h"

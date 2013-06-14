@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "base/message_pump_mac.h"
+#import "base/message_loop/message_pump_mac.h"
 
 #import <Foundation/Foundation.h>
 
@@ -546,7 +546,7 @@ void MessagePumpUIApplication::Quit() {
 
 void MessagePumpUIApplication::Attach(Delegate* delegate) {
   DCHECK(!run_loop_);
-  run_loop_ = new base::RunLoop();
+  run_loop_ = new RunLoop();
   CHECK(run_loop_->BeforeRun());
   SetDelegate(delegate);
 }

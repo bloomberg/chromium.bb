@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MESSAGE_PUMP_LIBEVENT_H_
-#define BASE_MESSAGE_PUMP_LIBEVENT_H_
+#ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_LIBEVENT_H_
+#define BASE_MESSAGE_LOOP_MESSAGE_PUMP_LIBEVENT_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_pump.h"
+#include "base/message_loop/message_pump.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/time.h"
@@ -86,7 +86,7 @@ class BASE_EXPORT MessagePumpLibevent : public MessagePump {
     event* event_;
     MessagePumpLibevent* pump_;
     Watcher* watcher_;
-    base::WeakPtrFactory<FileDescriptorWatcher> weak_factory_;
+    WeakPtrFactory<FileDescriptorWatcher> weak_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(FileDescriptorWatcher);
   };
@@ -176,4 +176,4 @@ class BASE_EXPORT MessagePumpLibevent : public MessagePump {
 
 }  // namespace base
 
-#endif  // BASE_MESSAGE_PUMP_LIBEVENT_H_
+#endif  // BASE_MESSAGE_LOOP_MESSAGE_PUMP_LIBEVENT_H_

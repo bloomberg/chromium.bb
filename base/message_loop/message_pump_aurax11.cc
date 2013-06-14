@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_pump_aurax11.h"
+#include "base/message_loop/message_pump_aurax11.h"
 
 #include <glib.h>
 #include <X11/X.h>
@@ -12,10 +12,12 @@
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 
+namespace base {
+
 namespace {
 
 gboolean XSourcePrepare(GSource* source, gint* timeout_ms) {
-  if (XPending(base::MessagePumpAuraX11::GetDefaultXDisplay()))
+  if (XPending(MessagePumpAuraX11::GetDefaultXDisplay()))
     *timeout_ms = 0;
   else
     *timeout_ms = -1;
@@ -23,13 +25,13 @@ gboolean XSourcePrepare(GSource* source, gint* timeout_ms) {
 }
 
 gboolean XSourceCheck(GSource* source) {
-  return XPending(base::MessagePumpAuraX11::GetDefaultXDisplay());
+  return XPending(MessagePumpAuraX11::GetDefaultXDisplay());
 }
 
 gboolean XSourceDispatch(GSource* source,
                          GSourceFunc unused_func,
                          gpointer data) {
-  base::MessagePumpAuraX11* pump = static_cast<base::MessagePumpAuraX11*>(data);
+  MessagePumpAuraX11* pump = static_cast<MessagePumpAuraX11*>(data);
   return pump->DispatchXEvents();
 }
 
@@ -52,7 +54,7 @@ Display* g_xdisplay = NULL;
 int g_xinput_opcode = -1;
 
 bool InitializeXInput2Internal() {
-  Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
+  Display* display = MessagePumpAuraX11::GetDefaultXDisplay();
   if (!display)
     return false;
 
@@ -86,7 +88,7 @@ bool InitializeXInput2Internal() {
   return true;
 }
 
-Window FindEventTarget(const base::NativeEvent& xev) {
+Window FindEventTarget(const NativeEvent& xev) {
   Window target = xev->xany.window;
   if (xev->type == GenericEvent &&
       static_cast<XIEvent*>(xev->xcookie.data)->extension == g_xinput_opcode) {
@@ -101,7 +103,7 @@ bool InitializeXInput2() {
 }
 
 bool InitializeXkb() {
-  Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
+  Display* display = MessagePumpAuraX11::GetDefaultXDisplay();
   if (!display)
     return false;
 
@@ -125,8 +127,6 @@ bool InitializeXkb() {
 }
 
 }  // namespace
-
-namespace base {
 
 MessagePumpAuraX11::MessagePumpAuraX11() : MessagePumpGlib(),
     x_source_(NULL) {
@@ -277,13 +277,13 @@ void MessagePumpAuraX11::DidProcessXEvent(XEvent* xevent) {
 }
 
 MessagePumpDispatcher* MessagePumpAuraX11::GetDispatcherForXEvent(
-    const base::NativeEvent& xev) const {
+    const NativeEvent& xev) const {
   ::Window x_window = FindEventTarget(xev);
   DispatchersMap::const_iterator it = dispatchers_.find(x_window);
   return it != dispatchers_.end() ? it->second : NULL;
 }
 
-bool MessagePumpAuraX11::Dispatch(const base::NativeEvent& xev) {
+bool MessagePumpAuraX11::Dispatch(const NativeEvent& xev) {
   // MappingNotify events (meaning that the keyboard or pointer buttons have
   // been remapped) aren't associated with a window; send them to all
   // dispatchers.

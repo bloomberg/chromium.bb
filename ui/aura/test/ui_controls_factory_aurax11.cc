@@ -11,7 +11,7 @@
 #endif
 
 #include "base/logging.h"
-#include "base/message_pump_aurax11.h"
+#include "base/message_loop/message_pump_aurax11.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
