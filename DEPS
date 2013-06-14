@@ -297,9 +297,6 @@ deps = {
      (Var("googlecode_url") % "libphonenumber") + "/trunk/resources@" +
          Var("libphonenumber_revision"),
 
-  "src/third_party/undoview":
-    "/trunk/deps/third_party/undoview@119694",
-
   "src/tools/deps2git":
     "/trunk/tools/deps2git@202885",
 
@@ -533,6 +530,9 @@ deps_os = {
     "src/third_party/pyelftools":
       Var("chromiumos_git") + "/third_party/pyelftools.git" +
       "@bdc1d380acd88d4bfaf47265008091483b0d614e",
+
+    "src/third_party/undoview":
+      "/trunk/deps/third_party/undoview@119694",
   },
   "android": {
     "src/third_party/android_tools":
