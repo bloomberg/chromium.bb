@@ -33,7 +33,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/android/java_bitmap.h"
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_impl.h"
+#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/glue/webthread_impl.h"
 
 namespace gfx {
@@ -334,16 +334,14 @@ bool CompositorImpl::CopyTextureToBitmap(WebKit::WebGLId texture_id,
 }
 
 scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface() {
-  if (g_use_direct_gl) {
-    WebKit::WebGraphicsContext3D::Attributes attrs;
-    attrs.shareResources = false;
-    attrs.noAutomaticFlushes = true;
-    scoped_ptr<WebKit::WebGraphicsContext3D> context(
-        webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWindow(
-            attrs,
-            window_,
-            NULL));
+  WebKit::WebGraphicsContext3D::Attributes attrs;
+  attrs.shareResources = true;
+  attrs.noAutomaticFlushes = true;
 
+  if (g_use_direct_gl) {
+    scoped_ptr<WebKit::WebGraphicsContext3D> context(
+        webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::
+            CreateViewContext(attrs, window_));
     if (!window_) {
       return scoped_ptr<cc::OutputSurface>(
           new DirectOutputSurface(context.Pass()));
@@ -352,9 +350,6 @@ scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface() {
     return make_scoped_ptr(new cc::OutputSurface(context.Pass()));
   } else {
     DCHECK(window_ && surface_id_);
-    WebKit::WebGraphicsContext3D::Attributes attrs;
-    attrs.shareResources = true;
-    attrs.noAutomaticFlushes = true;
     GpuChannelHostFactory* factory = BrowserGpuChannelHostFactory::instance();
     GURL url("chrome://gpu/Compositor::createContext3D");
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(

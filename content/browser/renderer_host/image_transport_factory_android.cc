@@ -12,11 +12,13 @@
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_impl.h"
+#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace content {
 
 namespace {
+
+using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
 
 static ImageTransportFactoryAndroid* g_factory = NULL;
 
@@ -43,20 +45,17 @@ class DirectGLImageTransportFactory : public ImageTransportFactoryAndroid {
   virtual GLHelper* GetGLHelper() OVERRIDE { return NULL; }
 
  private:
-  scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessImpl> context_;
+  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectGLImageTransportFactory);
 };
 
 DirectGLImageTransportFactory::DirectGLImageTransportFactory() {
   WebKit::WebGraphicsContext3D::Attributes attrs;
-  attrs.shareResources = false;
+  attrs.shareResources = true;
   attrs.noAutomaticFlushes = true;
-  context_.reset(
-      webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWindow(
-          attrs,
-          NULL,
-          NULL));
+  context_.reset(webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::
+                     CreateViewContext(attrs, NULL));
 }
 
 DirectGLImageTransportFactory::~DirectGLImageTransportFactory() {
