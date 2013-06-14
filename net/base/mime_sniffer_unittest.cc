@@ -361,7 +361,6 @@ TEST(MimeSnifferTest, XMLTest) {
             SniffMimeType("<foo><html xmlns=\"http://www.w3.org/1999/xhtml\">",
                           std::string(),
                           "text/xml"));
-
 }
 
 // Test content which is >= 1024 bytes, and includes no open angle bracket.
@@ -444,6 +443,45 @@ TEST(MimeSnifferTest, OfficeTest) {
   };
 
   TestArray(tests, arraysize(tests));
+}
+
+// TODO(thestig) Add more tests for other AV formats. Add another test case for
+// RAW images.
+TEST(MimeSnifferTest, AudioVideoTest) {
+  std::string mime_type;
+  const char kFlacTestData[] =
+      "fLaC\x00\x00\x00\x22\x12\x00\x12\x00\x00\x00\x00\x00";
+  EXPECT_TRUE(SniffMimeTypeFromLocalData(kFlacTestData,
+                                         sizeof(kFlacTestData),
+                                         &mime_type));
+  EXPECT_EQ("audio/x-flac", mime_type);
+  mime_type.clear();
+
+  const char kWMATestData[] =
+      "\x30\x26\xb2\x75\x8e\x66\xcf\x11\xa6\xd9\x00\xaa\x00\x62\xce\x6c";
+  EXPECT_TRUE(SniffMimeTypeFromLocalData(kWMATestData,
+                                         sizeof(kWMATestData),
+                                         &mime_type));
+  EXPECT_EQ("video/x-ms-asf", mime_type);
+  mime_type.clear();
+
+  // mp4a, m4b, m4p, and alac extension files which share the same container
+  // format.
+  const char kMP4TestData[] =
+      "\x00\x00\x00\x20\x66\x74\x79\x70\x4d\x34\x41\x20\x00\x00\x00\x00";
+  EXPECT_TRUE(SniffMimeTypeFromLocalData(kMP4TestData,
+                                         sizeof(kMP4TestData),
+                                         &mime_type));
+  EXPECT_EQ("video/mp4", mime_type);
+  mime_type.clear();
+
+  const char kAACTestData[] =
+      "\xff\xf1\x50\x80\x02\x20\xb0\x23\x0a\x83\x20\x7d\x61\x90\x3e\xb1";
+  EXPECT_TRUE(SniffMimeTypeFromLocalData(kAACTestData,
+                                         sizeof(kAACTestData),
+                                         &mime_type));
+  EXPECT_EQ("audio/mpeg", mime_type);
+  mime_type.clear();
 }
 
 }  // namespace net

@@ -59,6 +59,15 @@ const base::FilePath::CharType* const kExtraSupportedExtensions[] = {
   FILE_PATH_LITERAL("mpegps"),
   FILE_PATH_LITERAL("mpg"),
   FILE_PATH_LITERAL("wmv"),
+
+  // Audio file types. Many of these file types are audio files in the same
+  // containers that the MIME sniffer already detects as video/subtype.
+  FILE_PATH_LITERAL("aac"),   // audio/mpeg
+  FILE_PATH_LITERAL("alac"),  // video/mp4
+  FILE_PATH_LITERAL("flac"),  // audio/x-flac
+  FILE_PATH_LITERAL("m4b"),   // video/mp4
+  FILE_PATH_LITERAL("m4p"),   // video/mp4
+  FILE_PATH_LITERAL("wma"),   // video/x-ms-asf
 };
 
 bool IsUnsupportedExtension(const base::FilePath::StringType& extension) {

@@ -240,6 +240,7 @@ static const MagicNumber kExtraMagicNumbers[] = {
   MAGIC_NUMBER("application/x-shockwave-flash", "CWS")
   MAGIC_NUMBER("application/x-shockwave-flash", "FWS")
   MAGIC_NUMBER("video/x-flv", "FLV")
+  MAGIC_NUMBER("audio/x-flac", "fLaC")
 
   // RAW image types.
   MAGIC_NUMBER("image/x-canon-cr2", "II\x2a\x00\x10\x00\x00\x00CR")
