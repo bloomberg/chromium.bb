@@ -14,9 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_channel_proxy.h"
 
-AppShimHost::AppShimHost()
-    : channel_(NULL), profile_(NULL) {
-}
+AppShimHost::AppShimHost() : profile_(NULL) {}
 
 AppShimHost::~AppShimHost() {
   DCHECK(CalledOnValidThread());
