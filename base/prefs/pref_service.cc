@@ -177,12 +177,12 @@ bool PrefService::HasPrefPath(const char* path) const {
   return pref && !pref->IsDefaultValue();
 }
 
-DictionaryValue* PrefService::GetPreferenceValues() const {
+base::DictionaryValue* PrefService::GetPreferenceValues() const {
   DCHECK(CalledOnValidThread());
-  DictionaryValue* out = new DictionaryValue;
+  base::DictionaryValue* out = new base::DictionaryValue;
   PrefRegistry::const_iterator i = pref_registry_->begin();
   for (; i != pref_registry_->end(); ++i) {
-    const Value* value = GetPreferenceValue(i->first);
+    const base::Value* value = GetPreferenceValue(i->first);
     DCHECK(value);
     out->Set(i->first, value->DeepCopy());
   }
@@ -233,19 +233,20 @@ bool PrefService::IsUserModifiablePreference(const char* pref_name) const {
   return pref && pref->IsUserModifiable();
 }
 
-const DictionaryValue* PrefService::GetDictionary(const char* path) const {
+const base::DictionaryValue* PrefService::GetDictionary(
+    const char* path) const {
   DCHECK(CalledOnValidThread());
 
-  const Value* value = GetPreferenceValue(path);
+  const base::Value* value = GetPreferenceValue(path);
   if (!value) {
     NOTREACHED() << "Trying to read an unregistered pref: " << path;
     return NULL;
   }
-  if (value->GetType() != Value::TYPE_DICTIONARY) {
+  if (value->GetType() != base::Value::TYPE_DICTIONARY) {
     NOTREACHED();
     return NULL;
   }
-  return static_cast<const DictionaryValue*>(value);
+  return static_cast<const base::DictionaryValue*>(value);
 }
 
 const base::Value* PrefService::GetUserPrefValue(const char* path) const {
@@ -288,19 +289,19 @@ const base::Value* PrefService::GetDefaultPrefValue(const char* path) const {
   return value;
 }
 
-const ListValue* PrefService::GetList(const char* path) const {
+const base::ListValue* PrefService::GetList(const char* path) const {
   DCHECK(CalledOnValidThread());
 
-  const Value* value = GetPreferenceValue(path);
+  const base::Value* value = GetPreferenceValue(path);
   if (!value) {
     NOTREACHED() << "Trying to read an unregistered pref: " << path;
     return NULL;
   }
-  if (value->GetType() != Value::TYPE_LIST) {
+  if (value->GetType() != base::Value::TYPE_LIST) {
     NOTREACHED();
     return NULL;
   }
-  return static_cast<const ListValue*>(value);
+  return static_cast<const base::ListValue*>(value);
 }
 
 void PrefService::AddPrefObserver(const char* path, PrefObserver* obs) {
@@ -333,7 +334,7 @@ void PrefService::AddInitialPreferences() {
 // away in the prefs_map_, if we remove this they would be stored only
 // opportunistically.
 void PrefService::AddRegisteredPreference(const char* path,
-                                          Value* default_value) {
+                                          base::Value* default_value) {
   DCHECK(CalledOnValidThread());
 
   // For ListValue and DictionaryValue with non empty default, empty value
@@ -366,24 +367,24 @@ void PrefService::ClearPref(const char* path) {
   user_pref_store_->RemoveValue(path);
 }
 
-void PrefService::Set(const char* path, const Value& value) {
+void PrefService::Set(const char* path, const base::Value& value) {
   SetUserPrefValue(path, value.DeepCopy());
 }
 
 void PrefService::SetBoolean(const char* path, bool value) {
-  SetUserPrefValue(path, Value::CreateBooleanValue(value));
+  SetUserPrefValue(path, base::Value::CreateBooleanValue(value));
 }
 
 void PrefService::SetInteger(const char* path, int value) {
-  SetUserPrefValue(path, Value::CreateIntegerValue(value));
+  SetUserPrefValue(path, base::Value::CreateIntegerValue(value));
 }
 
 void PrefService::SetDouble(const char* path, double value) {
-  SetUserPrefValue(path, Value::CreateDoubleValue(value));
+  SetUserPrefValue(path, base::Value::CreateDoubleValue(value));
 }
 
 void PrefService::SetString(const char* path, const std::string& value) {
-  SetUserPrefValue(path, Value::CreateStringValue(value));
+  SetUserPrefValue(path, base::Value::CreateStringValue(value));
 }
 
 void PrefService::SetFilePath(const char* path, const base::FilePath& value) {
@@ -391,13 +392,14 @@ void PrefService::SetFilePath(const char* path, const base::FilePath& value) {
 }
 
 void PrefService::SetInt64(const char* path, int64 value) {
-  SetUserPrefValue(path, Value::CreateStringValue(base::Int64ToString(value)));
+  SetUserPrefValue(path,
+                   base::Value::CreateStringValue(base::Int64ToString(value)));
 }
 
 int64 PrefService::GetInt64(const char* path) const {
   DCHECK(CalledOnValidThread());
 
-  const Value* value = GetPreferenceValue(path);
+  const base::Value* value = GetPreferenceValue(path);
   if (!value) {
     NOTREACHED() << "Trying to read an unregistered pref: " << path;
     return 0;
@@ -412,13 +414,14 @@ int64 PrefService::GetInt64(const char* path) const {
 }
 
 void PrefService::SetUint64(const char* path, uint64 value) {
-  SetUserPrefValue(path, Value::CreateStringValue(base::Uint64ToString(value)));
+  SetUserPrefValue(path,
+                   base::Value::CreateStringValue(base::Uint64ToString(value)));
 }
 
 uint64 PrefService::GetUint64(const char* path) const {
   DCHECK(CalledOnValidThread());
 
-  const Value* value = GetPreferenceValue(path);
+  const base::Value* value = GetPreferenceValue(path);
   if (!value) {
     NOTREACHED() << "Trying to read an unregistered pref: " << path;
     return 0;
@@ -432,9 +435,9 @@ uint64 PrefService::GetUint64(const char* path) const {
   return val;
 }
 
-Value* PrefService::GetMutableUserPref(const char* path,
-                                       base::Value::Type type) {
-  CHECK(type == Value::TYPE_DICTIONARY || type == Value::TYPE_LIST);
+base::Value* PrefService::GetMutableUserPref(const char* path,
+                                             base::Value::Type type) {
+  CHECK(type == base::Value::TYPE_DICTIONARY || type == base::Value::TYPE_LIST);
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);
@@ -449,13 +452,13 @@ Value* PrefService::GetMutableUserPref(const char* path,
 
   // Look for an existing preference in the user store. If it doesn't
   // exist or isn't the correct type, create a new user preference.
-  Value* value = NULL;
+  base::Value* value = NULL;
   if (!user_pref_store_->GetMutableValue(path, &value) ||
       !value->IsType(type)) {
-    if (type == Value::TYPE_DICTIONARY) {
-      value = new DictionaryValue;
-    } else if (type == Value::TYPE_LIST) {
-      value = new ListValue;
+    if (type == base::Value::TYPE_DICTIONARY) {
+      value = new base::DictionaryValue;
+    } else if (type == base::Value::TYPE_LIST) {
+      value = new base::ListValue;
     } else {
       NOTREACHED();
     }
@@ -468,8 +471,8 @@ void PrefService::ReportUserPrefChanged(const std::string& key) {
   user_pref_store_->ReportValueChanged(key);
 }
 
-void PrefService::SetUserPrefValue(const char* path, Value* new_value) {
-  scoped_ptr<Value> owned_value(new_value);
+void PrefService::SetUserPrefValue(const char* path, base::Value* new_value) {
+  scoped_ptr<base::Value> owned_value(new_value);
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);
@@ -512,17 +515,17 @@ base::Value::Type PrefService::Preference::GetType() const {
   return type_;
 }
 
-const Value* PrefService::Preference::GetValue() const {
-  const Value* result= pref_service_->GetPreferenceValue(name_);
+const base::Value* PrefService::Preference::GetValue() const {
+  const base::Value* result= pref_service_->GetPreferenceValue(name_);
   DCHECK(result) << "Must register pref before getting its value";
   return result;
 }
 
-const Value* PrefService::Preference::GetRecommendedValue() const {
+const base::Value* PrefService::Preference::GetRecommendedValue() const {
   DCHECK(pref_service_->FindPreference(name_.c_str())) <<
       "Must register pref before getting its value";
 
-  const Value* found_value = NULL;
+  const base::Value* found_value = NULL;
   if (pref_value_store()->GetRecommendedValue(name_, type_, &found_value)) {
     DCHECK(found_value->IsType(type_));
     return found_value;
@@ -571,9 +574,9 @@ bool PrefService::Preference::IsExtensionModifiable() const {
 const base::Value* PrefService::GetPreferenceValue(
     const std::string& path) const {
   DCHECK(CalledOnValidThread());
-  const Value* default_value = NULL;
+  const base::Value* default_value = NULL;
   if (pref_registry_->defaults()->GetValue(path, &default_value)) {
-    const Value* found_value = NULL;
+    const base::Value* found_value = NULL;
     base::Value::Type default_type = default_value->GetType();
     if (pref_value_store_->GetValue(path, default_type, &found_value)) {
       DCHECK(found_value->IsType(default_type));

@@ -15,7 +15,8 @@ PrefValueMap::~PrefValueMap() {
   Clear();
 }
 
-bool PrefValueMap::GetValue(const std::string& key, const Value** value) const {
+bool PrefValueMap::GetValue(const std::string& key,
+                            const base::Value** value) const {
   const Map::const_iterator entry = prefs_.find(key);
   if (entry != prefs_.end()) {
     if (value)
@@ -26,7 +27,7 @@ bool PrefValueMap::GetValue(const std::string& key, const Value** value) const {
   return false;
 }
 
-bool PrefValueMap::GetValue(const std::string& key, Value** value) {
+bool PrefValueMap::GetValue(const std::string& key, base::Value** value) {
   const Map::const_iterator entry = prefs_.find(key);
   if (entry != prefs_.end()) {
     if (value)
@@ -37,12 +38,12 @@ bool PrefValueMap::GetValue(const std::string& key, Value** value) {
   return false;
 }
 
-bool PrefValueMap::SetValue(const std::string& key, Value* value) {
+bool PrefValueMap::SetValue(const std::string& key, base::Value* value) {
   DCHECK(value);
-  scoped_ptr<Value> value_ptr(value);
+  scoped_ptr<base::Value> value_ptr(value);
   const Map::iterator entry = prefs_.find(key);
   if (entry != prefs_.end()) {
-    if (Value::Equals(entry->second, value))
+    if (base::Value::Equals(entry->second, value))
       return false;
     delete entry->second;
     entry->second = value_ptr.release();
@@ -91,7 +92,7 @@ PrefValueMap::const_iterator PrefValueMap::end() const {
 
 bool PrefValueMap::GetBoolean(const std::string& key,
                               bool* value) const {
-  const Value* stored_value = NULL;
+  const base::Value* stored_value = NULL;
   return GetValue(key, &stored_value) && stored_value->GetAsBoolean(value);
 }
 
@@ -101,7 +102,7 @@ void PrefValueMap::SetBoolean(const std::string& key, bool value) {
 
 bool PrefValueMap::GetString(const std::string& key,
                              std::string* value) const {
-  const Value* stored_value = NULL;
+  const base::Value* stored_value = NULL;
   return GetValue(key, &stored_value) && stored_value->GetAsString(value);
 }
 
@@ -111,7 +112,7 @@ void PrefValueMap::SetString(const std::string& key,
 }
 
 bool PrefValueMap::GetInteger(const std::string& key, int* value) const {
-  const Value* stored_value = NULL;
+  const base::Value* stored_value = NULL;
   return GetValue(key, &stored_value) && stored_value->GetAsInteger(value);
 }
 

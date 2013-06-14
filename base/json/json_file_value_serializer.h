@@ -32,11 +32,11 @@ class BASE_EXPORT JSONFileValueSerializer : public base::ValueSerializer {
   // Attempt to serialize the data structure represented by Value into
   // JSON.  If the return value is true, the result will have been written
   // into the file whose name was passed into the constructor.
-  virtual bool Serialize(const Value& root) OVERRIDE;
+  virtual bool Serialize(const base::Value& root) OVERRIDE;
 
   // Equivalent to Serialize(root) except binary values are omitted from the
   // output.
-  bool SerializeAndOmitBinaryValues(const Value& root);
+  bool SerializeAndOmitBinaryValues(const base::Value& root);
 
   // Attempt to deserialize the data structure encoded in the file passed
   // in to the constructor into a structure of Value objects.  If the return
@@ -45,8 +45,8 @@ class BASE_EXPORT JSONFileValueSerializer : public base::ValueSerializer {
   // If |error_message| is non-null, it will be filled in with a formatted
   // error message including the location of the error if appropriate.
   // The caller takes ownership of the returned value.
-  virtual Value* Deserialize(int* error_code,
-                             std::string* error_message) OVERRIDE;
+  virtual base::Value* Deserialize(int* error_code,
+                                   std::string* error_message) OVERRIDE;
 
   // This enum is designed to safely overlap with JSONReader::JsonParseError.
   enum JsonFileError {
@@ -72,7 +72,7 @@ class BASE_EXPORT JSONFileValueSerializer : public base::ValueSerializer {
   }
 
  private:
-  bool SerializeInternal(const Value& root, bool omit_binary_values);
+  bool SerializeInternal(const base::Value& root, bool omit_binary_values);
 
   base::FilePath json_file_path_;
   bool allow_trailing_comma_;

@@ -61,19 +61,19 @@ class FileThreadDeserializer
     delegate_->OnFileRead(value_.release(), error_, no_dir_);
   }
 
-  static Value* DoReading(const base::FilePath& path,
-                          PersistentPrefStore::PrefReadError* error,
-                          bool* no_dir) {
+  static base::Value* DoReading(const base::FilePath& path,
+                                PersistentPrefStore::PrefReadError* error,
+                                bool* no_dir) {
     int error_code;
     std::string error_msg;
     JSONFileValueSerializer serializer(path);
-    Value* value = serializer.Deserialize(&error_code, &error_msg);
+    base::Value* value = serializer.Deserialize(&error_code, &error_msg);
     HandleErrors(value, path, error_code, error_msg, error);
     *no_dir = !file_util::PathExists(path.DirName());
     return value;
   }
 
-  static void HandleErrors(const Value* value,
+  static void HandleErrors(const base::Value* value,
                            const base::FilePath& path,
                            int error_code,
                            const std::string& error_msg,
@@ -85,7 +85,7 @@ class FileThreadDeserializer
 
   bool no_dir_;
   PersistentPrefStore::PrefReadError error_;
-  scoped_ptr<Value> value_;
+  scoped_ptr<base::Value> value_;
   const scoped_refptr<JsonPrefStore> delegate_;
   const scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
   const scoped_refptr<base::MessageLoopProxy> origin_loop_proxy_;
@@ -93,7 +93,7 @@ class FileThreadDeserializer
 
 // static
 void FileThreadDeserializer::HandleErrors(
-    const Value* value,
+    const base::Value* value,
     const base::FilePath& path,
     int error_code,
     const std::string& error_msg,
@@ -133,7 +133,7 @@ void FileThreadDeserializer::HandleErrors(
         file_util::Move(path, bad);
         break;
     }
-  } else if (!value->IsType(Value::TYPE_DICTIONARY)) {
+  } else if (!value->IsType(base::Value::TYPE_DICTIONARY)) {
     *error = PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE;
   }
 }
@@ -154,15 +154,15 @@ JsonPrefStore::JsonPrefStore(const base::FilePath& filename,
                              base::SequencedTaskRunner* sequenced_task_runner)
     : path_(filename),
       sequenced_task_runner_(sequenced_task_runner),
-      prefs_(new DictionaryValue()),
+      prefs_(new base::DictionaryValue()),
       read_only_(false),
       writer_(filename, sequenced_task_runner),
       initialized_(false),
       read_error_(PREF_READ_ERROR_OTHER) {}
 
 bool JsonPrefStore::GetValue(const std::string& key,
-                             const Value** result) const {
-  Value* tmp = NULL;
+                             const base::Value** result) const {
+  base::Value* tmp = NULL;
   if (!prefs_->Get(key, &tmp))
     return false;
 
@@ -188,14 +188,14 @@ bool JsonPrefStore::IsInitializationComplete() const {
 }
 
 bool JsonPrefStore::GetMutableValue(const std::string& key,
-                                    Value** result) {
+                                    base::Value** result) {
   return prefs_->Get(key, result);
 }
 
-void JsonPrefStore::SetValue(const std::string& key, Value* value) {
+void JsonPrefStore::SetValue(const std::string& key, base::Value* value) {
   DCHECK(value);
-  scoped_ptr<Value> new_value(value);
-  Value* old_value = NULL;
+  scoped_ptr<base::Value> new_value(value);
+  base::Value* old_value = NULL;
   prefs_->Get(key, &old_value);
   if (!old_value || !value->Equals(old_value)) {
     prefs_->Set(key, new_value.release());
@@ -203,10 +203,11 @@ void JsonPrefStore::SetValue(const std::string& key, Value* value) {
   }
 }
 
-void JsonPrefStore::SetValueSilently(const std::string& key, Value* value) {
+void JsonPrefStore::SetValueSilently(const std::string& key,
+                                     base::Value* value) {
   DCHECK(value);
-  scoped_ptr<Value> new_value(value);
-  Value* old_value = NULL;
+  scoped_ptr<base::Value> new_value(value);
+  base::Value* old_value = NULL;
   prefs_->Get(key, &old_value);
   if (!old_value || !value->Equals(old_value)) {
     prefs_->Set(key, new_value.release());
@@ -240,7 +241,8 @@ PersistentPrefStore::PrefReadError JsonPrefStore::ReadPrefs() {
 
   PrefReadError error;
   bool no_dir;
-  Value* value = FileThreadDeserializer::DoReading(path_, &error, &no_dir);
+  base::Value* value =
+      FileThreadDeserializer::DoReading(path_, &error, &no_dir);
   OnFileRead(value, error, no_dir);
   return error;
 }
@@ -271,10 +273,10 @@ void JsonPrefStore::ReportValueChanged(const std::string& key) {
     writer_.ScheduleWrite(this);
 }
 
-void JsonPrefStore::OnFileRead(Value* value_owned,
+void JsonPrefStore::OnFileRead(base::Value* value_owned,
                                PersistentPrefStore::PrefReadError error,
                                bool no_dir) {
-  scoped_ptr<Value> value(value_owned);
+  scoped_ptr<base::Value> value(value_owned);
   read_error_ = error;
 
   if (no_dir) {
@@ -296,7 +298,7 @@ void JsonPrefStore::OnFileRead(Value* value_owned,
       break;
     case PREF_READ_ERROR_NONE:
       DCHECK(value.get());
-      prefs_.reset(static_cast<DictionaryValue*>(value.release()));
+      prefs_.reset(static_cast<base::DictionaryValue*>(value.release()));
       break;
     case PREF_READ_ERROR_NO_FILE:
       // If the file just doesn't exist, maybe this is first run.  In any case
@@ -326,7 +328,8 @@ bool JsonPrefStore::SerializeData(std::string* output) {
   // value?
   JSONStringValueSerializer serializer(output);
   serializer.set_pretty_print(true);
-  scoped_ptr<DictionaryValue> copy(prefs_->DeepCopyWithoutEmptyChildren());
+  scoped_ptr<base::DictionaryValue> copy(
+      prefs_->DeepCopyWithoutEmptyChildren());
 
   // Iterates |keys_need_empty_value_| and if the key exists in |prefs_|,
   // ensure its empty ListValue or DictonaryValue is preserved.

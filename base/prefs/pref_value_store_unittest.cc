@@ -221,7 +221,7 @@ class PrefValueStoreTest : public testing::Test {
 };
 
 TEST_F(PrefValueStoreTest, GetValue) {
-  const Value* value;
+  const base::Value* value;
 
   // The following tests read a value from the PrefService. The preferences are
   // set in a way such that all lower-priority stores have a value and we can
@@ -230,7 +230,7 @@ TEST_F(PrefValueStoreTest, GetValue) {
   // Test getting a managed value.
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetValue(prefs::kManagedPref,
-                                          Value::TYPE_STRING, &value));
+                                          base::Value::TYPE_STRING, &value));
   std::string actual_str_value;
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(managed_pref::kManagedValue, actual_str_value);
@@ -238,28 +238,28 @@ TEST_F(PrefValueStoreTest, GetValue) {
   // Test getting an extension value.
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetValue(prefs::kExtensionPref,
-                                          Value::TYPE_STRING, &value));
+                                          base::Value::TYPE_STRING, &value));
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(extension_pref::kExtensionValue, actual_str_value);
 
   // Test getting a command-line value.
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetValue(prefs::kCommandLinePref,
-                                          Value::TYPE_STRING, &value));
+                                          base::Value::TYPE_STRING, &value));
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(command_line_pref::kCommandLineValue, actual_str_value);
 
   // Test getting a user-set value.
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetValue(prefs::kUserPref,
-                                          Value::TYPE_STRING, &value));
+                                          base::Value::TYPE_STRING, &value));
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(user_pref::kUserValue, actual_str_value);
 
   // Test getting a user set value overwriting a recommended value.
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetValue(prefs::kRecommendedPref,
-                                          Value::TYPE_STRING, &value));
+                                          base::Value::TYPE_STRING, &value));
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(recommended_pref::kRecommendedValue,
             actual_str_value);
@@ -267,7 +267,7 @@ TEST_F(PrefValueStoreTest, GetValue) {
   // Test getting a default value.
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetValue(prefs::kDefaultPref,
-                                          Value::TYPE_STRING, &value));
+                                          base::Value::TYPE_STRING, &value));
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(default_pref::kDefaultValue, actual_str_value);
 
@@ -276,12 +276,12 @@ TEST_F(PrefValueStoreTest, GetValue) {
   base::FundamentalValue tmp_dummy_value(true);
   value = &tmp_dummy_value;
   ASSERT_FALSE(pref_value_store_->GetValue(prefs::kMissingPref,
-                                           Value::TYPE_STRING, &value));
+                                           base::Value::TYPE_STRING, &value));
   ASSERT_FALSE(value);
 }
 
 TEST_F(PrefValueStoreTest, GetRecommendedValue) {
-  const Value* value;
+  const base::Value* value;
 
   // The following tests read a value from the PrefService. The preferences are
   // set in a way such that all lower-priority stores have a value and we can
@@ -291,7 +291,7 @@ TEST_F(PrefValueStoreTest, GetRecommendedValue) {
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetRecommendedValue(
       prefs::kManagedPref,
-      Value::TYPE_STRING, &value));
+      base::Value::TYPE_STRING, &value));
   std::string actual_str_value;
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(recommended_pref::kManagedValue, actual_str_value);
@@ -300,7 +300,7 @@ TEST_F(PrefValueStoreTest, GetRecommendedValue) {
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetRecommendedValue(
       prefs::kExtensionPref,
-      Value::TYPE_STRING, &value));
+      base::Value::TYPE_STRING, &value));
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(recommended_pref::kExtensionValue, actual_str_value);
 
@@ -308,7 +308,7 @@ TEST_F(PrefValueStoreTest, GetRecommendedValue) {
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetRecommendedValue(
       prefs::kCommandLinePref,
-      Value::TYPE_STRING, &value));
+      base::Value::TYPE_STRING, &value));
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(recommended_pref::kCommandLineValue, actual_str_value);
 
@@ -316,7 +316,7 @@ TEST_F(PrefValueStoreTest, GetRecommendedValue) {
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetRecommendedValue(
       prefs::kUserPref,
-      Value::TYPE_STRING, &value));
+      base::Value::TYPE_STRING, &value));
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(recommended_pref::kUserValue, actual_str_value);
 
@@ -324,7 +324,7 @@ TEST_F(PrefValueStoreTest, GetRecommendedValue) {
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetRecommendedValue(
       prefs::kRecommendedPref,
-      Value::TYPE_STRING, &value));
+      base::Value::TYPE_STRING, &value));
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(recommended_pref::kRecommendedValue,
             actual_str_value);
@@ -334,7 +334,7 @@ TEST_F(PrefValueStoreTest, GetRecommendedValue) {
   value = &tmp_dummy_value;
   ASSERT_FALSE(pref_value_store_->GetRecommendedValue(
       prefs::kDefaultPref,
-      Value::TYPE_STRING, &value));
+      base::Value::TYPE_STRING, &value));
   ASSERT_FALSE(value);
 
   // Test getting a preference value that the |PrefValueStore|
@@ -342,7 +342,7 @@ TEST_F(PrefValueStoreTest, GetRecommendedValue) {
   value = &tmp_dummy_value;
   ASSERT_FALSE(pref_value_store_->GetRecommendedValue(
       prefs::kMissingPref,
-      Value::TYPE_STRING, &value));
+      base::Value::TYPE_STRING, &value));
   ASSERT_FALSE(value);
 }
 

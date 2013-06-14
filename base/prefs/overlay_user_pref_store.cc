@@ -34,7 +34,7 @@ bool OverlayUserPrefStore::IsInitializationComplete() const {
 }
 
 bool OverlayUserPrefStore::GetValue(const std::string& key,
-                                    const Value** result) const {
+                                    const base::Value** result) const {
   // If the |key| shall NOT be stored in the overlay store, there must not
   // be an entry.
   DCHECK(ShallBeStoredInOverlay(key) || !overlay_.GetValue(key, NULL));
@@ -45,7 +45,7 @@ bool OverlayUserPrefStore::GetValue(const std::string& key,
 }
 
 bool OverlayUserPrefStore::GetMutableValue(const std::string& key,
-                                           Value** result) {
+                                           base::Value** result) {
   if (!ShallBeStoredInOverlay(key))
     return underlay_->GetMutableValue(GetUnderlayKey(key), result);
 
@@ -53,7 +53,7 @@ bool OverlayUserPrefStore::GetMutableValue(const std::string& key,
     return true;
 
   // Try to create copy of underlay if the overlay does not contain a value.
-  Value* underlay_value = NULL;
+  base::Value* underlay_value = NULL;
   if (!underlay_->GetMutableValue(GetUnderlayKey(key), &underlay_value))
     return false;
 
@@ -63,7 +63,7 @@ bool OverlayUserPrefStore::GetMutableValue(const std::string& key,
 }
 
 void OverlayUserPrefStore::SetValue(const std::string& key,
-                                    Value* value) {
+                                    base::Value* value) {
   if (!ShallBeStoredInOverlay(key)) {
     underlay_->SetValue(GetUnderlayKey(key), value);
     return;
@@ -74,7 +74,7 @@ void OverlayUserPrefStore::SetValue(const std::string& key,
 }
 
 void OverlayUserPrefStore::SetValueSilently(const std::string& key,
-                                            Value* value) {
+                                            base::Value* value) {
   if (!ShallBeStoredInOverlay(key)) {
     underlay_->SetValueSilently(GetUnderlayKey(key), value);
     return;

@@ -299,21 +299,21 @@ BASE_PREFS_EXPORT void PrefMember<bool>::UpdatePref(const bool& value);
 
 template <>
 BASE_PREFS_EXPORT bool PrefMember<bool>::Internal::UpdateValueInternal(
-    const Value& value) const;
+    const base::Value& value) const;
 
 template <>
 BASE_PREFS_EXPORT void PrefMember<int>::UpdatePref(const int& value);
 
 template <>
 BASE_PREFS_EXPORT bool PrefMember<int>::Internal::UpdateValueInternal(
-    const Value& value) const;
+    const base::Value& value) const;
 
 template <>
 BASE_PREFS_EXPORT void PrefMember<double>::UpdatePref(const double& value);
 
 template <>
 BASE_PREFS_EXPORT bool PrefMember<double>::Internal::UpdateValueInternal(
-    const Value& value) const;
+    const base::Value& value) const;
 
 template <>
 BASE_PREFS_EXPORT void PrefMember<std::string>::UpdatePref(

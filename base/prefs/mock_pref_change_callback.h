@@ -24,7 +24,7 @@ MATCHER_P3(PrefValueMatches, prefs, pref_name, value, "") {
   if (!pref)
     return false;
 
-  const Value* actual_value = pref->GetValue();
+  const base::Value* actual_value = pref->GetValue();
   if (!actual_value)
     return value == NULL;
   if (!value)
@@ -43,7 +43,7 @@ class MockPrefChangeCallback {
   MOCK_METHOD1(OnPreferenceChanged, void(const std::string&));
 
   void Expect(const std::string& pref_name,
-              const Value* value);
+              const base::Value* value);
 
  private:
   PrefService* prefs_;

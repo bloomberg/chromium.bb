@@ -13,12 +13,12 @@ TestingPrefStore::TestingPrefStore()
 }
 
 bool TestingPrefStore::GetValue(const std::string& key,
-                                const Value** value) const {
+                                const base::Value** value) const {
   return prefs_.GetValue(key, value);
 }
 
 bool TestingPrefStore::GetMutableValue(const std::string& key,
-                                       Value** value) {
+                                       base::Value** value) {
   return prefs_.GetValue(key, value);
 }
 
@@ -38,12 +38,13 @@ bool TestingPrefStore::IsInitializationComplete() const {
   return init_complete_;
 }
 
-void TestingPrefStore::SetValue(const std::string& key, Value* value) {
+void TestingPrefStore::SetValue(const std::string& key, base::Value* value) {
   if (prefs_.SetValue(key, value))
     NotifyPrefValueChanged(key);
 }
 
-void TestingPrefStore::SetValueSilently(const std::string& key, Value* value) {
+void TestingPrefStore::SetValueSilently(const std::string& key,
+                                        base::Value* value) {
   prefs_.SetValue(key, value);
 }
 
@@ -105,7 +106,7 @@ void TestingPrefStore::SetBoolean(const std::string& key, bool value) {
 
 bool TestingPrefStore::GetString(const std::string& key,
                                  std::string* value) const {
-  const Value* stored_value;
+  const base::Value* stored_value;
   if (!prefs_.GetValue(key, &stored_value) || !stored_value)
     return false;
 
@@ -113,7 +114,7 @@ bool TestingPrefStore::GetString(const std::string& key,
 }
 
 bool TestingPrefStore::GetInteger(const std::string& key, int* value) const {
-  const Value* stored_value;
+  const base::Value* stored_value;
   if (!prefs_.GetValue(key, &stored_value) || !stored_value)
     return false;
 
@@ -121,7 +122,7 @@ bool TestingPrefStore::GetInteger(const std::string& key, int* value) const {
 }
 
 bool TestingPrefStore::GetBoolean(const std::string& key, bool* value) const {
-  const Value* stored_value;
+  const base::Value* stored_value;
   if (!prefs_.GetValue(key, &stored_value) || !stored_value)
     return false;
 

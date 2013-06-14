@@ -12,7 +12,7 @@
 ValueMapPrefStore::ValueMapPrefStore() {}
 
 bool ValueMapPrefStore::GetValue(const std::string& key,
-                                 const Value** value) const {
+                                 const base::Value** value) const {
   return prefs_.GetValue(key, value);
 }
 
@@ -30,7 +30,7 @@ size_t ValueMapPrefStore::NumberOfObservers() const {
 
 ValueMapPrefStore::~ValueMapPrefStore() {}
 
-void ValueMapPrefStore::SetValue(const std::string& key, Value* value) {
+void ValueMapPrefStore::SetValue(const std::string& key, base::Value* value) {
   if (prefs_.SetValue(key, value))
     FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(key));
 }

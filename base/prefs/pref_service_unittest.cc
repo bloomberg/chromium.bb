@@ -33,7 +33,7 @@ TEST(PrefServiceTest, NoObserverFire) {
   registrar.Add(pref_name, obs.GetCallback());
 
   // This should fire the checks in MockPrefChangeCallback::OnPreferenceChanged.
-  const StringValue expected_value(new_pref_value);
+  const base::StringValue expected_value(new_pref_value);
   obs.Expect(pref_name, &expected_value);
   prefs.SetString(pref_name, new_pref_value);
   Mock::VerifyAndClearExpectations(&obs);
@@ -45,7 +45,7 @@ TEST(PrefServiceTest, NoObserverFire) {
   Mock::VerifyAndClearExpectations(&obs);
 
   // Clearing the pref should cause the pref to fire.
-  const StringValue expected_default_value((std::string()));
+  const base::StringValue expected_default_value((std::string()));
   obs.Expect(pref_name, &expected_default_value);
   prefs.ClearPref(pref_name);
   Mock::VerifyAndClearExpectations(&obs);
@@ -78,11 +78,12 @@ TEST(PrefServiceTest, Observers) {
   const char pref_name[] = "homepage";
 
   TestingPrefServiceSimple prefs;
-  prefs.SetUserPref(pref_name, Value::CreateStringValue("http://www.cnn.com"));
+  prefs.SetUserPref(pref_name,
+                    base::Value::CreateStringValue("http://www.cnn.com"));
   prefs.registry()->RegisterStringPref(pref_name, std::string());
 
   const char new_pref_value[] = "http://www.google.com/";
-  const StringValue expected_new_pref_value(new_pref_value);
+  const base::StringValue expected_new_pref_value(new_pref_value);
   MockPrefChangeCallback obs(&prefs);
   PrefChangeRegistrar registrar;
   registrar.Init(&prefs);
@@ -98,7 +99,7 @@ TEST(PrefServiceTest, Observers) {
 
   // Now try adding a second pref observer.
   const char new_pref_value2[] = "http://www.youtube.com/";
-  const StringValue expected_new_pref_value2(new_pref_value2);
+  const base::StringValue expected_new_pref_value2(new_pref_value2);
   MockPrefChangeCallback obs2(&prefs);
   obs.Expect(pref_name, &expected_new_pref_value2);
   obs2.Expect(pref_name, &expected_new_pref_value2);
@@ -109,7 +110,7 @@ TEST(PrefServiceTest, Observers) {
   Mock::VerifyAndClearExpectations(&obs2);
 
   // Set a recommended value.
-  const StringValue recommended_pref_value("http://www.gmail.com/");
+  const base::StringValue recommended_pref_value("http://www.gmail.com/");
   obs.Expect(pref_name, &expected_new_pref_value2);
   obs2.Expect(pref_name, &expected_new_pref_value2);
   // This should fire the checks in obs and obs2 but with an unchanged value
@@ -136,12 +137,13 @@ TEST(PrefServiceTest, GetValueChangedType) {
   prefs.registry()->RegisterIntegerPref(kPrefName, kTestValue);
 
   // Check falling back to a recommended value.
-  prefs.SetUserPref(kPrefName, Value::CreateStringValue("not an integer"));
+  prefs.SetUserPref(kPrefName,
+                    base::Value::CreateStringValue("not an integer"));
   const PrefService::Preference* pref = prefs.FindPreference(kPrefName);
   ASSERT_TRUE(pref);
-  const Value* value = pref->GetValue();
+  const base::Value* value = pref->GetValue();
   ASSERT_TRUE(value);
-  EXPECT_EQ(Value::TYPE_INTEGER, value->GetType());
+  EXPECT_EQ(base::Value::TYPE_INTEGER, value->GetType());
   int actual_int_value = -1;
   EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
   EXPECT_EQ(kTestValue, actual_int_value);
@@ -159,9 +161,9 @@ TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
   ASSERT_TRUE(pref);
 
   // Check that GetValue() returns the default value.
-  const Value* value = pref->GetValue();
+  const base::Value* value = pref->GetValue();
   ASSERT_TRUE(value);
-  EXPECT_EQ(Value::TYPE_INTEGER, value->GetType());
+  EXPECT_EQ(base::Value::TYPE_INTEGER, value->GetType());
   int actual_int_value = -1;
   EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
   EXPECT_EQ(kDefaultValue, actual_int_value);
@@ -171,12 +173,12 @@ TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
   ASSERT_FALSE(value);
 
   // Set a user-set value.
-  prefs.SetUserPref(kPrefName, Value::CreateIntegerValue(kUserValue));
+  prefs.SetUserPref(kPrefName, base::Value::CreateIntegerValue(kUserValue));
 
   // Check that GetValue() returns the user-set value.
   value = pref->GetValue();
   ASSERT_TRUE(value);
-  EXPECT_EQ(Value::TYPE_INTEGER, value->GetType());
+  EXPECT_EQ(base::Value::TYPE_INTEGER, value->GetType());
   actual_int_value = -1;
   EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
   EXPECT_EQ(kUserValue, actual_int_value);
@@ -187,12 +189,12 @@ TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
 
   // Set a recommended value.
   prefs.SetRecommendedPref(kPrefName,
-                           Value::CreateIntegerValue(kRecommendedValue));
+                           base::Value::CreateIntegerValue(kRecommendedValue));
 
   // Check that GetValue() returns the user-set value.
   value = pref->GetValue();
   ASSERT_TRUE(value);
-  EXPECT_EQ(Value::TYPE_INTEGER, value->GetType());
+  EXPECT_EQ(base::Value::TYPE_INTEGER, value->GetType());
   actual_int_value = -1;
   EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
   EXPECT_EQ(kUserValue, actual_int_value);
@@ -200,7 +202,7 @@ TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
   // Check that GetRecommendedValue() returns the recommended value.
   value = pref->GetRecommendedValue();
   ASSERT_TRUE(value);
-  EXPECT_EQ(Value::TYPE_INTEGER, value->GetType());
+  EXPECT_EQ(base::Value::TYPE_INTEGER, value->GetType());
   actual_int_value = -1;
   EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
   EXPECT_EQ(kRecommendedValue, actual_int_value);
@@ -211,7 +213,7 @@ TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
   // Check that GetValue() returns the recommended value.
   value = pref->GetValue();
   ASSERT_TRUE(value);
-  EXPECT_EQ(Value::TYPE_INTEGER, value->GetType());
+  EXPECT_EQ(base::Value::TYPE_INTEGER, value->GetType());
   actual_int_value = -1;
   EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
   EXPECT_EQ(kRecommendedValue, actual_int_value);
@@ -219,7 +221,7 @@ TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
   // Check that GetRecommendedValue() returns the recommended value.
   value = pref->GetRecommendedValue();
   ASSERT_TRUE(value);
-  EXPECT_EQ(Value::TYPE_INTEGER, value->GetType());
+  EXPECT_EQ(base::Value::TYPE_INTEGER, value->GetType());
   actual_int_value = -1;
   EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
   EXPECT_EQ(kRecommendedValue, actual_int_value);
@@ -241,7 +243,7 @@ const char PrefServiceSetValueTest::kValue[] = "value";
 
 TEST_F(PrefServiceSetValueTest, SetStringValue) {
   const char default_string[] = "default";
-  const StringValue default_value(default_string);
+  const base::StringValue default_value(default_string);
   prefs_.registry()->RegisterStringPref(kName, default_string);
 
   PrefChangeRegistrar registrar;
@@ -257,7 +259,7 @@ TEST_F(PrefServiceSetValueTest, SetStringValue) {
   prefs_.Set(kName, default_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  StringValue new_value(kValue);
+  base::StringValue new_value(kValue);
   observer_.Expect(kName, &new_value);
   prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
@@ -273,7 +275,7 @@ TEST_F(PrefServiceSetValueTest, SetDictionaryValue) {
   prefs_.RemoveUserPref(kName);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  DictionaryValue new_value;
+  base::DictionaryValue new_value;
   new_value.SetString(kName, kValue);
   observer_.Expect(kName, &new_value);
   prefs_.Set(kName, new_value);
@@ -283,7 +285,7 @@ TEST_F(PrefServiceSetValueTest, SetDictionaryValue) {
   prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  DictionaryValue empty;
+  base::DictionaryValue empty;
   observer_.Expect(kName, &empty);
   prefs_.Set(kName, empty);
   Mock::VerifyAndClearExpectations(&observer_);
@@ -299,8 +301,8 @@ TEST_F(PrefServiceSetValueTest, SetListValue) {
   prefs_.RemoveUserPref(kName);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  ListValue new_value;
-  new_value.Append(Value::CreateStringValue(kValue));
+  base::ListValue new_value;
+  new_value.Append(base::Value::CreateStringValue(kValue));
   observer_.Expect(kName, &new_value);
   prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
@@ -309,7 +311,7 @@ TEST_F(PrefServiceSetValueTest, SetListValue) {
   prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  ListValue empty;
+  base::ListValue empty;
   observer_.Expect(kName, &empty);
   prefs_.Set(kName, empty);
   Mock::VerifyAndClearExpectations(&observer_);

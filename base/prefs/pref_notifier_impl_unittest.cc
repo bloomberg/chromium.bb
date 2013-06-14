@@ -83,7 +83,7 @@ class PrefObserverMock : public PrefObserver {
 
   void Expect(PrefService* prefs,
               const std::string& pref_name,
-              const Value* value) {
+              const base::Value* value) {
     EXPECT_CALL(*this, OnPreferenceChanged(prefs, pref_name))
         .With(PrefValueMatches(prefs, pref_name, value));
   }

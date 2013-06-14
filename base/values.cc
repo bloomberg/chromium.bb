@@ -13,6 +13,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 
+namespace base {
+
 namespace {
 
 // Make a deep copy of |node|, but don't include empty lists or dictionaries
@@ -75,10 +77,6 @@ class ValueEquals {
 };
 
 }  // namespace
-
-namespace base {
-
-///////////////////// Value ////////////////////
 
 Value::~Value() {
 }

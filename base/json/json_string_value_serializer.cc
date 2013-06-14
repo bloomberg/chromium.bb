@@ -8,6 +8,8 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 
+using base::Value;
+
 JSONStringValueSerializer::~JSONStringValueSerializer() {}
 
 bool JSONStringValueSerializer::Serialize(const Value& root) {

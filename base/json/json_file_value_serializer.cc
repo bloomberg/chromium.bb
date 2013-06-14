@@ -15,15 +15,16 @@ const char* JSONFileValueSerializer::kCannotReadFile = "Can't read file.";
 const char* JSONFileValueSerializer::kFileLocked = "File locked.";
 const char* JSONFileValueSerializer::kNoSuchFile = "File doesn't exist.";
 
-bool JSONFileValueSerializer::Serialize(const Value& root) {
+bool JSONFileValueSerializer::Serialize(const base::Value& root) {
   return SerializeInternal(root, false);
 }
 
-bool JSONFileValueSerializer::SerializeAndOmitBinaryValues(const Value& root) {
+bool JSONFileValueSerializer::SerializeAndOmitBinaryValues(
+    const base::Value& root) {
   return SerializeInternal(root, true);
 }
 
-bool JSONFileValueSerializer::SerializeInternal(const Value& root,
+bool JSONFileValueSerializer::SerializeInternal(const base::Value& root,
                                                 bool omit_binary_values) {
   std::string json_string;
   JSONStringValueSerializer serializer(&json_string);
@@ -80,8 +81,8 @@ const char* JSONFileValueSerializer::GetErrorMessageForCode(int error_code) {
   }
 }
 
-Value* JSONFileValueSerializer::Deserialize(int* error_code,
-                                            std::string* error_str) {
+base::Value* JSONFileValueSerializer::Deserialize(int* error_code,
+                                                  std::string* error_str) {
   std::string json_string;
   int error = ReadFileToString(&json_string);
   if (error != JSON_NO_ERROR) {
