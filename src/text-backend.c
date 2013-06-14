@@ -170,7 +170,7 @@ text_input_activate(struct wl_client *client,
 		    struct wl_resource *surface)
 {
 	struct text_input *text_input = wl_resource_get_user_data(resource);
-	struct weston_seat *weston_seat = seat->data;
+	struct weston_seat *weston_seat = wl_resource_get_user_data(seat);
 	struct input_method *input_method = weston_seat->input_method;
 	struct text_input *old = weston_seat->input_method->model;
 	struct weston_compositor *ec = text_input->ec;
@@ -205,7 +205,7 @@ text_input_deactivate(struct wl_client *client,
 		      struct wl_resource *seat)
 {
 	struct text_input *text_input = wl_resource_get_user_data(resource);
-	struct weston_seat *weston_seat = seat->data;
+	struct weston_seat *weston_seat = wl_resource_get_user_data(seat);
 
 	deactivate_text_input(text_input,
 			      weston_seat->input_method);

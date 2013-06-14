@@ -1110,7 +1110,7 @@ static void
 shell_surface_move(struct wl_client *client, struct wl_resource *resource,
 		   struct wl_resource *seat_resource, uint32_t serial)
 {
-	struct weston_seat *seat = seat_resource->data;
+	struct weston_seat *seat = wl_resource_get_user_data(seat_resource);
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 	struct weston_surface *surface;
 
@@ -1270,7 +1270,7 @@ shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
 		     struct wl_resource *seat_resource, uint32_t serial,
 		     uint32_t edges)
 {
-	struct weston_seat *seat = seat_resource->data;
+	struct weston_seat *seat = wl_resource_get_user_data(seat_resource);
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 	struct weston_surface *surface;
 
@@ -2171,7 +2171,7 @@ shell_surface_set_popup(struct wl_client *client,
 
 	shsurf->type = SHELL_SURFACE_POPUP;
 	shsurf->parent = wl_resource_get_user_data(parent_resource);
-	shsurf->popup.shseat = get_shell_seat(seat_resource->data);
+	shsurf->popup.shseat = get_shell_seat(wl_resource_get_user_data(seat_resource));
 	shsurf->popup.serial = serial;
 	shsurf->popup.x = x;
 	shsurf->popup.y = y;
