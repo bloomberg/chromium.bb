@@ -34,13 +34,6 @@ void RunMessageLoop();
 // Variant of RunMessageLoop that takes RunLoop.
 void RunThisRunLoop(base::RunLoop* run_loop);
 
-// Adds pre/post hooks to call when running a message loop.
-// DEPRECATED: Please do not use in new code.
-// TODO(phajdan.jr): Remove message loop hooks after switch to Aura.
-typedef base::Callback<void(base::RunLoop*)> RunMessageLoopHook;
-void AddPreRunMessageLoopHook(const RunMessageLoopHook& hook);
-void AddPostRunMessageLoopHook(const RunMessageLoopHook& hook);
-
 // Turns on nestable tasks, runs all pending tasks in the message loop,
 // then resets nestable tasks to what they were originally. Prefer this
 // over MessageLoop::RunAllPending for in process browser tests to run

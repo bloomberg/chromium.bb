@@ -5,7 +5,6 @@
 #include "content/public/test/test_utils.h"
 
 #include "base/bind.h"
-#include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,12 +17,6 @@
 namespace content {
 
 namespace {
-
-base::LazyInstance<std::vector<RunMessageLoopHook> >::Leaky
-    g_pre_run_message_loop_hooks = LAZY_INSTANCE_INITIALIZER;
-
-base::LazyInstance<std::vector<RunMessageLoopHook> >::Leaky
-    g_post_run_message_loop_hooks = LAZY_INSTANCE_INITIALIZER;
 
 // Number of times to repost a Quit task so that the MessageLoop finishes up
 // pending tasks and tasks posted by those pending tasks without risking the
@@ -85,21 +78,17 @@ void RunThisRunLoop(base::RunLoop* run_loop) {
   base::MessageLoop::ScopedNestableTaskAllower allow(
       base::MessageLoop::current());
 
-  for (size_t i = 0; i < g_pre_run_message_loop_hooks.Get().size(); i++)
-    g_pre_run_message_loop_hooks.Get()[i].Run(run_loop);
-
+  // If we're running inside a browser test, we might need to allow the test
+  // launcher to do extra work before/after running a nested message loop.
+  TestLauncherDelegate* delegate = NULL;
+#if !defined(OS_IOS)
+  delegate = GetCurrentTestLauncherDelegate();
+#endif
+  if (delegate)
+    delegate->PreRunMessageLoop(run_loop);
   run_loop->Run();
-
-  for (size_t i = 0; i < g_pre_run_message_loop_hooks.Get().size(); i++)
-    g_post_run_message_loop_hooks.Get()[i].Run(run_loop);
-}
-
-void AddPreRunMessageLoopHook(const RunMessageLoopHook& hook) {
-  g_pre_run_message_loop_hooks.Get().push_back(hook);
-}
-
-void AddPostRunMessageLoopHook(const RunMessageLoopHook& hook) {
-  g_post_run_message_loop_hooks.Get().push_back(hook);
+  if (delegate)
+    delegate->PostRunMessageLoop();
 }
 
 void RunAllPendingInMessageLoop() {

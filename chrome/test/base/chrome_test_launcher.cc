@@ -59,12 +59,6 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
   }
 
   virtual int RunTestSuite(int argc, char** argv) OVERRIDE {
-    content::AddPreRunMessageLoopHook(base::Bind(
-        &ChromeTestLauncherDelegate::PreRunMessageLoop,
-        base::Unretained(this)));
-    content::AddPostRunMessageLoopHook(base::Bind(
-        &ChromeTestLauncherDelegate::PostRunMessageLoop,
-        base::Unretained(this)));
     return ChromeTestSuite(argc, argv).Run();
   }
 
@@ -90,9 +84,7 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
     return true;
   }
 
-  void PreRunMessageLoop(base::RunLoop* run_loop) {
-    // TODO(phajdan.jr): Remove message loop hooks after switch to Aura.
-    // This includes removing content::Add{Pre,Post}RunMessageLoopHook.
+  virtual void PreRunMessageLoop(base::RunLoop* run_loop) OVERRIDE {
 #if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
     if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
       linked_ptr<views::AcceleratorHandler> handler(
@@ -103,9 +95,7 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
 #endif
   }
 
-  void PostRunMessageLoop(base::RunLoop* run_loop) {
-    // TODO(phajdan.jr): Remove message loop hooks after switch to Aura.
-    // This includes removing content::Add{Pre,Post}RunMessageLoopHook.
+  virtual void PostRunMessageLoop() OVERRIDE {
 #if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
     if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
       DCHECK_EQ(handlers_.empty(), false);
@@ -113,7 +103,6 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
     }
 #endif
   }
-
 
  protected:
   virtual content::ContentMainDelegate* CreateContentMainDelegate() OVERRIDE {

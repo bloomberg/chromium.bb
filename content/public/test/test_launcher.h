@@ -42,6 +42,8 @@ class TestLauncherDelegate {
   virtual bool AdjustChildProcessCommandLine(
       CommandLine* command_line,
       const base::FilePath& temp_data_dir) = 0;
+  virtual void PreRunMessageLoop(base::RunLoop* run_loop) {}
+  virtual void PostRunMessageLoop() {}
   virtual ContentMainDelegate* CreateContentMainDelegate() = 0;
 
  protected:
