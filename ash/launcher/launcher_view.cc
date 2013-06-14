@@ -38,6 +38,7 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/point.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -1569,6 +1570,14 @@ void LauncherView::ShowMenu(
     // Application lists use a bubble.
     ash::ShelfAlignment align = shelf->GetAlignment();
     anchor_point = source->GetBoundsInScreen();
+
+    // It is possible to invoke the menu while it is sliding into view. To cover
+    // that case, the screen coordinates are offsetted by the animation delta.
+    gfx::Vector2d offset =
+        source->GetWidget()->GetNativeWindow()->bounds().origin() -
+        source->GetWidget()->GetNativeWindow()->GetTargetBounds().origin();
+    anchor_point.set_x(anchor_point.x() - offset.x());
+    anchor_point.set_y(anchor_point.y() - offset.y());
 
     // Launcher items can have an asymmetrical border for spacing reasons.
     // Adjust anchor location for this.
