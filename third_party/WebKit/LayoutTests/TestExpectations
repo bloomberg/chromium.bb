@@ -1689,6 +1689,9 @@ crbug.com/245520 [ Mac ] compositing/repaint/transform-style-change.html [ Image
 # Temporary expectations until I've fixed fast/hidpi
 Bug(jochen) virtual/gpu/fast/hidpi [ Slow ]
 
+# started crashing in V8 roll in r206439
+crbug.com/249873 fast/js/concat-large-strings-crash.html [ Crash ]
+
 crbug.com/249237 fast/forms/interactive-validation-remove-node-in-handler.html [ Crash Pass ]
 crbug.com/249237 fast/forms/interactive-validation-required-checkbox.html [ Crash Pass ]
 crbug.com/249237 fast/forms/interactive-validation-attach-assertion.html [ Crash Pass ]
