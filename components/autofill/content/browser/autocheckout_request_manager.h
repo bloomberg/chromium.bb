@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_BROWSER_AUTOCHECKOUT_REQUEST_MANAGER_H_
-#define COMPONENTS_AUTOFILL_BROWSER_AUTOCHECKOUT_REQUEST_MANAGER_H_
+#ifndef COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOCHECKOUT_REQUEST_MANAGER_H_
+#define COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOCHECKOUT_REQUEST_MANAGER_H_
 
 #include "base/supports_user_data.h"
 #include "components/autofill/browser/autofill_metrics.h"
@@ -98,4 +98,4 @@ class AutocheckoutRequestManager : public base::SupportsUserData::Data,
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_BROWSER_AUTOCHECKOUT_REQUEST_MANAGER_H_
+#endif  // COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOCHECKOUT_REQUEST_MANAGER_H_

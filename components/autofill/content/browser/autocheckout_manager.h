@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_BROWSER_AUTOCHECKOUT_MANAGER_H_
-#define COMPONENTS_AUTOFILL_BROWSER_AUTOCHECKOUT_MANAGER_H_
+#ifndef COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOCHECKOUT_MANAGER_H_
+#define COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOCHECKOUT_MANAGER_H_
 
 #include <string>
 
@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
-#include "components/autofill/browser/autocheckout_page_meta_data.h"
 #include "components/autofill/common/autocheckout_status.h"
+#include "components/autofill/content/browser/autocheckout_page_meta_data.h"
 
 class GURL;
 
@@ -157,4 +157,4 @@ class AutocheckoutManager {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_BROWSER_AUTOCHECKOUT_MANAGER_H_
+#endif  // COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOCHECKOUT_MANAGER_H_

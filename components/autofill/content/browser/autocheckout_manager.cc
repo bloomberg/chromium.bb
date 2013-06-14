@@ -1,13 +1,12 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/browser/autocheckout_manager.h"
+#include "components/autofill/content/browser/autocheckout_manager.h"
 
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/browser/autocheckout_request_manager.h"
 #include "components/autofill/browser/autofill_country.h"
 #include "components/autofill/browser/autofill_field.h"
 #include "components/autofill/browser/autofill_manager.h"
@@ -20,6 +19,7 @@
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_field_data.h"
 #include "components/autofill/common/web_element_descriptor.h"
+#include "components/autofill/content/browser/autocheckout_request_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"

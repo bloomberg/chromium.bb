@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/browser/autocheckout_request_manager.h"
+#include "components/autofill/content/browser/autocheckout_request_manager.h"
 
 #include "components/autofill/browser/autofill_manager_delegate.h"
 #include "content/public/browser/browser_context.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 #include "base/tuple.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/autofill/browser/autocheckout_manager.h"
 #include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/browser/autofill_manager.h"
 #include "components/autofill/browser/autofill_metrics.h"
@@ -14,6 +13,7 @@
 #include "components/autofill/browser/test_autofill_manager_delegate.h"
 #include "components/autofill/common/autofill_messages.h"
 #include "components/autofill/common/form_data.h"
+#include "components/autofill/content/browser/autocheckout_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread.h"

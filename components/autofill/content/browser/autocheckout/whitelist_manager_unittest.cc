@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/autofill/browser/autocheckout/whitelist_manager.h"
 #include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/common/autofill_switches.h"
+#include "components/autofill/content/browser/autocheckout/whitelist_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"

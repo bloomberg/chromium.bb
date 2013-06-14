@@ -7,9 +7,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/autofill/browser/autocheckout_page_meta_data.h"
 #include "components/autofill/browser/autofill_xml_parser.h"
 #include "components/autofill/browser/field_types.h"
+#include "components/autofill/content/browser/autocheckout_page_meta_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlparser.h"
 

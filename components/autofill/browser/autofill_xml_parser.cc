@@ -8,8 +8,8 @@
 #include <string.h>
 
 #include "base/logging.h"
-#include "components/autofill/browser/autocheckout_page_meta_data.h"
 #include "components/autofill/browser/autofill_server_field_info.h"
+#include "components/autofill/content/browser/autocheckout_page_meta_data.h"
 #include "third_party/libjingle/source/talk/xmllite/qname.h"
 
 namespace autofill {

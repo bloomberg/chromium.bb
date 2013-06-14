@@ -16,7 +16,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time.h"
-#include "components/autofill/browser/autocheckout_page_meta_data.h"
 #include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/autofill_xml_parser.h"
@@ -27,6 +26,7 @@
 #include "components/autofill/common/form_data_predictions.h"
 #include "components/autofill/common/form_field_data.h"
 #include "components/autofill/common/form_field_data_predictions.h"
+#include "components/autofill/content/browser/autocheckout_page_meta_data.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 namespace autofill {
