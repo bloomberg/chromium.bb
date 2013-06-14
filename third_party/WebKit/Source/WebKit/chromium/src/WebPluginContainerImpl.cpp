@@ -342,7 +342,7 @@ bool WebPluginContainerImpl::executeEditCommand(const WebString& name)
     if (m_webPlugin->executeEditCommand(name))
         return true;
 
-    if (name != "copy")
+    if (name != "Copy")
         return false;
 
     copy();
