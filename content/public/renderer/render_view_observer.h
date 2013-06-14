@@ -12,6 +12,8 @@
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIconURL.h"
 
+class GURL;
+
 namespace ppapi {
 namespace host {
 class PpapiHost;
