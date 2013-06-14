@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/content_switches.h"
+#include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/gdi_util.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
@@ -164,14 +165,15 @@ HWND ReparentWindow(HWND window, HWND parent) {
   return new_parent;
 }
 
-BOOL CALLBACK PainEnumChildProc(HWND hwnd, LPARAM lparam) {
+BOOL CALLBACK PaintEnumChildProc(HWND hwnd, LPARAM lparam) {
   if (!WebPluginDelegateImpl::IsPluginDelegateWindow(hwnd))
     return TRUE;
 
   gfx::Rect* rect = reinterpret_cast<gfx::Rect*>(lparam);
+  gfx::Rect rect_in_pixels = ui::win::DIPToScreenRect(*rect);
   static UINT msg = RegisterWindowMessage(webkit::npapi::kPaintMessageName);
-  WPARAM wparam = rect->x() << 16 | rect->y();
-  lparam = rect->width() << 16 | rect->height();
+  WPARAM wparam = rect_in_pixels.x() << 16 | rect_in_pixels.y();
+  lparam = rect_in_pixels.width() << 16 | rect_in_pixels.height();
 
   // SendMessage gets the message across much quicker than PostMessage, since it
   // doesn't get queued.  When the plugin thread calls PeekMessage or other
@@ -277,10 +279,11 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
 #endif
 
     if (move.rects_valid) {
-      HRGN hrgn = ::CreateRectRgn(move.clip_rect.x(),
-                                  move.clip_rect.y(),
-                                  move.clip_rect.right(),
-                                  move.clip_rect.bottom());
+      gfx::Rect clip_rect_in_pixel = ui::win::DIPToScreenRect(move.clip_rect);
+      HRGN hrgn = ::CreateRectRgn(clip_rect_in_pixel.x(),
+                                  clip_rect_in_pixel.y(),
+                                  clip_rect_in_pixel.right(),
+                                  clip_rect_in_pixel.bottom());
       gfx::SubtractRectanglesFromRegion(hrgn, move.cutout_rects);
 
       // Note: System will own the hrgn after we call SetWindowRgn,
@@ -291,12 +294,15 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
       flags |= SWP_NOSIZE;
     }
 
+    gfx::Rect window_rect_in_pixel =
+        ui::win::DIPToScreenRect(move.window_rect);
     defer_window_pos_info = ::DeferWindowPos(defer_window_pos_info,
                                              window, NULL,
-                                             move.window_rect.x(),
-                                             move.window_rect.y(),
-                                             move.window_rect.width(),
-                                             move.window_rect.height(), flags);
+                                             window_rect_in_pixel.x(),
+                                             window_rect_in_pixel.y(),
+                                             window_rect_in_pixel.width(),
+                                             window_rect_in_pixel.height(),
+                                             flags);
 
     if (!defer_window_pos_info) {
       DCHECK(false) << "DeferWindowPos failed, so all plugin moves ignored.";
@@ -312,7 +318,7 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
     RECT r;
     GetWindowRect(move.window, &r);
     gfx::Rect gr(r);
-    PainEnumChildProc(move.window, reinterpret_cast<LPARAM>(&gr));
+    PaintEnumChildProc(move.window, reinterpret_cast<LPARAM>(&gr));
   }
 #endif
 }
@@ -321,7 +327,7 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
 void RenderWidgetHostViewBase::PaintPluginWindowsHelper(
     HWND parent, const gfx::Rect& damaged_screen_rect) {
   LPARAM lparam = reinterpret_cast<LPARAM>(&damaged_screen_rect);
-  EnumChildWindows(parent, PainEnumChildProc, lparam);
+  EnumChildWindows(parent, PaintEnumChildProc, lparam);
 }
 
 // static
