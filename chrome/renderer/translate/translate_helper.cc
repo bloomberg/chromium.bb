@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
@@ -75,6 +76,14 @@ int GetSimilarLanguageGroupCode(const std::string& language) {
   }
   return 0;
 }
+
+// Well-known languages which often have wrong server configuration of
+// Content-Language: en.
+// TODO(toyoshim): Remove these static tables and caller functions to
+// chrome/common/translate, and implement them as std::set<>.
+const char* kWellKnownCodesOnWrongConfiguration[] = {
+  "es", "pt", "ja", "ru", "de", "zh-CN", "zh-TW", "ar", "id", "fr", "it", "th"
+};
 
 }  // namespace
 
@@ -364,6 +373,25 @@ bool TranslateHelper::IsSameOrSimilarLanguages(
 }
 
 // static
+bool TranslateHelper::MaybeServerWrongConfiguration(
+    const std::string& page_language, const std::string& cld_language) {
+  // If |page_language| is not "en-*", respect it and just return false here.
+  if (!StartsWithASCII(page_language, "en", false))
+    return false;
+
+  // A server provides a language meta information representing "en-*". But it
+  // might be just a default value due to missing user configuration.
+  // Let's trust |cld_language| if the determined language is not difficult to
+  // distinguish from English, and the language is one of well-known languages
+  // which often provide "en-*" meta information mistakenly.
+  for (size_t i = 0; i < arraysize(kWellKnownCodesOnWrongConfiguration); ++i) {
+    if (cld_language == kWellKnownCodesOnWrongConfiguration[i])
+      return true;
+  }
+  return false;
+}
+
+// static
 std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
                                                    const std::string& html_lang,
                                                    const string16& contents,
@@ -417,7 +445,14 @@ std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
   if (cld_language == chrome::kUnknownLanguageCode) {
     TranslateHelperMetrics::ReportLanguageVerification(
         TranslateHelperMetrics::LANGUAGE_VERIFICATION_UNKNOWN);
-  } else if (!IsSameOrSimilarLanguages(language, cld_language)) {
+  } else if (IsSameOrSimilarLanguages(language, cld_language)) {
+    TranslateHelperMetrics::ReportLanguageVerification(
+        TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_AGREE);
+  } else if (MaybeServerWrongConfiguration(language, cld_language)) {
+    language = cld_language;
+    TranslateHelperMetrics::ReportLanguageVerification(
+        TranslateHelperMetrics::LANGUAGE_VERIFICATION_TRUST_CLD);
+  } else {
     TranslateHelperMetrics::ReportLanguageVerification(
         TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_DISAGREE);
     // Content-Language value might be wrong because CLD says that this page
@@ -425,9 +460,6 @@ std::string TranslateHelper::DeterminePageLanguage(const std::string& code,
     // In this case, Chrome doesn't rely on any of the language codes, and
     // gives up suggesting a translation.
     return std::string(chrome::kUnknownLanguageCode);
-  } else {
-    TranslateHelperMetrics::ReportLanguageVerification(
-        TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_AGREE);
   }
 #else  // defined(ENABLE_LANGUAGE_DETECTION)
   TranslateHelperMetrics::ReportLanguageVerification(

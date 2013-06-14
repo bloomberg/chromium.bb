@@ -56,7 +56,8 @@ class MetricsRecorder {
                                  int expected_cld_only,
                                  int expected_unknown,
                                  int expected_cld_agree,
-                                 int expected_cld_disagree) {
+                                 int expected_cld_disagree,
+                                 int expected_trust_cld) {
     ASSERT_EQ(TranslateHelperMetrics::GetMetricsName(
         TranslateHelperMetrics::UMA_LANGUAGE_VERIFICATION), key_);
 
@@ -82,6 +83,10 @@ class MetricsRecorder {
         expected_cld_disagree,
         GetCountWithoutSnapshot(
             TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_DISAGREE));
+    EXPECT_EQ(
+        expected_trust_cld,
+        GetCountWithoutSnapshot(
+            TranslateHelperMetrics::LANGUAGE_VERIFICATION_TRUST_CLD));
   }
 
   void CheckScheme(int expected_http, int expected_https, int expected_others) {
@@ -189,22 +194,25 @@ TEST(TranslateHelperMetricsTest, ReportLanguageVerification) {
   MetricsRecorder recorder(TranslateHelperMetrics::GetMetricsName(
       TranslateHelperMetrics::UMA_LANGUAGE_VERIFICATION));
 
-  recorder.CheckLanguageVerification(0, 0, 0, 0, 0);
+  recorder.CheckLanguageVerification(0, 0, 0, 0, 0, 0);
   TranslateHelperMetrics::ReportLanguageVerification(
       TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_DISABLED);
-  recorder.CheckLanguageVerification(1, 0, 0, 0, 0);
+  recorder.CheckLanguageVerification(1, 0, 0, 0, 0, 0);
   TranslateHelperMetrics::ReportLanguageVerification(
       TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_ONLY);
-  recorder.CheckLanguageVerification(1, 1, 0, 0, 0);
+  recorder.CheckLanguageVerification(1, 1, 0, 0, 0, 0);
   TranslateHelperMetrics::ReportLanguageVerification(
       TranslateHelperMetrics::LANGUAGE_VERIFICATION_UNKNOWN);
-  recorder.CheckLanguageVerification(1, 1, 1, 0, 0);
+  recorder.CheckLanguageVerification(1, 1, 1, 0, 0, 0);
   TranslateHelperMetrics::ReportLanguageVerification(
       TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_AGREE);
-  recorder.CheckLanguageVerification(1, 1, 1, 1, 0);
+  recorder.CheckLanguageVerification(1, 1, 1, 1, 0, 0);
   TranslateHelperMetrics::ReportLanguageVerification(
       TranslateHelperMetrics::LANGUAGE_VERIFICATION_CLD_DISAGREE);
-  recorder.CheckLanguageVerification(1, 1, 1, 1, 1);
+  recorder.CheckLanguageVerification(1, 1, 1, 1, 1, 0);
+  TranslateHelperMetrics::ReportLanguageVerification(
+      TranslateHelperMetrics::LANGUAGE_VERIFICATION_TRUST_CLD);
+  recorder.CheckLanguageVerification(1, 1, 1, 1, 1, 1);
 }
 
 TEST(TranslateHelperMetricsTest, ReportTimeToBeReady) {

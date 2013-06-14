@@ -66,6 +66,16 @@ TEST_F(TranslateHelperTest, SimilarLanguageCode) {
   EXPECT_TRUE(TranslateHelper::IsSameOrSimilarLanguages("sr-ME", "sr"));
 }
 
+// Tests that well-known languages which often have wrong server configuration
+// are handles.
+TEST_F(TranslateHelperTest, WellKnownWrongConfiguration) {
+  EXPECT_TRUE(TranslateHelper::MaybeServerWrongConfiguration("en", "ja"));
+  EXPECT_TRUE(TranslateHelper::MaybeServerWrongConfiguration("en-US", "ja"));
+  EXPECT_TRUE(TranslateHelper::MaybeServerWrongConfiguration("en", "zh-CN"));
+  EXPECT_FALSE(TranslateHelper::MaybeServerWrongConfiguration("ja", "en"));
+  EXPECT_FALSE(TranslateHelper::MaybeServerWrongConfiguration("en", "he"));
+}
+
 // Tests that the language meta tag providing wrong information is ignored by
 // TranslateHelper due to disagreement between meta tag and CLD.
 TEST_F(TranslateHelperTest, CLDDisagreeWithWrongLanguageCode) {

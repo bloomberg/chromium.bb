@@ -98,6 +98,7 @@ class TranslateHelper : public content::RenderViewObserver {
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, LanguageCodeSynonyms);
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, ResetInvalidLanguageCode);
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, SimilarLanguageCode);
+  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, WellKnownWrongConfiguration);
 
   // Corrects language code if it contains well-known mistakes.
   static void CorrectLanguageCodeTypo(std::string* code);
@@ -116,6 +117,11 @@ class TranslateHelper : public content::RenderViewObserver {
   // to distinguish.
   static bool IsSameOrSimilarLanguages(const std::string& page_language,
                                        const std::string& cld_language);
+
+  // Checks if languages pair is one of well-known pairs of wrong server
+  // configuration.
+  static bool MaybeServerWrongConfiguration(const std::string& page_language,
+                                            const std::string& cld_language);
 
   // Determines content page language from Content-Language code and contents.
   static std::string DeterminePageLanguage(const std::string& code,
