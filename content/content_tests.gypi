@@ -842,6 +842,8 @@
             'renderer/render_widget_browsertest.cc',
             'renderer/resource_fetcher_browsertest.cc',
             'renderer/savable_resources_browsertest.cc',
+            'test/accessibility_browser_test_utils.cc',
+            'test/accessibility_browser_test_utils.h',
             'test/browser_test_message_pump_android.cc',
             'test/browser_test_message_pump_android.h',
             'test/content_browser_test.h',

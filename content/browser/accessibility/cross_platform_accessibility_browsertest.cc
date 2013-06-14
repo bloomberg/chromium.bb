@@ -10,9 +10,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/test/test_utils.h"
 #include "content/shell/shell.h"
+#include "content/test/accessibility_browser_test_utils.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 
@@ -40,18 +39,10 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
   // notification that it's been received.
   const AccessibilityNodeDataTreeNode& GetAccessibilityNodeDataTree(
       AccessibilityMode accessibility_mode = AccessibilityModeComplete) {
-    scoped_refptr<MessageLoopRunner> loop_runner(new MessageLoopRunner);
-    RenderWidgetHostView* host_view =
-        shell()->web_contents()->GetRenderWidgetHostView();
-    RenderWidgetHostImpl* host =
-        RenderWidgetHostImpl::From(host_view->GetRenderWidgetHost());
-    RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(host);
-    view_host->SetAccessibilityLayoutCompleteCallbackForTesting(
-        loop_runner->QuitClosure());
-    view_host->set_save_accessibility_tree_for_testing(true);
-    view_host->SetAccessibilityMode(accessibility_mode);
-    loop_runner->Run();
-    return view_host->accessibility_tree_for_testing();
+    AccessibilityNotificationWaiter waiter(
+        shell(), accessibility_mode, AccessibilityNotificationLayoutComplete);
+    waiter.WaitForNotification();
+    return waiter.GetAccessibilityNodeDataTree();
   }
 
   // Make sure each node in the tree has an unique id.

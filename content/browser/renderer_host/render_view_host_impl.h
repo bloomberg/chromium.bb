@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/accessibility_node_data.h"
+#include "content/common/accessibility_notification.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/render_view_host.h"
@@ -413,10 +414,17 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Set the opener to null in the renderer process.
   void DisownOpener();
 
-  void set_save_accessibility_tree_for_testing(bool save) {
-    save_accessibility_tree_for_testing_ = save;
-  }
+  // Turn on accessibility testing. The given callback will be run
+  // every time an accessibility notification is received from the
+  // renderer process, and the accessibility tree it sent can be
+  // retrieved using accessibility_tree_for_testing().
+  void SetAccessibilityCallbackForTesting(
+      const base::Callback<void(AccessibilityNotification)>& callback);
 
+  // Only valid if SetAccessibilityCallbackForTesting was called and
+  // the callback was run at least once. Returns a snapshot of the
+  // accessibility tree received from the renderer as of the last time
+  // a LoadComplete or LayoutComplete accessibility notification was received.
   const AccessibilityNodeDataTreeNode& accessibility_tree_for_testing() {
     return accessibility_tree_;
   }
@@ -677,22 +685,18 @@ class CONTENT_EXPORT RenderViewHostImpl
   // callbacks.
   std::map<int, JavascriptResultCallback> javascript_callbacks_;
 
-  // Accessibility callbacks.
-  base::Closure accessibility_layout_callback_;
-  base::Closure accessibility_load_callback_;
-  base::Closure accessibility_other_callback_;
+  // Accessibility callback for testing.
+  base::Callback<void(AccessibilityNotification)>
+      accessibility_testing_callback_;
+
+  // The most recently received accessibility tree - for testing only.
+  AccessibilityNodeDataTreeNode accessibility_tree_;
 
   // True if the render view can be shut down suddenly.
   bool sudden_termination_allowed_;
 
   // The session storage namespace to be used by the associated render view.
   scoped_refptr<SessionStorageNamespaceImpl> session_storage_namespace_;
-
-  // Whether the accessibility tree should be saved, for unit testing.
-  bool save_accessibility_tree_for_testing_;
-
-  // The most recently received accessibility tree - for unit testing only.
-  AccessibilityNodeDataTreeNode accessibility_tree_;
 
   // The termination status of the last render view that terminated.
   base::TerminationStatus render_view_termination_status_;

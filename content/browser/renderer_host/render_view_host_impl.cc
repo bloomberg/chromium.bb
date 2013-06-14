@@ -180,13 +180,9 @@ RenderViewHostImpl::RenderViewHostImpl(
       has_timed_out_on_unload_(false),
       unload_ack_is_for_cross_site_transition_(false),
       are_javascript_messages_suppressed_(false),
-      accessibility_layout_callback_(base::Bind(&base::DoNothing)),
-      accessibility_load_callback_(base::Bind(&base::DoNothing)),
-      accessibility_other_callback_(base::Bind(&base::DoNothing)),
       sudden_termination_allowed_(false),
       session_storage_namespace_(
           static_cast<SessionStorageNamespaceImpl*>(session_storage)),
-      save_accessibility_tree_for_testing_(false),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING) {
   DCHECK(session_storage_namespace_.get());
   DCHECK(instance_.get());
@@ -1801,19 +1797,9 @@ void RenderViewHostImpl::DisownOpener() {
   Send(new ViewMsg_DisownOpener(GetRoutingID()));
 }
 
-void RenderViewHostImpl::SetAccessibilityLayoutCompleteCallbackForTesting(
-    const base::Closure& callback) {
-  accessibility_layout_callback_ = callback;
-}
-
-void RenderViewHostImpl::SetAccessibilityLoadCompleteCallbackForTesting(
-    const base::Closure& callback) {
-  accessibility_load_callback_ = callback;
-}
-
-void RenderViewHostImpl::SetAccessibilityOtherCallbackForTesting(
-    const base::Closure& callback) {
-  accessibility_other_callback_ = callback;
+void RenderViewHostImpl::SetAccessibilityCallbackForTesting(
+    const base::Callback<void(AccessibilityNotification)>& callback) {
+  accessibility_testing_callback_ = callback;
 }
 
 void RenderViewHostImpl::UpdateWebkitPreferences(const WebPreferences& prefs) {
@@ -1911,26 +1897,23 @@ void RenderViewHostImpl::OnAccessibilityNotifications(
   if (view_ && !is_swapped_out_)
     view_->OnAccessibilityNotifications(params);
 
+  // Always send an ACK or the renderer can be in a bad state.
+  Send(new AccessibilityMsg_Notifications_ACK(GetRoutingID()));
+
+  // The rest of this code is just for testing; bail out if we're not
+  // in that mode.
+  if (accessibility_testing_callback_.is_null())
+    return;
+
   for (unsigned i = 0; i < params.size(); i++) {
     const AccessibilityHostMsg_NotificationParams& param = params[i];
     AccessibilityNotification src_type = param.notification_type;
-
-    if ((src_type == AccessibilityNotificationLayoutComplete ||
-         src_type == AccessibilityNotificationLoadComplete) &&
-        save_accessibility_tree_for_testing_) {
+    if (src_type == AccessibilityNotificationLayoutComplete ||
+        src_type == AccessibilityNotificationLoadComplete) {
       MakeAccessibilityNodeDataTree(param.nodes, &accessibility_tree_);
     }
-
-    if (src_type == AccessibilityNotificationLayoutComplete) {
-      accessibility_layout_callback_.Run();
-    } else if (src_type == AccessibilityNotificationLoadComplete) {
-      accessibility_load_callback_.Run();
-    } else {
-      accessibility_other_callback_.Run();
-    }
+    accessibility_testing_callback_.Run(src_type);
   }
-
-  Send(new AccessibilityMsg_Notifications_ACK(GetRoutingID()));
 }
 
 void RenderViewHostImpl::OnScriptEvalResponse(int id,
