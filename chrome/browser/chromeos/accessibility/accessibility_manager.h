@@ -81,6 +81,7 @@ class AccessibilityManager : public content::NotificationObserver {
   void UpdateLargeCursorFromPref();
   void UpdateSpokenFeedbackFromPref();
   void UpdateHighContrastFromPref();
+  void LocalePrefChanged();
 
   void SetProfile(Profile* profile);
 
@@ -94,6 +95,7 @@ class AccessibilityManager : public content::NotificationObserver {
   Profile* profile_;
   content::NotificationRegistrar notification_registrar_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  scoped_ptr<PrefChangeRegistrar> local_state_pref_change_registrar_;
 
   bool large_cursor_enabled_;
   bool spoken_feedback_enabled_;

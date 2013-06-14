@@ -388,12 +388,27 @@ void AccessibilityManager::UpdateHighContrastFromPref() {
 #endif
 }
 
+void AccessibilityManager::LocalePrefChanged() {
+  if (!profile_)
+    return;
+
+  if (!IsSpokenFeedbackEnabled())
+    return;
+
+  // If the system locale changes and spoken feedback is enabled,
+  // reload ChromeVox so that it switches its internal translations
+  // to the new language.
+  EnableSpokenFeedback(false, ash::A11Y_NOTIFICATION_NONE);
+  EnableSpokenFeedback(true, ash::A11Y_NOTIFICATION_NONE);
+}
+
 bool AccessibilityManager::IsHighContrastEnabled() {
   return high_contrast_enabled_;
 }
 
 void AccessibilityManager::SetProfile(Profile* profile) {
   pref_change_registrar_.reset();
+  local_state_pref_change_registrar_.reset();
 
   if (profile) {
     pref_change_registrar_.reset(new PrefChangeRegistrar);
@@ -409,6 +424,13 @@ void AccessibilityManager::SetProfile(Profile* profile) {
     pref_change_registrar_->Add(
         prefs::kHighContrastEnabled,
         base::Bind(&AccessibilityManager::UpdateHighContrastFromPref,
+                   base::Unretained(this)));
+
+    local_state_pref_change_registrar_.reset(new PrefChangeRegistrar);
+    local_state_pref_change_registrar_->Init(g_browser_process->local_state());
+    local_state_pref_change_registrar_->Add(
+        prefs::kApplicationLocale,
+        base::Bind(&AccessibilityManager::LocalePrefChanged,
                    base::Unretained(this)));
 
     content::BrowserAccessibilityState::GetInstance()->AddHistogramCallback(
