@@ -53,6 +53,12 @@ class MediaStreamCaptureIndicator
   // microphone input).
   bool IsCapturingUserMedia(content::WebContents* web_contents) const;
 
+  // Returns true if the |web_contents| is capturing video (e.g., webcam).
+  bool IsCapturingVideo(content::WebContents* web_contents) const;
+
+  // Returns true if the |web_contents| is capturing audio (e.g., microphone).
+  bool IsCapturingAudio(content::WebContents* web_contents) const;
+
   // Returns true if the |web_contents| itself is being mirrored (e.g., a source
   // of media for remote broadcast).
   bool IsBeingMirrored(content::WebContents* web_contents) const;

@@ -336,6 +336,22 @@ bool MediaStreamCaptureIndicator::IsCapturingUserMedia(
           (it->second->IsCapturingAudio() || it->second->IsCapturingVideo()));
 }
 
+bool MediaStreamCaptureIndicator::IsCapturingVideo(
+    content::WebContents* web_contents) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  UsageMap::const_iterator it = usage_map_.find(web_contents);
+  return (it != usage_map_.end() && it->second->IsCapturingVideo());
+}
+
+bool MediaStreamCaptureIndicator::IsCapturingAudio(
+    content::WebContents* web_contents) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  UsageMap::const_iterator it = usage_map_.find(web_contents);
+  return (it != usage_map_.end() && it->second->IsCapturingAudio());
+}
+
 bool MediaStreamCaptureIndicator::IsBeingMirrored(
     content::WebContents* web_contents) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

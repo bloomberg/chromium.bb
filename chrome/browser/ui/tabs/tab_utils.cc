@@ -38,4 +38,18 @@ bool IsPlayingAudio(content::WebContents* contents) {
   return audio_indicator->IsPlayingAudio(contents);
 }
 
+bool IsCapturingVideo(content::WebContents* contents) {
+  scoped_refptr<MediaStreamCaptureIndicator> indicator =
+      MediaCaptureDevicesDispatcher::GetInstance()->
+          GetMediaStreamCaptureIndicator();
+  return indicator->IsCapturingVideo(contents);
+}
+
+bool IsCapturingAudio(content::WebContents* contents) {
+  scoped_refptr<MediaStreamCaptureIndicator> indicator =
+      MediaCaptureDevicesDispatcher::GetInstance()->
+          GetMediaStreamCaptureIndicator();
+  return indicator->IsCapturingAudio(contents);
+}
+
 }  // namespace chrome

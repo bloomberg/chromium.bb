@@ -25,6 +25,20 @@ public class WebContentsDelegateAndroid {
     public static final int LOG_LEVEL_WARNING = 2;
     // Equivalent of WebCore::WebConsoleMessage::LevelError.
     public static final int LOG_LEVEL_ERROR = 3;
+
+    // Flags passed to the WebContentsDelegate.navigationStateChanged to tell it
+    // what has changed. Should match the values in invalidate_type.h.
+    // Equivalent of InvalidateTypes::INVALIDATE_TYPE_URL.
+    public static final int INVALIDATE_TYPE_URL = 1 << 0;
+    // Equivalent of InvalidateTypes::INVALIDATE_TYPE_TAB.
+    public static final int INVALIDATE_TYPE_TAB = 1 << 1;
+    // Equivalent of InvalidateTypes::INVALIDATE_TYPE_LOAD.
+    public static final int INVALIDATE_TYPE_LOAD = 1 << 2;
+    // Equivalent of InvalidateTypes::INVALIDATE_TYPE_PAGE_ACTIONS.
+    public static final int INVALIDATE_TYPE_PAGE_ACTIONS = 1 << 3;
+    // Equivalent of InvalidateTypes::INVALIDATE_TYPE_TITLE.
+    public static final int INVALIDATE_TYPE_TITLE = 1 << 4;
+
     // The most recent load progress callback received from WebContents, as a percentage.
     // Initialize to 100 to indicate that we're not in a loading state.
     private int mMostRecentProgress = 100;
@@ -56,7 +70,7 @@ public class WebContentsDelegateAndroid {
     }
 
     @CalledByNative
-    public void onTitleUpdated() {
+    public void navigationStateChanged(int flags) {
     }
 
     @SuppressWarnings("unused")

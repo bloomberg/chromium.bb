@@ -99,14 +99,14 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
 
 void WebContentsDelegateAndroid::NavigationStateChanged(
     const WebContents* source, unsigned changed_flags) {
-  if (changed_flags & content::INVALIDATE_TYPE_TITLE) {
-    JNIEnv* env = AttachCurrentThread();
-    ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
-    if (obj.is_null())
-      return;
-    Java_WebContentsDelegateAndroid_onTitleUpdated(
-        env, obj.obj());
-  }
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return;
+  Java_WebContentsDelegateAndroid_navigationStateChanged(
+      env,
+      obj.obj(),
+      changed_flags);
 }
 
 void WebContentsDelegateAndroid::AddNewContents(

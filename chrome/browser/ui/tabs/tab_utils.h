@@ -21,6 +21,12 @@ bool ShouldShowRecordingIndicator(content::WebContents* contents);
 // show an audio favicon indicator for this tab.
 bool IsPlayingAudio(content::WebContents* contents);
 
+// Returns whether the given |contents| is capturing video.
+bool IsCapturingVideo(content::WebContents* contents);
+
+// Returns whether the given |contents| is capturing video.
+bool IsCapturingAudio(content::WebContents* contents);
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_UTILS_H_
