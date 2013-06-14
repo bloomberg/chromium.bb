@@ -483,7 +483,10 @@ public class ContentView extends FrameLayout
      */
     @Override
     public boolean onHoverEvent(MotionEvent event) {
-        return mContentViewCore.onHoverEvent(event);
+        MotionEvent offset = createOffsetMotionEvent(event);
+        boolean consumed = mContentViewCore.onHoverEvent(offset);
+        offset.recycle();
+        return consumed;
     }
 
     @Override
