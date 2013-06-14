@@ -23,6 +23,10 @@
 #include "content/public/common/speech_recognition_result.h"
 #include "media/audio/audio_manager.h"
 
+#if defined(OS_ANDROID)
+#include "content/browser/speech/speech_recognizer_impl_android.h"
+#endif
+
 using base::Callback;
 
 namespace content {
@@ -141,10 +145,7 @@ int SpeechRecognitionManagerImpl::CreateSession(
       !config.continuous,
       google_remote_engine);
 #else
-  // TODO(janx): Implement a SpeechRecognizerImplAndroid with a JNI interface
-  // forwarding calls to Android's platform speech recognition service (see
-  // crbug.com/222352).
-  session->recognizer = NULL;
+  session->recognizer = new SpeechRecognizerImplAndroid(this, session_id);
 #endif
   return session_id;
 }

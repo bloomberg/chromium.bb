@@ -972,6 +972,8 @@
     'browser/speech/speech_recognizer.h',
     'browser/speech/speech_recognizer_impl.cc',
     'browser/speech/speech_recognizer_impl.h',
+    'browser/speech/speech_recognizer_impl_android.cc',
+    'browser/speech/speech_recognizer_impl_android.h',
     'browser/ssl/ssl_cert_error_handler.cc',
     'browser/ssl/ssl_cert_error_handler.h',
     'browser/ssl/ssl_client_auth_handler.cc',
@@ -1297,13 +1299,15 @@
         ['exclude', '^browser/geolocation/network_location_request\\.(cc|h)$'],
         ['exclude', '^browser/tracing/tracing_ui'],
         ['exclude', '^browser/speech/'],
-        ['include', '^browser/speech/speech_recognition_dispatcher_host'],
-        ['include', '^browser/speech/speech_recognition_manager_impl'],
+        ['include', '^browser/speech/speech_recognition_dispatcher_host\\.(cc|h)$'],
+        ['include', '^browser/speech/speech_recognition_manager_impl\\.(cc|h)$'],
         ['include', '^browser/speech/speech_recognizer\\.h$'],
+        ['include', '^browser/speech/speech_recognizer_impl_android\\.(cc|h)$'],
       ],
-    }, {
+    }, {  # OS!="android"
       'sources/': [
         ['exclude', '^browser/renderer_host/java/'],
+        ['exclude', '^browser/speech/speech_recognizer_impl_android\\.(cc|h)'],
       ],
     }],
     ['OS=="mac"', {
@@ -1421,7 +1425,7 @@
     }],
     ['input_speech==0', {
       'sources/': [
-        ['exclude', '^browser/speech/input_tag_speech_dispatcher_host'],
+        ['exclude', '^browser/speech/input_tag_speech_dispatcher_host\\.(cc|h)$'],
       ],
     }, {  # input_speech==1
       'dependencies': [

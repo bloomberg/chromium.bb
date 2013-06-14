@@ -25,6 +25,7 @@
 #include "content/browser/geolocation/location_api_adapter_android.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/java/java_bound_object.h"
+#include "content/browser/speech/speech_recognizer_impl_android.h"
 
 using content::SurfaceTexturePeerBrowserImpl;
 
@@ -49,6 +50,8 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     content::MediaResourceGetterImpl::RegisterMediaResourceGetter },
   { "LoadUrlParams", content::RegisterLoadUrlParams },
   { "RegisterImeAdapter", content::RegisterImeAdapter },
+  { "SpeechRecognizerImplAndroid",
+    content::SpeechRecognizerImplAndroid::RegisterSpeechRecognizer },
   { "TouchPoint", content::RegisterTouchPoint },
   { "TracingIntentHandler", content::RegisterTracingIntentHandler },
   { "WebContentsObserverAndroid", content::RegisterWebContentsObserverAndroid },

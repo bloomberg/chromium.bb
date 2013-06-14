@@ -5,7 +5,9 @@
 #ifndef CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
 #define CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_H_
 
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
@@ -17,7 +19,9 @@ class CONTENT_EXPORT SpeechRecognizer
  public:
 
   SpeechRecognizer(SpeechRecognitionEventListener* listener, int session_id)
-      : listener_(listener), session_id_(session_id) {}
+      : listener_(listener), session_id_(session_id) {
+    DCHECK(listener_);
+  }
 
   virtual void StartRecognition() = 0;
   virtual void AbortRecognition() = 0;
@@ -26,13 +30,13 @@ class CONTENT_EXPORT SpeechRecognizer
   virtual bool IsCapturingAudio() const = 0;
 
  protected:
+  friend class base::RefCountedThreadSafe<SpeechRecognizer>;
+
   virtual ~SpeechRecognizer() {}
   SpeechRecognitionEventListener* listener() const { return listener_; }
   int session_id() const { return session_id_; }
 
  private:
-  friend class base::RefCountedThreadSafe<SpeechRecognizer>;
-
   SpeechRecognitionEventListener* listener_;
   int session_id_;
 

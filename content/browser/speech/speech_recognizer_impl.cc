@@ -81,7 +81,6 @@ SpeechRecognizerImpl::SpeechRecognizerImpl(
       is_dispatching_event_(false),
       is_single_shot_(is_single_shot),
       state_(STATE_IDLE) {
-  DCHECK(this->listener() != NULL);
   DCHECK(recognition_engine_ != NULL);
   if (is_single_shot) {
     // In single shot recognition, the session is automatically ended after:

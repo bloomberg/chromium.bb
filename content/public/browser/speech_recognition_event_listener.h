@@ -53,6 +53,8 @@ class CONTENT_EXPORT SpeechRecognitionEventListener {
   // Informs of a change in the captured audio level, useful if displaying
   // a microphone volume indicator while recording.
   // The value of |volume| and |noise_volume| is in the [0.0, 1.0] range.
+  // TODO(janx): Is this necessary? It looks like only x-webkit-speech bubble
+  // uses it (see crbug.com/247351).
   virtual void OnAudioLevelsChange(int session_id,
                                    float volume, float noise_volume) = 0;
 
