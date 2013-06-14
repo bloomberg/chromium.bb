@@ -360,7 +360,7 @@ void WorkspaceManager::SetActiveWorkspace(Workspace* workspace,
     contents_window_->StackChildAtTop(active_workspace_->window());
   } else if (active_workspace_->is_fullscreen() &&
              last_active->is_fullscreen() &&
-             reason != SWITCH_MAXIMIZED_FROM_MAXIMIZED_WORKSPACE) {
+             reason != SWITCH_FULLSCREEN_FROM_FULLSCREEN_WORKSPACE) {
     // When switching between fullscreen windows we need the last active
     // workspace on top of the new, otherwise the animations won't look
     // right. Since only one workspace is visible at a time stacking order of
@@ -538,8 +538,11 @@ void WorkspaceManager::ShowOrHideDesktopBackground(
     case SWITCH_WORKSPACE_CYCLER:
       // The workspace cycler has already animated the desktop background's
       // opacity. Do not do any further animation.
+    case SWITCH_BACKGROUND_ONLY_WITHIN_DESKTOP:
+      // The show/hide of background may happen within the desktop workspace
+      // for maximized windows. In that case no animation is needed.
       break;
-    case SWITCH_MAXIMIZED_FROM_MAXIMIZED_WORKSPACE:
+    case SWITCH_FULLSCREEN_FROM_FULLSCREEN_WORKSPACE:
     case SWITCH_MAXIMIZED_OR_RESTORED:
       // FadeDesktop() fades the desktop background by animating the opacity of
       // a black window immediately above the desktop background. Set the
@@ -619,7 +622,7 @@ void WorkspaceManager::HideWorkspace(
       details.animate_scale = true;
       break;
 
-    case SWITCH_MAXIMIZED_FROM_MAXIMIZED_WORKSPACE:
+    case SWITCH_FULLSCREEN_FROM_FULLSCREEN_WORKSPACE:
     case SWITCH_MAXIMIZED_OR_RESTORED:
       if (active_workspace_->is_fullscreen()) {
         // Delay the hide until the animation is done.
@@ -678,6 +681,20 @@ void WorkspaceManager::OnWillRemoveWindowFromWorkspace(Workspace* workspace,
 
 void WorkspaceManager::OnWindowRemovedFromWorkspace(Workspace* workspace,
                                                     Window* child) {
+  // Reappear the background which was hidden when a window is maximized.
+  if (wm::IsWindowMaximized(child) && workspace == active_workspace_ &&
+      GetWindowState() != WORKSPACE_WINDOW_STATE_MAXIMIZED) {
+    RootWindowController* root_controller = GetRootWindowController(
+        workspace->window()->GetRootWindow());
+    aura::Window* background = root_controller->GetContainer(
+        kShellWindowId_DesktopBackgroundContainer);;
+    ShowOrHideDesktopBackground(
+        background,
+        SWITCH_BACKGROUND_ONLY_WITHIN_DESKTOP,
+        base::TimeDelta(),
+        true);
+  }
+
   if (workspace->ShouldMoveToPending())
     MoveWorkspaceToPendingOrDelete(workspace, NULL, SWITCH_WINDOW_REMOVED);
   UpdateShelfVisibility();
@@ -715,24 +732,29 @@ void WorkspaceManager::OnWorkspaceWindowShowStateChanged(
   // |child| better still be in |workspace| else things have gone wrong.
   DCHECK_EQ(workspace, child->GetProperty(kWorkspaceKey));
 
-  // Show/hide state of the background has to be set here since maximized window
-  // doesn't create its own workspace anymore.
-  RootWindowController* root_controller = GetRootWindowController(
-      contents_window_->GetRootWindow());
-  aura::Window* background = root_controller->GetContainer(
-      kShellWindowId_DesktopBackgroundContainer);;
-  if (wm::IsWindowMaximized(child)) {
-    ShowOrHideDesktopBackground(
-        background,
-        SWITCH_MAXIMIZED_OR_RESTORED,
-        base::TimeDelta(),
-        false);
-  } else if (last_show_state == ui::SHOW_STATE_MAXIMIZED) {
-    ShowOrHideDesktopBackground(
-        background,
-        SWITCH_MINIMIZED,
-        base::TimeDelta(),
-        true);
+  if (active_workspace_ == workspace) {
+    // Show/hide state of the background has to be set here since maximized
+    // window doesn't create its own workspace anymore.
+    RootWindowController* root_controller = GetRootWindowController(
+        contents_window_->GetRootWindow());
+    aura::Window* background = root_controller->GetContainer(
+        kShellWindowId_DesktopBackgroundContainer);
+    if (wm::IsWindowMaximized(child)) {
+      ShowOrHideDesktopBackground(
+          background,
+          last_show_state == ui::SHOW_STATE_MINIMIZED ?
+          SWITCH_MAXIMIZED_OR_RESTORED :
+          SWITCH_BACKGROUND_ONLY_WITHIN_DESKTOP,
+          base::TimeDelta(),
+          false);
+    } else if (last_show_state == ui::SHOW_STATE_MAXIMIZED &&
+               GetWindowState() != WORKSPACE_WINDOW_STATE_MAXIMIZED) {
+      ShowOrHideDesktopBackground(
+          background,
+          SWITCH_BACKGROUND_ONLY_WITHIN_DESKTOP,
+          base::TimeDelta(),
+          true);
+    }
   }
 
   if (wm::IsWindowMinimized(child)) {
@@ -781,7 +803,7 @@ void WorkspaceManager::OnWorkspaceWindowShowStateChanged(
       if (old_layer) {
         SetActiveWorkspace(new_workspace,
                            full_count >= 2 ?
-                               SWITCH_MAXIMIZED_FROM_MAXIMIZED_WORKSPACE :
+                               SWITCH_FULLSCREEN_FROM_FULLSCREEN_WORKSPACE :
                                SWITCH_MAXIMIZED_OR_RESTORED,
                            duration);
         CrossFadeWindowBetweenWorkspaces(new_workspace->window(), child,

@@ -111,10 +111,13 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
     SWITCH_WINDOW_MADE_ACTIVE,
     SWITCH_WINDOW_REMOVED,
     SWITCH_VISIBILITY_CHANGED,
+    SWITCH_BACKGROUND_ONLY_WITHIN_DESKTOP,
     SWITCH_MINIMIZED,
     SWITCH_MAXIMIZED_OR_RESTORED,
-    // Switch a normal window in a maximized workspace to maximized.
-    SWITCH_MAXIMIZED_FROM_MAXIMIZED_WORKSPACE,
+    // Switch a normal window in a fullscreen workspace to get fullscreen.
+    // TODO(mukai): this should be removed in the future. Normal windows should
+    // not be in a fullscreen workspace.  See crbug.com/249154
+    SWITCH_FULLSCREEN_FROM_FULLSCREEN_WORKSPACE,
     SWITCH_TRACKED_BY_WORKSPACE_CHANGED,
 
     // Switch as the result of DoInitialAnimation(). This isn't a real switch,
