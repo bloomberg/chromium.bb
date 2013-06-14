@@ -572,6 +572,7 @@
         'browser/chromeos/dbus/service_provider_test_helper.cc',
         'browser/chromeos/dbus/service_provider_test_helper.h',
         'browser/chromeos/display/display_preferences_unittest.cc',
+        'browser/chromeos/drive/change_list_loader_unittest.cc',
         'browser/chromeos/drive/change_list_processor_unittest.cc',
         'browser/chromeos/drive/download_handler_unittest.cc',
         'browser/chromeos/drive/drive_app_registry_unittest.cc',
