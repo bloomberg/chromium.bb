@@ -150,7 +150,12 @@ void WebRtcLoggingHandlerHost::LogMachineInfo() {
          ", x" + IntToString(base::SysInfo::NumberOfProcessors()) + ", " +
          IntToString(base::SysInfo::AmountOfPhysicalMemoryMB()) + "MB" + '\n';
   pcb.Write(info.c_str(), info.length());
-  info = "Cpu brand: " + cpu.cpu_brand() + '\n';
+  std::string cpu_brand = cpu.cpu_brand();
+  // Workaround for crbug.com/249713.
+  size_t null_pos = cpu_brand.find('\0');
+  if (null_pos != std::string::npos)
+    cpu_brand.erase(null_pos);
+  info = "Cpu brand: " + cpu_brand + '\n';
   pcb.Write(info.c_str(), info.length());
 
   // Computer model
