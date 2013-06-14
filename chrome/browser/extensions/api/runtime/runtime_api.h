@@ -109,6 +109,16 @@ class RuntimeGetPlatformInfoFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class RuntimeGetPackageDirectoryEntryFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("runtime.getPackageDirectoryEntry",
+                             RUNTIME_GETPACKAGEDIRECTORYENTRY)
+
+ protected:
+  virtual ~RuntimeGetPackageDirectoryEntryFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_RUNTIME_RUNTIME_API_H_

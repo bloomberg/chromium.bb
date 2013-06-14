@@ -22,8 +22,12 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/omaha_query_params/omaha_query_params.h"
+#include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "extensions/common/error_utils.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/browser/fileapi/isolated_context.h"
 
 namespace GetPlatformInfo = extensions::api::runtime::GetPlatformInfo;
 
@@ -51,6 +55,11 @@ const char kUpdateThrottled[] = "throttled";
 
 // A preference key storing the url loaded when an extension is uninstalled.
 const char kUninstallUrl[] = "uninstall_url";
+
+// The name of the directory to be returned by getPackageDirectoryEntry. This
+// particular value does not matter to user code, but is chosen for consistency
+// with the equivalent Pepper API.
+const char kPackageDirectoryPath[] = "crxfs";
 
 static void DispatchOnStartupEventImpl(
     Profile* profile,
@@ -377,6 +386,31 @@ bool RuntimeGetPlatformInfoFunction::RunImpl() {
   }
 
   results_ = GetPlatformInfo::Results::Create(info);
+  return true;
+}
+
+bool RuntimeGetPackageDirectoryEntryFunction::RunImpl() {
+  fileapi::IsolatedContext* isolated_context =
+      fileapi::IsolatedContext::GetInstance();
+  DCHECK(isolated_context);
+
+  std::string relative_path = kPackageDirectoryPath;
+  base::FilePath path = extension_->path();
+  std::string filesystem_id = isolated_context->RegisterFileSystemForPath(
+      fileapi::kFileSystemTypeNativeLocal, path, &relative_path);
+
+  int renderer_id = render_view_host_->GetProcess()->GetID();
+  content::ChildProcessSecurityPolicy* policy =
+      content::ChildProcessSecurityPolicy::GetInstance();
+  policy->GrantReadFileSystem(renderer_id, filesystem_id);
+
+  if (!policy->CanReadFile(renderer_id, path))
+    policy->GrantReadFile(renderer_id, path);
+
+  DictionaryValue* dict = new DictionaryValue();
+  SetResult(dict);
+  dict->SetString("fileSystemId", filesystem_id);
+  dict->SetString("baseName", relative_path);
   return true;
 }
 

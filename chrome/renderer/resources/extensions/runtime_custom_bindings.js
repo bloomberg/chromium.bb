@@ -10,6 +10,64 @@ var extensionNatives = requireNative('extension');
 var miscBindings = require('miscellaneous_bindings');
 var runtimeNatives = requireNative('runtime');
 var unloadEvent = require('unload_event');
+var process = requireNative('process');
+
+var backgroundPage = window;
+var backgroundRequire = require;
+var contextType = process.GetContextType();
+if (contextType == 'BLESSED_EXTENSION' ||
+    contextType == 'UNBLESSED_EXTENSION') {
+  var manifest = runtimeNatives.GetManifest();
+  if (manifest.app && manifest.app.background) {
+    backgroundPage = extensionNatives.GetExtensionViews(-1, 'BACKGROUND')[0];
+    var GetModuleSystem = requireNative('v8_context').GetModuleSystem;
+    backgroundRequire = GetModuleSystem(backgroundPage).require;
+  }
+}
+
+// For packaged apps, all windows use the bindFileEntryCallback from the
+// background page so their FileEntry objects have the background page's context
+// as their own.  This allows them to be used from other windows (including the
+// background page) after the original window is closed.
+if (window == backgroundPage) {
+  var lastError = require('lastError');
+  var fileSystemNatives = requireNative('file_system_natives');
+  var GetIsolatedFileSystem = fileSystemNatives.GetIsolatedFileSystem;
+  var bindDirectoryEntryCallback = function(functionName, apiFunctions) {
+    apiFunctions.setCustomCallback(functionName,
+        function(name, request, response) {
+      if (request.callback && response) {
+        var callback = request.callback;
+        request.callback = null;
+
+        var fileSystemId = response.fileSystemId;
+        var baseName = response.baseName;
+        var fs = GetIsolatedFileSystem(fileSystemId);
+
+        try {
+          fs.root.getDirectory(baseName, {}, callback, function(fileError) {
+            lastError.run('runtime.' + functionName,
+                          'Error getting Entry, code: ' + fileError.code,
+                          request.stack,
+                          callback);
+          });
+        } catch (e) {
+          lastError.run('runtime.' + functionName,
+                        'Error: ' + e.stack,
+                        request.stack,
+                        callback);
+        }
+      }
+    });
+  };
+} else {
+  // Force the runtime API to be loaded in the background page. Using
+  // backgroundPageModuleSystem.require('runtime') is insufficient as
+  // requireNative is only allowed while lazily loading an API.
+  backgroundPage.runtime;
+  var bindDirectoryEntryCallback = backgroundRequire(
+      'runtime').bindDirectoryEntryCallback;
+}
 
 binding.registerCustomHook(function(binding, id, contextType) {
   var apiFunctions = binding.apiFunctions;
@@ -125,6 +183,8 @@ binding.registerCustomHook(function(binding, id, contextType) {
     request.callback = null;
   });
 
+  bindDirectoryEntryCallback('getPackageDirectoryEntry', apiFunctions);
 });
 
+exports.bindDirectoryEntryCallback = bindDirectoryEntryCallback;
 exports.binding = binding.generate();

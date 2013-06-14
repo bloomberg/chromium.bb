@@ -1,0 +1,15 @@
+{
+  "name": "chrome.runtime get package directory entry",
+  "version": "0.1",
+  "description": "Test for chrome.runtime.getPackageDirectoryEntry.",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": [
+    {
+      "fileSystem": ["write"]
+    }
+  ]
+}

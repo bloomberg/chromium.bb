@@ -49,4 +49,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeGetPlatformInfo) {
   EXPECT_TRUE(dict->HasKey("nacl_arch"));
 }
 
+// Tests chrome.runtime.getPackageDirectory with an app.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+                       ChromeRuntimeGetPackageDirectoryEntryApp) {
+  ASSERT_TRUE(RunPlatformAppTest("runtime/get_package_directory/app"))
+      << message_;
+}
+
+// Tests chrome.runtime.getPackageDirectory with an extension.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+                       ChromeRuntimeGetPackageDirectoryEntryExtension) {
+  ASSERT_TRUE(RunExtensionTest("runtime/get_package_directory/extension"))
+      << message_;
+}
+
 }  // namespace extensions
