@@ -76,6 +76,24 @@ def ValidateOperandlessInstruction(instruction, bitness):
   raise DoNotMatchError(instruction)
 
 
+def ValidateStringInstruction(instruction):
+  prefix_re = r'(rep |repz |repnz )?'
+  lods_re = r'lods %ds:\(%esi\),(%al|%ax|%eax)'
+  stos_re = r'stos (%al|%ax|%eax),%es:\(%edi\)'
+  scas_re = r'scas %es:\(%edi\),(%al|%ax|%eax)'
+  movs_re = r'movs[bwl] %ds:\(%esi\),%es:\(%edi\)'
+  cmps_re = r'cmps[bwl] %es:\(%edi\),%ds:\(%esi\)'
+
+  string_insn_re = '%s(%s)$' % (
+      prefix_re,
+      '|'.join([lods_re, stos_re, scas_re, movs_re, cmps_re]))
+
+  if re.match(string_insn_re, instruction.disasm):
+    return
+
+  raise DoNotMatchError(instruction)
+
+
 def ValidateRegularInstruction(instruction, bitness):
   assert bitness in [32, 64]
 
@@ -90,6 +108,13 @@ def ValidateRegularInstruction(instruction, bitness):
     return
   except DoNotMatchError:
     pass
+
+  if bitness == 32:
+    try:
+      ValidateStringInstruction(instruction)
+      return
+    except DoNotMatchError:
+      pass
 
   raise DoNotMatchError(instruction)
 

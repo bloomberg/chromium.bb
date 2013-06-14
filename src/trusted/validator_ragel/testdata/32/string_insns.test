@@ -4,6 +4,8 @@
      0:	ae                   	scas   %es:(%edi),%al
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   f3 a4
@@ -11,6 +13,8 @@
      0:	f3 a4                	rep movsb %ds:(%esi),%es:(%edi)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   f2 a7
@@ -18,6 +22,8 @@
      0:	f2 a7                	repnz cmpsl %es:(%edi),%ds:(%esi)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   66 ab
@@ -25,6 +31,8 @@
      0:	66 ab                	stos   %ax,%es:(%edi)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   66 af
@@ -32,6 +40,8 @@
      0:	66 af                	scas   %es:(%edi),%ax
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # LODS in any form is disallowed for compatibility with old validator, see
@@ -42,6 +52,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # Two prefixes, disallowed for compatibility with old validator, see
@@ -52,6 +64,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  2: failed to decode instruction
 ----------------------------------------------------------------------
 @hex:
   # same
@@ -61,3 +75,5 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  2: failed to decode instruction
