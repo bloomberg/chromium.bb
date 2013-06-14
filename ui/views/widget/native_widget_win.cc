@@ -773,18 +773,19 @@ bool NativeWidgetWin::HandleIMEMessage(UINT message,
     return false;
   }
 
-  InputMethodWin* ime_win = static_cast<InputMethodWin*>(input_method);
-  BOOL handled = FALSE;
-  *result = ime_win->OnImeMessages(message, w_param, l_param, &handled);
-  return !!handled;
+  MSG msg = {};
+  msg.hwnd = message_handler_->hwnd();
+  msg.message = message;
+  msg.wParam = w_param;
+  msg.lParam = l_param;
+  return input_method->OnUntranslatedIMEMessage(msg, result);
 }
 
 void NativeWidgetWin::HandleInputLanguageChange(DWORD character_set,
                                                 HKL input_language_id) {
   InputMethod* input_method = GetInputMethod();
   if (input_method && !input_method->IsMock()) {
-    static_cast<InputMethodWin*>(input_method)->OnInputLangChange(
-        character_set, input_language_id);
+    input_method->OnInputLocaleChanged();
   }
 }
 

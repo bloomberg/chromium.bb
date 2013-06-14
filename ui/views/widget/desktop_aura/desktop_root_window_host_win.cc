@@ -13,7 +13,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/cursor/cursor_loader_win.h"
-#include "ui/base/ime/input_method_win.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/ime/win/tsf_bridge.h"
 #include "ui/base/win/dpi.h"
 #include "ui/base/win/shell.h"
@@ -799,27 +799,20 @@ bool DesktopRootWindowHostWin::HandleIMEMessage(UINT message,
                                                 WPARAM w_param,
                                                 LPARAM l_param,
                                                 LRESULT* result) {
-  // TODO(ime): Having to cast here is wrong. Maybe we should have IME events
-  // and have these flow through the same path as
-  // HandleUnHandletranslatedKeyEvent() does.
-  ui::InputMethodWin* ime_win =
-      static_cast<ui::InputMethodWin*>(
-          desktop_native_widget_aura_->input_method_event_filter()->
-          input_method());
-  BOOL handled = FALSE;
-  *result = ime_win->OnImeMessages(message, w_param, l_param, &handled);
-  return !!handled;
+  MSG msg = {};
+  msg.hwnd = GetHWND();
+  msg.message = message;
+  msg.wParam = w_param;
+  msg.lParam = l_param;
+  return desktop_native_widget_aura_->input_method_event_filter()->
+      input_method()->OnUntranslatedIMEMessage(msg, result);
 }
 
 void DesktopRootWindowHostWin::HandleInputLanguageChange(
     DWORD character_set,
     HKL input_language_id) {
-  // TODO(ime): Seem comment in HandleIMEMessage().
-  ui::InputMethodWin* ime_win =
-      static_cast<ui::InputMethodWin*>(
-          desktop_native_widget_aura_->input_method_event_filter()->
-          input_method());
-  ime_win->OnInputLangChange(character_set, input_language_id);
+  desktop_native_widget_aura_->input_method_event_filter()->
+      input_method()->OnInputLocaleChanged();
 }
 
 bool DesktopRootWindowHostWin::HandlePaintAccelerated(
