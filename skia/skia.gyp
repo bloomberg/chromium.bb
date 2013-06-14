@@ -359,6 +359,19 @@
             '__ARM_HAVE_NEON',
           ],
         }],
+        [ 'target_arch == "arm" and arm_version >= 7 and arm_neon_optional == 1', {
+          'defines': [
+            '__ARM_HAVE_OPTIONAL_NEON_SUPPORT',
+          ],
+        }],
+        [ 'OS == "android" and target_arch == "arm"', {
+          'sources': [
+            '../third_party/skia/src/core/SkUtilsArm.cpp',
+          ],
+          'includes': [
+            '../build/android/cpufeatures.gypi',
+          ],
+        }],
         [ 'target_arch == "arm" or target_arch == "mipsel"', {
           'sources!': [
             '../third_party/skia/src/opts/opts_check_SSE2.cpp'
@@ -690,6 +703,13 @@
               'defines': [
                 '__ARM_HAVE_NEON',
               ],
+            }],
+            [ 'arm_version >= 7 and arm_neon_optional == 1', {
+              'defines': [
+                '__ARM_HAVE_OPTIONAL_NEON_SUPPORT',
+              ],
+            }],
+            [ 'arm_version >= 7 and (arm_neon == 1 or arm_neon_optional == 1)', {
               'cflags': [
                 # The neon assembly contains conditional instructions which
                 # aren't enclosed in an IT block. The assembler complains
@@ -697,6 +717,9 @@
                 # See #86592.
                 '-Wa,-mimplicit-it=always',
               ],
+              'dependencies': [
+                'skia_opts_neon',
+              ]
            }],
           ],
           # The assembly uses the frame pointer register (r7 in Thumb/r11 in
@@ -715,20 +738,9 @@
             '../third_party/skia/src/opts/SkBitmapProcState_opts_arm.cpp',
           ],
         }],
-        [ 'target_arch == "arm" and (arm_version < 7 or arm_neon == 0)', {
+        [ 'target_arch == "arm" and (arm_version < 7 or (arm_neon == 0 and arm_neon_optional == 1))', {
           'sources': [
             '../third_party/skia/src/opts/memset.arm.S',
-        ],
-        }],
-        [ 'target_arch == "arm" and arm_version >= 7 and arm_neon == 1', {
-          'sources': [
-            '../third_party/skia/src/opts/memset16_neon.S',
-            '../third_party/skia/src/opts/memset32_neon.S',
-            '../third_party/skia/src/opts/SkBitmapProcState_arm_neon.cpp',
-            '../third_party/skia/src/opts/SkBitmapProcState_matrixProcs_neon.cpp',
-            '../third_party/skia/src/opts/SkBitmapProcState_matrix_clamp_neon.h',
-            '../third_party/skia/src/opts/SkBitmapProcState_matrix_repeat_neon.h',
-            '../third_party/skia/src/opts/SkBlitRow_opts_arm_neon.cpp',
           ],
         }],
         [ 'target_arch == "arm" and arm_version < 6', {
@@ -799,6 +811,59 @@
         [ 'target_arch != "arm" and target_arch != "mipsel"', {
           'sources': [
             '../third_party/skia/src/opts/SkBitmapProcState_opts_SSSE3.cpp',
+          ],
+        }],
+      ],
+    },
+    # NEON code must be compiled with -mfpu=neon which also affects scalar
+    # code. To support dynamic NEON code paths, we need to build all
+    # NEON-specific sources in a separate static library. The situation
+    # is very similar to the SSSE3 one.
+    {
+      'target_name': 'skia_opts_neon',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+        'config',
+        '../third_party/skia/include/config',
+        '../third_party/skia/include/core',
+        '../third_party/skia/src/core',
+        '../third_party/skia/src/opts',
+      ],
+      'cflags!': [
+        '-fno-omit-frame-pointer',
+        '-mfpu=vfp',  # remove them all, just in case.
+        '-mfpu=vfpv3',
+        '-mfpu=vfpv3-d16',
+      ],
+      'cflags': [
+        '-mfpu=neon',
+        '-fomit-frame-pointer',
+      ],
+      'ldflags': [
+        '-march=armv7-a',
+        '-Wl,--fix-cortex-a8',
+      ],
+      'conditions': [
+        ['arm_neon == 1', {
+          'defines': [
+            '__ARM_HAVE_NEON',
+          ],
+        }],
+        ['arm_neon_optional == 1', {
+          'defines': [
+            '__ARM_HAVE_OPTIONAL_NEON_SUPPORT',
+          ],
+        }],
+        ['target_arch == "arm" and (arm_neon == 1 or arm_neon_optional == 1)', {
+          'sources': [
+            '../third_party/skia/src/opts/memset16_neon.S',
+            '../third_party/skia/src/opts/memset32_neon.S',
+            '../third_party/skia/src/opts/SkBitmapProcState_arm_neon.cpp',
+            '../third_party/skia/src/opts/SkBitmapProcState_matrixProcs_neon.cpp',
+            '../third_party/skia/src/opts/SkBitmapProcState_matrix_clamp_neon.h',
+            '../third_party/skia/src/opts/SkBitmapProcState_matrix_repeat_neon.h',
+            '../third_party/skia/src/opts/SkBlitRow_opts_arm_neon.cpp',
           ],
         }],
       ],
