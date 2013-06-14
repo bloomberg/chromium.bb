@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/common/cancelable_request.h"
@@ -124,10 +123,10 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver {
 
   void OnLookupURL(scoped_ptr<LocalPredictorURLLookupInfo> info);
 
-  // Returns an element of issued_prerenders_, which should be replaced
-  // by a new prerender of the priority indicated, or NULL, if the priority
-  // is too low.
-  PrerenderProperties* GetIssuedPrerenderSlotForPriority(double priority);
+  // Returns whether a new prerender of the specified priority should replace
+  // the current prerender (based on whether it exists, whether it has expired,
+  // and based on what its priority is).
+  bool ShouldReplaceCurrentPrerender(double priority) const;
 
   void ContinuePrerenderCheck(
       scoped_refptr<content::SessionStorageNamespace> session_storage_namespace,
@@ -137,8 +136,8 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver {
   void IssuePrerender(scoped_refptr<content::SessionStorageNamespace>
                       session_storage_namespace,
                       scoped_ptr<gfx::Size> size,
-                      scoped_ptr<LocalPredictorURLInfo> info,
-                      PrerenderProperties* prerender_properties);
+                      scoped_ptr<LocalPredictorURLInfo> info);
+
   PrerenderManager* prerender_manager_;
   base::OneShotTimer<PrerenderLocalPredictor> timer_;
 
@@ -157,11 +156,18 @@ class PrerenderLocalPredictor : public history::VisitDatabaseObserver {
   scoped_ptr<PrerenderProperties> current_prerender_;
   scoped_ptr<PrerenderProperties> last_swapped_in_prerender_;
 
-  ScopedVector<PrerenderProperties> issued_prerenders_;
+  scoped_ptr<PrerenderHandle> prerender_handle_;
+  double current_prerender_priority_;
 
   base::hash_set<int64> url_whitelist_;
 
   base::WeakPtrFactory<PrerenderLocalPredictor> weak_factory_;
+
+  // Indicates whether the current prerender represented by prerender_handle_
+  // matched a load in some tab contents, to shed light on how many prerenders
+  // that could have possibily been swapped in were not swapped in. For
+  // measurement purposes only.
+  bool current_prerender_would_have_matched_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderLocalPredictor);
 };

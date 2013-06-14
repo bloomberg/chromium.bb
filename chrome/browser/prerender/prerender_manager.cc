@@ -1205,7 +1205,7 @@ base::TimeTicks PrerenderManager::GetExpiryTimeForNewPrerender(
     Origin origin) const {
   base::TimeDelta ttl = config_.time_to_live;
   if (origin == ORIGIN_LOCAL_PREDICTOR)
-    ttl = base::TimeDelta::FromSeconds(GetLocalPredictorTTLSeconds());
+    ttl = base::TimeDelta::FromSeconds(180);
   return GetCurrentTimeTicks() + ttl;
 }
 

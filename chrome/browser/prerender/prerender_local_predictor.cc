@@ -20,7 +20,6 @@
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_histograms.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -180,11 +179,8 @@ const int kMaxVisitHistory = 100 * 1000;
 const int kVisitHistoryPruneThreshold = 120 * 1000;
 const int kVisitHistoryPruneAmount = 20 * 1000;
 
+const int kMaxLocalPredictionTimeMs = 180 * 1000;
 const int kMinLocalPredictionTimeMs = 500;
-
-int GetMaxLocalPredictionTimeMs() {
-  return GetLocalPredictorTTLSeconds() * 1000;
-}
 
 bool IsBackForward(PageTransition transition) {
   return (transition & content::PAGE_TRANSITION_FORWARD_BACK) != 0;
@@ -292,27 +288,6 @@ struct PrerenderLocalPredictor::PrerenderProperties {
         start_time(start_time) {
   }
 
-  // Default constructor for dummy element
-  PrerenderProperties()
-      : priority(0.0) {
-  }
-
-  double GetCurrentDecayedPriority() {
-    // If we are no longer prerendering, the priority is 0.
-    if (!prerender_handle || !prerender_handle->IsPrerendering())
-      return 0.0;
-    int half_life_time_seconds =
-        GetLocalPredictorPrerenderPriorityHalfLifeTimeSeconds();
-    if (half_life_time_seconds < 1)
-      return priority;
-    double multiple_elapsed =
-        (GetCurrentTime() - actual_start_time).InMillisecondsF() /
-        base::TimeDelta::FromSeconds(half_life_time_seconds).InMillisecondsF();
-    // Decay factor: 2 ^ (-multiple_elapsed)
-    double decay_factor = exp(- multiple_elapsed * log(2.0));
-    return priority * decay_factor;
-  }
-
   URLID url_id;
   GURL url;
   double priority;
@@ -325,17 +300,17 @@ struct PrerenderLocalPredictor::PrerenderProperties {
   base::Time start_time;
   // The actual time this page was last requested for prerendering.
   base::Time actual_start_time;
-  scoped_ptr<PrerenderHandle> prerender_handle;
-  // Indicates whether this prerender would have matched a URL navigated to,
-  // but was not swapped in for some reason.
-  bool would_have_matched;
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PrerenderProperties);
 };
 
 PrerenderLocalPredictor::PrerenderLocalPredictor(
     PrerenderManager* prerender_manager)
     : prerender_manager_(prerender_manager),
       is_visit_database_observer_(false),
-      weak_factory_(this) {
+      weak_factory_(this),
+      current_prerender_would_have_matched_(false) {
   RecordEvent(EVENT_CONSTRUCTED);
   if (base::MessageLoop::current()) {
     timer_.Start(FROM_HERE,
@@ -375,12 +350,8 @@ PrerenderLocalPredictor::PrerenderLocalPredictor(
 
 PrerenderLocalPredictor::~PrerenderLocalPredictor() {
   Shutdown();
-  for (int i = 0; i < static_cast<int>(issued_prerenders_.size()); i++) {
-    PrerenderProperties* p = issued_prerenders_[i];
-    DCHECK(p != NULL);
-    if (p->prerender_handle)
-      p->prerender_handle->OnCancel();
-  }
+  if (prerender_handle_.get())
+    prerender_handle_->OnCancel();
 }
 
 void PrerenderLocalPredictor::Shutdown() {
@@ -411,7 +382,7 @@ void PrerenderLocalPredictor::OnAddVisit(const history::BriefVisitInfo& info) {
         "Prerender.LocalPredictorTimeUntilUsed",
         GetCurrentTime() - current_prerender_->actual_start_time,
         base::TimeDelta::FromMilliseconds(10),
-        base::TimeDelta::FromMilliseconds(GetMaxLocalPredictionTimeMs()),
+        base::TimeDelta::FromMilliseconds(kMaxLocalPredictionTimeMs),
         50);
     last_swapped_in_prerender_.reset(current_prerender_.release());
     RecordEvent(EVENT_ADD_VISIT_PRERENDER_IDENTIFIED);
@@ -420,7 +391,7 @@ void PrerenderLocalPredictor::OnAddVisit(const history::BriefVisitInfo& info) {
     return;
   RecordEvent(EVENT_ADD_VISIT_RELEVANT_TRANSITION);
   base::TimeDelta max_age =
-      base::TimeDelta::FromMilliseconds(GetMaxLocalPredictionTimeMs());
+      base::TimeDelta::FromMilliseconds(kMaxLocalPredictionTimeMs);
   base::TimeDelta min_age =
       base::TimeDelta::FromMilliseconds(kMinLocalPredictionTimeMs);
   std::set<URLID> next_urls_currently_found;
@@ -658,7 +629,7 @@ bool PrerenderLocalPredictor::IsPrerenderStillValid(
     PrerenderLocalPredictor::PrerenderProperties* prerender) const {
   return (prerender &&
           (prerender->start_time +
-           base::TimeDelta::FromMilliseconds(GetMaxLocalPredictionTimeMs()))
+           base::TimeDelta::FromMilliseconds(kMaxLocalPredictionTimeMs))
           > GetCurrentTime());
 }
 
@@ -681,27 +652,11 @@ bool PrerenderLocalPredictor::DoesPrerenderMatchPLTRecord(
   }
 }
 
-PrerenderLocalPredictor::PrerenderProperties*
-PrerenderLocalPredictor::GetIssuedPrerenderSlotForPriority(double priority) {
-  int num_prerenders = GetLocalPredictorMaxConcurrentPrerenders();
-  while (static_cast<int>(issued_prerenders_.size()) < num_prerenders)
-    issued_prerenders_.push_back(new PrerenderProperties());
-  PrerenderProperties* lowest_priority_prerender = NULL;
-  for (int i = 0; i < static_cast<int>(issued_prerenders_.size()); i++) {
-    PrerenderProperties* p = issued_prerenders_[i];
-    DCHECK(p != NULL);
-    if (!p->prerender_handle || !p->prerender_handle->IsPrerendering())
-      return p;
-    double decayed_priority = p->GetCurrentDecayedPriority();
-    if (decayed_priority > priority)
-      continue;
-    if (lowest_priority_prerender == NULL ||
-        lowest_priority_prerender->GetCurrentDecayedPriority() >
-        decayed_priority) {
-      lowest_priority_prerender = p;
-    }
-  }
-  return lowest_priority_prerender;
+bool PrerenderLocalPredictor::ShouldReplaceCurrentPrerender(
+    double priority) const {
+  return (!prerender_handle_.get() ||
+          !prerender_handle_->IsPrerendering() ||
+          current_prerender_priority_ < priority);
 }
 
 void PrerenderLocalPredictor::ContinuePrerenderCheck(
@@ -712,7 +667,6 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
   scoped_ptr<LocalPredictorURLInfo> url_info;
   scoped_refptr<SafeBrowsingDatabaseManager> sb_db_manager =
       g_browser_process->safe_browsing_service()->database_manager();
-  PrerenderProperties* prerender_properties = NULL;
 
   for (int i = 0; i < static_cast<int>(info->candidate_urls_.size()); i++) {
     url_info.reset(new LocalPredictorURLInfo(info->candidate_urls_[i]));
@@ -730,9 +684,7 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
       url_info.reset(NULL);
       continue;
     }
-    prerender_properties =
-        GetIssuedPrerenderSlotForPriority(url_info->priority);
-    if (!prerender_properties) {
+    if (!ShouldReplaceCurrentPrerender(url_info->priority)) {
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_PRIORITY_TOO_LOW);
       url_info.reset(NULL);
       continue;
@@ -780,57 +732,28 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
   if (!url_info.get())
     return;
   RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_ISSUING_PRERENDER);
-  DCHECK(prerender_properties != NULL);
-  if (IsLocalPredictorPrerenderLaunchEnabled()) {
-    IssuePrerender(session_storage_namespace, size.Pass(),
-                   url_info.Pass(), prerender_properties);
-  }
+  IssuePrerender(session_storage_namespace, size.Pass(),
+                 url_info.Pass());
 }
 
 void PrerenderLocalPredictor::IssuePrerender(
     scoped_refptr<SessionStorageNamespace> session_storage_namespace,
     scoped_ptr<gfx::Size> size,
-    scoped_ptr<LocalPredictorURLInfo> info,
-    PrerenderProperties* prerender_properties) {
+    scoped_ptr<LocalPredictorURLInfo> info) {
   URLID url_id = info->id;
   const GURL& url = info->url;
   double priority = info->priority;
   base::Time current_time = GetCurrentTime();
   RecordEvent(EVENT_ISSUING_PRERENDER);
 
-  // Issue the prerender and obtain a new handle.
-  scoped_ptr<prerender::PrerenderHandle> new_prerender_handle(
-      prerender_manager_->AddPrerenderFromLocalPredictor(
-          url, session_storage_namespace.get(), *size));
-
-  // Check if this is a duplicate of an existing prerender. If yes, clean up
-  // the new handle.
-  for (int i = 0; i < static_cast<int>(issued_prerenders_.size()); i++) {
-    PrerenderProperties* p = issued_prerenders_[i];
-    DCHECK(p != NULL);
-    if (new_prerender_handle->RepresentingSamePrerenderAs(
-            p->prerender_handle.get())) {
-      new_prerender_handle->OnCancel();
-      new_prerender_handle.reset(NULL);
-      break;
-    }
-  }
-
-  if (new_prerender_handle.get()) {
-    // The new prerender does not match any existing prerenders. Update
-    // prerender_properties so that it reflects the new entry.
-    prerender_properties->url_id = url_id;
-    prerender_properties->url = url;
-    prerender_properties->priority = priority;
-    prerender_properties->start_time = current_time;
-    prerender_properties->actual_start_time = current_time;
-    prerender_properties->would_have_matched = false;
-    prerender_properties->prerender_handle.swap(new_prerender_handle);
-    // new_prerender_handle now represents the old previou prerender that we
-    // are replacing. So we need to cancel it.
-    if (new_prerender_handle)
-      new_prerender_handle->OnCancel();
-  }
+  current_prerender_priority_ = priority;
+  scoped_ptr<prerender::PrerenderHandle> old_prerender_handle(
+      prerender_handle_.release());
+  prerender_handle_.reset(prerender_manager_->AddPrerenderFromLocalPredictor(
+      url, session_storage_namespace.get(), *size));
+  current_prerender_would_have_matched_ = false;
+  if (old_prerender_handle)
+    old_prerender_handle->OnCancel();
 
   RecordEvent(EVENT_ADD_VISIT_PRERENDERING);
   if (current_prerender_.get() && current_prerender_->url_id == url_id) {
@@ -858,39 +781,24 @@ void PrerenderLocalPredictor::IssuePrerender(
 void PrerenderLocalPredictor::OnTabHelperURLSeen(
     const GURL& url, WebContents* web_contents) {
   RecordEvent(EVENT_TAB_HELPER_URL_SEEN);
-
+  if (current_prerender_would_have_matched_ ||
+      !prerender_handle_.get() ||
+      !prerender_handle_->Matches(url, NULL)) {
+    return;
+  }
+  RecordEvent(EVENT_TAB_HELPER_URL_SEEN_MATCH);
+  if (prerender_handle_->Matches(
+          url,
+          web_contents->GetController().GetDefaultSessionStorageNamespace())) {
+    RecordEvent(EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MATCH);
+  }
   // If the namespace matches and the URL matches, we might be able to swap
   // in. However, the actual code initating the swapin is in the renderer
   // and is checking for other criteria (such as POSTs). There may
   // also be conditions when a swapin should happen but does not. By recording
   // the two previous events, we can keep an eye on the magnitude of the
   // discrepancy.
-
-  PrerenderProperties* best_matched_prerender = NULL;
-  bool session_storage_namespace_matches = false;
-  for (int i = 0; i < static_cast<int>(issued_prerenders_.size()); i++) {
-    PrerenderProperties* p = issued_prerenders_[i];
-    DCHECK(p != NULL);
-    if (!p->prerender_handle.get() ||
-        !p->prerender_handle->Matches(url, NULL) ||
-        p->would_have_matched) {
-      continue;
-    }
-    if (!best_matched_prerender || !session_storage_namespace_matches) {
-      best_matched_prerender = p;
-      session_storage_namespace_matches =
-          p->prerender_handle->Matches(
-              url,
-              web_contents->GetController().
-              GetDefaultSessionStorageNamespace());
-    }
-  }
-  if (best_matched_prerender) {
-    RecordEvent(EVENT_TAB_HELPER_URL_SEEN_MATCH);
-    best_matched_prerender->would_have_matched = true;
-    if (session_storage_namespace_matches)
-      RecordEvent(EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MATCH);
-  }
+  current_prerender_would_have_matched_ = true;
 }
 
 }  // namespace prerender

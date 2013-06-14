@@ -12,7 +12,6 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -267,11 +266,6 @@ void PrerenderContents::StartPrerendering(
   // control group.
   if (prerender_manager_->IsControlGroup(experiment_id()))
     return;
-
-  if (origin_ == ORIGIN_LOCAL_PREDICTOR &&
-      IsLocalPredictorPrerenderAlwaysControlEnabled()) {
-    return;
-  }
 
   prerendering_has_started_ = true;
 
