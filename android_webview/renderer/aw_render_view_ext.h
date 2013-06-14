@@ -54,6 +54,16 @@ class AwRenderViewExt : public content::RenderViewObserver,
   virtual bool allowImage(WebKit::WebFrame* frame,
                           bool enabledPerSettings,
                           const WebKit::WebURL& imageURL) OVERRIDE;
+  virtual bool allowDisplayingInsecureContent(
+      WebKit::WebFrame* frame,
+      bool enabled_per_settings,
+      const WebKit::WebSecurityOrigin& origin,
+      const WebKit::WebURL& url) OVERRIDE;
+  virtual bool allowRunningInsecureContent(
+      WebKit::WebFrame* frame,
+      bool enabled_per_settings,
+      const WebKit::WebSecurityOrigin& origin,
+      const WebKit::WebURL& url) OVERRIDE;
 
   bool capture_picture_enabled_;
 

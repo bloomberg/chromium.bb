@@ -32,6 +32,15 @@ namespace android_webview {
 
 namespace {
 
+bool AllowMixedContent(const WebKit::WebURL& url) {
+  // We treat non-standard schemes as "secure" in the WebView to allow them to
+  // be used for request interception.
+  // TODO(benm): Tighten this restriction by requiring embedders to register
+  // their custom schemes? See b/9420953.
+  GURL gurl(url);
+  return !gurl.IsStandard();
+}
+
 GURL GetAbsoluteUrl(const WebKit::WebNode& node, const string16& url_fragment) {
   return GURL(node.document().completeURL(url_fragment));
 }
@@ -178,6 +187,22 @@ bool AwRenderViewExt::allowImage(WebKit::WebFrame* frame,
   return !(url.SchemeIs(chrome::kHttpScheme) ||
            url.SchemeIs(chrome::kHttpsScheme) ||
            url.SchemeIs(chrome::kFtpScheme));
+}
+
+bool AwRenderViewExt::allowDisplayingInsecureContent(
+      WebKit::WebFrame* frame,
+      bool enabled_per_settings,
+      const WebKit::WebSecurityOrigin& origin,
+      const WebKit::WebURL& url) {
+  return enabled_per_settings ? true : AllowMixedContent(url);
+}
+
+bool AwRenderViewExt::allowRunningInsecureContent(
+      WebKit::WebFrame* frame,
+      bool enabled_per_settings,
+      const WebKit::WebSecurityOrigin& origin,
+      const WebKit::WebURL& url) {
+  return enabled_per_settings ? true : AllowMixedContent(url);
 }
 
 void AwRenderViewExt::DidCommitProvisionalLoad(WebKit::WebFrame* frame,
