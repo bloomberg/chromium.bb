@@ -99,7 +99,7 @@ Gallery.openStandalone = function(path, pageState, opt_callback) {
   var currentDir;
   var urls = [];
   var selectedUrls = [];
-  var appWindow = util.platform.v2() ? chrome.app.window.current() : null;
+  var appWindow = chrome.app.window.current();
 
   Gallery.getFileBrowserPrivate().requestFileSystem(function(filesystem) {
     // If the path points to the directory scan it.
@@ -205,10 +205,6 @@ Gallery.prototype.initListeners_ = function() {
   this.document_.oncontextmenu = function(e) { e.preventDefault(); };
   this.keyDownBound_ = this.onKeyDown_.bind(this);
   this.document_.body.addEventListener('keydown', this.keyDownBound_);
-
-  util.disableBrowserShortcutKeys(this.document_);
-  if (!util.platform.v2())
-    util.enableNewFullScreenHandler(this.document_);
 
   this.inactivityWatcher_ = new MouseInactivityWatcher(
       this.container_, Gallery.FADE_TIMEOUT, this.hasActiveTool.bind(this));
@@ -753,9 +749,8 @@ Gallery.prototype.updateSelectionAndState_ = function() {
         this.displayStringFunction_('ITEMS_SELECTED', selectedItems.length);
   }
 
-  window.top.util.updateAppState(true /*replace*/, path,
+  window.top.util.updateAppState(path,
       {gallery: (this.currentMode_ == this.mosaicMode_ ? 'mosaic' : 'slide')});
-
 
   // We can't rename files in readonly directory.
   // We can only rename a single file.
@@ -904,10 +899,9 @@ Gallery.prototype.toggleShare_ = function() {
 Gallery.prototype.updateShareMenu_ = function() {
   var urls = this.getSelectedUrls();
 
-  var internalId = util.platform.getAppId();
   function isShareAction(task) {
     var taskParts = task.taskId.split('|');
-    return taskParts[0] != internalId;
+    return taskParts[0] != chrome.runtime.id;
   }
 
   var api = Gallery.getFileBrowserPrivate();

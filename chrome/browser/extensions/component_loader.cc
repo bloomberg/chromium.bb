@@ -240,9 +240,7 @@ void ComponentLoader::AddFileManagerExtension() {
 #if defined(FILE_MANAGER_EXTENSION)
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   int manifest_id;
-  if (command_line->HasSwitch(chromeos::switches::kFileManagerLegacy))
-    manifest_id = IDR_FILEMANAGER_MANIFEST_V1;
-  else if (command_line->HasSwitch(chromeos::switches::kFileManagerLegacyUI))
+  if (command_line->HasSwitch(chromeos::switches::kFileManagerLegacyUI))
     manifest_id = IDR_FILEMANAGER_MANIFEST;
   else
     manifest_id = IDR_FILEMANAGER_MANIFEST_NEW_UI;

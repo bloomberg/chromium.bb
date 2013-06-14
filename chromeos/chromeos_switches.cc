@@ -121,10 +121,6 @@ const char kEnterpriseEnrollmentInitialModulus[] =
 const char kEnterpriseEnrollmentModulusLimit[] =
     "enterprise-enrollment-modulus-limit";
 
-// Loads the File Manager as an extension instead of a platform app.
-// This flag is obsolete. Remove it, once Files.app v2 is stable.
-const char kFileManagerLegacy[]             = "file-manager-legacy";
-
 // Loads the File Manager with the legacy UI.
 const char kFileManagerLegacyUI[]           = "file-manager-legacy-ui";
 

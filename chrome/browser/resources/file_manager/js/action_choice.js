@@ -191,10 +191,6 @@ ActionChoice.prototype.initDom_ = function() {
 
   metrics.startInterval('PhotoImport.Load');
   this.dom_.setAttribute('loading', '');
-
-  util.disableBrowserShortcutKeys(this.document_);
-  if (!util.platform.v2())
-    util.enableNewFullScreenHandler(this.document_);
 };
 
 /**
@@ -428,13 +424,13 @@ ActionChoice.prototype.onKeyDown_ = function(e) {
 ActionChoice.prototype.runAction_ = function(action) {
   // TODO(mtomasz): Remove these predefined actions in Apps v2.
   if (action == this.importPhotosToDriveAction_) {
-    var url = util.platform.getURL('photo_import.html') +
+    var url = chrome.runtime.getURL('photo_import.html') +
         '#' + this.sourceEntry_.fullPath;
     var width = 728;
     var height = 656;
     var top = Math.round((window.screen.availHeight - height) / 2);
     var left = Math.round((window.screen.availWidth - width) / 2);
-    util.platform.createWindow(url,
+    chrome.app.window.create(url,
         {height: height, width: width, left: left, top: top});
     this.recordAction_('import-photos-to-drive');
     this.close_();
@@ -489,9 +485,8 @@ ActionChoice.prototype.acceptAction_ = function() {
  * @private
  */
 ActionChoice.prototype.onDeviceUnmounted_ = function(event) {
-  if (this.sourceEntry_ && event.mountPath == this.sourceEntry_.fullPath) {
-    util.platform.closeWindow();
-  }
+  if (this.sourceEntry_ && event.mountPath == this.sourceEntry_.fullPath)
+    window.close();
 };
 
 /**
@@ -500,14 +495,9 @@ ActionChoice.prototype.onDeviceUnmounted_ = function(event) {
  */
 ActionChoice.prototype.viewFiles_ = function() {
   var path = this.sourceEntry_.fullPath;
-  if (util.platform.v2()) {
-    chrome.runtime.getBackgroundPage(function(bg) {
-      bg.launchFileManager({defaultPath: path});
-    });
-  } else {
-    var url = util.platform.getURL('main.html') + '#' + path;
-    chrome.fileBrowserPrivate.openNewWindow(url);
-  }
+  chrome.runtime.getBackgroundPage(function(bg) {
+    bg.launchFileManager({defaultPath: path});
+  });
 };
 
 /**

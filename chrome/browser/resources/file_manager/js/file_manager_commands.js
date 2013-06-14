@@ -218,12 +218,7 @@ Commands.importCommand = {
     if (!root)
       return;
 
-    chrome.windows.getCurrent(undefined, function(window) {
-      chrome.windows.create(
-          { url: chrome.extension.getURL('photo_import.html') +
-                 '?' + window.id + '#' + PathUtil.getRootPath(root.fullPath),
-            type: 'popup' });
-    }.bind(this));
+    // TODO(mtomasz): Implement launching Photo Importer.
   },
   /**
    * @param {Event} event Command event.

@@ -149,13 +149,13 @@ ImportingDialog.prototype.onOkClick_ = function() {
  * @private
  */
 ImportingDialog.prototype.onViewClick_ = function() {
-  var url = util.platform.getURL('main.html') +
+  var url = chrome.runtime.getURL('main.html') +
       '?{%22gallery%22:%22mosaic%22}#' + this.destination_.fullPath;
   if (!this.parentWindowId_ ||
       !util.redirectMainWindow(this.parentWindowId_, url)) {
     // The parent window hasn't been found. Launch the url as a new window.
     // TODO(mtomasz): Change it to chrome.fileBrowserPrivate.openNewWindow.
-    util.platform.createWindow(url);
+    chrome.app.window.create(url);
   }
   this.hide();
   window.close();

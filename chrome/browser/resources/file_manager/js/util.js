@@ -703,54 +703,22 @@ util.createChild = function(parent, opt_className, opt_tag) {
 
 /**
  * Update the app state.
- * For app v1 use the top window location search query and hash.
- * For app v2 use the top window appState variable.
  *
- * @param {boolean} replace True if the history state should be replaced,
- *                          false if pushed.
  * @param {string} path Path to be put in the address bar after the hash.
  *   If null the hash is left unchanged.
  * @param {string|Object=} opt_param Search parameter. Used directly if string,
  *   stringified if object. If omitted the search query is left unchanged.
  */
-util.updateAppState = function(replace, path, opt_param) {
-  if (util.platform.v2()) {
-    window.appState = window.appState || {};
-    // |replace| parameter is ignored. There is no stack, so saving/restoring
-    // the state is the apps responsibility.
-    if (typeof opt_param == 'string')
-      window.appState.params = {};
-    else if (typeof opt_param == 'object')
-      window.appState.params = opt_param;
-    if (path)
-      window.appState.defaultPath = path;
-    util.saveAppState();
-    return;
-  }
-
-  var location = document.location;
-
-  var search;
+util.updateAppState = function(path, opt_param) {
+  window.appState = window.appState || {};
   if (typeof opt_param == 'string')
-    search = opt_param;
+    window.appState.params = {};
   else if (typeof opt_param == 'object')
-    search = '?' + JSON.stringify(opt_param);
-  else
-    search = location.search;
-
-  var hash;
+    window.appState.params = opt_param;
   if (path)
-    hash = '#' + encodeURIComponent(path);
-  else
-    hash = location.hash;
-
-  var newLocation = location.origin + location.pathname + search + hash;
-  //TODO(kaznacheev): Fix replaceState for component extensions. Currently it
-  //does not replace the content of the address bar.
-  if (replace)
-    window.history.replaceState(undefined, path, newLocation);
-  else
-    window.history.pushState(undefined, path, newLocation);
+    window.appState.defaultPath = path;
+  util.saveAppState();
+  return;
 };
 
 /**
@@ -783,24 +751,14 @@ function strf(id, var_args) {
 /**
  * Adapter object that abstracts away the the difference between Chrome app APIs
  * v1 and v2. Is only necessary while the migration to v2 APIs is in progress.
+ * TODO(mtomasz): Clean up this. crbug.com/240606.
  */
 util.platform = {
-  /**
-   * @return {boolean} True for v2.
-   */
-  v2: function() {
-    try {
-      return !!(chrome.app && chrome.app.runtime);
-    } catch (e) {
-      return false;
-    }
-  },
-
   /**
    * @return {boolean} True if Files.app is running via "chrome://files".
    */
   runningInBrowser: function() {
-    return util.platform.v2() && !window.appID;
+    return !window.appID;
   },
 
   /**
@@ -818,11 +776,7 @@ util.platform = {
    * @param {function(Object)} callback Function accepting a preference map.
    */
   getPreferences: function(callback) {
-    try {
-      callback(window.localStorage);
-    } catch (ignore) {
-      chrome.storage.local.get(callback);
-    }
+    chrome.storage.local.get(callback);
   },
 
   /**
@@ -830,13 +784,9 @@ util.platform = {
    * @param {function(string)} callback Function accepting the preference value.
    */
   getPreference: function(key, callback) {
-    try {
-      callback(window.localStorage[key]);
-    } catch (ignore) {
-      chrome.storage.local.get(key, function(items) {
-        callback(items[key]);
-      });
-    }
+    chrome.storage.local.get(key, function(items) {
+      callback(items[key]);
+    });
   },
 
   /**
@@ -848,163 +798,11 @@ util.platform = {
     if (typeof value != 'string')
       value = JSON.stringify(value);
 
-    try {
-      window.localStorage[key] = value;
-      if (opt_callback) opt_callback();
-    } catch (ignore) {
-      var items = {};
-      items[key] = value;
-      chrome.storage.local.set(items, opt_callback);
-    }
-  },
-
-  /**
-   * @param {function(Object)} callback Function accepting a status object.
-   */
-  getWindowStatus: function(callback) {
-    try {
-      chrome.windows.getCurrent(callback);
-    } catch (ignore) {
-      // TODO: fill the status object once the API is available.
-      callback({});
-    }
-  },
-
-  /**
-   * Close current window.
-   */
-  closeWindow: function() {
-    if (util.platform.v2()) {
-      window.close();
-    } else {
-      chrome.tabs.getCurrent(function(tab) {
-        chrome.tabs.remove(tab.id);
-      });
-    }
-  },
-
-  /**
-   * @return {string} Applicaton id.
-   */
-  getAppId: function() {
-    if (util.platform.v2()) {
-      return chrome.runtime.id;
-    } else {
-      return chrome.extension.getURL('').split('/')[2];
-    }
-  },
-
-  /**
-   * @param {string} path Path relative to the extension root.
-   * @return {string} Extension-based URL.
-   */
-  getURL: function(path) {
-    if (util.platform.v2()) {
-      return chrome.runtime.getURL(path);
-    } else {
-      return chrome.extension.getURL(path);
-    }
-  },
-
-  /**
-   * Suppress default context menu in a current window.
-   */
-  suppressContextMenu: function() {
-    // For packed v2 apps the default context menu would not show until
-    // --debug-packed-apps is added to the command line.
-    // For unpacked v2 apps (used for debugging) it is ok to show the menu.
-    if (util.platform.v2())
-      return;
-
-    document.addEventListener('contextmenu',
-        function(e) { e.preventDefault() });
-  },
-
-  /**
-   * Creates a new window.
-   * @param {string} url Window url.
-   * @param {Object} options Window options.
-   */
-  createWindow: function(url, options) {
-    if (util.platform.v2()) {
-      chrome.app.window.create(url, options);
-    } else {
-      var params = {};
-      for (var key in options) {
-        if (options.hasOwnProperty(key)) {
-          params[key] = options[key];
-        }
-      }
-      params.url = url;
-      params.type = 'popup';
-      chrome.windows.create(params);
-    }
+    var items = {};
+    items[key] = value;
+    chrome.storage.local.set(items, opt_callback);
   }
 };
-
-// TODO(serya): remove it when have migrated to AppsV2.
-util.__defineGetter__('storage', function() {
-  delete util.storage;
-  if (chrome.storage) {
-    util.storage = chrome.storage;
-    return util.storage;
-  }
-
-  var listeners = [];
-
-  function StorageArea(type) {
-    this.type_ = type;
-  }
-
-  StorageArea.prototype.set = function(items, opt_callback) {
-    var changes = {};
-    for (var i in items) {
-      changes[i] = {oldValue: window.localStorage[i], newValue: items[i]};
-      window.localStorage[i] = items[i];
-    }
-    if (opt_callback)
-      opt_callback();
-    for (var i = 0; i < listeners.length; i++) {
-      listeners[i](changes, this.type_);
-    }
-  };
-
-  StorageArea.prototype.get = function(keys, callback) {
-    if (!callback) {
-      // Since key is optionsl it's the callback.
-      keys(window.localStorage);
-      return;
-    }
-    if (typeof(keys) == 'string')
-      keys = [keys];
-    var result = {};
-    for (var i = 0; i < keys.length; i++) {
-      var key = keys[i];
-      result[key] = window.localStorage[key];
-    }
-    callback(result);
-  };
-
-  /**
-   * Simulation of the AppsV2 storage interface.
-   * @type {Object}
-   */
-  util.storage = {
-    local: new StorageArea('local'),
-    sync: new StorageArea('sync'),
-    onChanged: {
-      addListener: function(l) {
-        listeners.push(l);
-      },
-      removeListener: function(l) {
-        for (var i = 0; i < listeners.length; i++) {
-          listeners.splice(i, 1);
-        }
-      }
-    }
-  };
-  return util.storage;
-});
 
 /**
  * Attach page load handler.
@@ -1013,12 +811,11 @@ util.__defineGetter__('storage', function() {
 util.addPageLoadHandler = function(handler) {
   document.addEventListener('DOMContentLoaded', function() {
     handler();
-    util.platform.suppressContextMenu();
   });
 };
 
 /**
- * Save app v2 launch data to the local storage.
+ * Save app launch data to the local storage.
  */
 util.saveAppState = function() {
   if (window.appState)
@@ -1217,21 +1014,6 @@ util.boardIs = function(boardPrefix) {
 };
 
 /**
- * Disabled browser shortcus key events on the given document.
- * @param {Element} element Element to be disabled browser shortcut keys on.
- */
-util.disableBrowserShortcutKeys = function(element) {
-  element.addEventListener('keydown', function(e) {
-    switch (util.getKeyModifiers(e) + e.keyCode) {
-      case 'Ctrl-79':  // Disable native Ctrl-O (open file).
-      case 'Ctrl-83':  // Disable native Ctrl-S (save as).
-      case 'Ctrl-85':  // Disable native Ctrl-U (view source).
-        e.preventDefault();
-    }
-  });
-};
-
-/**
  * Adds an isFocused method to the current window object.
  */
 util.addIsFocusedMethod = function() {
@@ -1254,92 +1036,48 @@ util.addIsFocusedMethod = function() {
 };
 
 /**
- * Enables the new full screen mode handler. This works only for Apps v1.
- * TODO(mtomasz): Remove after dropping support for Files.app V1.
- *
- * @param {Document} doc Document element.
- */
-util.enableNewFullScreenHandler = function(doc) {
-  doc.addEventListener('keydown', function(e) {
-    if (util.getKeyModifiers(e) + e.keyCode == '122' /* F11 */) {
-      util.toggleFullScreen(null, !util.isFullScreen(null));
-      e.preventDefault();
-    }
-  });
-};
-
-/**
  * Makes a redirect to the specified Files.app's window from another window.
  * @param {number} id Window id.
  * @param {string} url Target url.
  * @return {boolean} True if the window has been found. False otherwise.
  */
 util.redirectMainWindow = function(id, url) {
-  var windowViews = chrome.extension.getViews({ windowId: parseInt(id) });
-  if (!windowViews || windowViews.length === 0)
-    return false;
-
-  windowViews[0].location.href = url;
-  return true;
-};
-
-/**
- * Checks, if the Files.app's window is in a full screen mode.
- * TODO(mtomasz): Clean up after dropping support for Files.app V1.
- *
- * @param {AppWindow} appWindow App window to be maximized. (V2 only).
- *     For V1 pass NULL.
- * @return {boolean} True if the full screen mode is enabled.
- */
-util.isFullScreen = function(appWindow) {
-  if (util.platform.v2()) {
-    if (appWindow) {
-      return appWindow.isFullscreen();
-    } else {
-      console.error('App window not passed. Unable to check status of ' +
-                    'the full screen mode.');
-      return false;
-    }
-  }
-
-  // TODO(mtomasz): Remove after dropping support for V1.
-  if (document.webkitIsFullScreen)
-    return true;
-
-  // Check the parent if in a iframe.
-  if (window.parent != window &&
-      window.parent.document.webkitIsFullScreen) {
-    return true;
-  }
-
+  // TODO(mtomasz): Implement this for Apps V2, once the photo importer is
+  // restored.
   return false;
 };
 
 /**
- * Toggles the full screen mode.
- * TODO(mtomasz): Clean up after dropping support for Files.app V1.
+ * Checks, if the Files.app's window is in a full screen mode.
  *
- * @param {AppWindow} appWindow App window to be maximized. (V2 only).
- *     For V1 pass NULL.
+ * @param {AppWindow} appWindow App window to be maximized.
+ * @return {boolean} True if the full screen mode is enabled.
+ */
+util.isFullScreen = function(appWindow) {
+  if (appWindow) {
+    return appWindow.isFullscreen();
+  } else {
+    console.error('App window not passed. Unable to check status of ' +
+                  'the full screen mode.');
+    return false;
+  }
+};
+
+/**
+ * Toggles the full screen mode.
+ *
+ * @param {AppWindow} appWindow App window to be maximized.
  * @param {boolean} enabled True for enabling, false for disabling.
  */
 util.toggleFullScreen = function(appWindow, enabled) {
-  if (util.platform.v2()) {
-    if (appWindow) {
-      if (enabled)
-        appWindow.fullscreen();
-      else
-        appWindow.restore();
-      return;
-    }
-
-    console.error(
-        'App window not passed. Unable to toggle the full screen mode.');
+  if (appWindow) {
+    if (enabled)
+      appWindow.fullscreen();
+    else
+      appWindow.restore();
     return;
   }
 
-  if (!enabled)
-    document.webkitCancelFullScreen();
-  else
-    document.body.webkitRequestFullScreen();
+  console.error(
+      'App window not passed. Unable to toggle the full screen mode.');
 };

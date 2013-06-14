@@ -13,10 +13,9 @@ function showErrorMessage(message) {
   errorBanner.textContent =
       loadTimeData.getString(message);
   errorBanner.setAttribute('visible', 'true');
-  if (util.platform.v2()) {
-    // The window is hidden if the video has not loaded yet.
-    chrome.app.window.current().show();
-  }
+
+  // The window is hidden if the video has not loaded yet.
+  chrome.app.window.current().show();
 }
 
 /**
@@ -66,15 +65,11 @@ function FullWindowVideoControls(
     }
     if (e.keyIdentifier == 'U+001B') {  // Escape
       util.toggleFullScreen(
-          util.platform.v2() ? chrome.app.window.current() : null,
+          chrome.app.window.current(),
           false);  // Leave the full screen mode.
       e.preventDefault();
     }
   }.bind(this));
-
-  util.disableBrowserShortcutKeys(document);
-  if (!util.platform.v2())
-    util.enableNewFullScreenHandler(document);
 
   videoContainer.addEventListener('click',
       this.togglePlayStateWithFeedback.bind(this));
@@ -111,7 +106,7 @@ FullWindowVideoControls.prototype.restorePlayState = function() {
  * @private
  */
 FullWindowVideoControls.prototype.toggleFullScreen_ = function() {
-  var appWindow = util.platform.v2() ? chrome.app.window.current() : null;
+  var appWindow = chrome.app.window.current();
   util.toggleFullScreen(appWindow, !util.isFullScreen(appWindow));
 };
 
@@ -136,9 +131,6 @@ function loadVideoPlayer() {
        document.querySelector('#video-player'),
        document.querySelector('#video-container'),
        document.querySelector('#controls'));
-
-    if (!util.platform.v2())
-      window.addEventListener('unload', unload);
 
     metadataCache = MetadataCache.createFull();
     volumeManager = VolumeManager.getInstance();
@@ -171,7 +163,7 @@ function onExternallyUnmounted(event) {
   if (!selectedItemFilesystemPath)
     return;
   if (selectedItemFilesystemPath.indexOf(event.mountPath) == 0)
-    util.platform.closeWindow();
+    window.close();
 }
 
 /**
@@ -223,45 +215,43 @@ function reload() {
 
     video.src = src;
     video.load();
-    if (util.platform.v2()) {
-      video.addEventListener('loadedmetadata', function() {
-        // TODO: chrome.app.window soon will be able to resize the content area.
-        // Until then use approximate title bar height.
-        var TITLE_HEIGHT = 28;
+    video.addEventListener('loadedmetadata', function() {
+      // TODO: chrome.app.window soon will be able to resize the content area.
+      // Until then use approximate title bar height.
+      var TITLE_HEIGHT = 28;
 
-        var aspect = video.videoWidth / video.videoHeight;
-        var newWidth = video.videoWidth;
-        var newHeight = video.videoHeight + TITLE_HEIGHT;
+      var aspect = video.videoWidth / video.videoHeight;
+      var newWidth = video.videoWidth;
+      var newHeight = video.videoHeight + TITLE_HEIGHT;
 
-        var shrinkX = newWidth / window.screen.availWidth;
-        var shrinkY = newHeight / window.screen.availHeight;
-        if (shrinkX > 1 || shrinkY > 1) {
-          if (shrinkY > shrinkX) {
-            newHeight = newHeight / shrinkY;
-            newWidth = (newHeight - TITLE_HEIGHT) * aspect;
-          } else {
-            newWidth = newWidth / shrinkX;
-            newHeight = newWidth / aspect + TITLE_HEIGHT;
-          }
+      var shrinkX = newWidth / window.screen.availWidth;
+      var shrinkY = newHeight / window.screen.availHeight;
+      if (shrinkX > 1 || shrinkY > 1) {
+        if (shrinkY > shrinkX) {
+          newHeight = newHeight / shrinkY;
+          newWidth = (newHeight - TITLE_HEIGHT) * aspect;
+        } else {
+          newWidth = newWidth / shrinkX;
+          newHeight = newWidth / aspect + TITLE_HEIGHT;
         }
+      }
 
-        var oldLeft = window.screenX;
-        var oldTop = window.screenY;
-        var oldWidth = window.outerWidth;
-        var oldHeight = window.outerHeight;
+      var oldLeft = window.screenX;
+      var oldTop = window.screenY;
+      var oldWidth = window.outerWidth;
+      var oldHeight = window.outerHeight;
 
-        if (!oldWidth && !oldHeight) {
-          oldLeft = window.screen.availWidth / 2;
-          oldTop = window.screen.availHeight / 2;
-        }
+      if (!oldWidth && !oldHeight) {
+        oldLeft = window.screen.availWidth / 2;
+        oldTop = window.screen.availHeight / 2;
+      }
 
-        var appWindow = chrome.app.window.current();
-        appWindow.resizeTo(newWidth, newHeight);
-        appWindow.moveTo(oldLeft - (newWidth - oldWidth) / 2,
-                         oldTop - (newHeight - oldHeight) / 2);
-        appWindow.show();
-      });
-    }
+      var appWindow = chrome.app.window.current();
+      appWindow.resizeTo(newWidth, newHeight);
+      appWindow.moveTo(oldLeft - (newWidth - oldWidth) / 2,
+                       oldTop - (newHeight - oldHeight) / 2);
+      appWindow.show();
+    });
 
     // Resolve real filesystem path of the current video.
     selectedItemFilesystemPath = null;

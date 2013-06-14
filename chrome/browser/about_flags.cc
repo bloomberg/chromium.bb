@@ -1045,13 +1045,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(ash::switches::kAshDisableNewLockAnimations),
   },
   {
-    "file-manager-legacy",
-    IDS_FLAGS_FILE_MANAGER_LEGACY_NAME,
-    IDS_FLAGS_FILE_MANAGER_LEGACY_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(chromeos::switches::kFileManagerLegacy),
-  },
-  {
     "file-manager-legacy-ui",
     IDS_FLAGS_FILE_MANAGER_LEGACY_UI_NAME,
     IDS_FLAGS_FILE_MANAGER_LEGACY_UI_DESCRIPTION,

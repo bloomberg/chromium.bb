@@ -251,50 +251,6 @@ void OnCRXDownloadCallback(Browser* browser,
   InstallCRX(browser, file);
 }
 
-// TODO(mtomasz): Remove this when dropping support for the legacy Files.app.
-enum TAB_REUSE_MODE {
-  REUSE_ANY_FILE_MANAGER,
-  REUSE_SAME_PATH,
-  REUSE_NEVER
-};
-
-// TODO(mtomasz): Remove this when dropping support for the legacy Files.app.
-bool FileManagerTabExists(const base::FilePath& path, TAB_REUSE_MODE mode) {
-  if (mode == REUSE_NEVER)
-    return false;
-
-  // We always open full-tab File Manager via chrome://files URL, never
-  // chrome-extension://, so we only check against chrome://files
-  const GURL origin(chrome::kChromeUIFileManagerURL);
-  const std::string ref = std::string("/") + path.value();
-
-  // Check browser windows.
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    Browser* browser = *it;
-    TabStripModel* tab_strip = browser->tab_strip_model();
-    for (int idx = 0; idx < tab_strip->count(); idx++) {
-      content::WebContents* web_contents = tab_strip->GetWebContentsAt(idx);
-      const GURL& url = web_contents->GetURL();
-      if (origin == url.GetOrigin()) {
-        if (mode == REUSE_ANY_FILE_MANAGER || ref == url.ref()) {
-          if (mode == REUSE_SAME_PATH && tab_strip->active_index() != idx) {
-            browser->window()->Show();
-            tab_strip->ActivateTabAt(idx, false);
-          }
-          return true;
-        }
-      }
-    }
-  }
-
-  return false;
-}
-
-bool IsFileManagerPackaged() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(chromeos::switches::kFileManagerLegacy);
-}
-
 bool IsFileManagerNewUI() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   return !command_line->HasSwitch(chromeos::switches::kFileManagerLegacyUI);
@@ -342,64 +298,19 @@ void ExecuteHandler(Profile* profile,
   executor->Execute(urls);
 }
 
-// The |mode| argument is only for legacy Files.app. Files.app V2 has the
-// reusing logic in background.js.
 void OpenFileBrowserImpl(const base::FilePath& path,
-                         TAB_REUSE_MODE mode,
                          const std::string& action_id) {
   content::RecordAction(UserMetricsAction("ShowFileBrowserFullTab"));
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
 
-  if (IsFileManagerPackaged() && !path.value().empty()) {
-    GURL url;
-    if (!ConvertFileToFileSystemUrl(profile, path, kFileBrowserDomain, &url))
-      return;
-
-    // Some values of |action_id| are not listed in the manifest and are used
-    // to parametrize the behavior when opening the Files app window.
-    ExecuteHandler(profile, kFileBrowserDomain, action_id, url,
-                   file_handler_util::kTaskFile);
-    return;
-  }
-
-  if (FileManagerTabExists(path, mode))
+  GURL url;
+  if (!ConvertFileToFileSystemUrl(profile, path, kFileBrowserDomain, &url))
     return;
 
-  std::string url = chrome::kChromeUIFileManagerURL;
-  if (action_id.size()) {
-    DictionaryValue arg_value;
-    arg_value.SetString("action", action_id);
-    std::string query;
-    base::JSONWriter::Write(&arg_value, &query);
-    url += "?" +
-        net::EscapeUrlEncodedData(query,
-                                  false);  // Space to %20 instead of +.
-  }
-  if (!path.empty()) {
-    base::FilePath virtual_path;
-    if (!ConvertFileToRelativeFileSystemPath(profile, kFileBrowserDomain, path,
-                                             &virtual_path))
-      return;
-    url += "#/" +
-        net::EscapeUrlEncodedData(virtual_path.value(),
-                                  false);  // Space to %20 instead of +.
-  }
-
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!service)
-    return;
-
-  const extensions::Extension* extension =
-      service->GetExtensionById(kFileBrowserDomain, false);
-  if (!extension)
-    return;
-
-  chrome::AppLaunchParams params(profile, extension,
-                                 extension_misc::LAUNCH_WINDOW,
-                                 NEW_FOREGROUND_TAB);
-  params.override_url = GURL(url);
-  chrome::OpenApplication(params);
+  // Some values of |action_id| are not listed in the manifest and are used
+  // to parametrize the behavior when opening the Files app window.
+  ExecuteHandler(profile, kFileBrowserDomain, action_id, url,
+                 file_handler_util::kTaskFile);
 }
 
 Browser* GetBrowserForUrl(GURL target_url) {
@@ -489,27 +400,12 @@ bool ExecuteExtensionHandler(Profile* profile,
     return true;
 
   if (extension_id == kFileBrowserDomain) {
-    if (IsFileManagerPackaged()) {
-      if (action_id == kFileBrowserGalleryTaskId ||
-          action_id == kFileBrowserMountArchiveTaskId ||
-          action_id == kFileBrowserPlayTaskId ||
-          action_id == kFileBrowserWatchTaskId) {
-        ExecuteHandler(profile, extension_id, action_id, url,
-                       file_handler_util::kTaskFile);
-        return true;
-      }
-      return ExecuteBuiltinHandler(browser, path, action_id);
-    }
-
-    // Only two of the built-in File Browser tasks require opening the File
-    // Browser tab.
     if (action_id == kFileBrowserGalleryTaskId ||
-        action_id == kFileBrowserMountArchiveTaskId) {
-      // Tab reuse currently does not work for these two tasks.
-      // |gallery| tries to put the file url into the tab url but it does not
-      // work on Chrome OS.
-      // |mount-archive| does not even try.
-      OpenFileBrowserImpl(path, REUSE_SAME_PATH, "");
+        action_id == kFileBrowserMountArchiveTaskId ||
+        action_id == kFileBrowserPlayTaskId ||
+        action_id == kFileBrowserWatchTaskId) {
+      ExecuteHandler(profile, extension_id, action_id, url,
+                     file_handler_util::kTaskFile);
       return true;
     }
     return ExecuteBuiltinHandler(browser, path, action_id);
@@ -572,7 +468,7 @@ void ContinueViewItem(Profile* profile,
 
   if (error == base::PLATFORM_FILE_OK) {
     // A directory exists at |path|. Open it with FileBrowser.
-    OpenFileBrowserImpl(path, REUSE_SAME_PATH, "open");
+    OpenFileBrowserImpl(path, "open");
   } else {
     if (!ExecuteDefaultHandler(profile, path))
       ShowWarningMessageBox(profile, path);
@@ -779,7 +675,7 @@ string16 GetTitleFromType(ui::SelectFileDialog::Type dialog_type) {
 }
 
 void ViewRemovableDrive(const base::FilePath& path) {
-  OpenFileBrowserImpl(path, REUSE_ANY_FILE_MANAGER, "auto-open");
+  OpenFileBrowserImpl(path, "auto-open");
 }
 
 void OpenNewWindow(Profile* profile, const GURL& url) {
@@ -870,7 +766,7 @@ void ViewItem(const base::FilePath& path) {
 
 void ShowFileInFolder(const base::FilePath& path) {
   // This action changes the selection so we do not reuse existing tabs.
-  OpenFileBrowserImpl(path, REUSE_NEVER, "select");
+  OpenFileBrowserImpl(path, "select");
 }
 
 bool ExecuteBuiltinHandler(Browser* browser, const base::FilePath& path,
@@ -909,40 +805,6 @@ bool ExecuteBuiltinHandler(Browser* browser, const base::FilePath& path,
           base::Bind(&OpenNewTab, static_cast<Profile*>(NULL)));
     }
     return true;
-  }
-
-  if (!IsFileManagerPackaged()) {
-    if (internal_task_id == kFileBrowserPlayTaskId) {
-      GURL url;
-      if (!ConvertFileToFileSystemUrl(profile, path, kFileBrowserDomain, &url))
-        return false;
-      MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
-      mediaplayer->PopupMediaPlayer();
-      mediaplayer->ForcePlayMediaURL(url);
-      return true;
-    }
-    if (internal_task_id == kFileBrowserWatchTaskId) {
-      GURL url;
-      if (!ConvertFileToFileSystemUrl(profile, path, kFileBrowserDomain, &url))
-        return false;
-
-      ExtensionService* service =
-        extensions::ExtensionSystem::Get(profile)->extension_service();
-      if (!service)
-        return false;
-
-      const extensions::Extension* extension =
-        service->GetExtensionById(kFileBrowserDomain, false);
-      if (!extension)
-        return false;
-
-      chrome::AppLaunchParams params(profile, extension,
-                                     extension_misc::LAUNCH_WINDOW,
-                                     NEW_FOREGROUND_TAB);
-      params.override_url = GetVideoPlayerUrl(url);
-      chrome::OpenApplication(params);
-      return true;
-    }
   }
 
   if (IsCRXFile(file_extension.data())) {

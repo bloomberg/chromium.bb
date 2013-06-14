@@ -1067,7 +1067,7 @@ VideoControls.prototype.savePosition = function(opt_sync) {
         Math.max(0, this.media_.currentTime - VideoControls.RESUME_REWIND));
   }
 
-  if (opt_sync && util.platform.v2()) {
+  if (opt_sync) {
     // Packaged apps cannot save synchronously.
     // Pass the data to the background page.
     if (!window.saveOnExit)

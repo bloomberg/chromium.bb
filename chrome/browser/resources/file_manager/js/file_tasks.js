@@ -143,7 +143,7 @@ FileTasks.recordViewingFileTypeUMA_ = function(urls) {
  */
 FileTasks.prototype.processTasks_ = function(tasks) {
   this.tasks_ = [];
-  var id = util.platform.getAppId();
+  var id = chrome.runtime.id;
   var isOnDrive = false;
   for (var index = 0; index < this.urls_.length; ++index) {
     if (FileType.isOnDrive(this.urls_[index])) {
@@ -314,7 +314,7 @@ FileTasks.prototype.execute_ = function(taskId, opt_urls) {
 FileTasks.prototype.executeInternal_ = function(taskId, urls) {
   this.checkAvailability_(function() {
     var taskParts = taskId.split('|');
-    if (taskParts[0] == util.platform.getAppId() && taskParts[1] == 'file') {
+    if (taskParts[0] == chrome.runtime.id && taskParts[1] == 'file') {
       // For internal tasks we do not listen to the event to avoid
       // handling the same task instance from multiple tabs.
       // So, we manually execute the task.
@@ -413,24 +413,18 @@ FileTasks.prototype.executeInternalTask_ = function(id, urls) {
       urls = fm.getAllUrlsInCurrentDirectory().filter(FileType.isAudio);
       position = urls.indexOf(selectedUrl);
     }
-    if (util.platform.v2()) {
-      chrome.runtime.getBackgroundPage(function(background) {
-        background.launchAudioPlayer({ items: urls, position: position });
-      });
-    } else {
-      chrome.mediaPlayerPrivate.play(urls, position);
-    }
+    chrome.runtime.getBackgroundPage(function(background) {
+      background.launchAudioPlayer({ items: urls, position: position });
+    });
     return;
   }
 
-  if (util.platform.v2()) {
-    if (id == 'watch') {
-      console.assert(urls.length == 1, 'Cannot open multiple videos');
-      chrome.runtime.getBackgroundPage(function(background) {
-        background.launchVideoPlayer(urls[0]);
-      });
-      return;
-    }
+  if (id == 'watch') {
+    console.assert(urls.length == 1, 'Cannot open multiple videos');
+    chrome.runtime.getBackgroundPage(function(background) {
+      background.launchVideoPlayer(urls[0]);
+    });
+    return;
   }
 
   if (id == 'mount-archive') {
@@ -456,7 +450,6 @@ FileTasks.prototype.executeInternalTask_ = function(id, urls) {
       if (!success)
         console.error('chrome.fileBrowserPrivate.viewFiles failed', urls);
     });
-    return;
   }
 };
 
@@ -528,8 +521,7 @@ FileTasks.prototype.openGalleryInternal_ = function(urls) {
 
   if (this.params_ && this.params_.gallery) {
     // Remove the Gallery state from the location, we do not need it any more.
-    util.updateAppState(
-        true /* replace */, null /* keep path */, '' /* remove search. */);
+    util.updateAppState(null /* keep path */, '' /* remove search. */);
   }
 
   var savedAppState = window.appState;
@@ -537,18 +529,14 @@ FileTasks.prototype.openGalleryInternal_ = function(urls) {
 
   // Push a temporary state which will be replaced every time the selection
   // changes in the Gallery and popped when the Gallery is closed.
-  util.updateAppState(false /*push*/);
+  util.updateAppState();
 
   var onBack = function(selectedUrls) {
     fm.directoryModel_.selectUrls(selectedUrls);
-    if (util.platform.v2()) {
-      fm.closeFilePopup_();  // Will call Gallery.unload.
-      window.appState = savedAppState;
-      util.saveAppState();
-      document.title = savedTitle;
-    } else {
-      window.history.back(1);  // This will restore document.title.
-    }
+    fm.closeFilePopup_();  // Will call Gallery.unload.
+    window.appState = savedAppState;
+    util.saveAppState();
+    document.title = savedTitle;
   };
 
   var onClose = function() {
@@ -585,7 +573,7 @@ FileTasks.prototype.openGalleryInternal_ = function(urls) {
       searchResults: fm.directoryModel_.isSearching(),
       metadataCache: fm.metadataCache_,
       pageState: this.params_,
-      appWindow: util.platform.v2() ? chrome.app.window.current() : null,
+      appWindow: chrome.app.window.current(),
       onBack: onBack,
       onClose: onClose,
       onMaximize: onMaximize,

@@ -420,12 +420,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                                                self.onResize_.bind(self));
     });
 
-    if (!util.platform.v2()) {
-      window.addEventListener('popstate', this.onPopState_.bind(this));
-      window.addEventListener('unload', this.onUnload_.bind(this));
-      window.addEventListener('beforeunload', this.onBeforeUnload_.bind(this));
-    }
-
     var dm = this.directoryModel_;
     dm.addEventListener('directory-changed',
                         this.onDirectoryChanged_.bind(this));
@@ -904,7 +898,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     // Show the window as soon as the UI pre-initialization is done.
     if (this.dialogType == DialogType.FULL_PAGE &&
-        util.platform.v2() &&
         !util.platform.runningInBrowser()) {
       chrome.app.window.current().show();
       setTimeout(callback, 100);  // Wait until the animation is finished.
@@ -1150,14 +1143,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.fileTypeSelector_ = this.dialogDom_.querySelector('#file-type');
     this.initFileTypeFilter_();
 
-    util.disableBrowserShortcutKeys(this.document_);
-
-    if (!util.platform.v2())
-      util.enableNewFullScreenHandler(this.document_);
-    else
-      util.addIsFocusedMethod();
-
-    this.updateWindowState_();
+    util.addIsFocusedMethod();
 
     // Populate the static localized strings.
     i18nTemplate.process(this.document_, loadTimeData);
@@ -1631,16 +1617,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Respond to the back and forward buttons.
-   * @param {Event} event Pop state event.
-   * @private
-   */
-  FileManager.prototype.onPopState_ = function(event) {
-    this.closeFilePopup_();
-    this.setupCurrentDirectory_(false /* page loading */);
-  };
-
-  /**
    * Resize details and thumb views to fit the new window size.
    * @private
    */
@@ -1668,8 +1644,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
 
     this.searchBreadcrumbs_.truncate();
-
-    this.updateWindowState_();
   };
 
   /**
@@ -1717,19 +1691,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.cachedPreviewPanelHeight_ = previewPanel.clientHeight;
     }
     return this.cachedPreviewPanelHeight_;
-  };
-
-  /**
-   * @private
-   */
-  FileManager.prototype.updateWindowState_ = function() {
-    util.platform.getWindowStatus(function(wnd) {
-      if (wnd.state == 'maximized') {
-        this.dialogDom_.setAttribute('maximized', 'maximized');
-      } else {
-        this.dialogDom_.removeAttribute('maximized');
-      }
-    }.bind(this));
   };
 
   FileManager.prototype.resolvePath = function(
@@ -2066,8 +2027,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
   /**
    * Overrides default handling for clicks on hyperlinks.
-   * Opens them in a separate tab and if it's an open/save dialog
-   * closes it.
+   * In a packaged apps links with targer='_blank' open in a new tab by
+   * default, other links do not open at all.
    *
    * @param {Event} event Click event.
    * @private
@@ -2076,16 +2037,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (event.target.tagName != 'A' || !event.target.href)
       return;
 
-    // In a packaged apps links with targer='_blank' open in a new tab by
-    // default, other links do not open at all.
-    if (!util.platform.v2()) {
-      chrome.tabs.create({url: event.target.href});
-      event.preventDefault();
-    }
-
-    if (this.dialogType != DialogType.FULL_PAGE) {
+    if (this.dialogType != DialogType.FULL_PAGE)
       this.onCancel_();
-    }
   };
 
   /**
@@ -2226,8 +2179,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       if (this.closeOnUnmount_) {
         // If the file manager opened automatically when a usb drive inserted,
         // user have never changed current volume (that implies the current
-        // directory is still on the device) then close this tab.
-        util.platform.closeWindow();
+        // directory is still on the device) then close this window.
+        window.close();
       }
     }
   };
@@ -2462,7 +2415,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Update the tab title.
+   * Update the window title.
    * @private
    */
   FileManager.prototype.updateTitle_ = function() {
@@ -2549,7 +2502,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.dialogType == DialogType.FULL_PAGE)
       this.table_.showOfflineColumn(this.shouldShowOfflineColumn());
 
-    util.updateAppState(event.initial, this.getCurrentDirectory());
+    util.updateAppState(this.getCurrentDirectory());
 
     if (this.closeOnUnmount_ && !event.initial &&
         PathUtil.getRootPath(event.previousDirEntry.fullPath) !=

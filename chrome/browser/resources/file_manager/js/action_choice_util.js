@@ -55,7 +55,7 @@ ActionChoiceUtil.getDefinedActions = function(loadTimeData, callback) {
  * @param {function(string=)} callback Callback with the identifier.
  */
 ActionChoiceUtil.getRememberedActionId = function(callback) {
-  util.storage.local.get(['action-choice'], function(result) {
+  chrome.storage.local.get(['action-choice'], function(result) {
     callback(result['action-choice']);
   });
 };
@@ -66,5 +66,5 @@ ActionChoiceUtil.getRememberedActionId = function(callback) {
  *     the remembered choice.
  */
 ActionChoiceUtil.setRememberedActionId = function(opt_actionId) {
-  util.storage.local.set({'action-choice': opt_actionId});
+  chrome.storage.local.set({'action-choice': opt_actionId});
 };

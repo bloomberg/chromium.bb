@@ -345,10 +345,8 @@ FileCopyManager.prototype.hasQueuedTasks = function() {
  */
 FileCopyManager.prototype.maybeScheduleCloseBackgroundPage_ = function() {
   if (!this.hasQueuedTasks()) {
-    if (this.unloadTimeout_ === null) {
-      this.unloadTimeout_ = setTimeout(
-          util.platform.v2() ? maybeCloseBackgroundPage : close, 5000);
-    }
+    if (this.unloadTimeout_ === null)
+      this.unloadTimeout_ = setTimeout(maybeCloseBackgroundPage, 5000);
   } else if (this.unloadTimeout_) {
     clearTimeout(this.unloadTimeout_);
     this.unloadTimeout_ = null;

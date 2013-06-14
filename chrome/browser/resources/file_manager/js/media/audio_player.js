@@ -31,9 +31,6 @@ function AudioPlayer(container) {
   this.trackList_ = createChild('track-list');
   this.trackStack_ = createChild('track-stack');
 
-  if (!util.platform.v2())
-    window.addEventListener('unload', unload);
-
   createChild('title-button collapse').addEventListener(
       'click', this.onExpandCollapse_.bind(this));
 
@@ -231,7 +228,7 @@ AudioPlayer.prototype.onExternallyUnmounted_ = function(event) {
   if (!this.selectedItemFilesystemPath_)
     return;
   if (this.selectedItemFilesystemPath_.indexOf(event.mountPath) == 0)
-    util.platform.closeWindow();
+    close();
 };
 
 /**
@@ -457,18 +454,13 @@ AudioPlayer.prototype.syncHeight_ = function() {
       AudioPlayer.TRACK_HEIGHT :
       AudioPlayer.HEADER_HEIGHT + expandedListHeight);
 
-  if (util.platform.v2()) {
-    var appWindow = chrome.app.window.current();
-    var oldHeight = appWindow.contentWindow.outerHeight;
-    var bottom = appWindow.contentWindow.screenY + oldHeight;
-    var newTop = Math.max(0, bottom - targetClientHeight);
-    appWindow.moveTo(appWindow.contentWindow.screenX, newTop);
-    appWindow.resizeTo(appWindow.contentWindow.outerWidth,
-        oldHeight + targetClientHeight - this.container_.clientHeight);
-  } else {
-    chrome.mediaPlayerPrivate.setWindowHeight(
-        targetClientHeight - this.container_.clientHeight);
-  }
+  var appWindow = chrome.app.window.current();
+  var oldHeight = appWindow.contentWindow.outerHeight;
+  var bottom = appWindow.contentWindow.screenY + oldHeight;
+  var newTop = Math.max(0, bottom - targetClientHeight);
+  appWindow.moveTo(appWindow.contentWindow.screenX, newTop);
+  appWindow.resizeTo(appWindow.contentWindow.outerWidth,
+      oldHeight + targetClientHeight - this.container_.clientHeight);
 };
 
 
@@ -580,10 +572,6 @@ function FullWindowAudioControls(container, advanceTrack, onError) {
       e.preventDefault();
     }
   }.bind(this));
-
-  util.disableBrowserShortcutKeys(document);
-  if (!util.platform.v2())
-    util.enableNewFullScreenHandler(document);
 }
 
 FullWindowAudioControls.prototype = { __proto__: AudioControls.prototype };

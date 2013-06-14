@@ -568,10 +568,6 @@ body[new-ui]:not([type='full-page']) .dialog-header #maximize-button {
   display: none;
 }
 
-body[maximized][type='full-page'] .dialog-header {
-  -webkit-padding-end: 75px;
-}
-
 /* Container for the detail and thumbnail list views. */
 body:not([new-ui]) .dialog-body {
   -webkit-box-flex: 1;
