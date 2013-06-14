@@ -16,6 +16,7 @@
 #include "webkit/browser/appcache/appcache.h"
 #include "webkit/browser/appcache/appcache_backend_impl.h"
 #include "webkit/browser/appcache/appcache_entry.h"
+#include "webkit/browser/appcache/appcache_executable_handler.h"
 #include "webkit/browser/appcache/appcache_histograms.h"
 #include "webkit/browser/appcache/appcache_policy.h"
 #include "webkit/browser/appcache/appcache_quota_client.h"
@@ -429,7 +430,7 @@ void AppCacheService::CheckResponseHelper::OnReadDataComplete(int result) {
 // AppCacheService -------
 
 AppCacheService::AppCacheService(quota::QuotaManagerProxy* quota_manager_proxy)
-    : appcache_policy_(NULL), quota_client_(NULL),
+    : appcache_policy_(NULL), quota_client_(NULL), handler_factory_(NULL),
       quota_manager_proxy_(quota_manager_proxy),
       request_context_(NULL),
       force_keep_session_state_(false) {

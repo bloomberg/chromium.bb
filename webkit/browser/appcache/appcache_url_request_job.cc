@@ -13,6 +13,7 @@
 #include "base/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/http/http_request_headers.h"
@@ -20,7 +21,10 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
+#include "webkit/browser/appcache/appcache.h"
+#include "webkit/browser/appcache/appcache_group.h"
 #include "webkit/browser/appcache/appcache_histograms.h"
+#include "webkit/browser/appcache/appcache_host.h"
 #include "webkit/browser/appcache/appcache_service.h"
 
 namespace appcache {
@@ -28,8 +32,10 @@ namespace appcache {
 AppCacheURLRequestJob::AppCacheURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
-    AppCacheStorage* storage)
+    AppCacheStorage* storage,
+    AppCacheHost* host)
     : net::URLRequestJob(request, network_delegate),
+      host_(host),
       storage_(storage),
       has_been_started_(false), has_been_killed_(false),
       delivery_type_(AWAITING_DELIVERY_ORDERS),
@@ -106,10 +112,8 @@ void AppCacheURLRequestJob::BeginDelivery() {
 
     case APPCACHED_DELIVERY:
       if (entry_.IsExecutable()) {
-        DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
-            kEnableExecutableHandlers));
-        // TODO(michaeln): do something different here with
-        // an AppCacheExecutableHandler.
+        BeginExecutableHandlerDelivery();
+        return;
       }
       AppCacheHistograms::AddAppCacheJobStartDelaySample(
           base::TimeTicks::Now() - start_time_tick_);
@@ -125,6 +129,134 @@ void AppCacheURLRequestJob::BeginDelivery() {
       NOTREACHED();
       break;
   }
+}
+
+void AppCacheURLRequestJob::BeginExecutableHandlerDelivery() {
+  DCHECK(CommandLine::ForCurrentProcess()->
+            HasSwitch(kEnableExecutableHandlers));
+  if (!storage_->service()->handler_factory()) {
+    BeginErrorDelivery("missing handler factory");
+    return;
+  }
+
+  request()->net_log().AddEvent(
+      net::NetLog::TYPE_APPCACHE_DELIVERING_EXECUTABLE_RESPONSE);
+
+  // We defer job delivery until the executable handler is spun up and
+  // provides a response. The sequence goes like this...
+  //
+  // 1. First we load the cache.
+  // 2. Then if the handler is not spun up, we load the script resource which
+  //    is needed to spin it up.
+  // 3. Then we ask then we ask the handler to compute a response.
+  // 4. Finally we deilver that response to the caller.
+  storage_->LoadCache(cache_id_, this);
+}
+
+void AppCacheURLRequestJob::OnCacheLoaded(AppCache* cache, int64 cache_id) {
+  DCHECK_EQ(cache_id_, cache_id);
+  DCHECK(!has_been_killed());
+
+  if (!cache) {
+    BeginErrorDelivery("cache load failed");
+    return;
+  }
+
+  // Keep references to ensure they don't go out of scope until job completion.
+  cache_ = cache;
+  group_ = cache->owning_group();
+
+  // If the handler is spun up, ask it to compute a response.
+  AppCacheExecutableHandler* handler =
+      cache->GetExecutableHandler(entry_.response_id());
+  if (handler) {
+    InvokeExecutableHandler(handler);
+    return;
+  }
+
+  // Handler is not spun up yet, load the script resource to do that.
+  // NOTE: This is not ideal since multiple jobs may be doing this,
+  // concurrently but close enough for now, the first to load the script
+  // will win.
+
+  // Read the script data, truncating if its too large.
+  // NOTE: we just issue one read and don't bother chaining if the resource
+  // is very (very) large, close enough for now.
+  const int64 kLimit = 500 * 1000;
+  handler_source_buffer_ = new net::GrowableIOBuffer();
+  handler_source_buffer_->SetCapacity(kLimit);
+  handler_source_reader_.reset(storage_->CreateResponseReader(
+      manifest_url_, group_id_, entry_.response_id()));
+  handler_source_reader_->ReadData(
+      handler_source_buffer_, kLimit,
+      base::Bind(&AppCacheURLRequestJob::OnExecutableSourceLoaded,
+                  base::Unretained(this)));
+}
+
+void AppCacheURLRequestJob::OnExecutableSourceLoaded(int result) {
+  DCHECK(!has_been_killed());
+  handler_source_reader_.reset();
+  if (result < 0) {
+    BeginErrorDelivery("script source load failed");
+    return;
+  }
+
+  handler_source_buffer_->SetCapacity(result);  // Free up some memory.
+
+  AppCacheExecutableHandler* handler = cache_->GetOrCreateExecutableHandler(
+      entry_.response_id(), handler_source_buffer_);
+  handler_source_buffer_ = NULL;  // not needed anymore
+  if (handler) {
+    InvokeExecutableHandler(handler);
+    return;
+  }
+
+  BeginErrorDelivery("factory failed to produce a handler");
+}
+
+void AppCacheURLRequestJob::InvokeExecutableHandler(
+    AppCacheExecutableHandler* handler) {
+  handler->HandleRequest(
+      request(),
+      base::Bind(&AppCacheURLRequestJob::OnExecutableResponseCallback,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void AppCacheURLRequestJob::OnExecutableResponseCallback(
+    const AppCacheExecutableHandler::Response& response) {
+  DCHECK(!has_been_killed());
+  if (response.use_network) {
+    delivery_type_ = NETWORK_DELIVERY;
+    storage_ = NULL;
+    BeginDelivery();
+    return;
+  }
+
+  if (!response.cached_resource_url.is_empty()) {
+    AppCacheEntry* entry_ptr = cache_->GetEntry(response.cached_resource_url);
+    if (entry_ptr && !entry_ptr->IsExecutable()) {
+      entry_ = *entry_ptr;
+      BeginDelivery();
+      return;
+    }
+  }
+
+  if (!response.redirect_url.is_empty()) {
+    // TODO(michaeln): playback a redirect
+    // response_headers_(new HttpResponseHeaders(response_headers)),
+    // fallthru for now to deliver an error
+  }
+
+  // Otherwise, return an error.
+  BeginErrorDelivery("handler returned an invalid response");
+}
+
+void AppCacheURLRequestJob::BeginErrorDelivery(const char* message) {
+  if (host_)
+    host_->frontend()->OnLogMessage(host_->host_id(), LOG_ERROR, message);
+  delivery_type_ = ERROR_DELIVERY;
+  storage_ = NULL;
+  BeginDelivery();
 }
 
 AppCacheURLRequestJob::~AppCacheURLRequestJob() {
@@ -232,10 +364,12 @@ void AppCacheURLRequestJob::Kill() {
   if (!has_been_killed_) {
     has_been_killed_ = true;
     reader_.reset();
+    handler_source_reader_.reset();
     if (storage_) {
       storage_->CancelDelegateCallbacks(this);
       storage_ = NULL;
     }
+    host_ = NULL;
     net::URLRequestJob::Kill();
     weak_factory_.InvalidateWeakPtrs();
   }

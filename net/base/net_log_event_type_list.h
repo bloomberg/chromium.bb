@@ -1459,6 +1459,10 @@ EVENT_TYPE(APPCACHE_DELIVERING_FALLBACK_RESPONSE)
 // This event is emitted whenever the appcache generates an error response.
 EVENT_TYPE(APPCACHE_DELIVERING_ERROR_RESPONSE)
 
+// This event is emitted whenever the appcache executes script to compute
+// a response.
+EVENT_TYPE(APPCACHE_DELIVERING_EXECUTABLE_RESPONSE)
+
 // ------------------------------------------------------------------------
 // Global events
 // ------------------------------------------------------------------------

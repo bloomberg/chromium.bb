@@ -7,7 +7,8 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/strings/string_util.h"
+#include "base/stl_util.h"
+#include "webkit/browser/appcache/appcache_executable_handler.h"
 #include "webkit/browser/appcache/appcache_group.h"
 #include "webkit/browser/appcache/appcache_host.h"
 #include "webkit/browser/appcache/appcache_storage.h"
@@ -33,6 +34,8 @@ AppCache::~AppCache() {
   }
   DCHECK(!owning_group_.get());
   storage_->working_set()->RemoveCache(this);
+  STLDeleteContainerPairSecondPointers(
+      executable_handlers_.begin(), executable_handlers_.end());
 }
 
 void AppCache::UnassociateHost(AppCacheHost* host) {
@@ -69,13 +72,47 @@ AppCacheEntry* AppCache::GetEntry(const GURL& url) {
   return (it != entries_.end()) ? &(it->second) : NULL;
 }
 
-const AppCacheEntry* AppCache::GetEntryWithResponseId(int64 response_id) {
+const AppCacheEntry* AppCache::GetEntryAndUrlWithResponseId(
+    int64 response_id, GURL* optional_url_out) {
   for (EntryMap::const_iterator iter = entries_.begin();
        iter !=  entries_.end(); ++iter) {
-    if (iter->second.response_id() == response_id)
+    if (iter->second.response_id() == response_id) {
+      if (optional_url_out)
+        *optional_url_out = iter->first;
       return &iter->second;
+    }
   }
   return NULL;
+}
+
+AppCacheExecutableHandler* AppCache::GetExecutableHandler(int64 response_id) {
+  HandlerMap::const_iterator found = executable_handlers_.find(response_id);
+  if (found != executable_handlers_.end())
+    return found->second;
+  return NULL;
+}
+
+AppCacheExecutableHandler* AppCache::GetOrCreateExecutableHandler(
+    int64 response_id, net::IOBuffer* handler_source) {
+  AppCacheExecutableHandler* handler = GetExecutableHandler(response_id);
+  if (handler)
+    return handler;
+
+  GURL handler_url;
+  const AppCacheEntry* entry = GetEntryAndUrlWithResponseId(
+      response_id, &handler_url);
+  if (!entry || !entry->IsExecutable())
+    return NULL;
+
+  DCHECK(storage_->service()->handler_factory());
+  scoped_ptr<AppCacheExecutableHandler> own_ptr =
+      storage_->service()->handler_factory()->
+          CreateHandler(handler_url, handler_source);
+  handler = own_ptr.release();
+  if (!handler)
+    return NULL;
+  executable_handlers_[response_id] = handler;
+  return handler;
 }
 
 GURL AppCache::GetNamespaceEntryUrl(const NamespaceVector& namespaces,

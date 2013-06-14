@@ -11,11 +11,18 @@
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
 #include "webkit/browser/appcache/appcache_entry.h"
+#include "webkit/browser/appcache/appcache_executable_handler.h"
 #include "webkit/browser/appcache/appcache_response.h"
 #include "webkit/browser/appcache/appcache_storage.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
+namespace net {
+class GrowableIOBuffer;
+};
+
 namespace appcache {
+
+class AppCacheHost;
 
 // A net::URLRequestJob derivative that knows how to return a response stored
 // in the appcache.
@@ -25,7 +32,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheURLRequestJob
  public:
   AppCacheURLRequestJob(net::URLRequest* request,
                         net::NetworkDelegate* network_delegate,
-                        AppCacheStorage* storage);
+                        AppCacheStorage* storage,
+                        AppCacheHost* host);
 
   // Informs the job of what response it should deliver. Only one of these
   // methods should be called, and only once per job. A job will sit idle and
@@ -101,9 +109,18 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheURLRequestJob
   void MaybeBeginDelivery();
   void BeginDelivery();
 
+  // For executable response handling.
+  void BeginExecutableHandlerDelivery();
+  void OnExecutableSourceLoaded(int result);
+  void InvokeExecutableHandler(AppCacheExecutableHandler* handler);
+  void OnExecutableResponseCallback(
+      const AppCacheExecutableHandler::Response& response);
+  void BeginErrorDelivery(const char* message);
+
   // AppCacheStorage::Delegate methods
   virtual void OnResponseInfoLoaded(
       AppCacheResponseInfo* response_info, int64 response_id) OVERRIDE;
+  virtual void OnCacheLoaded(AppCache* cache, int64 cache_id) OVERRIDE;
 
   const net::HttpResponseInfo* http_info() const;
   bool is_range_request() const { return range_requested_.IsValid(); }
@@ -130,6 +147,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheURLRequestJob
   virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
   virtual int GetResponseCode() const OVERRIDE;
 
+  AppCacheHost* host_;
   AppCacheStorage* storage_;
   base::TimeTicks start_time_tick_;
   bool has_been_started_;
@@ -142,12 +160,16 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheURLRequestJob
   bool is_fallback_;
   bool cache_entry_not_found_;
   scoped_refptr<AppCacheResponseInfo> info_;
+  scoped_refptr<net::GrowableIOBuffer> handler_source_buffer_;
+  scoped_ptr<AppCacheResponseReader> handler_source_reader_;
   net::HttpByteRange range_requested_;
   scoped_ptr<net::HttpResponseInfo> range_response_info_;
   scoped_ptr<AppCacheResponseReader> reader_;
+  scoped_refptr<AppCache> cache_;
+  scoped_refptr<AppCacheGroup> group_;
   base::WeakPtrFactory<AppCacheURLRequestJob> weak_factory_;
 };
 
 }  // namespace appcache
 
-#endif  // WEBKIT_APPCACHE_APPCACHE_REQUEST_HANDLER_H_
+#endif  // WEBKIT_BROWSER_APPCACHE_APPCACHE_REQUEST_HANDLER_H_

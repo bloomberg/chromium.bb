@@ -33,6 +33,7 @@
         'browser/appcache/appcache_disk_cache.cc',
         'browser/appcache/appcache_disk_cache.h',
         'browser/appcache/appcache_entry.h',
+        'browser/appcache/appcache_executable_handler.h',
         'browser/appcache/appcache_group.cc',
         'browser/appcache/appcache_group.h',
         'browser/appcache/appcache_histograms.cc',
