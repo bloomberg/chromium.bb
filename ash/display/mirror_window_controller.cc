@@ -285,20 +285,24 @@ void MirrorWindowController::OnRootWindowHostResized(
     return;
   mirror_window_host_size_ = root->GetHostSize();
   reflector_->OnMirroringCompositorResized();
+  root_window_->SetRootWindowTransformer(
+      CreateRootWindowTransformer().Pass());
+  UpdateCursorLocation();
+}
 
+
+scoped_ptr<aura::RootWindowTransformer>
+MirrorWindowController::CreateRootWindowTransformer() const {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   const DisplayInfo& mirror_display_info = display_manager->GetDisplayInfo(
       display_manager->mirrored_display().id());
   const DisplayInfo& source_display_info = display_manager->GetDisplayInfo(
       Shell::GetScreen()->GetPrimaryDisplay().id());
   DCHECK(display_manager->mirrored_display().is_valid());
-  scoped_ptr<aura::RootWindowTransformer> transformer(
+  return scoped_ptr<aura::RootWindowTransformer>(
       internal::CreateRootWindowTransformerForMirroredDisplay(
           source_display_info,
           mirror_display_info));
-  root_window_->SetRootWindowTransformer(transformer.Pass());
-
-  UpdateCursorLocation();
 }
 
 }  // namespace internal

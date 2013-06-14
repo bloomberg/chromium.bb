@@ -6,6 +6,7 @@
 
 #include "ash/display/mirror_window_controller.h"
 #include "ash/shell.h"
+#include "ui/aura/root_window_transformer.h"
 #include "ui/gfx/point.h"
 
 namespace ash {
@@ -25,6 +26,12 @@ const gfx::Point& MirrorWindowTestApi::GetCursorHotPoint() const {
 
 const aura::Window* MirrorWindowTestApi::GetCursorWindow() const {
   return Shell::GetInstance()->mirror_window_controller()->cursor_window_;
+}
+
+scoped_ptr<aura::RootWindowTransformer>
+MirrorWindowTestApi::CreateCurrentRootWindowTransformer() const {
+  return Shell::GetInstance()->mirror_window_controller()->
+      CreateRootWindowTransformer();
 }
 
 }  // namespace test

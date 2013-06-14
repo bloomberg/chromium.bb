@@ -220,15 +220,33 @@ class MirrorRootWindowTransformer : public aura::RootWindowTransformer {
     gfx::Rect mirror_display_rect =
         gfx::Rect(mirror_display_info.bounds_in_pixel().size());
 
-    // TODO(oshima): Insets & scale has to be adjusted so that
-    // 1) it does letterbox/pillarbox to adjust aspect ratio
-    // 2) visible area excluding insets are correctly mapped
-    // to the other display's visible area.
-    float mirror_scale_ratio =
-        (static_cast<float>(root_bounds_.width()) /
-         static_cast<float>(mirror_display_rect.width()));
-    float inverted_scale = 1.0f / mirror_scale_ratio;
-    transform_.Scale(inverted_scale, inverted_scale);
+    bool letterbox = root_bounds_.width() * mirror_display_rect.height() >
+        root_bounds_.height() * mirror_display_rect.width();
+    if (letterbox) {
+      float mirror_scale_ratio =
+          (static_cast<float>(root_bounds_.width()) /
+           static_cast<float>(mirror_display_rect.width()));
+      float inverted_scale = 1.0f / mirror_scale_ratio;
+      int margin = static_cast<int>(
+          (mirror_display_rect.height() -
+           root_bounds_.height() * inverted_scale) / 2);
+      insets_.Set(0, margin, 0, margin);
+
+      transform_.Translate(0,  margin);
+      transform_.Scale(inverted_scale, inverted_scale);
+    } else {
+      float mirror_scale_ratio =
+          (static_cast<float>(root_bounds_.height()) /
+           static_cast<float>(mirror_display_rect.height()));
+      float inverted_scale = 1.0f / mirror_scale_ratio;
+      int margin = static_cast<int>(
+          (mirror_display_rect.width() -
+           root_bounds_.width() * inverted_scale) / 2);
+      insets_.Set(margin, 0, margin, 0);
+
+      transform_.Translate(margin, 0);
+      transform_.Scale(inverted_scale, inverted_scale);
+    }
   }
 
   // aura::RootWindowTransformer overrides:
@@ -245,7 +263,7 @@ class MirrorRootWindowTransformer : public aura::RootWindowTransformer {
     return root_bounds_;
   }
   virtual gfx::Insets GetHostInsets() const OVERRIDE {
-    return gfx::Insets();
+    return insets_;
   }
 
  private:
@@ -253,6 +271,7 @@ class MirrorRootWindowTransformer : public aura::RootWindowTransformer {
 
   gfx::Transform transform_;
   gfx::Rect root_bounds_;
+  gfx::Insets insets_;
 
   DISALLOW_COPY_AND_ASSIGN(MirrorRootWindowTransformer);
 };

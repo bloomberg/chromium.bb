@@ -16,6 +16,7 @@
 
 namespace aura {
 class RootWindow;
+class RootWindowTransformer;
 class Window;
 }
 
@@ -35,7 +36,7 @@ class CursorWindowDelegate;
 // An object that copies the content of the primary root window to a
 // mirror window. This also draws a mouse cursor as the mouse cursor
 // is typically drawn by the window system.
-class MirrorWindowController : public aura::RootWindowObserver {
+class ASH_EXPORT MirrorWindowController : public aura::RootWindowObserver {
  public:
   MirrorWindowController();
   virtual ~MirrorWindowController();
@@ -62,6 +63,10 @@ class MirrorWindowController : public aura::RootWindowObserver {
 
  private:
   friend class test::MirrorWindowTestApi;
+
+  // Creates a RootWindowTransformer for current display
+  // configuration.
+  scoped_ptr<aura::RootWindowTransformer> CreateRootWindowTransformer() const;
 
   int current_cursor_type_;
   aura::Window* cursor_window_;  // owned by root window.
