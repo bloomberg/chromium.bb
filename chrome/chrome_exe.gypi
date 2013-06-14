@@ -64,6 +64,12 @@
             }],
           ]
         }],
+        ['OS == "win" and use_aura==1', {
+          'sources!': [
+            # We still want the _win entry point for sandbox, etc.
+            'app/chrome_exe_main_aura.cc',
+          ],
+        }],
         ['OS == "android"', {
           # Don't put the 'chrome' target in 'all' on android
           'suppress_wildcard': 1,
