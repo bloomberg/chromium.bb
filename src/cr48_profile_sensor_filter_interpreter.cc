@@ -87,10 +87,19 @@ void Cr48ProfileSensorFilterInterpreter::AssignTrackingId(
     for (size_t i = 0; i < hwstate->finger_cnt; i++)
       hwstate->fingers[i].tracking_id = last_id_++;
   } else if (prev_hwstate_.finger_cnt == 1 && hwstate->finger_cnt == 2) {
-      int finger0_tid = prev_hwstate_.fingers[0].tracking_id;
-      hwstate->fingers[0].tracking_id = finger0_tid;
-      hwstate->fingers[1].tracking_id = last_id_;
-      while (++last_id_ == finger0_tid);
+    const FingerState& prev_finger = prev_hwstate_.fingers[0];
+
+    // Persist the tracking id of the finger that is closest to the
+    // previous finger.
+    int old_finger = 0;
+    if (DistSq(prev_finger, hwstate->fingers[0]) >
+        DistSq(prev_finger, hwstate->fingers[1]))
+      old_finger = 1;
+    int new_finger = (old_finger == 0) ? 1 : 0;
+
+    hwstate->fingers[old_finger].tracking_id = prev_finger.tracking_id;
+    hwstate->fingers[new_finger].tracking_id = last_id_;
+    while (++last_id_ == prev_finger.tracking_id);
   } else if (prev_hwstate_.finger_cnt == 2 && hwstate->finger_cnt == 1) {
     float dist_sq_prev_finger0 =
         DistSq(prev_hwstate_.fingers[0], hwstate->fingers[0]);
