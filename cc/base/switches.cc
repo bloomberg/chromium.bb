@@ -16,9 +16,6 @@ const char kBackgroundColorInsteadOfCheckerboard[] =
 
 const char kDisableThreadedAnimation[] = "disable-threaded-animation";
 
-// Send a message for every frame from the impl thread to the parent compositor.
-const char kEnableCompositorFrameMessage[] = "enable-compositor-frame-message";
-
 // Do not predict whether the tile will be either solid color or transparent.
 const char kDisableColorEstimator[] = "disable-color-estimator";
 

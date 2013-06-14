@@ -20,7 +20,6 @@ CC_EXPORT extern const char kBackgroundColorInsteadOfCheckerboard[];
 CC_EXPORT extern const char kDisableColorEstimator[];
 CC_EXPORT extern const char kDisableImplSidePainting[];
 CC_EXPORT extern const char kDisableThreadedAnimation[];
-CC_EXPORT extern const char kEnableCompositorFrameMessage[];
 CC_EXPORT extern const char kEnableImplSidePainting[];
 CC_EXPORT extern const char kEnableTopControlsPositionCalculation[];
 CC_EXPORT extern const char kForceDirectLayerDrawing[];

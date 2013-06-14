@@ -980,7 +980,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kDisableColorEstimator,
     cc::switches::kDisableImplSidePainting,
     cc::switches::kDisableThreadedAnimation,
-    cc::switches::kEnableCompositorFrameMessage,
     cc::switches::kEnableImplSidePainting,
     cc::switches::kEnablePartialSwap,
     cc::switches::kEnablePerTilePainting,
