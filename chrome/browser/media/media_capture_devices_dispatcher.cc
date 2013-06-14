@@ -331,7 +331,11 @@ void MediaCaptureDevicesDispatcher::OnAccessRequestResponse(
 
   std::map<content::WebContents*, RequestsQueue>::iterator it =
       pending_requests_.find(web_contents);
-  DCHECK(it != pending_requests_.end());
+  if (it == pending_requests_.end()) {
+    // WebContents has been destroyed. Don't need to do anything.
+    return;
+  }
+
   RequestsQueue& queue(it->second);
   content::MediaResponseCallback callback = queue.front().callback;
   queue.pop();
