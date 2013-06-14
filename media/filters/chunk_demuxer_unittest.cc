@@ -119,6 +119,11 @@ static void OnReadDone_EOSExpected(bool* called,
   *called = true;
 }
 
+static void OnSeekDone_OKExpected(bool* called, PipelineStatus status) {
+  EXPECT_EQ(status, PIPELINE_OK);
+  *called = true;
+}
+
 class ChunkDemuxerTest : public testing::Test {
  protected:
   enum CodecsIndex {
@@ -1704,6 +1709,77 @@ TEST_F(ChunkDemuxerTest, TestSeekAudioAndVideoSources) {
   // Read() should return buffers at 3.
   EXPECT_TRUE(audio_read_done);
   EXPECT_TRUE(video_read_done);
+}
+
+// Test that Seek() completes successfully when EndOfStream
+// is called before data is available for that seek point.
+// This scenario might be useful if seeking past the end of stream
+// of either audio or video (or both).
+TEST_F(ChunkDemuxerTest, TestEndOfStreamAfterPastEosSeek) {
+  ASSERT_TRUE(InitDemuxer(true, true));
+
+  scoped_ptr<Cluster> cluster_a1(
+      GenerateSingleStreamCluster(0, 120, kAudioTrackNum, 10));
+  scoped_ptr<Cluster> cluster_v1(
+      GenerateSingleStreamCluster(0, 100, kVideoTrackNum, 5));
+
+  AppendData(cluster_a1->data(), cluster_a1->size());
+  AppendData(cluster_v1->data(), cluster_v1->size());
+
+  // Seeking past the end of video.
+  // Note: audio data is available for that seek point.
+  bool seek_cb_was_called = false;
+  demuxer_->StartWaitingForSeek();
+  demuxer_->Seek(base::TimeDelta::FromMilliseconds(110),
+                 base::Bind(OnSeekDone_OKExpected, &seek_cb_was_called));
+  EXPECT_FALSE(seek_cb_was_called);
+
+  EXPECT_CALL(host_, SetDuration(
+      base::TimeDelta::FromMilliseconds(120)));
+  demuxer_->EndOfStream(PIPELINE_OK);
+  EXPECT_TRUE(seek_cb_was_called);
+
+  ShutdownDemuxer();
+}
+
+// Test that EndOfStream is ignored if coming during a pending seek
+// whose seek time is before some existing ranges.
+TEST_F(ChunkDemuxerTest, TestEndOfStreamDuringPendingSeek) {
+  ASSERT_TRUE(InitDemuxer(true, true));
+
+  scoped_ptr<Cluster> cluster_a1(
+      GenerateSingleStreamCluster(0, 120, kAudioTrackNum, 10));
+  scoped_ptr<Cluster> cluster_v1(
+      GenerateSingleStreamCluster(0, 100, kVideoTrackNum, 5));
+
+  scoped_ptr<Cluster> cluster_a2(
+      GenerateSingleStreamCluster(200, 300, kAudioTrackNum, 10));
+  scoped_ptr<Cluster> cluster_v2(
+      GenerateSingleStreamCluster(200, 300, kVideoTrackNum, 5));
+
+  AppendData(cluster_a1->data(), cluster_a1->size());
+  AppendData(cluster_v1->data(), cluster_v1->size());
+  AppendData(cluster_a2->data(), cluster_a2->size());
+  AppendData(cluster_v2->data(), cluster_v2->size());
+
+  bool seek_cb_was_called = false;
+  demuxer_->StartWaitingForSeek();
+  demuxer_->Seek(base::TimeDelta::FromMilliseconds(160),
+                 base::Bind(OnSeekDone_OKExpected, &seek_cb_was_called));
+  EXPECT_FALSE(seek_cb_was_called);
+
+  EXPECT_FALSE(demuxer_->EndOfStream(PIPELINE_OK));
+  EXPECT_FALSE(seek_cb_was_called);
+
+  scoped_ptr<Cluster> cluster_a3(
+      GenerateSingleStreamCluster(140, 180, kAudioTrackNum, 10));
+  scoped_ptr<Cluster> cluster_v3(
+      GenerateSingleStreamCluster(140, 180, kVideoTrackNum, 5));
+  AppendData(cluster_a3->data(), cluster_a3->size());
+  AppendData(cluster_v3->data(), cluster_v3->size());
+  EXPECT_TRUE(seek_cb_was_called);
+
+  ShutdownDemuxer();
 }
 
 // Test ranges in an audio-only stream.
