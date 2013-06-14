@@ -318,11 +318,11 @@ class WorkerState(object):
       self._instructions.append([NOP])
 
     if len(self._instructions) >= 1000000:
-      self.Finish()
+      self.CheckReceivedInstructions()
       self._instructions = []
 
-  def Finish(self):
-    # Check instructions accumulated so far.
+  def CheckReceivedInstructions(self):
+    # Check instructions accumulated so far and clear the list.
     if len(self._instructions) == 0:
       return
     try:
@@ -397,11 +397,10 @@ def Worker((prefix, state_index)):
         final_callback=worker_state.ReceiveInstruction,
         prefix=prefix,
         anyfield=0)
+    worker_state.CheckReceivedInstructions()
   except Exception as e:
     traceback.print_exc() # because multiprocessing imap swallows traceback
     raise
-  finally:
-    worker_state.Finish()
 
   return (
       prefix,
