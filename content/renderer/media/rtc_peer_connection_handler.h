@@ -129,8 +129,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   virtual WebKit::WebRTCDataChannelHandler* createDataChannel(
       const WebKit::WebString& label,
       const WebKit::WebRTCDataChannelInit& init) OVERRIDE;
-  virtual WebKit::WebRTCDataChannelHandler* createDataChannel(
-      const WebKit::WebString& label, bool reliable);
   virtual WebKit::WebRTCDTMFSenderHandler* createDTMFSender(
       const WebKit::WebMediaStreamTrack& track) OVERRIDE;
   virtual void stop() OVERRIDE;

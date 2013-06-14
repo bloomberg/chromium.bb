@@ -24,6 +24,7 @@
 #include "third_party/WebKit/public/platform/WebRTCConfiguration.h"
 #include "third_party/WebKit/public/platform/WebRTCDTMFSenderHandler.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelHandler.h"
+#include "third_party/WebKit/public/platform/WebRTCDataChannelInit.h"
 #include "third_party/WebKit/public/platform/WebRTCICECandidate.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandlerClient.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescription.h"
@@ -784,7 +785,7 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateDataChannel) {
                                      testing::NotNull(),
                                      PeerConnectionTracker::SOURCE_LOCAL));
   scoped_ptr<WebKit::WebRTCDataChannelHandler> channel(
-      pc_handler_->createDataChannel("d1", true));
+      pc_handler_->createDataChannel("d1", WebKit::WebRTCDataChannelInit()));
   EXPECT_TRUE(channel.get() != NULL);
   EXPECT_EQ(label, channel->label());
 }

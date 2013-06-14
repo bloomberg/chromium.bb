@@ -26,6 +26,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebRTCConfiguration.h"
+#include "third_party/WebKit/public/platform/WebRTCDataChannelInit.h"
 #include "third_party/WebKit/public/platform/WebRTCICECandidate.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandlerClient.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescription.h"
@@ -579,19 +580,18 @@ void RTCPeerConnectionHandler::GetStats(
 
 WebKit::WebRTCDataChannelHandler* RTCPeerConnectionHandler::createDataChannel(
     const WebKit::WebString& label, const WebKit::WebRTCDataChannelInit& init) {
-  // TODO(jiayl): update reliable to
-  // (init.ordered && init.maxRetransmitTime == -1 && init.maxRetransmits == -1)
-  // once Libjingle is updated to ignore this field for RTP data channels.
-  bool reliable = false;
-  return createDataChannel(label, reliable);
-}
-
-WebKit::WebRTCDataChannelHandler* RTCPeerConnectionHandler::createDataChannel(
-    const WebKit::WebString& label, bool reliable) {
   DVLOG(1) << "createDataChannel label " << UTF16ToUTF8(label);
 
   webrtc::DataChannelInit config;
-  config.reliable = reliable;
+  // TODO(jiayl): remove the deprecated reliable field once Libjingle is updated
+  // to handle that.
+  config.reliable = false;
+  config.id = init.id;
+  config.ordered = init.ordered;
+  config.negotiated = init.negotiated;
+  config.maxRetransmits = init.maxRetransmits;
+  config.maxRetransmitTime = init.maxRetransmitTime;
+  config.protocol = UTF16ToUTF8(init.protocol);
 
   talk_base::scoped_refptr<webrtc::DataChannelInterface> webrtc_channel(
       native_peer_connection_->CreateDataChannel(UTF16ToUTF8(label), &config));
