@@ -16,39 +16,14 @@
 #include "ui/base/events/event_utils.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/touch/touch_factory_x11.h"
+#include "ui/base/x/device_data_manager.h"
 #include "ui/base/x/device_list_cache_x.h"
-#include "ui/base/x/valuators.h"
 #include "ui/base/x/x11_atom_cache.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
-
-// Copied from xserver-properties.h
-#define AXIS_LABEL_PROP_REL_HWHEEL "Rel Horiz Wheel"
-#define AXIS_LABEL_PROP_REL_WHEEL "Rel Vert Wheel"
-
-// CMT specific timings
-#define AXIS_LABEL_PROP_ABS_START_TIME "Abs Start Timestamp"
-#define AXIS_LABEL_PROP_ABS_END_TIME "Abs End Timestamp"
-
-// Ordinal values
-#define AXIS_LABEL_PROP_ABS_DBL_ORDINAL_X   "Abs Dbl Ordinal X"
-#define AXIS_LABEL_PROP_ABS_DBL_ORDINAL_Y   "Abs Dbl Ordinal Y"
-
-// Fling properties
-#define AXIS_LABEL_PROP_ABS_FLING_X       "Abs Fling X Velocity"
-#define AXIS_LABEL_PROP_ABS_FLING_Y       "Abs Fling Y Velocity"
-#define AXIS_LABEL_PROP_ABS_FLING_STATE   "Abs Fling State"
-
-#define AXIS_LABEL_PROP_ABS_FINGER_COUNT   "Abs Finger Count"
-
-// New versions of the valuators, with double values instead of fixed point.
-#define AXIS_LABEL_PROP_ABS_DBL_START_TIME "Abs Dbl Start Timestamp"
-#define AXIS_LABEL_PROP_ABS_DBL_END_TIME   "Abs Dbl End Timestamp"
-#define AXIS_LABEL_PROP_ABS_DBL_FLING_VX   "Abs Dbl Fling X Velocity"
-#define AXIS_LABEL_PROP_ABS_DBL_FLING_VY   "Abs Dbl Fling Y Velocity"
 
 namespace {
 
@@ -57,24 +32,6 @@ const int kWheelScrollAmount = 53;
 
 const int kMinWheelButton = 4;
 const int kMaxWheelButton = 7;
-
-const char* kCMTCachedAtoms[] = {
-  AXIS_LABEL_PROP_ABS_DBL_ORDINAL_X,
-  AXIS_LABEL_PROP_ABS_DBL_ORDINAL_Y,
-  AXIS_LABEL_PROP_REL_HWHEEL,
-  AXIS_LABEL_PROP_REL_WHEEL,
-  AXIS_LABEL_PROP_ABS_START_TIME,
-  AXIS_LABEL_PROP_ABS_DBL_START_TIME,
-  AXIS_LABEL_PROP_ABS_END_TIME,
-  AXIS_LABEL_PROP_ABS_DBL_END_TIME,
-  AXIS_LABEL_PROP_ABS_FLING_X,
-  AXIS_LABEL_PROP_ABS_FLING_Y,
-  AXIS_LABEL_PROP_ABS_DBL_FLING_VX,
-  AXIS_LABEL_PROP_ABS_DBL_FLING_VY,
-  AXIS_LABEL_PROP_ABS_FLING_STATE,
-  AXIS_LABEL_PROP_ABS_FINGER_COUNT,
-  NULL
-};
 
 // A workaround for some incorrect implemented input drivers:
 // Ignore their mouse input valuators.
@@ -88,373 +45,6 @@ bool IgnoreMouseValuators() {
   initialized = true;
   return ignore_valuators;
 }
-
-// A class to support the detection of scroll events, using X11 valuators.
-class CMTEventData {
- public:
-  // Returns the ScrollEventData singleton.
-  static CMTEventData* GetInstance() {
-    return Singleton<CMTEventData>::get();
-  }
-
-  // Updates the list of devices.
-  void UpdateDeviceList(Display* display) {
-    cmt_devices_.reset();
-    touchpads_.reset();
-    device_to_valuators_.clear();
-
-#if defined(USE_XI2_MT)
-    // Find all the touchpad devices.
-    XDeviceList dev_list =
-        ui::DeviceListCacheX::GetInstance()->GetXDeviceList(display);
-    Atom xi_touchpad = XInternAtom(display, XI_TOUCHPAD, false);
-    for (int i = 0; i < dev_list.count; ++i)
-      if (dev_list[i].type == xi_touchpad)
-        touchpads_[dev_list[i].id] = true;
-
-    XIDeviceList info_list =
-        ui::DeviceListCacheX::GetInstance()->GetXI2DeviceList(display);
-    Atom x_axis = atom_cache_.GetAtom(AXIS_LABEL_PROP_REL_HWHEEL);
-    Atom y_axis = atom_cache_.GetAtom(AXIS_LABEL_PROP_REL_WHEEL);
-    Atom x_ordinal = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_DBL_ORDINAL_X);
-    Atom y_ordinal = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_DBL_ORDINAL_Y);
-    Atom start_time = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_START_TIME);
-    Atom start_time_dbl =
-        atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_DBL_START_TIME);
-    Atom end_time = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_END_TIME);
-    Atom end_time_dbl = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_DBL_END_TIME);
-    Atom fling_vx = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_FLING_X);
-    Atom fling_vx_dbl = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_DBL_FLING_VX);
-    Atom fling_vy = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_FLING_Y);
-    Atom fling_vy_dbl = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_DBL_FLING_VY);
-    Atom fling_state = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_FLING_STATE);
-    Atom finger_count = atom_cache_.GetAtom(AXIS_LABEL_PROP_ABS_FINGER_COUNT);
-
-    for (int i = 0; i < info_list.count; ++i) {
-      XIDeviceInfo* info = info_list.devices + i;
-
-      if (info->use != XISlavePointer && info->use != XIFloatingSlave)
-        continue;
-
-      Valuators valuators;
-      bool is_cmt = false;
-      for (int j = 0; j < info->num_classes; ++j) {
-        if (info->classes[j]->type == XIScrollClass) {
-          is_cmt = false;
-          break;
-        }
-        if (info->classes[j]->type != XIValuatorClass)
-          continue;
-
-        XIValuatorClassInfo* v =
-            reinterpret_cast<XIValuatorClassInfo*>(info->classes[j]);
-        int number = v->number;
-        if (number > valuators.max)
-          valuators.max = number;
-        if (v->label == x_axis) {
-          valuators.scroll_x = number;
-          is_cmt = true;
-        } else if (v->label == y_axis) {
-          valuators.scroll_y = number;
-          is_cmt = true;
-        } else if (v->label == x_ordinal) {
-          valuators.ordinal_x = number;
-          is_cmt = true;
-        } else if (v->label == y_ordinal) {
-          valuators.ordinal_y = number;
-          is_cmt = true;
-        } else if (v->label == finger_count) {
-          valuators.finger_count = number;
-          is_cmt = true;
-        } else if (v->label == start_time) {
-          valuators.start_time = number;
-          is_cmt = true;
-        } else if (v->label == start_time_dbl) {
-          valuators.start_time_dbl = number;
-          is_cmt = true;
-        } else if (v->label == end_time) {
-          valuators.end_time = number;
-          is_cmt = true;
-        } else if (v->label == end_time_dbl) {
-          valuators.end_time_dbl = number;
-          is_cmt = true;
-        } else if (v->label == fling_vx) {
-          valuators.fling_vx = number;
-          is_cmt = true;
-        } else if (v->label == fling_vx_dbl) {
-          valuators.fling_vx_dbl = number;
-          is_cmt = true;
-        } else if (v->label == fling_vy) {
-          valuators.fling_vy = number;
-          is_cmt = true;
-        } else if (v->label == fling_vy_dbl) {
-          valuators.fling_vy_dbl = number;
-          is_cmt = true;
-        } else if (v->label == fling_state) {
-          valuators.fling_state = number;
-          is_cmt = true;
-        }
-      }
-      if (is_cmt) {
-        // Double valuators override fixed point ones.
-        if (valuators.start_time_dbl >= 0)
-          valuators.start_time = -1;
-        if (valuators.end_time_dbl >= 0)
-          valuators.end_time = -1;
-        if (valuators.fling_vx_dbl >= 0)
-          valuators.fling_vx = -1;
-        if (valuators.fling_vy_dbl >= 0)
-          valuators.fling_vy = -1;
-        device_to_valuators_[info->deviceid] = valuators;
-        cmt_devices_[info->deviceid] = true;
-      }
-    }
-#endif  // defined(USE_XI2_MT)
-  }
-
-  bool natural_scroll_enabled() const { return natural_scroll_enabled_; }
-  void set_natural_scroll_enabled(bool enabled) {
-    natural_scroll_enabled_ = enabled;
-  }
-
-  bool IsTouchpadXInputEvent(const base::NativeEvent& native_event) {
-    if (native_event->type != GenericEvent)
-      return false;
-
-    XIDeviceEvent* xievent =
-        static_cast<XIDeviceEvent*>(native_event->xcookie.data);
-    return touchpads_[xievent->sourceid];
-  }
-
-  float GetNaturalScrollFactor(int sourceid) {
-    // Natural scroll is touchpad-only.
-    if (!touchpads_[sourceid])
-      return -1.0f;
-
-    return natural_scroll_enabled_ ? 1.0f : -1.0f;
-  }
-
-  // Returns true if this is a scroll event (a motion event with the necessary
-  // valuators. Also returns the offsets. |x_offset| and |y_offset| can be
-  // NULL.
-  bool GetScrollOffsets(const XEvent& xev,
-                        float* x_offset,
-                        float* y_offset,
-                        float* x_offset_ordinal,
-                        float* y_offset_ordinal,
-                        int* finger_count) {
-    XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
-
-    if (x_offset)
-      *x_offset = 0;
-    if (y_offset)
-      *y_offset = 0;
-    if (x_offset_ordinal)
-      *x_offset_ordinal = 0;
-    if (y_offset_ordinal)
-      *y_offset_ordinal = 0;
-   if (finger_count)
-      *finger_count = 2;
-
-    const int sourceid = xiev->sourceid;
-    if (!cmt_devices_[sourceid])
-      return false;
-
-    const float natural_scroll_factor = GetNaturalScrollFactor(sourceid);
-    const Valuators v = device_to_valuators_[sourceid];
-    const bool has_x_offset = XIMaskIsSet(xiev->valuators.mask, v.scroll_x);
-    const bool has_y_offset = XIMaskIsSet(xiev->valuators.mask, v.scroll_y);
-    const bool is_scroll = has_x_offset || has_y_offset;
-
-    if (!is_scroll || (!x_offset && !y_offset))
-      return is_scroll;
-
-    double* valuators = xiev->valuators.values;
-    for (int i = 0; i <= v.max; ++i) {
-      if (XIMaskIsSet(xiev->valuators.mask, i)) {
-        if (x_offset && v.scroll_x == i)
-          *x_offset = *valuators * natural_scroll_factor;
-        else if (y_offset && v.scroll_y == i)
-          *y_offset = *valuators * natural_scroll_factor;
-        else if (x_offset_ordinal && v.ordinal_x == i)
-          *x_offset_ordinal = *valuators * natural_scroll_factor;
-        else if (y_offset_ordinal && v.ordinal_y == i)
-          *y_offset_ordinal = *valuators * natural_scroll_factor;
-        else if (finger_count && v.finger_count == i)
-          *finger_count = static_cast<int>(*valuators);
-        valuators++;
-      }
-    }
-
-    return true;
-  }
-
-  bool GetFlingData(const XEvent& xev,
-                    float* vx, float* vy,
-                    float* vx_ordinal, float* vy_ordinal,
-                    bool* is_cancel) {
-    XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
-
-    if (vx)
-      *vx = 0;
-    if (vy)
-      *vy = 0;
-    if (vx_ordinal)
-      *vx_ordinal = 0;
-    if (vy_ordinal)
-      *vy_ordinal = 0;
-    if (is_cancel)
-      *is_cancel = false;
-
-    const int sourceid = xiev->sourceid;
-    if (!cmt_devices_[sourceid])
-      return false;
-
-    const float natural_scroll_factor = GetNaturalScrollFactor(sourceid);
-    const Valuators v = device_to_valuators_[sourceid];
-    if ((!XIMaskIsSet(xiev->valuators.mask, v.fling_vx) &&
-            !XIMaskIsSet(xiev->valuators.mask, v.fling_vx_dbl)) ||
-        (!XIMaskIsSet(xiev->valuators.mask, v.fling_vy) &&
-            !XIMaskIsSet(xiev->valuators.mask, v.fling_vy_dbl)) ||
-        !XIMaskIsSet(xiev->valuators.mask, v.fling_state))
-      return false;
-
-    double* valuators = xiev->valuators.values;
-    for (int i = 0; i <= v.max; ++i) {
-      if (XIMaskIsSet(xiev->valuators.mask, i)) {
-        // Convert values to unsigned ints representing ms before storing them,
-        // as that is how they were encoded before conversion to doubles.
-        if (vx && v.fling_vx_dbl == i) {
-          *vx = natural_scroll_factor * *valuators;
-        } else if (vx && v.fling_vx == i) {
-          *vx = natural_scroll_factor *
-              static_cast<double>(static_cast<int>(*valuators)) / 1000.0f;
-        } else if (vy && v.fling_vy_dbl == i) {
-          *vy = natural_scroll_factor * *valuators;
-        } else if (vy && v.fling_vy == i) {
-          *vy = natural_scroll_factor *
-              static_cast<double>(static_cast<int>(*valuators)) / 1000.0f;
-        } else if (is_cancel && v.fling_state == i) {
-          *is_cancel = !!static_cast<unsigned int>(*valuators);
-        } else if (vx_ordinal && v.ordinal_x == i) {
-          *vx_ordinal = *valuators * natural_scroll_factor;
-        } else if (vy_ordinal && v.ordinal_y == i) {
-          *vy_ordinal = *valuators * natural_scroll_factor;
-        }
-        valuators++;
-      }
-    }
-
-    return true;
-  }
-
-  bool GetGestureTimes(const XEvent& xev,
-                       double* start_time,
-                       double* end_time) {
-    *start_time = 0;
-    *end_time = 0;
-
-    XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
-    if (!cmt_devices_[xiev->sourceid])
-      return false;
-
-    Valuators v = device_to_valuators_[xiev->sourceid];
-    if ((!XIMaskIsSet(xiev->valuators.mask, v.start_time) &&
-            !XIMaskIsSet(xiev->valuators.mask, v.start_time_dbl)) ||
-        (!XIMaskIsSet(xiev->valuators.mask, v.end_time) &&
-            !XIMaskIsSet(xiev->valuators.mask, v.end_time_dbl)))
-      return false;
-
-    double* valuators = xiev->valuators.values;
-    for (int i = 0; i <= v.max; ++i) {
-      if (XIMaskIsSet(xiev->valuators.mask, i)) {
-        if (v.start_time_dbl == i) {
-          *start_time = *valuators;
-        } else if (v.start_time == i) {
-          // Convert values to unsigned ints representing ms before storing
-          // them, as that is how they were encoded before conversion
-          // to doubles.
-          *start_time =
-              static_cast<double>(
-                  static_cast<unsigned int>(*valuators)) / 1000;
-        } else if (v.end_time_dbl == i) {
-          *end_time = *valuators;
-        } else if (v.end_time == i) {
-          // Convert values to unsigned ints representing ms before storing
-          // them, as that is how they were encoded before conversion
-          // to doubles.
-          *end_time =
-              static_cast<double>(
-                  static_cast<unsigned int>(*valuators)) / 1000;
-        }
-        valuators++;
-      }
-    }
-
-    return true;
-  }
-
- private:
-  // Requirement for Singleton
-  friend struct DefaultSingletonTraits<CMTEventData>;
-
-  struct Valuators {
-    int max;
-    int scroll_x;
-    int scroll_y;
-    int ordinal_x;
-    int ordinal_y;
-    int finger_count;
-    int start_time;
-    int end_time;
-    int fling_vx;
-    int fling_vy;
-    int fling_state;
-    // *_dbl valuators take precedence over the fixed precision versions.
-    int start_time_dbl;
-    int end_time_dbl;
-    int fling_vx_dbl;
-    int fling_vy_dbl;
-
-    Valuators()
-        : max(-1),
-          scroll_x(-1),
-          scroll_y(-1),
-          ordinal_x(-1),
-          ordinal_y(-1),
-          finger_count(-1),
-          start_time(-1),
-          end_time(-1),
-          fling_vx(-1),
-          fling_vy(-1),
-          fling_state(-1),
-          start_time_dbl(-1),
-          end_time_dbl(-1),
-          fling_vx_dbl(-1),
-          fling_vy_dbl(-1) {
-    }
-
-  };
-
-  CMTEventData()
-      : natural_scroll_enabled_(false),
-        atom_cache_(ui::GetXDisplay(), kCMTCachedAtoms) {
-    UpdateDeviceList(ui::GetXDisplay());
-  }
-
-  ~CMTEventData() {}
-
-  // A quick lookup table for determining if events from the pointer device
-  // should be processed.
-  static const int kMaxDeviceNum = 128;
-  bool natural_scroll_enabled_;
-  std::bitset<kMaxDeviceNum> cmt_devices_;
-  std::bitset<kMaxDeviceNum> touchpads_;
-  std::map<int, Valuators> device_to_valuators_;
-  ui::X11AtomCache atom_cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(CMTEventData);
-};
 
 // A class to track current modifier state on master device. Only track ctrl,
 // alt, shift and caps lock keys currently. The tracked state can then be used
@@ -540,8 +130,8 @@ bool TouchEventIsGeneratedHack(const base::NativeEvent& native_event) {
   double radius = ui::GetTouchRadiusX(native_event), min, max;
   unsigned int deviceid =
       static_cast<XIDeviceEvent*>(native_event->xcookie.data)->sourceid;
-  if (!ui::ValuatorTracker::GetInstance()->GetValuatorRange(
-      deviceid, ui::ValuatorTracker::VAL_TOUCH_MAJOR, &min, &max)) {
+  if (!ui::DeviceDataManager::GetInstance()->GetDataRange(
+      deviceid, ui::DeviceDataManager::DT_TOUCH_MAJOR, &min, &max)) {
     return false;
   }
 
@@ -645,11 +235,11 @@ ui::EventType GetTouchEventType(const base::NativeEvent& native_event) {
   // when necessary, by a RWHVV.
   // TODO(sad): When should _CANCELLED be generated?
 
-  ui::ValuatorTracker* valuators = ui::ValuatorTracker::GetInstance();
+  ui::DeviceDataManager* manager = ui::DeviceDataManager::GetInstance();
 
   double slot;
-  if (!valuators->ExtractValuator(
-      *native_event, ui::ValuatorTracker::VAL_SLOT_ID, &slot))
+  if (!manager->GetEventData(
+      *native_event, ui::DeviceDataManager::DT_TOUCH_SLOT_ID, &slot))
     return ui::ET_UNKNOWN;
 
   if (!factory->IsSlotUsed(slot)) {
@@ -658,8 +248,8 @@ ui::EventType GetTouchEventType(const base::NativeEvent& native_event) {
   }
 
   double tracking;
-  if (!valuators->ExtractValuator(
-      *native_event, ui::ValuatorTracker::VAL_TRACKING_ID, &tracking))
+  if (!manager->GetEventData(
+      *native_event, ui::DeviceDataManager::DT_TOUCH_TRACKING_ID, &tracking))
     return ui::ET_UNKNOWN;
 
   if (tracking == 0l) {
@@ -672,9 +262,9 @@ ui::EventType GetTouchEventType(const base::NativeEvent& native_event) {
 }
 
 double GetTouchParamFromXEvent(XEvent* xev,
-                              ui::ValuatorTracker::Valuator val,
+                              ui::DeviceDataManager::DataType val,
                               double default_value) {
-  ui::ValuatorTracker::GetInstance()->ExtractValuator(
+  ui::DeviceDataManager::GetInstance()->GetEventData(
       *xev, val, &default_value);
   return default_value;
 }
@@ -692,9 +282,8 @@ namespace ui {
 void UpdateDeviceList() {
   Display* display = GetXDisplay();
   DeviceListCacheX::GetInstance()->UpdateDeviceList(display);
-  CMTEventData::GetInstance()->UpdateDeviceList(display);
   TouchFactory::GetInstance()->UpdateDeviceList(display);
-  ValuatorTracker::GetInstance()->SetupValuator();
+  DeviceDataManager::GetInstance()->UpdateDeviceList(display);
 }
 
 EventType EventTypeFromNative(const base::NativeEvent& native_event) {
@@ -752,8 +341,8 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
           bool is_cancel;
           if (GetFlingData(native_event, NULL, NULL, NULL, NULL, &is_cancel)) {
             return is_cancel ? ET_SCROLL_FLING_CANCEL : ET_SCROLL_FLING_START;
-          } else if (GetScrollOffsets(
-              native_event, NULL, NULL, NULL, NULL, NULL)) {
+          } else if (DeviceDataManager::GetInstance()->IsScrollEvent(
+              native_event)) {
             return IsTouchpadEvent(native_event) ? ET_SCROLL : ET_MOUSEWHEEL;
           } else if (GetButtonMaskForX2Event(xievent)) {
             return ET_MOUSE_DRAGGED;
@@ -849,8 +438,8 @@ base::TimeDelta EventTimeFromNative(const base::NativeEvent& native_event) {
       if (GetGestureTimes(native_event, &start, &end)) {
         // If the driver supports gesture times, use them.
         return base::TimeDelta::FromMicroseconds(end * 1000000);
-      } else if (ValuatorTracker::GetInstance()->ExtractValuator(*native_event,
-                 ValuatorTracker::VAL_TOUCH_RAW_TIMESTAMP, &touch_timestamp)) {
+      } else if (DeviceDataManager::GetInstance()->GetEventData(*native_event,
+                 DeviceDataManager::DT_TOUCH_RAW_TIMESTAMP, &touch_timestamp)) {
         return base::TimeDelta::FromMicroseconds(touch_timestamp * 1000000);
       } else {
         XIDeviceEvent* xide =
@@ -998,10 +587,9 @@ int GetChangedMouseButtonFlagsFromNative(
 }
 
 gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
-  float x_offset = 0;
-  float y_offset = 0;
-  if (native_event->type == GenericEvent &&
-      GetScrollOffsets(native_event, &x_offset, &y_offset, NULL, NULL, NULL)) {
+  float x_offset, y_offset;
+  if (GetScrollOffsets(
+      native_event, &x_offset, &y_offset, NULL, NULL, NULL)) {
     return gfx::Vector2d(static_cast<int>(x_offset),
                          static_cast<int>(y_offset));
   }
@@ -1030,12 +618,12 @@ int GetTouchId(const base::NativeEvent& xev) {
     return slot;
   }
 
-  ui::ValuatorTracker* valuators = ui::ValuatorTracker::GetInstance();
+  ui::DeviceDataManager* manager = ui::DeviceDataManager::GetInstance();
 
 #if defined(USE_XI2_MT)
   double tracking_id;
-  if (!valuators->ExtractValuator(
-      *xev, ui::ValuatorTracker::VAL_TRACKING_ID, &tracking_id)) {
+  if (!manager->GetEventData(
+      *xev, ui::DeviceDataManager::DT_TOUCH_TRACKING_ID, &tracking_id)) {
     LOG(ERROR) << "Could not get the slot ID for the event. Using 0.";
   } else {
     slot = factory->GetSlotForTrackingID(tracking_id);
@@ -1046,8 +634,8 @@ int GetTouchId(const base::NativeEvent& xev) {
     }
   }
 #else
-  if (!valuators->ExtractValuator(
-      *xev, ui::ValuatorTracker::VAL_SLOT_ID, &slot))
+  if (!manager->GetEventData(
+      *xev, ui::DeviceDataManager::DT_TOUCH_SLOT_ID, &slot))
     LOG(ERROR) << "Could not get the slot ID for the event. Using 0.";
 #endif
   return slot;
@@ -1055,28 +643,28 @@ int GetTouchId(const base::NativeEvent& xev) {
 
 float GetTouchRadiusX(const base::NativeEvent& native_event) {
   return GetTouchParamFromXEvent(native_event,
-      ui::ValuatorTracker::VAL_TOUCH_MAJOR, 0.0) / 2.0;
+      ui::DeviceDataManager::DT_TOUCH_MAJOR, 0.0) / 2.0;
 }
 
 float GetTouchRadiusY(const base::NativeEvent& native_event) {
   return GetTouchParamFromXEvent(native_event,
-      ui::ValuatorTracker::VAL_TOUCH_MINOR, 0.0) / 2.0;
+      ui::DeviceDataManager::DT_TOUCH_MINOR, 0.0) / 2.0;
 }
 
 float GetTouchAngle(const base::NativeEvent& native_event) {
   return GetTouchParamFromXEvent(native_event,
-      ui::ValuatorTracker::VAL_ORIENTATION, 0.0) / 2.0;
+      ui::DeviceDataManager::DT_TOUCH_ORIENTATION, 0.0) / 2.0;
 }
 
 float GetTouchForce(const base::NativeEvent& native_event) {
   double force = 0.0;
   force = GetTouchParamFromXEvent(native_event,
-      ui::ValuatorTracker::VAL_PRESSURE, 0.0);
+      ui::DeviceDataManager::DT_TOUCH_PRESSURE, 0.0);
   unsigned int deviceid =
       static_cast<XIDeviceEvent*>(native_event->xcookie.data)->sourceid;
   // Force is normalized to fall into [0, 1]
-  if (!ui::ValuatorTracker::GetInstance()->NormalizeValuator(
-      deviceid, ui::ValuatorTracker::VAL_PRESSURE, &force))
+  if (!ui::DeviceDataManager::GetInstance()->NormalizeData(
+      deviceid, ui::DeviceDataManager::DT_TOUCH_PRESSURE, &force))
     force = 0.0;
   return force;
 }
@@ -1087,11 +675,30 @@ bool GetScrollOffsets(const base::NativeEvent& native_event,
                       float* x_offset_ordinal,
                       float* y_offset_ordinal,
                       int* finger_count) {
-  return CMTEventData::GetInstance()->GetScrollOffsets(
-      *native_event,
+  if (!DeviceDataManager::GetInstance()->IsScrollEvent(native_event))
+    return false;
+
+  // Temp values to prevent passing NULLs to DeviceDataManager.
+  float x_offset_, y_offset_;
+  float x_offset_ordinal_, y_offset_ordinal_;
+  int finger_count_;
+  if (!x_offset)
+    x_offset = &x_offset_;
+  if (!y_offset)
+    y_offset = &y_offset_;
+  if (!x_offset_ordinal)
+    x_offset_ordinal = &x_offset_ordinal_;
+  if (!y_offset_ordinal)
+    y_offset_ordinal = &y_offset_ordinal_;
+  if (!finger_count)
+    finger_count = &finger_count_;
+
+  DeviceDataManager::GetInstance()->GetScrollOffsets(
+      native_event,
       x_offset, y_offset,
       x_offset_ordinal, y_offset_ordinal,
       finger_count);
+  return true;
 }
 
 bool GetFlingData(const base::NativeEvent& native_event,
@@ -1100,27 +707,55 @@ bool GetFlingData(const base::NativeEvent& native_event,
                   float* vx_ordinal,
                   float* vy_ordinal,
                   bool* is_cancel) {
-  return CMTEventData::GetInstance()->GetFlingData(
-      *native_event, vx, vy, vx_ordinal, vy_ordinal, is_cancel);
+  if (!DeviceDataManager::GetInstance()->IsFlingEvent(native_event))
+    return false;
+
+  float vx_, vy_;
+  float vx_ordinal_, vy_ordinal_;
+  bool is_cancel_;
+  if (!vx)
+    vx = &vx_;
+  if (!vy)
+    vy = &vy_;
+  if (!vx_ordinal)
+    vx_ordinal = &vx_ordinal_;
+  if (!vy_ordinal)
+    vy_ordinal = &vy_ordinal_;
+  if (!is_cancel)
+    is_cancel = &is_cancel_;
+
+  DeviceDataManager::GetInstance()->GetFlingData(
+      native_event, vx, vy, vx_ordinal, vy_ordinal, is_cancel);
+  return true;
 }
 
 bool GetGestureTimes(const base::NativeEvent& native_event,
                      double* start_time,
                      double* end_time) {
-  return CMTEventData::GetInstance()->GetGestureTimes(
-      *native_event, start_time, end_time);
+  if (!DeviceDataManager::GetInstance()->HasGestureTimes(native_event))
+    return false;
+
+  double start_time_, end_time_;
+  if (!start_time)
+    start_time = &start_time_;
+  if (!end_time)
+    end_time = &end_time_;
+
+  DeviceDataManager::GetInstance()->GetGestureTimes(
+      native_event, start_time, end_time);
+  return true;
 }
 
 void SetNaturalScroll(bool enabled) {
-  CMTEventData::GetInstance()->set_natural_scroll_enabled(enabled);
+  DeviceDataManager::GetInstance()->set_natural_scroll_enabled(enabled);
 }
 
 bool IsNaturalScrollEnabled() {
-  return CMTEventData::GetInstance()->natural_scroll_enabled();
+  return DeviceDataManager::GetInstance()->natural_scroll_enabled();
 }
 
 bool IsTouchpadEvent(const base::NativeEvent& event) {
-  return CMTEventData::GetInstance()->IsTouchpadXInputEvent(event);
+  return DeviceDataManager::GetInstance()->IsTouchpadXInputEvent(event);
 }
 
 bool IsNoopEvent(const base::NativeEvent& event) {
