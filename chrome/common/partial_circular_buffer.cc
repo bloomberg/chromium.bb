@@ -36,7 +36,8 @@ PartialCircularBuffer::PartialCircularBuffer(void* buffer,
 
 PartialCircularBuffer::PartialCircularBuffer(void* buffer,
                                              uint32 buffer_size,
-                                             uint32 wrap_position)
+                                             uint32 wrap_position,
+                                             bool append)
     : buffer_data_(reinterpret_cast<BufferData*>(buffer)),
       memory_buffer_size_(buffer_size),
       data_size_(0),
@@ -48,11 +49,16 @@ PartialCircularBuffer::PartialCircularBuffer(void* buffer,
 
   DCHECK(buffer_data_);
   DCHECK_GE(memory_buffer_size_, header_size);
-  DCHECK_LT(wrap_position, data_size_);
 
-  buffer_data_->total_written = 0;
-  buffer_data_->wrap_position = wrap_position;
-  buffer_data_->end_position = 0;
+  if (append) {
+    DCHECK_LT(buffer_data_->wrap_position, data_size_);
+    position_ = buffer_data_->end_position;
+  } else {
+    DCHECK_LT(wrap_position, data_size_);
+    buffer_data_->total_written = 0;
+    buffer_data_->wrap_position = wrap_position;
+    buffer_data_->end_position = 0;
+  }
 }
 
 uint32 PartialCircularBuffer::Read(void* buffer, uint32 buffer_size) {

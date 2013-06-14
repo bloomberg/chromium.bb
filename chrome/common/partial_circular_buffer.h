@@ -29,10 +29,12 @@ class PartialCircularBuffer {
   PartialCircularBuffer(void* buffer, uint32 buffer_size);
 
   // Use for writing. |buffer_size| is in bytes and must be larger than the
-  // header size (see above).
+  // header size (see above). If |append| is true, the header data is not reset
+  // and writing will continue were left off, |wrap_position| is then ignored.
   PartialCircularBuffer(void* buffer,
                         uint32 buffer_size,
-                        uint32 wrap_position);
+                        uint32 wrap_position,
+                        bool append);
 
   uint32 Read(void* buffer, uint32 buffer_size);
   void Write(const void* buffer, uint32 buffer_size);

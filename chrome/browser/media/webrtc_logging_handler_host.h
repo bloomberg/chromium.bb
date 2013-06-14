@@ -6,11 +6,8 @@
 #define CHROME_BROWSER_MEDIA_WEBRTC_LOGGING_HANDLER_HOST_H_
 
 #include "base/basictypes.h"
+#include "base/shared_memory.h"
 #include "content/public/browser/browser_message_filter.h"
-
-namespace base {
-class SharedMemory;
-}  // namespace base
 
 namespace net {
 class URLRequestContextGetter;
@@ -43,6 +40,8 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
 
   void OpenLogIfAllowed();
   void DoOpenLog();
+  void LogMachineInfo();
+  void NotifyLogOpened();
 
   void UploadLog();
 
@@ -50,6 +49,11 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   scoped_ptr<base::SharedMemory> shared_memory_;
   std::string app_session_id_;
   std::string app_url_;
+
+  // This is the handle to be passed to the render process. It's stored so that
+  // it doesn't have to be passed on when posting messages between threads.
+  // It's only accessed on the IO thread.
+  base::SharedMemoryHandle foreign_memory_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLoggingHandlerHost);
 };

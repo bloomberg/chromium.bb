@@ -64,7 +64,8 @@ void WebRtcLoggingHandlerImpl::OnLogOpened(
   circular_buffer_.reset(
       new PartialCircularBuffer(shared_memory_->memory(),
                                 length,
-                                length / 2));
+                                length / 2,
+                                true));
 }
 
 void WebRtcLoggingHandlerImpl::OnOpenLogFailed() {

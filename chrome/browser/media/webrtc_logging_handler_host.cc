@@ -5,20 +5,34 @@
 #include "chrome/browser/media/webrtc_logging_handler_host.h"
 
 #include "base/bind.h"
+#include "base/cpu.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
-#include "base/shared_memory.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/media/webrtc_log_uploader.h"
 #include "chrome/common/media/webrtc_logging_messages.h"
+#include "chrome/common/partial_circular_buffer.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
+#include "gpu/config/gpu_info.h"
+#include "gpu/config/gpu_info_collector.h"
 #include "net/url_request/url_request_context_getter.h"
 
+#if defined(OS_LINUX)
+#include "base/linux_util.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
+using base::IntToString;
 using content::BrowserThread;
 
 
@@ -102,14 +116,68 @@ void WebRtcLoggingHandlerHost::DoOpenLog() {
     return;
   }
 
-  base::SharedMemoryHandle foreign_memory_handle;
   if (!shared_memory_->ShareToProcess(peer_handle(),
-                                     &foreign_memory_handle)) {
+                                     &foreign_memory_handle_)) {
     Send(new WebRtcLoggingMsg_OpenLogFailed());
     return;
   }
 
-  Send(new WebRtcLoggingMsg_LogOpened(foreign_memory_handle, kWebRtcLogSize));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
+      &WebRtcLoggingHandlerHost::LogMachineInfo, this));
+}
+
+void WebRtcLoggingHandlerHost::LogMachineInfo() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  PartialCircularBuffer pcb(shared_memory_->memory(),
+                            kWebRtcLogSize,
+                            kWebRtcLogSize / 2,
+                            false);
+
+  // OS
+  std::string info = base::SysInfo::OperatingSystemName() + " " +
+                     base::SysInfo::OperatingSystemVersion() + " " +
+                     base::SysInfo::OperatingSystemArchitecture() + '\n';
+  pcb.Write(info.c_str(), info.length());
+#if defined(OS_LINUX)
+  info = "Linux distribution: " + base::GetLinuxDistro() + '\n';
+  pcb.Write(info.c_str(), info.length());
+#endif
+
+  // CPU
+  base::CPU cpu;
+  info = "Cpu: " + IntToString(cpu.family()) + "." + IntToString(cpu.model()) +
+         "." + IntToString(cpu.stepping()) +
+         ", x" + IntToString(base::SysInfo::NumberOfProcessors()) + ", " +
+         IntToString(base::SysInfo::AmountOfPhysicalMemoryMB()) + "MB" + '\n';
+  pcb.Write(info.c_str(), info.length());
+  info = "Cpu brand: " + cpu.cpu_brand() + '\n';
+  pcb.Write(info.c_str(), info.length());
+
+  // Computer model
+#if defined(OS_MACOSX)
+  info = "Computer model: " + base::mac::GetModelIdentifier() + '\n';
+#else
+  info = "Computer model: Not available\n";
+#endif
+  pcb.Write(info.c_str(), info.length());
+
+  // GPU
+  gpu::GPUInfo gpu_info;
+  gpu::CollectBasicGraphicsInfo(&gpu_info);
+  info = "Gpu: machine-model='" + gpu_info.machine_model +
+         "', vendor-id=" + IntToString(gpu_info.gpu.vendor_id) +
+         ", device-id=" + IntToString(gpu_info.gpu.device_id) +
+         ", driver-vendor='" + gpu_info.driver_vendor +
+         "', driver-version=" + gpu_info.driver_version + '\n';
+  pcb.Write(info.c_str(), info.length());
+
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
+      &WebRtcLoggingHandlerHost::NotifyLogOpened, this));
+}
+
+void WebRtcLoggingHandlerHost::NotifyLogOpened() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  Send(new WebRtcLoggingMsg_LogOpened(foreign_memory_handle_, kWebRtcLogSize));
 }
 
 void WebRtcLoggingHandlerHost::UploadLog() {

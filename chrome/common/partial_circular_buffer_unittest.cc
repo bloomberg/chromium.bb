@@ -34,10 +34,14 @@ class PartialCircularBufferTest : public testing::Test {
         &test_struct.data[0] - reinterpret_cast<uint8*>(&test_struct);
 
     buffer_.reset(new uint8[buffer_header_size_ + sizeof(kOutputRefDataWrap)]);
+  }
+
+  void InitWriteBuffer(bool append) {
     pcb_write_.reset(new PartialCircularBuffer(
         buffer_.get(),
         buffer_header_size_ + sizeof(kOutputRefDataWrap),
-        kWrapPosition));
+        kWrapPosition,
+        append));
   }
 
   void WriteToBuffer(int num) {
@@ -60,6 +64,7 @@ class PartialCircularBufferTest : public testing::Test {
 };
 
 TEST_F(PartialCircularBufferTest, NoWrapBeginningPartOnly) {
+  InitWriteBuffer(false);
   WriteToBuffer(1);
   InitReadBuffer();
 
@@ -73,6 +78,7 @@ TEST_F(PartialCircularBufferTest, NoWrapBeginningPartOnly) {
 }
 
 TEST_F(PartialCircularBufferTest, NoWrapBeginningAndEndParts) {
+  InitWriteBuffer(false);
   WriteToBuffer(2);
   InitReadBuffer();
 
@@ -89,6 +95,7 @@ TEST_F(PartialCircularBufferTest, NoWrapBeginningAndEndParts) {
 }
 
 TEST_F(PartialCircularBufferTest, WrapOnce) {
+  InitWriteBuffer(false);
   WriteToBuffer(4);
   InitReadBuffer();
 
@@ -102,6 +109,7 @@ TEST_F(PartialCircularBufferTest, WrapOnce) {
 }
 
 TEST_F(PartialCircularBufferTest, WrapTwice) {
+  InitWriteBuffer(false);
   WriteToBuffer(7);
   InitReadBuffer();
 
@@ -115,6 +123,7 @@ TEST_F(PartialCircularBufferTest, WrapTwice) {
 }
 
 TEST_F(PartialCircularBufferTest, WrapOnceSmallerOutputBuffer) {
+  InitWriteBuffer(false);
   WriteToBuffer(4);
   InitReadBuffer();
 
@@ -129,6 +138,54 @@ TEST_F(PartialCircularBufferTest, WrapOnceSmallerOutputBuffer) {
             pcb_read_->Read(output_data + read, size_per_read));
 
   EXPECT_EQ(0, memcmp(kOutputRefDataWrap, output_data, sizeof(output_data)));
+
+  EXPECT_EQ(0u, pcb_read_->Read(output_data, sizeof(output_data)));
+}
+
+TEST_F(PartialCircularBufferTest, WrapOnceWithAppend) {
+  InitWriteBuffer(false);
+  WriteToBuffer(2);
+  InitWriteBuffer(true);
+  WriteToBuffer(2);
+  InitReadBuffer();
+
+  uint8 output_data[sizeof(kOutputRefDataWrap)] = {0};
+  EXPECT_EQ(sizeof(output_data),
+            pcb_read_->Read(output_data, sizeof(output_data)));
+
+  EXPECT_EQ(0, memcmp(kOutputRefDataWrap, output_data, sizeof(output_data)));
+
+  EXPECT_EQ(0u, pcb_read_->Read(output_data, sizeof(output_data)));
+}
+
+TEST_F(PartialCircularBufferTest, WrapTwiceWithAppend) {
+  InitWriteBuffer(false);
+  WriteToBuffer(4);
+  InitWriteBuffer(true);
+  WriteToBuffer(3);
+  InitReadBuffer();
+
+  uint8 output_data[sizeof(kOutputRefDataWrap)] = {0};
+  EXPECT_EQ(sizeof(output_data),
+            pcb_read_->Read(output_data, sizeof(output_data)));
+
+  EXPECT_EQ(0, memcmp(kOutputRefDataWrap, output_data, sizeof(output_data)));
+
+  EXPECT_EQ(0u, pcb_read_->Read(output_data, sizeof(output_data)));
+}
+
+TEST_F(PartialCircularBufferTest, WrapOnceThenOverwriteWithNoWrap) {
+  InitWriteBuffer(false);
+  WriteToBuffer(4);
+  InitWriteBuffer(false);
+  WriteToBuffer(1);
+  InitReadBuffer();
+
+  uint8 output_data[sizeof(kInputData)] = {0};
+  EXPECT_EQ(sizeof(output_data),
+            pcb_read_->Read(output_data, sizeof(output_data)));
+
+  EXPECT_EQ(0, memcmp(kInputData, output_data, sizeof(kInputData)));
 
   EXPECT_EQ(0u, pcb_read_->Read(output_data, sizeof(output_data)));
 }
