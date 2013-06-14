@@ -15,9 +15,9 @@ class WebRequestCustomBindings : public ChromeV8Extension {
   WebRequestCustomBindings(Dispatcher* dispatcher, ChromeV8Context* context);
 
  private:
-  v8::Handle<v8::Value> GetUniqueSubEventName(const v8::Arguments& args);
+  void GetUniqueSubEventName(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
-}  // extensions
+}  // namespace extensions
 
 #endif  // CHROME_RENDERER_EXTENSIONS_WEB_REQUEST_CUSTOM_BINDINGS_H_

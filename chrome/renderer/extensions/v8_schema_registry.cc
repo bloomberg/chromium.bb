@@ -33,8 +33,9 @@ class SchemaRegistryNativeHandler : public ObjectBackedNativeHandler {
   }
 
  private:
-  v8::Handle<v8::Value> GetSchema(const v8::Arguments& args) {
-    return registry_->GetSchema(*v8::String::AsciiValue(args[0]));
+  void GetSchema(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    args.GetReturnValue().Set(
+      registry_->GetSchema(*v8::String::AsciiValue(args[0])));
   }
 
   scoped_ptr<ChromeV8Context> context_;

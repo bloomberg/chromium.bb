@@ -22,20 +22,21 @@ APIActivityLogger::APIActivityLogger(
 }
 
 // static
-v8::Handle<v8::Value> APIActivityLogger::LogAPICall(const v8::Arguments& args) {
+void APIActivityLogger::LogAPICall(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   LogInternal(APICALL, args);
-  return v8::Undefined();
 }
 
 // static
-v8::Handle<v8::Value> APIActivityLogger::LogEvent(const v8::Arguments& args) {
+void APIActivityLogger::LogEvent(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   LogInternal(EVENT, args);
-  return v8::Undefined();
 }
 
 // static
-void APIActivityLogger::LogInternal(const CallType call_type,
-                                    const v8::Arguments& args) {
+void APIActivityLogger::LogInternal(
+    const CallType call_type,
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   DCHECK_GT(args.Length(), 2);
   DCHECK(args[0]->IsString());
   DCHECK(args[1]->IsString());

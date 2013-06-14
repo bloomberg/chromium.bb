@@ -23,14 +23,14 @@ class SendRequestNatives : public ChromeV8Extension {
                      ChromeV8Context* context);
 
  private:
-  v8::Handle<v8::Value> GetNextRequestId(const v8::Arguments& args);
+  void GetNextRequestId(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Starts an API request to the browser, with an optional callback.  The
   // callback will be dispatched to EventBindings::HandleResponse.
-  v8::Handle<v8::Value> StartRequest(const v8::Arguments& args);
+  void StartRequest(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Gets a reference to an object's global object.
-  v8::Handle<v8::Value> GetGlobal(const v8::Arguments& args);
+  void GetGlobal(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   RequestSender* request_sender_;
 

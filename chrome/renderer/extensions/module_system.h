@@ -74,7 +74,7 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   // Require the specified module. This is the equivalent of calling
   // require('module_name') from the loaded JS files.
   v8::Handle<v8::Value> Require(const std::string& module_name);
-  v8::Handle<v8::Value> Require(const v8::Arguments& args);
+  void Require(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Calls the specified method exported by the specified module. This is
   // equivalent to calling require('module_name').method_name() from JS.
@@ -161,7 +161,7 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   v8::Handle<v8::Value> RunString(v8::Handle<v8::String> code,
                                   v8::Handle<v8::String> name);
 
-  v8::Handle<v8::Value> RequireForJs(const v8::Arguments& args);
+  void RequireForJs(const v8::FunctionCallbackInfo<v8::Value>& args);
   v8::Handle<v8::Value> RequireForJsInner(v8::Handle<v8::String> module_name);
 
   typedef v8::Handle<v8::Value> (ModuleSystem::*RequireFunction)(
@@ -181,7 +181,7 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   // NativeHandler.
   // |args[0]| - the name of a native handler object.
   v8::Handle<v8::Value> RequireNativeFromString(const std::string& native_name);
-  v8::Handle<v8::Value> RequireNative(const v8::Arguments& args);
+  void RequireNative(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Wraps |source| in a (function(require, requireNative, exports) {...}).
   v8::Handle<v8::String> WrapSource(v8::Handle<v8::String> source);

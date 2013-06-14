@@ -20,29 +20,29 @@ class LoggingNativeHandler : public ObjectBackedNativeHandler {
   // Equivalent to CHECK(predicate) << message.
   //
   // void(predicate, message?)
-  v8::Handle<v8::Value> Check(const v8::Arguments& args);
+  void Check(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Equivalent to DCHECK(predicate) << message.
   //
   // void(predicate, message?)
-  v8::Handle<v8::Value> Dcheck(const v8::Arguments& args);
+  void Dcheck(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Equivalent to DCHECK_IS_ON().
   //
   // bool()
-  v8::Handle<v8::Value> DcheckIsOn(const v8::Arguments& args);
+  void DcheckIsOn(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Equivalent to LOG(INFO) << message.
   //
   // void(message)
-  v8::Handle<v8::Value> Log(const v8::Arguments& args);
+  void Log(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Equivalent to LOG(WARNING) << message.
   //
   // void(message)
-  v8::Handle<v8::Value> Warning(const v8::Arguments& args);
+  void Warning(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  void ParseArgs(const v8::Arguments& args,
+  void ParseArgs(const v8::FunctionCallbackInfo<v8::Value>& args,
                  bool* check_value,
                  std::string* error_message);
 

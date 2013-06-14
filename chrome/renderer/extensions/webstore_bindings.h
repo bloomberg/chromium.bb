@@ -25,7 +25,7 @@ class WebstoreBindings : public ChromeV8Extension,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
-  v8::Handle<v8::Value> Install(const v8::Arguments& args);
+  void Install(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   void OnInlineWebstoreInstallResponse(
       int install_id, bool success, const std::string& error);

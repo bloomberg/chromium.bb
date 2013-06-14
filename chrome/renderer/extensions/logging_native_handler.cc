@@ -25,44 +25,43 @@ LoggingNativeHandler::LoggingNativeHandler(ChromeV8Context* context)
 
 LoggingNativeHandler::~LoggingNativeHandler() {}
 
-v8::Handle<v8::Value> LoggingNativeHandler::Check(const v8::Arguments& args) {
+void LoggingNativeHandler::Check(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   bool check_value;
   std::string error_message;
   ParseArgs(args, &check_value, &error_message);
   CHECK(check_value) << error_message;
-  return v8::Undefined();
 }
 
-v8::Handle<v8::Value> LoggingNativeHandler::Dcheck(const v8::Arguments& args) {
+void LoggingNativeHandler::Dcheck(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   bool check_value;
   std::string error_message;
   ParseArgs(args, &check_value, &error_message);
   DCHECK(check_value) << error_message;
-  return v8::Undefined();
 }
 
-v8::Handle<v8::Value> LoggingNativeHandler::DcheckIsOn(
-    const v8::Arguments& args) {
-  return v8::Boolean::New(DCHECK_IS_ON());
+void LoggingNativeHandler::DcheckIsOn(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  args.GetReturnValue().Set(DCHECK_IS_ON());
 }
 
-v8::Handle<v8::Value> LoggingNativeHandler::Log(
-    const v8::Arguments& args) {
+void LoggingNativeHandler::Log(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
   LOG(INFO) << *v8::String::AsciiValue(args[0]);
-  return v8::Undefined();
 }
 
-v8::Handle<v8::Value> LoggingNativeHandler::Warning(
-    const v8::Arguments& args) {
+void LoggingNativeHandler::Warning(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
   LOG(WARNING) << *v8::String::AsciiValue(args[0]);
-  return v8::Undefined();
 }
 
-void LoggingNativeHandler::ParseArgs(const v8::Arguments& args,
-                                     bool* check_value,
-                                     std::string* error_message) {
+void LoggingNativeHandler::ParseArgs(
+    const v8::FunctionCallbackInfo<v8::Value>& args,
+    bool* check_value,
+    std::string* error_message) {
   CHECK_LE(args.Length(), 2);
   *check_value = args[0]->BooleanValue();
   if (args.Length() == 2) {

@@ -90,7 +90,7 @@ class ExtensionImpl : public ChromeV8Extension {
   virtual ~ExtensionImpl() {}
 
   // Attach an event name to an object.
-  v8::Handle<v8::Value> AttachEvent(const v8::Arguments& args) {
+  void AttachEvent(const v8::FunctionCallbackInfo<v8::Value>& args) {
     DCHECK(args.Length() == 1);
     // TODO(erikkay) should enforce that event name is a string in the bindings
     DCHECK(args[0]->IsString() || args[0]->IsUndefined());
@@ -100,7 +100,7 @@ class ExtensionImpl : public ChromeV8Extension {
       CHECK(context());
 
       if (!dispatcher_->CheckContextAccessToExtensionAPI(event_name, context()))
-        return v8::Undefined();
+        return;
 
       std::string extension_id = context()->GetExtensionID();
       EventListenerCounts& listener_counts =
@@ -118,10 +118,9 @@ class ExtensionImpl : public ChromeV8Extension {
             new ExtensionHostMsg_AddLazyListener(extension_id, event_name));
       }
     }
-    return v8::Undefined();
   }
 
-  v8::Handle<v8::Value> DetachEvent(const v8::Arguments& args) {
+  void DetachEvent(const v8::FunctionCallbackInfo<v8::Value>& args) {
     DCHECK(args.Length() == 2);
     // TODO(erikkay) should enforce that event name is a string in the bindings
     DCHECK(args[0]->IsString() || args[0]->IsUndefined());
@@ -131,7 +130,7 @@ class ExtensionImpl : public ChromeV8Extension {
       bool is_manual = args[1]->BooleanValue();
 
       if (!context())
-        return v8::Undefined();
+        return;
 
       std::string extension_id = context()->GetExtensionID();
       EventListenerCounts& listener_counts =
@@ -152,7 +151,6 @@ class ExtensionImpl : public ChromeV8Extension {
             new ExtensionHostMsg_RemoveLazyListener(extension_id, event_name));
       }
     }
-    return v8::Undefined();
   }
 
   // MatcherID AttachFilteredEvent(string event_name, object filter)
@@ -160,23 +158,27 @@ class ExtensionImpl : public ChromeV8Extension {
   // filter - Which instances of the named event are we interested in.
   // returns the id assigned to the listener, which will be returned from calls
   // to MatchAgainstEventFilter where this listener matches.
-  v8::Handle<v8::Value> AttachFilteredEvent(const v8::Arguments& args) {
+  void AttachFilteredEvent(const v8::FunctionCallbackInfo<v8::Value>& args) {
     DCHECK_EQ(2, args.Length());
     DCHECK(args[0]->IsString());
     DCHECK(args[1]->IsObject());
 
     DCHECK(context());
-    if (!context())
-      return v8::Integer::New(-1);
+    if (!context()) {
+      args.GetReturnValue().Set(static_cast<int32_t>(-1));
+      return;
+    }
 
     std::string event_name = *v8::String::AsciiValue(args[0]);
     // This method throws an exception if it returns false.
     if (!dispatcher_->CheckContextAccessToExtensionAPI(event_name, context()))
-      return v8::Undefined();
+      return;
 
     std::string extension_id = context()->GetExtensionID();
-    if (extension_id.empty())
-      return v8::Integer::New(-1);
+    if (extension_id.empty()) {
+      args.GetReturnValue().Set(static_cast<int32_t>(-1));
+      return;
+    }
 
     scoped_ptr<base::DictionaryValue> filter;
     scoped_ptr<content::V8ValueConverter> converter(
@@ -185,11 +187,14 @@ class ExtensionImpl : public ChromeV8Extension {
     base::DictionaryValue* filter_dict = NULL;
     base::Value* filter_value =
         converter->FromV8Value(args[1]->ToObject(), context()->v8_context());
-    if (!filter_value)
-      return v8::Integer::New(-1);
+    if (!filter_value) {
+      args.GetReturnValue().Set(static_cast<int32_t>(-1));
+      return;
+    }
     if (!filter_value->GetAsDictionary(&filter_dict)) {
       delete filter_value;
-      return v8::Integer::New(-1);
+      args.GetReturnValue().Set(static_cast<int32_t>(-1));
+      return;
     }
 
     filter.reset(filter_dict);
@@ -205,7 +210,7 @@ class ExtensionImpl : public ChromeV8Extension {
                                                    *filter, lazy));
     }
 
-    return v8::Integer::New(id);
+    args.GetReturnValue().Set(static_cast<int32_t>(id));
   }
 
   // Add a filter to |event_name| in |extension_id|, returning true if it
@@ -240,17 +245,17 @@ class ExtensionImpl : public ChromeV8Extension {
   // id     - Id of the event to detach.
   // manual - false if this is part of the extension unload process where all
   //          listeners are automatically detached.
-  v8::Handle<v8::Value> DetachFilteredEvent(const v8::Arguments& args) {
+  void DetachFilteredEvent(const v8::FunctionCallbackInfo<v8::Value>& args) {
     DCHECK_EQ(2, args.Length());
     DCHECK(args[0]->IsInt32());
     DCHECK(args[1]->IsBoolean());
     bool is_manual = args[1]->BooleanValue();
     if (!context())
-      return v8::Undefined();
+      return;
 
     std::string extension_id = context()->GetExtensionID();
     if (extension_id.empty())
-      return v8::Undefined();
+      return;
 
     int matcher_id = args[0]->Int32Value();
     EventFilter& event_filter = g_event_filter.Get();
@@ -270,11 +275,10 @@ class ExtensionImpl : public ChromeV8Extension {
     }
 
     event_filter.RemoveEventMatcher(matcher_id);
-
-    return v8::Undefined();
   }
 
-  v8::Handle<v8::Value> MatchAgainstEventFilter(const v8::Arguments& args) {
+  void MatchAgainstEventFilter(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
     typedef std::set<EventFilter::MatcherID> MatcherIDs;
 
     EventFilter& event_filter = g_event_filter.Get();
@@ -288,7 +292,7 @@ class ExtensionImpl : public ChromeV8Extension {
          it != matched_event_filters.end(); ++it) {
       array->Set(v8::Integer::New(i++), v8::Integer::New(*it));
     }
-    return array;
+    args.GetReturnValue().Set(array);
   }
 
   static EventFilteringInfo ParseFromObject(v8::Handle<v8::Object> object) {

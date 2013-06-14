@@ -30,12 +30,11 @@ class MutationHandler : public ChromeV8Extension {
   }
 
  private:
-  v8::Handle<v8::Value> FrameMutated(const v8::Arguments& args) {
+  void FrameMutated(const v8::FunctionCallbackInfo<v8::Value>& args) {
     if (content_watcher_.get()) {
       content_watcher_->ScanAndNotify(
           WebKit::WebFrame::frameForContext(context()->v8_context()));
     }
-    return v8::Undefined();
   }
 
   base::WeakPtr<ContentWatcher> content_watcher_;

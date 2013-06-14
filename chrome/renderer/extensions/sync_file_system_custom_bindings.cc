@@ -23,38 +23,38 @@ SyncFileSystemCustomBindings::SyncFileSystemCustomBindings(
                  base::Unretained(this)));
 }
 
-v8::Handle<v8::Value> SyncFileSystemCustomBindings::GetSyncFileSystemObject(
-    const v8::Arguments& args) {
+void SyncFileSystemCustomBindings::GetSyncFileSystemObject(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   if (args.Length() != 2) {
     NOTREACHED();
-    return v8::Undefined();
+    return;
   }
   if (!args[0]->IsString()) {
     NOTREACHED();
-    return v8::Undefined();
+    return;
   }
   if (!args[1]->IsString()) {
     NOTREACHED();
-    return v8::Undefined();
+    return;
   }
 
   std::string name(*v8::String::Utf8Value(args[0]));
   if (name.empty()) {
     NOTREACHED();
-    return v8::Undefined();
+    return;
   }
   std::string root_url(*v8::String::Utf8Value(args[1]));
   if (root_url.empty()) {
     NOTREACHED();
-    return v8::Undefined();
+    return;
   }
 
   WebKit::WebFrame* webframe =
       WebKit::WebFrame::frameForContext(context()->v8_context());
-  return webframe->createFileSystem(
-                                    WebKit::WebFileSystemTypeExternal,
-                                    WebKit::WebString::fromUTF8(name),
-                                    WebKit::WebString::fromUTF8(root_url));
+  args.GetReturnValue().Set(
+    webframe->createFileSystem(WebKit::WebFileSystemTypeExternal,
+                               WebKit::WebString::fromUTF8(name),
+                               WebKit::WebString::fromUTF8(root_url)));
 }
 
 }  // namespace extensions

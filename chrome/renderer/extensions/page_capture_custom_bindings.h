@@ -17,8 +17,8 @@ class PageCaptureCustomBindings : public ChromeV8Extension {
 
  private:
   // Creates a Blob with the content of the specified file.
-  v8::Handle<v8::Value> CreateBlob(const v8::Arguments& args);
-  v8::Handle<v8::Value> SendResponseAck(const v8::Arguments& args);
+  void CreateBlob(const v8::FunctionCallbackInfo<v8::Value>& args);
+  void SendResponseAck(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 }  // namespace extensions

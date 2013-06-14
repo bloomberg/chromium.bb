@@ -25,7 +25,7 @@ class APIActivityLogger : public ChromeV8Extension {
   //    arg1 - API call name as a string
   //    arg2 - arguments to the API call
   //    arg3 - any extra logging info as a string (optional)
-  static v8::Handle<v8::Value> LogAPICall(const v8::Arguments& args);
+  static void LogAPICall(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // This is ultimately invoked in schema_generated_bindings.js with
   // JavaScript arguments. Logged as an EventAction.
@@ -33,7 +33,7 @@ class APIActivityLogger : public ChromeV8Extension {
   //    arg1 - Event name as a string
   //    arg2 - Event arguments
   //    arg3 - any extra logging info as a string (optional)
-  static v8::Handle<v8::Value> LogEvent(const v8::Arguments& args);
+  static void LogEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // This is for the Dispatcher to use to log blocked API calls.
   static void LogBlockedCall(const std::string& extension_id,
@@ -49,7 +49,7 @@ class APIActivityLogger : public ChromeV8Extension {
    // LogAPICall and LogEvent are really the same underneath except for
    // how they are ultimately dispatched to the log.
    static void LogInternal(const CallType call_type,
-                           const v8::Arguments& args);
+                           const v8::FunctionCallbackInfo<v8::Value>& args);
 
   DISALLOW_COPY_AND_ASSIGN(APIActivityLogger);
 };

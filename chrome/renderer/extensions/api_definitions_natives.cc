@@ -23,8 +23,8 @@ ApiDefinitionsNatives::ApiDefinitionsNatives(Dispatcher* dispatcher,
                     base::Unretained(this)));
 }
 
-v8::Handle<v8::Value> ApiDefinitionsNatives::GetExtensionAPIDefinitionsForTest(
-    const v8::Arguments& args) {
+void ApiDefinitionsNatives::GetExtensionAPIDefinitionsForTest(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   std::vector<std::string> apis;
   FeatureProvider* feature_provider = BaseFeatureProvider::GetByName("api");
   const std::vector<std::string>& feature_names =
@@ -36,7 +36,8 @@ v8::Handle<v8::Value> ApiDefinitionsNatives::GetExtensionAPIDefinitionsForTest(
       apis.push_back(*i);
     }
   }
-  return dispatcher()->v8_schema_registry()->GetSchemas(apis);
+  args.GetReturnValue().Set(
+    dispatcher()->v8_schema_registry()->GetSchemas(apis));
 }
 
 }  // namespace extensions

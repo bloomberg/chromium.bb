@@ -17,7 +17,7 @@ class ExtensionCustomBindings : public ChromeV8Extension {
                                    ChromeV8Context* context);
 
  private:
-  v8::Handle<v8::Value> GetExtensionViews(const v8::Arguments& args);
+  void GetExtensionViews(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 }  // namespace extensions

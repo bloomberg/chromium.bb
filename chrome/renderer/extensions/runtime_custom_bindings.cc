@@ -39,13 +39,13 @@ RuntimeCustomBindings::RuntimeCustomBindings(Dispatcher* dispatcher,
 
 RuntimeCustomBindings::~RuntimeCustomBindings() {}
 
-v8::Handle<v8::Value> RuntimeCustomBindings::OpenChannelToExtension(
-    const v8::Arguments& args) {
+void RuntimeCustomBindings::OpenChannelToExtension(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   // Get the current RenderView so that we can send a routed IPC message from
   // the correct source.
   content::RenderView* renderview = GetRenderView();
   if (!renderview)
-    return v8::Undefined();
+    return;
 
   // The Javascript code should validate/fill the arguments.
   CHECK_EQ(2, args.Length());
@@ -59,25 +59,25 @@ v8::Handle<v8::Value> RuntimeCustomBindings::OpenChannelToExtension(
   int port_id = -1;
   renderview->Send(new ExtensionHostMsg_OpenChannelToExtension(
       renderview->GetRoutingID(), info, channel_name, &port_id));
-  return v8::Integer::New(port_id);
+  args.GetReturnValue().Set(static_cast<int32_t>(port_id));
 }
 
-v8::Handle<v8::Value> RuntimeCustomBindings::OpenChannelToNativeApp(
-    const v8::Arguments& args) {
+void RuntimeCustomBindings::OpenChannelToNativeApp(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   // Verify that the extension has permission to use native messaging.
   if (!BaseFeatureProvider::GetByName("permission")->GetFeature(
         "nativeMessaging")->IsAvailableToContext(
             GetExtensionForRenderView(),
             context()->context_type(),
             context()->GetURL()).is_available()) {
-    return v8::Undefined();
+    return;
   }
 
   // Get the current RenderView so that we can send a routed IPC message from
   // the correct source.
   content::RenderView* renderview = GetRenderView();
   if (!renderview)
-    return v8::Undefined();
+    return;
 
   // The Javascript code should validate/fill the arguments.
   CHECK(args.Length() >= 2 &&
@@ -93,16 +93,17 @@ v8::Handle<v8::Value> RuntimeCustomBindings::OpenChannelToNativeApp(
       extension_id,
       native_app_name,
       &port_id));
-  return v8::Integer::New(port_id);
+  args.GetReturnValue().Set(static_cast<int32_t>(port_id));
 }
 
-v8::Handle<v8::Value> RuntimeCustomBindings::GetManifest(
-    const v8::Arguments& args) {
+void RuntimeCustomBindings::GetManifest(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK(context()->extension());
 
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  return converter->ToV8Value(context()->extension()->manifest()->value(),
-                              context()->v8_context());
+  args.GetReturnValue().Set(
+      converter->ToV8Value(context()->extension()->manifest()->value(),
+                           context()->v8_context()));
 }
 
 }  // namespace extensions

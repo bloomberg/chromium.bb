@@ -139,10 +139,10 @@ v8::Handle<v8::Value> ModuleSystem::Require(const std::string& module_name) {
       RequireForJsInner(v8::String::New(module_name.c_str())));
 }
 
-v8::Handle<v8::Value> ModuleSystem::RequireForJs(const v8::Arguments& args) {
-  v8::HandleScope handle_scope;
+void ModuleSystem::RequireForJs(
+  const v8::FunctionCallbackInfo<v8::Value>& args) {
   v8::Handle<v8::String> module_name = args[0]->ToString();
-  return handle_scope.Close(RequireForJsInner(module_name));
+  args.GetReturnValue().Set(RequireForJsInner(module_name));
 }
 
 v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
@@ -437,10 +437,11 @@ v8::Handle<v8::Value> ModuleSystem::GetSource(const std::string& module_name) {
   return handle_scope.Close(source_map_->GetSource(module_name));
 }
 
-v8::Handle<v8::Value> ModuleSystem::RequireNative(const v8::Arguments& args) {
+void ModuleSystem::RequireNative(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
   std::string native_name = *v8::String::AsciiValue(args[0]->ToString());
-  return RequireNativeFromString(native_name);
+  args.GetReturnValue().Set(RequireNativeFromString(native_name));
 }
 
 v8::Handle<v8::Value> ModuleSystem::RequireNativeFromString(

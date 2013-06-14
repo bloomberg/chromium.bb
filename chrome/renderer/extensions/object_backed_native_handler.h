@@ -31,7 +31,7 @@ class ObjectBackedNativeHandler : public NativeHandler {
   virtual v8::Handle<v8::Object> NewInstance() OVERRIDE;
 
  protected:
-  typedef base::Callback<v8::Handle<v8::Value>(const v8::Arguments&)>
+  typedef base::Callback<void(const v8::FunctionCallbackInfo<v8::Value>&)>
       HandlerFunction;
 
   // Installs a new 'route' from |name| to |handler_function|. This means that
@@ -47,7 +47,7 @@ class ObjectBackedNativeHandler : public NativeHandler {
  private:
   // Callback for RouteFunction which routes the V8 call to the correct
   // base::Bound callback.
-  static v8::Handle<v8::Value> Router(const v8::Arguments& args);
+  static void Router(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // When RouteFunction is called we create a v8::Object to hold the data we
   // need when handling it in Router() - this is the base::Bound function to

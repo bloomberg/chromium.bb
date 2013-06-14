@@ -26,8 +26,8 @@ FileBrowserPrivateCustomBindings::FileBrowserPrivateCustomBindings(
                   base::Unretained(this)));
 }
 
-v8::Handle<v8::Value> FileBrowserPrivateCustomBindings::GetFileSystem(
-    const v8::Arguments& args) {
+void FileBrowserPrivateCustomBindings::GetFileSystem(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   DCHECK(args.Length() == 2);
   DCHECK(args[0]->IsString());
   DCHECK(args[1]->IsString());
@@ -37,10 +37,11 @@ v8::Handle<v8::Value> FileBrowserPrivateCustomBindings::GetFileSystem(
   WebKit::WebFrame* webframe =
       WebKit::WebFrame::frameForContext(context()->v8_context());
   DCHECK(webframe);
-  return webframe->createFileSystem(
-      WebKit::WebFileSystemTypeExternal,
-      WebKit::WebString::fromUTF8(name.c_str()),
-      WebKit::WebString::fromUTF8(path.c_str()));
+  args.GetReturnValue().Set(
+      webframe->createFileSystem(
+          WebKit::WebFileSystemTypeExternal,
+          WebKit::WebString::fromUTF8(name.c_str()),
+          WebKit::WebString::fromUTF8(path.c_str())));
 }
 
 }  // namespace extensions

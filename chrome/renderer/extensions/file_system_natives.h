@@ -16,9 +16,10 @@ class FileSystemNatives : public ObjectBackedNativeHandler {
   explicit FileSystemNatives(ChromeV8Context* context);
 
  private:
-  v8::Handle<v8::Value> GetFileEntry(const v8::Arguments& args);
-  v8::Handle<v8::Value> GetIsolatedFileSystem(const v8::Arguments& args);
-  v8::Handle<v8::Value> CrackIsolatedFileSystemName(const v8::Arguments& args);
+  void GetFileEntry(const v8::FunctionCallbackInfo<v8::Value>& args);
+  void GetIsolatedFileSystem(const v8::FunctionCallbackInfo<v8::Value>& args);
+  void CrackIsolatedFileSystemName(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemNatives);
 };

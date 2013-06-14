@@ -136,13 +136,14 @@ class TestFeaturesNativeHandler : public ObjectBackedNativeHandler {
   }
 
  private:
-  v8::Handle<v8::Value> GetAPIFeatures(const v8::Arguments& args) {
+  void GetAPIFeatures(const v8::FunctionCallbackInfo<v8::Value>& args) {
     base::Value* value = base::JSONReader::Read(
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_EXTENSION_API_FEATURES).as_string());
     scoped_ptr<content::V8ValueConverter> converter(
         content::V8ValueConverter::create());
-    return converter->ToV8Value(value, context()->v8_context());
+    args.GetReturnValue().Set(
+        converter->ToV8Value(value, context()->v8_context()));
   }
 };
 
@@ -161,7 +162,7 @@ class V8ContextNativeHandler : public ObjectBackedNativeHandler {
   }
 
  private:
-  v8::Handle<v8::Value> GetAvailability(const v8::Arguments& args) {
+  void GetAvailability(const v8::FunctionCallbackInfo<v8::Value>& args) {
     CHECK_EQ(args.Length(), 1);
     std::string api_name = *v8::String::AsciiValue(args[0]->ToString());
     Feature::Availability availability = context_->GetAvailability(api_name);
@@ -171,17 +172,17 @@ class V8ContextNativeHandler : public ObjectBackedNativeHandler {
              v8::Boolean::New(availability.is_available()));
     ret->Set(v8::String::New("message"),
              v8::String::New(availability.message().c_str()));
-    return ret;
+    args.GetReturnValue().Set(ret);
   }
 
-  v8::Handle<v8::Value> GetModuleSystem(const v8::Arguments& args) {
+  void GetModuleSystem(const v8::FunctionCallbackInfo<v8::Value>& args) {
     CHECK_EQ(args.Length(), 1);
     CHECK(args[0]->IsObject());
     v8::Handle<v8::Context> v8_context =
         v8::Handle<v8::Object>::Cast(args[0])->CreationContext();
     ChromeV8Context* context = dispatcher_->v8_context_set().GetByV8Context(
         v8_context);
-    return context->module_system()->NewInstance();
+    args.GetReturnValue().Set(context->module_system()->NewInstance());
   }
 
   ChromeV8Context* context_;
@@ -196,8 +197,8 @@ class ChromeNativeHandler : public ObjectBackedNativeHandler {
         base::Bind(&ChromeNativeHandler::GetChrome, base::Unretained(this)));
   }
 
-  v8::Handle<v8::Value> GetChrome(const v8::Arguments& args) {
-    return GetOrCreateChrome(context());
+  void GetChrome(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    args.GetReturnValue().Set(GetOrCreateChrome(context()));
   }
 };
 
@@ -210,16 +211,15 @@ class PrintNativeHandler : public ObjectBackedNativeHandler {
                    base::Unretained(this)));
   }
 
-  v8::Handle<v8::Value> Print(const v8::Arguments& args) {
+  void Print(const v8::FunctionCallbackInfo<v8::Value>& args) {
     if (args.Length() < 1)
-      return v8::Undefined();
+      return;
 
     std::vector<std::string> components;
     for (int i = 0; i < args.Length(); ++i)
       components.push_back(*v8::String::Utf8Value(args[i]->ToString()));
 
     LOG(ERROR) << JoinString(components, ',');
-    return v8::Undefined();
   }
 };
 
@@ -236,26 +236,26 @@ class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
                    base::Unretained(this)));
   }
 
-  v8::Handle<v8::Value> IncrementKeepaliveCount(const v8::Arguments& args) {
+  void IncrementKeepaliveCount(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
     if (!context())
-      return v8::Undefined();
+      return;
     RenderView* render_view = context()->GetRenderView();
     if (IsContextLazyBackgroundPage(render_view, context()->extension())) {
       render_view->Send(new ExtensionHostMsg_IncrementLazyKeepaliveCount(
           render_view->GetRoutingID()));
     }
-    return v8::Undefined();
   }
 
-  v8::Handle<v8::Value> DecrementKeepaliveCount(const v8::Arguments& args) {
+  void DecrementKeepaliveCount(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
     if (!context())
-      return v8::Undefined();
+      return;
     RenderView* render_view = context()->GetRenderView();
     if (IsContextLazyBackgroundPage(render_view, context()->extension())) {
       render_view->Send(new ExtensionHostMsg_DecrementLazyKeepaliveCount(
           render_view->GetRoutingID()));
     }
-    return v8::Undefined();
   }
 
  private:
@@ -302,29 +302,28 @@ class ProcessInfoNativeHandler : public ChromeV8Extension {
                    base::Unretained(this)));
   }
 
-  v8::Handle<v8::Value> GetExtensionId(const v8::Arguments& args) {
-    return v8::String::New(extension_id_.c_str());
+  void GetExtensionId(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    args.GetReturnValue().Set(v8::String::New(extension_id_.c_str()));
   }
 
-  v8::Handle<v8::Value> GetContextType(const v8::Arguments& args) {
-    return v8::String::New(context_type_.c_str());
+  void GetContextType(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    args.GetReturnValue().Set(v8::String::New(context_type_.c_str()));
   }
 
-  v8::Handle<v8::Value> InIncognitoContext(const v8::Arguments& args) {
-    return v8::Boolean::New(is_incognito_context_);
+  void InIncognitoContext(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    args.GetReturnValue().Set(is_incognito_context_);
   }
 
-  v8::Handle<v8::Value> GetManifestVersion(const v8::Arguments& args) {
-    return v8::Integer::New(manifest_version_);
+  void GetManifestVersion(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    args.GetReturnValue().Set(static_cast<int32_t>(manifest_version_));
   }
 
-  v8::Handle<v8::Value> IsSendRequestDisabled(const v8::Arguments& args) {
+  void IsSendRequestDisabled(const v8::FunctionCallbackInfo<v8::Value>& args) {
     if (send_request_disabled_) {
-      return v8::String::New(
+      args.GetReturnValue().Set(v8::String::New(
           "sendRequest and onRequest are obsolete."
-          " Please use sendMessage and onMessage instead.");
+          " Please use sendMessage and onMessage instead."));
     }
-    return v8::Undefined();
   }
 
  private:

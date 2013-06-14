@@ -16,7 +16,7 @@ class FileBrowserPrivateCustomBindings : public ChromeV8Extension {
   FileBrowserPrivateCustomBindings(Dispatcher* dispatcher,
                                    ChromeV8Context* context);
 
-  v8::Handle<v8::Value> GetFileSystem(const v8::Arguments& args);
+  void GetFileSystem(const v8::FunctionCallbackInfo<v8::Value>& args);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileBrowserPrivateCustomBindings);

@@ -23,8 +23,8 @@ PageActionsCustomBindings::PageActionsCustomBindings(
                  base::Unretained(this)));
 }
 
-v8::Handle<v8::Value> PageActionsCustomBindings::GetCurrentPageActions(
-    const v8::Arguments& args) {
+void PageActionsCustomBindings::GetCurrentPageActions(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   std::string extension_id = *v8::String::Utf8Value(args[0]->ToString());
   CHECK(!extension_id.empty());
   const Extension* extension =
@@ -38,7 +38,7 @@ v8::Handle<v8::Value> PageActionsCustomBindings::GetCurrentPageActions(
                             v8::String::New(id.c_str(), id.size()));
   }
 
-  return page_action_vector;
+  args.GetReturnValue().Set(page_action_vector);
 }
 
-}  // extensions
+}  // namespace extensions

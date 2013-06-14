@@ -39,18 +39,16 @@ class AssertNatives : public ObjectBackedNativeHandler {
   bool assertion_made() { return assertion_made_; }
   bool failed() { return failed_; }
 
-  v8::Handle<v8::Value> AssertTrue(const v8::Arguments& args) {
+  void AssertTrue(const v8::FunctionCallbackInfo<v8::Value>& args) {
     CHECK_EQ(1, args.Length());
     assertion_made_ = true;
     failed_ = failed_ || !args[0]->ToBoolean()->Value();
-    return v8::Undefined();
   }
 
-  v8::Handle<v8::Value> AssertFalse(const v8::Arguments& args) {
+  void AssertFalse(const v8::FunctionCallbackInfo<v8::Value>& args) {
     CHECK_EQ(1, args.Length());
     assertion_made_ = true;
     failed_ = failed_ || args[0]->ToBoolean()->Value();
-    return v8::Undefined();
   }
 
  private:

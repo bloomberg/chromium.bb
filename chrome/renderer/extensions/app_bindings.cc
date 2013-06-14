@@ -71,34 +71,36 @@ AppBindings::AppBindings(Dispatcher* dispatcher, ChromeV8Context* context)
       base::Bind(&AppBindings::GetRunningState, base::Unretained(this)));
 }
 
-v8::Handle<v8::Value> AppBindings::GetIsInstalled(
-    const v8::Arguments& args) {
+void AppBindings::GetIsInstalled(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   const Extension* extension = context()->extension();
 
   // TODO(aa): Why only hosted app?
   bool result = extension && extension->is_hosted_app() &&
       dispatcher_->IsExtensionActive(extension->id());
-  return v8::Boolean::New(result);
+  args.GetReturnValue().Set(result);
 }
 
-v8::Handle<v8::Value> AppBindings::GetDetails(
-    const v8::Arguments& args) {
+void AppBindings::GetDetails(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK(context()->web_frame());
-  return GetDetailsForFrameImpl(context()->web_frame());
+  args.GetReturnValue().Set(GetDetailsForFrameImpl(context()->web_frame()));
 }
 
-v8::Handle<v8::Value> AppBindings::GetDetailsForFrame(
-    const v8::Arguments& args) {
+void AppBindings::GetDetailsForFrame(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK(context()->web_frame());
   if (!CheckAccessToAppDetails(context()->web_frame()))
-    return v8::Undefined();
+    return;
 
-  if (args.Length() < 0)
-    return v8::ThrowException(v8::String::New("Not enough arguments."));
+  if (args.Length() < 0) {
+    v8::ThrowException(v8::String::New("Not enough arguments."));
+    return;
+  }
 
   if (!args[0]->IsObject()) {
-    return v8::ThrowException(
-        v8::String::New("Argument 0 must be an object."));
+    v8::ThrowException(v8::String::New("Argument 0 must be an object."));
+    return;
   }
 
   v8::Local<v8::Context> context =
@@ -109,10 +111,10 @@ v8::Handle<v8::Value> AppBindings::GetDetailsForFrame(
   if (!target_frame) {
     console::Error(v8::Context::GetCalling(),
                    "Could not find frame for specified object.");
-    return v8::Undefined();
+    return;
   }
 
-  return GetDetailsForFrameImpl(target_frame);
+  args.GetReturnValue().Set(GetDetailsForFrameImpl(target_frame));
 }
 
 v8::Handle<v8::Value> AppBindings::GetDetailsForFrameImpl(
@@ -132,13 +134,14 @@ v8::Handle<v8::Value> AppBindings::GetDetailsForFrameImpl(
                               frame->mainWorldScriptContext());
 }
 
-v8::Handle<v8::Value> AppBindings::GetInstallState(const v8::Arguments& args) {
+void AppBindings::GetInstallState(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   // Get the callbackId.
   int callback_id = 0;
   if (args.Length() == 1) {
     if (!args[0]->IsInt32()) {
       v8::ThrowException(v8::String::New(kInvalidCallbackIdError));
-      return v8::Undefined();
+      return;
     }
     callback_id = args[0]->Int32Value();
   }
@@ -149,10 +152,10 @@ v8::Handle<v8::Value> AppBindings::GetInstallState(const v8::Arguments& args) {
   Send(new ExtensionHostMsg_GetAppInstallState(
       render_view->GetRoutingID(), context()->web_frame()->document().url(),
       GetRoutingID(), callback_id));
-  return v8::Undefined();
 }
 
-v8::Handle<v8::Value> AppBindings::GetRunningState(const v8::Arguments& args) {
+void AppBindings::GetRunningState(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   // To distinguish between ready_to_run and cannot_run states, we need the top
   // level frame.
   const WebFrame* parent_frame = context()->web_frame();
@@ -169,8 +172,11 @@ v8::Handle<v8::Value> AppBindings::GetRunningState(const v8::Arguments& args) {
   const Extension* this_app = extensions->GetHostedAppByURL(ExtensionURLInfo(
       context()->web_frame()->document().url()));
 
-  if (!this_app || !parent_app)
-    return v8::String::New(extension_misc::kAppStateCannotRun);
+  if (!this_app || !parent_app) {
+    args.GetReturnValue().Set(
+        v8::String::New(extension_misc::kAppStateCannotRun));
+    return;
+  }
 
   const char* state = NULL;
   if (dispatcher_->IsExtensionActive(parent_app->id())) {
@@ -184,7 +190,7 @@ v8::Handle<v8::Value> AppBindings::GetRunningState(const v8::Arguments& args) {
     state = extension_misc::kAppStateCannotRun;
   }
 
-  return v8::String::New(state);
+  args.GetReturnValue().Set(v8::String::New(state));
 }
 
 bool AppBindings::OnMessageReceived(const IPC::Message& message) {

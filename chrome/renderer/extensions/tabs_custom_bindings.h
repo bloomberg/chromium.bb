@@ -16,9 +16,9 @@ class TabsCustomBindings : public ChromeV8Extension {
 
  private:
   // Creates a new messaging channel to the tab with the given ID.
-  v8::Handle<v8::Value> OpenChannelToTab(const v8::Arguments& args);
+  void OpenChannelToTab(const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
-}  // extensions
+}  // namespace extensions
 
 #endif  // CHROME_RENDERER_EXTENSIONS_TABS_CUSTOM_BINDINGS_H_

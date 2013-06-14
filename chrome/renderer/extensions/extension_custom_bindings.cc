@@ -35,13 +35,13 @@ ExtensionCustomBindings::ExtensionCustomBindings(Dispatcher* dispatcher,
                  base::Unretained(this)));
 }
 
-v8::Handle<v8::Value> ExtensionCustomBindings::GetExtensionViews(
-    const v8::Arguments& args) {
+void ExtensionCustomBindings::GetExtensionViews(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   if (args.Length() != 2)
-    return v8::Undefined();
+    return;
 
   if (!args[0]->IsInt32() || !args[1]->IsString())
-    return v8::Undefined();
+    return;
 
   // |browser_window_id| == extension_misc::kUnknownWindowId means getting
   // views attached to any browser window.
@@ -69,12 +69,12 @@ v8::Handle<v8::Value> ExtensionCustomBindings::GetExtensionViews(
   } else if (view_type_string == kViewTypePanel) {
     view_type = VIEW_TYPE_PANEL;
   } else if (view_type_string != kViewTypeAll) {
-    return v8::Undefined();
+    return;
   }
 
   const Extension* extension = GetExtensionForRenderView();
   if (!extension)
-    return v8::Undefined();
+    return;
 
   std::vector<content::RenderView*> views = ExtensionHelper::GetExtensionViews(
       extension->id(), browser_window_id, view_type);
@@ -90,7 +90,7 @@ v8::Handle<v8::Value> ExtensionCustomBindings::GetExtensionViews(
     }
   }
 
-  return v8_views;
+  args.GetReturnValue().Set(v8_views);
 }
 
 }  // namespace extensions

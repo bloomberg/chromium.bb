@@ -28,15 +28,16 @@ SendRequestNatives::SendRequestNatives(Dispatcher* dispatcher,
                            base::Unretained(this)));
 }
 
-v8::Handle<v8::Value> SendRequestNatives::GetNextRequestId(
-    const v8::Arguments& args) {
-  return v8::Integer::New(request_sender_->GetNextRequestId());
+void SendRequestNatives::GetNextRequestId(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  args.GetReturnValue().Set(static_cast<int32_t>(
+      request_sender_->GetNextRequestId()));
 }
 
 // Starts an API request to the browser, with an optional callback.  The
 // callback will be dispatched to EventBindings::HandleResponse.
-v8::Handle<v8::Value> SendRequestNatives::StartRequest(
-    const v8::Arguments& args) {
+void SendRequestNatives::StartRequest(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   std::string name = *v8::String::AsciiValue(args[0]);
   int request_id = args[2]->Int32Value();
   bool has_callback = args[3]->BooleanValue();
@@ -56,19 +57,20 @@ v8::Handle<v8::Value> SendRequestNatives::StartRequest(
       converter->FromV8Value(args[1], context()->v8_context()));
   if (!value_args.get() || !value_args->IsType(Value::TYPE_LIST)) {
     NOTREACHED() << "Unable to convert args passed to StartRequest";
-    return v8::Undefined();
+    return;
   }
 
   request_sender_->StartRequest(
       context(), name, request_id, has_callback, for_io_thread,
       static_cast<ListValue*>(value_args.get()));
-  return v8::Undefined();
 }
 
-v8::Handle<v8::Value> SendRequestNatives::GetGlobal(const v8::Arguments& args) {
+void SendRequestNatives::GetGlobal(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsObject());
-  return v8::Handle<v8::Object>::Cast(args[0])->CreationContext()->Global();
+  args.GetReturnValue().Set(
+      v8::Handle<v8::Object>::Cast(args[0])->CreationContext()->Global());
 }
 
 }  // namespace extensions

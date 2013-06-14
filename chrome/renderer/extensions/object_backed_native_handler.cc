@@ -36,8 +36,8 @@ v8::Handle<v8::Object> ObjectBackedNativeHandler::NewInstance() {
 }
 
 // static
-v8::Handle<v8::Value> ObjectBackedNativeHandler::Router(
-    const v8::Arguments& args) {
+void ObjectBackedNativeHandler::Router(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   v8::HandleScope handle_scope;
   v8::Handle<v8::Object> data = args.Data().As<v8::Object>();
 
@@ -48,11 +48,11 @@ v8::Handle<v8::Value> ObjectBackedNativeHandler::Router(
       handler_function_value->IsUndefined()) {
     console::Error(v8::Context::GetCalling(),
                    "Extension view no longer exists");
-    return v8::Undefined();
+    return;
   }
   DCHECK(handler_function_value->IsExternal());
-  return handle_scope.Close(static_cast<HandlerFunction*>(
-      handler_function_value.As<v8::External>()->Value())->Run(args));
+  static_cast<HandlerFunction*>(
+      handler_function_value.As<v8::External>()->Value())->Run(args);
 }
 
 void ObjectBackedNativeHandler::RouteFunction(

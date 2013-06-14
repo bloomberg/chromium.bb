@@ -21,8 +21,8 @@ class ApiDefinitionsNatives : public ChromeV8Extension {
 
  private:
   // Returns the list of all schemas that are available to the calling context.
-  v8::Handle<v8::Value> GetExtensionAPIDefinitionsForTest(
-      const v8::Arguments& args);
+  void GetExtensionAPIDefinitionsForTest(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
   DISALLOW_COPY_AND_ASSIGN(ApiDefinitionsNatives);
 };
 

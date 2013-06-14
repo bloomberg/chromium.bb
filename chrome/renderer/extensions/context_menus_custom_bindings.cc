@@ -12,11 +12,11 @@
 
 namespace {
 
-v8::Handle<v8::Value> GetNextContextMenuId(const v8::Arguments& args) {
+void GetNextContextMenuId(const v8::FunctionCallbackInfo<v8::Value>& args) {
   int context_menu_id = -1;
   content::RenderThread::Get()->Send(
       new ExtensionHostMsg_GenerateUniqueID(&context_menu_id));
-  return v8::Integer::New(context_menu_id);
+  args.GetReturnValue().Set(static_cast<int32_t>(context_menu_id));
 }
 
 }  // namespace

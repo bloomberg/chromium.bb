@@ -22,15 +22,15 @@ WebRequestCustomBindings::WebRequestCustomBindings(
 }
 
 // Attach an event name to an object.
-v8::Handle<v8::Value> WebRequestCustomBindings::GetUniqueSubEventName(
-    const v8::Arguments& args) {
+void WebRequestCustomBindings::GetUniqueSubEventName(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   static int next_event_id = 0;
   DCHECK(args.Length() == 1);
   DCHECK(args[0]->IsString());
   std::string event_name(*v8::String::AsciiValue(args[0]));
   std::string unique_event_name =
       event_name + "/" + base::IntToString(++next_event_id);
-  return v8::String::New(unique_event_name.c_str());
+  args.GetReturnValue().Set(v8::String::New(unique_event_name.c_str()));
 }
 
-}  // extensions
+}  // namespace extensions

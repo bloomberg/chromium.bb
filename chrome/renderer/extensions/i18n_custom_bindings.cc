@@ -20,20 +20,20 @@ I18NCustomBindings::I18NCustomBindings(Dispatcher* dispatcher,
       base::Bind(&I18NCustomBindings::GetL10nMessage, base::Unretained(this)));
 }
 
-v8::Handle<v8::Value> I18NCustomBindings::GetL10nMessage(
-    const v8::Arguments& args) {
+void I18NCustomBindings::GetL10nMessage(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   if (args.Length() != 3 || !args[0]->IsString()) {
     NOTREACHED() << "Bad arguments";
-    return v8::Undefined();
+    return;
   }
 
   std::string extension_id;
   if (args[2]->IsNull() || !args[2]->IsString()) {
-    return v8::Undefined();
+    return;
   } else {
     extension_id = *v8::String::Utf8Value(args[2]->ToString());
     if (extension_id.empty())
-      return v8::Undefined();
+      return;
   }
 
   L10nMessagesMap* l10n_messages = GetL10nMessagesMap(extension_id);
@@ -42,7 +42,7 @@ v8::Handle<v8::Value> I18NCustomBindings::GetL10nMessage(
     // from the correct source.
     content::RenderView* renderview = GetRenderView();
     if (!renderview)
-      return v8::Undefined();
+      return;
 
     L10nMessagesMap messages;
     // A sync call to load message catalogs for current extension.
@@ -67,7 +67,7 @@ v8::Handle<v8::Value> I18NCustomBindings::GetL10nMessage(
     v8::Local<v8::Array> placeholders = v8::Local<v8::Array>::Cast(args[1]);
     uint32_t count = placeholders->Length();
     if (count > 9)
-      return v8::Undefined();
+      return;
     for (uint32_t i = 0; i < count; ++i) {
       substitutions.push_back(
           *v8::String::Utf8Value(
@@ -78,8 +78,9 @@ v8::Handle<v8::Value> I18NCustomBindings::GetL10nMessage(
     substitutions.push_back(*v8::String::Utf8Value(args[1]->ToString()));
   }
 
-  return v8::String::New(ReplaceStringPlaceholders(
-      message, substitutions, NULL).c_str());
+  args.GetReturnValue().Set(
+      v8::String::New(ReplaceStringPlaceholders(
+        message, substitutions, NULL).c_str()));
 }
 
-}  // namespace extension
+}  // namespace extensions

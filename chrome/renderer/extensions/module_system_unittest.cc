@@ -21,13 +21,12 @@ class CounterNatives : public ObjectBackedNativeHandler {
         base::Unretained(this)));
   }
 
-  v8::Handle<v8::Value> Get(const v8::Arguments& args) {
-    return v8::Integer::New(counter_);
+  void Get(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    args.GetReturnValue().Set(static_cast<int32_t>(counter_));
   }
 
-  v8::Handle<v8::Value> Increment(const v8::Arguments& args) {
+  void Increment(const v8::FunctionCallbackInfo<v8::Value>& args) {
     counter_++;
-    return v8::Undefined();
   }
 
  private:

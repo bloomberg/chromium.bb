@@ -26,8 +26,8 @@ FileBrowserHandlerCustomBindings::FileBrowserHandlerCustomBindings(
                  base::Unretained(this)));
 }
 
-v8::Handle<v8::Value> FileBrowserHandlerCustomBindings::GetExternalFileEntry(
-    const v8::Arguments& args) {
+void FileBrowserHandlerCustomBindings::GetExternalFileEntry(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
   // TODO(zelidrag): Make this magic work on other platforms when file browser
   // matures enough on ChromeOS.
 #if defined(OS_CHROMEOS)
@@ -47,14 +47,12 @@ v8::Handle<v8::Value> FileBrowserHandlerCustomBindings::GetExternalFileEntry(
         file_def->Get(v8::String::New("fileIsDirectory"))->ToBoolean()->Value();
     WebKit::WebFrame* webframe =
         WebKit::WebFrame::frameForContext(context()->v8_context());
-    return webframe->createFileEntry(
+    args.GetReturnValue().Set(webframe->createFileEntry(
         WebKit::WebFileSystemTypeExternal,
         WebKit::WebString::fromUTF8(file_system_name.c_str()),
         WebKit::WebString::fromUTF8(file_system_path.c_str()),
         WebKit::WebString::fromUTF8(file_full_path.c_str()),
-        is_directory);
-#else
-    return v8::Undefined();
+        is_directory));
 #endif
 }
 

@@ -90,10 +90,10 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
   virtual ~ExtensionImpl() {}
 
   // Sends a message along the given channel.
-  v8::Handle<v8::Value> PostMessage(const v8::Arguments& args) {
+  void PostMessage(const v8::FunctionCallbackInfo<v8::Value>& args) {
     content::RenderView* renderview = GetRenderView();
     if (!renderview)
-      return v8::Undefined();
+      return;
 
     // Arguments are (int32 port_id, object message).
     CHECK_EQ(2, args.Length());
@@ -101,8 +101,9 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
 
     int port_id = args[0]->Int32Value();
     if (!HasPortData(port_id)) {
-      return v8::ThrowException(v8::Exception::Error(
+      v8::ThrowException(v8::Exception::Error(
         v8::String::New(kPortClosedError)));
+      return;
     }
 
     // The message can be any base::Value but IPC can't serialize that, so we
@@ -117,12 +118,10 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
 
     renderview->Send(new ExtensionHostMsg_PostMessage(
         renderview->GetRoutingID(), port_id, message_as_list));
-
-    return v8::Undefined();
   }
 
   // Forcefully disconnects a port.
-  v8::Handle<v8::Value> CloseChannel(const v8::Arguments& args) {
+  void CloseChannel(const v8::FunctionCallbackInfo<v8::Value>& args) {
     // Arguments are (int32 port_id, boolean notify_browser).
     CHECK_EQ(2, args.Length());
     CHECK(args[0]->IsInt32());
@@ -130,7 +129,7 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
 
     int port_id = args[0]->Int32Value();
     if (!HasPortData(port_id))
-      return v8::Undefined();
+      return;
 
     // Send via the RenderThread because the RenderView might be closing.
     bool notify_browser = args[1]->BooleanValue();
@@ -140,27 +139,23 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
     }
 
     ClearPortData(port_id);
-
-    return v8::Undefined();
   }
 
   // A new port has been created for a context.  This occurs both when script
   // opens a connection, and when a connection is opened to this script.
-  v8::Handle<v8::Value> PortAddRef(const v8::Arguments& args) {
+  void PortAddRef(const v8::FunctionCallbackInfo<v8::Value>& args) {
     // Arguments are (int32 port_id).
     CHECK_EQ(1, args.Length());
     CHECK(args[0]->IsInt32());
 
     int port_id = args[0]->Int32Value();
     ++GetPortData(port_id).ref_count;
-
-    return v8::Undefined();
   }
 
   // The frame a port lived in has been destroyed.  When there are no more
   // frames with a reference to a given port, we will disconnect it and notify
   // the other end of the channel.
-  v8::Handle<v8::Value> PortRelease(const v8::Arguments& args) {
+  void PortRelease(const v8::FunctionCallbackInfo<v8::Value>& args) {
     // Arguments are (int32 port_id).
     CHECK_EQ(1, args.Length());
     CHECK(args[0]->IsInt32());
@@ -172,8 +167,6 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
           new ExtensionHostMsg_CloseChannel(port_id, std::string()));
       ClearPortData(port_id);
     }
-
-    return v8::Undefined();
   }
 
   struct GCCallbackArgs {
@@ -203,13 +196,12 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
   }
 
   // Binds a callback to be invoked when the given object is garbage collected.
-  v8::Handle<v8::Value> BindToGC(const v8::Arguments& args) {
+  void BindToGC(const v8::FunctionCallbackInfo<v8::Value>& args) {
     CHECK(args.Length() == 2 && args[0]->IsObject() && args[1]->IsFunction());
     GCCallbackArgs* context = new GCCallbackArgs(
         v8::Handle<v8::Object>::Cast(args[0]),
         v8::Handle<v8::Function>::Cast(args[1]));
     context->object.MakeWeak(context, GCCallback);
-    return v8::Undefined();
   }
 };
 
