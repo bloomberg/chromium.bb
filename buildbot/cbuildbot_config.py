@@ -1092,7 +1092,10 @@ sonic = _config(
   dev_manifest='sonic.xml',
   boards=['sonic'],
   # Until these are configured and ready, disable them.
+  images=['base', 'dev',],
   unittests=False,
+  upload_hw_test_artifacts=False,
+  build_tests=False,
   vm_tests=None,
   signer_tests=False,
   hw_tests=[],
