@@ -13,15 +13,17 @@ namespace itunes {
 
 typedef base::Callback<void(const std::string&)> ITunesFinderCallback;
 
-// ITunesFinder bounces to the FILE thread to find the iTunes library. If
-// (and only if) the library exists, the callback is run on UI thread with a
-// device id for the library. In either case, the class deletes itself.
+// ITunesFinder looks for the iTunes library in an asynchronous manner and
+// calls the given ITunesFinderCallback on the UI thread as soon as it knows
+// the result. If an iTunes library exists, the ITunesFinderCallback gets the
+// device id for the library. If an iTunes library does not exist, or the OS
+// does not support iTunes, then the callback result is an empty string.
+// In either case, the class deletes itself.
 class ITunesFinder {
  public:
   virtual ~ITunesFinder();
 
-  // If the platform does not support iTunes or the iTunes library is not found,
-  // |callback| will not be called. Otherwise, callback is run on the UI thread.
+  // |callback| runs on the UI thread.
   static void FindITunesLibrary(const ITunesFinderCallback& callback);
 
  protected:

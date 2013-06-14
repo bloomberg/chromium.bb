@@ -31,7 +31,7 @@ void ITunesFinderMac::FindITunesLibraryOnFileThread() {
   scoped_nsobject<NSArray> plist(CFToNSCast(CFCast<CFArrayRef>(
       CFPreferencesCopyAppValue(itunes_db_key, iapp_id))));
   if (!plist) {
-    PostResultToUIThread("");
+    PostResultToUIThread(std::string());
     return;
   }
 

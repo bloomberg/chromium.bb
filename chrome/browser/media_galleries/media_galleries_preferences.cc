@@ -294,7 +294,9 @@ void MediaGalleriesPreferences::AddDefaultGalleriesIfFreshProfile() {
 }
 
 void MediaGalleriesPreferences::OnITunesDeviceID(const std::string& device_id) {
-  DCHECK(!device_id.empty());
+  if (device_id.empty())
+    return;
+
   // TODO(vandebo): Since we only want to support one iTunes location (and
   // it is possible for it to move), but we want to preserve the user's
   // permissions for "the" iTunes gallery, we need to Amend any existing

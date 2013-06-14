@@ -22,6 +22,8 @@ ITunesFinder::~ITunesFinder() {}
 // static
 void ITunesFinder::FindITunesLibrary(const ITunesFinderCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
   ITunesFinder* finder = NULL;
 #if defined(OS_WIN)
   finder = new ITunesFinderWin(callback);
@@ -34,6 +36,8 @@ void ITunesFinder::FindITunesLibrary(const ITunesFinderCallback& callback) {
         FROM_HERE,
         base::Bind(&ITunesFinder::FindITunesLibraryOnFileThread,
                    base::Unretained(finder)));
+  } else {
+    callback.Run(std::string());
   }
 }
 
@@ -56,11 +60,12 @@ void ITunesFinder::PostResultToUIThread(const std::string& unique_id) {
 void ITunesFinder::FinishOnUIThread(const std::string& unique_id) const {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
+  std::string device_id;
   if (!unique_id.empty()) {
-    callback_.Run(
-        chrome::StorageInfo::MakeDeviceId(chrome::StorageInfo::ITUNES,
-                                          unique_id));
+    device_id = chrome::StorageInfo::MakeDeviceId(chrome::StorageInfo::ITUNES,
+                                                  unique_id);
   }
+  callback_.Run(device_id);
 }
 
 }  // namespace itunes
