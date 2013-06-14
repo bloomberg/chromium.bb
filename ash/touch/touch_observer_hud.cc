@@ -36,7 +36,7 @@
 #include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
 
-#include "ui/base/x/device_data_manager.h"
+#include "ui/base/x/valuators.h"
 #endif
 
 namespace ash {
@@ -88,11 +88,11 @@ int GetTrackingId(const ui::TouchEvent& event) {
   if (!event.HasNativeEvent())
     return 0;
 #if defined(USE_XI2_MT)
-  ui::DeviceDataManager* manager = ui::DeviceDataManager::GetInstance();
+  ui::ValuatorTracker* valuators = ui::ValuatorTracker::GetInstance();
   double tracking_id;
-  if (manager->GetEventData(*event.native_event(),
-                            ui::DeviceDataManager::DT_TOUCH_TRACKING_ID,
-                            &tracking_id)) {
+  if (valuators->ExtractValuator(*event.native_event(),
+                                 ui::ValuatorTracker::VAL_TRACKING_ID,
+                                 &tracking_id)) {
     return static_cast<int>(tracking_id);
   }
 #endif
