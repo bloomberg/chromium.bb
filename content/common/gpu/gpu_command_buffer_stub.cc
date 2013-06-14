@@ -168,6 +168,7 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   // Echo, RetireSyncPoint, or WaitSyncPoint).
   if (decoder_.get() &&
       message.type() != GpuCommandBufferMsg_Echo::ID &&
+      message.type() != GpuCommandBufferMsg_GetStateFast::ID &&
       message.type() != GpuCommandBufferMsg_RetireSyncPoint::ID &&
       message.type() != GpuCommandBufferMsg_SetLatencyInfo::ID) {
     if (!MakeCurrent())
