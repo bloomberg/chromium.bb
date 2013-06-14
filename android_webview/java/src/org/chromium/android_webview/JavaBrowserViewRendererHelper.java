@@ -13,37 +13,18 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.common.TraceEvent;
 
-import java.lang.ref.SoftReference;
-
 /**
  * Provides auxiliary methods related to Picture objects and native SkPictures.
  */
 @JNINamespace("android_webview")
 public class JavaBrowserViewRendererHelper {
 
-    private static SoftReference<Bitmap> sCachedBitmap;
-
     /**
      * Provides a Bitmap object with a given width and height used for auxiliary rasterization.
      */
     @CalledByNative
-    private static Bitmap createBitmap(int width, int height, boolean cacheResult) {
-        if (cacheResult && sCachedBitmap != null) {
-            Bitmap result = sCachedBitmap.get();
-            if (result != null) {
-                if (result.getWidth() == width && result.getHeight() == height) {
-                    TraceEvent.instant("Reused cached bitmap");
-                    return result;
-                }
-                result.recycle();
-            }
-            sCachedBitmap = null;
-        }
-        Bitmap result = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        if (cacheResult) {
-            sCachedBitmap = new SoftReference<Bitmap>(result);
-        }
-        return result;
+    private static Bitmap createBitmap(int width, int height) {
+        return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
     }
 
     /**

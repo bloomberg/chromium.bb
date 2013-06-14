@@ -21,13 +21,10 @@ JavaBrowserViewRendererHelper::~JavaBrowserViewRendererHelper() {
 ScopedJavaLocalRef<jobject> JavaBrowserViewRendererHelper::CreateBitmap(
     JNIEnv* env,
     int width,
-    int height,
-    bool cache_result) {
-  TRACE_EVENT1("android_webview", "RendererHelper::CreateBitmap",
-               "cache_result", cache_result);
+    int height) {
+  TRACE_EVENT0("android_webview", "RendererHelper::CreateBitmap");
   return width <= 0 || height <= 0 ? ScopedJavaLocalRef<jobject>() :
-      Java_JavaBrowserViewRendererHelper_createBitmap(env, width, height,
-                                                      cache_result);
+      Java_JavaBrowserViewRendererHelper_createBitmap(env, width, height);
 }
 
 void JavaBrowserViewRendererHelper::DrawBitmapIntoCanvas(

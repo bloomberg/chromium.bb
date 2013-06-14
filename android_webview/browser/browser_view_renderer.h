@@ -54,8 +54,7 @@ class BrowserViewRenderer {
     virtual base::android::ScopedJavaLocalRef<jobject> CreateBitmap(
         JNIEnv* env,
         int width,
-        int height,
-        bool cache_result) = 0;
+        int height) = 0;
 
     // Draws the provided Java Bitmap into the provided Java Canvas.
     virtual void DrawBitmapIntoCanvas(
