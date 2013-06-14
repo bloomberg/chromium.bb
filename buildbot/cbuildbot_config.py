@@ -1148,7 +1148,6 @@ internal_paladin.add_config('fox-wtm2-paladin',
 internal_paladin.add_config('link-paladin',
   boards=['link'],
   paladin_builder_name='link paladin',
-  quick_unit=False,
   upload_hw_test_artifacts=True,
 )
 
@@ -1183,6 +1182,7 @@ internal_paladin.add_config('sonic-paladin',
 
 internal_paladin.add_config('stout-paladin',
   boards=['stout'],
+  quick_unit=False,
   paladin_builder_name='stout paladin',
 )
 
@@ -1211,6 +1211,7 @@ internal_arm_paladin = internal_paladin.derive(arm)
 internal_arm_paladin.add_config('daisy-paladin',
   boards=['daisy'],
   paladin_builder_name='daisy paladin',
+  hw_tests=HWTestConfig.DefaultListCQ(),
   upload_hw_test_artifacts=True,
 )
 
