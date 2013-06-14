@@ -161,7 +161,7 @@ class MediaCodecBridge {
         int index = MEDIA_CODEC_ERROR;
         try {
             index = mMediaCodec.dequeueOutputBuffer(info, timeoutUs);
-        } catch(IllegalStateException e) {
+        } catch (IllegalStateException e) {
             Log.e(TAG, "Cannot dequeue output buffer " + e.toString());
         }
         return new DequeueOutputResult(
@@ -169,9 +169,15 @@ class MediaCodecBridge {
     }
 
     @CalledByNative
-    private void configureVideo(MediaFormat format, Surface surface, MediaCrypto crypto,
+    private boolean configureVideo(MediaFormat format, Surface surface, MediaCrypto crypto,
             int flags) {
-        mMediaCodec.configure(format, surface, crypto, flags);
+        try {
+            mMediaCodec.configure(format, surface, crypto, flags);
+            return true;
+        } catch (IllegalStateException e) {
+          Log.e(TAG, "Cannot configure the video codec " + e.toString());
+        }
+        return false;
     }
 
     @CalledByNative
@@ -203,19 +209,25 @@ class MediaCodecBridge {
     }
 
     @CalledByNative
-    private void configureAudio(MediaFormat format, MediaCrypto crypto, int flags,
+    private boolean configureAudio(MediaFormat format, MediaCrypto crypto, int flags,
             boolean playAudio) {
-        mMediaCodec.configure(format, null, crypto, flags);
-        if (playAudio) {
-            int sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE);
-            int channelCount = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
-            int channelConfig = (channelCount == 1) ? AudioFormat.CHANNEL_OUT_MONO :
-                    AudioFormat.CHANNEL_OUT_STEREO;
-            int minBufferSize = AudioTrack.getMinBufferSize(sampleRate, channelConfig,
-                    AudioFormat.ENCODING_PCM_16BIT);
-            mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, channelConfig,
-                    AudioFormat.ENCODING_PCM_16BIT, minBufferSize, AudioTrack.MODE_STREAM);
+        try {
+            mMediaCodec.configure(format, null, crypto, flags);
+            if (playAudio) {
+                int sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE);
+                int channelCount = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
+                int channelConfig = (channelCount == 1) ? AudioFormat.CHANNEL_OUT_MONO :
+                        AudioFormat.CHANNEL_OUT_STEREO;
+                int minBufferSize = AudioTrack.getMinBufferSize(sampleRate, channelConfig,
+                        AudioFormat.ENCODING_PCM_16BIT);
+                mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, channelConfig,
+                        AudioFormat.ENCODING_PCM_16BIT, minBufferSize, AudioTrack.MODE_STREAM);
+            }
+            return true;
+        } catch (IllegalStateException e) {
+            Log.e(TAG, "Cannot configure the audio codec " + e.toString());
         }
+        return false;
     }
 
     @CalledByNative

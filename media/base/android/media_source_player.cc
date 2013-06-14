@@ -52,8 +52,10 @@ base::LazyInstance<VideoDecoderThread>::Leaky
 
 namespace media {
 
-MediaDecoderJob::MediaDecoderJob(base::Thread* thread, bool is_audio)
-    : message_loop_(base::MessageLoopProxy::current()),
+MediaDecoderJob::MediaDecoderJob(
+    base::Thread* thread, MediaCodecBridge* media_codec_bridge, bool is_audio)
+    : media_codec_bridge_(media_codec_bridge),
+      message_loop_(base::MessageLoopProxy::current()),
       thread_(thread),
       needs_flush_(false),
       is_audio_(is_audio),
@@ -66,21 +68,26 @@ MediaDecoderJob::~MediaDecoderJob() {}
 // Class for managing audio decoding jobs.
 class AudioDecoderJob : public MediaDecoderJob {
  public:
-  AudioDecoderJob(
+  virtual ~AudioDecoderJob() {}
+
+  static AudioDecoderJob* Create(
       const AudioCodec audio_codec, int sample_rate,
       int channel_count, const uint8* extra_data, size_t extra_data_size);
-  virtual ~AudioDecoderJob() {}
+
+ private:
+  AudioDecoderJob(MediaCodecBridge* media_codec_bridge);
 };
 
 // Class for managing video decoding jobs.
 class VideoDecoderJob : public MediaDecoderJob {
  public:
-  VideoDecoderJob(
-      const VideoCodec video_codec, const gfx::Size& size, jobject surface);
   virtual ~VideoDecoderJob() {}
 
-  void Configure(
-      const VideoCodec codec, const gfx::Size& size, jobject surface);
+  static VideoDecoderJob* Create(
+      const VideoCodec video_codec, const gfx::Size& size, jobject surface);
+
+ private:
+  VideoDecoderJob(MediaCodecBridge* media_codec_bridge);
 };
 
 void MediaDecoderJob::Decode(
@@ -220,26 +227,37 @@ void MediaDecoderJob::Release() {
     delete this;
 }
 
-VideoDecoderJob::VideoDecoderJob(
-    const VideoCodec video_codec, const gfx::Size& size, jobject surface)
-    : MediaDecoderJob(g_video_decoder_thread.Pointer(), false) {
+VideoDecoderJob* VideoDecoderJob::Create(
+    const VideoCodec video_codec, const gfx::Size& size, jobject surface) {
   scoped_ptr<VideoCodecBridge> codec(VideoCodecBridge::Create(video_codec));
-  codec->Start(video_codec, size, surface);
-  media_codec_bridge_.reset(codec.release());
+  if (codec->Start(video_codec, size, surface))
+    return new VideoDecoderJob(codec.release());
+  return NULL;
 }
 
-AudioDecoderJob::AudioDecoderJob(
+VideoDecoderJob::VideoDecoderJob(MediaCodecBridge* media_codec_bridge)
+    : MediaDecoderJob(g_video_decoder_thread.Pointer(),
+                      media_codec_bridge,
+                      false) {}
+
+AudioDecoderJob* AudioDecoderJob::Create(
     const AudioCodec audio_codec,
     int sample_rate,
     int channel_count,
     const uint8* extra_data,
-    size_t extra_data_size)
-    : MediaDecoderJob(g_audio_decoder_thread.Pointer(), true) {
+    size_t extra_data_size) {
   scoped_ptr<AudioCodecBridge> codec(AudioCodecBridge::Create(audio_codec));
-  codec->Start(audio_codec, sample_rate, channel_count, extra_data,
-               extra_data_size, true);
-  media_codec_bridge_.reset(codec.release());
+  if (codec->Start(audio_codec, sample_rate, channel_count, extra_data,
+                   extra_data_size, true)) {
+    return new AudioDecoderJob(codec.release());
+  }
+  return NULL;
 }
+
+AudioDecoderJob::AudioDecoderJob(MediaCodecBridge* media_codec_bridge)
+    : MediaDecoderJob(g_audio_decoder_thread.Pointer(),
+                      media_codec_bridge,
+                      true) {}
 
 MediaSourcePlayer::MediaSourcePlayer(
     int player_id,
@@ -616,6 +634,8 @@ void MediaSourcePlayer::ClearDecodingData() {
   received_video_ = MediaPlayerHostMsg_ReadFromDemuxerAck_Params();
   audio_access_unit_index_ = 0;
   video_access_unit_index_ = 0;
+  waiting_for_audio_data_ = false;
+  waiting_for_video_data_ = false;
 }
 
 bool MediaSourcePlayer::HasVideo() {
@@ -631,10 +651,11 @@ void MediaSourcePlayer::CreateAudioDecoderJob() {
 
   // Create audio decoder job only if config changes.
   if (HasAudio() && (reconfig_audio_decoder_ || !audio_decoder_job_)) {
-    audio_decoder_job_.reset(new AudioDecoderJob(
+    audio_decoder_job_.reset(AudioDecoderJob::Create(
         audio_codec_, sampling_rate_, num_channels_,
         &audio_extra_data_[0], audio_extra_data_.size()));
-    reconfig_audio_decoder_ =  false;
+    if (audio_decoder_job_)
+      reconfig_audio_decoder_ =  false;
   }
 }
 
@@ -647,10 +668,13 @@ void MediaSourcePlayer::CreateVideoDecoderJob() {
   }
 
   if (reconfig_video_decoder_ || !video_decoder_job_) {
+    // Release the old VideoDecoderJob first so the surface can get released.
     video_decoder_job_.reset();
-    video_decoder_job_.reset(new VideoDecoderJob(
+    // Create the new VideoDecoderJob.
+    video_decoder_job_.reset(VideoDecoderJob::Create(
         video_codec_, gfx::Size(width_, height_), surface_.j_surface().obj()));
-    reconfig_video_decoder_ = false;
+    if (video_decoder_job_)
+      reconfig_video_decoder_ = false;
   }
 
   // Inform the fullscreen view the player is ready.
