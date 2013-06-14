@@ -36,6 +36,7 @@ void RenderViewImpl::OnUpdateTopControlsState(bool enable_hiding,
       constraints = cc::SHOWN;
     cc::TopControlsState current = cc::BOTH;
     compositor_->UpdateTopControlsState(constraints, current, animate);
+    top_controls_constraints_ = constraints;
   }
 }
 
@@ -47,6 +48,18 @@ void RenderViewImpl::UpdateTopControlsState(TopControlsState constraints,
   cc::TopControlsState current_cc = ContentToCcTopControlsState(current);
   if (compositor_)
     compositor_->UpdateTopControlsState(constraints_cc, current_cc, animate);
+  top_controls_constraints_ = constraints_cc;
+}
+
+void RenderViewImpl::didScrollWithKeyboard(const WebKit::WebSize& delta) {
+  if (delta.height == 0)
+    return;
+  if (compositor_) {
+    cc::TopControlsState current = delta.height < 0 ? cc::SHOWN : cc::HIDDEN;
+    compositor_->UpdateTopControlsState(top_controls_constraints_,
+                                        current,
+                                        true);
+  }
 }
 
 }  // namespace content

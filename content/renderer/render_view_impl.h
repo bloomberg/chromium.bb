@@ -517,6 +517,7 @@ class CONTENT_EXPORT RenderViewImpl
   // date and time input fields using MULTIPLE_FIELDS_UI
   virtual bool openDateTimeChooser(const WebKit::WebDateTimeChooserParams&,
                                    WebKit::WebDateTimeChooserCompletion*);
+  virtual void didScrollWithKeyboard(const WebKit::WebSize& delta);
 #endif
 
   // WebKit::WebFrameClient implementation -------------------------------------
@@ -1357,6 +1358,12 @@ class CONTENT_EXPORT RenderViewImpl
   // always respond properly to the request, so we don't have to worry so
   // much about leaks.
   IDMap<ContextMenuClient, IDMapExternalPointer> pending_context_menus_;
+
+#if defined(OS_ANDROID)
+  // Cache the old top controls state constraints. Used when updating
+  // current value only without altering the constraints.
+  cc::TopControlsState top_controls_constraints_;
+#endif
 
   // View ----------------------------------------------------------------------
 

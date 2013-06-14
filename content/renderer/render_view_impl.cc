@@ -767,6 +767,9 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       target_url_status_(TARGET_NONE),
       selection_text_offset_(0),
       selection_range_(ui::Range::InvalidRange()),
+#if defined(OS_ANDROID)
+      top_controls_constraints_(cc::BOTH),
+#endif
       cached_is_main_frame_pinned_to_left_(false),
       cached_is_main_frame_pinned_to_right_(false),
       cached_has_main_frame_horizontal_scrollbar_(false),
