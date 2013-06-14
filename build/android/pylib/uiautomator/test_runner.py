@@ -29,6 +29,10 @@ class TestRunner(instr_test_runner.TestRunner):
       self.test_pkg.Install(self.adb)
 
   #override
+  def PushDataDeps(self):
+    pass
+
+  #override
   def _RunTest(self, test, timeout):
     self.adb.ClearApplicationState(self.package_name)
     if 'Feature:FirstRunExperience' in self.test_pkg.GetTestAnnotations(test):
