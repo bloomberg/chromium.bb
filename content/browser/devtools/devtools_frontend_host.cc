@@ -82,6 +82,19 @@ bool DevToolsFrontendHost::OnMessageReceived(
   return handled;
 }
 
+void DevToolsFrontendHost::RenderViewGone(
+    base::TerminationStatus status) {
+  switch(status) {
+    case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+    case base::TERMINATION_STATUS_PROCESS_CRASHED:
+      DevToolsManager::GetInstance()->ClientHostClosing(this);
+      break;
+    default:
+      break;
+  }
+}
+
 void DevToolsFrontendHost::OnDispatchOnInspectorBackend(
     const std::string& message) {
   DevToolsManagerImpl::GetInstance()->DispatchOnInspectorBackend(this, message);
