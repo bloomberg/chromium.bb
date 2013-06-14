@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/api/system_info_display/display_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
@@ -17,19 +18,28 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
  public:
   virtual bool QueryInfo(DisplayInfo* info) OVERRIDE {
     info->clear();
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 4; i++) {
       linked_ptr<DisplayUnitInfo> unit(new DisplayUnitInfo());
-      unit->id = "DISPLAY";
-      unit->name = "DISPLAY NAME";
+      unit->id = base::IntToString(i);
+      unit->name = "DISPLAY NAME FOR " + unit->id;
+      if (i == 1)
+        unit->mirroring_source_id = "0";
       unit->is_primary = i == 0 ? true : false;
       unit->is_internal = i == 0 ? true : false;
       unit->is_enabled = true;
+      unit->rotation = (90 * i) % 360;
       unit->dpi_x = 96.0;
       unit->dpi_y = 96.0;
       unit->bounds.left = 0;
       unit->bounds.top = 0;
       unit->bounds.width = 1280;
       unit->bounds.height = 720;
+      if (i == 0) {
+        unit->overscan.left = 20;
+        unit->overscan.top = 40;
+        unit->overscan.right = 60;
+        unit->overscan.bottom = 80;
+      }
       unit->work_area.left = 0;
       unit->work_area.top = 0;
       unit->work_area.width = 960;

@@ -6,6 +6,11 @@
 
 namespace extensions {
 
+void DisplayInfoProvider::RequestInfo(const RequestInfoCallback& callback) {
+  // Redirect the request to a worker pool thread.
+  StartQueryInfo(callback);
+}
+
 // TODO(hongbo): implement X11 display info querying.
 bool DisplayInfoProvider::QueryInfo(DisplayInfo* info) {
   return false;

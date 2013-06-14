@@ -6,6 +6,11 @@
 
 namespace extensions {
 
+void DisplayInfoProvider::RequestInfo(const RequestInfoCallback& callback) {
+  // Redirect the request to a worker pool thread.
+  StartQueryInfo(callback);
+}
+
 // TODO(hongbo): implement display info querying on Mac OS X.
 bool DisplayInfoProvider::QueryInfo(DisplayInfo* info) {
   return false;

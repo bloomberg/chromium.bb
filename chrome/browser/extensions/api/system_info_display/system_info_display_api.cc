@@ -9,9 +9,10 @@ namespace extensions {
 using api::system_info_display::DisplayUnitInfo;
 
 bool SystemInfoDisplayGetDisplayInfoFunction::RunImpl() {
-  DisplayInfoProvider::GetDisplayInfo()->StartQueryInfo(
-      base::Bind(&SystemInfoDisplayGetDisplayInfoFunction::OnGetDisplayInfoCompleted,
-                 this));
+  DisplayInfoProvider::GetProvider()->RequestInfo(
+      base::Bind(
+          &SystemInfoDisplayGetDisplayInfoFunction::OnGetDisplayInfoCompleted,
+          this));
   return true;
 }
 

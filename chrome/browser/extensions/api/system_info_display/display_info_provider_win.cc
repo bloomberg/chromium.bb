@@ -67,6 +67,11 @@ BOOL CALLBACK EnumMonitorCallback(HMONITOR monitor,
 
 }  // namespace
 
+void DisplayInfoProvider::RequestInfo(const RequestInfoCallback& callback) {
+  // Redirect the request to a worker pool thread.
+  StartQueryInfo(callback);
+}
+
 bool DisplayInfoProvider::QueryInfo(DisplayInfo* info) {
   DCHECK(info);
   info->clear();

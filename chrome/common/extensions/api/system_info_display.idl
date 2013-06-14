@@ -7,32 +7,75 @@ namespace systemInfo.display {
   dictionary Bounds {
     // The x-coordinate of the upper-left corner.
     long left;
+
     // The y-coordinate of the upper-left corner.
     long top;
+
     // The width of the display in pixels.
     long width;
+
     // The height of the display in pixels.
     long height;
+  };
+
+  dictionary Insets {
+    // The x-axis distance from the left bound.
+    long left;
+
+    // The y-axis distance from the top bound.
+    long top;
+
+    // The x-axis distance from the right bound.
+    long right;
+
+    // The y-axis distance from the bottom bound.
+    long bottom;
   };
 
   dictionary DisplayUnitInfo {
     // The unique identifier of the display.
     DOMString id;
+    
     // The user-friendly name (e.g. "HP LCD monitor").
     DOMString name;
+  
+    // Identifier of the display that is being mirrored on the display unit.
+    // If mirroring is not in progress, set to an empty string.
+    // Currently exposed only on ChromeOS. Will be empty string on other
+    // platforms.
+    DOMString mirroringSourceId;
+  
     // True if this is the primary display.
     boolean isPrimary;
+
     // True if this is an internal display.
     boolean isInternal;
+
     // True if this display is enabled.
     boolean isEnabled;
+
     // The number of pixels per inch along the x-axis.
     double dpiX;
+
     // The number of pixels per inch along the y-axis.
     double dpiY;
-    // The bounds of the display.
+
+    // The display's clockwise rotation in degrees relative to the vertical
+    // position.
+    // Currently exposed only on ChromeOS. Will be set to 0 on other platforms.
+    long rotation;
+
+    // The display's logical bounds.
     Bounds bounds;
-    // The usable work area of the display.
+
+    // The display's insets within its screen's bounds.
+    // Currently exposed only on ChromeOS. Will be set to empty insets on
+    // other platforms.
+    Insets overscan;
+
+    // The usable work area of the display within the display bounds. The work
+    // area excludes areas of the display reserved for OS, for example taskbar
+    // and launcher.
     Bounds workArea;
   };
   

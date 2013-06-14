@@ -15,12 +15,23 @@ typedef std::vector<linked_ptr<
 
 class DisplayInfoProvider : public SystemInfoProvider<DisplayInfo> {
  public:
-  static DisplayInfoProvider* GetDisplayInfo();
+  typedef base::Callback<void(const DisplayInfo& info, bool success)>
+      RequestInfoCallback;
 
-  // Overriden from SystemInfoProvider<DisplayInfo>.
-  virtual bool QueryInfo(DisplayInfo* info) OVERRIDE;
+  // Gets a DisplayInfoProvider instance.
+  static DisplayInfoProvider* GetProvider();
+
+  // Starts request for the display info, redirecting the request to a worker
+  // thread if needed (using SystemInfoProvider<DisplayInfo>::StartQuery()).
+  // The callback will be called asynchronously.
+  // The implementation is platform specific.
+  void RequestInfo(const RequestInfoCallback& callback);
 
  protected:
+  // Overriden from SystemInfoProvider<DisplayInfo>.
+  // The implementation is platform specific.
+  virtual bool QueryInfo(DisplayInfo* info) OVERRIDE;
+
   friend class SystemInfoProvider<DisplayInfo>;
 
   DisplayInfoProvider() {}
