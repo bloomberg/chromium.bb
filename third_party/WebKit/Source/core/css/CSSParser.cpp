@@ -3043,7 +3043,8 @@ void CSSParser::storeVariableDeclaration(const CSSParserString& name, PassOwnPtr
             return;
         builder.append(cssValue->cssText());
     }
-    addProperty(CSSPropertyVariable, CSSVariableValue::create(variableName, builder.toString().lower()), important, false);
+
+    addProperty(CSSPropertyVariable, CSSVariableValue::create(variableName, builder.toString()), important, false);
 }
 
 void CSSParser::addAnimationValue(RefPtr<CSSValue>& lval, PassRefPtr<CSSValue> rval)
