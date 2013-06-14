@@ -52,7 +52,6 @@ InstrumentingAgents::InstrumentingAgents()
     , m_inspectorTimelineAgent(0)
     , m_inspectorDOMStorageAgent(0)
     , m_inspectorDatabaseAgent(0)
-    , m_inspectorFileSystemAgent(0)
     , m_inspectorApplicationCacheAgent(0)
     , m_inspectorDebuggerAgent(0)
     , m_pageDebuggerAgent(0)
@@ -77,7 +76,6 @@ void InstrumentingAgents::reset()
     m_inspectorTimelineAgent = 0;
     m_inspectorDOMStorageAgent = 0;
     m_inspectorDatabaseAgent = 0;
-    m_inspectorFileSystemAgent = 0;
     m_inspectorApplicationCacheAgent = 0;
     m_inspectorDebuggerAgent = 0;
     m_pageDebuggerAgent = 0;

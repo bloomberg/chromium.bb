@@ -36,7 +36,6 @@
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorState.h"
-#include "core/inspector/InstrumentingAgents.h"
 #include "core/platform/Timer.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
@@ -72,12 +71,10 @@ InspectorHeapProfilerAgent::InspectorHeapProfilerAgent(InstrumentingAgents* inst
     , m_frontend(0)
     , m_nextUserInitiatedHeapSnapshotNumber(1)
 {
-    m_instrumentingAgents->setInspectorHeapProfilerAgent(this);
 }
 
 InspectorHeapProfilerAgent::~InspectorHeapProfilerAgent()
 {
-    m_instrumentingAgents->setInspectorHeapProfilerAgent(0);
 }
 
 void InspectorHeapProfilerAgent::clearProfiles(ErrorString*)

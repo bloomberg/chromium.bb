@@ -48,8 +48,6 @@ class InspectorDOMDebuggerAgent;
 class InspectorDOMStorageAgent;
 class InspectorDatabaseAgent;
 class InspectorDebuggerAgent;
-class InspectorFileSystemAgent;
-class InspectorHeapProfilerAgent;
 class InspectorLayerTreeAgent;
 class InspectorPageAgent;
 class InspectorProfilerAgent;
@@ -106,9 +104,6 @@ public:
     InspectorDatabaseAgent* inspectorDatabaseAgent() const { return m_inspectorDatabaseAgent; }
     void setInspectorDatabaseAgent(InspectorDatabaseAgent* agent) { m_inspectorDatabaseAgent = agent; }
 
-    InspectorFileSystemAgent* inspectorFileSystemAgent() const { return m_inspectorFileSystemAgent; }
-    void setInspectorFileSystemAgent(InspectorFileSystemAgent* agent) { m_inspectorFileSystemAgent = agent; }
-
     InspectorApplicationCacheAgent* inspectorApplicationCacheAgent() const { return m_inspectorApplicationCacheAgent; }
     void setInspectorApplicationCacheAgent(InspectorApplicationCacheAgent* agent) { m_inspectorApplicationCacheAgent = agent; }
 
@@ -123,9 +118,6 @@ public:
 
     InspectorProfilerAgent* inspectorProfilerAgent() const { return m_inspectorProfilerAgent; }
     void setInspectorProfilerAgent(InspectorProfilerAgent* agent) { m_inspectorProfilerAgent = agent; }
-
-    InspectorHeapProfilerAgent* inspectorHeapProfilerAgent() const { return m_inspectorHeapProfilerAgent; }
-    void setInspectorHeapProfilerAgent(InspectorHeapProfilerAgent* agent) { m_inspectorHeapProfilerAgent = agent; }
 
     InspectorWorkerAgent* inspectorWorkerAgent() const { return m_inspectorWorkerAgent; }
     void setInspectorWorkerAgent(InspectorWorkerAgent* agent) { m_inspectorWorkerAgent = agent; }
@@ -151,13 +143,11 @@ private:
     InspectorTimelineAgent* m_inspectorTimelineAgent;
     InspectorDOMStorageAgent* m_inspectorDOMStorageAgent;
     InspectorDatabaseAgent* m_inspectorDatabaseAgent;
-    InspectorFileSystemAgent* m_inspectorFileSystemAgent;
     InspectorApplicationCacheAgent* m_inspectorApplicationCacheAgent;
     InspectorDebuggerAgent* m_inspectorDebuggerAgent;
     PageDebuggerAgent* m_pageDebuggerAgent;
     InspectorDOMDebuggerAgent* m_inspectorDOMDebuggerAgent;
     InspectorProfilerAgent* m_inspectorProfilerAgent;
-    InspectorHeapProfilerAgent* m_inspectorHeapProfilerAgent;
     InspectorWorkerAgent* m_inspectorWorkerAgent;
     InspectorCanvasAgent* m_inspectorCanvasAgent;
 };
