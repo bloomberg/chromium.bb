@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_BASE_WORKER_POOL_H_
-#define CC_BASE_WORKER_POOL_H_
+#ifndef CC_RESOURCES_WORKER_POOL_H_
+#define CC_RESOURCES_WORKER_POOL_H_
 
 #include <deque>
 #include <string>
@@ -151,4 +151,4 @@ class CC_EXPORT WorkerPool {
 
 }  // namespace cc
 
-#endif  // CC_BASE_WORKER_POOL_H_
+#endif  // CC_RESOURCES_WORKER_POOL_H_

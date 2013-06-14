@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
-#include "cc/base/worker_pool.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/tile_priority.h"
+#include "cc/resources/worker_pool.h"
 
 class SkDevice;
 
