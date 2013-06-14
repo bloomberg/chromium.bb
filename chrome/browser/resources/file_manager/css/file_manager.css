@@ -2480,10 +2480,24 @@ body[new-ui] menuitem#detail-view {
     url('../images/files/ui/new-ui/2x/button_list_view.png') 2x);
 }
 
+body[new-ui] menuitem#detail-view[selected]:not([disabled]),
+body[new-ui] menuitem#detail-view[lead]:not([disabled]) {
+  background-image: -webkit-image-set(
+    url('../images/files/ui/new-ui/button_list_view_white.png') 1x,
+    url('../images/files/ui/new-ui/2x/button_list_view_white.png') 2x);
+}
+
 body[new-ui] menuitem#thumbnail-view {
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/button_mosaic_view.png') 1x,
     url('../images/files/ui/new-ui/2x/button_mosaic_view.png') 2x);
+}
+
+body[new-ui] menuitem#thumbnail-view[selected]:not([disabled]),
+body[new-ui] menuitem#thumbnail-view[lead]:not([disabled]) {
+  background-image: -webkit-image-set(
+    url('../images/files/ui/new-ui/button_mosaic_view_white.png') 1x,
+    url('../images/files/ui/new-ui/2x/button_mosaic_view_white.png') 2x);
 }
 
 body[new-ui] #iframe-drag-area {
