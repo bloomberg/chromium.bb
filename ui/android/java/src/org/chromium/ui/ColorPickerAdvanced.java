@@ -27,15 +27,15 @@ public class ColorPickerAdvanced extends LinearLayout implements OnSeekBarChange
 
     private static final int SATURATION_COLOR_COUNT = 2;
 
-    private static final int LIGHTNESS_SEEK_BAR_MAX = 100;
+    private static final int VALUE_SEEK_BAR_MAX = 100;
 
-    private static final int LIGHTNESS_COLOR_COUNT = 2;
+    private static final int VALUE_COLOR_COUNT = 2;
 
     ColorPickerAdvancedComponent mHueDetails;
 
     ColorPickerAdvancedComponent mSaturationDetails;
 
-    ColorPickerAdvancedComponent mLightnessDetails;
+    ColorPickerAdvancedComponent mValueDetails;
 
     private OnColorChangedListener mOnColorChangedListener;
 
@@ -68,8 +68,8 @@ public class ColorPickerAdvanced extends LinearLayout implements OnSeekBarChange
                 HUE_SEEK_BAR_MAX, this);
         mSaturationDetails = createAndAddNewGradient(R.string.color_picker_saturation,
                 SATURATION_SEEK_BAR_MAX, this);
-        mLightnessDetails = createAndAddNewGradient(R.string.color_picker_lightness,
-                LIGHTNESS_SEEK_BAR_MAX, this);
+        mValueDetails = createAndAddNewGradient(R.string.color_picker_value,
+                VALUE_SEEK_BAR_MAX, this);
 
         refreshGradientComponents();
     }
@@ -147,13 +147,13 @@ public class ColorPickerAdvanced extends LinearLayout implements OnSeekBarChange
         if (fromUser) {
             mCurrentHsvValues[0] = mHueDetails.getValue();
             mCurrentHsvValues[1] = mSaturationDetails.getValue() / 100.0f;
-            mCurrentHsvValues[2] = mLightnessDetails.getValue() / 100.0f;
+            mCurrentHsvValues[2] = mValueDetails.getValue() / 100.0f;
 
             mCurrentColor = Color.HSVToColor(mCurrentHsvValues);
 
             updateHueGradient();
             updateSaturationGradient();
-            updateLightnessGradient();
+            updateValueGradient();
 
             notifyColorChanged();
         }
@@ -197,22 +197,22 @@ public class ColorPickerAdvanced extends LinearLayout implements OnSeekBarChange
     }
 
     /**
-     * Updates only the lightness gradient display with the lightness value for
+     * Updates only the Value gradient display with the Value amount for
      * the currently selected color.
      */
-    private void updateLightnessGradient() {
+    private void updateValueGradient() {
         float[] tempHsvValues = new float[3];
         tempHsvValues[0] = mCurrentHsvValues[0];
         tempHsvValues[1] = mCurrentHsvValues[1];
         tempHsvValues[2] = 0.0f;
 
-        int[] newColors = new int[LIGHTNESS_COLOR_COUNT];
+        int[] newColors = new int[VALUE_COLOR_COUNT];
 
         newColors[0] = Color.HSVToColor(tempHsvValues);
 
         tempHsvValues[2] = 1.0f;
         newColors[1] = Color.HSVToColor(tempHsvValues);
-        mLightnessDetails.setGradientColors(newColors);
+        mValueDetails.setGradientColors(newColors);
     }
 
     /**
@@ -224,20 +224,20 @@ public class ColorPickerAdvanced extends LinearLayout implements OnSeekBarChange
         saturationValue = Math.min(saturationValue, SATURATION_SEEK_BAR_MAX);
         saturationValue = Math.max(saturationValue, 0);
 
-        // Round and bound the lightness value.
-        int lightnessValue = Math.round(mCurrentHsvValues[2] * 100.0f);
-        lightnessValue = Math.min(lightnessValue, LIGHTNESS_SEEK_BAR_MAX);
-        lightnessValue = Math.max(lightnessValue, 0);
+        // Round and bound the Value amount.
+        int valueValue = Math.round(mCurrentHsvValues[2] * 100.0f);
+        valueValue = Math.min(valueValue, VALUE_SEEK_BAR_MAX);
+        valueValue = Math.max(valueValue, 0);
 
         // Don't need to round the hue value since its possible values match the seek bar
         // range directly.
         mHueDetails.setValue(mCurrentHsvValues[0]);
         mSaturationDetails.setValue(saturationValue);
-        mLightnessDetails.setValue(lightnessValue);
+        mValueDetails.setValue(valueValue);
 
         updateHueGradient();
         updateSaturationGradient();
-        updateLightnessGradient();
+        updateValueGradient();
     }
 
     @Override

@@ -17,8 +17,8 @@
       <message desc="Label for saturation slider in ColorPicker." name="IDS_COLOR_PICKER_SATURATION">
         Saturation
       </message>
-      <message desc="Label for lightness slider in ColorPicker" name="IDS_COLOR_PICKER_LIGHTNESS">
-        Lightness
+      <message desc="Label for value slider in ColorPicker." name="IDS_COLOR_PICKER_VALUE">
+        Value
       </message>
       <message desc="Label for button in ColorPicker dialog for user to accept the currently chosen color. [CHAR-LIMIT=20]" name="IDS_COLOR_PICKER_BUTTON_SET">       
         Set
