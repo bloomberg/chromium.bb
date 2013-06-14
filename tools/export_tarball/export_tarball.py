@@ -140,8 +140,8 @@ def main(argv):
     print 'Could not run build/util/lastchange.py to update LASTCHANGE.'
     return 1
   if subprocess.call(['python', 'build/util/lastchange.py', '-s',
-                      'src/third_party/WebKit', '-o',
-                      'src/build/util/LASTCHANGE.blink'],
+                      'third_party/WebKit', '-o',
+                      'build/util/LASTCHANGE.blink'],
                      cwd=GetSourceDirectory()) != 0:
     print 'Could not run build/util/lastchange.py to update LASTCHANGE.blink.'
     return 1
