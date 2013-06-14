@@ -4,6 +4,10 @@
 
 #include "ppapi/tests/test_flash_drm.h"
 
+#if defined(PPAPI_OS_WIN)
+#include <Windows.h>
+#endif
+
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/private/ppb_file_ref_private.h"
 #include "ppapi/c/private/ppb_flash_drm.h"
@@ -70,12 +74,18 @@ std::string TestFlashDRM::TestGetDeviceID() {
 }
 
 std::string TestFlashDRM::TestGetHmonitor() {
-  // TODO(raymes): Replace this with a real test once this is implemented.
   DRM drm(instance_);
   int64_t hmonitor;
   bool success = drm.GetHmonitor(&hmonitor);
+#if defined(PPAPI_OS_WIN)
+  // TODO(cpu): Replace this with a better test. See bug 249135.
   ASSERT_TRUE(success);
-  ASSERT_EQ(0, hmonitor);
+  MONITORINFO info = { sizeof(info) };
+  ASSERT_EQ(TRUE,
+            ::GetMonitorInfo(reinterpret_cast<HMONITOR>(hmonitor), &info));
+#else
+  ASSERT_FALSE(success);
+#endif
 
   PASS();
 }

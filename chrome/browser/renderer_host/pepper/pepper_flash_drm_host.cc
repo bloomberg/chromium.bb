@@ -4,6 +4,10 @@
 
 #include "chrome/browser/renderer_host/pepper/pepper_flash_drm_host.h"
 
+#if defined(OS_WIN)
+#include <Windows.h>
+#endif
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -72,9 +76,16 @@ int32_t PepperFlashDRMHost::OnHostMsgGetDeviceID(
 
 int32_t PepperFlashDRMHost::OnHostMsgGetHmonitor(
     ppapi::host::HostMessageContext* context) {
-  // TODO(cpu): Get the HMONITOR.
-  context->reply_msg = PpapiPluginMsg_FlashDRM_GetHmonitorReply(0);
+#if defined(OS_WIN)
+  // TODO(cpu): Get the real HMONITOR. See bug 249135.
+  POINT pt = {1,1};
+  HMONITOR monitor = ::MonitorFromPoint(pt, MONITOR_DEFAULTTOPRIMARY);
+  int64_t monitor_id = reinterpret_cast<int64_t>(monitor);
+  context->reply_msg = PpapiPluginMsg_FlashDRM_GetHmonitorReply(monitor_id);
   return PP_OK;
+#else
+  return PP_ERROR_FAILED;
+#endif
 }
 
 void PepperFlashDRMHost::GotDeviceID(
