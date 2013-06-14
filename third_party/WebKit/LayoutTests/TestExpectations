@@ -1691,6 +1691,8 @@ crbug.com/249237 fast/forms/interactive-validation-select-crash.html [ Failure ]
 crbug.com/249237 fast/forms/month/month-interactive-validation-required.html [ Failure ]
 crbug.com/249237 fast/forms/number/number-interactive-validation-required.html [ Failure ]
 crbug.com/249237 fast/forms/time/time-interactive-validation-required.html [ Failure ]
+crbug.com/249237 fast/forms/week/week-interactive-validation-required.html [ Failure ]
+crbug.com/249237 fast/forms/interactive-validation-remove-node-in-handler.html [ Crash ]
 
 crbug.com/247979 [ Mac Release ] inspector/elements/edit-dom-actions.html [ Slow Failure Pass ]
 crbug.com/247979 [ XP Release ] inspector/elements/edit-dom-actions.html [ Slow Pass Failure ]
