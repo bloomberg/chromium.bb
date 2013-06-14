@@ -753,6 +753,27 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   EXPECT_EQ(1, email_suggestions->checked_item());
 }
 
+TEST_F(AutofillDialogControllerTest, ValidSavedEmail) {
+  AutofillProfile profile(test::GetVerifiedProfile());
+  const string16 kValidEmail = ASCIIToUTF16(kFakeEmail);
+  profile.SetRawInfo(EMAIL_ADDRESS, kValidEmail);
+  controller()->GetTestingManager()->AddTestingProfile(&profile);
+
+  controller()->MenuModelForSection(SECTION_EMAIL)->ActivatedAt(0);
+  EXPECT_EQ(kValidEmail,
+            controller()->SuggestionStateForSection(SECTION_EMAIL).text);
+}
+
+TEST_F(AutofillDialogControllerTest, InvalidSavedEmail) {
+  AutofillProfile profile(test::GetVerifiedProfile());
+  profile.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16(".!#$%&'*+/=?^_`-@-.."));
+  controller()->GetTestingManager()->AddTestingProfile(&profile);
+
+  controller()->MenuModelForSection(SECTION_EMAIL)->ActivatedAt(0);
+  EXPECT_TRUE(
+      controller()->SuggestionStateForSection(SECTION_EMAIL).text.empty());
+}
+
 TEST_F(AutofillDialogControllerTest, AutofillCreditCards) {
   // Since the PersonalDataManager is empty, this should only have the
   // default menu items.

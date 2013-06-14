@@ -1030,8 +1030,10 @@ string16 AutofillDialogControllerImpl::SuggestionTextForSection(
   if (!IsASuggestionItemKey(item_key))
     return string16();
 
-  if (section == SECTION_EMAIL)
-    return model->GetLabelAt(model->checked_item());
+  if (section == SECTION_EMAIL) {
+    string16 email_address = model->GetLabelAt(model->checked_item());
+    return IsValidEmailAddress(email_address) ? email_address : string16();
+  }
 
   scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
   return wrapper->GetDisplayText();
