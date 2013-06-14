@@ -27,11 +27,11 @@
 
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
 
-#include <gtest/gtest.h>
-#include "MockDiscardablePixelRef.h"
-#include "MockImageDecoder.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/chromium/ImageFrameGenerator.h"
+#include "core/platform/graphics/chromium/test/MockDiscardablePixelRef.h"
+#include "core/platform/graphics/chromium/test/MockImageDecoder.h"
+#include <gtest/gtest.h>
 
 using namespace WebCore;
 

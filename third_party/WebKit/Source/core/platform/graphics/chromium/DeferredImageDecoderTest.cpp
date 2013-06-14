@@ -27,16 +27,16 @@
 
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 
-#include <gtest/gtest.h>
-#include "MockImageDecoder.h"
 #include "SkCanvas.h"
 #include "SkDevice.h"
 #include "SkPicture.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
+#include "core/platform/graphics/chromium/test/MockImageDecoder.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include <gtest/gtest.h>
 
 using namespace WebCore;
 
