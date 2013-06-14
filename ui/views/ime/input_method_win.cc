@@ -42,7 +42,7 @@ void InputMethodWin::Init(Widget* widget) {
   InputMethodBase::Init(widget);
 
   // Gets the initial input locale and text direction information.
-  OnInputLangChange(0, 0);
+  OnInputLocaleChanged();
 }
 
 void InputMethodWin::OnFocus() {
@@ -167,31 +167,12 @@ ui::TextInputClient* InputMethodWin::GetTextInputClient() const {
   return host_ ? host_->GetTextInputClient() : NULL;
 }
 
-
-LRESULT InputMethodWin::OnImeMessages(
-    UINT message, WPARAM w_param, LPARAM l_param, BOOL* handled) {
-  MSG msg = {};
-  msg.hwnd = hwnd_;
-  msg.message = message;
-  msg.wParam = w_param;
-  msg.lParam = l_param;
-
-  LRESULT result = 0;
-  *handled = !!OnUntranslatedIMEMessage(msg, &result);
-  return result;
-}
-
 void InputMethodWin::OnWillChangeFocus(View* focused_before, View* focused) {
   ConfirmCompositionText();
 }
 
 void InputMethodWin::OnDidChangeFocus(View* focused_before, View* focused) {
   UpdateIMEState();
-}
-
-void InputMethodWin::OnInputLangChange(DWORD character_set,
-                                       HKL input_language_id) {
-  OnInputLocaleChanged();
 }
 
 LRESULT InputMethodWin::OnImeSetContext(

@@ -41,18 +41,6 @@ class UI_EXPORT InputMethodWin : public InputMethodBase {
   virtual void SetFocusedTextInputClient(TextInputClient* client) OVERRIDE;
   virtual TextInputClient* GetTextInputClient() const OVERRIDE;
 
-  // Handles IME messages.
-  // TODO(ime): Remove this method.
-  LRESULT OnImeMessages(UINT message,
-                        WPARAM wparam,
-                        LPARAM lparam,
-                        BOOL* handled);
-
-  // Message handlers. The native widget is responsible for forwarding following
-  // messages to the input method.
-  // TODO(ime): Remove this method.
-  void OnInputLangChange(DWORD character_set, HKL input_language_id);
-
  protected:
   // Overridden from InputMethodBase:
   virtual void OnWillChangeFocusedClient(TextInputClient* focused_before,

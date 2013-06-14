@@ -41,7 +41,7 @@ InputMethodWin::~InputMethodWin() {
 
 void InputMethodWin::Init(bool focused) {
   // Gets the initial input locale and text direction information.
-  OnInputLangChange(0, 0);
+  OnInputLocaleChanged();
 
   InputMethodBase::Init(focused);
 }
@@ -233,29 +233,6 @@ TextInputClient* InputMethodWin::GetTextInputClient() const {
   if (base::win::IsTSFAwareRequired())
     return ui::TSFBridge::GetInstance()->GetFocusedTextInputClient();
   return InputMethodBase::GetTextInputClient();
-}
-
-LRESULT InputMethodWin::OnImeMessages(UINT message,
-                                      WPARAM w_param,
-                                      LPARAM l_param,
-                                      BOOL* handled) {
-  MSG msg = {};
-  msg.hwnd = hwnd_;
-  msg.message = message;
-  msg.wParam = w_param;
-  msg.lParam = l_param;
-
-  LRESULT result = 0;
-  *handled = !!OnUntranslatedIMEMessage(msg, &result);
-  return result;
-}
-
-void InputMethodWin::OnInputLangChange(DWORD character_set,
-                                       HKL input_language_id) {
-  active_ = ime_input_.SetInputLanguage();
-  locale_ = ime_input_.GetInputLanguageName();
-  direction_ = ime_input_.GetTextDirection();
-  OnInputMethodChanged();
 }
 
 void InputMethodWin::OnWillChangeFocusedClient(TextInputClient* focused_before,
