@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/locally_managed_user_creation_screen_handler.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -20,6 +21,9 @@ namespace {
 // Locally managed user creation screen id.
 const char kLocallyManagedUserCreationScreen[] =
     "locally-managed-user-creation";
+
+const char kLocallyManagedWebURL[] =
+    "www.chrome.com/SomeTBDURL";
 
 }  // namespace
 
@@ -53,18 +57,19 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
                IDS_CREATE_LOCALLY_MANAGED_INTRO_MANAGER_ITEM_3);
   builder->Add("createManagedUserIntroText2",
                IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_2);
-  builder->Add("createManagedUserIntroText3",
-               IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_3);
+  builder->AddF("createManagedUserIntroText3",
+               IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_3,
+               UTF8ToUTF16(kLocallyManagedWebURL));
 
   builder->Add("createManagedUserPickManagerTitle",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PICK_MANAGER_TITLE);
-  builder->Add("createManagedUserPickManagerTitleExplanation",
-               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PICK_MANAGER_EXPLANATION);
+  builder->AddF("createManagedUserPickManagerTitleExplanation",
+               IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PICK_MANAGER_EXPLANATION,
+               UTF8ToUTF16(kLocallyManagedWebURL));
   builder->Add("createManagedUserManagerPasswordHint",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_MANAGER_PASSWORD_HINT);
   builder->Add("createManagedUserWrongManagerPasswordText",
                IDS_CREATE_LOCALLY_MANAGED_USER_MANAGER_PASSWORD_ERROR);
-
 
   builder->Add("createManagedUserNameTitle",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ACCOUNT_NAME_TITLE);
@@ -109,6 +114,8 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_2);
   builder->Add("createManagedUserCreated3Text3",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_3);
+
+  builder->Add("managementURL", kLocallyManagedWebURL);
 }
 
 void LocallyManagedUserCreationScreenHandler::Initialize() {}

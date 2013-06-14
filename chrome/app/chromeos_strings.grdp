@@ -470,13 +470,13 @@ Press any key to continue exploring.
   A managed user is not a Google account, and applies only to this device.
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_3" desc="Managed user dialog, intro page, third paragraph">
-  After you create a new locally managed users, you can manage the settings at any time from any device at <ph name="MANAGEMENT_URL">$1<ex>www.chrome.com/manage</ex></ph>.
+  After you create a new locally managed users, you can manage the settings at any time from any device at <ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph>.
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PICK_MANAGER_TITLE" desc="Managed user dialog, manager selection page, title of the page">
     Choose the manager for this user
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PICK_MANAGER_EXPLANATION" desc="Managed user dialog, manager selection page, explanation of the page">
-    The manager will be able to configure restrictions and settings for this managed user at www.chrome.com/manage.
+    The manager will be able to configure restrictions and settings for this managed user at <ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph>.
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_MANAGER_PASSWORD_HINT" desc="Managed user dialog, manager selection page, text shown as a hint in the user password field.">
     Enter password
@@ -537,8 +537,8 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_2" desc="Managed user dialog, getting started page 3, paragraph 2">
     As a manager of this locally managed user, you can review the locally managed user's visited web sites, determine sites you wish to allow or restrict, and configure other settings
-    by visiting <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>www.chrome.com/manage<ph name="END_BOLD">&lt;/strong&gt;</ph> and signing in as
-    <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>.
+    by visiting <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> and signing in as
+    <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="MANAGER_EMAIL">$2<ex>john.doe@example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>.
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATED_3_TEXT_3" desc="Managed user dialog, getting started page 3, paragraph 3">
     For help, please check your email at <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="MANAGER_EMAIL">$1<ex>john.doe@example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> for further instructions.

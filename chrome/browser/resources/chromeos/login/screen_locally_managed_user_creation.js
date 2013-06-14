@@ -812,6 +812,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
           managerId);
       this.updateElementText_('created-3-text-2',
           'createManagedUserCreated3Text2',
+          loadTimeData.getStringF('managementURL'),
           managerId);
       this.updateElementText_('created-3-text-3',
           'createManagedUserCreated3Text3',
