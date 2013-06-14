@@ -34,6 +34,10 @@ function onLoad() {
     remoting.connectIT2Me();
     event.preventDefault();
   };
+  var reconnect = function() {
+    remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+    remoting.connector.reconnect();
+  };
   var doAuthRedirect = function() {
     remoting.oauth2.doAuthRedirect();
   };
@@ -62,8 +66,7 @@ function onLoad() {
       { event: 'click', id: 'host-finished-button', fn: goHome },
       { event: 'click', id: 'client-finished-it2me-button', fn: goHome },
       { event: 'click', id: 'client-finished-me2me-button', fn: goHome },
-      { event: 'click', id: 'client-reconnect-button',
-        fn: function() { remoting.connector.reconnect(); } },
+      { event: 'click', id: 'client-reconnect-button', fn: reconnect },
       { event: 'click', id: 'cancel-access-code-button', fn: cancelAccessCode},
       { event: 'click', id: 'cancel-connect-button', fn: goHome },
       { event: 'click', id: 'toolbar-stub',
