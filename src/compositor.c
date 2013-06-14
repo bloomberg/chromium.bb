@@ -1975,7 +1975,7 @@ static void
 subsurface_set_position(struct wl_client *client,
 			struct wl_resource *resource, int32_t x, int32_t y)
 {
-	struct weston_subsurface *sub = resource->data;
+	struct weston_subsurface *sub = wl_resource_get_user_data(resource);
 
 	if (!sub)
 		return;
@@ -2034,7 +2034,7 @@ subsurface_place_above(struct wl_client *client,
 		       struct wl_resource *resource,
 		       struct wl_resource *sibling_resource)
 {
-	struct weston_subsurface *sub = resource->data;
+	struct weston_subsurface *sub = wl_resource_get_user_data(resource);
 	struct weston_surface *surface =
 		wl_resource_get_user_data(sibling_resource);
 	struct weston_subsurface *sibling;
@@ -2056,7 +2056,7 @@ subsurface_place_below(struct wl_client *client,
 		       struct wl_resource *resource,
 		       struct wl_resource *sibling_resource)
 {
-	struct weston_subsurface *sub = resource->data;
+	struct weston_subsurface *sub = wl_resource_get_user_data(resource);
 	struct weston_surface *surface =
 		wl_resource_get_user_data(sibling_resource);
 	struct weston_subsurface *sibling;
@@ -2076,7 +2076,7 @@ subsurface_place_below(struct wl_client *client,
 static void
 subsurface_set_sync(struct wl_client *client, struct wl_resource *resource)
 {
-	struct weston_subsurface *sub = resource->data;
+	struct weston_subsurface *sub = wl_resource_get_user_data(resource);
 
 	if (sub)
 		sub->synchronized = 1;
@@ -2085,7 +2085,7 @@ subsurface_set_sync(struct wl_client *client, struct wl_resource *resource)
 static void
 subsurface_set_desync(struct wl_client *client, struct wl_resource *resource)
 {
-	struct weston_subsurface *sub = resource->data;
+	struct weston_subsurface *sub = wl_resource_get_user_data(resource);
 
 	if (sub && sub->synchronized) {
 		sub->synchronized = 0;
@@ -2142,7 +2142,7 @@ subsurface_handle_surface_destroy(struct wl_listener *listener, void *data)
 
 	/* The protocol object (wl_resource) is left inert. */
 	if (sub->resource)
-		sub->resource->data = NULL;
+		wl_resource_set_user_data(sub->resource, NULL);
 
 	weston_subsurface_destroy(sub);
 }
@@ -2165,7 +2165,7 @@ subsurface_handle_parent_destroy(struct wl_listener *listener, void *data)
 static void
 subsurface_resource_destroy(struct wl_resource *resource)
 {
-	struct weston_subsurface *sub = resource->data;
+	struct weston_subsurface *sub = wl_resource_get_user_data(resource);
 
 	if (sub)
 		weston_subsurface_destroy(sub);
@@ -2262,7 +2262,7 @@ weston_subsurface_create(uint32_t id, struct weston_surface *surface,
 		return NULL;
 	}
 
-	sub->resource->destroy = subsurface_resource_destroy;
+	wl_resource_set_destructor(sub->resource, subsurface_resource_destroy);
 	weston_subsurface_link_surface(sub, surface);
 	weston_subsurface_link_parent(sub, parent);
 	weston_subsurface_cache_init(sub);
@@ -2311,7 +2311,7 @@ subcompositor_get_subsurface(struct wl_client *client,
 		wl_resource_post_error(resource,
 			WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE,
 			"%s%d: wl_surface@%d cannot be its own parent",
-			where, id, surface_resource->object.id);
+			where, id, wl_resource_get_id(surface_resource));
 		return;
 	}
 
@@ -2319,7 +2319,7 @@ subcompositor_get_subsurface(struct wl_client *client,
 		wl_resource_post_error(resource,
 			WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE,
 			"%s%d: wl_surface@%d is already a sub-surface",
-			where, id, surface_resource->object.id);
+			where, id, wl_resource_get_id(surface_resource));
 		return;
 	}
 
@@ -2327,7 +2327,7 @@ subcompositor_get_subsurface(struct wl_client *client,
 		wl_resource_post_error(resource,
 			WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE,
 			"%s%d: wl_surface@%d already has a role",
-			where, id, surface_resource->object.id);
+			where, id, wl_resource_get_id(surface_resource));
 		return;
 	}
 
@@ -2335,7 +2335,7 @@ subcompositor_get_subsurface(struct wl_client *client,
 		wl_resource_post_error(resource,
 			WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE,
 			"%s%d: wl_surface@%d is an ancestor of parent",
-			where, id, surface_resource->object.id);
+			where, id, wl_resource_get_id(surface_resource));
 		return;
 	}
 
