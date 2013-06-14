@@ -82,9 +82,6 @@ void Launcher::SetAlignment(ShelfAlignment alignment) {
 gfx::Rect Launcher::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
   LauncherID id = delegate_->GetIDByWindow(window);
   gfx::Rect bounds(launcher_view_->GetIdealBoundsOfItemIcon(id));
-  if (bounds.IsEmpty())
-    return bounds;
-
   gfx::Point screen_origin;
   views::View::ConvertPointToScreen(launcher_view_, &screen_origin);
   return gfx::Rect(screen_origin.x() + bounds.x(),

@@ -54,8 +54,8 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     launcher_view_test_->SetAnimationDuration(1);
   }
 
-  aura::Window* CreateNormalWindow() {
-    return CreateTestWindowInShellWithBounds(gfx::Rect());
+  aura::Window* CreateNormalWindow(const gfx::Rect& bounds) {
+    return CreateTestWindowInShellWithBounds(bounds);
   }
 
   aura::Window* CreatePanelWindow(const gfx::Rect& bounds) {
@@ -71,6 +71,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
         static_cast<PanelLayoutManager*>(GetPanelContainer(window)->
                                          layout_manager());
     manager->Relayout();
+    launcher_view_test()->RunMessageLoopUntilAnimationsDone();
     return window;
   }
 
@@ -248,7 +249,10 @@ class PanelLayoutManagerTest : public test::AshTestBase {
         RootWindowController::ForWindow(window)->shelf()->
         shelf_layout_manager();
     shelf->SetAutoHideBehavior(behavior);
-    shelf->UpdateAutoHideState();
+    LauncherView* launcher_view =
+        Launcher::ForWindow(window)->GetLauncherViewForTest();
+    test::LauncherViewTestAPI test_api(launcher_view);
+    test_api.RunMessageLoopUntilAnimationsDone();
   }
 
   void SetShelfVisibilityState(aura::Window* window,
@@ -313,10 +317,35 @@ TEST_F(PanelLayoutManagerTest, PanelAlignsToHiddenLauncherIcon) {
   gfx::Rect bounds(0, 0, 201, 201);
   SetShelfAutoHideBehavior(Shell::GetPrimaryRootWindow(),
                            SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  RunAllPendingInMessageLoop();
+  scoped_ptr<aura::Window> normal_window(CreateNormalWindow(bounds));
   scoped_ptr<aura::Window> window(CreatePanelWindow(bounds));
   EXPECT_EQ(GetPanelContainer(window.get()), window->parent());
   EXPECT_NO_FATAL_FAILURE(IsPanelAboveLauncherIcon(window.get()));
+}
+
+TEST_F(PanelLayoutManagerTest, PanelAlignsToHiddenLauncherIconSecondDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  // Keep the displays wide so that launchers have enough
+  // space for launcher buttons.
+  UpdateDisplay("400x400,600x400");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+
+  scoped_ptr<aura::Window> normal_window(
+      CreateNormalWindow(gfx::Rect(450, 0, 100, 100)));
+  scoped_ptr<aura::Window> panel(CreatePanelWindow(gfx::Rect(400, 0, 50, 50)));
+  EXPECT_EQ(root_windows[1], panel->GetRootWindow());
+  EXPECT_NO_FATAL_FAILURE(IsPanelAboveLauncherIcon(panel.get()));
+  gfx::Rect shelf_visible_position = panel->GetBoundsInScreen();
+
+  SetShelfAutoHideBehavior(root_windows[1],
+                           SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  // Expect the panel X position to remain the same after the shelf is hidden
+  // but the Y to move down.
+  EXPECT_NO_FATAL_FAILURE(IsPanelAboveLauncherIcon(panel.get()));
+  EXPECT_EQ(shelf_visible_position.x(), panel->GetBoundsInScreen().x());
+  EXPECT_GT(panel->GetBoundsInScreen().y(), shelf_visible_position.y());
 }
 
 // Tests interactions between multiple panels
@@ -369,7 +398,7 @@ TEST_F(PanelLayoutManagerTest, MultiplePanelCallout) {
   scoped_ptr<aura::Window> w1(CreatePanelWindow(bounds));
   scoped_ptr<aura::Window> w2(CreatePanelWindow(bounds));
   scoped_ptr<aura::Window> w3(CreatePanelWindow(bounds));
-  scoped_ptr<aura::Window> w4(CreateNormalWindow());
+  scoped_ptr<aura::Window> w4(CreateNormalWindow(gfx::Rect()));
   launcher_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(IsPanelCalloutVisible(w1.get()));
   EXPECT_TRUE(IsPanelCalloutVisible(w2.get()));
