@@ -1097,6 +1097,7 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   metadata.root_layer_size = active_tree_->ScrollableSize();
   metadata.min_page_scale_factor = active_tree_->min_page_scale_factor();
   metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();
+  metadata.latency_info = active_tree_->GetLatencyInfo();
   if (top_controls_manager_) {
     metadata.location_bar_offset =
         gfx::Vector2dF(0.f, top_controls_manager_->controls_top_offset());
@@ -1109,7 +1110,6 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
     return metadata;
 
   metadata.root_scroll_offset = RootScrollLayer()->TotalScrollOffset();
-  metadata.latency_info = active_tree_->GetLatencyInfo();
 
   return metadata;
 }

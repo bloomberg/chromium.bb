@@ -21,6 +21,7 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
@@ -976,6 +977,20 @@ void CompositorSwapClient::OnLostContext() {
   // Note: previous line destroyed this. Don't access members from now on.
 }
 
+class SoftwareOutputSurface : public cc::OutputSurface {
+ public:
+  explicit SoftwareOutputSurface(
+      scoped_ptr<cc::SoftwareOutputDevice> software_device)
+      : cc::OutputSurface(software_device.Pass()) {}
+
+  virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE {
+    ui::LatencyInfo latency_info = frame->metadata.latency_info;
+    latency_info.swap_timestamp = base::TimeTicks::HighResNow();
+    RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
+    cc::OutputSurface::SwapBuffers(frame);
+  }
+};
+
 class SoftwareContextFactory : public ui::ContextFactory {
  public:
   SoftwareContextFactory() {}
@@ -988,12 +1003,12 @@ class SoftwareContextFactory : public ui::ContextFactory {
 #if defined(OS_WIN)
     scoped_ptr<SoftwareOutputDeviceWin> software_device(
         new SoftwareOutputDeviceWin(compositor));
-    return new cc::OutputSurface(
+    return new SoftwareOutputSurface(
         software_device.PassAs<cc::SoftwareOutputDevice>());
 #elif defined(USE_X11)
     scoped_ptr<SoftwareOutputDeviceX11> software_device(
         new SoftwareOutputDeviceX11(compositor));
-    return new cc::OutputSurface(
+    return new SoftwareOutputSurface(
         software_device.PassAs<cc::SoftwareOutputDevice>());
 #else
     NOTIMPLEMENTED();
