@@ -108,8 +108,9 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesPrivateApiTest);
 };
 
-// TODO(jschuh): Flaky on Win64 build. crbug.com/247336
-#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+// TODO(jschuh): Flaky on Win64 & Linux Aura build. crbug.com/247336
+#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || \
+    (defined(OS_LINUX) && defined(USE_AURA))
 #define MAYBE_DeviceAttachDetachEvents DISABLED_DeviceAttachDetachEvents
 #else
 #define MAYBE_DeviceAttachDetachEvents DeviceAttachDetachEvents
