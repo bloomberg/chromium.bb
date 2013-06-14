@@ -190,6 +190,8 @@ my %typedArrayHash = ("ArrayBuffer" => [],
                       "Float64Array" => ["double", "v8::kExternalDoubleArray"],
                      );
 
+my %callbackFunctionTypeHash = ();
+
 my %enumTypeHash = ();
 
 my %svgAnimatedTypeHash = ("SVGAnimatedAngle" => 1, "SVGAnimatedBoolean" => 1,
@@ -327,6 +329,7 @@ sub GenerateInterface
     my $object = shift;
     my $interface = shift;
 
+    %callbackFunctionTypeHash = map { $_->name => $_ } @{$idlDocument->callbackFunctions};
     %enumTypeHash = map { $_->name => $_->values } @{$idlDocument->enumerations};
     my $v8ClassName = GetV8ClassName($interface);
     my $defineName = $v8ClassName . "_h";
@@ -417,6 +420,7 @@ sub SkipIncludeHeader
 
     return 1 if IsPrimitiveType($type);
     return 1 if IsEnumType($type);
+    return 1 if IsCallbackFunctionType($type);
     return 1 if $type eq "DOMString";
 
     # Special case: SVGPoint.h / SVGNumber.h do not exist.
@@ -435,7 +439,7 @@ sub AddIncludesForType
         AddToImplIncludes("core/dom/EventListener.h");
     } elsif ($type eq "SerializedScriptValue") {
         AddToImplIncludes("bindings/v8/SerializedScriptValue.h");
-    } elsif ($type eq "any") {
+    } elsif ($type eq "any" || IsCallbackFunctionType($type)) {
         AddToImplIncludes("bindings/v8/ScriptValue.h");
     } else {
         AddToImplIncludes("V8${type}.h");
@@ -663,20 +667,13 @@ END
     $header{class}->addHeader("class $v8ClassName {");
     $header{class}->addFooter("};");
 
-    my $fromFunctionOpening = "";
-    my $fromFunctionClosing = "";
-    if ($interface->extendedAttributes->{"WrapAsFunction"}) {
-        $fromFunctionOpening = "V8DOMWrapper::fromFunction(";
-        $fromFunctionClosing = ")";
-    }
-
     $header{classPublic}->add(<<END);
     static bool HasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
     static bool HasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
     static ${nativeType}* toNative(v8::Handle<v8::Object> object)
     {
-        return reinterpret_cast<${nativeType}*>(${fromFunctionOpening}object${fromFunctionClosing}->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
+        return reinterpret_cast<${nativeType}*>(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
     static void derefObject(void*);
     static WrapperTypeInfo info;
@@ -849,9 +846,6 @@ END
     } else {
 
         my $createWrapperCall = $customWrap ? "${v8ClassName}::wrap" : "${v8ClassName}::createWrapper";
-        my $returningWrapper = $interface->extendedAttributes->{"WrapAsFunction"} ? "V8DOMWrapper::toFunction(wrapper)" : "wrapper";
-        my $returningCreatedWrapperOpening = $interface->extendedAttributes->{"WrapAsFunction"} ? "V8DOMWrapper::toFunction(" : "";
-        my $returningCreatedWrapperClosing = $interface->extendedAttributes->{"WrapAsFunction"} ? ", \"${implClassName}\", isolate)" : "";
 
         if ($customWrap) {
             $header{nameSpaceWebCore}->add(<<END);
@@ -871,7 +865,7 @@ inline v8::Handle<v8::Object> wrap(${nativeType}* impl, v8::Handle<v8::Object> c
         // the same object de-ref functions, though, so use that as the basis of the check.
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == ${v8ClassName}::info.derefObjectFunction);
     }
-    return ${returningCreatedWrapperOpening}$createWrapperCall(impl, creationContext, isolate)${returningCreatedWrapperClosing};
+    return $createWrapperCall(impl, creationContext, isolate);
 }
 END
         }
@@ -884,7 +878,7 @@ inline v8::Handle<v8::Value> toV8(${nativeType}* impl, v8::Handle<v8::Object> cr
         return v8NullWithCheck(isolate);
     v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);
     if (!wrapper.IsEmpty())
-        return $returningWrapper;
+        return wrapper;
     return wrap(impl, creationContext, isolate);
 }
 
@@ -895,7 +889,7 @@ inline v8::Handle<v8::Value> toV8ForMainWorld(${nativeType}* impl, v8::Handle<v8
         return v8NullWithCheck(isolate);
     v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperForMainWorld(impl);
     if (!wrapper.IsEmpty())
-        return $returningWrapper;
+        return wrapper;
     return wrap(impl, creationContext, isolate);
 }
 
@@ -906,7 +900,7 @@ inline v8::Handle<v8::Value> toV8Fast(${nativeType}* impl, const HolderContainer
         return v8Null(container.GetIsolate());
     v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast(impl, container, wrappable);
     if (!wrapper.IsEmpty())
-        return $returningWrapper;
+        return wrapper;
     return wrap(impl, container.Holder(), container.GetIsolate());
 }
 
@@ -918,7 +912,7 @@ inline v8::Handle<v8::Value> toV8FastForMainWorld(${nativeType}* impl, const Hol
         return v8Null(container.GetIsolate());
     v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld(impl);
     if (!wrapper.IsEmpty())
-        return $returningWrapper;
+        return wrapper;
     return wrap(impl, container.Holder(), container.GetIsolate());
 }
 
@@ -4846,7 +4840,7 @@ sub GetNativeType
     return "Range::CompareHow" if $type eq "CompareHow";
     return "DOMTimeStamp" if $type eq "DOMTimeStamp";
     return "double" if $type eq "Date";
-    return "ScriptValue" if $type eq "any";
+    return "ScriptValue" if $type eq "any" or IsCallbackFunctionType($type);
     return "Dictionary" if $type eq "Dictionary";
 
     return "RefPtr<DOMStringList>" if $type eq "DOMStringList";
@@ -4932,7 +4926,7 @@ sub JSValueToNative
         return "Dictionary($value, $getIsolate)";
     }
 
-    if ($type eq "any") {
+    if ($type eq "any" || IsCallbackFunctionType($type)) {
         AddToImplIncludes("bindings/v8/ScriptValue.h");
         return "ScriptValue($value)";
     }
@@ -5059,6 +5053,7 @@ sub IsWrapperType
     my $type = shift;
     return 0 if GetArrayType($type);
     return 0 if GetSequenceType($type);
+    return 0 if IsCallbackFunctionType($type);
     return 0 if IsEnumType($type);
     return 0 if IsPrimitiveType($type);
     return 0 if $type eq "DOMString";
@@ -5472,6 +5467,14 @@ sub IsPrimitiveType
     return 0;
 }
 
+sub IsCallbackFunctionType
+{
+    my $type = shift;
+
+    return 1 if $callbackFunctionTypeHash{$type};
+    return 0;
+}
+
 sub IsEnumType
 {
     my $type = shift;
@@ -5514,10 +5517,12 @@ sub IsRefPtrType
 {
     my $type = shift;
 
+    return 0 if $type eq "any";
     return 0 if IsPrimitiveType($type);
     return 0 if GetArrayType($type);
     return 0 if GetSequenceType($type);
     return 0 if $type eq "DOMString";
+    return 0 if IsCallbackFunctionType($type);
     return 0 if IsEnumType($type);
     return 0 if IsUnionType($type);
 

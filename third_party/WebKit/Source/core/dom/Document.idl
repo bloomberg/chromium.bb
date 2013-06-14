@@ -18,6 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
+callback CustomElementConstructor = Element ();
+
 [
     CustomToV8
 ] interface Document : Node {

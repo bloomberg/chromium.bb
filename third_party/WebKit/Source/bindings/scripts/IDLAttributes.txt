@@ -81,4 +81,3 @@ TreatReturnedNullStringAs=Null|Undefined
 TreatUndefinedAs=*
 URL
 Unforgeable
-WrapAsFunction

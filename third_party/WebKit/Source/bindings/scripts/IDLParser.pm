@@ -35,9 +35,16 @@ use constant EmptyToken => 5;
 
 # Used to represent a parsed IDL document
 struct( idlDocument => {
-    interfaces => '@', # All parsed interfaces
-    enumerations => '@', # All parsed enumerations
     fileName => '$', # file name
+    callbackFunctions => '@',
+    enumerations => '@', # All parsed enumerations
+    interfaces => '@', # All parsed interfaces
+});
+
+struct( callbackFunction => {
+    name => '$',
+    type => '$',
+    parameters => '@',
 });
 
 # Used to represent 'interface' blocks
@@ -209,6 +216,8 @@ sub Parse
             push(@{$document->interfaces}, $definition);
         } elsif (ref($definition) eq "domEnum") {
             push(@{$document->enumerations}, $definition);
+        } elsif (ref($definition) eq "callbackFunction") {
+            push(@{$document->callbackFunctions}, $definition);
         } else {
             die "Unrecognized IDL definition kind: \"" . ref($definition) . "\"";
         }
@@ -811,14 +820,17 @@ sub parseCallbackRest
 
     my $next = $self->nextToken();
     if ($next->type() == IdentifierToken) {
-        $self->assertTokenType($self->getToken(), IdentifierToken);
+        my $callback = callbackFunction->new();
+        my $name = $self->getToken();
+        $self->assertTokenType($name, IdentifierToken);
+        $callback->name($name->value());
         $self->assertTokenValue($self->getToken(), "=", __LINE__);
-        $self->parseReturnType();
+        $callback->type($self->parseReturnType());
         $self->assertTokenValue($self->getToken(), "(", __LINE__);
-        $self->parseArgumentList();
+        $callback->parameters($self->parseArgumentList());
         $self->assertTokenValue($self->getToken(), ")", __LINE__);
         $self->assertTokenValue($self->getToken(), ";", __LINE__);
-        return;
+        return $callback;
     }
     $self->assertUnexpectedToken($next->value(), __LINE__);
 }
@@ -1339,7 +1351,7 @@ sub parseOperationRest
         $newDataNode->signature(domSignature->new());
         my $name = $self->parseOptionalIdentifier();
         $newDataNode->signature->name($name);
-        $self->assertTokenValue($self->getToken(), "(", $name, __LINE__);
+        $self->assertTokenValue($self->getToken(), "(", __LINE__);
         push(@{$newDataNode->parameters}, @{$self->parseArgumentList()});
         $self->assertTokenValue($self->getToken(), ")", __LINE__);
         $self->assertTokenValue($self->getToken(), ";", __LINE__);

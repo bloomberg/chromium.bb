@@ -31,8 +31,8 @@
 #ifndef CustomElementRegistry_h
 #define CustomElementRegistry_h
 
+#include "bindings/v8/ScriptValue.h"
 #include "core/dom/ContextDestructionObserver.h"
-#include "core/dom/CustomElementConstructor.h"
 #include "core/dom/CustomElementUpgradeCandidateMap.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/QualifiedName.h"
@@ -78,7 +78,7 @@ public:
     explicit CustomElementRegistry(Document*);
     ~CustomElementRegistry();
 
-    PassRefPtr<CustomElementConstructor> registerElement(ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionCode&);
+    ScriptValue registerElement(ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionCode&);
 
     bool isUnresolved(Element*) const;
     PassRefPtr<CustomElementDefinition> findFor(Element*) const;

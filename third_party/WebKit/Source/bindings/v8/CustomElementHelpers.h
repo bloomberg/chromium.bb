@@ -39,11 +39,12 @@
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
-class CustomElementConstructor;
 class CustomElementInvocation;
+class Document;
 class HTMLElement;
 class QualifiedName;
 class SVGElement;
@@ -53,7 +54,7 @@ class CustomElementHelpers {
 public:
     static void didRegisterDefinition(CustomElementDefinition*, ScriptExecutionContext*, const HashSet<Element*>& upgradeCandidates, const ScriptValue& prototypeValue);
 
-    static bool initializeConstructorWrapper(CustomElementConstructor*, const ScriptValue& prototype, ScriptState*);
+    static ScriptValue createConstructor(ScriptState*, const ScriptValue& prototype, Document*, const AtomicString& namespaceURI, const AtomicString& name, const AtomicString& type);
 
     static bool isValidPrototypeParameter(const ScriptValue&, ScriptState*, AtomicString& namespaceURI);
     static bool isValidPrototypeParameter(const ScriptValue&, ScriptState*);

@@ -99,17 +99,17 @@ bool CustomElementRegistry::isValidName(const AtomicString& name)
     return Document::isValidName(name.string());
 }
 
-PassRefPtr<CustomElementConstructor> CustomElementRegistry::registerElement(ScriptState* state, const AtomicString& userSuppliedName, const Dictionary& options, ExceptionCode& ec)
+ScriptValue CustomElementRegistry::registerElement(ScriptState* state, const AtomicString& userSuppliedName, const Dictionary& options, ExceptionCode& ec)
 {
     RefPtr<CustomElementRegistry> protect(this);
 
     if (!CustomElementHelpers::isFeatureAllowed(state))
-        return 0;
+        return ScriptValue();
 
     AtomicString name = userSuppliedName.lower();
     if (!isValidName(name)) {
         ec = INVALID_CHARACTER_ERR;
-        return 0;
+        return ScriptValue();
     }
 
     ScriptValue prototypeValue;
@@ -120,24 +120,24 @@ PassRefPtr<CustomElementConstructor> CustomElementRegistry::registerElement(Scri
         // behavior. The spec should be fixed before WebKit implements
         // it. https://www.w3.org/Bugs/Public/show_bug.cgi?id=20801
         ec = INVALID_STATE_ERR;
-        return 0;
+        return ScriptValue();
     }
 
     AtomicString namespaceURI;
     if (!CustomElementHelpers::isValidPrototypeParameter(prototypeValue, state, namespaceURI)) {
         ec = INVALID_STATE_ERR;
-        return 0;
+        return ScriptValue();
     }
 
     if (namespaceURI.isNull()) {
         ec = NAMESPACE_ERR;
-        return 0;
+        return ScriptValue();
     }
 
     AtomicString type = name;
     if (m_definitions.contains(type)) {
         ec = INVALID_STATE_ERR;
-        return 0;
+        return ScriptValue();
     }
 
     const QualifiedName* prototypeTagName = CustomElementHelpers::findLocalName(prototypeValue);
@@ -147,18 +147,19 @@ PassRefPtr<CustomElementConstructor> CustomElementRegistry::registerElement(Scri
     // A script execution could happen in isValidPrototypeParameter(), which kills the document.
     if (!document()) {
         ec = INVALID_STATE_ERR;
-        return 0;
+        return ScriptValue();
     }
 
     ASSERT(name == type || QualifiedName(nullAtom, name, namespaceURI) == *CustomElementHelpers::findLocalName(prototypeValue));
     ASSERT(namespaceURI == HTMLNames::xhtmlNamespaceURI || namespaceURI == SVGNames::svgNamespaceURI);
 
     RefPtr<CustomElementDefinition> definition = CustomElementDefinition::create(type, name, namespaceURI);
-    RefPtr<CustomElementConstructor> constructor = CustomElementConstructor::create(document(), definition->tagQName(), definition->isTypeExtension() ? definition->type() : nullAtom);
-    if (!CustomElementHelpers::initializeConstructorWrapper(constructor.get(), prototypeValue, state)) {
+    ScriptValue constructor = CustomElementHelpers::createConstructor(state, prototypeValue, document(), definition->namespaceURI(), definition->name(), definition->isTypeExtension() ? definition->type() : nullAtom);
+    if (constructor.hasNoValue()) {
         ec = INVALID_STATE_ERR;
-        return 0;
+        return ScriptValue();
     }
+    ASSERT(constructor.isFunction());
 
     m_definitions.add(definition->type(), definition);
 
@@ -170,7 +171,7 @@ PassRefPtr<CustomElementConstructor> CustomElementRegistry::registerElement(Scri
         activate(CustomElementInvocation(*it));
     }
 
-    return constructor.release();
+    return constructor;
 }
 
 bool CustomElementRegistry::isUnresolved(Element* element) const

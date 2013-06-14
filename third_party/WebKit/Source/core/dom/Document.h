@@ -28,6 +28,7 @@
 #ifndef Document_h
 #define Document_h
 
+#include "bindings/v8/ScriptValue.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "core/dom/DocumentEventQueue.h"
@@ -72,7 +73,6 @@ class CanvasRenderingContext;
 class CharacterData;
 class Comment;
 class ContextFeatures;
-class CustomElementConstructor;
 class CustomElementRegistry;
 class DOMImplementation;
 class DOMNamedFlowCollection;
@@ -1025,8 +1025,8 @@ public:
 
     PassRefPtr<Element> createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionCode&);
     PassRefPtr<Element> createElementNS(const AtomicString& namespaceURI, const String& qualifiedName, const AtomicString& typeExtension, ExceptionCode&);
-    PassRefPtr<CustomElementConstructor> registerElement(WebCore::ScriptState*, const AtomicString& name, ExceptionCode&);
-    PassRefPtr<CustomElementConstructor> registerElement(WebCore::ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionCode&);
+    ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, ExceptionCode&);
+    ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionCode&);
     CustomElementRegistry* registry() const { return m_registry.get(); }
     CustomElementRegistry* ensureCustomElementRegistry();
 

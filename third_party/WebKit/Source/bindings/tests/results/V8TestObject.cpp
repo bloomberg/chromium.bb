@@ -1463,13 +1463,38 @@ static void anyAttributeAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Val
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(ScriptValue, v, ScriptValue(value));
-    imp->setAnyAttribute(WTF::getPtr(v));
+    imp->setAnyAttribute(v);
     return;
 }
 
 static void anyAttributeAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjV8Internal::anyAttributeAttrSetter(name, value, info);
+}
+
+static void callbackFunctionAttributeAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    v8SetReturnValue(info, imp->callbackFunctionAttribute().v8Value());
+    return;
+}
+
+static void callbackFunctionAttributeAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjV8Internal::callbackFunctionAttributeAttrGetter(name, info);
+}
+
+static void callbackFunctionAttributeAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_VOID(ScriptValue, v, ScriptValue(value));
+    imp->setCallbackFunctionAttribute(v);
+    return;
+}
+
+static void callbackFunctionAttributeAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObjV8Internal::callbackFunctionAttributeAttrSetter(name, value, info);
 }
 
 static void enabledAtRuntimeAttr1AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3474,6 +3499,36 @@ static void conditionalMethod3MethodCallback(const v8::FunctionCallbackInfo<v8::
 
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
 
+static void callbackFunctionReturnValueMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TestObj* imp = V8TestObject::toNative(args.Holder());
+    v8SetReturnValue(args, imp->callbackFunctionReturnValue().v8Value());
+    return;
+}
+
+static void callbackFunctionReturnValueMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TestObjV8Internal::callbackFunctionReturnValueMethod(args);
+}
+
+static void callbackFunctionArgumentMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if (args.Length() < 1) {
+        throwNotEnoughArgumentsError(args.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(args.Holder());
+    V8TRYCATCH_VOID(ScriptValue, function, ScriptValue(args[0]));
+    imp->callbackFunctionArgument(function);
+
+    return;
+}
+
+static void callbackFunctionArgumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    TestObjV8Internal::callbackFunctionArgumentMethod(args);
+}
+
 static void overloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     if (args.Length() < 2) {
@@ -4679,6 +4734,8 @@ static const V8DOMConfiguration::BatchedAttribute V8TestObjectAttrs[] = {
     {"cachedAttribute2", TestObjV8Internal::cachedAttribute2AttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'anyAttribute' (Type: 'attribute' ExtAttr: '')
     {"anyAttribute", TestObjV8Internal::anyAttributeAttrGetterCallback, TestObjV8Internal::anyAttributeAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    // Attribute 'callbackFunctionAttribute' (Type: 'attribute' ExtAttr: '')
+    {"callbackFunctionAttribute", TestObjV8Internal::callbackFunctionAttributeAttrGetterCallback, TestObjV8Internal::callbackFunctionAttributeAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'floatArray' (Type: 'attribute' ExtAttr: '')
     {"floatArray", TestObjV8Internal::floatArrayAttrGetterCallback, TestObjV8Internal::floatArrayAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'doubleArray' (Type: 'attribute' ExtAttr: '')
@@ -4794,6 +4851,8 @@ static const V8DOMConfiguration::BatchedMethod V8TestObjectMethods[] = {
 #if ENABLE(Condition1) || ENABLE(Condition2)
     {"conditionalMethod3", TestObjV8Internal::conditionalMethod3MethodCallback, 0, 0},
 #endif
+    {"callbackFunctionReturnValue", TestObjV8Internal::callbackFunctionReturnValueMethodCallback, 0, 0},
+    {"callbackFunctionArgument", TestObjV8Internal::callbackFunctionArgumentMethodCallback, 0, 1},
     {"overloadedMethod", TestObjV8Internal::overloadedMethodMethodCallback, 0, 2},
     {"classMethodWithClamp", TestObjV8Internal::classMethodWithClampMethodCallback, 0, 2},
     {"methodWithUnsignedLongSequence", TestObjV8Internal::methodWithUnsignedLongSequenceMethodCallback, 0, 1},

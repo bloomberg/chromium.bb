@@ -36,17 +36,20 @@
 namespace WebCore {
 
 #define V8_HIDDEN_PROPERTIES(V) \
+    V(adaptorFunctionPeer) \
     V(attributeListener) \
     V(callback) \
     V(detail) \
     V(document) \
     V(event) \
     V(listener) \
+    V(name) \
+    V(namespaceURI) \
     V(scriptState) \
     V(sleepFunction) \
     V(state) \
-    V(adaptorFunctionPeer) \
     V(toStringString) \
+    V(type) \
     V(typedArrayHiddenCopyMethod)
 
 class V8HiddenPropertyName {
