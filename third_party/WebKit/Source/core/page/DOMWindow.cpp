@@ -73,7 +73,6 @@
 #include "core/page/DOMPoint.h"
 #include "core/page/DOMTimer.h"
 #include "core/page/EventHandler.h"
-#include "core/page/FocusController.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"
@@ -892,11 +891,6 @@ void DOMWindow::focus(ScriptExecutionContext* context)
 
     if (!m_frame)
         return;
-
-    // Clear the current frame's focused node if a new frame is about to be focused.
-    Frame* focusedFrame = page->focusController()->focusedFrame();
-    if (focusedFrame && focusedFrame != m_frame)
-        focusedFrame->document()->setFocusedNode(0);
 
     m_frame->eventHandler()->focusDocumentView();
 }
