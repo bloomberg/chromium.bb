@@ -24,4 +24,4 @@ layer at (0,0) size 800x600
         RenderBlock {DIV} at (0,0) size 100x100
           RenderText {#text} at (0,0) size 0x0
 layer at (58,100) size 50x100 scrollX -50
-  RenderBlock {MARQUEE} at (50,0) size 50x100 [bgcolor=#008000]
+  RenderMarquee {MARQUEE} at (50,0) size 50x100 [bgcolor=#008000]

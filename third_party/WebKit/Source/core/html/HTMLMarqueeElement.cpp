@@ -185,9 +185,14 @@ void HTMLMarqueeElement::resume()
 
 RenderMarquee* HTMLMarqueeElement::renderMarquee() const
 {
-    if (renderer() && renderer()->hasLayer())
-        return renderBoxModelObject()->layer()->marquee();
+    if (renderer() && renderer()->isMarquee())
+        return toRenderMarquee(renderer());
     return 0;
+}
+
+RenderObject* HTMLMarqueeElement::createRenderer(RenderArena* arena, RenderStyle*)
+{
+    return new (arena) RenderMarquee(this);
 }
 
 } // namespace WebCore

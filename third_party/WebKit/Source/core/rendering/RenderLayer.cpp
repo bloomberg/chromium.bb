@@ -421,11 +421,12 @@ void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLay
     }
 
     // With all our children positioned, now update our marquee if we need to.
-    if (m_marquee) {
+    if (renderer()->isMarquee()) {
+        RenderMarquee* marquee = toRenderMarquee(renderer());
         // FIXME: would like to use TemporaryChange<> but it doesn't work with bitfields.
         bool oldUpdatingMarqueePosition = m_updatingMarqueePosition;
         m_updatingMarqueePosition = true;
-        m_marquee->updateMarqueePosition();
+        marquee->updateMarqueePosition();
         m_updatingMarqueePosition = oldUpdatingMarqueePosition;
     }
 
@@ -764,10 +765,11 @@ void RenderLayer::updateLayerPositionsAfterScroll(RenderGeometryMap* geometryMap
     // of an object, thus RenderReplica will still repaint itself properly as the layer position was
     // updated above.
 
-    if (m_marquee) {
+    if (renderer()->isMarquee()) {
+        RenderMarquee* marquee = toRenderMarquee(renderer());
         bool oldUpdatingMarqueePosition = m_updatingMarqueePosition;
         m_updatingMarqueePosition = true;
-        m_marquee->updateMarqueePosition();
+        marquee->updateMarqueePosition();
         m_updatingMarqueePosition = oldUpdatingMarqueePosition;
     }
 
@@ -2124,7 +2126,7 @@ void RenderLayer::setScrollOffset(const IntPoint& newScrollOffset)
     if (!box)
         return;
 
-    if (!box->isHTMLMarquee()) {
+    if (!box->isMarquee()) {
         // Ensure that the dimensions will be computed if they need to be (for overflow:hidden blocks).
         if (m_scrollDimensionsDirty)
             computeScrollDimensions();
@@ -3149,7 +3151,7 @@ void RenderLayer::updateScrollInfoAfterLayout()
 
     computeScrollDimensions();
 
-    if (!box->isHTMLMarquee()) {
+    if (!box->isMarquee()) {
         // Layout may cause us to be at an invalid scroll position. In this case we need
         // to pull our scroll offsets back to the max (or push them up to the min).
         IntSize clampedScrollOffset = clampScrollOffset(adjustedScrollOffset());
@@ -6072,16 +6074,6 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
 {
     updateIsNormalFlowOnly();
 
-    if (renderer()->isHTMLMarquee() && renderer()->style()->marqueeBehavior() != MNONE && renderer()->isBox()) {
-        if (!m_marquee)
-            m_marquee = adoptPtr(new RenderMarquee(this));
-        UseCounter::count(renderer()->document(), UseCounter::HTMLMarqueeElement);
-        m_marquee->updateMarqueeStyle();
-    }
-    else if (m_marquee) {
-        m_marquee.clear();
-    }
-
     updateResizerAreaSet();
     updateScrollbarsAfterStyleChange(oldStyle);
     updateStackingContextsAfterStyleChange(oldStyle);
@@ -6383,7 +6375,6 @@ void RenderLayer::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_negZOrderList, "negZOrderList");
     info.addMember(m_normalFlowList, "normalFlowList");
     info.addMember(m_clipRectsCache, "clipRectsCache");
-    info.addMember(m_marquee, "marquee");
     info.addMember(m_transform, "transform");
     info.addWeakPointer(m_reflection);
     info.addWeakPointer(m_scrollCorner);

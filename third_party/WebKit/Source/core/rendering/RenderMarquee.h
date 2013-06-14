@@ -46,6 +46,7 @@
 
 #include "core/platform/Length.h"
 #include "core/platform/Timer.h"
+#include "core/rendering/RenderBlock.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
 namespace WebCore {
@@ -53,10 +54,9 @@ namespace WebCore {
 class RenderLayer;
 
 // This class handles the auto-scrolling for <marquee>
-class RenderMarquee {
-    WTF_MAKE_NONCOPYABLE(RenderMarquee); WTF_MAKE_FAST_ALLOCATED;
+class RenderMarquee FINAL : public RenderBlock {
 public:
-    explicit RenderMarquee(RenderLayer*);
+    explicit RenderMarquee(Element*);
     virtual ~RenderMarquee();
 
     int speed() const { return m_speed; }
@@ -75,13 +75,19 @@ public:
     void suspend();
     void stop();
 
-    void updateMarqueeStyle();
+    // FIXME: This function should be private and called at layout time.
+    // However <marquee> tests are very timing dependent so we need to keep the existing timing.
     void updateMarqueePosition();
 
 private:
+    virtual const char* renderName() const OVERRIDE FINAL;
+
+    virtual bool isMarquee() const OVERRIDE FINAL { return true; }
+
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE FINAL;
+
     void timerFired(Timer<RenderMarquee>*);
 
-    RenderLayer* m_layer;
     int m_currentLoop;
     int m_totalLoops;
     Timer<RenderMarquee> m_timer;
@@ -94,6 +100,21 @@ private:
     bool m_stopped : 1;
     EMarqueeDirection m_direction : 4;
 };
+
+inline RenderMarquee* toRenderMarquee(RenderObject* renderer)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!renderer || renderer->isMarquee());
+    return static_cast<RenderMarquee*>(renderer);
+}
+
+inline const RenderMarquee* toRenderMarquee(const RenderObject* renderer)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!renderer || renderer->isMarquee());
+    return static_cast<const RenderMarquee*>(renderer);
+}
+
+// Catch unneeded cast.
+void toRenderMarquee(const RenderMarquee*);
 
 } // namespace WebCore
 

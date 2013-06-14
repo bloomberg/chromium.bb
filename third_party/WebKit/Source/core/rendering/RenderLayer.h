@@ -64,7 +64,6 @@ class RenderFlowThread;
 class RenderGeometryMap;
 class RenderLayerBacking;
 class RenderLayerCompositor;
-class RenderMarquee;
 class RenderReplica;
 class RenderScrollbarPart;
 class RenderStyle;
@@ -394,8 +393,6 @@ public:
     void repaintIncludingNonCompositingDescendants(RenderLayerModelObject* repaintContainer);
 
     void styleChanged(StyleDifference, const RenderStyle* oldStyle);
-
-    RenderMarquee* marquee() const { return m_marquee.get(); }
 
     bool isNormalFlowOnly() const { return m_isNormalFlowOnly; }
     bool isSelfPaintingLayer() const { return m_isSelfPaintingLayer; }
@@ -1282,8 +1279,6 @@ protected:
     
     IntPoint m_cachedOverlayScrollbarOffset;
 
-    OwnPtr<RenderMarquee> m_marquee; // Used for <marquee>.
-    
     // Cached normal flow values for absolute positioned elements with static left/top values.
     LayoutUnit m_staticInlinePosition;
     LayoutUnit m_staticBlockPosition;

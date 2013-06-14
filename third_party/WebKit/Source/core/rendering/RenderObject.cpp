@@ -59,6 +59,7 @@
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderLazyBlock.h"
 #include "core/rendering/RenderListItem.h"
+#include "core/rendering/RenderMarquee.h"
 #include "core/rendering/RenderMultiColumnBlock.h"
 #include "core/rendering/RenderNamedFlowThread.h"
 #include "core/rendering/RenderRegion.h"
@@ -282,11 +283,6 @@ bool RenderObject::isHR() const
 bool RenderObject::isLegend() const
 {
     return node() && node()->hasTagName(legendTag);
-}
-
-bool RenderObject::isHTMLMarquee() const
-{
-    return node() && node()->renderer() == this && node()->hasTagName(marqueeTag);
 }
 
 void RenderObject::setFlowThreadStateIncludingDescendants(FlowThreadState state)

@@ -49,6 +49,7 @@
 #include "HTMLNames.h"
 #include "core/html/HTMLMarqueeElement.h"
 #include "core/page/FrameView.h"
+#include "core/page/UseCounter.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 
@@ -58,13 +59,20 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-RenderMarquee::RenderMarquee(RenderLayer* l)
-    : m_layer(l), m_currentLoop(0)
+RenderMarquee::RenderMarquee(Element* element)
+    : RenderBlock(element)
+    , m_currentLoop(0)
     , m_totalLoops(0)
     , m_timer(this, &RenderMarquee::timerFired)
-    , m_start(0), m_end(0), m_speed(0), m_reset(false)
-    , m_suspended(false), m_stopped(false), m_direction(MAUTO)
+    , m_start(0)
+    , m_end(0)
+    , m_speed(0)
+    , m_reset(false)
+    , m_suspended(false)
+    , m_stopped(false)
+    , m_direction(MAUTO)
 {
+    UseCounter::count(document(), UseCounter::HTMLMarqueeElement);
 }
 
 RenderMarquee::~RenderMarquee()
@@ -73,10 +81,10 @@ RenderMarquee::~RenderMarquee()
 
 int RenderMarquee::marqueeSpeed() const
 {
-    int result = m_layer->renderer()->style()->marqueeSpeed();
-    Node* n = m_layer->renderer()->node();
-    if (n && n->hasTagName(marqueeTag)) {
-        HTMLMarqueeElement* marqueeElt = static_cast<HTMLMarqueeElement*>(n);
+    int result = style()->marqueeSpeed();
+    if (Node* node = this->node()) {
+        ASSERT(node->hasTagName(marqueeTag));
+        HTMLMarqueeElement* marqueeElt = static_cast<HTMLMarqueeElement*>(node);
         result = max(result, marqueeElt->minimumDelay());
     }
     return result;
@@ -86,8 +94,8 @@ EMarqueeDirection RenderMarquee::direction() const
 {
     // FIXME: Support the CSS3 "auto" value for determining the direction of the marquee.
     // For now just map MAUTO to MBACKWARD
-    EMarqueeDirection result = m_layer->renderer()->style()->marqueeDirection();
-    TextDirection dir = m_layer->renderer()->style()->direction();
+    EMarqueeDirection result = style()->marqueeDirection();
+    TextDirection dir = style()->direction();
     if (result == MAUTO)
         result = MBACKWARD;
     if (result == MFORWARD)
@@ -97,7 +105,7 @@ EMarqueeDirection RenderMarquee::direction() const
     
     // Now we have the real direction.  Next we check to see if the increment is negative.
     // If so, then we reverse the direction.
-    Length increment = m_layer->renderer()->style()->marqueeIncrement();
+    Length increment = style()->marqueeIncrement();
     if (increment.isNegative())
         result = static_cast<EMarqueeDirection>(-result);
     
@@ -111,18 +119,15 @@ bool RenderMarquee::isHorizontal() const
 
 int RenderMarquee::computePosition(EMarqueeDirection dir, bool stopAtContentEdge)
 {
-    RenderBox* box = m_layer->renderBox();
-    ASSERT(box);
-    RenderStyle* s = box->style();
     if (isHorizontal()) {
-        bool ltr = s->isLeftToRightDirection();
-        LayoutUnit clientWidth = box->clientWidth();
-        LayoutUnit contentWidth = ltr ? box->maxPreferredLogicalWidth() : box->minPreferredLogicalWidth();
+        bool ltr = style()->isLeftToRightDirection();
+        LayoutUnit clientWidth = this->clientWidth();
+        LayoutUnit contentWidth = ltr ? maxPreferredLogicalWidth() : minPreferredLogicalWidth();
         if (ltr)
-            contentWidth += (box->paddingRight() - box->borderLeft());
+            contentWidth += (paddingRight() - borderLeft());
         else {
-            contentWidth = box->width() - contentWidth;
-            contentWidth += (box->paddingLeft() - box->borderRight());
+            contentWidth = width() - contentWidth;
+            contentWidth += (paddingLeft() - borderRight());
         }
         if (dir == MRIGHT) {
             if (stopAtContentEdge)
@@ -138,8 +143,8 @@ int RenderMarquee::computePosition(EMarqueeDirection dir, bool stopAtContentEdge
         }
     }
     else {
-        int contentHeight = box->layoutOverflowRect().maxY() - box->borderTop() + box->paddingBottom();
-        int clientHeight = box->clientHeight();
+        int contentHeight = layoutOverflowRect().maxY() - borderTop() + paddingBottom();
+        int clientHeight = this->clientHeight();
         if (dir == MUP) {
             if (stopAtContentEdge)
                  return min(contentHeight - clientHeight, 0);
@@ -157,20 +162,20 @@ int RenderMarquee::computePosition(EMarqueeDirection dir, bool stopAtContentEdge
 
 void RenderMarquee::start()
 {
-    if (m_timer.isActive() || m_layer->renderer()->style()->marqueeIncrement().isZero())
+    if (m_timer.isActive() || style()->marqueeIncrement().isZero())
         return;
 
     // We may end up propagating a scroll event. It is important that we suspend events until 
     // the end of the function since they could delete the layer, including the marquee.
-    FrameView* frameView = m_layer->renderer()->document()->view();
+    FrameView* frameView = document()->view();
     if (frameView)
         frameView->pauseScheduledEvents();
 
     if (!m_suspended && !m_stopped) {
         if (isHorizontal())
-            m_layer->scrollToOffset(IntSize(m_start, 0));
+            layer()->scrollToOffset(IntSize(m_start, 0));
         else
-            m_layer->scrollToOffset(IntSize(0, m_start));
+            layer()->scrollToOffset(IntSize(0, m_start));
     }
     else {
         m_suspended = false;
@@ -199,7 +204,7 @@ void RenderMarquee::updateMarqueePosition()
 {
     bool activate = (m_totalLoops <= 0 || m_currentLoop < m_totalLoops);
     if (activate) {
-        EMarqueeBehavior behavior = m_layer->renderer()->style()->marqueeBehavior();
+        EMarqueeBehavior behavior = style()->marqueeBehavior();
         m_start = computePosition(direction(), behavior == MALTERNATE);
         m_end = computePosition(reverseDirection(), behavior == MALTERNATE || behavior == MSLIDE);
         if (!m_stopped)
@@ -207,9 +212,27 @@ void RenderMarquee::updateMarqueePosition()
     }
 }
 
-void RenderMarquee::updateMarqueeStyle()
+const char* RenderMarquee::renderName() const
 {
-    RenderStyle* s = m_layer->renderer()->style();
+    if (isFloating())
+        return "RenderMarquee (floating)";
+    if (isOutOfFlowPositioned())
+        return "RenderMarquee (positioned)";
+    if (isAnonymous())
+        return "RenderMarquee (generated)";
+    if (isRelPositioned())
+        return "RenderMarquee (relative positioned)";
+    if (isRunIn())
+        return "RenderMarquee (run-in)";
+    return "RenderMarquee";
+
+}
+
+void RenderMarquee::styleDidChange(StyleDifference difference, const RenderStyle* oldStyle)
+{
+    RenderBlock::styleDidChange(difference, oldStyle);
+
+    RenderStyle* s = style();
     
     if (m_direction != s->marqueeDirection() || (m_totalLoops != s->marqueeLoopCount() && m_currentLoop >= m_totalLoops))
         m_currentLoop = 0; // When direction changes or our loopCount is a smaller number than our current loop, reset our loop.
@@ -217,24 +240,22 @@ void RenderMarquee::updateMarqueeStyle()
     m_totalLoops = s->marqueeLoopCount();
     m_direction = s->marqueeDirection();
     
-    if (m_layer->renderer()->isHTMLMarquee()) {
-        // Hack for WinIE.  In WinIE, a value of 0 or lower for the loop count for SLIDE means to only do
-        // one loop.
-        if (m_totalLoops <= 0 && s->marqueeBehavior() == MSLIDE)
-            m_totalLoops = 1;
-        
-        // Hack alert: Set the white-space value to nowrap for horizontal marquees with inline children, thus ensuring
-        // all the text ends up on one line by default.  Limit this hack to the <marquee> element to emulate
-        // WinIE's behavior.  Someone using CSS3 can use white-space: nowrap on their own to get this effect.
-        // Second hack alert: Set the text-align back to auto.  WinIE completely ignores text-align on the
-        // marquee element.
-        // FIXME: Bring these up with the CSS WG.
-        if (isHorizontal() && m_layer->renderer()->childrenInline()) {
-            s->setWhiteSpace(NOWRAP);
-            s->setTextAlign(TASTART);
-        }
+    // Hack for WinIE. In WinIE, a value of 0 or lower for the loop count for SLIDE means to only do
+    // one loop.
+    if (m_totalLoops <= 0 && s->marqueeBehavior() == MSLIDE)
+        m_totalLoops = 1;
+
+    // Hack alert: Set the white-space value to nowrap for horizontal marquees with inline children, thus ensuring
+    // all the text ends up on one line by default. Limit this hack to the <marquee> element to emulate
+    // WinIE's behavior. Someone using CSS3 can use white-space: nowrap on their own to get this effect.
+    // Second hack alert: Set the text-align back to auto. WinIE completely ignores text-align on the
+    // marquee element.
+    // FIXME: Bring these up with the CSS WG.
+    if (isHorizontal() && childrenInline()) {
+        s->setWhiteSpace(NOWRAP);
+        s->setTextAlign(TASTART);
     }
-    
+
     // Legacy hack - multiple browsers default vertical marquees to 200px tall.
     if (!isHorizontal() && s->height().isAuto())
         s->setHeight(Length(200, Fixed)); 
@@ -248,26 +269,27 @@ void RenderMarquee::updateMarqueeStyle()
     // Check the loop count to see if we should now stop.
     bool activate = (m_totalLoops <= 0 || m_currentLoop < m_totalLoops);
     if (activate && !m_timer.isActive())
-        m_layer->renderer()->setNeedsLayout(true);
+        setNeedsLayout(true);
     else if (!activate && m_timer.isActive())
         m_timer.stop();
 }
 
 void RenderMarquee::timerFired(Timer<RenderMarquee>*)
 {
-    if (m_layer->renderer()->view()->needsLayout())
+    // FIXME: Why do we need to check the view and not just the RenderMarquee itself?
+    if (view()->needsLayout())
         return;
     
     if (m_reset) {
         m_reset = false;
         if (isHorizontal())
-            m_layer->scrollToXOffset(m_start);
+            layer()->scrollToXOffset(m_start);
         else
-            m_layer->scrollToYOffset(m_start);
+            layer()->scrollToYOffset(m_start);
         return;
     }
     
-    RenderStyle* s = m_layer->renderer()->style();
+    RenderStyle* s = style();
     
     int endPoint = m_end;
     int range = m_end - m_start;
@@ -284,9 +306,9 @@ void RenderMarquee::timerFired(Timer<RenderMarquee>*)
             addIncrement = !addIncrement;
         }
         bool positive = range > 0;
-        int clientSize = (isHorizontal() ? m_layer->renderBox()->clientWidth() : m_layer->renderBox()->clientHeight());
-        int increment = abs(intValueForLength(m_layer->renderer()->style()->marqueeIncrement(), clientSize));
-        int currentPos = (isHorizontal() ? m_layer->scrollXOffset() : m_layer->scrollYOffset());
+        int clientSize = (isHorizontal() ? clientWidth() : clientHeight());
+        int increment = abs(intValueForLength(style()->marqueeIncrement(), clientSize));
+        int currentPos = (isHorizontal() ? layer()->scrollXOffset() : layer()->scrollYOffset());
         newPos =  currentPos + (addIncrement ? increment : -increment);
         if (positive)
             newPos = min(newPos, endPoint);
@@ -303,9 +325,9 @@ void RenderMarquee::timerFired(Timer<RenderMarquee>*)
     }
     
     if (isHorizontal())
-        m_layer->scrollToXOffset(newPos);
+        layer()->scrollToXOffset(newPos);
     else
-        m_layer->scrollToYOffset(newPos);
+        layer()->scrollToYOffset(newPos);
 }
 
 } // namespace WebCore

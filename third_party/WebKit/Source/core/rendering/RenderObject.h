@@ -336,6 +336,7 @@ public:
     virtual bool isListBox() const { return false; }
     virtual bool isListItem() const { return false; }
     virtual bool isListMarker() const { return false; }
+    virtual bool isMarquee() const { return false; }
     virtual bool isMedia() const { return false; }
     virtual bool isMenuList() const { return false; }
     virtual bool isMeter() const { return false; }
@@ -389,8 +390,6 @@ public:
     bool isBody() const;
     bool isHR() const;
     bool isLegend() const;
-
-    bool isHTMLMarquee() const;
 
     bool isTablePart() const { return isTableCell() || isRenderTableCol() || isTableCaption() || isTableRow() || isTableSection(); }
 
