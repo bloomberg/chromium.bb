@@ -1509,11 +1509,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   master_ninja.pool('link_pool', depth=GetDefaultConcurrentLinks())
   master_ninja.newline()
 
-  deps = None
-  if flavor != 'win':
-    deps = 'gcc'
-  elif int(generator_flags.get('use_deps', '0')):
-    deps = 'msvc'
+  deps = 'msvc' if flavor == 'win' else 'gcc'
 
   if flavor != 'win':
     master_ninja.rule(
@@ -1536,12 +1532,11 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       depfile='$out.d',
       deps=deps)
   else:
-    deps_cmd = '-o $out ' if not deps else ''
-    cc_command = (('ninja -t msvc %s-e $arch ' % deps_cmd) +
+    cc_command = ('ninja -t msvc -e $arch ' +
                   '-- '
                   '$cc /nologo /showIncludes /FC '
                   '@$out.rsp /c $in /Fo$out /Fd$pdbname ')
-    cxx_command = (('ninja -t msvc %s-e $arch ' % deps_cmd) +
+    cxx_command = ('ninja -t msvc -e $arch ' +
                    '-- '
                    '$cxx /nologo /showIncludes /FC '
                    '@$out.rsp /c $in /Fo$out /Fd$pdbname ')
