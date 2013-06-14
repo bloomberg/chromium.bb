@@ -1239,6 +1239,7 @@ const char kGetAllLogs[] = "GetAllLogs";
 const char kGetUserLogFiles[] = "GetUserLogFiles";
 const char kGetFeedbackLogs[] = "GetFeedbackLogs";
 const char kTestICMP[] = "TestICMP";
+const char kTestICMPWithOptions[] = "TestICMPWithOptions";
 }  // namespace debugd
 
 namespace permission_broker {
