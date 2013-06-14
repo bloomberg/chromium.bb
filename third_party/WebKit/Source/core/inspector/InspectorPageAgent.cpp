@@ -102,6 +102,17 @@ static const char showGridOnResize[] = "showGridOnResize";
 static const char forceCompositingMode[] = "forceCompositingMode";
 }
 
+namespace {
+
+KURL urlWithoutFragment(const KURL& url)
+{
+    KURL result = url;
+    result.removeFragmentIdentifier();
+    return result;
+}
+
+}
+
 static bool decodeBuffer(const char* buffer, unsigned size, const String& textEncodingName, String* result)
 {
     if (buffer) {
@@ -505,11 +516,11 @@ static Vector<KURL> allResourcesURLsForFrame(Frame* frame)
 {
     Vector<KURL> result;
 
-    result.append(frame->loader()->documentLoader()->url());
+    result.append(urlWithoutFragment(frame->loader()->documentLoader()->url()));
 
     Vector<CachedResource*> allResources = cachedResourcesForFrame(frame);
     for (Vector<CachedResource*>::const_iterator it = allResources.begin(); it != allResources.end(); ++it)
-        result.append((*it)->url());
+        result.append(urlWithoutFragment((*it)->url()));
 
     return result;
 }
@@ -622,7 +633,7 @@ void InspectorPageAgent::searchInResources(ErrorString*, const String& text, con
             if (textContentForCachedResource(cachedResource, &content)) {
                 int matchesCount = ContentSearchUtils::countRegularExpressionMatches(regex.get(), content);
                 if (matchesCount)
-                    searchResults->addItem(buildObjectForSearchResult(frameId(frame), cachedResource->url().string(), matchesCount));
+                    searchResults->addItem(buildObjectForSearchResult(frameId(frame), urlWithoutFragment(cachedResource->url()).string(), matchesCount));
             }
         }
     }
@@ -1037,7 +1048,7 @@ PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(Fra
     RefPtr<TypeBuilder::Page::Frame> frameObject = TypeBuilder::Page::Frame::create()
         .setId(frameId(frame))
         .setLoaderId(loaderId(frame->loader()->documentLoader()))
-        .setUrl(frame->document()->url().string())
+        .setUrl(urlWithoutFragment(frame->document()->url()).string())
         .setMimeType(frame->loader()->documentLoader()->responseMIMEType())
         .setSecurityOrigin(frame->document()->securityOrigin()->toRawString());
     if (frame->tree()->parent())
@@ -1065,7 +1076,7 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
         CachedResource* cachedResource = *it;
 
         RefPtr<TypeBuilder::Page::FrameResourceTree::Resources> resourceObject = TypeBuilder::Page::FrameResourceTree::Resources::create()
-            .setUrl(cachedResource->url().string())
+            .setUrl(urlWithoutFragment(cachedResource->url()).string())
             .setType(cachedResourceTypeJson(*cachedResource))
             .setMimeType(cachedResource->response().mimeType());
         if (cachedResource->wasCanceled())

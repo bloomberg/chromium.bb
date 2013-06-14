@@ -1,0 +1,52 @@
+<html>
+<head>
+<script src="inspector-test.js"></script>
+<script type="text/javascript">
+function loadIFrame()
+{
+    var iframe = document.createElement("iframe");
+    iframe.src = "resources/fragment-frame.html#34";
+    iframe.onload = frameLoaded;
+    document.body.appendChild(iframe);
+}
+
+function frameLoaded()
+{
+    console.log("Done.");
+}
+
+function test()
+{
+    InspectorTest.addConsoleSniffer(step2);
+    InspectorTest.evaluateInPage("loadIFrame()", function() { });
+
+
+    function step2()
+    {
+        InspectorTest.runAfterPendingDispatches(step3);
+    }
+
+    function step3()
+    {
+        var childFrame = WebInspector.resourceTreeModel.mainFrame.childFrames[0];
+        InspectorTest.addResult("Child frame url: " + childFrame.url);
+        var childFrameResource = childFrame.resources()[0];
+        InspectorTest.addResult("Child frame resource url: " + childFrameResource.url);
+        WebInspector.showPanel("network");
+
+        function filterFrame(request)
+        {
+            return request.url.indexOf("fragment-frame.html") !== -1
+        }
+
+        var request = WebInspector.panels.network.requests.filter(filterFrame)[0];
+        InspectorTest.addResult("Child frame request url: " + request.url);
+        InspectorTest.completeTest(step2);
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests fragment is stripped from url by resource and page agents.</p>
+</body>
+</html>
