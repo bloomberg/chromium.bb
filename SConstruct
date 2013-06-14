@@ -2760,7 +2760,7 @@ def AllowInlineAssembly(env):
     # only current ARM toolchain.  One day, we will have an ARM GCC
     # toolchain, and we will no longer need to use inline assembly
     # with PNaCl/Clang at all.
-    if not env.Bit('target_arm'):
+    if not (env.Bit('target_arm') or env.Bit('target_mips32')):
       return False
     # Inline assembly does not work in pexes.
     if env.Bit('pnacl_generate_pexe'):

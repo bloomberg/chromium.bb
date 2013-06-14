@@ -85,7 +85,10 @@ __asm__(".pushsection .text, \"ax\", @progbits\n"
         "lui   $t9,      %hi(recovery_stack)\n"
         "addiu $sp, $t9, %lo(recovery_stack)\n"
         "and   $sp, $sp, $t7\n"
+        "lui   $t9,      %hi(error_exit)\n"
         "j error_exit\n"
+        "addiu $t9, $t9, %lo(error_exit)\n"
+        "nop\n"
         "nop\n"
         ".popsection\n");
 

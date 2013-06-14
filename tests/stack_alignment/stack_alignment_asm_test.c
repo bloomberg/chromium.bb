@@ -67,9 +67,9 @@ __asm__(
     ".global ThreadStartWrapper\n"
     "ThreadStartWrapper:\n"
     "move $a0, $sp\n"  /* Set argument. */
-    "nop\n"
+    "lui $t9, %hi(ThreadStart)\n"
     "bal ThreadStart\n"
-    "nop\n"
+    "addiu $t9, $t9, %lo(ThreadStart)\n"
     ".popsection\n");
 
 static const int kStackAlignment = 8;

@@ -236,6 +236,7 @@ extern const uint8_t kX86FlagBits[5];
     __asm__( \
         ".pushsection .text, \"ax\", @progbits\n" \
         ".p2align 5\n" \
+        ".global " #def_func "\n"\
         #def_func ":\n" \
         /* Push most of "struct NaClSignalContext" in reverse order. */ \
         "push $0\n"  /* Leave space for flags */ \
@@ -270,6 +271,7 @@ extern const uint8_t kX86FlagBits[5];
     __asm__( \
         ".pushsection .text, \"ax\", @progbits\n" \
         ".p2align 5\n" \
+        ".global " #def_func "\n"\
         #def_func ":\n" \
         /* Push most of "struct NaClSignalContext" in reverse order. */ \
         "push $0\n"  /* Leave space for flags */ \
@@ -319,6 +321,7 @@ extern const uint8_t kX86FlagBits[5];
     __asm__( \
         ".pushsection .text, \"ax\", %progbits\n" \
         ".p2align 4\n" \
+        ".global " #def_func "\n"\
         #def_func ":\n" \
         "push {r0}\n"  /* Leave space for cpsr */ \
         "push {r0}\n"  /* Leave space for prog_ctr */ \
@@ -351,6 +354,7 @@ extern const uint8_t kX86FlagBits[5];
     __asm__( \
         ".pushsection .text, \"ax\", %progbits\n" \
         ".p2align 4\n" \
+        ".global " #def_func "\n"\
         #def_func ":\n" \
         /* Make space on stack for all registers. */ \
         "add $sp, $sp, -132\n" \
@@ -401,8 +405,13 @@ extern const uint8_t kX86FlagBits[5];
         /* Make space on stack for convention calling registers. */ \
         "add $sp, $sp, -16\n" \
         "and $sp, $sp, $t7\n" \
+        /* Set $t9 to callee_func as required by ABI for PIC code. */ \
+        "lui $t9, %hi(" #callee_func ")\n" \
         "b " #callee_func "\n" \
+        "addiu $t9, $t9, %lo(" #callee_func ")\n" \
+        "nop\n" \
         "nop \n" \
+        "nop\n" \
         ".popsection\n")
 
 #else
