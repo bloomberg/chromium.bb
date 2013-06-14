@@ -541,6 +541,11 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
   if ((parsed_arg && threshold <= width * height) ||
       // Use H/W surface for MSE as the content is protected.
       media_source_delegate_) {
+    if (stream_texture_factory_) {
+      stream_texture_factory_->DestroyStreamTexture(texture_id_);
+      stream_id_ = 0;
+      texture_id_ = 0;
+    }
     needs_external_surface_ = true;
     SetNeedsEstablishPeer(false);
     if (!paused())
@@ -566,7 +571,9 @@ void WebMediaPlayerAndroid::OnDidEnterFullscreen() {
 }
 
 void WebMediaPlayerAndroid::OnDidExitFullscreen() {
-  SetNeedsEstablishPeer(true);
+  // |needs_external_surface_| is always false on non-TV devices.
+  if (!needs_external_surface_)
+    SetNeedsEstablishPeer(true);
   // We had the fullscreen surface connected to Android MediaPlayer,
   // so reconnect our surface texture for embedded playback.
   if (!paused())
