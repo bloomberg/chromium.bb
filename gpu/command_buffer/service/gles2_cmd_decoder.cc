@@ -7106,24 +7106,21 @@ error::Error GLES2DecoderImpl::HandleGetString(
           if (!derivatives_explicitly_enabled_) {
             size_t offset = extensions.find(kOESDerivativeExtension);
             if (std::string::npos != offset) {
-              extensions.replace(offset,
-                                 offset + arraysize(kOESDerivativeExtension),
+              extensions.replace(offset, arraysize(kOESDerivativeExtension),
                                  std::string());
             }
           }
           if (!frag_depth_explicitly_enabled_) {
             size_t offset = extensions.find(kEXTFragDepthExtension);
             if (std::string::npos != offset) {
-              extensions.replace(offset,
-                                 offset + arraysize(kEXTFragDepthExtension),
+              extensions.replace(offset, arraysize(kEXTFragDepthExtension),
                                  std::string());
             }
           }
           if (!draw_buffers_explicitly_enabled_) {
             size_t offset = extensions.find(kEXTDrawBuffersExtension);
             if (std::string::npos != offset) {
-              extensions.replace(offset,
-                                 offset + arraysize(kEXTDrawBuffersExtension),
+              extensions.replace(offset, arraysize(kEXTDrawBuffersExtension),
                                  std::string());
             }
           }
