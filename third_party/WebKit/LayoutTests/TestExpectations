@@ -187,6 +187,19 @@ webkit.org/b/83260 fast/text/international/embed-bidi-style-in-isolate-crash.htm
 
 webkit.org/b/109415 editing/spelling/spellcheck-async.html [ Failure Pass ]
 
+# ResourceRequest needs to support setTimeoutInterval
+webkit.org/b/98397 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-aborted.html [ Skip ]
+webkit.org/b/98397 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-abortedonmain.html [ Skip ]
+webkit.org/b/98397 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-overridesexpires.html [ Skip ]
+webkit.org/b/98397 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-simple.html [ Skip ]
+webkit.org/b/98397 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-synconmain.html [ Skip ]
+webkit.org/b/98397 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-twice.html [ Skip ]
+webkit.org/b/98397 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-aborted.html [ Skip ]
+webkit.org/b/98397 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Skip ]
+webkit.org/b/98397 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-simple.html [ Skip ]
+webkit.org/b/98397 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-synconworker.html [ Skip ]
+webkit.org/b/98397 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-twice.html [ Skip ]
+
 # -----------------------------------------------------------------
 # Inspector tests
 # -----------------------------------------------------------------

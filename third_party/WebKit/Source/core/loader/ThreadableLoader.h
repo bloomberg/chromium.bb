@@ -75,7 +75,6 @@ namespace WebCore {
         RefPtr<SecurityOrigin> securityOrigin;
         AtomicString initiator;
         ContentSecurityPolicyEnforcement contentSecurityPolicyEnforcement;
-        unsigned long timeoutMilliseconds;
     };
 
     // Useful for doing loader operations from any thread (not threadsafe, 

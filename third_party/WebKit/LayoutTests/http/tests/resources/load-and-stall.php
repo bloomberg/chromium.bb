@@ -13,6 +13,7 @@ header("Content-Length: " . filesize($name));
 
 if (isset($stallAt) && isset($stallFor)) {
     $stallAt = (int)$stallAt;
+    $stallFor = (int)$stallFor;
     if ($stallAt > filesize($name))
         die("Incorrect value for stallAt.");
     $written = 0;
