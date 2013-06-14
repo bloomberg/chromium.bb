@@ -241,20 +241,21 @@ class SpdyFramerDebugVisitorInterface {
  public:
   virtual ~SpdyFramerDebugVisitorInterface() {}
 
-  // Called after compressing header blocks.
-  // Provides uncompressed and compressed sizes.
-  virtual void OnCompressedHeaderBlock(size_t uncompressed_len,
-                                       size_t compressed_len) {}
+  // Called after compressing a frame with a payload of
+  // a list of name-value pairs.
+  // |payload_len| is the uncompressed payload size.
+  // |frame_len| is the compressed frame size.
+  virtual void OnSendCompressedFrame(SpdyStreamId stream_id,
+                                     SpdyFrameType type,
+                                     size_t payload_len,
+                                     size_t frame_len) {}
 
-  // Called when decompressing header blocks.
-  // Provides uncompressed and compressed sizes.
-  // Called once per incremental decompression. That is to say, if a header
-  // block is decompressed in four chunks, this will result in four calls to
-  // OnDecompressedHeaderBlock() interleaved with four calls to
-  // OnControlFrameHeaderData(). Note that uncompressed_len may be 0 in some
-  // valid cases, even though compressed_len is nonzero.
-  virtual void OnDecompressedHeaderBlock(size_t uncompressed_len,
-                                         size_t compressed_len) {}
+  // Called when a frame containing a compressed payload of
+  // name-value pairs is received.
+  // |frame_len| is the compressed frame size.
+  virtual void OnReceiveCompressedFrame(SpdyStreamId stream_id,
+                                        SpdyFrameType type,
+                                        size_t frame_len) {}
 };
 
 class NET_EXPORT_PRIVATE SpdyFramer {

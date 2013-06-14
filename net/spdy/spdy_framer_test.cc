@@ -282,8 +282,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
       control_frame_header_data_count_(0),
       zero_length_control_frame_header_data_count_(0),
       data_frame_count_(0),
-      last_uncompressed_size_(0),
-      last_compressed_size_(0),
+      last_payload_len_(0),
+      last_frame_len_(0),
       header_buffer_(new char[kDefaultHeaderBufferSize]),
       header_buffer_length_(0),
       header_buffer_size_(kDefaultHeaderBufferSize),
@@ -431,16 +431,18 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     return true;
   }
 
-  virtual void OnCompressedHeaderBlock(size_t uncompressed_size,
-                                       size_t compressed_size) OVERRIDE {
-    last_uncompressed_size_ = uncompressed_size;
-    last_compressed_size_ = compressed_size;
+  virtual void OnSendCompressedFrame(SpdyStreamId stream_id,
+                                     SpdyFrameType type,
+                                     size_t payload_len,
+                                     size_t frame_len) OVERRIDE {
+    last_payload_len_ = payload_len;
+    last_frame_len_ = frame_len;
   }
 
-  virtual void OnDecompressedHeaderBlock(size_t decompressed_size,
-                                         size_t compressed_size) OVERRIDE {
-    last_uncompressed_size_ = decompressed_size;
-    last_compressed_size_ = compressed_size;
+  virtual void OnReceiveCompressedFrame(SpdyStreamId stream_id,
+                                        SpdyFrameType type,
+                                        size_t frame_len) OVERRIDE {
+    last_frame_len_ = frame_len;
   }
 
   // Convenience function which runs a framer simulation with particular input.
@@ -505,8 +507,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   // The count of zero-length control frame header data chunks received.
   int zero_length_control_frame_header_data_count_;
   int data_frame_count_;
-  size_t last_uncompressed_size_;
-  size_t last_compressed_size_;
+  size_t last_payload_len_;
+  size_t last_frame_len_;
 
   // Header block streaming state:
   scoped_ptr<char[]> header_buffer_;
@@ -942,19 +944,22 @@ TEST_P(SpdyFramerTest, BasicCompression) {
                              CONTROL_FLAG_NONE,
                              true,  // compress
                              &headers));
+  size_t uncompressed_size1 = visitor->last_payload_len_;
+  size_t compressed_size1 =
+      visitor->last_frame_len_ - framer.GetSynStreamMinimumSize();
   if (IsSpdy2()) {
-    EXPECT_EQ(139u, visitor->last_uncompressed_size_);
+    EXPECT_EQ(139u, uncompressed_size1);
 #if defined(USE_SYSTEM_ZLIB)
-    EXPECT_EQ(155u, visitor->last_compressed_size_);
+    EXPECT_EQ(155u, compressed_size1);
 #else  // !defined(USE_SYSTEM_ZLIB)
-    EXPECT_EQ(135u, visitor->last_compressed_size_);
+    EXPECT_EQ(135u, compressed_size1);
 #endif  // !defined(USE_SYSTEM_ZLIB)
   } else {
-    EXPECT_EQ(165u, visitor->last_uncompressed_size_);
+    EXPECT_EQ(165u, uncompressed_size1);
 #if defined(USE_SYSTEM_ZLIB)
-    EXPECT_EQ(181u, visitor->last_compressed_size_);
+    EXPECT_EQ(181u, compressed_size1);
 #else  // !defined(USE_SYSTEM_ZLIB)
-    EXPECT_EQ(117u, visitor->last_compressed_size_);
+    EXPECT_EQ(117u, compressed_size1);
 #endif  // !defined(USE_SYSTEM_ZLIB)
   }
   scoped_ptr<SpdyFrame> frame2(
@@ -965,6 +970,9 @@ TEST_P(SpdyFramerTest, BasicCompression) {
                              CONTROL_FLAG_NONE,
                              true,  // compress
                              &headers));
+  size_t uncompressed_size2 = visitor->last_payload_len_;
+  size_t compressed_size2 =
+      visitor->last_frame_len_ - framer.GetSynStreamMinimumSize();
 
   // Expect the second frame to be more compact than the first.
   EXPECT_LE(frame2->size(), frame1->size());
@@ -978,21 +986,29 @@ TEST_P(SpdyFramerTest, BasicCompression) {
   framer.set_debug_visitor(visitor.get());
   scoped_ptr<SpdyFrame> frame4(SpdyFramerTestUtil::DecompressFrame(
       &framer, *frame2.get()));
+  size_t uncompressed_size4 =
+      frame4->size() - framer.GetSynStreamMinimumSize();
+  size_t compressed_size4 =
+      visitor->last_frame_len_ - framer.GetSynStreamMinimumSize();
   if (IsSpdy2()) {
-    EXPECT_EQ(139u, visitor->last_uncompressed_size_);
+    EXPECT_EQ(139u, uncompressed_size4);
 #if defined(USE_SYSTEM_ZLIB)
-    EXPECT_EQ(149u, visitor->last_compressed_size_);
+    EXPECT_EQ(149u, compressed_size4);
 #else  // !defined(USE_SYSTEM_ZLIB)
-    EXPECT_EQ(101u, visitor->last_compressed_size_);
+    EXPECT_EQ(101u, compressed_size4);
 #endif  // !defined(USE_SYSTEM_ZLIB)
   } else {
-    EXPECT_EQ(165u, visitor->last_uncompressed_size_);
+    EXPECT_EQ(165u, uncompressed_size4);
 #if defined(USE_SYSTEM_ZLIB)
-    EXPECT_EQ(175u, visitor->last_compressed_size_);
+    EXPECT_EQ(175u, compressed_size4);
 #else  // !defined(USE_SYSTEM_ZLIB)
-    EXPECT_EQ(102u, visitor->last_compressed_size_);
+    EXPECT_EQ(102u, compressed_size4);
 #endif  // !defined(USE_SYSTEM_ZLIB)
   }
+
+  EXPECT_EQ(uncompressed_size1, uncompressed_size2);
+  EXPECT_EQ(uncompressed_size1, uncompressed_size4);
+  EXPECT_EQ(compressed_size2, compressed_size4);
 
   // Expect frames 3 & 4 to be the same.
   CompareFrames("Uncompressed SYN_STREAM", *frame3, *frame4);

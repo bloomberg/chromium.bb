@@ -822,6 +822,13 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
               static_cast<int32>(current_frame_buffer_length_));
     remaining_control_header_ = frame_size_without_variable_data -
         current_frame_buffer_length_;
+
+    if (debug_visitor_) {
+      debug_visitor_->OnReceiveCompressedFrame(current_frame_stream_id_,
+                                               current_frame_type_,
+                                               current_frame_length_);
+    }
+
     CHANGE_STATE(SPDY_CONTROL_FRAME_BEFORE_HEADER_BLOCK);
     return;
   }
@@ -1579,6 +1586,15 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
   if (visitor_)
     visitor_->OnSynStreamCompressed(size, builder.length());
 
+  if (debug_visitor_) {
+    const size_t payload_len = GetSerializedLength(
+        protocol_version(), &(syn_stream.name_value_block()));
+    debug_visitor_->OnSendCompressedFrame(syn_stream.stream_id(),
+                                          SYN_STREAM,
+                                          payload_len,
+                                          builder.length());
+  }
+
   return builder.take();
 }
 
@@ -1625,6 +1641,15 @@ SpdySerializedFrame* SpdyFramer::SerializeSynReply(
   }
   DCHECK_EQ(GetSynReplyMinimumSize(), builder.length());
   SerializeNameValueBlock(&builder, syn_reply);
+
+  if (debug_visitor_) {
+    const size_t payload_len = GetSerializedLength(
+        protocol_version(), &(syn_reply.name_value_block()));
+    debug_visitor_->OnSendCompressedFrame(syn_reply.stream_id(),
+                                          SYN_REPLY,
+                                          payload_len,
+                                          builder.length());
+  }
 
   return builder.take();
 }
@@ -1797,6 +1822,15 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
   DCHECK_EQ(GetHeadersMinimumSize(), builder.length());
 
   SerializeNameValueBlock(&builder, headers);
+
+  if (debug_visitor_) {
+    const size_t payload_len = GetSerializedLength(
+        protocol_version(), &(headers.name_value_block()));
+    debug_visitor_->OnSendCompressedFrame(headers.stream_id(),
+                                          HEADERS,
+                                          payload_len,
+                                          builder.length());
+  }
 
   return builder.take();
 }
@@ -2037,9 +2071,6 @@ bool SpdyFramer::IncrementallyDecompressControlFrameHeaderData(
     bool input_exhausted = ((rv == Z_BUF_ERROR) && (decomp->avail_in == 0));
     if ((rv == Z_OK) || input_exhausted) {
       size_t decompressed_len = arraysize(buffer) - decomp->avail_out;
-      if (debug_visitor_ != NULL) {
-        debug_visitor_->OnDecompressedHeaderBlock(decompressed_len, len);
-      }
       if (decompressed_len > 0) {
         processed_successfully = visitor_->OnControlFrameHeaderData(
             stream_id, buffer, decompressed_len);
@@ -2167,10 +2198,6 @@ void SpdyFramer::SerializeNameValueBlock(
   post_compress_bytes.Add(compressed_size);
 
   compressed_frames.Increment();
-
-  if (debug_visitor_ != NULL) {
-    debug_visitor_->OnCompressedHeaderBlock(uncompressed_len, compressed_size);
-  }
 }
 
 }  // namespace net
