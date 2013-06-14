@@ -90,6 +90,8 @@ webkit.org/b/98659 [ Debug ] fast/dom/gc-dom-tree-lifetime.html [ Pass Timeout ]
 
 webkit.org/b/101362 [ Debug ] fast/dom/Window/customized-property-survives-gc.html [ Slow ]
 
+crbug.com/249707 [ Debug ] fast/dom/StyleSheet/gc-rule-children-wrappers.html [ Timeout Pass ]
+
 # This test os slow since r144263
 webkit.org/b/111054 [ Debug ] fast/forms/time-multiple-fields/time-multiple-fields-stepup-stepdown-from-renderer.html [ Slow ]
 
@@ -941,6 +943,9 @@ webkit.org/b/102349 fast/dom/shadow/pseudoclass-update-enabled-area.html [ Image
 # Requires setUseDeferredFrameLoading() API from LayoutTestController.
 webkit.org/b/87652 http/tests/appcache/load-from-appcache-defer-resume-crash.html [ Skip ]
 
+# Started flaky crashing on Linux around r152400.
+crbug.com/249706 [ Linux Release ] fast/dom/shadow/insertion-point-resetStyleInheritance-with-pseudo-element-crash.html [ Crash Pass ]
+
 webkit.org/b/87772 [ Release ] svg/dom/viewspec-parser-1.html [ Slow ]
 webkit.org/b/87772 [ Debug ] svg/dom/viewspec-parser-1.html [ Pass Timeout ]
 webkit.org/b/87772 [ Release ] svg/dom/viewspec-parser-2.html [ Slow ]
@@ -1088,7 +1093,7 @@ webkit.org/b/100806 [ Win7 ] fast/css/font-face-download-error.html [ Failure Pa
 # This test is consistently leaking state into the next test (object-src-url-allowed.html) after r133069.
 webkit.org/b/100955 http/tests/security/contentSecurityPolicy/object-src-none-blocked.html [ Skip ]
 
-webkit.org/b/102131 [ Win Linux ] fast/workers/worker-exception-during-navigation.html [ Crash Pass ]
+webkit.org/b/102131 fast/workers/worker-exception-during-navigation.html [ Crash Pass ]
 webkit.org/b/102264 [ Debug ] css3/filters/custom/custom-filter-property-computed-style.html [ Pass Timeout ]
 
 # This test is consistently leaking state into the next test.
