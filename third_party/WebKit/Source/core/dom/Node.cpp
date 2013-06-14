@@ -895,14 +895,12 @@ void Node::lazyAttach(ShouldSetAttached shouldSetAttached)
         attach();
         return;
     }
-    for (Node* n = this; n; n = NodeTraversal::next(n, this)) {
-        if (n->hasChildNodes())
-            n->setChildNeedsStyleRecalc();
-        n->setStyleChange(FullStyleChange);
-        if (shouldSetAttached == SetAttached)
-            n->setAttached();
-    }
+    setStyleChange(FullStyleChange);
     markAncestorsWithChildNeedsStyleRecalc();
+    if (shouldSetAttached == DoNotSetAttached)
+        return;
+    for (Node* node = this; node; node = NodeTraversal::next(node, this))
+        node->setAttached();
 }
 
 bool Node::supportsFocus() const
