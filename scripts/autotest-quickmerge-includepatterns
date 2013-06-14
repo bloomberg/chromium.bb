@@ -27,3 +27,5 @@ frontend/
 frontend/**
 
 global_config.ini
+
+.quickmerge_sentinel
