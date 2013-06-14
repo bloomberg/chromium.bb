@@ -645,17 +645,21 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
     CommandLine* command_line) const {
   DCHECK(command_line);
 
+  bool reduce_sandbox = false;
+
   std::string use_gl =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
   base::FilePath swiftshader_path =
       CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kSwiftShaderPath);
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_MULTISAMPLING) &&
-      !command_line->HasSwitch(switches::kDisableGLMultisampling))
+      !command_line->HasSwitch(switches::kDisableGLMultisampling)) {
     command_line->AppendSwitch(switches::kDisableGLMultisampling);
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_TEXTURE_SHARING))
+  }
+  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_TEXTURE_SHARING)) {
     command_line->AppendSwitch(switches::kDisableImageTransportSurface);
-
+    reduce_sandbox = true;
+  }
   if (use_swiftshader_) {
     command_line->AppendSwitchASCII(switches::kUseGL, "swiftshader");
     if (swiftshader_path.empty())
@@ -690,9 +694,10 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
     command_line->AppendSwitchASCII(switches::kSupportsDualGpus, "false");
   }
 
-  if (!swiftshader_path.empty())
+  if (!swiftshader_path.empty()) {
     command_line->AppendSwitchPath(switches::kSwiftShaderPath,
                                    swiftshader_path);
+  }
 
   if (!gpu_driver_bugs_.empty()) {
     command_line->AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
@@ -707,18 +712,23 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   if ((gpu_info_.display_link_version.IsValid()
       && gpu_info_.display_link_version.IsOlderThan("7.2")) ||
       gpu_info_.lenovo_dcute) {
-    command_line->AppendSwitch(switches::kReduceGpuSandbox);
+    reduce_sandbox = true;
   }
 #endif
 
   if (gpu_info_.optimus)
-    command_line->AppendSwitch(switches::kReduceGpuSandbox);
+    reduce_sandbox = true;
+
   if (gpu_info_.amd_switchable) {
     // The image transport surface currently doesn't work with AMD Dynamic
     // Switchable graphics.
-    command_line->AppendSwitch(switches::kReduceGpuSandbox);
+    reduce_sandbox = true;
     command_line->AppendSwitch(switches::kDisableImageTransportSurface);
   }
+
+  if (reduce_sandbox)
+    command_line->AppendSwitch(switches::kReduceGpuSandbox);
+
   // Pass GPU and driver information to GPU process. We try to avoid full GPU
   // info collection at GPU process startup, but we need gpu vendor_id,
   // device_id, driver_vendor, driver_version for deciding whether we need to
