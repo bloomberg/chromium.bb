@@ -1025,6 +1025,8 @@
     'browser/web_contents/aura/image_window_delegate.h',
     'browser/web_contents/aura/shadow_layer_delegate.cc',
     'browser/web_contents/aura/shadow_layer_delegate.h',
+    'browser/web_contents/aura/window_slider.cc',
+    'browser/web_contents/aura/window_slider.h',
     'browser/web_contents/debug_urls.cc',
     'browser/web_contents/debug_urls.h',
     'browser/web_contents/drag_utils_gtk.cc',

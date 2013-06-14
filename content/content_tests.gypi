@@ -357,6 +357,7 @@
         'browser/streams/stream_url_request_job_unittest.cc',
         'browser/system_message_window_win_unittest.cc',
         'browser/tracing/trace_subscriber_stdio_unittest.cc',
+        'browser/web_contents/aura/window_slider_unittest.cc',
         'browser/web_contents/navigation_controller_impl_unittest.cc',
         'browser/web_contents/navigation_entry_impl_unittest.cc',
         'browser/web_contents/render_view_host_manager_unittest.cc',

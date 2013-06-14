@@ -19,11 +19,11 @@ class Layer;
 
 namespace content {
 
-// ShadowLayerDelegate takes care of drawing a shadow on the left edge of a
-// window.
+// ShadowLayerDelegate takes care of drawing a shadow on the left edge of
+// another layer.
 class ShadowLayerDelegate : public ui::LayerDelegate {
  public:
-  explicit ShadowLayerDelegate(aura::Window* shadow_for);
+  explicit ShadowLayerDelegate(ui::Layer* shadow_for);
   virtual ~ShadowLayerDelegate();
 
   // Returns the layer for the shadow. Note that the ShadowLayerDelegate owns

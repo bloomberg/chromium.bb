@@ -21,13 +21,13 @@ const int kShadowThick = 7;
 
 namespace content {
 
-ShadowLayerDelegate::ShadowLayerDelegate(aura::Window* window)
+ShadowLayerDelegate::ShadowLayerDelegate(ui::Layer* shadow_for)
     : layer_(new ui::Layer(ui::LAYER_TEXTURED)) {
   layer_->set_delegate(this);
   layer_->SetBounds(gfx::Rect(-kShadowThick, 0, kShadowThick,
-                              window->bounds().height()));
+                              shadow_for->bounds().height()));
   layer_->SetFillsBoundsOpaquely(false);
-  window->layer()->Add(layer_.get());
+  shadow_for->Add(layer_.get());
 }
 
 ShadowLayerDelegate::~ShadowLayerDelegate() {

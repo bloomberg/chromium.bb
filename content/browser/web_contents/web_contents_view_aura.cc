@@ -720,7 +720,7 @@ void WebContentsViewAura::PrepareOverscrollWindow() {
   overscroll_window_->SetBounds(bounds);
   overscroll_window_->Show();
 
-  overscroll_shadow_.reset(new ShadowLayerDelegate(animate_window));
+  overscroll_shadow_.reset(new ShadowLayerDelegate(animate_window->layer()));
 }
 
 void WebContentsViewAura::PrepareContentWindowForOverscroll() {
