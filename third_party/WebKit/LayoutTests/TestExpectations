@@ -64,10 +64,15 @@ webkit.org/b/90488 [ Debug ] http/tests/inspector-enabled [ Slow ]
 webkit.org/b/90488 [ Debug ] inspector-protocol [ Slow ]
 
 crbug.com/247466 [ Win Debug ] inspector/debugger/live-edit-breakpoints.html [ Skip ]
-crbug.com/247466 [ Win Debug ] inspector/debugger/dom-breakpoints.html [ Skip ]
-crbug.com/247466 [ Win Debug ] inspector/debugger/script-formatter-breakpoints.html [ Skip ]
+crbug.com/247466 [ Debug ] inspector/debugger/dom-breakpoints.html [ Skip ]
+crbug.com/247466 [ Debug ] inspector/debugger/xhr-breakpoints.html [ Skip ]
+crbug.com/247466 [ Debug ] inspector/debugger/script-formatter-breakpoints.html [ Skip ]
 crbug.com/247466 [ Win Debug ] inspector/profiler/heap-snapshot-comparison-expansion-preserved-when-sorting.html [ Skip ]
 crbug.com/249087 [ Win Debug ] inspector/debugger/debugger-activation-crash2.html [ Pass Failure Timeout ]
+crbug.com/247466 [ Debug ] inspector/debugger/set-breakpoint.html [ Skip ]
+crbug.com/247466 [ Debug ] inspector/debugger/script-formatter-console.html [ Skip ]
+crbug.com/247466 [ Debug ] inspector/debugger/script-formatter-search.html [ Skip ]
+crbug.com/247466 [ Debug ] inspector/debugger/linkifier.html [ Skip ]
 
 # Inspector IndexedDB tests are slow in Release as well.
 crbug.com/246190 [ Release ] http/tests/inspector/indexeddb [ Slow ]
