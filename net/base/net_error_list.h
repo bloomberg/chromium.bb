@@ -287,6 +287,11 @@ NET_ERROR(CLIENT_AUTH_CERT_TYPE_UNSUPPORTED, -151)
 // first was still being generated.
 NET_ERROR(ORIGIN_BOUND_CERT_GENERATION_TYPE_MISMATCH, -152)
 
+// An SSL peer sent us a fatal decrypt_error alert. This typically occurs when
+// a peer could not correctly verify a signature (in CertificateVerify or
+// ServerKeyExchange) or validate a Finished message.
+NET_ERROR(SSL_DECRYPT_ERROR_ALERT, -153)
+
 // Certificate error codes
 //
 // The values of certificate error codes must be consecutive.
