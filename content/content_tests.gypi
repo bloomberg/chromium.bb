@@ -532,6 +532,7 @@
         '../webkit/renderer/media/buffered_resource_loader_unittest.cc',
         '../webkit/renderer/media/cache_util_unittest.cc',
         '../webkit/renderer/media/crypto/key_systems_unittest.cc',
+        '../webkit/renderer/media/media_info_loader_unittest.cc',
         '../webkit/renderer/media/test_response_generator.cc',
         '../webkit/renderer/media/test_response_generator.h',
         '../webkit/renderer/media/webaudiosourceprovider_impl_unittest.cc',
