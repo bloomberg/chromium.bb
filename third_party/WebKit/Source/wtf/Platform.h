@@ -134,9 +134,7 @@
 #endif /* OS(DARWIN) */
 
 #if !defined(HAVE_ACCESSIBILITY)
-#if !OS(ANDROID)
 #define HAVE_ACCESSIBILITY 1
-#endif
 #endif /* !defined(HAVE_ACCESSIBILITY) */
 
 #if OS(UNIX)
