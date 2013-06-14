@@ -298,14 +298,12 @@ static inline bool isCSSTokenAString(int yytype)
 %type <character> operator
 
 %type <valueList> expr
-%type <valueList> valid_expr
 %type <value> term
 %type <value> unary_term
 %type <value> function
 %type <value> calc_func_term
 %type <character> calc_func_operator
 %type <valueList> calc_func_expr
-%type <valueList> valid_calc_func_expr
 %type <valueList> calc_func_expr_list
 %type <valueList> calc_func_paren_expr
 %type <value> calc_function
@@ -774,18 +772,16 @@ supports_condition_in_parens:
 supports_declaration_condition:
     '(' maybe_space IDENT maybe_space ':' maybe_space expr prio ')' maybe_space {
         $$ = false;
-        if ($7) {
-            CSSPropertyID id = cssPropertyID($3);
-            if (id != CSSPropertyInvalid) {
-                parser->m_valueList = parser->sinkFloatingValueList($7);
-                int oldParsedProperties = parser->m_parsedProperties.size();
-                $$ = parser->parseValue(id, $8);
-                // We just need to know if the declaration is supported as it is written. Rollback any additions.
-                if ($$)
-                    parser->rollbackLastProperties(parser->m_parsedProperties.size() - oldParsedProperties);
-            }
-            parser->m_valueList = nullptr;
+        CSSPropertyID id = cssPropertyID($3);
+        if (id != CSSPropertyInvalid) {
+            parser->m_valueList = parser->sinkFloatingValueList($7);
+            int oldParsedProperties = parser->m_parsedProperties.size();
+            $$ = parser->parseValue(id, $8);
+            // We just need to know if the declaration is supported as it is written. Rollback any additions.
+            if ($$)
+                parser->rollbackLastProperties(parser->m_parsedProperties.size() - oldParsedProperties);
         }
+        parser->m_valueList = nullptr;
         parser->endProperty($8, false);
     }
     | '(' maybe_space IDENT maybe_space ':' maybe_space error error_recovery ')' maybe_space {
@@ -1555,13 +1551,13 @@ declaration:
         parser->endProperty($6, true);
     }
     |
-    property ':' maybe_space error_location valid_expr prio {
+    property ':' maybe_space error_location expr prio {
         $$ = false;
         bool isPropertyParsed = false;
-        if ($1 && $5) {
+        if ($1 != CSSPropertyInvalid) {
             parser->m_valueList = parser->sinkFloatingValueList($5);
             int oldParsedProperties = parser->m_parsedProperties.size();
-            $$ = parser->parseValue(static_cast<CSSPropertyID>($1), $6);
+            $$ = parser->parseValue($1, $6);
             if (!$$) {
                 parser->rollbackLastProperties(parser->m_parsedProperties.size() - oldParsedProperties);
                 parser->reportError($4, CSSParser::InvalidPropertyValueError);
@@ -1572,7 +1568,7 @@ declaration:
         parser->endProperty($6, isPropertyParsed);
     }
     |
-    property ':' maybe_space error_location valid_expr prio error error_recovery {
+    property ':' maybe_space error_location expr prio error error_recovery {
         /* When we encounter something like p {color: red !important fail;} we should drop the declaration */
         parser->reportError($4, CSSParser::InvalidPropertyValueError);
         parser->endProperty(false, false);
@@ -1612,27 +1608,20 @@ prio:
   ;
 
 expr:
-    valid_expr
-    | valid_expr expr_recovery { $$ = 0; }
-  ;
-
-valid_expr:
     term {
         $$ = parser->createFloatingValueList();
         $$->addValue(parser->sinkFloatingValue($1));
     }
-    | valid_expr operator term {
+    | expr operator term {
         $$ = $1;
-        if ($$) {
-            if ($2) {
-                CSSParserValue v;
-                v.id = CSSValueInvalid;
-                v.unit = CSSParserValue::Operator;
-                v.iValue = $2;
-                $$->addValue(v);
-            }
-            $$->addValue(parser->sinkFloatingValue($3));
+        if ($2) {
+            CSSParserValue v;
+            v.id = CSSValueInvalid;
+            v.unit = CSSParserValue::Operator;
+            v.iValue = $2;
+            $$->addValue(v);
         }
+        $$->addValue(parser->sinkFloatingValue($3));
     }
   ;
 
@@ -1729,15 +1718,12 @@ unary_term:
 
 function:
     FUNCTION maybe_space expr closing_parenthesis {
-        if ($3) {
-            CSSParserFunction* f = parser->createFloatingFunction();
-            f->name = $1;
-            f->args = parser->sinkFloatingValueList($3);
-            $$.id = CSSValueInvalid;
-            $$.unit = CSSParserValue::Function;
-            $$.function = f;
-        } else
-            YYERROR;
+        CSSParserFunction* f = parser->createFloatingFunction();
+        f->name = $1;
+        f->args = parser->sinkFloatingValueList($3);
+        $$.id = CSSValueInvalid;
+        $$.unit = CSSParserValue::Function;
+        $$.function = f;
     } |
     FUNCTION maybe_space closing_parenthesis {
         CSSParserFunction* f = parser->createFloatingFunction();
@@ -1785,17 +1771,14 @@ calc_maybe_space:
 
 calc_func_paren_expr:
     '(' maybe_space calc_func_expr calc_maybe_space closing_parenthesis {
-        if ($3) {
-            $$ = $3;
-            CSSParserValue v;
-            v.id = CSSValueInvalid;
-            v.unit = CSSParserValue::Operator;
-            v.iValue = '(';
-            $$->insertValueAt(0, v);
-            v.iValue = ')';
-            $$->addValue(v);
-        } else
-            YYERROR;
+        $$ = $3;
+        CSSParserValue v;
+        v.id = CSSValueInvalid;
+        v.unit = CSSParserValue::Operator;
+        v.iValue = '(';
+        $$->insertValueAt(0, v);
+        v.iValue = ')';
+        $$->addValue(v);
     }
     | '(' maybe_space expr_recovery closing_parenthesis {
         YYERROR;
@@ -1803,39 +1786,27 @@ calc_func_paren_expr:
   ;
 
 calc_func_expr:
-    valid_calc_func_expr
-    | valid_calc_func_expr expr_recovery { $$ = 0; }
-  ;
-
-valid_calc_func_expr:
     calc_func_term {
         $$ = parser->createFloatingValueList();
         $$->addValue(parser->sinkFloatingValue($1));
     }
     | calc_func_expr calc_func_operator calc_func_term {
-        if ($1 && $2) {
-            $$ = $1;
-            CSSParserValue v;
-            v.id = CSSValueInvalid;
-            v.unit = CSSParserValue::Operator;
-            v.iValue = $2;
-            $$->addValue(v);
-            $$->addValue(parser->sinkFloatingValue($3));
-        } else
-            YYERROR;
-
+        $$ = $1;
+        CSSParserValue v;
+        v.id = CSSValueInvalid;
+        v.unit = CSSParserValue::Operator;
+        v.iValue = $2;
+        $$->addValue(v);
+        $$->addValue(parser->sinkFloatingValue($3));
     }
     | calc_func_expr calc_func_operator calc_func_paren_expr {
-        if ($1 && $2 && $3) {
-            $$ = $1;
-            CSSParserValue v;
-            v.id = CSSValueInvalid;
-            v.unit = CSSParserValue::Operator;
-            v.iValue = $2;
-            $$->addValue(v);
-            $$->extend(*($3));
-        } else 
-            YYERROR;
+        $$ = $1;
+        CSSParserValue v;
+        v.id = CSSValueInvalid;
+        v.unit = CSSParserValue::Operator;
+        v.iValue = $2;
+        $$->addValue(v);
+        $$->extend(*($3));
     }
     | calc_func_paren_expr
   ;
@@ -1845,16 +1816,13 @@ calc_func_expr_list:
         $$ = $1;
     }    
     | calc_func_expr_list ',' maybe_space calc_func_expr calc_maybe_space {
-        if ($1 && $4) {
-            $$ = $1;
-            CSSParserValue v;
-            v.id = CSSValueInvalid;
-            v.unit = CSSParserValue::Operator;
-            v.iValue = ',';
-            $$->addValue(v);
-            $$->extend(*($4));
-        } else
-            YYERROR;
+        $$ = $1;
+        CSSParserValue v;
+        v.id = CSSValueInvalid;
+        v.unit = CSSParserValue::Operator;
+        v.iValue = ',';
+        $$->addValue(v);
+        $$->extend(*($4));
     }
   ;
 
