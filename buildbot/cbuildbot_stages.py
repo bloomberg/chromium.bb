@@ -1766,7 +1766,6 @@ class HWTestStage(ArchivingStage):
     logging.info('Copy of %s completed. Printing below:', result_file_name)
     self._PrintFile(os.path.join(self._options.log_dir, result_file_name))
 
-  @cros_build_lib.MemoizedSingleCall
   def _CheckAborted(self):
     aborted = (self.archive_stage.release_tag and
                commands.HaveHWTestsBeenAborted(self.archive_stage.release_tag))
