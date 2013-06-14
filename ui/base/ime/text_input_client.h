@@ -28,7 +28,7 @@ class UI_EXPORT TextInputClient {
   // Input method result -------------------------------------------------------
 
   // Sets composition text and attributes. If there is composition text already,
-  // it’ll be replaced by the new one. Otherwise, current selection will be
+  // it'll be replaced by the new one. Otherwise, current selection will be
   // replaced. If there is no selection, the composition text will be inserted
   // at the insertion point.
   virtual void SetCompositionText(const ui::CompositionText& composition) = 0;
@@ -124,7 +124,7 @@ class UI_EXPORT TextInputClient {
   virtual void OnInputMethodChanged() = 0;
 
   // Called whenever the user requests to change the text direction and layout
-  // alignment of the current text box. It’s for supporting ctrl-shift on
+  // alignment of the current text box. It's for supporting ctrl-shift on
   // Windows.
   // Returns false if the operation is not supported.
   virtual bool ChangeTextDirectionAndLayoutAlignment(
