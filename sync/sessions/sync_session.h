@@ -47,7 +47,12 @@ class SYNC_EXPORT_PRIVATE SyncSession {
    public:
     // The client was throttled and should cease-and-desist syncing activity
     // until the specified time.
-    virtual void OnSilencedUntil(const base::TimeTicks& silenced_until) = 0;
+    virtual void OnThrottled(const base::TimeDelta& throttle_duration) = 0;
+
+    // Some of the client's types were throttled.
+    virtual void OnTypesThrottled(
+        ModelTypeSet types,
+        const base::TimeDelta& throttle_duration) = 0;
 
     // Silenced intervals can be out of phase with individual sessions, so the
     // delegate is the only thing that can give an authoritative answer for
@@ -58,7 +63,7 @@ class SYNC_EXPORT_PRIVATE SyncSession {
     // solely based on absolute time values. So, this cannot be used to infer
     // that any given session _instance_ is silenced.  An example of reasonable
     // use is for UI reporting.
-    virtual bool IsSyncingCurrentlySilenced() = 0;
+    virtual bool IsCurrentlyThrottled() = 0;
 
     // The client has been instructed to change its short poll interval.
     virtual void OnReceivedShortPollIntervalUpdate(

@@ -49,8 +49,6 @@ class AllStatus : public SyncEngineEventListener {
 
   void IncrementNotificationsReceived();
 
-  void SetThrottledTypes(ModelTypeSet types);
-
   void SetEncryptedTypes(ModelTypeSet types);
   void SetCryptographerReady(bool ready);
   void SetCryptoHasPendingKeys(bool has_pending_keys);

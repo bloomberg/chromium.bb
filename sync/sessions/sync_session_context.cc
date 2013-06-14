@@ -4,7 +4,6 @@
 
 #include "sync/sessions/sync_session_context.h"
 
-#include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/sessions/debug_info_getter.h"
 #include "sync/util/extensions_activity_monitor.h"
 
@@ -19,7 +18,6 @@ SyncSessionContext::SyncSessionContext(
     syncable::Directory* directory,
     const std::vector<ModelSafeWorker*>& workers,
     ExtensionsActivityMonitor* extensions_activity_monitor,
-    ThrottledDataTypeTracker* throttled_data_type_tracker,
     const std::vector<SyncEngineEventListener*>& listeners,
     DebugInfoGetter* debug_info_getter,
     TrafficRecorder* traffic_recorder,
@@ -30,7 +28,6 @@ SyncSessionContext::SyncSessionContext(
       extensions_activity_monitor_(extensions_activity_monitor),
       notifications_enabled_(false),
       max_commit_batch_size_(kDefaultMaxCommitBatchSize),
-      throttled_data_type_tracker_(throttled_data_type_tracker),
       debug_info_getter_(debug_info_getter),
       traffic_recorder_(traffic_recorder),
       keystore_encryption_enabled_(keystore_encryption_enabled),

@@ -76,9 +76,11 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   virtual void OnConnectionStatusChange() OVERRIDE;
 
   // SyncSession::Delegate implementation.
-  virtual void OnSilencedUntil(
-      const base::TimeTicks& silenced_until) OVERRIDE;
-  virtual bool IsSyncingCurrentlySilenced() OVERRIDE;
+  virtual void OnThrottled(const base::TimeDelta& throttle_duration) OVERRIDE;
+  virtual void OnTypesThrottled(
+      ModelTypeSet types,
+      const base::TimeDelta& throttle_duration) OVERRIDE;
+  virtual bool IsCurrentlyThrottled() OVERRIDE;
   virtual void OnReceivedShortPollIntervalUpdate(
       const base::TimeDelta& new_interval) OVERRIDE;
   virtual void OnReceivedLongPollIntervalUpdate(
@@ -195,8 +197,11 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // Helper to signal all listeners registered with |session_context_|.
   void Notify(SyncEngineEvent::EventCause cause);
 
-  // Helper to signal listeners about changed retry time
+  // Helper to signal listeners about changed retry time.
   void NotifyRetryTime(base::Time retry_time);
+
+  // Helper to signal listeners about changed throttled types.
+  void NotifyThrottledTypesChanged(ModelTypeSet types);
 
   // Looks for pending work and, if it finds any, run this work at "canary"
   // priority.
@@ -204,6 +209,12 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
 
   // Transitions out of the THROTTLED WaitInterval then calls TryCanaryJob().
   void Unthrottle();
+
+  // Called when a per-type throttling interval expires.
+  void TypeUnthrottle(base::TimeTicks unthrottle_time);
+
+  // Runs a normal nudge job when the scheduled timer expires.
+  void PerformDelayedNudge();
 
   // Attempts to exit EXPONENTIAL_BACKOFF by calling TryCanaryJob().
   void ExponentialBackoffRetry();
@@ -263,6 +274,9 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
 
   // The event that will wake us up.
   base::OneShotTimer<SyncSchedulerImpl> pending_wakeup_timer_;
+
+  // An event that fires when data type throttling expires.
+  base::OneShotTimer<SyncSchedulerImpl> type_unthrottle_timer_;
 
   // Storage for variables related to an in-progress configure request.  Note
   // that (mode_ != CONFIGURATION_MODE) \implies !pending_configure_params_.

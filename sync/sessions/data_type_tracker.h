@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/time.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer {
@@ -48,11 +49,6 @@ class DataTypeTracker {
   // cycle.  That's for the scheduler to decide.
   bool IsSyncRequired() const;
 
-  // Returns true if one of the reasons behind the need for a sync cycle is to
-  // fetch updates.  If this is true, then IsSyncRequired() will also return
-  // true.
-  bool IsGetUpdatesRequired() const;
-
   // Returns true if there is an uncommitted local change.
   bool HasLocalChangePending() const;
 
@@ -67,6 +63,20 @@ class DataTypeTracker {
   // messages provide the server with the information it needs to decide how to
   // handle a request.
   void FillGetUpdatesTriggersMessage(sync_pb::GetUpdateTriggers* msg) const;
+
+  // Returns true if the type is currently throttled.
+  bool IsThrottled() const;
+
+  // Returns the time until this type's throttling interval expires.  Should not
+  // be called unless IsThrottled() returns true.  The returned value will be
+  // increased to zero if it would otherwise have been negative.
+  base::TimeDelta GetTimeUntilUnthrottle(base::TimeTicks now) const;
+
+  // Throttles the type from |now| until |now| + |duration|.
+  void ThrottleType(base::TimeDelta duration, base::TimeTicks now);
+
+  // Unthrottles the type if |now| >= the throttle expiry time.
+  void UpdateThrottleState(base::TimeTicks now);
 
  private:
   // Number of local change nudges received for this type since the last
@@ -91,6 +101,10 @@ class DataTypeTracker {
   bool server_payload_overflow_;
 
   size_t payload_buffer_size_;
+
+  // If !unthrottle_time_.is_null(), this type is throttled and may not download
+  // or commit data until the specified time.
+  base::TimeTicks unthrottle_time_;
 };
 
 }  // namespace syncer

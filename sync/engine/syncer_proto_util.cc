@@ -10,7 +10,6 @@
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_types.h"
-#include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/engine/traffic_logger.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync_enums.pb.h"
@@ -307,20 +306,6 @@ base::TimeDelta SyncerProtoUtil::GetThrottleDelay(
   return throttle_delay;
 }
 
-void SyncerProtoUtil::HandleThrottleError(
-    const SyncProtocolError& error,
-    const base::TimeTicks& throttled_until,
-    ThrottledDataTypeTracker* tracker,
-    sessions::SyncSession::Delegate* delegate) {
-  DCHECK_EQ(error.error_type, THROTTLED);
-  if (error.error_data_types.Empty()) {
-    // No datatypes indicates the client should be completely throttled.
-    delegate->OnSilencedUntil(throttled_until);
-  } else {
-    tracker->SetUnthrottleTime(error.error_data_types, throttled_until);
-  }
-}
-
 namespace {
 
 // Helper function for an assertion in PostClientToServerMessage.
@@ -457,11 +442,15 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
       LogResponseProfilingData(*response);
       return SYNCER_OK;
     case THROTTLED:
-      LOG(WARNING) << "Client silenced by server.";
-      HandleThrottleError(sync_protocol_error,
-                          base::TimeTicks::Now() + GetThrottleDelay(*response),
-                          session->context()->throttled_data_type_tracker(),
-                          session->delegate());
+      if (sync_protocol_error.error_data_types.Empty()) {
+        DLOG(WARNING) << "Client fully throttled by syncer.";
+        session->delegate()->OnThrottled(GetThrottleDelay(*response));
+      } else {
+        DLOG(WARNING) << "Some types throttled by syncer.";
+        session->delegate()->OnTypesThrottled(
+            sync_protocol_error.error_data_types,
+            GetThrottleDelay(*response));
+      }
       return SERVER_RETURN_THROTTLED;
     case TRANSIENT_ERROR:
       return SERVER_RETURN_TRANSIENT_ERROR;

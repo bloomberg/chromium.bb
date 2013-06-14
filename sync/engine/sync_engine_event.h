@@ -49,6 +49,9 @@ struct SYNC_EXPORT_PRIVATE SyncEngineEvent {
     // either because it gets throttled by server or because it backs off after
     // request failure. Retry time is passed in retry_time field of event.
     RETRY_TIME_CHANGED,
+
+    // This event is sent when types are throttled or unthrottled.
+    THROTTLED_TYPES_CHANGED,
   };
 
   explicit SyncEngineEvent(EventCause cause);
@@ -62,8 +65,11 @@ struct SYNC_EXPORT_PRIVATE SyncEngineEvent {
   // Update-Client-Auth returns a new token for sync use.
   std::string updated_token;
 
-  // Time when scheduler will try to send request after backoff
+  // Time when scheduler will try to send request after backoff.
   base::Time retry_time;
+
+  // Set of types that are currently throttled.
+  ModelTypeSet throttled_types;
 };
 
 class SYNC_EXPORT_PRIVATE SyncEngineEventListener {

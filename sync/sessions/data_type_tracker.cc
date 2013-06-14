@@ -37,6 +37,11 @@ void DataTypeTracker::RecordRemoteInvalidation(
 }
 
 void DataTypeTracker::RecordSuccessfulSyncCycle() {
+  // If we were throttled, then we would have been excluded from this cycle's
+  // GetUpdates and Commit actions.  Our state remains unchanged.
+  if (IsThrottled())
+    return;
+
   local_nudge_count_ = 0;
   local_refresh_request_count_ = 0;
   pending_payloads_.clear();
@@ -50,11 +55,10 @@ void DataTypeTracker::UpdatePayloadBufferSize(size_t new_size) {
 }
 
 bool DataTypeTracker::IsSyncRequired() const {
-  return local_nudge_count_ > 0 || IsGetUpdatesRequired();
-}
-
-bool DataTypeTracker::IsGetUpdatesRequired() const {
-  return local_refresh_request_count_ > 0 || !pending_payloads_.empty();
+  return !IsThrottled() &&
+      (local_nudge_count_ > 0 ||
+       local_refresh_request_count_ > 0 ||
+       !pending_payloads_.empty());
 }
 
 bool DataTypeTracker::HasLocalChangePending() const {
@@ -85,6 +89,31 @@ void DataTypeTracker::FillGetUpdatesTriggersMessage(
 
   // TODO(rlarocque): Support Tango trickles.  See crbug.com/223437.
   // msg->set_server_dropped_hints(server_payload_oveflow_);
+}
+
+bool DataTypeTracker::IsThrottled() const {
+  return !unthrottle_time_.is_null();
+}
+
+base::TimeDelta DataTypeTracker::GetTimeUntilUnthrottle(
+    base::TimeTicks now) const {
+  if (!IsThrottled()) {
+    NOTREACHED();
+    return base::TimeDelta::FromSeconds(0);
+  }
+  return std::max(base::TimeDelta::FromSeconds(0),
+                  unthrottle_time_ - now);
+}
+
+void DataTypeTracker::ThrottleType(base::TimeDelta duration,
+                                      base::TimeTicks now) {
+  unthrottle_time_ = std::max(unthrottle_time_, now + duration);
+}
+
+void DataTypeTracker::UpdateThrottleState(base::TimeTicks now) {
+  if (now >= unthrottle_time_) {
+    unthrottle_time_ = base::TimeTicks();
+  }
 }
 
 }  // namespace sessions

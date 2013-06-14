@@ -29,11 +29,6 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
   NudgeTracker();
   ~NudgeTracker();
 
-  // Returns true if one of the main reasons for performing the sync cycle is to
-  // fetch updates.  This is true when we have pending invalidations or refresh
-  // requests.
-  bool IsGetUpdatesRequired();
-
   // Returns true if there is a good reason for performing a sync cycle.
   // This does not take into account whether or not this is a good *time* to
   // perform a sync cycle; that's the scheduler's job.
@@ -58,13 +53,30 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
   void OnInvalidationsEnabled();
   void OnInvalidationsDisabled();
 
+  // Marks |types| as being throttled from |now| until |now| + |length|.
+  void SetTypesThrottledUntil(ModelTypeSet types,
+                              base::TimeDelta length,
+                              base::TimeTicks now);
+
+  // Removes any throttling that have expired by time |now|.
+  void UpdateTypeThrottlingState(base::TimeTicks now);
+
+  // Returns the time of the next type unthrottling, relative to
+  // the input |now| value.
+  base::TimeDelta GetTimeUntilNextUnthrottle(base::TimeTicks now) const;
+
+  // Returns true if any type is currenlty throttled.
+  bool IsAnyTypeThrottled() const;
+
+  // Returns true if |type| is currently throttled.
+  bool IsTypeThrottled(ModelType type) const;
+
+  // Returns the set of currently throttled types.
+  ModelTypeSet GetThrottledTypes() const;
+
   // A helper to return an old-style source info.  Used only to maintain
   // compatibility with some old code.
   SyncSourceInfo GetSourceInfo() const;
-
-  // Returns the set of locally modified types, according to the nudges received
-  // since the last successful sync cycle.
-  ModelTypeSet GetLocallyModifiedTypes() const;
 
   // Returns the 'source' of the GetUpdate request.
   //

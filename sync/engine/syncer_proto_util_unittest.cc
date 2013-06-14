@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/time.h"
-#include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/password_specifics.pb.h"
@@ -295,34 +294,6 @@ TEST_F(SyncerProtoUtilTest, PostAndProcessHeaders) {
   dcm.set_access_denied(true);
   EXPECT_FALSE(SyncerProtoUtil::PostAndProcessHeaders(&dcm, NULL,
       msg, &response));
-}
-
-TEST_F(SyncerProtoUtilTest, HandleThrottlingWithDatatypes) {
-  ThrottledDataTypeTracker tracker(NULL);
-  SyncProtocolError error;
-  error.error_type = THROTTLED;
-  ModelTypeSet types;
-  types.Put(BOOKMARKS);
-  types.Put(PASSWORDS);
-  error.error_data_types = types;
-
-  base::TimeTicks ticks = base::TimeTicks::FromInternalValue(1);
-  SyncerProtoUtil::HandleThrottleError(error, ticks, &tracker, NULL);
-  EXPECT_TRUE(tracker.GetThrottledTypes().Equals(types));
-}
-
-TEST_F(SyncerProtoUtilTest, HandleThrottlingNoDatatypes) {
-  ThrottledDataTypeTracker tracker(NULL);
-  MockDelegate delegate;
-  SyncProtocolError error;
-  error.error_type = THROTTLED;
-
-  base::TimeTicks ticks = base::TimeTicks::FromInternalValue(1);
-
-  EXPECT_CALL(delegate, OnSilencedUntil(ticks));
-
-  SyncerProtoUtil::HandleThrottleError(error, ticks, &tracker, &delegate);
-  EXPECT_TRUE(tracker.GetThrottledTypes().Empty());
 }
 
 }  // namespace syncer

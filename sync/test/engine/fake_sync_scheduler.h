@@ -42,9 +42,12 @@ class FakeSyncScheduler : public SyncScheduler {
   virtual void OnConnectionStatusChange() OVERRIDE;
 
   // SyncSession::Delegate implementation.
-  virtual void OnSilencedUntil(
-      const base::TimeTicks& silenced_until) OVERRIDE;
-  virtual bool IsSyncingCurrentlySilenced() OVERRIDE;
+  virtual void OnThrottled(
+      const base::TimeDelta& throttle_duration) OVERRIDE;
+  virtual void OnTypesThrottled(
+      ModelTypeSet types,
+      const base::TimeDelta& throttle_duration) OVERRIDE;
+  virtual bool IsCurrentlyThrottled() OVERRIDE;
   virtual void OnReceivedShortPollIntervalUpdate(
       const base::TimeDelta& new_interval) OVERRIDE;
   virtual void OnReceivedLongPollIntervalUpdate(

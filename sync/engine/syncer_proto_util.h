@@ -26,7 +26,6 @@ class SyncEntity;
 
 namespace syncer {
 
-class ThrottledDataTypeTracker;
 class ServerConnectionManager;
 
 namespace sessions {
@@ -139,12 +138,6 @@ class SYNC_EXPORT_PRIVATE SyncerProtoUtil {
 
   static base::TimeDelta GetThrottleDelay(
       const sync_pb::ClientToServerResponse& response);
-
-  static void HandleThrottleError(
-      const SyncProtocolError& error,
-      const base::TimeTicks& throttled_until,
-      ThrottledDataTypeTracker* tracker,
-      sessions::SyncSession::Delegate* delegate);
 
   friend class SyncerProtoUtilTest;
   FRIEND_TEST_ALL_PREFIXES(SyncerProtoUtilTest, AddRequestBirthday);

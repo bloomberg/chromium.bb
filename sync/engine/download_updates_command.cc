@@ -117,6 +117,15 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
        it.Good(); it.Inc()) {
     if (ProxyTypes().Has(it.Get()))
       continue;
+
+    if (origin == sync_pb::SyncEnums::GU_TRIGGER) {
+      if (session->nudge_tracker()->IsTypeThrottled(it.Get())) {
+        continue;  // Skip throttled types.
+      }
+    } else {
+      DCHECK(!session->nudge_tracker());
+    }
+
     sync_pb::DataTypeProgressMarker* progress_marker =
         get_updates->add_from_progress_marker();
     dir->GetDownloadProgress(it.Get(), progress_marker);
@@ -132,8 +141,6 @@ SyncerError DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
       session->nudge_tracker()->FillProtoMessage(
           it.Get(),
           progress_marker->mutable_get_update_triggers());
-    } else {
-      DCHECK(!session->nudge_tracker());
     }
   }
 

@@ -61,7 +61,7 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
   SyncSessionSnapshot snapshot(
       status_controller_->model_neutral_state(),
       download_progress_markers,
-      delegate_->IsSyncingCurrentlySilenced(),
+      delegate_->IsCurrentlyThrottled(),
       status_controller_->num_encryption_conflicts(),
       status_controller_->num_hierarchy_conflicts(),
       status_controller_->num_server_conflicts(),

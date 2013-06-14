@@ -77,8 +77,6 @@
     'engine/syncer_types.h',
     'engine/syncer_util.cc',
     'engine/syncer_util.h',
-    'engine/throttled_data_type_tracker.cc',
-    'engine/throttled_data_type_tracker.h',
     'engine/traffic_logger.cc',
     'engine/traffic_logger.h',
     'engine/traffic_recorder.cc',

@@ -60,9 +60,9 @@ class NudgeTrackerTest : public ::testing::Test {
 TEST_F(NudgeTrackerTest, EmptyNudgeTracker) {
   NudgeTracker nudge_tracker;
 
+  EXPECT_FALSE(nudge_tracker.IsSyncRequired());
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::UNKNOWN,
             nudge_tracker.updates_source());
-  EXPECT_TRUE(nudge_tracker.GetLocallyModifiedTypes().Empty());
 
   sync_pb::GetUpdateTriggers gu_trigger;
   nudge_tracker.FillProtoMessage(BOOKMARKS, &gu_trigger);
@@ -107,44 +107,6 @@ TEST_F(NudgeTrackerTest, SourcePriorities) {
   nudge_tracker.RecordLocalRefreshRequest(ModelTypeSet(TYPED_URLS));
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::NOTIFICATION,
             nudge_tracker.updates_source());
-}
-
-// Verify locally modified type coalescing and independence from other nudges.
-TEST_F(NudgeTrackerTest, LocallyModifiedTypes) {
-  NudgeTracker nudge_tracker;
-
-  // Start with a notification.  Verify it has no effect.
-  ModelTypeInvalidationMap invalidation_map1 =
-      ModelTypeSetToInvalidationMap(ModelTypeSet(PREFERENCES),
-                                    std::string("hint"));
-  nudge_tracker.RecordRemoteInvalidation(invalidation_map1);
-  EXPECT_TRUE(nudge_tracker.GetLocallyModifiedTypes().Empty());
-
-  // Record a local bookmark change.  Verify it was registered correctly.
-  nudge_tracker.RecordLocalChange(ModelTypeSet(BOOKMARKS));
-  EXPECT_TRUE(ModelTypeSetEquals(
-          ModelTypeSet(BOOKMARKS),
-          nudge_tracker.GetLocallyModifiedTypes()));
-
-  // Record a notification and a refresh request.  Verify they have no effect.
-  ModelTypeInvalidationMap invalidation_map2 =
-      ModelTypeSetToInvalidationMap(ModelTypeSet(PASSWORDS),
-                                    std::string("hint"));
-  nudge_tracker.RecordRemoteInvalidation(invalidation_map2);
-  EXPECT_TRUE(ModelTypeSetEquals(
-          ModelTypeSet(BOOKMARKS),
-          nudge_tracker.GetLocallyModifiedTypes()));
-
-  nudge_tracker.RecordLocalRefreshRequest(ModelTypeSet(AUTOFILL));
-  EXPECT_TRUE(ModelTypeSetEquals(
-          ModelTypeSet(BOOKMARKS),
-          nudge_tracker.GetLocallyModifiedTypes()));
-
-  // Record another local nudge.  Verify it was coalesced correctly.
-  nudge_tracker.RecordLocalChange(ModelTypeSet(THEMES));
-  EXPECT_TRUE(ModelTypeSetEquals(
-          ModelTypeSet(THEMES, BOOKMARKS),
-          nudge_tracker.GetLocallyModifiedTypes()));
 }
 
 TEST_F(NudgeTrackerTest, HintCoalescing) {
@@ -310,6 +272,146 @@ TEST_F(NudgeTrackerTest, WriteRefreshRequestedTypesToProto) {
   nudge_tracker.RecordSuccessfulSyncCycle();
   EXPECT_EQ(0, ProtoRefreshRequestedCount(nudge_tracker, SESSIONS));
 }
+
+// Basic tests for the IsSyncRequired() flag.
+TEST_F(NudgeTrackerTest, IsSyncRequired) {
+  NudgeTracker nudge_tracker;
+  EXPECT_FALSE(nudge_tracker.IsSyncRequired());
+
+  // Local changes.
+  nudge_tracker.RecordLocalChange(ModelTypeSet(SESSIONS));
+  EXPECT_TRUE(nudge_tracker.IsSyncRequired());
+  nudge_tracker.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker.IsSyncRequired());
+
+  // Refresh requests.
+  nudge_tracker.RecordLocalRefreshRequest(ModelTypeSet(SESSIONS));
+  EXPECT_TRUE(nudge_tracker.IsSyncRequired());
+  nudge_tracker.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker.IsSyncRequired());
+
+  // Invalidations.
+  ModelTypeInvalidationMap invalidation_map =
+      ModelTypeSetToInvalidationMap(ModelTypeSet(PREFERENCES),
+                                    std::string("hint"));
+  nudge_tracker.RecordRemoteInvalidation(invalidation_map);
+  EXPECT_TRUE(nudge_tracker.IsSyncRequired());
+  nudge_tracker.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker.IsSyncRequired());
+}
+
+// Test IsSyncRequired() responds correctly to data type throttling.
+TEST_F(NudgeTrackerTest, IsSyncRequired_Throttling) {
+  NudgeTracker nudge_tracker;
+  const base::TimeTicks t0 = base::TimeTicks::FromInternalValue(1234);
+  const base::TimeDelta throttle_length = base::TimeDelta::FromMinutes(10);
+  const base::TimeTicks t1 = t0 + throttle_length;
+
+  EXPECT_FALSE(nudge_tracker.IsSyncRequired());
+
+  // A local change to sessions enables the flag.
+  nudge_tracker.RecordLocalChange(ModelTypeSet(SESSIONS));
+  EXPECT_TRUE(nudge_tracker.IsSyncRequired());
+
+  // But the throttling of sessions unsets it.
+  nudge_tracker.SetTypesThrottledUntil(ModelTypeSet(SESSIONS),
+                                       throttle_length,
+                                       t0);
+  EXPECT_FALSE(nudge_tracker.IsSyncRequired());
+
+  // A refresh request for bookmarks means we have reason to sync again.
+  nudge_tracker.RecordLocalChange(ModelTypeSet(BOOKMARKS));
+  EXPECT_TRUE(nudge_tracker.IsSyncRequired());
+
+  // A successful sync cycle means we took care of bookmarks.
+  nudge_tracker.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker.IsSyncRequired());
+
+  // But we still haven't dealt with sessions.  We'll need to remember
+  // that sessions are out of sync and re-enable the flag when their
+  // throttling interval expires.
+  nudge_tracker.UpdateTypeThrottlingState(t1);
+  EXPECT_FALSE(nudge_tracker.IsTypeThrottled(SESSIONS));
+  EXPECT_TRUE(nudge_tracker.IsSyncRequired());
+}
+
+// Tests throttling-related getter functions when no types are throttled.
+TEST_F(NudgeTrackerTest, NoTypesThrottled) {
+  NudgeTracker nudge_tracker;
+
+  EXPECT_FALSE(nudge_tracker.IsAnyTypeThrottled());
+  EXPECT_FALSE(nudge_tracker.IsTypeThrottled(SESSIONS));
+  EXPECT_TRUE(nudge_tracker.GetThrottledTypes().Empty());
+}
+
+// Tests throttling-related getter functions when some types are throttled.
+TEST_F(NudgeTrackerTest, ThrottleAndUnthrottle) {
+  NudgeTracker nudge_tracker;
+  const base::TimeTicks t0 = base::TimeTicks::FromInternalValue(1234);
+  const base::TimeDelta throttle_length = base::TimeDelta::FromMinutes(10);
+  const base::TimeTicks t1 = t0 + throttle_length;
+
+  nudge_tracker.SetTypesThrottledUntil(ModelTypeSet(SESSIONS, PREFERENCES),
+                                       throttle_length,
+                                       t0);
+
+  EXPECT_TRUE(nudge_tracker.IsAnyTypeThrottled());
+  EXPECT_TRUE(nudge_tracker.IsTypeThrottled(SESSIONS));
+  EXPECT_TRUE(nudge_tracker.IsTypeThrottled(PREFERENCES));
+  EXPECT_FALSE(nudge_tracker.GetThrottledTypes().Empty());
+  EXPECT_EQ(throttle_length, nudge_tracker.GetTimeUntilNextUnthrottle(t0));
+
+  nudge_tracker.UpdateTypeThrottlingState(t1);
+
+  EXPECT_FALSE(nudge_tracker.IsAnyTypeThrottled());
+  EXPECT_FALSE(nudge_tracker.IsTypeThrottled(SESSIONS));
+  EXPECT_TRUE(nudge_tracker.GetThrottledTypes().Empty());
+}
+
+TEST_F(NudgeTrackerTest, OverlappingThrottleIntervals) {
+  NudgeTracker nudge_tracker;
+  const base::TimeTicks t0 = base::TimeTicks::FromInternalValue(1234);
+  const base::TimeDelta throttle1_length = base::TimeDelta::FromMinutes(10);
+  const base::TimeDelta throttle2_length = base::TimeDelta::FromMinutes(20);
+  const base::TimeTicks t1 = t0 + throttle1_length;
+  const base::TimeTicks t2 = t0 + throttle2_length;
+
+  // Setup the longer of two intervals.
+  nudge_tracker.SetTypesThrottledUntil(ModelTypeSet(SESSIONS, PREFERENCES),
+                                       throttle2_length,
+                                       t0);
+  EXPECT_TRUE(ModelTypeSetEquals(
+          ModelTypeSet(SESSIONS, PREFERENCES),
+          nudge_tracker.GetThrottledTypes()));
+  EXPECT_EQ(throttle2_length,
+            nudge_tracker.GetTimeUntilNextUnthrottle(t0));
+
+  // Setup the shorter interval.
+  nudge_tracker.SetTypesThrottledUntil(ModelTypeSet(SESSIONS, BOOKMARKS),
+                                       throttle1_length,
+                                       t0);
+  EXPECT_TRUE(ModelTypeSetEquals(
+          ModelTypeSet(SESSIONS, PREFERENCES, BOOKMARKS),
+          nudge_tracker.GetThrottledTypes()));
+  EXPECT_EQ(throttle1_length,
+            nudge_tracker.GetTimeUntilNextUnthrottle(t0));
+
+  // Expire the first interval.
+  nudge_tracker.UpdateTypeThrottlingState(t1);
+
+  // SESSIONS appeared in both intervals.  We expect it will be throttled for
+  // the longer of the two, so it's still throttled at time t1.
+  EXPECT_TRUE(ModelTypeSetEquals(
+          ModelTypeSet(SESSIONS, PREFERENCES),
+          nudge_tracker.GetThrottledTypes()));
+  EXPECT_EQ(throttle2_length - throttle1_length,
+            nudge_tracker.GetTimeUntilNextUnthrottle(t1));
+
+  // Expire the second interval.
+  nudge_tracker.UpdateTypeThrottlingState(t2);
+  EXPECT_TRUE(nudge_tracker.GetThrottledTypes().Empty());
+}
+
 
 }  // namespace sessions
 }  // namespace syncer

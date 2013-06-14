@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "sync/engine/syncer_util.h"
-#include "sync/engine/throttled_data_type_tracker.h"
+#include "sync/sessions/nudge_tracker.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/nigori_handler.h"
 #include "sync/syncable/nigori_util.h"
@@ -56,13 +56,15 @@ SyncerError GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
     passphrase_missing = cryptographer->has_pending_keys();
   };
 
-  const ModelTypeSet throttled_types =
-       session->context()->throttled_data_type_tracker()->GetThrottledTypes();
+  // If we're comitting, then we must be performing a nudge job and must have a
+  // session with a nudge tracker.
+  DCHECK(session->nudge_tracker());
+
   // We filter out all unready entries from the set of unsynced handles. This
   // new set of ready and unsynced items (which excludes throttled items as
   // well) is then what we use to determine what is a candidate for commit.
   FilterUnreadyEntries(trans_,
-                       throttled_types,
+                       session->nudge_tracker()->GetThrottledTypes(),
                        encrypted_types,
                        passphrase_missing,
                        all_unsynced_handles,

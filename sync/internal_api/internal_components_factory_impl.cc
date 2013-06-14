@@ -38,7 +38,6 @@ InternalComponentsFactoryImpl::BuildContext(
     syncable::Directory* directory,
     const std::vector<ModelSafeWorker*>& workers,
     ExtensionsActivityMonitor* monitor,
-    ThrottledDataTypeTracker* throttled_data_type_tracker,
     const std::vector<SyncEngineEventListener*>& listeners,
     sessions::DebugInfoGetter* debug_info_getter,
     TrafficRecorder* traffic_recorder,
@@ -46,7 +45,7 @@ InternalComponentsFactoryImpl::BuildContext(
   return scoped_ptr<sessions::SyncSessionContext>(
       new sessions::SyncSessionContext(
           connection_manager, directory, workers, monitor,
-          throttled_data_type_tracker, listeners, debug_info_getter,
+          listeners, debug_info_getter,
           traffic_recorder,
           switches_.encryption_method == ENCRYPTION_KEYSTORE,
           invalidation_client_id));

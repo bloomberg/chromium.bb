@@ -111,6 +111,9 @@ void AllStatus::OnSyncEngineEvent(const SyncEngineEvent& event) {
     case SyncEngineEvent::RETRY_TIME_CHANGED:
       status_.retry_time = event.retry_time;
       break;
+    case SyncEngineEvent::THROTTLED_TYPES_CHANGED:
+      status_.throttled_types = event.throttled_types;
+      break;
     default:
       LOG(ERROR) << "Unrecognized Syncer Event: " << event.what_happened;
       break;
@@ -135,11 +138,6 @@ void AllStatus::IncrementNotificationsReceived() {
 void AllStatus::SetEncryptedTypes(ModelTypeSet types) {
   ScopedStatusLock lock(this);
   status_.encrypted_types = types;
-}
-
-void AllStatus::SetThrottledTypes(ModelTypeSet types) {
-  ScopedStatusLock lock(this);
-  status_.throttled_types = types;
 }
 
 void AllStatus::SetCryptographerReady(bool ready) {

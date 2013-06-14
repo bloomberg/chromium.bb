@@ -57,10 +57,16 @@ void FakeSyncScheduler::OnConnectionStatusChange() {
 
 }
 
-void FakeSyncScheduler::OnSilencedUntil(
-     const base::TimeTicks& silenced_until) {
+void FakeSyncScheduler::OnThrottled(
+    const base::TimeDelta& throttle_duration) {
 }
-bool FakeSyncScheduler::IsSyncingCurrentlySilenced() {
+
+void FakeSyncScheduler::OnTypesThrottled(
+    ModelTypeSet types,
+    const base::TimeDelta& throttle_duration) {
+}
+
+bool FakeSyncScheduler::IsCurrentlyThrottled() {
   return false;
 }
 

@@ -21,7 +21,6 @@
 #include "sync/engine/process_updates_command.h"
 #include "sync/engine/store_timestamps_command.h"
 #include "sync/engine/syncer_types.h"
-#include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/internal_api/public/base/unique_position.h"
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/syncable-inl.h"
@@ -92,8 +91,6 @@ bool Syncer::SyncShare(sessions::SyncSession* session,
 
     switch (current_step) {
       case SYNCER_BEGIN:
-        session->context()->throttled_data_type_tracker()->
-            PruneUnthrottledTypes(base::TimeTicks::Now());
         session->SendEventNotification(SyncEngineEvent::SYNC_CYCLE_BEGIN);
 
         next_step = DOWNLOAD_UPDATES;

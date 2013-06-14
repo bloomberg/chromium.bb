@@ -4,6 +4,7 @@
 
 #include "sync/sessions/nudge_tracker.h"
 
+#include "base/basictypes.h"
 #include "sync/internal_api/public/base/invalidation.h"
 #include "sync/internal_api/public/sessions/sync_source_info.h"
 #include "sync/protocol/sync.pb.h"
@@ -26,16 +27,6 @@ NudgeTracker::NudgeTracker()
 }
 
 NudgeTracker::~NudgeTracker() { }
-
-bool NudgeTracker::IsGetUpdatesRequired() {
-  for (TypeTrackerMap::iterator it = type_trackers_.begin();
-       it != type_trackers_.end(); ++it) {
-    if (it->second.IsGetUpdatesRequired()) {
-      return true;
-    }
-  }
-  return false;
-}
 
 bool NudgeTracker::IsSyncRequired() {
   for (TypeTrackerMap::iterator it = type_trackers_.begin();
@@ -112,6 +103,69 @@ void NudgeTracker::OnInvalidationsDisabled() {
   invalidations_out_of_sync_ = true;
 }
 
+void NudgeTracker::SetTypesThrottledUntil(
+    ModelTypeSet types,
+    base::TimeDelta length,
+    base::TimeTicks now) {
+  for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
+    type_trackers_[it.Get()].ThrottleType(length, now);
+  }
+}
+
+void NudgeTracker::UpdateTypeThrottlingState(base::TimeTicks now) {
+  for (TypeTrackerMap::iterator it = type_trackers_.begin();
+       it != type_trackers_.end(); ++it) {
+    it->second.UpdateThrottleState(now);
+  }
+}
+
+bool NudgeTracker::IsAnyTypeThrottled() const {
+  for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
+       it != type_trackers_.end(); ++it) {
+    if (it->second.IsThrottled()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool NudgeTracker::IsTypeThrottled(ModelType type) const {
+  DCHECK(type_trackers_.find(type) != type_trackers_.end());
+  return type_trackers_.find(type)->second.IsThrottled();
+}
+
+base::TimeDelta NudgeTracker::GetTimeUntilNextUnthrottle(
+    base::TimeTicks now) const {
+  DCHECK(IsAnyTypeThrottled()) << "This function requires a pending unthrottle";
+  const base::TimeDelta kMaxTimeDelta =
+      base::TimeDelta::FromInternalValue(kint64max);
+
+  // Return min of GetTimeUntilUnthrottle() values for all IsThrottled() types.
+  base::TimeDelta time_until_next_unthrottle = kMaxTimeDelta;
+  for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
+       it != type_trackers_.end(); ++it) {
+    if (it->second.IsThrottled()) {
+      time_until_next_unthrottle =
+          std::min(time_until_next_unthrottle,
+                   it->second.GetTimeUntilUnthrottle(now));
+    }
+  }
+  DCHECK(kMaxTimeDelta != time_until_next_unthrottle);
+
+  return time_until_next_unthrottle;
+}
+
+ModelTypeSet NudgeTracker::GetThrottledTypes() const {
+  ModelTypeSet result;
+  for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
+       it != type_trackers_.end(); ++it) {
+    if (it->second.IsThrottled()) {
+      result.Put(it->first);
+    }
+  }
+  return result;
+}
+
 // This function is intended to mimic the behavior of older clients.  Newer
 // clients and servers will not rely on SyncSourceInfo.  See FillProtoMessage
 // for the more modern equivalent.
@@ -119,7 +173,10 @@ SyncSourceInfo NudgeTracker::GetSourceInfo() const {
   ModelTypeInvalidationMap invalidation_map;
   for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
-    if (it->second.HasPendingInvalidation()) {
+    if (it->second.IsThrottled()) {
+      // We pretend throttled types are not enabled by skipping them.
+      continue;
+    } else if (it->second.HasPendingInvalidation()) {
       // The old-style source info can contain only one hint per type.  We grab
       // the most recent, to mimic the old coalescing behaviour.
       Invalidation invalidation;
@@ -138,17 +195,6 @@ SyncSourceInfo NudgeTracker::GetSourceInfo() const {
   return SyncSourceInfo(updates_source_, invalidation_map);
 }
 
-ModelTypeSet NudgeTracker::GetLocallyModifiedTypes() const {
-  ModelTypeSet nudged_types;
-  for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
-       it != type_trackers_.end(); ++it) {
-    if (it->second.HasLocalChangePending()) {
-      nudged_types.Put(it->first);
-    }
-  }
-  return nudged_types;
-}
-
 sync_pb::GetUpdatesCallerInfo::GetUpdatesSource NudgeTracker::updates_source()
     const {
   return updates_source_;
@@ -162,7 +208,7 @@ void NudgeTracker::FillProtoMessage(
   // Fill what we can from the global data.
   msg->set_invalidations_out_of_sync(invalidations_out_of_sync_);
 
-  // Delegate the type-specific work to TypeSchedulingData class.
+  // Delegate the type-specific work to the DataTypeTracker class.
   type_trackers_.find(type)->second.FillGetUpdatesTriggersMessage(msg);
 }
 

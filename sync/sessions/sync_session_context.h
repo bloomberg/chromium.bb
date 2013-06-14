@@ -34,7 +34,6 @@ namespace syncer {
 
 class ExtensionsActivityMonitor;
 class ServerConnectionManager;
-class ThrottledDataTypeTracker;
 
 namespace syncable {
 class Directory;
@@ -52,7 +51,6 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
                      syncable::Directory* directory,
                      const std::vector<ModelSafeWorker*>& workers,
                      ExtensionsActivityMonitor* extensions_activity_monitor,
-                     ThrottledDataTypeTracker* throttled_data_type_tracker,
                      const std::vector<SyncEngineEventListener*>& listeners,
                      DebugInfoGetter* debug_info_getter,
                      TrafficRecorder* traffic_recorder,
@@ -82,10 +80,6 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
 
   ExtensionsActivityMonitor* extensions_monitor() {
     return extensions_activity_monitor_;
-  }
-
-  ThrottledDataTypeTracker* throttled_data_type_tracker() {
-    return throttled_data_type_tracker_;
   }
 
   DebugInfoGetter* debug_info_getter() {
@@ -166,8 +160,6 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
 
   // The server limits the number of items a client can commit in one batch.
   int max_commit_batch_size_;
-
-  ThrottledDataTypeTracker* throttled_data_type_tracker_;
 
   // We use this to get debug info to send to the server for debugging
   // client behavior on server side.

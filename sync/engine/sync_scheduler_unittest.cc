@@ -11,7 +11,6 @@
 #include "sync/engine/backoff_delay_provider.h"
 #include "sync/engine/sync_scheduler_impl.h"
 #include "sync/engine/syncer.h"
-#include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/internal_api/public/base/model_type_invalidation_map_test_util.h"
 #include "sync/sessions/test_util.h"
 #include "sync/test/callback_counter.h"
@@ -142,10 +141,9 @@ class SyncSchedulerTest : public testing::Test {
 
     connection_.reset(new MockConnectionManager(directory()));
     connection_->SetServerReachable();
-    throttled_data_type_tracker_.reset(new ThrottledDataTypeTracker(NULL));
     context_.reset(new SyncSessionContext(
             connection_.get(), directory(), workers,
-            &extensions_activity_monitor_, throttled_data_type_tracker_.get(),
+            &extensions_activity_monitor_,
             std::vector<SyncEngineEventListener*>(), NULL, NULL,
             true,  // enable keystore encryption
             "fake_invalidator_client_id"));
@@ -221,8 +219,8 @@ class SyncSchedulerTest : public testing::Test {
 
   SyncSessionContext* context() { return context_.get(); }
 
-  ThrottledDataTypeTracker* throttled_data_type_tracker() {
-    return throttled_data_type_tracker_.get();
+  ModelTypeSet GetThrottledTypes() {
+    return scheduler_->nudge_tracker_.GetThrottledTypes();
   }
 
  private:
@@ -240,7 +238,6 @@ class SyncSchedulerTest : public testing::Test {
   MockDelayProvider* delay_;
   std::vector<scoped_refptr<FakeModelWorker> > workers_;
   FakeExtensionsActivityMonitor extensions_activity_monitor_;
-  scoped_ptr<ThrottledDataTypeTracker> throttled_data_type_tracker_;
   ModelSafeRoutingInfo routing_info_;
 };
 
@@ -736,9 +733,9 @@ TEST_F(SyncSchedulerTest, ThrottlingExpiresFromNudge) {
   scheduler()->ScheduleLocalNudge(zero(), types, FROM_HERE);
 
   PumpLoop();
-  EXPECT_TRUE(scheduler()->IsSyncingCurrentlySilenced());
+  EXPECT_TRUE(scheduler()->IsCurrentlyThrottled());
   RunLoop();
-  EXPECT_FALSE(scheduler()->IsSyncingCurrentlySilenced());
+  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
 
   StopSyncScheduler();
 }
@@ -770,10 +767,10 @@ TEST_F(SyncSchedulerTest, ThrottlingExpiresFromConfigure) {
       base::Bind(&CallbackCounter::Callback, base::Unretained(&counter)));
   EXPECT_FALSE(scheduler()->ScheduleConfiguration(params));
   EXPECT_EQ(0, counter.times_called());
-  EXPECT_TRUE(scheduler()->IsSyncingCurrentlySilenced());
+  EXPECT_TRUE(scheduler()->IsCurrentlyThrottled());
 
   RunLoop();
-  EXPECT_FALSE(scheduler()->IsSyncingCurrentlySilenced());
+  EXPECT_FALSE(scheduler()->IsCurrentlyThrottled());
 
   StopSyncScheduler();
 }
@@ -800,7 +797,7 @@ TEST_F(SyncSchedulerTest, TypeThrottlingBlocksNudge) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
   scheduler()->ScheduleLocalNudge(zero(), types, FROM_HERE);
   PumpLoop();
-  EXPECT_TRUE(throttled_data_type_tracker()->GetThrottledTypes().HasAll(types));
+  EXPECT_TRUE(GetThrottledTypes().HasAll(types));
 
   // This won't cause a sync cycle because the types are throttled.
   scheduler()->ScheduleLocalNudge(zero(), types, FROM_HERE);
@@ -809,7 +806,7 @@ TEST_F(SyncSchedulerTest, TypeThrottlingBlocksNudge) {
   StopSyncScheduler();
 }
 
-TEST_F(SyncSchedulerTest, TypeThrottlingDoesntBlockOtherSources) {
+TEST_F(SyncSchedulerTest, TypeThrottlingDoesBlockOtherSources) {
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(zero()));
@@ -838,25 +835,24 @@ TEST_F(SyncSchedulerTest, TypeThrottlingDoesntBlockOtherSources) {
   scheduler()->ScheduleLocalNudge(zero(), throttled_types, FROM_HERE);
   PumpLoop();
   EXPECT_EQ(0U, records.snapshots.size());
-  EXPECT_TRUE(throttled_data_type_tracker()->GetThrottledTypes().HasAll(
-          throttled_types));
+  EXPECT_TRUE(GetThrottledTypes().HasAll(throttled_types));
 
-  // This invalidaiton will cause a sync even though the types are throttled.
+  // Ignore invalidations for throttled types.
   ModelTypeInvalidationMap invalidation_map =
       ModelTypeSetToInvalidationMap(throttled_types, "test");
   scheduler()->ScheduleInvalidationNudge(zero(), invalidation_map, FROM_HERE);
-  RunLoop();
-  EXPECT_EQ(1U, records.snapshots.size());
+  PumpLoop();
+  EXPECT_EQ(0U, records.snapshots.size());
 
-  // Refresh requests will cause a sync, too.
+  // Ignore refresh requests for throttled types.
   scheduler()->ScheduleLocalRefreshRequest(zero(), throttled_types, FROM_HERE);
-  RunLoop();
-  EXPECT_EQ(2U, records.snapshots.size());
+  PumpLoop();
+  EXPECT_EQ(0U, records.snapshots.size());
 
-  // Even local nudges for other data types will trigger a sync.
+  // Local nudges for non-throttled types will trigger a sync.
   scheduler()->ScheduleLocalNudge(zero(), unthrottled_types, FROM_HERE);
   RunLoop();
-  EXPECT_EQ(3U, records.snapshots.size());
+  EXPECT_EQ(1U, records.snapshots.size());
 
   StopSyncScheduler();
 }
@@ -1194,7 +1190,7 @@ TEST_F(SyncSchedulerTest, SyncerSteps) {
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
 
   // Poll.
-  EXPECT_CALL(*syncer(), SyncShare(_, SYNCER_BEGIN, SYNCER_END))
+  EXPECT_CALL(*syncer(), SyncShare(_, DOWNLOAD_UPDATES, APPLY_UPDATES))
       .Times(AtLeast(1))
       .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulateSuccess),
                             QuitLoopNowAction()));

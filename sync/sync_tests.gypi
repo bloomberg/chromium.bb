@@ -249,7 +249,6 @@
           'engine/sync_scheduler_unittest.cc',
           'engine/syncer_proto_util_unittest.cc',
           'engine/syncer_unittest.cc',
-          'engine/throttled_data_type_tracker_unittest.cc',
           'engine/traffic_recorder_unittest.cc',
           'js/js_arg_list_unittest.cc',
           'js/js_event_details_unittest.cc',
