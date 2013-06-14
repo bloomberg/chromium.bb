@@ -1,0 +1,99 @@
+<html>
+<head>
+    <script src="../../../http/tests/inspector/inspector-test.js"></script>
+    <script src="../canvas-profiler-test.js"></script>
+<script>
+if (window.internals)
+    window.internals.settings.setWebGLErrorsToConsoleEnabled(false);
+
+var gl;
+
+function createCanvasContext()
+{
+    gl = createWebGLContext(document.getElementById("canvas"));
+}
+
+function doSomeCanvasCalls()
+{
+    gl.getError();
+
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0,0, 1,1,1]), gl.STATIC_DRAW);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, gl.createFramebuffer());
+
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    var texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 512, 512, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+
+    var renderbuffer = gl.createRenderbuffer();
+    gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, 512, 512);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer);
+    gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+
+    gl.blendEquation(gl.FUNC_SUBTRACT);
+    gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_REVERSE_SUBTRACT);
+    gl.blendFunc(gl.ONE_MINUS_SRC_COLOR, gl.ONE_MINUS_DST_COLOR);
+    gl.blendFuncSeparate(gl.ZERO, gl.ONE, gl.ONE, gl.ZERO);
+
+    gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+
+    gl.createShader(gl.FRAGMENT_SHADER);
+    gl.cullFace(gl.FRONT_AND_BACK);
+    gl.depthFunc(gl.NOTEQUAL);
+
+    gl.disable(gl.DITHER);
+    gl.enable(gl.POLYGON_OFFSET_FILL);
+    gl.isEnabled(gl.SCISSOR_TEST);
+    gl.getParameter(gl.BLEND_EQUATION_RGB); // Ambiguous enum name, should be displayed as BLEND_EQUATION
+
+    gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, new Image()); // texImage2D short version
+}
+
+function test()
+{
+    var traceLogId;
+    InspectorTest.enableCanvasAgent(step1);
+    function step1()
+    {
+        InspectorTest.evaluateInConsole("createCanvasContext()", step2);
+    }
+    function step2()
+    {
+        CanvasAgent.startCapturing(didStartCapturing);
+    }
+    function didStartCapturing(error, id)
+    {
+        InspectorTest.assertTrue(!error && !!id, "Unexpected error: " + error);
+        traceLogId = id;
+        InspectorTest.evaluateInConsole("doSomeCanvasCalls()", didSomeCanvasCalls);
+    }
+    function didSomeCanvasCalls()
+    {
+        CanvasAgent.getTraceLog(traceLogId, 0, undefined, didReceiveTraceLog);
+    }
+    function didReceiveTraceLog(error, traceLog)
+    {
+        InspectorTest.assertTrue(!error && !!traceLog, "Unexpected error: " + error);
+        InspectorTest.addResult("");
+        InspectorTest.dumpTraceLog(traceLog, "", {functionName:true, arguments:true, result:true});
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests WebGL enum formatting.
+</p>
+<canvas id="canvas"></canvas>
+</body>
+</html>

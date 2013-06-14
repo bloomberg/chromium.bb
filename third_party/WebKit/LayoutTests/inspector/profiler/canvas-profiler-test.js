@@ -46,9 +46,13 @@ InspectorTest.disableCanvasAgent = function(callback)
     }
 };
 
-InspectorTest.dumpTraceLogCall = function(call, indent)
+InspectorTest.dumpTraceLogCall = function(call, indent, filter)
 {
     indent = indent || "";
+    function show(name)
+    {
+        return !filter || filter[name];
+    }
     function formatSourceURL(url)
     {
         return url ? "\"" + url.replace(/^.*\/([^\/]+)\/?$/, "$1") + "\"" : "null";
@@ -58,33 +62,37 @@ InspectorTest.dumpTraceLogCall = function(call, indent)
     });
     var properties = [
         "{Call}",
-        call.functionName ? "functionName:\"" + call.functionName + "\"" : "",
-        call.arguments ? "arguments:[" + args.join(",") + "]" : "",
-        call.result ? "result:" + call.result.description : "",
-        call.property ? "property:\"" + call.property + "\"" : "",
-        call.value ? "value:" + call.value.description : "",
-        call.isDrawingCall ? "isDrawingCall:true" : "",
-        call.isFrameEndCall ? "isFrameEndCall:true" : "",
-        "sourceURL:" + formatSourceURL(call.sourceURL),
-        "lineNumber:" + call.lineNumber,
-        "columnNumber:" + call.columnNumber
+        (show("functionName") && call.functionName) ? "functionName:\"" + call.functionName + "\"" : "",
+        (show("arguments") && call.arguments) ? "arguments:[" + args.join(",") + "]" : "",
+        (show("result") && call.result) ? "result:" + call.result.description : "",
+        (show("property") && call.property) ? "property:\"" + call.property + "\"" : "",
+        (show("value") && call.value) ? "value:" + call.value.description : "",
+        (show("isDrawingCall") && call.isDrawingCall) ? "isDrawingCall:true" : "",
+        (show("isFrameEndCall") && call.isFrameEndCall) ? "isFrameEndCall:true" : "",
+        show("sourceURL") ? "sourceURL:" + formatSourceURL(call.sourceURL) : "",
+        show("lineNumber") ? "lineNumber:" + call.lineNumber : "",
+        show("columnNumber") ? "columnNumber:" + call.columnNumber : ""
     ];
     InspectorTest.addResult(indent + properties.filter(Boolean).join("  "));
 };
 
-InspectorTest.dumpTraceLog = function(traceLog, indent)
+InspectorTest.dumpTraceLog = function(traceLog, indent, filter)
 {
     indent = indent || "";
+    function show(name)
+    {
+        return !filter || filter[name];
+    }
     var calls = traceLog.calls;
     var properties = [
         "{TraceLog}",
-        "alive:" + !!traceLog.alive,
-        "startOffset:" + (traceLog.startOffset || 0),
-        "#calls:" + traceLog.totalAvailableCalls
+        show("alive") ? "alive:" + !!traceLog.alive : "",
+        show("startOffset") ? "startOffset:" + (traceLog.startOffset || 0) : "",
+        show("totalAvailableCalls") ? "#calls:" + traceLog.totalAvailableCalls : ""
     ];
     InspectorTest.addResult(indent + properties.filter(Boolean).join("  "));
     for (var i = 0, n = calls.length; i < n; ++i)
-        InspectorTest.dumpTraceLogCall(calls[i], indent + "  ");
+        InspectorTest.dumpTraceLogCall(calls[i], indent + "  ", filter);
 };
 
 };

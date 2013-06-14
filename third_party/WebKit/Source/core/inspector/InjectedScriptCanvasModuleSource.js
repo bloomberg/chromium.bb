@@ -2671,7 +2671,7 @@ CallFormatter.prototype = {
 
     /**
      * @param {*} value
-     * @return {!Object}
+     * @return {!CanvasAgent.CallArgument}
      */
     formatValue: function(value)
     {
@@ -2713,8 +2713,298 @@ CallFormatter.formatCall = function(replayableCall)
     return formatter.formatCall(replayableCall);
 }
 
+/**
+ * @constructor
+ * @extends {CallFormatter}
+ * @param {!Object.<string, boolean>} drawingMethodNames
+ */
+function WebGLCallFormatter(drawingMethodNames)
+{
+    CallFormatter.call(this, drawingMethodNames);
+}
+
+/**
+ * NOTE: The code below is generated from the IDL file by the script:
+ * /devtools/scripts/check_injected_webgl_calls_info.py
+ *
+ * @type {!Array.<{aname: string, enum: (!Array.<number>|undefined), bitfield: (!Array.<number>|undefined), returnType: string, hints: (!Array.<string>|undefined)}>}
+ */
+WebGLCallFormatter.EnumsInfo = [
+    {"aname": "activeTexture", "enum": [0]},
+    {"aname": "bindBuffer", "enum": [0]},
+    {"aname": "bindFramebuffer", "enum": [0]},
+    {"aname": "bindRenderbuffer", "enum": [0]},
+    {"aname": "bindTexture", "enum": [0]},
+    {"aname": "blendEquation", "enum": [0]},
+    {"aname": "blendEquationSeparate", "enum": [0, 1]},
+    {"aname": "blendFunc", "enum": [0, 1], "hints": ["ZERO", "ONE"]},
+    {"aname": "blendFuncSeparate", "enum": [0, 1, 2, 3], "hints": ["ZERO", "ONE"]},
+    {"aname": "bufferData", "enum": [0, 2]},
+    {"aname": "bufferSubData", "enum": [0]},
+    {"aname": "checkFramebufferStatus", "enum": [0], "returnType": "enum"},
+    {"aname": "clear", "bitfield": [0]},
+    {"aname": "compressedTexImage2D", "enum": [0, 2]},
+    {"aname": "compressedTexSubImage2D", "enum": [0, 6]},
+    {"aname": "copyTexImage2D", "enum": [0, 2]},
+    {"aname": "copyTexSubImage2D", "enum": [0]},
+    {"aname": "createShader", "enum": [0]},
+    {"aname": "cullFace", "enum": [0]},
+    {"aname": "depthFunc", "enum": [0]},
+    {"aname": "disable", "enum": [0]},
+    {"aname": "drawArrays", "enum": [0], "hints": ["POINTS", "LINES"]},
+    {"aname": "drawElements", "enum": [0, 2], "hints": ["POINTS", "LINES"]},
+    {"aname": "enable", "enum": [0]},
+    {"aname": "framebufferRenderbuffer", "enum": [0, 1, 2]},
+    {"aname": "framebufferTexture2D", "enum": [0, 1, 2]},
+    {"aname": "frontFace", "enum": [0]},
+    {"aname": "generateMipmap", "enum": [0]},
+    {"aname": "getBufferParameter", "enum": [0, 1]},
+    {"aname": "getError", "hints": ["NO_ERROR"], "returnType": "enum"},
+    {"aname": "getFramebufferAttachmentParameter", "enum": [0, 1, 2]},
+    {"aname": "getParameter", "enum": [0], "hints": ["ZERO", "ONE"]},
+    {"aname": "getProgramParameter", "enum": [1]},
+    {"aname": "getRenderbufferParameter", "enum": [0, 1]},
+    {"aname": "getShaderParameter", "enum": [1]},
+    {"aname": "getShaderPrecisionFormat", "enum": [0, 1]},
+    {"aname": "getTexParameter", "enum": [0, 1]},
+    {"aname": "getVertexAttrib", "enum": [1]},
+    {"aname": "getVertexAttribOffset", "enum": [1]},
+    {"aname": "hint", "enum": [0, 1]},
+    {"aname": "isEnabled", "enum": [0]},
+    {"aname": "pixelStorei", "enum": [0]},
+    {"aname": "readPixels", "enum": [4, 5]},
+    {"aname": "renderbufferStorage", "enum": [0, 1]},
+    {"aname": "stencilFunc", "enum": [0]},
+    {"aname": "stencilFuncSeparate", "enum": [0, 1]},
+    {"aname": "stencilMaskSeparate", "enum": [0]},
+    {"aname": "stencilOp", "enum": [0, 1, 2], "hints": ["ZERO", "ONE"]},
+    {"aname": "stencilOpSeparate", "enum": [0, 1, 2, 3], "hints": ["ZERO", "ONE"]},
+    {"aname": "texParameterf", "enum": [0, 1, 2]},
+    {"aname": "texParameteri", "enum": [0, 1, 2]},
+    {"aname": "texImage2D", "enum": [0, 2, 6, 7]},
+    {"aname": "texImage2D", "enum": [0, 2, 3, 4]},
+    {"aname": "texSubImage2D", "enum": [0, 6, 7]},
+    {"aname": "texSubImage2D", "enum": [0, 4, 5]},
+    {"aname": "vertexAttribPointer", "enum": [2]}
+];
+
+WebGLCallFormatter.prototype = {
+    /**
+     * @override
+     * @param {!ReplayableCall} replayableCall
+     * @return {!Object}
+     */
+    formatCall: function(replayableCall)
+    {
+        var result = CallFormatter.prototype.formatCall.call(this, replayableCall);
+        if (!result.functionName)
+            return result;
+        var enumsInfo = this._findEnumsInfo(replayableCall);
+        if (!enumsInfo)
+            return result;
+        var enumArgsIndexes = enumsInfo["enum"] || [];
+        for (var i = 0, n = enumArgsIndexes.length; i < n; ++i) {
+            var index = enumArgsIndexes[i];
+            var callArgument = result.arguments[index];
+            if (callArgument && !isNaN(callArgument.description))
+                callArgument.description = this._enumValueToString(+callArgument.description, enumsInfo["hints"]) || callArgument.description;
+        }
+        var bitfieldArgsIndexes = enumsInfo["bitfield"] || [];
+        for (var i = 0, n = bitfieldArgsIndexes.length; i < n; ++i) {
+            var index = bitfieldArgsIndexes[i];
+            var callArgument = result.arguments[index];
+            if (callArgument && !isNaN(callArgument.description))
+                callArgument.description = this._enumBitmaskToString(+callArgument.description, enumsInfo["hints"]) || callArgument.description;
+        }
+        if (enumsInfo.returnType && result.result) {
+            if (enumsInfo.returnType === "enum")
+                result.result.description = this._enumValueToString(+result.result.description, enumsInfo["hints"]) || result.result.description;
+            else if (enumsInfo.returnType === "bitfield")
+                result.result.description = this._enumBitmaskToString(+result.result.description, enumsInfo["hints"]) || result.result.description;
+        }
+        return result;
+    },
+
+    /**
+     * @param {!ReplayableCall} replayableCall
+     * @return {Object}
+     */
+    _findEnumsInfo: function(replayableCall)
+    {
+        function findMaxArgumentIndex(enumsInfo)
+        {
+            var result = -1;
+            var enumArgsIndexes = enumsInfo["enum"] || [];
+            for (var i = 0, n = enumArgsIndexes.length; i < n; ++i)
+                result = Math.max(result, enumArgsIndexes[i]);
+            var bitfieldArgsIndexes = enumsInfo["bitfield"] || [];
+            for (var i = 0, n = bitfieldArgsIndexes.length; i < n; ++i)
+                result = Math.max(result, bitfieldArgsIndexes[i]);
+            return result;
+        }
+
+        var result = null;
+        for (var i = 0, enumsInfo; enumsInfo = WebGLCallFormatter.EnumsInfo[i]; ++i) {
+            if (enumsInfo["aname"] !== replayableCall.functionName())
+                continue;
+            var argsCount = replayableCall.args().length;
+            var maxArgumentIndex = findMaxArgumentIndex(enumsInfo);
+            if (maxArgumentIndex >= argsCount)
+                continue;
+            // To resolve ambiguity (see texImage2D, texSubImage2D) choose description with max argument indexes.
+            if (!result || findMaxArgumentIndex(result) < maxArgumentIndex)
+                result = enumsInfo;
+        }
+        return result;
+    },
+
+    /**
+     * @param {number} value
+     * @param {Array.<string>=} options
+     * @return {string}
+     */
+    _enumValueToString: function(value, options)
+    {
+        this._initialize();
+        options = options || [];
+        for (var i = 0, n = options.length; i < n; ++i) {
+            if (this._enumNameToValue[options[i]] === value)
+                return options[i];
+        }
+        var names = this._enumValueToNames[value];
+        if (!names || names.length !== 1) {
+            console.warn("Ambiguous WebGL enum names for value " + value + ": " + names);
+            return "";
+        }
+        return names[0];
+    },
+
+    /**
+     * @param {number} value
+     * @param {Array.<string>=} options
+     * @return {string}
+     */
+    _enumBitmaskToString: function(value, options)
+    {
+        this._initialize();
+        options = options || [];
+        /** @type {!Array.<string>} */
+        var result = [];
+        for (var i = 0, n = options.length; i < n; ++i) {
+            var bitValue = this._enumNameToValue[options[i]] || 0;
+            if (value & bitValue) {
+                result.push(options[i]);
+                value &= ~bitValue;
+            }
+        }
+        while (value) {
+            var nextValue = value & (value - 1);
+            var bitValue = value ^ nextValue;
+            var names = this._enumValueToNames[bitValue];
+            if (!names || names.length !== 1) {
+                console.warn("Ambiguous WebGL enum names for value " + bitValue + ": " + names);
+                return "";
+            }
+            result.push(names[0]);
+            value = nextValue;
+        }
+        result.sort();
+        return result.join(" | ");
+    },
+
+    _initialize: function()
+    {
+        if (this._enumNameToValue)
+            return;
+
+        /** @type {!Object.<string, number>} */
+        this._enumNameToValue = Object.create(null);
+        /** @type {!Object.<number, !Array.<string>>} */
+        this._enumValueToNames = Object.create(null);
+
+        /**
+         * @param {Object} obj
+         * @this WebGLCallFormatter
+         */
+        function iterateWebGLEnums(obj)
+        {
+            if (!obj)
+                return;
+            for (var property in obj) {
+                if (/^[A-Z0-9_]+$/.test(property) && typeof obj[property] === "number") {
+                    var value = /** @type {number} */ (obj[property]);
+                    this._enumNameToValue[property] = value;
+                    var names = this._enumValueToNames[value];
+                    if (names) {
+                        if (names.indexOf(property) === -1)
+                            names.push(property);
+                    } else
+                        this._enumValueToNames[value] = [property];
+                }
+            }
+        }
+
+        /**
+         * @param {!Array.<string>} values
+         * @return {string}
+         */
+        function commonSubstring(values)
+        {
+            var length = values.length;
+            for (var i = 0; i < length; ++i) {
+                for (var j = 0; j < length; ++j) {
+                    if (values[j].indexOf(values[i]) === -1)
+                        break;
+                }
+                if (j === length)
+                    return values[i];
+            }
+            return "";
+        }
+
+        var gl = this._createUninstrumentedWebGLRenderingContext();
+        iterateWebGLEnums.call(this, gl);
+
+        var extensions = gl.getSupportedExtensions() || [];
+        for (var i = 0, n = extensions.length; i < n; ++i)
+            iterateWebGLEnums.call(this, gl.getExtension(extensions[i]));
+
+        // Sort to get rid of ambiguity.
+        for (var value in this._enumValueToNames) {
+            var names = this._enumValueToNames[value];
+            if (names.length > 1) {
+                // Choose one enum name if possible. For example:
+                //   [BLEND_EQUATION, BLEND_EQUATION_RGB] => BLEND_EQUATION
+                //   [COLOR_ATTACHMENT0, COLOR_ATTACHMENT0_WEBGL] => COLOR_ATTACHMENT0
+                var common = commonSubstring(names);
+                if (common)
+                    this._enumValueToNames[value] = [common];
+                else
+                    this._enumValueToNames[value] = names.sort();
+            }
+        }
+    },
+
+    /**
+     * @return {WebGLRenderingContext}
+     */
+    _createUninstrumentedWebGLRenderingContext: function()
+    {
+        var canvas = /** @type {HTMLCanvasElement} */ (inspectedWindow.document.createElement("canvas"));
+        var contextIds = ["experimental-webgl", "webkit-3d", "3d"];
+        for (var i = 0, contextId; contextId = contextIds[i]; ++i) {
+            var context = canvas.getContext(contextId);
+            if (context)
+                return /** @type {WebGLRenderingContext} */ (Resource.wrappedObject(context));
+        }
+        return null;
+    },
+
+    __proto__: CallFormatter.prototype
+}
+
 CallFormatter.register("CanvasRenderingContext2D", new CallFormatter(CanvasRenderingContext2DResource.DrawingMethods));
-CallFormatter.register("WebGLRenderingContext", new CallFormatter(WebGLRenderingContextResource.DrawingMethods));
+CallFormatter.register("WebGLRenderingContext", new WebGLCallFormatter(WebGLRenderingContextResource.DrawingMethods));
 
 /**
  * @constructor

@@ -1,0 +1,39 @@
+Tests WebGL enum formatting.
+
+
+{TraceLog}
+  {Call}  functionName:"getError"  arguments:[]  result:NO_ERROR
+  {Call}  functionName:"activeTexture"  arguments:[TEXTURE2]
+  {Call}  functionName:"createBuffer"  arguments:[]  result:WebGLBuffer@1
+  {Call}  functionName:"bindBuffer"  arguments:[ARRAY_BUFFER,WebGLBuffer@1]
+  {Call}  functionName:"bufferData"  arguments:[ARRAY_BUFFER,[object Float32Array],STATIC_DRAW]
+  {Call}  functionName:"createFramebuffer"  arguments:[]  result:WebGLFramebuffer@1
+  {Call}  functionName:"bindFramebuffer"  arguments:[FRAMEBUFFER,WebGLFramebuffer@1]
+  {Call}  functionName:"pixelStorei"  arguments:[UNPACK_FLIP_Y_WEBGL,true]
+  {Call}  functionName:"createTexture"  arguments:[]  result:WebGLTexture@1
+  {Call}  functionName:"bindTexture"  arguments:[TEXTURE_2D,WebGLTexture@1]
+  {Call}  functionName:"texParameteri"  arguments:[TEXTURE_2D,TEXTURE_MAG_FILTER,LINEAR]
+  {Call}  functionName:"texParameteri"  arguments:[TEXTURE_2D,TEXTURE_MIN_FILTER,LINEAR_MIPMAP_NEAREST]
+  {Call}  functionName:"texImage2D"  arguments:[TEXTURE_2D,0,RGBA,512,512,0,RGBA,UNSIGNED_BYTE,null]
+  {Call}  functionName:"createRenderbuffer"  arguments:[]  result:WebGLRenderbuffer@1
+  {Call}  functionName:"bindRenderbuffer"  arguments:[RENDERBUFFER,WebGLRenderbuffer@1]
+  {Call}  functionName:"renderbufferStorage"  arguments:[RENDERBUFFER,DEPTH_COMPONENT16,512,512]
+  {Call}  functionName:"framebufferTexture2D"  arguments:[FRAMEBUFFER,COLOR_ATTACHMENT0,TEXTURE_2D,WebGLTexture@1,0]
+  {Call}  functionName:"framebufferRenderbuffer"  arguments:[FRAMEBUFFER,DEPTH_ATTACHMENT,RENDERBUFFER,WebGLRenderbuffer@1]
+  {Call}  functionName:"checkFramebufferStatus"  arguments:[FRAMEBUFFER]  result:FRAMEBUFFER_COMPLETE
+  {Call}  functionName:"blendEquation"  arguments:[FUNC_SUBTRACT]
+  {Call}  functionName:"blendEquationSeparate"  arguments:[FUNC_ADD,FUNC_REVERSE_SUBTRACT]
+  {Call}  functionName:"blendFunc"  arguments:[ONE_MINUS_SRC_COLOR,ONE_MINUS_DST_COLOR]
+  {Call}  functionName:"blendFuncSeparate"  arguments:[ZERO,ONE,ONE,ZERO]
+  {Call}  functionName:"clear"  arguments:[COLOR_BUFFER_BIT | DEPTH_BUFFER_BIT]
+  {Call}  functionName:"createShader"  arguments:[FRAGMENT_SHADER]  result:WebGLShader@1
+  {Call}  functionName:"cullFace"  arguments:[FRONT_AND_BACK]
+  {Call}  functionName:"depthFunc"  arguments:[NOTEQUAL]
+  {Call}  functionName:"disable"  arguments:[DITHER]
+  {Call}  functionName:"enable"  arguments:[POLYGON_OFFSET_FILL]
+  {Call}  functionName:"isEnabled"  arguments:[SCISSOR_TEST]  result:false
+  {Call}  functionName:"getParameter"  arguments:[BLEND_EQUATION]  result:32774
+  {Call}  functionName:"createTexture"  arguments:[]  result:WebGLTexture@2
+  {Call}  functionName:"bindTexture"  arguments:[TEXTURE_2D,WebGLTexture@2]
+  {Call}  functionName:"texImage2D"  arguments:[TEXTURE_2D,0,RGBA,RGBA,UNSIGNED_BYTE,[object HTMLImageElement]]
+
