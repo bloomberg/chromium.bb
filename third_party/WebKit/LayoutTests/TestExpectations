@@ -1366,7 +1366,7 @@ crbug.com/237270 fast/js/stack-overflow-arrity-catch.html [ Failure Pass ]
 crbug.com/238082 [ Win Mac Linux Debug ] media/media-continues-playing-after-replace-source.html [ Crash Pass Timeout ]
 crbug.com/88588 [ Debug ] fast/lists/inlineBoxWrapperNullCheck.html [ Failure Pass ]
 
-Bug(ojan) [ Win Mac ] http/tests/history/redirect-js-document-location-0-seconds.html [ Failure Pass ]
+Bug(ojan) http/tests/history/redirect-js-document-location-0-seconds.html [ Failure Pass ]
 
 webkit.org/b/92811 [ Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 webkit.org/b/92811 [ Mac ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
