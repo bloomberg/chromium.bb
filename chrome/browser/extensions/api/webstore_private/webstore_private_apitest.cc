@@ -181,16 +181,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
 }
 
 // Test cases where the user accepts the install confirmation dialog.
-// Disabled due to flaky crashes, especially on ASAN bots:
-// [ http://crbug.com/245357 ].
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       DISABLED_InstallAccepted) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallAccepted) {
   ASSERT_TRUE(RunInstallTest("accepted.html", "extension.crx"));
 }
 
 // Test having the default download directory missing.
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
-                       DISABLED_MissingDownloadDir) {
+ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MissingDownloadDir) {
   // Set a non-existent directory as the download path.
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -245,11 +241,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
   ASSERT_EQ("iladmdjkfniedhfhcfoefgojhgaiaccc", listener.id());
 }
 
+// Fails often on Windows dbg bots. http://crbug.com/177163.
+#if defined(OS_WIN)
+#define MAYBE_IconUrl DISABLED_IconUrl
+#else
+#define MAYBE_IconUrl IconUrl
+#endif  // defined(OS_WIN)
 // Tests using the iconUrl parameter to the install function.
-// Disabled due to flaky crashes, especially on ASAN bots:
-// [ http://crbug.com/245357 ].  Was previously disabled just on Windows because
-// it failed often on Windows dbg bots: [ http://crbug.com/177163 ].
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, DISABLED_IconUrl) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MAYBE_IconUrl) {
   ASSERT_TRUE(RunInstallTest("icon_url.html", "extension.crx"));
 }
 

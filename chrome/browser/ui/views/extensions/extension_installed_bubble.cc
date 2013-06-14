@@ -587,8 +587,11 @@ void ExtensionInstalledBubble::Observe(
   } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     const Extension* extension =
         content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
-    if (extension == extension_)
+    if (extension == extension_) {
+      // Extension is going away, make sure ShowInternal won't be called.
+      weak_factory_.InvalidateWeakPtrs();
       extension_ = NULL;
+    }
   } else if (type == chrome::NOTIFICATION_BROWSER_CLOSING) {
     delete this;
   } else {
