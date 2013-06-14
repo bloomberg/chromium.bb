@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,41 +28,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DedicatedWorkerContext_h
-#define DedicatedWorkerContext_h
+#include "config.h"
 
-#include "core/dom/MessagePort.h"
-#include "core/page/ContentSecurityPolicy.h"
+#include "modules/performance/WorkerContextPerformance.h"
+
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/workers/WorkerContext.h"
+#include "modules/performance/WorkerPerformance.h"
 
 namespace WebCore {
 
-    class DedicatedWorkerThread;
+WorkerContextPerformance::WorkerContextPerformance()
+{
+}
 
-    class DedicatedWorkerContext : public WorkerContext {
-    public:
-        typedef WorkerContext Base;
-        static PassRefPtr<DedicatedWorkerContext> create(const KURL&, const String& userAgent, PassOwnPtr<GroupSettings>, DedicatedWorkerThread*, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin);
-        virtual ~DedicatedWorkerContext();
+WorkerContextPerformance::~WorkerContextPerformance()
+{
+}
 
-        virtual bool isDedicatedWorkerContext() const OVERRIDE { return true; }
+const char* WorkerContextPerformance::supplementName()
+{
+    return "WorkerContextPerformance";
+}
 
-        // Overridden to allow us to check our pending activity after executing imported script.
-        virtual void importScripts(const Vector<String>& urls, ExceptionCode&) OVERRIDE;
+WorkerContextPerformance* WorkerContextPerformance::from(ScriptExecutionContext* context)
+{
+    WorkerContextPerformance* supplement = static_cast<WorkerContextPerformance*>(Supplement<ScriptExecutionContext>::from(context, supplementName()));
+    if (!supplement) {
+        supplement = new WorkerContextPerformance();
+        provideTo(context, supplementName(), adoptPtr(supplement));
+    }
+    return supplement;
+}
 
-        // EventTarget
-        virtual const AtomicString& interfaceName() const OVERRIDE;
+WorkerPerformance* WorkerContextPerformance::performance(ScriptExecutionContext* context)
+{
+    return from(context)->getPerformance(context);
+}
 
-        void postMessage(PassRefPtr<SerializedScriptValue>, const MessagePortArray*, ExceptionCode&);
-
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
-
-        DedicatedWorkerThread* thread();
-
-    private:
-        DedicatedWorkerContext(const KURL&, const String& userAgent, PassOwnPtr<GroupSettings>, DedicatedWorkerThread*, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin);
-    };
+WorkerPerformance* WorkerContextPerformance::getPerformance(ScriptExecutionContext* context)
+{
+    if (!m_performance)
+        m_performance = WorkerPerformance::create(context);
+    return m_performance.get();
+}
 
 } // namespace WebCore
-
-#endif // DedicatedWorkerContext_h

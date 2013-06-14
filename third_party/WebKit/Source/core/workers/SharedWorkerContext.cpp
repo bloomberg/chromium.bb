@@ -37,6 +37,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/DOMWindow.h"
 #include "core/workers/SharedWorkerThread.h"
+#include "wtf/CurrentTime.h"
 
 namespace WebCore {
 
@@ -56,7 +57,7 @@ PassRefPtr<SharedWorkerContext> SharedWorkerContext::create(const String& name, 
 }
 
 SharedWorkerContext::SharedWorkerContext(const String& name, const KURL& url, const String& userAgent, PassOwnPtr<GroupSettings> settings, SharedWorkerThread* thread)
-    : WorkerContext(url, userAgent, settings, thread, 0)
+    : WorkerContext(url, userAgent, settings, thread, 0, monotonicallyIncreasingTime())
     , m_name(name)
 {
     ScriptWrappable::init(this);

@@ -135,8 +135,10 @@ namespace WebCore {
 
         virtual const SecurityOrigin* topOrigin() const OVERRIDE { return m_topOrigin.get(); }
 
+        double timeOrigin() const { return m_timeOrigin; }
+
     protected:
-        WorkerContext(const KURL&, const String& userAgent, PassOwnPtr<GroupSettings>, WorkerThread*, PassRefPtr<SecurityOrigin> topOrigin);
+        WorkerContext(const KURL&, const String& userAgent, PassOwnPtr<GroupSettings>, WorkerThread*, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin);
         void applyContentSecurityPolicyFromString(const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType);
 
         virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, PassRefPtr<ScriptCallStack>) OVERRIDE;
@@ -179,6 +181,8 @@ namespace WebCore {
         OwnPtr<WorkerEventQueue> m_eventQueue;
 
         RefPtr<SecurityOrigin> m_topOrigin;
+
+        double m_timeOrigin;
     };
 
 } // namespace WebCore

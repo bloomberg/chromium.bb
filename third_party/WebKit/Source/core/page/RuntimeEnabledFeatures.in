@@ -43,6 +43,7 @@ CSSViewport status=experimental
 Gamepad status=stable
 Geolocation status=stable
 HTMLImports status=test
+HighResolutionTimeInWorkers status=experimental
 IMEAPI status=test
 IndexedDB status=stable
 InputTypeColor status=stable

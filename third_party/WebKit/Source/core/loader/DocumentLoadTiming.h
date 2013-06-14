@@ -68,6 +68,8 @@ public:
     bool hasCrossOriginRedirect() const { return m_hasCrossOriginRedirect; }
     bool hasSameOriginAsPreviousDocument() const { return m_hasSameOriginAsPreviousDocument; }
 
+    double referenceMonotonicTime() const { return m_referenceMonotonicTime; }
+
 private:
     double m_referenceMonotonicTime;
     double m_referenceWallTime;

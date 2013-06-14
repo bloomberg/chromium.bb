@@ -81,7 +81,7 @@ public:
     virtual bool isCleanupTask() const { return true; }
 };
 
-WorkerContext::WorkerContext(const KURL& url, const String& userAgent, PassOwnPtr<GroupSettings> settings, WorkerThread* thread, PassRefPtr<SecurityOrigin> topOrigin)
+WorkerContext::WorkerContext(const KURL& url, const String& userAgent, PassOwnPtr<GroupSettings> settings, WorkerThread* thread, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin)
     : m_url(url)
     , m_userAgent(userAgent)
     , m_groupSettings(settings)
@@ -91,6 +91,7 @@ WorkerContext::WorkerContext(const KURL& url, const String& userAgent, PassOwnPt
     , m_closing(false)
     , m_eventQueue(WorkerEventQueue::create(this))
     , m_topOrigin(topOrigin)
+    , m_timeOrigin(timeOrigin)
 {
     ScriptWrappable::init(this);
     setSecurityOrigin(SecurityOrigin::create(url));

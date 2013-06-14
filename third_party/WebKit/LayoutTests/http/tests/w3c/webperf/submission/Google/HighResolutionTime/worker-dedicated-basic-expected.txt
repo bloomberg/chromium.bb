@@ -1,0 +1,10 @@
+Description
+
+This test validates that performance.now() exists in dedicated workers and reports reasonable times.
+
+
+PASS self.performance is defined 
+PASS self.performance.now is defined 
+PASS Time in the worker should be after the startTime in the main document 
+PASS Time in the worker should be before the current time in the main document 
+

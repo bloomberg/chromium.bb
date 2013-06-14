@@ -38,15 +38,15 @@
 
 namespace WebCore {
 
-PassRefPtr<DedicatedWorkerContext> DedicatedWorkerContext::create(const KURL& url, const String& userAgent, PassOwnPtr<GroupSettings> settings, DedicatedWorkerThread* thread, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassRefPtr<SecurityOrigin> topOrigin)
+PassRefPtr<DedicatedWorkerContext> DedicatedWorkerContext::create(const KURL& url, const String& userAgent, PassOwnPtr<GroupSettings> settings, DedicatedWorkerThread* thread, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin)
 {
-    RefPtr<DedicatedWorkerContext> context = adoptRef(new DedicatedWorkerContext(url, userAgent, settings, thread, topOrigin));
+    RefPtr<DedicatedWorkerContext> context = adoptRef(new DedicatedWorkerContext(url, userAgent, settings, thread, topOrigin, timeOrigin));
     context->applyContentSecurityPolicyFromString(contentSecurityPolicy, contentSecurityPolicyType);
     return context.release();
 }
 
-DedicatedWorkerContext::DedicatedWorkerContext(const KURL& url, const String& userAgent, PassOwnPtr<GroupSettings> settings, DedicatedWorkerThread* thread, PassRefPtr<SecurityOrigin> topOrigin)
-    : WorkerContext(url, userAgent, settings, thread, topOrigin)
+DedicatedWorkerContext::DedicatedWorkerContext(const KURL& url, const String& userAgent, PassOwnPtr<GroupSettings> settings, DedicatedWorkerThread* thread, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin)
+    : WorkerContext(url, userAgent, settings, thread, topOrigin, timeOrigin)
 {
     ScriptWrappable::init(this);
 }

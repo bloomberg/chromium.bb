@@ -1,0 +1,11 @@
+Description
+
+This test validates that performance.now() exists in shared workers and reports reasonable times.
+
+
+
+PASS self.performance is defined 
+PASS self.performance.now is defined 
+PASS Time since origin time should be greater in the main document than the worker 
+PASS Time since origin time should be greater in the worker than the iframe 
+
