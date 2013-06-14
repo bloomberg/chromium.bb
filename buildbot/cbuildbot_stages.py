@@ -16,6 +16,7 @@ import os
 import Queue
 import shutil
 import sys
+import urllib
 
 from chromite.buildbot import builderstage as bs
 from chromite.buildbot import cbuildbot_commands as commands
@@ -1295,7 +1296,7 @@ class PreCQLauncherStage(SyncStage):
     # Loop through all of the changes until we hit a timeout.
     validation_pool.ValidationPool.AcquirePool(
         self._build_config['overlays'], self.repo,
-        self._options.buildnumber, constants.PRE_CQ_BUILDER_NAME,
+        self._options.buildnumber, urllib.quote(constants.PRE_CQ_LAUNCHER_NAME),
         dryrun=self._options.debug_forced,
         changes_query=self._options.cq_gerrit_override,
         check_tree_open=False, change_filter=self.ProcessChanges)

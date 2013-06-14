@@ -205,6 +205,8 @@ VALID_BUILD_TYPES = (
 # The name of the builder used to launch the pre-CQ.
 PRE_CQ_BUILDER_NAME = 'pre-cq-group'
 
+# The name of the Pre-CQ launcher on the waterfall.
+PRE_CQ_LAUNCHER_NAME = 'Pre-CQ Launcher'
 
 # Define pool of machines for Hardware tests.
 HWTEST_DEFAULT_NUM = 6
