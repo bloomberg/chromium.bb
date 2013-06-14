@@ -60,7 +60,7 @@ scoped_ptr<base::Value> TileManagerBinPriorityAsValue(
 // should no longer have any memory assigned to them. Tile objects are "owned"
 // by layers; they automatically register with the manager when they are
 // created, and unregister from the manager when they are deleted.
-class CC_EXPORT TileManager {
+class CC_EXPORT TileManager : public RasterWorkerPoolClient {
  public:
   typedef base::hash_set<uint32_t> PixelRefSet;
 
@@ -108,6 +108,10 @@ class CC_EXPORT TileManager {
   friend class Tile;
   void RegisterTile(Tile* tile);
   void UnregisterTile(Tile* tile);
+
+  // Overriden from RasterWorkerPoolClient:
+  virtual bool ShouldForceTasksRequiredForActivationToComplete() const
+      OVERRIDE;
 
   // Virtual for test
   virtual void ScheduleTasks();

@@ -120,6 +120,7 @@ TileManager::TileManager(
       use_color_estimator_(use_color_estimator),
       did_initialize_visible_tile_(false),
       texture_format_(texture_format) {
+  raster_worker_pool_->SetClient(this);
 }
 
 TileManager::~TileManager() {
@@ -161,6 +162,10 @@ void TileManager::UnregisterTile(Tile* tile) {
   DCHECK(std::find(tiles_.begin(), tiles_.end(), tile) != tiles_.end());
   FreeResourcesForTile(tile);
   tiles_.erase(std::remove(tiles_.begin(), tiles_.end(), tile));
+}
+
+bool TileManager::ShouldForceTasksRequiredForActivationToComplete() const {
+  return client_->ShouldForceTileUploadsRequiredForActivationToComplete();
 }
 
 class BinComparator {
@@ -297,43 +302,6 @@ void TileManager::ManageTiles() {
 
 void TileManager::CheckForCompletedTileUploads() {
   raster_worker_pool_->CheckForCompletedTasks();
-
-  if (!client_->ShouldForceTileUploadsRequiredForActivationToComplete())
-    return;
-
-  TileSet initialized_tiles;
-  for (TileSet::iterator it =
-           tiles_that_need_to_be_initialized_for_activation_.begin();
-       it != tiles_that_need_to_be_initialized_for_activation_.end();
-       ++it) {
-    Tile* tile = *it;
-    ManagedTileState& mts = tile->managed_state();
-
-    for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
-      ManagedTileState::TileVersion& pending_version =
-          mts.tile_versions[mode];
-      if (!pending_version.raster_task_.is_null() &&
-          !pending_version.forced_upload_) {
-        if (!raster_worker_pool_->ForceUploadToComplete(
-                pending_version.raster_task_)) {
-          continue;
-        }
-        // Setting |forced_upload_| to true makes this tile version
-        // ready to draw.
-        pending_version.forced_upload_ = true;
-        initialized_tiles.insert(tile);
-        break;
-      }
-    }
-  }
-
-  for (TileSet::iterator it = initialized_tiles.begin();
-       it != initialized_tiles.end();
-       ++it) {
-    Tile* tile = *it;
-    DidFinishTileInitialization(tile);
-    DCHECK(tile->IsReadyToDraw(NULL));
-  }
 }
 
 void TileManager::GetMemoryStats(
@@ -599,8 +567,6 @@ void TileManager::FreeResourceForTile(Tile* tile, RasterMode mode) {
     resource_pool_->ReleaseResource(
         mts.tile_versions[mode].resource_.Pass());
   }
-  mts.tile_versions[mode].resource_id_ = 0;
-  mts.tile_versions[mode].forced_upload_ = false;
 }
 
 void TileManager::FreeResourcesForTile(Tile* tile) {
@@ -639,7 +605,7 @@ void TileManager::ScheduleTasks() {
     if (tile_version.raster_task_.is_null())
       tile_version.raster_task_ = CreateRasterTask(tile, &decoded_images);
 
-    tasks.Append(tile_version.raster_task_);
+    tasks.Append(tile_version.raster_task_, tile->required_for_activation());
   }
 
   // Schedule running of |tasks|. This replaces any previously
@@ -694,11 +660,6 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(
       resource_pool_->AcquireResource(tile->tile_size_.size(),
                                       texture_format_);
   const Resource* const_resource = resource.get();
-
-  DCHECK(!mts.tile_versions[mts.raster_mode].resource_id_);
-  DCHECK(!mts.tile_versions[mts.raster_mode].forced_upload_);
-  mts.tile_versions[mts.raster_mode].resource_id_ = resource->id();
-  mts.tile_versions[mts.raster_mode].resource_format_ = texture_format_;
 
   // Create and queue all image decode tasks that this tile depends on.
   RasterWorkerPool::Task::Set decode_tasks;
@@ -768,7 +729,6 @@ void TileManager::OnRasterTaskCompleted(
 
   if (was_canceled) {
     resource_pool_->ReleaseResource(resource.Pass());
-    tile_version.resource_id_ = 0;
     return;
   }
 
@@ -778,7 +738,6 @@ void TileManager::OnRasterTaskCompleted(
     resource_pool_->ReleaseResource(resource.Pass());
   } else {
     tile_version.resource_ = resource.Pass();
-    tile_version.forced_upload_ = false;
   }
 
   FreeUnusedResourcesForTile(tile.get());

@@ -290,7 +290,6 @@ class CC_EXPORT ResourceProvider {
   void BeginSetPixels(ResourceId id);
   void ForceSetPixelsToComplete(ResourceId id);
   bool DidSetPixelsComplete(ResourceId id);
-  void AbortSetPixels(ResourceId id);
 
   // Acquire and release an image. The image allows direct
   // manipulation of texture memory.

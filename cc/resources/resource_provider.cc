@@ -958,6 +958,18 @@ void ResourceProvider::ReleasePixelBuffer(ResourceId id) {
   DCHECK(!resource->exported);
   DCHECK(!resource->image_id);
 
+  // The pixel buffer can be released while there is a pending "set pixels"
+  // if completion has been forced. Any shared memory associated with this
+  // pixel buffer will not be freed until the waitAsyncTexImage2DCHROMIUM
+  // command has been processed on the service side. It is also safe to
+  // reuse any query id associated with this resource before they complete
+  // as each new query has a unique submit count.
+  if (resource->pending_set_pixels) {
+    DCHECK(resource->set_pixels_completion_forced);
+    resource->pending_set_pixels = false;
+    UnlockForWrite(id);
+  }
+
   if (resource->type == GLTexture) {
     if (!resource->gl_pixel_buffer_id)
       return;
@@ -1208,32 +1220,6 @@ bool ResourceProvider::DidSetPixelsComplete(ResourceId id) {
   UnlockForWrite(id);
 
   return true;
-}
-
-void ResourceProvider::AbortSetPixels(ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
-  DCHECK(resource->locked_for_write);
-  DCHECK(resource->pending_set_pixels);
-
-  if (resource->gl_id) {
-    WebGraphicsContext3D* context3d = output_surface_->context3d();
-    DCHECK(context3d);
-    DCHECK(resource->gl_upload_query_id);
-    // CHROMIUM_async_pixel_transfers currently doesn't have a way to
-    // abort an upload. The best we can do is delete the query and
-    // the texture.
-    context3d->deleteQueryEXT(resource->gl_upload_query_id);
-    resource->gl_upload_query_id = 0;
-    context3d->deleteTexture(resource->gl_id);
-    resource->gl_id = CreateTextureId(context3d);
-    resource->allocated = false;
-  }
-
-  resource->pending_set_pixels = false;
-  UnlockForWrite(id);
 }
 
 void ResourceProvider::CreateForTesting(ResourceId id) {

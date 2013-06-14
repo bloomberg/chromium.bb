@@ -316,9 +316,12 @@ RasterWorkerPool::RasterTask::Queue::Queue() {
 RasterWorkerPool::RasterTask::Queue::~Queue() {
 }
 
-void RasterWorkerPool::RasterTask::Queue::Append(const RasterTask& task) {
+void RasterWorkerPool::RasterTask::Queue::Append(
+    const RasterTask& task, bool required_for_activation) {
   DCHECK(!task.is_null());
   tasks_.push_back(task.internal_);
+  if (required_for_activation)
+    tasks_required_for_activation_.insert(task.internal_.get());
 }
 
 RasterWorkerPool::RasterTask::RasterTask() {
@@ -353,20 +356,7 @@ RasterWorkerPool::RootTask::RootTask(
 RasterWorkerPool::RootTask::~RootTask() {
 }
 
-RasterWorkerPool::RasterWorkerPool(ResourceProvider* resource_provider,
-                                   size_t num_threads)
-    : WorkerPool(num_threads, kWorkerThreadNamePrefix),
-      resource_provider_(resource_provider) {
-}
-
-RasterWorkerPool::~RasterWorkerPool() {
-}
-
-void RasterWorkerPool::Shutdown() {
-  raster_tasks_.clear();
-  WorkerPool::Shutdown();
-}
-
+// static
 RasterWorkerPool::RasterTask RasterWorkerPool::CreateRasterTask(
     const Resource* resource,
     PicturePileImpl* picture_pile,
@@ -379,32 +369,52 @@ RasterWorkerPool::RasterTask RasterWorkerPool::CreateRasterTask(
     const RasterTask::Reply& reply,
     Task::Set& dependencies) {
   return RasterTask(new RasterWorkerPoolTaskImpl(resource,
-                                       picture_pile,
-                                       content_rect,
-                                       contents_scale,
-                                       raster_mode,
-                                       use_color_estimator,
-                                       metadata,
-                                       rendering_stats,
-                                       reply,
-                                       &dependencies.tasks_));
+                                                 picture_pile,
+                                                 content_rect,
+                                                 contents_scale,
+                                                 raster_mode,
+                                                 use_color_estimator,
+                                                 metadata,
+                                                 rendering_stats,
+                                                 reply,
+                                                 &dependencies.tasks_));
 }
 
+// static
 RasterWorkerPool::Task RasterWorkerPool::CreateImageDecodeTask(
     skia::LazyPixelRef* pixel_ref,
     int layer_id,
     RenderingStatsInstrumentation* stats_instrumentation,
     const Task::Reply& reply) {
-  return Task(new ImageDecodeWorkerPoolTaskImpl(
-      pixel_ref, layer_id, stats_instrumentation, reply));
+  return Task(new ImageDecodeWorkerPoolTaskImpl(pixel_ref,
+                                                layer_id,
+                                                stats_instrumentation,
+                                                reply));
 }
 
-bool RasterWorkerPool::ForceUploadToComplete(const RasterTask& raster_task) {
-  return false;
+RasterWorkerPool::RasterWorkerPool(ResourceProvider* resource_provider,
+                                   size_t num_threads)
+    : WorkerPool(num_threads, kWorkerThreadNamePrefix),
+      client_(NULL),
+      resource_provider_(resource_provider) {
+}
+
+RasterWorkerPool::~RasterWorkerPool() {
+}
+
+void RasterWorkerPool::SetClient(RasterWorkerPoolClient* client) {
+  client_ = client;
+}
+
+void RasterWorkerPool::Shutdown() {
+  raster_tasks_.clear();
+  WorkerPool::Shutdown();
 }
 
 void RasterWorkerPool::SetRasterTasks(RasterTask::Queue* queue) {
   raster_tasks_.swap(queue->tasks_);
+  raster_tasks_required_for_activation_.swap(
+      queue->tasks_required_for_activation_);
 }
 
 void RasterWorkerPool::ScheduleRasterTasks(const RootTask& root) {
@@ -415,6 +425,13 @@ void RasterWorkerPool::ScheduleRasterTasks(const RootTask& root) {
   WorkerPool::SetTaskGraph(&graph);
 
   root_.swap(new_root);
+}
+
+bool RasterWorkerPool::IsRasterTaskRequiredForActivation(
+    internal::RasterWorkerPoolTask* task) const {
+  return
+      raster_tasks_required_for_activation_.find(task) !=
+      raster_tasks_required_for_activation_.end();
 }
 
 }  // namespace cc

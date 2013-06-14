@@ -17,11 +17,12 @@
 
 namespace cc {
 
-class TestRasterTaskImpl : public internal::RasterWorkerPoolTask {
+class TestRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
  public:
-  TestRasterTaskImpl(const Resource* resource,
-                     const RasterWorkerPool::RasterTask::Reply& reply,
-                     internal::WorkerPoolTask::TaskVector* dependencies)
+  TestRasterWorkerPoolTaskImpl(
+      const Resource* resource,
+      const RasterWorkerPool::RasterTask::Reply& reply,
+      internal::WorkerPoolTask::TaskVector* dependencies)
       : internal::RasterWorkerPoolTask(resource, dependencies),
         reply_(reply) {}
 
@@ -33,13 +34,14 @@ class TestRasterTaskImpl : public internal::RasterWorkerPoolTask {
   }
 
  protected:
-  virtual ~TestRasterTaskImpl() {}
+  virtual ~TestRasterWorkerPoolTaskImpl() {}
 
  private:
   const RasterWorkerPool::RasterTask::Reply reply_;
 };
 
-class RasterWorkerPoolTest : public testing::Test {
+class RasterWorkerPoolTest : public testing::Test,
+                             public RasterWorkerPoolClient  {
  public:
   RasterWorkerPoolTest()
       : output_surface_(FakeOutputSurface::Create3d()),
@@ -61,6 +63,12 @@ class RasterWorkerPoolTest : public testing::Test {
     raster_worker_pool_->CheckForCompletedTasks();
   }
 
+  // Overriden from RasterWorkerPoolClient:
+  virtual bool ShouldForceTasksRequiredForActivationToComplete() const
+      OVERRIDE {
+    return false;
+  }
+
   virtual void BeginTest() = 0;
   virtual void AfterTest() = 0;
 
@@ -77,7 +85,9 @@ class RasterWorkerPoolTest : public testing::Test {
       const RasterWorkerPool::RasterTask::Reply& reply,
       RasterWorkerPool::Task::Set& dependencies) {
     return RasterWorkerPool::RasterTask(
-        new TestRasterTaskImpl(resource, reply, &dependencies.tasks_));
+        new TestRasterWorkerPoolTaskImpl(resource,
+                                         reply,
+                                         &dependencies.tasks_));
   }
 
   void RunTest(bool use_map_image) {
@@ -88,6 +98,8 @@ class RasterWorkerPoolTest : public testing::Test {
       raster_worker_pool_ = PixelBufferRasterWorkerPool::Create(
           resource_provider(), 1);
     }
+
+    raster_worker_pool_->SetClient(this);
 
     BeginTest();
 
@@ -208,7 +220,7 @@ class BasicRasterWorkerPoolTest : public RasterWorkerPoolTest {
     for (std::vector<RasterWorkerPool::RasterTask>::iterator it =
              tasks_.begin();
          it != tasks_.end(); ++it)
-      tasks.Append(*it);
+      tasks.Append(*it, false);
 
     worker_pool()->ScheduleTasks(&tasks);
   }

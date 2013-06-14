@@ -263,7 +263,11 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                      opaque_rect,
                      texture_rect,
                      iter.texture_size(),
-                     tile_version.contents_swizzled(),
+                     // TODO(reveman): This assumes the renderer will use
+                     // GL_RGBA as format of temporary resource. The need
+                     // to swizzle should instead be determined by the
+                     // renderer.
+                     !PlatformColor::SameComponentOrder(GL_RGBA),
                      iter->content_rect(),
                      iter->contents_scale(),
                      draw_direct_to_backbuffer,

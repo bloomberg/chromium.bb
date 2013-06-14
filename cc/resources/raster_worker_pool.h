@@ -100,6 +100,14 @@ struct RasterTaskMetadata {
     int source_frame_number;
 };
 
+class CC_EXPORT RasterWorkerPoolClient {
+ public:
+  virtual bool ShouldForceTasksRequiredForActivationToComplete() const = 0;
+
+ protected:
+  virtual ~RasterWorkerPoolClient() {}
+};
+
 // A worker thread pool that runs raster tasks.
 class CC_EXPORT RasterWorkerPool : public WorkerPool {
  public:
@@ -109,8 +117,6 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
 
     class CC_EXPORT Set {
      public:
-      typedef internal::WorkerPoolTask::TaskVector TaskVector;
-
       Set();
       ~Set();
 
@@ -120,6 +126,7 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
       friend class RasterWorkerPool;
       friend class RasterWorkerPoolTest;
 
+      typedef internal::WorkerPoolTask::TaskVector TaskVector;
       TaskVector tasks_;
     };
 
@@ -153,12 +160,14 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
       Queue();
       ~Queue();
 
-      void Append(const RasterTask& task);
+      void Append(const RasterTask& task, bool required_for_activation);
 
      private:
       friend class RasterWorkerPool;
 
       TaskVector tasks_;
+      typedef base::hash_set<internal::RasterWorkerPoolTask*> TaskSet;
+      TaskSet tasks_required_for_activation_;
     };
 
     RasterTask();
@@ -180,6 +189,21 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
     scoped_refptr<internal::RasterWorkerPoolTask> internal_;
   };
 
+  virtual ~RasterWorkerPool();
+
+  void SetClient(RasterWorkerPoolClient* client);
+
+  // Tells the worker pool to shutdown after canceling all previously
+  // scheduled tasks. Reply callbacks are still guaranteed to run.
+  virtual void Shutdown() OVERRIDE;
+
+  // Schedule running of raster tasks in |queue| and all dependencies.
+  // Previously scheduled tasks that are no longer needed to run
+  // raster tasks in |queue| will be canceled unless already running.
+  // Once scheduled, reply callbacks are guaranteed to run for all tasks
+  // even if they later get canceled by another call to ScheduleTasks().
+  virtual void ScheduleTasks(RasterTask::Queue* queue) = 0;
+
   // TODO(vmpstr): Try to elimiate some variables.
   static RasterTask CreateRasterTask(
       const Resource* resource,
@@ -198,23 +222,6 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
       int layer_id,
       RenderingStatsInstrumentation* stats_instrumentation,
       const Task::Reply& reply);
-
-  virtual ~RasterWorkerPool();
-
-  // Tells the worker pool to shutdown after canceling all previously
-  // scheduled tasks. Reply callbacks are still guaranteed to run.
-  virtual void Shutdown() OVERRIDE;
-
-  // Schedule running of raster tasks in |queue| and all dependencies.
-  // Previously scheduled tasks that are no longer needed to run
-  // raster tasks in |queue| will be canceled unless already running.
-  // Once scheduled, reply callbacks are guaranteed to run for all tasks
-  // even if they later get canceled by another call to ScheduleTasks().
-  virtual void ScheduleTasks(RasterTask::Queue* queue) = 0;
-
-  // Tells the raster worker pool to force any pending uploads for
-  // |raster_task| to complete. Returns true when successful.
-  virtual bool ForceUploadToComplete(const RasterTask& raster_task);
 
  protected:
   class RootTask {
@@ -239,15 +246,20 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
 
   void SetRasterTasks(RasterTask::Queue* queue);
   void ScheduleRasterTasks(const RootTask& root);
+  bool IsRasterTaskRequiredForActivation(
+      internal::RasterWorkerPoolTask* task) const;
 
+  RasterWorkerPoolClient* client() const { return client_; }
   ResourceProvider* resource_provider() const { return resource_provider_; }
   const RasterTask::Queue::TaskVector& raster_tasks() const {
     return raster_tasks_;
   }
 
  private:
+  RasterWorkerPoolClient* client_;
   ResourceProvider* resource_provider_;
   RasterTask::Queue::TaskVector raster_tasks_;
+  RasterTask::Queue::TaskSet raster_tasks_required_for_activation_;
 
   // The root task that is a dependent of all other tasks.
   scoped_refptr<internal::WorkerPoolTask> root_;

@@ -25,10 +25,7 @@ ManagedTileState::ManagedTileState()
 
 ManagedTileState::TileVersion::TileVersion()
     : mode_(RESOURCE_MODE),
-      has_text_(false),
-      resource_id_(0),
-      resource_format_(GL_RGBA),
-      forced_upload_(false) {
+      has_text_(false) {
 }
 
 ManagedTileState::TileVersion::~TileVersion() {
@@ -38,7 +35,7 @@ ManagedTileState::TileVersion::~TileVersion() {
 bool ManagedTileState::TileVersion::IsReadyToDraw() const {
   switch (mode_) {
     case RESOURCE_MODE:
-      return resource_id_ && (resource_ || forced_upload_);
+      return !!resource_;
     case SOLID_COLOR_MODE:
     case PICTURE_PILE_MODE:
       return true;
