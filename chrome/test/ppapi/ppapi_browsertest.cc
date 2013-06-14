@@ -219,8 +219,8 @@ TEST_PPAPI_IN_PROCESS(InputEvent)
 TEST_PPAPI_OUT_OF_PROCESS(InputEvent)
 TEST_PPAPI_NACL(InputEvent)
 
-// Flaky on Linux. http://crbug.com/135403
-#if defined(OS_LINUX)
+// Flaky on Linux and Windows. http://crbug.com/135403
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_ImeInputEvent DISABLED_ImeInputEvent
 #else
 #define MAYBE_ImeInputEvent ImeInputEvent
