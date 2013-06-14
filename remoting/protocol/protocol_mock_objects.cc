@@ -4,10 +4,6 @@
 
 #include "remoting/protocol/protocol_mock_objects.h"
 
-#include "base/message_loop/message_loop_proxy.h"
-#include "net/base/ip_endpoint.h"
-#include "remoting/protocol/transport.h"
-
 namespace remoting {
 namespace protocol {
 
@@ -51,6 +47,35 @@ MockSession::~MockSession() {}
 MockSessionManager::MockSessionManager() {}
 
 MockSessionManager::~MockSessionManager() {}
+
+MockPairingRegistryDelegate::MockPairingRegistryDelegate() {
+}
+
+MockPairingRegistryDelegate::~MockPairingRegistryDelegate() {
+}
+
+void MockPairingRegistryDelegate::AddPairing(
+    const PairingRegistry::Pairing& new_paired_client) {
+  paired_clients_[new_paired_client.client_id] = new_paired_client;
+}
+
+void MockPairingRegistryDelegate::GetPairing(
+    const std::string& client_id,
+    const PairingRegistry::GetPairingCallback& callback) {
+  PairingRegistry::Pairing result;
+  PairingRegistry::PairedClients::const_iterator i =
+      paired_clients_.find(client_id);
+  if (i != paired_clients_.end()) {
+    result = i->second;
+  }
+  saved_callback_ = base::Bind(base::Bind(callback), result);
+}
+
+void MockPairingRegistryDelegate::RunCallback() {
+  DCHECK(!saved_callback_.is_null());
+  saved_callback_.Run();
+  saved_callback_.Reset();
+}
 
 }  // namespace protocol
 }  // namespace remoting

@@ -37,24 +37,33 @@ class PairingRegistry : public base::RefCountedThreadSafe<PairingRegistry>,
   // Mapping from client id to pairing information.
   typedef std::map<std::string, Pairing> PairedClients;
 
+  // Delegate::GetPairing callback.
+  typedef base::Callback<void(Pairing)> GetPairingCallback;
+
   // Interface representing the persistent storage back-end.
   class Delegate {
    public:
     virtual ~Delegate() {}
 
-    // Save pairing information to persistent storage. Must not block.
-    virtual void Save(const PairedClients& paired_clients) = 0;
+    // Add pairing information to persistent storage. Must not block.
+    virtual void AddPairing(const Pairing& new_paired_client) = 0;
+
+    // Retrieve the Pairing for the specified client id. If none is
+    // found, invoke the callback with a Pairing in which (at least)
+    // the shared_secret is empty.
+    virtual void GetPairing(const std::string& client_id,
+                            const GetPairingCallback& callback) = 0;
   };
 
-  explicit PairingRegistry(scoped_ptr<Delegate> delegate,
-                           const PairedClients& paired_clients);
+  explicit PairingRegistry(scoped_ptr<Delegate> delegate);
 
   // Create a pairing for a new client and save it to disk.
-  const Pairing& CreatePairing(const std::string& client_name);
+  Pairing CreatePairing(const std::string& client_name);
 
-  // Look up the shared secret for the specified client id. Returns an empty
-  // string if the client id is not known.
-  std::string GetSecret(const std::string &client_id) const;
+  // Get the pairing for the specified client id. See the corresponding
+  // Delegate method for details.
+  void GetPairing(const std::string& client_id,
+                  const GetPairingCallback& callback);
 
  private:
   friend class base::RefCountedThreadSafe<PairingRegistry>;
@@ -62,7 +71,6 @@ class PairingRegistry : public base::RefCountedThreadSafe<PairingRegistry>,
   virtual ~PairingRegistry();
 
   scoped_ptr<Delegate> delegate_;
-  PairedClients paired_clients_;
 
   DISALLOW_COPY_AND_ASSIGN(PairingRegistry);
 };
@@ -71,8 +79,11 @@ class PairingRegistry : public base::RefCountedThreadSafe<PairingRegistry>,
 // TODO(jamiewalch): Delete once Delegates are implemented for all platforms.
 class NotImplementedPairingRegistryDelegate : public PairingRegistry::Delegate {
  public:
-  virtual void Save(
-      const PairingRegistry::PairedClients& paired_clients) OVERRIDE;
+  virtual void AddPairing(
+      const PairingRegistry::Pairing& paired_clients) OVERRIDE;
+  virtual void GetPairing(
+      const std::string& client_id,
+      const PairingRegistry::GetPairingCallback& callback) OVERRIDE;
 };
 
 }  // namespace protocol

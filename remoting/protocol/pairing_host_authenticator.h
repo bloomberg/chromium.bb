@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "remoting/protocol/pairing_authenticator_base.h"
+#include "remoting/protocol/pairing_registry.h"
 
 namespace remoting {
 
@@ -38,12 +39,19 @@ class PairingHostAuthenticator : public PairingAuthenticatorBase {
       const SetAuthenticatorCallback& callback) OVERRIDE;
   virtual void AddPairingElements(buzz::XmlElement* message) OVERRIDE;
 
+  // Continue processing a protocol message once the pairing information for
+  // the client id has been received.
+  void ProcessMessageWithPairing(const buzz::XmlElement* message,
+                                 const base::Closure& resume_callback,
+                                 PairingRegistry::Pairing pairing);
+
   // Protocol state.
   scoped_refptr<PairingRegistry> pairing_registry_;
   std::string local_cert_;
   scoped_refptr<RsaKeyPair> key_pair_;
   const std::string& pin_;
   bool protocol_error_;
+  bool waiting_for_paired_secret_;
 
   base::WeakPtrFactory<PairingHostAuthenticator> weak_factory_;
 

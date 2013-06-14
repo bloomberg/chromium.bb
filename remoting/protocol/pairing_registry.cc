@@ -15,17 +15,15 @@ namespace protocol {
 // How many bytes of random data to use for the client id and shared secret.
 const int kKeySize = 16;
 
-PairingRegistry::PairingRegistry(scoped_ptr<Delegate> delegate,
-                                 const PairedClients& paired_clients)
+PairingRegistry::PairingRegistry(scoped_ptr<Delegate> delegate)
     : delegate_(delegate.Pass()) {
   DCHECK(delegate_);
-  paired_clients_ = paired_clients;
 }
 
 PairingRegistry::~PairingRegistry() {
 }
 
-const PairingRegistry::Pairing& PairingRegistry::CreatePairing(
+PairingRegistry::Pairing PairingRegistry::CreatePairing(
     const std::string& client_name) {
   DCHECK(CalledOnValidThread());
 
@@ -42,27 +40,28 @@ const PairingRegistry::Pairing& PairingRegistry::CreatePairing(
   }
 
   // Save the result via the Delegate and return it to the caller.
-  paired_clients_[result.client_id] = result;
-  delegate_->Save(paired_clients_);
-
-  return paired_clients_[result.client_id];
-}
-
-std::string PairingRegistry::GetSecret(const std::string& client_id) const {
-  DCHECK(CalledOnValidThread());
-
-  std::string result;
-  PairedClients::const_iterator i = paired_clients_.find(client_id);
-  if (i != paired_clients_.end()) {
-    result = i->second.shared_secret;
-  }
+  delegate_->AddPairing(result);
   return result;
 }
 
-void NotImplementedPairingRegistryDelegate::Save(
-    const PairingRegistry::PairedClients& paired_clients) {
+void PairingRegistry::GetPairing(const std::string& client_id,
+                                 const GetPairingCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  delegate_->GetPairing(client_id, callback);
+}
+
+void NotImplementedPairingRegistryDelegate::AddPairing(
+    const PairingRegistry::Pairing& new_paired_client) {
   NOTIMPLEMENTED();
 }
+
+void NotImplementedPairingRegistryDelegate::GetPairing(
+    const std::string& client_id,
+    const PairingRegistry::GetPairingCallback& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(PairingRegistry::Pairing());
+}
+
 
 }  // namespace protocol
 }  // namespace remoting

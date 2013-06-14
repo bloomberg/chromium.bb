@@ -9,7 +9,6 @@
 #include "remoting/base/constants.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/channel_authenticator.h"
-#include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/v2_authenticator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
@@ -26,6 +25,7 @@ PairingHostAuthenticator::PairingHostAuthenticator(
       key_pair_(key_pair),
       pin_(pin),
       protocol_error_(false),
+      waiting_for_paired_secret_(false),
       weak_factory_(this) {
 }
 
@@ -35,6 +35,8 @@ PairingHostAuthenticator::~PairingHostAuthenticator() {
 Authenticator::State PairingHostAuthenticator::state() const {
   if (protocol_error_) {
     return REJECTED;
+  } else if (waiting_for_paired_secret_) {
+    return PROCESSING_MESSAGE;
   } else if (!v2_authenticator_) {
     return WAITING_MESSAGE;
   }
@@ -72,23 +74,13 @@ void PairingHostAuthenticator::ProcessMessage(
       LOG(ERROR) << "No client id specified.";
       protocol_error_ = true;
     } else {
-      paired_secret = pairing_registry_->GetSecret(client_id);
-      if (paired_secret.empty()) {
-        LOG(INFO) << "Unknown client id";
-        error_message_ = "unknown-client-id";
-      }
-    }
-
-    using_paired_secret_ = !paired_secret.empty();
-    if (using_paired_secret_) {
-      v2_authenticator_  = V2Authenticator::CreateForHost(
-          local_cert_, key_pair_, paired_secret, WAITING_MESSAGE);
-    } else {
-      v2_authenticator_ = V2Authenticator::CreateForHost(
-          local_cert_, key_pair_, pin_, MESSAGE_READY);
-      // The client's optimistic SPAKE message is using a Paired Secret to
-      // which the host doesn't have access, so don't bother processing it.
-      resume_callback.Run();
+      waiting_for_paired_secret_ = true;
+      pairing_registry_->GetPairing(
+          client_id,
+          base::Bind(&PairingHostAuthenticator::ProcessMessageWithPairing,
+                     weak_factory_.GetWeakPtr(),
+                     base::Owned(new buzz::XmlElement(*message)),
+                     resume_callback));
       return;
     }
   }
@@ -98,6 +90,31 @@ void PairingHostAuthenticator::ProcessMessage(
 
 void PairingHostAuthenticator::AddPairingElements(buzz::XmlElement* message) {
   // Nothing to do here
+}
+
+void PairingHostAuthenticator::ProcessMessageWithPairing(
+    const buzz::XmlElement* message,
+    const base::Closure& resume_callback,
+    PairingRegistry::Pairing pairing) {
+  waiting_for_paired_secret_ = false;
+  std::string paired_secret = pairing.shared_secret;
+  if (paired_secret.empty()) {
+    LOG(INFO) << "Unknown client id";
+    error_message_ = "unknown-client-id";
+  }
+
+  using_paired_secret_ = !paired_secret.empty();
+  if (using_paired_secret_) {
+    v2_authenticator_  = V2Authenticator::CreateForHost(
+        local_cert_, key_pair_, paired_secret, WAITING_MESSAGE);
+    PairingAuthenticatorBase::ProcessMessage(message, resume_callback);
+  } else {
+    v2_authenticator_ = V2Authenticator::CreateForHost(
+        local_cert_, key_pair_, pin_, MESSAGE_READY);
+    // The client's optimistic SPAKE message is using a Paired Secret to
+    // which the host doesn't have access, so don't bother processing it.
+    resume_callback.Run();
+  }
 }
 
 }  // namespace protocol

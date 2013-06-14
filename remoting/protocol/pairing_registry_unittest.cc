@@ -6,7 +6,9 @@
 
 #include <stdlib.h>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,55 +16,56 @@ namespace remoting {
 namespace protocol {
 
 class PairingRegistryTest : public testing::Test {
-};
-
-class MockDelegate : public PairingRegistry::Delegate {
  public:
-  // MockDelegate saves to an explicit external PairedClients instance because
-  // PairingRegistry takes ownership of it and makes no guarantees about its
-  // lifetime, so this is a simple way of getting access to pairing results.
-  MockDelegate(PairingRegistry::PairedClients* paired_clients)
-      : paired_clients_(paired_clients) {
+  virtual void SetUp() OVERRIDE {
+    got_secret_ = false;
   }
 
-  virtual void Save(
-      const PairingRegistry::PairedClients& paired_clients) OVERRIDE {
-    *paired_clients_ = paired_clients;
+  void CompareSecret(const std::string& expected,
+                     PairingRegistry::Pairing actual) {
+    EXPECT_EQ(actual.shared_secret, expected);
+    got_secret_ = true;
   }
 
  protected:
-  PairingRegistry::PairedClients* paired_clients_;
+  bool got_secret_;
 };
 
-TEST_F(PairingRegistryTest, LoadAndLookup) {
+TEST_F(PairingRegistryTest, GetPairing) {
   PairingRegistry::Pairing client_info = {
     "client_id",
     "client_name",
     "shared_secret"
   };
-  PairingRegistry::PairedClients clients;
-  clients[client_info.client_id] = client_info;
-  scoped_ptr<PairingRegistry::Delegate> delegate(new MockDelegate(&clients));
+  MockPairingRegistryDelegate* mock_delegate =
+      new MockPairingRegistryDelegate();
+  mock_delegate->AddPairing(client_info);
+  scoped_ptr<PairingRegistry::Delegate> delegate(mock_delegate);
 
-  scoped_refptr<PairingRegistry> registry(new PairingRegistry(delegate.Pass(),
-                                                              clients));
+  scoped_refptr<PairingRegistry> registry(new PairingRegistry(delegate.Pass()));
 
-  std::string secret = registry->GetSecret(client_info.client_id);
-  EXPECT_EQ(secret, client_info.shared_secret);
+  registry->GetPairing(client_info.client_id,
+                       base::Bind(&PairingRegistryTest::CompareSecret,
+                                  base::Unretained(this),
+                                  client_info.shared_secret));
+  mock_delegate->RunCallback();
+  EXPECT_TRUE(got_secret_);
 }
 
-TEST_F(PairingRegistryTest, CreateAndSave) {
-  PairingRegistry::PairedClients clients;
-  scoped_ptr<PairingRegistry::Delegate> delegate(new MockDelegate(&clients));
+TEST_F(PairingRegistryTest, AddPairing) {
+  MockPairingRegistryDelegate* mock_delegate =
+      new MockPairingRegistryDelegate();
+  scoped_ptr<PairingRegistry::Delegate> delegate(mock_delegate);
 
-  scoped_refptr<PairingRegistry> registry(new PairingRegistry(delegate.Pass(),
-                                                              clients));
+  scoped_refptr<PairingRegistry> registry(new PairingRegistry(delegate.Pass()));
 
   // Verify that we can create pairings from two clients with the same name, but
   // that they aren't allocated the same client id.
   PairingRegistry::Pairing pairing_1 = registry->CreatePairing("client_name");
   PairingRegistry::Pairing pairing_2 = registry->CreatePairing("client_name");
 
+  const PairingRegistry::PairedClients& clients =
+      mock_delegate->paired_clients();
   ASSERT_EQ(clients.size(), 2u);
   PairingRegistry::Pairing first = clients.begin()->second;
   PairingRegistry::Pairing second = (++clients.begin())->second;

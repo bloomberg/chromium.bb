@@ -16,6 +16,7 @@
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
+#include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_manager.h"
 #include "remoting/protocol/transport.h"
@@ -201,6 +202,30 @@ class MockSessionManager : public SessionManager {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSessionManager);
+};
+
+// Simple delegate that caches information on paired clients in memory.
+class MockPairingRegistryDelegate : public PairingRegistry::Delegate {
+ public:
+  MockPairingRegistryDelegate();
+  virtual ~MockPairingRegistryDelegate();
+
+  const PairingRegistry::PairedClients& paired_clients() const {
+    return paired_clients_;
+  }
+
+  // PairingRegistry::Delegate implementation.
+  virtual void AddPairing(
+      const PairingRegistry::Pairing& new_paired_client) OVERRIDE;
+  virtual void GetPairing(
+      const std::string& client_id,
+      const PairingRegistry::GetPairingCallback& callback) OVERRIDE;
+
+  void RunCallback();
+
+ private:
+  base::Closure saved_callback_;
+  PairingRegistry::PairedClients paired_clients_;
 };
 
 }  // namespace protocol

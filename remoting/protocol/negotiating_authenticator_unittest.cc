@@ -12,6 +12,7 @@
 #include "remoting/protocol/negotiating_client_authenticator.h"
 #include "remoting/protocol/negotiating_host_authenticator.h"
 #include "remoting/protocol/pairing_registry.h"
+#include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
@@ -54,13 +55,12 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
       const std::string& client_interactive_pin,
       const std::string& host_secret,
       AuthenticationMethod::HashFunction hash_function,
-      bool client_hmac_only,
-      scoped_refptr<PairingRegistry> pairing_registry) {
+      bool client_hmac_only) {
     std::string host_secret_hash = AuthenticationMethod::ApplyHashFunction(
         hash_function, kTestHostId, host_secret);
     host_ = NegotiatingHostAuthenticator::CreateWithSharedSecret(
         host_cert_, key_pair_, host_secret_hash, hash_function,
-        pairing_registry);
+        pairing_registry_);
 
     std::vector<AuthenticationMethod> methods;
     methods.push_back(AuthenticationMethod::Spake2Pair());
@@ -70,7 +70,7 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
       methods.push_back(AuthenticationMethod::Spake2(
           AuthenticationMethod::NONE));
     }
-    bool pairing_expected = pairing_registry.get() != NULL;
+    bool pairing_expected = pairing_registry_.get() != NULL;
     FetchSecretCallback fetch_secret_callback =
         base::Bind(&NegotiatingAuthenticatorTest::FetchSecret,
                    client_interactive_pin,
@@ -82,18 +82,16 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
     client_.reset(client_as_negotiating_authenticator_);
   }
 
-  scoped_refptr<PairingRegistry> CreatePairingRegistry(
-      PairingRegistry::Pairing* pairings, size_t num_pairings) {
-    PairingRegistry::PairedClients clients;
-    for (size_t i = 0; i < num_pairings; ++i) {
-      clients[pairings[i].client_id] = pairings[i];
+  void CreatePairingRegistry(bool with_paired_client) {
+    mock_delegate_ = new MockPairingRegistryDelegate;
+    if (with_paired_client) {
+      PairingRegistry::Pairing pairing;
+      pairing.client_id = kTestClientId;
+      pairing.shared_secret = kTestPairedSecret;
+      mock_delegate_->AddPairing(pairing);
     }
-    scoped_refptr<PairingRegistry> result(
-        new PairingRegistry(
-            scoped_ptr<PairingRegistry::Delegate>(
-                new NotImplementedPairingRegistryDelegate),
-            clients));
-    return result;
+    pairing_registry_ = new PairingRegistry(
+        scoped_ptr<PairingRegistry::Delegate>(mock_delegate_));
   }
 
   static void FetchSecret(
@@ -143,14 +141,19 @@ class NegotiatingAuthenticatorTest : public AuthenticatorTestBase {
   // Use a bare pointer because the storage is managed by the base class.
   NegotiatingClientAuthenticator* client_as_negotiating_authenticator_;
 
+ protected:
+  MockPairingRegistryDelegate* mock_delegate_;
+
  private:
+  scoped_refptr<PairingRegistry> pairing_registry_;
+
   DISALLOW_COPY_AND_ASSIGN(NegotiatingAuthenticatorTest);
 };
 
 TEST_F(NegotiatingAuthenticatorTest, SuccessfulAuthHmac) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kNoClientId, kNoPairedSecret, kTestPin, kTestPin,
-      AuthenticationMethod::HMAC_SHA256, false, NULL));
+      AuthenticationMethod::HMAC_SHA256, false));
   VerifyAccepted(
       AuthenticationMethod::Spake2(AuthenticationMethod::HMAC_SHA256));
 }
@@ -158,14 +161,14 @@ TEST_F(NegotiatingAuthenticatorTest, SuccessfulAuthHmac) {
 TEST_F(NegotiatingAuthenticatorTest, SuccessfulAuthPlain) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kNoClientId, kNoPairedSecret, kTestPin, kTestPin,
-      AuthenticationMethod::NONE, false, NULL));
+      AuthenticationMethod::NONE, false));
   VerifyAccepted(AuthenticationMethod::Spake2(AuthenticationMethod::NONE));
 }
 
 TEST_F(NegotiatingAuthenticatorTest, InvalidSecretHmac) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kNoClientId, kNoPairedSecret, kTestPinBad, kTestPin,
-      AuthenticationMethod::HMAC_SHA256, false, NULL));
+      AuthenticationMethod::HMAC_SHA256, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
 
   VerifyRejected(Authenticator::INVALID_CREDENTIALS);
@@ -174,7 +177,7 @@ TEST_F(NegotiatingAuthenticatorTest, InvalidSecretHmac) {
 TEST_F(NegotiatingAuthenticatorTest, InvalidSecretPlain) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kNoClientId, kNoPairedSecret, kTestPin, kTestPinBad,
-      AuthenticationMethod::NONE, false, NULL));
+      AuthenticationMethod::NONE, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
 
   VerifyRejected(Authenticator::INVALID_CREDENTIALS);
@@ -183,7 +186,7 @@ TEST_F(NegotiatingAuthenticatorTest, InvalidSecretPlain) {
 TEST_F(NegotiatingAuthenticatorTest, IncompatibleMethods) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kNoClientId, kNoPairedSecret, kTestPin, kTestPinBad,
-      AuthenticationMethod::NONE, true, NULL));
+      AuthenticationMethod::NONE, true));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
 
   VerifyRejected(Authenticator::PROTOCOL_ERROR);
@@ -192,72 +195,68 @@ TEST_F(NegotiatingAuthenticatorTest, IncompatibleMethods) {
 TEST_F(NegotiatingAuthenticatorTest, PairingNotSupported) {
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kTestClientId, kTestPairedSecret, kTestPin, kTestPin,
-      AuthenticationMethod::HMAC_SHA256, false, NULL));
+      AuthenticationMethod::HMAC_SHA256, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
   VerifyAccepted(
       AuthenticationMethod::Spake2(AuthenticationMethod::HMAC_SHA256));
 }
 
 TEST_F(NegotiatingAuthenticatorTest, PairingSupportedButNotPaired) {
+  CreatePairingRegistry(false);
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kNoClientId, kNoPairedSecret, kTestPin, kTestPin,
-      AuthenticationMethod::HMAC_SHA256, false,
-      CreatePairingRegistry(NULL, 0)));
+      AuthenticationMethod::HMAC_SHA256, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
   VerifyAccepted(AuthenticationMethod::Spake2Pair());
 }
 
 TEST_F(NegotiatingAuthenticatorTest, PairingRevokedPinOkay) {
+  CreatePairingRegistry(false);
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kTestClientId, kTestPairedSecret, kTestPin, kTestPin,
-      AuthenticationMethod::HMAC_SHA256, false,
-      CreatePairingRegistry(NULL, 0)));
+      AuthenticationMethod::HMAC_SHA256, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
+  mock_delegate_->RunCallback();
   VerifyAccepted(AuthenticationMethod::Spake2Pair());
 }
 
 TEST_F(NegotiatingAuthenticatorTest, PairingRevokedPinBad) {
+  CreatePairingRegistry(false);
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kTestClientId, kTestPairedSecret, kTestPinBad, kTestPin,
-      AuthenticationMethod::HMAC_SHA256, false,
-      CreatePairingRegistry(NULL, 0)));
+      AuthenticationMethod::HMAC_SHA256, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
+  mock_delegate_->RunCallback();
   VerifyRejected(Authenticator::INVALID_CREDENTIALS);
 }
 
 TEST_F(NegotiatingAuthenticatorTest, PairingSucceeded) {
-  PairingRegistry::Pairing pairing;
-  pairing.client_id = kTestClientId;
-  pairing.shared_secret = kTestPairedSecret;
+  CreatePairingRegistry(true);
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kTestClientId, kTestPairedSecret, kTestPinBad, kTestPin,
-      AuthenticationMethod::HMAC_SHA256, false,
-      CreatePairingRegistry(&pairing, 1)));
+      AuthenticationMethod::HMAC_SHA256, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
+  mock_delegate_->RunCallback();
   VerifyAccepted(AuthenticationMethod::Spake2Pair());
 }
 
 TEST_F(NegotiatingAuthenticatorTest, PairingSucceededInvalidSecretButPinOkay) {
-  PairingRegistry::Pairing pairing;
-  pairing.client_id = kTestClientId;
-  pairing.shared_secret = kTestPairedSecret;
+  CreatePairingRegistry(true);
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kTestClientId, kTestPairedSecretBad, kTestPin, kTestPin,
-      AuthenticationMethod::HMAC_SHA256, false,
-      CreatePairingRegistry(&pairing, 1)));
+      AuthenticationMethod::HMAC_SHA256, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
+  mock_delegate_->RunCallback();
   VerifyAccepted(AuthenticationMethod::Spake2Pair());
 }
 
 TEST_F(NegotiatingAuthenticatorTest, PairingFailedInvalidSecretAndPin) {
-  PairingRegistry::Pairing pairing;
-  pairing.client_id = kTestClientId;
-  pairing.shared_secret = kTestPairedSecret;
+  CreatePairingRegistry(true);
   ASSERT_NO_FATAL_FAILURE(InitAuthenticators(
       kTestClientId, kTestPairedSecretBad, kTestPinBad, kTestPin,
-      AuthenticationMethod::HMAC_SHA256, false,
-      CreatePairingRegistry(&pairing, 1)));
+      AuthenticationMethod::HMAC_SHA256, false));
   ASSERT_NO_FATAL_FAILURE(RunAuthExchange());
+  mock_delegate_->RunCallback();
   VerifyRejected(Authenticator::INVALID_CREDENTIALS);
 }
 

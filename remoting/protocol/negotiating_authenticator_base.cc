@@ -52,6 +52,7 @@ void NegotiatingAuthenticatorBase::ProcessMessageInternal(
     // If the message was not discarded and the authenticator is waiting for it,
     // give it to the underlying authenticator to process.
     // |current_authenticator_| is owned, so Unretained() is safe here.
+    state_ = PROCESSING_MESSAGE;
     current_authenticator_->ProcessMessage(message, base::Bind(
         &NegotiatingAuthenticatorBase::UpdateState,
         base::Unretained(this), resume_callback));
