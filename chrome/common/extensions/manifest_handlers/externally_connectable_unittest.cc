@@ -282,4 +282,9 @@ TEST_F(ExternallyConnectableTest, WarningUnknownTLD) {
   EXPECT_TRUE(info->matches.MatchesURL(GURL("http://build.chromium.org")));
 }
 
+TEST_F(ExternallyConnectableTest, WarningNothingSpecified) {
+  LoadAndExpectWarning("externally_connectable_nothing_specified.json",
+                       errors::kErrorNothingSpecified);
+}
+
 }  // namespace extensions

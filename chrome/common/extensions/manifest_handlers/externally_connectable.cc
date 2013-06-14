@@ -25,12 +25,15 @@ namespace externally_connectable_errors {
 const char kErrorInvalid[] = "Invalid value for 'externally_connectable'";
 const char kErrorInvalidMatchPattern[] = "Invalid match pattern '*'";
 const char kErrorInvalidId[] = "Invalid ID '*'";
+const char kErrorNothingSpecified[] =
+    "'externally_connectable' specifies neither 'matches' nor 'ids'; "
+    "nothing will be able to connect";
 const char kErrorTopLevelDomainsNotAllowed[] =
     "\"*\" is an effective top level domain for which wildcard subdomains such "
     "as \"*\" are not allowed";
 const char kErrorWildcardHostsNotAllowed[] =
     "Wildcard domain patterns such as \"*\" are not allowed";
-}
+}  // namespace externally_connectable_errors
 
 namespace keys = extension_manifest_keys;
 namespace errors = externally_connectable_errors;
@@ -172,6 +175,12 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
         return scoped_ptr<ExternallyConnectableInfo>();
       }
     }
+  }
+
+  if (!externally_connectable->matches &&
+      !externally_connectable->ids) {
+    install_warnings->push_back(InstallWarning::Text(
+        errors::kErrorNothingSpecified));
   }
 
   return make_scoped_ptr(

@@ -27,9 +27,10 @@ namespace externally_connectable_errors {
 extern const char kErrorInvalid[];
 extern const char kErrorInvalidMatchPattern[];
 extern const char kErrorInvalidId[];
+extern const char kErrorNothingSpecified[];
 extern const char kErrorTopLevelDomainsNotAllowed[];
 extern const char kErrorWildcardHostsNotAllowed[];
-}
+}  // namespace externally_connectable_errors
 
 // Parses the externally_connectable manifest entry.
 class ExternallyConnectableHandler : public ManifestHandler {
