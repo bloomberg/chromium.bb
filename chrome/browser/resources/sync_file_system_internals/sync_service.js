@@ -5,7 +5,7 @@
 /**
  * WebUI to monitor the Sync File System Service.
  */
-var syncService = (function() {
+var SyncService = (function() {
 'use strict';
 
 var SyncService = {};

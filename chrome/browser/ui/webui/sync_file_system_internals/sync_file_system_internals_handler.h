@@ -13,8 +13,10 @@ class Profile;
 
 namespace syncfs_internals {
 
-// This class handles message from WebUI page of chrome://syncfs-internals/.
-// All methods in this class should be called on UI thread.
+// This class handles message from WebUI page of chrome://syncfs-internals/
+// for the Sync Service tab. It corresponds to browser/resources/
+// sync_file_system_internals/sync_service.html. All methods in this class
+// should be called on UI thread.
 class SyncFileSystemInternalsHandler
     : public content::WebUIMessageHandler,
       public sync_file_system::SyncEventObserver {
@@ -48,6 +50,7 @@ class SyncFileSystemInternalsHandler
 
   DISALLOW_COPY_AND_ASSIGN(SyncFileSystemInternalsHandler);
 };
+
 }  // namespace syncfs_internals
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SYNC_FILE_SYSTEM_INTERNALS_SYNC_FILE_SYSTEM_INTERNALS_HANDLER_H_

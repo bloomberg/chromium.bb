@@ -68,7 +68,7 @@ void SyncFileSystemInternalsHandler::OnSyncStateUpdated(
 
   // TODO(calvinlo): OnSyncStateUpdated should be updated to also provide the
   // notification mechanism (XMPP or Polling).
-  web_ui()->CallJavascriptFunction("syncService.onGetServiceStatus",
+  web_ui()->CallJavascriptFunction("SyncService.onGetServiceStatus",
                                    base::StringValue(state_string));
 }
 
@@ -84,7 +84,7 @@ void SyncFileSystemInternalsHandler::GetServiceStatus(
       profile_)->GetSyncServiceState();
   std::string state_string = extensions::api::sync_file_system::ToString(
       extensions::SyncServiceStateToExtensionEnum(state_enum));
-  web_ui()->CallJavascriptFunction("syncService.onGetServiceStatus",
+  web_ui()->CallJavascriptFunction("SyncService.onGetServiceStatus",
                                    base::StringValue(state_string));
 }
 
@@ -94,7 +94,7 @@ void SyncFileSystemInternalsHandler::GetNotificationSource(
       google_apis::DriveNotificationManagerFactory::GetForProfile(profile_);
   bool xmpp_enabled = drive_notification_manager->push_notification_enabled();
   std::string notification_source = xmpp_enabled ? "XMPP" : "Polling";
-  web_ui()->CallJavascriptFunction("syncService.onGetNotificationSource",
+  web_ui()->CallJavascriptFunction("SyncService.onGetNotificationSource",
                                    base::StringValue(notification_source));
 }
 
@@ -121,7 +121,7 @@ void SyncFileSystemInternalsHandler::GetLog(
   if (list.empty())
     return;
 
-  web_ui()->CallJavascriptFunction("syncService.onGetLog", list);
+  web_ui()->CallJavascriptFunction("SyncService.onGetLog", list);
 }
 
 }  // namespace syncfs_internals

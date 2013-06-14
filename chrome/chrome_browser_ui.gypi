@@ -2293,6 +2293,8 @@
         'browser/ui/webui/suggestions_internals/suggestions_internals_ui.h',
         'browser/ui/webui/suggestions_internals/suggestions_internals_ui_handler.cc',
         'browser/ui/webui/suggestions_internals/suggestions_internals_ui_handler.h',
+        'browser/ui/webui/sync_file_system_internals/extension_statuses_handler.cc',
+        'browser/ui/webui/sync_file_system_internals/extension_statuses_handler.h',
         'browser/ui/webui/sync_file_system_internals/sync_file_system_internals_handler.cc',
         'browser/ui/webui/sync_file_system_internals/sync_file_system_internals_handler.h',
         'browser/ui/webui/sync_file_system_internals/sync_file_system_internals_ui.cc',
