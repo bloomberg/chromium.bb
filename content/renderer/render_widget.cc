@@ -15,8 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
-#include "cc/base/thread.h"
-#include "cc/base/thread_impl.h"
 #include "cc/output/output_surface.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"

@@ -1,7 +1,6 @@
 include_rules = [
   "+ash",
   "+base/prefs",
-  "+cc",
   "+crypto",
   "+gpu",
   "+jni",
@@ -12,6 +11,11 @@ include_rules = [
   # Browser, renderer, common and tests access V8 for various purposes.
   "-v8",
   "+v8/include",
+
+  # chrome only needs switches from cc. All usage of the compositor is from
+  # content. Definitely don't include generic stuff from cc/base here, if this
+  # is needed these files need to move to base/
+  "+cc/base/switches.h",
 
   # Limit what we include from nacl.
   "-native_client",
