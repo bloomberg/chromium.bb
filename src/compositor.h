@@ -571,7 +571,7 @@ struct weston_buffer_reference {
 };
 
 struct weston_region {
-	struct wl_resource resource;
+	struct wl_resource *resource;
 	pixman_region32_t region;
 };
 

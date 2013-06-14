@@ -1484,7 +1484,7 @@ surface_set_opaque_region(struct wl_client *client,
 	struct weston_region *region;
 
 	if (region_resource) {
-		region = region_resource->data;
+		region = wl_resource_get_user_data(region_resource);
 		pixman_region32_copy(&surface->pending.opaque,
 				     &region->region);
 	} else {
@@ -1501,7 +1501,7 @@ surface_set_input_region(struct wl_client *client,
 	struct weston_region *region;
 
 	if (region_resource) {
-		region = region_resource->data;
+		region = wl_resource_get_user_data(region_resource);
 		pixman_region32_copy(&surface->pending.input,
 				     &region->region);
 	} else {
@@ -1676,8 +1676,7 @@ compositor_create_surface(struct wl_client *client,
 static void
 destroy_region(struct wl_resource *resource)
 {
-	struct weston_region *region =
-		container_of(resource, struct weston_region, resource);
+	struct weston_region *region = wl_resource_get_user_data(resource);
 
 	pixman_region32_fini(&region->region);
 	free(region);
@@ -1693,7 +1692,7 @@ static void
 region_add(struct wl_client *client, struct wl_resource *resource,
 	   int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	struct weston_region *region = resource->data;
+	struct weston_region *region = wl_resource_get_user_data(resource);
 
 	pixman_region32_union_rect(&region->region, &region->region,
 				   x, y, width, height);
@@ -1703,7 +1702,7 @@ static void
 region_subtract(struct wl_client *client, struct wl_resource *resource,
 		int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	struct weston_region *region = resource->data;
+	struct weston_region *region = wl_resource_get_user_data(resource);
 	pixman_region32_t rect;
 
 	pixman_region32_init_rect(&rect, x, y, width, height);
@@ -1729,17 +1728,11 @@ compositor_create_region(struct wl_client *client,
 		return;
 	}
 
-	region->resource.destroy = destroy_region;
-
-	region->resource.object.id = id;
-	region->resource.object.interface = &wl_region_interface;
-	region->resource.object.implementation =
-		(void (**)(void)) &region_interface;
-	region->resource.data = region;
-
 	pixman_region32_init(&region->region);
 
-	wl_client_add_resource(client, &region->resource);
+	region->resource = wl_client_add_object(client, &wl_region_interface,
+						&region_interface, id, region);
+	wl_resource_set_destructor(region->resource, destroy_region);
 }
 
 static const struct wl_compositor_interface compositor_interface = {
