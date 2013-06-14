@@ -929,6 +929,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="clickjacking.discard_download">
+  <summary>TBD</summary>
+</histogram>
+
+<histogram name="clickjacking.launch_url">
+  <summary>TBD</summary>
+</histogram>
+
+<histogram name="clickjacking.open_download">
+  <summary>TBD</summary>
+</histogram>
+
+<histogram name="clickjacking.save_download">
+  <summary>TBD</summary>
+</histogram>
+
 <histogram name="Clipboard.IncognitoUseCase" enum="ClipboardAction">
   <obsolete>
     Deprecated as of 4/2013, experiment confirmed correctness of our patch.
@@ -1658,6 +1674,380 @@ other types of suffix sets.
   <summary>
     Number of requests that waited for load of domain bound cert database.
   </summary>
+</histogram>
+
+<histogram name="Download.AcceptRangesBytes.KBytes" units="KB">
+  <summary>The length of downloads for serves that accept byte ranges.</summary>
+</histogram>
+
+<histogram name="Download.AcceptRangesMissingOrInvalid.KBytes" units="KB">
+  <summary>
+    The length of downloads for serves that do not specify whether the accept
+    ranges, or have invalid ranges specified.
+  </summary>
+</histogram>
+
+<histogram name="Download.AcceptRangesNone.KBytes" units="KB">
+  <summary>
+    The length of downloads for serves that do not accept ranges.
+  </summary>
+</histogram>
+
+<histogram name="Download.ActualBandwidth" units="Bytes/second">
+  <summary>The actual bandwidth (per read) of a download.</summary>
+</histogram>
+
+<histogram name="Download.ApiFunctions" enum="DownloadFunctions">
+  <summary>Downloads extension API function calls.</summary>
+</histogram>
+
+<histogram name="Download.BandwidthDiskBytesPerSecond">
+  <summary>
+    Disk bandwidth (defined as total bytes divided by the amount of time blocked
+    on write or close on the file descriptor) seen for a single download.
+  </summary>
+</histogram>
+
+<histogram name="Download.BandwidthOverallBytesPerSecond">
+  <summary>
+    Overall bandwidth seen for the download.  Note that this is measured at the
+    point at which the file is written, and so will not take into account the
+    time costs of activities that occur after file write is completed (e.g. safe
+    browsing scanning).
+  </summary>
+</histogram>
+
+<histogram name="Download.BandwidthUsed" units="%">
+  <summary>
+    The percentage of the potential bandwidth actually used (per read) of a
+    download.  An entry of 100% implies that Chrome was the limiting factor in
+    download speed.
+  </summary>
+</histogram>
+
+<histogram name="Download.ClearAllSize">
+  <summary>
+    The number of downloads in history at the time it is cleared.
+  </summary>
+</histogram>
+
+<histogram name="Download.ContentDisposition" enum="DownloadContentDisposition">
+  <summary>
+    Content-Disposition header features. The presence of a Content-Disposition
+    header, use of 'name', 'filename' and 'filename*' parameters, and string
+    encoding schemes are counted for each unthrottled download. The total number
+    downloads is Download.Counts[5] (Initiated and Unthrottled).
+  </summary>
+</histogram>
+
+<histogram name="Download.ContentImageType" enum="DownloadImageType">
+  <summary>Types of images that are downloaded.</summary>
+</histogram>
+
+<histogram name="Download.ContentType" enum="DownloadContentType">
+  <summary>Content types that are downloaded.</summary>
+</histogram>
+
+<histogram name="Download.Counts" enum="DownloadCountType">
+  <summary>
+    Various individual counts in the download system; see DownloadCountType for
+    details.
+  </summary>
+</histogram>
+
+<histogram name="Download.CountsChrome" enum="ChromeDownloadCountType">
+  <summary>
+    Various individual counts in the download system, for example the number of
+    downloads blocked by throttling from the DownloadRequestLimiter.
+  </summary>
+</histogram>
+
+<histogram name="Download.DangerousDownloadValidated"
+    enum="DownloadItem.DangerType">
+  <summary>
+    User chose to save a download which was marked dangerous. Grouped by the
+    type of danger.
+  </summary>
+</histogram>
+
+<histogram name="Download.DatabaseRecordDropped"
+    enum="DownloadDatabaseRecordDroppedType">
+  <summary>Reason for dropping a record read in from the DB.</summary>
+</histogram>
+
+<histogram name="Download.DatabaseRemoveDownloadsCount">
+  <summary>Number of downloads removed from the history at once.</summary>
+</histogram>
+
+<histogram name="Download.DatabaseRemoveDownloadsTime" units="microseconds">
+  <summary>How long it took to delete some downloads from history.</summary>
+</histogram>
+
+<histogram name="Download.DatabaseRemoveDownloadsTimePerRecord"
+    units="nanoseconds/record">
+  <summary>
+    How long it took to delete some downloads from history, per download.
+  </summary>
+</histogram>
+
+<histogram name="Download.Discard" enum="DownloadItem.DangerType">
+  <summary>
+    A download which was marked dangerous was discarded without the user
+    directly choosing, because the browser was closed.  Grouped by the type of
+    danger.
+  </summary>
+</histogram>
+
+<histogram name="Download.DiskBandwidthUsedPercentage" units="Percent">
+  <summary>
+    The percentage of the available disk bandwidth that was used by the
+    download.  100% indicates that the disk bandwidth was the limiting factor
+    for the download.
+  </summary>
+</histogram>
+
+<histogram name="Download.DOMEvent" enum="DownloadDOMEvent">
+  <summary>User actions in chrome://downloads</summary>
+</histogram>
+
+<histogram name="Download.DownloadSize" units="KB">
+  <summary>The size of successfully completed downloads.</summary>
+</histogram>
+
+<histogram name="Download.FilePickerResult" enum="DownloadFilePickerResult">
+  <summary>
+    How the user interacts with the file chooser when doing a &quot;Save
+    As&quot; for non-full-page saves.
+  </summary>
+</histogram>
+
+<histogram name="Download.FileThreadBlockedTime">
+  <summary>
+    The amount of time in milliseconds the file thread blocks for each set of
+    buffers drained from the incoming pipe (ms).
+  </summary>
+</histogram>
+
+<histogram name="Download.FileThreadReceiveBuffers">
+  <summary>
+    The number of buffers in a call to DownloadManager::UpdateDownload.
+  </summary>
+</histogram>
+
+<histogram name="Download.FirstOpenTime" units="milliseconds">
+  <summary>
+    The time between a download completing and the file being opened for the
+    first time.
+  </summary>
+</histogram>
+
+<histogram name="Download.HistorySize">
+  <summary>
+    The number of items in the History database, at the time a new download is
+    recorded.
+  </summary>
+</histogram>
+
+<histogram name="Download.HistorySize2">
+  <summary>
+    The number of items in the History database, at the time a new download is
+    recorded. Higher maximum, more buckets than Download.HistorySize.
+  </summary>
+</histogram>
+
+<histogram name="Download.InterruptedAtEndError" enum="NetErrorCodes">
+  <summary>
+    Positive net error code that caused a download to be interrupted at the
+    *end* of a download (when the number of bytes is known). This is only
+    triggered when the total content size is known before any bytes are
+    transferred, such as when a Content-Length header is supplied.
+  </summary>
+</histogram>
+
+<histogram name="Download.InterruptedAtEndReason" enum="InterruptReason">
+  <summary>
+    The reason that a download was interrupted at the *end* of a download (when
+    the number of bytes is known). This is only triggered when the total content
+    size is known before any bytes are transferred, such as when a
+    Content-Length header is supplied.
+  </summary>
+</histogram>
+
+<histogram name="Download.InterruptedError" enum="NetErrorCodes">
+  <summary>
+    Positive net error code that caused a download to be interrupted.
+  </summary>
+</histogram>
+
+<histogram name="Download.InterruptedOverrunBytes">
+  <summary>
+    The excessive number of bytes which have been received at the time that a
+    download is interrupted. This is only triggered when the total content size
+    is known before any bytes are transferred, such as when a Content-Length
+    header is supplied.
+  </summary>
+</histogram>
+
+<histogram name="Download.InterruptedReason" enum="InterruptReason">
+  <summary>The reason that a download was interrupted.</summary>
+</histogram>
+
+<histogram name="Download.InterruptedReceivedSizeK" units="KB">
+  <summary>
+    The number of kilobytes received for a download at the time it is
+    interrupted.
+  </summary>
+</histogram>
+
+<histogram name="Download.InterruptedTotalSizeK" units="KB">
+  <summary>
+    The reported total size in kilobytes for a download at the time it is
+    interrupted. This is essentially the size reported by the Content-Length
+    header. If no size is specified up-front, it is not recorded in the
+    histogram. For example, a download transferred with chunked encoding will
+    not be recorded.
+  </summary>
+</histogram>
+
+<histogram name="Download.InterruptedUnderrunBytes">
+  <summary>
+    The total number of bytes minus the received number of bytes at the time
+    that a download is interrupted. This is only triggered when the total
+    content size is known before any bytes are transferred, such as when a
+    Content-Length header is supplied.
+  </summary>
+</histogram>
+
+<histogram name="Download.InterruptedUnknownSize"
+    enum="DownloadInterruptedUnknownSizeType">
+  <summary>
+    True if the size of an interrupted download is unknown, false if it is
+    known.
+  </summary>
+</histogram>
+
+<histogram name="Download.MapErrorNetworkFailed" enum="NetErrorCodes">
+  <summary>
+    Network error that produced a DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED
+    result in DownloadResourceHandler::OnResponseCompleted().
+  </summary>
+</histogram>
+
+<histogram name="Download.MapWinShErrorAccessDenied"
+    enum="SpecialShFileOperationCodes">
+  <summary>
+    Windows error that produced a DOWNLOAD_INTERRUPT_REASON_ACCESS_DENIED result
+    in MapShFileOperationCodes().
+  </summary>
+</histogram>
+
+<histogram name="Download.MapWinShErrorFileFailed"
+    enum="SpecialShFileOperationCodes">
+  <summary>
+    Windows error that produced a DOWNLOAD_INTERRUPT_REASON_FILE_FAILED result
+    in MapShFileOperationCodes().
+  </summary>
+</histogram>
+
+<histogram name="Download.OnChanged">
+  <summary>
+    Percentage of DownloadItem::Observer::OnDownloadUpdated events that
+    signified a change in the extension API representation of the download.
+  </summary>
+</histogram>
+
+<histogram name="Download.OpensOutstanding">
+  <summary>The number of unopened downloads, when one is opened.</summary>
+</histogram>
+
+<histogram name="Download.OpenTime" units="milliseconds">
+  <summary>
+    The time between a download completing and the file being opened.
+  </summary>
+</histogram>
+
+<histogram name="Download.PotentialBandwidth" units="Bytes/second">
+  <summary>
+    The maximum bandwidth (per read) that Chrome could have provided for the
+    download.  If the actual bandwidth equals the potential bandwidth, that
+    means that Chrome was the limiting factor for download bandwidth.
+  </summary>
+</histogram>
+
+<histogram name="Download.ResourceHandlerBlockedPercentage" units="Percent">
+  <summary>
+    The percentage of the lifetime of the DownloadResourceHandler for which it
+    was blocked by downstream flow control.  0% indicates that the network
+    bandwidth was the limiting factor for the download.
+  </summary>
+</histogram>
+
+<histogram name="Download.SavePackage" enum="DownloadSavePackageEvent">
+  <summary>
+    Events (e.g. Started, Cancelled, Finished, Write to Completed file, Write to
+    Failed file) occuring within the state machine of a SavePackage operation.
+  </summary>
+</histogram>
+
+<histogram name="Download.ShelfInProgressSizeOnAutoClose">
+  <summary>
+    The number of download items in progress on the shelf when it closes
+    automatically.
+  </summary>
+</histogram>
+
+<histogram name="Download.ShelfInProgressSizeOnUserClose">
+  <summary>
+    The number of download items in progress on the shelf when the user closes
+    it.
+  </summary>
+</histogram>
+
+<histogram name="Download.ShelfSizeOnAutoClose">
+  <summary>
+    The number of download items on the shelf when it closes automatically.
+  </summary>
+</histogram>
+
+<histogram name="Download.ShelfSizeOnUserClose">
+  <summary>
+    The number of download items on the shelf when the user closes it.
+  </summary>
+</histogram>
+
+<histogram name="Download.Sources" enum="DownloadSource">
+  <summary>
+    The initiation source (if initiated within the content layer of chrome) for
+    a download.
+  </summary>
+</histogram>
+
+<histogram name="Download.SourcesChrome" enum="ChromeDownloadSource">
+  <summary>
+    The initiation source (if initiated within the above-content layer of
+    chrome) for a download.
+  </summary>
+</histogram>
+
+<histogram name="Download.Time" units="milliseconds">
+  <summary>Time between the start of a download and its completion.</summary>
+</histogram>
+
+<histogram name="Download.UserDiscard" enum="DownloadItem.DangerType">
+  <summary>
+    User chose to discard a download which was marked dangerous.  Grouped by the
+    type of danger.
+  </summary>
+</histogram>
+
+<histogram name="Download.WriteLoopCount">
+  <summary>
+    The number of iterations for the write loop in BaseFile::AppendDataTofile().
+  </summary>
+</histogram>
+
+<histogram name="Download.WriteSize" units="Bytes">
+  <summary>The write size for calls to BaseFile::AppendDataTofile().</summary>
 </histogram>
 
 <histogram name="Drive.CacheDBOpenStatus" enum="DriveCacheDBOpenStatus">
@@ -12030,6 +12420,22 @@ other types of suffix sets.
   <int value="2" label="CRC check done"/>
 </enum>
 
+<enum name="ChromeDownloadCountType" type="int">
+  <int value="0" label="Initiated by Navigation (Obsolete)"/>
+  <int value="1" label="Initiated by Context Menu (Obsolete)"/>
+  <int value="2" label="Initiated by WebStore Installer (Obsolete)"/>
+  <int value="3" label="Initiated by ImageBurner (Obsolete)"/>
+  <int value="4" label="Blocked by Throttling"/>
+</enum>
+
+<enum name="ChromeDownloadSource" type="int">
+  <int value="0" label="Initiated by Navigation"/>
+  <int value="1" label="Initiated by Context Menu"/>
+  <int value="2" label="Initiated by WebStore Installer"/>
+  <int value="3" label="Initiated by ImageBurner"/>
+  <int value="4" label="Initiated by Plugin Installer"/>
+</enum>
+
 <enum name="ClipboardAction" type="int">
   <int value="0" label="Write from non-Incognito"/>
   <int value="1" label="Write from Incognito"/>
@@ -12240,6 +12646,135 @@ other types of suffix sets.
   <int value="0" label="POST"/>
   <int value="1" label="GET_CACHABLE"/>
   <int value="2" label="GET_NON_CACHABLE"/>
+</enum>
+
+<enum name="DownloadContentDisposition" type="int">
+  <int value="0" label="Content-Disposition header present"/>
+  <int value="1" label="Valid"/>
+  <int value="2" label="Has disposition-type"/>
+  <int value="3" label="Has unknown disposition-type"/>
+  <int value="4" label="Has 'name' attribute"/>
+  <int value="5" label="Has 'filename' attribute"/>
+  <int value="6" label="Has 'filename*' attribute"/>
+  <int value="7" label="Has non-ASCII strings"/>
+  <int value="8" label="Has percent encoded strings"/>
+  <int value="9" label="Has RFC 2047 encoded strings"/>
+  <int value="10" label="Has 'name' attribute only"/>
+</enum>
+
+<enum name="DownloadContentType" type="int">
+  <int value="0" label="UNRECOGNIZED"/>
+  <int value="1" label="TEXT"/>
+  <int value="2" label="IMAGE"/>
+  <int value="3" label="AUDIO"/>
+  <int value="4" label="VIDEO"/>
+  <int value="5" label="OCTET_STREAM"/>
+  <int value="6" label="PDF"/>
+  <int value="7" label="DOC"/>
+  <int value="8" label="XLS"/>
+  <int value="9" label="PPT"/>
+  <int value="10" label="ARCHIVE"/>
+  <int value="11" label="EXE"/>
+  <int value="12" label="DMG"/>
+  <int value="13" label="CRX"/>
+</enum>
+
+<enum name="DownloadCountType" type="int">
+  <int value="0" label="Initiated by Navigation (Obsolete)"/>
+  <int value="1" label="Initiated by Context Menu (Obsolete)"/>
+  <int value="2" label="Initiated by SavePackage Failure (Obsolete)"/>
+  <int value="3" label="Initiated by Drag-n-drop (Obsolete)"/>
+  <int value="4" label="Initiated by Renderer (Obsolete)"/>
+  <int value="5" label="Initiated and Unthrottled"/>
+  <int value="6" label="Completed"/>
+  <int value="7" label="Cancelled"/>
+  <int value="8" label="Started"/>
+  <int value="9" label="Interrupted"/>
+  <int value="10" label="Calls to AppendDataToFile (Size)"/>
+  <int value="11" label="Calls to AppendDataToFile (Count)"/>
+  <int value="12" label="Interrupted at End of Download"/>
+  <int value="13" label="Attempt to Append to Detached File"/>
+</enum>
+
+<enum name="DownloadDatabaseRecordDroppedType" type="int">
+  <int value="0" label="Bad State"/>
+  <int value="1" label="Bad Danger Type"/>
+</enum>
+
+<enum name="DownloadDOMEvent" type="int">
+  <int value="0" label="GetDownloads"/>
+  <int value="1" label="OpenFile"/>
+  <int value="2" label="Drag"/>
+  <int value="3" label="SaveDangerous"/>
+  <int value="4" label="DiscardDangerous"/>
+  <int value="5" label="Show"/>
+  <int value="6" label="Pause"/>
+  <int value="7" label="Remove"/>
+  <int value="8" label="Cancel"/>
+  <int value="9" label="ClearAll"/>
+  <int value="10" label="OpenFolder"/>
+  <int value="11" label="Resume"/>
+</enum>
+
+<enum name="DownloadFilePickerResult" type="int">
+  <int value="0" label="SAME"/>
+  <int value="1" label="DIFFERENT_DIR"/>
+  <int value="2" label="DIFFERENT_NAME"/>
+  <int value="3" label="CANCEL"/>
+</enum>
+
+<enum name="DownloadFunctions" type="int">
+  <int value="0" label="download"/>
+  <int value="1" label="search"/>
+  <int value="2" label="pause"/>
+  <int value="3" label="resume"/>
+  <int value="4" label="cancel"/>
+  <int value="5" label="erase"/>
+  <int value="6" label="set_destination"/>
+  <int value="7" label="accept_danger"/>
+  <int value="8" label="show"/>
+  <int value="9" label="drag"/>
+</enum>
+
+<enum name="DownloadImageType" type="int">
+  <int value="0" label="Unrecognized"/>
+  <int value="1" label="GIF"/>
+  <int value="2" label="JPEG"/>
+  <int value="3" label="PNG"/>
+  <int value="4" label="TIFF"/>
+  <int value="5" label="ICON"/>
+  <int value="6" label="WEBP"/>
+</enum>
+
+<enum name="DownloadInterruptedUnknownSizeType" type="int">
+  <int value="0" label="Size Known"/>
+  <int value="1" label="Size Unknown"/>
+</enum>
+
+<enum name="DownloadItem.DangerType" type="int">
+  <int value="0" label="NOT_DANGEROUS"/>
+  <int value="1" label="DANGEROUS_FILE"/>
+  <int value="2" label="DANGEROUS_URL"/>
+  <int value="3" label="DANGEROUS_CONTENT"/>
+  <int value="4" label="MAYBE_DANGEROUS_CONTENT"/>
+  <int value="5" label="UNCOMMON_CONTENT"/>
+  <int value="6" label="USER_VALIDATED"/>
+  <int value="7" label="DANGEROUS_HOST"/>
+</enum>
+
+<enum name="DownloadSavePackageEvent" type="int">
+  <int value="0" label="Started"/>
+  <int value="1" label="Cancelled"/>
+  <int value="2" label="Finished"/>
+  <int value="3" label="Write to already completed file"/>
+  <int value="4" label="Write to already failed file"/>
+</enum>
+
+<enum name="DownloadSource" type="int">
+  <int value="0" label="Initiated by Save Package on Non-HTML content"/>
+  <int value="1" label="Initiated by Drag-and-drop"/>
+  <int value="2" label="Initiated by RPC from Renderer"/>
+  <int value="3" label="Initiated by Save from Pepper"/>
 </enum>
 
 <enum name="DriveCacheDBOpenStatus" type="int">
@@ -14279,6 +14814,30 @@ other types of suffix sets.
   <int value="5" label="SSE4.1"/>
   <int value="6" label="SSE4.3"/>
   <int value="7" label="AVX"/>
+</enum>
+
+<enum name="InterruptReason" type="int">
+  <int value="0" label="NONE"/>
+  <int value="1" label="FILE_FAILED"/>
+  <int value="2" label="FILE_ACCESS_DENIED"/>
+  <int value="3" label="FILE_NO_SPACE"/>
+  <int value="5" label="FILE_NAME_TOO_LONG"/>
+  <int value="6" label="FILE_TOO_LARGE"/>
+  <int value="7" label="FILE_VIRUS_INFECTED"/>
+  <int value="10" label="FILE_TRANSIENT_ERROR"/>
+  <int value="11" label="FILE_BLOCKED"/>
+  <int value="12" label="FILE_SECURITY_CHECK_FAILED"/>
+  <int value="20" label="NETWORK_FAILED"/>
+  <int value="21" label="NETWORK_TIMEOUT"/>
+  <int value="22" label="NETWORK_DISCONNECTED"/>
+  <int value="23" label="NETWORK_SERVER_DOWN"/>
+  <int value="30" label="SERVER_FAILED"/>
+  <int value="31" label="SERVER_NO_RANGE"/>
+  <int value="32" label="SERVER_PRECONDITION"/>
+  <int value="33" label="SERVER_BAD_CONTENT"/>
+  <int value="40" label="USER_CANCELED"/>
+  <int value="41" label="USER_SHUTDOWN"/>
+  <int value="50" label="CRASH"/>
 </enum>
 
 <enum name="IPV6ProbeResult" type="int">
@@ -16868,6 +17427,36 @@ other types of suffix sets.
 <enum name="SpdySettingsSent" type="int">
   <int value="0" label="not sent"/>
   <int value="1" label="sent"/>
+</enum>
+
+<enum name="SpecialShFileOperationCodes" type="int">
+  <summary>Legacy error codes still returned by |ShFileOperation()|</summary>
+  <int value="5" label="Access denied"/>
+  <int value="113" label="Source and Destination are same file"/>
+  <int value="114" label="Multiple source mapped to single destination"/>
+  <int value="115" label="Rename to different directory"/>
+  <int value="116" label="Source root"/>
+  <int value="117" label="Canceled by user"/>
+  <int value="118" label="Destination is subtree of source"/>
+  <int value="120" label="Denied by security settings"/>
+  <int value="121" label="Path length exceeded MAX_PATH"/>
+  <int value="122" label="Multiple destination paths"/>
+  <int value="124" label="Path invalid"/>
+  <int value="125" label="Source and destination have same parent"/>
+  <int value="126" label="Destination exists"/>
+  <int value="128" label="Destination exists as folder"/>
+  <int value="129" label="Name length exceeded MAX_PATH"/>
+  <int value="130" label="Destination read-only CD-ROM"/>
+  <int value="131" label="Destination read-only DVD"/>
+  <int value="132" label="Destination writable CD-ROM"/>
+  <int value="133" label="File too large"/>
+  <int value="134" label="Source read-only CD-ROM"/>
+  <int value="135" label="Source read-only DVD"/>
+  <int value="136" label="Source writable CD-ROM"/>
+  <int value="183" label="Operation exceeded MAX_PATH"/>
+  <int value="1026" label="Invalid path / unknown"/>
+  <int value="65536" label="Unspecified destination error"/>
+  <int value="65652" label="Destination root"/>
 </enum>
 
 <enum name="SqliteErrorCode" type="int">
