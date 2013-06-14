@@ -19,6 +19,7 @@
         '../base/base.gyp:base_java_memory_pressure_level_list',
         '../content/content.gyp:page_transition_types_java',
         '../content/content.gyp:result_codes_java',
+        '../content/content.gyp:speech_recognition_error_java',
         '../net/net.gyp:certificate_mime_types_java',
         '../net/net.gyp:cert_verify_result_android_java',
         '../net/net.gyp:net_errors_java',

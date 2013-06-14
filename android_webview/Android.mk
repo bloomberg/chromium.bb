@@ -54,6 +54,7 @@ LOCAL_GENERATED_SOURCES := \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/base/ActivityState.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/base/MemoryPressureLevelList.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/PageTransitionTypes.java \
+$(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/browser/SpeechRecognitionError.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/content/common/ResultCodes.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/CertificateMimeType.java \
 $(call intermediates-dir-for,GYP,shared)/templates/org/chromium/net/CertVerifyResultAndroid.java \
