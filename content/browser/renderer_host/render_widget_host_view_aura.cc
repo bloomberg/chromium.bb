@@ -1547,21 +1547,17 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
     return;
   }
 
-  base::SharedMemoryHandle handle = frame_data->handle;
+  const size_t size_in_bytes = 4 * frame_size.GetArea();
 #ifdef OS_WIN
-  BOOL success = ::DuplicateHandle(
-      host_->GetProcess()->GetHandle(), frame_data->handle,
-      ::GetCurrentProcess(), &handle,
-      0, TRUE, DUPLICATE_SAME_ACCESS);
-  if (!success) {
-    host_->GetProcess()->ReceivedBadMessage();
-    return;
-  }
-#endif
-  const size_t expected_size = 4 * frame_size.GetArea();
   scoped_ptr<base::SharedMemory> shared_memory(
-      new base::SharedMemory(handle, false));
-  if (!shared_memory->Map(expected_size)) {
+      new base::SharedMemory(frame_data->handle, true,
+                             host_->GetProcess()->GetHandle()));
+#else
+  scoped_ptr<base::SharedMemory> shared_memory(
+      new base::SharedMemory(frame_data->handle, true));
+#endif
+
+  if (!shared_memory->Map(size_in_bytes)) {
     host_->GetProcess()->ReceivedBadMessage();
     return;
   }
