@@ -64,6 +64,7 @@ class PermissionMessage {
     kFavicon,
     kMusicManagerPrivate,
     kWebConnectable,
+    kActivityLogPrivate,
     kEnumBoundary,
   };
 
