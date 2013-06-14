@@ -21,7 +21,7 @@ var TIME_DELAY = 200;
 /*
  * This should point to a resource that responds after a delay of TIME_XHR_LOAD milliseconds.
  */
-var STALLED_REQUEST_URL = "/resources/load-and-stall.cgi?name=../../../http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout.js&stallFor=" + TIME_XHR_LOAD/1000 + "&stallAt=0&mimeType=text/plain";
+var STALLED_REQUEST_URL = "/resources/load-and-stall.php?name=../../../http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout.js&stallFor=" + TIME_XHR_LOAD/1000 + "&stallAt=0&mimeType=text/plain";
 
 var inWorker = false;
 try {
