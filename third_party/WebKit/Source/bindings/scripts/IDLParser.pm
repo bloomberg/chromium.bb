@@ -65,6 +65,7 @@ struct( domInterface => {
 # Used to represent domInterface contents (name of method, signature)
 struct( domFunction => {
     isStatic => '$',
+    specials => '@',  # Specials
     signature => '$',    # Return type/Object name/extended attributes
     parameters => '@',    # List of 'domSignature'
     overloadedIndex => '$',
@@ -84,7 +85,6 @@ struct( domAttribute => {
 struct( domSignature => {
     name => '$',      # Variable name
     type => '$',      # Variable type (string or UnionType)
-    specials => '@',  # Specials
     extendedAttributes => '$', # Extended attributes
     isOptional => '$', # Is variable optional (optional T)
     isNullable => '$', # Is variable type Nullable (T?)
@@ -1229,12 +1229,12 @@ sub parseSpecialOperation
         my @specials = ();
         push(@specials, @{$self->parseSpecials()});
         my $returnType = $self->parseReturnType();
-        my $interface = $self->parseOperationRest($extendedAttributeList);
-        if (defined ($interface)) {
-            $interface->signature->type($returnType);
-            $interface->signature->specials(\@specials);
+        my $function = $self->parseOperationRest($extendedAttributeList);
+        if (defined ($function)) {
+            $function->signature->type($returnType);
+            $function->specials(\@specials);
         }
-        return $interface;
+        return $function;
     }
     $self->assertUnexpectedToken($next->value(), __LINE__);
 }

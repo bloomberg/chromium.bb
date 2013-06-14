@@ -597,7 +597,7 @@ sub GetSpecialAccessorFunctionForType
     my $numberOfParameters = shift;
 
     foreach my $function (@{$interface->functions}) {
-        my $specials = $function->signature->specials;
+        my $specials = $function->specials;
         my $specialExists = grep { $_ eq $special } @$specials;
         my $parameters = $function->parameters;
         if ($specialExists and scalar(@$parameters) == $numberOfParameters and $parameters->[0]->type eq $firstParameterType) {
