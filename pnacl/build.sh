@@ -68,6 +68,7 @@ readonly TOOLCHAIN_ROOT="${NACL_ROOT}/toolchain"
 readonly NNACL_BASE="${TOOLCHAIN_ROOT}/${SCONS_BUILD_PLATFORM}_x86"
 readonly NNACL_NEWLIB_ROOT="${NNACL_BASE}_newlib"
 readonly NNACL_GLIBC_ROOT="${NNACL_BASE}"
+readonly NNACL_ARM_NEWLIB_ROOT="${TOOLCHAIN_ROOT}/linux_arm_newlib"
 
 readonly PNACL_MAKE_OPTS="${PNACL_MAKE_OPTS:-}"
 readonly MAKE_OPTS="-j${PNACL_CONCURRENCY} VERBOSE=1 ${PNACL_MAKE_OPTS}"
@@ -211,6 +212,20 @@ GetTool() {
   ld-newlib) echo ${PNACL_LD_NEWLIB} ;;
   ld-glibc) echo ${PNACL_LD_GLIBC} ;;
   *) Fatal "Invalid call to GetTool: $*" ;;
+  esac
+}
+
+GetNNaClTool() {
+  local arch=$1
+  case ${arch} in
+    x86-32) echo ${NNACL_NEWLIB_ROOT}/bin/i686-nacl-gcc ;;
+    x86-64) echo ${NNACL_NEWLIB_ROOT}/bin/x86_64-nacl-gcc ;;
+    arm) echo ${NNACL_ARM_NEWLIB_ROOT}/bin/arm-nacl-gcc ;;
+    mips32)
+      # No NNaCl for mips
+      echo -n "${PNACL_CC_NEWLIB} -arch mips32 --pnacl-bias=mips32 "
+      echo "--pnacl-allow-translate --pnacl-allow-native" ;;
+    *) Fatal "Unexpected argument to GetNNaClTool: $*" ;;
   esac
 }
 
@@ -1431,6 +1446,28 @@ libgcc_eh-glibc() {
   libgcc_eh x86-64 glibc
 }
 
+libgcc_eh-setup() {
+  local arch=$1
+  local flags=$2
+  # For x86 we use nacl-gcc to build libgcc_eh because of some issues with
+  # LLVM's handling of the gcc intrinsics used in the library. See
+  # https://code.google.com/p/nativeclient/issues/detail?id=1933
+  # and http://llvm.org/bugs/show_bug.cgi?id=8541
+  # For ARM, LLVM does work and we use it to avoid dealing with the fact that
+  # arm-nacl-gcc uses different libgcc support functions than PNaCl.
+  if [ ${arch} == "arm" ]; then
+    LIBGCC_EH_ENV=(
+      CC="$(GetTool cc ${libmode}) ${flags} -arch ${arch} --pnacl-bias=${arch} \
+         --pnacl-allow-translate --pnacl-allow-native" \
+      AR="${PNACL_AR}" \
+      NM="${PNACL_NM}" \
+      RANLIB="${PNACL_RANLIB}")
+  else
+    LIBGCC_EH_ENV=(
+      CC="$(GetNNaClTool ${arch}) ${flags}")
+  fi
+}
+
 libgcc_eh() {
   local arch=$1
   local libmode=$2
@@ -1464,8 +1501,7 @@ libgcc_eh() {
 
   mkdir -p "${subdir}"
   spushd "${subdir}"
-  local flags="-arch ${arch} --pnacl-bias=${arch} --pnacl-allow-translate"
-  flags+=" --pnacl-allow-native"
+  local flags=""
   if [ "${libmode}" == "glibc" ]; then
     # Enable thread safety using pthreads
     # Thread safety requires pthread_mutex_*. For the newlib case,
@@ -1478,17 +1514,15 @@ libgcc_eh() {
   fi
   flags+=" -DENABLE_RUNTIME_CHECKING"
 
+  libgcc_eh-setup ${arch} "${flags}"
+
   StepBanner "LIBGCC_EH" "Configure ${label}"
   RunWithLog libgcc.${arch}.configure \
     env -i \
       PATH="/usr/bin:/bin" \
-      CC="$(GetTool cc ${libmode}) ${flags}" \
-      CXX="$(GetTool cxx ${libmode}) ${flags}" \
-      AR="${PNACL_AR}" \
-      NM="${PNACL_NM}" \
-      RANLIB="${PNACL_RANLIB}" \
       /bin/sh \
       "${TC_SRC_GCC}"/libgcc/configure \
+        "${LIBGCC_EH_ENV[@]}" \
         --prefix="${FAKE_INSTALL_DIR}" \
         --enable-shared \
         --host=i686-nacl
