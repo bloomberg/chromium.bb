@@ -37,6 +37,7 @@ static void CreateValidFileNameFromTitle(const GURL& url,
                                          string16* validated);
 // Creates a new STGMEDIUM object to hold a file.
 static STGMEDIUM* GetStorageForFileName(const base::FilePath& path);
+static STGMEDIUM* GetIDListStorageForFileName(const base::FilePath& path);
 // Creates a File Descriptor for the creation of a file to the given URL and
 // returns a handle to it.
 static STGMEDIUM* GetStorageForFileDescriptor(const base::FilePath& path);
@@ -318,6 +319,13 @@ void OSExchangeDataProviderWin::SetFilename(const base::FilePath& path) {
   STGMEDIUM* storage = GetStorageForFileName(path);
   DataObjectImpl::StoredDataInfo* info = new DataObjectImpl::StoredDataInfo(
       Clipboard::GetCFHDropFormatType().ToFormatEtc(), storage);
+  data_->contents_.push_back(info);
+
+  storage = GetIDListStorageForFileName(path);
+  if (!storage)
+    return;
+  info = new DataObjectImpl::StoredDataInfo(
+      Clipboard::GetIDListFormatType().ToFormatEtc(), storage);
   data_->contents_.push_back(info);
 }
 
@@ -913,6 +921,83 @@ static STGMEDIUM* GetStorageForFileName(const base::FilePath& path) {
   const size_t copy_size = (path.value().length() + 1) * sizeof(wchar_t);
   memcpy(data, path.value().c_str(), copy_size);
   data[path.value().length() + 1] = L'\0';  // Double NULL
+
+  STGMEDIUM* storage = new STGMEDIUM;
+  storage->tymed = TYMED_HGLOBAL;
+  storage->hGlobal = hdata;
+  storage->pUnkForRelease = NULL;
+  return storage;
+}
+
+static LPITEMIDLIST PIDLNext(LPITEMIDLIST pidl) {
+  return reinterpret_cast<LPITEMIDLIST>(
+      reinterpret_cast<BYTE*>(pidl) + pidl->mkid.cb);
+}
+
+static size_t PIDLSize(LPITEMIDLIST pidl) {
+  size_t s = 0;
+  while (pidl->mkid.cb > 0) {
+    s += pidl->mkid.cb;
+    pidl = PIDLNext(pidl);
+  }
+  // We add 2 because an LPITEMIDLIST is terminated by two NULL bytes.
+  return 2 + s;
+}
+
+static LPITEMIDLIST GetNthPIDL(CIDA* cida, int n) {
+  return reinterpret_cast<LPITEMIDLIST>(
+      reinterpret_cast<LPBYTE>(cida) + cida->aoffset[n]);
+}
+
+static LPITEMIDLIST GetPidlFromPath(const base::FilePath& path) {
+  LPITEMIDLIST pidl = NULL;
+  LPSHELLFOLDER desktop_folder = NULL;
+  LPWSTR path_str = const_cast<LPWSTR>(path.value().c_str());
+
+  if (FAILED(SHGetDesktopFolder(&desktop_folder)))
+    return NULL;
+
+  HRESULT hr = desktop_folder->ParseDisplayName(
+      NULL, NULL, path_str, NULL, &pidl, NULL);
+
+  return SUCCEEDED(hr) ? pidl : NULL;
+}
+
+static STGMEDIUM* GetIDListStorageForFileName(const base::FilePath& path) {
+  LPITEMIDLIST pidl = GetPidlFromPath(path);
+  if (!pidl)
+    return NULL;
+
+  // When using CFSTR_SHELLIDLIST the hGlobal field of the STGMEDIUM is a
+  // pointer to a CIDA*. A CIDA is a variable length struct that contains a PIDL
+  // count (a UINT), an array of offsets of the following PIDLs (a UINT[]) and
+  // then a series of PIDLs laid out contiguously in memory. A PIDL is
+  // represented by an ITEMIDLIST struct, which contains a single SHITEMID.
+  // Despite only containing a single SHITEMID, ITEMIDLISTs are so-named because
+  // SHITEMIDs contain their own size and so given one, the next can be found by
+  // looking at the section of memory after it. The end of a list is indicated
+  // by two NULL bytes.
+  // Here we require two PIDLs - the first PIDL is the parent folder and is
+  // NULL here to indicate that the parent folder is the desktop, and the second
+  // is the PIDL of |path|.
+  const size_t kPIDLCountSize = sizeof(UINT);
+  const size_t kPIDLOffsetsSize = 2 * sizeof(UINT);
+  const size_t kFirstPIDLOffset = kPIDLCountSize + kPIDLOffsetsSize;
+  const size_t kFirstPIDLSize = 2;  // Empty PIDL - 2 NULL bytes.
+  const size_t kSecondPIDLSize = PIDLSize(pidl);
+  const size_t kCIDASize = kFirstPIDLOffset + kFirstPIDLSize + kSecondPIDLSize;
+  HANDLE hdata = GlobalAlloc(GMEM_MOVEABLE, kCIDASize);
+
+  base::win::ScopedHGlobal<CIDA> locked_mem(hdata);
+  CIDA* cida = locked_mem.get();
+  cida->cidl = 1;     // We have one PIDL (not including the 0th root PIDL).
+  cida->aoffset[0] = kFirstPIDLOffset;
+  cida->aoffset[1] = kFirstPIDLOffset + kFirstPIDLSize;
+  LPITEMIDLIST idl = GetNthPIDL(cida, 0);
+  idl->mkid.cb = 0;
+  idl->mkid.abID[0] = 0;
+  idl = GetNthPIDL(cida, 1);
+  memcpy(idl, pidl, kSecondPIDLSize);
 
   STGMEDIUM* storage = new STGMEDIUM;
   storage->tymed = TYMED_HGLOBAL;

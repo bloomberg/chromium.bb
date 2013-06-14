@@ -789,6 +789,13 @@ const Clipboard::FormatType& Clipboard::GetFileContentZeroFormatType() {
 }
 
 // static
+const Clipboard::FormatType& Clipboard::GetIDListFormatType() {
+  CR_DEFINE_STATIC_LOCAL(
+      FormatType, type, (::RegisterClipboardFormat(CFSTR_SHELLIDLIST)));
+  return type;
+}
+
+// static
 const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
   CR_DEFINE_STATIC_LOCAL(
       FormatType,

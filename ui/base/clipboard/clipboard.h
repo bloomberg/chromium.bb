@@ -312,6 +312,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   static const FormatType& GetCFHDropFormatType();
   static const FormatType& GetFileDescriptorFormatType();
   static const FormatType& GetFileContentZeroFormatType();
+  static const FormatType& GetIDListFormatType();
 #endif
 
  private:
