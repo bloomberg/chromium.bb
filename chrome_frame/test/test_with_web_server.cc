@@ -459,7 +459,8 @@ TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeIE_Resize) {
 const wchar_t kNavigateURLAbsolutePage[] =
     L"navigateurl_absolute_host.html";
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_NavigateURLAbsolute) {
+TEST_F(ChromeFrameTestWithWebServer,
+           DISABLED_WidgetModeIE_NavigateURLAbsolute) {
   SimpleBrowserTest(IE, kNavigateURLAbsolutePage);
 }
 
