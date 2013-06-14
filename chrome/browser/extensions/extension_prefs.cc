@@ -1652,7 +1652,7 @@ ExtensionPrefs::ExtensionPrefs(
     : prefs_(prefs),
       install_directory_(root_dir),
       extension_pref_value_map_(extension_pref_value_map),
-      extension_sorting_(new ExtensionSorting(this, prefs)),
+      extension_sorting_(new ExtensionSorting(this)),
       content_settings_store_(new ContentSettingsStore()),
       time_provider_(time_provider.Pass()),
       extensions_disabled_(extensions_disabled) {

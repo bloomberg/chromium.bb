@@ -20,8 +20,7 @@ class PrefService;
 
 class ExtensionSorting {
  public:
-  ExtensionSorting(ExtensionScopedPrefs* extension_scoped_prefs,
-                   PrefService* pref_service);
+  explicit ExtensionSorting(ExtensionScopedPrefs* extension_scoped_prefs);
   ~ExtensionSorting();
 
   // Set up the ExtensionService to inform of changes that require syncing.
@@ -198,7 +197,6 @@ class ExtensionSorting {
   size_t CountItemsVisibleOnNtp(const AppLaunchOrdinalMap& m) const;
 
   ExtensionScopedPrefs* extension_scoped_prefs_;  // Weak, owns this instance.
-  PrefService* pref_service_;  // Weak.
   ExtensionServiceInterface* extension_service_;  // Weak.
 
   // A map of all the StringOrdinal page ordinals mapping to the collections of
