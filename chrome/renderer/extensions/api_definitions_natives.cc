@@ -8,10 +8,6 @@
 
 #include "chrome/common/extensions/features/base_feature_provider.h"
 
-namespace {
-const char kInvalidExtensionNamespace[] = "Invalid extension namespace";
-}
-
 namespace extensions {
 
 ApiDefinitionsNatives::ApiDefinitionsNatives(Dispatcher* dispatcher,
