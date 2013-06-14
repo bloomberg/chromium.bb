@@ -59,15 +59,15 @@ testElementStyle("textDecorationLine", "text-decoration-line", "[object CSSValue
 testComputedStyle("textDecorationLine", "text-decoration-line", "[object CSSValueList]", "line-through");
 debug('');
 
-debug("Value 'underline overline line-through':");
-e.style.textDecorationLine = 'underline overline line-through';
-testElementStyle("textDecorationLine", "text-decoration-line", "[object CSSValueList]", "underline overline line-through");
-testComputedStyle("textDecorationLine", "text-decoration-line", "[object CSSValueList]", "underline overline line-through");
+debug("Value 'blink' (valid, but ignored on computed style):");
+e.style.textDecorationLine = 'blink';
+testElementStyle("textDecorationLine", "text-decoration-line", "[object CSSValueList]", "blink");
+testComputedStyle("textDecorationLine", "text-decoration-line", "[object CSSPrimitiveValue]", "none");
 debug('');
 
-debug("Value 'blink' (invalid, last valid value is used):");
-e.style.textDecorationLine = 'blink';
-testElementStyle("textDecorationLine", "text-decoration-line", "[object CSSValueList]", "underline overline line-through");
+debug("Value 'underline overline line-through blink':");
+e.style.textDecorationLine = 'underline overline line-through blink';
+testElementStyle("textDecorationLine", "text-decoration-line", "[object CSSValueList]", "underline overline line-through blink");
 testComputedStyle("textDecorationLine", "text-decoration-line", "[object CSSValueList]", "underline overline line-through");
 debug('');
 

@@ -15,8 +15,8 @@
                 document.getElementById("test-underline").style.textDecorationLine = 'underline';
                 document.getElementById("test-overline").style.textDecorationLine = 'overline';
                 document.getElementById("test-line-through").style.textDecorationLine = 'line-through';
-                document.getElementById("test-all").style.textDecorationLine = 'underline overline line-through';
-                document.getElementById("test-invalid-blink").style.textDecorationLine = 'blink';
+                document.getElementById("test-blink").style.textDecorationLine = 'blink';
+                document.getElementById("test-all").style.textDecorationLine = 'underline overline line-through blink';
                 document.getElementById("test-invalid-inherit").style.textDecorationLine = 'inherit';
                 document.getElementById("test-initial-explicit").style.textDecorationLine = 'initial';
                 document.getElementById("test-initial-empty").style.textDecorationLine = '';
@@ -30,6 +30,7 @@
         <p><span id="test-underline" style="text-decoration: none;">&gt; &lt;</span></p>
         <p><span id="test-overline" style="text-decoration: none;">&gt; &lt;</span></p>
         <p><span id="test-line-through" style="text-decoration: none;">&gt; &lt;</span></p>
+        <p><span id="test-blink" style="text-decoration: none;">&gt; &lt;</span></p>
         <p><span id="test-all" style="text-decoration: none;">&gt; &lt;</span></p>
 
         <!-- Parent value is not set, so fallback to initial "none" value. -->
@@ -37,9 +38,6 @@
 
         <!-- Explicit 'initial' value computed style is 'none'. -->
         <p><span id="test-initial-explicit" style="text-decoration: underline;">&gt; &lt;</span></p>
-
-        <!-- "text-decoration-line" property does not accept 'blink' value. -->
-        <p><span id="test-invalid-blink" style="text-decoration: underline;">&gt; &lt;</span></p>
 
         <!-- Empty value treated as invalid, so fallback to last valid value "underline". -->
         <p><span id="test-initial-empty" style="text-decoration: underline;">&gt; &lt;</span></p>

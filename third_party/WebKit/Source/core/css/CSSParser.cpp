@@ -2099,11 +2099,8 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
 
     case CSSPropertyTextDecoration:
     case CSSPropertyWebkitTextDecorationsInEffect:
-        // none | [ underline || overline || line-through || blink ] | inherit
-        return parseTextDecoration(propId, important);
-
     case CSSPropertyTextDecorationLine:
-        // none | [ underline || overline || line-through ] | inherit
+        // none | [ underline || overline || line-through || blink ] | inherit
         return parseTextDecoration(propId, important);
 
     case CSSPropertyTextDecorationStyle:
@@ -8847,15 +8844,10 @@ bool CSSParser::parseTextDecoration(CSSPropertyID propId, bool important)
     bool isValid = true;
     while (isValid && value) {
         switch (value->id) {
-        case CSSValueBlink:
-            // Blink value is not accepted by text-decoration-line.
-            isValid = propId != CSSPropertyTextDecorationLine;
-            if (isValid)
-                list->append(cssValuePool().createIdentifierValue(value->id));
-            break;
         case CSSValueUnderline:
         case CSSValueOverline:
         case CSSValueLineThrough:
+        case CSSValueBlink:
             list->append(cssValuePool().createIdentifierValue(value->id));
             break;
         default:
