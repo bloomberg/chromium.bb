@@ -596,19 +596,19 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   if (!CollectDriverInfoD3D(id, gpu_info))
     return false;
 
-  // This is on a field trial so we can turn it off easily if it blows up
-  // again in stable channel.
-  scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial("D3D11Experiment", 100,
-                                                 "Disabled", 2015, 7, 8,
-                                                 NULL));
-  const int enabled_group =
-      trial->AppendGroup("Enabled", 0);
+  // Collect basic information about supported D3D11 features. Delay for 45
+  // seconds so as not to regress performance tests.
+  if (D3D11ShouldWork(*gpu_info)) {
+    // This is on a field trial so we can turn it off easily if it blows up
+    // again in stable channel.
+    scoped_refptr<base::FieldTrial> trial(
+        base::FieldTrialList::FactoryGetFieldTrial("D3D11Experiment", 100,
+                                                   "Disabled", 2015, 7, 8,
+                                                   NULL));
+    const int enabled_group =
+        trial->AppendGroup("Enabled", 0);
 
-  if (trial->group() == enabled_group) {
-    // Collect basic information about supported D3D11 features. Delay for 45
-    // seconds so as not to regress performance tests.
-    if (D3D11ShouldWork(*gpu_info)) {
+    if (trial->group() == enabled_group) {
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&CollectD3D11Support),
