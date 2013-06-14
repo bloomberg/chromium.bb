@@ -8,6 +8,7 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
 #include "webkit/browser/fileapi/sandbox_mount_point_provider.h"
+#include "webkit/browser/fileapi/timed_task_helper.h"
 #include "webkit/browser/quota/quota_client.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -22,9 +23,7 @@ SandboxQuotaObserver::SandboxQuotaObserver(
     : quota_manager_proxy_(quota_manager_proxy),
       update_notify_runner_(update_notify_runner),
       sandbox_file_util_(sandbox_file_util),
-      file_system_usage_cache_(file_system_usage_cache),
-      running_delayed_cache_update_(false),
-      weak_factory_(this) {}
+      file_system_usage_cache_(file_system_usage_cache) {}
 
 SandboxQuotaObserver::~SandboxQuotaObserver() {}
 
@@ -55,11 +54,14 @@ void SandboxQuotaObserver::OnUpdate(const FileSystemURL& url,
     return;
 
   pending_update_notification_[usage_file_path] += delta;
-  if (!running_delayed_cache_update_) {
-    update_notify_runner_->PostTask(FROM_HERE, base::Bind(
-        &SandboxQuotaObserver::ApplyPendingUsageUpdate,
-        weak_factory_.GetWeakPtr()));
-    running_delayed_cache_update_ = true;
+  if (!delayed_cache_update_helper_) {
+    delayed_cache_update_helper_.reset(new TimedTaskHelper(
+            update_notify_runner_));
+    delayed_cache_update_helper_->Start(
+        FROM_HERE,
+        base::TimeDelta(),  // No delay.
+        base::Bind(&SandboxQuotaObserver::ApplyPendingUsageUpdate,
+                   base::Unretained(this)));
   }
 }
 
@@ -120,6 +122,7 @@ base::FilePath SandboxQuotaObserver::GetUsageCachePath(
 }
 
 void SandboxQuotaObserver::ApplyPendingUsageUpdate() {
+  delayed_cache_update_helper_.reset();
   for (PendingUpdateNotificationMap::iterator itr =
            pending_update_notification_.begin();
        itr != pending_update_notification_.end();
@@ -127,7 +130,6 @@ void SandboxQuotaObserver::ApplyPendingUsageUpdate() {
     UpdateUsageCacheFile(itr->first, itr->second);
   }
   pending_update_notification_.clear();
-  running_delayed_cache_update_ = false;
 }
 
 void SandboxQuotaObserver::UpdateUsageCacheFile(

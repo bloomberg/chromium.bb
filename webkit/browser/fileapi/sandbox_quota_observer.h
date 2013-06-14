@@ -28,6 +28,7 @@ namespace fileapi {
 
 class FileSystemUsageCache;
 class FileSystemURL;
+class TimedTaskHelper;
 class ObfuscatedFileUtil;
 
 class SandboxQuotaObserver
@@ -71,9 +72,7 @@ class SandboxQuotaObserver
   FileSystemUsageCache* file_system_usage_cache_;
 
   PendingUpdateNotificationMap pending_update_notification_;
-  bool running_delayed_cache_update_;
-
-  base::WeakPtrFactory<SandboxQuotaObserver> weak_factory_;
+  scoped_ptr<TimedTaskHelper> delayed_cache_update_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxQuotaObserver);
 };
