@@ -23,9 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    EnabledAtRuntime=touch
-] interface Touch {
+interface Touch {
     readonly attribute long             clientX;
     readonly attribute long             clientY;
     readonly attribute long             screenX;
