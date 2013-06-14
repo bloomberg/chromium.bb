@@ -119,7 +119,7 @@
     renderWidgetHostView_->frame_subscriber(),
     true);
 
-  renderWidgetHostView_->AckPendingSwapBuffers();
+  renderWidgetHostView_->ThrottledAckPendingSwapBuffers();
 }
 
 @end

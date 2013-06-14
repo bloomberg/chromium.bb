@@ -377,7 +377,9 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       is_loading_(false),
       is_hidden_(false),
       weak_factory_(this),
-      fullscreen_parent_host_view_(NULL) {
+      fullscreen_parent_host_view_(NULL),
+      pending_swap_buffers_acks_weak_factory_(this),
+      next_swap_ack_time_(base::Time::Now()) {
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_|
   // goes away.  Since we autorelease it, our caller must put
   // |GetNativeView()| into the view hierarchy right after calling us.
@@ -1262,15 +1264,15 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(
     [[cocoa_view_ delegate] compositingIOSurfaceCreated];
   }
 
-  // Don't ack the new frame until it is drawn.
-  if (use_core_animation_)
-    return false;
-
   return true;
 }
 
 void RenderWidgetHostViewMac::AckPendingSwapBuffers() {
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::AckPendingSwapBuffers");
+
+  // Cancel any outstanding delayed calls to this function.
+  pending_swap_buffers_acks_weak_factory_.InvalidateWeakPtrs();
+
   while (!pending_swap_buffers_acks_.empty()) {
     if (pending_swap_buffers_acks_.front().first != 0) {
       AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
@@ -1283,33 +1285,66 @@ void RenderWidgetHostViewMac::AckPendingSwapBuffers() {
           ack_params);
       if (render_widget_host_) {
         render_widget_host_->AcknowledgeSwapBuffersToRenderer();
-
-        // Send VSync parameters to compositor thread.
-        if (compositing_iosurface_) {
-          base::TimeTicks timebase;
-          uint32 numerator = 0, denominator = 0;
-          compositing_iosurface_->GetVSyncParameters(&timebase,
-                                                     &numerator,
-                                                     &denominator);
-          if (numerator > 0 && denominator > 0) {
-            int64 interval_micros =
-                1000000 * static_cast<int64>(numerator) / denominator;
-            render_widget_host_->UpdateVSyncParameters(
-                timebase, base::TimeDelta::FromMicroseconds(interval_micros));
-          } else {
-            // Pass reasonable default values if unable to get the actual ones
-            // (e.g. CVDisplayLink failed to return them because the display is
-            // in sleep mode).
-            static const int64 kOneOverSixtyMicroseconds = 16669;
-            render_widget_host_->UpdateVSyncParameters(
-                base::TimeTicks::Now(),
-                base::TimeDelta::FromMicroseconds(kOneOverSixtyMicroseconds));
-          }
-        }
       }
     }
     pending_swap_buffers_acks_.erase(pending_swap_buffers_acks_.begin());
   }
+}
+
+void RenderWidgetHostViewMac::ThrottledAckPendingSwapBuffers() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Send VSync parameters to the renderer's compositor thread.
+  base::TimeTicks vsync_timebase;
+  base::TimeDelta vsync_interval;
+  GetVSyncParameters(&vsync_timebase, &vsync_interval);
+  if (render_widget_host_ && compositing_iosurface_)
+    render_widget_host_->UpdateVSyncParameters(vsync_timebase, vsync_interval);
+
+  // If the render widget host is responsible for throttling swaps to vsync rate
+  // then don't ack the swapbuffers until a full vsync has passed since the last
+  // ack was sent.
+  bool throttle_swap_ack =
+      render_widget_host_ &&
+      !render_widget_host_->is_threaded_compositing_enabled() &&
+      compositing_iosurface_ &&
+      !compositing_iosurface_->is_vsync_disabled();
+  base::Time now = base::Time::Now();
+  if (throttle_swap_ack && next_swap_ack_time_ > now) {
+    base::TimeDelta next_swap_ack_delay = next_swap_ack_time_ - now;
+    next_swap_ack_time_ += vsync_interval;
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&RenderWidgetHostViewMac::AckPendingSwapBuffers,
+                   pending_swap_buffers_acks_weak_factory_.GetWeakPtr()),
+        next_swap_ack_delay);
+  } else {
+    next_swap_ack_time_ = now + vsync_interval;
+    AckPendingSwapBuffers();
+  }
+}
+
+void RenderWidgetHostViewMac::GetVSyncParameters(
+  base::TimeTicks* timebase, base::TimeDelta* interval) {
+  if (compositing_iosurface_) {
+    uint32 numerator = 0;
+    uint32 denominator = 0;
+    compositing_iosurface_->GetVSyncParameters(
+        timebase, &numerator, &denominator);
+    if (numerator > 0 && denominator > 0) {
+      int64 interval_micros =
+          1000000 * static_cast<int64>(numerator) / denominator;
+      *interval = base::TimeDelta::FromMicroseconds(interval_micros);
+      return;
+    }
+  }
+
+  // Pass reasonable default values if unable to get the actual ones
+  // (e.g. CVDisplayLink failed to return them because the display is
+  // in sleep mode).
+  static const int64 kOneOverSixtyMicroseconds = 16669;
+  *timebase = base::TimeTicks::Now(),
+  *interval = base::TimeDelta::FromMicroseconds(kOneOverSixtyMicroseconds);
 }
 
 bool RenderWidgetHostViewMac::GetLineBreakIndex(
@@ -1450,8 +1485,10 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
   if (CompositorSwapBuffers(params.surface_handle,
                             params.size,
                             params.scale_factor,
-                            params.latency_info))
-    AckPendingSwapBuffers();
+                            params.latency_info)) {
+    if (!use_core_animation_)
+      ThrottledAckPendingSwapBuffers();
+  }
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
@@ -1467,8 +1504,10 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
   if (CompositorSwapBuffers(params.surface_handle,
                             params.surface_size,
                             params.surface_scale_factor,
-                            params.latency_info))
-    AckPendingSwapBuffers();
+                            params.latency_info)) {
+    if (!use_core_animation_)
+      ThrottledAckPendingSwapBuffers();
+  }
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceSuspend() {

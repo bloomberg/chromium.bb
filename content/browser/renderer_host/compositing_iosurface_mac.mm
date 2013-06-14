@@ -280,8 +280,6 @@ CompositingIOSurfaceMac::CompositingIOSurfaceMac(
       display_link_(0),
       display_link_stop_timer_(FROM_HERE, base::TimeDelta::FromSeconds(1),
                                this, &CompositingIOSurfaceMac::StopDisplayLink),
-      vsync_count_(0),
-      swap_count_(0),
       vsync_interval_numerator_(0),
       vsync_interval_denominator_(0),
       initialized_is_intel_(false),
@@ -565,9 +563,6 @@ void CompositingIOSurfaceMac::DrawIOSurface(
     copy_done_callbacks[i].Run();
 
   StartOrContinueDisplayLink();
-
-  if (!is_vsync_disabled())
-    RateLimitDraws();
 }
 
 void CompositingIOSurfaceMac::CopyTo(
@@ -740,9 +735,6 @@ void CompositingIOSurfaceMac::DisplayLinkTick(CVDisplayLinkRef display_link,
                                               const CVTimeStamp* time) {
   TRACE_EVENT0("gpu", "CompositingIOSurfaceMac::DisplayLinkTick");
   base::AutoLock lock(lock_);
-  // Increment vsync_count but don't let it get ahead of swap_count.
-  vsync_count_ = std::min(vsync_count_ + 1, swap_count_);
-
   CalculateVsyncParametersLockHeld(time);
 }
 
@@ -758,39 +750,11 @@ void CompositingIOSurfaceMac::CalculateVsyncParametersLockHeld(
       base::TimeTicks::FromInternalValue(time->hostTime / 1000);
 }
 
-void CompositingIOSurfaceMac::RateLimitDraws() {
-  int64 vsync_count;
-  int64 swap_count;
-
-  {
-    base::AutoLock lock(lock_);
-    vsync_count = vsync_count_;
-    swap_count = ++swap_count_;
-  }
-
-  // It's OK for swap_count to get 2 ahead of vsync_count, but any more
-  // indicates that it has become unthrottled. This happens when, for example,
-  // the window is obscured by another opaque window.
-  if (swap_count > vsync_count + 2) {
-    TRACE_EVENT0("gpu", "CompositingIOSurfaceMac::RateLimitDraws");
-    // Sleep for one vsync interval. This will prevent spinning while the window
-    // is not visible, but will also allow quick recovery when the window
-    // becomes visible again.
-    int64 sleep_us = 16666;  // default to 60hz if display link API fails.
-    if (vsync_interval_denominator_ > 0) {
-      sleep_us = (static_cast<int64>(vsync_interval_numerator_) * 1000000) /
-                 vsync_interval_denominator_;
-    }
-    base::PlatformThread::Sleep(base::TimeDelta::FromMicroseconds(sleep_us));
-  }
-}
-
 void CompositingIOSurfaceMac::StartOrContinueDisplayLink() {
   if (display_link_ == NULL)
     return;
 
   if (!CVDisplayLinkIsRunning(display_link_)) {
-    vsync_count_ = swap_count_ = 0;
     CVDisplayLinkStart(display_link_);
   }
   display_link_stop_timer_.Reset();

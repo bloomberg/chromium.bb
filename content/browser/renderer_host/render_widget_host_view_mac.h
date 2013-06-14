@@ -338,6 +338,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // no effect if there are no pending requests.
   void AckPendingSwapBuffers();
 
+  // Ack pending SwapBuffers requests, but no more frequently than the vsync
+  // rate if the renderer is not throttling the swap rate.
+  void ThrottledAckPendingSwapBuffers();
+
   // Returns true and stores first rectangle for character range if the
   // requested |range| is already cached, otherwise returns false.
   // Exposed for testing.
@@ -436,6 +440,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   friend class RenderWidgetHostView;
   friend class RenderWidgetHostViewMacTest;
 
+  void GetVSyncParameters(
+      base::TimeTicks* timebase, base::TimeDelta* interval);
+
   // The view will associate itself with the given widget. The native view must
   // be hooked up immediately to the view hierarchy, or else when it is
   // deleted it will delete this out from under the caller.
@@ -506,6 +513,15 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // List of pending swaps for deferred acking:
   //   pairs of (route_id, gpu_host_id).
   std::list<std::pair<int32, int32> > pending_swap_buffers_acks_;
+
+  // Factory used to cancel outstanding throttled AckPendingSwapBuffers calls.
+  base::WeakPtrFactory<RenderWidgetHostViewMac>
+      pending_swap_buffers_acks_weak_factory_;
+
+  // The earliest time at which the next swap ack may be sent. Only relevant
+  // when swaps are not being throttled by the renderer (when threaded
+  // compositing is off).
+  base::Time next_swap_ack_time_;
 
   // The current composition character range and its bounds.
   ui::Range composition_range_;

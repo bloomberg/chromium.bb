@@ -438,6 +438,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // TODO(jbates) Once the compositor thread is always on, this can be removed.
   void AcknowledgeSwapBuffersToRenderer();
 
+  bool is_threaded_compositing_enabled() const {
+    return is_threaded_compositing_enabled_;
+  }
+
 #if defined(USE_AURA)
   // Called by the view when the parent changes. If a parent isn't available,
   // NULL is used.
