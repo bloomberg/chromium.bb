@@ -259,8 +259,11 @@ cr.define('options', function() {
     if (currentPage)
       currentPage.lastFocusedElement = document.activeElement;
 
-    if ((!rootPage || !rootPage.sticky) && overlay.parentPage)
+    if ((!rootPage || !rootPage.sticky) &&
+        overlay.parentPage &&
+        !overlay.parentPage.visible) {
       this.showPageByName(overlay.parentPage.name, false);
+    }
 
     if (!overlay.visible) {
       overlay.visible = true;
