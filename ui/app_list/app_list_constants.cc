@@ -19,6 +19,11 @@ const SkColor kPagerHoverColor = SkColorSetRGB(0xB4, 0xB4, 0xB4);
 const SkColor kPagerNormalColor = SkColorSetRGB(0xE2, 0xE2, 0xE2);
 const SkColor kPagerSelectedColor = SkColorSetRGB(0x46, 0x8F, 0xFC);
 
+const SkColor kResultBorderColor = SkColorSetRGB(0xE5, 0xE5, 0xE5);
+const SkColor kResultDefaultTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
+const SkColor kResultDimmedTextColor = SkColorSetRGB(0x96, 0x96, 0x96);
+const SkColor kResultURLTextColor = SkColorSetRGB(0x00, 0x99, 0x33);
+
 // Duration in milliseconds for page transition.
 const int kPageTransitionDurationInMs = 180;
 

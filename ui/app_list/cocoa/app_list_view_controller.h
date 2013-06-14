@@ -12,6 +12,7 @@
 #include "ui/app_list/app_list_export.h"
 #import "ui/app_list/cocoa/apps_pagination_model_observer.h"
 #import "ui/app_list/cocoa/apps_search_box_controller.h"
+#import "ui/app_list/cocoa/apps_search_results_controller.h"
 
 namespace app_list {
 class AppListViewDelegate;
@@ -26,13 +27,16 @@ class AppListModel;
 // between pages in the grid, and search entry box.
 APP_LIST_EXPORT
 @interface AppListViewController : NSViewController<AppsPaginationModelObserver,
-                                                    AppsSearchBoxDelegate> {
+                                                    AppsSearchBoxDelegate,
+                                                    AppsSearchResultsDelegate> {
  @private
   scoped_nsobject<AppsGridController> appsGridController_;
   scoped_nsobject<AppListPagerView> pagerControl_;
   scoped_nsobject<AppsSearchBoxController> appsSearchBoxController_;
+  scoped_nsobject<AppsSearchResultsController> appsSearchResultsController_;
   scoped_nsobject<NSView> contentsView_;
   scoped_ptr<app_list::AppListViewDelegate> delegate_;
+  BOOL showingSearchResults_;
 }
 
 - (AppsGridController*)appsGridController;

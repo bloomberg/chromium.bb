@@ -5,6 +5,7 @@
 #import "ui/app_list/cocoa/app_list_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/string_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_model.h"
@@ -12,6 +13,7 @@
 #import "ui/app_list/cocoa/app_list_pager_view.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 #import "ui/base/cocoa/flipped_view.h"
+#include "ui/app_list/search_box_model.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
@@ -33,6 +35,9 @@ const CGFloat kSearchInputHeight = 48;
 const CGFloat kMinPagerMargin = 40;
 // Maximum width of a single segment.
 const CGFloat kMaxSegmentWidth = 80;
+
+// Duration of the animation for sliding in and out search results.
+const NSTimeInterval kResultsAnimationDuration = 0.2;
 
 }  // namespace
 
@@ -66,6 +71,7 @@ const CGFloat kMaxSegmentWidth = 80;
 @interface AppListViewController ()
 
 - (void)loadAndSetView;
+- (void)revealSearchResults:(BOOL)show;
 
 @end
 
@@ -108,6 +114,7 @@ const CGFloat kMaxSegmentWidth = 80;
       withTestModel:(scoped_ptr<app_list::AppListModel>)newModel {
   if (delegate_) {
     // First clean up, in reverse order.
+    [appsSearchResultsController_ setDelegate:nil];
     [appsSearchBoxController_ setDelegate:nil];
   }
   delegate_.reset(newDelegate.release());
@@ -115,6 +122,7 @@ const CGFloat kMaxSegmentWidth = 80;
   if (newModel.get())
     [appsGridController_ setModel:newModel.Pass()];
   [appsSearchBoxController_ setDelegate:self];
+  [appsSearchResultsController_ setDelegate:self];
 }
 
 - (void)setDelegate:(scoped_ptr<app_list::AppListViewDelegate>)newDelegate {
@@ -139,12 +147,39 @@ const CGFloat kMaxSegmentWidth = 80;
   appsSearchBoxController_.reset(
       [[AppsSearchBoxController alloc] initWithFrame:
           NSMakeRect(0, 0, NSWidth(contentsRect), kSearchInputHeight)]);
+  appsSearchResultsController_.reset(
+      [[AppsSearchResultsController alloc] initWithAppsSearchResultsFrameSize:
+          [contentsView_ bounds].size]);
 
   [contentsView_ addSubview:[appsGridController_ view]];
   [contentsView_ addSubview:pagerControl_];
   [backgroundView addSubview:contentsView_];
+  [backgroundView addSubview:[appsSearchResultsController_ view]];
   [backgroundView addSubview:[appsSearchBoxController_ view]];
   [self setView:backgroundView];
+}
+
+- (void)revealSearchResults:(BOOL)show {
+  if (show == showingSearchResults_)
+    return;
+
+  showingSearchResults_ = show;
+  NSSize contentsSize = [contentsView_ frame].size;
+  NSRect resultsTargetRect = NSMakeRect(
+      0, kSearchInputHeight + kTopSeparatorSize,
+      contentsSize.width, contentsSize.height);
+  NSRect contentsTargetRect = resultsTargetRect;
+
+  // Shows results by sliding the grid and pager down to the bottom of the view.
+  // Hides results by collapsing the search results container to a height of 0.
+  if (show)
+    contentsTargetRect.origin.y += NSHeight(contentsTargetRect);
+  else
+    resultsTargetRect.size.height = 0;
+
+  [[NSAnimationContext currentContext] setDuration:kResultsAnimationDuration];
+  [[contentsView_ animator] setFrame:contentsTargetRect];
+  [[[appsSearchResultsController_ view] animator] setFrame:resultsTargetRect];
 }
 
 - (void)totalPagesChanged {
@@ -192,8 +227,8 @@ const CGFloat kMaxSegmentWidth = 80;
 - (BOOL)control:(NSControl*)control
                textView:(NSTextView*)textView
     doCommandBySelector:(SEL)command {
-  // TODO(tapted): If showing search results, first pass up/down navigation to
-  // the search results controller.
+  if (showingSearchResults_)
+    return [appsSearchResultsController_ handleCommandBySelector:command];
 
   // If anything has been written, let the search view handle it.
   if ([[control stringValue] length] > 0)
@@ -217,9 +252,25 @@ const CGFloat kMaxSegmentWidth = 80;
   if (!searchBoxModel || !delegate_)
     return;
 
-  // TODO(tapted): If there is a non-empty query in |searchBoxModel| reveal the
-  // search results, and run delegate_->StartSearch(). Or, if the query is now
-  // empty, hide results and run delegate_->StopSearch().
+  string16 query;
+  TrimWhitespace(searchBoxModel->text(), TRIM_ALL, &query);
+  BOOL shouldShowSearch = !query.empty();
+  [self revealSearchResults:shouldShowSearch];
+  if (shouldShowSearch)
+    delegate_->StartSearch();
+  else
+    delegate_->StopSearch();
+}
+
+- (app_list::AppListModel*)appListModel {
+  return [appsGridController_ model];
+}
+
+- (void)openResult:(app_list::SearchResult*)result {
+  if (delegate_)
+    delegate_->OpenSearchResult(result, 0 /* event flags */);
+
+  [appsSearchBoxController_ clearSearch];
 }
 
 @end
