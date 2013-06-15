@@ -1469,15 +1469,6 @@
           'includes': ['../build/jni_generator.gypi'],
         },
         {
-          'target_name': 'media_format_jni_headers',
-          'type': 'none',
-          'variables': {
-            'jni_gen_package': 'media',
-            'input_java_class': 'android/media/MediaFormat.class',
-          },
-          'includes': ['../build/jar_file_jni_generator.gypi'],
-        },
-        {
           'target_name': 'player_android',
           'type': 'static_library',
           'sources': [
