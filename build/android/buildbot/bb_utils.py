@@ -76,3 +76,18 @@ def GetParser():
 def EncodeProperties(options):
   return ['--factory-properties=%s' % json.dumps(options.factory_properties),
           '--build-properties=%s' % json.dumps(options.build_properties)]
+
+
+def RunSteps(all_steps, options):
+  if not options.steps:
+    return
+
+  steps = options.steps.split(',')
+  unknown_steps = set(steps) - set(step for step, _ in all_steps)
+  if unknown_steps:
+    print >> sys.stderr, 'FATAL: Unknown steps %s' % list(unknown_steps)
+    sys.exit(1)
+
+  for step, cmd in all_steps:
+    if step in steps:
+      cmd(options)

@@ -19,7 +19,8 @@ BotConfig = collections.namedtuple(
     'BotConfig', ['bot_id', 'host_obj', 'test_obj'])
 
 HostConfig = collections.namedtuple(
-    'HostConfig', ['host_step_args', 'extra_gyp_defines', 'target_arch'])
+    'HostConfig',
+    ['host_steps', 'extra_args', 'extra_gyp_defines', 'target_arch'])
 
 TestConfig = collections.namedtuple('Tests', ['tests', 'extra_args'])
 
@@ -84,7 +85,8 @@ def GetCommands(options, bot_config):
   """
   property_args = bb_utils.EncodeProperties(options)
   commands = [['build/android/buildbot/bb_host_steps.py'] +
-              bot_config.host_obj.host_step_args + property_args]
+              ['--steps=%s' % ','.join(bot_config.host_obj.host_steps)] +
+              property_args + (bot_config.host_obj.extra_args or [])]
 
   test_obj = bot_config.test_obj
   if test_obj:
@@ -99,10 +101,10 @@ def GetCommands(options, bot_config):
 
 
 def GetBotStepMap():
-  compile_opt = ['--compile']
-  std_host_tests = ['--host-tests=check_webview_licenses,findbugs']
-  std_build_opts = ['--compile', '--zip-build']
-  std_test_opts = ['--extract-build']
+  compile_step = ['compile']
+  std_host_tests = ['check_webview_licenses', 'findbugs']
+  std_build_steps = ['compile', 'zip_build']
+  std_test_steps = ['extract_build']
   std_tests = ['ui', 'unit']
   flakiness_server = '--upload-to-flakiness-server'
 
@@ -112,42 +114,42 @@ def GetBotStepMap():
   def T(tests, extra_args=None):
     return TestConfig(tests, extra_args)
 
-  def H(host_step_args, extra_gyp=None, target_arch=None):
-    return HostConfig(host_step_args, extra_gyp, target_arch)
+  def H(host_steps, extra_args=None, extra_gyp=None, target_arch=None):
+    return HostConfig(host_steps, extra_args, extra_gyp, target_arch)
 
   bot_configs = [
       # Main builders
-      B('main-builder-dbg', H(std_build_opts + std_host_tests)),
-      B('main-builder-rel', H(std_build_opts)),
+      B('main-builder-dbg', H(std_build_steps + std_host_tests)),
+      B('main-builder-rel', H(std_build_steps)),
       B('main-clang-builder',
-        H(compile_opt, 'clang=1 component=shared_library')),
-      B('main-clobber', H(compile_opt)),
-      B('main-tests', H(std_test_opts), T(std_tests, [flakiness_server])),
+        H(compile_step, extra_gyp='clang=1 component=shared_library')),
+      B('main-clobber', H(compile_step)),
+      B('main-tests', H(std_test_steps), T(std_tests, [flakiness_server])),
 
       # Other waterfalls
-      B('asan-builder-tests', H(compile_opt, 'asan=1'),
+      B('asan-builder-tests', H(compile_step, extra_gyp='asan=1'),
         T(std_tests, ['--asan'])),
-      B('chromedriver-fyi-tests-dbg', H(std_test_opts),
+      B('chromedriver-fyi-tests-dbg', H(std_test_steps),
         T(['chromedriver'], ['--install=ChromiumTestShell'])),
       B('fyi-builder-dbg',
-        H(std_build_opts + std_host_tests + ['--experimental'])),
-      B('fyi-builder-rel', H(std_build_opts + ['--experimental'])),
-      B('fyi-tests-dbg-ics-gn', H(compile_opt + [ '--experimental']),
+        H(std_build_steps + std_host_tests, ['--experimental'])),
+      B('fyi-builder-rel', H(std_build_steps,  ['--experimental'])),
+      B('fyi-tests-dbg-ics-gn', H(compile_step, [ '--experimental']),
         T(std_tests, ['--experimental', flakiness_server])),
-      B('fyi-tests', H(std_test_opts),
+      B('fyi-tests', H(std_test_steps),
         T(std_tests, ['--experimental', flakiness_server])),
       B('fyi-component-builder-tests-dbg',
-        H(compile_opt, 'component=shared_library'),
+        H(compile_step, extra_gyp='component=shared_library'),
         T(std_tests, ['--experimental', flakiness_server])),
-      B('perf-bisect-builder-tests-dbg', H(['--bisect-perf-regression'])),
-      B('perf-tests-rel', H(std_test_opts), T([], ['--install=ContentShell'])),
-      B('webkit-latest-webkit-tests', H(std_test_opts),
+      B('perf-bisect-builder-tests-dbg', H(['bisect_perf_regression'])),
+      B('perf-tests-rel', H(std_test_steps), T([], ['--install=ContentShell'])),
+      B('webkit-latest-webkit-tests', H(std_test_steps),
         T(['webkit_layout', 'webkit'])),
-      B('webkit-latest-contentshell', H(compile_opt), T(['webkit_layout'])),
-      B('builder-unit-tests', H(compile_opt), T(['unit'])),
+      B('webkit-latest-contentshell', H(compile_step), T(['webkit_layout'])),
+      B('builder-unit-tests', H(compile_step), T(['unit'])),
 
       # Generic builder config (for substring match).
-      B('builder', H(std_build_opts)),
+      B('builder', H(std_build_steps)),
   ]
 
   bot_map = dict((config.bot_id, config) for config in bot_configs)

@@ -25,7 +25,7 @@ def SrcPath(*path):
   return os.path.join(constants.DIR_SOURCE_ROOT, *path)
 
 
-def CheckWebViewLicenses():
+def CheckWebViewLicenses(_):
   buildbot_report.PrintNamedStep('check_licenses')
   RunCmd([SrcPath('android_webview', 'tools', 'webview_licenses.py'), 'scan'],
          warning_code=1)
@@ -48,43 +48,46 @@ def RunHooks(build_type):
   RunCmd(['gclient', 'runhooks'], halt_on_failure=True)
 
 
-def Compile(build_type, args, experimental=False):
+def Compile(options):
+  RunHooks(options.target)
   cmd = [os.path.join(SLAVE_SCRIPTS_DIR, 'compile.py'),
          '--build-tool=ninja',
          '--compiler=goma',
-         '--target=%s' % build_type,
+         '--target=%s' % options.target,
          '--goma-dir=%s' % bb_utils.GOMA_DIR]
-  if experimental:
-    for compile_target in args:
+  build_targets = options.build_targets.split(',')
+  buildbot_report.PrintNamedStep('compile')
+  for build_target in build_targets:
+    RunCmd(cmd + ['--build-args=%s' % build_target], halt_on_failure=True)
+  if options.experimental:
+    for compile_target in EXPERIMENTAL_TARGETS:
       buildbot_report.PrintNamedStep('Experimental Compile %s' % compile_target)
       RunCmd(cmd + ['--build-args=%s' % compile_target], flunk_on_failure=False)
-  else:
-    buildbot_report.PrintNamedStep('compile')
-    RunCmd(cmd + ['--build-args=%s' % ' '.join(args)], halt_on_failure=True)
 
 
-def ZipBuild(properties):
+def ZipBuild(options):
   buildbot_report.PrintNamedStep('zip_build')
   RunCmd([
       os.path.join(SLAVE_SCRIPTS_DIR, 'zip_build.py'),
       '--src-dir', constants.DIR_SOURCE_ROOT,
       '--build-dir', SrcPath('out'),
       '--exclude-files', 'lib.target,gen,android_webview,jingle_unittests']
-      + properties)
+      + bb_utils.EncodeProperties(options))
 
 
-def ExtractBuild(properties):
+def ExtractBuild(options):
   buildbot_report.PrintNamedStep('extract_build')
-  RunCmd([os.path.join(SLAVE_SCRIPTS_DIR, 'extract_build.py'),
-          '--build-dir', SrcPath('build'),
-          '--build-output-dir', SrcPath('out')] + properties,
-         warning_code=1)
+  RunCmd(
+      [os.path.join(SLAVE_SCRIPTS_DIR, 'extract_build.py'),
+       '--build-dir', SrcPath('build'), '--build-output-dir',
+       SrcPath('out')] + bb_utils.EncodeProperties(options),
+       warning_code=1)
 
 
-def FindBugs(is_release):
+def FindBugs(options):
   buildbot_report.PrintNamedStep('findbugs')
   build_type = []
-  if is_release:
+  if options.target == 'Release':
     build_type = ['--release-build']
   RunCmd([SrcPath('build', 'android', 'findbugs_diff.py')] + build_type)
   RunCmd([SrcPath(
@@ -92,7 +95,7 @@ def FindBugs(is_release):
       'run_findbugs_plugin_tests.py')] + build_type)
 
 
-def BisectPerfRegression():
+def BisectPerfRegression(_):
   buildbot_report.PrintNamedStep('Bisect Perf Regression')
   RunCmd([SrcPath('tools', 'prepare-bisect-perf-regression.py'),
           '-w', os.path.join(constants.DIR_SOURCE_ROOT, os.pardir)])
@@ -101,50 +104,32 @@ def BisectPerfRegression():
           '-p', bb_utils.GOMA_DIR])
 
 
+def GetHostSteps():
+  return [
+      ('compile', Compile),
+      ('extract_build', ExtractBuild),
+      ('check_webview_licenses', CheckWebViewLicenses),
+      ('bisect_perf_regression', BisectPerfRegression),
+      ('findbugs', FindBugs),
+      ('zip_build', ZipBuild)
+  ]
+
+
 def main(argv):
   parser = bb_utils.GetParser()
-  parser.add_option('--host-tests', help='Comma separated list of host tests.')
-  parser.add_option('--build-args', default='All',
+  parser.add_option('--steps', help='Comma separated list of host tests.')
+  parser.add_option('--build-targets', default='All',
                     help='Comma separated list of build targets.')
-  parser.add_option('--compile', action='store_true',
-                    help='Indicate whether a compile step should be run.')
   parser.add_option('--experimental', action='store_true',
                     help='Indicate whether to compile experimental targets.')
-  parser.add_option('--zip-build', action='store_true',
-                    help='Indicate whether the build should be zipped.')
-  parser.add_option('--extract-build', action='store_true',
-                    help='Indicate whether a build should be downloaded.')
-  parser.add_option('--bisect-perf-regression', action='store_true',
-                    help='Bisect a perf regression.')
 
   options, args = parser.parse_args(argv[1:])
   if args:
     return sys.exit('Unused args %s' % args)
 
-  host_tests = []
-  if options.host_tests:
-    host_tests = options.host_tests.split(',')
-  unknown_tests = set(host_tests) - VALID_HOST_TESTS
-  if unknown_tests:
-    return sys.exit('Unknown host tests %s' % list(unknown_tests))
+  setattr(options, 'target', options.factory_properties.get('target', 'Debug'))
 
-  build_type = options.factory_properties.get('target', 'Debug')
-
-  if options.bisect_perf_regression:
-    BisectPerfRegression()
-  if options.compile:
-    if 'check_webview_licenses' in host_tests:
-      CheckWebViewLicenses()
-    RunHooks(build_type)
-    Compile(build_type, options.build_args.split(','))
-    if options.experimental:
-      Compile(build_type, EXPERIMENTAL_TARGETS, True)
-    if 'findbugs' in host_tests:
-      FindBugs(build_type == 'Release')
-    if options.zip_build:
-      ZipBuild(bb_utils.EncodeProperties(options))
-  if options.extract_build:
-    ExtractBuild(bb_utils.EncodeProperties(options))
+  bb_utils.RunSteps(GetHostSteps(), options)
 
 
 if __name__ == '__main__':
