@@ -33,6 +33,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
+#include "core/html/canvas/ANGLEInstancedArrays.h"
 #include "core/html/canvas/EXTFragDepth.h"
 #include "core/html/canvas/EXTTextureFilterAnisotropic.h"
 #include "core/html/canvas/OESElementIndexUint.h"
@@ -593,6 +594,7 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
     registerExtension<WebGLLoseContext>(m_webglLoseContext, false, false, false, bothPrefixes);
 
     // Register draft extensions.
+    registerExtension<ANGLEInstancedArrays>(m_angleInstancedArrays, false, true, false, unprefixed);
     registerExtension<EXTFragDepth>(m_extFragDepth, false, true, false, unprefixed);
     registerExtension<WebGLDrawBuffers>(m_webglDrawBuffers, false, true, false, unprefixed);
 
@@ -1768,32 +1770,8 @@ void WebGLRenderingContext::drawArrays(GC3Denum mode, GC3Dint first, GC3Dsizei c
 {
     UNUSED_PARAM(ec);
 
-    if (isContextLost() || !validateDrawMode("drawArrays", mode))
+    if (!validateDrawArrays("drawArrays", mode, first, count))
         return;
-
-    if (!validateStencilSettings("drawArrays"))
-        return;
-
-    if (first < 0 || count < 0) {
-        synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "drawArrays", "first or count < 0");
-        return;
-    }
-
-    if (!count) {
-        markContextChanged();
-        return;
-    }
-
-    if (!validateRenderingState()) {
-        synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "drawArrays", "attribs not setup correctly");
-        return;
-    }
-
-    const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), &reason)) {
-        synthesizeGLError(GraphicsContext3D::INVALID_FRAMEBUFFER_OPERATION, "drawArrays", reason);
-        return;
-    }
 
     clearIfComposited();
 
@@ -1807,56 +1785,46 @@ void WebGLRenderingContext::drawElements(GC3Denum mode, GC3Dsizei count, GC3Denu
 {
     UNUSED_PARAM(ec);
 
-    if (isContextLost() || !validateDrawMode("drawElements", mode))
+    if (!validateDrawElements("drawElements", mode, count, type, offset))
         return;
 
-    if (!validateStencilSettings("drawElements"))
-        return;
-
-    switch (type) {
-    case GraphicsContext3D::UNSIGNED_BYTE:
-    case GraphicsContext3D::UNSIGNED_SHORT:
-        break;
-    case GraphicsContext3D::UNSIGNED_INT:
-        if (m_oesElementIndexUint)
-            break;
-        synthesizeGLError(GraphicsContext3D::INVALID_ENUM, "drawElements", "invalid type");
-        return;
-    default:
-        synthesizeGLError(GraphicsContext3D::INVALID_ENUM, "drawElements", "invalid type");
-        return;
-    }
-
-    if (count < 0 || offset < 0) {
-        synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "drawElements", "count or offset < 0");
-        return;
-    }
-
-    if (!count) {
-        markContextChanged();
-        return;
-    }
-
-    if (!m_boundVertexArrayObject->getElementArrayBuffer()) {
-        synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "drawElements", "no ELEMENT_ARRAY_BUFFER bound");
-        return;
-    }
-
-    if (!validateRenderingState()) {
-        synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, "drawElements", "attribs not setup correctly");
-        return;
-    }
-
-    const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), &reason)) {
-        synthesizeGLError(GraphicsContext3D::INVALID_FRAMEBUFFER_OPERATION, "drawElements", reason);
-        return;
-    }
     clearIfComposited();
 
     handleTextureCompleteness("drawElements", true);
     m_context->drawElements(mode, count, type, static_cast<GC3Dintptr>(offset));
     handleTextureCompleteness("drawElements", false);
+    markContextChanged();
+}
+
+void WebGLRenderingContext::drawArraysInstancedANGLE(GC3Denum mode, GC3Dint first, GC3Dsizei count, GC3Dsizei primcount)
+{
+    if (!validateDrawArrays("drawArraysInstancedANGLE", mode, first, count))
+        return;
+
+    if (!validateDrawInstanced("drawArraysInstancedANGLE", primcount))
+        return;
+
+    clearIfComposited();
+
+    handleTextureCompleteness("drawArraysInstancedANGLE", true);
+    m_context->getExtensions()->drawArraysInstancedANGLE(mode, first, count, primcount);
+    handleTextureCompleteness("drawArraysInstancedANGLE", false);
+    markContextChanged();
+}
+
+void WebGLRenderingContext::drawElementsInstancedANGLE(GC3Denum mode, GC3Dsizei count, GC3Denum type, GC3Dintptr offset, GC3Dsizei primcount)
+{
+    if (!validateDrawElements("drawElementsInstancedANGLE", mode, count, type, offset))
+        return;
+
+    if (!validateDrawInstanced("drawElementsInstancedANGLE", primcount))
+        return;
+
+    clearIfComposited();
+
+    handleTextureCompleteness("drawElementsInstancedANGLE", true);
+    m_context->getExtensions()->drawElementsInstancedANGLE(mode, count, type, static_cast<GC3Dintptr>(offset), primcount);
+    handleTextureCompleteness("drawElementsInstancedANGLE", false);
     markContextChanged();
 }
 
@@ -2837,6 +2805,10 @@ WebGLGetInfo WebGLRenderingContext::getVertexAttrib(GC3Duint index, GC3Denum pna
         return WebGLGetInfo();
     }
     const WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(index);
+
+    if (m_angleInstancedArrays && pname == Extensions3D::VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE)
+        return WebGLGetInfo(state.divisor);
+
     switch (pname) {
     case GraphicsContext3D::VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
         if (!state.bufferBinding || !state.bufferBinding->object())
@@ -4125,6 +4097,20 @@ void WebGLRenderingContext::vertexAttribPointer(GC3Duint index, GC3Dint size, GC
     m_context->vertexAttribPointer(index, size, type, normalized, stride, static_cast<GC3Dintptr>(offset));
 }
 
+void WebGLRenderingContext::vertexAttribDivisorANGLE(GC3Duint index, GC3Duint divisor)
+{
+    if (isContextLost())
+        return;
+
+    if (index >= m_maxVertexAttribs) {
+        synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "vertexAttribDivisorANGLE", "index out of range");
+        return;
+    }
+
+    m_boundVertexArrayObject->setVertexAttribDivisor(index, divisor);
+    m_context->getExtensions()->vertexAttribDivisorANGLE(index, divisor);
+}
+
 void WebGLRenderingContext::viewport(GC3Dint x, GC3Dint y, GC3Dsizei width, GC3Dsizei height)
 {
     if (isContextLost())
@@ -5175,6 +5161,108 @@ bool WebGLRenderingContext::validateHTMLVideoElement(const char* functionName, H
         return false;
     }
     return true;
+}
+
+bool WebGLRenderingContext::validateDrawArrays(const char* functionName, GC3Denum mode, GC3Dint first, GC3Dsizei count)
+{
+    if (isContextLost() || !validateDrawMode(functionName, mode))
+        return false;
+
+    if (!validateStencilSettings(functionName))
+        return false;
+
+    if (first < 0 || count < 0) {
+        synthesizeGLError(GraphicsContext3D::INVALID_VALUE, functionName, "first or count < 0");
+        return false;
+    }
+
+    if (!count) {
+        markContextChanged();
+        return false;
+    }
+
+    if (!validateRenderingState()) {
+        synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, functionName, "attribs not setup correctly");
+        return false;
+    }
+
+    const char* reason = "framebuffer incomplete";
+    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), &reason)) {
+        synthesizeGLError(GraphicsContext3D::INVALID_FRAMEBUFFER_OPERATION, functionName, reason);
+        return false;
+    }
+
+    return true;
+}
+
+bool WebGLRenderingContext::validateDrawElements(const char* functionName, GC3Denum mode, GC3Dsizei count, GC3Denum type, long long offset)
+{
+    if (isContextLost() || !validateDrawMode(functionName, mode))
+        return false;
+
+    if (!validateStencilSettings(functionName))
+        return false;
+
+    switch (type) {
+    case GraphicsContext3D::UNSIGNED_BYTE:
+    case GraphicsContext3D::UNSIGNED_SHORT:
+        break;
+    case GraphicsContext3D::UNSIGNED_INT:
+        if (m_oesElementIndexUint)
+            break;
+        synthesizeGLError(GraphicsContext3D::INVALID_ENUM, functionName, "invalid type");
+        return false;
+    default:
+        synthesizeGLError(GraphicsContext3D::INVALID_ENUM, functionName, "invalid type");
+        return false;
+    }
+
+    if (count < 0 || offset < 0) {
+        synthesizeGLError(GraphicsContext3D::INVALID_VALUE, functionName, "count or offset < 0");
+        return false;
+    }
+
+    if (!count) {
+        markContextChanged();
+        return false;
+    }
+
+    if (!m_boundVertexArrayObject->getElementArrayBuffer()) {
+        synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, functionName, "no ELEMENT_ARRAY_BUFFER bound");
+        return false;
+    }
+
+    if (!validateRenderingState()) {
+        synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, functionName, "attribs not setup correctly");
+        return false;
+    }
+
+    const char* reason = "framebuffer incomplete";
+    if (m_framebufferBinding && !m_framebufferBinding->onAccess(graphicsContext3D(), &reason)) {
+        synthesizeGLError(GraphicsContext3D::INVALID_FRAMEBUFFER_OPERATION, functionName, reason);
+        return false;
+    }
+
+    return true;
+}
+
+// Helper function to validate draw*Instanced calls
+bool WebGLRenderingContext::validateDrawInstanced(const char* functionName, GC3Dsizei primcount)
+{
+    if (primcount < 0) {
+        synthesizeGLError(GraphicsContext3D::INVALID_VALUE, functionName, "primcount < 0");
+        return false;
+    }
+
+    // Ensure at least one enabled vertex attrib has a divisor of 0.
+    for (unsigned i = 0; i < m_maxVertexAttribs; ++i) {
+        const WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(i);
+        if (state.enabled && !state.divisor)
+            return true;
+    }
+
+    synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, functionName, "at least one enabled attribute must have a divisor of 0");
+    return false;
 }
 
 void WebGLRenderingContext::vertexAttribfImpl(const char* functionName, GC3Duint index, GC3Dsizei expectedSize, GC3Dfloat v0, GC3Dfloat v1, GC3Dfloat v2, GC3Dfloat v3)

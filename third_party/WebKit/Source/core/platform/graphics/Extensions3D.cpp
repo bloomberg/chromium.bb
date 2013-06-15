@@ -215,4 +215,19 @@ void Extensions3D::drawBuffersEXT(GC3Dsizei n, const GC3Denum* bufs)
     m_context->webContext()->drawBuffersEXT(n, bufs);
 }
 
+void Extensions3D::drawArraysInstancedANGLE(GC3Denum mode, GC3Dint first, GC3Dsizei count, GC3Dsizei primcount)
+{
+    m_context->webContext()->drawArraysInstancedANGLE(mode, first, count, primcount);
+}
+
+void Extensions3D::drawElementsInstancedANGLE(GC3Denum mode, GC3Dsizei count, GC3Denum type, GC3Dintptr offset, GC3Dsizei primcount)
+{
+    m_context->webContext()->drawElementsInstancedANGLE(mode, count, type, offset, primcount);
+}
+
+void Extensions3D::vertexAttribDivisorANGLE(GC3Duint index, GC3Duint divisor)
+{
+    m_context->webContext()->vertexAttribDivisorANGLE(index, divisor);
+}
+
 } // namespace WebCore

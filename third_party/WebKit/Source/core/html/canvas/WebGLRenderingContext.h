@@ -44,6 +44,7 @@ namespace WebKit { class WebLayer; }
 
 namespace WebCore {
 
+class ANGLEInstancedArrays;
 class DrawingBuffer;
 class WebGLDrawBuffers;
 class EXTFragDepth;
@@ -156,6 +157,9 @@ public:
     void disableVertexAttribArray(GC3Duint index, ExceptionCode&);
     void drawArrays(GC3Denum mode, GC3Dint first, GC3Dsizei count, ExceptionCode&);
     void drawElements(GC3Denum mode, GC3Dsizei count, GC3Denum type, long long offset, ExceptionCode&);
+
+    void drawArraysInstancedANGLE(GC3Denum mode, GC3Dint first, GC3Dsizei count, GC3Dsizei primcount);
+    void drawElementsInstancedANGLE(GC3Denum mode, GC3Dsizei count, GC3Denum type, GC3Dintptr offset, GC3Dsizei primcount);
 
     void enable(GC3Denum cap);
     void enableVertexAttribArray(GC3Duint index, ExceptionCode&);
@@ -291,6 +295,8 @@ public:
     void vertexAttrib4fv(GC3Duint index, GC3Dfloat* values, GC3Dsizei size);
     void vertexAttribPointer(GC3Duint index, GC3Dint size, GC3Denum type, GC3Dboolean normalized,
                              GC3Dsizei stride, long long offset, ExceptionCode&);
+
+    void vertexAttribDivisorANGLE(GC3Duint index, GC3Duint divisor);
 
     void viewport(GC3Dint x, GC3Dint y, GC3Dsizei width, GC3Dsizei height);
 
@@ -503,6 +509,7 @@ public:
     int m_numGLErrorsToConsoleAllowed;
 
     // Enabled extension objects.
+    RefPtr<ANGLEInstancedArrays> m_angleInstancedArrays;
     RefPtr<EXTFragDepth> m_extFragDepth;
     RefPtr<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
     RefPtr<OESTextureFloat> m_oesTextureFloat;
@@ -804,6 +811,15 @@ public:
 
     // Helper function for tex{Sub}Image2D to make sure video is ready wouldn't taint Origin.
     bool validateHTMLVideoElement(const char* functionName, HTMLVideoElement*, ExceptionCode&);
+
+    // Helper function to validate drawArrays(Instanced) calls
+    bool validateDrawArrays(const char* functionName, GC3Denum mode, GC3Dint first, GC3Dsizei count);
+
+    // Helper function to validate drawElements(Instanced) calls
+    bool validateDrawElements(const char* functionName, GC3Denum mode, GC3Dsizei count, GC3Denum type, long long offset);
+
+    // Helper function to validate draw*Instanced calls
+    bool validateDrawInstanced(const char* functionName, GC3Dsizei primcount);
 
     // Helper functions for vertexAttribNf{v}.
     void vertexAttribfImpl(const char* functionName, GC3Duint index, GC3Dsizei expectedSize, GC3Dfloat, GC3Dfloat, GC3Dfloat, GC3Dfloat);

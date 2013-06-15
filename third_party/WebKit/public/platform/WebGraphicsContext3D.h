@@ -488,6 +488,11 @@ public:
     virtual void* mapImageCHROMIUM(WGC3Duint imageId, WGC3Denum access) { return 0; }
     virtual void unmapImageCHROMIUM(WGC3Duint imageId) { }
 
+    // GL_ANGLE_instanced_arrays
+    virtual void drawArraysInstancedANGLE(WGC3Denum mode, WGC3Dint first, WGC3Dsizei count, WGC3Dsizei primcount) { }
+    virtual void drawElementsInstancedANGLE(WGC3Denum mode, WGC3Dsizei count, WGC3Denum type, WGC3Dintptr offset, WGC3Dsizei primcount) { }
+    virtual void vertexAttribDivisorANGLE(WGC3Duint index, WGC3Duint divisor) { }
+
 protected:
     virtual GrGLInterface* onCreateGrGLInterface() { return 0; }
 

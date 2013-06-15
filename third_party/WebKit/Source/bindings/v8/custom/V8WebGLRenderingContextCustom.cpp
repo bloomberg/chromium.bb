@@ -32,6 +32,7 @@
 
 #include "V8WebGLRenderingContext.h"
 
+#include "V8ANGLEInstancedArrays.h"
 #include "V8ArrayBufferView.h"
 #include "V8EXTFragDepth.h"
 #include "V8EXTTextureFilterAnisotropic.h"
@@ -178,6 +179,10 @@ static v8::Handle<v8::Value> toV8Object(WebGLExtension* extension, v8::Handle<v8
     v8::Handle<v8::Value> extensionObject;
     const char* referenceName = 0;
     switch (extension->getName()) {
+    case WebGLExtension::ANGLEInstancedArraysName:
+        extensionObject = toV8(static_cast<ANGLEInstancedArrays*>(extension), contextObject, isolate);
+        referenceName = "angleInstancedArraysName";
+        break;
     case WebGLExtension::EXTFragDepthName:
         extensionObject = toV8(static_cast<EXTFragDepth*>(extension), contextObject, isolate);
         referenceName = "extFragDepthName";

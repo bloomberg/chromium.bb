@@ -998,6 +998,7 @@ bool GraphicsContext3D::ensureExtensionEnabled(const String& name)
     }
 
     initializeExtensions();
+    fprintf(stderr, "m_enabledExtensions.contains(%s) == %d\n", mappedName.ascii().data(), m_enabledExtensions.contains(mappedName));
     return m_enabledExtensions.contains(mappedName);
 }
 
