@@ -9112,6 +9112,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Prerender.SchemeCancelReason"
+    enum="PrerenderSchemeCancelReason">
+  <summary>
+    The detailed reason why a prerender is canceled with
+    FINAL_STATUS_UNSUPPORTED_SCHEME
+  </summary>
+</histogram>
+
 <histogram name="Prerender.Sessions" enum="PrerenderMode">
   <obsolete>
     deprecated Nov 16 2012
@@ -16939,6 +16947,20 @@ other types of suffix sets.
   <int value="1" label="PAGEVIEW_EVENT_TOP_SITE_NEW_URL"/>
   <int value="2" label="PAGEVIEW_EVENT_LOAD_START"/>
   <int value="3" label="PAGEVIEW_EVENT_TOP_SITE_LOAD_START"/>
+</enum>
+
+<enum name="PrerenderSchemeCancelReason" type="int">
+  <int value="0" label="EXTERNAL_PROTOCOL"/>
+  <int value="1" label="DATA"/>
+  <int value="2" label="BLOB"/>
+  <int value="3" label="FILE"/>
+  <int value="4" label="FILESYSTEM"/>
+  <int value="5" label="WEBSOCKET"/>
+  <int value="6" label="FTP"/>
+  <int value="7" label="CHROME"/>
+  <int value="8" label="CHROME_EXTENSION"/>
+  <int value="9" label="ABOUT"/>
+  <int value="10" label="UNKNOWN"/>
 </enum>
 
 <enum name="PrerenderTabHelperEvents" type="int">
