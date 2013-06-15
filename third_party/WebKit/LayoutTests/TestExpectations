@@ -746,7 +746,7 @@ crbug.com/82281 fast/xpath/xpath-iterator-result-should-mark-its-nodeset.html [ 
 webkit.org/b/60822 [ Linux ] plugins/get-url-with-javascript-url.html [ Timeout Pass ]
 
 # Flaky since added by r86478
-crbug.com/82881 [ Linux Mac XP ] http/tests/appcache/interrupted-update.html [ Failure Pass ]
+crbug.com/82881 http/tests/appcache/interrupted-update.html [ Failure Pass ]
 
 # Random timeouts and failures going back a week.
 crbug.com/83290 [ Win ] http/tests/misc/link-rel-prefetch-and-subresource.html [ Pass Timeout ]
