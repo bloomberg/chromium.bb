@@ -62,6 +62,7 @@
       ],
       'defines': [
         'WEBKIT_IMPLEMENTATION=1',
+        'INSIDE_WEBKIT',
       ],
       'include_dirs': [
         # FIXME:  Remove <(SHARED_INTERMEDIATE_DIR)/webcore when we

@@ -37,10 +37,26 @@
             'type': 'none',
             'dependencies': [
                 '../Source/WebKit/chromium/WebKit.gyp:webkit',
+                'blink_minimal',
             ],
             'export_dependent_settings': [
                 '../Source/WebKit/chromium/WebKit.gyp:webkit',
+                'blink_minimal',
             ]
+        },
+        {
+            # This target provides a minimal set of Blink APIs such as WebString to use in
+            # places that cannot link against the full Blink library.
+            # FIXME: We really shouldn't have this at all and should instead remove all uses
+            # of Blink's API types from places that can't link against Blink. crbug.com/248653
+            'target_name': 'blink_minimal',
+            'type': 'none',
+            'dependencies': [
+                '../Source/WebKit/chromium/WebKit.gyp:blink_common',
+            ],
+            'export_dependent_settings': [
+                '../Source/WebKit/chromium/WebKit.gyp:blink_common',
+            ],
         },
     ],
 }

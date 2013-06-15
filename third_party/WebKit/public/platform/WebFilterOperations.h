@@ -50,25 +50,25 @@ public:
     }
     ~WebFilterOperations() { destroy(); }
 
-    WEBKIT_EXPORT void assign(const WebFilterOperations&);
-    WEBKIT_EXPORT bool equals(const WebFilterOperations&) const;
+    BLINK_COMMON_EXPORT void assign(const WebFilterOperations&);
+    BLINK_COMMON_EXPORT bool equals(const WebFilterOperations&) const;
 
-    WEBKIT_EXPORT void append(const WebFilterOperation&);
+    BLINK_COMMON_EXPORT void append(const WebFilterOperation&);
 
     // Removes all filter operations.
-    WEBKIT_EXPORT void clear();
-    WEBKIT_EXPORT bool isEmpty() const;
+    BLINK_COMMON_EXPORT void clear();
+    BLINK_COMMON_EXPORT bool isEmpty() const;
 
-    WEBKIT_EXPORT void getOutsets(int& top, int& right, int& bottom, int& left) const;
-    WEBKIT_EXPORT bool hasFilterThatMovesPixels() const;
-    WEBKIT_EXPORT bool hasFilterThatAffectsOpacity() const;
+    BLINK_COMMON_EXPORT void getOutsets(int& top, int& right, int& bottom, int& left) const;
+    BLINK_COMMON_EXPORT bool hasFilterThatMovesPixels() const;
+    BLINK_COMMON_EXPORT bool hasFilterThatAffectsOpacity() const;
 
-    WEBKIT_EXPORT size_t size() const;
-    WEBKIT_EXPORT WebFilterOperation at(size_t) const;
+    BLINK_COMMON_EXPORT size_t size() const;
+    BLINK_COMMON_EXPORT WebFilterOperation at(size_t) const;
 
 private:
-    WEBKIT_EXPORT void initialize();
-    WEBKIT_EXPORT void destroy();
+    BLINK_COMMON_EXPORT void initialize();
+    BLINK_COMMON_EXPORT void destroy();
 
     WebPrivateOwnPtr<WebFilterOperationsPrivate> m_private;
 };

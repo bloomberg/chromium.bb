@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if INSIDE_WEBKIT
 #include <wtf/Forward.h>
 #else
 #include <base/strings/latin1_string_conversions.h>
@@ -74,24 +74,24 @@ public:
         return *this;
     }
 
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebString&);
-    WEBKIT_EXPORT void assign(const WebUChar* data, size_t len);
+    BLINK_COMMON_EXPORT void reset();
+    BLINK_COMMON_EXPORT void assign(const WebString&);
+    BLINK_COMMON_EXPORT void assign(const WebUChar* data, size_t len);
 
-    WEBKIT_EXPORT bool equals(const WebString& s) const;
+    BLINK_COMMON_EXPORT bool equals(const WebString&) const;
 
-    WEBKIT_EXPORT size_t length() const;
+    BLINK_COMMON_EXPORT size_t length() const;
 
     // Caller must check bounds.
-    WEBKIT_EXPORT WebUChar at(unsigned) const;
+    BLINK_COMMON_EXPORT WebUChar at(unsigned) const;
 
     bool isEmpty() const { return !length(); }
     bool isNull() const { return m_private.isNull(); }
 
-    WEBKIT_EXPORT WebCString utf8() const;
+    BLINK_COMMON_EXPORT WebCString utf8() const;
 
-    WEBKIT_EXPORT static WebString fromUTF8(const char* data, size_t length);
-    WEBKIT_EXPORT static WebString fromUTF8(const char* data);
+    BLINK_COMMON_EXPORT static WebString fromUTF8(const char* data, size_t length);
+    BLINK_COMMON_EXPORT static WebString fromUTF8(const char* data);
 
     template <int N> WebString(const char (&data)[N])
     {
@@ -104,14 +104,14 @@ public:
         return *this;
     }
 
-#if WEBKIT_IMPLEMENTATION
-    WebString(const WTF::String&);
-    WebString& operator=(const WTF::String&);
-    operator WTF::String() const;
+#if INSIDE_WEBKIT
+    BLINK_COMMON_EXPORT WebString(const WTF::String&);
+    BLINK_COMMON_EXPORT WebString& operator=(const WTF::String&);
+    BLINK_COMMON_EXPORT operator WTF::String() const;
 
-    WebString(const WTF::AtomicString&);
-    WebString& operator=(const WTF::AtomicString&);
-    operator WTF::AtomicString() const;
+    BLINK_COMMON_EXPORT WebString(const WTF::AtomicString&);
+    BLINK_COMMON_EXPORT WebString& operator=(const WTF::AtomicString&);
+    BLINK_COMMON_EXPORT operator WTF::AtomicString() const;
 #else
 
     WebString(const base::string16& s)
@@ -160,11 +160,11 @@ public:
 #endif
 
 private:
-    WEBKIT_EXPORT bool is8Bit() const;
-    WEBKIT_EXPORT const WebLChar* data8() const;
-    WEBKIT_EXPORT const WebUChar* data16() const;
+    BLINK_COMMON_EXPORT bool is8Bit() const;
+    BLINK_COMMON_EXPORT const WebLChar* data8() const;
+    BLINK_COMMON_EXPORT const WebUChar* data16() const;
 
-    void assign(WTF::StringImpl*);
+    BLINK_COMMON_EXPORT void assign(WTF::StringImpl*);
 
     WebPrivatePtr<WTF::StringImpl> m_private;
 };

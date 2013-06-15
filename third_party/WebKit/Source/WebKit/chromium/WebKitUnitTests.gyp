@@ -73,6 +73,7 @@
                     ],
                     'defines': [
                         'WEBKIT_IMPLEMENTATION=1',
+                        'INSIDE_WEBKIT',
                     ],
                     'sources': [
                         '<@(core_unittest_files)',

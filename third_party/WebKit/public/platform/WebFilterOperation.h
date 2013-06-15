@@ -179,7 +179,7 @@ private:
         memset(m_matrix, 0, sizeof(m_matrix));
     }
 
-    WEBKIT_EXPORT WebFilterOperation(FilterType, SkScalar matrix[20]);
+    BLINK_COMMON_EXPORT WebFilterOperation(FilterType, SkScalar matrix[20]);
 
     WebFilterOperation(FilterType type, float amount, int inset)
         : m_type(type)

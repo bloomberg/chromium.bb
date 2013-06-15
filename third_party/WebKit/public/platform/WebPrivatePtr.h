@@ -33,7 +33,7 @@
 
 #include "WebCommon.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if INSIDE_WEBKIT
 #include <wtf/PassRefPtr.h>
 #endif
 
@@ -63,8 +63,8 @@ namespace WebKit {
 //        WEBKIT_EXPORT doWebFooThing();
 //
 //        // Methods that are used only by other WebKit/chromium API classes
-//        // should only be declared when WEBKIT_IMPLEMENTATION is set.
-//    #if WEBKIT_IMPLEMENTATION
+//        // should only be declared when INSIDE_WEBKIT is set.
+//    #if INSIDE_WEBKIT
 //        WebFoo(const WTF::PassRefPtr<WebCore::Foo>&);
 //    #endif
 //
@@ -80,7 +80,7 @@ public:
 
     bool isNull() const { return !m_ptr; }
 
-#if WEBKIT_IMPLEMENTATION
+#if INSIDE_WEBKIT
     WebPrivatePtr(const PassRefPtr<T>& prp)
         : m_ptr(prp.leakRef())
     {
@@ -119,7 +119,7 @@ public:
 #endif
 
 private:
-#if WEBKIT_IMPLEMENTATION
+#if INSIDE_WEBKIT
     void assign(T* p)
     {
         // p is already ref'd for us by the caller
@@ -129,7 +129,7 @@ private:
     }
 #else
     // Disable the assignment operator; we define it above for when
-    // WEBKIT_IMPLEMENTATION is set, but we need to make sure that it is not
+    // INSIDE_WEBKIT is set, but we need to make sure that it is not
     // used outside there; the compiler-provided version won't handle reference
     // counting properly.
     WebPrivatePtr<T>& operator=(const WebPrivatePtr<T>& other);

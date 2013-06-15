@@ -42,6 +42,7 @@
     ],
     'defines': [
       'WEBKIT_IMPLEMENTATION=1',
+      'INSIDE_WEBKIT',
     ],
     'sources': [
       '<@(modules_files)',

@@ -399,6 +399,7 @@
         'defines': [
           'WEBCORE_NAVIGATOR_VENDOR="Google Inc."',
           'WEBKIT_IMPLEMENTATION=1',
+          'INSIDE_WEBKIT',
         ],
         'include_dirs': [
           '<@(webcore_include_dirs)',
@@ -1086,6 +1087,7 @@
       ],
       'defines': [
         'WEBKIT_IMPLEMENTATION=1',
+        'INSIDE_WEBKIT',
       ],
       'include_dirs': [
         '<(bindings_dir)/v8',  # FIXME: Remove once http://crbug.com/236119 is fixed.

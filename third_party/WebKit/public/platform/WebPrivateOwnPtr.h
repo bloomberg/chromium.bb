@@ -42,7 +42,7 @@ public:
     WebPrivateOwnPtr() : m_ptr(0) {}
     ~WebPrivateOwnPtr() { WEBKIT_ASSERT(!m_ptr); }
 
-#if WEBKIT_IMPLEMENTATION
+#if INSIDE_WEBKIT
     explicit WebPrivateOwnPtr(T* ptr)
         : m_ptr(ptr)
     {
@@ -61,7 +61,7 @@ public:
         WEBKIT_ASSERT(m_ptr);
         return m_ptr;
     }
-#endif // WEBKIT_IMPLEMENTATION
+#endif // INSIDE_WEBKIT
 
 private:
     T* m_ptr;

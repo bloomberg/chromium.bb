@@ -31,29 +31,42 @@
 #ifndef WebCommon_h
 #define WebCommon_h
 
-// -----------------------------------------------------------------------------
-// Default configuration
-
 #if !defined(WEBKIT_IMPLEMENTATION)
-    #define WEBKIT_IMPLEMENTATION 0
+#define WEBKIT_IMPLEMENTATION 0
 #endif
-
-// -----------------------------------------------------------------------------
-// Exported symbols need to be annotated with WEBKIT_EXPORT
 
 #if defined(WEBKIT_DLL)
-    #if defined(WIN32)
-        #if WEBKIT_IMPLEMENTATION
-            #define WEBKIT_EXPORT __declspec(dllexport)
-        #else
-            #define WEBKIT_EXPORT __declspec(dllimport)
-        #endif
-    #else
-        #define WEBKIT_EXPORT __attribute__((visibility("default")))
-    #endif
-#else
-    #define WEBKIT_EXPORT
+#if defined(WIN32)
+#if WEBKIT_IMPLEMENTATION
+#define WEBKIT_EXPORT __declspec(dllexport)
+#else // WEBKIT_IMPLEMENTATION
+#define WEBKIT_EXPORT __declspec(dllimport)
 #endif
+#else // defined(WIN32)
+#define WEBKIT_EXPORT __attribute__((visibility("default")))
+#endif
+#else // defined(WEBKIT_DLL)
+#define WEBKIT_EXPORT
+#endif
+
+#if !defined(BLINK_COMMON_IMPLEMENTATION)
+#define BLINK_COMMON_IMPLEMENTATION 0
+#endif
+
+#if defined(COMPONENT_BUILD)
+#if defined(WIN32)
+#if BLINK_COMMON_IMPLEMENTATION
+#define BLINK_COMMON_EXPORT __declspec(dllexport)
+#else // BLINK_COMMON_IMPLEMENTATION
+#define BLINK_COMMON_EXPORT __declspec(dllimport)
+#endif
+#else // defined(WIN32)
+#define BLINK_COMMON_EXPORT __attribute__((visibility("default")))
+#endif
+#else // defined(COMPONENT_BUILD)
+#define BLINK_COMMON_EXPORT
+#endif
+
 
 // -----------------------------------------------------------------------------
 // Basic types
@@ -83,11 +96,11 @@ typedef unsigned char WebLChar;
 // -----------------------------------------------------------------------------
 // Assertions
 
-WEBKIT_EXPORT void failedAssertion(const char* file, int line, const char* function, const char* assertion);
+BLINK_COMMON_EXPORT void failedAssertion(const char* file, int line, const char* function, const char* assertion);
 
 } // namespace WebKit
 
-// Ideally, only use inside the public directory but outside of WEBKIT_IMPLEMENTATION blocks.  (Otherwise use WTF's ASSERT.)
+// Ideally, only use inside the public directory but outside of INSIDE_WEBKIT blocks.  (Otherwise use WTF's ASSERT.)
 #if defined(NDEBUG)
 #define WEBKIT_ASSERT(assertion) ((void)0)
 #else

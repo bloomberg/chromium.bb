@@ -49,6 +49,7 @@
                 '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
                 '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+                'blink_common',
             ],
             'export_dependent_settings': [
                 '<(DEPTH)/skia/skia.gyp:skia',
@@ -64,6 +65,7 @@
             ],
             'defines': [
                 'WEBKIT_IMPLEMENTATION=1',
+                'INSIDE_WEBKIT',
             ],
             'sources': [
                 '<@(webcore_platform_support_files)',
@@ -395,7 +397,6 @@
                 'src/WebCache.cpp',
                 'src/WebCachedURLRequest.cpp',
                 'src/WebColorName.cpp',
-                'src/WebCommon.cpp',
                 'src/WebCrossOriginPreflightResultCache.cpp',
                 'src/WebDOMActivityLogger.cpp',
                 'src/WebDOMCustomEvent.cpp',
@@ -557,7 +558,6 @@
                 ['component=="shared_library"', {
                     'defines': [
                         'WEBKIT_DLL',
-                        'WEBKIT_IMPLEMENTATION=1',
                     ],
                     'dependencies': [
                         '../../core/core.gyp:webcore_derived',
@@ -743,6 +743,30 @@
                         'public/WebTestingSupport.h',
                     ],
                 }],
+            ],
+        },
+        {
+            'target_name': 'blink_common',
+            'type': '<(component)',
+            'variables': { 'enable_wexit_time_destructors': 1 },
+            'dependencies': [
+                '../../wtf/wtf.gyp:wtf',
+                '<(DEPTH)/skia/skia.gyp:skia',
+            ],
+            'defines': [
+                'INSIDE_WEBKIT',
+                'BLINK_COMMON_IMPLEMENTATION=1',
+            ],
+            'include_dirs': [
+                '../..',
+                '../../..',
+            ],
+            'sources': [
+                '../../core/platform/chromium/support/WebFilterOperation.cpp',
+                '../../core/platform/chromium/support/WebFilterOperations.cpp',
+                '../../core/platform/chromium/support/WebCString.cpp',
+                '../../core/platform/chromium/support/WebString.cpp',
+                'src/WebCommon.cpp',
             ],
         },
     ], # targets

@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
 
-#if WEBKIT_IMPLEMENTATION
+#if INSIDE_WEBKIT
 #include <wtf/Forward.h>
 #else
 #include <string>
@@ -76,24 +76,24 @@ public:
     // Returns 0 if both strings are equals, a value greater than zero if the
     // first character that does not match has a greater value in this string
     // than in |other|, or a value less than zero to indicate the opposite.
-    WEBKIT_EXPORT int compare(const WebCString& other) const;
+    BLINK_COMMON_EXPORT int compare(const WebCString& other) const;
 
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebCString&);
-    WEBKIT_EXPORT void assign(const char* data, size_t len);
+    BLINK_COMMON_EXPORT void reset();
+    BLINK_COMMON_EXPORT void assign(const WebCString&);
+    BLINK_COMMON_EXPORT void assign(const char* data, size_t len);
 
-    WEBKIT_EXPORT size_t length() const;
-    WEBKIT_EXPORT const char* data() const;
+    BLINK_COMMON_EXPORT size_t length() const;
+    BLINK_COMMON_EXPORT const char* data() const;
 
     bool isEmpty() const { return !length(); }
     bool isNull() const { return m_private.isNull(); }
 
-    WEBKIT_EXPORT WebString utf16() const;
+    BLINK_COMMON_EXPORT WebString utf16() const;
 
-#if WEBKIT_IMPLEMENTATION
-    WebCString(const WTF::CString&);
-    WebCString& operator=(const WTF::CString&);
-    operator WTF::CString() const;
+#if INSIDE_WEBKIT
+    BLINK_COMMON_EXPORT WebCString(const WTF::CString&);
+    BLINK_COMMON_EXPORT WebCString& operator=(const WTF::CString&);
+    BLINK_COMMON_EXPORT operator WTF::CString() const;
 #else
     WebCString(const std::string& s)
     {
@@ -120,7 +120,7 @@ public:
 #endif
 
 private:
-    void assign(WTF::CStringBuffer*);
+    BLINK_COMMON_EXPORT void assign(WTF::CStringBuffer*);
     WebPrivatePtr<WTF::CStringBuffer> m_private;
 };
 
