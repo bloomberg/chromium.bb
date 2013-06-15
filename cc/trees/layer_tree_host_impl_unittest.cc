@@ -127,7 +127,7 @@ class LayerTreeHostImplTest : public testing::Test,
   virtual bool IsInsideDraw() OVERRIDE { return false; }
   virtual void RenewTreePriority() OVERRIDE {}
   virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta delay)
-      OVERRIDE {}
+      OVERRIDE { requested_scrollbar_animation_delay_ = delay; }
   virtual void DidActivatePendingTree() OVERRIDE {}
 
   void set_reduce_memory_result(bool reduce_memory_result) {
@@ -282,6 +282,7 @@ class LayerTreeHostImplTest : public testing::Test,
   bool did_request_redraw_;
   bool did_upload_visible_tile_;
   bool reduce_memory_result_;
+  base::TimeDelta requested_scrollbar_animation_delay_;
 };
 
 class TestWebGraphicsContext3DMakeCurrentFails
@@ -985,6 +986,130 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationNoOp) {
     EXPECT_EQ(scroll_info->page_scale_delta, 1);
     ExpectNone(*scroll_info, scroll_layer->id());
   }
+}
+
+class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
+ public:
+  LayerTreeHostImplOverridePhysicalTime(
+      const LayerTreeSettings& settings,
+      LayerTreeHostImplClient* client,
+      Proxy* proxy,
+      RenderingStatsInstrumentation* rendering_stats_instrumentation)
+      : LayerTreeHostImpl(settings,
+                          client,
+                          proxy,
+                          rendering_stats_instrumentation) {}
+
+
+  virtual base::TimeTicks CurrentPhysicalTimeTicks() const OVERRIDE {
+    return fake_current_physical_time_;
+  }
+
+  void SetCurrentPhysicalTimeTicksForTest(base::TimeTicks fake_now) {
+    fake_current_physical_time_ = fake_now;
+  }
+
+ private:
+  base::TimeTicks fake_current_physical_time_;
+};
+
+TEST_F(LayerTreeHostImplTest, ScrollbarLinearFadeScheduling) {
+  LayerTreeSettings settings;
+  settings.use_linear_fade_scrollbar_animator = true;
+  settings.scrollbar_linear_fade_delay_ms = 20;
+  settings.scrollbar_linear_fade_length_ms = 20;
+
+  LayerTreeHostImplOverridePhysicalTime* host_impl_override_time =
+      new LayerTreeHostImplOverridePhysicalTime(
+          settings, this, &proxy_, &stats_instrumentation_);
+  host_impl_ = make_scoped_ptr<LayerTreeHostImpl>(host_impl_override_time);
+  host_impl_->InitializeRenderer(CreateOutputSurface());
+  host_impl_->SetViewportSize(gfx::Size(10, 10));
+
+  gfx::Size content_size(100, 100);
+  scoped_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl_->active_tree(), 1);
+  root->SetBounds(content_size);
+  root->SetContentBounds(content_size);
+
+  scoped_ptr<LayerImpl> scroll =
+      LayerImpl::Create(host_impl_->active_tree(), 2);
+  scroll->SetScrollable(true);
+  scroll->SetScrollOffset(gfx::Vector2d());
+  scroll->SetMaxScrollOffset(gfx::Vector2d(content_size.width(),
+                                           content_size.height()));
+  scroll->SetBounds(content_size);
+  scroll->SetContentBounds(content_size);
+
+  scoped_ptr<LayerImpl> contents =
+      LayerImpl::Create(host_impl_->active_tree(), 3);
+  contents->SetDrawsContent(true);
+  contents->SetBounds(content_size);
+  contents->SetContentBounds(content_size);
+
+  scoped_ptr<ScrollbarLayerImpl> scrollbar = ScrollbarLayerImpl::Create(
+      host_impl_->active_tree(),
+      4,
+      VERTICAL);
+  scroll->SetVerticalScrollbarLayer(scrollbar.get());
+
+  scroll->AddChild(contents.Pass());
+  root->AddChild(scroll.Pass());
+  root->AddChild(scrollbar.PassAs<LayerImpl>());
+
+  host_impl_->active_tree()->SetRootLayer(root.Pass());
+  host_impl_->active_tree()->DidBecomeActive();
+  InitializeRendererAndDrawFrame();
+
+  base::TimeTicks fake_now = base::TimeTicks::Now();
+  host_impl_override_time->SetCurrentPhysicalTimeTicksForTest(fake_now);
+
+  // If no scroll happened recently, StartScrollbarAnimation should have no
+  // effect.
+  host_impl_->StartScrollbarAnimation();
+  EXPECT_EQ(base::TimeDelta(), requested_scrollbar_animation_delay_);
+  EXPECT_FALSE(did_request_redraw_);
+
+  // After a scroll, a fade animation should be scheduled about 20ms from now.
+  host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel);
+  host_impl_->ScrollEnd();
+  host_impl_->StartScrollbarAnimation();
+  EXPECT_LT(base::TimeDelta::FromMilliseconds(19),
+            requested_scrollbar_animation_delay_);
+  EXPECT_FALSE(did_request_redraw_);
+  requested_scrollbar_animation_delay_ = base::TimeDelta();
+
+  // After the fade begins, we should start getting redraws instead of a
+  // scheduled animation.
+  fake_now += base::TimeDelta::FromMilliseconds(25);
+  host_impl_override_time->SetCurrentPhysicalTimeTicksForTest(fake_now);
+  host_impl_->StartScrollbarAnimation();
+  EXPECT_EQ(base::TimeDelta(), requested_scrollbar_animation_delay_);
+  EXPECT_TRUE(did_request_redraw_);
+  did_request_redraw_ = false;
+
+  // If no scroll happened recently, StartScrollbarAnimation should have no
+  // effect.
+  fake_now += base::TimeDelta::FromMilliseconds(25);
+  host_impl_override_time->SetCurrentPhysicalTimeTicksForTest(fake_now);
+  host_impl_->StartScrollbarAnimation();
+  EXPECT_EQ(base::TimeDelta(), requested_scrollbar_animation_delay_);
+  EXPECT_FALSE(did_request_redraw_);
+
+  // Setting the scroll offset outside a scroll should also cause the scrollbar
+  // to appear and to schedule a fade.
+  host_impl_->RootScrollLayer()->SetScrollOffset(gfx::Vector2d(5, 5));
+  host_impl_->StartScrollbarAnimation();
+  EXPECT_LT(base::TimeDelta::FromMilliseconds(19),
+            requested_scrollbar_animation_delay_);
+  EXPECT_FALSE(did_request_redraw_);
+  requested_scrollbar_animation_delay_ = base::TimeDelta();
+
+  // None of the above should have called CurrentFrameTimeTicks, so if we call
+  // it now we should get the current time.
+  fake_now += base::TimeDelta::FromMilliseconds(10);
+  host_impl_override_time->SetCurrentPhysicalTimeTicksForTest(fake_now);
+  EXPECT_EQ(fake_now, host_impl_->CurrentFrameTimeTicks());
 }
 
 TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {

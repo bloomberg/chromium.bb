@@ -129,7 +129,7 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void DidChangeTopControlsPosition() OVERRIDE;
   virtual bool HaveRootScrollLayer() const OVERRIDE;
 
-  void StartScrollbarAnimation(base::TimeTicks now);
+  void StartScrollbarAnimation();
 
   struct CC_EXPORT FrameData : public RenderPassSink {
     FrameData();
@@ -367,6 +367,8 @@ class CC_EXPORT LayerTreeHostImpl
   base::TimeTicks CurrentFrameTimeTicks();
   base::Time CurrentFrameTime();
 
+  virtual base::TimeTicks CurrentPhysicalTimeTicks() const;
+
   scoped_ptr<base::Value> AsValue() const;
   scoped_ptr<base::Value> ActivationStateAsValue() const;
 
@@ -434,6 +436,8 @@ class CC_EXPORT LayerTreeHostImpl
                           const LayerImpl* layer) const;
 
   static LayerImpl* GetNonCompositedContentLayerRecursive(LayerImpl* layer);
+
+  void UpdateCurrentFrameTime(base::TimeTicks* ticks, base::Time* now) const;
 
   void StartScrollbarAnimationRecursive(LayerImpl* layer, base::TimeTicks time);
 

@@ -26,6 +26,8 @@ LayerTreeSettings::LayerTreeSettings()
       can_use_lcd_text(true),
       should_clear_root_render_pass(true),
       use_linear_fade_scrollbar_animator(false),
+      scrollbar_linear_fade_delay_ms(300),
+      scrollbar_linear_fade_length_ms(300),
       solid_color_scrollbars(false),
       solid_color_scrollbar_color(SK_ColorWHITE),
       solid_color_scrollbar_thickness_dip(-1),

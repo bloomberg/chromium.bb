@@ -1950,7 +1950,7 @@ void LayerTreeHostImpl::ScrollEnd() {
   if (top_controls_manager_)
     top_controls_manager_->ScrollEnd();
   ClearCurrentlyScrollingLayer();
-  StartScrollbarAnimation(CurrentFrameTimeTicks());
+  StartScrollbarAnimation();
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
@@ -2222,9 +2222,9 @@ void LayerTreeHostImpl::AnimateScrollbarsRecursive(LayerImpl* layer,
     AnimateScrollbarsRecursive(layer->children()[i], time);
 }
 
-void LayerTreeHostImpl::StartScrollbarAnimation(base::TimeTicks time) {
+void LayerTreeHostImpl::StartScrollbarAnimation() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::StartScrollbarAnimation");
-  StartScrollbarAnimationRecursive(RootLayer(), time);
+  StartScrollbarAnimationRecursive(RootLayer(), CurrentPhysicalTimeTicks());
 }
 
 void LayerTreeHostImpl::StartScrollbarAnimationRecursive(LayerImpl* layer,
@@ -2264,10 +2264,11 @@ void LayerTreeHostImpl::ResetCurrentFrameTimeForNextFrame() {
   current_frame_time_ = base::Time();
 }
 
-static void UpdateCurrentFrameTime(base::TimeTicks* ticks, base::Time* now) {
+void LayerTreeHostImpl::UpdateCurrentFrameTime(base::TimeTicks* ticks,
+                                               base::Time* now) const {
   if (ticks->is_null()) {
     DCHECK(now->is_null());
-    *ticks = base::TimeTicks::Now();
+    *ticks = CurrentPhysicalTimeTicks();
     *now = base::Time::Now();
   }
 }
@@ -2280,6 +2281,10 @@ base::TimeTicks LayerTreeHostImpl::CurrentFrameTimeTicks() {
 base::Time LayerTreeHostImpl::CurrentFrameTime() {
   UpdateCurrentFrameTime(&current_frame_timeticks_, &current_frame_time_);
   return current_frame_time_;
+}
+
+base::TimeTicks LayerTreeHostImpl::CurrentPhysicalTimeTicks() const {
+  return base::TimeTicks::Now();
 }
 
 scoped_ptr<base::Value> LayerTreeHostImpl::AsValue() const {

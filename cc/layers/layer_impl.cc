@@ -877,7 +877,7 @@ void LayerImpl::UpdateScrollbarPositions() {
   if (scrollbar_animation_controller_ &&
       !scrollbar_animation_controller_->IsScrollGestureInProgress()) {
     scrollbar_animation_controller_->DidProgrammaticallyUpdateScroll(
-        layer_tree_impl()->CurrentFrameTimeTicks());
+        layer_tree_impl_->CurrentPhysicalTimeTicks());
   }
 
   // Get the current_offset_.y() value for a sanity-check on scrolling
@@ -985,15 +985,6 @@ void LayerImpl::SetScrollbarOpacity(float opacity) {
     vertical_scrollbar_layer_->SetOpacity(opacity);
 }
 
-inline scoped_ptr<ScrollbarAnimationController>
-CreateScrollbarAnimationControllerWithFade(LayerImpl* layer) {
-  base::TimeDelta fadeout_delay = base::TimeDelta::FromMilliseconds(300);
-  base::TimeDelta fadeout_length = base::TimeDelta::FromMilliseconds(300);
-  return ScrollbarAnimationControllerLinearFade::Create(
-      layer, fadeout_delay, fadeout_length)
-      .PassAs<ScrollbarAnimationController>();
-}
-
 void LayerImpl::DidBecomeActive() {
   if (!layer_tree_impl_->settings().use_linear_fade_scrollbar_animator)
     return;
@@ -1002,8 +993,14 @@ void LayerImpl::DidBecomeActive() {
                                              vertical_scrollbar_layer_;
   if (need_scrollbar_animation_controller) {
     if (!scrollbar_animation_controller_) {
+      base::TimeDelta fadeout_delay = base::TimeDelta::FromMilliseconds(
+          layer_tree_impl_->settings().scrollbar_linear_fade_delay_ms);
+      base::TimeDelta fadeout_length = base::TimeDelta::FromMilliseconds(
+          layer_tree_impl_->settings().scrollbar_linear_fade_length_ms);
       scrollbar_animation_controller_ =
-          CreateScrollbarAnimationControllerWithFade(this);
+          ScrollbarAnimationControllerLinearFade::Create(
+              this, fadeout_delay, fadeout_length)
+              .PassAs<ScrollbarAnimationController>();
     }
   } else {
     scrollbar_animation_controller_.reset();

@@ -68,6 +68,7 @@ class CC_EXPORT LayerTreeImpl {
   bool PinchGestureActive() const;
   base::TimeTicks CurrentFrameTimeTicks() const;
   base::Time CurrentFrameTime() const;
+  base::TimeTicks CurrentPhysicalTimeTicks() const;
   void SetNeedsCommit();
 
   // Tree specific methods exposed to layer-impl tree.

@@ -607,7 +607,8 @@ void ThreadProxy::ScheduledActionSendBeginFrameToMainThread() {
   TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionSendBeginFrameToMainThread");
   scoped_ptr<BeginFrameAndCommitState> begin_frame_state(
       new BeginFrameAndCommitState);
-  begin_frame_state->monotonic_frame_begin_time = base::TimeTicks::Now();
+  begin_frame_state->monotonic_frame_begin_time =
+      layer_tree_host_impl_->CurrentPhysicalTimeTicks();
   begin_frame_state->scroll_info =
       layer_tree_host_impl_->ProcessScrollDeltas();
   DCHECK_GT(layer_tree_host_impl_->memory_allocation_limit_bytes(), 0u);
@@ -1300,19 +1301,20 @@ void ThreadProxy::RenewTreePriority() {
       layer_tree_host_impl_->CurrentlyScrollingLayer() ||
       layer_tree_host_impl_->page_scale_animation_active();
 
+  base::TimeTicks now = layer_tree_host_impl_->CurrentPhysicalTimeTicks();
+
   // Update expiration time if smoothness currently takes priority.
   if (smoothness_takes_priority) {
     smoothness_takes_priority_expiration_time_ =
-        base::TimeTicks::Now() +
-        base::TimeDelta::FromMilliseconds(
-            kSmoothnessTakesPriorityExpirationDelay * 1000);
+        now + base::TimeDelta::FromMilliseconds(
+                  kSmoothnessTakesPriorityExpirationDelay * 1000);
   }
 
   // We use the same priority for both trees by default.
   TreePriority priority = SAME_PRIORITY_FOR_BOTH_TREES;
 
   // Smoothness takes priority if expiration time is in the future.
-  if (smoothness_takes_priority_expiration_time_ > base::TimeTicks::Now())
+  if (smoothness_takes_priority_expiration_time_ > now)
     priority = SMOOTHNESS_TAKES_PRIORITY;
 
   // New content always takes priority when the active tree has
@@ -1331,8 +1333,7 @@ void ThreadProxy::RenewTreePriority() {
         UpdateSmoothnessTakesPriority(priority == SMOOTHNESS_TAKES_PRIORITY);
   }
 
-  base::TimeDelta delay =
-      smoothness_takes_priority_expiration_time_ - base::TimeTicks::Now();
+  base::TimeDelta delay = smoothness_takes_priority_expiration_time_ - now;
 
   // Need to make sure a delayed task is posted when we have smoothness
   // takes priority expiration time in the future.
@@ -1364,8 +1365,7 @@ void ThreadProxy::RequestScrollbarAnimationOnImplThread(base::TimeDelta delay) {
 }
 
 void ThreadProxy::StartScrollbarAnimationOnImplThread() {
-  layer_tree_host_impl_->StartScrollbarAnimation(
-      layer_tree_host_impl_->CurrentFrameTimeTicks());
+  layer_tree_host_impl_->StartScrollbarAnimation();
 }
 
 void ThreadProxy::DidActivatePendingTree() {
