@@ -453,7 +453,6 @@ Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentCla
     , m_designMode(inherit)
     , m_hasAnnotatedRegions(false)
     , m_annotatedRegionsDirty(false)
-    , m_createRenderers(true)
     , m_accessKeyMapValid(false)
     , m_useSecureKeyboardEntryWhenActive(false)
     , m_documentClasses(documentClasses)
@@ -3896,16 +3895,6 @@ void Document::documentWillBecomeInactive()
 {
     if (renderer())
         renderView()->setIsInWindow(false);
-}
-
-void Document::setShouldCreateRenderers(bool f)
-{
-    m_createRenderers = f;
-}
-
-bool Document::shouldCreateRenderers()
-{
-    return m_createRenderers;
 }
 
 // Support for Javascript execCommand, and related methods

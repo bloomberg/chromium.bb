@@ -182,8 +182,6 @@ RenderObject* NodeRenderingContext::parentRenderer() const
 
 bool NodeRenderingContext::shouldCreateRenderer() const
 {
-    if (!m_node->document()->shouldCreateRenderers())
-        return false;
     if (!m_renderingParent)
         return false;
     RenderObject* parentRenderer = this->parentRenderer();

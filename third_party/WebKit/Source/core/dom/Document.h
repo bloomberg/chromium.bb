@@ -914,9 +914,6 @@ public:
 
     void documentWillBecomeInactive();
 
-    void setShouldCreateRenderers(bool);
-    bool shouldCreateRenderers();
-
     void setDecoder(PassRefPtr<TextResourceDecoder>);
     TextResourceDecoder* decoder() const { return m_decoder.get(); }
 
@@ -1318,7 +1315,6 @@ private:
 
     HashMap<String, RefPtr<HTMLCanvasElement> > m_cssCanvasElements;
 
-    bool m_createRenderers;
     Vector<IconURL> m_iconURLs;
 
     HashMap<StringImpl*, Element*, CaseFoldingHash> m_elementsByAccessKey;
