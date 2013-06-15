@@ -118,6 +118,15 @@ void AppendAvailableAutocompletion(size_t type,
     base::StringAppendF(autocompletions, "l%d", count);
 }
 
+// Returns whether the autocompletion is trivial enough that we consider it
+// an autocompletion for which the omnibox autocompletion code did not add
+// any value.
+bool IsTrivialAutocompletion(const AutocompleteMatch& match) {
+  return match.type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
+      match.type == AutocompleteMatchType::URL_WHAT_YOU_TYPED ||
+      match.type == AutocompleteMatchType::SEARCH_OTHER_ENGINE;
+}
+
 }  // namespace
 
 const int AutocompleteController::kNoItemSelected = -1;
@@ -510,9 +519,13 @@ void AutocompleteController::UpdateAssistedQueryStats(
     const TemplateURL* template_url = match->GetTemplateURL(profile_, false);
     if (!template_url || !match->search_terms_args.get())
       continue;
+    std::string selected_index;
+    // Prevent trivial suggestions from getting credit for being selected.
+    if (!IsTrivialAutocompletion(*match))
+      selected_index = base::StringPrintf("%" PRIuS, index);
     match->search_terms_args->assisted_query_stats =
-        base::StringPrintf("chrome.%" PRIuS ".%s",
-                           index,
+        base::StringPrintf("chrome.%s.%s",
+                           selected_index.c_str(),
                            autocompletions.c_str());
     match->destination_url = GURL(template_url->url_ref().ReplaceSearchTerms(
         *match->search_terms_args));

@@ -537,7 +537,7 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
 
   {
     AssistedQueryStatsTestData test_data[] = {
-      { AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, "chrome.0.69i57" }
+      { AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, "chrome..69i57" }
     };
     SCOPED_TRACE("One match");
     RunAssistedQueryStatsTest(test_data, ARRAYSIZE_UNSAFE(test_data));
@@ -546,9 +546,9 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
   {
     AssistedQueryStatsTestData test_data[] = {
       { AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-        "chrome.0.69i57j69i58j5l2j0l3j69i59" },
+        "chrome..69i57j69i58j5l2j0l3j69i59" },
       { AutocompleteMatchType::URL_WHAT_YOU_TYPED,
-        "chrome.1.69i57j69i58j5l2j0l3j69i59" },
+        "chrome..69i57j69i58j5l2j0l3j69i59" },
       { AutocompleteMatchType::NAVSUGGEST,
         "chrome.2.69i57j69i58j5l2j0l3j69i59" },
       { AutocompleteMatchType::NAVSUGGEST,
