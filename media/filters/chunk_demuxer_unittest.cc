@@ -455,7 +455,8 @@ class ChunkDemuxerTest : public testing::Test {
     AppendData(bear1->GetData() + 72737, 28183);
     CheckExpectedRanges(kSourceId, "{ [0,2737) }");
 
-    return demuxer_->EndOfStream(PIPELINE_OK);
+    demuxer_->EndOfStream(PIPELINE_OK);
+    return true;
   }
 
   void ShutdownDemuxer() {
@@ -1242,7 +1243,7 @@ TEST_F(ChunkDemuxerTest, TestReadsAfterEndOfStream) {
 
   EXPECT_CALL(host_, SetDuration(
       base::TimeDelta::FromMilliseconds(kVideoBlockDuration)));
-  EXPECT_TRUE(demuxer_->EndOfStream(PIPELINE_OK));
+  demuxer_->EndOfStream(PIPELINE_OK);
 
   end_of_stream_helper_1.CheckIfReadDonesWereCalled(true);
 
@@ -1260,7 +1261,7 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamDuringCanceledSeek) {
 
   AppendCluster(0, 10);
   EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(138)));
-  EXPECT_TRUE(demuxer_->EndOfStream(PIPELINE_OK));
+  demuxer_->EndOfStream(PIPELINE_OK);
 
   // Start the first seek.
   demuxer_->StartWaitingForSeek();
@@ -1768,7 +1769,9 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamDuringPendingSeek) {
                  base::Bind(OnSeekDone_OKExpected, &seek_cb_was_called));
   EXPECT_FALSE(seek_cb_was_called);
 
-  EXPECT_FALSE(demuxer_->EndOfStream(PIPELINE_OK));
+  EXPECT_CALL(host_, SetDuration(
+      base::TimeDelta::FromMilliseconds(300)));
+  demuxer_->EndOfStream(PIPELINE_OK);
   EXPECT_FALSE(seek_cb_was_called);
 
   scoped_ptr<Cluster> cluster_a3(
@@ -2068,60 +2071,6 @@ TEST_F(ChunkDemuxerTest, TestCodecIDsThatAreNotRFC6381Compliant) {
     if (result == ChunkDemuxer::kOk)
       demuxer_->RemoveId("source_id");
   }
-}
-
-TEST_F(ChunkDemuxerTest, TestEndOfStreamFailures) {
-  std::string audio_id = "audio";
-  std::string video_id = "video";
-
-  ASSERT_TRUE(InitDemuxerAudioAndVideoSources(audio_id, video_id));
-
-  scoped_ptr<Cluster> cluster_a1(
-      GenerateSingleStreamCluster(0, 35, kAudioTrackNum, 35));
-  scoped_ptr<Cluster> cluster_v1(
-      GenerateSingleStreamCluster(0, 10, kVideoTrackNum, 5));
-  scoped_ptr<Cluster> cluster_v2(
-      GenerateSingleStreamCluster(10, 25, kVideoTrackNum, 5));
-  scoped_ptr<Cluster> cluster_v3(
-      GenerateSingleStreamCluster(30, 50, kVideoTrackNum, 10));
-
-  AppendData(audio_id, cluster_a1->data(), cluster_a1->size());
-  AppendData(video_id, cluster_v1->data(), cluster_v1->size());
-  AppendData(video_id, cluster_v3->data(), cluster_v3->size());
-
-  CheckExpectedRanges(audio_id, "{ [0,35) }");
-  CheckExpectedRanges(video_id, "{ [0,10) [30,50) }");
-
-  // Make sure that end of stream fails because there is a gap between
-  // the current position(0) and the end of the appended data.
-  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(50)));
-  ASSERT_FALSE(demuxer_->EndOfStream(PIPELINE_OK));
-
-  // Seek to an time that is inside the last ranges for both streams
-  // and verify that the EndOfStream() is successful.
-  demuxer_->StartWaitingForSeek();
-  demuxer_->Seek(base::TimeDelta::FromMilliseconds(30),
-                 NewExpectedStatusCB(PIPELINE_OK));
-
-  ASSERT_TRUE(demuxer_->EndOfStream(PIPELINE_OK));
-
-  // Append an zero length buffer to transition out of the end of stream state.
-  AppendData(NULL, 0);
-
-  // Seek back to 0 and verify that EndOfStream() fails again.
-  demuxer_->StartWaitingForSeek();
-  demuxer_->Seek(base::TimeDelta::FromMilliseconds(0),
-                 NewExpectedStatusCB(PIPELINE_OK));
-
-  ASSERT_FALSE(demuxer_->EndOfStream(PIPELINE_OK));
-
-  // Append the missing range and verify that EndOfStream() succeeds now.
-  AppendData(video_id, cluster_v2->data(), cluster_v2->size());
-
-  CheckExpectedRanges(audio_id, "{ [0,35) }");
-  CheckExpectedRanges(video_id, "{ [0,50) }");
-
-  ASSERT_TRUE(demuxer_->EndOfStream(PIPELINE_OK));
 }
 
 TEST_F(ChunkDemuxerTest, TestEndOfStreamStillSetAfterSeek) {

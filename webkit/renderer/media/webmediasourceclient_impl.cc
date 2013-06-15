@@ -77,8 +77,7 @@ void WebMediaSourceClientImpl::endOfStream(
       NOTIMPLEMENTED();
   }
 
-  if (!demuxer_->EndOfStream(pipeline_status))
-    DVLOG(1) << "EndOfStream call failed.";
+  demuxer_->EndOfStream(pipeline_status);
 }
 
 }  // namespace webkit_media

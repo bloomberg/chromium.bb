@@ -104,9 +104,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   bool SetTimestampOffset(const std::string& id, base::TimeDelta offset);
 
   // Signals an EndOfStream request.
-  // Returns false if called in an unexpected state or if there is a gap between
-  // the current position and the end of the buffered data.
-  bool EndOfStream(PipelineStatus status);
+  void EndOfStream(PipelineStatus status);
   void Shutdown();
 
  private:

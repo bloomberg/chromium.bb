@@ -232,7 +232,6 @@ class ChunkDemuxerStream : public DemuxerStream {
 
   void EndOfStream();
   void CancelEndOfStream();
-  bool CanEndOfStream() const;
 
   void Shutdown();
 
@@ -340,7 +339,8 @@ void ChunkDemuxerStream::CancelPendingSeek() {
 
 bool ChunkDemuxerStream::IsSeekPending() const {
   base::AutoLock auto_lock(lock_);
-  return stream_->IsSeekPending();
+  return !(end_of_stream_ && stream_->IsEndSelected()) &&
+      stream_->IsSeekPending();
 }
 
 void ChunkDemuxerStream::OnNewMediaSegment(TimeDelta start_timestamp) {
@@ -411,7 +411,6 @@ void ChunkDemuxerStream::EndOfStream() {
   {
     base::AutoLock auto_lock(lock_);
     DCHECK(!end_of_stream_);
-    DCHECK(stream_->IsEndSelected());
     end_of_stream_ = true;
     CreateReadDoneClosures_Locked(&closures);
   }
@@ -424,11 +423,6 @@ void ChunkDemuxerStream::CancelEndOfStream() {
   base::AutoLock auto_lock(lock_);
   DCHECK(end_of_stream_);
   end_of_stream_ = false;
-}
-
-bool ChunkDemuxerStream::CanEndOfStream() const {
-  base::AutoLock auto_lock(lock_);
-  return stream_->IsEndSelected();
 }
 
 void ChunkDemuxerStream::Shutdown() {
@@ -975,7 +969,7 @@ bool ChunkDemuxer::SetTimestampOffset(const std::string& id, TimeDelta offset) {
   return source_state_map_[id]->SetTimestampOffset(offset);
 }
 
-bool ChunkDemuxer::EndOfStream(PipelineStatus status) {
+void ChunkDemuxer::EndOfStream(PipelineStatus status) {
   DVLOG(1) << "EndOfStream(" << status << ")";
   PipelineStatusCB cb;
   {
@@ -984,16 +978,14 @@ bool ChunkDemuxer::EndOfStream(PipelineStatus status) {
     DCHECK_NE(state_, ENDED);
 
     if (state_ == SHUTDOWN || state_ == PARSE_ERROR)
-      return true;
+      return;
 
     if (state_ == INITIALIZING) {
       ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
-      return true;
+      return;
     }
 
-    if (!CanEndOfStream_Locked() && status == PIPELINE_OK)
-      return false;
-
+    bool old_seek_pending = IsSeekPending_Locked();
     if (audio_)
       audio_->EndOfStream();
 
@@ -1001,22 +993,20 @@ bool ChunkDemuxer::EndOfStream(PipelineStatus status) {
       video_->EndOfStream();
 
     // Give a chance to resume the pending seek process.
-    if (IsSeekPending_Locked() && !seek_cb_.is_null()) {
-      std::swap(cb, seek_cb_);
-    }
-
     if (status != PIPELINE_OK) {
       ReportError_Locked(status);
-    } else {
-      ChangeState_Locked(ENDED);
-      DecreaseDurationIfNecessary();
+      return;
     }
+
+    ChangeState_Locked(ENDED);
+    DecreaseDurationIfNecessary();
+
+    if (old_seek_pending && !IsSeekPending_Locked() && !seek_cb_.is_null())
+      std::swap(cb, seek_cb_);
   }
 
   if (!cb.is_null())
     cb.Run(PIPELINE_OK);
-
-  return true;
 }
 
 void ChunkDemuxer::Shutdown() {
@@ -1102,12 +1092,6 @@ bool ChunkDemuxer::IsSeekPending_Locked() const {
     seek_pending = video_->IsSeekPending();
 
   return seek_pending;
-}
-
-bool ChunkDemuxer::CanEndOfStream_Locked() const {
-  lock_.AssertAcquired();
-  return (!audio_ || audio_->CanEndOfStream()) &&
-         (!video_ || video_->CanEndOfStream());
 }
 
 void ChunkDemuxer::OnSourceInitDone(bool success, TimeDelta duration) {
