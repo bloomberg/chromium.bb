@@ -40,11 +40,14 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
   typedef std::set<net::IPEndPoint> ConnectedPeerSet;
 
   struct PendingPacket {
-    PendingPacket(const net::IPEndPoint& to, const std::vector<char>& content);
+    PendingPacket(const net::IPEndPoint& to,
+                  const std::vector<char>& content,
+                  uint64 id);
     ~PendingPacket();
     net::IPEndPoint to;
     scoped_refptr<net::IOBuffer> data;
     int size;
+    uint64 id;
   };
 
   void OnError();
@@ -54,8 +57,8 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
   void HandleReadResult(int result);
 
   void DoSend(const PendingPacket& packet);
-  void OnSend(int result);
-  void HandleSendResult(int result);
+  void OnSend(uint64 packet_id, int result);
+  void HandleSendResult(uint64 packet_id, int result);
 
   scoped_ptr<net::DatagramServerSocket> socket_;
   scoped_refptr<net::IOBuffer> recv_buffer_;
@@ -63,6 +66,7 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
 
   std::deque<PendingPacket> send_queue_;
   bool send_pending_;
+  uint64 send_packet_count_;
 
   // Set of peer for which we have received STUN binding request or
   // response or relay allocation request or response.

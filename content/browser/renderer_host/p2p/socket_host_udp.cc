@@ -37,15 +37,24 @@ bool IsTransientError(int error) {
          error == net::ERR_OUT_OF_MEMORY;
 }
 
+uint64 GetUniqueEventId(const content::P2PSocketHostUdp* obj,
+                        uint64 packet_id) {
+  uint64 uid = reinterpret_cast<uintptr_t>(obj);
+  uid <<= 32;
+  uid |= packet_id;
+  return uid;
+}
+
 }  // namespace
 
 namespace content {
 
 P2PSocketHostUdp::PendingPacket::PendingPacket(
-    const net::IPEndPoint& to, const std::vector<char>& content)
+    const net::IPEndPoint& to, const std::vector<char>& content, uint64 id)
     : to(to),
       data(new net::IOBuffer(content.size())),
-      size(content.size()) {
+      size(content.size()),
+      id(id) {
   memcpy(data->data(), &content[0], size);
 }
 
@@ -55,7 +64,8 @@ P2PSocketHostUdp::PendingPacket::~PendingPacket() {
 P2PSocketHostUdp::P2PSocketHostUdp(IPC::Sender* message_sender, int id)
     : P2PSocketHost(message_sender, id),
       socket_(new net::UDPServerSocket(NULL, net::NetLog::Source())),
-      send_pending_(false) {
+      send_pending_(false),
+      send_packet_count_(0) {
 }
 
 P2PSocketHostUdp::~P2PSocketHostUdp() {
@@ -173,21 +183,23 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
   }
 
   if (send_pending_) {
-    send_queue_.push_back(PendingPacket(to, data));
+    send_queue_.push_back(PendingPacket(to, data, send_packet_count_));
   } else {
-    PendingPacket packet(to, data);
+    PendingPacket packet(to, data, send_packet_count_);
     DoSend(packet);
   }
+  ++send_packet_count_;
 }
 
 void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
-  TRACE_EVENT_ASYNC_BEGIN2("p2p", "Udp::DoSend", this,
-                           "id", id_, "size", packet.size);
+  TRACE_EVENT_ASYNC_BEGIN1("p2p", "Udp::DoSend",
+                           GetUniqueEventId(this, packet.id),
+                           "size", packet.size);
   int result = socket_->SendTo(
       packet.data.get(),
       packet.size,
       packet.to,
-      base::Bind(&P2PSocketHostUdp::OnSend, base::Unretained(this)));
+      base::Bind(&P2PSocketHostUdp::OnSend, base::Unretained(this), packet.id));
 
   // sendto() may return an error, e.g. if we've received an ICMP Destination
   // Unreachable message. When this happens try sending the same packet again,
@@ -197,23 +209,24 @@ void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
         packet.data.get(),
         packet.size,
         packet.to,
-        base::Bind(&P2PSocketHostUdp::OnSend, base::Unretained(this)));
+        base::Bind(&P2PSocketHostUdp::OnSend, base::Unretained(this),
+                   packet.id));
   }
 
   if (result == net::ERR_IO_PENDING) {
     send_pending_ = true;
   } else {
-    HandleSendResult(result);
+    HandleSendResult(packet.id, result);
   }
 }
 
-void P2PSocketHostUdp::OnSend(int result) {
+void P2PSocketHostUdp::OnSend(uint64 packet_id, int result) {
   DCHECK(send_pending_);
   DCHECK_NE(result, net::ERR_IO_PENDING);
 
   send_pending_ = false;
 
-  HandleSendResult(result);
+  HandleSendResult(packet_id, result);
 
   // Send next packets if we have them waiting in the buffer.
   while (state_ == STATE_OPEN && !send_queue_.empty() && !send_pending_) {
@@ -222,8 +235,10 @@ void P2PSocketHostUdp::OnSend(int result) {
   }
 }
 
-void P2PSocketHostUdp::HandleSendResult(int result) {
-  TRACE_EVENT_ASYNC_END1("p2p", "Udp::DoSend", this, "result", result);
+void P2PSocketHostUdp::HandleSendResult(uint64 packet_id, int result) {
+  TRACE_EVENT_ASYNC_END1("p2p", "Udp::DoSend",
+                         GetUniqueEventId(this, packet_id),
+                         "result", result);
   if (result > 0) {
     message_sender_->Send(new P2PMsg_OnSendComplete(id_));
   } else if (IsTransientError(result)) {
