@@ -40,8 +40,9 @@ WebKit::WebLayer* WebExternalTextureLayerImpl::layer() { return layer_.get(); }
 
 void WebExternalTextureLayerImpl::clearTexture() {
   if (uses_mailbox_) {
-    static_cast<TextureLayer*>(layer_->layer())->SetTextureMailbox(
-        cc::TextureMailbox());
+    TextureLayer *layer = static_cast<TextureLayer*>(layer_->layer());
+    layer->WillModifyTexture();
+    layer->SetTextureMailbox(cc::TextureMailbox());
   } else {
     static_cast<TextureLayer*>(layer_->layer())->SetTextureId(0);
   }
